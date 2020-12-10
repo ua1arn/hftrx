@@ -51,12 +51,10 @@
 #define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
 
 typedef void (*rndis_rxproc_t)(const uint8_t *data, int size);
-extern rndis_state_t rndis_state;
-extern rndis_rxproc_t rndis_rxproc;
+static rndis_state_t rndis_state;
+static rndis_rxproc_t rndis_rxproc = NULL;
 
-extern USBD_ClassTypeDef  usbd_rndis;
-extern usb_eth_stat_t usb_eth_stat;
-extern rndis_state_t rndis_state;
+static usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
 
 static bool rndis_rx_start(void);
 uint8_t *rndis_rx_data(void);
@@ -294,30 +292,21 @@ USBD_HandleTypeDef *pDev;
 
 uint8_t station_hwaddr[6] = { STATION_HWADDR };
 uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
-usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
-rndis_state_t rndis_state = rndis_uninitialized;
+static rndis_state_t rndis_state = rndis_uninitialized;
 uint32_t oid_packet_filter = 0x0000000;
 uint8_t encapsulated_buffer[ENC_BUF_SIZE];
 
 uint16_t rndis_tx_data_size = 0;
 bool rndis_tx_transmitting = false;
 bool rndis_tx_ZLP = false;
-USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END ;
-USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_END;
-rndis_rxproc_t rndis_rxproc = NULL;
-uint16_t rndis_rx_data_size = 0;
-bool rndis_rx_started = false;
-uint8_t *rndis_tx_ptr = NULL;
-bool rndis_first_tx = true;
-int rndis_tx_size = 0;
-int rndis_sended = 0;
-
-/*******************************************************************************
-                            API functions
-*******************************************************************************/
-/*__weak */void rndis_initialized_cb(void)
-{
-}
+static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END ;
+static USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_END;
+static uint16_t rndis_rx_data_size = 0;
+static bool rndis_rx_started = false;
+static uint8_t *rndis_tx_ptr = NULL;
+static bool rndis_first_tx = true;
+static int rndis_tx_size = 0;
+static int rndis_sended = 0;
 
 static bool rndis_rx_start(void)
 {
