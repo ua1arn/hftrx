@@ -877,6 +877,12 @@ uint_fast32_t display_getdotclock(void);
 int toshiba_ddr_power_init(void);
 void stpmic1_dump_regulators(void);
 
+void network_initialize(void);
+void init_netif(void);
+
+void usb_polling(void);	/* LWIP support */
+void tcp_tmr(void);	/* LWIP support */
+
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */
 #define UNUSED(x) ((void)(x))
@@ -886,6 +892,8 @@ void stpmic1_dump_regulators(void);
 
 #define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
+#define IPADDR                          {192, 168, 7, 1}	// local addreww
+#define PADDR(ptr) ((ip_addr_t *)ptr)
 
 #ifdef __cplusplus
 }

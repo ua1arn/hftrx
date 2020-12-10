@@ -21459,6 +21459,7 @@ main(void)
 	global_enableIRQ();
 	midtests();
 	initialize2();	/* вызывается при разрешённых прерываниях. */
+	network_initialize();
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 

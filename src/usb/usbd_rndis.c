@@ -9,81 +9,23 @@
 
 #if WITHUSBHW && WITHUSBRNDIS
 
-#include "formats.h"
-#include "usb_core.h"
-
-#include "lwip/opt.h"
-
-#include "lwip/init.h"
-//#include "lwip/stats.h"
-//#include "lwip/sys.h"
-//#include "lwip/mem.h"
-//#include "lwip/memp.h"
-//#include "lwip/pbuf.h"
-#include "lwip/netif.h"
-//#include "lwip/sockets.h"
-#include "lwip/ip.h"
-//#include "lwip/raw.h"
-#include "lwip/udp.h"
-#include "lwip/dhcp.h"
-//#include "lwip/priv/tcp_priv.h"
-//#include "lwip/igmp.h"
-//#include "lwip/dns.h"
-#include "src/dhcp-server/dhserver.h"
-#include "src/dns-server/dnserver.h"
-#include "src/lwip-1.4.1/apps/httpserver_raw/httpd.h"
-//#include "lwip/timeouts.h"
-//#include "lwip/etharp.h"
-//#include "lwip/ip6.h"
-//#include "lwip/nd6.h"
-//#include "lwip/mld6.h"
-//#include "lwip/api.h"
-
 #include <stdbool.h>
 #include <stddef.h>
 #include "rndis_protocol.h"
 
 
-/* Includes ------------------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
-/* Exported macros -----------------------------------------------------------*/
-#define PADDR(ptr) ((ip_addr_t *)ptr)
+#include "formats.h"
+#include "usb_core.h"
 
-/* Exported constants --------------------------------------------------------*/
-
-/* LAN */
-#define HWADDR                          {0x30,0x89,0x84,0x6A,0x96,0x34}
-#define IPADDR                          {192, 168, 7, 1}
-#define NETMASK                         {255, 255, 255, 0}
-#define GATEWAY                         {0, 0, 0, 0}
-
-#define DHCP_ENTRIES_QNT                3
-#define DHCP_ENTRIES                    {\
-                                        { {0}, {192, 168, 7, 2}, {255, 255, 255, 0}, 24 * 60 * 60 }, \
-                                        { {0}, {192, 168, 7, 3}, {255, 255, 255, 0}, 24 * 60 * 60 }, \
-                                        { {0}, {192, 168, 7, 4}, {255, 255, 255, 0}, 24 * 60 * 60 } \
-                                        }
-#define DHCP_CONFIG                     { \
-                                        IPADDR, 67, \
-                                        IPADDR, \
-                                        "stm", \
-                                        DHCP_ENTRIES_QNT, \
-                                        entries \
-                                        }
-
-
-
-//#define TX_ZLP_TEST
-
-/* Exported macro ------------------------------------------------------------*/
-/* Exported variables --------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
-void init_lwip(void);
-void init_htserv(void);
-void init_dhserv(void);
-void init_dnserv(void);
-void init_netif(void);
-void usb_polling(void);
+#include "lwip/opt.h"
+#include "lwip/init.h"
+//#include "lwip/stats.h"
+//#include "lwip/sys.h"
+//#include "lwip/mem.h"
+//#include "lwip/memp.h"
+#include "lwip/pbuf.h"
+#include "lwip/netif.h"
+#include "netif/etharp.h"
 
 
 #define RNDIS_CONTROL_OUT_PMAADDRESS                    (0x08 * 4)                //8 bytes per EP
@@ -127,30 +69,18 @@ bool rndis_can_send(void);
 bool rndis_send(const void *data, int size);
 
 
-/* Private types -------------------------------------------------------------*/
-struct netif netif_data;
-const char *state_cgi_handler(int index, int n_params, char *params[], char *values[]);
-const char *ctl_cgi_handler(int index, int n_params, char *params[], char *values[]);
-
-dhcp_entry_t entries[DHCP_ENTRIES_QNT] = DHCP_ENTRIES;
-dhcp_config_t dhcp_config = DHCP_CONFIG;
-
-
 static uint8_t received[RNDIS_MTU + 14];
 static int recvSize = 0;
 
-/* Private variables ---------------------------------------------------------*/
-const uint8_t ipaddr[4]  = IPADDR;
-
-/* External variables --------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-static err_t netif_init_cb(struct netif *netif);
-static err_t linkoutput_fn(struct netif *netif, struct pbuf *p);
-static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr);
-static bool dns_query_proc(const char *name, ip_addr_t *addr);
-static uint16_t ssi_handler(int index, char *insert, int ins_len);
-
 static int outputs = 0;
+
+
+static struct netif netif_data;
+
+/* LAN */
+#define HWADDR                          {0x30,0x89,0x84,0x6A,0x96,0x34}
+#define NETMASK                         {255, 255, 255, 0}
+#define GATEWAY                         {0, 0, 0, 0}
 
 // Transceiving Ethernet packets
 static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
@@ -236,232 +166,34 @@ TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
 }
 */
 
-static bool dns_query_proc(const char *name, ip_addr_t *addr)
-{
-  if (
-		  strcmp(name, "run.stm") == 0 ||
-		  strcmp(name, "www.run.stm") == 0
-		  )
-  {
-    addr->addr = *(uint32_t *)ipaddr;
-    return true;
-  }
-  return false;
-}
-
-
 static void on_packet(const uint8_t *data, int size)
 {
     memcpy(received, data, size);
     recvSize = size;
 }
 
-void init_lwip()
-{
-//	PRINTF("init_lwip start\n");
-  uint8_t hwaddr[6]  = HWADDR;
-  uint8_t netmask[4] = NETMASK;
-  uint8_t gateway[4] = GATEWAY;
-
-  struct netif  *netif = &netif_data;
-  rndis_rxproc = on_packet;
-
-  lwip_init();
-  netif->hwaddr_len = 6;
-  memcpy(netif->hwaddr, hwaddr, 6);
-
-  netif = netif_add(netif, PADDR(ipaddr), PADDR(netmask), PADDR(gateway), NULL, netif_init_cb, ip_input);
-  netif_set_default(netif);
-
-  //stmr_add(&tcp_timer);
-//	PRINTF("init_lwip done\n");
-}
-
-
-
 void init_netif(void)
 {
-  while (!netif_is_up(&netif_data));
-}
+	static const  uint8_t hwaddr[6]  = HWADDR;
+	static const  uint8_t netmask[4] = NETMASK;
+	static const  uint8_t gateway[4] = GATEWAY;
 
-void init_dnserv(void)
-{
-	uint8_t ipaddr [4] = IPADDR;
-	while (dnserv_init(PADDR(ipaddr), 53, dns_query_proc) != ERR_OK)
+	static const uint8_t ipaddr[4]  = IPADDR;
+	struct netif  *netif = &netif_data;
+	netif->hwaddr_len = 6;
+	memcpy(netif->hwaddr, hwaddr, 6);
+
+	netif = netif_add(netif, PADDR(ipaddr), PADDR(netmask), PADDR(gateway), NULL, netif_init_cb, ip_input);
+	netif_set_default(netif);
+
+	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
+
+	while (!netif_is_up(&netif_data))
 		;
 }
 
-void init_dhserv(void)
-{
-  while (dhserv_init(&dhcp_config) != ERR_OK)
-	  ;
-}
-
-#if 1
-static const char *ssi_tags_table[] =
-{
-    "systick", /* 0 */
-    "btn",     /* 1 */
-    "acc",     /* 2 */
-    "ledg",    /* 3 */
-    "ledo",    /* 4 */
-    "ledr"     /* 5 */
-};
-
-static const tCGI cgi_uri_table[] =
-{
-    { "/state.cgi", state_cgi_handler },
-    { "/ctl.cgi",   ctl_cgi_handler },
-};
-
-
-void init_htserv(void)
-{
-  http_set_cgi_handlers(cgi_uri_table, sizeof(cgi_uri_table) / sizeof(tCGI));
-  http_set_ssi_handler(ssi_handler, ssi_tags_table, sizeof(ssi_tags_table) / sizeof(char *));
-  httpd_init();
-}
-
-static uint8_t PORTC[8];
-
-const char *state_cgi_handler(int index, int n_params, char *params[], char *values[])
-{
-  return "/state.shtml";
-}
-
-
-bool led_g = false;
-bool led_o = false;
-bool led_r = false;
-
-const char *ctl_cgi_handler(int index, int n_params, char *params[], char *values[])
-{
-    int i;
-    for (i = 0; i < n_params; i++)
-    {
-        if (strcmp(params[i], "g") == 0) led_g = *values[i] == '1';
-        if (strcmp(params[i], "o") == 0) led_o = *values[i] == '1';
-        if (strcmp(params[i], "r") == 0) led_r = *values[i] == '1';
-    }
-
-
-    return "/state.shtml";
-}
-
-#ifdef TX_ZLP_TEST
-static uint16_t ssi_handler(int index, char *insert, int ins_len)
-{
-  int res;
-  static uint8_t i;
-  static uint8_t c;
-
-  if (ins_len < 32) return 0;
-
-  if (c++ == 10)
-  {
-    i++;
-    i &= 0x07;
-    c = 0;
-  }
-  switch (index)
-  {
-  case 0: // systick
-    res = local_snprintf_P(insert, ins_len, "%s", "1234");
-    break;
-  case 1: // PORTC
-    {
-      res = local_snprintf_P(insert, ins_len, "%u, %u, %u, %u, %u, %u, %u, %u", 10, 10, 10, 10, 10, 10, 10, 10);
-      break;
-    }
-  case 2: // PA0
-    *insert = '0' + (i == 0);
-    res = 1;
-    break;
-  case 3: // PA1
-    *insert = '0' + (i == 1);
-    res = 1;
-    break;
-  case 4: // PA2
-    *insert = '0' + (i == 2);
-    res = 1;
-    break;
-  case 5: // PA3
-    *insert = '0' + (i == 3);
-    res = 1;
-    break;
-  case 6: // PA4
-    *insert = '0' + (i == 4);
-    res = 1;
-    break;
-  case 7: // PA5
-    *insert = '0' + (i == 5);
-    res = 1;
-    break;
-  case 8: // PA6
-    *insert = '0' + (i == 6);
-    res = 1;
-    break;
-  case 9: // PA7
-    *insert = '0' + (i == 7);
-    res = 1;
-    break;
-  }
-
-  return res;
-}
-#else
-static u16_t ssi_handler(int index, char *insert, int ins_len)
-{
-    int res = 0;
-
-    if (ins_len < 32) return 0;
-
-    switch (index)
-    {
-    case 0: /* systick */
-        res = local_snprintf_P(insert, ins_len, "%u", (unsigned)111);
-        break;
-    case 1: /* btn */
-        res = local_snprintf_P(insert, ins_len, "%i", 1);
-        break;
-    case 2: /* acc */
-    {
-        int acc[3];
-        acc[0] = 1;
-        acc[1] = 2;
-        acc[2] = 4;
-        res = local_snprintf_P(insert, ins_len, "%i, %i, %i", acc[0], acc[1], acc[2]);
-        break;
-    }
-    case 3: /* ledg */
-        *insert = '0' + (1 & 1);
-        res = 1;
-        break;
-    case 4: /* ledo */
-        *insert = '0' + (1 & 1);
-        res = 1;
-        break;
-    case 5: /* ledr */
-        *insert = '0' + (1 & 1);
-        res = 1;
-        break;
-    }
-
-    return res;
-}
-#endif
-
-#endif
-
-
 static void USBD_RNDIS_ColdInit(void)
 {
-	  init_lwip();
-	  init_netif();
-	  init_dhserv();
-	  init_dnserv();
-	  //init_htserv();
-	  //echo_init();
 }
 
 /*
@@ -782,7 +514,7 @@ NDIS_MAC_OPTION_RECEIVE_SERIALIZED  | \
   NDIS_MAC_OPTION_TRANSFERS_NOT_PEND  | \
     NDIS_MAC_OPTION_NO_LOOPBACK
 
-static const char *rndis_vendor = RNDIS_VENDOR;
+static const char * const rndis_vendor = RNDIS_VENDOR;
 
 static void rndis_query(USBD_HandleTypeDef  *pdev)
 {
