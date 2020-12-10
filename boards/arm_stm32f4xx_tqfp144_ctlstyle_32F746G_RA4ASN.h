@@ -103,8 +103,8 @@
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-		//#define DIRECT_96M_X1				1	/* Тактовый генератор 96 МГц */
+		//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+		#define DIRECT_96M_X1				1	/* Тактовый генератор 96 МГц */
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
@@ -394,7 +394,7 @@
 	#define targetext1	SPI_CSEL_PG15 	/* external devices control */
 	#define targetext2	SPI_CSEL_PG15 	/* external devices control */
 	#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
-	#define targetfpga1	SPI_CSEL_PC7 	/* control register in FPGA */
+	#define targetfpga1	SPI_CSEL_PC6 	/* control register in FPGA */
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/

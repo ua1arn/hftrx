@@ -448,11 +448,11 @@
 #define SPI_CSEL_PG7	0//(1U << 7)	// PG7 board control registers chain
 #define SPI_CSEL_PG6	0//(1U << 6)	// PG6 on-board codec1 NAU8822L
 //#define SPI_CSEL_PG5	0//(1U << 5)	// PG5 FPGA CS2 - used as overflov signal from ADC
-#define SPI_CSEL_PC7	(1U << 7)		// PC7 FPGA control registers CS
+#define SPI_CSEL_PC6	(1U << 6)		// PC6 FPGA control registers CS
 #define SPI_CSEL_PG1	0//(1U << 7)	// PG1 FPGA NCO1 registers CS
 
 // Здесь должны быть перечислены все биты формирования CS в устройстве.
-#define SPI_ALLCS_BITS (SPI_CSEL_PC7)
+#define SPI_ALLCS_BITS (SPI_CSEL_PC6)
 
 #define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
@@ -487,37 +487,39 @@
 	} while (0)
 
 // MOSI & SCK port
-#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_SCLK_BIT			(1U << 6)	// * PH6 бит, через который идет синхронизация SPI
+#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOI->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOI->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define	SPI_SCLK_BIT			(1U << 0)	// * PI0 бит, через который идет синхронизация SPI
 
-#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOI->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOI->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_MOSI_BIT			(1U << 0)	// * PI0 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define	SPI_MOSI_BIT			(1U << 7)	// * PG7 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
-#define SPI_TARGET_MISO_PIN		(GPIOG->IDR)		// was PINA
-#define	SPI_MISO_BIT			(1U << 7)	// * PG7 бит, через который идет ввод с SPI.
+#define SPI_TARGET_MISO_PIN		(GPIOH->IDR)		// was PINA
+#define	SPI_MISO_BIT			(1U << 6)	// * PH6 бит, через который идет ввод с SPI.
 
 #define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioh_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-		arm_hardware_pioi_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-		arm_hardware_piog_inputs(SPI_MISO_BIT); \
+		arm_hardware_pioi_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+		arm_hardware_piog_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+		arm_hardware_pioh_inputs(SPI_MISO_BIT); \
 	} while (0)
 
 
 #define HARDWARE_SPI_CONNECT() do { \
-		arm_hardware_piob_altfn50(SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-		arm_hardware_pioa_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-	} while (0)
+		arm_hardware_pioh_altfn50(SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_piog_altfn50(SPI_MOSI_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_pioi_altfn50(SPI_SCLK_BIT, AF_SPI1);	\
+} while (0)
 #define HARDWARE_SPI_DISCONNECT() do { \
-		arm_hardware_pioa_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
-		arm_hardware_piob_inputs(SPI_MISO_BIT); \
+		arm_hardware_pioi_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+		arm_hardware_piog_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+		arm_hardware_pioh_inputs(SPI_MISO_BIT); \
 	} while (0)
 #define HARDWARE_SPI_CONNECT_MOSI() do { \
-		arm_hardware_pioa_altfn50(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+		arm_hardware_piog_altfn50(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
 	} while (0)
 #define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
+		arm_hardware_piog_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 	} while (0)
 
 /* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
@@ -595,22 +597,22 @@
 
 #if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1U << 4)	/* PB4 - fir CLK */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (1U << 7)	/* PC7 - fir CLK */
 
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1U << 6)	/* PC6 - fir1 WE */
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_BIT (1U << 6)	/* PG6 - fir1 WE */
 
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1U << 6)	/* PG6 - fir2 WE */
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_BIT (1U << 4)	/* PB4 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+			arm_hardware_piog_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+			arm_hardware_piob_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
+			arm_hardware_pioc_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 

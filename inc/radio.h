@@ -2641,6 +2641,14 @@ void spool_0p128(void);	// OPERA support
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_122M88_X1 */
 
+#if DIRECT_96M_X1
+	#define LO1MODE_DIRECT	1
+	#define REFERENCE_FREQ	96000000uL
+	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
+	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
+	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
+#endif	/* DIRECT_96M_X1 */
+
 #if DIRECT_12M288_X10
 	#define LO1MODE_DIRECT	1
 	#define REFERENCE_FREQ	12288000uL
