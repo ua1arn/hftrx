@@ -5831,7 +5831,7 @@ static void rendertest1(int w, int h)
 
     path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
 
-    // 1) перечисляем (доьавляем) фигуры
+    // 1) перечисляем (добавляем) фигуры
     vgAppendPathData( path, 6, segments, coords );
 	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 300, 100, 100, 100, 10, 10));
 
@@ -5966,13 +5966,8 @@ static void rendertest3(int w, int h)
 
 static void rendertestdynamic(int w, int h, int pos, int total)
 {
-	static const float clearColor[4] = {1, 1, 1, 1};
-	//		float scaleX = w / (tigerMaxX - tigerMinX);
-	//		float scaleY = h / (tigerMaxY - tigerMinY);
-	//		float scale = fminf(scaleX, scaleY);
-	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+	static const float clearColor[4] = {1.0f, 1.0f, 1.0f, 1.0f };
 
-	vgLoadIdentity();
 	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
 
 	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
@@ -5995,7 +5990,10 @@ static void rendertestdynamic(int w, int h, int pos, int total)
 
 	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
 
-    // 1) перечисляем (доьавляем) фигуры
+	// 0) сброс масштабирования
+	vgLoadIdentity();
+
+   // 1) перечисляем (добавляем) фигуры
 	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
 	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100 + pos * 5, 10, 10, 10));
 
@@ -6083,8 +6081,8 @@ void hightests(void)
 					break;
 				}
 
-				rendertest1(DIM_X, DIM_Y);
-				display_nextfb();
+				//rendertest1(DIM_X, DIM_Y);
+				//display_nextfb();
 
 				rendertestdynamic(DIM_X, DIM_Y, pos, total);
 				display_nextfb();
