@@ -242,11 +242,11 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
     int res = 0;
 
     if (ins_len < 32) return 0;
-
+    static unsigned ttt;
     switch (index)
     {
     case 0: /* systick */
-        res = local_snprintf_P(insert, ins_len, "%u", (unsigned)111);
+        res = local_snprintf_P(insert, ins_len, "%u", (unsigned)++ ttt);
         break;
     case 1: /* btn */
         res = local_snprintf_P(insert, ins_len, "%i", 1);
