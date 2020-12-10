@@ -19,10 +19,6 @@
 
 #include "lwip/opt.h"
 #include "lwip/init.h"
-//#include "lwip/stats.h"
-//#include "lwip/sys.h"
-//#include "lwip/mem.h"
-//#include "lwip/memp.h"
 #include "lwip/pbuf.h"
 #include "lwip/netif.h"
 #include "netif/etharp.h"
@@ -56,15 +52,15 @@ static rndis_rxproc_t rndis_rxproc = NULL;
 
 static usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
 
-static bool rndis_rx_start(void);
+static int rndis_rx_start(void);
 static uint8_t *rndis_rx_data(void);
 static uint16_t rndis_rx_size(void);
 
-bool rndis_tx_start(uint8_t *data, uint16_t size);
-bool rndis_tx_started(void);
+static int rndis_tx_start(uint8_t *data, uint16_t size);
+static int rndis_tx_started(void);
 
-bool rndis_can_send(void);
-bool rndis_send(const void *data, int size);
+static int rndis_can_send(void);
+static int rndis_send(const void *data, int size);
 
 
 static uint8_t received[RNDIS_MTU + 14];
@@ -106,6 +102,39 @@ static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
     return ERR_OK;
 }
 
+
+static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
+{
+  return etharp_output(netif, p, ipaddr);
+}
+
+static err_t netif_init_cb(struct netif *netif)
+{
+  LWIP_ASSERT("netif != NULL", (netif != NULL));
+  netif->mtu = RNDIS_MTU;
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+  netif->state = NULL;
+  netif->name[0] = 'E';
+  netif->name[1] = 'X';
+  netif->linkoutput = linkoutput_fn;
+  netif->output = output_fn;
+  return ERR_OK;
+}
+/*
+TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
+{
+  tcp_tmr();
+}
+*/
+
+static void on_packet(const uint8_t *data, int size)
+{
+    memcpy(received, data, size);
+    recvSize = size;
+}
+
+
+
 // Receiving Ethernet packets
 // user-mode function
 void usb_polling(void)
@@ -139,44 +168,13 @@ void usb_polling(void)
 	}
 }
 
-
-static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
-{
-  return etharp_output(netif, p, ipaddr);
-}
-
-static err_t netif_init_cb(struct netif *netif)
-{
-  LWIP_ASSERT("netif != NULL", (netif != NULL));
-  netif->mtu = RNDIS_MTU;
-  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
-  netif->state = NULL;
-  netif->name[0] = 'E';
-  netif->name[1] = 'X';
-  netif->linkoutput = linkoutput_fn;
-  netif->output = output_fn;
-  return ERR_OK;
-}
-/*
-TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
-{
-  tcp_tmr();
-}
-*/
-
-static void on_packet(const uint8_t *data, int size)
-{
-    memcpy(received, data, size);
-    recvSize = size;
-}
-
 void init_netif(void)
 {
-	static const  uint8_t hwaddr[6]  = HWADDR;
-	static const  uint8_t netmask[4] = NETMASK;
-	static const  uint8_t gateway[4] = GATEWAY;
+	static const  uint8_t hwaddr [6]  = HWADDR;
+	static const  uint8_t netmask [4] = NETMASK;
+	static const  uint8_t gateway [4] = GATEWAY;
 
-	static const uint8_t ipaddr[4]  = IPADDR;
+	static const uint8_t ipaddr [4]  = IPADDR;
 	struct netif  *netif = &netif_data;
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddr, 6);
@@ -297,28 +295,28 @@ static uint32_t oid_packet_filter = 0x0000000;
 static uint8_t encapsulated_buffer[ENC_BUF_SIZE];
 
 static uint16_t rndis_tx_data_size = 0;
-static bool rndis_tx_transmitting = false;
-static bool rndis_tx_ZLP = false;
+static int rndis_tx_transmitting = false;
+static int rndis_tx_ZLP = false;
 static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END ;
 static USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_END;
 static uint16_t rndis_rx_data_size = 0;
-static bool rndis_rx_started = false;
+static int rndis_rx_started = false;
 static uint8_t *rndis_tx_ptr = NULL;
-static bool rndis_first_tx = true;
+static int rndis_first_tx = 1;
 static int rndis_tx_size = 0;
 static int rndis_sended = 0;
 
-static bool rndis_rx_start(void)
+static int rndis_rx_start(void)
 {
   if (rndis_rx_started)
     return false;
 
-  rndis_rx_started = true;
+  rndis_rx_started = 1;
   USBD_LL_PrepareReceive(pDev,
                          USBD_EP_RNDIS_OUT,
 						 usb_rx_buffer,
 						 USBD_RNDIS_OUT_BUFSIZE);
-  return true;
+  return 1;
 }
 
 static uint8_t *rndis_rx_data(void)
@@ -341,7 +339,7 @@ static uint16_t rndis_rx_size(void)
 {
 }
 
-bool rndis_tx_start(uint8_t *data, uint16_t size)
+int rndis_tx_start(uint8_t *data, uint16_t size)
 {
 	unsigned sended;
 	static uint8_t first [USBD_RNDIS_IN_BUFSIZE];
@@ -354,7 +352,7 @@ bool rndis_tx_start(uint8_t *data, uint16_t size)
     return false;
   }
 
-  rndis_tx_transmitting = true;
+  rndis_tx_transmitting = 1;
   rndis_tx_ptr = data;
   rndis_tx_data_size = size;
 
@@ -376,7 +374,7 @@ bool rndis_tx_start(uint8_t *data, uint16_t size)
 
   //http://habrahabr.ru/post/248729/
   if (hdr->MessageLength % USBD_RNDIS_IN_BUFSIZE == 0)
-    rndis_tx_ZLP = true;
+    rndis_tx_ZLP = 1;
 
   //We should disable USB_OUT(EP3) IRQ, because if IRQ will happens with locked HAL (__HAL_LOCK()
   //in USBD_LL_Transmit()), the program will fail with big probability
@@ -388,10 +386,10 @@ bool rndis_tx_start(uint8_t *data, uint16_t size)
   //Increment error counter and then decrement in data_in if OK
   usb_eth_stat.txbad++;
 
-  return true;
+  return 1;
 }
 
-bool rndis_tx_started(void)
+int rndis_tx_started(void)
 {
   return rndis_tx_transmitting;
 }
@@ -571,7 +569,7 @@ static void rndis_packetFilter(uint32_t newfilter)
 {
   if (newfilter & NDIS_PACKET_TYPE_PROMISCUOUS)
   {
-    //		USB_ETH_HOOK_SET_PROMISCIOUS_MODE(true);
+    //		USB_ETH_HOOK_SET_PROMISCIOUS_MODE(1);
   }
   else
   {
@@ -908,21 +906,21 @@ static USBD_StatusTypeDef rndis_iso_out_incomplete(USBD_HandleTypeDef *pdev, uin
 
 void response_available(USBD_HandleTypeDef *pdev)
 {
-  __disable_irq();
-  USBD_LL_Transmit (pdev,
-                    USBD_EP_RNDIS_INT,
-                    (uint8_t *)"\x01\x00\x00\x00\x00\x00\x00\x00",
-                    USBD_RNDIS_INT_SIZE);
-  __enable_irq();   //TODO
+	system_disableIRQ();
+	USBD_LL_Transmit (pdev,
+			USBD_EP_RNDIS_INT,
+			(uint8_t *)"\x01\x00\x00\x00\x00\x00\x00\x00",
+			USBD_RNDIS_INT_SIZE);
+	system_enableIRQ();
 }
 
 
-bool rndis_can_send(void)
+int rndis_can_send(void)
 {
 	return rndis_tx_size <= 0;
 }
 
-bool rndis_send(const void *data, int size)
+int rndis_send(const void *data, int size)
 {
 	//rndis_tx_start(data, size);
 /*
@@ -939,16 +937,18 @@ bool rndis_send(const void *data, int size)
 		size > ETH_MAX_PACKET_SIZE ||
 		rndis_tx_size > 0) return false;
 
-	__disable_irq();
-	rndis_first_tx = true;
+	system_disableIRQ();
+
+	rndis_first_tx = 1;
 	rndis_tx_ptr = (uint8_t *)data;
 	rndis_tx_size = size;
 	rndis_sended = 0;
-	__enable_irq();
+
+	system_enableIRQ();
 
 	usbd_cdc_transfer(pDev);
 
-	return true;
+	return 1;
 }
 
 

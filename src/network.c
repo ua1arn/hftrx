@@ -69,10 +69,6 @@ static dhcp_config_t dhcp_config = DHCP_CONFIG;
 
 /* External variables --------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-static err_t netif_init_cb(struct netif *netif);
-static err_t linkoutput_fn(struct netif *netif, struct pbuf *p);
-static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr);
-static bool dns_query_proc(const char *name, ip_addr_t *addr);
 static uint16_t ssi_handler(int index, char *insert, int ins_len);
 
 
