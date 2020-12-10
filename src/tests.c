@@ -5986,6 +5986,8 @@ static void rendertestdynamic(int w, int h, int pos, int total)
 
     static const VGfloat fillColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
     static const VGfloat strokeColor [4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+    static const VGfloat fillColor2 [4] = { 1.0f, 0.0f, 1.0f, 1.0f };
+    static const VGfloat strokeColor2 [4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 
 	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
@@ -5993,24 +5995,44 @@ static void rendertestdynamic(int w, int h, int pos, int total)
 	// 0) сброс масштабирования
 	vgLoadIdentity();
 
-   // 1) перечисляем (добавляем) фигуры
+	// 1) перечисляем (добавляем) фигуры
 	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
 	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100 + pos * 5, 10, 10, 10));
 
-    // 2) правила черчения / заполнения
+	// 2) правила черчения / заполнения
 	vgSeti( VG_STROKE_LINE_WIDTH, 3 );		// толщина лини
 	vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
 	vgSetPaint(fillPaint, VG_FILL_PATH );
 	vgSetPaint(strokePaint, VG_STROKE_PATH );
 
-    // 3) Цвета
+	// 3) Цвета
 	vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
 	vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
 
-    // 4) рисуем фигуры
+	// 4) рисуем фигуры
 	vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
 
-	// 5) Освобожлаем память
+	vgClearPath(path, VG_PATH_CAPABILITY_ALL);
+
+	// 1a) перечисляем (добавляем) фигуры
+	VERIFY(VGU_NO_ERROR == vguRect(path, 50, 50, 100, 100));
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 150, 150, 100 + pos * 5, 10, 10, 10));
+
+	// 2a) правила черчения / заполнения
+	vgSeti( VG_STROKE_LINE_WIDTH, 1 );		// толщина лини
+	vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
+	vgSetPaint(fillPaint, VG_FILL_PATH );
+	vgSetPaint(strokePaint, VG_STROKE_PATH );
+
+	// 3a) Цвета
+	vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor2);
+	vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor2);
+
+	// 4a) рисуем фигуры
+	vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
+	vgClearPath(path, VG_PATH_CAPABILITY_ALL);
+
+	// 5a) Освобожлаем память
 	vgDestroyPath(path);
 
 	vgDestroyPaint(strokePaint);
@@ -6072,6 +6094,7 @@ void hightests(void)
 		{
 			int pos;
 			int total = 100;
+			display_nextfb();
 			for (pos = 0; ; pos = (pos + 1) % total)
 			{
 				uint_fast8_t kbch, repeat;
