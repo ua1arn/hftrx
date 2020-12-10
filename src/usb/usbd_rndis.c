@@ -57,8 +57,8 @@ static rndis_rxproc_t rndis_rxproc = NULL;
 static usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
 
 static bool rndis_rx_start(void);
-uint8_t *rndis_rx_data(void);
-uint16_t rndis_rx_size(void);
+static uint8_t *rndis_rx_data(void);
+static uint16_t rndis_rx_size(void);
 
 bool rndis_tx_start(uint8_t *data, uint16_t size);
 bool rndis_tx_started(void);
@@ -270,7 +270,7 @@ const uint32_t OIDSupportedList[] =
 /*******************************************************************************
 Private function definitions
 *******************************************************************************/
-void response_available(USBD_HandleTypeDef *pdev);
+static void response_available(USBD_HandleTypeDef *pdev);
 
 /*********************************************
 RNDIS Device library callbacks
@@ -288,17 +288,17 @@ static USBD_StatusTypeDef  rndis_iso_out_incomplete                (USBD_HandleT
 /*******************************************************************************
 Private variables
 *******************************************************************************/
-USBD_HandleTypeDef *pDev;
+static USBD_HandleTypeDef *pDev;
 
-uint8_t station_hwaddr[6] = { STATION_HWADDR };
-uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
+static uint8_t station_hwaddr[6] = { STATION_HWADDR };
+static uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
 static rndis_state_t rndis_state = rndis_uninitialized;
-uint32_t oid_packet_filter = 0x0000000;
-uint8_t encapsulated_buffer[ENC_BUF_SIZE];
+static uint32_t oid_packet_filter = 0x0000000;
+static uint8_t encapsulated_buffer[ENC_BUF_SIZE];
 
-uint16_t rndis_tx_data_size = 0;
-bool rndis_tx_transmitting = false;
-bool rndis_tx_ZLP = false;
+static uint16_t rndis_tx_data_size = 0;
+static bool rndis_tx_transmitting = false;
+static bool rndis_tx_ZLP = false;
 static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END ;
 static USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_END;
 static uint16_t rndis_rx_data_size = 0;
@@ -321,7 +321,7 @@ static bool rndis_rx_start(void)
   return true;
 }
 
-uint8_t *rndis_rx_data(void)
+static uint8_t *rndis_rx_data(void)
 {
   if (rndis_rx_size())
     return rndis_rx_buffer + RNDIS_HEADER_SIZE;
@@ -329,7 +329,7 @@ uint8_t *rndis_rx_data(void)
     return NULL;
 }
 
-uint16_t rndis_rx_size(void)
+static uint16_t rndis_rx_size(void)
 {
   if (!rndis_rx_started)
     return rndis_rx_data_size;
