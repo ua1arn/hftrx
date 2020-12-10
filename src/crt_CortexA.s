@@ -38,6 +38,9 @@
 *                   Therefore partial copyright by egnite Software GmbH.
 ****************************************************************************/
 
+
+//#define WITHSMPSYSTEM 1
+
 /*
  * Some defines for the program status registers
  */
@@ -419,6 +422,8 @@ IRQHandlerNested:
 	.endfunc
    .ltorg
 
+#if WITHSMPSYSTEM
+
 	.section .init, "ax"
 	.code 32
 	.align 4, 0
@@ -472,6 +477,8 @@ Reset_CPU1_HandlerSleep:
 		.endfunc
    .ltorg
 
+#endif /* WITHSMPSYSTEM */
+
 	.section .noinit
 	.align 8
 
@@ -492,6 +499,13 @@ __stack_cpu0_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu0_sys_end = .
 
+	.space	STACKSIZEIRQ
+__stack_cpu0_irq_end = .
+
+#if WITHSMPSYSTEM
+
+	.space	STACKSIZEIRQ
+__stack_cpu1_irq_end = .
 	.space	STACKSIZEUND
 __stack_cpu1_und_end = .
 	.space	STACKSIZEABT
@@ -504,15 +518,10 @@ __stack_cpu1_mon_end = .
 __stack_cpu1_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu1_sys_end = .
-
-	.space	STACKSIZEIRQ
-__stack_cpu0_irq_end = .
-
-	.space	STACKSIZEIRQ
-__stack_cpu1_irq_end = .
-
 	.space	STACKSIZESVC
 __stack_cpu1_svc_end = .
+
+#endif /* WITHSMPSYSTEM */
 
 	.word 0		/* fix non-zero size of this section */
 
