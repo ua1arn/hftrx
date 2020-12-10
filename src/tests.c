@@ -5810,37 +5810,45 @@ static void rendertest1(int w, int h)
     static const VGubyte segments[] = { VG_MOVE_TO_ABS, VG_LINE_TO_ABS, VG_LINE_TO_ABS,
                            VG_LINE_TO_ABS, VG_LINE_TO_ABS, VG_CLOSE_PATH };
     static const VGfloat coords [] = { 120.0f, 260.0f, 61.2f, 79.1f, 215.1f, 190.9f, 24.8f, 190.9f, 178.8f, 79.1f };
-    static const VGfloat clearColor [4] = { 1, 0, 0, 1 };
-    static const VGfloat fillColor [4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    static const VGfloat strokeColor [4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    static const VGfloat clearColor [4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    static const VGfloat fillColor [4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+    static const VGfloat strokeColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 
     // top-down mirror and back...
 	vgLoadIdentity();
-	vgScale(1, -1);
-	vgScale(1, -1);
-	vgTranslate(0, - h);
-	vgTranslate(0, + h);
+//	vgScale(1, -1);
+//	vgScale(1, -1);
+//	vgTranslate(0, - h);
+//	vgTranslate(0, + h);
 
     vgSetfv( VG_CLEAR_COLOR, 4, clearColor );
     vgClear( 0, 0, w, h );
 #if 1
 
-    vgSeti( VG_STROKE_LINE_WIDTH, 1 );		// толщина лини
+    vgSeti( VG_STROKE_LINE_WIDTH, 3 );		// толщина лини
     fillPaint = vgCreatePaint();
     strokePaint = vgCreatePaint();
+
     path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
+
+    // 1) перечисляем (доьавляем) фигуры
     vgAppendPathData( path, 6, segments, coords );
 	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 300, 100, 100, 100, 10, 10));
 
-    vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
+    // 2) правила черчения / заполнения
+   vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
     vgSetPaint(fillPaint, VG_FILL_PATH );
     vgSetPaint(strokePaint, VG_STROKE_PATH );
 
-    vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
+    // 3) Цвета
+   vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
     vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
 
-    vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
-    vgDestroyPath( path );
+    // 4) рисуем фигуры
+   vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
+
+	// 5) Освобожлаем память
+   vgDestroyPath( path );
     vgDestroyPaint( fillPaint );
     vgDestroyPaint( strokePaint );
 #endif
@@ -5874,7 +5882,7 @@ static void rendertest2(int w, int h)
 	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
 	//vgSetColor(paint, VGuint rgba)
 
-	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_S_16 /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
 
 	//static const float drawColorRed[4] = {1,0,0,1};
 	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
@@ -5928,7 +5936,7 @@ static void rendertest3(int w, int h)
 	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
 	//vgSetColor(paint, VGuint rgba)
 
-	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_S_16 /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
 
 	//static const float drawColorRed[4] = {1,0,0,1};
 	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
@@ -5952,6 +5960,64 @@ static void rendertest3(int w, int h)
 	//		//vgRotate(30);
 	//		PS_render(tiger);
 	//		ASSERT(vgGetError() == VG_NO_ERROR);
+#endif
+}
+
+
+static void rendertestdynamic(int w, int h, int pos, int total)
+{
+	static const float clearColor[4] = {1, 1, 1, 1};
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+	vgLoadIdentity();
+	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	vgClear(0, 0, w, h);
+#if 1
+
+    VGPaint fillPaint = vgCreatePaint();
+    VGPaint strokePaint = vgCreatePaint();
+
+    static const VGfloat fillColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+    static const VGfloat strokeColor [4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+
+
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+
+    // 1) перечисляем (доьавляем) фигуры
+	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100 + pos * 5, 10, 10, 10));
+
+    // 2) правила черчения / заполнения
+	vgSeti( VG_STROKE_LINE_WIDTH, 3 );		// толщина лини
+	vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
+	vgSetPaint(fillPaint, VG_FILL_PATH );
+	vgSetPaint(strokePaint, VG_STROKE_PATH );
+
+    // 3) Цвета
+	vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
+	vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
+
+    // 4) рисуем фигуры
+	vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
+
+	// 5) Освобожлаем память
+	vgDestroyPath(path);
+
+	vgDestroyPaint(strokePaint);
+	vgDestroyPaint(fillPaint);
+
 #endif
 }
 
@@ -5983,7 +6049,7 @@ void hightests(void)
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		//disableAllIRQs();
-	#if 1
+	#if 0
 
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		ASSERT(tiger != NULL);
@@ -6003,6 +6069,27 @@ void hightests(void)
 			display_nextfb();
 		}
 		PS_destruct(tiger);
+
+	#elif 1
+		{
+			int pos;
+			int total = 100;
+			for (pos = 0; ; pos = (pos + 1) % total)
+			{
+				uint_fast8_t kbch, repeat;
+
+				if ((repeat = kbd_scan(& kbch)) != 0)
+				{
+					break;
+				}
+
+				rendertest1(DIM_X, DIM_Y);
+				display_nextfb();
+
+				rendertestdynamic(DIM_X, DIM_Y, pos, total);
+				display_nextfb();
+			}
+		}
 
 	#else
 
