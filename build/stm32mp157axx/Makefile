@@ -55,6 +55,8 @@ OPT = -Og
 #OPT = -Ofast
 #LTO = -flto
 OBJDIR2 = obj_app
+UDEFS += -D"WITHSMPSYSTEM"
+UADEFS += -D"WITHSMPSYSTEM"
 LDSCRIPT = ./stm32mp15xx_ca7_app.ld
 else
 # Bootloader
@@ -63,6 +65,7 @@ LTO = -flto
 
 OBJDIR2 = obj_boot
 UDEFS += -D"WITHISBOOTLOADER"
+UADEFS += -D"WITHISBOOTLOADER"
 LDSCRIPT = ./stm32mp15xx_ca7_boot.ld
 endif
 
