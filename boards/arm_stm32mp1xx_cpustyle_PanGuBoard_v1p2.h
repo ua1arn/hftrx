@@ -129,7 +129,7 @@
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
-	#define WITHCAT7_CDC	1	// сетевой интерфейс SLIP на UART5
+	#define WITHCAT7_CDC	1	// сетевой интерфейс SLIP на CDC
 	#define WITHMODEM_CDC	1
 
 	#if WITHINTEGRATEDDSP
