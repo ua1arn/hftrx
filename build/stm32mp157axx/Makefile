@@ -45,9 +45,6 @@ CORE += -mfpu=neon
 
 # Define optimisation level here
 # ony -Og for app
-CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1
-
 
 ifeq "1" "1"
 # Application
