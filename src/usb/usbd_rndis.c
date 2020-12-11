@@ -286,7 +286,7 @@ static USBD_StatusTypeDef  rndis_iso_out_incomplete                (USBD_HandleT
 /*******************************************************************************
 Private variables
 *******************************************************************************/
-static USBD_HandleTypeDef *pDev;
+static USBD_HandleTypeDef *hold_pDev;
 
 static uint8_t station_hwaddr[6] = { STATION_HWADDR };
 static uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
@@ -311,8 +311,9 @@ static int rndis_rx_start(void)
   if (rndis_rx_started)
     return false;
 
+  ASSERT(hold_pDev != NULL);
   rndis_rx_started = 1;
-  USBD_LL_PrepareReceive(pDev,
+  USBD_LL_PrepareReceive(hold_pDev,
                          USBD_EP_RNDIS_OUT,
 						 usb_rx_buffer,
 						 USBD_RNDIS_OUT_BUFSIZE);
@@ -376,9 +377,10 @@ int rndis_tx_start(uint8_t *data, uint16_t size)
   if (hdr->MessageLength % USBD_RNDIS_IN_BUFSIZE == 0)
     rndis_tx_ZLP = 1;
 
+  ASSERT(hold_pDev != NULL);
   //We should disable USB_OUT(EP3) IRQ, because if IRQ will happens with locked HAL (__HAL_LOCK()
   //in USBD_LL_Transmit()), the program will fail with big probability
-  USBD_LL_Transmit (pDev,
+  USBD_LL_Transmit (hold_pDev,
                     USBD_EP_RNDIS_IN,
                     (uint8_t *)first,
                     USBD_RNDIS_IN_BUFSIZE);
@@ -423,7 +425,8 @@ static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef  *pdev, uint_fast8_
                          USBD_EP_RNDIS_OUT,
                          rndis_rx_buffer,
                          RNDIS_RX_BUFFER_SIZE);  */
-  pDev = pdev;
+  hold_pDev = pdev;
+  ASSERT(hold_pDev != NULL);
 
   rndis_rx_start();
   return USBD_OK;
@@ -676,6 +679,8 @@ static int sended = 0;
 
 static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 {
+	hold_pDev = pdev;
+	  ASSERT(hold_pDev != NULL);
 	if (sended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0) return USBD_OK;
 	if (rndis_first_tx)
 	{
@@ -693,7 +698,8 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 		if (sended > rndis_tx_size) sended = rndis_tx_size;
 		memcpy(first + sizeof(rndis_data_packet_t), rndis_tx_ptr, sended);
 
-		USBD_LL_Transmit (pDev,
+		  ASSERT(hold_pDev != NULL);
+		USBD_LL_Transmit (hold_pDev,
 						USBD_EP_RNDIS_IN,
 						(uint8_t *)&first,
 						sizeof(rndis_data_packet_t) + sended);
@@ -703,7 +709,7 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 		int n = rndis_tx_size;
 		if (n > USBD_RNDIS_IN_BUFSIZE) n = USBD_RNDIS_IN_BUFSIZE;
 
-		USBD_LL_Transmit (pDev,
+		USBD_LL_Transmit (hold_pDev,
 						USBD_EP_RNDIS_IN,
 						rndis_tx_ptr,
 						n);
@@ -873,7 +879,7 @@ static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fas
 					usb_eth_stat.rxbad++;
 			}
 		}
-		USBD_LL_PrepareReceive(pDev,
+		USBD_LL_PrepareReceive(hold_pDev,
 							   USBD_EP_RNDIS_OUT,
 							   usb_rx_buffer,
 							   USBD_RNDIS_OUT_BUFSIZE);
@@ -897,14 +903,14 @@ static USBD_StatusTypeDef rndis_iso_in_incomplete(USBD_HandleTypeDef *pdev, uint
 
 static USBD_StatusTypeDef rndis_iso_out_incomplete(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	USBD_LL_PrepareReceive(pDev,
+	USBD_LL_PrepareReceive(pdev,
 							USBD_EP_RNDIS_OUT,
 							usb_rx_buffer,
 							USBD_RNDIS_OUT_BUFSIZE);
 	return USBD_OK;
 }
 
-void response_available(USBD_HandleTypeDef *pdev)
+static void response_available(USBD_HandleTypeDef *pdev)
 {
 	system_disableIRQ();
 	USBD_LL_Transmit (pdev,
@@ -917,11 +923,15 @@ void response_available(USBD_HandleTypeDef *pdev)
 
 int rndis_can_send(void)
 {
-	return rndis_tx_size <= 0;
+	system_disableIRQ();
+	int f = rndis_tx_size <= 0 && hold_pDev != NULL;
+	system_enableIRQ();
+	return f;
 }
 
 int rndis_send(const void *data, int size)
 {
+	ASSERT(data != NULL);
 	//rndis_tx_start(data, size);
 /*
 	while (transmit_ok == 1)
@@ -932,21 +942,27 @@ int rndis_send(const void *data, int size)
 					  size);
 */
 
+	system_disableIRQ();
 
 	if (size <= 0 ||
 		size > ETH_MAX_PACKET_SIZE ||
-		rndis_tx_size > 0) return false;
+		rndis_tx_size > 0 || hold_pDev == NULL)
 
-	system_disableIRQ();
+		{
+			system_enableIRQ();
+			return false;
+		}
+
 
 	rndis_first_tx = 1;
 	rndis_tx_ptr = (uint8_t *)data;
 	rndis_tx_size = size;
 	rndis_sended = 0;
 
-	system_enableIRQ();
 
-	usbd_cdc_transfer(pDev);
+	ASSERT(hold_pDev != NULL);
+	usbd_cdc_transfer(hold_pDev);
+	system_enableIRQ();
 
 	return 1;
 }
