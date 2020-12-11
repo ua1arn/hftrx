@@ -2,7 +2,7 @@
    BY SG BITMAP FONT EDITOR
  */
 #define HALFCHARH 16 /* Font height */
-static const FLASHMEM uint8_t uc1601s_halffont [12][2][10] = 
+const FLASHMEM uint8_t uc1601s_halffont [12][2][10] = 
 {
 	{
 		{ 0x01, 0x03, 0x07, 0x06, 0x06, 0x07, 0x03, 0x01, 0x00, 0x00, },	/* Upper part */

@@ -8,6 +8,43 @@
 #ifndef DISPLAY_FONTMAPS_H_INCLUDED
 #define DISPLAY_FONTMAPS_H_INCLUDED
 
+extern const FLASHMEM uint8_t ILI9225_bigfont [13][5 * 24];
+extern const FLASHMEM uint8_t ILI9225_halffont [12][5 * 14];
+extern const FLASHMEM uint8_t ILI9225_smallfont [][2 * 8];
+extern const FLASHMEM uint8_t ILI9320_bigfont [13][4 * 18];
+extern const FLASHMEM uint8_t ILI9320_halffont [12][4 * 14];
+extern const FLASHMEM uint8_t ILI9320_smallfont [][16];
+extern const FLASHMEM uint8_t ILI9341_bigfont [][120];
+extern const FLASHMEM uint8_t ILI9341_halffont [12][5 * 14];
+extern const FLASHMEM uint8_t ILI9341_smallfont [][20];
+extern const FLASHMEM uint8_t ls020_bigfont [13][4 * 18];
+extern const FLASHMEM uint8_t ls020_halffont [12][4 * 14];
+extern const FLASHMEM uint8_t ls020_smallfont [][16];
+extern const FLASHMEM uint8_t S1D13781_bigfont_LTDC [13][64][5];
+extern const FLASHMEM uint8_t S1D13781_halffont_LTDC [12][64][4];
+extern const FLASHMEM uint8_t S1D13781_smallfont_LTDC [][15][2];
+extern const FLASHMEM uint8_t S1D13781_smallfont2_LTDC [][16][2];
+extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
+//
+//extern const FLASHMEM uint8_t uc1601s_bigfont [13][2][12];
+//extern const FLASHMEM uint8_t uc1601s_halffont [12][2][10];
+//extern const FLASHMEM uint8_t uc1601s_font [] [6];
+//extern const FLASHMEM uint8_t uc1601s_bigfont [13][2][12];
+//extern const FLASHMEM uint8_t uc1601s_halffont [12][2][12];
+//
+//extern const FLASHMEM uint8_t uc1608_bigfont [13][5][24];
+//extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
+//extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
+//
+//extern const FLASHMEM uint8_t uc1608_bigfont [13][5][24];
+//extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
+//extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
+
+#define SMALLCHARH 15 /* Font height */
+#define SMALLCHARW 12 /* Font width */
+
+#if FONTSHERE
+
 #if LCDMODE_DUMMY || LCDMODE_HD44780
 	// Дисплеи, не требующие растров знакогенераторов
 
@@ -124,5 +161,7 @@
 
 	#include "./fonts/ls020_font_small.h"
 #endif /* DSTYLE_G_X320_Y240 */
+
+#endif /* FONTSHERE */
 
 #endif /* DISPLAY_FONTMAPS_H_INCLUDED */

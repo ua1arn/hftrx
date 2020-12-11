@@ -2,7 +2,7 @@
    BY SG BITMAP FONT EDITOR
  */
 #define SMALLHARH 16 /* Font height */
-static const FLASHMEM uint8_t ILI9225_smallfont [][2 * 8] = 
+const FLASHMEM uint8_t ILI9225_smallfont [][2 * 8] = 
 {
 	{
 		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,

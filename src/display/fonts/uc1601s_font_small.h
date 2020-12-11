@@ -2,7 +2,7 @@
    BY SG BITMAP FONT EDITOR
  */
 #define SMALLHARH 8 /* Font height */
-static const FLASHMEM uint8_t uc1601s_font [] [6] =
+const FLASHMEM uint8_t uc1601s_font [] [6] =
 {
 	{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, },	/* XX */
 	{ 0x00, 0x00, 0xfa, 0x00, 0x00, 0x00, },	/* XX */

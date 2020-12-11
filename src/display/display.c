@@ -7,8 +7,8 @@
 // Доработки для LS020 Василий Линывый, livas60@mail.ru
 //
 
-#include "src/gui/gui.h"
 #include "hardware.h"
+#include "src/gui/gui.h"
 #include "board.h"
 #include "display.h"
 #include "formats.h"
@@ -17,6 +17,8 @@
 #include <string.h>
 
 #if LCDMODE_LTDC
+
+#define FONTSHERE 1
 
 #include "fontmaps.h"
 //

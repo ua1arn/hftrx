@@ -2,7 +2,7 @@
    BY SG BITMAP FONT EDITOR
  */
 #define HALFCHARH 40 /* Font height */
-static const FLASHMEM uint8_t ILI9225_halffont [12][5 * 14] = 
+const FLASHMEM uint8_t ILI9225_halffont [12][5 * 14] = 
 {
 	{
 		0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,

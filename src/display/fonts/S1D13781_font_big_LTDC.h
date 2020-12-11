@@ -4,7 +4,7 @@
 #define BIGCHARH 56 /* Font height */
 #define BIGCHARW 36 /* Font width */
 #define BIGCHARW_NARROW 12
-static const FLASHMEM uint8_t S1D13781_bigfont_LTDC [13][64][5] = 
+const FLASHMEM uint8_t S1D13781_bigfont_LTDC [13][64][5] = 
 {
 	{
 		{0x00,0xfc,0xff,0xff,0x03,},
