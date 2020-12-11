@@ -41,7 +41,11 @@ extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
 //extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
 
 #define SMALLCHARH 15 /* Font height */
-#define SMALLCHARW 12 /* Font width */
+#define SMALLCHARW 16 /* Font width */
+#define SMALLCHARH2 16 /* Font height */
+#define SMALLCHARW2 10 /* Font width */
+#define SMALLCHARH3 8 /* Font height */
+#define SMALLCHARW3 8 /* Font width */
 
 #if FONTSHERE
 
