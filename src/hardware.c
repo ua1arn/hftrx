@@ -13373,7 +13373,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 }
 #endif /* CPUSTYPE_TMS320F2833X */
 
-#if CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32MP1 && WITHSMPSYSTEM
 
 
 /*

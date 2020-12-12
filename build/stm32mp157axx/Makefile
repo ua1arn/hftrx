@@ -52,8 +52,8 @@ OPT = -Og
 #OPT = -Ofast
 #LTO = -flto
 OBJDIR2 = obj_app
-UDEFS += -D"WITHSMPSYSTEM"
-UADEFS += -D"WITHSMPSYSTEM"
+#UDEFS += -D"WITHSMPSYSTEM"
+#UADEFS += -D"WITHSMPSYSTEM"
 LDSCRIPT = ./stm32mp15xx_ca7_app.ld
 else
 # Bootloader
@@ -118,7 +118,7 @@ LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
 
 # Define ASM defines here
-UADEFS = 
+UADEFS += 
 
 # List C source files here
 CSRC +=
