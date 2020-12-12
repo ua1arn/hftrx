@@ -37,6 +37,14 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+/**
+ * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain
+ * critical regions during buffer allocation, deallocation and memory
+ * allocation and deallocation.
+ */
+#define SYS_LIGHTWEIGHT_PROT 1
+typedef unsigned sys_prot_t;
+
 #if WITHISBOOTLOADER
 	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
 	#define NO_SYS                          1

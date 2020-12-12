@@ -15,31 +15,17 @@
 #if WITHLWIP
 
 #include "lwip/opt.h"
-
 #include "lwip/init.h"
-//#include "lwip/stats.h"
-//#include "lwip/sys.h"
-//#include "lwip/mem.h"
-//#include "lwip/memp.h"
-//#include "lwip/pbuf.h"
-//#include "lwip/netif.h"
-//#include "lwip/sockets.h"
-//#include "lwip/ip.h"
-//#include "lwip/raw.h"
-#include "lwip/udp.h"
-#include "lwip/dhcp.h"
-//#include "lwip/priv/tcp_priv.h"
-//#include "lwip/igmp.h"
-//#include "lwip/dns.h"
-//#include "lwip/timeouts.h"
-//#include "lwip/etharp.h"
-//#include "lwip/ip6.h"
-//#include "lwip/nd6.h"
-//#include "lwip/mld6.h"
-//#include "lwip/api.h"
+#include "lwip/pbuf.h"
+#include "lwip/netif.h"
+#include "netif/etharp.h"
 
+#define RNDIS_MTU 1500  // MTU value
 
 static struct netif test_netif1, test_netif2;
+
+#if 0
+
 static ip4_addr_t test_gw1, test_ipaddr1, test_netmask1;
 static ip4_addr_t test_gw2, test_ipaddr2, test_netmask2;
 static int output_ctr, linkoutput_ctr;
@@ -158,6 +144,95 @@ udp_teardown(void)
   //lwip_check_ensure_no_alloc(SKIP_POOL(MEMP_SYS_TIMEOUT));
 }
 
+#endif
+
+
+
+// Transceiving Ethernet packets
+static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
+{
+//    int i;
+//    struct pbuf *q;
+//    static char data[RNDIS_MTU + 14 + 4];
+//    int size = 0;
+//    for (i = 0; i < 200; i++)
+//    {
+//        if (rndis_can_send()) break;
+//        local_delay_ms(1);
+//    }
+//    for(q = p; q != NULL; q = q->next)
+//    {
+//        if (size + q->len > RNDIS_MTU + 14)
+//            return ERR_ARG;
+//        memcpy(data + size, (char *)q->payload, q->len);
+//        size += q->len;
+//    }
+//    if (!rndis_can_send())
+//        return ERR_USE;
+//    rndis_send(data, size);
+//    outputs++;
+    return ERR_OK;
+}
+
+
+static struct netif netif_cdceem;
+
+/* LAN */
+#define HWADDR                          {0x30,0x89,0x84,0x6A,0x96,0x34}
+#define NETMASK                         {255, 255, 255, 0}
+#define GATEWAY                         {0, 0, 0, 0}
+
+
+static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
+{
+  return etharp_output(netif, p, ipaddr);
+}
+
+static err_t netif_init_cb(struct netif *netif)
+{
+  LWIP_ASSERT("netif != NULL", (netif != NULL));
+  netif->mtu = RNDIS_MTU;
+  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+  netif->state = NULL;
+  netif->name[0] = 'E';
+  netif->name[1] = 'X';
+  netif->linkoutput = linkoutput_fn;
+  netif->output = output_fn;
+  return ERR_OK;
+}
+
+void init_netif(void)
+{
+	static const  uint8_t hwaddr [6]  = HWADDR;
+	static const  uint8_t netmask [4] = NETMASK;
+	static const  uint8_t gateway [4] = GATEWAY;
+
+	static const uint8_t ipaddr [4]  = IPADDR;
+	struct netif  *netif = &netif_cdceem;
+	netif->hwaddr_len = 6;
+	memcpy(netif->hwaddr, hwaddr, 6);
+
+	netif = netif_add(netif, PADDR(ipaddr), PADDR(netmask), PADDR(gateway), NULL, netif_init_cb, ip_input);
+	netif_set_default(netif);
+#if 0
+	IP4_ADDR(&test_ipaddr1, 192,168,7,2);
+	IP4_ADDR(&test_netmask1, 255,255,255,0);
+	IP4_ADDR(&test_gw1, 192,168,7,254);
+	n = netif_add(&test_netif1, &test_ipaddr1, &test_netmask1,
+			&test_gw1, NULL, default_netif_init, NULL);
+	ASSERT(n == &test_netif1);
+#endif
+	//rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
+
+	while (!netif_is_up(&netif_cdceem))
+		;
+}
+
+void usb_polling(void)
+{
+
+}
+
 #endif /* WITHLWIP */
 
 // CDC class-specific request codes
@@ -210,6 +285,7 @@ static uint_fast32_t cdceemlength;
 static uint_fast32_t cdceematcrc;
 static uint_fast32_t cdceemnpackets;
 
+// see SIZEOF_ETHARP_PACKET
 static uint8_t cdceembuff [1514];
 
 static void cdceemout_initialize(void)
@@ -292,6 +368,7 @@ static void cdceemout_buffer_print2(
 
 static USBALIGN_BEGIN uint8_t dbd [2] USBALIGN_END;
 
+// called in context of interrupt
 static void cdceemout_buffer_save(
 	const uint8_t * data,
 	uint_fast16_t length
@@ -362,18 +439,23 @@ static void cdceemout_buffer_save(
 #if WITHLWIP
 				// Save to LWIP
 				{
-					  err_t err;
-					  struct pbuf *p;
-					  p = pbuf_alloc(PBUF_TRANSPORT, cdceematcrc, PBUF_POOL);
-					  ASSERT(p != NULL);
-					  memcpy(p->payload, cdceembuff, cdceematcrc);	// TODO: eliminae copying
-					  err = ip4_input(p, &test_netif1);
-					  ASSERT(err == ERR_OK);
-					  if (err != ERR_OK)
-					  {
-						  pbuf_free(p);
-					  }
-					  //TP();
+					// Note: use SYS_LIGHTWEIGHT_PROT
+#ifndef SYS_LIGHTWEIGHT_PROT
+#error Use safe buffers allocation
+#endif
+					err_t err;
+					struct pbuf *frame = pbuf_alloc(PBUF_RAW, cdceematcrc, PBUF_POOL);
+					ASSERT(frame != NULL);
+					memcpy(frame->payload, cdceembuff, cdceematcrc);	// TODO: eliminae copying
+					err = ethernet_input(frame, & netif_cdceem);
+					//err = ip4_input(p, &test_netif1);
+					ASSERT(err == ERR_OK);
+					if (err != ERR_OK)
+					{
+						/* This means the pbuf is freed or consumed,
+						so the caller doesn't have to free it again */
+					}
+					//TP();
 				}
 
 #elif 0
@@ -615,10 +697,6 @@ static USBD_StatusTypeDef USBD_CDCEEM_DeInit(USBD_HandleTypeDef *pdev, uint_fast
 
 static void USBD_CDCEEM_ColdInit(void)
 {
-#if WITHLWIP
-	lwip_init();
-	udp_setup();
-#endif /* WITHLWIP */
 }
 
 const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =

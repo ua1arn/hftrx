@@ -342,6 +342,75 @@ void httpd_post_data_recved(void *connection, u16_t recved_len);
 
 #endif /* LWIP_HTTPD_SUPPORT_POST */
 
+#if SYS_LIGHTWEIGHT_PROT
+
+// Taken from https://github.com/kslemb/ARM-K/blob/master/vic/isr.c
+
+
+#define IRQ_MASK	0x00000080
+#define FIQ_MASK	0x00000040
+#define INT_MASK	(IRQ_MASK | FIQ_MASK)
+
+static inline unsigned __get_cpsr (void)
+{
+	unsigned long retval;
+	asm volatile (" mrs  %0, cpsr" : "=r" (retval) : /* no inputs */  );
+	return retval;
+}
+
+static inline void __set_cpsr (unsigned val)
+{
+	asm volatile (" msr  cpsr, %0" : /* no outputs */ : "r" (val)  );
+}
+
+unsigned Restore_INT (unsigned oldCPSR)
+{
+	unsigned _cpsr;
+
+	_cpsr = __get_cpsr();
+	__set_cpsr((_cpsr & ~INT_MASK) | (oldCPSR & INT_MASK));
+	return _cpsr;
+}
+
+unsigned Disable_IRQ (void)
+{
+	unsigned _cpsr;
+
+	_cpsr = __get_cpsr();
+	__set_cpsr(_cpsr | IRQ_MASK);
+	return _cpsr;
+}
+
+unsigned Restore_IRQ (unsigned oldCPSR)
+{
+	unsigned _cpsr;
+
+	_cpsr = __get_cpsr();
+	__set_cpsr((_cpsr & ~IRQ_MASK) | (oldCPSR & IRQ_MASK));
+	return _cpsr;
+}
+
+unsigned Enable_IRQ (void)
+{
+	unsigned _cpsr;
+
+	_cpsr = __get_cpsr();
+	__set_cpsr(_cpsr & ~IRQ_MASK);
+	return _cpsr;
+}
+
+sys_prot_t sys_arch_protect(void)
+{
+
+	return 0;
+}
+
+void sys_arch_unprotect(sys_prot_t pval)
+{
+
+}
+
+#endif /* SYS_LIGHTWEIGHT_PROT */
 
 void network_initialize(void)
 {
