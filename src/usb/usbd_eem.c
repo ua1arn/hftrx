@@ -184,6 +184,12 @@ static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 static struct netif netif_data;
 
 
+
+struct netif  * getNetifData(void)
+{
+	return &slip_netif_data;
+}
+
 static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 {
   return etharp_output(netif, p, ipaddr);
@@ -191,6 +197,7 @@ static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 
 static err_t netif_init_cb(struct netif *netif)
 {
+	PRINTF("cdc eem netif_init_cb\n");
   LWIP_ASSERT("netif != NULL", (netif != NULL));
   netif->mtu = RNDIS_MTU;
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
@@ -294,6 +301,7 @@ static void on_packet(const uint8_t *data, int size)
 			return;
 		}
 		memcpy(frame->payload, data, size);
+		frame->len = size;
 
 		p->frame = frame;
 		cdceem_buffers_rx(p);
@@ -326,16 +334,14 @@ void init_netif(void)
 	cdceem_buffers_initialize();
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
-	static const  uint8_t netmaskv [4] = { NETMASK };
-	static const  uint8_t gatewayv [4] = { GATEWAY };
 
 	static ip_addr_t hwaddr;// [6]  = HWADDR;
 	static ip_addr_t netmask;// [4] = NETMASK;
 	static ip_addr_t gateway;// [4] = GATEWAY;
 
 	IP4_ADDR(& hwaddr, hwaddrv [0], hwaddrv [1], hwaddrv [2], hwaddrv [3]);
-	IP4_ADDR(& netmask, netmaskv [0], netmaskv [1], netmaskv [2], netmaskv [3]);
-	IP4_ADDR(& gateway, gatewayv [0], gatewayv [1], gatewayv [2], gatewayv [3]);
+	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
+	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
 
 	static const uint8_t ipaddrv [4]  = { IPADDR };
 	static ip_addr_t vaddr;// [4]  = IPADDR;

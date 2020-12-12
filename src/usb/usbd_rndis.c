@@ -65,11 +65,12 @@ static int rndis_send(const void *data, int size);
 static int outputs = 0;
 
 
-static struct netif netif_data;
+static struct netif rndis_netif_data;
 
 // Transceiving Ethernet packets
-static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
+static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
+	PRINTF("rndis_linkoutput_fn\n");
     int i;
     struct pbuf *q;
     static char data[RNDIS_MTU + 14 + 4];
@@ -101,13 +102,14 @@ static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 
 static err_t netif_init_cb(struct netif *netif)
 {
+	PRINTF("rndis netif_init_cb\n");
   LWIP_ASSERT("netif != NULL", (netif != NULL));
   netif->mtu = RNDIS_MTU;
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
   netif->state = NULL;
   netif->name[0] = 'E';
   netif->name[1] = 'X';
-  netif->linkoutput = linkoutput_fn;
+  netif->linkoutput = rndis_linkoutput_fn;
   netif->output = output_fn;
   return ERR_OK;
 }
@@ -210,6 +212,7 @@ static void on_packet(const uint8_t *data, int size)
 			return;
 		}
 		memcpy(frame->payload, data, size);
+		frame->len = size;
 
 		p->frame = frame;
 		rndis_buffers_rx(p);
@@ -225,7 +228,7 @@ void usb_polling(void)
 	rndisbuf_t * p;
 	if (rndis_buffers_ready_user(& p) != 0)
 	{
-		err_t e = ethernet_input(p->frame, & netif_data);
+		err_t e = ethernet_input(p->frame, & rndis_netif_data);
 		if (e != ERR_OK)
 		{
 			  /* This means the pbuf is freed or consumed,
@@ -236,27 +239,27 @@ void usb_polling(void)
 	}
 }
 
+struct netif  * getNetifData(void)
+{
+	return &rndis_netif_data;
+}
+
 void init_netif(void)
 {
 	rndis_buffers_initialize();
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
-	static const  uint8_t netmaskv [4] = { NETMASK };
-	static const  uint8_t gatewayv [4] = { GATEWAY };
 
-	static ip_addr_t hwaddr;// [6]  = HWADDR;
 	static ip_addr_t netmask;// [4] = NETMASK;
 	static ip_addr_t gateway;// [4] = GATEWAY;
 
-	IP4_ADDR(& hwaddr, hwaddrv [0], hwaddrv [1], hwaddrv [2], hwaddrv [3]);
-	IP4_ADDR(& netmask, netmaskv [0], netmaskv [1], netmaskv [2], netmaskv [3]);
-	IP4_ADDR(& gateway, gatewayv [0], gatewayv [1], gatewayv [2], gatewayv [3]);
+	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
+	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
 
-	static const uint8_t ipaddrv [4]  = { IPADDR };
 	static ip_addr_t vaddr;// [4]  = IPADDR;
-	IP4_ADDR(& vaddr, ipaddrv [0], ipaddrv [1], ipaddrv [2], ipaddrv [3]);
+	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
-	struct netif  *netif = &netif_data;
+	struct netif  *netif = &rndis_netif_data;
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
@@ -265,7 +268,7 @@ void init_netif(void)
 
 	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
 
-	while (!netif_is_up(&netif_data))
+	while (!netif_is_up(&rndis_netif_data))
 		;
 }
 
@@ -1013,6 +1016,7 @@ int rndis_can_send(void)
 int rndis_send(const void *data, int size)
 {
 	ASSERT(data != NULL);
+	ASSERT(hold_pDev != NULL);
 	//rndis_tx_start(data, size);
 /*
 	while (transmit_ok == 1)
