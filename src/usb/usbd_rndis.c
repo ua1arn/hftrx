@@ -62,10 +62,6 @@ static int rndis_tx_started(void);
 static int rndis_can_send(void);
 static int rndis_send(const void *data, int size);
 
-
-static uint8_t received[RNDIS_MTU + 14];
-static int recvSize = 0;
-
 static int outputs = 0;
 
 
@@ -121,12 +117,6 @@ TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
   tcp_tmr();
 }
 */
-
-static void on_packetaaaaaa(const uint8_t *data, int size)
-{
-    memcpy(received, data, size);
-    recvSize = size;
-}
 
 
 typedef struct rndisbuf_tag
@@ -243,40 +233,6 @@ void usb_polling(void)
 		}
 
 		rndis_buffers_release_user(p);
-	}
-}
-
-
-// Receiving Ethernet packets
-// user-mode function
-void usb_pollingzzzz(void)
-{
-	struct pbuf *frame;
-	system_disableIRQ();
-	if (recvSize == 0)
-	{
-		system_enableIRQ();
-		return;
-	}
-	system_enableIRQ();
-
-	frame = pbuf_alloc(PBUF_RAW, recvSize, PBUF_POOL);
-	if (frame == NULL)
-	{
-		return;
-	}
-
-	system_disableIRQ();
-	memcpy(frame->payload, received, recvSize);
-	frame->len = recvSize;
-	recvSize = 0;
-	system_enableIRQ();
-
-	err_t e = ethernet_input(frame, & netif_data);
-	if (e != ERR_OK)
-	{
-		  /* This means the pbuf is freed or consumed,
-		     so the caller doesn't have to free it again */
 	}
 }
 
