@@ -37,32 +37,65 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
-#define NO_SYS                          1
-#define MEM_ALIGNMENT                   4
-#define LWIP_RAW                        1
-#define LWIP_NETCONN                    0
-#define LWIP_SOCKET                     0
-#define LWIP_DHCP                       0
-#define LWIP_ICMP                       1
-#define LWIP_UDP                        1
-#define LWIP_TCP                        1
-#define ETH_PAD_SIZE                    0
-//#define LWIP_HAVE_SLIPIF				1
-#define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
+#if WITHISBOOTLOADER
+	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
+	#define NO_SYS                          1
+	#define MEM_ALIGNMENT                   4
+	#define LWIP_RAW                        1
+	#define LWIP_NETCONN                    0
+	#define LWIP_SOCKET                     0
+	#define LWIP_DHCP                       0
+	#define LWIP_ICMP                       1
+	#define LWIP_UDP                        1
+	//#define LWIP_TCP                        1
+	#define ETH_PAD_SIZE                    0
+	//#define LWIP_HAVE_SLIPIF				1
+	#define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
 
-#define MEM_SIZE                        10000
-#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
-#define TCP_SND_BUF                     (2 * TCP_MSS)
+	#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
+	#define TCP_SND_BUF                     (2 * TCP_MSS)
 
-#define ETHARP_SUPPORT_STATIC_ENTRIES   1
+	#define ETHARP_SUPPORT_STATIC_ENTRIES   1
 
-#define LWIP_HTTPD_CGI                  1
-#define LWIP_HTTPD_SSI                  1
-#define LWIP_HTTPD_SSI_INCLUDE_TAG      0
+	#define LWIP_HTTPD_CGI                  0//1
+	#define LWIP_HTTPD_SSI                  0//1
+	#define LWIP_HTTPD_SSI_INCLUDE_TAG      0
+	#define LWIP_HTTPD_SUPPORT_POST			0//1
 
-#define LWIP_HTTPD_STRNSTR_PRIVATE		0
+	#define LWIP_HTTPD_STRNSTR_PRIVATE		0
 
+#else /* WITHISBOOTLOADER */
+	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
+	#define NO_SYS                          1
+	#define MEM_ALIGNMENT                   4
+	#define LWIP_RAW                        1
+	#define LWIP_NETCONN                    0
+	#define LWIP_SOCKET                     0
+	#define LWIP_DHCP                       0
+	#define LWIP_ICMP                       1
+	#define LWIP_UDP                        1
+	#define LWIP_TCP                        1
+	#define ETH_PAD_SIZE                    0
+	//#define LWIP_HAVE_SLIPIF				1
+	#define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
+
+	#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
+	#define TCP_SND_BUF                     (2 * TCP_MSS)
+
+	#define ETHARP_SUPPORT_STATIC_ENTRIES   1
+
+	#define LWIP_HTTPD_CGI                  1
+	#define LWIP_HTTPD_SSI                  1
+	#define LWIP_HTTPD_SSI_INCLUDE_TAG      0
+	#define LWIP_HTTPD_SUPPORT_POST			1
+
+	#define LWIP_HTTPD_STRNSTR_PRIVATE		0
+
+#endif	/* WITHISBOOTLOADER */
+
+#define LWIP_RAM_HEAP_POINTER		lwipBuffer
+#define MEM_SIZE                        32768
+extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 
 #define X32_F "08X"
 #define S32_F "ld"
