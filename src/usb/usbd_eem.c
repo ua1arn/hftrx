@@ -20,7 +20,13 @@
 #include "lwip/netif.h"
 #include "netif/etharp.h"
 
+
 #define RNDIS_MTU 1500  // MTU value
+
+
+typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
+
+static cdcdeem_rxproc_t cdceem_rxproc = NULL;
 
 static struct netif test_netif1, test_netif2;
 
@@ -157,7 +163,7 @@ static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 //    int size = 0;
 //    for (i = 0; i < 200; i++)
 //    {
-//        if (rndis_can_send()) break;
+//        if (cdceem_can_send()) break;
 //        local_delay_ms(1);
 //    }
 //    for(q = p; q != NULL; q = q->next)
@@ -167,20 +173,15 @@ static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 //        memcpy(data + size, (char *)q->payload, q->len);
 //        size += q->len;
 //    }
-//    if (!rndis_can_send())
+//    if (!cdceem_can_send())
 //        return ERR_USE;
-//    rndis_send(data, size);
+//    cdceem_send(data, size);
 //    outputs++;
     return ERR_OK;
 }
 
 
-static struct netif netif_cdceem;
-
-/* LAN */
-#define HWADDR                          {0x30,0x89,0x84,0x6A,0x96,0x34}
-#define NETMASK                         {255, 255, 255, 0}
-#define GATEWAY                         {0, 0, 0, 0}
+static struct netif netif_data;
 
 
 static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
@@ -201,19 +202,157 @@ static err_t netif_init_cb(struct netif *netif)
   return ERR_OK;
 }
 
+
+typedef struct cdceembuf_tag
+{
+	LIST_ENTRY item;
+	struct pbuf *frame;
+} ALIGNX_END cdceembuf_t;
+
+
+static LIST_ENTRY cdceem_free;
+static LIST_ENTRY cdceem_ready;
+
+static void cdceem_buffers_initialize(void)
+{
+	static RAMFRAMEBUFF cdceembuf_t sliparray [64];
+	unsigned i;
+
+	InitializeListHead(& cdceem_free);	// Незаполненные
+	InitializeListHead(& cdceem_ready);	// Для обработки
+
+	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
+	{
+		cdceembuf_t * const p = & sliparray [i];
+		InsertHeadList(& cdceem_free, & p->item);
+	}
+}
+
+static int cdceem_buffers_alloc(cdceembuf_t * * tp)
+{
+	if (! IsListEmpty(& cdceem_free))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& cdceem_free);
+		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	if (! IsListEmpty(& cdceem_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
+		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	return 0;
+}
+
+static int cdceem_buffers_ready_user(cdceembuf_t * * tp)
+{
+	system_disableIRQ();
+	if (! IsListEmpty(& cdceem_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
+		system_enableIRQ();
+		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	system_enableIRQ();
+	return 0;
+}
+
+
+static void cdceem_buffers_release(cdceembuf_t * p)
+{
+	InsertHeadList(& cdceem_free, & p->item);
+}
+
+static void cdceem_buffers_release_user(cdceembuf_t * p)
+{
+	system_disableIRQ();
+	cdceem_buffers_release(p);
+	system_enableIRQ();
+}
+
+// сохранить принятый
+static void cdceem_buffers_rx(cdceembuf_t * p)
+{
+	InsertHeadList(& cdceem_ready, & p->item);
+}
+
+static void on_packet(const uint8_t *data, int size)
+{
+	cdceembuf_t * p;
+	if (cdceem_buffers_alloc(& p) != 0)
+	{
+		struct pbuf *frame;
+		frame = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
+		if (frame == NULL)
+		{
+			cdceem_buffers_release(p);
+			return;
+		}
+		memcpy(frame->payload, data, size);
+
+		p->frame = frame;
+		cdceem_buffers_rx(p);
+	}
+}
+
+
+
+// Receiving Ethernet packets
+// user-mode function
+void usb_polling(void)
+{
+	cdceembuf_t * p;
+	if (cdceem_buffers_ready_user(& p) != 0)
+	{
+		err_t e = ethernet_input(p->frame, & netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+		cdceem_buffers_release_user(p);
+	}
+}
+
+
 void init_netif(void)
 {
-	static const  uint8_t hwaddr [6]  = HWADDR;
-	static const  uint8_t netmask [4] = NETMASK;
-	static const  uint8_t gateway [4] = GATEWAY;
+	cdceem_buffers_initialize();
 
-	static const uint8_t ipaddr [4]  = IPADDR;
-	struct netif  *netif = &netif_cdceem;
+	static const  uint8_t hwaddrv [6]  = { HWADDR };
+	static const  uint8_t netmaskv [4] = { NETMASK };
+	static const  uint8_t gatewayv [4] = { GATEWAY };
+
+	static ip_addr_t hwaddr;// [6]  = HWADDR;
+	static ip_addr_t netmask;// [4] = NETMASK;
+	static ip_addr_t gateway;// [4] = GATEWAY;
+
+	IP4_ADDR(& hwaddr, hwaddrv [0], hwaddrv [1], hwaddrv [2], hwaddrv [3]);
+	IP4_ADDR(& netmask, netmaskv [0], netmaskv [1], netmaskv [2], netmaskv [3]);
+	IP4_ADDR(& gateway, gatewayv [0], gatewayv [1], gatewayv [2], gatewayv [3]);
+
+	static const uint8_t ipaddrv [4]  = { IPADDR };
+	static ip_addr_t vaddr;// [4]  = IPADDR;
+	IP4_ADDR(& vaddr, ipaddrv [0], ipaddrv [1], ipaddrv [2], ipaddrv [3]);
+
+	struct netif  *netif = &netif_data;
 	netif->hwaddr_len = 6;
-	memcpy(netif->hwaddr, hwaddr, 6);
+	memcpy(netif->hwaddr, hwaddrv, 6);
 
-	netif = netif_add(netif, PADDR(ipaddr), PADDR(netmask), PADDR(gateway), NULL, netif_init_cb, ip_input);
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
+
+	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
+
+	while (!netif_is_up(&netif_data))
+		;
+
 #if 0
 	IP4_ADDR(&test_ipaddr1, 192,168,7,2);
 	IP4_ADDR(&test_netmask1, 255,255,255,0);
@@ -222,14 +361,7 @@ void init_netif(void)
 			&test_gw1, NULL, default_netif_init, NULL);
 	ASSERT(n == &test_netif1);
 #endif
-	//rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
-
-	while (!netif_is_up(&netif_cdceem))
-		;
-}
-
-void usb_polling(void)
-{
+	//cdceem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
 
 }
 
@@ -439,23 +571,9 @@ static void cdceemout_buffer_save(
 #if WITHLWIP
 				// Save to LWIP
 				{
-					// Note: use SYS_LIGHTWEIGHT_PROT
-#ifndef SYS_LIGHTWEIGHT_PROT
-#error Use safe buffers allocation
-#endif
-					err_t err;
-					struct pbuf *frame = pbuf_alloc(PBUF_RAW, cdceematcrc, PBUF_POOL);
-					ASSERT(frame != NULL);
-					memcpy(frame->payload, cdceembuff, cdceematcrc);	// TODO: eliminae copying
-					err = ethernet_input(frame, & netif_cdceem);
-					//err = ip4_input(p, &test_netif1);
-					ASSERT(err == ERR_OK);
-					if (err != ERR_OK)
-					{
-						/* This means the pbuf is freed or consumed,
-						so the caller doesn't have to free it again */
-					}
-					//TP();
+					if (cdceem_rxproc != NULL)
+						cdceem_rxproc(cdceembuff, cdceematcrc);
+
 				}
 
 #elif 0

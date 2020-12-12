@@ -892,8 +892,14 @@ void tcp_tmr(void);	/* LWIP support */
 
 #define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
-#define IPADDR                          {192, 168, 7, 1}	// local addreww
-#define PADDR(ptr) ((ip_addr_t *)ptr)
+
+/* LAN */
+#define IPADDR  192,168,7,1	// local address
+
+#define HWADDR                          0x30,0x89,0x84,0x6A,0x96,0x34
+#define NETMASK                         255, 255, 255, 0
+#define NETADDR                         192, 168, 7, 0
+#define GATEWAY                         0, 0, 0, 0
 
 #ifdef __cplusplus
 }

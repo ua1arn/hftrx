@@ -71,11 +71,6 @@ static int outputs = 0;
 
 static struct netif netif_data;
 
-/* LAN */
-#define HWADDR                          {0x30,0x89,0x84,0x6A,0x96,0x34}
-#define NETMASK                         {255, 255, 255, 0}
-#define GATEWAY                         {0, 0, 0, 0}
-
 // Transceiving Ethernet packets
 static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
@@ -127,7 +122,7 @@ TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
 }
 */
 
-static void on_packet(const uint8_t *data, int size)
+static void on_packetaaaaaa(const uint8_t *data, int size)
 {
     memcpy(received, data, size);
     recvSize = size;
@@ -212,7 +207,7 @@ static void rndis_buffers_rx(rndisbuf_t * p)
 	InsertHeadList(& rndis_ready, & p->item);
 }
 
-static void on_packet1(const uint8_t *data, int size)
+static void on_packet(const uint8_t *data, int size)
 {
 	rndisbuf_t * p;
 	if (rndis_buffers_alloc(& p) != 0)
@@ -235,7 +230,7 @@ static void on_packet1(const uint8_t *data, int size)
 
 // Receiving Ethernet packets
 // user-mode function
-void usb_polling1(void)
+void usb_polling(void)
 {
 	rndisbuf_t * p;
 	if (rndis_buffers_ready_user(& p) != 0)
@@ -254,7 +249,7 @@ void usb_polling1(void)
 
 // Receiving Ethernet packets
 // user-mode function
-void usb_polling(void)
+void usb_pollingzzzz(void)
 {
 	struct pbuf *frame;
 	system_disableIRQ();
@@ -287,16 +282,29 @@ void usb_polling(void)
 
 void init_netif(void)
 {
-	static const  uint8_t hwaddr [6]  = HWADDR;
-	static const  uint8_t netmask [4] = NETMASK;
-	static const  uint8_t gateway [4] = GATEWAY;
+	rndis_buffers_initialize();
 
-	static const uint8_t ipaddr [4]  = IPADDR;
+	static const  uint8_t hwaddrv [6]  = { HWADDR };
+	static const  uint8_t netmaskv [4] = { NETMASK };
+	static const  uint8_t gatewayv [4] = { GATEWAY };
+
+	static ip_addr_t hwaddr;// [6]  = HWADDR;
+	static ip_addr_t netmask;// [4] = NETMASK;
+	static ip_addr_t gateway;// [4] = GATEWAY;
+
+	IP4_ADDR(& hwaddr, hwaddrv [0], hwaddrv [1], hwaddrv [2], hwaddrv [3]);
+	IP4_ADDR(& netmask, netmaskv [0], netmaskv [1], netmaskv [2], netmaskv [3]);
+	IP4_ADDR(& gateway, gatewayv [0], gatewayv [1], gatewayv [2], gatewayv [3]);
+
+	static const uint8_t ipaddrv [4]  = { IPADDR };
+	static ip_addr_t vaddr;// [4]  = IPADDR;
+	IP4_ADDR(& vaddr, ipaddrv [0], ipaddrv [1], ipaddrv [2], ipaddrv [3]);
+
 	struct netif  *netif = &netif_data;
 	netif->hwaddr_len = 6;
-	memcpy(netif->hwaddr, hwaddr, 6);
+	memcpy(netif->hwaddr, hwaddrv, 6);
 
-	netif = netif_add(netif, PADDR(ipaddr), PADDR(netmask), PADDR(gateway), NULL, netif_init_cb, ip_input);
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
 
 	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP

@@ -24,6 +24,8 @@
 #include "lwip/ip.h"
 #include "lwip/udp.h"
 #include "lwip/dhcp.h"
+#include "netif/etharp.h"
+#include "lwip/ip_addr.h"
 
 #include "src/dhcp-server/dhserver.h"
 #include "src/dns-server/dnserver.h"
@@ -59,29 +61,31 @@ static void init_dhserv(void)
 
 	static dhcp_config_t dhcp_config =
 	{
-		IPADDR, 67,
-		IPADDR,
+		{IPADDR}, 67,
+		{IPADDR},
 		"stm",
 		ARRAY_SIZE(dhcpentries),
 		dhcpentries
 	};
+
+//	IP4_ADDR(& dhcp_config.addr, 192,168,7,1);
+//	IP4_ADDR(& dhcp_config.dns, 192,168,7,1);
 
 	while (dhserv_init(& dhcp_config) != ERR_OK)
 		;
 }
 #endif /* LWIP_DHCP */
 
-/* Private variables ---------------------------------------------------------*/
-static const uint8_t localipaddr[4]  = IPADDR;
 
 static bool dns_query_proc(const char *name, ip_addr_t *addr)
 {
+	uint8_t       vaddr[4] = {IPADDR};
   if (
 		  strcmp(name, "run.stm") == 0 ||
 		  strcmp(name, "www.run.stm") == 0
 		  )
   {
-    addr->addr = *(uint32_t *)localipaddr;
+	IP4_ADDR(addr, vaddr [0], vaddr [1], vaddr [2], vaddr [3]);
     return true;
   }
   return false;
@@ -91,8 +95,11 @@ static bool dns_query_proc(const char *name, ip_addr_t *addr)
 
 static void init_dnserv(void)
 {
-	uint8_t ipaddr [4] = IPADDR;
-	while (dnserv_init(PADDR(ipaddr), 53, dns_query_proc) != ERR_OK)
+	uint8_t       vaddr[4] = {IPADDR};
+	ip_addr_t ipaddr;
+	IP4_ADDR(& ipaddr, vaddr [0], vaddr [1], vaddr [2], vaddr [3]);
+
+	while (dnserv_init(& ipaddr, 53, dns_query_proc) != ERR_OK)
 		;
 }
 
