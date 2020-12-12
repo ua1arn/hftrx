@@ -148,6 +148,9 @@ extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 #define AUTOIP_DEBUG           LWIP_DBG_ON
 #define DNS_DEBUG              LWIP_DBG_ON
 #define IP6_DEBUG              LWIP_DBG_ON
-#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)
+
+void display_vtty_printf(const char * format, ...);
+//#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)
+#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; /*display_vtty_printf mmsg; */} while (0)
 
 #endif /* __LWIPOPTS_H__ */
