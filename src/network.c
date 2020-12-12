@@ -40,21 +40,6 @@
 	ALIGNX_BEGIN RAMFRAMEBUFF uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE] ALIGNX_END;
 #endif /* defined (LWIP_RAM_HEAP_POINTER) */
 
-#define DHCP_ENTRIES_QNT                3
-#define DHCP_ENTRIES                    {\
-                                        { {0}, {192, 168, 7, 2}, {255, 255, 255, 0}, 24 * 60 * 60 }, \
-                                        { {0}, {192, 168, 7, 3}, {255, 255, 255, 0}, 24 * 60 * 60 }, \
-                                        { {0}, {192, 168, 7, 4}, {255, 255, 255, 0}, 24 * 60 * 60 } \
-                                        }
-#define DHCP_CONFIG                     { \
-                                        IPADDR, 67, \
-                                        IPADDR, \
-                                        "stm", \
-                                        DHCP_ENTRIES_QNT, \
-                                        entries \
-                                        }
-
-
 
 //#define TX_ZLP_TEST
 static void init_lwip(void);
@@ -62,21 +47,29 @@ static void init_htserv(void);
 static void init_dhserv(void);
 static void init_dnserv(void);
 
+#if LWIP_DHCP
+static void init_dhserv(void)
+{
+	static dhcp_entry_t dhcpentries [] =
+	{
+		{ {0}, {192, 168, 7, 2}, {255, 255, 255, 0}, 24 * 60 * 60 },
+		{ {0}, {192, 168, 7, 3}, {255, 255, 255, 0}, 24 * 60 * 60 },
+		{ {0}, {192, 168, 7, 4}, {255, 255, 255, 0}, 24 * 60 * 60 }
+	};
 
+	static dhcp_config_t dhcp_config =
+	{
+		IPADDR, 67,
+		IPADDR,
+		"stm",
+		ARRAY_SIZE(dhcpentries),
+		dhcpentries
+	};
 
-
-/* Private types -------------------------------------------------------------*/
-static const char *state_cgi_handler(int index, int n_params, char *params[], char *values[]);
-static const char *ctl_cgi_handler(int index, int n_params, char *params[], char *values[]);
-
-static dhcp_entry_t entries[DHCP_ENTRIES_QNT] = DHCP_ENTRIES;
-static dhcp_config_t dhcp_config = DHCP_CONFIG;
-
-
-/* External variables --------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-static uint16_t ssi_handler(int index, char *insert, int ins_len);
-
+	while (dhserv_init(& dhcp_config) != ERR_OK)
+		;
+}
+#endif /* LWIP_DHCP */
 
 /* Private variables ---------------------------------------------------------*/
 static const uint8_t localipaddr[4]  = IPADDR;
@@ -95,6 +88,14 @@ static bool dns_query_proc(const char *name, ip_addr_t *addr)
 }
 
 
+
+static void init_dnserv(void)
+{
+	uint8_t ipaddr [4] = IPADDR;
+	while (dnserv_init(PADDR(ipaddr), 53, dns_query_proc) != ERR_OK)
+		;
+}
+
 static void init_lwip()
 {
 //	PRINTF("init_lwip start\n");
@@ -109,23 +110,17 @@ static void init_lwip()
 #if ! WITHISBOOTLOADER
 
 
-
-static void init_dnserv(void)
-{
-	uint8_t ipaddr [4] = IPADDR;
-	while (dnserv_init(PADDR(ipaddr), 53, dns_query_proc) != ERR_OK)
-		;
-}
-
-static void init_dhserv(void)
-{
-  while (dhserv_init(& dhcp_config) != ERR_OK)
-	  ;
-}
-
 #endif
 
 #if LWIP_HTTPD_CGI
+
+
+static uint8_t PORTC[8];
+
+const char *state_cgi_handler(int index, int n_params, char *params[], char *values[])
+{
+  return "/state.shtml";
+}
 
 static const char *ssi_tags_table[] =
 {
@@ -136,27 +131,6 @@ static const char *ssi_tags_table[] =
     "ledo",    /* 4 */
     "ledr"     /* 5 */
 };
-
-static const tCGI cgi_uri_table[] =
-{
-    { "/state.cgi", state_cgi_handler },
-    { "/ctl.cgi",   ctl_cgi_handler },
-};
-
-
-void init_htserv(void)
-{
-  http_set_cgi_handlers(cgi_uri_table, sizeof(cgi_uri_table) / sizeof(tCGI));
-  http_set_ssi_handler(ssi_handler, ssi_tags_table, sizeof(ssi_tags_table) / sizeof(char *));
-  httpd_init();
-}
-
-static uint8_t PORTC[8];
-
-const char *state_cgi_handler(int index, int n_params, char *params[], char *values[])
-{
-  return "/state.shtml";
-}
 
 
 static int led_g = false;
@@ -177,8 +151,11 @@ const char *ctl_cgi_handler(int index, int n_params, char *params[], char *value
     return "/state.shtml";
 }
 
-
-
+static const tCGI cgi_uri_table[] =
+{
+    { "/state.cgi", state_cgi_handler },
+    { "/ctl.cgi",   ctl_cgi_handler },
+};
 
 
 
@@ -200,11 +177,11 @@ static uint16_t ssi_handler(int index, char *insert, int ins_len)
   switch (index)
   {
   case 0: // systick
-    res = local_snprintf_P(insert, ins_len, "%s", "1234");
+    res = snprintf(insert, ins_len, "%s", "1234");
     break;
   case 1: // PORTC
     {
-      res = local_snprintf_P(insert, ins_len, "%u, %u, %u, %u, %u, %u, %u, %u", 10, 10, 10, 10, 10, 10, 10, 10);
+      res = snprintf(insert, ins_len, "%u, %u, %u, %u, %u, %u, %u, %u", 10, 10, 10, 10, 10, 10, 10, 10);
       break;
     }
   case 2: // PA0
@@ -253,10 +230,10 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
     switch (index)
     {
     case 0: /* systick */
-        res = local_snprintf_P(insert, ins_len, "%u", (unsigned)++ ttt);
+        res = snprintf(insert, ins_len, "%u", (unsigned)++ ttt);
         break;
     case 1: /* btn */
-        res = local_snprintf_P(insert, ins_len, "%i", 1);
+        res = snprintf(insert, ins_len, "%i", 1);
         break;
     case 2: /* acc */
     {
@@ -264,7 +241,7 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
         acc[0] = 1;
         acc[1] = 2;
         acc[2] = 4;
-        res = local_snprintf_P(insert, ins_len, "%i, %i, %i", acc[0], acc[1], acc[2]);
+        res = snprintf(insert, ins_len, "%i, %i, %i", acc[0], acc[1], acc[2]);
         break;
     }
     case 3: /* ledg */
@@ -283,7 +260,17 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
 
     return res;
 }
-#endif /* ! WITHISBOOTLOADER */
+#endif /* TX_ZLP_TEST */
+
+
+void init_htserv(void)
+{
+  http_set_cgi_handlers(cgi_uri_table, sizeof(cgi_uri_table) / sizeof(tCGI));
+  http_set_ssi_handler(ssi_handler, ssi_tags_table, sizeof(ssi_tags_table) / sizeof(char *));
+
+  httpd_init();
+}
+
 #endif /* LWIP_HTTPD_CGI */
 
 
@@ -313,6 +300,7 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
                        u16_t http_request_len, int content_len, char *response_uri,
                        u16_t response_uri_len, u8_t *post_auto_wnd)
 {
+	PRINTF("httpd_post_begin\n");
 	return ERR_OK;
 }
 
@@ -326,6 +314,7 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
  */
 err_t httpd_post_receive_data(void *connection, struct pbuf *p)
 {
+	PRINTF("httpd_post_receive_data\n");
 	return ERR_OK;
 }
 
@@ -340,6 +329,7 @@ err_t httpd_post_receive_data(void *connection, struct pbuf *p)
  */
 void httpd_post_finished(void *connection, char *response_uri, u16_t response_uri_len)
 {
+	PRINTF("httpd_post_finished\n");
 }
 
 #ifndef LWIP_HTTPD_POST_MANUAL_WND
@@ -360,7 +350,9 @@ void network_initialize(void)
 
 #if WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
 	  PRINTF("network_initialize: start DHCP & DNS\n");
-	  init_dhserv();
+	#if LWIP_DHCP
+		  init_dhserv();
+	#endif /* LWIP_DHCP */
 	  init_dnserv();
 #endif /* WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM) */
 
