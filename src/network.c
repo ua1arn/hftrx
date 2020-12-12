@@ -13,6 +13,7 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "formats.h"	/* зависящие от процессора функции работы с портами */
 
 #if WITHLWIP
 
@@ -27,6 +28,7 @@
 #include "src/dhcp-server/dhserver.h"
 #include "src/dns-server/dnserver.h"
 #include "httpd.h"
+
 /*
  *  В конфигурации описано имя и размер
  *
@@ -104,6 +106,9 @@ static void init_lwip()
 }
 
 
+#if ! WITHISBOOTLOADER
+
+
 
 static void init_dnserv(void)
 {
@@ -118,7 +123,10 @@ static void init_dhserv(void)
 	  ;
 }
 
-#if 1
+#endif
+
+#if LWIP_HTTPD_CGI
+
 static const char *ssi_tags_table[] =
 {
     "systick", /* 0 */
@@ -168,7 +176,6 @@ const char *ctl_cgi_handler(int index, int n_params, char *params[], char *value
 
     return "/state.shtml";
 }
-#endif
 
 
 
@@ -276,8 +283,8 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
 
     return res;
 }
-#endif
-
+#endif /* ! WITHISBOOTLOADER */
+#endif /* LWIP_HTTPD_CGI */
 
 
 #if LWIP_HTTPD_SUPPORT_POST
@@ -350,9 +357,16 @@ void network_initialize(void)
 {
 	  init_lwip();
 	  init_netif();
+
+#if WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
+	  PRINTF("network_initialize: start DHCP & DNS\n");
 	  init_dhserv();
 	  init_dnserv();
+#endif /* WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM) */
+
+#if LWIP_HTTPD_CGI
 	  init_htserv();
+#endif /* LWIP_HTTPD_CGI */
 	  //echo_init();
 
 }
