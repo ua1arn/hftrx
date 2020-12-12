@@ -402,12 +402,12 @@ unsigned Enable_IRQ (void)
 sys_prot_t sys_arch_protect(void)
 {
 
-	return 0;
+	return Disable_IRQ();
 }
 
 void sys_arch_unprotect(sys_prot_t pval)
 {
-
+	Restore_IRQ(pval);
 }
 
 #endif /* SYS_LIGHTWEIGHT_PROT */

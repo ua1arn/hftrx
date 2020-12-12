@@ -134,6 +134,123 @@ static void on_packet(const uint8_t *data, int size)
 }
 
 
+typedef struct rndisbuf_tag
+{
+	LIST_ENTRY item;
+	struct pbuf *frame;
+} ALIGNX_END rndisbuf_t;
+
+
+static LIST_ENTRY rndis_free;
+static LIST_ENTRY rndis_ready;
+
+static void rndis_buffers_initialize(void)
+{
+	static RAMFRAMEBUFF rndisbuf_t sliparray [64];
+	unsigned i;
+
+	InitializeListHead(& rndis_free);	// Незаполненные
+	InitializeListHead(& rndis_ready);	// Для обработки
+
+	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
+	{
+		rndisbuf_t * const p = & sliparray [i];
+		InsertHeadList(& rndis_free, & p->item);
+	}
+}
+
+static int rndis_buffers_alloc(rndisbuf_t * * tp)
+{
+	if (! IsListEmpty(& rndis_free))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& rndis_free);
+		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	if (! IsListEmpty(& rndis_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& rndis_ready);
+		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	return 0;
+}
+
+static int rndis_buffers_ready_user(rndisbuf_t * * tp)
+{
+	system_disableIRQ();
+	if (! IsListEmpty(& rndis_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& rndis_ready);
+		system_enableIRQ();
+		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	system_enableIRQ();
+	return 0;
+}
+
+
+static void rndis_buffers_release(rndisbuf_t * p)
+{
+	InsertHeadList(& rndis_free, & p->item);
+}
+
+static void rndis_buffers_release_user(rndisbuf_t * p)
+{
+	system_disableIRQ();
+	rndis_buffers_release(p);
+	system_enableIRQ();
+}
+
+// сохранить принятый
+static void rndis_buffers_rx(rndisbuf_t * p)
+{
+	InsertHeadList(& rndis_ready, & p->item);
+}
+
+static void on_packet1(const uint8_t *data, int size)
+{
+	rndisbuf_t * p;
+	if (rndis_buffers_alloc(& p) != 0)
+	{
+		struct pbuf *frame;
+		frame = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
+		if (frame == NULL)
+		{
+			rndis_buffers_release(p);
+			return;
+		}
+		memcpy(frame->payload, data, size);
+
+		p->frame = frame;
+		rndis_buffers_rx(p);
+	}
+}
+
+
+
+// Receiving Ethernet packets
+// user-mode function
+void usb_polling1(void)
+{
+	rndisbuf_t * p;
+	if (rndis_buffers_ready_user(& p) != 0)
+	{
+		err_t e = ethernet_input(p->frame, & netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+		rndis_buffers_release_user(p);
+	}
+}
+
 
 // Receiving Ethernet packets
 // user-mode function
