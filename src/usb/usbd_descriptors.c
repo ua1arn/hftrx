@@ -3372,7 +3372,7 @@ static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = highspeed ? HSINTERVAL_32MS : FSINTERVAL_32MS;   		/* bInterval: 32 mS */
+		* buff ++ = highspeed ? HSINTERVAL_1MS : FSINTERVAL_1MS;   		/* bInterval: 1 mS */
 	}
 	return length;
 }
@@ -3474,8 +3474,9 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	n += RNDIS_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_RNDIS_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 	// OUT Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee482464(v=winembedded.60).aspx
 	n += RNDIS_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_RNDIS_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
+
 	return n;
-	}
+}
 
 #endif /* WITHUSBRNDIS */
 

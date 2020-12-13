@@ -277,6 +277,9 @@ extern "C" {
 #define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
 #define FSINTERVAL_AUDIO48 1
 
+#define HSINTERVAL_1MS 4	// endpoint descriptor parameters - для обеспечения 10 ms периода
+#define FSINTERVAL_1MS 1
+
 #define HSINTERVAL_8MS 7	// endpoint descriptor parameters - для обеспечения 10 ms периода
 #define FSINTERVAL_8MS 8
 

@@ -447,3 +447,8 @@ void network_initialize(void)
 }
 
 #endif /*  WITHLWIP */
+
+uint8_t myIP [4] = { 172, 210, 72, 198 };		// для проверки пингов с клавиатуры по готовому бинарному обьразу
+//uint8_t myIP [4] = { 192, 168, 7, 1 };		// работа в сети
+uint8_t myNETMASK [4] = {255, 0, 0, 0};
+uint8_t myGATEWAY [4] = { 172, 171, 242, 248 };

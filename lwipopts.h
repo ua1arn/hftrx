@@ -37,14 +37,6 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-/**
- * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain
- * critical regions during buffer allocation, deallocation and memory
- * allocation and deallocation.
- */
-#define SYS_LIGHTWEIGHT_PROT 1
-typedef unsigned sys_prot_t;
-
 #if WITHISBOOTLOADER
 	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
 	#define NO_SYS                          1
@@ -56,7 +48,6 @@ typedef unsigned sys_prot_t;
 	#define LWIP_ICMP                       1
 	#define LWIP_UDP                        1
 	//#define LWIP_TCP                        1
-	#define ETH_PAD_SIZE                    0
 	//#define LWIP_HAVE_SLIPIF				1
 	#define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
 
@@ -75,7 +66,6 @@ typedef unsigned sys_prot_t;
 #else /* WITHISBOOTLOADER */
 	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
 	#define NO_SYS                          1
-	#define MEM_ALIGNMENT                   4
 	#define LWIP_RAW                        1
 	#define LWIP_NETCONN                    0
 	#define LWIP_SOCKET                     0
@@ -83,7 +73,6 @@ typedef unsigned sys_prot_t;
 	#define LWIP_ICMP                       1
 	#define LWIP_UDP                        1
 	#define LWIP_TCP                        1
-	#define ETH_PAD_SIZE                    0
 	//#define LWIP_HAVE_SLIPIF				1
 	#define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
 
@@ -101,9 +90,21 @@ typedef unsigned sys_prot_t;
 
 #endif	/* WITHISBOOTLOADER */
 
+#define ETH_PAD_SIZE                    0
+
 #define LWIP_RAM_HEAP_POINTER		lwipBuffer
 #define MEM_SIZE                        32768
 extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
+
+#define MEM_ALIGNMENT                   8
+
+/**
+ * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain
+ * critical regions during buffer allocation, deallocation and memory
+ * allocation and deallocation.
+ */
+#define SYS_LIGHTWEIGHT_PROT 1
+typedef unsigned sys_prot_t;
 
 #define X32_F "08X"
 #define S32_F "ld"

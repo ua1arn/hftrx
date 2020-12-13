@@ -137,7 +137,7 @@ typedef struct _SerialStatePacket_t
   SerialState_t    SerialState;
 } SerialStatePacket_t, *pSerialStatePacket_t;
 
-static uint8_t sendState [WITHUSBCDCACM_N] [10];
+static USBALIGN_BEGIN uint8_t sendState [WITHUSBCDCACM_N] [10] USBALIGN_END;
 
 static void notify(uint_fast8_t offset, uint_fast16_t state)
 {

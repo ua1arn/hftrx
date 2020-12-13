@@ -23,12 +23,12 @@
 #include "lwip/netif.h"
 #include "netif/etharp.h"
 
-
-#define RNDIS_CONTROL_OUT_PMAADDRESS                    (0x08 * 4)                //8 bytes per EP
-#define RNDIS_CONTROL_IN_PMAADDRESS                     (RNDIS_CONTROL_OUT_PMAADDRESS + USB_MAX_EP0_SIZE)
-#define RNDIS_NOTIFICATION_IN_PMAADDRESS                (RNDIS_CONTROL_IN_PMAADDRESS + USB_MAX_EP0_SIZE)
-#define RNDIS_DATA_IN_PMAADDRESS                        (RNDIS_NOTIFICATION_IN_PMAADDRESS + RNDIS_NOTIFICATION_IN_SZ)
-#define RNDIS_DATA_OUT_PMAADDRESS                       (RNDIS_DATA_IN_PMAADDRESS + USBD_RNDIS_IN_BUFSIZE)
+//
+//#define RNDIS_CONTROL_OUT_PMAADDRESS                    (0x08 * 4)                //8 bytes per EP
+//#define RNDIS_CONTROL_IN_PMAADDRESS                     (RNDIS_CONTROL_OUT_PMAADDRESS + USB_MAX_EP0_SIZE)
+//#define RNDIS_NOTIFICATION_IN_PMAADDRESS                (RNDIS_CONTROL_IN_PMAADDRESS + USB_MAX_EP0_SIZE)
+//#define RNDIS_DATA_IN_PMAADDRESS                        (RNDIS_NOTIFICATION_IN_PMAADDRESS + RNDIS_NOTIFICATION_IN_SZ)
+//#define RNDIS_DATA_OUT_PMAADDRESS                       (RNDIS_DATA_IN_PMAADDRESS + USBD_RNDIS_IN_BUFSIZE)
 
 #define RNDIS_MTU                                       1500                           // MTU value
 #if WITHUSBDEV_HSDESC
@@ -43,7 +43,7 @@
 #define ETH_HEADER_SIZE                 14
 #define ETH_MIN_PACKET_SIZE             60
 #define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + RNDIS_MTU)
-#define RNDIS_HEADER_SIZE               sizeof(rndis_data_packet_t)
+#define RNDIS_HEADER_SIZE               (sizeof (rndis_data_packet_t))
 #define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
 
 typedef void (*rndis_rxproc_t)(const uint8_t *data, int size);
@@ -376,7 +376,7 @@ static uint8_t station_hwaddr[6] = { STATION_HWADDR };
 static uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
 static rndis_state_t rndis_state = rndis_uninitialized;
 static uint32_t oid_packet_filter = 0x0000000;
-static uint8_t encapsulated_buffer[ENC_BUF_SIZE];
+static USBALIGN_BEGIN uint8_t encapsulated_buffer [ENC_BUF_SIZE] USBALIGN_END;
 
 static uint16_t rndis_tx_data_size = 0;
 static int rndis_tx_transmitting = false;
@@ -518,18 +518,18 @@ static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef  *pdev, uint_fast8_
 
 static USBD_StatusTypeDef  usbd_rndis_deinit(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx)
 {
-  USBD_LL_CloseEP(pdev,
-              USBD_EP_RNDIS_INT);
-  USBD_LL_CloseEP(pdev,
-		  USBD_EP_RNDIS_IN);
-  USBD_LL_CloseEP(pdev,
-		  USBD_EP_RNDIS_OUT);
-  return USBD_OK;
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_INT);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_IN);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_OUT);
+	return USBD_OK;
 }
 
 static USBD_StatusTypeDef usbd_rndis_setup(USBD_HandleTypeDef  *pdev, const USBD_SetupReqTypedef *req)
 {
-  switch (req->bmRequest & USB_REQ_TYPE_MASK)
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+	if (interfacev != INTERFACE_RNDIS_CONTROL && interfacev != INTERFACE_RNDIS_DATA)
+		   return USBD_OK;
+ switch (req->bmRequest & USB_REQ_TYPE_MASK)
   {
   case USB_REQ_TYPE_CLASS :
     if (req->wLength != 0) // is data setup packet?
@@ -765,7 +765,8 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 {
 	hold_pDev = pdev;
 	  ASSERT(hold_pDev != NULL);
-	if (sended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0) return USBD_OK;
+	if (sended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0)
+		return USBD_OK;
 	if (rndis_first_tx)
 	{
 		static uint8_t first [USBD_RNDIS_IN_BUFSIZE];
@@ -783,7 +784,7 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 		memcpy(first + sizeof(rndis_data_packet_t), rndis_tx_ptr, sended);
 
 		  ASSERT(hold_pDev != NULL);
-		USBD_LL_Transmit (hold_pDev,
+		USBD_LL_Transmit(hold_pDev,
 						USBD_EP_RNDIS_IN,
 						(uint8_t *)&first,
 						sizeof(rndis_data_packet_t) + sended);
@@ -791,9 +792,10 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 	else
 	{
 		int n = rndis_tx_size;
-		if (n > USBD_RNDIS_IN_BUFSIZE) n = USBD_RNDIS_IN_BUFSIZE;
+		if (n > USBD_RNDIS_IN_BUFSIZE)
+			n = USBD_RNDIS_IN_BUFSIZE;
 
-		USBD_LL_Transmit (hold_pDev,
+		USBD_LL_Transmit(hold_pDev,
 						USBD_EP_RNDIS_IN,
 						rndis_tx_ptr,
 						n);
@@ -805,6 +807,11 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 // Control Channel      https://msdn.microsoft.com/en-us/library/windows/hardware/ff546124(v=vs.85).aspx
 static USBD_StatusTypeDef usbd_rndis_ep0_recv(USBD_HandleTypeDef  *pdev)
 {
+	const USBD_SetupReqTypedef * const req = & pdev->request;
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+	if (interfacev != INTERFACE_RNDIS_CONTROL && interfacev != INTERFACE_RNDIS_DATA)
+		   return USBD_OK;
+
   switch (((rndis_generic_msg_t *)encapsulated_buffer)->MessageType)
   {
   case REMOTE_NDIS_INITIALIZE_MSG:
@@ -996,11 +1003,22 @@ static USBD_StatusTypeDef rndis_iso_out_incomplete(USBD_HandleTypeDef *pdev, uin
 
 static void response_available(USBD_HandleTypeDef *pdev)
 {
+	static USBALIGN_BEGIN uint8_t sendState [8] USBALIGN_END;
+	uint_fast32_t code = 0x01;
+	uint_fast32_t reserved0 = 0x09;
+
+	ASSERT(USBD_RNDIS_INT_SIZE == sizeof sendState);
+	sendState [0] = LO_BYTE(code);
+	sendState [1] = HI_BYTE(code);
+	sendState [2] = HI_24BY(code);
+	sendState [3] = HI_32BY(code);
+	sendState [4] = LO_BYTE(reserved0);
+	sendState [5] = HI_BYTE(reserved0);
+	sendState [6] = HI_24BY(reserved0);
+	sendState [7] = HI_32BY(reserved0);
+
 	system_disableIRQ();
-	USBD_LL_Transmit (pdev,
-			USBD_EP_RNDIS_INT,
-			(uint8_t *)"\x01\x00\x00\x00\x00\x00\x00\x00",
-			USBD_RNDIS_INT_SIZE);
+	USBD_LL_Transmit (pdev, USBD_EP_RNDIS_INT, sendState, USBD_RNDIS_INT_SIZE);
 	system_enableIRQ();
 }
 
@@ -1052,7 +1070,6 @@ int rndis_send(const void *data, int size)
 	return 1;
 }
 
-
 const USBD_ClassTypeDef USBD_CLASS_RNDIS =
 {
 	USBD_RNDIS_ColdInit,
@@ -1067,8 +1084,6 @@ const USBD_ClassTypeDef USBD_CLASS_RNDIS =
 	rndis_iso_in_incomplete,
 	rndis_iso_out_incomplete,
 };
-
-
 
 
 #endif /* WITHUSBHW && WITHUSBRNDIS */
