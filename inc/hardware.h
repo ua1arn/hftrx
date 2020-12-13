@@ -893,13 +893,15 @@ void tcp_tmr(void);	/* LWIP support */
 #define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
 
-/* LAN */
-#define IPADDR  192,168,7,1	// local address
-
 #define HWADDR                          0x30,0x89,0x84,0x6A,0x96,0x34
-#define NETMASK                         255, 255, 255, 0
-#define NETADDR                         192, 168, 7, 0
-#define GATEWAY                         0, 0, 0, 0
+
+extern uint8_t myIP [4];
+extern uint8_t myNETMASK [4];
+extern uint8_t myGATEWAY [4];
+
+
+void tcp_tmr(void);
+void usb_polling(void);
 
 #ifdef __cplusplus
 }

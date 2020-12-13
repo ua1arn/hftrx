@@ -266,10 +266,10 @@ void init_netif(void)
 	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
 
-	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
-
 	while (!netif_is_up(&rndis_netif_data))
 		;
+
+	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
 }
 
 static void USBD_RNDIS_ColdInit(void)

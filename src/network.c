@@ -61,15 +61,23 @@ static void init_dhserv(void)
 
 	static dhcp_config_t dhcp_config =
 	{
-		{IPADDR}, 67,
-		{IPADDR},
+		{192, 168, 7, 1}, 67,
+		{192, 168, 7, 1},
 		"stm",
 		ARRAY_SIZE(dhcpentries),
 		dhcpentries
 	};
 
-//	IP4_ADDR(& dhcp_config.addr, 192,168,7,1);
-//	IP4_ADDR(& dhcp_config.dns, 192,168,7,1);
+	for (int i = 0; i < ARRAY_SIZE(dhcpentries); ++ i)
+	{
+		memcpy(dhcpentries [i].addr, myIP, 4);
+		memcpy(dhcpentries [i].subnet, myNETMASK, 4);
+		dhcpentries [i].addr [3] += i + 100;
+	}
+	memcpy(dhcp_config.addr, myIP, 4);
+	memcpy(dhcp_config.dns, myIP, 4);
+//	IP4_ADDR(& dhcp_config.addr, myIP [0], myIP [1], myIP [2], myIP [3] );
+//	IP4_ADDR(& dhcp_config.dns, myIP [0], myIP [1], myIP [2], myIP [3]);
 
 	while (dhserv_init(& dhcp_config) != ERR_OK)
 		;
@@ -79,13 +87,12 @@ static void init_dhserv(void)
 
 static bool dns_query_proc(const char *name, ip_addr_t *addr)
 {
-	uint8_t       vaddr[4] = {IPADDR};
   if (
 		  strcmp(name, "run.stm") == 0 ||
 		  strcmp(name, "www.run.stm") == 0
 		  )
   {
-	IP4_ADDR(addr, vaddr [0], vaddr [1], vaddr [2], vaddr [3]);
+	IP4_ADDR(addr, myIP [0], myIP [1], myIP [2], myIP [3]);
     return true;
   }
   return false;
@@ -95,9 +102,8 @@ static bool dns_query_proc(const char *name, ip_addr_t *addr)
 
 static void init_dnserv(void)
 {
-	uint8_t       vaddr[4] = {IPADDR};
 	ip_addr_t ipaddr;
-	IP4_ADDR(& ipaddr, vaddr [0], vaddr [1], vaddr [2], vaddr [3]);
+	IP4_ADDR(& ipaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
 	while (dnserv_init(& ipaddr, 53, dns_query_proc) != ERR_OK)
 		;
@@ -448,7 +454,7 @@ void network_initialize(void)
 
 #endif /*  WITHLWIP */
 
-uint8_t myIP [4] = { 172, 210, 72, 198 };		// äëÿ ïðîâåðêè ïèíãîâ ñ êëàâèàòóðû ïî ãîòîâîìó áèíàðíîìó îáüðàçó
-//uint8_t myIP [4] = { 192, 168, 7, 1 };		// ðàáîòà â ñåòè
+uint8_t myIP [4] = { 172, 210, 72, 198 };		// Ð´Ð»Ñ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ¸ Ð¿Ð¸Ð½Ð³Ð¾Ð² Ñ ÐºÐ»Ð°Ð²Ð¸Ð°Ñ‚ÑƒÑ€Ñ‹ Ð¿Ð¾ Ð³Ð¾Ñ‚Ð¾Ð²Ð¾Ð¼Ñƒ Ð±Ð¸Ð½Ð°Ñ€Ð½Ð¾Ð¼Ñƒ Ð¾Ð±ÑŒÑ€Ð°Ð·Ñƒ
+//uint8_t myIP [4] = { 192, 168, 7, 1 };		// Ñ€Ð°Ð±Ð¾Ñ‚Ð° Ð² ÑÐµÑ‚Ð¸
 uint8_t myNETMASK [4] = {255, 0, 0, 0};
 uint8_t myGATEWAY [4] = { 172, 171, 242, 248 };

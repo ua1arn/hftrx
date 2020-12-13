@@ -197,16 +197,16 @@ static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 
 static err_t netif_init_cb(struct netif *netif)
 {
-	PRINTF("cdc eem netif_init_cb\n");
-  LWIP_ASSERT("netif != NULL", (netif != NULL));
-  netif->mtu = RNDIS_MTU;
-  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
-  netif->state = NULL;
-  netif->name[0] = 'E';
-  netif->name[1] = 'X';
-  netif->linkoutput = linkoutput_fn;
-  netif->output = output_fn;
-  return ERR_OK;
+	//PRINTF("cdc eem netif_init_cb\n");
+	LWIP_ASSERT("netif != NULL", (netif != NULL));
+	netif->mtu = RNDIS_MTU;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->state = NULL;
+	netif->name[0] = 'E';
+	netif->name[1] = 'X';
+	netif->linkoutput = linkoutput_fn;
+	netif->output = output_fn;
+	return ERR_OK;
 }
 
 
@@ -335,11 +335,9 @@ void init_netif(void)
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
-	static ip_addr_t hwaddr;// [6]  = HWADDR;
 	static ip_addr_t netmask;// [4] = NETMASK;
 	static ip_addr_t gateway;// [4] = GATEWAY;
 
-	IP4_ADDR(& hwaddr, hwaddrv [0], hwaddrv [1], hwaddrv [2], hwaddrv [3]);
 	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
 	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
 
@@ -354,21 +352,11 @@ void init_netif(void)
 	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
 
-	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
 
 	while (!netif_is_up(&netif_data))
 		;
 
-#if 0
-	IP4_ADDR(&test_ipaddr1, 192,168,7,2);
-	IP4_ADDR(&test_netmask1, 255,255,255,0);
-	IP4_ADDR(&test_gw1, 192,168,7,254);
-	n = netif_add(&test_netif1, &test_ipaddr1, &test_netmask1,
-			&test_gw1, NULL, default_netif_init, NULL);
-	ASSERT(n == &test_netif1);
-#endif
-	//cdceem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
-
+	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
 }
 
 #endif /* WITHLWIP */
