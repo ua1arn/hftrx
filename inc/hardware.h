@@ -463,7 +463,7 @@ void hardware_adc_initialize(void);
 	#define NOINLINEAT // __attribute__((noinline))
 	#define strlen_P(s) strlen(s)
 
-	#define ATTRWEAK __attribute__ ((weak))
+	#define ATTRWEAK __WEAK
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
 	#define PSTR(s) (s)

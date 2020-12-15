@@ -40,7 +40,6 @@
 #if WITHISBOOTLOADER
 	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
 	#define NO_SYS                          1
-	#define MEM_ALIGNMENT                   4
 	#define LWIP_RAW                        1
 	#define LWIP_NETCONN                    0
 	#define LWIP_SOCKET                     0
@@ -90,6 +89,7 @@
 
 #endif	/* WITHISBOOTLOADER */
 
+#define UDP_TTL 64
 #define ETH_PAD_SIZE                    0
 
 #define LWIP_RAM_HEAP_POINTER		lwipBuffer
@@ -117,8 +117,8 @@ typedef unsigned sys_prot_t;
 #define LWIP_DEBUG             1
 #define LWIP_DBG_MIN_LEVEL     LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON      (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
-#define ETHARP_DEBUG           LWIP_DBG_ON
-#define NETIF_DEBUG            LWIP_DBG_ON
+//#define ETHARP_DEBUG           LWIP_DBG_ON
+//#define NETIF_DEBUG            LWIP_DBG_ON
 //#define PBUF_DEBUG             LWIP_DBG_ON
 #define API_LIB_DEBUG          LWIP_DBG_ON
 #define API_MSG_DEBUG          LWIP_DBG_ON
@@ -133,15 +133,15 @@ typedef unsigned sys_prot_t;
 #define MEMP_DEBUG             LWIP_DBG_ON
 #define SYS_DEBUG              LWIP_DBG_ON
 #define TIMERS_DEBUG           LWIP_DBG_ON
-#define TCP_DEBUG              LWIP_DBG_ON
-#define TCP_INPUT_DEBUG        LWIP_DBG_ON
-#define TCP_FR_DEBUG           LWIP_DBG_ON
-#define TCP_RTO_DEBUG          LWIP_DBG_ON
-#define TCP_CWND_DEBUG         LWIP_DBG_ON
-#define TCP_WND_DEBUG          LWIP_DBG_ON
-#define TCP_OUTPUT_DEBUG       LWIP_DBG_ON
-#define TCP_RST_DEBUG          LWIP_DBG_ON
-#define TCP_QLEN_DEBUG         LWIP_DBG_ON
+//#define TCP_DEBUG              LWIP_DBG_ON
+//#define TCP_INPUT_DEBUG        LWIP_DBG_ON
+//#define TCP_FR_DEBUG           LWIP_DBG_ON
+//#define TCP_RTO_DEBUG          LWIP_DBG_ON
+//#define TCP_CWND_DEBUG         LWIP_DBG_ON
+//#define TCP_WND_DEBUG          LWIP_DBG_ON
+//#define TCP_OUTPUT_DEBUG       LWIP_DBG_ON
+//#define TCP_RST_DEBUG          LWIP_DBG_ON
+//#define TCP_QLEN_DEBUG         LWIP_DBG_ON
 #define UDP_DEBUG              LWIP_DBG_ON
 #define TCPIP_DEBUG            LWIP_DBG_ON
 #define SLIP_DEBUG             LWIP_DBG_ON

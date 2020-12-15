@@ -96,5 +96,18 @@ void openvg_next(unsigned page)
 	OpenVGRI::ctx.setDefaultDrawable(OpenVGRI::d0 [page]);
 
 }
+#else /* WITHOPENVG */
+
+void openvg_init(PACKEDCOLORMAIN_T * const * frames)
+{
+}
+
+void openvg_deinit(void)
+{
+}
+
+void openvg_next(unsigned page)
+{
+}
 
 #endif /* WITHOPENVG */
