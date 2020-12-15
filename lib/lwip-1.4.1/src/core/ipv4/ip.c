@@ -735,7 +735,7 @@ err_t ip_output_if_opt(struct pbuf *p, ip_addr_t *src, ip_addr_t *dest,
 #if CHECKSUM_GEN_IP_INLINE
     chk_sum += iphdr->_len;
 #endif /* CHECKSUM_GEN_IP_INLINE */
-    IPH_OFFSET_SET(iphdr, htons(IP_DF));	/* by ua1arn */
+    IPH_OFFSET_SET(iphdr, 0);
     IPH_ID_SET(iphdr, htons(ip_id));
 #if CHECKSUM_GEN_IP_INLINE
     chk_sum += iphdr->_id;
