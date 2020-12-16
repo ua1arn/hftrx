@@ -1615,12 +1615,14 @@ static RAMFUNC void spool_elkeyinputsbundle(void)
 
 
 static LIST_ENTRY tickers;
-static unsigned nowtick;
+static LIST_ENTRY adcdones;
+//static unsigned nowtick;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
 {
 	p->period = nticks;
-	p->fired = nowtick;
+	//p->fired = nowtick;
+	p->ticks = 0;
 	p->cb = cb;
 	p->ctx = ctx;
 	InsertHeadList(& tickers, & p->item);
@@ -1629,43 +1631,42 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 static void tickers_spool(void)
 {
 
-	++ nowtick;
+	//++ nowtick;
 	PLIST_ENTRY t;
 	for (t = tickers.Blink; t != & tickers; t = t->Blink)
 	{
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
 	
-		if (1)//(p->next <= nowtick)
+		//if (p->next <= nowtick)
+		if (++ p->ticks >= p->period)
 		{
-			p->fired = nowtick;
+			//p->fired = nowtick;
+			p->ticks = 0;
 			if (p->cb != NULL)
 				(p->cb)(p->ctx);
 		}
 	}
 }
 
-#if 0//WITHLWIP
-	#include "lwip/sys.h"
-	#include "lwip/timeouts.h"
-#endif /* WITHLWIP */
-
-
-static uint32_t sys_now_counter;
-
-/* прототип в lwip/sys.h
- *
- */
-/**
- * @ingroup sys_time
- * Returns the current time in milliseconds,
- * may be the same as sys_jiffies or at least based on it.
- * Don't care for wraparound, this is only used for time diffs.
- * Not implementing this function means you cannot use some modules (e.g. TCP
- * timestamps, internal timeouts for NO_SYS==1).
- */
-uint32_t sys_now(void)
+void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx)
 {
-	return sys_now_counter;
+	p->cb = cb;
+	p->ctx = ctx;
+	InsertHeadList(& adcdones, & p->item);
+}
+
+static void adcdones_spool(void)
+{
+
+	//++ nowtick;
+	PLIST_ENTRY t;
+	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
+	{
+		adcdone_t * const p = CONTAINING_RECORD(t, adcdone_t, item);
+
+		if (p->cb != NULL)
+			(p->cb)(p->ctx);
+	}
 }
 
 /* Машинно-независимый обработчик прерываний. */
@@ -1673,24 +1674,11 @@ uint32_t sys_now(void)
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 static RAMFUNC void spool_systimerbundle1(void)
 {
-	static uint_fast16_t spool_1stickcount;
 	//beacon_255();
 
-	sys_now_counter += (1000 / TICKS_FREQUENCY);
-#if 0//WITHLWIP
-    sys_check_timeouts();
-#endif /* WITHLWIP */
+	//sys_now_counter += (1000 / TICKS_FREQUENCY);
 
-	enum { TICKS1000MS = NTICKS(1000) };
 	//spool_lfm();
-	display_spool();	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
-	// Формирование секундного прерывания
-	if (++ spool_1stickcount >= TICKS1000MS)
-	{
-		spool_1stickcount = 0;
-		spool_secound();
-	}
-
 	tickers_spool();
 }
 
@@ -1720,13 +1708,9 @@ static RAMFUNC void spool_systimerbundle2(void)
 
 #if WITHKEYBOARD
 #if ! KEYBOARD_USE_ADC
-	kbd_spool();	//
+	kbd_spool(NULL);	//
 #endif /* ! KEYBOARD_USE_ADC */
 #endif /* WITHKEYBOARD */
-
-#if ! WITHCPUADCHW
-	board_adc_filtering();
-#endif /* ! WITHCPUADCHW */
 
 #if WITHCPUADCHW
 	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
@@ -1739,17 +1723,10 @@ static RAMFUNC void spool_systimerbundle2(void)
 	Вызывается с периодом 1/TIMETICKS по окончании получения данных всех каналов АЦП,
 	перечисленных в таблице adcinputs.
 */
+
 static RAMFUNC void spool_adcdonebundle(void)
 {
-	board_adc_filtering();
-#if WITHTX && WITHVOX
-	vox_probe(board_getvox(), board_getavox());
-#endif /* WITHTX && WITHVOX */
-#if WITHKEYBOARD
-#if KEYBOARD_USE_ADC
-	kbd_spool();	// 
-#endif /* KEYBOARD_USE_ADC */
-#endif /* WITHKEYBOARD */
+	adcdones_spool();
 }
 #endif /* WITHCPUADCHW */
 
@@ -2438,8 +2415,12 @@ hardware_getshutdown(void)
 void 
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
+	static ticker_t ticker_1S;
+
 	InitializeListHead(& tickers);
+	ticker_initialize(& ticker_1S, NTICKS(1000), spool_secound, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	
+
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	SysTick_Config(calcdivround_systick(ticksfreq));	// Call SysTick_Handler
@@ -3203,6 +3184,7 @@ build_adc_mask(void)
 void hardware_adc_initialize(void)
 {
 	//PRINTF(PSTR("hardware_adc_initialize\n"));
+	InitializeListHead(& adcdones);		// регистрируются обработчики конца преобразвания АЦП
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 

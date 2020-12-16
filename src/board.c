@@ -8518,9 +8518,11 @@ adcvalholder_t filter_hyst(
 }
 						   
 // Функция вызывается из обработчика прерывания после получения значения от последнего канала АЦП
-void board_adc_filtering(void)
+static void board_adc_filtering(void * ctx)
 {
 	uint_fast8_t i;
+
+	(void) ctx;
 
 	for (i = 0; i < sizeof badcst / sizeof badcst [0]; ++ i)
 	{
@@ -8556,6 +8558,16 @@ void board_adc_filtering(void)
 static void
 adcfilters_initialize(void)
 {
+	static adcdone_t adcevent;
+
+	// вызов board_adc_filtering() по заверщению цикла АЦП
+	adcdone_initialize(& adcevent, board_adc_filtering, NULL);
+
+
+//#if ! WITHCPUADCHW
+//	board_adc_filtering();
+//#endif /* ! WITHCPUADCHW */
+
 	#if WITHBARS && ! WITHINTEGRATEDDSP
 		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */

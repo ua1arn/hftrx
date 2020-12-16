@@ -10608,8 +10608,8 @@ static volatile uint_fast8_t counterupdatewpm;
 	обновлению режимов работы
 	Вызывается из обработчика таймерного прерывания
 */
-void 
-display_spool(void)
+static void
+display_spool(void * ctx)
 {
 	#if 0 //WITHNMEA
 	// таймер обновления часов/минут/секунд
@@ -13331,8 +13331,10 @@ uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 }
 
 /* Вызывается из обработчика прерываний раз в секунду */
-void spool_secound(void)
+void spool_secound(void * ctx)
 {
+	(void) ctx;	// приходит NULL
+
 	board_dpc(dpc_1stimer, NULL);
 #if WITHTOUCHGUI
 	board_dpc(gui_update, NULL);
@@ -18848,9 +18850,13 @@ lowinitialize(void)
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 	display_hardware_initialize();
 
+	static ticker_t displayticker;
+
 	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
 	// Инициализация таймера и списка регистрирумых обработчиков
 	hardware_timer_initialize(TICKS_FREQUENCY);
+	ticker_initialize(& displayticker, 1, display_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
 
 #if WITHUSBHW

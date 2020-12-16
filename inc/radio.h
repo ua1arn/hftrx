@@ -500,7 +500,6 @@ void hardware_lfm_timer_initialize(void);
 void vox_initialize(void);
 void vox_enable(uint_fast8_t voxstate, uint_fast8_t vox_delay_tens);	/* разрешение (не-0) или запрещение (0) работы vox. */
 void vox_set_levels(uint_fast8_t level, uint_fast8_t alevel);	/* установить уровень срабатывания vox и anti-vox */
-void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel);		/* предъявить для проверки отдетектированный уровень сигнала и anti-vox */
 
 void seq_set_bkin_enable(uint_fast8_t bkinstate, uint_fast8_t bkin_delay_tens);	/* разрешение (не-0) или запрещение (0) работы параметры BREAK-IN. */
 void seq_set_cw_enable(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) работы qsk. означает работу CW */

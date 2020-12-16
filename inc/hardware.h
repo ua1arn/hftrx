@@ -535,11 +535,7 @@ void hardware_adc_initialize(void);
 ///* все возможные в данной конфигурации фильтры */
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
-// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-void kbd_spool(void);
-void display_spool(void);	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
-
-void spool_secound(void);		// вызывается раз в секунду из таймерного прерывания.
+void spool_secound(void * ctx);		// вызывается раз в секунду из таймерного прерывания.
 
 void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
 
@@ -815,16 +811,25 @@ uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3); 
 
 #include "list.h"
 
-typedef struct ticker
+typedef struct ticker_tag
 {
 	LIST_ENTRY item;
 	unsigned period;
-	unsigned fired;
+	//unsigned fired;
+	unsigned ticks;		// текущее количество тиков
 	void (* cb)(void *);
 	void * ctx;
 } ticker_t;
 
+typedef struct adcdone_tag
+{
+	LIST_ENTRY item;
+	void (* cb)(void *);
+	void * ctx;
+} adcdone_t;
+
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
+void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_detach(uintptr_t ip);

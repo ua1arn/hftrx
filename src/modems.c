@@ -511,6 +511,7 @@ uint_fast8_t modem_getnextbit(
 }
 
 static ticker_t modemticker;
+static ticker_t modemticker1S;
 
 /* вызывается при разрешённых прерываниях. */
 void modem_initialze(void)
@@ -542,9 +543,10 @@ void modem_initialze(void)
 	ownaddressbuff [0x0B] = uidbase [2] >> 0;
 #endif
 
+	ticker_initialize(& modemticker1S, NTICKS(1000), modem_spool_1S, NULL);	// вызывается с частотой 1 герц
 	ticker_initialize(& modemticker, 1, modem_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 }
-
+modem_spool_1S
 
 enum nmeaparser_states
 {
@@ -658,7 +660,6 @@ static size_t nmeaparser_sendbin_buffer(int index, const uint8_t * databuff, siz
 	return pos;
 }
 
-static unsigned ticks;
 static unsigned volatile rxerrchar;
 
 static int numvolts1(int val)	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
@@ -699,64 +700,62 @@ isownaddressmatch(
 #endif /* CTLREGMODE_STORCH_V4 */
 }
 
+static void modem_spool_1S(void * ctx)
+{
+	static unsigned seq;
+
+	char buff [100];
+#if CTLREGMODE_STORCH_V4
+	// new version
+	// $GPMDR,2,160550000,30000,13.4,+1.55,75,003E003A3234510D37343138,NN*HH
+	const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
+	const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
+	const int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер, может быть отрицательным
+	const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+		PSTR("$GPMDR,"
+		"%ld,"	// type of information
+		"%ld,"	// freq
+		"%ld,"	// baudrate * 100
+		"%d.%d,"	// voltage
+		"%+d.%02d,"	// current
+		"%d,"	// mastermode
+		"%08lX%08lX%08lX,"	// uid
+		"%u,"	// buff0
+		"%u,"	// buff1
+		"%d*"),
+		2L,
+		(long) hamradio_get_freq_rx(),
+		(long) hamradio_get_modem_baudrate100(),
+		numvolts1(volt), numvolts01(volt),
+		numamps1(drain), numamps001(drain),
+		mastermode != 0,
+		(unsigned long) uidbase [0], (unsigned long) uidbase [1], (unsigned long) uidbase [2],
+		modem_getbuffsize(0),
+		modem_getbuffsize(1),
+		seq ++
+		);
+#else /* CTLREGMODE_STORCH_V4 */
+	// ADACTA version
+	const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0],
+		PSTR("$GPMDR,%ld,%ld,%u,%u,%d,%d*"),
+		2L,
+		(long) hamradio_get_freq_rx(),
+		(int) seq ++,
+		(int) rxerrchar,
+		(int) hamradio_get_tx(),
+		(int) modem_rx_state
+		);
+#endif /* CTLREGMODE_STORCH_V4 */
+	unsigned xorv = calcxorv(buff + 1, len - 1);
+	const size_t len2 = local_snprintf_P(buff + len, sizeof buff / sizeof buff [0] - len, PSTR("%02X\r\n"), xorv);
+	qput(0xff);
+	qputs(buff, len + len2);
+}
+
 static void modem_spool(void * ctx)
 {
 	size_t len;
 	uint8_t * buff;
-	enum { NTS = NTICKS(1000) };
-
-	if (++ ticks >= NTS)
-	{
-		ticks = 0;
-		static unsigned seq;
-
-		char buff [100];
-#if CTLREGMODE_STORCH_V4
-		// new version
-		// $GPMDR,2,160550000,30000,13.4,+1.55,75,003E003A3234510D37343138,NN*HH
-		const uint32_t * const uidbase = (const uint32_t *) UID_BASE;
-		const uint_fast8_t volt = hamradio_get_volt_value();	// Напряжение в сотнях милливольт т.е. 151 = 15.1 вольта
-		const int_fast16_t drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер, может быть отрицательным
-		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-			PSTR("$GPMDR,"
-			"%ld,"	// type of information
-			"%ld,"	// freq
-			"%ld,"	// baudrate * 100
-			"%d.%d,"	// voltage
-			"%+d.%02d,"	// current
-			"%d,"	// mastermode
-			"%08lX%08lX%08lX,"	// uid
-			"%u,"	// buff0
-			"%u,"	// buff1
-			"%d*"),  
-			2L, 
-			(long) hamradio_get_freq_rx(), 
-			(long) hamradio_get_modem_baudrate100(), 
-			numvolts1(volt), numvolts01(volt),
-			numamps1(drain), numamps001(drain),
-			mastermode != 0,
-			(unsigned long) uidbase [0], (unsigned long) uidbase [1], (unsigned long) uidbase [2], 
-			modem_getbuffsize(0),
-			modem_getbuffsize(1),
-			seq ++
-			);
-#else /* CTLREGMODE_STORCH_V4 */
-		// ADACTA version
-		const size_t len = local_snprintf_P(buff, sizeof buff / sizeof buff [0], 
-			PSTR("$GPMDR,%ld,%ld,%u,%u,%d,%d*"),  
-			2L, 
-			(long) hamradio_get_freq_rx(), 
-			(int) seq ++,
-			(int) rxerrchar,
-			(int) hamradio_get_tx(),
-			(int) modem_rx_state
-			);
-#endif /* CTLREGMODE_STORCH_V4 */
-		unsigned xorv = calcxorv(buff + 1, len - 1);
-		const size_t len2 = local_snprintf_P(buff + len, sizeof buff / sizeof buff [0] - len, PSTR("%02X\r\n"), xorv);
-		qput(0xff);
-		qputs(buff, len + len2);
-	}
 	
 	len = takemodemrxbuffer(& buff);
 	if (buff != NULL)

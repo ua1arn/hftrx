@@ -14,6 +14,7 @@
 #include "spi.h"
 
 static ticker_t seqticker;
+static adcdone_t voxoribet;
 
 #if WITHTX
 
@@ -156,7 +157,7 @@ static int vscale(uint_fast8_t v, uint_fast8_t mag)
  
 /* предъявить для проверки детектированный уровень сигнала и anti-vox */
 // Вызывается при запрещённых прерываниях.
-void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel)
+static void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel)
 {
 	// vlevel, alevel - значение 0..UINT8_MAX
 	if ((vscale(vlevel, vox_level) - vscale(alevel, avox_level) >= 16))
@@ -563,11 +564,21 @@ void seq_set_rxtxdelay(
 	}
 }
 
+static void vox_spool(void * ctx)
+{
+	(void) ctx;
+#if WITHTX && WITHVOX
+	vox_probe(board_getvox(), board_getavox());
+#endif /* WITHTX && WITHVOX */
+}
 
 /* инициализация сиквенсора и телеграфного ключа. Выполняется при запрещённых прерываниях. */
 void seq_initialize(void)
 {
 	ticker_initialize(& seqticker, 1, seq_spool_ticks, NULL);
+#if WITHTX && WITHVOX
+	adcdone_initialize(& voxoribet, vox_spool, NULL);
+#endif /* WITHTX && WITHVOX */
 
 	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи
 
