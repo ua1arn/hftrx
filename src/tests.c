@@ -6084,9 +6084,8 @@ void hightests(void)
 			}
 
 			rendertiger(tiger, DIM_X, DIM_Y);
-			display_nextfb();
 			rendertest2(DIM_X, DIM_Y);
-			display_nextfb();
+			display_flush();		// наблюдаем процесс
 		}
 		PS_destruct(tiger);
 
