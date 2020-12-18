@@ -6064,12 +6064,12 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
-#if 1 && WITHOPENVG
+#if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
 		//disableAllIRQs();
-	#if 0
+	#if 1
 
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		ASSERT(tiger != NULL);
