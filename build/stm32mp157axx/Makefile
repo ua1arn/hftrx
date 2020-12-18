@@ -33,6 +33,8 @@ LWIPDIR = ../../src/lwip-1.4.1
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = ../../src/OpenVG
 
+OBJDIR2 = obj
+OBJDIR = ./$(OBJDIR2)
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
@@ -40,36 +42,20 @@ CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
 #CORE += -mfpu=vfpv4-d16
-CORE += -mfpu=neon
+CORE += -mfpu=neon-vfpv4
 #CORE += -mlong-calls
 
 # Define optimisation level here
 # ony -Og for app
-
-ifeq "1" "1"
 # Application
-OPT = -Og
-#OPT = -Ofast
-#LTO = -flto
-OBJDIR2 = obj_app
-UDEFS += -D"WITHSMPSYSTEM"
-UADEFS += -D"WITHSMPSYSTEM"
-LDSCRIPT = ./stm32mp15xx_ca7_app.ld
-else
-# Bootloader
-OPT = -Os
+#OPT = -Og
+OPT = -Ofast
 LTO = -flto
-
-OBJDIR2 = obj_boot
-UDEFS += -D"WITHISBOOTLOADER"
-UADEFS += -D"WITHISBOOTLOADER"
-LDSCRIPT = ./stm32mp15xx_ca7_boot.ld
-endif
-
-OBJDIR = ./$(OBJDIR2)
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
+
+UADEFS += -D"WITHSMPSYSTEM"
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
