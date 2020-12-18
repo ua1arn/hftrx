@@ -147,7 +147,7 @@ err_t            tcp_process_refused_data(struct tcp_pcb *pcb);
 #define  TCP_KEEPCNT_DEFAULT      9U        /* Default Counter for KEEPALIVE probes */
 #endif
 
-#define  TCP_MAXIDLE              TCP_KEEPCNT_DEFAULT * TCP_KEEPINTVL_DEFAULT  /* Maximum KEEPALIVE probe time */
+#define  TCP_MAXIDLE              (TCP_KEEPCNT_DEFAULT * TCP_KEEPINTVL_DEFAULT)  /* Maximum KEEPALIVE probe time */
 
 /* Fields are (of course) in network byte order.
  * Some fields are converted to host byte order in tcp_input().
