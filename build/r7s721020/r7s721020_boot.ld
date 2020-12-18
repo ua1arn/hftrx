@@ -169,16 +169,11 @@ SECTIONS
 
 	.noinit :
 	{
-		. = ALIGN(32);
+		. = ALIGN(64);
 		KEEP(*(.noinit*))
-		. = ALIGN(32);
-	} > RAM
-
-	.vram :
-	{
-		. = ALIGN(32);
+		. = ALIGN(64);
 		KEEP(*(.framebuff*))
-		. = ALIGN(32);
+		. = ALIGN(64);
 	} > RAM
 
 	.heap (COPY):

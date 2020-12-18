@@ -25,8 +25,8 @@ GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
 #COMPUTEDIR = ../../../ComputeLibrary
 # Add to includes
