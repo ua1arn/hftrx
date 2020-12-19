@@ -99,6 +99,10 @@ static err_t netif_init_cb(struct netif *netif)
 {
 	//PRINTF("cdc eem netif_init_cb\n");
 	LWIP_ASSERT("netif != NULL", (netif != NULL));
+#if LWIP_NETIF_HOSTNAME
+	/* Initialize interface hostname */
+	netif->hostname = "storch";
+#endif /* LWIP_NETIF_HOSTNAME */
 	netif->mtu = RNDIS_MTU;
 	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
 	netif->state = NULL;

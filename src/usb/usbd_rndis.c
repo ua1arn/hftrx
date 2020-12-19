@@ -63,84 +63,6 @@ static int rndis_can_send(void);
 static int rndis_send(const void *data, int size);
 
 
-static struct netif rndis_netif_data;
-
-
-/**
- * This function should do the actual transmission of the packet. The packet is
- * contained in the pbuf that is passed to the function. This pbuf
- * might be chained.
- *
- * @param netif the lwip network interface structure for this ethernetif
- * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
- * @return ERR_OK if the packet could be sent
- *         an err_t value if the packet couldn't be sent
- *
- * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
- *       strange results. You might consider waiting for space in the DMA queue
- *       to become availale since the stack doesn't retry to send a packet
- *       dropped because of memory failure (except for the TCP timers).
- */
-
-// Transceiving Ethernet packets
-static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
-{
-	//PRINTF("rndis_linkoutput_fn\n");
-    int i;
-    struct pbuf *q;
-    static char data[RNDIS_MTU + 14 + 4];
-    int size = 0;
-
-    for (i = 0; i < 200; i++)
-    {
-        if (rndis_can_send()) break;
-        local_delay_ms(1);
-    }
-
-    if (!rndis_can_send())
-        return ERR_MEM;
-
-    size = pbuf_copy_partial(p, data, sizeof data, 0);
-
-    rndis_send(data, size);
-
-    return ERR_OK;
-}
-
-
-static err_t rndis_output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
-{
-	err_t e = etharp_output(netif, p, ipaddr);
-	if (e == ERR_OK)
-	{
-		// добавляем свои заголовки требуеющиеся для физического уповня
-
-	}
-	return e;
-}
-
-static err_t netif_init_cb(struct netif *netif)
-{
-	PRINTF("rndis netif_init_cb\n");
-	LWIP_ASSERT("netif != NULL", (netif != NULL));
-	netif->mtu = RNDIS_MTU;
-	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
-	netif->state = NULL;
-	netif->name[0] = 'E';
-	netif->name[1] = 'X';
-	netif->output = rndis_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
-												// и слкдующий callback linkoutput не требовался бы вообще
-	netif->linkoutput = rndis_linkoutput_fn;	// используется внутри etharp_output
-	return ERR_OK;
-}
-/*
-TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
-{
-  tcp_tmr();
-}
-*/
-
-
 typedef struct rndisbuf_tag
 {
 	LIST_ENTRY item;
@@ -225,14 +147,16 @@ static void on_packet(const uint8_t *data, int size)
 	if (rndis_buffers_alloc(& p) != 0)
 	{
 		struct pbuf *frame;
-		frame = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
+		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
 		if (frame == NULL)
 		{
 			TP();
 			rndis_buffers_release(p);
 			return;
 		}
+		pbuf_header(frame, - ETH_PAD_SIZE);
 		err_t e = pbuf_take(frame, data, size);
+		pbuf_header(frame, + ETH_PAD_SIZE);
 		if (e == ERR_OK)
 		{
 			p->frame = frame;
@@ -249,29 +173,99 @@ static void on_packet(const uint8_t *data, int size)
 
 
 
-// Receiving Ethernet packets
-// user-mode function
-void usb_polling(void)
+static struct netif rndis_netif_data;
+
+
+/**
+ * This function should do the actual transmission of the packet. The packet is
+ * contained in the pbuf that is passed to the function. This pbuf
+ * might be chained.
+ *
+ * @param netif the lwip network interface structure for this ethernetif
+ * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
+ * @return ERR_OK if the packet could be sent
+ *         an err_t value if the packet couldn't be sent
+ *
+ * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
+ *       strange results. You might consider waiting for space in the DMA queue
+ *       to become availale since the stack doesn't retry to send a packet
+ *       dropped because of memory failure (except for the TCP timers).
+ */
+
+// Transceiving Ethernet packets
+static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	rndisbuf_t * p;
-	if (rndis_buffers_ready_user(& p) != 0)
-	{
-		struct pbuf *frame = p->frame;
-		rndis_buffers_release_user(p);
+	//PRINTF("rndis_linkoutput_fn\n");
+    int i;
+    struct pbuf *q;
+    static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
+    int size = 0;
 
-		err_t e = ethernet_input(frame, & rndis_netif_data);
-		if (e != ERR_OK)
-		{
-			  /* This means the pbuf is freed or consumed,
-			     so the caller doesn't have to free it again */
-		}
+    for (i = 0; i < 200; i++)
+    {
+        if (rndis_can_send()) break;
+        local_delay_ms(1);
+    }
 
-	}
+    if (!rndis_can_send())
+    {
+		pbuf_free(p);
+		return ERR_MEM;
+    }
+
+    size = pbuf_copy_partial(p, data, sizeof data, 0);
+
+    rndis_send(data, size);
+
+    return ERR_OK;
 }
 
-struct netif  * getNetifData(void)
+
+static err_t rndis_output_fn(struct netif *netif, struct pbuf *q, ip_addr_t *ipaddr)
 {
-	return &rndis_netif_data;
+	err_t e = etharp_output(netif, q, ipaddr);
+	if (e == ERR_OK)
+	{
+#if 0
+		rndis_data_packet_t * hdr;
+		unsigned size = q->len;
+		// добавляем свои заголовки требуеющиеся для физического уповня
+		  /* make room for RNDIS header - should not fail */
+		  if (pbuf_header(q, RNDIS_HEADER_SIZE) != 0) {
+		    /* bail out */
+		    LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
+		      ("rndis_output_fn: could not allocate room for header.\n"));
+		    return ERR_BUF;
+		  }
+
+		  hdr = (rndis_data_packet_t *) q->payload;
+		  memset(hdr, 0, RNDIS_HEADER_SIZE);
+		  hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
+		  hdr->MessageLength = RNDIS_HEADER_SIZE + size;
+		  hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
+		  hdr->DataLength = size;
+#endif
+	}
+	return e;
+}
+
+static err_t netif_init_cb(struct netif *netif)
+{
+	PRINTF("rndis netif_init_cb\n");
+	LWIP_ASSERT("netif != NULL", (netif != NULL));
+#if LWIP_NETIF_HOSTNAME
+	/* Initialize interface hostname */
+	netif->hostname = "storch";
+#endif /* LWIP_NETIF_HOSTNAME */
+	netif->mtu = RNDIS_MTU;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->state = NULL;
+	netif->name[0] = 'E';
+	netif->name[1] = 'X';
+	netif->output = rndis_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
+												// и слкдующий callback linkoutput не требовался бы вообще
+	netif->linkoutput = rndis_linkoutput_fn;	// используется внутри etharp_output
+	return ERR_OK;
 }
 
 void init_netif(void)
@@ -300,6 +294,38 @@ void init_netif(void)
 		;
 
 	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
+}
+/*
+TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
+{
+  tcp_tmr();
+}
+*/
+
+
+// Receiving Ethernet packets
+// user-mode function
+void usb_polling(void)
+{
+	rndisbuf_t * p;
+	if (rndis_buffers_ready_user(& p) != 0)
+	{
+		struct pbuf *frame = p->frame;
+		rndis_buffers_release_user(p);
+
+		err_t e = ethernet_input(frame, & rndis_netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+	}
+}
+
+struct netif  * getNetifData(void)
+{
+	return &rndis_netif_data;
 }
 
 static void USBD_RNDIS_ColdInit(void)
@@ -457,7 +483,7 @@ static uint16_t rndis_rx_size(void)
 
 static int rndis_tx_start(uint8_t *data, uint16_t size)
 {
-	unsigned sended;
+	unsigned laststxended;
 	static uint8_t first [USBD_RNDIS_IN_BUFSIZE];
 	rndis_data_packet_t *hdr;
 
@@ -480,12 +506,12 @@ static int rndis_tx_start(uint8_t *data, uint16_t size)
   hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
   hdr->DataLength = size;
 
-  sended = USBD_RNDIS_IN_BUFSIZE - RNDIS_HEADER_SIZE;
-  if (sended > size)
-    sended = size;
-  memcpy(first + RNDIS_HEADER_SIZE, data, sended);
-  rndis_tx_ptr += sended;
-  rndis_tx_data_size -= sended;
+  laststxended = USBD_RNDIS_IN_BUFSIZE - RNDIS_HEADER_SIZE;
+  if (laststxended > size)
+    laststxended = size;
+  memcpy(first + RNDIS_HEADER_SIZE, data, laststxended);
+  rndis_tx_ptr += laststxended;
+  rndis_tx_data_size -= laststxended;
 
 
   //http://habrahabr.ru/post/248729/
@@ -787,13 +813,13 @@ static void rndis_handle_set_msg(void  *pdev)
 	return;
 }
 
-static int sended = 0;
+static int laststxended = 0;
 
 static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 {
 	hold_pDev = pdev;
 	  ASSERT(hold_pDev != NULL);
-	if (sended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0)
+	if (laststxended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0)
 		return USBD_OK;
 	if (rndis_first_tx)
 	{
@@ -807,15 +833,15 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 		hdr->DataOffset = sizeof(rndis_data_packet_t) - offsetof(rndis_data_packet_t, DataOffset);
 		hdr->DataLength = rndis_tx_size;
 
-		sended = USBD_RNDIS_IN_BUFSIZE - sizeof(rndis_data_packet_t);
-		if (sended > rndis_tx_size) sended = rndis_tx_size;
-		memcpy(first + sizeof(rndis_data_packet_t), rndis_tx_ptr, sended);
+		laststxended = USBD_RNDIS_IN_BUFSIZE - sizeof(rndis_data_packet_t);
+		if (laststxended > rndis_tx_size) laststxended = rndis_tx_size;
+		memcpy(first + sizeof(rndis_data_packet_t), rndis_tx_ptr, laststxended);
 
 		  ASSERT(hold_pDev != NULL);
 		USBD_LL_Transmit(hold_pDev,
 						USBD_EP_RNDIS_IN,
 						(uint8_t *)&first,
-						sizeof(rndis_data_packet_t) + sended);
+						sizeof(rndis_data_packet_t) + laststxended);
 	}
 	else
 	{
@@ -827,7 +853,7 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 						USBD_EP_RNDIS_IN,
 						rndis_tx_ptr,
 						n);
-		sended = n;
+		laststxended = n;
 	}
 	return USBD_OK;
 }
@@ -915,17 +941,17 @@ static USBD_StatusTypeDef usbd_rndis_data_in(USBD_HandleTypeDef*pdev, uint_fast8
 	if (epnum == (USBD_EP_RNDIS_IN & 0x0F))
 	{
 		rndis_first_tx = false;
-		rndis_sended += sended;
-		rndis_tx_size -= sended;
-		rndis_tx_ptr += sended;
-		sended = 0;
+		rndis_sended += laststxended;
+		rndis_tx_size -= laststxended;
+		rndis_tx_ptr += laststxended;
+		laststxended = 0;
 		usbd_cdc_transfer(pdev);
 
 	}
 	return USBD_OK;
 }
 
-static void handle_packet(const uint8_t *data, int size)
+static void handle_rxpacket(const uint8_t *data, int size)
 {
 	rndis_data_packet_t *p;
 	p = (rndis_data_packet_t *)data;
@@ -993,7 +1019,7 @@ static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fas
 				rndis_received += ep->xfer_count;
 				if (ep->xfer_count != USBD_RNDIS_OUT_BUFSIZE)
 				{
-					handle_packet(rndis_rx_buffer, rndis_received);
+					handle_rxpacket(rndis_rx_buffer, rndis_received);
 					rndis_received = 0;
 				}
 			}
@@ -1007,7 +1033,7 @@ static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fas
 		  //	DCD_EP_PrepareRx(pdev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
 	}
   //  PCD_EPTypeDef *ep = &((PCD_HandleTypeDef*)pdev->pData)->OUT_ep[epnum];
-   // handle_packet((rndis_data_packet_t*)rndis_rx_buffer, RNDIS_RX_BUFFER_SIZE - ep->xfer_len - USBD_RNDIS_OUT_BUFSIZE + ep->xfer_count);
+   // handle_rxpacket((rndis_data_packet_t*)rndis_rx_buffer, RNDIS_RX_BUFFER_SIZE - ep->xfer_len - USBD_RNDIS_OUT_BUFSIZE + ep->xfer_count);
   return USBD_OK;
 }
 
