@@ -434,7 +434,7 @@ static USBALIGN_BEGIN uint8_t encapsulated_buffer [ENC_BUF_SIZE] USBALIGN_END;
 
 static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END;
 
-static USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE] USBALIGN_END;
+static uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE];
 static uint_fast16_t rndis_rx_data_size;
 
 static uint16_t rndis_tx_data_size = 0;
@@ -898,12 +898,12 @@ static void handle_rxpacket(const uint8_t *data, int size)
 // Data Channel
 //	https://msdn.microsoft.com/en-us/library/windows/hardware/ff546305(v=vs.85).aspx
 //	https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
+// todo: обработка ZLP
 static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	unsigned xfcount = USBD_LL_GetRxDataSize(pdev, epnum);
-
 	if (epnum == USBD_EP_RNDIS_OUT)
 	{
+		unsigned xfcount = USBD_LL_GetRxDataSize(pdev, epnum);
 		if (rndis_rx_data_size + xfcount > RNDIS_RX_BUFFER_SIZE)
 		{
 			usb_eth_stat.rxbad ++;
@@ -1022,9 +1022,19 @@ static int rndis_send(const void *data, int size)
 }
 
 const USBD_ClassTypeDef USBD_CLASS_RNDIS =
-{ USBD_RNDIS_ColdInit, usbd_rndis_init, usbd_rndis_deinit, usbd_rndis_setup,
-NULL, usbd_rndis_ep0_recv, usbd_rndis_data_in, usbd_rndis_data_out, usbd_rndis_sof, rndis_iso_in_incomplete,
-		rndis_iso_out_incomplete, };
+{
+	USBD_RNDIS_ColdInit,
+	usbd_rndis_init,
+	usbd_rndis_deinit,
+	usbd_rndis_setup,
+	NULL,
+	usbd_rndis_ep0_recv,
+	usbd_rndis_data_in,
+	usbd_rndis_data_out,
+	usbd_rndis_sof,
+	rndis_iso_in_incomplete,
+	rndis_iso_out_incomplete,
+};
 
 #endif /* WITHUSBHW && WITHUSBRNDIS */
 
