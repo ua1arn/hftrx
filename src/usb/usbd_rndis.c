@@ -175,7 +175,6 @@ static void on_packet(const uint8_t *data, int size)
 
 
 static struct netif rndis_netif_data;
-static int rndis_first_tx = 0;
 
 
 /**
@@ -236,7 +235,6 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 	size = pbuf_copy_partial(p, data, sizeof data, 0);
 	//ASSERT((size + RNDIS_HEADER_SIZE) == size1);
 
-	rndis_first_tx = 0;
 
 	rndis_send(data, size);
 
@@ -822,29 +820,6 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 	  ASSERT(hold_pDev != NULL);
 	if (laststxended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0)
 		return USBD_OK;
-	if (rndis_first_tx)
-	{
-		static uint8_t first [USBD_RNDIS_IN_BUFSIZE];
-		rndis_data_packet_t *hdr;
-
-		hdr = (rndis_data_packet_t *)first;
-		memset(hdr, 0, sizeof(rndis_data_packet_t));
-		hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
-		hdr->MessageLength = sizeof(rndis_data_packet_t) + rndis_tx_size;
-		hdr->DataOffset = sizeof(rndis_data_packet_t) - offsetof(rndis_data_packet_t, DataOffset);
-		hdr->DataLength = rndis_tx_size;
-
-		laststxended = USBD_RNDIS_IN_BUFSIZE - sizeof(rndis_data_packet_t);
-		if (laststxended > rndis_tx_size) laststxended = rndis_tx_size;
-		memcpy(first + sizeof(rndis_data_packet_t), rndis_tx_ptr, laststxended);
-
-		  ASSERT(hold_pDev != NULL);
-		USBD_LL_Transmit(hold_pDev,
-						USBD_EP_RNDIS_IN,
-						(uint8_t *)&first,
-						sizeof(rndis_data_packet_t) + laststxended);
-	}
-	else
 	{
 		int n = rndis_tx_size;
 		if (n > USBD_RNDIS_IN_BUFSIZE)
@@ -941,7 +916,6 @@ static USBD_StatusTypeDef usbd_rndis_data_in(USBD_HandleTypeDef*pdev, uint_fast8
 	epnum &= 0x0F;
 	if (epnum == (USBD_EP_RNDIS_IN & 0x0F))
 	{
-		rndis_first_tx = false;
 		rndis_sended += laststxended;
 		rndis_tx_size -= laststxended;
 		rndis_tx_ptr += laststxended;
