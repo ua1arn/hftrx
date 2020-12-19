@@ -143,6 +143,7 @@ static void rndis_buffers_rx(rndisbuf_t * p)
 
 static void on_packet(const uint8_t *data, int size)
 {
+	ASSERT(ETH_PAD_SIZE >= RNDIS_HEADER_SIZE);
 	rndisbuf_t * p;
 	if (rndis_buffers_alloc(& p) != 0)
 	{
@@ -195,6 +196,7 @@ static struct netif rndis_netif_data;
 // Transceiving Ethernet packets
 static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
+	ASSERT(ETH_PAD_SIZE >= RNDIS_HEADER_SIZE);
 	//PRINTF("rndis_linkoutput_fn\n");
     int i;
     struct pbuf *q;
@@ -225,6 +227,7 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 // Transceiving Ethernet packets
 static err_t rndis_linkoutput_fn2(struct netif *netif, struct pbuf *p)
 {
+	ASSERT(ETH_PAD_SIZE >= RNDIS_HEADER_SIZE);
 	//PRINTF("rndis_linkoutput_fn\n");
     int i;
     static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
