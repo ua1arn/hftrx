@@ -105,7 +105,7 @@
 #endif	/* WITHISBOOTLOADER */
 
 #define UDP_TTL 64
-//#define ETH_PAD_SIZE                    16
+#define ETH_PAD_SIZE                    64
 
 #if 0
 	#define LWIP_RAM_HEAP_POINTER		lwipBuffer

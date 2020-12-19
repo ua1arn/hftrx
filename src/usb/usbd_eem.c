@@ -49,25 +49,26 @@ static cdcdeem_rxproc_t cdceem_rxproc = NULL;
 // Transceiving Ethernet packets
 static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
+//	//PRINTF("rndis_linkoutput_fn\n");
 //    int i;
 //    struct pbuf *q;
-//    static char data[RNDIS_MTU + 14 + 4];
+//    static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
 //    int size = 0;
+//
 //    for (i = 0; i < 200; i++)
 //    {
-//        if (cdceem_can_send()) break;
+//        if (rndis_can_send()) break;
 //        local_delay_ms(1);
 //    }
-//    for(q = p; q != NULL; q = q->next)
+//
+//    if (!rndis_can_send())
 //    {
-//        if (size + q->len > RNDIS_MTU + 14)
-//            return ERR_ARG;
-//        memcpy(data + size, (char *)q->payload, q->len);
-//        size += q->len;
+//		pbuf_free(p);
+//		return ERR_MEM;
 //    }
-//    if (!cdceem_can_send())
-//        return ERR_MEM;
-
+//
+//	pbuf_header(p, - ETH_PAD_SIZE);
+//    size = pbuf_copy_partial(p, data, sizeof data, 0);
 //    cdceem_send(data, size);
 
     return ERR_OK;
@@ -80,7 +81,7 @@ static struct netif cdceem_netif_data;
 
 struct netif  * getNetifData(void)
 {
-	return &cdceem_netif_data;
+	return & cdceem_netif_data;
 }
 
 
@@ -199,17 +200,26 @@ static void on_packet(const uint8_t *data, int size)
 	if (cdceem_buffers_alloc(& p) != 0)
 	{
 		struct pbuf *frame;
-		frame = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
+		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
 		if (frame == NULL)
 		{
-			cdceem_buffers_release(p);
+			TP();
+			cdceem_buffers_rx(p);
 			return;
 		}
-		memcpy(frame->payload, data, size);
-		frame->len = size;
-
-		p->frame = frame;
-		cdceem_buffers_rx(p);
+		pbuf_header(frame, - ETH_PAD_SIZE);
+		err_t e = pbuf_take(frame, data, size);
+		pbuf_header(frame, + ETH_PAD_SIZE);
+		if (e == ERR_OK)
+		{
+			p->frame = frame;
+			cdceem_buffers_rx(p);
+		}
+		else
+		{
+			pbuf_free(frame);
+			cdceem_buffers_rx(p);
+		}
 	}
 }
 

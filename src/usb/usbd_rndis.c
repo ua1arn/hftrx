@@ -213,6 +213,7 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 		return ERR_MEM;
     }
 
+	pbuf_header(p, - ETH_PAD_SIZE);
     size = pbuf_copy_partial(p, data, sizeof data, 0);
 
     rndis_send(data, size);
