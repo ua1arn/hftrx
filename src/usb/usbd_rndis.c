@@ -222,31 +222,51 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 }
 
 
+// Transceiving Ethernet packets
+static err_t rndis_linkoutput_fn2(struct netif *netif, struct pbuf *p)
+{
+	//PRINTF("rndis_linkoutput_fn\n");
+    int i;
+    static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
+    int size = 0;
+
+    for (i = 0; i < 200; i++)
+    {
+        if (rndis_can_send()) break;
+        local_delay_ms(1);
+    }
+
+    if (!rndis_can_send())
+    {
+		return ERR_MEM;
+    }
+
+	// добавляем свои заголовки требуеющиеся для физического уповня
+	/* make room for RNDIS header - should not fail */
+	if (pbuf_header(p, - (s16_t) ETH_PAD_SIZE + (s16_t) RNDIS_HEADER_SIZE) != 0) {
+		/* bail out */
+		LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
+		("rndis_output_fn: could not allocate room for header.\n"));
+		return ERR_BUF;
+	}
+
+	rndis_data_packet_t * const hdr = (rndis_data_packet_t *) p->payload;
+	memset(hdr, 0, RNDIS_HEADER_SIZE);
+	hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
+	hdr->MessageLength = p->tot_len;
+	hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
+	hdr->DataLength = p->tot_len - RNDIS_HEADER_SIZE;
+
+	size = pbuf_copy_partial(p, data, sizeof data, 0);
+
+	rndis_send(data, size);
+
+    return ERR_OK;
+}
+
 static err_t rndis_output_fn(struct netif *netif, struct pbuf *q, ip_addr_t *ipaddr)
 {
 	err_t e = etharp_output(netif, q, ipaddr);
-	if (e == ERR_OK)
-	{
-#if 0
-		rndis_data_packet_t * hdr;
-		unsigned size = q->len;
-		// добавляем свои заголовки требуеющиеся для физического уповня
-		  /* make room for RNDIS header - should not fail */
-		  if (pbuf_header(q, RNDIS_HEADER_SIZE) != 0) {
-		    /* bail out */
-		    LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
-		      ("rndis_output_fn: could not allocate room for header.\n"));
-		    return ERR_BUF;
-		  }
-
-		  hdr = (rndis_data_packet_t *) q->payload;
-		  memset(hdr, 0, RNDIS_HEADER_SIZE);
-		  hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
-		  hdr->MessageLength = RNDIS_HEADER_SIZE + size;
-		  hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
-		  hdr->DataLength = size;
-#endif
-	}
 	return e;
 }
 
@@ -437,7 +457,7 @@ static uint32_t oid_packet_filter = 0x0000000;
 static USBALIGN_BEGIN uint8_t encapsulated_buffer [ENC_BUF_SIZE] USBALIGN_END;
 
 static uint16_t rndis_tx_data_size = 0;
-static int rndis_tx_transmitting = false;
+//static int rndis_tx_transmitting = false;
 static int rndis_tx_ZLP = false;
 static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END ;
 static USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_END;
@@ -482,6 +502,7 @@ static uint16_t rndis_rx_size(void)
 {
 }
 
+#if 0
 static int rndis_tx_start(uint8_t *data, uint16_t size)
 {
 	unsigned laststxended;
@@ -529,12 +550,13 @@ static int rndis_tx_start(uint8_t *data, uint16_t size)
 
   return 1;
 }
-
-int rndis_tx_started(void)
+#endif
+/*
+static int rndis_tx_started(void)
 {
   return rndis_tx_transmitting;
 }
-
+*/
 /*__weak */void rndis_tx_ready_cb(void)
 {
 }
@@ -1088,7 +1110,7 @@ int rndis_can_send(void)
 	return f;
 }
 
-int rndis_send(const void *data, int size)
+static int rndis_send(const void *data, int size)
 {
 	ASSERT(data != NULL);
 	ASSERT(hold_pDev != NULL);
