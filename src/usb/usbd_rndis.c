@@ -229,14 +229,14 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 	hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
 	hdr->DataLength = p->tot_len - RNDIS_HEADER_SIZE;
 
-	unsigned size1 = pbuf_copy_partial(p, data, sizeof data, 0);
+	//unsigned size1 = pbuf_copy_partial(p, data, sizeof data, 0);
 
-	VERIFY(0 == pbuf_header(p, - (s16_t) RNDIS_HEADER_SIZE));	// DEBUG
+	//VERIFY(0 == pbuf_header(p, - (s16_t) RNDIS_HEADER_SIZE));	// DEBUG
 
 	size = pbuf_copy_partial(p, data, sizeof data, 0);
-	ASSERT((size + RNDIS_HEADER_SIZE) == size1);
+	//ASSERT((size + RNDIS_HEADER_SIZE) == size1);
 
-	rndis_first_tx = 1;
+	rndis_first_tx = 0;
 
 	rndis_send(data, size);
 
