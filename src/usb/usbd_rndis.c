@@ -52,10 +52,6 @@ static rndis_rxproc_t rndis_rxproc = NULL;
 
 static usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
 
-static int rndis_rx_start(void);
-static uint8_t *rndis_rx_data(void);
-static uint16_t rndis_rx_size(void);
-
 static int rndis_tx_start(uint8_t *data, uint16_t size);
 static int rndis_tx_started(void);
 
@@ -444,104 +440,15 @@ static uint8_t *rndis_tx_ptr = NULL;
 static int rndis_tx_size = 0;
 static int rndis_sended = 0;
 
-static int rndis_rx_start(void)
-{
-  if (rndis_rx_started)
-    return false;
 
-  ASSERT(hold_pDev != NULL);
-  rndis_rx_started = 1;
-  USBD_LL_PrepareReceive(hold_pDev,
-                         USBD_EP_RNDIS_OUT,
-						 usb_rx_buffer,
-						 USBD_RNDIS_OUT_BUFSIZE);
-  return 1;
-}
-
-static uint8_t *rndis_rx_data(void)
-{
-  if (rndis_rx_size())
-    return rndis_rx_buffer + RNDIS_HEADER_SIZE;
-  else
-    return NULL;
-}
-
-static uint16_t rndis_rx_size(void)
-{
-  if (!rndis_rx_started)
-    return rndis_rx_data_size;
-  else
-    return 0;
-}
-
-/* __weak */ void rndis_rx_ready_cb(void)
-{
-}
-
-#if 0
-static int rndis_tx_start(uint8_t *data, uint16_t size)
-{
-	unsigned laststxended;
-	static uint8_t first [USBD_RNDIS_IN_BUFSIZE];
-	rndis_data_packet_t *hdr;
-
-  //if tx buffer is already transfering or has incorrect length
-  if ((rndis_tx_transmitting) || (size > ETH_MAX_PACKET_SIZE) || (size == 0))
-  {
-    usb_eth_stat.txbad++;
-    return false;
-  }
-
-  rndis_tx_transmitting = 1;
-  rndis_tx_ptr = data;
-  rndis_tx_data_size = size;
-
-
-  hdr = (rndis_data_packet_t *)first;
-  memset(hdr, 0, RNDIS_HEADER_SIZE);
-  hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
-  hdr->MessageLength = RNDIS_HEADER_SIZE + size;
-  hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
-  hdr->DataLength = size;
-
-  laststxended = USBD_RNDIS_IN_BUFSIZE - RNDIS_HEADER_SIZE;
-  if (laststxended > size)
-    laststxended = size;
-  memcpy(first + RNDIS_HEADER_SIZE, data, laststxended);
-  rndis_tx_ptr += laststxended;
-  rndis_tx_data_size -= laststxended;
-
-
-  //http://habrahabr.ru/post/248729/
-  if (hdr->MessageLength % USBD_RNDIS_IN_BUFSIZE == 0)
-    rndis_tx_ZLP = 1;
-
-  ASSERT(hold_pDev != NULL);
-  //We should disable USB_OUT(EP3) IRQ, because if IRQ will happens with locked HAL (__HAL_LOCK()
-  //in USBD_LL_Transmit()), the program will fail with big probability
-  USBD_LL_Transmit (hold_pDev,  USBD_EP_RNDIS_IN, first, USBD_RNDIS_IN_BUFSIZE);
-
-  //Increment error counter and then decrement in data_in if OK
-  usb_eth_stat.txbad++;
-
-  return 1;
-}
-#endif
-/*
-static int rndis_tx_started(void)
-{
-  return rndis_tx_transmitting;
-}
-*/
-/*__weak */void rndis_tx_ready_cb(void)
-{
-}
 /*******************************************************************************
                             /API functions
 *******************************************************************************/
 
 static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx)
 {
+	  hold_pDev = pdev;
+	  ASSERT(hold_pDev != NULL);
 
 	USBD_LL_OpenEP(pdev,
 				 USBD_EP_RNDIS_OUT,
@@ -557,15 +464,10 @@ static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef  *pdev, uint_fast8_
 				 USBD_EP_RNDIS_IN,
 				 USBD_EP_TYPE_BULK,
 				 USBD_RNDIS_IN_BUFSIZE);
-  /*
   USBD_LL_PrepareReceive(pdev,
                          USBD_EP_RNDIS_OUT,
                          rndis_rx_buffer,
-                         RNDIS_RX_BUFFER_SIZE);  */
-  hold_pDev = pdev;
-  ASSERT(hold_pDev != NULL);
-
-  rndis_rx_start();
+                         RNDIS_RX_BUFFER_SIZE);
   return USBD_OK;
 }
 
