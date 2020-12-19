@@ -175,6 +175,7 @@ static void on_packet(const uint8_t *data, int size)
 
 
 static struct netif rndis_netif_data;
+static int rndis_first_tx = 0;
 
 
 /**
@@ -192,40 +193,8 @@ static struct netif rndis_netif_data;
  *       to become availale since the stack doesn't retry to send a packet
  *       dropped because of memory failure (except for the TCP timers).
  */
-
 // Transceiving Ethernet packets
 static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
-{
-	ASSERT(ETH_PAD_SIZE >= RNDIS_HEADER_SIZE);
-	//PRINTF("rndis_linkoutput_fn\n");
-    int i;
-    struct pbuf *q;
-    static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
-    int size = 0;
-
-    for (i = 0; i < 200; i++)
-    {
-        if (rndis_can_send()) break;
-        local_delay_ms(1);
-    }
-
-    if (!rndis_can_send())
-    {
-		pbuf_free(p);
-		return ERR_MEM;
-    }
-
-	pbuf_header(p, - ETH_PAD_SIZE);
-    size = pbuf_copy_partial(p, data, sizeof data, 0);
-
-    rndis_send(data, size);
-
-    return ERR_OK;
-}
-
-
-// Transceiving Ethernet packets
-static err_t rndis_linkoutput_fn2(struct netif *netif, struct pbuf *p)
 {
 	ASSERT(ETH_PAD_SIZE >= RNDIS_HEADER_SIZE);
 	//PRINTF("rndis_linkoutput_fn\n");
@@ -260,7 +229,10 @@ static err_t rndis_linkoutput_fn2(struct netif *netif, struct pbuf *p)
 	hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
 	hdr->DataLength = p->tot_len - RNDIS_HEADER_SIZE;
 
+	VERIFY(0 == pbuf_header(p, - (s16_t) RNDIS_HEADER_SIZE));	// DEBUG
+
 	size = pbuf_copy_partial(p, data, sizeof data, 0);
+	rndis_first_tx = 1;
 
 	rndis_send(data, size);
 
@@ -467,7 +439,6 @@ static USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_E
 static uint16_t rndis_rx_data_size = 0;
 static int rndis_rx_started = false;
 static uint8_t *rndis_tx_ptr = NULL;
-static int rndis_first_tx = 1;
 static int rndis_tx_size = 0;
 static int rndis_sended = 0;
 
@@ -1139,7 +1110,6 @@ static int rndis_send(const void *data, int size)
 		}
 
 
-	rndis_first_tx = 1;
 	rndis_tx_ptr = (uint8_t *)data;
 	rndis_tx_size = size;
 	rndis_sended = 0;
