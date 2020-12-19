@@ -144,18 +144,18 @@ static void on_packet(const uint8_t *data, int size)
 	if (rndis_buffers_alloc(& p) != 0)
 	{
 		struct pbuf *frame;
-		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
+		frame = pbuf_alloc(PBUF_RAW, size + (s16_t) ETH_PAD_SIZE - (s16_t) RNDIS_HEADER_SIZE, PBUF_POOL);
 		if (frame == NULL)
 		{
 			TP();
 			rndis_buffers_release(p);
 			return;
 		}
-		pbuf_header(frame, - ETH_PAD_SIZE);
+		pbuf_header(frame, - (s16_t) ETH_PAD_SIZE + (s16_t) RNDIS_HEADER_SIZE);
 		err_t e = pbuf_take(frame, data, size);
-		pbuf_header(frame, + ETH_PAD_SIZE);
 		if (e == ERR_OK)
 		{
+			pbuf_header(frame, + (s16_t) ETH_PAD_SIZE - (s16_t) RNDIS_HEADER_SIZE);
 			p->frame = frame;
 			rndis_buffers_rx(p);
 		}
@@ -164,7 +164,6 @@ static void on_packet(const uint8_t *data, int size)
 			pbuf_free(frame);
 			rndis_buffers_release(p);
 		}
-
 	}
 }
 
@@ -429,13 +428,15 @@ static rndis_state_t rndis_state = rndis_uninitialized;
 static uint32_t oid_packet_filter = 0x0000000;
 static USBALIGN_BEGIN uint8_t encapsulated_buffer [ENC_BUF_SIZE] USBALIGN_END;
 
+static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END ;
+
+static USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_END;
+static uint_fast16_t rndis_rx_data_size;
+
 static uint16_t rndis_tx_data_size = 0;
 //static int rndis_tx_transmitting = false;
 static int rndis_tx_ZLP = false;
-static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END ;
-static USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_END;
-static uint16_t rndis_rx_data_size = 0;
-static int rndis_rx_started = false;
+
 static uint8_t *rndis_tx_ptr = NULL;
 static int rndis_tx_size = 0;
 static int rndis_sended = 0;
@@ -449,6 +450,7 @@ static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef  *pdev, uint_fast8_
 {
 	  hold_pDev = pdev;
 	  ASSERT(hold_pDev != NULL);
+	  rndis_rx_data_size = 0;
 
 	USBD_LL_OpenEP(pdev,
 				 USBD_EP_RNDIS_OUT,
@@ -841,37 +843,7 @@ static void handle_rxpacket(const uint8_t *data, int size)
 	}
 	usb_eth_stat.rxok++;
 	if (rndis_rxproc != NULL)
-		rndis_rxproc(&rndis_rx_buffer[p->DataOffset + offsetof(rndis_data_packet_t, DataOffset)], p->DataLength);
-	/*
-  if (size < RNDIS_HEADER_SIZE)
-  {
-    usb_eth_stat.rxbad++;
-    return;
-  }
-  //To exclude Rx ZLP bug
-  if ((pheader->MessageType != REMOTE_NDIS_PACKET_MSG) ||
-      ((pheader->MessageLength != size) && (pheader->MessageLength != size - 1)))
-  {
-    usb_eth_stat.rxbad++;
-    return;
-  }
-  size = pheader->MessageLength;
-  if (pheader->DataOffset + offsetof(rndis_data_packet_t, DataOffset) + pheader->DataLength != size)
-  {
-    usb_eth_stat.rxbad++;
-    return;
-  }
-  if (!rndis_rx_started)
-  {
-    usb_eth_stat.rxbad++;
-    return;
-  }
-  rndis_rx_data_size = pheader->DataLength;
-  rndis_rx_started = false;
-
-  usb_eth_stat.rxok++;
-  rndis_rx_ready_cb();
-  */
+		rndis_rxproc(rndis_rx_buffer, p->MessageLength);
 }
 
 // Data Channel
@@ -879,38 +851,36 @@ static void handle_rxpacket(const uint8_t *data, int size)
 //	https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	static int rndis_received = 0;
+	unsigned xfcount = USBD_LL_GetRxDataSize(pdev, epnum);
+
 	if (epnum == USBD_EP_RNDIS_OUT)
 	{
-		PCD_EPTypeDef *ep = &(((PCD_HandleTypeDef*)(pdev->pData))->OUT_ep[epnum]);
-		if (rndis_received + ep->xfer_count > RNDIS_RX_BUFFER_SIZE)
+		if (rndis_rx_data_size + xfcount > RNDIS_RX_BUFFER_SIZE)
 		{
 			usb_eth_stat.rxbad++;
-			rndis_received = 0;
+			rndis_rx_data_size = 0;
 		}
 		else
 		{
-			if (rndis_received + ep->xfer_count <= RNDIS_RX_BUFFER_SIZE)
+			if (rndis_rx_data_size + xfcount <= RNDIS_RX_BUFFER_SIZE)
 			{
-				memcpy(&rndis_rx_buffer[rndis_received], usb_rx_buffer, ep->xfer_count);
-				rndis_received += ep->xfer_count;
-				if (ep->xfer_count != USBD_RNDIS_OUT_BUFSIZE)
+				memcpy(&rndis_rx_buffer[rndis_rx_data_size], usb_rx_buffer, xfcount);
+				rndis_rx_data_size += xfcount;
+				if (xfcount != USBD_RNDIS_OUT_BUFSIZE)
 				{
-					handle_rxpacket(rndis_rx_buffer, rndis_received);
-					rndis_received = 0;
+					handle_rxpacket(rndis_rx_buffer, rndis_rx_data_size);
+					rndis_rx_data_size = 0;
 				}
 			}
 			else
 			{
-					rndis_received = 0;
+					rndis_rx_data_size = 0;
 					usb_eth_stat.rxbad++;
 			}
 		}
+
 		USBD_LL_PrepareReceive(hold_pDev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
-		  //	DCD_EP_PrepareRx(pdev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
 	}
-  //  PCD_EPTypeDef *ep = &((PCD_HandleTypeDef*)pdev->pData)->OUT_ep[epnum];
-   // handle_rxpacket((rndis_data_packet_t*)rndis_rx_buffer, RNDIS_RX_BUFFER_SIZE - ep->xfer_len - USBD_RNDIS_OUT_BUFSIZE + ep->xfer_count);
   return USBD_OK;
 }
 
