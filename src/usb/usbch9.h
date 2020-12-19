@@ -279,7 +279,7 @@ enum interfaces_tag
 
 #define INTERFACE_CDCACM_count 2	/* количество интерфейсов в одном CDC - control & data */
 #define INTERFACE_CDCEEM_count 1	/* количество интерфейсов в одном CDC EEM */
-#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC EEM */
+#define INTERFACE_CDCECM_count 2	/* количество интерфейсов в одном CDC ECM */
 #define INTERFACE_HID_count 1	/* количество интерфейсов в одном HID */
 #define INTERFACE_RNDIS_count 2	/* количество интерфейсов в одном RNDIS */
 #define INTERFACE_DFU_count 1	/* количество интерфейсов в одном DFU */

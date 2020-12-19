@@ -37,38 +37,15 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#if WITHISBOOTLOADER
+#if 0//WITHISBOOTLOADER
 	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
 	#define NO_SYS                          1
 	#define LWIP_RAW                        1
 	#define LWIP_NETCONN                    0
 	#define LWIP_SOCKET                     0
-	#define LWIP_DHCP                       0//1
-	#define LWIP_ICMP                       1
-	#define LWIP_UDP                        1
-	//#define LWIP_TCP                        1
-	//#define LWIP_HAVE_SLIPIF				1
-	#define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
-
-	#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
-	#define TCP_SND_BUF                     (2 * TCP_MSS)
-
-	#define ETHARP_SUPPORT_STATIC_ENTRIES   1
-
-	#define LWIP_HTTPD_CGI                  0//1
-	#define LWIP_HTTPD_SSI                  0//1
-	#define LWIP_HTTPD_SSI_INCLUDE_TAG      0
-	#define LWIP_HTTPD_SUPPORT_POST			0//1
-
-	#define LWIP_HTTPD_STRNSTR_PRIVATE		0
-
-#else /* WITHISBOOTLOADER */
-	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
-	#define NO_SYS                          1
-	#define LWIP_RAW                        1
-	#define LWIP_NETCONN                    0
-	#define LWIP_SOCKET                     0
+#if ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED
 	#define LWIP_DHCP                       1
+#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED */
 	#define LWIP_ICMP                       1
 	#define LWIP_UDP                        1
 	#define LWIP_TCP                        1
@@ -80,21 +57,61 @@
 
 	#define ETHARP_SUPPORT_STATIC_ENTRIES   1
 
+#if WITHISBOOTLOADER
+
 	#define LWIP_HTTPD_CGI                  1
 	#define LWIP_HTTPD_SSI                  1
 	#define LWIP_HTTPD_SSI_INCLUDE_TAG      0
 	#define LWIP_HTTPD_SUPPORT_POST			1
 
+#endif
+	#define LWIP_NETIF_LOOPBACK 1
+	#define LWIP_HTTPD_STRNSTR_PRIVATE		0
+
+
+#else /* WITHISBOOTLOADER */
+	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
+	#define NO_SYS                          1
+	#define NO_SYS_NO_TIMERS                1
+	#define LWIP_RAW                        1
+	#define LWIP_NETCONN                    0
+	#define LWIP_SOCKET                     0
+#if 1//ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED
+	#define LWIP_DHCP                       1
+#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED */
+	#define LWIP_ICMP                       1
+	#define LWIP_UDP                        1
+	#define LWIP_TCP                        1
+	//#define LWIP_HAVE_SLIPIF				1
+	#define LWIP_IP_ACCEPT_UDP_PORT(p)      ((p) == PP_NTOHS(67))
+
+	#define TCP_MSS                         (1500 /*mtu*/ - 20 /*iphdr*/ - 20 /*tcphhr*/)
+	#define TCP_SND_BUF                     (2 * TCP_MSS)
+
+	#define ETHARP_SUPPORT_STATIC_ENTRIES   1
+
+#if 1//WITHHTTPUPDATE || WITHISBOOTLOADER
+
+	#define LWIP_HTTPD_CGI                  1
+	#define LWIP_HTTPD_SSI                  1
+	#define LWIP_HTTPD_SSI_INCLUDE_TAG      0
+	#define LWIP_HTTPD_SUPPORT_POST			1
+
+#endif /* WITHHTTPUPDATE || WITHISBOOTLOADER */
+
+	//#define LWIP_NETIF_LOOPBACK 1
 	#define LWIP_HTTPD_STRNSTR_PRIVATE		0
 
 #endif	/* WITHISBOOTLOADER */
 
 #define UDP_TTL 64
-#define ETH_PAD_SIZE                    0
+//#define ETH_PAD_SIZE                    16
 
-#define LWIP_RAM_HEAP_POINTER		lwipBuffer
-#define MEM_SIZE                        32768
-extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
+#if 0
+	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
+	#define MEM_SIZE                        (16384 * 1024uL)
+	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
+#endif
 
 #define MEM_ALIGNMENT                   8
 
@@ -106,6 +123,11 @@ extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
 #define SYS_LIGHTWEIGHT_PROT 1
 typedef unsigned sys_prot_t;
 
+//#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
+//#define MEMP_MEM_MALLOC 1
+
+//#define PBUF_POOL_SIZE 1024	// 512 for 400 k is okay
+
 #define X32_F "08X"
 #define S32_F "ld"
 #define U32_F "lu"
@@ -114,12 +136,14 @@ typedef unsigned sys_prot_t;
 #define S16_F "d"
 #define U16_F "u"
 
-#define LWIP_DEBUG             1
+//#define LWIP_DEBUG             1
 #define LWIP_DBG_MIN_LEVEL     LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON      (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
-//#define ETHARP_DEBUG           LWIP_DBG_ON
-//#define NETIF_DEBUG            LWIP_DBG_ON
-//#define PBUF_DEBUG             LWIP_DBG_ON
+
+//#define HTTPD_DEBUG           LWIP_DBG_ON
+#define ETHARP_DEBUG           LWIP_DBG_ON
+#define NETIF_DEBUG            LWIP_DBG_ON
+#define PBUF_DEBUG             LWIP_DBG_ON
 #define API_LIB_DEBUG          LWIP_DBG_ON
 #define API_MSG_DEBUG          LWIP_DBG_ON
 #define SOCKETS_DEBUG          LWIP_DBG_ON
@@ -131,8 +155,8 @@ typedef unsigned sys_prot_t;
 #define RAW_DEBUG              LWIP_DBG_ON
 #define MEM_DEBUG              LWIP_DBG_ON
 #define MEMP_DEBUG             LWIP_DBG_ON
-#define SYS_DEBUG              LWIP_DBG_ON
-#define TIMERS_DEBUG           LWIP_DBG_ON
+//#define SYS_DEBUG              LWIP_DBG_ON
+//#define TIMERS_DEBUG           LWIP_DBG_ON
 //#define TCP_DEBUG              LWIP_DBG_ON
 //#define TCP_INPUT_DEBUG        LWIP_DBG_ON
 //#define TCP_FR_DEBUG           LWIP_DBG_ON
@@ -142,13 +166,13 @@ typedef unsigned sys_prot_t;
 //#define TCP_OUTPUT_DEBUG       LWIP_DBG_ON
 //#define TCP_RST_DEBUG          LWIP_DBG_ON
 //#define TCP_QLEN_DEBUG         LWIP_DBG_ON
-#define UDP_DEBUG              LWIP_DBG_ON
-#define TCPIP_DEBUG            LWIP_DBG_ON
-#define SLIP_DEBUG             LWIP_DBG_ON
-#define DHCP_DEBUG             LWIP_DBG_ON
-#define AUTOIP_DEBUG           LWIP_DBG_ON
-#define DNS_DEBUG              LWIP_DBG_ON
-#define IP6_DEBUG              LWIP_DBG_ON
+//#define UDP_DEBUG              LWIP_DBG_ON
+//#define TCPIP_DEBUG            LWIP_DBG_ON
+//#define SLIP_DEBUG             LWIP_DBG_ON
+//#define DHCP_DEBUG             LWIP_DBG_ON
+//#define AUTOIP_DEBUG           LWIP_DBG_ON
+//#define DNS_DEBUG              LWIP_DBG_ON
+//#define IP6_DEBUG              LWIP_DBG_ON
 
 void display_vtty_printf(const char * format, ...);
 //#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)

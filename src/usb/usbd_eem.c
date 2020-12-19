@@ -28,131 +28,7 @@ typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
 
 static cdcdeem_rxproc_t cdceem_rxproc = NULL;
 
-static struct netif test_netif1, test_netif2;
-
-#if 0
-
-static ip4_addr_t test_gw1, test_ipaddr1, test_netmask1;
-static ip4_addr_t test_gw2, test_ipaddr2, test_netmask2;
-static int output_ctr, linkoutput_ctr;
-
-/* Helper functions */
-static void
-udp_remove_all(void)
-{
-	struct udp_pcb *pcb = udp_pcbs;
-	struct udp_pcb *pcb2;
-
-	while(pcb != NULL)
-	{
-		pcb2 = pcb;
-		pcb = pcb->next;
-		udp_remove(pcb2);
-	}
-	ASSERT(MEMP_STATS_GET(used, MEMP_UDP_PCB) == 0);
-}
-
-static err_t
-default_netif_output(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
-{
-	ASSERT((netif == &test_netif1) || (netif == &test_netif2));
-	ASSERT(p != NULL);
-	ASSERT(ipaddr != NULL);
-	output_ctr++;
-	return ERR_OK;
-}
-
-static err_t
-default_netif_linkoutput(struct netif *netif, struct pbuf *p)
-{
-	ASSERT((netif == &test_netif1) || (netif == &test_netif2));
-	ASSERT(p != NULL);
-	linkoutput_ctr++;
-
-	TP();
-	return ERR_OK;
-}
-
-static err_t
-default_netif_init(struct netif *netif)
-{
-	ASSERT(netif != NULL);
-	netif->output = default_netif_output;
-	netif->linkoutput = default_netif_linkoutput;
-	netif->mtu = 1500;
-	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
-	netif->hwaddr_len = 6;
-	return ERR_OK;
-}
-
-static void
-default_netif_add(void)
-{
-	struct netif *n;
-
-#if LWIP_HAVE_LOOPIF
-	ASSERT(netif_list != NULL); /* the loopif */
-	ASSERT(netif_list->next == NULL);
-#else
-	ASSERT(netif_list == NULL);
-#endif
-	ASSERT(netif_default == NULL);
-
-	IP4_ADDR(&test_ipaddr1, 192,168,0,1);
-	IP4_ADDR(&test_netmask1, 255,255,255,0);
-	IP4_ADDR(&test_gw1, 192,168,0,254);
-	n = netif_add(&test_netif1, &test_ipaddr1, &test_netmask1,
-			&test_gw1, NULL, default_netif_init, NULL);
-	ASSERT(n == &test_netif1);
-
-	IP4_ADDR(&test_ipaddr2, 192,168,1,1);
-	IP4_ADDR(&test_netmask2, 255,255,255,0);
-	IP4_ADDR(&test_gw2, 192,168,1,254);
-	n = netif_add(&test_netif2, &test_ipaddr2, &test_netmask2,
-			&test_gw2, NULL, default_netif_init, NULL);
-	ASSERT(n == &test_netif2);
-
-	netif_set_default(&test_netif1);
-	netif_set_up(&test_netif1);
-	netif_set_up(&test_netif2);
-}
-
-static void
-default_netif_remove(void)
-{
-  ASSERT(netif_default == &test_netif1);
-  netif_remove(&test_netif1);
-  netif_remove(&test_netif2);
-  ASSERT(netif_default == NULL);
-#if LWIP_HAVE_LOOPIF
-  ASSERT(netif_list != NULL); /* the loopif */
-  ASSERT(netif_list->next == NULL);
-#else
-  ASSERT(netif_list == NULL);
-#endif
-}
-/* Setups/teardown functions */
-
-static void
-udp_setup(void)
-{
-  udp_remove_all();
-  default_netif_add();
-  //lwip_check_ensure_no_alloc(SKIP_POOL(MEMP_SYS_TIMEOUT));
-  //dhcp_start(& test_netif1);
-}
-
-static void
-udp_teardown(void)
-{
-  udp_remove_all();
-  default_netif_remove();
-  //lwip_check_ensure_no_alloc(SKIP_POOL(MEMP_SYS_TIMEOUT));
-}
-
-#endif
-
-
+//static struct netif test_netif1, test_netif2;
 
 // Transceiving Ethernet packets
 static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
@@ -181,13 +57,13 @@ static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
 }
 
 
-static struct netif netif_data;
+static struct netif cdceem_netif_data;
 
 
 
 struct netif  * getNetifData(void)
 {
-	return &slip_netif_data;
+	return &cdceem_netif_data;
 }
 
 static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
@@ -317,7 +193,7 @@ void usb_polling(void)
 	cdceembuf_t * p;
 	if (cdceem_buffers_ready_user(& p) != 0)
 	{
-		err_t e = ethernet_input(p->frame, & netif_data);
+		err_t e = ethernet_input(p->frame, & cdceem_netif_data);
 		if (e != ERR_OK)
 		{
 			  /* This means the pbuf is freed or consumed,
@@ -341,22 +217,20 @@ void init_netif(void)
 	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
 	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
 
-	static const uint8_t ipaddrv [4]  = { IPADDR };
 	static ip_addr_t vaddr;// [4]  = IPADDR;
-	IP4_ADDR(& vaddr, ipaddrv [0], ipaddrv [1], ipaddrv [2], ipaddrv [3]);
+	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
-	struct netif  *netif = &netif_data;
+	struct netif  *netif = & cdceem_netif_data;
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
 	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
 
-
-	while (!netif_is_up(&netif_data))
+	while (!netif_is_up(netif))
 		;
 
-	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
+	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
 }
 
 #endif /* WITHLWIP */
@@ -501,7 +375,7 @@ static void cdceemout_buffer_save(
 	)
 {
 	uint_fast16_t pos;
-
+	PRINTF("cdceemout_buffer_save: EP len=%u\n", length);
 	for (pos = 0; pos < length; )
 	{
 		switch (cdceemoutstate)
@@ -562,6 +436,7 @@ static void cdceemout_buffer_save(
 
 				//PRINTF(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
 				// Тут полностью собран ethernet пакет, используем его (или например печатаем содержимое).
+				PRINTF("cdceemout_buffer_save: LWIP len=%u\n", cdceematcrc);
 #if WITHLWIP
 				// Save to LWIP
 				{

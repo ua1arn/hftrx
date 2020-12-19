@@ -76,6 +76,7 @@ fs_open(struct fs_file *file, const char *name)
   file->is_custom_file = 0;
 #endif /* LWIP_HTTPD_CUSTOM_FILES */
 
+PRINTF("fs_open: name='%s'\n", name);
   for (f = FS_ROOT; f != NULL; f = f->next) {
     if (!strcmp(name, (char *)f->name)) {
       file->data = (const char *)f->data;

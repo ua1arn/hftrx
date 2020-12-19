@@ -44,7 +44,7 @@
 #define ETH_MIN_PACKET_SIZE             60
 #define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + RNDIS_MTU)
 #define RNDIS_HEADER_SIZE               (sizeof (rndis_data_packet_t))
-#define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
+#define RNDIS_RX_BUFFER_SIZE            (RNDIS_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
 
 typedef void (*rndis_rxproc_t)(const uint8_t *data, int size);
 static rndis_state_t rndis_state;
@@ -70,23 +70,20 @@ static struct netif rndis_netif_data;
 // Transceiving Ethernet packets
 static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-	PRINTF("rndis_linkoutput_fn\n");
+	//PRINTF("rndis_linkoutput_fn\n");
     int i;
     struct pbuf *q;
     static char data[RNDIS_MTU + 14 + 4];
     int size = 0;
+
     for (i = 0; i < 200; i++)
     {
         if (rndis_can_send()) break;
         local_delay_ms(1);
     }
-    for(q = p; q != NULL; q = q->next)
-    {
-        if (size + q->len > RNDIS_MTU + 14)
-            return ERR_ARG;
-        memcpy(data + size, (char *)q->payload, q->len);
-        size += q->len;
-    }
+
+    size = pbuf_copy_partial(p, data, sizeof data, 0);
+    //pbuf_free(p);
     if (!rndis_can_send())
         return ERR_USE;
     rndis_send(data, size);
@@ -208,14 +205,22 @@ static void on_packet(const uint8_t *data, int size)
 		frame = pbuf_alloc(PBUF_RAW, size, PBUF_POOL);
 		if (frame == NULL)
 		{
+			TP();
 			rndis_buffers_release(p);
 			return;
 		}
-		memcpy(frame->payload, data, size);
-		frame->len = size;
+		err_t e = pbuf_take(frame, data, size);
+		if (e == ERR_OK)
+		{
+			p->frame = frame;
+			rndis_buffers_rx(p);
+		}
+		else
+		{
+			pbuf_free(frame);
+			rndis_buffers_release(p);
+		}
 
-		p->frame = frame;
-		rndis_buffers_rx(p);
 	}
 }
 
@@ -228,14 +233,16 @@ void usb_polling(void)
 	rndisbuf_t * p;
 	if (rndis_buffers_ready_user(& p) != 0)
 	{
-		err_t e = ethernet_input(p->frame, & rndis_netif_data);
+		struct pbuf *frame = p->frame;
+		rndis_buffers_release_user(p);
+
+		err_t e = ethernet_input(frame, & rndis_netif_data);
 		if (e != ERR_OK)
 		{
 			  /* This means the pbuf is freed or consumed,
 			     so the caller doesn't have to free it again */
 		}
 
-		rndis_buffers_release_user(p);
 	}
 }
 
@@ -266,10 +273,10 @@ void init_netif(void)
 	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
 
-	while (!netif_is_up(&rndis_netif_data))
+	while (!netif_is_up(netif))
 		;
 
-	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправляьь в LWIP
+	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
 }
 
 static void USBD_RNDIS_ColdInit(void)
@@ -305,6 +312,7 @@ static void USBD_RNDIS_ColdInit(void)
 */
 
 // RNDIS to USB Mapping https://msdn.microsoft.com/en-us/library/windows/hardware/ff570657(v=vs.85).aspx
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 //
 //#include "usbd_conf.h"
 //#include "usbd_rndis.h"
@@ -424,7 +432,7 @@ static uint16_t rndis_rx_size(void)
 {
 }
 
-int rndis_tx_start(uint8_t *data, uint16_t size)
+static int rndis_tx_start(uint8_t *data, uint16_t size)
 {
 	unsigned sended;
 	static uint8_t first [USBD_RNDIS_IN_BUFSIZE];
@@ -464,10 +472,7 @@ int rndis_tx_start(uint8_t *data, uint16_t size)
   ASSERT(hold_pDev != NULL);
   //We should disable USB_OUT(EP3) IRQ, because if IRQ will happens with locked HAL (__HAL_LOCK()
   //in USBD_LL_Transmit()), the program will fail with big probability
-  USBD_LL_Transmit (hold_pDev,
-                    USBD_EP_RNDIS_IN,
-                    (uint8_t *)first,
-                    USBD_RNDIS_IN_BUFSIZE);
+  USBD_LL_Transmit (hold_pDev,  USBD_EP_RNDIS_IN, first, USBD_RNDIS_IN_BUFSIZE);
 
   //Increment error counter and then decrement in data_in if OK
   usb_eth_stat.txbad++;
@@ -804,7 +809,9 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 	return USBD_OK;
 }
 
-// Control Channel      https://msdn.microsoft.com/en-us/library/windows/hardware/ff546124(v=vs.85).aspx
+// Control Channel
+//	https://msdn.microsoft.com/en-us/library/windows/hardware/ff546124(v=vs.85).aspx
+//	https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 static USBD_StatusTypeDef usbd_rndis_ep0_recv(USBD_HandleTypeDef  *pdev)
 {
 	const USBD_SetupReqTypedef * const req = & pdev->request;
@@ -877,7 +884,8 @@ static USBD_StatusTypeDef usbd_rndis_ep0_recv(USBD_HandleTypeDef  *pdev)
 }
 
 // Data Channel         https://msdn.microsoft.com/en-us/library/windows/hardware/ff546305(v=vs.85).aspx
-//                      https://msdn.microsoft.com/en-us/library/windows/hardware/ff570635(v=vs.85).aspx
+//                      https://msdn.microsoft.com/en-us/library/windows/hardware/ff570635(v=vs.85).aspx (prev version)
+//	https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 static USBD_StatusTypeDef usbd_rndis_data_in(USBD_HandleTypeDef*pdev, uint_fast8_t epnum)
 {
 	epnum &= 0x0F;
@@ -940,7 +948,9 @@ static void handle_packet(const uint8_t *data, int size)
   */
 }
 
-// Data Channel         https://msdn.microsoft.com/en-us/library/windows/hardware/ff546305(v=vs.85).aspx
+// Data Channel
+//	https://msdn.microsoft.com/en-us/library/windows/hardware/ff546305(v=vs.85).aspx
+//	https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
 	static int rndis_received = 0;
@@ -970,11 +980,8 @@ static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fas
 					usb_eth_stat.rxbad++;
 			}
 		}
-		USBD_LL_PrepareReceive(hold_pDev,
-							   USBD_EP_RNDIS_OUT,
-							   usb_rx_buffer,
-							   USBD_RNDIS_OUT_BUFSIZE);
-		  //	DCD_EP_PrepareRx(pdev, USBD_EP_RNDIS_OUT, (uint8_t*)usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
+		USBD_LL_PrepareReceive(hold_pDev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
+		  //	DCD_EP_PrepareRx(pdev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
 	}
   //  PCD_EPTypeDef *ep = &((PCD_HandleTypeDef*)pdev->pData)->OUT_ep[epnum];
    // handle_packet((rndis_data_packet_t*)rndis_rx_buffer, RNDIS_RX_BUFFER_SIZE - ep->xfer_len - USBD_RNDIS_OUT_BUFSIZE + ep->xfer_count);
