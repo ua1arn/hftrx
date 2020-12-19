@@ -108,23 +108,30 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 }
 
 
-static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
+static err_t rndis_output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 {
-  return etharp_output(netif, p, ipaddr);
+	err_t e = etharp_output(netif, p, ipaddr);
+	if (e == ERR_OK)
+	{
+		// добавляем свои заголовки требуеющиеся для физического уповня
+
+	}
+	return e;
 }
 
 static err_t netif_init_cb(struct netif *netif)
 {
 	PRINTF("rndis netif_init_cb\n");
-  LWIP_ASSERT("netif != NULL", (netif != NULL));
-  netif->mtu = RNDIS_MTU;
-  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
-  netif->state = NULL;
-  netif->name[0] = 'E';
-  netif->name[1] = 'X';
-  netif->linkoutput = rndis_linkoutput_fn;
-  netif->output = output_fn;
-  return ERR_OK;
+	LWIP_ASSERT("netif != NULL", (netif != NULL));
+	netif->mtu = RNDIS_MTU;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->state = NULL;
+	netif->name[0] = 'E';
+	netif->name[1] = 'X';
+	netif->output = rndis_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
+												// и слкдующий callback linkoutput не требовался бы вообще
+	netif->linkoutput = rndis_linkoutput_fn;	// используется внутри etharp_output
+	return ERR_OK;
 }
 /*
 TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)

@@ -83,9 +83,16 @@ struct netif  * getNetifData(void)
 	return &cdceem_netif_data;
 }
 
-static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
+
+static err_t cdceem_output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
 {
-  return etharp_output(netif, p, ipaddr);
+	err_t e = etharp_output(netif, p, ipaddr);
+	if (e == ERR_OK)
+	{
+		// добавляем свои заголовки требуеющиеся для физического уповня
+
+	}
+	return e;
 }
 
 static err_t netif_init_cb(struct netif *netif)
@@ -97,8 +104,9 @@ static err_t netif_init_cb(struct netif *netif)
 	netif->state = NULL;
 	netif->name[0] = 'E';
 	netif->name[1] = 'X';
-	netif->linkoutput = linkoutput_fn;
-	netif->output = output_fn;
+	netif->output = etharp_output; //cdceem_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
+												// и слкдующий callback linkoutput не требовался бы вообще
+	netif->linkoutput = linkoutput_fn;	// используется внутри etharp_output
 	return ERR_OK;
 }
 
