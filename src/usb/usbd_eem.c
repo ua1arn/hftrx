@@ -269,7 +269,7 @@ void init_netif(void)
 	while (!netif_is_up(netif))
 		;
 
-	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
+	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 }
 
 #endif /* WITHLWIP */

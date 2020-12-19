@@ -291,7 +291,7 @@ void init_netif(void)
 	while ( ! netif_is_up(netif))
 		;
 
-	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
+	rndis_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 }
 /*
  TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
@@ -458,7 +458,7 @@ static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef *pdev, uint_fast8_t
 	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_OUT, USBD_EP_TYPE_BULK, USBD_RNDIS_OUT_BUFSIZE);
 	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_INT, USBD_EP_TYPE_INTR, USBD_RNDIS_INT_SIZE);
 	USBD_LL_OpenEP(pdev, USBD_EP_RNDIS_IN, USBD_EP_TYPE_BULK, USBD_RNDIS_IN_BUFSIZE);
-	USBD_LL_PrepareReceive(pdev, USBD_EP_RNDIS_OUT, rndis_rx_buffer, RNDIS_RX_BUFFER_SIZE);
+	USBD_LL_PrepareReceive(pdev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
 
 	return USBD_OK;
 }
@@ -946,8 +946,8 @@ static USBD_StatusTypeDef rndis_iso_in_incomplete(USBD_HandleTypeDef *pdev, uint
 
 static USBD_StatusTypeDef rndis_iso_out_incomplete(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	USBD_LL_PrepareReceive(pdev, USBD_EP_RNDIS_OUT, usb_rx_buffer,
-	USBD_RNDIS_OUT_BUFSIZE);
+	USBD_LL_PrepareReceive(pdev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
+
 	return USBD_OK;
 }
 
