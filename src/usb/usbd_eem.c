@@ -23,6 +23,14 @@
 
 #define RNDIS_MTU 1500  // MTU value
 
+static int cdceem_can_send(void)
+{
+	return 1;
+}
+
+static void cdceem_send(const void *data, int size)
+{
+}
 
 typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
 
@@ -47,29 +55,29 @@ static cdcdeem_rxproc_t cdceem_rxproc = NULL;
  */
 
 // Transceiving Ethernet packets
-static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
+static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
-//	//PRINTF("rndis_linkoutput_fn\n");
-//    int i;
-//    struct pbuf *q;
-//    static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
-//    int size = 0;
-//
-//    for (i = 0; i < 200; i++)
-//    {
-//        if (rndis_can_send()) break;
-//        local_delay_ms(1);
-//    }
-//
-//    if (!rndis_can_send())
-//    {
-//		pbuf_free(p);
-//		return ERR_MEM;
-//    }
-//
-//	pbuf_header(p, - ETH_PAD_SIZE);
-//    size = pbuf_copy_partial(p, data, sizeof data, 0);
-//    cdceem_send(data, size);
+	//PRINTF("cdceem_linkoutput_fn\n");
+    int i;
+    struct pbuf *q;
+    static char data [RNDIS_MTU + 14 + 4];
+    int size = 0;
+
+    for (i = 0; i < 200; i++)
+    {
+        if (cdceem_can_send()) break;
+        local_delay_ms(1);
+    }
+
+    if (! cdceem_can_send())
+    {
+		pbuf_free(p);
+		return ERR_MEM;
+    }
+
+	pbuf_header(p, - ETH_PAD_SIZE);
+    size = pbuf_copy_partial(p, data, sizeof data, 0);
+    cdceem_send(data, size);
 
     return ERR_OK;
 }
@@ -111,7 +119,7 @@ static err_t netif_init_cb(struct netif *netif)
 	netif->name[1] = 'X';
 	netif->output = etharp_output; //cdceem_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
 												// и слкдующий callback linkoutput не требовался бы вообще
-	netif->linkoutput = linkoutput_fn;	// используется внутри etharp_output
+	netif->linkoutput = cdceem_linkoutput_fn;	// используется внутри etharp_output
 	return ERR_OK;
 }
 
@@ -232,6 +240,9 @@ void usb_polling(void)
 	cdceembuf_t * p;
 	if (cdceem_buffers_ready_user(& p) != 0)
 	{
+		struct pbuf * const frame = p->frame;
+		cdceem_buffers_release_user(p);
+
 		err_t e = ethernet_input(p->frame, & cdceem_netif_data);
 		if (e != ERR_OK)
 		{
@@ -239,7 +250,6 @@ void usb_polling(void)
 			     so the caller doesn't have to free it again */
 		}
 
-		cdceem_buffers_release_user(p);
 	}
 }
 

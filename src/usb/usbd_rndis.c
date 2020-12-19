@@ -56,7 +56,7 @@ static int rndis_tx_start(uint8_t *data, uint16_t size);
 static int rndis_tx_started(void);
 
 static int rndis_can_send(void);
-static int rndis_send(const void *data, int size);
+static void rndis_send(const void *data, int size);
 
 
 typedef struct rndisbuf_tag
@@ -1025,7 +1025,7 @@ static int rndis_can_send(void)
 	return f;
 }
 
-static int rndis_send(const void *data, int size)
+static void rndis_send(const void *data, int size)
 {
 	ASSERT(data != NULL);
 	ASSERT(hold_pDev != NULL);
@@ -1047,7 +1047,7 @@ static int rndis_send(const void *data, int size)
 
 		{
 			system_enableIRQ();
-			return false;
+			return;
 		}
 
 
@@ -1060,8 +1060,6 @@ static int rndis_send(const void *data, int size)
 	ASSERT(hold_pDev != NULL);
 	usbd_cdc_transfer(hold_pDev);
 	system_enableIRQ();
-
-	return 1;
 }
 
 const USBD_ClassTypeDef USBD_CLASS_RNDIS =
