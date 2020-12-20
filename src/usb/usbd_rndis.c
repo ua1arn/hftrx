@@ -205,7 +205,6 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 
     if (!rndis_can_send())
     {
-		pbuf_free(p);
 		return ERR_MEM;
     }
 
