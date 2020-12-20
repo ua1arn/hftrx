@@ -142,22 +142,22 @@ typedef struct
   __IO uint64_t rx_cnt_sent;
 }
 USBD_CDC_EEM_HandleTypeDef;
-//
-//typedef struct
-//{
-//  uint32_t data[CDC_DATA_HS_MAX_PACKET_SIZE/4];      /* Force 32bits alignment */
-//  uint8_t  CmdOpCode;
-//  uint8_t  CmdLength;
-//  uint8_t  *RxBuffer;
-//  uint8_t  *TxBuffer;
-//  uint32_t RxLength;
-//  uint32_t TxLength;
-//
-//  __IO uint32_t TxState;
-//  __IO uint32_t RxState;
-//}
-//USBD_CDC_HandleTypeDef;
-//
+
+typedef struct
+{
+  uint32_t data[USBD_CDCEEM_BUFSIZE/4];      /* Force 32bits alignment */
+  uint8_t  CmdOpCode;
+  uint8_t  CmdLength;
+  uint8_t  *RxBuffer;
+  uint8_t  *TxBuffer;
+  uint32_t RxLength;
+  uint32_t TxLength;
+
+  __IO uint32_t TxState;
+  __IO uint32_t RxState;
+}
+USBD_CDC_HandleTypeDef;
+
 
 typedef enum _eem_receiver_state_enum {
   EEM_RECEIVER_INITIAL          = 0,
