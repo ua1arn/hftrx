@@ -6689,7 +6689,7 @@ restart:
 
 void board_fpga_fir_initialize(void)
 {
-	PRINTF(PSTR("board_fpga_fir_initialize start\n"));
+	//PRINTF(PSTR("board_fpga_fir_initialize start\n"));
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
@@ -6703,7 +6703,7 @@ void board_fpga_fir_initialize(void)
 	board_set_flt_reset_n(1);	// снять сигнал сброса
 	board_update();
 
-	PRINTF(PSTR("board_fpga_fir_initialize done\n"));
+	//PRINTF(PSTR("board_fpga_fir_initialize done\n"));
 }
 
 // Передача одного (первого) 32-битного значения и формирование строба.
@@ -6845,6 +6845,7 @@ static void sendbatch(uint_fast8_t ifir)
 		board_fpga_fir_coef_p2(va [i]);
 }
 */	
+
 // переупорядачивание коэффициентов при выдаче в FIR
 // Оригинальный код взят из coef_seq.cpp, Copyright (C) 1991-2012 Altera Corporation
 //
@@ -7611,8 +7612,10 @@ void hardware_txpath_set(
 void 
 hardware_txpath_initialize(void)
 {
+#if defined (TXPATH_INITIALIZE)
+	TXPATH_INITIALIZE();
 
-#if CPUSTYLE_ATMEGA
+#elif CPUSTYLE_ATMEGA
 
 	// Биты управления трактом на передачу
 	#if defined (TXPATH_BITS_ENABLE)
