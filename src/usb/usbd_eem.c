@@ -320,13 +320,48 @@ void set_eem_pkt_size(uint8_t *buffer, uint32_t pkt_size){
 
 #define RNDIS_MTU 1500  // MTU value
 
+static volatile unsigned eemtxready;
+static volatile unsigned eemtxleft;
+static uint8_t  * volatile eemtxpointer;
+static uint8_t eemtxbuffer [8192];
+
 static int cdceem_can_send(void)
 {
-	return 1;
+	return eemtxready;
 }
 
-static void cdceem_send(const void *data, int size)
+static void cdceem_send(const uint8_t *data, int size)
 {
+	// прербразуем пакет в CDC EEM пакеты
+	uint8_t * tg = & eemtxbuffer [0];
+
+	if (size == 0)
+		return;
+
+	uint_fast16_t header =
+			(0 << 15) |		// bmType. Set to 0
+			(0 << 14) |		// D14: bmCRC
+			(((size + 4) << 0) & 0x3FFF) |
+			0;
+	uint_fast32_t crc = 0xDEADBEEF;
+
+	* tg ++ = (header >> 8) & 0xFF;
+	* tg ++ = (header >> 0) & 0xFF;
+
+	memcpy(tg, data, size);
+	tg += size;
+
+	* tg ++ = (crc >> 24) & 0xFF;
+	* tg ++ = (crc >> 16) & 0xFF;
+	* tg ++ = (crc >> 8) & 0xFF;
+	* tg ++ = (crc >> 0) & 0xFF;
+
+	// а теперь передаем
+	system_disableIRQ();
+	eemtxleft = tg - eemtxbuffer;
+	eemtxpointer = eemtxbuffer;
+	eemtxready = 0;
+	system_enableIRQ();
 }
 
 typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
@@ -357,7 +392,7 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 	//PRINTF("cdceem_linkoutput_fn\n");
     int i;
     struct pbuf *q;
-    static char data [RNDIS_MTU + 14 + 4];
+    static uint8_t data [RNDIS_MTU + 14 + 4];
     int size = 0;
 
     for (i = 0; i < 200; i++)
@@ -508,7 +543,7 @@ static void on_packet(const uint8_t *data, int size)
 		if (frame == NULL)
 		{
 			TP();
-			cdceem_buffers_rx(p);
+			cdceem_buffers_release(p);
 			return;
 		}
 		pbuf_header(frame, - ETH_PAD_SIZE);
@@ -522,7 +557,7 @@ static void on_packet(const uint8_t *data, int size)
 		else
 		{
 			pbuf_free(frame);
-			cdceem_buffers_rx(p);
+			cdceem_buffers_release(p);
 		}
 	}
 }
@@ -631,7 +666,7 @@ static uint_fast32_t cdceematcrc;
 static uint_fast32_t cdceemnpackets;
 
 // see SIZEOF_ETHARP_PACKET
-static uint8_t cdceembuff [1514];
+static uint8_t cdceemrxbuff [1514];
 
 static void cdceemout_initialize(void)
 {
@@ -720,7 +755,7 @@ static void cdceemout_buffer_save(
 	)
 {
 	uint_fast16_t pos;
-	PRINTF("cdceemout_buffer_save: EP len=%u\n", length);
+	//PRINTF("cdceemout_buffer_save: EP len=%u\n", length);
 	for (pos = 0; pos < length; )
 	{
 		switch (cdceemoutstate)
@@ -759,7 +794,7 @@ static void cdceemout_buffer_save(
 		case CDCEEMOUT_DATA:
 			{
 				const uint_fast16_t chunk = ulmin16(length - pos, cdceematcrc - cdceemoutscore);
-				memcpy(cdceembuff + cdceemoutscore, data + pos, ulmin16(sizeof cdceembuff - cdceemoutscore, chunk)); // use data bytes
+				memcpy(cdceemrxbuff + cdceemoutscore, data + pos, ulmin16(sizeof cdceemrxbuff - cdceemoutscore, chunk)); // use data bytes
 				pos += chunk;
 				if ((cdceemoutscore += chunk) >= cdceematcrc)
 				{
@@ -781,20 +816,21 @@ static void cdceemout_buffer_save(
 
 				//PRINTF(PSTR("crc=%08lX\n"), (cdceemoutacc & 0xFFFFFFFF));
 				// Тут полностью собран ethernet пакет, используем его (или например печатаем содержимое).
-				PRINTF("cdceemout_buffer_save: LWIP len=%u\n", cdceematcrc);
+				//PRINTF("cdceemout_buffer_save: LWIP len=%u\n", cdceematcrc);
+				//cdceemout_buffer_print2(cdceemrxbuff, cdceematcrc);
 #if WITHLWIP
 				// Save to LWIP
 				{
 					if (cdceem_rxproc != NULL)
-						cdceem_rxproc(cdceembuff, cdceematcrc);
+						cdceem_rxproc(cdceemrxbuff, cdceematcrc);
 
 				}
 
 #elif 0
 				// Отладочная печать
 				PRINTF(PSTR("Data pyload length=0x%04X\n"), cdceematcrc);
-				//cdceemout_buffer_print(cdceembuff, cdceematcrc);
-				cdceemout_buffer_print2(cdceembuff, cdceematcrc);
+				//cdceemout_buffer_print(cdceemrxbuff, cdceematcrc);
+				cdceemout_buffer_print2(cdceemrxbuff, cdceematcrc);
 #endif
 			}
 		}
@@ -815,7 +851,18 @@ static USBD_StatusTypeDef USBD_CDCEEM_DataIn(USBD_HandleTypeDef *pdev, uint_fast
 	case (USBD_EP_CDCEEM_IN & 0x7F):
 		//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdceem1buffin, cdceem1buffinlevel);
 		//cdceem1buffinlevel = 0;
-		USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
+		if (eemtxready == 0 && eemtxleft != 0)
+		{
+			const unsigned eemtxsize = ulmin32(eemtxleft, USBD_CDCEEM_BUFSIZE);
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), eemtxpointer, eemtxsize);
+			eemtxpointer += eemtxsize;
+			eemtxleft -= eemtxsize;
+		}
+		else
+		{
+			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), dbd, sizeof dbd);
+			eemtxready = 1;
+		}
 		break;
 	}
 	return USBD_OK;
