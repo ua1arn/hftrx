@@ -6716,11 +6716,18 @@ static void board_fpga_fir_coef_p1(int_fast32_t v)
 	hardware_spi_b16_p1(v >> 16);
 	hardware_spi_b16_p2(v >> 0);		// на последнем бите формируется coef_in_clk
 
-#else /* WITHSPI32BIT */
+#elif WITHSPIHW
 	hardware_spi_b8_p1(v >> 24);
 	hardware_spi_b8_p2(v >> 16);
 	hardware_spi_b8_p2(v >> 8);
 	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p1(0, v >> 24);
+	spi_progval8_p2(0, v >> 16);
+	spi_progval8_p2(0, v >> 8);
+	spi_progval8_p2(0, v >> 0);	// на последнем бите формируется coef_in_clk
 
 #endif /* WITHSPI32BIT */
 }
@@ -6735,11 +6742,18 @@ static void board_fpga_fir_coef_p2(int_fast32_t v)
 	hardware_spi_b16_p2(v >> 16);
 	hardware_spi_b16_p2(v >> 0);		// на последнем бите формируется coef_in_clk
 
-#else /* WITHSPI32BIT */
+#elif WITHSPIHW
 	hardware_spi_b8_p2(v >> 24);
 	hardware_spi_b8_p2(v >> 16);
 	hardware_spi_b8_p2(v >> 8);
 	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p2(0, v >> 24);
+	spi_progval8_p2(0, v >> 16);
+	spi_progval8_p2(0, v >> 8);
+	spi_progval8_p2(0, v >> 0);	// на последнем бите формируется coef_in_clk
 
 #endif /* WITHSPI32BIT */
 }
@@ -6753,8 +6767,12 @@ board_fpga_fir_complete(void)
 #elif WITHSPI16BIT
 	hardware_spi_complete_b16();
 
-#else /* WITHSPI32BIT */
+#elif WITHSPIHW
 	hardware_spi_complete_b8();
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_complete(0);
 
 #endif /* WITHSPI32BIT */
 }
@@ -6765,20 +6783,24 @@ board_fpga_fir_connect(void)
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
 
-	hardware_spi_b32_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_b32_p1(0x00000000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b32();
 
 #elif WITHSPI16BIT
 	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
 
-	hardware_spi_b16_p1(0);	// provide clock for reset bit counter while CS=1
-	hardware_spi_complete_b16();
+	hardware_spi_b16_p1(0x0000);	// provide clock for reset bit counter while CS=1
 
-#else /* WITHSPI32BIT */
+#elif WITHSPIHW
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
 
-	hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_b8_p1(0x00);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b8();
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p1(0, 0x00);	// provide clock for reset bit counter while CS=1
+	spi_complete(0);
 
 #endif /* WITHSPI32BIT */
 
@@ -6802,7 +6824,10 @@ board_fpga_fir_disconnect(void)
 
 #endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
 
+#if WITHSPIHW
 	hardware_spi_disconnect();
+#else /* WITHSPIHW */
+#endif
 }
 
 /*
