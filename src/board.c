@@ -7012,8 +7012,6 @@ board_fpga_fir_send(
 	const int_fast32_t * const k, unsigned Ntap, unsigned CWidth
 	)
 {
-#if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
-
 	ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	board_fpga_fir_connect();
@@ -7061,7 +7059,6 @@ board_fpga_fir_send(
 	board_fpga_fir_complete();
 
 	board_fpga_fir_disconnect();
-#endif /* (WITHSPIHW && WITHSPI16BIT) */
 }
 
 /* поменять местами значение загружаемого профиля FIR фильтра в FPGA */
