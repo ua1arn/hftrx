@@ -13122,6 +13122,9 @@ static void dpc_1stimer(void * arg)
 
 #if WITHLWIP
 	  tcp_tmr();
+	#if LWIP_AUTOIP
+		  autoip_tmr();
+	#endif /* LWIP_AUTOIP */
 #endif /* WITHLWIP */
 }
 

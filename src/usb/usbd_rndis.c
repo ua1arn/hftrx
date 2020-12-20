@@ -21,6 +21,7 @@
 #include "lwip/init.h"
 #include "lwip/pbuf.h"
 #include "lwip/netif.h"
+#include "lwip/autoip.h"
 #include "netif/etharp.h"
 
 //
@@ -267,6 +268,7 @@ static err_t netif_init_cb(struct netif *netif)
 void init_netif(void)
 {
 	rndis_buffers_initialize();
+	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
@@ -289,7 +291,9 @@ void init_netif(void)
 	while (!netif_is_up(netif))
 		;
 
-	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
+#if LWIP_AUTOIP
+	  autoip_start(netif);
+#endif /* LWIP_AUTOIP */
 }
 /*
 TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)

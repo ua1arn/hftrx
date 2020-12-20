@@ -99,15 +99,17 @@
 
 #endif /* WITHHTTPUPDATE || WITHISBOOTLOADER */
 
-	//#define LWIP_NETIF_LOOPBACK 1
+	#define LWIP_NETIF_LOOPBACK 1
 	#define LWIP_HTTPD_STRNSTR_PRIVATE		0
+
+	//#define LWIP_AUTOIP 1
 
 #endif	/* WITHISBOOTLOADER */
 
 #define UDP_TTL 64
 #define ETH_PAD_SIZE                    64
 
-#if 0
+#if 1
 	#define LWIP_RAM_HEAP_POINTER		lwipBuffer
 	#define MEM_SIZE                        (16384 * 1024uL)
 	extern uint8_t LWIP_RAM_HEAP_POINTER [MEM_SIZE];
@@ -127,23 +129,23 @@ typedef unsigned sys_prot_t;
 //#define MEMP_MEM_MALLOC 1
 
 //#define PBUF_POOL_SIZE 1024	// 512 for 400 k is okay
+//
+//#define X32_F "08X"
+//#define S32_F "ld"
+//#define U32_F "lu"
+//
+//#define X16_F "04X"
+//#define S16_F "d"
+//#define U16_F "u"
 
-#define X32_F "08X"
-#define S32_F "ld"
-#define U32_F "lu"
-
-#define X16_F "04X"
-#define S16_F "d"
-#define U16_F "u"
-
-//#define LWIP_DEBUG             1
+#define LWIP_DEBUG             1
 #define LWIP_DBG_MIN_LEVEL     LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON      (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
 //#define HTTPD_DEBUG           LWIP_DBG_ON
-#define ETHARP_DEBUG           LWIP_DBG_ON
+//#define ETHARP_DEBUG           LWIP_DBG_ON
 #define NETIF_DEBUG            LWIP_DBG_ON
-#define PBUF_DEBUG             LWIP_DBG_ON
+//#define PBUF_DEBUG             LWIP_DBG_ON
 #define API_LIB_DEBUG          LWIP_DBG_ON
 #define API_MSG_DEBUG          LWIP_DBG_ON
 #define SOCKETS_DEBUG          LWIP_DBG_ON
@@ -152,9 +154,9 @@ typedef unsigned sys_prot_t;
 #define INET_DEBUG             LWIP_DBG_ON
 #define IP_DEBUG               LWIP_DBG_ON
 #define IP_REASS_DEBUG         LWIP_DBG_ON
-#define RAW_DEBUG              LWIP_DBG_ON
-#define MEM_DEBUG              LWIP_DBG_ON
-#define MEMP_DEBUG             LWIP_DBG_ON
+//#define RAW_DEBUG              LWIP_DBG_ON
+//#define MEM_DEBUG              LWIP_DBG_ON
+//#define MEMP_DEBUG             LWIP_DBG_ON
 //#define SYS_DEBUG              LWIP_DBG_ON
 //#define TIMERS_DEBUG           LWIP_DBG_ON
 //#define TCP_DEBUG              LWIP_DBG_ON
@@ -166,13 +168,13 @@ typedef unsigned sys_prot_t;
 //#define TCP_OUTPUT_DEBUG       LWIP_DBG_ON
 //#define TCP_RST_DEBUG          LWIP_DBG_ON
 //#define TCP_QLEN_DEBUG         LWIP_DBG_ON
-//#define UDP_DEBUG              LWIP_DBG_ON
-//#define TCPIP_DEBUG            LWIP_DBG_ON
-//#define SLIP_DEBUG             LWIP_DBG_ON
-//#define DHCP_DEBUG             LWIP_DBG_ON
-//#define AUTOIP_DEBUG           LWIP_DBG_ON
-//#define DNS_DEBUG              LWIP_DBG_ON
-//#define IP6_DEBUG              LWIP_DBG_ON
+#define UDP_DEBUG              LWIP_DBG_ON
+#define TCPIP_DEBUG            LWIP_DBG_ON
+#define SLIP_DEBUG             LWIP_DBG_ON
+#define DHCP_DEBUG             LWIP_DBG_ON
+#define AUTOIP_DEBUG           LWIP_DBG_ON
+#define DNS_DEBUG              LWIP_DBG_ON
+#define IP6_DEBUG              LWIP_DBG_ON
 
 void display_vtty_printf(const char * format, ...);
 //#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)

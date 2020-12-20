@@ -23,6 +23,7 @@
 #include "lwip/init.h"
 #include "lwip/pbuf.h"
 #include "lwip/netif.h"
+#include "lwip/autoip.h"
 #include "netif/etharp.h"
 
 
@@ -588,6 +589,7 @@ void usb_polling(void)
 void init_netif(void)
 {
 	cdceem_buffers_initialize();
+	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
@@ -604,13 +606,15 @@ void init_netif(void)
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
-	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip4_input);
+#if LWIP_AUTOIP
+	  autoip_start(netif);
+#endif /* LWIP_AUTOIP */
 	netif_set_default(netif);
 
 	while (!netif_is_up(netif))
 		;
 
-	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 }
 
 #endif /* WITHLWIP */
