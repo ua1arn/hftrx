@@ -6790,6 +6790,7 @@ board_fpga_fir_connect(void)
 	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
 
 	hardware_spi_b16_p1(0x0000);	// provide clock for reset bit counter while CS=1
+	hardware_spi_complete_b16();
 
 #elif WITHSPIHW
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
