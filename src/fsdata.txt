@@ -1,4 +1,4 @@
-#include "fs.h"
+#include "lwip/apps/fs.h"
 #include "lwip/def.h"
 #include "fsdata.h"
 

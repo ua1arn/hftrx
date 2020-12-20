@@ -30,7 +30,7 @@
 
 #include "src/dhcp-server/dhserver.h"
 #include "src/dns-server/dnserver.h"
-#include "httpd.h"
+#include "lwip/apps/httpd.h"
 
 /*
  *  В конфигурации описано имя и размер
@@ -100,7 +100,7 @@ static bool dns_query_proc(const char *name, ip_addr_t *addr)
 }
 
 
-
+#if 1
 static void init_dnserv(void)
 {
 	ip_addr_t ipaddr;
@@ -109,15 +109,16 @@ static void init_dnserv(void)
 	while (dnserv_init(& ipaddr, 53, dns_query_proc) != ERR_OK)
 		;
 }
+#endif
 
 static void init_lwip()
 {
-//	PRINTF("init_lwip start\n");
+	//	PRINTF("init_lwip start\n");
 
 
-  lwip_init();
-   //stmr_add(&tcp_timer);
-//	PRINTF("init_lwip done\n");
+	lwip_init();
+	//stmr_add(&tcp_timer);
+	//	PRINTF("init_lwip done\n");
 }
 
 #if LWIP_HTTPD_CGI
@@ -587,7 +588,7 @@ void network_initialize(void)
 	  init_lwip();
 	  init_netif();
 
-#if WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
+#if 1//WITHUSBHW && (WITHUSBRNDIS || WITHUSBCDCEEM || WITHUSBCDCECM)
 	  PRINTF("network_initialize: start DHCP & DNS\n");
 	#if LWIP_DHCP
 		  init_dhserv();

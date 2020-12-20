@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "lwip/err.h"
+#include "lwip/ip_addr.h"
 #include "lwip/udp.h"
 #include "netif/etharp.h"
 
