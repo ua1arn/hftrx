@@ -59,7 +59,7 @@ static int rndis_can_send(void);
 static void rndis_send(const void *data, int size);
 
 
-typedef struct rndisbuf_tag
+typedef ALIGNX_BEGIN struct rndisbuf_tag
 {
 	LIST_ENTRY item;
 	struct pbuf *frame;
