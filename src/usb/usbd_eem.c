@@ -318,7 +318,7 @@ void set_eem_pkt_size(uint8_t *buffer, uint32_t pkt_size){
 }
 
 
-#define RNDIS_MTU 1500  // MTU value
+#define CDCEEM_MTU 1500  // MTU value
 
 static volatile unsigned eemtxready;
 static volatile unsigned eemtxleft;
@@ -392,7 +392,7 @@ static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
 	//PRINTF("cdceem_linkoutput_fn\n");
     int i;
     struct pbuf *q;
-    static uint8_t data [RNDIS_MTU + 14 + 4];
+    static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
     int size = 0;
 
     for (i = 0; i < 200; i++)
@@ -443,7 +443,7 @@ static err_t netif_init_cb(struct netif *netif)
 	/* Initialize interface hostname */
 	netif->hostname = "storch";
 #endif /* LWIP_NETIF_HOSTNAME */
-	netif->mtu = RNDIS_MTU;
+	netif->mtu = CDCEEM_MTU;
 	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
 	netif->state = NULL;
 	netif->name[0] = 'E';
