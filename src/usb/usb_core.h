@@ -1580,4 +1580,6 @@ USBH_StatusTypeDef USBH_ClosePipe  (USBH_HandleTypeDef *phost,
 
 HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num);
 
+extern USBD_HandleTypeDef hUsbDevice;
+
 #endif /* USB_USB_CORE_H_ */

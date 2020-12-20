@@ -243,7 +243,7 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 /* PCD Handle Structure */
 static RAMBIGDTCM USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
 /* USB Device Core handle declaration */
-static RAMBIGDTCM USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
+/*static */ RAMBIGDTCM USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
 
 /* HCD Handle Structure */
 static RAMBIGDTCM USBALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG USBALIGN_END;

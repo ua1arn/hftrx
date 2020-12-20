@@ -6,6 +6,8 @@
  *
  * Много взято
  * https://github.com/rawaaw/cdc-eem-f103.git
+ *
+ * see also https://www.belcarra.com/2012/01/belcarra-eem-configuration-extension.html
 */
 
 #include "hardware.h"
@@ -79,6 +81,8 @@ void set_eem_pkt_size(uint8_t *buffer, uint32_t pkt_size);
 extern uint8_t UserRxBufferFS[EEM_RX_DATA_SIZE];
 extern uint8_t UserTxBufferFS[EEM_TX_DATA_SIZE];
 */
+static uint8_t UserRxBufferFS[EEM_RX_DATA_SIZE];
+static uint8_t UserTxBufferFS[EEM_TX_DATA_SIZE];
 
 
 /**
@@ -138,7 +142,22 @@ typedef struct
   __IO uint64_t rx_cnt_sent;
 }
 USBD_CDC_EEM_HandleTypeDef;
-
+//
+//typedef struct
+//{
+//  uint32_t data[CDC_DATA_HS_MAX_PACKET_SIZE/4];      /* Force 32bits alignment */
+//  uint8_t  CmdOpCode;
+//  uint8_t  CmdLength;
+//  uint8_t  *RxBuffer;
+//  uint8_t  *TxBuffer;
+//  uint32_t RxLength;
+//  uint32_t TxLength;
+//
+//  __IO uint32_t TxState;
+//  __IO uint32_t RxState;
+//}
+//USBD_CDC_HandleTypeDef;
+//
 
 typedef enum _eem_receiver_state_enum {
   EEM_RECEIVER_INITIAL          = 0,
@@ -179,8 +198,8 @@ typedef enum _eem_packet_type_enum {
   * @{
   */
 
-extern USBD_ClassTypeDef  USBD_CDC_EEM;
-#define USBD_CDC_EEM_CLASS    &USBD_CDC_EEM
+//extern USBD_ClassTypeDef  USBD_CDC_EEM;
+//#define USBD_CDC_EEM_CLASS    &USBD_CDC_EEM
 /**
   * @}
   */
@@ -191,7 +210,7 @@ extern USBD_ClassTypeDef  USBD_CDC_EEM;
 uint8_t  USBD_CDC_EEM_RegisterInterface  (USBD_HandleTypeDef   *pdev,
                                       USBD_CDC_EEM_ItfTypeDef *fops);
 
-#if 0
+#if 1
 uint8_t  USBD_CDC_EEM_SetTxBuffer        (USBD_HandleTypeDef   *pdev,
                                       uint8_t  *pbuff,
                                       uint16_t buf_size,
@@ -203,7 +222,7 @@ uint8_t  USBD_CDC_EEM_SetRxBuffer        (USBD_HandleTypeDef   *pdev,
                                       uint16_t buf_size);
 #endif
 
-#if 0
+#if 1
 uint8_t  USBD_CDC_EEM_ReceivePacket      (USBD_HandleTypeDef *pdev,
                                           uint8_t*pbuf);
 #endif
@@ -1027,9 +1046,9 @@ static int8_t CDC_EEM_Init_FS(void)
 {
   /* USER CODE BEGIN 3 */
   /* Set Application Buffers */
-/*  USBD_CDC_EEM_SetTxBuffer(&hUsbDeviceFS, UserTxBufferFS, EEM_TX_DATA_SIZE, 0);
-  USBD_CDC_EEM_SetRxBuffer(&hUsbDeviceFS, UserRxBufferFS, EEM_RX_DATA_SIZE);
-*/
+  USBD_CDC_EEM_SetTxBuffer(&hUsbDevice, UserTxBufferFS, EEM_TX_DATA_SIZE, 0);
+  USBD_CDC_EEM_SetRxBuffer(&hUsbDevice, UserRxBufferFS, EEM_RX_DATA_SIZE);
+
   init_eem_pkt_bpool(EEM_RX_BUFFER);
   init_eem_pkt_bpool(EEM_TX_BUFFER);
 
@@ -1127,7 +1146,7 @@ static int8_t CDC_EEM_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 static int8_t CDC_EEM_Receive_FS (uint8_t*buf, uint32_t *size)
 {
   /* USER CODE BEGIN 6 */
-  USBD_CDC_EEM_ReceivePacket(&hUsbDeviceFS, buf, size);
+  USBD_CDC_EEM_ReceivePacket(&hUsbDevice, buf, size);
   return (USBD_OK);
   /* USER CODE END 6 */
 }
@@ -1149,7 +1168,8 @@ uint8_t CDC_EEM_Transmit_FS(uint8_t* Buf, uint16_t Len)
 {
   uint8_t result = USBD_OK;
   /* USER CODE BEGIN 7 */
-  USBD_CDC_EEM_HandleTypeDef *hcdc = (USBD_CDC_EEM_HandleTypeDef*)hUsbDeviceFS.pClassData;
+  //USBD_CDC_EEM_HandleTypeDef *hcdc = (USBD_CDC_EEM_HandleTypeDef*)hUsbDevice.pClassData;
+  USBD_CDC_EEM_HandleTypeDef   * const hcdc = & gxdc;
   if (hcdc->tx_state != 0){
     return USBD_BUSY;
   }
@@ -1160,8 +1180,8 @@ uint8_t CDC_EEM_Transmit_FS(uint8_t* Buf, uint16_t Len)
     Buf[0] = 0;
     Buf[1] = 0;
   }
-  USBD_CDC_EEM_SetTxBuffer(&hUsbDeviceFS, Buf, EEM_TX_DATA_SIZE, Len);
-  result = USBD_CDC_EEM_TransmitPacket(&hUsbDeviceFS);
+  USBD_CDC_EEM_SetTxBuffer(&hUsbDevice, Buf, EEM_TX_DATA_SIZE, Len);
+  result = USBD_CDC_EEM_TransmitPacket(&hUsbDevice);
   /* USER CODE END 7 */
   return result;
 }
@@ -1615,7 +1635,8 @@ USBD_StatusTypeDef  USBD_CDC_EEM_SetTxBuffer  (USBD_HandleTypeDef   *pdev,
                                 uint16_t buf_size,
                                 uint16_t length)
 {
-  USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
+	  //USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
+	  USBD_CDC_EEM_HandleTypeDef   * const hcdc = & gxdc;
 
   hcdc->TxBuffer = pbuff;
   hcdc->TxBufferSize = buf_size;
@@ -1637,7 +1658,8 @@ USBD_StatusTypeDef  USBD_CDC_EEM_SetRxBuffer  (USBD_HandleTypeDef   *pdev,
                                    uint8_t  *pbuff,
                                    uint16_t buf_size)
 {
-  USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
+	  //USBD_CDC_EEM_HandleTypeDef   *hcdc = (USBD_CDC_EEM_HandleTypeDef*) pdev->pClassData;
+	  USBD_CDC_EEM_HandleTypeDef   * const hcdc = & gxdc;
 
   hcdc->RxBuffer = pbuff;
   hcdc->RxBufferSize = buf_size;
@@ -1703,7 +1725,7 @@ USBD_StatusTypeDef  USBD_CDC_EEM_TransmitPacket(USBD_HandleTypeDef *pdev, eem_tr
   * @param  pdev: device instance
   * @retval status
   */
-#if 0
+#if 1
 USBD_StatusTypeDef  USBD_CDC_EEM_ReceivePacket(USBD_HandleTypeDef *pdev,
                                     uint8_t*pbuf)
 {
