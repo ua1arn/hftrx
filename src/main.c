@@ -826,6 +826,28 @@ static const FLASHMEM struct {
 
 #endif /* WITHUSEDUALWATCH */
 
+#if WITHIF4DSP && 0
+// надо бы перейти, но проблема в начальных значениях в таблице mdt - там коды а не индексы в этой таблице
+static const FLASHMEM struct {
+	uint_fast8_t code;
+	char label [6];
+}  txaudiosrcs [] =
+{
+	{ BOARD_TXAUDIO_MIKE, 	"MIKE ", },
+#if WITHAFCODEC1HAVELINEINLEVEL
+	{ BOARD_TXAUDIO_LINE, 	"LINE ", },
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+#if WITHUSBUAC
+	{ BOARD_TXAUDIO_USB, 	"USB  ", },
+#endif /* WITHUSBUAC */
+	{ BOARD_TXAUDIO_2TONE, 	"2TONE", },
+	{ BOARD_TXAUDIO_NOISE, 	"NOISE", },
+	{ BOARD_TXAUDIO_1TONE, 	"1TONE", },
+	{ BOARD_TXAUDIO_MUTE, 	"MUTE ", },
+};
+
+#endif /* WITHIF4DSP */
+
 #define PWRMODE_COUNT (sizeof pwrmodes / sizeof pwrmodes [0])
 #define NOTCHMODE_COUNT (sizeof notchmodes / sizeof notchmodes [0])
 #define PAMPMODE_COUNT (sizeof pampmodes / sizeof pampmodes [0])
@@ -833,6 +855,7 @@ static const FLASHMEM struct {
 #define ANTMODE_COUNT (sizeof antmodes / sizeof antmodes [0])
 #define AGCMODE_COUNT (sizeof agcmodes / sizeof agcmodes [0])
 #define MAINSUBRXMODE_COUNT (sizeof mainsubrxmodes / sizeof mainsubrxmodes [0])
+#define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
@@ -15292,6 +15315,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+#if WITHMIC1LEVEL
+	{
+		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
+		ITEM_VALUE,
+		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
+		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
+		nvramoffs0,
+		& mik1level,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* ITHMIC1LEVEL */
 	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	{
 		QLABEL("LINE LVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
@@ -15481,18 +15516,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#endif /* WITHAFCODEC1HAVEPROC */
 #endif /* WITHTX && WITHIF4DSP */
-#if WITHMIC1LEVEL
-	{
-		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
-		ITEM_VALUE,
-		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
-		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
-		nvramoffs0,
-		& mik1level,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* ITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 //	unsigned ALCNEN = 0;	// ALC noise gate function control bit
 //	unsigned ALCNTH = 0;	// ALC noise gate threshold level
