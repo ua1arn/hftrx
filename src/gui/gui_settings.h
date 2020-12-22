@@ -15,6 +15,7 @@
 	#define GUI_SOFTWARE_RENDERING		1 			// Не использовать DMA при отрисовке
 #else
 	#define GUI_TRANSPARENT_WINDOWS		1			// Прозрачный фон окон
+	#define GUI_SOFTWARE_RENDERING		0
 #endif
 
 enum {
