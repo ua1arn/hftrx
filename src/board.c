@@ -7140,21 +7140,7 @@ void board_init_io(void)
 	hardware_spi_slave_initialize();
 #endif /* WITHSPISLAVE */
 
-#if WITHI2SHW
-	hardware_audiocodec_initialize();	// Интерфейс к НЧ кодеку
-#endif /* WITHI2SHW */
-
-#if WITHSAI1HW
-	hardware_fpgacodec_initialize();	// Интерфейс к ВЧ кодеку
-#endif /* WITHSAI1HW */
-
-#if WITHSAI2HW
-	hardware_fpgaspectrum_initialize();	// Интерфейс к источнику данных о спектре
-#endif /* WITHSAI2HW */
-
-#if WITHSAI3HW
-	hardware_fpgawidespectrum_initialize();	// Интерфейс к источнику данных о спектре
-#endif /* WITHSAI3HW */
+	hardware_channels_initialize();	// SAI, I2S и подключенная на них периферия
 
 #if WITHCPUDACHW
 	hardware_dac_initialize();	/* инициализация DAC на STM32F4xx */

@@ -19281,17 +19281,7 @@ hamradio_initialize(void)
 	hamradio_autonotch_init(& lmsData0);
 #endif /* WITHINTEGRATEDDSP */
 
-#if WITHI2SHW
-	hardware_audiocodec_enable();	// Интерфейс к НЧ кодеку
-#endif /* WITHI2SHW */
-
-#if WITHSAI1HW
-	hardware_fpgacodec_enable();	// Интерфейс к ВЧ кодеку
-#endif /* WITHSAI1HW */
-
-#if WITHSAI2HW
-	hardware_fpgaspectrum_enable();	// Интерфейс к источнику данных о спектре
-#endif /* WITHSAI1HW */
+	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
 
 	board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
 	board_update();

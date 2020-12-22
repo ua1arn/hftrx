@@ -19,8 +19,8 @@ typedef struct codechw
 	void (* initialize_tx)(void);	/* инициализация периферии процессора для передачи данных в кодек */
 	void (* initializedma_rx)(void);	/* инициализация DMA процессора для приёма данных от кодека */
 	void (* initializedma_tx)(void);	/* инициализация DMA процессора для передачи данных в кодек */
-	void (* enable_rx)(void);	/* разрешение приёма данных от кодека */
-	void (* enable_tx)(void);	/* разрешение передачи данных в кодек */
+	void (* enable_rx)(uint_fast8_t state);	/* разрешение приёма данных от кодека */
+	void (* enable_tx)(uint_fast8_t state);	/* разрешение передачи данных в кодек */
 	const char * label;
 } codechw_t;
 
@@ -29,7 +29,7 @@ static void hardware_dummy_initialize(void)
 
 }
 
-static void hardware_dummy_enable(void)
+static void hardware_dummy_enable(uint_fast8_t state)
 {
 
 }
@@ -915,7 +915,7 @@ hardware_i2s2_slave_fullduplex_initialize(void)
 /* разрешение работы I2S  */
 // Интерфейс к НЧ кодеку
 static void
-hardware_i2s2_fullduplex_enable(void)
+hardware_i2s2_fullduplex_enable(uint_fast8_t state)
 {
 #if defined (I2S2ext)
 
@@ -949,7 +949,7 @@ hardware_i2s2_fullduplex_enable(void)
 /* разрешение работы I2S на STM32F4xx */
 // Интерфейс к НЧ кодеку
 static void
-hardware_i2s2_tx_enable(void)
+hardware_i2s2_tx_enable(uint_fast8_t state)
 {
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
@@ -966,7 +966,7 @@ hardware_i2s2_tx_enable(void)
 /* разрешение работы I2S на STM32F4xx */
 // Интерфейс к НЧ кодеку
 static void 
-hardware_i2s3_rx_enable(void)
+hardware_i2s3_rx_enable(uint_fast8_t state)
 {
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
@@ -988,7 +988,7 @@ hardware_i2s3_rx_enable(void)
 /* разрешение работы I2S на STM32F4xx */
 // Интерфейс к НЧ кодеку
 static void
-hardware_i2s2_rx_enable(void)
+hardware_i2s2_rx_enable(uint_fast8_t state)
 {
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
@@ -1890,7 +1890,7 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 
 #endif /* WITHSAI1HWTXRXMASTER */
 
-static void hardware_sai1_enable(void)		/* разрешение работы SAI1 на STM32F4xx */
+static void hardware_sai1_enable(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
 {
 	SAI1_Block_B->CR1 |= SAI_xCR1_SAIEN;
 	SAI1_Block_A->CR1 |= SAI_xCR1_SAIEN;
@@ -2499,7 +2499,7 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициал�
 
 #endif /* WITHSUSBSPKONLY */
 
-static void hardware_sai2_enable(void)		/* разрешение работы SAI2 на STM32F4xx */
+static void hardware_sai2_enable(uint_fast8_t state)		/* разрешение работы SAI2 на STM32F4xx */
 {
 	// при dual watch используется SAI2, но
 	// через него не передаются данные.
@@ -2586,6 +2586,17 @@ static const codechw_t audiocodechw =
 	hardware_sai2_enable,
 	hardware_dummy_enable,
 	"sai2-audiocodechw"
+};
+
+static const codechw_t audiocodechw_v3d =
+{
+	hardware_sai2_master_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+	hardware_dummy_initialize,
+	hardware_dummy_initialize, //DMA_SAI2_B_RX_initializeAUDIO48,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
+	DMA_SAI2_A_TX_initializeAUDIO48,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
+	hardware_sai2_enable,
+	hardware_dummy_enable,
+	"sai2-audiocodechw-v3d"
 };
 #else
 	// other CPUs
@@ -2911,7 +2922,7 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
-static void r7s721_ssif0_fullduplex_enable(void)
+static void r7s721_ssif0_fullduplex_enable(uint_fast8_t state)
 {
 	SSIF0.SSICR |= 
 		1 * (1UL << 1) |		// TEN	
@@ -3176,7 +3187,7 @@ static void r7s721_ssif1_fullduplex_initialize(void)
 	HARDWARE_SSIF1_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
-static void r7s721_ssif1_fullduplex_enable(void)
+static void r7s721_ssif1_fullduplex_enable(uint_fast8_t state)
 {
 	SSIF1.SSICR |= 
 		1 * (1UL << 1) |		// TEN	
@@ -3343,7 +3354,7 @@ static void r7s721_ssif2_rx_initialize(void)
 }
 
 // FPGA/spectrum channel
-static void r7s721_ssif2_rx_enable(void)
+static void r7s721_ssif2_rx_enable(uint_fast8_t state)
 {
 	SSIF2.SSICR |= 
 		1 * (1UL << 0) |		// REN	
@@ -3383,16 +3394,16 @@ static const codechw_t fpgaspectrumhw =
 
 // Интерфейс к НЧ кодеку
 // Разрешение работы, вызывается при разрешённых прерываниях
-void hardware_audiocodec_enable(void)
+static void hardware_audiocodec_enable(void)
 {
 	audiocodechw.initializedma_rx();
 	audiocodechw.initializedma_tx();
-	audiocodechw.enable_rx();
-	audiocodechw.enable_tx();
+	audiocodechw.enable_rx(1);
+	audiocodechw.enable_tx(1);
 }
 
 // Интерфейс к НЧ кодеку
-void hardware_audiocodec_initialize(void)
+static void hardware_audiocodec_initialize(void)
 {
 	PRINTF(PSTR("hardware_audiocodec_initialize start\n"));
 
@@ -3407,18 +3418,18 @@ void hardware_audiocodec_initialize(void)
 #if WITHSAI1HW
 
 // Интерфейс к ВЧ кодеку
-void hardware_fpgacodec_enable(void)
+static void hardware_fpgacodec_enable(void)
 {
 	fpgacodechw.initializedma_rx();
 	fpgacodechw.initializedma_tx();
-	fpgacodechw.enable_rx();
-	fpgacodechw.enable_tx();
+	fpgacodechw.enable_rx(1);
+	fpgacodechw.enable_tx(1);
 }
 
 // Инициализация всех каналов интерфейса к FPGA или к IF CODEC
 // Интерфейс к ВЧ кодеку
 // Если есть WITHSAICLOCKFROMI2S	- это инициализируется после I2S
-void hardware_fpgacodec_initialize(void)
+static void hardware_fpgacodec_initialize(void)
 {
 	PRINTF(PSTR("hardware_fpgacodec_initialize start\n"));
 
@@ -3430,25 +3441,24 @@ void hardware_fpgacodec_initialize(void)
 
 #endif /* WITHSAI1HW */
 
-
 #if WITHSAI2HW
 
 #if WITHSUSBSPKONLY || CTLSTYLE_V3D
 
 // Интерфейс к НЧ кодеку
 // Разрешение работы, вызывается при разрешённых прерываниях
-void hardware_fpgaspectrum_enable(void)
+static void hardware_fpgaspectrum_enable(void)
 {
 	PRINTF(PSTR("hardware_fpgaspectrum_enable start: %s\n"), audiocodechw.label);
 	audiocodechw.initializedma_rx();
 	audiocodechw.initializedma_tx();
-	audiocodechw.enable_rx();
-	audiocodechw.enable_tx();
+	audiocodechw.enable_rx(1);
+	audiocodechw.enable_tx(1);
 	PRINTF(PSTR("hardware_fpgaspectrum_enable done\n"));
 }
 
 // Интерфейс к НЧ кодеку
-void hardware_fpgaspectrum_initialize(void)
+static void hardware_fpgaspectrum_initialize(void)
 {
 	PRINTF(PSTR("hardware_fpgaspectrum_initialize start: %s\n"), audiocodechw.label);
 
@@ -3460,18 +3470,18 @@ void hardware_fpgaspectrum_initialize(void)
 
 #else /* WITHSUSBSPKONLY */
 // Интерфейс к источнику данных о спектре
-void hardware_fpgaspectrum_enable(void)
+static void hardware_fpgaspectrum_enable(void)
 {
 	fpgaspectrumhw.initializedma_rx();
 	//fpgaspectrumhw.initializedma_tx();
-	fpgaspectrumhw.enable_rx();
-	//fpgaspectrumhw.enable_tx();
+	fpgaspectrumhw.enable_rx(1);
+	//fpgaspectrumhw.enable_tx(1);
 }
 
 // Инициализация всех каналов интерфейса к FPGA или к IF CODEC
 // Интерфейс к источнику данных о спектре
 // Если есть WITHSAICLOCKFROMI2S	- это инициализируется после I2S
-void hardware_fpgaspectrum_initialize(void)
+static void hardware_fpgaspectrum_initialize(void)
 {
 	PRINTF(PSTR("hardware_fpgaspectrum_initialize start: %s\n"), fpgaspectrumhw.label);
 	fpgaspectrumhw.initialize_rx();
@@ -3530,3 +3540,120 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v)
 }
 #endif /* WITHCPUDACHW */
 
+// other CPUs
+static const codechw_t audiocodechw_dummy =
+{
+	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	hardware_dummy_enable,
+	hardware_dummy_enable,
+	"dummy codec"
+};
+
+// other CPUs
+static const codechw_t fpgaiqhw_dummy =
+{
+	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	hardware_dummy_enable,
+	hardware_dummy_enable,
+	"dummy I/Q"
+};
+// other CPUs
+static const codechw_t fpgaspectrumhw_dummy =
+{
+	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	hardware_dummy_enable,
+	hardware_dummy_enable,
+	"dummy SAIx-fpga spectrum for WFM"
+};
+// other CPUs
+static const codechw_t fpgaspectrumwhw_dummy =
+{
+	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	hardware_dummy_enable,
+	hardware_dummy_enable,
+	"dummy SAIx-fpga ultra wide spectrum"
+};
+
+static const codechw_t * const channels [] =
+{
+
+#if 0//WITHSUSBSPKONLY || CTLSTYLE_V3D
+	& audiocodechw_v3d,
+	& fpgaiqhw_v3d,
+#else
+	& audiocodechw_dummy,				// Интерфейс к НЧ кодеку
+	& fpgaiqhw_dummy,			// Интерфейс к ВЧ кодеку
+	& fpgaspectrumhw_dummy,		// Интерфейс к источнику данных о спектре
+	& fpgaspectrumwhw_dummy,	// Интерфейс к источнику данных о спектре (высокоскоростной)
+#endif
+};
+
+void hardware_channels_initialize(void)
+{
+#if WITHI2SHW
+	hardware_audiocodec_initialize();	// Интерфейс к НЧ кодеку
+#endif /* WITHI2SHW */
+
+#if WITHSAI1HW
+	hardware_fpgacodec_initialize();	// Интерфейс к ВЧ кодеку
+#endif /* WITHSAI1HW */
+
+#if WITHSAI2HW
+	hardware_fpgaspectrum_initialize();	// Интерфейс к источнику данных о спектре
+#endif /* WITHSAI2HW */
+
+#if WITHSAI3HW
+	hardware_fpgawidespectrum_initialize();	// Интерфейс к источнику данных о спектре
+#endif /* WITHSAI3HW */
+
+	uint_fast8_t i;
+	for (i = 0; i < ARRAY_SIZE(channels); ++ i)
+	{
+		const codechw_t * const p = channels [i];
+		//
+		PRINTF(PSTR("hardware_channels_initialize: %s\n"), p->label);
+		p->initialize_rx();
+		p->initialize_tx();
+	}
+}
+
+void hardware_channels_enable(void)
+{
+
+#if WITHI2SHW
+	hardware_audiocodec_enable();	// Интерфейс к НЧ кодеку
+#endif /* WITHI2SHW */
+
+#if WITHSAI1HW
+	hardware_fpgacodec_enable();	// Интерфейс к ВЧ кодеку
+#endif /* WITHSAI1HW */
+
+#if WITHSAI2HW
+	hardware_fpgaspectrum_enable();	// Интерфейс к источнику данных о спектре
+#endif /* WITHSAI1HW */
+
+
+	uint_fast8_t i;
+	for (i = 0; i < ARRAY_SIZE(channels); ++ i)
+	{
+		const codechw_t * const p = channels [i];
+		//
+		PRINTF(PSTR("hardware_channels_enable: %s\n"), p->label);
+		p->initializedma_rx();
+		p->initializedma_tx();
+		p->enable_rx(1);
+		p->enable_tx(1);
+	}
+}
