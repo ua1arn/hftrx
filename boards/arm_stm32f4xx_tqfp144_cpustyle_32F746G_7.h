@@ -197,16 +197,16 @@
 	// Обязательно буфер (входы процессора низковольтные).
 
 	#define ENCODER_INPUT_PORT			(GPIOB->IDR)
-	#define ENCODER_BITS ((1u << 14) | (1u << 15))		// PB14 & PB15
-	#define ENCODER_SHIFT 14
+	#define ENCODER_BITS ((1u << 12) | (1u << 13))		// PB12 & PB13
+	#define ENCODER_SHIFT 12
 	// Обязательно буфер (входы процессора низковольтные).
 
 	#define ENCODER2_INPUT_PORT			(GPIOB->IDR)
 	#define ENCODER2_BITS ((1u << 8) | (1u << 9))		// PB8 & PB9
 	#define ENCODER2_SHIFT 8
 
-	#define TARGET_ENC2BTN_BIT (1U << 1)				// PI1 - second encoder button with pull-up
-	#define TARGET_ENC2BTN_GET (((GPIOI->IDR) & TARGET_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_BIT (1U << 8)				// PA8 - second encoder button with pull-up
+	#define TARGET_ENC2BTN_GET (((GPIOA->IDR) & TARGET_ENC2BTN_BIT) == 0)
 
 	#define ENCODER_INITIALIZE() \
 		do { \
@@ -482,19 +482,19 @@
 // MOSI & SCK port
 #define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOI->BSRR = BSRR_C(v); __DSB(); } while (0)
 #define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOI->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_SCLK_BIT			(1U << 0)	// * PI0 бит, через который идет синхронизация SPI
+#define	SPI_SCLK_BIT			(1U << 1)	// * PI1 бит, через который идет синхронизация SPI
 
-#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_MOSI_BIT			(1U << 7)	// * PG7 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define	SPI_MOSI_BIT			(1U << 15)	// * PB15 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
-#define SPI_TARGET_MISO_PIN		(GPIOH->IDR)		// was PINA
-#define	SPI_MISO_BIT			(1U << 6)	// * PH6 бит, через который идет ввод с SPI.
+#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
+#define	SPI_MISO_BIT			(1U << 14)	// * PB14 бит, через который идет ввод с SPI.
 
 #define SPIIO_INITIALIZE() do { \
 		arm_hardware_pioi_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-		arm_hardware_piog_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-		arm_hardware_pioh_inputs(SPI_MISO_BIT); \
+		arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+		arm_hardware_piob_inputs(SPI_MISO_BIT); \
 	} while (0)
 
 
@@ -505,14 +505,14 @@
 } while (0)
 #define HARDWARE_SPI_DISCONNECT() do { \
 		arm_hardware_pioi_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-		arm_hardware_piog_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-		arm_hardware_pioh_inputs(SPI_MISO_BIT); \
+		arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+		arm_hardware_piob_inputs(SPI_MISO_BIT); \
 	} while (0)
 #define HARDWARE_SPI_CONNECT_MOSI() do { \
 		arm_hardware_piog_altfn50(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
 	} while (0)
 #define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		arm_hardware_piog_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
+		arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 	} while (0)
 
 /* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
@@ -534,8 +534,8 @@
 #else
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		/*arm_hardware_pioa_inputs(KBD_MASK); */\
-		arm_hardware_pioi_inputs(TARGET_ENC2BTN_BIT); \
-		arm_hardware_pioi_updown(TARGET_ENC2BTN_BIT, 0); /* PF0: pull-up second encoder button */ \
+		arm_hardware_pioa_inputs(TARGET_ENC2BTN_BIT); \
+		arm_hardware_pioa_updown(TARGET_ENC2BTN_BIT, 0); /* PA8: pull-up second encoder button */ \
 		} while (0)
 #endif
 
