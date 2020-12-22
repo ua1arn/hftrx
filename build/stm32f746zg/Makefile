@@ -27,7 +27,7 @@ HEX  = $(CP) -O ihex -R .bss -R .heap
 BIN  = $(CP) -O binary -R .bss -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1
+LWIPDIR = ../../src/lwip-2.1.2
 OBJDIR = ./obj
 
 # Define optimisation level here
@@ -82,8 +82,8 @@ SRCDIR = ../../src
 PROJECT = tc1_stm32f746zg
 
 # Define linker script file here
-#LDSCRIPT_ROM = ./STM32F746ZG_rom.ld
-LDSCRIPT_ROM = ./STM32F746ZG_rom_sdram.ld
+LDSCRIPT_ROM = ./STM32F746ZG_rom.ld
+#LDSCRIPT_ROM = ./STM32F746ZG_rom_sdram.ld
 
 LDSCRIPT_RAM = ./STM32F746ZG_ram.ld
 
