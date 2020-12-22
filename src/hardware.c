@@ -1706,12 +1706,6 @@ static RAMFUNC void spool_systimerbundle2(void)
 	}
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 
-#if WITHKEYBOARD
-#if ! KEYBOARD_USE_ADC
-	kbd_spool(NULL);	//
-#endif /* ! KEYBOARD_USE_ADC */
-#endif /* WITHKEYBOARD */
-
 #if WITHCPUADCHW
 	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
 #endif /* WITHCPUADCHW */
