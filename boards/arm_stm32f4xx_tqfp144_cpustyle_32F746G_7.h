@@ -221,30 +221,23 @@
 #endif
 
 #if WITHI2SHW
-
-	#if defined(STM32H743xx)
-		#define PB5_I2S3_AF 7	// AF_7
-	#else /* defined(STM32H743xx) */
-		#define PB5_I2S3_AF AF_SPI3
-	#endif /* defined(STM32H743xx) */
-
-	// Инициализируются I2S2 и I2S3
-	#define I2S2HW_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(1U << 12, AF_SPI2); /* PB12	*/ \
-		arm_hardware_piob_altfn2(1U << 13, AF_SPI2); /* PB13	*/ \
-		arm_hardware_piob_altfn2(1U << 15, AF_SPI2); /* PB15 - передача */ \
-		arm_hardware_pioa_altfn2(1U << 15, AF_SPI3); /* PA15	*/ \
-		arm_hardware_piob_altfn2(1U << 3, AF_SPI3); /* PB3	*/ \
-		arm_hardware_piob_altfn2(1U << 5, PB5_I2S3_AF); /* PB5 - приём */ \
+	#define I2S2HW_INITIALIZE()	do { \
+		arm_hardware_pioi_altfn20(1U << 4, AF_SAI2);	/* PI4 - SAI2_MCLK_A - 12.288 MHz	*/ \
+		arm_hardware_pioi_altfn20(1U << 5, AF_SAI2);	/* PI5 - SAI2_SCK_A	*/ \
+		arm_hardware_pioi_altfn2(1U << 6, AF_SAI2); 	/* PI6 SAI2_SD_A (i2s data to codec)	*/ \
+		arm_hardware_pioi_altfn2(1U << 7, AF_SAI2); 	/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_piog_altfn2(1U << 10, AF_SAI2);	/* PG10 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
 #if WITHSAI1HW
+	#define WITHSAI1HWTXRXMASTER	1
 	#define SAI1HW_INITIALIZE()	do { \
 		arm_hardware_piof_altfn2(1U << 9, AF_SAI);		/* PF9 - SAI1_FS_B	- 48 kHz	*/ \
 		arm_hardware_piof_altfn20(1U << 8, AF_SAI);		/* PF8 - SAI1_SCK_B	*/ \
 		arm_hardware_piob_altfn2(1U << 2, AF_SAI);		/* PB2 - SAI1_SD_A	(i2s data to codec)	*/ \
 		arm_hardware_piof_altfn2(1U << 6, AF_SAI);		/* PF6 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioc_altfn20(1U << 9, AF_SPI2);	/* PC9 - MCLK source - I2S_CKIN 24.576 MHz */ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -254,7 +247,7 @@
 	#define SAI2HW_INITIALIZE()	do { \
 		arm_hardware_pioi_altfn20(1U << 4, AF_SAI2);	/* PI4 - SAI2_MCLK_A - 12.288 MHz	*/ \
 		arm_hardware_pioi_altfn20(1U << 5, AF_SAI2);	/* PI5 - SAI2_SCK_A	*/ \
-		arm_hardware_pioi_altfn2(1U << 6, AF_SAI2); 	/* PI6 SAI2_SD_A (i2s data to codec)	*/ \
+		arm_hardware_pioi_altfn2(1U << 6, AF_SAI2); 	/* PI6 - SAI2_SD_A (i2s data to codec)	*/ \
 		arm_hardware_pioi_altfn2(1U << 7, AF_SAI2); 	/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
 		arm_hardware_piog_altfn2(1U << 10, AF_SAI2);	/* PG10 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
@@ -857,13 +850,13 @@
 		} while (0)
 
 #define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t enpins = (1U << 14); /* PB14 */ \
-		arm_hardware_piob_outputs(enpins, 0 ? enpins : 0);	/* BL ENABLE */ \
+		const portholder_t enpins = (1U << 0); /* PA0 */ \
+		arm_hardware_pioa_outputs(enpins, 0 ? enpins : 0);	/* BL ENABLE */ \
 		} while (0)
 	/* включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t enpins = (1U << 14); /* PB14 */ \
-		arm_hardware_piob_outputs(enpins, en ? enpins : 0);	/* BL ENABLE */ \
+		const portholder_t enpins = (1U << 0); /* PA0 */ \
+		arm_hardware_pioa_outputs(enpins, en ? enpins : 0);	/* BL ENABLE */ \
 	} while (0)
 
 #define	HARDWARE_INITIALIZE() do { \

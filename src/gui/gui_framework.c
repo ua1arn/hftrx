@@ -668,7 +668,8 @@ static void draw_button(const button_t * const bh)
 		}
 	} while ( ++i < BG_COUNT);
 
-	if (b1 == NULL)				// если не найден заполненный буфер фона по размерам, программная отрисовка
+	// если не найден заполненный буфер фона по размерам, программная отрисовка
+	if (b1 == NULL || GUI_SOFTWARE_RENDERING)
 	{
 		PACKEDCOLORMAIN_T c1, c2;
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);

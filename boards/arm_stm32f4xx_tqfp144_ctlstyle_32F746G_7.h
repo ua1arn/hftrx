@@ -19,8 +19,8 @@
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
-	//#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
-	//#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
+	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
+	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
 	#if 1
 		// при наличии внешнего генератора
@@ -62,6 +62,8 @@
 
 		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
 		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
+		#define PLLI2SN_MUL 344		// 344.064 (192 <= PLLI2SN <= 432)
+		#define SAIREF1_MUL 344		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 344		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 344		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
@@ -146,14 +148,12 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_V2			1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_AT070TN90 	1	/* AT070TN90 panel (800*480) - 7" display */
+	#define WITHLCDDEMODE		1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
-	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
-	//#define LCDMODE_LTDCSDRAMBUFF	1	/* используется область внешнего SDRAM для хранения framebuffer */
-	//#define SDRAM_BANK_ADDR     ((uint32_t)0xC0000000)
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -201,8 +201,8 @@
 	#define CODEC1_TYPE CODEC_TYPE_WM8994		// PH7 & PH8 I2C3
 	//#define CODEC_TYPE_WM8994_USE_SPI	1
 	//#define CODEC_TYPE_WM8994_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
-	#define CODEC_TYPE_WM8994_USE_32BIT 1	/* кодек в формате 32 bit (иначе - 16 bit) */
-	#define CODEC_TYPE_WM8994_MASTER	1
+	//#define CODEC_TYPE_WM8994_USE_32BIT 1	/* кодек в формате 32 bit (иначе - 16 bit) */
+	//#define CODEC_TYPE_WM8994_MASTER	1
 
 	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L	// PH7 & PH8 I2C3
 	//#define CODEC_TYPE_NAU8822_USE_SPI	1
@@ -227,8 +227,8 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHAFADCWIDTH	32		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	32		// 1 бит знак и 15 бит значащих
+	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
@@ -300,6 +300,10 @@
 	#define WITHDISPLAY_FPS		25
 	#define WITHDISPLAYSWR_FPS	25
 
+//	#define WITHBBOX	1
+//	#define WITHBBOXSUBMODE	SUBMODE_LSB
+//	#define WITHBBOXFREQ	3688000L
+
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
@@ -312,7 +316,7 @@
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	////#define WITHCAT		1	/* используется CAT */
-	#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
+	//#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */

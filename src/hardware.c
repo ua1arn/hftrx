@@ -12784,6 +12784,10 @@ sysinit_fpu_initialize(void)
 	__FPU_Enable();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+
+#if (__CORTEX_M != 0) && CTLSTYLE_V3D
+	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
+#endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
 }
 
 static void FLASHMEMINITFUNC

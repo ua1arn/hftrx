@@ -47,10 +47,10 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(CMSISDIR)/Core_A/Include \
+	$(CMSISDIR)/Core/Include \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/DSP/ComputeLibrary/Include \
-	$(CMSISDIR)/Core_A/Source \
+	$(CMSISDIR)/Core/Source \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \

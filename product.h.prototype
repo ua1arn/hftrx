@@ -357,10 +357,10 @@
 	#include "boards/arm_stm32fxxx_tqfp100_cpustyle_v8c.h"	/* плата STM32F4DISCOVERY с процессором STM32F407VGT6	*/
 #elif CPUSTYLE_STM32F && CTLSTYLE_V3D
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
-	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G_RA4ASN.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6 + дисплей 7" */
+	//#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_32F746G_7.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6 + дисплей 7" */
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
-	//#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G_RA4ASN.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6 + дисплей 7" */
+	//#include "boards/arm_stm32f4xx_tqfp144_cpustyle_32F746G_7.h"	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6 + дисплей 7" */
 #elif CPUSTYLE_STM32F && CTLSTYLE_NUCLEO_V1	// Внешняя аудиоплата на базе NUCLEO-F767ZI с процессором STM32F767ZIT6  mb1137.pdf
 	#include "boards/arm_stm32f767_tqfp144_ctlstyle_nucleo.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

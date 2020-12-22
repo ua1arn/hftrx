@@ -9,8 +9,13 @@
 #define GUI_WINDOWBGCOLOR			2
 #define GUI_SLIDERLAYOUTCOLOR		100
 #define GUI_MENUSELECTCOLOR			109
-#define GUI_TRANSPARENT_WINDOWS		1			// Прозрачный фон окон
 #define GUI_DEFAULTCOLOR			COLORMAIN_BLACK
+
+#if CTLSTYLE_V3D
+	#define GUI_SOFTWARE_RENDERING		1 			// Не использовать DMA при отрисовке
+#else
+	#define GUI_TRANSPARENT_WINDOWS		1			// Прозрачный фон окон
+#endif
 
 enum {
 	sliders_width = 8,			// ширина шкалы слайдера

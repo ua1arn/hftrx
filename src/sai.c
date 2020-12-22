@@ -1683,7 +1683,19 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 	PRINTF(PSTR("hardware_sai1_master_fullduplex_initialize: 3 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
+#if CTLSTYLE_V3D
 	SAI1_Block_A->CR1 = 
+		commoncr1 |
+		(1 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: 0: audio sub-block in asynchronous mode.
+		(0 * SAI_xCR1_MODE_0) |	// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
+		0;
+	SAI1_Block_B->CR1 =
+		commoncr1 |
+		(0 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
+		(1 * SAI_xCR1_MODE_0) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
+		0;
+#else
+	SAI1_Block_A->CR1 =
 		commoncr1 |
 		(0 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: 0: audio sub-block in asynchronous mode.
 		(0 * SAI_xCR1_MODE_0) |	// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
@@ -1693,6 +1705,7 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 		(1 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
 		(3 * SAI_xCR1_MODE_0) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
+#endif
 
 	// CR2 value
 	const portholder_t commoncr2 =
@@ -1952,17 +1965,17 @@ void DMA2_Stream4_IRQHandler(void)
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
 		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
-#if WITHSUSBSPKONLY
+#if WITHSUSBSPKONLY || CTLSTYLE_V3D
 		if (b != 0)
 		{
-			release_dmabuffer32tx(DMA2_Stream4->M0AR);
-			DMA2_Stream4->M0AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			release_dmabuffer16(DMA2_Stream4->M0AR);
+			DMA2_Stream4->M0AR = dma_flush16tx(getfilled_dmabuffer16phones());
 			DRD(DMA2_Stream4->M0AR);
 		}
 		else
 		{
-			release_dmabuffer32tx(DMA2_Stream4->M1AR);
-			DMA2_Stream4->M1AR = dma_flush32tx(getfilled_dmabuffer32tx_main());
+			release_dmabuffer16(DMA2_Stream4->M1AR);
+			DMA2_Stream4->M1AR = dma_flush16tx(getfilled_dmabuffer16phones());
 			DRD(DMA2_Stream4->M1AR);
 		}
 #else /* WITHSUSBSPKONLY */
@@ -2075,10 +2088,10 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-	DMA2_Stream4->M0AR = dma_flush32tx(allocate_dmabuffer32tx());
-	DMA2_Stream4->M1AR = dma_flush32tx(allocate_dmabuffer32tx());
+	DMA2_Stream4->M0AR = dma_flush16tx(allocate_dmabuffer16());
+	DMA2_Stream4->M1AR = dma_flush16tx(allocate_dmabuffer16());
 	DMA2_Stream4->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
-		(DMABUFFSIZE32TX * DMA_SxNDT_0);
+		(DMABUFFSIZE16 * DMA_SxNDT_0);
 
 	DMA2_Stream4->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA2_Stream4->FCR);
@@ -2088,8 +2101,8 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 		0 * DMA_SxCR_PBURST_0 |	// 0: single transfer
 		1 * DMA_SxCR_DIR_0 | //направление - память - периферия
 		1 * DMA_SxCR_MINC | //инкремент памяти
-		2 * DMA_SxCR_MSIZE_0 | //длина в памяти - 32 bit
-		2 * DMA_SxCR_PSIZE_0 | //длина в DR - 32 bit
+		(1 << DMA_SxCR_MSIZE_Pos) | //длина в памяти - 16 bit
+		(1 << DMA_SxCR_PSIZE_Pos) | //длина в DR - 16 bit
 		(DMA_SxCR_PL_VALUE << DMA_SxCR_PL_Pos) |		// Priority level - High
 		0 * DMA_SxCR_CT | // M0AR selected
 		1 * DMA_SxCR_DBM | // double buffer mode seelcted
@@ -2362,7 +2375,7 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 	PRINTF(PSTR("hardware_sai2_slave_fullduplex_initialize done\n"));
 }
 
-#if WITHSUSBSPKONLY
+#if WITHSUSBSPKONLY || CTLSTYLE_V3D
 
 static void hardware_sai2_master_fullduplex_initialize(void)		/* инициализация SAI2 на STM32F4xx */
 {
@@ -2563,12 +2576,12 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 	PRINTF(PSTR("DMA_SAI2_B_RX_initializeWFM done.\n"));
 }
 
-#if WITHSUSBSPKONLY
+#if WITHSUSBSPKONLY || CTLSTYLE_V3D
 static const codechw_t audiocodechw =
 {
 	hardware_sai2_master_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
 	hardware_dummy_initialize,
-	DMA_SAI2_B_RX_initializeAUDIO48,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
+	hardware_dummy_initialize, //DMA_SAI2_B_RX_initializeAUDIO48,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
 	DMA_SAI2_A_TX_initializeAUDIO48,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
 	hardware_sai2_enable,
 	hardware_dummy_enable,
@@ -2601,7 +2614,7 @@ static const codechw_t fpgacodechw =
 	hardware_sai1_master_fullduplex_initialize,
 	hardware_dummy_initialize,
 	DMA_SAI1_B_RX_initialize,
-	DMA_SAI1_A_TX_initialize,
+	hardware_dummy_enable, //DMA_SAI1_A_TX_initialize,
 	hardware_sai1_enable,
 	hardware_dummy_enable,
 	"sai1-audiocodechw"
@@ -3420,7 +3433,7 @@ void hardware_fpgacodec_initialize(void)
 
 #if WITHSAI2HW
 
-#if WITHSUSBSPKONLY
+#if WITHSUSBSPKONLY || CTLSTYLE_V3D
 
 // Интерфейс к НЧ кодеку
 // Разрешение работы, вызывается при разрешённых прерываниях

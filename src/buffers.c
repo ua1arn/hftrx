@@ -660,7 +660,7 @@ void buffers_initialize(void)
 	static subscribefloat_t afsample16reregister_user;
 	subscribefloat_user(& afoutfloat_user, & afsample16reregister_user, NULL, savesampleout16stereo_user);
 
-#if WITHSKIPUSERMODE
+#if WITHSKIPUSERMODE || CTLSTYLE_V3D
 
 	static subscribefloat_t afsample16reregister;
 	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16stereo);

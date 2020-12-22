@@ -4183,7 +4183,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
-		#if ADC1_TYPE == ADC_TYPE_AD9246
+		#if (ADC1_TYPE == ADC_TYPE_AD9246) || CTLSTYLE_V3D
 			static uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
 		#else /* ADC1_TYPE == ADC_TYPE_AD9246 */
 			static uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */

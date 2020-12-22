@@ -5258,7 +5258,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 	#if 0
 			// Тестирование - заменить приянтые квадратуры синтезированными
-			inject_testsignals((int32_t *) (buff + i))
+			inject_testsignals((int32_t *) (buff + i));
 
 	#endif
 
