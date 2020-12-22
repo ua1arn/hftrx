@@ -3465,6 +3465,16 @@ enum
 	VIEW_COUNT
 };
 
+static const FLASHMEM char view_types [][6] =
+	{
+		"LINE ",
+		"FILL ",
+		"COLOR",
+#if WITHVIEW_3DSS
+		"3DSS ",
+#endif /* WITHVIEW_3DSS */
+	};
+
 /* Управление частичной полосоц отображением спектра/волопада */
 enum
 {

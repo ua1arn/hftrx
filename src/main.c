@@ -6335,6 +6335,18 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
+	{
+		"VIEW STL",
+		RJ_VIEW,
+		ISTEP1,
+		0, VIEW_COUNT - 1,
+		offsetof(struct nvmap, gviewstyle),
+		nvramoffs0,
+		NULL,
+		& gviewstyle,
+		getzerobase,
+		enc2menu_adjust,
+	},
 #endif /* WITHSPECTRUMWF */
 #endif /* WITHIF4DSP */
 #if WITHIFSHIFT && ! WITHPOTIFSHIFT
@@ -6414,6 +6426,9 @@ enc2menu_value(
 		break;
 	case RJ_SIGNED:
 		local_snprintf_P(buff, sz, PSTR("%+ld"), (signed long) value);
+		break;
+	case RJ_VIEW:
+		local_snprintf_P(buff, sz, PSTR("%s"), view_types [value]);
 		break;
 	case RJ_UNSIGNED:
 	default:
@@ -17561,18 +17576,8 @@ void display2_menu_valxx(
 	case RJ_VIEW:
 		{
 			/* стиль отображения спектра и панорамы */
-			static const FLASHMEM char msg [][6] =
-			{
-				"LINE ",
-				"FILL ",
-				"COLOR",
-#if WITHVIEW_3DSS
-				"3DSS ",
-#endif /* WITHVIEW_3DSS */
-			};
-
 			width = VALUEW;
-			display_menu_string_P(x, y, msg [value], width, comma);
+			display_menu_string_P(x, y, view_types [value], width, comma);
 		}
 		break;
 
