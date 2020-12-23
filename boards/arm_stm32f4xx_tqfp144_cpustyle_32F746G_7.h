@@ -15,9 +15,9 @@
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
 
 //#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -499,9 +499,9 @@
 
 
 #define HARDWARE_SPI_CONNECT() do { \
-		arm_hardware_pioh_altfn50(SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-		arm_hardware_piog_altfn50(SPI_MOSI_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-		arm_hardware_pioi_altfn50(SPI_SCLK_BIT, AF_SPI1);	\
+		arm_hardware_piob_altfn50(SPI_MISO_BIT, AF_SPI2); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_piob_altfn50(SPI_MOSI_BIT, AF_SPI2); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_pioi_altfn50(SPI_SCLK_BIT, AF_SPI2);	\
 } while (0)
 #define HARDWARE_SPI_DISCONNECT() do { \
 		arm_hardware_pioi_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
@@ -509,7 +509,7 @@
 		arm_hardware_piob_inputs(SPI_MISO_BIT); \
 	} while (0)
 #define HARDWARE_SPI_CONNECT_MOSI() do { \
-		arm_hardware_piog_altfn50(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+		arm_hardware_piob_altfn50(SPI_MOSI_BIT, AF_SPI2);	/* PIO disable for MOSI bit (SD CARD read support) */ \
 	} while (0)
 #define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 		arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \

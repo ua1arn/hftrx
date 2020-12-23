@@ -530,7 +530,7 @@ void hardware_spi_io_delay(void)
 	_NOP();
 	_NOP();
 #elif	CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
-	__DSB(); 
+	__DSB();
 	//__ISB(); 
 	__NOP();
 	__NOP();
@@ -4903,6 +4903,15 @@ void hardware_spi_master_initialize(void)
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
+#elif CTLSTYLE_V3D		// SPI2
+
+	// Настроим модуль SPI.
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // подать тактирование
+	(void) RCC->APB1ENR;
+
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
 	// Настроим модуль SPI.
@@ -5410,6 +5419,15 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 	#endif
 	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
 
+#elif CTLSTYLE_V3D		// SPI2
+
+	HARDWARE_SPI_CONNECT();
+	SPI2->CR1 = spi_cr1_val8w [spispeedindex][spimode];
+	SPI2->CR2 = (SPI2->CR2 & ~ (SPI_CR2_DS)) |
+		7 * SPI_CR2_DS_0 |	// 8 bit word length
+		1 * SPI_CR2_FRXTH |			// RXFIFO threshold is set to 8 bits (FRXTH=1).
+		0;
+
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
 	// В этих процессорах и входы и выходы перекдючаются на ALT FN
@@ -5495,6 +5513,11 @@ void hardware_spi_disconnect(void)
 	// connect back to GPIO
 	HARDWARE_SPI_DISCONNECT();
 
+#elif CTLSTYLE_V3D		// SPI2
+
+	SPI2->CR1 &= ~ SPI_CR1_SPE;
+	HARDWARE_SPI_DISCONNECT();
+
 #elif CPUSTYLE_STM32F
 
 	SPI1->CR1 &= ~ SPI_CR1_SPE;
@@ -5571,6 +5594,11 @@ hardware_spi_ready_b8_void(void)
 		;
 	(void) * (volatile uint8_t *) & SPI1->RXDR;	/* clear SPI_SR_RXP in status register */
 
+#elif CTLSTYLE_V3D		// SPI2
+
+	while ((SPI2->SR & SPI_SR_RXNE) == 0)
+			;
+		(void) SPI2->DR;	/* clear SPI_SR_RXNE in status register */
 
 #elif CPUSTYLE_STM32F
 
@@ -5626,6 +5654,15 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((SPI1->SR & SPI_SR_RXP) == 0)	
 		;
 	const portholder_t t = * (volatile uint8_t *) & SPI1->RXDR;	// prevent data packing feature
+	return t;
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	while ((SPI2->SR & SPI_SR_RXNE) == 0)
+		;
+	const portholder_t t = SPI2->DR & 0xFF;	/* clear SPI_SR_RXNE in status register */
+	while ((SPI2->SR & SPI_SR_BSY) != 0)
+		;
 	return t;
 
 #elif CPUSTYLE_STM32F
@@ -6890,6 +6927,10 @@ void hardware_spi_b8_p1(
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	* (volatile uint8_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	* (volatile uint8_t *) & (SPI2)->DR = v;	// prevent data packing feature
 
 #elif CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F7XX
 
