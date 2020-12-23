@@ -5217,6 +5217,10 @@ board_set_preamp(uint_fast8_t v)
 		glob_preamp = n;
 		board_ctlreg1changed();
 	}
+
+#if CTLSTYLE_V3D	// пока тут, надо будет добавить свой CTLREGMODE
+	arm_hardware_pioc_outputs((1 << 7), ! glob_preamp * (1 << 7));
+#endif
 }
 
 void
