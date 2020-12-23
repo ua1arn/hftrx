@@ -2803,7 +2803,7 @@ static const codechw_t fpgaspectrumhw_sai2 =
 
 static const codechw_t fpgacodechw_sai1_master =
 {
-	hardware_sai1_master_fullduplex_initialize,
+	hardware_sai1_master_fullduplex_initialize_v3d,
 	hardware_dummy_initialize,
 	DMA_SAI1_B_RX_initialize,
 	hardware_dummy_initialize, //DMA_SAI1_A_TX_initialize,
