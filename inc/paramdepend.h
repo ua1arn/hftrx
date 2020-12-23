@@ -701,6 +701,8 @@ extern "C" {
 	#undef NVRAM_TYPE
 	#define NVRAM_TYPE NVRAM_TYPE_NOTHING
 
+	#define TICKS_FREQUENCY 200
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
