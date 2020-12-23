@@ -92,35 +92,13 @@ typedef enum IRQn
 /*                Device Specific Peripheral Section                          */
 /******************************************************************************/
 
-
-#if defined ( __CC_ARM   )
-#pragma anon_unions
-#endif
-
-//#include "pl310.h"
-//#include "gic.h"
-
-#if defined ( __CC_ARM   )
-#pragma no_anon_unions
-#endif
-
-/*@}*/ /* end of group Zynq7000_Peripherals */
-
-
-/******************************************************************************/
-/*                         Peripheral memory map                              */
-/******************************************************************************/
-/** @addtogroup Zynq7000_MemoryMap Zynq7000 Memory Mapping
-  @{
-*/
-
-#define Zynq7000_SLCR_BASE               0xF8000000uL
-#define Zynq7000_SCTL_BASE              0xF8F00000uL  /* System Controller */
-#define Zynq7000_TIMER_GLOBAL_BASE      0xF8F00200uL  /* Global 64bit timer */
-
-#define Zynq7000_GIC_CPU_BASE           0xF8F00100uL  /* Generic interrupt controller CPU interface */
-#define Zynq7000_GIC_DIST_BASE          0xF8F01000uL  /* Generic interrupt controller distributor */
-#define Zynq7000_PL310_BASE       		0xF8F02000uL                        /*!< v (PL310     ) Base Address */
+#define CPUPRIV_BASE      (0xF8F00000uL)
+#define SCU_CONTROL_BASE  (CPUPRIV_BASE + 0x0000uL)
+#define GIC_PROC_BASE     (CPUPRIV_BASE + 0x0100uL)
+#define GLOBAL_TIMER_BASE (CPUPRIV_BASE + 0x0200uL)
+#define PRIV_TIMER_BASE   (CPUPRIV_BASE + 0x0600uL)
+#define GIC_DISTRIB_BASE  (CPUPRIV_BASE + 0x1000uL)
+#define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
 
 #define __CORTEX_A                    9U      /*!< Cortex-A# Core                              */
 //#define __CA_REV                 0x0005U      /*!< Core revision r0p0                          */
@@ -129,9 +107,9 @@ typedef enum IRQn
 #define __TIM_PRESENT                 0U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present                  */
 
-#define GIC_DISTRIBUTOR_BASE         Zynq7000_GIC_DIST_BASE                        /*!< (GIC DIST  ) Base Address */
-#define GIC_INTERFACE_BASE           Zynq7000_GIC_CPU_BASE                        /*!< (GIC CPU IF) Base Address */
-#define L2C_310_BASE                 Zynq7000_PL310_BASE                        /*!< (PL310     ) Base Address */
+#define GIC_DISTRIBUTOR_BASE         GIC_DISTRIB_BASE                        /*!< (GIC DIST  ) Base Address */
+#define GIC_INTERFACE_BASE           GIC_PROC_BASE                        /*!< (GIC CPU IF) Base Address */
+#define L2C_310_BASE                 L2CACHE_BASE                        /*!< (PL310     ) Base Address */
 
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
@@ -186,7 +164,7 @@ typedef struct slcr_regs {
 	volatile uint32_t SLCR_LOCK;                       // SLCR Write Protection Lock
 	volatile uint32_t SLCR_UNLOCK;                     // SLCR Write Protection Unlock
 	volatile uint32_t SLCR_LOCKSTA;                    // SLCR Write Protection Status
-    uint32_t ___reserved0[60];
+    uint32_t reserved0[60];
     volatile uint32_t ARM_PLL_CTRL;                    // ARM PLL Control
     volatile uint32_t DDR_PLL_CTRL;                    // DDR PLL Control
     volatile  uint32_t IO_PLL_CTRL;                     // IO PLL Control
@@ -194,7 +172,7 @@ typedef struct slcr_regs {
     volatile uint32_t ARM_PLL_CFG;                     // ARM PLL Configuration
     volatile uint32_t DDR_PLL_CFG;                     // DDR PLL Configuration
     volatile uint32_t IO_PLL_CFG;                      // IO PLL Configuration
-    uint32_t ___reserved1[1];
+    uint32_t reserved1[1];
     volatile uint32_t ARM_CLK_CTRL;                    // CPU Clock Control
     volatile uint32_t DDR_CLK_CTRL;                    // DDR Clock Control
     volatile uint32_t DCI_CLK_CTRL;                    // DCI clock control
@@ -231,9 +209,9 @@ typedef struct slcr_regs {
     volatile uint32_t FPGA3_THR_CTRL;                  // PL Clock 3 Throttle Control
     volatile uint32_t FPGA3_THR_CNT;                   // PL Clock 3 Throttle Count
     volatile uint32_t FPGA3_THR_STA;                   // PL Clock 3 Throttle Status
-    uint32_t ___reserved2[5];
+    uint32_t reserved2[5];
     volatile uint32_t CLK_621_TRUE;                    // CPU Clock Ratio Mode select
-    uint32_t ___reserved3[14];
+    uint32_t reserved3[14];
     volatile uint32_t PSS_RST_CTRL;                    // PS Software Reset Control
     volatile uint32_t DDR_RST_CTRL;                    // DDR Software Reset Control
     volatile uint32_t TOPSW_RST_CTRL;                  // Central Interconnect Reset Control
@@ -249,33 +227,33 @@ typedef struct slcr_regs {
     volatile uint32_t LQSPI_RST_CTRL;                  // Quad SPI Software Reset Control
     volatile uint32_t SMC_RST_CTRL;                    // SMC Software Reset Control
     volatile uint32_t OCM_RST_CTRL;                    // OCM Software Reset Control
-    uint32_t ___reserved4[1];
+    uint32_t reserved4[1];
     volatile uint32_t FPGA_RST_CTRL;                   // FPGA Software Reset Control
     volatile uint32_t A9_CPU_RST_CTRL;                 // CPU Reset and Clock control
-    uint32_t ___reserved5[1];
+    uint32_t reserved5[1];
     volatile uint32_t RS_AWDT_CTRL;                    // Watchdog Timer Reset Control
-    uint32_t ___reserved6[2];
+    uint32_t reserved6[2];
     volatile uint32_t REBOOT_STATUS;                   // Reboot Status, persistent
     volatile uint32_t BOOT_MODE;                       // Boot Mode Strapping Pins
-    uint32_t ___reserved7[40];
+    uint32_t reserved7[40];
     volatile uint32_t APU_CTRL;                        // APU Control
     volatile uint32_t WDT_CLK_SEL;                     // SWDT clock source select
-    uint32_t ___reserved8[78];
+    uint32_t reserved8[78];
     volatile uint32_t TZ_DMA_NS;                       // DMAC TrustZone Config
     volatile uint32_t TZ_DMA_IRQ_NS;                   // DMAC TrustZone Config for Interrupts
     volatile uint32_t TZ_DMA_PERIPH_NS;                // DMAC TrustZone Config for Peripherals
-    uint32_t ___reserved9[57];
+    uint32_t reserved9[57];
     volatile uint32_t PSS_IDCODE;                      // PS IDCODE
-    uint32_t ___reserved10[51];
+    uint32_t reserved10[51];
     volatile uint32_t DDR_URGENT;                      // DDR Urgent Control
-    uint32_t ___reserved11[2];
+    uint32_t reserved11[2];
     volatile uint32_t DDR_CAL_START;                   // DDR Calibration Start Triggers
-    uint32_t ___reserved12[1];
+    uint32_t reserved12[1];
     volatile uint32_t DDR_REF_START;                   // DDR Refresh Start Triggers
     volatile uint32_t DDR_CMD_STA;                     // DDR Command Store Status
     volatile uint32_t DDR_URGENT_SEL;                  // DDR Urgent Select
     volatile uint32_t DDR_DFI_STATUS;                  // DDR DFI status
-    uint32_t ___reserved13[55];
+    uint32_t reserved13[55];
     volatile uint32_t MIO_PIN_00;                      // MIO Pin 0 Control
     volatile uint32_t MIO_PIN_01;                      // MIO Pin 1 Control
     volatile uint32_t MIO_PIN_02;                      // MIO Pin 2 Control
@@ -330,29 +308,29 @@ typedef struct slcr_regs {
     volatile uint32_t MIO_PIN_51;                      // MIO Pin 51 Control
     volatile uint32_t MIO_PIN_52;                      // MIO Pin 52 Control
     volatile uint32_t MIO_PIN_53;                      // MIO Pin 53 Control
-    uint32_t ___reserved14[11];
+    uint32_t reserved14[11];
     volatile uint32_t MIO_LOOPBACK;                    // Loopback function within MIO
-    uint32_t ___reserved15[1];
+    uint32_t reserved15[1];
     volatile uint32_t MIO_MST_TRI0;                    // MIO pin Tri-state Enables, 31:0
     volatile uint32_t MIO_MST_TRI1;                    // MIO pin Tri-state Enables, 53:32
-    uint32_t ___reserved16[7];
+    uint32_t reserved16[7];
     volatile uint32_t SD0_WP_CD_SEL;                   // SDIO 0 WP CD select
     volatile uint32_t SD1_WP_CD_SEL;                   // SDIO 1 WP CD select
-    uint32_t ___reserved17[50];
+    uint32_t reserved17[50];
     volatile uint32_t LVL_SHFTR_EN;                    // Level Shifters Enable
-    uint32_t ___reserved18[3];
+    uint32_t reserved18[3];
     volatile uint32_t OCM_CFG;                         // OCM Address Mapping
-    uint32_t ___reserved19[66];
+    uint32_t reserved19[66];
     volatile uint32_t RESERVED;                        // Reserved
-    uint32_t ___reserved20[56];
+    uint32_t reserved20[56];
     volatile uint32_t GPIOB_CTRL;                      // PS IO Buffer Control
     volatile uint32_t GPIOB_CFG_CMOS18;                // MIO GPIOB CMOS 1.8V config
     volatile uint32_t GPIOB_CFG_CMOS25;                // MIO GPIOB CMOS 2.5V config
     volatile uint32_t GPIOB_CFG_CMOS33;                // MIO GPIOB CMOS 3.3V config
-    uint32_t ___reserved21[1];
+    uint32_t reserved21[1];
     volatile uint32_t GPIOB_CFG_HSTL;                  // MIO GPIOB HSTL config
     volatile uint32_t GPIOB_DRVR_BIAS_CTRL;            // MIO GPIOB Driver Bias Control
-    uint32_t ___reserved22[9];
+    uint32_t reserved22[9];
     volatile uint32_t DDRIOB_ADDR0;                    // DDR IOB Config for A[14:0], CKE and DRST_B
     volatile uint32_t DDRIOB_ADDR1;                    // DDR IOB Config for BA[2:0], ODT, CS_B, WE_B, RAS_B and CAS_B
     volatile uint32_t DDRIOB_DATA0;                    // DDR IOB Config for Data 15:0
@@ -393,27 +371,19 @@ typedef struct slcr_regs {
 #define CAN1_BASE  (0xE0009000uL)
 #define GPIO_BASE  (0xE000a000uL)
 #define GEM0_BASE  (0xE000b000uL) // gigabit eth controller
-#define GEM1_BASE  (0xE000c000uL) // ""
+#define GEM1_BASE  (0xE000x000uL) // ""
 #define QSPI_BASE  (0xE000d000uL)
 #define SMCC_BASE  (0xE000e000uL) // PL353 shared memory controller
 
 #define SD0_BASE   (0xE0100000uL)
 #define SD1_BASE   (0xE0101000uL)
 
-#define SLCR_BASE  (0cF8000000uL)
-#define TTC0_BASE  (0cF8001000uL)
-#define TTC1_BASE  (0cF8002000uL)
-#define DMAC0_NS_BASE (0cF8004000uL)
-#define DMAC0_S_BASE (0cF8003000uL)
-#define SWDT_BASE  (0cF8005000uL)
-
-#define CPUPRIV_BASE      (0cF8F00000uL)
-#define SCU_CONTROL_BASE  (CPUPRIV_BASE + 0x0000uL)
-#define GIC_PROC_BASE     (CPUPRIV_BASE + 0x0100uL)
-#define GLOBAL_TIMER_BASE (CPUPRIV_BASE + 0x0200uL)
-#define PRIV_TIMER_BASE   (CPUPRIV_BASE + 0x0600uL)
-#define GIC_DISTRIB_BASE  (CPUPRIV_BASE + 0x1000uL)
-#define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
+#define SLCR_BASE  (0xF8000000uL)
+#define TTC0_BASE  (0xF8001000uL)
+#define TTC1_BASE  (0xF8002000uL)
+#define DMAC0_NS_BASE (0xF8004000uL)
+#define DMAC0_S_BASE (0xF8003000uL)
+#define SWDT_BASE  (0xF8005000uL)
 
 #define QSPI_LINEAR_BASE  (0xfc000000uL)
 
