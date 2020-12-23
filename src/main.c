@@ -984,7 +984,7 @@ struct micprof_cell
 	uint_fast8_t eq_enable;
 	uint8_t eq_params [HARDWARE_CODEC1_NPROCPARAMS];
 	uint_fast8_t cell_saved;
-} ATTRPACKED;
+};
 
 typedef struct micprof_cell	micprof_t;
 #define NMICPROFCELLS	3
@@ -5994,8 +5994,7 @@ static void micproc_load(void)
 #if WITHTOUCHGUI && WITHAFCODEC1HAVEPROC
 	for (i = 0; i < NMICPROFCELLS; i++)
 	{
-		micprof_t * mp = & micprof_cells[i];
-
+		micprof_t * const mp = & micprof_cells[i];
 		mp->cell_saved = loadvfy8up(RMT_MICPSAVE_BASE(i), 0, 1, 0);
 		mp->agc = loadvfy8up(RMT_MICAGC_BASE(i), 0, 1, 1);
 		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
