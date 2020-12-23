@@ -2803,13 +2803,24 @@ static const codechw_t fpgaspectrumhw_sai2 =
 
 static const codechw_t fpgacodechw_sai1_master =
 {
+	hardware_sai1_master_fullduplex_initialize,
+	hardware_dummy_initialize,
+	DMA_SAI1_B_RX_initialize,
+	DMA_SAI1_A_TX_initialize,
+	hardware_sai1_enable,
+	hardware_dummy_enable,
+	"fpgacodechw_sai1_master"
+};
+
+static const codechw_t fpgacodechw_sai1_master_v3d =
+{
 	hardware_sai1_master_fullduplex_initialize_v3d,
 	hardware_dummy_initialize,
 	DMA_SAI1_B_RX_initialize,
 	hardware_dummy_initialize, //DMA_SAI1_A_TX_initialize,
 	hardware_sai1_enable,
 	hardware_dummy_enable,
-	"sai1-audiocodechw"
+	"fpgacodechw_sai1_master_v3d"
 };
 
 #else /* WITHSAI1HWTXRXMASTER */
@@ -3704,7 +3715,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_sai2_master_v3d,		// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_master,				// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai1_master_v3d,				// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_sai2,		// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
