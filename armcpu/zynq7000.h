@@ -349,6 +349,25 @@ typedef struct slcr_regs {
 
 #define ZYNQ_MIO_CNT    54
 
+/* SPI */
+typedef struct spi_regs {
+	volatile uint32_t CR; 		/*	SPI Configuration.	 */
+	volatile uint32_t SR; 		/*	SPI Interrupt Status	 */
+	volatile uint32_t IER; 		/*	Interrupt Enable. 	 */
+	volatile uint32_t IDR; 		/*	Interrupt disable. 	 */
+	volatile uint32_t IMR; 		/*	Interrupt mask. 	 */
+	volatile uint32_t ER; 		/*	SPI Controller Enable.	 */
+	volatile uint32_t DR; 		/*	Delay Control 	 */
+	volatile uint32_t TXD; 		/*	Transmit Data. 	 */
+	volatile uint32_t RXD; 		/*	Receive Data. 	 */
+	volatile uint32_t SICR; 	/*	Slave Idle Count.	 */
+	volatile uint32_t TXWR; 	/*	TX_FIFO Threshold. 	 */
+	volatile uint32_t RXWR;		/* 0x0000002C	RX FIFO Threshold.	 */
+	uint32_t reserved1 [(0xfc - 0x30) / 4];
+	volatile uint32_t Mod_id_reg0;	/* 0x000000FC	Module ID. 	 */
+} SPI_Registers;
+
+
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
 #define PL310_TAG_RAM_LATENCY ((1 << 8) | (1 << 4) | (1 << 0))
@@ -430,6 +449,8 @@ typedef struct slcr_regs {
 #define SWDT                       	((SWDT_Registers *) SWDT_BASE)
 #define UART0                       ((UART_Registers *) UART0_BASE)
 #define UART1                       ((UART_Registers *) UART1_BASE)
+#define SPI0                       	((SPI_Registers *) SPI0_BASE)
+#define SPI1                       	((SPI_Registers *) SPI1_BASE)
 
 
 #ifdef __cplusplus
