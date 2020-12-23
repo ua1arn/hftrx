@@ -276,7 +276,7 @@ static void nau8822_initialize_fullduplex(void)
 #endif /* CODEC_TYPE_NAU8822_USE_8KS */
 
 	const unsigned long mclk = 12288000;
-	const unsigned long framebits = WITHI2S_FRAMEBITS;
+	const unsigned long framebits = CODEC1_FRAMEBITS;
 	const unsigned long bclk = ws * framebits;
 	const unsigned divider = mclk / bclk;
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex: mclk=%lu, bclk=%lu, divider=%lu, nau8822_ilog2=%u\n"), mclk, bclk, divider, nau8822_ilog2(divider));
@@ -298,19 +298,19 @@ static void nau8822_initialize_fullduplex(void)
 
 #if WITHI2S_FORMATI2S_PHILIPS
 	// I2S mode
-	#if WITHI2S_FRAMEBITS == 64
+	#if CODEC1_FRAMEBITS == 64
 		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | 0x060);	// reg 0x04, I2S, 32 bit
-	#else /* WITHI2S_FRAMEBITS == 64 */
+	#else /* CODEC1_FRAMEBITS == 64 */
 		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | 0x000);	// reg 0x04, I2S, 16 bit
-	#endif /* WITHI2S_FRAMEBITS == 64 */
+	#endif /* CODEC1_FRAMEBITS == 64 */
 
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 	// LJ mode
-	#if WITHI2S_FRAMEBITS == 64
+	#if CODEC1_FRAMEBITS == 64
 		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | 0x060);	// reg 0x04, LJ, 32 bit
-	#else /* WITHI2S_FRAMEBITS == 64 */
+	#else /* CODEC1_FRAMEBITS == 64 */
 		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | 0x000);	// reg 0x04, LJ, 16 bit
-	#endif /* WITHI2S_FRAMEBITS == 64 */
+	#endif /* CODEC1_FRAMEBITS == 64 */
 
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
 
