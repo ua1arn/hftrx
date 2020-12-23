@@ -349,6 +349,44 @@ typedef struct slcr_regs {
 
 #define ZYNQ_MIO_CNT    54
 
+/* configuration for the PL310 L2 cache controller */
+#define PL310_BASE L2CACHE_BASE
+#define PL310_TAG_RAM_LATENCY ((1 << 8) | (1 << 4) | (1 << 0))
+#define PL310_DATA_RAM_LATENCY ((1 << 8) | (2 << 4) | (1 << 0))
+
+/* Verify the entries match the TRM offset to validate the struct */
+//STATIC_ASSERT(offsetof(struct slcr_regs, SCL) == 0x0);
+//STATIC_ASSERT(offsetof(struct slcr_regs, DDRIOB_DCI_STATUS) == 0xb74);
+
+#define DDRC_CTRL                       0xF8006000
+#define DDRC_MODE_STATUS                0xF8006054
+
+/* GPIO registers are not indexed in a particularly convenient manner, but can be calculated
+ * via the GPIO bank */
+
+#define GPIO_MASK_DATA_BASE         (GPIO_BASE + 0x0)
+#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * bank))
+#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * bank))
+
+#define GPIO_DATA_BASE              (GPIO_BASE + 0x40)
+#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * bank))
+
+#define GPIO_DATA_RO_BASE           (GPIO_BASE + 0x60)
+#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * bank))
+
+#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * bank))
+#define GPIO_DIRM(bank)             (GPIO_REGS(bank) + 0x0)
+#define GPIO_OEN(bank)              (GPIO_REGS(bank) + 0x4)
+#define GPIO_INT_MASK(bank)         (GPIO_REGS(bank) + 0x8)
+#define GPIO_INT_EN(bank)           (GPIO_REGS(bank) + 0xC)
+#define GPIO_INT_DIS(bank)          (GPIO_REGS(bank) + 0x10)
+#define GPIO_INT_STAT(bank)         (GPIO_REGS(bank) + 0x14)
+#define GPIO_INT_TYPE(bank)         (GPIO_REGS(bank) + 0x18)
+#define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
+#define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
+
+
+
 /* memory addresses */
 /* assumes sram is mapped at 0 the first MB of sdram is covered by it */
 #define SDRAM_BASE          (0x00100000)
@@ -378,12 +416,12 @@ typedef struct slcr_regs {
 #define SD0_BASE   (0xE0100000uL)
 #define SD1_BASE   (0xE0101000uL)
 
-#define SLCR_BASE  (0xF8000000uL)
-#define TTC0_BASE  (0xF8001000uL)
-#define TTC1_BASE  (0xF8002000uL)
-#define DMAC0_NS_BASE (0xF8004000uL)
-#define DMAC0_S_BASE (0xF8003000uL)
-#define SWDT_BASE  (0xF8005000uL)
+#define SLCR_BASE  		(0xF8000000uL)
+#define TTC0_BASE  		(0xF8001000uL)
+#define TTC1_BASE  		(0xF8002000uL)
+#define DMAC0_NS_BASE 	(0xF8004000uL)
+#define DMAC0_S_BASE 	(0xF8003000uL)
+#define SWDT_BASE  		(0xF8005000uL)
 
 #define QSPI_LINEAR_BASE  (0xfc000000uL)
 
