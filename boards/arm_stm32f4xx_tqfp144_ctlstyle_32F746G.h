@@ -192,10 +192,11 @@
 	//#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 
 	/* Board hardware configuration */
+	#define CODEC1_FRAMEBITS 32			// используется при программировании DMA обслуживающего аудиокодек
 	#define CODEC1_TYPE CODEC_TYPE_WM8994		// PH7 & PH8 I2C3
 	//#define CODEC_TYPE_WM8994_USE_SPI	1
 	//#define CODEC_TYPE_WM8994_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
-	#define CODEC_TYPE_WM8994_USE_32BIT 1	/* кодек в формате 32 bit (иначе - 16 bit) */
+	#define CODEC_TYPE_WM8994_USE_32BIT (CODEC1_FRAMEBITS == 64)	/* кодек в формате 32 bit (иначе - 16 bit) */
 	#define CODEC_TYPE_WM8994_MASTER	1
 
 	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L	// PH7 & PH8 I2C3
@@ -214,7 +215,7 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	//#define WITHI2S_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
+	//#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	//#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	//#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
@@ -243,6 +244,8 @@
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+	#define WITHFFTOVERLAPPOW2 2
+	#define WITHFFTSIZEWIDE 512
 	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 

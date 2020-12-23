@@ -203,7 +203,7 @@ extern "C" {
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
-#if WITHI2S_FRAMEBITS == 64
+#if CODEC1_FRAMEBITS == 64
 
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
@@ -212,7 +212,7 @@ extern "C" {
 	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
 	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
 
-#else /* WITHI2S_FRAMEBITS == 64 */
+#else /* CODEC1_FRAMEBITS == 64 */
 
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
@@ -221,7 +221,7 @@ extern "C" {
 	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
 	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
 
-#endif /* WITHI2S_FRAMEBITS == 64 */
+#endif /* CODEC1_FRAMEBITS == 64 */
 
 #define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
