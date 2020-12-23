@@ -14054,6 +14054,9 @@ volatile uint32_t psr;// Регистр статуса программы.
 		;
 }
 
+static const void * volatile const ph =  prvGetRegistersFromStack;	// 'used' ignored...
+
+
 #endif /* WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3) */
 
 
@@ -14072,7 +14075,7 @@ void
 HardFault_Handler(void)
 {
 #if WITHDEBUG
-#if CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3
+#if 0 && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3)
 
    __asm volatile
    (
@@ -14093,8 +14096,10 @@ HardFault_Handler(void)
 
 #else
 
-	dbg_putchar('S');	// "SK"
-	dbg_putchar('K');
+//	dbg_putchar('S');	// "SK"
+//	dbg_putchar('K');
+	PRINTF(PSTR("HardFault_Handler trapped.\n"));
+	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
 
 #endif
 	//PRINTF(PSTR("HardFault_Handler trapped. HFSR=%08lx\n"), SCB->HFSR);
