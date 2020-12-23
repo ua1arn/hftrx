@@ -52,10 +52,7 @@ typedef enum IRQn
 /******************************************************************************/
 /*                Device Specific Peripheral Section                          */
 /******************************************************************************/
-/** @addtogroup Renesas_RZ_A1_Peripherals Renesas_RZ_A1 Peripherals
-  Renesas_RZ_A1 Device Specific Peripheral registers structures
-  @{
-*/
+
 
 #if defined ( __CC_ARM   )
 #pragma anon_unions
@@ -68,28 +65,27 @@ typedef enum IRQn
 #pragma no_anon_unions
 #endif
 
-/*@}*/ /* end of group Renesas_RZ_A1_Peripherals */
+/*@}*/ /* end of group Zynq7000_Peripherals */
 
 
 /******************************************************************************/
 /*                         Peripheral memory map                              */
 /******************************************************************************/
-/** @addtogroup Renesas_RZ_A1_MemoryMap Renesas_RZ_A1 Memory Mapping
+/** @addtogroup Zynq7000_MemoryMap Zynq7000 Memory Mapping
   @{
 */
-#define Renesas_RZ_A1_SDRAM_BASE0                  (0x0C000000UL)                        /*!< (SDRAM0    ) Base Address */
-#define Renesas_RZ_A1_USER_AREA0                   (0x10000000UL)                        /*!< (USER0     ) Base Address */
-#define Renesas_RZ_A1_USER_AREA1                   (0x14000000UL)                        /*!< (USER1     ) Base Address */
-#define Renesas_RZ_A1_SPI_IO0                      (0x18000000UL)                        /*!< (SPI_IO0   ) Base Address */
-#define Renesas_RZ_A1_SPI_IO1                      (0x1C000000UL)                        /*!< (SPI_IO1   ) Base Address */
-#define Renesas_RZ_A1_ONCHIP_SRAM_BASE             (0x20000000UL)                        /*!< (SRAM_OC   ) Base Address */
-#define Renesas_RZ_A1_SPI_MIO_BASE                 (0x3fe00000UL)                        /*!< (SPI_MIO   ) Base Address */
-#define Renesas_RZ_A1_BSC_BASE                     (0x3ff00000UL)                        /*!< (BSC       ) Base Address */
-#define Renesas_RZ_A1_PERIPH_BASE0                 (0xe8000000UL)                        /*!< (PERIPH0   ) Base Address */
-#define Renesas_RZ_A1_PERIPH_BASE1                 (0xfcf00000UL)                        /*!< (PERIPH1   ) Base Address */
-#define Renesas_RZ_A1_GIC_DISTRIBUTOR_BASE         (0xe8201000UL)                        /*!< (GIC DIST  ) Base Address */
-#define Renesas_RZ_A1_GIC_INTERFACE_BASE           (0xe8202000UL)                        /*!< (GIC CPU IF) Base Address */
-#define Renesas_RZ_A1_PL310_BASE                   (0x3ffff000UL)                        /*!< (PL310     ) Base Address */
+#define Zynq7000_SDRAM_BASE0                  (0x0C000000UL)                        /*!< (SDRAM0    ) Base Address */
+#define Zynq7000_USER_AREA0                   (0x10000000UL)                        /*!< (USER0     ) Base Address */
+#define Zynq7000_USER_AREA1                   (0x14000000UL)                        /*!< (USER1     ) Base Address */
+#define Zynq7000_SPI_IO0                      (0x18000000UL)                        /*!< (SPI_IO0   ) Base Address */
+#define Zynq7000_SPI_IO1                      (0x1C000000UL)                        /*!< (SPI_IO1   ) Base Address */
+#define Zynq7000_ONCHIP_SRAM_BASE             (0x20000000UL)                        /*!< (SRAM_OC   ) Base Address */
+#define Zynq7000_SPI_MIO_BASE                 (0x3fe00000UL)                        /*!< (SPI_MIO   ) Base Address */
+#define Zynq7000_BSC_BASE                     (0x3ff00000UL)                        /*!< (BSC       ) Base Address */
+#define Zynq7000_PERIPH_BASE0                 (0xe8000000UL)                        /*!< (PERIPH0   ) Base Address */
+#define Zynq7000_PERIPH_BASE1                 (0xfcf00000UL)                        /*!< (PERIPH1   ) Base Address */
+#define Zynq7000_GIC_DISTRIBUTOR_BASE         (0xe8201000UL)                        /*!< (GIC DIST  ) Base Address */
+#define Zynq7000_GIC_INTERFACE_BASE           (0xe8202000UL)                        /*!< (GIC CPU IF) Base Address */
 
 #define __CORTEX_A                    9U      /*!< Cortex-A# Core                              */
 //#define __CA_REV                 0x0005U      /*!< Core revision r0p0                          */
@@ -98,9 +94,8 @@ typedef enum IRQn
 #define __TIM_PRESENT                 0U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
-#define GIC_DISTRIBUTOR_BASE         Renesas_RZ_A1_GIC_DISTRIBUTOR_BASE                        /*!< (GIC DIST  ) Base Address */
-#define GIC_INTERFACE_BASE           Renesas_RZ_A1_GIC_INTERFACE_BASE                        /*!< (GIC CPU IF) Base Address */
-#define L2C_310_BASE                 Renesas_RZ_A1_PL310_BASE                        /*!< (PL310     ) Base Address */
+#define GIC_DISTRIBUTOR_BASE         Zynq7000_GIC_DISTRIBUTOR_BASE                        /*!< (GIC DIST  ) Base Address */
+#define GIC_INTERFACE_BASE           Zynq7000_GIC_INTERFACE_BASE                        /*!< (GIC CPU IF) Base Address */
 
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
