@@ -414,16 +414,15 @@ extern "C" {
 	// XC7Z015
 	// XC7Z020
 
-	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
 	#include "armcpu/zynq7000.h"
 	#include "irq_ctrl.h"
 
-	#define DCACHEROWSIZE 64
+	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON

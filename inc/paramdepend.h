@@ -700,8 +700,12 @@ extern "C" {
 
 	#undef NVRAM_TYPE
 	#define NVRAM_TYPE NVRAM_TYPE_NOTHING
+	#define HARDWARE_IGNORENONVRAM 1
 
 	#define TICKS_FREQUENCY 200
+	#define CPU_FREQ 300000uL
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
 
 #else
 
