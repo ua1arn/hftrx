@@ -698,6 +698,8 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
+	#undef NVRAM_TYPE
+	#define NVRAM_TYPE NVRAM_TYPE_NOTHING
 
 #else
 

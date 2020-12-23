@@ -417,7 +417,7 @@ extern "C" {
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "armcpu/stm32mp1xx.h"
+	#include "armcpu/zynq7000.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64

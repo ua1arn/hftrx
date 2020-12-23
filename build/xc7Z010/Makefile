@@ -36,13 +36,14 @@ OPENVGDIR = ../../src/OpenVG
 OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
-# This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
-# debug architecture ARMv7.1.
-CORE = -mcpu=cortex-a9
-CORE += -mfloat-abi=hard
-#CORE += -mcpu=cortex-a7
-#CORE += -mfpu=vfpv4-d16
-CORE += -mfpu=neon-vfpv4
+# The Zynq-7000 family is based on the Xilinx SoC architecture. These products integrate a feature-rich dual-core or single-core ARM®
+# Cortex™-A9 based processing system (PS) and 28 nm Xilinx programmable logic (PL) in a single device. The ARM Cortex-A9 CPUs are
+# the heart of the PS and also include on-chip memory, external memory interfaces, and a rich set of peripheral connectivity interfaces.
+
+CORE = -mcpu=cortex-a9 
+CORE += -mfloat-abi=hard 
+CORE += -mfpu=vfpv3-d16
+#CORE += -mfpu=neon
 #CORE += -mlong-calls
 
 # Define optimisation level here
