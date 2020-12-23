@@ -580,7 +580,6 @@ extern "C" {
 
 #elif CPUSTYLE_STM32MP1
 
-
 	//! GPIO Alternate Functions
 	typedef enum {
 		AF_SYSTEM,		//!< AF0 - SYSTEM*
@@ -693,6 +692,12 @@ extern "C" {
 
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+
+#elif CPUSTYLE_XC7Z
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
 
 #else
 

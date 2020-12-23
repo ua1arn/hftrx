@@ -406,6 +406,31 @@ extern "C" {
 	#endif /* __ARM_NEON */
 
 
+#elif CPUSTYLE_XC7Z
+
+	// Zynq®-7000 SoC Family
+
+	// XC7Z010
+	// XC7Z015
+	// XC7Z020
+
+	#define CORE_CA7	1
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "armcpu/stm32mp1xx.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+	#endif /* __ARM_NEON */
+
+
 #elif \
 	defined (__TMS320C28X__) || \
 	0
