@@ -7784,6 +7784,9 @@ local_delay_uscycles(unsigned timeUS, unsigned long cpufreq_MHz)
 	const unsigned long top = 77 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_R7S721
 	const unsigned long top = 105 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_XC7Z
+	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 105 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 125 * cpufreq_MHz * timeUS / 1000;
@@ -7852,6 +7855,9 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 	#elif CPUSTYLE_STM32H7XX
 		const unsigned long top = timeUS * 11000uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_R7S721
+		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
+	#elif CPUSTYLE_XC7Z
+		#warning TODO: calibrate local_delay_us constant
 		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
 	#elif CPUSTYLE_STM32MP1
 		// калибровано для 650 МГц процессора
