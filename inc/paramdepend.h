@@ -698,14 +698,17 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-	#undef NVRAM_TYPE
-	#define NVRAM_TYPE NVRAM_TYPE_NOTHING
-	#define HARDWARE_IGNORENONVRAM 1
+	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 
 	#define TICKS_FREQUENCY 200
-	#define CPU_FREQ 300000uL
+	#define CPU_FREQ 300000000uL
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 #else
 

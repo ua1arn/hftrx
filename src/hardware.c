@@ -521,7 +521,7 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 	};
 
 #else
-	//#error Undefined CPUSTYLE_XXX
+	//#warning Undefined CPUSTYLE_XXX
 #endif
 
 void hardware_spi_io_delay(void)
@@ -712,7 +712,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	SCIF0.SCBRR = value;	/* Bit rate register */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -879,7 +879,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -1046,7 +1046,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -1213,7 +1213,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -1379,7 +1379,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -1577,7 +1577,7 @@ void hardware_twi_master_configure(void)
 	I2C1->CR1 |= I2C_CR1_PE;
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -2387,7 +2387,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 
 #else
 
-	#error Undefined CPUSTYLE_XXX interrrupts handlers
+	#warning Undefined CPUSTYLE_XXX interrrupts handlers
 #endif
 
 //static volatile uint_fast8_t hardware_reqshutdown;
@@ -2563,7 +2563,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -3894,7 +3894,7 @@ void hardware_adc_initialize(void)
 	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 	//PRINTF(PSTR("hardware_adc_initialize done\n"));
@@ -4001,7 +4001,7 @@ hardware_adc_startonescan(void)
 
 #else
 
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 
 #endif
 }
@@ -4238,7 +4238,7 @@ void hardware_sounds_disable(void)
 	TIM4->CR1 = 0x00;
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -4358,7 +4358,7 @@ void hardware_sounds_setfreq(
 	TIM4->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -4495,7 +4495,7 @@ hardware_beep_initialize(void)
 	HARDWARE_SIDETONE_INITIALIZE();
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -4558,7 +4558,7 @@ hardware_calc_sound_params(
 	return calcdivider(calcdivround10_pclk2(tonefreq), STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, pvalue, 1);
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -7104,7 +7104,7 @@ hardware_elkey_timer_initialize(void)
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -7200,7 +7200,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		0;
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -7296,7 +7296,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -7865,7 +7865,7 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 		const unsigned long top = timeUS * 480uL / (CPU_FREQ / 1000000);	// Execute from RAM
 
 	#else
-		#error TODO: calibrate local_delay_us constant
+		#warning TODO: calibrate local_delay_us constant
 		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
 	#endif
 	//
@@ -13653,7 +13653,7 @@ void cpu_initialize(void)
 	#endif
 
 #else
-	//#error Undefined CPUSTYLE_XXX
+	//#warning Undefined CPUSTYLE_XXX
 
 #endif
 

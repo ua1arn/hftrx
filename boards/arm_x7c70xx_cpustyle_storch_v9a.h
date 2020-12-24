@@ -12,18 +12,18 @@
 #ifndef ARM_X7C7XX_BGAXXX_CPUSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_X7C7XX_BGAXXX_CPUSTYLE_STORCH_V9A_H_INCLUDED 1
 
-#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
-	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
-	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
+	//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
+	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
@@ -438,7 +438,7 @@
 
 	// +++
 	// TXDISABLE input - PD10
-	#define TXDISABLE_TARGET_PIN				(GPIOD->IDR)
+	#define TXDISABLE_TARGET_PIN				1//(GPIOD->IDR)
 	#define TXDISABLE_BIT_TXDISABLE				0//(1U << 10)		// PD10 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
 	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
@@ -452,10 +452,10 @@
 	// +++
 	// PTT input - PD10
 	// PTT2 input - PD9
-	#define PTT_TARGET_PIN				(GPIOD->IDR)
-	#define PTT_BIT_PTT					(1uL << 10)		// PD10 - PTT
-	#define PTT2_TARGET_PIN				(GPIOD->IDR)
-	#define PTT2_BIT_PTT				(1uL << 9)		// PD9 - PTT2
+	#define PTT_TARGET_PIN				1//(GPIOD->IDR)
+	#define PTT_BIT_PTT					1//(1uL << 10)		// PD10 - PTT
+	#define PTT2_TARGET_PIN				1//(GPIOD->IDR)
+	#define PTT2_BIT_PTT				1//(1uL << 9)		// PD9 - PTT2
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
@@ -467,8 +467,8 @@
 		} while (0)
 	// ---
 	// TUNE input - PD11
-	#define TUNE_TARGET_PIN				(GPIOD->IDR)
-	#define TUNE_BIT_TUNE					(1U << 11)		// PD11
+	#define TUNE_TARGET_PIN				1//(GPIOD->IDR)
+	#define TUNE_BIT_TUNE				1//	(1U << 11)		// PD11
 	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() \
 		do { \
@@ -511,8 +511,8 @@
 
 #if WITHSPIHW || WITHSPISW
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define SPI_ALLCS_PORT_S(v)	do { /*GPIOE->BSRR = BSRR_S(v);*/ __DSB(); } while (0)
+	#define SPI_ALLCS_PORT_C(v)	do {/* GPIOE->BSRR = BSRR_C(v);*/ __DSB(); } while (0)
 
 	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
 	#define targetxad2		(1uL << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -550,16 +550,16 @@
 		} while (0)
 
 	// MOSI & SCK port
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { /*GPIOB->BSRR = BSRR_C(v);*/ __DSB(); } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { /*GPIOB->BSRR = BSRR_S(v);*/ __DSB(); } while (0)
 	#define	SPI_SCLK_BIT			(1uL << 3)	// * PB3 бит, через который идет синхронизация SPI
 
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define SPI_TARGET_MOSI_PORT_C(v)	do { /*GPIOB->BSRR = BSRR_C(v);*/ __DSB(); } while (0)
+	#define SPI_TARGET_MOSI_PORT_S(v)	do { /*GPIOB->BSRR = BSRR_S(v);*/ __DSB(); } while (0)
 	#define	SPI_MOSI_BIT			(1uL << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
-	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
-	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
+	#define SPI_TARGET_MISO_PIN		1//(GPIOB->IDR)
+	#define	SPI_MISO_BIT			1//(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
 			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
@@ -636,14 +636,14 @@
 	// I2C1_SDA	PB11
 	// I2C1_SCL	PD7
 	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
-	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWCK_PIN		0//(GPIOD->IDR)
+	#define TARGET_TWI_TWCK_PORT_C(v) do { /*GPIOD->BSRR = BSRR_C(v); */ __DSB(); } while (0)
+	#define TARGET_TWI_TWCK_PORT_S(v) do { /*GPIOD->BSRR = BSRR_S(v); */ __DSB(); } while (0)
 
 	#define TARGET_TWI_TWD		(1u << 11)		// PB11 I2C1_SDA
-	#define TARGET_TWI_TWD_PIN		(GPIOB->IDR)
-	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_TWI_TWD_PIN		0//(GPIOB->IDR)
+	#define TARGET_TWI_TWD_PORT_C(v) do { /*GPIOB->BSRR = BSRR_C(v); */ __DSB(); } while (0)
+	#define TARGET_TWI_TWD_PORT_S(v) do { /*GPIOB->BSRR = BSRR_S(v); */ __DSB(); } while (0)
 
 	// Инициализация битов портов ввода-вывода для программной реализации I2C
 	#define	TWISOFT_INITIALIZE() do { \
@@ -725,7 +725,7 @@
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
-#if 1
+#if 0
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_INPUT		(GPIOC->IDR)
 	#define TARGET_FPGA_OVF_BIT			(1u << 8)	// PC8
@@ -834,6 +834,7 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
+#if 0
 	/* BL0: PA14. BL1: PA15 */
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
@@ -854,6 +855,7 @@
 			0; \
 		__DSB(); \
 	} while (0)
+#endif
 
 #if LCDMODE_LTDC
 	enum
@@ -1002,6 +1004,7 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
+#if 0
 	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
 	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
 	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
@@ -1019,9 +1022,11 @@
 				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
 		} while (0)
 
+#endif
+
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_USERBOOT_BIT	(1uL << 1)	/* PB1: ~USER_BOOT */
-	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
+	#define BOARD_USERBOOT_BIT	0//(1uL << 1)	/* PB1: ~USER_BOOT */
+	#define BOARD_IS_USERBOOT() 0//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
@@ -1029,15 +1034,15 @@
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			I2S2HW_POOLDOWN(); \
-			BOARD_BLINK_INITIALIZE(); \
+			/*BOARD_BLINK_INITIALIZE(); */\
 			HARDWARE_KBD_INITIALIZE(); \
 			HARDWARE_DAC_INITIALIZE(); \
-			HARDWARE_BL_INITIALIZE(); \
+			/*HARDWARE_BL_INITIALIZE(); */ \
 			HARDWARE_DCDC_INITIALIZE(); \
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
-			USBD_FS_INITIALIZE(); \
+			/*USBD_FS_INITIALIZE(); */\
 		} while (0)
 
 #endif /* ARM_X7C7XX_BGAXXX_CPUSTYLE_STORCH_V9A_H_INCLUDED */
