@@ -397,7 +397,7 @@
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
-	#define WITHVIEW_3DSS		1
+	////*#define WITHVIEW_3DSS		1
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
