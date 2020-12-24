@@ -3665,7 +3665,16 @@ static const codechw_t fpgaspectrumhw_dummy =
 	"dummy SAIx-fpga spectrum for WFM"
 };
 
-#if CPUSTYLE_R7S721
+
+#if WITHISBOOTLOADER
+static const codechw_t * const channels [] =
+{
+	& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
+	& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
+	& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
+};
+
+#elif CPUSTYLE_R7S721
 	static const codechw_t * const channels [] =
 	{
 		& audiocodec_ssif0,				// Интерфейс к НЧ кодеку
@@ -3679,7 +3688,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_i2s2_fullduplex_slave,	// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_slave,						// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai1_slave,				// Интерфейс к IF кодеку/FPGA
 #if WITHSAI2HW
 		& fpgaspectrumhw_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
 #endif
@@ -3689,7 +3698,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_i2s2_i2s2ext_fullduplex,		// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_slave,							// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai1_slave,					// Интерфейс к IF кодеку/FPGA
 #if WITHSAI2HW
 		//& fpgaspectrumhw_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 #endif
@@ -3709,7 +3718,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_sai2_master_spkonly,	// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_slave,				// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai1_slave,			// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_sai2,		// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
