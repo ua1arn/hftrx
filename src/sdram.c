@@ -3900,6 +3900,7 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 
 	return sizeee;	// OK
 }
+
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -4132,6 +4133,14 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 }
 
+#elif CPUSTYLE_XC7Z
+
+// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
+void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+{
+	PRINTF("arm_hardware_sdram_initialize start\n");
+	PRINTF("arm_hardware_sdram_initialize done\n");
+}
 #endif
 
 #endif /* WITHSDRAMHW */

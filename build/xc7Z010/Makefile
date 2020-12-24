@@ -187,13 +187,13 @@ BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.stm32: $(PROJECT)_boot.bin
-	./stm32image.exe -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
+	./stm32image.exe -l 0x00000100 -e 0x00000100 -s $(PROJECT)_boot.bin -d $@
 	
 boot.hex: fsbl.stm32
 	./bin2ihex -l 0x00000000 -s fsbl.stm32 >$@
 	
 $(PROJECT)_app.stm32: $(PROJECT)_app.bin
-	./stm32image.exe -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image.exe -l 0x04100100 -e 0x04100100 -s $(PROJECT)_app.bin -d $@
 	
 app.hex: $(PROJECT)_app.stm32
 	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.stm32 >$@

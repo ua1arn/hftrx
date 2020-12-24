@@ -25,9 +25,9 @@ typedef struct codechw
 } codechw_t;
 
 //#define CODEC1_FRAMEBITS CODEC1_FRAMEBITS
-#if ! defined (CODEC1_FRAMEBITS)
-	#error CODEC1_FRAMEBITS should be defined
-#endif
+//#if ! defined (CODEC1_FRAMEBITS)
+//	#error CODEC1_FRAMEBITS should be defined
+//#endif
 
 #if CODEC1_FRAMEBITS == 32
 

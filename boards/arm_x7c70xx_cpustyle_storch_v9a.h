@@ -45,8 +45,8 @@
 
 #if WITHISBOOTLOADER
 
-	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
@@ -57,9 +57,9 @@
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	//#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -922,14 +922,14 @@
 
 	#if WITHSDRAMHW
 		// Bootloader parameters
-		#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_RAMAREA SDRAM_BASE	/* адрес ОЗУ, куда перемещать application */
 		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
 		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
 		#define USBD_DFU_RAM_XFER_SIZE 4096
 	#endif /* WITHSDRAMHW */
 
 	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
-	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFBASE QSPI_LINEAR_BASE	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
@@ -950,10 +950,10 @@
 	#define SPDIF_D3_BIT (1u << 6)		// PF6	QUADSPI_BK1_IO3
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
-			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-			arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+			/* arm_hardware_piob_inputs(SPDIF_NCS_BIT);  */ \
+			/* arm_hardware_piof_inputs(SPDIF_SCLK_BIT);  */ \
+			/* arm_hardware_piof_inputs(SPDIF_MOSI_BIT);  */ \
+			/* arm_hardware_piof_inputs(SPDIF_MISO_BIT);  */ \
 		} while (0)
 
 	#if WIHSPIDFSW || WIHSPIDFHW
@@ -972,31 +972,31 @@
 
 		#else /* WIHSPIDFHW */
 
-			#define SPIDF_MISO() ((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
-			#define SPIDF_MOSI(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
-			#define SPIDF_SCLK(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
+			#define SPIDF_MISO() 1//((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
+			#define SPIDF_MOSI(v) //do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
+			#define SPIDF_SCLK(v) //do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
 					/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* D2 tie-up */ \
 					/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* D3 tie-up */ \
-					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-					arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-					arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+					/* arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); */  \
+					/* arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); */  \
+					/* arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); */  \
+					/* arm_hardware_piof_inputs(SPDIF_MISO_BIT); */  \
 				} while (0)
 			#define SPIDF_SELECT() do { \
-					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-					arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-					arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
+					/* arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); */  \
+					/* arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); */  \
+					/* arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); */  \
+					/* arm_hardware_piof_inputs(SPDIF_MISO_BIT); */  \
+					/*GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT);*/ \
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
-					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+					/*GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); */ \
+					/* arm_hardware_piob_inputs(SPDIF_NCS_BIT); */  \
+					/* arm_hardware_piof_inputs(SPDIF_SCLK_BIT); */  \
+					/* arm_hardware_piof_inputs(SPDIF_MOSI_BIT); */  \
+					/* arm_hardware_piof_inputs(SPDIF_MISO_BIT); */  \
 					__DSB(); \
 				} while (0)
 
