@@ -8,8 +8,8 @@ MEMORY
 	FLASHitcm (rx) :	ORIGIN = 0x00200000, LENGTH = 1024k	/* FLASH on AXIM interface = FLASHITCM_BASE */
 	DTCM (rwx) :		ORIGIN = 0x20000000, LENGTH = 64k	/* DTCM = RAMDTCM_BASE */
 	RAM (rwx)  :		ORIGIN = 0x20010000, LENGTH = 256k	/* was: 240k SRAM = SRAM1_BASE (240k) */
-	/*RAM2 (rwx)  :		ORIGIN = 0x2004C000, LENGTH = 64k	 SRAM = SRAM2_BASE (64k) */
-  	SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8192k	/* MT48LC4M32B2 */
+	/* RAM2 (rwx)  :		ORIGIN = 0x2004C000, LENGTH = 64k */ /* SRAM = SRAM2_BASE (64k) */
+  	/* SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8192k	*/ /* MT48LC4M32B2 */
 }
 
 /* Library configurations */
@@ -218,7 +218,7 @@ SECTIONS
 		*(.sdramdata*)
 		. = ALIGN(4);
 		__data4_end__ = .;
-	} > SDRAM  AT > FLASH
+	} > RAM  AT > FLASH
 
 	. = __etext4 + __data4_end__ - __data4_start__;
 	
@@ -246,7 +246,7 @@ SECTIONS
 		*(.sdrambss*)
 		. = ALIGN(32);
 		__bss2_end__ = .;
-	} > SDRAM
+	} > RAM
 
 	.heap (COPY):
 	{
