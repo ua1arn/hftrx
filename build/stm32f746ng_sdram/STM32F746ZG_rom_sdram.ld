@@ -211,7 +211,7 @@ SECTIONS
 	
 	__etext4 = .;
 
-	.sdramd_data :
+	.sdramdata :
 	{
 		__data4_start__ = .;
 		. = ALIGN(4);
@@ -239,7 +239,7 @@ SECTIONS
 		__bss_end__ = .;
 	} > SDRAM
 
-	.sdram_bss (NOLOAD):
+	.sdrambss (NOLOAD):
 	{
 		. = ALIGN(32);
 		__bss2_start__ = .;
@@ -263,6 +263,11 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
+	} > RAM
+	
+	.ram :
+	{
+		KEEP(*(.ram*))
 	} > RAM
 
 	/* Set stack top to end of RAM, and stack limit move down by

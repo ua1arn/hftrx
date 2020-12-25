@@ -4416,7 +4416,11 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 	return length;
 }
 
-static ALIGNX_BEGIN uint8_t alldescbuffer [2048 + 512] ALIGNX_END;
+#if CTLSTYLE_V3D && WITHSDRAMHW
+	static RAMLOW uint8_t alldescbuffer [2048 + 512];
+#else
+	static ALIGNX_BEGIN uint8_t alldescbuffer [2048 + 512] ALIGNX_END;
+#endif /* CTLSTYLE_V3D && WITHSDRAMHW */
 
 struct descholder MsftStringDescr [1];
 struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor

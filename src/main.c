@@ -8617,7 +8617,6 @@ updateboard(
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
 
-
 #if WITHCAT
 	if (aistate != 0)
 	{
@@ -9195,6 +9194,10 @@ updateboard(
 		board_set_dac1(dac1level);	/* подстройка частоты опорного генератора */
 	#endif /* defined (DAC1_TYPE) */
 
+	#if (WITHSWRMTR || WITHSHOWSWRPWR)
+		display2_set_smetertype(gsmetertype);
+	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 		{
 			// nau8822 experements
@@ -9285,10 +9288,6 @@ updateboard(
 		//board_update();		/* вывести забуферированные изменения в регистры */
 	#endif /* WITHTX */
 	}
-
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
-	display2_set_smetertype(gsmetertype);
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
 	/* после всех перенастроек включаем передатчик */
 #if WITHTX
@@ -20310,10 +20309,10 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	if (freqvalid(freq, gtx))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
-		vindex_t vi = getvfoindex(bi);
+		//vindex_t vi = getvfoindex(bi);
 		gfreqs [bi] = freq;
-		savebandfreq(vi, bi);
-		updateboard(1, 0);
+		//savebandfreq(vi, bi);
+		updateboard(0, 0);
 		return 1;
 	}
 	return 0;
