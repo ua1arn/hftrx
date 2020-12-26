@@ -15,9 +15,9 @@
 MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
+  RAM (rwx)		: ORIGIN = 0x00000000, LENGTH = 176k	/* OCM - on-chip memory 192k - 16k for TTB */
+  TTB (rwx)  	: ORIGIN = 0x0002C000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
   DDR3 (rwx) 	: ORIGIN = 0x00100000, LENGTH = 191M 	/* lower 64MB reserved for image, DDR3 single chip NT5CC128M16IP-DI */
-  RAM (rwx)		: ORIGIN = 0x00000000, LENGTH = 240k	/* OCM - on-chip memory 256k - 16k for TTB */
-  TTB (rwx)  	: ORIGIN = 0x0F000000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
 }
 
 /* Library configurations */
@@ -196,7 +196,7 @@ SECTIONS
 		. = ALIGN(64);
 		KEEP(*(.framebuff*))
 		. = ALIGN(64);
-	} > DDR3
+	} > RAM
 
 	.heap (COPY):
 	{
@@ -205,7 +205,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > DDR3
+	} > RAM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign

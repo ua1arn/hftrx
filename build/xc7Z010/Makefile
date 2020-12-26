@@ -49,9 +49,9 @@ CORE += -mfpu=vfpv3-d16
 # Define optimisation level here
 # ony -Og for app
 # Application
-OPT = -Og
+OPT = -Os
 #OPT = -Ofast
-#LTO = -flto
+LTO = -flto
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 

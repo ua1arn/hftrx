@@ -1234,6 +1234,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART0->CR = r;
 
+	  HARDWARE_UART1_INITIALIZE();
 
 #else
 
@@ -2374,6 +2375,7 @@ xxxx!;
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART1->CR = r;
 
+	  HARDWARE_UART2_INITIALIZE();
 
 #else
 	#error Undefined CPUSTYLE_XXX
