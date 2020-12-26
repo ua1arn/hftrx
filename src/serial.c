@@ -288,6 +288,9 @@ void nmea_disconnect(void)
 		HARDWARE_UART1_ONTXCHAR(& SCIF0);
 	}
 
+#elif CPUSTYLE_XC7Z
+
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -423,6 +426,16 @@ void hardware_uart1_enabletx(uint_fast8_t state)
 	else
 		SCIF0.SCSCR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
 
+#elif CPUSTYLE_XC7Z
+
+
+//	if (state)
+//		 UART0->CR |= SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
+//	else
+//		 UART0->CR &= ~ SCIF0_SCSCR_TIE;	// TIE Transmit Interrupt Enable
+//
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -537,6 +550,14 @@ void hardware_uart1_enablerx(uint_fast8_t state)
 	else
 		SCIF0.SCSCR &= ~ SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
 
+#elif CPUSTYLE_XC7Z
+
+
+//	if (state)
+//		 UART0->CR |= SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
+//	else
+//		 UART0->CR &= ~ SCIF0_SCSCR_RIE;	// RIE Receive Interrupt Enable
+//
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -600,6 +621,10 @@ void hardware_uart1_tx(void * ctx, uint_fast8_t c)
 
 #elif CPUSTYLE_STM32MP1
 	#warning Insert code for CPUSTYLE_STM32MP1
+
+#elif CPUSTYLE_XC7Z
+
+	UART0->FIFO = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -701,6 +726,12 @@ hardware_uart1_getchar(char * cp)
 	* cp = SCIF0.SCFRDR;
 	SCIF0.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
+#elif CPUSTYLE_XC7Z
+
+	if ((UART0->SR & XUARTPS_SR_RXEMPTY) != 0)
+		return 0;
+	* cp = UART0->FIFO;
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -795,6 +826,12 @@ hardware_uart1_putchar(uint_fast8_t c)
 		return 0;
 	SCIF0.SCFTDR = c;
 	SCIF0.SCFSR = (uint16_t) ~ (1U << SCIF0_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_XC7Z
+
+	if ((UART0->SR & XUARTPS_SR_TNFUL) != 0)
+		return 0;
+	UART0->FIFO = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1170,6 +1207,34 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	USART1->CR1 |= USART_CR1_UE; // Включение USART1.
 
+#elif CPUSTYLE_XC7Z
+
+	  uint32_t r = 0; // Temporary value variable
+	  r = UART0->CR;
+	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
+	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
+	  UART0->CR = r;
+
+	  UART0->MR = 0;
+	  UART0->MR &= ~XUARTPS_MR_CLKSEL; // Clear "Input clock selection" - 0: clock source is uart_ref_clk
+	  UART0->MR |= XUARTPS_MR_CHARLEN_8_BIT; 	// Set "8 bits data"
+	  UART0->MR |= XUARTPS_MR_PARITY_NONE; 	// Set "No parity mode"
+	  UART0->MR |= XUARTPS_MR_STOPMODE_1_BIT; // Set "1 stop bit"
+	  UART0->MR |= XUARTPS_MR_CHMODE_NORM; 	// Set "Normal mode"
+
+	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
+	  UART0->BAUDDIV = 6; // ("BDIV")
+	  UART0->BAUDGEN = 124; // ("CD")
+	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
+
+	  UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+
+	  r = UART0->CR;
+	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
+	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
+	  UART0->CR = r;
+
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
@@ -1350,8 +1415,9 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 		HARDWARE_UART2_ONTXCHAR(& SCIF3);
 	}
 
-#elif CPUSTYLE_STM32MP1
-	#warning Insert interrupt handlers code for CPUSTYLE_STM32MP1
+#elif CPUSTYLE_XC7Z
+
+
 
 #else
 
@@ -1489,6 +1555,9 @@ void hardware_uart2_enabletx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 7);	// TIE Transmit Interrupt Enable
 
+#elif CPUSTYLE_XC7Z
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1597,6 +1666,9 @@ void hardware_uart2_enablerx(uint_fast8_t state)
 	else
 		SCIF3.SCSCR &= ~ (1U << 6);	// RIE Receive Interrupt Enable
 
+#elif CPUSTYLE_XC7Z
+
+
 #else
 	#error Undefined CPUSTYLE_XXX
 
@@ -1658,6 +1730,10 @@ void hardware_uart2_tx(void * ctx, uint_fast8_t c)
 	(void) SCIF3.SCFSR;			// Перед сбросом бита TDFE должно произойти его чтение в ненулевом состоянии
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_XC7Z
+
+	UART1->FIFO = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -1769,6 +1845,12 @@ hardware_uart2_getchar(char * cp)
 	* cp = SCIF3.SCFRDR;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << 1);	// RDF=0 читать незачем (в примерах странное)
 
+#elif CPUSTYLE_XC7Z
+
+	if ((UART1->SR & XUARTPS_SR_RXEMPTY) != 0)
+		return 0;
+	* cp = UART1->FIFO;
+
 #else
 	#error Undefined CPUSTYLE_XXX
 #endif
@@ -1871,6 +1953,12 @@ hardware_uart2_putchar(uint_fast8_t c)
 		return 0;
 	SCIF3.SCFTDR = c;
 	SCIF3.SCFSR = (uint16_t) ~ (1U << SCIF3_SCFSR_TDFE_SHIFT);	// TDFE=0 читать незачем (в примерах странное)
+
+#elif CPUSTYLE_XC7Z
+
+	if ((UART1->SR & XUARTPS_SR_TNFUL) != 0)
+		return 0;
+	UART1->FIFO = c;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -2258,6 +2346,34 @@ xxxx!;
 	}
 
 	USART2->CR1 |= USART_CR1_UE; // Включение USART1.
+
+#elif CPUSTYLE_XC7Z
+
+	  uint32_t r = 0; // Temporary value variable
+	  r = UART1->CR;
+	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
+	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
+	  UART1->CR = r;
+
+	  UART1->MR = 0;
+	  UART1->MR &= ~XUARTPS_MR_CLKSEL; // Clear "Input clock selection" - 0: clock source is uart_ref_clk
+	  UART1->MR |= XUARTPS_MR_CHARLEN_8_BIT; 	// Set "8 bits data"
+	  UART1->MR |= XUARTPS_MR_PARITY_NONE; 	// Set "No parity mode"
+	  UART1->MR |= XUARTPS_MR_STOPMODE_1_BIT; // Set "1 stop bit"
+	  UART1->MR |= XUARTPS_MR_CHMODE_NORM; 	// Set "Normal mode"
+
+	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
+	  UART1->BAUDDIV = 6; // ("BDIV")
+	  UART1->BAUDGEN = 124; // ("CD")
+	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
+
+	  UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+
+	  r = UART1->CR;
+	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
+	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
+	  UART1->CR = r;
+
 
 #else
 	#error Undefined CPUSTYLE_XXX

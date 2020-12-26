@@ -135,14 +135,14 @@ typedef struct
     volatile uint32_t IDR;           /**< Interrupt Disable */
     volatile uint32_t IMR;           /**< Interrupt Mask */
     volatile uint32_t ISR;           /**< Interrupt Status */
-    volatile uint32_t BAUDGEN;       /**< Baud Rate Generator */
+    volatile uint32_t BAUDGEN;       /**< Baud Rate Generator "CD" */
     volatile uint32_t RXTOUT;        /**< RX Timeout */
     volatile uint32_t RXWM;          /**< RX FIFO Trigger Level */
     volatile uint32_t MODEMCR;       /**< Modem Control */
     volatile uint32_t MODEMSR;       /**< Modem Status */
     volatile uint32_t SR;            /**< Channel Status */
     volatile uint32_t FIFO;          /**< FIFO */
-    volatile uint32_t BAUDDIV;       /**< Baud Rate Divider */
+    volatile uint32_t BAUDDIV;       /**< Baud Rate Divider "DIV" */
     volatile uint32_t FLOWDEL;       /**< Flow Delay */
     volatile uint32_t RESERVED1;
     volatile uint32_t RESERVED2;
@@ -377,8 +377,8 @@ typedef struct spi_regs {
 //STATIC_ASSERT(offsetof(struct slcr_regs, SCL) == 0x0);
 //STATIC_ASSERT(offsetof(struct slcr_regs, DDRIOB_DCI_STATUS) == 0xb74);
 
-#define DDRC_CTRL                       0xF8006000
-#define DDRC_MODE_STATUS                0xF8006054
+#define DDRC_CTRL                       0xF8006000L
+#define DDRC_MODE_STATUS                0xF8006054L
 
 /* GPIO registers are not indexed in a particularly convenient manner, but can be calculated
  * via the GPIO bank */
@@ -404,6 +404,35 @@ typedef struct spi_regs {
 #define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
 #define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
 
+
+#define XUARTPS_CR_TXRST	0x00000002U  /**< TX logic reset */
+#define XUARTPS_CR_RXRST	0x00000001U  /**< RX logic reset */
+
+#define XUARTPS_MR_CHMODE_NORM		0x00000000UL /**< Normal mode */
+#define XUARTPS_MR_STOPMODE_1_BIT	0x00000000UL /**< 1 stop bit */
+#define XUARTPS_MR_PARITY_NONE		0x00000020UL /**< No parity mode */
+#define XUARTPS_MR_CHARLEN_8_BIT	0x00000000UL /**< 8 bits data */
+#define XUARTPS_MR_CLKSEL			0x00000001UL /**< Input clock selection */
+
+#define XUARTPS_SR_TNFUL	0x00004000UL /**< TX FIFO Nearly Full Status */
+#define XUARTPS_SR_TACTIVE	0x00000800UL /**< TX active */
+#define XUARTPS_SR_RXEMPTY	0x00000002UL /**< RX FIFO empty */
+
+#define XUARTPS_CR_TX_DIS	0x00000020UL  /**< TX disabled. */
+#define XUARTPS_CR_TX_EN	0x00000010UL  /**< TX enabled */
+#define XUARTPS_CR_RX_DIS	0x00000008UL  /**< RX disabled. */
+#define XUARTPS_CR_RX_EN	0x00000004UL  /**< RX enabled */
+
+//#define POINTER_TO_REGISTER(REG)  ( * (volatile uint32_t *) (REG))
+
+#define MIO_PIN07_CTRL       (* (volatile uint32_t *)0xF800071CuL)
+#define MIO_PIN07_CTRL_GPIO0 0x00003200
+
+#define GPIO_DIRM0           (* (volatile uint32_t *)0xE000A204uL)
+#define GPIO_OEN0            (* (volatile uint32_t *)0xE000A208uL)
+#define GPIO_DATA0           (* (volatile uint32_t *)0xE000A040uL)
+
+#define GPIO0_PIN7           (1uL << 7)
 
 
 /* memory addresses */

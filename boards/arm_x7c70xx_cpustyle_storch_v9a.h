@@ -31,16 +31,16 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
-//#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 
 #if WITHDEBUG
-	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	//#define WITHUART1HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта UART00 */
+	#define WITHUART2HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта UART1 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
 
 #if WITHISBOOTLOADER
