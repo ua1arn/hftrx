@@ -27,12 +27,12 @@
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
+	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz
 	// PLL1, PLL2 VCOs
 	#if 1
-		#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
-		//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+		//#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 
 		// PLL1_1600
 		#define PLL1DIVM	2	// ref1_ck = 12 MHz

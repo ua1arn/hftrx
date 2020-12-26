@@ -700,8 +700,17 @@ extern "C" {
 
 	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
 
+	#if WITHCPUXOSC
+		// с генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с кварцем
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define CPU_FREQ (REFINFREQ * 20)
+
 	#define TICKS_FREQUENCY 200
-	#define CPU_FREQ 300000000uL
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 

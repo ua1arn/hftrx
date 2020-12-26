@@ -87,6 +87,13 @@ typedef enum IRQn
 
 } IRQn_Type;
 
+//Info: Found Cortex-A9 r3p0
+//Info: 6 code breakpoints, 4 data breakpoints
+//Info: Debug architecture ARMv7.0
+//Info: Data endian: little
+//Info: Main ID register: 0x413FC090
+//Info: I-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
+//Info: D-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
 
 /******************************************************************************/
 /*                Device Specific Peripheral Section                          */

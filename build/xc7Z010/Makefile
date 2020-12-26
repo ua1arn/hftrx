@@ -36,6 +36,8 @@ OPENVGDIR = ../../src/OpenVG
 OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
 
+# Cortex-A9 r3p0
+
 # The Zynq-7000 family is based on the Xilinx SoC architecture. These products integrate a feature-rich dual-core or single-core ARM®
 # Cortex™-A9 based processing system (PS) and 28 nm Xilinx programmable logic (PL) in a single device. The ARM Cortex-A9 CPUs are
 # the heart of the PS and also include on-chip memory, external memory interfaces, and a rich set of peripheral connectivity interfaces.
