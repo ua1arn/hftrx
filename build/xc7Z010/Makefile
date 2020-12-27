@@ -175,7 +175,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 all: APP2 $(PROJECT)_app.stm32 app.hex
 
-bootloader: BOOT2 fsbl.stm32 boot.hex
+bootloader: BOOT2
   
 app_run: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download $(PROJECT)_app.stm32
@@ -188,7 +188,7 @@ BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.img
 
 APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-$(PROJECT)_boot.img: $(PROJECT)_boot.bin
+$(PROJECT)_boot.img: $(PROJECT)_boot.elf
 	C:\Xilinx\Vivado\2020.2\bin\bootgen -arch zynq -image boot.bif -w on -o $@
 	
 $(PROJECT)_app.stm32: $(PROJECT)_app.bin
