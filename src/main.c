@@ -17864,6 +17864,8 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 #endif /* WITHTOUCHGUI */
 }
 
+#if 0
+
 static const struct menudef notchPopUp [] =
 {
 #if WITHNOTCHFREQ
@@ -17937,6 +17939,10 @@ static const struct menudef notchPopUp [] =
 
 static const FLASHMEM struct menudef * thisPopUp = notchPopUp;
 static size_t sizePopUp = ARRAY_SIZE(notchPopUp);
+#else
+static const FLASHMEM struct menudef * thisPopUp = NULL;
+static size_t sizePopUp = 0;
+#endif
 
 // всплывающее меню
 void display2_popup(
@@ -21026,8 +21032,13 @@ const char * hamradio_get_att_value(void)
 
 const char * hamradio_get_preamp_value(void)
 {
+#if ! WITHONEATTONEAMP
 	const uint_fast8_t bi = getbankindex_tx(gtx);
 	return pampmodes [gpamps [bi]].label;
+#else
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	return attmodes [gatts [bi]].label;
+#endif
 }
 
 void hamradio_change_att(void)

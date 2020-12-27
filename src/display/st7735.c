@@ -46,6 +46,8 @@
 // LCDMODE_ILI9163 - 176 * 132
 
 #include "st7735.h"
+
+#define FONTSHERE 1
 #include "fontmaps.h"
 
 #define ST7735_SPIMODE		SPIC_MODE3

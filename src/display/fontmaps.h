@@ -40,12 +40,47 @@ extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
 //extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
 //extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
 
-#define SMALLCHARH 15 /* Font height */
-#define SMALLCHARW 16 /* Font width */
-#define SMALLCHARH2 16 /* Font height */
-#define SMALLCHARW2 10 /* Font width */
-#define SMALLCHARH3 8 /* Font height */
-#define SMALLCHARW3 8 /* Font width */
+#if  LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341
+
+	#if DSTYLE_G_X320_Y240
+		// LCDMODE_ILI9341
+
+		// Для дисплеев 320 * 240
+		#include "./fonts/ILI9341_font_small.h"
+		#include "./fonts/ILI9341_font_half.h"
+		#include "./fonts/ILI9341_font_big.h"
+
+		#define    ls020_smallfont    ILI9341_smallfont
+		#define    ls020_halffont    ILI9341_halffont
+		#define    ls020_bigfont    ILI9341_bigfont
+
+
+		#define BIGCHARH xx40	// st7735
+		#define SMALLCHARH xx40	// st7735
+
+
+	#else /* DSTYLE_G_X320_Y240 */
+		// LCDMODE_ST7735 - 160 * 128
+		// LCDMODE_ILI9163 - 176 * 132
+
+		//#include "./fonts/ls020_font_small.h"
+		//#include "./fonts/ls020_font_half.h"
+		//#include "./fonts/ls020_font_big.h"
+		#define BIGCHARH 32 /* Font height */
+		#define SMALLCHARH 16 /* Font height */
+
+	#endif /* DSTYLE_G_X320_Y240 */
+
+#else
+
+	#define SMALLCHARH 15 /* Font height */
+	#define SMALLCHARW 16 /* Font width */
+	#define SMALLCHARH2 16 /* Font height */
+	#define SMALLCHARW2 10 /* Font width */
+	#define SMALLCHARH3 8 /* Font height */
+	#define SMALLCHARW3 8 /* Font width */
+
+#endif
 
 #if FONTSHERE
 
