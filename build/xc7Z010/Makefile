@@ -184,15 +184,12 @@ app_run: $(PROJECT)_app.stm32
 flash: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
-BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.img
 
 APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-fsbl.stm32: $(PROJECT)_boot.bin
-	./stm32image.exe -l 0x00000100 -e 0x00000100 -s $(PROJECT)_boot.bin -d $@
-	
-boot.hex: fsbl.stm32
-	./bin2ihex -l 0x00000000 -s fsbl.stm32 >$@
+$(PROJECT)_boot.img: $(PROJECT)_boot.bin
+	C:\Xilinx\Vivado\2020.2\bin\bootgen -arch zynq -image boot.bif -w on -o $@
 	
 $(PROJECT)_app.stm32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0x04100100 -e 0x04100100 -s $(PROJECT)_app.bin -d $@
