@@ -12483,11 +12483,22 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_NO_ACCESS;
 
+#elif CPUSTYLE_XC7Z
+	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
+
+	if (a >= 0x40000000uL && a < 0xFC000000uL)
+		return addrbase | TTB_PARA_DEVICE;
+
+	return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);	// OCM (On Chip Memory)
+
+#else
+	#warning ttb_accessbits: Unhandled CPUSTYLE_xxxx
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #endif
-
-	return addrbase | TTB_PARA_NO_ACCESS; //TTB_PARA_STRGLY;
 }
-
 /* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 static void FLASHMEMINITFUNC
 sysinit_ttbr_initialize(void)
