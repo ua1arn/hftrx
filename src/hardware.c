@@ -13391,8 +13391,8 @@ static unsigned long ps7_mio_init_data_3_0[] = {
 	EMIT_MASKWRITE(0xF8000788, 0x00003FFFU, 0x00001304U),
 	EMIT_MASKWRITE(0xF800078C, 0x00003FFFU, 0x00001304U),
 	EMIT_MASKWRITE(0xF8000790, 0x00003FFFU, 0x00001305U),
-	EMIT_MASKWRITE(0xF8000794, 0x00003FFFU, 0x00001304U),
-	EMIT_MASKWRITE(0xF8000798, 0x00003FFFU, 0x00001304U),
+	EMIT_MASKWRITE(0xF8000794, 0x00003FFFU, 0x00001600U),
+	EMIT_MASKWRITE(0xF8000798, 0x00003FFFU, 0x00001600U),
 	EMIT_MASKWRITE(0xF800079C, 0x00003FFFU, 0x00001304U),
 	EMIT_MASKWRITE(0xF80007A0, 0x00003FFFU, 0x00001280U),
 	EMIT_MASKWRITE(0xF80007A4, 0x00003FFFU, 0x00001280U),
@@ -13494,16 +13494,19 @@ SystemInit(void)
 	  GPIO_OEN0  |= GPIO0_PIN15;
 	  GPIO_DATA0 &= ~ GPIO0_PIN15;	// LED at MIO15
 
+	  GPIO_DIRM1 |= GPIO0_PIN37;
+	  GPIO_OEN1  |= GPIO0_PIN37;
+
 	sysinit_debug_initialize();
-	for (;;)
-		;
+//	for (;;)
+//		;
 #endif
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
-	sysinit_mmu_initialize();
+//	sysinit_mmu_initialize();
 }
 
 #if  (__CORTEX_A != 0)

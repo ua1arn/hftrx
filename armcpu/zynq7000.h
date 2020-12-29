@@ -438,9 +438,13 @@ typedef struct spi_regs {
 #define GPIO_DIRM0           (* (volatile uint32_t *)0xE000A204uL)
 #define GPIO_OEN0            (* (volatile uint32_t *)0xE000A208uL)
 #define GPIO_DATA0           (* (volatile uint32_t *)0xE000A040uL)
+#define GPIO_DIRM1           (* (volatile uint32_t *)0xE000A244uL)
+#define GPIO_OEN1            (* (volatile uint32_t *)0xE000A248uL)
+#define GPIO_DATA1           (* (volatile uint32_t *)0xE000A044uL)
 
 //#define GPIO0_PIN7           (1uL << 7)
 #define GPIO0_PIN15           (1uL << 15)
+#define GPIO0_PIN37           (1uL << (37 - 32))
 
 
 /* memory addresses */

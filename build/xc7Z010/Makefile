@@ -58,7 +58,7 @@ LTO = -flto
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
 
-UADEFS += -D"WITHSMPSYSTEM"
+#UADEFS += -D"WITHSMPSYSTEM"
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
@@ -189,7 +189,7 @@ BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.img
 APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 $(PROJECT)_boot.img: $(PROJECT)_boot.elf
-	C:\Xilinx\Vivado\2020.2\bin\bootgen -arch zynq -image boot.bif -w on -o $@
+	bootgen -arch zynq -image boot.bif -w on -o $@
 	
 $(PROJECT)_app.stm32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0x04100100 -e 0x04100100 -s $(PROJECT)_app.bin -d $@

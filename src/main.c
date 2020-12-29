@@ -21407,6 +21407,13 @@ static void bootloader_mainloop(void)
 	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
 ddd:
 	;
+#if 1	// мигалка
+	GPIO_DATA1 &= ~ GPIO0_PIN37;
+	local_delay_ms(500);
+	GPIO_DATA1 |= GPIO0_PIN37;
+	local_delay_ms(500);
+#endif
+
 #if WITHUSBHW
 	for (;;)
 	{
