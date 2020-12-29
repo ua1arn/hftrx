@@ -136,6 +136,26 @@ extern "C" {
 	#define R7S721_INPUT_PORT(p) ((uint16_t) GPIO.PPR ## p)
 	#define R7S721_INPUT_JPORT(p) ((uint16_t) GPIO.JPPR ## p)
 
+#elif CPUSTYLE_XC7Z
+
+	#define ZYNQ_IORW32(addr) (* (volatile uint32_t *) (addr))
+
+	#define gpio_output(pin, state) do { \
+		const portholder_t bank = (pin) >> 5; \
+		const portholder_t mask = 1u << ((pin) & 0x1F); \
+		ZYNQ_IORW32(GPIO_DATA(bank)) = (ZYNQ_IORW32(GPIO_DATA(bank)) & ~ mask) | (mask * state); \
+		ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; \
+		ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; \
+		} while (0)
+
+	#define gpio_inputt(pin) do { \
+		const portholder_t bank = (pin) >> 5; \
+		const portholder_t mask = 1u << ((pin) & 0x1F); \
+		ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; \
+		ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; \
+		} while (0)
+
+
 #endif /* CPUSTYLE_STM32F */
 
 void arm_hardware_pioa_inputs(unsigned long ipins);

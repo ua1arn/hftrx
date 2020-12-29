@@ -21408,9 +21408,11 @@ static void bootloader_mainloop(void)
 ddd:
 	;
 #if 1 && CPUSTYLE_XC7Z	// мигалка
-	GPIO_DATA1 &= ~ GPIO0_PIN37;
+	//GPIO_DATA1 &= ~ GPIO0_PIN37;
+	gpio_output(37, 0);
 	local_delay_ms(500);
-	GPIO_DATA1 |= GPIO0_PIN37;
+	//GPIO_DATA1 |= GPIO0_PIN37;
+	gpio_output(37, 1);
 	local_delay_ms(500);
 #endif
 
