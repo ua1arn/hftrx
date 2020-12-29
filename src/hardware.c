@@ -13061,15 +13061,15 @@ sysinit_mmu_initialize(void)
 #define OPCODE_MASKWRITE  3U
 #define OPCODE_MASKPOLL   4U
 #define OPCODE_MASKDELAY  5U
-#define OPCODE_ADDRESS_MASK	(~3U)
+#define NEW_PS7_ERR_CODE 1
 
-/* Sentinel */
-#define EMIT_EXIT()			OPCODE_EXIT
-/* Opcode is in lower 2 bits of address, address is always 4-byte aligned */
-#define EMIT_MASKWRITE(addr, mask, val)	OPCODE_MASKWRITE | addr, mask, val
-#define EMIT_MASKPOLL(addr, mask)	OPCODE_MASKPOLL | addr, mask
-#define EMIT_MASKDELAY(addr, mask)	OPCODE_MASKDELAY | addr, mask
-#define EMIT_WRITE(addr, val)		OPCODE_WRITE | addr, val
+/* Encode number of arguments in last nibble */
+#define EMIT_EXIT()                   ( (OPCODE_EXIT      << 4 ) | 0 )
+#define EMIT_CLEAR(addr)              ( (OPCODE_CLEAR     << 4 ) | 1 ) , addr
+#define EMIT_WRITE(addr,val)          ( (OPCODE_WRITE     << 4 ) | 2 ) , addr, val
+#define EMIT_MASKWRITE(addr,mask,val) ( (OPCODE_MASKWRITE << 4 ) | 3 ) , addr, mask, val
+#define EMIT_MASKPOLL(addr,mask)      ( (OPCODE_MASKPOLL  << 4 ) | 2 ) , addr, mask
+#define EMIT_MASKDELAY(addr,mask)      ( (OPCODE_MASKDELAY << 4 ) | 2 ) , addr, mask
 
 /* Returns codes of ps7_init* */
 #define PS7_INIT_SUCCESS		(0)
