@@ -140,17 +140,27 @@ extern "C" {
 
 	#define ZYNQ_IORW32(addr) (* (volatile uint32_t *) (addr))
 
+	// ug585-Zynq-7000-TRM.pdf v1.12.2, page 1630
+
+	// initial value = 0x00001601
+	#define mio_mode(pin, value) do { \
+			volatile uint32_t * const mio = (& SCLR->MIO_PIN_00) + (pin); \
+			* mio = (value); /*  */ \
+	} while (0)
+
 	#define gpio_output(pin, state) do { \
 		const portholder_t bank = (pin) >> 5; \
-		const portholder_t mask = 1u << ((pin) & 0x1F); \
+		const portholder_t mask = (portholder_t) 1 << ((pin) & 0x1F); \
+		mio_mode(pin, 0x00001601uL); /* initial value */ \
 		ZYNQ_IORW32(GPIO_DATA(bank)) = (ZYNQ_IORW32(GPIO_DATA(bank)) & ~ mask) | (mask * state); \
 		ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; \
 		ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; \
 		} while (0)
 
-	#define gpio_inputt(pin) do { \
+	#define gpio_input(pin) do { \
 		const portholder_t bank = (pin) >> 5; \
-		const portholder_t mask = 1u << ((pin) & 0x1F); \
+		const portholder_t mask = (portholder_t) 1 << ((pin) & 0x1F); \
+		mio_mode(pin, 0x00001601uL); /* initial value */ \
 		ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; \
 		ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; \
 		} while (0)

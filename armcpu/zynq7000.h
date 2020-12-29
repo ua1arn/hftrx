@@ -430,23 +430,6 @@ typedef struct spi_regs {
 #define XUARTPS_CR_RX_DIS	0x00000008UL  /**< RX disabled. */
 #define XUARTPS_CR_RX_EN	0x00000004UL  /**< RX enabled */
 
-//#define POINTER_TO_REGISTER(REG)  ( * (volatile uint32_t *) (REG))
-//
-//#define MIO_PIN07_CTRL       (* (volatile uint32_t *)0xF800071CuL)
-//#define MIO_PIN07_CTRL_GPIO0 0x00003200
-//
-//#define GPIO_DIRM0           (* (volatile uint32_t *)0xE000A204uL)
-//#define GPIO_OEN0            (* (volatile uint32_t *)0xE000A208uL)
-//#define GPIO_DATA0           (* (volatile uint32_t *)0xE000A040uL)
-//#define GPIO_DIRM1           (* (volatile uint32_t *)0xE000A244uL)
-//#define GPIO_OEN1            (* (volatile uint32_t *)0xE000A248uL)
-//#define GPIO_DATA1           (* (volatile uint32_t *)0xE000A044uL)
-//
-////#define GPIO0_PIN7           (1uL << 7)
-//#define GPIO0_PIN15           (1uL << 15)
-//#define GPIO0_PIN37           (1uL << (37 - 32))
-
-
 /* memory addresses */
 /* assumes sram is mapped at 0 the first MB of sdram is covered by it */
 #define SDRAM_BASE          (0x00100000)
