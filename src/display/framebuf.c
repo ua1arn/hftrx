@@ -2230,6 +2230,7 @@ COLORPIP_T getshadedcolor(
 	}
 	else
 	{
+		// распаковка дисплейного представления
 		const uint_fast8_t r = ((dot >> 11) & 0x001f) * 8;	// result in 0..255
 		const uint_fast8_t g = ((dot >> 5) & 0x003f) * 4;	// result in 0..255
 		const uint_fast8_t b = ((dot >> 0) & 0x001f) * 8;	// result in 0..255
@@ -2238,7 +2239,7 @@ COLORPIP_T getshadedcolor(
 		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
-	#elif LCDMODE_MAIN_ARGB888
+#elif LCDMODE_MAIN_ARGB888
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -2246,6 +2247,7 @@ COLORPIP_T getshadedcolor(
 	}
 	else
 	{
+		// распаковка дисплейного представления
 		const uint_fast8_t r = ((dot >> 16) & 0x00FF) * 1;	// result in 0..255
 		const uint_fast8_t g = ((dot >> 8) & 0x00FF) * 1;	// result in 0..255
 		const uint_fast8_t b = ((dot >> 0) & 0x00FF) * 1;	// result in 0..255
