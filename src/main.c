@@ -8025,8 +8025,8 @@ typedef struct lmsnrstate_tag
 	float32_t lms2_normCoeff_f32 [NOISE_REDUCTION_TAPS];
 	float32_t ref [NOISE_REDUCTION_REFERENCE_SIZE];
 	float32_t lms2_errsig2 [NOISE_REDUCTION_BLOCK_SIZE];
-	uint_fast16_t reference_index_old;
-	uint_fast16_t reference_index_new;
+	uint_fast16_t refold;
+	uint_fast16_t refnew;
 
 #else /* WITHNOSPEEX */
 
@@ -8161,8 +8161,8 @@ static void InitNoiseReduction(void)
 		arm_fill_f32(0, nrp->ref, NOISE_REDUCTION_REFERENCE_SIZE);
 		arm_fill_f32(0, nrp->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
 
-		nrp->reference_index_old = 0;
-		nrp->reference_index_new = 0;
+		nrp->refold = 0;
+		nrp->refnew = 0;
 #else /* WITHNOSPEEX */
 
 		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
@@ -8180,15 +8180,15 @@ static void InitNoiseReduction(void)
 
 static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, float* bufferOut)
 {
-	arm_copy_f32(bufferIn, & nrp->ref [nrp->reference_index_new], NOISE_REDUCTION_BLOCK_SIZE);
-	arm_lms_norm_f32(& nrp->lms2_Norm_instance, bufferIn, & nrp->ref [nrp->reference_index_old], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
+	arm_copy_f32(bufferIn, & nrp->ref [nrp->refnew], NOISE_REDUCTION_BLOCK_SIZE);
+	arm_lms_norm_f32(& nrp->lms2_Norm_instance, bufferIn, & nrp->ref [nrp->refold], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
 
-	nrp->reference_index_old += NOISE_REDUCTION_BLOCK_SIZE;
-	if (nrp->reference_index_old >= NOISE_REDUCTION_REFERENCE_SIZE)
-		nrp->reference_index_old = 0;
-	nrp->reference_index_new = nrp->reference_index_old + NOISE_REDUCTION_BLOCK_SIZE;
-	if (nrp->reference_index_new >= NOISE_REDUCTION_REFERENCE_SIZE)
-		nrp->reference_index_new = 0;
+	nrp->refold += NOISE_REDUCTION_BLOCK_SIZE;
+	if (nrp->refold >= NOISE_REDUCTION_REFERENCE_SIZE)
+		nrp->refold = 0;
+	nrp->refnew = nrp->refold + NOISE_REDUCTION_BLOCK_SIZE;
+	if (nrp->refnew >= NOISE_REDUCTION_REFERENCE_SIZE)
+		nrp->refnew = 0;
 }
 
 #endif /* WITHNOSPEEX */
@@ -8209,8 +8209,8 @@ typedef struct
     float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
     float32_t	                norm [AUTONOTCH_NUMTAPS];
     float32_t	                ref [AUTONOTCH_BUFFER_SIZE];
-    unsigned 					reference_index_old;
-    unsigned 					reference_index_new;
+    unsigned 					refold;
+    unsigned 					refnew;
 } LMSData_t;
 
 static RAMBIGDTCM LMSData_t lmsData0;
@@ -8222,8 +8222,8 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
 	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
 	arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
-	lmsd->reference_index_old = 0;
-	lmsd->reference_index_new = FIRBUFSIZE;
+	lmsd->refold = 0;
+	lmsd->refnew = FIRBUFSIZE;
 }
 
 // pInput - входной буфер FIRBUFSIZE сэмплов
@@ -8231,22 +8231,23 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
 {
 	float32_t diag;
-	arm_mean_f32(lmsd->ref, AUTONOTCH_BUFFER_SIZE, & diag);
 	float32_t diag2;
+
+	arm_mean_f32(lmsd->ref, AUTONOTCH_BUFFER_SIZE, & diag);
 	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
 	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
 	{
 		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
 		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
-		lmsd->reference_index_old = 0;
-		lmsd->reference_index_new = FIRBUFSIZE;
+		lmsd->refold = 0;
+		lmsd->refnew = FIRBUFSIZE;
 	}
-	arm_copy_f32(pInput, & lmsd->ref [lmsd->reference_index_new], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->reference_index_old], lmsd->errsig2, pOutput, FIRBUFSIZE);
-	lmsd->reference_index_old += FIRBUFSIZE;
-	lmsd->reference_index_new = lmsd->reference_index_old + FIRBUFSIZE;
-	lmsd->reference_index_old %= AUTONOTCH_BUFFER_SIZE;
-	lmsd->reference_index_new %= AUTONOTCH_BUFFER_SIZE;
+	arm_copy_f32(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
+	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], lmsd->errsig2, pOutput, FIRBUFSIZE);
+	lmsd->refold += FIRBUFSIZE;
+	lmsd->refnew = lmsd->refold + FIRBUFSIZE;
+	lmsd->refold %= AUTONOTCH_BUFFER_SIZE;
+	lmsd->refnew %= AUTONOTCH_BUFFER_SIZE;
 }
 #endif /* WITHLMSAUTONOTCH */
 
