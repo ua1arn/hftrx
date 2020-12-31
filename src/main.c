@@ -8310,6 +8310,10 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 		{
 			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
 		}
+		else
+		{
+			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
+		}
 #if WITHLEAKYLMSANR
 		if (pathi == 0)
 			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
@@ -8337,6 +8341,10 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 		if (anotch)
 		{
 			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
+		}
+		else
+		{
+			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
 		}
 #if WITHAFEQUALIZER
 		audio_rx_equalizer(nrp->wire1, FIRBUFSIZE);
