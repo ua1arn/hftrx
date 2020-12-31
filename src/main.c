@@ -8005,12 +8005,75 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 
 #endif /* WITHLEAKYLMSANR */
 
-#define NOISE_REDUCTION_BLOCK_SIZE FIRBUFSIZE
-#define NOISE_REDUCTION_TAPS 64
-#define NOISE_REDUCTION_REFERENCE_SIZE (NOISE_REDUCTION_BLOCK_SIZE * 2)
-#define NOISE_REDUCTION_STEP 0.01f
+#if WITHLMSAUTONOTCH
 
-typedef struct lmsnrstate_tag
+enum {
+	AUTONOTCH_NUMTAPS = 64,
+	AUTONOTCH_BUFFER_SIZE = FIRBUFSIZE * 4,
+	AUTONOTCH_STATE_ARRAY_SIZE = AUTONOTCH_NUMTAPS + FIRBUFSIZE - 1,
+};
+
+typedef struct
+{
+    float32_t   				errsig2 [FIRBUFSIZE];
+    arm_lms_norm_instance_f32	lms2Norm_instance;
+    arm_lms_instance_f32	    lms2_instance;
+    float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
+    float32_t	                norm [AUTONOTCH_NUMTAPS];
+    float32_t	                ref [AUTONOTCH_BUFFER_SIZE];
+    unsigned 					refold;
+    unsigned 					refnew;
+} LMSData_t;
+
+static void hamradio_autonotch_init(LMSData_t * const lmsd)
+{
+	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
+	//const float32_t mu = 0.0001f;		// UA3REO value
+	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
+	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+	arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+	lmsd->refold = 0;
+	lmsd->refnew = FIRBUFSIZE;
+}
+
+// pInput - входной буфер FIRBUFSIZE сэмплов
+// pOutput - обработаный буфер FIRBUFSIZE сэмплов
+static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
+{
+	float32_t diag;
+	float32_t diag2;
+
+	arm_mean_f32(lmsd->ref, AUTONOTCH_BUFFER_SIZE, & diag);
+	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
+	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
+	{
+		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+		lmsd->refold = 0;
+		lmsd->refnew = FIRBUFSIZE;
+	}
+	arm_copy_f32(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
+	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], lmsd->errsig2, pOutput, FIRBUFSIZE);
+	lmsd->refold += FIRBUFSIZE;
+	lmsd->refnew = lmsd->refold + FIRBUFSIZE;
+	lmsd->refold %= AUTONOTCH_BUFFER_SIZE;
+	lmsd->refnew %= AUTONOTCH_BUFFER_SIZE;
+}
+
+#endif /* WITHLMSAUTONOTCH */
+
+#if ! WITHSKIPUSERMODE
+
+#if WITHNOSPEEX
+
+	#define NOISE_REDUCTION_BLOCK_SIZE FIRBUFSIZE
+	#define NOISE_REDUCTION_TAPS 64
+	#define NOISE_REDUCTION_REFERENCE_SIZE (NOISE_REDUCTION_BLOCK_SIZE * 2)
+	#define NOISE_REDUCTION_STEP 0.01f
+
+#endif /* WITHNOSPEEX */
+
+typedef struct rxaproc_tag
 {
 	// FIR audio filter
 	float32_t firEQcoeff [Ntap_rx_AUDIO];
@@ -8034,10 +8097,17 @@ typedef struct lmsnrstate_tag
 
 #endif /* WITHNOSPEEX */
 
-	speexel_t * outsp;	/* pointer to buffer with result of processing */
-} lmsnrstate_t;
+#if WITHLMSAUTONOTCH
+	// LMS auto notch
+	LMSData_t lmsanotch;
+#endif /* WITHLMSAUTONOTCH */
 
-static lmsnrstate_t lmsnrstates [NTRX];
+	speexel_t * outsp;	/* pointer to buffer with result of processing */
+} rxaproc_t;
+
+static RAMBIGDTCM rxaproc_t rxaprocs [NTRX];
+
+#endif /* ! WITHSKIPUSERMODE */
 
 #if ! WITHNOSPEEX
 
@@ -8126,7 +8196,7 @@ static void speex_update_rx(void)
 
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
-		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+		rxaproc_t * const nrp = & rxaprocs [pathi];
 		// Получение параметров эквалайзера
 		float32_t * const dCoefs = nrp->firEQcoeff;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
@@ -8151,7 +8221,7 @@ static void InitNoiseReduction(void)
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
-		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+		rxaproc_t * const nrp = & rxaprocs [pathi];
 
 		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->firEQcoeff, nrp->fir_state, FIRBUFSIZE);
 
@@ -8168,6 +8238,10 @@ static void InitNoiseReduction(void)
 		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
 
 #endif /* WITHNOSPEEX */
+
+#if WITHLMSAUTONOTCH
+		hamradio_autonotch_init(& nrp->lmsanotch);
+#endif /* WITHLMSAUTONOTCH */
 	}
 
 #ifdef WITHLEAKYLMSANR
@@ -8178,7 +8252,7 @@ static void InitNoiseReduction(void)
 
 #if WITHNOSPEEX
 
-static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, float* bufferOut)
+static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float* bufferOut)
 {
 	arm_copy_f32(bufferIn, & nrp->ref [nrp->refnew], NOISE_REDUCTION_BLOCK_SIZE);
 	arm_lms_norm_f32(& nrp->lms2_Norm_instance, bufferIn, & nrp->ref [nrp->refold], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
@@ -8193,67 +8267,9 @@ static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, flo
 
 #endif /* WITHNOSPEEX */
 
-#if WITHLMSAUTONOTCH
-
-enum {
-	AUTONOTCH_NUMTAPS = 64,
-	AUTONOTCH_BUFFER_SIZE = FIRBUFSIZE * 4,
-	AUTONOTCH_STATE_ARRAY_SIZE = AUTONOTCH_NUMTAPS + FIRBUFSIZE - 1,
-};
-
-typedef struct
-{
-    float32_t   				errsig2 [FIRBUFSIZE];
-    arm_lms_norm_instance_f32	lms2Norm_instance;
-    arm_lms_instance_f32	    lms2_instance;
-    float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
-    float32_t	                norm [AUTONOTCH_NUMTAPS];
-    float32_t	                ref [AUTONOTCH_BUFFER_SIZE];
-    unsigned 					refold;
-    unsigned 					refnew;
-} LMSData_t;
-
-static RAMBIGDTCM LMSData_t lmsData0;
-
-static void hamradio_autonotch_init(LMSData_t * const lmsd)
-{
-	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
-	//const float32_t mu = 0.0001f;		// UA3REO value
-	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
-	arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
-	lmsd->refold = 0;
-	lmsd->refnew = FIRBUFSIZE;
-}
-
-// pInput - входной буфер FIRBUFSIZE сэмплов
-// pOutput - обработаный буфер FIRBUFSIZE сэмплов
-static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
-{
-	float32_t diag;
-	float32_t diag2;
-
-	arm_mean_f32(lmsd->ref, AUTONOTCH_BUFFER_SIZE, & diag);
-	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
-	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
-	{
-		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
-		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
-		lmsd->refold = 0;
-		lmsd->refnew = FIRBUFSIZE;
-	}
-	arm_copy_f32(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], lmsd->errsig2, pOutput, FIRBUFSIZE);
-	lmsd->refold += FIRBUFSIZE;
-	lmsd->refnew = lmsd->refold + FIRBUFSIZE;
-	lmsd->refold %= AUTONOTCH_BUFFER_SIZE;
-	lmsd->refnew %= AUTONOTCH_BUFFER_SIZE;
-}
-#endif /* WITHLMSAUTONOTCH */
-
 void audio_rx_equalizer(float32_t *buffer, uint16_t size);
 // обработка и сохранение в savesampleout16stereo_user()
-static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, speexel_t * p)
+static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel_t * p)
 {
 	const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
 	const uint_fast8_t pathsubmode = getsubmode(bi);
@@ -8290,8 +8306,10 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		BEGIN_STAMP();
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		END_STAMP();
-		if (anotch && pathi == 0)
-			hamradio_autonotch_process(& lmsData0, nrp->wire1, nrp->wire1);
+		if (anotch)
+		{
+			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
+		}
 #if WITHLEAKYLMSANR
 		if (pathi == 0)
 			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
@@ -8316,8 +8334,10 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		BEGIN_STAMP();
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		END_STAMP();
-		if (anotch && pathi == 0)
-			hamradio_autonotch_process(& lmsData0, nrp->wire1, nrp->wire1);
+		if (anotch)
+		{
+			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
+		}
 #if WITHAFEQUALIZER
 		audio_rx_equalizer(nrp->wire1, FIRBUFSIZE);
 #endif /* WITHAFEQUALIZER */
@@ -8338,7 +8358,7 @@ audioproc_spool_user(void)
 		uint_fast8_t pathi;
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
-			lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+			rxaproc_t * const nrp = & rxaprocs [pathi];
 			// nrp->outsp указывает на результат обработки
 			processingonebuff(pathi, nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
 		}
@@ -8348,9 +8368,9 @@ audioproc_spool_user(void)
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
 	#if WITHUSEDUALWATCH
-			deliveryfloat(& afoutfloat_user, lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& afoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [1].outsp [i]);	// to AUDIO codec
 	#else /* WITHUSEDUALWATCH */
-			deliveryfloat(& afoutfloat_user, lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& afoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [0].outsp [i]);	// to AUDIO codec
 	#endif /* WITHUSEDUALWATCH */
 		}
 		// Освобождаем буфер
@@ -19286,7 +19306,6 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
-	hamradio_autonotch_init(& lmsData0);
 #endif /* WITHINTEGRATEDDSP */
 
 	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
