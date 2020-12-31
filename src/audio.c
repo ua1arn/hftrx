@@ -6465,7 +6465,7 @@ void audio_rx_equalizer_init(void)
     calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [2] + base, EQ_RX_HIGH_FILTER_Coeffs);
 }
 
-void audio_rx_equalizer(float32_t * buffer, uint16_t size)
+void audio_rx_equalizer(float32_t * buffer, uint_fast16_t size)
 {
 	if (glob_equalizer_rx)
 	{

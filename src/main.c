@@ -8267,7 +8267,6 @@ static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float*
 
 #endif /* WITHNOSPEEX */
 
-void audio_rx_equalizer(float32_t *buffer, uint16_t size);
 // обработка и сохранение в savesampleout16stereo_user()
 static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel_t * p)
 {

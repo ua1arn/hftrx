@@ -798,6 +798,8 @@ void board_set_equalizer_tx(uint_fast8_t n);
 void board_set_equalizer_rx_gains(const uint_fast8_t * p);
 void board_set_equalizer_tx_gains(const uint_fast8_t * p);
 
+void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
+
 #endif /* WITHAFEQUALIZER */
 
 #ifdef __cplusplus
