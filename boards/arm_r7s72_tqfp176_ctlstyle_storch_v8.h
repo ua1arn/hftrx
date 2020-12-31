@@ -380,7 +380,7 @@
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHVIEW_3DSS	1
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
