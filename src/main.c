@@ -8023,7 +8023,7 @@ typedef struct lmsnrstate_tag
 	arm_lms_norm_instance_f32 lms2_Norm_instance;
 	float32_t lms2_stateF32 [NOISE_REDUCTION_TAPS + NOISE_REDUCTION_BLOCK_SIZE - 1];
 	float32_t lms2_normCoeff_f32 [NOISE_REDUCTION_TAPS];
-	float32_t lms2_reference [NOISE_REDUCTION_REFERENCE_SIZE];
+	float32_t ref [NOISE_REDUCTION_REFERENCE_SIZE];
 	float32_t lms2_errsig2 [NOISE_REDUCTION_BLOCK_SIZE];
 	uint_fast16_t reference_index_old;
 	uint_fast16_t reference_index_new;
@@ -8158,7 +8158,7 @@ static void InitNoiseReduction(void)
 #if WITHNOSPEEX
 
 		arm_lms_norm_init_f32(& nrp->lms2_Norm_instance, NOISE_REDUCTION_TAPS, nrp->lms2_normCoeff_f32, nrp->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
-		arm_fill_f32(0, nrp->lms2_reference, NOISE_REDUCTION_REFERENCE_SIZE);
+		arm_fill_f32(0, nrp->ref, NOISE_REDUCTION_REFERENCE_SIZE);
 		arm_fill_f32(0, nrp->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
 
 		nrp->reference_index_old = 0;
@@ -8180,8 +8180,8 @@ static void InitNoiseReduction(void)
 
 static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, float* bufferOut)
 {
-	arm_copy_f32(bufferIn, & nrp->lms2_reference [nrp->reference_index_new], NOISE_REDUCTION_BLOCK_SIZE);
-	arm_lms_norm_f32(& nrp->lms2_Norm_instance, bufferIn, & nrp->lms2_reference [nrp->reference_index_old], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
+	arm_copy_f32(bufferIn, & nrp->ref [nrp->reference_index_new], NOISE_REDUCTION_BLOCK_SIZE);
+	arm_lms_norm_f32(& nrp->lms2_Norm_instance, bufferIn, & nrp->ref [nrp->reference_index_old], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
 
 	nrp->reference_index_old += NOISE_REDUCTION_BLOCK_SIZE;
 	if (nrp->reference_index_old >= NOISE_REDUCTION_REFERENCE_SIZE)
@@ -8207,8 +8207,8 @@ typedef struct
     arm_lms_norm_instance_f32	lms2Norm_instance;
     arm_lms_instance_f32	    lms2_instance;
     float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
-    float32_t	                lms2NormCoeff_f32 [AUTONOTCH_NUMTAPS];
-    float32_t	                lms2_reference [AUTONOTCH_BUFFER_SIZE];
+    float32_t	                norm [AUTONOTCH_NUMTAPS];
+    float32_t	                ref [AUTONOTCH_BUFFER_SIZE];
     unsigned 					reference_index_old;
     unsigned 					reference_index_new;
 } LMSData_t;
@@ -8219,29 +8219,30 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 {
 	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
-	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->lms2NormCoeff_f32, lmsd->lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
-	arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
+	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
+	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+	arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
 	lmsd->reference_index_old = 0;
 	lmsd->reference_index_new = FIRBUFSIZE;
 }
 
-// TODO: учесть возмодность работы двух каналов приёма
-static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * notchbuffer)
+// pInput - входной буфер FIRBUFSIZE сэмплов
+// pOutput - обработаный буфер FIRBUFSIZE сэмплов
+static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
 {
 	float32_t diag;
-	arm_mean_f32(lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE, & diag);
+	arm_mean_f32(lmsd->ref, AUTONOTCH_BUFFER_SIZE, & diag);
 	float32_t diag2;
-	arm_mean_f32(lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS, & diag2);
+	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
 	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
 	{
-		arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
-		arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
+		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
 		lmsd->reference_index_old = 0;
 		lmsd->reference_index_new = FIRBUFSIZE;
 	}
-	arm_copy_f32(notchbuffer, & lmsd->lms2_reference [lmsd->reference_index_new], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, notchbuffer, & lmsd->lms2_reference [lmsd->reference_index_old], lmsd->errsig2, notchbuffer, FIRBUFSIZE);
+	arm_copy_f32(pInput, & lmsd->ref [lmsd->reference_index_new], FIRBUFSIZE);
+	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->reference_index_old], lmsd->errsig2, pOutput, FIRBUFSIZE);
 	lmsd->reference_index_old += FIRBUFSIZE;
 	lmsd->reference_index_new = lmsd->reference_index_old + FIRBUFSIZE;
 	lmsd->reference_index_old %= AUTONOTCH_BUFFER_SIZE;
@@ -8287,7 +8288,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		END_STAMP();
 		if (anotch && pathi == 0)
-			hamradio_autonotch_process(& lmsData0, nrp->wire1);
+			hamradio_autonotch_process(& lmsData0, nrp->wire1, nrp->wire1);
 #if WITHLEAKYLMSANR
 		if (pathi == 0)
 			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
@@ -8313,7 +8314,7 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		END_STAMP();
 		if (anotch && pathi == 0)
-			hamradio_autonotch_process(& lmsData0, nrp->wire1);
+			hamradio_autonotch_process(& lmsData0, nrp->wire1, nrp->wire1);
 #if WITHAFEQUALIZER
 		audio_rx_equalizer(nrp->wire1, FIRBUFSIZE);
 #endif /* WITHAFEQUALIZER */
