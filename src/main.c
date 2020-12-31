@@ -8255,7 +8255,9 @@ void audio_rx_equalizer(float32_t *buffer, uint16_t size);
 // обработка и сохранение в savesampleout16stereo_user()
 static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, speexel_t * p)
 {
-	const uint_fast8_t mode = submodes [gsubmode].mode;
+	const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
+	const uint_fast8_t pathsubmode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [pathsubmode].mode;
 	const uint_fast8_t noprocessing = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
 	const uint_fast8_t denoise = ! noprocessing && gnoisereducts [mode];
 	const uint_fast8_t anotch = ! (gtx || mode == MODE_DIGI || gdatamode) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
