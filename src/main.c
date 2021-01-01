@@ -8209,13 +8209,16 @@ static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
 
-#if ! WITHNOSPEEX
-	spx_int32_t denoise = gnoisereducts [gmode];
-	spx_int32_t supress = - (int) gnoisereductvl;
-#endif /* ! WITHNOSPEEX */
-
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
+		const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
+		const uint_fast8_t pathsubmode = getsubmode(bi);
+		const uint_fast8_t mode = submodes [pathsubmode].mode;
+#if ! WITHNOSPEEX
+		spx_int32_t denoise = gnoisereducts [mode];
+		spx_int32_t supress = - (int) gnoisereductvl;
+#endif /* ! WITHNOSPEEX */
+
 		rxaproc_t * const nrp = & rxaprocs [pathi];
 		// Получение параметров эквалайзера
 		float32_t * const dCoefs = nrp->firEQcoeff;
