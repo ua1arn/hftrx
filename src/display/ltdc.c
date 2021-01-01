@@ -1794,6 +1794,27 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 }
 
+#elif CPUSTYLE_XC7Z
+
+void arm_hardware_ltdc_initialize(void)
+{
+
+}
+
+/* Palette reload (dummy fuction) */
+void arm_hardware_ltdc_L8_palette(void)
+{
+
+}
+
+/* Set MAIN frame buffer address. */
+void arm_hardware_ltdc_main_set(uintptr_t p)
+{
+}
+
+#else
+	#error Wrong CPUSTYLE_xxxx
+
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
 uint_fast32_t display_getdotclock(void)
