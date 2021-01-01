@@ -8037,7 +8037,8 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 	lmsd->refnew = FIRBUFSIZE;
 }
 
-static volatile int nrestarts;
+//static volatile int nrestarts;
+
 // pInput - входной буфер FIRBUFSIZE сэмплов
 // pOutput - обработаный буфер FIRBUFSIZE сэмплов
 static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
@@ -8072,9 +8073,10 @@ static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInpu
 	{
 		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
 		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+		arm_fill_f32(0, pOutput, FIRBUFSIZE);
 		lmsd->refold = 0;
 		lmsd->refnew = FIRBUFSIZE;
-		++ nrestarts;
+		//++ nrestarts;
 	}
 }
 
