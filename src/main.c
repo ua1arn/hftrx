@@ -8015,7 +8015,6 @@ enum {
 
 typedef struct
 {
-    float32_t   				errsig2 [FIRBUFSIZE];
     arm_lms_norm_instance_f32	lms2Norm_instance;
     arm_lms_instance_f32	    lms2_instance;
     float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
@@ -8023,10 +8022,12 @@ typedef struct
     float32_t	                ref [AUTONOTCH_BUFFER_SIZE];
     unsigned 					refold;
     unsigned 					refnew;
+    float32_t phonefence;
 } LMSData_t;
 
 static void hamradio_autonotch_init(LMSData_t * const lmsd)
 {
+	lmsd->phonefence = (powf(2, WITHAFDACWIDTH - 1) - 1);
 	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
@@ -8036,28 +8037,45 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 	lmsd->refnew = FIRBUFSIZE;
 }
 
+static volatile int nrestarts;
 // pInput - входной буфер FIRBUFSIZE сэмплов
 // pOutput - обработаный буфер FIRBUFSIZE сэмплов
 static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
 {
-	float32_t diag;
-	float32_t diag2;
+    static float32_t errsig2 [FIRBUFSIZE];	/* unused output */
+//	float32_t diag;
+//	float32_t diag2;
+//
+//	arm_mean_f32(lmsd->ref, AUTONOTCH_BUFFER_SIZE, & diag);
+//	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
+//	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
+//	{
+//		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+//		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+//		lmsd->refold = 0;
+//		lmsd->refnew = FIRBUFSIZE;
+//		++ nrestarts;
+//	}
+	arm_copy_f32(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
+	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], errsig2, pOutput, FIRBUFSIZE);
+	lmsd->refold += FIRBUFSIZE;
+	lmsd->refnew = lmsd->refold + FIRBUFSIZE;
+	lmsd->refold %= AUTONOTCH_BUFFER_SIZE;
+	lmsd->refnew %= AUTONOTCH_BUFFER_SIZE;
 
-	arm_mean_f32(lmsd->ref, AUTONOTCH_BUFFER_SIZE, & diag);
-	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
-	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
+	float32_t diagmin;
+	float32_t diagmax;
+	uint32_t index;
+	arm_min_f32(pOutput, FIRBUFSIZE, & diagmin, & index);
+	arm_max_no_idx_f32(pOutput, FIRBUFSIZE, & diagmax);
+	if (diagmin < - lmsd->phonefence || diagmax > lmsd->phonefence)
 	{
 		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
 		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
 		lmsd->refold = 0;
 		lmsd->refnew = FIRBUFSIZE;
+		++ nrestarts;
 	}
-	arm_copy_f32(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], lmsd->errsig2, pOutput, FIRBUFSIZE);
-	lmsd->refold += FIRBUFSIZE;
-	lmsd->refnew = lmsd->refold + FIRBUFSIZE;
-	lmsd->refold %= AUTONOTCH_BUFFER_SIZE;
-	lmsd->refnew %= AUTONOTCH_BUFFER_SIZE;
 }
 
 #endif /* WITHLMSAUTONOTCH */
