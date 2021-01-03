@@ -3488,6 +3488,13 @@ void display2_set_smetertype(uint_fast8_t v);
 
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */
 
+enum
+{
+	BANDF_COUNT = 20,
+	BANDF2_COUNT = 17,
+	BANDF3_COUNT = 17
+};
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
