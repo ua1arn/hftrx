@@ -184,11 +184,11 @@ app_run: $(PROJECT)_app.stm32
 flash: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
-BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.img
+BOOT2: version $(OBJS) $(PROJECT)_boot.elf BOOT.bin
 
 APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
-$(PROJECT)_boot.img: $(PROJECT)_boot.elf
+BOOT.bin: $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot.bif -w on -o $@
 	
 $(PROJECT)_app.stm32: $(PROJECT)_app.bin
