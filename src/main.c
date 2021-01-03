@@ -5210,6 +5210,55 @@ verifyband(const vindex_t b)
 #endif /* DEBUGEXT */
 }
 
+
+#if XVTR_NYQ1
+// Частота из лююой зоны найквиста преобразуется в первую
+static uint_fast32_t FQMODEL_TUNING_TO_NYQ1(uint_fast32_t f)
+{
+	uint_fast32_t f1 = (f % DUCDDC_FREQ);
+	return f1 >= (DUCDDC_FREQ / 2) ? (DUCDDC_FREQ - f1) : f1;
+}
+#endif /* XVTR_NYQ1 */
+
+// tuning frequency to band pass frequency adjust
+static uint_fast32_t
+nyquistadj(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif 0//XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
+}
+
+// tuning frequency to PA low pass frequency adjust
+static uint_fast32_t
+nyquistadj2(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
+}
+
+// tuning frequency to external PA (ACC socket) frequency adjust
+static uint_fast32_t
+nyquistadj3(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
+}
+
 /* получить номер диапазона, в который попадает отображающаяся частота
   Если не принадлежит ни одному диапазону, возврат ((uint8_t)-1) */
 static vindex_t 
@@ -8554,55 +8603,6 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 #define FLAGNE_U32_CAT(a,b,c) flagne_u32(& (a)->value, (b))
 
 #endif /* WITHCAT */
-
-
-#if XVTR_NYQ1
-// Частота из лююой зоны найквиста преобразуется в первую
-static uint_fast32_t FQMODEL_TUNING_TO_NYQ1(uint_fast32_t f)
-{
-	uint_fast32_t f1 = (f % DUCDDC_FREQ);
-	return f1 >= (DUCDDC_FREQ / 2) ? (DUCDDC_FREQ - f1) : f1;
-}
-#endif /* XVTR_NYQ1 */
-
-// tuning frequency to band pass frequency adjust
-static uint_fast32_t
-nyquistadj(uint_fast32_t f)
-{
-#if 0//XVTR_R820T2
-	reuturn R820T_IFFREQ;
-#elif 0//XVTR_NYQ1
-	return FQMODEL_TUNING_TO_NYQ1(f);
-#else /* XVTR_NYQ1 */
-	return f;
-#endif /* XVTR_NYQ1 */
-}
-
-// tuning frequency to PA low pass frequency adjust
-static uint_fast32_t
-nyquistadj2(uint_fast32_t f)
-{
-#if 0//XVTR_R820T2
-	reuturn R820T_IFFREQ;
-#elif XVTR_NYQ1
-	return FQMODEL_TUNING_TO_NYQ1(f);
-#else /* XVTR_NYQ1 */
-	return f;
-#endif /* XVTR_NYQ1 */
-}
-
-// tuning frequency to external PA (ACC socket) frequency adjust
-static uint_fast32_t
-nyquistadj3(uint_fast32_t f)
-{
-#if 0//XVTR_R820T2
-	reuturn R820T_IFFREQ;
-#elif XVTR_NYQ1
-	return FQMODEL_TUNING_TO_NYQ1(f);
-#else /* XVTR_NYQ1 */
-	return f;
-#endif /* XVTR_NYQ1 */
-}
 
 /*
  параметры:
