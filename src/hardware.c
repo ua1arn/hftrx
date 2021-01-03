@@ -713,15 +713,16 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_XC7Z
 
-	  uint32_t r = 0; // Temporary value variable
+	  uint32_t r; // Temporary value variable
 	  r = UART0->CR;
 	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
 	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
 	  UART0->CR = r;
-
+	  unsigned long sel_clk = SELOUT_CLK;
+	  unsigned long bdiv = 8;
 	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-	  UART0->BAUDDIV = 6; // ("BDIV")
-	  UART0->BAUDGEN = 124; // ("CD")
+	  UART0->BAUDDIV = bdiv - 1; // ("BDIV")
+	  UART0->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
 	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
 	  UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
 
@@ -899,15 +900,16 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_XC7Z
 
-	  uint32_t r = 0; // Temporary value variable
+	  uint32_t r; // Temporary value variable
 	  r = UART1->CR;
 	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
 	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
 	  UART1->CR = r;
-
+	  unsigned long sel_clk = SELOUT_CLK;
+	  unsigned long bdiv = 8;
 	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-	  UART1->BAUDDIV = 6; // ("BDIV")
-	  UART1->BAUDGEN = 124; // ("CD")
+	  UART1->BAUDDIV = bdiv - 1; // ("BDIV")
+	  UART1->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
 	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
 	  UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
 
