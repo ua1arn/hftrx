@@ -21471,6 +21471,7 @@ ddd:
 	//GPIO_DATA1 |= GPIO0_PIN37;
 	gpio_output(37, 1);
 	local_delay_ms(500);
+	PRINTF(".");
 #endif
 
 #if WITHUSBHW
