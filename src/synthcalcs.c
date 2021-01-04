@@ -357,9 +357,10 @@ static void synth_direct1_setfreq(
 	uint_fast8_t om		/* умножитель перед подачей на смеситель (1, 2, 4, 8...) */
 	)
 {
-	//debug_printf_P(PSTR("synth_direct1_setfreq: pathi=%u, freq=%lu\n"), pathi, f);
+	//PRINTF(PSTR("synth_direct1_setfreq: pathi=%u, freq=%lu, dds1ref=%lu\n"), (unsigned) pathi, (unsigned long) f, (unsigned long) dds1ref);
 #if defined(DDS1_TYPE)
 	const ftw_t ph1 = freq2ftw(f, dds1refdiv * od, dds1ref * (uint_fast64_t) om);    /* преобразование требуемой частоты в фазу */
+	//PRINTF("f=%f, r=%f\n", (double) f, (double) dds1ref * ph1 / pow(2, 32));
 	switch (pathi)
 	{
 	case 0:

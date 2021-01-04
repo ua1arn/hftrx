@@ -8848,14 +8848,14 @@ updateboard(
 				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_value_P());
 				PRINTF(PSTR("\n"));
 				PRINTF(
-					PSTR("mixXlsbs[0]=%d, mixXlsbs[1]=%d, mixXlsbs[2]=%d, mixXlsbs[3]=%d, mixXlsbs[4]=%d, mixXlsbs[5]=%d, mixXlsbs[6]=%d dc=%d tx=%d\n"), 
+					PSTR("mixXlsbs[0]=%d, [1]=%d, [2]=%d, [3]=%d, [4]=%d, [5]=%d, [6]=%d dc=%d tx=%d\n"),
 						mixXlsbs [0], mixXlsbs [1], mixXlsbs [2], mixXlsbs [3], mixXlsbs [4], mixXlsbs [5], mixXlsbs [6], dc, gtx
 					);
-				PRINTF(PSTR(" ["));	printfreq(synth_freq2lo1(freq, pathi));
+				PRINTF(PSTR(" [lo1="));	printfreq(synth_freq2lo1(freq, pathi));
 				PRINTF(PSTR("]if1="));	printfreq(freqif1);
-				PRINTF(PSTR(" ["));	printfreq(freqlo2);
+				PRINTF(PSTR(" [lo2="));	printfreq(freqlo2);
 				PRINTF(PSTR("]if2="));	printfreq(freqif2);
-				PRINTF(PSTR(" ["));	printfreq(freqlo3);
+				PRINTF(PSTR(" [lo3="));	printfreq(freqlo3);
 				PRINTF(PSTR("]if3="));	printfreq(freqif3);
 
 				//PRINTF(PSTR("\n"));
