@@ -583,20 +583,25 @@
 		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
+#if WITHUART1HW
+	// WITHUART1HW
+	// MIO46 UART0_RXD MIO47 UART0_TXD
+	#define HARDWARE_UART1_INITIALIZE() do { \
+		mio_mode(47, 0x000016E0uL);	/*  MIO47 UART0_TXD */ \
+		mio_mode(46, 0x000016E1uL);	/*  MIO46 UART0_RXD */ \
+		} while (0)
 
-// WITHUART1HW
-// MIO46 UART0_RXD MIO47 UART0_TXD
-#define HARDWARE_UART1_INITIALIZE() do { \
-	mio_mode(47, 0x000016E0uL);	/*  MIO47 UART1_TXD */ \
-	mio_mode(46, 0x000016E1uL);	/*  MIO46 UART1_RXD */ \
-	} while (0)
+#endif /* WITHUART1HW */
 
-// WITHUART2HW
-// MIO49 UART1_RXD MIO48 UART1_TXD
-#define HARDWARE_UART2_INITIALIZE() do { \
-	mio_mode(48, 0x000016E0uL);	/*  MIO48 UART1_TXD */ \
-	mio_mode(49, 0x000016E1uL);	/*  MIO49 UART1_RXD */ \
-	} while (0)
+#if WITHUART2HW
+	// WITHUART2HW
+	// MIO49 UART1_RXD MIO48 UART1_TXD
+	#define HARDWARE_UART2_INITIALIZE() do { \
+		mio_mode(48, 0x000016E0uL);	/*  MIO48 UART1_TXD */ \
+		mio_mode(49, 0x000016E1uL);	/*  MIO49 UART1_RXD */ \
+		} while (0)
+
+#endif /* WITHUART2HW */
 
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
