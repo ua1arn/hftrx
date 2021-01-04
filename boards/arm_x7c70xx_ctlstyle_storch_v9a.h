@@ -19,15 +19,9 @@
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
-	#define WITHUSEPLL		1	/* Главная PLL	*/
-	#define WITHUSEPLL1		1	/* PLL1 - MPU, AXI	*/
-	#define WITHUSEPLL2		1	/* PLL2 - GPU, DDR	*/
-	//#define WITHUSEPLL3		1	/* PLL3 - для LTDC на STM32H743xx	*/
-	#define WITHUSEPLL4		1	/* PLL4 - для LTDC & USBPHY	*/
-	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
-	//#define WITHUSESAII2S	1	/* I2S PLL	*/
-
 	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
+	#define SELOUT_CLK (WITHCPUXOSC * 3)
+
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz
 	// PLL1, PLL2 VCOs
@@ -351,6 +345,7 @@
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
