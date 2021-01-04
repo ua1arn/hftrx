@@ -1795,9 +1795,63 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 }
 
 #elif CPUSTYLE_XC7Z
+#include "zynq_vdma.h"
+#include "pict.h"
+
+u8 *pFrames[DISPLAY_NUM_FRAMES];
+DisplayCtrl dispCtrl;
+#define XPAR_AXI_DYNCLK_0_BASEADDR 	0x43c10000
+#define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
+#define VGA_VDMA_ID         		XPAR_AXIVDMA_0_DEVICE_ID
+#define DISP_VTC_ID         		XPAR_VTC_0_DEVICE_ID
+#define DEMO_MAX_FRAME 				(800*480*4)
+#define DEMO_STRIDE					(800*4)
 
 void arm_hardware_ltdc_initialize(void)
 {
+	int Status;
+	u8 *ptempFrames[DISPLAY_NUM_FRAMES] = {(u8*)BUFFER0_BASE,(u8*)BUFFER1_BASE,(u8*)BUFFER2_BASE};
+
+	for (int i = 0; i < DISPLAY_NUM_FRAMES; i++)
+	{
+		pFrames[i] = ptempFrames[i];
+	}
+
+	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
+
+	Status = DisplayInitialize(&dispCtrl, &AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, pFrames, DEMO_STRIDE, VMODE_800x480);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("Display Ctrl initialization failed during demo initialization%d\r\n", Status);
+	}
+
+	Status = DisplayStart(&dispCtrl);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("Couldn't start display during demo initialization%d\r\n", Status);
+	}
+
+	PRINTF("init ok\r\n");
+
+	u32 xcoi, ycoi;
+	u32 linesStart = 0;
+	u32 pixelIdx = 0;
+
+	u8 * frame = dispCtrl.framePtr[dispCtrl.curFrame];
+
+	memset(frame, 0x00, DEMO_MAX_FRAME);
+
+	for(ycoi = 0; ycoi < dispCtrl.vMode.height; ycoi++)
+	{
+		for(xcoi = 0; xcoi < (dispCtrl.vMode.width * 4); xcoi+=4)
+		{
+			frame[linesStart + xcoi    ] = gImage_pict[pixelIdx++];
+			frame[linesStart + xcoi + 1] = gImage_pict[pixelIdx++];
+			frame[linesStart + xcoi + 2] = gImage_pict[pixelIdx++];
+		}
+		linesStart += dispCtrl.stride;
+	}
+	Xil_DCacheFlushRange((unsigned int) frame, DEMO_MAX_FRAME);
 
 }
 

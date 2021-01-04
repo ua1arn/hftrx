@@ -3192,7 +3192,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format.490955874" name="Debug format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.1870199625" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name" value="GNU Tools for ARM Embedded Processors" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.875584466" name="Architecture" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.architecture" value="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.arm" valueType="enumerated"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.972596946" name="ARM family" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.mcpu.cortex-m3" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.972596946" name="Arm family (-mcpu)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.mcpu.cortex-m3" valueType="enumerated"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.255786747" name="Instruction set" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.thumb" valueType="enumerated"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix.1972979920" name="Prefix" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix" value="arm-none-eabi-" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.c.189779743" name="C compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.c" value="gcc" valueType="string"/>
@@ -3229,6 +3229,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/zynq}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.440636602" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -3254,6 +3255,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/zynq}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.542331745" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -3276,6 +3278,7 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/zynq}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1221530905" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>

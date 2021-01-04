@@ -13454,22 +13454,16 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z & WITHISBOOTLOADER	// FSBL
 	ps7_init();
-//	  GPIO_DIRM0 |= GPIO0_PIN15;
-//	  GPIO_OEN0  |= GPIO0_PIN15;
-//	  GPIO_DATA0 &= ~ GPIO0_PIN15;	// LED at MIO15
-//
-//	  GPIO_DIRM1 |= GPIO0_PIN37;
-//	  GPIO_OEN1  |= GPIO0_PIN37;
-//
-	  gpio_output(15, 0);	// LED at MIO15
-	  gpio_output(37, 1);
+
+	gpio_output(15, 0);	// LED at MIO15
+	gpio_output(37, 1);
 
 	sysinit_debug_initialize();
-//	for (;;)
-//		;
-#endif
+	;
+#endif /* CPUSTYLE_XC7Z & WITHISBOOTLOADER */
+
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();
 	sysinit_debug_initialize();
