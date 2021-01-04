@@ -21466,10 +21466,12 @@ ddd:
 	;
 #if 1 && CPUSTYLE_XC7Z	// мигалка
 	//GPIO_DATA1 &= ~ GPIO0_PIN37;
-	gpio_output(37, 0);
+	gpio_output(37, 0);		// LED_R
+	gpio_output(38, 1);		// LED_G
 	local_delay_ms(500);
 	//GPIO_DATA1 |= GPIO0_PIN37;
-	gpio_output(37, 1);
+	gpio_output(37, 1);		// LED_R
+	gpio_output(38, 0);		// LED_G
 	local_delay_ms(500);
 	PRINTF(".");
 #endif
