@@ -243,6 +243,10 @@
 	#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a.h"	// rmainunit_v5km2.pcb R7S721020VCFP, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
+#elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 0
+	#include "boards/arm_x7c70xx_ctlstyle_antminer_v1p1.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_x7c70xx_cpustyle_antminer_v1p1.h"
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7
 	#include "boards/arm_x7c70xx_ctlstyle_storch_v9a.h"
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
