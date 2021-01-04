@@ -96,8 +96,8 @@
 #define IRQ_FIQ_MASK 0xC0U	/* Mask IRQ and FIQ interrupts in cpsr */
 
 #ifdef __GNUC__
-	extern s32  _stack_end;
-	extern s32  __undef_stack;
+	extern s32  __StackTop;
+	extern s32  __StackLimit;
 #endif
 
 #ifndef USE_AMP
@@ -770,8 +770,8 @@ void Xil_L1DCacheInvalidate(void)
 	mtcpsr(currmask | IRQ_FIQ_MASK);
 
 #ifdef __GNUC__
-	stack_end = (u32)&_stack_end;
-	stack_start = (u32)&__undef_stack;
+	stack_end = (u32)&__StackTop;
+	stack_start = (u32)&__StackLimit;
 	stack_size=stack_start-stack_end;
 
 	/* Check for the cache status. If cache is enabled, then only
@@ -1364,8 +1364,8 @@ void Xil_L2CacheInvalidate(void)
 	#ifdef __GNUC__
 	u32 stack_start,stack_end,stack_size;
 	register u32 L2CCReg;
-	stack_end = (u32)&_stack_end;
-	stack_start = (u32)&__undef_stack;
+	stack_end = (u32)&__StackTop;
+	stack_start = (u32)&__StackLimit;
 	stack_size=stack_start-stack_end;
 
 	/* Check for the cache status. If cache is enabled, then only

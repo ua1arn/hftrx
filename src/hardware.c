@@ -12847,6 +12847,11 @@ sysinit_pll_initialize(void)
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
+#elif CPUSTYLE_XC7Z
+
+	Xil_ICacheEnable();
+	Xil_DCacheEnable();
+
 #endif
 }
 
