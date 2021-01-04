@@ -76,7 +76,8 @@ DINCDIR = \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
+	$(OPENVGDIR)/src	\
+	../../src/zynq
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
