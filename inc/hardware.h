@@ -707,7 +707,11 @@ void arm_hardware_mdma_initialize(void);	// Graphic 2D engine
 void arm_hardware_sdram_initialize(void);	// External memory region(s)
 
 void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
-void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
+#if CPUSTYLE_XC7Z
+	void arm_hardware_ltdc_main_set(uint_fast8_t i);
+#else
+	void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
+#endif /* CPUSTYLE_XC7Z */
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 void arm_hardware_ltdc_L8_palette(void);	// Palette reload
