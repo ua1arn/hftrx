@@ -3792,7 +3792,7 @@ enum
 	#endif /* WITHSUBTONES */
 
 
-	static uint_fast8_t gbandf2adj [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
+	static uint_fast8_t gbandf2adj [NUMLPFADJ] = { 100, 100, 100, 100, 100, 100, 100, 100, };	/* коррекция мощности по ФНЧ передачика */
 
 	#if WITHPOWERTRIM
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
@@ -7798,6 +7798,18 @@ getbandf2adjust(uint_fast8_t lpfno)
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
 		return 100;
 	return gbandf2adj [lpfno];
+}
+
+/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+static void
+bandf2adjust_initialize(void)
+{
+	uint_fast8_t i;
+
+	for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
+	{
+		gbandf2adj [i] = 98;
+	}
 }
 
 /* Возвращает WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
@@ -16163,7 +16175,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		& lfmtinterval,
 		NULL,
-		getzerobase, 
+		getzerobase,
 	},
 #endif /* WITHLFM */
 
@@ -16184,47 +16196,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 /* settings page list */
 #if WITHIF4DSP
-
-	{
-		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gamdepth,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
-		ITEM_VALUE,
-		0, 120,
-		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
-		nvramoffs0,
-		NULL,
-		& gnfmdeviation,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		90, 300,
-		offsetof(struct nvmap, ggaindigitx),
-		nvramoffs0,
-		& ggaindigitx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		30, 100,
-		offsetof(struct nvmap, ggaincwtx),
-		nvramoffs0,
-		& ggaincwtx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
 	{
 		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
@@ -16322,6 +16293,47 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [7],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+	{
+		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gamdepth,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
+		ITEM_VALUE,
+		0, 120,
+		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
+		nvramoffs0,
+		NULL,
+		& gnfmdeviation,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		90, 300,
+		offsetof(struct nvmap, ggaindigitx),
+		nvramoffs0,
+		& ggaindigitx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		30, 100,
+		offsetof(struct nvmap, ggaincwtx),
+		nvramoffs0,
+		& ggaincwtx,
+		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 
@@ -17749,6 +17761,10 @@ void display2_menu_valxx(
 			case 0x81:	msg = PSTR("STM32MP157Dx"); break;
 			default: 	msg = PSTR("STM32MP15xxx"); break;
 			}
+#elif CPUSTYLE_XC7Z
+			msg = PSTR("ZYNQ 7000");
+#elif CPUSTYLE_R7S721
+			msg = PSTR("RENESAS");
 #else
 			msg = PSTR("CPUxxx");
 #endif
@@ -19437,6 +19453,10 @@ static uint_fast8_t usbactivated;
 static void 
 hamradio_initialize(void)
 {
+#if WITHTX
+	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+	bandf2adjust_initialize();
+#endif /* WITHTX */
 	/* NVRAM уже можно пользоваться */
 #if WITHMENU && ! HARDWARE_IGNORENONVRAM
 	loadsettings();		/* загрузка всех установок из nvram */
