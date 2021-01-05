@@ -151,7 +151,7 @@ extern "C" {
 	#define gpio_output(pin, state) do { \
 		const portholder_t bank = (pin) >> 5; \
 		const portholder_t mask = (portholder_t) 1 << ((pin) & 0x1F); \
-		mio_mode(pin, 0x00001601uL); /* initial value - with pull-up */ \
+		mio_mode(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		ZYNQ_IORW32(GPIO_DATA(bank)) = (ZYNQ_IORW32(GPIO_DATA(bank)) & ~ mask) | (mask * ! ! (state)); \
 		ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
 		ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; /* When OEN[x]==0, the output driver is disabled */ \
@@ -160,7 +160,7 @@ extern "C" {
 	#define gpio_input(pin) do { \
 		const portholder_t bank = (pin) >> 5; \
 		const portholder_t mask = (portholder_t) 1 << ((pin) & 0x1F); \
-		mio_mode(pin, 0x00001601uL); /* initial value - with pull-up */ \
+		mio_mode(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		ZYNQ_IORW32(GPIO_DIRM(bank)) &= ~ mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
 		ZYNQ_IORW32(GPIO_OEN(bank)) &= ~ mask; /* When OEN[x]==0, the output driver is disabled */ \
 		} while (0)

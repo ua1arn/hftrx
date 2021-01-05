@@ -391,16 +391,16 @@ typedef struct spi_regs {
  * via the GPIO bank */
 
 #define GPIO_MASK_DATA_BASE         (GPIO_BASE + 0x0)
-#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * bank))
-#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * bank))
+#define GPIO_MASK_DATA_LSW(bank)    (GPIO_MASK_DATA_BASE + (8 * (bank)))
+#define GPIO_MASK_DATA_MSW(bank)    (GPIO_MASK_DATA_BASE + 4 + (8 * (bank)))
 
 #define GPIO_DATA_BASE              (GPIO_BASE + 0x40)
-#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * bank))
+#define GPIO_DATA(bank)             (GPIO_DATA_BASE + (4 * (bank)))
 
 #define GPIO_DATA_RO_BASE           (GPIO_BASE + 0x60)
-#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * bank))
+#define GPIO_DATA_RO(bank)          (GPIO_DATA_RO_BASE + (4 * (bank)))
 
-#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * bank))
+#define GPIO_REGS(bank)             (GPIO_BASE + 0x204 + (0x40 * (bank)))
 #define GPIO_DIRM(bank)             (GPIO_REGS(bank) + 0x0)
 #define GPIO_OEN(bank)              (GPIO_REGS(bank) + 0x4)
 #define GPIO_INT_MASK(bank)         (GPIO_REGS(bank) + 0x8)
