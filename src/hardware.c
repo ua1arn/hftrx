@@ -13195,25 +13195,25 @@ int ps7_config(const unsigned long * ps7_config_init)
             break;
 
         case OPCODE_CLEAR:
-            addr = (unsigned long*) args[0];
+            addr = (volatile unsigned long*) args[0];
             *addr = 0;
             break;
 
         case OPCODE_WRITE:
-            addr = (unsigned long*) args[0];
+            addr = (volatile unsigned long*) args[0];
             val = args[1];
             *addr = val;
             break;
 
         case OPCODE_MASKWRITE:
-            addr = (unsigned long*) args[0];
+            addr = (volatile unsigned long*) args[0];
             mask = args[1];
             val = args[2];
             *addr = ( val & mask ) | ( *addr & ~mask);
             break;
 
         case OPCODE_MASKPOLL:
-            addr = (unsigned long*) args[0];
+            addr = (volatile unsigned long*) args[0];
             mask = args[1];
             i = 0;
             while (!(*addr & mask)) {
@@ -13225,7 +13225,7 @@ int ps7_config(const unsigned long * ps7_config_init)
             }
             break;
         case OPCODE_MASKDELAY:
-            addr = (unsigned long*) args[0];
+            addr = (volatile unsigned long*) args[0];
             mask = args[1];
             int delay = get_number_of_cycles_for_delay(mask);
             perf_reset_and_start_timer();
@@ -13271,13 +13271,13 @@ static const unsigned long ps7_pll_init_data_3_0[] = {
 
 static const unsigned long ps7_clock_init_data_3_0[] = {
 		//EMIT_WRITE(0XF8000008, 0x0000DF0DU), // SLCR_UNLOCK
-		EMIT_MASKWRITE(0XF8000128, 0x03F03F01U ,0x00700F01U),
-		EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),
-		EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),
-		EMIT_MASKWRITE(0XF8000168, 0x00003F31U ,0x00000801U),
-		EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400400U),
-		EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),
-		EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),
+		EMIT_MASKWRITE(0XF8000128, 0x03F03F01U ,0x00700F01U),	// DCI_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000168, 0x00003F31U ,0x00000801U),	// PCAP_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400400U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+		EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+		EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
 		//EMIT_WRITE(0XF8000004, 0x0000767BU),// SLCR_LOCK
 		EMIT_EXIT(),
 	};
