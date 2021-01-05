@@ -12448,8 +12448,9 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 	if (a == 0x00000000uL)
 		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
-	if (a >= 0x18000000uL && a < 0x20000000uL)			//
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
+	if (a >= 0x18000000uL && a < 0x20000000uL)			// FIXME: QSPI memory mapped should be R/O, but...
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 0, 0);
+
 	if (a >= 0x00000000uL && a < 0x00A00000uL)			// up to 10 MB
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
