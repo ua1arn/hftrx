@@ -12805,30 +12805,6 @@ sysinit_pll_initialize(void)
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
 #elif CPUSTYLE_STM32MP1
-	if (0)
-	{
-		// PC13, PC14, PC15, PI8 as the common IO:
-		////RCC->APB1ENR |=  RCC_APB1ENR_BKPEN;     // включить тактирование Backup interface
-		////__DSB();
-		// cancel the backup area write protection
-		PWR->CR1 |= PWR_CR1_DBP;
-		while ((PWR->CR1 & PWR_CR1_DBP) == 0)
-			;
-
-		//PWR->CR |= PWR_CR_DBP; // cancel the backup area write protection
-
-		//RCC->BDCR &= ~ RCC_BDCR_LSEON; // close external low-speed oscillator, PC14, PC15 as ordinary IO
-		RTC->CR &= ~ RTC_CR_TAMPOE; // TAMPER pin; intrusion detection (PC13) used as a universal IO port
-
-		//PWR->CR &= ~ PWR_CR_DBP; // backup area write protection </span>
-
-		PWR->CR1 &= ~ PWR_CR1_DBP;
-		while ((PWR->CR1 & PWR_CR1_DBP) != 0)
-			;
-
-		////RCC->APB1ENR &=  ~ RCC_APB1ENR_BKPEN;     // выключить тактирование Backup interface
-		////__DSB();
-	}
 
 	#if WITHISBOOTLOADER
 		// PLL только в bootloader.
@@ -12836,23 +12812,37 @@ sysinit_pll_initialize(void)
 		stm32mp1_pll_initialize();
 	#endif
 
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
-	//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
-	#if (__L2C_PRESENT == 1)
-	  // Enable Level 2 Cache
-	  L2C_Enable();
-	#endif
-
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #elif CPUSTYLE_XC7Z
 
-	Xil_ICacheEnable();
-	Xil_DCacheEnable();
+	//Xil_ICacheEnable();
+	//Xil_DCacheEnable();
+
+	#if WITHISBOOTLOADER
+		// PLL только в bootloader.
+		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
+		//xc7z1_pll_initialize();
+	#endif
+
+	// Hang-off QSPI memory
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
+
+#if ! CPUSTYLE_R7S721	// выше комментарий почему
+	#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+
+		L1C_EnableCaches();
+		L1C_EnableBTAC();
+		//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+		#if (__L2C_PRESENT == 1)
+		  // Enable Level 2 Cache
+		  L2C_Enable();
+		#endif
+	#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+#endif /*  ! CPUSTYLE_R7S721 */
 }
 
 
@@ -13420,18 +13410,11 @@ static const unsigned long ps7_post_config_3_0[] = {
 		EMIT_EXIT(),
 	};
 
-static const unsigned long ps7_unlock_data_3_0[] = {
-		EMIT_WRITE(0XF8000008, 0x0000DF0DU), // SLCR_UNLOCK
-		EMIT_EXIT(),
-	};
-
 static int ps7_init(void)
 {
 	int ret;
 
-	ret = ps7_config(ps7_unlock_data_3_0);
-	if (ret != PS7_INIT_SUCCESS)
-		return ret;
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 
 	ret = ps7_config(ps7_mio_init_data_3_0);
 	if (ret != PS7_INIT_SUCCESS)

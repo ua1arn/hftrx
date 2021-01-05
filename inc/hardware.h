@@ -419,8 +419,6 @@ extern "C" {
 	#include "armcpu/zynq7000.h"
 	#include "irq_ctrl.h"
 
-	#include <src/zynq/xil_cache.h>
-
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
