@@ -6394,7 +6394,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
 	{
-		"VIEW STL",
+		"VIEW STLE",
 		RJ_VIEW,
 		ISTEP1,
 		0, VIEW_COUNT - 1,
@@ -6512,6 +6512,9 @@ enc2menu_value(
 			break;
 		case RJ_POW2:
 			local_snprintf_P(buff, sz, PSTR("%*u"), WDTH, 1U << value);
+			break;
+		case RJ_VIEW:
+			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, view_types [value]);
 			break;
 		case RJ_SIGNED:
 			local_snprintf_P(buff, sz, PSTR("%-+*ld"), WDTH, (signed long) value);
