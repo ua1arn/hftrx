@@ -144,6 +144,8 @@
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
 
+#define NUMLPFADJ 8	/* Коррекция мощности по ФНЧ передачика - количество ФНЧ. */
+
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
 static enc2_menu_t enc2_menu;
@@ -2677,6 +2679,7 @@ struct nvmap
 	/* группы */
 	uint8_t ggroup;			/* последняя группа в менюю, с которой работали */
 	uint8_t	ggrpdisplay;	// последний посещённый пункт группы
+	uint8_t	ggrptxadj;		// последний посещённый пункт группы
 	uint8_t	ggrpsecial;		// последний посещённый пункт группы
 	uint8_t	ggrpaudio;		// последний посещённый пункт группы
 #if WITHSUBTONES && WITHTX
@@ -2739,6 +2742,7 @@ struct nvmap
 #if WITHTX
 	uint8_t	ggrptxparams; // последний посещённый пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
+	uint8_t gbandf2adj [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 	#if WITHPOWERLPHP
 		uint8_t gpwri;		// индекс в pwrmodes - мощность при обычной работе
 		uint8_t gpwratunei;	// индекс в pwrmodes - моность при работе автотюнера или по внешнему запросу
@@ -3787,6 +3791,8 @@ enum
 		static uint_fast8_t gsbtonenable;	// разрешить формирование subtone
 	#endif /* WITHSUBTONES */
 
+
+	static uint_fast8_t gbandf2adj [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 
 	#if WITHPOWERTRIM
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
@@ -7782,6 +7788,15 @@ getactualdownpower(void)
 
 #if WITHTX
 
+/* возвраящам 0..100 для указанного ФНЧ передатчика */
+static uint_fast8_t
+getbandf2adjust(uint_fast8_t lpfno)
+{
+	if (lpfno >= ARRAY_SIZE(gbandf2adj))
+		return 100;
+	return gbandf2adj [lpfno];
+}
+
 /* Возвращает WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 static uint_fast8_t
 getactualpower(void)
@@ -9165,10 +9180,12 @@ updateboard(
 			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
 		#if WITHNOTXDACCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
-			board_set_dacscale(gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
+			// 0..10000
+			board_set_dacscale(getbandf2adjust(bandf2hint) * (unsigned long) gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
 		#else /* CPUDAC */
 			/* мощность регулируется постоянны напряжением на ЦАП */
-			board_set_dacscale(gdacscale);
+			// 0..10000
+			board_set_dacscale(getbandf2adjust(bandf2hint) * (unsigned long) gdacscale);
 		#endif /* CPUDAC */
 			board_set_gdigiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
@@ -16136,11 +16153,277 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 #endif /* WITHLFM */
+
+#if WITHTX
+/* settings page header */
+#if ! WITHFLATMENU
+	{
+		QLABEL("TX ADJ  "), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrptxadj),
+		nvramoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+#endif /* ! WITHFLATMENU */
+
+/* settings page list */
+#if WITHIF4DSP
+
+	{
+		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gamdepth,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
+		ITEM_VALUE,
+		0, 120,
+		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
+		nvramoffs0,
+		NULL,
+		& gnfmdeviation,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		90, 300,
+		offsetof(struct nvmap, ggaindigitx),
+		nvramoffs0,
+		& ggaindigitx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		30, 100,
+		offsetof(struct nvmap, ggaincwtx),
+		nvramoffs0,
+		& ggaincwtx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gdacscale,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF0 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [0],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF1 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [1],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF2 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [2],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF3 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [3],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF4 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [4],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF5 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [5],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF6 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [6],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF7 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [7],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+#endif /* WITHIF4DSP */
+#if WITHFANTIMER
+	{
+		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,
+		0, FANPATIMEMAX,
+		offsetof(struct nvmap, gfanpatime),
+		nvramoffs0,
+		NULL,
+		& gfanpatime,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#if WITHFANPWM
+	{
+		QLABEL("FAN PWM "), 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,
+		0, 255,
+		offsetof(struct nvmap, gfanpapwm),
+		nvramoffs0,
+		& gfanpapwm,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#endif /* WITHFANPWM */
+#endif /* WITHFANTIMER */
+
+#if WITHPOWERTRIM
+  #if ! WITHPOTPOWER
+	{
+		QLABEL("TX POWER"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gnormalpower),
+		nvramoffs0,
+		NULL,
+		& gnormalpower.value,
+		getzerobase,
+	},
+  #endif /* ! WITHPOTPOWER */
+  #if WITHLOWPOWEREXTTUNE
+	{
+		QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gtunepower),
+		nvramoffs0,
+		NULL,
+		& gtunepower,
+		getzerobase,
+	},
+  #endif /* WITHLOWPOWEREXTTUNE */
+#elif WITHPOWERLPHP
+	#if ! CTLSTYLE_SW2011ALL
+	{
+		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
+		ITEM_VALUE,
+		0, PWRMODE_COUNT - 1,
+		offsetof(struct nvmap, gpwri),
+		nvramoffs0,
+		NULL,
+		& gpwri,
+		getzerobase,
+	},
+	#endif /* ! CTLSTYLE_SW2011ALL */
+  	#if WITHLOWPOWEREXTTUNE
+	{
+		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
+		ITEM_VALUE,
+		0, PWRMODE_COUNT - 1,
+		offsetof(struct nvmap, gtunepower),
+		nvramoffs0,
+		NULL,
+		& gtunepower,
+		getzerobase, 
+	},
+  #endif /* WITHLOWPOWEREXTTUNE */
+#endif /* WITHPOWERTRIM */
+
+#if ! CTLSTYLE_SW2011ALL
+	{
+		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gtxgate),
+		nvramoffs0,
+		NULL,
+		& gtxgate,
+		getzerobase, 
+	},
+#endif /* ! CTLSTYLE_SW2011ALL */
+
+#if WITHPABIASTRIM
+	{
+		QLABEL("PA BIAS "), 7, 0, 0,	ISTEP1,		/* Подстройка тока оконечного каскада передатчика */
+		ITEM_VALUE,
+		WITHPABIASMIN, WITHPABIASMAX,
+		offsetof(struct nvmap, gpabias),
+		nvramoffs0,
+		NULL,
+		& gpabias,
+		getzerobase, 
+	},
+#endif /* WITHPABIASTRIM && WITHTX */
+
+#endif /* WITHTX */
+
+/* settings page header */
 #if ! WITHFLATMENU
 	{
 		QLABEL("SPECIAL "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
+		ITEM_GROUP,
+		0, 0,
 		offsetof(struct nvmap, ggrpsecial),
 		nvramoffs0,
 		NULL,
@@ -16148,11 +16431,13 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
+
+/* settings page list */
 #if WITHRFSG
 	{
 		QLABEL("RFSG MOD"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, userfsg),
 		nvramoffs0,
 		NULL,
@@ -16215,115 +16500,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHENCODER2 */
 #endif /* WITHENCODER */
 
-#if WITHTX
-#if WITHFANTIMER
-	{
-		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, FANPATIMEMAX,
-		offsetof(struct nvmap, gfanpatime),
-		nvramoffs0,
-		NULL,
-		& gfanpatime,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#if WITHFANPWM
-	{
-		QLABEL("FAN PWM "), 7, 0, 0,	ISTEP5,
-		ITEM_VALUE,
-		0, 255,
-		offsetof(struct nvmap, gfanpapwm),
-		nvramoffs0,
-		& gfanpapwm,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	#endif /* WITHFANPWM */
-#endif /* WITHFANTIMER */
-#endif /* WITHTX */
-
-#if WITHTX
-#if WITHPOWERTRIM
-  #if ! WITHPOTPOWER
-	{
-		QLABEL("TX POWER"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gnormalpower),
-		nvramoffs0,
-		NULL,
-		& gnormalpower.value,
-		getzerobase,
-	},
-  #endif /* ! WITHPOTPOWER */
-  #if WITHLOWPOWEREXTTUNE
-	{
-		QLABEL("ATU PWR "), 7, 0, 0,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
-		offsetof(struct nvmap, gtunepower),
-		nvramoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase,
-	},
-  #endif /* WITHLOWPOWEREXTTUNE */
-#elif WITHPOWERLPHP
-	#if ! CTLSTYLE_SW2011ALL
-	{
-		QLABEL("TX POWER"), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при обычной работе на передачу */
-		ITEM_VALUE,
-		0, PWRMODE_COUNT - 1,
-		offsetof(struct nvmap, gpwri),
-		nvramoffs0,
-		NULL,
-		& gpwri,
-		getzerobase,
-	},
-	#endif /* ! CTLSTYLE_SW2011ALL */
-  	#if WITHLOWPOWEREXTTUNE
-	{
-		QLABEL("ATU PWR "), 7, 0, RJ_POWER,	ISTEP1,		/* мощность при работе автоматического согласующего устройства */
-		ITEM_VALUE,
-		0, PWRMODE_COUNT - 1,
-		offsetof(struct nvmap, gtunepower),
-		nvramoffs0,
-		NULL,
-		& gtunepower,
-		getzerobase, 
-	},
-  #endif /* WITHLOWPOWEREXTTUNE */
-#endif /* WITHPOWERTRIM */
-#endif /* WITHTX */
-
-#if WITHTX
-#if ! CTLSTYLE_SW2011ALL
-	{
-		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gtxgate),
-		nvramoffs0,
-		NULL,
-		& gtxgate,
-		getzerobase, 
-	},
-#endif /* ! CTLSTYLE_SW2011ALL */
-#endif /* WITHTX */
-#if WITHTX
-#if WITHPABIASTRIM && WITHTX
-	{
-		QLABEL("PA BIAS "), 7, 0, 0,	ISTEP1,		/* Подстройка тока оконечного каскада передатчика */
-		ITEM_VALUE,
-		WITHPABIASMIN, WITHPABIASMAX,
-		offsetof(struct nvmap, gpabias),
-		nvramoffs0,
-		NULL,
-		& gpabias,
-		getzerobase, 
-	},
-#endif /* WITHPABIASTRIM && WITHTX */
-#endif /* WITHTX */
 #if WITHIF4DSP
 	{
 		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
@@ -16335,59 +16511,8 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& ggainnfmrx10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if WITHTX
-	{
-		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
-		ITEM_VALUE,
-		0, 100, 
-		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gamdepth,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
-		ITEM_VALUE,
-		0, 120,
-		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
-		nvramoffs0,
-		NULL,
-		& gnfmdeviation,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		90, 300,
-		offsetof(struct nvmap, ggaindigitx),
-		nvramoffs0,
-		& ggaindigitx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		30, 100,
-		offsetof(struct nvmap, ggaincwtx),
-		nvramoffs0,
-		& ggaincwtx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		nvramoffs0,
-		NULL,
-		& gdacscale,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHTX */
 #endif /* WITHIF4DSP */
+
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
 	{
@@ -17777,6 +17902,20 @@ modifysettings(
 				uif_key_tune();
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
+
+	#if WITHAUTOTUNER
+			case KBD_CODE_ATUSTART:
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				uif_key_atunerstart();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+
+			case KBD_CODE_ATUBYPASS:
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				uif_key_bypasstoggle();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+	#endif /* WITHAUTOTUNER */
 
 #endif /* WITHTX */
 
