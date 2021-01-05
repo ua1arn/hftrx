@@ -1796,9 +1796,8 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 
 #elif CPUSTYLE_XC7Z
 #include "zynq_vdma.h"
-#include "pict.h"
 
-u8 *pFrames[DISPLAY_NUM_FRAMES];
+u8 *pFrames[LCDMODE_MAIN_PAGES];
 DisplayCtrl dispCtrl;
 #define XPAR_AXI_DYNCLK_0_BASEADDR 	0x43c10000
 #define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
@@ -1810,11 +1809,12 @@ DisplayCtrl dispCtrl;
 void arm_hardware_ltdc_initialize(void)
 {
 	int Status;
-	u8 *ptempFrames[DISPLAY_NUM_FRAMES] = {(u8*)BUFFER0_BASE,(u8*)BUFFER1_BASE,(u8*)BUFFER2_BASE};
+	//u8 *ptempFrames[LCDMODE_MAIN_PAGES] = {(u8*)BUFFER0_BASE,(u8*)BUFFER1_BASE,(u8*)BUFFER2_BASE};
 
-	for (int i = 0; i < DISPLAY_NUM_FRAMES; i++)
+	for (int i = 0; i < LCDMODE_MAIN_PAGES; i++)
 	{
-		pFrames[i] = ptempFrames[i];
+		pFrames[i] = (u8 *) colmain_fb_draw();
+		colmain_fb_next();
 	}
 
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
@@ -1830,29 +1830,6 @@ void arm_hardware_ltdc_initialize(void)
 	{
 		PRINTF("Couldn't start display during demo initialization%d\r\n", Status);
 	}
-
-	PRINTF("init ok\r\n");
-
-	u32 xcoi, ycoi;
-	u32 linesStart = 0;
-	u32 pixelIdx = 0;
-
-	u8 * frame = dispCtrl.framePtr[dispCtrl.curFrame];
-
-	memset(frame, 0x00, DEMO_MAX_FRAME);
-
-	for(ycoi = 0; ycoi < dispCtrl.vMode.height; ycoi++)
-	{
-		for(xcoi = 0; xcoi < (dispCtrl.vMode.width * 4); xcoi+=4)
-		{
-			frame[linesStart + xcoi    ] = gImage_pict[pixelIdx++];
-			frame[linesStart + xcoi + 1] = gImage_pict[pixelIdx++];
-			frame[linesStart + xcoi + 2] = gImage_pict[pixelIdx++];
-		}
-		linesStart += dispCtrl.stride;
-	}
-	Xil_DCacheFlushRange((unsigned int) frame, DEMO_MAX_FRAME);
-
 }
 
 /* Palette reload (dummy fuction) */
@@ -1862,8 +1839,25 @@ void arm_hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. */
-void arm_hardware_ltdc_main_set(uintptr_t p)
+void arm_hardware_ltdc_main_set(uint_fast8_t i)
 {
+	//DisplayChangeFrame(&dispCtrl, colmain_fb_next());
+	int Status;
+
+	dispCtrl.curFrame = i;
+	/*
+	 * If currently running, then the DMA needs to be told to start reading from the desired frame
+	 * at the end of the current frame
+	 */
+	if (dispCtrl.state == DISPLAY_RUNNING)
+	{
+		Status = XAxiVdma_StartParking(dispCtrl.vdma, dispCtrl.curFrame, XAXIVDMA_READ);
+		if (Status != XST_SUCCESS)
+		{
+			PRINTF("Cannot change frame, unable to start parking %d %d\n", Status, i);
+			ASSERT(0);
+		}
+	}
 }
 
 #else

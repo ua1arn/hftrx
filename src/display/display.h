@@ -952,6 +952,7 @@ void board_set_afspechigh(int_fast16_t v);		// верхняя частота о�
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
 uint_fast8_t colmain_fb_next(void);						// переключиться на использование следующего фреймбуфера (его номер возвращается)
+uint_fast8_t colmain_fb_current(void);
 void colmain_fb_initialize(void);
 
 #if WITHALPHA

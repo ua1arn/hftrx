@@ -20146,6 +20146,10 @@ hamradio_main_step(void)
 #if WITHTOUCHGUI && WITHENCODER2
 			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
+
+#if 1 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+			hamradio_set_freq(hamradio_get_freq_rx() + 50);
+#endif
 		}
 		break;
 

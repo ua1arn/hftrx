@@ -46,15 +46,13 @@ typedef enum {
 	DISPLAY_RUNNING = 1
 } DisplayState;
 
-#define DISPLAY_NUM_FRAMES		3
-
 typedef struct {
 	u32 dynClkAddr; 		  		  /* Physical Base address of the dynclk core */
 	XAxiVdma *vdma; 				  /* VDMA driver struct */
 	XAxiVdma_DmaSetup vdmaConfig;     /* VDMA channel configuration */
 	XVtc vtc; 					      /* VTC driver struct */
 	VideoMode vMode; 				  /* Current video mode */
-	u8 *framePtr[DISPLAY_NUM_FRAMES]; 		  /* Array of pointers to the frame buffers */
+	u8 *framePtr[LCDMODE_MAIN_PAGES]; 		  /* Array of pointers to the frame buffers */
 	u32 stride; 					  /* The line stride of the frame buffers, in bytes */
 	double pxlFreq; 				  /* Frequency of clock currently being generated, maybe not exactly with vMode.freq */
 	u32 curFrame; 					  /* Current frame being displayed */
@@ -63,28 +61,19 @@ typedef struct {
 
 int DisplayStop(DisplayCtrl *dispPtr);
 int DisplayStart(DisplayCtrl *dispPtr);
-int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[DISPLAY_NUM_FRAMES], u32 stride, VideoMode VMODE);
+int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[LCDMODE_MAIN_PAGES], u32 stride, VideoMode VMODE);
 int DisplaySetMode(DisplayCtrl *dispPtr, const VideoMode *newMode);
 int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex);
 
 
 #define AXI_VDMA_DEV_ID		XPAR_AXIVDMA_0_DEVICE_ID
-
 #define VDMA_INTR_ID		XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR
-
-
-#define IMAGE_WIDTH     	800
-#define IMAGE_HEIGHT		480
-#define BYTES_PER_PIXEL		4
-
 #define NUMBER_OF_READ_FRAMES  1
-
 
 #define MEM_BASE_ADDR		0x5000000
 #define BUFFER0_BASE		(MEM_BASE_ADDR)
-#define BUFFER1_BASE		(MEM_BASE_ADDR +     IMAGE_WIDTH * IMAGE_HEIGHT * BYTES_PER_PIXEL)
-#define BUFFER2_BASE		(MEM_BASE_ADDR + 2 * IMAGE_WIDTH * IMAGE_HEIGHT * BYTES_PER_PIXEL)
-
+#define BUFFER1_BASE		(MEM_BASE_ADDR +     DIM_X * DIM_Y * LCDMODE_PIXELSIZE)
+#define BUFFER2_BASE		(MEM_BASE_ADDR + 2 * DIM_X * DIM_Y * LCDMODE_PIXELSIZE)
 
 XAxiVdma AxiVdma;
 
@@ -93,11 +82,5 @@ void ReadErrorCallBack(void *CallbackRef, u32 Mask);
 void Vdma_Init(XAxiVdma *InstancePtr, u32 DeviceId);
 int ReadSetup(XAxiVdma *InstancePtr);
 int Vdma_Start(XAxiVdma *InstancePtr);
-
-
-
-
-
-
 
 #endif /* ZYNQ_VDMA_H_INCLUDED */
