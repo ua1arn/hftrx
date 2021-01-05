@@ -145,6 +145,7 @@ extern "C" {
 	// initial value = 0x00001601
 	#define mio_mode(pin, value) do { \
 			volatile uint32_t * const mio = (& SCLR->MIO_PIN_00) + (pin); \
+			SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 			* mio = (value); /*  */ \
 	} while (0)
 
