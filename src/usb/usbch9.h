@@ -13,10 +13,36 @@
 #ifndef __CHAP_9_H__
 #define __CHAP_9_H__
 
-//#include "gendef.h"
-//#include "usbdef.h"
+#include "hardware.h"
 
 #define UNICODE_ENGLISH     (0x0409)    /* US_English (Ref: USB_LANGIDs.pdf) */
+
+
+#if CPUSTYLE_R7S721
+	//  Renesas parameters
+	#define HARDWARE_USBD_PIPE_ISOC_OUT	1	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
+	#define HARDWARE_USBD_PIPE_ISOC_IN	2	// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
+
+#if WITHUSBCDCACMINTSHARING
+	#define HARDWARE_USBD_PIPE_CDC_INTSHARED	6	// CDC ACM shared interrupt endpoint
+#else /* WITHUSBCDCACMINTSHARING */
+	#define HARDWARE_USBD_PIPE_CDC_INT	6	//
+	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
+#endif /* WITHUSBCDCACMINTSHARING */
+
+	#define HARDWARE_USBD_PIPE_CDC_OUT	3	// CDC OUT Данные ком-порта от компьютера в TRX
+	#define HARDWARE_USBD_PIPE_CDC_IN	4	// CDC IN Данные ком-порта в компьютер из TRX
+	#define HARDWARE_USBD_PIPE_CDC_OUTb	14	// CDC OUT - без передачи данных
+	#define HARDWARE_USBD_PIPE_CDC_INb	15	// CDC IN - без передачи данных
+	#define HARDWARE_USBD_PIPE_RNDIS_OUT	12	// RNDIS OUT Данные RNDIS от компьютера в TRX
+	#define HARDWARE_USBD_PIPE_RNDIS_IN		13	// RNDIS IN Данные RNDIS в компьютер из TRX
+	#define HARDWARE_USBD_PIPE_RNDIS_INT	8	//
+
+	/* совпадает с RNDIS */
+	#define HARDWARE_USBD_PIPE_CDCEEM_OUT	12	// CDC EEM OUT Данные ком-порта от компьютера в TRX
+	#define HARDWARE_USBD_PIPE_CDCEEM_IN	13	// CDC EEM IN Данные ком-порта в компьютер из TRX
+
+#endif /* CPUSTYLE_R7S721 */
 
 // STM32F429:
 //	valid EPs: dcp, 0x01/0x81, 0x02/0x82, 0x03/0x83 
@@ -43,9 +69,20 @@ enum
 #endif /* WITHUSBUAC */
 
 #if WITHUSBCDCACM
-	USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
-	USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N - 1,
-	USBD_EP_CDCACM_INTSHARED,	// Shared EP: CDC INT События ком-порта в компьютер из TRX
+
+	#if WITHUSBCDCACMINTSHARING
+		/* Использование общей notification endpoint на всех CDC ACM устрйоствах */
+		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
+		USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N - 1,
+		USBD_EP_CDCACM_INTSHARED,	// Shared EP: CDC INT События ком-порта в компьютер из TRX
+
+	#else /* WITHUSBCDCACMINTSHARING */
+
+		USBD_EP_CDCACM_IN,		// CDC IN Данные ком-порта в компьютер из TRX
+		USBD_EP_CDCACM_INT,		// CDC IN Данные ком-порта в компьютер из TRX
+		USBD_EP_CDCACM_INlast = USBD_EP_CDCACM_IN + WITHUSBCDCACM_N * 2 - 1,
+
+	#endif /* WITHUSBCDCACMINTSHARING */
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBCDCEEM
@@ -287,8 +324,18 @@ enum interfaces_tag
 //#define INTERFACE_UAC_count (INTERFACE_AUDIO_last - INTERFACE_AUDIO_CONTROL_SPK)
 
 
-#define USBD_CDCACM_EP(base, offset) ((base) + (offset))
-#define USBD_CDCACM_OFFSET_BY_EP(ep, base) ((ep) - (base))
+
+#if WITHUSBCDCACMINTSHARING
+
+	#define USBD_CDCACM_EP(base, offset) ((base) + (offset))
+	#define USBD_CDCACM_OFFSET_BY_EP(ep, base) ((ep) - (base))
+
+#else /* WITHUSBCDCACMINTSHARING */
+
+	#define USBD_CDCACM_EP(base, offset) ((base) + (offset) * 2)
+	#define USBD_CDCACM_OFFSET_BY_EP(ep, base) (((ep) - (base)) / 2)
+
+#endif /* WITHUSBCDCACMINTSHARING */
 #define USBD_CDCACM_IFC(base, offset) ((base) + (offset) * INTERFACE_CDCACM_count)
 
 #else /* WITHPLAINDESCROPTOR */
@@ -427,5 +474,6 @@ enum
 
 	UACOUTALTALT_top
 };
+
 
 #endif  /* __CHAP_9_H__ */
