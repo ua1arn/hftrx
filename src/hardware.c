@@ -7777,70 +7777,64 @@ void hardware_sdhost_initialize(void)
 
 #if CPUSTYLE_ARM || CPUSTYPE_TMS320F2833X
 
-#if CPUSTYPE_TMS320F2833X
-	#pragma CODE_SECTION(local_delay_us, "ramfuncs")
-#endif /* CPUSTYPE_TMS320F2833X */
-
-#if 0
 // количество циклов на микросекунду
 static unsigned long
-local_delay_uscycles(unsigned timeUS, unsigned long cpufreq_MHz)
+local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 {
 #if CPUSTYLE_AT91SAM7S
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant	 looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 175uL / cpufreq_MHz;
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_ATSAM3S
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_ATSAM4S
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F0XX
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 190uL / cpufreq_MHz;
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32L0XX
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 20uL / cpufreq_MHz;
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F1XX
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 345uL / cpufreq_MHz;
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F30X
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 430uL / cpufreq_MHz;
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32F4XX
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 3800uL / cpufreq_MHz;
 #elif CPUSTYLE_STM32F7XX
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32H7XX
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 77 * cpufreq_MHz * timeUS / 1000;
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 77uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_R7S721
-	const unsigned long top = 105 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 105 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора
-	const unsigned long top = 125 * cpufreq_MHz * timeUS / 1000;
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYPE_TMS320F2833X && 1 // RAM code0
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 760uL / cpufreq_MHz;	// tested @ 100 MHz Execute from RAM
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
-	#warning TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #else
-	#error TODO: calibrate local_delay_us constant looks like CPUSTYLE_STM32MP1
-	const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
 #endif
 	return top;
 }
@@ -7850,7 +7844,7 @@ local_delay_uscycles(unsigned timeUS, unsigned long cpufreq_MHz)
 void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
 	// Частота процессора приволится к мегагерцам.
-	const unsigned long top = local_delay_uscycles(1000, CPU_FREQ / 1000000uL);
+	const unsigned long top = local_delay_uscycles(timeUS, CPU_FREQ / 1000000uL);
 	//
 	volatile unsigned long t;
 	for (t = 0; t < top; ++ t)
@@ -7872,66 +7866,6 @@ void local_delay_ms(int timeMS)
 		}
 	}
 }
-#else
-void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
-{
-	#if CPUSTYLE_AT91SAM7S
-		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_ATSAM3S
-		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_ATSAM4S
-		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F0XX
-		const unsigned long top = timeUS * 190uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32L0XX
-		const unsigned long top = timeUS * 20uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F1XX
-		const unsigned long top = timeUS * 345uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F30X
-		const unsigned long top = timeUS * 430uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F4XX
-		const unsigned long top = timeUS * 3800uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F7XX
-		const unsigned long top = timeUS * 6150uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32H7XX
-		const unsigned long top = timeUS * 11000uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_R7S721
-		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_XC7Z
-		#warning TODO: calibrate local_delay_us constant
-		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32MP1
-		// калибровано для 650 МГц процессора
-		//const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
-		// калибровано для 800 МГц процессора
-		const unsigned long top = timeUS * 72500uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
-		const unsigned long top = timeUS * 760uL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
-		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
-	#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
-		const unsigned long top = timeUS * 480uL / (CPU_FREQ / 1000000);	// Execute from RAM
-
-	#else
-		#warning TODO: calibrate local_delay_us constant
-		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
-	#endif
-	//
-	volatile unsigned long n;
-	for (n = 0; n < top; ++ n)
-	{
-	}
-}
-// exactly as required
-//
-void local_delay_ms(int timeMS)
-{
-	int n;
-	for (n = 0; n < timeMS; ++ n)
-	{
-		local_delay_us(1000);
-	}
-}
-#endif
 
 #endif /* CPUSTYLE_ARM || CPUSTYPE_TMS320F2833X */
 
