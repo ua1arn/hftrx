@@ -21277,7 +21277,9 @@ void hamradio_change_att(void)
 
 void hamradio_change_preamp(void)
 {
+#if ! WITHONEATTONEAMP
 	uif_key_click_pamp();
+#endif /* ! WITHONEATTONEAMP */
 }
 
 #if WITHTX
