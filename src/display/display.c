@@ -35,7 +35,7 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
 #endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 
-#if ! defined (SDRAM_BANK_ADDR) && LCDMODE_MAIN_PAGES == 3
+#if ! defined (SDRAM_BANK_ADDR) //&& LCDMODE_MAIN_PAGES == 3
 	// буфер экрана
 	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T fbfX ALIGNX_END;
 
@@ -689,30 +689,19 @@ display_reset(void)
 void display_set_contrast(uint_fast8_t v)
 {
 }
-
-#include <src/zynq/xil_cache.h>
 // для framebufer дисплеев - вытолкнуть кэш память
 void display_flush(void)
 {
-#if CPUSTYLE_XC7Z
-	Xil_DCacheFlushRange((unsigned int) colmain_fb_draw(), GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-	//arm_hardware_ltdc_main_set(colmain_fb_current());
-#else
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
 //	char s [32];
 //	snprintf(s, 32, "FLUSH=%08lX", (unsigned long) frame);
 //	display_at(0, 0, s);
 	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set(frame);
-#endif /* CPUSTYLE_XC7Z */
 }
 
 void display_nextfb(void)
 {
-#if CPUSTYLE_XC7Z
-	Xil_DCacheFlushRange((unsigned int) colmain_fb_draw(), GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-	arm_hardware_ltdc_main_set(colmain_fb_next());
-#else
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();	// Тот буфер, в котором рисовали, станет отображаемым
 //	char s [32];
 //	snprintf(s, 32, "BUFF=%08lX", (unsigned long) frame);
@@ -724,7 +713,6 @@ void display_nextfb(void)
 #if WITHOPENVG
 	openvg_next(page);
 #endif /* WITHOPENVG */
-#endif /* CPUSTYLE_XC7Z */
 }
 
 /* вызывается при разрешённых прерываниях. */

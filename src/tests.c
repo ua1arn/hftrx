@@ -6048,11 +6048,7 @@ static void rendertestdynamic(int w, int h, int pos, int total)
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
-#if CPUSTYLE_XC7Z
-	arm_hardware_ltdc_main_set(colmain_fb_current());
-#else
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
-#endif /* CPUSTYLE_XC7Z */
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 
 #if 1 && defined (__GNUC__)
@@ -7136,7 +7132,7 @@ void hightests(void)
 		for (int i = 0; i <= 255; i++)
 		{
 
-			display_fillrect(x, y, wx - sepx, wy - sepy, i);
+			display_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
 
 			if (wx > 24)
 			{
@@ -7153,8 +7149,7 @@ void hightests(void)
 			}
 		}
 
-		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-		arm_hardware_ltdc_main_set((uintptr_t) fr);
+		display_flush();
 		for (;;)
 			;
 	}

@@ -1839,25 +1839,10 @@ void arm_hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. */
-void arm_hardware_ltdc_main_set(uint_fast8_t i)
+void arm_hardware_ltdc_main_set(uintptr_t addr)
 {
-	//DisplayChangeFrame(&dispCtrl, colmain_fb_next());
-	int Status;
-
-	dispCtrl.curFrame = i;
-	/*
-	 * If currently running, then the DMA needs to be told to start reading from the desired frame
-	 * at the end of the current frame
-	 */
-	if (dispCtrl.state == DISPLAY_RUNNING)
-	{
-		Status = XAxiVdma_StartParking(dispCtrl.vdma, dispCtrl.curFrame, XAXIVDMA_READ);
-		if (Status != XST_SUCCESS)
-		{
-			PRINTF("Cannot change frame, unable to start parking %d %d\n", Status, i);
-			ASSERT(0);
-		}
-	}
+	DisplayChangeFrame(&dispCtrl, colmain_fb_current());
+	TP();
 }
 
 #else
