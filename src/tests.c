@@ -8630,11 +8630,30 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 	return 10;
 }
 
-// FPU тут еще нельзя использовать
+// Сразу после начала main
+
 void lowtests(void)
 {
+#if 0 && CPUSTYLE_XC7Z
+	{
+		// калибровка программной задержки
+		for (;;)
+		{
+			gpio_output(37, 0);		// LED_R
+			gpio_output(38, 1);		// LED_G
+			local_delay_ms(50);
+
+			gpio_output(37, 1);		// LED_R
+			gpio_output(38, 0);		// LED_G
+			local_delay_ms(50);
+
+		}
+	}
+#endif
 #if 0 && CPUSTYLE_STM32MP1
 	{
+		// калибровка программной задержки
+
 		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 		//PRINTF("Hello. STM32MP157\n");
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
