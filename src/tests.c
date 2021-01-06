@@ -8701,7 +8701,9 @@ void lowtests(void)
 		volatile static unsigned RAMBIGDTCM v5;
 		volatile static unsigned RAMBIGDTCM v6 = 6;
 		volatile static unsigned RAMFRAMEBUFF v7;
-		volatile static unsigned RAMBIG v8 = 7;
+		volatile static unsigned RAMBIG v8 = 8;
+		volatile unsigned v9;
+		volatile unsigned v10 = 10;
 
 		PRINTF(PSTR("Unititilalized SRAM=%08lX @%p\n"), v1, & v1);
 		PRINTF(PSTR("Ititilalized SRAM=%08lX @%p\n"), v2, & v2);
@@ -8713,6 +8715,8 @@ void lowtests(void)
 		PRINTF(PSTR("Ititilalized RAMFRAMEBUFF=%08lX @%p\n"), v8, & v8);
 		PRINTF(PSTR("RAMFUNC_NONILINE #1=%08lX @%p\n"), testramfunc(), testramfunc);
 		PRINTF(PSTR("RAMFUNC_NONILINE #2=%08lX @%p\n"), testramfunc2(), testramfunc2);
+		PRINTF(PSTR("Unititilalized auto=%08lX @%p\n"), v9, & v9);
+		PRINTF(PSTR("Ititilalized auto=%08lX @%p\n"), v10, & v10);
 	}
 #endif
 #if 0

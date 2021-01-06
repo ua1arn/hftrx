@@ -2,21 +2,12 @@
 /* XILINX XC7Z010/XC7Z015/XC7Z020 memory layout */
 /* Linker script to configure memory regions. */
 
-/* Note: due to ROM code RAM needs, FSBL payload is limited to 247 KB.  */
-/* The ROM code loads the image into SYSRAM internal memory at address 0x2ffc2400.  */
-/*
-	https://community.st.com/s/question/0D50X0000BiDo0fSQC/stm32mp157aab-failed-to-boot-from-nor-qspi-baremetal?t=1575552683743
-	
-	Load address is ALWAYS 0x2FFC2400 for FSBL, whatever you put in the header (it is ignored for FSBL).
-	Entry point in the header could be anywhere after the header (i.e. 0x2FFC2500) and the end of the SYSRAM
-	I recommend to compile your FSBL SW to fit with a region starting from 0x2FFC2500 (with a size of max 247KB minus 256 for header).
-	Entry point will depend on your SW startup.s construction, it is not always at the very first address.
-*/
 MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
-  RAM (rwx)		: ORIGIN = 0x00000000, LENGTH = 176k	/* OCM - on-chip memory 192k - 16k for TTB */
-  TTB (rwx)  	: ORIGIN = 0x0002C000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
+  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
+  OCM3 (rwx)	: ORIGIN = 0x000F0000, LENGTH = 48k		/* OCM3 - on-chip memory 64k - 16k for TTB */
+  TTB (rwx)  	: ORIGIN = 0x000FC000, LENGTH = 16k		/* last 16 kB OCM3 for TTB */
   DDR3 (rwx) 	: ORIGIN = 0x00100000, LENGTH = 191M 	/* lower 64MB reserved for image, DDR3 single chip NT5CC128M16IP-DI */
 }
 
@@ -68,18 +59,18 @@ SECTIONS
 
 		KEEP(*(.text*))
 		KEEP(*(.itcm*))
-	} > RAM
+	} > OCM
 
 	.ARM.extab :
 	{
 		*(.ARM.extab* .gnu.linkonce.armextab.*)
-	} > RAM
+	} > OCM
 
 	__exidx_start = .;
 	.ARM.exidx :
 	{
 		*(.ARM.exidx* .gnu.linkonce.armexidx.*)
-	} > RAM
+	} > OCM
 	__exidx_end = .;
 
 	/* To copy multiple ROM to RAM sections,
@@ -98,7 +89,7 @@ SECTIONS
 		LONG (__data2_end__ - __data2_start__)
 	*/
 		__copy_table_end__ = .;
-	} > RAM
+	} > OCM
 
 	/* To clear multiple BSS sections,
 	 * uncomment .zero.table section and,
@@ -114,7 +105,7 @@ SECTIONS
 		LONG (__bss2_end__ - __bss2_start__)
 	*/
 		__zero_table_end__ = .;
-	} > RAM
+	} > OCM
 
 	__etext = .;
 
@@ -172,7 +163,7 @@ SECTIONS
 		/* All data end */
 		__data_end__ = .;
 
-	} > RAM
+	} > OCM
 
 	.bss :
 	{
@@ -182,21 +173,21 @@ SECTIONS
 		KEEP(*(COMMON))
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
+	} > OCM
 
 	.noinit :
 	{
 		. = ALIGN(32);
 		KEEP(*(.noinit*))
 		. = ALIGN(32);
-	} > RAM
+	} > OCM
 
 	.vram :
 	{
 		. = ALIGN(64);
 		KEEP(*(.framebuff*))
 		. = ALIGN(64);
-	} > RAM
+	} > OCM
 
 	.heap (COPY):
 	{
@@ -205,7 +196,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > RAM
+	} > OCM
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -213,11 +204,11 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > RAM
+	} > OCM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM) + LENGTH(RAM);
+	__StackTop = ORIGIN(OCM) + LENGTH(OCM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
