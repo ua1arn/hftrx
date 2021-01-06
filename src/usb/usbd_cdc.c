@@ -405,6 +405,12 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 			cdcXbuffinlevel [offset] = 0;
 			break;
 		default:
+			if (1)
+			{
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
+				cdcXbuffinlevel [offset] = 0;
+			}
+			else
 			{
 				// test usb tx fifo initialization
 				//enum { TLENNNN = (VIRTUAL_COM_PORT_IN_DATA_SIZE - 0) };
@@ -557,9 +563,22 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
  		USBD_LL_Transmit(pdev, USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset), NULL, 0);
 	     /* cdc Open EP OUT */
 		USBD_LL_OpenEP(pdev, USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
+
+#if WITHUSBCDCACMINTSHARING
+#else /* WITHUSBCDCACMINTSHARING */
+
+		/* CDC Open EP interrupt */
+		USBD_LL_OpenEP(pdev, USBD_EP_CDCACM_INT, USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_INT_SIZE);
+#endif /* WITHUSBCDCACMINTSHARING */
+
 	}
+
+#if WITHUSBCDCACMINTSHARING
+
 	/* CDC Open EP interrupt */
 	USBD_LL_OpenEP(pdev, USBD_EP_CDCACM_INTSHARED, USBD_EP_TYPE_INTR, VIRTUAL_COM_PORT_INT_SIZE);
+#else /* WITHUSBCDCACMINTSHARING */
+#endif /* WITHUSBCDCACMINTSHARING */
 
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
@@ -577,9 +596,19 @@ static USBD_StatusTypeDef USBD_CDC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 {
 	uint_fast8_t offset;
 
+
+#if WITHUSBCDCACMINTSHARING
 	USBD_LL_CloseEP(pdev, USBD_EP_CDCACM_INTSHARED);
+#else /* WITHUSBCDCACMINTSHARING */
+#endif /* WITHUSBCDCACMINTSHARING */
+
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
+
+#if WITHUSBCDCACMINTSHARING
+#else /* WITHUSBCDCACMINTSHARING */
+		USBD_LL_CloseEP(pdev, USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset));
+#endif /* WITHUSBCDCACMINTSHARING */
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset));
 		USBD_LL_CloseEP(pdev, USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset));
 	}
