@@ -1809,9 +1809,7 @@ DisplayCtrl dispCtrl;
 void arm_hardware_ltdc_initialize(void)
 {
 	int Status;
-	//u8 *ptempFrames[LCDMODE_MAIN_PAGES] = {(u8*)BUFFER0_BASE,(u8*)BUFFER1_BASE,(u8*)BUFFER2_BASE};
-
-	for (int i = 0; i < LCDMODE_MAIN_PAGES; i++)
+	for (int i = 0; i < LCDMODE_MAIN_PAGES; i ++)
 	{
 		pFrames[i] = (u8 *) colmain_fb_draw();
 		colmain_fb_next();
@@ -1819,13 +1817,13 @@ void arm_hardware_ltdc_initialize(void)
 
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
 
-	Status = DisplayInitialize(&dispCtrl, &AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, pFrames, DEMO_STRIDE, VMODE_800x480);
+	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, pFrames, DEMO_STRIDE, VMODE_800x480);
 	if (Status != XST_SUCCESS)
 	{
 		PRINTF("Display Ctrl initialization failed during demo initialization%d\r\n", Status);
 	}
 
-	Status = DisplayStart(&dispCtrl);
+	Status = DisplayStart(& dispCtrl);
 	if (Status != XST_SUCCESS)
 	{
 		PRINTF("Couldn't start display during demo initialization%d\r\n", Status);
@@ -1835,14 +1833,12 @@ void arm_hardware_ltdc_initialize(void)
 /* Palette reload (dummy fuction) */
 void arm_hardware_ltdc_L8_palette(void)
 {
-
 }
 
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_fb_current());
-	TP();
 }
 
 #else

@@ -65,15 +65,8 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 int DisplaySetMode(DisplayCtrl *dispPtr, const VideoMode *newMode);
 int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex);
 
-
 #define AXI_VDMA_DEV_ID		XPAR_AXIVDMA_0_DEVICE_ID
 #define VDMA_INTR_ID		XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR
-#define NUMBER_OF_READ_FRAMES  1
-
-#define MEM_BASE_ADDR		0x5000000
-#define BUFFER0_BASE		(MEM_BASE_ADDR)
-#define BUFFER1_BASE		(MEM_BASE_ADDR +     DIM_X * DIM_Y * LCDMODE_PIXELSIZE)
-#define BUFFER2_BASE		(MEM_BASE_ADDR + 2 * DIM_X * DIM_Y * LCDMODE_PIXELSIZE)
 
 XAxiVdma AxiVdma;
 
