@@ -1019,19 +1019,13 @@
 #if 1
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		gpio_output(37, 0);		/* LED_R */ \
 		gpio_output(38, 0);		/* LED_G */ \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
 			{ \
-				gpio_pin_output_state(37, 1);		/* LED_R */ \
 				gpio_pin_output_state(38, 0);		/* LED_G */ \
-			} \
-			else \
-			if (state) \
-			{ \
-				gpio_pin_output_state(37, 0);		/* LED_R */ \
+			} else { \
 				gpio_pin_output_state(38, 1);		/* LED_G */ \
 			} \
 		} while (0)

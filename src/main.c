@@ -21641,6 +21641,7 @@ static void bootloader_mainloop(void)
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
+	gpio_output(37, 0);		/* LED_R */
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
@@ -21649,13 +21650,9 @@ ddd:
 	;
 #if defined (BOARD_BLINK_INITIALIZE) && CPUSTYLE_XC7Z	// мигалка
 	// установка состояния выходов
-	//BOARD_BLINK_SETSTATE(1);
-	gpio_pin_output_state(37, 0);		/* LED_R */ \
-	gpio_pin_output_state(38, 1);		/* LED_G */ \
+	gpio_pin_output_state(37, 1);	/* LED_R */
 	local_delay_ms(500);
-	//BOARD_BLINK_SETSTATE(0);
-	gpio_pin_output_state(37, 1);		/* LED_R */ \
-	gpio_pin_output_state(38, 0);		/* LED_G */ \
+	gpio_pin_output_state(37, 0);	/* LED_R */
 	local_delay_ms(500);
 	PRINTF(".");
 #endif
