@@ -51,7 +51,7 @@ CORE += -mfpu=vfpv3-d16
 # Define optimisation level here
 # ony -Og for app
 # Application
-OPT = -Os
+OPT = -Ofast
 #OPT = -Ofast
 LTO = -flto
 

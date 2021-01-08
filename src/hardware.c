@@ -12751,10 +12751,6 @@ sysinit_pll_initialize(void)
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #elif CPUSTYLE_XC7Z
-
-	//Xil_ICacheEnable();
-	//Xil_DCacheEnable();
-
 	#if WITHISBOOTLOADER
 		// PLL только в bootloader.
 		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.

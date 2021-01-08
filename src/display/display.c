@@ -706,10 +706,10 @@ void display_nextfb(void)
 //	char s [32];
 //	snprintf(s, 32, "BUFF=%08lX", (unsigned long) frame);
 //	display_at(0, 0, s);
-	unsigned page = colmain_fb_next();	// возвращает новый индекс страницы отрисовки
 	ASSERT((frame % DCACHEROWSIZE) == 0);
 	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set(frame);
+	unsigned page = colmain_fb_next();	// возвращает новый индекс страницы отрисовки
 #if WITHOPENVG
 	openvg_next(page);
 #endif /* WITHOPENVG */

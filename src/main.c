@@ -19929,6 +19929,10 @@ static void hamradio_main_initialize(void)
 static STTE_t
 hamradio_main_step(void)
 {
+#if CPUSTYLE_XC7Z			// временно, пока нет таймера
+	display_spool(NULL);
+	local_delay_us(300);	// при меньшем значении кеш не успевает сбрасываться
+#endif
 	//void r820t_spool(void);
 	//r820t_spool();
 	uint_fast8_t kbch, kbready;
@@ -20148,7 +20152,7 @@ hamradio_main_step(void)
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
 #if 1 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
-			hamradio_set_freq(hamradio_get_freq_rx() + 50);
+			hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif
 		}
 		break;
