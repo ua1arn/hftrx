@@ -1016,22 +1016,24 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-#if 0
-	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
-	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
+#if 1
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
+		gpio_output(37, 0);		/* LED_R */ \
+		gpio_output(38, 0);		/* LED_G */ \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
+			{ \
+				gpio_pin_output_state(37, 1);		/* LED_R */ \
+				gpio_pin_output_state(38, 0);		/* LED_G */ \
+			} \
 			else \
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+			if (state) \
+			{ \
+				gpio_pin_output_state(37, 0);		/* LED_R */ \
+				gpio_pin_output_state(38, 1);		/* LED_G */ \
+			} \
 		} while (0)
 
 #endif
@@ -1046,7 +1048,7 @@
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			I2S2HW_POOLDOWN(); \
-			/*BOARD_BLINK_INITIALIZE(); */\
+			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			HARDWARE_DAC_INITIALIZE(); \
 			/*HARDWARE_BL_INITIALIZE(); */ \

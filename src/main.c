@@ -21640,20 +21640,22 @@ static void bootloader_mainloop(void)
 {
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
+
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
 	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
 ddd:
 	;
-#if 1 && CPUSTYLE_XC7Z	// мигалка
-	//GPIO_DATA1 &= ~ GPIO0_PIN37;
-	gpio_output(37, 0);		// LED_R
-	gpio_output(38, 1);		// LED_G
+#if defined (BOARD_BLINK_INITIALIZE) && CPUSTYLE_XC7Z	// мигалка
+	// установка состояния выходов
+	//BOARD_BLINK_SETSTATE(1);
+	gpio_pin_output_state(37, 0);		/* LED_R */ \
+	gpio_pin_output_state(38, 1);		/* LED_G */ \
 	local_delay_ms(500);
-	//GPIO_DATA1 |= GPIO0_PIN37;
-	gpio_output(37, 1);		// LED_R
-	gpio_output(38, 0);		// LED_G
+	//BOARD_BLINK_SETSTATE(0);
+	gpio_pin_output_state(37, 1);		/* LED_R */ \
+	gpio_pin_output_state(38, 0);		/* LED_G */ \
 	local_delay_ms(500);
 	PRINTF(".");
 #endif

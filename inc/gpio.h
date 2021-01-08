@@ -147,13 +147,31 @@ extern "C" {
 			volatile uint32_t * const mio = (& SCLR->MIO_PIN_00) + (pin); \
 			SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 			* mio = (value); /*  */ \
-	} while (0)
+		} while (0)
 
+	// set pin state (thread-safe)
+	#define gpio_bank_output_state(bank, mask, outstate) do { \
+		const portholder_t maskmsw = ((~ (mask)) >> 16) & 0xFFFF; \
+		const portholder_t masklsw = ((~ (mask)) >> 0) & 0xFFFF; \
+		const portholder_t datamsw = ((outstate) >> 16) & 0xFFFF; \
+		const portholder_t datalsw = ((outstate) >> 0) & 0xFFFF; \
+		ZYNQ_IORW32(GPIO_MASK_DATA_LSW(bank)) = (masklsw << 16) | datalsw; \
+		ZYNQ_IORW32(GPIO_MASK_DATA_MSW(bank)) = (maskmsw << 16) | datamsw; \
+		} while (0)
+
+	// set pin state (thread-safe)
+	#define gpio_pin_output_state(pin, state) do { \
+		const portholder_t bank = (pin) >> 5; \
+		const portholder_t mask = (portholder_t) 1 << ((pin) & 0x1F); \
+		gpio_bank_output_state(bank, mask, mask * !! (state)); \
+		} while (0)
+
+	// set pin mode (no thread-safe)
 	#define gpio_output(pin, state) do { \
 		const portholder_t bank = (pin) >> 5; \
 		const portholder_t mask = (portholder_t) 1 << ((pin) & 0x1F); \
+		gpio_bank_output_state(bank, mask, mask * !! (state)); \
 		mio_mode(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
-		ZYNQ_IORW32(GPIO_DATA(bank)) = (ZYNQ_IORW32(GPIO_DATA(bank)) & ~ mask) | (mask * ! ! (state)); \
 		ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
 		ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; /* When OEN[x]==0, the output driver is disabled */ \
 		} while (0)
