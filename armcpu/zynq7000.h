@@ -375,14 +375,15 @@ typedef struct spi_regs {
 } SPI_Registers;
 
 // Global Timer Registers offsets
-typedef struct gt_regs {
-	volatile uint32_t GTCTRL; 	// Low Counter
-	volatile uint32_t GTCTRH; 	// High Counter
+typedef struct gtc_regs {
+	volatile uint32_t GTCTRL; 	// Global_Timer_Counter_Register0
+	volatile uint32_t GTCTRH; 	// Global_Timer_Counter_Register1
 	volatile uint32_t GTCLR; 	// Control
 	volatile uint32_t GTISR; 	// Interrupt Status
 	volatile uint32_t GTCOMPL;	// Comparator_Value_Register0
 	volatile uint32_t GTCOMPH; 	// Comparator_Value_Register1
-} GT_Registers;
+	volatile uint32_t GTCAIR; 	// Auto_increment_Register
+} GTC_Registers;
 
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
@@ -478,7 +479,7 @@ typedef struct gt_regs {
 #define QSPI_LINEAR_BASE  (0xfc000000uL)
 
 
-#define GT 							((GT_Registers *) GLOBAL_TIMER_BASE)
+#define GTC 						((GTC_Registers *) GLOBAL_TIMER_BASE)
 #define SCLR 						((SLCR_Registers *) SLCR_BASE)
 #define SWDT                       	((SWDT_Registers *) SWDT_BASE)
 #define UART0                       ((UART_Registers *) UART0_BASE)

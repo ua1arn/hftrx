@@ -2428,12 +2428,12 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 
 #elif CPUSTYLE_XC7Z
 
-
-	#if 0
+	#if 1
 		// Global timer use
 		void
-		GT_Handler(void)
+		GTC_Handler(void)
 		{
+			GTC->GTISR = 0x0001;	// ckear interrupt
 			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 		}
@@ -2632,17 +2632,20 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		BOARD_BLINK_INITIALIZE();
 	#endif
 
-	#if 0
+	#if 1
+		const uint_fast32_t period = calcdivround(ticksfreq * 2);	// Global Timer runs with the system frequency / 2
 		// Global timer use
-		const uint_fast64_t comp = calcdivround(ticksfreq * 2);	// Global Timer runs with the system frequency / 2
-		GT->GTCLR = 0;
-		GT->GTCTRH = 0;
-		GT->GTCTRL = 0;
-		GT->GTCOMPH = comp >> 32;
-		GT->GTCOMPL = comp >> 0;
-		GT->GTCLR |= 0x06;
-		arm_hardware_set_handler_system(GlobalTimer_IRQn, GT_Handler);
-		GT->GTCLR |= 0x1;	// start
+		GTC->GTCLR = 0;
+
+		GTC->GTCTRL = period;
+		GTC->GTCTRH = 0;
+		GTC->GTCOMPL = 0;
+		GTC->GTCOMPH = 0;
+		GTC->GTCAIR = period;
+		GTC->GTCLR |= 0x0E;	// auto increment mode. IRQ_Enable, Comp_Enablea
+		arm_hardware_set_handler_system(GlobalTimer_IRQn, GTC_Handler);
+
+		GTC->GTCLR |= 0x1;	// Timer_Enable
 
 	#else
 
