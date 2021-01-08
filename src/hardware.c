@@ -2634,7 +2634,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	#if 1
 		// Global timer use
-		const uint_fast64_t comp = calcdivround(ticksfreq * 2);
+		const uint_fast64_t comp = calcdivround(ticksfreq * 2);	// Global Timer runs with the system frequency / 2
 		GT->GTCLR = 0;
 		GT->GTCTRH = 0;
 		GT->GTCTRL = 0;
@@ -2648,7 +2648,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 		// Private timer use
 		// Disable Private Timer and set load value
-		PTIM_SetControl   (0U);
+		PTIM_SetControl(0);
 		PTIM_SetCurrentValue(0);
 		PTIM_SetLoadValue (calcdivround(ticksfreq * 2));	// Private Timer runs with the system frequency / 2
 		// Set bits: IRQ enable and Auto reload
