@@ -16,7 +16,7 @@
 
 /******************************************************************/
 
-#include <src/zynq/xparameters_ps.h>
+#include "xparameters_ps.h"
 
 #define STDIN_BASEADDRESS 0xE0001000
 #define STDOUT_BASEADDRESS 0xE0001000
@@ -38,7 +38,7 @@
 #define XPAR_AXI_VDMA_0_DEVICE_ID 0U
 #define XPAR_AXI_VDMA_0_BASEADDR 0x43000000U
 #define XPAR_AXI_VDMA_0_HIGHADDR 0x4300FFFFU
-#define XPAR_AXI_VDMA_0_NUM_FSTORES 3U			// требуется изменение параметра в AXI VDMA и генерация bitstream
+#define XPAR_AXI_VDMA_0_NUM_FSTORES 3U
 #define XPAR_AXI_VDMA_0_INCLUDE_MM2S 1U
 #define XPAR_AXI_VDMA_0_INCLUDE_MM2S_DRE 0U
 #define XPAR_AXI_VDMA_0_M_AXI_MM2S_DATA_WIDTH 64U
@@ -80,7 +80,7 @@
 #define XPAR_AXIVDMA_0_DEVICE_ID XPAR_AXI_VDMA_0_DEVICE_ID
 #define XPAR_AXIVDMA_0_BASEADDR 0x43000000U
 #define XPAR_AXIVDMA_0_HIGHADDR 0x4300FFFFU
-#define XPAR_AXIVDMA_0_NUM_FSTORES 1U
+#define XPAR_AXIVDMA_0_NUM_FSTORES 3U
 #define XPAR_AXIVDMA_0_INCLUDE_MM2S 1U
 #define XPAR_AXIVDMA_0_INCLUDE_MM2S_DRE 0U
 #define XPAR_AXIVDMA_0_M_AXI_MM2S_DATA_WIDTH 64U
@@ -261,6 +261,47 @@
 /* Definitions for peripheral PS7_SLCR_0 */
 #define XPAR_PS7_SLCR_0_S_AXI_BASEADDR 0xF8000000
 #define XPAR_PS7_SLCR_0_S_AXI_HIGHADDR 0xF8000FFF
+
+
+/******************************************************************/
+
+/* Definitions for driver LLFIFO */
+#define XPAR_XLLFIFO_NUM_INSTANCES 2U
+
+/* Definitions for peripheral AXI_FIFO_MM_S_0 */
+#define XPAR_AXI_FIFO_MM_S_0_DEVICE_ID 0U
+#define XPAR_AXI_FIFO_MM_S_0_BASEADDR 0x43C10000U
+#define XPAR_AXI_FIFO_MM_S_0_HIGHADDR 0x43C1FFFFU
+#define XPAR_AXI_FIFO_MM_S_0_AXI4_BASEADDR 0U
+#define XPAR_AXI_FIFO_MM_S_0_AXI4_HIGHADDR 0U
+#define XPAR_AXI_FIFO_MM_S_0_DATA_INTERFACE_TYPE 0U
+
+/* Canonical definitions for peripheral AXI_FIFO_MM_S_0 */
+#define XPAR_AXI_FIFO_0_DEVICE_ID 0U
+#define XPAR_AXI_FIFO_0_BASEADDR 0x43C10000U
+#define XPAR_AXI_FIFO_0_HIGHADDR 0x43C1FFFFU
+#define XPAR_AXI_FIFO_0_AXI4_BASEADDR 0U
+#define XPAR_AXI_FIFO_0_AXI4_HIGHADDR 0U
+#define XPAR_AXI_FIFO_0_DATA_INTERFACE_TYPE 0U
+
+
+
+/* Definitions for peripheral AXI_FIFO_MM_S_1 */
+#define XPAR_AXI_FIFO_MM_S_1_DEVICE_ID 1U
+#define XPAR_AXI_FIFO_MM_S_1_BASEADDR 0x43C20000U
+#define XPAR_AXI_FIFO_MM_S_1_HIGHADDR 0x43C2FFFFU
+#define XPAR_AXI_FIFO_MM_S_1_AXI4_BASEADDR 0U
+#define XPAR_AXI_FIFO_MM_S_1_AXI4_HIGHADDR 0U
+#define XPAR_AXI_FIFO_MM_S_1_DATA_INTERFACE_TYPE 0U
+
+/* Canonical definitions for peripheral AXI_FIFO_MM_S_1 */
+#define XPAR_AXI_FIFO_1_DEVICE_ID 1U
+#define XPAR_AXI_FIFO_1_BASEADDR 0x43C20000U
+#define XPAR_AXI_FIFO_1_HIGHADDR 0x43C2FFFFU
+#define XPAR_AXI_FIFO_1_AXI4_BASEADDR 0U
+#define XPAR_AXI_FIFO_1_AXI4_HIGHADDR 0U
+#define XPAR_AXI_FIFO_1_DATA_INTERFACE_TYPE 0U
+
 
 
 /******************************************************************/

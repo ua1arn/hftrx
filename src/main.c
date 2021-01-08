@@ -13262,6 +13262,9 @@ static void dpc_1stimer(void * arg)
 		  autoip_tmr();
 	#endif /* LWIP_AUTOIP */
 #endif /* WITHLWIP */
+#if 0 && CPUSTYLE_XC7Z
+	hamradio_set_freq(hamradio_get_freq_rx() + 1);
+#endif /* CPUSTYLE_XC7Z */
 }
 
 static void
@@ -19442,6 +19445,10 @@ static void initialize2(void)
 
 	(void) mclearnvram;
 
+#if CPUSTYLE_XC7Z
+	hardware_xc7z_fifo_init();
+#endif /* CPUSTYLE_XC7Z */
+
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("initialize2() finished.\n"));
 #endif
@@ -19929,10 +19936,6 @@ static void hamradio_main_initialize(void)
 static STTE_t
 hamradio_main_step(void)
 {
-#if CPUSTYLE_XC7Z			// временно, пока нет таймера
-	display_spool(NULL);
-	local_delay_us(300);	// при меньшем значении кеш не успевает сбрасываться
-#endif
 	//void r820t_spool(void);
 	//r820t_spool();
 	uint_fast8_t kbch, kbready;
@@ -20151,7 +20154,7 @@ hamradio_main_step(void)
 			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
-#if 1 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif
 		}

@@ -13041,7 +13041,16 @@ sysinit_mmu_initialize(void)
 }
 
 #if CPUSTYLE_XC7Z
+#include "xllfifo.h"
 
+typedef struct
+{
+	XLlFifo fifo_spi;
+	XLlFifo fifo_i2s;
+	u8 chipAddr;
+	int wordSize;
+} xc7z_codec_t;
+xc7z_codec_t wm8731_config;
 
 /* Opcode exit is 0 all the time */
 #define OPCODE_EXIT       0U
@@ -13435,6 +13444,53 @@ static int ps7_init(void)
 
 	return PS7_INIT_SUCCESS;
 }
+
+void hardware_xc7z_fifo_init(void)
+{
+	wm8731_config.wordSize = 4;
+
+	XLlFifo_Config *pConfig = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_0_DEVICE_ID);
+	int xStatus = XLlFifo_CfgInitialize(& wm8731_config.fifo_spi, pConfig, pConfig->BaseAddress);
+	if(XST_SUCCESS != xStatus)
+		PRINTF("AXI FIFO codec SPI init error\n");
+	else
+		PRINTF("AXI FIFO codec SPI init success\n");
+
+	u32 Status = XLlFifo_Status(&wm8731_config.fifo_spi);
+	XLlFifo_IntClear(&wm8731_config.fifo_spi,0xffffffff);
+	Status = XLlFifo_Status(&wm8731_config.fifo_spi);
+	if(Status != 0)
+		PRINTF("AXI FIFO codec SPI reset error\n");
+
+	pConfig = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_1_DEVICE_ID);
+	xStatus = XLlFifo_CfgInitialize(& wm8731_config.fifo_i2s, pConfig, pConfig->BaseAddress);
+	if(XST_SUCCESS != xStatus)
+		PRINTF("AXI FIFO codec I2S init error\n");
+	else
+		PRINTF("AXI FIFO codec I2S init success\n");
+
+	Status = XLlFifo_Status(&wm8731_config.fifo_i2s);
+	XLlFifo_IntClear(&wm8731_config.fifo_i2s,0xffffffff);
+	Status = XLlFifo_Status(&wm8731_config.fifo_i2s);
+	if(Status != 0)
+		PRINTF("AXI FIFO codec I2S reset error\n");
+
+	while(0)
+	{
+		XLlFifo_TxPutWord(&wm8731_config.fifo_spi, 0xFF);
+		XLlFifo_TxPutWord(&wm8731_config.fifo_spi, 0x22);
+		XLlFifo_TxPutWord(&wm8731_config.fifo_spi, 0xFF);
+		XLlFifo_TxPutWord(&wm8731_config.fifo_spi, 0x22);
+		XLlFifo_iTxSetLen(&wm8731_config.fifo_spi, 4 * wm8731_config.wordSize);
+		while(XLlFifo_RxOccupancy(&wm8731_config.fifo_spi)!=4) {}
+		XLlFifo_RxGetWord(&wm8731_config.fifo_spi);
+		XLlFifo_RxGetWord(&wm8731_config.fifo_spi);
+		XLlFifo_RxGetWord(&wm8731_config.fifo_spi);
+		u32 rdata = XLlFifo_RxGetWord(&wm8731_config.fifo_spi);
+		TP();
+	}
+}
+
 #endif /* CPUSTYLE_XC7Z */
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
@@ -14320,7 +14376,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	return (i);
 }
 
-#if CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 
 	static RAMHEAP uint8_t heapplace [64 * 1024uL * 1024uL];
 

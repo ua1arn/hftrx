@@ -912,4 +912,8 @@ void usb_polling(void);
 #include "product.h"
 #include "taildefs.h"
 
+#if CPUSTYLE_XC7Z
+void hardware_xc7z_fifo_init(void);
+#endif /* CPUSTYLE_XC7Z */
+
 #endif // HARDWARE_H_INCLUDED
