@@ -37,7 +37,7 @@ typedef enum IRQn
   /* Private Peripheral Interrupts                                                                                     */
   //VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt                                        */
  // HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt                                           */
-  GloballTimer_IRQn                = 27,     /*!< Global Timer Interrupt                                              */
+  GlobalTimer_IRQn                 = 27,     /*!< Global Timer Interrupt                                              */
   Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt                                                */
   PrivTimer_IRQn        	   	   = 29,     /*!< Private Timer Interrupt                                      */
   AwdtTimer_IRQn      			   = 30,     /*!< Private watchdog timer for each CPU Interrupt                                  */
@@ -374,6 +374,15 @@ typedef struct spi_regs {
 	volatile uint32_t Mod_id_reg0;	/* 0x000000FC	Module ID. 	 */
 } SPI_Registers;
 
+// Global Timer Registers offsets
+typedef struct gt_regs {
+	volatile uint32_t GTCTRL; 	// Low Counter
+	volatile uint32_t GTCTRH; 	// High Counter
+	volatile uint32_t GTCLR; 	// Control
+	volatile uint32_t GTISR; 	// Interrupt Status
+	volatile uint32_t GTCOMPL;	// Comparator_Value_Register0
+	volatile uint32_t GTCOMPH; 	// Comparator_Value_Register1
+} GT_Registers;
 
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
@@ -469,6 +478,7 @@ typedef struct spi_regs {
 #define QSPI_LINEAR_BASE  (0xfc000000uL)
 
 
+#define GT 							((GT_Registers *) GLOBAL_TIMER_BASE)
 #define SCLR 						((SLCR_Registers *) SLCR_BASE)
 #define SWDT                       	((SWDT_Registers *) SWDT_BASE)
 #define UART0                       ((UART_Registers *) UART0_BASE)

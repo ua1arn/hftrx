@@ -2428,12 +2428,26 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 
 #elif CPUSTYLE_XC7Z
 
-	void
-	PTIM_Handler(void)
-	{
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-	}
+
+	#if 1
+		// Global timer use
+		void
+		GT_Handler(void)
+		{
+			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		}
+
+	#else
+		// Pricate timer use
+		void
+		PTIM_Handler(void)
+		{
+			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		}
+
+	#endif
 
 #else
 
@@ -2617,16 +2631,35 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	#ifdef BOARD_BLINK_INITIALIZE
 		BOARD_BLINK_INITIALIZE();
 	#endif
-	// Disable Private Timer and set load value
-	PTIM_SetControl   (0U);
-	PTIM_SetLoadValue (calcdivround(ticksfreq * 2));	// Private Timer runs with the system frequency / 2
-	// Set bits: IRQ enable and Auto reload
-	PTIM_SetControl(0x06U);
 
-	arm_hardware_set_handler_system(PrivTimer_IRQn, PTIM_Handler);
+	#if 1
+		// Global timer use
+		const uint_fast64_t comp = calcdivround(ticksfreq * 2);
+		GT->GTCLR = 0;
+		GT->GTCTRH = 0;
+		GT->GTCTRL = 0;
+		GT->GTCOMPH = comp >> 32;
+		GT->GTCOMPL = comp >> 0;
+		GT->GTCLR |= 0x06;
+		arm_hardware_set_handler_system(GlobalTimer_IRQn, GT_Handler);
+		GT->GTCLR |= 0x1;	// start
 
-	// Start the Private Timer
-	PTIM_SetControl (PTIM_GetControl() | 0x01);
+	#else
+
+		// Private timer use
+		// Disable Private Timer and set load value
+		PTIM_SetControl   (0U);
+		PTIM_SetCurrentValue(0);
+		PTIM_SetLoadValue (calcdivround(ticksfreq * 2));	// Private Timer runs with the system frequency / 2
+		// Set bits: IRQ enable and Auto reload
+		PTIM_SetControl(0x06U);
+
+		arm_hardware_set_handler_system(PrivTimer_IRQn, PTIM_Handler);
+
+		// Start the Private Timer
+		PTIM_SetControl (PTIM_GetControl() | 0x01);
+
+	#endif
 
 #else
 	#warning Undefined CPUSTYLE_XXX
