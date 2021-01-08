@@ -2027,7 +2027,7 @@ extern "C" {
 	#define BOARD_DETECTOR_SSB 	0
 	#define BOARD_DETECTOR_AM 	0
 	#define BOARD_DETECTOR_FM 	0
-	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	#define BOARD_DETECTOR_TUNE 	0		// Заглушка конфигурация платы для режима TUNE (CWZ на передачу)
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0
 	#define	BOARD_FILTERCODE_1	0
