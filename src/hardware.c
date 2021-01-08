@@ -2429,7 +2429,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 #elif CPUSTYLE_XC7Z
 
 
-	#if 1
+	#if 0
 		// Global timer use
 		void
 		GT_Handler(void)
@@ -2439,7 +2439,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		}
 
 	#else
-		// Pricate timer use
+		// Private timer use
 		void
 		PTIM_Handler(void)
 		{
@@ -2632,7 +2632,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		BOARD_BLINK_INITIALIZE();
 	#endif
 
-	#if 1
+	#if 0
 		// Global timer use
 		const uint_fast64_t comp = calcdivround(ticksfreq * 2);	// Global Timer runs with the system frequency / 2
 		GT->GTCLR = 0;

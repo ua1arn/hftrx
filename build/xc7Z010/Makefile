@@ -19,6 +19,8 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
+ZINQ_BOOT_BIN := f:\\BOOT.BIN
+
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -174,7 +176,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 $(PROJECT)_app.stm32 app.hex
+all: APP2
 
 bootloader: BOOT2
   
@@ -185,13 +187,17 @@ app_run: $(PROJECT)_app.stm32
 flash: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
-BOOT2: version $(OBJS) $(PROJECT)_boot.elf BOOT.BIN
-	-cp BOOT.BIN e:\\
+BOOT2: version $(OBJS) $(PROJECT)_boot.elf BOOTL.BIN
+	-cp BOOTL.BIN $(ZINQ_BOOT_BIN)
 
-APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: version $(OBJS) $(PROJECT)_app.elf APPL.BIN vdma_bitstream.bit
+	-cp APPL.BIN $(ZINQ_BOOT_BIN)
 
-BOOT.BIN: $(PROJECT)_boot.elf
+BOOTL.BIN: $(PROJECT)_boot.elf boot.bif
 	bootgen -arch zynq -image boot.bif -w on -o $@
+
+APPL.BIN: $(PROJECT)_app.elf app.bif fsbl.elf
+	bootgen -arch zynq -image app.bif -w on -o $@
 	
 $(PROJECT)_app.stm32: $(PROJECT)_app.bin
 	./stm32image.exe -l 0x04100100 -e 0x04100100 -s $(PROJECT)_app.bin -d $@
