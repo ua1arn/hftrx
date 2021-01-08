@@ -164,9 +164,6 @@ int DisplayStart(DisplayCtrl *dispPtr)
 		return XST_SUCCESS;
 	}
 
-
-
-
 	/*
 	 * Configure the vtc core with the display mode timing parameters
 	 */
@@ -228,7 +225,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 	 *Also reset the stride and address values, in case the user manually changed them
 	 */
 	dispPtr->vdmaConfig.Stride = dispPtr->stride;
-	for (i = 0; i < DISPLAY_NUM_FRAMES; i++)
+	for (i = 0; i < LCDMODE_MAIN_PAGES; i++)
 	{
 		dispPtr->vdmaConfig.FrameStoreStartAddr[i] = (u32)dispPtr->framePtr[i];
 	}
@@ -240,7 +237,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 
 
 
-	xdbg_printf( "preform vdma  transfer \r\n");
+	PRINTF( "preform vdma  transfer \r\n");
 
 	Status = XAxiVdma_DmaConfig(dispPtr->vdma, XAXIVDMA_READ, &(dispPtr->vdmaConfig));
 	if (Status != XST_SUCCESS)
@@ -274,7 +271,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 
 /* ------------------------------------------------------------ */
 
-/***	DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[DISPLAY_NUM_FRAMES], u32 stride)
+/***	DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[LCDMODE_MAIN_PAGES], u32 stride)
 **
 **	Parameters:
 **		dispPtr - Pointer to the struct that will be initialized
@@ -293,7 +290,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 **		Initializes the driver struct for use.
 **
 */
-int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[DISPLAY_NUM_FRAMES], u32 stride, VideoMode VMODE)
+int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[LCDMODE_MAIN_PAGES], u32 stride, VideoMode VMODE)
 {
 	int Status;
 	int i;
@@ -305,7 +302,7 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 	 */
 	dispPtr->curFrame = 0;
 	dispPtr->dynClkAddr = dynClkAddr;
-	for (i = 0; i < DISPLAY_NUM_FRAMES; i++)
+	for (i = 0; i < LCDMODE_MAIN_PAGES; i++)
 	{
 		dispPtr->framePtr[i] = framePtr[i];
 	}
@@ -390,7 +387,7 @@ int DisplaySetMode(DisplayCtrl *dispPtr, const VideoMode *newMode)
 **	Parameters:
 **		dispPtr - Pointer to the initialized DisplayCtrl struct
 **		frameIndex - Index of the framebuffer to change to (must
-**				be between 0 and (DISPLAY_NUM_FRAMES - 1))
+**				be between 0 and (LCDMODE_MAIN_PAGES - 1))
 **
 **	Return Value: int
 **		XST_SUCCESS if successful, XST_FAILURE otherwise
@@ -508,10 +505,10 @@ int ReadSetup(XAxiVdma *InstancePtr)
 	int Status;
 	XAxiVdma_DmaSetup ReadCfg;
 
-	ReadCfg.VertSizeInput = IMAGE_HEIGHT;
-	ReadCfg.HoriSizeInput = IMAGE_WIDTH * BYTES_PER_PIXEL;
+	ReadCfg.VertSizeInput = DIM_Y;
+	ReadCfg.HoriSizeInput = DIM_X * LCDMODE_PIXELSIZE;
 
-	ReadCfg.Stride = IMAGE_WIDTH * BYTES_PER_PIXEL;
+	ReadCfg.Stride = DIM_X * LCDMODE_PIXELSIZE;
 	ReadCfg.FrameDelay = 0;  /* This example does not test frame delay */
 
 	ReadCfg.EnableCircularBuf = 1;
@@ -538,7 +535,7 @@ int ReadSetup(XAxiVdma *InstancePtr)
 	for(Index = 0; Index < NUMBER_OF_READ_FRAMES; Index++) {
 		ReadCfg.FrameStoreStartAddr[Index] = Addr;
 
-		Addr += IMAGE_WIDTH * BYTES_PER_PIXEL * IMAGE_HEIGHT;
+		Addr += DIM_X * LCDMODE_PIXELSIZE * DIM_Y;
 	}
 
 	/* Set the buffer addresses for transfer in the DMA engine

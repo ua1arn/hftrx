@@ -7095,6 +7095,30 @@ void hightests(void)
 		}
 	}
 #endif
+#if 0
+	#include "display/pict.h"
+	uint_fast16_t xcoi, ycoi;
+	uint_fast32_t linesStart = 0;
+	uint_fast32_t pixelIdx = 0;
+
+	PACKEDCOLORMAIN_T * frame = colmain_fb_draw();
+
+	memset(frame, 0x00, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+
+	for(ycoi = 0; ycoi < DIM_Y; ycoi++)
+	{
+		for(xcoi = 0; xcoi < (DIM_X * 4); xcoi+=4)
+		{
+			frame[linesStart + xcoi    ] = gImage_pict[pixelIdx++];
+			frame[linesStart + xcoi + 1] = gImage_pict[pixelIdx++];
+			frame[linesStart + xcoi + 2] = gImage_pict[pixelIdx++];
+		}
+		linesStart += (DIM_X * 4);
+	}
+	display_flush();
+	for (;;)
+		;
+#endif
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
 		// test: вывод палитры на экран
@@ -7108,7 +7132,7 @@ void hightests(void)
 		for (int i = 0; i <= 255; i++)
 		{
 
-			display_solidbar(x, y, x + wx - sepx, y + wy - sepy, i);
+			display_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
 
 			if (wx > 24)
 			{
@@ -7125,8 +7149,7 @@ void hightests(void)
 			}
 		}
 
-		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-		arm_hardware_ltdc_main_set((uintptr_t) fr);
+		display_flush();
 		for (;;)
 			;
 	}
