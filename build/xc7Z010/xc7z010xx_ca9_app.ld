@@ -15,10 +15,10 @@
 MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
-  RAM (rwx) 	: ORIGIN = 0x04100100, LENGTH = 0x0AEFFF00  	/* DDR3 single chip NT5CC128M16IP-DI 255M - 64M - 16M - 256B */
+  RAM (rwx) 	: ORIGIN = 0x00100000, LENGTH = 239M  	/* DDR3 single chip NT5CC128M16IP-DI 255M - 16M */
   TTB (rwx)  	: ORIGIN = 0x0F000000, LENGTH = 16M		/* last 16 MB DDR3 RAM for TTB */
-  DDR3 (rwx) 	: ORIGIN = 0x00100000, LENGTH = 191M 	/* lower 64MB reserved for image, DDR3 single chip NT5CC128M16IP-DI */
-  SYSRAM (rwx)	: ORIGIN = 0x00000000, LENGTH = 256k	/* OCM - on-chip memory 256k */
+  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
+  OCM3 (rwx)	: ORIGIN = 0x000F0000, LENGTH = 48k		/* OCM3 - on-chip memory 64k - 16k for TTB */
 }
 
 /* Library configurations */
@@ -89,9 +89,11 @@ SECTIONS
 		LONG (__data_start__)
 		LONG (__data_end__ - __data_start__)
 	*/
+	/*
 		LONG (__etext2)
 		LONG (__data2_start__)
 		LONG (__data2_end__ - __data2_start__)
+	*/
 		__copy_table_end__ = .;
 	} > RAM
 
@@ -137,8 +139,17 @@ SECTIONS
 		KEEP(*(.eh_frame*))
 
 		*(.data*)
-
 		. = ALIGN(4);
+		
+		. = ALIGN(32);
+		KEEP(*(.vectors))
+		__Vectors_End = .;
+		__Vectors_Size = __Vectors_End - __Vectors;
+		. = ALIGN(64);
+		KEEP(*(.itcm*))
+		. = ALIGN(64);
+		KEEP(*(.dtcm*))
+		. = ALIGN(32);
 		/* preinit data */
 		PROVIDE_HIDDEN (__preinit_array_start = .);
 		KEEP(*(.preinit_array))
@@ -165,7 +176,7 @@ SECTIONS
 		__data_end__ = .;
 
 	} > RAM
-
+/*
 	__etext2 = .;
 
 	.sysram : AT (__etext2)
@@ -185,7 +196,7 @@ SECTIONS
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
-
+*/
 	.bss :
 	{
 		__bss_start__ = .;
