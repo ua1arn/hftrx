@@ -1017,16 +1017,18 @@
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 #if 1
+	//#define ZYNQBOARD_BLINK_LED 37 /* LED_R */
+	#define ZYNQBOARD_BLINK_LED 38 /* LED_G */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		gpio_output(38, 0);		/* LED_G */ \
+		gpio_output(ZYNQBOARD_BLINK_LED, 0); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
 			{ \
-				gpio_pin_output_state(38, 0);		/* LED_G */ \
+				gpio_pin_output_state(ZYNQBOARD_BLINK_LED, 0); \
 			} else { \
-				gpio_pin_output_state(38, 1);		/* LED_G */ \
+				gpio_pin_output_state(ZYNQBOARD_BLINK_LED, 1); \
 			} \
 		} while (0)
 
