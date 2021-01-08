@@ -1026,9 +1026,9 @@
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
 			{ \
-				gpio_pin_output_state(ZYNQBOARD_BLINK_LED, 0); \
-			} else { \
 				gpio_pin_output_state(ZYNQBOARD_BLINK_LED, 1); \
+			} else { \
+				gpio_pin_output_state(ZYNQBOARD_BLINK_LED, 0); \
 			} \
 		} while (0)
 

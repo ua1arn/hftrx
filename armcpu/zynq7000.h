@@ -39,7 +39,7 @@ typedef enum IRQn
  // HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt                                           */
   GloballTimer_IRQn                = 27,     /*!< Global Timer Interrupt                                              */
   Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt                                                */
-  PrivatelTimer_IRQn        	   = 29,     /*!< Private Timer Interrupt                                      */
+  PrivTimer_IRQn        	   	   = 29,     /*!< Private Timer Interrupt                                      */
   AwdtTimer_IRQn      			   = 30,     /*!< Private watchdog timer for each CPU Interrupt                                  */
   Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt                                                */
 
@@ -111,13 +111,13 @@ typedef enum IRQn
 //#define __CA_REV                 0x0005U      /*!< Core revision r0p0                          */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
-#define __TIM_PRESENT                 0U      /*!< Set to 1 if TIM is present                  */
+#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
 #define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present                  */
 
 #define GIC_DISTRIBUTOR_BASE         GIC_DISTRIB_BASE                        /*!< (GIC DIST  ) Base Address */
 #define GIC_INTERFACE_BASE           GIC_PROC_BASE                        /*!< (GIC CPU IF) Base Address */
 #define L2C_310_BASE                 L2CACHE_BASE                        /*!< (PL310     ) Base Address */
-
+#define TIMER_BASE				PRIV_TIMER_BASE
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         0x0000    /*!< Core revision r0       */

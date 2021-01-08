@@ -2426,6 +2426,15 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
+#elif CPUSTYLE_XC7Z
+
+	void
+	PTIM_Handler(void)
+	{
+		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+	}
+
 #else
 
 	#warning Undefined CPUSTYLE_XXX interrrupts handlers
@@ -2602,6 +2611,22 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TIM5->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
+
+#elif CPUSTYLE_XC7Z
+
+	#ifdef BOARD_BLINK_INITIALIZE
+		BOARD_BLINK_INITIALIZE();
+	#endif
+	// Disable Private Timer and set load value
+	PTIM_SetControl   (0U);
+	PTIM_SetLoadValue (calcdivround(ticksfreq * 2));	// Private Timer runs with the system frequency / 2
+	// Set bits: IRQ enable and Auto reload
+	PTIM_SetControl(0x06U);
+
+	arm_hardware_set_handler_system(PrivTimer_IRQn, PTIM_Handler);
+
+	// Start the Private Timer
+	PTIM_SetControl (PTIM_GetControl() | 0x01);
 
 #else
 	#warning Undefined CPUSTYLE_XXX
