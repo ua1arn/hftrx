@@ -7189,7 +7189,7 @@ static void fftzoom_filer_decimate_ifspectrum(
 {
 	union configs
 	{
-		arm_biquad_casd_df1_inst_f32 iir_config;
+		arm_biquad_cascade_df2T_instance_f32 iir_config;
 		arm_fir_decimate_instance_f32 fir_config;
 	} c;
 	const unsigned usedSize = NORMALFFT * prm->zoom;
