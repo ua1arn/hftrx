@@ -3792,7 +3792,19 @@ enum
 	#endif /* WITHSUBTONES */
 
 
-	static uint_fast8_t gbandf2adj [NUMLPFADJ] = { 100, 100, 100, 100, 100, 100, 100, 100, };	/* коррекция мощности по ФНЧ передачика */
+	static uint_fast8_t gbandf2adj [NUMLPFADJ]; /* коррекция мощности по ФНЧ передачика */
+
+	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+	static void
+	bandf2adjust_initialize(void)
+	{
+		uint_fast8_t i;
+
+		for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
+		{
+			gbandf2adj [i] = 100;
+		}
+	}
 
 	#if WITHPOWERTRIM
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
@@ -7798,18 +7810,6 @@ getbandf2adjust(uint_fast8_t lpfno)
 	if (lpfno >= ARRAY_SIZE(gbandf2adj))
 		return 100;
 	return gbandf2adj [lpfno];
-}
-
-/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
-static void
-bandf2adjust_initialize(void)
-{
-	uint_fast8_t i;
-
-	for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
-	{
-		gbandf2adj [i] = 98;
-	}
 }
 
 /* Возвращает WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
@@ -19460,10 +19460,6 @@ static uint_fast8_t usbactivated;
 static void 
 hamradio_initialize(void)
 {
-#if WITHTX
-	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
-	bandf2adjust_initialize();
-#endif /* WITHTX */
 	/* NVRAM уже можно пользоваться */
 #if WITHMENU && ! HARDWARE_IGNORENONVRAM
 	loadsettings();		/* загрузка всех установок из nvram */
@@ -21749,6 +21745,11 @@ main(void)
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
 	midtests();
+	// Инициализируем то что не получается иниитить в описании перменных.
+#if WITHTX
+	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+	bandf2adjust_initialize();
+#endif /* WITHTX */
 	initialize2();	/* вызывается при разрешённых прерываниях. */
 	network_initialize();
 	hamradio_initialize();
