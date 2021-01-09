@@ -2855,9 +2855,13 @@ static unsigned CDCACM_fill_38(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	unsigned n = 0;
-	const uint8_t inep = USBD_CDCACM_EP(USBD_EP_CDC_IN, offset);
-	const uint8_t outnep = USBD_CDCACM_EP(USBD_EP_CDC_OUT, offset);
-	const uint8_t intnep = USBD_CDCACM_EP(USBD_EP_CDC_INT, offset);
+	const uint8_t inep = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset);
+	const uint8_t outnep = USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset);
+#if WITHUSBCDCACMINTSHARING
+	const uint8_t intnep = USBD_EP_CDCACM_INTSHARED;
+#else /* WITHUSBCDCACMINTSHARING */
+	const uint8_t intnep = USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset);;
+#endif /* WITHUSBCDCACMINTSHARING */
 
 	// CDC
 	n += CDCACM_InterfaceAssociationDescriptor_a(fill, p + n, maxsize - n, offset);	/* CDC: Interface Association Descriptor Abstract Control Model */
@@ -2869,8 +2873,8 @@ static unsigned fill_CDCACM_function_a(uint_fast8_t fill, uint8_t * p, unsigned 
 	n += CDCACM_fill_35(fill, p + n, maxsize - n, highspeed, USB_ENDPOINT_IN(intnep));	/* Endpoint Descriptor 86 6 In, Interrupt */
 
 	n += CDCACM_InterfaceDescriptorDataIf_a(fill, p + n, maxsize - n, 0x00, 2, offset);	/* INTERFACE_CDC_DATA_4a Data class interface descriptor */
-	n += CDCACM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDC_OUT Out, Bulk, 64 bytes */
-	n += CDCACM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDC_IN In, Bulk, 64 bytes */
+	n += CDCACM_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(outnep));	/* Endpoint Descriptor USBD_EP_CDCACM_OUT Out, Bulk, 64 bytes */
+	n += CDCACM_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(inep));	/* Endpoint Descriptor USBD_EP_CDCACM_IN In, Bulk, 64 bytes */
 
 	return n;
 }
@@ -3372,7 +3376,7 @@ static unsigned RNDIS_fill_35(uint_fast8_t fill, uint8_t * buff, unsigned maxsiz
 		* buff ++ = USB_ENDPOINT_TYPE_INTERRUPT;   	/* bmAttributes: Interrupt */
 		* buff ++ = LO_BYTE(wMaxPacketSize);        /* wMaxPacketSize */
 		* buff ++ = HI_BYTE(wMaxPacketSize); 
-		* buff ++ = highspeed ? HSINTERVAL_32MS : FSINTERVAL_32MS;   		/* bInterval: 32 mS */
+		* buff ++ = highspeed ? HSINTERVAL_1MS : FSINTERVAL_1MS;   		/* bInterval: 1 mS */
 	}
 	return length;
 }
@@ -3474,8 +3478,9 @@ static unsigned fill_RNDIS_function(uint_fast8_t fill, uint8_t * p, unsigned max
 	n += RNDIS_fill_38(fill, p + n, maxsize - n, USB_ENDPOINT_IN(USBD_EP_RNDIS_IN));	/* Endpoint Descriptor USBD_EP_CDCECM_IN In, Bulk, 64 bytes */
 	// OUT Endpoint descriptor     https://msdn.microsoft.com/en-US/library/ee482464(v=winembedded.60).aspx
 	n += RNDIS_fill_37(fill, p + n, maxsize - n, USB_ENDPOINT_OUT(USBD_EP_RNDIS_OUT));	/* Endpoint Descriptor USBD_EP_CDCECM_OUT Out, Bulk, 64 bytes */
+
 	return n;
-	}
+}
 
 #endif /* WITHUSBRNDIS */
 
@@ -4415,7 +4420,11 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 	return length;
 }
 
-static ALIGNX_BEGIN uint8_t alldescbuffer [2048 + 512] ALIGNX_END;
+#if CTLSTYLE_V3D && WITHSDRAMHW
+	static RAMLOW uint8_t alldescbuffer [2048 + 512];
+#else
+	static ALIGNX_BEGIN uint8_t alldescbuffer [2048 + 512] ALIGNX_END;
+#endif /* CTLSTYLE_V3D && WITHSDRAMHW */
 
 struct descholder MsftStringDescr [1];
 struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
@@ -4841,7 +4850,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* CPUSTYLE_STM32F && defined(UID_BASE) */
 
-	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, score);
+	arm_hardware_flush_invalidate((uintptr_t) alldescbuffer, sizeof alldescbuffer);
 	PRINTF(PSTR("usbd_descriptors_initialize: total length=%u at %p\n"), score, alldescbuffer);
 }
 

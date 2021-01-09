@@ -85,7 +85,7 @@ extern "C" {
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
-	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -203,7 +203,7 @@ extern "C" {
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
-#if WITHI2S_FRAMEBITS == 64
+#if CODEC1_FRAMEBITS == 64
 
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
@@ -212,7 +212,7 @@ extern "C" {
 	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
 	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
 
-#else /* WITHI2S_FRAMEBITS == 64 */
+#else /* CODEC1_FRAMEBITS == 64 */
 
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
@@ -221,7 +221,7 @@ extern "C" {
 	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
 	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
 
-#endif /* WITHI2S_FRAMEBITS == 64 */
+#endif /* CODEC1_FRAMEBITS == 64 */
 
 #define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
@@ -276,6 +276,9 @@ extern "C" {
   */
 #define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
 #define FSINTERVAL_AUDIO48 1
+
+#define HSINTERVAL_1MS 4	// endpoint descriptor parameters - для обеспечения 10 ms периода
+#define FSINTERVAL_1MS 1
 
 #define HSINTERVAL_8MS 7	// endpoint descriptor parameters - для обеспечения 10 ms периода
 #define FSINTERVAL_8MS 8
@@ -778,6 +781,26 @@ void subscribeint(deliverylist_t * head, subscribeint32_t * target, void * ctx, 
 extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
 extern deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
 extern deliverylist_t afoutfloat;	// выход приемника
+
+#if WITHAFEQUALIZER
+
+enum {
+	AF_EQUALIZER_BANDS = 3,		// число полос
+	AF_EQUALIZER_BASE = 8,		// предел регулировки
+	AF_EQUALIZER_LOW = 400,		// частота нижней полосы
+	AF_EQUALIZER_MID = 1500,	// частота средней полосы
+	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
+};
+
+int_fast32_t getafequalizerbase(void);
+void board_set_equalizer_rx(uint_fast8_t n);
+void board_set_equalizer_tx(uint_fast8_t n);
+void board_set_equalizer_rx_gains(const uint_fast8_t * p);
+void board_set_equalizer_tx_gains(const uint_fast8_t * p);
+
+void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
+
+#endif /* WITHAFEQUALIZER */
 
 #ifdef __cplusplus
 }

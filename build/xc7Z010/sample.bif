@@ -1,0 +1,10 @@
+all: {         
+
+[bootloader] executable.elf         
+[pmcdata, partition_type=cdo] pmc_cdo.bin
+[partition_type=cdo] sample_image.rnpi
+[partition_type=cdo]  ps_cdo.bin
+sample_image.rcfi
+
+}
+

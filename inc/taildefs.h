@@ -2,6 +2,15 @@
 #ifndef TAILDEFS_H_INCLUDED
 #define TAILDEFS_H_INCLUDED
 
+
+#if WITHINTEGRATEDDSP && CPUSTYLE_ARM
+	#define ARM_MATH_LOOPUNROLL 1
+	#define DISABLEFLOAT16 1
+
+	#include "arm_math.h"
+	#include "arm_const_structs.h"
+#endif /* WITHINTEGRATEDDSP && CPUSTYLE_ARM */
+
 // В зависимости от типа платы - какие микросхемы применены в синтезаторе
 
 #ifndef HARDWARE_H_INCLUDED
@@ -169,9 +178,22 @@ typedef struct spinlock_tag {
 	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
-	#define RAMNOINIT_D1	////__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
+	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	////__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
+#elif CPUSTYLE_XC7Z
+	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -201,12 +223,13 @@ typedef struct spinlock_tag {
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
-	#define RAMFRAMEBUFF	//__attribute__((section(".sdrabss"))) /* размещение в памяти SRAM_D1 */
+	#define RAMFRAMEBUFF	//__attribute__((section(".sdrambss"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			__attribute__((section(".sdramdata"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+	#define RAMLOW	__attribute__((section(".ram")))	// размещение во внутренней мамяти МК
 #elif (CPUSTYLE_STM32F7XX)
 	#define VTRATTR	__attribute__ ((section("vtable"), used, aligned(256 * 4)))
 	#define FLASHMEMINIT	__attribute__((section(".init"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */

@@ -3,7 +3,7 @@
  */
 #define SMALLCHARH3 8 /* Font height */
 #define SMALLCHARW3 8 /* Font width */
-static const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8] = 
+const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8] = 
 {
 	{
 		 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

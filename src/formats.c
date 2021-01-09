@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 // использование библиотечной функции форматного вывода вместо самописной
 //#define FORMATFROMLIBRARY (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM0 /* || (__CORTEX_A != 0) */)
@@ -287,8 +288,8 @@ vsputchar(void * param, int ch)
 
 #endif /* ! FORMATFROMLIBRARY */
 
-	// Для архитектуры ATMega определена только эта функция -
-	// с расположением форматной строкии в памяти программ.
+// Для архитектуры ATMega определена только эта функция -
+// с расположением форматной строкии в памяти программ.
 uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... )
 {
 	va_list	ap;
@@ -310,6 +311,29 @@ uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, con
 	// использование самописной функции
 	n = local_format(& pr, vsputchar, format, ap);		// никогда не возвращается ошибка
 	va_end(ap);
+	vsputchar(& pr, '\0');
+#endif /* FORMATFROMLIBRARY */
+	return n == -1 ? count - 1 : n;	// изменено от стандартного поведения = всегда длинну возвращаем.
+}
+
+// Для архитектуры ATMega определена только эта функция -
+// с расположением форматной строкии в памяти программ.
+uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, va_list	ap)
+{
+	int n;
+
+#if FORMATFROMLIBRARY
+	n = vsnprintf(buffer, count, format, ap);
+#else /* FORMATFROMLIBRARY */
+
+	struct fmt_param pr;
+
+	pr.buffer = buffer;
+	pr.pos = 0;
+	pr.count = count;
+
+	// использование самописной функции
+	n = local_format(& pr, vsputchar, format, ap);		// никогда не возвращается ошибка
 	vsputchar(& pr, '\0');
 #endif /* FORMATFROMLIBRARY */
 	return n == -1 ? count - 1 : n;	// изменено от стандартного поведения = всегда длинну возвращаем.
@@ -381,21 +405,23 @@ toprintc(int c)
 void
 printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 {
+	enum { ROWSIZE = 16 };
 	unsigned i, j;
-	unsigned rows = (length + 15) / 16;
+	unsigned rows = (length + ROWSIZE - 1) / ROWSIZE;
 
 	for (i = 0; i < rows; ++ i)
 	{
-		const int trl = ((length - 1) - i * 16) % 16 + 1;
-		debug_printf_P(PSTR("%08lX "), voffs + i * 16);
+		const int remaining = length - i * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		debug_printf_P(PSTR("%08lX "), voffs + i * ROWSIZE);
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR(" %02X"), buff [i * 16 + j]);
+			debug_printf_P(PSTR(" %02X"), buff [i * ROWSIZE + j]);
 
 		debug_printf_P(PSTR("%*s"), (16 - trl) * 3, "");
 
 		debug_printf_P(PSTR("  "));
 		for (j = 0; j < trl; ++ j)
-			debug_printf_P(PSTR("%c"), toprintc(buff [i * 16 + j]));
+			debug_printf_P(PSTR("%c"), toprintc(buff [i * ROWSIZE + j]));
 
 		debug_printf_P(PSTR("\n"));
 	}
@@ -475,3 +501,21 @@ int dbg_puts_impl(const char * s)
 	return 0;
 }
 #endif /* WITHDEBUG */
+
+
+#if CPUSTYLE_ARM
+
+void ATTRNORETURN __attribute__ ((used)) (__assert) (const char * file, int line, const char * msg)
+{
+	for (;;)
+		;
+}
+
+void ATTRNORETURN __attribute__ ((used)) (__assert_func) (const char * file, int line, const char * func, const char * msg)
+{
+	for (;;)
+		;
+}
+
+#endif /* CPUSTYLE_ARM */
+

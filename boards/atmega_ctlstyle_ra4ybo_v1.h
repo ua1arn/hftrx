@@ -121,8 +121,8 @@
 	#define WITHWFM	1			/* используется WFM */
 
 	#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-	#define SHORTSET7 1
-	//#define FULLSET7 1
+	#define SHORTSET8 1
+	//#define FULLSET8 1
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */

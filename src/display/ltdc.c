@@ -14,9 +14,11 @@
 #include "display.h"
 #include <stdint.h>
 #include <string.h>
+#include <limits.h>
 
 #include "formats.h"	// for debug prints
 #include "gpio.h"
+#include "src/touch/touch.h"
 
 #if LCDMODETX_TC358778XBG
 #include "mipi_dsi.h"
@@ -253,7 +255,8 @@ enum
 
 #if CPUSTYLE_R7S721
 
-void vdc5_update(
+// Записываем и ожидаем пока указанные биты сбросятся в 0
+static void vdc5_update(
 	volatile uint32_t * reg,
 	const char * label,
 	uint_fast32_t mask
@@ -267,7 +270,26 @@ void vdc5_update(
 		local_delay_ms(1);
 		if (-- count == 0)
 		{
-			PRINTF(PSTR("wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			PRINTF(PSTR("vdc5_update: wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
+			return;
+		}
+	}
+}
+
+// Ожидаем пока указанные биты сбросятся в 0
+static void vdc5_wait(
+	volatile uint32_t * reg,
+	const char * label,
+	uint_fast32_t mask
+	)
+{
+	uint_fast32_t count = 1000;
+	while ((* reg & mask) != 0)
+	{
+		local_delay_ms(1);
+		if (-- count == 0)
+		{
+			PRINTF(PSTR("vdc5_wait: wait reg=%p %s mask=%08lX, stay=%08lX\n"), reg, label, mask, * reg & mask);
 			return;
 		}
 	}
@@ -289,7 +311,7 @@ void vdc5_update(
 	(void) * (reg);	/* dummy read */ \
 	uint_fast32_t count = 1000; \
 	do { \
-		if (count -- == 0) {PRINTF(PSTR("wait %s/%d\n"), __FILE__, __LINE__); break; } \
+		if (count -- == 0) {PRINTF(PSTR("SETREG32_UPDATE: wait %s/%d\n"), __FILE__, __LINE__); break; } \
 		local_delay_ms(1); \
 	} while (((* (reg)) & mask) != 0); /* wait for bit chamge to zero */ \
 } while (0)
@@ -431,6 +453,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 #if LCDMODE_MAIN_L8
 	const unsigned grx_format_MAIN = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_MAIN = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
+#elif LCDMODE_MAIN_ARGB888
+	const unsigned grx_format_MAIN = 0x04;	// GRx_FORMAT 4: ARGB8888, 1: RGB888
+	const unsigned grx_rdswa_MAIN = 0x04;	// GRx_RDSWA 100: (5) (6) (7) (8) (1) (2) (3) (4) [Swapped in 32-bit units]
 #else /* LCDMODE_MAIN_L8 */
 	const unsigned grx_format_MAIN = 0x00;	// GRx_FORMAT 0: RGB565
 	const unsigned grx_rdswa_MAIN = 0x06;	// GRx_RDSWA 110: (7) (8) (5) (6) (3) (4) (1) (2) [32-bit swap + 16-bit swap]
@@ -439,6 +464,9 @@ static void vdc5fb_init_graphics(struct st_vdc5 * const vdc)
 #if LCDMODE_PIP_L8
 	const unsigned grx_format_PIP = 0x05;	// GRx_FORMAT 5: CLUT8
 	const unsigned grx_rdswa_PIP = 0x07;	// GRx_RDSWA 111: (8) (7) (6) (5) (4) (3) (2) (1) [32-bit swap + 16-bit swap + 8-bit swap]
+#elif LCDMODE_PIP_ARGB888
+	const unsigned grx_format_MAIN = 0x04;	// GRx_FORMAT 4: ARGB8888, 1: RGB888
+	const unsigned grx_rdswa_MAIN = 0x04;	// GRx_RDSWA 100: (5) (6) (7) (8) (1) (2) (3) (4) [Swapped in 32-bit units]
 #else
 	// LCDMODE_PIP_RGB565
 	const unsigned grx_format_PIP = 0x00;	// GRx_FORMAT 0: RGB565
@@ -912,6 +940,14 @@ arm_hardware_ltdc_initialize(void)
 	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
+void
+arm_hardware_ltdc_deinitialize(void)
+{
+	/* ---- Stop clock to the video display controller 5  ---- */
+	CPG.STBCR9 |= CPG_STBCR9_MSTP91;	// Module Stop 91 0: The video display controller 5 runs.
+	(void) CPG.STBCR9;			/* Dummy read */
+}
+
 /* Palette reload */
 void arm_hardware_ltdc_L8_palette(void)
 {
@@ -919,7 +955,7 @@ void arm_hardware_ltdc_L8_palette(void)
 	vdc5fb_L8_palette(vdc);
 }
 
-/* set bottom buffer start */
+/* set top buffer start */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -932,13 +968,23 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 	// GR3_IBUS_VEN and GR3_P_VEN in GR3_UPDATE are 1.
 	// GR3_P_VEN in GR3_UPDATE is 1.
 
-	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-		vdc->GR3_UPDATE = (
-			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-			0
-		);
+	vdc->GR3_UPDATE = (
+		(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+		(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+		(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+		0);
+	(void) vdc->GR3_UPDATE;
+
+	if (0 && LCDMODE_MAIN_PAGES < 3)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		vdc5_wait(& vdc->GR3_UPDATE, "GR3_UPDATE",
+				(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+				(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+				(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+				0
+			);
+	}
 }
 
 void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
@@ -948,14 +994,14 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 	SETREG32_CK(& vdc->GR3_FLM_RD, 1, 0, 0);			// GR3_R_ENB Frame Buffer Read Enable 0: Frame buffer reading is disabled.
 	SETREG32_CK(& vdc->GR3_AB1, 2, 0,	0x01);			// GR3_DISP_SEL 1: Lower-layer graphics display
 
-	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-		vdc->GR3_UPDATE = (
-			(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
-			(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
-			(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
-			0
-		);
+	vdc->GR3_UPDATE = (
+		(1 << 8) |	// GR3_UPDATE Frame Buffer Read Control Register Update
+		(1 << 4) |	// GR3_P_VEN Graphics Display Register Update
+		(1 << 0) |	// GR3_IBUS_VEN Frame Buffer Read Control Register Update
+		0);
+	(void) vdc->GR3_UPDATE;
 }
+
 /* set bottom buffer start */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
@@ -969,13 +1015,22 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
 	// GR2_P_VEN in GR2_UPDATE is 1.
 
-	//vdc5_update(& vdc->GR3_UPDATE, "GR3_UPDATE",
-		vdc->GR2_UPDATE = (
-			(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
-			(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
-			(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
-			0
-		);
+	vdc->GR2_UPDATE = (
+		(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+		(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+		(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+		0);
+	(void) vdc->GR2_UPDATE;
+
+	if (LCDMODE_MAIN_PAGES < 3)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		vdc5_wait(& vdc->GR2_UPDATE, "GR2_UPDATE",
+				(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+				(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+				(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+				0);
+	}
 }
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -1353,8 +1408,8 @@ static void LCD_LayerInit(
 
 	/* Pixel Format configuration*/
 	LTDC_Layer_InitStruct.LTDC_PixelFormat = LTDC_PixelFormat;
-	/* Alpha constant (255 totally opaque = непрозрачный) */
-	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255; 
+	/* Alpha constant (255 = непрозрачный) */
+	LTDC_Layer_InitStruct.LTDC_ConstantAlpha = 255;
 	/* Default Color configuration (configure A,R,G,B component values) */          
 	LTDC_Layer_InitStruct.LTDC_DefaultColor = 0; // transparent=прозрачный black color. outside active layer area
 	/* Configure blending factors */       
@@ -1579,6 +1634,11 @@ arm_hardware_ltdc_initialize(void)
 
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
 
+#elif LCDMODE_MAIN_ARGB888
+
+	/* Без палитры */
+	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORMAIN_T));
+
 #else
 	/* Без палитры */
 	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
@@ -1599,6 +1659,14 @@ arm_hardware_ltdc_initialize(void)
 
 	// Bottom layer
 	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
+	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
+
+#elif LCDMODE_PIP_RGB888
+
+	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
+
+	// Bottom layer
+	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
 	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #endif /* LCDMODE_PIP_RGB565 */
@@ -1635,15 +1703,47 @@ arm_hardware_ltdc_initialize(void)
 	PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 
+void
+arm_hardware_ltdc_deinitialize(void)
+{
+	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
+	(void) LAYER_PIP->CR;
+	LAYER_MAIN->CR &= ~ LTDC_LxCR_LEN;
+	(void) LAYER_MAIN->CR;
+	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Vertical Blanking Reload. */
+
+#if CPUSTYLE_STM32H7XX
+	/* Enable the LTDC Clock */
+	RCC->APB3ENR &= ~ RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
+	(void) RCC->APB3ENR;
+
+#elif CPUSTYLE_STM32MP1
+
+	/* Enable the LTDC Clock */
+	RCC->MP_APB4ENCLRR = RCC_MP_APB4ENCLRR_LTDCEN;	/* LTDC clock enable */
+	(void) RCC->MP_APB4ENCLRR;
+	/* Enable the LTDC Clock in low-power mode */
+	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_LTDCLPEN;	/* LTDC clock enable */
+	(void) RCC->MP_APB4LPENCLRR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	/* Enable the LTDC Clock */
+	RCC->APB2ENR &= ~ RCC_APB2ENR_LTDCEN;	/* LTDC clock enable */
+	(void) RCC->APB2ENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+}
+
 /* set bottom buffer start */
 /* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
-#if 0
-	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
-		hardware_nonguiyield();
-#endif
+	if (LCDMODE_MAIN_PAGES < 3)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+			hardware_nonguiyield();
+	}
 	LAYER_PIP->CFBAR = p;
 	(void) LAYER_PIP->CFBAR;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
@@ -1681,17 +1781,68 @@ void arm_hardware_ltdc_L8_palette(void)
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
-#if 0
-	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-	while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
-		hardware_nonguiyield();
-#endif
+	if (LCDMODE_MAIN_PAGES < 3)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+			hardware_nonguiyield();
+	}
 	LAYER_MAIN->CFBAR = p;
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
 }
+
+#elif CPUSTYLE_XC7Z
+#include "zynq_vdma.h"
+
+u8 *pFrames[LCDMODE_MAIN_PAGES];
+DisplayCtrl dispCtrl;
+#define XPAR_AXI_DYNCLK_0_BASEADDR 	0x43c10000
+#define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
+#define VGA_VDMA_ID         		XPAR_AXIVDMA_0_DEVICE_ID
+#define DISP_VTC_ID         		XPAR_VTC_0_DEVICE_ID
+#define DEMO_MAX_FRAME 				(800*480*4)
+#define DEMO_STRIDE					(800*4)
+
+void arm_hardware_ltdc_initialize(void)
+{
+	int Status;
+	for (int i = 0; i < LCDMODE_MAIN_PAGES; i ++)
+	{
+		pFrames[i] = (u8 *) colmain_fb_draw();
+		colmain_fb_next();
+	}
+
+	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
+
+	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, pFrames, DEMO_STRIDE, VMODE_800x480);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("Display Ctrl initialization failed during demo initialization%d\r\n", Status);
+	}
+
+	Status = DisplayStart(& dispCtrl);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("Couldn't start display during demo initialization%d\r\n", Status);
+	}
+}
+
+/* Palette reload (dummy fuction) */
+void arm_hardware_ltdc_L8_palette(void)
+{
+}
+
+/* Set MAIN frame buffer address. */
+void arm_hardware_ltdc_main_set(uintptr_t addr)
+{
+	DisplayChangeFrame(&dispCtrl, colmain_fb_current());
+}
+
+#else
+	#error Wrong CPUSTYLE_xxxx
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
@@ -2696,110 +2847,6 @@ int tc358768_get_id(void) {
 	//tc358768_power_up();
 	id = tc358768_rd_reg_16or32bits(0);
 	return id;
-}
-
-
-#define TSC_I2C_ADDR (0x20 * 2)
-
-void s3402_init(void)
-{
-	const unsigned i2caddr = TSC_I2C_ADDR;
-
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write(0xFF);		// set page addr
-	i2c_write(0x00);		// page #0
-	i2c_waitsend();
-    i2c_stop();
-}
-
-int s3402_get_id(void)
-{
-	const unsigned i2caddr = TSC_I2C_ADDR;
-
-	uint8_t v0;
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(0xE1);	//  Manufacturer ID register
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_NACK);	// ||	The Manufacturer ID register always returns data $01.
-
-	PRINTF("tsc id=%08lX (expected 0x01)\n", v0);
-
-	return v0;
-}
-
-void tscprint(void)
-{
-	const unsigned i2caddr = TSC_I2C_ADDR;
-
-
-	uint8_t v0, v1, v2, v3, v4, v5, v6, v7;
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(0x06);	// Address=0x0006 is used to read coordinate.
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_1);	// ||
-	i2c_read(& v1, I2C_READ_ACK);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_ACK);	// ||
-	i2c_read(& v4, I2C_READ_ACK);	// ||
-	i2c_read(& v5, I2C_READ_ACK);	// ||
-	i2c_read(& v6, I2C_READ_ACK);	// ||
-	i2c_read(& v7, I2C_READ_NACK);	// ||
-
-	unsigned vz1 =
-			(((unsigned long) v3) << 24) |
-			(((unsigned long) v2) << 16) |
-			(((unsigned long) v1) << 8) |
-			(((unsigned long) v0) << 0) |
-			0;
-
-	unsigned vz2 =
-			(((unsigned long) v7) << 24) |
-			(((unsigned long) v6) << 16) |
-			(((unsigned long) v5) << 8) |
-			(((unsigned long) v4) << 0) |
-			0;
-
-	if (vz1 == 0 && vz2 == 0)
-		return;
-
-	PRINTF("tsc=%08lX %08lX\n", vz1, vz2);
-}
-
-// center: 		9E 01 79 01  00 03 05 02
-// left up: 	29 00 32 01  00 05 05 00
-// cright up:	29 02 BE 01  00 05 05 00
-// Left down: 	D0 00 26 01  00 05 05 04
-// Right down: 	E6 02 93 01  00 03 04 04
-
-int s3402_get_coord(unsigned * px, unsigned * py)
-{
-	const unsigned i2caddr = TSC_I2C_ADDR;
-
-
-	uint8_t v0, v1, v2, v3, v4, v5, v6, v7;
-
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(0x06);	// Address=0x0006 is used to read coordinate.
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_1);	// ||
-	i2c_read(& v1, I2C_READ_ACK);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_ACK);	// ||
-	i2c_read(& v4, I2C_READ_ACK);	// ||
-	i2c_read(& v5, I2C_READ_ACK);	// ||
-	i2c_read(& v6, I2C_READ_ACK);	// ||
-	i2c_read(& v7, I2C_READ_NACK);	// ||
-
-	if (v0 != 0)
-	{
-		* px = v1 + v2 * 256;
-		* py = v3 + v4 * 256;
-		return 1;
-	}
-	return 0;
 }
 
 
@@ -3900,15 +3947,30 @@ struct comipfb_dev oled_auo_rm69052_dev = {
 
 #endif
 
+void tc358768_deinitialize(void)
+{
+	struct tc358768_drv_data * ddata = & dev0;
+
+	tc358768_power_off(ddata);
+	tc358768_sw_reset(ddata);
+
+	const portholder_t Video_RST = (1uL << 10);	// PA10
+	const portholder_t Video_MODE = (1uL << 14);	// PF14: Video_MODE: 0: test, 1: normal
+
+	arm_hardware_piof_outputs(Video_MODE, Video_MODE);
+	arm_hardware_pioa_outputs(Video_RST, 1 * Video_RST);
+	local_delay_ms(5);
+}
+
 void tc358768_initialize(void)
 {
 	struct tc358768_drv_data * ddata = & dev0;
 
-	if (toshiba_ddr_power_init())
-	{
-		PRINTF("TC358768 power init failure\n");
-		return;
-	}
+//	if (toshiba_ddr_power_init())
+//	{
+//		PRINTF("TC358768 power init failure\n");
+//		return;
+//	}
 	//stpmic1_dump_regulators();
 	// See also:
 	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
@@ -3926,12 +3988,6 @@ void tc358768_initialize(void)
 	local_delay_ms(5);
 	arm_hardware_piod_outputs(RESET, 1 * RESET);
 
-	// TP_RESX - active low
-	//	x-gpios = <&gpiog 0 GPIO_ACTIVE_HIGH>; /* TP_RESX_18 */
-	const portholder_t TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
-	arm_hardware_piog_outputs(TP_RESX, 0 * TP_RESX);
-	local_delay_ms(5);
-	arm_hardware_piog_outputs(TP_RESX, 1 * TP_RESX);
 
 
 	// TC358778XBG conrol
@@ -4132,11 +4188,17 @@ void panel_initialize(void)
 
 	s3402_init();
 	s3402_get_id();
-	for (;0;)
-	{
-		tscprint();
-	}
+}
 
+void panel_deinitialize(void)
+{
+	static uint8_t sleep [] = { 0x10, 0x00, };
+	static uint8_t disploff [] = { 0x28, 0x00, };
+
+	mipi_dsi_send_dcs_packet(disploff, ARRAY_SIZE(disploff));
+	local_delay_ms(10);
+	mipi_dsi_send_dcs_packet(sleep, ARRAY_SIZE(sleep));
+	local_delay_ms(20);
 }
 
 #endif /* LCDMODETX_TC358778XBG */

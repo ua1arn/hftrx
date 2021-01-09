@@ -53,6 +53,7 @@
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
+    //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
@@ -99,6 +100,7 @@
 		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
+    	//#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
 		//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 		//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10

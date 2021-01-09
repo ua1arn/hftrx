@@ -848,7 +848,11 @@ void display_initialize(void)
 }
 
 /* Разряжаем конденсаторы питания */
-void display_discharge(void)
+void display_uninitialize(void)
+{
+}
+
+void display_nextfb(void)
 {
 }
 

@@ -186,7 +186,11 @@
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 	//#define LCDMODE_DUMMY	1
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+
+	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
+	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
@@ -261,7 +265,7 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHI2S_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
+	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
@@ -299,6 +303,7 @@
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 
 	// выбор функциональности
+	//#define WITHUSEFATFS		1	// FatFS
 	//#define WITHUSEAUDIOREC		1	// Запись звука
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука в стерео формате
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"

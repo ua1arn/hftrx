@@ -18,6 +18,8 @@
 	#else /* KEYBOARD_USE_ADC6 */
 		#define NQMKEYS (KI_COUNT * 4 + 2)
 	#endif /* KEYBOARD_USE_ADC6 */
+#elif KEYBOARD_SINGLE
+	#define NQMKEYS (1)
 #else
 	#define NQMKEYS (12 + 2)		// сейчас обслуживается до 12-ти кнопок.
 #endif
@@ -991,6 +993,18 @@ const struct qmkey qmdefs [NQMKEYS] =
 	{ KIF_NONE,		KBD_ENC2_PRESS,		KBD_ENC2_HOLD, 		' ', },
 	/* кнопка выключения питания (включение аппаратно) */
 	{ KIF_POWER, 	KBD_CODE_POWEROFF,	KBD_CODE_MAX, 		' ', },
+};
+
+uint_fast8_t getexitkey(void)
+{
+	return KBD_CODE_DISPMODE;
+}
+
+#elif KEYBOARD_SINGLE
+
+const struct qmkey qmdefs [NQMKEYS] =
+{
+	{ KIF_NONE,		KBD_ENC2_PRESS,			KBD_ENC2_HOLD, 			' ', },
 };
 
 uint_fast8_t getexitkey(void)

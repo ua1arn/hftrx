@@ -660,7 +660,7 @@ void buffers_initialize(void)
 	static subscribefloat_t afsample16reregister_user;
 	subscribefloat_user(& afoutfloat_user, & afsample16reregister_user, NULL, savesampleout16stereo_user);
 
-#if WITHSKIPUSERMODE
+#if WITHSKIPUSERMODE || CTLSTYLE_V3D
 
 	static subscribefloat_t afsample16reregister;
 	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16stereo);
@@ -1821,6 +1821,7 @@ RAMFUNC uintptr_t allocate_dmabuffer32tx(void)
 	PRINTF(PSTR("allocate_dmabuffer32tx() failure\n"));
 	for (;;)
 		;
+	return 0;
 }
 
 // Этой функцией пользуются обработчики прерываний DMA на приём данных по SAI
@@ -1841,6 +1842,7 @@ RAMFUNC uintptr_t allocate_dmabuffer32rx(void)
 		for (;;)
 			;
 	}
+	return 0;
 }
 
 // Этой функцией пользуются обработчики прерываний DMA на передачу и приём данных по I2S и USB AUDIO
@@ -1914,6 +1916,7 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 		for (;;)
 			;
 	}
+	return 0;
 }
 
 // Этой функцией пользуются обработчики прерываний DMA

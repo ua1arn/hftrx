@@ -99,7 +99,17 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
+
+	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
+
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+
+	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
+	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+
+	//#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
+
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 
@@ -243,9 +253,26 @@
 
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
-	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
-	#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
+	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 15
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		#if 0
+			#define WITHTOUCHGUI		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA			64
+			#define FORMATFROMLIBRARY 	1
+			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#endif
+	#elif LCDMODE_LQ043T3DX02K
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	2	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 15
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
@@ -294,7 +321,7 @@
 	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHI2S_FRAMEBITS 64	// Полный размер фрейма для двух каналов - канал кодека
+	#define CODEC1_FRAMEBITS 64	// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
@@ -349,6 +376,11 @@
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 25
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -356,7 +388,6 @@
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
-		#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 

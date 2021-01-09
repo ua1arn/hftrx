@@ -21,10 +21,10 @@
 #include "spi.h"
 #include "gpio.h"
 
-#if WITHUSEAUDIOREC
+#if WITHUSEFATFS
 	#include "fatfs/ff.h"
 	#include "sdcard.h"
-#endif /* WITHUSEAUDIOREC */
+#endif /* WITHUSEFATFS */
 
 #include <string.h>
 #include <ctype.h>
@@ -3453,7 +3453,7 @@ static const uint8_t pe2014 [] =
 
 #endif /* ARM_STM32L051_TQFP32_CPUSTYLE_V1_H_INCLUDED */
 
-#if 1 && WITHDEBUG && WITHUSEAUDIOREC
+#if 1 && WITHDEBUG && WITHUSEFATFS
 
 struct fb
 {
@@ -3662,7 +3662,17 @@ static void test_recodstart(void)
 	system_enableIRQ();
 }
 
-unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
+#if 0
+/* записать в буфер для ответа 32-бит значение */
+unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+	buff [3] = HI_32BY(v);
+
+	return 4;
+}
 
 // сохранение потока данных большими блоками
 static void dosaveblocks(const char * fname)
@@ -3676,7 +3686,7 @@ static void dosaveblocks(const char * fname)
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	memset(rbuff, 0xE5, sizeof rbuff);
 	static int i;
-	USBD_poke_u32(rbuff, ++ i);
+	USBD_poke_u32X(rbuff, ++ i);
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
@@ -3762,6 +3772,7 @@ static void dosaveblocks(const char * fname)
 		PRINTF("Write speed %ld kB/S\n", (long) (kbs / 1000 / 60));
 	}
 }
+#endif
 
 #if 0
 
@@ -3891,7 +3902,7 @@ static uint_fast64_t mmcCardSize(void)
 	return st != RES_OK ? 0 : (uint_fast64_t) v * MMC_SECTORSIZE;
 }
 
-static void fatfs_test(void)
+static void diskio_test(void)
 {
 	const unsigned long MMC_SUCCESS2 = 0x00;
 	unsigned long lba_sector = 0;
@@ -4067,7 +4078,7 @@ static void fatfs_test(void)
 	}
 }
 
-static void fatfs_filesystest(void)
+static void fatfs_filesystest(int speedtest)
 {
 	FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 	FRESULT rc;  
@@ -4161,8 +4172,9 @@ static void fatfs_filesystest(void)
 					dosaveserialport(testlog);
 				}
 				break;
-
+#if 0
 			case 'W':
+				if (speedtest)
 				{
 					uint_fast16_t year;
 					uint_fast8_t month, day;
@@ -4180,11 +4192,12 @@ static void fatfs_filesystest(void)
 					dosaveblocks(testlog);
 				}
 				break;
+#endif
 			}
 		}
 	}
 }
-
+#if 0
 static void fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
@@ -4207,6 +4220,7 @@ static void fatfs_filesyspeedstest(void)
 		);
 	dosaveblocks(testlog);
 }
+#endif
 
 #endif /* WITHDEBUG && WITHUSEAUDIOREC */
 
@@ -5258,6 +5272,14 @@ GridTest(void)
 	/* Filled rectangle at center. */
 	display_solidbar(xm4 + xm1, ym4 + ym1, xm4 * 3 - xm1, ym4 * 3 - ym1, col23);
 
+
+
+	// Тест порядка цветов в пикселе
+	const unsigned rct0 = DIM_Y / 4;
+	display_fillrect(rct0, rct0 * 1, rct0, rct0, COLORMAIN_RED);
+	display_fillrect(rct0, rct0 * 2, rct0, rct0, COLORMAIN_GREEN);
+	display_fillrect(rct0, rct0 * 3, rct0, rct0, COLORMAIN_BLUE);
+
 	for (k = 0; k < 16; ++ k)
 		for (n = 0; n < 16; ++ n)
 			display_solidbar(n * 18 + 1,
@@ -5267,10 +5289,11 @@ GridTest(void)
 				 TFTRGB(n * 16, k * 16, 255 - (n * 8 + k * 8) )
 				 );
 
-	/* Interlase test.	*/
-	display_line(0,  0,  xm, 1,  col3);
-	display_line(0,  0,  xm, 3,  col3);
-	display_line(0,  0,  xm, 5,  col3);
+	/* Interlase flockertest.	*/
+	display_line(10,  0,  xm, 10 + 1,  col3);
+	display_line(10,  0,  xm, 10 + 3,  col3);
+	display_line(10,  0,  xm, 10 + 5,  col3);
+	display_line(10,  0,  xm, 10 + 7,  col3);
 
 	/* diagonales test.	*/
 	display_line(xm, 0,  xm, ym, col3);
@@ -5278,10 +5301,18 @@ GridTest(void)
 	display_line(0,  ym, 0,  0,  col3);
 	display_line(0,  0,  xm, ym, col3);
 	display_line(0,  ym, xm, 0,  col3);
+
+	// тест перестановки байтов при выборке видеоконтроллером
+	const unsigned rct = DIM_Y / 3;
+	display_line(rct, rct,  rct * 2 - 1, rct * 2 - 1, COLORMAIN_BLACK);
+	display_line(rct, rct * 2 - 1, rct * 2 - 1,  rct, COLORMAIN_BLACK);
+
+
+
 	display_flush();
 
-	local_delay_ms((300));
-
+	for (;;)
+		;
 }
 
 #endif /* LCDMODE_COLORED && ! DSTYLE_G_DUMMY */
@@ -5376,7 +5407,7 @@ static void disableAllIRQs(void)
 	{
 		if (IRQ_GetEnableState(i))
 			PRINTF("disableAllIRQs: active=%u // IRQ_Disable(%u); \n", i, i);
-		//IRQ_Disable(i);
+		IRQ_Disable(i);
 	}
 	PRINTF("disableAllIRQs: n=%u\n", n);
 
@@ -5388,8 +5419,8 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 {
 	uint8_t v0, v1, v2, v3;
 
-	i2c_start(i2caddr | 0x00);
-	i2c_write_withrestart(register_id);
+	//i2c_start(i2caddr | 0x00);
+	//i2c_write_withrestart(register_id);
 	i2c_start(i2caddr | 0x01);
 	i2c_read(& v0, I2C_READ_ACK_1);	// ||
 	i2c_read(& v1, I2C_READ_ACK);	// ||
@@ -5405,6 +5436,615 @@ static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t regist
 }
 #endif
 
+#if WITHOPENVG
+/*------------------------------------------------------------------------
+ *
+ * OpenVG 1.0.1 Reference Implementation sample code
+ * -------------------------------------------------
+ *
+ * Copyright (c) 2007 The Khronos Group Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and /or associated documentation files
+ * (the "Materials "), to deal in the Materials without restriction,
+ * including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Materials,
+ * and to permit persons to whom the Materials are furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Materials.
+ *
+ * THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE MATERIALS OR
+ * THE USE OR OTHER DEALINGS IN THE MATERIALS.
+ *
+ *//**
+ * \file
+ * \brief	Tiger sample application. Resizing the application window
+ *			rerenders the tiger in the new resolution. Pressing 1,2,3
+ *			or 4 sets pixel zoom factor, mouse moves inside the zoomed
+ *			image (mouse move works on OpenGL >= 1.2).
+ * \note
+ *//*-------------------------------------------------------------------*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <assert.h>
+#include <string.h>
+#define UNREF(X) ((void)(X))
+
+#ifdef HG_FLAT_INCLUDES
+#	include "openvg.h"
+#	include "vgu.h"
+//#	include "egl.h"
+#else
+#	include "VG/openvg.h"
+#	include "VG/vgu.h"
+//#	include "EGL/egl.h"
+#endif
+
+
+#if 1
+
+#include "tiger.h"
+
+/*--------------------------------------------------------------*/
+
+//static const float			aspectRatio = 612.0f / 792.0f;
+
+/*--------------------------------------------------------------*/
+
+typedef struct
+{
+	VGFillRule		m_fillRule;
+	VGPaintMode		m_paintMode;
+	VGCapStyle		m_capStyle;
+	VGJoinStyle		m_joinStyle;
+	float			m_miterLimit;
+	float			m_strokeWidth;
+	VGPaint			m_fillPaint;
+	VGPaint			m_strokePaint;
+	VGPath			m_path;
+} PathData;
+
+typedef struct
+{
+	PathData*			m_paths;
+	int					m_numPaths;
+} PS;
+
+static PS* PS_construct(const char* commands, int commandCount, const float* points, int pointCount)
+{
+	PS* ps = (PS*)malloc(sizeof(PS));
+	int p = 0;
+	int c = 0;
+	int i = 0;
+	int paths = 0;
+	int maxElements = 0;
+	unsigned char* cmd;
+	UNREF(pointCount);
+
+	while(c < commandCount)
+	{
+		int elements, e;
+		c += 4;
+		p += 8;
+		elements = (int)points[p++];
+		ASSERT(elements > 0);
+		if(elements > maxElements)
+			maxElements = elements;
+		for(e=0;e<elements;e++)
+		{
+			switch(commands[c])
+			{
+			case 'M': p += 2; break;
+			case 'L': p += 2; break;
+			case 'C': p += 6; break;
+			case 'E': break;
+			default:
+				ASSERT(0);		//unknown command
+			}
+			c++;
+		}
+		paths++;
+	}
+
+	ps->m_numPaths = paths;
+	ps->m_paths = (PathData*)malloc(paths * sizeof(PathData));
+	cmd = (unsigned char*)malloc(maxElements);
+
+	i = 0;
+	p = 0;
+	c = 0;
+	while(c < commandCount)
+	{
+		int elements, startp, e;
+		float color[4];
+
+		//fill type
+		int paintMode = 0;
+		ps->m_paths[i].m_fillRule = VG_NON_ZERO;
+		switch( commands[c] )
+		{
+		case 'N':
+			break;
+		case 'F':
+			ps->m_paths[i].m_fillRule = VG_NON_ZERO;
+			paintMode |= VG_FILL_PATH;
+			break;
+		case 'E':
+			ps->m_paths[i].m_fillRule = VG_EVEN_ODD;
+			paintMode |= VG_FILL_PATH;
+			break;
+		default:
+			ASSERT(0);		//unknown command
+		}
+		c++;
+
+		//stroke
+		switch( commands[c] )
+		{
+		case 'N':
+			break;
+		case 'S':
+			paintMode |= VG_STROKE_PATH;
+			break;
+		default:
+			ASSERT(0);		//unknown command
+		}
+		ps->m_paths[i].m_paintMode = (VGPaintMode)paintMode;
+		c++;
+
+		//line cap
+		switch( commands[c] )
+		{
+		case 'B':
+			ps->m_paths[i].m_capStyle = VG_CAP_BUTT;
+			break;
+		case 'R':
+			ps->m_paths[i].m_capStyle = VG_CAP_ROUND;
+			break;
+		case 'S':
+			ps->m_paths[i].m_capStyle = VG_CAP_SQUARE;
+			break;
+		default:
+			ASSERT(0);		//unknown command
+		}
+		c++;
+
+		//line join
+		switch( commands[c] )
+		{
+		case 'M':
+			ps->m_paths[i].m_joinStyle = VG_JOIN_MITER;
+			break;
+		case 'R':
+			ps->m_paths[i].m_joinStyle = VG_JOIN_ROUND;
+			break;
+		case 'B':
+			ps->m_paths[i].m_joinStyle = VG_JOIN_BEVEL;
+			break;
+		default:
+			ASSERT(0);		//unknown command
+		}
+		c++;
+
+		//the rest of stroke attributes
+		ps->m_paths[i].m_miterLimit = points[p++];
+		ps->m_paths[i].m_strokeWidth = points[p++];
+
+		//paints
+		color[0] = points[p++];
+		color[1] = points[p++];
+		color[2] = points[p++];
+		color[3] = 1.0f;
+		ps->m_paths[i].m_strokePaint = vgCreatePaint();
+		vgSetParameteri(ps->m_paths[i].m_strokePaint, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
+		vgSetParameterfv(ps->m_paths[i].m_strokePaint, VG_PAINT_COLOR, 4, color);
+
+		color[0] = points[p++];
+		color[1] = points[p++];
+		color[2] = points[p++];
+		color[3] = 1.0f;
+		ps->m_paths[i].m_fillPaint = vgCreatePaint();
+		vgSetParameteri(ps->m_paths[i].m_fillPaint, VG_PAINT_TYPE, VG_PAINT_TYPE_COLOR);
+		vgSetParameterfv(ps->m_paths[i].m_fillPaint, VG_PAINT_COLOR, 4, color);
+
+		//read number of elements
+
+		elements = (int)points[p++];
+		ASSERT(elements > 0);
+		startp = p;
+		for(e=0;e<elements;e++)
+		{
+			switch( commands[c] )
+			{
+			case 'M':
+				cmd[e] = VG_MOVE_TO | VG_ABSOLUTE;
+				p += 2;
+				break;
+			case 'L':
+				cmd[e] = VG_LINE_TO | VG_ABSOLUTE;
+				p += 2;
+				break;
+			case 'C':
+				cmd[e] = VG_CUBIC_TO | VG_ABSOLUTE;
+				p += 6;
+				break;
+			case 'E':
+				cmd[e] = VG_CLOSE_PATH;
+				break;
+			default:
+				ASSERT(0);		//unknown command
+			}
+			c++;
+		}
+
+		ps->m_paths[i].m_path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+		vgAppendPathData(ps->m_paths[i].m_path, elements, cmd, points + startp);
+		i++;
+	}
+	free(cmd);
+	return ps;
+}
+
+static void PS_destruct(PS* ps)
+{
+	int i;
+	ASSERT(ps);
+	for(i=0;i<ps->m_numPaths;i++)
+	{
+		vgDestroyPaint(ps->m_paths[i].m_fillPaint);
+		vgDestroyPaint(ps->m_paths[i].m_strokePaint);
+		vgDestroyPath(ps->m_paths[i].m_path);
+	}
+	free(ps->m_paths);
+	free(ps);
+}
+
+static void PS_render(PS* ps)
+{
+	int i;
+	ASSERT(ps);
+	vgSeti(VG_BLEND_MODE, VG_BLEND_SRC_OVER);
+
+	for(i=0;i<ps->m_numPaths;i++)
+	{
+		vgSeti(VG_FILL_RULE, ps->m_paths[i].m_fillRule);
+		vgSetPaint(ps->m_paths[i].m_fillPaint, VG_FILL_PATH);
+
+		if(ps->m_paths[i].m_paintMode & VG_STROKE_PATH)
+		{
+			vgSetf(VG_STROKE_LINE_WIDTH, ps->m_paths[i].m_strokeWidth);
+			vgSeti(VG_STROKE_CAP_STYLE, ps->m_paths[i].m_capStyle);
+			vgSeti(VG_STROKE_JOIN_STYLE, ps->m_paths[i].m_joinStyle);
+			vgSetf(VG_STROKE_MITER_LIMIT, ps->m_paths[i].m_miterLimit);
+			vgSetPaint(ps->m_paths[i].m_strokePaint, VG_STROKE_PATH);
+		}
+
+		vgDrawPath(ps->m_paths[i].m_path, ps->m_paths[i].m_paintMode);
+	}
+	ASSERT(vgGetError() == VG_NO_ERROR);
+}
+
+/*--------------------------------------------------------------*/
+
+static void rendertiger(PS* const tiger, int w, int h)
+{
+	float clearColor[4] = {1,1,1,1};
+	float scaleX = w / (tigerMaxX - tigerMinX);
+	float scaleY = h / (tigerMaxY - tigerMinY);
+	float scale = fminf(scaleX, scaleY);
+
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	ASSERT(vgGetError() == VG_NO_ERROR);
+	vgClear(0, 0, w, h);
+	ASSERT(vgGetError() == VG_NO_ERROR);
+
+	// normal on Window (top-down mirror on Storch)
+//	vgLoadIdentity();
+//	vgScale(scale, scale);
+//	vgTranslate(-tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));	// all parameters are zeroes
+
+	// top-down mirror
+	vgLoadIdentity();
+	vgScale(scale, -scale);
+	vgTranslate(-tigerMinX, - (tigerMaxY - tigerMinY));
+	ASSERT(vgGetError() == VG_NO_ERROR);
+
+	PS_render(tiger);
+	ASSERT(vgGetError() == VG_NO_ERROR);
+
+}
+
+#endif /* tiger */
+/*--------------------------------------------------------------*/
+
+// See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
+#if 0
+{
+    VGPath path;
+
+    VGfloat clear[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    vgSetfv( VG_CLEAR_COLOR, 4, clear );
+    vgClear( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT );
+
+    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1, 0, 0, 0, VG_PATH_CAPABILITY_ALL );
+
+    vguRect( path, 40.5f, 40.5f, 160.0f, 100.0f );
+    vguRect( path, 40.0f, 180.0f, 160.0f, 100.0f );
+
+    vgDrawPath( path, VG_STROKE_PATH );
+
+    vgDestroyPath( path );
+}
+#endif
+
+static void rendertest1(int w, int h)
+{
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+	vgLoadIdentity();
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);	// для работы антииалиасинга треьуется знать расположение пикселей
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	VGPath path;
+    VGPaint fillPaint, strokePaint;
+    static const VGubyte segments[] = { VG_MOVE_TO_ABS, VG_LINE_TO_ABS, VG_LINE_TO_ABS,
+                           VG_LINE_TO_ABS, VG_LINE_TO_ABS, VG_CLOSE_PATH };
+    static const VGfloat coords [] = { 120.0f, 260.0f, 61.2f, 79.1f, 215.1f, 190.9f, 24.8f, 190.9f, 178.8f, 79.1f };
+    static const VGfloat clearColor [4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+    static const VGfloat fillColor [4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+    static const VGfloat strokeColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+    // top-down mirror and back...
+	vgLoadIdentity();
+//	vgScale(1, -1);
+//	vgScale(1, -1);
+//	vgTranslate(0, - h);
+//	vgTranslate(0, + h);
+
+    vgSetfv( VG_CLEAR_COLOR, 4, clearColor );
+    vgClear( 0, 0, w, h );
+#if 1
+
+    vgSeti( VG_STROKE_LINE_WIDTH, 3 );		// толщина лини
+    fillPaint = vgCreatePaint();
+    strokePaint = vgCreatePaint();
+
+    path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F, 1.0f, 0.0f, 0, 0, VG_PATH_CAPABILITY_ALL);
+
+    // 1) перечисляем (добавляем) фигуры
+    vgAppendPathData( path, 6, segments, coords );
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 300, 100, 100, 100, 10, 10));
+
+    // 2) правила черчения / заполнения
+   vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
+    vgSetPaint(fillPaint, VG_FILL_PATH );
+    vgSetPaint(strokePaint, VG_STROKE_PATH );
+
+    // 3) Цвета
+   vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
+    vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
+
+    // 4) рисуем фигуры
+   vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
+
+	// 5) Освобожлаем память
+   vgDestroyPath( path );
+    vgDestroyPaint( fillPaint );
+    vgDestroyPaint( strokePaint );
+#endif
+}
+
+static void rendertest2(int w, int h)
+{
+	static const float clearColor[4] = {0,1,0,1};
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+	vgLoadIdentity();
+	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	vgClear(0, 0, w, h);
+#if 1
+
+	VGPaint paint = vgCreatePaint();
+
+	static const float drawColorRed[4] = {0,0,0,1};
+	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
+	//vgSetColor(paint, VGuint rgba)
+
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+
+	//static const float drawColorRed[4] = {1,0,0,1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
+	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
+
+	static const float drawColorGreen[4] = {0,0,0,1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
+
+	vgDrawPath(path, VG_STROKE_PATH);	// VG_STROKE_PATH - линиями
+	vgDrawPath(path, VG_FILL_PATH);	// VG_FILL_PATH - заполняя
+
+	vgDestroyPath(path);
+
+	vgDestroyPaint(paint);
+	//		vgLoadIdentity();
+	//		vgScale(scale, scale);
+	//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX, tigerMinY);
+	//		//vgRotate(30);
+	//		PS_render(tiger);
+	//		ASSERT(vgGetError() == VG_NO_ERROR);
+#endif
+}
+
+static void rendertest3(int w, int h)
+{
+	static const float clearColor[4] = {0,0,1,1};
+	//		float scaleX = w / (tigerMaxX - tigerMinX);
+	//		float scaleY = h / (tigerMaxY - tigerMinY);
+	//		float scale = fminf(scaleX, scaleY);
+	//		PRINTF("render: scaleX=%f, scaleY=%f\n", scaleX, scaleY);
+
+	vgLoadIdentity();
+	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	vgClear(0, 0, w, h);
+#if 1
+	VGPaint paint = vgCreatePaint();
+
+	static const float drawColorRed[4] = {0,0,0,1};
+	vgSetParameterfv(paint, VG_PAINT_COLOR, 4, drawColorRed);
+	//vgSetColor(paint, VGuint rgba)
+
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+
+	//static const float drawColorRed[4] = {1,0,0,1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorRed);
+	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
+
+	static const float drawColorGreen[4] = {0,0,0,1};
+	vgSetfv(VG_TILE_FILL_COLOR, 4, drawColorGreen);
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100, 100, 10, 10));
+
+	vgDrawPath(path, VG_STROKE_PATH);	// VG_STROKE_PATH - линиями
+	vgDrawPath(path, VG_FILL_PATH);	// VG_FILL_PATH - заполняя
+
+	vgDestroyPath(path);
+
+	vgDestroyPaint(paint);
+	//		vgLoadIdentity();
+	//		vgScale(scale, scale);
+	//		vgTranslate(- tigerMinX, -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX + 0.5f * (w / scale - (tigerMaxX - tigerMinX)), -tigerMinY + 0.5f * (h / scale - (tigerMaxY - tigerMinY)));
+	//		//vgTranslate(-tigerMinX, tigerMinY);
+	//		//vgRotate(30);
+	//		PS_render(tiger);
+	//		ASSERT(vgGetError() == VG_NO_ERROR);
+#endif
+}
+
+
+static void rendertestdynamic(int w, int h, int pos, int total)
+{
+	static const float clearColor[4] = {1.0f, 1.0f, 1.0f, 1.0f };
+
+	////eglSwapBuffers(egldisplay, eglsurface);	//force EGL to recognize resize
+
+	vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_BETTER);
+	//vgSeti(VG_RENDERING_QUALITY, VG_RENDERING_QUALITY_NONANTIALIASED);
+	//vgSeti(VG_FILL_RULE, VG_NON_ZERO);
+
+	vgSeti(VG_PIXEL_LAYOUT, VG_PIXEL_LAYOUT_RGB_HORIZONTAL);
+	//vgSeti(VG_SCREEN_LAYOUT, );
+
+	vgSetfv(VG_CLEAR_COLOR, 4, clearColor);
+	vgClear(0, 0, w, h);
+#if 1
+
+    VGPaint fillPaint = vgCreatePaint();
+    VGPaint strokePaint = vgCreatePaint();
+
+    static const VGfloat fillColor [4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+    static const VGfloat strokeColor [4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+    static const VGfloat fillColor2 [4] = { 1.0f, 0.0f, 1.0f, 1.0f };
+    static const VGfloat strokeColor2 [4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+
+	VGPath path = vgCreatePath(VG_PATH_FORMAT_STANDARD, VG_PATH_DATATYPE_F /*VG_PATH_DATATYPE_F */, 1.0f, 0.0f, 0, 0, (unsigned int)VG_PATH_CAPABILITY_ALL);
+
+	// 0) сброс масштабирования
+	vgLoadIdentity();
+
+	// 1) перечисляем (добавляем) фигуры
+	VERIFY(VGU_NO_ERROR == vguRect(path, 0, 0, 100, 100));
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 100, 100, 100 + pos * 5, 10, 10, 10));
+
+	// 2) правила черчения / заполнения
+	vgSeti( VG_STROKE_LINE_WIDTH, 3 );		// толщина лини
+	vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
+	vgSetPaint(fillPaint, VG_FILL_PATH );
+	vgSetPaint(strokePaint, VG_STROKE_PATH );
+
+	// 3) Цвета
+	vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor);
+	vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor);
+
+	// 4) рисуем фигуры
+	vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
+
+	vgClearPath(path, VG_PATH_CAPABILITY_ALL);
+
+	// 1a) перечисляем (добавляем) фигуры
+	VERIFY(VGU_NO_ERROR == vguRect(path, 50, 50, 100, 100));
+	VERIFY(VGU_NO_ERROR == vguRoundRect(path, 150, 150, 100 + pos * 5, 10, 10, 10));
+
+	// 2a) правила черчения / заполнения
+	vgSeti( VG_STROKE_LINE_WIDTH, 1 );		// толщина лини
+	vgSeti( VG_FILL_RULE, VG_EVEN_ODD ); // OR VG_NON_ZERO
+	vgSetPaint(fillPaint, VG_FILL_PATH );
+	vgSetPaint(strokePaint, VG_STROKE_PATH );
+
+	// 3a) Цвета
+	vgSetParameterfv( fillPaint, VG_PAINT_COLOR, 4, fillColor2);
+	vgSetParameterfv( strokePaint, VG_PAINT_COLOR, 4, strokeColor2);
+
+	// 4a) рисуем фигуры
+	vgDrawPath( path, (VG_FILL_PATH | VG_STROKE_PATH) );
+	vgClearPath(path, VG_PATH_CAPABILITY_ALL);
+
+	// 5a) Освобожлаем память
+	vgDestroyPath(path);
+
+	vgDestroyPaint(strokePaint);
+	vgDestroyPaint(fillPaint);
+
+#endif
+}
+
+/*--------------------------------------------------------------*/
+
+#endif /* WITHOPENVG */
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
@@ -5415,6 +6055,90 @@ void hightests(void)
 	{
 
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
+	}
+#endif
+#if 0 && WITHDEBUG
+	{
+		const time_t t = time(NULL);
+
+		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
+	}
+#endif
+#if 0 && WITHOPENVG
+	{
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
+		//disableAllIRQs();
+	#if 1
+
+		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
+		ASSERT(tiger != NULL);
+		for (;;)
+		{
+			TP();
+			uint_fast8_t kbch, repeat;
+
+			if ((repeat = kbd_scan(& kbch)) != 0)
+			{
+				break;
+			}
+
+			rendertiger(tiger, DIM_X, DIM_Y);
+			rendertest2(DIM_X, DIM_Y);
+			display_flush();		// наблюдаем процесс
+		}
+		PS_destruct(tiger);
+
+	#elif 1
+		{
+			int pos;
+			int total = 100;
+			display_nextfb();
+			for (pos = 0; ; pos = (pos + 1) % total)
+			{
+				uint_fast8_t kbch, repeat;
+
+				if ((repeat = kbd_scan(& kbch)) != 0)
+				{
+					break;
+				}
+
+				//rendertest1(DIM_X, DIM_Y);
+				//display_nextfb();
+
+				rendertestdynamic(DIM_X, DIM_Y, pos, total);
+				display_nextfb();
+			}
+		}
+
+	#else
+
+		// wait for press any key
+		for (;;)
+		{
+			uint_fast8_t kbch, repeat;
+
+			if ((repeat = kbd_scan(& kbch)) != 0)
+			{
+				break;
+			}
+			rendertest1(DIM_X, DIM_Y);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_RED);
+			display_nextfb();
+			//local_delay_ms(300);
+
+			rendertest2(DIM_X, DIM_Y);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_GREEN);
+			display_nextfb();
+			//local_delay_ms(300);
+
+			rendertest3(DIM_X, DIM_Y);
+			//display_fillrect(0, 0, DIM_X, DIM_Y, COLORMAIN_BLUE);
+			display_nextfb();
+			//local_delay_ms(300);
+		}
+
+	#endif
 	}
 #endif
 #if 0 && (__CORTEX_A != 0)
@@ -6038,13 +6762,19 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD low level functions test
 	{
-		fatfs_test();
+		diskio_test();
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
+	// SD CARD FatFs functions test
+	{
+		fatfs_filesystest(0);
+	}
+#endif
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// SD CARD file system level functions test
 	// no interactive
 	{
@@ -6108,13 +6838,13 @@ void hightests(void)
 		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 		system_enableIRQ();
-		fatfs_filesystest();
+		fatfs_filesystest(1);
 	}
 #endif
-#if 0 && WITHDEBUG && WITHUSEAUDIOREC
+#if 0 && WITHDEBUG && WITHUSEFATFS
 	// Автономный программатор SPI flash memory
 	{
-		//fatfs_test();
+		//diskio_test();
 		////mmcCardSize();
 		////mmcCardSize();
 		fatfs_progspi();
@@ -6353,16 +7083,41 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
+		TP();
 		unsigned cnt;
 		display2_bgreset();
+		//disableAllIRQs();
 		for (cnt = 0; ; ++ cnt)
 		{
-			//disableAllIRQs();
 			//GridTest();
 			BarTest();
 			PRINTF("BarTest: %u\n", cnt);
 		}
 	}
+#endif
+#if 0
+	#include "display/pict.h"
+	uint_fast16_t xcoi, ycoi;
+	uint_fast32_t linesStart = 0;
+	uint_fast32_t pixelIdx = 0;
+
+	PACKEDCOLORMAIN_T * frame = colmain_fb_draw();
+
+	memset(frame, 0x00, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+
+	for(ycoi = 0; ycoi < DIM_Y; ycoi++)
+	{
+		for(xcoi = 0; xcoi < (DIM_X * 4); xcoi+=4)
+		{
+			frame[linesStart + xcoi    ] = gImage_pict[pixelIdx++];
+			frame[linesStart + xcoi + 1] = gImage_pict[pixelIdx++];
+			frame[linesStart + xcoi + 2] = gImage_pict[pixelIdx++];
+		}
+		linesStart += (DIM_X * 4);
+	}
+	display_flush();
+	for (;;)
+		;
 #endif
 #if 0 && WITHLTDCHW && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
@@ -6377,7 +7132,7 @@ void hightests(void)
 		for (int i = 0; i <= 255; i++)
 		{
 
-			display_solidbar(x, y, x + wx - sepx, y + wy - sepy, i);
+			display_fillrect(x, y, wx - sepx, wy - sepy, i << 4);
 
 			if (wx > 24)
 			{
@@ -6394,8 +7149,7 @@ void hightests(void)
 			}
 		}
 
-		arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-		arm_hardware_ltdc_main_set((uintptr_t) fr);
+		display_flush();
 		for (;;)
 			;
 	}
@@ -7510,6 +8264,7 @@ void hightests(void)
 		}
 	}
 #endif
+	display_nextfb();	// Скрыть резулбтаты теста, разнести рисуемый и ообрадаемый буферы
 }
 
 // Вызывается перед инициализацией NVRAM, но после инициализации SPI
@@ -7898,11 +8653,30 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 	return 10;
 }
 
-// FPU тут еще нельзя использовать
+// Сразу после начала main
+
 void lowtests(void)
 {
+#if 0 && CPUSTYLE_XC7Z
+	{
+		// калибровка программной задержки
+		for (;;)
+		{
+			gpio_output(37, 0);		// LED_R
+			gpio_output(38, 1);		// LED_G
+			local_delay_ms(50);
+
+			gpio_output(37, 1);		// LED_R
+			gpio_output(38, 0);		// LED_G
+			local_delay_ms(50);
+
+		}
+	}
+#endif
 #if 0 && CPUSTYLE_STM32MP1
 	{
+		// калибровка программной задержки
+
 		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
 		//PRINTF("Hello. STM32MP157\n");
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
@@ -7950,7 +8724,9 @@ void lowtests(void)
 		volatile static unsigned RAMBIGDTCM v5;
 		volatile static unsigned RAMBIGDTCM v6 = 6;
 		volatile static unsigned RAMFRAMEBUFF v7;
-		volatile static unsigned RAMBIG v8 = 7;
+		volatile static unsigned RAMBIG v8 = 8;
+		volatile unsigned v9;
+		volatile unsigned v10 = 10;
 
 		PRINTF(PSTR("Unititilalized SRAM=%08lX @%p\n"), v1, & v1);
 		PRINTF(PSTR("Ititilalized SRAM=%08lX @%p\n"), v2, & v2);
@@ -7962,22 +8738,27 @@ void lowtests(void)
 		PRINTF(PSTR("Ititilalized RAMFRAMEBUFF=%08lX @%p\n"), v8, & v8);
 		PRINTF(PSTR("RAMFUNC_NONILINE #1=%08lX @%p\n"), testramfunc(), testramfunc);
 		PRINTF(PSTR("RAMFUNC_NONILINE #2=%08lX @%p\n"), testramfunc2(), testramfunc2);
+		PRINTF(PSTR("Unititilalized auto=%08lX @%p\n"), v9, & v9);
+		PRINTF(PSTR("Ititilalized auto=%08lX @%p\n"), v10, & v10);
 	}
 #endif
 #if 0
 	{
-		// PD13 signal pulses
-		enum { WORKMASK	 = 1ul << 13 };
-		arm_hardware_piod_outputs(WORKMASK, WORKMASK);
+		// Калиьбровка задержек для данного процссора
+		// See local_delay_uscycles()
+		//enum { WORKMASK	 = 1ul << 7 };	// PB7
+		enum { WORKMASK	 = 1ul << 10 };	// P7_10
+		//arm_hardware_piob_outputs(WORKMASK, WORKMASK);
+		arm_hardware_pio7_outputs(WORKMASK, WORKMASK);
 
 		for (;;)
 		{
-			arm_hardware_piod_outputs(WORKMASK, 1 * WORKMASK);
-			hardware_spi_io_delay();
-			local_delay_ms(300);
-			arm_hardware_piod_outputs(WORKMASK, 0 * WORKMASK);
-			hardware_spi_io_delay();
-			local_delay_ms(300);
+			//(GPIOB)->BSRR = BSRR_S(WORKMASK);
+			R7S721_TARGET_PORT_S(7, WORKMASK);
+			local_delay_ms(5);
+			//(GPIOB)->BSRR = BSRR_C(WORKMASK);
+			R7S721_TARGET_PORT_C(7, WORKMASK);
+			local_delay_ms(5);
 		}
 	}
 #endif

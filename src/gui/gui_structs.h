@@ -90,6 +90,7 @@ typedef struct {
 	int32_t payload;
 	char name [NAME_ARRAY_SIZE];
 	char text [TEXT_ARRAY_SIZE]; 	// текст внутри кнопки, разделитель строк |, не более 2х строк
+	uint8_t index;
 } button_t;
 
 typedef enum {
@@ -109,6 +110,7 @@ typedef struct {
 	char text [TEXT_ARRAY_SIZE];
 	font_size_t font_size;
 	PACKEDCOLORMAIN_T color;
+	uint8_t index;
 } label_t;
 
 typedef enum  {
@@ -133,6 +135,7 @@ typedef struct {
 	uint8_t value_old;				// для перерасчетов при изменении значения
 	uint16_t value_p;				// в пикселях от начала шкалы
 	float step;
+	uint8_t index;
 } slider_t;
 
 typedef enum {

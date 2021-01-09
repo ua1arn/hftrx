@@ -213,11 +213,17 @@
 	//#define LCDMODE_DUMMY	1
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 
-	//#define LCDMODE_V1B	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=L8 */
-	//#define LCDMODE_V1	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=L8, PIP=RGB565 */
-	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами L8, без PIP */
-	#define LCDMODE_V2A	1	/* только главный экран с тремя видеобуферами RGB565, без PIP */
-	//#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
+
+	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+
+	#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
+	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+
+	//#define LCDMODE_V5A	1	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
+
+	//#define LCDMODE_V2B 1	/* только главный экран 16 бит RGB565 (одна страница), без PIP */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
@@ -323,7 +329,7 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHI2S_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
+	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 	#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
@@ -346,6 +352,7 @@
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -364,16 +371,34 @@
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
+	//#define WITHUSEFATFS		1	// FatFS
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFFTOVERLAPPOW2	5		/* Количество перекрывающися буферов FFT спектра (2^param). */
-	#define WITHFFTSIZEWIDE 	1024	/* Отображение спектра и волопада */
-	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-	//#define WITHDISPLAY_FPS		25
-	#define WITHDISPLAYSWR_FPS	25
+	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 15
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		#if 0
+			#define WITHTOUCHGUI		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA			64
+			#define FORMATFROMLIBRARY 	1
+			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#endif
+	#elif LCDMODE_LQ043T3DX02K
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 15
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
+
+	////*#define WITHVIEW_3DSS		1
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
@@ -473,20 +498,19 @@
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#if 0
-			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-			#define WITHALPHA			64
-			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-		#endif
-		#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-
+	#if 0
+		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
+		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+	#endif
+	#if 0
+		#define WITHLWIP 1
+		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
+	#endif
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
+	//#define WITHFANPWM		1	/* есть управление скоростью вентилятора */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью

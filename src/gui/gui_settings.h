@@ -9,7 +9,15 @@
 #define GUI_WINDOWBGCOLOR			2
 #define GUI_SLIDERLAYOUTCOLOR		100
 #define GUI_MENUSELECTCOLOR			109
-#define GUI_TRANSPARENT_WINDOWS		1			// Прозрачный фон окон
+#define GUI_DEFAULTCOLOR			COLORMAIN_BLACK
+
+#if CTLSTYLE_V3D
+	#define GUI_SOFTWARE_RENDERING		1 			// Не использовать DMA при отрисовке
+	#define GUI_OLDBUTTONSTYLE			1
+#else
+	#define GUI_TRANSPARENT_WINDOWS		1			// Прозрачный фон окон
+	#define GUI_SOFTWARE_RENDERING		0
+#endif
 
 enum {
 	sliders_width = 8,			// ширина шкалы слайдера
@@ -22,12 +30,6 @@ enum {
 	footer_buttons_count = 9,
 	touch_area_enlarge = 5,		// увеличение области вокруг элементов для упрощения попадания по мелким элементам
 };
-
-#if defined (GUI_OLDBUTTONSTYLE)
-#define GUI_DEFAULTCOLOR		COLORMAIN_BLACK
-#else
-#define GUI_DEFAULTCOLOR		255
-#endif
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_STRUCTS_H_INCLUDED */

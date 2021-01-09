@@ -174,12 +174,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
 
@@ -201,12 +195,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32F4XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -227,12 +215,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32F30X
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -249,12 +231,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32F1XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -269,12 +245,6 @@ extern "C" {
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
-
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_STM32F0XX
 
@@ -291,12 +261,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32L0XX
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -310,12 +274,6 @@ extern "C" {
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
-
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_ATSAM3S
 
@@ -332,12 +290,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_ATSAM4S
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -353,12 +305,6 @@ extern "C" {
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_MK20DX	// Teensy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
 
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
@@ -372,12 +318,6 @@ extern "C" {
 	#if __ARM_NEON
 		#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
-
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -440,12 +380,6 @@ extern "C" {
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
-
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
-
 #elif CPUSTYLE_STM32MP1
 
 	// ST dual core A7 + M4
@@ -470,11 +404,31 @@ extern "C" {
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
-	#define ARM_MATH_LOOPUNROLL 1
-	#define DISABLEFLOAT16 1
 
-	#include "arm_math.h"
-	#include "arm_const_structs.h"
+
+#elif CPUSTYLE_XC7Z
+
+	// Zynq®-7000 SoC Family
+
+	// XC7Z010
+	// XC7Z015
+	// XC7Z020
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "armcpu/zynq7000.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 32
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+	#endif /* __ARM_NEON */
+
 
 #elif \
 	defined (__TMS320C28X__) || \
@@ -533,7 +487,7 @@ void hardware_adc_initialize(void);
 	#define NOINLINEAT // __attribute__((noinline))
 	#define strlen_P(s) strlen(s)
 
-	#define ATTRWEAK __attribute__ ((weak))
+	#define ATTRWEAK __WEAK
 	// Use __attribute__ ((weak, alias("Default_Handler")))
 
 	#define PSTR(s) (s)
@@ -605,11 +559,7 @@ void hardware_adc_initialize(void);
 ///* все возможные в данной конфигурации фильтры */
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
-// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-void kbd_spool(void);
-void display_spool(void);	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
-
-void spool_secound(void);		// вызывается раз в секунду из таймерного прерывания.
+void spool_secound(void * ctx);		// вызывается раз в секунду из таймерного прерывания.
 
 void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
 
@@ -629,17 +579,9 @@ void hardware_sounds_disable(void);
 /* вызывается при запрещённых прерываниях. */
 void hardware_beep_initialize(void);
 
-// +++ dsp
-// Интерфейс к НЧ кодеку
-void hardware_audiocodec_enable(void);		// Интерфейс к НЧ кодеку
-void hardware_audiocodec_initialize(void);	// Интерфейс к НЧ кодеку
-
-// Интерфейс к ПЧ кодеку или FPGA
-void hardware_fpgacodec_enable(void);		// Интерфейс к ВЧ кодеку
-void hardware_fpgacodec_initialize(void);	// Интерфейс к ВЧ кодеку
-void hardware_fpgaspectrum_enable(void);	// Интерфейс к источнику данных о спектре
-void hardware_fpgaspectrum_initialize(void);	// Интерфейс к источнику данных о спектре
-void hardware_fpgawidespectrum_initialize(void);	// Интерфейс к источнику данных о спектре
+/* SAI, I2S и подключенная на них периферия */
+void hardware_channels_initialize(void);
+void hardware_channels_enable(void);
 
 void hardware_dac_initialize(void);		/* инициализация DAC на STM32F4xx */
 void hardware_dac_ch1_setvalue(uint_fast16_t v);	// вывод 12-битного значения на ЦАП - канал 1
@@ -700,6 +642,14 @@ void hardware_uart4_enabletx(uint_fast8_t state);	/* вызывается из �
 void hardware_uart4_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
 uint_fast8_t hardware_uart4_putchar(uint_fast8_t c);/* передача символа если готов порт */
 uint_fast8_t hardware_uart4_getchar(char * cp); /* приём символа, если готов порт */
+
+void hardware_uart5_initialize(uint_fast8_t debug);
+void hardware_uart5_set_speed(uint_fast32_t baudrate);
+void hardware_uart5_tx(void * ctx, uint_fast8_t c);	/* передача символа после прерывания о готовности передатчика */
+void hardware_uart5_enabletx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+void hardware_uart5_enablerx(uint_fast8_t state);	/* вызывается из обработчика прерываний */
+uint_fast8_t hardware_uart5_putchar(uint_fast8_t c);/* передача символа если готов порт */
+uint_fast8_t hardware_uart5_getchar(char * cp); /* приём символа, если готов порт */
 
 void hardware_uart7_initialize(uint_fast8_t debug);
 void hardware_uart7_set_speed(uint_fast32_t baudrate);
@@ -831,26 +781,6 @@ calcdivround2(
 	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
 	);
 
-#if CPUSTYLE_R7S721
-	//  Renesas parameters
-	#define HARDWARE_USBD_PIPE_ISOC_OUT	1	// ISOC OUT Аудиоданные от компьютера в TRX - D0FIFOB0
-	#define HARDWARE_USBD_PIPE_ISOC_IN	2	// ISOC IN Аудиоданные в компьютер из TRX - D0FIFOB1
-	#define HARDWARE_USBD_PIPE_CDC_OUT	3	// CDC OUT Данные ком-порта от компьютера в TRX
-	#define HARDWARE_USBD_PIPE_CDC_IN	4	// CDC IN Данные ком-порта в компьютер из TRX
-	#define HARDWARE_USBD_PIPE_CDC_OUTb	14	// CDC OUT - без передачи данных
-	#define HARDWARE_USBD_PIPE_CDC_INb	15	// CDC IN - без передачи данных
-	#define HARDWARE_USBD_PIPE_CDC_INT	6	//
-	#define HARDWARE_USBD_PIPE_CDC_INTb	7	//
-	#define HARDWARE_USBD_PIPE_RNDIS_OUT	12	// RNDIS OUT Данные RNDIS от компьютера в TRX
-	#define HARDWARE_USBD_PIPE_RNDIS_IN		13	// RNDIS IN Данные RNDIS в компьютер из TRX
-	#define HARDWARE_USBD_PIPE_RNDIS_INT	8	//
-
-	/* совпадает с RNDIS */
-	#define HARDWARE_USBD_PIPE_CDCEEM_OUT	12	// CDC EEM OUT Данные ком-порта от компьютера в TRX
-	#define HARDWARE_USBD_PIPE_CDCEEM_IN	13	// CDC EEM IN Данные ком-порта в компьютер из TRX
-
-#endif /* CPUSTYLE_R7S721 */
-
 #define CATPCOUNTSIZE (13)
 #define MSGBUFFERSIZE8 (9 + CATPCOUNTSIZE)
 
@@ -878,16 +808,25 @@ uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3); 
 
 #include "list.h"
 
-typedef struct ticker
+typedef struct ticker_tag
 {
 	LIST_ENTRY item;
 	unsigned period;
-	unsigned fired;
+	//unsigned fired;
+	unsigned ticks;		// текущее количество тиков
 	void (* cb)(void *);
 	void * ctx;
 } ticker_t;
 
+typedef struct adcdone_tag
+{
+	LIST_ENTRY item;
+	void (* cb)(void *);
+	void * ctx;
+} adcdone_t;
+
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
+void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_detach(uintptr_t ip);
@@ -940,6 +879,12 @@ uint_fast32_t display_getdotclock(void);
 int toshiba_ddr_power_init(void);
 void stpmic1_dump_regulators(void);
 
+void network_initialize(void);
+void init_netif(void);
+
+void usb_polling(void);	/* LWIP support */
+void tcp_tmr(void);	/* LWIP support */
+
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */
 #define UNUSED(x) ((void)(x))
@@ -950,11 +895,25 @@ void stpmic1_dump_regulators(void);
 #define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
 
 
+#define HWADDR                          0x30,0x89,0x84,0x6A,0x96,0x34
+
+extern uint8_t myIP [4];
+extern uint8_t myNETMASK [4];
+extern uint8_t myGATEWAY [4];
+
+
+void tcp_tmr(void);
+void usb_polling(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #include "product.h"
 #include "taildefs.h"
+
+#if CPUSTYLE_XC7Z
+void hardware_xc7z_fifo_init(void);
+#endif /* CPUSTYLE_XC7Z */
 
 #endif // HARDWARE_H_INCLUDED

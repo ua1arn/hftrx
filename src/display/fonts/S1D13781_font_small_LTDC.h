@@ -3,7 +3,7 @@
  */
 #define SMALLCHARH 15 /* Font height */
 #define SMALLCHARW 16 /* Font width */
-static const FLASHMEM uint8_t S1D13781_smallfont_LTDC [][15][2] = 
+const FLASHMEM uint8_t S1D13781_smallfont_LTDC [][15][2] = 
 {
 	{
 		{ 0x00,0x00,}, { 0x00,0x00,}, { 0x00,0x00,}, { 0x00,0x00,}, { 0x00,0x00,},

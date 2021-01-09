@@ -280,6 +280,24 @@ static const COLORPAIR_T colors_1freq [1] =
 	{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
 
+// Тестовая функция - прототип для элементов отображения
+static void
+display2_testvidget(
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
+	dctx_t * pctx
+	)
+{
+	const uint_fast16_t x = GRID2X(xcell);
+	const uint_fast16_t y = GRID2X(ycell);
+	//colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, 100, 100, COLORMAIN_GREEN);
+
+	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 0, "Hello", COLORMAIN_WHITE);
+	colpip_string_x2_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 20, "Test", COLORMAIN_WHITE);
+	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 50, "Test", COLORMAIN_WHITE);
+
+}
+
 // todo: switch off -Wunused-function
 
 // формирование данных спектра для последующего отображения
@@ -438,6 +456,43 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 
 #endif /* WITHTX */
 
+#if WITHINTEGRATEDDSP
+enum
+{
+	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
+	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
+
+	LARGEFFT = WITHFFTSIZEWIDE * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
+	NORMALFFT = WITHFFTSIZEWIDE				// размер буфера для отображения
+};
+
+static RAMBIG FLOAT_t ifspec_wndfn [WITHFFTSIZEWIDE];
+
+static void buildsigwndifspec(void)
+{
+	int i;
+	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
+	{
+		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
+	}
+}
+
+static void printsigwnd(void)
+{
+	PRINTF(PSTR("static const FLASHMEM FLOAT_t ifspec_wndfn [%u] =\n"), (unsigned) WITHFFTSIZEWIDE);
+	PRINTF(PSTR("{\n"));
+
+	int i;
+	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
+	{
+		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
+		int el = ((i + 1) % 4) == 0;
+		PRINTF(PSTR("\t" "%+1.20f%s"), ifspec_wndfn [i], el ? ",\n" : ", ");
+	}
+	PRINTF(PSTR("};\n"));
+}
+#endif /* WITHINTEGRATEDDSP */
+
 #if LCDMODE_LTDC && WITHBARS
 
 enum {
@@ -577,7 +632,7 @@ display2_smeter15_layout(
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
-		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr); ++ i, p += 10)
+		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
 		{
 			if (i % 2 == 0)
 			{
@@ -587,9 +642,7 @@ display2_smeter15_layout(
 				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
 				polar_to_dek(xb, yb, markersTX_pwr [i], smpr->r1 + 6, & xx, & yy, 1);
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-
-				colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-				colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2);
+				colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORMAIN_YELLOW);
 			}
 			else
 				display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_pwr [i], smpr->r1, smpr->r1 + 4, smeter, 1, 1);
@@ -603,15 +656,11 @@ display2_smeter15_layout(
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersTX_swr [i], smpr->r2, smpr->r2 - 8, smeter, 1, 1);
 			polar_to_dek(xb, yb, markersTX_swr [i], smpr->r2 - 16, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-
-			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - SMALLCHARW3 / 2 + 1, buf2, COLORMAIN_YELLOW);
 		}
-
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeter, 1, 1);
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
-
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX];
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
@@ -623,9 +672,7 @@ display2_smeter15_layout(
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markers [i], smpr->r1, smpr->r1 + 8, smeter, 1, 1);
 			polar_to_dek(xb, yb, markers [i], smpr->r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%u"), p);
-
-			colmain_setcolors(COLORMAIN_YELLOW, COLORMAIN_BLACK);
-			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - SMALLCHARW3 / 2, yy - pad2w3 + 1, buf2, COLORMAIN_YELLOW);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2); ++ i)
 		{
@@ -640,9 +687,7 @@ display2_smeter15_layout(
 			display_radius_buf(bg, SM_BG_W, SM_BG_H, xb, yb, markersR [i], smpr->r1, smpr->r1 + 8, smeterplus, 1, 1);
 			polar_to_dek(xb, yb, markersR [i], smpr->r1 + 6, & xx, & yy, 1);
 			local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("+%u"), p);
-
-			colmain_setcolors(COLORMAIN_RED, COLORMAIN_BLACK);
-			colmain_string3_at_xy(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2);
+			colpip_string3_tbg(bg, SM_BG_W, SM_BG_H, xx - strwidth3(buf2) / 2, yy - pad2w3 + 1, buf2, COLORMAIN_RED);
 		}
 		for (i = 0; i < ARRAY_SIZE(markers2R); ++ i)
 		{
@@ -825,9 +870,9 @@ display2_smeter15(
 		{
 			// TX state
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
-					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
 
 			if (gswr > smpr->gs)
@@ -852,9 +897,9 @@ display2_smeter15(
 		{
 			// RX state
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
-					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
 
 			{
@@ -881,9 +926,9 @@ display2_smeter15(
 		if (is_tx)
 		{
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					fr, DIM_X, DIM_Y, x0, y0,
-					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H),
+					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_TX], SM_BG_W, SM_BG_H);
 
 			if(gp > smpr->gs)
@@ -895,9 +940,9 @@ display2_smeter15(
 		else
 		{
 			colpip_plot(
-					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y),
+					(uintptr_t) fr, GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					fr, DIM_X, DIM_Y, x0, y0,
-					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H),
+					(uintptr_t) smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_BARS][SM_STATE_RX], SM_BG_W, SM_BG_H
 					);
 
@@ -910,41 +955,6 @@ display2_smeter15(
 
 		break;
 	}
-}
-
-enum
-{
-	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
-	BOARD_FFTZOOM_MAX = (1 << BOARD_FFTZOOM_POW2MAX),
-
-	LARGEFFT = WITHFFTSIZEWIDE * BOARD_FFTZOOM_MAX,	// размер буфера для децимации
-	NORMALFFT = WITHFFTSIZEWIDE				// размер буфера для отображения
-};
-
-static RAMBIG FLOAT_t ifspec_wndfn [WITHFFTSIZEWIDE];
-
-static void buildsigwndifspec(void)
-{
-	int i;
-	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
-	{
-		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
-	}
-}
-
-static void printsigwnd(void)
-{
-	PRINTF(PSTR("static const FLASHMEM FLOAT_t ifspec_wndfn [%u] =\n"), (unsigned) WITHFFTSIZEWIDE);
-	PRINTF(PSTR("{\n"));
-
-	int i;
-	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
-	{
-		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
-		int el = ((i + 1) % 4) == 0;
-		PRINTF(PSTR("\t" "%+1.20f%s"), ifspec_wndfn [i], el ? ",\n" : ", ");
-	}
-	PRINTF(PSTR("};\n"));
 }
 
 #if WITHAFSPECTRE
@@ -1124,11 +1134,7 @@ display2_nextfb(
 {
 #if WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8)
 
-	colmain_fb_next();
-	ASSERT(((uintptr_t) colmain_fb_show() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush((uintptr_t) colmain_fb_show(), (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_show());
-
+	display_nextfb();
 #endif /* WITHLTDCHW && LCDMODE_LTDC && ! (LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8) */
 }
 
@@ -5771,9 +5777,10 @@ enum
 		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	47, 15,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-
+#if WITHBARS
 		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 4,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+#endif /* WITHBARS */
 #if WITHAFSPECTRE
 		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
 		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
@@ -5855,7 +5862,7 @@ enum
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}
 
-#elif DSTYLE_G_X800_Y480 && (LCDMODE_MAIN_PAGES > 1)	//&& WITHSPECTRUMWF
+#elif DSTYLE_G_X800_Y480 // && (LCDMODE_MAIN_PAGES > 1)	//&& WITHSPECTRUMWF
 	// вариант без сенсорного экрана
 	// стрелочный S-метр
 	// TFT панель AT070TN90
@@ -5946,15 +5953,15 @@ enum
 		{	26,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		{	32,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	37,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
-#if WITHBARS
+	#if WITHBARS
 		{   0, 	4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{   0, 	4,	display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
-#endif /* WITHBARS */
-#if WITHAFSPECTRE
+	#endif /* WITHBARS */
+	#if WITHAFSPECTRE
 		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
 		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
 		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
-#endif /* WITHAFSPECTRE */
+	#endif /* WITHAFSPECTRE */
 
 		{	15,	6,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 
@@ -6013,6 +6020,9 @@ enum
 		// sleep mode display
 		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+	#if WITHMENU
+		{	15, 25,	display2_popup,		REDRM_MODE, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
+	#endif /* WITHMENU */
 
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
@@ -6852,10 +6862,16 @@ static FLOAT_t filter_spectrum(
 	return Y;
 }
 
+#if WITHVIEW_3DSS
+	enum { ADD_Y_3DSS = 15 };
+#else
+	enum { ADD_Y_3DSS = 0 };
+#endif
+
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY + ADD_Y_3DSS)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = COLORPIP_BASE };
@@ -6882,7 +6898,7 @@ static FLOAT_t filter_spectrum(
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY + ADD_Y_3DSS)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
@@ -6920,7 +6936,7 @@ static FLOAT_t filter_spectrum(
 
 
 // IIR filter before decimation
-#define FFTZOOM_IIR_STAGES 4
+#define FFTZOOM_IIR_STAGES 9
 
 // Дециматор для Zoom FFT
 #define FFTZOOM_FIR_TAPS 4	// Maximum taps from all zooms
@@ -6945,14 +6961,7 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 		},
 		.pIIRCoeffs = (const float32_t[])
 		{
-			// 2x magnify
-			// 60dB stopband, elliptic
-			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
-			// Iowa Hills IIR Filter Designer
-			0.228454526413293696,0.077639329099949764,0.228454526413293696,0.635534925142242080,-0.170083307068779194,
-			0.436788292542003964,0.232307972937606161,0.436788292542003964,0.365885230717786780,-0.471769788739400842,
-			0.535974654742658707,0.557035600464780845,0.535974654742658707,0.125740787233286133,-0.754725697183384336,
-			0.501116342273565607,0.914877831284765408,0.501116342273565607,0.013862536615004284,-0.930973052446900984,
+			0.8532925292044,0,0,0,0,1,0.8833322961087,1,0.1236299808214,-0.7350834072447,0.9875433620142,0,0,0,0,1,1.342280599073,1,0.4562397651846,-0.4782312921079,2.028993125202,0,0,0,0,1,1.89580631004,1,0.8042973736597,-0.2291792806388,0.007914495910771,0,0,0,0,1,0.6767766059742,1,-0.04594374270934,-0.9200030070288,1,0,0,0,0
 		},
 	},
 #if BOARD_FFTZOOM_POW2MAX > 1
@@ -6966,14 +6975,7 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 		},
 		.pIIRCoeffs = (const float32_t[])
 		{
-			// 4x magnify
-			// 60dB stopband, elliptic
-			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
-			// Iowa Hills IIR Filter Designer
-			0.182208761527446556,-0.222492493114674145,0.182208761527446556,1.326111070880959810,-0.468036100821178802,
-			0.337123762652097259,-0.366352718812586853,0.337123762652097259,1.337053579516321200,-0.644948386007929031,
-			0.336163175380826074,-0.199246162162897811,0.336163175380826074,1.354952684569386670,-0.828032873168141115,
-			0.178588201750411041,0.207271695028067304,0.178588201750411041,1.386486967455699220,-0.950935065984588657,
+			0.5839356339838,0,0,0,0,1,-0.771972117459,1,1.343915676465,-0.8135916285663,0.4782836785149,0,0,0,0,1,-0.136902479699,1,1.384012938487,-0.6599241585437,0.5710926297269,0,0,0,0,1,1.460561429795,1,1.42850177555,-0.5347308564118,0.006193916545061,0,0,0,0,1,-0.9693891605869,1,1.34943197558,-0.9418065619339,1,0,0,0,0
 		},
 	},
 #endif
@@ -6988,14 +6990,7 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 		},
 		.pIIRCoeffs = (const float32_t[])
 		{
-			// 8x magnify
-			// 60dB stopband, elliptic
-			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
-			// Iowa Hills IIR Filter Designer
-			0.185643392652478922,-0.332064345389014803,0.185643392652478922,1.654637402827731090,-0.693859842743674182,
-			0.327519300813245984,-0.571358085216950418,0.327519300813245984,1.715375037176782860,-0.799055553586324407,
-			0.283656142708241688,-0.441088976843048652,0.283656142708241688,1.778230635987093860,-0.904453944560528522,
-			0.079685368654848945,-0.011231810140649204,0.079685368654848945,1.825046003243238070,-0.973184930412286708,
+			0.5178801132175,0,0,0,0,1,-1.62922673236,1,1.770291824795,-0.8960576854358,0.3574467243734,0,0,0,0,1,-1.330391295344,1,1.735672241982,-0.8097828924848,0.2223906792886,0,0,0,0,1,0.3866929321081,1,1.711258208935,-0.7397883181276,0.005701993747067,0,0,0,0,1,-1.703569409977,1,1.811062635903,-0.9679132120413,1,0,0,0,0
 		},
 	},
 #endif
@@ -7010,14 +7005,7 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 		},
 		.pIIRCoeffs = (const float32_t[])
 		{
-			// 16x magnify
-			// 60dB stopband, elliptic
-			// a1 and coeffs[A2] negated! order: coeffs[B0], coeffs[B1], coeffs[B2], a1, coeffs[A2]
-			// Iowa Hills IIR Filter Designer
-			0.194769868656866380,-0.379098413160710079,0.194769868656866380,1.824436402073870810,-0.834877726226893380,
-			0.333973874901496770,-0.646106479315673776,0.333973874901496770,1.871892825636887640,-0.893734096124207178,
-			0.272903880596429671,-0.513507745397738469,0.272903880596429671,1.918161772571113750,-0.950461788366234739,
-			0.053535383722369843,-0.069683422367188122,0.053535383722369843,1.948900719896301760,-0.986288064973853129,
+			0.5069794114512,0,0,0,0,1,-1.902257527901,1,1.913369602099,-0.9458258835145,0.3329212537442,0,0,0,0,1,-1.812084985979,1,1.880217497722,-0.8995884608839,0.1315803997161,0,0,0,0,1,-0.935339884295,1,1.853769133777,-0.8612990906983,0.005593913991087,0,0,0,0,1,-1.923016831809,1,1.943527765596,-0.9834898311558,1,0,0,0,0
 		},
 	},
 #endif
@@ -7201,15 +7189,15 @@ static void fftzoom_filer_decimate_ifspectrum(
 {
 	union configs
 	{
-		arm_biquad_casd_df1_inst_f32 iir_config;
+		arm_biquad_cascade_df2T_instance_f32 iir_config;
 		arm_fir_decimate_instance_f32 fir_config;
 	} c;
 	const unsigned usedSize = NORMALFFT * prm->zoom;
 
 	// Biquad LPF фильтр
 	// Initialize floating-point Biquad cascade filter.
-	arm_biquad_cascade_df1_init_f32(& c.iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, zoomfft_st.iir_state);
-	arm_biquad_cascade_df1_f32(& c.iir_config, buffer, buffer, usedSize);
+	arm_biquad_cascade_df2T_init_f32(& c.iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, zoomfft_st.iir_state);
+	arm_biquad_cascade_df2T_f32(& c.iir_config, buffer, buffer, usedSize);
 
 	// Дециматор
 	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& c.fir_config,
@@ -7570,27 +7558,24 @@ display_colorgrid_3dss(
 
 #define HHWMG ((! LCDMODE_S1D13781_NHWACCEL && LCDMODE_S1D13781) || LCDMODE_UC1608 || LCDMODE_UC1601)
 
-#if HHWMG
-static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
-#endif /* HHWMG */
-
+#if WITHVIEW_3DSS
 enum {
-	MAX_3DSS_STEP = 20,
-	Y_STEP = 5,
-	MAX_DELAY_3DSS = 3,
+	MAX_3DSS_STEP = 42,
+	Y_STEP = 2,
+	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,
 	SPY_3DSS = SPDY,
 	SPY_3DSS_H = SPY_3DSS / 4
 };
 
-#define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP + 1)
-#define SP_CONTRAST_Y_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY, 0, MAX_3DSS_STEP * 3 + 1)
+#define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY + ADD_Y_3DSS, 0, MAX_3DSS_STEP + 1)
+#define SP_CONTRAST_Y_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY + ADD_Y_3DSS, 0, MAX_3DSS_STEP * 3 + 1)
 
 static void init_depth_map_3dss(void)
 {
 	PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
 
-	for (int_fast8_t i = MAX_3DSS_STEP - 1; i >= 0; i --)
+	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
 	{
 		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;
 
@@ -7609,6 +7594,28 @@ static void init_depth_map_3dss(void)
 			depth_map_3dss ++;
 		}
 	}
+}
+#endif /* WITHVIEW_3DSS */
+
+#if HHWMG
+static ALIGNX_BEGIN GX_t spectmonoscr [MGSIZE(ALLDX, SPDY)] ALIGNX_END;
+#endif /* HHWMG */
+
+uint_fast16_t calcprev(uint_fast16_t v, uint_fast16_t lim)
+{
+	if (v)
+		return -- v;
+	else
+		return lim - 1;
+}
+
+uint_fast16_t calcnext(uint_fast16_t v, uint_fast16_t lim)
+{
+	v ++;
+	if (v >= lim)
+		return 0;
+	else
+		return v;
 }
 
 // подготовка изображения спектра
@@ -7705,18 +7712,19 @@ static void display2_spectrum(
 		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
 
+#if WITHVIEW_3DSS
 		if (glob_view_style == VIEW_3DSS)
 		{
 			static uint_fast8_t current_3dss_step = 0;
 			static uint_fast8_t delay_3dss = MAX_DELAY_3DSS;
 
-			uint_fast8_t draw_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
+			uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
 			uint_fast16_t ylast_sp = 0;
 			PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
 			PACKEDCOLORMAIN_T * y_env = SP_CONTRAST_Y_DEFAULT;
 			int i;
 
-			for (i = MAX_3DSS_STEP - 1; i >= 0; i --)
+			for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 			{
 				uint_fast16_t y0 = spy - 5 - i * Y_STEP;
 				uint_fast16_t x;
@@ -7737,12 +7745,12 @@ static void display2_spectrum(
 
 						if (x)
 						{
-							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_BLACK, 1);
+							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_WHITE, 1);
 						}
 
-						* y_env = ((ynew + 2) >> 0) & UINT8_MAX;
+						* y_env = ((ynew - 2) >> 0) & UINT8_MAX;
 						y_env ++;
-						* y_env = ((ynew + 2) >> 8) & UINT8_MAX;
+						* y_env = ((ynew - 2) >> 8) & UINT8_MAX;
 						y_env ++;
 
 						ylast_sp = ynew;
@@ -7754,25 +7762,30 @@ static void display2_spectrum(
 						uint_fast16_t x_d = * depth_map_3dss ++;
 						x_d |= (* depth_map_3dss ++) << 8;
 
-						/* предотвращение отрисовки по ранее закрашенной области*/
 						if (x_old != x_d)
 						{
 							uint_fast16_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
-							uint_fast8_t h = y0 - y1;		// высота пика
+							int_fast8_t h = y0 - y1 - i / 2;		// высота пика
+							h = h < 0 ? 0 : h;
 
 							for (; h > 0; h --)
 							{
+								/* предотвращение отрисовки по ранее закрашенной области*/
+								if (* colmain_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != COLORMAIN_BLACK)
+									break;
+
 								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, color_scale [h]);
 							}
+							x_old = x_d;
 						}
-						x_old = x_d;
 					}
 				}
-				draw_step = (draw_step + 1) % MAX_3DSS_STEP;
+				draw_step = calcprev(draw_step, MAX_3DSS_STEP);
 			}
-			delay_3dss = (delay_3dss + 1) % MAX_DELAY_3DSS;
+			delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
+
 			if (! delay_3dss)
-				current_3dss_step = (current_3dss_step + 1) % MAX_3DSS_STEP;
+				current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
 
 			// увеличение контрастности спектра на фоне панорамы
 			y_env = SP_CONTRAST_Y_DEFAULT;
@@ -7783,7 +7796,7 @@ static void display2_spectrum(
 				y1 |= (* y_env ++) << 8;
 
 				if (x)
-					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_WHITE, 0);
+					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_BLACK, 0);
 
 				ylast_sp = y1;
 			}
@@ -7791,6 +7804,7 @@ static void display2_spectrum(
 			display_colorgrid_3dss(colorpip, spy - SPY_3DSS_H + 3, SPY_3DSS_H, f0, bw);
 		}
 		else
+#endif /* WITHVIEW_3DSS */
 		{
 			uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
 			uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
@@ -7865,7 +7879,11 @@ static void display2_spectrum(
 static void wflclear(void)
 {
 	uint_fast16_t y;
+#if WITHVIEW_3DSS
 	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+#else
+	uint_fast8_t rows = WFROWS;
+#endif /* WITHVIEW_3DSS */
 
 	for (y = 0; y < rows; ++ y)
 	{
@@ -7897,7 +7915,11 @@ static void wfl_avg_clear(void)
 static void wflshiftleft(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
+#if WITHVIEW_3DSS
 	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+#else
+	uint_fast8_t rows = WFROWS;
+#endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
 		return;
@@ -7934,7 +7956,11 @@ static void wflshiftleft(uint_fast16_t pixels)
 static void wflshiftright(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
+#if WITHVIEW_3DSS
 	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+#else
+	uint_fast8_t rows = WFROWS;
+#endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
 		return;
@@ -8057,7 +8083,9 @@ static void display2_latchwaterfall(
 	wfrow = (wfrow == 0) ? (WFDY - 1) : (wfrow - 1);
 #endif
 
+#if WITHVIEW_3DSS
 	if (glob_view_style != VIEW_3DSS)
+#endif /* WITHVIEW_3DSS */
 	{
 		// запоминание информации спектра для водопада
 		for (x = 0; x < ALLDX; ++ x)
@@ -8138,7 +8166,10 @@ static void display2_waterfall(
 	#if ! LCDMODE_HORFILL
 		#error LCDMODE_HORFILL must be defined
 	#endif /* ! LCDMODE_HORFILL */
+
+#if WITHVIEW_3DSS
 	if (glob_view_style != VIEW_3DSS)
+#endif /* WITHVIEW_3DSS */
 	{
 		PACKEDCOLORMAIN_T * const colorpip = getscratchwnd();
 		const uint_fast16_t p1h = WFDY - wfrow;	// высота верхней части в результируюшем изображении
@@ -8149,7 +8180,7 @@ static void display2_waterfall(
 		{
 			/* перенос свежей части растра */
 			colpip_plot(
-					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y),
+					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
 					(uintptr_t) wfjarray, sizeof (* wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
 					colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
@@ -8159,9 +8190,9 @@ static void display2_waterfall(
 		{
 			/* перенос старой части растра */
 			colpip_plot(
-					(uintptr_t) colorpip, 0,
+					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
-					(uintptr_t) wfjarray, 0,	// размер области 0 - ранее уже вызывали clean
+					(uintptr_t) wfjarray, 0 * sizeof (* wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
 					colmain_mem_at(wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
 					ALLDX, p2h);	// размеры источника
 		}
@@ -8936,10 +8967,12 @@ board_set_view_style(uint_fast8_t v)
 	if (glob_view_style != n)
 	{
 		glob_view_style = n;
+#if WITHVIEW_3DSS
 		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
 
 		if (glob_view_style == VIEW_3DSS)
 			init_depth_map_3dss();
+#endif /* WITHVIEW_3DSS */
 	}
 #endif /* WITHINTEGRATEDDSP */
 }

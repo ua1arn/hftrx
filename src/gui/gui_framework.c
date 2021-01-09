@@ -653,6 +653,12 @@ static void draw_button(const button_t * const bh)
 	uint_fast16_t x1 = win->x1 + bh->x1;
 	uint_fast16_t y1 = win->y1 + bh->y1;
 
+	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
+	{
+		PRINTF("%s %s\n", bh->name, bh->text);
+		ASSERT(0);
+	}
+
 	btn_bg_t * b1 = NULL;
 	do {
 		if (bh->h == btn_bg [i].h && bh->w == btn_bg [i].w)
@@ -662,9 +668,9 @@ static void draw_button(const button_t * const bh)
 		}
 	} while ( ++i < BG_COUNT);
 
-	if (b1 == NULL)				// если не найден заполненный буфер фона по размерам, программная отрисовка
+	// если не найден заполненный буфер фона по размерам, программная отрисовка
+	if (b1 == NULL || GUI_SOFTWARE_RENDERING)
 	{
-
 		PACKEDCOLORMAIN_T c1, c2;
 		c1 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_LOCKED : COLOR_BUTTON_NON_LOCKED);
 		c2 = bh->state == DISABLED ? COLOR_BUTTON_DISABLED : (bh->is_locked ? COLOR_BUTTON_PR_LOCKED : COLOR_BUTTON_PR_NON_LOCKED);
@@ -696,6 +702,8 @@ static void draw_button(const button_t * const bh)
 		PACKEDCOLORMAIN_T * src = NULL, * dst = NULL, * row = NULL;
 		for (uint16_t yy = y1, yb = 0; yy < y1 + bh->h; yy ++, yb ++)
 		{
+			ASSERT(yy < WITHGUIMAXY);
+			ASSERT(yb < WITHGUIMAXY);
 			row = colmain_mem_at(bg, b1->w, b1->h, 0, yb);
 			if (* row == GUI_DEFAULTCOLOR)										// если в первой позиции строки буфера не прозрачный цвет,
 			{																	// скопировать ее целиком, иначе попиксельно с проверкой
@@ -712,6 +720,7 @@ static void draw_button(const button_t * const bh)
 			{
 				dst = colmain_mem_at(fr, DIM_X, DIM_Y, x1, yy);
 				memcpy(dst, row, b1->w * sizeof(PACKEDCOLORMAIN_T));
+//				colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, x1, yy, (uintptr_t) row, GXSIZE(b1->w, 1), row, b1->w, 1);
 			}
 		}
 #endif /* GUI_OLDBUTTONSTYLE */
@@ -941,48 +950,6 @@ static void slider_process(slider_t * sl)
 	if (v >= 0 && v <= sl->size / sl->step)
 		sl->value = v;
 	reset_tracking();
-}
-
-/* Возврат позиции однотипного элемента */
-uint_fast8_t get_element_index(window_t * win, element_type_t type, void * eh)
-{
-	ASSERT(win != NULL);
-	ASSERT(eh != NULL);
-
-	switch (type)
-	{
-	case TYPE_BUTTON:
-	{
-		ASSERT((button_t *) eh > win->bh_ptr);
-		uint_fast8_t index = ((button_t *) eh - win->bh_ptr);
-		ASSERT(index < win->bh_count);
-		return index;
-	}
-		break;
-
-	case TYPE_LABEL:
-	{
-		ASSERT((label_t *) eh > win->lh_ptr);
-		uint_fast8_t index = ((label_t *) eh - win->lh_ptr);
-		ASSERT(index < win->lh_count);
-		return index;
-	}
-		break;
-
-	case TYPE_SLIDER:
-	{
-		ASSERT((slider_t *) eh > win->sh_ptr);
-		uint_fast8_t index = ((slider_t *) eh - win->sh_ptr);
-		ASSERT(index < win->sh_count);
-		return index;
-	}
-		break;
-
-	default:
-
-		return UINT8_MAX;
-		break;
-	}
 }
 
 /* Селектор запуска функций обработки событий */

@@ -9,88 +9,27 @@
 
 #if WITHUSBHW && WITHUSBRNDIS
 
-#include "formats.h"
-#include "usb_core.h"
-
-#include "lwip/opt.h"
-
-#include "lwip/init.h"
-//#include "lwip/stats.h"
-//#include "lwip/sys.h"
-//#include "lwip/mem.h"
-//#include "lwip/memp.h"
-//#include "lwip/pbuf.h"
-#include "lwip/netif.h"
-//#include "lwip/sockets.h"
-#include "lwip/ip.h"
-//#include "lwip/raw.h"
-#include "lwip/udp.h"
-#include "lwip/dhcp.h"
-//#include "lwip/priv/tcp_priv.h"
-//#include "lwip/igmp.h"
-//#include "lwip/dns.h"
-#include "src/dhcp-server/dhserver.h"
-#include "src/dns-server/dnserver.h"
-#include "src/lwip-1.4.1/apps/httpserver_raw/httpd.h"
-//#include "lwip/timeouts.h"
-//#include "lwip/etharp.h"
-//#include "lwip/ip6.h"
-//#include "lwip/nd6.h"
-//#include "lwip/mld6.h"
-//#include "lwip/api.h"
-
 #include <stdbool.h>
 #include <stddef.h>
 #include "rndis_protocol.h"
 
 
-/* Includes ------------------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
-/* Exported macros -----------------------------------------------------------*/
-#define PADDR(ptr) ((ip_addr_t *)ptr)
+#include "formats.h"
+#include "usb_core.h"
 
-/* Exported constants --------------------------------------------------------*/
+#include "lwip/opt.h"
+#include "lwip/init.h"
+#include "lwip/pbuf.h"
+#include "lwip/netif.h"
+#include "lwip/autoip.h"
+#include "netif/etharp.h"
 
-/* LAN */
-#define HWADDR                          {0x30,0x89,0x84,0x6A,0x96,0x34}
-#define IPADDR                          {192, 168, 7, 1}
-#define NETMASK                         {255, 255, 255, 0}
-#define GATEWAY                         {0, 0, 0, 0}
-
-#define DHCP_ENTRIES_QNT                3
-#define DHCP_ENTRIES                    {\
-                                        { {0}, {192, 168, 7, 2}, {255, 255, 255, 0}, 24 * 60 * 60 }, \
-                                        { {0}, {192, 168, 7, 3}, {255, 255, 255, 0}, 24 * 60 * 60 }, \
-                                        { {0}, {192, 168, 7, 4}, {255, 255, 255, 0}, 24 * 60 * 60 } \
-                                        }
-#define DHCP_CONFIG                     { \
-                                        IPADDR, 67, \
-                                        IPADDR, \
-                                        "stm", \
-                                        DHCP_ENTRIES_QNT, \
-                                        entries \
-                                        }
-
-
-
-//#define TX_ZLP_TEST
-
-/* Exported macro ------------------------------------------------------------*/
-/* Exported variables --------------------------------------------------------*/
-/* Exported functions ------------------------------------------------------- */
-void init_lwip(void);
-void init_htserv(void);
-void init_dhserv(void);
-void init_dnserv(void);
-void init_netif(void);
-void usb_polling(void);
-
-
-#define RNDIS_CONTROL_OUT_PMAADDRESS                    (0x08 * 4)                //8 bytes per EP
-#define RNDIS_CONTROL_IN_PMAADDRESS                     (RNDIS_CONTROL_OUT_PMAADDRESS + USB_MAX_EP0_SIZE)
-#define RNDIS_NOTIFICATION_IN_PMAADDRESS                (RNDIS_CONTROL_IN_PMAADDRESS + USB_MAX_EP0_SIZE)
-#define RNDIS_DATA_IN_PMAADDRESS                        (RNDIS_NOTIFICATION_IN_PMAADDRESS + RNDIS_NOTIFICATION_IN_SZ)
-#define RNDIS_DATA_OUT_PMAADDRESS                       (RNDIS_DATA_IN_PMAADDRESS + USBD_RNDIS_IN_BUFSIZE)
+//
+//#define RNDIS_CONTROL_OUT_PMAADDRESS                    (0x08 * 4)                //8 bytes per EP
+//#define RNDIS_CONTROL_IN_PMAADDRESS                     (RNDIS_CONTROL_OUT_PMAADDRESS + USB_MAX_EP0_SIZE)
+//#define RNDIS_NOTIFICATION_IN_PMAADDRESS                (RNDIS_CONTROL_IN_PMAADDRESS + USB_MAX_EP0_SIZE)
+//#define RNDIS_DATA_IN_PMAADDRESS                        (RNDIS_NOTIFICATION_IN_PMAADDRESS + RNDIS_NOTIFICATION_IN_SZ)
+//#define RNDIS_DATA_OUT_PMAADDRESS                       (RNDIS_DATA_IN_PMAADDRESS + USBD_RNDIS_IN_BUFSIZE)
 
 #define RNDIS_MTU                                       1500                           // MTU value
 #if WITHUSBDEV_HSDESC
@@ -105,128 +44,256 @@ void usb_polling(void);
 #define ETH_HEADER_SIZE                 14
 #define ETH_MIN_PACKET_SIZE             60
 #define ETH_MAX_PACKET_SIZE             (ETH_HEADER_SIZE + RNDIS_MTU)
-#define RNDIS_HEADER_SIZE               sizeof(rndis_data_packet_t)
-#define RNDIS_RX_BUFFER_SIZE            (ETH_MAX_PACKET_SIZE + RNDIS_HEADER_SIZE)
+#define RNDIS_HEADER_SIZE               (sizeof (rndis_data_packet_t))
+#define RNDIS_RX_BUFFER_SIZE            (RNDIS_HEADER_SIZE + ETH_MAX_PACKET_SIZE)
 
 typedef void (*rndis_rxproc_t)(const uint8_t *data, int size);
-extern rndis_state_t rndis_state;
-extern rndis_rxproc_t rndis_rxproc;
+static rndis_state_t rndis_state;
+static rndis_rxproc_t rndis_rxproc = NULL;
 
-extern USBD_ClassTypeDef  usbd_rndis;
-extern usb_eth_stat_t usb_eth_stat;
-extern rndis_state_t rndis_state;
+static usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
 
-static bool rndis_rx_start(void);
-uint8_t *rndis_rx_data(void);
-uint16_t rndis_rx_size(void);
+static int rndis_tx_start(uint8_t *data, uint16_t size);
+static int rndis_tx_started(void);
 
-bool rndis_tx_start(uint8_t *data, uint16_t size);
-bool rndis_tx_started(void);
-
-bool rndis_can_send(void);
-bool rndis_send(const void *data, int size);
+static int rndis_can_send(void);
+static void rndis_send(const void *data, int size);
 
 
-/* Private types -------------------------------------------------------------*/
-struct netif netif_data;
-const char *state_cgi_handler(int index, int n_params, char *params[], char *values[]);
-const char *ctl_cgi_handler(int index, int n_params, char *params[], char *values[]);
-
-dhcp_entry_t entries[DHCP_ENTRIES_QNT] = DHCP_ENTRIES;
-dhcp_config_t dhcp_config = DHCP_CONFIG;
+typedef ALIGNX_BEGIN struct rndisbuf_tag
+{
+	LIST_ENTRY item;
+	struct pbuf *frame;
+} ALIGNX_END rndisbuf_t;
 
 
-static uint8_t received[RNDIS_MTU + 14];
-static int recvSize = 0;
+static LIST_ENTRY rndis_free;
+static LIST_ENTRY rndis_ready;
 
-/* Private variables ---------------------------------------------------------*/
-const uint8_t ipaddr[4]  = IPADDR;
+static void rndis_buffers_initialize(void)
+{
+	static RAMFRAMEBUFF rndisbuf_t sliparray [64];
+	unsigned i;
 
-/* External variables --------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
-static err_t netif_init_cb(struct netif *netif);
-static err_t linkoutput_fn(struct netif *netif, struct pbuf *p);
-static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr);
-static bool dns_query_proc(const char *name, ip_addr_t *addr);
-static uint16_t ssi_handler(int index, char *insert, int ins_len);
+	InitializeListHead(& rndis_free);	// Незаполненные
+	InitializeListHead(& rndis_ready);	// Для обработки
 
-static int outputs = 0;
+	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
+	{
+		rndisbuf_t * const p = & sliparray [i];
+		InsertHeadList(& rndis_free, & p->item);
+	}
+}
+
+static int rndis_buffers_alloc(rndisbuf_t * * tp)
+{
+	if (! IsListEmpty(& rndis_free))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& rndis_free);
+		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	if (! IsListEmpty(& rndis_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& rndis_ready);
+		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	return 0;
+}
+
+static int rndis_buffers_ready_user(rndisbuf_t * * tp)
+{
+	system_disableIRQ();
+	if (! IsListEmpty(& rndis_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& rndis_ready);
+		system_enableIRQ();
+		rndisbuf_t * const p = CONTAINING_RECORD(t, rndisbuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	system_enableIRQ();
+	return 0;
+}
+
+
+static void rndis_buffers_release(rndisbuf_t * p)
+{
+	InsertHeadList(& rndis_free, & p->item);
+}
+
+static void rndis_buffers_release_user(rndisbuf_t * p)
+{
+	system_disableIRQ();
+	rndis_buffers_release(p);
+	system_enableIRQ();
+}
+
+// сохранить принятый
+static void rndis_buffers_rx(rndisbuf_t * p)
+{
+	InsertHeadList(& rndis_ready, & p->item);
+}
+
+static void on_packet(const uint8_t *data, int size)
+{
+	rndisbuf_t * p;
+	if (rndis_buffers_alloc(& p) != 0)
+	{
+		struct pbuf *frame;
+		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
+		if (frame == NULL)
+		{
+			TP();
+			rndis_buffers_release(p);
+			return;
+		}
+		pbuf_header(frame, - ETH_PAD_SIZE);
+		err_t e = pbuf_take(frame, data, size);
+		pbuf_header(frame, + ETH_PAD_SIZE);
+		if (e == ERR_OK)
+		{
+			p->frame = frame;
+			rndis_buffers_rx(p);
+		}
+		else
+		{
+			pbuf_free(frame);
+			rndis_buffers_release(p);
+		}
+
+	}
+}
+
+
+
+static struct netif rndis_netif_data;
+
+
+/**
+ * This function should do the actual transmission of the packet. The packet is
+ * contained in the pbuf that is passed to the function. This pbuf
+ * might be chained.
+ *
+ * @param netif the lwip network interface structure for this ethernetif
+ * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
+ * @return ERR_OK if the packet could be sent
+ *         an err_t value if the packet couldn't be sent
+ *
+ * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
+ *       strange results. You might consider waiting for space in the DMA queue
+ *       to become availale since the stack doesn't retry to send a packet
+ *       dropped because of memory failure (except for the TCP timers).
+ */
 
 // Transceiving Ethernet packets
-static err_t linkoutput_fn(struct netif *netif, struct pbuf *p)
+static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 {
+	//PRINTF("rndis_linkoutput_fn\n");
     int i;
     struct pbuf *q;
-    static char data[RNDIS_MTU + 14 + 4];
+    static char data [RNDIS_HEADER_SIZE + RNDIS_MTU + 14 + 4];
     int size = 0;
+
     for (i = 0; i < 200; i++)
     {
         if (rndis_can_send()) break;
         local_delay_ms(1);
     }
-    for(q = p; q != NULL; q = q->next)
-    {
-        if (size + q->len > RNDIS_MTU + 14)
-            return ERR_ARG;
-        memcpy(data + size, (char *)q->payload, q->len);
-        size += q->len;
-    }
+
     if (!rndis_can_send())
-        return ERR_USE;
+    {
+		return ERR_MEM;
+    }
+
+	pbuf_header(p, - ETH_PAD_SIZE);
+    size = pbuf_copy_partial(p, data, sizeof data, 0);
+
     rndis_send(data, size);
-    outputs++;
+
     return ERR_OK;
 }
 
-// Receiving Ethernet packets
-// user-mode function
-void usb_polling(void)
+
+static err_t rndis_output_fn(struct netif *netif, struct pbuf *q, ip_addr_t *ipaddr)
 {
-	struct pbuf *frame;
-	system_disableIRQ();
-	if (recvSize == 0)
+	err_t e = etharp_output(netif, q, ipaddr);
+	if (e == ERR_OK)
 	{
-		system_enableIRQ();
-		return;
+#if 0
+		rndis_data_packet_t * hdr;
+		unsigned size = q->len;
+		// добавляем свои заголовки требуеющиеся для физического уповня
+		  /* make room for RNDIS header - should not fail */
+		  if (pbuf_header(q, RNDIS_HEADER_SIZE) != 0) {
+		    /* bail out */
+		    LWIP_DEBUGF(ETHARP_DEBUG | LWIP_DBG_TRACE | LWIP_DBG_LEVEL_SERIOUS,
+		      ("rndis_output_fn: could not allocate room for header.\n"));
+		    return ERR_BUF;
+		  }
+
+		  hdr = (rndis_data_packet_t *) q->payload;
+		  memset(hdr, 0, RNDIS_HEADER_SIZE);
+		  hdr->MessageType = REMOTE_NDIS_PACKET_MSG;
+		  hdr->MessageLength = RNDIS_HEADER_SIZE + size;
+		  hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
+		  hdr->DataLength = size;
+#endif
 	}
-	system_enableIRQ();
-
-	frame = pbuf_alloc(PBUF_RAW, recvSize, PBUF_POOL);
-	if (frame == NULL)
-	{
-		return;
-	}
-
-	system_disableIRQ();
-	memcpy(frame->payload, received, recvSize);
-	frame->len = recvSize;
-	recvSize = 0;
-	system_enableIRQ();
-
-	err_t e = ethernet_input(frame, & netif_data);
-	if (e != ERR_OK)
-	{
-		pbuf_free(frame);
-	}
-}
-
-
-static err_t output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
-{
-  return etharp_output(netif, p, ipaddr);
+	return e;
 }
 
 static err_t netif_init_cb(struct netif *netif)
 {
-  LWIP_ASSERT("netif != NULL", (netif != NULL));
-  netif->mtu = RNDIS_MTU;
-  netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
-  netif->state = NULL;
-  netif->name[0] = 'E';
-  netif->name[1] = 'X';
-  netif->linkoutput = linkoutput_fn;
-  netif->output = output_fn;
-  return ERR_OK;
+	PRINTF("rndis netif_init_cb\n");
+	LWIP_ASSERT("netif != NULL", (netif != NULL));
+#if LWIP_NETIF_HOSTNAME
+	/* Initialize interface hostname */
+	netif->hostname = "storch";
+#endif /* LWIP_NETIF_HOSTNAME */
+	netif->mtu = RNDIS_MTU;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->state = NULL;
+	netif->name[0] = 'E';
+	netif->name[1] = 'X';
+	netif->output = rndis_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
+												// и слкдующий callback linkoutput не требовался бы вообще
+	netif->linkoutput = rndis_linkoutput_fn;	// используется внутри etharp_output
+	return ERR_OK;
+}
+
+void init_netif(void)
+{
+	rndis_buffers_initialize();
+	rndis_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
+
+	static const  uint8_t hwaddrv [6]  = { HWADDR };
+
+	static ip_addr_t netmask;// [4] = NETMASK;
+	static ip_addr_t gateway;// [4] = GATEWAY;
+
+	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
+	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
+
+	static ip_addr_t vaddr;// [4]  = IPADDR;
+	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
+
+	struct netif  *netif = &rndis_netif_data;
+	netif->hwaddr_len = 6;
+	memcpy(netif->hwaddr, hwaddrv, 6);
+
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
+	netif_set_default(netif);
+
+	while (!netif_is_up(netif))
+		;
+
+#if LWIP_AUTOIP
+	  autoip_start(netif);
+#endif /* LWIP_AUTOIP */
 }
 /*
 TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
@@ -235,232 +302,34 @@ TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
 }
 */
 
-static bool dns_query_proc(const char *name, ip_addr_t *addr)
+
+// Receiving Ethernet packets
+// user-mode function
+void usb_polling(void)
 {
-  if (
-		  strcmp(name, "run.stm") == 0 ||
-		  strcmp(name, "www.run.stm") == 0
-		  )
-  {
-    addr->addr = *(uint32_t *)ipaddr;
-    return true;
-  }
-  return false;
+	rndisbuf_t * p;
+	if (rndis_buffers_ready_user(& p) != 0)
+	{
+		struct pbuf *frame = p->frame;
+		rndis_buffers_release_user(p);
+
+		err_t e = ethernet_input(frame, & rndis_netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+	}
 }
 
-
-static void on_packet(const uint8_t *data, int size)
+struct netif  * getNetifData(void)
 {
-    memcpy(received, data, size);
-    recvSize = size;
+	return &rndis_netif_data;
 }
-
-void init_lwip()
-{
-//	PRINTF("init_lwip start\n");
-  uint8_t hwaddr[6]  = HWADDR;
-  uint8_t netmask[4] = NETMASK;
-  uint8_t gateway[4] = GATEWAY;
-
-  struct netif  *netif = &netif_data;
-  rndis_rxproc = on_packet;
-
-  lwip_init();
-  netif->hwaddr_len = 6;
-  memcpy(netif->hwaddr, hwaddr, 6);
-
-  netif = netif_add(netif, PADDR(ipaddr), PADDR(netmask), PADDR(gateway), NULL, netif_init_cb, ip_input);
-  netif_set_default(netif);
-
-  //stmr_add(&tcp_timer);
-//	PRINTF("init_lwip done\n");
-}
-
-
-
-void init_netif(void)
-{
-  while (!netif_is_up(&netif_data));
-}
-
-void init_dnserv(void)
-{
-	uint8_t ipaddr [4] = IPADDR;
-	while (dnserv_init(PADDR(ipaddr), 53, dns_query_proc) != ERR_OK)
-		;
-}
-
-void init_dhserv(void)
-{
-  while (dhserv_init(&dhcp_config) != ERR_OK)
-	  ;
-}
-
-#if 1
-static const char *ssi_tags_table[] =
-{
-    "systick", /* 0 */
-    "btn",     /* 1 */
-    "acc",     /* 2 */
-    "ledg",    /* 3 */
-    "ledo",    /* 4 */
-    "ledr"     /* 5 */
-};
-
-static const tCGI cgi_uri_table[] =
-{
-    { "/state.cgi", state_cgi_handler },
-    { "/ctl.cgi",   ctl_cgi_handler },
-};
-
-
-void init_htserv(void)
-{
-  http_set_cgi_handlers(cgi_uri_table, sizeof(cgi_uri_table) / sizeof(tCGI));
-  http_set_ssi_handler(ssi_handler, ssi_tags_table, sizeof(ssi_tags_table) / sizeof(char *));
-  httpd_init();
-}
-
-static uint8_t PORTC[8];
-
-const char *state_cgi_handler(int index, int n_params, char *params[], char *values[])
-{
-  return "/state.shtml";
-}
-
-
-bool led_g = false;
-bool led_o = false;
-bool led_r = false;
-
-const char *ctl_cgi_handler(int index, int n_params, char *params[], char *values[])
-{
-    int i;
-    for (i = 0; i < n_params; i++)
-    {
-        if (strcmp(params[i], "g") == 0) led_g = *values[i] == '1';
-        if (strcmp(params[i], "o") == 0) led_o = *values[i] == '1';
-        if (strcmp(params[i], "r") == 0) led_r = *values[i] == '1';
-    }
-
-
-    return "/state.shtml";
-}
-
-#ifdef TX_ZLP_TEST
-static uint16_t ssi_handler(int index, char *insert, int ins_len)
-{
-  int res;
-  static uint8_t i;
-  static uint8_t c;
-
-  if (ins_len < 32) return 0;
-
-  if (c++ == 10)
-  {
-    i++;
-    i &= 0x07;
-    c = 0;
-  }
-  switch (index)
-  {
-  case 0: // systick
-    res = local_snprintf_P(insert, ins_len, "%s", "1234");
-    break;
-  case 1: // PORTC
-    {
-      res = local_snprintf_P(insert, ins_len, "%u, %u, %u, %u, %u, %u, %u, %u", 10, 10, 10, 10, 10, 10, 10, 10);
-      break;
-    }
-  case 2: // PA0
-    *insert = '0' + (i == 0);
-    res = 1;
-    break;
-  case 3: // PA1
-    *insert = '0' + (i == 1);
-    res = 1;
-    break;
-  case 4: // PA2
-    *insert = '0' + (i == 2);
-    res = 1;
-    break;
-  case 5: // PA3
-    *insert = '0' + (i == 3);
-    res = 1;
-    break;
-  case 6: // PA4
-    *insert = '0' + (i == 4);
-    res = 1;
-    break;
-  case 7: // PA5
-    *insert = '0' + (i == 5);
-    res = 1;
-    break;
-  case 8: // PA6
-    *insert = '0' + (i == 6);
-    res = 1;
-    break;
-  case 9: // PA7
-    *insert = '0' + (i == 7);
-    res = 1;
-    break;
-  }
-
-  return res;
-}
-#else
-static u16_t ssi_handler(int index, char *insert, int ins_len)
-{
-    int res = 0;
-
-    if (ins_len < 32) return 0;
-
-    switch (index)
-    {
-    case 0: /* systick */
-        res = local_snprintf_P(insert, ins_len, "%u", (unsigned)111);
-        break;
-    case 1: /* btn */
-        res = local_snprintf_P(insert, ins_len, "%i", 1);
-        break;
-    case 2: /* acc */
-    {
-        int acc[3];
-        acc[0] = 1;
-        acc[1] = 2;
-        acc[2] = 4;
-        res = local_snprintf_P(insert, ins_len, "%i, %i, %i", acc[0], acc[1], acc[2]);
-        break;
-    }
-    case 3: /* ledg */
-        *insert = '0' + (1 & 1);
-        res = 1;
-        break;
-    case 4: /* ledo */
-        *insert = '0' + (1 & 1);
-        res = 1;
-        break;
-    case 5: /* ledr */
-        *insert = '0' + (1 & 1);
-        res = 1;
-        break;
-    }
-
-    return res;
-}
-#endif
-
-#endif
-
 
 static void USBD_RNDIS_ColdInit(void)
 {
-	  init_lwip();
-	  init_netif();
-	  init_dhserv();
-	  init_dnserv();
-	  //init_htserv();
-	  //echo_init();
 }
 
 /*
@@ -492,6 +361,7 @@ static void USBD_RNDIS_ColdInit(void)
 */
 
 // RNDIS to USB Mapping https://msdn.microsoft.com/en-us/library/windows/hardware/ff570657(v=vs.85).aspx
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 //
 //#include "usbd_conf.h"
 //#include "usbd_rndis.h"
@@ -539,7 +409,7 @@ const uint32_t OIDSupportedList[] =
 /*******************************************************************************
 Private function definitions
 *******************************************************************************/
-void response_available(USBD_HandleTypeDef *pdev);
+static void response_available(USBD_HandleTypeDef *pdev);
 
 /*********************************************
 RNDIS Device library callbacks
@@ -557,71 +427,31 @@ static USBD_StatusTypeDef  rndis_iso_out_incomplete                (USBD_HandleT
 /*******************************************************************************
 Private variables
 *******************************************************************************/
-USBD_HandleTypeDef *pDev;
+static USBD_HandleTypeDef *hold_pDev;
 
-uint8_t station_hwaddr[6] = { STATION_HWADDR };
-uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
-usb_eth_stat_t usb_eth_stat = { 0, 0, 0, 0 };
-rndis_state_t rndis_state = rndis_uninitialized;
-uint32_t oid_packet_filter = 0x0000000;
-uint8_t encapsulated_buffer[ENC_BUF_SIZE];
+static uint8_t station_hwaddr[6] = { STATION_HWADDR };
+static uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
+static rndis_state_t rndis_state = rndis_uninitialized;
+static uint32_t oid_packet_filter = 0x0000000;
+static USBALIGN_BEGIN uint8_t encapsulated_buffer [ENC_BUF_SIZE] USBALIGN_END;
 
-uint16_t rndis_tx_data_size = 0;
-bool rndis_tx_transmitting = false;
-bool rndis_tx_ZLP = false;
-USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END ;
-USBALIGN_BEGIN uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE]  USBALIGN_END;
-rndis_rxproc_t rndis_rxproc = NULL;
-uint16_t rndis_rx_data_size = 0;
-bool rndis_rx_started = false;
-uint8_t *rndis_tx_ptr = NULL;
-bool rndis_first_tx = true;
-int rndis_tx_size = 0;
-int rndis_sended = 0;
+static uint16_t rndis_tx_data_size = 0;
+static int rndis_tx_transmitting = false;
+static int rndis_tx_ZLP = false;
+static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END;
 
-/*******************************************************************************
-                            API functions
-*******************************************************************************/
-/*__weak */void rndis_initialized_cb(void)
+static uint8_t *rndis_tx_ptr = NULL;
+static int rndis_first_tx = 1;
+static int rndis_tx_size = 0;
+static int rndis_sended = 0;
+
+static uint8_t rndis_rx_buffer [RNDIS_RX_BUFFER_SIZE];
+static int rndis_received;
+
+
+static int rndis_tx_start(uint8_t *data, uint16_t size)
 {
-}
-
-static bool rndis_rx_start(void)
-{
-  if (rndis_rx_started)
-    return false;
-
-  rndis_rx_started = true;
-  USBD_LL_PrepareReceive(pDev,
-                         USBD_EP_RNDIS_OUT,
-						 usb_rx_buffer,
-						 USBD_RNDIS_OUT_BUFSIZE);
-  return true;
-}
-
-uint8_t *rndis_rx_data(void)
-{
-  if (rndis_rx_size())
-    return rndis_rx_buffer + RNDIS_HEADER_SIZE;
-  else
-    return NULL;
-}
-
-uint16_t rndis_rx_size(void)
-{
-  if (!rndis_rx_started)
-    return rndis_rx_data_size;
-  else
-    return 0;
-}
-
-/* __weak */ void rndis_rx_ready_cb(void)
-{
-}
-
-bool rndis_tx_start(uint8_t *data, uint16_t size)
-{
-	unsigned sended;
+	unsigned laststxended;
 	static uint8_t first [USBD_RNDIS_IN_BUFSIZE];
 	rndis_data_packet_t *hdr;
 
@@ -632,7 +462,7 @@ bool rndis_tx_start(uint8_t *data, uint16_t size)
     return false;
   }
 
-  rndis_tx_transmitting = true;
+  rndis_tx_transmitting = 1;
   rndis_tx_ptr = data;
   rndis_tx_data_size = size;
 
@@ -644,39 +474,29 @@ bool rndis_tx_start(uint8_t *data, uint16_t size)
   hdr->DataOffset = RNDIS_HEADER_SIZE - offsetof(rndis_data_packet_t, DataOffset);
   hdr->DataLength = size;
 
-  sended = USBD_RNDIS_IN_BUFSIZE - RNDIS_HEADER_SIZE;
-  if (sended > size)
-    sended = size;
-  memcpy(first + RNDIS_HEADER_SIZE, data, sended);
-  rndis_tx_ptr += sended;
-  rndis_tx_data_size -= sended;
+  laststxended = USBD_RNDIS_IN_BUFSIZE - RNDIS_HEADER_SIZE;
+  if (laststxended > size)
+    laststxended = size;
+  memcpy(first + RNDIS_HEADER_SIZE, data, laststxended);
+  rndis_tx_ptr += laststxended;
+  rndis_tx_data_size -= laststxended;
 
 
   //http://habrahabr.ru/post/248729/
   if (hdr->MessageLength % USBD_RNDIS_IN_BUFSIZE == 0)
-    rndis_tx_ZLP = true;
+    rndis_tx_ZLP = 1;
 
+  ASSERT(hold_pDev != NULL);
   //We should disable USB_OUT(EP3) IRQ, because if IRQ will happens with locked HAL (__HAL_LOCK()
   //in USBD_LL_Transmit()), the program will fail with big probability
-  USBD_LL_Transmit (pDev,
-                    USBD_EP_RNDIS_IN,
-                    (uint8_t *)first,
-                    USBD_RNDIS_IN_BUFSIZE);
+  USBD_LL_Transmit (hold_pDev,  USBD_EP_RNDIS_IN, first, USBD_RNDIS_IN_BUFSIZE);
 
   //Increment error counter and then decrement in data_in if OK
   usb_eth_stat.txbad++;
 
-  return true;
+  return 1;
 }
 
-bool rndis_tx_started(void)
-{
-  return rndis_tx_transmitting;
-}
-
-/*__weak */void rndis_tx_ready_cb(void)
-{
-}
 /*******************************************************************************
                             /API functions
 *******************************************************************************/
@@ -698,31 +518,30 @@ static USBD_StatusTypeDef usbd_rndis_init(USBD_HandleTypeDef  *pdev, uint_fast8_
 				 USBD_EP_RNDIS_IN,
 				 USBD_EP_TYPE_BULK,
 				 USBD_RNDIS_IN_BUFSIZE);
-  /*
-  USBD_LL_PrepareReceive(pdev,
-                         USBD_EP_RNDIS_OUT,
-                         rndis_rx_buffer,
-                         RNDIS_RX_BUFFER_SIZE);  */
-  pDev = pdev;
 
-  rndis_rx_start();
+  USBD_LL_PrepareReceive(pdev,
+                         USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
+  rndis_received = 0;
+  hold_pDev = pdev;
+  ASSERT(hold_pDev != NULL);
+
   return USBD_OK;
 }
 
 static USBD_StatusTypeDef  usbd_rndis_deinit(USBD_HandleTypeDef  *pdev, uint_fast8_t cfgidx)
 {
-  USBD_LL_CloseEP(pdev,
-              USBD_EP_RNDIS_INT);
-  USBD_LL_CloseEP(pdev,
-		  USBD_EP_RNDIS_IN);
-  USBD_LL_CloseEP(pdev,
-		  USBD_EP_RNDIS_OUT);
-  return USBD_OK;
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_INT);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_IN);
+	USBD_LL_CloseEP(pdev, USBD_EP_RNDIS_OUT);
+	return USBD_OK;
 }
 
 static USBD_StatusTypeDef usbd_rndis_setup(USBD_HandleTypeDef  *pdev, const USBD_SetupReqTypedef *req)
 {
-  switch (req->bmRequest & USB_REQ_TYPE_MASK)
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+	if (interfacev != INTERFACE_RNDIS_CONTROL && interfacev != INTERFACE_RNDIS_DATA)
+		   return USBD_OK;
+ switch (req->bmRequest & USB_REQ_TYPE_MASK)
   {
   case USB_REQ_TYPE_CLASS :
     if (req->wLength != 0) // is data setup packet?
@@ -781,7 +600,7 @@ NDIS_MAC_OPTION_RECEIVE_SERIALIZED  | \
   NDIS_MAC_OPTION_TRANSFERS_NOT_PEND  | \
     NDIS_MAC_OPTION_NO_LOOPBACK
 
-static const char *rndis_vendor = RNDIS_VENDOR;
+static const char * const rndis_vendor = RNDIS_VENDOR;
 
 static void rndis_query(USBD_HandleTypeDef  *pdev)
 {
@@ -849,7 +668,7 @@ static void rndis_packetFilter(uint32_t newfilter)
 {
   if (newfilter & NDIS_PACKET_TYPE_PROMISCUOUS)
   {
-    //		USB_ETH_HOOK_SET_PROMISCIOUS_MODE(true);
+    //		USB_ETH_HOOK_SET_PROMISCIOUS_MODE(1);
   }
   else
   {
@@ -952,11 +771,14 @@ static void rndis_handle_set_msg(void  *pdev)
 	return;
 }
 
-static int sended = 0;
+static int laststxended = 0;
 
 static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 {
-	if (sended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0) return USBD_OK;
+	hold_pDev = pdev;
+	  ASSERT(hold_pDev != NULL);
+	if (laststxended != 0 || rndis_tx_ptr == NULL || rndis_tx_size <= 0)
+		return USBD_OK;
 	if (rndis_first_tx)
 	{
 		static uint8_t first [USBD_RNDIS_IN_BUFSIZE];
@@ -969,32 +791,41 @@ static USBD_StatusTypeDef usbd_cdc_transfer(void *pdev)
 		hdr->DataOffset = sizeof(rndis_data_packet_t) - offsetof(rndis_data_packet_t, DataOffset);
 		hdr->DataLength = rndis_tx_size;
 
-		sended = USBD_RNDIS_IN_BUFSIZE - sizeof(rndis_data_packet_t);
-		if (sended > rndis_tx_size) sended = rndis_tx_size;
-		memcpy(first + sizeof(rndis_data_packet_t), rndis_tx_ptr, sended);
+		laststxended = USBD_RNDIS_IN_BUFSIZE - sizeof(rndis_data_packet_t);
+		if (laststxended > rndis_tx_size) laststxended = rndis_tx_size;
+		memcpy(first + sizeof(rndis_data_packet_t), rndis_tx_ptr, laststxended);
 
-		USBD_LL_Transmit (pDev,
+		  ASSERT(hold_pDev != NULL);
+		USBD_LL_Transmit(hold_pDev,
 						USBD_EP_RNDIS_IN,
 						(uint8_t *)&first,
-						sizeof(rndis_data_packet_t) + sended);
+						sizeof(rndis_data_packet_t) + laststxended);
 	}
 	else
 	{
 		int n = rndis_tx_size;
-		if (n > USBD_RNDIS_IN_BUFSIZE) n = USBD_RNDIS_IN_BUFSIZE;
+		if (n > USBD_RNDIS_IN_BUFSIZE)
+			n = USBD_RNDIS_IN_BUFSIZE;
 
-		USBD_LL_Transmit (pDev,
+		USBD_LL_Transmit(hold_pDev,
 						USBD_EP_RNDIS_IN,
 						rndis_tx_ptr,
 						n);
-		sended = n;
+		laststxended = n;
 	}
 	return USBD_OK;
 }
 
-// Control Channel      https://msdn.microsoft.com/en-us/library/windows/hardware/ff546124(v=vs.85).aspx
+// Control Channel
+//	https://msdn.microsoft.com/en-us/library/windows/hardware/ff546124(v=vs.85).aspx
+//	https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 static USBD_StatusTypeDef usbd_rndis_ep0_recv(USBD_HandleTypeDef  *pdev)
 {
+	const USBD_SetupReqTypedef * const req = & pdev->request;
+	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
+	if (interfacev != INTERFACE_RNDIS_CONTROL && interfacev != INTERFACE_RNDIS_DATA)
+		   return USBD_OK;
+
   switch (((rndis_generic_msg_t *)encapsulated_buffer)->MessageType)
   {
   case REMOTE_NDIS_INITIALIZE_MSG:
@@ -1060,24 +891,25 @@ static USBD_StatusTypeDef usbd_rndis_ep0_recv(USBD_HandleTypeDef  *pdev)
 }
 
 // Data Channel         https://msdn.microsoft.com/en-us/library/windows/hardware/ff546305(v=vs.85).aspx
-//                      https://msdn.microsoft.com/en-us/library/windows/hardware/ff570635(v=vs.85).aspx
+//                      https://msdn.microsoft.com/en-us/library/windows/hardware/ff570635(v=vs.85).aspx (prev version)
+//	https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 static USBD_StatusTypeDef usbd_rndis_data_in(USBD_HandleTypeDef*pdev, uint_fast8_t epnum)
 {
 	epnum &= 0x0F;
 	if (epnum == (USBD_EP_RNDIS_IN & 0x0F))
 	{
 		rndis_first_tx = false;
-		rndis_sended += sended;
-		rndis_tx_size -= sended;
-		rndis_tx_ptr += sended;
-		sended = 0;
+		rndis_sended += laststxended;
+		rndis_tx_size -= laststxended;
+		rndis_tx_ptr += laststxended;
+		laststxended = 0;
 		usbd_cdc_transfer(pdev);
 
 	}
 	return USBD_OK;
 }
 
-static void handle_packet(const uint8_t *data, int size)
+static void handle_rxpacket(const uint8_t *data, int size)
 {
 	rndis_data_packet_t *p;
 	p = (rndis_data_packet_t *)data;
@@ -1123,27 +955,31 @@ static void handle_packet(const uint8_t *data, int size)
   */
 }
 
-// Data Channel         https://msdn.microsoft.com/en-us/library/windows/hardware/ff546305(v=vs.85).aspx
+
+// Data Channel
+//	https://msdn.microsoft.com/en-us/library/windows/hardware/ff546305(v=vs.85).aspx
+//	https://docs.microsoft.com/en-us/windows-hardware/drivers/network/data-channel-characteristics
 static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	static int rndis_received = 0;
 	if (epnum == USBD_EP_RNDIS_OUT)
 	{
+		const unsigned xfercount = USBD_LL_GetRxDataSize(pdev, epnum);
+
 		PCD_EPTypeDef *ep = &(((PCD_HandleTypeDef*)(pdev->pData))->OUT_ep[epnum]);
-		if (rndis_received + ep->xfer_count > RNDIS_RX_BUFFER_SIZE)
+		if (rndis_received + xfercount > RNDIS_RX_BUFFER_SIZE)
 		{
 			usb_eth_stat.rxbad++;
 			rndis_received = 0;
 		}
 		else
 		{
-			if (rndis_received + ep->xfer_count <= RNDIS_RX_BUFFER_SIZE)
+			if ((rndis_received + xfercount) <= RNDIS_RX_BUFFER_SIZE)
 			{
-				memcpy(&rndis_rx_buffer[rndis_received], usb_rx_buffer, ep->xfer_count);
-				rndis_received += ep->xfer_count;
-				if (ep->xfer_count != USBD_RNDIS_OUT_BUFSIZE)
+				memcpy(& rndis_rx_buffer [rndis_received], usb_rx_buffer, xfercount);
+				rndis_received += xfercount;
+				if (xfercount != USBD_RNDIS_OUT_BUFSIZE)
 				{
-					handle_packet(rndis_rx_buffer, rndis_received);
+					handle_rxpacket(rndis_rx_buffer, rndis_received);
 					rndis_received = 0;
 				}
 			}
@@ -1153,55 +989,49 @@ static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fas
 					usb_eth_stat.rxbad++;
 			}
 		}
-		USBD_LL_PrepareReceive(pDev,
-							   USBD_EP_RNDIS_OUT,
-							   usb_rx_buffer,
-							   USBD_RNDIS_OUT_BUFSIZE);
-		  //	DCD_EP_PrepareRx(pdev, USBD_EP_RNDIS_OUT, (uint8_t*)usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
+		USBD_LL_PrepareReceive(hold_pDev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
+		  //	DCD_EP_PrepareRx(pdev, USBD_EP_RNDIS_OUT, usb_rx_buffer, USBD_RNDIS_OUT_BUFSIZE);
 	}
   //  PCD_EPTypeDef *ep = &((PCD_HandleTypeDef*)pdev->pData)->OUT_ep[epnum];
-   // handle_packet((rndis_data_packet_t*)rndis_rx_buffer, RNDIS_RX_BUFFER_SIZE - ep->xfer_len - USBD_RNDIS_OUT_BUFSIZE + ep->xfer_count);
+   // handle_rxpacket((rndis_data_packet_t*)rndis_rx_buffer, RNDIS_RX_BUFFER_SIZE - ep->xfer_len - USBD_RNDIS_OUT_BUFSIZE + xfercount);
   return USBD_OK;
 }
 
-// Start Of Frame event management
-static USBD_StatusTypeDef usbd_rndis_sof(USBD_HandleTypeDef *pdev)
-{
-	return usbd_cdc_transfer(pdev);
-}
 
-static USBD_StatusTypeDef rndis_iso_in_incomplete(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
+static void response_available(USBD_HandleTypeDef *pdev)
 {
-	return usbd_cdc_transfer(pdev);
-}
+	static USBALIGN_BEGIN uint8_t sendState [8] USBALIGN_END;
+	uint_fast32_t code = 0x01;
+	uint_fast32_t reserved0 = 0x09;
 
-static USBD_StatusTypeDef rndis_iso_out_incomplete(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
-{
-	USBD_LL_PrepareReceive(pDev,
-							USBD_EP_RNDIS_OUT,
-							usb_rx_buffer,
-							USBD_RNDIS_OUT_BUFSIZE);
-	return USBD_OK;
-}
+	ASSERT(USBD_RNDIS_INT_SIZE == sizeof sendState);
+	sendState [0] = LO_BYTE(code);
+	sendState [1] = HI_BYTE(code);
+	sendState [2] = HI_24BY(code);
+	sendState [3] = HI_32BY(code);
+	sendState [4] = LO_BYTE(reserved0);
+	sendState [5] = HI_BYTE(reserved0);
+	sendState [6] = HI_24BY(reserved0);
+	sendState [7] = HI_32BY(reserved0);
 
-void response_available(USBD_HandleTypeDef *pdev)
-{
-  __disable_irq();
-  USBD_LL_Transmit (pdev,
-                    USBD_EP_RNDIS_INT,
-                    (uint8_t *)"\x01\x00\x00\x00\x00\x00\x00\x00",
-                    USBD_RNDIS_INT_SIZE);
-  __enable_irq();   //TODO
+	system_disableIRQ();
+	USBD_LL_Transmit (pdev, USBD_EP_RNDIS_INT, sendState, USBD_RNDIS_INT_SIZE);
+	system_enableIRQ();
 }
 
 
-bool rndis_can_send(void)
+static int rndis_can_send(void)
 {
-	return rndis_tx_size <= 0;
+	system_disableIRQ();
+	int f = rndis_tx_size <= 0 && hold_pDev != NULL;
+	system_enableIRQ();
+	return f;
 }
 
-bool rndis_send(const void *data, int size)
+static void rndis_send(const void *data, int size)
 {
+	ASSERT(data != NULL);
+	ASSERT(hold_pDev != NULL);
 	//rndis_tx_start(data, size);
 /*
 	while (transmit_ok == 1)
@@ -1212,23 +1042,28 @@ bool rndis_send(const void *data, int size)
 					  size);
 */
 
+	system_disableIRQ();
 
 	if (size <= 0 ||
 		size > ETH_MAX_PACKET_SIZE ||
-		rndis_tx_size > 0) return false;
+		rndis_tx_size > 0 || hold_pDev == NULL)
 
-	__disable_irq();
-	rndis_first_tx = true;
+		{
+			system_enableIRQ();
+			return;
+		}
+
+
+	rndis_first_tx = 1;
 	rndis_tx_ptr = (uint8_t *)data;
 	rndis_tx_size = size;
 	rndis_sended = 0;
-	__enable_irq();
 
-	usbd_cdc_transfer(pDev);
 
-	return true;
+	ASSERT(hold_pDev != NULL);
+	usbd_cdc_transfer(hold_pDev);
+	system_enableIRQ();
 }
-
 
 const USBD_ClassTypeDef USBD_CLASS_RNDIS =
 {
@@ -1240,12 +1075,10 @@ const USBD_ClassTypeDef USBD_CLASS_RNDIS =
 	usbd_rndis_ep0_recv,
 	usbd_rndis_data_in,
 	usbd_rndis_data_out,
-	usbd_rndis_sof,
-	rndis_iso_in_incomplete,
-	rndis_iso_out_incomplete,
+	NULL,
+	NULL,
+	NULL,
 };
-
-
 
 
 #endif /* WITHUSBHW && WITHUSBRNDIS */

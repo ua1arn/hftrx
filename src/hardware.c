@@ -16,7 +16,6 @@
 #include "formats.h"	// for debug prints
 #include "gpio.h"
 #include "spi.h"
-#include "gui/gui.h"
 
 static unsigned long ulmin(
 	unsigned long a,
@@ -522,7 +521,7 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 	};
 
 #else
-	//#error Undefined CPUSTYLE_XXX
+	//#warning Undefined CPUSTYLE_XXX
 #endif
 
 void hardware_spi_io_delay(void)
@@ -531,7 +530,7 @@ void hardware_spi_io_delay(void)
 	_NOP();
 	_NOP();
 #elif	CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
-	__DSB(); 
+	__DSB();
 	//__ISB(); 
 	__NOP();
 	__NOP();
@@ -712,8 +711,28 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF0.SCBRR = value;	/* Bit rate register */
 
+#elif CPUSTYLE_XC7Z
+
+	  uint32_t r; // Temporary value variable
+	  r = UART0->CR;
+	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
+	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
+	  UART0->CR = r;
+	  unsigned long sel_clk = SELOUT_CLK;
+	  unsigned long bdiv = 8;
+	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
+	  UART0->BAUDDIV = bdiv - 1; // ("BDIV")
+	  UART0->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
+	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
+	  UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+
+	  r = UART0->CR;
+	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
+	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
+	  UART0->CR = r;
+
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -879,8 +898,29 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
+#elif CPUSTYLE_XC7Z
+
+	  uint32_t r; // Temporary value variable
+	  r = UART1->CR;
+	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
+	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
+	  UART1->CR = r;
+	  unsigned long sel_clk = SELOUT_CLK;
+	  unsigned long bdiv = 8;
+	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
+	  UART1->BAUDDIV = bdiv - 1; // ("BDIV")
+	  UART1->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
+	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
+	  UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+
+	  r = UART1->CR;
+	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
+	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
+	  UART1->CR = r;
+
+
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -1047,13 +1087,179 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
 
 #endif /* WITHUART4HW */
 
+
+#if WITHUART5HW
+
+void
+hardware_uart5_set_speed(uint_fast32_t baudrate)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	#if HARDWARE_ARM_USEUSART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART0->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART0->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART0->US_MR &= ~ US_MR_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART5
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART5->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART5->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART5->US_MR &= ~ US_MR_OVER;
+		}
+
+	#elif HARDWARE_ARM_USEUART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART0->UART_BRGR = value;
+	#elif HARDWARE_ARM_USEUART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround(baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART1->UART_BRGR = value;
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+
+	#if HARDWARE_ARM_USEUSART0
+		AT91C_BASE_US0->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART5
+		AT91C_BASE_US1->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+		}
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_ATMEGA_XXX4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
+
+
+#elif CPUSTYLE_ATMEGA128
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1L = value & 0xff;
+
+#elif CPUSTYLE_ATMEGA
+
+	#error WITHUART5HW not supported with CPUSTYLE_ATMEGA
+
+#elif CPUSTYLE_ATXMEGAXXXA4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround(baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	if (prei == 0)
+		USARTE1.CTRLB |= USART_CLK2X_bm;
+	else
+		USARTE1.CTRLB &= ~USART_CLK2X_bm;
+	// todo: проверить требование к порядку обращения к портам
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+
+#elif CPUSTYLE_STM32MP1
+
+	// uart5 on xxx
+
+	UART5->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
+
+	// uart5 on apb1
+
+	USART2->BRR = calcdivround_pclk1(baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYPE_TMS320F2833X
+
+	const unsigned long lspclk = CPU_FREQ / 4;
+	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
+
+	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
+	SCIBLBAUD = (brr - 1) >> 0;
+
+#elif CPUSTYLE_R7S721
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+
+	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
+		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
+		0;
+	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
+		0 * 0x80 |						// BGDM
+		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
+		0;
+	SCIF3.SCBRR = value;	/* Bit rate register */
+
+#else
+	#warning Undefined CPUSTYLE_XXX
+#endif
+
+}
+
+#endif /* WITHUART5HW */
 
 #if WITHUART7HW
 
@@ -1214,7 +1420,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -1412,7 +1618,7 @@ void hardware_twi_master_configure(void)
 	I2C1->CR1 |= I2C_CR1_PE;
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -1450,12 +1656,14 @@ static RAMFUNC void spool_elkeyinputsbundle(void)
 
 
 static LIST_ENTRY tickers;
-static unsigned nowtick;
+static LIST_ENTRY adcdones;
+//static unsigned nowtick;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
 {
 	p->period = nticks;
-	p->fired = nowtick;
+	//p->fired = nowtick;
+	p->ticks = 0;
 	p->cb = cb;
 	p->ctx = ctx;
 	InsertHeadList(& tickers, & p->item);
@@ -1464,43 +1672,42 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 static void tickers_spool(void)
 {
 
-	++ nowtick;
+	//++ nowtick;
 	PLIST_ENTRY t;
 	for (t = tickers.Blink; t != & tickers; t = t->Blink)
 	{
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
 	
-		if (1)//(p->next <= nowtick)
+		//if (p->next <= nowtick)
+		if (++ p->ticks >= p->period)
 		{
-			p->fired = nowtick;
+			//p->fired = nowtick;
+			p->ticks = 0;
 			if (p->cb != NULL)
 				(p->cb)(p->ctx);
 		}
 	}
 }
 
-#if 0//WITHLWIP
-	#include "lwip/sys.h"
-	#include "lwip/timeouts.h"
-#endif /* WITHLWIP */
-
-
-static uint32_t sys_now_counter;
-
-/* прототип в lwip/sys.h
- *
- */
-/**
- * @ingroup sys_time
- * Returns the current time in milliseconds,
- * may be the same as sys_jiffies or at least based on it.
- * Don't care for wraparound, this is only used for time diffs.
- * Not implementing this function means you cannot use some modules (e.g. TCP
- * timestamps, internal timeouts for NO_SYS==1).
- */
-uint32_t sys_now(void)
+void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx)
 {
-	return sys_now_counter;
+	p->cb = cb;
+	p->ctx = ctx;
+	InsertHeadList(& adcdones, & p->item);
+}
+
+static void adcdones_spool(void)
+{
+
+	//++ nowtick;
+	PLIST_ENTRY t;
+	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
+	{
+		adcdone_t * const p = CONTAINING_RECORD(t, adcdone_t, item);
+
+		if (p->cb != NULL)
+			(p->cb)(p->ctx);
+	}
 }
 
 /* Машинно-независимый обработчик прерываний. */
@@ -1508,24 +1715,11 @@ uint32_t sys_now(void)
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 static RAMFUNC void spool_systimerbundle1(void)
 {
-	static uint_fast16_t spool_1stickcount;
 	//beacon_255();
 
-	sys_now_counter += (1000 / TICKS_FREQUENCY);
-#if 0//WITHLWIP
-    sys_check_timeouts();
-#endif /* WITHLWIP */
+	//sys_now_counter += (1000 / TICKS_FREQUENCY);
 
-	enum { TICKS1000MS = NTICKS(1000) };
 	//spool_lfm();
-	display_spool();	// отсчёт времени по запрещению обновления дисплея при вращении валкодера
-	// Формирование секундного прерывания
-	if (++ spool_1stickcount >= TICKS1000MS)
-	{
-		spool_1stickcount = 0;
-		spool_secound();
-	}
-
 	tickers_spool();
 }
 
@@ -1553,16 +1747,6 @@ static RAMFUNC void spool_systimerbundle2(void)
 	}
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 
-#if WITHKEYBOARD
-#if ! KEYBOARD_USE_ADC
-	kbd_spool();	//
-#endif /* ! KEYBOARD_USE_ADC */
-#endif /* WITHKEYBOARD */
-
-#if ! WITHCPUADCHW
-	board_adc_filtering();
-#endif /* ! WITHCPUADCHW */
-
 #if WITHCPUADCHW
 	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
 #endif /* WITHCPUADCHW */
@@ -1574,17 +1758,10 @@ static RAMFUNC void spool_systimerbundle2(void)
 	Вызывается с периодом 1/TIMETICKS по окончании получения данных всех каналов АЦП,
 	перечисленных в таблице adcinputs.
 */
+
 static RAMFUNC void spool_adcdonebundle(void)
 {
-	board_adc_filtering();
-#if WITHTX && WITHVOX
-	vox_probe(board_getvox(), board_getavox());
-#endif /* WITHTX && WITHVOX */
-#if WITHKEYBOARD
-#if KEYBOARD_USE_ADC
-	kbd_spool();	// 
-#endif /* KEYBOARD_USE_ADC */
-#endif /* WITHKEYBOARD */
+	adcdones_spool();
 }
 #endif /* WITHCPUADCHW */
 
@@ -2249,9 +2426,33 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
+#elif CPUSTYLE_XC7Z
+
+	#if 1
+		// Global timer use
+		void
+		GTC_Handler(void)
+		{
+			GTC->GTISR = 0x0001;	// ckear interrupt
+			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		}
+
+	#else
+		// Private timer use
+		void
+		PTIM_Handler(void)
+		{
+			PTIM_ClearEventFlag();
+			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		}
+
+	#endif
+
 #else
 
-	#error Undefined CPUSTYLE_XXX interrrupts handlers
+	#warning Undefined CPUSTYLE_XXX interrrupts handlers
 #endif
 
 //static volatile uint_fast8_t hardware_reqshutdown;
@@ -2273,8 +2474,12 @@ hardware_getshutdown(void)
 void 
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
+	static ticker_t ticker_1S;
+
 	InitializeListHead(& tickers);
+	ticker_initialize(& ticker_1S, NTICKS(1000), spool_secound, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	
+
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	SysTick_Config(calcdivround_systick(ticksfreq));	// Call SysTick_Handler
@@ -2422,8 +2627,46 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
 
+#elif CPUSTYLE_XC7Z
+
+	#ifdef BOARD_BLINK_INITIALIZE
+		BOARD_BLINK_INITIALIZE();
+	#endif
+
+	#if 1
+		const uint_fast32_t period = calcdivround(ticksfreq * 2);	// Global Timer runs with the system frequency / 2
+		// Global timer use
+		GTC->GTCLR = 0;
+
+		GTC->GTCTRL = period;
+		GTC->GTCTRH = 0;
+		GTC->GTCOMPL = 0;
+		GTC->GTCOMPH = 0;
+		GTC->GTCAIR = period;
+		GTC->GTCLR |= 0x0E;	// auto increment mode. IRQ_Enable, Comp_Enablea
+		arm_hardware_set_handler_system(GlobalTimer_IRQn, GTC_Handler);
+
+		GTC->GTCLR |= 0x1;	// Timer_Enable
+
+	#else
+
+		// Private timer use
+		// Disable Private Timer and set load value
+		PTIM_SetControl(0);
+		PTIM_SetCurrentValue(0);
+		PTIM_SetLoadValue(calcdivround(ticksfreq * 2));	// Private Timer runs with the system frequency / 2
+		// Set bits: IRQ enable and Auto reload
+		PTIM_SetControl(0x06U);
+
+		arm_hardware_set_handler_system(PrivTimer_IRQn, PTIM_Handler);
+
+		// Start the Private Timer
+		PTIM_SetControl(PTIM_GetControl() | 0x01);
+
+	#endif
+
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -3038,6 +3281,7 @@ build_adc_mask(void)
 void hardware_adc_initialize(void)
 {
 	//PRINTF(PSTR("hardware_adc_initialize\n"));
+	InitializeListHead(& adcdones);		// регистрируются обработчики конца преобразвания АЦП
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -3753,7 +3997,7 @@ void hardware_adc_initialize(void)
 	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 	//PRINTF(PSTR("hardware_adc_initialize done\n"));
@@ -3860,7 +4104,7 @@ hardware_adc_startonescan(void)
 
 #else
 
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 
 #endif
 }
@@ -4097,7 +4341,7 @@ void hardware_sounds_disable(void)
 	TIM4->CR1 = 0x00;
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -4217,7 +4461,7 @@ void hardware_sounds_setfreq(
 	TIM4->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE;	/* разрешить перезагрузку и включить таймер */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -4354,7 +4598,7 @@ hardware_beep_initialize(void)
 	HARDWARE_SIDETONE_INITIALIZE();
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 
 }
@@ -4417,7 +4661,7 @@ hardware_calc_sound_params(
 	return calcdivider(calcdivround10_pclk2(tonefreq), STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, pvalue, 1);
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -4758,6 +5002,15 @@ void hardware_spi_master_initialize(void)
 		DMA2_SPI1_TX_initialize();	// stream 3, канал 3
 		DMA2_SPI1_RX_initialize();	// stream 0. канал 3
 	#endif /* WITHSPIHWDMA */
+
+	/* настраиваем в режиме disconnect */
+	SPIIO_INITIALIZE();
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	// Настроим модуль SPI.
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // подать тактирование
+	(void) RCC->APB1ENR;
 
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
@@ -5269,6 +5522,15 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 	#endif
 	SPI1->CR1 = spi_cr1_val8w [spispeedindex][spimode];
 
+#elif CTLSTYLE_V3D		// SPI2
+
+	HARDWARE_SPI_CONNECT();
+	SPI2->CR1 = spi_cr1_val8w [spispeedindex][spimode];
+	SPI2->CR2 = (SPI2->CR2 & ~ (SPI_CR2_DS)) |
+		7 * SPI_CR2_DS_0 |	// 8 bit word length
+		1 * SPI_CR2_FRXTH |			// RXFIFO threshold is set to 8 bits (FRXTH=1).
+		0;
+
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
 	// В этих процессорах и входы и выходы перекдючаются на ALT FN
@@ -5354,6 +5616,11 @@ void hardware_spi_disconnect(void)
 	// connect back to GPIO
 	HARDWARE_SPI_DISCONNECT();
 
+#elif CTLSTYLE_V3D		// SPI2
+
+	SPI2->CR1 &= ~ SPI_CR1_SPE;
+	HARDWARE_SPI_DISCONNECT();
+
 #elif CPUSTYLE_STM32F
 
 	SPI1->CR1 &= ~ SPI_CR1_SPE;
@@ -5430,6 +5697,11 @@ hardware_spi_ready_b8_void(void)
 		;
 	(void) * (volatile uint8_t *) & SPI1->RXDR;	/* clear SPI_SR_RXP in status register */
 
+#elif CTLSTYLE_V3D		// SPI2
+
+	while ((SPI2->SR & SPI_SR_RXNE) == 0)
+			;
+		(void) SPI2->DR;	/* clear SPI_SR_RXNE in status register */
 
 #elif CPUSTYLE_STM32F
 
@@ -5485,6 +5757,15 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	while ((SPI1->SR & SPI_SR_RXP) == 0)	
 		;
 	const portholder_t t = * (volatile uint8_t *) & SPI1->RXDR;	// prevent data packing feature
+	return t;
+
+#elif CTLSTYLE_V3D		// SPI2
+
+	while ((SPI2->SR & SPI_SR_RXNE) == 0)
+		;
+	const portholder_t t = SPI2->DR & 0xFF;	/* clear SPI_SR_RXNE in status register */
+	while ((SPI2->SR & SPI_SR_BSY) != 0)
+		;
 	return t;
 
 #elif CPUSTYLE_STM32F
@@ -6750,6 +7031,10 @@ void hardware_spi_b8_p1(
 
 	* (volatile uint8_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
 
+#elif CTLSTYLE_V3D		// SPI2
+
+	* (volatile uint8_t *) & (SPI2)->DR = v;	// prevent data packing feature
+
 #elif CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F30X || CPUSTYLE_STM32F7XX
 
 	* (volatile uint8_t *) & (SPI1)->DR = v;	// prevent data packing feature
@@ -6922,7 +7207,7 @@ hardware_elkey_timer_initialize(void)
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -7018,7 +7303,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		0;
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -7114,7 +7399,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 	TIM3->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
 #else
-	#error Undefined CPUSTYLE_XXX
+	#warning Undefined CPUSTYLE_XXX
 #endif
 }
 
@@ -7255,7 +7540,7 @@ void hardware_lfm_setupdatefreq(unsigned ticksfreq)
 
 void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 {
-	PRINTF(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
+	//PRINTF(PSTR("hardware_sdhost_setbuswidth: use4bit=%u\n"), (unsigned) use4bit);
 
 #if ! WITHSDHCHW4BIT
 	use4bit = 0;
@@ -7274,7 +7559,7 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 		(use4bit != 0 ? 0x01 : 0x00) * SDIO_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 		0;
 
-#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_WIDBUS)) |
 		(use4bit != 0 ? 0x01 : 0x00) * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
@@ -7377,7 +7662,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
 	// See RCC_PLLCFGR_PLLQ usage
-	const uint32_t SDMMCCLK = PLL_FREQ / stm32h7xx_pllq;
+	const uint32_t SDMMCCLK = PLL_FREQ / stm32h7xx_pllq;;
 	// Использование автоматического расчёта делителя
 	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
 	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
@@ -7386,8 +7671,33 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
 	PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
 
-	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV)) |
-		(value & SDMMC_CLKCR_CLKDIV);
+	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV_Msk)) |
+		((value << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
+
+
+
+#elif CPUSTYLE_STM32MP1
+
+	//RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_SDMMC1SEL)) |
+	//	0 * RCC_DCKCFGR2_SDMMC1SEL |	// 0: 48 MHz clock is selected as SDMMC clock
+	//	0;
+
+	//const uint_fast32_t stm32h7xx_pllq = stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+	// Использование автоматического расчёта делителя
+	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
+	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
+	// See RCC_PLLCFGR_PLLQ usage
+	const uint32_t SDMMCCLK = HSIFREQ;
+	// Использование автоматического расчёта делителя
+	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
+	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
+	const unsigned value = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
+
+	//PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
+	//PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
+
+	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV_Msk)) |
+		((value << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
 
 
 #else
@@ -7478,6 +7788,30 @@ void hardware_sdhost_initialize(void)
 	__DSB();
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+
+	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
+	SDMMC1->CLKCR =
+		SDMMC_CLKCR_CLKDIV |
+		1 * SDMMC_CLKCR_HWFC_EN |
+		1 * SDMMC_CLKCR_PWRSAV |		// выключается clock без обращений
+		0;
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+	arm_hardware_set_handler_system(SDMMC1_IRQn, SDMMC1_IRQHandler);
+
+	// разрешить тактирование карты памяти
+	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
+
+#elif CPUSTYLE_STM32MP1
+
+	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_SDMMC1EN;   // подаем тактирование на SDMMC1
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR |= RCC_MC_AHB6LPENSETR_SDMMC1LPEN;   // подаем тактирование на SDMMC1
+	(void) RCC->MP_AHB6LPENSETR;
+
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	
 	// hwrdware flow control отключен - от этого зависит проверка состояния txfifo & rxfifo
 	SDMMC1->CLKCR =
@@ -7505,55 +7839,77 @@ void hardware_sdhost_initialize(void)
 
 #if CPUSTYLE_ARM || CPUSTYPE_TMS320F2833X
 
-#if CPUSTYPE_TMS320F2833X
-	#pragma CODE_SECTION(local_delay_us, "ramfuncs")
-#endif /* CPUSTYPE_TMS320F2833X */
-
+// количество циклов на микросекунду
+static unsigned long
+local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
+{
+#if CPUSTYLE_AT91SAM7S
+	#warning TODO: calibrate constant	 looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 175uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_ATSAM3S
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_ATSAM4S
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 270uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32F0XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 190uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32L0XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 20uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32F1XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 345uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32F30X
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 430uL / cpufreq_MHz;
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32F4XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 3800uL / cpufreq_MHz;
+#elif CPUSTYLE_STM32F7XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32H7XX
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 77uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_R7S721
+	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_XC7Z
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_STM32MP1
+	// калибровано для 800 МГц процессора
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYPE_TMS320F2833X && 1 // RAM code0
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = timeUS * 760uL / cpufreq_MHz;	// tested @ 100 MHz Execute from RAM
+	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
+#else
+	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
+#endif
+	return top;
+}
 // Атрибут RAMFUNC_NONILINE убран, так как функция
 // используется в инициализации SDRAM на процессорах STM32F746.
 // TODO: перекалибровать для FLASH контроллеров.
 void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 {
-	#if CPUSTYLE_AT91SAM7S
-		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_ATSAM3S
-		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_ATSAM4S
-		const unsigned long top = timeUS * 270uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F0XX
-		const unsigned long top = timeUS * 190uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32L0XX
-		const unsigned long top = timeUS * 20uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F1XX
-		const unsigned long top = timeUS * 345uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F30X
-		const unsigned long top = timeUS * 430uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F4XX
-		const unsigned long top = timeUS * 3800uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32F7XX
-		const unsigned long top = timeUS * 6150uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32H7XX
-		const unsigned long top = timeUS * 11000uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_R7S721
-		const unsigned long top = timeUS * 13800uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYLE_STM32MP1
-		// калибровано для 650 МГц процессора
-		//const unsigned long top = timeUS * 52500uL / (CPU_FREQ / 1000000);
-		// калибровано для 800 МГц процессора
-		const unsigned long top = timeUS * 72500uL / (CPU_FREQ / 1000000);
-	#elif CPUSTYPE_TMS320F2833X && 1 // RAM code
-		const unsigned long top = timeUS * 760uL / (CPU_FREQ / 1000000);	// tested @ 100 MHz Execute from RAM
-		//const unsigned long top = timeUS * 1600UL / (CPU_FREQ / 1000000);	// tested @ 150 MHz Execute from RAM
-	#elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
-		const unsigned long top = timeUS * 480uL / (CPU_FREQ / 1000000);	// Execute from RAM
-
-	#else
-		#error TODO: calibrate local_delay_us constant
-		const unsigned long top = timeUS * 175uL / (CPU_FREQ / 1000000);
-	#endif
+	// Частота процессора приволится к мегагерцам.
+	const unsigned long top = local_delay_uscycles(timeUS, CPU_FREQ / 1000000uL);
 	//
-	volatile unsigned long n;
-	for (n = 0; n < top; ++ n)
+	volatile unsigned long t;
+	for (t = 0; t < top; ++ t)
 	{
 	}
 }
@@ -7561,13 +7917,17 @@ void /* RAMFUNC_NONILINE */ local_delay_us(int timeUS)
 //
 void local_delay_ms(int timeMS)
 {
+	// Частота процессора приволится к мегагерцам.
+	const unsigned long top = local_delay_uscycles(1000, CPU_FREQ / 1000000uL);
 	int n;
 	for (n = 0; n < timeMS; ++ n)
 	{
-		local_delay_us(1000);
+		volatile unsigned long t;
+		for (t = 0; t < top; ++ t)
+		{
+		}
 	}
 }
-
 
 #endif /* CPUSTYLE_ARM || CPUSTYPE_TMS320F2833X */
 
@@ -10114,8 +10474,8 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 {
-	//ASSERT((addr % DCACHEROWSIZE) == 0);
-	//ASSERT((dsize % DCACHEROWSIZE) == 0);
+	ASSERT((addr % DCACHEROWSIZE) == 0);
+	ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -10146,7 +10506,7 @@ void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	//ASSERT((dsize % DCACHEROWSIZE) == 0);
+	ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -10579,12 +10939,12 @@ static void stm32mp1_pll_initialize(void)
 
 #if 1//WITHUART1HW
 	// usart1
-	//0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
-	//0x1: pll3_q_ck clock selected as kernel peripheral clock
-	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
-	//0x3: csi_ker_ck clock selected as kernel peripheral clock
-	//0x4: pll4_q_ck clock selected as kernel peripheral clock
-	//0x5: hse_ker_ck clock selected as kernel peripheral clock
+	//	0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+	//	0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//	0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//	0x4: pll4_q_ck clock selected as kernel peripheral clock
+	//	0x5: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART1CKSELR = (RCC->UART1CKSELR & ~ (RCC_UART1CKSELR_UART1SRC_Msk)) |
 		(0x02 << RCC_UART1CKSELR_UART1SRC_Pos) | // HSI
 		0;
@@ -10592,12 +10952,12 @@ static void stm32mp1_pll_initialize(void)
 #endif /* WITHUART1HW */
 
 #if 1//WITHUART2HW
-	// usart2
-	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
-	//0x1: pll4_q_ck clock selected as kernel peripheral clock
-	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
-	//0x3: csi_ker_ck clock selected as kernel peripheral clock
-	//0x4: hse_ker_ck clock selected as kernel peripheral clock
+	// UART2, UART4
+	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//	0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//	0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//	0x4: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART24CKSELR = (RCC->UART24CKSELR & ~ (RCC_UART24CKSELR_UART24SRC_Msk)) |
 		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// hsi_ker_ck
 		//(0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
@@ -10605,19 +10965,47 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->UART24CKSELR;
 #endif /* WITHUART2HW */
 
+#if 1//WITHUART5HW
+	// UART3, UART5
+	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//	0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//	0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//	0x4: hse_ker_ck clock selected as kernel peripheral clock
+	//	others: reserved, the kernel clock is disabled
+	RCC->UART35CKSELR = (RCC->UART35CKSELR & ~ (RCC_UART35CKSELR_UART35SRC_Msk)) |
+		(0x02 << RCC_UART35CKSELR_UART35SRC_Pos) |	// hsi_ker_ck
+		//(0x00 << RCC_UART35CKSELR_UART35SRC_Pos) |	// pclk1
+		0;
+	(void) RCC->UART24CKSELR;
+#endif /* WITHUART2HW */
+
 #if 1//WITHUART7HW
-	// usart7
+	// UART7, UART8
 	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll4_q_ck clock selected as kernel peripheral clock
 	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
 	//0x3: csi_ker_ck clock selected as kernel peripheral clock
 	//0x4: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART78CKSELR = (RCC->UART78CKSELR & ~ (RCC_UART78CKSELR_UART78SRC_Msk)) |
-		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// hsi_ker_ck
-		//(0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
+		(0x02 << RCC_UART78CKSELR_UART78SRC_Pos) |	// hsi_ker_ck
+		//(0x00 << RCC_UART78CKSELR_UART78SRC_Pos) |	// pclk1
 		0;
 	(void) RCC->UART78CKSELR;
 #endif /* WITHUART7HW */
+
+#if WITHSDHCHW
+	// SDMMC1
+	//	0x0: hclk6 clock selected as kernel peripheral clock
+	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
+	//	0x2: pll4_p_ck clock selected as kernel peripheral clock
+	//	0x3: hsi_ker_ck clock selected as kernel peripheral clock (default after reset)
+	//	others: reserved, the kernel clock is disabled
+	RCC->SDMMC12CKSELR = (RCC->SDMMC12CKSELR & ~ (RCC_SDMMC12CKSELR_SDMMC12SRC_Msk)) |
+		(0x3 << RCC_SDMMC12CKSELR_SDMMC12SRC_Pos) |	// hsi_ker_ck
+		0;
+	(void) RCC->SDMMC12CKSELR;
+#endif /* WITHSDHCHW */
 
 #if WITHSPIHW
 	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
@@ -12056,8 +12444,9 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 	if (a == 0x00000000uL)
 		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
-	if (a >= 0x18000000uL && a < 0x20000000uL)			//
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x18000000uL && a < 0x20000000uL)			// FIXME: QSPI memory mapped should be R/O, but...
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 0, 0);
+
 	if (a >= 0x00000000uL && a < 0x00A00000uL)			// up to 10 MB
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 	if (a >= 0x20000000uL && a < 0x20A00000uL)			// up to 10 MB
@@ -12080,7 +12469,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
 	if (a >= 0x70000000uL && a < 0xA0000000uL)			//  QUADSPI, FMC NAND, ...
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
 
 	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
 		return addrbase | TTB_PARA_DEVICE;
@@ -12093,11 +12482,22 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_NO_ACCESS;
 
+#elif CPUSTYLE_XC7Z
+	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
+
+	if (a >= 0x40000000uL && a < 0xFC000000uL)
+		return addrbase | TTB_PARA_DEVICE;
+
+	return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);	// OCM (On Chip Memory)
+
+#else
+	#warning ttb_accessbits: Unhandled CPUSTYLE_xxxx
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #endif
-
-	return addrbase | TTB_PARA_NO_ACCESS; //TTB_PARA_STRGLY;
 }
-
 /* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 static void FLASHMEMINITFUNC
 sysinit_ttbr_initialize(void)
@@ -12402,30 +12802,6 @@ sysinit_pll_initialize(void)
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
 #elif CPUSTYLE_STM32MP1
-	if (0)
-	{
-		// PC13, PC14, PC15, PI8 as the common IO:
-		////RCC->APB1ENR |=  RCC_APB1ENR_BKPEN;     // включить тактирование Backup interface
-		////__DSB();
-		// cancel the backup area write protection
-		PWR->CR1 |= PWR_CR1_DBP;
-		while ((PWR->CR1 & PWR_CR1_DBP) == 0)
-			;
-
-		//PWR->CR |= PWR_CR_DBP; // cancel the backup area write protection
-
-		//RCC->BDCR &= ~ RCC_BDCR_LSEON; // close external low-speed oscillator, PC14, PC15 as ordinary IO
-		RTC->CR &= ~ RTC_CR_TAMPOE; // TAMPER pin; intrusion detection (PC13) used as a universal IO port
-
-		//PWR->CR &= ~ PWR_CR_DBP; // backup area write protection </span>
-
-		PWR->CR1 &= ~ PWR_CR1_DBP;
-		while ((PWR->CR1 & PWR_CR1_DBP) != 0)
-			;
-
-		////RCC->APB1ENR &=  ~ RCC_APB1ENR_BKPEN;     // выключить тактирование Backup interface
-		////__DSB();
-	}
 
 	#if WITHISBOOTLOADER
 		// PLL только в bootloader.
@@ -12433,18 +12809,33 @@ sysinit_pll_initialize(void)
 		stm32mp1_pll_initialize();
 	#endif
 
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
-	//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
-	#if (__L2C_PRESENT == 1)
-	  // Enable Level 2 Cache
-	  L2C_Enable();
+	// Hang-off QSPI memory
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+
+#elif CPUSTYLE_XC7Z
+	#if WITHISBOOTLOADER
+		// PLL только в bootloader.
+		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
+		//xc7z1_pll_initialize();
 	#endif
 
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
+
+#if ! CPUSTYLE_R7S721	// выше комментарий почему
+	#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+
+		L1C_EnableCaches();
+		L1C_EnableBTAC();
+		//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+		#if (__L2C_PRESENT == 1)
+		  // Enable Level 2 Cache
+		  L2C_Enable();
+		#endif
+	#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+#endif /*  ! CPUSTYLE_R7S721 */
 }
 
 
@@ -12480,6 +12871,10 @@ sysinit_fpu_initialize(void)
 	__FPU_Enable();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+
+#if (__CORTEX_M != 0) && CTLSTYLE_V3D
+	SCB->CCR &= ~ SCB_CCR_UNALIGN_TRP_Msk;
+#endif /* (__CORTEX_M != 0) && CTLSTYLE_V3D */
 }
 
 static void FLASHMEMINITFUNC
@@ -12553,7 +12948,6 @@ sysinit_debug_initialize(void)
 #if WITHDEBUG
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-
 #endif /* WITHDEBUG */
 }
 
@@ -12646,6 +13040,458 @@ sysinit_mmu_initialize(void)
 	//PRINTF("MMU initialized\n");
 }
 
+#if CPUSTYLE_XC7Z
+#include "xllfifo.h"
+
+typedef struct
+{
+	XLlFifo fifo_spi;
+	XLlFifo fifo_i2s;
+	u8 chipAddr;
+	int wordSize;
+} xc7z_codec_t;
+xc7z_codec_t wm8731_config;
+
+/* Opcode exit is 0 all the time */
+#define OPCODE_EXIT       0U
+#define OPCODE_CLEAR      1U
+#define OPCODE_WRITE      2U
+#define OPCODE_MASKWRITE  3U
+#define OPCODE_MASKPOLL   4U
+#define OPCODE_MASKDELAY  5U
+#define NEW_PS7_ERR_CODE 1
+
+/* Encode number of arguments in last nibble */
+#define EMIT_EXIT()                   ( (OPCODE_EXIT      << 4 ) | 0 )
+#define EMIT_CLEAR(addr)              ( (OPCODE_CLEAR     << 4 ) | 1 ) , addr
+#define EMIT_WRITE(addr,val)          ( (OPCODE_WRITE     << 4 ) | 2 ) , addr, val
+#define EMIT_MASKWRITE(addr,mask,val) ( (OPCODE_MASKWRITE << 4 ) | 3 ) , addr, mask, val
+#define EMIT_MASKPOLL(addr,mask)      ( (OPCODE_MASKPOLL  << 4 ) | 2 ) , addr, mask
+#define EMIT_MASKDELAY(addr,mask)      ( (OPCODE_MASKDELAY << 4 ) | 2 ) , addr, mask
+
+/* Returns codes of ps7_init* */
+#define PS7_INIT_SUCCESS		(0)
+#define PS7_INIT_CORRUPT		(1)
+#define PS7_INIT_TIMEOUT		(2)
+#define PS7_POLL_FAILED_DDR_INIT	(3)
+#define PS7_POLL_FAILED_DMA		(4)
+#define PS7_POLL_FAILED_PLL		(5)
+
+#define PCW_SILICON_VERSION_1	0
+#define PCW_SILICON_VERSION_2	1
+#define PCW_SILICON_VERSION_3	2
+
+/* For delay calculation using global registers*/
+#define SCU_GLOBAL_TIMER_COUNT_L32	0xF8F00200
+#define SCU_GLOBAL_TIMER_COUNT_U32	0xF8F00204
+#define SCU_GLOBAL_TIMER_CONTROL	0xF8F00208
+#define SCU_GLOBAL_TIMER_AUTO_INC	0xF8F00218
+#define APU_FREQ  666666666
+
+#define PS7_MASK_POLL_TIME 100000000
+
+#define __arch_getb(a)			(*(volatile unsigned char *)(a))
+#define __arch_getw(a)			(*(volatile unsigned short *)(a))
+#define __arch_getl(a)			(*(volatile unsigned int *)(a))
+#define __arch_getq(a)			(*(volatile unsigned long long *)(a))
+
+#define __arch_putb(v,a)		(*(volatile unsigned char *)(a) = (v))
+#define __arch_putw(v,a)		(*(volatile unsigned short *)(a) = (v))
+#define __arch_putl(v,a)		(*(volatile unsigned int *)(a) = (v))
+#define __arch_putq(v,a)		(*(volatile unsigned long long *)(a) = (v))
+
+#define __raw_writeb(v,a)	__arch_putb(v,a)
+#define __raw_writew(v,a)	__arch_putw(v,a)
+#define __raw_writel(v,a)	__arch_putl(v,a)
+#define __raw_writeq(v,a)	__arch_putq(v,a)
+
+#define __raw_readb(a)		__arch_getb(a)
+#define __raw_readw(a)		__arch_getw(a)
+#define __raw_readl(a)		__arch_getl(a)
+#define __raw_readq(a)		__arch_getq(a)
+
+/* IO accessors. No memory barriers desired. */
+static inline void iowrite(unsigned long val, unsigned long addr)
+{
+	__raw_writel(val, addr);
+}
+
+static inline unsigned long ioread(unsigned long addr)
+{
+	return __raw_readl(addr);
+}
+
+/* start timer */
+static void perf_start_clock(void)
+{
+	iowrite((1 << 0) | /* Timer Enable */
+		(1 << 3) | /* Auto-increment */
+		(0 << 8), /* Pre-scale */
+		SCU_GLOBAL_TIMER_CONTROL);
+}
+
+/* Compute mask for given delay in miliseconds*/
+static unsigned long get_number_of_cycles_for_delay(unsigned long delay)
+{
+	return (APU_FREQ / (2 * 1000)) * delay;
+}
+
+/* stop timer */
+static void perf_disable_clock(void)
+{
+	iowrite(0, SCU_GLOBAL_TIMER_CONTROL);
+}
+
+/* stop timer and reset timer count regs */
+static void perf_reset_clock(void)
+{
+	perf_disable_clock();
+	iowrite(0, SCU_GLOBAL_TIMER_COUNT_L32);
+	iowrite(0, SCU_GLOBAL_TIMER_COUNT_U32);
+}
+
+static void perf_reset_and_start_timer(void)
+{
+	perf_reset_clock();
+	perf_start_clock();
+}
+
+int ps7_config(const unsigned long * ps7_config_init)
+{
+	const unsigned long *ptr = ps7_config_init;
+
+    unsigned long  opcode;            // current instruction ..
+    unsigned long  args[16];           // no opcode has so many args ...
+    int  numargs;           // number of arguments of this instruction
+    int  j;                 // general purpose index
+
+    volatile unsigned long *addr;         // some variable to make code readable
+    unsigned long  val,mask;              // some variable to make code readable
+
+    int finish = -1 ;           // loop while this is negative !
+    int i = 0;                  // Timeout variable
+
+    while( finish < 0 ) {
+        numargs = ptr[0] & 0xF;
+        opcode = ptr[0] >> 4;
+
+        for( j = 0 ; j < numargs ; j ++ )
+            args[j] = ptr[j+1];
+        ptr += numargs + 1;
+
+
+        switch ( opcode ) {
+
+        case OPCODE_EXIT:
+            finish = PS7_INIT_SUCCESS;
+            break;
+
+        case OPCODE_CLEAR:
+            addr = (volatile unsigned long*) args[0];
+            *addr = 0;
+            break;
+
+        case OPCODE_WRITE:
+            addr = (volatile unsigned long*) args[0];
+            val = args[1];
+            *addr = val;
+            break;
+
+        case OPCODE_MASKWRITE:
+            addr = (volatile unsigned long*) args[0];
+            mask = args[1];
+            val = args[2];
+            *addr = ( val & mask ) | ( *addr & ~mask);
+            break;
+
+        case OPCODE_MASKPOLL:
+            addr = (volatile unsigned long*) args[0];
+            mask = args[1];
+            i = 0;
+            while (!(*addr & mask)) {
+                if (i == PS7_MASK_POLL_TIME) {
+                    finish = PS7_INIT_TIMEOUT;
+                    break;
+                }
+                i++;
+            }
+            break;
+        case OPCODE_MASKDELAY:
+            addr = (volatile unsigned long*) args[0];
+            mask = args[1];
+            int delay = get_number_of_cycles_for_delay(mask);
+            perf_reset_and_start_timer();
+            while ((*addr < delay)) {
+            }
+            break;
+        default:
+            finish = PS7_INIT_CORRUPT;
+            break;
+        }
+    }
+    return finish;
+}
+
+static const unsigned long ps7_pll_init_data_3_0[] = {
+		//EMIT_WRITE(0XF8000008, 0x0000DF0DU), // SLCR_UNLOCK
+		EMIT_MASKWRITE(0XF8000110, 0x003FFFF0U ,0x000FA220U),
+		EMIT_MASKWRITE(0XF8000100, 0x0007F000U ,0x00028000U),
+		EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000010U),
+		EMIT_MASKWRITE(0XF8000100, 0x00000001U ,0x00000001U),
+		EMIT_MASKWRITE(0XF8000100, 0x00000001U ,0x00000000U),
+		EMIT_MASKPOLL(0XF800010C, 0x00000001U),
+		EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000000U),
+		EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),
+		EMIT_MASKWRITE(0XF8000114, 0x003FFFF0U ,0x0012C220U),
+		EMIT_MASKWRITE(0XF8000104, 0x0007F000U ,0x00020000U),
+		EMIT_MASKWRITE(0XF8000104, 0x00000010U ,0x00000010U),
+		EMIT_MASKWRITE(0XF8000104, 0x00000001U ,0x00000001U),
+		EMIT_MASKWRITE(0XF8000104, 0x00000001U ,0x00000000U),
+		EMIT_MASKPOLL(0XF800010C, 0x00000002U),
+		EMIT_MASKWRITE(0XF8000104, 0x00000010U ,0x00000000U),
+		EMIT_MASKWRITE(0XF8000124, 0xFFF00003U ,0x0C200003U),
+		EMIT_MASKWRITE(0XF8000118, 0x003FFFF0U ,0x000FA240U),
+		EMIT_MASKWRITE(0XF8000108, 0x0007F000U ,0x00030000U),
+		EMIT_MASKWRITE(0XF8000108, 0x00000010U ,0x00000010U),
+		EMIT_MASKWRITE(0XF8000108, 0x00000001U ,0x00000001U),
+		EMIT_MASKWRITE(0XF8000108, 0x00000001U ,0x00000000U),
+		EMIT_MASKPOLL(0XF800010C, 0x00000004U),
+		EMIT_MASKWRITE(0XF8000108, 0x00000010U ,0x00000000U),
+		//EMIT_WRITE(0XF8000004, 0x0000767BU),	// SLCR_LOCK
+		EMIT_EXIT(),
+	};
+
+static const unsigned long ps7_clock_init_data_3_0[] = {
+		//EMIT_WRITE(0XF8000008, 0x0000DF0DU), // SLCR_UNLOCK
+		EMIT_MASKWRITE(0XF8000128, 0x03F03F01U ,0x00700F01U),	// DCI_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000168, 0x00003F31U ,0x00000801U),	// PCAP_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400400U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+		EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+		EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
+		//EMIT_WRITE(0XF8000004, 0x0000767BU),// SLCR_LOCK
+		EMIT_EXIT(),
+	};
+
+static const unsigned long ps7_ddr_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000084U),
+		EMIT_MASKWRITE(0XF8006004, 0x0007FFFFU ,0x00001082U),
+		EMIT_MASKWRITE(0XF8006008, 0x03FFFFFFU ,0x03C0780FU),
+		EMIT_MASKWRITE(0XF800600C, 0x03FFFFFFU ,0x02001001U),
+		EMIT_MASKWRITE(0XF8006010, 0x03FFFFFFU ,0x00014001U),
+		EMIT_MASKWRITE(0XF8006014, 0x001FFFFFU ,0x0004159BU),
+		EMIT_MASKWRITE(0XF8006018, 0xF7FFFFFFU ,0x44E458D3U),
+		EMIT_MASKWRITE(0XF800601C, 0xFFFFFFFFU ,0x7282BCE5U),
+		EMIT_MASKWRITE(0XF8006020, 0x7FDFFFFCU ,0x270872D0U),
+		EMIT_MASKWRITE(0XF8006024, 0x0FFFFFC3U ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006028, 0x00003FFFU ,0x00002007U),
+		EMIT_MASKWRITE(0XF800602C, 0xFFFFFFFFU ,0x00000008U),
+		EMIT_MASKWRITE(0XF8006030, 0xFFFFFFFFU ,0x00040B30U),
+		EMIT_MASKWRITE(0XF8006034, 0x13FF3FFFU ,0x000116D4U),
+		EMIT_MASKWRITE(0XF8006038, 0x00000003U ,0x00000000U),
+		EMIT_MASKWRITE(0XF800603C, 0x000FFFFFU ,0x00000666U),
+		EMIT_MASKWRITE(0XF8006040, 0xFFFFFFFFU ,0xFFFF0000U),
+		EMIT_MASKWRITE(0XF8006044, 0x0FFFFFFFU ,0x0FF55555U),
+		EMIT_MASKWRITE(0XF8006048, 0x0003F03FU ,0x0003C008U),
+		EMIT_MASKWRITE(0XF8006050, 0xFF0F8FFFU ,0x77010800U),
+		EMIT_MASKWRITE(0XF8006058, 0x00010000U ,0x00000000U),
+		EMIT_MASKWRITE(0XF800605C, 0x0000FFFFU ,0x00005003U),
+		EMIT_MASKWRITE(0XF8006060, 0x000017FFU ,0x0000003EU),
+		EMIT_MASKWRITE(0XF8006064, 0x00021FE0U ,0x00020000U),
+		EMIT_MASKWRITE(0XF8006068, 0x03FFFFFFU ,0x00284141U),
+		EMIT_MASKWRITE(0XF800606C, 0x0000FFFFU ,0x00001610U),
+		EMIT_MASKWRITE(0XF8006078, 0x03FFFFFFU ,0x00466111U),
+		EMIT_MASKWRITE(0XF800607C, 0x000FFFFFU ,0x00032222U),
+		EMIT_MASKWRITE(0XF80060A4, 0xFFFFFFFFU ,0x10200802U),
+		EMIT_MASKWRITE(0XF80060A8, 0x0FFFFFFFU ,0x0690CB73U),
+		EMIT_MASKWRITE(0XF80060AC, 0x000001FFU ,0x000001FEU),
+		EMIT_MASKWRITE(0XF80060B0, 0x1FFFFFFFU ,0x1CFFFFFFU),
+		EMIT_MASKWRITE(0XF80060B4, 0x00000200U ,0x00000200U),
+		EMIT_MASKWRITE(0XF80060B8, 0x01FFFFFFU ,0x00200066U),
+		EMIT_MASKWRITE(0XF80060C4, 0x00000003U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060C8, 0x000000FFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060DC, 0x00000001U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060F0, 0x0000FFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060F4, 0x0000000FU ,0x00000008U),
+		EMIT_MASKWRITE(0XF8006114, 0x000000FFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006118, 0x7FFFFFCFU ,0x40000001U),
+		EMIT_MASKWRITE(0XF800611C, 0x7FFFFFCFU ,0x40000001U),
+		EMIT_MASKWRITE(0XF8006120, 0x7FFFFFCFU ,0x40000000U),
+		EMIT_MASKWRITE(0XF8006124, 0x7FFFFFCFU ,0x40000000U),
+		EMIT_MASKWRITE(0XF800612C, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006130, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006134, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006138, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006140, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006144, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006148, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF800614C, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006154, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006158, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF800615C, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006160, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006168, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF800616C, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF8006170, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF8006174, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF800617C, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006180, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006184, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006188, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006190, 0x6FFFFEFEU ,0x00040080U),
+		EMIT_MASKWRITE(0XF8006194, 0x000FFFFFU ,0x0001FC82U),
+		EMIT_MASKWRITE(0XF8006204, 0xFFFFFFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006208, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF800620C, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006210, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006214, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006218, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF800621C, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006220, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006224, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF80062A8, 0x00000FF5U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80062AC, 0xFFFFFFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80062B0, 0x003FFFFFU ,0x00005125U),
+		EMIT_MASKWRITE(0XF80062B4, 0x0003FFFFU ,0x000012A8U),
+		EMIT_MASKPOLL(0XF8000B74, 0x00002000U),
+		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000085U),
+		EMIT_MASKPOLL(0XF8006054, 0x00000007U),
+		EMIT_EXIT(),
+	};
+
+static const unsigned long ps7_mio_init_data_3_0[] = {
+		//EMIT_WRITE(0XF8000008, 0x0000DF0DU), // SLCR_UNLOCK
+		EMIT_MASKWRITE(0XF8000B40, 0x00000FFFU ,0x00000600U),
+		EMIT_MASKWRITE(0XF8000B44, 0x00000FFFU ,0x00000600U),
+		EMIT_MASKWRITE(0XF8000B48, 0x00000FFFU ,0x00000672U),
+		EMIT_MASKWRITE(0XF8000B4C, 0x00000FFFU ,0x00000800U),
+		EMIT_MASKWRITE(0XF8000B50, 0x00000FFFU ,0x00000674U),
+		EMIT_MASKWRITE(0XF8000B54, 0x00000FFFU ,0x00000800U),
+		EMIT_MASKWRITE(0XF8000B58, 0x00000FFFU ,0x00000600U),
+		EMIT_MASKWRITE(0XF8000B5C, 0xFFFFFFFFU ,0x0018C61CU),
+		EMIT_MASKWRITE(0XF8000B60, 0xFFFFFFFFU ,0x00F9861CU),
+		EMIT_MASKWRITE(0XF8000B64, 0xFFFFFFFFU ,0x00F9861CU),
+		EMIT_MASKWRITE(0XF8000B68, 0xFFFFFFFFU ,0x00F9861CU),
+		EMIT_MASKWRITE(0XF8000B6C, 0x00007FFFU ,0x00000220U),
+		EMIT_MASKWRITE(0XF8000B70, 0x00000001U ,0x00000001U),
+		EMIT_MASKWRITE(0XF8000B70, 0x00000021U ,0x00000020U),
+		EMIT_MASKWRITE(0XF8000B70, 0x07FEFFFFU ,0x00000823U),
+		EMIT_MASKWRITE(0XF80007A0, 0x00003FFFU ,0x00001680U),
+		EMIT_MASKWRITE(0XF80007A4, 0x00003FFFU ,0x00001680U),
+		EMIT_MASKWRITE(0XF80007A8, 0x00003FFFU ,0x00001680U),
+		EMIT_MASKWRITE(0XF80007AC, 0x00003FFFU ,0x00001680U),
+		EMIT_MASKWRITE(0XF80007B0, 0x00003FFFU ,0x00001680U),
+		EMIT_MASKWRITE(0XF80007B4, 0x00003FFFU ,0x00001680U),
+		EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),
+		//EMIT_WRITE(0XF8000004, 0x0000767BU),// SLCR_LOCK
+		EMIT_EXIT(),
+};
+
+static const unsigned long ps7_peripherals_init_data_3_0[] = {
+		//EMIT_WRITE(0XF8000008, 0x0000DF0DU), // SLCR_UNLOCK
+		EMIT_MASKWRITE(0XF8000B48, 0x00000180U ,0x00000180U),	// DDRIOB_DATA0
+		EMIT_MASKWRITE(0XF8000B4C, 0x00000180U ,0x00000000U),	// DDRIOB_DATA1
+		EMIT_MASKWRITE(0XF8000B50, 0x00000180U ,0x00000180U),	// DDRIOB_DIFF0
+		EMIT_MASKWRITE(0XF8000B54, 0x00000180U ,0x00000000U),	// DDRIOB_DIFF1
+		//EMIT_WRITE(0XF8000004, 0x0000767BU),	// SLCR_LOCK
+//		EMIT_MASKWRITE(0XE0001034, 0x000000FFU ,0x00000006U),	// Register (UART) Baud_rate_divider_reg0
+//		EMIT_MASKWRITE(0XE0001018, 0x0000FFFFU ,0x0000007CU),
+//		EMIT_MASKWRITE(0XE0001000, 0x000001FFU ,0x00000017U),
+//		EMIT_MASKWRITE(0XE0001004, 0x000003FFU ,0x00000020U),
+		EMIT_MASKWRITE(0XE000D000, 0x00080000U ,0x00080000U),	// XQSPIPS_CR_OFFSET
+		EMIT_MASKWRITE(0XF8007000, 0x20000000U ,0x00000000U),	// Register (devcfg) XDCFG_CTRL_OFFSET
+		EMIT_EXIT(),
+	};
+
+static const unsigned long ps7_post_config_3_0[] = {
+		//EMIT_WRITE(0XF8000008, 0x0000DF0DU), // SLCR_UNLOCK
+		EMIT_MASKWRITE(0XF8000900, 0x0000000FU ,0x0000000FU),	// LVL_SHFTR_EN
+		EMIT_MASKWRITE(0XF8000240, 0xFFFFFFFFU ,0x00000000U),	// FPGA_RST_CTRL
+		//EMIT_WRITE(0XF8000004, 0x0000767BU),	// SLCR_LOCK
+		EMIT_EXIT(),
+	};
+
+static int ps7_init(void)
+{
+	int ret;
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+
+	ret = ps7_config(ps7_mio_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_pll_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_clock_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_ddr_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_peripherals_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_post_config_3_0);
+		if (ret != PS7_INIT_SUCCESS)
+			return ret;
+
+	return PS7_INIT_SUCCESS;
+}
+
+void hardware_xc7z_fifo_init(void)
+{
+	wm8731_config.wordSize = 4;
+
+	XLlFifo_Config *pConfig = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_0_DEVICE_ID);
+	int xStatus = XLlFifo_CfgInitialize(& wm8731_config.fifo_spi, pConfig, pConfig->BaseAddress);
+	if(XST_SUCCESS != xStatus)
+		PRINTF("AXI FIFO codec SPI init error\n");
+	else
+		PRINTF("AXI FIFO codec SPI init success\n");
+
+	u32 Status = XLlFifo_Status(&wm8731_config.fifo_spi);
+	XLlFifo_IntClear(&wm8731_config.fifo_spi,0xffffffff);
+	Status = XLlFifo_Status(&wm8731_config.fifo_spi);
+	if(Status != 0)
+		PRINTF("AXI FIFO codec SPI reset error\n");
+
+	pConfig = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_1_DEVICE_ID);
+	xStatus = XLlFifo_CfgInitialize(& wm8731_config.fifo_i2s, pConfig, pConfig->BaseAddress);
+	if(XST_SUCCESS != xStatus)
+		PRINTF("AXI FIFO codec I2S init error\n");
+	else
+		PRINTF("AXI FIFO codec I2S init success\n");
+
+	Status = XLlFifo_Status(&wm8731_config.fifo_i2s);
+	XLlFifo_IntClear(&wm8731_config.fifo_i2s,0xffffffff);
+	Status = XLlFifo_Status(&wm8731_config.fifo_i2s);
+	if(Status != 0)
+		PRINTF("AXI FIFO codec I2S reset error\n");
+
+	while(0)
+	{
+		XLlFifo_TxPutWord(&wm8731_config.fifo_spi, 0xFF);
+		XLlFifo_TxPutWord(&wm8731_config.fifo_spi, 0x22);
+		XLlFifo_TxPutWord(&wm8731_config.fifo_spi, 0xFF);
+		XLlFifo_TxPutWord(&wm8731_config.fifo_spi, 0x22);
+		XLlFifo_iTxSetLen(&wm8731_config.fifo_spi, 4 * wm8731_config.wordSize);
+		while(XLlFifo_RxOccupancy(&wm8731_config.fifo_spi)!=4) {}
+		XLlFifo_RxGetWord(&wm8731_config.fifo_spi);
+		XLlFifo_RxGetWord(&wm8731_config.fifo_spi);
+		XLlFifo_RxGetWord(&wm8731_config.fifo_spi);
+		u32 rdata = XLlFifo_RxGetWord(&wm8731_config.fifo_spi);
+		TP();
+	}
+}
+
+#endif /* CPUSTYLE_XC7Z */
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
 // watchdog disable, clock initialize, cache enable
@@ -12653,6 +13499,12 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if CPUSTYLE_XC7Z & WITHISBOOTLOADER	// FSBL
+
+	ps7_init();
+
+#endif /* CPUSTYLE_XC7Z & WITHISBOOTLOADER */
+
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();
 	sysinit_debug_initialize();
@@ -13045,7 +13897,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 }
 #endif /* CPUSTYPE_TMS320F2833X */
 
-#if CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32MP1 && WITHSMPSYSTEM
 
 
 /*
@@ -13304,7 +14156,7 @@ void cpu_initialize(void)
 	#endif
 
 #else
-	//#error Undefined CPUSTYLE_XXX
+	//#warning Undefined CPUSTYLE_XXX
 
 #endif
 
@@ -13448,16 +14300,11 @@ void _fini(void)
 		;
 }
 
-void __gxx_personality_v0(void)
-{
-
-}
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#if WITHUSEMALLOC
+#if 1//WITHUSEMALLOC
 
 /*
  *
@@ -13529,7 +14376,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	return (i);
 }
 
-#if CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 
 	static RAMHEAP uint8_t heapplace [64 * 1024uL * 1024uL];
 
@@ -13586,6 +14433,96 @@ int __attribute__((used)) (_getpid)(int id)
 	return (-1);
 }
 
+#if defined(RTC1_TYPE)
+
+#include <time.h>
+/* поддержка получения времени */
+int _gettimeofday(struct timeval *p, void *tz)
+{
+	const time_t XSEC_PER_DAY = (time_t) 24 * 60 * 60;
+
+	if (p != NULL)
+	{
+		// получаем локальное время в секундах из компонент
+		uint_fast16_t year;
+		uint_fast8_t month, dayofmonth;
+		uint_fast8_t hour, minute, secounds;
+
+		board_rtc_getdatetime( & year, & month, & dayofmonth, & hour, & minute, & secounds);
+
+		static const unsigned int years [2] [13] =
+		{
+			{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 }, /* Normal */
+			{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }, /* Leap   */
+		};
+
+//		unsigned int leap = 0;
+//		float Leap_check = 0.0;
+
+		/* сколько лет прошло с 1980 года? */
+		/* делим разность текущего и 1980 годов на 4 */
+		/* если результат деления - без остатка, то текущий год - високосный */
+		/* если результат деления - с остатком, то текущий год -  нормальный */
+//
+//		Leap_check = ((float) ((year) - 1980)) / 4.; /* деление на предмет */
+//		/* выявления остатка  */
+//		leap = ((int) ((year) - 1980)) / 4; /* деление с обрезанием остатка*/
+//
+//		if (Leap_check == leap)
+//			leap = 1; /* сравнение (leap=1 - вис.год) */
+//
+//		else
+//			leap = 0;
+
+		const div_t d = div(year - 1980, 4);
+		const int leap = d.rem == 0;
+
+		/* число секунд в этих годах
+		 SEC_PER_DAY*(((year)-1980)*365 + ((year)-1980)/4 + 0\1);
+
+		 сколько секунд в предыдущих месяцах текущего года?
+		 SEC_PER_DAY*years[leap][(month)-1];
+
+		 сколько секунд прошло за предыдущие дни текущего месяца?
+		 SEC_PER_DAY*((day)-1);
+
+		 сколько секунд прошло за предыдущие часы текущего дня?
+		 3600*(hour);
+
+		 сколько секунд прошло за предыдущие минуты текущего часа?
+		 60*(min);
+
+		 число отдельных секунд
+		 (sec);    */
+
+		if (leap != 0)
+		{
+			p->tv_sec = XSEC_PER_DAY * (((year) - 1980) * 365 + ((year) - 1980) / 4 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
+					+ 3600 * (hour) + 60 * (minute) + (secounds);
+		}
+		else
+		{
+			p->tv_sec = XSEC_PER_DAY
+					* (((year) - 1980) * 365 + ((year) - 1980) / 4 + 1 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
+					+ 3600 * (hour) + 60 * (minute) + (secounds);
+		}
+		p->tv_usec = 0;
+	}
+
+	return 0;
+}
+
+#else
+
+int _gettimeofday(struct timeval *p, void *tz)
+{
+	if (p != NULL)
+	{
+	}
+	return 0;
+}
+
+#endif
 
 #ifdef __cplusplus
 }
@@ -13661,6 +14598,9 @@ volatile uint32_t psr;// Регистр статуса программы.
 		;
 }
 
+static const void * volatile const ph =  prvGetRegistersFromStack;	// 'used' ignored...
+
+
 #endif /* WITHDEBUG && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3) */
 
 
@@ -13679,7 +14619,7 @@ void
 HardFault_Handler(void)
 {
 #if WITHDEBUG
-#if CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3
+#if 0 && (CPUSTYLE_ARM_CM7 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM3)
 
    __asm volatile
    (
@@ -13700,8 +14640,10 @@ HardFault_Handler(void)
 
 #else
 
-	dbg_putchar('S');	// "SK"
-	dbg_putchar('K');
+//	dbg_putchar('S');	// "SK"
+//	dbg_putchar('K');
+	PRINTF(PSTR("HardFault_Handler trapped.\n"));
+	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
 
 #endif
 	//PRINTF(PSTR("HardFault_Handler trapped. HFSR=%08lx\n"), SCB->HFSR);
@@ -14044,8 +14986,3 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 }
 
 #endif /* CPUSTYLE_ARM */
-
-
-// hack for eliminate exception handling unwinding code
-//
-//char __attribute__ ((used)) __aeabi_unwind_cpp_pr0 [0];

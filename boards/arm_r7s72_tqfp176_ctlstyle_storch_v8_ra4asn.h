@@ -100,7 +100,16 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
+
+	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
+
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+
+	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
+	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+
+	//#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -314,7 +323,7 @@
 	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHI2S_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
+	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
@@ -349,6 +358,7 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
+	#define WITHVIEW_3DSS		1
 	#define WITHDEFAULTVIEW		VIEW_3DSS
 
 	#define WITHDISPLAY_FPS		25
@@ -361,6 +371,8 @@
 	#define WITHALPHA			64
 
 	#define WITHAFSPECTRE		1
+
+	#define WITHAFEQUALIZER		1
 
 	#define WITHBOTTOMDBVAL		110
 	#define DEFAULTDIALFREQ		3708000L

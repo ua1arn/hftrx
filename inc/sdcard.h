@@ -15,18 +15,18 @@ struct drvfunc
 	DRESULT (* Disk_write) (
 		BYTE drv,			/* Physical drive number (0..) */
 		const BYTE *buff,	/* Data to be written */
-		DWORD sector,		/* Sector address (LBA) */
+		LBA_t sector,		/* Sector address (LBA) */
 		UINT count			/* Number of sectors to write */
 		);
 	DRESULT (* Disk_read) (
 		BYTE drv,		/* Physical drive number (0..) */
 		BYTE *buff,		/* Data buffer to store read data */
-		DWORD sector,	/* Sector address (LBA) */
+		LBA_t sector,	/* Sector address (LBA) */
 		UINT count		/* Number of sectors to read */
 	);
 	DRESULT (* Get_Sector_Count) (
 		BYTE drv,		/* Physical drive number (0..) */
-		DWORD  *buff	/* Data buffer to store read data */
+		LBA_t  *buff	/* Data buffer to store read data */
 	);
 	DRESULT (* Get_Block_Size) (
 		BYTE drv,		/* Physical drive number (0..) */

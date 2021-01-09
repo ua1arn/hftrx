@@ -16,6 +16,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 uint_fast8_t local_snprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, ... );
+uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, const FLASHMEM char * __restrict format, va_list ap );
 // Отладочная печать
 void debug_printf_P(const FLASHMEM char * __restrict format, ... );
 
@@ -414,7 +415,7 @@ int dbg_getchar(char * r);
 
 #endif /* WITHCAT && WITHUART2HW && WITHCAT_USART2 */
 
-#if WITHUART7HW
+#if WITHLWIP && WITHUART7HW && WITHCAT7_UART7
 	// CAT7 функции работают через UART7
 	// Вызывается из user-mode программы
 	#define HARDWARE_CAT7_INITIALIZE() do { \
@@ -454,7 +455,49 @@ int dbg_getchar(char * r);
 			cat7_sendchar(ctx); \
 		} while (0)
 
-#endif /* WITHUART7HW */
+#endif /* WITHLWIP && WITHUART7HW && WITHCAT7_UART7 */
+
+#if WITHLWIP && WITHUART5HW && WITHCAT7_UART5
+	// CAT7 функции работают через UART5
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT7_INITIALIZE() do { \
+			hardware_uart5_initialize(0); \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT7_SET_SPEED(baudrate) do { \
+			hardware_uart5_set_speed(baudrate); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT7_ENABLETX(v) do { \
+			hardware_uart5_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT7_ENABLERX(v) do { \
+			hardware_uart5_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_CAT7_TX(ctx, c) do { \
+			hardware_uart5_tx((ctx), (c)); \
+		} while (0)
+	// вызывается из обработчика прерываний UART7
+	// с принятым символом
+	#define HARDWARE_UART5_ONRXCHAR(c) do { \
+			cat7_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний UART7
+	#define HARDWARE_UART5_ONOVERFLOW() do { \
+			cat7_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний UART7
+	// по готовности передатчика
+	#define HARDWARE_UART5_ONTXCHAR(ctx) do { \
+			cat7_sendchar(ctx); \
+		} while (0)
+
+#endif /* WITHLWIP && WITHUART5HW && WITHCAT7_UART5 */
 
 #if WITHCAT && WITHUSBCDCACM && WITHCAT_CDC
 	// CAT функции работают через виртуальный USB последовательный порт
@@ -490,12 +533,8 @@ int dbg_getchar(char * r);
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом
-	#define HARDWARE_CDC_ONRXCHAR(c) do { \
+	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
 			cat2_parsechar(c); \
-		} while (0)
-	// вызывается из обработчика прерываний CDC
-	#define HARDWARE_CDC_ONOVERFLOW() do { \
-			cat2_rxoverflow(); \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// произошёл разрыв связи при работе по USB CDC
@@ -504,11 +543,58 @@ int dbg_getchar(char * r);
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
-	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 			cat2_sendchar(ctx); \
 		} while (0)
 
 #endif /* WITHCAT && WITHUSBCDCACM && WITHCAT_CDC */
+
+
+#if WITHLWIP && WITHUSBCDCACM && WITHCAT7_CDC
+	// CAT функции работают через виртуальный USB последовательный порт
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT7_INITIALIZE() do { \
+		} while (0)
+	// Вызывается из user-mode программы
+	#define HARDWARE_CAT7_SET_SPEED(baudrate) do { \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT7_ENABLETX(v) do { \
+			usbd_cdc_enabletx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для управления разрешением последующих вызовов прерывания
+	#define HARDWARE_CAT7_ENABLERX(v) do { \
+			usbd_cdc_enablerx(v); \
+		} while (0)
+	// вызывается из state machie протокола CAT или NMEA (в прерываниях)
+	// для передачи символа
+	#define HARDWARE_CAT7_TX(ctx, c) do { \
+			usbd_cdc_tx((ctx), (c)); \
+		} while (0)
+
+	// вызывается из обработчика прерываний CDC
+	// с принятым символом
+	#define HARDWARE_CDC_ONRXCHAR(c) do { \
+			cat7_parsechar(c); \
+		} while (0)
+	// вызывается из обработчика прерываний CDC
+	#define HARDWARE_CDC_ONOVERFLOW() do { \
+			cat7_rxoverflow(); \
+		} while (0)
+	// вызывается из обработчика прерываний CDC
+	// произошёл разрыв связи при работе по USB CDC
+	#define HARDWARE_CDC_ONDISCONNECT() do { \
+			cat7_disconnect(); \
+		} while (0)
+	// вызывается из обработчика прерываний CDC
+	// по готовности передатчика
+	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+			cat7_sendchar(ctx); \
+		} while (0)
+
+#endif /* WITHLWIP && WITHUSBCDCACM && WITHCAT7_CDC */
 
 
 #if WITHMODEM && WITHUSBCDCACM && WITHMODEM_CDC
@@ -537,12 +623,8 @@ int dbg_getchar(char * r);
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом
-	#define HARDWARE_CDC_ONRXCHAR(c) do { \
+	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
 			modem_parsechar(c); \
-		} while (0)
-	// вызывается из обработчика прерываний CDC
-	#define HARDWARE_CDC_ONOVERFLOW() do { \
-			modem_rxoverflow(); \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// произошёл разрыв связи при работе по USB CDC
@@ -551,7 +633,7 @@ int dbg_getchar(char * r);
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
-	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 			modem_sendchar(ctx); \
 		} while (0)
 
@@ -589,11 +671,8 @@ int dbg_getchar(char * r);
 
 	// вызывается из обработчика прерываний CDC
 	// с принятым символом
-	#define HARDWARE_CDC_ONRXCHAR(c) do { \
+	#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
 			debugusb_parsechar(c); \
-		} while (0)
-	// вызывается из обработчика прерываний CDC
-	#define HARDWARE_CDC_ONOVERFLOW() do { \
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// произошёл разрыв связи при работе по USB CDC
@@ -601,7 +680,7 @@ int dbg_getchar(char * r);
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
-	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 			debugusb_sendchar(ctx); \
 		} while (0)
 
@@ -754,7 +833,7 @@ int dbg_getchar(char * r);
 	#if ! defined (HARDWARE_CDC_ONRXCHAR)
 		// вызывается из обработчика прерываний CDC
 		// с принятым символом
-		#define HARDWARE_CDC_ONRXCHAR(c) do { \
+		#define HARDWARE_CDC_ONRXCHAR(offset, c) do { \
 				(void) (c); \
 				usbd_cdc_enablerx(1); \
 			} while (0)
@@ -765,17 +844,10 @@ int dbg_getchar(char * r);
 		#define HARDWARE_CDC_ONDISCONNECT() do { \
 			} while (0)
 	#endif /* ! defined (HARDWARE_CDC_ONDISCONNECT) */
-	#if ! defined (HARDWARE_CDC_ONOVERFLOW)
-		// вызывается из обработчика прерываний CDC
-		#define HARDWARE_CDC_ONOVERFLOW() do { \
-				usbd_cdc_enablerx(1); \
-			} while (0)
-	#endif /* ! defined (HARDWARE_CDC_ONOVERFLOW) */
-
 	#if ! defined (HARDWARE_CDC_ONTXCHAR)
 		// вызывается из обработчика прерываний CDC
 		// по готовности передатчика
-		#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+		#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 				usbd_cdc_enabletx(0); \
 			} while (0)
 	#endif /* ! defined (HARDWARE_CDC_ONTXCHAR) */

@@ -647,21 +647,20 @@ void arm_hardware_sdram_initialize(void)
 		#define SDRAM_ADDR 		0xC0000000uL
 		#define SDRAM_SIZE 		0x800000uL
 	#endif
-	#define BUFFER_SIZE 		0x1000uL
+	#define BUFFER_SIZE 		0x100uL
 
-	uint32_t addr = SDRAM_ADDR;
+  	uint_fast32_t addr = SDRAM_ADDR;
 
 	PRINTF("sdram testing...\n");
 
-	do
+	for (; addr < SDRAM_ADDR + SDRAM_SIZE - BUFFER_SIZE; addr += BUFFER_SIZE)
 	{
+		PRINTF("addr %lx\n", addr);
 		sdram_test_pattern(addr, BUFFER_SIZE, 0x5555);
-		sdram_test_pattern(addr, BUFFER_SIZE, 0xCCCC);
-		sdram_test_increment(addr, BUFFER_SIZE, 0x7800);
-		sdram_test_random(addr, BUFFER_SIZE);
-
-		addr += BUFFER_SIZE;
-	} while(addr < SDRAM_ADDR + SDRAM_SIZE - BUFFER_SIZE);
+//		sdram_test_pattern(addr, BUFFER_SIZE, 0xCCCC);
+//		sdram_test_increment(addr, BUFFER_SIZE, 0x7800);
+//		sdram_test_random(addr, BUFFER_SIZE);
+	}
 
 	PRINTF("sdram testing done\n");
 	for(;;)
@@ -774,6 +773,7 @@ void arm_hardware_sdram_initialize(void)
 	((value) & ~round_boundary(value, boundary))
 
 /* DDR Controller Register fields */
+/*
 #define DDRCTRL_MSTR_DDR3			BIT(0)
 #define DDRCTRL_MSTR_LPDDR2			BIT(2)
 #define DDRCTRL_MSTR_LPDDR3			BIT(3)
@@ -782,7 +782,7 @@ void arm_hardware_sdram_initialize(void)
 #define DDRCTRL_MSTR_DATA_BUS_WIDTH_HALF	BIT(12)
 #define DDRCTRL_MSTR_DATA_BUS_WIDTH_QUARTER	BIT(13)
 #define DDRCTRL_MSTR_DLL_OFF_MODE		BIT(15)
-
+*/
 #define DDRCTRL_STAT_OPERATING_MODE_MASK	GENMASK(2, 0)
 #define DDRCTRL_STAT_OPERATING_MODE_NORMAL	BIT(0)
 #define DDRCTRL_STAT_OPERATING_MODE_SR		(BIT(0) | BIT(1))
@@ -791,27 +791,28 @@ void arm_hardware_sdram_initialize(void)
 #define DDRCTRL_STAT_SELFREF_TYPE_SR		BIT(5)
 
 #define DDRCTRL_MRCTRL0_MR_TYPE_WRITE		U(0)
+
 /* Only one rank supported */
 #define DDRCTRL_MRCTRL0_MR_RANK_SHIFT		4
 #define DDRCTRL_MRCTRL0_MR_RANK_ALL \
 					BIT(DDRCTRL_MRCTRL0_MR_RANK_SHIFT)
 #define DDRCTRL_MRCTRL0_MR_ADDR_SHIFT		12
 #define DDRCTRL_MRCTRL0_MR_ADDR_MASK		GENMASK(15, 12)
-#define DDRCTRL_MRCTRL0_MR_WR			BIT(31)
+//#define DDRCTRL_MRCTRL0_MR_WR			BIT(31)
 
-#define DDRCTRL_MRSTAT_MR_WR_BUSY		BIT(0)
+//#define DDRCTRL_MRSTAT_MR_WR_BUSY		BIT(0)
 
-#define DDRCTRL_PWRCTL_SELFREF_EN		BIT(0)
-#define DDRCTRL_PWRCTL_POWERDOWN_EN		BIT(1)
-#define DDRCTRL_PWRCTL_EN_DFI_DRAM_CLK_DISABLE	BIT(3)
-#define DDRCTRL_PWRCTL_SELFREF_SW		BIT(5)
+//#define DDRCTRL_PWRCTL_SELFREF_EN		BIT(0)
+//#define DDRCTRL_PWRCTL_POWERDOWN_EN		BIT(1)
+//#define DDRCTRL_PWRCTL_EN_DFI_DRAM_CLK_DISABLE	BIT(3)
+//#define DDRCTRL_PWRCTL_SELFREF_SW		BIT(5)
 
 #define DDRCTRL_PWRTMG_SELFREF_TO_X32_MASK	GENMASK(19, 12)
-#define DDRCTRL_PWRTMG_SELFREF_TO_X32_0		BIT(16)
+//#define DDRCTRL_PWRTMG_SELFREF_TO_X32_0		BIT(16)
 
-#define DDRCTRL_RFSHCTL3_DIS_AUTO_REFRESH	BIT(0)
+//#define DDRCTRL_RFSHCTL3_DIS_AUTO_REFRESH	BIT(0)
 
-#define DDRCTRL_HWLPCTL_HW_LP_EN		BIT(0)
+//#define DDRCTRL_HWLPCTL_HW_LP_EN		BIT(0)
 
 #define DDRCTRL_RFSHTMG_T_RFC_NOM_X1_X32_MASK	GENMASK(27, 16)
 #define DDRCTRL_RFSHTMG_T_RFC_NOM_X1_X32_SHIFT	16
@@ -819,15 +820,15 @@ void arm_hardware_sdram_initialize(void)
 #define DDRCTRL_INIT0_SKIP_DRAM_INIT_MASK	GENMASK(31, 30)
 #define DDRCTRL_INIT0_SKIP_DRAM_INIT_NORMAL	BIT(30)
 
-#define DDRCTRL_DFIMISC_DFI_INIT_COMPLETE_EN	BIT(0)
+//#define DDRCTRL_DFIMISC_DFI_INIT_COMPLETE_EN	BIT(0)
 
-#define DDRCTRL_DBG1_DIS_HIF			BIT(1)
+//#define DDRCTRL_DBG1_DIS_HIF			BIT(1)
 
-#define DDRCTRL_DBGCAM_WR_DATA_PIPELINE_EMPTY	BIT(29)
-#define DDRCTRL_DBGCAM_RD_DATA_PIPELINE_EMPTY	BIT(28)
-#define DDRCTRL_DBGCAM_DBG_WR_Q_EMPTY		BIT(26)
-#define DDRCTRL_DBGCAM_DBG_LPR_Q_DEPTH		GENMASK(12, 8)
-#define DDRCTRL_DBGCAM_DBG_HPR_Q_DEPTH		GENMASK(4, 0)
+//#define DDRCTRL_DBGCAM_WR_DATA_PIPELINE_EMPTY	BIT(29)
+//#define DDRCTRL_DBGCAM_RD_DATA_PIPELINE_EMPTY	BIT(28)
+//#define DDRCTRL_DBGCAM_DBG_WR_Q_EMPTY		BIT(26)
+//#define DDRCTRL_DBGCAM_DBG_LPR_Q_DEPTH		GENMASK(12, 8)
+//#define DDRCTRL_DBGCAM_DBG_HPR_Q_DEPTH		GENMASK(4, 0)
 #define DDRCTRL_DBGCAM_DATA_PIPELINE_EMPTY \
 		(DDRCTRL_DBGCAM_WR_DATA_PIPELINE_EMPTY | \
 		 DDRCTRL_DBGCAM_RD_DATA_PIPELINE_EMPTY)
@@ -836,13 +837,13 @@ void arm_hardware_sdram_initialize(void)
 		 DDRCTRL_DBGCAM_DBG_LPR_Q_DEPTH | \
 		 DDRCTRL_DBGCAM_DBG_HPR_Q_DEPTH)
 
-#define DDRCTRL_DBGCMD_RANK0_REFRESH		BIT(0)
+//#define DDRCTRL_DBGCMD_RANK0_REFRESH		BIT(0)
 
-#define DDRCTRL_DBGSTAT_RANK0_REFRESH_BUSY	BIT(0)
+//#define DDRCTRL_DBGSTAT_RANK0_REFRESH_BUSY	BIT(0)
 
-#define DDRCTRL_SWCTL_SW_DONE			BIT(0)
+//#define DDRCTRL_SWCTL_SW_DONE			BIT(0)
 
-#define DDRCTRL_SWSTAT_SW_DONE_ACK		BIT(0)
+//#define DDRCTRL_SWSTAT_SW_DONE_ACK		BIT(0)
 
 #define DDRCTRL_PCTRL_N_PORT_EN			BIT(0)
 
@@ -867,6 +868,7 @@ void arm_hardware_sdram_initialize(void)
 #define DDRPHYC_DX3DLLCR			0x28C
 
 /* DDR PHY Register fields */
+/*
 #define DDRPHYC_PIR_INIT			BIT(0)
 #define DDRPHYC_PIR_DLLSRST			BIT(1)
 #define DDRPHYC_PIR_DLLLOCK			BIT(2)
@@ -930,9 +932,10 @@ void arm_hardware_sdram_initialize(void)
 #define DDRPHYC_DXNGCR_DXEN			BIT(0)
 
 #define DDRPHYC_DXNDLLCR_DLLSRST		BIT(30)
-#define DDRPHYC_DXNDLLCR_DLLDIS			BIT(31)
 #define DDRPHYC_DXNDLLCR_SDPHASE_MASK		GENMASK(17, 14)
 #define DDRPHYC_DXNDLLCR_SDPHASE_SHIFT		14
+*/
+#define DDRPHYC_DXNDLLCR_DLLDIS			BIT(31)
 
 #define RCC_DDRITFCR			U(0xD8)
 
@@ -978,8 +981,8 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 
 ////////////////////////
 
-//#define VERBOSE PRINTF
-#define VERBOSE(...) // PRINTF
+#define VERBOSE PRINTF
+//#define VERBOSE(...) // PRINTF
 #define ERROR PRINTF
 #define INFO PRINTF
 
@@ -1181,7 +1184,7 @@ struct stm32mp1_ddrctl {
 	uint32_t pcfgqos1_1;	/* 0x548 Read QoS Configuration 1 */
 	uint32_t pcfgwqos0_1;	/* 0x54c Write QoS Configuration 0 */
 	uint32_t pcfgwqos1_1;	/* 0x550 Write QoS Configuration 1 */
-} __packed;
+} KEYWORDPACKED;
 
 /* DDR Physical Interface Control (DDRPHYC) registers*/
 struct stm32mp1_ddrphy {
@@ -1271,7 +1274,7 @@ struct stm32mp1_ddrphy {
 	uint32_t dx3dllcr;	/* 0x28c Byte lane 3 DLL Control */
 	uint32_t dx3dqtr;	/* 0x290 Byte lane 3 DQ Timing */
 	uint32_t dx3dqstr;	/* 0x294 Byte lane 3 QS Timing */
-} __packed;
+} KEYWORDPACKED;
 
 struct stm32mp1_ddr_size {
 	uint64_t base;
@@ -3585,19 +3588,31 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 #if DDR_FREQ <= 300000000uL
 	// less or equal 300 MHz
-	//#include "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-	#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-	//#include "stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-	//#include "stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
-
+	#if WITHHWDDR3_1GBIT
+		#include "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
+	#elif WITHHWDDR3_2GBIT
+		#include "stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
+	#elif WITHHWDDR3_4GBIT
+		#include "stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
+	#elif WITHHWDDR3_8GBIT
+		#include "stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
+	#else
+		#error Please select DDR3 chip size
+	#endif
 #else
-	//#include "stm32mp15-mx_1G.dtsi"	// 64k*16
-	#include "stm32mp15-mx_2G.dtsi"	// 128k*16
-	//#include "stm32mp15-mx_4G.dtsi"		// 256k*16
-	//#include "stm32mp15-mx_8G.dtsi"	// 512k*16
-
+	#if WITHHWDDR3_1GBIT
+		#include "stm32mp15-mx_1G.dtsi"	// 64k*16
+	#elif WITHHWDDR3_2GBIT
+		#include "stm32mp15-mx_2G.dtsi"	// 128k*16
+	#elif WITHHWDDR3_4GBIT
+		#include "stm32mp15-mx_4G.dtsi"		// 256k*16
+	#elif WITHHWDDR3_8GBIT
+		#include "stm32mp15-mx_8G.dtsi"	// 512k*16
+	#else
+		#error Please select DDR3 chip size
+	#endif
 #endif
-// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
+
 void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 {
 	cfg->info.speed = DDR_MEM_SPEED; // kHz
@@ -3885,6 +3900,7 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 
 	return sizeee;	// OK
 }
+
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
@@ -3993,7 +4009,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #define CTL_PARAM(x) PARAM("st,ctl-"#x, c_##x)
 #define PHY_PARAM(x) PARAM("st,phy-"#x, p_##x)
 
-	const struct {
+	static const struct {
 		const char *name; /* Name in DT */
 		const uint32_t offset; /* Offset in config struct */
 		const uint32_t size;   /* Size of parameters */
@@ -4007,7 +4023,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 		PHY_PARAM(cal)
 	};
 
-	priv->ctl = (struct stm32mp1_ddrctl *) DDRC_BASE;
+	priv->ctl = (struct stm32mp1_ddrctl *) DDRCTRL_BASE;
 	priv->phy = (struct stm32mp1_ddrphy *) DDRPHYC_BASE;
 	priv->pwr = PWR_BASE;
 	priv->rcc = RCC_BASE;
@@ -4053,7 +4069,7 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	}
 	INFO("Memory size = 0x%x (%d MB)\n", uret, uret / (1024U * 1024U));
 
-#if 1
+#if 0
 	// Бесконечный тест памяти.
 	PRINTF("DDR memory tests:\n");
 #if defined (BOARD_BLINK_INITIALIZE)
@@ -4117,6 +4133,14 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 }
 
+#elif CPUSTYLE_XC7Z
+
+// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
+void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+{
+	PRINTF("arm_hardware_sdram_initialize start\n");
+	PRINTF("arm_hardware_sdram_initialize done\n");
+}
 #endif
 
 #endif /* WITHSDRAMHW */

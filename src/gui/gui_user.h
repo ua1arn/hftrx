@@ -16,7 +16,6 @@ enum {
 	WINDOW_AF,						// регулировка полосы пропускания фильтров выбранного режима
 	WINDOW_FREQ,					// прямой ввод частоты
 	WINDOW_MENU,					// системное меню
-	WINDOW_ENC2,					// быстрое меню по нажатию 2-го энкодера
 	WINDOW_UIF,						// быстрое меню по нажатию заранее определенных кнопок
 	WINDOW_SWR_SCANNER,				// сканер КСВ по диапазону
 	WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров
@@ -34,6 +33,7 @@ enum {
 	WINDOW_DISPLAY,					// настройки отображения
 	WINDOW_RECEIVE,					// настройки приема
 	WINDOW_NOTCH,					// ручной режекторый фильтр
+	WINDOW_GUI_SETTINGS,				// настройки интерфейса GUI
 
 	WINDOWS_COUNT
 };
@@ -67,12 +67,20 @@ typedef struct {
 enum {
 	TYPE_BP_LOW,
 	TYPE_BP_HIGH,
+	TYPE_AFR,
 	TYPE_IF_SHIFT
 };
 
 enum {
 	TYPE_NOTCH_FREQ,
 	TYPE_NOTCH_WIDTH
+};
+
+enum {
+	TYPE_DISPLAY_SP_TOP,
+	TYPE_DISPLAY_SP_BOTTOM,
+	TYPE_DISPLAY_WF_TOP,
+	TYPE_DISPLAY_WF_BOTTOM
 };
 
 typedef struct {
@@ -82,6 +90,12 @@ typedef struct {
 } bp_var_t;
 
 typedef bp_var_t notch_var_t;
+typedef bp_var_t display_var_t;
+
+typedef struct {
+	uint_fast16_t step;
+	char label [10];
+} enc2step_t;
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

@@ -580,7 +580,6 @@ extern "C" {
 
 #elif CPUSTYLE_STM32MP1
 
-
 	//! GPIO Alternate Functions
 	typedef enum {
 		AF_SYSTEM,		//!< AF0 - SYSTEM*
@@ -693,6 +692,32 @@ extern "C" {
 
 	#define DACVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+
+#elif CPUSTYLE_XC7Z
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
+
+	#if WITHCPUXOSC
+		// с генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с кварцем
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define CPU_FREQ (REFINFREQ * 20)
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 #else
 
@@ -871,6 +896,7 @@ extern "C" {
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
 	#define ATTRPACKED __attribute__ ((packed))
+	#define ATTRNORETURN __attribute__ ((__noreturn__))
 	#define KEYWORDPACKED __packed
 #else                           
 	#if defined   (__CC_ARM)      /* ARM Compiler */
@@ -934,6 +960,7 @@ extern "C" {
 #define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046
 #define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
 #define TSC_TYPE_GT911		62	// Capasitive touch screen controller Goodix GT911
+#define TSC_TYPE_S3402		63	// Capasitive touch screen controller S3402 (on panel H497TLB01.4)
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
@@ -1464,7 +1491,7 @@ extern "C" {
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	#define WITHPOWERTRIMMIN	1	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	4	// Верхний предел регулировки (показываемый на дисплее)
-	//#define WITHPOWERTRIMATU	2	// Значение для работы автотюнера
+	#define WITHPOWERTRIMATU	4	// Значение для работы автотюнера
 	#define WITHMUTEALL			1	// Отключение микрофона во всех режимах
 	#define WITHONEATTONEAMP	1	/* только одно положение аттенюатора и УВЧ */
 
@@ -2000,7 +2027,7 @@ extern "C" {
 	#define BOARD_DETECTOR_SSB 	0
 	#define BOARD_DETECTOR_AM 	0
 	#define BOARD_DETECTOR_FM 	0
-	#define BOARD_DETECTOR_TUNE 0x00	/* конфигурация платы для режима TUNE (CWZ на передачу) */
+	#define BOARD_DETECTOR_TUNE 	0		// Заглушка конфигурация платы для режима TUNE (CWZ на передачу)
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
 	#define	BOARD_FILTERCODE_0	0
 	#define	BOARD_FILTERCODE_1	0
@@ -2034,7 +2061,7 @@ extern "C" {
 //#define LCDMODE_V2A	1	/* только главный экран, без PIP (но главный экран 16 бит) */
 
 #if LCDMODE_V0
-	/* Обычная конфигурация без PIP с L8 на основном экране */
+	/* Обычная конфигурация одна страница без PIP с L8 на основном экране */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
 	//#define LCDMODE_MAIN_RGB565	1
@@ -2148,12 +2175,99 @@ extern "C" {
 
 	#define WITHFASTWATERFLOW 1
 
+#elif LCDMODE_V2_2PAGE
+	/* только главный экран с двумя видеобуферами L8, без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	#define LCDMODE_MAIN_L8	1
+	//#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	2
+	#define LCDMODE_PIXELSIZE 1
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
+	//#define LCDMODE_PIP_PAGES	3
+
+	// 0..COLORPIP_BASE-1 - волопад
+	// COLORPIP_BASE..127 - надписи и элементы дизайна
+	// то же с кодом больше на 128 - затененные цвета для получения полупрозрачности
+	// 0..95 - палитра водопада
+	// 96..111 - норм цвета
+	// 112..127 - первая степень AA
+	// Заполнение палитры производится в display2_xltrgb24()
+
+	#define COLORPIP_SHADED 128
+	#define COLORPIP_ALIASED 16
+	#define COLORPIP_BASE 96	// should be match to PALETTESIZE
+
+	#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
 #elif LCDMODE_V2A
 	/* только главный экран 16 бит (три страницы), без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
 	#define LCDMODE_MAIN_PAGES	3
+	#define LCDMODE_PIXELSIZE 2
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
+	//#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+
+	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V2A_2PAGE
+	/* только главный экран 16 бит (две страницы), без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	//#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	2
+	#define LCDMODE_PIXELSIZE 2
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB565	1
+	//#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+
+	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V5A
+	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	//#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_MAIN_ARGB888	1
+	#define LCDMODE_MAIN_PAGES	3
+	#define LCDMODE_PIXELSIZE 4
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB888	1
+	//#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+
+	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V2B
+	/* только главный экран 16 бит (одна страница), без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	//#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_MAIN_RGB565	1
+	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 2
 
 	//#define LCDMODE_PIP_L8	1
@@ -2202,6 +2316,36 @@ extern "C" {
 #if WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
+
+
+#if (DIM_X < 800 || DIM_Y < 480) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
+	#undef WITHTOUCHGUI									// для функционирования touch GUI
+#endif
+
+#if WITHTOUCHGUI
+
+#define WITHGUIMAXX				800						// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
+#define WITHGUIMAXY				480
+#define FOOTER_HEIGHT			50						// высота нижнего ряда кнопок
+
+#if (__CORTEX_M == 0)
+	#define FORMATFROMLIBRARY 		1
+#endif
+
+#if ! defined WITHUSEMALLOC								// необходима поддержка динамического управления памятью
+	#define WITHUSEMALLOC		1
+#endif /* ! defined WITHUSEMALLOC */
+
+#if ! WITHMENU
+	#error WITHMENU must be defined for WITHTOUCHGUI
+#endif
+
+#if ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL)
+	#undef WITHGUIHEAP
+	#define WITHGUIHEAP 		(80 * 1024uL)			// требуемый размер кучи для touch GUI
+#endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
+
+#endif /* WITHTOUCHGUI */
 
 #ifdef __cplusplus
 }

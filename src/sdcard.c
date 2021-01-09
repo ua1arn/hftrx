@@ -144,8 +144,8 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 	// Обработка информациолнного блока (Code length is 128 bits = 16 bytes)
 	//
 	const uint_fast8_t csdv = array_get_bits(bv, 128, 127, 2);	//  [127:126] - csd structure version
-	PRINTF(PSTR("CSD version=0x%02x\n"), csdv);
-	PRINTF(PSTR("CSD TRAN_SPEED = %d (0x%02x)\n"), array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96]
+//	PRINTF(PSTR("CSD version=0x%02x\n"), csdv);
+//	PRINTF(PSTR("CSD TRAN_SPEED=%d (0x%02x)\n"), array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96]
 
 	switch (csdv)
 	{	
@@ -374,7 +374,7 @@ static uint_fast8_t crc7b8(uint_fast8_t crc, uint_fast8_t v8)
 
 #elif CPUSTYLE_R7S721
 
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32MP1
 
 
 /** 
@@ -552,7 +552,7 @@ static void DMA_SDIO_setparams(
 
 	SDHI0.CC_EXT_MODE |= (1uL << 1);	// DMASDRW
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 
@@ -669,7 +669,7 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	__DMB();
 	return 0;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 	// check result
 	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
@@ -718,7 +718,7 @@ static void DMA_sdio_cancel(void)
 		;
 	SDHI0.CC_EXT_MODE &= ~ (1uL << 1);	// DMASDRW
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 	//SDMMC1->CMD = SDMMC_CMD_CMDSTOP;
 
@@ -744,7 +744,7 @@ static void DMA_sdio_cancel(void)
 
 #if CPUSTYLE_R7S721
 
-#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 #elif CPUSTYLE_STM32F4XX
 #else
@@ -758,7 +758,7 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
 {
 }
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 static volatile int sd_event_xx;
 static volatile int sd_event_value;
@@ -794,12 +794,11 @@ WaitEvents(events_t e, int type)
 		{
 			sd_event_xx = 0;
 			system_enableIRQ();
-			SDMMC1->MASK = 0;
 			return EV_SD_READY;
 		}
 		system_enableIRQ();
 	}
-	SDMMC1->MASK = 0;
+	PRINTF("WaitEvents: timeout\n");
 	return EV_SD_ERROR;
 }
 
@@ -821,9 +820,9 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
       //We have finished the command execution
       e |= EV_SD_READY;
       SDMMC1->MASK &= ~ (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
-      SDMMC1->ICR |= (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
+      SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC);
    }
-   uint32_t fdata = (f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT));
+   const uint_fast32_t fdata = f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
    if (fdata)
    {
       //We have finished the data send/receive
@@ -848,7 +847,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 
 	return 0;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	return WaitEvents(EV_SD_DATA, WAIT_ANY) == EV_SD_ERROR;
 
@@ -896,7 +895,7 @@ static void sdhost_dpsm_wait_fifo_empty(void)
 
 #elif CPUSTYLE_R7S721
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// в процессоре для обмена с SDIO используется выделенный блок DMA
 	// TODO: найти способ контроля состояния FIFO
 	for (;;)
@@ -937,7 +936,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 #elif CPUSTYLE_R7S721
 
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 
 	//Clean DPSM interrupt flags and enable DPSM interrupts
@@ -1037,7 +1036,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 	default:
 		break;
 	}
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	switch (cmd)
 	{
 	case SD_CMD_WRITE_SINGLE_BLOCK:
@@ -1088,7 +1087,7 @@ static portholder_t encode_appcmd(uint_fast8_t cmd)
 	default:
 		return (cmd & 0x3f) | R7S721_SD_CMD_ACMD_bm;
 	}
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	switch (cmd)
 	{
 	case SD_CMD_SD_APP_SEND_SCR:
@@ -1139,7 +1138,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 	SDHI0.SD_ARG1 = arg >> 16;
 	SDHI0.SD_CMD = cmd;				// Выполнение команды начинается после записи в этот регистр
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
@@ -1219,7 +1218,7 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 	SDHI0.SD_ARG1 = arg >> 16;
 	SDHI0.SD_CMD = cmd;				// Выполнение команды начинается после записи в этот регистр
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
@@ -1305,7 +1304,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	SDHI0.SD_ARG1 = arg >> 16;
 	SDHI0.SD_CMD = cmd;				// Выполнение команды начинается после записи в этот регистр
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	SDMMC1->ARG = arg;
 	SDMMC1->CMD = 
@@ -1357,7 +1356,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 
 	return 0;
 
-#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	if ((SDMMC1->RESPCMD & SDMMC_RESPCMD_RESPCMD) != (cmd & SDMMC_CMD_CMDINDEX))
 	{
@@ -1421,7 +1420,7 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	
 	return ec;
 
-#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	uint_fast8_t ec = 0;
 	while (ec == 0)
@@ -1435,7 +1434,7 @@ static uint_fast8_t sdhost_get_none_resp(void)
 		if ((sta & SDMMC_STA_DTIMEOUT) != 0)
 			ec = 1;
 #endif /* defined (SDMMC_STA_DTIMEOUT) */
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		if ((sta & SDMMC_STA_BUSYD0END) != 0)
 			break;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -1521,7 +1520,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	
 	return ec;
 
-#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	uint_fast8_t ec = 0;
 	while (ec == 0)
@@ -1537,7 +1536,7 @@ static uint_fast8_t sdhost_get_resp(void)
 		if ((sta & SDMMC_STA_DTIMEOUT) != 0)
 			ec = 1;
 #endif /* defined (SDMMC_STA_DTIMEOUT) */
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		if ((sta & SDMMC_STA_BUSYD0END) != 0)
 			break;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -1637,7 +1636,7 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	
 	return ec;
 
-#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	uint_fast8_t ec = 0;
 	while (ec == 0)
@@ -1653,7 +1652,7 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 		if ((sta & SDMMC_STA_DTIMEOUT) != 0)
 			ec = 1;
 #endif /* defined (SDMMC_STA_DTIMEOUT) */
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		if ((sta & SDMMC_STA_BUSYD0END) != 0)
 			break;
 #endif /* CPUSTYLE_STM32H7XX */
@@ -1724,7 +1723,7 @@ static uint_fast32_t sdhost_get_resp32bit(void)
 	// SD_RSP07: R127 to 120 (8 bit)
 	return ((uint32_t) SDHI0.SD_RSP01 << 16) | SDHI0.SD_RSP00;	// [39:8] OCR register
 
-#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	return SDMMC1->RESP1;	// Card Status [39:8]
 
@@ -1787,7 +1786,7 @@ static void sdhost_get_resp128bit(uint8_t * resp128)
 		resp128 [14] = SDHI0.SD_RSP00 >> 0;
 		resp128 [15] = 0;				// CRC-7 and stop bit
 
-#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 		// RESP1;Card Status [127:96]
 		// RESP2;Card Status [95:64]
@@ -2177,29 +2176,27 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
 }
 
 #endif
+
+static int multisectorWriteProblems(UINT count)
+{
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	if (count > 1)
+	{
+		return 1;
+	}
+#endif /* CPUSTYLE_STM32H7XX */
+	return 0;
+}
 // write a size Byte big block beginning at the address.
 static 
 DRESULT SD_disk_write(
 	BYTE drv,			/* Physical drive nmuber (0..) */
 	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Sector address (LBA) */
+	LBA_t sector,		/* Sector address (LBA) */
 	UINT count			/* Number of sectors to write */
 	)
 {
-#if CPUSTYLE_STM32H7XX
-	if (count > 1)
-	{
-		while (count --)
-		{
-			DRESULT ec = SD_disk_write(drv, buff, sector, 1);
-			if (ec != RES_OK)
-				return ec;
-			buff += 512;
-			sector += 1;
-		}
-		return RES_OK;
-	}
-#endif /* CPUSTYLE_STM32H7XX */
+	sector += USERFIRSTSBLOCK;
 
 	enum { txmode = 1 };
 	//return SDWriteBlock(sector, buff, count);
@@ -2237,7 +2234,7 @@ DRESULT SD_disk_write(
 		// Работает и на STM32Fxxx
 
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		// H7 need here: 
 		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* CPUSTYLE_STM32H7XX */
@@ -2250,7 +2247,7 @@ DRESULT SD_disk_write(
 			return RES_ERROR;
 		}
 
-#if ! CPUSTYLE_STM32H7XX
+#if ! (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 		// other then H7 need here
 		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* ! CPUSTYLE_STM32H7XX */
@@ -2302,7 +2299,7 @@ DRESULT SD_disk_write(
 		// Сперва настраивается DMA, затем выдается команда SD_CMD_WRITE_MULT_BLOCK
 		// Работает и на STM32Fxxx
 		DMA_SDIO_setparams((uintptr_t) buff, 512, count, txmode);
-#if CPUSTYLE_STM32H7XX
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		// H7 need here: 
 		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* CPUSTYLE_STM32H7XX */
@@ -2316,7 +2313,7 @@ DRESULT SD_disk_write(
 			return RES_ERROR;
 		}
 
-#if ! CPUSTYLE_STM32H7XX
+#if ! (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 		// other then H7 need here
 		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* ! CPUSTYLE_STM32H7XX */
@@ -2361,10 +2358,11 @@ static
 DRESULT SD_disk_read(
 	BYTE drv,			/* Physical drive nmuber (0..) */
 	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	/* Sector address (LBA) */
+	LBA_t sector,	/* Sector address (LBA) */
 	UINT count		/* Number of sectors to read */
 	)
 {
+	sector += USERFIRSTSBLOCK;
 	enum { txmode = 0 };
 	//if ((uintptr_t) buff & 0x1F)
 	//{
@@ -2504,7 +2502,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 			sdhost_SDType = SD_HIGH_CAPACITY;
 			sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
 
-			PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
+			//PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
 			return 0;
 		}
 	}
@@ -2520,7 +2518,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 		PRINTF(PSTR("sdhost_sdcard_checkversion failure\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
+	//PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
 	return 0;
 }
 
@@ -2528,14 +2526,14 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 {
 	uint_fast32_t resp;
 
-	PRINTF(PSTR("SD CARD power on start\n"));
+	//PRINTF(PSTR("SD CARD power on start\n"));
 	sdhost_sdcard_RCA = 0;
 
 
 	if (sdhost_sdcard_checkversion() != 0)
 		return 1;
 
-	PRINTF(PSTR("Set voltage conditions\n"));
+	//PRINTF(PSTR("Set voltage conditions\n"));
 
 	const unsigned COUNTLIMIT = 10000;
 	unsigned count;
@@ -2558,13 +2556,13 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
  		//PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
-		PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
+		//PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & SD_HIGH_CAPACITY) != 0)
 		{
             sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD;
-			PRINTF(PSTR("SD CARD is high capacity\n"));
+			//PRINTF(PSTR("SD CARD is high capacity\n"));
 		}
-		PRINTF(PSTR("SD CARD power on done, no errors\n"));
+		//PRINTF(PSTR("SD CARD power on done, no errors\n"));
 		return 0;
 	}
 	PRINTF(PSTR("SD CARD power on done, error\n"));
@@ -2619,7 +2617,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 {
 	uint_fast32_t resp;
 
-	PRINTF(PSTR("SD CARD identification start\n"));
+	//PRINTF(PSTR("SD CARD identification start\n"));
 
 	sdhost_long_resp(encode_cmd(SD_CMD_ALL_SEND_CID), 0);	// CMD2
 	if (sdhost_get_R2(sdhost_sdcard_CID) != 0)
@@ -2639,7 +2637,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	else
 	{
 		sdhost_sdcard_RCA = 0xFFFF & (resp >> 16);
-		PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
+		//PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
 	}
 #endif /* WITHSDHCHW */
 
@@ -2650,7 +2648,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		PRINTF(PSTR("SD_CMD_SEND_CSD error\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
+	//PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
 
 #if WITHSDHCHW
 	// Select card
@@ -2660,7 +2658,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD error\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD okay\n"));
+	//PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD okay\n"));
 #endif /* WITHSDHCHW */
 
 	// Get SCR
@@ -2718,7 +2716,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
+		//PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
 		hardware_sdhost_setbuswidth(1);		// 4-bit width
 	}
 	else if (bussupport1b != 0)
@@ -2853,12 +2851,17 @@ DRESULT SD_Get_Block_Size (
 static 
 DRESULT SD_Get_Sector_Count (
 	BYTE drv,		/* Physical drive nmuber (0..) */
-	DWORD  *buff	/* Data buffer to store read data */
+	LBA_t  *buff	/* Data buffer to store read data */
 	)
 {
-	//PRINTF(PSTR("SD_Get_Sector_Count: drv=%d\n"), (int) drv);
-	* buff = SD_ReadCardSize() / FF_MAX_SS;
-	return RES_OK;
+	LBA_t val = SD_ReadCardSize() / FF_MAX_SS;
+	if (val > USERFIRSTSBLOCK)
+	{
+		//PRINTF(PSTR("SD_Get_Sector_Count: drv=%d\n"), (int) drv);
+		* buff = val - USERFIRSTSBLOCK;
+		return RES_OK;
+	}
+	return RES_ERROR;
 }
 
 /* запись буферизированных данных на носитель */
@@ -2876,7 +2879,7 @@ DSTATUS SD_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */
 )
 {
-	PRINTF(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("SD_Initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
 #if WITHSDHCHW
@@ -2915,13 +2918,81 @@ DSTATUS SD_Status (
 }
 
 
+
+// write a size Byte big block beginning at the address.
+static
+DRESULT SD_disk_writeMisalign(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	const BYTE *buff,	/* Data to be written */
+	LBA_t sector,		/* Sector address (LBA) */
+	UINT count			/* Number of sectors to write */
+	)
+{
+	if (multisectorWriteProblems(count) || ((uintptr_t) buff % DCACHEROWSIZE) != 0)
+	{
+		while (count --)
+		{
+			static FATFSALIGN_BEGIN BYTE tmpbuf[FF_MAX_SS] FATFSALIGN_END;
+			const BYTE *abuff = buff;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				memcpy(tmpbuf, buff, FF_MAX_SS);
+				abuff = tmpbuf;
+			}
+
+			DRESULT ec = SD_disk_write(drv, abuff, sector, 1);
+			if (ec != RES_OK)
+				return ec;
+			buff += FF_MAX_SS;
+			sector += 1;
+		}
+		return RES_OK;
+	}
+	return SD_disk_write(drv, buff, sector, count);
+}
+
+// read a size Byte big block beginning at the address.
+static
+DRESULT SD_disk_readMisalign(
+	BYTE drv,			/* Physical drive nmuber (0..) */
+	BYTE *buff,		/* Data buffer to store read data */
+	LBA_t sector,	/* Sector address (LBA) */
+	UINT count		/* Number of sectors to read */
+	)
+{
+	if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+	{
+		while (count --)
+		{
+			static FATFSALIGN_BEGIN BYTE tmpbuf[FF_MAX_SS] FATFSALIGN_END;
+			BYTE *abuff = buff;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				abuff = tmpbuf;
+			}
+
+			DRESULT ec = SD_disk_read(drv, abuff, sector, 1);
+			if (ec != RES_OK)
+				return ec;
+			if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+			{
+				memcpy(buff, tmpbuf, FF_MAX_SS);
+			}
+			buff += FF_MAX_SS;
+			sector += 1;
+		}
+		return RES_OK;
+	}
+	return SD_disk_read(drv, buff, sector, count);
+}
+
 const struct drvfunc SD_drvfunc =
 {
 	SD_Initialize,
 	SD_Status,
 	SD_Sync,
-	SD_disk_write,
-	SD_disk_read,
+	SD_disk_writeMisalign,
+	SD_disk_readMisalign,
 	SD_Get_Sector_Count,
 	SD_Get_Block_Size,
 };
@@ -3880,7 +3951,7 @@ static char mmcWriteSectors(
 static 
 DRESULT MMC_Get_Sector_Count (
 	BYTE drv,		/* Physical drive nmuber (0..) */
-	DWORD  *buff	/* Data buffer to store read data */
+	LBA_t  *buff	/* Data buffer to store read data */
 	)
 {
 	* buff = MMC_ReadCardSize() / FF_MAX_SS;

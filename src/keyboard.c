@@ -276,8 +276,8 @@ static volatile uint_fast8_t kbd_ready;
 
 // вызывается с частотой TICKS_FREQUENCY герц
 // после завершения полного цикла ADC по всем входам.
-void
-kbd_spool(void)
+static void
+kbd_spool(void * ctx)
 {
 	uint_fast8_t code;
 	if (kbd_scan_local(& code) != 0)
@@ -343,11 +343,19 @@ uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
+	static ticker_t ticker;
+	static adcdone_t aevent;
+
 	// todo: все присвоения нулями могут быть убраны.
 
 	////kbd_press = 0;
 	////kbd_release = 0;
 	////kbd_repeat = 0;
+#if KEYBOARD_USE_ADC
+	adcdone_initialize(& aevent, kbd_spool, NULL);
+#else /* KEYBOARD_USE_ADC */
+	ticker_initialize(& ticker, 1, kbd_spool, NULL);
+#endif /* KEYBOARD_USE_ADC */
 }
 
 #else /* WITHKEYBOARD */

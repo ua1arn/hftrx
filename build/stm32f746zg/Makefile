@@ -27,7 +27,7 @@ HEX  = $(CP) -O ihex -R .bss -R .heap
 BIN  = $(CP) -O binary -R .bss -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1/src
+LWIPDIR = ../../src/lwip-2.1.2
 OBJDIR = ./obj
 
 # Define optimisation level here
@@ -49,10 +49,17 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(CMSISDIR)/Core/Include \
 	$(CMSISDIR)/DSP/Include \
+	$(CMSISDIR)/DSP/ComputeLibrary/Include \
+	$(CMSISDIR)/Core/Source \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
-	$(LWIPDIR)/include \
-	$(LWIPDIR)/include/ipv4
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/apps/httpserver_raw \
+	$(OPENVGDIR)/include/VG \
+	$(OPENVGDIR)/include \
+	$(OPENVGDIR)/include/EGL \
+	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
@@ -75,8 +82,8 @@ SRCDIR = ../../src
 PROJECT = tc1_stm32f746zg
 
 # Define linker script file here
-#LDSCRIPT_ROM = ./STM32F746ZG_rom.ld
-LDSCRIPT_ROM = ./STM32F746ZG_rom_sdram.ld
+LDSCRIPT_ROM = ./STM32F746ZG_rom.ld
+#LDSCRIPT_ROM = ./STM32F746ZG_rom_sdram.ld
 
 LDSCRIPT_RAM = ./STM32F746ZG_ram.ld
 
@@ -127,8 +134,8 @@ ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS) $(MAKE_DEFINES)
 
-LDFLAGS_RAM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_RAM) -Wl,-Map=$(PROJECT)_ram.map,--cref $(LIBDIR)
-LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)
+LDFLAGS_RAM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_RAM) -Wl,-Map=$(PROJECT)_ram.map,--cref $(LIBDIR)
+LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_ROM) -Wl,-Map=$(PROJECT)_rom.map,--cref $(LIBDIR)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
@@ -147,8 +154,11 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: ROM
 
 flash: ROM
-	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
-
+	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -c UR -HardRst
+	
+app_run:
+	ST-LINK_CLI.exe -Q -c UR -HardRst
+	
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
@@ -189,6 +199,9 @@ clean:
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
 
 
 # *** EOF ***

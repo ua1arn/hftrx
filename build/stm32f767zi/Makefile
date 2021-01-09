@@ -28,7 +28,7 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss
 BIN  = $(CP) -O binary -R .noinit -R .bss
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1/src
+LWIPDIR = ../../src/lwip-1.4.1
 OBJDIR = ./obj
 
 # Define optimisation level here
@@ -49,10 +49,16 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(CMSISDIR)/Core/Include \
 	$(CMSISDIR)/DSP/Include \
+	$(CMSISDIR)/DSP/ComputeLibrary/Include \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
-	$(LWIPDIR)/include \
-	$(LWIPDIR)/include/ipv4
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/apps/httpserver_raw \
+	$(OPENVGDIR)/include/VG \
+	$(OPENVGDIR)/include \
+	$(OPENVGDIR)/include/EGL \
+	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
@@ -145,7 +151,10 @@ all: ROM
 
 flash: ROM
 	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
-
+	
+app_run:
+	ST-LINK_CLI.exe -Q -rst
+	
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
@@ -157,7 +166,7 @@ $(OBJDIR)/%.o: %.c
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CC) -std=gnu++11 -fno-rtti -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(CC) -std=gnu++11 -fno-rtti -fno-exceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
@@ -190,6 +199,9 @@ clean:
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
 
 
 # *** EOF ***

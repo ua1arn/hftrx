@@ -14,7 +14,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410" name="r7s721020" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410" name="r7s721020" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.288097818" name="ARM Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.1374206731" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" value="true" valueType="boolean"/>
@@ -53,16 +53,18 @@
 									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.2002454582" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.710390065" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -75,16 +77,18 @@
 									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.1779921479" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1058551991" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -97,16 +101,18 @@
 									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1709062437" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1748405061" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -152,7 +158,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592" name="stm32h743ii" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592" name="stm32h743ii" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
 					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592." name="/" resourcePath="">
 						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1065081031" name="ARM Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.179621590" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" value="true" valueType="boolean"/>
@@ -201,6 +207,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1127033403" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -223,6 +233,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1740697233" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -245,6 +259,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.456610938" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -321,6 +339,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.968034443" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -340,6 +362,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.119390635" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -359,6 +385,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1919757008" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -450,6 +480,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1314344816" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -470,6 +504,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.835450119" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -490,6 +528,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.948663826" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -564,7 +606,11 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.141547350" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" value="rm" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.1181491194" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" value="962691777" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.8170366" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
-							<builder buildPath="${ProjName}/build/${ConfigName}/" id="cdt.managedbuild.builder.gnu.cross.325238145" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<builder buildPath="${ProjName}/build/${ConfigName}/" id="cdt.managedbuild.builder.gnu.cross.325238145" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross">
+								<outputEntries>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="build/stm32f746zg"/>
+								</outputEntries>
+							</builder>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.160913192" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.445460446" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.868877564" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
@@ -575,16 +621,17 @@
 									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1714978743" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1089312548" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -597,16 +644,17 @@
 									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.346553819" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.2047647142" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -619,16 +667,17 @@
 									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.470276062" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.486612800" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -705,6 +754,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.668007736" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -724,6 +777,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1574613372" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -743,6 +800,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1805668966" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -833,6 +894,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1007432407" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -852,6 +917,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.282504790" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -871,6 +940,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1736848152" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -947,6 +1020,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.51574555" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -966,6 +1043,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.877539834" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -985,6 +1066,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1999710997" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1061,6 +1146,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.794675792" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1080,6 +1169,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1092272083" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -1099,6 +1192,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1738749577" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1175,6 +1272,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.2090880501" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1194,6 +1295,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.437341540" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -1213,6 +1318,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.195906346" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1289,6 +1398,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1659248544" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1308,6 +1421,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1533161922" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -1327,6 +1444,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.308774454" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1403,6 +1524,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.577317707" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1422,6 +1547,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1306287258" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -1441,6 +1570,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.508595142" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1517,6 +1650,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.357415170" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1536,6 +1673,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1155868725" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -1555,6 +1696,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.446973267" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1631,6 +1776,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1566319611" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1650,6 +1799,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1534844678" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -1669,6 +1822,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1927371909" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1745,6 +1902,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.2056500400" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1764,6 +1925,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.559547488" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -1783,6 +1948,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.241205447" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1859,6 +2028,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1849603513" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1878,6 +2051,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.2006332874" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -1897,6 +2074,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.248086108" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -1973,6 +2154,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1583900105" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -1992,6 +2177,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1301962295" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -2011,6 +2200,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.402571717" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -2087,6 +2280,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.375152365" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -2106,6 +2303,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1661589210" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -2125,6 +2326,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.857976906" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -2202,6 +2407,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.2076680726" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -2222,6 +2431,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1889665580" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -2242,6 +2455,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1589141287" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -2319,6 +2536,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1042150583" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -2339,6 +2560,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1528431325" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -2359,6 +2584,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1976575764" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -2435,6 +2664,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.613564284" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -2454,6 +2687,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.821650662" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -2473,6 +2710,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.193234554" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -2550,6 +2791,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1933929788" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -2570,6 +2815,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1137476394" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -2590,6 +2839,10 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1839141950" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -2647,7 +2900,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections.2005500254" name="Data sections (-fdata-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections" value="true" valueType="boolean"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level.1633531213" name="Debug level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format.2113187826" name="Debug format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.1042507339" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name" value="GNU MCU Eclipse ARM Embedded GCC" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.1042507339" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name" value="GNU Tools for ARM Embedded Processors" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.839693371" name="Architecture" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.architecture" value="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.arm" valueType="enumerated"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.1047736401" name="ARM family" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.mcpu.cortex-m3" valueType="enumerated"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.10539191" name="Instruction set" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.thumb" valueType="enumerated"/>
@@ -2660,7 +2913,7 @@
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.size.764494161" name="Size command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.size" value="size" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.1160178135" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make" value="make" valueType="string"/>
 							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.573583522" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" value="rm" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.422272798" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" value="962691777" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.422272798" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" value="1287942917" valueType="string"/>
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.978018210" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
 							<builder buildPath="${ProjName}/build/${ConfigName}/" id="cdt.managedbuild.builder.gnu.cross.1590383213" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1655132322" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
@@ -2681,6 +2934,11 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1734940494" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -2701,6 +2959,11 @@
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1683573035" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -2711,16 +2974,18 @@
 									<listOptionValue builtIn="false" value="STM32MP153Dxx=1"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.1553339857" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1341894635" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
@@ -2753,8 +3018,154 @@
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 			<storageModule moduleId="ilg.gnumcueclipse.managedbuild.packs"/>
 		</cconfiguration>
-		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592.315541523">
-			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592.315541523" moduleId="org.eclipse.cdt.core.settings" name="stm32h745ii">
+		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1370923348.634599155">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1370923348.634599155" moduleId="org.eclipse.cdt.core.settings" name="stm32f746ng_sdram">
+				<externalSettings>
+					<externalSetting/>
+				</externalSettings>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GASErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GmakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.CWDLocator" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1370923348.634599155" name="stm32f746ng_sdram" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
+					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1370923348.634599155." name="/" resourcePath="">
+						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.899512691" name="ARM Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.1202988722" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting.1994381676" name="Create extended listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize.1669301213" name="Print size" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.1831393932" name="Optimization Level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level" value="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.size" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength.419685675" name="Message length (-fmessage-length=0)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar.82938755" name="'char' is signed (-fsigned-char)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections.1342531609" name="Function sections (-ffunction-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections.1369513484" name="Data sections (-fdata-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level.695334655" name="Debug level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format.49706462" name="Debug format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.2125735898" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name" value="GNU MCU Eclipse ARM Embedded GCC" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.1658856554" name="Architecture" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.architecture" value="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.arm" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.930911240" name="ARM family" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.mcpu.cortex-m3" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.1747169303" name="Instruction set" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.thumb" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix.1990967492" name="Prefix" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix" value="arm-none-eabi-" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.c.2068646974" name="C compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.c" value="gcc" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp.1243199069" name="C++ compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp" value="g++" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar.820617467" name="Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar" value="ar" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy.372274008" name="Hex/Bin converter" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy" value="objcopy" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump.1028855608" name="Listing generator" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump" value="objdump" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.size.358045967" name="Size command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.size" value="size" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.1873573870" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make" value="make" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.1178659771" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" value="rm" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.547303593" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" value="962691777" valueType="string"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.1497090755" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
+							<builder buildPath="${ProjName}/build/${ConfigName}/" id="cdt.managedbuild.builder.gnu.cross.1998453576" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross">
+								<outputEntries>
+									<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="outputPath" name="build/stm32f746zg"/>
+								</outputEntries>
+							</builder>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1584834132" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1267992411" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.362269962" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="NDEBUG=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F7XX=1"/>
+									<listOptionValue builtIn="false" value="STM32F746xx=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1593024661" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+								</option>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.248388" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.36153798" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.920596700" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="NDEBUG=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F7XX=1"/>
+									<listOptionValue builtIn="false" value="STM32F746xx=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.2076501674" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+								</option>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1315581851" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.497972289" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.1610124322" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="NDEBUG=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F7XX=1"/>
+									<listOptionValue builtIn="false" value="STM32F746xx=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
+								</option>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.652097518" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+								</option>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1031944202" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.2138700832" name="GNU ARM Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.681473267" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" value="true" valueType="boolean"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.1389094426" name="GNU ARM Cross C++ Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.gcsections.1690195905" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.gcsections" value="true" valueType="boolean"/>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input.1119319496" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input">
+									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
+									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
+								</inputType>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.1708742405" name="GNU ARM Cross Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash.348447400" name="GNU ARM Cross Create Flash Image" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting.1661767826" name="GNU ARM Cross Create Listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.source.2110944056" name="Display source (--source|-S)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.source" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.allheaders.1220719521" name="Display all headers (--all-headers|-x)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.allheaders" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.demangle.790297873" name="Demangle names (--demangle|-C)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.demangle" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.linenumbers.599928013" name="Display line numbers (--line-numbers|-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.linenumbers" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.wide.1070683893" name="Wide lines (--wide|-w)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.wide" value="true" valueType="boolean"/>
+							</tool>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize.1964668421" name="GNU ARM Cross Print Size" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.printsize.format.1425315397" name="Size format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.printsize.format"/>
+							</tool>
+						</toolChain>
+					</folderInfo>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1378179117">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1378179117" moduleId="org.eclipse.cdt.core.settings" name="xc7Z010">
 				<externalSettings/>
 				<extensions>
 					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
@@ -2766,129 +3177,139 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592.315541523" name="stm32h745ii" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
-					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592.315541523." name="/" resourcePath="">
-						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.67919140" name="ARM Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.1861219847" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting.2102718829" name="Create extended listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize.1556237770" name="Print size" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.2119198360" name="Optimization Level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level" value="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.size" valueType="enumerated"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength.728064821" name="Message length (-fmessage-length=0)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar.668530764" name="'char' is signed (-fsigned-char)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections.312863401" name="Function sections (-ffunction-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections.379003715" name="Data sections (-fdata-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections" value="true" valueType="boolean"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level.1928592613" name="Debug level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format.2131374322" name="Debug format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.905654897" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name" value="GNU Tools for ARM Embedded Processors" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.269551955" name="Architecture" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.architecture" value="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.arm" valueType="enumerated"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.514651730" name="ARM family" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.mcpu.cortex-m3" valueType="enumerated"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.1900953126" name="Instruction set" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.thumb" valueType="enumerated"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix.1903156916" name="Prefix" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix" value="arm-none-eabi-" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.c.1798789491" name="C compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.c" value="gcc" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp.96318294" name="C++ compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp" value="g++" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar.758537531" name="Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar" value="ar" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy.470454364" name="Hex/Bin converter" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy" value="objcopy" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump.936916323" name="Listing generator" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump" value="objdump" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.size.1058088219" name="Size command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.size" value="size" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.437391771" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make" value="make" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.2003028910" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" value="rm" valueType="string"/>
-							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.893780090" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" value="1287942917" valueType="string"/>
-							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.1997686779" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
-							<builder buildPath="${ProjName}/build/${ConfigName}/" id="cdt.managedbuild.builder.gnu.cross.1931934395" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.562357169" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.162043232" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.659838704" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="${cross_rm} -rf" description="" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1378179117" name="xc7Z010" optionalBuildProperties="org.eclipse.cdt.docker.launcher.containerbuild.property.selectedvolumes=,org.eclipse.cdt.docker.launcher.containerbuild.property.volumes=" parent="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release">
+					<folderInfo id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1378179117." name="/" resourcePath="">
+						<toolChain id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release.1971714637" name="ARM Cross GCC" superClass="ilg.gnuarmeclipse.managedbuild.cross.toolchain.elf.release">
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash.1986743864" name="Create flash image" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createflash" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting.321092196" name="Create extended listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.createlisting"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize.507635859" name="Print size" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.addtools.printsize" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.839302260" name="Optimization Level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level" value="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.level.size" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength.504112627" name="Message length (-fmessage-length=0)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.messagelength" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar.1453139895" name="'char' is signed (-fsigned-char)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.signedchar" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections.1909380474" name="Function sections (-ffunction-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.functionsections" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections.487653926" name="Data sections (-fdata-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.optimization.datasections" value="true" valueType="boolean"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level.262292455" name="Debug level" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.level"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format.490955874" name="Debug format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.debugging.format"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name.1870199625" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.name" value="GNU Tools for ARM Embedded Processors" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.875584466" name="Architecture" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.architecture" value="ilg.gnuarmeclipse.managedbuild.cross.option.architecture.arm" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family.972596946" name="Arm family (-mcpu)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.family" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.mcpu.cortex-m3" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.255786747" name="Instruction set" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset" value="ilg.gnuarmeclipse.managedbuild.cross.option.arm.target.instructionset.thumb" valueType="enumerated"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix.1972979920" name="Prefix" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.prefix" value="arm-none-eabi-" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.c.189779743" name="C compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.c" value="gcc" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp.1761365309" name="C++ compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.cpp" value="g++" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar.1453203055" name="Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.ar" value="ar" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy.1538263596" name="Hex/Bin converter" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objcopy" value="objcopy" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump.206196222" name="Listing generator" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.objdump" value="objdump" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.size.272982212" name="Size command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.size" value="size" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.make.862134021" name="Build command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.make" value="make" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm.1509523695" name="Remove command" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.command.rm" value="rm" valueType="string"/>
+							<option id="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id.1045820535" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.toolchain.id" value="1287942917" valueType="string"/>
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform.1932326638" isAbstract="false" osList="all" superClass="ilg.gnuarmeclipse.managedbuild.cross.targetPlatform"/>
+							<builder buildPath="${ProjName}/build/${ConfigName}/" id="cdt.managedbuild.builder.gnu.cross.823850133" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.builder.gnu.cross"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.1477238975" name="GNU ARM Cross Assembler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.373293734" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs.652573634" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.defs" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="STM32H743xx=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_STM32H7XX=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
+									<listOptionValue builtIn="false" value="XC7Z010=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_XC7Z=1"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1199966011" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.752443101" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
 									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/zynq}&quot;"/>
 								</option>
-								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.2137748819" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.440636602" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1962410493" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.1987287618" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1570779396" name="GNU ARM Cross C Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs.23565625" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="STM32H743xx=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_STM32H7XX=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
+									<listOptionValue builtIn="false" value="XC7Z010=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_XC7Z=1"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.360366961" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths.530260457" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
+									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
 									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
+									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
 									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/zynq}&quot;"/>
 								</option>
-								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1815768676" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.542331745" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1901981049" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.1014313917" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1061459887" name="GNU ARM Cross C++ Compiler" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs.1562948386" name="Defined symbols (-D)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.defs" useByScannerDiscovery="true" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG=1"/>
-									<listOptionValue builtIn="false" value="STM32H743xx=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_STM32H7XX=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_STM32F=1"/>
-									<listOptionValue builtIn="false" value="CPUSTYLE_ATMEGA32=1"/>
+									<listOptionValue builtIn="false" value="XC7Z010=1"/>
+									<listOptionValue builtIn="false" value="CPUSTYLE_XC7Z=1"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.174566149" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/DSP/Include"/>
-									<listOptionValue builtIn="false" value="&quot;C:\user\SVN\CMSIS_5\CMSIS\Core\Include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths.117262805" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.include.paths" useByScannerDiscovery="true" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\lib\gcc\arm-none-eabi\7.3.1\include-fixed&quot;"/>
-									<listOptionValue builtIn="false" value="../../../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
-									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="&quot;C:\Program Files (x86)\GNU Tools ARM Embedded\7 2018-q2-update\arm-none-eabi\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/EGL}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/include/VG}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/OpenVG/src}&quot;"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/DSP/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core_A/Include"/>
+									<listOptionValue builtIn="false" value="../../CMSIS_5/CMSIS/Core/Include"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/hftrx/src/zynq}&quot;"/>
 								</option>
-								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.579263507" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1221530905" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input"/>
 							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.333878341" name="GNU ARM Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.833810571" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" value="true" valueType="boolean"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker.1134474754" name="GNU ARM Cross C Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.linker">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections.747921355" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.c.linker.gcsections" value="true" valueType="boolean"/>
 							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.439072507" name="GNU ARM Cross C++ Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker">
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.gcsections.729864153" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.gcsections" value="true" valueType="boolean"/>
-								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input.1528843657" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input">
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.15629522" name="GNU ARM Cross C++ Linker" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.gcsections.2068655304" name="Remove unused sections (-Xlinker --gc-sections)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.linker.gcsections" value="true" valueType="boolean"/>
+								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input.1111353533" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>
 								</inputType>
 							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.1403042450" name="GNU ARM Cross Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash.1354199499" name="GNU ARM Cross Create Flash Image" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash"/>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting.1312773568" name="GNU ARM Cross Create Listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting">
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.source.223981711" name="Display source (--source|-S)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.source" value="true" valueType="boolean"/>
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.allheaders.1766511936" name="Display all headers (--all-headers|-x)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.allheaders" value="true" valueType="boolean"/>
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.demangle.959460042" name="Demangle names (--demangle|-C)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.demangle" value="true" valueType="boolean"/>
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.linenumbers.195901926" name="Display line numbers (--line-numbers|-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.linenumbers" value="true" valueType="boolean"/>
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.wide.1393253770" name="Wide lines (--wide|-w)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.wide" value="true" valueType="boolean"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver.483097822" name="GNU ARM Cross Archiver" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.archiver"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash.286855066" name="GNU ARM Cross Create Flash Image" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createflash"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting.46499297" name="GNU ARM Cross Create Listing" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.createlisting">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.source.1341062501" name="Display source (--source|-S)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.source" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.allheaders.961271215" name="Display all headers (--all-headers|-x)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.allheaders" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.demangle.1501178117" name="Demangle names (--demangle|-C)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.demangle" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.linenumbers.1948040150" name="Display line numbers (--line-numbers|-l)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.linenumbers" value="true" valueType="boolean"/>
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.wide.1968988731" name="Wide lines (--wide|-w)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.createlisting.wide" value="true" valueType="boolean"/>
 							</tool>
-							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize.1381099531" name="GNU ARM Cross Print Size" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize">
-								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.printsize.format.1332979153" name="Size format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.printsize.format"/>
+							<tool id="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize.1099937090" name="GNU ARM Cross Print Size" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.printsize">
+								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.printsize.format.2040214454" name="Size format" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.printsize.format"/>
 							</tool>
 						</toolChain>
 					</folderInfo>
 				</configuration>
 			</storageModule>
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+			<storageModule moduleId="ilg.gnumcueclipse.managedbuild.packs"/>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
@@ -2906,10 +3327,10 @@
 		<configuration configurationName="atxmega128a4u"/>
 		<configuration configurationName="atmega644p_10"/>
 		<configuration configurationName="atsams70q20"/>
+		<configuration configurationName="stm32f101rb"/>
 		<configuration configurationName="stm32f769ii">
 			<resource resourceType="PROJECT" workspacePath="/hftrx"/>
 		</configuration>
-		<configuration configurationName="stm32f101rb"/>
 		<configuration configurationName="stm32h743zi"/>
 		<configuration configurationName="atsam3s4b"/>
 		<configuration configurationName="stm32f103c8"/>
@@ -2919,6 +3340,7 @@
 		<configuration configurationName="stm32f767zi"/>
 		<configuration configurationName="stm32f303vc"/>
 		<configuration configurationName="stm32f051c6t"/>
+		<configuration configurationName="stm32h743ii"/>
 		<configuration configurationName="stm32f030f4p"/>
 		<configuration configurationName="atsam4sa16c"/>
 		<configuration configurationName="stm32mp157axx"/>
@@ -2937,6 +3359,46 @@
 		<configuration configurationName="atmega644p_8"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets>
+			<target name="Default" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildTarget>all</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="Flash Programming" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildTarget>flash</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="Bootloader" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildTarget>bootloader</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="Application Run" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildTarget>app_run</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="Clean" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>make</buildCommand>
+				<buildArguments/>
+				<buildTarget>clean</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+		</buildTargets>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.289646041;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1683573035">
@@ -2999,6 +3461,9 @@
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.301750592.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1857613512;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1740697233">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1378179117;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1378179117.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1061459887;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1221530905">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.124063364;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.124063364.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.38025698;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.857976906">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
@@ -3024,6 +3489,9 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1370923348;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1370923348.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.897791476;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.486612800">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1378179117;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.1819153991.1378179117.;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.1570779396;ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.542331745">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.760965394;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.760965394.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.1495665489;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1999710997">
@@ -3107,45 +3575,5 @@
 		<scannerConfigBuildInfo instanceId="ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.2005365281;ilg.gnuarmeclipse.managedbuild.cross.config.elf.release.1180705410.2005365281.;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.134940055;ilg.gnuarmeclipse.managedbuild.cross.tool.cpp.compiler.input.1919757008">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
-	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
-		<buildTargets>
-			<target name="Default" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-				<buildCommand>make</buildCommand>
-				<buildTarget>all</buildTarget>
-				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
-				<runAllBuilders>true</runAllBuilders>
-			</target>
-			<target name="Flash Programming" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-				<buildCommand>make</buildCommand>
-				<buildTarget>flash</buildTarget>
-				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
-				<runAllBuilders>true</runAllBuilders>
-			</target>
-			<target name="Bootloader" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-				<buildCommand>make</buildCommand>
-				<buildTarget>bootloader</buildTarget>
-				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
-				<runAllBuilders>true</runAllBuilders>
-			</target>
-			<target name="Application Run" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-				<buildCommand>make</buildCommand>
-				<buildTarget>app_run</buildTarget>
-				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
-				<runAllBuilders>true</runAllBuilders>
-			</target>
-			<target name="Clean" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-				<buildCommand>make</buildCommand>
-				<buildArguments/>
-				<buildTarget>clean</buildTarget>
-				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
-				<runAllBuilders>true</runAllBuilders>
-			</target>
-		</buildTargets>
 	</storageModule>
 </cproject>

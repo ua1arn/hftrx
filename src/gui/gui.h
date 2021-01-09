@@ -5,25 +5,7 @@
 #include "../display/display.h"
 #include "display2.h"
 
-#if (DIM_X < 800 || DIM_Y < 480) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
-	#undef WITHTOUCHGUI									// для функционирования touch GUI
-#endif
-
 #if WITHTOUCHGUI
-
-#define WITHGUIMAXX				800						// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
-#define WITHGUIMAXY				480
-#define FOOTER_HEIGHT			50						// высота нижнего ряда кнопок
-#define FORMATFROMLIBRARY 		1
-
-#if ! defined WITHUSEMALLOC								// необходима поддержка динамического управления памятью
-	#define WITHUSEMALLOC		1
-#endif /* ! defined WITHUSEMALLOC */
-
-#if ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL)
-	#undef WITHGUIHEAP
-	#define WITHGUIHEAP 		(80 * 1024uL)			// требуемый размер кучи для touch GUI
-#endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
 
 typedef struct {
 	char name[20];
@@ -53,6 +35,11 @@ typedef struct {
 	char name[10];
 } band_array_t;
 
+/* структура для размещения в конфигурационном ОЗУ */
+struct gui_nvram_t {
+	uint8_t enc2step_pos;
+} ATTRPACKED;
+
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
 uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
@@ -68,6 +55,8 @@ void hamradio_clean_mic_profile(uint_fast8_t cell);
 uint_fast8_t hamradio_get_bands(band_array_t * bands);
 void hamradio_goto_band_by_freq(uint_fast32_t f);
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
+void hamradio_load_gui_settings(void * ptr);
+void hamradio_save_gui_settings(const void * ptr);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);

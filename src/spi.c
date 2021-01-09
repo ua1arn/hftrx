@@ -827,7 +827,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 		spidf_progval8(* buff ++);
 }
 
-#elif WIHSPIDFHW && CPUSTYLE_STM32MP1
+#elif WIHSPIDFHW && (CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F)
 
 
 // вычитываем все заказанное количество
@@ -947,11 +947,22 @@ static void spidf_iostart(
 
 void spidf_initialize(void)
 {
+#if CPUSTYLE_STM32MP1
 	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_QSPIEN;
 	(void) RCC->MP_AHB6ENSETR;
 	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_QSPILPEN;
 	(void) RCC->MP_AHB6LPENSETR;
 
+#elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	RCC->AHB3ENR |= RCC_AHB3ENR_QSPIEN_Msk;
+	(void) RCC->AHB3ENR;
+	RCC->AHB3LPENR |= RCC_AHB3LPENR_QSPILPEN_Msk;
+	(void) RCC->AHB3LPENR;
+
+#else
+	#error Add QSPI init code
+
+#endif
 	// Connect I/O pins
 	//SPIDF_HARDINITIALIZE();
 
@@ -1277,7 +1288,7 @@ uint_fast8_t dataflash_read_status(void)
 
 int timed_dataflash_read_status(void)
 {
-	unsigned long w = 4000000;
+	unsigned long w = 400000;
 	while (w --)
 	{
 		if ((dataflash_read_status() & 0x01) == 0)
@@ -1289,7 +1300,7 @@ int timed_dataflash_read_status(void)
 
 static int largetimed_dataflash_read_status(void)
 {
-	unsigned long w = 40000000;
+	unsigned long w = 4000000;
 	while (w --)
 	{
 		if ((dataflash_read_status() & 0x01) == 0)

@@ -7,8 +7,8 @@
 // Доработки для LS020 Василий Линывый, livas60@mail.ru
 //
 
-#include "src/gui/gui.h"
 #include "hardware.h"
+#include "src/gui/gui.h"
 #include "board.h"
 #include "display.h"
 #include "formats.h"
@@ -17,6 +17,8 @@
 #include <string.h>
 
 #if LCDMODE_LTDC
+
+#define FONTSHERE 1
 
 #include "fontmaps.h"
 //
@@ -33,40 +35,41 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 	//extern FRAMEBUFF_T framebuff0;	//L8 (8-bit Luminance or CLUT)
 #endif /* defined (SDRAM_BANK_ADDR) && LCDMODE_LTDCSDRAMBUFF && LCDMODE_LTDC */
 
-#if ! defined (SDRAM_BANK_ADDR) && LCDMODE_MAIN_PAGES == 3
+#if ! defined (SDRAM_BANK_ADDR) //&& LCDMODE_MAIN_PAGES == 3
 	// буфер экрана
-	//RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T framebuff0 ALIGNX_END;
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf0 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf1 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf2 [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
-	static PACKEDCOLORMAIN_T * const fbfs [] =
-	{
-			fbf0, fbf1, fbf2,
-	};
+	RAMFRAMEBUFF ALIGNX_BEGIN FRAMEBUFF_T fbfX ALIGNX_END;
 
 	static uint_fast8_t mainphase;
 
-	void colmain_fb_next(void)
+	uint_fast8_t colmain_fb_next(void)
 	{
-		mainphase = (mainphase + 1) % ARRAY_SIZE(fbfs);
+		mainphase = (mainphase + 1) % LCDMODE_MAIN_PAGES;
+		return mainphase;
+	}
+
+	uint_fast8_t colmain_fb_current(void)
+	{
+		return mainphase;
 	}
 
 	PACKEDCOLORMAIN_T *
 	colmain_fb_draw(void)
 	{
-		return fbfs [(mainphase + 1) % ARRAY_SIZE(fbfs)];
+		return fbfX [mainphase];
 	}
 
-	PACKEDCOLORMAIN_T *
-	colmain_fb_show(void)
+	void colmain_fb_initialize(void)
 	{
-		return fbfs [(mainphase + 0) % ARRAY_SIZE(fbfs)];
+		unsigned i;
+		for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+			memset(fbfX [i], 0, sizeof fbfX [0]);
 	}
 
 #elif WITHSDRAMHW && LCDMODE_LTDCSDRAMBUFF
 
-	void colmain_fb_next(void)
+	uint_fast8_t colmain_fb_next(void)
 	{
+		return 0;
 	}
 
 	PACKEDCOLORMAIN_T *
@@ -75,18 +78,22 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return & framebuff[0][0];
 	}
 
-
-	PACKEDCOLORMAIN_T *
-	colmain_fb_show(void)
+	void colmain_fb_initialize(void)
 	{
-		return & framebuff[0][0];
+		memset(framebuff, 0, sizeof framebuff);
 	}
 
 #else
 	RAMFRAMEBUFF ALIGNX_BEGIN PACKEDCOLORMAIN_T fbf [GXSIZE(DIM_SECOND, DIM_FIRST)] ALIGNX_END;
 
-	void colmain_fb_next(void)
+	uint_fast8_t colmain_fb_next(void)
 	{
+		return 0;
+	}
+
+	uint_fast8_t colmain_fb_current(void)
+	{
+		return 0;
 	}
 
 	PACKEDCOLORMAIN_T *
@@ -95,12 +102,11 @@ typedef PACKEDCOLORMAIN_T FRAMEBUFF_T [LCDMODE_MAIN_PAGES] [GXSIZE(DIM_SECOND, D
 		return fbf;
 	}
 
-
-	PACKEDCOLORMAIN_T *
-	colmain_fb_show(void)
+	void colmain_fb_initialize(void)
 	{
-		return fbf;
+		memset(fbf, 0, sizeof fbf);
 	}
+
 #endif /* LCDMODE_LTDC */
 
 #if LCDMODE_LTDC
@@ -313,14 +319,6 @@ void display_clear(void)
 	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 
 	colmain_fillrect(buffer, DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, bg);
-}
-
-// для framebufer дисплеев - вытолкнуть кэш память
-void display_flush(void)
-{
-	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
-	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-	arm_hardware_ltdc_main_set(frame);
 }
 
 void display_plotstart(
@@ -687,18 +685,56 @@ display_reset(void)
 	board_update();
 	local_delay_ms(50); // Delay 50 ms
 }
-/* вызывается при разрешённых прерываниях. */
-void display_initialize(void)
-{
-}
 
 void display_set_contrast(uint_fast8_t v)
 {
 }
+// для framebufer дисплеев - вытолкнуть кэш память
+void display_flush(void)
+{
+	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
+//	char s [32];
+//	snprintf(s, 32, "FLUSH=%08lX", (unsigned long) frame);
+//	display_at(0, 0, s);
+	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set(frame);
+}
+
+void display_nextfb(void)
+{
+	const uintptr_t frame = (uintptr_t) colmain_fb_draw();	// Тот буфер, в котором рисовали, станет отображаемым
+//	char s [32];
+//	snprintf(s, 32, "BUFF=%08lX", (unsigned long) frame);
+//	display_at(0, 0, s);
+	ASSERT((frame % DCACHEROWSIZE) == 0);
+	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set(frame);
+	unsigned page = colmain_fb_next();	// возвращает новый индекс страницы отрисовки
+#if WITHOPENVG
+	openvg_next(page);
+#endif /* WITHOPENVG */
+}
+
+/* вызывается при разрешённых прерываниях. */
+void display_initialize(void)
+{
+#if WITHOPENVG
+	PACKEDCOLORMAIN_T * frames [LCDMODE_MAIN_PAGES];
+	unsigned i;
+	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+	{
+		frames [i] = fbfX [i];
+	}
+	openvg_init(frames);
+#endif /* WITHOPENVG */
+}
 
 /* Разряжаем конденсаторы питания */
-void display_discharge(void)
+void display_uninitialize(void)
 {
+#if WITHOPENVG
+	openvg_deinit();
+#endif /* WITHOPENVG */
 }
 
 #endif /* LCDMODE_LQ043T3DX02K */
@@ -1303,11 +1339,18 @@ void display_hardware_initialize(void)
 #endif /* WITHMDMAHW */
 
 #if WITHLTDCHW
+
+	colmain_fb_initialize();
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
 	arm_hardware_ltdc_initialize();
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
+#if CPUSTYLE_XC7Z
+	uint_fast8_t i = colmain_fb_current();
+	arm_hardware_ltdc_main_set(i);
+#else
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
+#endif
 	arm_hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 

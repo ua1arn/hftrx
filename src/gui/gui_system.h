@@ -24,7 +24,6 @@ void remove_end_line_spaces(char * str);
 const char * remove_start_line_spaces(const char * str);
 void reset_tracking(void);
 uint_fast8_t check_for_parent_window(void);
-uint_fast8_t get_element_index(window_t * win, element_type_t type, void * eh);
 void get_gui_tracking(int_fast8_t * x, int_fast8_t * y);
 
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...);

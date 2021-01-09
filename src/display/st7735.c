@@ -46,6 +46,8 @@
 // LCDMODE_ILI9163 - 176 * 132
 
 #include "st7735.h"
+
+#define FONTSHERE 1
 #include "fontmaps.h"
 
 #define ST7735_SPIMODE		SPIC_MODE3
@@ -1399,12 +1401,16 @@ void display_reset(void)
 }
 
 /* Разряжаем конденсаторы питания */
-void display_discharge(void)
+void display_uninitialize(void)
 {
 	spi_select2(targetlcd, ST7735_SPIMODE, ST7735_SPISPEED);	/* Enable SPI */
 	writecommand(ST7735_DISPOFF);
 	writecommand(ST7735_SLPIN);
 	spi_unselect(targetlcd);		/* Disable SPI */
+}
+
+void display_nextfb(void)
+{
 }
 
 #endif /* LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341 */

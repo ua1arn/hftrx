@@ -80,6 +80,7 @@ static uint_fast8_t 	glob_poweron = 1;
 //#endif /* WITHKEYBOARD */
 
 static uint_fast8_t		glob_fanflag;	/* включение вентилятора */
+static uint_fast8_t		glob_fanpwm = 255;	/* скорость вентилятора 0..255 */
 #if WITHDCDCFREQCTL
 	static uint_fast32_t 	glob_blfreq = UINT32_MAX;	/* DC-DC frequency divider */
 #endif /* WITHDCDCFREQCTL */
@@ -2226,23 +2227,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 #define BOARD_NPLANES	2	/* в данной конфигурации присутствует цифровой потенциометр со "слоями" */
 
-// Разворот битов в регистре управления индуктивностью
-static uint_fast8_t revbits7L(uint_fast8_t v)
-{
-	uint_fast8_t r = 0;
-
-	if ((v & 0x01) != 0)	r |= (1U << 1);		// 0.1 uH
-	if ((v & 0x02) != 0)	r |= (1U << 2);		// 0.2 uH	
-	if ((v & 0x04) != 0)	r |= (1U << 5);		// 0.5 uH	
-	if ((v & 0x08) != 0)	r |= (1U << 6);		// 1.0 uH	
-	if ((v & 0x10) != 0)	r |= (1U << 4);		// 2.0 uH
-	if ((v & 0x20) != 0)	r |= (1U << 3);		// 5.0 uH	
-	if ((v & 0x40) != 0)	r |= (1U << 0);		// 10 uH	
-
-	return r;
-}
-
-// 24-bit control register + DAC + tuner for RA4YBO
+// 24-bit control register + DAC + 8 bit tuner for RA4YBO
 static void 
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
@@ -2253,16 +2238,58 @@ prog_ctrlreg(uint_fast8_t plane)
 	const uint_fast8_t ssb = glob_af_input == BOARD_DETECTOR_SSB;	// SSB mode activated
 	const uint_fast8_t am = glob_af_input == BOARD_DETECTOR_AM;	// AM mode activated
 
-	rbtype_t rbbuff [7] = { 0 };
+	const uint_fast8_t Cx = glob_tuner_bypass ? 0 : glob_tuner_C;
+	const uint_fast8_t Lx = glob_tuner_bypass ? 0 : glob_tuner_L;
+
+	const uint_fast8_t c1500p = (Cx & 0x80) != 0;
+	const uint_fast8_t c700p = (Cx & 0x40) != 0;
+	const uint_fast8_t c360p = (Cx & 0x20) != 0;
+	const uint_fast8_t c180p = (Cx & 0x10) != 0;
+	const uint_fast8_t c82p = (Cx & 0x08) != 0;
+	const uint_fast8_t c39p = (Cx & 0x04) != 0;
+	const uint_fast8_t c20p = (Cx & 0x02) != 0;
+	const uint_fast8_t c10p = (Cx & 0x01) != 0;
+
+	const uint_fast8_t L10uH = (Lx & 0x80) != 0;
+	const uint_fast8_t L5uH = (Lx & 0x40) != 0;
+	const uint_fast8_t L2p5uH = (Lx & 0x20) != 0;
+	const uint_fast8_t L1p25uH = (Lx & 0x10) != 0;
+	const uint_fast8_t L0p65uH = (Lx & 0x08) != 0;
+	const uint_fast8_t L0p3uH = (Lx & 0x04) != 0;
+	const uint_fast8_t L0p15uH = (Lx & 0x02) != 0;
+	const uint_fast8_t L0p08H = (Lx & 0x01) != 0;
+
+	rbtype_t rbbuff [9] = { 0 };
 
 	
 	/* +++ Управление согласующим устройством */
-	/* регистр управления наборной индуктивностью. */
-	RBVAL(052, glob_tuner_bypass ? 0 : revbits7L(glob_tuner_L), 7);			/* Inductors tuner bank 	*/
-	RBBIT(051, ! glob_tuner_bypass);		// pin 15: обход СУ
-	/* регистр управления массивом конденсаторов */
-	RBVAL(042, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
-	RBBIT(041, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 15: TYPE OF TUNER 	*/
+
+	RBBIT(070, 0);		// IC3 pin 7: nc
+	RBBIT(067, 0);		// IC3 pin 6: nc
+	RBBIT(066, 0);		// IC3 pin 5: nc
+	RBBIT(065, 0);		// IC3 pin 4: nc
+	RBBIT(064, c1500p);		// IC3 pin 3: nc
+	RBBIT(063, c700p);		// IC3 pin 2: nc
+	RBBIT(062, c360p);		// IC3 pin 1: nc
+	//RBBIT(061, 0);		// IC3 pin 15: nc
+
+	RBBIT(060, c180p);		// IC2 pin 7: nc
+	RBBIT(057, c82p);		// IC2 pin 6: nc
+	RBBIT(056, c39p);		// IC2 pin 5: nc
+	RBBIT(055, c20p);		// IC2 pin 4: nc
+	RBBIT(054, c10p);		// IC2 pin 3: nc
+	RBBIT(053, glob_tuner_bypass ? 0 : glob_tuner_type);		// IC2 pin 2: nc
+	RBBIT(052, L10uH);		// IC2 pin 1: nc
+	//RBBIT(051, 0);			// IC2 pin 15: nc
+
+	RBBIT(050, L5uH);		// IC1 pin 7: nc
+	RBBIT(047, L2p5uH);		// IC1 pin 6: nc
+	RBBIT(046, L1p25uH);	// IC1 pin 5: nc
+	RBBIT(045, L0p65uH);	// IC1 pin 4: nc
+	RBBIT(044, L0p3uH);		// IC1 pin 3: nc
+	RBBIT(043, L0p15uH);	// IC1 pin 2: nc
+	RBBIT(042, L0p08H);		// IC1 pin 1: nc
+	//RBBIT(041, 0);			// IC1 pin 15: nc
 	/* --- Управление согласующим устройством */
 
 	/* IC7 AD5262 */
@@ -5099,6 +5126,17 @@ board_setfanflag(uint_fast8_t v)
 		board_ctlreg1changed();
 	}
 }
+/* скорость вентилятора */
+void
+board_setfanpwm(uint_fast8_t n)
+{
+	if (glob_fanpwm != n)
+	{
+		glob_fanpwm = n;
+		//board_ctlreg1changed();
+	}
+}
+
 
 /* отключить микрофонный усилитель */
 void
@@ -5179,6 +5217,10 @@ board_set_preamp(uint_fast8_t v)
 		glob_preamp = n;
 		board_ctlreg1changed();
 	}
+
+#if CTLSTYLE_V3D	// пока тут, надо будет добавить свой CTLREGMODE
+	arm_hardware_pioc_outputs((1 << 7), ! glob_preamp * (1 << 7));
+#endif
 }
 
 void
@@ -6651,7 +6693,7 @@ restart:
 
 void board_fpga_fir_initialize(void)
 {
-	PRINTF(PSTR("board_fpga_fir_initialize start\n"));
+	//PRINTF(PSTR("board_fpga_fir_initialize start\n"));
 
 	TARGET_FPGA_FIR_INITIALIZE();
 
@@ -6665,7 +6707,7 @@ void board_fpga_fir_initialize(void)
 	board_set_flt_reset_n(1);	// снять сигнал сброса
 	board_update();
 
-	PRINTF(PSTR("board_fpga_fir_initialize done\n"));
+	//PRINTF(PSTR("board_fpga_fir_initialize done\n"));
 }
 
 // Передача одного (первого) 32-битного значения и формирование строба.
@@ -6678,11 +6720,18 @@ static void board_fpga_fir_coef_p1(int_fast32_t v)
 	hardware_spi_b16_p1(v >> 16);
 	hardware_spi_b16_p2(v >> 0);		// на последнем бите формируется coef_in_clk
 
-#else /* WITHSPI32BIT */
+#elif WITHSPIHW
 	hardware_spi_b8_p1(v >> 24);
 	hardware_spi_b8_p2(v >> 16);
 	hardware_spi_b8_p2(v >> 8);
 	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p1(0, v >> 24);
+	spi_progval8_p2(0, v >> 16);
+	spi_progval8_p2(0, v >> 8);
+	spi_progval8_p2(0, v >> 0);	// на последнем бите формируется coef_in_clk
 
 #endif /* WITHSPI32BIT */
 }
@@ -6697,11 +6746,18 @@ static void board_fpga_fir_coef_p2(int_fast32_t v)
 	hardware_spi_b16_p2(v >> 16);
 	hardware_spi_b16_p2(v >> 0);		// на последнем бите формируется coef_in_clk
 
-#else /* WITHSPI32BIT */
+#elif WITHSPIHW
 	hardware_spi_b8_p2(v >> 24);
 	hardware_spi_b8_p2(v >> 16);
 	hardware_spi_b8_p2(v >> 8);
 	hardware_spi_b8_p2(v >> 0);	// на последнем бите формируется coef_in_clk
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p2(0, v >> 24);
+	spi_progval8_p2(0, v >> 16);
+	spi_progval8_p2(0, v >> 8);
+	spi_progval8_p2(0, v >> 0);	// на последнем бите формируется coef_in_clk
 
 #endif /* WITHSPI32BIT */
 }
@@ -6715,8 +6771,12 @@ board_fpga_fir_complete(void)
 #elif WITHSPI16BIT
 	hardware_spi_complete_b16();
 
-#else /* WITHSPI32BIT */
+#elif WITHSPIHW
 	hardware_spi_complete_b8();
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_complete(0);
 
 #endif /* WITHSPI32BIT */
 }
@@ -6727,20 +6787,25 @@ board_fpga_fir_connect(void)
 #if WITHSPI32BIT
 	hardware_spi_connect_b32(SPIC_SPEEDUFAST, SPIC_MODE3);
 
-	hardware_spi_b32_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_b32_p1(0x00000000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b32();
 
 #elif WITHSPI16BIT
 	hardware_spi_connect_b16(SPIC_SPEEDUFAST, SPIC_MODE3);
 
-	hardware_spi_b16_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_b16_p1(0x0000);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b16();
 
-#else /* WITHSPI32BIT */
+#elif WITHSPIHW
 	hardware_spi_connect(SPIC_SPEEDUFAST, SPIC_MODE3);
 
-	hardware_spi_b8_p1(0);	// provide clock for reset bit counter while CS=1
+	hardware_spi_b8_p1(0x00);	// provide clock for reset bit counter while CS=1
 	hardware_spi_complete_b8();
+
+#else /* WITHSPI32BIT */
+	// Software SPI
+	spi_progval8_p1(0, 0x00);	// provide clock for reset bit counter while CS=1
+	spi_complete(0);
 
 #endif /* WITHSPI32BIT */
 
@@ -6764,7 +6829,10 @@ board_fpga_fir_disconnect(void)
 
 #endif /* defined (TARGET_FPGA_FIR_CS_BIT) */
 
+#if WITHSPIHW
 	hardware_spi_disconnect();
+#else /* WITHSPIHW */
+#endif
 }
 
 /*
@@ -6781,6 +6849,7 @@ static void sendbatch(uint_fast8_t ifir)
 		board_fpga_fir_coef_p2(va [i]);
 }
 */	
+
 // переупорядачивание коэффициентов при выдаче в FIR
 // Оригинальный код взят из coef_seq.cpp, Copyright (C) 1991-2012 Altera Corporation
 //
@@ -6949,8 +7018,6 @@ board_fpga_fir_send(
 	const int_fast32_t * const k, unsigned Ntap, unsigned CWidth
 	)
 {
-#if (WITHSPIHW && WITHSPI16BIT)	// for skip in test configurations
-
 	ASSERT(CWidth <= 24);
 	//PRINTF(PSTR("board_fpga_fir_send: ifir=%u, Ntap=%u\n"), ifir, Ntap);
 	board_fpga_fir_connect();
@@ -6998,7 +7065,6 @@ board_fpga_fir_send(
 	board_fpga_fir_complete();
 
 	board_fpga_fir_disconnect();
-#endif /* (WITHSPIHW && WITHSPI16BIT) */
 }
 
 /* поменять местами значение загружаемого профиля FIR фильтра в FPGA */
@@ -7078,21 +7144,7 @@ void board_init_io(void)
 	hardware_spi_slave_initialize();
 #endif /* WITHSPISLAVE */
 
-#if WITHI2SHW
-	hardware_audiocodec_initialize();	// Интерфейс к НЧ кодеку
-#endif /* WITHI2SHW */
-
-#if WITHSAI1HW
-	hardware_fpgacodec_initialize();	// Интерфейс к ВЧ кодеку
-#endif /* WITHSAI1HW */
-
-#if WITHSAI2HW
-	hardware_fpgaspectrum_initialize();	// Интерфейс к источнику данных о спектре
-#endif /* WITHSAI2HW */
-
-#if WITHSAI3HW
-	hardware_fpgawidespectrum_initialize();	// Интерфейс к источнику данных о спектре
-#endif /* WITHSAI3HW */
+	hardware_channels_initialize();	// SAI, I2S и подключенная на них периферия
 
 #if WITHCPUDACHW
 	hardware_dac_initialize();	/* инициализация DAC на STM32F4xx */
@@ -7550,8 +7602,10 @@ void hardware_txpath_set(
 void 
 hardware_txpath_initialize(void)
 {
+#if defined (TXPATH_INITIALIZE)
+	TXPATH_INITIALIZE();
 
-#if CPUSTYLE_ATMEGA
+#elif CPUSTYLE_ATMEGA
 
 	// Биты управления трактом на передачу
 	#if defined (TXPATH_BITS_ENABLE)
@@ -8480,9 +8534,11 @@ adcvalholder_t filter_hyst(
 }
 						   
 // Функция вызывается из обработчика прерывания после получения значения от последнего канала АЦП
-void board_adc_filtering(void)
+static void board_adc_filtering(void * ctx)
 {
 	uint_fast8_t i;
+
+	(void) ctx;
 
 	for (i = 0; i < sizeof badcst / sizeof badcst [0]; ++ i)
 	{
@@ -8518,6 +8574,16 @@ void board_adc_filtering(void)
 static void
 adcfilters_initialize(void)
 {
+	static adcdone_t adcevent;
+
+	// вызов board_adc_filtering() по заверщению цикла АЦП
+	adcdone_initialize(& adcevent, board_adc_filtering, NULL);
+
+
+//#if ! WITHCPUADCHW
+//	board_adc_filtering();
+//#endif /* ! WITHCPUADCHW */
+
 	#if WITHBARS && ! WITHINTEGRATEDDSP
 		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
 	#endif /* WITHBARS && ! WITHINTEGRATEDDSP */

@@ -143,7 +143,10 @@ all: ROM
 
 flash: ROM
 	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
-
+	
+app_run:
+	ST-LINK_CLI.exe -Q -rst
+	
 RAM: $(OBJS) $(PROJECT)_ram.elf $(PROJECT)_ram.hex
 
 ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
@@ -183,5 +186,8 @@ clean:
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
 
 # *** EOF ***

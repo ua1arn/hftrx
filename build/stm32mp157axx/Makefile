@@ -21,6 +21,7 @@ TRGT = arm-none-eabi-
 
 #
 CC   = $(TRGT)gcc
+GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
@@ -28,14 +29,12 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1/src
+LWIPDIR = ../../src/lwip-2.1.2
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = ../../src/OpenVG
 
 OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
-
-# Define optimisation level here
-OPT = -Ofast
-LTO = -flto
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
@@ -43,10 +42,20 @@ CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
 #CORE += -mfpu=vfpv4-d16
-CORE += -mfpu=neon
+CORE += -mfpu=neon-vfpv4
+#CORE += -mlong-calls
+
+# Define optimisation level here
+# ony -Og for app
+# Application
+OPT = -Og
+#OPT = -Ofast
+#LTO = -flto
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
+
+UADEFS += -D"WITHSMPSYSTEM"
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
@@ -58,8 +67,13 @@ DINCDIR = \
 	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
-	$(LWIPDIR)/include \
-	$(LWIPDIR)/include/ipv4
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/src/apps/http \
+	$(OPENVGDIR)/include/VG \
+	$(OPENVGDIR)/include \
+	$(OPENVGDIR)/include/EGL \
+	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
@@ -87,10 +101,10 @@ LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
 LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS = -DNDEBUG=1 -DCPUSTYLE_STM32MP1=1 -DSTM32MP153Dxx=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
 
 # Define ASM defines here
-UADEFS = 
+UADEFS += 
 
 # List C source files here
 CSRC +=
@@ -135,11 +149,11 @@ MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
-#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
-LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
-LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
+# see also -Xlinker --print-gc-sections
+LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
+LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
@@ -190,18 +204,18 @@ $(OBJDIR)/%.o: %.c
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CC) -std=gnu++11 -fno-rtti -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
 %_boot.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
 %_app.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
 %hex: %elf
@@ -211,9 +225,9 @@ $(OBJDIR)/%.o: %.s
 	$(BIN) $< $@
 
 clean: version
-	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
-	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) -R $(OBJDIR)
+	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
+	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 
 version:
 	$(CC) --version
@@ -225,5 +239,8 @@ version:
 -include $(wildcard $(OBJDIR)/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
 
 # *** EOF ***

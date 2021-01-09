@@ -82,6 +82,7 @@ void board_set_sleep(uint_fast8_t v);	/* перевести в режим мин
 void board_set_maxlabdac(uint_fast16_t n);	/* значение на выходе ЦАП для увода частоты опорного генератора PLL */
 
 void board_setfanflag(uint_fast8_t v);	/* включить вентилятор */
+void board_setfanpwm(uint_fast8_t n);	/* скорость ывентилятора 0..255 */
 void board_set_mainsubrxmode(uint_fast8_t v);	// Левый/правый, A - main RX, B - sub RX
 void board_set_detector(uint_fast8_t v);
 void board_set_nfm(uint_fast8_t v);
@@ -111,7 +112,7 @@ void board_set_tx_bpsk_enable(uint_fast8_t v);	/* разрешение прям�
 void board_set_mode_wfm(uint_fast8_t v);
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LTC2208 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LTC2208 */
-void board_set_dacscale(uint_fast8_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
+void board_set_dacscale(uint_fast16_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
 void board_set_gdigiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 void board_set_cwscale(uint_fast16_t n);	/* Уменьшение усиления при передаче в CW режимах 50..100% */
 void board_set_dac1(uint_fast8_t n);	/* подстройка опорного генератора */
@@ -293,7 +294,6 @@ uint_fast8_t board_get_adcinputs(void);	/* получить количество
 uint_fast8_t board_get_adcch(uint_fast8_t index);	/* получить канал АЦП но индексу в таблице */
 
 void board_adc_store_data(uint_fast8_t i, adcvalholder_t v);
-void board_adc_filtering(void);	// Функция вызывается из обработчика прерывания после получения значения от последнего канала АЦП
 
 adcvalholder_t filter_hyst(
 	adcvalholder_t * pv0, 

@@ -21,11 +21,12 @@ TRGT = arm-none-eabi-
 
 #
 CC   = $(TRGT)gcc
+GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
 #COMPUTEDIR = ../../../ComputeLibrary
 # Add to includes
@@ -33,7 +34,9 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1/src
+LWIPDIR = ../../src/lwip-1.4.1
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = ../../src/OpenVG
 
 OBJDIR2 = obj
 OBJDIR = ./$(OBJDIR2)
@@ -47,7 +50,9 @@ LTO = -flto
 CORE = -mcpu=cortex-a9 
 CORE += -mfloat-abi=hard 
 CORE += -mfpu=vfpv3-d16
-#CORE += -mfpu=neon
+#CORE += -mfpu=neon-vfpv3
+#CORE += -mfpu=neon-vfpv3
+#CORE += -mlong-calls
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -62,8 +67,13 @@ DINCDIR = \
 	$(CMSISDIR)/Core_A/Source \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
-	$(LWIPDIR)/include \
-	$(LWIPDIR)/include/ipv4
+	$(LWIPDIR)/src/include \
+	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/apps/httpserver_raw \
+	$(OPENVGDIR)/include/VG \
+	$(OPENVGDIR)/include \
+	$(OPENVGDIR)/include/EGL \
+	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
 DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
@@ -93,7 +103,7 @@ LDSCRIPT_APP = ./r7s721020_app.ld
 # List all user C define here, like -D_DEBUG=1
 # RZ/A1H: R7S721001: CPUSTYLE_R7S721001
 # RZ/A1L: R7S721020: CPUSTYLE_R7S721020
-UDEFS = -DNDEBUG=1 -DCPUSTYLE_R7S721=1 -DCPUSTYLE_R7S721020=1 -DTARGET_RZA1=TARGET_RZA1L
+UDEFS = -DNDEBUG=1 -DCPUSTYLE_R7S721=1 -DCPUSTYLE_R7S721020=1 -DTARGET_RZA1=TARGET_RZA1L -DEGL_STATIC_LIBRARY=1
 
 # Define ASM defines here
 UADEFS = 
@@ -142,11 +152,11 @@ MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
-#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
-LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
-LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
+# see also -Xlinker --print-gc-sections
+LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
+LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
@@ -195,18 +205,18 @@ $(OBJDIR)/%.o: %.c
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CC) -std=gnu++11 -fno-rtti -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
 $(OBJDIR)/%.o: %.s
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
 %_boot.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
 %_app.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
 %hex: %elf
@@ -216,9 +226,9 @@ $(OBJDIR)/%.o: %.s
 	$(BIN) $< $@
 
 clean: version
-	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_boot.elf $(PROJECT)_boot.map
-	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) -R $(OBJDIR)
+	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
+	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 
 version:
 	$(CC) --version

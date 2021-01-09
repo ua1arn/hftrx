@@ -565,12 +565,16 @@ display_reset(void)
 }
 
 /* Разряжаем конденсаторы питания */
-void display_discharge(void)
+void display_uninitialize(void)
 {
 	i2c_start(LCD_ADDR_W);
 	i2c_write(0xe2);		// system reset
 	i2c_waitsend();
 	i2c_stop();
+}
+
+void display_nextfb(void)
+{
 }
 
 #endif /* LCDMODE_UC1601 */

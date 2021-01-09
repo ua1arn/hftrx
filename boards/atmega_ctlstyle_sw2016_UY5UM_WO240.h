@@ -258,4 +258,8 @@ enum
 #define KI_COUNT 2	// количество используемых под клавиатуру входов АЦП
 #define KI_LIST	KI1, KI0,	// инициализаторы для функции перекодировки
 
+#define BOARD_NOTCH_OFF 0	// stub
+#define BOARD_NOTCH_AUTO 1	// stub
+#define BOARD_NOTCH_MANUAL 2	// stub
+
 #endif /* ATMEGA_CTLSTYLE_SW2016_H_INCLUDED */

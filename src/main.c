@@ -5,8 +5,8 @@
 // UA1ARN
 //
 
-#include "gui/gui.h"
 #include "hardware.h"
+#include "gui/gui.h"
 #include "synthcalcs.h"
 #include "board.h"
 #include "keyboard.h"
@@ -143,6 +143,8 @@
 #if WITHRFSG
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
+
+#define NUMLPFADJ 8	/* Коррекция мощности по ФНЧ передачика - количество ФНЧ. */
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
@@ -393,47 +395,51 @@ enum {
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char codeatt;	// признак включения аттенюатора
-		unsigned char codepre;	// признак включения предусилителя
+		uint8_t codeatt;	// признак включения аттенюатора
+		uint8_t codepre;	// признак включения предусилителя
+		int16_t atten10;	// результирующее затухание
 		char label [1];
 	}  attmodes [] =
 	{
-		{ 0, 0, "" },
+		{ 0, 0, "", 0  },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 
 #elif WITHONEATTONEAMP
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char codeatt;	// признак включения аттенюатора
-		unsigned char codepre;	// признак включения предусилителя
+		uint8_t codeatt;	// признак включения аттенюатора
+		uint8_t codepre;	// признак включения предусилителя
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, 0, "   " },
-		{ 0, 1, "PRE" },
-		{ 0, 0, "   " },
-		{ 1, 0, "ATT" },
+		{ 0, 0, "   ", 0  },
+		{ 0, 1, "PRE", 0  },
+		{ 0, 0, "   ", 0  },
+		{ 1, 0, "ATT", 0  },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 
 #elif WITHPREAMPATT2_6DB
@@ -443,25 +449,27 @@ enum {
 	 */
 
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [5];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    " },
-		{ 1, " 6dB" },
-		{ 2, "12dB" },
-		{ 3, "18dB" },
+		{ 0, "    ", 0 },
+		{ 1, " 6dB", 60 },
+		{ 2, "12dB", 120 },
+		{ 3, "18dB", 180 },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },
-		{ 1, "PRE" },
+		{ 0, "   ", 0 },
+		{ 1, "PRE", -120 },
 	};
 
 #elif WITHPREAMPATT2_10DB
@@ -471,25 +479,27 @@ enum {
 	 */
 
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [5];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    " },
-		{ 1, "10dB" },
-		{ 2, "20dB" },
-		{ 3, "30dB" },
+		{ 0, "    ", 0  },
+		{ 1, "10dB", 100  },
+		{ 2, "20dB", 200  },
+		{ 3, "30dB", 300  },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },
-		{ 1, "PRE" },
+		{ 0, "   ", 0 },
+		{ 1, "PRE", -120 },
 	};
 
 #elif WITHATT2_6DB
@@ -499,24 +509,26 @@ enum {
 	 */
 
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [5];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    " },
-		{ 1, " 6dB" },
-		{ 2, "12dB" },
-		{ 3, "18dB" },
+		{ 0, "    ", 0 },
+		{ 1, " 6dB", 60 },
+		{ 2, "12dB", 120 },
+		{ 3, "18dB", 180 },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 #elif WITHATT2_10DB
 	/* Управление двухкаскадным аттенюатором с затуханиями 0 - 10 - 20 - 30 dB без УВЧ */
@@ -527,48 +539,74 @@ enum {
 	static const FLASHMEM struct {
 		unsigned char code;
 		char label [5];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "    " },
-		{ 1, "10dB" },
-		{ 2, "20dB" },
-		{ 3, "30dB" },
+		{ 0, "    ", 0 },
+		{ 1, "10dB", 100  },
+		{ 2, "20dB", 200  },
+		{ 3, "30dB", 300  },
 	};
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
+		{ 0, "   ", 0 },	// три символа нужны для стирания надписи OVF если используется индикация в одном месте с PRE
 	};
 #elif WITHATT1PRE1
 
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  attmodes [] =
 	{
-		{ 0, "   " },
-		{ 1, "ATT" },
+		{ 0, "   ", 0 },
+		{ 1, "ATT", 120 },
 	};
 
 
 	/* строки, выводимые на индикатор для обозначения режимов.
 	 */
 	static const FLASHMEM struct {
-		unsigned char code;
+		uint8_t code;
 		char label [4];
+		int16_t atten10;	// результирующее затухание
 	}  pampmodes [] =
 	{
-		{ 0, "   " },
-		{ 1, "PRE" },
+		{ 0, "   ", 0 },
+		{ 1, "PRE", - 120 },
 	};
 #else
 	#error ATT/PREAMP mode undefined
 #endif
+
+// парамер меню
+static uint_fast8_t gattpresh;	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
+
+// вернуть положительное значение в случае необходимости коррекции С-метра на величину аттенюатора
+// и отрицательное щначение в случае коррекции на величину усиления.
+// Возвращаем с точностью 0.1 дБ
+
+static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast8_t pre)
+{
+	if (gattpresh && ! xvrtr)
+	{
+		// если не трансвертор и не отклбчено - корректируем S-meter
+		return pampmodes [pre].atten10 + attmodes [att].atten10;
+	}
+	else
+	{
+		// без коррекции
+		return 0;
+	}
+}
+
 /* строки, выводимые на индикатор для обозначения режимов.
  */
 #if CTLREGMODE24_RK4CI	/* управляющий регистр 24 бита - "Воробей" RK4CI */
@@ -790,6 +828,28 @@ static const FLASHMEM struct {
 
 #endif /* WITHUSEDUALWATCH */
 
+#if WITHIF4DSP && 0
+// надо бы перейти, но проблема в начальных значениях в таблице mdt - там коды а не индексы в этой таблице
+static const FLASHMEM struct {
+	uint_fast8_t code;
+	char label [6];
+}  txaudiosrcs [] =
+{
+	{ BOARD_TXAUDIO_MIKE, 	"MIKE ", },
+#if WITHAFCODEC1HAVELINEINLEVEL
+	{ BOARD_TXAUDIO_LINE, 	"LINE ", },
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+#if WITHUSBUAC
+	{ BOARD_TXAUDIO_USB, 	"USB  ", },
+#endif /* WITHUSBUAC */
+	{ BOARD_TXAUDIO_2TONE, 	"2TONE", },
+	{ BOARD_TXAUDIO_NOISE, 	"NOISE", },
+	{ BOARD_TXAUDIO_1TONE, 	"1TONE", },
+	{ BOARD_TXAUDIO_MUTE, 	"MUTE ", },
+};
+
+#endif /* WITHIF4DSP */
+
 #define PWRMODE_COUNT (sizeof pwrmodes / sizeof pwrmodes [0])
 #define NOTCHMODE_COUNT (sizeof notchmodes / sizeof notchmodes [0])
 #define PAMPMODE_COUNT (sizeof pampmodes / sizeof pampmodes [0])
@@ -797,6 +857,7 @@ static const FLASHMEM struct {
 #define ANTMODE_COUNT (sizeof antmodes / sizeof antmodes [0])
 #define AGCMODE_COUNT (sizeof agcmodes / sizeof agcmodes [0])
 #define MAINSUBRXMODE_COUNT (sizeof mainsubrxmodes / sizeof mainsubrxmodes [0])
+#define TXAUDIOSRC_COUNT (sizeof txaudiosrcs / sizeof txaudiosrcs [0])
 
 #define MENUNONVRAM ((nvramaddress_t) ~ 0)		// такой адрес, что не соответствует ни одному настраиваемому параметру.
 
@@ -925,7 +986,7 @@ struct micprof_cell
 	uint_fast8_t eq_enable;
 	uint8_t eq_params [HARDWARE_CODEC1_NPROCPARAMS];
 	uint_fast8_t cell_saved;
-} ATTRPACKED;
+};
 
 typedef struct micprof_cell	micprof_t;
 #define NMICPROFCELLS	3
@@ -2618,6 +2679,7 @@ struct nvmap
 	/* группы */
 	uint8_t ggroup;			/* последняя группа в менюю, с которой работали */
 	uint8_t	ggrpdisplay;	// последний посещённый пункт группы
+	uint8_t	ggrptxadj;		// последний посещённый пункт группы
 	uint8_t	ggrpsecial;		// последний посещённый пункт группы
 	uint8_t	ggrpaudio;		// последний посещённый пункт группы
 #if WITHSUBTONES && WITHTX
@@ -2635,8 +2697,8 @@ struct nvmap
 	uint8_t mainsubrxmode;		// Левый/правый, A - main RX, B - sub RX
 #endif /* WITHUSEDUALWATCH */
 #if WITHENCODER
-	uint8_t ghiresres;		/* индекс в таблице разрешений валкодера */
-	uint8_t ghiresdyn;	/* включение динамического енкодера */
+	uint8_t genc1pulses;		/* индекс в таблице разрешений валкодера */
+	uint8_t genc1dynamic;	/* включение динамического енкодера */
 #endif /* WITHENCODER */
 
 #if defined (DEFAULT_LCD_CONTRAST)
@@ -2656,6 +2718,9 @@ struct nvmap
 #endif /* WITHLCDBACKLIGHT || WITHKBDBACKLIGHT */
 #if WITHFANTIMER
 	uint8_t gfanpatime;
+	#if WITHFANPWM
+		uint16_t gfanpapwm;
+	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
 #if WITHSLEEPTIMER
 	uint8_t gsleeptime;
@@ -2667,9 +2732,17 @@ struct nvmap
 #if WITHMIC1LEVEL
 	uint16_t mik1level;
 #endif /* WITHMIC1LEVEL */
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
+	uint8_t ALCNTH;// = 0;	// ALC noise gate threshold level
+	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
+	uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+	uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHTX
 	uint8_t	ggrptxparams; // последний посещённый пункт группы
 	//uint8_t gfitx;		/* номер используемого фильтра на передачу */
+	uint8_t gbandf2adj [NUMLPFADJ];	/* коррекция мощности по ФНЧ передачика */
 	#if WITHPOWERLPHP
 		uint8_t gpwri;		// индекс в pwrmodes - мощность при обычной работе
 		uint8_t gpwratunei;	// индекс в pwrmodes - моность при работе автотюнера или по внешнему запросу
@@ -2788,7 +2861,13 @@ struct nvmap
 		uint8_t gmikeequalizer;	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 		uint8_t gmikeequalizerparams [HARDWARE_CODEC1_NPROCPARAMS];	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
 	#endif /* WITHAFCODEC1HAVEPROC */
-
+	#if WITHAFEQUALIZER
+		uint8_t	ggrpafeq;
+		uint8_t geqtx;	// эквалайзер в режиме передачи
+		uint8_t geqrx;	// эквалайзер в режиме приема
+		uint8_t geqtxparams [AF_EQUALIZER_BANDS];
+		uint8_t geqrxparams [AF_EQUALIZER_BANDS];
+	#endif /* #if WITHAFEQUALIZER */
 	struct micproc gmicprocs [NMICPROFILES];
 	uint8_t txaprofile [TXAPROFIG_count];	/* параметры обработки звука перед модулятором */
 #endif /* WITHIF4DSP */
@@ -3027,7 +3106,8 @@ filter_t fi_2p0_455 =
 
 
 	uint8_t gbigstep;		/* больщой шаг валкодера */
-	uint8_t ghiresdiv;		/* во сколько раз уменьшаем разрешение валкодера. */
+	uint8_t genc1div;		/* во сколько раз уменьшаем разрешение валкодера. */
+	uint8_t genc2div;
 #if WITHSPKMUTE
 	uint8_t gmutespkr;		/* выключение динамика */
 #endif /* WITHSPKMUTE */
@@ -3058,6 +3138,8 @@ filter_t fi_2p0_455 =
 	uint8_t lo4powrx;		/* на сколько раз по 2 делим выходную частоту синтезатора четивертого гетеродина */
 	uint8_t lo4powtx;		/* на сколько раз по 2 делим выходную частоту синтезатора четивертого гетеродина */
 #endif /* LO1FDIV_ADJ */
+
+	uint8_t gattpresh;	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
 
 #if WITHBARS
 	uint8_t s9level;			/* уровни калибровки S-метра */
@@ -3098,9 +3180,13 @@ filter_t fi_2p0_455 =
 	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #endif	/* WITHDIRECTBANDS */
 
-#if WITHTOUCHGUI && WITHAFCODEC1HAVEPROC
-	struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
-#endif /*  WITHTOUCHGUI && WITHAFCODEC1HAVEPROC */
+#if WITHTOUCHGUI
+	struct gui_nvram_t gui_nvram;
+
+	#if WITHAFCODEC1HAVEPROC
+		struct micprof_cell micprof_cells [NMICPROFCELLS];	/* ячейки памяти профилей микрофона */
+	#endif /* WITHAFCODEC1HAVEPROC */
+#endif /*  WITHTOUCHGUI */
 	uint8_t signature [sizeof nvramsign - 1];	/* сигнатура соответствия версии программы и содержимого NVRAM */
 } ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -3263,17 +3349,26 @@ static uint_fast8_t gagcmode;
 #endif /* WITHUSEDUALWATCH */
 
 #if WITHENCODER
-	static uint_fast8_t ghiresres = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
+	static uint_fast8_t genc1pulses = ENCRES_DEFAULT;		/* 5: 128 индекс в таблице разрешений валкодера */
 	#if defined (ENCDIV_DEFAULT)
-		static uint_fast8_t ghiresdiv = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
+		static uint_fast8_t genc1div = ENCDIV_DEFAULT;	/* во сколько раз уменьшаем разрешение валкодера. */
 	#else /* defined (ENCDIV_DEFAULT) */
-		static uint_fast8_t ghiresdiv = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
+		static uint_fast8_t genc1div = 1;	/* во сколько раз уменьшаем разрешение валкодера. */
 	#endif /* defined (ENCDIV_DEFAULT) */
-	static uint_fast8_t ghiresdyn = 1;
+	static uint_fast8_t genc1dynamic = 1;
 	static uint_fast8_t gbigstep = (ENCRES_24 >= ENCRES_DEFAULT);	/* модифицируется через меню. */
+
+	#if defined (BOARD_ENCODER2_DIVIDE)
+		static uint_fast8_t genc2div = BOARD_ENCODER2_DIVIDE;
+	#else /* defined (BOARD_ENCODER2_DIVIDE) */
+		static uint_fast8_t genc2div = 2;	/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#endif /* defined (BOARD_ENCODER2_DIVIDE) */
+
+
 #else
 	static const uint_fast8_t gbigstep;
-	static const uint_fast8_t ghiresdiv = 1;
+	static const uint_fast8_t genc1div = 1;
+	static const uint_fast8_t genc2div = 1;
 #endif
 
 static uint_fast8_t lockmode;
@@ -3583,6 +3678,23 @@ enum
 			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
 		};
 	#endif /* WITHAFCODEC1HAVEPROC */
+	#if WITHAFEQUALIZER
+		int_fast32_t getafequalizerbase(void)
+		{
+			return - AF_EQUALIZER_BASE;
+		}
+
+		static uint_fast8_t geqtx;
+		static uint_fast8_t geqrx;
+		static uint_fast8_t geqtxparams [AF_EQUALIZER_BANDS] =
+		{
+			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
+		};
+		static uint_fast8_t geqrxparams [AF_EQUALIZER_BANDS] =
+		{
+			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
+		};
+	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
 	static const uint_fast8_t gagcoff = 0;
@@ -3679,6 +3791,20 @@ enum
 		static uint_fast8_t gsbtonenable;	// разрешить формирование subtone
 	#endif /* WITHSUBTONES */
 
+
+	static uint_fast8_t gbandf2adj [NUMLPFADJ]; /* коррекция мощности по ФНЧ передачика */
+
+	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+	static void
+	bandf2adjust_initialize(void)
+	{
+		uint_fast8_t i;
+
+		for (i = 0; i < ARRAY_SIZE(gbandf2adj); ++ i)
+		{
+			gbandf2adj [i] = 100;
+		}
+	}
 
 	#if WITHPOWERTRIM
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
@@ -3999,6 +4125,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #if WITHMIC1LEVEL
 	static uint_fast16_t mik1level = WITHMIKEINGAINMAX;
 #endif /* WITHMIC1LEVEL */
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+	uint_fast8_t ALCNEN = 0;	// ALC noise gate function control bit
+	uint_fast8_t ALCNTH = 0;	// ALC noise gate threshold level
+	uint_fast8_t ALCEN = 0;	// only left channel ALC enabled
+	uint_fast8_t ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+	uint_fast8_t ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHIF4DSP
 #if WITHTX
 	#if WITHTXCWREDUCE
@@ -4012,9 +4145,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */
 
 	/*  Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
-	static uint_fast8_t gdacscale = 50;	/* настраивается под прегруз драйвера. */
-#endif /* WITHTX */
+	#if defined (WITHDEFDACSCALE)
+		static uint_fast8_t gdacscale = WITHDEFDACSCALE;	/* настраивается под прегруз драйвера. */
+	#else /* defined (WITHDEFDACSCALE) */
+		static uint_fast8_t gdacscale = 50;	/* настраивается под прегруз драйвера. */
+	#endif /* defined (WITHDEFDACSCALE) */
 
+#endif /* WITHTX */
 
 	#define FSADCPOWEROFFSET10 700
 	static int_fast32_t getfsasdcbase10(void)
@@ -4068,7 +4205,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast8_t gvad605 = 180; //UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 	#if WITHDSPEXTDDC	/* "Воронёнок" с DSP и FPGA */
 		static uint_fast8_t gdither;		/* управление зашумлением в LTC2208 */
-		#if ADC1_TYPE == ADC_TYPE_AD9246
+		#if (ADC1_TYPE == ADC_TYPE_AD9246) || CTLSTYLE_V3D
 			static uint_fast8_t gadcrand = 0;		/* управление интерфейсом в LTC2208 */
 		#else /* ADC1_TYPE == ADC_TYPE_AD9246 */
 			static uint_fast8_t gadcrand = 1;		/* управление интерфейсом в LTC2208 */
@@ -4780,6 +4917,9 @@ static uint_fast8_t gfanpatime = 15;	/* количество секунд до �
 static uint_fast8_t fanpacount = FANPATIMEMAX;
 static uint_fast8_t fanpaflag = 1;	/* не-0: выключить ыентилятор. */
 static uint_fast8_t fanpaflagch;	/* не-0: изменилось состояние fanpaflag */
+	#if WITHFANPWM
+		static uint_fast16_t gfanpapwm = 255;
+	#endif /* WITHFANPWM */
 
 #endif /* WITHFANTIMER */
 
@@ -5090,6 +5230,55 @@ verifyband(const vindex_t b)
 			;
 	}
 #endif /* DEBUGEXT */
+}
+
+
+#if XVTR_NYQ1
+// Частота из лююой зоны найквиста преобразуется в первую
+static uint_fast32_t FQMODEL_TUNING_TO_NYQ1(uint_fast32_t f)
+{
+	uint_fast32_t f1 = (f % DUCDDC_FREQ);
+	return f1 >= (DUCDDC_FREQ / 2) ? (DUCDDC_FREQ - f1) : f1;
+}
+#endif /* XVTR_NYQ1 */
+
+// tuning frequency to band pass frequency adjust
+static uint_fast32_t
+nyquistadj(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif 0//XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
+}
+
+// tuning frequency to PA low pass frequency adjust
+static uint_fast32_t
+nyquistadj2(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
+}
+
+// tuning frequency to external PA (ACC socket) frequency adjust
+static uint_fast32_t
+nyquistadj3(uint_fast32_t f)
+{
+#if 0//XVTR_R820T2
+	reuturn R820T_IFFREQ;
+#elif XVTR_NYQ1
+	return FQMODEL_TUNING_TO_NYQ1(f);
+#else /* XVTR_NYQ1 */
+	return f;
+#endif /* XVTR_NYQ1 */
 }
 
 /* получить номер диапазона, в который попадает отображающаяся частота
@@ -5853,7 +6042,6 @@ agcseti_load(void)
 	}
 }
 
-
 /* чтение из NVRAM параметров профилей обработки сигнала перед модулятором */
 static void micproc_load(void)
 {
@@ -5877,8 +6065,7 @@ static void micproc_load(void)
 #if WITHTOUCHGUI && WITHAFCODEC1HAVEPROC
 	for (i = 0; i < NMICPROFCELLS; i++)
 	{
-		micprof_t * mp = & micprof_cells[i];
-
+		micprof_t * const mp = & micprof_cells[i];
 		mp->cell_saved = loadvfy8up(RMT_MICPSAVE_BASE(i), 0, 1, 0);
 		mp->agc = loadvfy8up(RMT_MICAGC_BASE(i), 0, 1, 1);
 		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
@@ -5893,7 +6080,6 @@ static void micproc_load(void)
 }
 
 #endif /* WITHIF4DSP */
-
 
 ///////////////////////////
 //
@@ -6219,6 +6405,18 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
+	{
+		"VIEW STLE",
+		RJ_VIEW,
+		ISTEP1,
+		0, VIEW_COUNT - 1,
+		offsetof(struct nvmap, gviewstyle),
+		nvramoffs0,
+		NULL,
+		& gviewstyle,
+		getzerobase,
+		enc2menu_adjust,
+	},
 #endif /* WITHSPECTRUMWF */
 #endif /* WITHIF4DSP */
 #if WITHIFSHIFT && ! WITHPOTIFSHIFT
@@ -6299,6 +6497,9 @@ enc2menu_value(
 	case RJ_SIGNED:
 		local_snprintf_P(buff, sz, PSTR("%+ld"), (signed long) value);
 		break;
+	case RJ_VIEW:
+		local_snprintf_P(buff, sz, PSTR("%s"), view_types [value]);
+		break;
 	case RJ_UNSIGNED:
 	default:
 		local_snprintf_P(buff, sz, PSTR("%lu"), (unsigned long) value);
@@ -6323,6 +6524,9 @@ enc2menu_value(
 			break;
 		case RJ_POW2:
 			local_snprintf_P(buff, sz, PSTR("%*u"), WDTH, 1U << value);
+			break;
+		case RJ_VIEW:
+			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, view_types [value]);
 			break;
 		case RJ_SIGNED:
 			local_snprintf_P(buff, sz, PSTR("%-+*ld"), WDTH, (signed long) value);
@@ -7599,6 +7803,15 @@ getactualdownpower(void)
 
 #if WITHTX
 
+/* возвраящам 0..100 для указанного ФНЧ передатчика */
+static uint_fast8_t
+getbandf2adjust(uint_fast8_t lpfno)
+{
+	if (lpfno >= ARRAY_SIZE(gbandf2adj))
+		return 100;
+	return gbandf2adj [lpfno];
+}
+
 /* Возвращает WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 static uint_fast8_t
 getactualpower(void)
@@ -7648,7 +7861,7 @@ static void
 updateboard2(void)
 {
 #if WITHENCODER
-	encoder_set_resolution(encresols [ghiresres], ghiresdyn);
+	encoder_set_resolution(encresols [genc1pulses], genc1dynamic);
 #endif /* WITHENCODER */
 	display_setbgcolor(gbluebgnd ? COLORMAIN_BLUE : COLORMAIN_BLACK);
 }
@@ -7741,7 +7954,7 @@ static uint_fast8_t getlo4div(
 
 // speex
 
-#if WITHIF4DSP
+#if WITHINTEGRATEDDSP
 
 
 #ifdef WITHLEAKYLMSANR
@@ -7875,12 +8088,95 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 
 #endif /* WITHLEAKYLMSANR */
 
-#define NOISE_REDUCTION_BLOCK_SIZE FIRBUFSIZE
-#define NOISE_REDUCTION_TAPS 64
-#define NOISE_REDUCTION_REFERENCE_SIZE (NOISE_REDUCTION_BLOCK_SIZE * 2)
-#define NOISE_REDUCTION_STEP 0.01f
+#if WITHLMSAUTONOTCH
 
-typedef struct lmsnrstate_tag
+enum {
+	AUTONOTCH_NUMTAPS = 64,
+	AUTONOTCH_BUFFER_SIZE = FIRBUFSIZE * 4,
+	AUTONOTCH_STATE_ARRAY_SIZE = AUTONOTCH_NUMTAPS + FIRBUFSIZE - 1,
+};
+
+typedef struct
+{
+    arm_lms_norm_instance_f32	lms2Norm_instance;
+    arm_lms_instance_f32	    lms2_instance;
+    float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
+    float32_t	                norm [AUTONOTCH_NUMTAPS];
+    float32_t	                ref [AUTONOTCH_BUFFER_SIZE];
+    unsigned 					refold;
+    unsigned 					refnew;
+    float32_t phonefence;
+} LMSData_t;
+
+static void hamradio_autonotch_init(LMSData_t * const lmsd)
+{
+	lmsd->phonefence = (powf(2, WITHAFDACWIDTH - 1) - 1);
+	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
+	//const float32_t mu = 0.0001f;		// UA3REO value
+	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
+	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+	arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+	lmsd->refold = 0;
+	lmsd->refnew = FIRBUFSIZE;
+}
+
+//static volatile int nrestarts;
+
+// pInput - входной буфер FIRBUFSIZE сэмплов
+// pOutput - обработаный буфер FIRBUFSIZE сэмплов
+static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
+{
+    static float32_t errsig2 [FIRBUFSIZE];	/* unused output */
+//	float32_t diag;
+//	float32_t diag2;
+//
+//	arm_mean_f32(lmsd->ref, AUTONOTCH_BUFFER_SIZE, & diag);
+//	arm_mean_f32(lmsd->norm, AUTONOTCH_NUMTAPS, & diag2);
+//	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
+//	{
+//		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+//		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+//		lmsd->refold = 0;
+//		lmsd->refnew = FIRBUFSIZE;
+//		++ nrestarts;
+//	}
+	arm_copy_f32(pInput, & lmsd->ref [lmsd->refnew], FIRBUFSIZE);
+	arm_lms_norm_f32(& lmsd->lms2Norm_instance, pInput, & lmsd->ref [lmsd->refold], errsig2, pOutput, FIRBUFSIZE);
+	lmsd->refold += FIRBUFSIZE;
+	lmsd->refnew = lmsd->refold + FIRBUFSIZE;
+	lmsd->refold %= AUTONOTCH_BUFFER_SIZE;
+	lmsd->refnew %= AUTONOTCH_BUFFER_SIZE;
+
+	float32_t diagmin;
+	float32_t diagmax;
+	uint32_t index;
+	arm_min_f32(pOutput, FIRBUFSIZE, & diagmin, & index);
+	arm_max_no_idx_f32(pOutput, FIRBUFSIZE, & diagmax);
+	if (diagmin < - lmsd->phonefence || diagmax > lmsd->phonefence)
+	{
+		arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
+		arm_fill_f32(0, lmsd->norm, AUTONOTCH_NUMTAPS);
+		arm_fill_f32(0, pOutput, FIRBUFSIZE);
+		lmsd->refold = 0;
+		lmsd->refnew = FIRBUFSIZE;
+		//++ nrestarts;
+	}
+}
+
+#endif /* WITHLMSAUTONOTCH */
+
+#if ! WITHSKIPUSERMODE
+
+#if WITHNOSPEEX
+
+	#define NOISE_REDUCTION_BLOCK_SIZE FIRBUFSIZE
+	#define NOISE_REDUCTION_TAPS 64
+	#define NOISE_REDUCTION_REFERENCE_SIZE (NOISE_REDUCTION_BLOCK_SIZE * 2)
+	#define NOISE_REDUCTION_STEP 0.01f
+
+#endif /* WITHNOSPEEX */
+
+typedef struct rxaproc_tag
 {
 	// FIR audio filter
 	float32_t firEQcoeff [Ntap_rx_AUDIO];
@@ -7893,10 +8189,10 @@ typedef struct lmsnrstate_tag
 	arm_lms_norm_instance_f32 lms2_Norm_instance;
 	float32_t lms2_stateF32 [NOISE_REDUCTION_TAPS + NOISE_REDUCTION_BLOCK_SIZE - 1];
 	float32_t lms2_normCoeff_f32 [NOISE_REDUCTION_TAPS];
-	float32_t lms2_reference [NOISE_REDUCTION_REFERENCE_SIZE];
+	float32_t ref [NOISE_REDUCTION_REFERENCE_SIZE];
 	float32_t lms2_errsig2 [NOISE_REDUCTION_BLOCK_SIZE];
-	uint_fast16_t reference_index_old;
-	uint_fast16_t reference_index_new;
+	uint_fast16_t refold;
+	uint_fast16_t refnew;
 
 #else /* WITHNOSPEEX */
 
@@ -7904,10 +8200,17 @@ typedef struct lmsnrstate_tag
 
 #endif /* WITHNOSPEEX */
 
-	speexel_t * outsp;	/* pointer to buffer with result of processing */
-} lmsnrstate_t;
+#if WITHLMSAUTONOTCH
+	// LMS auto notch
+	LMSData_t lmsanotch;
+#endif /* WITHLMSAUTONOTCH */
 
-static lmsnrstate_t lmsnrstates [NTRX];
+	speexel_t * outsp;	/* pointer to buffer with result of processing */
+} rxaproc_t;
+
+static RAMBIGDTCM rxaproc_t rxaprocs [NTRX];
+
+#endif /* ! WITHSKIPUSERMODE */
 
 #if ! WITHNOSPEEX
 
@@ -7989,14 +8292,17 @@ static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
 
-#if ! WITHNOSPEEX
-	spx_int32_t denoise = gnoisereducts [gmode];
-	spx_int32_t supress = - (int) gnoisereductvl;
-#endif /* ! WITHNOSPEEX */
-
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
-		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+		const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
+		const uint_fast8_t pathsubmode = getsubmode(bi);
+		const uint_fast8_t mode = submodes [pathsubmode].mode;
+#if ! WITHNOSPEEX
+		spx_int32_t denoise = gnoisereducts [mode];
+		spx_int32_t supress = - (int) gnoisereductvl;
+#endif /* ! WITHNOSPEEX */
+
+		rxaproc_t * const nrp = & rxaprocs [pathi];
 		// Получение параметров эквалайзера
 		float32_t * const dCoefs = nrp->firEQcoeff;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
@@ -8021,23 +8327,27 @@ static void InitNoiseReduction(void)
 	uint_fast8_t pathi;
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
-		lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+		rxaproc_t * const nrp = & rxaprocs [pathi];
 
 		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->firEQcoeff, nrp->fir_state, FIRBUFSIZE);
 
 #if WITHNOSPEEX
 
 		arm_lms_norm_init_f32(& nrp->lms2_Norm_instance, NOISE_REDUCTION_TAPS, nrp->lms2_normCoeff_f32, nrp->lms2_stateF32, NOISE_REDUCTION_STEP, NOISE_REDUCTION_BLOCK_SIZE);
-		arm_fill_f32(0, nrp->lms2_reference, NOISE_REDUCTION_REFERENCE_SIZE);
+		arm_fill_f32(0, nrp->ref, NOISE_REDUCTION_REFERENCE_SIZE);
 		arm_fill_f32(0, nrp->lms2_normCoeff_f32, NOISE_REDUCTION_TAPS);
 
-		nrp->reference_index_old = 0;
-		nrp->reference_index_new = 0;
+		nrp->refold = 0;
+		nrp->refnew = 0;
 #else /* WITHNOSPEEX */
 
 		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
 
 #endif /* WITHNOSPEEX */
+
+#if WITHLMSAUTONOTCH
+		hamradio_autonotch_init(& nrp->lmsanotch);
+#endif /* WITHLMSAUTONOTCH */
 	}
 
 #ifdef WITHLEAKYLMSANR
@@ -8048,85 +8358,40 @@ static void InitNoiseReduction(void)
 
 #if WITHNOSPEEX
 
-static void processNoiseReduction(lmsnrstate_t * nrp, const float* bufferIn, float* bufferOut)
+static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float* bufferOut)
 {
-	arm_copy_f32(bufferIn, & nrp->lms2_reference [nrp->reference_index_new], NOISE_REDUCTION_BLOCK_SIZE);
-	arm_lms_norm_f32(& nrp->lms2_Norm_instance, bufferIn, & nrp->lms2_reference [nrp->reference_index_old], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
+	arm_copy_f32(bufferIn, & nrp->ref [nrp->refnew], NOISE_REDUCTION_BLOCK_SIZE);
+	arm_lms_norm_f32(& nrp->lms2_Norm_instance, bufferIn, & nrp->ref [nrp->refold], bufferOut, nrp->lms2_errsig2, NOISE_REDUCTION_BLOCK_SIZE);
 
-	nrp->reference_index_old += NOISE_REDUCTION_BLOCK_SIZE;
-	if (nrp->reference_index_old >= NOISE_REDUCTION_REFERENCE_SIZE)
-		nrp->reference_index_old = 0;
-	nrp->reference_index_new = nrp->reference_index_old + NOISE_REDUCTION_BLOCK_SIZE;
-	if (nrp->reference_index_new >= NOISE_REDUCTION_REFERENCE_SIZE)
-		nrp->reference_index_new = 0;
+	nrp->refold += NOISE_REDUCTION_BLOCK_SIZE;
+	if (nrp->refold >= NOISE_REDUCTION_REFERENCE_SIZE)
+		nrp->refold = 0;
+	nrp->refnew = nrp->refold + NOISE_REDUCTION_BLOCK_SIZE;
+	if (nrp->refnew >= NOISE_REDUCTION_REFERENCE_SIZE)
+		nrp->refnew = 0;
 }
 
 #endif /* WITHNOSPEEX */
 
-#if WITHLMSAUTONOTCH
-
-enum {
-	AUTONOTCH_NUMTAPS = 64,
-	AUTONOTCH_BUFFER_SIZE = FIRBUFSIZE * 4,
-	AUTONOTCH_STATE_ARRAY_SIZE = AUTONOTCH_NUMTAPS + FIRBUFSIZE - 1,
-};
-
-typedef struct
+/* на слабых процессорах второй приемник без NR и автонотч */
+static uint_fast8_t ispathprovessing(uint_fast8_t pathi)
 {
-    float32_t   				errsig2 [FIRBUFSIZE];
-    arm_lms_norm_instance_f32	lms2Norm_instance;
-    arm_lms_instance_f32	    lms2_instance;
-    float32_t	                lms2StateF32 [AUTONOTCH_STATE_ARRAY_SIZE];
-    float32_t	                lms2NormCoeff_f32 [AUTONOTCH_NUMTAPS];
-    float32_t	                lms2_reference [AUTONOTCH_BUFFER_SIZE];
-    unsigned 					reference_index_old;
-    unsigned 					reference_index_new;
-} LMSData_t;
-
-static RAMBIGDTCM LMSData_t lmsData0;
-
-static void hamradio_autonotch_init(LMSData_t * const lmsd)
-{
-	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
-	//const float32_t mu = 0.0001f;		// UA3REO value
-	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->lms2NormCoeff_f32, lmsd->lms2StateF32, mu, FIRBUFSIZE);
-	arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
-	arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
-	lmsd->reference_index_old = 0;
-	lmsd->reference_index_new = FIRBUFSIZE;
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
+	return 1;
+#else
+	return pathi == 0;
+#endif
 }
 
-// TODO: учесть возмодность работы двух каналов приёма
-static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * notchbuffer)
-{
-	float32_t diag;
-	arm_mean_f32(lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE, & diag);
-	float32_t diag2;
-	arm_mean_f32(lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS, & diag2);
-	if (__isnanf(diag) || __isinff(diag) || __isnanf(diag2) || __isinff(diag2))
-	{
-		arm_fill_f32(0, lmsd->lms2_reference, AUTONOTCH_BUFFER_SIZE);
-		arm_fill_f32(0, lmsd->lms2NormCoeff_f32, AUTONOTCH_NUMTAPS);
-		lmsd->reference_index_old = 0;
-		lmsd->reference_index_new = FIRBUFSIZE;
-	}
-	arm_copy_f32(notchbuffer, & lmsd->lms2_reference [lmsd->reference_index_new], FIRBUFSIZE);
-	arm_lms_norm_f32(& lmsd->lms2Norm_instance, notchbuffer, & lmsd->lms2_reference [lmsd->reference_index_old], lmsd->errsig2, notchbuffer, FIRBUFSIZE);
-	lmsd->reference_index_old += FIRBUFSIZE;
-	lmsd->reference_index_new = lmsd->reference_index_old + FIRBUFSIZE;
-	lmsd->reference_index_old %= AUTONOTCH_BUFFER_SIZE;
-	lmsd->reference_index_new %= AUTONOTCH_BUFFER_SIZE;
-}
-#endif /* WITHLMSAUTONOTCH */
-
-void audio_rx_equalizer(float32_t *buffer, uint16_t size);
 // обработка и сохранение в savesampleout16stereo_user()
-static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, speexel_t * p)
+static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel_t * p)
 {
-	const uint_fast8_t mode = submodes [gsubmode].mode;
+	const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
+	const uint_fast8_t pathsubmode = getsubmode(bi);
+	const uint_fast8_t mode = submodes [pathsubmode].mode;
 	const uint_fast8_t noprocessing = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
-	const uint_fast8_t denoise = ! noprocessing && gnoisereducts [mode];
-	const uint_fast8_t anotch = ! (gtx || mode == MODE_DIGI || gdatamode) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
+	const uint_fast8_t denoise = ispathprovessing(pathi) && ! noprocessing && gnoisereducts [mode];
+	const uint_fast8_t anotch = ispathprovessing(pathi)  && ! noprocessing && ! (gtx || mode == MODE_DIGI || gdatamode) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
@@ -8156,8 +8421,14 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		BEGIN_STAMP();
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		END_STAMP();
-		if (anotch && pathi == 0)
-			hamradio_autonotch_process(& lmsData0, nrp->wire1);
+		if (anotch)
+		{
+			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
+		}
+		else
+		{
+			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
+		}
 #if WITHLEAKYLMSANR
 		if (pathi == 0)
 			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
@@ -8182,11 +8453,17 @@ static void processingonebuff(uint_fast8_t pathi, lmsnrstate_t * const nrp, spee
 		BEGIN_STAMP();
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		END_STAMP();
-		if (anotch && pathi == 0)
-			hamradio_autonotch_process(& lmsData0, nrp->wire1);
-#if (1)
+		if (anotch)
+		{
+			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
+		}
+		else
+		{
+			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
+		}
+#if WITHAFEQUALIZER
 		audio_rx_equalizer(nrp->wire1, FIRBUFSIZE);
-#endif
+#endif /* WITHAFEQUALIZER */
 
 		nrp->outsp = nrp->wire1;
 	}
@@ -8204,7 +8481,7 @@ audioproc_spool_user(void)
 		uint_fast8_t pathi;
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
-			lmsnrstate_t * const nrp = & lmsnrstates [pathi];
+			rxaproc_t * const nrp = & rxaprocs [pathi];
 			// nrp->outsp указывает на результат обработки
 			processingonebuff(pathi, nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
 		}
@@ -8214,9 +8491,9 @@ audioproc_spool_user(void)
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
 	#if WITHUSEDUALWATCH
-			deliveryfloat(& afoutfloat_user, lmsnrstates [0].outsp [i], lmsnrstates [1].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& afoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [1].outsp [i]);	// to AUDIO codec
 	#else /* WITHUSEDUALWATCH */
-			deliveryfloat(& afoutfloat_user, lmsnrstates [0].outsp [i], lmsnrstates [0].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& afoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [0].outsp [i]);	// to AUDIO codec
 	#endif /* WITHUSEDUALWATCH */
 		}
 		// Освобождаем буфер
@@ -8224,7 +8501,7 @@ audioproc_spool_user(void)
 	}
 }
 
-#else /* WITHIF4DSP */
+#else /* WITHINTEGRATEDDSP */
 
 /* поддержка компиляции без Link Time Optimization */
 void *speex_alloc (int size)
@@ -8252,7 +8529,7 @@ FLOAT_t local_log(FLOAT_t x)
 	return 0;
 }
 
-#endif /* WITHIF4DSP */
+#endif /* WITHINTEGRATEDDSP */
 
 /* функция вызывается при ожидании опросом разного рода событий связанных с аппаартурой,
  * в том числе наступление следующего кадра.
@@ -8371,55 +8648,6 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
 
 #endif /* WITHCAT */
 
-
-#if XVTR_NYQ1
-// Частота из лююой зоны найквиста преобразуется в первую
-static uint_fast32_t FQMODEL_TUNING_TO_NYQ1(uint_fast32_t f)
-{
-	uint_fast32_t f1 = (f % DUCDDC_FREQ);
-	return f1 >= (DUCDDC_FREQ / 2) ? (DUCDDC_FREQ - f1) : f1;
-}
-#endif /* XVTR_NYQ1 */
-
-// tuning frequency to band pass frequency adjust
-static uint_fast32_t
-nyquistadj(uint_fast32_t f)
-{
-#if 0//XVTR_R820T2
-	reuturn R820T_IFFREQ;
-#elif 0//XVTR_NYQ1
-	return FQMODEL_TUNING_TO_NYQ1(f);
-#else /* XVTR_NYQ1 */
-	return f;
-#endif /* XVTR_NYQ1 */
-}
-
-// tuning frequency to PA low pass frequency adjust
-static uint_fast32_t
-nyquistadj2(uint_fast32_t f)
-{
-#if 0//XVTR_R820T2
-	reuturn R820T_IFFREQ;
-#elif XVTR_NYQ1
-	return FQMODEL_TUNING_TO_NYQ1(f);
-#else /* XVTR_NYQ1 */
-	return f;
-#endif /* XVTR_NYQ1 */
-}
-
-// tuning frequency to external PA (ACC socket) frequency adjust
-static uint_fast32_t
-nyquistadj3(uint_fast32_t f)
-{
-#if 0//XVTR_R820T2
-	reuturn R820T_IFFREQ;
-#elif XVTR_NYQ1
-	return FQMODEL_TUNING_TO_NYQ1(f);
-#else /* XVTR_NYQ1 */
-	return f;
-#endif /* XVTR_NYQ1 */
-}
-
 /*
  параметры:
  tx - не-0: переключение аппаратуры в режим передачи
@@ -8487,7 +8715,6 @@ updateboard(
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
 
-
 #if WITHCAT
 	if (aistate != 0)
 	{
@@ -8517,6 +8744,9 @@ updateboard(
 
 	if (full2)
 	{
+#if WITHTOUCHGUI
+		gui_update(NULL);
+#endif /* WITHTOUCHGUI */
 
 		/* Полная перенастройка. Изменился режим (или одно из значений hint). */
 		if (gtx == 0)
@@ -8658,14 +8888,14 @@ updateboard(
 				PRINTF(PSTR(" dbw="));	PRINTF(hamradio_get_rxbw_value_P());
 				PRINTF(PSTR("\n"));
 				PRINTF(
-					PSTR("mixXlsbs[0]=%d, mixXlsbs[1]=%d, mixXlsbs[2]=%d, mixXlsbs[3]=%d, mixXlsbs[4]=%d, mixXlsbs[5]=%d, mixXlsbs[6]=%d dc=%d tx=%d\n"), 
+					PSTR("mixXlsbs[0]=%d, [1]=%d, [2]=%d, [3]=%d, [4]=%d, [5]=%d, [6]=%d dc=%d tx=%d\n"),
 						mixXlsbs [0], mixXlsbs [1], mixXlsbs [2], mixXlsbs [3], mixXlsbs [4], mixXlsbs [5], mixXlsbs [6], dc, gtx
 					);
-				PRINTF(PSTR(" ["));	printfreq(synth_freq2lo1(freq, pathi));
+				PRINTF(PSTR(" [lo1="));	printfreq(synth_freq2lo1(freq, pathi));
 				PRINTF(PSTR("]if1="));	printfreq(freqif1);
-				PRINTF(PSTR(" ["));	printfreq(freqlo2);
+				PRINTF(PSTR(" [lo2="));	printfreq(freqlo2);
 				PRINTF(PSTR("]if2="));	printfreq(freqif2);
-				PRINTF(PSTR(" ["));	printfreq(freqlo3);
+				PRINTF(PSTR(" [lo3="));	printfreq(freqlo3);
 				PRINTF(PSTR("]if3="));	printfreq(freqif3);
 
 				//PRINTF(PSTR("\n"));
@@ -8914,7 +9144,7 @@ updateboard(
 		board_set_detector(BOARD_DETECTOR_SSB);		/* Всегда смесительный детектор */
 		board_set_digigainmax(gdigigainmax);
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
-		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10);	/*	Мощность, соответствующая full scale от IF ADC */
+		board_set_fsadcpower10((int_fast16_t) gfsadcpower10 [lo0side != LOCODE_INVALID] - (int_fast16_t) FSADCPOWEROFFSET10 + gerflossdb10(lo0side != LOCODE_INVALID, gatts [rxbi], gpamps [rxbi]));	/*	Мощность, соответствующая full scale от IF ADC */
 		#if WITHUSEDUALWATCH
 			board_set_mainsubrxmode(getactualmainsubrx());		// Левый/правый, A - main RX, B - sub RX
 		#endif /* WITHUSEDUALWATCH */
@@ -8952,6 +9182,13 @@ updateboard(
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
 
+	#if WITHAFEQUALIZER
+		board_set_equalizer_rx(geqrx);
+		board_set_equalizer_tx(geqtx);
+		board_set_equalizer_rx_gains(geqrxparams);
+		board_set_equalizer_tx_gains(geqtxparams);
+	#endif /* WITHAFEQUALIZER */
+
 	#if WITHTX
 		#if defined (CODEC1_TYPE) && WITHAFCODEC1HAVEPROC
 			board_set_mikeequal(gmikeequalizer);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
@@ -8968,10 +9205,12 @@ updateboard(
 			board_set_nfmdeviation100(gnfmdeviation);	/* Девиация при передаче в NFM - в сотнях герц */
 		#if WITHNOTXDACCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
-			board_set_dacscale(gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
+			// 0..10000
+			board_set_dacscale(getbandf2adjust(bandf2hint) * (unsigned long) gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
 		#else /* CPUDAC */
 			/* мощность регулируется постоянны напряжением на ЦАП */
-			board_set_dacscale(gdacscale);
+			// 0..10000
+			board_set_dacscale(getbandf2adjust(bandf2hint) * (unsigned long) gdacscale);
 		#endif /* CPUDAC */
 			board_set_gdigiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
@@ -9001,7 +9240,10 @@ updateboard(
 	#endif /* defined (DEFAULT_LCD_CONTRAST) */
 
 	#if WITHFANTIMER
-		board_setfanflag(! fanpaflag);
+		board_setfanflag(! fanpaflag);	// fanpaflag - сигнал выключения вентилятора
+		#if WITHFANPWM
+				board_setfanpwm(! fanpaflag ? gfanpapwm : 0);
+		#endif /* WITHFANPWM */
 	#endif /* WITHFANTIMER */
 	#if WITHDCDCFREQCTL
 		board_set_blfreq(bldividerout);
@@ -9052,6 +9294,36 @@ updateboard(
 		board_set_dac1(dac1level);	/* подстройка частоты опорного генератора */
 	#endif /* defined (DAC1_TYPE) */
 
+	#if (WITHSWRMTR || WITHSHOWSWRPWR)
+		display2_set_smetertype(gsmetertype);
+	#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+		{
+			// nau8822 experements
+
+			// ALC
+//			unsigned ALCEN = 0;	// only left channel ALC enabled
+//			unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+//			unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+			unsigned alcctl1 =
+					((ALCEN ? 0x02 : 0x00) << 7) |	// only left channel ALC enabled
+					(ALCMXGAIN << 3) |
+					(ALCMNGAIN << 0) |
+					0;
+			nau8822_setreg(NAU8822_ALC_CONTROL_1, alcctl1);
+
+			// Noise gate
+//			unsigned ALCNEN = 0;	// ALC noise gate function control bit
+//			unsigned ALCNTH = 0;	// ALC noise gate threshold level
+			unsigned ngctl1 =
+					(1 << 4) |	// reserved
+					(ALCNEN << 3) |
+					(ALCNTH << 0) |
+					0;
+			nau8822_setreg(NAU8822_NOISE_GATE, ngctl1);
+		}
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 		board_update();		/* вывести забуферированные изменения в регистры */
 	} // full2 != 0
 	
@@ -9117,19 +9389,11 @@ updateboard(
 	#endif /* WITHTX */
 	}
 
-#if (WITHSWRMTR || WITHSHOWSWRPWR)
-	display2_set_smetertype(gsmetertype);
-#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-
 	/* после всех перенастроек включаем передатчик */
 #if WITHTX
 	board_set_tx(gtx);		/* в конце выдаём сигнал разрешения передачи */
 	board_update();		/* вывести забуферированные изменения в регистры */
 #endif /* WITHTX */
-
-#if WITHTOUCHGUI
-	gui_update(NULL);
-#endif /* WITHTOUCHGUI */
 }
 
 ///////////////////////////
@@ -9880,14 +10144,14 @@ const FLASHMEM char * hamradio_get_notchtype5_P(void)
 
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ  */
 
-#if WITHIF4DSP
+#if WITHINTEGRATEDDSP
 // NR ON/OFF
 uint_fast8_t hamradio_get_nrvalue(int_fast32_t * p)
 {
 	* p = gnoisereductvl;
 	return gnoisereducts [gmode] != 0;
 }
-#endif /* WITHIF4DSP */
+#endif /* WITHINTEGRATEDDSP */
 
 // текущее состояние TUNE
 uint_fast8_t hamradio_get_tunemodevalue(void)
@@ -10480,8 +10744,8 @@ static volatile uint_fast8_t counterupdatewpm;
 	обновлению режимов работы
 	Вызывается из обработчика таймерного прерывания
 */
-void 
-display_spool(void)
+static void
+display_spool(void * ctx)
 {
 	#if 0 //WITHNMEA
 	// таймер обновления часов/минут/секунд
@@ -12567,7 +12831,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(steps, ghiresdiv);
+			encoder_pushback(steps, genc1div);
 		}
 	}
 	else if (match2('D', 'N'))
@@ -12575,7 +12839,7 @@ processcatmsg(
 		if (cathasparam)
 		{
 			const int steps = vfy32up(catparam, 0, 99, 1);	/* 00 .. 99 */
-			encoder_pushback(0 - steps, ghiresdiv);
+			encoder_pushback(0 - steps, genc1div);
 		}
 	}
 #if 0
@@ -12994,7 +13258,13 @@ static void dpc_1stimer(void * arg)
 
 #if WITHLWIP
 	  tcp_tmr();
+	#if LWIP_AUTOIP
+		  autoip_tmr();
+	#endif /* LWIP_AUTOIP */
 #endif /* WITHLWIP */
+#if 0 && CPUSTYLE_XC7Z
+	hamradio_set_freq(hamradio_get_freq_rx() + 1);
+#endif /* CPUSTYLE_XC7Z */
 }
 
 static void
@@ -13028,7 +13298,7 @@ processmessages(
 {
 	if (hardware_getshutdown())	// признак провала питания
 	{
-		display_discharge();	// выключаем дисплей
+		display_uninitialize();	// выключаем дисплей
 		gtx = 0;
 		updateboard(1, 1);	// переходим на приём
 		for (;;)				// вешаемся...
@@ -13203,8 +13473,10 @@ uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 }
 
 /* Вызывается из обработчика прерываний раз в секунду */
-void spool_secound(void)
+void spool_secound(void * ctx)
 {
+	(void) ctx;	// приходит NULL
+
 	board_dpc(dpc_1stimer, NULL);
 #if WITHTOUCHGUI
 	board_dpc(gui_update, NULL);
@@ -13383,6 +13655,7 @@ struct menudef
 	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 
 	uint_fast16_t * qpval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * qpval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
@@ -13398,6 +13671,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrptuner),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -13408,6 +13682,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		LMIN, LMAX, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		nvramoffs0,
 		& tunerind,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13417,6 +13692,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		CMIN, CMAX, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunercap),
+		nvramoffs0,
 		& tunercap,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13426,6 +13702,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		0, KSCH_COUNT - 1, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunertype),
+		nvramoffs0,
 		NULL,
 		& tunertype,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13435,6 +13712,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		10, 250,
 		offsetof(struct nvmap, tunerdelay),
+		nvramoffs0,
 		NULL,
 		& tunerdelay,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13446,6 +13724,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpdisplay),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -13467,6 +13746,7 @@ static const FLASHMEM struct menudef menutable [] =
 		0, 63, 					// UC1608 - 0..63
 #endif /* LCDMODE_UC1601 */
 		offsetof(struct nvmap, gcontrast),
+		nvramoffs0,
 		NULL,
 		& gcontrast,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13478,6 +13758,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		4, UINT16_MAX, 
 		offsetof(struct nvmap, dcdcrefdiv),
+		nvramoffs0,
 		& dcdcrefdiv,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13489,6 +13770,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHLCDBACKLIGHTMIN, WITHLCDBACKLIGHTMAX, 
 		offsetof(struct nvmap, gbglight),
+		nvramoffs0,
 		NULL,
 		& gbglight,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13500,6 +13782,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gkblight),
+		nvramoffs0,
 		NULL,
 		& gkblight,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13511,6 +13794,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 240, 
 		offsetof(struct nvmap, gdimmtime),
+		nvramoffs0,
 		NULL,
 		& gdimmtime,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13522,6 +13806,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 240, 
 		offsetof(struct nvmap, gsleeptime),
+		nvramoffs0,
 		NULL,
 		& gsleeptime,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13534,6 +13819,7 @@ static const FLASHMEM struct menudef menutable [] =
 //		ITEM_VALUE,
 //		0, 1,
 //		offsetof(struct nvmap, gbluebgnd),
+//		nvramoffs0,
 //		NULL,
 //		& gbluebgnd,
 //		getzerobase, /* складывается со смещением и отображается */
@@ -13544,6 +13830,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gshowdbm),
+		nvramoffs0,
 		NULL,
 		& gshowdbm,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13553,6 +13840,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		4, 25,							/* частота обновления показаний частоты от 5 до 25 раз в секунду */
 		offsetof(struct nvmap, gdisplayfreqsfps),
+		nvramoffs0,
 		NULL,
 		& gdisplayfreqsfps,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13563,6 +13851,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		4, 40,							/* частота обновления барграфов от 5 до 40 раз в секунду */
 		offsetof(struct nvmap, gdisplaybarsfps),
+		nvramoffs0,
 		NULL,
 		& gdisplaybarsfps,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13574,6 +13863,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, VIEW_COUNT - 1,				/* стиль отображения спектра и панорамы */
 		offsetof(struct nvmap, gviewstyle),
+		nvramoffs0,
 		NULL,
 		& gviewstyle,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13583,6 +13873,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 		MENUNONVRAM,
+		nvramoffs0,
 		NULL,
 		& gtopdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13592,6 +13883,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 		MENUNONVRAM,
+		nvramoffs0,
 		NULL,
 		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13601,6 +13893,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,							/* водопад отдельными папаметрами */
 		offsetof(struct nvmap, gwflevelsep),
+		nvramoffs0,
 		NULL,
 		& gwflevelsep,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13610,6 +13903,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
 		MENUNONVRAM,
+		nvramoffs0,
 		NULL,
 		& gtopdbwf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13619,6 +13913,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
 		MENUNONVRAM,
+		nvramoffs0,
 		NULL,
 		& gbottomdbwf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13628,6 +13923,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 		MENUNONVRAM,
+		nvramoffs0,
 		NULL,
 		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13637,6 +13933,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,							/* разрешение или запрет раскраски спектра */
 		offsetof(struct nvmap, gtxloopback),
+		nvramoffs0,
 		NULL,
 		& gtxloopback,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13647,6 +13944,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 1,							/* выбор внешнего вида прибора - стрелочный или градусник */
 		offsetof(struct nvmap, gsmetertype),
+		nvramoffs0,
 		NULL,
 		& gsmetertype,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13660,6 +13958,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpclock),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -13670,6 +13969,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		2015, 2099, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		nvramoffs0,
 		& grtcyear,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13679,6 +13979,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		1, 12, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		nvramoffs0,
 		NULL,
 		& grtcmonth,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13688,6 +13989,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		1, 31, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		nvramoffs0,
 		NULL,
 		& grtcday,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13697,6 +13999,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		0, 23, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		nvramoffs0,
 		NULL,
 		& grtchour,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13706,6 +14009,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		0, 59, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		nvramoffs0,
 		NULL,
 		& grtcminute,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13715,6 +14019,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE, 
 		0, 1, 
 		MENUNONVRAM, //offsetof(struct nvmap, tunerind),
+		nvramoffs0,
 		NULL,
 		& grtcstrobe,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13726,6 +14031,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpfilters),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -13737,6 +14043,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		CWPITCHMIN10, CWPITCHMAX10,	// 40, 190,			/* 400 Hz..1900, Hz in 100 Hz steps */
 		offsetof(struct nvmap, gcwpitch10),
+		nvramoffs0,
 		NULL,
 		& gcwpitch10,
 		getzerobase, 
@@ -13747,6 +14054,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),
+		nvramoffs0,
 		NULL,
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13758,6 +14066,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 		RMT_BWPROPSLEFT_BASE(BWPROPI_CWWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_cwwide.left10_width10,
 		getzerobase, 
@@ -13767,6 +14076,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 180,			/* 100 Hz..1800, Hz in 100 Hz steps */
 		RMT_BWPROPSLEFT_BASE(BWPROPI_CWNARROW),
+		nvramoffs0,
 		NULL,
 		& bwprop_cwnarrow.left10_width10,
 		getzerobase, 
@@ -13776,6 +14086,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13785,6 +14096,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13794,6 +14106,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbwide.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -13803,6 +14116,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBMEDIUM),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbmedium.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13812,6 +14126,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBMEDIUM),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbmedium.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13821,6 +14136,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBMEDIUM),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbmedium.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -13830,6 +14146,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBNARROW),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbnarrow.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13839,6 +14156,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX, 		// 50 Hz-700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBNARROW),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbnarrow.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13848,6 +14166,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBNARROW),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbnarrow.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -13857,6 +14176,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_amwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13866,6 +14186,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_amwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13875,6 +14196,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_amwide.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -13884,6 +14206,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_AMNARROW),
+		nvramoffs0,
 		NULL,
 		& bwprop_amnarrow.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13893,6 +14216,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_AMNARROW),
+		nvramoffs0,
 		NULL,
 		& bwprop_amnarrow.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13902,6 +14226,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_AMNARROW),
+		nvramoffs0,
 		NULL,
 		& bwprop_amnarrow.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -13911,6 +14236,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_SSBTX),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbtx.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13920,6 +14246,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_SSBTX),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbtx.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13929,6 +14256,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		AFRESPONCEMIN, AFRESPONCEMAX,			/* изменение тембра звука - на Samplerate/2 АЧХ изменяется на столько децибел  */
 		RMT_BWPROPSAFRESPONCE_BASE(BWPROPI_SSBTX),
+		nvramoffs0,
 		NULL,
 		& bwprop_ssbtx.afresponce,
 		getafresponcebase, /* складывается со смещением и отображается */
@@ -13938,6 +14266,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWRIGHTMIN, BWRIGHTMAX, 		// 0.8 kHz-18 kHz
 		RMT_BWPROPSRIGHT_BASE(BWPROPI_DIGIWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_digiwide.right100,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13947,6 +14276,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		BWLEFTMIN, BWLEFTMAX,		// 50 Hz..700 Hz
 		RMT_BWPROPSLEFT_BASE(BWPROPI_DIGIWIDE),
+		nvramoffs0,
 		NULL,
 		& bwprop_digiwide.left10_width10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -13960,6 +14290,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		offsetof(struct nvmap, ifshifoffset),
+		nvramoffs0,
 		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, 
@@ -13980,6 +14311,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe3p1),
+		nvramoffs0,
 		& fi_3p1.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -13989,6 +14321,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe3p1),
+		nvramoffs0,
 		& fi_3p1.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -13998,6 +14331,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe3p0),
+		nvramoffs0,
 		& fi_3p0_455.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14007,6 +14341,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe3p0),
+		nvramoffs0,
 		& fi_3p0_455.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14016,6 +14351,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, carr0p5),
+		nvramoffs0,
 		& fi_0p5.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14026,6 +14362,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq2k),
+		nvramoffs0,
 		& fi_2p0_455.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14036,6 +14373,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq6k),
+		nvramoffs0,
 		& fi_6p0_455.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14046,6 +14384,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq10k),
+		nvramoffs0,
 		& fi_10p0_455.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14057,6 +14396,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lo4offset),
+		nvramoffs0,
 		& lo4offset,
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
@@ -14067,6 +14407,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lo4offsets [0]),
+		nvramoffs0,
 		& lo4offsets [0],
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
@@ -14076,6 +14417,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lo4offsets [1]),
+		nvramoffs0,
 		& lo4offsets [1],
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
@@ -14086,6 +14428,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lo4offset),
+		nvramoffs0,
 		& lo4offset,
 		NULL,
 		getlo4base, /* складывается со смещением и отображается */
@@ -14095,6 +14438,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, glo4lsb),
+		nvramoffs0,
 		NULL,
 		& glo4lsb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14110,6 +14454,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, /* 0 - off, 1 - on */
 		offsetof(struct nvmap, dctxmodecw),
+		nvramoffs0,
 		NULL,
 		& dctxmodecw,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14123,6 +14468,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe2p4),
+		nvramoffs0,
 		& fi_2p4.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14132,6 +14478,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe2p4),
+		nvramoffs0,
 		& fi_2p4.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14143,6 +14490,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe2p7),
+		nvramoffs0,
 		& fi_2p7.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14152,6 +14500,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe2p7),
+		nvramoffs0,
 		& fi_2p7.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14162,6 +14511,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe2p7tx),
+		nvramoffs0,
 		& fi_2p7_tx.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14171,6 +14521,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe2p7tx),
+		nvramoffs0,
 		& fi_2p7_tx.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14184,6 +14535,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe3p1),
+		nvramoffs0,
 		& fi_3p1.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14193,6 +14545,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe3p1),
+		nvramoffs0,
 		& fi_3p1.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14203,6 +14556,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe3p1tx),
+		nvramoffs0,
 		& fi_3p1_tx.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14212,6 +14566,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe3p1tx),
+		nvramoffs0,
 		& fi_3p1_tx.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14225,6 +14580,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw0p3),
+		nvramoffs0,
 		NULL,
 		& fi_0p3.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14234,6 +14590,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, carr0p3),
+		nvramoffs0,
 		& fi_0p3.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14246,6 +14603,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw0p5),
+		nvramoffs0,
 		NULL,
 		& fi_0p5.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14255,6 +14613,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, carr0p5),
+		nvramoffs0,
 		& fi_0p5.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14267,6 +14626,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw1p8),
+		nvramoffs0,
 		NULL,
 		& fi_1p8.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14276,6 +14636,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERU | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10, 
 		offsetof(struct nvmap, usbe1p8),
+		nvramoffs0,
 		& fi_1p8.high,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14285,6 +14646,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_FILTERL | ITEM_VALUE,
 		10, IF3OFFS * 2 - 10,
 		offsetof(struct nvmap, lsbe1p8),
+		nvramoffs0,
 		& fi_1p8.low_or_center,
 		NULL,
 		NULL,	/* базоое значение для отображения берётся из структуры filter_t */
@@ -14297,6 +14659,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p4),
+		nvramoffs0,
 		NULL,
 		& fi_2p4.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14309,6 +14672,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p4_tx),
+		nvramoffs0,
 		NULL,
 		& fi_2p4_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14321,6 +14685,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw2p7_tx),
+		nvramoffs0,
 		NULL,
 		& fi_2p7_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14333,6 +14698,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw3p1_tx),
+		nvramoffs0,
 		NULL,
 		& fi_3p1_tx.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14345,6 +14711,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, hascw6p0),
+		nvramoffs0,
 		NULL,
 		& fi_6p0.present,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14355,6 +14722,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq6k),
+		nvramoffs0,
 		& fi_6p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14368,6 +14736,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq7p8k),
+		nvramoffs0,
 		& fi_7p8.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14381,6 +14750,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq8k),
+		nvramoffs0,
 		& fi_8p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14393,6 +14763,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq9k),
+		nvramoffs0,
 		& fi_9p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14406,6 +14777,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq15k_nfm),
+		nvramoffs0,
 		& fi_15p0_tx_nfm.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14417,6 +14789,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq15k),
+		nvramoffs0,
 		& fi_15p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14430,6 +14803,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, IF3CEOFFS * 2,
 		offsetof(struct nvmap, cfreq17k),
+		nvramoffs0,
 		& fi_17p0.ceoffset,
 		NULL,
 		getcefreqshiftbase, 
@@ -14445,6 +14819,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpnotch),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14455,6 +14830,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
+		nvramoffs0,
 		NULL,
 		& gnotchtype,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14465,6 +14841,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		nvramoffs0,
 		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14474,6 +14851,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
 		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
+		nvramoffs0,
 		& gnotchwidth.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14486,6 +14864,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpnotch),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14496,6 +14875,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, NOTCHMODE_COUNT - 1,
 		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
+		nvramoffs0,
 		NULL,
 		& gnotch,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14510,6 +14890,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrppbts),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14520,6 +14901,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		PBTMIN, PBTMAX,			/* -15 kHz..+15 kHz in 5 Hz steps */
 		offsetof(struct nvmap, pbtoffset),
+		nvramoffs0,
 		& gpbtoffset,
 		NULL,
 		getpbtbase, 
@@ -14534,6 +14916,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpelkey),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14545,6 +14928,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
+		nvramoffs0,
 		NULL,
 		& elkeywpm.value,
 		getzerobase, 
@@ -14556,6 +14940,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 5,		// minimal 0 - без эффекта Виброплекса
 		offsetof(struct nvmap, elkeyslope),
+		nvramoffs0,
 		NULL,
 		& elkeyslope,
 		getzerobase, 
@@ -14566,6 +14951,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,		// minimal 0 - без эффекта Виброплекса
 		offsetof(struct nvmap, elkeyslopeenable),
+		nvramoffs0,
 		NULL,
 		& elkeyslopeenable,
 		getzerobase, 
@@ -14577,6 +14963,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 3,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 		offsetof(struct nvmap, elkeymode),
+		nvramoffs0,
 		NULL,
 		& elkeymode,
 		getzerobase, 
@@ -14586,6 +14973,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,	/* режим электронного ключа - поменять местами точки с тире или нет. */
 		offsetof(struct nvmap, elkeyreverse),
+		nvramoffs0,
 		NULL,
 		& elkeyreverse,
 		getzerobase, 
@@ -14595,6 +14983,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		23, 45, 
 		offsetof(struct nvmap, dashratio),
+		nvramoffs0,
 		NULL,
 		& dashratio,
 		getzerobase, 
@@ -14604,6 +14993,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		7, 13, 
 		offsetof(struct nvmap, spaceratio),
+		nvramoffs0,
 		NULL,
 		& spaceratio,
 		getzerobase, 
@@ -14614,6 +15004,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bkinenable),
+		nvramoffs0,
 		NULL,
 		& bkinenable,
 		getzerobase, 
@@ -14623,6 +15014,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		5, 160,						/* 0.05..1.6 секунды */
 		offsetof(struct nvmap, bkindelay),
+		nvramoffs0,
 		NULL,
 		& bkindelay,
 		getzerobase, 
@@ -14634,6 +15026,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		2, 16, 
 		offsetof(struct nvmap, gcwedgetime),	/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
+		nvramoffs0,
 		NULL,
 		& gcwedgetime,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14647,6 +15040,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrprfadc),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14658,6 +15052,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gadcrand),
+		nvramoffs0,
 		NULL,
 		& gadcrand,
 		getzerobase, 
@@ -14668,6 +15063,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gdither),
+		nvramoffs0,
 		NULL,
 		& gdither,
 		getzerobase, 
@@ -14677,6 +15073,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gadcfifo),
+		nvramoffs0,
 		NULL,
 		& gadcfifo,
 		getzerobase, 
@@ -14686,6 +15083,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		ADCOFFSETMID - 200, ADCOFFSETMID + 200,
 		offsetof(struct nvmap, gadcoffset),
+		nvramoffs0,
 		& gadcoffset,
 		NULL,
 		getadcoffsbase,	/* складывается со смещением и отображается */
@@ -14695,6 +15093,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gdactest),
+		nvramoffs0,
 		NULL,
 		& gdactest,
 		getzerobase, 
@@ -14708,6 +15107,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpvox),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14718,6 +15118,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gvoxenable),
+		nvramoffs0,
 		NULL,
 		& gvoxenable,
 		getzerobase, 
@@ -14727,6 +15128,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHVOXDELAYMIN, WITHVOXDELAYMAX,						/* 0.1..2.5 secounds delay */
 		offsetof(struct nvmap, voxdelay),
+		nvramoffs0,
 		NULL,
 		& voxdelay,
 		getzerobase, 
@@ -14736,6 +15138,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHVOXLEVELMIN, WITHVOXLEVELMAX,
 		offsetof(struct nvmap, gvoxlevel),
+		nvramoffs0,
 		NULL,
 		& gvoxlevel,
 		getzerobase, 
@@ -14745,6 +15148,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHAVOXLEVELMIN, WITHAVOXLEVELMAX,
 		offsetof(struct nvmap, gavoxlevel),
+		nvramoffs0,
 		NULL,
 		& gavoxlevel,
 		getzerobase, 
@@ -14758,6 +15162,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpcat),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14768,6 +15173,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, catenable),
+		nvramoffs0,
 		NULL,
 		& catenable,
 		getzerobase,
@@ -14778,6 +15184,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, (sizeof catbr2int / sizeof catbr2int [0]) - 1,
 		offsetof(struct nvmap, catbaudrate),
+		nvramoffs0,
 		NULL,
 		& catbaudrate,
 		getzerobase,
@@ -14788,6 +15195,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, cat1dtrenable),
+		nvramoffs0,
 		NULL,
 		& cat1dtrenable,
 		getzerobase,
@@ -14798,6 +15206,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, cat1rtsenable),
+		nvramoffs0,
 		NULL,
 		& cat1rtsenable,
 		getzerobase, 
@@ -14807,6 +15216,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, cat1txdtr),
+		nvramoffs0,
 		NULL,
 		& cat1txdtr,
 		getzerobase, 
@@ -14818,6 +15228,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, cat2dtrenable),
+		nvramoffs0,
 		NULL,
 		& cat2dtrenable,
 		getzerobase, 
@@ -14828,6 +15239,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, cat2rtsenable),
+		nvramoffs0,
 		NULL,
 		& cat2rtsenable,
 		getzerobase, 
@@ -14837,6 +15249,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, cat2txdtr),
+		nvramoffs0,
 		NULL,
 		& cat2txdtr,
 		getzerobase, 
@@ -14852,6 +15265,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpctcss),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14862,6 +15276,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gsbtonenable),
+		nvramoffs0,
 		NULL,
 		& gsbtonenable,
 		getzerobase, 
@@ -14871,6 +15286,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
 		offsetof(struct nvmap, gsubtonei),
+		nvramoffs0,
 		NULL,
 		& gsubtonei,
 		getzerobase, 
@@ -14881,6 +15297,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 100, 
 		offsetof(struct nvmap, gsubtonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		nvramoffs0,
 		NULL,
 		& gsubtonelevel,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14893,6 +15310,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpaudio),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -14905,6 +15323,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		offsetof(struct nvmap, afgain1),
+		nvramoffs0,
 		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14916,6 +15335,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
+		nvramoffs0,
 		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14928,6 +15348,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		80, 250,			/* 800 Hz..2500, Hz in 50 Hz steps */
 		offsetof(struct nvmap, gkeybeep10),
+		nvramoffs0,
 		NULL,
 		& gkeybeep10,
 		getzerobase, 
@@ -14939,6 +15360,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gmuteall),
+		nvramoffs0,
 		NULL,
 		& gmuteall,
 		getzerobase, 
@@ -14950,6 +15372,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelch),	/* уровень сигнала болше которого открывается шумодав */
+		nvramoffs0,
 		NULL,
 		& gsquelch.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14959,6 +15382,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, SQUELCHMAX,
 		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
+		nvramoffs0,
 		NULL,
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14968,6 +15392,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 100, 
 		offsetof(struct nvmap, gsidetonelevel),	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
+		nvramoffs0,
 		NULL,
 		& gsidetonelevel,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14977,6 +15402,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmoniflag),	/* разрешение самопрослушивания */
+		nvramoffs0,
 		NULL,
 		& gmoniflag,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14989,6 +15415,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, (sizeof loopnames / sizeof loopnames [0]) - 1,
 		offsetof(struct nvmap, gloopmsg),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		nvramoffs0,
 		NULL,
 		& gloopmsg,
 		getzerobase, /* складывается со смещением и отображается */
@@ -14998,17 +15425,31 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		15, 240,
 		offsetof(struct nvmap, gloopsec),	/* Уровень сигнала самопрослушивания в процентах - 0%..100% */
+		nvramoffs0,
 		NULL,
 		& gloopsec,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+#if WITHMIC1LEVEL
+	{
+		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
+		ITEM_VALUE,
+		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
+		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
+		nvramoffs0,
+		& mik1level,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* ITHMIC1LEVEL */
 	#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	{
 		QLABEL("LINE LVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления с линейного входа через меню. */
 		ITEM_VALUE,
 		WITHLINEINGAINMIN, WITHLINEINGAINMAX, 
 		offsetof(struct nvmap, glineamp),	/* усиление с линейного входа */
+		nvramoffs0,
 		& glineamp,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15019,6 +15460,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_SSB),
+		nvramoffs0,
 		NULL,
 		& gtxaudio [MODE_SSB],
 		getzerobase, /* складывается со смещением и отображается */
@@ -15028,6 +15470,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_DIGI),
+		nvramoffs0,
 		NULL,
 		& gtxaudio [MODE_DIGI],
 		getzerobase, /* складывается со смещением и отображается */
@@ -15037,6 +15480,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_AM),
+		nvramoffs0,
 		NULL,
 		& gtxaudio [MODE_AM],
 		getzerobase, /* складывается со смещением и отображается */
@@ -15046,6 +15490,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, BOARD_TXAUDIO_count - 1, 					// при SSB/AM/FM передача с тестовых источников
 		RMT_TXAUDIO_BASE(MODE_NFM),
+		nvramoffs0,
 		NULL,
 		& gtxaudio [MODE_NFM],
 		getzerobase, /* складывается со смещением и отображается */
@@ -15055,6 +15500,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,	
 		0, 1, 					/* Включение программной АРУ перед модулятором */
 		offsetof(struct nvmap, gmikeagc),
+		nvramoffs0,
 		NULL,
 		& gmikeagc,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15064,6 +15510,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,	
 		WITHMIKEAGCMIN, WITHMIKEAGCMAX, 	/* максимальное усиление АРУ микрофона в дБ */
 		offsetof(struct nvmap, gmikeagcgain),
+		nvramoffs0,
 		NULL,
 		& gmikeagcgain,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15073,6 +15520,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,	
 		0, 90, 					/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
+		nvramoffs0,
 		NULL,
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15083,6 +15531,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 					/* ревербератор */
 		offsetof(struct nvmap, greverb),
+		nvramoffs0,
 		NULL,
 		& greverb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15092,6 +15541,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHREVERBDELAYMIN, WITHREVERBDELAYMAX, 					/* ревербератор - задержка */
 		offsetof(struct nvmap, greverbdelay),
+		nvramoffs0,
 		NULL,
 		& greverbdelay,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15101,6 +15551,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHREVERBLOSSMIN, WITHREVERBLOSSMAX, 					/* ревербератор - ослабление на возврате */
 		offsetof(struct nvmap, greverbloss),
+		nvramoffs0,
 		NULL,
 		& greverbloss,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15111,6 +15562,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gmikebust20db),
+		nvramoffs0,
 		NULL,
 		& gmikebust20db,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15121,6 +15573,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gmikeequalizer),
+		nvramoffs0,
 		NULL,
 		& gmikeequalizer,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15131,6 +15584,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [0]),
+		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [0],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -15140,6 +15594,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [1]),
+		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [1],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -15149,6 +15604,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [2]),
+		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [2],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -15158,6 +15614,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [3]),
+		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [3],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -15167,6 +15624,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, EQUALIZERBASE * 2,
 		offsetof(struct nvmap, gmikeequalizerparams [4]),
+		nvramoffs0,
 		NULL,
 		& gmikeequalizerparams [4],
 		getequalizerbase, /* складывается с -12 и отображается */
@@ -15174,23 +15632,70 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	#endif /* WITHAFCODEC1HAVEPROC */
 #endif /* WITHTX && WITHIF4DSP */
-#if WITHMIC1LEVEL
+#if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
+//	unsigned ALCNEN = 0;	// ALC noise gate function control bit
+//	unsigned ALCNTH = 0;	// ALC noise gate threshold level
+//	unsigned ALCEN = 1;	// only left channel ALC enabled
+//	unsigned ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
+//	unsigned ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
 	{
-		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
+		QLABEL("ALC NCEN"), 7, 0, RJ_ON,	ISTEP1,		/* ALC noise gate function control bit. */
 		ITEM_VALUE,
-		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
-		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
-		& mik1level,
+		0, 1,
+		offsetof(struct nvmap, ALCNEN),	/* ALC noise gate function control bit */
+		nvramoffs0,
 		NULL,
+		& ALCNEN,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* ITHMIC1LEVEL */
+	{
+		QLABEL("ALCNTH  "), 7, 0, 0,	ISTEP1,		/* ALC noise gate threshold level. */
+		ITEM_VALUE,
+		0, 7,
+		offsetof(struct nvmap, ALCNTH),	/* ALC noise gate threshold level */
+		nvramoffs0,
+		NULL,
+		& ALCNTH,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ALC EN   "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, ALCEN),	/* ALC enabled */
+		nvramoffs0,
+		NULL,
+		& ALCEN,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ALCMXGAN"), 7, 0, 0,	ISTEP1,		/* Set maximum gain limit for PGA volume setting changes under ALC control. */
+		ITEM_VALUE,
+		0, 7,
+		offsetof(struct nvmap, ALCMXGAIN),	/* Set maximum gain limit for PGA volume setting changes under ALC control */
+		nvramoffs0,
+		NULL,
+		& ALCMXGAIN,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ALCMNGAN"), 7, 0, 0,	ISTEP1,		/* Set minimum gain value limit for PGA volume setting changes under ALC contro. */
+		ITEM_VALUE,
+		0, 7,
+		offsetof(struct nvmap, ALCMNGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
+		nvramoffs0,
+		NULL,
+		& ALCMNGAIN,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHUSEAUDIOREC
 	{
 		QLABEL("SD RECRD"), 8, 3, RJ_ON,	ISTEP1,		/* автоматически начинаем запись на SD CARD при включении */
 		ITEM_VALUE,
-		0, 1, 
+		0, 1,
 		offsetof(struct nvmap, recmode),
+		nvramoffs0,
 		NULL,
 		& recmode,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15200,9 +15705,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #if WITHUSBUAC
 	{
 		QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,	
+		ITEM_VALUE,
 		0, 1, 					/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		offsetof(struct nvmap, guacplayer),
+		nvramoffs0,
 		NULL,
 		& guacplayer,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15210,9 +15716,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 	{
 		QLABEL("I/Q SWAP"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,	
+		ITEM_VALUE,
 		0, 1, 					/* Поменять местами I и Q сэмплы в потоке RTS96 */
 		offsetof(struct nvmap, gswapiq),
+		nvramoffs0,
 		NULL,
 		& gswapiq,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15220,6 +15727,98 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
+#if WITHAFEQUALIZER
+	{
+		QLABEL2("", "AF Equalizer"), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpafeq),
+		nvramoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+	{
+		QLABEL2("", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, geqrx),
+		nvramoffs0,
+		NULL,
+		& geqrx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [0]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [0],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [1]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [1],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [2]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [2],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, geqtx),
+		nvramoffs0,
+		NULL,
+		& geqtx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [0]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [0],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [1]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [1],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [2]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [2],
+		getafequalizerbase,
+	},
+#endif /* WITHAFEQUALIZER */
 #if WITHIF4DSP
 #if ! WITHFLATMENU
 	{
@@ -15227,6 +15826,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpagc),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -15237,6 +15837,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
 		offsetof(struct nvmap, gfsadcpower10 [0]),
+		nvramoffs0,
 		& gfsadcpower10 [0],	// 16 bit
 		NULL,
 		getfsasdcbase10, /* складывается со смещением и отображается */
@@ -15246,6 +15847,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, FSADCPOWEROFFSET10 * 2, 		// -50..+50 dBm
 		offsetof(struct nvmap, gfsadcpower10 [1]),
+		nvramoffs0,
 		& gfsadcpower10 [1],	// 16 bit
 		NULL,
 		getfsasdcbase10, /* складывается со смещением и отображается */
@@ -15255,6 +15857,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
 		offsetof(struct nvmap, gagcoff),
+		nvramoffs0,
 		NULL,
 		& gagcoff,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15264,6 +15867,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		40, 120, 		// 40..120 dB
 		offsetof(struct nvmap, gdigigainmax),
+		nvramoffs0,
 		NULL,
 		& gdigigainmax,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
@@ -15274,6 +15878,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, UINT8_MAX, 		//
 		offsetof(struct nvmap, gvad605),
+		nvramoffs0,
 		NULL,
 		& gvad605,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
@@ -15285,6 +15890,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpagcssb),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -15295,6 +15901,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].rate,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15304,6 +15911,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].thung10),	/* время удержания медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].thung10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15313,6 +15921,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].t1),	/* время срабатывания медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].t1,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15322,6 +15931,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].release10),	/* время разряда медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].release10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15331,6 +15941,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_SSB].t4),	/* время разряда быстрой цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_SSB].t4,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15341,6 +15952,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpagccw),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -15351,6 +15963,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		offsetof(struct nvmap, afsets [AGCSETI_CW].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].rate,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15360,6 +15973,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_CW].thung10),	/* время удержания медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].thung10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15369,6 +15983,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_CW].t1),	/* время срабатывания медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].t1,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15378,6 +15993,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		offsetof(struct nvmap, afsets [AGCSETI_CW].release10),	/* время разряда медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].release10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15387,6 +16003,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_CW].t4),	/* время разряда быстрой цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_CW].t4,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15397,6 +16014,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpagcdigi),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -15407,6 +16025,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, AGC_RATE_FLAT,
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].rate),	/* На N децибел изменения входного сигнала происходит 1 дБ выходного */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].rate,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15416,6 +16035,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].thung10),	/* время удержания медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].thung10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15425,6 +16045,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t1),	/* время срабатывания медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].t1,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15434,6 +16055,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		1, 100, 
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].release10),	/* время разряда медленной цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].release10,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15443,6 +16065,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		10, 250, 
 		offsetof(struct nvmap, afsets [AGCSETI_DIGI].t4),	/* время разряда быстрой цепи АРУ */
+		nvramoffs0,
 		NULL,
 		& gagc [AGCSETI_DIGI].t4,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15455,6 +16078,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrpmodem),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -15465,6 +16089,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,			/* 0: BPSK, 1: QPSK */
 		offsetof(struct nvmap, gmodemmode),
+		nvramoffs0,
 		NULL,
 		& gmodemmode,
 		getzerobase, 
@@ -15474,6 +16099,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, (sizeof modembr2int100 / sizeof modembr2int100 [0]) - 1, 
 		offsetof(struct nvmap, gmodemspeed),
+		nvramoffs0,
 		NULL,
 		& gmodemspeed,
 		getzerobase, 
@@ -15486,6 +16112,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrplfm),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -15496,6 +16123,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1,			/* LFM mode enable */
 		offsetof(struct nvmap, lfmmode),
+		nvramoffs0,
 		NULL,
 		& lfmmode,
 		getzerobase, 
@@ -15505,6 +16133,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		10, 300,			/* 10.0 MHz.. 30.0 MHz in 100 kHz steps */
 		offsetof(struct nvmap, lfmstart100k),
+		nvramoffs0,
 		& lfmstart100k,
 		NULL,
 		getzerobase, 
@@ -15514,6 +16143,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		10, 300,			/* 0.0 MHz.. 30.0 MHz in 100 kHz steps */
 		offsetof(struct nvmap, lfmstop100k),
+		nvramoffs0,
 		& lfmstop100k,
 		NULL,
 		getzerobase, 
@@ -15523,6 +16153,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		50, 550,			/* 50 kHz/sec..550 kHz/sec, 1 kHz/sec steps */
 		offsetof(struct nvmap, lfmspeed1k),
+		nvramoffs0,
 		& lfmspeed1k,
 		NULL,
 		getzerobase, 
@@ -15533,6 +16164,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 60 * 60 - 1,			/* 0..59:59 */
 		offsetof(struct nvmap, lfmtoffset),
+		nvramoffs0,
 		& lfmtoffset,
 		NULL,
 		getzerobase, 
@@ -15543,87 +16175,197 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		1, 60 * 60 - 1,			/* 00:01..59:59 */
 		offsetof(struct nvmap, lfmtinterval),
+		nvramoffs0,
 		& lfmtinterval,
 		NULL,
-		getzerobase, 
+		getzerobase,
 	},
 #endif /* WITHLFM */
+
+#if WITHTX
+/* settings page header */
 #if ! WITHFLATMENU
 	{
-		QLABEL("SPECIAL "), 0, 0, 0, 0,
-		ITEM_GROUP, 
-		0, 0, 
-		offsetof(struct nvmap, ggrpsecial),
+		QLABEL("TX ADJ  "), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrptxadj),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
 	},
 #endif /* ! WITHFLATMENU */
-#if WITHRFSG
-	{
-		QLABEL("RFSG MOD"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, userfsg),
-		NULL,
-		& userfsg,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHRFSG */
-#if WITHENCODER
-	{
-		QLABEL("ENC RES "), 7, 0, RJ_ENCRES,	ISTEP1,
-		ITEM_VALUE,
-		0, (sizeof encresols / sizeof encresols [0]) - 1,
-		offsetof(struct nvmap, ghiresres),
-		NULL,
-		& ghiresres,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ENC DYNA"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, ghiresdyn),
-		NULL,
-		& ghiresdyn,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("ENC DIVS"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		1, 128, 	/* /1 ... /128 */
-		offsetof(struct nvmap, ghiresdiv),
-		NULL,
-		& ghiresdiv,
-		getzerobase,
-	},
-	{
-		QLABEL("BIG STEP"), 7, 3, RJ_YES,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gbigstep),
-		NULL,
-		& gbigstep,
-		getzerobase,
-	},
-#endif /* WITHENCODER */
 
-#if WITHTX
+/* settings page list */
+#if WITHIF4DSP
+	{
+		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gdacscale,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF0 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [0],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF1 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [1],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF2 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [2],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF3 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [3],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF4 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [4],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF5 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [5],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF6 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [6],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX LPF7 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [7],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+	{
+		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gamdepth,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
+		ITEM_VALUE,
+		0, 120,
+		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
+		nvramoffs0,
+		NULL,
+		& gnfmdeviation,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		90, 300,
+		offsetof(struct nvmap, ggaindigitx),
+		nvramoffs0,
+		& ggaindigitx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
+		ITEM_VALUE,
+		30, 100,
+		offsetof(struct nvmap, ggaincwtx),
+		nvramoffs0,
+		& ggaincwtx,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+
+#endif /* WITHIF4DSP */
 #if WITHFANTIMER
 	{
 		QLABEL("FAN TIME"), 7, 0, 0,	ISTEP5,
 		ITEM_VALUE,
 		0, FANPATIMEMAX,
 		offsetof(struct nvmap, gfanpatime),
+		nvramoffs0,
 		NULL,
 		& gfanpatime,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+	#if WITHFANPWM
+	{
+		QLABEL("FAN PWM "), 7, 0, 0,	ISTEP5,
+		ITEM_VALUE,
+		0, 255,
+		offsetof(struct nvmap, gfanpapwm),
+		nvramoffs0,
+		& gfanpapwm,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
-#endif /* WITHTX */
 
-#if WITHTX
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
 	{
@@ -15631,6 +16373,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
+		nvramoffs0,
 		NULL,
 		& gnormalpower.value,
 		getzerobase,
@@ -15642,6 +16385,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gtunepower),
+		nvramoffs0,
 		NULL,
 		& gtunepower,
 		getzerobase,
@@ -15654,6 +16398,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
 		offsetof(struct nvmap, gpwri),
+		nvramoffs0,
 		NULL,
 		& gpwri,
 		getzerobase,
@@ -15665,98 +16410,137 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, PWRMODE_COUNT - 1,
 		offsetof(struct nvmap, gtunepower),
+		nvramoffs0,
 		NULL,
 		& gtunepower,
 		getzerobase, 
 	},
   #endif /* WITHLOWPOWEREXTTUNE */
 #endif /* WITHPOWERTRIM */
-#endif /* WITHTX */
 
-#if WITHTX
 #if ! CTLSTYLE_SW2011ALL
 	{
 		QLABEL("TX GATE "), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, gtxgate),
+		nvramoffs0,
 		NULL,
 		& gtxgate,
 		getzerobase, 
 	},
 #endif /* ! CTLSTYLE_SW2011ALL */
-#endif /* WITHTX */
-#if WITHTX
-#if WITHPABIASTRIM && WITHTX
+
+#if WITHPABIASTRIM
 	{
 		QLABEL("PA BIAS "), 7, 0, 0,	ISTEP1,		/* Подстройка тока оконечного каскада передатчика */
 		ITEM_VALUE,
 		WITHPABIASMIN, WITHPABIASMAX,
 		offsetof(struct nvmap, gpabias),
+		nvramoffs0,
 		NULL,
 		& gpabias,
 		getzerobase, 
 	},
 #endif /* WITHPABIASTRIM && WITHTX */
+
 #endif /* WITHTX */
+
+/* settings page header */
+#if ! WITHFLATMENU
+	{
+		QLABEL("SPECIAL "), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpsecial),
+		nvramoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+#endif /* ! WITHFLATMENU */
+
+/* settings page list */
+#if WITHRFSG
+	{
+		QLABEL("RFSG MOD"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, userfsg),
+		nvramoffs0,
+		NULL,
+		& userfsg,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHRFSG */
+#if WITHENCODER
+	{
+		QLABEL("ENC1 RES"), 7, 0, RJ_ENCRES,	ISTEP1,
+		ITEM_VALUE,
+		0, (sizeof encresols / sizeof encresols [0]) - 1,
+		offsetof(struct nvmap, genc1pulses),
+		nvramoffs0,
+		NULL,
+		& genc1pulses,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ENC1 DYN"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, genc1dynamic),
+		nvramoffs0,
+		NULL,
+		& genc1dynamic,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ENC1 DIV"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		1, 128, 	/* /1 ... /128 */
+		offsetof(struct nvmap, genc1div),
+		nvramoffs0,
+		NULL,
+		& genc1div,
+		getzerobase,
+	},
+	{
+		QLABEL("BIG STEP"), 7, 3, RJ_YES,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gbigstep),
+		nvramoffs0,
+		NULL,
+		& gbigstep,
+		getzerobase,
+	},
+#if WITHENCODER2
+	{
+		QLABEL("ENC2 DIV"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		1, 8, 	/* /1 ... /8 */
+		offsetof(struct nvmap, genc2div),
+		nvramoffs0,
+		NULL,
+		& genc2div,
+		getzerobase,
+	},
+#endif /* WITHENCODER2 */
+#endif /* WITHENCODER */
+
 #if WITHIF4DSP
 	{
 		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
 		ITEM_VALUE,
 		10, 100,
 		offsetof(struct nvmap, ggainnfmrx10),	/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
+		nvramoffs0,
 		NULL,
 		& ggainnfmrx10,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if WITHTX
-	{
-		QLABEL("AM DEPTH"), 7, 0, 0,	ISTEP1,		/* Подстройка глубины модуляции в АМ */
-		ITEM_VALUE,
-		0, 100, 
-		offsetof(struct nvmap, gamdepth),	/* Глубина модуляции в АМ - 0..100% */
-		NULL,
-		& gamdepth,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("NFM DEVI"), 7, 1, 0,	ISTEP1,		/* Подстройка девиации на передачу */
-		ITEM_VALUE,
-		0, 120,
-		offsetof(struct nvmap, gnfmdeviation),	/* девиация в сотнях герц */
-		NULL,
-		& gnfmdeviation,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("FT8BOOST", "FT8 Boost"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		90, 300,
-		offsetof(struct nvmap, ggaindigitx),
-		& ggaindigitx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("CW BOOST"),	7, 2, 0,	ISTEP1,		/* Увеличение усиления при передаче в цифровых режимах 90..300% */
-		ITEM_VALUE,
-		30, 100,
-		offsetof(struct nvmap, ggaincwtx),
-		& ggaincwtx,
-		NULL,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("DACSCALE"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
-		ITEM_VALUE,
-		0, 100,
-		offsetof(struct nvmap, gdacscale),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
-		NULL,
-		& gdacscale,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* WITHTX */
 #endif /* WITHIF4DSP */
+
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
 	{
@@ -15764,6 +16548,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		WITHDAC1VALMIN, WITHDAC1VALMAX, 
 		offsetof(struct nvmap, dac1level),
+		nvramoffs0,
 		NULL,	/* подстройка опорника */
 		& dac1level,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15774,6 +16559,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		offsetof(struct nvmap, refbias),
+		nvramoffs0,
 		& refbias,	/* подстройка частоты опорника */
 		NULL,
 		getrefbase, 	/* складывается со смещением и отображается */
@@ -15785,6 +16571,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		LO2AMIN, LO2AMAX, 
 		offsetof(struct nvmap, lo3offset),
+		nvramoffs0,
 		& lo3offset,	/* подстройка частоты гетеродина */
 		NULL,
 		getlo3base, 	/* складывается со смещением и отображается */
@@ -15796,6 +16583,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, OSCSHIFT * 2 - 1, 
 		offsetof(struct nvmap, si570_xtall_offset),
+		nvramoffs0,
 		& si570_xtall_offset,	/* подстройка опорника */
 		NULL,
 		si570_get_xtall_base, 	/* складывается со смещением и отображается */
@@ -15807,6 +16595,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, withonlybands),
+		nvramoffs0,
 		NULL,
 		& withonlybands,
 		getzerobase, 
@@ -15817,6 +16606,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, stayfreq),
+		nvramoffs0,
 		NULL,
 		& stayfreq,
 		getzerobase, 
@@ -15827,6 +16617,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		ADCVREF_CPU, 255,	// 3.3/5.0 .. 25.5 вольта
 		offsetof(struct nvmap, voltcalibr100mV),
+		nvramoffs0,
 		NULL,
 		& voltcalibr100mV,
 		getzerobase, 
@@ -15839,6 +16630,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, swrmode),
+		nvramoffs0,
 		NULL,
 		& swrmode,
 		getzerobase, 
@@ -15850,6 +16642,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		50, 200, //80, 120, 
 		offsetof(struct nvmap, swrcalibr),
+		nvramoffs0,
 		NULL,
 		& swrcalibr,
 		getzerobase, 
@@ -15859,6 +16652,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		1, (1U << HARDWARE_ADCBITS) - 1, 
 		offsetof(struct nvmap, minforward),
+		nvramoffs0,
 		& minforward,
 		NULL,
 		getzerobase, 
@@ -15868,6 +16662,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		1, 255, 
 		offsetof(struct nvmap, maxpwrcali),
+		nvramoffs0,
 		NULL,
 		& maxpwrcali,
 		getzerobase, 
@@ -15879,6 +16674,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		10, 255, 
 		offsetof(struct nvmap, maxpwrcali),
+		nvramoffs0,
 		NULL,
 		& maxpwrcali,
 		getzerobase, 
@@ -15890,6 +16686,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		5, WITHMAXRXTXDELAY,						/* 5..100 ms delay */
 		offsetof(struct nvmap, rxtxdelay),
+		nvramoffs0,
 		NULL,
 		& rxtxdelay,
 		getzerobase, 
@@ -15899,6 +16696,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		5, WITHMAXTXRXDELAY,						/* 5..100 ms delay */
 		offsetof(struct nvmap, txrxdelay),
+		nvramoffs0,
 		NULL,
 		& txrxdelay,
 		getzerobase, 
@@ -15911,6 +16709,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 100, 		/* уровень (амплитуда) LO1 в процентах */
 		offsetof(struct nvmap, lo1level),
+		nvramoffs0,
 		NULL,
 		& lo1level,
 		getzerobase, 
@@ -15922,6 +16721,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
 		offsetof(struct nvmap, phaserx),
+		nvramoffs0,
 		& phasesmap [0],
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15932,6 +16732,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 65535, /* добавление к коду смещения фазы */
 		offsetof(struct nvmap, phasetx),
+		nvramoffs0,
 		& phasesmap [1],
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15945,6 +16746,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, alignmode),
+		nvramoffs0,
 		NULL,
 		& alignmode,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15957,6 +16759,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		offsetof(struct nvmap, lo1powrx),
+		nvramoffs0,
 		NULL,
 		& lo1powmap [0],
 		getzerobase, /* складывается со смещением и отображается */
@@ -15966,6 +16769,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		offsetof(struct nvmap, lo1powtx),
+		nvramoffs0,
 		NULL,
 		& lo1powmap [1],
 		getzerobase, /* складывается со смещением и отображается */
@@ -15977,6 +16781,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		offsetof(struct nvmap, lo4powrx),
+		nvramoffs0,
 		NULL,
 		& lo4powmap [0],
 		getzerobase, /* складывается со смещением и отображается */
@@ -15986,6 +16791,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 3, 	/* Output of synthesizer multiplied to 1, 2, 4 or 8 */
 		offsetof(struct nvmap, lo4powtx),
+		nvramoffs0,
 		NULL,
 		& lo4powmap [1],
 		getzerobase, /* складывается со смещением и отображается */
@@ -15998,6 +16804,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		offsetof(struct nvmap, s9level),
+		nvramoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9level,
 		getzerobase, 
@@ -16007,6 +16814,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		offsetof(struct nvmap, s9delta),
+		nvramoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9delta,
 		getzerobase, /* складывается со смещением и отображается */
@@ -16016,8 +16824,19 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		1, UINT8_MAX - 1, 
 		offsetof(struct nvmap, s9_60_delta),
+		nvramoffs0,
 		NULL,			/* калибровка уровней S-метра */
 		& s9_60_delta,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("ATTPRESH"), 7, 0, RJ_ON,	ISTEP1,	/* attenuator-preamplifier shift */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gattpresh),	/* корректировка показаний с-метра по включенному аттенюатору и предусилителю */
+		nvramoffs0,
+		NULL,
+		& gattpresh,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHBARS */
@@ -16027,6 +16846,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset11m),
+		nvramoffs0,
 		NULL,
 		& bandset11m,
 		getzerobase, /* складывается со смещением и отображается */
@@ -16037,6 +16857,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, gbandsetbcast),
+		nvramoffs0,
 		NULL,
 		& gbandsetbcast,
 		getzerobase, /* складывается со смещением и отображается */
@@ -16050,6 +16871,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset6m),
+		nvramoffs0,
 		NULL,
 		& bandset6m,
 		getzerobase, /* складывается со смещением и отображается */
@@ -16061,6 +16883,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset4m),
+		nvramoffs0,
 		NULL,
 		& bandset4m,
 		getzerobase, /* складывается со смещением и отображается */
@@ -16072,6 +16895,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, bandset2m),
+		nvramoffs0,
 		NULL,
 		& bandset2m,
 		getzerobase, /* складывается со смещением и отображается */
@@ -16086,6 +16910,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP, 
 		0, 0, 
 		offsetof(struct nvmap, ggrptxparams),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -16096,6 +16921,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_SSB),
+		nvramoffs0,
 		& gtxpower [MODE_SSB],	// 16 bit in nvram
 		NULL,
 		getzerobase, 
@@ -16105,6 +16931,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_CW),
+		nvramoffs0,
 		& gtxpower [MODE_CW],	// 16 bit in nvram
 		NULL,
 		getzerobase, 
@@ -16114,6 +16941,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_NFM),
+		nvramoffs0,
 		& gtxpower [MODE_NFM],	// 16 bit in nvram
 		NULL,
 		getzerobase, 
@@ -16123,6 +16951,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_AM),
+		nvramoffs0,
 		& gtxpower [MODE_AM],	// 16 bit in nvram
 		NULL,
 		getzerobase, 
@@ -16132,6 +16961,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_TUNE),
+		nvramoffs0,
 		& gtxpower [MODE_TUNE],	// 16 bit in nvram
 		NULL,
 		getzerobase, 
@@ -16141,6 +16971,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_SSB),
+		nvramoffs0,
 		& gtxcompr [MODE_SSB],	// 16 bit in nvram
 		NULL,
 		getzerobase, 
@@ -16150,6 +16981,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_AM),
+		nvramoffs0,
 		& gtxcompr [MODE_AM],	// 16 bit in nvram
 		NULL,
 		getzerobase, 
@@ -16159,6 +16991,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,
 		0, 255, 		/*  */
 		RMT_TXPOWER_BASE(MODE_NFM),
+		nvramoffs0,
 		& gtxcompr [MODE_NFM],	// 16 bit in nvram
 		NULL,
 		getzerobase, 
@@ -16171,6 +17004,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_GROUP,
 		0, 0,
 		offsetof(struct nvmap, ggrpabout),
+		nvramoffs0,
 		NULL,
 		NULL,
 		NULL,
@@ -16181,6 +17015,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
+		nvramoffs0,
 		& gzero,
 		NULL,
 		getzerobase,
@@ -16190,6 +17025,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
+		nvramoffs0,
 		& gzero,
 		NULL,
 		getcpufreqbase,
@@ -16199,6 +17035,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		ITEM_VALUE | ITEM_NOINITNVRAM,	/* значение этого пункта не используется при начальной инициализации NVRAM */
 		0, 0,
 		MENUNONVRAM,
+		nvramoffs0,
 		& gzero,
 		NULL,
 		getzerobase,
@@ -16927,6 +17764,10 @@ void display2_menu_valxx(
 			case 0x81:	msg = PSTR("STM32MP157Dx"); break;
 			default: 	msg = PSTR("STM32MP15xxx"); break;
 			}
+#elif CPUSTYLE_XC7Z
+			msg = PSTR("ZYNQ 7000");
+#elif CPUSTYLE_R7S721
+			msg = PSTR("RENESAS");
 #else
 			msg = PSTR("CPUxxx");
 #endif
@@ -16948,16 +17789,8 @@ void display2_menu_valxx(
 	case RJ_VIEW:
 		{
 			/* стиль отображения спектра и панорамы */
-			static const FLASHMEM char msg [][6] =
-			{
-				"LINE ",
-				"FILL ",
-				"COLOR",
-				"3DSS ",
-			};
-
 			width = VALUEW;
-			display_menu_string_P(x, y, msg [value], width, comma);
+			display_menu_string_P(x, y, view_types [value], width, comma);
 		}
 		break;
 
@@ -17029,7 +17862,7 @@ modifysettings(
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
-			const int_least16_t nr2 = getRotateHiRes2(& js);  // перемещение по меню также с помощью 2го энкодера
+			const int_least16_t nr2 = getRotateHiRes2(& js, genc2div);  // перемещение по меню также с помощью 2го энкодера
 
 			if (nr2 > 0)
 			{
@@ -17102,6 +17935,20 @@ modifysettings(
 				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
 				continue;	// требуется обновление индикатора
 
+	#if WITHAUTOTUNER
+			case KBD_CODE_ATUSTART:
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				uif_key_atunerstart();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+
+			case KBD_CODE_ATUBYPASS:
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				uif_key_bypasstoggle();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+	#endif /* WITHAUTOTUNER */
+
 #endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
@@ -17145,7 +17992,7 @@ modifysettings(
 
 #if WITHENCODER
 		/* редактирование значения с помощью поворота валкодера. */
-		nrotate = getRotateLoRes(ghiresdiv);
+		nrotate = getRotateLoRes(genc1div);
 		if (lockmode != 0)
 			nrotate = 0;	// ignore encoder
 
@@ -17244,6 +18091,115 @@ uif_key_click_menubyname(const char * name, uint_fast8_t exitkey)
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
 	display2_bgreset();		/* возможно уже с новой цветовой схемой */
 #endif /* WITHTOUCHGUI */
+}
+
+#if 0
+
+static const struct menudef notchPopUp [] =
+{
+#if WITHNOTCHFREQ
+	{
+		QLABEL("NOTCH   "), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpnotch),
+		nvramoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+	{
+		QLABEL("NOTCH   "), 8, 3, RJ_NOTCH,	ISTEP1,		/* управление режимом NOTCH */
+		ITEM_VALUE,
+		0, NOTCHMODE_COUNT - 1,
+		RMT_NOTCHTYPE_BASE,							/* управление режимом NOTCH */
+		nvramoffs0,
+		NULL,
+		& gnotchtype,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#if ! WITHPOTNOTCH
+	{
+		QLABEL("NTCH FRQ"), 7, 2, 1,	ISTEP50,		/* управление частотой NOTCH. */
+		ITEM_VALUE,
+		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
+		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
+		nvramoffs0,
+		& gnotchfreq.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("NTCH WDT"), 7, 0, 0,	ISTEP50,		/* полоса режекции NOTCH. */
+		ITEM_VALUE,
+		WITHNOTCHWIDTHMIN, WITHNOTCHWIDTHMAX,
+		offsetof(struct nvmap, gnotchwidth),	/* полоса режекции NOTCH */
+		nvramoffs0,
+		& gnotchwidth.value,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	#endif /* ! WITHPOTNOTCH */
+#elif WITHNOTCHONOFF
+#if ! WITHFLATMENU
+	{
+		QLABEL("NOTCH   "), 0, 0, 0, 0,
+		ITEM_GROUP,
+		0, 0,
+		offsetof(struct nvmap, ggrpnotch),
+		nvramoffs0,
+		NULL,
+		NULL,
+		NULL,
+	},
+#endif /* ! WITHFLATMENU */
+	{
+		QLABEL("NOTCH   "), 8, 3, RJ_ON,	ISTEP1,		/* управление режимом NOTCH */
+		ITEM_VALUE,
+		0, NOTCHMODE_COUNT - 1,
+		RMT_NOTCH_BASE,							/* управление режимом NOTCH */
+		nvramoffs0,
+		NULL,
+		& gnotch,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHNOTCHFREQ */
+};
+
+static const FLASHMEM struct menudef * thisPopUp = notchPopUp;
+static size_t sizePopUp = ARRAY_SIZE(notchPopUp);
+#else
+static const FLASHMEM struct menudef * thisPopUp = NULL;
+static size_t sizePopUp = 0;
+#endif
+
+// всплывающее меню
+void display2_popup(
+	uint_fast8_t xcell,
+	uint_fast8_t ycell,
+	dctx_t * pctx
+	)
+{
+
+	if (thisPopUp == NULL)
+		return;
+	multimenuwnd_t mw;
+	unsigned i;
+
+	display2_getmultimenu(& mw);
+	const uint_fast16_t x = GRID2X(xcell);
+	const uint_fast16_t y = GRID2Y(ycell);
+	const uint_fast16_t w = GRID2X(LABELW);
+	const uint_fast16_t h = GRID2Y(mw.ystep) * sizePopUp;
+
+	//display_fillrect(x, y, w, h, COLORMAIN_DARKGREEN);	// Фон
+
+	for (i = 0; i < sizePopUp; ++ i)
+	{
+		const FLASHMEM struct menudef * const mp = thisPopUp + i;
+
+		//menu
+	}
 }
 
 #else // WITHMENU
@@ -18158,9 +19114,13 @@ lowinitialize(void)
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 	display_hardware_initialize();
 
+	static ticker_t displayticker;
+
 	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
 	// Инициализация таймера и списка регистрирумых обработчиков
 	hardware_timer_initialize(TICKS_FREQUENCY);
+	ticker_initialize(& displayticker, 1, display_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
 
 #if WITHUSBHW
@@ -18485,6 +19445,10 @@ static void initialize2(void)
 
 	(void) mclearnvram;
 
+#if CPUSTYLE_XC7Z
+	hardware_xc7z_fifo_init();
+#endif /* CPUSTYLE_XC7Z */
+
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("initialize2() finished.\n"));
 #endif
@@ -18551,20 +19515,9 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
-	hamradio_autonotch_init(& lmsData0);
 #endif /* WITHINTEGRATEDDSP */
 
-#if WITHI2SHW
-	hardware_audiocodec_enable();	// Интерфейс к НЧ кодеку
-#endif /* WITHI2SHW */
-
-#if WITHSAI1HW
-	hardware_fpgacodec_enable();	// Интерфейс к ВЧ кодеку
-#endif /* WITHSAI1HW */
-
-#if WITHSAI2HW
-	hardware_fpgaspectrum_enable();	// Интерфейс к источнику данных о спектре
-#endif /* WITHSAI1HW */
+	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
 
 	board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
 	board_update();
@@ -18594,6 +19547,13 @@ hamradio_initialize(void)
 
 #if WITHTOUCHGUI
 	gui_initialize();
+
+	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
+	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
+	enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
+	enc2_menu.updated = 1;
+	enc2_menu.state = enc2state;
+	gui_encoder2_menu(& enc2_menu);
 #endif /* WITHTOUCHGUI */
 }
 
@@ -19075,8 +20035,8 @@ hamradio_main_step(void)
 				nrotate = 0;	// ignore encoder
 				nrotate2 = 0;	// ignore encoder
 			#else
-				nrotate = getRotateHiRes(& jumpsize, ghiresdiv * gencderate);
-				nrotate2 = getRotateHiRes2(& jumpsize2);
+				nrotate = getRotateHiRes(& jumpsize, genc1div * gencderate);
+				nrotate2 = getRotateHiRes2(& jumpsize2, genc2div);
 			#endif
 
 			if (uif_encoder2_rotate(nrotate2))
@@ -19189,6 +20149,10 @@ hamradio_main_step(void)
 #if WITHTOUCHGUI && WITHENCODER2
 			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
+
+#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+			hamradio_set_freq(hamradio_get_freq_rx() + 1);
+#endif
 		}
 		break;
 
@@ -19587,10 +20551,10 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	if (freqvalid(freq, gtx))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
-		vindex_t vi = getvfoindex(bi);
+		//vindex_t vi = getvfoindex(bi);
 		gfreqs [bi] = freq;
-		savebandfreq(vi, bi);
-		updateboard(1, 0);
+		//savebandfreq(vi, bi);
+		updateboard(0, 0);
 		return 1;
 	}
 	return 0;
@@ -19805,6 +20769,29 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 		high = gcwpitch10;
 	}
 	return high;
+}
+
+int_fast8_t hamradio_afresponce(int_fast8_t v)
+{
+	const uint_fast8_t tx = hamradio_get_tx();
+	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t amode = submodes [asubmode].mode;
+	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
+	const uint_fast8_t pos = bwsetpos [bwseti];
+	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+
+	if (v > 0)
+		p->afresponce = calc_next(p->afresponce, AFRESPONCEMIN, AFRESPONCEMAX);
+	else if (v < 0)
+		p->afresponce = calc_prev(p->afresponce, AFRESPONCEMIN, AFRESPONCEMAX);
+
+	if (v != 0)
+	{
+		save_i8(RMT_BWPROPSAFRESPONCE_BASE(bwseti), p->afresponce);
+		updateboard(1, 0);
+	}
+
+	return p->afresponce + getafresponcebase();
 }
 
 #endif /* WITHIF4DSP */
@@ -20143,7 +21130,7 @@ uint_fast8_t hamradio_get_gsmetertype(void)
 }
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 
-#if WITHSPECTRUMWF
+#if WITHSPECTRUMWF && WITHMENU
 const char * hamradio_change_view_style(uint_fast8_t v)
 {
 	uint_fast16_t menupos;
@@ -20195,51 +21182,83 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	updateboard(1, 0);
 }
 
-void hamradio_get_gtopdb_limits(uint_fast8_t * min, uint_fast8_t * max)
+uint_fast8_t hamradio_get_gwflevelsep(void)
 {
-	* min = WITHTOPDBMIN;
-	* max = WITHTOPDBMAX;
+	return gwflevelsep;
 }
 
-uint_fast8_t hamradio_get_gtopdb(void)
+void hamradio_set_gwflevelsep(uint_fast8_t v)
 {
+	gwflevelsep = v != 0;
+	save_i8(offsetof(struct nvmap, gwflevelsep), gwflevelsep);
+	updateboard(1, 0);
+}
+
+uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
+{
+	if (v > 0)
+		gtopdb = calc_next(gtopdb, WITHTOPDBMIN, WITHTOPDBMAX);
+	else if (v < 0)
+		gtopdb = calc_prev(gtopdb, WITHTOPDBMIN, WITHTOPDBMAX);
+
+	if (v != 0)
+	{
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
+		updateboard(1, 0);
+	}
+
 	return gtopdb;
 }
 
-void hamradio_set_gtopdb(uint_fast8_t v)
+uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
 {
-	ASSERT(v >= WITHTOPDBMIN && v <= WITHTOPDBMAX);
-	gtopdb = v;
-	gtopdbwf = v;
-	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
-	updateboard(1, 0);
-}
+	if (v > 0)
+		gbottomdb = calc_next(gbottomdb, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+	else if (v < 0)
+		gbottomdb = calc_prev(gbottomdb, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 
-void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max)
-{
-	* min = WITHBOTTOMDBMIN;
-	* max = WITHBOTTOMDBMAX;
-}
+	if (v != 0)
+	{
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
+		updateboard(1, 0);
+	}
 
-uint_fast8_t hamradio_get_gbottomdb(void)
-{
 	return gbottomdb;
 }
 
-void hamradio_set_gbottomdb(uint_fast8_t v)
+uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
 {
-	ASSERT(v >= WITHBOTTOMDBMIN && v <= WITHBOTTOMDBMAX);
-	gbottomdb = v;
-	gbottomdbwf = v;
-	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
-	updateboard(1, 0);
+	if (v > 0)
+		gtopdbwf = calc_next(gtopdbwf, WITHTOPDBMIN, WITHTOPDBMAX);
+	else if (v < 0)
+		gtopdbwf = calc_prev(gtopdbwf, WITHTOPDBMIN, WITHTOPDBMAX);
+
+	if (v != 0)
+	{
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
+		updateboard(1, 0);
+	}
+
+	return gtopdbwf;
 }
 
-#endif /* WITHSPECTRUMWF */
+uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
+{
+	if (v > 0)
+		gbottomdbwf = calc_next(gbottomdbwf, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+	else if (v < 0)
+		gbottomdbwf = calc_prev(gbottomdbwf, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+
+	if (v != 0)
+	{
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
+		updateboard(1, 0);
+	}
+
+	return gbottomdbwf;
+}
+
+#endif /* WITHSPECTRUMWF && WITHMENU */
 
 const char * hamradio_get_att_value(void)
 {
@@ -20249,8 +21268,13 @@ const char * hamradio_get_att_value(void)
 
 const char * hamradio_get_preamp_value(void)
 {
+#if ! WITHONEATTONEAMP
 	const uint_fast8_t bi = getbankindex_tx(gtx);
 	return pampmodes [gpamps [bi]].label;
+#else
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	return attmodes [gatts [bi]].label;
+#endif
 }
 
 void hamradio_change_att(void)
@@ -20260,7 +21284,9 @@ void hamradio_change_att(void)
 
 void hamradio_change_preamp(void)
 {
+#if ! WITHONEATTONEAMP
 	uif_key_click_pamp();
+#endif /* ! WITHONEATTONEAMP */
 }
 
 #if WITHTX
@@ -20280,6 +21306,37 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 }
 
 #endif /* WITHTX */
+
+#if WITHTOUCHGUI
+void hamradio_load_gui_settings(void * ptr)
+{
+	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
+	size_t gui_nvram_size = sizeof (struct gui_nvram_t);
+
+	for (uint_fast8_t i = 0; i < gui_nvram_size; i ++)
+	{
+		uint_fast8_t v = restore_i8(offset);
+		memcpy(ptr, & v, 1);
+		ptr ++;
+		offset ++;
+	}
+}
+
+void hamradio_save_gui_settings(const void * ptr)
+{
+	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
+	size_t gui_nvram_size = sizeof (struct gui_nvram_t);
+	uint_fast8_t buf;
+
+	for (uint_fast8_t i = 0; i < gui_nvram_size; i ++)
+	{
+		memcpy(& buf, ptr, 1);
+		save_i8(offset, buf);
+		ptr ++;
+		offset ++;
+	}
+}
+#endif /* WITHTOUCHGUI */
 
 // основной цикл программы при работе в режиме любительского премника
 static void
@@ -20582,12 +21639,25 @@ static void bootloader_mainloop(void)
 {
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
+
+#if CPUSTYLE_XC7Z	// мигалка
+	gpio_output(37, 0);		/* LED_R */
+#endif
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
 	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
 ddd:
 	;
+#if CPUSTYLE_XC7Z	// мигалка
+	// установка состояния выходов
+	gpio_pin_output_state(37, 1);	/* LED_R */
+	local_delay_ms(500);
+	gpio_pin_output_state(37, 0);	/* LED_R */
+	local_delay_ms(500);
+	PRINTF(".");
+#endif
+
 #if WITHUSBHW
 	for (;;)
 	{
@@ -20661,7 +21731,7 @@ int
 //__attribute__ ((used))
 main(void)
 {
-#if WITHDEBUG && (! CPUSTYLE_ARM || WITHISBOOTLOADER)
+#if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
 
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
@@ -20675,7 +21745,13 @@ main(void)
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
 	midtests();
+	// Инициализируем то что не получается иниитить в описании перменных.
+#if WITHTX
+	/* запись значений по умолчанию для корректировок мощности в завивимости от диапазона ФНЧ УМ */
+	bandf2adjust_initialize();
+#endif /* WITHTX */
 	initialize2();	/* вызывается при разрешённых прерываниях. */
+	network_initialize();
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 

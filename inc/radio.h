@@ -500,7 +500,6 @@ void hardware_lfm_timer_initialize(void);
 void vox_initialize(void);
 void vox_enable(uint_fast8_t voxstate, uint_fast8_t vox_delay_tens);	/* разрешение (не-0) или запрещение (0) работы vox. */
 void vox_set_levels(uint_fast8_t level, uint_fast8_t alevel);	/* установить уровень срабатывания vox и anti-vox */
-void vox_probe(uint_fast8_t vlevel, uint_fast8_t alevel);		/* предъявить для проверки отдетектированный уровень сигнала и anti-vox */
 
 void seq_set_bkin_enable(uint_fast8_t bkinstate, uint_fast8_t bkin_delay_tens);	/* разрешение (не-0) или запрещение (0) работы параметры BREAK-IN. */
 void seq_set_cw_enable(uint_fast8_t state);	/* разрешение (не-0) или запрещение (0) работы qsk. означает работу CW */
@@ -2641,6 +2640,14 @@ void spool_0p128(void);	// OPERA support
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_122M88_X1 */
 
+#if DIRECT_96M_X1
+	#define LO1MODE_DIRECT	1
+	#define REFERENCE_FREQ	96000000uL
+	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
+	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
+	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
+#endif	/* DIRECT_96M_X1 */
+
 #if DIRECT_12M288_X10
 	#define LO1MODE_DIRECT	1
 	#define REFERENCE_FREQ	12288000uL
@@ -3360,13 +3367,14 @@ void hamradio_set_gmikeequalizerparams(uint_fast8_t i, uint_fast8_t v);
 int_fast32_t hamradio_getequalizerbase(void);
 uint_fast8_t hamradio_get_gzoomxpow2(void);
 void hamradio_set_gzoomxpow2(uint_fast8_t v);
-void hamradio_get_gtopdb_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_gtopdb(void);
-void hamradio_set_gtopdb(uint_fast8_t v);
-void hamradio_get_gbottomdb_limits(uint_fast8_t * min, uint_fast8_t * max);
-uint_fast8_t hamradio_get_gbottomdb(void);
-void hamradio_set_gbottomdb(uint_fast8_t v);
+uint_fast8_t hamradio_get_gwflevelsep(void);
+void hamradio_set_gwflevelsep(uint_fast8_t v);
+uint_fast8_t hamradio_gtopdbsp(int_fast8_t v);
+uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v);
+uint_fast8_t hamradio_gtopdbwf(int_fast8_t v);
+uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v);
 const char * hamradio_change_view_style(uint_fast8_t v);
+int_fast8_t hamradio_afresponce(int_fast8_t v);
 
 #if WITHREVERB
 void hamradio_set_greverb(uint_fast8_t v);
@@ -3451,9 +3459,21 @@ enum
 	VIEW_LINE,		// ломаная линия
 	VIEW_FILL,		// залитый зеленым спектр
 	VIEW_COLOR,		// раскрашенный цветовым градиентом спектр
+#if WITHVIEW_3DSS
 	VIEW_3DSS,		// дизайн панорамы под 3DSS Yaesu
+#endif /* WITHVIEW_3DSS */
 	VIEW_COUNT
 };
+
+static const FLASHMEM char view_types [][6] =
+	{
+		"LINE ",
+		"FILL ",
+		"COLOR",
+#if WITHVIEW_3DSS
+		"3DSS ",
+#endif /* WITHVIEW_3DSS */
+	};
 
 /* Управление частичной полосоц отображением спектра/волопада */
 enum
@@ -3467,6 +3487,13 @@ void display2_set_smetertype(uint_fast8_t v);
 
 
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */
+
+enum
+{
+	BANDF_COUNT = 20,
+	BANDF2_COUNT = 17,
+	BANDF3_COUNT = 17
+};
 
 #ifdef __cplusplus
 }

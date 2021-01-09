@@ -1538,7 +1538,7 @@ extern struct descholder ExtOsPropDescTbl [INTERFACE_count];
 uint_fast16_t usbd_dfu_get_xfer_size(uint_fast8_t alt);
 
 /* USB Host defines and prototypes */
-
+#include <string.h>
 /* Memory management macros */
 //#define USBH_malloc               malloc
 //#define USBH_free                 free
@@ -1580,7 +1580,6 @@ USBH_StatusTypeDef USBH_ClosePipe  (USBH_HandleTypeDef *phost,
 
 HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t ch_num);
 
-void usb_polling(void);	/* LWIP support */
-void tcp_tmr(void);	/* LWIP support */
+extern USBD_HandleTypeDef hUsbDevice;
 
 #endif /* USB_USB_CORE_H_ */
