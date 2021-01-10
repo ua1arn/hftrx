@@ -515,23 +515,25 @@
 	#define SPI_ALLCS_PORT_S(v)	do { gpio_bank_output_state(SPI_ALLCS_BANK, (v), (v)); __DSB(); } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { gpio_bank_output_state(SPI_ALLCS_BANK, (v), ~ (v)); __DSB(); } while (0)
 
-	#define targetext1		(1uL << (37 % 32))		// PE8 ext1 on front panel
-	#define targetxad2		(1uL << (37 % 32))		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
-	#define targetnvram		(1uL << (37 % 32))		// PE0 nvmem FM25L16B
-	#define targetctl1		(1uL << (37 % 32))		// PE1 board control registers chain
-	#define targetcodec1	(1uL << (37 % 32))		// PE2 on-board codec1 NAU8822L
-	#define targetadc2		(1uL << (37 % 32)) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
-	#define targetfpga1		(1uL << (37 % 32))		// PE10 FPGA control registers CS1
+	#define TARGET_NVRAM_MIO	37	//  nvmem FM25L16B
+	#define TARGET_EXT1_MIO		37	// ext1 on front panel
+	#define TARGET_CTL1_MIO		37	// board control registers chain
+	#define TARGET_CODEC11_MIO	37	// on-board codec1 NAU8822L
+	#define TARGET_FPAG1_MIO	37	// ALTERA FPGA control registers CS1
+
+	#define targetext1		(1uL << ((TARGET_EXT1_MIO) % 32))		// PE8 ext1 on front panel
+	#define targetnvram		(1uL << ((TARGET_NVRAM_MIO) % 32))		// PE0 nvmem FM25L16B
+	#define targetctl1		(1uL << ((TARGET_CTL1_MIO) % 32))		// PE1 board control registers chain
+	#define targetcodec1	(1uL << ((TARGET_CODEC11_MIO) % 32))		// PE2 on-board codec1 NAU8822L
+	#define targetfpga1		(1uL << ((TARGET_FPAG1_MIO) % 32))		// PE10 FPGA control registers CS1
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
 		targetext1		| 	/* PE8 ext1 on front panel */ \
-		targetxad2		|	/* PE7 PA100W on-board ADC (not connected on this board) */ \
 		targetnvram		| 	/* PE0 nvmem FM25L16B */ \
 		targetctl1		| 	/* PE1 board control registers chain */ \
 		targetcodec1	| 	/* PE2 on-board codec1 NAU8822L */ \
 		targetfpga1		| 	/* PE10 FPGA control registers CS1 */ \
-		targetadc2		| 	/*	PE9 ADC MCP3208-BI/SL chip select (potentiometers) */ \
 		0)
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
