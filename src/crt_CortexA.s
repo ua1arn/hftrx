@@ -350,8 +350,8 @@ IRQHandlerNested:
 
 	// A VMRS or VMSR instruction that accesses the FPSCR acts as a Floating-point exception barrier
 	// save VFP/Neon FPSCR register
-	VMRS	LR, FPSCR
-	PUSH	{LR}
+	VMRS	R2, FPSCR	// R2 used below
+	PUSH	{R2}
 	// save VFP/Neon FPEXC register
 	VMRS	R0, FPEXC
     ldr     LR, =0x80000000 //check FPEXC.EX
@@ -370,6 +370,12 @@ IRQHandlerNested:
 //#endif /* __ARM_NEON == 1 */
 	// save vfp/neon data registers
 	VPUSH.F32	{D0-D15}
+
+    // Initialise FPSCR to a known state
+    // Loaded in to R2
+	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
+	AND     R2,R2,R3
+	VMSR    FPSCR,R2
 
 	LDR		R2, =IRQ_Handler_GICv1
 	MOV		LR, PC
