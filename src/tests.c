@@ -6073,9 +6073,10 @@ void hightests(void)
 
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		ASSERT(tiger != NULL);
-		for (;;)
+		unsigned cnt;
+		for (cnt = 0;; ++ cnt)
 		{
-			TP();
+			PRINTF("tiger: cnt=%u\n", cnt);
 			uint_fast8_t kbch, repeat;
 
 			if ((repeat = kbd_scan(& kbch)) != 0)

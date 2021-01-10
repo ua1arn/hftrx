@@ -359,7 +359,6 @@
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
@@ -380,6 +379,7 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
@@ -393,12 +393,13 @@
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
-	////*#define WITHVIEW_3DSS		1
+	#define WITHVIEW_3DSS		1
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
