@@ -510,17 +510,18 @@
 //#define SPI_IOUPDATE_BIT		(1uL << 15)	// * PA15
 
 #if WITHSPIHW || WITHSPISW
+	#define SPI_ALLCS_BANK	1	// желательно все сигналы чипселект поместить в один банк
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ALLCS_PORT_S(v)	do { /*GPIOE->BSRR = BSRR_S(v);*/ __DSB(); } while (0)
-	#define SPI_ALLCS_PORT_C(v)	do {/* GPIOE->BSRR = BSRR_C(v);*/ __DSB(); } while (0)
+	#define SPI_ALLCS_PORT_S(v)	do { gpio_bank_output_state(SPI_ALLCS_BANK, (v), (v)); __DSB(); } while (0)
+	#define SPI_ALLCS_PORT_C(v)	do { gpio_bank_output_state(SPI_ALLCS_BANK, (v), ~ (v)); __DSB(); } while (0)
 
-	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
-	#define targetxad2		(1uL << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
-	#define targetnvram		(1uL << 0)		// PE0 nvmem FM25L16B
-	#define targetctl1		(1uL << 1)		// PE1 board control registers chain
-	#define targetcodec1	(1uL << 2)		// PE2 on-board codec1 NAU8822L
-	#define targetadc2		(1uL << 9) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
-	#define targetfpga1		(1uL << 10)		// PE10 FPGA control registers CS1
+	#define targetext1		(1uL << (37 % 32))		// PE8 ext1 on front panel
+	#define targetxad2		(1uL << (37 % 32))		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
+	#define targetnvram		(1uL << (37 % 32))		// PE0 nvmem FM25L16B
+	#define targetctl1		(1uL << (37 % 32))		// PE1 board control registers chain
+	#define targetcodec1	(1uL << (37 % 32))		// PE2 on-board codec1 NAU8822L
+	#define targetadc2		(1uL << (37 % 32)) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
+	#define targetfpga1		(1uL << (37 % 32))		// PE10 FPGA control registers CS1
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
@@ -546,40 +547,56 @@
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			arm_hardware_pioe_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
+			gpio_output(37, 1); \
+			gpio_output(37, 1); \
+			gpio_output(37, 1); \
+			gpio_output(37, 1); \
+			gpio_output(37, 1); \
+			gpio_output(37, 1); \
+			gpio_output(37, 1); \
 		} while (0)
 
 	// MOSI & SCK port
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { /*GPIOB->BSRR = BSRR_C(v);*/ __DSB(); } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { /*GPIOB->BSRR = BSRR_S(v);*/ __DSB(); } while (0)
-	#define	SPI_SCLK_BIT			(1uL << 3)	// * PB3 бит, через который идет синхронизация SPI
+	#define	SPI_SCLK_MIO 	37
+	#define	SPI_MOSI_MIO 	37
+	#define	SPI_MISO_MIO 	37
 
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { /*GPIOB->BSRR = BSRR_C(v);*/ __DSB(); } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { /*GPIOB->BSRR = BSRR_S(v);*/ __DSB(); } while (0)
-	#define	SPI_MOSI_BIT			(1uL << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+	#define	SPI_SCLK_BIT	(1uL << (SPI_SCLK_MIO % 32))	// бит, через который идет синхронизация SPI
+	#define	SPI_SCLK_BANK	(SPI_SCLK_MIO / 32)
 
-	#define SPI_TARGET_MISO_PIN		1//(GPIOB->IDR)
-	#define	SPI_MISO_BIT			1//(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
+	#define	SPI_MOSI_BIT	(1uL << (SPI_MOSI_MIO % 32))	// бит, через который идет синхронизация SPI
+	#define	SPI_MOSI_BANK	(SPI_MOSI_MIO / 32)
+
+	#define	SPI_MISO_BIT	(1uL << (SPI_MISO_MIO % 32))	// бит, через который идет ввод данных SPI
+	#define	SPI_MISO_BANK	(SPI_MISO_MIO / 32)
+
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpio_bank_output_state(SPI_SCLK_BANK, (v), ~ (v)); __DSB(); } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpio_bank_output_state(SPI_SCLK_BANK, (v), (v)); __DSB(); } while (0)
+
+	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpio_bank_output_state(SPI_MOSI_BANK, (v), ~ (v)); __DSB(); } while (0)
+	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpio_bank_output_state(SPI_MOSI_BANK, (v), (v)); __DSB(); } while (0)
+
+	#define SPI_TARGET_MISO_PIN		(ZYNQ_IORW32(GPIO_DATA_RO(SPI_MISO_BANK)))
 
 	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
-			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
-			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
+			gpio_output(SPI_SCLK_MIO, 1); /*  */ \
+			gpio_output(SPI_MOSI_MIO, 1); /*  */ \
+			gpio_input(SPI_MISO_MIO); /*  */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_piob_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			gpio_output(SPI_SCLK_MIO, 1); /*  */ \
+			gpio_output(SPI_MOSI_MIO, 1); /*  */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-			arm_hardware_piob_inputs(SPI_MISO_BIT); \
+			gpio_input(SPI_SCLK_MIO, 1); /*  */ \
+			gpio_input(SPI_MOSI_MIO, 1); /*  */ \
+			gpio_input(SPI_MISO_MIO); /*  */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+			/*arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	*/ /* PIO disable for MOSI bit (SD CARD read support) */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
+			/*arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	*/ /* PIO enable for MOSI bit (SD CARD read support)  */ \
 		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
