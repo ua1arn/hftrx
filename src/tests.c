@@ -5205,9 +5205,6 @@ static int local_randomgr(unsigned long num)
 static void BarTest(void)
 {
 	//PRINTF("BarTest\n");
-
-	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-	board_update();
 	int forever = 0;
 	unsigned n = 2000;
 	for (;forever || n --;)
@@ -7084,6 +7081,9 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
+
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
 		TP();
 		unsigned cnt;
 		display2_bgreset();
