@@ -41,7 +41,7 @@ OBJDIR = ./$(OBJDIR2)
 CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
 #CORE += -mcpu=cortex-a7
-#CORE += -mfpu=vfpv4-d16
+#CORE += -mfpu=vfpv4
 CORE += -mfpu=neon-vfpv4
 #CORE += -mlong-calls
 
