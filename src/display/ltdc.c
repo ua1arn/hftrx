@@ -894,7 +894,7 @@ static void vdc5fb_update_all(struct st_vdc5 * const vdc)
 }
 
 void
-arm_hardware_ltdc_initialize(void)
+arm_hardware_ltdc_initialize(const uintptr_t * frames)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -975,7 +975,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		0);
 	(void) vdc->GR3_UPDATE;
 
-	if (0 && LCDMODE_MAIN_PAGES < 3)
+	if (LCDMODE_MAIN_PAGES > 1)
 	{
 		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 		vdc5_wait(& vdc->GR3_UPDATE, "GR3_UPDATE",
@@ -1022,7 +1022,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		0);
 	(void) vdc->GR2_UPDATE;
 
-	if (LCDMODE_MAIN_PAGES < 3)
+	if (LCDMODE_MAIN_PAGES > 1)
 	{
 		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 		vdc5_wait(& vdc->GR2_UPDATE, "GR2_UPDATE",
@@ -1516,7 +1516,7 @@ static void LCD_LayerInitPIP(
 }
 
 void
-arm_hardware_ltdc_initialize(void)
+arm_hardware_ltdc_initialize(const uintptr_t * frames)
 {
 	PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
@@ -1738,17 +1738,17 @@ arm_hardware_ltdc_deinitialize(void)
 /* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
-	if (LCDMODE_MAIN_PAGES < 3)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
-			hardware_nonguiyield();
-	}
 	LAYER_PIP->CFBAR = p;
 	(void) LAYER_PIP->CFBAR;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
 	(void) LAYER_PIP->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	if (LCDMODE_MAIN_PAGES > 1)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+			hardware_nonguiyield();
+	}
 }
 
 /* Turn PIP off (main layer only). */
@@ -1781,37 +1781,37 @@ void arm_hardware_ltdc_L8_palette(void)
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
-	if (LCDMODE_MAIN_PAGES < 3)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
-			hardware_nonguiyield();
-	}
 	LAYER_MAIN->CFBAR = p;
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+	if (LCDMODE_MAIN_PAGES > 1)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+			hardware_nonguiyield();
+	}
 }
 
 #elif CPUSTYLE_XC7Z
 #include "zynq_vdma.h"
 
-u8 *pFrames[LCDMODE_MAIN_PAGES];
-DisplayCtrl dispCtrl;
+static u8 *pFrames [LCDMODE_MAIN_PAGES];
+static DisplayCtrl dispCtrl;
 #define XPAR_AXI_DYNCLK_0_BASEADDR 	0x43c10000
 #define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
 #define VGA_VDMA_ID         		XPAR_AXIVDMA_0_DEVICE_ID
 #define DISP_VTC_ID         		XPAR_VTC_0_DEVICE_ID
-#define DEMO_MAX_FRAME 				(800*480*4)
-#define DEMO_STRIDE					(800*4)
+//#define DEMO_MAX_FRAME 				((unsigned long) GXADJ(DIM_X) * DIM_Y * LCDMODE_PIXELSIZE)
+#define DEMO_STRIDE					((unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE)
 
-void arm_hardware_ltdc_initialize(void)
+void arm_hardware_ltdc_initialize(const uintptr_t * frames)
 {
 	int Status;
 	for (int i = 0; i < LCDMODE_MAIN_PAGES; i ++)
 	{
-		pFrames[i] = (u8 *) colmain_fb_draw();
+		pFrames[i] = (u8 *) frames [i];
 		colmain_fb_next();
 	}
 
@@ -1838,7 +1838,7 @@ void arm_hardware_ltdc_L8_palette(void)
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t addr)
 {
-	DisplayChangeFrame(&dispCtrl, colmain_fb_current());
+	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
 #else
