@@ -6199,7 +6199,9 @@ void hightests(void)
 	{
 		// FPU speed test
 		uint_fast8_t state = 0;
-#if CPUSTYLE_R7S721
+#if defined (BOARD_BLINK_INITIALIZE)
+		BOARD_BLINK_INITIALIZE();
+#elif CPUSTYLE_R7S721
 		const uint_fast32_t mask = (1uL << 10);	// P7_10: RXD0: RX DATA line
 		arm_hardware_pio7_outputs(mask, mask);
 #else /* CPUSTYLE_R7S721 */
@@ -6218,12 +6220,25 @@ void hightests(void)
 			// stm32mp1 @800 MHz with NEON:
 			// cplxmla: 3 kHz
 			// cplxmla & cplxmlasave: 2.65 kHz
+
 			// __GNUC__=9, __GNUC_MINOR__=3
 			// cplxmla @20042D08, src @20206040, dst @201F6040. refv @20123080, CPU_FREQ=360 MHz
 			// R7S721 @360 MHz w/o NEON:
 			// cplxmla & cplxmlasave: 0.7 kHz
 			// R7S721 @360 MHz with NEON:
 			// cplxmla & cplxmlasave: 0.7 kHz
+
+			// ZYNQ 7000 @666 MHz,
+			//	__GNUC__=10, __GNUC_MINOR__=2
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=neon-vfpv3
+			//	cplxmla @00112798, src @0080DB40, dst @007FDB40. refv @00362E00, CPU_FREQ=666 MHz
+			// cplxmla & cplxmlasave: 1.4 kHz
+
+			// ZYNQ 7000 @666 MHz,
+			//	__GNUC__=10, __GNUC_MINOR__=2
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=vfpv3
+			//	cplxmla @00112798, src @0080DB40, dst @007FDB40. refv @00362E00, CPU_FREQ=666 MHz
+			// cplxmla & cplxmlasave: 1.53 kHz
 
 			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16  : 1.85 kHz
 			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon -mfpu=vfpv4-d16 : 1.85 kHz
@@ -6237,7 +6252,9 @@ void hightests(void)
 			if (state)
 			{
 				state = 0;
-	#if CPUSTYLE_R7S721
+	#if defined (BOARD_BLINK_SETSTATE)
+			BOARD_BLINK_SETSTATE(0);
+	#elif CPUSTYLE_R7S721
 				R7S721_TARGET_PORT_S(7, mask);
 	#else /* CPUSTYLE_R7S721 */
 				(GPIOA)->BSRR = BSRR_S(mask);
@@ -6247,10 +6264,12 @@ void hightests(void)
 			else
 			{
 				state = 1;
-		#if CPUSTYLE_R7S721
-					R7S721_TARGET_PORT_C(7, mask);
+		#if defined (BOARD_BLINK_SETSTATE)
+				BOARD_BLINK_SETSTATE(1);
+		#elif CPUSTYLE_R7S721
+				R7S721_TARGET_PORT_C(7, mask);
 		#else /* CPUSTYLE_R7S721 */
-					(GPIOA)->BSRR = BSRR_C(mask);
+				(GPIOA)->BSRR = BSRR_C(mask);
 		#endif /* CPUSTYLE_R7S721 */
 				//BOARD_BLINK_SETSTATE(0);
 			}
