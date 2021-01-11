@@ -155,7 +155,11 @@ display_fillrect(
 	COLORMAIN_T color
 	)
 {
-	colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, x, y, w, h, color);
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+
+	colmain_fillrect(buffer, dx, dy, x, y, w, h, color);
 }
 
 /* рисование линии на основном экране произвольным цветом
@@ -167,8 +171,11 @@ display_line(
 	COLORMAIN_T color
 	)
 {
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	colmain_line(fr, DIM_X, DIM_Y, x1, y1, x2, y2, color, 0);
+	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
+	const uint_fast16_t dx = DIM_X;
+	const uint_fast16_t dy = DIM_Y;
+
+	colmain_line(buffer, dx, dy, x1, y1, x2, y2, color, 0);
 }
 
 #endif /* LCDMODE_LTDC */
