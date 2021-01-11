@@ -1797,36 +1797,25 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 #elif CPUSTYLE_XC7Z
 #include "zynq_vdma.h"
 
-static u8 *pFrames [LCDMODE_MAIN_PAGES];
-static DisplayCtrl dispCtrl;
-#define XPAR_AXI_DYNCLK_0_BASEADDR 	0x43c10000
-#define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
-#define VGA_VDMA_ID         		XPAR_AXIVDMA_0_DEVICE_ID
-#define DISP_VTC_ID         		XPAR_VTC_0_DEVICE_ID
-//#define DEMO_MAX_FRAME 				((unsigned long) GXADJ(DIM_X) * DIM_Y * LCDMODE_PIXELSIZE)
-#define DEMO_STRIDE					((unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE)
+DisplayCtrl dispCtrl;
 
 void arm_hardware_ltdc_initialize(const uintptr_t * frames)
 {
 	int Status;
-	for (int i = 0; i < LCDMODE_MAIN_PAGES; i ++)
-	{
-		pFrames[i] = (u8 *) frames [i];
-		colmain_fb_next();
-	}
+	XAxiVdma AxiVdma;
 
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
 
-	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, pFrames, DEMO_STRIDE, VMODE_800x480);
+	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, (u8 **) frames, DEMO_STRIDE, VMODE_800x480);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("Display Ctrl initialization failed during demo initialization%d\r\n", Status);
+		PRINTF("Display Ctrl initialization failed: %d\r\n", Status);
 	}
 
 	Status = DisplayStart(& dispCtrl);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("Couldn't start display during demo initialization%d\r\n", Status);
+		PRINTF("Couldn't start display: %d\r\n", Status);
 	}
 }
 

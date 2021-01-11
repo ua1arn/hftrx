@@ -59,21 +59,24 @@ typedef struct {
 	DisplayState state; 			  /* Indicates if the Display is currently running */
 } DisplayCtrl;
 
-int DisplayStop(DisplayCtrl *dispPtr);
-int DisplayStart(DisplayCtrl *dispPtr);
-int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[LCDMODE_MAIN_PAGES], u32 stride, VideoMode VMODE);
-int DisplaySetMode(DisplayCtrl *dispPtr, const VideoMode *newMode);
-int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex);
-
-#define AXI_VDMA_DEV_ID		XPAR_AXIVDMA_0_DEVICE_ID
-#define VDMA_INTR_ID		XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR
-
-XAxiVdma AxiVdma;
+#define AXI_VDMA_DEV_ID				XPAR_AXIVDMA_0_DEVICE_ID
+#define VDMA_INTR_ID				XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR
+#define XPAR_AXI_DYNCLK_0_BASEADDR 	0x43C10000
+#define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
+#define VGA_VDMA_ID         		XPAR_AXIVDMA_0_DEVICE_ID
+#define DISP_VTC_ID         		XPAR_VTC_0_DEVICE_ID
+#define DEMO_STRIDE					((unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE)
 
 //void Vdma_Setup_Intr_System(XScuGic *GicInstancePtr, XAxiVdma *InstancePtr, u16 IntrId);
 void ReadErrorCallBack(void *CallbackRef, u32 Mask);
 void Vdma_Init(XAxiVdma *InstancePtr, u32 DeviceId);
 int ReadSetup(XAxiVdma *InstancePtr);
 int Vdma_Start(XAxiVdma *InstancePtr);
+
+int DisplayStop(DisplayCtrl *dispPtr);
+int DisplayStart(DisplayCtrl *dispPtr);
+int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[LCDMODE_MAIN_PAGES], u32 stride, VideoMode VMODE);
+int DisplaySetMode(DisplayCtrl *dispPtr, const VideoMode *newMode);
+int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex);
 
 #endif /* ZYNQ_VDMA_H_INCLUDED */
