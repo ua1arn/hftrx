@@ -1797,16 +1797,16 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 #elif CPUSTYLE_XC7Z
 #include "zynq_vdma.h"
 
-DisplayCtrl dispCtrl;
+static DisplayCtrl dispCtrl;
 
 void arm_hardware_ltdc_initialize(const uintptr_t * frames)
 {
 	int Status;
-	XAxiVdma AxiVdma;
+	static XAxiVdma AxiVdma;
 
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
 
-	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, (u8 **) frames, DEMO_STRIDE, VMODE_800x480);
+	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, frames, (unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE, VMODE_800x480);
 	if (Status != XST_SUCCESS)
 	{
 		PRINTF("Display Ctrl initialization failed: %d\r\n", Status);

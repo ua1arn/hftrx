@@ -290,7 +290,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 **		Initializes the driver struct for use.
 **
 */
-int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[LCDMODE_MAIN_PAGES], u32 stride, VideoMode VMODE)
+int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, const uintptr_t * frames, u32 stride, VideoMode VMODE)
 {
 	int Status;
 	int i;
@@ -304,7 +304,7 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 	dispPtr->dynClkAddr = dynClkAddr;
 	for (i = 0; i < LCDMODE_MAIN_PAGES; i++)
 	{
-		dispPtr->framePtr[i] = framePtr[i];
+		dispPtr->framePtr[i] = (u8 *) frames [i];
 	}
 	dispPtr->state = DISPLAY_STOPPED;
 	dispPtr->stride = stride;

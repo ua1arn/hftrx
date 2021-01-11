@@ -52,7 +52,7 @@ typedef struct {
 	XAxiVdma_DmaSetup vdmaConfig;     /* VDMA channel configuration */
 	XVtc vtc; 					      /* VTC driver struct */
 	VideoMode vMode; 				  /* Current video mode */
-	u8 *framePtr[LCDMODE_MAIN_PAGES]; 		  /* Array of pointers to the frame buffers */
+	u8 *framePtr [LCDMODE_MAIN_PAGES]; 		  /* Array of pointers to the frame buffers */
 	u32 stride; 					  /* The line stride of the frame buffers, in bytes */
 	double pxlFreq; 				  /* Frequency of clock currently being generated, maybe not exactly with vMode.freq */
 	u32 curFrame; 					  /* Current frame being displayed */
@@ -65,7 +65,6 @@ typedef struct {
 #define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
 #define VGA_VDMA_ID         		XPAR_AXIVDMA_0_DEVICE_ID
 #define DISP_VTC_ID         		XPAR_VTC_0_DEVICE_ID
-#define DEMO_STRIDE					((unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE)
 
 //void Vdma_Setup_Intr_System(XScuGic *GicInstancePtr, XAxiVdma *InstancePtr, u16 IntrId);
 void ReadErrorCallBack(void *CallbackRef, u32 Mask);
@@ -75,7 +74,7 @@ int Vdma_Start(XAxiVdma *InstancePtr);
 
 int DisplayStop(DisplayCtrl *dispPtr);
 int DisplayStart(DisplayCtrl *dispPtr);
-int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, u8 *framePtr[LCDMODE_MAIN_PAGES], u32 stride, VideoMode VMODE);
+int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, const uintptr_t * frames, u32 stride, VideoMode VMODE);
 int DisplaySetMode(DisplayCtrl *dispPtr, const VideoMode *newMode);
 int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex);
 
