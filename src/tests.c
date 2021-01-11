@@ -6259,7 +6259,6 @@ void hightests(void)
 	#else /* CPUSTYLE_R7S721 */
 				(GPIOA)->BSRR = BSRR_S(mask);
 	#endif /* CPUSTYLE_R7S721 */
-				//BOARD_BLINK_SETSTATE(1);
 			}
 			else
 			{
@@ -6271,7 +6270,6 @@ void hightests(void)
 		#else /* CPUSTYLE_R7S721 */
 				(GPIOA)->BSRR = BSRR_C(mask);
 		#endif /* CPUSTYLE_R7S721 */
-				//BOARD_BLINK_SETSTATE(0);
 			}
 		}
 
