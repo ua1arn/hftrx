@@ -12770,24 +12770,17 @@ sysinit_pll_initialize(void)
 			0;
 	}
 
-    /* ----  Writing to On-Chip Data-Retention RAM is enabled. ---- */
-	if (1)
+#if WITHISBOOTLOADER
 	{
+		/* ----  Writing to On-Chip Data-Retention RAM is enabled. ---- */
 		// Нельзя отключить - т.к. r7s721_ttb_map работает со страницами по 1 мегабайту
+		// Нельзя отключить - botloader не может загрузить программу на выполнение по DFU.
+		// Странно, почему? Судя по описанию, области перекрываются...
 		CPG.SYSCR3 = (CPG_SYSCR3_RRAMWE3 | CPG_SYSCR3_RRAMWE2 | CPG_SYSCR3_RRAMWE1 | CPG_SYSCR3_RRAMWE0);
 		(void) CPG.SYSCR3;
 	}
+#endif /* WITHISBOOTLOADER */
 
-
-	* (volatile unsigned long *) 0x3FFFFF80 &= ~ 0x01uL;	// L2CTL Clear standby_mode_en bit of the power control register in the PL310
-	* (volatile unsigned long *) 0x3FFFF100 |= 0x01uL;		// REG1 Set bit L2 Cache enable
-
-	//INB.RMPR &= ~ (1U << 1);		// 0: Address remapping is enabled 0x20000000 visible at 0x00000000.
-	//(void) INB.RMPR;
-
-    /* ==== Initial setting of the level 1 cache ==== */
-	//__set_SCTLR(0);
-    //L1CacheInit();
 #if ! WITHISBOOTLOADER
 	// Перенесено в cpu_initialize
 	// Не получается разместить эти функции во FLASH
