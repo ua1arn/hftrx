@@ -49,9 +49,9 @@ LTO = -flto
 #CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3
 CORE = -mcpu=cortex-a9 
 CORE += -mfloat-abi=hard 
-CORE += -mfpu=vfpv3
+#CORE += -mfpu=vfpv3
 #CORE += -mfpu=neon
-#CORE += -mfpu=neon-vfpv3
+CORE += -mfpu=neon-vfpv3
 #CORE += -mlong-calls
 
 # List all default C defines here, like -D_DEBUG=1

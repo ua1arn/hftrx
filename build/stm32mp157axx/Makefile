@@ -40,11 +40,9 @@ OBJDIR = ./$(OBJDIR2)
 # debug architecture ARMv7.1.
 CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
-#CORE += -mcpu=cortex-a7
-#CORE += -mfpu=vfpv4
 #CORE += -mfpu=neon
 CORE += -mfpu=neon-vfpv4
-#CORE += -mlong-calls
+#CORE += -mfpu=vfpv4
 
 # Define optimisation level here
 # ony -Og for app
