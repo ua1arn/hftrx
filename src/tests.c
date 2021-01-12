@@ -6212,39 +6212,33 @@ void hightests(void)
 		global_disableIRQ();
 		for (;;)
 		{
-			//	__GNUC__=9, __GNUC_MINOR__=3
-			//	cplxmla @2FFC5698, src @C0114100, dst @C0104100. refv @2FFCC340, CPU_FREQ=793 MHz
-			// stm32mp1 @800 MHz w/o NEON:
-			// cplxmla: 2 kHz
-			// cplxmla & cplxmlasave: 1.85 kHz
-			// stm32mp1 @800 MHz with NEON:
-			// cplxmla: 3 kHz
-			// cplxmla & cplxmlasave: 2.65 kHz
-
-			// __GNUC__=9, __GNUC_MINOR__=3
-			// cplxmla @20042D08, src @20206040, dst @201F6040. refv @20123080, CPU_FREQ=360 MHz
-			// R7S721 @360 MHz w/o NEON:
-			// cplxmla & cplxmlasave: 0.7 kHz
-			// R7S721 @360 MHz with NEON:
-			// cplxmla & cplxmlasave: 0.7 kHz
-
-			// ZYNQ 7000 @666 MHz,
+			// stm32mp1 @800 MHz, 16 bit DDR3 @533 MHz
 			//	__GNUC__=10, __GNUC_MINOR__=2
-			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=neon-vfpv3
+			//	cplxmla @C001D174, src @C0CD06C0, dst @C0CC06C0. refv @C0B01A00, CPU_FREQ=792 MHz
+			// -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon
+			// cplxmla & cplxmlasave: 2.43 kHz
+			// -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
+			// cplxmla & cplxmlasave: 2.38 kHz
+			// -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4
+			// cplxmla & cplxmlasave: 1.87 kHz
+
+			// ZYNQ 7000 @666 MHz, 16 bit DDR3 @533 MHz
+			//	__GNUC__=10, __GNUC_MINOR__=2
 			//	cplxmla @00112798, src @0080DB40, dst @007FDB40. refv @00362E00, CPU_FREQ=666 MHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=vfpv3
+			// cplxmla & cplxmlasave: 1.53 kHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=neon-vfpv3
 			// cplxmla & cplxmlasave: 1.4 kHz
 
-			// ZYNQ 7000 @666 MHz,
+			// R7S721 @360 MHz
 			//	__GNUC__=10, __GNUC_MINOR__=2
+			// cplxmla @2001C184, src @2027D780, dst @2026D780. refv @20186B00, CPU_FREQ=360 MHz
 			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=vfpv3
-			//	cplxmla @00112798, src @0080DB40, dst @007FDB40. refv @00362E00, CPU_FREQ=666 MHz
-			// cplxmla & cplxmlasave: 1.53 kHz
-
-			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16  : 1.85 kHz
-			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon -mfpu=vfpv4-d16 : 1.85 kHz
-			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon : 2.65 kHz
-			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon : 2.65 kHz
-
+			// cplxmla & cplxmlasave: 0.71 kHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=neon-vfpv3
+			// cplxmla & cplxmlasave: 0.71 kHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=neon
+			// cplxmla & cplxmlasave: 0.71 kHz
 
 			cplxmla(src, dst, refv,  FFTZS);
 			cplxmlasave(dst, FFTZS);
