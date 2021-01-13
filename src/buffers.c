@@ -799,7 +799,7 @@ void buffers_initialize(void)
 	#elif defined (STM32F429xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32H743xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [6];
+		RAMNOINIT_D1 static records16_t recordsarray16 [5];
 	#else
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#endif
