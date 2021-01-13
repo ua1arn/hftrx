@@ -3,7 +3,7 @@
 
 #include <src/zynq/xaxivdma.h>
 #include <src/zynq/xdebug.h>
-#include <src/zynq/xil_cache.h>
+//#include <src/zynq/xil_cache.h>
 #include <src/zynq/xil_exception.h>
 #include <src/zynq/xil_types.h>
 #include <src/zynq/xparameters.h>
