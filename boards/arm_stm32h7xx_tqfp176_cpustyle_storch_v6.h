@@ -48,7 +48,9 @@
 //#define WITHUSBDEV_HIGHSPEEDULPI	1
 //#define WITHUSBDEV_HIGHSPEEDPHYC	1
 
-//#define WITHUSBHW_HOST		USB_OTG_FS
+#if WITHUSEUSBFLASH
+	#define WITHUSBHW_HOST		USB_OTG_FS
+#endif /* WITHUSEUSBFLASH */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
