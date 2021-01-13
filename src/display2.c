@@ -6949,7 +6949,7 @@ struct zoom_param
 	const float32_t * pIIRCoeffs;
 };
 
-static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
+static const struct zoom_param zoom_params [] =
 {
 	// x2 zoom lowpass
 	{
@@ -6964,7 +6964,6 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 			0.8532925292044,0,0,0,0,1,0.8833322961087,1,0.1236299808214,-0.7350834072447,0.9875433620142,0,0,0,0,1,1.342280599073,1,0.4562397651846,-0.4782312921079,2.028993125202,0,0,0,0,1,1.89580631004,1,0.8042973736597,-0.2291792806388,0.007914495910771,0,0,0,0,1,0.6767766059742,1,-0.04594374270934,-0.9200030070288,1,0,0,0,0
 		},
 	},
-#if BOARD_FFTZOOM_POW2MAX > 1
 	// x4 zoom lowpass
 	{
 		.zoom = 4,
@@ -6978,8 +6977,6 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 			0.5839356339838,0,0,0,0,1,-0.771972117459,1,1.343915676465,-0.8135916285663,0.4782836785149,0,0,0,0,1,-0.136902479699,1,1.384012938487,-0.6599241585437,0.5710926297269,0,0,0,0,1,1.460561429795,1,1.42850177555,-0.5347308564118,0.006193916545061,0,0,0,0,1,-0.9693891605869,1,1.34943197558,-0.9418065619339,1,0,0,0,0
 		},
 	},
-#endif
-#if BOARD_FFTZOOM_POW2MAX > 2
 	// x8 zoom lowpass
 	{
 		.zoom = 8,
@@ -6993,8 +6990,6 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 			0.5178801132175,0,0,0,0,1,-1.62922673236,1,1.770291824795,-0.8960576854358,0.3574467243734,0,0,0,0,1,-1.330391295344,1,1.735672241982,-0.8097828924848,0.2223906792886,0,0,0,0,1,0.3866929321081,1,1.711258208935,-0.7397883181276,0.005701993747067,0,0,0,0,1,-1.703569409977,1,1.811062635903,-0.9679132120413,1,0,0,0,0
 		},
 	},
-#endif
-#if BOARD_FFTZOOM_POW2MAX > 3
 	// x16 zoom lowpass
 	{
 		.zoom = 16,
@@ -7008,7 +7003,6 @@ static const struct zoom_param zoom_params [BOARD_FFTZOOM_POW2MAX] =
 			0.5069794114512,0,0,0,0,1,-1.902257527901,1,1.913369602099,-0.9458258835145,0.3329212537442,0,0,0,0,1,-1.812084985979,1,1.880217497722,-0.8995884608839,0.1315803997161,0,0,0,0,1,-0.935339884295,1,1.853769133777,-0.8612990906983,0.005593913991087,0,0,0,0,1,-1.923016831809,1,1.943527765596,-0.9834898311558,1,0,0,0,0
 		},
 	},
-#endif
 };
 
 // Сэмплы для децимации
@@ -7214,6 +7208,7 @@ static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT
 {
 	if (zoompow2 != 0)
 	{
+		ASSERT(ARRAY_SIZE(zoom_params) >= zoompow2);
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
 		arm_fir_decimate_instance_f32 fir_config;
 		const unsigned usedSize = normalFFT * prm->zoom;
@@ -7284,6 +7279,7 @@ dsp_getspectrumrow(
 
 	if (zoompow2 > 0)
 	{
+		ASSERT(ARRAY_SIZE(zoom_params) >= zoompow2);
 		const struct zoom_param * const prm = & zoom_params [zoompow2 - 1];
 
 		fftzoom_filer_decimate_ifspectrum(prm, largesigI);
