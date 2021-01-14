@@ -12,7 +12,7 @@
 
 #if WITHTWIHW || WITHTWISW
 
-// Обслуживание I2C без использования аппаратных средств процессора
+// Обслуживание I2C без использования аппаратных контроллеров процессора
 // программное "ногодрыгание" выводами.
 
 #if CPUSTYLE_ATMEGA
@@ -38,55 +38,26 @@
 
 void TWISOFT_INITIALIZE(void)
 {
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);	// "1" получается открытым стоком
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);	// "1" получается открытым стоком
 }
 
-void SET_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
-	hardware_spi_io_delay();
-}
+// "1" получается открытым стоком
+#define SET_TWCK() do { XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while (0)	// SCL = 1
+// "0" притягиваем к земле
+#define CLR_TWCK() do { XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while (0)	// SCL = 0
+// "1" получается открытым стоком
+#define SET_TWD() do { XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)	// SDA = 1
+// "0" притягиваем к земле
+#define CLR_TWD() do { XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while (0)	// SDA = 0
 
-void CLR_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK, 0);
-	hardware_spi_io_delay();
-}
-
-void SET_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD, 1);
-	hardware_spi_io_delay();
-}
-
-void CLR_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD, 0);
-	hardware_spi_io_delay();
-}
-
-uint_fast8_t GET_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK, 0);
-	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK);
-}
-
-uint_fast8_t GET_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD, 0);
-	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD);
-}
+// всегда вызывается когда отпустили шину
+#define GET_TWCK() (XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO) != 0)
+#define GET_TWD() (XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO) != 0)
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 

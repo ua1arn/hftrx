@@ -662,8 +662,8 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	#define TARGET_TWI_TWCK			46		// MIO 46 SCL
-	#define TARGET_TWI_TWD			47		// MIO 47 SDA
+	#define TARGET_TWI_TWCK_MIO			46		// MIO 46 SCL
+	#define TARGET_TWI_TWD_MIO			47		// MIO 47 SDA
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
