@@ -32,6 +32,62 @@
 	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
 	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
 
+#elif CPUSTYLE_XC7Z
+
+#include <src/zynq/xgpiops.h>
+
+void TWISOFT_INITIALIZE(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD, 1);
+}
+
+void SET_TWCK(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
+	hardware_spi_io_delay();
+}
+
+void CLR_TWCK(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK, 0);
+	hardware_spi_io_delay();
+}
+
+void SET_TWD(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD, 1);
+	hardware_spi_io_delay();
+}
+
+void CLR_TWD(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD, 0);
+	hardware_spi_io_delay();
+}
+
+uint_fast8_t GET_TWCK(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK, 0);
+	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK);
+}
+
+uint_fast8_t GET_TWD(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD, 0);
+	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD);
+}
+
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#define SET_TWCK() do { TARGET_TWI_TWCK_PORT_S(TARGET_TWI_TWCK); hardware_spi_io_delay(); } while (0)	// SCL = 1

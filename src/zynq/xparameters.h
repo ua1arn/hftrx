@@ -265,29 +265,30 @@
 
 /******************************************************************/
 
+/* Definitions for driver GPIOPS */
+#define XPAR_XGPIOPS_NUM_INSTANCES 1
+
+/* Definitions for peripheral PS7_GPIO_0 */
+#define XPAR_PS7_GPIO_0_DEVICE_ID 0
+#define XPAR_PS7_GPIO_0_BASEADDR 0xE000A000
+#define XPAR_PS7_GPIO_0_HIGHADDR 0xE000AFFF
+
+
+/******************************************************************/
+
+/* Canonical definitions for peripheral PS7_GPIO_0 */
+#define XPAR_XGPIOPS_0_DEVICE_ID XPAR_PS7_GPIO_0_DEVICE_ID
+#define XPAR_XGPIOPS_0_BASEADDR 0xE000A000
+#define XPAR_XGPIOPS_0_HIGHADDR 0xE000AFFF
+
+
+/******************************************************************/
+
 /* Definitions for driver LLFIFO */
-#define XPAR_XLLFIFO_NUM_INSTANCES 2U
-
-/* Definitions for peripheral AXI_FIFO_MM_S_0 */
-#define XPAR_AXI_FIFO_MM_S_0_DEVICE_ID 0U
-#define XPAR_AXI_FIFO_MM_S_0_BASEADDR 0x43C10000U
-#define XPAR_AXI_FIFO_MM_S_0_HIGHADDR 0x43C1FFFFU
-#define XPAR_AXI_FIFO_MM_S_0_AXI4_BASEADDR 0U
-#define XPAR_AXI_FIFO_MM_S_0_AXI4_HIGHADDR 0U
-#define XPAR_AXI_FIFO_MM_S_0_DATA_INTERFACE_TYPE 0U
-
-/* Canonical definitions for peripheral AXI_FIFO_MM_S_0 */
-#define XPAR_AXI_FIFO_0_DEVICE_ID 0U
-#define XPAR_AXI_FIFO_0_BASEADDR 0x43C10000U
-#define XPAR_AXI_FIFO_0_HIGHADDR 0x43C1FFFFU
-#define XPAR_AXI_FIFO_0_AXI4_BASEADDR 0U
-#define XPAR_AXI_FIFO_0_AXI4_HIGHADDR 0U
-#define XPAR_AXI_FIFO_0_DATA_INTERFACE_TYPE 0U
-
-
+#define XPAR_XLLFIFO_NUM_INSTANCES 1U
 
 /* Definitions for peripheral AXI_FIFO_MM_S_1 */
-#define XPAR_AXI_FIFO_MM_S_1_DEVICE_ID 1U
+#define XPAR_AXI_FIFO_MM_S_1_DEVICE_ID 0U
 #define XPAR_AXI_FIFO_MM_S_1_BASEADDR 0x43C20000U
 #define XPAR_AXI_FIFO_MM_S_1_HIGHADDR 0x43C2FFFFU
 #define XPAR_AXI_FIFO_MM_S_1_AXI4_BASEADDR 0U
@@ -295,12 +296,12 @@
 #define XPAR_AXI_FIFO_MM_S_1_DATA_INTERFACE_TYPE 0U
 
 /* Canonical definitions for peripheral AXI_FIFO_MM_S_1 */
-#define XPAR_AXI_FIFO_1_DEVICE_ID 1U
-#define XPAR_AXI_FIFO_1_BASEADDR 0x43C20000U
-#define XPAR_AXI_FIFO_1_HIGHADDR 0x43C2FFFFU
-#define XPAR_AXI_FIFO_1_AXI4_BASEADDR 0U
-#define XPAR_AXI_FIFO_1_AXI4_HIGHADDR 0U
-#define XPAR_AXI_FIFO_1_DATA_INTERFACE_TYPE 0U
+#define XPAR_AXI_FIFO_0_DEVICE_ID 0U
+#define XPAR_AXI_FIFO_0_BASEADDR 0x43C20000U
+#define XPAR_AXI_FIFO_0_HIGHADDR 0x43C2FFFFU
+#define XPAR_AXI_FIFO_0_AXI4_BASEADDR 0U
+#define XPAR_AXI_FIFO_0_AXI4_HIGHADDR 0U
+#define XPAR_AXI_FIFO_0_DATA_INTERFACE_TYPE 0U
 
 
 

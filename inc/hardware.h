@@ -905,15 +905,21 @@ extern uint8_t myGATEWAY [4];
 void tcp_tmr(void);
 void usb_polling(void);
 
+#if CPUSTYLE_XC7Z
+#include <src/zynq/xllfifo.h>
+#include <src/zynq/xgpiops.h>
+
+extern XGpioPs xc7z_gpio;
+extern XLlFifo xc7z_i2s;
+
+void xc7z_hardware_initialize(void);
+#endif /* CPUSTYLE_XC7Z */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #include "product.h"
 #include "taildefs.h"
-
-#if CPUSTYLE_XC7Z
-void hardware_xc7z_fifo_init(void);
-#endif /* CPUSTYLE_XC7Z */
 
 #endif // HARDWARE_H_INCLUDED

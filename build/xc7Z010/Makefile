@@ -191,13 +191,13 @@ flash: $(PROJECT)_app.stm32
 BOOT2: version $(OBJS) $(PROJECT)_boot.elf BOOTL.BIN
 	-cp BOOTL.BIN $(ZINQ_BOOT_BIN)
 
-APP2: version $(OBJS) $(PROJECT)_app.elf APPL.BIN vdma_bitstream.bit
+APP2: version $(OBJS) $(PROJECT)_app.elf APPL.BIN bitstream_4205.bit
 	-cp APPL.BIN $(ZINQ_BOOT_BIN)
 
 BOOTL.BIN: $(PROJECT)_boot.elf boot.bif
 	bootgen -arch zynq -image boot.bif -w on -o $@
 
-APPL.BIN: $(PROJECT)_app.elf app.bif fsbl.elf
+APPL.BIN: $(PROJECT)_app.elf app.bif fsbl_4205.elf
 	bootgen -arch zynq -image app.bif -w on -o $@
 	
 $(PROJECT)_app.stm32: $(PROJECT)_app.bin

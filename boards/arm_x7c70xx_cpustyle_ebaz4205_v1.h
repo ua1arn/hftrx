@@ -160,8 +160,8 @@
  *  A19	MIO16 (R2608 left)
  *  B18	MIO18 (R2609 left)
  *  С18	MIO39 (R2444 left)
- *  D16	MIO46 (R2445B left)
- *  B14	MIO47 (R2446 left)
+ *  D16	MIO46 (R2445B left)	-> SCL
+ *  B14	MIO47 (R2446 left)	-> SDA
  *  B12	MIO48 (R2447 left)
  *  C12	MIO49 (R2445 left)
  *  B13	MIO50 (R2543 left)
@@ -661,34 +661,13 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 1 // WITHTWISW
-	// I2C1_SDA	PB11
-	// I2C1_SCL	PD7
-	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
-	#define TARGET_TWI_TWCK_PIN		0//(GPIOD->IDR)
-	#define TARGET_TWI_TWCK_PORT_C(v) do { /*GPIOD->BSRR = BSRR_C(v); */ __DSB(); } while (0)
-	#define TARGET_TWI_TWCK_PORT_S(v) do { /*GPIOD->BSRR = BSRR_S(v); */ __DSB(); } while (0)
+#if WITHTWISW
+	#define TARGET_TWI_TWCK			46		// MIO 46 SCL
+	#define TARGET_TWI_TWD			47		// MIO 47 SDA
 
-	#define TARGET_TWI_TWD		(1u << 11)		// PB11 I2C1_SDA
-	#define TARGET_TWI_TWD_PIN		0//(GPIOB->IDR)
-	#define TARGET_TWI_TWD_PORT_C(v) do { /*GPIOB->BSRR = BSRR_C(v); */ __DSB(); } while (0)
-	#define TARGET_TWI_TWD_PORT_S(v) do { /*GPIOB->BSRR = BSRR_S(v); */ __DSB(); } while (0)
-
-	// Инициализация битов портов ввода-вывода для программной реализации I2C
-	#define	TWISOFT_INITIALIZE() do { \
-			arm_hardware_piod_opendrain(TARGET_TWI_TWCK, TARGET_TWI_TWCK); /* SCL */ \
-			arm_hardware_piob_opendrain(TARGET_TWI_TWD, TARGET_TWI_TWD);  	/* SDA */ \
-		} while (0) 
-	#define	TWISOFT_DEINITIALIZE() do { \
-			arm_hardware_piod_inputs(TARGET_TWI_TWCK); 	/* SCL */ \
-			arm_hardware_piob_inputs(TARGET_TWI_TWD);	/* SDA */ \
-		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_piod_periphopendrain_altfn2(TARGET_TWI_TWCK, AF_I2C1);	/* I2C1_SCL AF=4 */ \
-			arm_hardware_piob_periphopendrain_altfn2(TARGET_TWI_TWD, AF_I2C1);	/* I2C1_SDA AF=4 */ \
-		} while (0) 
+	#define	TWIHARD_INITIALIZE() do { } while (0)
 
 
 #endif // WITHTWISW

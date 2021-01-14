@@ -19446,7 +19446,7 @@ static void initialize2(void)
 	(void) mclearnvram;
 
 #if CPUSTYLE_XC7Z
-	hardware_xc7z_fifo_init();
+	xc7z_hardware_initialize();
 #endif /* CPUSTYLE_XC7Z */
 
 #if WITHDEBUG
@@ -19548,12 +19548,14 @@ hamradio_initialize(void)
 #if WITHTOUCHGUI
 	gui_initialize();
 
+#if WITHENCODER2
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
 	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
 	enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
 	enc2_menu.updated = 1;
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
+#endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
 }
 
