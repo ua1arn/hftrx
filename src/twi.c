@@ -47,17 +47,33 @@ void TWISOFT_INITIALIZE(void)
 }
 
 // "1" получается открытым стоком
-#define SET_TWCK() do { XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while (0)	// SCL = 1
+#define SET_TWCK() do { \
+		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); \
+		hardware_spi_io_delay(); \
+	} while (0)	// SCL = 1
 // "0" притягиваем к земле
-#define CLR_TWCK() do { XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while (0)	// SCL = 0
+#define CLR_TWCK() do { \
+		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); \
+		hardware_spi_io_delay(); \
+	} while (0)	// SCL = 0
 // "1" получается открытым стоком
-#define SET_TWD() do { XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)	// SDA = 1
+#define SET_TWD() do { \
+		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); \
+		hardware_spi_io_delay(); \
+	} while (0)	// SDA = 1
 // "0" притягиваем к земле
-#define CLR_TWD() do { XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while (0)	// SDA = 0
+#define CLR_TWD() do { \
+		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); \
+		hardware_spi_io_delay(); \
+	} while (0)	// SDA = 0
 
 // всегда вызывается когда отпустили шину
-#define GET_TWCK() (XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO) != 0)
-#define GET_TWD() (XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO) != 0)
+#define GET_TWCK() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO) != 0)
+#define GET_TWD() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO) != 0)
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
