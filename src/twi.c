@@ -40,8 +40,8 @@ void TWISOFT_INITIALIZE(void)
 {
 	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
 	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
 	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);	// "1" получается открытым стоком
 	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);	// "1" получается открытым стоком
 }
