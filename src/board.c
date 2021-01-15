@@ -6590,7 +6590,7 @@ restart:
 
 			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
 			/* 4) Дождаться "1" на CONF_DONE */
-			while (board_fpga_get_CONF_DONE() == 0)
+			while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
 			{
 				++ wcd;
 				hardware_spi_b16_p2(0xffff);
@@ -6601,6 +6601,8 @@ restart:
 			hardware_spi_disconnect();
 
 			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
+			if (wcd >= rbflength)
+				goto restart;
 			/*
 			After the configuration data is accepted and CONF_DONE goes
 			high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
