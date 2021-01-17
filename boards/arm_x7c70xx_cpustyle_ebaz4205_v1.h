@@ -159,15 +159,19 @@
  *
  *  A19	MIO16 (R2608 left)
  *  B18	MIO18 (R2609 left)
+ *  A15	MIO26 (X3 6)		-> SCL
+ *  D13	MIO27 (X3 5)		-> SDA
  *  С18	MIO39 (R2444 left)
- *  D16	MIO46 (R2445B left)	-> SCL
- *  B14	MIO47 (R2446 left)	-> SDA
+ *  D16	MIO46 (R2445B left)
+ *  B14	MIO47 (R2446 left)
  *  B12	MIO48 (R2447 left)
  *  C12	MIO49 (R2445 left)
  *  B13	MIO50 (R2543 left)
  *
  *  L14	PL (R2609 right)
  *  N16	PL (R2608 right)
+ *
+ *  N18 PL					<- Clock 49,152 MHz
  *
  */
 
@@ -662,8 +666,8 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	#define TARGET_TWI_TWCK_MIO			46		// MIO 46 SCL
-	#define TARGET_TWI_TWD_MIO			47		// MIO 47 SDA
+	#define TARGET_TWI_TWCK_MIO			26		// MIO 26 SCL
+	#define TARGET_TWI_TWD_MIO			27		// MIO 27 SDA
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству

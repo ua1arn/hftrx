@@ -6054,6 +6054,28 @@ void hightests(void)
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
+#if 0 && CPUSTYLE_XC7Z		// тестирование вывода звука через PL I2S
+	#define PERIODSAMPLES 128
+
+	u32 buf[PERIODSAMPLES];
+	double amp = 16384;
+	for(int i = 0; i < PERIODSAMPLES; ++ i)
+	{
+		short left = (short) (cos((double) i / PERIODSAMPLES * 2 * M_PI) * amp);
+		short right = (short) (sin((double) i / PERIODSAMPLES * 2 * M_PI) * amp);
+		buf[i] = (left << 16) + (right & 0xFFFF);
+	}
+
+	while(1)
+	{
+		for(int i = 0; i < PERIODSAMPLES; i += 2)
+		{
+			while (! XLlFifo_iTxVacancy(& xc7z_i2s));
+			XLlFifo_iWrite_Aligned(& xc7z_i2s, & buf[i], 2);
+			XLlFifo_iTxSetLen(& xc7z_i2s, 4 * 2);
+		}
+	}
+#endif /* 1 && CPUSTYLE_XC7Z */
 #if 0 && WITHDEBUG
 	{
 		const time_t t = time(NULL);

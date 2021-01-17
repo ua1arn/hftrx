@@ -700,6 +700,7 @@ u32 XLlFifo_iTxVacancy(XLlFifo *InstancePtr);
 void XLlFifo_iTxSetLen(XLlFifo *InstancePtr, u32 Bytes);
 u32 XLlFifo_RxGetWord(XLlFifo *InstancePtr);
 void XLlFifo_TxPutWord(XLlFifo *InstancePtr, u32 Word);
+int XLlFifo_iWrite_Aligned(XLlFifo *InstancePtr, void *BufPtr, unsigned WordCount);
 
 #ifdef __cplusplus
 }

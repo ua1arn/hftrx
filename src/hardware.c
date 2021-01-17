@@ -13041,7 +13041,7 @@ XGpioPs xc7z_gpio;
 void xc7z_hardware_initialize(void)
 {
 	// FIFO init
-	XLlFifo_Config * pConfig = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_1_DEVICE_ID);
+	XLlFifo_Config * pConfig = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_0_DEVICE_ID);
 	int Status = XLlFifo_CfgInitialize(& xc7z_i2s, pConfig, pConfig->BaseAddress);
 	if(XST_SUCCESS != Status)
 		PRINTF("AXI FIFO codec I2S init error\n");
