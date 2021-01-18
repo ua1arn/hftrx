@@ -362,22 +362,21 @@ IRQHandlerNested:
 	VMRSNE	LR, FPINST2
 	PUSHNE	{LR}
 //skipPUSH:
+   // Initialise FPSCR to a known state
+    // Loaded in to R2
+	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
 	PUSH {R0}	// FPEXC
+	AND     R2,R2,R3
 
 //#if __ARM_NEON == 1
 	// save neon data registers
 	VPUSH.F32	{D16-D31}
 //#endif /* __ARM_NEON == 1 */
+ 	VMSR    FPSCR,R2
+	LDR		R2, =IRQ_Handler_GICv1
 	// save vfp/neon data registers
 	VPUSH.F32	{D0-D15}
 
-    // Initialise FPSCR to a known state
-    // Loaded in to R2
-	LDR     R3,=0x00086060	//Mask off all bits that do not have to be preserved. Non-preserved bits can/should be zero.
-	AND     R2,R2,R3
-	VMSR    FPSCR,R2
-
-	LDR		R2, =IRQ_Handler_GICv1
 	MOV		LR, PC
 	BX		R2     /* and jump... */
 
@@ -386,13 +385,13 @@ IRQHandlerNested:
 
 	// restore vfp data registers
 	VPOP.F32   {D0-D15}
+	// restore VFP/Neon FPEXC register
+    ldr     LR, =(1 << 31) //check FPEXC.EX
 //#if __ARM_NEON == 1
 	// restore vfp/neon data registers
 	VPOP.F32	{D16-D31}
 //#endif /* __ARM_NEON == 1 */
 
-	// restore VFP/Neon FPEXC register
-    ldr     LR, =(1 << 31) //check FPEXC.EX
 	POP 	{R0}	// FPEXC
 	TST		R0, LR	// check FPEXC.EX
 	//BEQ skipPOP
