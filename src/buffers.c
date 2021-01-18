@@ -438,7 +438,7 @@ static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
 static volatile unsigned debugcount_uacout;
 static volatile unsigned debugcount_mikeadc;
 static volatile unsigned debugcount_phonesdac;
-static volatile unsigned debugcount_rtsadc;
+static volatile unsigned debugcount_uacinrts;
 static volatile unsigned debugcount_uacin;
 static volatile unsigned debugcount_rx32adc;
 static volatile unsigned debugcount_rx32wfm;
@@ -516,18 +516,18 @@ void buffers_diagnostics(void)
 		const unsigned uacout = getresetval(& debugcount_uacout);
 		const unsigned mikeadc = getresetval(& debugcount_mikeadc);
 		const unsigned phonesdac = getresetval(& debugcount_phonesdac);
-		const unsigned rtsadc = getresetval(& debugcount_rtsadc);
+		const unsigned uacinrts = getresetval(& debugcount_uacinrts);
 		const unsigned rx32adc = getresetval(& debugcount_rx32adc);
 		const unsigned rx32wfm = getresetval(& debugcount_rx32wfm);
 		const unsigned tx32dac = getresetval(& debugcount_tx32dac);
 		const unsigned uacin = getresetval(& debugcount_uacin);
 
-		PRINTF(PSTR("FREQ: uacout=%u, uacin=%u, mikeadc=%u, phonesdac=%u, rtsadc=%u, rx32adc=%u, rx32wfm=%u, tx32dac=%u\n"),
+		PRINTF(PSTR("FREQ: uacout=%u, uacin=%u, uacinrts=%u, mikeadc=%u, phonesdac=%u, rx32adc=%u, rx32wfm=%u, tx32dac=%u\n"),
 			uacout * 10000 / ms10, 
 			uacin * 10000 / ms10, 
+			uacinrts * 10000 / ms10,
 			mikeadc * 10000 / ms10, 
 			phonesdac * 10000 / ms10, 
-			rtsadc * 10000 / ms10, 
 			rx32adc * 10000 / ms10, 
 			rx32wfm * 10000 / ms10, 
 			tx32dac * 10000 / ms10
@@ -1276,7 +1276,7 @@ buffers_savetouacin192rts(voice192rts_t * p)
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP192RTS;	// в буфере пары сэмплов по четыре байта
+	debugcount_uacinrts += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP192RTS;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
 	SPIN_LOCK(& locklistrts);
@@ -1324,7 +1324,7 @@ buffers_savetouacin96rts(voice96rts_t * p)
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_rtsadc += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFSTEP96RTS;	// в буфере пары сэмплов по три байта
+	debugcount_uacinrts += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFSTEP96RTS;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	
 	SPIN_LOCK(& locklistrts);
