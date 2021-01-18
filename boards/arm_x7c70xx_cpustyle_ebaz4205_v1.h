@@ -155,7 +155,7 @@
 
 #endif /* WITHISBOOTLOADER */
 
-/* 	Available ports on unplaced resistors on EBAZ4205 board:
+/* 	Available ports on EBAZ4205 board:
  *
  *  A19	MIO16 (R2608 left)
  *  B18	MIO18 (R2609 left)
@@ -170,6 +170,10 @@
  *
  *  L14	PL (R2609 right)
  *  N16	PL (R2608 right)
+ *  V13 PL (J3 3) MIO54		-> ENCODER2 BITA
+ *  U12 PL (J3 4) MIO55		-> ENCODER2 BITB
+ *  V15 PL (J5 3) MIO56
+ *  V12 PL (J5 4) MIO57	 	-> ENCODER2 button
  *
  *  N18 PL					<- Clock 49,152 MHz
  *
@@ -230,27 +234,20 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOG->IDR)
-	#define ENCODER_BITA		(1u << 13)		// PG13
-	#define ENCODER_BITB		(1u << 9)		// PG9
+	#define ENCODER_BITA		0
+	#define ENCODER_BITB		0
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(GPIOG->IDR)
-	#define ENCODER2_BITA		(1u << 15)		// PG15
-	#define ENCODER2_BITB		(1u << 14)		// PG14
-
-
-	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
-	#define ENCODER2_BITS		(ENCODER2_BITA | ENCODER2_BITB)
+	#define ENCODER2_BITA		54
+	#define ENCODER2_BITB		55
+	#define ENCODER2_GPIO_BANK	2
+	#define ENCODER2_GPIO_MASK	3
+	#define ENCODER2_GPIO_SHIFT	0
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_piog_inputs(ENCODER_BITS); \
-			arm_hardware_piog_updown(ENCODER_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-			arm_hardware_piog_inputs(ENCODER2_BITS); \
-			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			XGpioPs_SetDirection(& xc7z_gpio, ENCODER2_BITA, 0); \
+			XGpioPs_SetDirection(& xc7z_gpio, ENCODER2_BITB, 0); \
 		} while (0)
 
 #endif

@@ -36,6 +36,7 @@
 
 #include <src/zynq/xgpiops.h>
 
+/*
 void TWISOFT_INITIALIZE(void)
 {
 	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
@@ -74,6 +75,59 @@ void TWISOFT_INITIALIZE(void)
 // всегда вызывается когда отпустили шину
 #define GET_TWCK() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO) != 0)
 #define GET_TWD() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO) != 0)
+*/
+
+void TWISOFT_INITIALIZE(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+}
+
+void SET_TWCK(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+	hardware_spi_io_delay();
+}
+
+void CLR_TWCK(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
+	hardware_spi_io_delay();
+}
+
+void SET_TWD(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	hardware_spi_io_delay();
+}
+
+void CLR_TWD(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
+	hardware_spi_io_delay();
+}
+
+uint_fast8_t GET_TWCK(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
+	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO);
+}
+
+uint_fast8_t GET_TWD(void)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
+	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO);
+}
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
