@@ -83,7 +83,7 @@ SRC +=
 
 # List ASM source files here
 ASRC = \
- crt_sam7s.s
+ crt_sam7s.S
 
 # List all user directories here
 UINCDIR += ../.. ../../inc
@@ -107,13 +107,13 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	= $(patsubst %.s,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC))
+OBJS 	= $(patsubst %.S,$(OBJDIR)/%.o,$(ASRC)) $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 #MCFLAGS = -mcpu=$(MCU) $(CORE) -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects
 MCFLAGS = -mcpu=$(MCU) $(CORE)
 #
-#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
+#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.S=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -Wstrict-prototypes -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mlong-calls -fomit-frame-pointer -Wall -Wstrict-prototypes $(DEFS)
@@ -147,9 +147,9 @@ $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
 	$(CC) -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-$(OBJDIR)/%.o: %.s
+$(OBJDIR)/%.o: %.S
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
+	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.S, $@))) -o $@
 
 %ram.elf: $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
@@ -173,8 +173,8 @@ clean:
 	-rm -f $(PROJECT)_app.elf $(PROJECT)_app.map $(PROJECT)_app.hex $(PROJECT)_app.bin
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
-	-rm -f $(ASRC:.s=.s.bak)
-	-rm -f $(ASRC:.s=.lst)
+	-rm -f $(ASRC:.S=.S.bak)
+	-rm -f $(ASRC:.S=.lst)
 
 # 
 # Include the dependency files, should be the last of the makefile

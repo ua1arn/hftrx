@@ -116,7 +116,7 @@ CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- $(SRCDIR)/crt_CortexA.s
+ $(SRCDIR)/crt_CortexA.S
 
 # List all user directories here
 UINCDIR += ../.. ../../inc
@@ -141,7 +141,7 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	+= $(patsubst $(SRCDIR)/%.s,$(OBJDIR)/%.o,$(ASRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.S,$(OBJDIR)/%.o,$(ASRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
@@ -149,7 +149,7 @@ LIBS    = $(DLIBS) $(ULIBS)
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
 #MCFLAGS = $(CORE) -fno-math-errno
 #
-#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
+#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.S=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
@@ -207,9 +207,9 @@ $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
-$(OBJDIR)/%.o: %.s
+$(OBJDIR)/%.o: %.S
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.s, $@))) -o $@
+	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.S, $@))) -o $@
 
 %_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
