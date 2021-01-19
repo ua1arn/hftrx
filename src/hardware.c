@@ -1829,6 +1829,17 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		}
 	}
 
+//	static uint_fast32_t gtimloadvalue;
+//	void
+//	SecurePhysicalTimer_IRQHandler(void)
+//	{
+//		//IRQ_ClearPending (SecurePhysicalTimer_IRQn);
+//		PL1_SetLoadValue(gtimloadvalue);
+//
+//		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+//		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+//	}
+
 #if CPUSTYLE_STM32MP1
 	void EXTI0_IRQHandler(void)
 	{
@@ -2618,6 +2629,21 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TIM5->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
+//
+//	const uint_fast32_t gtimfreq = HSIFREQ;
+//
+//	PL1_SetCounterFrequency(gtimfreq);
+//
+//	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
+//	// Private timer use
+//	// Disable Private Timer and set load value
+//	// Enable timer control
+//	PL1_SetControl(PL1_GetControl() & ~ 0x01);
+//	PL1_SetLoadValue(gtimloadvalue);
+//	// Enable timer control
+//	PL1_SetControl(PL1_GetControl() | 0x01);
+//
+//	arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
 
 #elif CPUSTYLE_XC7Z
 
