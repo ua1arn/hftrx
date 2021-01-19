@@ -188,24 +188,17 @@ app_run: $(PROJECT)_app.stm32
 flash: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
-BOOT2: version $(OBJS) $(PROJECT)_boot.elf BOOTL.BIN
+BOOT2: version $(OBJS) BOOTL.BIN
 	-cp BOOTL.BIN $(ZINQ_BOOT_BIN)
 
-APP2: version $(OBJS) $(PROJECT)_app.elf APPL.BIN bitstream_4205.bit
+APP2: version $(OBJS) APPL.BIN
 	-cp APPL.BIN $(ZINQ_BOOT_BIN)
 
-BOOTL.BIN: $(PROJECT)_boot.elf boot.bif
+BOOTL.BIN:f boot.bif $(PROJECT)_boot.el
 	bootgen -arch zynq -image boot.bif -w on -o $@
 
-APPL.BIN: $(PROJECT)_app.elf app.bif fsbl_4205.elf
+APPL.BIN: app.bif $(PROJECT)_app.elf fsbl_4205.elf bitstream_4205.bit
 	bootgen -arch zynq -image app.bif -w on -o $@
-	
-$(PROJECT)_app.stm32: $(PROJECT)_app.bin
-	./stm32image.exe -l 0x04100100 -e 0x04100100 -s $(PROJECT)_app.bin -d $@
-	
-app.hex: $(PROJECT)_app.stm32
-	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.stm32 >$@
-
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
