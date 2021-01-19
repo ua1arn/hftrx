@@ -8,3 +8,4 @@
 *.stm32
 *.nec32
 *.bin
+!fsbl_4205.elf

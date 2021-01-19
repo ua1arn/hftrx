@@ -3,11 +3,9 @@
 
 #include <src/zynq/xaxivdma.h>
 #include <src/zynq/xdebug.h>
-//#include <src/zynq/xil_cache.h>
 #include <src/zynq/xil_exception.h>
 #include <src/zynq/xil_types.h>
 #include <src/zynq/xparameters.h>
-#include <src/zynq/xscugic.h>
 #include <src/zynq/xvtc.h>
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
@@ -60,8 +58,7 @@ typedef struct {
 } DisplayCtrl;
 
 #define AXI_VDMA_DEV_ID				XPAR_AXIVDMA_0_DEVICE_ID
-#define VDMA_INTR_ID				XPAR_FABRIC_AXI_VDMA_0_MM2S_INTROUT_INTR
-#define XPAR_AXI_DYNCLK_0_BASEADDR 	0x43C10000
+#define XPAR_AXI_DYNCLK_0_BASEADDR 	XPAR_AXI_FIFO_MM_S_0_BASEADDR
 #define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
 #define VGA_VDMA_ID         		XPAR_AXIVDMA_0_DEVICE_ID
 #define DISP_VTC_ID         		XPAR_VTC_0_DEVICE_ID
