@@ -372,7 +372,8 @@ IRQHandlerNested:
 	// save neon data registers
 	VPUSH.F32	{D16-D31}
 //#endif /* __ARM_NEON == 1 */
- 	VMSR    FPSCR,R2
+ 	VMSR    FPSCR,R2	// Initialise FPSCR to a known state
+
 	LDR		R2, =IRQ_Handler_GICv1
 	// save vfp/neon data registers
 	VPUSH.F32	{D0-D15}
