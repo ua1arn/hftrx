@@ -194,7 +194,7 @@ BOOT2: version $(OBJS) BOOTL.BIN
 APP2: version $(OBJS) APPL.BIN
 	-cp APPL.BIN $(ZINQ_BOOT_BIN)
 
-BOOTL.BIN:f boot.bif $(PROJECT)_boot.el
+BOOTL.BIN: boot.bif $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot.bif -w on -o $@
 
 APPL.BIN: app.bif $(PROJECT)_app.elf fsbl_4205.elf bitstream_4205.bit
