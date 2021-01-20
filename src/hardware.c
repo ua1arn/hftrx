@@ -13055,34 +13055,11 @@ sysinit_mmu_initialize(void)
 
 #if CPUSTYLE_XC7Z
 
-XLlFifo xc7z_i2s;
 XGpioPs xc7z_gpio;
-
-#define PERIODSAMPLES 128
-static u32 buf[PERIODSAMPLES];
-
-void xc7z_fifo_i2s_handler(void)
-{
-	XLlFifo_iWrite_Aligned(&xc7z_i2s, buf, PERIODSAMPLES);
-	XLlFifo_iTxSetLen(& xc7z_i2s, 4 * PERIODSAMPLES);
-	XLlFifo_IntClear(&xc7z_i2s, XLLF_INT_TFPE_MASK);
-}
 
 void xc7z_hardware_initialize(void)
 {
-	// FIFO init
-	XLlFifo_Config * pConfig = XLlFfio_LookupConfig(XPAR_AXI_FIFO_MM_S_0_DEVICE_ID);
-	int Status = XLlFifo_CfgInitialize(& xc7z_i2s, pConfig, pConfig->BaseAddress);
-	if(XST_SUCCESS != Status)
-		PRINTF("AXI FIFO codec I2S init error\n");
-	else
-		PRINTF("AXI FIFO codec I2S init success\n");
-
-	Status = XLlFifo_Status(& xc7z_i2s);
-	XLlFifo_IntClear(& xc7z_i2s, 0xffffffff);
-	Status = XLlFifo_Status(& xc7z_i2s);
-	if(Status != 0)
-		PRINTF("AXI FIFO codec I2S reset error\n");
+	int Status;
 
 	// GPIO init
 	XGpioPs_Config * ConfigPtr;
@@ -13091,18 +13068,9 @@ void xc7z_hardware_initialize(void)
 	if (Status != XST_SUCCESS)
 		PRINTF("PS GPIO init error\n");
 
-#if 0								// тестирование вывода звука по прерыванию
-	double amp = 16384;
-	for(int i = 0; i < PERIODSAMPLES; ++ i)
-	{
-		short left = (short) (cos((double) i / PERIODSAMPLES * 2 * M_PI) * amp);
-		short right = (short) (sin((double) i / PERIODSAMPLES * 2 * M_PI) * amp);
-		buf[i] = (left << 16) + (right & 0xFFFF);
-	}
-
-	XLlFifo_IntEnable(& xc7z_i2s, XLLF_INT_TFPE_MASK);
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_LLFIFO_0_VEC_ID, xc7z_fifo_i2s_handler);
-	xc7z_fifo_i2s_handler();		// пнуть для запуска прерываний
+#if 0								// тестирование вывода звука по AXI DMA
+	xc7z_dma_init();
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXIDMA_0_VEC_ID, xc7z_dma_intHandler);
 #endif
 }
 

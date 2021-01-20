@@ -906,11 +906,10 @@ void tcp_tmr(void);
 void usb_polling(void);
 
 #if CPUSTYLE_XC7Z
-#include <src/zynq/xllfifo.h>
 #include <src/zynq/xgpiops.h>
+#include "dma_test.h"
 
 extern XGpioPs xc7z_gpio;
-extern XLlFifo xc7z_i2s;
 
 void xc7z_hardware_initialize(void);
 #endif /* CPUSTYLE_XC7Z */

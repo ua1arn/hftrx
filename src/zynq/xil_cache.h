@@ -32,7 +32,7 @@
 #ifndef XIL_CACHE_H
 #define XIL_CACHE_H
 
-#include <src/zynq/xil_types.h>
+#include "xil_types.h"
 
 #ifdef __cplusplus
 extern "C" {
