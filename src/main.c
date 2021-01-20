@@ -3969,7 +3969,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	#endif
 
 	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
+		uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
 		#if WITHSWRCALI
 			uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
 		#else /* WITHSWRCALI */
@@ -4273,8 +4273,9 @@ typedef struct tunerstate
 {
 	uint8_t tunercap, tunerind, tunertype;
 	uint8_t swr;	// values 0..190: SWR = 1..20
+	adcvalholder_t f, r;
 } tus_t;
-#define TUS_SWRMAX (SWRMIN * 20)
+#define TUS_SWRMAX (SWRMIN * 3)			// 4.0
 #define TUS_SWR1p1 (SWRMIN * 11 / 10)	// SWR=1.1
 
 static void board_set_tuner_group(void)
@@ -4324,18 +4325,16 @@ static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale, adcvalholder_t * pr, 
 	else if (f <= r)
 		return fs;		// SWR is infinite
 
-	const uint_fast16_t swr10 = (f + r) * SWRMIN / (f - r) - SWRMIN;
+	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * SWRMIN / (f - r) - SWRMIN;
 	return swr10 > fs ? fs : swr10;
 }
 
-static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
+static void printtunerstate(const char * title, uint_fast8_t swr, adcvalholder_t r, adcvalholder_t f)
 {
-	adcvalholder_t r;
-	adcvalholder_t f;
-	uint_fast8_t swr = tuner_get_swr0(fullscale, & r, & f);
 
 #if SHORTSET8 || SHORTSET7
-	PRINTF("tuner_get_swr: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u\n",
+	PRINTF("%s: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u\n",
+		title,
 		(unsigned) logtable_ind [tunerind], (unsigned) tunerind,
 		(unsigned) logtable_cap [tunercap], (unsigned) tunercap,
 		(unsigned) tunertype,
@@ -4343,13 +4342,25 @@ static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
 		(unsigned) r,
 		(unsigned) (swr + SWRMIN));
 #else /* SHORTSET8 || SHORTSET7 */
-	PRINTF("tuner_get_swr: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u\n",
+	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u\n",
+		title,
 		(unsigned) tunerind, (unsigned) tunercap, (unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
 		(unsigned) (swr + SWRMIN));
 #endif /* SHORTSET8 || SHORTSET7 */
 
+}
+
+static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+{
+	adcvalholder_t r;
+	adcvalholder_t f;
+	const uint_fast8_t swr = tuner_get_swr0(fullscale, & r, & f);
+
+	* pr = r;
+	* pf = f;
+	printtunerstate("tuner_get_swr", swr, r, f);
 	return swr;
 }
 
@@ -4390,13 +4401,17 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
 			// Измерений ещё небыло
 			tus->swr = swr;
 			tus->tunerind = tunerind;
+			tus->r = r;
+			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
 		}
@@ -4425,14 +4440,17 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 		if (tuneabort())
 			return 1;
 		updateboard_tuner();
-		tuner_waitadc();
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
 			// Измерений ещё небыло
 			tus->swr = swr;
 			tus->tunercap = tunercap;
+			tus->r = r;
+			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
 		}
@@ -4461,7 +4479,7 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
-/* отсюда не возвращаемся пока нне настроится тюнер */
+/* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {	
 	const uint_fast8_t tx = 1;
@@ -4508,6 +4526,7 @@ static void auto_tune(void)
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
+	printtunerstate("Selected", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	updateboard_tuner();
 	//PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
