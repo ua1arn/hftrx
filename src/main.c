@@ -4297,7 +4297,7 @@ static void board_set_tuner_group(void)
 // выдача параметров на тюнер
 static void updateboard_tuner(void)
 {
-	PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
+	//PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	board_set_tuner_group();
 	board_update();		/* вывести забуферированные изменения в регистры */
 }
@@ -4335,7 +4335,7 @@ static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
 	uint_fast8_t swr = tuner_get_swr0(fullscale, & r, & f);
 
 #if SHORTSET8 || SHORTSET7
-	PRINTF("tuner_get_swr: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u\n",
+	PRINTF("tuner_get_swr: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u\n",
 		(unsigned) logtable_ind [tunerind], (unsigned) tunerind,
 		(unsigned) logtable_cap [tunercap], (unsigned) tunercap,
 		(unsigned) tunertype,
@@ -4343,7 +4343,7 @@ static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
 		(unsigned) r,
 		(unsigned) (swr + SWRMIN));
 #else /* SHORTSET8 || SHORTSET7 */
-	PRINTF("tuner_get_swr: L=%u,C=%u,ty=%u,fw=%u,ref=%u\n",
+	PRINTF("tuner_get_swr: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u\n",
 		(unsigned) tunerind, (unsigned) tunercap, (unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
