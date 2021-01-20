@@ -4310,11 +4310,14 @@ static void tuner_waitadc(void)
 		local_delay_ms(5);
 }
 
-static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale)
+static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrmeter_unfiltered(& r, swrcalibr);
 	const uint_fast8_t fs = fullscale - SWRMIN;
+
+	* pr = r;
+	* pf = f;
 
 	if (f < minforward)
 		return 0;	// SWR=1
@@ -4322,13 +4325,31 @@ static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale)
 		return fs;		// SWR is infinite
 
 	const uint_fast16_t swr10 = (f + r) * SWRMIN / (f - r) - SWRMIN;
-	return swr10 > fs ? swr10 : swr10;
+	return swr10 > fs ? fs : swr10;
 }
 
 static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
 {
-	uint_fast8_t swr = tuner_get_swr0(fullscale);
-	PRINTF("tuner_get_swr: %u\n", swr);
+	adcvalholder_t r;
+	adcvalholder_t f;
+	uint_fast8_t swr = tuner_get_swr0(fullscale, & r, & f);
+
+#if SHORTSET8 || SHORTSET7
+	PRINTF("tuner_get_swr: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u\n",
+		(unsigned) logtable_ind [tunerind], (unsigned) tunerind,
+		(unsigned) logtable_cap [tunercap], (unsigned) tunercap,
+		(unsigned) tunertype,
+		(unsigned) f,
+		(unsigned) r,
+		(unsigned) (swr + SWRMIN));
+#else /* SHORTSET8 || SHORTSET7 */
+	PRINTF("tuner_get_swr: L=%u,C=%u,ty=%u,fw=%u,ref=%u\n",
+		(unsigned) tunerind, (unsigned) tunercap, (unsigned) tunertype,
+		(unsigned) f,
+		(unsigned) r,
+		(unsigned) (swr + SWRMIN));
+#endif /* SHORTSET8 || SHORTSET7 */
+
 	return swr;
 }
 
