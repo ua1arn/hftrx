@@ -1829,18 +1829,18 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		}
 	}
 
-//	static uint_fast32_t gtimloadvalue;
-//	void
-//	SecurePhysicalTimer_IRQHandler(void)
-//	{
-//		//IRQ_ClearPending (SecurePhysicalTimer_IRQn);
-//		PL1_SetLoadValue(gtimloadvalue);
-//
-//		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-//		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-//	}
+	static uint_fast32_t gtimloadvalue;
 
-#if CPUSTYLE_STM32MP1
+	void
+	SecurePhysicalTimer_IRQHandler(void)
+	{
+		//IRQ_ClearPending (SecurePhysicalTimer_IRQn);
+		PL1_SetLoadValue(gtimloadvalue);
+
+		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+	}
+
 	void EXTI0_IRQHandler(void)
 	{
 		const uint_fast32_t mask = EXTI_IMR1_IM0;
@@ -2000,8 +2000,6 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		EXTI->RPR1 = prr;		// reset all rising requests
 		stm32fxxx_pinirq(prf | prr);
 	}
-
-#endif /* CPUSTYLE_STM32MP1 */
 
 #elif CPUSTYLE_STM32F
 
@@ -2629,10 +2627,10 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	TIM5->CR1 = TIM_CR1_CEN | TIM_CR1_ARPE; /* разрешить перезагрузку и включить таймер = перенесено в установку скорости - если счётчик успевал превысить значение ARR - считал до конца */
 
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
-//
-//	const uint_fast32_t gtimfreq = HSIFREQ;
-//
-//	PL1_SetCounterFrequency(gtimfreq);
+
+	const uint_fast32_t gtimfreq = HSIFREQ;
+
+	PL1_SetCounterFrequency(gtimfreq);
 //
 //	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
 //	// Private timer use
