@@ -31,6 +31,15 @@ static unsigned long ulmax(
 	return a > b ? a : b;
 }
 
+uint_fast32_t
+calcdivround2(
+	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
+	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
+	)
+{
+	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
+}
+
 // ATMega32 timers:
 // 8 bit timer0 - system ticks
 // 16 bit timer1 - прерывания с периодом 1/ELKEY_DISCRETE от длительности точки
@@ -72,16 +81,6 @@ static unsigned long ulmax(
 // R7S721xxxx timers
 // OSTM1: 1/ELKEY_DISCRETE dot length timer 
 // OSTM0: system ticks
-
-uint_fast32_t 
-NOINLINEAT
-calcdivround2(
-	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
-	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
-	)
-{
-	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
-}
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
@@ -2628,20 +2627,20 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
 
+	// Prepare funcionality: use CNTP
 	const uint_fast32_t gtimfreq = HSIFREQ;
 
-	PL1_SetCounterFrequency(gtimfreq);
-//
-//	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
-//	// Private timer use
-//	// Disable Private Timer and set load value
-//	// Enable timer control
-//	PL1_SetControl(PL1_GetControl() & ~ 0x01);
-//	PL1_SetLoadValue(gtimloadvalue);
-//	// Enable timer control
-//	PL1_SetControl(PL1_GetControl() | 0x01);
-//
-//	arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
+	PL1_SetCounterFrequency(gtimfreq);	// CNTFRQ
+
+	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
+	// Private timer use
+	// Disable Private Timer and set load value
+	PL1_SetControl(PL1_GetControl() & ~ 0x01);	// CNTP_CTL
+	PL1_SetLoadValue(gtimloadvalue);	// CNTP_TVAL
+	// Enable timer control
+	PL1_SetControl(PL1_GetControl() | 0x01);
+
+	//arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
 
 #elif CPUSTYLE_XC7Z
 
