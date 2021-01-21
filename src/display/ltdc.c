@@ -1538,9 +1538,9 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames)
 
 	{
 		/* SYSCFG clock enable */
-		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
 		(void) RCC->MP_APB3ENSETR;
-		RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
 		(void) RCC->MP_APB3LPENSETR;
 		/*
 		 * Interconnect update : select master using the port 1.

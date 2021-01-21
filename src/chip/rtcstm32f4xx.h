@@ -430,9 +430,9 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	PRINTF(PSTR("rtc_stm32f4xx_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;  // Включить тактирование
+	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_RTCAPBEN;  // Включить тактирование
 	(void) RCC->MP_APB5ENSETR;
-	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+	RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
 	(void) RCC->MP_APB5LPENSETR;
 
 #elif defined(RCC_APB1ENR_RTCEN)

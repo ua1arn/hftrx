@@ -775,9 +775,9 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			)
 	{
 		// CPU1 = MPU and CPU2 = MCU
-		RCC->MP_APB3ENSETR |= RCC_MC_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
+		RCC->MP_APB3ENSETR |= RCC_MP_APB3ENSETR_SYSCFGEN;     // включить тактирование альтернативных функций
 		(void) RCC->MP_APB3ENSETR;
-		RCC->MP_APB3LPENSETR |= RCC_MC_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
+		RCC->MP_APB3LPENSETR |= RCC_MP_APB3LPENSETR_SYSCFGLPEN;     // включить тактирование альтернативных функций
 		(void) RCC->MP_APB3LPENSETR;
 
 		#if 1

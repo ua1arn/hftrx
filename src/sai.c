@@ -705,9 +705,9 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2 */
 	PRINTF(PSTR("hardware_i2s2_slave_tx_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI2LPEN; // Подать тактирование
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN; // Подать тактирование
 	(void) RCC->MP_APB1LPENSETR;
 
 #elif CPUSTYLE_STM32H7XX
@@ -854,9 +854,9 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	PRINTF(PSTR("hardware_i2s3_slave_rx_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI3EN; // Подать тактирование
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI3EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI3LPEN; // Подать тактирование
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI3LPEN; // Подать тактирование
 	(void) RCC->MP_APB1LPENSETR;
 #elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование
@@ -893,9 +893,9 @@ hardware_i2s2_slave_fullduplex_initialize(void)
 	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI2LPEN; // Подать тактирование
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN; // Подать тактирование
 	(void) RCC->MP_APB1LPENSETR;
 
 #elif CPUSTYLE_STM32H7XX
@@ -1641,9 +1641,9 @@ static void hardware_sai1_master_fullduplex_initialize_v3d(void)		/* иници�
 	// Теперь настроим модуль SAI.
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI1EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SAI1LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SAI1LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -1766,9 +1766,9 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 	// Теперь настроим модуль SAI.
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI1EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SAI1LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SAI1LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -1891,9 +1891,9 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI1EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SAI1LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SAI1LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -2463,9 +2463,9 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI2EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SA21LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SA21LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -2580,7 +2580,7 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициал�
 
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI2EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.

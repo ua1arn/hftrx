@@ -6192,7 +6192,7 @@ void hightests(void)
 #if 0 && CPUSTYLE_STM32MP1
 	{
 
-		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+		RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
 		(void) RCC->MP_APB5ENSETR;
 	//	0x24: STM32MP153Cx
 	//	0x25: STM32MP153Ax
@@ -8711,7 +8711,7 @@ void lowtests(void)
 	{
 		// калибровка программной задержки
 
-		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+		//RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZPCEN;
 		//PRINTF("Hello. STM32MP157\n");
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
 		// LED blinking test

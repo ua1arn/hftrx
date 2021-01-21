@@ -2607,9 +2607,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MP_APB1ENSETR |= RCC_MC_APB1ENSETR_TIM5EN;   // подаем тактирование на TIM3
+	RCC->MP_APB1ENSETR |= RCC_MP_APB1ENSETR_TIM5EN;   // подаем тактирование на TIM3
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR |= RCC_MC_APB1LPENSETR_TIM5LPEN;   // подаем тактирование на TIM3
+	RCC->MP_APB1LPENSETR |= RCC_MP_APB1LPENSETR_TIM5LPEN;   // подаем тактирование на TIM3
 	(void) RCC->MP_APB1LPENSETR;
 
 	TIM5->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
@@ -4228,9 +4228,9 @@ hardware_adc_startonescan(void)
 	void hardware_dcdcfreq_tim17_ch1_initialize(void)
 	{
 		/* TIM17_CH1 */
-		RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_TIM17EN;   //подаем тактирование на TIM17
+		RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_TIM17EN;   //подаем тактирование на TIM17
 		(void) RCC->MP_APB2ENSETR;
-		RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_TIM17LPEN;   //подаем тактирование на TIM17
+		RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_TIM17LPEN;   //подаем тактирование на TIM17
 		(void) RCC->MP_APB2LPENSETR;
 
 		TIM17->CCMR1 =
@@ -5177,9 +5177,9 @@ void hardware_spi_master_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SPI1EN; // подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SPI1EN; // подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SPI1LPEN; // подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SPI1LPEN; // подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
@@ -7214,9 +7214,9 @@ hardware_elkey_timer_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MP_APB1ENSETR |= RCC_MC_APB1ENSETR_TIM3EN;   // подаем тактирование на TIM3
+	RCC->MP_APB1ENSETR |= RCC_MP_APB1ENSETR_TIM3EN;   // подаем тактирование на TIM3
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR |= RCC_MC_APB1LPENSETR_TIM3LPEN;   // подаем тактирование на TIM3
+	RCC->MP_APB1LPENSETR |= RCC_MP_APB1LPENSETR_TIM3LPEN;   // подаем тактирование на TIM3
 	(void) RCC->MP_APB1LPENSETR;
 
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
@@ -10607,9 +10607,9 @@ static void vectors_relocate(void);
 // return 1 if CPU supports 800 MHz clock
 uint_fast8_t stm32mp1_overdrived(void)
 {
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
 	(void) RCC->MP_APB5ENSETR;
-	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_BSECLPEN;
+	RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
 	(void) RCC->MP_APB5LPENSETR;
 
 	const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
@@ -10624,7 +10624,7 @@ static void stm32mp1_pll_initialize(void)
 	// PLL1 DIVN=0x1f. DIVM=0x4, DIVP=0x0
 	// HSI 64MHz/5*32 = 409.6 MHz
 	// HSI 64MHz/5*42 = 537.6 MHz
-	//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+	//RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZPCEN;
 	//(void) RCC->MP_APB5ENSETR;
 	RCC->TZCR &= ~ (RCC_TZCR_MCKPROT);
 	//RCC->TZCR &= ~ (RCC_TZCR_TZEN);
@@ -10639,9 +10639,9 @@ static void stm32mp1_pll_initialize(void)
 	//	4. Set SYSCFG_CMPCR.SW_CTRL = 0
 
 		/* SYSCFG clock enable */
-		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
 		(void) RCC->MP_APB3ENSETR;
-		RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
 		(void) RCC->MP_APB3LPENSETR;
 
 		// CSI ON (The CSI oscillator must be enabled and ready (controlled in RCC) before MPU_EN could be set to 1)
@@ -13907,9 +13907,9 @@ static void stm32_cpu1_start(void)
 	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 		;
 
-	RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_RTCAPBEN;
+	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_RTCAPBEN;
 	(void) RCC->MP_APB5ENSETR;
-	RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
+	RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
 	(void) RCC->MP_APB5LPENSETR;
 
 	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
