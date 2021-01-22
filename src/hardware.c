@@ -10297,7 +10297,14 @@ void PAbort_Handler(void)
 //		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
 //	}
 	for (;;)
-		;
+	{
+#if defined (BOARD_BLINK_SETSTATE)
+		BOARD_BLINK_SETSTATE(1);
+		local_delay_ms(250);
+		BOARD_BLINK_SETSTATE(0);
+		local_delay_ms(250);
+#endif /* defined (BOARD_BLINK_SETSTATE) */
+	}
 }
 
 // Data Abort.
@@ -10355,7 +10362,14 @@ void DAbort_Handler(void)
 //		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
 //	}
 	for (;;)
-		;
+	{
+#if defined (BOARD_BLINK_SETSTATE)
+		BOARD_BLINK_SETSTATE(1);
+		local_delay_ms(1250);
+		BOARD_BLINK_SETSTATE(0);
+		local_delay_ms(1250);
+#endif /* defined (BOARD_BLINK_SETSTATE) */
+	}
 }
 
 void FIQ_Handler(void)
