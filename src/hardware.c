@@ -10356,11 +10356,11 @@ void DAbort_Handler(void)
 	case 0x02: PRINTF(PSTR("debug event.\n")); break;
 	default: PRINTF(PSTR("undefined Status=%02X\n"), Status); break;
 	}
-//	unsigned i;
-//	for (i = 0; i < 8; ++ i)
-//	{
-//		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
-//	}
+	unsigned i;
+	for (i = 0; i < 8; ++ i)
+	{
+		PRINTF("marker [%2d] = %08lX\n", i, (& marker) [i]);
+	}
 	for (;;)
 	{
 #if defined (BOARD_BLINK_SETSTATE)
