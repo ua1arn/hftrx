@@ -308,6 +308,25 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 				) \
 			)
 
+	#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z
+
+		typedef uint_fast32_t COLORMAIN_T;
+		typedef uint32_t PACKEDCOLORMAIN_T;
+
+		#define TFTRGB(red, green, blue) \
+			(  (uint_fast32_t) \
+				(	\
+					(((uint_fast32_t) ((red) & 0xFF)) << 16)  | \
+					(((uint_fast32_t) ((green) & 0xFF)) << 0)  | \
+					(((uint_fast32_t) ((blue) & 0xFF)) << 8)  | \
+					0 \
+				) \
+			)
+
+		// для формирования растра с изображением водопада и спектра
+		#define TFTRGB565 TFTRGB
+
+
 	#elif LCDMODE_MAIN_ARGB888
 
 		//#define LCDMODE_RGB565 1

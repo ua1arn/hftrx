@@ -2226,7 +2226,7 @@ COLORPIP_T getshadedcolor(
 
 	if (dot == COLORPIP_BLACK)
 	{
-		return TFTRGB565(alpha, alpha, alpha); // back gray
+		return TFTRGB(alpha, alpha, alpha); // back gray
 	}
 	else
 	{
@@ -2236,8 +2236,26 @@ COLORPIP_T getshadedcolor(
 		const uint_fast8_t b = ((dot >> 0) & 0x001f) * 8;	// result in 0..255
 
 		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
-		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
+		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
+
+#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z
+
+	if (dot == COLORPIP_BLACK)
+	{
+		return TFTRGB(alpha, alpha, alpha); // back gray
+	}
+	else
+	{
+		// распаковка дисплейного представления
+		const uint_fast8_t r = ((dot >> 16) & 0x00FF) * 1;	// result in 0..255
+		const uint_fast8_t g = ((dot >> 0) & 0x00FF) * 1;	// result in 0..255
+		const uint_fast8_t b = ((dot >> 8) & 0x00FF) * 1;	// result in 0..255
+
+		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
+		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
+	}
+
 
 #elif LCDMODE_MAIN_ARGB888
 
@@ -2253,7 +2271,7 @@ COLORPIP_T getshadedcolor(
 		const uint_fast8_t b = ((dot >> 0) & 0x00FF) * 1;	// result in 0..255
 
 		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
-		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
+		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
 
