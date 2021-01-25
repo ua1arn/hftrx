@@ -25,7 +25,7 @@
 //#define DEFAULTDIALFREQ	12798340L
 //#define DEFAULTDIALFREQ	225000L
 //#define DEFAULTDIALFREQ	14021000L
-//#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собирем bootloader */
+//#define WITHISBOOTLOADER	1	/* соответствующим Build Target компилируем и собираем bootloader */
 
 // Современные конфигурации:
 //#define CTLSTYLE_RAVENDSP_V1	1	// Трансивер Вороненок с 12 кГц IF DSP трактом
