@@ -317,8 +317,8 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 			(  (uint_fast32_t) \
 				(	\
 					(((uint_fast32_t) ((red) & 0xFF)) << 16)  | \
-					(((uint_fast32_t) ((green) & 0xFF)) << 0)  | \
-					(((uint_fast32_t) ((blue) & 0xFF)) << 8)  | \
+					(((uint_fast32_t) ((green) & 0xFF)) << 8)  | \
+					(((uint_fast32_t) ((blue) & 0xFF)) << 0)  | \
 					0 \
 				) \
 			)
