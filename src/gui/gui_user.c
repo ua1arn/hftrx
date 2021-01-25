@@ -2464,6 +2464,7 @@ static void window_audiosettings_process(void)
 				hamradio_set_gmoniflag(! hamradio_get_gmoniflag());
 				update = 1;
 			}
+#if WITHAFCODEC1HAVEPROC
 			else if (bh == btn_mic_eq)
 			{
 				hamradio_set_gmikeequalizer(! hamradio_get_gmikeequalizer());
@@ -2484,6 +2485,7 @@ static void window_audiosettings_process(void)
 				open_window(winMICpr);
 				return;
 			}
+#endif /* WITHAFCODEC1HAVEPROC */
 #if WITHREVERB
 			else if (bh == btn_reverb)
 			{
@@ -2522,11 +2524,29 @@ static void window_audiosettings_process(void)
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
 
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
+#if WITHAFCODEC1HAVEPROC
 		bh->is_locked = hamradio_get_gmikeequalizer() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("MIC EQ|%s"), bh->is_locked ? "ON" : "OFF");
+#else
+		bh->state = DISABLED;
+#endif /* WITHAFCODEC1HAVEPROC */
 
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
+#if WITHAFCODEC1HAVEPROC
 		bh->state = hamradio_get_gmikeequalizer() ? CANCELLED : DISABLED;
+#else
+		bh->state = DISABLED;
+#endif /* WITHAFCODEC1HAVEPROC */
+
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_profiles");				// MIC profiles
+#if ! WITHAFCODEC1HAVEPROC
+		bh->state = DISABLED;
+#endif /* ! WITHAFCODEC1HAVEPROC */
+
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_settings");				// MIC settings
+#if ! WITHAFCODEC1HAVEPROC
+		bh->state = DISABLED;
+#endif /* ! WITHAFCODEC1HAVEPROC */
 	}
 }
 
@@ -2685,6 +2705,7 @@ static void window_ap_reverb_process(void)
 
 static void window_ap_mic_eq_process(void)
 {
+#if WITHAFCODEC1HAVEPROC
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(WINDOW_AP_MIC_EQ);
 
@@ -2836,12 +2857,14 @@ static void window_ap_mic_eq_process(void)
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 	}
+#endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************
 
 static void window_ap_mic_process(void)
 {
+#if WITHAFCODEC1HAVEPROC
 	window_t * win = get_win(WINDOW_AP_MIC_SETT);
 
 	static slider_t * sl_micLevel = NULL, * sl_micClip = NULL, * sl_micAGC = NULL;
@@ -3057,12 +3080,14 @@ static void window_ap_mic_process(void)
 
 		break;
 	}
+#endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************
 
 static void window_ap_mic_prof_process(void)
 {
+#if WITHAFCODEC1HAVEPROC
 	window_t * win = get_win(WINDOW_AP_MIC_PROF);
 
 	if (win->first_call)
@@ -3149,6 +3174,7 @@ static void window_ap_mic_prof_process(void)
 
 		break;
 	}
+#endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************

@@ -174,6 +174,7 @@
  *  U12 PL (J3 4) MIO55		-> ENCODER2 BITB
  *  V15 PL (J5 3) MIO56
  *  V12 PL (J5 4) MIO57	 	-> ENCODER2 button
+ *  W14	PL		  MIO58		-> red led
  *
  *  N18 PL					<- Clock 49,152 MHz
  *
@@ -1014,21 +1015,19 @@
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 #if 0
-	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
-	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
+	#define ZYNQBOARD_BLINK_LED 58 /* LED_R */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
+		XGpioPs_SetDirection(& xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
-			else \
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+			{ \
+				XGpioPs_WritePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
+			} else { \
+				XGpioPs_WritePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 0); \
+			} \
 		} while (0)
 
 #endif

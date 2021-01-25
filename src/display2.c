@@ -5787,7 +5787,7 @@ enum
 		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
 #endif /* WITHAFSPECTRE */
 
-		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
+//		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
 	#if WITHENCODER2
 //		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
 //		{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
@@ -5801,8 +5801,8 @@ enum
 //		{	46, 25,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 //		{	46, 30,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 //		{	46, 35,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
-		//{	46, 40,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		//{	46, 45,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	47, 20,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	43, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 		//{	46, 50,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		
 		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
