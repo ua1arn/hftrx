@@ -12608,7 +12608,7 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t t
 		textstart += pagesize;
 	}
 
-#if CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER
+#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
 	/* R/O, XN for pages table. - 16 MB size. */
 	tlbbase [(uintptr_t) tlbbase / pagesize] = accessbits((uintptr_t) tlbbase, 1, 1);
 #endif /* CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER */
@@ -13079,7 +13079,7 @@ void xc7z_hardware_initialize(void)
 	if (Status != XST_SUCCESS)
 		PRINTF("PS GPIO init error\n");
 
-#if 0								// тестирование вывода звука по AXI DMA
+#if 1								// тестирование вывода звука по AXI DMA
 	xc7z_dma_init();
 	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXIDMA_0_VEC_ID, xc7z_dma_intHandler);
 #endif
