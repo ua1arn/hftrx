@@ -197,7 +197,7 @@ SECTIONS
 	. = __etext2 + __data2_end__ - __data2_start__;
 
 */
-	.bss :
+	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
 		. = ALIGN(32);
@@ -207,7 +207,7 @@ SECTIONS
 		__bss_end__ = .;
 	} > RAM
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		KEEP(*(.noinit*))
@@ -216,7 +216,7 @@ SECTIONS
 		. = ALIGN(64);
 	} > RAM
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
 		__end__ = .;

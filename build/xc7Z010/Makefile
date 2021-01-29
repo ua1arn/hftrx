@@ -181,9 +181,8 @@ all: APP2
 
 bootloader: BOOT2
   
-app_run: $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 2 --detach
+app_run: $(PROJECT)_app.elf fsbl_4205.elf bitstream_4205.bit app_run_4205.tcl
+	xsct.bat app_run_4205.tcl
 
 flash: $(PROJECT)_app.stm32
 	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
