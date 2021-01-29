@@ -78,6 +78,9 @@
 ******************************************************************************/
 
 /***************************** Include Files *********************************/
+#include "hardware.h"
+
+#if CPUSTYLE_XC7Z
 
 #include "xil_cache.h"
 #include "xil_cache_l.h"
@@ -1613,3 +1616,5 @@ void Xil_L2CacheStoreLine(u32 adr)
 	dsb();
 }
 #endif
+
+#endif /* CPUSTYLE_XC7Z */

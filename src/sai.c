@@ -12,7 +12,7 @@
 
 #include "formats.h"	// for debug prints
 #include "gpio.h"
-#include "dma_test.h"
+#include "zynq/dma_test.h"
 
 typedef struct codechw
 {
