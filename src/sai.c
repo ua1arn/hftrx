@@ -12,6 +12,7 @@
 
 #include "formats.h"	// for debug prints
 #include "gpio.h"
+#include "dma_test.h"
 
 typedef struct codechw
 {
@@ -68,7 +69,7 @@ dma_invalidate16rx(uintptr_t addr)
 
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
-static uintptr_t 
+static uintptr_t
 dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
@@ -3568,6 +3569,17 @@ static const codechw_t fpgaspectrumhw_ssif2 =
 
 #elif CPUSTYLE_XC7Z
 
+static const codechw_t audiocodechw_xc7z =
+{
+	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	xc7z_dma_init,
+	hardware_dummy_enable,
+	hardware_dummy_enable,
+	"ZYNQ 7000 audio codec"
+};
+
 #else
 	// other CPUs
 static const codechw_t fpgaspectrumhw_sai2 =
@@ -3733,9 +3745,9 @@ static const codechw_t * const channels [] =
 #elif CPUSTYLE_XC7Z
 	static const codechw_t * const channels [] =
 	{
-		& audiocodechw_dummy,					// Интерфейс к НЧ кодеку
-		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
-		& fpgaspectrumhw_dummy,			// Интерфейс к FPGA - широкополосный канал (WFM)
+		& audiocodechw_xc7z,				// Интерфейс к НЧ кодеку
+		//& fpgaiqhw_dummy,					// Интерфейс к IF кодеку/FPGA
+		//& fpgaspectrumhw_dummy,				// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
 #elif WITHINTEGRATEDDSP

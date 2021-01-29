@@ -13078,11 +13078,6 @@ void xc7z_hardware_initialize(void)
 	Status = XGpioPs_CfgInitialize(& xc7z_gpio, ConfigPtr, ConfigPtr->BaseAddr);
 	if (Status != XST_SUCCESS)
 		PRINTF("PS GPIO init error\n");
-
-#if 1								// тестирование вывода звука по AXI DMA
-	xc7z_dma_init();
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXIDMA_0_VEC_ID, xc7z_dma_intHandler);
-#endif
 }
 
 /* Opcode exit is 0 all the time */

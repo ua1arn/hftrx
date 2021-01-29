@@ -11,50 +11,41 @@
 #include "xil_types.h"
 #include "xstatus.h"
 
-#define DMA_BDUFFERSIZE 4000
-#define PERIODSAMPLES 128
-static u32 buf[PERIODSAMPLES];
+#define REPEATS 		5
+#define PERIODSAMPLES 	128
+#define BUFLEN			(PERIODSAMPLES * REPEATS)
+static u32 buf[BUFLEN];
 
-typedef struct
-{
-	u8 spiChipAddr;
-	int spiFifoWordsize;
-
-	XAxiDma dmaAxiController;
-	XAxiDma_Bd dmaBdBuffer[DMA_BDUFFERSIZE] __attribute__((aligned(XAXIDMA_BD_MINIMUM_ALIGNMENT)));
-	int dmaWritten;
-} test_config;
-test_config pDevice;
+XAxiDma xc7z_axidma;
+XAxiDma_Bd xc7z_axidmaBDspace[REPEATS] __attribute__((aligned(XAXIDMA_BD_MINIMUM_ALIGNMENT)));
 
 void xc7z_dma_init(void)
 {
-	int Status = XAxiDma_CfgInitialize(&pDevice.dmaAxiController, XAxiDma_LookupConfig(XPAR_AXI_DMA_0_DEVICE_ID));
+	int Status = XAxiDma_CfgInitialize(&xc7z_axidma, XAxiDma_LookupConfig(XPAR_AXI_DMA_0_DEVICE_ID));
 	if(XST_SUCCESS != Status)
 	{
-		PRINTF("DMA init fail\n");
+		PRINTF("XAxiDma_CfgInitialize fail %d\n", Status);
 		ASSERT(0);
 	}
 
-	if(!XAxiDma_HasSg(&pDevice.dmaAxiController))
+	if(!XAxiDma_HasSg(&xc7z_axidma))
 	{
-		PRINTF("Device configured as simple mode\n");
+		PRINTF("AxiDma configured as simple mode\n");
 		ASSERT(0);
 	}
 
-	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&pDevice.dmaAxiController);
-
-	pDevice.dmaWritten = FALSE;
+	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&xc7z_axidma);
 
 	// Disable all TX interrupts before TxBD space setup
 	XAxiDma_BdRingIntDisable(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
 
 	// Setup TxBD space
-	u32 BdCount = XAxiDma_BdRingCntCalc(XAXIDMA_BD_MINIMUM_ALIGNMENT,(u32) sizeof(pDevice.dmaBdBuffer));
+	u32 BdCount = XAxiDma_BdRingCntCalc(XAXIDMA_BD_MINIMUM_ALIGNMENT,(u32) sizeof(xc7z_axidmaBDspace));
 
-	Status = XAxiDma_BdRingCreate(TxRingPtr, (UINTPTR)&pDevice.dmaBdBuffer[0], (UINTPTR)&pDevice.dmaBdBuffer[0], XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
+	Status = XAxiDma_BdRingCreate(TxRingPtr, (UINTPTR)&xc7z_axidmaBDspace[0], (UINTPTR)&xc7z_axidmaBDspace[0], XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("DMA init fail\n");
+		PRINTF("XAxiDma_BdRingCreate fail %d\n", Status);
 		ASSERT(0);
 	}
 
@@ -65,7 +56,7 @@ void xc7z_dma_init(void)
 	Status = XAxiDma_BdRingClone(TxRingPtr, &BdTemplate);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("DMA init fail\n");
+		PRINTF("XAxiDma_BdRingClone fail %d\n", Status);
 		ASSERT(0);
 	}
 	// Start the TX channel
@@ -73,24 +64,26 @@ void xc7z_dma_init(void)
 	//Status = XAxiDma_StartBdRingHw(TxRingPtr);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("DMA init fail\n");
+		PRINTF("XAxiDma_BdRingStart fail %d\n", Status);
 		ASSERT(0);
 	}
 	XAxiDma_BdRingIntEnable(TxRingPtr, XAXIDMA_IRQ_IOC_MASK);
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXIDMA_0_VEC_ID, xc7z_dma_intHandler);
 
 	double amp = 16384;
-	for(int i = 0; i < PERIODSAMPLES; ++ i)
+	for(int i = 0; i < BUFLEN; ++ i)
 	{
 		short left = (short) (cos((double) i / PERIODSAMPLES * 2 * M_PI) * amp);
 		short right = (short) (sin((double) i / PERIODSAMPLES * 2 * M_PI) * amp);
 		buf[i] = (left << 16) + (right & 0xFFFF);
 	}
-	xc7z_dma_transmit(buf, PERIODSAMPLES, 100);
+
+	xc7z_dma_transmit(buf, BUFLEN, REPEATS);
 }
 
 void xc7z_dmaFreeProcessedBDs(void)
 {
-	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&pDevice.dmaAxiController);
+	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&xc7z_axidma);
 
 	// Get all processed BDs from hardware
 	XAxiDma_Bd *BdPtr;
@@ -99,14 +92,13 @@ void xc7z_dmaFreeProcessedBDs(void)
 	// Free all processed BDs for future transmission
 	int Status = XAxiDma_BdRingFree(TxRingPtr, BdCount, BdPtr);
 	if (Status != XST_SUCCESS) {
-		PRINTF("Failed to free BDs\n");
-		ASSERT(0);
+		PRINTF("XAxiDma_BdRingFree fail %d\n", Status);
 	}
 }
 
 void xc7z_dma_transmit(u32 *buffer, size_t buffer_len, u32 nRepeats)
 {
-	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&pDevice.dmaAxiController);
+	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&xc7z_axidma);
 
 	// Free the processed BDs from previous run.
 	xc7z_dmaFreeProcessedBDs();
@@ -117,7 +109,7 @@ void xc7z_dma_transmit(u32 *buffer, size_t buffer_len, u32 nRepeats)
 	XAxiDma_Bd *BdPtr = NULL;
 	int Status = XAxiDma_BdRingAlloc(TxRingPtr, nRepeats, &BdPtr);
 	if (Status != XST_SUCCESS) {
-		PRINTF("Failed bd alloc\n");
+		PRINTF("XAxiDma_BdRingAlloc fail %d\n", Status);
 		ASSERT(0);
 	}
 
@@ -126,13 +118,13 @@ void xc7z_dma_transmit(u32 *buffer, size_t buffer_len, u32 nRepeats)
 	{
 		Status = XAxiDma_BdSetBufAddr(BdCurPtr, (UINTPTR)buffer);
 		if (Status != XST_SUCCESS) {
-			PRINTF("Tx set buffer addr failed\n");
+			PRINTF("XAxiDma_BdSetBufAddr fail %d\n", Status);
 			ASSERT(0);
 		}
 
 		Status = XAxiDma_BdSetLength(BdCurPtr, buffer_len*sizeof(u32),	TxRingPtr->MaxTransferLen);
 		if (Status != XST_SUCCESS) {
-			PRINTF("Tx set length failed\n");
+			PRINTF("XAxiDma_BdSetLength fail %d\n", Status);
 			ASSERT(0);
 		}
 
@@ -153,18 +145,19 @@ void xc7z_dma_transmit(u32 *buffer, size_t buffer_len, u32 nRepeats)
 	// Give the BD to hardware
 	Status = XAxiDma_BdRingToHw(TxRingPtr, nRepeats, BdPtr);
 	if (Status != XST_SUCCESS) {
-		PRINTF("Failed to hw\n");
+		PRINTF("XAxiDma_BdRingToHw fail %d\n", Status);
 		ASSERT(0);
 	}
-
-	pDevice.dmaWritten = TRUE;
 }
 
 void xc7z_dma_intHandler(void)
 {
-	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&pDevice.dmaAxiController);
-	XAxiDma_BdRingAckIrq(TxRingPtr, XAXIDMA_IRQ_IOC_MASK);
-	xc7z_dma_transmit(buf, PERIODSAMPLES, 4000);
+	//dbg_putchar('-');
+	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&xc7z_axidma);
+	XAxiDma_BdRingAckIrq(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
+	xc7z_dma_transmit(buf, BUFLEN, REPEATS);
+	//xc7z_dma_transmit((u32 *) allocate_dmabuffer16(), DMABUFFSIZE16, 1);
+	//dbg_putchar('.');
 }
 
 #endif /* CPUSTYLE_XC7Z */
