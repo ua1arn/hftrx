@@ -93,6 +93,7 @@ enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 
 enum {
 	enc2step_default = 1,
+	micprofile_default = UINT8_MAX,
 };
 
 /* Возврат ссылки на окно */
@@ -113,6 +114,9 @@ void load_settings(void)
 
 	if (gui_nvram.enc2step_pos == 255)
 		gui_nvram.enc2step_pos = enc2step_default;
+
+	if (gui_nvram.micprofile == 255)
+		gui_nvram.micprofile = micprofile_default;
 }
 
 void save_settings(void)
@@ -3125,8 +3129,14 @@ static void window_ap_mic_prof_process(void)
 				y = y + bh->h + interval;
 			}
 			uint_fast8_t cell_saved = hamradio_load_mic_profile(i, 0);
-			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|%s"), i + 1, cell_saved ? "saved" : "empty");
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|%s"), i + 1, cell_saved ? "saved" : "clean");
 			bh->payload = cell_saved;
+
+//			if (gui_nvram.micprofile == i && bh->payload)
+//			{
+//				hamradio_load_mic_profile(bh->index, 1);
+//				bh->state = BUTTON_LOCKED;
+//			}
 		}
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -3146,6 +3156,8 @@ static void window_ap_mic_prof_process(void)
 			if (bh->payload)
 			{
 				hamradio_load_mic_profile(profile_id, 1);
+//				gui_nvram.micprofile = profile_id;
+//				save_settings();
 				close_window(DONT_OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 				return;
@@ -3158,13 +3170,13 @@ static void window_ap_mic_prof_process(void)
 			if (bh->payload)
 			{
 				hamradio_clean_mic_profile(profile_id);
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|empty"), profile_id + 1);
+				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|clean"), profile_id + 1);
 				bh->payload = 0;
 			}
 			else
 			{
 				hamradio_save_mic_profile(profile_id);
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|saved"), profile_id + 1);
+				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|saved"), profile_id + 1);
 				bh->payload = 1;
 			}
 		}
@@ -3297,7 +3309,8 @@ static void window_menu_process(void)
 			yn += int_rows;
 		}
 
-		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block, menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index) - 1;
+		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
+				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
 		xn += int_col2;
 		yn = row1_int;
 		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i ++)
@@ -3557,7 +3570,8 @@ static void window_menu_process(void)
 		else if (menu_label_touched)
 			menu [menu_level].selected_str = menu [menu_level].selected_label + menu [menu_level].add_id;
 
-		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block, menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index) - 1;
+		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
+				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
 
 		if (rotate > 0)
 		{

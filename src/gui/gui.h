@@ -38,10 +38,11 @@ typedef struct {
 /* структура для размещения в конфигурационном ОЗУ */
 struct gui_nvram_t {
 	uint8_t enc2step_pos;
+	uint8_t micprofile;
 } ATTRPACKED;
 
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
-uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index);
+uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count);
 void hamradio_get_multilinemenu_block_vals(menu_names_t * vals, uint_fast8_t index, uint_fast8_t cnt);
 const char * hamradio_gui_edit_menu_item(uint_fast8_t index, int_fast8_t rotate);
 void hamradio_clean_memory_cells(uint_fast8_t i);

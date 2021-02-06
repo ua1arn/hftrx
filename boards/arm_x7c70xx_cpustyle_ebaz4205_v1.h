@@ -485,14 +485,12 @@
 			arm_hardware_piod_updown(PTT2_BIT_PTT, 0); \
 		} while (0)
 	// ---
-	// TUNE input - PD11
-	#define TUNE_TARGET_PIN				1//(GPIOD->IDR)
-	#define TUNE_BIT_TUNE				1//	(1U << 11)		// PD11
-	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
+	// TUNE input - MIO 20 - S2
+	#define TUNE_TARGET_PIN_MIO				20
+	#define HARDWARE_GET_TUNE() (0) // (XGpioPs_ReadPin(&xc7z_gpio, TUNE_TARGET_PIN_MIO) != 0)
 	#define TUNE_INITIALIZE() \
 		do { \
-			arm_hardware_piod_inputs(TUNE_BIT_TUNE); \
-			arm_hardware_piod_updown(TUNE_BIT_TUNE, 0); \
+			XGpioPs_SetDirection(& xc7z_gpio, TUNE_TARGET_PIN_MIO, 0);	 \
 		} while (0)
 
 #else /* WITHTX */

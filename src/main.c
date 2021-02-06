@@ -15669,8 +15669,89 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gmikeequalizerparams [4],
 		getequalizerbase, /* складывается с -12 и отображается */
 	},
-
 	#endif /* WITHAFCODEC1HAVEPROC */
+#if WITHAFEQUALIZER
+	{
+		QLABEL2("RX EQ   ", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, geqrx),
+		nvramoffs0,
+		NULL,
+		& geqrx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("RX 0.4k ", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [0]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [0],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("RX 1.5k ", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [1]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [1],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("RX 2.7k ", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [2]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [2],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("TX EQ   ", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, geqtx),
+		nvramoffs0,
+		NULL,
+		& geqtx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("TX 0.4k ", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [0]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [0],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("TX 1.5k ", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [1]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [1],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("TX 2.7k ", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [2]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [2],
+		getafequalizerbase,
+	},
+#endif /* WITHAFEQUALIZER */
 #endif /* WITHTX && WITHIF4DSP */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 //	unsigned ALCNEN = 0;	// ALC noise gate function control bit
@@ -15699,7 +15780,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("ALC EN   "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
+		QLABEL("ALC EN  "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, ALCEN),	/* ALC enabled */
@@ -15767,98 +15848,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
-#if WITHAFEQUALIZER
-	{
-		QLABEL2("", "AF Equalizer"), 0, 0, 0, 0,
-		ITEM_GROUP,
-		0, 0,
-		offsetof(struct nvmap, ggrpafeq),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-	{
-		QLABEL2("", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, geqrx),
-		nvramoffs0,
-		NULL,
-		& geqrx,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [0]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [0],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [1]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [1],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [2]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [2],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, geqtx),
-		nvramoffs0,
-		NULL,
-		& geqtx,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [0]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [0],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [1]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [1],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [2]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [2],
-		getafequalizerbase,
-	},
-#endif /* WITHAFEQUALIZER */
 #if WITHIF4DSP
 #if ! WITHFLATMENU
 	{
@@ -20861,7 +20850,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 	return count;
 }
 
-uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index)
+uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count)
 {
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
@@ -20877,6 +20866,11 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->label);
 			v->index = el;
 			count++;
+		}
+		if (count >= max_count)
+		{
+			PRINTF("Block count %d exceeding the array size %d\n", count, max_count);
+			ASSERT(0);
 		}
 	}
 	return count;
