@@ -14528,7 +14528,21 @@ void board_ehci_initialize(void)
 //		(void) SYSCFG->ICNR;
 	}
 
+    static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024uL * 1024uL];
+    static __attribute__((used, aligned(4096))) uint32_t framesbuff [1024uL * 1024uL];
+
+    unsigned i;
+
+    for (i = 0; i < 1024; ++ i)
+    {
+    	framesbuff [i] = 0;
+    }
+
+	// power cycle for USB dongle
+	TARGET_USBFS_VBUSON_SET(0);
+	local_delay_ms(200);
 	TARGET_USBFS_VBUSON_SET(1);
+	local_delay_ms(200);
 	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
 
 	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
@@ -14540,6 +14554,37 @@ void board_ehci_initialize(void)
 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) USB1_EHCI->HCCAPBASE);
 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) USB1_EHCI->HCSPARAMS);
 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) USB1_EHCI->HCCPARAMS);
+
+	// https://habr.com/ru/post/426421/
+	// Read the Command register
+	// Читаем командный регистр
+	uint_fast32_t cmd = USB1_EHCI->USBCMD;
+	// Write it back, setting bit 2 (the Reset bit)
+	// Записываем его обратно, выставляя бит 2(Reset)
+	// and making sure the two schedule Enable bits are clear.
+	// и проверяем, что 2 очереди выключены
+	USB1_EHCI->USBCMD = (cmd & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+	// A small delay here would be good. You don't want to read
+	// Небольшая задержка здесь будет неплоха, Вы не должны читать
+	// the register before it has a chance to actually set the bit
+	// регистр перед тем, как у него не появится шанса выставить бит
+	(void) USB1_EHCI->USBCMD;
+	// Now wait for the controller to clear the reset bit.
+	// Ждем пока контроллер сбросит бит Reset
+	while ((USB1_EHCI->USBCMD & CMD_HCRESET) != 0)
+		;
+	// Again, a small delay here would be good to allow the
+	// reset to actually become complete.
+	// Опять задержка
+	(void) USB1_EHCI->USBCMD;
+	// wait for the halted bit to become set
+	// Ждем пока бит Halted не будет выставлен
+	while ((USB1_EHCI->USBSTS & STS_HCHALTED) == 0)
+		;
+	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
+	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
+
+
     // Check extended capabilities
     uint_fast32_t eecp = (USB1_EHCI->HCCPARAMS & HCCPARAMS_EECP_MASK) >> HCCPARAMS_EECP_SHIFT;
     if (eecp >= 0x40)
@@ -14561,13 +14606,38 @@ void board_ehci_initialize(void)
 //            }
 //        }
     }
-
-    static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024uL * 1024uL];
-    static __attribute__((used, aligned(4096))) uint32_t framesbuff [1024uL * 1024uL];
-
-    USB1_EHCI->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+	// Disable interrupts
+	// Отключаем прерывания
+	//hc->opRegs->usbIntr = 0;
+    USB1_EHCI->USBINTR = 0;
+	// Setup frame list
+	// Устанавливаем ссылку на фреймлист
+	//hc->opRegs->frameIndex = 0;
+    USB1_EHCI->FRINDEX = 0;
+	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
     USB1_EHCI->PERIODICLISTBASE = (uintptr_t) framesbuff;
+	// копируем адрес асинхронной очереди в регистр
+	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
+    USB1_EHCI->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+	// Устанавливаем сегмент в 0
+	//hc->opRegs->ctrlDsSegment = 0;
     USB1_EHCI->CTRLDSSEGMENT = 0x00000000;
+	// Clear status
+	// Чистим статус
+	//hc->opRegs->usbSts = ~0;
+    USB1_EHCI->USBSTS = ~ 0uL;
+	// Enable controller
+	// Запускаем контроллер, 8 микро-фреймов, включаем
+	// последовательную и асинхронную очередь
+	//hc->opRegs->usbCmd = (8 << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
+    USB1_EHCI->USBCMD = (8uL << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
+	while ((USB1_EHCI->USBSTS & STS_HCHALTED) != 0)
+		;
+
+	// Configure all devices to be managed by the EHCI
+	// Говорим, что завершили
+	//hc->opRegs->configFlag = 1;
+	//WOR(configFlagO, 1);
 
 	PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) USB1_EHCI->USBCMD);
 	PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) USB1_EHCI->USBSTS);
@@ -14578,12 +14648,13 @@ void board_ehci_initialize(void)
 	PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) USB1_EHCI->ASYNCLISTADDR);
 	//PRINTF("board_ehci_initialize: asyncbuff=%08lX\n", (unsigned long) & asyncbuff);
 
-
 //	USBH_EHCI_IRQn
 	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
 	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
 	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
+
+
 
 	PRINTF("board_ehci_initialize done.\n");
 }
