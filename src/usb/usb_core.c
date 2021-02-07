@@ -14502,6 +14502,18 @@ void USBH_EHCI_IRQHandler(void)
 {
 	TP();
 }
+
+
+static void ehci_queue_fill(uint32_t * qh)
+{
+	qh [0] = 0x01;
+}
+
+static void ehci_itd_fill(uint32_t * itd)
+{
+	itd [0] = 0x01;
+}
+
 // USB EHCI controller
 void board_ehci_initialize(void)
 {
@@ -14528,15 +14540,45 @@ void board_ehci_initialize(void)
 //		(void) SYSCFG->ICNR;
 	}
 
-    static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024uL * 1024uL];
-    static __attribute__((used, aligned(4096))) uint32_t framesbuff [1024uL * 1024uL];
+	static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
+
+    static __attribute__((used, aligned(32))) uint32_t itd0 [16];
+    static __attribute__((used, aligned(32))) uint32_t queue0 [16];
+
+    ehci_itd_fill(itd0);
+    ehci_queue_fill(queue0);
 
     unsigned i;
 
-    for (i = 0; i < 1024; ++ i)
+	static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024];
+	for (i = 0; i < ARRAY_SIZE(asyncbuff); ++ i)
     {
-    	framesbuff [i] = 0;
+    	asyncbuff [i] = 0x01;	// 0 - valid, 1 - invalid
     }
+
+	//enum { FLS = 1024, FLS_code = 0 };
+    //enum { FLS = 512, FLS_code = 1 };
+    enum { FLS = 256, FLS_code = 2 };
+	// Periodic frame list
+	static __attribute__((used, aligned(4096))) uint32_t framesbuff [FLS];
+    for (i = 0; i < FLS; ++ i)
+    {
+    	framesbuff [i] = 0x01;	// 0 - valid, 1 - invalid
+    }
+
+    framesbuff [0] =
+    		(uintptr_t) & itd0 |
+			(0uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
+			(0uL << 0);	// 0 - valid, 1 - invalid
+    framesbuff [1] =
+    		(uintptr_t) & queue0 |
+			(1uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
+			(0uL << 0);	// 0 - valid, 1 - invalid
+
+    arm_hardware_flush((uintptr_t) framesbuff, sizeof framesbuff);
+    arm_hardware_flush((uintptr_t) asyncbuff, sizeof asyncbuff);
+    arm_hardware_flush((uintptr_t) itd0, sizeof itd0);
+    arm_hardware_flush((uintptr_t) queue0, sizeof queue0);
 
 	// power cycle for USB dongle
 	TARGET_USBFS_VBUSON_SET(0);
@@ -14558,12 +14600,11 @@ void board_ehci_initialize(void)
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
 	// Читаем командный регистр
-	uint_fast32_t cmd = USB1_EHCI->USBCMD;
 	// Write it back, setting bit 2 (the Reset bit)
 	// Записываем его обратно, выставляя бит 2(Reset)
 	// and making sure the two schedule Enable bits are clear.
 	// и проверяем, что 2 очереди выключены
-	USB1_EHCI->USBCMD = (cmd & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+	USB1_EHCI->USBCMD = (USB1_EHCI->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
 	// A small delay here would be good. You don't want to read
 	// Небольшая задержка здесь будет неплоха, Вы не должны читать
 	// the register before it has a chance to actually set the bit
@@ -14630,8 +14671,18 @@ void board_ehci_initialize(void)
 	// Запускаем контроллер, 8 микро-фреймов, включаем
 	// последовательную и асинхронную очередь
 	//hc->opRegs->usbCmd = (8 << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
-    USB1_EHCI->USBCMD = (8uL << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
-	while ((USB1_EHCI->USBSTS & STS_HCHALTED) != 0)
+    USB1_EHCI->USBCMD =
+    		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
+			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
+			CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
+			//CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
+			//CMD_RS |	// Run/Stop
+			0;
+
+    USB1_EHCI->USBCMD |= CMD_RS;
+	(void) USB1_EHCI->USBCMD;
+
+ 	while ((USB1_EHCI->USBSTS & STS_HCHALTED) != 0)
 		;
 
 	// Configure all devices to be managed by the EHCI
@@ -14642,11 +14693,13 @@ void board_ehci_initialize(void)
 	PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) USB1_EHCI->USBCMD);
 	PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) USB1_EHCI->USBSTS);
 	PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) USB1_EHCI->USBINTR);
-	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
 	PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) USB1_EHCI->CTRLDSSEGMENT);
 	PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) USB1_EHCI->PERIODICLISTBASE);
 	PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) USB1_EHCI->ASYNCLISTADDR);
 	//PRINTF("board_ehci_initialize: asyncbuff=%08lX\n", (unsigned long) & asyncbuff);
+	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
+	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
+	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
 
 //	USBH_EHCI_IRQn
 	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
