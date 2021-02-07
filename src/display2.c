@@ -366,6 +366,7 @@ static void display2_legend_tx(
 
 // waterfall/spectrum parameters
 static uint_fast8_t glob_view_style;		/* стиль отображения спектра и панорамы */
+static uint_fast8_t gview3dss_mark;			/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 
 static int_fast16_t glob_topdb = 30;		/* верхний предел FFT */
 static int_fast16_t glob_bottomdb = 130;	/* нижний предел FFT */
@@ -7707,6 +7708,17 @@ static void display2_spectrum(
 		const uint_fast8_t pathi = 0;	// RX A
 		const uint_fast32_t f0 = hamradio_get_freq_pathi(pathi);	/* frequency at middle of spectrum */
 		const int_fast32_t bw = display_zoomedbw();
+		uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
+		uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
+
+		if (xleft > xright)
+			xleft = 0;
+		if (xright == xleft)
+			xright = xleft + 1;
+		if (xright >= ALLDX)
+			xright = ALLDX - 1;
+
+		const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
 
 #if WITHVIEW_3DSS
 		if (glob_view_style == VIEW_3DSS)
@@ -7736,7 +7748,10 @@ static void display2_spectrum(
 
 						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
-							colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [j]);
+							if (x > xleft && x < xrightv && gview3dss_mark)
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, COLORPIP_SPECTRUMFG);
+							else
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [j]);
 						}
 
 						if (x)
@@ -7802,18 +7817,6 @@ static void display2_spectrum(
 		else
 #endif /* WITHVIEW_3DSS */
 		{
-			uint_fast16_t xleft = deltafreq2x(f0, hamradio_getleft_bp(pathi), bw, ALLDX);	// левый край шторки
-			uint_fast16_t xright = deltafreq2x(f0, hamradio_getright_bp(pathi), bw, ALLDX);	// правый край шторки
-
-			if (xleft > xright)
-				xleft = 0;
-			if (xright == xleft)
-				xright = xleft + 1;
-			if (xright >= ALLDX)
-				xright = ALLDX - 1;
-
-			const uint_fast16_t xrightv = xright + 1;	// рисуем от xleft до xright включительно
-
 			/* рисуем спектр ломанной линией */
 			/* стираем старый фон, рисуем прямоугольник полосы пропускания */
 			if (ALLDX / (xrightv - xleft) > 8)
@@ -8971,6 +8974,13 @@ board_set_view_style(uint_fast8_t v)
 #endif /* WITHVIEW_3DSS */
 	}
 #endif /* WITHINTEGRATEDDSP */
+}
+
+/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+void
+board_set_view3dss_mark(int_fast16_t v)
+{
+	gview3dss_mark = v;
 }
 
 /* верхний предел FFT - spectrum */

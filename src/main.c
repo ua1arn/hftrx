@@ -2771,6 +2771,7 @@ struct nvmap
 	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gviewstyle;		/* стиль отображения спектра и панорамы */
+	uint8_t gview3dss_mark;	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 #endif /* WITHSPECTRUMWF */
@@ -3460,10 +3461,15 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
 #endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
-#if defined (WITHDEFAULTVIEW)
+#if defined (WITHDEFAULTVIEW)		/* стиль отображения спектра и панорамы */
 	static uint_fast8_t gviewstyle = WITHDEFAULTVIEW;
 #else
-	static uint_fast8_t gviewstyle = VIEW_LINE;		/* стиль отображения спектра и панорамы */
+	static uint_fast8_t gviewstyle = VIEW_LINE;
+#endif
+#if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
+#else
+	static uint_fast8_t gview3dss_mark = 0;
 #endif
 	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
@@ -9215,6 +9221,7 @@ updateboard(
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
+			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
@@ -13906,6 +13913,16 @@ static const FLASHMEM struct menudef menutable [] =
 		nvramoffs0,
 		NULL,
 		& gviewstyle,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
+		ITEM_VALUE,
+		0, 1,				/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+		offsetof(struct nvmap, gview3dss_mark),
+		nvramoffs0,
+		NULL,
+		& gview3dss_mark,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
