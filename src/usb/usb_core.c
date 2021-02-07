@@ -14504,9 +14504,9 @@ void USBH_EHCI_IRQHandler(void)
 }
 
 
-static void ehci_queue_fill(uint32_t * qh)
+static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
 {
-	qh [0] = 0x01;
+	qh [0] = (qnext & 0xFFFFFFC0) | (1uL << 1);
 }
 
 static void ehci_itd_fill(uint32_t * itd)
@@ -14546,7 +14546,7 @@ void board_ehci_initialize(void)
     static __attribute__((used, aligned(32))) uint32_t queue0 [16];
 
     ehci_itd_fill(itd0);
-    ehci_queue_fill(queue0);
+    ehci_queue_fill(queue0, (uintptr_t) queue0);
 
     unsigned i;
 
