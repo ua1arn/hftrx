@@ -297,7 +297,7 @@
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	#define CODEC_TYPE_TLV320AIC23B_USE_32BIT	1
@@ -323,7 +323,7 @@
 	//#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define CODEC1_FRAMEBITS 32		// Полный размер фрейма для двух каналов - канал кодека
+	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
@@ -374,7 +374,11 @@
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
-		#define WITHDISPLAYSWR_FPS 15
+		#define WITHVIEW_3DSS		1
+		#define WITHDEFAULTVIEW		VIEW_3DSS
+		#define WITHVIEW_3DSS_MARK	1
+		#define WITHDISPLAY_FPS		25
+		#define WITHDISPLAYSWR_FPS	25
 		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		//#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 1

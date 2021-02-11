@@ -122,7 +122,7 @@ void xc7z_dma_transmit(u32 *buffer, size_t buffer_len, u32 nRepeats)
 			ASSERT(0);
 		}
 
-		Status = XAxiDma_BdSetLength(BdCurPtr, buffer_len*sizeof(u32),	TxRingPtr->MaxTransferLen);
+		Status = XAxiDma_BdSetLength(BdCurPtr, buffer_len*sizeof(aubufv_t),	TxRingPtr->MaxTransferLen);
 		if (Status != XST_SUCCESS) {
 			PRINTF("XAxiDma_BdSetLength fail %d\n", Status);
 			ASSERT(0);
@@ -150,13 +150,36 @@ void xc7z_dma_transmit(u32 *buffer, size_t buffer_len, u32 nRepeats)
 	}
 }
 
+uintptr_t dma_invalidate32rx(uintptr_t addr);
+
 void xc7z_dma_intHandler(void)
 {
+	uintptr_t a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
+	processing_dmabuffer32rx(a1);
+	release_dmabuffer32rx(a1);
+
+	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
+	processing_dmabuffer32rx(a1);
+	release_dmabuffer32rx(a1);
+
+	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
+	processing_dmabuffer32rx(a1);
+	release_dmabuffer32rx(a1);
+
+	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
+	processing_dmabuffer32rx(a1);
+	release_dmabuffer32rx(a1);
+
+
+
+
 	//dbg_putchar('-');
 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(&xc7z_axidma);
 	XAxiDma_BdRingAckIrq(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
-	xc7z_dma_transmit(buf, BUFLEN, REPEATS);
-	//xc7z_dma_transmit((u32 *) allocate_dmabuffer16(), DMABUFFSIZE16, 1);
+	uintptr_t addr = getfilled_dmabuffer16phones();
+	//xc7z_dma_transmit(buf, BUFLEN, REPEATS);
+	xc7z_dma_transmit((u32 *) addr, DMABUFFSIZE16, 1);
+	release_dmabuffer16(addr);
 	//dbg_putchar('.');
 }
 

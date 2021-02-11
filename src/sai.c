@@ -89,7 +89,7 @@ dma_invalidate192rts(uintptr_t addr)
 }
 
 // Сейчас в эту память будем читать по DMA
-static uintptr_t 
+uintptr_t
 dma_invalidate32rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
