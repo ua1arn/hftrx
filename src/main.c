@@ -13309,7 +13309,7 @@ static void dpc_1stimer(void * arg)
 		  autoip_tmr();
 	#endif /* LWIP_AUTOIP */
 #endif /* WITHLWIP */
-#if 1 && CPUSTYLE_XC7Z
+#if 0 && CPUSTYLE_XC7Z
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif /* CPUSTYLE_XC7Z */
 }
