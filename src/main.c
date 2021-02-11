@@ -800,6 +800,8 @@ static const FLASHMEM struct {
 
 #endif /* WITHPOWERLPHP */
 
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+
 static const FLASHMEM struct {
 	uint_fast8_t code;
 	char label [6];
@@ -811,6 +813,7 @@ static const FLASHMEM struct {
 #endif /* WITHLMSAUTONOTCH */
 	{ BOARD_NOTCH_MANUAL, 	"NOTCH" },
 };
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
 #if WITHUSEDUALWATCH
 

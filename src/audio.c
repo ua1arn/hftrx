@@ -143,9 +143,11 @@ static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
 static uint_fast16_t	glob_mik1level = WITHMIKEINGAINMAX;
 static uint_fast8_t 	glob_txaudio = BOARD_TXAUDIO_MIKE;	// при SSB/AM/FM передача с тестовых источников
 
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
 static uint_fast16_t 	glob_notch_freq = 1000;	/* частота NOTCH фильтра */
 static uint_fast16_t	glob_notch_width = 500;	/* полоса NOTCH фильтра */
 static uint_fast8_t 	glob_notch_mode = BOARD_NOTCH_OFF;		/* включение NOTCH фильтра */
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
 static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
 static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -6154,6 +6156,8 @@ board_set_swaprts(uint_fast8_t v)	/* если используется конв�
 	}
 }
 
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+
 // Работает при BOARD_NOTCH_MANUAL
 void 
 board_set_notch_freq(uint_fast16_t n)	/* частота NOTCH фильтра */
@@ -6188,6 +6192,8 @@ board_set_notch_mode(uint_fast8_t n)	/* включение NOTCH фильтра 
 		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
+
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
 void 
 board_set_sidetonelevel(uint_fast8_t n)	/* Уровень сигнала самоконтроля в процентах - 0%..100% */

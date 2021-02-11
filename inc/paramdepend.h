@@ -1623,7 +1623,7 @@ extern "C" {
 	//#define	BOARD_AGCCODE_1		0x01
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
-	#define WITHNOTCHONOFF		1	/* notch on/off */
+	//#define WITHNOTCHONOFF		1	/* notch on/off */
 
 #elif CTLREGSTYLE_SW2013RDX_UY5UM_WO240
 
