@@ -4717,7 +4717,7 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 	}
 }
 
-#if WITHDSPEXTDDC
+#if WITHDSPEXTDDC && WITHRTS96
 // использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC 
 saverts96(const int32_t * buff)
@@ -4752,7 +4752,7 @@ saverts96(const int32_t * buff)
 	}
 }
 
-#endif /* WITHDSPEXTDDC */
+#endif /* WITHDSPEXTDDC && WITHRTS96 */
 
 // Taken from https://stackoverflow.com/questions/11930594/calculate-atan2-without-std-functions-or-c99
 
@@ -4857,7 +4857,7 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 #endif /* WITHSKIPUSERMODE */
 }
 
-#if WITHDSPEXTDDC
+#if WITHDSPEXTDDC && defined (DMABUF32RXWFM0Q)
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
@@ -5264,8 +5264,9 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 	#endif
 
+#if WITHRTS96
 	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
-
+#endif /* WITHRTS96 */
 	#if WITHLOOPBACKTEST
 
 		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
