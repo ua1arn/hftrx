@@ -405,6 +405,8 @@
 //	#define FORMATFROMLIBRARY 	1
 //	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define WITHVIEW_3DSS		1
+	//#define WITHDEFAULTVIEW		VIEW_3DSS
+	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1

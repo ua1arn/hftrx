@@ -360,7 +360,7 @@
 
 	#define WITHVIEW_3DSS		1
 	#define WITHDEFAULTVIEW		VIEW_3DSS
-	#define WITHVIEW_3DSS_MARK	1
+	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 
 	#define WITHDISPLAY_FPS		25
 	#define WITHDISPLAYSWR_FPS	25
