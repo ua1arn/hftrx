@@ -500,6 +500,7 @@ ua1ceituner_send(void)
 			"%d,"	// SEL_CTUNio,       //0 = конденсатор на входе тюнера 1 = конденсатор на входе тюнера
 			"%d,"	// SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
 			"%d,"	// SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
+			"%d"	// отключение тюнера 0 - тютер используется, 1 - режим BYPAS
 			"*FF\r\n",	// *CS<CR><LF>
 			glob_tx,
 			glob_bandf3,
@@ -508,7 +509,8 @@ ua1ceituner_send(void)
 			glob_antenna,
 			glob_tuner_type,
 			glob_tuner_bypass ? 0 : glob_tuner_C,
-			glob_tuner_bypass ? 0 : glob_tuner_L
+			glob_tuner_bypass ? 0 : glob_tuner_L,
+			glob_tuner_bypass
 		);
 }
 
