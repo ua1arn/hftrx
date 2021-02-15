@@ -385,7 +385,7 @@ static int_fast16_t glob_afspechigh = 3400;	// верхняя частота о�
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
-#if WITHSPECTRUMWF
+#if WITHSPECTRUMWF || WITHAFSPECTRE
 static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT);
 #endif /* WITHSPECTRUMWF */
 
@@ -6815,7 +6815,7 @@ static void display2_legend(
 }
 
 
-#if WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY
+#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
 enum 
 {

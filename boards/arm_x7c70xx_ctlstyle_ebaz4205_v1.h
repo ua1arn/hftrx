@@ -192,8 +192,10 @@
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
-	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
+	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	//#define KEYB_FPANEL20_V0A_RA1AGO	1	/* перевернутый */
+	#define KEYBOARD_SINGLE	1
+
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -371,18 +373,18 @@
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
-	////#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
-		////#define WITHVIEW_3DSS		1
-		#define WITHDEFAULTVIEW		VIEW_3DSS
+		#define WITHVIEW_3DSS		1
+		//#define WITHDEFAULTVIEW		VIEW_3DSS
 		#define WITHVIEW_3DSS_MARK	1
 		#define WITHDISPLAY_FPS		25
 		#define WITHDISPLAYSWR_FPS	25
-		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		//#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 1
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		#if 0
 			#define WITHTOUCHGUI		1
 			//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			64
@@ -559,7 +561,7 @@
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	////#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	////#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z

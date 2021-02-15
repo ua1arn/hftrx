@@ -157,6 +157,7 @@
 
 /* 	Available ports on EBAZ4205 board:
  *
+ *	Top side:
  *  A19	MIO16 (R2608 left)
  *  B18	MIO18 (R2609 left)
  *  A15	MIO26 (X3 6)		-> SCL
@@ -172,11 +173,19 @@
  *  N16	PL (R2608 right)
  *  V13 PL (J3 3) MIO54		-> ENCODER2 BITA
  *  U12 PL (J3 4) MIO55		-> ENCODER2 BITB
- *  V15 PL (J5 3) MIO56
- *  V12 PL (J5 4) MIO57	 	-> ENCODER2 button
+ *  V15 PL (J5 3) MIO56		-> ENCODER2 button
+ *  V12 PL (J5 4) MIO57
  *  W14	PL		  MIO58		-> red led
  *
  *  N18 PL					<- Clock 49,152 MHz
+ *
+ *  Bottom side:
+ *  F12	MIO35 R2539 unsolder 20k resistor and up
+ *  E16 MIO31 R2435 right
+ *  E13 MIO38 R2443 right
+ *  C15 MIO30 R2434 right
+ *  C13 MIO29 R2442 right
+ *  C16 MIO28 R2441 right	-> LCD BL enable (?)
  *
  */
 
@@ -247,10 +256,9 @@
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			XGpioPs_SetDirection(& xc7z_gpio, ENCODER2_BITA, 0); \
-			XGpioPs_SetDirection(& xc7z_gpio, ENCODER2_BITB, 0); \
+			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER2_BITA, 0); \
+			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER2_BITB, 0); \
 		} while (0)
-
 #endif
 
 #if WITHI2SHW
@@ -485,12 +493,16 @@
 			arm_hardware_piod_updown(PTT2_BIT_PTT, 0); \
 		} while (0)
 	// ---
+
 	// TUNE input - MIO 20 - S2
-	#define TUNE_TARGET_PIN_MIO				20
-	#define HARDWARE_GET_TUNE() (0) // (XGpioPs_ReadPin(&xc7z_gpio, TUNE_TARGET_PIN_MIO) != 0)
+	#define TUNE_TARGET_PIN_MIO		20
+	#define TUNE_TARGET_GPIO_BANK	0
+	#define TUNE_TARGET_GPIO_MASK	1
+	#define TUNE_TARGET_GPIO_SHIFT	20
+	#define HARDWARE_GET_TUNE() (((XGpioPs_Read(& xc7z_gpio, TUNE_TARGET_GPIO_BANK) >> TUNE_TARGET_GPIO_SHIFT) & TUNE_TARGET_GPIO_MASK))
 	#define TUNE_INITIALIZE() \
 		do { \
-			XGpioPs_SetDirection(& xc7z_gpio, TUNE_TARGET_PIN_MIO, 0);	 \
+			XGpioPs_SetDirectionPin(& xc7z_gpio, TUNE_TARGET_PIN_MIO, 0);	 \
 		} while (0)
 
 #else /* WITHTX */
@@ -634,24 +646,23 @@
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
-	#define TARGET_ENC2BTN_BIT (1U << 15)	// PE15 - second encoder button with pull-up
-	#define TARGET_POWERBTN_BIT 0//(1U << 8)	// PAxx - ~CPU_POWER_SW signal
+	#define TARGET_ENC2BTN_BIT_MIO 		56
+	#define TARGET_ENC2BTN_GPIO_BANK	2
+	#define TARGET_ENC2BTN_GPIO_MASK	1
+	#define TARGET_ENC2BTN_GPIO_SHIFT	3
 
 #if WITHENCODER2
-	// P7_8
-	#define TARGET_ENC2BTN_GET	(((GPIOE->IDR) & TARGET_ENC2BTN_BIT) == 0)
+	#define TARGET_ENC2BTN_GET (((XGpioPs_Read(& xc7z_gpio, TARGET_ENC2BTN_GPIO_BANK) >> TARGET_ENC2BTN_GPIO_SHIFT) & TARGET_ENC2BTN_GPIO_MASK) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
 	// P5_3 - ~CPU_POWER_SW signal
+#define TARGET_POWERBTN_BIT 0//(1U << 8)	// PAxx - ~CPU_POWER_SW signal
 	#define TARGET_POWERBTN_GET	0//(((GPIOx->IDR) & TARGET_POWERBTN_BIT) == 0)
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); \
-			arm_hardware_pioe_updown(TARGET_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
-			arm_hardware_pioa_inputs(TARGET_POWERBTN_BIT); \
-			arm_hardware_pioa_updown(TARGET_POWERBTN_BIT, 0);	/* PAxx: pull-up second encoder button */ \
+			XGpioPs_SetDirectionPin(& xc7z_gpio, TARGET_ENC2BTN_BIT_MIO, 0); \
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -843,25 +854,17 @@
 	#endif
 
 #if 0
-	/* BL0: PA14. BL1: PA15 */
+	#define TARGET_BL_ENABLE_MIO	28
+
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
-		arm_hardware_pioa_opendrain(BLpins, 0); \
+		XGpioPs_SetDirectionPin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, 1); \
+		XGpioPs_SetOutputEnablePin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, 1); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
-	/* BL0: PA14. BL1: PA15 */
+
 	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t Vlevel = (level) & 0x03; \
-		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
-		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t BLstate = (~ Vlevel) << 14; \
-		GPIOA->BSRR = \
-			BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
-			BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
-			0; \
-		__DSB(); \
+		XGpioPs_WritePin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, en); \
 	} while (0)
 #endif
 
@@ -1016,7 +1019,7 @@
 	#define ZYNQBOARD_BLINK_LED 58 /* LED_R */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		XGpioPs_SetDirection(& xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
+		XGpioPs_SetDirectionPin(& xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
 		XGpioPs_SetOutputEnablePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
