@@ -3574,7 +3574,7 @@ static const codechw_t audiocodechw_xc7z =
 	hardware_dummy_initialize,	// added...
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
-	xc7z_dma_init,
+	xc7z_dma_init_af_tx,
 	hardware_dummy_enable,
 	hardware_dummy_enable,
 	"ZYNQ 7000 audio codec"
