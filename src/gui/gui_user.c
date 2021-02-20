@@ -893,6 +893,11 @@ static void window_options_process(void)
 			}
 		}
 
+#if ! (WITHSPECTRUMWF && WITHMENU)
+		button_t * btn_Display = find_gui_element(TYPE_BUTTON, win, "btn_Display");
+		btn_Display->state = DISABLED;
+#endif
+
 		hamradio_disable_keyboard_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -940,11 +945,13 @@ static void window_options_process(void)
 				open_window(win);
 				hamradio_enable_encoder2_redirect();
 			}
+#if WITHSPECTRUMWF && WITHMENU
 			else if (bh == btn_Display)
 			{
 				window_t * win = get_win(WINDOW_DISPLAY);
 				open_window(win);
 			}
+#endif /* WITHSPECTRUMWF && WITHMENU */
 		}
 		break;
 
@@ -958,6 +965,7 @@ static void window_options_process(void)
 
 static void window_display_process(void)
 {
+#if WITHSPECTRUMWF && WITHMENU
 	window_t * win = get_win(WINDOW_DISPLAY);
 	static display_var_t display_t;
 
@@ -1207,6 +1215,7 @@ static void window_display_process(void)
 
 		display_t.change = 0;
 	}
+#endif /* WITHSPECTRUMWF && WITHMENU */
 }
 
 // *********************************************************************************************************************************************************************
