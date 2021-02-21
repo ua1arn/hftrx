@@ -2239,7 +2239,7 @@ COLORPIP_T getshadedcolor(
 		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
-#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z
+#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
 
 	if (dot == COLORPIP_BLACK)
 	{
