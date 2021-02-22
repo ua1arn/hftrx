@@ -15,6 +15,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
 #if defined (WITHUSBUACIN) && defined (WITHUSBUACOUT)
 	#define WITHUSBUAC 1
 #elif defined (WITHUSBUACIN)
