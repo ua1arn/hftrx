@@ -15,11 +15,10 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
 #if defined (WITHUSBUACIN) && defined (WITHUSBUACOUT)
-	#edfine WITHUSBUAC 1
+	#define WITHUSBUAC 1
 #elif defined (WITHUSBUACIN)
-	#edfine WITHUSBUAC 1
+	#define WITHUSBUAC 1
 #elif defined (WITHUSBUACOUT)
 	#define WITHUSBUAC 1
 #elif WITHUSBUAC

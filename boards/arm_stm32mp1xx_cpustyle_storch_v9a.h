@@ -133,9 +133,12 @@
 
 	#if WITHINTEGRATEDDSP
 
-		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 		#if WITHRTS96 || WITHRTS192
+			#define WITHUSBUACIN	1
 			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+		#else /* WITHRTS96 || WITHRTS192 */
+			#define WITHUSBUACIN
 		#endif /* WITHRTS96 || WITHRTS192 */
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 	#endif /* WITHINTEGRATEDDSP */
