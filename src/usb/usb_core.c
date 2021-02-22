@@ -43,10 +43,12 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 		return 0;
 	case 0x00: return 0;
 	case 0x80: return 0;
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	case USBD_EP_AUDIO_OUT:	return HARDWARE_USBD_PIPE_ISOC_OUT;
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
 	case USBD_EP_AUDIO_IN:	return HARDWARE_USBD_PIPE_ISOC_IN;
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 #if WITHUSBCDCACM
 
 #if WITHUSBCDCACMINTSHARING
@@ -102,10 +104,12 @@ usbd_pipe2epaddr(uint_fast8_t pipe)
 	default:
 		ASSERT(0);
 		return 0;
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	case HARDWARE_USBD_PIPE_ISOC_OUT: return USBD_EP_AUDIO_OUT;
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
 	case HARDWARE_USBD_PIPE_ISOC_IN: return USBD_EP_AUDIO_IN;
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 #if WITHUSBCDCACM
 
 #if WITHUSBCDCACMINTSHARING
@@ -1377,7 +1381,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 #endif /* WITHUSBCDCACM */
 
-#if WITHUSBUAC
+#if WITHUSBUACIN
 	if (1)
 	{
 		// Данные AUDIO из трансивера в компьютер
@@ -1410,9 +1414,9 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 	}
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	if (1)
 	{
 		// Данные AUDIO из компьютера в трансивер
@@ -1443,7 +1447,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 	}
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACOUT */
 
 #if WITHUSBCDCEEM
 	if (1)
