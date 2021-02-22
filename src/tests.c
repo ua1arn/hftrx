@@ -5049,12 +5049,12 @@ void looptests(void)
 #if WITHDTMFPROCESSING
 	dtmftest();
 #endif
-#if 0 && WITHINTEGRATEDDSP
+#if 0 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
 	}
 #endif
-#if 0 && WITHINTEGRATEDDSP
+#if 0 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		// See buffers.c - WITHBUFFERSDEBUG
 		buffers_diagnostics();
