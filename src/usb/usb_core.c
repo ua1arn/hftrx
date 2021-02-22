@@ -8511,7 +8511,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
   * @param  hpcd: PCD handle
   * @retval HAL status
   */
-// F4, F7, H7...
+// F4, F7, H7, MP1...
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	__DMB();
@@ -8537,7 +8537,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	    /* Handle RxQLevel Interrupt */
 	    if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_RXFLVL))
 	    {
-	      USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
+	      //USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
 	      const uint_fast32_t grxstsp = USBx->GRXSTSP;
 	      USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [(grxstsp & USB_OTG_GRXSTSP_EPNUM_Msk) >> USB_OTG_GRXSTSP_EPNUM_Pos];
 
@@ -8564,7 +8564,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	        USB_ReadPacket(USBx, (uint8_t *) hpcd->PSetup, 8);
 	        ep->xfer_count += bcnt;
 	      }
-	      USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
+	      //USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
 	    }
 
 		/* OUT endpoints interrupts */
@@ -14107,11 +14107,11 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		/* Handle Rx Queue Level Interrupts */
 		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_RXFLVL))
 		{
-			USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
+			//USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
 
 			HCD_RXQLVL_IRQHandler (hhcd);
 
-			USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
+			//USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
 		}
 	}
 }

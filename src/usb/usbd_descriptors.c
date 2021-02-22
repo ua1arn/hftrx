@@ -264,7 +264,7 @@ static unsigned CDCACM_fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 
 #if WITHUSBUAC
 
-#if 0
+#if 1
 	// Вариант Oleg UR3IQO
 	static const uint_fast8_t USBD_UAC1_IN_EP_ATTRIBUTES =
 		USB_ENDPOINT_USAGE_DATA |

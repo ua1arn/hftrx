@@ -1276,10 +1276,10 @@ HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
 #define USBx_HC(i)      ((USB_OTG_HostChannelTypeDef *) ((uintptr_t) (USBx) + USB_OTG_HOST_CHANNEL_BASE + (i) * USB_OTG_HOST_CHANNEL_SIZE))
 
 /* Exported macro ------------------------------------------------------------*/
-#define USB_MASK_INTERRUPT(i, m)     do { (i)->GINTMSK &= ~ (m); (void) (i)->GINTMSK; } while (0)
-#define USB_UNMASK_INTERRUPT(i, m)   do { (i)->GINTMSK |= (m); (void) (i)->GINTMSK; } while (0)
-#define CLEAR_IN_EP_INTR(ep, m)      do { USBx_INEP(ep)->DIEPINT = (m); (void) USBx_INEP(ep)->DIEPINT; } while (0)
-#define CLEAR_OUT_EP_INTR(ep, m)     do { USBx_OUTEP(ep)->DOEPINT = (m); (void) USBx_OUTEP(ep)->DOEPINT; } while (0)
+#define USB_MASK_INTERRUPT(i, m)     do { (i)->GINTMSK &= ~ (m); /*(void) (i)->GINTMSK; */} while (0)
+#define USB_UNMASK_INTERRUPT(i, m)   do { (i)->GINTMSK |= (m); /*(void) (i)->GINTMSK; */} while (0)
+#define CLEAR_IN_EP_INTR(ep, m)      do { USBx_INEP(ep)->DIEPINT = (m); /*(void) USBx_INEP(ep)->DIEPINT;*/ } while (0)
+#define CLEAR_OUT_EP_INTR(ep, m)     do { USBx_OUTEP(ep)->DOEPINT = (m); /*(void) USBx_OUTEP(ep)->DOEPINT; */} while (0)
 /**
   * @}
   */
