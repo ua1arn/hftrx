@@ -296,8 +296,6 @@ static RAMDTCM volatile uint_fast8_t uacoutalt;
 static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 
-#if WITHUSBUACIN
-
 // USB AUDIO IN
 typedef ALIGNX_BEGIN struct uacin16_tag
 {
@@ -373,8 +371,6 @@ static subscribeint32_t uacinrtssubscribe;
 static RAMDTCM LIST_HEAD2 uacinfree16;
 static RAMDTCM LIST_HEAD2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 static RAMDTCM SPINLOCK_t locklistuacin16 = SPINLOCK_INIT;
-
-#endif /* WITHUSBUACIN */
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -696,8 +692,6 @@ void buffers_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& locklist16);
 
-#if WITHUSBUACIN
-
 	static uacin16_t uacinarray16 [24];
 
 	InitializeListHead2(& uacinfree16);	// Незаполненные
@@ -762,8 +756,6 @@ void buffers_initialize(void)
 
 	#endif /* WITHRTS192 */
 	SPINLOCK_INITIALIZE(& locklistrts);
-
-#endif /* WITHUSBUACIN */
 
 	static ALIGNX_BEGIN RAM_D2 voice32tx_t voicesarray32tx [6] ALIGNX_END;
 
@@ -1955,7 +1947,7 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после приёма пакета с USB AUDIO
-void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
+static void processing_dmabuffer16rxuac(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG

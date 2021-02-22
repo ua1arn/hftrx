@@ -8941,11 +8941,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     /* Handle Incomplete ISO IN Interrupt */
     if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_IISOIXFR))
     {
-#if WITHUSBUAC
+#if WITHUSBUACIN
 	// device only: Incomplete isochronous IN transfer
     	uint8_t epnum = USBD_EP_AUDIO_IN;	// TODO: use right value - now ignored
       HAL_PCD_ISOINIncompleteCallback(hpcd, epnum);
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
       __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_IISOIXFR);
     }
 

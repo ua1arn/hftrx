@@ -59,14 +59,12 @@ enum
 	USBD_EP_RNDIS_IN,
 #endif /* WITHUSBRNDIS */
 
-#if WITHUSBUAC
+#if WITHUSBUACIN
+	USBD_EP_AUDIO_IN,	// ISOC IN Аудиоданные в компьютер из TRX
 	#if WITHUSBUACIN2
-		USBD_EP_AUDIO_IN,	// ISOC IN Аудиоданные в компьютер из TRX
 		USBD_EP_RTS_IN,	// ISOC IN Аудиоданные в компьютер из TRX
-	#else
-		USBD_EP_AUDIO_IN,	// ISOC IN Аудиоданные в компьютер из TRX
 	#endif
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 
 #if WITHUSBCDCACM
 
@@ -114,13 +112,9 @@ enum
 	USBD_EP_RNDIS_OUT,
 #endif /* WITHUSBRNDIS */
 
-#if WITHUSBUAC
-	#if WITHUSBUACIN2
-		USBD_EP_AUDIO_OUT,
-	#else
-		USBD_EP_AUDIO_OUT,	// ISOC OUT Аудиоданные от компьютера в TRX
-	#endif
-#endif /* WITHUSBUAC */
+#if WITHUSBUACOUT
+	USBD_EP_AUDIO_OUT,	// ISOC OUT Аудиоданные от компьютера в TRX
+#endif /* WITHUSBUACOUT */
 
 #if WITHUSBCDCACM
 	USBD_EP_CDCACM_OUT,	// CDC OUT Данные ком-порта от компьютера в TRX
@@ -268,25 +262,20 @@ enum interfaces_tag
 		INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
 		INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		//#if WITHTX
-			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
-			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-		//#endif /* WITHTX */
 	#elif 0 /* WITHUSBUACIN2 */
 		// версия с совмещённым устройством IN/OUT
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 		#define INTERFACE_AUDIO_CONTROL_SPK 2222
 		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-	#else /* WITHUSBUACIN2 */
+	#elif WITHUSBUACIN
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		//#if WITHTX
-			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
-			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-		//#endif /* WITHTX */
-		//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 2,
-	#endif /* WITHUSBUACIN2 */
+	#endif
+	#if WITHUSBUACOUT
+		INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+	#endif /* WITHUSBUACOUT */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBRNDIS

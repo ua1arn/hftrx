@@ -21,7 +21,7 @@ extern "C" {
 #elif defined (WITHUSBUACIN)
 	#edfine WITHUSBUAC 1
 #elif defined (WITHUSBUACOUT)
-	#edfine WITHUSBUAC 1
+	#define WITHUSBUAC 1
 #elif WITHUSBUAC
 	#define WITHUSBUACIN	1
 	#define WITHUSBUACOUT	1

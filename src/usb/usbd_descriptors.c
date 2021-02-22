@@ -271,7 +271,18 @@ static unsigned CDCACM_fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 		USB_ENDPOINT_SYNC_SYNCHRONOUS |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
+	// Вариант Oleg UR3IQO
+	static const uint_fast8_t USBD_UAC2_IN_EP_ATTRIBUTES =
+		USB_ENDPOINT_USAGE_DATA |
+		USB_ENDPOINT_SYNC_SYNCHRONOUS |
+		USB_ENDPOINT_TYPE_ISOCHRONOUS;
+
 	static const uint_fast8_t USBD_UAC1_OUT_EP_ATTRIBUTES =
+		USB_ENDPOINT_USAGE_DATA |
+		USB_ENDPOINT_SYNC_SYNCHRONOUS |
+		USB_ENDPOINT_TYPE_ISOCHRONOUS;
+
+	static const uint_fast8_t USBD_UAC2_OUT_EP_ATTRIBUTES =
 		USB_ENDPOINT_USAGE_DATA |
 		USB_ENDPOINT_SYNC_SYNCHRONOUS |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
@@ -1583,6 +1594,8 @@ static unsigned fill_UAC2_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 #endif /* WITHUSBUACIN2 */
 
+#if WITHUSBUACIN
+
 // AUDIO48 only IN (radio to host) audio function
 static unsigned fill_UAC2_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
@@ -1662,6 +1675,10 @@ static unsigned fill_UAC2_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 	return n;
 }
 
+#endif /* WITHUSBUACIN */
+
+#if WITHUSBUACOUT
+
 // AUDIO48 only OUT (host to radio) audio function
 static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
@@ -1691,6 +1708,7 @@ static unsigned fill_UAC2_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 	return n;
 }
+#endif /* WITHUSBUACOUT */
 
 /* UAC IAD */
 // Interface Association Descriptor Audio
@@ -2395,6 +2413,7 @@ static unsigned fill_UAC1_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 #endif /* WITHUSBUACIN2 */
 
+#if WITHUSBUACIN
 // AUDIO48 only IN (radio to host) audio function
 static unsigned fill_UAC1_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
@@ -2472,7 +2491,9 @@ static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, un
 #endif /* WITHRTS192 */
 	return n;
 }
+#endif /* WITHUSBUACIN */
 
+#if WITHUSBUACOUT
 // AUDIO48 only OUT (host to radio) audio function
 static unsigned fill_UAC1_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
@@ -2502,6 +2523,7 @@ static unsigned fill_UAC1_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigne
 
 	return n;
 }
+#endif /* WITHUSBUACOUT */
 
 typedef struct audiopath_tag
 {
@@ -2509,6 +2531,7 @@ typedef struct audiopath_tag
 	uint_fast8_t terminalID;
 } audiopath_t;
 
+#if WITHUSBUACIN && WITHUSBUACOUT
 // Объединенное устройство. Необюходимо в случае UAC2 из-за возможности применить shared clock source
 static unsigned fill_UAC2_IN48_OUT48_function(
 	uint_fast8_t fill, uint8_t * p, unsigned maxsize,
@@ -2580,6 +2603,8 @@ static unsigned fill_UAC2_IN48_OUT48_function(
 	return n;
 }
 
+#endif /* WITHUSBUACIN && WITHUSBUACOUT */
+
 static unsigned fill_UAC1_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
 	unsigned n = 0;
@@ -2594,15 +2619,16 @@ static unsigned fill_UAC1_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 			#error WITHRTS96 or WITHRTS192 required for WITHUSBUACIN2
 		#endif /* WITHRTS96 || WITHRTS192 */
 
-	#else /* WITHUSBUACIN2 */
+	#elif WITHUSBUACIN
 		/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
 		n += fill_UAC1_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUACIN2 */
 
-//#if WITHTX
+#if WITHUSBUACOUT
+
 	n += fill_UAC1_OUT48_function(fill, p + n, maxsize - n, highspeed, 2);
-//#endif /* WITHTX */
+#endif /* WITHUSBUACOUT */
 
 	return n;
 }
