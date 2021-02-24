@@ -97,15 +97,11 @@
 	#if 1
 		// Обычный AUDIO + 2*CDC + DFU
 		#if WITHINTEGRATEDDSP
-			//#define WITHUAC2		1	/* UAC2 support */
 
+			//#define WITHUAC2		1	/* UAC2 support */
+			#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
 			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
-			#if WITHRTS96 || WITHRTS192
-				#define WITHUSBUACIN	1
-				#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-			#else /* WITHRTS96 || WITHRTS192 */
-				#define WITHUSBUACIN
-			#endif /* WITHRTS96 || WITHRTS192 */
+			#define WITHUSBUACIN	1
 			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 		#endif /* WITHINTEGRATEDDSP */
 

@@ -257,25 +257,37 @@ enum interfaces_tag
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBUAC
-	#if WITHUSBUACIN2
-		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
-		INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
-		INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-	#elif 0 /* WITHUSBUACIN2 */
+	#if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
 		// версия с совмещённым устройством IN/OUT
-		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out / transmitter input control interface */
 		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
 		#define INTERFACE_AUDIO_CONTROL_SPK 2222
-		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-	#elif WITHUSBUACIN
-		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
-		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-	#endif
-	#if WITHUSBUACOUT
-		INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
-		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
-	#endif /* WITHUSBUACOUT */
+		#if WITHRTS96 || WITHRTS192
+			INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
+			INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		#endif /* WITHRTS96 || WITHRTS192 */
+	#else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
+		#if WITHUSBUACIN2
+			INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+			INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
+			INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		#elif 0 /* WITHUSBUACIN2 */
+			// версия с совмещённым устройством IN/OUT
+			INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+			INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			#define INTERFACE_AUDIO_CONTROL_SPK 2222
+			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+		#elif WITHUSBUACIN
+			INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+			INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		#endif
+		#if WITHUSBUACOUT
+			INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+		#endif /* WITHUSBUACOUT */
+	#endif /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBRNDIS
