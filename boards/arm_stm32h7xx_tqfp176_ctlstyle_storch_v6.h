@@ -304,6 +304,9 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHVIEW_3DSS		1
+	//#define WITHDEFAULTVIEW		VIEW_3DSS
+	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	#define WITHFFTOVERLAPPOW2	0	/* Количество перекрывающися буферов FFT спектра (2^param). */
 	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
@@ -360,6 +363,7 @@
 	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER_UA1CEI	1	/* Плата управления LPF и тюнером от UA1CEI - по компорту */
+		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
 		//#define WITHNMEAOVERREALTIME	1	/* прерывания от SERUAL PORT работают на OVERREALTIME приориоритете */
 		#if defined(WITHDEBUG)
 			#error Please off WITHDEBUG

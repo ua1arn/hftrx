@@ -97,6 +97,7 @@ static uint_fast8_t 	glob_affilter;
 static uint_fast8_t 	glob_dac1value [2];
 static uint_fast8_t 	glob_txcw;			// находимся в режиме передачи телеграфа
 static uint_fast8_t 	glob_txgate = 1;	// разрешение драйвера и оконечного усилителя
+static uint_fast8_t 	glob_classamode;	/* использование режима клвсс А при передаче */
 
 static int_fast16_t		glob_adcoffset;		/* смещение для выходного сигнала с АЦП */
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
@@ -504,7 +505,7 @@ ua1ceituner_send(void)
 			"*FF\r\n",	// *CS<CR><LF>
 			glob_tx,
 			glob_bandf3,
-			1,	// 1=class AB, 0=class A
+			! glob_classamode,	// 1=class AB, 0=class A
 			glob_fanflag,
 			glob_antenna,
 			glob_tuner_type,
@@ -5457,6 +5458,18 @@ board_set_txgate(uint_fast8_t v)	/* разрешение драйвера и о�
 		board_ctlreg1changed();
 	}
 }
+
+void
+board_set_classamode(uint_fast8_t v)	/* использование режима клвсс А при передаче */
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_classamode != n)
+	{
+		glob_classamode = n;
+		board_ctlreg1changed();
+	}
+}
+
 
 void
 board_set_tuner_C(uint_fast8_t n)	/* установка значение конденсатора в согласующем устройстве */

@@ -2757,6 +2757,8 @@ struct nvmap
 		uint8_t gpwratunei;	// индекс в pwrmodes - моность при работе автотюнера или по внешнему запросу
 	#elif WITHPOWERTRIM
 		uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		uint8_t gclassapower;/* мощность при работе в классе А WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		uint8_t gclassamode;	/* использование режима клвсс А при передаче */
 		uint8_t gtunepower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 	#endif /* WITHPOWERLPHP, WITHPOWERTRIM */
 #endif /* WITHTX */
@@ -3823,6 +3825,8 @@ enum
 
 	#if WITHPOWERTRIM
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
+		static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
+		static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
 		#if WITHLOWPOWEREXTTUNE
 			static uint_fast8_t gtunepower = WITHPOWERTRIMATU; /* мощность при работе автоматического согласующего устройства */
 		#else /* WITHLOWPOWEREXTTUNE */
@@ -3835,6 +3839,7 @@ enum
 		#else /* WITHLOWPOWEREXTTUNE */
 			enum { gpwratunei = 1 }; // индекс нормальной мощности
 		#endif /* WITHLOWPOWEREXTTUNE */
+		enum { gclassamode = 0 };
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
 	#if WITHPABIASTRIM
@@ -9324,6 +9329,7 @@ updateboard(
 		#endif /* WITHIF4DSP */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
 		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
+		board_set_classamode(gclassamode);	/* использование режима клвсс А при передаче */
 		board_set_txgate(gtxgate);		/* разрешение драйвера и оконечного усилителя */
 		#if WITHMIC1LEVEL
 			board_set_mik1level(mik1level);
@@ -16482,6 +16488,29 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gnormalpower.value,
 		getzerobase,
 	},
+#if WITHPACLASSA
+	/* усилитель мощности поддерживает переключение в класс А */
+	{
+		QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gclassamode),
+		nvramoffs0,
+		NULL,
+		& gclassamode,
+		getzerobase,
+	},
+	{
+		QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gclassapower),
+		nvramoffs0,
+		NULL,
+		& gclassapower,
+		getzerobase,
+	},
+#endif /* WITHPACLASSA */
   #endif /* ! WITHPOTPOWER */
   #if WITHLOWPOWEREXTTUNE
 	{
