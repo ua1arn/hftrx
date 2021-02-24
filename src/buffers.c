@@ -253,14 +253,21 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rx_t;
-// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void)
 {
 	return offsetof(voice32rx_t, item) - offsetof(voice32rx_t, buff);
 }
 
-enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
+#if 1
+	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
+	enum { SKIPPED = 4000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
+
+#else
+	// исправляемая погрешность = 0.1% - один сэмпл добавить/убрать на 1000 сэмплов
+	enum { SKIPPED = 1000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
+#endif
+
 enum { VOICESMIKE16NORMAL = 5 };	// Нормальное количество буферов в очереди
 enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
 enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };

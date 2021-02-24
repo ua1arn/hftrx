@@ -2347,6 +2347,10 @@ extern "C" {
 
 #endif /* WITHTOUCHGUI */
 
+#if WITHKEEPNVRAM && defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
+	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
