@@ -264,54 +264,25 @@ static unsigned CDCACM_fill_31(uint_fast8_t fill, uint8_t * buff, unsigned maxsi
 
 #if WITHUSBUAC
 
-#if 1
-	// Вариант Oleg UR3IQO
 	static const uint_fast8_t USBD_UAC1_IN_EP_ATTRIBUTES =
 		USB_ENDPOINT_USAGE_DATA |
-		USB_ENDPOINT_SYNC_SYNCHRONOUS |
-		USB_ENDPOINT_TYPE_ISOCHRONOUS;
-
-	// Вариант Oleg UR3IQO
-	static const uint_fast8_t USBD_UAC2_IN_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_DATA |
-		USB_ENDPOINT_SYNC_SYNCHRONOUS |
-		USB_ENDPOINT_TYPE_ISOCHRONOUS;
-
-	static const uint_fast8_t USBD_UAC1_OUT_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_DATA |
-		USB_ENDPOINT_SYNC_SYNCHRONOUS |
-		USB_ENDPOINT_TYPE_ISOCHRONOUS;
-
-	static const uint_fast8_t USBD_UAC2_OUT_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_DATA |
-		USB_ENDPOINT_SYNC_SYNCHRONOUS |
-		USB_ENDPOINT_TYPE_ISOCHRONOUS;
-#else
-	// Мой вариант
-	static const uint_fast8_t USBD_UAC1_IN_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
-		USB_ENDPOINT_SYNC_ASYNCHRONOUS |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
 	// UAC2 Windows 10
 	// For the Adaptive IN case the driver does not support a feedforward endpoint.
 	static const uint_fast8_t USBD_UAC2_IN_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
-		USB_ENDPOINT_SYNC_ASYNCHRONOUS |
+		USB_ENDPOINT_USAGE_DATA |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
 	static const uint_fast8_t USBD_UAC1_OUT_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
-		USB_ENDPOINT_SYNC_ASYNCHRONOUS |
+		USB_ENDPOINT_USAGE_DATA |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
 
 	// UAC2 Windows 10
 	// For the asynchronous OUT case the driver supports explicit feedback only.
 	static const uint_fast8_t USBD_UAC2_OUT_EP_ATTRIBUTES =
-		USB_ENDPOINT_USAGE_IMPLICIT_FEEDBACK |
-		USB_ENDPOINT_SYNC_SYNCHRONOUS |
+		USB_ENDPOINT_USAGE_DATA |
 		USB_ENDPOINT_TYPE_ISOCHRONOUS;
-#endif
 
 //In the following code bmAttributes field is 0x01; 
 //which means that clock type is internal fixed clock.
