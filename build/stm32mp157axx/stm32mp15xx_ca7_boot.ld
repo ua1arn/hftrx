@@ -70,6 +70,7 @@ SECTIONS
 
 		KEEP(*(.text*))
 		KEEP(*(.itcm*))
+		. = ALIGN(4);
 	} > RAM
 
 	.ARM.extab :

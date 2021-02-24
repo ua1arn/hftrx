@@ -59,6 +59,7 @@ SECTIONS
 
 		KEEP(*(.text*))
 		KEEP(*(.itcm*))
+		. = ALIGN(4);
 	} > OCM
 
 	.ARM.extab :

@@ -47,6 +47,7 @@ SECTIONS
 		KEEP(*(.initfunc*))
 		KEEP(*(.initdata*))
 		KEEP(*(.fini))
+		. = ALIGN(4);
 	} > FLASH
 
 	.ARM.extab :

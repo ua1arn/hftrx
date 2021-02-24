@@ -78,6 +78,8 @@ SECTIONS
 		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
+		. = ALIGN(4);
+		
 	} > FLASH
 
 	.ARM.extab :
@@ -218,6 +220,7 @@ SECTIONS
 		__end__ = .;
 		end = __end__;
 		KEEP(*(.heap*))
+		. = ALIGN(4);
 		__HeapLimit = .;
 	} > RAM_D2
 
@@ -234,6 +237,7 @@ SECTIONS
 	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
+		. = ALIGN(4);
 	} > RAM_D3
 
 	/* Set stack top to end of RAM, and stack limit move down by
