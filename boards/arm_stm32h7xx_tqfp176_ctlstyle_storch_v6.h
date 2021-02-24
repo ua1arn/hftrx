@@ -309,7 +309,7 @@
 	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-
+	#define WITHKEEPNVRAM 1		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 	#if 0
 		#define WITHWAVPLAYER 1	/* трансивер работает проигрывателем файлов с USB/SD накопителя */
 		//#define WITHBBOX	1	// Black Box mode - устройство без органов управления

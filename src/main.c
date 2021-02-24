@@ -2597,11 +2597,17 @@ validatesubmode(
 
 /* текст (любой), используемый как сигнатура содержимого NVRAM */
 /* последний байт этого массива в NVRAM не запоминается и не сравнивается. */
-static const FLASHMEM char nvramsign [] = 
-	#if NVRAM_END > 511
-		__DATE__
-	#endif
-	__TIME__;
+static const FLASHMEM char nvramsign [] =
+#if WITHKEEPNVRAM
+		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+		{ 0, 0, 0, 0, 1, 1, 1, 1, };
+#else /* WITHKEEPNVRAM */
+
+#if NVRAM_END > 511
+	__DATE__
+#endif
+__TIME__;
+#endif /* WITHKEEPNVRAM */
 
 /* Шаблон данных для тестирования доступа к NVRAM */
 static const FLASHMEM char nvrampattern [sizeof nvramsign / sizeof nvramsign [0]] = 
@@ -4623,6 +4629,21 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
+static void fillrelaxedsign(uint8_t * tsign)
+{
+	ASSERT(sizeof nvramsign == 8);
+
+	memset(tsign, 0xe5, 8);
+	tsign [0] = (uint8_t) (sizeof (struct nvmap) >> 24);
+	tsign [1] = (uint8_t) (sizeof (struct nvmap) >> 16);
+	tsign [2] = (uint8_t) (sizeof (struct nvmap) >> 8);
+	tsign [3] = (uint8_t) (sizeof (struct nvmap) >> 0);
+	tsign [4] = (uint8_t) (~ sizeof (struct nvmap) >> 24);
+	tsign [5] = (uint8_t) (~ sizeof (struct nvmap) >> 16);
+	tsign [6] = (uint8_t) (~ sizeof (struct nvmap) >> 8);
+	tsign [7] = (uint8_t) (~ sizeof (struct nvmap) >> 0);
+}
+
 /* проверка совпадения сигнатуры в энергонезависимой памяти.
    0 - совпадает,
 	 не-0 - отличается
@@ -4631,6 +4652,25 @@ static uint_fast8_t
 //NOINLINEAT
 verifynvramsignature(void)
 {
+#if WITHKEEPNVRAM
+
+	/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+	uint8_t tsign [sizeof nvramsign];
+	uint_fast8_t i;
+
+	fillrelaxedsign(tsign);
+	for (i = 0; i < (sizeof nvramsign - 1); ++ i)
+	{
+		const char c = restore_i8(RMT_SIGNATURE_BASE(i));
+		if (c != tsign [i])
+		{
+			return 1;	/* есть отличие */
+		}
+	}
+	return 0;	/* сигнатура совпадает */
+
+#else /* WITHKEEPNVRAM */
+
 	uint_fast8_t i;
 	for (i = 0; i < (sizeof nvramsign - 1); ++ i)
 	{
@@ -4641,18 +4681,33 @@ verifynvramsignature(void)
 		}
 	}		
 	return 0;	/* сигнатура совпадает */
+
+#endif /* WITHKEEPNVRAM */
 }
 
 static void 
 //NOINLINEAT
 initnvramsignature(void)
 {
+#if WITHKEEPNVRAM
+	/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+	uint8_t tsign [sizeof nvramsign];
+	uint_fast8_t i;
+
+	fillrelaxedsign(tsign);
+
+	for (i = 0; i < sizeof nvramsign - 1; ++ i)
+	{
+		save_i8(RMT_SIGNATURE_BASE(i), tsign [i]);
+	}
+#else /* WITHKEEPNVRAM */
 	uint_fast8_t i;
 
 	for (i = 0; i < sizeof nvramsign - 1; ++ i)
 	{
 		save_i8(RMT_SIGNATURE_BASE(i), nvramsign [i]);
 	}
+#endif /* WITHKEEPNVRAM */
 }
 
 /* проверка совпадения тестовой сигнатуры в энергонезависимой памяти.
