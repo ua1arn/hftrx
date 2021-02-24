@@ -4287,10 +4287,10 @@ HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTy
 
 		if ((outep->DOEPCTL & USB_OTG_DOEPCTL_USBAEP) == 0)
 		{
-			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP)) |
+			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP | USB_OTG_DOEPCTL_STALL)) |
 				((ep->maxpacket << USB_OTG_DOEPCTL_MPSIZ_Pos) & USB_OTG_DOEPCTL_MPSIZ) |
 				(ep->type << USB_OTG_DOEPCTL_EPTYP_Pos) |
-				USB_OTG_DOEPCTL_SD0PID_SEVNFRM |
+				USB_OTG_DOEPCTL_SD0PID_SEVNFRM |	/* DATA0 */
 				USB_OTG_DOEPCTL_USBAEP |
 				0;
 			(void) outep->DOEPCTL;
@@ -4330,7 +4330,7 @@ HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB
 		USB_OTG_OUTEndpointTypeDef * const outep = USBx_OUTEP(ep->num);
 		if ((outep->DOEPCTL & USB_OTG_DOEPCTL_USBAEP) == 0)
 		{
-			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP)) |
+			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP | USB_OTG_DOEPCTL_STALL)) |
 				((ep->maxpacket << USB_OTG_DOEPCTL_MPSIZ_Pos) & USB_OTG_DOEPCTL_MPSIZ ) |
 				(ep->type << USB_OTG_DOEPCTL_EPTYP_Pos ) |
 				//(ep->num << USB_OTG_DIEPCTL_TXFNUM_Pos ) |	// TX FIFO index - зачем это здесь?
@@ -4402,7 +4402,7 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
 	{
 		USB_OTG_OUTEndpointTypeDef * const outep = USBx_OUTEP(ep->num);
 
-		outep->DOEPCTL &= ~ USB_OTG_DOEPCTL_USBAEP;
+		outep->DOEPCTL &= ~ (USB_OTG_DOEPCTL_USBAEP | USB_OTG_DOEPCTL_STALL);
 		(void) outep->DOEPCTL;
 		USBx_DEVICE->DAINTMSK &= ~ (USB_OTG_DAINTMSK_OEPM & ((1 << ep->num) << USB_OTG_DAINTMSK_OEPM_Pos));
 		(void) USBx_DEVICE->DAINTMSK;
@@ -4562,17 +4562,17 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		{
 			if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U || USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH)
 			{
-				outep->DOEPCTL |= USB_OTG_DOEPCTL_SODDFRM;
+				outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | USB_OTG_DOEPCTL_SODDFRM);
 				(void) outep->DOEPCTL;
 			}
 			else
 			{
-				outep->DOEPCTL |= USB_OTG_DOEPCTL_SD0PID_SEVNFRM;
+				outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | USB_OTG_DOEPCTL_SD0PID_SEVNFRM);	/* DATA0 */
 				(void) outep->DOEPCTL;
 			}
 		}
 		/* EP enable */
-		outep->DOEPCTL |= (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
+		outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA));
 		(void) outep->DOEPCTL;
 	}
 
@@ -4686,7 +4686,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
     }
 
     /* EP enable */
-    outep->DOEPCTL |= (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
+    outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_STALL)) | (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
     (void) outep->DOEPCTL;
   }
 
@@ -5044,7 +5044,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
 	//PRINTF(PSTR("USB_EPSetStall, ep->num=%02X\n"), ep->num);
-	if (ep->is_in == 1)
+	if (ep->is_in)
 	{
 		USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
 		if (((inep->DIEPCTL) & USB_OTG_DIEPCTL_EPENA) == 0)
@@ -5079,7 +5079,7 @@ HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTy
 HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
 	//PRINTF(PSTR("USB_EPClearStall, ep->num=%02X\n"), ep->num);
-	if (ep->is_in == 1)
+	if (ep->is_in)
 	{
 		USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
 		inep->DIEPCTL &= ~ USB_OTG_DIEPCTL_STALL;
@@ -5097,7 +5097,8 @@ HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EP
 		(void) outep->DOEPCTL;
 		if (ep->type == USBD_EP_TYPE_INTR || ep->type == USBD_EP_TYPE_BULK)
 		{
-			outep->DOEPCTL |= USB_OTG_DOEPCTL_SD0PID_SEVNFRM; /* DATA0 */
+			outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | USB_OTG_DOEPCTL_SD0PID_SEVNFRM); /* DATA0 */
+			//outep->DOEPCTL |= USB_OTG_DOEPCTL_SD0PID_SEVNFRM; /* DATA0 */
 			(void) outep->DOEPCTL;
 		}
 	}
