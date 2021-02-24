@@ -8584,18 +8584,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC)
 				  {
 					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
-		#if CPUSTYLE_STM32MP1
-					  if (hpcd->Init.dma_enable == USB_ENABLE)
-					  {
-						  // USB_OTG_DOEPINT_STPKTRX
-						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))	// Setup packet received
-						{
-						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
-						}
-					  }
-		#elif CPUSTYLE_STM32H7XX
+		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
-					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
+					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
 					{
 					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
@@ -8627,18 +8618,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 				  if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
 				  {
-		#if CPUSTYLE_STM32MP1
-					  if (hpcd->Init.dma_enable == USB_ENABLE)
-					  {
-						  // USB_OTG_DOEPINT_STPKTRX
-						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))
-						{
-						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
-						}
-					  }
-		#elif CPUSTYLE_STM32H7XX
+		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
-					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
+					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
 					{
 					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
