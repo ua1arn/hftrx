@@ -4295,7 +4295,7 @@ static unsigned fill_BinaryDeviceObjectStore_descriptor(uint8_t * buff, unsigned
 
 static unsigned fill_align4(uint8_t * buff, unsigned maxsize)
 {
-	const uintptr_t granulation = 32;
+	const uintptr_t granulation = DCACHEROWSIZE;
 	return (granulation - ((uintptr_t) buff & (granulation - 1))) & (granulation - 1);
 }
 

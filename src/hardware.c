@@ -10476,7 +10476,7 @@ void arm_hardware_flush_all(void)
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((dsize % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -10506,7 +10506,7 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((dsize % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
@@ -10537,7 +10537,7 @@ void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
-	ASSERT((dsize % DCACHEROWSIZE) == 0);
+	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
