@@ -425,7 +425,7 @@ struct netif  * getNetifData(void)
 }
 
 
-static err_t cdceem_output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
+static err_t cdceem_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
 {
 	err_t e = etharp_output(netif, p, ipaddr);
 	if (e == ERR_OK)
@@ -460,7 +460,7 @@ typedef struct cdceembuf_tag
 {
 	LIST_ENTRY item;
 	struct pbuf *frame;
-} ALIGNX_END cdceembuf_t;
+} cdceembuf_t;
 
 
 static LIST_ENTRY cdceem_free;
