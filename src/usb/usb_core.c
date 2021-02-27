@@ -3596,8 +3596,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			0;
-		USBPHYC_PHY1->TUNE = 0x04070004;
-		(void) USBPHYC_PHY1->TUNE;
+		//USBPHYC_PHY1->TUNE = 0x04070004;
+		//(void) USBPHYC_PHY1->TUNE;
 	}
 	if (1)
 	{
@@ -3608,8 +3608,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			0;
-		USBPHYC_PHY2->TUNE = 0x04070004;
-		(void) USBPHYC_PHY2->TUNE;
+		//USBPHYC_PHY2->TUNE = 0x04070004;
+		//(void) USBPHYC_PHY2->TUNE;
 	}
 
 	//PRINTF("USB_HS_PHYCInit done\n");
