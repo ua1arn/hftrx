@@ -8532,6 +8532,12 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
   * @retval HAL status
   */
 // F4, F7, H7, MP1...
+#ifndef USB_OTG_DOEPINT_STPKTRX
+	#define USB_OTG_DOEPINT_STPKTRX (1uL << 15)		// STPKTRX: Setup packet received. Applicable for control OUT endpoints in only in the Buffer DMA Mode.
+#endif /* USB_OTG_DOEPINT_STPKTRX */
+#ifndef USB_OTG_DOEPINT_OTEPSPR
+	#define USB_OTG_DOEPINT_OTEPSPR (1uL << 5)		// STSPHSRX: Status phase received for control write
+#endif /* USB_OTG_DOEPINT_OTEPSPR */
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	__DMB();
@@ -8605,20 +8611,96 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  {
 					//  process EP OUT transfer complete interrupt.
 					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
-		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+					const uint32_t DoepintReg = USBx_OUTEP(epnum)->DOEPINT;
+					const uint32_t gSNPSiD = USB_GetSNPSiD(USBx);
 					/* setup/out transaction management for Core ID >= 310A */
-					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
-					{
 					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
-						  // USB_OTG_DOEPINT_STPKTRX
-						if (USBx_OUTEP(epnum)->DOEPINT & (1 << 15))	// Setup packet received
-						{
-						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
-						}
+					    if ((DoepintReg & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP) /* Class C */
+					    {
+					      /* StupPktRcvd = 1 this is a setup packet */
+					      if ((gSNPSiD > USB_OTG_CORE_ID_300A) &&
+					          ((DoepintReg & USB_OTG_DOEPINT_STPKTRX) == USB_OTG_DOEPINT_STPKTRX))
+					      {
+					        CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_STPKTRX);
+					      }
+					    }
+					    else if ((DoepintReg & USB_OTG_DOEPINT_OTEPSPR) == USB_OTG_DOEPINT_OTEPSPR) /* Class E */
+					    {
+					      CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_OTEPSPR);
+					    }
+					    else if ((DoepintReg & (USB_OTG_DOEPINT_STUP | USB_OTG_DOEPINT_OTEPSPR)) == 0U)
+					    {
+					      /* StupPktRcvd = 1 this is a setup packet */
+					      if ((gSNPSiD > USB_OTG_CORE_ID_300A) &&
+					          ((DoepintReg & USB_OTG_DOEPINT_STPKTRX) == USB_OTG_DOEPINT_STPKTRX))
+					      {
+					        CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_STPKTRX);
+					      }
+					      else
+					      {
+					        /* out data packet received over EP0 */
+					        hpcd->OUT_ep[epnum].xfer_count =
+					          hpcd->OUT_ep[epnum].maxpacket -
+					          (USBx_OUTEP(epnum)->DOEPTSIZ & USB_OTG_DOEPTSIZ_XFRSIZ);
+
+					        hpcd->OUT_ep[epnum].xfer_buff += hpcd->OUT_ep[epnum].maxpacket;
+
+					        if ((epnum == 0U) && (hpcd->OUT_ep[epnum].xfer_len == 0U))
+					        {
+					          /* this is ZLP, so prepare EP0 for next setup */
+					          (void)USB_EP0_OutStart(hpcd->Instance, 1U, (uint8_t *)hpcd->PSetup);
+					        }
+					#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+					        hpcd->DataOutStageCallback(hpcd, (uint8_t)epnum);
+					#else
+					        HAL_PCD_DataOutStageCallback(hpcd, (uint8_t)epnum);
+					#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+					      }
+					    }
+					    else
+					    {
+					      /* ... */
+					    }
 					  }
-					}
-		#endif /* CPUSTYLE_STM32H7XX */
+					  else
+					  {
+					    if (gSNPSiD >= USB_OTG_CORE_ID_310A)	// change == to >= by MGS
+					    {
+					      /* StupPktRcvd = 1 this is a setup packet */
+					      if ((DoepintReg & USB_OTG_DOEPINT_STPKTRX) == USB_OTG_DOEPINT_STPKTRX)
+					      {
+					        CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_STPKTRX);
+					      }
+					      else
+					      {
+					        if ((DoepintReg & USB_OTG_DOEPINT_OTEPSPR) == USB_OTG_DOEPINT_OTEPSPR)
+					        {
+					          CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_OTEPSPR);
+					        }
+
+					#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+					        hpcd->DataOutStageCallback(hpcd, (uint8_t)epnum);
+					#else
+					        HAL_PCD_DataOutStageCallback(hpcd, (uint8_t)epnum);
+					#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+					      }
+					    }
+					    else
+					    {
+					      if ((epnum == 0U) && (hpcd->OUT_ep[epnum].xfer_len == 0U))
+					      {
+					        /* this is ZLP, so prepare EP0 for next setup */
+					        (void)USB_EP0_OutStart(hpcd->Instance, 0U, (uint8_t *)hpcd->PSetup);
+					      }
+
+					#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+					      hpcd->DataOutStageCallback(hpcd, (uint8_t)epnum);
+					#else
+					      HAL_PCD_DataOutStageCallback(hpcd, (uint8_t)epnum);
+					#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+					    }
+					  }
 
 					if (hpcd->Init.dma_enable == USB_ENABLE)
 					{
@@ -8639,25 +8721,27 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 				  if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
 				  {
-					/* Class B setup phase done for previous decoded setup */
-		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
-					/* setup/out transaction management for Core ID >= 310A */
-					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
-					{
-					  if (hpcd->Init.dma_enable == USB_ENABLE)
-					  {
-						  // USB_OTG_DOEPINT_STPKTRX
-						if (USBx_OUTEP(epnum)->DOEPINT & (1 << 15))
-						{
-						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
-						}
-					  }
-					}
-		#endif /* CPUSTYLE_STM32H7XX */
+						CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_STUP);
+							const uint32_t gSNPSiD = USB_GetSNPSiD(USBx);
+						  uint32_t DoepintReg = USBx_OUTEP(epnum)->DOEPINT;
 
-					/* Inform the upper layer that a setup packet is available */
-					HAL_PCD_SetupStageCallback(hpcd);
-					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_STUP);
+						  if ((gSNPSiD > USB_OTG_CORE_ID_300A) &&
+						      ((DoepintReg & USB_OTG_DOEPINT_STPKTRX) == USB_OTG_DOEPINT_STPKTRX))
+						  {
+						    CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_STPKTRX);
+						  }
+
+						  /* Inform the upper layer that a setup packet is available */
+						#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+						  hpcd->SetupStageCallback(hpcd);
+						#else
+						  HAL_PCD_SetupStageCallback(hpcd);
+						#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+
+						  if ((gSNPSiD > USB_OTG_CORE_ID_300A) && (hpcd->Init.dma_enable == USB_ENABLE))
+						  {
+						    (void)USB_EP0_OutStart(hpcd->Instance, 1U, (uint8_t *)hpcd->PSetup);
+						  }
 				  }
 
 			  if ((epint & USB_OTG_DOEPINT_OTEPDIS) == USB_OTG_DOEPINT_OTEPDIS)
