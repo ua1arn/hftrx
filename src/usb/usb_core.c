@@ -4231,20 +4231,33 @@ HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t usb_
   */
 uint_fast8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
+	//	STM32MP1:
+	//	00: High Speed using HS PHY
+	//	01: Full Speed using HS PHY
+	//	11: Full speed using embedded FS PHY
+	//	Others: reserved
+
 	uint_fast8_t speed = USB_OTG_SPEED_FULL;
 
 	if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD) == DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ)
 	{
 		speed = USB_OTG_SPEED_HIGH;
+		//PRINTF("HS connected\n");
 	}
 	else if (((USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD) == DSTS_ENUMSPD_FS_PHY_30MHZ_OR_60MHZ)||
 		((USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD) == DSTS_ENUMSPD_FS_PHY_48MHZ))
 	{
 		speed = USB_OTG_SPEED_FULL;
+		//PRINTF("FS connected\n");
 	}
 	else if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD) == DSTS_ENUMSPD_LS_PHY_6MHZ)
 	{
 		speed = USB_OTG_SPEED_LOW;
+		//PRINTF("LOW connected\n");
+	}
+	else
+	{
+		//PRINTF("Assume FS connected. code=%02X\n", (USBx_DEVICE->DSTS & USB_OTG_DSTS_ENUMSPD) >> USB_OTG_DSTS_ENUMSPD_Pos);
 	}
 
 	return speed;
@@ -5143,8 +5156,8 @@ HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t address)
 {
-	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DAD)) |
-		address * USB_OTG_DCFG_DAD_0 |
+	USBx_DEVICE->DCFG = (USBx_DEVICE->DCFG & ~ (USB_OTG_DCFG_DAD_Msk)) |
+		(address << USB_OTG_DCFG_DAD_Pos) |
 		0;
 
 	return HAL_OK;
@@ -8584,6 +8597,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 				  if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC)
 				  {
+					//  process EP OUT transfer complete interrupt.
 					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
 		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
@@ -8592,7 +8606,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
-						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))	// Setup packet received
+						if (USBx_OUTEP(epnum)->DOEPINT & (1 << 15))	// Setup packet received
 						{
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
 						}
@@ -8619,6 +8633,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 				  if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
 				  {
+					/* Class B setup phase done for previous decoded setup */
 		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
 					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
@@ -8626,7 +8641,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
-						if(USBx_OUTEP(0)->DOEPINT & (1 << 15))
+						if(USBx_OUTEP(epnum)->DOEPINT & (1 << 15))
 						{
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
 						}
