@@ -3520,9 +3520,10 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 
 	}
 
-	// USBPHYC already initialized
-	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
-		return HAL_OK;
+// не требуется... запущено в bootloader
+//	// USBPHYC already initialized
+//	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
+//		return HAL_OK;
 
 	if (1)
 	{
@@ -3586,9 +3587,10 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		0;
 	(void) USBPHYC->MISC;
 
-	if (0)
+	if (1)
 	{
 		// USBH_HS_DP1, USBH_HS_DM1
+		PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
 //		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
@@ -3600,6 +3602,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	if (1)
 	{
 		// USBH_HS_DP2, USBH_HS_DM2
+		PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
 //		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
