@@ -3494,7 +3494,7 @@ USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 
 
 // STM32MP1 UTMI interface
-HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef USB_HS_PHYCInit(void)
 {
 	//PRINTF("USB_HS_PHYCInit start\n");
 	// Clock source
@@ -3520,6 +3520,10 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 
 	}
 
+	// USBPHYC already initialized
+	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
+		return HAL_OK;
+
 	if (1)
 	{
 		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
@@ -3533,7 +3537,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 			;
 		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
-		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;
+		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
 		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
 		const uint_fast32_t ODF = 0;	// игнорируется
 		// 1440 MHz
@@ -3584,6 +3588,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 
 	if (0)
 	{
+		// USBH_HS_DP1, USBH_HS_DM1
 //		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
@@ -3592,8 +3597,9 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		USBPHYC_PHY1->TUNE = 0x04070004;
 		(void) USBPHYC_PHY1->TUNE;
 	}
-	else
+	if (1)
 	{
+		// USBH_HS_DP2, USBH_HS_DM2
 //		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
@@ -3731,7 +3737,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 		(void) USBx->GCCFG;
 
 		/* Enables control of a High Speed USB PHY */
-		USB_HS_PHYCInit(USBx);
+		USB_HS_PHYCInit();
 
 		if(cfg->use_external_vbus == USB_ENABLE)
 		{
@@ -3779,7 +3785,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 			//	0111 INCR16: Bus transactions based on 16x 32 bit accesses
 			//	Others: Reserved
 			//(0x07uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |
-			(0x3UL << USB_OTG_GAHBCFG_HBSTLEN_Pos) | // INCR4
+			(0x7UL << USB_OTG_GAHBCFG_HBSTLEN_Pos) | // INCR
 		#elif CPUSTYLE_STM32H7XX
 			(0x3UL << USB_OTG_GAHBCFG_HBSTLEN_Pos) | // INCR4
 			//(USB_OTG_GAHBCFG_HBSTLEN_1 | USB_OTG_GAHBCFG_HBSTLEN_2) | // (0x06 << USB_OTG_GAHBCFG_HBSTLEN_Pos)
@@ -14631,6 +14637,8 @@ void board_ehci_initialize(void)
 //		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
 //		(void) SYSCFG->ICNR;
 	}
+	USB_HS_PHYCInit();
+
 
 	static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
 
