@@ -1823,7 +1823,7 @@ USBD_StatusTypeDef  USBD_CDC_EEM_ReceivePacket(USBD_HandleTypeDef *pdev,
 static void USBD_CDCEEM_ColdInit(void)
 {
 }
-
+#if 0
 const USBD_ClassTypeDef USBD_CLASS_CDC_EEMx =
 {
 	USBD_CDCEEM_ColdInit,
@@ -1838,6 +1838,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEMx =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
+#endif
 
 const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 {

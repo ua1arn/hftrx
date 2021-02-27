@@ -60,11 +60,11 @@ static int rndis_can_send(void);
 static void rndis_send(const void *data, int size);
 
 
-typedef ALIGNX_BEGIN struct rndisbuf_tag
+typedef struct rndisbuf_tag
 {
 	LIST_ENTRY item;
 	struct pbuf *frame;
-} ALIGNX_END rndisbuf_t;
+} rndisbuf_t;
 
 
 static LIST_ENTRY rndis_free;
@@ -218,7 +218,7 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 }
 
 
-static err_t rndis_output_fn(struct netif *netif, struct pbuf *q, ip_addr_t *ipaddr)
+static err_t rndis_output_fn(struct netif *netif, struct pbuf *q, const ip4_addr_t *ipaddr)
 {
 	err_t e = etharp_output(netif, q, ipaddr);
 	if (e == ERR_OK)
@@ -285,7 +285,7 @@ void init_netif(void)
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
-	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip4_input);
 	netif_set_default(netif);
 
 	while (!netif_is_up(netif))

@@ -125,8 +125,9 @@ enum
 #endif /* WITHUSBCDCACM */
 	STRING_ID_5,
 	STRING_ID_5a,
+#if WITHUSBCDCECM
 	STRING_ID_MACADDRESS,	// iMacAddress
-
+#endif /* WITHUSBCDCECM */
 	// USB UAC strings
 	STRING_ID_a0, /* by offset RX demodulator */
 	STRING_ID_a1, /* by offset spectrum */
@@ -4869,14 +4870,15 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 #endif /* WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE */
 #endif /* WITHUSBDFU */
-#if WITHUSBCDCECM || WITHUSBCDCEEM
+#if WITHUSBCDCECM
 	{
+		static const  uint8_t hw [6]  = { HWADDR };
 		unsigned partlen;
 		// Формирование MAC адреса данного устройства
 		// TODO: При модификации не забыть про достоверность значений
 		const uint_fast8_t id = STRING_ID_MACADDRESS;
 		char b [64];
-		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("3089846A96AB"));
+		local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%02X%02X%02X%02X%02X%02X"), hw [0], hw [1], hw [2], hw [3], hw [4], hw [5]);
 		//local_snprintf_P(b, ARRAY_SIZE(b), PSTR("0023543C471C"));
 		// Unic serial number
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
@@ -4885,7 +4887,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* WITHUSBCDCECM || WITHUSBCDCEEM */
+#endif /* WITHUSBCDCECM */
 
 #if CTLSTYLE_SW2011ALL || WITHUSBNOUNIQUE
 	{

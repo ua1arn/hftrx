@@ -53,6 +53,7 @@ static void init_dnserv(void);
 #if LWIP_DHCP
 static void init_dhserv(void)
 {
+	PRINTF("network_initialize: init_dhserv\n");
 	static dhcp_entry_t dhcpentries [] =
 	{
 		{ {0}, {192, 168, 7, 2}, {255, 255, 255, 0}, 24 * 60 * 60 },
@@ -73,7 +74,7 @@ static void init_dhserv(void)
 	{
 		memcpy(dhcpentries [i].addr, myIP, 4);
 		memcpy(dhcpentries [i].subnet, myNETMASK, 4);
-		dhcpentries [i].addr [3] += i + 100;
+		dhcpentries [i].addr [3] += i + 10;
 	}
 	memcpy(dhcp_config.addr, myIP, 4);
 	memcpy(dhcp_config.dns, myIP, 4);
@@ -86,7 +87,7 @@ static void init_dhserv(void)
 #endif /* LWIP_DHCP */
 
 
-static bool dns_query_proc(const char *name, ip_addr_t *addr)
+static bool dns_query_proc(const char *name, ip4_addr_t *addr)
 {
   if (
 		  strcmp(name, "run.stm") == 0 ||
@@ -103,7 +104,7 @@ static bool dns_query_proc(const char *name, ip_addr_t *addr)
 #if 1
 static void init_dnserv(void)
 {
-	ip_addr_t ipaddr;
+	ip4_addr_t ipaddr;
 	IP4_ADDR(& ipaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
 
 	while (dnserv_init(& ipaddr, 53, dns_query_proc) != ERR_OK)
