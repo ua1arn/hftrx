@@ -175,6 +175,7 @@ typedef unsigned sys_prot_t;
 #define AUTOIP_DEBUG           LWIP_DBG_ON
 #define DNS_DEBUG              LWIP_DBG_ON
 #define IP6_DEBUG              LWIP_DBG_ON
+#define PING_DEBUG				LWIP_DBG_ON
 
 void display_vtty_printf(const char * format, ...);
 //#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)
