@@ -12685,8 +12685,8 @@ sysinit_pll_initialize(void)
 	RCC->AHB2ENR |= RCC_AHB2ENR_D2SRAM3EN;
 	(void) RCC->AHB2ENR;
 
-	RCC->AHB4ENR |= RCC_AHB4ENR_D3SRAM1EN;
-	(void) RCC->AHB4ENR;
+//	RCC->AHB4ENR |= RCC_AHB4ENR_D3SRAM1EN;
+//	(void) RCC->AHB4ENR;
 
 	SCB_InvalidateICache();
 	SCB_EnableICache();

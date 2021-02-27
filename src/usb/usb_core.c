@@ -3778,11 +3778,14 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 			//	0101 INCR8: Bus transactions target 8x 32 bit accesses
 			//	0111 INCR16: Bus transactions based on 16x 32 bit accesses
 			//	Others: Reserved
-			(0x07uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |
+			//(0x07uL << USB_OTG_GAHBCFG_HBSTLEN_Pos) |
+			(0x3UL << USB_OTG_GAHBCFG_HBSTLEN_Pos) | // INCR4
 		#elif CPUSTYLE_STM32H7XX
-			(USB_OTG_GAHBCFG_HBSTLEN_1 | USB_OTG_GAHBCFG_HBSTLEN_2) | // (0x06 << USB_OTG_GAHBCFG_HBSTLEN_Pos)
+			(0x3UL << USB_OTG_GAHBCFG_HBSTLEN_Pos) | // INCR4
+			//(USB_OTG_GAHBCFG_HBSTLEN_1 | USB_OTG_GAHBCFG_HBSTLEN_2) | // (0x06 << USB_OTG_GAHBCFG_HBSTLEN_Pos)
 		#else /* CPUSTYLE_STM32H7XX */
-			(5 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
+			(0x3UL << USB_OTG_GAHBCFG_HBSTLEN_Pos) | // INCR4
+			//(5 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR8
 			//(7 << USB_OTG_GAHBCFG_HBSTLEN_Pos) |	// INCR16
 		#endif /* CPUSTYLE_STM32H7XX */
 			USB_OTG_GAHBCFG_DMAEN |
