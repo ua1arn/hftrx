@@ -8647,7 +8647,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
-						if(USBx_OUTEP(epnum)->DOEPINT & (1 << 15))
+						if (USBx_OUTEP(epnum)->DOEPINT & (1 << 15))
 						{
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
 						}
