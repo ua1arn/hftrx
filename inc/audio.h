@@ -195,10 +195,28 @@ extern "C" {
 // коррекция размера с учетом требуемого выравнивания
 #define DMAHWEPADJUST(sz, granulation) (((sz) + ((granulation) - 1)) / (granulation) * (granulation))
 
+/*
+	For full-/high-speed isochronous endpoints, this value
+	must be in the range from 1 to 16. The bInterval value
+	is used as the exponent for a 2^(bInterval-1) value; e.g.,
+	a bInterval of 4 means a period of 8 (2^(4-1))."
+
+  */
 /* константы. С запасом чтобы работало и при тактовой 125 МГц на FPGA при децимации 2560 = 48.828125 kHz sample rate */
 //#define MSOUTSAMPLES	49 /* количество сэмплов за милисекунду в UAC OUT */
 // без запаса - только для 48000
-#define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
+#if WITHUSBDEV_HSDESC
+	#define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
+	#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
+	#define FSINTERVAL_AUDIO48 1
+
+#else /* WITHUSBDEV_HSDESC */
+	#define MSOUTSAMPLES	48 /* количество сэмплов за милисекунду в UAC OUT */
+	#define HSINTERVAL_AUDIO48 1//4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
+	#define FSINTERVAL_AUDIO48 1
+
+#endif /* WITHUSBDEV_HSDESC */
+
 #define MSINSAMPLES		(MSOUTSAMPLES + 1) /* количество сэмплов за милисекунду в UAC IN */
 
 
@@ -283,8 +301,6 @@ extern "C" {
 	a bInterval of 4 means a period of 8 (2^(4-1))."
 
   */
-#define HSINTERVAL_AUDIO48 4	// endpoint descriptor parameters - для обеспечения 1 кГц периода
-#define FSINTERVAL_AUDIO48 1
 
 #define HSINTERVAL_1MS 4	// endpoint descriptor parameters - для обеспечения 10 ms периода
 #define FSINTERVAL_1MS 1

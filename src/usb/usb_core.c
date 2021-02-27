@@ -3924,7 +3924,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 
 	if(cfg->phy_itface  == USB_OTG_ULPI_PHY)
 	{
-		if(cfg->pcd_speed == PCD_SPEED_HIGH)
+		if (cfg->pcd_speed == PCD_SPEED_HIGH)
 		{
 			/* Set High speed phy */
 			USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH);
@@ -3932,7 +3932,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 		else
 		{
 			/* set High speed phy in Full speed mode */
-			USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH_IN_FULL);
+			USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH_IN_FULL);	// 0x01
 		}
 	}
 
@@ -4192,6 +4192,9 @@ HAL_StatusTypeDef USB_FlushRxFifo(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef USB_SetDevSpeed(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t usb_otg_speed)
 {
+#if WITHUSBDEV_HIGHSPEEDPHYC
+#else /* WITHUSBDEV_HIGHSPEEDPHYC */
+#endif /* WITHUSBDEV_HIGHSPEEDPHYC */
 	uint_fast32_t speed;
 	switch (usb_otg_speed)
 	{
