@@ -28,8 +28,6 @@
 #define DMA2D_AMTCR_DT_VALUE 255uL	/* 0..255 */
 #define DMA2D_AMTCR_DT_ENABLE 1uL	/* 0..1 */
 
-#define DMA2D_CR_LOM	(1u << 6)	/* documented but missing in headers. */
-
 #define MDMA_CH		MDMA_Channel0
 #define MDMA_DATA	(MDMA_Channel1->CSAR)	// регистр выделенного канала MDMA используется для хранения значения цвета. Переиферия не кэшируется.
 
