@@ -129,7 +129,7 @@
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	//#define WITHIF4DSP	1	// "Дятел"
 	//#define DEFAULT_DSP_IF	12000
-	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
+	//
 	//#define WITHMODEM 1	// тестирование приёма/передачи BPSK31
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */ 
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */

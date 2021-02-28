@@ -143,7 +143,7 @@
 		#define DIRECT_27M0_X1		1	/* Board hardware configuration */
 		#define BANDSELSTYLERE_LOCONV32M	1	/* Down-conversion with working band .030..32 MHz */
 		//#define DEFAULT_DSP_IF	12000
-		//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
+		//
 		#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 
 	#elif 0
@@ -284,7 +284,7 @@
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
-	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
+	//
 	//#define WITHLOOPBACKTEST	1
 	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */

@@ -15982,18 +15982,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gdigigainmax,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if CTLSTYLE_RAVENDSP_V1 || WITHEXTERNALDDSP
-	{
-		QLABEL("AD605 GN"), 7, 0, 0,	ISTEP1,		/* напряжение на AD605 (управление усилением тракта ПЧ */
-		ITEM_VALUE,
-		0, UINT8_MAX, 		//
-		offsetof(struct nvmap, gvad605),
-		nvramoffs0,
-		NULL,
-		& gvad605,	// 8 bit
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* CTLSTYLE_RAVENDSP_V1 || WITHEXTERNALDDSP */
 #if ! WITHFLATMENU
 	{
 		QLABEL("AGC SSB "), 0, 0, 0, 0,
