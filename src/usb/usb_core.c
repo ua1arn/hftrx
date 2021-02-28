@@ -3514,7 +3514,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
 			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m
-			(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck
+			(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck	- входная частота для PHYC PLL
 			0;
 		(void) RCC->USBCKSELR;
 
@@ -3539,7 +3539,25 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
 		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
-		const uint_fast32_t refclk = PLL4_FREQ_R;
+		uint_fast32_t refclk;
+		switch ((RCC->USBCKSELR & RCC_USBCKSELR_USBPHYSRC_Msk) >> RCC_USBCKSELR_USBPHYSRC_Pos)
+		{
+		case 0x00:
+			// hse_ker_ck
+			refclk = WITHCPUXTAL;
+			break;
+		case 0x01:
+			// pll4_r_ck
+			refclk = PLL4_FREQ_R;
+			break;
+		case 0x02:
+			// hse_ker_ck/2
+			refclk = WITHCPUXTAL / 2;
+			break;
+		default:
+			ASSERT(0);
+			return HAL_ERROR;
+		}
 		const uint_fast32_t ODF = 0;	// игнорируется
 		// 1440 MHz
 		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, refclk);
@@ -3552,7 +3570,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 //		FRACT /= pll4_r_ck;
 //		FRACT = FRACT - (d.quot << 16);
 
-		//PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, (unsigned) (FRACT & 0xFFFF), ODF);
+		//PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", refclk, N, (unsigned) (FRACT & 0xFFFF), ODF);
 
 		USBPHYC->PLL =
 				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |
@@ -4036,8 +4054,8 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 #else /* CPUSTYLE_STM32H7XX */
 
 	#if CPUSTYLE_STM32MP1
-		  const uint_fast32_t TXTHRLEN = 1;		// in DWORDS: The threshold length has to be at least eight DWORDS.
-		  const uint_fast32_t RXTHRLEN = 1;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
+		  const uint_fast32_t TXTHRLEN = 4;		// in DWORDS: The threshold length has to be at least eight DWORDS.
+		  const uint_fast32_t RXTHRLEN = 4;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
 	#elif CPUSTYLE_STM32H7XX
 		  const uint_fast32_t TXTHRLEN = 256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
 		  const uint_fast32_t RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
@@ -4055,6 +4073,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 		//USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
 		//USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
 		USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable controls internal DMA arbiter parking for IN endpoints.
+		USB_OTG_DTHRCTL_RXTHREN |
 		0;
     (void) USBx_DEVICE->DTHRCTL;
 
@@ -9102,18 +9121,18 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 }
 #else
 
-//#ifndef USB_OTG_DOEPINT_STPKTRX
-//	#define USB_OTG_DOEPINT_STPKTRX (1uL << 15)		// STPKTRX: Setup packet received. Applicable for control OUT endpoints in only in the Buffer DMA Mode.
-//#endif /* USB_OTG_DOEPINT_STPKTRX */
-//#ifndef USB_OTG_DOEPINT_OTEPSPR
-//	#define USB_OTG_DOEPINT_OTEPSPR (1uL << 5)		// STSPHSRX: Status phase received for control write
-//#endif /* USB_OTG_DOEPINT_OTEPSPR */
-//#ifndef USB_OTG_DOEPMSK_OTEPSPRM
-//	#define USB_OTG_DOEPMSK_OTEPSPRM (1uL << 5)		// STSPHSRX: Status phase received for control write
-//#endif /* USB_OTG_DOEPMSK_OTEPSPRM */
-//#ifndef USB_OTG_DOEPMSK_NAKM
-//	#define USB_OTG_DOEPMSK_NAKM (1uL << 13)
-//#endif /* USB_OTG_DOEPMSK_NAKM */
+#ifndef USB_OTG_DOEPINT_STPKTRX
+	#define USB_OTG_DOEPINT_STPKTRX (1uL << 15)		// STPKTRX: Setup packet received. Applicable for control OUT endpoints in only in the Buffer DMA Mode.
+#endif /* USB_OTG_DOEPINT_STPKTRX */
+#ifndef USB_OTG_DOEPINT_OTEPSPR
+	#define USB_OTG_DOEPINT_OTEPSPR (1uL << 5)		// STSPHSRX: Status phase received for control write
+#endif /* USB_OTG_DOEPINT_OTEPSPR */
+#ifndef USB_OTG_DOEPMSK_OTEPSPRM
+	#define USB_OTG_DOEPMSK_OTEPSPRM (1uL << 5)		// STSPHSRX: Status phase received for control write
+#endif /* USB_OTG_DOEPMSK_OTEPSPRM */
+#ifndef USB_OTG_DOEPMSK_NAKM
+	#define USB_OTG_DOEPMSK_NAKM (1uL << 13)
+#endif /* USB_OTG_DOEPMSK_NAKM */
 
 /**
   * @brief  Handle PCD interrupt request.
@@ -9189,6 +9208,13 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				if (ep_intr & 0x1)
 				{
 				  const uint32_t epint = USB_ReadDevOutEPInterrupt(hpcd->Instance, epnum);
+
+				  /* This interrupt is asserted when the core detects an overflow or a CRC error for an OUT packet. */
+				  if ((USBx_OUTEP(epnum)->DOEPINT & (1uL << 8)) != 0)
+				  {
+						dbg_putchar('!');
+						CLEAR_OUT_EP_INTR(epnum, (1uL << 8));
+				  }
 
 				  if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC)
 				  {
@@ -9402,46 +9428,53 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     /* Handle Reset Interrupt */
     if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_USBRST))
     {
-	  uint32_t i;
-      USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_RWUSIG;
-      USB_FlushTxFifoEx(hpcd->Instance,  0);	/* flush control endpoint tx FIFO */
+  	  uint32_t i;
+        USBx_DEVICE->DCTL &= ~USB_OTG_DCTL_RWUSIG;
+        USB_FlushTxFifoEx(hpcd->Instance,  0);	/* flush control endpoint tx FIFO */
 
-      for (i = 0; i < hpcd->Init.dev_endpoints ; ++ i)
-      {
-        USBx_INEP(i)->DIEPINT = 0xFF;
-        USBx_INEP(i)->DIEPCTL &= ~ USB_OTG_DIEPCTL_STALL;
-        USBx_OUTEP(i)->DOEPINT = 0xFF;
-        USBx_OUTEP(i)->DOEPCTL &= ~ USB_OTG_DOEPCTL_STALL;
+        for (i = 0; i < hpcd->Init.dev_endpoints ; ++ i)
+        {
+          USBx_INEP(i)->DIEPINT = 0xFF;
+          USBx_INEP(i)->DIEPCTL &= ~ USB_OTG_DIEPCTL_STALL;
+          USBx_OUTEP(i)->DOEPINT = 0xFF;
+          USBx_OUTEP(i)->DOEPCTL &= ~ USB_OTG_DOEPCTL_STALL;
+        }
+        USBx_DEVICE->DAINT = 0xFFFFFFFF;
+        USBx_DEVICE->DAINTMSK |= (1uL << USB_OTG_DAINTMSK_IEPM_Pos) | (1uL << USB_OTG_DAINTMSK_OEPM_Pos);
+
+        if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
+        {
+            USBx_DEVICE->DOUTEP1MSK |= USB_OTG_DOEPMSK_STUPM |
+                                       USB_OTG_DOEPMSK_XFRCM |
+                                       USB_OTG_DOEPMSK_EPDM;
+
+            USBx_DEVICE->DINEP1MSK |= USB_OTG_DIEPMSK_TOM |
+                                      USB_OTG_DIEPMSK_XFRCM |
+                                      USB_OTG_DIEPMSK_EPDM;
+
+        }
+        else
+        {
+            USBx_DEVICE->DOEPMSK |= USB_OTG_DOEPMSK_STUPM |
+                                    USB_OTG_DOEPMSK_XFRCM |
+                                    USB_OTG_DOEPMSK_EPDM |
+                                    USB_OTG_DOEPMSK_OTEPSPRM |
+                                    USB_OTG_DOEPMSK_NAKM;
+
+            USBx_DEVICE->DIEPMSK |= USB_OTG_DIEPMSK_TOM |
+                                    USB_OTG_DIEPMSK_XFRCM |
+                                    USB_OTG_DIEPMSK_EPDM;
+        }
+
+
+        /* Set Default Address to 0 */
+        USBx_DEVICE->DCFG &= ~USB_OTG_DCFG_DAD;
+
+        /* setup EP0 to receive SETUP packets */
+        USB_EP0_OutStart(hpcd->Instance, hpcd->Init.dma_enable, (uint8_t *)hpcd->PSetup);
+
+        __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_USBRST);
       }
-      USBx_DEVICE->DAINT = 0xFFFFFFFF;
-      USBx_DEVICE->DAINTMSK |= (1uL << USB_OTG_DAINTMSK_IEPM_Pos) | (1uL << USB_OTG_DAINTMSK_OEPM_Pos);
-
-      if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
-      {
-		//#ifdef USB_OTG_DOEPINT_OTEPSPR
-		  //USBx_DEVICE->DOUTEP1MSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
- 		//#else
-		  USBx_DEVICE->DOUTEP1MSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM);
- 		//#endif
-        USBx_DEVICE->DINEP1MSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
-      }
-
-	#ifdef USB_OTG_DOEPMSK_OTEPSPRM
-		USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
-	#else
-		USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM);
-	#endif
-
-    USBx_DEVICE->DIEPMSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
-
-      /* Set Default Address to 0 */
-      USBx_DEVICE->DCFG &= ~USB_OTG_DCFG_DAD;
-
-      /* setup EP0 to receive SETUP packets */
-      USB_EP0_OutStart(hpcd->Instance, hpcd->Init.dma_enable, (uint8_t *)hpcd->PSetup);
-
-      __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_USBRST);
-    }
 
     /* Handle Enumeration done Interrupt */
     if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE))
