@@ -30,7 +30,7 @@
 static void hd44780_delay(void)
 {
 	hardware_spi_io_delay();
-	local_delay_us(25);
+	local_delay_us(50);
 }
 
 #endif /* LCDMODE_HARD_SPI */
