@@ -8535,6 +8535,101 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 	return HAL_OK;
 }
 
+void USB_SetTurnaroundTime(PCD_HandleTypeDef *hpcd)
+{
+	//hpcd->Instance->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
+	if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
+	{
+		hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
+		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
+		hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+				| (uint32_t) ((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) | 0;
+	}
+	else
+	{
+		hpcd->Init.pcd_speed = PCD_SPEED_FULL;
+		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE;//USB_OTG_FS_MAX_PACKET_SIZE ;
+		/* The USBTRD is configured according to the tables below, depending on AHB frequency
+		 used by application. In the low AHB frequency range it is used to stretch enough the USB response
+		 time to IN tokens, the USB turnaround time, so to compensate for the longer AHB read access
+		 latency to the Data FIFO */
+		if (0)
+		{
+			hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+					| (uint32_t) ((0xF * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+		}
+		else
+		{
+			uint32_t hclk;
+			/* Get hclk frequency value */
+			hclk = CPU_FREQ; //HAL_RCC_GetHCLKFreq();
+			if ((hclk >= 14200000) && (hclk < 15000000))
+			{
+				/* hclk Clock Range between 14.2-15 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0xF * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else if ((hclk >= 15000000) && (hclk < 16000000))
+			{
+				/* hclk Clock Range between 15-16 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0xE * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else if ((hclk >= 16000000) && (hclk < 17200000))
+			{
+				/* hclk Clock Range between 16-17.2 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0xD * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else if ((hclk >= 17200000) && (hclk < 18500000))
+			{
+				/* hclk Clock Range between 17.2-18.5 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0xC * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else if ((hclk >= 18500000) && (hclk < 20000000))
+			{
+				/* hclk Clock Range between 18.5-20 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0xB * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else if ((hclk >= 20000000) && (hclk < 21800000))
+			{
+				/* hclk Clock Range between 20-21.8 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0xA * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else if ((hclk >= 21800000) && (hclk < 24000000))
+			{
+				/* hclk Clock Range between 21.8-24 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0x9 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else if ((hclk >= 24000000) && (hclk < 27700000))
+			{
+				/* hclk Clock Range between 24-27.7 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0x8 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else if ((hclk >= 27700000) && (hclk < 32000000))
+			{
+				/* hclk Clock Range between 27.7-32 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0x7 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+			else/* if(hclk >= 32000000) */
+			{
+				/* hclk Clock Range between 32-200 MHz */
+				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+						| (uint32_t) ((0x6 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			}
+		}
+		hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+				| (uint32_t) ((0x0F << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT);
+	}
+}
+
+
 /**
   * @brief  Handle PCD interrupt request.
   * @param  hpcd: PCD handle
@@ -8554,7 +8649,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 	#define USB_OTG_DOEPMSK_NAKM (1uL << 13)
 #endif /* USB_OTG_DOEPMSK_NAKM */
 
-void newHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
+void badHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	__DMB();
 	//	PRINTF(PSTR("HAL_PCD_IRQHandler:\n"));
@@ -8793,52 +8888,51 @@ void newHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 			  const uint32_t epint = USB_ReadDevInEPInterrupt(hpcd->Instance, epnum);
 			  USB_OTG_EPTypeDef * const inep = & hpcd->IN_ep [epnum];
 
-			  if ((epint & USB_OTG_DIEPINT_XFRC) == USB_OTG_DIEPINT_XFRC)
-			  {
-				USBx_DEVICE->DIEPEMPMSK &= ~ (0x1uL << epnum);
+	          if ((epint & USB_OTG_DIEPINT_XFRC) == USB_OTG_DIEPINT_XFRC)
+	          {
+	        	  const uint32_t fifoemptymsk = (uint32_t)(0x1UL << (epnum & 0x0F));
+	            USBx_DEVICE->DIEPEMPMSK &= ~fifoemptymsk;
 
-				CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_XFRC);
+	            CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_XFRC);
 
-				if (hpcd->Init.dma_enable == USB_ENABLE)
-				{
-				// Использование maxpacket вместо xfer_len важно для обработки персылок больше чем maxpacket
-				  inep->xfer_buff += inep->maxpacket; // пересланный размер может отличаться от максимального
-				}
+	            if (hpcd->Init.dma_enable == 1U)
+	            {
+	              hpcd->IN_ep[epnum].xfer_buff += hpcd->IN_ep[epnum].maxpacket;
 
-				HAL_PCD_DataInStageCallback(hpcd, inep->num);
+	              /* this is ZLP, so prepare EP0 for next setup */
+	              if ((epnum == 0U) && (hpcd->IN_ep[epnum].xfer_len == 0U))
+	              {
+	                /* prepare to rx more setup packets */
+	                (void)USB_EP0_OutStart(hpcd->Instance, 1U, (uint8_t *)hpcd->PSetup);
+	              }
+	            }
 
-				if (hpcd->Init.dma_enable == USB_ENABLE)
-				{
-				  /* this is ZLP, so prepare EP0 for next setup */
-				  if ((epnum == 0) && (inep->xfer_len == 0))
-				  {
-					/* prepare to rx more setup packets */
-					USB_EP0_OutStart(hpcd->Instance, USB_ENABLE, (uint8_t *) hpcd->PSetup);
-				  }
-				}
-			  }
-
-			  if ((epint & USB_OTG_DIEPINT_TOC) == USB_OTG_DIEPINT_TOC)
-			  {
-				CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_TOC);
-			  }
-			  if ((epint & USB_OTG_DIEPINT_ITTXFE) == USB_OTG_DIEPINT_ITTXFE)
-			  {
-				CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_ITTXFE);
-			  }
-			  if ((epint & USB_OTG_DIEPINT_INEPNE) == USB_OTG_DIEPINT_INEPNE)
-			  {
-				CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_INEPNE);
-			  }
-			  if ((epint & USB_OTG_DIEPINT_EPDISD) == USB_OTG_DIEPINT_EPDISD)
-			  {
-				CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_EPDISD);
-			  }
-			  if ((epint & USB_OTG_DIEPINT_TXFE) == USB_OTG_DIEPINT_TXFE)
-			  {
-				  // see (USBx->GAHBCFG & USB_OTG_GAHBCFG_TXFELVL)
-				PCD_WriteEmptyTxFifo(hpcd, epnum);	// вызывается только при работе без DMA
-			  }
+	#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+	            hpcd->DataInStageCallback(hpcd, (uint8_t)epnum);
+	#else
+	            HAL_PCD_DataInStageCallback(hpcd, (uint8_t)epnum);
+	#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+	          }
+	          if ((epint & USB_OTG_DIEPINT_TOC) == USB_OTG_DIEPINT_TOC)
+	          {
+	            CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_TOC);
+	          }
+	          if ((epint & USB_OTG_DIEPINT_ITTXFE) == USB_OTG_DIEPINT_ITTXFE)
+	          {
+	            CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_ITTXFE);
+	          }
+	          if ((epint & USB_OTG_DIEPINT_INEPNE) == USB_OTG_DIEPINT_INEPNE)
+	          {
+	            CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_INEPNE);
+	          }
+	          if ((epint & USB_OTG_DIEPINT_EPDISD) == USB_OTG_DIEPINT_EPDISD)
+	          {
+	            CLEAR_IN_EP_INTR(epnum, USB_OTG_DIEPINT_EPDISD);
+	          }
+	          if ((epint & USB_OTG_DIEPINT_TXFE) == USB_OTG_DIEPINT_TXFE)
+	          {
+	            (void)PCD_WriteEmptyTxFifo(hpcd, epnum);
+	          }
 			}
 			epnum ++;
 			ep_intr >>= 1;
@@ -8948,102 +9042,13 @@ void newHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     /* Handle Enumeration done Interrupt */
     if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE))
     {
-      USB_ActivateSetup(hpcd->Instance);
-      //hpcd->Instance->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
+		USB_ActivateSetup(hpcd->Instance);
+		//hpcd->Instance->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
 
-      if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
-      {
-        hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
-        //hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
-        hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
-			(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
-			0;
-      }
-      else
-      {
-        hpcd->Init.pcd_speed = PCD_SPEED_FULL;
-        //hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE;//USB_OTG_FS_MAX_PACKET_SIZE ;
+		USB_SetTurnaroundTime(hpcd);
+		HAL_PCD_ResetCallback(hpcd);
 
-        /* The USBTRD is configured according to the tables below, depending on AHB frequency
-        used by application. In the low AHB frequency range it is used to stretch enough the USB response
-        time to IN tokens, the USB turnaround time, so to compensate for the longer AHB read access
-        latency to the Data FIFO */
-
-		if (0)
-		{
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xF * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-		}
-		else
-		{
-		uint32_t hclk;
-        /* Get hclk frequency value */
-        hclk = CPU_FREQ; //HAL_RCC_GetHCLKFreq();
-
-		if ((hclk >= 14200000)&&(hclk < 15000000))
-        {
-          /* hclk Clock Range between 14.2-15 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xF * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 15000000)&&(hclk < 16000000))
-        {
-          /* hclk Clock Range between 15-16 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xE * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 16000000)&&(hclk < 17200000))
-        {
-          /* hclk Clock Range between 16-17.2 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xD * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 17200000)&&(hclk < 18500000))
-        {
-          /* hclk Clock Range between 17.2-18.5 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xC * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 18500000)&&(hclk < 20000000))
-        {
-          /* hclk Clock Range between 18.5-20 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xB * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 20000000)&&(hclk < 21800000))
-        {
-          /* hclk Clock Range between 20-21.8 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xA * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 21800000)&&(hclk < 24000000))
-        {
-          /* hclk Clock Range between 21.8-24 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0x9 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 24000000)&&(hclk < 27700000))
-        {
-          /* hclk Clock Range between 24-27.7 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0x8 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 27700000)&&(hclk < 32000000))
-        {
-          /* hclk Clock Range between 27.7-32 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0x7 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else /* if(hclk >= 32000000) */
-        {
-          /* hclk Clock Range between 32-200 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0x6 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-		}
-      }
-
-      HAL_PCD_ResetCallback(hpcd);
-
-      __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE);
+		__HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE);
     }
 
     /* Handle SOF Interrupt */
@@ -9184,11 +9189,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  {
 					//  process EP OUT transfer complete interrupt.
 					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
-		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+		//#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
 					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
 					{
-					  if (hpcd->Init.dma_enable == USB_ENABLE)
+					  //if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
 						if (USBx_OUTEP(epnum)->DOEPINT & (1 << 15))	// Setup packet received
@@ -9197,7 +9202,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						}
 					  }
 					}
-		#endif /* CPUSTYLE_STM32H7XX */
+		//#endif /* CPUSTYLE_STM32H7XX */
 
 					if (hpcd->Init.dma_enable == USB_ENABLE)
 					{
@@ -9219,11 +9224,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
 				  {
 					/* Class B setup phase done for previous decoded setup */
-		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
+		//#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
 					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
 					{
-					  if (hpcd->Init.dma_enable == USB_ENABLE)
+					  //if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
 						if (USBx_OUTEP(epnum)->DOEPINT & (1 << 15))
@@ -9232,7 +9237,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						}
 					  }
 					}
-		#endif /* CPUSTYLE_STM32H7XX */
+		//#endif /* CPUSTYLE_STM32H7XX */
 
 					/* Inform the upper layer that a setup packet is available */
 					HAL_PCD_SetupStageCallback(hpcd);
@@ -9426,102 +9431,13 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     /* Handle Enumeration done Interrupt */
     if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE))
     {
-      USB_ActivateSetup(hpcd->Instance);
-      //hpcd->Instance->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
+		USB_ActivateSetup(hpcd->Instance);
+		//hpcd->Instance->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
 
-      if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
-      {
-        hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
-        //hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
-        hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) |
-			(uint32_t)((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) |
-			0;
-      }
-      else
-      {
-        hpcd->Init.pcd_speed = PCD_SPEED_FULL;
-        //hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE;//USB_OTG_FS_MAX_PACKET_SIZE ;
+		USB_SetTurnaroundTime(hpcd);
+		HAL_PCD_ResetCallback(hpcd);
 
-        /* The USBTRD is configured according to the tables below, depending on AHB frequency
-        used by application. In the low AHB frequency range it is used to stretch enough the USB response
-        time to IN tokens, the USB turnaround time, so to compensate for the longer AHB read access
-        latency to the Data FIFO */
-
-		if (0)
-		{
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xF * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-		}
-		else
-		{
-		uint32_t hclk;
-        /* Get hclk frequency value */
-        hclk = CPU_FREQ; //HAL_RCC_GetHCLKFreq();
-
-		if ((hclk >= 14200000)&&(hclk < 15000000))
-        {
-          /* hclk Clock Range between 14.2-15 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xF * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 15000000)&&(hclk < 16000000))
-        {
-          /* hclk Clock Range between 15-16 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xE * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 16000000)&&(hclk < 17200000))
-        {
-          /* hclk Clock Range between 16-17.2 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xD * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 17200000)&&(hclk < 18500000))
-        {
-          /* hclk Clock Range between 17.2-18.5 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xC * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 18500000)&&(hclk < 20000000))
-        {
-          /* hclk Clock Range between 18.5-20 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xB * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 20000000)&&(hclk < 21800000))
-        {
-          /* hclk Clock Range between 20-21.8 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0xA * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 21800000)&&(hclk < 24000000))
-        {
-          /* hclk Clock Range between 21.8-24 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0x9 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 24000000)&&(hclk < 27700000))
-        {
-          /* hclk Clock Range between 24-27.7 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0x8 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else if ((hclk >= 27700000)&&(hclk < 32000000))
-        {
-          /* hclk Clock Range between 27.7-32 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0x7 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-
-        else /* if(hclk >= 32000000) */
-        {
-          /* hclk Clock Range between 32-200 MHz */
-          hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT) | (uint32_t)((0x6 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
-        }
-		}
-      }
-
-      HAL_PCD_ResetCallback(hpcd);
-
-      __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE);
+		__HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE);
     }
 
     /* Handle SOF Interrupt */
