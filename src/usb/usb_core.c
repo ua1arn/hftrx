@@ -8547,7 +8547,14 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 #ifndef USB_OTG_DOEPINT_OTEPSPR
 	#define USB_OTG_DOEPINT_OTEPSPR (1uL << 5)		// STSPHSRX: Status phase received for control write
 #endif /* USB_OTG_DOEPINT_OTEPSPR */
-void badHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
+#ifndef USB_OTG_DOEPMSK_OTEPSPRM
+	#define USB_OTG_DOEPMSK_OTEPSPRM (1uL << 5)		// STSPHSRX: Status phase received for control write
+#endif /* USB_OTG_DOEPMSK_OTEPSPRM */
+#ifndef USB_OTG_DOEPMSK_NAKM
+	#define USB_OTG_DOEPMSK_NAKM (1uL << 13)
+#endif /* USB_OTG_DOEPMSK_NAKM */
+
+void newHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	__DMB();
 	//	PRINTF(PSTR("HAL_PCD_IRQHandler:\n"));
@@ -8906,21 +8913,28 @@ void badHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
       if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
       {
-		//#ifdef USB_OTG_DOEPINT_OTEPSPR
-		  //USBx_DEVICE->DOUTEP1MSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
- 		//#else
-		  USBx_DEVICE->DOUTEP1MSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM);
- 		//#endif
-        USBx_DEVICE->DINEP1MSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
+          USBx_DEVICE->DOUTEP1MSK |= USB_OTG_DOEPMSK_STUPM |
+                                     USB_OTG_DOEPMSK_XFRCM |
+                                     USB_OTG_DOEPMSK_EPDM;
+
+          USBx_DEVICE->DINEP1MSK |= USB_OTG_DIEPMSK_TOM |
+                                    USB_OTG_DIEPMSK_XFRCM |
+                                    USB_OTG_DIEPMSK_EPDM;
+
+      }
+      else
+      {
+          USBx_DEVICE->DOEPMSK |= USB_OTG_DOEPMSK_STUPM |
+                                  USB_OTG_DOEPMSK_XFRCM |
+                                  USB_OTG_DOEPMSK_EPDM |
+                                  USB_OTG_DOEPMSK_OTEPSPRM |
+                                  USB_OTG_DOEPMSK_NAKM;
+
+          USBx_DEVICE->DIEPMSK |= USB_OTG_DIEPMSK_TOM |
+                                  USB_OTG_DIEPMSK_XFRCM |
+                                  USB_OTG_DIEPMSK_EPDM;
       }
 
-	#ifdef USB_OTG_DOEPMSK_OTEPSPRM
-		USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
-	#else
-		USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM);
-	#endif
-
-    USBx_DEVICE->DIEPMSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
 
       /* Set Default Address to 0 */
       USBx_DEVICE->DCFG &= ~USB_OTG_DCFG_DAD;
@@ -9378,21 +9392,27 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
       if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
       {
-		//#ifdef USB_OTG_DOEPINT_OTEPSPR
-		  //USBx_DEVICE->DOUTEP1MSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
- 		//#else
-		  USBx_DEVICE->DOUTEP1MSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM);
- 		//#endif
-        USBx_DEVICE->DINEP1MSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
+          USBx_DEVICE->DOUTEP1MSK |= USB_OTG_DOEPMSK_STUPM |
+                                     USB_OTG_DOEPMSK_XFRCM |
+                                     USB_OTG_DOEPMSK_EPDM;
+
+          USBx_DEVICE->DINEP1MSK |= USB_OTG_DIEPMSK_TOM |
+                                    USB_OTG_DIEPMSK_XFRCM |
+                                    USB_OTG_DIEPMSK_EPDM;
+
       }
+      else
+      {
+          USBx_DEVICE->DOEPMSK |= USB_OTG_DOEPMSK_STUPM |
+                                  USB_OTG_DOEPMSK_XFRCM |
+                                  USB_OTG_DOEPMSK_EPDM |
+                                  USB_OTG_DOEPMSK_OTEPSPRM |
+                                  USB_OTG_DOEPMSK_NAKM;
 
-	#ifdef USB_OTG_DOEPMSK_OTEPSPRM
-		USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
-	#else
-		USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM);
-	#endif
-
-    USBx_DEVICE->DIEPMSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
+          USBx_DEVICE->DIEPMSK |= USB_OTG_DIEPMSK_TOM |
+                                  USB_OTG_DIEPMSK_XFRCM |
+                                  USB_OTG_DIEPMSK_EPDM;
+      }
 
       /* Set Default Address to 0 */
       USBx_DEVICE->DCFG &= ~USB_OTG_DCFG_DAD;
