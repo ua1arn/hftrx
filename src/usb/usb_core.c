@@ -9118,7 +9118,7 @@ void badHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 // F4, F7, H7, MP1...
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
-	__DMB();
+	//__DMB();
 	//	PRINTF(PSTR("HAL_PCD_IRQHandler:\n"));
 	USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
 
@@ -9335,17 +9335,24 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		/* Clear the Remote Wake-up Signaling */
 		USBx_DEVICE->DCTL &= ~ USB_OTG_DCTL_RWUSIG;
 
-#ifdef USB_OTG_GLPMCFG_LPMEN
-		if(hpcd->LPM_State == LPM_L1)
-		{
-			hpcd->LPM_State = LPM_L0;
-			HAL_PCDEx_LPM_Callback(hpcd, PCD_LPM_L0_ACTIVE);
-		}
-		else
-#endif /* USB_OTG_GLPMCFG_LPMEN */
-		{
-			HAL_PCD_ResumeCallback(hpcd);
-		}
+	      if (hpcd->LPM_State == LPM_L1)
+	      {
+	        hpcd->LPM_State = LPM_L0;
+
+	#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+	        hpcd->LPMCallback(hpcd, PCD_LPM_L0_ACTIVE);
+	#else
+	        HAL_PCDEx_LPM_Callback(hpcd, PCD_LPM_L0_ACTIVE);
+	#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+	      }
+	      else
+	      {
+	#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+	        hpcd->ResumeCallback(hpcd);
+	#else
+	        HAL_PCD_ResumeCallback(hpcd);
+	#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+	      }
 		__HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_WKUINT);
 	}
 
