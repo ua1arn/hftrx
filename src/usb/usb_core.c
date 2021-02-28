@@ -4450,7 +4450,7 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
   */
 HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef *ep, uint_fast8_t dma)
 {
-	uint16_t pktcnt;
+	const uint32_t devspeed = USB_GetDevSpeed(USBx);
 
 	/* IN endpoint */
 	if (ep->is_in == 1U)
@@ -4501,7 +4501,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 
 			if (ep->type == USBD_EP_TYPE_ISOC)
 			{
-				if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_FNSOF_Msk) == 0U || USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH)
+				if ((USBx_DEVICE->DSTS & USB_OTG_DSTS_FNSOF_Msk) == 0U || devspeed == USB_OTG_SPEED_HIGH)
 				{
 					inep->DIEPCTL |= USB_OTG_DIEPCTL_SODDFRM;
 					(void) inep->DIEPCTL;
@@ -4534,7 +4534,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 			}
 			else
 			{
-				if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U || USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH)
+				if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U || devspeed == USB_OTG_SPEED_HIGH)
 				{
 					inep->DIEPCTL |= USB_OTG_DIEPCTL_SODDFRM;
 					(void) inep->DIEPCTL;
@@ -4556,9 +4556,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		 * pktcnt = N
 		 * xfersize = N * maxpacket
 		 */
-		outep->DOEPTSIZ &= ~ (USB_OTG_DOEPTSIZ_XFRSIZ);
-		(void) outep->DOEPTSIZ;
-		outep->DOEPTSIZ &= ~ (USB_OTG_DOEPTSIZ_PKTCNT);
+		outep->DOEPTSIZ &= ~ (USB_OTG_DOEPTSIZ_XFRSIZ | USB_OTG_DOEPTSIZ_PKTCNT);
 		(void) outep->DOEPTSIZ;
 
 		if (ep->xfer_len == 0U)
@@ -4570,7 +4568,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		}
 		else
 		{
-			pktcnt = (uint16_t) ((ep->xfer_len + ep->maxpacket - 1U) / ep->maxpacket);
+			uint16_t pktcnt = (uint16_t) ((ep->xfer_len + ep->maxpacket - 1U) / ep->maxpacket);
 			outep->DOEPTSIZ |= USB_OTG_DOEPTSIZ_PKTCNT & ((uint32_t) pktcnt << USB_OTG_DOEPTSIZ_PKTCNT_Pos);
 			(void) outep->DOEPTSIZ;
 			outep->DOEPTSIZ |= USB_OTG_DOEPTSIZ_XFRSIZ & (ep->maxpacket * pktcnt);
@@ -4581,14 +4579,14 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		{
 			if ((uint32_t) ep->xfer_buff != 0U)
 			{
-				outep->DOEPDMA = (uint32_t) (ep->xfer_buff);
+				outep->DOEPDMA = (uintptr_t) (ep->xfer_buff);
 				(void) outep->DOEPDMA;
 			}
 		}
 
 		if (ep->type == USBD_EP_TYPE_ISOC)
 		{
-			if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U || USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH)
+			if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U || devspeed == USB_OTG_SPEED_HIGH)
 			{
 				outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | USB_OTG_DOEPCTL_SODDFRM);
 				(void) outep->DOEPCTL;
@@ -8535,15 +8533,16 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 	return HAL_OK;
 }
 
+
 void USB_SetTurnaroundTime(PCD_HandleTypeDef *hpcd)
 {
+	uint32_t trdt;
 	//hpcd->Instance->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
 	if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
 	{
 		hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
 		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
-		hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-				| (uint32_t) ((USBD_HS_TRDT_VALUE << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT) | 0;
+		trdt = USBD_HS_TRDT_VALUE;
 	}
 	else
 	{
@@ -8555,8 +8554,7 @@ void USB_SetTurnaroundTime(PCD_HandleTypeDef *hpcd)
 		 latency to the Data FIFO */
 		if (0)
 		{
-			hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-					| (uint32_t) ((0xF * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+			trdt = 0x0F;
 		}
 		else
 		{
@@ -8566,69 +8564,62 @@ void USB_SetTurnaroundTime(PCD_HandleTypeDef *hpcd)
 			if ((hclk >= 14200000) && (hclk < 15000000))
 			{
 				/* hclk Clock Range between 14.2-15 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0xF * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x0F;
 			}
 			else if ((hclk >= 15000000) && (hclk < 16000000))
 			{
 				/* hclk Clock Range between 15-16 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0xE * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x0E;
 			}
 			else if ((hclk >= 16000000) && (hclk < 17200000))
 			{
 				/* hclk Clock Range between 16-17.2 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0xD * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x0D;
 			}
 			else if ((hclk >= 17200000) && (hclk < 18500000))
 			{
 				/* hclk Clock Range between 17.2-18.5 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0xC * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x0C;
 			}
 			else if ((hclk >= 18500000) && (hclk < 20000000))
 			{
 				/* hclk Clock Range between 18.5-20 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0xB * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x0B;
 			}
 			else if ((hclk >= 20000000) && (hclk < 21800000))
 			{
 				/* hclk Clock Range between 20-21.8 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0xA * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x0A;
 			}
 			else if ((hclk >= 21800000) && (hclk < 24000000))
 			{
 				/* hclk Clock Range between 21.8-24 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0x9 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x09;
 			}
 			else if ((hclk >= 24000000) && (hclk < 27700000))
 			{
 				/* hclk Clock Range between 24-27.7 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0x8 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x08;
 			}
 			else if ((hclk >= 27700000) && (hclk < 32000000))
 			{
 				/* hclk Clock Range between 27.7-32 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0x7 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x07;
 			}
 			else/* if(hclk >= 32000000) */
 			{
 				/* hclk Clock Range between 32-200 MHz */
-				hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-						| (uint32_t) ((0x6 * USB_OTG_GUSBCFG_TRDT_0) & USB_OTG_GUSBCFG_TRDT);
+				trdt = 0x06;
 			}
 		}
-		hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
-				| (uint32_t) ((0x0F << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT);
 	}
+
+	hpcd->Instance->GUSBCFG = (hpcd->Instance->GUSBCFG & ~ USB_OTG_GUSBCFG_TRDT)
+			| (uint32_t) ((trdt << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT);
 }
 
+
+#if 0
 
 /**
   * @brief  Handle PCD interrupt request.
@@ -8649,7 +8640,7 @@ void USB_SetTurnaroundTime(PCD_HandleTypeDef *hpcd)
 	#define USB_OTG_DOEPMSK_NAKM (1uL << 13)
 #endif /* USB_OTG_DOEPMSK_NAKM */
 
-void badHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
+void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	__DMB();
 	//	PRINTF(PSTR("HAL_PCD_IRQHandler:\n"));
@@ -9040,7 +9031,7 @@ void badHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     }
 
     /* Handle Enumeration done Interrupt */
-    if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE))
+    if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE))
     {
 		USB_ActivateSetup(hpcd->Instance);
 		//hpcd->Instance->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
@@ -9109,6 +9100,20 @@ void badHAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
   }
 }
+#else
+
+//#ifndef USB_OTG_DOEPINT_STPKTRX
+//	#define USB_OTG_DOEPINT_STPKTRX (1uL << 15)		// STPKTRX: Setup packet received. Applicable for control OUT endpoints in only in the Buffer DMA Mode.
+//#endif /* USB_OTG_DOEPINT_STPKTRX */
+//#ifndef USB_OTG_DOEPINT_OTEPSPR
+//	#define USB_OTG_DOEPINT_OTEPSPR (1uL << 5)		// STSPHSRX: Status phase received for control write
+//#endif /* USB_OTG_DOEPINT_OTEPSPR */
+//#ifndef USB_OTG_DOEPMSK_OTEPSPRM
+//	#define USB_OTG_DOEPMSK_OTEPSPRM (1uL << 5)		// STSPHSRX: Status phase received for control write
+//#endif /* USB_OTG_DOEPMSK_OTEPSPRM */
+//#ifndef USB_OTG_DOEPMSK_NAKM
+//	#define USB_OTG_DOEPMSK_NAKM (1uL << 13)
+//#endif /* USB_OTG_DOEPMSK_NAKM */
 
 /**
   * @brief  Handle PCD interrupt request.
@@ -9187,13 +9192,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 				  if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC)
 				  {
-					//  process EP OUT transfer complete interrupt.
 					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
-		//#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
-					/* setup/out transaction management for Core ID >= 310A */
-					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
-					{
-					  //if (hpcd->Init.dma_enable == USB_ENABLE)
+		#if CPUSTYLE_STM32MP1
+					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
 						if (USBx_OUTEP(epnum)->DOEPINT & (1 << 15))	// Setup packet received
@@ -9201,8 +9202,20 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
 						}
 					  }
+		#elif CPUSTYLE_STM32H7XX
+					/* setup/out transaction management for Core ID >= 310A */
+					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
+					{
+					  if (hpcd->Init.dma_enable == USB_ENABLE)
+					  {
+						  // USB_OTG_DOEPINT_STPKTRX
+						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))	// Setup packet received
+						{
+						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
+						}
+					  }
 					}
-		//#endif /* CPUSTYLE_STM32H7XX */
+		#endif /* CPUSTYLE_STM32H7XX */
 
 					if (hpcd->Init.dma_enable == USB_ENABLE)
 					{
@@ -9223,12 +9236,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 				  if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
 				  {
-					/* Class B setup phase done for previous decoded setup */
-		//#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
-					/* setup/out transaction management for Core ID >= 310A */
-					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
-					{
-					  //if (hpcd->Init.dma_enable == USB_ENABLE)
+		#if CPUSTYLE_STM32MP1
+					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
 						  // USB_OTG_DOEPINT_STPKTRX
 						if (USBx_OUTEP(epnum)->DOEPINT & (1 << 15))
@@ -9236,8 +9245,20 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
 						}
 					  }
+		#elif CPUSTYLE_STM32H7XX
+					/* setup/out transaction management for Core ID >= 310A */
+					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
+					{
+					  if (hpcd->Init.dma_enable == USB_ENABLE)
+					  {
+						  // USB_OTG_DOEPINT_STPKTRX
+						if(USBx_OUTEP(epnum)->DOEPINT & (1 << 15))
+						{
+						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
+						}
+					  }
 					}
-		//#endif /* CPUSTYLE_STM32H7XX */
+		#endif /* CPUSTYLE_STM32H7XX */
 
 					/* Inform the upper layer that a setup packet is available */
 					HAL_PCD_SetupStageCallback(hpcd);
@@ -9335,24 +9356,17 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		/* Clear the Remote Wake-up Signaling */
 		USBx_DEVICE->DCTL &= ~ USB_OTG_DCTL_RWUSIG;
 
-	      if (hpcd->LPM_State == LPM_L1)
-	      {
-	        hpcd->LPM_State = LPM_L0;
-
-	#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
-	        hpcd->LPMCallback(hpcd, PCD_LPM_L0_ACTIVE);
-	#else
-	        HAL_PCDEx_LPM_Callback(hpcd, PCD_LPM_L0_ACTIVE);
-	#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
-	      }
-	      else
-	      {
-	#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
-	        hpcd->ResumeCallback(hpcd);
-	#else
-	        HAL_PCD_ResumeCallback(hpcd);
-	#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
-	      }
+#ifdef USB_OTG_GLPMCFG_LPMEN
+		if(hpcd->LPM_State == LPM_L1)
+		{
+			hpcd->LPM_State = LPM_L0;
+			HAL_PCDEx_LPM_Callback(hpcd, PCD_LPM_L0_ACTIVE);
+		}
+		else
+#endif /* USB_OTG_GLPMCFG_LPMEN */
+		{
+			HAL_PCD_ResumeCallback(hpcd);
+		}
 		__HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_WKUINT);
 	}
 
@@ -9404,27 +9418,21 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
       if (hpcd->Init.use_dedicated_ep1 == USB_ENABLE)
       {
-          USBx_DEVICE->DOUTEP1MSK |= USB_OTG_DOEPMSK_STUPM |
-                                     USB_OTG_DOEPMSK_XFRCM |
-                                     USB_OTG_DOEPMSK_EPDM;
-
-          USBx_DEVICE->DINEP1MSK |= USB_OTG_DIEPMSK_TOM |
-                                    USB_OTG_DIEPMSK_XFRCM |
-                                    USB_OTG_DIEPMSK_EPDM;
-
+		//#ifdef USB_OTG_DOEPINT_OTEPSPR
+		  //USBx_DEVICE->DOUTEP1MSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
+ 		//#else
+		  USBx_DEVICE->DOUTEP1MSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM);
+ 		//#endif
+        USBx_DEVICE->DINEP1MSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
       }
-      else
-      {
-          USBx_DEVICE->DOEPMSK |= USB_OTG_DOEPMSK_STUPM |
-                                  USB_OTG_DOEPMSK_XFRCM |
-                                  USB_OTG_DOEPMSK_EPDM |
-                                  USB_OTG_DOEPMSK_OTEPSPRM |
-                                  USB_OTG_DOEPMSK_NAKM;
 
-          USBx_DEVICE->DIEPMSK |= USB_OTG_DIEPMSK_TOM |
-                                  USB_OTG_DIEPMSK_XFRCM |
-                                  USB_OTG_DIEPMSK_EPDM;
-      }
+	#ifdef USB_OTG_DOEPMSK_OTEPSPRM
+		USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM | USB_OTG_DOEPMSK_OTEPSPRM);
+	#else
+		USBx_DEVICE->DOEPMSK |= (USB_OTG_DOEPMSK_STUPM | USB_OTG_DOEPMSK_XFRCM | USB_OTG_DOEPMSK_EPDM);
+	#endif
+
+    USBx_DEVICE->DIEPMSK |= (USB_OTG_DIEPMSK_TOM | USB_OTG_DIEPMSK_XFRCM | USB_OTG_DIEPMSK_EPDM);
 
       /* Set Default Address to 0 */
       USBx_DEVICE->DCFG &= ~USB_OTG_DCFG_DAD;
@@ -9436,22 +9444,20 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     }
 
     /* Handle Enumeration done Interrupt */
-    if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE))
+    if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE))
     {
 		USB_ActivateSetup(hpcd->Instance);
 		//hpcd->Instance->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
-
 		USB_SetTurnaroundTime(hpcd);
 		HAL_PCD_ResetCallback(hpcd);
-
 		__HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE);
     }
 
     /* Handle SOF Interrupt */
     if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_SOF))
     {
-      HAL_PCD_SOFCallback(hpcd);
-      __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_SOF);
+		HAL_PCD_SOFCallback(hpcd);
+		__HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_SOF);
     }
 
     /* Handle Incomplete ISO IN Interrupt */
@@ -9505,6 +9511,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
   }
 }
+
+#endif
 
 void device_OTG_HS_IRQHandler(void)
 {
@@ -10612,7 +10620,8 @@ USBD_StatusTypeDef  USBD_LL_Init(PCD_HandleTypeDef * hpcd, USBD_HandleTypeDef *p
 	#else /* WITHUSBDEV_HIGHSPEEDULPI */
 		hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 	#endif /* WITHUSBDEV_HIGHSPEEDULPI */
-		hpcd->Init.dev_endpoints = 9;	// or 6 for FS devices
+
+	hpcd->Init.dev_endpoints = 9;	// or 6 for FS devices
 
 #endif /* CPUSTYLE_R7S721 */
 
