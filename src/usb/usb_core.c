@@ -3539,14 +3539,14 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
 		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
-		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
+		const uint_fast32_t refclk = PLL4_FREQ_R;
 		const uint_fast32_t ODF = 0;	// игнорируется
 		// 1440 MHz
-		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, pll4_r_ck);
+		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, refclk);
 		const uint_fast32_t N = d.quot;
 
 		const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
-		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / pll4_r_ck;
+		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / refclk;
 
 //		uint_fast64_t FRACT = (uint_fast64_t) USBPHYCPLLFREQUENCY << 16;
 //		FRACT /= pll4_r_ck;
