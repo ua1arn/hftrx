@@ -3558,7 +3558,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |
 					USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk |
 					USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk | USBPHYC_PLL_PLLSTRB_Msk | USBPHYC_PLL_PLLSTRBYP_Msk)) |
-			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя
+			((N - 1) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя. Вычитание единицы получео как результат тестов.
 			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 			USBPHYC_PLL_PLLSTRBYP_Msk |
 			(((FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
