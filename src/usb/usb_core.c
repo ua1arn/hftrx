@@ -3505,6 +3505,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 
 	if (1)
 	{
+		//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+		//	48 MHz clock source to be provided to the USBO:
 		// USBOSRC
 		//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
 		//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
@@ -3513,15 +3515,16 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//  0x1: pll4_r_ck clock selected as kernel peripheral clock
 		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m
-			//(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max pll4_r_ck (подполагаю, что можно использовать только 48 МГц)
+			//(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m
+			(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max pll4_r_ck (можно использовать только 48 МГц)
 
 			//(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck	- входная частота для PHYC PLL
 			(0x00 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max hse_ker_ck	- входная частота для PHYC PLL
 			0;
 		(void) RCC->USBCKSELR;
-
 	}
+
+	ASSERT(((RCC->USBCKSELR & RCC_USBCKSELR_USBOSRC_Msk) >> RCC_USBCKSELR_USBOSRC_Pos) != 0 || PLL4_FREQ_R == 48000000uL);
 
 // не требуется... запущено в bootloader
 //	// USBPHYC already initialized
@@ -3561,6 +3564,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 			ASSERT(0);
 			return HAL_ERROR;
 		}
+		ASSERT(refclk >= 19200000uL && refclk <= 38400000uL);
 		const uint_fast32_t ODF = 0;	// игнорируется
 		// 1440 MHz
 		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, refclk);
@@ -3579,7 +3583,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |
 					USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk |
 					USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk | USBPHYC_PLL_PLLSTRB_Msk | USBPHYC_PLL_PLLSTRBYP_Msk)) |
-			((N - 1) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя. Вычитание единицы получео как результат тестов.
+			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя.
 			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 			USBPHYC_PLL_PLLSTRBYP_Msk |
 			(((FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
@@ -9212,11 +9216,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  const uint32_t epint = USB_ReadDevOutEPInterrupt(hpcd->Instance, epnum);
 
 				  /* This interrupt is asserted when the core detects an overflow or a CRC error for an OUT packet. */
-				  if ((USBx_OUTEP(epnum)->DOEPINT & (1uL << 8)) != 0)
-				  {
-						dbg_putchar('!');
-						CLEAR_OUT_EP_INTR(epnum, (1uL << 8));
-				  }
+//				  if ((USBx_OUTEP(epnum)->DOEPINT & (1uL << 8)) != 0)
+//				  {
+//						dbg_putchar('!');
+//						CLEAR_OUT_EP_INTR(epnum, (1uL << 8));
+//				  }
 
 				  if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC)
 				  {
