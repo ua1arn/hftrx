@@ -3514,7 +3514,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
 			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m
-			//(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max pll4_r_ck
+			//(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max pll4_r_ck (подполагаю, что можно использовать только 48 МГц)
 
 			//(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck	- входная частота для PHYC PLL
 			(0x00 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max hse_ker_ck	- входная частота для PHYC PLL
@@ -4057,8 +4057,8 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 #else /* CPUSTYLE_STM32H7XX */
 
 	#if CPUSTYLE_STM32MP1
-		  const uint_fast32_t TXTHRLEN = 4;		// in DWORDS: The threshold length has to be at least eight DWORDS.
-		  const uint_fast32_t RXTHRLEN = 4;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
+		  const uint_fast32_t TXTHRLEN = 128;		// in DWORDS: The threshold length has to be at least eight DWORDS.
+		  const uint_fast32_t RXTHRLEN = 128;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
 	#elif CPUSTYLE_STM32H7XX
 		  const uint_fast32_t TXTHRLEN = 256;		// in DWORDS: The threshold length has to be at least eight DWORDS.
 		  const uint_fast32_t RXTHRLEN = 8;	// in DWORDS: 128 - енумерация проходтит, 256 - нет.
@@ -4072,10 +4072,10 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 									USB_OTG_DTHRCTL_RXTHREN | USB_OTG_DTHRCTL_ISOTHREN | USB_OTG_DTHRCTL_NONISOTHREN | USB_OTG_DTHRCTL_ARPEN)) |
 		TXTHRLEN * USB_OTG_DTHRCTL_TXTHRLEN_0 |		// Transmit (IN) threshold length
 		RXTHRLEN * USB_OTG_DTHRCTL_RXTHRLEN_0 | // see HBSTLEN bit in OTG_GAHBCFG).
-		//USB_OTG_DTHRCTL_RXTHREN |		//  Receive (OUT) threshold enable
+		USB_OTG_DTHRCTL_RXTHREN |		//  Receive (OUT) threshold enable
 		//USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
 		//USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
-		USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable controls internal DMA arbiter parking for IN endpoints.
+		//USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable controls internal DMA arbiter parking for IN endpoints.
 		0;
     (void) USBx_DEVICE->DTHRCTL;
 
