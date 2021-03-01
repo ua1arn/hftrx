@@ -4076,7 +4076,6 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgType
 		//USB_OTG_DTHRCTL_ISOTHREN |		// ISO IN endpoint threshold enable
 		//USB_OTG_DTHRCTL_NONISOTHREN |	// Nonisochronous IN endpoints threshold enable
 		USB_OTG_DTHRCTL_ARPEN |			// Arbiter parking enable controls internal DMA arbiter parking for IN endpoints.
-		USB_OTG_DTHRCTL_RXTHREN |
 		0;
     (void) USBx_DEVICE->DTHRCTL;
 
