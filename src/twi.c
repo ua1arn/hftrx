@@ -1738,6 +1738,52 @@ void i2c2_stop(void)
 
 }
 
+void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
+{
+	volatile int n;
+	char x, d=0;
+	SET2_TWD();
+	i2c_dly();
+	for(x=0; x<8; x++)
+	{
+		n = 10000;
+		do {
+			SET2_TWCK();
+			i2c_dly();
+		}
+		while (n -- && GET2_TWCK() == 0)    // wait for any SCL clock stretching
+			;
+		d *= 2;
+		i2c_dly();
+		if (GET2_TWD() != 0)
+			d += 1;
+		CLR2_TWCK();
+		i2c_dly();
+	}
+
+	switch (ack_type)
+	{
+	case I2C_READ_ACK_1:
+	case I2C_READ_ACK:
+		CLR2_TWD();
+		i2c_dly();
+		break;
+	case I2C_READ_NACK:
+	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+		SET2_TWD();
+		i2c_dly();
+		break;
+	}
+
+	SET2_TWCK();
+	i2c_dly();             // send (N)ACK bit
+	CLR2_TWCK();
+	SET2_TWD();
+	i2c_dly();
+	* data = d;
+	//return 0;
+}
+
 void i2c2_write(uint_fast8_t d)
 {
 	uint_fast8_t x;
