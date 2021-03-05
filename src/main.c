@@ -992,7 +992,6 @@ struct micprof_cell
 };
 
 typedef struct micprof_cell	micprof_t;
-#define NMICPROFCELLS	3
 
 static micprof_t micprof_cells[NMICPROFCELLS];
 #endif /* WITHAFCODEC1HAVEPROC */

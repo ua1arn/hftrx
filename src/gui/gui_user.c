@@ -115,7 +115,9 @@ void load_settings(void)
 	if (gui_nvram.enc2step_pos == 255)
 		gui_nvram.enc2step_pos = enc2step_default;
 
-	if (gui_nvram.micprofile == 255)
+	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
+		hamradio_load_mic_profile(gui_nvram.micprofile, 1);
+	else
 		gui_nvram.micprofile = micprofile_default;
 }
 
@@ -3072,7 +3074,8 @@ static void window_ap_mic_prof_process(void)
 		x = col1_int;
 		y = row1_int;
 
-		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		uint_fast8_t i, r;
+		for (i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
 			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
@@ -3090,11 +3093,8 @@ static void window_ap_mic_prof_process(void)
 			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|%s"), i + 1, cell_saved ? "saved" : "clean");
 			bh->payload = cell_saved;
 
-//			if (gui_nvram.micprofile == i && bh->payload)
-//			{
-//				hamradio_load_mic_profile(bh->index, 1);
-//				bh->state = BUTTON_LOCKED;
-//			}
+			if (gui_nvram.micprofile == i && bh->payload)
+				bh->is_locked = BUTTON_LOCKED;
 		}
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -3111,8 +3111,8 @@ static void window_ap_mic_prof_process(void)
 			if (bh->payload)
 			{
 				hamradio_load_mic_profile(profile_id, 1);
-//				gui_nvram.micprofile = profile_id;
-//				save_settings();
+				gui_nvram.micprofile = profile_id;
+				save_settings();
 				close_window(DONT_OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 				return;
@@ -3127,6 +3127,12 @@ static void window_ap_mic_prof_process(void)
 				hamradio_clean_mic_profile(profile_id);
 				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|clean"), profile_id + 1);
 				bh->payload = 0;
+				if (gui_nvram.micprofile == profile_id)
+				{
+					gui_nvram.micprofile = micprofile_default;
+					save_settings();
+					bh->is_locked = BUTTON_NON_LOCKED;
+				}
 			}
 			else
 			{
