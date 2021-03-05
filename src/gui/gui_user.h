@@ -97,5 +97,10 @@ typedef struct {
 	char label [10];
 } enc2step_t;
 
+#define GET_FROM_WM_QUEUE	uint_fast8_t type;	\
+							int_fast8_t action;	\
+							uintptr_t ptr;		\
+							switch (get_from_wm_queue(win, & type, & ptr, & action))
+
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

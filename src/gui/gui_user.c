@@ -177,10 +177,7 @@ static void gui_main_process(void)
 		elements_state(win);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -643,10 +640,7 @@ static void window_memory_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -814,10 +808,7 @@ static void window_bands_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -902,10 +893,7 @@ static void window_options_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1088,10 +1076,7 @@ static void window_display_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1263,10 +1248,7 @@ static void window_utilites_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1352,10 +1334,7 @@ static void window_mode_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1466,10 +1445,7 @@ static void window_af_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1663,10 +1639,7 @@ static void window_freq_process (void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1833,10 +1806,7 @@ static void window_swrscan_process(void)
 		swr_scan_stop = 0;
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1994,10 +1964,7 @@ static void window_tx_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2211,10 +2178,7 @@ static void window_tx_vox_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2349,10 +2313,7 @@ static void window_tx_power_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2445,10 +2406,7 @@ static void window_audiosettings_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2676,10 +2634,7 @@ static void window_ap_reverb_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2825,10 +2780,7 @@ static void window_ap_mic_eq_process(void)
 		mid_y = win->y1 + sl->y + sl->size / 2;						//todo: абсолютные координаты! переделать
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3033,10 +2985,7 @@ static void window_ap_mic_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3151,10 +3100,7 @@ static void window_ap_mic_prof_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3361,10 +3307,7 @@ static void window_menu_process(void)
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, xmax, ymax);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3700,10 +3643,7 @@ static void window_receive_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3859,10 +3799,7 @@ static void window_notch_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3997,10 +3934,7 @@ static void window_gui_settings_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -4092,10 +4026,7 @@ static void window_uif_process(void)
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, window_title_height + get_label_height(lbl_uif_val) * 4);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
