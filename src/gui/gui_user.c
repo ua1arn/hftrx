@@ -115,7 +115,9 @@ void load_settings(void)
 	if (gui_nvram.enc2step_pos == 255)
 		gui_nvram.enc2step_pos = enc2step_default;
 
-	if (gui_nvram.micprofile == 255)
+	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
+		hamradio_load_mic_profile(gui_nvram.micprofile, 1);
+	else
 		gui_nvram.micprofile = micprofile_default;
 }
 
@@ -177,10 +179,7 @@ static void gui_main_process(void)
 		elements_state(win);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -643,10 +642,7 @@ static void window_memory_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -814,10 +810,7 @@ static void window_bands_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -902,10 +895,7 @@ static void window_options_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1088,10 +1078,7 @@ static void window_display_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1263,10 +1250,7 @@ static void window_utilites_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1352,10 +1336,7 @@ static void window_mode_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1466,10 +1447,7 @@ static void window_af_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1663,10 +1641,7 @@ static void window_freq_process (void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1833,10 +1808,7 @@ static void window_swrscan_process(void)
 		swr_scan_stop = 0;
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1994,10 +1966,7 @@ static void window_tx_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2211,10 +2180,7 @@ static void window_tx_vox_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2349,10 +2315,7 @@ static void window_tx_power_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2445,10 +2408,7 @@ static void window_audiosettings_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2676,10 +2636,7 @@ static void window_ap_reverb_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2825,10 +2782,7 @@ static void window_ap_mic_eq_process(void)
 		mid_y = win->y1 + sl->y + sl->size / 2;						//todo: абсолютные координаты! переделать
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3033,10 +2987,7 @@ static void window_ap_mic_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3123,7 +3074,8 @@ static void window_ap_mic_prof_process(void)
 		x = col1_int;
 		y = row1_int;
 
-		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		uint_fast8_t i, r;
+		for (i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
 			button_t * bh = & win->bh_ptr [i];
 			bh->x1 = x;
@@ -3141,20 +3093,14 @@ static void window_ap_mic_prof_process(void)
 			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|%s"), i + 1, cell_saved ? "saved" : "clean");
 			bh->payload = cell_saved;
 
-//			if (gui_nvram.micprofile == i && bh->payload)
-//			{
-//				hamradio_load_mic_profile(bh->index, 1);
-//				bh->state = BUTTON_LOCKED;
-//			}
+			if (gui_nvram.micprofile == i && bh->payload)
+				bh->is_locked = BUTTON_LOCKED;
 		}
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3165,8 +3111,8 @@ static void window_ap_mic_prof_process(void)
 			if (bh->payload)
 			{
 				hamradio_load_mic_profile(profile_id, 1);
-//				gui_nvram.micprofile = profile_id;
-//				save_settings();
+				gui_nvram.micprofile = profile_id;
+				save_settings();
 				close_window(DONT_OPEN_PARENT_WINDOW);
 				footer_buttons_state(CANCELLED);
 				return;
@@ -3181,6 +3127,12 @@ static void window_ap_mic_prof_process(void)
 				hamradio_clean_mic_profile(profile_id);
 				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|clean"), profile_id + 1);
 				bh->payload = 0;
+				if (gui_nvram.micprofile == profile_id)
+				{
+					gui_nvram.micprofile = micprofile_default;
+					save_settings();
+					bh->is_locked = BUTTON_NON_LOCKED;
+				}
 			}
 			else
 			{
@@ -3361,10 +3313,7 @@ static void window_menu_process(void)
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, xmax, ymax);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3700,10 +3649,7 @@ static void window_receive_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3859,10 +3805,7 @@ static void window_notch_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3997,10 +3940,7 @@ static void window_gui_settings_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -4092,10 +4032,7 @@ static void window_uif_process(void)
 		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, window_title_height + get_label_height(lbl_uif_val) * 4);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 

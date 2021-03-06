@@ -3442,6 +3442,8 @@ enum
 	BANDF3_COUNT = 17
 };
 
+#define NMICPROFCELLS	3
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
