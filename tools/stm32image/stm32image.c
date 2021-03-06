@@ -32,26 +32,34 @@
 /* Default option : bit0 => no signature */
 #define HEADER_DEFAULT_OPTION	(__cpu_to_le32(0x00000001))
 
-typedef unsigned long uint32_t;
+
+#if defined   (__GNUC__)        /* GNU Compiler */
+	#include <stdint.h>
+	#define ATTRPACKED __attribute__ ((packed))
+#else
+	#define ATTRPACKED
+typedef unsigned int uint32_t;
 typedef unsigned char uint8_t;
 
+#endif /* __GNUC__ */
+
 struct stm32_header {
-	uint32_t magic_number;
-	uint8_t image_signature[64];
-	uint32_t image_checksum;
-	uint8_t  header_version[4];
-	uint32_t image_length;
-	uint32_t image_entry_point;
-	uint32_t reserved1;
-	uint32_t load_address;
-	uint32_t reserved2;
-	uint32_t version_number;
-	uint32_t option_flags;
-	uint32_t ecdsa_algorithm;
-	uint8_t ecdsa_public_key[64];
-	uint8_t padding[83];
-	uint8_t binary_type;
-};
+	uint32_t magic_number; //4
+	uint8_t image_signature [64]; //64
+	uint32_t image_checksum; //4
+	uint8_t  header_version [4]; //4
+	uint32_t image_length; //4
+	uint32_t image_entry_point; //4
+	uint32_t reserved1; //4
+	uint32_t load_address; //4
+	uint32_t reserved2; //4
+	uint32_t version_number; //4
+	uint32_t option_flags; //4
+	uint32_t ecdsa_algorithm ; //4
+	uint8_t ecdsa_public_key [64]; //64
+	uint8_t padding[83] ; //83
+	uint8_t binary_type; //1
+} ATTRPACKED;
 
 static struct stm32_header stm32image_header;
 
@@ -88,7 +96,8 @@ static uint32_t stm32image_checksum(void *start, uint32_t len)
 static void stm32image_print_header(const void *ptr)
 {
 	struct stm32_header *stm32hdr = (struct stm32_header *)ptr;
-
+    printf("Header Size   : %lu bytes\n",
+	       (unsigned long)__le32_to_cpu(sizeof(struct stm32_header)));
 	printf("Image Type   : ST Microelectronics STM32 V%d.%d\n",
 	       stm32hdr->header_version[VER_MAJOR],
 	       stm32hdr->header_version[VER_MINOR]);
