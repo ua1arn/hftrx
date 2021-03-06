@@ -590,7 +590,7 @@ int dbg_getchar(char * r);
 		} while (0)
 	// вызывается из обработчика прерываний CDC
 	// по готовности передатчика
-	#define HARDWARE_CDC_ONTXCHAR(ctx) do { \
+	#define HARDWARE_CDC_ONTXCHAR(offset, ctx) do { \
 			cat7_sendchar(ctx); \
 		} while (0)
 
