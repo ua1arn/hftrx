@@ -3856,7 +3856,8 @@ enum
 		static uint_fast8_t gavoxlevel = 50;	/* модифицируется через меню - усиление anti-VOX */
 		static uint_fast8_t voxdelay = 70;	/* модифицируется через меню - задержка отпускания VOX */
 	#else /* WITHVOX */
-		enum { gvoxenable = 0 };	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
+		enum { gvoxenable = 0 };	/* автоматическое управление передатчиком (от голоса) */
+		enum { gclassamode = 0 };	/* использование режима клвсс А при передаче */
 	#endif /* WITHVOX */
 
 	#if WITHMUTEALL
