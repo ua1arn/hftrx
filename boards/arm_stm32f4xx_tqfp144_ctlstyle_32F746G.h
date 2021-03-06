@@ -285,7 +285,7 @@
 	#endif
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
-#if 1
+#if 0
 	#define WITHTOUCHGUI		1
 #endif
 

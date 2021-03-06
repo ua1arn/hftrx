@@ -3737,8 +3737,8 @@ static const codechw_t * const channels [] =
 #elif CTLSTYLE_V3D
 	static const codechw_t * const channels [] =
 	{
-		& audiocodechw_sai2_master_v3d,		// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_master_v3d,				// Интерфейс к IF кодеку/FPGA
+		//& audiocodechw_sai2_master_v3d,		// Интерфейс к НЧ кодеку
+		//& fpgacodechw_sai1_master_v3d,				// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_sai2,		// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
