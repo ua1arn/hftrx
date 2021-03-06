@@ -47,9 +47,9 @@ CORE += -mfpu=neon-vfpv4
 # Define optimisation level here
 # ony -Og for app
 # Application
-#OPT = -Og
-OPT = -Ofast
-LTO = -flto
+OPT = -Og
+#OPT = -Ofast
+#LTO = -flto
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 

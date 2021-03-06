@@ -188,7 +188,7 @@ app_run: $(PROJECT)_app.elf bitstream_ant.bit app_run_ant.tcl
 	xsct.bat app_run_ant.tcl
 
 flash: $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
+	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
 BOOT2: version $(OBJS) BOOTL.BIN
 	-cp BOOTL.BIN $(ZINQ_BOOT_BIN)

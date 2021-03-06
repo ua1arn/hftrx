@@ -178,11 +178,11 @@ all: APP2 $(PROJECT)_app.nec32 app.hex
 bootloader: BOOT2 boot.hex
   
 app_run: IMAGE
-	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0x20000000 --download $(PROJECT)_app.nec32
-	./dfu-util.exe --device ffff:0738 --alt 2 --detach
+	./dfu-util --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0x20000000 --download $(PROJECT)_app.nec32
+	./dfu-util --device ffff:0738 --alt 2 --detach
 
 flash: IMAGE
-	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
+	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
 
 IMAGE: $(PROJECT)_app.nec32
 
@@ -194,7 +194,7 @@ boot.hex: $(PROJECT)_boot.bin
 APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 $(PROJECT)_app.nec32: $(PROJECT)_app.bin
-	./stm32image.exe -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
 
 app.hex: $(PROJECT)_app.nec32
 	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.nec32 >$@
