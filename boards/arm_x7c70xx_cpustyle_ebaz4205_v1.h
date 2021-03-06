@@ -669,7 +669,11 @@
 
 #if WITHTWISW
 	#define TARGET_TWI_TWCK_MIO			26		// MIO 26 SCL
+	#define	TARGET_TWI_TWCK_BIT			(1uL << (TARGET_TWI_TWCK_MIO % 32))	// бит
+	#define TARGET_TWI_TWCK_BANK 		(TARGET_TWI_TWCK_MIO / 32)
 	#define TARGET_TWI_TWD_MIO			27		// MIO 27 SDA
+	#define	TARGET_TWI_TWD_BIT			(1uL << (TARGET_TWI_TWD_MIO % 32))	// бит
+	#define TARGET_TWI_TWD_BANK 		(TARGET_TWI_TWD_MIO / 32)
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
@@ -863,7 +867,7 @@
 	} while (0)
 #endif
 
-#if LCDMODE_LTDC
+#if LCDMODE_LTDC && 0
 	enum
 	{
 		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */

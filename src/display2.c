@@ -5410,7 +5410,7 @@ enum
 		PGALL = PG0 | REDRSUBSET_MENU,
 		PGWFL = PG0,	// страница отображения водопада
 		PGSPE = PG0,	// страница отображения панорамы
-		PGSWR = PG0,	// страница отоюражения S-meter и SWR-meter
+		PGSWR = PGALL,	// страница отоюражения S-meter и SWR-meter
 		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
 		PGINI = REDRSUBSET_INIT,
@@ -5424,7 +5424,7 @@ enum
 	#endif
 	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
 
-	#define MENU1ROW 20
+	#define MENU1ROW 28
 
 	// 272/5 = 54, 480/16=30
 	// Main frequency indicator 56 lines height = 12 cells
