@@ -4460,6 +4460,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 		if (tuneabort())
 			return 1;
 		updateboard_tuner();
+		tuner_waitadc();
 		adcvalholder_t r;
 		adcvalholder_t f;
 		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
