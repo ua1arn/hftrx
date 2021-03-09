@@ -105,6 +105,7 @@
 	//#define LWIP_AUTOIP 1
 
 #endif	/* WITHISBOOTLOADER */
+#define LWIP_IPV4                       1
 
 #define UDP_TTL 64
 #define ETH_PAD_SIZE                    64
