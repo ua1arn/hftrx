@@ -3823,9 +3823,14 @@ enum
 	}
 
 	#if WITHPOWERTRIM
+		#if WITHPACLASSA
+			static uint_fast8_t gclassapower = WITHPOWERTRIMCLASSA;
+			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
+		#else /* WITHPACLASSA */
+			static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
+			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
+		#endif /* WITHPACLASSA */
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
-		static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
-		static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
 		#if WITHLOWPOWEREXTTUNE
 			static uint_fast8_t gtunepower = WITHPOWERTRIMATU; /* мощность при работе автоматического согласующего устройства */
 		#else /* WITHLOWPOWEREXTTUNE */
