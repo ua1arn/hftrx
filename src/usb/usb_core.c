@@ -7391,7 +7391,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 				// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
 
 				// Extended Properties OS Descriptor support
-				if (ExtOsPropDescTbl[ifc].size != 0)
+				if (ifc < ARRAY_SIZE(ExtOsPropDescTbl) && ExtOsPropDescTbl[ifc].size != 0)
 				{
 					USBD_CtlSendData(pdev, ExtOsPropDescTbl[ifc].data, ulmin16(ExtOsPropDescTbl[ifc].size, req->wLength));
 				}
