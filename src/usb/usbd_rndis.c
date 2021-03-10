@@ -23,6 +23,7 @@
 #include "lwip/netif.h"
 #include "lwip/autoip.h"
 #include "netif/etharp.h"
+#include "lwip/ip.h"
 
 //
 //#define RNDIS_CONTROL_OUT_PMAADDRESS                    (0x08 * 4)                //8 bytes per EP
@@ -285,7 +286,7 @@ void init_netif(void)
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
-	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip4_input);
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 	netif_set_default(netif);
 
 	while (!netif_is_up(netif))

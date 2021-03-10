@@ -25,6 +25,7 @@
 #include "lwip/netif.h"
 #include "lwip/autoip.h"
 #include "netif/etharp.h"
+#include "lwip/ip.h"
 
 
 #define BPOOL_FLAG_BPOOL_FULL 0x00000001
@@ -606,7 +607,7 @@ void init_netif(void)
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
-	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip4_input);
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
