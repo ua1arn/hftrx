@@ -50,7 +50,7 @@
 	//#define FQMODEL_70200		1	// 1-st if = 70.2 MHz, 2-nd IF-200 kHz
 
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
+	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 
 	#if 0
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
@@ -92,16 +92,7 @@
 
 	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 display */
 
-
-	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
-
 	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
-	//#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
-
-	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
-	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-
-	//#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
 
 	//#define LCDMODE_LTDC_L24	1	/* 32-bit на пиксель в памяти (3 байта) */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
@@ -110,10 +101,19 @@
 
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
-	#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+
+	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
+
+	//#define LCDMODE_V2	1	/* только главный экран с тремя видеобуферами, L8, без PIP */
+	#define LCDMODE_V2_2PAGE	1	/* только главный экран с двумя видеобуферами, L8, без PIP */
+
+	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
+	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+
+	//#define LCDMODE_V2B 1	/* только главный экран 16 бит (одна страница), без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
-	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 1
 
@@ -250,49 +250,28 @@
 	// app
 
 	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
-	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */
+	#define BOARD_FILTER_0P5		0	/* 0.5 or 0.3 kHz filter */
 	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
 	#define BOARD_FILTER_6P0		0	/* 6.0 kHz filter */
 	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
 	// --- заглушки для плат с DSP обработкой
 
-	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
-	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-		#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
-		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 0
-			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-			#define WITHALPHA			64
-			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-		#endif
-	#elif LCDMODE_LQ043T3DX02K
-		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
-		#define WITHFFTOVERLAPPOW2	2	/* Количество перекрывающися буферов FFT спектра (2^param). */
-		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	#define ENCRES_DEFAULT ENCRES_128
 	//#define ENCRES_DEFAULT ENCRES_24
-	#define WITHDIRECTFREQENER	1
+	//#define WITHDIRECTFREQENER	1
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 4
+	#define BOARD_ENCODER2_DIVIDE 4	// PEC11R-4220K-S0024 (общий на среднем выводе)
+	//#define BOARD_ENCODER2_DIVIDE 2	//
 	//#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 	//#define WITHBANDF2_FT757	1	/* Управление LPF от трансивра FT-757 */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
-	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
-	#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
@@ -376,7 +355,6 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
-	////#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
@@ -402,7 +380,33 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
-
+	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
+	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	1	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 15
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+		#if 0
+			#define WITHTOUCHGUI		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA			64
+			#define FORMATFROMLIBRARY 	1
+			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#endif
+	#elif LCDMODE_LQ043T3DX02K
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	2	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 15
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
+//	#define FORMATFROMLIBRARY 	1
+//	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define WITHVIEW_3DSS		1
+	//#define WITHDEFAULTVIEW		VIEW_3DSS
+	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
@@ -512,13 +516,18 @@
 		POTAFGAIN = AFGAIN_IXI,
 	#endif /* WITHPOTAFGAIN */
 
+	#if WITHTHERMOLEVEL
+		XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+	#endif /* WITHTHERMOLEVEL */
+
 	#if WITHISBOOTLOADER
 
 	#elif WITHAUTOTUNER_AVBELNN
 
+		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
-		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
@@ -530,6 +539,7 @@
 		FWD = 0, REF = 1,	// PB0	SWR-meter
 		PWRI = FWD,			// PB1
 
+
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
 		#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
@@ -538,7 +548,8 @@
 	#elif 0
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 
-		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		//#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
@@ -559,7 +570,8 @@
 	#else /* WITHAUTOTUNER_AVBELNN */
 		// QRP вариант - только 5 ватт на плате
 
-		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 
