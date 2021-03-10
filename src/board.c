@@ -385,6 +385,10 @@ static uint_fast8_t hex2int(uint_fast8_t c)
 	return 0;
 }
 
+
+static void
+ua1ceituner_send(void *);
+
 /* вызывается из обработчика прерываний */
 // принятый символ с последовательного порта
 void nmea_parsechar(uint_fast8_t c)
@@ -451,6 +455,9 @@ void nmea_parsechar(uint_fast8_t c)
 				board_adc_store_data(PASENSEIX, strtol(nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
 				board_adc_store_data(XTHERMOIX, strtol(nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
 				board_adc_store_data(VOLTSOURCE, strtol(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
+
+				board_dpc(ua1ceituner_send, NULL);
+
 			}
 		}
 		break;
@@ -461,7 +468,7 @@ void nmea_parsechar(uint_fast8_t c)
 }
 
 static void
-ua1ceituner_send(void)
+ua1ceituner_send(void * not_used)
 {
 	//управление устройством
 	//Обмен на скорости 250 kb/s, 8-N-1
@@ -4245,7 +4252,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 #endif
 #if WITHAUTOTUNER_UA1CEI
-	ua1ceituner_send();
+	ua1ceituner_send(NULL);
 #endif /* WITHAUTOTUNER_UA1CEI */
 
 	// registers chain control register
@@ -4289,7 +4296,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif
 
 #if WITHAUTOTUNER_UA1CEI
-	ua1ceituner_send();
+	ua1ceituner_send(NULL);
 #endif /* WITHAUTOTUNER_UA1CEI */
 
 	// registers chain control register
