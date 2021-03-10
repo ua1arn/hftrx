@@ -296,12 +296,7 @@ void init_netif(void)
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
 }
-/*
-TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
-{
-  tcp_tmr();
-}
-*/
+
 
 
 // Receiving Ethernet packets

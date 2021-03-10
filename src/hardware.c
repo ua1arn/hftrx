@@ -1709,6 +1709,14 @@ static void adcdones_spool(void)
 	}
 }
 
+#if WITHLWIP
+static volatile uint32_t sys_now_counter;
+uint32_t sys_now(void)
+{
+	return sys_now_counter;
+}
+#endif /* WITHLWIP */
+
 /* Машинно-независимый обработчик прерываний. */
 // Функции с побочным эффектом - отсчитывание времени.
 // При возможности вызываются столько раз, сколько произошло таймерных прерываний.
@@ -1716,7 +1724,9 @@ static RAMFUNC void spool_systimerbundle1(void)
 {
 	//beacon_255();
 
-	//sys_now_counter += (1000 / TICKS_FREQUENCY);
+#if WITHLWIP
+	sys_now_counter += (1000 / TICKS_FREQUENCY);
+#endif /* WITHLWIP */
 
 	//spool_lfm();
 	tickers_spool();

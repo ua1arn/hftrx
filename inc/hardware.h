@@ -884,7 +884,7 @@ void network_initialize(void);
 void init_netif(void);
 
 void usb_polling(void);	/* LWIP support */
-void tcp_tmr(void);	/* LWIP support */
+void sys_check_timeouts(void);	/* LWIP support */
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */
@@ -902,9 +902,6 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-
-void tcp_tmr(void);
-void usb_polling(void);
 
 #if CPUSTYLE_XC7Z
 #include <src/zynq/xgpiops.h>

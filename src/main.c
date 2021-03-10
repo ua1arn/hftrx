@@ -13374,10 +13374,7 @@ static void dpc_1stimer(void * arg)
 #endif /* WITHSLEEPTIMER */
 
 #if WITHLWIP
-	  tcp_tmr();
-	#if LWIP_AUTOIP
-		  autoip_tmr();
-	#endif /* LWIP_AUTOIP */
+	sys_check_timeouts();
 #endif /* WITHLWIP */
 #if 0 && CPUSTYLE_XC7Z
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
