@@ -7,6 +7,20 @@
 
 #if WITHTOUCHGUI
 
+#if DIM_X == 480 && DIM_Y == 272
+	#define WITHGUIMAXX				480						// для разрешения 480х272 используется мини-версия touch GUI
+	#define WITHGUIMAXY				272
+	#define WITHGUISTYLE_MINI		1
+	#define GUI_OLDBUTTONSTYLE		1						// Кнопки без закругления углов
+	#define FOOTER_HEIGHT			50
+#elif DIM_X >= 800 && DIM_Y >= 480							// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
+	#define WITHGUIMAXX				800
+	#define WITHGUIMAXY				480
+	#define WITHGUISTYLE_COMMON		1
+	#define GUI_TRANSPARENT_WINDOWS	1						// Прозрачный фон окон
+	#define FOOTER_HEIGHT			50
+#endif
+
 typedef struct {
 	char name[20];
 	uint_fast8_t index;

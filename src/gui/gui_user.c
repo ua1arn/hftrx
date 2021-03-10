@@ -28,6 +28,48 @@
 #include "src/gui/gui_structs.h"
 #include "src/gui/gui_settings.h"
 
+enc2step_t enc2step [] = {
+	{ 100, "100 Hz", },
+	{ 500, "500 Hz", },
+};
+
+struct gui_nvram_t gui_nvram;
+static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
+static menu_by_name_t menu_uif;
+
+enum { enc2step_vals = ARRAY_SIZE(enc2step) };
+
+enum {
+	enc2step_default = 1,
+	micprofile_default = UINT8_MAX,
+};
+
+void gui_encoder2_menu (enc2_menu_t * enc2_menu)
+{
+	memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
+	gui_enc2_menu.updated = 1;
+}
+
+void load_settings(void)
+{
+	hamradio_load_gui_settings(& gui_nvram);
+
+	if (gui_nvram.enc2step_pos == 255)
+		gui_nvram.enc2step_pos = enc2step_default;
+
+	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
+		hamradio_load_mic_profile(gui_nvram.micprofile, 1);
+	else
+		gui_nvram.micprofile = micprofile_default;
+}
+
+void save_settings(void)
+{
+	hamradio_save_gui_settings(& gui_nvram);
+}
+
+#if WITHGUISTYLE_COMMON				// версия GUI для разрешения 800х480
+
 static void gui_main_process(void);
 static void window_mode_process(void);
 static void window_af_process(void);
@@ -79,23 +121,6 @@ static window_t windows [] = {
 	{ WINDOW_GUI_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, 0, 0, 0, 0, "GUI settings",	 		 NON_VISIBLE, 0, 1, window_gui_settings_process, },
 };
 
-static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
-static menu_by_name_t menu_uif;
-
-enc2step_t enc2step [] = {
-	{ 100, "100 Hz", },
-	{ 500, "500 Hz", },
-};
-
-struct gui_nvram_t gui_nvram;
-
-enum { enc2step_vals = ARRAY_SIZE(enc2step) };
-
-enum {
-	enc2step_default = 1,
-	micprofile_default = UINT8_MAX,
-};
-
 /* Возврат ссылки на окно */
 window_t * get_win(uint8_t window_id)
 {
@@ -106,24 +131,6 @@ window_t * get_win(uint8_t window_id)
 void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
-}
-
-void load_settings(void)
-{
-	hamradio_load_gui_settings(& gui_nvram);
-
-	if (gui_nvram.enc2step_pos == 255)
-		gui_nvram.enc2step_pos = enc2step_default;
-
-	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
-		hamradio_load_mic_profile(gui_nvram.micprofile, 1);
-	else
-		gui_nvram.micprofile = micprofile_default;
-}
-
-void save_settings(void)
-{
-	hamradio_save_gui_settings(& gui_nvram);
 }
 
 // *********************************************************************************************************************************************************************
@@ -4106,14 +4113,6 @@ static void window_uif_process(void)
 
 // *********************************************************************************************************************************************************************
 
-void gui_encoder2_menu (enc2_menu_t * enc2_menu)
-{
-	memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
-	gui_enc2_menu.updated = 1;
-}
-
-// *********************************************************************************************************************************************************************
-
 void gui_open_sys_menu(void)
 {
 	window_t * win = get_win(WINDOW_MENU);
@@ -4136,5 +4135,99 @@ void gui_open_sys_menu(void)
 }
 
 // *********************************************************************************************************************************************************************
+#elif WITHGUISTYLE_MINI 				// версия GUI для разрешения 480x272
 
-#endif /* WITHTOUCHGUI */
+static void minigui_main_process(void);
+
+static window_t windows [] = {
+//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
+	{ WINDOW_MAIN, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, minigui_main_process, },
+};
+
+/* Возврат ссылки на окно */
+window_t * get_win(uint8_t window_id)
+{
+	ASSERT(window_id < WINDOWS_COUNT);
+	return & windows [window_id];
+}
+
+void gui_user_actions_after_close_window(void)
+{
+	hamradio_disable_encoder2_redirect();
+}
+
+// **********************************************************************************************************
+
+void minigui_main_process(void)
+{
+	window_t * win = get_win(WINDOW_MAIN);
+
+	if (win->first_call)
+	{
+		uint_fast8_t interval_btn = 3;
+		uint_fast16_t x = 0;
+		win->first_call = 0;
+
+		button_t buttons [] = {
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1", 	"1", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2",  "2", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_3", 	"3", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_4",  "4", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
+		{
+			button_t * bh = & win->bh_ptr [id];
+			bh->x1 = x;
+			bh->y1 = WITHGUIMAXY - bh->h - 1;
+			bh->visible = VISIBLE;
+			x = x + interval_btn + bh->w;
+		}
+
+		load_settings();
+		elements_state(win);
+
+		return;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+
+		}
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		hamradio_set_freq(hamradio_get_freq_rx() + 10);
+		break;
+
+	default:
+
+		break;
+	}
+}
+
+// **********************************************************************************************************
+
+void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
+{
+
+}
+
+void gui_open_sys_menu(void)
+{
+
+}
+
+#endif
+#endif /* WITHTOUCHGUI && WITHGUISTYLE_COMMON */

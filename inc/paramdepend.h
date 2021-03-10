@@ -2318,15 +2318,11 @@ extern "C" {
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
 
-#if (DIM_X < 800 || DIM_Y < 480) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
+#if (DIM_X < 480 || DIM_Y < 272) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
 	#undef WITHTOUCHGUI									// для функционирования touch GUI
 #endif
 
 #if WITHTOUCHGUI
-
-#define WITHGUIMAXX				800						// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
-#define WITHGUIMAXY				480
-#define FOOTER_HEIGHT			50						// высота нижнего ряда кнопок
 
 #if (__CORTEX_M == 0)
 	#define FORMATFROMLIBRARY 		1

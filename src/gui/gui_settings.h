@@ -13,9 +13,7 @@
 
 #if CTLSTYLE_V3D
 	#define GUI_SOFTWARE_RENDERING		1 			// Не использовать DMA при отрисовке
-	#define GUI_OLDBUTTONSTYLE			1
 #else
-	#define GUI_TRANSPARENT_WINDOWS		1			// Прозрачный фон окон
 	#define GUI_SOFTWARE_RENDERING		0
 #endif
 

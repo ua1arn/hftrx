@@ -8,7 +8,7 @@
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
-void gui_user_actions_after_close_window(void);
+#if WITHGUISTYLE_COMMON				// версия GUI для разрешения 800х480
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -37,6 +37,18 @@ enum {
 
 	WINDOWS_COUNT
 };
+
+#elif WITHGUISTYLE_MINI 				// версия GUI для разрешения 480x272
+
+enum {
+	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
+
+	WINDOWS_COUNT
+};
+
+#endif /* WITHGUISTYLE_COMMON */
+
+void gui_user_actions_after_close_window(void);
 
 enum {
 	MENU_OFF,

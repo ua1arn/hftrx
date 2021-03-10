@@ -15,9 +15,9 @@
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
 
 //#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -196,52 +196,60 @@
 	// Encoder inputs: PF8 - PHASE A, PF7 = PHASE B
 	// Обязательно буфер (входы процессора низковольтные).
 
-	#define ENCODER_INPUT_PORT			(GPIOF->IDR)
-	#define ENCODER_BITS ((1u << 8) | (1u << 7))		// PF8 & PF7
-	#define ENCODER_SHIFT 7
+	#define ENCODER_INPUT_PORT			(GPIOB->IDR)
+	#define ENCODER_BITS ((1u << 12) | (1u << 13))		// PB12 & PB13
+	#define ENCODER_SHIFT 12
 	// Обязательно буфер (входы процессора низковольтные).
 
-	#define ENCODER2_INPUT_PORT			(GPIOF->IDR)
-	#define ENCODER2_BITS ((1u << 10) | (1u << 9))		// PF10 & PF9
-	#define ENCODER2_SHIFT 9
+	#define ENCODER2_INPUT_PORT			(GPIOB->IDR)
+	#define ENCODER2_BITS ((1u << 8) | (1u << 9))		// PB8 & PB9
+	#define ENCODER2_SHIFT 8
+
+	#define TARGET_ENC2BTN_BIT (1U << 8)				// PA8 - second encoder button with pull-up
+	#define TARGET_ENC2BTN_GET (((GPIOA->IDR) & TARGET_ENC2BTN_BIT) == 0)
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_piof_inputs(ENCODER_BITS); \
-			arm_hardware_piof_updown(ENCODER_BITS, 0); \
-			arm_hardware_piof_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-			arm_hardware_piof_inputs(ENCODER2_BITS); \
-			arm_hardware_piof_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piof_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_piob_inputs(ENCODER_BITS); \
+			arm_hardware_piob_updown(ENCODER_BITS, 0); \
+			arm_hardware_piob_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_piob_inputs(ENCODER2_BITS); \
+			arm_hardware_piob_updown(ENCODER2_BITS, 0); \
+			arm_hardware_piob_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
 
 #if WITHI2SHW
-
-	#if defined(STM32H743xx)
-		#define PB5_I2S3_AF 7	// AF_7
-	#else /* defined(STM32H743xx) */
-		#define PB5_I2S3_AF AF_SPI3
-	#endif /* defined(STM32H743xx) */
-
-	// Инициализируются I2S2 и I2S3
-	#define I2S2HW_INITIALIZE() do { \
-		arm_hardware_piob_altfn2(1U << 12, AF_SPI2); /* PB12	*/ \
-		arm_hardware_piob_altfn2(1U << 13, AF_SPI2); /* PB13	*/ \
-		arm_hardware_piob_altfn2(1U << 15, AF_SPI2); /* PB15 - передача */ \
-		arm_hardware_pioa_altfn2(1U << 15, AF_SPI3); /* PA15	*/ \
-		arm_hardware_piob_altfn2(1U << 3, AF_SPI3); /* PB3	*/ \
-		arm_hardware_piob_altfn2(1U << 5, PB5_I2S3_AF); /* PB5 - приём */ \
+	#define I2S2HW_INITIALIZE()	do { \
+		arm_hardware_pioi_altfn20(1U << 4, AF_SAI2);	/* PI4 - SAI2_MCLK_A - 12.288 MHz	*/ \
+		arm_hardware_pioi_altfn20(1U << 5, AF_SAI2);	/* PI5 - SAI2_SCK_A	*/ \
+		arm_hardware_pioi_altfn2(1U << 6, AF_SAI2); 	/* PI6 SAI2_SD_A (i2s data to codec)	*/ \
+		arm_hardware_pioi_altfn2(1U << 7, AF_SAI2); 	/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_piog_altfn2(1U << 10, AF_SAI2);	/* PG10 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
 #if WITHSAI1HW
+	#define WITHSAI1HWTXRXMASTER	1
 	#define SAI1HW_INITIALIZE()	do { \
 		arm_hardware_piof_altfn2(1U << 9, AF_SAI);		/* PF9 - SAI1_FS_B	- 48 kHz	*/ \
 		arm_hardware_piof_altfn20(1U << 8, AF_SAI);		/* PF8 - SAI1_SCK_B	*/ \
 		arm_hardware_piob_altfn2(1U << 2, AF_SAI);		/* PB2 - SAI1_SD_A	(i2s data to codec)	*/ \
 		arm_hardware_piof_altfn2(1U << 6, AF_SAI);		/* PF6 - SAI1_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioc_altfn20(1U << 9, AF_SPI2);	/* PC9 - MCLK source - I2S_CKIN 24.576 MHz */ \
+	} while (0)
+#endif /* WITHSAI1HW */
+
+#if WITHSAI2HW
+	/*
+	*/
+	#define SAI2HW_INITIALIZE()	do { \
+		arm_hardware_pioi_altfn20(1U << 4, AF_SAI2);	/* PI4 - SAI2_MCLK_A - 12.288 MHz	*/ \
+		arm_hardware_pioi_altfn20(1U << 5, AF_SAI2);	/* PI5 - SAI2_SCK_A	*/ \
+		arm_hardware_pioi_altfn2(1U << 6, AF_SAI2); 	/* PI6 - SAI2_SD_A (i2s data to codec)	*/ \
+		arm_hardware_pioi_altfn2(1U << 7, AF_SAI2); 	/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_piog_altfn2(1U << 10, AF_SAI2);	/* PG10 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -445,11 +453,11 @@
 #define SPI_CSEL_PG7	0//(1U << 7)	// PG7 board control registers chain
 #define SPI_CSEL_PG6	0//(1U << 6)	// PG6 on-board codec1 NAU8822L
 //#define SPI_CSEL_PG5	0//(1U << 5)	// PG5 FPGA CS2 - used as overflov signal from ADC
-#define SPI_CSEL_PC7	(1U << 7)		// PC7 FPGA control registers CS
+#define SPI_CSEL_PC6	(1U << 6)		// PC6 FPGA control registers CS
 #define SPI_CSEL_PG1	0//(1U << 7)	// PG1 FPGA NCO1 registers CS
 
 // Здесь должны быть перечислены все биты формирования CS в устройстве.
-#define SPI_ALLCS_BITS (SPI_CSEL_PC7)
+#define SPI_ALLCS_BITS (SPI_CSEL_PC6)
 
 #define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
@@ -484,37 +492,39 @@
 	} while (0)
 
 // MOSI & SCK port
-#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOH->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOH->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_SCLK_BIT			(1U << 6)	// * PH6 бит, через который идет синхронизация SPI
+#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOI->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOI->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define	SPI_SCLK_BIT			(1U << 1)	// * PI1 бит, через который идет синхронизация SPI
 
-#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOI->BSRR = BSRR_C(v); __DSB(); } while (0)
-#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOI->BSRR = BSRR_S(v); __DSB(); } while (0)
-#define	SPI_MOSI_BIT			(1U << 0)	// * PI0 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+#define	SPI_MOSI_BIT			(1U << 15)	// * PB15 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
-#define SPI_TARGET_MISO_PIN		(GPIOG->IDR)		// was PINA
-#define	SPI_MISO_BIT			(1U << 7)	// * PG7 бит, через который идет ввод с SPI.
+#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
+#define	SPI_MISO_BIT			(1U << 14)	// * PB14 бит, через который идет ввод с SPI.
 
 #define SPIIO_INITIALIZE() do { \
-		arm_hardware_pioh_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-		arm_hardware_pioi_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-		arm_hardware_piog_inputs(SPI_MISO_BIT); \
+		arm_hardware_pioi_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+		arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+		arm_hardware_piob_inputs(SPI_MISO_BIT); \
 	} while (0)
 
 
 #define HARDWARE_SPI_CONNECT() do { \
-		arm_hardware_piob_altfn50(SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-		arm_hardware_pioa_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-	} while (0)
+		arm_hardware_piob_altfn50(SPI_MISO_BIT, AF_SPI2); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_piob_altfn50(SPI_MOSI_BIT, AF_SPI2); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_pioi_altfn50(SPI_SCLK_BIT, AF_SPI2);	\
+} while (0)
 #define HARDWARE_SPI_DISCONNECT() do { \
-		arm_hardware_pioa_outputs(SPI_MOSI_BIT | SPI_SCLK_BIT, SPI_MOSI_BIT | SPI_SCLK_BIT); \
+		arm_hardware_pioi_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+		arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT); \
 		arm_hardware_piob_inputs(SPI_MISO_BIT); \
 	} while (0)
 #define HARDWARE_SPI_CONNECT_MOSI() do { \
-		arm_hardware_pioa_altfn50(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+		arm_hardware_piob_altfn50(SPI_MOSI_BIT, AF_SPI2);	/* PIO disable for MOSI bit (SD CARD read support) */ \
 	} while (0)
 #define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		arm_hardware_pioa_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
+		arm_hardware_piob_outputs(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
 	} while (0)
 
 /* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
@@ -536,6 +546,8 @@
 #else
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		/*arm_hardware_pioa_inputs(KBD_MASK); */\
+		arm_hardware_pioa_inputs(TARGET_ENC2BTN_BIT); \
+		arm_hardware_pioa_updown(TARGET_ENC2BTN_BIT, 0); /* PA8: pull-up second encoder button */ \
 		} while (0)
 #endif
 
@@ -590,22 +602,22 @@
 
 #if WITHDSPEXTFIR
 	// Биты доступа к массиву коэффициентов FIR фильтра в FPGA
-	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR_CS_BIT (1U << 4)	/* PB4 - fir CLK */
+	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR_CS_BIT (1U << 7)	/* PG7 - fir CLK */
 
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR1_WE_BIT (1U << 6)	/* PC6 - fir1 WE */
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR1_WE_BIT (1U << 6)	/* PG6 - fir1 WE */
 
-	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); __DSB(); } while (0)
-	#define TARGET_FPGA_FIR2_WE_BIT (1U << 6)	/* PG6 - fir2 WE */
+	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); __DSB(); } while (0)
+	#define TARGET_FPGA_FIR2_WE_BIT (1U << 4)	/* PB4 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioe_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+			arm_hardware_piog_outputs(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+			arm_hardware_piob_outputs(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
+			arm_hardware_piog_outputs(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
@@ -780,7 +792,7 @@
 
 		#if WIHSPIDFHW
 			#define SPIDF_HARDINITIALIZE() do { \
-					enum { AF_QUADSPI_AF9 = 9xxx, AF_QUADSPI_AF10 = 10xxx }; \
+					enum { AF_QUADSPI_AF9 = 9, AF_QUADSPI_AF10 = 10 }; \
 					arm_hardware_pioe_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PE2 QSPI_D2 */ \
 					arm_hardware_piod_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PD13 QSPI_D3 */ \
 					/*arm_hardware_pioe_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PE2 QSPI_D2 tie-up */ \
@@ -849,5 +861,18 @@
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
+#define	HARDWARE_BL_INITIALIZE() do { \
+		const portholder_t enpins = (1U << 0); /* PA0 */ \
+		arm_hardware_pioa_outputs(enpins, 0 ? enpins : 0);	/* BL ENABLE */ \
+		} while (0)
+	/* включение/выключение преобразователя подсветки */
+	#define HARDWARE_BL_SET(en, level) do { \
+		const portholder_t enpins = (1U << 0); /* PA0 */ \
+		arm_hardware_pioa_outputs(enpins, en ? enpins : 0);	/* BL ENABLE */ \
+	} while (0)
+
+#define	HARDWARE_INITIALIZE() do { \
+		HARDWARE_BL_INITIALIZE(); \
+		} while (0)
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_32F746G_H_INCLUDED */
