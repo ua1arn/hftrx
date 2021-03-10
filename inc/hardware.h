@@ -798,12 +798,14 @@ void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обра
 size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
 
+typedef struct dpclock_tag dpclock_t;
+
 typedef void (* udpcfn_t)(void *);
 typedef void (* udpcfn2_t)(void *, void *);
 typedef void (* udpcfn3_t)(void *, void *, void *);
-uint_fast8_t board_dpc(udpcfn_t func, void * arg); // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2); // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3); // Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg); // Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2); // Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3); // Запрос отложенного вызова user-mode функций
 
 #include "list.h"
 

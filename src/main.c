@@ -13398,6 +13398,47 @@ peek_u32(const uint8_t * p)
 		((uint_fast32_t) p [3] << 24);
 }
 
+
+void dpclock_initialize(dpclock_t * lp)
+{
+	SPINLOCK_INITIALIZE(& lp->lock);
+	lp->flag = 0;
+}
+/*
+void dpclock_enter(dpclock_t * lp)
+{
+	global_disableIRQ();
+	SPIN_LOCK(& lp->lock);
+
+	SPIN_UNLOCK(& lp->lock);
+	global_enableIRQ();
+}
+*/
+void dpclock_exit(dpclock_t * lp)
+{
+	global_disableIRQ();
+	SPIN_LOCK(& lp->lock);
+	lp->flag = 0;
+	SPIN_UNLOCK(& lp->lock);
+	global_enableIRQ();
+}
+
+// возврат не-0 если уже занято
+uint_fast8_t dpclock_traylock(dpclock_t * lp)
+{
+	uint_fast8_t v;
+
+	global_disableIRQ();
+	SPIN_LOCK(& lp->lock);
+	v = lp->flag;
+	lp->flag = 1;
+	SPIN_UNLOCK(& lp->lock);
+	global_enableIRQ();
+
+	return v;
+}
+
+
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 static void
 //NOINLINEAT
@@ -13510,11 +13551,15 @@ processmessages(
 			void * arg1;
 			void * arg2;
 			void * arg3;
+			dpclock_t * lp;
 
 			func = (uintptr_t) peek_u32(buff + 1);
 			arg1 = (void *) peek_u32(buff + 5);
 			arg2 = (void *) peek_u32(buff + 9);
 			arg3 = (void *) peek_u32(buff + 13);
+			lp = (dpclock_t *) peek_u32(buff + 17);
+
+			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была вощмодность самого себя повторно запросить
 			switch (buff [0])
 			{
 			case 1:
@@ -13537,14 +13582,18 @@ processmessages(
 }
 
 // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc(udpcfn_t func, void * arg)
+uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 {
+	// предотвращение повторного включенияв очередь того же запроса
+	if (dpclock_traylock(lp))
+		return 0;
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 1;
 		poke_u32(buff + 1, (uintptr_t) func);
 		poke_u32(buff + 5, (uintptr_t) arg);
+		poke_u32(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -13552,8 +13601,11 @@ uint_fast8_t board_dpc(udpcfn_t func, void * arg)
 }
 
 // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
+uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2)
 {
+	// предотвращение повторного включенияв очередь того же запроса
+	if (dpclock_traylock(lp))
+		return 0;
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
@@ -13561,6 +13613,7 @@ uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
 		poke_u32(buff + 1, (uintptr_t) func);
 		poke_u32(buff + 5, (uintptr_t) arg1);
 		poke_u32(buff + 9, (uintptr_t) arg2);
+		poke_u32(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -13568,8 +13621,11 @@ uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
 }
 
 // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
+uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 {
+	// предотвращение повторного включенияв очередь того же запроса
+	if (dpclock_traylock(lp))
+		return 0;
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
@@ -13578,18 +13634,20 @@ uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 		poke_u32(buff + 5, (uintptr_t) arg1);
 		poke_u32(buff + 9, (uintptr_t) arg2);
 		poke_u32(buff + 13, (uintptr_t) arg3);
+		poke_u32(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
 	return 0;
 }
 
+static dpclock_t dpc_1slock;
 /* Вызывается из обработчика прерываний раз в секунду */
 void spool_secound(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(dpc_1stimer, NULL);
+	board_dpc(& dpc_1slock, dpc_1stimer, NULL);
 #if WITHTOUCHGUI
 	board_dpc(gui_update, NULL);
 #endif /*WITHTOUCHGUI */
