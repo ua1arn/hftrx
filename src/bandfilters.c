@@ -519,7 +519,7 @@ void bandf_calc_initialize(void)
 		(fseltype_t) ( 20900000UL >> BANDDIVPOWER),
 		(fseltype_t) ( 21500000UL >> BANDDIVPOWER),
 		(fseltype_t) ( 25500000UL >> BANDDIVPOWER),
-		(fseltype_t) ( 41500000UL >> BANDDIVPOWER),
+		(fseltype_t) ( 29900000UL >> BANDDIVPOWER),	// was: 41.5
 		(fseltype_t) ( 56000000UL >> BANDDIVPOWER),
 	};
 	#define BAND3CALCS	(sizeof board_band3fs / sizeof board_band3fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
