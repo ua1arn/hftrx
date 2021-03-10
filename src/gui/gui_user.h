@@ -41,7 +41,8 @@ enum {
 #elif WITHGUISTYLE_MINI 				// версия GUI для разрешения 480x272
 
 enum {
-	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
+	WINDOW_MAIN,
+	WINDOW_MAIN_MENU,
 
 	WINDOWS_COUNT
 };

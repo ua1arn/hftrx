@@ -217,7 +217,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
 		{
 			button_t * bh = & win->bh_ptr [i];
-			if (!strcmp(bh->name, name))
+			if (! strcmp(bh->name, name))
 				return (button_t *) bh;
 		}
 		PRINTF("find_gui_element: button '%s' not found\n", name);
@@ -229,7 +229,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		for (uint_fast8_t i = 0; i < win->lh_count; i ++)
 		{
 			label_t * lh = & win->lh_ptr [i];
-			if (!strcmp(lh->name, name))
+			if (! strcmp(lh->name, name))
 				return (label_t *) lh;
 		}
 		PRINTF("find_gui_element: label '%s' not found\n", name);
@@ -241,10 +241,22 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		for (uint_fast8_t i = 0; i < win->sh_count; i ++)
 		{
 			slider_t * sh = & win->sh_ptr [i];
-			if (!strcmp(sh->name, name))
+			if (! strcmp(sh->name, name))
 				return (slider_t *) sh;
 		}
 		PRINTF("find_gui_element: slider '%s' not found\n", name);
+		ASSERT(0);
+		return NULL;
+		break;
+
+	case TYPE_TOUCH_AREA:
+		for (uint_fast8_t i = 0; i < win->ta_count; i ++)
+		{
+			touch_area_t * ta = & win->ta_ptr [i];
+			if (! strcmp(ta->name, name))
+				return (touch_area_t *) ta;
+		}
+		PRINTF("find_gui_element: touch_area '%s' not found\n", name);
 		ASSERT(0);
 		return NULL;
 		break;
@@ -402,6 +414,33 @@ void elements_state (window_t * win)
 		}
 	}
 
+	touch_area_t * t = win->ta_ptr;
+	if(t != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->ta_count; i ++)
+		{
+			touch_area_t * ta = & t [i];
+			if (win->state)
+			{
+				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
+				gui_elements [gui_element_count].link = (touch_area_t *) ta;
+				gui_elements [gui_element_count].win = win;
+				gui_elements [gui_element_count].type = TYPE_TOUCH_AREA;
+				gui_element_count ++;
+				debug_num ++;
+			}
+			else
+			{
+				debug_num --;
+				gui_element_count --;
+				ta->visible = NON_VISIBLE;
+#if WITHGUISTYLE_COMMON
+				ASSERT(gui_element_count >= footer_buttons_count);
+#endif /* WITHGUISTYLE_COMMON */
+			}
+		}
+	}
+
 	// инициализировать системную кнопку закрытия окна, если разрешено
 	if(win->is_close)
 	{
@@ -456,14 +495,17 @@ static void free_win_ptr (window_t * win)
 	free(win->bh_ptr);
 	free(win->lh_ptr);
 	free(win->sh_ptr);
+	free(win->ta_ptr);
 
 	win->bh_count = 0;
 	win->lh_count = 0;
 	win->sh_count = 0;
+	win->ta_count = 0;
 
 	win->bh_ptr = NULL;
 	win->lh_ptr = NULL;
 	win->sh_ptr = NULL;
+	win->ta_ptr = NULL;
 //	PRINTF("free: %d %s\n", win->window_id, win->name);
 }
 
@@ -940,6 +982,18 @@ static void update_gui_elements_list(void)
 			p->is_trackable = 1;
 			p->is_long_press = 0;
 		}
+		else if (p->type == TYPE_TOUCH_AREA)
+		{
+			touch_area_t * ta = (touch_area_t *) p->link;
+			p->x1 = (ta->x1) < 0 ? 0 : (ta->x1);
+			p->x2 = (ta->x1 + ta->w) > WITHGUIMAXX ? WITHGUIMAXX : (ta->x1 + ta->w);
+			p->y1 = (ta->y1) < 0 ? 0 : (ta->y1);
+			p->y2 = (ta->y1 + ta->h) > WITHGUIMAXY ? WITHGUIMAXY : (ta->y1 + ta->h);
+			p->state = ta->state;
+			p->visible = ta->visible;
+			p->is_trackable = 0;
+			p->is_long_press = 0;
+		}
 	}
 }
 
@@ -1003,6 +1057,19 @@ static void set_state_record(gui_element_t * val)
 			{
 				slider_process(sh);
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED))
+					PRINTF("WM stack on window '%s' full!\n", val->win->name);
+			}
+			break;
+
+		case TYPE_TOUCH_AREA:
+			ASSERT(val->link != NULL);
+			touch_area_t * ta = (touch_area_t *) val->link;
+			gui.selected_type = TYPE_TOUCH_AREA;
+			gui.selected_link = val;
+			ta->state = val->state;
+			if (ta->state == RELEASED)
+			{
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, PRESSED))
 					PRINTF("WM stack on window '%s' full!\n", val->win->name);
 			}
 			break;
@@ -1112,7 +1179,7 @@ static void process_gui(void)
 			gui.state = CANCELLED;
 			p->state = CANCELLED;
 			set_state_record(p);
-			gui.is_after_touch = 1; 	// точка непрерывного нажатия вышла за пределы выбранного элемента, не поддерживающего tracking
+			gui.is_after_touch = 1; 	// точка непрерывного касания вышла за пределы выбранного элемента, не поддерживающего tracking
 		}
 	}
 	if (gui.state == RELEASED)

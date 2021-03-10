@@ -177,7 +177,7 @@ static void gui_main_process(void)
 		{
 			button_t * bh = & win->bh_ptr [id];
 			bh->x1 = x;
-			bh->y1 = WITHGUIMAXY - bh->h - 1;
+			bh->y1 = WITHGUIMAXY - bh->h;
 			bh->visible = VISIBLE;
 			x = x + interval_btn + bh->w;
 		}
@@ -4168,27 +4168,15 @@ void minigui_main_process(void)
 		uint_fast16_t x = 0;
 		win->first_call = 0;
 
-		button_t buttons [] = {
-		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1", 	"1", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2",  "2", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_3", 	"3", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_4",  "4", },
+		touch_area_t ta [] = {
+		//   x1, y1, w, 		 h, 		  state, 	 parent,      visible, payload,    name,  index
+			{ 0, 0, WITHGUIMAXX, WITHGUIMAXY, CANCELLED, WINDOW_MAIN, VISIBLE, INT32_MAX, "ta_main", },
 		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
-		{
-			button_t * bh = & win->bh_ptr [id];
-			bh->x1 = x;
-			bh->y1 = WITHGUIMAXY - bh->h - 1;
-			bh->visible = VISIBLE;
-			x = x + interval_btn + bh->w;
-		}
+		win->ta_count = ARRAY_SIZE(ta);
+		uint_fast16_t ta_size = sizeof(ta);
+		win->ta_ptr = malloc(ta_size);
+		GUI_MEM_ASSERT(win->ta_ptr);
+		memcpy(win->ta_ptr, ta, ta_size);
 
 		load_settings();
 		elements_state(win);
@@ -4200,15 +4188,70 @@ void minigui_main_process(void)
 	{
 	case WM_MESSAGE_ACTION:
 
-		if (IS_BUTTON_PRESS)
+		if (IS_AREA_TOUCHED)
 		{
-
+			TP();
 		}
 		break;
 
 	case WM_MESSAGE_UPDATE:
 
 		hamradio_set_freq(hamradio_get_freq_rx() + 10);
+		break;
+
+	default:
+
+		break;
+	}
+}
+
+// **********************************************************************************************************
+
+void minigui_main_menu_process(void)
+{
+	window_t * win = get_win(WINDOW_MAIN_MENU);
+
+	if (win->first_call)
+	{
+		uint_fast8_t interval_btn = 3;
+		uint_fast16_t x = 0;
+		win->first_call = 0;
+
+		button_t buttons [] = {
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_1", 	"1", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_2",  "2", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_3", 	"3", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_4",  "4", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
+		{
+			button_t * bh = & win->bh_ptr [id];
+			bh->x1 = x;
+			bh->y1 = WITHGUIMAXY - bh->h;
+			bh->visible = VISIBLE;
+			x = x + interval_btn + bh->w;
+		}
+
+		elements_state(win);
+
+		return;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_AREA_TOUCHED)
+		{
+
+		}
 		break;
 
 	default:
