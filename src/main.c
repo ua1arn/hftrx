@@ -7927,7 +7927,7 @@ static uint_fast8_t
 getactualpower(void)
 {
 #if WITHPOWERTRIM
-	return getactualdownpower() ? gtunepower : gnormalpower.value;
+	return getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
 
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
