@@ -1069,7 +1069,6 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		}
 		arm_max_no_idx_f32(afsp.val_array, afsp.w, & afsp.max_val);	// поиск в отображаемой части
 		afsp.max_val = FMAXF(afsp.max_val, 1);
-
 	}
 }
 
@@ -1213,6 +1212,21 @@ static void display2_freqX_a(
 			display_value_big(x, y + lowhalf, freq, fullwidth, comma, comma + 3, rj, blinkpos, blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 	}
+}
+
+static void display2_freqx_a(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	uint_fast8_t rj;
+	uint_fast8_t fullwidth = display_getfreqformat(& rj);
+	const uint_fast8_t comma = 3 - rj;
+	const uint_fast32_t freq = hamradio_get_freq_a();
+
+	colmain_setcolors3(colors_1freq [0].fg, colors_1freq [0].bg, colors_1freq [0].fg);
+	display_value_lower(x, y, freq, fullwidth, comma, rj);
 }
 
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
@@ -2186,6 +2200,18 @@ static void display2_mode3_a(
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_a_value_P(), };
 	ASSERT(strlen(labels [0]) == 3);
 	display2_text_P(x, y, labels, colors_1freq, 0);
+}
+
+static void display2_mode_lower_a(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	char labels[5];
+	local_snprintf_P(labels, ARRAY_SIZE(labels), PSTR(" %s"), hamradio_get_mode_a_value_P());
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), labels, colors_1freq [0].fg);
 }
 
 
@@ -5241,9 +5267,9 @@ enum
 	#if TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 	#else
-		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
+		#define DISPLC_WIDTH	7	// количество цифр в отображении частоты
 	#endif
-	#define DISPLC_RJ		0	// количество скрытых справа цифр в отображении частоты
+	#define DISPLC_RJ		1	// количество скрытых справа цифр в отображении частоты
 
 	#define MENU1ROW 20
 
@@ -5252,48 +5278,57 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
-		{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
-		{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
-		{	18,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
+//		{	0,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
+//		{	3,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+//		{	9,	0,	display2_att4,		REDRM_MODE, PGALL, },
+//		{	14,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+//		{	18,	0,	display_lockstate1,	REDRM_BARS, PGALL, },	// LOCK (*)
+#if WITHBARS
+		{    0, 0,  display2_smeter15_init,	REDRM_INIS, PGINI, },	// Инициализация стрелочного прибора
+		{    0, 0,  display2_smeter15, 		REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+#endif /* WITHBARS */
+#if WITHAFSPECTRE
+		{	0,	0,	display2_af_spectre15_init,	 REDRM_INIS, PGINI, },
+		{	0,	0,	display2_af_spectre15_latch, REDRM_BARS, PGLATCH, },
+		{	0,	0,	display2_af_spectre15,		 REDRM_BARS, PGSPE, },
+#endif /* WITHAFSPECTRE */
 
-	#if WITHENCODER2
-		{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-		{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-		{	25, 12,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-	#else /* WITHENCODER2 */
-		{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
-	#endif /* WITHENCODER2 */
+//	#if WITHENCODER2
+//		{	21, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
+//		{	21,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
+//		{	25, 12,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
+//	#else /* WITHENCODER2 */
+//		{	25, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
+//		{	25,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
+//	#endif /* WITHENCODER2 */
 
-		{	26, 16,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
+//		{	26, 16,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
 //		{	26,	16,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
-		{	26,	20,	display2_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
+//		{	26,	20,	display2_voxtune3,	REDRM_MODE, PGNOMEMU, },	// VOX
 
-		{	0,	4,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-		{	21,	8,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-		{	21,	12,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-		{	26,	8,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	13,	0,	display2_freqx_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (малые цифры)
+		{	27,	8,	display2_mode_lower_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+//		{	21,	12,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+//		{	26,	8,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 
-		{	0,	16,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
-		{	0,	16,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+//		{	0,	16,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+//		{	0,	16,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	5,	16,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
-		{	9,	16,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-		{	21,	16,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+//		{	5,	16,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT - не очень нужно при наличии индикации на A/B (display2_mainsub3) яркостью.
+//		{	9,	16,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+//		{	21,	16,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
-		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
-		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-		{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S или dBm
+//		{	0,	20,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра, PWR & SWR-метра
+//		{	0,	24,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
+//		{	25, 24, display2_smeors5, 	REDRM_BARS, PGSWR, },	// уровень сигнала в баллах S или dBm
 
-		{	0,	28,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
-		{	0,	28,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	28,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	28,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	0,	gui_WM_walktrough,	REDRM_BARS,	PGWFL | PGSPE, },
-		{	0,	28,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		{	0,	27,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
+		{	0,	27,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	27,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
+		{	0,	27,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
+		{	0,	0,	gui_WM_walktrough,	REDRM_BARS,	PGALL, },
+		{	0,	27,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
 #else
 		{	0,	20,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
 #endif
@@ -5309,15 +5344,15 @@ enum
 		{	25, 51,	display_amfmhighcut5,REDRM_MODE, PGALL, },	// 13.70
 	#endif /* WITHAMHIGHKBDADJ */
 
-		// sleep mode display
-		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-		{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+//		// sleep mode display
+//		{	5,	24,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+//		{	20, 24,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 
-	#if WITHMENU
-		{	1,	MENU1ROW,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
-		{	LABELW + 3,	MENU1ROW,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
-		{	LABELW * 2 + 4,	MENU1ROW,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
-	#endif /* WITHMENU */
+//	#if WITHMENU
+//		{	1,	MENU1ROW,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
+//		{	LABELW + 3,	MENU1ROW,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
+//		{	LABELW * 2 + 4,	MENU1ROW,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+//	#endif /* WITHMENU */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 	};
 
@@ -5336,7 +5371,7 @@ enum
 	void display2_getpipparams(pipparams_t * p)
 	{
 		p->x = 0; //GRID2X(0);	// позиция верхнего левого угла в пикселях
-		p->y = GRID2Y(28);	// позиция верхнего левого угла в пикселях
+		p->y = GRID2Y(26);	// позиция верхнего левого угла в пикселях
 		p->w = DIM_X; //GRID2X(CHARS2GRID(BDTH_ALLRX));	// размер по горизонтали в пикселях
 		p->h = GRID2Y(BDCV_ALLRX);				// размер по вертикали в пикселях
 	}

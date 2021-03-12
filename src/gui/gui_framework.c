@@ -37,10 +37,14 @@ void close_all_windows(void);
 uint_fast8_t check_for_parent_window(void);
 
 static btn_bg_t btn_bg [] = {
+#if WITHGUISTYLE_COMMON
 	{ 100, 44, },
 	{ 86, 44, },
 	{ 50, 50, },
 	{ 40, 40, },
+#elif WITHGUISTYLE_MINI
+	{ 94, 30, },
+#endif
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
@@ -296,7 +300,6 @@ uint_fast8_t get_label_height(const label_t * const lh)
 /* При DISABLED в качестве необязательного параметра передать указатель на активную кнопку или NULL для блокирования всех */
 void footer_buttons_state (uint_fast8_t state, ...)
 {
-#if WITHGUISTYLE_COMMON
 	window_t * win = get_win(WINDOW_MAIN);
 	va_list arg;
 	button_t * bt = NULL;
@@ -331,7 +334,6 @@ void footer_buttons_state (uint_fast8_t state, ...)
 			bh->is_locked = ((bitmask_locked_buttons >> i) & 1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		}
 	}
-#endif /* WITHGUISTYLE_COMMON */
 }
 
 //todo: добавить признак инициализированности элементов и учитывать его при закрытии окна
@@ -361,9 +363,7 @@ void elements_state (window_t * win)
 				debug_num --;
 				gui_element_count --;
 				bh->visible = NON_VISIBLE;
-#if WITHGUISTYLE_COMMON
-				ASSERT(gui_element_count >= footer_buttons_count);
-#endif
+				ASSERT(gui_element_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -388,9 +388,7 @@ void elements_state (window_t * win)
 				debug_num --;
 				gui_element_count --;
 				lh->visible = NON_VISIBLE;
-#if WITHGUISTYLE_COMMON
-				ASSERT(gui_element_count >= footer_buttons_count);
-#endif
+				ASSERT(gui_element_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -415,9 +413,7 @@ void elements_state (window_t * win)
 				debug_num --;
 				gui_element_count --;
 				sh->visible = NON_VISIBLE;
-#if WITHGUISTYLE_COMMON
-				ASSERT(gui_element_count >= footer_buttons_count);
-#endif
+				ASSERT(gui_element_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -442,9 +438,7 @@ void elements_state (window_t * win)
 				debug_num --;
 				gui_element_count --;
 				ta->visible = NON_VISIBLE;
-#if WITHGUISTYLE_COMMON
-				ASSERT(gui_element_count >= footer_buttons_count);
-#endif /* WITHGUISTYLE_COMMON */
+				ASSERT(gui_element_count >= gui.footer_buttons_count);
 			}
 		}
 	}
@@ -474,9 +468,7 @@ void elements_state (window_t * win)
 			debug_num --;
 			gui_element_count --;
 			close_button.visible = NON_VISIBLE;
-#if WITHGUISTYLE_COMMON
-			ASSERT(gui_element_count >= footer_buttons_count);
-#endif
+			ASSERT(gui_element_count >= gui.footer_buttons_count);
 		}
 	}
 //	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->name, gui_element_count, debug_num);
@@ -577,7 +569,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			{
 				for (uint_fast8_t i = 0; i < win->bh_count; i++)
 				{
-					button_t * bh = & win->bh_ptr [i];
+					const button_t * bh = & win->bh_ptr [i];
 					xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
 					ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
 					ASSERT(xmax < WITHGUIMAXX);
@@ -589,7 +581,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			{
 				for (uint_fast8_t i = 0; i < win->lh_count; i++)
 				{
-					label_t * lh = & win->lh_ptr [i];
+					const label_t * lh = & win->lh_ptr [i];
 					xmax = (xmax > lh->x + get_label_width(lh)) ? xmax : (lh->x + get_label_width(lh));
 					ymax = (ymax > lh->y + get_label_height(lh)) ? ymax : (lh->y + get_label_height(lh));
 					ASSERT(xmax < WITHGUIMAXX);
@@ -601,7 +593,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			{
 				for (uint_fast8_t i = 0; i < win->sh_count; i++)
 				{
-					slider_t * sh = & win->sh_ptr [i];
+					const slider_t * sh = & win->sh_ptr [i];
 					if (sh->orientation)	// ORIENTATION_HORIZONTAL
 					{
 						xmax = (xmax > sh->x + sh->size + sliders_w) ? xmax : (sh->x + sh->size + sliders_w);
@@ -621,10 +613,13 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 
 	case WINDOW_POSITION_FULLSCREEN:
 		{
+			const window_t * win_main = get_win(WINDOW_MAIN);
+			const uint_fast8_t h = win->bh_ptr[0].h;
+
 			win->x1 = 0;
 			win->y1 = 0;
 			win->w = WITHGUIMAXX - 1;
-			win->h = WITHGUIMAXY - 1;
+			win->h = WITHGUIMAXY - 1 - h;
 		}
 	break;
 
@@ -666,7 +661,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		ASSERT(win->y1 + win->h < WITHGUIMAXY);
 	}
 
-	PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
+	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	elements_state(win);
 }
 
@@ -966,6 +961,7 @@ void gui_initialize (void)
 
 	open_window(win);
 	gui.win [1] = NO_PARENT_WINDOW;
+	gui.footer_buttons_count = win->bh_count;
 
 	do {
 		fill_button_bg_buf(& btn_bg [i]);

@@ -1173,6 +1173,46 @@ display_value_big(
 	display_wrdatabig_end();
 }
 
+void
+NOINLINEAT
+display_value_lower(
+	uint_fast8_t x,	// x координата начала вывода значения
+	uint_fast8_t y,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t rj	// = 1;		// right truncated
+	)
+{
+	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
+	uint_fast8_t i = (j - width);
+	uint_fast8_t z = 1;	// only zeroes
+	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
+
+	uint_fast16_t ypix;
+	uint_fast16_t xpix = display_wrdatabig_begin(x, y, & ypix);
+	for (; i < j; ++ i)
+	{
+		const ldiv_t res = ldiv(freq, vals10 [i]);
+		const uint_fast8_t g = (j - i);		// десятичная степень текущего разряда на отображении
+
+		if (comma == g || comma + 3 == g)
+		{
+			z = 0;
+			xpix = display_put_char_big(xpix, ypix, '.', 0);
+		}
+
+		if (z == 1 && (i + 1) < j && res.quot == 0)
+			xpix = display_put_char_big(xpix, ypix, ' ', 0);	// supress zero
+		else
+		{
+			z = 0;
+			xpix = display_put_char_half(xpix, ypix, '0' + res.quot, 0);
+		}
+		freq = res.rem;
+	}
+	display_wrdatabig_end();
+}
 
 void
 NOINLINEAT

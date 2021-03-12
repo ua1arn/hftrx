@@ -12,7 +12,7 @@
 	#define WITHGUIMAXY				272
 	#define WITHGUISTYLE_MINI		1
 	#define GUI_OLDBUTTONSTYLE		1						// Кнопки без закругления углов
-	#define FOOTER_HEIGHT			0
+	#define FOOTER_HEIGHT			36
 #elif DIM_X >= 800 && DIM_Y >= 480							// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
 	#define WITHGUIMAXX				800
 	#define WITHGUIMAXY				480

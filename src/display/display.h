@@ -1067,6 +1067,16 @@ display_value_big(
 	);
 
 void
+display_value_lower(
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t rj
+	);
+
+void
 display_value_small(
 	uint_fast8_t xcell,	// x координата начала вывода значения
 	uint_fast8_t ycell,	// y координата начала вывода значения
