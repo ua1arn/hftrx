@@ -177,7 +177,7 @@ static void gui_main_process(void)
 		{
 			button_t * bh = & win->bh_ptr [id];
 			bh->x1 = x;
-			bh->y1 = WITHGUIMAXY - bh->h;
+			bh->y1 = WITHGUIMAXY - bh->h - 1;
 			bh->visible = VISIBLE;
 			x = x + interval_btn + bh->w;
 		}
@@ -4138,10 +4138,12 @@ void gui_open_sys_menu(void)
 #elif WITHGUISTYLE_MINI 				// версия GUI для разрешения 480x272
 
 static void minigui_main_process(void);
+static void minigui_main_menu_process(void);
 
 static window_t windows [] = {
-//     window_id,   		 parent_id, 			align_mode,     x1, y1, w, h,   title,     		is_show, first_call, is_close, onVisibleProcess
-	{ WINDOW_MAIN, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X,	0, 0, 0, 0, "",  	   	   			 NON_VISIBLE, 0, 0, minigui_main_process, },
+//     window_id,   	parent_id, 		  align_mode,  x1, y1, w, h, title, is_show, first_call, is_close, onVisibleProcess
+	{ WINDOW_MAIN, 		NO_PARENT_WINDOW, ALIGN_LEFT_X,	0, 0, 0, 0, "", NON_VISIBLE, 0, 0, minigui_main_process, },
+	{ WINDOW_MAIN_MENU, WINDOW_MAIN,	  ALIGN_LEFT_X,	0, 0, 0, 0, "", NON_VISIBLE, 0, 1, minigui_main_menu_process, },
 };
 
 /* Возврат ссылки на окно */
@@ -4190,13 +4192,16 @@ void minigui_main_process(void)
 
 		if (IS_AREA_TOUCHED)
 		{
-			TP();
+			if (check_for_parent_window() != NO_PARENT_WINDOW)
+				close_window(OPEN_PARENT_WINDOW);
+			else
+				open_window(get_win(WINDOW_MAIN_MENU));
 		}
 		break;
 
 	case WM_MESSAGE_UPDATE:
 
-		hamradio_set_freq(hamradio_get_freq_rx() + 10);
+		//hamradio_set_freq(hamradio_get_freq_rx() + 10);
 		break;
 
 	default:
@@ -4207,7 +4212,7 @@ void minigui_main_process(void)
 
 // **********************************************************************************************************
 
-void minigui_main_menu_process(void)
+static void minigui_main_menu_process(void)
 {
 	window_t * win = get_win(WINDOW_MAIN_MENU);
 
@@ -4219,10 +4224,10 @@ void minigui_main_menu_process(void)
 
 		button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_1", 	"1", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_2",  "2", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_3", 	"3", },
-			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_4",  "4", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_1", "1", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_2", "2", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_3", "3", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_4", "4", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -4234,12 +4239,12 @@ void minigui_main_menu_process(void)
 		{
 			button_t * bh = & win->bh_ptr [id];
 			bh->x1 = x;
-			bh->y1 = WITHGUIMAXY - bh->h;
+			bh->y1 = WITHGUIMAXY - bh->h - 1;
 			bh->visible = VISIBLE;
 			x = x + interval_btn + bh->w;
 		}
 
-		elements_state(win);
+		calculate_window_position(win, WINDOW_POSITION_FULLSCREEN);
 
 		return;
 	}

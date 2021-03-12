@@ -197,13 +197,13 @@
 	// Обязательно буфер (входы процессора низковольтные).
 
 	#define ENCODER_INPUT_PORT			(GPIOB->IDR)
-	#define ENCODER_BITS ((1u << 12) | (1u << 13))		// PB12 & PB13
-	#define ENCODER_SHIFT 12
+	#define ENCODER_BITS  				((1u << 8) | (1u << 9))		// PB8 & PB9
+	#define ENCODER_SHIFT 8
 	// Обязательно буфер (входы процессора низковольтные).
 
 	#define ENCODER2_INPUT_PORT			(GPIOB->IDR)
-	#define ENCODER2_BITS ((1u << 8) | (1u << 9))		// PB8 & PB9
-	#define ENCODER2_SHIFT 8
+	#define ENCODER2_BITS 				((1u << 12) | (1u << 13))		// PB12 & PB13
+	#define ENCODER2_SHIFT 12
 
 	#define TARGET_ENC2BTN_BIT (1U << 8)				// PA8 - second encoder button with pull-up
 	#define TARGET_ENC2BTN_GET (((GPIOA->IDR) & TARGET_ENC2BTN_BIT) == 0)

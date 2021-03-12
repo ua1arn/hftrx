@@ -8860,7 +8860,7 @@ updateboard(
 	if (full2)
 	{
 #if WITHTOUCHGUI
-		gui_update(NULL);
+		gui_update();
 #endif /* WITHTOUCHGUI */
 
 		/* Полная перенастройка. Изменился режим (или одно из значений hint). */
@@ -13376,13 +13376,18 @@ static void dpc_1stimer(void * arg)
 #if WITHLWIP
 	sys_check_timeouts();
 #endif /* WITHLWIP */
+
 #if 0 && CPUSTYLE_XC7Z
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif /* CPUSTYLE_XC7Z */
+
+#if WITHTOUCHGUI
+	gui_update();
+#endif /*WITHTOUCHGUI */
 }
 
 static void
-poke_u32(uint8_t * p, uintptr_t v)
+poke_u32(volatile uint8_t * p, uintptr_t v)
 {
 	p [0] = (v >> 0) & 0xFF;
 	p [1] = (v >> 8) & 0xFF;
@@ -13391,7 +13396,7 @@ poke_u32(uint8_t * p, uintptr_t v)
 }
 
 static uintptr_t
-peek_u32(const uint8_t * p)
+peek_u32(volatile const uint8_t * p)
 {
 	return
 		((uint_fast32_t) p [0] << 0) +
@@ -13650,9 +13655,6 @@ void spool_secound(void * ctx)
 	(void) ctx;	// приходит NULL
 
 	board_dpc(& dpc_1slock, dpc_1stimer, NULL);
-#if WITHTOUCHGUI
-	board_dpc(gui_update, NULL);
-#endif /*WITHTOUCHGUI */
 }
 
 /* Установка сиквенсору запроса на передачу.	*/

@@ -7557,7 +7557,11 @@ display_colorgrid_3dss(
 
 #if WITHVIEW_3DSS
 enum {
+#if DIM_X == 480 && DIM_Y == 272
+	MAX_3DSS_STEP = 21,
+#else
 	MAX_3DSS_STEP = 42,
+#endif
 	Y_STEP = 2,
 	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,

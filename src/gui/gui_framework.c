@@ -183,7 +183,7 @@ void clean_wm_queue (window_t * win)
 	memset(win->queue.data, 0, sizeof win->queue.data);
 }
 /* Запрос на обновление состояния элементов GUI */
-void gui_update(void * arg)
+void gui_update(void)
 {
 	put_to_wm_queue(get_win(WINDOW_MAIN), WM_MESSAGE_UPDATE);	// главное окно всегда нужно обновлять
 
@@ -296,6 +296,7 @@ uint_fast8_t get_label_height(const label_t * const lh)
 /* При DISABLED в качестве необязательного параметра передать указатель на активную кнопку или NULL для блокирования всех */
 void footer_buttons_state (uint_fast8_t state, ...)
 {
+#if WITHGUISTYLE_COMMON
 	window_t * win = get_win(WINDOW_MAIN);
 	va_list arg;
 	button_t * bt = NULL;
@@ -330,6 +331,7 @@ void footer_buttons_state (uint_fast8_t state, ...)
 			bh->is_locked = ((bitmask_locked_buttons >> i) & 1) ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		}
 	}
+#endif /* WITHGUISTYLE_COMMON */
 }
 
 //todo: добавить признак инициализированности элементов и учитывать его при закрытии окна
@@ -359,7 +361,9 @@ void elements_state (window_t * win)
 				debug_num --;
 				gui_element_count --;
 				bh->visible = NON_VISIBLE;
+#if WITHGUISTYLE_COMMON
 				ASSERT(gui_element_count >= footer_buttons_count);
+#endif
 			}
 		}
 	}
@@ -384,7 +388,9 @@ void elements_state (window_t * win)
 				debug_num --;
 				gui_element_count --;
 				lh->visible = NON_VISIBLE;
+#if WITHGUISTYLE_COMMON
 				ASSERT(gui_element_count >= footer_buttons_count);
+#endif
 			}
 		}
 	}
@@ -409,7 +415,9 @@ void elements_state (window_t * win)
 				debug_num --;
 				gui_element_count --;
 				sh->visible = NON_VISIBLE;
+#if WITHGUISTYLE_COMMON
 				ASSERT(gui_element_count >= footer_buttons_count);
+#endif
 			}
 		}
 	}
@@ -466,7 +474,9 @@ void elements_state (window_t * win)
 			debug_num --;
 			gui_element_count --;
 			close_button.visible = NON_VISIBLE;
+#if WITHGUISTYLE_COMMON
 			ASSERT(gui_element_count >= footer_buttons_count);
+#endif
 		}
 	}
 //	PRINTF("line %d: %s gui_element_count: %d %+d\n", __LINE__, win->name, gui_element_count, debug_num);
@@ -549,92 +559,114 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	uint_fast8_t title_length = strlen(win->name) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0;
 
-	if (mode)					// WINDOW_POSITION_MANUAL
+	switch (mode)
 	{
-		va_list arg;
-		va_start(arg, mode);
-		xmax = va_arg(arg, uint_fast16_t);
-		ymax = va_arg(arg, uint_fast16_t);
-		va_end(arg);
-	}
-	else						// WINDOW_POSITION_AUTO
-	{
-		if (win->bh_ptr != NULL)
+	case WINDOW_POSITION_MANUAL:
 		{
-			for (uint_fast8_t i = 0; i < win->bh_count; i++)
-			{
-				button_t * bh = & win->bh_ptr [i];
-				xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
-				ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
-				ASSERT(xmax < WITHGUIMAXX);
-				ASSERT(ymax < WITHGUIMAXY);
-			}
+			va_list arg;
+			va_start(arg, mode);
+			xmax = va_arg(arg, uint_fast16_t);
+			ymax = va_arg(arg, uint_fast16_t);
+			va_end(arg);
 		}
+		break;
 
-		if (win->lh_ptr != NULL)
+	case WINDOW_POSITION_AUTO:
 		{
-			for (uint_fast8_t i = 0; i < win->lh_count; i++)
+			if (win->bh_ptr != NULL)
 			{
-				label_t * lh = & win->lh_ptr [i];
-				xmax = (xmax > lh->x + get_label_width(lh)) ? xmax : (lh->x + get_label_width(lh));
-				ymax = (ymax > lh->y + get_label_height(lh)) ? ymax : (lh->y + get_label_height(lh));
-				ASSERT(xmax < WITHGUIMAXX);
-				ASSERT(ymax < WITHGUIMAXY);
-			}
-		}
-
-		if (win->sh_ptr != NULL)
-		{
-			for (uint_fast8_t i = 0; i < win->sh_count; i++)
-			{
-				slider_t * sh = & win->sh_ptr [i];
-				if (sh->orientation)	// ORIENTATION_HORIZONTAL
+				for (uint_fast8_t i = 0; i < win->bh_count; i++)
 				{
-					xmax = (xmax > sh->x + sh->size + sliders_w) ? xmax : (sh->x + sh->size + sliders_w);
-					ymax = (ymax > sh->y + sliders_h * 2) ? ymax : (sh->y + sliders_h * 2);
+					button_t * bh = & win->bh_ptr [i];
+					xmax = (xmax > bh->x1 + bh->w) ? xmax : (bh->x1 + bh->w);
+					ymax = (ymax > bh->y1 + bh->h) ? ymax : (bh->y1 + bh->h);
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
 				}
-				else					// ORIENTATION_VERTICAL
+			}
+
+			if (win->lh_ptr != NULL)
+			{
+				for (uint_fast8_t i = 0; i < win->lh_count; i++)
 				{
-					xmax = (xmax > sh->x + sliders_w * 2) ? xmax : (sh->x + sliders_w * 2);
-					ymax = (ymax > sh->y + sh->size + sliders_h) ? ymax : (sh->y + sh->size + sliders_h);
+					label_t * lh = & win->lh_ptr [i];
+					xmax = (xmax > lh->x + get_label_width(lh)) ? xmax : (lh->x + get_label_width(lh));
+					ymax = (ymax > lh->y + get_label_height(lh)) ? ymax : (lh->y + get_label_height(lh));
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
 				}
-				ASSERT(xmax < WITHGUIMAXX);
-				ASSERT(ymax < WITHGUIMAXY);
+			}
+
+			if (win->sh_ptr != NULL)
+			{
+				for (uint_fast8_t i = 0; i < win->sh_count; i++)
+				{
+					slider_t * sh = & win->sh_ptr [i];
+					if (sh->orientation)	// ORIENTATION_HORIZONTAL
+					{
+						xmax = (xmax > sh->x + sh->size + sliders_w) ? xmax : (sh->x + sh->size + sliders_w);
+						ymax = (ymax > sh->y + sliders_h * 2) ? ymax : (sh->y + sliders_h * 2);
+					}
+					else					// ORIENTATION_VERTICAL
+					{
+						xmax = (xmax > sh->x + sliders_w * 2) ? xmax : (sh->x + sliders_w * 2);
+						ymax = (ymax > sh->y + sh->size + sliders_h) ? ymax : (sh->y + sh->size + sliders_h);
+					}
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
+				}
 			}
 		}
-	}
+		break;
 
-	win->w = xmax > title_length ? (xmax + edge_step) : (title_length + edge_step * 2);
-	win->w = (win->is_close && win->w < title_length + window_close_button_size * 2) ? (win->w + window_close_button_size) : win->w;
-	win->h = ymax + edge_step;
-
-	win->y1 = ALIGN_Y - win->h / 2;
-
-	switch (win->align_mode)
-	{
-	case ALIGN_LEFT_X:
-		if (ALIGN_LEFT_X - win->w / 2 < 0)
+	case WINDOW_POSITION_FULLSCREEN:
+		{
 			win->x1 = 0;
-		else
-			win->x1 = ALIGN_LEFT_X - win->w / 2;
-		break;
+			win->y1 = 0;
+			win->w = WITHGUIMAXX - 1;
+			win->h = WITHGUIMAXY - 1;
+		}
+	break;
 
-	case ALIGN_RIGHT_X:
-		if (ALIGN_RIGHT_X + win->w / 2 > WITHGUIMAXX)
-			win->x1 = WITHGUIMAXX - win->w;
-		else
-			win->x1 = ALIGN_RIGHT_X - win->w / 2;
-		break;
-
-	case ALIGN_CENTER_X:
 	default:
-		win->x1 = ALIGN_CENTER_X - win->w / 2;
+
 		break;
 	}
 
-	ASSERT(win->x1 + win->w < WITHGUIMAXX);
-	ASSERT(win->y1 + win->h < WITHGUIMAXY);
+	if (mode != WINDOW_POSITION_FULLSCREEN)
+	{
+		win->w = xmax > title_length ? (xmax + edge_step) : (title_length + edge_step * 2);
+		win->w = (win->is_close && win->w < title_length + window_close_button_size * 2) ? (win->w + window_close_button_size) : win->w;
+		win->h = ymax + edge_step;
+		win->y1 = ALIGN_Y - win->h / 2;
 
+		switch (win->align_mode)
+		{
+		case ALIGN_LEFT_X:
+			if (ALIGN_LEFT_X - win->w / 2 < 0)
+				win->x1 = 0;
+			else
+				win->x1 = ALIGN_LEFT_X - win->w / 2;
+			break;
+
+		case ALIGN_RIGHT_X:
+			if (ALIGN_RIGHT_X + win->w / 2 > WITHGUIMAXX)
+				win->x1 = WITHGUIMAXX - win->w;
+			else
+				win->x1 = ALIGN_RIGHT_X - win->w / 2;
+			break;
+
+		case ALIGN_CENTER_X:
+		default:
+			win->x1 = ALIGN_CENTER_X - win->w / 2;
+			break;
+		}
+
+		ASSERT(win->x1 + win->w < WITHGUIMAXX);
+		ASSERT(win->y1 + win->h < WITHGUIMAXY);
+	}
+
+	PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	elements_state(win);
 }
 
@@ -1088,7 +1120,7 @@ static void process_gui(void)
 	static uint_fast16_t x_old = 0, y_old = 0, long_press_counter = 0;
 	static gui_element_t * p = NULL;
 	static window_t * w = NULL;
-	uint_fast8_t long_press_limit = 20;
+	const uint_fast8_t long_press_limit = 20;
 	static uint_fast8_t is_long_press = 0;		// 1 - долгое нажатие уже обработано
 
 #if defined (TSC1_TYPE)
@@ -1208,7 +1240,6 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
 	uint_fast8_t alpha = DEFAULT_ALPHA; // на сколько затемнять цвета
 	char buf [TEXT_ARRAY_SIZE];
-	char * text2 = NULL;
 	uint_fast8_t str_len = 0;
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 
