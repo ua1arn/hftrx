@@ -1040,8 +1040,11 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	{
 		afspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEAF, BOARD_WTYPE_SPECTRUM);
 	}
-
+#if CTLSTYLE_V3D
+	subscribefloat_user(& afoutfloat, & afspectreregister, NULL, afsp_save_sample);
+#else
 	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
+#endif /* CTLSTYLE_V3D */
 }
 
 static void
