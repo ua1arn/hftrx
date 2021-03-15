@@ -12870,6 +12870,13 @@ sysinit_pll_initialize(void)
 		#endif
 	#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 #endif /*  ! CPUSTYLE_R7S721 */
+#if (__L2C_PRESENT == 1)
+	PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_310->CACHE_ID);	// L2C_GetID()
+	PRINTF("L2C_310->CACHE_ID Implementer=%08lX\n", (L2C_310->CACHE_ID >> 24) & 0xFF);
+	PRINTF("L2C_310->CACHE_ID CACHE ID=%08lX\n", (L2C_310->CACHE_ID >> 10) & 0x3F);
+	PRINTF("L2C_310->CACHE_ID Part number=%08lX\n", (L2C_310->CACHE_ID >> 6) & 0x0F);
+	PRINTF("L2C_310->CACHE_ID RTL release=%08lX\n", (L2C_310->CACHE_ID >> 0) & 0x3F);
+#endif
 }
 
 
