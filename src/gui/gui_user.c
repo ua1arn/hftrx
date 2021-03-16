@@ -3159,452 +3159,7 @@ static void window_ap_mic_prof_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_menu_process(void)
-{
-	static uint_fast8_t menu_is_scrolling = 0;
-	uint_fast8_t int_col2 = 180, int_col3 = 230, int_rows = 35, is_moving_label = 0;
-	static button_t * button_up = NULL, * button_down = NULL;
-	window_t * win = get_win(WINDOW_MENU);
-	int_fast8_t move_x = 0, move_y = 0, rotate = 0;
-	static label_t * selected_label = NULL;
-	static uint_fast8_t menu_label_touched = 0;
-	static uint_fast8_t menu_level, enc2_code = KBD_CODE_MAX;
-	static menu_t menu [MENU_COUNT];
 
-	if (win->first_call)
-	{
-		uint_fast16_t xmax = 0, ymax = 0;
-		win->first_call = 0;
-		win->align_mode = ALIGN_CENTER_X;						// выравнивание окна системных настроек всегда по центру
-
-		uint_fast8_t col1_int = 20, row1_int = window_title_height + 20, i;
-		uint_fast16_t xn, yn;
-		label_t * lh;
-
-		static const button_t buttons [] = {
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, -1, "btn_SysMenu-", "-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, 1, "btn_SysMenu+", "+", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels [] = {
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 0, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 1, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 2, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 3, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 4, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 5, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 0, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 1, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 2, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 3, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 4, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 5, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 0, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 1, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 2, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 3, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 4, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 5, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		button_up = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu+");
-		button_down = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu-");
-		button_up->visible = NON_VISIBLE;
-		button_down->visible = NON_VISIBLE;
-
-		menu [MENU_GROUPS].add_id = 0;
-		menu [MENU_GROUPS].selected_str = 0;
-		menu [MENU_GROUPS].selected_label = 0;
-		menu [MENU_PARAMS].add_id = 0;
-		menu [MENU_PARAMS].selected_str = 0;
-		menu [MENU_PARAMS].selected_label = 0;
-		menu [MENU_VALS].add_id = 0;
-		menu [MENU_VALS].selected_str = 0;
-		menu [MENU_VALS].selected_label = 0;
-
-		menu [MENU_GROUPS].first_id = 0;
-		for (i = 0; i < win->lh_count; i ++)
-		{
-			lh = & win->lh_ptr [i];
-			if (strcmp(lh->name, "lbl_group"))
-				break;
-		}
-
-		menu [MENU_GROUPS].last_id = -- i;
-		menu [MENU_GROUPS].num_rows = menu [MENU_GROUPS].last_id - menu [MENU_GROUPS].first_id;
-
-		menu [MENU_PARAMS].first_id = ++ i;
-		for (; i < win->lh_count; i ++)
-		{
-			lh = & win->lh_ptr [i];
-			if (strcmp(lh->name, "lbl_params"))
-				break;
-		}
-		menu [MENU_PARAMS].last_id = -- i;
-		menu [MENU_PARAMS].num_rows = menu [MENU_PARAMS].last_id - menu [MENU_PARAMS].first_id;
-
-		menu [MENU_VALS].first_id = ++ i;
-		for (; i < win->lh_count; i ++)
-		{
-			lh = & win->lh_ptr [i];
-			if (strcmp(lh->name, "lbl_vals"))
-				break;
-		}
-		menu [MENU_VALS].last_id = -- i;
-		menu [MENU_VALS].num_rows = menu [MENU_VALS].last_id - menu [MENU_VALS].first_id;
-
-		menu [MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu [MENU_GROUPS].menu_block) - 1;
-		xn = col1_int;
-		yn = row1_int;
-		for(i = 0; i <= menu [MENU_GROUPS].num_rows; i ++)
-		{
-			lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-			strcpy(lh->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
-			lh->visible = VISIBLE;
-			lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
-			lh->x = xn;
-			lh->y = yn;
-			yn += int_rows;
-		}
-
-		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
-				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
-		xn += int_col2;
-		yn = row1_int;
-		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i ++)
-		{
-			lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-			strcpy(lh->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
-			lh->visible = VISIBLE;
-			lh->color = COLORMAIN_WHITE;
-			lh->x = xn;
-			lh->y = yn;
-			yn += int_rows;
-		}
-
-		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
-		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block, menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, menu [MENU_VALS].count);
-		xn += int_col3;
-		yn = row1_int;
-		for(lh = NULL, i = 0; i <= menu [MENU_VALS].num_rows; i ++)
-		{
-			lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
-			lh->x = xn;
-			lh->y = yn;
-			yn += int_rows;
-			lh->visible = NON_VISIBLE;
-			lh->color = COLORMAIN_WHITE;
-			if (menu [MENU_VALS].count < i)
-				continue;
-			strcpy(lh->text, menu [MENU_VALS].menu_block [i + menu [MENU_VALS].add_id].name);
-			lh->visible = VISIBLE;
-		}
-
-		menu_level = MENU_GROUPS;
-
-		ASSERT(lh != NULL);
-		xmax = lh->x + 100;
-		ymax = lh->y + get_label_height(lh);
-
-		hamradio_enable_encoder2_redirect();
-		calculate_window_position(win, WINDOW_POSITION_MANUAL, xmax, ymax);
-	}
-
-	GET_FROM_WM_QUEUE
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			button_t * bh = (button_t *) ptr;
-			put_to_wm_queue(win, WM_MESSAGE_ENC2_ROTATE, bh->payload);
-		}
-		else if ((IS_LABEL_PRESS) || (IS_LABEL_MOVE))
-		{
-			selected_label = (label_t *) ptr;
-			if (strcmp(selected_label->name, "lbl_group") == 0)
-			{
-				menu [MENU_GROUPS].selected_label = selected_label->index;
-				menu_label_touched = 1;
-				menu_level = MENU_GROUPS;
-			}
-			else if (strcmp(selected_label->name, "lbl_params") == 0)
-			{
-				menu [MENU_PARAMS].selected_label = selected_label->index;
-				menu_label_touched = 1;
-				menu_level = MENU_PARAMS;
-			}
-			else if (strcmp(selected_label->name, "lbl_vals") == 0)
-			{
-				menu [MENU_VALS].selected_label = selected_label->index;
-				menu [MENU_PARAMS].selected_label = menu [MENU_VALS].selected_label;
-				menu_label_touched = 1;
-				menu_level = MENU_VALS;
-			}
-
-			is_moving_label = IS_LABEL_MOVE;
-		}
-		break;
-
-	case WM_MESSAGE_ENC2_ROTATE:
-
-		rotate = action;
-		break;
-
-	case WM_MESSAGE_KEYB_CODE:
-
-		enc2_code = action;
-		break;
-
-	default:
-
-		break;
-	}
-
-	get_gui_tracking(& move_x, & move_y);
-	if (is_moving_label && move_y != 0)
-	{
-		static uint_fast8_t start_str_group = 0, start_str_params = 0;
-		if (! menu_is_scrolling)
-		{
-			start_str_group = menu [MENU_GROUPS].add_id;
-			start_str_params = menu [MENU_PARAMS].add_id;
-		}
-		ldiv_t r = ldiv(move_y, int_rows);
-		if (strcmp(selected_label->name, "lbl_group") == 0)
-		{
-			int_fast8_t q = start_str_group - r.quot;
-			menu [MENU_GROUPS].add_id = q <= 0 ? 0 : q;
-			menu [MENU_GROUPS].add_id = (menu [MENU_GROUPS].add_id + menu [MENU_GROUPS].num_rows) > menu [MENU_GROUPS].count ?
-					(menu [MENU_GROUPS].count - menu [MENU_GROUPS].num_rows) : menu [MENU_GROUPS].add_id;
-			menu [MENU_GROUPS].selected_str = menu [MENU_GROUPS].selected_label + menu [MENU_GROUPS].add_id;
-			menu_level = MENU_GROUPS;
-			menu [MENU_PARAMS].add_id = 0;
-			menu [MENU_PARAMS].selected_str = 0;
-			menu [MENU_PARAMS].selected_label = 0;
-			menu [MENU_VALS].add_id = 0;
-			menu [MENU_VALS].selected_str = 0;
-			menu [MENU_VALS].selected_label = 0;
-		}
-		else if (strcmp(selected_label->name, "lbl_params") == 0 && menu [MENU_PARAMS].count > menu [MENU_PARAMS].num_rows)
-		{
-			int_fast8_t q = start_str_params - r.quot;
-			menu [MENU_PARAMS].add_id = q <= 0 ? 0 : q;
-			menu [MENU_PARAMS].add_id = (menu [MENU_PARAMS].add_id + menu [MENU_PARAMS].num_rows) > menu [MENU_PARAMS].count ?
-					(menu [MENU_PARAMS].count - menu [MENU_PARAMS].num_rows) : menu [MENU_PARAMS].add_id;
-			menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
-			menu [MENU_VALS].add_id = menu [MENU_PARAMS].add_id;
-			menu [MENU_VALS].selected_str = menu [MENU_PARAMS].selected_str;
-			menu [MENU_VALS].selected_label = menu [MENU_PARAMS].selected_label;
-			menu_level = MENU_PARAMS;
-		}
-		menu_is_scrolling = 1;
-	}
-
-	if (! is_moving_label && menu_is_scrolling)
-	{
-		menu_is_scrolling = 0;
-		reset_tracking();
-	}
-
-	if (enc2_code != KBD_CODE_MAX || menu_label_touched || menu_is_scrolling)
-	{
-		// выход из режима редактирования параметра  - краткое или длинное нажатие на энкодер
-		if (enc2_code == KBD_ENC2_PRESS && menu_level == MENU_VALS)
-		{
-			menu_level = MENU_PARAMS;
-			enc2_code = KBD_CODE_MAX;
-		}
-		if (enc2_code == KBD_ENC2_PRESS)
-			menu_level = ++menu_level > MENU_VALS ? MENU_VALS : menu_level;
-		if (enc2_code == KBD_ENC2_HOLD)
-		{
-			menu_level = --menu_level == MENU_OFF ? MENU_OFF : menu_level;
-			if (menu_level == MENU_GROUPS)
-			{
-				menu [MENU_PARAMS].add_id = 0;
-				menu [MENU_PARAMS].selected_str = 0;
-				menu [MENU_PARAMS].selected_label = 0;
-				menu [MENU_VALS].add_id = 0;
-				menu [MENU_VALS].selected_str = 0;
-				menu [MENU_VALS].selected_label = 0;
-			}
-		}
-
-		// при переходе между уровнями пункты меню выделяется цветом
-		label_t * lh = NULL;
-		if (menu_level == MENU_VALS)
-		{
-			menu [MENU_VALS].selected_label = menu [MENU_PARAMS].selected_label;
-			lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_VALS].selected_label];
-
-			button_down->visible = VISIBLE;
-			button_down->x1 = lh->x - button_down->w - 10;
-			button_down->y1 = (lh->y + get_label_height(lh) / 2) - (button_down->h / 2);
-
-			button_up->visible = VISIBLE;
-			button_up->x1 = lh->x + get_label_width(lh) + 10;
-			button_up->y1 = button_down->y1;
-			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
-			{
-				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
-
-				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
-
-				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
-				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_YELLOW : COLORMAIN_GRAY;
-			}
-			menu_label_touched = 0;
-		}
-		else if (menu_level == MENU_PARAMS)
-		{
-			button_down->visible = NON_VISIBLE;
-			button_up->visible = NON_VISIBLE;
-			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
-			{
-				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
-
-				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
-
-				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
-				lh->color = COLORMAIN_WHITE;
-			}
-		}
-		else if (menu_level == MENU_GROUPS)
-		{
-			button_down->visible = NON_VISIBLE;
-			button_up->visible = NON_VISIBLE;
-			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
-			{
-				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
-
-				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-				lh->color = COLORMAIN_WHITE;
-
-				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
-				lh->color = COLORMAIN_WHITE;
-			}
-		}
-
-		enc2_code = KBD_CODE_MAX;
-	}
-
-	if (menu_level == MENU_OFF)
-	{
-		if (win->parent_id != NO_PARENT_WINDOW)
-		{
-			close_all_windows();
-			return;
-		} else
-			menu_level = MENU_GROUPS;
-	}
-
-	if (rotate != 0 && menu_level == MENU_VALS)
-	{
-		menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
-		label_t * lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_PARAMS].selected_label];
-		strcpy(lh->text, hamradio_gui_edit_menu_item(menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, rotate));
-
-		lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_VALS].selected_label];
-		button_up->x1 = lh->x + get_label_width(lh) + 10;
-	}
-
-	if ((menu_label_touched || menu_is_scrolling || rotate != 0) && menu_level != MENU_VALS)
-	{
-
-		if (rotate != 0)
-		{
-			menu [menu_level].selected_str = (menu [menu_level].selected_str + rotate) <= 0 ? 0 : (menu [menu_level].selected_str + rotate);
-			menu [menu_level].selected_str = menu [menu_level].selected_str > menu [menu_level].count ? menu [menu_level].count : menu [menu_level].selected_str;
-		}
-		else if (menu_label_touched)
-			menu [menu_level].selected_str = menu [menu_level].selected_label + menu [menu_level].add_id;
-
-		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
-				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
-
-		if (rotate > 0)
-		{
-			// указатель подошел к нижней границе списка
-			if (++menu [menu_level].selected_label > (menu [menu_level].count < menu [menu_level].num_rows ? menu [menu_level].count : menu [menu_level].num_rows))
-			{
-				menu [menu_level].selected_label = (menu [menu_level].count < menu [menu_level].num_rows ? menu [menu_level].count : menu [menu_level].num_rows);
-				menu [menu_level].add_id = menu [menu_level].selected_str - menu [menu_level].selected_label;
-			}
-		}
-		if (rotate < 0)
-		{
-			// указатель подошел к верхней границе списка
-			if (--menu [menu_level].selected_label < 0)
-			{
-				menu [menu_level].selected_label = 0;
-				menu [menu_level].add_id = menu [menu_level].selected_str;
-			}
-		}
-
-		if (menu_level == MENU_GROUPS)
-			for(uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
-			{
-				label_t * l = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-				strcpy(l->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
-				l->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
-			}
-
-		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
-		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block,  menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].add_id].index, menu [MENU_VALS].count);
-
-		for(uint_fast8_t i = 0; i <= menu [MENU_PARAMS].num_rows; i++)
-		{
-			label_t * lp = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-			label_t * lv = & win->lh_ptr [menu [MENU_VALS].first_id + i];
-
-			lp->visible = NON_VISIBLE;
-			lp->state = DISABLED;
-			lv->visible = NON_VISIBLE;
-			lv->state = DISABLED;
-			if (i > menu [MENU_PARAMS].count)
-				continue;
-			strcpy(lp->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
-			strncpy(lv->text, menu [MENU_VALS].menu_block [i].name, 15);
-			lp->color = i == menu [MENU_PARAMS].selected_label && menu_level > MENU_GROUPS ? COLORMAIN_BLACK : COLORMAIN_WHITE;
-			lp->visible = VISIBLE;
-			lp->state = CANCELLED;
-			lv->visible = VISIBLE;
-			lv->state = CANCELLED;
-		}
-		menu_label_touched = 0;
-	}
-
-	label_t * lh;
-	switch (menu_level)
-	{
-	case MENU_PARAMS:
-	case MENU_VALS:
-		lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + menu [MENU_PARAMS].selected_label];
-		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_col3 - 20,
-				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
-
-	case MENU_GROUPS:
-		lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + menu [MENU_GROUPS].selected_label];
-		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_col2 - 20,
-				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
-	}
-}
 
 // *********************************************************************************************************************************************************************
 
@@ -4139,11 +3694,13 @@ void gui_open_sys_menu(void)
 
 static void minigui_main_process(void);
 static void minigui_main_menu_process(void);
+static void window_menu_process(void);
 
 static window_t windows [] = {
 //     window_id,   	parent_id, 		  align_mode,  x1, y1, w, h, title, is_show, first_call, is_close, onVisibleProcess
 	{ WINDOW_MAIN, 		NO_PARENT_WINDOW, ALIGN_LEFT_X,	0, 0, 0, 0, "", NON_VISIBLE, 0, 0, minigui_main_process, },
 	{ WINDOW_MAIN_MENU, WINDOW_MAIN,	  ALIGN_LEFT_X,	0, 0, 0, 0, "", NON_VISIBLE, 0, 1, minigui_main_menu_process, },
+	{ WINDOW_MENU,  	NO_PARENT_WINDOW, ALIGN_CENTER_X, 0, 0, 0, 0, "", NON_VISIBLE, 0, 1, window_menu_process, },
 };
 
 /* Возврат ссылки на окно */
@@ -4186,7 +3743,7 @@ void minigui_main_process(void)
 			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", "2", },
 			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_3", "3", },
 			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_4", "4", },
-			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_5", "5", },
+			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_settings", "Settings", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -4206,6 +3763,8 @@ void minigui_main_process(void)
 		load_settings();
 		elements_state(win);
 
+		hamradio_set_gmutespkr(1);
+
 		return;
 	}
 
@@ -4213,13 +3772,25 @@ void minigui_main_process(void)
 	{
 	case WM_MESSAGE_ACTION:
 
-		if (IS_AREA_TOUCHED)
+		if (IS_BUTTON_PRESS)
 		{
-			TP();
-			if (check_for_parent_window() != NO_PARENT_WINDOW)
-				close_window(OPEN_PARENT_WINDOW);
-			else
-				open_window(get_win(WINDOW_MAIN_MENU));
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_settings = find_gui_element(TYPE_BUTTON, win, "btn_settings");
+
+			if (bh == btn_settings)
+			{
+				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
+				else
+				{
+					window_t * win = get_win(WINDOW_MENU);
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_settings);
+				}
+			}
 		}
 		break;
 
@@ -4302,4 +3873,465 @@ void gui_open_sys_menu(void)
 }
 
 #endif
+
+static void window_menu_process(void)
+{
+	static uint_fast8_t menu_is_scrolling = 0;
+	static button_t * button_up = NULL, * button_down = NULL;
+	window_t * win = get_win(WINDOW_MENU);
+	int_fast8_t move_x = 0, move_y = 0, rotate = 0;
+	static label_t * selected_label = NULL;
+	static uint_fast8_t menu_label_touched = 0;
+	static uint_fast8_t menu_level, enc2_code = KBD_CODE_MAX;
+	static menu_t menu [MENU_COUNT];
+	uint_fast8_t is_moving_label = 0;
+
+#if WITHGUISTYLE_COMMON
+	uint_fast8_t int_col2 = 180, int_col3 = 230, int_rows = 35;
+	#define MENU_FONT	FONT_LARGE
+	#define BUTTON_SIZE	40
+	#define WINDOW_SIZE	WINDOW_POSITION_MANUAL
+#elif WITHGUISTYLE_MINI
+	uint_fast8_t int_col2 = 150, int_col3 = 200, int_rows = 30;
+	#define MENU_FONT	FONT_MEDIUM
+	#define BUTTON_SIZE	30
+	#define WINDOW_SIZE	WINDOW_POSITION_FULLSCREEN
+#endif
+
+	if (win->first_call)
+	{
+		uint_fast16_t xmax = 0, ymax = 0;
+		win->first_call = 0;
+		win->align_mode = ALIGN_CENTER_X;						// выравнивание окна системных настроек всегда по центру
+
+		uint_fast8_t col1_int = 20, row1_int = window_title_height + 20, i;
+		uint_fast16_t xn, yn;
+		label_t * lh;
+
+		static const button_t buttons [] = {
+			{ 0, 0, BUTTON_SIZE, BUTTON_SIZE, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, -1, "btn_SysMenu-", "-", },
+			{ 0, 0, BUTTON_SIZE, BUTTON_SIZE, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, 1, "btn_SysMenu+", "+", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		static const label_t labels [] = {
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 5, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 5, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 5, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		button_up = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu+");
+		button_down = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu-");
+		button_up->visible = NON_VISIBLE;
+		button_down->visible = NON_VISIBLE;
+
+		menu [MENU_GROUPS].add_id = 0;
+		menu [MENU_GROUPS].selected_str = 0;
+		menu [MENU_GROUPS].selected_label = 0;
+		menu [MENU_PARAMS].add_id = 0;
+		menu [MENU_PARAMS].selected_str = 0;
+		menu [MENU_PARAMS].selected_label = 0;
+		menu [MENU_VALS].add_id = 0;
+		menu [MENU_VALS].selected_str = 0;
+		menu [MENU_VALS].selected_label = 0;
+
+		menu [MENU_GROUPS].first_id = 0;
+		for (i = 0; i < win->lh_count; i ++)
+		{
+			lh = & win->lh_ptr [i];
+			if (strcmp(lh->name, "lbl_group"))
+				break;
+		}
+
+		menu [MENU_GROUPS].last_id = -- i;
+		menu [MENU_GROUPS].num_rows = menu [MENU_GROUPS].last_id - menu [MENU_GROUPS].first_id;
+
+		menu [MENU_PARAMS].first_id = ++ i;
+		for (; i < win->lh_count; i ++)
+		{
+			lh = & win->lh_ptr [i];
+			if (strcmp(lh->name, "lbl_params"))
+				break;
+		}
+		menu [MENU_PARAMS].last_id = -- i;
+		menu [MENU_PARAMS].num_rows = menu [MENU_PARAMS].last_id - menu [MENU_PARAMS].first_id;
+
+		menu [MENU_VALS].first_id = ++ i;
+		for (; i < win->lh_count; i ++)
+		{
+			lh = & win->lh_ptr [i];
+			if (strcmp(lh->name, "lbl_vals"))
+				break;
+		}
+		menu [MENU_VALS].last_id = -- i;
+		menu [MENU_VALS].num_rows = menu [MENU_VALS].last_id - menu [MENU_VALS].first_id;
+
+		menu [MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu [MENU_GROUPS].menu_block) - 1;
+		xn = col1_int;
+		yn = row1_int;
+		for(i = 0; i <= menu [MENU_GROUPS].num_rows; i ++)
+		{
+			lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+			strcpy(lh->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
+			lh->visible = VISIBLE;
+			lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+			lh->x = xn;
+			lh->y = yn;
+			yn += int_rows;
+		}
+
+		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
+				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
+		xn += int_col2;
+		yn = row1_int;
+		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i ++)
+		{
+			lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+			strcpy(lh->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
+			lh->visible = VISIBLE;
+			lh->color = COLORMAIN_WHITE;
+			lh->x = xn;
+			lh->y = yn;
+			yn += int_rows;
+		}
+
+		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
+		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block, menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, menu [MENU_VALS].count);
+		xn += int_col3;
+		yn = row1_int;
+		for(lh = NULL, i = 0; i <= menu [MENU_VALS].num_rows; i ++)
+		{
+			lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+			lh->x = xn;
+			lh->y = yn;
+			yn += int_rows;
+			lh->visible = NON_VISIBLE;
+			lh->color = COLORMAIN_WHITE;
+			if (menu [MENU_VALS].count < i)
+				continue;
+			strcpy(lh->text, menu [MENU_VALS].menu_block [i + menu [MENU_VALS].add_id].name);
+			lh->visible = VISIBLE;
+		}
+
+		menu_level = MENU_GROUPS;
+
+		ASSERT(lh != NULL);
+		xmax = lh->x + 100;
+		ymax = lh->y + get_label_height(lh);
+
+		hamradio_enable_encoder2_redirect();
+		calculate_window_position(win, WINDOW_SIZE, xmax, ymax);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			put_to_wm_queue(win, WM_MESSAGE_ENC2_ROTATE, bh->payload);
+		}
+		else if ((IS_LABEL_PRESS) || (IS_LABEL_MOVE))
+		{
+			selected_label = (label_t *) ptr;
+			if (strcmp(selected_label->name, "lbl_group") == 0)
+			{
+				menu [MENU_GROUPS].selected_label = selected_label->index;
+				menu_label_touched = 1;
+				menu_level = MENU_GROUPS;
+			}
+			else if (strcmp(selected_label->name, "lbl_params") == 0)
+			{
+				menu [MENU_PARAMS].selected_label = selected_label->index;
+				menu_label_touched = 1;
+				menu_level = MENU_PARAMS;
+			}
+			else if (strcmp(selected_label->name, "lbl_vals") == 0)
+			{
+				menu [MENU_VALS].selected_label = selected_label->index;
+				menu [MENU_PARAMS].selected_label = menu [MENU_VALS].selected_label;
+				menu_label_touched = 1;
+				menu_level = MENU_VALS;
+			}
+
+			is_moving_label = IS_LABEL_MOVE;
+		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		rotate = action;
+		break;
+
+	case WM_MESSAGE_KEYB_CODE:
+
+		enc2_code = action;
+		break;
+
+	default:
+
+		break;
+	}
+
+	get_gui_tracking(& move_x, & move_y);
+	if (is_moving_label && move_y != 0)
+	{
+		static uint_fast8_t start_str_group = 0, start_str_params = 0;
+		if (! menu_is_scrolling)
+		{
+			start_str_group = menu [MENU_GROUPS].add_id;
+			start_str_params = menu [MENU_PARAMS].add_id;
+		}
+		ldiv_t r = ldiv(move_y, int_rows);
+		if (strcmp(selected_label->name, "lbl_group") == 0)
+		{
+			int_fast8_t q = start_str_group - r.quot;
+			menu [MENU_GROUPS].add_id = q <= 0 ? 0 : q;
+			menu [MENU_GROUPS].add_id = (menu [MENU_GROUPS].add_id + menu [MENU_GROUPS].num_rows) > menu [MENU_GROUPS].count ?
+					(menu [MENU_GROUPS].count - menu [MENU_GROUPS].num_rows) : menu [MENU_GROUPS].add_id;
+			menu [MENU_GROUPS].selected_str = menu [MENU_GROUPS].selected_label + menu [MENU_GROUPS].add_id;
+			menu_level = MENU_GROUPS;
+			menu [MENU_PARAMS].add_id = 0;
+			menu [MENU_PARAMS].selected_str = 0;
+			menu [MENU_PARAMS].selected_label = 0;
+			menu [MENU_VALS].add_id = 0;
+			menu [MENU_VALS].selected_str = 0;
+			menu [MENU_VALS].selected_label = 0;
+		}
+		else if (strcmp(selected_label->name, "lbl_params") == 0 && menu [MENU_PARAMS].count > menu [MENU_PARAMS].num_rows)
+		{
+			int_fast8_t q = start_str_params - r.quot;
+			menu [MENU_PARAMS].add_id = q <= 0 ? 0 : q;
+			menu [MENU_PARAMS].add_id = (menu [MENU_PARAMS].add_id + menu [MENU_PARAMS].num_rows) > menu [MENU_PARAMS].count ?
+					(menu [MENU_PARAMS].count - menu [MENU_PARAMS].num_rows) : menu [MENU_PARAMS].add_id;
+			menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
+			menu [MENU_VALS].add_id = menu [MENU_PARAMS].add_id;
+			menu [MENU_VALS].selected_str = menu [MENU_PARAMS].selected_str;
+			menu [MENU_VALS].selected_label = menu [MENU_PARAMS].selected_label;
+			menu_level = MENU_PARAMS;
+		}
+		menu_is_scrolling = 1;
+	}
+
+	if (! is_moving_label && menu_is_scrolling)
+	{
+		menu_is_scrolling = 0;
+		reset_tracking();
+	}
+
+	if (enc2_code != KBD_CODE_MAX || menu_label_touched || menu_is_scrolling)
+	{
+		// выход из режима редактирования параметра  - краткое или длинное нажатие на энкодер
+		if (enc2_code == KBD_ENC2_PRESS && menu_level == MENU_VALS)
+		{
+			menu_level = MENU_PARAMS;
+			enc2_code = KBD_CODE_MAX;
+		}
+		if (enc2_code == KBD_ENC2_PRESS)
+			menu_level = ++menu_level > MENU_VALS ? MENU_VALS : menu_level;
+		if (enc2_code == KBD_ENC2_HOLD)
+		{
+			menu_level = --menu_level == MENU_OFF ? MENU_OFF : menu_level;
+			if (menu_level == MENU_GROUPS)
+			{
+				menu [MENU_PARAMS].add_id = 0;
+				menu [MENU_PARAMS].selected_str = 0;
+				menu [MENU_PARAMS].selected_label = 0;
+				menu [MENU_VALS].add_id = 0;
+				menu [MENU_VALS].selected_str = 0;
+				menu [MENU_VALS].selected_label = 0;
+			}
+		}
+
+		// при переходе между уровнями пункты меню выделяется цветом
+		label_t * lh = NULL;
+		if (menu_level == MENU_VALS)
+		{
+			menu [MENU_VALS].selected_label = menu [MENU_PARAMS].selected_label;
+			lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_VALS].selected_label];
+
+			button_down->visible = VISIBLE;
+			button_down->x1 = lh->x - button_down->w - 10;
+			button_down->y1 = (lh->y + get_label_height(lh) / 2) - (button_down->h / 2);
+
+			button_up->visible = VISIBLE;
+			button_up->x1 = lh->x + get_label_width(lh) + 10;
+			button_up->y1 = button_down->y1;
+			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+			{
+				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+
+				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+
+				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_YELLOW : COLORMAIN_GRAY;
+			}
+			menu_label_touched = 0;
+		}
+		else if (menu_level == MENU_PARAMS)
+		{
+			button_down->visible = NON_VISIBLE;
+			button_up->visible = NON_VISIBLE;
+			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+			{
+				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+
+				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+
+				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+				lh->color = COLORMAIN_WHITE;
+			}
+		}
+		else if (menu_level == MENU_GROUPS)
+		{
+			button_down->visible = NON_VISIBLE;
+			button_up->visible = NON_VISIBLE;
+			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+			{
+				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+
+				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+				lh->color = COLORMAIN_WHITE;
+
+				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+				lh->color = COLORMAIN_WHITE;
+			}
+		}
+
+		enc2_code = KBD_CODE_MAX;
+	}
+
+	if (menu_level == MENU_OFF)
+	{
+		if (win->parent_id != NO_PARENT_WINDOW)
+		{
+			close_all_windows();
+			return;
+		} else
+			menu_level = MENU_GROUPS;
+	}
+
+	if (rotate != 0 && menu_level == MENU_VALS)
+	{
+		menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
+		label_t * lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_PARAMS].selected_label];
+		strcpy(lh->text, hamradio_gui_edit_menu_item(menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, rotate));
+
+		lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_VALS].selected_label];
+		button_up->x1 = lh->x + get_label_width(lh) + 10;
+	}
+
+	if ((menu_label_touched || menu_is_scrolling || rotate != 0) && menu_level != MENU_VALS)
+	{
+
+		if (rotate != 0)
+		{
+			menu [menu_level].selected_str = (menu [menu_level].selected_str + rotate) <= 0 ? 0 : (menu [menu_level].selected_str + rotate);
+			menu [menu_level].selected_str = menu [menu_level].selected_str > menu [menu_level].count ? menu [menu_level].count : menu [menu_level].selected_str;
+		}
+		else if (menu_label_touched)
+			menu [menu_level].selected_str = menu [menu_level].selected_label + menu [menu_level].add_id;
+
+		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
+				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
+
+		if (rotate > 0)
+		{
+			// указатель подошел к нижней границе списка
+			if (++menu [menu_level].selected_label > (menu [menu_level].count < menu [menu_level].num_rows ? menu [menu_level].count : menu [menu_level].num_rows))
+			{
+				menu [menu_level].selected_label = (menu [menu_level].count < menu [menu_level].num_rows ? menu [menu_level].count : menu [menu_level].num_rows);
+				menu [menu_level].add_id = menu [menu_level].selected_str - menu [menu_level].selected_label;
+			}
+		}
+		if (rotate < 0)
+		{
+			// указатель подошел к верхней границе списка
+			if (--menu [menu_level].selected_label < 0)
+			{
+				menu [menu_level].selected_label = 0;
+				menu [menu_level].add_id = menu [menu_level].selected_str;
+			}
+		}
+
+		if (menu_level == MENU_GROUPS)
+			for(uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+			{
+				label_t * l = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
+				strcpy(l->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
+				l->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+			}
+
+		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
+		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block,  menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].add_id].index, menu [MENU_VALS].count);
+
+		for(uint_fast8_t i = 0; i <= menu [MENU_PARAMS].num_rows; i++)
+		{
+			label_t * lp = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+			label_t * lv = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+
+			lp->visible = NON_VISIBLE;
+			lp->state = DISABLED;
+			lv->visible = NON_VISIBLE;
+			lv->state = DISABLED;
+			if (i > menu [MENU_PARAMS].count)
+				continue;
+			strcpy(lp->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
+			strncpy(lv->text, menu [MENU_VALS].menu_block [i].name, 15);
+			lp->color = i == menu [MENU_PARAMS].selected_label && menu_level > MENU_GROUPS ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+			lp->visible = VISIBLE;
+			lp->state = CANCELLED;
+			lv->visible = VISIBLE;
+			lv->state = CANCELLED;
+		}
+		menu_label_touched = 0;
+	}
+
+	label_t * lh;
+	switch (menu_level)
+	{
+	case MENU_PARAMS:
+	case MENU_VALS:
+		lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + menu [MENU_PARAMS].selected_label];
+		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_col3 - 20,
+				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
+
+	case MENU_GROUPS:
+		lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + menu [MENU_GROUPS].selected_label];
+		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_col2 - 20,
+				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
+	}
+}
+
+
 #endif /* WITHTOUCHGUI && WITHGUISTYLE_COMMON */

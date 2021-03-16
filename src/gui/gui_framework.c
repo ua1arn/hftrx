@@ -614,12 +614,12 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	case WINDOW_POSITION_FULLSCREEN:
 		{
 			const window_t * win_main = get_win(WINDOW_MAIN);
-			const uint_fast8_t h = win->bh_ptr[0].h;
+			const uint_fast8_t h = win_main->bh_ptr[0].h;
 
 			win->x1 = 0;
 			win->y1 = 0;
-			win->w = WITHGUIMAXX - 1;
-			win->h = WITHGUIMAXY - 1 - h;
+			win->w = WITHGUIMAXX;
+			win->h = WITHGUIMAXY - h;
 		}
 	break;
 

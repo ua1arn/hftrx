@@ -43,6 +43,7 @@ enum {
 enum {
 	WINDOW_MAIN,
 	WINDOW_MAIN_MENU,
+	WINDOW_MENU,
 
 	WINDOWS_COUNT
 };
