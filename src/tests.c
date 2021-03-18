@@ -5235,7 +5235,6 @@ GridTest(void)
 	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 	board_update();
 
-
 	int     xm, ym, xm4, ym4;
 	int xm1, ym1;
 	unsigned long col1, col20, col21, col22, col23, col3;
@@ -5260,7 +5259,6 @@ GridTest(void)
 
 	/* Filled rectangle - all screen. */
 	display_solidbar(0, 0, xm, ym, col1);
-
 	/* Filled rectangle at right-down corner. */
 	display_solidbar(xm4 * 3 + xm1, ym4 * 3 + ym1, xm4 * 4 - xm1, ym4 * 4 - ym1, col20);
 	/* Filled rectangle at right-upper corner. */
@@ -5271,14 +5269,13 @@ GridTest(void)
 	display_solidbar(xm4 + xm1, ym4 + ym1, xm4 * 3 - xm1, ym4 * 3 - ym1, col23);
 
 
-
 	// Тест порядка цветов в пикселе
 	const unsigned yrct0 = DIM_Y / 4;
 	const unsigned xrct0 = DIM_X / 4;
 	display_fillrect(xrct0, yrct0 * 1, xrct0, yrct0, COLORMAIN_RED);
 	display_fillrect(xrct0, yrct0 * 2, xrct0, yrct0, COLORMAIN_GREEN);
 	display_fillrect(xrct0, yrct0 * 3, xrct0, yrct0, COLORMAIN_BLUE);
-
+/*
 	const unsigned yg0 = DIM_Y / 24;
 	const unsigned xg0 = DIM_X / 30;
 	for (k = 0; k < 16; ++ k)
@@ -5289,8 +5286,8 @@ GridTest(void)
 				 k * yg0 + yg0,
 				 TFTRGB(n * 16, k * 16, 255 - (n * 8 + k * 8) )
 				 );
-
-	/* Interlase flockertest.	*/
+*/
+	/* Interlase clocke test.	*/
 	display_line(10,  0,  xm, 10 + 1,  col3);
 	display_line(10,  0,  xm, 10 + 3,  col3);
 	display_line(10,  0,  xm, 10 + 5,  col3);
@@ -5304,9 +5301,10 @@ GridTest(void)
 	display_line(0,  ym, xm, 0,  col3);
 
 	// тест перестановки байтов при выборке видеоконтроллером
-	const unsigned rct = DIM_Y / 3;
-	display_line(rct, rct,  rct * 2 - 1, rct * 2 - 1, COLORMAIN_BLACK);
-	display_line(rct, rct * 2 - 1, rct * 2 - 1,  rct, COLORMAIN_BLACK);
+	const unsigned rctx = DIM_X / 3;
+	const unsigned rcty = DIM_Y / 3;
+	display_line(rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORMAIN_BLACK);
+	display_line(rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORMAIN_BLACK);
 
 	display_flush();
 
