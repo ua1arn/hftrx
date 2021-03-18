@@ -1719,12 +1719,18 @@ arm_hardware_ltdc_deinitialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	/* Enable the LTDC Clock */
+	/* Disable the LTDC Clock */
 	RCC->MP_APB4ENCLRR = RCC_MP_APB4ENCLRR_LTDCEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4ENCLRR;
-	/* Enable the LTDC Clock in low-power mode */
+	/* Disable the LTDC Clock in low-power mode */
 	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_LTDCLPEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4LPENCLRR;
+
+	/* Reset pulse to LTDC */
+	RCC->APB4RSTSETR = RCC_APB4RSTSETR_LTDCRST_Msk;
+	(void) RCC->APB4RSTSETR;
+	RCC->APB4RSTCLRR = RCC_APB4RSTCLRR_LTDCRST_Msk;
+	(void) RCC->APB4RSTCLRR;
 
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the LTDC Clock */
