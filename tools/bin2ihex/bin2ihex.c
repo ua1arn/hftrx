@@ -105,7 +105,7 @@ processfile(FILE * fp, unsigned long address, unsigned long runaddress)
         address += length;
         length = 0;
     }
-    // Finbalize
+    // Finalize
     if (1)
     {
         hexdata(runaddress, 0x01, NULL, 0);
@@ -125,16 +125,17 @@ int main(int argc, char * * argv)
     unsigned long loadaddr = 0;
     FILE * fpi;
  	int opt;
-	char *dest = NULL, *src = NULL;
+	char *src = NULL;
+	/*char *dest = NULL;*/
 
 	while ((opt = getopt(argc, argv, ":l:s:")) != -1) {
 		switch (opt) {
 		case 's':
 			src = optarg;
 			break;
-		case 'd':
-			dest = optarg;
-			break;
+//		case 'd':
+//			dest = optarg;
+//			break;
 		case 'l':
 			loadaddr = strtoul(optarg, NULL, 16);
 			break;
