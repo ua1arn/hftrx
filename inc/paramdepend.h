@@ -652,9 +652,18 @@ extern "C" {
 	#define PLL3_FREQ	(REFINFREQ / (PLL3DIVM) * (PLL3DIVN))
 	#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
 	#define PLL4_FREQ_R	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN) / (PLL4DIVR))
-	#define	PCLK1_FREQ (stm32mp1_get_axiss_freq() / 4)	// 42 MHz PCLK1 frequency
 
-	unsigned long stm32mp1_get_axiss_freq(void);
+	unsigned long stm32mp1_get_axiss_freq(void);	// Internal AXI clock frequency
+	unsigned long stm32mp1_get_hclk5_freq(void);	// Internal AHB5 clock frequency
+	unsigned long stm32mp1_get_hclk6_freq(void);	// Internal AHB6 clock frequency
+	unsigned long stm32mp1_get_per_freq(void);	// Internal per_ck frequency
+
+	unsigned long stm32mp1_get_pclk1_freq(void);	// Internal APB1 clock frequency
+	unsigned long stm32mp1_get_pclk2_freq(void);	// Internal APB2 clock frequency
+	unsigned long stm32mp1_get_pclk3_freq(void);	// Internal APB3 clock frequency
+	unsigned long stm32mp1_get_pclk4_freq(void);	// Internal APB4 clock frequency
+	unsigned long stm32mp1_get_pclk5_freq(void);	// Internal APB5 clock frequency
+
 	unsigned long stm32mp1_get_pll1_freq(void);
 	unsigned long stm32mp1_get_pll2_freq(void);
 	unsigned long stm32mp1_get_pll3_freq(void);
@@ -667,7 +676,7 @@ extern "C" {
 
 	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (stm32mp1_get_pclk1_freq() / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
