@@ -12869,20 +12869,8 @@ sysinit_pll_initialize(void)
 		  L2C_Enable();
 		#endif
 	#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-#if (__L2C_PRESENT == 1)
-	// Renesas: PL310 as a secondary cache. The IP version is r3p2.
-	// ZYNQ: RTL release R3p2
-	// RTL release 0x8 denotes r3p2 code of the cache controller
-	// RTL release 0x9 denotes r3p3 code of the cache controller.
-	PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_310->CACHE_ID);	// L2C_GetID()
-	PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_310->CACHE_ID >> 24) & 0xFF);
-	PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_310->CACHE_ID >> 10) & 0x3F);
-	PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_310->CACHE_ID >> 6) & 0x0F);
-	PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_310->CACHE_ID >> 0) & 0x3F);
-#endif
 #endif /*  ! CPUSTYLE_R7S721 */
 }
-
 
 // PLL and caches inuitialize
 static void FLASHMEMINITFUNC
@@ -14003,28 +13991,6 @@ void cpu_initialize(void)
 
 #endif /* WITHSMPSYSTEM */
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	// GIC version diagnostics
-	//PRINTF("arm_gic_initialize: ICPIDR0=%08lX\n", ICPIDR0);	// ICPIDR0
-	//PRINTF("arm_gic_initialize: ICPIDR1=%08lX\n", ICPIDR1);	// ICPIDR1
-	//PRINTF("arm_gic_initialize: ICPIDR2=%08lX\n", ICPIDR2);	// ICPIDR2
-
-	// Renesas:
-	//	arm_gic_initialize: ARM GICv1
-	//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
-	// STM32MP1:
-	//	arm_gic_initialize: ARM GICv2
-	//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
-//	switch (ICPIDR1 & 0x0F)
-//	{
-//	case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
-//	case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-//	default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
-//	}
-//
-//	PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GICInterface->IIDR, (unsigned long) GIC_DistributorImplementer());
-#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 	//PRINTF("cpu_initialize\n");
 #if CPUSTYLE_STM32F1XX

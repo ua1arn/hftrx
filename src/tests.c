@@ -6147,6 +6147,42 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
+#if 1 && (__L2C_PRESENT == 1)
+	{
+		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
+		// ZYNQ: RTL release R3p2
+		// RTL release 0x8 denotes r3p2 code of the cache controller
+		// RTL release 0x9 denotes r3p3 code of the cache controller.
+		PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_310->CACHE_ID);	// L2C_GetID()
+		PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_310->CACHE_ID >> 24) & 0xFF);
+		PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_310->CACHE_ID >> 10) & 0x3F);
+		PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_310->CACHE_ID >> 6) & 0x0F);
+		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_310->CACHE_ID >> 0) & 0x3F);
+
+	}
+#endif
+#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	{
+		// GIC version diagnostics
+		// Renesas:
+		//	arm_gic_initialize: ARM GICv1
+		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
+		// STM32MP1:
+		//	arm_gic_initialize: ARM GICv2
+		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
+		// ZINQ ?
+		//	GICInterface->IIDR=?, GICDistributor->IIDR=?
+
+		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
+
+//		switch (ICPIDR1 & 0x0F)
+//		{
+//		case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+//		case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+//		default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
+//		}
+	}
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 #if 0 && (WITHTWIHW || WITHTWISW)
 	{
 		unsigned i;
