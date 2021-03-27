@@ -57,6 +57,17 @@ unsigned long stm32f_7xx_get_hse_freq(void)
 
 #elif CPUSTYLE_STM32H7XX
 
+
+/* частоты, подающиеся на периферию */
+#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
+#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
+#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+
+#define BOARD_ADC_FREQ (stm32h7xx_get_adc_freq())
+#define BOARD_SPI1_FREQ (stm32h7xx_get_spi1_2_3_freq())
+
 unsigned long stm32h7xx_get_hse_freq(void)
 {
 #if WITHCPUXTAL
@@ -76,11 +87,35 @@ unsigned long stm32h7xx_get_pll1_freq(void)
 	return (uint_fast64_t) REFINFREQ * pll1divn1 / pll1divm1;
 }
 
+unsigned long stm32h7xx_get_pll1_p_freq(void)
+{
+	const unsigned long pll1divp = ((RCC->PLL1DIVR & RCC_PLL1DIVR_P1_Msk) >> RCC_PLL1DIVR_P1_Pos) + 1;
+	return stm32h7xx_get_pll1_freq() / pll1divp;
+}
+
+unsigned long stm32h7xx_get_pll1_q_freq(void)
+{
+	const unsigned long pll1divq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1_Msk) >> RCC_PLL1DIVR_Q1_Pos) + 1;
+	return stm32h7xx_get_pll1_freq() / pll1divq;
+}
+
 unsigned long stm32h7xx_get_pll2_freq(void)
 {
 	const uint32_t pll2divm2 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM2_Msk) >> RCC_PLLCKSELR_DIVM2_Pos);	// reference divider - not need 1substracted
 	const uint32_t pll2divn2 = ((RCC->PLL2DIVR & RCC_PLL2DIVR_N2_Msk) >> RCC_PLL2DIVR_N2_Pos) + 1;
 	return (uint_fast64_t) REFINFREQ * pll2divn2 / pll2divm2;
+}
+
+unsigned long stm32h7xx_get_pll2_p_freq(void)
+{
+	const unsigned long pll2divp = ((RCC->PLL2DIVR & RCC_PLL2DIVR_P2_Msk) >> RCC_PLL2DIVR_P2_Pos) + 1;
+	return stm32h7xx_get_pll2_freq() / pll2divp;
+}
+
+unsigned long stm32h7xx_get_pll2_q_freq(void)
+{
+	const unsigned long pll2divq = ((RCC->PLL2DIVR & RCC_PLL2DIVR_Q2_Msk) >> RCC_PLL2DIVR_Q2_Pos) + 1;
+	return stm32h7xx_get_pll2_freq() / pll2divq;
 }
 
 unsigned long stm32h7xx_get_pll3_freq(void)
@@ -90,16 +125,232 @@ unsigned long stm32h7xx_get_pll3_freq(void)
 	return (uint_fast64_t) REFINFREQ * pll3divn3 / pll3divm3;
 }
 
+unsigned long stm32h7xx_get_pll3_p_freq(void)
+{
+	const unsigned long pll3divp = ((RCC->PLL3DIVR & RCC_PLL3DIVR_P3_Msk) >> RCC_PLL3DIVR_P3_Pos) + 1;
+	return stm32h7xx_get_pll3_freq() / pll3divp;
+}
+
+unsigned long stm32h7xx_get_pll3_q_freq(void)
+{
+	const unsigned long pll3divq = ((RCC->PLL3DIVR & RCC_PLL3DIVR_Q3_Msk) >> RCC_PLL3DIVR_Q3_Pos) + 1;
+	return stm32h7xx_get_pll3_freq() / pll3divq;
+}
+
+unsigned long stm32h7xx_get_pll3_r_freq(void)
+{
+	const unsigned long pll3divr = ((RCC->PLL3DIVR & RCC_PLL3DIVR_R3_Msk) >> RCC_PLL3DIVR_R3_Pos) + 1;
+	return stm32h7xx_get_pll3_freq() / pll3divr;
+}
+
+unsigned long stm32h7xx_get_sys_freq(void)
+{
+	//	000: HSI used as system clock (hsi_ck) (default after reset)
+	//	001: CSI used as system clock (csi_ck)
+	//	010: HSE used as system clock (hse_ck)
+	//	011: PLL1 used as system clock (pll1_p_ck)
+	//	others: Reserved
+	switch ((RCC->CFGR & RCC_CFGR_SWS_Msk) >> RCC_CFGR_SWS_Pos)
+	{
+	default: return HSIFREQ;
+	case 0x01: return CSIFREQ;
+	case 0x02: return stm32h7xx_get_hse_freq();
+	case 0x03: return stm32h7xx_get_pll1_p_freq();
+	}
+}
+
+unsigned long stm32h7xx_get_stm32h7xx_get_d1cpre_freq(void)
+{
+	//	0xxx: sys_ck not divided (default after reset)
+	//	1000: sys_ck divided by 2
+	//	1001: sys_ck divided by 4
+	//	1010: sys_ck divided by 8
+	//	1011: sys_ck divided by 16
+	//	1100: sys_ck divided by 64
+	//	1101: sys_ck divided by 128
+	//	1110: sys_ck divided by 256
+	//	1111: sys_ck divided by 512
+	switch ((RCC->D1CFGR & RCC_D1CFGR_D1CPRE_Msk) >> RCC_D1CFGR_D1CPRE_Pos)
+	{
+	default: return stm32h7xx_get_sys_freq();
+	case 0x08: return stm32h7xx_get_sys_freq() / 2;
+	case 0x09: return stm32h7xx_get_sys_freq() / 4;
+	case 0x0A: return stm32h7xx_get_sys_freq() / 8;
+	case 0x0B: return stm32h7xx_get_sys_freq() / 16;
+	case 0x0C: return stm32h7xx_get_sys_freq() / 64;
+	case 0x0D: return stm32h7xx_get_sys_freq() / 128;
+	case 0x0E: return stm32h7xx_get_sys_freq() / 256;
+	case 0x0F: return stm32h7xx_get_sys_freq() / 512;
+	}
+
+}
+
+unsigned long stm32h7xx_get_hclk3_freq(void)
+{
+	// HPRE output
+	//	0xxx: rcc_hclk3 = sys_d1cpre_ck (default after reset)
+	//	1000: rcc_hclk3 = sys_d1cpre_ck / 2
+	//	1001: rcc_hclk3 = sys_d1cpre_ck / 4
+	//	1010: rcc_hclk3 = sys_d1cpre_ck / 8
+	//	1011: rcc_hclk3 = sys_d1cpre_ck / 16
+	//	1100: rcc_hclk3 = sys_d1cpre_ck / 64
+	//	1101: rcc_hclk3 = sys_d1cpre_ck / 128
+	//	1110: rcc_hclk3 = sys_d1cpre_ck / 256
+	//	1111: rcc_hclk3 = sys_d1cpre_ck / 512
+	switch ((RCC->D1CFGR & RCC_D1CFGR_HPRE_Msk) >> RCC_D1CFGR_HPRE_Pos)
+	{
+	default: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq();
+	case 0x08: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 2;
+	case 0x09: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 4;
+	case 0x0A: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 8;
+	case 0x0B: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 16;
+	case 0x0C: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 64;
+	case 0x0D: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 128;
+	case 0x0E: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 256;
+	case 0x0F: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 512;
+	}
+}
+
+unsigned long stm32h7xx_get_hclk1_freq(void)
+{
+	return stm32h7xx_get_hclk3_freq();
+}
+
+unsigned long stm32h7xx_get_pclk2_freq(void)
+{
+	return stm32h7xx_get_hclk3_freq();
+}
+
+// apb1
+// rcc_timx_ker_ck
+// rcc_pclk1
+unsigned long stm32h7xx_get_apb1_freq(void)
+{
+	// D2PPRE1
+	//	0xx: rcc_pclk1 = rcc_hclk1 (default after reset)
+	//	100: rcc_pclk1 = rcc_hclk1 / 2
+	//	101: rcc_pclk1 = rcc_hclk1 / 4
+	//	110: rcc_pclk1 = rcc_hclk1 / 8
+	//	111: rcc_pclk1 = rcc_hclk1 / 16
+	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE1_Msk) >> RCC_D2CFGR_D2PPRE1_Pos)
+	{
+	default: return stm32h7xx_get_hclk1_freq();
+	case 0x04: return stm32h7xx_get_hclk1_freq() / 2;
+	case 0x05: return stm32h7xx_get_hclk1_freq() / 4;
+	case 0x06: return stm32h7xx_get_hclk1_freq() / 8;
+	case 0x07: return stm32h7xx_get_hclk1_freq() / 16;
+	}
+}
+
+// apb2
+// rcc_timy_ker_ck
+// rcc_pclk2
+unsigned long stm32h7xx_get_apb2_freq(void)
+{
+	// D2PPRE2
+	//	0xx: rcc_pclk2 = rcc_hclk1 (default after reset)
+	//	100: rcc_pclk2 = rcc_hclk1 / 2
+	//	101: rcc_pclk2 = rcc_hclk1 / 4
+	//	110: rcc_pclk2 = rcc_hclk1 / 8
+	//	111: rcc_pclk2 = rcc_hclk1 / 16
+	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE2_Msk) >> RCC_D2CFGR_D2PPRE2_Pos)
+	{
+	default: return stm32h7xx_get_hclk1_freq();
+	case 0x04: return stm32h7xx_get_hclk1_freq() / 2;
+	case 0x05: return stm32h7xx_get_hclk1_freq() / 4;
+	case 0x06: return stm32h7xx_get_hclk1_freq() / 8;
+	case 0x07: return stm32h7xx_get_hclk1_freq() / 16;
+	}
+}
+
+unsigned long stm32h7xx_get_per_freq(void)
+{
+	// CKPERSEL
+	//	00: hsi_ker_ck clock selected as per_ck clock (default after reset)
+	//	01: csi_ker_ck clock selected as per_ck clock
+	//	10: hse_ck clock selected as per_ck clock
+	//	11: reserved, the per_ck clock is disabled
+	switch ((RCC->D1CCIPR & RCC_D1CCIPR_CKPERSEL_Msk) >> RCC_D1CCIPR_CKPERSEL_Pos)
+	{
+	case 0x00: return HSIFREQ;
+	case 0x01: return CSIFREQ;
+	case 0x02: stm32h7xx_get_hse_freq();
+	default: return HSIFREQ;
+	}
+}
+
+unsigned long stm32h7xx_get_spi1_2_3_freq(void)
+{
+	// RCC Domain 2 Kernel Clock Configuration Register
+	//	000: pll1_q_ck clock selected as SPI/I2S1,2 and 3 kernel clock (default after reset)
+	//	001: pll2_p_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+	//	010: pll3_p_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+	//	011: I2S_CKIN clock selected as SPI/I2S1,2 and 3 kernel clock
+	//	100: per_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+	//	others: reserved, the kernel clock is disabled
+	//	Note: I2S_CKIN is an external clock taken from a pin.
+	switch ((RCC->D2CCIP1R & RCC_D2CCIP1R_SPI123SEL_Msk) >> RCC_D2CCIP1R_SPI123SEL_Pos)
+	{
+	case 0x00: return stm32h7xx_get_pll1_q_freq();
+	case 0x01: return stm32h7xx_get_pll2_p_freq();
+	case 0x02: return stm32h7xx_get_pll3_p_freq();
+#if (defined BOARD_I2S_CKIN_FREQ)
+	case 0x03: return BOARD_I2S_CKIN_FREQ;
+#endif /* (defined BOARD_I2S_CKIN_FREQ) */
+	case 0x04: return stm32h7xx_get_per_freq();
+	default: return stm32h7xx_get_per_freq();
+	}
+}
+
+unsigned long stm32h7xx_get_spi4_5_freq(void)
+{
+	// RCC Domain 2 Kernel Clock Configuration Register
+	//	000: APB clock is selected as kernel clock (default after reset)
+	//	001: pll2_q_ck clock is selected as kernel clock
+	//	010: pll3_q_ck clock is selected as kernel clock
+	//	011: hsi_ker_ck clock is selected as kernel clock
+	//	100: csi_ker_ck clock is selected as kernel clock
+	//	101: hse_ck clock is selected as kernel clock
+	//	others: reserved, the kernel clock is disabled
+	switch ((RCC->D2CCIP1R & RCC_D2CCIP1R_SPI45SEL_Msk) >> RCC_D2CCIP1R_SPI45SEL_Pos)
+	{
+	case 0x00: return stm32h7xx_get_pclk2_freq();	// specific for D2 domain - APB2
+	case 0x01: return stm32h7xx_get_pll2_q_freq();
+	case 0x02: return stm32h7xx_get_pll3_q_freq();
+	case 0x03: return HSIFREQ;
+	case 0x04: return CSIFREQ;
+	case 0x05: return stm32h7xx_get_hse_freq();
+	default: return HSIFREQ;
+	}
+}
+
+unsigned long stm32h7xx_get_adc_freq(void)
+{
+	//	00: pll2_p_ck clock selected as kernel peripheral clock (default after reset)
+	//	01: pll3_r_ck clock selected as kernel peripheral clock
+	//	10: per_ck clock selected as kernel peripheral clock
+	//	others: reserved, the kernel clock is disabled
+	switch ((RCC->D3CCIPR & RCC_D3CCIPR_ADCSEL_Msk) >> RCC_D3CCIPR_ADCSEL_Pos)
+	{
+	default:
+	case 0x00: return stm32h7xx_get_pll2_p_freq();
+	case 0x01: return stm32h7xx_get_pll3_r_freq();
+	case 0x02: return stm32h7xx_get_per_freq();
+	}
+}
+
 #elif CPUSTYLE_STM32MP1
 
 /* частоты, подающиеся на периферию */
-#define PCLK1_FREQ (stm32mp1_get_pclk1_freq())
-#define	PCLK1_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 2)	// 42 MHz PCLK1 frequency
-#define	PCLK2_FREQ (stm32mp1_get_pclk2_freq())	// 84 MHz PCLK2 frequency
-#define	PCLK3_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 4)	// 84 MHz PCLK2 frequency
-#define	PCLK2_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 2)	// 84 MHz PCLK2 frequency
-#define SYSTICK_FREQ (stm32mp1_get_axiss_freq())	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-#define PER_CK_FREQ (stm32mp1_get_per_freq())	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
+//#define PCLK1_FREQ (stm32mp1_get_pclk1_freq())
+//#define	PCLK1_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 2)	// 42 MHz PCLK1 frequency
+//#define	PCLK2_FREQ (stm32mp1_get_pclk2_freq())	// 84 MHz PCLK2 frequency
+//#define	PCLK3_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 4)	// 84 MHz PCLK2 frequency
+//#define	PCLK2_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 2)	// 84 MHz PCLK2 frequency
+//#define SYSTICK_FREQ (stm32mp1_get_axiss_freq())	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+//#define PER_CK_FREQ (stm32mp1_get_per_freq())	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
+#define BOARD_ADC_FREQ (stm32mp1_get_adc_freq())
+#define BOARD_SPI1_FREQ (stm32mp1_get_spi1_freq())
 
 unsigned long stm32mp1_get_hse_freq(void)
 {
@@ -129,7 +380,7 @@ unsigned long stm32mp1_get_pll2_freq(void)
 	return (uint_fast64_t) REFINFREQ * pll2divn / pll2divm;
 }
 
-unsigned long stm32mp1_get_pll2p_freq(void)
+unsigned long stm32mp1_get_pll2_p_freq(void)
 {
 	const uint32_t pll2divp = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVP_Msk) >> RCC_PLL2CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll2_freq() / pll2divp;
@@ -143,10 +394,22 @@ unsigned long stm32mp1_get_pll3_freq(void)
 	return (uint_fast64_t) REFINFREQ * pll3divn / pll3divm;
 }
 
-unsigned long stm32mp1_get_pll3q_freq(void)
+unsigned long stm32mp1_get_pll3_p_freq(void)
+{
+	const uint32_t pll3divp = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVP_Msk) >> RCC_PLL3CFGR2_DIVP_Pos) + 1;
+	return stm32mp1_get_pll3_freq() / pll3divp;
+}
+
+unsigned long stm32mp1_get_pll3_q_freq(void)
 {
 	const uint32_t pll3divq = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVQ_Msk) >> RCC_PLL3CFGR2_DIVQ_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divq;
+}
+
+unsigned long stm32mp1_get_pll3_r_freq(void)
+{
+	const uint32_t pll3divr = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVR_Msk) >> RCC_PLL3CFGR2_DIVR_Pos) + 1;
+	return stm32mp1_get_pll3_freq() / pll3divr;
 }
 
 // PLL4 methods
@@ -158,16 +421,22 @@ unsigned long stm32mp1_get_pll4_freq(void)
 	return (uint_fast64_t) REFINFREQ * pll4divn / pll4divm;
 }
 
-unsigned long stm32mp1_get_pll4q_freq(void)
+unsigned long stm32mp1_get_pll4_q_freq(void)
 {
 	const uint32_t pll4divq = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVQ_Msk) >> RCC_PLL4CFGR2_DIVQ_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divq;
 }
 
-unsigned long stm32mp1_get_pll4r_freq(void)
+unsigned long stm32mp1_get_pll4_p_freq(void)
+{
+	const uint32_t pll4divp = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVP_Msk) >> RCC_PLL4CFGR2_DIVP_Pos) + 1;
+	return stm32mp1_get_pll4_freq() / pll4divp;
+}
+
+unsigned long stm32mp1_get_pll4_r_freq(void)
 {
 	const uint32_t pll4divr = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVR_Msk) >> RCC_PLL4CFGR2_DIVR_Pos) + 1;
-	return PLL4_FREQ / pll4divr;
+	return stm32mp1_get_pll4_freq() / pll4divr;
 }
 
 // Internal AXI clock frequency
@@ -182,7 +451,7 @@ unsigned long stm32mp1_get_axiss_freq(void)
 	{
 	case 0x00: return HSIFREQ;
 	case 0x01: return stm32mp1_get_hse_freq();
-	case 0x02: return stm32mp1_get_pll2p_freq();
+	case 0x02: return stm32mp1_get_pll2_p_freq();
 	default: return HSIFREQ;
 	}
 }
@@ -216,7 +485,7 @@ unsigned long stm32mp1_get_mcuss_freq(void)
 	case 0x00: return HSIFREQ;
 	case 0x01: return stm32mp1_get_hse_freq();
 	case 0x02: return CSIFREQ;
-	case 0x03: return stm32mp1_get_pll3q_freq();
+	case 0x03: return stm32mp1_get_pll3_p_freq();
 	}
 }
 
@@ -399,13 +668,13 @@ unsigned long stm32mp1_uart1_get_clock(void)
 	case 0x00:
 		return PCLK5_FREQ;
 	case 0x01:
-		return stm32mp1_get_pll3q_freq();
+		return stm32mp1_get_pll3_q_freq();
 	case 0x02:
 		return HSIFREQ;
 	case 0x03:
 		return CSIFREQ;
 	case 0x04:
-		return stm32mp1_get_pll4q_freq();
+		return stm32mp1_get_pll4_q_freq();
 	case 0x05:
 		return stm32mp1_get_hse_freq();
 	default:
@@ -428,7 +697,7 @@ unsigned long stm32mp1_uart24_get_clock(void)
 	case 0x00:
 		return stm32mp1_get_pclk1_freq();
 	case 0x01:
-		return stm32mp1_get_pll4q_freq();
+		return stm32mp1_get_pll4_q_freq();
 	case 0x02:
 		return HSIFREQ;
 	case 0x03:
@@ -456,7 +725,7 @@ unsigned long stm32mp1_uart35_get_clock(void)
 	case 0x00:
 		return stm32mp1_get_pclk1_freq();
 	case 0x01:
-		return stm32mp1_get_pll4q_freq();
+		return stm32mp1_get_pll4_q_freq();
 	case 0x02:
 		return HSIFREQ;
 	case 0x03:
@@ -483,7 +752,7 @@ unsigned long stm32mp1_uart78_get_clock(void)
 	case 0x00:
 		return stm32mp1_get_pclk1_freq();
 	case 0x01:
-		return stm32mp1_get_pll4q_freq();
+		return stm32mp1_get_pll4_q_freq();
 	case 0x02:
 		return HSIFREQ;
 	case 0x03:
@@ -521,15 +790,51 @@ unsigned long stm32mp1_get_timg1_freq(void)
 // bus: Fpclk2 104.5 MHz max
 unsigned long stm32mp1_get_timg2_freq(void)
 {
-	const unsigned g1 = (RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRE_Msk) != 0;
+	const unsigned g2 = (RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRE_Msk) != 0;
 	switch ((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIV_Msk) >> RCC_APB2DIVR_APB2DIV_Pos)
 	{
 	default:
 	case 0x00: return stm32mp1_get_mlhclk_freq();
 	case 0x01: return stm32mp1_get_mlhclk_freq();
-	case 0x02: return g1 ? stm32mp1_get_mlhclk_freq() : (stm32mp1_get_mlhclk_freq() / 2);
-	case 0x03: return g1 ? (stm32mp1_get_mlhclk_freq() / 2) : (stm32mp1_get_mlhclk_freq() / 4);
-	case 0x04: return g1 ? (stm32mp1_get_mlhclk_freq() / 4) : (stm32mp1_get_mlhclk_freq() / 8);
+	case 0x02: return g2 ? stm32mp1_get_mlhclk_freq() : (stm32mp1_get_mlhclk_freq() / 2);
+	case 0x03: return g2 ? (stm32mp1_get_mlhclk_freq() / 2) : (stm32mp1_get_mlhclk_freq() / 4);
+	case 0x04: return g2 ? (stm32mp1_get_mlhclk_freq() / 4) : (stm32mp1_get_mlhclk_freq() / 8);
+	}
+}
+
+unsigned long stm32mp1_get_spi1_freq(void)
+{
+	//	0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+	//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+	//	0x3: per_ck clock selected as kernel peripheral clock
+	//	0x4: pll3_r_ck clock selected as kernel peripheral clock
+	//	others: reserved, the kernel clock is disabled
+	switch ((RCC->SPI2S1CKSELR & RCC_SPI2S1CKSELR_SPI1SRC_Msk) >> RCC_SPI2S1CKSELR_SPI1SRC_Pos)
+	{
+	case 0x00: return stm32mp1_get_pll4_p_freq();
+	case 0x01: return stm32mp1_get_pll3_q_freq();
+#if (defined BOARD_I2S_CKIN_FREQ)
+	case 0x02: return BOARD_I2S_CKIN_FREQ;
+#endif /* (defined BOARD_I2S_CKIN_FREQ) */
+	case 0x03: return stm32mp1_get_per_freq();
+	case 0x04: return stm32mp1_get_pll3_r_freq();
+	default: return stm32mp1_get_per_freq();
+	}
+}
+
+unsigned long stm32mp1_get_adc_freq(void)
+{
+	//	0x0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+	//	0x1: per_ck clock selected as kernel peripheral clock
+	//	0x2: pll3_q_ck clock selected as kernel peripheral clock
+	//	others: the kernel clock is disabled
+	switch ((RCC->ADCCKSELR & RCC_ADCCKSELR_ADCSRC_Msk) >> RCC_ADCCKSELR_ADCSRC_Pos)
+	{
+	case 0x00: return stm32mp1_get_pll4_r_freq();
+	case 0x01: return stm32mp1_get_per_freq();
+	case 0x02: return stm32mp1_get_pll3_q_freq();
+	default: return stm32mp1_get_per_freq();
 	}
 }
 
@@ -577,7 +882,9 @@ unsigned long stm32mp1_get_timg2_freq(void)
 // OSTM1: 1/ELKEY_DISCRETE dot length timer
 // OSTM0: system ticks
 
-#if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32MP1
+
+#elif CPUSTYLE_STM32F
 
 	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 	static uint_fast32_t 
@@ -595,15 +902,6 @@ unsigned long stm32mp1_get_timg2_freq(void)
 		)
 	{
 		return calcdivround2(PCLK1_FREQ, freq);
-	}
-
-	/* для устройствтактирующихся от HSI48 */
-	static uint_fast32_t 
-	calcdivround_hsi48(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
-		)
-	{
-		return calcdivround2(48000000uL, freq);
 	}
 
 	/* для устройств на шине APB1 (up to 36 MHz) - таймеры */
@@ -647,18 +945,6 @@ unsigned long stm32mp1_get_timg2_freq(void)
 		return calcdivround2(10UL * PCLK2_FREQ, freq);
 	}
 #endif /* SIDETONE_TARGET_BIT != 0 */
-
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-	/* для устройств тактирующихся от per_ck */
-	static uint_fast32_t
-	NOINLINEAT
-	calcdivround_per_ck(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
-		)
-	{
-		return calcdivround2(PER_CK_FREQ, freq);
-	}
-#endif /* CPUSTYLE_STM32H7XX */
 
 #elif CPUSTYLE_R7S721
 
@@ -4043,7 +4329,7 @@ void hardware_adc_initialize(void)
 
 	// расчет делителя для тактирования АЦП
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_hsi48(ADC_FREQ), 0, (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2), & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_ADC_FREQ, ADC_FREQ), 0, (512 | 256 | 128 | 64 | 32 | 16 | 8 | 4 | 2), & value, 0);
 	static const uint_fast8_t presc [] = 
 	{
 		0x00,	// 0000: input ADC clock not divided
@@ -5859,7 +6145,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI1_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
 	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
 	//PRINTF(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);
@@ -7780,7 +8066,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_pclk3_timers(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(stm32mp1_get_timg1_freq(), ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -7911,7 +8197,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround_pclk2(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(stm32mp1_get_timg1_freq(), ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -9578,12 +9864,30 @@ stm32h7xx_pll_initialize(void)
 	#endif /* WITHCPUXTAL */
 
 	// D1 domain Core prescaler (to CPU)
+	//	0xxx: sys_ck not divided (default after reset)
+	//	1000: sys_ck divided by 2
+	//	1001: sys_ck divided by 4
+	//	1010: sys_ck divided by 8
+	//	1011: sys_ck divided by 16
+	//	1100: sys_ck divided by 64
+	//	1101: sys_ck divided by 128
+	//	1110: sys_ck divided by 256
+	//	1111: sys_ck divided by 512
 	RCC->D1CFGR = (RCC->D1CFGR & ~ (RCC_D1CFGR_D1CPRE)) |	
 		0 * RCC_D1CFGR_D1CPRE_0 |	// not divided
 		0;
 	(void) RCC->D1CFGR;
 
 	// D1 domain AHB prescaler
+	//	0xxx: rcc_hclk3 = sys_d1cpre_ck (default after reset)
+	//	1000: rcc_hclk3 = sys_d1cpre_ck / 2
+	//	1001: rcc_hclk3 = sys_d1cpre_ck / 4
+	//	1010: rcc_hclk3 = sys_d1cpre_ck / 8
+	//	1011: rcc_hclk3 = sys_d1cpre_ck / 16
+	//	1100: rcc_hclk3 = sys_d1cpre_ck / 64
+	//	1101: rcc_hclk3 = sys_d1cpre_ck / 128
+	//	1110: rcc_hclk3 = sys_d1cpre_ck / 256
+	//	1111: rcc_hclk3 = sys_d1cpre_ck / 512
 	RCC->D1CFGR = (RCC->D1CFGR & ~ (RCC_D1CFGR_HPRE)) |
 		8 * RCC_D1CFGR_HPRE_0 |		// 1000: rcc_hclk3 = sys_d1cpre_ck / 2
 		0;

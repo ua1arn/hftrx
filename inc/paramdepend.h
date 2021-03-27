@@ -234,12 +234,14 @@ extern "C" {
 			#define CPU_FREQ (PLL_FREQ / 4)	// 172032000uL
 
 			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
+			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
+			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
 			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
  		#elif CPUSTYLE_STM32H7XX
+
+			unsigned long stm32h7xx_get_spi1_2_3_freq(void);
 
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
@@ -249,13 +251,11 @@ extern "C" {
 
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
 
-			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
-			#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
-			#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-			#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
+			#define HSIFREQ 64000000uL
+			#define HSI48FREQ 48000000uL
+			#define CSIFREQ 4000000uL
+
+			#define BOARD_SPI1_FREQ (stm32h7xx_get_spi1_2_3_freq())
 
 		#else
 
@@ -280,11 +280,11 @@ extern "C" {
 		#if WITHCPUXTAL
 			#define	REFINFREQ WITHCPUXTAL
 			#define REF1_DIV 1
-			#define REF1_MUL 9	// Up to 16 supported
+			#define REF1_MUL 9	// Up to 16 supported - вынести в конфигурационный файл платы
 		#else
 			#define	REFINFREQ 8000000uL
 			#define REF1_DIV 2
-			#define REF1_MUL 9	// Up to 16 supported
+			#define REF1_MUL 9	// Up to 16 supported - вынести в конфигурационный файл платы
 		#endif
 
 		#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
@@ -308,7 +308,7 @@ extern "C" {
 
 	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (BOARD_SPI1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */

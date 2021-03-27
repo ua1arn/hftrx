@@ -6147,7 +6147,7 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
-#if 1 && (__L2C_PRESENT == 1)
+#if 0 && (__L2C_PRESENT == 1)
 	{
 		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
 		// ZYNQ: RTL release R3p2
@@ -6160,7 +6160,7 @@ void hightests(void)
 		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
 	}
 #endif
-#if 1 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		// GIC version diagnostics
 		// Renesas:
@@ -6182,6 +6182,12 @@ void hightests(void)
 //		}
 	}
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+#if 0 && CPUSTYLE_STM32MP1
+	{
+		PRINTF("stm32mp1_get_per_freq()=%lu\n",stm32mp1_get_per_freq());
+		PRINTF("stm32mp1_get_axiss_freq()=%lu\n",stm32mp1_get_axiss_freq());
+	}
+#endif
 #if 0 && (WITHTWIHW || WITHTWISW)
 	{
 		unsigned i;
