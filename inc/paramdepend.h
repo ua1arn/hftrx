@@ -631,6 +631,9 @@ extern "C" {
 	//#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
 	#define HSIFREQ 64000000uL
+	#define CSIFREQ 4000000uL
+	#define LSIFREQ 32000uL
+
 	//
 	#if WITHCPUXOSC
 		// с генератором
@@ -644,19 +647,18 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	(REFINFREQ / (PLL1DIVM) * (PLL1DIVN) / (PLL1DIVP))
-	#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
+	//#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
 	#define DDR_FREQ 	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 	#define PLL3_FREQ	(REFINFREQ / (PLL3DIVM) * (PLL3DIVN))
 	#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
 	#define PLL4_FREQ_R	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN) / (PLL4DIVR))
-	/* частоты, подающиеся на периферию */
-	#define	PCLK1_FREQ (AXISS_FREQ / 4)	// 42 MHz PCLK1 frequency
-	#define	PCLK1_TIMERS_FREQ (AXISS_FREQ / 2)	// 42 MHz PCLK1 frequency
-	#define	PCLK2_FREQ (AXISS_FREQ / 4)	// 84 MHz PCLK2 frequency
-	#define	PCLK3_TIMERS_FREQ (AXISS_FREQ / 4)	// 84 MHz PCLK2 frequency
-	#define	PCLK2_TIMERS_FREQ (AXISS_FREQ / 2)	// 84 MHz PCLK2 frequency
-	#define SYSTICK_FREQ AXISS_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-	#define PER_CK_FREQ HSIFREQ	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
+	#define	PCLK1_FREQ (stm32mp1_get_axiss_freq() / 4)	// 42 MHz PCLK1 frequency
+
+	unsigned long stm32mp1_get_axiss_freq(void);
+	unsigned long stm32mp1_get_pll1_freq(void);
+	unsigned long stm32mp1_get_pll2_freq(void);
+	unsigned long stm32mp1_get_pll3_freq(void);
+	unsigned long stm32mp1_get_pll4_freq(void);
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 

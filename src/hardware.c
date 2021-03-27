@@ -40,6 +40,270 @@ calcdivround2(
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
+
+#if CPUSTYLE_STM32F7XX
+
+unsigned long stm32f_7xx_get_hse_freq(void)
+{
+#if WITHCPUXTAL
+	return WITHCPUXTAL;
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 24000000uL;
+#endif
+}
+
+#elif CPUSTYLE_STM32H7XX
+
+unsigned long stm32h7xx_get_hse_freq(void)
+{
+#if WITHCPUXTAL
+	return WITHCPUXTAL;
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 24000000uL;
+#endif
+}
+
+unsigned long stm32h7xx_get_pll1_freq(void)
+{
+	const uint32_t pll1divm1 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM1_Msk) >> RCC_PLLCKSELR_DIVM1_Pos);	// reference divider - not need 1substracted
+	const uint32_t pll1divn1 = ((RCC->PLL1DIVR & RCC_PLL1DIVR_N1_Msk) >> RCC_PLL1DIVR_N1_Pos) + 1;
+	return (uint_fast64_t) REFINFREQ * pll1divn1 / pll1divm1;
+}
+
+unsigned long stm32h7xx_get_pll2_freq(void)
+{
+	const uint32_t pll2divm2 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM2_Msk) >> RCC_PLLCKSELR_DIVM2_Pos);	// reference divider - not need 1substracted
+	const uint32_t pll2divn2 = ((RCC->PLL2DIVR & RCC_PLL2DIVR_N2_Msk) >> RCC_PLL2DIVR_N2_Pos) + 1;
+	return (uint_fast64_t) REFINFREQ * pll2divn2 / pll2divm2;
+}
+
+unsigned long stm32h7xx_get_pll3_freq(void)
+{
+	const uint32_t pll3divm3 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM3_Msk) >> RCC_PLLCKSELR_DIVM3_Pos);	// reference divider - not need 1substracted
+	const uint32_t pll3divn3 = ((RCC->PLL3DIVR & RCC_PLL3DIVR_N3_Msk) >> RCC_PLL3DIVR_N3_Pos) + 1;
+	return (uint_fast64_t) REFINFREQ * pll3divn3 / pll3divm3;
+}
+
+#elif CPUSTYLE_STM32MP1
+
+/* частоты, подающиеся на периферию */
+#define	PCLK1_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 2)	// 42 MHz PCLK1 frequency
+#define	PCLK2_FREQ (stm32mp1_get_axiss_freq() / 4)	// 84 MHz PCLK2 frequency
+#define	PCLK3_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 4)	// 84 MHz PCLK2 frequency
+#define	PCLK2_TIMERS_FREQ (stm32mp1_get_axiss_freq() / 2)	// 84 MHz PCLK2 frequency
+#define SYSTICK_FREQ stm32mp1_get_axiss_freq()	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+#define PER_CK_FREQ HSIFREQ	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
+
+unsigned long stm32mp1_get_hse_freq(void)
+{
+#if WITHCPUXTAL
+	return WITHCPUXTAL;
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 24000000uL;
+#endif
+}
+
+// PLL1 methods
+unsigned long stm32mp1_get_pll1_freq(void)
+{
+	const uint32_t pll1divn = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVN_Msk) >> RCC_PLL1CFGR1_DIVN_Pos) + 1;
+	const uint32_t pll1divm = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVM1_Msk) >> RCC_PLL1CFGR1_DIVM1_Pos) + 1;
+	return (uint_fast64_t) REFINFREQ * pll1divn / pll1divm;
+}
+
+// PLL2 methods
+unsigned long stm32mp1_get_pll2_freq(void)
+{
+	const uint32_t pll2divn = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVN_Msk) >> RCC_PLL2CFGR1_DIVN_Pos) + 1;
+	const uint32_t pll2divm = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVM2_Msk) >> RCC_PLL2CFGR1_DIVM2_Pos) + 1;
+	return (uint_fast64_t) REFINFREQ * pll2divn / pll2divm;
+}
+
+unsigned long stm32mp1_get_pll2p_freq(void)
+{
+	const uint32_t pll2divp = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVP_Msk) >> RCC_PLL2CFGR2_DIVP_Pos) + 1;
+	return stm32mp1_get_pll2_freq() / pll2divp;
+}
+
+// PLL3 methods
+unsigned long stm32mp1_get_pll3_freq(void)
+{
+	const uint32_t pll3divn = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVN_Msk) >> RCC_PLL3CFGR1_DIVN_Pos) + 1;
+	const uint32_t pll3divm = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVM3_Msk) >> RCC_PLL3CFGR1_DIVM3_Pos) + 1;
+	return (uint_fast64_t) REFINFREQ * pll3divn / pll3divm;
+}
+
+unsigned long stm32mp1_get_pll3q_freq(void)
+{
+	const uint32_t pll3divq = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVQ_Msk) >> RCC_PLL3CFGR2_DIVQ_Pos) + 1;
+	return stm32mp1_get_pll3_freq() / pll3divq;
+}
+
+// PLL4 methods
+unsigned long stm32mp1_get_pll4_freq(void)
+{
+	//#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
+	const uint32_t pll4divn = ((RCC->PLL4CFGR1 & RCC_PLL4CFGR1_DIVN_Msk) >> RCC_PLL4CFGR1_DIVN_Pos) + 1;
+	const uint32_t pll4divm = ((RCC->PLL4CFGR1 & RCC_PLL4CFGR1_DIVM4_Msk) >> RCC_PLL4CFGR1_DIVM4_Pos) + 1;
+	return (uint_fast64_t) REFINFREQ * pll4divn / pll4divm;
+}
+
+unsigned long stm32mp1_get_pll4q_freq(void)
+{
+	const uint32_t pll4divq = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVQ_Msk) >> RCC_PLL4CFGR2_DIVQ_Pos) + 1;
+	return stm32mp1_get_pll4_freq() / pll4divq;
+}
+
+unsigned long stm32mp1_get_pll4r_freq(void)
+{
+	const uint32_t pll4divr = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVR_Msk) >> RCC_PLL4CFGR2_DIVR_Pos) + 1;
+	return PLL4_FREQ / pll4divr;
+}
+
+
+unsigned long stm32mp1_get_axiss_freq(void)
+{
+	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as AXI sub-system clock (hse_ck)
+	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
+	//others: axiss_ck is gated
+	// axiss_ck 266 MHz Max
+	switch ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRC_Msk) >> RCC_ASSCKSELR_AXISSRC_Pos)
+	{
+	case 0x00:
+		return HSIFREQ;
+	case 0x01:
+		return stm32mp1_get_hse_freq();
+	case 0x02:
+		return stm32mp1_get_pll2p_freq();
+	default:
+		return HSIFREQ;
+	}
+}
+
+#if WITHUART1HW
+unsigned long stm32mp1_uart1_get_clock(void)
+{
+	//	0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+	//	0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//	0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//	0x4: pll4_q_ck clock selected as kernel peripheral clock
+	//	0x5: hse_ker_ck clock selected as kernel peripheral clock
+	switch ((RCC->UART1CKSELR & RCC_UART1CKSELR_UART1SRC_Msk) >> RCC_UART1CKSELR_UART1SRC_Pos)
+	{
+	case 0x00:
+		return PCLK5_FREQ;
+	case 0x01:
+		return stm32mp1_get_pll3q_freq();
+	case 0x02:
+		return HSIFREQ;
+	case 0x03:
+		return CSIFREQ;
+	case 0x04:
+		return stm32mp1_get_pll4q_freq();
+	case 0x05:
+		return stm32mp1_get_hse_freq();
+	default:
+		return HSIFREQ;
+	}
+}
+#endif /* WITHUART1HW */
+
+#if WITHUART2HW || WITHUART4HW
+unsigned long stm32mp1_uart24_get_clock(void)
+{
+	// UART2, UART4
+	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//	0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//	0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//	0x4: hse_ker_ck clock selected as kernel peripheral clock
+	switch ((RCC->UART24CKSELR & RCC_UART24CKSELR_UART24SRC_Msk) >> RCC_UART24CKSELR_UART24SRC_Pos)
+	{
+	case 0x00:
+		return PCLK1_FREQ;
+	case 0x01:
+		return stm32mp1_get_pll4q_freq();
+	case 0x02:
+		return HSIFREQ;
+	case 0x03:
+		return CSIFREQ;
+	case 0x04:
+		return stm32mp1_get_hse_freq();
+	default:
+		return HSIFREQ;
+	}
+
+}
+#endif /* WITHUART2HW || WITHUART4HW */
+
+#if WITHUART3HW || WITHUART5HW
+unsigned long stm32mp1_uart35_get_clock(void)
+{
+	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//	0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//	0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//	0x4: hse_ker_ck clock selected as kernel peripheral clock
+	//	others: reserved, the kernel clock is disabled
+	switch ((RCC->UART35CKSELR & RCC_UART35CKSELR_UART35SRC_Msk) >> RCC_UART35CKSELR_UART35SRC_Pos)
+	{
+	case 0x00:
+		return PCLK1_FREQ;
+	case 0x01:
+		return stm32mp1_get_pll4q_freq();
+	case 0x02:
+		return HSIFREQ;
+	case 0x03:
+		return CSIFREQ;
+	case 0x04:
+		return stm32mp1_get_hse_freq();
+	default:
+		return HSIFREQ;
+	}
+}
+#endif /* WITHUART3HW || WITHUART5HW */
+
+#if WITHUART7HW || WITHUART8HW
+unsigned long stm32mp1_uart78_get_clock(void)
+{
+	// UART7, UART8
+	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll4_q_ck clock selected as kernel peripheral clock
+	//0x2: hsi_ker_ck clock selected as kernel peripheral clock
+	//0x3: csi_ker_ck clock selected as kernel peripheral clock
+	//0x4: hse_ker_ck clock selected as kernel peripheral clock
+	switch ((RCC->UART78CKSELR & RCC_UART78CKSELR_UART78SRC_Msk) >> RCC_UART78CKSELR_UART78SRC_Pos)
+	{
+	case 0x00:
+		return PCLK1_FREQ;
+	case 0x01:
+		return stm32mp1_get_pll4q_freq();
+	case 0x02:
+		return HSIFREQ;
+	case 0x03:
+		return CSIFREQ;
+	case 0x04:
+		return stm32mp1_get_hse_freq();
+	default:
+		return HSIFREQ;
+	}
+
+}
+#endif /* WITHUART7HW || WITHUART8HW */
+
+#endif /* CPUSTYLE_STM32MP1 */
+
 // ATMega32 timers:
 // 8 bit timer0 - system ticks
 // 16 bit timer1 - прерывания с периодом 1/ELKEY_DISCRETE от длительности точки
@@ -57,29 +321,29 @@ calcdivround2(
 // 8 bit timer2 - system ticks
 
 // ATXMega timers:
-// TCC1: 1/ELKEY_DISCRETE dot length timer 
+// TCC1: 1/ELKEY_DISCRETE dot length timer
 // TCD1: beep (CW sidetone) - генерация сигнала самоконтроля
 // TCC0: system ticks
 
 // AT91SAM7Sxxx timers
-// TC0: LFM timer 
+// TC0: LFM timer
 // TC1: beep (CW sidetone) - генерация сигнала самоконтроля
 // TC2: 1/ELKEY_DISCRETE dot length timer
 
 // ATSAMSSxxx timers
-// TC0: LFM timer 
+// TC0: LFM timer
 // TC1: beep (CW sidetone) - генерация сигнала самоконтроля
 // TC2: 1/ELKEY_DISCRETE dot length timer
-// TC3: UNUSED 
-// TC4: UNUSED 
-// TC5: UNUSED 
+// TC3: UNUSED
+// TC4: UNUSED
+// TC5: UNUSED
 
 // STM32 timers
-// TIM3: 1/ELKEY_DISCRETE dot length timer 
+// TIM3: 1/ELKEY_DISCRETE dot length timer
 // TIM4: beep (CW sidetone) - генерация сигнала самоконтроля
 
 // R7S721xxxx timers
-// OSTM1: 1/ELKEY_DISCRETE dot length timer 
+// OSTM1: 1/ELKEY_DISCRETE dot length timer
 // OSTM0: system ticks
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
@@ -112,7 +376,7 @@ calcdivround2(
 	}
 
 	/* для устройств на шине APB1 (up to 36 MHz) - таймеры */
-	static uint_fast32_t 
+	static uint_fast32_t
 	calcdivround_pclk1_timers(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -121,7 +385,7 @@ calcdivround2(
 	}
 
 	/* для устройств на шине APB2 (up to 72 MHz) */
-	static uint_fast32_t 
+	static uint_fast32_t
 	calcdivround_pclk2(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -143,7 +407,7 @@ calcdivround2(
 
 #if SIDETONE_TARGET_BIT != 0
 	/* для устройств на шине APB2 (up to 72 MHz) */
-	static uint_fast32_t 
+	static uint_fast32_t
 	NOINLINEAT
 	calcdivround10_pclk2(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в десятых долях герца. */
@@ -155,7 +419,7 @@ calcdivround2(
 
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	/* для устройств тактирующихся от per_ck */
-	static uint_fast32_t 
+	static uint_fast32_t
 	NOINLINEAT
 	calcdivround_per_ck(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
@@ -168,7 +432,7 @@ calcdivround2(
 #elif CPUSTYLE_R7S721
 
 	/* для устройств тактирующихся от P0 clock */
-	static uint_fast32_t 
+	static uint_fast32_t
 	calcdivround_p0clock(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -177,7 +441,7 @@ calcdivround2(
 	}
 
 	/* для устройств тактирующихся от P1 clock */
-	static uint_fast32_t 
+	static uint_fast32_t
 	calcdivround_p1clock(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
 		)
@@ -252,7 +516,7 @@ calcdivround2(
 #else
 	// other CPUs
 
-	static uint_fast32_t 
+	static uint_fast32_t
 	NOINLINEAT
 	calcdivround(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
@@ -261,7 +525,7 @@ calcdivround2(
 		return calcdivround2(CPU_FREQ, freq);
 	}
 
-	static uint_fast32_t 
+	static uint_fast32_t
 	NOINLINEAT
 	calcdivround_systick(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
@@ -271,7 +535,7 @@ calcdivround2(
 	}
 
 #if SIDETONE_TARGET_BIT != 0
-	static uint_fast32_t 
+	static uint_fast32_t
 	NOINLINEAT
 	calcdivround10(
 		uint_fast32_t freq		/* требуемая частота на выходе делителя, в десятых долях герца. */
@@ -284,7 +548,7 @@ calcdivround2(
 #endif
 
  // возврат позиции старшего значащего бита в числе
-static uint_fast8_t 
+static uint_fast8_t
 countbits2(
 	unsigned long v		// число на анализ
 	)
@@ -300,7 +564,7 @@ countbits2(
 
 // Вариант функции для расчёта делителя определяющего скорость передачи
 // на UART AT91SAM7S, делитель для АЦП ATMega (значение делителя не требуется уменьшать на 1).
-static uint_fast8_t 
+static uint_fast8_t
 //NOINLINEAT
 calcdivider(
 	uint_fast32_t divider, // ожидаемый коэффициент деления всей системы
@@ -343,7 +607,7 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 	// Параметры функции calcdivider().
 	enum 
 	{ 
-		AT91SAM7_TIMER_WIDTH = 16,	AT91SAM7_TIMER_TAPS = (1024 | 128 | 32 | 8 | 2), 
+		AT91SAM7_TIMER_WIDTH = 16,	AT91SAM7_TIMER_TAPS = (1024 | 128 | 32 | 8 | 2),
 		AT91SAM7_UART_BRGR_WIDTH = 16,	AT91SAM7_UART_BRGR_TAPS = (16),	// Регистр UART_BRGR не требует уменьшения на 1
 		AT91SAM7_USART_BRGR_WIDTH = 16,	AT91SAM7_USART_BRGR_TAPS = (16 | 8),	// Регистр US_BRGR не требует уменьшения на 1
 		AT91SAM7_PITPIV_WIDTH = 20,	AT91SAM7_PITPIV_TAPS = (16),	// Periodic Interval Timer (PIT)
@@ -366,16 +630,16 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 	// Параметры функции calcdivider().
-	// 
+	//
 	// В stm32 три вида таймеров - General-purpose (2..5, 9..14), Advanced-control (1 & 8) & Basic (6 & 7)
-	enum 
-	{ 
+	enum
+	{
 		//STM32F_GP_TIMER_WIDTH = 16,	STM32F_GP_TIMER_TAPS = (65535), // General-purpose timers
 		// 32-bit timer: TIM2 on STM32F3xxx, TIM2 and TIM5 on STM32F4xxx
 		//STM32F_AC_TIMER_WIDTH = 16,	STM32F_AC_TIMER_TAPS = (65535), // Advanced-control timers
 		//STM32F_BA_TIMER_WIDTH = 16,	STM32F_BA_TIMER_TAPS = (65535), // Basic timers
 
-#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32FHXX || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		STM32F_TIM2_TIMER_WIDTH = 32,	STM32F_TIM2_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
 		STM32F_TIM5_TIMER_WIDTH = 32,	STM32F_TIM5_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
 #else /* CPUSTYLE_STM32F4XX */
@@ -403,9 +667,9 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
 	// Параметры функции calcdivider().
-	enum 
-	{ 
-		ATSAM3S_TIMER_WIDTH = 16,	ATSAM3S_TIMER_TAPS = (1024 | 128 | 32 | 8 | 2), 
+	enum
+	{
+		ATSAM3S_TIMER_WIDTH = 16,	ATSAM3S_TIMER_TAPS = (1024 | 128 | 32 | 8 | 2),
 		ATSAM3S_UART_BRGR_WIDTH = 16,	ATSAM3S_UART_BRGR_TAPS = (16),	// Регистр US_BRGR не требует уменьшения на 1
 		ATSAM3S_USART_BRGR_WIDTH = 16,	ATSAM3S_USART_BRGR_TAPS = (16 | 8),	// Регистр US_BRGR не требует уменьшения на 1
 		ATSAM3S_PITPIV_WIDTH = 20,	ATSAM3S_PITPIV_TAPS = (16),	// Periodic Interval Timer (PIT)
@@ -428,12 +692,12 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 #elif CPUSTYLE_ATMEGA
 
 	// Параметры функции calcdivider().
-	enum 
-	{ 
-		ATMEGA_SPCR_WIDTH = 0,			ATMEGA_SPCR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2), 
+	enum
+	{
+		ATMEGA_SPCR_WIDTH = 0,			ATMEGA_SPCR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2),
 
-		ATMEGA128_TIMER0_WIDTH = 8,		ATMEGA128_TIMER0_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1), 
-		ATMEGA_TIMER0_WIDTH = 8,		ATMEGA_TIMER0_TAPS = (1024 | 256 | 64 | 8 | 1), 
+		ATMEGA128_TIMER0_WIDTH = 8,		ATMEGA128_TIMER0_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1),
+		ATMEGA_TIMER0_WIDTH = 8,		ATMEGA_TIMER0_TAPS = (1024 | 256 | 64 | 8 | 1),
 		ATMEGA_TIMER1_WIDTH = 16,		ATMEGA_TIMER1_TAPS = (1024 | 256 | 64 | 8 | 1),
 		ATMEGA_TIMER2_WIDTH = 8,		ATMEGA_TIMER2_TAPS = (1024 | 256 | 128 | 64 | 32 | 8 | 1),
 		ATMEGAXXX4_TIMER3_WIDTH = 16,	ATMEGAXXX4_TIMER3_TAPS = (1024 | 256 | 64 | 8 | 1),	/* avaliable only on ATMega1284P */
@@ -462,10 +726,10 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 
 #elif CPUSTYLE_ATXMEGA
 	// Параметры функции calcdivider().
-	enum 
-	{ 
+	enum
+	{
 		ATXMEGA_TIMER_WIDTH = 16,	ATXMEGA_TIMER_TAPS = (1024 | 256 | 64 | 8 | 4 | 2 | 1),
-		ATXMEGA_SPIBR_WIDTH = 0,	ATXMEGA_SPIBR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2), 
+		ATXMEGA_SPIBR_WIDTH = 0,	ATXMEGA_SPIBR_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2),
 		ATXMEGA_UBR_WIDTH = 12,
 			ATXMEGA_UBR_GRADE = 3, // Допустимы значения 0 (без дробного делителя), 1, 2 и 3 (с периодом 8)
 			ATXMEGA_UBR_TAPS = (16 | 8) >> ATXMEGA_UBR_GRADE, ATXMEGA_UBR_BSEL = (0 - ATXMEGA_UBR_GRADE),
@@ -530,7 +794,7 @@ void hardware_spi_io_delay(void)
 	_NOP();
 #elif	CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	__DSB();
-	//__ISB(); 
+	//__ISB();
 	__NOP();
 	__NOP();
 #elif	CPUSTYLE_ARM_CM0
@@ -541,6 +805,7 @@ void hardware_spi_io_delay(void)
 	__NOP();
 #endif
 }
+
 
 #if WITHUART1HW
 
@@ -677,9 +942,8 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_STM32MP1
 
-	// uart1 on apb2 up to 72/36 MHz
-
-	USART1->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	// uart1
+	USART1->BRR = calcdivround2(stm32mp1_uart1_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
 
 #elif CPUSTYLE_STM32F
 
@@ -864,9 +1128,8 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_STM32MP1
 
-	// uart2 on apb1
-
-	USART2->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	// uart2
+	USART2->BRR = calcdivround2(stm32mp1_uart24_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
 
 #elif CPUSTYLE_STM32F
 
@@ -1052,9 +1315,8 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_STM32MP1
 
-	// uart4 on xxx
-
-	UART4->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	// uart4
+	UART4->BRR = calcdivround2(stm32mp1_uart24_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
 
 #elif CPUSTYLE_STM32F
 
@@ -1219,9 +1481,8 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_STM32MP1
 
-	// uart5 on xxx
-
-	UART5->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	// uart5
+	UART5->BRR = calcdivround2(stm32mp1_uart35_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
 
 #elif CPUSTYLE_STM32F
 
@@ -1385,9 +1646,8 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 
 #elif CPUSTYLE_STM32MP1
 
-	// uart4 on xxx
-
-	UART7->BRR = calcdivround2(HSIFREQ, baudrate);		// младшие 4 бита - это дробная часть.
+	// uart7
+	UART7->BRR = calcdivround2(stm32mp1_uart78_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
 
 #elif CPUSTYLE_STM32F
 
@@ -10780,7 +11040,7 @@ static void stm32mp1_pll_initialize(void)
 
 	#else
 		// На внутреннем генераторе
-		// выклюяаем внешний
+		// выключаем внешний
 		RCC->OCENCLRR = RCC_OCENCLRR_HSEON;
 		(void) RCC->OCENCLRR;
 
@@ -10992,7 +11252,7 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->UART1CKSELR;
 #endif /* WITHUART1HW */
 
-#if 1//WITHUART2HW
+#if WITHUART2HW || WITHUART4HW
 	// UART2, UART4
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -11004,9 +11264,9 @@ static void stm32mp1_pll_initialize(void)
 		//(0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
 		0;
 	(void) RCC->UART24CKSELR;
-#endif /* WITHUART2HW */
+#endif /* WITHUART2HW || WITHUART4HW */
 
-#if 1//WITHUART5HW
+#if WITHUART3HW || WITHUART5HW
 	// UART3, UART5
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -11018,10 +11278,10 @@ static void stm32mp1_pll_initialize(void)
 		(0x02 << RCC_UART35CKSELR_UART35SRC_Pos) |	// hsi_ker_ck
 		//(0x00 << RCC_UART35CKSELR_UART35SRC_Pos) |	// pclk1
 		0;
-	(void) RCC->UART24CKSELR;
-#endif /* WITHUART2HW */
+	(void) RCC->UART35CKSELR;
+#endif /* WITHUART3HW || WITHUART5HW */
 
-#if 1//WITHUART7HW
+#if WITHUART7HW || WITHUART8HW
 	// UART7, UART8
 	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -11033,7 +11293,7 @@ static void stm32mp1_pll_initialize(void)
 		//(0x00 << RCC_UART78CKSELR_UART78SRC_Pos) |	// pclk1
 		0;
 	(void) RCC->UART78CKSELR;
-#endif /* WITHUART7HW */
+#endif /* WITHUART7HW || WITHUART8HW */
 
 #if WITHSDHCHW
 	// SDMMC1
@@ -11181,7 +11441,7 @@ static void stm32mp1_pll_initialize(void)
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
-	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, dotfreq);
+	const uint32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	ASSERT(pll4divq >= 1);
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVQ_Msk)) |
 		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
@@ -11198,7 +11458,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 unsigned long hardware_get_dotclock(unsigned long dotfreq)
 {
-	const uint32_t pll4divq = calcdivround2(PLL4_FREQ, dotfreq);
+	const uint32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	return PLL4_FREQ / pll4divq;
 }
 #endif /* CPUSTYLE_STM32MP1 */
