@@ -12869,7 +12869,6 @@ sysinit_pll_initialize(void)
 		  L2C_Enable();
 		#endif
 	#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-#endif /*  ! CPUSTYLE_R7S721 */
 #if (__L2C_PRESENT == 1)
 	// Renesas: PL310 as a secondary cache. The IP version is r3p2.
 	// ZYNQ: RTL release R3p2
@@ -12881,6 +12880,7 @@ sysinit_pll_initialize(void)
 	PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_310->CACHE_ID >> 6) & 0x0F);
 	PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_310->CACHE_ID >> 0) & 0x3F);
 #endif
+#endif /*  ! CPUSTYLE_R7S721 */
 }
 
 
