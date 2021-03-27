@@ -6153,15 +6153,14 @@ void hightests(void)
 		// ZYNQ: RTL release R3p2
 		// RTL release 0x8 denotes r3p2 code of the cache controller
 		// RTL release 0x9 denotes r3p3 code of the cache controller.
-		PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_310->CACHE_ID);	// L2C_GetID()
-		PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_310->CACHE_ID >> 24) & 0xFF);
-		PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_310->CACHE_ID >> 10) & 0x3F);
-		PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_310->CACHE_ID >> 6) & 0x0F);
-		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_310->CACHE_ID >> 0) & 0x3F);
-
+		PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_GetID());	// L2C_GetID()
+		//PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_GetID() >> 24) & 0xFF);
+		//PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_GetID() >> 10) & 0x3F);
+		//PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_GetID() >> 6) & 0x0F);
+		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
 	}
 #endif
-#if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if 1 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		// GIC version diagnostics
 		// Renesas:
