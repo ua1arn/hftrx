@@ -59,15 +59,16 @@
 	I_BIT          = 0x80      /* disable IRQ when I bit is set */
 	F_BIT          = 0x40      /* disable FIQ when F bit is set */
  
-	 STACKSIZEUND = 512
-	 STACKSIZEABT = 512
-	 STACKSIZEFIQ = 512
+	 STACKSIZEUND = 64
+	 STACKSIZEABT = 64
+	 STACKSIZEFIQ = 64
+	 STACKSIZEHYP = 64
+	 STACKSIZEMON = 64
+	 STACKSIZESYS = 64
 	 STACKSIZEIRQ = 512
-	 STACKSIZEHYP = 512
-	 STACKSIZEMON = 512
-	 STACKSIZESYS = 512
 
-	 STACKSIZESVC = 8192
+	 STACKSIZESVCBOOT = 2048
+	 STACKSIZESVCCPU1 = 8192
   
 	.global __Vectors
 	.section .vectors, "ax"
@@ -154,7 +155,7 @@ gotosleep:
    mov   lr, #0
 
    msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-   ldr   sp, =__stack
+   ldr   sp, = __stack_cpu0_svc_end
    mov   lr, #0
 
 #if 0
@@ -179,6 +180,10 @@ line_loop:
    ldr   r2, =SystemInit
    mov   lr, pc
    bx    r2     /* And jump... */
+
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
+   ldr   sp, =__stack
+    mov   lr, #0
 
 /*  Firstly it copies data from read only memory to RAM. There are two schemes
  *  to copy. One can copy more than one sections. Another can only copy
@@ -486,10 +491,8 @@ __stack_cpu0_und_end = .
 __stack_cpu0_abt_end = .
 	.space	STACKSIZEFIQ
 __stack_cpu0_fiq_end = .
-/*
-	.space	STACKSIZESVC
+	.space	STACKSIZESVCBOOT
 __stack_cpu0_svc_end = .
-*/
 	.space	STACKSIZEMON
 __stack_cpu0_mon_end = .
 	.space	STACKSIZEHYP
@@ -516,7 +519,7 @@ __stack_cpu1_mon_end = .
 __stack_cpu1_hyp_end = .
 	.space	STACKSIZESYS
 __stack_cpu1_sys_end = .
-	.space	STACKSIZESVC
+	.space	STACKSIZESVCCPU1
 __stack_cpu1_svc_end = .
 
 #endif /* WITHSMPSYSTEM */
