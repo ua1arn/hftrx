@@ -28,6 +28,8 @@
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
+	#define LSEFREQ 32768uL
+
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz
 	// PLL1, PLL2 VCOs

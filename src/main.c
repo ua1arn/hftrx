@@ -9367,7 +9367,7 @@ updateboard(
 		#endif /* WITHFANPWM */
 	#endif /* WITHFANTIMER */
 	#if WITHDCDCFREQCTL
-		board_set_blfreq(bldividerout);
+		board_set_bldivider(bldividerout);
 	#endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
 		board_set_bglight(dimmflag || sleepflag || dimmmode, gbglight);		/* подсветка дисплея  */

@@ -5168,7 +5168,7 @@ board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright)
 #if WITHDCDCFREQCTL
 /* установка делителя для формирования рабочей частоты преобразователя подсветки */
 void 
-board_set_blfreq(uint_fast32_t n)	
+board_set_bldivider(uint_fast32_t n)	
 {
 	// TIM16_CH1 - PF6
 	if (glob_blfreq != n)

@@ -268,6 +268,7 @@ unsigned long stm32mp1_get_mlhclk_freq(void)
 	default: return stm32mp1_get_mcuss_freq() / 512;
 	}
 }
+
 // Internal APB1 clock frequency
 // 104.5 MHz max
 unsigned long stm32mp1_get_pclk1_freq(void)
@@ -495,6 +496,42 @@ unsigned long stm32mp1_uart78_get_clock(void)
 
 }
 #endif /* WITHUART7HW || WITHUART8HW */
+
+// частота для деления таймером
+// timg1_ck: TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14
+// kernel: Ftimg1_ck 209 MHz max
+// bus: Fpclk1 104.5 MHz max
+unsigned long stm32mp1_get_timg1_freq(void)
+{
+	const unsigned g1 = (RCC->TIMG1PRER & RCC_TIMG1PRER_TIMG1PRE_Msk) != 0;
+	switch ((RCC->APB1DIVR & RCC_APB1DIVR_APB1DIV_Msk) >> RCC_APB1DIVR_APB1DIV_Pos)
+	{
+	default:
+	case 0x00: return stm32mp1_get_mlhclk_freq();
+	case 0x01: return stm32mp1_get_mlhclk_freq();
+	case 0x02: return g1 ? stm32mp1_get_mlhclk_freq() : (stm32mp1_get_mlhclk_freq() / 2);
+	case 0x03: return g1 ? (stm32mp1_get_mlhclk_freq() / 2) : (stm32mp1_get_mlhclk_freq() / 4);
+	case 0x04: return g1 ? (stm32mp1_get_mlhclk_freq() / 4) : (stm32mp1_get_mlhclk_freq() / 8);
+	}
+}
+
+// частота для деления таймером
+// timg2_ck: TIM1, TIM8, TIM15, TIM16, and TIM17
+// kernel: Ftimg1_ck 209 MHz max
+// bus: Fpclk2 104.5 MHz max
+unsigned long stm32mp1_get_timg2_freq(void)
+{
+	const unsigned g1 = (RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRE_Msk) != 0;
+	switch ((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIV_Msk) >> RCC_APB2DIVR_APB2DIV_Pos)
+	{
+	default:
+	case 0x00: return stm32mp1_get_mlhclk_freq();
+	case 0x01: return stm32mp1_get_mlhclk_freq();
+	case 0x02: return g1 ? stm32mp1_get_mlhclk_freq() : (stm32mp1_get_mlhclk_freq() / 2);
+	case 0x03: return g1 ? (stm32mp1_get_mlhclk_freq() / 2) : (stm32mp1_get_mlhclk_freq() / 4);
+	case 0x04: return g1 ? (stm32mp1_get_mlhclk_freq() / 4) : (stm32mp1_get_mlhclk_freq() / 8);
+	}
+}
 
 #endif /* CPUSTYLE_STM32MP1 */
 
@@ -833,6 +870,7 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 		//STM32F_AC_TIMER_WIDTH = 16,	STM32F_AC_TIMER_TAPS = (65535), // Advanced-control timers
 		//STM32F_BA_TIMER_WIDTH = 16,	STM32F_BA_TIMER_TAPS = (65535), // Basic timers
 
+		// General-purpose timers (TIM2/TIM3/TIM4/TIM5)
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		STM32F_TIM2_TIMER_WIDTH = 32,	STM32F_TIM2_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
 		STM32F_TIM5_TIMER_WIDTH = 32,	STM32F_TIM5_TIMER_TAPS = (65535), // General-purpose timers TIM2 and TIM5 on CPUSTYLE_STM32F4XX
@@ -3071,19 +3109,16 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MP_APB1ENSETR |= RCC_MP_APB1ENSETR_TIM5EN;   // подаем тактирование на TIM3
+	RCC->MP_APB1ENSETR |= RCC_MP_APB1ENSETR_TIM5EN;   // подаем тактирование на TIM5
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR |= RCC_MP_APB1LPENSETR_TIM5LPEN;   // подаем тактирование на TIM3
+	RCC->MP_APB1LPENSETR |= RCC_MP_APB1LPENSETR_TIM5LPEN;   // подаем тактирование на TIM5
 	(void) RCC->MP_APB1LPENSETR;
 
 	TIM5->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
 
-	// TIM2 & TIM5 on CPUSTYLE_STM32F4XX have 32-bit CNT and ARR registers
-	// TIM7 located on APB1
-	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_per_ck(ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(stm32mp1_get_timg1_freq(), ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
 
 	TIM5->PSC = ((1UL << prei) - 1);
 	TIM5->ARR = value;
@@ -4595,7 +4630,6 @@ hardware_adc_startonescan(void)
 
 #if WITHDCDCFREQCTL
 	//static uint_fast16_t dcdcrefdiv = 62;	/* делится частота внутреннего генератора 48 МГц */
-
 	/*
 		получение делителя частоты для синхронизации DC-DC конверторов
 		для исключения попадания в полосу обзора панорамы гармоник этой частоты.
@@ -4626,6 +4660,8 @@ hardware_adc_startonescan(void)
 		  { 62, 0,		6900000uL },	
 		};
 	#elif CPUSTYLE_STM32MP1
+		//const unsigned long ifreq = stm32mp1_get_timg2_freq();	// TIM17 это timg2
+		//PRINTF("hardware_dcdc_calcdivider: ifreq=%lu\n", ifreq);
 		// пока для проверки работоспособности. Таблицу надо расчитать.
 		// сейчас делит 32 MHz
 		static const FLASHMEM struct FREQ freqs [] = {
@@ -4691,6 +4727,8 @@ hardware_adc_startonescan(void)
 
 	void hardware_dcdcfreq_tim17_ch1_initialize(void)
 	{
+		const unsigned long ifreq = stm32mp1_get_timg2_freq();	// TIM17 это timg2
+		PRINTF("hardware_dcdcfreq_tim17_ch1_initialize: ifreq=%lu\n", ifreq);
 		/* TIM17_CH1 */
 		RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_TIM17EN;   //подаем тактирование на TIM17
 		(void) RCC->MP_APB2ENSETR;
@@ -11501,7 +11539,7 @@ static void stm32mp1_pll_initialize(void)
 		;
 
 
-#if 1//WITHUART1HW
+#if WITHUART1HW
 	// usart1
 	//	0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
