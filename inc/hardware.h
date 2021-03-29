@@ -464,6 +464,12 @@ void cpu_initialize(void);
 void cpu_initdone(void);	// секция init больше не нужна
 uint_fast32_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
 
+void tickers_initialize(void);
+void spool_systimerbundle1(void);
+void spool_systimerbundle2(void);
+void spool_elkeybundle(void);
+void sysinit_pll_initialize(void);
+void hardware_adc_startonescan(void);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
@@ -721,6 +727,7 @@ uint_fast8_t usbd_cdc2_getrts(void);
 uint_fast8_t usbd_cdc2_getdtr(void);
 
 void AT91F_PIOA_IRQHandler(void);
+void AT91F_ADC_IRQHandler(void);
 
 void EXTI0_IRQHandler(void);
 void EXTI1_IRQHandler(void);
@@ -747,6 +754,35 @@ void DMA2_Stream6_IRQHandler(void);
 
 void SysTick_Handler(void);
 void Reset_CPUn_Handler(void);
+
+void ADC_IRQHandler(void);
+void ADC1_IRQHandler(void);
+void ADC2_IRQHandler(void);
+void ADC3_IRQHandler(void);
+void ADC1_2_IRQHandler(void);
+void ADC1_COMP_IRQHandler(void);
+void r7s721_adi_irq_handler(void);
+void TIM3_IRQHandler(void);
+void TIM5_IRQHandler(void);
+
+
+/* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
+typedef struct adcinmap_tag
+{
+	uint_fast8_t ch;	// номер канала в периферийном блоке процессора
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	ADC_TypeDef * adc;	// периферийный блок процессора
+	ADC_Common_TypeDef * adccommon;
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+	uint_fast8_t thold_uS01;	// минимальное время выборки для данного канала - десятые доли микросекунды
+} adcinmap_t;
+
+const adcinmap_t * getadcmap(uint_fast8_t adci);
+
+void spool_adcdonebundle(void);
+void adcdones_initialize(void);
+uint_fast8_t isadchw(uint_fast8_t adci); // Проверка что индекс входа АЦП относится ко встроенной периферии процессора
+
 
 void cpump_initialize(void);
 void arm_gic_initialize(void);
