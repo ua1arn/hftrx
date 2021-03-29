@@ -2826,7 +2826,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	#endif
 
 	#if 1
-		const uint_fast32_t period = calcdivround2(CPU_FREQticksfreq * 2);	// Global Timer runs with the system frequency / 2
+		const uint_fast32_t period = calcdivround2(CPU_FREQ, ticksfreq * 2);	// Global Timer runs with the system frequency / 2
 		// Global timer use
 		GTC->GTCLR = 0;
 
@@ -2846,7 +2846,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		// Disable Private Timer and set load value
 		PTIM_SetControl(0);
 		PTIM_SetCurrentValue(0);
-		PTIM_SetLoadValue(calcdivround2(CPU_FREQticksfreq * 2));	// Private Timer runs with the system frequency / 2
+		PTIM_SetLoadValue(calcdivround2(CPU_FREQ, ticksfreq * 2));	// Private Timer runs with the system frequency / 2
 		// Set bits: IRQ enable and Auto reload
 		PTIM_SetControl(0x06U);
 
