@@ -339,7 +339,7 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
                        u16_t http_request_len, int content_len, char *response_uri,
                        u16_t response_uri_len, u8_t *post_auto_wnd)
 {
-	PRINTF("httpd_post_begin, url='%', content_len=%u\n", uri, content_len);
+	PRINTF("httpd_post_begin, url='%s', content_len=%u\n", uri, content_len);
 	//printhex(0, http_request, http_request_len);
 
 	writeok = 1;
