@@ -3457,12 +3457,13 @@ static RAMDTCM SPINLOCK_t cpu1init;
 
 void Reset_CPUn_Handler(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#if CPUSTYLE_XC7Z
 	// set the ACTLR.SMP
-//	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-//	__ISB();
-//	__DSB();
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+	// Что за бит 0x02 ?
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Pos | ACTLR_FW_Msk | 0x02);
+	__ISB();
+	__DSB();
+#endif /* CPUSTYLE_XC7Z */
 
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
