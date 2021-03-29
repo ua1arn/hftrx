@@ -3355,7 +3355,7 @@ SystemInit(void)
 #endif /* CPUSTYLE_XC7Z & WITHISBOOTLOADER */
 
 	sysinit_fpu_initialize();
-	sysinit_pll_initialize();
+	sysinit_pll_cache_initialize();	// PLL and caches inuitialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate

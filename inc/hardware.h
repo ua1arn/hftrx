@@ -468,7 +468,7 @@ void tickers_initialize(void);
 void spool_systimerbundle1(void);
 void spool_systimerbundle2(void);
 void spool_elkeybundle(void);
-void sysinit_pll_initialize(void);
+void sysinit_pll_cache_initialize(void);	// PLL and caches inuitialize
 void hardware_adc_startonescan(void);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
