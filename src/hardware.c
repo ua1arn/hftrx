@@ -3457,13 +3457,18 @@ static RAMDTCM SPINLOCK_t cpu1init;
 
 void Reset_CPUn_Handler(void)
 {
-#if CPUSTYLE_XC7Z
+#if (__CORTEX_A == 9U)
 	// set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
 	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Pos | ACTLR_FW_Msk | 0x02);
 	__ISB();
 	__DSB();
-#endif /* CPUSTYLE_XC7Z */
+#elif (__CORTEX_A == 7U)
+	// set the ACTLR.SMP
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	__ISB();
+	__DSB();
+#endif /* (__CORTEX_A == 9U) */
 
 	sysinit_fpu_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
@@ -3503,11 +3508,19 @@ void cpump_initialize(void)
 #if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM
 
+#if (__CORTEX_A == 9U)
+	// set the ACTLR.SMP
+	// 0x02: L2 Prefetch hint enable
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Pos | ACTLR_FW_Msk | 0x02);
+	__ISB();
+	__DSB();
+#elif (__CORTEX_A == 7U)
 	// set the ACTLR.SMP
 	// STM32MP1: already set
-//	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-//	__ISB();
-//	__DSB();
+	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+	__ISB();
+	__DSB();
+#endif /* (__CORTEX_A == 9U) */
 
 	cortexa_cpuinfo();
 	SPINLOCK_INITIALIZE(& cpu1init);
