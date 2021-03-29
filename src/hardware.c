@@ -3459,7 +3459,7 @@ void Reset_CPUn_Handler(void)
 {
 #if CPUSTYLE_XC7Z
 	// set the ACTLR.SMP
-	// Что за бит 0x02 ?
+	// 0x02: L2 Prefetch hint enable
 	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk | ACTLR_L1PE_Pos | ACTLR_FW_Msk | 0x02);
 	__ISB();
 	__DSB();
