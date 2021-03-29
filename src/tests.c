@@ -6147,7 +6147,7 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
-#if 0 && (__L2C_PRESENT == 1)
+#if 1 && (__L2C_PRESENT == 1)
 	{
 		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
 		// ZYNQ: RTL release R3p2
@@ -6158,6 +6158,9 @@ void hightests(void)
 		//PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_GetID() >> 10) & 0x3F);
 		//PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_GetID() >> 6) & 0x0F);
 		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
+
+		PRINTF("L2C Data RAM latencies: %08lX\n", (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C)); // reg1_data_ram_control
+		PRINTF("L2C Tag RAM latencies: %08lX\n", (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
 	}
 #endif
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
