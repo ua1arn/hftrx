@@ -10,60 +10,6 @@
 #include "board.h"
 #include "formats.h"	// for debug prints
 
-
-#if  (__CORTEX_A != 0)
-
-static void printcpustate(void)
-{
-	volatile uint_fast32_t vvv;
-	dbg_putchar('$');
-	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%p\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(), & vvv);
-}
-
-static void arm_gic_initialize(void);
-
-static RAMDTCM SPINLOCK_t cpu1init;
-
-void Reset_CPUn_Handler(void)
-{
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	// set the ACTLR.SMP
-//	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-//	__ISB();
-//	__DSB();
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-
-	sysinit_fpu_initialize();
-	sysinit_vbar_initialize();		// interrupt vectors relocate
-	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
-
-	arm_gic_initialize();
-//	GIC_CPUInterfaceInit();
-//#if WITHNESTEDINTERRUPTS
-//	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
-//#endif /* WITHNESTEDINTERRUPTS */
-
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
-	//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
-	#if (__L2C_PRESENT == 1)
-	  // Enable Level 2 Cache
-	  L2C_Enable();
-	#endif
-
-	printcpustate();
-	__enable_irq();
-	SPIN_UNLOCK(& cpu1init);
-
-	// Idle loop
-	for (;;)
-	{
-		__WFI();
-	}
-}
-
-#endif /*  (__CORTEX_A != 0) */
-
 #if (__CORTEX_M != 0)
 
 uint32_t gARM_OVERREALTIME_PRIORITY;
@@ -135,7 +81,7 @@ uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 
-static void
+void
 arm_gic_initialize(void)
 {
 	IRQ_Initialize();
@@ -615,84 +561,6 @@ void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void
 
 #endif /* CPUSTYLE_ARM */
 
-#if CPUSTYLE_STM32MP1
-
-
-/*
- * Cores secure magic numbers
- * Constant to be stored in bakcup register
- * BOOT_API_MAGIC_NUMBER_TAMP_BCK_REG_IDX
- */
-//#define BOOT_API_A7_CORE0_MAGIC_NUMBER				0xCA7FACE0U
-#define BOOT_API_A7_CORE1_MAGIC_NUMBER				0xCA7FACE1U
-
-/*
- * TAMP_BCK4R register index
- * This register is used to write a Magic Number in order to restart
- * Cortex A7 Core 1 and make it execute @ branch address from TAMP_BCK5R
- */
-//#define BOOT_API_CORE1_MAGIC_NUMBER_TAMP_BCK_REG_IDX		4U
-
-/*
- * TAMP_BCK5R register index
- * This register is used to contain the branch address of
- * Cortex A7 Core 1 when restarted by a TAMP_BCK4R magic number writing
- */
-//#define BOOT_API_CORE1_BRANCH_ADDRESS_TAMP_BCK_REG_IDX		5U
-
-/*******************************************************************************
- * STM32MP1 handler called when a power domain is about to be turned on. The
- * mpidr determines the CPU to be turned on.
- * call by core 0 to activate core 1
- ******************************************************************************/
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
-{
-	PWR->CR1 |= PWR_CR1_DBP;	// 1: Write access to RTC and backup domain registers enabled.
-	(void) PWR->CR1;
-	while ((PWR->CR1 & PWR_CR1_DBP) == 0)
-		;
-
-	RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_RTCAPBEN;
-	(void) RCC->MP_APB5ENSETR;
-	RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
-	(void) RCC->MP_APB5LPENSETR;
-
-	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
-	(void) RCC->MP_AHB5ENSETR;
-	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
-	(void) RCC->MP_AHB5LPENSETR;
-
-	/* Write entrypoint in backup RAM register */
-	TAMP->BKP5R = startfunc;	// Invoke at SVC context
-	(void) TAMP->BKP5R;
-
-	/* Write magic number in backup register */
-	TAMP->BKP4R = BOOT_API_A7_CORE1_MAGIC_NUMBER;
-	(void) TAMP->BKP4R;
-
-//	PWR->CR1 &= ~ PWR_CR1_DBP;	// 0: Write access to RTC and backup domain registers disabled.
-//	(void) PWR->CR1;
-//	while ((PWR->CR1 & PWR_CR1_DBP) != 0)
-//		;
-
-	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
-
-	/* Generate an IT to core 1 */
-	GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
-}
-
-#elif CPUSTYLE_XC7Z
-
-static void cortexa_mp_cpu1_start(uintptr_t startfunc)
-{
-	* (volatile uint32_t *) 0xFFFFFF00 = startfunc;	// Invoke at SVC context
-	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
-	/* Generate an IT to core 1 */
-	//GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
-}
-
-#endif /* CPUSTYLE_STM32MP1 */
-
 // Вызывается из main
 void cpu_initialize(void)
 {
@@ -710,28 +578,11 @@ void cpu_initialize(void)
 
 //	ca9_ca7_cache_diag();	// print
 
-#if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
-#if WITHSMPSYSTEM
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 
-	// set the ACTLR.SMP
-	// STM32MP1: already set
-//	__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
-//	__ISB();
-//	__DSB();
+	cpump_initialize();
 
-	printcpustate();
-	SPIN_LOCK(& cpu1init);
-	cortexa_mp_cpu1_start(Reset_CPU1_Handler);
-	SPIN_LOCK(& cpu1init);
-	SPIN_UNLOCK(& cpu1init);
-
-#else /* WITHSMPSYSTEM */
-	printcpustate();
-
-#endif /* WITHSMPSYSTEM */
-#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-
-#if CPUSTYLE_ATMEGA328
+#elif CPUSTYLE_ATMEGA328
 	// управления JTAG нету
 
 #elif CPUSTYLE_ATMEGA128

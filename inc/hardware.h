@@ -746,6 +746,10 @@ void SDMMC1_IRQHandler(void);
 void DMA2_Stream6_IRQHandler(void);
 
 void SysTick_Handler(void);
+void Reset_CPUn_Handler(void);
+
+void cpump_initialize(void);
+void arm_gic_initialize(void);
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 
