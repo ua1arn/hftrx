@@ -61,7 +61,7 @@ LTO = -flto
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
 
-#UADEFS += -D"WITHSMPSYSTEM"
+UADEFS += -D"WITHSMPSYSTEM"
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
