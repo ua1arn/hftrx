@@ -273,9 +273,21 @@ static const COLORPAIR_T colors_1freqB [1] =
 {
 	{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
+// Параметры отображения режима дополнительного приемника
+// синий
+static const COLORPAIR_T colors_1modeB [1] =
+{
+	{	DESIGNBIGCOLORB,	LABELBACK,	},
+};
 
 // Параметры отображения частоты основного приемника
 static const COLORPAIR_T colors_1freq [1] =
+{
+	{	DESIGNBIGCOLOR,	LABELBACK,	},
+};
+
+// Параметры отображения режима основного приемника
+static const COLORPAIR_T colors_1mode [1] =
 {
 	{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
@@ -2202,7 +2214,7 @@ static void display2_mode3_a(
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_a_value_P(), };
 	ASSERT(strlen(labels [0]) == 3);
-	display2_text_P(x, y, labels, colors_1freq, 0);
+	display2_text_P(x, y, labels, colors_1mode, 0);
 }
 
 static void display2_mode_lower_a(
@@ -2214,7 +2226,7 @@ static void display2_mode_lower_a(
 	char labels[5];
 	local_snprintf_P(labels, ARRAY_SIZE(labels), PSTR(" %s"), hamradio_get_mode_a_value_P());
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	colpip_string2_tbg(fr, DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), labels, colors_1freq [0].fg);
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), labels, colors_1mode [0].fg);
 }
 
 
@@ -2227,7 +2239,7 @@ static void display2_mode3_b(
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
 	ASSERT(strlen(labels [0]) == 3);
-	display2_text_P(x, y, labels, colors_1freqB, 0);
+	display2_text_P(x, y, labels, colors_1modeB, 0);
 }
 
 // dd.dV - 5 places
