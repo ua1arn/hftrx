@@ -17,8 +17,7 @@ MEMORY
   FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
   RAM (rwx) 	: ORIGIN = 0x00100000, LENGTH = 239M  	/* DDR3 single chip NT5CC128M16IP-DI 255M - 16M */
   TTB (rwx)  	: ORIGIN = 0x0F000000, LENGTH = 16M		/* last 16 MB DDR3 RAM for TTB */
-  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
-  OCM3 (rwx)	: ORIGIN = 0x000F0000, LENGTH = 48k		/* OCM3 - on-chip memory 64k - 16k for TTB */
+  OCM (rwx)	: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k. OCM3 last 1 kb assigned for CPU1 */
 }
 
 /* Library configurations */
