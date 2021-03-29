@@ -745,6 +745,8 @@ void SDIO_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
 void DMA2_Stream6_IRQHandler(void);
 
+void SysTick_Handler(void);
+
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 
 void hardware_tim21_initialize(void);
