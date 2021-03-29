@@ -217,6 +217,22 @@
 	};
 	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
+#elif CTLREGMODE_V3D
+
+	static const fseltype_t board_bandfs [] =
+	{
+		(fseltype_t) (2800000UL >> BANDDIVPOWER),
+		(fseltype_t) (3900000UL >> BANDDIVPOWER),
+		(fseltype_t) (7200000UL >> BANDDIVPOWER),
+		(fseltype_t) (10200000UL >> BANDDIVPOWER),
+		(fseltype_t) (14500000UL >> BANDDIVPOWER),
+		(fseltype_t) (18300000UL >> BANDDIVPOWER),
+		(fseltype_t) (21500000UL >> BANDDIVPOWER),
+		(fseltype_t) (29000000UL >> BANDDIVPOWER),
+	};
+	#define BANDCALCS	(sizeof board_bandfs / sizeof board_bandfs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+
+
 #elif \
 	BANDSELSTYLERE_UPCONV56M || \
 	BANDSELSTYLERE_UPCONV56M_45M || \

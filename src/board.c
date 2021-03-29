@@ -4729,7 +4729,43 @@ prog_ctrlreg(uint_fast8_t plane)
 	spi_unselect(target);
 }
 
+#elif CTLREGMODE_V3D
 
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+/* RF unit board UA3REO rev.2 */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	const spitarget_t target = targetbpf;
+	rbtype_t rbbuff [2] = { 0 };
+
+	/* U1 */
+	RBBIT(017, 0);					// not use
+	RBBIT(016, glob_att);			// attenuator
+	RBBIT(015, 0);					// LPF bypass, not use
+	RBBIT(014, 0);					// BPF bypass, not use
+	RBBIT(013, glob_bandf & 0x00);	// 160m
+	RBBIT(012, glob_bandf & 0x01);	// 80m
+	RBBIT(011, glob_bandf & 0x02);	// 40m
+	RBBIT(010, glob_tx);			// tx\rx
+
+	/* U3 */
+	RBBIT(007, 0);					// not use
+	RBBIT(006, 0);					// not use
+	RBBIT(005, 0);					// not use
+	RBBIT(004, glob_bandf & 0x80);	// 10m
+	RBBIT(003, glob_bandf & 0x40);	// 15m
+	RBBIT(002, glob_bandf & 0x20);	// 17m
+	RBBIT(001, glob_bandf & 0x10);	// 20m
+	RBBIT(000, glob_bandf & 0x08);	// 30m
+
+	spi_select(target, CTLREG_SPIMODE);
+	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	spi_unselect(target);
+}
 
 #elif CTLREGMODE_NOCTLREG
 

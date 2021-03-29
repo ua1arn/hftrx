@@ -113,7 +113,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
+	//#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_V3D		1	// UA3REO RF board, 2x74HC595
 
 	#define WITHLCDBACKLIGHT	1	// Имеется управление подсветкой дисплея
 	#define WITHLCDBACKLIGHTMIN	0	// Нижний предел регулировки (показываемый на дисплее)
@@ -404,6 +405,7 @@
 	#define targetext2	SPI_CSEL_PG15 	/* external devices control */
 	#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
 	#define targetfpga1	SPI_CSEL_PC6 	/* control register in FPGA */
+	#define targetbpf	SPI_CSEL_PC7 	/* RF unit */
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/

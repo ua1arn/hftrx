@@ -15,9 +15,9 @@
 //#define HARDWARE_ARM_USEUSART1 1		// US1: PA9/PA10 pins
 
 //#define WITHSPI16BIT	1		/* возможно использование 16-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPISW 		1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -454,10 +454,11 @@
 #define SPI_CSEL_PG6	0//(1U << 6)	// PG6 on-board codec1 NAU8822L
 //#define SPI_CSEL_PG5	0//(1U << 5)	// PG5 FPGA CS2 - used as overflov signal from ADC
 #define SPI_CSEL_PC6	(1U << 6)		// PC6 FPGA control registers CS
+#define SPI_CSEL_PC7	(1U << 7)		// PC7 rf unit
 #define SPI_CSEL_PG1	0//(1U << 7)	// PG1 FPGA NCO1 registers CS
 
 // Здесь должны быть перечислены все биты формирования CS в устройстве.
-#define SPI_ALLCS_BITS (SPI_CSEL_PC6)
+#define SPI_ALLCS_BITS (SPI_CSEL_PC6 | SPI_CSEL_PC7)
 
 #define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
