@@ -41,9 +41,25 @@ calcdivround2(
 }
 
 
-#if CPUSTYLE_STM32F7XX
+#if CPUSTYLE_STM32F4XX
 
-unsigned long stm32f_7xx_get_hse_freq(void)
+unsigned long stm32f4xx_get_spi1_freq(void)
+{
+	return PCLK1_FREQ;
+}
+
+#if WITHSPIHW
+// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
+unsigned long hardware_get_spi_freq(void)
+{
+	return stm32f4xx_get_spi1_freq();
+}
+
+#endif /* WITHSPIHW */
+
+#elif CPUSTYLE_STM32F7XX
+
+unsigned long stm32f7xx_get_hse_freq(void)
 {
 #if WITHCPUXTAL
 	return WITHCPUXTAL;
@@ -54,6 +70,24 @@ unsigned long stm32f_7xx_get_hse_freq(void)
 	return 24000000uL;
 #endif
 }
+
+
+#if WITHSPIHW
+unsigned long stm32f7xx_get_spi1_freq(void)
+{
+	return PCLK1_FREQ;
+}
+
+#endif /* WITHSPIHW */
+
+#if WITHSPIHW
+// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
+unsigned long hardware_get_spi_freq(void)
+{
+	return stm32f7xx_get_spi1_freq();
+}
+
+#endif /* WITHSPIHW */
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -66,7 +100,7 @@ unsigned long stm32f_7xx_get_hse_freq(void)
 #define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 #define BOARD_ADC_FREQ (stm32h7xx_get_adc_freq())
-#define BOARD_SPI1_FREQ (stm32h7xx_get_spi1_2_3_freq())
+#define BOARD_SPI_FREQ (stm32h7xx_get_spi1_2_3_freq())
 
 unsigned long stm32h7xx_get_hse_freq(void)
 {
@@ -324,6 +358,7 @@ unsigned long stm32h7xx_get_spi4_5_freq(void)
 	}
 }
 
+#if WITHADCHW
 unsigned long stm32h7xx_get_adc_freq(void)
 {
 	//	00: pll2_p_ck clock selected as kernel peripheral clock (default after reset)
@@ -338,6 +373,16 @@ unsigned long stm32h7xx_get_adc_freq(void)
 	case 0x02: return stm32h7xx_get_per_freq();
 	}
 }
+#endif /* WITHADCHW */
+
+#if WITHSPIHW
+// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
+unsigned long hardware_get_spi_freq(void)
+{
+	return stm32h7xx_get_spi1_2_3_freq();
+}
+
+#endif /* WITHSPIHW */
 
 #elif CPUSTYLE_STM32MP1
 
@@ -350,7 +395,7 @@ unsigned long stm32h7xx_get_adc_freq(void)
 //#define SYSTICK_FREQ (stm32mp1_get_axiss_freq())	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 //#define PER_CK_FREQ (stm32mp1_get_per_freq())	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
 #define BOARD_ADC_FREQ (stm32mp1_get_adc_freq())
-#define BOARD_SPI1_FREQ (stm32mp1_get_spi1_freq())
+#define BOARD_SPI_FREQ (stm32mp1_get_spi1_freq())
 
 unsigned long stm32mp1_get_hse_freq(void)
 {
@@ -574,16 +619,11 @@ unsigned long stm32mp1_get_pclk2_freq(void)
 	switch ((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIV_Msk) >> RCC_APB2DIVR_APB2DIV_Pos)
 	{
 	default:
-	case 0x00:
-		return stm32mp1_get_mlhclk_freq() / 1;
-	case 0x01:
-		return stm32mp1_get_mlhclk_freq() / 2;
-	case 0x02:
-		return stm32mp1_get_mlhclk_freq() / 4;
-	case 0x03:
-		return stm32mp1_get_mlhclk_freq() / 8;
-	case 0x04:
-		return stm32mp1_get_mlhclk_freq() / 16;
+	case 0x00: return stm32mp1_get_mlhclk_freq() / 1;
+	case 0x01: return stm32mp1_get_mlhclk_freq() / 2;
+	case 0x02: return stm32mp1_get_mlhclk_freq() / 4;
+	case 0x03: return stm32mp1_get_mlhclk_freq() / 8;
+	case 0x04: return stm32mp1_get_mlhclk_freq() / 16;
 	}
 }
 
@@ -601,16 +641,11 @@ unsigned long stm32mp1_get_pclk3_freq(void)
 	switch ((RCC->APB3DIVR & RCC_APB3DIVR_APB3DIV_Msk) >> RCC_APB3DIVR_APB3DIV_Pos)
 	{
 	default:
-	case 0x00:
-		return stm32mp1_get_mlhclk_freq() / 1;
-	case 0x01:
-		return stm32mp1_get_mlhclk_freq() / 2;
-	case 0x02:
-		return stm32mp1_get_mlhclk_freq() / 4;
-	case 0x03:
-		return stm32mp1_get_mlhclk_freq() / 8;
-	case 0x04:
-		return stm32mp1_get_mlhclk_freq() / 16;
+	case 0x00: return stm32mp1_get_mlhclk_freq() / 1;
+	case 0x01: return stm32mp1_get_mlhclk_freq() / 2;
+	case 0x02: return stm32mp1_get_mlhclk_freq() / 4;
+	case 0x03: return stm32mp1_get_mlhclk_freq() / 8;
+	case 0x04: return stm32mp1_get_mlhclk_freq() / 16;
 	}
 }
 
@@ -802,6 +837,7 @@ unsigned long stm32mp1_get_timg2_freq(void)
 	}
 }
 
+#if WITHSPIHW
 unsigned long stm32mp1_get_spi1_freq(void)
 {
 	//	0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
@@ -822,7 +858,9 @@ unsigned long stm32mp1_get_spi1_freq(void)
 	default: return stm32mp1_get_per_freq();
 	}
 }
+#endif /* WITHSPIHW */
 
+#if WITHADCHW
 unsigned long stm32mp1_get_adc_freq(void)
 {
 	//	0x0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
@@ -837,8 +875,19 @@ unsigned long stm32mp1_get_adc_freq(void)
 	default: return stm32mp1_get_per_freq();
 	}
 }
+#endif /* WITHADCHW */
+
+#if WITHSPIHW
+// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
+unsigned long hardware_get_spi_freq(void)
+{
+	return stm32mp1_get_spi1_freq();
+}
+
+#endif /* WITHSPIHW */
 
 #endif /* CPUSTYLE_STM32MP1 */
+
 
 // ATMega32 timers:
 // 8 bit timer0 - system ticks
@@ -6145,7 +6194,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI1_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 	const uint_fast32_t cfg1baudrate = (prei * SPI_CFG1_MBR_0) & SPI_CFG1_MBR_Msk;
 	const uint_fast32_t cfg1 = cfg1baudrate;// | (SPI_CFG1_CRCSIZE_0 * 7);
 	//PRINTF(PSTR("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u\n"), prei, value, spispeed);

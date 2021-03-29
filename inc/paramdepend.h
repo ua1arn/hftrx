@@ -241,8 +241,6 @@ extern "C" {
 
  		#elif CPUSTYLE_STM32H7XX
 
-			unsigned long stm32h7xx_get_spi1_2_3_freq(void);
-
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
 
@@ -255,9 +253,9 @@ extern "C" {
 			#define HSI48FREQ 48000000uL
 			#define CSIFREQ 4000000uL
 
-			#define BOARD_SPI1_FREQ (stm32h7xx_get_spi1_2_3_freq())
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
-		#else
+		#elif CPUSTYLE_STM32F7XX
 
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
@@ -272,6 +270,25 @@ extern "C" {
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
 			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+
+		#elif CPUSTYLE_STM32F4XX
+
+			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
+			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
+
+			#define PLLSAI_FREQ (REFINFREQ / REF1_DIV * SAIREF1_MUL)
+			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
+
+			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
+
+			/* частоты, подающиеся на периферию */
+			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+
 		#endif
 
 	#elif CPUSTYLE_STM32F30X
@@ -308,7 +325,7 @@ extern "C" {
 
 	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEED (BOARD_SPI1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */

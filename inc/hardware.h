@@ -590,6 +590,8 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v);	// вывод 12-битного
 
 void hardware_spi_io_delay(void);
 
+unsigned long hardware_get_spi_freq(void);	// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
+
 void cat2_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void cat2_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void cat2_disconnect(void);							/* вызывается из обработчика прерываний произошёл разрыв связи при работе по USB CDC */
