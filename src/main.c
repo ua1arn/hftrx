@@ -19633,10 +19633,6 @@ static void initialize2(void)
 
 	(void) mclearnvram;
 
-#if CPUSTYLE_XC7Z
-	xc7z_hardware_initialize();
-#endif /* CPUSTYLE_XC7Z */
-
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("initialize2() finished.\n"));
 #endif

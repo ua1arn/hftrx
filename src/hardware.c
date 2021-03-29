@@ -2930,18 +2930,20 @@ sysinit_mmu_initialize(void)
 
 #if CPUSTYLE_XC7Z
 
-XGpioPs xc7z_gpio;
 
 void xc7z_hardware_initialize(void)
 {
 	int Status;
 
+/*
+	static XGpioPs xc7z_gpio;
 	// GPIO init
 	XGpioPs_Config * ConfigPtr;
 	ConfigPtr = XGpioPs_LookupConfig(XPAR_XGPIOPS_0_DEVICE_ID);
 	Status = XGpioPs_CfgInitialize(& xc7z_gpio, ConfigPtr, ConfigPtr->BaseAddr);
 	if (Status != XST_SUCCESS)
 		PRINTF("PS GPIO init error\n");
+*/
 }
 
 /* Opcode exit is 0 all the time */
@@ -3347,6 +3349,7 @@ SystemInit(void)
 {
 #if CPUSTYLE_XC7Z & WITHISBOOTLOADER	// FSBL
 
+	xc7z_hardware_initialize();
 	ps7_init();
 
 #endif /* CPUSTYLE_XC7Z & WITHISBOOTLOADER */
@@ -3437,12 +3440,15 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 #elif CPUSTYLE_XC7Z
 
+// See also:
+//	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
+
 static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 {
-	* (volatile uint32_t *) 0xFFFFFF00 = startfunc;	// Invoke at SVC context
+	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
 	/* Generate an IT to core 1 */
-	//GIC_SendSGI(SGI8_IRQn, 0x01 << 1, 0x00);	// CPU1, filer=0
+	__SEV();
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
