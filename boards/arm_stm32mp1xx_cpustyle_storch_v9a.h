@@ -1026,7 +1026,7 @@
 		#define BOARD_GT911_INT_SET(v) do { if (v) GPIOA->BSRR = BSRR_S(BOARD_GT911_INT_PIN); else GPIOA->BSRR = BSRR_C(BOARD_GT911_INT_PIN); __DSB(); } while (0)
 
 		#define BOARD_GT911_RESET_INITIO_1() do { \
-			arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
+			arm_hardware_pioa_outputs2m(BOARD_GT911_INT_PIN, 1* BOARD_GT911_INT_PIN); \
 			arm_hardware_piod_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
 			 local_delay_ms(200);  \
 		} while (0)
