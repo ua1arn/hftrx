@@ -1012,7 +1012,13 @@
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
+		//	tsc interrupt XS26, pin 08
+		//	tsc/LCD reset, XS26, pin 22
+		//	tsc SCL: XS26, pin 01
+		//	tsc SDA: XS26, pin 02
+
 		void gt911_interrupt_handler(void);
+
 		#define BOARD_GT911_INT_PIN (1uL << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
 		#define BOARD_GT911_RESET_PIN (1uL << 4)	/* PD4 : tsc/LCD reset, XS26, pin 22 */
 
