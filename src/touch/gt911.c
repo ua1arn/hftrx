@@ -15,8 +15,8 @@ static uint_fast8_t gt911_addr = 0;
 	#define BOARD_GT911_RESET_PIN (1uL << 15)	/* P5_15 : reset */
 	#define BOARD_GT911_INT_PIN (1uL << 3)		/* P5_3 : interrupt */
 
-	#define BOARD_GT911_RESET_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_RESET_PIN); else R7S721_TARGET_PORT_S(5, BOARD_GT911_RESET_PIN); } while (0)
-	#define BOARD_GT911_INT_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_INT_PIN); else R7S721_TARGET_PORT_S(5, BOARD_GT911_INT_PIN); } while (0)
+	#define BOARD_GT911_RESET_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_RESET_PIN); else R7S721_TARGET_PORT_C(5, BOARD_GT911_RESET_PIN); } while (0)
+	#define BOARD_GT911_INT_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_INT_PIN); else R7S721_TARGET_PORT_C(5, BOARD_GT911_INT_PIN); } while (0)
 
 	#define BOARD_GT911_RESET_INITIO_1() do { \
 		arm_hardware_pio5_outputs(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN); \
