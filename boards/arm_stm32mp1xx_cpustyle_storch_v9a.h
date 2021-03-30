@@ -1010,6 +1010,35 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
+	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+
+		void gt911_interrupt_handler(void);
+		#define BOARD_GT911_INT_PIN (1uL << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
+		#define BOARD_GT911_RESET_PIN 0		/* PAxx : tsc interrupt XS26, pin 08 */
+
+		#define BOARD_GT911_RESET_SET(v) do { if (v) GPIOA->BSRR = BSRR_S(BOARD_GT911_RESET_PIN); else GPIOA->BSRR = BSRR_C(BOARD_GT911_RESET_PIN); __DSB(); } while (0)
+		#define BOARD_GT911_INT_SET(v) do { if (v) GPIOA->BSRR = BSRR_S(BOARD_GT911_INT_PIN); else GPIOA->BSRR = BSRR_C(BOARD_GT911_INT_PIN); __DSB(); } while (0)
+
+		#define BOARD_GT911_RESET_INITIO_1() do { \
+			arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
+			arm_hardware_pioa_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
+			 local_delay_ms(200);  \
+		} while (0)
+
+		#define BOARD_GT911_RESET_INITIO_2() do { \
+			arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
+			arm_hardware_pioa_updown(BOARD_GT911_INT_PIN, 0); \
+		} while (0)
+
+		#define BOARD_GT911_INT_CONNECT() do { \
+			arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
+			arm_hardware_pioa_updown(BOARD_GT911_INT_PIN, 0); \
+			arm_hardware_pioa_onchangeinterrupt(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+		} while (0)
+		//gt911_interrupt_handler
+
+	#endif
+
 	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
 	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
 	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf

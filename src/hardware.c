@@ -200,6 +200,12 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		//spool_encinterrupt2();	/* прерывание по изменению сигнала на входах от валкодера #2*/
 	}
 #endif /* WITHENCODER && ENCODER2_BITS */
+#if BOARD_GT911_INT_PIN
+	if ((pr & BOARD_GT911_INT_PIN) != 0)
+	{
+		gt911_interrupt_handler();	/* прерывание по изменению сигнала на входеь от тач */
+	}
+#endif
 }
 
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F */

@@ -9,35 +9,6 @@
 
 static uint_fast8_t gt911_addr = 0;
 
-/* TODO: вынести в конфигурационные файлы */
-#if CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V8
-
-	#define BOARD_GT911_RESET_PIN (1uL << 15)	/* P5_15 : reset */
-	#define BOARD_GT911_INT_PIN (1uL << 3)		/* P5_3 : interrupt */
-
-	#define BOARD_GT911_RESET_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_RESET_PIN); else R7S721_TARGET_PORT_C(5, BOARD_GT911_RESET_PIN); } while (0)
-	#define BOARD_GT911_INT_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_INT_PIN); else R7S721_TARGET_PORT_C(5, BOARD_GT911_INT_PIN); } while (0)
-
-	#define BOARD_GT911_RESET_INITIO_1() do { \
-		arm_hardware_pio5_outputs(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN); \
-		arm_hardware_pio5_outputs(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
-		/* local_delay_ms(200); */ \
-	} while (0)
-
-	#define BOARD_GT911_RESET_INITIO_2() do { \
-		arm_hardware_pio5_inputs(BOARD_GT911_INT_PIN); \
-	} while (0)
-
-	#define BOARD_GT911_INT_CONNECT() do { \
-		arm_hardware_pio5_onchangeinterrupt(BOARD_GT911_INT_PIN, 1, ARM_SYSTEM_PRIORITY, gt911_interrupt_handler);	/* P5_3 interrupt, rising edge sensitive */ \
-	} while (0)
-
-#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7
-
-	#define BOARD_GT911_INT_PIN (1uL << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
-
-#endif
-
 static void gt911_io_initialize(void)
 {
 	BOARD_GT911_RESET_INITIO_1();	// 1-st stage init io (int pin pull up)
@@ -57,7 +28,7 @@ static void gt911_io_initialize(void)
 
 static volatile uint_fast8_t tsc_int = 0;
 
-static void
+void
 gt911_interrupt_handler(void)
 {
 	tsc_int = 1;
