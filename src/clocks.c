@@ -5831,7 +5831,7 @@ sysinit_pll_cache_initialize(void)
 		// PLL только в bootloader.
 		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
 		stm32mp1_pll_initialize();
-	#endif
+	#endif /* WITHISBOOTLOADER */
 
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
@@ -5841,7 +5841,7 @@ sysinit_pll_cache_initialize(void)
 		// PLL только в bootloader.
 		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
 		//xc7z1_pll_initialize();
-	#endif
+	#endif /* WITHISBOOTLOADER */
 
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH

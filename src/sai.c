@@ -3594,7 +3594,6 @@ static const codechw_t fpgaspectrumhw_sai2 =
 
 #endif /* CPUSTYLE_STM32F */
 
-
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHCPUDACHW
@@ -3645,7 +3644,7 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v)
 
 static const codechw_t audiocodechw_dummy =
 {
-	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
@@ -3656,7 +3655,7 @@ static const codechw_t audiocodechw_dummy =
 
 static const codechw_t fpgaiqhw_dummy =
 {
-	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
@@ -3667,7 +3666,7 @@ static const codechw_t fpgaiqhw_dummy =
 
 static const codechw_t fpgaspectrumhw_dummy =
 {
-	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
@@ -3677,7 +3676,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 };
 
 
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER || ! WITHINTEGRATEDDSP
 static const codechw_t * const channels [] =
 {
 	& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
@@ -3757,9 +3756,13 @@ static const codechw_t * const channels [] =
 		& fpgaspectrumhw_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
-#endif
+#else
+	static const codechw_t * const channels [] =
+	{
+		& fpgaiqhw_dummy,					// Интерфейс к IF кодеку/FPGA
+	};
 
-#if WITHINTEGRATEDDSP
+#endif
 
 void hardware_channels_initialize(void)
 {
@@ -3788,14 +3791,3 @@ void hardware_channels_enable(void)
 		p->enable_tx(1);
 	}
 }
-#else /* WITHINTEGRATEDDSP */
-
-void hardware_channels_initialize(void)
-{
-}
-
-void hardware_channels_enable(void)
-{
-}
-
-#endif /* WITHINTEGRATEDDSP */

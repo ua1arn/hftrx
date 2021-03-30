@@ -17,6 +17,11 @@
 #include "gpio.h"
 #include "spi.h"
 
+
+#if WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721
+	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
+#endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
+
 /* 
 	Машинно-независимый обработчик прерываний.
 	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки

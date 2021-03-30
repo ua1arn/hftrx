@@ -2328,10 +2328,6 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-#if WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721
-	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
-#endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
-
 
 #if (DIM_X < 480 || DIM_Y < 272) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
 	#undef WITHTOUCHGUI									// для функционирования touch GUI
