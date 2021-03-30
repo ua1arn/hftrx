@@ -144,7 +144,7 @@
 	#error WITHRFSG now not supported
 #endif /* WITHRFSG */
 
-#define NUMLPFADJ 8	/* Коррекция мощности по ФНЧ передачика - количество ФНЧ. */
+#define NUMLPFADJ 16	/* Коррекция мощности по ФНЧ передачика - количество ФНЧ. */
 
 #if WITHTOUCHGUI
 static uint_fast8_t keyboard_redirect = 0;	// перенаправление кодов кнопок в менеджер gui
@@ -7922,7 +7922,7 @@ getactualdownpower(void)
 
 #if WITHTX
 
-/* возвраящам 0..100 для указанного ФНЧ передатчика */
+/* возвращаем 0..100 для кода на разъеме ACC */
 static uint_fast8_t
 getbandf2adjust(uint_fast8_t lpfno)
 {
@@ -9326,11 +9326,11 @@ updateboard(
 		#if WITHNOTXDACCONTROL
 			/* мощность регулируется умножнением выходных значений в потоке к FPGA / IF CODEC */
 			// 0..10000
-			board_set_dacscale(getbandf2adjust(bandf2hint) * (unsigned long) gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
+			board_set_dacscale(getbandf2adjust(bandf3hint) * (unsigned long) gdacscale * (unsigned long) (getactualpower() - WITHPOWERTRIMMIN) / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN));
 		#else /* CPUDAC */
 			/* мощность регулируется постоянны напряжением на ЦАП */
 			// 0..10000
-			board_set_dacscale(getbandf2adjust(bandf2hint) * (unsigned long) gdacscale);
+			board_set_dacscale(getbandf2adjust(bandf3hint) * (unsigned long) gdacscale);
 		#endif /* CPUDAC */
 			board_set_gdigiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
@@ -16377,7 +16377,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX LPF0 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("TX MW/LW"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		offsetof(struct nvmap, gbandf2adj [0]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -16388,7 +16388,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX LPF1 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("TX 160m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		offsetof(struct nvmap, gbandf2adj [1]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -16399,7 +16399,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX LPF2 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("TX 80m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		offsetof(struct nvmap, gbandf2adj [2]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -16410,7 +16410,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX LPF3 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("TX 40m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		offsetof(struct nvmap, gbandf2adj [3]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -16421,7 +16421,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX LPF4 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("TX 30m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		offsetof(struct nvmap, gbandf2adj [4]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -16432,7 +16432,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX LPF5 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("TX 20m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		offsetof(struct nvmap, gbandf2adj [5]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -16443,7 +16443,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX LPF6 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("TX 17m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		offsetof(struct nvmap, gbandf2adj [6]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
@@ -16454,13 +16454,101 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	// gbandf2adj [NUMLPFADJ]
 	{
-		QLABEL("TX LPF7 "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		QLABEL("TX 15m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
 		ITEM_VALUE,
 		0, 100,
 		offsetof(struct nvmap, gbandf2adj [7]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
 		nvramoffs0,
 		NULL,
 		& gbandf2adj [7],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX 12m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [8]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [8],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX 10m  "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [9]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [9],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX 6m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [10]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [10],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX 2m   "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [11]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [11],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX 0.7m "), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [12]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [12],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX ACC13"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [13]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [13],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX ACC14"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [14]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [14],
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	// gbandf2adj [NUMLPFADJ]
+	{
+		QLABEL("TX ACC15"), 7, 0, 0,	ISTEP1,		/* Подстройка амплитуды сигнала с ЦАП передатчика */
+		ITEM_VALUE,
+		0, 100,
+		offsetof(struct nvmap, gbandf2adj [15]),	/* Амплитуда сигнала с ЦАП передатчика - 0..100% */
+		nvramoffs0,
+		NULL,
+		& gbandf2adj [15],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 
