@@ -203,7 +203,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 #if BOARD_GT911_INT_PIN
 	if ((pr & BOARD_GT911_INT_PIN) != 0)
 	{
-		gt911_interrupt_handler();	/* прерывание по изменению сигнала на входеь от тач */
+		gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
 	}
 #endif
 }
@@ -575,6 +575,12 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 			spool_nmeapps();
 		}
 	#endif /* WITHNMEA */
+	#if BOARD_GT911_INT_PIN
+		if ((state & BOARD_GT911_INT_PIN) != 0)
+		{
+			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif
 	}
 
 #elif CPUSTYLE_AT91SAM7S
@@ -602,6 +608,12 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 			spool_nmeapps();
 		}
 	#endif /* WITHNMEA */
+	#if BOARD_GT911_INT_PIN
+		if ((state & BOARD_GT911_INT_PIN) != 0)
+		{
+			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif
 	}
 
 #elif CPUSTYLE_ATMEGA
