@@ -28,6 +28,48 @@
 #include "src/gui/gui_structs.h"
 #include "src/gui/gui_settings.h"
 
+enc2step_t enc2step [] = {
+	{ 100, "100 Hz", },
+	{ 500, "500 Hz", },
+};
+
+struct gui_nvram_t gui_nvram;
+static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
+static menu_by_name_t menu_uif;
+
+enum { enc2step_vals = ARRAY_SIZE(enc2step) };
+
+enum {
+	enc2step_default = 1,
+	micprofile_default = UINT8_MAX,
+};
+
+void gui_encoder2_menu (enc2_menu_t * enc2_menu)
+{
+	memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
+	gui_enc2_menu.updated = 1;
+}
+
+void load_settings(void)
+{
+	hamradio_load_gui_settings(& gui_nvram);
+
+	if (gui_nvram.enc2step_pos == 255)
+		gui_nvram.enc2step_pos = enc2step_default;
+
+	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
+		hamradio_load_mic_profile(gui_nvram.micprofile, 1);
+	else
+		gui_nvram.micprofile = micprofile_default;
+}
+
+void save_settings(void)
+{
+	hamradio_save_gui_settings(& gui_nvram);
+}
+
+#if WITHGUISTYLE_COMMON				// версия GUI для разрешения 800х480
+
 static void gui_main_process(void);
 static void window_mode_process(void);
 static void window_af_process(void);
@@ -79,22 +121,6 @@ static window_t windows [] = {
 	{ WINDOW_GUI_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, 0, 0, 0, 0, "GUI settings",	 		 NON_VISIBLE, 0, 1, window_gui_settings_process, },
 };
 
-static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
-static menu_by_name_t menu_uif;
-
-enc2step_t enc2step [] = {
-	{ 100, "100 Hz", },
-	{ 500, "500 Hz", },
-};
-
-struct gui_nvram_t gui_nvram;
-
-enum { enc2step_vals = ARRAY_SIZE(enc2step) };
-
-enum {
-	enc2step_default = 1,
-};
-
 /* Возврат ссылки на окно */
 window_t * get_win(uint8_t window_id)
 {
@@ -105,19 +131,6 @@ window_t * get_win(uint8_t window_id)
 void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
-}
-
-void load_settings(void)
-{
-	hamradio_load_gui_settings(& gui_nvram);
-
-	if (gui_nvram.enc2step_pos == 255)
-		gui_nvram.enc2step_pos = enc2step_default;
-}
-
-void save_settings(void)
-{
-	hamradio_save_gui_settings(& gui_nvram);
 }
 
 // *********************************************************************************************************************************************************************
@@ -173,10 +186,7 @@ static void gui_main_process(void)
 		elements_state(win);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -639,10 +649,7 @@ static void window_memory_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -810,10 +817,7 @@ static void window_bands_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -889,14 +893,16 @@ static void window_options_process(void)
 			}
 		}
 
+#if ! (WITHSPECTRUMWF && WITHMENU)
+		button_t * btn_Display = find_gui_element(TYPE_BUTTON, win, "btn_Display");
+		btn_Display->state = DISABLED;
+#endif
+
 		hamradio_disable_keyboard_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -936,11 +942,13 @@ static void window_options_process(void)
 				open_window(win);
 				hamradio_enable_encoder2_redirect();
 			}
+#if WITHSPECTRUMWF && WITHMENU
 			else if (bh == btn_Display)
 			{
 				window_t * win = get_win(WINDOW_DISPLAY);
 				open_window(win);
 			}
+#endif /* WITHSPECTRUMWF && WITHMENU */
 		}
 		break;
 
@@ -954,6 +962,7 @@ static void window_options_process(void)
 
 static void window_display_process(void)
 {
+#if WITHSPECTRUMWF && WITHMENU
 	window_t * win = get_win(WINDOW_DISPLAY);
 	static display_var_t display_t;
 
@@ -1076,10 +1085,7 @@ static void window_display_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1203,6 +1209,7 @@ static void window_display_process(void)
 
 		display_t.change = 0;
 	}
+#endif /* WITHSPECTRUMWF && WITHMENU */
 }
 
 // *********************************************************************************************************************************************************************
@@ -1250,10 +1257,7 @@ static void window_utilites_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1339,10 +1343,7 @@ static void window_mode_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1453,10 +1454,7 @@ static void window_af_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1650,10 +1648,7 @@ static void window_freq_process (void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1820,10 +1815,7 @@ static void window_swrscan_process(void)
 		swr_scan_stop = 0;
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -1981,10 +1973,7 @@ static void window_tx_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2198,10 +2187,7 @@ static void window_tx_vox_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2336,10 +2322,7 @@ static void window_tx_power_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2432,10 +2415,7 @@ static void window_audiosettings_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2464,6 +2444,7 @@ static void window_audiosettings_process(void)
 				hamradio_set_gmoniflag(! hamradio_get_gmoniflag());
 				update = 1;
 			}
+#if WITHAFCODEC1HAVEPROC
 			else if (bh == btn_mic_eq)
 			{
 				hamradio_set_gmikeequalizer(! hamradio_get_gmikeequalizer());
@@ -2484,6 +2465,7 @@ static void window_audiosettings_process(void)
 				open_window(winMICpr);
 				return;
 			}
+#endif /* WITHAFCODEC1HAVEPROC */
 #if WITHREVERB
 			else if (bh == btn_reverb)
 			{
@@ -2522,11 +2504,29 @@ static void window_audiosettings_process(void)
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Monitor|%s"), bh->is_locked ? "enabled" : "disabled");
 
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_eq");						// MIC EQ on/off
+#if WITHAFCODEC1HAVEPROC
 		bh->is_locked = hamradio_get_gmikeequalizer() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("MIC EQ|%s"), bh->is_locked ? "ON" : "OFF");
+#else
+		bh->state = DISABLED;
+#endif /* WITHAFCODEC1HAVEPROC */
 
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_eq_settings");				// MIC EQ settings
+#if WITHAFCODEC1HAVEPROC
 		bh->state = hamradio_get_gmikeequalizer() ? CANCELLED : DISABLED;
+#else
+		bh->state = DISABLED;
+#endif /* WITHAFCODEC1HAVEPROC */
+
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_profiles");				// MIC profiles
+#if ! WITHAFCODEC1HAVEPROC
+		bh->state = DISABLED;
+#endif /* ! WITHAFCODEC1HAVEPROC */
+
+		bh = find_gui_element(TYPE_BUTTON, win, "btn_mic_settings");				// MIC settings
+#if ! WITHAFCODEC1HAVEPROC
+		bh->state = DISABLED;
+#endif /* ! WITHAFCODEC1HAVEPROC */
 	}
 }
 
@@ -2643,10 +2643,7 @@ static void window_ap_reverb_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2685,6 +2682,7 @@ static void window_ap_reverb_process(void)
 
 static void window_ap_mic_eq_process(void)
 {
+#if WITHAFCODEC1HAVEPROC
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	window_t * win = get_win(WINDOW_AP_MIC_EQ);
 
@@ -2791,10 +2789,7 @@ static void window_ap_mic_eq_process(void)
 		mid_y = win->y1 + sl->y + sl->size / 2;						//todo: абсолютные координаты! переделать
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -2836,12 +2831,14 @@ static void window_ap_mic_eq_process(void)
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
 	}
+#endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************
 
 static void window_ap_mic_process(void)
 {
+#if WITHAFCODEC1HAVEPROC
 	window_t * win = get_win(WINDOW_AP_MIC_SETT);
 
 	static slider_t * sl_micLevel = NULL, * sl_micClip = NULL, * sl_micAGC = NULL;
@@ -2997,10 +2994,7 @@ static void window_ap_mic_process(void)
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3057,12 +3051,14 @@ static void window_ap_mic_process(void)
 
 		break;
 	}
+#endif /* WITHAFCODEC1HAVEPROC */
 }
 
 // *********************************************************************************************************************************************************************
 
 static void window_ap_mic_prof_process(void)
 {
+#if WITHAFCODEC1HAVEPROC
 	window_t * win = get_win(WINDOW_AP_MIC_PROF);
 
 	if (win->first_call)
@@ -3075,6 +3071,117 @@ static void window_ap_mic_prof_process(void)
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_1", "", 0, },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_2", "", 1, },
 			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_AP_MIC_PROF, 	NON_VISIBLE, INT32_MAX, "btn_mic_profile_3", "", 2, },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		x = col1_int;
+		y = row1_int;
+
+		uint_fast8_t i, r;
+		for (i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		{
+			button_t * bh = & win->bh_ptr [i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->visible = VISIBLE;
+
+			x = x + interval + bh->w;
+			if (r >= row_count)
+			{
+				r = 0;
+				x = col1_int;
+				y = y + bh->h + interval;
+			}
+			uint_fast8_t cell_saved = hamradio_load_mic_profile(i, 0);
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|%s"), i + 1, cell_saved ? "saved" : "clean");
+			bh->payload = cell_saved;
+
+			if (gui_nvram.micprofile == i && bh->payload)
+				bh->is_locked = BUTTON_LOCKED;
+		}
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			uint_fast8_t profile_id = bh->index;
+			if (bh->payload)
+			{
+				hamradio_load_mic_profile(profile_id, 1);
+				gui_nvram.micprofile = profile_id;
+				save_settings();
+				close_window(DONT_OPEN_PARENT_WINDOW);
+				footer_buttons_state(CANCELLED);
+				return;
+			}
+		}
+		else if (IS_BUTTON_LONG_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			uint_fast8_t profile_id = bh->index;
+			if (bh->payload)
+			{
+				hamradio_clean_mic_profile(profile_id);
+				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|clean"), profile_id + 1);
+				bh->payload = 0;
+				if (gui_nvram.micprofile == profile_id)
+				{
+					gui_nvram.micprofile = micprofile_default;
+					save_settings();
+					bh->is_locked = BUTTON_NON_LOCKED;
+				}
+			}
+			else
+			{
+				hamradio_save_mic_profile(profile_id);
+				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("%d|saved"), profile_id + 1);
+				bh->payload = 1;
+			}
+		}
+		break;
+
+	default:
+
+		break;
+	}
+#endif /* WITHAFCODEC1HAVEPROC */
+}
+
+// *********************************************************************************************************************************************************************
+
+
+
+// *********************************************************************************************************************************************************************
+
+static void window_receive_process(void)
+{
+	window_t * win = get_win(WINDOW_RECEIVE);
+	uint_fast8_t update = 0;
+
+	if (win->first_call)
+	{
+		uint_fast16_t x = 0, y = 0;
+		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
+		win->first_call = 0;
+		update = 1;
+
+		static const button_t buttons [] = {
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_att",     "", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AGC", 	 "", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_mode", 	 "Mode", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_preamp",  "", },
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AF",  	 "AF|filter", },
+
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3099,49 +3206,651 @@ static void window_ap_mic_prof_process(void)
 				x = col1_int;
 				y = y + bh->h + interval;
 			}
-			uint_fast8_t cell_saved = hamradio_load_mic_profile(i, 0);
-			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|%s"), i + 1, cell_saved ? "saved" : "empty");
-			bh->payload = cell_saved;
 		}
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			uint_fast8_t profile_id = bh->index;
-			if (bh->payload)
+			button_t * btn_att = find_gui_element(TYPE_BUTTON, win, "btn_att");
+			button_t * btn_preamp = find_gui_element(TYPE_BUTTON, win, "btn_preamp");
+			button_t * btn_AF = find_gui_element(TYPE_BUTTON, win, "btn_AF");
+			button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
+			button_t * btn_mode = find_gui_element(TYPE_BUTTON, win, "btn_mode");
+
+			if (bh == btn_att)
 			{
-				hamradio_load_mic_profile(profile_id, 1);
-				close_window(DONT_OPEN_PARENT_WINDOW);
-				footer_buttons_state(CANCELLED);
-				return;
+				hamradio_change_att();
+			}
+			else if (bh == btn_preamp)
+			{
+				hamradio_change_preamp();
+			}
+			else if (bh == btn_AF)
+			{
+				window_t * win = get_win(WINDOW_AF);
+				open_window(win);
+			}
+			else if (bh == btn_AGC)
+			{
+				btn_AGC->payload ? hamradio_set_agc_slow() : hamradio_set_agc_fast();
+				btn_AGC->payload = hamradio_get_agc_type();
+			}
+			else if (bh == btn_mode)
+			{
+				window_t * win = get_win(WINDOW_MODES);
+				open_window(win);
 			}
 		}
-		else if (IS_BUTTON_LONG_PRESS)
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		update = 1;
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (update)
+	{
+		button_t * btn_att = find_gui_element(TYPE_BUTTON, win, "btn_att");
+		const char * a = remove_start_line_spaces(hamradio_get_att_value());
+		local_snprintf_P(btn_att->text, ARRAY_SIZE(btn_att->text), PSTR("Att|%s"), a == NULL ? "off" : a);
+
+		button_t * btn_preamp = find_gui_element(TYPE_BUTTON, win, "btn_preamp");
+		const char * p = remove_start_line_spaces(hamradio_get_preamp_value());
+		local_snprintf_P(btn_preamp->text, ARRAY_SIZE(btn_preamp->text), PSTR("Preamp|%s"), p == NULL ? "off" : "on");
+
+		button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
+		local_snprintf_P(btn_AGC->text, ARRAY_SIZE(btn_AGC->text), PSTR("AGC|%s"), btn_AGC->payload ? "fast" : "slow");
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
+static void window_notch_process(void)
+{
+	window_t * win = get_win(WINDOW_NOTCH);
+	static notch_var_t notch;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		uint_fast8_t interval = 50, col1_int = 20;
+		notch.change = 0;
+		notch.updated = 1;
+
+		static const button_t buttons [] = {
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_freq-",  "-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_freq+",  "+", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_width-", "-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_width+", "+", },
+			{ 0, 0, 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 0,  "btn_Auto",   "Auto", },
+			{ 0, 0, 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_Manual", "Manual", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		static const label_t labels [] = {
+			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_freq",  "Freq:  *******",  FONT_MEDIUM, COLORMAIN_YELLOW, },
+			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_width", "Width: *******",  FONT_MEDIUM, COLORMAIN_WHITE,  },
+			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_type",  "Type: ",  		FONT_MEDIUM, COLORMAIN_WHITE,  },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
+		label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
+		label_t * lbl_type = find_gui_element(TYPE_LABEL, win, "lbl_type");
+
+		lbl_freq->x = col1_int;
+		lbl_freq->y = interval;
+		lbl_freq->visible = VISIBLE;
+
+		lbl_width->x = lbl_freq->x;
+		lbl_width->y = lbl_freq->y + interval;
+		lbl_width->visible = VISIBLE;
+
+		lbl_type->x = lbl_width->x;
+		lbl_type->y = lbl_width->y + interval;
+		lbl_type->visible = VISIBLE;
+
+		button_t * btn_freqm = find_gui_element(TYPE_BUTTON, win, "btn_freq-");
+		button_t * btn_freqp = find_gui_element(TYPE_BUTTON, win, "btn_freq+");
+		button_t * btn_widthm = find_gui_element(TYPE_BUTTON, win, "btn_width-");
+		button_t * btn_widthp = find_gui_element(TYPE_BUTTON, win, "btn_width+");
+		button_t * btn_Auto = find_gui_element(TYPE_BUTTON, win, "btn_Auto");
+		button_t * btn_Manual = find_gui_element(TYPE_BUTTON, win, "btn_Manual");
+
+		uint_fast16_t x = lbl_freq->x + get_label_width(lbl_freq);
+		uint_fast16_t y = lbl_freq->y + get_label_height(lbl_freq) / 2 - btn_freqm->h / 2;
+
+		btn_freqm->x1 = x;
+		btn_freqm->y1 = y;
+		btn_freqm->visible = VISIBLE;
+
+		btn_freqp->x1 = btn_freqm->x1 + btn_freqm->w + 10;
+		btn_freqp->y1 = y;
+		btn_freqp->visible = VISIBLE;
+
+		btn_widthm->x1 = btn_freqm->x1;
+		btn_widthm->y1 = btn_freqm->y1 + interval;
+		btn_widthm->visible = VISIBLE;
+
+		btn_widthp->x1 = btn_freqp->x1;
+		btn_widthp->y1 = btn_widthm->y1;
+		btn_widthp->visible = VISIBLE;
+
+		btn_Auto->x1 = lbl_type->x + get_label_width(lbl_type);
+		btn_Auto->y1 = lbl_type->y + get_label_height(lbl_type) / 2 - btn_Auto->h / 2;
+		btn_Auto->visible = VISIBLE;
+
+		btn_Manual->x1 = btn_Auto->x1 + btn_Auto->w + 10;
+		btn_Manual->y1 = btn_Auto->y1;
+		btn_Manual->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			uint_fast8_t profile_id = bh->index;
-			if (bh->payload)
+			button_t * btn_freqm = find_gui_element(TYPE_BUTTON, win, "btn_freq-");
+			button_t * btn_freqp = find_gui_element(TYPE_BUTTON, win, "btn_freq+");
+			button_t * btn_widthm = find_gui_element(TYPE_BUTTON, win, "btn_width-");
+			button_t * btn_widthp = find_gui_element(TYPE_BUTTON, win, "btn_width+");
+			button_t * btn_Auto = find_gui_element(TYPE_BUTTON, win, "btn_Auto");
+			button_t * btn_Manual = find_gui_element(TYPE_BUTTON, win, "btn_Manual");
+
+			if (bh == btn_freqm || bh == btn_freqp)
 			{
-				hamradio_clean_mic_profile(profile_id);
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|empty"), profile_id + 1);
-				bh->payload = 0;
+				notch.select = TYPE_NOTCH_FREQ;
+				notch.change = bh->payload;
+				notch.updated = 1;
 			}
-			else
+			else if (bh == btn_widthm || bh == btn_widthp)
 			{
-				hamradio_save_mic_profile(profile_id);
-				local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), PSTR("Profile %d|saved"), profile_id + 1);
-				bh->payload = 1;
+				notch.select = TYPE_NOTCH_WIDTH;
+				notch.change = bh->payload;
+				notch.updated = 1;
 			}
+			else if (bh == btn_Manual || bh == btn_Auto)
+			{
+				hamradio_set_gnotchtype(bh->payload);
+				notch.change = 0;
+				notch.updated = 1;
+			}
+		}
+		else if (IS_LABEL_PRESS)
+		{
+			label_t * lh = (label_t *) ptr;
+			label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
+			label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
+
+			if (lh == lbl_freq)
+				notch.select = TYPE_NOTCH_FREQ;
+			else if (lh == lbl_width)
+				notch.select = TYPE_NOTCH_WIDTH;
+
+			notch.change = 0;
+			notch.updated = 1;
+		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		notch.change = action;
+		notch.updated = 1;
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		notch.change = 0;
+		notch.updated = 1;
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (notch.updated)
+	{
+		button_t * btn_Auto = find_gui_element(TYPE_BUTTON, win, "btn_Auto");
+		button_t * btn_Manual = find_gui_element(TYPE_BUTTON, win, "btn_Manual");
+		label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
+		label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
+
+		notch.updated = 0;
+
+		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
+			win->lh_ptr [i].color = COLORMAIN_WHITE;
+
+		ASSERT(notch.select < win->lh_count);
+		win->lh_ptr [notch.select].color = COLORMAIN_YELLOW;
+
+		uint_fast8_t type = hamradio_get_gnotchtype();
+		btn_Auto->is_locked = type == BOARD_NOTCH_AUTO ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		btn_Manual->is_locked = type == BOARD_NOTCH_MANUAL ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+
+		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("Freq:%5d Hz"), hamradio_notch_freq(notch.select == TYPE_NOTCH_FREQ ? notch.change : 0));
+		local_snprintf_P(lbl_width->text, ARRAY_SIZE(lbl_width->text), PSTR("Width:%4d Hz"), hamradio_notch_width(notch.select == TYPE_NOTCH_WIDTH ? notch.change : 0));
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
+static void window_gui_settings_process(void)
+{
+	window_t * win = get_win(WINDOW_GUI_SETTINGS);
+	uint_fast8_t update = 0;
+
+	if (win->first_call)
+	{
+		uint_fast16_t x = 0, y = 0;
+		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		win->first_call = 0;
+
+		static const button_t buttons [] = {
+			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step", "", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		x = col1_int;
+		y = row1_int;
+
+		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
+		{
+			button_t * bh = & win->bh_ptr [i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->visible = VISIBLE;
+
+			x = x + interval + bh->w;
+			if (r >= row_count)
+			{
+				r = 0;
+				x = col1_int;
+				y = y + bh->h + interval;
+			}
+		}
+
+		update = 1;
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
+
+			if (bh == btn_enc2_step)
+			{
+				gui_nvram.enc2step_pos = (gui_nvram.enc2step_pos + 1 ) % enc2step_vals;
+				save_settings();
+				update = 1;
+			}
+		}
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+		button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
+		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), PSTR("Enc2 step|%s"), enc2step [gui_nvram.enc2step_pos].label);
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
+void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
+{
+	window_t * win = get_win(WINDOW_UIF);
+	if (win->state == NON_VISIBLE)
+	{
+		close_window(DONT_OPEN_PARENT_WINDOW);
+		open_window(win);
+		footer_buttons_state(DISABLED, NULL);
+		strcpy(menu_uif.name, name);
+		menu_uif.menupos = menupos;
+		menu_uif.exitkey = exitkey;
+		hamradio_enable_encoder2_redirect();
+	}
+	else if (win->state == VISIBLE)
+	{
+		close_window(DONT_OPEN_PARENT_WINDOW);
+		footer_buttons_state(CANCELLED);
+		hamradio_disable_encoder2_redirect();
+	}
+}
+
+static void window_uif_process(void)
+{
+	static label_t * lbl_uif_val;
+	static button_t * button_up, * button_down;
+	static uint_fast16_t window_center_x;
+	static uint_fast8_t reinit = 0;
+	window_t * win = get_win(WINDOW_UIF);
+	int_fast8_t rotate = 0;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		reinit = 1;
+		static const uint_fast8_t win_width = 170;
+
+		static const button_t buttons [] = {
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, -1, "btn_UIF-", "-", },
+			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, 1, "btn_UIF+",  "+", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		static const label_t labels [] = {
+			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", FONT_LARGE, COLORMAIN_WHITE, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		label_t * lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
+		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, window_title_height + get_label_height(lbl_uif_val) * 4);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			put_to_wm_queue(win, WM_MESSAGE_ENC2_ROTATE, bh->payload);
+		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		rotate = action;
+		break;
+
+	case WM_MESSAGE_KEYB_CODE:
+
+		if (action == menu_uif.exitkey)
+		{
+			hamradio_disable_keyboard_redirect();
+			close_window(DONT_OPEN_PARENT_WINDOW);
+			footer_buttons_state(CANCELLED);
+			return;
+		}
+
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (reinit)
+	{
+		reinit = 0;
+		uint_fast8_t col1_int = 20, row1_int = window_title_height + 20;
+		strcpy(win->name, menu_uif.name);
+
+		button_down = find_gui_element(TYPE_BUTTON, win, "btn_UIF-");
+		button_up = find_gui_element(TYPE_BUTTON, win, "btn_UIF+");
+		lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
+
+		const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
+		strcpy(lbl_uif_val->text, v);
+
+		button_down->x1 = col1_int;
+		button_down->y1 = row1_int;
+		button_down->visible = VISIBLE;
+
+		button_up->x1 = button_down->x1 + button_down->w + 30 + get_label_width(lbl_uif_val);
+		button_up->y1 = button_down->y1;
+		button_up->visible = VISIBLE;
+
+		window_center_x = (col1_int + button_up->x1 + button_up->w) / 2;
+
+		lbl_uif_val->x = window_center_x - get_label_width(lbl_uif_val) / 2;
+		lbl_uif_val->y = row1_int + button_up->h / 2 - get_label_height(lbl_uif_val) / 2;
+		lbl_uif_val->visible = VISIBLE;
+
+		hamradio_enable_keyboard_redirect();
+		return;
+	}
+
+	if (rotate != 0)
+	{
+		hamradio_gui_edit_menu_item(menu_uif.menupos, rotate);
+		reinit = 1;
+		gui_update();
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
+void gui_open_sys_menu(void)
+{
+	window_t * win = get_win(WINDOW_MENU);
+	static uint_fast8_t backup_parent = NO_PARENT_WINDOW;
+
+	if (check_for_parent_window() == NO_PARENT_WINDOW && win->parent_id != NO_PARENT_WINDOW)
+	{
+		backup_parent = win->parent_id;		// для возможности открытия окна напрямую временно "обнулить" parent_id
+		win->parent_id = NO_PARENT_WINDOW;
+		open_window(win);
+		footer_buttons_state(DISABLED, NULL);
+	}
+	else if (check_for_parent_window() == WINDOW_MENU && win->parent_id == NO_PARENT_WINDOW)
+	{
+		close_window(DONT_OPEN_PARENT_WINDOW);
+		footer_buttons_state(CANCELLED);
+		win->parent_id = backup_parent;
+		backup_parent = NO_PARENT_WINDOW;
+	}
+}
+
+// *********************************************************************************************************************************************************************
+#elif WITHGUISTYLE_MINI 				// версия GUI для разрешения 480x272
+
+static void minigui_main_process(void);
+static void minigui_main_menu_process(void);
+static void window_menu_process(void);
+
+static window_t windows [] = {
+//     window_id,   	parent_id, 		  align_mode,  x1, y1, w, h, title, is_show, first_call, is_close, onVisibleProcess
+	{ WINDOW_MAIN, 		NO_PARENT_WINDOW, ALIGN_LEFT_X,	0, 0, 0, 0, "", NON_VISIBLE, 0, 0, minigui_main_process, },
+	{ WINDOW_MAIN_MENU, WINDOW_MAIN,	  ALIGN_LEFT_X,	0, 0, 0, 0, "", NON_VISIBLE, 0, 1, minigui_main_menu_process, },
+	{ WINDOW_MENU,  	NO_PARENT_WINDOW, ALIGN_CENTER_X, 0, 0, 0, 0, "", NON_VISIBLE, 0, 1, window_menu_process, },
+};
+
+/* Возврат ссылки на окно */
+window_t * get_win(uint8_t window_id)
+{
+	ASSERT(window_id < WINDOWS_COUNT);
+	return & windows [window_id];
+}
+
+void gui_user_actions_after_close_window(void)
+{
+	hamradio_disable_encoder2_redirect();
+}
+
+// **********************************************************************************************************
+
+void minigui_main_process(void)
+{
+	window_t * win = get_win(WINDOW_MAIN);
+
+	if (win->first_call)
+	{
+		uint_fast8_t interval_btn = 2;
+		uint_fast16_t x = 0;
+		win->first_call = 0;
+
+//		touch_area_t ta [] = {
+//		//   x1, y1, w, 		 h, 		  state, 	 parent,      visible, payload,    name,  index
+//			{ 0, 0, WITHGUIMAXX, WITHGUIMAXY, CANCELLED, WINDOW_MAIN, VISIBLE, INT32_MAX, "ta_main", },
+//		};
+//		win->ta_count = ARRAY_SIZE(ta);
+//		uint_fast16_t ta_size = sizeof(ta);
+//		win->ta_ptr = malloc(ta_size);
+//		GUI_MEM_ASSERT(win->ta_ptr);
+//		memcpy(win->ta_ptr, ta, ta_size);
+
+		static const button_t buttons [] = {
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1", "1", },
+			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", "2", },
+			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_3", "3", },
+			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_4", "4", },
+			{ 0, 0, 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_settings", "Settings", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
+		{
+			button_t * bh = & win->bh_ptr [id];
+			bh->x1 = x;
+			bh->y1 = WITHGUIMAXY - bh->h - 1;
+			bh->visible = VISIBLE;
+			x = x + interval_btn + bh->w;
+		}
+
+		load_settings();
+		elements_state(win);
+
+		hamradio_set_gmutespkr(1);
+
+		return;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_settings = find_gui_element(TYPE_BUTTON, win, "btn_settings");
+
+			if (bh == btn_settings)
+			{
+				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
+				else
+				{
+					window_t * win = get_win(WINDOW_MENU);
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_settings);
+				}
+			}
+		}
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		//hamradio_set_freq(hamradio_get_freq_rx() + 10);
+		break;
+
+	default:
+
+		break;
+	}
+}
+
+// **********************************************************************************************************
+
+static void minigui_main_menu_process(void)
+{
+	window_t * win = get_win(WINDOW_MAIN_MENU);
+
+	if (win->first_call)
+	{
+		uint_fast8_t interval_btn = 3;
+		uint_fast16_t x = 0;
+		win->first_call = 0;
+
+		static const button_t buttons [] = {
+		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_1", "1", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_2", "2", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_3", "3", },
+			{ 0, 0, 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_4", "4", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
+		{
+			button_t * bh = & win->bh_ptr [id];
+			bh->x1 = x;
+			bh->y1 = WITHGUIMAXY - bh->h - 1;
+			bh->visible = VISIBLE;
+			x = x + interval_btn + bh->w;
+		}
+
+		calculate_window_position(win, WINDOW_POSITION_FULLSCREEN);
+
+		return;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_AREA_TOUCHED)
+		{
+
 		}
 		break;
 
@@ -3151,12 +3860,23 @@ static void window_ap_mic_prof_process(void)
 	}
 }
 
-// *********************************************************************************************************************************************************************
+// **********************************************************************************************************
+
+void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
+{
+
+}
+
+void gui_open_sys_menu(void)
+{
+
+}
+
+#endif
 
 static void window_menu_process(void)
 {
 	static uint_fast8_t menu_is_scrolling = 0;
-	uint_fast8_t int_col2 = 180, int_col3 = 230, int_rows = 35, is_moving_label = 0;
 	static button_t * button_up = NULL, * button_down = NULL;
 	window_t * win = get_win(WINDOW_MENU);
 	int_fast8_t move_x = 0, move_y = 0, rotate = 0;
@@ -3164,6 +3884,19 @@ static void window_menu_process(void)
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level, enc2_code = KBD_CODE_MAX;
 	static menu_t menu [MENU_COUNT];
+	uint_fast8_t is_moving_label = 0;
+
+#if WITHGUISTYLE_COMMON
+	uint_fast8_t int_col2 = 180, int_col3 = 230, int_rows = 35;
+	#define MENU_FONT	FONT_LARGE
+	#define BUTTON_SIZE	40
+	#define WINDOW_SIZE	WINDOW_POSITION_MANUAL
+#elif WITHGUISTYLE_MINI
+	uint_fast8_t int_col2 = 150, int_col3 = 200, int_rows = 30;
+	#define MENU_FONT	FONT_MEDIUM
+	#define BUTTON_SIZE	30
+	#define WINDOW_SIZE	WINDOW_POSITION_FULLSCREEN
+#endif
 
 	if (win->first_call)
 	{
@@ -3176,8 +3909,8 @@ static void window_menu_process(void)
 		label_t * lh;
 
 		static const button_t buttons [] = {
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, -1, "btn_SysMenu-", "-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, 1, "btn_SysMenu+", "+", },
+			{ 0, 0, BUTTON_SIZE, BUTTON_SIZE, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, -1, "btn_SysMenu-", "-", },
+			{ 0, 0, BUTTON_SIZE, BUTTON_SIZE, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, 1, "btn_SysMenu+", "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3186,24 +3919,24 @@ static void window_menu_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 0, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 1, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 2, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 3, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 4, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", FONT_LARGE, COLORMAIN_WHITE, 5, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 0, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 1, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 2, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 3, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 4, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", FONT_LARGE, COLORMAIN_WHITE, 5, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 0, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 1, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 2, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 3, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 4, },
-			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", FONT_LARGE, COLORMAIN_WHITE, 5, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_group",  "", MENU_FONT, COLORMAIN_WHITE, 5, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 1, NON_VISIBLE, "lbl_params", "", MENU_FONT, COLORMAIN_WHITE, 5, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 0, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 1, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 2, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 3, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 4, },
+			{ 0, 0, WINDOW_MENU, CANCELLED, 0, NON_VISIBLE, "lbl_vals",   "", MENU_FONT, COLORMAIN_WHITE, 5, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -3271,7 +4004,8 @@ static void window_menu_process(void)
 			yn += int_rows;
 		}
 
-		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block, menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index) - 1;
+		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
+				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
 		xn += int_col2;
 		yn = row1_int;
 		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i ++)
@@ -3310,13 +4044,10 @@ static void window_menu_process(void)
 		ymax = lh->y + get_label_height(lh);
 
 		hamradio_enable_encoder2_redirect();
-		calculate_window_position(win, WINDOW_POSITION_MANUAL, xmax, ymax);
+		calculate_window_position(win, WINDOW_SIZE, xmax, ymax);
 	}
 
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
+	GET_FROM_WM_QUEUE
 	{
 	case WM_MESSAGE_ACTION:
 
@@ -3531,7 +4262,8 @@ static void window_menu_process(void)
 		else if (menu_label_touched)
 			menu [menu_level].selected_str = menu [menu_level].selected_label + menu [menu_level].add_id;
 
-		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block, menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index) - 1;
+		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
+				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
 
 		if (rotate > 0)
 		{
@@ -3601,554 +4333,5 @@ static void window_menu_process(void)
 	}
 }
 
-// *********************************************************************************************************************************************************************
 
-static void window_receive_process(void)
-{
-	window_t * win = get_win(WINDOW_RECEIVE);
-	uint_fast8_t update = 0;
-
-	if (win->first_call)
-	{
-		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
-		win->first_call = 0;
-		update = 1;
-
-		static const button_t buttons [] = {
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_att",     "", },
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AGC", 	 "", },
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_mode", 	 "Mode", },
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_preamp",  "", },
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AF",  	 "AF|filter", },
-
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		x = col1_int;
-		y = row1_int;
-
-		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = col1_int;
-				y = y + bh->h + interval;
-			}
-		}
-
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-	}
-
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_att = find_gui_element(TYPE_BUTTON, win, "btn_att");
-			button_t * btn_preamp = find_gui_element(TYPE_BUTTON, win, "btn_preamp");
-			button_t * btn_AF = find_gui_element(TYPE_BUTTON, win, "btn_AF");
-			button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
-			button_t * btn_mode = find_gui_element(TYPE_BUTTON, win, "btn_mode");
-
-			if (bh == btn_att)
-			{
-				hamradio_change_att();
-			}
-			else if (bh == btn_preamp)
-			{
-				hamradio_change_preamp();
-			}
-			else if (bh == btn_AF)
-			{
-				window_t * win = get_win(WINDOW_AF);
-				open_window(win);
-			}
-			else if (bh == btn_AGC)
-			{
-				btn_AGC->payload ? hamradio_set_agc_slow() : hamradio_set_agc_fast();
-				btn_AGC->payload = hamradio_get_agc_type();
-			}
-			else if (bh == btn_mode)
-			{
-				window_t * win = get_win(WINDOW_MODES);
-				open_window(win);
-			}
-		}
-		break;
-
-	case WM_MESSAGE_UPDATE:
-
-		update = 1;
-		break;
-
-	default:
-
-		break;
-	}
-
-	if (update)
-	{
-		button_t * btn_att = find_gui_element(TYPE_BUTTON, win, "btn_att");
-		const char * a = remove_start_line_spaces(hamradio_get_att_value());
-		local_snprintf_P(btn_att->text, ARRAY_SIZE(btn_att->text), PSTR("Att|%s"), a == NULL ? "off" : a);
-
-		button_t * btn_preamp = find_gui_element(TYPE_BUTTON, win, "btn_preamp");
-		const char * p = remove_start_line_spaces(hamradio_get_preamp_value());
-		local_snprintf_P(btn_preamp->text, ARRAY_SIZE(btn_preamp->text), PSTR("Preamp|%s"), p == NULL ? "off" : "on");
-
-		button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
-		local_snprintf_P(btn_AGC->text, ARRAY_SIZE(btn_AGC->text), PSTR("AGC|%s"), btn_AGC->payload ? "fast" : "slow");
-	}
-}
-
-// *********************************************************************************************************************************************************************
-
-static void window_notch_process(void)
-{
-	window_t * win = get_win(WINDOW_NOTCH);
-	static notch_var_t notch;
-
-	if (win->first_call)
-	{
-		win->first_call = 0;
-		uint_fast8_t interval = 50, col1_int = 20;
-		notch.change = 0;
-		notch.updated = 1;
-
-		static const button_t buttons [] = {
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_freq-",  "-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_freq+",  "+", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_width-", "-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_width+", "+", },
-			{ 0, 0, 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 0,  "btn_Auto",   "Auto", },
-			{ 0, 0, 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_Manual", "Manual", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels [] = {
-			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_freq",  "Freq:  *******",  FONT_MEDIUM, COLORMAIN_YELLOW, },
-			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_width", "Width: *******",  FONT_MEDIUM, COLORMAIN_WHITE,  },
-			{ 0, 0, WINDOW_NOTCH, CANCELLED, 0, NON_VISIBLE, "lbl_type",  "Type: ",  		FONT_MEDIUM, COLORMAIN_WHITE,  },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
-		label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
-		label_t * lbl_type = find_gui_element(TYPE_LABEL, win, "lbl_type");
-
-		lbl_freq->x = col1_int;
-		lbl_freq->y = interval;
-		lbl_freq->visible = VISIBLE;
-
-		lbl_width->x = lbl_freq->x;
-		lbl_width->y = lbl_freq->y + interval;
-		lbl_width->visible = VISIBLE;
-
-		lbl_type->x = lbl_width->x;
-		lbl_type->y = lbl_width->y + interval;
-		lbl_type->visible = VISIBLE;
-
-		button_t * btn_freqm = find_gui_element(TYPE_BUTTON, win, "btn_freq-");
-		button_t * btn_freqp = find_gui_element(TYPE_BUTTON, win, "btn_freq+");
-		button_t * btn_widthm = find_gui_element(TYPE_BUTTON, win, "btn_width-");
-		button_t * btn_widthp = find_gui_element(TYPE_BUTTON, win, "btn_width+");
-		button_t * btn_Auto = find_gui_element(TYPE_BUTTON, win, "btn_Auto");
-		button_t * btn_Manual = find_gui_element(TYPE_BUTTON, win, "btn_Manual");
-
-		uint_fast16_t x = lbl_freq->x + get_label_width(lbl_freq);
-		uint_fast16_t y = lbl_freq->y + get_label_height(lbl_freq) / 2 - btn_freqm->h / 2;
-
-		btn_freqm->x1 = x;
-		btn_freqm->y1 = y;
-		btn_freqm->visible = VISIBLE;
-
-		btn_freqp->x1 = btn_freqm->x1 + btn_freqm->w + 10;
-		btn_freqp->y1 = y;
-		btn_freqp->visible = VISIBLE;
-
-		btn_widthm->x1 = btn_freqm->x1;
-		btn_widthm->y1 = btn_freqm->y1 + interval;
-		btn_widthm->visible = VISIBLE;
-
-		btn_widthp->x1 = btn_freqp->x1;
-		btn_widthp->y1 = btn_widthm->y1;
-		btn_widthp->visible = VISIBLE;
-
-		btn_Auto->x1 = lbl_type->x + get_label_width(lbl_type);
-		btn_Auto->y1 = lbl_type->y + get_label_height(lbl_type) / 2 - btn_Auto->h / 2;
-		btn_Auto->visible = VISIBLE;
-
-		btn_Manual->x1 = btn_Auto->x1 + btn_Auto->w + 10;
-		btn_Manual->y1 = btn_Auto->y1;
-		btn_Manual->visible = VISIBLE;
-
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-	}
-
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_freqm = find_gui_element(TYPE_BUTTON, win, "btn_freq-");
-			button_t * btn_freqp = find_gui_element(TYPE_BUTTON, win, "btn_freq+");
-			button_t * btn_widthm = find_gui_element(TYPE_BUTTON, win, "btn_width-");
-			button_t * btn_widthp = find_gui_element(TYPE_BUTTON, win, "btn_width+");
-			button_t * btn_Auto = find_gui_element(TYPE_BUTTON, win, "btn_Auto");
-			button_t * btn_Manual = find_gui_element(TYPE_BUTTON, win, "btn_Manual");
-
-			if (bh == btn_freqm || bh == btn_freqp)
-			{
-				notch.select = TYPE_NOTCH_FREQ;
-				notch.change = bh->payload;
-				notch.updated = 1;
-			}
-			else if (bh == btn_widthm || bh == btn_widthp)
-			{
-				notch.select = TYPE_NOTCH_WIDTH;
-				notch.change = bh->payload;
-				notch.updated = 1;
-			}
-			else if (bh == btn_Manual || bh == btn_Auto)
-			{
-				hamradio_set_gnotchtype(bh->payload);
-				notch.change = 0;
-				notch.updated = 1;
-			}
-		}
-		else if (IS_LABEL_PRESS)
-		{
-			label_t * lh = (label_t *) ptr;
-			label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
-			label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
-
-			if (lh == lbl_freq)
-				notch.select = TYPE_NOTCH_FREQ;
-			else if (lh == lbl_width)
-				notch.select = TYPE_NOTCH_WIDTH;
-
-			notch.change = 0;
-			notch.updated = 1;
-		}
-		break;
-
-	case WM_MESSAGE_ENC2_ROTATE:
-
-		notch.change = action;
-		notch.updated = 1;
-		break;
-
-	case WM_MESSAGE_UPDATE:
-
-		notch.change = 0;
-		notch.updated = 1;
-		break;
-
-	default:
-
-		break;
-	}
-
-	if (notch.updated)
-	{
-		button_t * btn_Auto = find_gui_element(TYPE_BUTTON, win, "btn_Auto");
-		button_t * btn_Manual = find_gui_element(TYPE_BUTTON, win, "btn_Manual");
-		label_t * lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq");
-		label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
-
-		notch.updated = 0;
-
-		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
-			win->lh_ptr [i].color = COLORMAIN_WHITE;
-
-		ASSERT(notch.select < win->lh_count);
-		win->lh_ptr [notch.select].color = COLORMAIN_YELLOW;
-
-		uint_fast8_t type = hamradio_get_gnotchtype();
-		btn_Auto->is_locked = type == BOARD_NOTCH_AUTO ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-		btn_Manual->is_locked = type == BOARD_NOTCH_MANUAL ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
-
-		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("Freq:%5d Hz"), hamradio_notch_freq(notch.select == TYPE_NOTCH_FREQ ? notch.change : 0));
-		local_snprintf_P(lbl_width->text, ARRAY_SIZE(lbl_width->text), PSTR("Width:%4d Hz"), hamradio_notch_width(notch.select == TYPE_NOTCH_WIDTH ? notch.change : 0));
-	}
-}
-
-// *********************************************************************************************************************************************************************
-
-static void window_gui_settings_process(void)
-{
-	window_t * win = get_win(WINDOW_GUI_SETTINGS);
-	uint_fast8_t update = 0;
-
-	if (win->first_call)
-	{
-		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
-		win->first_call = 0;
-
-		static const button_t buttons [] = {
-			{ 0, 0, 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step", "", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		x = col1_int;
-		y = row1_int;
-
-		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
-		{
-			button_t * bh = & win->bh_ptr [i];
-			bh->x1 = x;
-			bh->y1 = y;
-			bh->visible = VISIBLE;
-
-			x = x + interval + bh->w;
-			if (r >= row_count)
-			{
-				r = 0;
-				x = col1_int;
-				y = y + bh->h + interval;
-			}
-		}
-
-		update = 1;
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-	}
-
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
-
-			if (bh == btn_enc2_step)
-			{
-				gui_nvram.enc2step_pos = (gui_nvram.enc2step_pos + 1 ) % enc2step_vals;
-				save_settings();
-				update = 1;
-			}
-		}
-		break;
-
-	default:
-
-		break;
-	}
-
-	if (update)
-	{
-		update = 0;
-		button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
-		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), PSTR("Enc2 step|%s"), enc2step [gui_nvram.enc2step_pos].label);
-	}
-}
-
-// *********************************************************************************************************************************************************************
-
-void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
-{
-	window_t * win = get_win(WINDOW_UIF);
-	if (win->state == NON_VISIBLE)
-	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
-		open_window(win);
-		footer_buttons_state(DISABLED, NULL);
-		strcpy(menu_uif.name, name);
-		menu_uif.menupos = menupos;
-		menu_uif.exitkey = exitkey;
-		hamradio_enable_encoder2_redirect();
-	}
-	else if (win->state == VISIBLE)
-	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
-		footer_buttons_state(CANCELLED);
-		hamradio_disable_encoder2_redirect();
-	}
-}
-
-static void window_uif_process(void)
-{
-	static label_t * lbl_uif_val;
-	static button_t * button_up, * button_down;
-	static uint_fast16_t window_center_x;
-	static uint_fast8_t reinit = 0;
-	window_t * win = get_win(WINDOW_UIF);
-	int_fast8_t rotate = 0;
-
-	if (win->first_call)
-	{
-		win->first_call = 0;
-		reinit = 1;
-		static const uint_fast8_t win_width = 170;
-
-		static const button_t buttons [] = {
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, -1, "btn_UIF-", "-", },
-			{ 0, 0, 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, 1, "btn_UIF+",  "+", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels [] = {
-			{ 0, 0,	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", FONT_LARGE, COLORMAIN_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		label_t * lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
-		calculate_window_position(win, WINDOW_POSITION_MANUAL, win_width, window_title_height + get_label_height(lbl_uif_val) * 4);
-	}
-
-	uint_fast8_t type;
-	int_fast8_t action;
-	uintptr_t ptr;
-	switch (get_from_wm_queue(win, & type, & ptr, & action))
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			button_t * bh = (button_t *) ptr;
-			put_to_wm_queue(win, WM_MESSAGE_ENC2_ROTATE, bh->payload);
-		}
-		break;
-
-	case WM_MESSAGE_ENC2_ROTATE:
-
-		rotate = action;
-		break;
-
-	case WM_MESSAGE_KEYB_CODE:
-
-		if (action == menu_uif.exitkey)
-		{
-			hamradio_disable_keyboard_redirect();
-			close_window(DONT_OPEN_PARENT_WINDOW);
-			footer_buttons_state(CANCELLED);
-			return;
-		}
-
-		break;
-
-	default:
-
-		break;
-	}
-
-	if (reinit)
-	{
-		reinit = 0;
-		uint_fast8_t col1_int = 20, row1_int = window_title_height + 20;
-		strcpy(win->name, menu_uif.name);
-
-		button_down = find_gui_element(TYPE_BUTTON, win, "btn_UIF-");
-		button_up = find_gui_element(TYPE_BUTTON, win, "btn_UIF+");
-		lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
-
-		const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
-		strcpy(lbl_uif_val->text, v);
-
-		button_down->x1 = col1_int;
-		button_down->y1 = row1_int;
-		button_down->visible = VISIBLE;
-
-		button_up->x1 = button_down->x1 + button_down->w + 30 + get_label_width(lbl_uif_val);
-		button_up->y1 = button_down->y1;
-		button_up->visible = VISIBLE;
-
-		window_center_x = (col1_int + button_up->x1 + button_up->w) / 2;
-
-		lbl_uif_val->x = window_center_x - get_label_width(lbl_uif_val) / 2;
-		lbl_uif_val->y = row1_int + button_up->h / 2 - get_label_height(lbl_uif_val) / 2;
-		lbl_uif_val->visible = VISIBLE;
-
-		hamradio_enable_keyboard_redirect();
-		return;
-	}
-
-	if (rotate != 0)
-	{
-		hamradio_gui_edit_menu_item(menu_uif.menupos, rotate);
-		reinit = 1;
-		gui_update(NULL);
-	}
-}
-
-// *********************************************************************************************************************************************************************
-
-void gui_encoder2_menu (enc2_menu_t * enc2_menu)
-{
-	memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
-	gui_enc2_menu.updated = 1;
-}
-
-// *********************************************************************************************************************************************************************
-
-void gui_open_sys_menu(void)
-{
-	window_t * win = get_win(WINDOW_MENU);
-	static uint_fast8_t backup_parent = NO_PARENT_WINDOW;
-
-	if (check_for_parent_window() == NO_PARENT_WINDOW && win->parent_id != NO_PARENT_WINDOW)
-	{
-		backup_parent = win->parent_id;		// для возможности открытия окна напрямую временно "обнулить" parent_id
-		win->parent_id = NO_PARENT_WINDOW;
-		open_window(win);
-		footer_buttons_state(DISABLED, NULL);
-	}
-	else if (check_for_parent_window() == WINDOW_MENU && win->parent_id == NO_PARENT_WINDOW)
-	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
-		footer_buttons_state(CANCELLED);
-		win->parent_id = backup_parent;
-		backup_parent = NO_PARENT_WINDOW;
-	}
-}
-
-// *********************************************************************************************************************************************************************
-
-#endif /* WITHTOUCHGUI */
+#endif /* WITHTOUCHGUI && WITHGUISTYLE_COMMON */

@@ -68,7 +68,7 @@ dma_invalidate16rx(uintptr_t addr)
 
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
-static uintptr_t 
+static uintptr_t
 dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
@@ -88,7 +88,7 @@ dma_invalidate192rts(uintptr_t addr)
 }
 
 // Сейчас в эту память будем читать по DMA
-static uintptr_t 
+uintptr_t
 dma_invalidate32rx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
@@ -705,9 +705,9 @@ hardware_i2s2_slave_tx_initialize(void)		/* инициализация I2S2 */
 	PRINTF(PSTR("hardware_i2s2_slave_tx_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI2LPEN; // Подать тактирование
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN; // Подать тактирование
 	(void) RCC->MP_APB1LPENSETR;
 
 #elif CPUSTYLE_STM32H7XX
@@ -854,9 +854,9 @@ hardware_i2s3_slave_rx_initialize(void)		/* инициализация I2S3 STM3
 	PRINTF(PSTR("hardware_i2s3_slave_rx_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI3EN; // Подать тактирование
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI3EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI3LPEN; // Подать тактирование
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI3LPEN; // Подать тактирование
 	(void) RCC->MP_APB1LPENSETR;
 #elif CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI3EN; // Подать тактирование
@@ -893,9 +893,9 @@ hardware_i2s2_slave_fullduplex_initialize(void)
 	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_APB1ENSETR = RCC_MC_APB1ENSETR_SPI2EN; // Подать тактирование
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN; // Подать тактирование
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR = RCC_MC_APB1LPENSETR_SPI2LPEN; // Подать тактирование
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN; // Подать тактирование
 	(void) RCC->MP_APB1LPENSETR;
 
 #elif CPUSTYLE_STM32H7XX
@@ -1641,9 +1641,9 @@ static void hardware_sai1_master_fullduplex_initialize_v3d(void)		/* иници�
 	// Теперь настроим модуль SAI.
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI1EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SAI1LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SAI1LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -1766,9 +1766,9 @@ static void hardware_sai1_master_fullduplex_initialize(void)		/* инициал�
 	// Теперь настроим модуль SAI.
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI1EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SAI1LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SAI1LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -1891,9 +1891,9 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI1EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI1EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SAI1LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SAI1LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -2463,9 +2463,9 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI2EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MC_APB2LPENSETR_SA21LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SA21LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -2580,7 +2580,7 @@ static void hardware_sai2_master_fullduplex_initialize(void)		/* инициал�
 
 #if CPUSTYLE_STM32MP1
 	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MC_APB2ENSETR_SAI2EN; //подать тактирование
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
@@ -3568,6 +3568,17 @@ static const codechw_t fpgaspectrumhw_ssif2 =
 
 #elif CPUSTYLE_XC7Z
 
+static const codechw_t audiocodechw_xc7z =
+{
+	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	xc7z_dma_init_af_tx,
+	hardware_dummy_enable,
+	hardware_dummy_enable,
+	"ZYNQ 7000 audio codec"
+};
+
 #else
 	// other CPUs
 static const codechw_t fpgaspectrumhw_sai2 =
@@ -3582,7 +3593,6 @@ static const codechw_t fpgaspectrumhw_sai2 =
 };
 
 #endif /* CPUSTYLE_STM32F */
-
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -3634,7 +3644,7 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v)
 
 static const codechw_t audiocodechw_dummy =
 {
-	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
@@ -3645,7 +3655,7 @@ static const codechw_t audiocodechw_dummy =
 
 static const codechw_t fpgaiqhw_dummy =
 {
-	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
@@ -3656,7 +3666,7 @@ static const codechw_t fpgaiqhw_dummy =
 
 static const codechw_t fpgaspectrumhw_dummy =
 {
-	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
 	hardware_dummy_initialize,
@@ -3666,7 +3676,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 };
 
 
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER || ! WITHINTEGRATEDDSP
 static const codechw_t * const channels [] =
 {
 	& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
@@ -3726,16 +3736,16 @@ static const codechw_t * const channels [] =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_sai2_master_v3d,		// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_master_v3d,				// Интерфейс к IF кодеку/FPGA
-		//& fpgaspectrumhw_sai2,		// Интерфейс к FPGA - широкополосный канал (WFM)
+		& fpgacodechw_sai1_master_v3d,		// Интерфейс к IF кодеку/FPGA
+		//& fpgaspectrumhw_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
 #elif CPUSTYLE_XC7Z
 	static const codechw_t * const channels [] =
 	{
-		& audiocodechw_dummy,					// Интерфейс к НЧ кодеку
-		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
-		& fpgaspectrumhw_dummy,			// Интерфейс к FPGA - широкополосный канал (WFM)
+		& audiocodechw_xc7z,				// Интерфейс к НЧ кодеку
+		//& fpgaiqhw_dummy,					// Интерфейс к IF кодеку/FPGA
+		//& fpgaspectrumhw_dummy,				// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
 #elif WITHINTEGRATEDDSP
@@ -3746,9 +3756,13 @@ static const codechw_t * const channels [] =
 		& fpgaspectrumhw_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
-#endif
+#else
+	static const codechw_t * const channels [] =
+	{
+		& fpgaiqhw_dummy,					// Интерфейс к IF кодеку/FPGA
+	};
 
-#if WITHINTEGRATEDDSP
+#endif
 
 void hardware_channels_initialize(void)
 {
@@ -3777,14 +3791,3 @@ void hardware_channels_enable(void)
 		p->enable_tx(1);
 	}
 }
-#else /* WITHINTEGRATEDDSP */
-
-void hardware_channels_initialize(void)
-{
-}
-
-void hardware_channels_enable(void)
-{
-}
-
-#endif /* WITHINTEGRATEDDSP */

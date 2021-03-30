@@ -28,10 +28,12 @@
 #define DMA2D_AMTCR_DT_VALUE 255uL	/* 0..255 */
 #define DMA2D_AMTCR_DT_ENABLE 1uL	/* 0..1 */
 
-#define DMA2D_CR_LOM	(1u << 6)	/* documented but missing in headers. */
-
 #define MDMA_CH		MDMA_Channel0
 #define MDMA_DATA	(MDMA_Channel1->CSAR)	// регистр выделенного канала MDMA используется для хранения значения цвета. Переиферия не кэшируется.
+
+#ifndef DMA2D_CR_LOM
+	#define DMA2D_CR_LOM	(1u << 6)	/* documented but missing in headers. */
+#endif
 
 #define MDMA_CCR_PL_VALUE 0uL	// PL: priority 0..3: min..max
 
@@ -217,9 +219,9 @@ void arm_hardware_mdma_initialize(void)
 	//(void) RCC->MP_TZAHB6ENSETR;
 
 	/* SYSCFG clock enable */
-	RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+	RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
 	(void) RCC->MP_APB3ENSETR;
-	RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+	RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
 	(void) RCC->MP_APB3LPENSETR;
 	/*
 	 * Interconnect update : select master using the port 1.
@@ -2226,7 +2228,7 @@ COLORPIP_T getshadedcolor(
 
 	if (dot == COLORPIP_BLACK)
 	{
-		return TFTRGB565(alpha, alpha, alpha); // back gray
+		return TFTRGB(alpha, alpha, alpha); // back gray
 	}
 	else
 	{
@@ -2236,8 +2238,26 @@ COLORPIP_T getshadedcolor(
 		const uint_fast8_t b = ((dot >> 0) & 0x001f) * 8;	// result in 0..255
 
 		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
-		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
+		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
+
+#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
+
+	if (dot == COLORPIP_BLACK)
+	{
+		return TFTRGB(alpha, alpha, alpha); // back gray
+	}
+	else
+	{
+		// распаковка дисплейного представления
+		const uint_fast8_t r = ((dot >> 16) & 0x00FF) * 1;	// result in 0..255
+		const uint_fast8_t g = ((dot >> 0) & 0x00FF) * 1;	// result in 0..255
+		const uint_fast8_t b = ((dot >> 8) & 0x00FF) * 1;	// result in 0..255
+
+		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
+		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
+	}
+
 
 #elif LCDMODE_MAIN_ARGB888
 
@@ -2253,7 +2273,7 @@ COLORPIP_T getshadedcolor(
 		const uint_fast8_t b = ((dot >> 0) & 0x00FF) * 1;	// result in 0..255
 
 		const COLOR24_T c = color24_shaded(COLOR24(r, g, b), alpha);
-		return TFTRGB565((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
+		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
 

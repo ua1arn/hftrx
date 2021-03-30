@@ -13,18 +13,22 @@
 	//#define ARM_MATH_NEON 1
 
 	#include "BasicMathFunctions/BasicMathFunctions.c"
-	#include "CommonTables/CommonTables.c"
-	//#include "DistanceFunctions/DistanceFunctions.c"
-	//#include "MatrixFunctions/MatrixFunctions.c"
-	#include "SupportFunctions/SupportFunctions.c"
 	//#include "BayesFunctions/BayesFunctions.c"
+	#include "CommonTables/CommonTables.c"
 	#include "ComplexMathFunctions/ComplexMathFunctions.c"
+	//#include "ControllerFunctions/ControllerFunctions.c"
+
+	//#include "DistanceFunctions/DistanceFunctions.c"
 	#include "FastMathFunctions/FastMathFunctions.c"
+	#include "FilteringFunctions/FilteringFunctions.c"
+	//#include "InterpolationFunctions/InterpolationFunctions.c"
+	//#include "MatrixFunctions/MatrixFunctions.c"
+
+	//#include "QuaternionMathFunctions/QuaternionMathFunctions.c"
+	#include "StatisticsFunctions/StatisticsFunctions.c"
+	#include "SupportFunctions/SupportFunctions.c"
 	//#include "SVMFunctions/SVMFunctions.c"
 	#include "TransformFunctions/TransformFunctions.c"
-	//#include "ControllerFunctions/ControllerFunctions.c"
-	#include "FilteringFunctions/FilteringFunctions.c"
-	#include "StatisticsFunctions/StatisticsFunctions.c"
 
 #endif  /* WITHINTEGRATEDDSP */
 

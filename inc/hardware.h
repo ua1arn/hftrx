@@ -464,6 +464,12 @@ void cpu_initialize(void);
 void cpu_initdone(void);	// секция init больше не нужна
 uint_fast32_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
 
+void tickers_initialize(void);
+void spool_systimerbundle1(void);
+void spool_systimerbundle2(void);
+void spool_elkeybundle(void);
+void sysinit_pll_cache_initialize(void);	// PLL and caches inuitialize
+void hardware_adc_startonescan(void);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
@@ -590,6 +596,8 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v);	// вывод 12-битного
 
 void hardware_spi_io_delay(void);
 
+unsigned long hardware_get_spi_freq(void);	// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
+
 void cat2_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void cat2_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void cat2_disconnect(void);							/* вызывается из обработчика прерываний произошёл разрыв связи при работе по USB CDC */
@@ -706,7 +714,7 @@ void arm_hardware_dma2d_initialize(void);	// Graphic 2D engine
 void arm_hardware_mdma_initialize(void);	// Graphic 2D engine
 void arm_hardware_sdram_initialize(void);	// External memory region(s)
 
-void arm_hardware_ltdc_initialize(void);	// LCD-TFT Controller (LTDC) with framebuffer
+void arm_hardware_ltdc_initialize(const uintptr_t * frames);	// LCD-TFT Controller (LTDC) with framebuffer
 void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
@@ -719,6 +727,7 @@ uint_fast8_t usbd_cdc2_getrts(void);
 uint_fast8_t usbd_cdc2_getdtr(void);
 
 void AT91F_PIOA_IRQHandler(void);
+void AT91F_ADC_IRQHandler(void);
 
 void EXTI0_IRQHandler(void);
 void EXTI1_IRQHandler(void);
@@ -742,6 +751,41 @@ void EXTI15_10_IRQHandler(void);
 void SDIO_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
 void DMA2_Stream6_IRQHandler(void);
+
+void SysTick_Handler(void);
+void Reset_CPUn_Handler(void);
+
+void ADC_IRQHandler(void);
+void ADC1_IRQHandler(void);
+void ADC2_IRQHandler(void);
+void ADC3_IRQHandler(void);
+void ADC1_2_IRQHandler(void);
+void ADC1_COMP_IRQHandler(void);
+void r7s721_adi_irq_handler(void);
+void TIM3_IRQHandler(void);
+void TIM5_IRQHandler(void);
+
+
+/* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
+typedef struct adcinmap_tag
+{
+	uint_fast8_t ch;	// номер канала в периферийном блоке процессора
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	ADC_TypeDef * adc;	// периферийный блок процессора
+	ADC_Common_TypeDef * adccommon;
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+	uint_fast8_t thold_uS01;	// минимальное время выборки для данного канала - десятые доли микросекунды
+} adcinmap_t;
+
+const adcinmap_t * getadcmap(uint_fast8_t adci);
+
+void spool_adcdonebundle(void);
+void adcdones_initialize(void);
+uint_fast8_t isadchw(uint_fast8_t adci); // Проверка что индекс входа АЦП относится ко встроенной периферии процессора
+
+
+void cpump_initialize(void);
+void arm_gic_initialize(void);
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 
@@ -775,7 +819,6 @@ void arm_hardware_flush_all(void);
 void r7s721_sdhi0_dma_handler(void);
 
 uint_fast32_t 
-NOINLINEAT
 calcdivround2(
 	uint_fast32_t ref,	/* частота на входе делителя, в герцах. */
 	uint_fast32_t freq	/* требуемая частота на выходе делителя, в герцах. */
@@ -799,12 +842,14 @@ void releasemsgbuffer_user(uint8_t * dest);	// Освобождение обра
 size_t takemsgbufferfree_low(uint8_t * * dest);	// Буфер для формирования сообщения
 void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest);	// поместить сообщение в очередь к исполнению
 
+typedef struct dpclock_tag dpclock_t;
+
 typedef void (* udpcfn_t)(void *);
 typedef void (* udpcfn2_t)(void *, void *);
 typedef void (* udpcfn3_t)(void *, void *, void *);
-uint_fast8_t board_dpc(udpcfn_t func, void * arg); // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2); // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3); // Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg); // Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2); // Запрос отложенного вызова user-mode функций
+uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3); // Запрос отложенного вызова user-mode функций
 
 #include "list.h"
 
@@ -883,7 +928,7 @@ void network_initialize(void);
 void init_netif(void);
 
 void usb_polling(void);	/* LWIP support */
-void tcp_tmr(void);	/* LWIP support */
+void sys_check_timeouts(void);	/* LWIP support */
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */
@@ -892,7 +937,7 @@ void tcp_tmr(void);	/* LWIP support */
 #define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
 
 
-#define  ARRAY_SIZE(a)  (sizeof a / sizeof a [0])
+#define  ARRAY_SIZE(a)  (sizeof (a) / sizeof (a) [0])
 
 
 #define HWADDR                          0x30,0x89,0x84,0x6A,0x96,0x34
@@ -901,19 +946,11 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-
-void tcp_tmr(void);
-void usb_polling(void);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
 #include "product.h"
 #include "taildefs.h"
-
-#if CPUSTYLE_XC7Z
-void hardware_xc7z_fifo_init(void);
-#endif /* CPUSTYLE_XC7Z */
 
 #endif // HARDWARE_H_INCLUDED

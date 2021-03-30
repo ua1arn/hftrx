@@ -18,7 +18,7 @@
 #include "usb_core.h"
 #include "src/fatfs/ff.h"
 #include "src/fatfs/diskio.h"		/* FatFs lower layer API */
-#include "MSC/inc/usbh_msc.h"
+#include "MSC/Inc/usbh_msc.h"
 
 
 #if WITHUSEUSBFLASH
@@ -73,7 +73,7 @@ static
 DRESULT USB_disk_write(
 	BYTE lun,			/* Physical drive nmuber (0..) */
 	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Sector address (LBA) */
+	LBA_t sector,		/* Sector address (LBA) */
 	UINT count			/* Number of sectors to write */
 	)
 {
@@ -116,7 +116,7 @@ static
 DRESULT USB_disk_read(
 	BYTE lun,			/* Physical drive nmuber (0..) */
 	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	/* Sector address (LBA) */
+	LBA_t sector,	/* Sector address (LBA) */
 	UINT count		/* Number of sectors to read */
 	)
 {

@@ -97,6 +97,7 @@ static uint_fast8_t 	glob_affilter;
 static uint_fast8_t 	glob_dac1value [2];
 static uint_fast8_t 	glob_txcw;			// находимся в режиме передачи телеграфа
 static uint_fast8_t 	glob_txgate = 1;	// разрешение драйвера и оконечного усилителя
+static uint_fast8_t 	glob_classamode;	/* использование режима клвсс А при передаче */
 
 static int_fast16_t		glob_adcoffset;		/* смещение для выходного сигнала с АЦП */
 static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DSP
@@ -384,6 +385,10 @@ static uint_fast8_t hex2int(uint_fast8_t c)
 	return 0;
 }
 
+
+static void
+ua1ceituner_send(void *);
+
 /* вызывается из обработчика прерываний */
 // принятый символ с последовательного порта
 void nmea_parsechar(uint_fast8_t c)
@@ -450,6 +455,10 @@ void nmea_parsechar(uint_fast8_t c)
 				board_adc_store_data(PASENSEIX, strtol(nmeaparser_get_buff(NMF_C_SENS), NULL, 10));
 				board_adc_store_data(XTHERMOIX, strtol(nmeaparser_get_buff(NMF_T_SENS), NULL, 10));
 				board_adc_store_data(VOLTSOURCE, strtol(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
+
+				static dpclock_t dpc_ua1ceituner;
+				board_dpc(& dpc_ua1ceituner, ua1ceituner_send, NULL);
+
 			}
 		}
 		break;
@@ -460,7 +469,7 @@ void nmea_parsechar(uint_fast8_t c)
 }
 
 static void
-ua1ceituner_send(void)
+ua1ceituner_send(void * not_used)
 {
 	//управление устройством
 	//Обмен на скорости 250 kb/s, 8-N-1
@@ -500,15 +509,17 @@ ua1ceituner_send(void)
 			"%d,"	// SEL_CTUNio,       //0 = конденсатор на входе тюнера 1 = конденсатор на входе тюнера
 			"%d,"	// SEL_CTUN,         //перебор емкости конденсатора тюнера  0 - 255
 			"%d,"	// SEL_LTUN,          //перебор ендуктивностей тюнера  0 - 255
+			"%d"	// отключение тюнера 0 - тютер используется, 1 - режим BYPAS
 			"*FF\r\n",	// *CS<CR><LF>
 			glob_tx,
 			glob_bandf3,
-			1,	// 1=class AB, 0=class A
+			! glob_classamode,	// 1=class AB, 0=class A
 			glob_fanflag,
 			glob_antenna,
 			glob_tuner_type,
 			glob_tuner_bypass ? 0 : glob_tuner_C,
-			glob_tuner_bypass ? 0 : glob_tuner_L
+			glob_tuner_bypass ? 0 : glob_tuner_L,
+			glob_tuner_bypass
 		);
 }
 
@@ -718,15 +729,6 @@ board_gpio_init(void)
 		TARGET_FPGA_OVF_INITIALIZE();
 	#endif /* defined (TARGET_FPGA_OVF_INITIALIZE) */
 }
-
-#if WITHSPISLAVE
-
-#elif WITHINTEGRATEDDSP
-
-#elif WITHEXTERNALDDSP
-
-#endif /* (WITHEXTERNALDDSP || WITHINTEGRATEDDSP) && ! WITHSPISLAVE */
-
 
 #if MULTIVFO
 
@@ -4251,7 +4253,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 #endif
 #if WITHAUTOTUNER_UA1CEI
-	ua1ceituner_send();
+	ua1ceituner_send(NULL);
 #endif /* WITHAUTOTUNER_UA1CEI */
 
 	// registers chain control register
@@ -4295,7 +4297,7 @@ prog_ctrlreg(uint_fast8_t plane)
 #endif
 
 #if WITHAUTOTUNER_UA1CEI
-	ua1ceituner_send();
+	ua1ceituner_send(NULL);
 #endif /* WITHAUTOTUNER_UA1CEI */
 
 	// registers chain control register
@@ -4727,7 +4729,43 @@ prog_ctrlreg(uint_fast8_t plane)
 	spi_unselect(target);
 }
 
+#elif CTLREGMODE_V3D
 
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+/* RF unit board UA3REO rev.2 */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	const spitarget_t target = targetbpf;
+	rbtype_t rbbuff [2] = { 0 };
+
+	/* U1 */
+	RBBIT(017, 0);					// not use
+	RBBIT(016, glob_att);			// attenuator
+	RBBIT(015, 0);					// LPF bypass, not use
+	RBBIT(014, 0);					// BPF bypass, not use
+	RBBIT(013, glob_bandf & 0x00);	// 160m
+	RBBIT(012, glob_bandf & 0x01);	// 80m
+	RBBIT(011, glob_bandf & 0x02);	// 40m
+	RBBIT(010, glob_tx);			// tx\rx
+
+	/* U3 */
+	RBBIT(007, 0);					// not use
+	RBBIT(006, 0);					// not use
+	RBBIT(005, 0);					// not use
+	RBBIT(004, glob_bandf & 0x80);	// 10m
+	RBBIT(003, glob_bandf & 0x40);	// 15m
+	RBBIT(002, glob_bandf & 0x20);	// 17m
+	RBBIT(001, glob_bandf & 0x10);	// 20m
+	RBBIT(000, glob_bandf & 0x08);	// 30m
+
+	spi_select(target, CTLREG_SPIMODE);
+	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	spi_unselect(target);
+}
 
 #elif CTLREGMODE_NOCTLREG
 
@@ -5166,7 +5204,7 @@ board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright)
 #if WITHDCDCFREQCTL
 /* установка делителя для формирования рабочей частоты преобразователя подсветки */
 void 
-board_set_blfreq(uint_fast32_t n)	
+board_set_bldivider(uint_fast32_t n)	
 {
 	// TIM16_CH1 - PF6
 	if (glob_blfreq != n)
@@ -5455,6 +5493,18 @@ board_set_txgate(uint_fast8_t v)	/* разрешение драйвера и о�
 		board_ctlreg1changed();
 	}
 }
+
+void
+board_set_classamode(uint_fast8_t v)	/* использование режима клвсс А при передаче */
+{
+	const uint_fast8_t n = v != 0;
+	if (glob_classamode != n)
+	{
+		glob_classamode = n;
+		board_ctlreg1changed();
+	}
+}
+
 
 void
 board_set_tuner_C(uint_fast8_t n)	/* установка значение конденсатора в согласующем устройстве */
@@ -6590,7 +6640,7 @@ restart:
 
 			//PRINTF("fpga: done sending RBF image, waiting for CONF_DONE==1\n");
 			/* 4) Дождаться "1" на CONF_DONE */
-			while (board_fpga_get_CONF_DONE() == 0)
+			while (wcd < rbflength && board_fpga_get_CONF_DONE() == 0)
 			{
 				++ wcd;
 				hardware_spi_b16_p2(0xffff);
@@ -6601,6 +6651,8 @@ restart:
 			hardware_spi_disconnect();
 
 			//PRINTF("fpga: CONF_DONE asserted, wcd=%u\n", wcd);
+			if (wcd >= rbflength)
+				goto restart;
 			/*
 			After the configuration data is accepted and CONF_DONE goes
 			high, Cyclone IV devices require 3,192 clock cycles to initialize properly and enter
@@ -8921,7 +8973,6 @@ void board_set_wpm(
 
 #endif /* WITHELKEY */
 
-
 #if 0
 // 
 void hardware_cw_diagnostics_noirq(
@@ -8968,132 +9019,6 @@ void hardware_cw_diagnostics(
 
 
 #endif
-
-#if WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC
-
-
-// Очереди символов для обмена с host
-enum { qSZdevice = 8192 };
-
-static uint8_t debugusb_queue [qSZdevice];
-static unsigned debugusb_qp, debugusb_qg;
-
-// Передать символ в host
-static uint_fast8_t	debugusb_qput(uint_fast8_t c)
-{
-	unsigned qpt = debugusb_qp;
-	const unsigned next = (qpt + 1) % qSZdevice;
-	if (next != debugusb_qg)
-	{
-		debugusb_queue [qpt] = c;
-		debugusb_qp = next;
-		return 1;
-	}
-	return 0;
-}
-
-// Получить символ в host
-static uint_fast8_t debugusb_qget(uint_fast8_t * pc)
-{
-	if (debugusb_qp != debugusb_qg)
-	{
-		* pc = debugusb_queue [debugusb_qg];
-		debugusb_qg = (debugusb_qg + 1) % qSZdevice;
-		return 1;
-	}
-	return 0;
-}
-
-// получить состояние очереди передачи
-static uint_fast8_t debugusb_qempty(void)
-{
-	return debugusb_qp == debugusb_qg;
-}
-
-enum { qSZhost = 32 };
-
-static uint8_t debugusb_ci_queue [qSZhost];
-static unsigned debugusb_ci_qp, debugusb_ci_qg;
-
-// Передать символ в device
-static uint_fast8_t	debugusb_ci_qput(uint_fast8_t c)
-{
-	unsigned qpt = debugusb_ci_qp;
-	const unsigned next = (qpt + 1) % qSZhost;
-	if (next != debugusb_ci_qg)
-	{
-		debugusb_ci_queue [qpt] = c;
-		debugusb_ci_qp = next;
-		return 1;
-	}
-	return 0;
-}
-
-// Получить символ в host
-static uint_fast8_t debugusb_ci_qget(uint_fast8_t * pc)
-{
-	if (debugusb_ci_qp != debugusb_ci_qg)
-	{
-		* pc = debugusb_ci_queue [debugusb_ci_qg];
-		debugusb_ci_qg = (debugusb_ci_qg + 1) % qSZhost;
-		return 1;
-	}
-	return 0;
-}
-
-// получить состояние очереди передачи
-static uint_fast8_t debugusb_ci_qempty(void)
-{
-	return debugusb_ci_qp == debugusb_ci_qg;
-}
-
-uint_fast8_t debugusb_putchar(uint_fast8_t c)/* передача символа если готов порт */
-{
-	system_disableIRQ();
-	const uint_fast8_t f = debugusb_qput(c);
-	if (f)
-		HARDWARE_DEBUG_ENABLETX(1);
-	system_enableIRQ();
-	return f;
-}
-
-uint_fast8_t debugusb_getchar(char * cp) /* приём символа, если готов порт */
-{
-	uint_fast8_t c;
-	system_disableIRQ();
-	const uint_fast8_t f = debugusb_ci_qget(& c);
-	system_enableIRQ();
-	if (f)
-		* cp = c;
-	return f;
-}
-
-void debugusb_parsechar(uint_fast8_t c)				/* вызывается из обработчика прерываний */
-{
-	debugusb_ci_qput(c);
-}
-
-void debugusb_sendchar(void * ctx)							/* вызывается из обработчика прерываний */
-{
-	uint_fast8_t c;
-	if (debugusb_qget(& c))
-	{
-		HARDWARE_DEBUG_TX(ctx, c);
-		if (debugusb_qempty())
-			HARDWARE_DEBUG_ENABLETX(0);
-	}
-	else
-	{
-		HARDWARE_DEBUG_ENABLETX(0);
-	}
-}
-
-// Вызывается из user-mode программы при запрещённых прерываниях.
-void debugusb_initialize(void)
-{
-}
-
-#endif /* WITHDEBUG && WITHUSBCDCACM && WITHDEBUG_CDC */
 
 #if WITHSPIHW || WITHSPISW
 

@@ -234,7 +234,7 @@
 	#define WITHIFADCWIDTH	24		// 1 бит знак и 23 бит значащих
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
+	//
 	//#define WITHLOOPBACKTEST	1
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */

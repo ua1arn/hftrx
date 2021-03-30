@@ -119,9 +119,10 @@ void board_set_dac1(uint_fast8_t n);	/* подстройка опорного г
 void board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright);	/* Включение подсветки дисплея */
 void board_set_kblight(uint_fast8_t v);	/* Включение подсветки клавиатуры */
 void board_set_poweron(uint_fast8_t v);	/* Включение удерхания схемы питания */
-void board_set_blfreq(uint_fast32_t n);	/* установка делителя для формирования рабочей частоты преобразователя подсветки */
+void board_set_bldivider(uint_fast32_t n);	/* установка делителя для формирования рабочей частоты преобразователя подсветки */
 void board_set_txcw(uint_fast8_t v);	/* Включение передачи в обход балансного модулятора */
 void board_set_txgate(uint_fast8_t v);	/* разрешение драйвера и оконечного усилителя */
+void board_set_classamode(uint_fast8_t v);	/* использование режима клвсс А при передаче */
 void board_set_scalelo1(uint_fast8_t n);	/* SW-2011-RDX */
 void board_set_tuner_C(uint_fast8_t n);	/* установка значение конденсатора в согласующем устройстве */
 void board_set_tuner_L(uint_fast8_t n);	/* установка значение индуктивности в согласующем устройстве */

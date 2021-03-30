@@ -23,6 +23,7 @@
 #include "lwip/netif.h"
 #include "lwip/autoip.h"
 #include "netif/etharp.h"
+#include "lwip/ip.h"
 
 //
 //#define RNDIS_CONTROL_OUT_PMAADDRESS                    (0x08 * 4)                //8 bytes per EP
@@ -60,11 +61,11 @@ static int rndis_can_send(void);
 static void rndis_send(const void *data, int size);
 
 
-typedef ALIGNX_BEGIN struct rndisbuf_tag
+typedef struct rndisbuf_tag
 {
 	LIST_ENTRY item;
 	struct pbuf *frame;
-} ALIGNX_END rndisbuf_t;
+} rndisbuf_t;
 
 
 static LIST_ENTRY rndis_free;
@@ -218,7 +219,7 @@ static err_t rndis_linkoutput_fn(struct netif *netif, struct pbuf *p)
 }
 
 
-static err_t rndis_output_fn(struct netif *netif, struct pbuf *q, ip_addr_t *ipaddr)
+static err_t rndis_output_fn(struct netif *netif, struct pbuf *q, const ip4_addr_t *ipaddr)
 {
 	err_t e = etharp_output(netif, q, ipaddr);
 	if (e == ERR_OK)
@@ -295,12 +296,7 @@ void init_netif(void)
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
 }
-/*
-TIMER_PROC(tcp_timer, TCP_TMR_INTERVAL * 1000, 1, NULL)
-{
-  tcp_tmr();
-}
-*/
+
 
 
 // Receiving Ethernet packets

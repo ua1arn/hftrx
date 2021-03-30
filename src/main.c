@@ -800,6 +800,8 @@ static const FLASHMEM struct {
 
 #endif /* WITHPOWERLPHP */
 
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+
 static const FLASHMEM struct {
 	uint_fast8_t code;
 	char label [6];
@@ -811,6 +813,7 @@ static const FLASHMEM struct {
 #endif /* WITHLMSAUTONOTCH */
 	{ BOARD_NOTCH_MANUAL, 	"NOTCH" },
 };
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
 #if WITHUSEDUALWATCH
 
@@ -989,7 +992,6 @@ struct micprof_cell
 };
 
 typedef struct micprof_cell	micprof_t;
-#define NMICPROFCELLS	3
 
 static micprof_t micprof_cells[NMICPROFCELLS];
 #endif /* WITHAFCODEC1HAVEPROC */
@@ -2594,11 +2596,17 @@ validatesubmode(
 
 /* текст (любой), используемый как сигнатура содержимого NVRAM */
 /* последний байт этого массива в NVRAM не запоминается и не сравнивается. */
-static const FLASHMEM char nvramsign [] = 
-	#if NVRAM_END > 511
-		__DATE__
-	#endif
-	__TIME__;
+static const FLASHMEM char nvramsign [] =
+#if WITHKEEPNVRAM
+		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+		{ 0, 0, 0, 0, 1, 1, 1, 1, };
+#else /* WITHKEEPNVRAM */
+
+#if NVRAM_END > 511
+	__DATE__
+#endif
+__TIME__;
+#endif /* WITHKEEPNVRAM */
 
 /* Шаблон данных для тестирования доступа к NVRAM */
 static const FLASHMEM char nvrampattern [sizeof nvramsign / sizeof nvramsign [0]] = 
@@ -2748,6 +2756,8 @@ struct nvmap
 		uint8_t gpwratunei;	// индекс в pwrmodes - моность при работе автотюнера или по внешнему запросу
 	#elif WITHPOWERTRIM
 		uint8_t gnormalpower;/* мощность WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		uint8_t gclassapower;/* мощность при работе в классе А WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
+		uint8_t gclassamode;	/* использование режима клвсс А при передаче */
 		uint8_t gtunepower;/* мощность при работе автоматического согласующего устройства WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 	#endif /* WITHPOWERLPHP, WITHPOWERTRIM */
 #endif /* WITHTX */
@@ -2771,6 +2781,7 @@ struct nvmap
 	uint8_t gdisplaybarsfps;	/* скорость обновления S-метра */
 #if WITHSPECTRUMWF
 	uint8_t gviewstyle;		/* стиль отображения спектра и панорамы */
+	uint8_t gview3dss_mark;	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 #endif /* WITHSPECTRUMWF */
@@ -3460,10 +3471,15 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gdisplaybarsfps = DISPLAYSWR_FPS;
 #endif /* WITHDISPLAYSWR_FPS */
 #if WITHSPECTRUMWF
-#if defined (WITHDEFAULTVIEW)
+#if defined (WITHDEFAULTVIEW)		/* стиль отображения спектра и панорамы */
 	static uint_fast8_t gviewstyle = WITHDEFAULTVIEW;
 #else
-	static uint_fast8_t gviewstyle = VIEW_LINE;		/* стиль отображения спектра и панорамы */
+	static uint_fast8_t gviewstyle = VIEW_LINE;
+#endif
+#if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
+#else
+	static uint_fast8_t gview3dss_mark = 0;
 #endif
 	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
 	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
@@ -3635,7 +3651,11 @@ enum
 #endif /* WITHCAT */
 
 #if WITHIF4DSP
+#if defined WITHAFGAINDEFAULT
+	static dualctl16_t afgain1 = { WITHAFGAINDEFAULT, WITHAFGAINDEFAULT };
+#else
 	static dualctl16_t afgain1 = { BOARD_AFGAIN_MAX, BOARD_AFGAIN_MAX };	// Усиление НЧ на максимуме
+#endif /* defined WITHAFGAINDEFAULT */
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
 	static uint_fast8_t gmikebust20db;	// предусилитель микрофона
@@ -3807,6 +3827,13 @@ enum
 	}
 
 	#if WITHPOWERTRIM
+		#if WITHPACLASSA
+			static uint_fast8_t gclassapower = WITHPOWERTRIMCLASSA;
+			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
+		#else /* WITHPACLASSA */
+			static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
+			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
+		#endif /* WITHPACLASSA */
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 		#if WITHLOWPOWEREXTTUNE
 			static uint_fast8_t gtunepower = WITHPOWERTRIMATU; /* мощность при работе автоматического согласующего устройства */
@@ -3820,6 +3847,7 @@ enum
 		#else /* WITHLOWPOWEREXTTUNE */
 			enum { gpwratunei = 1 }; // индекс нормальной мощности
 		#endif /* WITHLOWPOWEREXTTUNE */
+		enum { gclassamode = 0 };
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
 	#if WITHPABIASTRIM
@@ -3836,7 +3864,8 @@ enum
 		static uint_fast8_t gavoxlevel = 50;	/* модифицируется через меню - усиление anti-VOX */
 		static uint_fast8_t voxdelay = 70;	/* модифицируется через меню - задержка отпускания VOX */
 	#else /* WITHVOX */
-		enum { gvoxenable = 0 };	/* модифицируется через меню - автоматическое управление передатчиком (от голоса) */
+		enum { gvoxenable = 0 };	/* автоматическое управление передатчиком (от голоса) */
+		enum { gclassamode = 0 };	/* использование режима клвсс А при передаче */
 	#endif /* WITHVOX */
 
 	#if WITHMUTEALL
@@ -3969,7 +3998,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	#endif
 
 	#if (WITHSWRMTR || WITHSHOWSWRPWR)
-		uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 8;
+		uint_fast16_t minforward = (1U << HARDWARE_ADCBITS) / 32;
 		#if WITHSWRCALI
 			uint_fast8_t swrcalibr = WITHSWRCALI;	/* калибровочный параметр SWR-метра */
 		#else /* WITHSWRCALI */
@@ -4273,8 +4302,9 @@ typedef struct tunerstate
 {
 	uint8_t tunercap, tunerind, tunertype;
 	uint8_t swr;	// values 0..190: SWR = 1..20
+	adcvalholder_t f, r;
 } tus_t;
-#define TUS_SWRMAX (SWRMIN * 20)
+#define TUS_SWRMAX (SWRMIN * 3)			// 4.0
 #define TUS_SWR1p1 (SWRMIN * 11 / 10)	// SWR=1.1
 
 static void board_set_tuner_group(void)
@@ -4297,7 +4327,7 @@ static void board_set_tuner_group(void)
 // выдача параметров на тюнер
 static void updateboard_tuner(void)
 {
-	PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
+	//PRINTF(PSTR("updateboard_tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	board_set_tuner_group();
 	board_update();		/* вывести забуферированные изменения в регистры */
 }
@@ -4310,25 +4340,56 @@ static void tuner_waitadc(void)
 		local_delay_ms(5);
 }
 
-static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale)
+static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	adcvalholder_t r;
 	const adcvalholder_t f = board_getswrmeter_unfiltered(& r, swrcalibr);
 	const uint_fast8_t fs = fullscale - SWRMIN;
+
+	* pr = r;
+	* pf = f;
 
 	if (f < minforward)
 		return 0;	// SWR=1
 	else if (f <= r)
 		return fs;		// SWR is infinite
 
-	const uint_fast16_t swr10 = (f + r) * SWRMIN / (f - r) - SWRMIN;
-	return swr10 > fs ? swr10 : swr10;
+	const uint_fast16_t swr10 = (uint_fast32_t) (f + r) * SWRMIN / (f - r) - SWRMIN;
+	return swr10 > fs ? fs : swr10;
 }
 
-static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale)
+static void printtunerstate(const char * title, uint_fast8_t swr, adcvalholder_t r, adcvalholder_t f)
 {
-	uint_fast8_t swr = tuner_get_swr0(fullscale);
-	PRINTF("tuner_get_swr: %u\n", swr);
+
+#if SHORTSET8 || SHORTSET7
+	PRINTF("%s: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u\n",
+		title,
+		(unsigned) logtable_ind [tunerind], (unsigned) tunerind,
+		(unsigned) logtable_cap [tunercap], (unsigned) tunercap,
+		(unsigned) tunertype,
+		(unsigned) f,
+		(unsigned) r,
+		(unsigned) (swr + SWRMIN));
+#else /* SHORTSET8 || SHORTSET7 */
+	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u\n",
+		title,
+		(unsigned) tunerind, (unsigned) tunercap, (unsigned) tunertype,
+		(unsigned) f,
+		(unsigned) r,
+		(unsigned) (swr + SWRMIN));
+#endif /* SHORTSET8 || SHORTSET7 */
+
+}
+
+static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+{
+	adcvalholder_t r;
+	adcvalholder_t f;
+	const uint_fast8_t swr = tuner_get_swr0(fullscale, & r, & f);
+
+	* pr = r;
+	* pf = f;
+	printtunerstate("tuner_get_swr", swr, r, f);
 	return swr;
 }
 
@@ -4369,13 +4430,17 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
 			// Измерений ещё небыло
 			tus->swr = swr;
 			tus->tunerind = tunerind;
+			tus->r = r;
+			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
 		}
@@ -4405,13 +4470,17 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			return 1;
 		updateboard_tuner();
 		tuner_waitadc();
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
 			// Измерений ещё небыло
 			tus->swr = swr;
 			tus->tunercap = tunercap;
+			tus->r = r;
+			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
 		}
@@ -4440,7 +4509,7 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
-/* отсюда не возвращаемся пока нне настроится тюнер */
+/* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {	
 	const uint_fast8_t tx = 1;
@@ -4487,6 +4556,7 @@ static void auto_tune(void)
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
+	printtunerstate("Selected", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	updateboard_tuner();
 	//PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
@@ -4574,6 +4644,21 @@ prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq,
 
 #if defined(NVRAM_TYPE) && (NVRAM_TYPE != NVRAM_TYPE_NOTHING)
 
+static void fillrelaxedsign(uint8_t * tsign)
+{
+	ASSERT(sizeof nvramsign == 8);
+
+	memset(tsign, 0xe5, 8);
+	tsign [0] = (uint8_t) (sizeof (struct nvmap) >> 24);
+	tsign [1] = (uint8_t) (sizeof (struct nvmap) >> 16);
+	tsign [2] = (uint8_t) (sizeof (struct nvmap) >> 8);
+	tsign [3] = (uint8_t) (sizeof (struct nvmap) >> 0);
+	tsign [4] = (uint8_t) (~ sizeof (struct nvmap) >> 24);
+	tsign [5] = (uint8_t) (~ sizeof (struct nvmap) >> 16);
+	tsign [6] = (uint8_t) (~ sizeof (struct nvmap) >> 8);
+	tsign [7] = (uint8_t) (~ sizeof (struct nvmap) >> 0);
+}
+
 /* проверка совпадения сигнатуры в энергонезависимой памяти.
    0 - совпадает,
 	 не-0 - отличается
@@ -4582,6 +4667,25 @@ static uint_fast8_t
 //NOINLINEAT
 verifynvramsignature(void)
 {
+#if WITHKEEPNVRAM
+
+	/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+	uint8_t tsign [sizeof nvramsign];
+	uint_fast8_t i;
+
+	fillrelaxedsign(tsign);
+	for (i = 0; i < (sizeof nvramsign - 1); ++ i)
+	{
+		const char c = restore_i8(RMT_SIGNATURE_BASE(i));
+		if (c != tsign [i])
+		{
+			return 1;	/* есть отличие */
+		}
+	}
+	return 0;	/* сигнатура совпадает */
+
+#else /* WITHKEEPNVRAM */
+
 	uint_fast8_t i;
 	for (i = 0; i < (sizeof nvramsign - 1); ++ i)
 	{
@@ -4592,18 +4696,33 @@ verifynvramsignature(void)
 		}
 	}		
 	return 0;	/* сигнатура совпадает */
+
+#endif /* WITHKEEPNVRAM */
 }
 
 static void 
 //NOINLINEAT
 initnvramsignature(void)
 {
+#if WITHKEEPNVRAM
+	/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+	uint8_t tsign [sizeof nvramsign];
+	uint_fast8_t i;
+
+	fillrelaxedsign(tsign);
+
+	for (i = 0; i < sizeof nvramsign - 1; ++ i)
+	{
+		save_i8(RMT_SIGNATURE_BASE(i), tsign [i]);
+	}
+#else /* WITHKEEPNVRAM */
 	uint_fast8_t i;
 
 	for (i = 0; i < sizeof nvramsign - 1; ++ i)
 	{
 		save_i8(RMT_SIGNATURE_BASE(i), nvramsign [i]);
 	}
+#endif /* WITHKEEPNVRAM */
 }
 
 /* проверка совпадения тестовой сигнатуры в энергонезависимой памяти.
@@ -7817,7 +7936,7 @@ static uint_fast8_t
 getactualpower(void)
 {
 #if WITHPOWERTRIM
-	return getactualdownpower() ? gtunepower : gnormalpower.value;
+	return getactualdownpower() ? gtunepower : (gclassamode ? gclassapower : gnormalpower.value);
 
 #elif WITHPOWERLPHP
 	/* установить выходную мощность передатчика WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
@@ -8745,7 +8864,7 @@ updateboard(
 	if (full2)
 	{
 #if WITHTOUCHGUI
-		gui_update(NULL);
+		gui_update();
 #endif /* WITHTOUCHGUI */
 
 		/* Полная перенастройка. Изменился режим (или одно из значений hint). */
@@ -9175,6 +9294,7 @@ updateboard(
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
+			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
@@ -9219,6 +9339,7 @@ updateboard(
 		#endif /* WITHIF4DSP */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
 		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
+		board_set_classamode(gclassamode);	/* использование режима клвсс А при передаче */
 		board_set_txgate(gtxgate);		/* разрешение драйвера и оконечного усилителя */
 		#if WITHMIC1LEVEL
 			board_set_mik1level(mik1level);
@@ -9246,7 +9367,7 @@ updateboard(
 		#endif /* WITHFANPWM */
 	#endif /* WITHFANTIMER */
 	#if WITHDCDCFREQCTL
-		board_set_blfreq(bldividerout);
+		board_set_bldivider(bldividerout);
 	#endif /* WITHDCDCFREQCTL */
 	#if WITHLCDBACKLIGHT
 		board_set_bglight(dimmflag || sleepflag || dimmmode, gbglight);		/* подсветка дисплея  */
@@ -13257,18 +13378,20 @@ static void dpc_1stimer(void * arg)
 #endif /* WITHSLEEPTIMER */
 
 #if WITHLWIP
-	  tcp_tmr();
-	#if LWIP_AUTOIP
-		  autoip_tmr();
-	#endif /* LWIP_AUTOIP */
+	sys_check_timeouts();
 #endif /* WITHLWIP */
+
 #if 0 && CPUSTYLE_XC7Z
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif /* CPUSTYLE_XC7Z */
+
+#if WITHTOUCHGUI
+	gui_update();
+#endif /*WITHTOUCHGUI */
 }
 
 static void
-poke_u32(uint8_t * p, uintptr_t v)
+poke_u32(volatile uint8_t * p, uintptr_t v)
 {
 	p [0] = (v >> 0) & 0xFF;
 	p [1] = (v >> 8) & 0xFF;
@@ -13277,7 +13400,7 @@ poke_u32(uint8_t * p, uintptr_t v)
 }
 
 static uintptr_t
-peek_u32(const uint8_t * p)
+peek_u32(volatile const uint8_t * p)
 {
 	return
 		((uint_fast32_t) p [0] << 0) +
@@ -13285,6 +13408,47 @@ peek_u32(const uint8_t * p)
 		((uint_fast32_t) p [2] << 16) +
 		((uint_fast32_t) p [3] << 24);
 }
+
+
+void dpclock_initialize(dpclock_t * lp)
+{
+	SPINLOCK_INITIALIZE(& lp->lock);
+	lp->flag = 0;
+}
+/*
+void dpclock_enter(dpclock_t * lp)
+{
+	global_disableIRQ();
+	SPIN_LOCK(& lp->lock);
+
+	SPIN_UNLOCK(& lp->lock);
+	global_enableIRQ();
+}
+*/
+void dpclock_exit(dpclock_t * lp)
+{
+	global_disableIRQ();
+	SPIN_LOCK(& lp->lock);
+	lp->flag = 0;
+	SPIN_UNLOCK(& lp->lock);
+	global_enableIRQ();
+}
+
+// возврат не-0 если уже занято
+uint_fast8_t dpclock_traylock(dpclock_t * lp)
+{
+	uint_fast8_t v;
+
+	global_disableIRQ();
+	SPIN_LOCK(& lp->lock);
+	v = lp->flag;
+	lp->flag = 1;
+	SPIN_UNLOCK(& lp->lock);
+	global_enableIRQ();
+
+	return v;
+}
+
 
 /* обработка сообщений от уровня обработчиков прерываний к user-level функциям. */
 static void
@@ -13398,11 +13562,15 @@ processmessages(
 			void * arg1;
 			void * arg2;
 			void * arg3;
+			dpclock_t * lp;
 
 			func = (uintptr_t) peek_u32(buff + 1);
 			arg1 = (void *) peek_u32(buff + 5);
 			arg2 = (void *) peek_u32(buff + 9);
 			arg3 = (void *) peek_u32(buff + 13);
+			lp = (dpclock_t *) peek_u32(buff + 17);
+
+			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была вощмодность самого себя повторно запросить
 			switch (buff [0])
 			{
 			case 1:
@@ -13425,14 +13593,18 @@ processmessages(
 }
 
 // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc(udpcfn_t func, void * arg)
+uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 {
+	// предотвращение повторного включенияв очередь того же запроса
+	if (dpclock_traylock(lp))
+		return 0;
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 1;
 		poke_u32(buff + 1, (uintptr_t) func);
 		poke_u32(buff + 5, (uintptr_t) arg);
+		poke_u32(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -13440,8 +13612,11 @@ uint_fast8_t board_dpc(udpcfn_t func, void * arg)
 }
 
 // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
+uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2)
 {
+	// предотвращение повторного включенияв очередь того же запроса
+	if (dpclock_traylock(lp))
+		return 0;
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
@@ -13449,6 +13624,7 @@ uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
 		poke_u32(buff + 1, (uintptr_t) func);
 		poke_u32(buff + 5, (uintptr_t) arg1);
 		poke_u32(buff + 9, (uintptr_t) arg2);
+		poke_u32(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -13456,8 +13632,11 @@ uint_fast8_t board_dpc2(udpcfn2_t func, void * arg1, void * arg2)
 }
 
 // Запрос отложенного вызова user-mode функций
-uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
+uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 {
+	// предотвращение повторного включенияв очередь того же запроса
+	if (dpclock_traylock(lp))
+		return 0;
 	uint8_t * buff;
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
@@ -13466,21 +13645,20 @@ uint_fast8_t board_dpc3(udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 		poke_u32(buff + 5, (uintptr_t) arg1);
 		poke_u32(buff + 9, (uintptr_t) arg2);
 		poke_u32(buff + 13, (uintptr_t) arg3);
+		poke_u32(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
 	return 0;
 }
 
+static dpclock_t dpc_1slock;
 /* Вызывается из обработчика прерываний раз в секунду */
 void spool_secound(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(dpc_1stimer, NULL);
-#if WITHTOUCHGUI
-	board_dpc(gui_update, NULL);
-#endif /*WITHTOUCHGUI */
+	board_dpc(& dpc_1slock, dpc_1stimer, NULL);
 }
 
 /* Установка сиквенсору запроса на передачу.	*/
@@ -13866,6 +14044,16 @@ static const FLASHMEM struct menudef menutable [] =
 		nvramoffs0,
 		NULL,
 		& gviewstyle,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("FREQ MRK", "Freq marker"), 7, 5, RJ_YES, ISTEP1,
+		ITEM_VALUE,
+		0, 1,				/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+		offsetof(struct nvmap, gview3dss_mark),
+		nvramoffs0,
+		NULL,
+		& gview3dss_mark,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -15629,8 +15817,89 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gmikeequalizerparams [4],
 		getequalizerbase, /* складывается с -12 и отображается */
 	},
-
 	#endif /* WITHAFCODEC1HAVEPROC */
+#if WITHAFEQUALIZER
+	{
+		QLABEL2("RX EQ   ", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, geqrx),
+		nvramoffs0,
+		NULL,
+		& geqrx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("RX 0.4k ", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [0]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [0],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("RX 1.5k ", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [1]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [1],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("RX 2.7k ", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqrxparams [2]),
+		nvramoffs0,
+		NULL,
+		& geqrxparams [2],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("TX EQ   ", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, geqtx),
+		nvramoffs0,
+		NULL,
+		& geqtx,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL2("TX 0.4k ", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [0]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [0],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("TX 1.5k ", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [1]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [1],
+		getafequalizerbase,
+	},
+	{
+		QLABEL2("TX 2.7k ", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, AF_EQUALIZER_BASE * 2,
+		offsetof(struct nvmap, geqtxparams [2]),
+		nvramoffs0,
+		NULL,
+		& geqtxparams [2],
+		getafequalizerbase,
+	},
+#endif /* WITHAFEQUALIZER */
 #endif /* WITHTX && WITHIF4DSP */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 //	unsigned ALCNEN = 0;	// ALC noise gate function control bit
@@ -15659,7 +15928,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("ALC EN   "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
+		QLABEL("ALC EN  "), 7, 0, RJ_ON,	ISTEP1,		/* ALC enabled. */
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, ALCEN),	/* ALC enabled */
@@ -15727,98 +15996,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
 #endif /* WITHUSBUAC */
 #endif /* WITHIF4DSP */
-#if WITHAFEQUALIZER
-	{
-		QLABEL2("", "AF Equalizer"), 0, 0, 0, 0,
-		ITEM_GROUP,
-		0, 0,
-		offsetof(struct nvmap, ggrpafeq),
-		nvramoffs0,
-		NULL,
-		NULL,
-		NULL,
-	},
-	{
-		QLABEL2("", "RX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, geqrx),
-		nvramoffs0,
-		NULL,
-		& geqrx,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("", "RX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [0]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [0],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [1]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [1],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqrxparams [2]),
-		nvramoffs0,
-		NULL,
-		& geqrxparams [2],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, geqtx),
-		nvramoffs0,
-		NULL,
-		& geqtx,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL2("", "TX EQ 400 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [0]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [0],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [1]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [1],
-		getafequalizerbase,
-	},
-	{
-		QLABEL2("", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		0, AF_EQUALIZER_BASE * 2,
-		offsetof(struct nvmap, geqtxparams [2]),
-		nvramoffs0,
-		NULL,
-		& geqtxparams [2],
-		getafequalizerbase,
-	},
-#endif /* WITHAFEQUALIZER */
 #if WITHIF4DSP
 #if ! WITHFLATMENU
 	{
@@ -15872,18 +16049,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gdigigainmax,	// 8 bit
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#if CTLSTYLE_RAVENDSP_V1 || WITHEXTERNALDDSP
-	{
-		QLABEL("AD605 GN"), 7, 0, 0,	ISTEP1,		/* напряжение на AD605 (управление усилением тракта ПЧ */
-		ITEM_VALUE,
-		0, UINT8_MAX, 		//
-		offsetof(struct nvmap, gvad605),
-		nvramoffs0,
-		NULL,
-		& gvad605,	// 8 bit
-		getzerobase, /* складывается со смещением и отображается */
-	},
-#endif /* CTLSTYLE_RAVENDSP_V1 || WITHEXTERNALDDSP */
 #if ! WITHFLATMENU
 	{
 		QLABEL("AGC SSB "), 0, 0, 0, 0,
@@ -16378,6 +16543,29 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gnormalpower.value,
 		getzerobase,
 	},
+#if WITHPACLASSA
+	/* усилитель мощности поддерживает переключение в класс А */
+	{
+		QLABEL2("CLASSA  ", "Class A"), 7, 0, RJ_ON,	ISTEP1,		/* использование режима клвсс А при передаче */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gclassamode),
+		nvramoffs0,
+		NULL,
+		& gclassamode,
+		getzerobase,
+	},
+	{
+		QLABEL2("CLASSA P", "Class A Pwr"), 7, 0, 0,	ISTEP1,		/* мощность при обычной работе на передачу */
+		ITEM_VALUE,
+		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
+		offsetof(struct nvmap, gclassapower),
+		nvramoffs0,
+		NULL,
+		& gclassapower,
+		getzerobase,
+	},
+#endif /* WITHPACLASSA */
   #endif /* ! WITHPOTPOWER */
   #if WITHLOWPOWEREXTTUNE
 	{
@@ -17746,9 +17934,9 @@ void display2_menu_valxx(
 		{
 			const FLASHMEM char * msg;
 #if CPUSTYLE_STM32MP1
-			RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+			RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
 			(void) RCC->MP_APB5ENSETR;
-			RCC->MP_APB5LPENSETR = RCC_MC_APB5LPENSETR_BSECLPEN;
+			RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_BSECLPEN;
 			(void) RCC->MP_APB5LPENSETR;
 
 			const unsigned rpn = ((* (volatile uint32_t *) RPN_BASE) & RPN_ID_Msk) >> RPN_ID_Pos;
@@ -19445,10 +19633,6 @@ static void initialize2(void)
 
 	(void) mclearnvram;
 
-#if CPUSTYLE_XC7Z
-	hardware_xc7z_fifo_init();
-#endif /* CPUSTYLE_XC7Z */
-
 #if WITHDEBUG
 	dbg_puts_impl_P(PSTR("initialize2() finished.\n"));
 #endif
@@ -19548,12 +19732,14 @@ hamradio_initialize(void)
 #if WITHTOUCHGUI
 	gui_initialize();
 
+#if WITHENCODER2
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
 	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
 	enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
 	enc2_menu.updated = 1;
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
+#endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
 }
 
@@ -20819,7 +21005,7 @@ uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals)
 	return count;
 }
 
-uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index)
+uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count)
 {
 	uint_fast16_t el;
 	uint_fast8_t count = 0;
@@ -20835,6 +21021,11 @@ uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_f
 			safestrcpy (v->name, ARRAY_SIZE(v->name), mv->label);
 			v->index = el;
 			count++;
+		}
+		if (count >= max_count)
+		{
+			PRINTF("Block count %d exceeding the array size %d\n", count, max_count);
+			ASSERT(0);
 		}
 	}
 	return count;

@@ -53,6 +53,7 @@ SECTIONS
 		KEEP(*(.initdata*))
 		KEEP(*(.fini))
 		*(.text*)
+		. = ALIGN(4);
 	} > RAM
 
 	.ARM.extab :

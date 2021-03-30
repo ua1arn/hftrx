@@ -5049,12 +5049,12 @@ void looptests(void)
 #if WITHDTMFPROCESSING
 	dtmftest();
 #endif
-#if 0 && WITHINTEGRATEDDSP
+#if 0 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
 	}
 #endif
-#if 0 && WITHINTEGRATEDDSP
+#if 0 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		// See buffers.c - WITHBUFFERSDEBUG
 		buffers_diagnostics();
@@ -5205,9 +5205,6 @@ static int local_randomgr(unsigned long num)
 static void BarTest(void)
 {
 	//PRINTF("BarTest\n");
-
-	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
-	board_update();
 	int forever = 0;
 	unsigned n = 2000;
 	for (;forever || n --;)
@@ -5262,7 +5259,6 @@ GridTest(void)
 
 	/* Filled rectangle - all screen. */
 	display_solidbar(0, 0, xm, ym, col1);
-
 	/* Filled rectangle at right-down corner. */
 	display_solidbar(xm4 * 3 + xm1, ym4 * 3 + ym1, xm4 * 4 - xm1, ym4 * 4 - ym1, col20);
 	/* Filled rectangle at right-upper corner. */
@@ -5273,23 +5269,25 @@ GridTest(void)
 	display_solidbar(xm4 + xm1, ym4 + ym1, xm4 * 3 - xm1, ym4 * 3 - ym1, col23);
 
 
-
 	// Тест порядка цветов в пикселе
-	const unsigned rct0 = DIM_Y / 4;
-	display_fillrect(rct0, rct0 * 1, rct0, rct0, COLORMAIN_RED);
-	display_fillrect(rct0, rct0 * 2, rct0, rct0, COLORMAIN_GREEN);
-	display_fillrect(rct0, rct0 * 3, rct0, rct0, COLORMAIN_BLUE);
-
+	const unsigned yrct0 = DIM_Y / 4;
+	const unsigned xrct0 = DIM_X / 4;
+	display_fillrect(xrct0, yrct0 * 1, xrct0, yrct0, COLORMAIN_RED);
+	display_fillrect(xrct0, yrct0 * 2, xrct0, yrct0, COLORMAIN_GREEN);
+	display_fillrect(xrct0, yrct0 * 3, xrct0, yrct0, COLORMAIN_BLUE);
+/*
+	const unsigned yg0 = DIM_Y / 24;
+	const unsigned xg0 = DIM_X / 30;
 	for (k = 0; k < 16; ++ k)
 		for (n = 0; n < 16; ++ n)
-			display_solidbar(n * 18 + 1,
-				 k * 10 + 3,
-				 n * 18 + 16,
-				 k * 10 + 9,
+			display_solidbar(n * xg0,
+				 k * yg0,
+				 n * xg0 + xg0,
+				 k * yg0 + yg0,
 				 TFTRGB(n * 16, k * 16, 255 - (n * 8 + k * 8) )
 				 );
-
-	/* Interlase flockertest.	*/
+*/
+	/* Interlase clocke test.	*/
 	display_line(10,  0,  xm, 10 + 1,  col3);
 	display_line(10,  0,  xm, 10 + 3,  col3);
 	display_line(10,  0,  xm, 10 + 5,  col3);
@@ -5303,11 +5301,10 @@ GridTest(void)
 	display_line(0,  ym, xm, 0,  col3);
 
 	// тест перестановки байтов при выборке видеоконтроллером
-	const unsigned rct = DIM_Y / 3;
-	display_line(rct, rct,  rct * 2 - 1, rct * 2 - 1, COLORMAIN_BLACK);
-	display_line(rct, rct * 2 - 1, rct * 2 - 1,  rct, COLORMAIN_BLACK);
-
-
+	const unsigned rctx = DIM_X / 3;
+	const unsigned rcty = DIM_Y / 3;
+	display_line(rctx, rcty,  rctx * 2 - 1, rcty * 2 - 1, COLORMAIN_BLACK);
+	display_line(rctx, rcty * 2 - 1, rctx * 2 - 1,  rcty, COLORMAIN_BLACK);
 
 	display_flush();
 
@@ -6150,6 +6147,50 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
+#if 1 && (__L2C_PRESENT == 1)
+	{
+		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
+		// ZYNQ: RTL release R3p2
+		// RTL release 0x8 denotes r3p2 code of the cache controller
+		// RTL release 0x9 denotes r3p3 code of the cache controller.
+		PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_GetID());	// L2C_GetID()
+		//PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_GetID() >> 24) & 0xFF);
+		//PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_GetID() >> 10) & 0x3F);
+		//PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_GetID() >> 6) & 0x0F);
+		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
+
+		PRINTF("L2C Data RAM latencies: %08lX\n", (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C)); // reg1_data_ram_control
+		PRINTF("L2C Tag RAM latencies: %08lX\n", (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
+	}
+#endif
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	{
+		// GIC version diagnostics
+		// Renesas:
+		//	arm_gic_initialize: ARM GICv1
+		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
+		// STM32MP1:
+		//	arm_gic_initialize: ARM GICv2
+		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
+		// ZINQ ?
+		//	GICInterface->IIDR=?, GICDistributor->IIDR=?
+
+		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
+
+//		switch (ICPIDR1 & 0x0F)
+//		{
+//		case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+//		case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+//		default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
+//		}
+	}
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+#if 0 && CPUSTYLE_STM32MP1
+	{
+		PRINTF("stm32mp1_get_per_freq()=%lu\n",stm32mp1_get_per_freq());
+		PRINTF("stm32mp1_get_axiss_freq()=%lu\n",stm32mp1_get_axiss_freq());
+	}
+#endif
 #if 0 && (WITHTWIHW || WITHTWISW)
 	{
 		unsigned i;
@@ -6173,7 +6214,7 @@ void hightests(void)
 #if 0 && CPUSTYLE_STM32MP1
 	{
 
-		RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_BSECEN;
+		RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_BSECEN;
 		(void) RCC->MP_APB5ENSETR;
 	//	0x24: STM32MP153Cx
 	//	0x25: STM32MP153Ax
@@ -6202,7 +6243,9 @@ void hightests(void)
 	{
 		// FPU speed test
 		uint_fast8_t state = 0;
-#if CPUSTYLE_R7S721
+#if defined (BOARD_BLINK_INITIALIZE)
+		BOARD_BLINK_INITIALIZE();
+#elif CPUSTYLE_R7S721
 		const uint_fast32_t mask = (1uL << 10);	// P7_10: RXD0: RX DATA line
 		arm_hardware_pio7_outputs(mask, mask);
 #else /* CPUSTYLE_R7S721 */
@@ -6213,26 +6256,33 @@ void hightests(void)
 		global_disableIRQ();
 		for (;;)
 		{
-			//	__GNUC__=9, __GNUC_MINOR__=3
-			//	cplxmla @2FFC5698, src @C0114100, dst @C0104100. refv @2FFCC340, CPU_FREQ=793 MHz
-			// stm32mp1 @800 MHz w/o NEON:
-			// cplxmla: 2 kHz
-			// cplxmla & cplxmlasave: 1.85 kHz
-			// stm32mp1 @800 MHz with NEON:
-			// cplxmla: 3 kHz
-			// cplxmla & cplxmlasave: 2.65 kHz
-			// __GNUC__=9, __GNUC_MINOR__=3
-			// cplxmla @20042D08, src @20206040, dst @201F6040. refv @20123080, CPU_FREQ=360 MHz
-			// R7S721 @360 MHz w/o NEON:
-			// cplxmla & cplxmlasave: 0.7 kHz
-			// R7S721 @360 MHz with NEON:
-			// cplxmla & cplxmlasave: 0.7 kHz
+			// stm32mp1 @800 MHz, 16 bit DDR3 @533 MHz
+			//	__GNUC__=10, __GNUC_MINOR__=2
+			//	cplxmla @C001D174, src @C0CD06C0, dst @C0CC06C0. refv @C0B01A00, CPU_FREQ=792 MHz
+			// -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon
+			// cplxmla & cplxmlasave: 2.43 kHz
+			// -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon-vfpv4
+			// cplxmla & cplxmlasave: 2.38 kHz
+			// -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4
+			// cplxmla & cplxmlasave: 1.87 kHz
 
-			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16  : 1.85 kHz
-			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon -mfpu=vfpv4-d16 : 1.85 kHz
-			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=vfpv4-d16 -mfpu=neon : 2.65 kHz
-			// stm32mp1 @800, -mcpu=cortex-a7 -mfloat-abi=hard -mfpu=neon : 2.65 kHz
+			// ZYNQ 7000 @666 MHz, 16 bit DDR3 @533 MHz
+			//	__GNUC__=10, __GNUC_MINOR__=2
+			//	cplxmla @00112798, src @0080DB40, dst @007FDB40. refv @00362E00, CPU_FREQ=666 MHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=vfpv3
+			// cplxmla & cplxmlasave: 1.53 kHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=neon-vfpv3
+			// cplxmla & cplxmlasave: 1.4 kHz
 
+			// R7S721 @360 MHz
+			//	__GNUC__=10, __GNUC_MINOR__=2
+			// cplxmla @2001C184, src @2027D780, dst @2026D780. refv @20186B00, CPU_FREQ=360 MHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=vfpv3
+			// cplxmla & cplxmlasave: 0.71 kHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=neon-vfpv3
+			// cplxmla & cplxmlasave: 0.71 kHz
+			// -mcpu=cortex-a9  -mfloat-abi=hard  -mfpu=neon
+			// cplxmla & cplxmlasave: 0.71 kHz
 
 			cplxmla(src, dst, refv,  FFTZS);
 			cplxmlasave(dst, FFTZS);
@@ -6240,22 +6290,24 @@ void hightests(void)
 			if (state)
 			{
 				state = 0;
-	#if CPUSTYLE_R7S721
+	#if defined (BOARD_BLINK_SETSTATE)
+			BOARD_BLINK_SETSTATE(0);
+	#elif CPUSTYLE_R7S721
 				R7S721_TARGET_PORT_S(7, mask);
 	#else /* CPUSTYLE_R7S721 */
 				(GPIOA)->BSRR = BSRR_S(mask);
 	#endif /* CPUSTYLE_R7S721 */
-				//BOARD_BLINK_SETSTATE(1);
 			}
 			else
 			{
 				state = 1;
-		#if CPUSTYLE_R7S721
-					R7S721_TARGET_PORT_C(7, mask);
+		#if defined (BOARD_BLINK_SETSTATE)
+				BOARD_BLINK_SETSTATE(1);
+		#elif CPUSTYLE_R7S721
+				R7S721_TARGET_PORT_C(7, mask);
 		#else /* CPUSTYLE_R7S721 */
-					(GPIOA)->BSRR = BSRR_C(mask);
+				(GPIOA)->BSRR = BSRR_C(mask);
 		#endif /* CPUSTYLE_R7S721 */
-				//BOARD_BLINK_SETSTATE(0);
 			}
 		}
 
@@ -7084,6 +7136,9 @@ void hightests(void)
 #endif
 #if 0 && LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 	{
+
+		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+		board_update();
 		TP();
 		unsigned cnt;
 		display2_bgreset();
@@ -8678,7 +8733,7 @@ void lowtests(void)
 	{
 		// калибровка программной задержки
 
-		//RCC->MP_APB5ENSETR = RCC_MC_APB5ENSETR_TZPCEN;
+		//RCC->MP_APB5ENSETR = RCC_MP_APB5ENSETR_TZPCEN;
 		//PRINTF("Hello. STM32MP157\n");
 		//arm_hardware_pioa_altfn20(1uL << 13, 0);	// DBGTRO
 		// LED blinking test

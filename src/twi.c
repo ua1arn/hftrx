@@ -12,7 +12,7 @@
 
 #if WITHTWIHW || WITHTWISW
 
-// Обслуживание I2C без использования аппаратных средств процессора
+// Обслуживание I2C без использования аппаратных контроллеров процессора
 // программное "ногодрыгание" выводами.
 
 #if CPUSTYLE_ATMEGA
@@ -31,6 +31,105 @@
 
 	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
 	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
+
+#elif CPUSTYLE_XC7Z
+
+//#include <src/zynq/xgpiops.h>
+
+/*
+void TWISOFT_INITIALIZE(void)
+{
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
+	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);	// "1" получается открытым стоком
+	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);	// "1" получается открытым стоком
+}
+
+// "1" получается открытым стоком
+#define SET_TWCK() do { \
+		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); \
+		hardware_spi_io_delay(); \
+	} while (0)	// SCL = 1
+// "0" притягиваем к земле
+#define CLR_TWCK() do { \
+		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); \
+		hardware_spi_io_delay(); \
+	} while (0)	// SCL = 0
+// "1" получается открытым стоком
+#define SET_TWD() do { \
+		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); \
+		hardware_spi_io_delay(); \
+	} while (0)	// SDA = 1
+// "0" притягиваем к земле
+#define CLR_TWD() do { \
+		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); \
+		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); \
+		hardware_spi_io_delay(); \
+	} while (0)	// SDA = 0
+
+// всегда вызывается когда отпустили шину
+#define GET_TWCK() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO) != 0)
+#define GET_TWD() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO) != 0)
+*/
+
+void TWISOFT_INITIALIZE(void)
+{
+//	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+//	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+//	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+//	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+}
+
+void SET_TWCK(void)
+{
+//	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+//	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+//	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+//	hardware_spi_io_delay();
+}
+
+void CLR_TWCK(void)
+{
+//	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+//	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
+//	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
+	hardware_spi_io_delay();
+}
+
+void SET_TWD(void)
+{
+//	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+//	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+//	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	hardware_spi_io_delay();
+}
+
+void CLR_TWD(void)
+{
+//	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+//	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+//	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
+	hardware_spi_io_delay();
+}
+
+uint_fast8_t GET_TWCK(void)
+{
+	return 1;
+//	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
+//	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO);
+}
+
+uint_fast8_t GET_TWD(void)
+{
+	return 1;
+//	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
+//	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO);
+}
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
@@ -1639,6 +1738,52 @@ void i2c2_stop(void)
 	SET2_TWD();//SDA = 1;
 	i2c_dly();
 
+}
+
+void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
+{
+	volatile int n;
+	char x, d=0;
+	SET2_TWD();
+	i2c_dly();
+	for(x=0; x<8; x++)
+	{
+		n = 10000;
+		do {
+			SET2_TWCK();
+			i2c_dly();
+		}
+		while (n -- && GET2_TWCK() == 0)    // wait for any SCL clock stretching
+			;
+		d *= 2;
+		i2c_dly();
+		if (GET2_TWD() != 0)
+			d += 1;
+		CLR2_TWCK();
+		i2c_dly();
+	}
+
+	switch (ack_type)
+	{
+	case I2C_READ_ACK_1:
+	case I2C_READ_ACK:
+		CLR2_TWD();
+		i2c_dly();
+		break;
+	case I2C_READ_NACK:
+	case I2C_READ_ACK_NACK:	/* чтение первого и единственного байта ответа */
+		SET2_TWD();
+		i2c_dly();
+		break;
+	}
+
+	SET2_TWCK();
+	i2c_dly();             // send (N)ACK bit
+	CLR2_TWCK();
+	SET2_TWD();
+	i2c_dly();
+	* data = d;
+	//return 0;
 }
 
 void i2c2_write(uint_fast8_t d)

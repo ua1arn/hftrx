@@ -647,4 +647,129 @@ const USBD_ClassTypeDef USBD_CLASS_CDCACM =
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
 
+#if WITHDEBUG && WITHDEBUG_CDC
+
+// Очереди символов для обмена с host
+enum { qSZdevice = 8192 };
+
+static uint8_t debugusb_queue [qSZdevice];
+static unsigned debugusb_qp, debugusb_qg;
+
+// Передать символ в host
+static uint_fast8_t	debugusb_qput(uint_fast8_t c)
+{
+	unsigned qpt = debugusb_qp;
+	const unsigned next = (qpt + 1) % qSZdevice;
+	if (next != debugusb_qg)
+	{
+		debugusb_queue [qpt] = c;
+		debugusb_qp = next;
+		return 1;
+	}
+	return 0;
+}
+
+// Получить символ в host
+static uint_fast8_t debugusb_qget(uint_fast8_t * pc)
+{
+	if (debugusb_qp != debugusb_qg)
+	{
+		* pc = debugusb_queue [debugusb_qg];
+		debugusb_qg = (debugusb_qg + 1) % qSZdevice;
+		return 1;
+	}
+	return 0;
+}
+
+// получить состояние очереди передачи
+static uint_fast8_t debugusb_qempty(void)
+{
+	return debugusb_qp == debugusb_qg;
+}
+
+enum { qSZhost = 32 };
+
+static uint8_t debugusb_ci_queue [qSZhost];
+static unsigned debugusb_ci_qp, debugusb_ci_qg;
+
+// Передать символ в device
+static uint_fast8_t	debugusb_ci_qput(uint_fast8_t c)
+{
+	unsigned qpt = debugusb_ci_qp;
+	const unsigned next = (qpt + 1) % qSZhost;
+	if (next != debugusb_ci_qg)
+	{
+		debugusb_ci_queue [qpt] = c;
+		debugusb_ci_qp = next;
+		return 1;
+	}
+	return 0;
+}
+
+// Получить символ в host
+static uint_fast8_t debugusb_ci_qget(uint_fast8_t * pc)
+{
+	if (debugusb_ci_qp != debugusb_ci_qg)
+	{
+		* pc = debugusb_ci_queue [debugusb_ci_qg];
+		debugusb_ci_qg = (debugusb_ci_qg + 1) % qSZhost;
+		return 1;
+	}
+	return 0;
+}
+
+// получить состояние очереди передачи
+static uint_fast8_t debugusb_ci_qempty(void)
+{
+	return debugusb_ci_qp == debugusb_ci_qg;
+}
+
+uint_fast8_t debugusb_putchar(uint_fast8_t c)/* передача символа если готов порт */
+{
+	system_disableIRQ();
+	const uint_fast8_t f = debugusb_qput(c);
+	if (f)
+		HARDWARE_DEBUG_ENABLETX(1);
+	system_enableIRQ();
+	return f;
+}
+
+uint_fast8_t debugusb_getchar(char * cp) /* приём символа, если готов порт */
+{
+	uint_fast8_t c;
+	system_disableIRQ();
+	const uint_fast8_t f = debugusb_ci_qget(& c);
+	system_enableIRQ();
+	if (f)
+		* cp = c;
+	return f;
+}
+
+void debugusb_parsechar(uint_fast8_t c)				/* вызывается из обработчика прерываний */
+{
+	debugusb_ci_qput(c);
+}
+
+void debugusb_sendchar(void * ctx)							/* вызывается из обработчика прерываний */
+{
+	uint_fast8_t c;
+	if (debugusb_qget(& c))
+	{
+		HARDWARE_DEBUG_TX(ctx, c);
+		if (debugusb_qempty())
+			HARDWARE_DEBUG_ENABLETX(0);
+	}
+	else
+	{
+		HARDWARE_DEBUG_ENABLETX(0);
+	}
+}
+
+// Вызывается из user-mode программы при запрещённых прерываниях.
+void debugusb_initialize(void)
+{
+}
+
+#endif /* WITHDEBUG && WITHDEBUG_CDC */
+
 #endif /* WITHUSBHW && WITHUSBCDCACM */

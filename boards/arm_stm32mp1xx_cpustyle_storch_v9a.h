@@ -52,7 +52,8 @@
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
-	#define WITHHWDDR3_2GBIT	1
+	#define WITHHWDDR3_2GBIT	1	/* 256 MB chip */
+	//#define WITHHWDDR3_4GBIT	1	/* 512 MB chip */
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
@@ -121,7 +122,7 @@
 	//#define USB_OTG_HS                   USB1_OTG_HS
 	//#define USB_OTG_FS                   USB2_OTG_FS
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	//#define WITHUSBHW_HOST		USB_OTG_HS
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
@@ -132,9 +133,14 @@
 
 	#if WITHINTEGRATEDDSP
 
-		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+		//#define WITHUAC2		1	/* UAC2 support */
+		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 		#if WITHRTS96 || WITHRTS192
+			#define WITHUSBUACIN	1
 			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+		#else /* WITHRTS96 || WITHRTS192 */
+			#define WITHUSBUACIN
 		#endif /* WITHRTS96 || WITHRTS192 */
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 	#endif /* WITHINTEGRATEDDSP */
@@ -1003,6 +1009,41 @@
 		#endif /* WIHSPIDFHW */
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
+
+	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+
+		//	tsc interrupt XS26, pin 08
+		//	tsc/LCD reset, XS26, pin 22
+		//	tsc SCL: XS26, pin 01
+		//	tsc SDA: XS26, pin 02
+
+		void gt911_interrupt_handler(void);
+
+		#define BOARD_GT911_INT_PIN (1uL << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
+		#define BOARD_GT911_RESET_PIN (1uL << 4)	/* PD4 : tsc/LCD reset, XS26, pin 22 */
+
+		#define BOARD_GT911_RESET_SET(v) do { if (v) GPIOD->BSRR = BSRR_S(BOARD_GT911_RESET_PIN); else GPIOD->BSRR = BSRR_C(BOARD_GT911_RESET_PIN); __DSB(); } while (0)
+		#define BOARD_GT911_INT_SET(v) do { if (v) GPIOA->BSRR = BSRR_S(BOARD_GT911_INT_PIN); else GPIOA->BSRR = BSRR_C(BOARD_GT911_INT_PIN); __DSB(); } while (0)
+
+		#define BOARD_GT911_RESET_INITIO_1() do { \
+			arm_hardware_pioa_outputs2m(BOARD_GT911_INT_PIN, 1* BOARD_GT911_INT_PIN); \
+			arm_hardware_piod_outputs2m(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
+			 local_delay_ms(200);  \
+		} while (0)
+
+		#define BOARD_GT911_RESET_INITIO_2() do { \
+			arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
+			arm_hardware_pioa_updown(BOARD_GT911_INT_PIN, 0); \
+		} while (0)
+
+		#define BOARD_GT911_INT_CONNECT() do { \
+			arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
+			arm_hardware_pioa_updown(BOARD_GT911_INT_PIN, 0); \
+			arm_hardware_pioa_onchangeinterrupt(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+		} while (0)
+		//gt911_interrupt_handler
+
+	#endif
 
 	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
 	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf

@@ -48,7 +48,9 @@
 //#define WITHUSBDEV_HIGHSPEEDULPI	1
 //#define WITHUSBDEV_HIGHSPEEDPHYC	1
 
-//#define WITHUSBHW_HOST		USB_OTG_FS
+#if WITHUSEUSBFLASH
+	#define WITHUSBHW_HOST		USB_OTG_FS
+#endif /* WITHUSEUSBFLASH */
 
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 #define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
@@ -60,12 +62,19 @@
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-//#define WITHUAC2		1	/* UAC2 support */
-#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-#if WITHRTS96
-	#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-#endif /* WITHRTS96 */
-//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+#if WITHINTEGRATEDDSP
+
+	//#define WITHUAC2		1	/* UAC2 support */
+	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+	#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+	#if WITHRTS96 || WITHRTS192
+		#define WITHUSBUACIN	1
+		#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+	#else /* WITHRTS96 || WITHRTS192 */
+		#define WITHUSBUACIN
+	#endif /* WITHRTS96 || WITHRTS192 */
+	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+#endif /* WITHINTEGRATEDDSP */
 
 #define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 #define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */

@@ -78,6 +78,8 @@ SECTIONS
 		*(.rodata*)
 
 		KEEP(*(.eh_frame*))
+		. = ALIGN(4);
+		
 	} > FLASH
 
 	.ARM.extab :
@@ -202,7 +204,7 @@ SECTIONS
 
 	. = __etext3 + __data3_end__ - __data3_start__;
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		. = ALIGN(32);
 		__bss_start__ = .;
@@ -212,16 +214,17 @@ SECTIONS
 		__bss_end__ = .;
 	} > RAM_D2
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
 		__end__ = .;
 		end = __end__;
 		KEEP(*(.heap*))
+		. = ALIGN(4);
 		__HeapLimit = .;
 	} > RAM_D2
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
 		*(.noinit*)
@@ -231,9 +234,10 @@ SECTIONS
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (COPY):
+	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
+		. = ALIGN(4);
 	} > RAM_D3
 
 	/* Set stack top to end of RAM, and stack limit move down by

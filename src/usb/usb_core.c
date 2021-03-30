@@ -43,10 +43,12 @@ usbd_epaddr2pipe(uint_fast8_t ep_addr)
 		return 0;
 	case 0x00: return 0;
 	case 0x80: return 0;
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	case USBD_EP_AUDIO_OUT:	return HARDWARE_USBD_PIPE_ISOC_OUT;
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
 	case USBD_EP_AUDIO_IN:	return HARDWARE_USBD_PIPE_ISOC_IN;
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 #if WITHUSBCDCACM
 
 #if WITHUSBCDCACMINTSHARING
@@ -102,10 +104,12 @@ usbd_pipe2epaddr(uint_fast8_t pipe)
 	default:
 		ASSERT(0);
 		return 0;
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	case HARDWARE_USBD_PIPE_ISOC_OUT: return USBD_EP_AUDIO_OUT;
+#endif /* WITHUSBUACOUT */
+#if WITHUSBUACIN
 	case HARDWARE_USBD_PIPE_ISOC_IN: return USBD_EP_AUDIO_IN;
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 #if WITHUSBCDCACM
 
 #if WITHUSBCDCACMINTSHARING
@@ -1377,7 +1381,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	}
 #endif /* WITHUSBCDCACM */
 
-#if WITHUSBUAC
+#if WITHUSBUACIN
 	if (1)
 	{
 		// Данные AUDIO из трансивера в компьютер
@@ -1410,9 +1414,9 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 	}
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
 
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	if (1)
 	{
 		// Данные AUDIO из компьютера в трансивер
@@ -1443,7 +1447,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 
 		USBx->PIPESEL = 0;
 	}
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACOUT */
 
 #if WITHUSBCDCEEM
 	if (1)
@@ -3490,17 +3494,19 @@ USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 
 
 // STM32MP1 UTMI interface
-HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef USB_HS_PHYCInit(void)
 {
 	//PRINTF("USB_HS_PHYCInit start\n");
 	// Clock source
-	RCC->MP_APB4ENSETR = RCC_MC_APB4ENSETR_USBPHYEN;
+	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN;
 	(void)RCC-> MP_APB4ENSETR;
-	RCC->MP_APB4LPENSETR = RCC_MC_APB4LPENSETR_USBPHYLPEN;
+	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN;
 	(void) RCC->MP_APB4LPENSETR;
 
 	if (1)
 	{
+		//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+		//	48 MHz clock source to be provided to the USBO:
 		// USBOSRC
 		//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
 		//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
@@ -3510,11 +3516,20 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
 			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m
-			(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck
+			//(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max pll4_r_ck (можно использовать только 48 МГц)
+
+			//(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck	- входная частота для PHYC PLL
+			(0x00 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max hse_ker_ck	- входная частота для PHYC PLL
 			0;
 		(void) RCC->USBCKSELR;
-
 	}
+
+	ASSERT(((RCC->USBCKSELR & RCC_USBCKSELR_USBOSRC_Msk) >> RCC_USBCKSELR_USBOSRC_Pos) != 0 || PLL4_FREQ_R == 48000000uL);
+
+// не требуется... запущено в bootloader
+//	// USBPHYC already initialized
+//	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
+//		return HAL_OK;
 
 	if (1)
 	{
@@ -3529,27 +3544,46 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 			;
 		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
-		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;
-		const uint_fast32_t pll4_r_ck = PLL4_FREQ_R;
+		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
+		uint_fast32_t refclk;
+		switch ((RCC->USBCKSELR & RCC_USBCKSELR_USBPHYSRC_Msk) >> RCC_USBCKSELR_USBPHYSRC_Pos)
+		{
+		case 0x00:
+			// hse_ker_ck
+			refclk = WITHCPUXTAL;
+			break;
+		case 0x01:
+			// pll4_r_ck
+			refclk = PLL4_FREQ_R;
+			break;
+		case 0x02:
+			// hse_ker_ck/2
+			refclk = WITHCPUXTAL / 2;
+			break;
+		default:
+			ASSERT(0);
+			return HAL_ERROR;
+		}
+		ASSERT(refclk >= 19200000uL && refclk <= 38400000uL);
 		const uint_fast32_t ODF = 0;	// игнорируется
 		// 1440 MHz
-		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, pll4_r_ck);
+		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, refclk);
 		const uint_fast32_t N = d.quot;
 
 		const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
-		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / pll4_r_ck;
+		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / refclk;
 
 //		uint_fast64_t FRACT = (uint_fast64_t) USBPHYCPLLFREQUENCY << 16;
 //		FRACT /= pll4_r_ck;
 //		FRACT = FRACT - (d.quot << 16);
 
-		//PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", pll4_r_ck, N, (unsigned) (FRACT & 0xFFFF), ODF);
+		//PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", refclk, N, (unsigned) (FRACT & 0xFFFF), ODF);
 
 		USBPHYC->PLL =
 				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |
 					USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk |
 					USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk | USBPHYC_PLL_PLLSTRB_Msk | USBPHYC_PLL_PLLSTRBYP_Msk)) |
-			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя
+			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя.
 			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
 			USBPHYC_PLL_PLLSTRBYP_Msk |
 			(((FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
@@ -3578,25 +3612,29 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
 		0;
 	(void) USBPHYC->MISC;
 
-	if (0)
+	if (1)
 	{
+		// USBH_HS_DP1, USBH_HS_DM1
+		PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
 //		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			0;
-		USBPHYC_PHY1->TUNE = 0x04070004;
-		(void) USBPHYC_PHY1->TUNE;
+		//USBPHYC_PHY1->TUNE = 0x04070004;
+		//(void) USBPHYC_PHY1->TUNE;
 	}
-	else
+	if (1)
 	{
+		// USBH_HS_DP2, USBH_HS_DM2
+		PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
 //		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			0;
-		USBPHYC_PHY2->TUNE = 0x04070004;
-		(void) USBPHYC_PHY2->TUNE;
+		//USBPHYC_PHY2->TUNE = 0x04070004;
+		//(void) USBPHYC_PHY2->TUNE;
 	}
 
 	//PRINTF("USB_HS_PHYCInit done\n");
@@ -3612,7 +3650,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
   * @param  USBx : Selected device
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_HS_PHYCInit(USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef USB_HS_PHYCInit(void)
 {
 	PRINTF("USB_HS_PHYCInit start\n");
   uint32_t count = 0;
@@ -3727,7 +3765,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 		(void) USBx->GCCFG;
 
 		/* Enables control of a High Speed USB PHY */
-		USB_HS_PHYCInit(USBx);
+		USB_HS_PHYCInit();
 
 		if(cfg->use_external_vbus == USB_ENABLE)
 		{
@@ -4283,10 +4321,10 @@ HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTy
 
 		if ((outep->DOEPCTL & USB_OTG_DOEPCTL_USBAEP) == 0)
 		{
-			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP)) |
+			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP | USB_OTG_DOEPCTL_STALL)) |
 				((ep->maxpacket << USB_OTG_DOEPCTL_MPSIZ_Pos) & USB_OTG_DOEPCTL_MPSIZ) |
 				(ep->type << USB_OTG_DOEPCTL_EPTYP_Pos) |
-				USB_OTG_DOEPCTL_SD0PID_SEVNFRM |
+				USB_OTG_DOEPCTL_SD0PID_SEVNFRM |	/* DATA0 */
 				USB_OTG_DOEPCTL_USBAEP |
 				0;
 			(void) outep->DOEPCTL;
@@ -4326,7 +4364,7 @@ HAL_StatusTypeDef USB_ActivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, USB
 		USB_OTG_OUTEndpointTypeDef * const outep = USBx_OUTEP(ep->num);
 		if ((outep->DOEPCTL & USB_OTG_DOEPCTL_USBAEP) == 0)
 		{
-			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP)) |
+			outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_MPSIZ | USB_OTG_DOEPCTL_EPTYP | USB_OTG_DOEPCTL_STALL)) |
 				((ep->maxpacket << USB_OTG_DOEPCTL_MPSIZ_Pos) & USB_OTG_DOEPCTL_MPSIZ ) |
 				(ep->type << USB_OTG_DOEPCTL_EPTYP_Pos ) |
 				//(ep->num << USB_OTG_DIEPCTL_TXFNUM_Pos ) |	// TX FIFO index - зачем это здесь?
@@ -4398,7 +4436,7 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
 	{
 		USB_OTG_OUTEndpointTypeDef * const outep = USBx_OUTEP(ep->num);
 
-		outep->DOEPCTL &= ~ USB_OTG_DOEPCTL_USBAEP;
+		outep->DOEPCTL &= ~ (USB_OTG_DOEPCTL_USBAEP | USB_OTG_DOEPCTL_STALL);
 		(void) outep->DOEPCTL;
 		USBx_DEVICE->DAINTMSK &= ~ (USB_OTG_DAINTMSK_OEPM & ((1 << ep->num) << USB_OTG_DAINTMSK_OEPM_Pos));
 		(void) USBx_DEVICE->DAINTMSK;
@@ -4558,17 +4596,17 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 		{
 			if ((USBx_DEVICE->DSTS & (1U << USB_OTG_DSTS_FNSOF_Pos)) == 0U || USB_GetDevSpeed(USBx) == USB_OTG_SPEED_HIGH)
 			{
-				outep->DOEPCTL |= USB_OTG_DOEPCTL_SODDFRM;
+				outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | USB_OTG_DOEPCTL_SODDFRM);
 				(void) outep->DOEPCTL;
 			}
 			else
 			{
-				outep->DOEPCTL |= USB_OTG_DOEPCTL_SD0PID_SEVNFRM;
+				outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | USB_OTG_DOEPCTL_SD0PID_SEVNFRM);	/* DATA0 */
 				(void) outep->DOEPCTL;
 			}
 		}
 		/* EP enable */
-		outep->DOEPCTL |= (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
+		outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA));
 		(void) outep->DOEPCTL;
 	}
 
@@ -4682,7 +4720,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
     }
 
     /* EP enable */
-    outep->DOEPCTL |= (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
+    outep->DOEPCTL = (outep->DOEPCTL & ~ (USB_OTG_DOEPCTL_STALL)) | (USB_OTG_DOEPCTL_CNAK | USB_OTG_DOEPCTL_EPENA);
     (void) outep->DOEPCTL;
   }
 
@@ -5040,7 +5078,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
 	//PRINTF(PSTR("USB_EPSetStall, ep->num=%02X\n"), ep->num);
-	if (ep->is_in == 1)
+	if (ep->is_in)
 	{
 		USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
 		if (((inep->DIEPCTL) & USB_OTG_DIEPCTL_EPENA) == 0)
@@ -5075,7 +5113,7 @@ HAL_StatusTypeDef USB_EPSetStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTy
 HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EPTypeDef *ep)
 {
 	//PRINTF(PSTR("USB_EPClearStall, ep->num=%02X\n"), ep->num);
-	if (ep->is_in == 1)
+	if (ep->is_in)
 	{
 		USB_OTG_INEndpointTypeDef * const inep = USBx_INEP(ep->num);
 		inep->DIEPCTL &= ~ USB_OTG_DIEPCTL_STALL;
@@ -5093,7 +5131,8 @@ HAL_StatusTypeDef USB_EPClearStall(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_EP
 		(void) outep->DOEPCTL;
 		if (ep->type == USBD_EP_TYPE_INTR || ep->type == USBD_EP_TYPE_BULK)
 		{
-			outep->DOEPCTL |= USB_OTG_DOEPCTL_SD0PID_SEVNFRM; /* DATA0 */
+			outep->DOEPCTL = ((outep->DOEPCTL & ~ USB_OTG_DOEPCTL_STALL) | USB_OTG_DOEPCTL_SD0PID_SEVNFRM); /* DATA0 */
+			//outep->DOEPCTL |= USB_OTG_DOEPCTL_SD0PID_SEVNFRM; /* DATA0 */
 			(void) outep->DOEPCTL;
 		}
 	}
@@ -7352,7 +7391,7 @@ USBD_StatusTypeDef  USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 				// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
 
 				// Extended Properties OS Descriptor support
-				if (ExtOsPropDescTbl[ifc].size != 0)
+				if (ifc < ARRAY_SIZE(ExtOsPropDescTbl) && ExtOsPropDescTbl[ifc].size != 0)
 				{
 					USBD_CtlSendData(pdev, ExtOsPropDescTbl[ifc].data, ulmin16(ExtOsPropDescTbl[ifc].size, req->wLength));
 				}
@@ -8507,7 +8546,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
   * @param  hpcd: PCD handle
   * @retval HAL status
   */
-// F4, F7, H7...
+// F4, F7, H7, MP1...
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	__DMB();
@@ -8533,7 +8572,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	    /* Handle RxQLevel Interrupt */
 	    if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_RXFLVL))
 	    {
-	      USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
+	      //USB_MASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
 	      const uint_fast32_t grxstsp = USBx->GRXSTSP;
 	      USB_OTG_EPTypeDef * const ep = & hpcd->OUT_ep [(grxstsp & USB_OTG_GRXSTSP_EPNUM_Msk) >> USB_OTG_GRXSTSP_EPNUM_Pos];
 
@@ -8560,7 +8599,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	        USB_ReadPacket(USBx, (uint8_t *) hpcd->PSetup, 8);
 	        ep->xfer_count += bcnt;
 	      }
-	      USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
+	      //USB_UNMASK_INTERRUPT(hpcd->Instance, USB_OTG_GINTMSK_RXFLVLM); //mgs:????
 	    }
 
 		/* OUT endpoints interrupts */
@@ -8580,18 +8619,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 				  if ((epint & USB_OTG_DOEPINT_XFRC) == USB_OTG_DOEPINT_XFRC)
 				  {
 					CLEAR_OUT_EP_INTR(epnum, USB_OTG_DOEPINT_XFRC);
-		#if CPUSTYLE_STM32MP1
-					  if (hpcd->Init.dma_enable == USB_ENABLE)
-					  {
-						  // USB_OTG_DOEPINT_STPKTRX
-						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))	// Setup packet received
-						{
-						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
-						}
-					  }
-		#elif CPUSTYLE_STM32H7XX
+		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
-					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
+					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
 					{
 					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
@@ -8623,18 +8653,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
 				  if ((epint & USB_OTG_DOEPINT_STUP) == USB_OTG_DOEPINT_STUP)
 				  {
-		#if CPUSTYLE_STM32MP1
-					  if (hpcd->Init.dma_enable == USB_ENABLE)
-					  {
-						  // USB_OTG_DOEPINT_STPKTRX
-						if (USBx_OUTEP(0)->DOEPINT & (1 << 15))
-						{
-						  CLEAR_OUT_EP_INTR(epnum, (1 << 15));
-						}
-					  }
-		#elif CPUSTYLE_STM32H7XX
+		#if CPUSTYLE_STM32MP1 || CPUSTYLE_STM32H7XX
 					/* setup/out transaction management for Core ID >= 310A */
-					if (USBx->GSNPSID >= USB_OTG_CORE_ID_310A)
+					if (USB_GetSNPSiD(USBx) >= USB_OTG_CORE_ID_310A)
 					{
 					  if (hpcd->Init.dma_enable == USB_ENABLE)
 					  {
@@ -8941,11 +8962,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     /* Handle Incomplete ISO IN Interrupt */
     if(__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_IISOIXFR))
     {
-#if WITHUSBUAC
+#if WITHUSBUACIN
 	// device only: Incomplete isochronous IN transfer
     	uint8_t epnum = USBD_EP_AUDIO_IN;	// TODO: use right value - now ignored
       HAL_PCD_ISOINIncompleteCallback(hpcd, epnum);
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACIN */
       __HAL_PCD_CLEAR_FLAG(hpcd, USB_OTG_GINTSTS_IISOIXFR);
     }
 
@@ -14103,11 +14124,11 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		/* Handle Rx Queue Level Interrupts */
 		if(__HAL_HCD_GET_FLAG(hhcd, USB_OTG_GINTSTS_RXFLVL))
 		{
-			USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
+			//USB_MASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
 
 			HCD_RXQLVL_IRQHandler (hhcd);
 
-			USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
+			//USB_UNMASK_INTERRUPT(hhcd->Instance, USB_OTG_GINTMSK_RXFLVLM);
 		}
 	}
 }
@@ -14502,6 +14523,18 @@ void USBH_EHCI_IRQHandler(void)
 {
 	TP();
 }
+
+
+static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
+{
+	qh [0] = (qnext & 0xFFFFFFC0) | (1uL << 1);
+}
+
+static void ehci_itd_fill(uint32_t * itd)
+{
+	itd [0] = 0x01;
+}
+
 // USB EHCI controller
 void board_ehci_initialize(void)
 {
@@ -14514,9 +14547,9 @@ void board_ehci_initialize(void)
 	if (0)
 	{
 		/* SYSCFG clock enable */
-		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
 		(void) RCC->MP_APB3ENSETR;
-		RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
 		(void) RCC->MP_APB3LPENSETR;
 		/*
 		 * Interconnect update : select master using the port 1.
@@ -14528,7 +14561,51 @@ void board_ehci_initialize(void)
 //		(void) SYSCFG->ICNR;
 	}
 
+	static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
+
+    static __attribute__((used, aligned(32))) uint32_t itd0 [16];
+    static __attribute__((used, aligned(32))) uint32_t queue0 [16];
+
+    ehci_itd_fill(itd0);
+    ehci_queue_fill(queue0, (uintptr_t) queue0);
+
+    unsigned i;
+
+	static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024];
+	for (i = 0; i < ARRAY_SIZE(asyncbuff); ++ i)
+    {
+    	asyncbuff [i] = 0x01;	// 0 - valid, 1 - invalid
+    }
+
+	//enum { FLS = 1024, FLS_code = 0 };
+    //enum { FLS = 512, FLS_code = 1 };
+    enum { FLS = 256, FLS_code = 2 };
+	// Periodic frame list
+	static __attribute__((used, aligned(4096))) uint32_t framesbuff [FLS];
+    for (i = 0; i < FLS; ++ i)
+    {
+    	framesbuff [i] = 0x01;	// 0 - valid, 1 - invalid
+    }
+
+    framesbuff [0] =
+    		(uintptr_t) & itd0 |
+			(0uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
+			(0uL << 0);	// 0 - valid, 1 - invalid
+    framesbuff [1] =
+    		(uintptr_t) & queue0 |
+			(1uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
+			(0uL << 0);	// 0 - valid, 1 - invalid
+
+    arm_hardware_flush((uintptr_t) framesbuff, sizeof framesbuff);
+    arm_hardware_flush((uintptr_t) asyncbuff, sizeof asyncbuff);
+    arm_hardware_flush((uintptr_t) itd0, sizeof itd0);
+    arm_hardware_flush((uintptr_t) queue0, sizeof queue0);
+
+	// power cycle for USB dongle
+	TARGET_USBFS_VBUSON_SET(0);
+	local_delay_ms(200);
 	TARGET_USBFS_VBUSON_SET(1);
+	local_delay_ms(200);
 	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
 
 	// USBH_EHCI_HCICAPLENGTH == USB1_EHCI->HCCAPBASE
@@ -14540,6 +14617,36 @@ void board_ehci_initialize(void)
 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) USB1_EHCI->HCCAPBASE);
 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) USB1_EHCI->HCSPARAMS);
 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) USB1_EHCI->HCCPARAMS);
+
+	// https://habr.com/ru/post/426421/
+	// Read the Command register
+	// Читаем командный регистр
+	// Write it back, setting bit 2 (the Reset bit)
+	// Записываем его обратно, выставляя бит 2(Reset)
+	// and making sure the two schedule Enable bits are clear.
+	// и проверяем, что 2 очереди выключены
+	USB1_EHCI->USBCMD = (USB1_EHCI->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+	// A small delay here would be good. You don't want to read
+	// Небольшая задержка здесь будет неплоха, Вы не должны читать
+	// the register before it has a chance to actually set the bit
+	// регистр перед тем, как у него не появится шанса выставить бит
+	(void) USB1_EHCI->USBCMD;
+	// Now wait for the controller to clear the reset bit.
+	// Ждем пока контроллер сбросит бит Reset
+	while ((USB1_EHCI->USBCMD & CMD_HCRESET) != 0)
+		;
+	// Again, a small delay here would be good to allow the
+	// reset to actually become complete.
+	// Опять задержка
+	(void) USB1_EHCI->USBCMD;
+	// wait for the halted bit to become set
+	// Ждем пока бит Halted не будет выставлен
+	while ((USB1_EHCI->USBSTS & STS_HCHALTED) == 0)
+		;
+	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
+	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
+
+
     // Check extended capabilities
     uint_fast32_t eecp = (USB1_EHCI->HCCPARAMS & HCCPARAMS_EECP_MASK) >> HCCPARAMS_EECP_SHIFT;
     if (eecp >= 0x40)
@@ -14561,29 +14668,67 @@ void board_ehci_initialize(void)
 //            }
 //        }
     }
-
-    static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024uL * 1024uL];
-    static __attribute__((used, aligned(4096))) uint32_t framesbuff [1024uL * 1024uL];
-
-    USB1_EHCI->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+	// Disable interrupts
+	// Отключаем прерывания
+	//hc->opRegs->usbIntr = 0;
+    USB1_EHCI->USBINTR = 0;
+	// Setup frame list
+	// Устанавливаем ссылку на фреймлист
+	//hc->opRegs->frameIndex = 0;
+    USB1_EHCI->FRINDEX = 0;
+	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
     USB1_EHCI->PERIODICLISTBASE = (uintptr_t) framesbuff;
+	// копируем адрес асинхронной очереди в регистр
+	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
+    USB1_EHCI->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+	// Устанавливаем сегмент в 0
+	//hc->opRegs->ctrlDsSegment = 0;
     USB1_EHCI->CTRLDSSEGMENT = 0x00000000;
+	// Clear status
+	// Чистим статус
+	//hc->opRegs->usbSts = ~0;
+    USB1_EHCI->USBSTS = ~ 0uL;
+	// Enable controller
+	// Запускаем контроллер, 8 микро-фреймов, включаем
+	// последовательную и асинхронную очередь
+	//hc->opRegs->usbCmd = (8 << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
+    USB1_EHCI->USBCMD =
+    		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
+			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
+			CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
+			//CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
+			//CMD_RS |	// Run/Stop
+			0;
+
+    USB1_EHCI->USBCMD |= CMD_RS;
+	(void) USB1_EHCI->USBCMD;
+
+ 	while ((USB1_EHCI->USBSTS & STS_HCHALTED) != 0)
+		;
+
+	// Configure all devices to be managed by the EHCI
+	// Говорим, что завершили
+	//hc->opRegs->configFlag = 1;
+	//WOR(configFlagO, 1);
 
 	PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) USB1_EHCI->USBCMD);
 	PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) USB1_EHCI->USBSTS);
 	PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) USB1_EHCI->USBINTR);
-	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
 	PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) USB1_EHCI->CTRLDSSEGMENT);
 	PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) USB1_EHCI->PERIODICLISTBASE);
 	PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) USB1_EHCI->ASYNCLISTADDR);
 	//PRINTF("board_ehci_initialize: asyncbuff=%08lX\n", (unsigned long) & asyncbuff);
-
+	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
+	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
+	PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) USB1_EHCI->FRINDEX);
 
 //	USBH_EHCI_IRQn
 	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
 	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
 	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
+
+
 
 	PRINTF("board_ehci_initialize done.\n");
 }

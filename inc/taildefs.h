@@ -160,6 +160,17 @@ typedef struct spinlock_tag {
 
 #endif /* WITHSMPSYSTEM */
 
+typedef struct dpclock_tag
+{
+	SPINLOCK_t lock;
+	uint8_t flag;
+} dpclock_t;
+
+void dpclock_initialize(dpclock_t * lp);
+void dpclock_enter(dpclock_t * lp);
+void dpclock_exit(dpclock_t * lp);
+uint_fast8_t dpclock_tray(dpclock_t * lp);
+
 #if CPUSTYLE_R7S721
 	#define FLASHMEMINIT	__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
 	#define FLASHMEMINITFUNC	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */

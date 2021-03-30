@@ -308,6 +308,25 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 				) \
 			)
 
+	#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
+
+		typedef uint_fast32_t COLORMAIN_T;
+		typedef uint32_t PACKEDCOLORMAIN_T;
+
+		#define TFTRGB(red, green, blue) \
+			(  (uint_fast32_t) \
+				(	\
+					(((uint_fast32_t) ((red) & 0xFF)) << 16)  | \
+					(((uint_fast32_t) ((green) & 0xFF)) << 0)  | \
+					(((uint_fast32_t) ((blue) & 0xFF)) << 8)  | \
+					0 \
+				) \
+			)
+
+		// для формирования растра с изображением водопада и спектра
+		#define TFTRGB565 TFTRGB
+
+
 	#elif LCDMODE_MAIN_ARGB888
 
 		//#define LCDMODE_RGB565 1
@@ -946,14 +965,15 @@ void board_set_bottomdbwf(int_fast16_t v);		/* нижний предел FFT */
 void board_set_zoomxpow2(uint_fast8_t v);		/* уменьшение отображаемого участка спектра */
 void board_set_wflevelsep(uint_fast8_t v); 		/* чувствительность водопада регулируется отдельной парой параметров */
 void board_set_view_style(uint_fast8_t v);		/* стиль отображения спектра и панорамы */
+void board_set_view3dss_mark(int_fast16_t v);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 void board_set_showdbm(uint_fast8_t v);			// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 void board_set_afspeclow(int_fast16_t v);		// нижняя частота отображения спектроанализатора
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
-uint_fast8_t colmain_fb_next(void);						// переключиться на использование следующего фреймбуфера (его номер возвращается)
-uint_fast8_t colmain_fb_current(void);
+uint_fast8_t colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
 void colmain_fb_initialize(void);
+uint_fast8_t colmain_getindexbyaddr(uintptr_t addr);
 
 #if WITHALPHA
 #define DEFAULT_ALPHA WITHALPHA
@@ -1044,6 +1064,16 @@ display_value_big(
 	uint_fast8_t blinkstate,	// 0 - пробел, 1 - курсор
 	uint_fast8_t withhalf,		// 0 - только большие цифры
 	uint_fast8_t lowhalf		// lower half
+	);
+
+void
+display_value_lower(
+	uint_fast8_t xcell,	// x координата начала вывода значения
+	uint_fast8_t ycell,	// y координата начала вывода значения
+	uint_fast32_t freq,
+	uint_fast8_t width, // = 8;	// full width
+	uint_fast8_t comma, // = 2;	// comma position (from right, inside width)
+	uint_fast8_t rj
 	);
 
 void

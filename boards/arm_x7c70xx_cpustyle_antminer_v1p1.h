@@ -663,7 +663,18 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 1 // WITHTWISW
+#if 1//WITHTWISW
+	#define TARGET_TWI_TWCK_MIO			37		// MIO 26 SCL
+	#define TARGET_TWI_TWD_MIO			37		// MIO 27 SDA
+
+	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
+	// присоединение выводов к периферийному устройству
+	#define	TWIHARD_INITIALIZE() do { } while (0)
+
+
+#endif // WITHTWISW
+
+#if 0 // WITHTWISW
 	// I2C1_SDA	PB11
 	// I2C1_SCL	PD7
 	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL

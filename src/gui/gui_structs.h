@@ -12,13 +12,15 @@
 #define IS_SLIDER_MOVE			(type == TYPE_SLIDER && action == PRESSED)
 #define IS_LABEL_PRESS			(type == TYPE_LABEL && action == PRESSED)
 #define IS_LABEL_MOVE			(type == TYPE_LABEL && action == MOVING)
+#define IS_AREA_TOUCHED 		(type == TYPE_TOUCH_AREA && action == PRESSED)
 
 typedef enum {
 	TYPE_DUMMY,
 	TYPE_BUTTON,
 	TYPE_LABEL,
 	TYPE_SLIDER,
-	TYPE_CLOSE_BUTTON
+	TYPE_CLOSE_BUTTON,
+	TYPE_TOUCH_AREA
 } element_type_t;
 
 enum {
@@ -57,13 +59,14 @@ enum {
 
 enum {
 	WINDOW_POSITION_AUTO,
-	WINDOW_POSITION_MANUAL
+	WINDOW_POSITION_MANUAL,
+	WINDOW_POSITION_FULLSCREEN
 };
 
 enum {
 	NAME_ARRAY_SIZE = 30,
 	TEXT_ARRAY_SIZE = 30,
-	MENU_ARRAY_SIZE = 30,
+	MENU_ARRAY_SIZE = 50,
 	GUI_ELEMENTS_ARRAY_SIZE = 50
 };
 
@@ -76,6 +79,19 @@ typedef struct {
 	PACKEDCOLORMAIN_T * bg_locked_pressed;
 	PACKEDCOLORMAIN_T * bg_disabled;
 } btn_bg_t;
+
+typedef struct {
+	uint16_t x1;
+	uint16_t y1;
+	uint16_t w;
+	uint16_t h;
+	uint8_t state;
+	uint8_t parent;
+	uint8_t visible;
+	int32_t payload;
+	char name [NAME_ARRAY_SIZE];
+	uint8_t index;
+} touch_area_t;
 
 typedef struct {
 	uint16_t x1;					// координаты от начала экрана
@@ -189,6 +205,8 @@ typedef struct {
 	uint8_t lh_count;
 	slider_t * sh_ptr;
 	uint8_t sh_count;
+	touch_area_t * ta_ptr;
+	uint8_t ta_count;
 	wm_queue_t queue;
 } window_t;
 
@@ -218,6 +236,7 @@ typedef struct {
 	int16_t vector_move_x;	 	  	// в т.ч. и за границами элемента, при state == PRESSED
 	int16_t vector_move_y;
 	uint8_t win[WIN_GUI_COUNT];		// на экране не более 2х окон, одно из которых - основное на весь экран
+	uint8_t footer_buttons_count;
 } gui_t;
 
 #endif /* WITHTOUCHGUI */

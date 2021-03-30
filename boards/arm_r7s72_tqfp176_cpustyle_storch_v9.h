@@ -96,8 +96,15 @@
 
 	#if 1
 		// Обычный AUDIO + 2*CDC + DFU
-		//#define WITHUAC2		1	/* UAC2 support */
-		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#if WITHINTEGRATEDDSP
+
+			//#define WITHUAC2		1	/* UAC2 support */
+			//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+			#define WITHUSBUACIN	1
+			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+		#endif /* WITHINTEGRATEDDSP */
+
 		#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 		#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
     	//#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */

@@ -28,6 +28,8 @@
 	//#define WITHUSESAIPLL	1	/* SAI PLL	*/
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
+	#define LSEFREQ 32768uL
+
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz
 	// PLL1, PLL2 VCOs
@@ -74,8 +76,10 @@
 		#define PLL4DIVN	64	// 768 MHz
 		#define PLL4DIVP	2	// div2
 		//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
-		#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
+		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
+		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
 
 	#else
 		// HSI version (HSI=64 MHz)
@@ -112,9 +116,10 @@
 		#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
 		#define PLL4DIVN	60	// 12.8 * 60 = 768 MHz
 		#define PLL4DIVP	2	// div2
-		//#define PLL4DIVQ	25	// LTDC clock divider = 30.72 MHz
-		#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
+		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
+		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
 
 	#endif
 
@@ -363,7 +368,7 @@
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
-	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
+	//
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	//#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
@@ -463,7 +468,7 @@
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	#define WITHCAT		1	/* используется CAT */
+	//#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
@@ -509,12 +514,12 @@
 		#endif
 		//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
-	#if 1
+	#if 0
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 0
+	#if 1
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */

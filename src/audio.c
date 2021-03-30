@@ -143,9 +143,11 @@ static uint_fast16_t 	glob_lineamp = WITHLINEINGAINMAX;
 static uint_fast16_t	glob_mik1level = WITHMIKEINGAINMAX;
 static uint_fast8_t 	glob_txaudio = BOARD_TXAUDIO_MIKE;	// при SSB/AM/FM передача с тестовых источников
 
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
 static uint_fast16_t 	glob_notch_freq = 1000;	/* частота NOTCH фильтра */
 static uint_fast16_t	glob_notch_width = 500;	/* полоса NOTCH фильтра */
 static uint_fast8_t 	glob_notch_mode = BOARD_NOTCH_OFF;		/* включение NOTCH фильтра */
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
 static uint_fast8_t 	glob_cwedgetime = 4;		/* CW Rise Time (in 1 ms discrete) */
 static uint_fast8_t 	glob_sidetonelevel = 10;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
@@ -4715,7 +4717,7 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 	}
 }
 
-#if WITHDSPEXTDDC
+#if WITHDSPEXTDDC && WITHRTS96
 // использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC 
 saverts96(const int32_t * buff)
@@ -4750,7 +4752,7 @@ saverts96(const int32_t * buff)
 	}
 }
 
-#endif /* WITHDSPEXTDDC */
+#endif /* WITHDSPEXTDDC && WITHRTS96 */
 
 // Taken from https://stackoverflow.com/questions/11930594/calculate-atan2-without-std-functions-or-c99
 
@@ -4855,7 +4857,7 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 #endif /* WITHSKIPUSERMODE */
 }
 
-#if WITHDSPEXTDDC
+#if WITHDSPEXTDDC && defined (DMABUF32RXWFM0Q)
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
 void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
@@ -5262,8 +5264,9 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 	#endif
 
+#if WITHRTS96
 	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
-
+#endif /* WITHRTS96 */
 	#if WITHLOOPBACKTEST
 
 		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
@@ -5825,81 +5828,6 @@ prog_fltlreg(void)
 	modem_update();
 }
 
-#elif WITHEXTERNALDDSP /* имеется управление внешней DSP платой. */
-
-
-#define DSPREG_SPIMODE	SPIC_MODE3	// DSP module для управления платой "Дятел"
-
-void 
-prog_dsplreg(void)
-{
-	const spitarget_t target = targetdsp1;
-	uint_fast8_t buff [DSPCTL_BUFSIZE]; // = { 0 };
-	uint_fast8_t i;
-
-	buff [DSPCTL_OFFSET_MODEA] = glob_dspmodes [0];
-	buff [DSPCTL_OFFSET_MODEB] = glob_dspmodes [1];
-	buff [DSPCTL_OFFSET_AFGAIN_HI] = glob_afgain >> 8;
-	buff [DSPCTL_OFFSET_AFGAIN_LO] = glob_afgain;
-	buff [DSPCTL_OFFSET_IFGAIN_HI] = glob_ifgain >> 8;
-	buff [DSPCTL_OFFSET_IFGAIN_LO] = glob_ifgain;
-	buff [DSPCTL_OFFSET_AFMUTE] = glob_afmute;	/* отключить звук в наушниках и динамиках */
-	buff [DSPCTL_OFFSET_AGCOFF] = (glob_dspagc == BOARD_AGCCODE_OFF);
-	buff [DSPCTL_OFFSET_MICLEVEL_HI] = glob_mik1level >> 8;
-	buff [DSPCTL_OFFSET_MICLEVEL_LO] = glob_mik1level;
-	buff [DSPCTL_OFFSET_AGC_T1] = glob_agc_t1;
-	buff [DSPCTL_OFFSET_AGC_T2] = glob_agc_t2;
-	buff [DSPCTL_OFFSET_AGC_T4] = glob_agc_t4;
-	buff [DSPCTL_OFFSET_AGC_THUNG] = glob_agc_thung;
-	buff [DSPCTL_OFFSET_AGCRATE] = glob_agcrate; // may be UINT8_MAX
-
-	buff [DSPCTL_OFFSET_CWEDGETIME] = glob_cwedgetime;
-	buff [DSPCTL_OFFSET_SIDETONELVL] = glob_sidetonelevel;
-
-	buff [DSPCTL_OFFSET_NOTCH_MODE] = glob_notch_mode;
-	buff [DSPCTL_OFFSET_NOTCH_WIDTH_HI] = glob_notch_width >> 8;
-	buff [DSPCTL_OFFSET_NOTCH_WIDTH_LO] = glob_notch_width >> 0;
-	buff [DSPCTL_OFFSET_NOTCH_FREQ_HI] = glob_notch_freq >> 8;
-	buff [DSPCTL_OFFSET_NOTCH_FREQ_LO] = glob_notch_freq >> 0;
-	buff [DSPCTL_OFFSET_LO6_FREQ_HI] = glob_lo6A >> 8;
-	buff [DSPCTL_OFFSET_LO6_FREQ_LO] = glob_lo6A >> 0;
-	buff [DSPCTL_OFFSET_FULLBW6_HI] = glob_fullbw6 >> 8;
-	buff [DSPCTL_OFFSET_FULLBW6_LO] = glob_fullbw6 >> 0;
-
-	buff [DSPCTL_OFFSET_LOWCUTRX_HI] = glob_aflowcutrx >> 8;
-	buff [DSPCTL_OFFSET_LOWCUTRX_LO] = glob_aflowcutrx >> 0;
-	buff [DSPCTL_OFFSET_HIGHCUTRX_HI] = glob_afhighcutrx >> 8;
-	buff [DSPCTL_OFFSET_HIGHCUTRX_LO] = glob_afhighcutrx >> 0;
-
-	buff [DSPCTL_OFFSET_LOWCUTTX_HI] = glob_aflowcuttx >> 8;
-	buff [DSPCTL_OFFSET_LOWCUTTX_LO] = glob_aflowcuttx >> 0;
-	buff [DSPCTL_OFFSET_HIGHCUTTX_HI] = glob_afhighcuttx >> 8;
-	buff [DSPCTL_OFFSET_HIGHCUTTX_LO] = glob_afhighcuttx >> 0;
-
-	buff [DSPCTL_OFFSET_DIGIGAINMAX] = glob_digigainmax;
-
-	//buff [DSPCTL_OFFSET_FLTSOFTER] = glob_fltsofter;
-	buff [DSPCTL_OFFSET_AMDEPTH] = glob_amdepth;
-	buff [DSPCTL_OFFSET_MIKEAGC] = glob_mikeagc;
-	buff [DSPCTL_OFFSET_MIKEHCLIP] = glob_mikehclip;
-
-	spi_select(target, DSPREG_SPIMODE);
-	prog_spi_send_frame(target, buff, sizeof buff / sizeof buff [0]);
-	spi_unselect(target);
-}
-
-/* 1/4 FS (12 kHz) или 0 для DSP */
-int_fast32_t
-dsp_get_ifreq(void)
-{
-	return DEFAULT_DSP_IF;		/* про частоту ПЧ внешнего DSP знаем только по этому определению. */
-}
-
-void 
-prog_fltlreg(void)
-{
-}
-
 #else
 
 void 
@@ -6002,12 +5930,7 @@ board_dsp1regchanged(void)
 void
 board_flt1regchanged(void)
 {
-#if WITHEXTERNALDDSP /* имеется управление внешней DSP платой. */
-	// в этом случае обращаемся к другой функции
-	flag_dsp1reg = 1; 
-#else /* WITHEXTERNALDDSP */
 	flag_flt1reg = 1; 
-#endif /* WITHEXTERNALDDSP */
 }
 /* Функция может вызываться из обработчика прерывания в случае WITHSPISLAVE */
 /* Установка запроса на обновление сигналов управления */
@@ -6154,6 +6077,8 @@ board_set_swaprts(uint_fast8_t v)	/* если используется конв�
 	}
 }
 
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+
 // Работает при BOARD_NOTCH_MANUAL
 void 
 board_set_notch_freq(uint_fast16_t n)	/* частота NOTCH фильтра */
@@ -6188,6 +6113,8 @@ board_set_notch_mode(uint_fast8_t n)	/* включение NOTCH фильтра 
 		board_flt1regchanged();		// параметры этой функции используются в audio_update();
 	}
 }
+
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 
 void 
 board_set_sidetonelevel(uint_fast8_t n)	/* Уровень сигнала самоконтроля в процентах - 0%..100% */

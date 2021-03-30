@@ -8,7 +8,7 @@
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
-void gui_user_actions_after_close_window(void);
+#if WITHGUISTYLE_COMMON				// версия GUI для разрешения 800х480
 
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
@@ -37,6 +37,20 @@ enum {
 
 	WINDOWS_COUNT
 };
+
+#elif WITHGUISTYLE_MINI 				// версия GUI для разрешения 480x272
+
+enum {
+	WINDOW_MAIN,
+	WINDOW_MAIN_MENU,
+	WINDOW_MENU,
+
+	WINDOWS_COUNT
+};
+
+#endif /* WITHGUISTYLE_COMMON */
+
+void gui_user_actions_after_close_window(void);
 
 enum {
 	MENU_OFF,
@@ -96,6 +110,11 @@ typedef struct {
 	uint_fast16_t step;
 	char label [10];
 } enc2step_t;
+
+#define GET_FROM_WM_QUEUE	uint_fast8_t type;	\
+							int_fast8_t action;	\
+							uintptr_t ptr;		\
+							switch (get_from_wm_queue(win, & type, & ptr, & action))
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */

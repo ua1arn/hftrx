@@ -25,6 +25,7 @@
 #include "lwip/netif.h"
 #include "lwip/autoip.h"
 #include "netif/etharp.h"
+#include "lwip/ip.h"
 
 
 #define BPOOL_FLAG_BPOOL_FULL 0x00000001
@@ -425,7 +426,7 @@ struct netif  * getNetifData(void)
 }
 
 
-static err_t cdceem_output_fn(struct netif *netif, struct pbuf *p, ip_addr_t *ipaddr)
+static err_t cdceem_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
 {
 	err_t e = etharp_output(netif, p, ipaddr);
 	if (e == ERR_OK)
@@ -460,7 +461,7 @@ typedef struct cdceembuf_tag
 {
 	LIST_ENTRY item;
 	struct pbuf *frame;
-} ALIGNX_END cdceembuf_t;
+} cdceembuf_t;
 
 
 static LIST_ENTRY cdceem_free;
@@ -606,7 +607,7 @@ void init_netif(void)
 	netif->hwaddr_len = 6;
 	memcpy(netif->hwaddr, hwaddrv, 6);
 
-	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip4_input);
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
 #if LWIP_AUTOIP
 	  autoip_start(netif);
 #endif /* LWIP_AUTOIP */
@@ -1823,7 +1824,7 @@ USBD_StatusTypeDef  USBD_CDC_EEM_ReceivePacket(USBD_HandleTypeDef *pdev,
 static void USBD_CDCEEM_ColdInit(void)
 {
 }
-
+#if 0
 const USBD_ClassTypeDef USBD_CLASS_CDC_EEMx =
 {
 	USBD_CDCEEM_ColdInit,
@@ -1838,6 +1839,7 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEMx =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
+#endif
 
 const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 {

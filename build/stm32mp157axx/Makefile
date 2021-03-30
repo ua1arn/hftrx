@@ -40,11 +40,9 @@ OBJDIR = ./$(OBJDIR2)
 # debug architecture ARMv7.1.
 CORE = -mcpu=cortex-a7
 CORE += -mfloat-abi=hard
-#CORE += -mcpu=cortex-a7
-#CORE += -mfpu=vfpv4
 #CORE += -mfpu=neon
 CORE += -mfpu=neon-vfpv4
-#CORE += -mlong-calls
+#CORE += -mfpu=vfpv4
 
 # Define optimisation level here
 # ony -Og for app
@@ -115,7 +113,7 @@ CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- $(SRCDIR)/crt_CortexA.s
+ $(SRCDIR)/crt_CortexA.S
 
 # List all user directories here
 UINCDIR += ../.. ../../inc
@@ -140,14 +138,14 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	+= $(patsubst $(SRCDIR)/%.s,$(OBJDIR)/%.o,$(ASRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.S,$(OBJDIR)/%.o,$(ASRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
 #
-#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
+#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.S=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
@@ -176,24 +174,24 @@ all: APP2 $(PROJECT)_app.stm32 app.hex
 bootloader: BOOT2 fsbl.stm32 boot.hex
   
 app_run: $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 2 --detach
+	./dfu-util --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download $(PROJECT)_app.stm32
+	./dfu-util --device ffff:0738 --alt 2 --detach
 
 flash: $(PROJECT)_app.stm32
-	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
+	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
 BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.stm32: $(PROJECT)_boot.bin
-	./stm32image.exe -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
+	./stm32image -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
 	
 boot.hex: fsbl.stm32
 	./bin2ihex -l 0x00000000 -s fsbl.stm32 >$@
 	
 $(PROJECT)_app.stm32: $(PROJECT)_app.bin
-	./stm32image.exe -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
 	
 app.hex: $(PROJECT)_app.stm32
 	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.stm32 >$@
@@ -207,9 +205,9 @@ $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
-$(OBJDIR)/%.o: %.s
+$(OBJDIR)/%.o: %.S
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.s, $@))) -o $@
+	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.S, $@))) -o $@
 
 %_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@

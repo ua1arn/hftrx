@@ -17,11 +17,11 @@ extern "C" {
 #endif /* __cplusplus */
 
 #if defined (WITHUSBUACIN) && defined (WITHUSBUACOUT)
-	#edfine WITHUSBUAC 1
+	#define WITHUSBUAC 1
 #elif defined (WITHUSBUACIN)
-	#edfine WITHUSBUAC 1
+	#define WITHUSBUAC 1
 #elif defined (WITHUSBUACOUT)
-	#edfine WITHUSBUAC 1
+	#define WITHUSBUAC 1
 #elif WITHUSBUAC
 	#define WITHUSBUACIN	1
 	#define WITHUSBUACOUT	1
@@ -165,59 +165,6 @@ typedef uint_least64_t phase_t;
 #ifndef DDS2_CLK_DIV
 	#define DDS2_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS2 */
 #endif
-
-enum
-{
-	DSPCTL_OFFSET_MODEA,
-	DSPCTL_OFFSET_MODEB,
-	DSPCTL_OFFSET_AFGAIN_HI,
-	DSPCTL_OFFSET_AFGAIN_LO,
-	DSPCTL_OFFSET_AFMUTE,
-	DSPCTL_OFFSET_IFGAIN_HI,
-	DSPCTL_OFFSET_IFGAIN_LO,
-	DSPCTL_OFFSET_AGCOFF,
-	DSPCTL_OFFSET_AGC_T1,
-	DSPCTL_OFFSET_AGC_T2,
-	DSPCTL_OFFSET_AGC_T4,
-	DSPCTL_OFFSET_AGC_THUNG,
-	DSPCTL_OFFSET_AGCRATE,
-
-	DSPCTL_OFFSET_MICLEVEL_HI,
-	DSPCTL_OFFSET_MICLEVEL_LO,
-
-	DSPCTL_OFFSET_CWEDGETIME,
-	DSPCTL_OFFSET_SIDETONELVL,			// уровень самоконтроля/озвучки клавиш
-
-	DSPCTL_OFFSET_LOWCUTRX_HI,		// иижняя частота среза аудио фильтра
-	DSPCTL_OFFSET_LOWCUTRX_LO,		// иижняя частота среза аудио фильтра
-	DSPCTL_OFFSET_HIGHCUTRX_HI,		// верхняя частота среза аудио фильтра
-	DSPCTL_OFFSET_HIGHCUTRX_LO,		// верхняя частота среза аудио фильтра
-
-	DSPCTL_OFFSET_LOWCUTTX_HI,		// иижняя частота среза аудио фильтра
-	DSPCTL_OFFSET_LOWCUTTX_LO,		// иижняя частота среза аудио фильтра
-	DSPCTL_OFFSET_HIGHCUTTX_HI,		// верхняя частота среза аудио фильтра
-	DSPCTL_OFFSET_HIGHCUTTX_LO,		// верхняя частота среза аудио фильтра
-
-	DSPCTL_OFFSET_NOTCH_MODE,
-	DSPCTL_OFFSET_NOTCH_WIDTH_HI,
-	DSPCTL_OFFSET_NOTCH_WIDTH_LO,
-	DSPCTL_OFFSET_NOTCH_FREQ_HI,
-	DSPCTL_OFFSET_NOTCH_FREQ_LO,
-	DSPCTL_OFFSET_LO6_FREQ_HI,
-	DSPCTL_OFFSET_LO6_FREQ_LO,
-	DSPCTL_OFFSET_FULLBW6_HI,
-	DSPCTL_OFFSET_FULLBW6_LO,
-	DSPCTL_OFFSET_CWPITCH_HI,
-	DSPCTL_OFFSET_CWPITCH_LO,
-	DSPCTL_OFFSET_DIGIGAINMAX,
-	//DSPCTL_OFFSET_FLTSOFTER,
-	DSPCTL_OFFSET_AMDEPTH,
-	DSPCTL_OFFSET_MIKEAGC,
-	DSPCTL_OFFSET_MIKEHCLIP,
-
-	// Это имя всегда последнее - размер буфера
-	DSPCTL_BUFSIZE
-};
 
 enum
 {
@@ -3494,6 +3441,8 @@ enum
 	BANDF2_COUNT = 17,
 	BANDF3_COUNT = 17
 };
+
+#define NMICPROFCELLS	3
 
 #ifdef __cplusplus
 }

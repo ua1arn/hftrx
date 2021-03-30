@@ -66,6 +66,24 @@ static void startlinearaddress(unsigned long address)
     hexdata(0, 0x05, buff, 4);
 }
 
+// reverse 8 bits
+static unsigned rev8bits(unsigned v)
+{
+	unsigned r = 0;
+
+	r |= (v & 0x80) ? 0x01 : 0x00;
+	r |= (v & 0x40) ? 0x02 : 0x00;
+	r |= (v & 0x20) ? 0x04 : 0x00;
+	r |= (v & 0x10) ? 0x08 : 0x00;
+	r |= (v & 0x08) ? 0x10 : 0x00;
+	r |= (v & 0x04) ? 0x20 : 0x00;
+	r |= (v & 0x02) ? 0x40 : 0x00;
+	r |= (v & 0x01) ? 0x80 : 0x00;
+
+	return r;
+}
+
+static int rbfflag;
 
 static void
 processfile(FILE * fp, unsigned long address, unsigned long runaddress)
@@ -81,8 +99,8 @@ processfile(FILE * fp, unsigned long address, unsigned long runaddress)
         c = fgetc(fp);
         if (c == EOF)
             break;
-        buff [length] = (unsigned char) c;
-        if (++ length >= ROWSIZE)
+       	buff [length] = rbfflag ? rev8bits((unsigned char) c) : (unsigned char) c;
+         if (++ length >= ROWSIZE)
         {
             if (getsplit(pageoffset) != getsplit(address))
             {
@@ -105,7 +123,7 @@ processfile(FILE * fp, unsigned long address, unsigned long runaddress)
         address += length;
         length = 0;
     }
-    // Finbalize
+    // Finalize
     if (1)
     {
         hexdata(runaddress, 0x01, NULL, 0);
@@ -125,23 +143,27 @@ int main(int argc, char * * argv)
     unsigned long loadaddr = 0;
     FILE * fpi;
  	int opt;
-	char *dest = NULL, *src = NULL;
+	char *src = NULL;
+	/*char *dest = NULL;*/
 
-	while ((opt = getopt(argc, argv, ":l:s:")) != -1) {
+	while ((opt = getopt(argc, argv, ":l:s:r")) != -1) {
 		switch (opt) {
 		case 's':
 			src = optarg;
 			break;
-		case 'd':
-			dest = optarg;
+		case 'r':
+			rbfflag = 1;
 			break;
+//		case 'd':
+//			dest = optarg;
+//			break;
 		case 'l':
 			loadaddr = strtoul(optarg, NULL, 16);
 			break;
 		default:
 			
 				fprintf(stderr, "Usage :\n");
-				fprintf(stderr, " %s -s srcfile -l loadaddr\n", argv[0]);
+				fprintf(stderr, " %s -s srcfile [-l loadaddr][-r]\n", argv[0]);
 			return -1;
 		}
 	}

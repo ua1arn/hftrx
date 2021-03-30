@@ -119,7 +119,7 @@
 	#define BANDSELSTYLERE_LOCONV32M	1	/* Down-conversion with working band .030..32 MHz */
 	#define WITHIF4DSP	1	// "Дятел"
 	//#define DEFAULT_DSP_IF	12000
-	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
+	//
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 #elif 0
 	/* Версии частотных схем - с преобразованием "вниз" синтезатор MAXLAB */
@@ -232,7 +232,7 @@
 	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHIF4DSP	1	// "Дятел"
-	//#define WITHEXTERNALDDSP		1	/* имеется управление внешней DSP платой. */
+	//
 	//#define WITHLOOPBACKTEST	1
 	//#define DEFAULT_DSP_IF	12000
 	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */

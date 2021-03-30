@@ -94,8 +94,15 @@
 	#define WITHMODEM_USART2	1
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-	//#define WITHUAC2		1	/* UAC2 support */
-	#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
+	#if WITHINTEGRATEDDSP
+
+		//#define WITHUAC2		1	/* UAC2 support */
+		//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#define WITHUSBUACIN	1
+		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+	#endif /* WITHINTEGRATEDDSP */
+
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
 	//#define WITHUSBCDCACMINTSHARING 1	/* Использование общей notification endpoint на всех CDC ACM устрйоствах */
@@ -836,6 +843,31 @@
 		arm_hardware_pio3_outputs(mask, 0 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
 	} while (0)
 #endif /* WITHFLATLINK && LCDMODE_LTDC */
+
+	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+
+		void gt911_interrupt_handler(void);
+		#define BOARD_GT911_RESET_PIN (1uL << 15)	/* P5_15 : reset */
+		#define BOARD_GT911_INT_PIN (1uL << 3)		/* P5_3 : interrupt */
+
+		#define BOARD_GT911_RESET_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_RESET_PIN); else R7S721_TARGET_PORT_C(5, BOARD_GT911_RESET_PIN); } while (0)
+		#define BOARD_GT911_INT_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_INT_PIN); else R7S721_TARGET_PORT_C(5, BOARD_GT911_INT_PIN); } while (0)
+
+		#define BOARD_GT911_RESET_INITIO_1() do { \
+			arm_hardware_pio5_outputs(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN); \
+			arm_hardware_pio5_outputs(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
+			/* local_delay_ms(200); */ \
+		} while (0)
+
+		#define BOARD_GT911_RESET_INITIO_2() do { \
+			arm_hardware_pio5_inputs(BOARD_GT911_INT_PIN); \
+		} while (0)
+
+		#define BOARD_GT911_INT_CONNECT() do { \
+			arm_hardware_pio5_onchangeinterrupt(BOARD_GT911_INT_PIN, 1, ARM_SYSTEM_PRIORITY, gt911_interrupt_handler);	/* P5_3 interrupt, rising edge sensitive */ \
+		} while (0)
+
+	#endif
 
 	#define HARDWARE_VBUS_ON_MASK (1U << 2)	/* P5_2 ~VBUS_ON */
 

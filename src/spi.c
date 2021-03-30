@@ -556,7 +556,6 @@ void spi_initialize(void)
 {
 
 #if WITHSPIHW && WITHSPISW
-
 	// программный и аппаратный SPI
 
 	// Для работы Hittite HMC830 в Open mode инициализация требутеn условие "b":
@@ -568,7 +567,6 @@ void spi_initialize(void)
 	prog_select_init();		// spi CS initialize
 
 #elif WITHSPIHW
-
 	// только аппаратный SPI
 
 	// Для работы Hittite HMC830 в Open mode инициализация требутеn условие "b":
@@ -579,7 +577,6 @@ void spi_initialize(void)
 	prog_select_init();		// spi CS initialize
 
 #elif WITHSPISW
-
 	// только программный SPI
 
 	// Для работы Hittite HMC830 в Open mode инициализация требутеn условие "b":
@@ -590,6 +587,9 @@ void spi_initialize(void)
 	prog_select_init();		// spi CS initialize
 
 #endif
+
+#if WITHSPIHW
+	// аппаратный SPI
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS || WITHDSPEXTFIR
 	hardware_spi_master_setfreq(SPIC_SPEEDUFAST, SPISPEEDUFAST);
@@ -605,6 +605,7 @@ void spi_initialize(void)
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
 #endif /* (SPISPEED400k) || defined (SPISPEED100k) */
 
+#endif /* WITHSPIHW */
 }
 
 #endif /* WITHSPIHW || WITHSPISW */

@@ -1,11 +1,13 @@
 #include "hardware.h"
 #include "board.h"
 #include "formats.h"
+#include "gpio.h"
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
 
-static uint_fast8_t tscpresetnt;
+static uint_fast8_t tscpresent;
+volatile uint_fast8_t tsc_int = 0;
 
 int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte, uint8_t * r_buffer)
 {
@@ -141,6 +143,17 @@ uint_fast8_t stmpe811_TS_GetXYZ(
 	uint8_t dataXYZ [4];
 	uint_fast32_t vdataXY;
 	uint_fast16_t xx, yy;
+
+#if WITHTSCINT
+	if (! tscpresent || ! tsc_int)
+		return 0;
+
+	tsc_int = 0;
+#else
+	if (! tscpresent)
+		return 0;
+#endif
+
 	uint_fast8_t sta = i2cperiph_read8(DeviceAddr, STMPE811_REG_FIFO_STA);
 	if ((sta & 0x10) == 0)
 		return 0;
@@ -163,6 +176,7 @@ uint_fast8_t stmpe811_TS_GetXYZ(
 	/* Enable the FIFO again */
 	i2cperiph_write8(DeviceAddr, STMPE811_REG_FIFO_STA, 0x00);
 #endif
+	i2cperiph_write8(DeviceAddr, STMPE811_REG_INT_STA, 0xFF);
 	return 1;
 }
 
@@ -234,11 +248,22 @@ static void stmpe811_TS_Start(uint_fast8_t DeviceAddr)
 		  0
 		  );
 
+#if WITHTSCINT
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_INT_CTRL, 0x07);
+  i2cperiph_write8(DeviceAddr, STMPE811_REG_INT_EN, STMPE811_GIT_TOUCH);
+#endif
+
   /*  Clear all the status pending bits if any */
   i2cperiph_write8(DeviceAddr, STMPE811_REG_INT_STA, 0xFF);
 
   /* Wait for 2 ms delay */
   local_delay_ms(2);
+}
+
+static void
+stmpe811_handler(void)
+{
+	tsc_int = 1;
 }
 
 void stmpe811_initialize(void)
@@ -253,17 +278,23 @@ void stmpe811_initialize(void)
 	ver = i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_ID_VER);
 	PRINTF(PSTR("stmpe811_initialize: chip_id=%04X, expected %04X, ver=%02x\n"), chip_id, STMPE811_ID, ver);
 
-	tscpresetnt = chip_id == STMPE811_ID;
+	tscpresent = chip_id == STMPE811_ID;
 
-	if (tscpresetnt != 0 && ver == 0x03)
+	if (tscpresent != 0 && ver == 0x03)
 	{
 		stmpe811_TS_Start(BOARD_I2C_STMPE811);
+
+#if WITHTSCINT
+	const portholder_t int_pin = 1uL << 3;		/* P5_3 */
+	arm_hardware_pio5_inputs(int_pin);
+	arm_hardware_pio5_onchangeinterrupt(int_pin, 1, ARM_SYSTEM_PRIORITY, stmpe811_handler);	// P5_3 interrupt, rising edge sensitive
+#endif
 	}
 }
 
 uint_fast8_t stmpe811_is_pressed(void) /* Return 1 if touch detection */
 {
-	return tscpresetnt &&
+	return tscpresent &&
 			((i2cperiph_read8(BOARD_I2C_STMPE811, STMPE811_REG_TSC_CTRL) & STMPE811_TS_CTRL_STATUS) >> STMPE811_TS_CTRL_STATUS_POS) != 0;
 }
 

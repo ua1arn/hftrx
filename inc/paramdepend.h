@@ -234,8 +234,8 @@ extern "C" {
 			#define CPU_FREQ (PLL_FREQ / 4)	// 172032000uL
 
 			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - ti,er clocks is 85 MHz
+			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
+			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
 			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
@@ -249,15 +249,13 @@ extern "C" {
 
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
 
-			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
-			#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
-			#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-			#define PER_CK_FREQ 64000000uL	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
+			#define HSIFREQ 64000000uL
+			#define HSI48FREQ 48000000uL
+			#define CSIFREQ 4000000uL
 
-		#else
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+
+		#elif CPUSTYLE_STM32F7XX
 
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
@@ -272,6 +270,25 @@ extern "C" {
 			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
 			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+
+		#elif CPUSTYLE_STM32F4XX
+
+			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
+			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
+
+			#define PLLSAI_FREQ (REFINFREQ / REF1_DIV * SAIREF1_MUL)
+			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
+
+			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
+
+			/* частоты, подающиеся на периферию */
+			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+
 		#endif
 
 	#elif CPUSTYLE_STM32F30X
@@ -280,11 +297,11 @@ extern "C" {
 		#if WITHCPUXTAL
 			#define	REFINFREQ WITHCPUXTAL
 			#define REF1_DIV 1
-			#define REF1_MUL 9	// Up to 16 supported
+			#define REF1_MUL 9	// Up to 16 supported - вынести в конфигурационный файл платы
 		#else
 			#define	REFINFREQ 8000000uL
 			#define REF1_DIV 2
-			#define REF1_MUL 9	// Up to 16 supported
+			#define REF1_MUL 9	// Up to 16 supported - вынести в конфигурационный файл платы
 		#endif
 
 		#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
@@ -308,7 +325,7 @@ extern "C" {
 
 	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
@@ -631,6 +648,9 @@ extern "C" {
 	//#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
 
 	#define HSIFREQ 64000000uL
+	#define CSIFREQ 4000000uL
+	#define LSIFREQ 32000uL
+
 	//
 	#if WITHCPUXOSC
 		// с генератором
@@ -644,19 +664,13 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	(REFINFREQ / (PLL1DIVM) * (PLL1DIVN) / (PLL1DIVP))
-	#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
+	//#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
 	#define DDR_FREQ 	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 	#define PLL3_FREQ	(REFINFREQ / (PLL3DIVM) * (PLL3DIVN))
 	#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
 	#define PLL4_FREQ_R	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN) / (PLL4DIVR))
-	/* частоты, подающиеся на периферию */
-	#define	PCLK1_FREQ (AXISS_FREQ / 4)	// 42 MHz PCLK1 frequency
-	#define	PCLK1_TIMERS_FREQ (AXISS_FREQ / 2)	// 42 MHz PCLK1 frequency
-	#define	PCLK2_FREQ (AXISS_FREQ / 4)	// 84 MHz PCLK2 frequency
-	#define	PCLK3_TIMERS_FREQ (AXISS_FREQ / 4)	// 84 MHz PCLK2 frequency
-	#define	PCLK2_TIMERS_FREQ (AXISS_FREQ / 2)	// 84 MHz PCLK2 frequency
-	#define SYSTICK_FREQ AXISS_FREQ	// SysTick_Config станавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-	#define PER_CK_FREQ HSIFREQ	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
+
+	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
@@ -665,7 +679,7 @@ extern "C" {
 
 	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
 	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEED (PCLK1_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
@@ -959,8 +973,9 @@ extern "C" {
 
 #define TSC_TYPE_TSC2046	60	// Resistive touch screen controller TI TSC2046
 #define TSC_TYPE_STMPE811	61	// Resistive touch screen controller ST STMPE811
-#define TSC_TYPE_GT911		62	// Capasitive touch screen controller Goodix GT911
-#define TSC_TYPE_S3402		63	// Capasitive touch screen controller S3402 (on panel H497TLB01.4)
+#define TSC_TYPE_GT911		62	// Capacitive touch screen controller Goodix GT911
+#define TSC_TYPE_S3402		63	// Capacitive touch screen controller S3402 (on panel H497TLB01.4)
+#define TSC_TYPE_FT5336 	64	// Capacitive touch screen controller FocalTech FT5336
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
@@ -1623,7 +1638,7 @@ extern "C" {
 	//#define	BOARD_AGCCODE_1		0x01
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
-	#define WITHNOTCHONOFF		1	/* notch on/off */
+	//#define WITHNOTCHONOFF		1	/* notch on/off */
 
 #elif CTLREGSTYLE_SW2013RDX_UY5UM_WO240
 
@@ -2210,7 +2225,7 @@ extern "C" {
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	3
+	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 2
 
 	//#define LCDMODE_PIP_L8	1
@@ -2313,20 +2328,12 @@ extern "C" {
 
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-#if WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721
-	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
-#endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
-
-#if (DIM_X < 800 || DIM_Y < 480) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
+#if (DIM_X < 480 || DIM_Y < 272) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
 	#undef WITHTOUCHGUI									// для функционирования touch GUI
 #endif
 
 #if WITHTOUCHGUI
-
-#define WITHGUIMAXX				800						// при разрешении больше чем 800х480 интерфейс будет сжат до 800х480.
-#define WITHGUIMAXY				480
-#define FOOTER_HEIGHT			50						// высота нижнего ряда кнопок
 
 #if (__CORTEX_M == 0)
 	#define FORMATFROMLIBRARY 		1
@@ -2346,6 +2353,10 @@ extern "C" {
 #endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
 
 #endif /* WITHTOUCHGUI */
+
+#if WITHKEEPNVRAM && defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
+	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together
+#endif
 
 #ifdef __cplusplus
 }

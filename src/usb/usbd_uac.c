@@ -168,6 +168,7 @@ static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN
 
 static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
+#if WITHUSBUACIN
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_IN);
 	if (uacinaddr != 0)
 	{
@@ -194,12 +195,13 @@ static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 	altinterfaces [INTERFACE_AUDIO_RTS] = 0;
 	buffers_set_uacinrtsalt(altinterfaces [INTERFACE_AUDIO_RTS]);
 #endif /* WITHUSBUACIN2 */
-
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
 	USBD_LL_CloseEP(pdev, USBD_EP_AUDIO_OUT);
 	//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
 	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
 	uacout_buffer_stop();
-
+#endif /* WITHUSBUACOUT */
 	//PRINTF(PSTR("USBD_XXX_DeInit done\n"));
 	return USBD_OK;
 }
@@ -490,8 +492,12 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 #if WITHUSBUACIN2
 					LO_BYTE(req->wValue) == INTERFACE_AUDIO_CONTROL_RTS ||
 #endif /* WITHUSBUACIN2 */
+#if WITHUSBUACIN
 					LO_BYTE(req->wValue) == INTERFACE_AUDIO_CONTROL_MIKE ||
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
 					LO_BYTE(req->wValue) == INTERFACE_AUDIO_CONTROL_SPK ||
+#endif /* WITHUSBUACOUT */
 					0)
 			&& req->wIndex == 0x05)
 	{
@@ -510,11 +516,15 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
+#if WITHUSBUACIN
 		#if WITHUSBUACIN2
 			case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
 		#endif /* WITHUSBUACIN2 */
 			case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
 			case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
+#endif /* WITHUSBUACOUT */
 				{
 					const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
 					const uint_fast8_t controlID = HI_BYTE(req->wValue);	// AUDIO_MUTE_CONTROL, AUDIO_VOLUME_CONTROL, ...
@@ -586,15 +596,18 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				// не видел вызовов этой функции
 				switch (interfacev)
 				{
-
+#if WITHUSBUACIN
 			#if WITHUSBUACIN2
 				case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
 				case INTERFACE_AUDIO_RTS:	/* AUDIO spectrum control interface */
 			#endif /* WITHUSBUACIN2 */
 				case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
 				case INTERFACE_AUDIO_MIKE:	// AUDIO control interface
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
 				case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
 				case INTERFACE_AUDIO_SPK:	// AUDIO control interface
+#endif /* WITHUSBUACOUT */
 					//PRINTF(PSTR("USBD_UAC_Setup IN: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
 					buff [0] = altinterfaces [interfacev];
 					USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
@@ -623,12 +636,15 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 		case USB_REQ_TYPE_CLASS:
 			switch (interfacev)
 			{
-
+#if WITHUSBUACIN
 		#if WITHUSBUACIN2
 			case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
 		#endif /* WITHUSBUACIN2 */
 			case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
 			case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
+#endif /* WITHUSBUACOUT */
 				switch (req->bRequest)
 				{
 				default:
@@ -669,18 +685,7 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
 				switch (interfacev)
 				{
-				case INTERFACE_AUDIO_MIKE: // Audio interface: recording device
-					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_MIKE interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
-					altinterfaces [interfacev] = LO_BYTE(req->wValue);
-					buffers_set_uacinalt(altinterfaces [interfacev]);
-					USBD_CtlSendStatus(pdev);
-					break;
-				case INTERFACE_AUDIO_SPK:	// DATA OUT Audio interface: playback device
-					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_SPK interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
-					altinterfaces [interfacev] = LO_BYTE(req->wValue);
-					buffers_set_uacoutalt(altinterfaces [interfacev]);
-					USBD_CtlSendStatus(pdev);
-					break;
+#if WITHUSBUACIN
 			#if WITHUSBUACIN2
 				case INTERFACE_AUDIO_RTS: // Audio interface: recording device
 					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_RTS interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
@@ -689,6 +694,21 @@ static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					USBD_CtlSendStatus(pdev);
 					break;
 			#endif /* WITHUSBUACIN2 */
+				case INTERFACE_AUDIO_MIKE: // Audio interface: recording device
+					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_MIKE interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
+					altinterfaces [interfacev] = LO_BYTE(req->wValue);
+					buffers_set_uacinalt(altinterfaces [interfacev]);
+					USBD_CtlSendStatus(pdev);
+					break;
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
+				case INTERFACE_AUDIO_SPK:	// DATA OUT Audio interface: playback device
+					//PRINTF(PSTR("USBD_UAC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_SET_INTERFACE INTERFACE_AUDIO_SPK interfacev=%d, value=%d\n"), (int) interfacev, (int) LO_BYTE(req->wValue));
+					altinterfaces [interfacev] = LO_BYTE(req->wValue);
+					buffers_set_uacoutalt(altinterfaces [interfacev]);
+					USBD_CtlSendStatus(pdev);
+					break;
+#endif /* WITHUSBUACOUT */
 
 				default:
 					// Other interfaces
@@ -710,6 +730,7 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 {
 	switch (epnum)
 	{
+#if WITHUSBUACOUT
 	case USBD_EP_AUDIO_OUT:
 		/* UAC EP OUT */
 		// use audio data
@@ -717,6 +738,7 @@ static USBD_StatusTypeDef USBD_UAC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 		/* Prepare Out endpoint to receive next audio data packet */
 		USBD_LL_PrepareReceive(pdev, USB_ENDPOINT_OUT(epnum), uacoutbuff, UACOUT_AUDIO48_DATASIZE);
 		break;
+#endif /* WITHUSBUACOUT */
 	}
 	return USBD_OK;
 }
@@ -729,11 +751,15 @@ static USBD_StatusTypeDef USBD_UAC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 	//PRINTF(PSTR("1 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wIndex=%04X, wValue=%04X, wLength=%u\n"), interfacev, req->bRequest, req->wIndex, req->wValue, req->wLength);
 	switch (interfacev)
 	{
+#if WITHUSBUACIN
 #if WITHUSBUACIN2
 	case INTERFACE_AUDIO_CONTROL_RTS:	/* AUDIO spectrum control interface */
 #endif /* WITHUSBUACIN2 */
 	case INTERFACE_AUDIO_CONTROL_MIKE:	// AUDIO control interface
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
 	case INTERFACE_AUDIO_CONTROL_SPK:	// AUDIO control interface
+#endif /* WITHUSBUACOUT */
 		{
 			//PRINTF(PSTR("2 USBD_XXX_EP0_RxReady: interfacev=%u: bRequest=%u, wIndex=%04X, wValue=%04X, wLength=%u\n"), interfacev, req->bRequest, req->wIndex, req->wValue, req->wLength);
 			const uint_fast8_t terminalID = HI_BYTE(req->wIndex);
@@ -777,6 +803,7 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 	//PRINTF(PSTR("USBD_LL_DataInStage: IN: epnum=%02X\n"), epnum);
 	switch (epnum)
 	{
+#if WITHUSBUACIN
 	case ((USBD_EP_AUDIO_IN) & 0x7F):
 		if (uacinaddr != 0)
 		{
@@ -822,6 +849,7 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 		}
 		break;
 #endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
 	}
 	return USBD_OK;
 }
@@ -829,12 +857,11 @@ static USBD_StatusTypeDef USBD_UAC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
 {
 	//PRINTF(PSTR("USBD_XXX_Init: cfgidx=%d\n"), cfgidx);
-	altinterfaces [INTERFACE_AUDIO_MIKE] = 0;
-	altinterfaces [INTERFACE_AUDIO_SPK] = 0;
 	//terminalsprops [TERMINAL_ID_SELECTOR_6] [AUDIO_CONTROL_UNDEFINED] = 1;
-	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
-	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
 
+#if WITHUSBUACIN
+	buffers_set_uacinalt(altinterfaces [INTERFACE_AUDIO_MIKE]);
+	altinterfaces [INTERFACE_AUDIO_MIKE] = 0;
 	/* uac Open EP IN */
 	USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_IN, USBD_EP_TYPE_ISOC, usbd_getuacinmaxpacket());	// was: VIRTUAL_AUDIO_PORT_DATA_SIZE_IN
 	USBD_LL_Transmit(pdev, USBD_EP_AUDIO_IN, NULL, 0);
@@ -848,13 +875,17 @@ static USBD_StatusTypeDef USBD_UAC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 	USBD_LL_Transmit(pdev, USBD_EP_RTS_IN, NULL, 0);
 
 #endif /* WITHUSBUACIN2 */
-
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
+	buffers_set_uacoutalt(altinterfaces [INTERFACE_AUDIO_SPK]);
+	altinterfaces [INTERFACE_AUDIO_SPK] = 0;
 	/* UAC Open EP OUT */
 	USBD_LL_OpenEP(pdev, USBD_EP_AUDIO_OUT, USBD_EP_TYPE_ISOC, UACOUT_AUDIO48_DATASIZE);
    /* UAC Prepare Out endpoint to receive 1st packet */
 	USBD_LL_PrepareReceive(pdev, USBD_EP_AUDIO_OUT, uacoutbuff, UACOUT_AUDIO48_DATASIZE);
 
 	uacout_buffer_start();
+#endif /* WITHUSBUACOUT */
 	return USBD_OK;
 }
 

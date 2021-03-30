@@ -34,7 +34,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1
+LWIPDIR = ../../src/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = ../../src/OpenVG
 
@@ -49,9 +49,9 @@ LTO = -flto
 #CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3
 CORE = -mcpu=cortex-a9 
 CORE += -mfloat-abi=hard 
-CORE += -mfpu=vfpv3
+#CORE += -mfpu=vfpv3
 #CORE += -mfpu=neon
-#CORE += -mfpu=neon-vfpv3
+CORE += -mfpu=neon-vfpv3
 #CORE += -mlong-calls
 
 # List all default C defines here, like -D_DEBUG=1
@@ -69,7 +69,7 @@ DINCDIR = \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/apps/httpserver_raw \
+	$(LWIPDIR)/src/apps/http \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
@@ -116,7 +116,7 @@ CPPSRC +=
 
 # List ASM source files here
 ASRC += \
- $(SRCDIR)/crt_CortexA.s
+ $(SRCDIR)/crt_CortexA.S
 
 # List all user directories here
 UINCDIR += ../.. ../../inc
@@ -141,7 +141,7 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	+= $(patsubst $(SRCDIR)/%.s,$(OBJDIR)/%.o,$(ASRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.S,$(OBJDIR)/%.o,$(ASRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
 OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
@@ -149,7 +149,7 @@ LIBS    = $(DLIBS) $(ULIBS)
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
 #MCFLAGS = $(CORE) -fno-math-errno
 #
-#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
+#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.S=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
 #CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
@@ -178,11 +178,11 @@ all: APP2 $(PROJECT)_app.nec32 app.hex
 bootloader: BOOT2 boot.hex
   
 app_run: IMAGE
-	./dfu-util.exe --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0x20000000 --download $(PROJECT)_app.nec32
-	./dfu-util.exe --device ffff:0738 --alt 2 --detach
+	./dfu-util --device ffff:0738 --alt 2 --transfer-size 4096 --dfuse-address 0x20000000 --download $(PROJECT)_app.nec32
+	./dfu-util --device ffff:0738 --alt 2 --detach
 
 flash: IMAGE
-	./dfu-util.exe --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
+	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x18020000 --download $(PROJECT)_app.nec32
 
 IMAGE: $(PROJECT)_app.nec32
 
@@ -194,7 +194,7 @@ boot.hex: $(PROJECT)_boot.bin
 APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 $(PROJECT)_app.nec32: $(PROJECT)_app.bin
-	./stm32image.exe -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
 
 app.hex: $(PROJECT)_app.nec32
 	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.nec32 >$@
@@ -207,9 +207,9 @@ $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
-$(OBJDIR)/%.o: %.s
+$(OBJDIR)/%.o: %.S
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.s, $@))) -o $@
+	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.S, $@))) -o $@
 
 %_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@

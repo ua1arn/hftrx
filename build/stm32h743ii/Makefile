@@ -29,7 +29,7 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1
+LWIPDIR = ../../src/lwip-2.1.2
 
 OBJDIR = ./obj
 
@@ -56,7 +56,7 @@ DINCDIR = \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/apps/httpserver_raw \
+	$(LWIPDIR)/src/apps/http \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
@@ -197,9 +197,9 @@ $(OBJDIR)/%.o: %.s
 	$(BIN) $< $@
 
 clean:
-	-rm -fR $(OBJDIR)
-	-rm -f $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
-	-rm -f $(PROJECT)_ram.elf $(PROJECT)_ram.map $(PROJECT)_ram.hex $(PROJECT)_ram.bin
+	-$(RM) -R $(OBJDIR)
+	-$(RM) $(PROJECT)_rom.elf $(PROJECT)_rom.map $(PROJECT)_rom.hex $(PROJECT)_rom.bin
+	-$(RM) $(PROJECT)_ram.elf $(PROJECT)_ram.map $(PROJECT)_ram.hex $(PROJECT)_ram.bin
 	$(CC) --version
 
 # 

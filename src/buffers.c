@@ -253,14 +253,21 @@ typedef ALIGNX_BEGIN struct voices32rx_tag
 	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rx_t;
-// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void)
 {
 	return offsetof(voice32rx_t, item) - offsetof(voice32rx_t, buff);
 }
 
-enum { SKIPPED = 5000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
+#if 1
+	// исправляемая погрешность = 0.02% - один сэмпл добавить/убрать на 5000 сэмплов
+	enum { SKIPPED = 4000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
+
+#else
+	// исправляемая погрешность = 0.1% - один сэмпл добавить/убрать на 1000 сэмплов
+	enum { SKIPPED = 1000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
+#endif
+
 enum { VOICESMIKE16NORMAL = 5 };	// Нормальное количество буферов в очереди
 enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
 enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
@@ -295,8 +302,6 @@ static RAMDTCM volatile uint_fast8_t uacoutalt;
 
 static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
-
-#if WITHUSBUACIN
 
 // USB AUDIO IN
 typedef ALIGNX_BEGIN struct uacin16_tag
@@ -374,8 +379,6 @@ static RAMDTCM LIST_HEAD2 uacinfree16;
 static RAMDTCM LIST_HEAD2 uacinready16;	// Буферы для записи в вудиоканал USB к компьютер 2*16*24 kS/S
 static RAMDTCM SPINLOCK_t locklistuacin16 = SPINLOCK_INIT;
 
-#endif /* WITHUSBUACIN */
-
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHUSEAUDIOREC
@@ -438,7 +441,7 @@ static volatile unsigned debugcount_ms10;	// с точностью 0.1 ms
 static volatile unsigned debugcount_uacout;
 static volatile unsigned debugcount_mikeadc;
 static volatile unsigned debugcount_phonesdac;
-static volatile unsigned debugcount_rtsadc;
+static volatile unsigned debugcount_uacinrts;
 static volatile unsigned debugcount_uacin;
 static volatile unsigned debugcount_rx32adc;
 static volatile unsigned debugcount_rx32wfm;
@@ -516,18 +519,18 @@ void buffers_diagnostics(void)
 		const unsigned uacout = getresetval(& debugcount_uacout);
 		const unsigned mikeadc = getresetval(& debugcount_mikeadc);
 		const unsigned phonesdac = getresetval(& debugcount_phonesdac);
-		const unsigned rtsadc = getresetval(& debugcount_rtsadc);
+		const unsigned uacinrts = getresetval(& debugcount_uacinrts);
 		const unsigned rx32adc = getresetval(& debugcount_rx32adc);
 		const unsigned rx32wfm = getresetval(& debugcount_rx32wfm);
 		const unsigned tx32dac = getresetval(& debugcount_tx32dac);
 		const unsigned uacin = getresetval(& debugcount_uacin);
 
-		PRINTF(PSTR("FREQ: uacout=%u, uacin=%u, mikeadc=%u, phonesdac=%u, rtsadc=%u, rx32adc=%u, rx32wfm=%u, tx32dac=%u\n"),
+		PRINTF(PSTR("FREQ: uacout=%u, uacin=%u, uacinrts=%u, mikeadc=%u, phonesdac=%u, rx32adc=%u, rx32wfm=%u, tx32dac=%u\n"),
 			uacout * 10000 / ms10, 
 			uacin * 10000 / ms10, 
+			uacinrts * 10000 / ms10,
 			mikeadc * 10000 / ms10, 
 			phonesdac * 10000 / ms10, 
-			rtsadc * 10000 / ms10, 
 			rx32adc * 10000 / ms10, 
 			rx32wfm * 10000 / ms10, 
 			tx32dac * 10000 / ms10
@@ -696,8 +699,6 @@ void buffers_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& locklist16);
 
-#if WITHUSBUACIN
-
 	static uacin16_t uacinarray16 [24];
 
 	InitializeListHead2(& uacinfree16);	// Незаполненные
@@ -763,8 +764,6 @@ void buffers_initialize(void)
 	#endif /* WITHRTS192 */
 	SPINLOCK_INITIALIZE(& locklistrts);
 
-#endif /* WITHUSBUACIN */
-
 	static ALIGNX_BEGIN RAM_D2 voice32tx_t voicesarray32tx [6] ALIGNX_END;
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
@@ -799,7 +798,7 @@ void buffers_initialize(void)
 	#elif defined (STM32F429xx)
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#elif defined (STM32H743xx)
-		RAM_D2 static records16_t recordsarray16 [6];
+		RAMNOINIT_D1 static records16_t recordsarray16 [5];
 	#else
 		RAMNOINIT_D1 static records16_t recordsarray16 [8];
 	#endif
@@ -1276,7 +1275,7 @@ buffers_savetouacin192rts(voice192rts_t * p)
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_rtsadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP192RTS;	// в буфере пары сэмплов по четыре байта
+	debugcount_uacinrts += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP192RTS;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 
 	SPIN_LOCK(& locklistrts);
@@ -1324,7 +1323,7 @@ buffers_savetouacin96rts(voice96rts_t * p)
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_rtsadc += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFSTEP96RTS;	// в буфере пары сэмплов по три байта
+	debugcount_uacinrts += sizeof p->u.buff / sizeof p->u.buff [0] / DMABUFSTEP96RTS;	// в буфере пары сэмплов по три байта
 #endif /* WITHBUFFERSDEBUG */
 	
 	SPIN_LOCK(& locklistrts);
@@ -1955,7 +1954,7 @@ void RAMFUNC processing_dmabuffer16rx(uintptr_t addr)
 
 // Этой функцией пользуются обработчики прерываний DMA
 // обработать буфер после приёма пакета с USB AUDIO
-void RAMFUNC processing_dmabuffer16rxuac(uintptr_t addr)
+static void processing_dmabuffer16rxuac(uintptr_t addr)
 {
 	//ASSERT(addr != 0);
 #if WITHBUFFERSDEBUG

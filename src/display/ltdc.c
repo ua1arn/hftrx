@@ -894,7 +894,7 @@ static void vdc5fb_update_all(struct st_vdc5 * const vdc)
 }
 
 void
-arm_hardware_ltdc_initialize(void)
+arm_hardware_ltdc_initialize(const uintptr_t * frames)
 {
 	struct st_vdc5 * const vdc = & VDC50;
 
@@ -975,7 +975,7 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 		0);
 	(void) vdc->GR3_UPDATE;
 
-	if (0 && LCDMODE_MAIN_PAGES < 3)
+	if (LCDMODE_MAIN_PAGES > 1)
 	{
 		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 		vdc5_wait(& vdc->GR3_UPDATE, "GR3_UPDATE",
@@ -1022,7 +1022,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 		0);
 	(void) vdc->GR2_UPDATE;
 
-	if (LCDMODE_MAIN_PAGES < 3)
+	if (LCDMODE_MAIN_PAGES > 1)
 	{
 		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
 		vdc5_wait(& vdc->GR2_UPDATE, "GR2_UPDATE",
@@ -1516,7 +1516,7 @@ static void LCD_LayerInitPIP(
 }
 
 void
-arm_hardware_ltdc_initialize(void)
+arm_hardware_ltdc_initialize(const uintptr_t * frames)
 {
 	PRINTF(PSTR("arm_hardware_ltdc_initialize start, WIDTH=%d, HEIGHT=%d\n"), WIDTH, HEIGHT);
 
@@ -1538,9 +1538,9 @@ arm_hardware_ltdc_initialize(void)
 
 	{
 		/* SYSCFG clock enable */
-		RCC->MP_APB3ENSETR = RCC_MC_APB3ENSETR_SYSCFGEN;
+		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
 		(void) RCC->MP_APB3ENSETR;
-		RCC->MP_APB3LPENSETR = RCC_MC_APB3LPENSETR_SYSCFGLPEN;
+		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
 		(void) RCC->MP_APB3LPENSETR;
 		/*
 		 * Interconnect update : select master using the port 1.
@@ -1719,12 +1719,18 @@ arm_hardware_ltdc_deinitialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	/* Enable the LTDC Clock */
+	/* Disable the LTDC Clock */
 	RCC->MP_APB4ENCLRR = RCC_MP_APB4ENCLRR_LTDCEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4ENCLRR;
-	/* Enable the LTDC Clock in low-power mode */
+	/* Disable the LTDC Clock in low-power mode */
 	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_LTDCLPEN;	/* LTDC clock enable */
 	(void) RCC->MP_APB4LPENCLRR;
+
+	/* Reset pulse to LTDC */
+	RCC->APB4RSTSETR = RCC_APB4RSTSETR_LTDCRST_Msk;
+	(void) RCC->APB4RSTSETR;
+	RCC->APB4RSTCLRR = RCC_APB4RSTCLRR_LTDCRST_Msk;
+	(void) RCC->APB4RSTCLRR;
 
 #else /* CPUSTYLE_STM32H7XX */
 	/* Enable the LTDC Clock */
@@ -1738,17 +1744,17 @@ arm_hardware_ltdc_deinitialize(void)
 /* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
-	if (LCDMODE_MAIN_PAGES < 3)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
-			hardware_nonguiyield();
-	}
 	LAYER_PIP->CFBAR = p;
 	(void) LAYER_PIP->CFBAR;
 	LAYER_PIP->CR |= LTDC_LxCR_LEN;
 	(void) LAYER_PIP->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	if (LCDMODE_MAIN_PAGES > 1)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+			hardware_nonguiyield();
+	}
 }
 
 /* Turn PIP off (main layer only). */
@@ -1781,52 +1787,41 @@ void arm_hardware_ltdc_L8_palette(void)
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
-	if (LCDMODE_MAIN_PAGES < 3)
-	{
-		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
-			hardware_nonguiyield();
-	}
 	LAYER_MAIN->CFBAR = p;
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+	if (LCDMODE_MAIN_PAGES > 1)
+	{
+		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+			hardware_nonguiyield();
+	}
 }
 
 #elif CPUSTYLE_XC7Z
 #include "zynq_vdma.h"
 
-u8 *pFrames[LCDMODE_MAIN_PAGES];
-DisplayCtrl dispCtrl;
-#define XPAR_AXI_DYNCLK_0_BASEADDR 	0x43c10000
-#define DYNCLK_BASEADDR     		XPAR_AXI_DYNCLK_0_BASEADDR
-#define VGA_VDMA_ID         		XPAR_AXIVDMA_0_DEVICE_ID
-#define DISP_VTC_ID         		XPAR_VTC_0_DEVICE_ID
-#define DEMO_MAX_FRAME 				(800*480*4)
-#define DEMO_STRIDE					(800*4)
+static DisplayCtrl dispCtrl;
 
-void arm_hardware_ltdc_initialize(void)
+void arm_hardware_ltdc_initialize(const uintptr_t * frames)
 {
 	int Status;
-	for (int i = 0; i < LCDMODE_MAIN_PAGES; i ++)
-	{
-		pFrames[i] = (u8 *) colmain_fb_draw();
-		colmain_fb_next();
-	}
+	static XAxiVdma AxiVdma;
 
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
 
-	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, pFrames, DEMO_STRIDE, VMODE_800x480);
+	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, frames, (unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE, VMODE_800x480);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("Display Ctrl initialization failed during demo initialization%d\r\n", Status);
+		PRINTF("Display Ctrl initialization failed: %d\r\n", Status);
 	}
 
 	Status = DisplayStart(& dispCtrl);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("Couldn't start display during demo initialization%d\r\n", Status);
+		PRINTF("Couldn't start display: %d\r\n", Status);
 	}
 }
 
@@ -1838,7 +1833,7 @@ void arm_hardware_ltdc_L8_palette(void)
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t addr)
 {
-	DisplayChangeFrame(&dispCtrl, colmain_fb_current());
+	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
 #else
