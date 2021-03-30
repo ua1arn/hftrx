@@ -452,7 +452,8 @@
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define WITHTSCINT	1
-	#define TSC1_TYPE	TSC_TYPE_GT911		/* Capasitive touch screen with controller Goodix GT911 */
+	#define WITH_GT911_INTERRUPTS	1
+	#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 

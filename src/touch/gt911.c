@@ -8,8 +8,90 @@
 #include "gt911.h"
 
 static uint_fast8_t gt911_addr = 0;
-static uint_fast8_t tscpresetnt;
-static uint_fast8_t tsc_int = 0;
+
+/* TODO: вынести в конфигурационные файлы */
+#if CPUSTYLE_R7S721 && CTLSTYLE_STORCH_V8
+
+	#define BOARD_GT911_RESET_PIN (1uL << 15)	/* P5_15 : reset */
+	#define BOARD_GT911_INT_PIN (1uL << 3)		/* P5_3 : interrupt */
+
+	#define BOARD_GT911_RESET_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_RESET_PIN); else R7S721_TARGET_PORT_S(5, BOARD_GT911_RESET_PIN); } while (0)
+	#define BOARD_GT911_INT_SET(v) do { if (v) R7S721_TARGET_PORT_S(5, BOARD_GT911_INT_PIN); else R7S721_TARGET_PORT_S(5, BOARD_GT911_INT_PIN); } while (0)
+
+	#define BOARD_GT911_RESET_INITIO_1() do { \
+		arm_hardware_pio5_outputs(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN); \
+		arm_hardware_pio5_outputs(BOARD_GT911_RESET_PIN, 1 * BOARD_GT911_RESET_PIN); \
+		/* local_delay_ms(200); */ \
+	} while (0)
+
+	#define BOARD_GT911_RESET_INITIO_2() do { \
+		arm_hardware_pio5_inputs(BOARD_GT911_INT_PIN); \
+	} while (0)
+
+	#define BOARD_GT911_INT_CONNECT() do { \
+		arm_hardware_pio5_onchangeinterrupt(BOARD_GT911_INT_PIN, 1, ARM_SYSTEM_PRIORITY, gt911_interrupt_handler);	/* P5_3 interrupt, rising edge sensitive */ \
+	} while (0)
+
+#elif CPUSTYLE_STM32MP1 && CTLSTYLE_STORCH_V7
+
+	#define BOARD_GT911_INT_PIN (1uL << 12)		/* PA12 : tsc interrupt XS26, pin 08 */
+
+#endif
+
+static void gt911_io_initialize(void)
+{
+	BOARD_GT911_RESET_INITIO_1();	// 1-st stage init io (int pin pull up)
+	// reset and i2c address select sequence
+	BOARD_GT911_RESET_SET(1);
+	local_delay_us(100);
+	BOARD_GT911_RESET_SET(0);
+	local_delay_us(100);
+	BOARD_GT911_INT_SET(0);		// 0xBA address select
+	local_delay_us(100);
+	BOARD_GT911_RESET_SET(1);
+	local_delay_ms(100);
+	BOARD_GT911_RESET_INITIO_2();	// 2-nd stage init io (int pin pull up)
+}
+
+#if WITH_GT911_INTERRUPTS
+
+static volatile uint_fast8_t tsc_int = 0;
+
+static void
+gt911_interrupt_handler(void)
+{
+	tsc_int = 1;
+}
+
+/* считать признак произошедьшего прерывания */
+static uint_fast8_t
+gt911_interrupt_get(void)
+{
+	uint_fast8_t f;
+	system_disableIRQ();
+	f = tsc_int;
+	tsc_int = 0;
+	system_enableIRQ();
+	return f;
+}
+
+static void gt911_intconnect(void)
+{
+	BOARD_GT911_INT_CONNECT();
+}
+
+#else
+
+static uint_fast8_t
+gt911_interrupt_get(void)
+{
+	return 1;
+}
+static void gt911_intconnect(void)
+{
+}
+
+#endif
 
 void gt911_set_reg(uint_fast16_t reg)
 {
@@ -126,15 +208,16 @@ uint_fast16_t gt911_productID(void) {
 	return res;
 }
 
+static uint_fast8_t tscpresetnt;
+
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 {
-	if (! tscpresetnt || ! tsc_int)
+	if (! tscpresetnt || ! gt911_interrupt_get())
 		return 0;
 
 	GTPoint points[5]; //points buffer
 	int8_t contacts;
 	contacts = gt911_readInput(points);
-	tsc_int = 0;
 
 	if (contacts == 0)
 		return 0;
@@ -144,27 +227,9 @@ uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 	return 1;
 }
 
-static void
-gt911_interrupt_handler(void)
-{
-	tsc_int = 1;
-}
-
 uint_fast8_t gt911_initialize(void)
 {
-	const portholder_t int_pin = 1uL << 3;		/* P5_3 */
-	const portholder_t reset_pin = 1uL << 15;	/* P5_15 */
-
-	// reset and i2c address select sequence
-	arm_hardware_pio5_outputs(reset_pin, 1 * reset_pin);
-	local_delay_us(100);
-	arm_hardware_pio5_outputs(reset_pin, 0 * reset_pin);
-	local_delay_us(100);
-	arm_hardware_pio5_outputs(int_pin, 0 * int_pin);		// 0xBA address select
-	local_delay_us(100);
-	arm_hardware_pio5_outputs(reset_pin, 1 * reset_pin);
-	local_delay_ms(100);
-	arm_hardware_pio5_inputs(int_pin);
+	gt911_io_initialize();
 
 	gt911_addr = GOODIX_I2C_ADDR_BA;
 	tscpresetnt = 0;
@@ -177,7 +242,7 @@ uint_fast8_t gt911_initialize(void)
 	i2c_write(0);
 	tscpresetnt = 1;
 
-	arm_hardware_pio5_onchangeinterrupt(int_pin, 1, ARM_SYSTEM_PRIORITY, gt911_interrupt_handler);	// P5_3 interrupt, rising edge sensitive
+	gt911_intconnect();
 
 	return 1;
 }
