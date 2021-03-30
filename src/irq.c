@@ -1334,6 +1334,8 @@ void cpu_initialize(void)
 		L1C_EnableCaches();
 		L1C_EnableBTAC();
 		__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+		__ISB();
+		__DSB();
 		#if (__L2C_PRESENT == 1)
 		  // Enable Level 2 Cache
 		  L2C_Enable();
