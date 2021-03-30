@@ -377,9 +377,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		stm32fxxx_pinirq(prf | prr);
 	}
 
-#elif CPUSTYLE_STM32F
-
-	#if CPUSTYLE_STM32L0XX
+#elif CPUSTYLE_STM32L0XX
 
 	void EXTI0_1_IRQHandler(void)
 	{
@@ -407,7 +405,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		stm32fxxx_pinirq(pr);
 	}
 
-	#elif CPUSTYLE_STM32H7XX
+#elif CPUSTYLE_STM32H7XX
 
 	void EXTI0_IRQHandler(void)
 	{
@@ -416,8 +414,8 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		(void) EXTI_D1->PR1;
 		stm32fxxx_pinirq(pr);
 	}
-
 	
+
 	void EXTI1_IRQHandler(void)
 	{
 		const portholder_t pr = EXTI_D1->PR1 & (EXTI_PR1_PR1);
@@ -465,7 +463,7 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		stm32fxxx_pinirq(pr);
 	}
 
-	#else
+#elif CPUSTYLE_STM32F
 
 	void EXTI0_IRQHandler(void)
 	{
@@ -549,7 +547,6 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		//(void) EXTI->PR;
 		stm32fxxx_pinirq(pr);
 	}
-	#endif
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
