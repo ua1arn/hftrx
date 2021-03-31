@@ -265,6 +265,7 @@ extern "C" {
 
 			unsigned long stm32f7xx_get_pll_freq(void);
 			unsigned long stm32f7xx_get_plli2s_freq(void);
+			unsigned long stm32f7xx_get_pllsai_freq(void);
 
 			#define PLL_FREQ	(stm32f7xx_get_pll_freq())
 			//#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx

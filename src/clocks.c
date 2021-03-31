@@ -78,6 +78,14 @@ unsigned long stm32f7xx_get_pllsai_freq(void)
 	return (uint_fast64_t) REFINFREQ * pllsain / pllm;
 }
 
+unsigned long stm32f7xx_get_plli2s_freq(void)
+{
+	const unsigned long pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	const unsigned long plli2sn = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SN_Msk) >> RCC_PLLI2SCFGR_PLLI2SN_Pos;
+
+	return (uint_fast64_t) REFINFREQ * plli2sn / pllm;
+}
+
 unsigned long stm32f7xx_get_pll_p_freq(void)
 {
 	const unsigned long pll = stm32f7xx_get_pll_freq();
