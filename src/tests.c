@@ -6147,7 +6147,7 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
-#if 1 && (__L2C_PRESENT == 1)
+#if 0 && (__L2C_PRESENT == 1)
 	{
 		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
 		// ZYNQ: RTL release R3p2
