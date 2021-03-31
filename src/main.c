@@ -2653,6 +2653,7 @@ struct bandinfo
 	uint8_t tunercap;
 	uint8_t tunerind;
 	uint8_t tunertype;
+	uint8_t tunerwork;
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
 	uint8_t gzoomxpow2;	/* уменьшение отображаемого участка спектра */
@@ -3049,7 +3050,6 @@ filter_t fi_2p0_455 =
 
 #if WITHAUTOTUNER
 	uint8_t	ggrptuner; // последний посещённый пункт группы
-	uint8_t tunerwork;
 	uint8_t tunerdelay;
 #endif /* WITHAUTOTUNER */
 
@@ -4560,11 +4560,13 @@ static void auto_tune(void)
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
 	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
+	save_i8(offsetof(struct nvmap, bands[b].tunerwork), 1);
 	return;
 
 aborted:
+	tunerwork = 1; //loadvfy8up(offsetof(struct nvmap, bands[b].tunerwork), 0, 1, tunerwork);	// всегда единица (сохранилось в начале настройки)
 	tunercap = loadvfy8up(offsetof(struct nvmap, bands[b].tunercap), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(offsetof(struct nvmap, bands[b].tunerind), CMIN, CMAX, tunerind);
+	tunerind = loadvfy8up(offsetof(struct nvmap, bands[b].tunerind), LMIN, LMAX, tunerind);
 	tunertype = loadvfy8up(offsetof(struct nvmap, bands[b].tunertype), 0, KSCH_COUNT - 1, tunertype);
 	updateboard_tuner();
 	return;
@@ -6007,6 +6009,7 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
 #endif /* WITHANTSELECT */
 #if WITHAUTOTUNER
+	save_i8(offsetof(struct nvmap, bands[b].tunerwork), tunerwork);
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
 	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
@@ -6892,9 +6895,10 @@ loadsavedstate(void)
 	guser4 = loadvfy8up(RMT_USER4_BASE, 0, 1, guser4);
 	guser5 = loadvfy8up(RMT_USER5_BASE, 0, 1, guser5);
 #endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 */
-#if WITHAUTOTUNER
-	tunerwork = loadvfy8up(offsetof(struct nvmap, tunerwork), 0, 1, tunerwork);
-#endif /* WITHAUTOTUNER */
+	// тюнер запоминается подиапазонно
+//#if WITHAUTOTUNER
+//	tunerwork = loadvfy8up(offsetof(struct nvmap, tunerwork), 0, 1, tunerwork);
+//#endif /* WITHAUTOTUNER */
 
 #if WITHIF4DSP
 	#if WITHUSBUAC && WITHTX
@@ -6970,8 +6974,9 @@ loadnewband(
 #if WITHAUTOTUNER
 	// todo: добавить учет включенной антенны
 	tunercap = loadvfy8up(offsetof(struct nvmap, bands[b].tunercap), CMIN, CMAX, tunercap);
-	tunerind = loadvfy8up(offsetof(struct nvmap, bands[b].tunerind), CMIN, CMAX, tunerind);
+	tunerind = loadvfy8up(offsetof(struct nvmap, bands[b].tunerind), LMIN, LMAX, tunerind);
 	tunertype = loadvfy8up(offsetof(struct nvmap, bands[b].tunertype), 0, KSCH_COUNT - 1, tunertype);
+	tunerwork = loadvfy8up(offsetof(struct nvmap, bands[b].tunerwork), 0, 1, tunerwork);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
 	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
@@ -10211,20 +10216,28 @@ uif_key_tune(void)
 static void 
 uif_key_bypasstoggle(void)
 {
-	tunerwork = calc_next(tunerwork, 0, 1);
-	save_i8(offsetof(struct nvmap, tunerwork), tunerwork);
+	const uint_fast8_t tx = 1;
+	const uint_fast8_t bi = getbankindex_tx(tx);
+	const vindex_t b = getvfoindex(bi);
+
+	tunerwork = calc_next(tunerwork, 0, 1);	// переключаем в противоположное состояние
+	save_i8(offsetof(struct nvmap, bands[b].tunerwork), 1);
 	if (tunerwork == 0)
-		reqautotune = 0;
+		reqautotune = 0;	// сброс идущей настройки
 	updateboard(1, 0);
 }
 
 static void 
 uif_key_atunerstart(void)
 {
+	const uint_fast8_t tx = 1;
+	const uint_fast8_t bi = getbankindex_tx(tx);
+	const vindex_t b = getvfoindex(bi);
+
 	reqautotune = 1;
 	// отработка перехода в режим передачи делается в основном цикле
 	tunerwork = 1;
-	save_i8(offsetof(struct nvmap, tunerwork), tunerwork);
+	save_i8(offsetof(struct nvmap, bands[b].tunerwork), 1);
 	updateboard(1, 0);
 }
 
