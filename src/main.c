@@ -1547,16 +1547,11 @@ static agcp_t gagc [AGCSETI_COUNT];
 #define STEP_MINIMAL	10		/* минимальный шаг перестройки */
 #define STEP_SSB_HIGH	10		/* шаг для SSB (USB/LSB/CW/CWR) при применении валкдера с большим к-вом шагов */
 #define STEP_SSB_LOW	50		/* шаг для SSB (USB/LSB/CW/CWR) при применении валкдера с небольшим к-вом шагов */
-
 #define	STEP_AM_HIGH	100		/* шаг для AM */
 #define	STEP_AM_LOW		200		/* шаг для AM */
-
 #define STEP_DRM	1000	/* шаг для DRM */
-
 #define STEP_FM		250		/* шаг для FM */
-
 #define	STEP_CWZ	10		/* шаг для CWZ (калибровка гетеродинов)  */
-
 #define	STEP_WFM_LOW		1000		/* шаг для WFM */
 #define	STEP_WFM_HIGH		2500		/* шаг для WFM */
 
@@ -3076,7 +3071,7 @@ filter_t fi_2p0_455 =
 	#endif /* WITHELKEY */
 
 	#if WITHPABIASTRIM
-		uint8_t gpabias;	/* ток оконечного каскада передатчика */
+		uint8_t gpabias;	/* регулировка тока покоя оконечного каскада передатчика */
 	#endif /* WITHPABIASTRIM */
 	uint8_t gtxgate;	/* разрешение предусилителя */
 	uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
@@ -3832,7 +3827,6 @@ enum
 			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
 		#else /* WITHPACLASSA */
 			static uint_fast8_t gclassapower = WITHPOWERTRIMMAX;
-			static uint_fast8_t gclassamode;	/* использование режима клвсс А при передаче */
 		#endif /* WITHPACLASSA */
 		static dualctl8_t gnormalpower = { WITHPOWERTRIMMAX, WITHPOWERTRIMMAX };
 		#if WITHLOWPOWEREXTTUNE
@@ -3847,14 +3841,13 @@ enum
 		#else /* WITHLOWPOWEREXTTUNE */
 			enum { gpwratunei = 1 }; // индекс нормальной мощности
 		#endif /* WITHLOWPOWEREXTTUNE */
-		enum { gclassamode = 0 };
 	#endif /* WITHPOWERTRIM, WITHPOWERLPHP */
 
 	#if WITHPABIASTRIM
 		#if defined (WITHBBOXPABIAS)
 			static uint_fast8_t gpabias = WITHBBOXPABIAS; //WITHPABIASMIN;	/* ток оконечного каскада передатчика */
 		#else /* defined (WITHBBOXPABIAS) */
-			static uint_fast8_t gpabias = 208; //WITHPABIASMIN;	/* ток оконечного каскада передатчика */
+			static uint_fast8_t gpabias = 208; //WITHPABIASMIN;	/* регулировка тока покоя оконечного каскада передатчика */
 		#endif /* defined (WITHBBOXPABIAS) */
 	#endif /* WITHPABIASTRIM */
 	static uint_fast8_t gtxgate = 1;		/* разрешение драйвера и оконечного усилителя */
@@ -3865,7 +3858,6 @@ enum
 		static uint_fast8_t voxdelay = 70;	/* модифицируется через меню - задержка отпускания VOX */
 	#else /* WITHVOX */
 		enum { gvoxenable = 0 };	/* автоматическое управление передатчиком (от голоса) */
-		enum { gclassamode = 0 };	/* использование режима клвсс А при передаче */
 	#endif /* WITHVOX */
 
 	#if WITHMUTEALL
@@ -3873,6 +3865,10 @@ enum
 	#else /* WITHMUTEALL */
 		enum { gmuteall = 0 };
 	#endif /* WITHMUTEALL */
+
+	#if ! WITHPACLASSA
+		enum { gclassamode = 0 };	/* использование режима клвсс А при передаче */
+	#endif /* WITHPACLASSA */
 
 	#if WITHELKEY
 		static uint_fast8_t bkinenable = 1;	/* модифицируется через меню - автоматическое управление передатчиком (от телеграфного манипулятора) */
@@ -9102,7 +9098,7 @@ updateboard(
 			board_set_opowerlevel(getactualpower());	/* WITHPOWERTRIMMIN..WITHPOWERTRIMMAX */
 
 		#if WITHPABIASTRIM
-			board_set_pabias(gpabias);	// Подстройка тока оконечного каскада передатчика
+			board_set_pabias(gpabias);	/* регулировка тока покоя оконечного каскада передатчика */
 		#endif /* WITHPABIASTRIM */
 			// установка параметров Speech processor
 			//board_speech_set_mode(speechmode);
@@ -16709,7 +16705,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 
 #if WITHPABIASTRIM
 	{
-		QLABEL("PA BIAS "), 7, 0, 0,	ISTEP1,		/* Подстройка тока оконечного каскада передатчика */
+		QLABEL("PA BIAS "), 7, 0, 0,	ISTEP1,		/* регулировка тока покоя оконечного каскада передатчика */
 		ITEM_VALUE,
 		WITHPABIASMIN, WITHPABIASMAX,
 		offsetof(struct nvmap, gpabias),
