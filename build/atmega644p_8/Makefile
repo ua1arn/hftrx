@@ -27,7 +27,7 @@ ASMFLAGS += -x assembler-with-cpp -Wa,-gdwarf2
 
 ## Linker flags
 LDFLAGS = $(COMMON)
-LDFLAGS += -Ofast -flto
+LDFLAGS += -Os -flto
 
 
 ## Intel Hex file production flags

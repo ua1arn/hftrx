@@ -10,6 +10,7 @@
 #include "hardware.h"
 #include "board.h"
 #include "display.h"
+#include "display2.h"
 #include <stdint.h>
 
 #include "spi.h"
@@ -18,6 +19,7 @@
 #if LCDMODE_S1D13781
 
 #include "s1d13781.h"
+#define FONTSHERE 1
 #include "fontmaps.h"
 
 #define REG00_REV_CODE       0x00     // Revision Code Register [READONLY]
@@ -692,7 +694,7 @@ display_scroll_down(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	const COLORMAIN_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	const COLORMAIN_T fillnewcolor = COLORMAIN_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
 	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
 	const int_fast16_t adjw = hshift < 0 ?
 				w + hshift 	// сдвиг окна влево
@@ -764,7 +766,7 @@ display_scroll_up(
 	int_fast16_t hshift	// количество пиксеелей для сдвига влево (отрицательное число) или вправо (положительное).
 	)
 {
-	const COLORMAIN_T fillnewcolor = COLOR_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
+	const COLORMAIN_T fillnewcolor = COLORMAIN_BLACK;	// цвет, которым заполняется свободное место при сдвиге старого изобажения
 	enum { WC = (S1D_DISPLAY_BPP / 8) };		// количество байтов на пиксель
 	const int_fast16_t adjw = hshift < 0 ?
 				w + hshift 	// сдвиг окна влево
@@ -1094,7 +1096,7 @@ loadlut(
 		case COLOR_YELLOW:		ARGB(255, 255, 0);		break; 	// 0xFC желтый
 		case COLOR_MAGENTA:		ARGB(255, 0, 255);		break; 	// 0x83 пурпурный
 		case COLOR_CYAN:			ARGB(0, 255, 255);		break; 	// 0x1F голубой
-		case COLOR_WHITE:	ARGB(255, 255, 255);	break;  // 0xff	белый
+		case COLORMAIN_WHITE:	ARGB(255, 255, 255);	break;  // 0xff	белый
 		case COLOR_GRAY:			ARGB(128, 128, 128);	break; 	// серый
 		case COLOR_BROWN:			ARGB(0xa5, 0x2a, 0x2a);	break; 	// 0x64 коричневый
 		case COLOR_GOLD:			ARGB(0xff, 0xd7, 0x00);	break; 	// 0xF4 золото
@@ -1452,7 +1454,7 @@ static void display_putpixel_complete(void)
 static void s1d13781_clear(COLORMAIN_T bg)
 {
 	display_fillrect(0, 0, S1D_DISPLAY_WIDTH, S1D_DISPLAY_HEIGHT, bg);
-	s1d13781_setcolor(COLOR_WHITE, bg);
+	s1d13781_setcolor(COLORMAIN_WHITE, bg);
 }
 
 static void 
@@ -1586,7 +1588,7 @@ static void s1d13781_initialize(void)
 
 	//for (;;)
 	//	;
-	s1d13781_setcolor(COLOR_WHITE, display_getbgcolor());
+	s1d13781_setcolor(COLORMAIN_WHITE, display_getbgcolor());
 }
 
 /* установить DE в требуемое состояние */
@@ -1967,7 +1969,7 @@ display_panel(
 	uint_fast8_t h
 	)
 {
-	rectangle3d(GRID2X(x), GRID2Y(y), GRID2X(w) - 3, GRID2Y(h) - 3, COLOR_GRAY, COLOR_GRAY);
+	rectangle3d(GRID2X(x), GRID2Y(y), GRID2X(w) - 3, GRID2Y(h) - 3, COLORMAIN_GRAY, COLORMAIN_GRAY);
 }
 
 /* аппаратный сброс дисплея - перед инициализаций */
