@@ -21,6 +21,7 @@
 
 #include "uc1601s.h"
 
+#define FONTSHERE 1
 /* растровые шрифты */
 #include "fontmaps.h"
 
