@@ -219,11 +219,11 @@ extern "C" {
 			#define	REFINFREQ 16000000uL
 		#endif /* WITHCPUXTAL */
 
-		#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
-		#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
-		#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
-
 		#if defined(STM32F401xC)
+
+			#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
+			#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
+			#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
 
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
@@ -241,6 +241,10 @@ extern "C" {
 
  		#elif CPUSTYLE_STM32H7XX
 
+			#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
+			#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
+			#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
+
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
 
@@ -253,24 +257,30 @@ extern "C" {
 			#define HSI48FREQ 48000000uL
 			#define CSIFREQ 4000000uL
 
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
 		#elif CPUSTYLE_STM32F7XX
 
-			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
+			unsigned long stm32f7xx_get_pll_freq(void);
+			unsigned long stm32f7xx_get_plli2s_freq(void);
+
+			#define PLL_FREQ	(stm32f7xx_get_pll_freq())
+			//#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
+			//#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
+
+			#define PLLI2S_FREQ (stm32f7xx_get_plli2s_freq())
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
 
-			#define PLLSAI_FREQ (REFINFREQ / REF1_DIV * SAIREF1_MUL)
+			#define PLLSAI_FREQ (stm32f7xx_get_pllsai_freq())
 			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
 
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
-
-			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+
+			#define HSIFREQ 16000000uL
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
 		#elif CPUSTYLE_STM32F4XX
 
