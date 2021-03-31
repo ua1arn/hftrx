@@ -1510,6 +1510,9 @@ extern "C" {
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
+	#define WITHLCDBACKLIGHTMIN 0
+	#define WITHLCDBACKLIGHTMAX 1
+
 #elif CTLREGSTYLE_SW2012CN
 	// управляющие регистры SW2012MINI COLOR 2 c цветным дисплеем ILI9163 и регулировкой выходной мощности
 	// управляющие регистры SW2016MINI
@@ -1539,6 +1542,9 @@ extern "C" {
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
+#define WITHLCDBACKLIGHTMIN 0
+#define WITHLCDBACKLIGHTMAX 1
+
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
@@ -1565,6 +1571,9 @@ extern "C" {
 	//#define	BOARD_AGCCODE_1		0x01
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
+
+#define WITHLCDBACKLIGHTMIN 0
+#define WITHLCDBACKLIGHTMAX 1
 
 #elif CTLREGSTYLE_SW2013SF
 
