@@ -1355,7 +1355,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUSART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART1->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -1369,12 +1369,12 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART0->UART_BRGR = value;
 	#elif HARDWARE_ARM_USEUART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART1->UART_BRGR = value;
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -1384,7 +1384,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
 
 	#if HARDWARE_ARM_USEUSART0
 		AT91C_BASE_US0->US_BRGR = value;
@@ -1414,7 +1414,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR0A |= (1U << U2X0);
@@ -1428,7 +1428,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR0A |= (1U << U2X0);
@@ -1442,7 +1442,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSRA |= (1U << U2X);
@@ -1456,7 +1456,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
 	if (prei == 0)
 		USARTE0.CTRLB |= USART_CLK2X_bm;
 	else
@@ -1538,7 +1538,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	#if HARDWARE_ARM_USEUSART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART0->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -1551,7 +1551,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUSART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART1->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -1565,12 +1565,12 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART0->UART_BRGR = value;
 	#elif HARDWARE_ARM_USEUART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART1->UART_BRGR = value;
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -1580,7 +1580,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
 
 	#if HARDWARE_ARM_USEUSART0
 		AT91C_BASE_US0->US_BRGR = value;
@@ -1610,7 +1610,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR1A |= (1U << U2X1);
@@ -1624,7 +1624,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR1A |= (1U << U2X1);
@@ -1642,7 +1642,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
 	if (prei == 0)
 		USARTE1.CTRLB |= USART_CLK2X_bm;
 	else
@@ -1725,7 +1725,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 	#if HARDWARE_ARM_USEUSART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART0->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -1738,7 +1738,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUSART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART1->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -1752,12 +1752,12 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART0->UART_BRGR = value;
 	#elif HARDWARE_ARM_USEUART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART1->UART_BRGR = value;
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -1767,7 +1767,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
 
 	#if HARDWARE_ARM_USEUSART0
 		AT91C_BASE_US0->US_BRGR = value;
@@ -1797,7 +1797,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR1A |= (1U << U2X1);
@@ -1811,7 +1811,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR1A |= (1U << U2X1);
@@ -1829,7 +1829,7 @@ hardware_uart4_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
 	if (prei == 0)
 		USARTE1.CTRLB |= USART_CLK2X_bm;
 	else
@@ -1891,7 +1891,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 	#if HARDWARE_ARM_USEUSART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART0->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -1904,7 +1904,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUSART5
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART5->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -1918,12 +1918,12 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART0->UART_BRGR = value;
 	#elif HARDWARE_ARM_USEUART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART1->UART_BRGR = value;
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -1933,7 +1933,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
 
 	#if HARDWARE_ARM_USEUSART0
 		AT91C_BASE_US0->US_BRGR = value;
@@ -1963,7 +1963,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR1A |= (1U << U2X1);
@@ -1977,7 +1977,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR1A |= (1U << U2X1);
@@ -1995,7 +1995,7 @@ hardware_uart5_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
 	if (prei == 0)
 		USARTE1.CTRLB |= USART_CLK2X_bm;
 	else
@@ -2056,7 +2056,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 	#if HARDWARE_ARM_USEUSART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART0->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -2069,7 +2069,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUSART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
 		USART1->US_BRGR = value;
 		if (prei == 0)
 		{
@@ -2083,12 +2083,12 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 	#elif HARDWARE_ARM_USEUART0
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART0->UART_BRGR = value;
 	#elif HARDWARE_ARM_USEUART1
 		// Использование автоматического расчёта предделителя
 		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
 		UART1->UART_BRGR = value;
 	#else	/* HARDWARE_ARM_USExxx */
 		#error Wrong HARDWARE_ARM_USExxx value
@@ -2098,7 +2098,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
 
 	#if HARDWARE_ARM_USEUSART0
 		AT91C_BASE_US0->US_BRGR = value;
@@ -2128,7 +2128,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR1A |= (1U << U2X1);
@@ -2142,7 +2142,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
 
 	if (prei == 0)
 		UCSR1A |= (1U << U2X1);
@@ -2160,7 +2160,7 @@ hardware_uart7_set_speed(uint_fast32_t baudrate)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
 	if (prei == 0)
 		USARTE1.CTRLB |= USART_CLK2X_bm;
 	else
@@ -2219,7 +2219,7 @@ void hardware_twi_master_configure(void)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQSCL_CLOCK * 2) - 8, ATMEGA_TWBR_WIDTH, ATMEGA_TWBR_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 8, ATMEGA_TWBR_WIDTH, ATMEGA_TWBR_TAPS, & value, 0);
 
 	TWSR = prei; 	/* prescaler */
 	TWBR = value;
@@ -2237,7 +2237,7 @@ void hardware_twi_master_configure(void)
     AT91C_BASE_TWI->TWI_CR = AT91C_TWI_MSEN;
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQSCL_CLOCK * 2) - 3, AT91SAM7_TWI_WIDTH, AT91SAM7_TWI_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 3, AT91SAM7_TWI_WIDTH, AT91SAM7_TWI_TAPS, & value, 0);
 
     AT91C_BASE_TWI->TWI_CWGR = (prei << 16) | (value << 8) | value;
 
@@ -2253,7 +2253,7 @@ void hardware_twi_master_configure(void)
     TWI0->TWI_CR = TWI_CR_MSEN;
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQSCL_CLOCK * 2) - 4, ATSAM3S_TWI_WIDTH, ATSAM3S_TWI_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 4, ATSAM3S_TWI_WIDTH, ATSAM3S_TWI_TAPS, & value, 1);
 	//prei = 0;
 	//value = 70;
     TWI0->TWI_CWGR = TWI_CWGR_CKDIV(prei) | TWI_CWGR_CHDIV(value) | TWI_CWGR_CLDIV(value);
@@ -2688,7 +2688,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Timer/Counter 0 initialization
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
 	TCCR0A = (1u << WGM01);	// CTC mode = 0x02
 	TCCR0B = prei + 1; // прескалер
 	OCR0A = value;	// делитель - программирование полного периода
@@ -2703,7 +2703,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Timer/Counter 0 initialization
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATMEGA128_TIMER0_WIDTH, ATMEGA128_TIMER0_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA128_TIMER0_WIDTH, ATMEGA128_TIMER0_TAPS, & value, 1);
 	TCCR0 = (1U << WGM01) | (prei + 1);	// прескалер
 	OCR0 = value;	// делитель - программирование полного периода
 
@@ -2717,7 +2717,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Timer/Counter 0 initialization
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
 	TCCR0 = (1U << WGM01) | (prei + 1);	// прескалер
 	OCR0 = value;	// делитель - программирование полного периода
 
@@ -2729,7 +2729,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	/* const uint_fast8_t prei = */ calcdivider(calcdivround2(CPU_FREQticksfreq), AT91SAM7_PITPIV_WIDTH, AT91SAM7_PITPIV_TAPS, & value, 1);
+	/* const uint_fast8_t prei = */ calcdivider(calcdivround2(CPU_FREQ, ticksfreq), AT91SAM7_PITPIV_WIDTH, AT91SAM7_PITPIV_TAPS, & value, 1);
 
 	// Periodic interval timer enable - see TICKS_FREQUENCY
 	AT91C_BASE_PITC->PITC_PIMR =
@@ -2753,7 +2753,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
 	// программирование таймера
 	TCC0.CCA = value;	// timer/counter C0, compare register A, see TCC0_CCA_vect
 	TCC0.CTRLA = (prei + 1);
@@ -6689,7 +6689,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQspispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
 	const uint_fast8_t spcr = spcr_spsr [prei].spcr | (1U << SPE) | (1U << MSTR);
 	// С FRAM FM25L04 работает MODE3 и MODE0
 	spcr_val [spispeedindex][SPIC_MODE0] = (0U << CPOL) | (0U << CPHA) | spcr;
@@ -6705,7 +6705,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQspispeed), ATXMEGA_SPIBR_WIDTH, ATXMEGA_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATXMEGA_SPIBR_WIDTH, ATXMEGA_SPIBR_TAPS, & value, 1);
 	const uint_fast8_t ctl = spi_ctl [prei] | SPI_MASTER_bm | SPI_ENABLE_bm;
 	// С FRAM FM25L04 работает MODE3 и MODE0
 	spi_ctl_val [spispeedindex][SPIC_MODE0] = SPI_MODE_0_gc | ctl;	// SPI MODE0,
@@ -8577,7 +8577,7 @@ void hardware_adc_initialize(void)
 
 
 	unsigned prescal;
-	calcdivider(calcdivround2(CPU_FREQADC_FREQ), ATSAM3S_ADC_PRESCAL_WIDTH, ATSAM3S_ADC_PRESCAL_TAPS, & prescal, 1);
+	calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATSAM3S_ADC_PRESCAL_WIDTH, ATSAM3S_ADC_PRESCAL_TAPS, & prescal, 1);
 	// Settling time to change offset and gain
 	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
     const unsigned int tracktime = ulmin(16, ulmax(1, (205 + (tADCnS / 2)) / (tADCnS == 0 ? 1 : tADCnS)));
@@ -8617,7 +8617,7 @@ void hardware_adc_initialize(void)
 	// Track and Hold Acquisition Time - 600 nS
 
 	unsigned prescal;
-	calcdivider(calcdivround2(CPU_FREQADC_FREQ), AT91SAM7_ADC_PRESCAL_WIDTH, AT91SAM7_ADC_PRESCAL_TAPS, & prescal, 1);
+	calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), AT91SAM7_ADC_PRESCAL_WIDTH, AT91SAM7_ADC_PRESCAL_TAPS, & prescal, 1);
 	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
     const unsigned int shtm = ulmin(15, ulmax(0, (600 + (tADCnS / 2)) / (tADCnS == 0 ? 1 : tADCnS)));
 
@@ -8649,7 +8649,7 @@ void hardware_adc_initialize(void)
 	// Использование автоматического расчёта предделителя
 	// Хотя, 128 (prei = 6) годится для всех частот - 8 МГц и выше. Ниже - уменьшаем.
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQADC_FREQ), ATMEGA_ADPS_WIDTH, ATMEGA_ADPS_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATMEGA_ADPS_WIDTH, ATMEGA_ADPS_TAPS, & value, 1);
 
 	#if CPUSTYLE_ATMEGA_XXX4
 
@@ -8669,7 +8669,7 @@ void hardware_adc_initialize(void)
 	// Использование автоматического расчёта предделителя
 	// Хотя, 128 (prei = 6) годится для всех частот - 8 МГц и выше. Ниже - уменьшаем.
 	////unsigned value;
-	////const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQADC_FREQ), ATXMEGA_ADPS_WIDTH, ATXMEGA_ADPS_TAPS, & value, 1);
+	////const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATXMEGA_ADPS_WIDTH, ATXMEGA_ADPS_TAPS, & value, 1);
 
 	////ADCA.PRESCALER = prei;
 	//DIDR0 = build_adc_mask();	// запретить цифровые входы на входах АЦП
@@ -9349,7 +9349,7 @@ void hardware_lfm_setupdatefreq(unsigned ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC0->TC_CHANNEL [0].TC_CMR =
 		(TC0->TC_CHANNEL [0].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
 	TC0->TC_CHANNEL [0].TC_RC = value;	// программирование полного периода
@@ -9358,7 +9358,7 @@ void hardware_lfm_setupdatefreq(unsigned ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC0.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC0.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
 	AT91C_BASE_TCB->TCB_TC0.TC_RC = value;	// программирование полного периода
@@ -9894,7 +9894,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC2->TC_CHANNEL [2].TC_CMR =
 		(TC0->TC_CHANNEL [2].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
 	TC2->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
@@ -9903,7 +9903,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC2.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
 	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// программирование полного периода
@@ -9912,7 +9912,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
 	// WGM12 = WGMn2 bit in timer 1
 	// (1U << WGM12) - mode4: CTC
 	TCCR1B = (1U << WGM12) | (prei + 1);	// прескалер
@@ -9922,7 +9922,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
 
 	// программирование таймера
 	TCC1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
@@ -9991,7 +9991,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQ, ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC0->TC_CHANNEL [2].TC_CMR =
 		(TC0->TC_CHANNEL [2].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
 	TC0->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
@@ -10000,7 +10000,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQ, ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC2.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
 	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// программирование полного периода
@@ -10009,7 +10009,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
 	// WGM12 = WGMn2 bit in timer 1
 	// (1U << WGM12) - mode4: CTC
 	TCCR1B = (1U << WGM12) | (prei + 1);	// прескалер
@@ -10019,7 +10019,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQ, ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
 
 	// программирование таймера
 	TCC1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
