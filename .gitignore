@@ -4,7 +4,6 @@
 *.7z
 product.h
 boards/atmega644_ctlstyle_v1.h
-.settings/language.settings.xml
 *.prefs
 .settings/*.*
 *.log
