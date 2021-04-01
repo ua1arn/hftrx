@@ -10,14 +10,14 @@
  * DDR type: DDR3 / DDR3L
  * DDR width: 16bits
  * DDR density: 1Gb
- * System frequency: 528000Khz
+ * System frequency: 528000kHz
  * Relaxed Timing Mode: false
  * Address mapping type: RBC
  *
- * Save Date: 2020.11.27, save Time: 04:17:44
+ * Save Date: 2021.04.01, save Time: 23:39:01
  */
 
-#define DDR_MEM_NAME	"DDR3-DDR3L 16bits 528000Khz"
+#define DDR_MEM_NAME	"DDR3-DDR3L 16bits 528000kHz"
 #define DDR_MEM_SPEED	528000
 #define DDR_MEM_SIZE	0x8000000
 
