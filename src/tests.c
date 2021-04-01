@@ -6047,7 +6047,19 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		// gnu11 tests
+		enum e1 { WORKMASK1 = -1 << 7 };
+		uint32_t v1 = WORKMASK1;
+		enum e2 { WORKMASK2 = -1 << 15 };
+		uint32_t v2 = WORKMASK2;
+		PRINTF("v1=%08lX, v2=%08lX, %u, %u\n", v1, v2, sizeof (enum e1), sizeof (enum e2));
+		for (;;)
+			;
 
+	}
+#endif
 #if 1 && defined (__GNUC__)
 	{
 

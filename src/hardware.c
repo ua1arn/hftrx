@@ -4023,6 +4023,8 @@ int __attribute__((used)) (_getpid)(int id)
 #if defined(RTC1_TYPE)
 
 #include <time.h>
+#include <sys/_timeval.h>
+
 /* поддержка получения времени */
 int _gettimeofday(struct timeval *p, void *tz)
 {
