@@ -19,6 +19,7 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
+PRJROOT := ../..
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -90,7 +91,7 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = ../../src
+SRCDIR = $(PRJROOT)/src
 
 # Define project name here
 PROJECT = tc1_stm32mp157axx
@@ -125,8 +126,8 @@ ULIBDIR +=
 ULIBS += 
 
 #SRC_EXCLUDES += ../../tools/rbf2c.c
-CSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c  $(SRCDIR)/*/*/*/*/*.c))
-CPPSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp))
+CSRC += $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c  $(SRCDIR)/*/*/*/*/*.c)
+CPPSRC += $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp)
 VPATH = $(SRCDIR)
 
 #
@@ -138,9 +139,9 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	+= $(patsubst $(SRCDIR)/%.S,$(OBJDIR)/%.o,$(ASRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(CSRC))
+OBJS 	+= $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
@@ -169,7 +170,13 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 $(PROJECT)_app.stm32 app.hex
+allX: APP2 $(PROJECT)_app.stm32 app.hex
+
+all:
+	@echo Src
+	@echo $(CSRC)
+	@echo Obj
+	@echo $(OBJS)
 
 bootloader: BOOT2 fsbl.stm32 boot.hex
   
