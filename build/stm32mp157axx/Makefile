@@ -112,8 +112,7 @@ CSRC +=
 CPPSRC +=
 
 # List ASM source files here
-ASRC += \
- $(SRCDIR)/crt_CortexA.S
+ASRC +=
 
 # List all user directories here
 UINCDIR += ../.. ../../inc

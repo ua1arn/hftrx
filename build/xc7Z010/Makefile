@@ -21,6 +21,8 @@ TRGT = arm-none-eabi-
 
 PRJROOT := ../..
 
+OBJDIR = obj
+
 ZINQ_BOOT_BIN := f:\\BOOT.BIN
 
 #
@@ -33,13 +35,10 @@ SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
-CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-2.1.2
+CMSISDIR = $(PRJROOT)/../CMSIS_5/CMSIS
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = ../../src/OpenVG
-
-PRJROOT = ../..
-OBJDIR = obj
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
 
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
 
@@ -106,7 +105,7 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = ../../src
+SRCDIRS = $(PRJROOT)/src
 
 # Define project name here
 PROJECT = tc1_xc7z010
@@ -128,7 +127,7 @@ CSRC +=
 CPPSRC +=
 
 # List all user directories here
-UINCDIR += ../.. ../../inc
+UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
@@ -136,7 +135,7 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += $(ZYNQLIB)
 
-VPATH = $(SRCDIR)
+VPATH = $(PRJROOT)
 
 #
 # End of user defines
@@ -148,32 +147,37 @@ LIBDIR  = $(patsubst %,-L%, $(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
 
+
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
+
 find_c = $(wildcard $(dir)*.c)
 find_cpp = $(wildcard $(dir)*.cpp)
 find_S = $(wildcard $(dir)*.S)
 
 # Collect files for main module
 
-CSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_c))
-CPPSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_cpp))
+CSRC += $(call rwildcard, $(SRCDIRS), *.c)
+CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 # List ASM source files here
-ASRC += $(SRCDIR)/crt_CortexA.S
+ASRC += $(PRJROOT)/src/crt_CortexA.S
 
-OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
+OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
 
 OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
 
 # Collect files for library
 
 # .S and .s files ugnored
-ZCSRC := $(foreach dir, $(ZYNQLIBSRC)/ $(filter %/, $(wildcard $(ZYNQLIBSRC)/*/)), $(find_c))
-ZCPPSRC := $(foreach dir, $(ZYNQLIBSRC)/ $(filter %/, $(wildcard $(ZYNQLIBSRC)/*/)), $(find_cpp))
+ZCSRC += $(call rwildcard, $(ZYNQLIBSRC), *.c)
+ZCPPSRC += $(call rwildcard, $(ZYNQLIBSRC), *.cpp)
 
-ZOBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ZASRC))
 ZOBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(ZCSRC))
 ZOBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(ZCPPSRC))
+ZOBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ZASRC))
 
 ZOBJS = $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA)
 
