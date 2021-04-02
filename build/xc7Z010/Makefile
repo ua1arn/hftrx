@@ -19,12 +19,15 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
+PRJROOT := ../..
+
 ZINQ_BOOT_BIN := f:\\BOOT.BIN
 
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
+AR   = $(TRGT)ar
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
@@ -35,8 +38,13 @@ LWIPDIR = ../../src/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = ../../src/OpenVG
 
-OBJDIR2 = obj
-OBJDIR = ./$(OBJDIR2)
+PRJROOT = ../..
+OBJDIR = obj
+
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
+
+# full qualified name
+ZYNQLIB = zynq7000.a
 
 # Cortex-A9 r3p0
 
@@ -79,8 +87,8 @@ DINCDIR = \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src	\
-	../../src/zynq
+	$(OPENVGDIR)/src \
+	$(ZYNQLIBSRC)
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
@@ -119,10 +127,6 @@ CSRC +=
 # List C++ source files here
 CPPSRC +=
 
-# List ASM source files here
-ASRC += \
- $(SRCDIR)/crt_CortexA.S
-
 # List all user directories here
 UINCDIR += ../.. ../../inc
 
@@ -130,11 +134,17 @@ UINCDIR += ../.. ../../inc
 ULIBDIR +=
 
 # List all user libraries here
-ULIBS += 
+ULIBS += $(ZYNQLIB)
 
-#SRC_EXCLUDES += ../../tools/rbf2c.c
-CSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c  $(SRCDIR)/*/*/*/*/*.c))
-CPPSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp))
+# Collect files for main module
+CSRC += $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c  $(SRCDIR)/*/*/*/*/*.c)
+CPPSRC += $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp)
+# List ASM source files here
+ASRC += \
+ $(SRCDIR)/crt_CortexA.S
+
+ZCSRC += $(wildcard $(ZYNQLIBSRC)/*.c)
+
 VPATH = $(SRCDIR)
 
 #
@@ -142,13 +152,23 @@ VPATH = $(SRCDIR)
 ##############################################################################################
 
 
-INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
-LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
+INCDIR  = $(patsubst %,-I%, $(DINCDIR) $(UINCDIR))
+LIBDIR  = $(patsubst %,-L%, $(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	+= $(patsubst $(SRCDIR)/%.S,$(OBJDIR)/%.o,$(ASRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
+
+OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
+OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
+
+OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+
+ZOBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ZASRC))
+ZOBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(ZCSRC))
+ZOBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(ZCPPSRC))
+
+ZOBJS = $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA)
+
 LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
@@ -175,50 +195,65 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 # makefile rules
 #
 
-.PHONY: all bootloader flash clean
+.PHONY: all bootloader flash clean lib
 
-all: APP2
+
+all: APP2_4205
+
+#all: APP2_ANT
 
 bootloader: BOOT2
   
-#app_run: $(PROJECT)_app.elf bitstream_4205.bit app_run_4205.tcl
-#	xsct.bat app_run_4205.tcl 
+app_run: $(PROJECT)_app.elf bitstream_4205.bit app_run_4205.tcl
+	xsct.bat app_run_4205.tcl 
   
-app_run: $(PROJECT)_app.elf bitstream_ant.bit app_run_ant.tcl
-	xsct.bat app_run_ant.tcl
+#app_run: $(PROJECT)_app.elf bitstream_ant.bit app_run_ant.tcl
+#	xsct.bat app_run_ant.tcl
 
+lib: $(ZYNQLIB)
+
+$(ZYNQLIB): $(ZOBJS)
+	-$(RM) $(ZYNQLIB)
+	$(AR) r $(ZYNQLIB) $(ZOBJS)
+	
 flash: $(PROJECT)_app.stm32
 	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
 BOOT2: version $(OBJS) BOOTL.BIN
 	-cp BOOTL.BIN $(ZINQ_BOOT_BIN)
-
-APP2: version $(OBJS) APPL.BIN
-	-cp APPL.BIN $(ZINQ_BOOT_BIN)
+	
+APP2_ANT: version $(OBJS) APPL_ANT.BIN
+	-cp APPL.BIN $(ZINQ_BOOT_BIN)  
+  
+APP2_4205: version $(OBJS) APPL_4205.BIN
+	-cp APPL_4205.BIN $(ZINQ_BOOT_BIN)
 
 BOOTL.BIN: boot.bif $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot.bif -w on -o $@
+	
+APPL_4205.BIN: app_4205.bif $(PROJECT)_app.elf fsbl_4205.elf bitstream_4205.bit
+	bootgen -arch zynq -image app_4205.bif -w on -o $@
 
-APPL.BIN: app.bif $(PROJECT)_app.elf fsbl_4205.elf bitstream_4205.bit
-	bootgen -arch zynq -image app.bif -w on -o $@
+APPL_ANT.BIN: app_ant.bif $(PROJECT)_app.elf fsbl_ant.elf bitstream_ant.bit
+	bootgen -arch zynq -image app_ant.bif -w on -o $@
 
-$(OBJDIR)/%.o: %.c
+$(OBJSC) $(ZOBJSC):
 	@mkdir -p $(@D)
-	$(CC) -std=c99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -std=c99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-$(OBJDIR)/%.o: %.cpp
+$(OBJSCPP) $(ZOBJSCPP):
 	@mkdir -p $(@D)
-	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
-$(OBJDIR)/%.o: %.S
+$(OBJSA) $(ZOBJSA):
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.S, $@))) -o $@
+	$(AS) -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@))) -o $@
 
-%_boot.elf: $(OBJS)
+%_boot.elf: $(OBJS) $(ZYNQLIB)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS)
+%_app.elf: $(OBJS) $(ZYNQLIB)
 	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
@@ -246,5 +281,6 @@ version:
 -include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
+
 
 # *** EOF ***
