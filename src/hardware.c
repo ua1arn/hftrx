@@ -4103,6 +4103,10 @@ int _gettimeofday(struct timeval *p, void *tz)
 
 #else
 
+#include <time.h>
+#include <sys/_timeval.h>
+
+
 int _gettimeofday(struct timeval *p, void *tz)
 {
 	if (p != NULL)
