@@ -27,7 +27,7 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-2.1.2
+LWIPDIR = ../../src/lwip-1.4.1
 OBJDIR = ./obj
 
 # Define optimisation level here

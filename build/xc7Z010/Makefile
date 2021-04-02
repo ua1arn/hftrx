@@ -136,15 +136,6 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += $(ZYNQLIB)
 
-# Collect files for main module
-CSRC += $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c  $(SRCDIR)/*/*/*/*/*.c)
-CPPSRC += $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp)
-# List ASM source files here
-ASRC += \
- $(SRCDIR)/crt_CortexA.S
-
-ZCSRC += $(wildcard $(ZYNQLIBSRC)/*.c)
-
 VPATH = $(SRCDIR)
 
 #
@@ -157,11 +148,28 @@ LIBDIR  = $(patsubst %,-L%, $(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
 
+find_c = $(wildcard $(dir)*.c)
+find_cpp = $(wildcard $(dir)*.cpp)
+find_S = $(wildcard $(dir)*.S)
+
+# Collect files for main module
+
+CSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_c))
+CPPSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_cpp))
+# List ASM source files here
+ASRC += $(SRCDIR)/crt_CortexA.S
+
 OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 
 OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+
+# Collect files for library
+
+# .S and .s files ugnored
+ZCSRC := $(foreach dir, $(ZYNQLIBSRC)/ $(filter %/, $(wildcard $(ZYNQLIBSRC)/*/)), $(find_c))
+ZCPPSRC := $(foreach dir, $(ZYNQLIBSRC)/ $(filter %/, $(wildcard $(ZYNQLIBSRC)/*/)), $(find_cpp))
 
 ZOBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ZASRC))
 ZOBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(ZCSRC))

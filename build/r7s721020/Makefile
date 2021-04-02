@@ -32,14 +32,14 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 # Add to includes
 #	$(COMPUTEDIR)/arm_compute/core/NEON
 
+PRJROOT := ../..
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-2.1.2
+LWIPDIR = ../../src/lwip-1.4.1
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = ../../src/OpenVG
 
-OBJDIR2 = obj
-OBJDIR = ./$(OBJDIR2)
+OBJDIR = obj
 
 # Define optimisation level here
 OPT = -Ofast
@@ -69,7 +69,7 @@ DINCDIR = \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http \
+	$(LWIPDIR)/apps/httpserver_raw \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
@@ -91,7 +91,7 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = ../../src
+SRCDIR = $(PRJROOT)/src
 
 # Define project name here
 PROJECT = tc1_r7s721020
@@ -126,10 +126,20 @@ ULIBDIR +=
 
 # List all user libraries here
 ULIBS += 
+# List all user directories here
+xINC_EXCLUDES += 
+xUINCDIR += $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
 
-#SRC_EXCLUDES += ../../tools/rbf2c.c
-CSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c $(SRCDIR)/*/*/*/*/*.c))
-CPPSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp))
+find_c = $(wildcard $(dir)*.c)
+find_cpp = $(wildcard $(dir)*.cpp)
+find_S = $(wildcard $(dir)*.S)
+
+CSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_c))
+CPPSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_cpp))
+
+# not all .S files in directory need
+#ASRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_S))
+ASRC := $(SRCDIR)/crt_CortexA.S
 VPATH = $(SRCDIR)
 
 #
@@ -141,9 +151,12 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	+= $(patsubst $(SRCDIR)/%.S,$(OBJDIR)/%.o,$(ASRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
+
+OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
+OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
+
+OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
 LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
@@ -186,30 +199,30 @@ flash: IMAGE
 
 IMAGE: $(PROJECT)_app.nec32
 
-BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 boot.hex: $(PROJECT)_boot.bin
 	./bin2ihex -l 0x00000000 -s $(PROJECT)_boot.bin >$@
 	
-APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 $(PROJECT)_app.nec32: $(PROJECT)_app.bin
 	./stm32image -l 0x20000100 -e 0x20000100 -s $(PROJECT)_app.bin -d $@
 
 app.hex: $(PROJECT)_app.nec32
 	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.nec32 >$@
-
-$(OBJDIR)/%.o: %.c
+	
+$(OBJSC):
 	@mkdir -p $(@D)
-	$(CC) -std=c99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -std=c99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-$(OBJDIR)/%.o: %.cpp
+$(OBJSCPP):
 	@mkdir -p $(@D)
-	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
-$(OBJDIR)/%.o: %.S
+$(OBJSA):
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.S, $@))) -o $@
+	$(AS) -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@))) -o $@
 
 %_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@

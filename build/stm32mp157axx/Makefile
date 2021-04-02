@@ -45,7 +45,7 @@ CORE += -mfpu=neon-vfpv4
 #CORE += -mfpu=vfpv4
 
 # Define optimisation level here
-# only -Og for app
+# ony -Og for app
 # Application
 #OPT = -Og
 OPT = -Ofast
@@ -124,9 +124,21 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-#SRC_EXCLUDES += ../../tools/rbf2c.c
-CSRC += $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c  $(SRCDIR)/*/*/*/*/*.c)
-CPPSRC += $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp)
+# List all user directories here
+xINC_EXCLUDES += 
+xUINCDIR += $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
+
+find_c = $(wildcard $(dir)*.c)
+find_cpp = $(wildcard $(dir)*.cpp)
+find_S = $(wildcard $(dir)*.S)
+
+CSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_c))
+CPPSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_cpp))
+
+# not all .S files in directory need
+#ASRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_S))
+ASRC := $(SRCDIR)/crt_CortexA.S
+
 VPATH = $(SRCDIR)
 
 #
@@ -138,6 +150,7 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
+
 OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
