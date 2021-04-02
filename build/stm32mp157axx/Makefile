@@ -19,7 +19,19 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
+UADEFS += -D"WITHSMPSYSTEM"
+
 PRJROOT := ../..
+
+# Define project name here
+PROJECT = tc1_stm32mp157axx
+
+# Define linker script file here
+LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
+LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
+
+# List all user C define here, like -D_DEBUG=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -28,13 +40,6 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
-
-CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../lib/lwip-2.1.2
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = ../../lib/OpenVG
-
-OBJDIR = obj
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
@@ -51,10 +56,15 @@ CORE += -mfpu=neon-vfpv4
 OPT = -Ofast
 LTO = -flto
 
+CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
+
+OBJDIR = obj
+
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
-
-UADEFS += -D"WITHSMPSYSTEM"
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
@@ -91,16 +101,6 @@ DLIBS = -lm
 #
 
 SRCDIR = $(PRJROOT)/src
-
-# Define project name here
-PROJECT = tc1_stm32mp157axx
-
-# Define linker script file here
-LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
-LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
-
-# List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
 
 # Define ASM defines here
 UADEFS += 

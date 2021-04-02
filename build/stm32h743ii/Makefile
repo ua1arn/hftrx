@@ -28,7 +28,7 @@ SIZE = $(TRGT)size
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
-CMSISDIR = ../../../CMSIS_5/CMSIS
+CMSISDIR = ../../CMSIS_5/CMSIS
 LWIPDIR = ../../src/lwip-1.4.1
 
 OBJDIR = ./obj
