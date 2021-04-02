@@ -34,10 +34,10 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
 PRJROOT := ../..
 
-CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-1.4.1
+CMSISDIR = $(PRJROOT)/../CMSIS_5/CMSIS
+LWIPDIR = $(PRJROOT)/src/lwip-1.4.1
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = ../../src/OpenVG
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
 
 OBJDIR = obj
 
@@ -91,8 +91,6 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = $(PRJROOT)/src
-
 # Define project name here
 PROJECT = tc1_r7s721020
 
@@ -114,12 +112,9 @@ CSRC +=
 # List C++ source files here
 CPPSRC +=
 
-# List ASM source files here
-ASRC += \
- $(SRCDIR)/crt_CortexA.S
 
 # List all user directories here
-UINCDIR += ../.. ../../inc
+UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
@@ -134,13 +129,21 @@ find_c = $(wildcard $(dir)*.c)
 find_cpp = $(wildcard $(dir)*.cpp)
 find_S = $(wildcard $(dir)*.S)
 
-CSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_c))
-CPPSRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_cpp))
+SRCDIR = $(PRJROOT)/src
+
+CSRC += $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_c))
+CPPSRC += $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_cpp))
+
+# todo: process list of directories  $(OPENVGDIR)
+#CSRC += $(foreach dir, $(OPENVGDIR)/ $(filter %/, $(wildcard $(OPENVGDIR)/*/)), $(find_c))
+#CPPSRC += $(foreach dir, $(OPENVGDIR)/ $(filter %/, $(wildcard $(OPENVGDIR)/*/)), $(find_cpp))
+
 
 # not all .S files in directory need
 #ASRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_S))
-ASRC := $(SRCDIR)/crt_CortexA.S
-VPATH = $(SRCDIR)
+ASRC := $(PRJROOT)/src/crt_CortexA.S
+
+VPATH = $(PRJROOT)
 
 #
 # End of user defines
