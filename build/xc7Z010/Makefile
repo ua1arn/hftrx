@@ -214,7 +214,7 @@ lib: $(ZYNQLIB)
 
 $(ZYNQLIB): $(ZOBJS)
 	-$(RM) $(ZYNQLIB)
-	$(AR) r $(ZYNQLIB) $(ZOBJS)
+	$(AR) -rc $(ZYNQLIB) $(ZOBJS)
 	
 flash: $(PROJECT)_app.stm32
 	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
