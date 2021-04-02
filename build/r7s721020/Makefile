@@ -35,7 +35,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 PRJROOT := ../..
 
 CMSISDIR = $(PRJROOT)/../CMSIS_5/CMSIS
-LWIPDIR = $(PRJROOT)/src/lwip-1.4.1
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 
@@ -121,27 +121,24 @@ ULIBDIR +=
 
 # List all user libraries here
 ULIBS += 
-# List all user directories here
-xINC_EXCLUDES += 
-xUINCDIR += $(filter-out $(INC_EXCLUDES), $(filter %/, $(wildcard $(SRCDIR)/*/)))
 
-find_c = $(wildcard $(dir)*.c)
-find_cpp = $(wildcard $(dir)*.cpp)
-find_S = $(wildcard $(dir)*.S)
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
-SRCDIR = $(PRJROOT)/src
+#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR) $(LWIPDIR) 
+SRCDIRS = $(PRJROOT)/src
 
-CSRC += $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_c))
-CPPSRC += $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_cpp))
+CSRC += $(call rwildcard, $(SRCDIRS), *.c)
+CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
-# todo: process list of directories  $(OPENVGDIR)
-#CSRC += $(foreach dir, $(OPENVGDIR)/ $(filter %/, $(wildcard $(OPENVGDIR)/*/)), $(find_c))
-#CPPSRC += $(foreach dir, $(OPENVGDIR)/ $(filter %/, $(wildcard $(OPENVGDIR)/*/)), $(find_cpp))
-
+# debug target
+allX:
+	@echo $(CPPSRC)
 
 # not all .S files in directory need
-#ASRC := $(foreach dir, $(SRCDIR)/ $(filter %/, $(wildcard $(SRCDIR)/*/)), $(find_S))
-ASRC := $(PRJROOT)/src/crt_CortexA.S
+#ASRC += $(call rwildcard, $(SRCDIRS), *.S)
+ASRC += $(PRJROOT)/src/crt_CortexA.S
 
 VPATH = $(PRJROOT)
 
