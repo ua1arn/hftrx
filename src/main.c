@@ -3469,7 +3469,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #if defined (WITHDEFAULTVIEW)		/* стиль отображения спектра и панорамы */
 	static uint_fast8_t gviewstyle = WITHDEFAULTVIEW;
 #else
-	static uint_fast8_t gviewstyle = VIEW_LINE;
+	static uint_fast8_t gviewstyle = VIEW_COLOR;
 #endif
 #if defined (WITHVIEW_3DSS_MARK)	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	static uint_fast8_t gview3dss_mark = WITHVIEW_3DSS_MARK;
