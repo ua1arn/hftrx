@@ -3386,11 +3386,13 @@ static uint_fast8_t lockmode;
 #endif /* WITHLCDBACKLIGHTOFF */
 static uint_fast8_t gusefast;
 
+
 #if WITHNOTCHONOFF
+	static uint_fast8_t gnotchtype;
 	static uint_fast8_t gnotch;	// on/off
 #elif WITHNOTCHFREQ
-	static uint_fast8_t gnotch;	// on/off
 	static uint_fast8_t gnotchtype;
+	static uint_fast8_t gnotch;	// on/off
 	static dualctl16_t gnotchfreq = { 1000, 1000 };
 	static dualctl16_t gnotchwidth = { 500, 500 };
 #endif /* WITHNOTCHFREQ */

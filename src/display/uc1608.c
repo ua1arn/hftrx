@@ -18,6 +18,7 @@
 #include "uc1608.h"
 
 /* растровые шрифты */
+#define FONTSHERE 1
 #include "fontmaps.h"
 
 
@@ -113,7 +114,7 @@ uc1608_put_char_end(void)
 // многополосный вывод символов - за несколько горизонтальных проходов.
 // Нумерация полос - сверху вниз, начиная с 0
 // Вызов этой функции только внутри display_wrdata_begin() и 	display_wrdata_end();
-static void uc1608_put_char_small(char cc, uint_fast8_t lowhalf)
+static uint_fast16_t uc1608_put_char_small(uint_fast16_t xpix, char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -123,12 +124,13 @@ static void uc1608_put_char_small(char cc, uint_fast8_t lowhalf)
 
 	for (; i < NCOLS; ++ i)
     	uc1608_putoctet(p [i]);
+	return xpix + NCOLS;
 }
 
 // многополосный вывод символов - за несколько горизонтальных проходов.
 // Нумерация полос - сверху вниз, начиная с 0
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void uc1608_put_char_big(char cc, uint_fast8_t lowhalf)
+static uint_fast16_t uc1608_put_char_big(uint_fast16_t xpix, char cc, uint_fast8_t lowhalf)
 {
 	// '#' - узкий пробел
 	enum { NBV = (BIGCHARH / 8) }; // сколько байтов в одной вертикали
@@ -140,12 +142,13 @@ static void uc1608_put_char_big(char cc, uint_fast8_t lowhalf)
 
 	for (; i < NCOLS; ++ i)
 		uc1608_putoctet(p [i]);
+	return xpix + NCOLS;
 }
 
 // многополосный вывод символов - за несколько горизонтальных проходов.
 // Нумерация полос - сверху вниз, начиная с 0
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
-static void uc1608_put_char_half(char cc, uint_fast8_t lowhalf)
+static uint_fast16_t uc1608_put_char_half(uint_fast16_t xpix, char cc, uint_fast8_t lowhalf)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
@@ -155,9 +158,10 @@ static void uc1608_put_char_half(char cc, uint_fast8_t lowhalf)
 
 	for (; i < NCOLS; ++ i)
 		uc1608_putoctet(p [i]);
+	return xpix + NCOLS;
 }
 
-static void uc1608_put_char_small2(char cc)
+static uint_fast16_t uc1608_put_char_small2(uint_fast16_t xpix, char cc)
 {
 	uint_fast8_t i = 0;
     const uint_fast8_t c = smallfont_decode((unsigned char) cc);
@@ -166,6 +170,7 @@ static void uc1608_put_char_small2(char cc)
 
 	for (; i < NCOLS; ++ i)
     	uc1608_putoctet(p [i]);
+	return xpix + NCOLS;
 }
 
 /*
@@ -228,6 +233,8 @@ uint_fast16_t
 display_wrdata_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	uc1608_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -241,6 +248,8 @@ uint_fast16_t
 display_wrdatabig_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	uc1608_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 // завершение вывода сиволов big и half
@@ -265,6 +274,8 @@ uint_fast16_t
 display_wrdatabar_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	uc1608_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -277,13 +288,13 @@ display_wrdatabar_end(void)
 uint_fast16_t
 display_put_char_big(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	uc1608_put_char_big(c, lowhalf);
+	return uc1608_put_char_big(xpix, c, lowhalf);
 }
 
 uint_fast16_t
 display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	uc1608_put_char_half(c, lowhalf);
+	return uc1608_put_char_half(xpix, c, lowhalf);
 }
 
 
@@ -292,13 +303,15 @@ display_put_char_half(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, ui
 uint_fast16_t
 display_put_char_small(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	uc1608_put_char_small(c, lowhalf);
+	return uc1608_put_char_small(xpix, c, lowhalf);
 }
 
 uint_fast16_t
 display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp)
 {
 	uc1608_put_char_begin();
+	* yp = GRID2Y(ycell);
+	return GRID2X(xcell);
 }
 
 void
@@ -313,7 +326,7 @@ display_wrdata2_end(void)
 uint_fast16_t
 display_put_char_small2(uint_fast16_t xpix, uint_fast16_t ypix, uint_fast8_t c, uint_fast8_t lowhalf)
 {
-	uc1608_put_char_small2(c);
+	return uc1608_put_char_small2(xpix, c);
 }
 
 void
