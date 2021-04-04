@@ -1023,9 +1023,9 @@
 		//#define BOARD_STMPE811_RESET_PIN (1uL << 4)	/* PD4 : tsc/LCD reset, XS26, pin 22 */
 
 		#define BOARD_STMPE811_INT_CONNECT() do { \
-		arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
-		arm_hardware_pioa_updown(BOARD_GT911_INT_PIN, 0); \
-		arm_hardware_pioa_onchangeinterrupt(BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+			arm_hardware_pioa_inputs(BOARD_STMPE811_INT_PIN); \
+			arm_hardware_pioa_updown(BOARD_STMPE811_INT_PIN, 0); \
+			arm_hardware_pioa_onchangeinterrupt(BOARD_STMPE811_INT_PIN, 1 * BOARD_STMPE811_INT_PIN, 0 * BOARD_STMPE811_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 		} while (0)
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811) */
 
