@@ -1320,6 +1320,18 @@ unsigned long hardware_get_spi_freq(void)
 	return stm32mp1_get_spi1_freq();
 }
 
+#elif CPUSTYLE_STM32F1XX && defined (STM32F101xB)
+
+// placeholders
+#define BOARD_USART1_FREQ 1
+#define BOARD_SPI_FREQ 1
+
+#elif CPUSTYLE_STM32F1XX && defined (STM32F103xB)
+
+// placeholders
+#define BOARD_USART1_FREQ 1
+#define BOARD_SPI_FREQ 1
+
 #endif /* CPUSTYLE_STM32MP1 */
 
 

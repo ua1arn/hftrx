@@ -6,7 +6,7 @@
 //
 // Плата Воробей
 //
-// Для компиляции скопировать данный файл под расширением .h 
+// Для компиляции скопировать данный файл под расширением .h
 //
 // copy atmega644_ctlstyle_v1.h.prototype atmega644_ctlstyle_v1.h
 
@@ -301,10 +301,10 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 	//#define SHORTSET7	1	
-	#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	#define WITHPOTIFSHIFT	1		// потенциометр управления сдвигом полосы ПЧ
 
@@ -328,7 +328,7 @@
 	//#define WITHSUBTONES	1	/* выполняется формирование субтона при передаче NFM */
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
-	#define WITHFIXEDBFO	1	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
+	//#define WITHFIXEDBFO	1	/* Переворот боковых за счёт 1-го гетродина (особенно, если нет подстраиваемого BFO) */
 	//#define WITHDUALBFO		1	/* Переворот боковых за счёт переключения частоты BFO внешним сигналом */
 	//#define WITHDUALFLTR	1	/* Переворот боковых за счёт переключения фильтра верхней или нижней боковой полосы */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
@@ -480,6 +480,14 @@
 		PWRI = 4,
 		FWD = 4, REF = 3,	// SWR-meter
 	#endif /* WITHSWRMTR */
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
 		KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
 	};
 
@@ -488,5 +496,8 @@
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
+
+	#define  WITHPOWERTRIMMAX 100
+	#define LCDMODE_PIXELSIZE 1
 
 #endif /* ATMEGA644_CTLSTYLE_V1_H_INCLUDED */

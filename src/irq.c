@@ -9,6 +9,7 @@
 
 #include "board.h"
 #include "formats.h"	// for debug prints
+#include <string.h>
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
