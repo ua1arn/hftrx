@@ -31,7 +31,7 @@ CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
 
 # Define optimisation level here
-OPT = -Ofast
+OPT = -Os
 LTO = -flto
 
 MCU  = cortex-m3

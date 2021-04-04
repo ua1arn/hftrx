@@ -1325,12 +1325,18 @@ unsigned long hardware_get_spi_freq(void)
 // placeholders
 #define BOARD_USART1_FREQ 1
 #define BOARD_SPI_FREQ 1
+#define BOARD_I2C_FREQ 1
+#define BOARD_TIM3_FREQ 1
+#warning TODO: use real clocks
 
 #elif CPUSTYLE_STM32F1XX && defined (STM32F103xB)
 
 // placeholders
 #define BOARD_USART1_FREQ 1
 #define BOARD_SPI_FREQ 1
+#define BOARD_I2C_FREQ 1
+#define BOARD_TIM3_FREQ 1
+#warning TODO: use real clocks
 
 #endif /* CPUSTYLE_STM32MP1 */
 
@@ -2709,7 +2715,7 @@ void hardware_twi_master_configure(void)
 	I2C1->TRISE = 46; //время установления логического уровня в количестве цыклах тактового генератора I2C
 
 	I2C1->CCR = (I2C1->CCR & ~ (I2C_CCR_CCR | I2C_CCR_FS | I2C_CCR_DUTY)) |
-		(calcdivround_pclk1(SCL_CLOCK * 25) & I2C_CCR_CCR) |	// Делитель для получения 10 МГц (400 кHz * 25)
+		(calcdivround2(BOARD_I2C_FREQ, SCL_CLOCK * 25) & I2C_CCR_CCR) |	// Делитель для получения 10 МГц (400 кHz * 25)
 	#if SCL_CLOCK == 400000UL
 		I2C_CCR_FS |
 		I2C_CCR_DUTY | // T high = 9 * CCR * TPCLK1, T low = 16 * CCR * TPCLK1: full cycle = 25 * CCR * TPCLK1
@@ -9394,7 +9400,7 @@ void hardware_adc_initialize(void)
 	__DSB();
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(ADC_FREQ), 0, (8 | 4 | 2), & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_ADC_FREQ, ADC_FREQ), 0, (8 | 4 | 2), & value, 0);
 	// STM32F767
 	// STM32F429
 	static const uint_fast8_t presc [] =
@@ -10381,7 +10387,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -10465,7 +10471,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround_pclk2(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
