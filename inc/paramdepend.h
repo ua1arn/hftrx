@@ -221,6 +221,8 @@ extern "C" {
 
 		#if defined(STM32F401xC)
 
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+
 			#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
 			#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
 			#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
@@ -234,10 +236,11 @@ extern "C" {
 			#define CPU_FREQ (PLL_FREQ / 4)	// 172032000uL
 
 			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
-			#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			//#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
+			//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
+			//#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
+			//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
  		#elif CPUSTYLE_STM32H7XX
 
@@ -263,6 +266,9 @@ extern "C" {
 
 		#elif CPUSTYLE_STM32F7XX
 
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+
+
 			unsigned long stm32f7xx_get_pll_freq(void);
 			unsigned long stm32f7xx_get_plli2s_freq(void);
 			unsigned long stm32f7xx_get_pllsai_freq(void);
@@ -281,9 +287,11 @@ extern "C" {
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
 			#define HSIFREQ 16000000uL
-			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
 		#elif CPUSTYLE_STM32F4XX
+
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+
 
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
@@ -294,10 +302,10 @@ extern "C" {
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
 
 			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			//#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+			//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+			//#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+			//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
 		#endif

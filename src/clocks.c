@@ -22,8 +22,10 @@ calcdivround2(
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
+#if defined(STM32F401xC)
 
-#if CPUSTYLE_STM32F4XX
+
+#elif CPUSTYLE_STM32F4XX
 
 unsigned long stm32f4xx_get_spi1_freq(void)
 {

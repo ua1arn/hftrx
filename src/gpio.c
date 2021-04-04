@@ -918,8 +918,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		stm32f30x_pioX_onchangeinterrupt(portholder_t ipins,
 			portholder_t raise, portholder_t fall,
 			portholder_t portcode,	/* 0x00: PAxx, 0x01: PBxx, .. 0x0a: PKxx */
-			uint32_t priority,
-			uint_fast8_t targetcpu	/* dummy parameter */
+			uint32_t priority
 			)
 		{
 			#if CPUSTYLE_STM32H7XX
@@ -983,6 +982,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 			EXTI_D1->EMR1 &= ~ ipins;		// запретить событие
 			(void) EXTI_D1->EMR1;
 
+			enum { targetcpu = 0 };	// stub
 
 			if ((ipins & EXTI_IMR1_IM0) != 0)
 				arm_hardware_set_handler(EXTI0_IRQn, EXTI0_IRQHandler, priority, targetcpu);
@@ -7517,7 +7517,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority, tgcpu);	// PORT F
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PF, priority);	// PORT F
 
 #elif CPUSTYLE_STM32MP1
 
@@ -7550,7 +7550,7 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority, tgcpu);	// PORT G
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PG, priority);	// PORT G
 
 #elif CPUSTYLE_STM32MP1
 
@@ -7576,7 +7576,7 @@ arm_hardware_pioh_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
 
-	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority, tgcpu);	// PORT H
+	stm32f30x_pioX_onchangeinterrupt(ipins, raise, fall, SYSCFG_EXTICR1_EXTI0_PH, priority);	// PORT H
 
 #elif CPUSTYLE_STM32MP1
 
