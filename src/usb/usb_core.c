@@ -8513,7 +8513,7 @@ static HAL_StatusTypeDef PCD_WriteEmptyTxFifo(PCD_HandleTypeDef *hpcd, uint32_t 
 	int i = 0;
 	// todo: разобраться, почему тут цикл. Это же обработчик прерывания
 	while  (
-		((USBx_INEP(epnum)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) > len32b &&
+		((USBx_INEP(epnum)->DTXFSTS & USB_OTG_DTXFSTS_INEPTFSAV_Msk) >> USB_OTG_DTXFSTS_INEPTFSAV_Pos) > len32b &&
 		ep->xfer_count < ep->xfer_len &&
 		ep->xfer_len != 0
 		)
