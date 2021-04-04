@@ -50,7 +50,7 @@ CORE += -mfpu=neon-vfpv4
 #CORE += -mfpu=vfpv4
 
 # Define optimisation level here
-# ony -Og for app
+# olny -Og for app
 # Application
 #OPT = -Og
 OPT = -Ofast
