@@ -260,8 +260,8 @@ static void stmpe811_TS_Start(uint_fast8_t DeviceAddr)
   local_delay_ms(2);
 }
 
-static void
-stmpe811_handler(void)
+void
+stmpe811_interrupt_handler(void)
 {
 	tsc_int = 1;
 }
@@ -284,11 +284,9 @@ void stmpe811_initialize(void)
 	{
 		stmpe811_TS_Start(BOARD_I2C_STMPE811);
 
-#if WITH_STMPE811_INTERRUPTS
-	const portholder_t int_pin = 1uL << 3;		/* P5_3 */
-	arm_hardware_pio5_inputs(int_pin);
-	arm_hardware_pio5_onchangeinterrupt(int_pin, 1, ARM_SYSTEM_PRIORITY, stmpe811_handler);	// P5_3 interrupt, rising edge sensitive
-#endif /* WITH_STMPE811_INTERRUPTS */
+	#if WITH_STMPE811_INTERRUPTS
+		BOARD_STMPE811_INT_CONNECT();
+	#endif /* WITH_STMPE811_INTERRUPTS */
 	}
 }
 

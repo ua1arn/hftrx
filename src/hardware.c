@@ -210,7 +210,13 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 	{
 		gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
 	}
-#endif
+#endif /* BOARD_GT911_INT_PIN */
+#if BOARD_STMPE811_INT_PIN
+	if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+	{
+		stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+	}
+#endif /* BOARD_STMPE811_INT_PIN */
 }
 
 #endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F */
@@ -582,7 +588,13 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		{
 			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
 		}
-	#endif
+	#endif /* BOARD_GT911_INT_PIN */
+	#if BOARD_STMPE811_INT_PIN
+		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+		{
+			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_STMPE811_INT_PIN */
 	}
 
 #elif CPUSTYLE_AT91SAM7S
@@ -615,7 +627,13 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		{
 			gt911_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
 		}
-	#endif
+	#endif /* BOARD_GT911_INT_PIN */
+	#if BOARD_STMPE811_INT_PIN
+		if ((pr & BOARD_STMPE811_INT_PIN) != 0)
+		{
+			stmpe811_interrupt_handler();	/* прерывание по изменению сигнала на входе от тач */
+		}
+	#endif /* BOARD_STMPE811_INT_PIN */
 	}
 
 #elif CPUSTYLE_ATMEGA
