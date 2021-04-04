@@ -1054,9 +1054,11 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		static void 
 		stm32f30x_pioX_onchangeinterrupt(portholder_t ipins,
 				portholder_t raise, portholder_t fall,
-				portholder_t portcode, uint32_t priority,
-				uint_fast8_t targetcpu	/* dummy parameter */)
+				portholder_t portcode, uint32_t priority
+				)
 		{
+			enum { targetcpu = 0 };
+
 			#if CPUSTYLE_STM32H7XX
 				RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 				__DSB();
