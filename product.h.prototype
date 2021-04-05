@@ -307,6 +307,7 @@
 	#include "boards/atmega_cpustyle_v8a.h"
 #elif CPUSTYLE_STM32F && CTLSTYLE_V1B
 	#include "boards/atmega644_ctlstyle_v1.h"	// Синтезатор "Воробей"
+//	#include "boards/arm_stm32f103c8_ctlstyle_test.h"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32fxxx_tqfp64_cpustyle_v8a.h"	/* STM32F101RB	*/
 #elif CPUSTYLE_STM32F && CTLSTYLE_V1K
