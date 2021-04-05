@@ -1325,19 +1325,19 @@ unsigned long hardware_get_spi_freq(void)
 #elif CPUSTYLE_STM32F1XX && defined (STM32F101xB)
 
 // placeholders
-#define BOARD_USART1_FREQ 1
-#define BOARD_SPI_FREQ 1
-#define BOARD_I2C_FREQ 1
-#define BOARD_TIM3_FREQ 1
+#define BOARD_USART1_FREQ (CPU_FREQ / 1)
+#define BOARD_SPI_FREQ (CPU_FREQ / 1)
+#define BOARD_I2C_FREQ (CPU_FREQ / 1)
+#define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
 #elif CPUSTYLE_STM32F1XX && defined (STM32F103xB)
 
 // placeholders
-#define BOARD_USART1_FREQ 1
-#define BOARD_SPI_FREQ 1
-#define BOARD_I2C_FREQ 1
-#define BOARD_TIM3_FREQ 1
+#define BOARD_USART1_FREQ (CPU_FREQ / 1)
+#define BOARD_SPI_FREQ (CPU_FREQ / 1)
+#define BOARD_I2C_FREQ (CPU_FREQ / 1)
+#define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
 #endif /* CPUSTYLE_STM32MP1 */
