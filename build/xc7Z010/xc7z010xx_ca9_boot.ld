@@ -5,10 +5,10 @@
 MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
-  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 176k	/* OCM - on-chip memory 192k */
-  TTB (rwx)  	: ORIGIN = 0x0002C000, LENGTH = 16k		/* first 16 kB OCM3 for TTB */
-  /*OCM3 (rwx)	: ORIGIN = 0x00034000, LENGTH = 47k	*/	/* OCM3 - on-chip memory 64k - 16k - 1k for TTB */
-  /*DDR3 (rwx) 	: ORIGIN = 0x00100000, LENGTH = 191M  */	/* lower 64MB reserved for image, DDR3 single chip NT5CC128M16IP-DI */
+  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
+  TTB (rwx)  	: ORIGIN = 0xFFFF0000, LENGTH = 16k		/* last 16 kB OCM3 for TTB */
+  OCM3 (rwx)	: ORIGIN = 0xFFFF4000, LENGTH = 0x00BE00		/* OCM3 - on-chip memory 64k - 16k - 512 for TTB */
+  DDR3 (rwx) 	: ORIGIN = 0x00100000, LENGTH = 191M 	/* lower 64MB reserved for image, DDR3 single chip NT5CC128M16IP-DI */
 }
 
 /* Library configurations */
@@ -59,7 +59,6 @@ SECTIONS
 
 		KEEP(*(.text*))
 		KEEP(*(.itcm*))
-		. = ALIGN(4);
 	} > OCM
 
 	.ARM.extab :
@@ -166,7 +165,7 @@ SECTIONS
 
 	} > OCM
 
-	.bss :
+	.bss (COPY):
 	{
 		__bss_start__ = .;
 		. = ALIGN(32);
@@ -176,19 +175,19 @@ SECTIONS
 		__bss_end__ = .;
 	} > OCM
 
-	.noinit :
+	.noinit (COPY):
 	{
 		. = ALIGN(32);
 		KEEP(*(.noinit*))
 		. = ALIGN(32);
-	} > OCM
+	} > OCM3
 
-	.vram :
+	.vram (COPY):
 	{
 		. = ALIGN(64);
 		KEEP(*(.framebuff*))
 		. = ALIGN(64);
-	} > OCM
+	} > OCM3
 
 	.heap (COPY):
 	{
@@ -197,7 +196,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > OCM
+	} > OCM3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
@@ -205,11 +204,11 @@ SECTIONS
 	.stack_dummy (COPY):
 	{
 		KEEP(*(.stack*))
-	} > OCM
+	} > OCM3
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(OCM) + LENGTH(OCM);
+	__StackTop = ORIGIN(OCM3) + LENGTH(OCM3);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 

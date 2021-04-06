@@ -2742,7 +2742,7 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t t
 	}
 
 #if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
-	/* R/O, XN for pages table. - 16 MB size. */
+	/* R/O, XN for pages table. - 1 MB size. */
 	tlbbase [(uintptr_t) tlbbase / pagesize] = accessbits((uintptr_t) tlbbase, 1, 1);
 #endif /* CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER */
 }
