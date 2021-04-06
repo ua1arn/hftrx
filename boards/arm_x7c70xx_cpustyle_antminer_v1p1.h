@@ -32,7 +32,7 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 
-#if WITHDEBUG
+#if 1//WITHDEBUG
 	//#define WITHUART1HW	1	/* MIO46 UART0_RXD MIO47 UART0_TXD  Используется периферийный контроллер последовательного порта UART00 */
 	#define WITHUART2HW	1	/*	MIO49 UART1_RXD MIO48 UART1_TXD Используется периферийный контроллер последовательного порта UART1 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
@@ -617,8 +617,8 @@
 	// little board
 	// WITHUART2HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		mio_mode(48, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
-		mio_mode(49, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
+		mio_mode(24, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
+		mio_mode(25, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
 		} while (0)
 
 #endif /* WITHUART2HW */

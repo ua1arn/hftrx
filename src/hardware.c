@@ -2765,7 +2765,7 @@ ttb_map(
 
 #endif /* CPUSTYLE_R7S721 */
 
-// PLL and caches inuitialize
+// PLL and caches iniitialize
 static void FLASHMEMINITFUNC
 sysinit_fpu_initialize(void)
 {
@@ -2917,7 +2917,7 @@ sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
 #if (__CORTEX_A != 0)
-	// MMU inuitialize
+	// MMU iniitialize
 
 #if 0 && WITHDEBUG
 	uint_fast32_t leveli;
@@ -2944,18 +2944,18 @@ sysinit_mmu_initialize(void)
 
 #if WITHISBOOTLOADER || CPUSTYLE_R7S721
 
-	// MMU inuitialize
+	// MMU iniitialize
 	ttb_initialize(ttb_accessbits, 0, 0);
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #elif CPUSTYLE_STM32MP1
 	extern uint32_t __data_start__;
-	// MMU inuitialize
+	// MMU iniitialize
 	ttb_initialize(ttb_accessbits, 0xC0000000, (uintptr_t) & __data_start__ - 0xC0000000);
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
 #else
-	// MMU inuitialize
+	// MMU iniitialize
 	ttb_initialize(ttb_accessbits, 0, 0);
 	sysinit_ttbr_initialize();	/* Загрузка TTBR, инвалидация кеш памяти и включение MMU */
 
@@ -3385,15 +3385,14 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
-#if CPUSTYLE_XC7Z & WITHISBOOTLOADER	// FSBL
+#if CPUSTYLE_XC7Z && WITHISBOOTLOADER	// FSBL
 
 	xc7z_hardware_initialize();
 	ps7_init();
-
-#endif /* CPUSTYLE_XC7Z & WITHISBOOTLOADER */
+#endif /* CPUSTYLE_XC7Z && WITHISBOOTLOADER */
 
 	sysinit_fpu_initialize();
-	sysinit_pll_cache_initialize();	// PLL and caches inuitialize
+	sysinit_pll_cache_initialize();	// PLL and caches iniitialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate

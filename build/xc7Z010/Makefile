@@ -59,7 +59,7 @@ CORE += -mfpu=neon-vfpv3
 #CORE += -mlong-calls
 
 # Define optimisation level here
-# ony -Og for app
+# only -Og for app
 # Application
 #OPT = -Og
 OPT = -Ofast
@@ -133,7 +133,7 @@ UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 ULIBDIR +=
 
 # List all user libraries here
-ULIBS += $(ZYNQLIB)
+#ULIBS += $(ZYNQLIB)
 
 VPATH = $(PRJROOT)
 
@@ -210,9 +210,9 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 .PHONY: all bootloader flash clean lib
 
 
-all: APP2_4205
+#all: APP2_4205
 
-#all: APP2_ANT
+all: APP2_ANT
 
 bootloader: BOOT2
   
@@ -225,23 +225,23 @@ app_run: $(PROJECT)_app.elf bitstream_4205.bit app_run_4205.tcl
 lib: $(ZYNQLIB)
 
 $(ZYNQLIB): $(ZOBJS)
-	-$(RM) $(ZYNQLIB)
-	$(AR) -rc $(ZYNQLIB) $(ZOBJS)
+	-$(RM) $@
+	$(AR) -rc $@ $(ZOBJS)
 	
 flash: $(PROJECT)_app.stm32
 	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
-BOOT2: version $(OBJS) BOOTL.BIN
+BOOT2: version BOOTL.BIN
 	-cp BOOTL.BIN $(ZINQ_BOOT_BIN)
 	
-APP2_ANT: version $(OBJS) APPL_ANT.BIN
-	-cp APPL.BIN $(ZINQ_BOOT_BIN)  
+APP2_ANT: version APPL_ANT.BIN
+	-cp APPL_ANT.BIN $(ZINQ_BOOT_BIN)  
   
-APP2_4205: version $(OBJS) APPL_4205.BIN
+APP2_4205: version APPL_4205.BIN
 	-cp APPL_4205.BIN $(ZINQ_BOOT_BIN)
 
-BOOTL.BIN: boot.bif $(PROJECT)_boot.elf
-	bootgen -arch zynq -image boot.bif -w on -o $@
+BOOTL.BIN: boot_ant.bif $(PROJECT)_boot.elf
+	bootgen -arch zynq -image boot_ant.bif -w on -o $@
 	
 APPL_4205.BIN: app_4205.bif $(PROJECT)_app.elf fsbl_4205.elf bitstream_4205.bit
 	bootgen -arch zynq -image app_4205.bif -w on -o $@

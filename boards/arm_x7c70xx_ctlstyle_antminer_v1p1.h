@@ -383,7 +383,7 @@
 	#define WITHDISPLAYSWR_FPS	25
 	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-	#if 1
+	#if 0
 		#define WITHTOUCHGUI		1
 		//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHALPHA			64

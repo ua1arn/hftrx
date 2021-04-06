@@ -1837,7 +1837,20 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 }
 
 #else
-	#error Wrong CPUSTYLE_xxxx
+	//#error Wrong CPUSTYLE_xxxx
+
+void arm_hardware_ltdc_initialize(const uintptr_t * frames)
+{
+}
+
+/* set bottom buffer start */
+void arm_hardware_ltdc_main_set(uintptr_t p)
+{
+}
+
+void arm_hardware_ltdc_L8_palette(void)
+{
+}
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
