@@ -53,9 +53,9 @@ ZYNQLIB = zynq7000.a
 
 CORE = -mcpu=cortex-a9 
 CORE += -mfloat-abi=hard 
-CORE += -mfpu=vfpv3
+#CORE += -mfpu=vfpv3
 #CORE += -mfpu=neon
-#CORE += -mfpu=neon-vfpv3
+CORE += -mfpu=neon-vfpv3
 #CORE += -mlong-calls
 
 # Define optimisation level here

@@ -2792,8 +2792,6 @@ sysinit_fpu_initialize(void)
 #elif (__CORTEX_A != 0)
 
 	// FPU
-	//vfp_access_enable();
-	//arm_hardware_VFPEnable();
 	__FPU_Enable();
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
@@ -3022,15 +3020,15 @@ void xc7z_hardware_initialize(void)
 
 #define PS7_MASK_POLL_TIME 100000000
 
-#define __arch_getb(a)			(*(volatile unsigned char *)(a))
-#define __arch_getw(a)			(*(volatile unsigned short *)(a))
-#define __arch_getl(a)			(*(volatile unsigned int *)(a))
-#define __arch_getq(a)			(*(volatile unsigned long long *)(a))
+#define __arch_getb(a)			(*(volatile uint8_t *)(a))
+#define __arch_getw(a)			(*(volatile uint16_t *)(a))
+#define __arch_getl(a)			(*(volatile uint32_t *)(a))
+#define __arch_getq(a)			(*(volatile uint64_t *)(a))
 
-#define __arch_putb(v,a)		(*(volatile unsigned char *)(a) = (v))
-#define __arch_putw(v,a)		(*(volatile unsigned short *)(a) = (v))
-#define __arch_putl(v,a)		(*(volatile unsigned int *)(a) = (v))
-#define __arch_putq(v,a)		(*(volatile unsigned long long *)(a) = (v))
+#define __arch_putb(v,a)		(*(volatile uint8_t *)(a) = (v))
+#define __arch_putw(v,a)		(*(volatile uint16_t *)(a) = (v))
+#define __arch_putl(v,a)		(*(volatile uint32_t *)(a) = (v))
+#define __arch_putq(v,a)		(*(volatile uint64_t *)(a) = (v))
 
 #define __raw_writeb(v,a)	__arch_putb(v,a)
 #define __raw_writew(v,a)	__arch_putw(v,a)
@@ -3043,12 +3041,12 @@ void xc7z_hardware_initialize(void)
 #define __raw_readq(a)		__arch_getq(a)
 
 /* IO accessors. No memory barriers desired. */
-static inline void iowrite(unsigned long val, unsigned long addr)
+static inline void iowrite(unsigned long val, uintptr_t addr)
 {
 	__raw_writel(val, addr);
 }
 
-static inline unsigned long ioread(unsigned long addr)
+static inline unsigned long ioread(uintptr_t addr)
 {
 	return __raw_readl(addr);
 }
@@ -3097,7 +3095,7 @@ int ps7_config(const unsigned long * ps7_config_init)
     int  numargs;           // number of arguments of this instruction
     int  j;                 // general purpose index
 
-    volatile unsigned long *addr;         // some variable to make code readable
+    volatile uint32_t *addr;         // some variable to make code readable
     unsigned long  val,mask;              // some variable to make code readable
 
     int finish = -1 ;           // loop while this is negative !
@@ -3119,25 +3117,25 @@ int ps7_config(const unsigned long * ps7_config_init)
             break;
 
         case OPCODE_CLEAR:
-            addr = (volatile unsigned long*) args[0];
+            addr = (volatile uint32_t*) args[0];
             *addr = 0;
             break;
 
         case OPCODE_WRITE:
-            addr = (volatile unsigned long*) args[0];
+            addr = (volatile uint32_t*) args[0];
             val = args[1];
             *addr = val;
             break;
 
         case OPCODE_MASKWRITE:
-            addr = (volatile unsigned long*) args[0];
+            addr = (volatile uint32_t*) args[0];
             mask = args[1];
             val = args[2];
             *addr = ( val & mask ) | ( *addr & ~mask);
             break;
 
         case OPCODE_MASKPOLL:
-            addr = (volatile unsigned long*) args[0];
+            addr = (volatile uint32_t*) args[0];
             mask = args[1];
             i = 0;
             while (!(*addr & mask)) {
@@ -3149,7 +3147,7 @@ int ps7_config(const unsigned long * ps7_config_init)
             }
             break;
         case OPCODE_MASKDELAY:
-            addr = (volatile unsigned long*) args[0];
+            addr = (volatile uint32_t*) args[0];
             mask = args[1];
             int delay = get_number_of_cycles_for_delay(mask);
             perf_reset_and_start_timer();
@@ -3385,13 +3383,13 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+	sysinit_fpu_initialize();
 #if CPUSTYLE_XC7Z && WITHISBOOTLOADER	// FSBL
 
 	xc7z_hardware_initialize();
 	ps7_init();
 #endif /* CPUSTYLE_XC7Z && WITHISBOOTLOADER */
 
-	sysinit_fpu_initialize();
 	sysinit_pll_cache_initialize();	// PLL and caches iniitialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
