@@ -1322,10 +1322,6 @@ void cpu_initialize(void)
 
 	cpu_atxmega_switchto32MHz();
 
-#elif CPUSTYLE_AT91SAM7S
-
-	usb_disable();
-
 #endif
 
 #if CPUSTYLE_R7S721
