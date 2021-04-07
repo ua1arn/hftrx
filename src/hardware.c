@@ -3152,6 +3152,7 @@ void Reset_CPUn_Handler(void)
 	__ISB();
 	__DSB();
 	#if (__L2C_PRESENT == 1)
+		// L2 контроллерп едминственный и уже инициализирован
 	  // Enable Level 2 Cache
 	  //L2C_Enable();
 	  //L2C_InvAllByWay();
