@@ -2964,7 +2964,7 @@ sysinit_mmu_initialize(void)
 	//PRINTF("MMU initialized\n");
 }
 
-void FLASHMEMINITFUNC
+static void FLASHMEMINITFUNC
 sysinit_cache_initialize(void)
 {
 #if CPUSTYLE_AT91SAM9XE

@@ -6488,7 +6488,7 @@ sysinit_pll_initialize(void)
 	cpu_stm32f1xx_setmapr(0);	/* переключить отладочный интерфейс в SWD */
 	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     //включить тактирование power management
-	__DSB();
+	(void) RCC->APB1ENR;
 	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_2V8 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_STM32F4XX
@@ -6498,7 +6498,7 @@ sysinit_pll_initialize(void)
 	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
-	__DSB();
+	(void) RCC->APB1ENR;
 
 	#if WITHUSESAIPLL
 		stm32f4xx_pllsai_initialize();
@@ -6699,6 +6699,7 @@ sysinit_pll_initialize(void)
 
 	xc7z_hardware_initialize();
 	ps7_init();
+
 #endif /* CPUSTYLE_XC7Z && WITHISBOOTLOADER */
 	#endif /* WITHISBOOTLOADER */
 
