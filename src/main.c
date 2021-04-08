@@ -21927,14 +21927,100 @@ void bootloader_deffereddetach(void * arg)
 #endif /* BOOTLOADER_RAMSIZE */
 }
 
+#if CPUSTYLE_XC7Z	// мигалка
+
+static unsigned volatile tmpressed;
+static unsigned volatile pressflag;
+
+static unsigned refreshtimer;
+static unsigned volatile refreshevent;
+
+static unsigned s1timer;
+static unsigned volatile s1event;
+
+static unsigned s01timer;
+static unsigned volatile s01event;
+enum { REFRESHPERIODmS = 500 };
+
+static unsigned tcpiptimer;
+static unsigned volatile tcpipevent;
+
+static int getrefresh(void)
+{
+	unsigned v;
+
+	system_disableIRQ();
+	v = refreshevent;
+	refreshevent = 0;
+	system_enableIRQ();
+
+	return v;
+}
+
+
+static void
+tsc_spool(void * ctx)
+{
+	{
+		unsigned t = tmpressed;
+		if (t != 0)
+			tmpressed = t - 1;
+	}
+	// обновление крана
+	{
+		unsigned t = refreshtimer;
+		if (++ t >= NTICKS(REFRESHPERIODmS))
+		{
+			refreshevent = 1;
+			refreshtimer = 0;
+		}
+		else
+		{
+			refreshtimer = t;
+		}
+	}
+	// обработка LWIP
+	{
+		unsigned t = tcpiptimer;
+		if (++ t >= NTICKS(250))
+		{
+			tcpipevent = 1;
+			tcpiptimer = 0;
+		}
+		else
+		{
+			tcpiptimer = t;
+		}
+	}
+//	{
+//		unsigned t = s1timer;
+//		if (++ t >= NTICKS(1000))
+//		{
+//			++ abstime;
+//			s1event = 1;
+//			s1timer = 0;
+//		}
+//		else
+//		{
+//			s1timer = t;
+//		}
+//	}
+}
+
+#endif /* CPUSTYLE_XC7Z */
+
 static void bootloader_mainloop(void)
 {
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
 #if CPUSTYLE_XC7Z	// мигалка
+	static ticker_t tscticker;
+	system_disableIRQ();
+	ticker_initialize(& tscticker, 1, tsc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	system_enableIRQ();
 	gpio_output(37, 0);		/* LED_R */
-#endif
+#endif /* CPUSTYLE_XC7Z */
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
@@ -21942,12 +22028,17 @@ static void bootloader_mainloop(void)
 ddd:
 	;
 #if CPUSTYLE_XC7Z	// мигалка
-	// установка состояния выходов
-	gpio_pin_output_state(37, 1);	/* LED_R */
-	local_delay_ms(500);
-	gpio_pin_output_state(37, 0);	/* LED_R */
-	local_delay_ms(500);
-	PRINTF(".");
+
+	if (getrefresh())
+	{
+		static int state;
+
+		state = ! state;
+		// установка состояния выходов
+		gpio_pin_output_state(37, state);	/* LED_R */
+
+	}
+	//PRINTF(".");
 	char c;
 	if (dbg_getchar(& c))
 	{
