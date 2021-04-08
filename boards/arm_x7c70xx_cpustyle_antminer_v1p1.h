@@ -28,9 +28,7 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-
+#define USERFIRSTSBLOCK 0
 
 #if 1//WITHDEBUG
 	//#define WITHUART1HW	1	/* MIO46 UART0_RXD MIO47 UART0_TXD  Используется периферийный контроллер последовательного порта UART00 */
@@ -49,6 +47,9 @@
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
@@ -100,6 +101,9 @@
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+
+	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -347,6 +351,34 @@
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 #if WITHSDHCHW
+
+	// J11
+	//	PS_MIO40_CD_CLK
+	//	PS_MIO41_CD_CMD
+	//	PS_MIO42_CD_D0
+	//	PS_MIO43_CD_D1
+	//	PS_MIO44_CD_D2
+	//	PS_MIO45_CD_D3
+	//	PS_MIO46_CD_SW
+	//	PS_MIO50_CD_WP
+
+	// 0 - no disk
+	#define HARDWARE_SDIOSENSE_CD() 1//((GPIOG->IDR & HARDWARE_SDIO_CD_BIT) == 0)	/* получить состояние датчика CARD PRESENT */
+	// ! 0 - write protect
+	#define HARDWARE_SDIOSENSE_WP() 0//((GPIOG->IDR & HARDWARE_SDIO_WP_BIT) != 0)	/* получить состояние датчика CARD WRITE PROTECT */
+
+	#define HARDWARE_SDIO_HANGOFF() do { \
+		} while (0)
+	#define HARDWARE_SDIO_INITIALIZE() do { \
+		} while (0)
+	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
+		} while (0)
+	#define HARDWARE_SDIOPOWER_INITIALIZE() do { \
+		} while (0)
+
+#endif /* WITHSDHCHW */
+
+#if WITHSDHCHW && 0
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
 			arm_hardware_piod_altfn50(1uL << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \

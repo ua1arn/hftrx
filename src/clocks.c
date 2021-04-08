@@ -10892,6 +10892,8 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 		(use4bit != 0 ? 0x01 : 0x00) * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 		0;
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -11027,6 +11029,8 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 		((value << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
 
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -11154,6 +11158,8 @@ void hardware_sdhost_initialize(void)
 
 	// разрешить тактирование карты памяти
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
+
+#elif CPUSTYLE_XC7Z
 
 #else
 

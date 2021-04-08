@@ -399,6 +399,8 @@ void SDIO_IRQHandler(void)
 		;
 }
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -647,6 +649,9 @@ static void DMA_SDIO_setparams(
 	
 	DMA2_Stream6->CR |= DMA_SxCR_EN;
 
+
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -701,6 +706,8 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	__DMB();
 	return 0;
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -736,6 +743,8 @@ static void DMA_sdio_cancel(void)
 		//DMA2_Stream6->CR |= DMA_SxCR_EN;	// перезапуск DMA
 	}
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -747,6 +756,9 @@ static void DMA_sdio_cancel(void)
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
 #elif CPUSTYLE_STM32F4XX
+
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -881,6 +893,8 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	PRINTF(PSTR("sdhost_dpsm_wait error, STA=%08lX\n"), SDIO->STA);
 	return 1;
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 	return 1;
@@ -922,6 +936,9 @@ static void sdhost_dpsm_wait_fifo_empty(void)
 		if ((fifocnt & SDIO_FIFOCNT_FIFOCOUNT) == 0)
 			break;
 	}
+
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -991,6 +1008,8 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 		//1 * SDIO_DCTRL_RWMOD |			// 1: Read Wait control using SDIO_CK
 		//0 * SDIO_DCTRL_SDIOEN |		// If this bit is set, the DPSM performs an SD I/O-card-specific operation.
 		0;
+
+#elif CPUSTYLE_XC7Z
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1174,6 +1193,8 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 		0 * SDIO_CMD_SDIOSUSPEND |
 		0;
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -1253,6 +1274,8 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 		1 * SDIO_CMD_CPSMEN |
 		0 * SDIO_CMD_SDIOSUSPEND |
 		0;
+
+#elif CPUSTYLE_XC7Z
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1340,6 +1363,8 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 		0 * SDIO_CMD_SDIOSUSPEND |
 		0;
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -1382,6 +1407,8 @@ static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 		return 1;
 	}
 	return 0;
+
+#elif CPUSTYLE_XC7Z
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1475,6 +1502,8 @@ static uint_fast8_t sdhost_get_none_resp(void)
 
 	SDIO->ICR = SDIO_STATIC_FLAGS;
 	return 0;
+
+#elif CPUSTYLE_XC7Z
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1589,6 +1618,8 @@ static uint_fast8_t sdhost_get_resp(void)
 	SDIO->ICR = SDIO_STATIC_FLAGS;
 	return ec;
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 	return 1;
@@ -1694,6 +1725,8 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	SDIO->ICR = SDIO_STATIC_FLAGS;
 	return ec;
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 	return 1;
@@ -1730,6 +1763,8 @@ static uint_fast32_t sdhost_get_resp32bit(void)
 #elif CPUSTYLE_STM32F4XX
 
 	return SDIO->RESP1;		// Card Status[39:8]
+
+#elif CPUSTYLE_XC7Z
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1837,6 +1872,9 @@ static void sdhost_get_resp128bit(uint8_t * resp128)
 		resp128 [13] = SDIO->RESP4 >> 16;
 		resp128 [14] = SDIO->RESP4 >> 8;
 		resp128 [15] = 0;				// CRC-7 and stop bit
+
+#elif CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
