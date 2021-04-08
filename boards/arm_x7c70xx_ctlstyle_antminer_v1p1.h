@@ -21,6 +21,7 @@
 
 	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
 	#define SELOUT_CLK (WITHCPUXOSC * 3)
+	#define SCLR_UART_CLK_CTRL_DIVISOR 16
 
 	// Варианты конфигурации тактирования
 	// ref1_ck, ref2_ck - 8..16 MHz

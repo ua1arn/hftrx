@@ -1211,7 +1211,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 
 	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
-			(16uL << 8) | // DIVISOR
+			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 			(0x01) |	// CLKACT0 - UART 0 reference clock active
 			0;
@@ -2359,7 +2359,7 @@ xxxx!;
 
 	//EMIT_MASKWRITE(0XF8000154, 0x00003F33U ,0x00001002U),	// UART_CLK_CTRL
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
-			(16uL << 8) | // DIVISOR
+			((uint_fast32_t) SCLR_UART_CLK_CTRL_DIVISOR << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 			(0x02) |	// CLKACT1 - UART 1 reference clock active
 			0;
