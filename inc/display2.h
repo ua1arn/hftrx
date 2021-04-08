@@ -23,6 +23,7 @@ typedef struct editfreq_tag
 	uint32_t val;
 	uint8_t num;
 	uint8_t key;
+	uint8_t error;
 } editfreq_t;
 
 typedef struct editfreq2_tag
