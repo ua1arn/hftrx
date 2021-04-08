@@ -2648,7 +2648,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_XC7Z
 
-	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory)
+	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory), DDR3_SCU
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
 	if (a >= 0x00100000uL && a < 0x40000000uL)			//  DDR3 - 255 MB
@@ -2663,7 +2663,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
 
-	if (a >= 0xFFFC0000uL)			//  OCM (On Chip Memory)
+	if (a >= 0xFFFC0000uL)			// OCM (On Chip Memory) is mapped high
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
