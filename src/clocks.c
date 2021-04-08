@@ -11161,6 +11161,15 @@ void hardware_sdhost_initialize(void)
 
 #elif CPUSTYLE_XC7Z
 
+	//EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
+	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
+			(16uL << 8) | // DIVISOR
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			(0x01)	| // CLKACT0 - SDIO 0 reference clock active
+			0;
+
+	//HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+
 #else
 
 	#error Wrong CPUSTYLE_xxx

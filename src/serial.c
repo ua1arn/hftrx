@@ -1213,7 +1213,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
 			(16uL << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			(0x01) |	// CLKACT0 - UART 0 reference clock active:
+			(0x01) |	// CLKACT0 - UART 0 reference clock active
 			0;
 
 	uint32_t r = 0; // Temporary value variable
@@ -2361,7 +2361,7 @@ xxxx!;
 	SCLR->UART_CLK_CTRL = (SCLR->UART_CLK_CTRL & ~ (0x00003F30U)) |
 			(16uL << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			(0x02) |	// CLKACT1 - UART 1 reference clock active:
+			(0x02) |	// CLKACT1 - UART 1 reference clock active
 			0;
 
 	uint32_t r = 0; // Temporary value variable
