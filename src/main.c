@@ -21948,6 +21948,11 @@ ddd:
 	gpio_pin_output_state(37, 0);	/* LED_R */
 	local_delay_ms(500);
 	PRINTF(".");
+	char c;
+	if (dbg_getchar(& c))
+	{
+		dbg_putchar(c);
+	}
 #endif
 
 #if WITHUSBHW
