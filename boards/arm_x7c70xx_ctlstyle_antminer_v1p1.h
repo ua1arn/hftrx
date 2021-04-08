@@ -288,8 +288,10 @@
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	#define WITHUSESDCARD 1
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	#define WITHUSEFATFS		1	// FatFS
 
 #else /* WITHISBOOTLOADER */
 

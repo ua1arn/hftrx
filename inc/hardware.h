@@ -752,6 +752,8 @@ void SDIO_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
 void DMA2_Stream6_IRQHandler(void);
 
+void SDIO0_IRQHandler(void);	// ZYNQ
+
 void SysTick_Handler(void);
 void Reset_CPUn_Handler(void);
 

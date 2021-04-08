@@ -401,6 +401,13 @@ void SDIO_IRQHandler(void)
 
 #elif CPUSTYLE_XC7Z
 
+void SDIO0_IRQHandler(void)
+{
+	PRINTF(PSTR("SDIO0_IRQHandler trapped\n"));
+	for (;;)
+		;
+}
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -707,6 +714,7 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	return 0;
 
 #elif CPUSTYLE_XC7Z
+	return 0;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -895,6 +903,30 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 
 #elif CPUSTYLE_XC7Z
 
+	local_delay_ms(100);
+	// bits are Readable, write a one to clear
+	for (;;)
+	{
+		const uint32_t status = SD0->INT_STATUS;
+		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		if ((status & (1uL << 16)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
+			return 1;
+		}
+		if ((status & (1uL << 1)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Transfer_Complete
+			return 0;
+		}
+		if ((status & (1uL << 0)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Complete
+			return 0;
+		}
+	}
+	return 1;
+
 #else
 	#error Wrong CPUSTYLE_xxx
 	return 1;
@@ -1010,6 +1042,14 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 		0;
 
 #elif CPUSTYLE_XC7Z
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x0F0000uL)) | 0x0E0000uL;	// Data_Timeout_Counter_Value_
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) | 0x008000uL;	// SDCLK_Frequency_Select
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
+	// Wait Internal_Clock_Stable
+	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
+		;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1195,6 +1235,26 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 
 #elif CPUSTYLE_XC7Z
 
+	SD0->ARG = arg;
+	SD0->CMD_TRANSFER_MODE =
+		(cmd << 24) |
+		(0x00 << 22) | // Command_Type
+		(0x00 << 21) | // Data_Present_Select
+		(0x00 << 20) | // Command_Index_Check_Enable
+		(0x00 << 19) | // Command_CRC_Check_Enable
+		(0x00 << 16) | // Response_Type_Select: 00 - No Response
+		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
+		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+		(0x00 << 2) | // Auto_CMD12_Enable
+		(0x00 << 1) | // Block_Count_Enable
+		(0x00 << 0) | // DMA_Enable
+//		0 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
+//		0 * SDMMC_CMD_WAITINT |
+//		0 * SDMMC_CMD_WAITPEND |
+//		1 * SDMMC_CMD_CPSMEN |
+//		//0 * SDMMC_CMD_SDIOSUSPEND |
+		0;
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -1276,6 +1336,26 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 		0;
 
 #elif CPUSTYLE_XC7Z
+
+	SD0->ARG = arg;
+	SD0->CMD_TRANSFER_MODE =
+		(cmd << 24) |
+		(0x00 << 22) | // Command_Type
+		(0x00 << 21) | // Data_Present_Select
+		(0x00 << 20) | // Command_Index_Check_Enable
+		(0x00 << 19) | // Command_CRC_Check_Enable
+		((nocrc ? 0x02 : 0x02) << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
+		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
+		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+		(0x00 << 2) | // Auto_CMD12_Enable
+		(0x00 << 1) | // Block_Count_Enable
+		(0x00 << 0) | // DMA_Enable
+//		1 * SDIO_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
+//		0 * SDIO_CMD_WAITINT |
+//		0 * SDIO_CMD_WAITPEND |
+//		1 * SDIO_CMD_CPSMEN |
+//		0 * SDIO_CMD_SDIOSUSPEND |
+		0;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1365,6 +1445,26 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 
 #elif CPUSTYLE_XC7Z
 
+	SD0->ARG = arg;
+	SD0->CMD_TRANSFER_MODE =
+		(cmd << 24) |
+		(0x00 << 22) | // Command_Type
+		(0x00 << 21) | // Data_Present_Select
+		(0x00 << 20) | // Command_Index_Check_Enable
+		(0x00 << 19) | // Command_CRC_Check_Enable
+		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
+		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
+		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+		(0x00 << 2) | // Auto_CMD12_Enable
+		(0x00 << 1) | // Block_Count_Enable
+		(0x00 << 0) | // DMA_Enable
+		//3 * SDIO_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
+		//0 * SDIO_CMD_WAITINT |
+		//0 * SDIO_CMD_WAITPEND |
+		//1 * SDIO_CMD_CPSMEN |
+		//0 * SDIO_CMD_SDIOSUSPEND |
+		0;
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -1409,6 +1509,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 	return 0;
 
 #elif CPUSTYLE_XC7Z
+	return 0;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1504,6 +1605,28 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	return 0;
 
 #elif CPUSTYLE_XC7Z
+	// bits are Readable, write a one to clear
+	for (;;)
+	{
+		const uint32_t status = SD0->INT_STATUS;
+		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		if ((status & (1uL << 16)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
+			return 1;
+		}
+		if ((status & (1uL << 1)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Transfer_Complete
+			return 0;
+		}
+		if ((status & (1uL << 0)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Complete
+			return 0;
+		}
+	}
+	return 1;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1619,6 +1742,28 @@ static uint_fast8_t sdhost_get_resp(void)
 	return ec;
 
 #elif CPUSTYLE_XC7Z
+	// bits are Readable, write a one to clear
+	for (;;)
+	{
+		const uint32_t status = SD0->INT_STATUS;
+		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		if ((status & (1uL << 16)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
+			return 1;
+		}
+		if ((status & (1uL << 1)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Transfer_Complete
+			return 0;
+		}
+		if ((status & (1uL << 0)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Complete
+			return 0;
+		}
+	}
+	return 1;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1726,6 +1871,28 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	return ec;
 
 #elif CPUSTYLE_XC7Z
+	// bits are Readable, write a one to clear
+	for (;;)
+	{
+		const uint32_t status = SD0->INT_STATUS;
+		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		if ((status & (1uL << 16)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
+			return 1;
+		}
+		if ((status & (1uL << 1)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Transfer_Complete
+			return 0;
+		}
+		if ((status & (1uL << 0)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Complete
+			return 0;
+		}
+	}
+	return 1;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -2731,7 +2898,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 #endif /* WITHSDHCHW4BIT */
 	sdhost_use_cmd23 = 0;
 	sdhost_use_cmd20 = 0;
-#if 0 && WITHSDHCHW
+#if 1 && WITHSDHCHW
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
@@ -2793,7 +2960,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 #endif /* WITHSDHCHW */
 
 	// Get SD status
-#if 0 && WITHSDHCHW
+#if 1 && WITHSDHCHW
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{

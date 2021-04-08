@@ -339,25 +339,19 @@ typedef struct sd_regs {
     __IO uint16_t BLOCK_SIZE                     ; /* 0x0004 Block Size Register */
     __IO uint16_t BLOCK_COUNT                    ; /* 0x0006 Block Count Register */
     __IO uint32_t ARG                     		 ; /* 0x0008 Argument Low Register */
-    __IO uint16_t TRANSFER_MODE                  ; /* 0x000C Transfer Mode Register */
-    __IO uint16_t CMD                            ; /* 0x000E Command Register */
+    __IO uint32_t CMD_TRANSFER_MODE              ; /* 0x000C Command Register, Transfer Mode Register */
     __IO uint32_t RESP_0                         ; /* 0x0010 Response Register 0 */
     __IO uint32_t RESP_1                         ; /* 0x0014 Response Register 1 */
     __IO uint32_t RESP_2                         ; /* 0x0018 Response Register 2 */
     __IO uint32_t RESP_3                         ; /* 0x001C Response Register 3 */
     __IO uint32_t BUFFER_DATA_PORT               ; /* 0x0020 Buffer Data Port Register */
     __IO uint32_t PRESENT_STATE                  ; /* 0x0024 Present State Register 1 */
-    __IO uint16_t HOST_CTRL                      ; /* 0x0028 Host Control Register */
-    __IO uint16_t BLOCK_GAP_CTRL                 ; /* 0x002A Block Gap Control Register */
-    __IO uint16_t CLOCK_CTRL                     ; /* 0x002C Clock Control Register */
-    __IO uint16_t TIMEOUT_CTRL_SW_RESET          ; /* 0x002E Timeout Control/Software Reset Register */
-    __IO uint16_t NORMAL_INT_STATUS              ; /* 0x0030 Normal Interrupt Status Register */
-    __IO uint16_t ERROR_INT_STATUS               ; /* 0x0032 Error Interrupt Status Register */
-    __IO uint16_t NORMAL_INT_STATUS_EN           ; /* 0x0034 Normal Interrupt Status Enable Register */
-    __IO uint16_t ERROR_INT_STATUS_EN            ; /* 0x0036 Error Interrupt Status Enable Register */
-    __IO uint16_t NORMAL_INT_STATUS_INT_EN       ; /* 0x0038 Normal Interrupt Status Interrupt Enable Register */
-    __IO uint16_t ERROR_INT_STATUS_INT_EN        ; /* 0x003A Error Interrupt Status Interrupt Enable Register */
-    __IO uint8_t AUTO_CMD12_ERROR_STATUS         ; /* 0x003C Auto CMD12 Error Status Register */
+    __IO uint32_t HOST_CTRL_BLOCK_GAP_CTRL       ; /* 0x0028 Host Control Register */
+    __IO uint32_t TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL; /* 0x002C Timeout Control/Software Reset Register, Clock Control Register */
+    __IO uint32_t INT_STATUS            		 ; /* 0x0030 Interrupt Status Register */
+    __IO uint32_t INT_STATUS_EN           		 ; /* 0x0034 Interrupt Status Enable Register */
+    __IO uint32_t INT_STATUS_INT_EN       		 ; /* 0x0038 Interrupt Status Interrupt Enable Register */
+     __IO uint8_t AUTO_CMD12_ERROR_STATUS        ; /* 0x003C Auto CMD12 Error Status Register */
     uint8_t reserved0 [3];
     __IO uint32_t CAPABILITIES                   ; /* 0x0040 Capabilities Register 1 */
     uint32_t reserved1 [1];

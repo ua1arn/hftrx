@@ -10898,6 +10898,10 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 
 #elif CPUSTYLE_XC7Z
 
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL = (SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x02uL)) |
+				(use4bit != 0) * 0x02uL |	// Data_Transfer_Width_SD1_or_SD4
+				0;
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -11034,6 +11038,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 
 #elif CPUSTYLE_XC7Z
+	#warning Implement SD HOST speed selection for CPUSTYLE_XC7Z
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -11176,6 +11181,13 @@ void hardware_sdhost_initialize(void)
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	ASSERT(((SD0->Vendor_Version_Number & 0xFFFF0000uL) >> 16) == 0x8901uL);
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+	SD0->INT_STATUS = ~ 0;
+
+	//arm_hardware_set_handler_system(SDIO0_IRQn, SDIO0_IRQHandler);
 
 #else
 
