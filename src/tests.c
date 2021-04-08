@@ -6197,7 +6197,7 @@ void hightests(void)
 //		}
 	}
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
-#if 1 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
+#if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
 	{
 		// SCU registers dump
 		// ZYNQ7000:

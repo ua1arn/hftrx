@@ -2961,33 +2961,25 @@ sysinit_mmu_initialize(void)
 		PRINTF(PSTR("cpu_initialize1: level=%d, passoc=%d, assoc=%u, maxsets=%u, instr cache row size = %u\n"), leveli, passoc1, assoc1, maxsets1, linesize1);
 	}
 #endif /* WITHDEBUG */
-
 #if 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
 	{
 		// SCU inut
 		// SCU Control Register
-		//PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
 		((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
-		//PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
 //
 //
 //		// Filtering Start Address Register
 //		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
-//				0 * (0x001uL << 20) |
+//				(0x001uL << 20) |
 //				0;
 //		TP();
 //		// Filtering End Address Register
 //		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
 //				(0xFFEuL << 20) |
 //				0;
-//		TP();
 
-		// SCU Control Register
-		//PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;	// SCU Invalidate All Registers in Secure State
-		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;
-		//TP();
-		//PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
 	}
 #endif
 
@@ -3062,6 +3054,12 @@ sysinit_cache_initialize(void)
 		#endif /* (__CORTEX_A == 9U) */
 		if (arm_hardware_cpuid() == 0)
 		{
+
+#if 0 && (__L2C_PRESENT == 1)
+			L2C_Disable();
+			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = 0;//0x00000777;	// reg1_data_ram_control
+			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = 0;//0x00000777;	// reg1_tag_ram_control
+#endif /* (__L2C_PRESENT == 1) */
 		#if (__L2C_PRESENT == 1)
 			// Enable Level 2 Cache
 			L2C_Enable();
