@@ -574,7 +574,7 @@ static void window_memory_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 5;
+		uint_fast8_t interval = 6, row_count = 5;
 		win->first_call = 0;
 
 		win->bh_count = memory_cells_count;
@@ -592,9 +592,6 @@ static void window_memory_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-
-		x = col1_int;
-		y = row1_int;
 		button_t * bh = NULL;
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
@@ -616,7 +613,7 @@ static void window_memory_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 
@@ -635,7 +632,7 @@ static void window_memory_process(void)
 
 		ASSERT(bh != NULL);
 		label_t * lbl_note1 = find_gui_element(TYPE_LABEL, win, "lbl_note1");
-		lbl_note1->x = col1_int;
+		lbl_note1->x = 0;
 		lbl_note1->y = bh->y1 + bh->h + get_label_height(lbl_note1);
 		lbl_note1->visible = VISIBLE;
 		local_snprintf_P(lbl_note1->text, ARRAY_SIZE(lbl_note1->text), PSTR("Long press on empty cell - sa"));
@@ -707,7 +704,7 @@ static void window_bands_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0, max_x = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3, i = 0;
+		uint_fast8_t interval = 6, row_count = 3, i = 0;
 		button_t * bh = NULL;
 		win->first_call = 0;
 
@@ -727,11 +724,11 @@ static void window_bands_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 
 		label_t * lh1 = find_gui_element(TYPE_LABEL, win, "lbl_ham");
-		lh1->x = col1_int;
-		lh1->y = row1_int;
+		lh1->x = 0;
+		lh1->y = 0;
 		lh1->visible = VISIBLE;
 
-		x = col1_int;
+		x = 0;
 		y = lh1->y + get_label_height(lh1) * 2;
 
 		for (uint_fast8_t r = 1; i < win->bh_count; i ++, r ++)
@@ -774,14 +771,14 @@ static void window_bands_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 		}
 
 		label_t * lh2 = find_gui_element(TYPE_LABEL, win, "lbl_bcast");
 		lh2->x = max_x + 50;
-		lh2->y = row1_int;
+		lh2->y = 0;
 		lh2->visible = VISIBLE;
 
 		x = lh2->x;
@@ -857,7 +854,7 @@ static void window_options_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
+		uint_fast8_t interval = 6, row_count = 3;
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
@@ -874,9 +871,6 @@ static void window_options_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		x = col1_int;
-		y = row1_int;
-
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
 			button_t * bh = & win->bh_ptr [i];
@@ -888,7 +882,7 @@ static void window_options_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 		}
@@ -969,7 +963,7 @@ static void window_display_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 50, col1_int = 20, row1_int = window_title_height + 20;
+		uint_fast8_t interval = 50;
 		win->first_call = 0;
 		display_t.change = 0;
 		display_t.updated = 1;
@@ -1027,9 +1021,9 @@ static void window_display_process(void)
 		button_t * btn_view = find_gui_element(TYPE_BUTTON, win, "btn_view");
 		button_t * btn_params = find_gui_element(TYPE_BUTTON, win, "btn_params");
 
-		lbl_sp->y = row1_int;
+		lbl_sp->y = 0;
 		lbl_sp->visible = VISIBLE;
-		lbl_topSP->x = col1_int;
+		lbl_topSP->x = 0;
 		lbl_topSP->y = lbl_sp->y + interval;
 		lbl_topSP->visible = VISIBLE;
 		lbl_bottomSP->x = lbl_topSP->x;
@@ -1222,7 +1216,7 @@ static void window_utilites_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		uint_fast8_t interval = 6, row_count = 4;
 		win->first_call = 0;
 		update = 1;
 
@@ -1235,9 +1229,6 @@ static void window_utilites_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		x = col1_int;
-		y = row1_int;
-
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
 			button_t * bh = & win->bh_ptr [i];
@@ -1249,7 +1240,7 @@ static void window_utilites_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 		}
@@ -1520,7 +1511,7 @@ static void window_tx_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
+		uint_fast8_t interval = 6, row_count = 3;
 		button_t * bh = NULL;
 		win->first_call = 0;
 		update = 1;
@@ -1536,9 +1527,6 @@ static void window_tx_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		x = col1_int;
-		y = row1_int;
-
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
 			button_t * bh = & win->bh_ptr [i];
@@ -1550,7 +1538,7 @@ static void window_tx_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 		}
@@ -1638,7 +1626,7 @@ static void window_tx_vox_process(void)
 
 	if (win->first_call)
 	{
-		uint_fast8_t interval = 50, col1_int = 20;
+		uint_fast8_t interval = 50;
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
@@ -1690,7 +1678,7 @@ static void window_tx_vox_process(void)
 		lbl_avox_level = find_gui_element(TYPE_LABEL, win, "lbl_avox_level");
 
 		ldiv_t d = ldiv(hamradio_get_vox_delay(), 100);
-		lbl_vox_delay->x = col1_int;
+		lbl_vox_delay->x = 0;
 		lbl_vox_delay->y = interval;
 		lbl_vox_delay->visible = VISIBLE;
 		local_snprintf_P(lbl_vox_delay->text, ARRAY_SIZE(lbl_vox_delay->text), PSTR("Delay: %d.%d"), d.quot, d.rem / 10);
@@ -1727,7 +1715,7 @@ static void window_tx_vox_process(void)
 		sl_avox_level->value = normalize(hamradio_get_antivox_level(), alevel_min, alevel_max, 100);
 
 		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_vox_OK");
-		bh->x1 = (sl_vox_delay->x + sl_vox_delay->size + col1_int * 2) / 2 - (bh->w / 2);
+		bh->x1 = (sl_vox_delay->x + sl_vox_delay->size) / 2 - (bh->w / 2);
 		bh->y1 = lbl_avox_level->y + interval;
 		bh->visible = VISIBLE;
 
@@ -1833,7 +1821,7 @@ static void window_tx_power_process(void)
 
 	if (win->first_call)
 	{
-		uint_fast8_t interval = 50, col1_int = 20;
+		uint_fast8_t interval = 50;
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
@@ -1875,7 +1863,7 @@ static void window_tx_power_process(void)
 		uint_fast8_t power = hamradio_get_tx_power();
 		uint_fast8_t tune_power = hamradio_get_tx_tune_power();
 
-		lbl_tx_power->x = col1_int;
+		lbl_tx_power->x = 0;
 		lbl_tx_power->y = interval;
 		lbl_tx_power->visible = VISIBLE;
 		local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power);
@@ -1900,7 +1888,7 @@ static void window_tx_power_process(void)
 		sl_pwr_tuner_level->value = normalize(tune_power, power_min, power_max, 100);
 
 		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-		bh->x1 = (sl_pwr_level->x + sl_pwr_level->size + col1_int * 2) / 2 - (bh->w / 2);
+		bh->x1 = (sl_pwr_level->x + sl_pwr_level->size) / 2 - (bh->w / 2);
 		bh->y1 = lbl_tune_power->y + interval;
 		bh->visible = VISIBLE;
 
@@ -1957,7 +1945,7 @@ static void window_audiosettings_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		uint_fast8_t interval = 6, row_count = 4;
 		button_t * bh = NULL;
 		win->first_call = 0;
 		update = 1;
@@ -1978,9 +1966,6 @@ static void window_audiosettings_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		x = col1_int;
-		y = row1_int;
-
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
 			button_t * bh = & win->bh_ptr [i];
@@ -1992,7 +1977,7 @@ static void window_audiosettings_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 		}
@@ -2128,7 +2113,7 @@ static void window_ap_reverb_process(void)
 
 	if (win->first_call)
 	{
-		uint_fast8_t interval = 60, col1_int = 20;
+		uint_fast8_t interval = 60;
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
@@ -2176,7 +2161,7 @@ static void window_ap_reverb_process(void)
 		hamradio_get_reverb_delay_limits(& delay_min, & delay_max);
 		hamradio_get_reverb_loss_limits(& loss_min, & loss_max);
 
-		lbl_reverbDelay->x = col1_int;
+		lbl_reverbDelay->x = 0;
 		lbl_reverbDelay->y = interval;
 		lbl_reverbDelay->visible = VISIBLE;
 		local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: %3d ms"), hamradio_get_reverb_delay());
@@ -2280,8 +2265,8 @@ static void window_ap_mic_eq_process(void)
 
 	if (win->first_call)
 	{
-		uint_fast16_t x, y, mid_w;
-		uint_fast8_t interval = 70, col1_int = 70, row1_int = window_title_height + 20;
+		uint_fast16_t x = 0, y = 0, mid_w;
+		uint_fast8_t interval = 70;
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
@@ -2327,8 +2312,6 @@ static void window_ap_mic_eq_process(void)
 		eq_base = hamradio_getequalizerbase();
 		eq_limit = abs(eq_base) * 2;
 
-		x = col1_int;
-		y = row1_int;
 		slider_t * sl = NULL;
 
 		for (id = 0; id < win->sh_count; id++)
@@ -2362,7 +2345,7 @@ static void window_ap_mic_eq_process(void)
 			sl->y = lbl->y + get_label_height(lbl) * 2 + 10;
 
 			x = x + interval;
-			y = row1_int;
+			y = 0;
 		}
 
 		btn_EQ_ok = find_gui_element(TYPE_BUTTON, win, "btn_EQ_ok");
@@ -2432,7 +2415,7 @@ static void window_ap_mic_process(void)
 
 	if (win->first_call)
 	{
-		uint_fast8_t interval = 50, col1_int = 20;
+		uint_fast8_t interval = 50;
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
@@ -2485,7 +2468,7 @@ static void window_ap_mic_process(void)
 		lbl_micClip = find_gui_element(TYPE_LABEL, win, "lbl_micClip");
 		lbl_micAGC = find_gui_element(TYPE_LABEL, win, "lbl_micAGC");
 
-		lbl_micLevel->x = col1_int;
+		lbl_micLevel->x = 0;
 		lbl_micLevel->y = interval;
 		lbl_micLevel->visible = VISIBLE;
 		local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: %3d"), hamradio_get_mik1level());
@@ -2522,7 +2505,7 @@ static void window_ap_mic_process(void)
 		sl_micAGC->value = normalize(hamradio_get_gmikeagcgain(), agc_min, agc_max, 100);
 
 		button_t * bh2 = find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
-		bh2->x1 = (sl_micLevel->x + sl_micLevel->size + col1_int * 2) / 2 - (bh2->w / 2);
+		bh2->x1 = (sl_micLevel->x + sl_micLevel->size) / 2 - (bh2->w / 2);
 		bh2->y1 = lbl_micAGC->y + interval;
 		bh2->is_locked = hamradio_get_gmikebust20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh2->text, ARRAY_SIZE(bh2->text), PSTR("Boost|%s"), bh2->is_locked ? "ON" : "OFF");
@@ -2649,7 +2632,7 @@ static void window_ap_mic_prof_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
+		uint_fast8_t interval = 6, row_count = 3;
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
@@ -2663,9 +2646,6 @@ static void window_ap_mic_prof_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		x = col1_int;
-		y = row1_int;
-
 		uint_fast8_t i, r;
 		for (i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -2678,7 +2658,7 @@ static void window_ap_mic_prof_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 			uint_fast8_t cell_saved = hamradio_load_mic_profile(i, 0);
@@ -2752,7 +2732,7 @@ static void window_notch_process(void)
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		uint_fast8_t interval = 50, col1_int = 20;
+		uint_fast8_t interval = 50;
 		notch.change = 0;
 		notch.updated = 1;
 
@@ -2785,7 +2765,7 @@ static void window_notch_process(void)
 		label_t * lbl_width = find_gui_element(TYPE_LABEL, win, "lbl_width");
 		label_t * lbl_type = find_gui_element(TYPE_LABEL, win, "lbl_type");
 
-		lbl_freq->x = col1_int;
+		lbl_freq->x = 0;
 		lbl_freq->y = interval;
 		lbl_freq->visible = VISIBLE;
 
@@ -2934,7 +2914,7 @@ static void window_gui_settings_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		uint_fast8_t interval = 6, row_count = 4;
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
@@ -2945,9 +2925,6 @@ static void window_gui_settings_process(void)
 		win->bh_ptr = malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		x = col1_int;
-		y = row1_int;
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -2960,7 +2937,7 @@ static void window_gui_settings_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 		}
@@ -3334,7 +3311,7 @@ static void minigui_window_bands_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0, max_x = 0;
-		uint_fast8_t interval = 6, col1_int = 12, row1_int = window_title_height + 20, row_count = 3, i = 0, w = 86, h = 44;
+		uint_fast8_t interval = 6, col1_int = 0, row1_int = 0, row_count = 3, i = 0, w = 86, h = 44;
 		button_t * bh = NULL;
 		win->first_call = 0;
 
@@ -3557,7 +3534,7 @@ static void window_af_process(void)
 	if (win->first_call)
 	{
 		win->first_call = 0;
-		uint_fast8_t interval = 50, col1_int = 20;
+		uint_fast8_t interval = 50;
 		bp_t.change = 0;
 		bp_t.updated = 1;
 
@@ -3596,8 +3573,8 @@ static void window_af_process(void)
 
 		button_t * bh = & win->bh_ptr [0];
 
-		lbl_low->x = col1_int;
-		lbl_low->y = interval;
+		lbl_low->x = 0;
+		lbl_low->y = bh->h / 2;
 		lbl_low->visible = VISIBLE;
 
 		lbl_high->x = lbl_low->x;
@@ -3757,8 +3734,8 @@ static void window_mode_process(void)
 
 	if (win->first_call)
 	{
-		uint_fast16_t x, y;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		uint_fast16_t x = 0, y;
+		uint_fast8_t interval = 6, row1_int = 0, row_count = 4;
 		uint_fast8_t id_start, id_end;
 		win->first_call = 0;
 
@@ -3778,7 +3755,6 @@ static void window_mode_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		x = col1_int;
 		y = row1_int;
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
@@ -3791,7 +3767,7 @@ static void window_mode_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = row1_int + bh->h + interval;
 			}
 		}
@@ -3832,7 +3808,7 @@ static void window_receive_process(void)
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 3;
+		uint_fast8_t interval = 6, row_count = 3;
 		win->first_call = 0;
 		update = 1;
 
@@ -3850,8 +3826,8 @@ static void window_receive_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		x = col1_int;
-		y = row1_int;
+		x = 0;
+		y = 0;
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -3864,7 +3840,7 @@ static void window_receive_process(void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 		}
@@ -3943,11 +3919,12 @@ static void window_freq_process (void)
 	static label_t * lbl_freq;
 	static editfreq_t editfreq;
 	window_t * win = get_win(WINDOW_FREQ);
+	static const char * win_title = "Freq:";
 
 	if (win->first_call)
 	{
-		uint_fast16_t x, y;
-		uint_fast8_t interval = 6, col1_int = 20, row1_int = window_title_height + 20, row_count = 4;
+		uint_fast16_t x = 0, y = 0;
+		uint_fast8_t interval = 6, row_count = 4;
 		win->first_call = 0;
 		button_t * bh = NULL;
 
@@ -3971,18 +3948,6 @@ static void window_freq_process (void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const label_t labels [] = {
-			{ 0, 0,	WINDOW_FREQ, DISABLED, 0, NON_VISIBLE, "lbl_freq_val", "", FONT_LARGE, COLORMAIN_WHITE, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		x = col1_int;
-		y = row1_int;
-
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
 			bh = & win->bh_ptr [i];
@@ -3994,7 +3959,7 @@ static void window_freq_process (void)
 			if (r >= row_count)
 			{
 				r = 0;
-				x = col1_int;
+				x = 0;
 				y = y + bh->h + interval;
 			}
 		}
@@ -4002,16 +3967,11 @@ static void window_freq_process (void)
 		bh = find_gui_element(TYPE_BUTTON, win, "btn_FreqOK");
 		bh->is_locked = BUTTON_LOCKED;
 
-		lbl_freq = find_gui_element(TYPE_LABEL, win, "lbl_freq_val");
-		lbl_freq->x = strwidth(win->name) + strwidth(" ") + 20;
-		lbl_freq->y = 5;
-		strcpy(lbl_freq->text, "    0 k");
-		lbl_freq->color = COLORMAIN_WHITE;
-		lbl_freq->visible = VISIBLE;
-
 		editfreq.val = 0;
 		editfreq.num = 0;
 		editfreq.key = BUTTON_CODE_DONE;
+
+		local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s %d k", win_title, editfreq.val);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
@@ -4034,13 +3994,13 @@ static void window_freq_process (void)
 
 	if (editfreq.key != BUTTON_CODE_DONE)
 	{
-		if (lbl_freq->color == COLORMAIN_RED)
+		if (editfreq.error)
 		{
 			editfreq.val = 0;
 			editfreq.num = 0;
 		}
 
-		lbl_freq->color = COLORMAIN_WHITE;
+		editfreq.error = 0;
 
 		switch (editfreq.key)
 		{
@@ -4058,7 +4018,7 @@ static void window_freq_process (void)
 				close_all_windows();
 			}
 			else
-				lbl_freq->color = COLORMAIN_RED;
+				editfreq.error = 1;
 
 			break;
 
@@ -4072,7 +4032,10 @@ static void window_freq_process (void)
 		}
 		editfreq.key = BUTTON_CODE_DONE;
 
-		local_snprintf_P(lbl_freq->text, ARRAY_SIZE(lbl_freq->text), PSTR("%5d k"), editfreq.val);
+		if (editfreq.error)
+			local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s ERROR", win_title);
+		else
+			local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s %d k", win_title, editfreq.val);
 	}
 }
 
@@ -4104,7 +4067,7 @@ static void window_menu_process(void)
 		win->first_call = 0;
 		win->align_mode = ALIGN_CENTER_X;						// выравнивание окна системных настроек всегда по центру
 
-		uint_fast8_t col1_int = 20, row1_int = window_title_height + 20, i;
+		uint_fast8_t i;
 		uint_fast16_t xn, yn;
 		label_t * lh;
 
@@ -4191,8 +4154,8 @@ static void window_menu_process(void)
 		menu [MENU_VALS].num_rows = menu [MENU_VALS].last_id - menu [MENU_VALS].first_id;
 
 		menu [MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu [MENU_GROUPS].menu_block) - 1;
-		xn = col1_int;
-		yn = row1_int;
+		xn = 0;
+		yn = 0;
 		for(i = 0; i <= menu [MENU_GROUPS].num_rows; i ++)
 		{
 			lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
@@ -4207,7 +4170,7 @@ static void window_menu_process(void)
 		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
 				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
 		xn += int_col2;
-		yn = row1_int;
+		yn = 0;
 		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i ++)
 		{
 			lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
@@ -4222,7 +4185,7 @@ static void window_menu_process(void)
 		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
 		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block, menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, menu [MENU_VALS].count);
 		xn += int_col3;
-		yn = row1_int;
+		yn = 0;
 		for(lh = NULL, i = 0; i <= menu [MENU_VALS].num_rows; i ++)
 		{
 			lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];

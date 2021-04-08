@@ -208,7 +208,7 @@ void reset_tracking(void)
 	gui.vector_move_y = 0;
 }
 
-/* Получить данные трекинга */
+/* Получить относительные координаты перемещения точки касания экрана */
 void get_gui_tracking(int_fast8_t * x, int_fast8_t * y)
 {
 	* x = gui.vector_move_x;
@@ -571,6 +571,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		}
 		break;
 
+	case WINDOW_POSITION_FULLSCREEN:
 	case WINDOW_POSITION_AUTO:
 		{
 			if (win->bh_ptr != NULL)
@@ -619,24 +620,22 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		}
 		break;
 
-	case WINDOW_POSITION_FULLSCREEN:
-		{
-			const window_t * win_main = get_win(WINDOW_MAIN);
-			const uint_fast8_t h = win_main->bh_ptr[0].h;
-
-			win->x1 = 0;
-			win->y1 = 0;
-			win->w = WITHGUIMAXX;
-			win->h = WITHGUIMAXY - h - (strcmp(win->name, "") ? window_title_height : 0);
-		}
-	break;
-
 	default:
 
 		break;
 	}
 
-	if (mode != WINDOW_POSITION_FULLSCREEN)
+	if (mode == WINDOW_POSITION_FULLSCREEN)
+	{
+		const window_t * win_main = get_win(WINDOW_MAIN);
+		const uint_fast8_t h = win_main->bh_ptr[0].h;
+
+		win->x1 = 0;
+		win->y1 = 0;
+		win->w = WITHGUIMAXX;
+		win->h = WITHGUIMAXY - h - (strcmp(win->name, "") ? window_title_height : 0);
+	}
+	else
 	{
 		win->w = xmax > title_length ? (xmax + edge_step) : (title_length + edge_step * 2);
 		win->w = (win->is_close && win->w < title_length + window_close_button_size * 2) ? (win->w + window_close_button_size) : win->w;
@@ -667,6 +666,46 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 
 		ASSERT(win->x1 + win->w < WITHGUIMAXX);
 		ASSERT(win->y1 + win->h < WITHGUIMAXY);
+	}
+
+	// Выравнивание массива оконных элементов по центру окна
+	uint_fast16_t shift_x = (win->w - xmax) / 2;
+	uint_fast16_t shift_y = (win->h - ymax) / 2 + (strcmp(win->name, "") ? window_title_height : 0);
+
+	if (win->bh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->bh_count; i++)
+		{
+			button_t * bh = & win->bh_ptr [i];
+			bh->x1 += shift_x;
+			bh->y1 += shift_y;
+			ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
+			ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
+		}
+	}
+
+	if (win->lh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->lh_count; i++)
+		{
+			label_t * lh = & win->lh_ptr [i];
+			lh->x += shift_x;
+			lh->y += shift_y;
+			ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
+			ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+		}
+	}
+
+	if (win->sh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->sh_count; i++)
+		{
+			slider_t * sh = & win->sh_ptr [i];
+			sh->x += shift_x;
+			sh->y += shift_y;
+//			ASSERT(sh->x < WITHGUIMAXX);
+//			ASSERT(sh->y < WITHGUIMAXY);
+		}
 	}
 
 	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
