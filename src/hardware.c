@@ -2605,6 +2605,8 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 #if CPUSTYLE_R7S721020
 
+	// Все сравнения должны быть не точнее 1 MB
+
 	if (a == 0x00000000uL)
 		return addrbase | TTB_PARA_NO_ACCESS;		// NULL pointers access trap
 
@@ -2619,6 +2621,8 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 	return addrbase | TTB_PARA_DEVICE;
 
 #elif CPUSTYLE_STM32MP1
+
+	// Все сравнения должны быть не точнее 1 MB
 
 	if (a < 0x10000000uL)			// BOOT
 		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
@@ -2648,6 +2652,8 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYLE_XC7Z
 
+	// Все сравнения должны быть не точнее 1 MB
+
 	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory), DDR3_SCU
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
@@ -2663,12 +2669,15 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
 
-	if (a >= 0xFFFC0000uL)			// OCM (On Chip Memory) is mapped high
+	if (a >= 0xFFF00000uL)			// OCM (On Chip Memory) is mapped high
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
 	return addrbase | TTB_PARA_DEVICE;
 
 #else
+
+	// Все сравнения должны быть не точнее 1 MB
+
 	#warning ttb_accessbits: Unhandled CPUSTYLE_xxxx
 
 	return addrbase | TTB_PARA_DEVICE;
@@ -2955,13 +2964,11 @@ sysinit_mmu_initialize(void)
 
 #if 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE)
 	{
-//		// SCU inut
-		//TP();
+		// SCU inut
 		// SCU Control Register
 		//PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
 		((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
 		//PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
-		//TP();
 //
 //
 //		// Filtering Start Address Register
