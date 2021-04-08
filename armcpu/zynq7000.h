@@ -385,6 +385,51 @@ typedef struct gtc_regs {
 	volatile uint32_t GTCAIR; 	// Auto_increment_Register
 } GTC_Registers;
 
+// https://github.com/yuhuidream/crane/blob/bc4d2b830839c0678ee5ae249378d5cf606dfa9e/arch/asr/include/SDH_v3_1.h
+// SD Controller (sdio)
+typedef struct sd_regs {
+    __IO uint16_t SYS_ADDR_LOW                   ; /* 0x0000 System Address Low Register */
+    __IO uint16_t SYS_ADDR_HIGH                  ; /* 0x0002 System Address High Register */
+    __IO uint16_t BLOCK_SIZE                     ; /* 0x0004 Block Size Register */
+    __IO uint16_t BLOCK_COUNT                    ; /* 0x0006 Block Count Register */
+    __IO uint32_t ARG                     		 ; /* 0x0008 Argument Low Register */
+    __IO uint16_t TRANSFER_MODE                  ; /* 0x000C Transfer Mode Register */
+    __IO uint16_t CMD                            ; /* 0x000E Command Register */
+    __IO uint32_t RESP_0                         ; /* 0x0010 Response Register 0 */
+    __IO uint32_t RESP_1                         ; /* 0x0014 Response Register 1 */
+    __IO uint32_t RESP_2                         ; /* 0x0018 Response Register 2 */
+    __IO uint32_t RESP_3                         ; /* 0x001C Response Register 3 */
+    __IO uint32_t BUFFER_DATA_PORT               ; /* 0x0020 Buffer Data Port Register */
+    __IO uint32_t PRESENT_STATE                  ; /* 0x0024 Present State Register 1 */
+    __IO uint16_t HOST_CTRL                      ; /* 0x0028 Host Control Register */
+    __IO uint16_t BLOCK_GAP_CTRL                 ; /* 0x002A Block Gap Control Register */
+    __IO uint16_t CLOCK_CTRL                     ; /* 0x002C Clock Control Register */
+    __IO uint16_t TIMEOUT_CTRL_SW_RESET          ; /* 0x002E Timeout Control/Software Reset Register */
+    __IO uint16_t NORMAL_INT_STATUS              ; /* 0x0030 Normal Interrupt Status Register */
+    __IO uint16_t ERROR_INT_STATUS               ; /* 0x0032 Error Interrupt Status Register */
+    __IO uint16_t NORMAL_INT_STATUS_EN           ; /* 0x0034 Normal Interrupt Status Enable Register */
+    __IO uint16_t ERROR_INT_STATUS_EN            ; /* 0x0036 Error Interrupt Status Enable Register */
+    __IO uint16_t NORMAL_INT_STATUS_INT_EN       ; /* 0x0038 Normal Interrupt Status Interrupt Enable Register */
+    __IO uint16_t ERROR_INT_STATUS_INT_EN        ; /* 0x003A Error Interrupt Status Interrupt Enable Register */
+    __IO uint8_t AUTO_CMD12_ERROR_STATUS         ; /* 0x003C Auto CMD12 Error Status Register */
+    uint8_t reserved0 [3];
+    __IO uint32_t CAPABILITIES                   ; /* 0x0040 Capabilities Register 1 */
+    uint32_t reserved1 [1];
+    __IO uint32_t MAX_CURRENT                    ; /* 0x0048 Maximum Current Register 1 */
+    uint32_t reserved2 [1];
+    __IO uint16_t FORCE_EVENT_AUTO_CMD12_ERROR   ; /* 0x0050 Force Event Auto cmd12 Error Register */
+    __IO uint16_t FORCE_EVENT_FOR_ERROR_STATUS   ; /* 0x0052 Force Event for Error Status Register */
+    __IO uint32_t ADMA_ERROR_STATUS              ; /* 0x0054 ADMA Error Status Register */
+    __IO uint32_t ADMA_SYS_ADDR                  ; /* 0x0058 ADMA System Address Register */
+    uint32_t reserved3 [1];
+    __IO uint32_t Boot_Timeout_control           ; /* 0x0060 Boot Timeout control register */
+    __IO uint32_t Debug_Selection            	 ; /* 0x0064 Debug Selection Register */
+    uint8_t reserved4 [0x00F0 - 0x68];
+    __IO uint8_t SPI_interrupt_support           ; /* 0x00F0 SPI interrupt support register */
+    uint8_t reserved5 [0x00F1 - 0x68];
+    __IO uint32_t Vendor_Version_Number          ; /* 0x00FC Shared Bus Control Register */
+} SD_Registers;
+
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
 #define PL310_TAG_RAM_LATENCY ((1 << 8) | (1 << 4) | (1 << 0))
@@ -486,7 +531,8 @@ typedef struct gtc_regs {
 #define UART1                       ((UART_Registers *) UART1_BASE)
 #define SPI0                       	((SPI_Registers *) SPI0_BASE)
 #define SPI1                       	((SPI_Registers *) SPI1_BASE)
-
+#define SD0							((SD_Registers *) SD0_BASE)
+#define SD1							((SD_Registers *) SD1_BASE)
 
 #ifdef __cplusplus
 }
