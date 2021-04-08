@@ -3010,7 +3010,18 @@ sysinit_cache_initialize(void)
 	#else
 		L1C_EnableCaches();
 		L1C_EnableBTAC();
-		//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
+		#if (__CORTEX_A == 9U)
+			// not set the ACTLR.SMP
+			// 0x02: L2 Prefetch hint enable
+			__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk | ACTLR_FW_Msk | 0x02);
+			__ISB();
+			__DSB();
+		#elif (__CORTEX_A == 7U)
+			// set the ACTLR.SMP
+			__set_ACTLR(__get_ACTLR() | ACTLR_SMP_Msk);
+			__ISB();
+			__DSB();
+		#endif /* (__CORTEX_A == 9U) */
 		if (arm_hardware_cpuid() == 0)
 		{
 		#if (__L2C_PRESENT == 1)
@@ -3019,6 +3030,7 @@ sysinit_cache_initialize(void)
 			L2C_InvAllByWay();
 		#endif
 		}
+		arm_hardware_flush_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
@@ -3161,9 +3173,6 @@ void Reset_CPUn_Handler(void)
 
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
-	__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
-	__ISB();
-	__DSB();
 	#if (__L2C_PRESENT == 1)
 		// L2 контроллерп едминственный и уже инициализирован
 	  // Enable Level 2 Cache

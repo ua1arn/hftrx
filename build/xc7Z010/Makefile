@@ -167,6 +167,7 @@ OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
 
+SRCS = $(CSRC) $(CPPSRC) $(ASRC)
 OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
 
 # Collect files for library
@@ -179,6 +180,7 @@ ZOBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(ZCSRC))
 ZOBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(ZCPPSRC))
 ZOBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ZASRC))
 
+ZSRCS = $(ZCSRC) $(ZCPPSRC) $(ZASRC)
 ZOBJS = $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA)
 
 LIBS    = $(DLIBS) $(ULIBS)
@@ -224,7 +226,7 @@ app_run: $(PROJECT)_app.elf bitstream_4205.bit app_run_4205.tcl
 
 lib: $(ZYNQLIB)
 
-$(ZYNQLIB): $(ZOBJS)
+$(ZYNQLIB): $(ZSRCS) 
 	-$(RM) $@
 	$(AR) -rc $@ $(ZOBJS)
 	

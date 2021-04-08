@@ -3579,7 +3579,7 @@ static const codechw_t audiocodechw_xc7z =
 	"ZYNQ 7000 audio codec"
 };
 
-#else
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 	// other CPUs
 static const codechw_t fpgaspectrumhw_sai2 =
 {
