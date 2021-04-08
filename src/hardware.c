@@ -3007,6 +3007,7 @@ sysinit_mmu_initialize(void)
 	//PRINTF("MMU initialized\n");
 }
 
+// ОБщая для всех процессоров инициализация
 static void FLASHMEMINITFUNC
 sysinit_cache_initialize(void)
 {
@@ -3052,25 +3053,42 @@ sysinit_cache_initialize(void)
 			__ISB();
 			__DSB();
 		#endif /* (__CORTEX_A == 9U) */
-		if (arm_hardware_cpuid() == 0)
-		{
+	#endif
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+}
+
+static void FLASHMEMINITFUNC
+sysinit_cache_cpu0_initialize(void)
+{
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	#if (CPUSTYLE_R7S721 && ! WITHISBOOTLOADER)
+	#else
 
 #if 0 && (__L2C_PRESENT == 1)
-			L2C_Disable();
-			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = 0;//0x00000777;	// reg1_data_ram_control
-			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = 0;//0x00000777;	// reg1_tag_ram_control
+		L2C_Disable();
+		* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = 0;//0x00000777;	// reg1_data_ram_control
+		* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = 0;//0x00000777;	// reg1_tag_ram_control
 #endif /* (__L2C_PRESENT == 1) */
 		#if (__L2C_PRESENT == 1)
 			// Enable Level 2 Cache
 			L2C_Enable();
 			L2C_InvAllByWay();
 		#endif
-		}
 		arm_hardware_flush_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
 
+static void FLASHMEMINITFUNC
+sysinit_cache_cpu1_initialize(void)
+{
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+	#if (CPUSTYLE_R7S721 && ! WITHISBOOTLOADER)
+	#else
+		arm_hardware_flush_all();
+	#endif
+#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+}
 
 /* функция вызывается из start-up до копирования в SRAM всех "быстрых" функций и до инициализации переменных
 */
@@ -3082,6 +3100,7 @@ SystemInit(void)
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_cache_initialize();	// caches iniitialize
+	sysinit_cache_cpu0_initialize();	// L2 cache, SCU initialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
@@ -3198,6 +3217,7 @@ void Reset_CPUn_Handler(void)
 
 	sysinit_fpu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize
+	sysinit_cache_cpu1_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
 
