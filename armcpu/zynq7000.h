@@ -261,60 +261,7 @@ typedef struct slcr_regs {
     volatile uint32_t DDR_URGENT_SEL;                  // DDR Urgent Select
     volatile uint32_t DDR_DFI_STATUS;                  // DDR DFI status
     uint32_t reserved13[55];
-    volatile uint32_t MIO_PIN_00;                      // MIO Pin 0 Control
-    volatile uint32_t MIO_PIN_01;                      // MIO Pin 1 Control
-    volatile uint32_t MIO_PIN_02;                      // MIO Pin 2 Control
-    volatile uint32_t MIO_PIN_03;                      // MIO Pin 3 Control
-    volatile uint32_t MIO_PIN_04;                      // MIO Pin 4 Control
-    volatile uint32_t MIO_PIN_05;                      // MIO Pin 5 Control
-    volatile uint32_t MIO_PIN_06;                      // MIO Pin 6 Control
-    volatile uint32_t MIO_PIN_07;                      // MIO Pin 7 Control
-    volatile uint32_t MIO_PIN_08;                      // MIO Pin 8 Control
-    volatile uint32_t MIO_PIN_09;                      // MIO Pin 9 Control
-    volatile uint32_t MIO_PIN_10;                      // MIO Pin 10 Control
-    volatile uint32_t MIO_PIN_11;                      // MIO Pin 11 Control
-    volatile uint32_t MIO_PIN_12;                      // MIO Pin 12 Control
-    volatile uint32_t MIO_PIN_13;                      // MIO Pin 13 Control
-    volatile uint32_t MIO_PIN_14;                      // MIO Pin 14 Control
-    volatile uint32_t MIO_PIN_15;                      // MIO Pin 15 Control
-    volatile uint32_t MIO_PIN_16;                      // MIO Pin 16 Control
-    volatile uint32_t MIO_PIN_17;                      // MIO Pin 17 Control
-    volatile uint32_t MIO_PIN_18;                      // MIO Pin 18 Control
-    volatile uint32_t MIO_PIN_19;                      // MIO Pin 19 Control
-    volatile uint32_t MIO_PIN_20;                      // MIO Pin 20 Control
-    volatile uint32_t MIO_PIN_21;                      // MIO Pin 21 Control
-    volatile uint32_t MIO_PIN_22;                      // MIO Pin 22 Control
-    volatile uint32_t MIO_PIN_23;                      // MIO Pin 23 Control
-    volatile uint32_t MIO_PIN_24;                      // MIO Pin 24 Control
-    volatile uint32_t MIO_PIN_25;                      // MIO Pin 25 Control
-    volatile uint32_t MIO_PIN_26;                      // MIO Pin 26 Control
-    volatile uint32_t MIO_PIN_27;                      // MIO Pin 27 Control
-    volatile uint32_t MIO_PIN_28;                      // MIO Pin 28 Control
-    volatile uint32_t MIO_PIN_29;                      // MIO Pin 29 Control
-    volatile uint32_t MIO_PIN_30;                      // MIO Pin 30 Control
-    volatile uint32_t MIO_PIN_31;                      // MIO Pin 31 Control
-    volatile uint32_t MIO_PIN_32;                      // MIO Pin 32 Control
-    volatile uint32_t MIO_PIN_33;                      // MIO Pin 33 Control
-    volatile uint32_t MIO_PIN_34;                      // MIO Pin 34 Control
-    volatile uint32_t MIO_PIN_35;                      // MIO Pin 35 Control
-    volatile uint32_t MIO_PIN_36;                      // MIO Pin 36 Control
-    volatile uint32_t MIO_PIN_37;                      // MIO Pin 37 Control
-    volatile uint32_t MIO_PIN_38;                      // MIO Pin 38 Control
-    volatile uint32_t MIO_PIN_39;                      // MIO Pin 39 Control
-    volatile uint32_t MIO_PIN_40;                      // MIO Pin 40 Control
-    volatile uint32_t MIO_PIN_41;                      // MIO Pin 41 Control
-    volatile uint32_t MIO_PIN_42;                      // MIO Pin 42 Control
-    volatile uint32_t MIO_PIN_43;                      // MIO Pin 43 Control
-    volatile uint32_t MIO_PIN_44;                      // MIO Pin 44 Control
-    volatile uint32_t MIO_PIN_45;                      // MIO Pin 45 Control
-    volatile uint32_t MIO_PIN_46;                      // MIO Pin 46 Control
-    volatile uint32_t MIO_PIN_47;                      // MIO Pin 47 Control
-    volatile uint32_t MIO_PIN_48;                      // MIO Pin 48 Control
-    volatile uint32_t MIO_PIN_49;                      // MIO Pin 49 Control
-    volatile uint32_t MIO_PIN_50;                      // MIO Pin 50 Control
-    volatile uint32_t MIO_PIN_51;                      // MIO Pin 51 Control
-    volatile uint32_t MIO_PIN_52;                      // MIO Pin 52 Control
-    volatile uint32_t MIO_PIN_53;                      // MIO Pin 53 Control
+    volatile uint32_t MIO_PIN [54];                      // MIO Pin 0 Control
     uint32_t reserved14[11];
     volatile uint32_t MIO_LOOPBACK;                    // Loopback function within MIO
     uint32_t reserved15[1];

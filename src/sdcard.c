@@ -1766,6 +1766,8 @@ static uint_fast32_t sdhost_get_resp32bit(void)
 
 #elif CPUSTYLE_XC7Z
 
+	return SD0->RESP_0;	// Card Status [39:8]
+
 #else
 	#error Wrong CPUSTYLE_xxx
 	return 0;
@@ -1874,6 +1876,26 @@ static void sdhost_get_resp128bit(uint8_t * resp128)
 		resp128 [15] = 0;				// CRC-7 and stop bit
 
 #elif CPUSTYLE_XC7Z
+
+		resp128 [0] = SD0->RESP_0 >> 24;
+		resp128 [1] = SD0->RESP_0 >> 16;
+		resp128 [2] = SD0->RESP_0 >> 8;
+		resp128 [3] = SD0->RESP_0 >> 0;
+
+		resp128 [4] = SD0->RESP_1 >> 24;
+		resp128 [5] = SD0->RESP_1 >> 16;
+		resp128 [6] = SD0->RESP_1 >> 8;
+		resp128 [7] = SD0->RESP_1 >> 0;
+
+		resp128 [8] = SD0->RESP_2 >> 24;
+		resp128 [9] = SD0->RESP_2 >> 16;
+		resp128 [10] = SD0->RESP_2 >> 8;
+		resp128 [11] = SD0->RESP_2 >> 0;
+
+		resp128 [12] = SD0->RESP_3 >> 24;
+		resp128 [13] = SD0->RESP_3 >> 16;
+		resp128 [14] = SD0->RESP_3 >> 8;
+		resp128 [15] = 0;				// CRC-7 and stop bit
 
 #else
 	#error Wrong CPUSTYLE_xxx

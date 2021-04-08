@@ -142,11 +142,23 @@ extern "C" {
 
 	// ug585-Zynq-7000-TRM.pdf v1.12.2, page 1630
 
+#define MIO_PIN_VALUE(DisableRcvr, PULLUP, IO_Type, Speed, L3_SEL, L2_SEL, L1_SEL, L0_SEL, TRI_ENABLE) \
+	( \
+			((uint_fast32_t) (DisableRcvr) << 13) | \
+			((uint_fast32_t) (PULLUP) << 13) | \
+			((uint_fast32_t) (IO_Type) << 12) | \
+			((uint_fast32_t) (Speed) << 9) | \
+			((uint_fast32_t) (L3_SEL) << 5) | \
+			((uint_fast32_t) (L2_SEL) << 3) | \
+			((uint_fast32_t) (L1_SEL) << 2) | \
+			((uint_fast32_t) (L0_SEL) << 1) | \
+			((uint_fast32_t) (TRI_ENABLE) << 0) | \
+			0 \
+	)
 	// initial value = 0x00001601
 	#define mio_mode(pin, value) do { \
-			volatile uint32_t * const mio = (& SCLR->MIO_PIN_00) + (pin); \
 			SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
-			* mio = (value); /*  */ \
+			SCLR->MIO_PIN [pin] = (value); /*  */ \
 		} while (0)
 
 	// set pin state (thread-safe)
