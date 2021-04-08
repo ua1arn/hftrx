@@ -11169,12 +11169,13 @@ void hardware_sdhost_initialize(void)
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
 			(16uL << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			(0x01)	| // CLKACT0 - SDIO 0 reference clock active
+			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
 			0;
 
 	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+	ASSERT(((SD0->Vendor_Version_Number & 0xFFFF0000uL) >> 16) == 0x8901uL);
 
 #else
 
