@@ -2953,6 +2953,33 @@ sysinit_mmu_initialize(void)
 	}
 #endif /* WITHDEBUG */
 
+#if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
+	{
+		// SCU inut
+		TP();
+		// SCU Control Register
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0] &= ~ 0x01;
+		TP();
+
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;	// SCU Invalidate All Registers in Secure State
+
+		// Filtering Start Address Register
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x10] & ~ (0xFFFuL << 20)) |
+				0 * (0x001uL << 20) |
+				0;
+		TP();
+		// Filtering End Address Register
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] = (((volatile uint32_t *) SCU_CONTROL_BASE) [0x11] & ~ (0xFFFuL << 20)) |
+				(0xFFEuL << 20) |
+				0;
+		TP();
+
+		// SCU Control Register
+		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;
+		TP();
+	}
+#endif
+
 #if WITHISBOOTLOADER || CPUSTYLE_R7S721
 
 	// MMU iniitialize

@@ -6197,10 +6197,27 @@ void hightests(void)
 //		}
 	}
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+#if 1 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
+	{
+		// SCU registers dump
+		// ZYNQ7000:
+		//	SCU Control Register=00000002
+		//	SCU Configuration Register=00000501
+		//	SCU CPU Power Status Register=03030000
+		//	Filtering Start Address Register=00100000
+		//	Filtering End Address Register=FFE00000
+		PRINTF("SCU_CONTROL_BASE=%08lX\n", SCU_CONTROL_BASE);
+		PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
+		PRINTF("SCU Configuration Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [1]);	// 0x04
+		PRINTF("SCU CPU Power Status Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);	// 0x08
+		PRINTF("Filtering Start Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x10]);	// 0x40
+		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
+	}
+#endif
 #if 0 && CPUSTYLE_STM32MP1
 	{
-		PRINTF("stm32mp1_get_per_freq()=%lu\n",stm32mp1_get_per_freq());
-		PRINTF("stm32mp1_get_axiss_freq()=%lu\n",stm32mp1_get_axiss_freq());
+		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
+		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
 	}
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
