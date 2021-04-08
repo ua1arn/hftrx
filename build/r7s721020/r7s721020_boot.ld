@@ -158,7 +158,7 @@ SECTIONS
 
 	} > RAM
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		. = ALIGN(32);
 		__bss_start__ = .;
@@ -168,7 +168,7 @@ SECTIONS
 		__bss_end__ = .;
 	} > RAM
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		KEEP(*(.noinit*))
@@ -177,7 +177,7 @@ SECTIONS
 		. = ALIGN(64);
 	} > RAM
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
 		__end__ = .;

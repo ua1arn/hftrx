@@ -249,7 +249,7 @@ SECTIONS
 		__bss2_end__ = .;
 	} > SDRAM
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
 		__end__ = .;
@@ -261,7 +261,7 @@ SECTIONS
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (COPY):
+	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
 	} > RAM

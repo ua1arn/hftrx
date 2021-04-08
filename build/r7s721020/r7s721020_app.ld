@@ -159,7 +159,7 @@ SECTIONS
 
 	} > RAM
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		. = ALIGN(32);
 		__bss_start__ = .;
@@ -169,7 +169,7 @@ SECTIONS
 		__bss_end__ = .;
 	} > RAM
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		KEEP(*(.noinit*))
@@ -190,7 +190,7 @@ SECTIONS
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (COPY):
+	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
 	} > RAM
