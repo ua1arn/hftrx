@@ -21341,7 +21341,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 #endif /* WITHAFCODEC1HAVEPROC */
 
-uint_fast8_t hamradio_get_bands(band_array_t * bands)
+uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t is_bcast_need)
 {
 	uint_fast8_t count = 0;
 
@@ -21368,28 +21368,30 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands)
 		}
 	}
 
-	for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
+	if (is_bcast_need)
 	{
-		if (existingbandsingle(i, 1))		// check for broadcast bands
+		for (uint_fast8_t i = 0; i < HBANDS_COUNT; i++)
 		{
-			band_array_t * b = & bands [count];
-			const char * l = get_band_label(i);
+			if (existingbandsingle(i, 1))		// check for broadcast bands
+			{
+				band_array_t * b = & bands [count];
+				const char * l = get_band_label(i);
 
-			b->index = i;
-			b->init_freq = get_band_init(i);
-			b->type = BAND_TYPE_BROADCAST;
-			if (strcmp(l, ""))
-			{
-				strcpy(b->name, l);
+				b->index = i;
+				b->init_freq = get_band_init(i);
+				b->type = BAND_TYPE_BROADCAST;
+				if (strcmp(l, ""))
+				{
+					strcpy(b->name, l);
+				}
+				else
+				{
+					local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
+				}
+				count ++;
 			}
-			else
-			{
-				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
-			}
-			count ++;
 		}
 	}
-
 	return count;
 }
 

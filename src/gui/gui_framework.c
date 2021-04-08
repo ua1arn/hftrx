@@ -44,6 +44,9 @@ static btn_bg_t btn_bg [] = {
 	{ 40, 40, },
 #elif WITHGUISTYLE_MINI
 	{ 94, 30, },
+	{ 86, 44, },
+	{ 50, 50, },
+	{ 30, 30, },
 #endif
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
@@ -551,6 +554,11 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	uint_fast8_t title_length = strlen(win->name) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0;
 
+#if WITHGUISTYLE_MINI
+	// Для разрешения 480х272 окна всегда полноэкранные
+	mode = WINDOW_POSITION_FULLSCREEN;
+#endif
+
 	switch (mode)
 	{
 	case WINDOW_POSITION_MANUAL:
@@ -619,7 +627,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			win->x1 = 0;
 			win->y1 = 0;
 			win->w = WITHGUIMAXX;
-			win->h = WITHGUIMAXY - h;
+			win->h = WITHGUIMAXY - h - (strcmp(win->name, "") ? window_title_height : 0);
 		}
 	break;
 
@@ -724,7 +732,7 @@ static void draw_button(const button_t * const bh)
 
 	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
 	{
-		PRINTF("%s %s\n", bh->name, bh->text);
+		PRINTF("%s %s x+w: %d y+h: %d\n", bh->name, bh->text, x1 + bh->w, y1 + bh->h);
 		ASSERT(0);
 	}
 
