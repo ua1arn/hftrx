@@ -6206,7 +6206,7 @@ void hightests(void)
 		//	SCU CPU Power Status Register=03030000
 		//	Filtering Start Address Register=00100000
 		//	Filtering End Address Register=FFE00000
-		PRINTF("SCU_CONTROL_BASE=%08lX\n", SCU_CONTROL_BASE);
+		//PRINTF("SCU_CONTROL_BASE=%08lX\n", SCU_CONTROL_BASE);
 		PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
 		PRINTF("SCU Configuration Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [1]);	// 0x04
 		PRINTF("SCU CPU Power Status Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);	// 0x08
