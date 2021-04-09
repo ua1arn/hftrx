@@ -658,6 +658,13 @@ static void DMA_SDIO_setparams(
 
 
 #elif CPUSTYLE_XC7Z
+	SD0->SYS_DMA_ADDR = addr;
+	/*
+	 * This register specifies the block size for block
+	 * data transfers for CMD17, CMD18, CMD24, CMD25, and CMD53.
+	 */
+	SD0->BLOCK_SIZE = length0;	// bits [11:0] - Transfer_Block_Size
+	SD0->BLOCK_COUNT = count;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -714,6 +721,7 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	return 0;
 
 #elif CPUSTYLE_XC7Z
+	local_delay_ms(250);
 	return 0;
 
 #else
@@ -1109,23 +1117,39 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 	switch (cmd)
 	{
 	case SD_CMD_WRITE_SINGLE_BLOCK:
+		return
+			((cmd & 0x3FuL) << 24) |
+			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x00 << 1) | // Block_Count_Enable
+			(0x01 << 0) | // DMA_Enable
+			0;
+
 	case SD_CMD_WRITE_MULT_BLOCK:
 		return
 			((cmd & 0x3FuL) << 24) |
 			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 1) | // Block_Count_Enable
-			(0x00 << 0) | // DMA_Enable
+			(0x01 << 0) | // DMA_Enable
 			0;
 
 	case SD_CMD_READ_SINGLE_BLOCK:
+		return
+			((cmd & 0x3FuL) << 24) |
+			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x00 << 1) | // Block_Count_Enable
+			(0x01 << 0) | // DMA_Enable
+			0;
+
 	case SD_CMD_READ_MULT_BLOCK:
 		return
 			((cmd & 0x3FuL) << 24) |
 			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 1) | // Block_Count_Enable
-			(0x00 << 0) | // DMA_Enable
+			(0x01 << 0) | // DMA_Enable
 			0;
 
 	case SD_CMD_ALL_SEND_CID:
@@ -1139,6 +1163,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x00 << 0) | // DMA_Enable
 			0;
 
+	case SD_CMD_SEND_STATUS:
 	default:
 		return
 			((cmd & 0x3FuL) << 24) |
