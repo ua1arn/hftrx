@@ -2230,6 +2230,7 @@ static uint_fast8_t sdhost_stop_transmission(void)
 // Ожидаем завершения.
 static uint_fast8_t sdhost_sdcard_waitstatus(void)
 {
+	TP();
 	uint_fast8_t cardstate = 0xFF;
 	unsigned long n;
 	for (n = 1000000; -- n;)
@@ -2262,6 +2263,7 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 		{
 		case 4:	// Transfer
 		case 1:	// Ready
+			PRINTF(PSTR("sdhost_sdcard_waitstatus OK, resp=%08lX, cardstate=%u\n"), (unsigned long) resp, (unsigned) cardstate);
 			return 0;
 
 		case 7:	// Programming
@@ -3056,6 +3058,12 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	}
 #endif /* WITHSDHCHW */
 
+
+	if (sdhost_sdcard_waitstatus() != 0)
+	{
+		PRINTF(PSTR("sdhost_sdcard_identification: sdhost_sdcard_waitstatus error\n"));
+		return 1;
+	}
 	PRINTF(PSTR("SD CARD identification done\n"));
 	return 0;
 }
