@@ -915,7 +915,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
-		//PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1156,6 +1156,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 	case SD_CMD_SEND_CSD:
 		return
 			((cmd & 0x3FuL) << 24) |
+			(0x01 << 21) | // Data_Present_Select
 			(0x01 << 19) | // Command_CRC_Check_Enable
 			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
@@ -1167,6 +1168,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 	default:
 		return
 			((cmd & 0x3FuL) << 24) |
+			(0x01 << 21) | // Data_Present_Select
 			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x00 << 1) | // Block_Count_Enable
@@ -1421,7 +1423,7 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
 		(0x00 << 22) | // Command_Type
-		(0x01 << 21) | // Data_Present_Select
+		(0x00 << 21) | // Data_Present_Select
 		(0x00 << 20) | // Command_Index_Check_Enable
 		(! nocrc << 19) | // Command_CRC_Check_Enable
 		(0x03 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
@@ -1527,7 +1529,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
 		(0x00 << 22) | // Command_Type
-		(0x01 << 21) | // Data_Present_Select
+		(0x00 << 21) | // Data_Present_Select
 		(0x00 << 20) | // Command_Index_Check_Enable
 		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
@@ -1685,7 +1687,7 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
-		//PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		PRINTF("sdhost_get_none_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1827,7 +1829,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
-		//PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		PRINTF("sdhost_get_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1961,7 +1963,7 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
-		//PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		PRINTF("sdhost_get_resp_nocrc: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
