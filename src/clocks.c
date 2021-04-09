@@ -11234,10 +11234,9 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
-	PRINTF("SD0->CAPABILITIES.SDMA_Support=%d\n", (SD0->CAPABILITIES >> 22) & 0x01);
-	PRINTF("SD0->CAPABILITIES.Voltage_Support_3_3_V=%d\n", (SD0->CAPABILITIES >> 24) & 0x01);
-
+//	PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+//	PRINTF("SD0->CAPABILITIES.SDMA_Support=%d\n", (SD0->CAPABILITIES >> 22) & 0x01);
+//	PRINTF("SD0->CAPABILITIES.Voltage_Support_3_3_V=%d\n", (SD0->CAPABILITIES >> 24) & 0x01);
 
 	//arm_hardware_set_handler_system(SDIO0_IRQn, SDIO0_IRQHandler);
 
