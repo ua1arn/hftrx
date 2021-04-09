@@ -1112,6 +1112,9 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 	default:
 		break;
 	}
+#elif CPUSTYLE_XC7Z
+	return cmd & 0x3F;
+
 
 #endif
 	return cmd;
@@ -1459,12 +1462,12 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	SD0->CMD_TRANSFER_MODE =
 		((uint_fast32_t) cmd << 24) |
 		(0x00 << 22) | // Command_Type
-		(0x00 << 21) | // Data_Present_Select
-		(0x01 << 20) | // Command_Index_Check_Enable
+		(0x01 << 21) | // Data_Present_Select
+		(0x00 << 20) | // Command_Index_Check_Enable
 		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
 		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
-		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+		(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 		(0x00 << 2) | // Auto_CMD12_Enable
 		(0x00 << 1) | // Block_Count_Enable
 		(0x00 << 0) | // DMA_Enable
@@ -2892,7 +2895,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	else
 	{
 		sdhost_sdcard_RCA = 0xFFFF & (resp >> 16);
-		//PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
+		PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
 	}
 #endif /* WITHSDHCHW */
 
@@ -2903,7 +2906,8 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		PRINTF(PSTR("SD_CMD_SEND_CSD error\n"));
 		return 1;
 	}
-	//PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
+	PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
+	printhex(0, sdhost_sdcard_CSD, sizeof sdhost_sdcard_CSD);
 
 #if WITHSDHCHW
 	// Select card
@@ -2926,7 +2930,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 #endif /* WITHSDHCHW4BIT */
 	sdhost_use_cmd23 = 0;
 	sdhost_use_cmd20 = 0;
-#if 1 && WITHSDHCHW
+#if 0 && WITHSDHCHW
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
@@ -2988,7 +2992,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 #endif /* WITHSDHCHW */
 
 	// Get SD status
-#if 1 && WITHSDHCHW
+#if 0 && WITHSDHCHW
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{
