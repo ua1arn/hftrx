@@ -1047,11 +1047,6 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 #elif CPUSTYLE_XC7Z
 
-	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
-	// Wait Internal_Clock_Stable
-	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
-		;
-
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -1110,8 +1105,49 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 		break;
 	}
 #elif CPUSTYLE_XC7Z
-	return cmd & 0x3F;
+	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
+	switch (cmd)
+	{
+	case SD_CMD_WRITE_SINGLE_BLOCK:
+	case SD_CMD_WRITE_MULT_BLOCK:
+		return
+			((cmd & 0x3FuL) << 24) |
+			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x01 << 1) | // Block_Count_Enable
+			(0x00 << 0) | // DMA_Enable
+			0;
 
+	case SD_CMD_READ_SINGLE_BLOCK:
+	case SD_CMD_READ_MULT_BLOCK:
+		return
+			((cmd & 0x3FuL) << 24) |
+			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x01 << 1) | // Block_Count_Enable
+			(0x00 << 0) | // DMA_Enable
+			0;
+
+	case SD_CMD_ALL_SEND_CID:
+	case SD_CMD_SEND_CSD:
+		return
+			((cmd & 0x3FuL) << 24) |
+			(0x01 << 19) | // Command_CRC_Check_Enable
+			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x00 << 1) | // Block_Count_Enable
+			(0x00 << 0) | // DMA_Enable
+			0;
+
+	default:
+		return
+			((cmd & 0x3FuL) << 24) |
+			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x00 << 1) | // Block_Count_Enable
+			(0x00 << 0) | // DMA_Enable
+			0;
+	}
 
 #endif
 	return cmd;
@@ -1162,7 +1198,18 @@ static portholder_t encode_appcmd(uint_fast8_t cmd)
 	}
 
 #elif CPUSTYLE_XC7Z
-	return cmd & 0x3F;
+	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
+	switch (cmd)
+	{
+	default:
+		return
+			((cmd & 0x3FuL) << 24) |
+			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x00 << 1) | // Block_Count_Enable
+			(0x00 << 0) | // DMA_Enable
+			0;
+	}
 
 #endif
 	return cmd;
@@ -1246,14 +1293,12 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
-		((uint_fast32_t) cmd << 24) |
+		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
 		(0x00 << 22) | // Command_Type
 		(0x00 << 21) | // Data_Present_Select
 		(0x01 << 20) | // Command_Index_Check_Enable
 		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x00 << 16) | // Response_Type_Select: 00 - No Response
-		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
-		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 		(0x00 << 2) | // Auto_CMD12_Enable
 		(0x00 << 1) | // Block_Count_Enable
 		(0x00 << 0) | // DMA_Enable
@@ -1349,14 +1394,12 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
-		((uint_fast32_t) cmd << 24) |
+		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
 		(0x00 << 22) | // Command_Type
 		(0x01 << 21) | // Data_Present_Select
 		(0x00 << 20) | // Command_Index_Check_Enable
 		(! nocrc << 19) | // Command_CRC_Check_Enable
 		(0x03 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
-		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
-		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 		(0x00 << 2) | // Auto_CMD12_Enable
 		(0x00 << 1) | // Block_Count_Enable
 		(0x00 << 0) | // DMA_Enable
@@ -1457,14 +1500,12 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
-		((uint_fast32_t) cmd << 24) |
+		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
 		(0x00 << 22) | // Command_Type
 		(0x01 << 21) | // Data_Present_Select
 		(0x00 << 20) | // Command_Index_Check_Enable
 		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
-		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
-		(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 		(0x00 << 2) | // Auto_CMD12_Enable
 		(0x00 << 1) | // Block_Count_Enable
 		(0x00 << 0) | // DMA_Enable

@@ -11047,9 +11047,20 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 			0;
 
 	if (ticksfreq <= 400000uL)
-		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) | 0x008000uL;	// SDCLK_Frequency_Select
+	{
+		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
+		0x008000uL;	// SDCLK_Frequency_Select
+	}
 	else
-		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) | 0x000000uL;	// SDCLK_Frequency_Select
+	{
+		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
+		0x000000uL;	// SDCLK_Frequency_Select
+	}
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
+	// Wait Internal_Clock_Stable
+	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
+		;
 
 #else
 	#error Wrong CPUSTYLE_xxx
