@@ -903,12 +903,16 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 
 #elif CPUSTYLE_XC7Z
 
-	local_delay_ms(100);
 	// bits are Readable, write a one to clear
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
 		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		if ((status & (1uL << 15)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+			return 1;
+		}
 		if ((status & (1uL << 16)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
@@ -1146,6 +1150,7 @@ static portholder_t encode_appcmd(uint_fast8_t cmd)
 	default:
 		return (cmd & 0x3f) | R7S721_SD_CMD_ACMD_bm;
 	}
+
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	switch (cmd)
 	{
@@ -1155,6 +1160,10 @@ static portholder_t encode_appcmd(uint_fast8_t cmd)
 	default:
 		break;
 	}
+
+#elif CPUSTYLE_XC7Z
+	return cmd & 0x3F;
+
 #endif
 	return cmd;
 }
@@ -1240,8 +1249,8 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 		(cmd << 24) |
 		(0x00 << 22) | // Command_Type
 		(0x00 << 21) | // Data_Present_Select
-		(0x00 << 20) | // Command_Index_Check_Enable
-		(0x00 << 19) | // Command_CRC_Check_Enable
+		(0x01 << 20) | // Command_Index_Check_Enable
+		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x00 << 16) | // Response_Type_Select: 00 - No Response
 		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
 		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
@@ -1261,6 +1270,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 }
 
 // Запустить на выполнение команду, возвращающую short responce
+// Команда без пересылки данных
 static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t nocrc)
 {
 #if ! WITHSDHCHW
@@ -1342,9 +1352,9 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 		(cmd << 24) |
 		(0x00 << 22) | // Command_Type
 		(0x00 << 21) | // Data_Present_Select
-		(0x00 << 20) | // Command_Index_Check_Enable
-		(0x00 << 19) | // Command_CRC_Check_Enable
-		((nocrc ? 0x02 : 0x02) << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
+		(0x01 << 20) | // Command_Index_Check_Enable
+		(! nocrc << 19) | // Command_CRC_Check_Enable
+		(0x02 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
 		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
 		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 		(0x00 << 2) | // Auto_CMD12_Enable
@@ -1450,8 +1460,8 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 		(cmd << 24) |
 		(0x00 << 22) | // Command_Type
 		(0x00 << 21) | // Data_Present_Select
-		(0x00 << 20) | // Command_Index_Check_Enable
-		(0x00 << 19) | // Command_CRC_Check_Enable
+		(0x01 << 20) | // Command_Index_Check_Enable
+		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
 		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
 		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
@@ -1610,6 +1620,11 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	{
 		const uint32_t status = SD0->INT_STATUS;
 		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		if ((status & (1uL << 15)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+			return 1;
+		}
 		if ((status & (1uL << 16)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
@@ -1747,6 +1762,11 @@ static uint_fast8_t sdhost_get_resp(void)
 	{
 		const uint32_t status = SD0->INT_STATUS;
 		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		if ((status & (1uL << 15)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+			return 1;
+		}
 		if ((status & (1uL << 16)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
@@ -1876,6 +1896,11 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	{
 		const uint32_t status = SD0->INT_STATUS;
 		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		if ((status & (1uL << 15)) != 0)
+		{
+			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+			return 1;
+		}
 		if ((status & (1uL << 16)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
@@ -2288,7 +2313,10 @@ static uint_fast8_t sdhost_short_acmd_resp_R3(uint_fast8_t cmd, uint_fast32_t ar
 {
 	sdhost_short_resp(encode_cmd(SD_CMD_APP_CMD), sdhost_sdcard_RCA << 16);
 	if (sdhost_get_R1(SD_CMD_APP_CMD, resp) != 0)
+	{
+		TP();
 		return 1;
+	}
 	sdhost_short_resp2(encode_appcmd(cmd), arg, 1);	// no CRC check
 	return sdhost_get_R3(resp);
 }

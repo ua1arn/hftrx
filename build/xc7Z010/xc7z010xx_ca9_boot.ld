@@ -173,7 +173,7 @@ SECTIONS
 		KEEP(*(COMMON))
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > OCM
+	} > OCM3
 
 	.noinit (NOLOAD):
 	{
