@@ -22,7 +22,7 @@
 #include "keyboard.h"	
 #include "audio.h"	
 
-enum { XC7Z_SDRDWRDMA = 0 * 1 };
+enum { XC7Z_SDRDWRDMA = 1 * 1 };
 
 
 /* Card Status Register*/
@@ -659,12 +659,13 @@ static void DMA_SDIO_setparams(
 
 
 #elif CPUSTYLE_XC7Z
-	SD0->SYS_DMA_ADDR = addr;
 	/*
 	 * This register specifies the block size for block
 	 * data transfers for CMD17, CMD18, CMD24, CMD25, and CMD53.
 	 */
 	SD0->BLOCK_SIZE = length0;	// bits [11:0] - Transfer_Block_Size
+	SD0->SYS_DMA_ADDR = addr;
+	/* start DMA transfer */
 	SD0->BLOCK_COUNT = count;
 
 #else
@@ -914,6 +915,8 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	local_delay_ms(200);
 	PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 	SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+	PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+	SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
 	return 0;
 	for (;;)
 	{
@@ -1118,6 +1121,19 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 	}
 #elif CPUSTYLE_XC7Z
 	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
+//	if (BlkCnt == 1U) {
+//		InstancePtr->TransferMode =
+//		XSDPS_TM_BLK_CNT_EN_MASK |
+//		XSDPS_TM_DAT_DIR_SEL_MASK |
+//		XSDPS_TM_DMA_EN_MASK;
+//	} else {
+//		InstancePtr->TransferMode =
+//		XSDPS_TM_AUTO_CMD12_EN_MASK |
+//		XSDPS_TM_BLK_CNT_EN_MASK | //s
+//		XSDPS_TM_DAT_DIR_SEL_MASK |	//s
+//		XSDPS_TM_DMA_EN_MASK | //s
+//		XSDPS_TM_MUL_SIN_BLK_SEL_MASK;
+//	}
 	switch (cmd)
 	{
 	case SD_CMD_WRITE_SINGLE_BLOCK:
@@ -1125,7 +1141,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			((cmd & 0x3FuL) << 24) |
 			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x00 << 1) | // Block_Count_Enable
+			(0x01 << 1) | // Block_Count_Enable
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
@@ -1133,10 +1149,11 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 	case SD_CMD_WRITE_MULT_BLOCK:
 		return
 			((cmd & 0x3FuL) << 24) |
+			(0x01 << 5) | // Multi_Single_Block_Select
 			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 1) | // Block_Count_Enable
-			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x01 << 2) | // Auto_CMD12_Enable
 			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 
@@ -1145,7 +1162,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			((cmd & 0x3FuL) << 24) |
 			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x00 << 1) | // Block_Count_Enable
+			(0x01 << 1) | // Block_Count_Enable
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
@@ -1153,10 +1170,11 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 	case SD_CMD_READ_MULT_BLOCK:
 		return
 			((cmd & 0x3FuL) << 24) |
+			(0x01 << 5) | // Multi_Single_Block_Select
 			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 1) | // Block_Count_Enable
-			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x01 << 2) | // Auto_CMD12_Enable
 			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 
@@ -1242,7 +1260,7 @@ static portholder_t encode_appcmd(uint_fast8_t cmd)
 			((cmd & 0x3FuL) << 24) |
 			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x00 << 1) | // Block_Count_Enable
+			(0x01 << 1) | // Block_Count_Enable
 			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 
