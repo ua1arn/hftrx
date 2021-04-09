@@ -22,6 +22,7 @@
 #include "keyboard.h"	
 #include "audio.h"	
 
+enum { XC7Z_SDRDWRDMA = 0 * 1 };
 
 
 /* Card Status Register*/
@@ -910,10 +911,13 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	return 1;
 
 #elif CPUSTYLE_XC7Z
-
-	// bits are Readable, write a one to clear
+	local_delay_ms(200);
+	PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+	SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+	return 0;
 	for (;;)
 	{
+		// bits are Readable, write a one to clear
 		const uint32_t status = SD0->INT_STATUS;
 		PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
@@ -1123,7 +1127,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x00 << 1) | // Block_Count_Enable
 			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 0) | // DMA_Enable
+			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 
 	case SD_CMD_WRITE_MULT_BLOCK:
@@ -1133,7 +1137,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 1) | // Block_Count_Enable
 			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 0) | // DMA_Enable
+			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 
 	case SD_CMD_READ_SINGLE_BLOCK:
@@ -1143,7 +1147,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x00 << 1) | // Block_Count_Enable
 			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 0) | // DMA_Enable
+			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 
 	case SD_CMD_READ_MULT_BLOCK:
@@ -1153,7 +1157,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 1) | // Block_Count_Enable
 			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 0) | // DMA_Enable
+			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 
 	case SD_CMD_ALL_SEND_CID:
@@ -1232,13 +1236,23 @@ static portholder_t encode_appcmd(uint_fast8_t cmd)
 	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
 	switch (cmd)
 	{
+	case SD_CMD_SD_APP_STATUS:
+	case SD_CMD_SD_APP_SEND_SCR:
+		return
+			((cmd & 0x3FuL) << 24) |
+			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
+			(0x00 << 2) | // Auto_CMD12_Enable
+			(0x00 << 1) | // Block_Count_Enable
+			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
+			0;
+
 	default:
 		return
 			((cmd & 0x3FuL) << 24) |
 			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x00 << 1) | // Block_Count_Enable
-			(0x00 << 0) | // DMA_Enable
+			//(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 	}
 
@@ -1654,11 +1668,11 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	return 0;
 
 #elif CPUSTYLE_XC7Z
-	// bits are Readable, write a one to clear
 	for (;;)
 	{
+		// bits are Readable, write a one to clear
 		const uint32_t status = SD0->INT_STATUS;
-		PRINTF("sdhost_get_none_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		//PRINTF("sdhost_get_none_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1796,11 +1810,11 @@ static uint_fast8_t sdhost_get_resp(void)
 	return ec;
 
 #elif CPUSTYLE_XC7Z
-	// bits are Readable, write a one to clear
 	for (;;)
 	{
+		// bits are Readable, write a one to clear
 		const uint32_t status = SD0->INT_STATUS;
-		PRINTF("sdhost_get_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		//PRINTF("sdhost_get_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1930,11 +1944,11 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	return ec;
 
 #elif CPUSTYLE_XC7Z
-	// bits are Readable, write a one to clear
 	for (;;)
 	{
+		// bits are Readable, write a one to clear
 		const uint32_t status = SD0->INT_STATUS;
-		PRINTF("sdhost_get_resp_nocrc: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		//PRINTF("sdhost_get_resp_nocrc: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
