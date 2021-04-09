@@ -1122,6 +1122,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x00 << 1) | // Block_Count_Enable
+			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 0) | // DMA_Enable
 			0;
 
@@ -1131,6 +1132,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 1) | // Block_Count_Enable
+			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 0) | // DMA_Enable
 			0;
 
@@ -1140,6 +1142,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x00 << 1) | // Block_Count_Enable
+			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 0) | // DMA_Enable
 			0;
 
@@ -1149,6 +1152,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd)
 			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 1) | // Block_Count_Enable
+			(0x00 << 2) | // Auto_CMD12_Enable
 			(0x01 << 0) | // DMA_Enable
 			0;
 
@@ -1318,22 +1322,13 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 
 #elif CPUSTYLE_XC7Z
 
+	// sdhost_no_resp
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
-		(0x00 << 22) | // Command_Type
-		(0x00 << 21) | // Data_Present_Select
 		(0x01 << 20) | // Command_Index_Check_Enable
 		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x00 << 16) | // Response_Type_Select: 00 - No Response
-		(0x00 << 2) | // Auto_CMD12_Enable
-		(0x00 << 1) | // Block_Count_Enable
-		(0x00 << 0) | // DMA_Enable
-//		0 * SDMMC_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
-//		0 * SDMMC_CMD_WAITINT |
-//		0 * SDMMC_CMD_WAITPEND |
-//		1 * SDMMC_CMD_CPSMEN |
-//		//0 * SDMMC_CMD_SDIOSUSPEND |
 		0;
 
 #else
@@ -1419,22 +1414,13 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 
 #elif CPUSTYLE_XC7Z
 
+	// sdhost_short_resp2
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
-		(0x00 << 22) | // Command_Type
-		(0x00 << 21) | // Data_Present_Select
 		(0x00 << 20) | // Command_Index_Check_Enable
 		(! nocrc << 19) | // Command_CRC_Check_Enable
 		(0x03 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
-		(0x00 << 2) | // Auto_CMD12_Enable
-		(0x00 << 1) | // Block_Count_Enable
-		(0x00 << 0) | // DMA_Enable
-//		1 * SDIO_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
-//		0 * SDIO_CMD_WAITINT |
-//		0 * SDIO_CMD_WAITPEND |
-//		1 * SDIO_CMD_CPSMEN |
-//		0 * SDIO_CMD_SDIOSUSPEND |
 		0;
 
 #else
@@ -1525,22 +1511,13 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 
 #elif CPUSTYLE_XC7Z
 
+	// sdhost_long_resp
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
-		(0x00 << 22) | // Command_Type
-		(0x00 << 21) | // Data_Present_Select
 		(0x00 << 20) | // Command_Index_Check_Enable
 		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
-		(0x00 << 2) | // Auto_CMD12_Enable
-		(0x00 << 1) | // Block_Count_Enable
-		(0x00 << 0) | // DMA_Enable
-		//3 * SDIO_CMD_WAITRESP_0 |	// 0: no response, 1: short response, 3: long response
-		//0 * SDIO_CMD_WAITINT |
-		//0 * SDIO_CMD_WAITPEND |
-		//1 * SDIO_CMD_CPSMEN |
-		//0 * SDIO_CMD_SDIOSUSPEND |
 		0;
 
 #else
