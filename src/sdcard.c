@@ -2957,6 +2957,12 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	//PRINTF(PSTR("SD_CMD_SEL_DESEL_CARD okay\n"));
 #endif /* WITHSDHCHW */
 
+	if (sdhost_sdcard_waitstatus() != 0)
+	{
+		PRINTF(PSTR("sdhost_sdcard_identification: sdhost_sdcard_waitstatus error\n"));
+		return 1;
+	}
+
 	// Get SCR
 #if WITHSDHCHW4BIT
 	uint_fast8_t bussupport4b = 1;
@@ -2968,6 +2974,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_use_cmd23 = 0;
 	sdhost_use_cmd20 = 0;
 #if 0 && WITHSDHCHW
+	// STM32MP1 work
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
@@ -3030,6 +3037,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 
 	// Get SD status
 #if 0 && WITHSDHCHW
+	// STM32MP1 work
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{
@@ -3047,6 +3055,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 
 	}
 #endif /* WITHSDHCHW */
+
 	PRINTF(PSTR("SD CARD identification done\n"));
 	return 0;
 }
