@@ -11038,7 +11038,13 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 
 #elif CPUSTYLE_XC7Z
-	#warning Implement SD HOST speed selection for CPUSTYLE_XC7Z
+	unsigned long d = calcdivround2(100000000uL, ticksfreq);
+	d = ulmin(ulmax(d, 1), 0x3F);
+	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
+			(d << 8) | // DIVISOR
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
+			0;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -11172,7 +11178,7 @@ void hardware_sdhost_initialize(void)
 
 	//EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
-			(31uL << 8) | //(16uL << 8) | // DIVISOR
+			(16uL << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
 			0;

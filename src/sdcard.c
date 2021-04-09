@@ -144,8 +144,8 @@ static uint_fast64_t sdhost_sdcard_parse_CSD(const uint8_t * bv)
 	// Обработка информациолнного блока (Code length is 128 bits = 16 bytes)
 	//
 	const uint_fast8_t csdv = array_get_bits(bv, 128, 127, 2);	//  [127:126] - csd structure version
-//	PRINTF(PSTR("CSD version=0x%02x\n"), csdv);
-//	PRINTF(PSTR("CSD TRAN_SPEED=%d (0x%02x)\n"), array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96]
+	PRINTF(PSTR("CSD version=0x%02x\n"), csdv);
+	PRINTF(PSTR("CSD TRAN_SPEED=%d (0x%02x)\n"), array_get_bits(bv, 128, 103, 8), array_get_bits(bv, 128, 103, 8));	// [103:96]
 
 	switch (csdv)
 	{	
@@ -907,7 +907,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
-		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		//PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1622,7 +1622,7 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
-		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		//PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1764,7 +1764,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
-		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		//PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1898,7 +1898,7 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;
-		PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		//PRINTF("SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
@@ -1969,6 +1969,7 @@ static uint_fast32_t sdhost_get_resp32bit(void)
 #endif
 }
 
+// Response length 136
 static void sdhost_get_resp128bit(uint8_t * resp128)
 {
 #if ! WITHSDHCHW
@@ -2050,7 +2051,7 @@ static void sdhost_get_resp128bit(uint8_t * resp128)
 		// RESP3;Card Status [63:32]
 		// RESP4;Card Status [31:1]0b
 		
-		resp128 [0] = SDIO->RESP1 >> 24;
+		resp128 [0] = SDIO->RESP1 >> 24;	// R127 to 120 (8 bit)
 		resp128 [1] = SDIO->RESP1 >> 16;
 		resp128 [2] = SDIO->RESP1 >> 8;
 		resp128 [3] = SDIO->RESP1 >> 0;
@@ -2072,24 +2073,21 @@ static void sdhost_get_resp128bit(uint8_t * resp128)
 
 #elif CPUSTYLE_XC7Z
 
-		resp128 [0] = SD0->RESP_0 >> 24;
-		resp128 [1] = SD0->RESP_0 >> 16;
-		resp128 [2] = SD0->RESP_0 >> 8;
-		resp128 [3] = SD0->RESP_0 >> 0;
-
-		resp128 [4] = SD0->RESP_1 >> 24;
-		resp128 [5] = SD0->RESP_1 >> 16;
-		resp128 [6] = SD0->RESP_1 >> 8;
-		resp128 [7] = SD0->RESP_1 >> 0;
-
-		resp128 [8] = SD0->RESP_2 >> 24;
-		resp128 [9] = SD0->RESP_2 >> 16;
-		resp128 [10] = SD0->RESP_2 >> 8;
-		resp128 [11] = SD0->RESP_2 >> 0;
-
-		resp128 [12] = SD0->RESP_3 >> 24;
-		resp128 [13] = SD0->RESP_3 >> 16;
-		resp128 [14] = SD0->RESP_3 >> 8;
+		resp128 [0] = SD0->RESP_3 >> 16;	// R127 to 120 (8 bit)
+		resp128 [1] = SD0->RESP_3 >> 8;
+		resp128 [2] = SD0->RESP_3 >> 0;
+		resp128 [3] = SD0->RESP_2 >> 24;
+		resp128 [4] = SD0->RESP_2 >> 16;
+		resp128 [5] = SD0->RESP_2 >> 8;
+		resp128 [6] = SD0->RESP_2 >> 0;
+		resp128 [7] = SD0->RESP_1 >> 24;
+		resp128 [8] = SD0->RESP_1 >> 16;
+		resp128 [9] = SD0->RESP_1 >> 8;
+		resp128 [10] = SD0->RESP_1 >> 0;
+		resp128 [11] = SD0->RESP_0 >> 24;
+		resp128 [12] = SD0->RESP_0 >> 16;
+		resp128 [13] = SD0->RESP_0 >> 8;
+		resp128 [14] = SD0->RESP_0 >> 0;
 		resp128 [15] = 0;				// CRC-7 and stop bit
 
 #else
@@ -2811,7 +2809,7 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 			return 1;
 		}
 #endif /* WITHSDHCHW */
- 		PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
+ 		//PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
 		//PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
@@ -2820,7 +2818,7 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
             sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD;
 			//PRINTF(PSTR("SD CARD is high capacity\n"));
 		}
-		PRINTF(PSTR("SD CARD power on done, no errors\n"));
+		//PRINTF(PSTR("SD CARD power on done, no errors\n"));
 		return 0;
 	}
 	PRINTF(PSTR("SD CARD power on done, error\n"));
@@ -2895,7 +2893,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	else
 	{
 		sdhost_sdcard_RCA = 0xFFFF & (resp >> 16);
-		PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
+		//PRINTF(PSTR("RCA=%08lX\n"), sdhost_sdcard_RCA);
 	}
 #endif /* WITHSDHCHW */
 
@@ -2906,8 +2904,8 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		PRINTF(PSTR("SD_CMD_SEND_CSD error\n"));
 		return 1;
 	}
-	PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
-	printhex(0, sdhost_sdcard_CSD, sizeof sdhost_sdcard_CSD);
+	//PRINTF(PSTR("SD_CMD_SEND_CSD okay\n"));
+	//printhex(0, sdhost_sdcard_CSD, sizeof sdhost_sdcard_CSD);
 
 #if WITHSDHCHW
 	// Select card
