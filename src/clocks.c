@@ -11039,12 +11039,17 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 #elif CPUSTYLE_XC7Z
 	unsigned long d = calcdivround2(100000000uL, ticksfreq);
-	d = ulmin(ulmax(d, 1), 0x3F);
+	d = 16; //ulmin(ulmax(d, 1), 0x3F);
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
 			(d << 8) | // DIVISOR
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
 			0;
+
+	if (ticksfreq <= 400000uL)
+		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) | 0x008000uL;	// SDCLK_Frequency_Select
+	else
+		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) | 0x000000uL;	// SDCLK_Frequency_Select
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -11182,6 +11187,9 @@ void hardware_sdhost_initialize(void)
 			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
 			0;
+
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x0F0000uL)) | 0x030000uL;	// Data_Timeout_Counter_Value_
 
 	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
 

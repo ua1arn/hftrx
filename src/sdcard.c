@@ -1047,9 +1047,6 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 #elif CPUSTYLE_XC7Z
 
-	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x0F0000uL)) | 0x0E0000uL;	// Data_Timeout_Counter_Value_
-	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL = (SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) | 0x008000uL;	// SDCLK_Frequency_Select
-
 	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
 	// Wait Internal_Clock_Stable
 	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
