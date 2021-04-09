@@ -668,43 +668,47 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		ASSERT(win->y1 + win->h < WITHGUIMAXY);
 	}
 
-	// Выравнивание массива оконных элементов по центру окна
-	uint_fast16_t shift_x = (win->w - xmax) / 2;
-	uint_fast16_t shift_y = (win->h - ymax) / 2 + (strcmp(win->name, "") ? window_title_height : 0);
+	// Выравнивание массива оконных элементов по центру окна для полноэкранного дизайна
 
-	if (win->bh_ptr != NULL)
+	if (mode == WINDOW_POSITION_FULLSCREEN)
 	{
-		for (uint_fast8_t i = 0; i < win->bh_count; i++)
+		uint_fast16_t shift_x = (win->w - xmax) / 2;
+		uint_fast16_t shift_y = (win->h - ymax) / 2 + (strcmp(win->name, "") ? window_title_height : 0);
+
+		if (win->bh_ptr != NULL)
 		{
-			button_t * bh = & win->bh_ptr [i];
-			bh->x1 += shift_x;
-			bh->y1 += shift_y;
-			ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
-			ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
+			for (uint_fast8_t i = 0; i < win->bh_count; i++)
+			{
+				button_t * bh = & win->bh_ptr [i];
+				bh->x1 += shift_x;
+				bh->y1 += shift_y;
+				ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
+				ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
+			}
 		}
-	}
 
-	if (win->lh_ptr != NULL)
-	{
-		for (uint_fast8_t i = 0; i < win->lh_count; i++)
+		if (win->lh_ptr != NULL)
 		{
-			label_t * lh = & win->lh_ptr [i];
-			lh->x += shift_x;
-			lh->y += shift_y;
-			ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
-			ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+			for (uint_fast8_t i = 0; i < win->lh_count; i++)
+			{
+				label_t * lh = & win->lh_ptr [i];
+				lh->x += shift_x;
+				lh->y += shift_y;
+				ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
+				ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+			}
 		}
-	}
 
-	if (win->sh_ptr != NULL)
-	{
-		for (uint_fast8_t i = 0; i < win->sh_count; i++)
+		if (win->sh_ptr != NULL)
 		{
-			slider_t * sh = & win->sh_ptr [i];
-			sh->x += shift_x;
-			sh->y += shift_y;
-//			ASSERT(sh->x < WITHGUIMAXX);
-//			ASSERT(sh->y < WITHGUIMAXY);
+			for (uint_fast8_t i = 0; i < win->sh_count; i++)
+			{
+				slider_t * sh = & win->sh_ptr [i];
+				sh->x += shift_x;
+				sh->y += shift_y;
+	//			ASSERT(sh->x < WITHGUIMAXX);
+	//			ASSERT(sh->y < WITHGUIMAXY);
+			}
 		}
 	}
 
