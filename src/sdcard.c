@@ -1246,7 +1246,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
-		(cmd << 24) |
+		((uint_fast32_t) cmd << 24) |
 		(0x00 << 22) | // Command_Type
 		(0x00 << 21) | // Data_Present_Select
 		(0x01 << 20) | // Command_Index_Check_Enable
@@ -1349,12 +1349,12 @@ static void sdhost_short_resp2(portholder_t cmd, uint_fast32_t arg, uint_fast8_t
 
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
-		(cmd << 24) |
+		((uint_fast32_t) cmd << 24) |
 		(0x00 << 22) | // Command_Type
-		(0x00 << 21) | // Data_Present_Select
-		(0x01 << 20) | // Command_Index_Check_Enable
+		(0x01 << 21) | // Data_Present_Select
+		(0x00 << 20) | // Command_Index_Check_Enable
 		(! nocrc << 19) | // Command_CRC_Check_Enable
-		(0x02 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
+		(0x03 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
 		(0x00 << 5) | // Multi_Single_Block_Select: 0 - Single Block
 		(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
 		(0x00 << 2) | // Auto_CMD12_Enable
@@ -1457,7 +1457,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 
 	SD0->ARG = arg;
 	SD0->CMD_TRANSFER_MODE =
-		(cmd << 24) |
+		((uint_fast32_t) cmd << 24) |
 		(0x00 << 22) | // Command_Type
 		(0x00 << 21) | // Data_Present_Select
 		(0x01 << 20) | // Command_Index_Check_Enable
@@ -2808,7 +2808,7 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 			return 1;
 		}
 #endif /* WITHSDHCHW */
- 		//PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
+ 		PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
 		if ((resp & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
 		//PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
@@ -2817,7 +2817,7 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
             sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD;
 			//PRINTF(PSTR("SD CARD is high capacity\n"));
 		}
-		//PRINTF(PSTR("SD CARD power on done, no errors\n"));
+		PRINTF(PSTR("SD CARD power on done, no errors\n"));
 		return 0;
 	}
 	PRINTF(PSTR("SD CARD power on done, error\n"));
