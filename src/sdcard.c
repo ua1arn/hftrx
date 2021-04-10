@@ -922,16 +922,15 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	unsigned rcnt = 0;
 	for (;;)
 	{
-		// bits are Readable, write a one to clear
-		const uint32_t status = SD0->INT_STATUS;
+		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint32_t psts = SD0->PRESENT_STATE;
-		if ((psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
+		if (txmode && ! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
 		{
 			SD0->BUFFER_DATA_PORT = 0xDEADBEEF;
 			++ wcnt;
 			continue;
 		}
-		if ((psts & (1uL << 11)) != 0)	// Buffer_Read_Enable
+		if (! txmode && ! XC7Z_SDRDWRDMA && (psts & (1uL << 11)) != 0)	// Buffer_Read_Enable
 		{
 			(void) SD0->BUFFER_DATA_PORT;
 			++ rcnt;
@@ -1095,15 +1094,13 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
  * @{
  */
 
-#define XSDPS_TM_DMA_EN_MASK			0x00000001UL /**< DMA Enable */
-#define XSDPS_TM_BLK_CNT_EN_MASK		0x00000002UL /**< Block Count Enable */
-#define XSDPS_TM_AUTO_CMD12_EN_MASK		0x00000004UL /**< Auto CMD12 Enable */
-#define XSDPS_TM_DAT_DIR_SEL_MASK		0x00000010UL /**< Data Transfer
-							Direction Select */
-#define XSDPS_TM_MUL_SIN_BLK_SEL_MASK	0x00000020UL /**< Multi/Single
-							Block Select */
+#define XSDPS_TM_DMA_EN_MASK			(0x01uL << 0) /**< DMA Enable */
+#define XSDPS_TM_BLK_CNT_EN_MASK		(0x01uL << 1) /**< Block Count Enable */
+#define XSDPS_TM_AUTO_CMD12_EN_MASK		(0x01uL << 2) /**< Auto CMD12 Enable */
+#define XSDPS_TM_DAT_DIR_SEL_MASK		(0x01uL << 4) /**< Data Transfer Direction Select, 1 - Read (Card to Host) */
+#define XSDPS_TM_MUL_SIN_BLK_SEL_MASK	(0x01uL << 5) /**< Multi/Single Block Select */
 
-#define XSDPS_CMD_RESP_SEL_MASK			0x00030000UL /**< Response Type Select */
+#define XSDPS_CMD_RESP_SEL_MASK			(0x03uL << 16) /**< Response Type Select */
 #define XSDPS_CMD_RESP_NONE_MASK		(0x00uL << 16) /**< No Response */
 #define XSDPS_CMD_RESP_L136_MASK		(0x01uL << 16) /**< Response length 138 */
 #define XSDPS_CMD_RESP_L48_MASK			(0x02uL << 16) /**< Response length 48 */
@@ -1171,11 +1168,11 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 // see XSdPs_FrameCmd
 // cardType: XSDPS_CARD_SD
-static uint_fast32_t frame_cmd(uint_fast32_t Cmd)
+static uint_fast32_t frame_cmd(uint_fast8_t cmd)
 {
-	uint_fast32_t RetVal = (Cmd & 0x3F) << 24;
+	uint_fast32_t RetVal = (cmd & 0x3FuL) << 24;
 	unsigned cardType = XSDPS_CARD_SD;
-	switch(Cmd) {
+	switch(cmd) {
 	case CMD0:
 		RetVal |= RESP_NONE;
 		break;
@@ -1247,7 +1244,7 @@ static uint_fast32_t frame_cmd(uint_fast32_t Cmd)
 	case CMD58:
 		break;
 	default :
-		PRINTF("Wrong case: cmd=%02X\n", Cmd);
+		PRINTF("Wrong case: cmd=%02X\n", cmd);
 		ASSERT(0);
 		break;
 	}
@@ -1257,11 +1254,11 @@ static uint_fast32_t frame_cmd(uint_fast32_t Cmd)
 
 // see XSdPs_FrameCmd
 // cardType: XSDPS_CARD_SD
-static uint_fast32_t frame_acmd(uint_fast32_t Cmd)
+static uint_fast32_t frame_acmd(uint_fast8_t cmd)
 {
-	uint_fast32_t RetVal = (Cmd & 0x3F) << 24;
+	uint_fast32_t RetVal = (cmd & 0x3FuL) << 24;
 	unsigned cardType = XSDPS_CARD_SD;
-	switch(Cmd) {
+	switch(cmd) {
 	case ACMD6:
 		RetVal |= RESP_R1;
 		break;
@@ -1278,10 +1275,10 @@ static uint_fast32_t frame_acmd(uint_fast32_t Cmd)
 		RetVal |= RESP_R1;
 		break;
 	case ACMD51:
-		RetVal |= RESP_R1 | (uint_fast32_t)XSDPS_DAT_PRESENT_SEL_MASK;
+		RetVal |= RESP_R1 | XSDPS_DAT_PRESENT_SEL_MASK;
 		break;
 	default :
-		PRINTF("Wrong case: acmd=%02X\n", Cmd);
+		PRINTF("Wrong case: acmd=%02X\n", cmd);
 		ASSERT(0);
 		break;
 	}
@@ -1325,6 +1322,7 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 	}
 	return v;
 }
+
 #else
 
 static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
@@ -1619,10 +1617,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_no_resp
 	SD0->ARG = arg;
 #if NEWXPS
-	((volatile uint16_t *) & SD0->CMD_TRANSFER_MODE) [0] = cmd;
-	ASSERT(((volatile uint16_t *) & SD0->CMD_TRANSFER_MODE) [0] == ((0xFFFF & cmd)));
-	((volatile uint16_t *) & SD0->CMD_TRANSFER_MODE) [1] = cmd >> 16;
-	//SD0->CMD_TRANSFER_MODE = cmd;
+	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
@@ -1631,7 +1626,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 		(0x00 << 16) | // Response_Type_Select: 00 - No Response
 		0;
 #endif /* NEWXPS */
-	PRINTF("sdhost_no_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
+	//PRINTF("sdhost_no_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -1641,7 +1636,6 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 // Команда без пересылки данных
 static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t nocrc)
 {
-	PRINTF("sdhost_short_resp: cmd=%08lX\n", cmd);
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
 
@@ -1728,7 +1722,7 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 		(0x03 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
 		0;
 #endif /* NEWXPS */
-	PRINTF("sdhost_short_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
+	//PRINTF("sdhost_short_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1824,7 +1818,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
 		0;
 #endif /* NEWXPS */
-	PRINTF("sdhost_long_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
+	//PRINTF("sdhost_long_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1966,10 +1960,13 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	return 0;
 
 #elif CPUSTYLE_XC7Z
+	// sdhost_get_none_resp
 	for (;;)
 	{
-		// bits are Readable, write a one to clear
-		const uint32_t status = SD0->INT_STATUS;
+		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		const uint32_t psts = SD0->PRESENT_STATE;
+//		if ((psts & (3uL << 0)) != 0)	// Command_Inhibit_DAT | Command_Inhibit_CMD
+//			continue;
 		//PRINTF("sdhost_get_none_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
@@ -2108,11 +2105,14 @@ static uint_fast8_t sdhost_get_resp(void)
 	return ec;
 
 #elif CPUSTYLE_XC7Z
+	// sdhost_get_resp
 	for (;;)
 	{
-		// bits are Readable, write a one to clear
-		const uint32_t status = SD0->INT_STATUS;
+		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		const uint32_t psts = SD0->PRESENT_STATE;
 		//PRINTF("sdhost_get_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+//		if ((psts & (3uL << 0)) != 0)	// Command_Inhibit_DAT | Command_Inhibit_CMD
+//			continue;
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
@@ -2242,11 +2242,14 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	return ec;
 
 #elif CPUSTYLE_XC7Z
+	// sdhost_get_resp_nocrc
 	for (;;)
 	{
-		// bits are Readable, write a one to clear
-		const uint32_t status = SD0->INT_STATUS;
+		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		const uint32_t psts = SD0->PRESENT_STATE;
 		//PRINTF("sdhost_get_resp_nocrc: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+//		if ((psts & (3uL << 0)) != 0)	// Command_Inhibit_DAT | Command_Inhibit_CMD
+//			continue;
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
