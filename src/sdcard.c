@@ -912,12 +912,10 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	return 1;
 
 #elif CPUSTYLE_XC7Z
-	local_delay_ms(200);
-	PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
-	SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
-	PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
-	SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
-	return 0;
+//	local_delay_ms(200);
+//	PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+//	SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+//	return 0;
 	for (;;)
 	{
 		// bits are Readable, write a one to clear
@@ -925,22 +923,22 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 		PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
 			return 1;
 		}
 		if ((status & (1uL << 16)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
+			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
 			return 1;
 		}
 		if ((status & (1uL << 1)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Transfer_Complete
+			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
 			return 0;
 		}
 		if ((status & (1uL << 0)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Complete
+			SD0->INT_STATUS = (1uL << 0); // Command_Complete
 			return 0;
 		}
 	}
@@ -1693,22 +1691,22 @@ static uint_fast8_t sdhost_get_none_resp(void)
 		//PRINTF("sdhost_get_none_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
 			return 1;
 		}
 		if ((status & (1uL << 16)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
+			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
 			return 1;
 		}
 		if ((status & (1uL << 1)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Transfer_Complete
+			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
 			return 0;
 		}
 		if ((status & (1uL << 0)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Complete
+			SD0->INT_STATUS = (1uL << 0); // Command_Complete
 			return 0;
 		}
 	}
@@ -1835,22 +1833,22 @@ static uint_fast8_t sdhost_get_resp(void)
 		//PRINTF("sdhost_get_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
 			return 1;
 		}
 		if ((status & (1uL << 16)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
+			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
 			return 1;
 		}
 		if ((status & (1uL << 1)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Transfer_Complete
+			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
 			return 0;
 		}
 		if ((status & (1uL << 0)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Complete
+			SD0->INT_STATUS = (1uL << 0); // Command_Complete
 			return 0;
 		}
 	}
@@ -1969,22 +1967,22 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 		//PRINTF("sdhost_get_resp_nocrc: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
+			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
 			return 1;
 		}
 		if ((status & (1uL << 16)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Timeout_Error
+			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
 			return 1;
 		}
 		if ((status & (1uL << 1)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Transfer_Complete
+			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
 			return 0;
 		}
 		if ((status & (1uL << 0)) != 0)
 		{
-			SD0->INT_STATUS = ~ 0; //(1uL << 16); // Command_Complete
+			SD0->INT_STATUS = (1uL << 0); // Command_Complete
 			return 0;
 		}
 	}
