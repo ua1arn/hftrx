@@ -339,9 +339,7 @@ typedef struct sd_regs {
     __IO uint16_t BLOCK_SIZE                     ; /* 0x0004 Block Size Register */
     __IO uint16_t BLOCK_COUNT                    ; /* 0x0006 Block Count Register */
     __IO uint32_t ARG                     		 ; /* 0x0008 Argument Register */
-    //__IO uint32_t CMD_TRANSFER_MODE              ; /* 0x000C Command Register, Transfer Mode Register */
-    __IO uint16_t TRANSFER_MODE              ; /* 0x000C Command Register, Transfer Mode Register */
-    __IO uint16_t CMD              ; /* 0x000C Command Register, Transfer Mode Register */
+    __IO uint32_t CMD_TRANSFER_MODE              ; /* 0x000C Command Register, Transfer Mode Register */
     __IO uint32_t RESP_0                         ; /* 0x0010 Response Register 0 */
     __IO uint32_t RESP_1                         ; /* 0x0014 Response Register 1 */
     __IO uint32_t RESP_2                         ; /* 0x0018 Response Register 2 */

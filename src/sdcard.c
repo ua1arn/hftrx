@@ -1322,12 +1322,7 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 
 static void setTrabsferMode(uint_fast32_t cmd)
 {
-	//SD0->CMD_TRANSFER_MODE = cmd;
-	SD0->TRANSFER_MODE = cmd;
-	__DSB();
-	ASSERT(SD0->TRANSFER_MODE == (cmd & 0xFFFF));
-	SD0->CMD = cmd >> 16;
-	__DSB();
+	SD0->CMD_TRANSFER_MODE = cmd;
 }
 
 #else
