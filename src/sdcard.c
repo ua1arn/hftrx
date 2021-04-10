@@ -868,7 +868,7 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
 
 
 // Ожидание окончания обмена data path state machine
-static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
+static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_fast32_t len)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -913,47 +913,44 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	return 1;
 
 #elif CPUSTYLE_XC7Z
-	unsigned wcnt = 0;
-	unsigned rcnt = 0;
-	for (;;)
+
+	if (! XC7Z_SDRDWRDMA)
 	{
-		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
-		const uint32_t psts = SD0->PRESENT_STATE;
-//		if (/*txmode && */! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
-//		{
-//			SD0->BUFFER_DATA_PORT = 0xDEADBEEF;
-//			++ wcnt;
-//			//continue;
-//		}
-		if (/*! txmode && */! XC7Z_SDRDWRDMA && (psts & (1uL << 11)) != 0)	// Buffer_Read_Enable
+		uint_fast32_t len4 = len / 4;
+		ASSERT((len % 4) == 0);
+
+		if (0 && txmode)
 		{
-			(void) SD0->BUFFER_DATA_PORT;
-			++ rcnt;
-			//continue;
+			// Fill FIFO
+			const uint8_t * p = (const uint8_t *) addr;
+			// 10 - Buffer_Write_Enable
+			for (; len4 -- && (SD0->PRESENT_STATE & (1uL << 10)) != 0; p += 4)
+			{
+				const uint_fast32_t v =
+					((uint_fast32_t) p [0] << 0) |
+					((uint_fast32_t) p [1] << 8) |
+					((uint_fast32_t) p [2] << 16) |
+					((uint_fast32_t) p [3] << 24) |
+					0;
+				SD0->BUFFER_DATA_PORT = v;
+			}
 		}
-		PRINTF("sdhost_dpsm_wait: status=%08lX. psts=%08lX, rcnt=%u, wcnt=%u\n", status, psts, rcnt, wcnt);
-		if ((status & (1uL << 15)) != 0)
+		else
 		{
-			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
-			return 1;
+			// Read FIFO
+			uint8_t * p = (uint8_t *) addr;
+			// 11 - Buffer_Read_Enable
+			for (; len4 -- && (SD0->PRESENT_STATE & (1uL << 11)) != 0; p += 4)
+			{
+				const uint_fast32_t v = SD0->BUFFER_DATA_PORT;
+				p [0] = v >> 0;
+				p [1] = v >> 8;
+				p [2] = v >> 16;
+				p [3] = v >> 24;
+			}
 		}
-//		if ((status & (1uL << 16)) != 0)
-//		{
-//			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
-//			return 1;
-//		}
-		if ((status & (1uL << 1)) != 0)
-		{
-			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
-			return 0;
-		}
-//		if ((status & (1uL << 0)) != 0)
-//		{
-//			SD0->INT_STATUS = (1uL << 0); // Command_Complete
-//			return 0;
-//		}
 	}
-	return 1;
+	return 0;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1071,20 +1068,40 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 #elif CPUSTYLE_XC7Z
 	//PRINTF("sdhost_dpsm_prepare: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
-	// Fill FIFO for one sector
-	if (txmode && ! XC7Z_SDRDWRDMA)
+	if (! XC7Z_SDRDWRDMA)
 	{
-		const uint8_t * p = (const uint8_t *) addr;
-		unsigned i;
-		for (i = 0; i < 128 && (SD0->PRESENT_STATE & (1uL << 10)) != 0; ++ i, p += 4)
+		uint_fast32_t len4 = len / 4;
+		ASSERT((len % 4) == 0);
+
+		if (txmode)
 		{
-			const uint_fast32_t v =
-				((uint_fast32_t) p [0] << 0) |
-				((uint_fast32_t) p [1] << 8) |
-				((uint_fast32_t) p [2] << 16) |
-				((uint_fast32_t) p [3] << 24) |
-				0;
-			SD0->BUFFER_DATA_PORT = v;
+			// Fill FIFO
+			const uint8_t * p = (const uint8_t *) addr;
+			// 10 - Buffer_Write_Enable
+			for (; len4 -- && (SD0->PRESENT_STATE & (1uL << 10)) != 0; p += 4)
+			{
+				const uint_fast32_t v =
+					((uint_fast32_t) p [0] << 0) |
+					((uint_fast32_t) p [1] << 8) |
+					((uint_fast32_t) p [2] << 16) |
+					((uint_fast32_t) p [3] << 24) |
+					0;
+				SD0->BUFFER_DATA_PORT = v;
+			}
+		}
+		else
+		{
+			// Read FIFO
+			uint8_t * p = (uint8_t *) addr;
+			// 11 - Buffer_Read_Enable
+			for (; len4 -- && (SD0->PRESENT_STATE & (1uL << 11)) != 0; p += 4)
+			{
+				const uint_fast32_t v = SD0->BUFFER_DATA_PORT;
+				p [0] = v >> 0;
+				p [1] = v >> 8;
+				p [2] = v >> 16;
+				p [3] = v >> 24;
+			}
 		}
 	}
 
@@ -1333,6 +1350,16 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 		}
 	}
 	return v;
+}
+
+static void setTrabsferMode(uint_fast32_t cmd)
+{
+	//SD0->CMD_TRANSFER_MODE = cmd;
+	SD0->TRANSFER_MODE = cmd;
+	__DSB();
+	ASSERT(SD0->TRANSFER_MODE == (cmd & 0xFFFF));
+	SD0->CMD = cmd >> 16;
+	__DSB();
 }
 
 #else
@@ -1631,7 +1658,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 	SD0->INT_STATUS = ~ 0;
 	PRINTF("sdhost_no_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
-	SD0->CMD_TRANSFER_MODE = cmd;
+	setTrabsferMode(cmd);
 #else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
@@ -1729,7 +1756,7 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 	SD0->INT_STATUS = ~ 0;
 	PRINTF("sdhost_short_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
-	SD0->CMD_TRANSFER_MODE = cmd;
+	setTrabsferMode(cmd);
 #else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
 		(cmd & ~ (1uL << 19)) | // уже сдвинуто влево на 24 бита в функции encode_cmd
@@ -1826,7 +1853,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	SD0->INT_STATUS = ~ 0;
 	PRINTF("sdhost_long_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
-	SD0->CMD_TRANSFER_MODE = cmd;
+	setTrabsferMode(cmd);
 #else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
@@ -2561,6 +2588,7 @@ static uint_fast8_t sdhost_stop_transmission(void)
 // Ожидаем завершения.
 static uint_fast8_t sdhost_sdcard_waitstatus(void)
 {
+	return 0;
 	uint_fast8_t cardstate = 0xFF;
 	unsigned long n;
 	for (n = 1000000; -- n;)
@@ -2866,6 +2894,7 @@ DRESULT SD_disk_write(
 		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* CPUSTYLE_STM32H7XX */
 		// write block
+		PRINTF("w 1: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 		sdhost_short_resp(encode_cmd(SD_CMD_WRITE_SINGLE_BLOCK, getTransferMode(txmode, count)), sector * sdhost_getaddresmultiplier(), 0);	// CMD24
 		if (sdhost_get_R1(SD_CMD_WRITE_SINGLE_BLOCK, & resp) != 0)
 		{
@@ -2873,13 +2902,14 @@ DRESULT SD_disk_write(
 			PRINTF(PSTR("SD_CMD_WRITE_SINGLE_BLOCK error\n"));
 			return RES_ERROR;
 		}
+		PRINTF("w 2: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 
 #if ! (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 		// other then H7 need here
 		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* ! CPUSTYLE_STM32H7XX */
 
-		if (sdhost_dpsm_wait(txmode) != 0)
+		if (sdhost_dpsm_wait((uintptr_t) buff, txmode, 512 * count) != 0)
 		{
 			DMA_sdio_cancel();
 			PRINTF(PSTR("SD_disk_write 1: sdhost_dpsm_wait error\n"));
@@ -2945,7 +2975,7 @@ DRESULT SD_disk_write(
 		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* ! CPUSTYLE_STM32H7XX */
 
-		if (sdhost_dpsm_wait(txmode) != 0)
+		if (sdhost_dpsm_wait((uintptr_t) buff, txmode, 512 * count) != 0)
 		{
 			PRINTF(PSTR("SD_disk_write: sdhost_dpsm_wait error\n"));
 			DMA_sdio_cancel();
@@ -3030,6 +3060,7 @@ DRESULT SD_disk_read(
 		//TP();
 
 		// read block
+		PRINTF("r 1: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 		sdhost_short_resp(encode_cmd(SD_CMD_READ_SINGLE_BLOCK, getTransferMode(txmode, count)), sector * sdhost_getaddresmultiplier(), 0);	// CMD17
 		if (sdhost_get_R1(SD_CMD_READ_SINGLE_BLOCK, & resp) != 0)
 		{
@@ -3037,7 +3068,8 @@ DRESULT SD_disk_read(
 			PRINTF(PSTR("SD_CMD_READ_SINGLE_BLOCK error\n"));
 			return RES_ERROR;
 		}
-		if (sdhost_dpsm_wait(txmode) != 0)
+		PRINTF("r 2: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
+		if (sdhost_dpsm_wait((uintptr_t) buff, txmode, 512 * count) != 0)
 		{
 			DMA_sdio_cancel();
 			PRINTF(PSTR("SD_disk_read 1: sdhost_dpsm_wait error\n"));
@@ -3081,7 +3113,7 @@ DRESULT SD_disk_read(
 			PRINTF(PSTR("SD_CMD_READ_MULT_BLOCK error\n"));
 			return RES_ERROR;
 		}
-		if (sdhost_dpsm_wait(txmode) != 0)
+		if (sdhost_dpsm_wait((uintptr_t) buff, txmode, 512 * count) != 0)
 		{
 			PRINTF(PSTR("SD_disk_read 2: sdhost_dpsm_wait error\n"));
 			DMA_sdio_cancel();
@@ -3221,7 +3253,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_get_R1 (acmd=0x%02lX) error\n"), acmd);
 		return 1;
 	}
-	if (sdhost_dpsm_wait(txmode) != 0)
+	if (sdhost_dpsm_wait((uintptr_t) buff, txmode, size) != 0)
 	{
 		DMA_sdio_cancel();
 		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_dpsm_wait error\n"));
