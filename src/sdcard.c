@@ -5,8 +5,6 @@
 // UA1ARN
 //
 
-#define NEWXPS 1
-
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	/* sprintf() replacement */
 #include <ctype.h>
@@ -1184,10 +1182,106 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 #define XSDPS_CARD_SDCOMBO	4U
 #define XSDPS_CHIP_EMMC		5U
 
-// see XSdPs_FrameCmd
-// cardType: XSDPS_CARD_SD
-static uint_fast32_t frame_cmd(uint_fast8_t cmd)
+static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 {
+	uint_fast32_t v;
+	if (txmode)
+	{
+
+		// WRITE
+		if (BlkCnt == 1U) {
+			v = XSDPS_TM_BLK_CNT_EN_MASK |
+					XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
+		} else {
+			v = XSDPS_TM_AUTO_CMD12_EN_MASK |
+				XSDPS_TM_BLK_CNT_EN_MASK |
+				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
+		}
+	}
+	else
+	{
+		// READ
+
+		if (BlkCnt == 1U) {
+			v = XSDPS_TM_BLK_CNT_EN_MASK |
+				XSDPS_TM_DAT_DIR_SEL_MASK |
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
+		} else {
+			v = XSDPS_TM_AUTO_CMD12_EN_MASK |
+				XSDPS_TM_BLK_CNT_EN_MASK |
+				XSDPS_TM_DAT_DIR_SEL_MASK |
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
+				XSDPS_TM_MUL_SIN_BLK_SEL_MASK;
+		}
+	}
+	return v;
+}
+
+#else
+
+static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
+{
+	return DEFAULT_TRANSFER_MODE;
+}
+
+#endif /* CPUSTYLE_XC7Z */
+
+// CPUSTYLE_R7S721 SD_CMD bits
+// 
+// SD_CMD[15:14]	MD7:MD6		Multiple Block Transfer Mode (enabled at multiple block transfer)
+// SD_CMD[13]		MD5			Single/Multiple Block Transfer (enabled when the command with data is handled)
+// SD_CMD[12]		MD4			Write/Read Mode (enabled when the command with data is handled)
+// SD_CMD[11]		MD3			Data Mode (Command Type)
+// SD_CMD[10..8]	MD2:MD0		Mode/Response Type
+// SD_CMD[7..6]		C1:C0		00: CMD, 01: ACMD
+// SD_CMD[5..0]		CF45:CF40	Command Index
+#define R7S721_SD_CMD_ACMD_bm	(1U << 6)
+
+static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
+{
+#if ! WITHSDHCHW
+// SPI SD CARD (MMC SD)
+	return (cmd & 0x3f) | 0x40;
+
+#elif CPUSTYLE_R7S721
+
+	switch (cmd)
+	{
+	case 5:					// CMD5 SD_CMD_SDIO_SEN_OP_COND
+		return 0x0705;
+
+	case SD_CMD_HS_SWITCH:	// CMD6
+		return 0x1C06;
+
+	case 8:					// CMD8 SD_CMD_HS_SEND_EXT_CSD
+		return 0x0408;
+
+	case SD_CMD_SDIO_RW_DIRECT:	// CMD52
+		return 0x0434;
+
+	case SD_CMD_SDIO_RW_EXTENDED:	// command have four versions in depends of mode
+		return cmd;
+
+	default:
+		break;
+	}
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	switch (cmd)
+	{
+	case SD_CMD_WRITE_SINGLE_BLOCK:
+	case SD_CMD_WRITE_MULT_BLOCK:
+	case SD_CMD_READ_SINGLE_BLOCK:
+	case SD_CMD_READ_MULT_BLOCK:
+		return cmd | SDMMC_CMD_CMDTRANS;
+	case SD_CMD_STOP_TRANSMISSION:
+		return cmd | SDMMC_CMD_CMDSTOP;
+	default:
+		break;
+	}
+#elif CPUSTYLE_XC7Z
+	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
+
 	uint_fast32_t RetVal = (cmd & 0x3FuL) << 24;
 	unsigned cardType = XSDPS_CARD_SD;
 	switch(cmd) {
@@ -1267,219 +1361,7 @@ static uint_fast32_t frame_cmd(uint_fast8_t cmd)
 		break;
 	}
 
-	return RetVal;
-}
-
-// see XSdPs_FrameCmd
-// cardType: XSDPS_CARD_SD
-static uint_fast32_t frame_acmd(uint_fast8_t cmd)
-{
-	uint_fast32_t RetVal = (cmd & 0x3FuL) << 24;
-	unsigned cardType = XSDPS_CARD_SD;
-	switch(cmd) {
-	case ACMD6:
-		RetVal |= RESP_R1;
-		break;
-	case ACMD13:
-		RetVal |= RESP_R1 | (uint_fast32_t)XSDPS_DAT_PRESENT_SEL_MASK;
-		break;
-	case ACMD23:
-		RetVal |= RESP_R1 | (uint_fast32_t)XSDPS_DAT_PRESENT_SEL_MASK;
-		break;
-	case ACMD41:
-		RetVal |= RESP_R3;
-		break;
-	case ACMD42:
-		RetVal |= RESP_R1;
-		break;
-	case ACMD51:
-		RetVal |= RESP_R1 | XSDPS_DAT_PRESENT_SEL_MASK;
-		break;
-	default :
-		PRINTF("Wrong case: acmd=%02X\n", cmd);
-		ASSERT(0);
-		break;
-	}
-
-	return RetVal;
-}
-
-
-static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
-{
-	uint_fast32_t v;
-	if (txmode)
-	{
-
-		// WRITE
-		if (BlkCnt == 1U) {
-			v = XSDPS_TM_BLK_CNT_EN_MASK |
-					XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
-		} else {
-			v = XSDPS_TM_AUTO_CMD12_EN_MASK |
-				XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
-				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
-		}
-	}
-	else
-	{
-		// READ
-
-		if (BlkCnt == 1U) {
-			v = XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_DAT_DIR_SEL_MASK |
-				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
-		} else {
-			v = XSDPS_TM_AUTO_CMD12_EN_MASK |
-				XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_DAT_DIR_SEL_MASK |
-				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
-				XSDPS_TM_MUL_SIN_BLK_SEL_MASK;
-		}
-	}
-	return v;
-}
-
-static void setTrabsferMode(uint_fast32_t cmd)
-{
-	SD0->CMD_TRANSFER_MODE = cmd;
-}
-
-#else
-
-static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
-{
-	return DEFAULT_TRANSFER_MODE;
-}
-
-#endif /* CPUSTYLE_XC7Z */
-
-// CPUSTYLE_R7S721 SD_CMD bits
-// 
-// SD_CMD[15:14]	MD7:MD6		Multiple Block Transfer Mode (enabled at multiple block transfer)
-// SD_CMD[13]		MD5			Single/Multiple Block Transfer (enabled when the command with data is handled)
-// SD_CMD[12]		MD4			Write/Read Mode (enabled when the command with data is handled)
-// SD_CMD[11]		MD3			Data Mode (Command Type)
-// SD_CMD[10..8]	MD2:MD0		Mode/Response Type
-// SD_CMD[7..6]		C1:C0		00: CMD, 01: ACMD
-// SD_CMD[5..0]		CF45:CF40	Command Index
-#define R7S721_SD_CMD_ACMD_bm	(1U << 6)
-
-static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
-{
-#if ! WITHSDHCHW
-// SPI SD CARD (MMC SD)
-	return (cmd & 0x3f) | 0x40;
-
-#elif CPUSTYLE_R7S721
-
-	switch (cmd)
-	{
-	case 5:					// CMD5 SD_CMD_SDIO_SEN_OP_COND
-		return 0x0705;
-
-	case SD_CMD_HS_SWITCH:	// CMD6
-		return 0x1C06;
-
-	case 8:					// CMD8 SD_CMD_HS_SEND_EXT_CSD
-		return 0x0408;
-
-	case SD_CMD_SDIO_RW_DIRECT:	// CMD52
-		return 0x0434;
-
-	case SD_CMD_SDIO_RW_EXTENDED:	// command have four versions in depends of mode
-		return cmd;
-
-	default:
-		break;
-	}
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-	switch (cmd)
-	{
-	case SD_CMD_WRITE_SINGLE_BLOCK:
-	case SD_CMD_WRITE_MULT_BLOCK:
-	case SD_CMD_READ_SINGLE_BLOCK:
-	case SD_CMD_READ_MULT_BLOCK:
-		return cmd | SDMMC_CMD_CMDTRANS;
-	case SD_CMD_STOP_TRANSMISSION:
-		return cmd | SDMMC_CMD_CMDSTOP;
-	default:
-		break;
-	}
-#elif CPUSTYLE_XC7Z
-	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
-#if NEWXPS
-	return frame_cmd(cmd) | TransferMode;
-#else /* NEWXPS */
-	switch (cmd)
-	{
-	case SD_CMD_WRITE_SINGLE_BLOCK:
-		return
-			((cmd & 0x3FuL) << 24) |
-			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 1) | // Block_Count_Enable
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
-			0;
-
-	case SD_CMD_WRITE_MULT_BLOCK:
-		return
-			((cmd & 0x3FuL) << 24) |
-			(0x01 << 5) | // Multi_Single_Block_Select
-			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 1) | // Block_Count_Enable
-			(0x01 << 2) | // Auto_CMD12_Enable
-			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
-			0;
-
-	case SD_CMD_READ_SINGLE_BLOCK:
-		return
-			((cmd & 0x3FuL) << 24) |
-			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 1) | // Block_Count_Enable
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
-			0;
-
-	case SD_CMD_READ_MULT_BLOCK:
-		return
-			((cmd & 0x3FuL) << 24) |
-			(0x01 << 5) | // Multi_Single_Block_Select
-			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 1) | // Block_Count_Enable
-			(0x01 << 2) | // Auto_CMD12_Enable
-			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
-			0;
-
-	case SD_CMD_ALL_SEND_CID:
-	case SD_CMD_SEND_CSD:
-		return
-			((cmd & 0x3FuL) << 24) |
-			(0x01 << 21) | // Data_Present_Select
-			(0x01 << 19) | // Command_CRC_Check_Enable
-			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x00 << 1) | // Block_Count_Enable
-			(0x00 << 0) | // DMA_Enable
-			0;
-
-	case SD_CMD_SEND_STATUS:
-	default:
-		return
-			((cmd & 0x3FuL) << 24) |
-			(0x01 << 21) | // Data_Present_Select
-			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x00 << 1) | // Block_Count_Enable
-			(0x00 << 0) | // DMA_Enable
-			0;
-	}
-#endif /* NEWXPS */
+	return RetVal | TransferMode;
 
 #endif
 	return cmd;
@@ -1531,31 +1413,35 @@ static portholder_t encode_appcmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 
 #elif CPUSTYLE_XC7Z
 	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
-#if NEWXPS
-	return frame_acmd(cmd) | TransferMode;
-#else /* NEWXPS */
-	switch (cmd)
-	{
-	case SD_CMD_SD_APP_STATUS:
-	case SD_CMD_SD_APP_SEND_SCR:
-		return
-			((cmd & 0x3FuL) << 24) |
-			(0x01 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x01 << 1) | // Block_Count_Enable
-			(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
-			0;
 
-	default:
-		return
-			((cmd & 0x3FuL) << 24) |
-			(0x00 << 4) | // Data_Transfer_Direction_Select: 0 - Write (Host to Card), 1 - Read (Card to Host)
-			(0x00 << 2) | // Auto_CMD12_Enable
-			(0x00 << 1) | // Block_Count_Enable
-			//(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
-			0;
+	uint_fast32_t RetVal = (cmd & 0x3FuL) << 24;
+	unsigned cardType = XSDPS_CARD_SD;
+	switch(cmd) {
+	case ACMD6:
+		RetVal |= RESP_R1;
+		break;
+	case ACMD13:
+		RetVal |= RESP_R1 | (uint_fast32_t)XSDPS_DAT_PRESENT_SEL_MASK;
+		break;
+	case ACMD23:
+		RetVal |= RESP_R1 | (uint_fast32_t)XSDPS_DAT_PRESENT_SEL_MASK;
+		break;
+	case ACMD41:
+		RetVal |= RESP_R3;
+		break;
+	case ACMD42:
+		RetVal |= RESP_R1;
+		break;
+	case ACMD51:
+		RetVal |= RESP_R1 | XSDPS_DAT_PRESENT_SEL_MASK;
+		break;
+	default :
+		PRINTF("Wrong case: acmd=%02X\n", cmd);
+		ASSERT(0);
+		break;
 	}
-#endif /* NEWXPS */
+
+	return RetVal | TransferMode;
 
 #endif
 	return cmd;
@@ -1640,17 +1526,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_no_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
-	//PRINTF("sdhost_no_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
-#if NEWXPS
-	setTrabsferMode(cmd);
-#else /* NEWXPS */
-	SD0->CMD_TRANSFER_MODE =
-		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
-		(0x01 << 20) | // Command_Index_Check_Enable
-		(0x01 << 19) | // Command_CRC_Check_Enable
-		(0x00 << 16) | // Response_Type_Select: 00 - No Response
-		0;
-#endif /* NEWXPS */
+	SD0->CMD_TRANSFER_MODE = cmd;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1738,17 +1614,7 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 	// sdhost_short_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
-	//PRINTF("sdhost_short_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
-#if NEWXPS
-	setTrabsferMode(cmd);
-#else /* NEWXPS */
-	SD0->CMD_TRANSFER_MODE =
-		(cmd & ~ (1uL << 19)) | // уже сдвинуто влево на 24 бита в функции encode_cmd
-		(0x00 << 20) | // Command_Index_Check_Enable
-		(! nocrc << 19) | // Command_CRC_Check_Enable
-		(0x03 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
-		0;
-#endif /* NEWXPS */
+	SD0->CMD_TRANSFER_MODE = cmd;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1835,17 +1701,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_long_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
-	//PRINTF("sdhost_long_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
-#if NEWXPS
-	setTrabsferMode(cmd);
-#else /* NEWXPS */
-	SD0->CMD_TRANSFER_MODE =
-		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
-		(0x00 << 20) | // Command_Index_Check_Enable
-		(0x01 << 19) | // Command_CRC_Check_Enable
-		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
-		0;
-#endif /* NEWXPS */
+	SD0->CMD_TRANSFER_MODE = cmd;
 
 #else
 	#error Wrong CPUSTYLE_xxx
