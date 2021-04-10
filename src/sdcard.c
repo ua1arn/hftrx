@@ -725,7 +725,27 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	return 0;
 
 #elif CPUSTYLE_XC7Z
-	return 0;
+	// DMA_sdio_waitdone
+	for (;;)
+	{
+		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		if ((status & (1uL << 15)) != 0)
+		{
+			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
+			return 1;
+		}
+		if ((status & (1uL << 16)) != 0)
+		{
+			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
+			return 1;
+		}
+		if ((status & (1uL << 1)) != 0)
+		{
+			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+			return 0;
+		}
+	}
+	return 1;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -868,6 +888,7 @@ void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
 
 
 // Ожидание окончания обмена data path state machine
+// Возврат не-0 в слдучае ошибки
 static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_fast32_t len)
 {
 #if ! WITHSDHCHW
@@ -1970,7 +1991,7 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
-		const uint32_t psts = SD0->PRESENT_STATE;
+		//const uint32_t psts = SD0->PRESENT_STATE;
 //		if ((psts & (3uL << 0)) != 0)	// Command_Inhibit_DAT | Command_Inhibit_CMD
 //			continue;
 		//PRINTF("sdhost_get_none_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
@@ -2115,7 +2136,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
-		const uint32_t psts = SD0->PRESENT_STATE;
+		//const uint32_t psts = SD0->PRESENT_STATE;
 		//PRINTF("sdhost_get_resp: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 //		if ((psts & (3uL << 0)) != 0)	// Command_Inhibit_DAT | Command_Inhibit_CMD
 //			continue;
@@ -2252,7 +2273,7 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
-		const uint32_t psts = SD0->PRESENT_STATE;
+		//const uint32_t psts = SD0->PRESENT_STATE;
 		//PRINTF("sdhost_get_resp_nocrc: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 //		if ((psts & (3uL << 0)) != 0)	// Command_Inhibit_DAT | Command_Inhibit_CMD
 //			continue;
