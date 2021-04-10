@@ -1333,7 +1333,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 		RetVal |= RESP_R1;
 		break;
 	case CMD13:	// SD_CMD_SEND_STATUS
-		RetVal |= RESP_R1 | XSDPS_DAT_PRESENT_SEL_MASK;
+		RetVal |= RESP_R1;
 		break;
 	case CMD16:
 		RetVal |= RESP_R1;
@@ -2428,7 +2428,6 @@ static uint_fast8_t sdhost_stop_transmission(void)
 // Ожидаем завершения.
 static uint_fast8_t sdhost_sdcard_waitstatus(void)
 {
-	return 0;
 	uint_fast8_t cardstate = 0xFF;
 	unsigned long n;
 	for (n = 1000000; -- n;)
