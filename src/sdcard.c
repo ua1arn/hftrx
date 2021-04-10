@@ -923,9 +923,11 @@ static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_f
 		{
 			// Fill FIFO
 			const uint8_t * p = (const uint8_t *) addr;
-			// 10 - Buffer_Write_Enable
-			for (; len4 -- && (SD0->PRESENT_STATE & (1uL << 10)) != 0; p += 4)
+
+			for (; len4 --; p += 4)
 			{
+				while ((SD0->PRESENT_STATE & (1uL << 10)) == 0)	// 10 - Buffer_Write_Enable
+					;
 				const uint_fast32_t v =
 					((uint_fast32_t) p [0] << 0) |
 					((uint_fast32_t) p [1] << 8) |
@@ -939,9 +941,11 @@ static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_f
 		{
 			// Read FIFO
 			uint8_t * p = (uint8_t *) addr;
-			// 11 - Buffer_Read_Enable
-			for (; len4 -- && (SD0->PRESENT_STATE & (1uL << 11)) != 0; p += 4)
+
+			for (; len4 --; p += 4)
 			{
+				while ((SD0->PRESENT_STATE & (1uL << 11)) == 0)	// 11 - Buffer_Read_Enable
+					;
 				const uint_fast32_t v = SD0->BUFFER_DATA_PORT;
 				p [0] = v >> 0;
 				p [1] = v >> 8;
@@ -1620,7 +1624,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_no_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
-	PRINTF("sdhost_no_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
+	//PRINTF("sdhost_no_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
 	setTrabsferMode(cmd);
 #else /* NEWXPS */
@@ -1718,7 +1722,7 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 	// sdhost_short_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
-	PRINTF("sdhost_short_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
+	//PRINTF("sdhost_short_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
 	setTrabsferMode(cmd);
 #else /* NEWXPS */
@@ -1815,7 +1819,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_long_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
-	PRINTF("sdhost_long_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
+	//PRINTF("sdhost_long_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
 	setTrabsferMode(cmd);
 #else /* NEWXPS */
