@@ -5,7 +5,7 @@
 // UA1ARN
 //
 
-//#defie NEWXPS 1
+#define NEWXPS 1
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	/* sprintf() replacement */
@@ -24,7 +24,7 @@
 #include "keyboard.h"	
 #include "audio.h"	
 
-enum { XC7Z_SDRDWRDMA = 1 * 1 };
+enum { XC7Z_SDRDWRDMA = 0 };
 
 
 /* Card Status Register*/
@@ -918,11 +918,26 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 //	PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 //	SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
 //	return 0;
+	unsigned wcnt = 0;
+	unsigned rcnt = 0;
 	for (;;)
 	{
 		// bits are Readable, write a one to clear
 		const uint32_t status = SD0->INT_STATUS;
-		PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		const uint32_t psts = SD0->PRESENT_STATE;
+		if ((psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
+		{
+			SD0->BUFFER_DATA_PORT = 0xDEADBEEF;
+			++ wcnt;
+			continue;
+		}
+		if ((psts & (1uL << 11)) != 0)	// Buffer_Read_Enable
+		{
+			(void) SD0->BUFFER_DATA_PORT;
+			++ rcnt;
+			continue;
+		}
+		PRINTF("sdhost_dpsm_wait: status=%08lX. psts=%08lX, rcnt=%u, wcnt=%u\n", status, psts, rcnt, wcnt);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
@@ -1284,11 +1299,12 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 		// WRITE
 		if (BlkCnt == 1U) {
 			v = XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_DMA_EN_MASK;
+					XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
 		} else {
 			v = XSDPS_TM_AUTO_CMD12_EN_MASK |
 				XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_MUL_SIN_BLK_SEL_MASK | XSDPS_TM_DMA_EN_MASK;
+				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
 		}
 	}
 	else
@@ -1297,11 +1313,14 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 
 		if (BlkCnt == 1U) {
 			v = XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_DAT_DIR_SEL_MASK | XSDPS_TM_DMA_EN_MASK;
+				XSDPS_TM_DAT_DIR_SEL_MASK |
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
 		} else {
 			v = XSDPS_TM_AUTO_CMD12_EN_MASK |
-				XSDPS_TM_BLK_CNT_EN_MASK | XSDPS_TM_DAT_DIR_SEL_MASK |
-				XSDPS_TM_DMA_EN_MASK | XSDPS_TM_MUL_SIN_BLK_SEL_MASK;
+				XSDPS_TM_BLK_CNT_EN_MASK |
+				XSDPS_TM_DAT_DIR_SEL_MASK |
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
+				XSDPS_TM_MUL_SIN_BLK_SEL_MASK;
 		}
 	}
 	return v;
@@ -1600,8 +1619,10 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_no_resp
 	SD0->ARG = arg;
 #if NEWXPS
-	* (volatile uint16_t *) & SD0->CMD_TRANSFER_MODE = cmd;
-	SD0->CMD_TRANSFER_MODE = cmd;
+	((volatile uint16_t *) & SD0->CMD_TRANSFER_MODE) [0] = cmd;
+	ASSERT(((volatile uint16_t *) & SD0->CMD_TRANSFER_MODE) [0] == ((0xFFFF & cmd)));
+	((volatile uint16_t *) & SD0->CMD_TRANSFER_MODE) [1] = cmd >> 16;
+	//SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
@@ -1620,6 +1641,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 // Команда без пересылки данных
 static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t nocrc)
 {
+	PRINTF("sdhost_short_resp: cmd=%08lX\n", cmd);
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
 
@@ -1697,7 +1719,6 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 	// sdhost_short_resp
 	SD0->ARG = arg;
 #if NEWXPS
-	* (volatile uint16_t *) & SD0->CMD_TRANSFER_MODE = cmd;
 	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
@@ -1794,7 +1815,6 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_long_resp
 	SD0->ARG = arg;
 #if NEWXPS
-	* (volatile uint16_t *) & SD0->CMD_TRANSFER_MODE = cmd;
 	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
