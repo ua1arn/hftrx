@@ -5,6 +5,8 @@
 // UA1ARN
 //
 
+//#defie NEWXPS 1
+
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	/* sprintf() replacement */
 #include <ctype.h>
@@ -1367,7 +1369,9 @@ static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 	}
 #elif CPUSTYLE_XC7Z
 	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
+#if NEWXPS
 	return frame_cmd(cmd) | TransferMode;
+#else /* NEWXPS */
 	switch (cmd)
 	{
 	case SD_CMD_WRITE_SINGLE_BLOCK:
@@ -1435,6 +1439,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 			(0x00 << 0) | // DMA_Enable
 			0;
 	}
+#endif /* NEWXPS */
 
 #endif
 	return cmd;
@@ -1486,7 +1491,9 @@ static portholder_t encode_appcmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 
 #elif CPUSTYLE_XC7Z
 	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
+#if NEWXPS
 	return frame_acmd(cmd) | TransferMode;
+#else /* NEWXPS */
 	switch (cmd)
 	{
 	case SD_CMD_SD_APP_STATUS:
@@ -1508,6 +1515,7 @@ static portholder_t encode_appcmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 			//(XC7Z_SDRDWRDMA << 0) | // DMA_Enable
 			0;
 	}
+#endif /* NEWXPS */
 
 #endif
 	return cmd;
@@ -1591,18 +1599,18 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 
 	// sdhost_no_resp
 	SD0->ARG = arg;
-#if 1
+#if NEWXPS
 	* (volatile uint16_t *) & SD0->CMD_TRANSFER_MODE = cmd;
 	SD0->CMD_TRANSFER_MODE = cmd;
-#else
+#else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
 		(0x01 << 20) | // Command_Index_Check_Enable
 		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x00 << 16) | // Response_Type_Select: 00 - No Response
 		0;
-#endif
-
+#endif /* NEWXPS */
+	PRINTF("sdhost_no_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -1688,17 +1696,18 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 
 	// sdhost_short_resp
 	SD0->ARG = arg;
-#if 1
+#if NEWXPS
 	* (volatile uint16_t *) & SD0->CMD_TRANSFER_MODE = cmd;
 	SD0->CMD_TRANSFER_MODE = cmd;
-#else
+#else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
 		(cmd & ~ (1uL << 19)) | // уже сдвинуто влево на 24 бита в функции encode_cmd
 		(0x00 << 20) | // Command_Index_Check_Enable
 		(! nocrc << 19) | // Command_CRC_Check_Enable
 		(0x03 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
 		0;
-#endif
+#endif /* NEWXPS */
+	PRINTF("sdhost_short_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1784,17 +1793,18 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 
 	// sdhost_long_resp
 	SD0->ARG = arg;
-#if 1
+#if NEWXPS
 	* (volatile uint16_t *) & SD0->CMD_TRANSFER_MODE = cmd;
 	SD0->CMD_TRANSFER_MODE = cmd;
-#else
+#else /* NEWXPS */
 	SD0->CMD_TRANSFER_MODE =
 		(cmd) | // уже сдвинуто влево на 24 бита в функции encode_cmd
 		(0x00 << 20) | // Command_Index_Check_Enable
 		(0x01 << 19) | // Command_CRC_Check_Enable
 		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
 		0;
-#endif
+#endif /* NEWXPS */
+	PRINTF("sdhost_long_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
 
 #else
 	#error Wrong CPUSTYLE_xxx
