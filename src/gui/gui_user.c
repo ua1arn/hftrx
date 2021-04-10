@@ -482,7 +482,7 @@ static void gui_main_process(void)
 
 	// ток PA (при передаче)
 	{
-#if WITHCURRLEVEL
+#if WITHCURRLEVEL || WITHCURRLEVEL2
 		if (hamradio_get_tx())
 		{
 			static int_fast16_t drain;
@@ -4077,11 +4077,11 @@ static void window_menu_process(void)
 	uint_fast8_t is_moving_label = 0;
 
 #if WITHGUISTYLE_COMMON
-	uint_fast8_t int_col2 = 180, int_col3 = 230, int_rows = 35;
+	uint_fast8_t col1_int = 20, row1_int = window_title_height + 20, int_col2 = 180, int_col3 = 230, int_rows = 35;
 	#define MENU_FONT	FONT_LARGE
 	#define BUTTON_SIZE	40
 #elif WITHGUISTYLE_MINI
-	uint_fast8_t int_col2 = 150, int_col3 = 200, int_rows = 30;
+	uint_fast8_t col1_int = 0, row1_int = 0, int_col2 = 150, int_col3 = 200, int_rows = 30;
 	#define MENU_FONT	FONT_MEDIUM
 	#define BUTTON_SIZE	30
 #endif
@@ -4179,8 +4179,8 @@ static void window_menu_process(void)
 		menu [MENU_VALS].num_rows = menu [MENU_VALS].last_id - menu [MENU_VALS].first_id;
 
 		menu [MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu [MENU_GROUPS].menu_block) - 1;
-		xn = 0;
-		yn = 0;
+		xn = col1_int;
+		yn = row1_int;
 		for(i = 0; i <= menu [MENU_GROUPS].num_rows; i ++)
 		{
 			lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
@@ -4195,7 +4195,7 @@ static void window_menu_process(void)
 		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
 				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
 		xn += int_col2;
-		yn = 0;
+		yn = row1_int;
 		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i ++)
 		{
 			lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
@@ -4210,7 +4210,7 @@ static void window_menu_process(void)
 		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
 		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block, menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, menu [MENU_VALS].count);
 		xn += int_col3;
-		yn = 0;
+		yn = row1_int;
 		for(lh = NULL, i = 0; i <= menu [MENU_VALS].num_rows; i ++)
 		{
 			lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
