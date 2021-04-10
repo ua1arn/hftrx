@@ -22,7 +22,7 @@
 
 #include "display/display.h"	/* используем функцию получения рабочей частоты */
 #include "keyboard.h"	
-#include "audio.h"	
+#include "audio.h"
 
 enum { XC7Z_SDRDWRDMA = 0 };
 
@@ -920,18 +920,18 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	{
 		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint32_t psts = SD0->PRESENT_STATE;
-		if (txmode && ! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
+		if (/*txmode && */! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
 		{
 			SD0->BUFFER_DATA_PORT = 0xDEADBEEF;
 			++ wcnt;
-			continue;
+			//continue;
 		}
-		if (! txmode && ! XC7Z_SDRDWRDMA && (psts & (1uL << 11)) != 0)	// Buffer_Read_Enable
+		if (/*! txmode && */! XC7Z_SDRDWRDMA && (psts & (1uL << 11)) != 0)	// Buffer_Read_Enable
 		//if (! txmode && ! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
 		{
 			(void) SD0->BUFFER_DATA_PORT;
 			++ rcnt;
-			continue;
+			//continue;
 		}
 		PRINTF("sdhost_dpsm_wait: status=%08lX. psts=%08lX, rcnt=%u, wcnt=%u\n", status, psts, rcnt, wcnt);
 		if ((status & (1uL << 15)) != 0)
@@ -939,21 +939,21 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
 			return 1;
 		}
-		if ((status & (1uL << 16)) != 0)
-		{
-			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
-			return 1;
-		}
+//		if ((status & (1uL << 16)) != 0)
+//		{
+//			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
+//			return 1;
+//		}
 		if ((status & (1uL << 1)) != 0)
 		{
 			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
 			return 0;
 		}
-		if ((status & (1uL << 0)) != 0)
-		{
-			SD0->INT_STATUS = (1uL << 0); // Command_Complete
-			return 0;
-		}
+//		if ((status & (1uL << 0)) != 0)
+//		{
+//			SD0->INT_STATUS = (1uL << 0); // Command_Complete
+//			return 0;
+//		}
 	}
 	return 1;
 
@@ -1130,7 +1130,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 #define CMD13	 0x0DU	// SD_CMD_SEND_STATUS
 #define ACMD13	 (XSDPS_APP_CMD_PREFIX + 0x0DU)
 #define CMD16	 0x10U
-#define CMD17	 0x11U
+#define CMD17	 0x11U	// SD_CMD_READ_SINGLE_BLOCK
 #define CMD18	 0x12U
 #define CMD19	 0x13U
 #define CMD21	 0x15U
@@ -1223,7 +1223,7 @@ static uint_fast32_t frame_cmd(uint_fast8_t cmd)
 	case CMD16:
 		RetVal |= RESP_R1;
 		break;
-	case CMD17:
+	case CMD17:	// SD_CMD_READ_SINGLE_BLOCK
 	case CMD18:
 	case CMD19:
 	case CMD21:
@@ -1614,6 +1614,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_no_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
+	PRINTF("sdhost_no_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
 	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
@@ -1624,7 +1625,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 		(0x00 << 16) | // Response_Type_Select: 00 - No Response
 		0;
 #endif /* NEWXPS */
-	//PRINTF("sdhost_no_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
@@ -1711,6 +1712,7 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 	// sdhost_short_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
+	PRINTF("sdhost_short_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
 	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
@@ -1721,7 +1723,6 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 		(0x03 << 16) | // Response_Type_Select: 10 - Response length 48, 11 - Response length 48 check	Busy after response
 		0;
 #endif /* NEWXPS */
-	//PRINTF("sdhost_short_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1808,6 +1809,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 	// sdhost_long_resp
 	SD0->ARG = arg;
 	SD0->INT_STATUS = ~ 0;
+	PRINTF("sdhost_long_resp: cmd=%08lX, read=%d\n", cmd, (cmd & XSDPS_TM_DAT_DIR_SEL_MASK) != 0);
 #if NEWXPS
 	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
@@ -1818,7 +1820,6 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 		(0x01 << 16) | // Response_Type_Select: 00 - No Response, 10 - Response length 48, 01 - Response length 136
 		0;
 #endif /* NEWXPS */
-	//PRINTF("sdhost_long_resp: CMD=%08lX\n", SD0->CMD_TRANSFER_MODE);
 
 #else
 	#error Wrong CPUSTYLE_xxx
