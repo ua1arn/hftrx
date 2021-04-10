@@ -914,10 +914,6 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	return 1;
 
 #elif CPUSTYLE_XC7Z
-//	local_delay_ms(200);
-//	PRINTF("sdhost_dpsm_wait: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
-//	SD0->INT_STATUS = ~ 0; //(1uL << 15); // Error_Interrupt
-//	return 0;
 	unsigned wcnt = 0;
 	unsigned rcnt = 0;
 	for (;;)
@@ -931,6 +927,7 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 			continue;
 		}
 		if (! txmode && ! XC7Z_SDRDWRDMA && (psts & (1uL << 11)) != 0)	// Buffer_Read_Enable
+		//if (! txmode && ! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
 		{
 			(void) SD0->BUFFER_DATA_PORT;
 			++ rcnt;
@@ -1616,6 +1613,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 
 	// sdhost_no_resp
 	SD0->ARG = arg;
+	SD0->INT_STATUS = ~ 0;
 #if NEWXPS
 	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
@@ -1712,6 +1710,7 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 
 	// sdhost_short_resp
 	SD0->ARG = arg;
+	SD0->INT_STATUS = ~ 0;
 #if NEWXPS
 	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
@@ -1808,6 +1807,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 
 	// sdhost_long_resp
 	SD0->ARG = arg;
+	SD0->INT_STATUS = ~ 0;
 #if NEWXPS
 	SD0->CMD_TRANSFER_MODE = cmd;
 #else /* NEWXPS */
@@ -2123,11 +2123,11 @@ static uint_fast8_t sdhost_get_resp(void)
 			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
 			return 1;
 		}
-		if ((status & (1uL << 1)) != 0)
-		{
-			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
-			return 0;
-		}
+//		if ((status & (1uL << 1)) != 0)
+//		{
+//			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+//			return 0;
+//		}
 		if ((status & (1uL << 0)) != 0)
 		{
 			SD0->INT_STATUS = (1uL << 0); // Command_Complete
@@ -2260,11 +2260,11 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
 			return 1;
 		}
-		if ((status & (1uL << 1)) != 0)
-		{
-			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
-			return 0;
-		}
+//		if ((status & (1uL << 1)) != 0)
+//		{
+//			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+//			return 0;
+//		}
 		if ((status & (1uL << 0)) != 0)
 		{
 			SD0->INT_STATUS = (1uL << 0); // Command_Complete
