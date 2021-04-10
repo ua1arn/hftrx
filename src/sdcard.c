@@ -725,7 +725,6 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	return 0;
 
 #elif CPUSTYLE_XC7Z
-	local_delay_ms(250);
 	return 0;
 
 #else
@@ -920,14 +919,13 @@ static uint_fast8_t sdhost_dpsm_wait(uint_fast8_t txmode)
 	{
 		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint32_t psts = SD0->PRESENT_STATE;
-		if (/*txmode && */! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
-		{
-			SD0->BUFFER_DATA_PORT = 0xDEADBEEF;
-			++ wcnt;
-			//continue;
-		}
+//		if (/*txmode && */! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
+//		{
+//			SD0->BUFFER_DATA_PORT = 0xDEADBEEF;
+//			++ wcnt;
+//			//continue;
+//		}
 		if (/*! txmode && */! XC7Z_SDRDWRDMA && (psts & (1uL << 11)) != 0)	// Buffer_Read_Enable
-		//if (! txmode && ! XC7Z_SDRDWRDMA && (psts & (1uL << 10)) != 0)	// Buffer_Write_Enable
 		{
 			(void) SD0->BUFFER_DATA_PORT;
 			++ rcnt;
@@ -1072,6 +1070,23 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 		0;
 
 #elif CPUSTYLE_XC7Z
+	//PRINTF("sdhost_dpsm_prepare: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
+	// Fill FIFO for one sector
+	if (txmode && ! XC7Z_SDRDWRDMA)
+	{
+		const uint8_t * p = (const uint8_t *) addr;
+		unsigned i;
+		for (i = 0; i < 128 && (SD0->PRESENT_STATE & (1uL << 10)) != 0; ++ i, p += 4)
+		{
+			const uint_fast32_t v =
+				((uint_fast32_t) p [0] << 0) |
+				((uint_fast32_t) p [1] << 8) |
+				((uint_fast32_t) p [2] << 16) |
+				((uint_fast32_t) p [3] << 24) |
+				0;
+			SD0->BUFFER_DATA_PORT = v;
+		}
+	}
 
 #else
 	#error Wrong CPUSTYLE_xxx
