@@ -919,7 +919,7 @@ static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_f
 		uint_fast32_t len4 = len / 4;
 		ASSERT((len % 4) == 0);
 
-		if (0 && txmode)
+		if (txmode)
 		{
 			// Fill FIFO
 			const uint8_t * p = (const uint8_t *) addr;
@@ -1068,42 +1068,6 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 
 #elif CPUSTYLE_XC7Z
 	//PRINTF("sdhost_dpsm_prepare: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
-	if (! XC7Z_SDRDWRDMA)
-	{
-		uint_fast32_t len4 = len / 4;
-		ASSERT((len % 4) == 0);
-
-		if (txmode)
-		{
-			// Fill FIFO
-			const uint8_t * p = (const uint8_t *) addr;
-			// 10 - Buffer_Write_Enable
-			for (; len4 -- && (SD0->PRESENT_STATE & (1uL << 10)) != 0; p += 4)
-			{
-				const uint_fast32_t v =
-					((uint_fast32_t) p [0] << 0) |
-					((uint_fast32_t) p [1] << 8) |
-					((uint_fast32_t) p [2] << 16) |
-					((uint_fast32_t) p [3] << 24) |
-					0;
-				SD0->BUFFER_DATA_PORT = v;
-			}
-		}
-		else
-		{
-			// Read FIFO
-			uint8_t * p = (uint8_t *) addr;
-			// 11 - Buffer_Read_Enable
-			for (; len4 -- && (SD0->PRESENT_STATE & (1uL << 11)) != 0; p += 4)
-			{
-				const uint_fast32_t v = SD0->BUFFER_DATA_PORT;
-				p [0] = v >> 0;
-				p [1] = v >> 8;
-				p [2] = v >> 16;
-				p [3] = v >> 24;
-			}
-		}
-	}
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -2894,7 +2858,6 @@ DRESULT SD_disk_write(
 		sdhost_dpsm_prepare((uintptr_t) buff, txmode, 512 * count, 9);		// подготовка к обмену data path state machine - при записи после выдачи команды
 #endif /* CPUSTYLE_STM32H7XX */
 		// write block
-		PRINTF("w 1: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 		sdhost_short_resp(encode_cmd(SD_CMD_WRITE_SINGLE_BLOCK, getTransferMode(txmode, count)), sector * sdhost_getaddresmultiplier(), 0);	// CMD24
 		if (sdhost_get_R1(SD_CMD_WRITE_SINGLE_BLOCK, & resp) != 0)
 		{
@@ -2902,7 +2865,6 @@ DRESULT SD_disk_write(
 			PRINTF(PSTR("SD_CMD_WRITE_SINGLE_BLOCK error\n"));
 			return RES_ERROR;
 		}
-		PRINTF("w 2: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 
 #if ! (CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 		// other then H7 need here
@@ -3060,7 +3022,6 @@ DRESULT SD_disk_read(
 		//TP();
 
 		// read block
-		PRINTF("r 1: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 		sdhost_short_resp(encode_cmd(SD_CMD_READ_SINGLE_BLOCK, getTransferMode(txmode, count)), sector * sdhost_getaddresmultiplier(), 0);	// CMD17
 		if (sdhost_get_R1(SD_CMD_READ_SINGLE_BLOCK, & resp) != 0)
 		{
@@ -3068,7 +3029,6 @@ DRESULT SD_disk_read(
 			PRINTF(PSTR("SD_CMD_READ_SINGLE_BLOCK error\n"));
 			return RES_ERROR;
 		}
-		PRINTF("r 2: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 		if (sdhost_dpsm_wait((uintptr_t) buff, txmode, 512 * count) != 0)
 		{
 			DMA_sdio_cancel();
