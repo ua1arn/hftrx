@@ -22,7 +22,7 @@
 #include "keyboard.h"	
 #include "audio.h"
 
-enum { XC7Z_SDRDWRDMA = 1 };
+enum { XC7Z_SDRDWRDMA = 0 };
 
 
 /* Card Status Register*/
