@@ -752,6 +752,59 @@ static uint_fast8_t DMA_sdio_waitdone(uint_fast8_t txmode)
 	}
 	return 1;
 
+	// DMA_sdio_waitdone
+	for (;;)
+	{
+		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		const uint32_t psts = SD0->PRESENT_STATE;
+		PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX\n", status, psts);
+		if ((status & (1uL << 15)) != 0)
+		{
+			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
+			return 1;
+		}
+//		if ((status & (1uL << 16)) != 0)
+//		{
+//			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
+//			return 1;
+//		}
+		if (txmode)
+		{
+			if ((status & (1uL << 3)) != 0)
+			{
+				SD0->INT_STATUS = (1uL << 3); // DMA_Interrupt
+				SD0->SYS_DMA_ADDR = SD0->SYS_DMA_ADDR;
+				//return 0;
+				if ((status & (1uL << 1)) != 0)
+				{
+					SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+					return 0;
+				}
+			}
+			if ((SD0->HOST_CTRL_BLOCK_GAP_CTRL & (1uL << 16)) != 0)	// Stop_At_Block_Gap_Request
+			{
+				SD0->HOST_CTRL_BLOCK_GAP_CTRL &= ~ (1uL << 16);	// Stop_At_Block_Gap_Request
+				SD0->HOST_CTRL_BLOCK_GAP_CTRL |= (1uL << 17);	// Continue_Request
+
+			}
+		}
+		else
+		{
+			if ((status & (1uL << 3)) != 0)
+			{
+				SD0->INT_STATUS = (1uL << 3); // DMA_Interrupt
+				SD0->SYS_DMA_ADDR = SD0->SYS_DMA_ADDR;
+				//return 0;
+			}
+		}
+		if ((status & (1uL << 1)) != 0)
+		{
+			SD0->INT_STATUS = (1uL << 1); // Transfer_Complete
+			return 0;
+		}
+	}
+	return 1;
+
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
