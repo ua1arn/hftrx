@@ -727,15 +727,22 @@ static uint_fast8_t DMA_sdio_waitdone(void)
 	for (;;)
 	{
 		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		//PRINTF("DMA_sdio_waitdone: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
 		if ((status & (1uL << 15)) != 0)
 		{
 			SD0->INT_STATUS = (1uL << 15); // Error_Interrupt
 			return 1;
 		}
-		if ((status & (1uL << 16)) != 0)
+//		if ((status & (1uL << 16)) != 0)
+//		{
+//			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
+//			return 1;
+//		}
+		if ((status & (1uL << 3)) != 0)
 		{
-			SD0->INT_STATUS = (1uL << 16); // Command_Timeout_Error
-			return 1;
+			SD0->INT_STATUS = (1uL << 3); // DMA_Interrupt
+			SD0->SYS_DMA_ADDR = SD0->SYS_DMA_ADDR;
+			//return 0;
 		}
 		if ((status & (1uL << 1)) != 0)
 		{
@@ -2673,7 +2680,7 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
 
 static int multisectorWriteProblems(UINT count)
 {
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 	if (count > 1)
 	{
 		return 1;
@@ -2681,6 +2688,7 @@ static int multisectorWriteProblems(UINT count)
 #endif /* CPUSTYLE_STM32H7XX */
 	return 0;
 }
+
 // write a size Byte big block beginning at the address.
 static 
 DRESULT SD_disk_write(
@@ -2831,12 +2839,12 @@ DRESULT SD_disk_write(
 			sdhost_dpsm_wait_fifo_empty();
 			DMA_sdio_cancel();
 
-			#if ! CPUSTYLE_R7S721
-			// В процессоре CPUSTYLE_R7S721 команда CMD12 формируется аппаратурой
+			#if ! CPUSTYLE_R7S721 && ! CPUSTYLE_XC7Z
+			// В процессоре CPUSTYLE_R7S721 и CPUSTYLE_XC7Z команда CMD12 формируется аппаратурой
 			if (sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
-					PRINTF(PSTR("SD_disk_write 2: sdhost_stop_transmission error\n"));
+					PRINTF(PSTR("SD_disk_write 3: sdhost_stop_transmission error\n"));
 			}
 			#endif /* ! CPUSTYLE_R7S721 */
 		}
@@ -2966,12 +2974,13 @@ DRESULT SD_disk_read(
 		{
 			sdhost_dpsm_wait_fifo_empty();
 			DMA_sdio_cancel();
-			#if ! CPUSTYLE_R7S721
-			// В процессоре CPUSTYLE_R7S721 команда CMD12 формируется аппаратурой
+
+			#if ! CPUSTYLE_R7S721 && ! CPUSTYLE_XC7Z
+			// В процессоре CPUSTYLE_R7S721 и CPUSTYLE_XC7Z команда CMD12 формируется аппаратурой
 			if (sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
-					PRINTF(PSTR("SD_disk_read 2: sdhost_stop_transmission error\n"));
+					PRINTF(PSTR("SD_disk_read 3: sdhost_stop_transmission error\n"));
 			}
 			#endif /* ! CPUSTYLE_R7S721 */
 			return RES_OK;
