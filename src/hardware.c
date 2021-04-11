@@ -1880,7 +1880,7 @@ void arm_hardware_flush_all(void)
 {
 	L1C_CleanDCacheAll();
 #if (__L2C_PRESENT == 1)
-	L2C_InvAllByWay();
+	L2C_CleanInvAllByWay();
 #endif
 }
 
