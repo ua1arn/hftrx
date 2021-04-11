@@ -11038,25 +11038,18 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 
 #elif CPUSTYLE_XC7Z
-	unsigned long d = calcdivround2(100000000uL, ticksfreq);
-	d = 16; //ulmin(ulmax(d, 1), 0x3F);
-	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
-			(d << 8) | // DIVISOR
-			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
-			0;
 
 	if (ticksfreq <= 400000uL)
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
 			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
-			0x008000uL;	// SDCLK_Frequency_Select
+			0x008000uL;	// SDCLK_Frequency_Select: 80h - base clock divided by 256
 	}
 	else
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
 			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
-			0x002000uL;	// SDCLK_Frequency_Select
+			0x000400uL;	// SDCLK_Frequency_Select: 04h - base clock divided by 8
 	}
 
 	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
@@ -11193,6 +11186,13 @@ void hardware_sdhost_initialize(void)
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
 
 #elif CPUSTYLE_XC7Z
+
+	const unsigned d = 16; //ulmin(ulmax(d, 1), 0x3F);
+	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
+			(d << 8) | // DIVISOR
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
+			0;
 
 	//EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
