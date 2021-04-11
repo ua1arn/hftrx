@@ -3666,10 +3666,10 @@ static void test_recodstart(void)
 /* записать в буфер для ответа 32-бит значение */
 unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
 {
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	buff [2] = HI_24BY(v);
-	buff [3] = HI_32BY(v);
+	buff [0] = v >> 0;
+	buff [1] = v >> 8;
+	buff [2] = v >> 16;
+	buff [3] = v >> 24;
 
 	return 4;
 }

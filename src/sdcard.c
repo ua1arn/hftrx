@@ -673,7 +673,7 @@ static void DMA_SDIO_setparams(
 #endif
 }
 
-static uint_fast8_t DMA_sdio_waitdone(void)
+static uint_fast8_t DMA_sdio_waitdone(uint_fast8_t txmode)
 {
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -1097,7 +1097,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 		0;
 
 #elif CPUSTYLE_XC7Z
-	//PRINTF("sdhost_dpsm_prepare: tx=%d, status=%08lX. psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
+	//PRINTF("sdhost_dpsm_prepare: tx=%d, status=%08lX, psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -2760,7 +2760,7 @@ DRESULT SD_disk_write(
 			PRINTF(PSTR("SD_disk_write 1: sdhost_dpsm_wait error\n"));
 			return RES_ERROR;
 		}
-		else if (DMA_sdio_waitdone() != 0)
+		else if (DMA_sdio_waitdone(txmode) != 0)
 		{
 			DMA_sdio_cancel();
 			PRINTF(PSTR("SD_disk_write 1: DMA_sdio_waitdone error\n"));
@@ -2828,7 +2828,7 @@ DRESULT SD_disk_write(
 				PRINTF(PSTR("SD_disk_write 2: sdhost_stop_transmission error\n"));
 			return RES_ERROR;
 		}
-		else if (DMA_sdio_waitdone() != 0)
+		else if (DMA_sdio_waitdone(txmode) != 0)
 		{
 			DMA_sdio_cancel();
 			PRINTF(PSTR("SD_disk_write 2: DMA_sdio_waitdone error\n"));
@@ -2918,7 +2918,7 @@ DRESULT SD_disk_read(
 			PRINTF(PSTR("SD_disk_read 1: sdhost_dpsm_wait error\n"));
 			return RES_ERROR;
 		}
-		else if (DMA_sdio_waitdone() != 0)
+		else if (DMA_sdio_waitdone(txmode) != 0)
 		{
 			DMA_sdio_cancel();
 			PRINTF(PSTR("SD_disk_read 1: DMA_sdio_waitdone error\n"));
@@ -2964,7 +2964,7 @@ DRESULT SD_disk_read(
 				PRINTF(PSTR("SD_disk_read 2: sdhost_stop_transmission error\n"));
 			return RES_ERROR;
 		}
-		else if (DMA_sdio_waitdone() != 0)
+		else if (DMA_sdio_waitdone(txmode) != 0)
 		{
 			DMA_sdio_cancel();
 			PRINTF(PSTR("SD_disk_read 2: DMA_sdio_waitdone error\n"));
@@ -3103,7 +3103,7 @@ static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, un
 		PRINTF(PSTR("sdhost_read_registers_acmd: sdhost_dpsm_wait error\n"));
 		return 1;
 	}
-	else if (DMA_sdio_waitdone() != 0)
+	else if (DMA_sdio_waitdone(txmode) != 0)
 	{
 		DMA_sdio_cancel();
 		PRINTF(PSTR("sdhost_read_registers_acmd: DMA_sdio_waitdone error\n"));
