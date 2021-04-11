@@ -11038,26 +11038,18 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 
 #elif CPUSTYLE_XC7Z
-	unsigned long d = calcdivround2(100000000uL, ticksfreq);
-	d = 16; //ulmin(ulmax(d, 1), 0x3F);
-	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
-			(d << 8) | // DIVISOR
-			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
-			0;
 
 	if (ticksfreq <= 400000uL)
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
 			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
-			0x008000uL;	// SDCLK_Frequency_Select
+			0x008000uL;	// SDCLK_Frequency_Select: 80h - base clock divided by 256
 	}
 	else
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
 			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
-			0x001000uL;	// SDCLK_Frequency_Select
-			//0x000000uL;	// SDCLK_Frequency_Select
+			0x000100uL;	// SDCLK_Frequency_Select: 04h - base clock divided by 8
 	}
 
 	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
@@ -11195,6 +11187,13 @@ void hardware_sdhost_initialize(void)
 
 #elif CPUSTYLE_XC7Z
 
+	const unsigned d = 16; //ulmin(ulmax(d, 1), 0x3F);
+	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
+			(d << 8) | // DIVISOR
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
+			0;
+
 	//EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
 		(16uL << 8) | // DIVISOR
@@ -11207,7 +11206,26 @@ void hardware_sdhost_initialize(void)
 		(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x0F0000uL)) |
 		0x0E0000uL;	// Data_Timeout_Counter_Value_
 
-	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
+	// SD_Bus_Power off
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			0 * (0x01uL << 8) |	// 0 - Power off
+			0;
+	// SD_Bus_Voltage_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x07uL << 9)) |
+			(0x07uL << 9) |	// 111b - 3.3 Flattop
+			0;
+	// SD_Bus_Power on
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			1 * (0x01uL << 8) |	// 1 - Power on
+			0;
+	// DMA_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x03uL << 3)) |
+			(0x00uL << 3) |	// SDMA select
+			0;
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
 	ASSERT(((SD0->Vendor_Version_Number & 0xFFFF0000uL) >> 16) == 0x8901uL);
@@ -11215,7 +11233,9 @@ void hardware_sdhost_initialize(void)
 	hardware_sdhost_setbuswidth(0);
 	hardware_sdhost_setspeed(400000uL);
 
-	SD0->INT_STATUS = ~ 0;
+//	PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+//	PRINTF("SD0->CAPABILITIES.SDMA_Support=%d\n", (SD0->CAPABILITIES >> 22) & 0x01);
+//	PRINTF("SD0->CAPABILITIES.Voltage_Support_3_3_V=%d\n", (SD0->CAPABILITIES >> 24) & 0x01);
 
 	//arm_hardware_set_handler_system(SDIO0_IRQn, SDIO0_IRQHandler);
 

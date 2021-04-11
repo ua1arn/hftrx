@@ -187,7 +187,7 @@ SECTIONS
 		. = ALIGN(64);
 		KEEP(*(.framebuff*))
 		. = ALIGN(64);
-	} > OCM3
+	} > DDR3
 
 	.heap (NOLOAD):
 	{
