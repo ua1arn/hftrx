@@ -23,7 +23,7 @@ PRJROOT := ../..
 
 OBJDIR = obj
 
-ZINQ_BOOT_DIR := e:
+ZINQ_BOOT_DIR := f:
 
 #
 CC   = $(TRGT)gcc
@@ -61,8 +61,8 @@ CORE += -mfpu=neon-vfpv3
 # Define optimisation level here
 # only -Og for app
 # Application
-OPT = -Og
-#OPT = -Ofast
+#OPT = -Og
+OPT = -Ofast
 LTO = -flto
 
 # List all default C defines here, like -D_DEBUG=1
