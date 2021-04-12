@@ -81,8 +81,6 @@ typedef struct {
 } btn_bg_t;
 
 typedef struct {
-	uint16_t x1;
-	uint16_t y1;
 	uint16_t w;
 	uint16_t h;
 	uint8_t state;
@@ -91,11 +89,11 @@ typedef struct {
 	int32_t payload;
 	char name [NAME_ARRAY_SIZE];
 	uint8_t index;
+	uint16_t x1;
+	uint16_t y1;
 } touch_area_t;
 
 typedef struct {
-	uint16_t x1;					// координаты от начала экрана
-	uint16_t y1;
 	uint16_t w;
 	uint16_t h;
 	uint8_t state;					// текущее состояние кнопки
@@ -107,6 +105,8 @@ typedef struct {
 	char name [NAME_ARRAY_SIZE];
 	char text [TEXT_ARRAY_SIZE]; 	// текст внутри кнопки, разделитель строк |, не более 2х строк
 	uint8_t index;
+	uint16_t x1;					// координаты от начала экрана
+	uint16_t y1;
 } button_t;
 
 typedef enum {
@@ -116,8 +116,6 @@ typedef enum {
 } font_size_t;
 
 typedef struct {
-	uint16_t x;
-	uint16_t y;
 	uint8_t parent;
 	uint8_t state;
 	uint8_t is_trackable;
@@ -127,6 +125,8 @@ typedef struct {
 	font_size_t font_size;
 	PACKEDCOLORMAIN_T color;
 	uint8_t index;
+	uint16_t x;
+	uint16_t y;
 } label_t;
 
 typedef enum  {
@@ -135,12 +135,6 @@ typedef enum  {
 } orientation_t;
 
 typedef struct {
-	uint16_t x;
-	uint16_t y;
-	uint16_t x1_p;					// координаты ползунка
-	uint16_t y1_p;					// для update_touch_list_list
-	uint16_t x2_p;
-	uint16_t y2_p;
 	orientation_t orientation;
 	uint8_t parent;
 	char name [NAME_ARRAY_SIZE];
@@ -152,6 +146,12 @@ typedef struct {
 	uint16_t value_p;				// в пикселях от начала шкалы
 	float step;
 	uint8_t index;
+	uint16_t x;
+	uint16_t y;
+	uint16_t x1_p;					// координаты ползунка
+	uint16_t y1_p;					// для update_touch_list_list
+	uint16_t x2_p;
+	uint16_t y2_p;
 } slider_t;
 
 typedef enum {
@@ -187,18 +187,14 @@ typedef struct {					// очередь сообщений окнам от WM о 
 } wm_queue_t;
 
 typedef struct {
+//	*** обязательные для указания вручную элементы описателя ***
 	const uint8_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
 	uint8_t parent_id;				// UINT8_MAX - нет parent window
 	window_align_t align_mode;		// вертикаль выравнивания окна
-	uint16_t x1;
-	uint16_t y1;
-	uint16_t w;
-	uint16_t h;
 	char name[NAME_ARRAY_SIZE];		// текст, выводимый в заголовке окна
-	uint8_t state;
-	uint8_t first_call;				// признак первого вызова для различных инициализаций
 	uint8_t is_close;				// разрешение или запрет вывода кнопки закрытия окна
 	void (*onVisibleProcess) (void);
+//	*** служебные и автоматически заполняемые элементы структуры ***
 	button_t * bh_ptr;				// указатели на массивы оконных элементов
 	uint8_t bh_count;
 	label_t * lh_ptr;
@@ -208,6 +204,16 @@ typedef struct {
 	touch_area_t * ta_ptr;
 	uint8_t ta_count;
 	wm_queue_t queue;
+	uint8_t first_call;				// признак первого вызова для различных инициализаций
+	uint8_t state;
+	uint16_t x1;
+	uint16_t y1;
+	uint16_t w;
+	uint16_t h;
+	uint16_t draw_x1;				// координаты и размеры внутриоконной области,
+	uint16_t draw_y1;				// доступной для вывода графики
+	uint16_t draw_x2;
+	uint16_t draw_y2;
 } window_t;
 
 typedef struct {
