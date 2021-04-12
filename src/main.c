@@ -22009,6 +22009,111 @@ tsc_spool(void * ctx)
 
 #endif /* CPUSTYLE_XC7Z */
 
+#if WITHISBOOTLOADERFATFS
+
+static void bootloader_fatfs_mainloop(void)
+{
+	static const char IMAGENAME [] = WITHISBOOTLOADERIMAGE;
+	static FATFSALIGN_BEGIN BYTE header [sizeof (struct stm32_header)] FATFSALIGN_END;
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	FRESULT rc;
+	UINT br = 0;		//  количество считанных байтов
+	struct stm32_header * const hdr = (struct stm32_header *) & header;
+
+	board_set_bglight(1, gbglight);	// выключить подсветку
+	board_update();
+	PRINTF("bootloader_fatfs_mainloop start: '%s'\n", IMAGENAME);
+
+	static BYTE targetdrv = 0;
+	DSTATUS st = disk_initialize (targetdrv);				/* Physical drive nmuber (0..) */
+	if (st != RES_OK)
+	{
+		PRINTF("disk_initialize code=%02X\n", st);
+		for (;;)
+			;
+	}
+	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
+	// чтение файла
+	rc = f_open(& Fil, IMAGENAME, FA_READ);
+	if (rc != FR_OK)
+	{
+		PRINTF("Can not open file '%s'\n", IMAGENAME);
+		PRINTF("Failed with rc=%u.\n", rc);
+		for (;;)
+			;
+	}
+	rc = f_read(& Fil, header, sizeof header, & br);	/* Read a chunk of file */
+	if (rc != FR_OK || br != sizeof (header))
+	{
+		PRINTF("Can not read header of file '%s'\n", IMAGENAME);
+		PRINTF("Failed with rc=%u.\n", rc);
+		for (;;)
+			;
+	}
+
+	uint_fast32_t length = hdr->image_length;
+	const uint8_t * p = (const uint8_t *) hdr->load_address;
+	if (hdr->magic_number != HEADER_MAGIC)
+	{
+		PRINTF("Wrong header of file '%s'\n", IMAGENAME);
+		for (;;)
+			;
+	}
+	rc = f_read(& Fil, (BYTE *) hdr->load_address, hdr->image_length, & br);	/* Read a chunk of file */
+	if (rc != FR_OK || br != hdr->image_length)
+	{
+		PRINTF("Can not read body of file '%s'\n", IMAGENAME);
+		PRINTF("Failed with rc=%u.\n", rc);
+		for (;;)
+			;
+	}
+	uint_fast32_t checksum = hdr->image_checksum;
+	while (length --)
+		checksum -= * p ++;
+	if (checksum != 0)
+	{
+		PRINTF("Wrong body checksum of file '%s'\n", IMAGENAME);
+		for (;;)
+			;
+	}
+	rc = f_close(& Fil);
+	if (rc != FR_OK)
+	{
+		PRINTF("Can not close file '%s'\n", IMAGENAME);
+		PRINTF("Failed with rc=%u.\n", rc);
+		for (;;)
+			;
+	}
+
+#if BOOTLOADER_RAMSIZE
+	uintptr_t ip;
+	if (bootloader_get_start((uintptr_t) header, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
+	{
+		PRINTF("bootloader_fatfs_mainloop start: can not load '%s'\n", IMAGENAME);
+		for (;;)
+			;
+	}
+#else
+	ASSERT(0);
+	for (;;)
+		;
+#endif /* BOOTLOADER_RAMSIZE */
+#if WITHUSBHW
+	board_usb_deactivate();
+	board_usb_deinitialize();
+#endif /* WITHUSBHW */
+#if BOOTLOADER_RAMSIZE
+	PRINTF("bootloader_fatfs_mainloop start: run '%s' at %08lX\n", IMAGENAME, ip);
+#if WITHDEBUG
+	local_delay_ms(100);
+#endif /* WITHDEBUG */
+	bootloader_detach(ip);
+#endif /* BOOTLOADER_RAMSIZE */
+}
+
+#else /* WITHISBOOTLOADERFATFS */
+
 static void bootloader_mainloop(void)
 {
 	board_set_bglight(1, gbglight);	// выключить подсветку
@@ -22111,6 +22216,7 @@ ddd:
 	bootloader_detach(ip);
 #endif /* BOOTLOADER_RAMSIZE */
 }
+#endif /* WITHISBOOTLOADERFATFS */
 
 #endif /* WITHISBOOTLOADER */
 
@@ -22143,7 +22249,9 @@ main(void)
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER && WITHISBOOTLOADERFATFS
+	bootloader_fatfs_mainloop();
+#elif WITHISBOOTLOADER
 	bootloader_mainloop();
 #elif WITHOPERA4BEACON
 	hamradio_mainloop_OPERA4();

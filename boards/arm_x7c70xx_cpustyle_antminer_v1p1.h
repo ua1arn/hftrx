@@ -1016,12 +1016,12 @@
 	#if WITHSDRAMHW
 		// Bootloader parameters
 		#define BOOTLOADER_RAMAREA SDRAM_BASE	/* адрес ОЗУ, куда перемещать application */
-		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
-		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+		#define BOOTLOADER_RAMSIZE SDRAM_APERTURE_SIZE	// 255M
+		#define BOOTLOADER_RAMPAGESIZE	(16 * 1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
 		#define USBD_DFU_RAM_XFER_SIZE 4096
 	#endif /* WITHSDRAMHW */
 
-	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
+	#define BOOTLOADER_FLASHSIZE (16 * 1024uL * 1024uL)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE QSPI_LINEAR_BASE	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
 

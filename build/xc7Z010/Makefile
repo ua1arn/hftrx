@@ -23,7 +23,7 @@ PRJROOT := ../..
 
 OBJDIR = obj
 
-ZINQ_BOOT_BIN := f:\\BOOT.BIN
+ZINQ_BOOT_DIR := e:
 
 #
 CC   = $(TRGT)gcc
@@ -61,8 +61,8 @@ CORE += -mfpu=neon-vfpv3
 # Define optimisation level here
 # only -Og for app
 # Application
-#OPT = -Og
-OPT = -Ofast
+OPT = -Og
+#OPT = -Ofast
 LTO = -flto
 
 # List all default C defines here, like -D_DEBUG=1
@@ -213,8 +213,10 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 
 #all: APP2_4205
+#all: APP2_ANT
 
-all: APP2_ANT
+all: $(PROJECT)_app.xyl32
+	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
 bootloader: BOOT2
   
@@ -230,17 +232,20 @@ $(ZYNQLIB): $(ZSRCS)
 	-$(RM) $@
 	$(AR) -rc $@ $(ZOBJS)
 	
-flash: $(PROJECT)_app.stm32
-	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
+flash: $(PROJECT)_app.xyl32
+	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.xyl32
 
+$(PROJECT)_app.xyl32: $(PROJECT)_app.bin
+	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
+		
 BOOT2: version BOOTL.BIN
-	-cp BOOTL.BIN $(ZINQ_BOOT_BIN)
+	-cp BOOTL.BIN $(ZINQ_BOOT_DIR)/BOOT.BIN
 	
 APP2_ANT: version APPL_ANT.BIN
-	-cp APPL_ANT.BIN $(ZINQ_BOOT_BIN)  
+	-cp APPL_ANT.BIN $(ZINQ_BOOT_DIR)/BOOT.BIN
   
 APP2_4205: version APPL_4205.BIN
-	-cp APPL_4205.BIN $(ZINQ_BOOT_BIN)
+	-cp APPL_4205.BIN $(ZINQ_BOOT_DIR)/BOOT.BIN
 
 BOOTL.BIN: boot_ant.bif $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot_ant.bif -w on -o $@

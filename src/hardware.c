@@ -1878,9 +1878,9 @@ static void ca9_ca7_cache_diag(void)
 // применяетмся после начальной инициализации среды выполнния
 void arm_hardware_flush_all(void)
 {
-	L1C_CleanDCacheAll();
+	L1C_CleanInvalidateDCacheAll();
 #if (__L2C_PRESENT == 1)
-	L2C_InvAllByWay();
+	L2C_CleanInvAllByWay();
 #endif
 }
 
@@ -3231,9 +3231,9 @@ void Reset_CPUn_Handler(void)
 	L1C_EnableBTAC();
 	#if (__L2C_PRESENT == 1)
 		// L2 контроллерп едминственный и уже инициализирован
-	  // Enable Level 2 Cache
-	  //L2C_Enable();
-	  //L2C_InvAllByWay();
+		// Enable Level 2 Cache
+		//L2C_Enable();
+		//L2C_InvAllByWay();
 	#endif
 
 	cortexa_cpuinfo();
