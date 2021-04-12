@@ -1333,9 +1333,15 @@ void cpu_initialize(void)
 		__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
 		__ISB();
 		__DSB();
+		#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
+			L2C_Disable();
+			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
+			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
+		#endif /* (__L2C_PRESENT == 1) */
 		#if (__L2C_PRESENT == 1)
-		  // Enable Level 2 Cache
-		  L2C_Enable();
+			// Enable Level 2 Cache
+			L2C_Enable();
+			L2C_InvAllByWay();
 		#endif
 	#endif
 
