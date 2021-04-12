@@ -307,7 +307,6 @@ static uint8_t sdhost_sdcard_CSD [16];
 
 static uint_fast32_t sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V1_1;
 static uint32_t sdhost_SDType = SD_STD_CAPACITY;
-static int ovr512oldcard = 0;
 
 static uint_fast8_t sdhost_use_cmd23;
 static uint_fast8_t sdhost_use_cmd20;
@@ -2541,18 +2540,31 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 
 // Получить кратность аргумента для команды SD_CMD_READ_SINGLE_BLOCK/SD_CMD_WRITE_SINGLE_BLOCK
 //  В зависимости от типа SD карты адрес это LBA или смещение в байтах
+
+// 512 требуется для SDSC
+//	(a) Argument 0001h is byte address 0001h in the SDSC and 0001h block in SDHC and SDXC
+//	(b) Argument 0200h is byte address 0200h in the SDSC and 0200h block in SDHC and SDXC
+// sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD; // (CCS=1)
+
+//	SDSC Card (CCS=0) uses byte unit address and
+//	SDHC and SDXC Cards (CCS=1) use block unit address (512 bytes unit).
+
 static uint_fast32_t sdhost_getaddresmultiplier(void)
 {
-	if (ovr512oldcard)
-		return 512; //mmcAddressMultiplier = MMC_SECTORSIZE;	// Для обычных SD карт
+// 	set at same time
+//	sdhost_SDType = SD_HIGH_CAPACITY;
+//	sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
 	//if ((cmd58answer & 0x40000000) != 0)	//CCS (Card Capacity Status)
-	if ((sdhost_SDType & SD_HIGH_CAPACITY) != 0)	//CCS (Card Capacity Status)
+	//if ((sdhost_SDType & SD_HIGH_CAPACITY) != 0)	//CCS (Card Capacity Status)
+	if (sdhost_CardType == SDIO_HIGH_CAPACITY_SD_CARD) // (CCS=1)
 	{
+		// Сюда должны попадать в случае SDHC and SDXC
 		//PRINTF(PSTR("SDHC or SDXC (High Capacity)\n"));
 		return 1; //mmcAddressMultiplier = 1;	// Для SDHC (адресация идёт в 512-ти байтовых блоках)
 	}
 	else
 	{
+		// Сюда должны попадать в случае SDSC
 		//PRINTF(PSTR("SDSD - up to 2GB\n"));
 		return 512; //mmcAddressMultiplier = MMC_SECTORSIZE;	// Для обычных SD карт
 	}
@@ -3063,7 +3075,6 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 	const unsigned COUNTLIMIT = 16;
 	unsigned count;
 
-	ovr512oldcard = 0;
 	for (count = 0; count < COUNTLIMIT; ++ count)
 	{
 		sdhost_no_resp(encode_cmd(SD_CMD_GO_IDLE_STATE, DEFAULT_TRANSFER_MODE), 0x00000000uL);	// CMD0
@@ -3074,7 +3085,6 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 		{
 			sdhost_SDType = SD_HIGH_CAPACITY;
 			sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
-			ovr512oldcard = 1;
 			PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
 			return 0;
 		}
@@ -3097,7 +3107,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 
 static uint_fast8_t sdhost_sdcard_poweron(void)
 {
-	uint_fast32_t resp;
+	uint_fast32_t respOCR;
 
 	//PRINTF(PSTR("SD CARD power on start\n"));
 	sdhost_sdcard_RCA = 0;
@@ -3113,27 +3123,28 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 	for (count = 0; count < COUNTLIMIT; ++ count)
 	{
 #if WITHSDHCHW
-		if (sdhost_short_acmd_resp_R3(SD_CMD_SD_APP_OP_COND, SD_VOLTAGE_WINDOW_SD | sdhost_SDType, & resp, DEFAULT_TRANSFER_MODE) != 0)	// ACMD41
+		if (sdhost_short_acmd_resp_R3(SD_CMD_SD_APP_OP_COND, SD_VOLTAGE_WINDOW_SD | sdhost_SDType, & respOCR, DEFAULT_TRANSFER_MODE) != 0)	// ACMD41
 		{
 			PRINTF(PSTR("voltage send process: sdhost_short_acmd_resp_R3(SD_CMD_SD_APP_OP_COND) failure\n"));
 			return 1;
 		}
 #else /* WITHSDHCHW */
 		sdhost_short_resp(encode_cmd(58, DEFAULT_TRANSFER_MODE), 0, 0);	// CMD58
-		if (sdhost_get_R3(& resp) != 0)	// Response of ACMD41 (R3)
+		if (sdhost_get_R3(& respOCR) != 0)	// Response of ACMD41 (R3)
 		{
 			PRINTF(PSTR("Set voltage conditions error\n"));
 			return 1;
 		}
 #endif /* WITHSDHCHW */
  		//PRINTF(PSTR("voltage send waiting: R3 resp: stuff=%08lX\n"), resp);
-		if ((resp & (1UL << 31)) == 0)	// check for voltage range is okay
+		if ((respOCR & (1UL << 31)) == 0)	// check for voltage range is okay
 			continue;
 		//PRINTF(PSTR("voltage send okay: R3 resp: stuff=%08lX\n"), resp);
-		if ((resp & SD_HIGH_CAPACITY) != 0)
+		if ((respOCR & SD_HIGH_CAPACITY) != 0)
 		{
-            sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD;
-			//PRINTF(PSTR("SD CARD is high capacity\n"));
+			// set by Card Capacity Status (CCS)
+            sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD; // (CCS=1)
+			PRINTF(PSTR("SD CARD is high capacity (CCS=1)\n"));
 		}
 		//PRINTF(PSTR("SD CARD power on done, no errors\n"));
 		return 0;
@@ -3141,7 +3152,7 @@ static uint_fast8_t sdhost_sdcard_poweron(void)
 	PRINTF(PSTR("SD CARD power on done, error\n"));
 	return 1;
 }
-
+// sdhost_CardType = SDIO_HIGH_CAPACITY_SD_CARD; // (CCS=1)
 static uint_fast8_t sdhost_read_registers_acmd(uint16_t acmd, uint8_t * buff, unsigned size, unsigned lenpower, unsigned sizeofarray)
 {
 	enum { txmode = 0 };	// read from card to memory
@@ -3886,6 +3897,9 @@ static void mmcSendCmd(uint_fast8_t cmd, uint_fast32_t data)
 static uint_fast8_t mmcCardVersion2;
 // Для НЕ SDHC (адресация идёт в байтах)
 // Для SDHC (адресация идёт в 512-ти байтовых блоках)
+// 512 требуется для SDSC
+//	(a) Argument 0001h is byte address 0001h in the SDSC and 0001h block in SDHC and SDXC
+//	(b) Argument 0200h is byte address 0200h in the SDSC and 0200h block in SDHC and SDXC
 static uint_fast32_t mmcAddressMultiplier;
 
 // set MMC in Idle mode
