@@ -1,16 +1,25 @@
 // rbf2c.cpp : Defines the entry point for the console application.
 //
+// About format see
+// PG374 (v1.0) June 3, 2020
+// pg374-dfx-controller.pdf
+
+#define BINOFFSET 0x0082	/* начало HEADER в исходном файле */
+//
+// Sample of output file header:
+//
+//	0xFFFFFFFF,
+//	0xFFFFFFFF,
+//	0x000000BB,
+//	0x11220044,
+//	0xFFFFFFFF,
+//	0xFFFFFFFF,
+//	0xAA995566,
+//	0x20000000,
+//	0x30022001,
+//	0x00000000,
 
 #include <stdio.h>
-
-// Функция разворота младших восьми бит
-static unsigned revbits8(unsigned v)
-{
-	unsigned b = v & 0xff;
-	b = ((b * 0x0802LU & 0x22110LU) | (b * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16; 
-	return b & 0xff;
-}
-
 
 int main(int argc, char* argv[])
 {
@@ -40,10 +49,11 @@ int main(int argc, char* argv[])
 		fprintf(fpo, "/* Source file '%s' */\n", argv [1]);
 		//fprintf(fpo, "static const FLASHMEMINIT uint16_t rbfimage [] =\n");
 		//fprintf(fpo, "{\n");
+		fseek(fpi, BINOFFSET, SEEK_SET);
 		for (;;)
 		{
-			int c1, c2;
-			unsigned pv;
+			int c1, c2, c3, c4;
+			unsigned long pv;
 
 			c1 = fgetc(fpi);
 			if (c1 == EOF)
@@ -51,13 +61,28 @@ int main(int argc, char* argv[])
 			++ bytes;
 			c2 = fgetc(fpi);
 			if (c2 == EOF)
-				pv = revbits8((unsigned char) c1) * 256 | 0xff;
+				c2 = 0xFF;
 			else
-			{
 				++ bytes;
-				pv = revbits8((unsigned char) c1) * 256 | revbits8((unsigned char) c2);
-			}
-			fprintf(fpo, " 0x%04X,%s", pv, ((pos + 1) >= ROWSOZE) ? "\n" : "");
+			c3 = fgetc(fpi);
+			if (c3 == EOF)
+				c3 = 0xFF;
+			else
+				++ bytes;
+			c4 = fgetc(fpi);
+			if (c4 == EOF)
+				c4 = 0xFF;
+			else
+				++ bytes;
+
+			pv = (
+				((unsigned long) c1 << 24) |
+				((unsigned long) c2 << 16) |
+				((unsigned long) c3 << 8) |
+				((unsigned long) c4 << 0) |
+				0);
+			
+			fprintf(fpo, " 0x%08lX,%s", pv, ((pos + 1) >= ROWSOZE) ? "\n" : "");
 			pos = (pos + 1) % ROWSOZE;
 			++ words;
 		}

@@ -6618,8 +6618,10 @@ static void devcfg_write(void)
 	size_t nwords;
 	const uint32_t * const p = getbitimage(& nwords);
 
+	ASSERT((((uintptr_t) p) % 4) == 0);
+
 	XDCFG->DMA_SRC_ADDR = (uintptr_t) p | dma_flags;
-	XDCFG->DMA_DEST_ADDR = 0xFFFFFFFF;
+	XDCFG->DMA_DST_ADDR = 0xFFFFFFFF;
 
 	XDCFG->DMA_SRC_LEN = nwords;
 	XDCFG->DMA_DST_LEN = 0;

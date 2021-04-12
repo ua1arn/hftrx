@@ -388,7 +388,7 @@ typedef struct devcfg_regs {
 	__IO uint32_t INT_MASK;			/* 0x0010 Interrupt Mask */
 	__IO uint32_t STATUS;			/* 0x0014 Miscellaneous Status */
 	__IO uint32_t DMA_SRC_ADDR;		/* 0x0018 DMA Source Address */
-	__IO uint32_t DMA_DEST_ADDR;	/* 0x001C DMA Destination Address */
+	__IO uint32_t DMA_DST_ADDR;		/* 0x001C DMA Destination Address */
 	__IO uint32_t DMA_SRC_LEN;		/* 0x0020 DMA Source Transfer Length */
 	__IO uint32_t DMA_DST_LEN;		/* 0x0024 DMA Destination Transfer Length */
 	uint32_t reserved1;
