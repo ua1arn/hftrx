@@ -5,7 +5,9 @@
 // UA1ARN
 //
 
-#if (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
+#if CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7
+	#include "rbf/bitimage_ant.h"
+#elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
 	#include "rbf/rbfimage_v3_pll.h"
 #elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
 	#include "rbf/rbfimage_v3.h"

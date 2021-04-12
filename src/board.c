@@ -6607,91 +6607,27 @@ static void devcfg_reset_pl(void) {
 /**
  *	This assumes a single write request will be generated.
  **/
-static int32_t devcfg_write(uint32_t ulFlags, uint32_t ulSize, const void *pBuffer) {
-
-	uint32_t user_count = ulSize;
-
-#if 0
-	uint32_t kmem_size = ulSize + hDevcfg->residue_len;
-	bt_paddr_t kmem = bt_page_alloc_coherent(kmem_size);
-	if(!kmem) {
-		BT_kPrint("xdevcfg: Cannot allocate memory.");
-		return BT_ERR_NO_MEMORY;
-	}
-
-	uint8_t *buf = (uint8_t *) bt_phys_to_virt(kmem);
-
-	// Collect stragglers from last time (0 to 3 bytes).
-	memcpy(buf, hDevcfg->residue_buf, hDevcfg->residue_len);
-
-	// Copy the user data.
-	memcpy(buf + hDevcfg->residue_len, pBuffer, ulSize);
-
-	// Include straggles in total to be counted.
-	ulSize += hDevcfg->residue_len;
-
-	// Check if header?
-	if(hDevcfg->offset == 0 && ulSize > 4) {
-		uint32_t i;
-		for(i = 0; i < ulSize - 4; i++) {
-			if(!memcmp(buf + i, "\x66\x55\x99\xAA", 4)) {
-				BT_kPrint("xdevcfg: found normal sync word.");
-				hDevcfg->bEndianSwap = 0;
-				break;
-			}
-
-			if(!memcmp(buf + i, "\xAA\x99\x55\x66", 4)) {
-				BT_kPrint("xdevcfg: found byte-swapped sync word.");
-				hDevcfg->bEndianSwap = 1;
-				break;
-			}
-		}
-
-		if(i != ulSize - 4) {
-			ulSize -= i;
-			memmove(buf, buf + i, ulSize);	// ulSize - i ??
-		}
-	}
-
-	// Save stragglers for next time.
-	hDevcfg->residue_len = ulSize % 4;
-	ulSize -= hDevcfg->residue_len;
-	memcpy(hDevcfg->residue_buf, buf + ulSize, hDevcfg->residue_len);
-#endif
-
-	// Fixup the endianness
-//	if (1) {
-//		uint32_t i;
-//		for (i = 0; i < ulSize; i += 4) {
-//			uint32_t *p = (uint32_t *) &buf[i];
-//			p[0] = __builtin_bswap32(p[0]);
-//		}
-//	}
+static void devcfg_write(void)
+{
+	// About format see
+	// PG374 (v1.0) June 3, 2020
+	// pg374-dfx-controller.pdf
 
 	// Transfer the data.
+	const uint_fast32_t dma_flags = 0x01;
+	size_t nwords;
+	const uint32_t * const p = getbitimage(& nwords);
 
-//	XDCFG->DMA_SRC_ADDR = (uint32_t ) kmem | 1;
-//	XDCFG->DMA_DEST_ADDR = 0xFFFFFFFF;
+	XDCFG->DMA_SRC_ADDR = (uintptr_t) p | dma_flags;
+	XDCFG->DMA_DEST_ADDR = 0xFFFFFFFF;
 
-	uint32_t transfer_len = 0;
-	if(ulSize % 4) {
-		transfer_len = (ulSize / 4) + 1;
-	} else {
-		transfer_len = (ulSize / 4);
-	}
-
-	XDCFG->DMA_SRC_LEN = transfer_len;
+	XDCFG->DMA_SRC_LEN = nwords;
 	XDCFG->DMA_DST_LEN = 0;
 
 	while((XDCFG->INT_STS &  XDCFG_INT_STS_DMA_DONE_INT) == 0)
 		;
 
 	XDCFG->INT_STS = XDCFG_INT_STS_DMA_DONE_INT;	// Clear DMA_DONE status
-
-	//hDevcfg->offset += user_count;
-
-	//bt_page_free_coherent(kmem, kmem_size);
-	return user_count;
 }
 
 /* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
@@ -6705,12 +6641,15 @@ static void board_fpga_loader_XDCFG(void)
 
 	devcfg_reset_pl();
 
-#if 0
-	devcfg_write(0, 0, 0);
+	devcfg_write();
 
-	while(!(XDCFG->INT_STS & XDCFG_INT_STS_PCFG_DONE))
-		;
-#endif
+	unsigned w = 1000;
+	while (-- w && (XDCFG->INT_STS & XDCFG_INT_STS_PCFG_DONE) == 0)
+		local_delay_ms(1);
+	if (w == 0)
+	{
+		PRINTF("board_fpga_loader_XDCFG: INT_STS_PCFG_DONE wait error.\n");
+	}
 
 	zynq_slcr_unlock();
 	zynq_slcr_postload_fpga();
@@ -6719,6 +6658,19 @@ static void board_fpga_loader_XDCFG(void)
 	PRINTF("board_fpga_loader_XDCFG done.\n");
 }
 
+#endif /* WITHFPGALOAD_DCFG */
+
+#if WITHFPGALOAD_DCFG
+static ALIGNX_BEGIN const FLASHMEMINIT uint32_t bitimage0 [] ALIGNX_END =
+{
+#include "rbfimages.h"
+};
+/* получить расположение в памяти и количество элементов в массиве для загрузки PS ZYNQ */
+const uint32_t * getbitimage(size_t * count)
+{
+	* count = sizeof bitimage0 / sizeof bitimage0 [0];
+	return & bitimage0 [0];
+}
 #endif /* WITHFPGALOAD_DCFG */
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
@@ -6746,8 +6698,8 @@ static void board_fpga_loader_initialize(void)
 
 #if ! (CPUSTYLE_R7S721 || 0)
 /* на процессоре renesas образ располагается в памяти, испольщуемой для хранений буферов DSP части */
-static const FLASHMEMINIT uint16_t rbfimage0 [] =
-{
+static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
+
 #include "rbfimages.h"
 };
 
