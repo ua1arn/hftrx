@@ -21896,18 +21896,6 @@ void bootloader_detach(uintptr_t ip)
 	MMU_InvalidateTLB();
 	__ISB();
 	__DSB();
-	printhex(ip, ip, 512);
-	for (;;)
-	{
-		char c;
-		if (dbg_getchar(& c))
-		{
-			//dbg_putchar(c);
-			if (c == 'r')
-				break;
-		}
-
-	}
 	(* (void (*)(void)) ip)();
 
 #endif
@@ -22117,18 +22105,9 @@ static void bootloader_fatfs_mainloop(void)
 #endif /* WITHUSBHW */
 #if BOOTLOADER_RAMSIZE
 	PRINTF("bootloader_fatfs_mainloop start: run '%s' at %08lX\n", IMAGENAME, ip);
-	printhex(ip, ip, 512);
-	for (;;)
-	{
-		char c;
-		if (dbg_getchar(& c))
-		{
-			//dbg_putchar(c);
-			if (c == 'r')
-				break;
-		}
-
-	}
+#if WITHDEBUG
+	local_delay_ms(100);
+#endif /* WITHDEBUG */
 	bootloader_detach(ip);
 #endif /* BOOTLOADER_RAMSIZE */
 }
