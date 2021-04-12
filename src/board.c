@@ -6532,6 +6532,195 @@ static uint_fast8_t board_fpga_get_NSTATUS(void)
 }
 #endif
 
+#if WITHFPGALOAD_DCFG
+
+// See also
+// https://github.com/jameswalmsley/bitthunder/blob/master/arch/arm/mach/zynq/devcfg.c
+
+
+static void zynq_slcr_unlock(void) {
+	SCLR->SLCR_UNLOCK = 0xdf0d;
+}
+
+static void zynq_slcr_lock(void) {
+	SCLR->SLCR_LOCK = 0x767b;
+}
+
+#if 0
+static void zynq_slcr_cpu_start(unsigned ulCoreID)
+{
+	zynq_slcr_unlock();
+	SCLR->A9_CPU_RST_CTRL &= ~((SLCR_A9_CPU_CLKSTOP | SLCR_A9_CPU_RST) << ulCoreID);
+}
+
+static void zynq_slcr_cpu_stop(unsigned ulCoreID)
+{
+	SCLR->A9_CPU_RST_CTRL = (SLCR_A9_CPU_CLKSTOP | SLCR_A9_CPU_RST) << ulCoreID;
+}
+#endif
+
+static void zynq_slcr_preload_fpga(void)
+{
+	SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
+	SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
+	SCLR->LVL_SHFTR_EN  = 0xA;	// Enable output level shifters.
+}
+
+void zynq_slcr_postload_fpga(void) {
+	SCLR->LVL_SHFTR_EN 	= 0xF;	// Enable all level shifters.
+	SCLR->FPGA_RST_CTRL = 0;	// De-assert AXI interface resets.
+}
+
+static void devcfg_cleanup(void) {
+
+	while(!(XDCFG->INT_STS & XDCFG_INT_STS_PCFG_DONE)) {
+		;
+	}
+
+	zynq_slcr_unlock();
+	zynq_slcr_postload_fpga();
+	zynq_slcr_lock();
+}
+
+
+static void devcfg_reset_pl(void) {
+
+	XDCFG->CTRL |= XDCFG_CTRL_PCFG_PROG_B;				// Setting PCFG_PROGB signal to high
+
+	while(!(XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT)) {	// Wait for PL for reset
+		;
+	}
+
+	XDCFG->CTRL &= ~ XDCFG_CTRL_PCFG_PROG_B;				// Setting PCFG_PROGB signal to low
+
+	while((XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT)) {	// Wait for PL for status set
+		;
+	}
+
+	XDCFG->CTRL |= XDCFG_CTRL_PCFG_PROG_B;
+	while(!(XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT)) {	// Wait for PL for status set
+		;
+	}
+}
+
+
+/**
+ *	This assumes a single write request will be generated.
+ **/
+static int32_t devcfg_write(uint32_t ulFlags, uint32_t ulSize, const void *pBuffer) {
+
+	uint32_t user_count = ulSize;
+
+#if 0
+	uint32_t kmem_size = ulSize + hDevcfg->residue_len;
+	bt_paddr_t kmem = bt_page_alloc_coherent(kmem_size);
+	if(!kmem) {
+		BT_kPrint("xdevcfg: Cannot allocate memory.");
+		return BT_ERR_NO_MEMORY;
+	}
+
+	uint8_t *buf = (uint8_t *) bt_phys_to_virt(kmem);
+
+	// Collect stragglers from last time (0 to 3 bytes).
+	memcpy(buf, hDevcfg->residue_buf, hDevcfg->residue_len);
+
+	// Copy the user data.
+	memcpy(buf + hDevcfg->residue_len, pBuffer, ulSize);
+
+	// Include straggles in total to be counted.
+	ulSize += hDevcfg->residue_len;
+
+	// Check if header?
+	if(hDevcfg->offset == 0 && ulSize > 4) {
+		uint32_t i;
+		for(i = 0; i < ulSize - 4; i++) {
+			if(!memcmp(buf + i, "\x66\x55\x99\xAA", 4)) {
+				BT_kPrint("xdevcfg: found normal sync word.");
+				hDevcfg->bEndianSwap = 0;
+				break;
+			}
+
+			if(!memcmp(buf + i, "\xAA\x99\x55\x66", 4)) {
+				BT_kPrint("xdevcfg: found byte-swapped sync word.");
+				hDevcfg->bEndianSwap = 1;
+				break;
+			}
+		}
+
+		if(i != ulSize - 4) {
+			ulSize -= i;
+			memmove(buf, buf + i, ulSize);	// ulSize - i ??
+		}
+	}
+
+	// Save stragglers for next time.
+	hDevcfg->residue_len = ulSize % 4;
+	ulSize -= hDevcfg->residue_len;
+	memcpy(hDevcfg->residue_buf, buf + ulSize, hDevcfg->residue_len);
+#endif
+
+	// Fixup the endianness
+//	if (1) {
+//		uint32_t i;
+//		for (i = 0; i < ulSize; i += 4) {
+//			uint32_t *p = (uint32_t *) &buf[i];
+//			p[0] = __builtin_bswap32(p[0]);
+//		}
+//	}
+
+	// Transfer the data.
+
+//	XDCFG->DMA_SRC_ADDR = (uint32_t ) kmem | 1;
+//	XDCFG->DMA_DEST_ADDR = 0xFFFFFFFF;
+
+	uint32_t transfer_len = 0;
+	if(ulSize % 4) {
+		transfer_len = (ulSize / 4) + 1;
+	} else {
+		transfer_len = (ulSize / 4);
+	}
+
+	XDCFG->DMA_SRC_LEN = transfer_len;
+	XDCFG->DMA_DST_LEN = 0;
+
+	while((XDCFG->INT_STS &  XDCFG_INT_STS_DMA_DONE_INT) == 0)
+		;
+
+	XDCFG->INT_STS = XDCFG_INT_STS_DMA_DONE_INT;	// Clear DMA_DONE status
+
+	//hDevcfg->offset += user_count;
+
+	//bt_page_free_coherent(kmem, kmem_size);
+	return user_count;
+}
+
+/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+static void board_fpga_loader_XDCFG(void)
+{
+	PRINTF("board_fpga_loader_XDCFG start: boot_mode=%08lX\n", SCLR->BOOT_MODE);
+
+	zynq_slcr_unlock();
+	zynq_slcr_preload_fpga();
+	zynq_slcr_lock();
+
+	devcfg_reset_pl();
+
+#if 0
+	devcfg_write(0, 0, 0);
+
+	while(!(XDCFG->INT_STS & XDCFG_INT_STS_PCFG_DONE))
+		;
+#endif
+
+	zynq_slcr_unlock();
+	zynq_slcr_postload_fpga();
+	zynq_slcr_lock();
+
+	PRINTF("board_fpga_loader_XDCFG done.\n");
+}
+
+#endif /* WITHFPGALOAD_DCFG */
+
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 
@@ -7183,6 +7372,9 @@ void board_init_io(void)
 	spi_initialize();
 #endif /* WITHSPIHW || WITHSPISW */
 
+#if WITHFPGALOAD_DCFG
+	board_fpga_loader_XDCFG();	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+#endif /* WITHFPGALOAD_DCFG */
 #if WITHFPGALOAD_PS
 	/* FPGA загружается процессором с помощью SPI */
 	board_fpga_loader_initialize();

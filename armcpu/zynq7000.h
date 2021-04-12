@@ -303,6 +303,13 @@ typedef struct slcr_regs {
 
 #define ZYNQ_MIO_CNT    54
 
+#define SLCR_A9_CPU_CLKSTOP	0x10
+#define SLCR_A9_CPU_RST		0x01
+
+#define ZYNQ_SLCR_BOOT_MODE_ARM_PLL_BYPASS 		0x00000010
+#define ZYNQ_SLCR_BOOT_MODE_IO_PLL_BYPASS		0x00000010
+#define ZYNQ_SLCR_BOOT_MODE_BOOT_MODE 			0x0000000F
+
 /* SPI */
 typedef struct spi_regs {
 	volatile uint32_t CR; 		/*	SPI Configuration.	 */
