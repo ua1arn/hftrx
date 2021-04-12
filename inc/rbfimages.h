@@ -5,8 +5,8 @@
 // UA1ARN
 //
 
-#if CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7
-	#include "rbf/bitimage_ant.h"
+#if defined (BOARD_BITIMAGE_NAME)
+	#include BOARD_BITIMAGE_NAME
 #elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
 	#include "rbf/rbfimage_v3_pll.h"
 #elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
@@ -50,8 +50,6 @@
 	#include "rbf/rbfimage_v7h_2ch.h"	// - 32BIT audio
 #elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini STM32H7 with TFT plug on board
 	#include "rbf/rbfimage_v7h_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7 - 32BIT audio
-#elif CTLSTYLE_STORCH_V7 && CPUSTYLE_STM32MP1		// normal size STM32MP1, TFT plug on board
-	#include "rbf/rbfimage_v9a_2ch.h"	//
 #elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// normal size STM32H7, TFT plug on board
 	#include "rbf/rbfimage_v7h_2ch.h"	// - 32BIT audio
 #elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// normal size STM32H7, TFT plug on board
@@ -67,6 +65,6 @@
 #elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
 	#include "rbf/rbfimage_v8t_96k.h"
 #else
-	#error Missing FPGA image file
+	#error Missing FPGA image file BOARD_BITIMAGE_NAME
 	0,
 #endif
