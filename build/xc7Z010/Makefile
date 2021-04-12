@@ -211,7 +211,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-all: bitstream_ant.h $(PROJECT)_app.xyl32
+all: bitstream_4205.h $(PROJECT)_app.xyl32
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
 bitstream_ant.h: bitstream_ant.bit
@@ -240,21 +240,21 @@ flash: $(PROJECT)_app.xyl32
 $(PROJECT)_app.xyl32: $(PROJECT)_app.bin
 	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
 		
-BOOT2: version BOOTL.BIN
-	-cp BOOTL.BIN $(ZINQ_BOOT_DIR)/BOOT.BIN
+BOOT2: version boot.bin
+	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
 
-BOOTL.BIN: boot_ant.bif $(PROJECT)_boot.elf
+boot.bin: boot_ant.bif $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot_ant.bif -w on -o $@
 
 $(OBJSC) $(ZOBJSC):
 	@mkdir -p $(@D)
 	$(CC) -std=c99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-$(OBJSCPP) $(ZOBJSCPP):  bitstream_ant.h
+$(OBJSCPP) $(ZOBJSCPP):
 	@mkdir -p $(@D)
 	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
-$(OBJSA) $(ZOBJSA):  bitstream_ant.h
+$(OBJSA) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@))) -o $@
 

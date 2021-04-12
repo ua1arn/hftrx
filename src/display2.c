@@ -466,7 +466,11 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 	return swr10;
 }
-
+#else
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
+{
+	return 0;
+}
 #endif /* WITHTX */
 
 #if WITHINTEGRATEDDSP

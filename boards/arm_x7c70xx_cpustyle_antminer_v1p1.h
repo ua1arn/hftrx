@@ -377,11 +377,13 @@
 	//	PS_MIO43_CD_D1
 	//	PS_MIO44_CD_D2
 	//	PS_MIO45_CD_D3
+	// 46 SDIO 0 CD Select
+	// 50 SDIO 0 WP Select
 	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
 	#define HARDWARE_SDIO_INITIALIZE() do { \
 			SCLR->SD0_WP_CD_SEL = \
-					(46uL << 16) |	/* 56 SDIO 0 CD Select */ \
-					(50uL << 0) |	/* 55 SDIO 0 WP Select */ \
+					(46uL << 16) |	/* 46 SDIO 0 CD Select */ \
+					(50uL << 0) |	/* 50 SDIO 0 WP Select */ \
 					0; \
 			mio_mode(40, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
 			mio_mode(41, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
