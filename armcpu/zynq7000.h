@@ -370,6 +370,34 @@ typedef struct sd_regs {
     __IO uint32_t Vendor_Version_Number          ; /* 0x00FC Shared Bus Control Register */
 } SD_Registers;
 
+// Device Configuration Interface (devcfg)
+typedef struct devcfg_regs {
+	__IO uint32_t CTRL;				/* 0x0000 Control Register */
+	__IO uint32_t LOCK;				/* 0x0004 Locks for the Control Register */
+	__IO uint32_t CFG;				/* 0x0008 Configuration Register */
+	__IO uint32_t INT_STS;			/* 0x000C Interrupt Status */
+	__IO uint32_t INT_MASK;			/* 0x0010 Interrupt Mask */
+	__IO uint32_t STATUS;			/* 0x0014 Miscellaneous Status */
+	__IO uint32_t DMA_SRC_ADDR;		/* 0x0018 DMA Source Address */
+	__IO uint32_t DMA_DEST_ADDR;	/* 0x001C DMA Destination Address */
+	__IO uint32_t DMA_SRC_LEN;		/* 0x0020 DMA Source Transfer Length */
+	__IO uint32_t DMA_DST_LEN;		/* 0x0024 DMA Destination Transfer Length */
+	uint32_t reserved1;
+	__IO uint32_t MULTIBOOT_ADDR;	/* 0x002C Multi-Boot Address Pointer */
+	uint32_t reserved2;
+	__IO uint32_t UNLOCK;			/* 0x0034 Unlock Control */
+	uint8_t reserved3 [0x0080 - 0x0038];
+	__IO uint32_t MCTRL;			/* 0x0080 Miscellaneous Control */
+	uint8_t reserved4 [0x0100 - 0x0084];
+	__IO uint32_t XADCIF_CFG;		/* 0x0100 XADC Interface Configuration */
+	__IO uint32_t XADCIF_INT_STS;	/* 0x0114 XADC Interface Interrupt Status */
+	__IO uint32_t XADCIF_INT_MASK;	/* 0x0118 XADC Interface Interrupt Mask */
+	__IO uint32_t XADCIF_MSTS;		/* 0x010C XADC Interface Miscellaneous Status */
+	__IO uint32_t XADCIF_CMDFIFO;	/* 0x0110 XADC Interface Command FIFO Data Port */
+	__IO uint32_t XADCIF_RDFIFO;	/* 0x0114 XADC Interface Data FIFO Data Port */
+	__IO uint32_t XADCIF_MCTL;		/* 0x0118 XADC Interface Miscellaneous Control */
+} XDCFG_Registers;
+
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
 #define PL310_TAG_RAM_LATENCY ((1 << 8) | (1 << 4) | (1 << 0))
@@ -460,6 +488,7 @@ typedef struct sd_regs {
 #define DMAC0_NS_BASE 	(0xF8004000uL)
 #define DMAC0_S_BASE 	(0xF8003000uL)
 #define SWDT_BASE  		(0xF8005000uL)
+#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
 
 #define QSPI_LINEAR_BASE  (0xfc000000uL)
 
@@ -473,6 +502,7 @@ typedef struct sd_regs {
 #define SPI1                       	((SPI_Registers *) SPI1_BASE)
 #define SD0							((SD_Registers *) SD0_BASE)
 #define SD1							((SD_Registers *) SD1_BASE)
+#define XDCFG						((XDCFG_Registers *) XDCFG_BASE)
 
 #ifdef __cplusplus
 }
