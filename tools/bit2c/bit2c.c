@@ -4,7 +4,6 @@
 // PG374 (v1.0) June 3, 2020
 // pg374-dfx-controller.pdf
 
-#define BINOFFSET 0x0082	/* начало HEADER в исходном файле */
 //
 // Sample of output file header:
 //
@@ -20,6 +19,12 @@
 //	0x00000000,
 
 #include <stdio.h>
+#include <limits.h>
+
+static const unsigned char pattern [] =
+{
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+};
 
 int main(int argc, char* argv[])
 {
@@ -36,20 +41,46 @@ int main(int argc, char* argv[])
 	if (fpi != NULL)
 	{
 		enum { ROWSOZE = 8 };
+		enum { HDRAREA = 1024 };
 		int pos = 0;
 		unsigned int words = 0;
 		unsigned int bytes = 0;
+		unsigned binoffset = UINT_MAX;
+		unsigned char header [HDRAREA];
+		unsigned hdrpos;
+		size_t hdrlen;
 		FILE * fpo = fopen(argv [2], "wt");
 
 		if (fpo == NULL)
 			return 1;
 
+
+		hdrlen = fread(header, 1, HDRAREA, fpi);
+		if (hdrlen < HDRAREA)
+		{
+			fprintf(stderr, "file '%s' have not enough size.\n", argv [1]);
+			exit(1);
+		}
+		for (hdrpos = 0; hdrpos + sizeof pattern < hdrlen; ++ hdrpos)
+		{
+			if (memcmp(header + hdrpos, pattern, sizeof pattern) == 0)
+			{
+				binoffset = hdrpos;
+				break;
+			}
+		}
+		if (binoffset == UINT_MAX)
+		{
+			fprintf(stderr, "Wrong format of file '%s'.\n", argv [1]);
+			exit(1);
+		}
+
 		fprintf(fpo, "/* $Id: $ */\n");
 		fprintf(fpo, "/* GENERATED FILE - DO NOT EDIT */\n");
-		fprintf(fpo, "/* Source file '%s' */\n", argv [1]);
+		fprintf(fpo, "/* Source file '%s' offset=%u (0x%08X) */\n", argv [1], binoffset, binoffset);
 		//fprintf(fpo, "static const FLASHMEMINIT uint16_t rbfimage [] =\n");
 		//fprintf(fpo, "{\n");
-		fseek(fpi, BINOFFSET, SEEK_SET);
+		fseek(fpi, binoffset, SEEK_SET);
 		for (;;)
 		{
 			int c1, c2, c3, c4;
