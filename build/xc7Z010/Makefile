@@ -211,7 +211,12 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-all: bitstream_4205.h $(PROJECT)_app.xyl32
+all: all_4205
+
+all_4205: bitstream_4205.h $(PROJECT)_app.xyl32
+	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
+
+all_ANT: bitstream_ant.h $(PROJECT)_app.xyl32
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
 bitstream_ant.h: bitstream_ant.bit

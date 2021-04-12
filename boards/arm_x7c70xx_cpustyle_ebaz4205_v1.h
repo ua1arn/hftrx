@@ -34,14 +34,13 @@
 
 
 #if WITHDEBUG
-	//#define WITHUART1HW	1	/* MIO46 UART0_RXD MIO47 UART0_TXD  Используется периферийный контроллер последовательного порта UART00 */
-	#define WITHUART2HW	1	/*	MIO49 UART1_RXD MIO48 UART1_TXD Используется периферийный контроллер последовательного порта UART1 */
+	#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
-#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
+#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 
 #if WITHISBOOTLOADER
@@ -662,32 +661,14 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-#if WITHUART1HW
-	// WITHUART1HW
-	// MIO46 UART0_RXD MIO47 UART0_TXD
-	#define HARDWARE_UART1_INITIALIZE() do { \
-		mio_mode(47, 0x000016E0uL);	/*  MIO47 UART0_TXD */ \
-		mio_mode(46, 0x000016E1uL);	/*  MIO46 UART0_RXD */ \
-		} while (0)
-
-#endif /* WITHUART1HW */
-
-#if WITHUART2HW && 1
+#if WITHUART2HW
+	// RXD: U3.V13
+	// TXD: U3.U12
 	// little board
-	// WITHUART2HW
+	// WITHUART1HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		mio_mode(48, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
-		mio_mode(49, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
-		} while (0)
-
-#endif /* WITHUART2HW */
-
-#if WITHUART2HW && 0
-	// antminer
-	// WITHUART2HW
-	#define HARDWARE_UART2_INITIALIZE() do { \
-		mio_mode(48, 0x000016E0uL);	/*  MIO_PIN_48 UART1_TXD */ \
-		mio_mode(49, 0x000016E1uL);	/*  MIO_PIN_49 UART1_RXD */ \
+		mio_mode(24, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
+		mio_mode(25, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
 		} while (0)
 
 #endif /* WITHUART2HW */

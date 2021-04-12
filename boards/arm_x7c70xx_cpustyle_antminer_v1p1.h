@@ -656,27 +656,7 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-#if WITHUART1HW
-	// WITHUART1HW
-	// MIO46 UART0_RXD MIO47 UART0_TXD
-	#define HARDWARE_UART1_INITIALIZE() do { \
-		mio_mode(47, 0x000016E0uL);	/*  MIO47 UART0_TXD */ \
-		mio_mode(46, 0x000016E1uL);	/*  MIO46 UART0_RXD */ \
-		} while (0)
-
-#endif /* WITHUART1HW */
-
-#if WITHUART2HW && 0
-	// little board
-	// WITHUART2HW
-	#define HARDWARE_UART2_INITIALIZE() do { \
-		mio_mode(24, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
-		mio_mode(25, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
-		} while (0)
-
-#endif /* WITHUART2HW */
-
-#if WITHUART2HW && 1
+#if WITHUART2HW
 	// antminer
 	// WITHUART2HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
