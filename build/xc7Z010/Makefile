@@ -211,14 +211,14 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-all: $(PROJECT)_app.xyl32 bitstream_ant.h
+all: bitstream_ant.h $(PROJECT)_app.xyl32
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
 bitstream_ant.h: bitstream_ant.bit
-	./bit2c bitstream_ant.bit > bitstream_ant.h
+	./bit2c bitstream_ant.bit bitstream_ant.h
 
 bitstream_4205.h: bitstream_4205.bit
-	./bit2c bitstream_4205.bit > bitstream_4205.h
+	./bit2c bitstream_4205.bit bitstream_4205.h
 	
 bootloader: BOOT2
   
@@ -250,11 +250,11 @@ $(OBJSC) $(ZOBJSC):
 	@mkdir -p $(@D)
 	$(CC) -std=c99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
-$(OBJSCPP) $(ZOBJSCPP):
+$(OBJSCPP) $(ZOBJSCPP):  bitstream_ant.h
 	@mkdir -p $(@D)
 	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
 
-$(OBJSA) $(ZOBJSA):
+$(OBJSA) $(ZOBJSA):  bitstream_ant.h
 	@mkdir -p $(@D)
 	$(AS) -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@))) -o $@
 
