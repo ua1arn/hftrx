@@ -370,6 +370,8 @@ typedef struct sd_regs {
     __IO uint32_t Vendor_Version_Number          ; /* 0x00FC Shared Bus Control Register */
 } SD_Registers;
 
+// See also
+// https://github.com/jameswalmsley/bitthunder/blob/master/arch/arm/mach/zynq/devcfg.c
 // Device Configuration Interface (devcfg)
 typedef struct devcfg_regs {
 	__IO uint32_t CTRL;				/* 0x0000 Control Register */
@@ -398,10 +400,34 @@ typedef struct devcfg_regs {
 	__IO uint32_t XADCIF_MCTL;		/* 0x0118 XADC Interface Miscellaneous Control */
 } XDCFG_Registers;
 
+#define XDCFG_CTRL_DAP_EN				0x00000007
+#define XDCFG_CTRL_DBGEN				0x00000008
+#define XDCFG_CTRL_NIDEN				0x00000010
+#define XDCFG_CTRL_SPIDEN				0x00000020
+#define XDCFG_CTRL_SPNIDEN				0x00000040
+#define XDCFG_CTRL_SEC_EN				0x00000080
+#define XDCFG_CTRL_SEU_EN				0x00000100
+#define XDCFG_CTRL_PCFG_AES_EN			0x00000E00
+#define XDCFG_CTRL_PCFG_AES_FUSE 		0x00001000
+#define XDCFG_CTRL_USER_MODE 			0x00008000
+#define XDCFG_CTRL_JTAG_CHAIN_DIS 		0x00800000
+#define XDCFG_CTRL_MULTIBOOT_EN 		0x01000000
+#define XDCFG_CTRL_QUARTER_PCAP_RATE 	0x02000000
+#define XDCFG_CTRL_PCAP_MODE 			0x04000000
+#define XDCFG_CTRL_PCAP_PR 				0x08000000
+#define XDCFG_CTRL_PCFG_POR_CNT_4K		0x20000000
+#define XDCFG_CTRL_PCFG_PROG_B 			0x40000000
+#define XDCFG_CTRL_FORCE_RESET 			0x80000000
+#define XDCFG_INT_STS_DMA_DONE_INT  	0x00002000
+#define XDCFG_INT_STS_DMA_PCAP_DONE		0x00001000
+#define XDCFG_INT_STS_PCFG_DONE			0x00000004
+#define XDCFG_STATUS_PCFG_INIT			0x00000010
+#define XDCFG_MCTRL_PCAP_LPBK			0x00000010
+
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
-#define PL310_TAG_RAM_LATENCY ((1 << 8) | (1 << 4) | (1 << 0))
-#define PL310_DATA_RAM_LATENCY ((1 << 8) | (2 << 4) | (1 << 0))
+#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
+#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
 
 /* Verify the entries match the TRM offset to validate the struct */
 //STATIC_ASSERT(offsetof(struct slcr_regs, SCL) == 0x0);
