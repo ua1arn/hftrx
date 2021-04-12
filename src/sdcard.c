@@ -307,6 +307,7 @@ static uint8_t sdhost_sdcard_CSD [16];
 
 static uint_fast32_t sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V1_1;
 static uint32_t sdhost_SDType = SD_STD_CAPACITY;
+static int ovr512oldcard = 0;
 
 static uint_fast8_t sdhost_use_cmd23;
 static uint_fast8_t sdhost_use_cmd20;
@@ -2542,6 +2543,8 @@ static uint_fast8_t sdhost_sdcard_waitstatus(void)
 //  В зависимости от типа SD карты адрес это LBA или смещение в байтах
 static uint_fast32_t sdhost_getaddresmultiplier(void)
 {
+	if (ovr512oldcard)
+		return 512; //mmcAddressMultiplier = MMC_SECTORSIZE;	// Для обычных SD карт
 	//if ((cmd58answer & 0x40000000) != 0)	//CCS (Card Capacity Status)
 	if ((sdhost_SDType & SD_HIGH_CAPACITY) != 0)	//CCS (Card Capacity Status)
 	{
@@ -2733,6 +2736,18 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
 
 static int multisectorWriteProblems(UINT count)
 {
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
+	if (count > 1)
+	{
+		return 1;
+	}
+#endif /* CPUSTYLE_STM32H7XX */
+	return 0;
+}
+
+static int multisectorReadProblems(UINT count)
+{
+	return 0;
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 	if (count > 1)
 	{
@@ -3047,6 +3062,8 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 
 	const unsigned COUNTLIMIT = 16;
 	unsigned count;
+
+	ovr512oldcard = 0;
 	for (count = 0; count < COUNTLIMIT; ++ count)
 	{
 		sdhost_no_resp(encode_cmd(SD_CMD_GO_IDLE_STATE, DEFAULT_TRANSFER_MODE), 0x00000000uL);	// CMD0
@@ -3057,8 +3074,8 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 		{
 			sdhost_SDType = SD_HIGH_CAPACITY;
 			sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V2_0; /*!< SD Card 2.0 */
-
-			//PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
+			ovr512oldcard = 1;
+			PRINTF(PSTR("SD CARD is V2, R1 resp: stuff=%08lX\n"), resp);
 			return 0;
 		}
 	}
@@ -3074,7 +3091,7 @@ static uint_fast8_t sdhost_sdcard_checkversion(void)
 		PRINTF(PSTR("sdhost_sdcard_checkversion failure\n"));
 		return 1;
 	}
-	//PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
+	PRINTF(PSTR("SD CARD is V1, R1 resp: stuff=%08lX\n"), resp);
 	return 0;
 }
 
@@ -3235,7 +3252,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 #endif /* WITHSDHCHW4BIT */
 	sdhost_use_cmd23 = 0;
 	sdhost_use_cmd20 = 0;
-#if 0 && WITHSDHCHW
+#if 1 && WITHSDHCHW
 	// STM32MP1 work
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
@@ -3298,7 +3315,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 #endif /* WITHSDHCHW */
 
 	// Get SD status
-#if 0 && WITHSDHCHW
+#if 1 && WITHSDHCHW
 	// STM32MP1 work
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
@@ -3533,7 +3550,7 @@ DRESULT SD_disk_readMisalign(
 	UINT count		/* Number of sectors to read */
 	)
 {
-	if (((uintptr_t) buff % DCACHEROWSIZE) != 0)
+	if (multisectorReadProblems(count) || ((uintptr_t) buff % DCACHEROWSIZE) != 0)
 	{
 		while (count --)
 		{
