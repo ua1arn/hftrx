@@ -23,7 +23,7 @@ PRJROOT := ../..
 
 OBJDIR = obj
 
-ZINQ_BOOT_DIR := f:
+ZINQ_BOOT_DIR := E:
 
 #
 CC   = $(TRGT)gcc
@@ -211,13 +211,15 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-
-#all: APP2_4205
-#all: APP2_ANT
-
-all: $(PROJECT)_app.xyl32
+all: $(PROJECT)_app.xyl32 bitstream_ant.h
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
+bitstream_ant.h: bitstream_ant.bit
+	./bit2c bitstream_ant.bit > bitstream_ant.h
+
+bitstream_4205.h: bitstream_4205.bit
+	./bit2c bitstream_4205.bit > bitstream_4205.h
+	
 bootloader: BOOT2
   
 app_run: $(PROJECT)_app.elf bitstream_4205.bit app_run_4205.tcl
@@ -233,28 +235,16 @@ $(ZYNQLIB): $(ZSRCS)
 	$(AR) -rc $@ $(ZOBJS)
 	
 flash: $(PROJECT)_app.xyl32
-	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.xyl32
+	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0xFC080000 --download $(PROJECT)_app.xyl32
 
 $(PROJECT)_app.xyl32: $(PROJECT)_app.bin
 	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
 		
 BOOT2: version BOOTL.BIN
 	-cp BOOTL.BIN $(ZINQ_BOOT_DIR)/BOOT.BIN
-	
-APP2_ANT: version APPL_ANT.BIN
-	-cp APPL_ANT.BIN $(ZINQ_BOOT_DIR)/BOOT.BIN
-  
-APP2_4205: version APPL_4205.BIN
-	-cp APPL_4205.BIN $(ZINQ_BOOT_DIR)/BOOT.BIN
 
 BOOTL.BIN: boot_ant.bif $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot_ant.bif -w on -o $@
-	
-APPL_4205.BIN: app_4205.bif $(PROJECT)_app.elf fsbl_4205.elf bitstream_4205.bit
-	bootgen -arch zynq -image app_4205.bif -w on -o $@
-
-APPL_ANT.BIN: app_ant.bif $(PROJECT)_app.elf fsbl_ant.elf bitstream_ant.bit
-	bootgen -arch zynq -image app_ant.bif -w on -o $@
 
 $(OBJSC) $(ZOBJSC):
 	@mkdir -p $(@D)
@@ -286,6 +276,8 @@ clean: version
 	-$(RM) -R $(OBJDIR)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
+	-$(RM) bitstream_ant.h
+	-$(RM) bitstream_4205.h
 
 version:
 	$(CC) --version

@@ -1,6 +1,5 @@
 set SRCPATH=..\fpga_q131\output_files
 rem set SRCPATH=..\fpga_q181std\output_files
-set ZYNQSRCPATH=..\build\xc7Z010
 
 rbf2c.exe %SRCPATH%\t1_v3.rbf ..\rbf\rbfimage_v3.h
 rbf2c.exe %SRCPATH%\t1_v3_pll.rbf ..\rbf\rbfimage_v3_pll.h
@@ -17,7 +16,5 @@ rbf2c.exe %SRCPATH%\t1_v7_oleg4z.rbf ..\rbf\rbfimage_oleg4z.h
 rbf2c.exe %SRCPATH%\t1_v8t_96k.rbf ..\rbf\rbfimage_v8t_96k.h
 rbf2c.exe %SRCPATH%\t1_v8t_192k.rbf ..\rbf\rbfimage_v8t_192k.h
 rbf2c.exe %SRCPATH%\t1_v9a_2ch.rbf ..\rbf\rbfimage_v9a_2ch.h
-bit2c.exe %ZYNQSRCPATH%\bitstream_ant.bit ..\rbf\bitimage_ant.h
-bit2c.exe %ZYNQSRCPATH%\bitstream_4205.bit ..\rbf\bitimage_4205.h
 
 pause
