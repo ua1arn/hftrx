@@ -6571,36 +6571,17 @@ void zynq_slcr_postload_fpga(void) {
 	SCLR->FPGA_RST_CTRL = 0;	// De-assert AXI interface resets.
 }
 
-static void devcfg_cleanup(void) {
-
-	while(!(XDCFG->INT_STS & XDCFG_INT_STS_PCFG_DONE)) {
-		;
-	}
-
-	zynq_slcr_unlock();
-	zynq_slcr_postload_fpga();
-	zynq_slcr_lock();
-}
-
-
 static void devcfg_reset_pl(void) {
 
 	XDCFG->CTRL |= XDCFG_CTRL_PCFG_PROG_B;				// Setting PCFG_PROGB signal to high
-
-	while(!(XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT)) {	// Wait for PL for reset
+	while((XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT) == 0)	// Wait for PL for reset
 		;
-	}
-
 	XDCFG->CTRL &= ~ XDCFG_CTRL_PCFG_PROG_B;				// Setting PCFG_PROGB signal to low
-
-	while((XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT)) {	// Wait for PL for status set
+	while((XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT) != 0)	// Wait for PL for status set
 		;
-	}
-
 	XDCFG->CTRL |= XDCFG_CTRL_PCFG_PROG_B;
-	while(!(XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT)) {	// Wait for PL for status set
+	while((XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT) == 0)	// Wait for PL for status set
 		;
-	}
 }
 
 
