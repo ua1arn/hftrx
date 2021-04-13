@@ -133,7 +133,7 @@ UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 ULIBDIR +=
 
 # List all user libraries here
-#ULIBS += $(ZYNQLIB)
+ULIBS += $(ZYNQLIB)
 
 VPATH = $(PRJROOT)
 

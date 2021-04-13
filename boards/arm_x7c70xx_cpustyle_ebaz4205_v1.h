@@ -547,16 +547,9 @@
 		} while (0)
 	// ---
 
-	// TUNE input - MIO 20 - S2
-	#define TUNE_TARGET_PIN_MIO		20
-	#define TUNE_TARGET_GPIO_BANK	0
-	#define TUNE_TARGET_GPIO_MASK	1
-	#define TUNE_TARGET_GPIO_SHIFT	20
-	#define HARDWARE_GET_TUNE() (((XGpioPs_Read(& xc7z_gpio, TUNE_TARGET_GPIO_BANK) >> TUNE_TARGET_GPIO_SHIFT) & TUNE_TARGET_GPIO_MASK))
+	#define HARDWARE_GET_TUNE() (0)
 	#define TUNE_INITIALIZE() \
-		do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, TUNE_TARGET_PIN_MIO, 0);	 \
-		} while (0)
+		do { } while (0)
 
 #else /* WITHTX */
 
@@ -703,12 +696,8 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	#define TARGET_TWI_TWCK_MIO			26		// MIO 26 SCL
-	#define	TARGET_TWI_TWCK_BIT			(1uL << (TARGET_TWI_TWCK_MIO % 32))	// бит
-	#define TARGET_TWI_TWCK_BANK 		(TARGET_TWI_TWCK_MIO / 32)
-	#define TARGET_TWI_TWD_MIO			27		// MIO 27 SDA
-	#define	TARGET_TWI_TWD_BIT			(1uL << (TARGET_TWI_TWD_MIO % 32))	// бит
-	#define TARGET_TWI_TWD_BANK 		(TARGET_TWI_TWD_MIO / 32)
+	#define TARGET_TWI_TWCK_MIO			62		// EMIO 62
+	#define TARGET_TWI_TWD_MIO			61		// EMIO 61
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству

@@ -948,6 +948,15 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
+#if CPUSTYLE_XC7Z
+#include "lib/zynq/src/xgpiops.h"
+#include "zynq_test.h"
+
+extern XGpioPs xc7z_gpio;
+
+void xc7z_hardware_initialize(void);
+#endif /* CPUSTYLE_XC7Z */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

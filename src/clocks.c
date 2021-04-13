@@ -6052,20 +6052,18 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #if CPUSTYLE_XC7Z
 
+XGpioPs xc7z_gpio;
 
 void xc7z_hardware_initialize(void)
 {
 	int Status;
 
-/*
-	static XGpioPs xc7z_gpio;
 	// GPIO init
 	XGpioPs_Config * ConfigPtr;
 	ConfigPtr = XGpioPs_LookupConfig(XPAR_XGPIOPS_0_DEVICE_ID);
 	Status = XGpioPs_CfgInitialize(& xc7z_gpio, ConfigPtr, ConfigPtr->BaseAddr);
 	if (Status != XST_SUCCESS)
 		PRINTF("PS GPIO init error\n");
-*/
 }
 
 /* Opcode exit is 0 all the time */

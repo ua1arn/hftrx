@@ -13392,7 +13392,7 @@ static void dpc_1stimer(void * arg)
 	sys_check_timeouts();
 #endif /* WITHLWIP */
 
-#if 0 && CPUSTYLE_XC7Z
+#if 1 && CPUSTYLE_XC7Z
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif /* CPUSTYLE_XC7Z */
 
@@ -19729,6 +19729,10 @@ static void initialize2(void)
 	}
 	//blinkmain();
 #endif /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
+
+#if CPUSTYLE_XC7Z
+	xc7z_hardware_initialize();
+#endif /* CPUSTYLE_XC7Z */
 
 	(void) mclearnvram;
 
