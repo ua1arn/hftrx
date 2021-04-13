@@ -5858,6 +5858,7 @@ getactualmainsubrx(void)
 #endif /* WITHUSEDUALWATCH */
 
 // VFO mode
+// Через flag возвращается признак активного SPLIT (0/1)
 const char * hamradio_get_vfomode3_value(uint_fast8_t * flag)
 {
 	static const char spl [] = "SPL";

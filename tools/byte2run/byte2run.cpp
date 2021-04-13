@@ -104,6 +104,7 @@ static const char * const array [][2] =
 	{	"BLACK",	"GREEN"		},
 	{	"BLACK",	"RED"		},
 	{	"SPECTRUMBG2",	"BLACK"		},     // цвет частоты дополнительного приемника
+	{	"GRAY",	"BLACK"		},     // цвет частоты дополнительного приемника
 };
 
 

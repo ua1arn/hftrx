@@ -269,14 +269,16 @@ static const COLORPAIR_T colors_1stateBlue [1] =
 
 // Параметры отображения частоты дополнительного приемника
 // синий
-static const COLORPAIR_T colors_1freqB [1] =
+static const COLORPAIR_T colors_2freqB [2] =
 {
+	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
 	{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
 // Параметры отображения режима дополнительного приемника
 // синий
-static const COLORPAIR_T colors_1modeB [1] =
+static const COLORPAIR_T colors_2modeB [2] =
 {
+	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
 	{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
 
@@ -1298,8 +1300,10 @@ static void display_freqchr_b(
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
+	uint_fast8_t state;
+	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 
-	colmain_setcolors3(colors_1freqB [0].fg, colors_1freq [0].bg, colors_1freqB [0].fg);
+	colmain_setcolors3(colors_2freqB [state].fg, colors_2freqB [state].bg, colors_2freqB [state].fg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -1335,10 +1339,12 @@ static void display2_freqX_b(
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
+	uint_fast8_t state;
+	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	colmain_setcolors(colors_1freqB [0].fg, colors_1freqB [0].bg);
+	colmain_setcolors(colors_2freqB [state].fg, colors_2freqB [state].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1716,7 +1722,7 @@ static void display2_vfomode3(
 	dctx_t * pctx
 	)
 {
-	uint_fast8_t state;
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
 	display2_text(x, y, labels, colors_1state, 0);
 }
@@ -1729,7 +1735,7 @@ static void display_vfomode5(
 	dctx_t * pctx
 	)
 {
-	uint_fast8_t state;
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode5_value(& state), };
 	display2_text(x, y, labels, colors_1state, 0);
 }
@@ -2037,7 +2043,7 @@ static void display2_mainsub3(
 	)
 {
 #if WITHUSEDUALWATCH
-	uint_fast8_t state;
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode5_value(& state);
 	const char FLASHMEM * const label = hamradio_get_mainsubrxmode3_value_P();
 	ASSERT(strlen(label) == 3);
@@ -2195,7 +2201,7 @@ static void display_vfomode1(
 	dctx_t * pctx
 	)
 {
-	uint_fast8_t state;
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const label = hamradio_get_vfomode3_value(& state);
 
 	colmain_setcolors(LABELTEXT, LABELBACK);
@@ -2242,8 +2248,10 @@ static void display2_mode3_b(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
+	hamradio_get_vfomode3_value(& state);
 	ASSERT(strlen(labels [0]) == 3);
-	display2_text_P(x, y, labels, colors_1modeB, 0);
+	display2_text_P(x, y, labels, colors_2modeB, state);
 }
 
 // dd.dV - 5 places
