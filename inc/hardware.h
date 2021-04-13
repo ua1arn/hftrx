@@ -807,6 +807,7 @@ uint_fast32_t hardware_dcdc_calcdivider(uint_fast32_t freq);
 void hardware_sdhost_initialize(void);
 void hardware_sdhost_setspeed(unsigned long ticksfreq);
 void hardware_sdhost_setbuswidth(uint_fast8_t use4bit);
+void hardware_sdhost_detect(uint_fast8_t present);		// в ответ на прерывание изменения состояния card detect
 
 void lowtests(void);
 void midtests(void);

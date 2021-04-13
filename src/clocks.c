@@ -11185,13 +11185,6 @@ void hardware_sdhost_initialize(void)
 
 #elif CPUSTYLE_XC7Z
 
-	const unsigned d = 16; //ulmin(ulmax(d, 1), 0x3F);
-	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
-			(d << 8) | // DIVISOR
-			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-			(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
-			0;
-
 	//EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
 		(16uL << 8) | // DIVISOR
@@ -11202,7 +11195,7 @@ void hardware_sdhost_initialize(void)
 
 	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
 		(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x0F0000uL)) |
-		0x0E0000uL;	// Data_Timeout_Counter_Value_
+		0x0E0000uL;	// Data_Timeout_Counter_Value
 
 	// SD_Bus_Power off
 	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
@@ -11240,6 +11233,61 @@ void hardware_sdhost_initialize(void)
 #else
 
 	#error Wrong CPUSTYLE_xxx
+
+#endif
+}
+
+// в ответ на прерывание изменения состояния card detect
+void hardware_sdhost_detect(uint_fast8_t present)
+{
+#if CPUSTYLE_XC7Z
+
+	//	This bit indicates whether a card has been
+	//	inserted. Changing from 0 to 1 generates a Card
+	//	Insertion interrupt in the Normal Interrupt Status
+	//	register and changing from 1 to 0 generates a
+	//	Card Removal Interrupt in the Normal Interrupt
+	//	Status register. The Software Reset For All in the
+	//	Software Reset register shall not affect this bit. If
+	//	a Card is removed while its power is on and its
+	//	clock is oscillating, the HC shall clear SD Bus
+	//	Power in the Power Control register and SD Clock
+	//	Enable in the Clock control register. In addition
+	//	the HD should clear the HC by the Software Reset
+	//	For All in Software register. The card detect is
+	//	active regardless of the SD Bus Power.
+
+
+	// SD_Bus_Power off
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			0 * (0x01uL << 8) |	// 0 - Power off
+			0;
+	SCLR->SDIO_CLK_CTRL = 0;
+
+	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
+		(16uL << 8) | // DIVISOR
+		(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+		(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
+		0;
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= (1uL << 24);	// Software_Reset_for_All
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL &= ~ (1uL << 24);	// Software_Reset_for_All
+
+	// SD_Bus_Voltage_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x07uL << 9)) |
+			(0x07uL << 9) |	// 111b - 3.3 Flattop
+			0;
+	// SD_Bus_Power on
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			1 * (0x01uL << 8) |	// 1 - Power on
+			0;
 
 #endif
 }
