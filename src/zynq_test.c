@@ -71,19 +71,19 @@ static void xc7z_dma_init_tx(u32 axi_dma_id, XAxiDma * dmaptr, XAxiDma_Bd * dmaB
 
 void xc7z_dma_init_af_tx(void)
 {
-//	xc7z_dma_init_tx(XPAR_AXI_DMA_0_DEVICE_ID, & xc7z_axidma_af_tx, xc7z_axidmaBDspace_af_tx);
-//	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXIDMA_0_VEC_ID, xc7z_dma_intHandler_af_tx);
-//
-//	// пнуть для запуска прерываний, без этого не идут
-//	double amp = 16383;
-//	static u32 buf[128] __attribute__((aligned(64)));
-//	for(int i = 0; i < 128; ++ i)
-//	{
-//		short left = (short) (cosf((double) i / 128 * 2 * M_PI) * amp);
-//		short right = (short) (sinf((double) i / 128 * 2 * M_PI) * amp);
-//		buf[i] = (left << 16) + (right & 0xFFFF);
-//	}
-//	xc7z_dma_transmit(& xc7z_axidma_af_tx, buf, 128);
+	xc7z_dma_init_tx(XPAR_AXI_DMA_0_DEVICE_ID, & xc7z_axidma_af_tx, xc7z_axidmaBDspace_af_tx);
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXIDMA_0_VEC_ID, xc7z_dma_intHandler_af_tx);
+
+	// пнуть для запуска прерываний, без этого не идут
+	double amp = 16383;
+	static u32 buf[128] __attribute__((aligned(64)));
+	for(int i = 0; i < 128; ++ i)
+	{
+		short left = (short) (cosf((double) i / 128 * 2 * M_PI) * amp);
+		short right = (short) (sinf((double) i / 128 * 2 * M_PI) * amp);
+		buf[i] = (left << 16) + (right & 0xFFFF);
+	}
+	xc7z_dma_transmit(& xc7z_axidma_af_tx, buf, 128);
 }
 
 void xc7z_dma_transmit(XAxiDma * dmaptr, u32 *buffer, size_t buffer_len)
@@ -152,21 +152,32 @@ xdma_flush16tx(uintptr_t addr)
 }
 void xc7z_dma_intHandler_af_tx(void)
 {
-	// RX simulate
-	uintptr_t a1 = allocate_dmabuffer32rx();
-	processing_dmabuffer32rx(a1);
-	processing_dmabuffer32rx(a1);
-	processing_dmabuffer32rx(a1);
+	uintptr_t a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
 	processing_dmabuffer32rx(a1);
 	release_dmabuffer32rx(a1);
+
+	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
+	processing_dmabuffer32rx(a1);
+	release_dmabuffer32rx(a1);
+
+	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
+	processing_dmabuffer32rx(a1);
+	release_dmabuffer32rx(a1);
+
+	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
+	processing_dmabuffer32rx(a1);
+	release_dmabuffer32rx(a1);
+
+
+
 
 	//dbg_putchar('-');
 	XAxiDma_BdRing *TxRingPtr = XAxiDma_GetTxRing(& xc7z_axidma_af_tx);
 	XAxiDma_BdRingAckIrq(TxRingPtr, XAXIDMA_IRQ_ALL_MASK);
-	//uintptr_t addr = xdma_flush16tx(getfilled_dmabuffer16phones());
-	static aubufv_t emptyDMA [DMABUFFSIZE16] __attribute__((aligned(64)));
-	xc7z_dma_transmit(& xc7z_axidma_af_tx, (u32 *) emptyDMA, DMABUFFSIZE16);
-	//release_dmabuffer16(addr);
+	uintptr_t addr = getfilled_dmabuffer16phones();
+	//xc7z_dma_transmit(buf, BUFLEN, REPEATS);
+	xc7z_dma_transmit(& xc7z_axidma_af_tx, (u32 *) addr, DMABUFFSIZE16);
+	release_dmabuffer16(addr);
 	//dbg_putchar('.');
 }
 
