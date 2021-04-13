@@ -11191,6 +11191,12 @@ directctlupdate(
 			changed |= FLAGNE_U8_CAT(& elkeywpm, board_getpot_filtered_u8(POTWPM, CWWPMMIN, CWWPMMAX, & wpmstate), CAT_KS_INDEX);
 		}
 	#endif /* WITHPOTWPM */
+	#if WITHPOTNFMSQL
+		{
+			static adcvalholder_t sqlstate;
+			changed |= flagne_u8(& gsquelchNFM, board_getpot_filtered_u8(POTNFMSQL, 0, SQUELCHMAX, & sqlstate));
+		}
+	#endif /* WITHPOTNFMSQL */
 	#if WITHPOTIFGAIN
 		{
 			static adcvalholder_t ifgainstate;
@@ -15576,6 +15582,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gsquelch.value,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if ! WITHPOTNFMSQL
 	{
 		QLABEL("SQUELNFM"), 7, 0, 0,	ISTEP1,		/* squelch level */
 		ITEM_VALUE,
@@ -15586,6 +15593,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#endif /* WITHPOTNFMSQL */
 	{
 		QLABEL("SDTN LVL"), 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,

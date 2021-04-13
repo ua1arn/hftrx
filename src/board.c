@@ -8331,6 +8331,9 @@ static const uint_fast8_t adcinputs [] =
 #if WITHPOTAFGAIN
 	POTAFGAIN,
 #endif /* WITHPOTAFGAIN */
+#if WITHPOTNFMSQL
+	POTNFMSQL,
+#endif /* WITHPOTNFMSQL */
 #if WITHCURRLEVEL2
 	PASENSEIX2,		// 100W PA current sense - ACS712-30 chip
 	PAREFERIX2,
