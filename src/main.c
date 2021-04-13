@@ -6488,6 +6488,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
+#if ! WITHPOTNFMSQL
 	{
 		"SQUELCHFM",
 		RJ_UNSIGNED,		// rj
@@ -6500,6 +6501,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
+#endif /* ! WITHPOTNFMSQL */
 #if WITHSPECTRUMWF
 	{
 		"BOTTOM DB",
