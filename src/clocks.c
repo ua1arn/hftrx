@@ -6370,12 +6370,6 @@ static const unsigned long ps7_peripherals_init_data_3_0[] = {
 		EMIT_EXIT(),
 	};
 
-static const unsigned long ps7_post_config_3_0[] = {
-		EMIT_MASKWRITE(0XF8000900, 0x0000000FU ,0x0000000FU),	// LVL_SHFTR_EN
-		EMIT_MASKWRITE(0XF8000240, 0xFFFFFFFFU ,0x00000000U),	// FPGA_RST_CTRL
-		EMIT_EXIT(),
-	};
-
 static int ps7_init(void)
 {
 	int ret;
@@ -6397,10 +6391,6 @@ static int ps7_init(void)
 	ret = ps7_config(ps7_peripherals_init_data_3_0);
 	if (ret != PS7_INIT_SUCCESS)
 		return ret;
-
-	ret = ps7_config(ps7_post_config_3_0);
-		if (ret != PS7_INIT_SUCCESS)
-			return ret;
 
 	return PS7_INIT_SUCCESS;
 }
@@ -6525,14 +6515,6 @@ static void xc7z1_io_pll_initialize(void)
 	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000010U)) |
 			0x00000000U |
 			0;
-}
-
-static void xc7z1_pll_initialize(void)
-{
-
-	xc7z1_arm_pll_initialize();
-	xc7z1_ddr_pll_initialize();
-	xc7z1_io_pll_initialize();
 }
 
 #endif /* CPUSTYLE_XC7Z */
@@ -6757,7 +6739,7 @@ sysinit_pll_initialize(void)
 
 	#if WITHISBOOTLOADER
 		// PLL только в bootloader.
-		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
+		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
 		stm32mp1_pll_initialize();
 	#endif /* WITHISBOOTLOADER */
 
@@ -6766,9 +6748,17 @@ sysinit_pll_initialize(void)
 
 #elif CPUSTYLE_XC7Z
 	#if WITHISBOOTLOADER
+
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
+		SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
+
 		// PLL только в bootloader.
-		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
-		xc7z1_pll_initialize();
+		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
+
+		xc7z1_arm_pll_initialize();
+		xc7z1_ddr_pll_initialize();
+		xc7z1_io_pll_initialize();
 
 		ps7_init();
 
