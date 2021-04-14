@@ -6287,7 +6287,7 @@ static const unsigned long ps7_clock_init_data_3_0[] = {
 	};
 
 static const unsigned long ps7_ddr_init_data_3_0[] = {
-		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000084U),	// ddrc_ctrl
+		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000084U),	// ddrc_ctrl, reg_ddrc_soft_rstb = 0
 		EMIT_MASKWRITE(0XF8006004, 0x0007FFFFU ,0x00001082U),	// Two_rank_cfg
 		EMIT_MASKWRITE(0XF8006008, 0x03FFFFFFU ,0x03C0780FU),
 		EMIT_MASKWRITE(0XF800600C, 0x03FFFFFFU ,0x02001001U),
@@ -6366,8 +6366,8 @@ static const unsigned long ps7_ddr_init_data_3_0[] = {
 		EMIT_MASKWRITE(0XF80062AC, 0xFFFFFFFFU ,0x00000000U),
 		EMIT_MASKWRITE(0XF80062B0, 0x003FFFFFU ,0x00005125U),
 		EMIT_MASKWRITE(0XF80062B4, 0x0003FFFFU ,0x000012A8U),
-		EMIT_MASKPOLL(0XF8000B74, 0x00002000U),
-		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000085U),
+		EMIT_MASKPOLL(0XF8000B74, 0x00002000U),					// DDRIOB_DCI_STATUS
+		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000085U),	// ddrc_ctrl, reg_ddrc_soft_rstb = 1
 		EMIT_MASKPOLL(0XF8006054, 0x00000007U),					// mode_sts_reg
 		EMIT_EXIT(),
 	};
@@ -6417,10 +6417,6 @@ static int ps7_init(void)
 	if (ret != PS7_INIT_SUCCESS)
 		return ret;
 
-	ret = ps7_config(ps7_pll_init_data_3_0);
-	if (ret != PS7_INIT_SUCCESS)
-		return ret;
-
 	ret = ps7_config(ps7_clock_init_data_3_0);
 	if (ret != PS7_INIT_SUCCESS)
 		return ret;
@@ -6436,6 +6432,19 @@ static int ps7_init(void)
 	ret = ps7_config(ps7_post_config_3_0);
 		if (ret != PS7_INIT_SUCCESS)
 			return ret;
+
+	return PS7_INIT_SUCCESS;
+}
+
+
+static int xc7z1_pll_initialize(void)
+{
+	int ret;
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+
+	ret = ps7_config(ps7_pll_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
 
 	return PS7_INIT_SUCCESS;
 }
@@ -6673,14 +6682,13 @@ sysinit_pll_initialize(void)
 	#if WITHISBOOTLOADER
 		// PLL только в bootloader.
 		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
-		//xc7z1_pll_initialize();
-#if CPUSTYLE_XC7Z && WITHISBOOTLOADER	// FSBL
+		xc7z1_pll_initialize();
+
+		ps7_init();
+
+	#endif /* WITHISBOOTLOADER */
 
 	xc7z_hardware_initialize();
-	ps7_init();
-
-#endif /* CPUSTYLE_XC7Z && WITHISBOOTLOADER */
-	#endif /* WITHISBOOTLOADER */
 
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
