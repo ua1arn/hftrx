@@ -272,8 +272,10 @@ $(OBJSA) $(ZOBJSA):
 %bin: %elf
 	$(BIN) $< $@
 
+#	-$(RM) -R $(OBJDIR)
+
 clean: version
-	-$(RM) -R $(OBJDIR)
+	-$(RM) $(OBJS)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) bitstream_ant.h
