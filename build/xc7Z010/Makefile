@@ -61,8 +61,8 @@ CORE += -mfpu=neon-vfpv3
 # Define optimisation level here
 # only -Og for app
 # Application
-#OPT = -Og
-OPT = -Ofast
+OPT = -Og
+#OPT = -Ofast
 LTO = -flto
 
 # List all default C defines here, like -D_DEBUG=1
@@ -230,7 +230,7 @@ app_run: $(PROJECT)_app.elf bitstream_4205.bit app_run_4205.tcl
 
 lib: $(ZYNQLIB)
 
-$(ZYNQLIB): $(ZSRCS) 
+$(ZYNQLIB): $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA) 
 	-$(RM) $@
 	$(AR) -rc $@ $(ZOBJS)
 	
