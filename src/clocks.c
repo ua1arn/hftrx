@@ -3426,11 +3426,19 @@ static void stm32mp1_pll_initialize(void)
 		;
 
 	#if WITHCPUXOSC
-		#error rr1
 		// с внешним генератором
-		// HSEBYP
+		RCC->OCENCLRR = RCC_OCENCLRR_HSEON;
+		(void) RCC->OCENCLRR;
+		while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) != 0)
+			;
+		RCC->OCENSETR = RCC_OCENSETR_DIGBYP;
+		(void) RCC->OCENSETR;
 		RCC->OCENSETR = RCC_OCENSETR_HSEBYP;
 		(void) RCC->OCENSETR;
+		RCC->OCENSETR = RCC_OCENSETR_HSEON;
+		(void) RCC->OCENSETR;
+		while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
+			;
 
 	#elif WITHCPUXTAL
 		//#error rr2
