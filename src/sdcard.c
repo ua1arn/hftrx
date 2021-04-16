@@ -3259,7 +3259,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
 	{
-		PRINTF(PSTR("SD_CMD_SD_APP_SEND_SCR okay: SCR=%02X%02X%02X%02X%02X%02X%02X%02X\n"), 
+		PRINTF("SD_CMD_SD_APP_SEND_SCR okay: SCR=%02X%02X%02X%02X%02X%02X%02X%02X\n",
 			sdhost_sdcard_SCR [0], sdhost_sdcard_SCR [1], sdhost_sdcard_SCR [2], sdhost_sdcard_SCR [3], sdhost_sdcard_SCR [4], sdhost_sdcard_SCR [5], sdhost_sdcard_SCR [6], sdhost_sdcard_SCR [7]
 			);
 
@@ -3280,10 +3280,11 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		PRINTF(PSTR("CMD Support=0x%02lX\n"), array_get_bits(sdhost_sdcard_SCR, 64, 33, 2));			// [33:32]
 
 		bussupport1b = array_get_bits(sdhost_sdcard_SCR, 64, 48, 1); //(sdhost_sdcard_SCR [1] & 0x01) != 0;
-		bussupport4b = array_get_bits(sdhost_sdcard_SCR, 64, 51, 1); //(sdhost_sdcard_SCR [1] & 0x04) != 0;
+		bussupport4b = array_get_bits(sdhost_sdcard_SCR, 64, 50, 1); //(sdhost_sdcard_SCR [1] & 0x04) != 0;
 		sdhost_use_cmd20 = array_get_bits(sdhost_sdcard_SCR, 64, 32, 1); //(sdhost_sdcard_SCR [3] & 0x01) != 0;
 		sdhost_use_cmd23 = array_get_bits(sdhost_sdcard_SCR, 64, 33, 1); //(sdhost_sdcard_SCR [3] & 0x02) != 0;
 
+		PRINTF("Support: 1b=%d, 4b=%d, cmd20=%d, cmd23=%d\n", bussupport1b, bussupport4b, sdhost_use_cmd20, sdhost_use_cmd23);
 	}
 //#endif /* WITHSDHCHW */
 
@@ -3298,7 +3299,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		//PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
+		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH 4 okay\n"));
 		hardware_sdhost_setbuswidth(1);		// 4-bit width
 	}
 	else if (bussupport1b != 0)
@@ -3309,7 +3310,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		//PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
+		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH 1 okay\n"));
 		hardware_sdhost_setbuswidth(0);		// 1-bit width
 	}
 	else
@@ -3328,7 +3329,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
 			return 1;
 		}
-		//PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
+		PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH 1 okay\n"));
 		hardware_sdhost_setbuswidth(0);		// 1-bit width
 	}
 	else
