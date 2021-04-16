@@ -1282,6 +1282,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 #define CMD17	 0x11U	// SD_CMD_READ_SINGLE_BLOCK
 #define CMD18	 0x12U
 #define CMD19	 0x13U
+#define CMD20	 0x14U
 #define CMD21	 0x15U
 #define CMD23	 0x17U
 #define ACMD23	 (XSDPS_APP_CMD_PREFIX + 0x17U)
@@ -1471,6 +1472,9 @@ static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 	case CMD17:	// SD_CMD_READ_SINGLE_BLOCK
 	case CMD18:
 	case CMD19:
+	case CMD20:
+		RetVal |= RESP_R1B;
+		break;
 	case CMD21:
 		RetVal |= RESP_R1 | XSDPS_DAT_PRESENT_SEL_MASK;
 		break;
@@ -3249,8 +3253,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 #endif /* WITHSDHCHW4BIT */
 	sdhost_use_cmd23 = 0;
 	sdhost_use_cmd20 = 0;
-#if 1 && WITHSDHCHW
-	// STM32MP1 work
+//#if 1 && WITHSDHCHW
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
@@ -3278,14 +3281,10 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		bussupport1b = array_get_bits(sdhost_sdcard_SCR, 64, 48, 1); //(sdhost_sdcard_SCR [1] & 0x01) != 0;
 		bussupport4b = array_get_bits(sdhost_sdcard_SCR, 64, 51, 1); //(sdhost_sdcard_SCR [1] & 0x04) != 0;
 		sdhost_use_cmd20 = array_get_bits(sdhost_sdcard_SCR, 64, 32, 1); //(sdhost_sdcard_SCR [3] & 0x01) != 0;
-		#if ! CPUSTYLE_R7S721// && ! CPUSTYLE_XC7Z
-			sdhost_use_cmd23 = array_get_bits(sdhost_sdcard_SCR, 64, 33, 1); //(sdhost_sdcard_SCR [3] & 0x02) != 0;
-		#else
-			sdhost_use_cmd23 = 0;
-		#endif /* ! CPUSTYLE_R7S721 && ! CPUSTYLE_XC7Z */
+		sdhost_use_cmd23 = array_get_bits(sdhost_sdcard_SCR, 64, 33, 1); //(sdhost_sdcard_SCR [3] & 0x02) != 0;
 
 	}
-#endif /* WITHSDHCHW */
+//#endif /* WITHSDHCHW */
 
 #if WITHSDHCHW
 
@@ -3302,14 +3301,40 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		hardware_sdhost_setbuswidth(1);		// 4-bit width
 	}
 	else if (bussupport1b != 0)
+	{
+		// Set 1 bit bus width
+		if (sdhost_short_acmd_resp_R1(SD_CMD_APP_SD_SET_BUSWIDTH, 0x0000, & resp, DEFAULT_TRANSFER_MODE) != 0) // ACMD6
+		{
+			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
+			return 1;
+		}
+		//PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
 		hardware_sdhost_setbuswidth(0);		// 1-bit width
+	}
 	else
+	{
+		TP();
 		return 1;
+	}
 
 #else /* WITHSDHCHW4BIT */
 
-	if (bussupport1b == 0)
+	if (bussupport1b != 0)
+	{
+		// Set 1 bit bus width
+		if (sdhost_short_acmd_resp_R1(SD_CMD_APP_SD_SET_BUSWIDTH, 0x0000, & resp, DEFAULT_TRANSFER_MODE) != 0) // ACMD6
+		{
+			PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH error\n"));
+			return 1;
+		}
+		//PRINTF(PSTR("SD_CMD_APP_SD_SET_BUSWIDTH okay\n"));
+		hardware_sdhost_setbuswidth(0);		// 1-bit width
+	}
+	else
+	{
+		TP();
 		return 1;
+	}
 
 #endif /* WITHSDHCHW4BIT */
 #endif /* WITHSDHCHW */
