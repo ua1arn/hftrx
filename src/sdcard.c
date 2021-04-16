@@ -1471,12 +1471,12 @@ static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 	case CMD16:
 		RetVal |= RESP_R1;
 		break;
-	case CMD17:	// SD_CMD_READ_SINGLE_BLOCK
-	case CMD18:
-	case CMD19:
 	case CMD20:
 		RetVal |= RESP_R1B;
 		break;
+	case CMD17:	// SD_CMD_READ_SINGLE_BLOCK
+	case CMD18:
+	case CMD19:
 	case CMD21:
 		RetVal |= RESP_R1 | XSDPS_DAT_PRESENT_SEL_MASK;
 		break;
