@@ -1678,7 +1678,8 @@ static void display2_notch5(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	const char FLASHMEM * const labels [2] = { hamradio_get_notchtype5_P(), hamradio_get_notchtype5_P(), };
+	const char FLASHMEM * const label = hamradio_get_notchtype5_P();
+	const char FLASHMEM * const labels [2] = { label, label, };
 	display2_text_P(x, y, labels, colors_2state, state);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
@@ -2247,7 +2248,8 @@ static void display2_mode3_b(
 	dctx_t * pctx
 	)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
+	const char FLASHMEM * const label = hamradio_get_mode_b_value_P();
+	const char FLASHMEM * const labels [2] = { label, label };
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode3_value(& state);
 	ASSERT(strlen(labels [0]) == 3);
