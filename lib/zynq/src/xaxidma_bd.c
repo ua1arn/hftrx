@@ -37,7 +37,6 @@
  *****************************************************************************/
 
 #include "xaxidma_bd.h"
-#include "formats.h"
 
 /************************** Function Prototypes ******************************/
 
@@ -73,7 +72,7 @@ int XAxiDma_BdSetLength(XAxiDma_Bd *BdPtr, u32 LenBytes, u32 LengthMask)
 {
 	if (LenBytes <= 0 || (LenBytes > LengthMask)) {
 
-		PRINTF("invalid length %d\n",
+		xdbg_printf(XDBG_DEBUG_ERROR, "invalid length %d\n",
 		    (int)LenBytes);
 
 		return XST_INVALID_PARAM;
@@ -189,7 +188,7 @@ int XAxiDma_BdSetAppWord(XAxiDma_Bd* BdPtr, int Offset, u32 Word)
 {
 	if (XAxiDma_BdRead(BdPtr, XAXIDMA_BD_HAS_STSCNTRL_OFFSET) == 0) {
 
-		PRINTF("BdRingSetAppWord: no sts cntrl"
+		xdbg_printf(XDBG_DEBUG_ERROR, "BdRingSetAppWord: no sts cntrl"
 			"stream in hardware build, cannot set app word\r\n");
 
 		return XST_INVALID_PARAM;
@@ -197,7 +196,7 @@ int XAxiDma_BdSetAppWord(XAxiDma_Bd* BdPtr, int Offset, u32 Word)
 
 	if ((Offset < 0) || (Offset > XAXIDMA_LAST_APPWORD)) {
 
-		PRINTF("BdRingSetAppWord: invalid"
+		xdbg_printf(XDBG_DEBUG_ERROR, "BdRingSetAppWord: invalid"
 			"offset %d",Offset);
 
 		return XST_INVALID_PARAM;
@@ -229,7 +228,7 @@ u32 XAxiDma_BdGetAppWord(XAxiDma_Bd* BdPtr, int Offset, int *Valid)
 
 	if (XAxiDma_BdRead(BdPtr, XAXIDMA_BD_HAS_STSCNTRL_OFFSET) == 0) {
 
-		PRINTF("BdRingGetAppWord: no sts cntrl "
+		xdbg_printf(XDBG_DEBUG_ERROR, "BdRingGetAppWord: no sts cntrl "
 			"stream in hardware build, no app word available\r\n");
 
 		return (u32)0;
@@ -237,7 +236,7 @@ u32 XAxiDma_BdGetAppWord(XAxiDma_Bd* BdPtr, int Offset, int *Valid)
 
 	if((Offset < 0) || (Offset > XAXIDMA_LAST_APPWORD)) {
 
-		PRINTF("BdRingGetAppWord: invalid"
+		xdbg_printf(XDBG_DEBUG_ERROR, "BdRingGetAppWord: invalid"
 			" offset %d", Offset);
 
 		return (u32)0;
