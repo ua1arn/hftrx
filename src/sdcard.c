@@ -22,7 +22,7 @@
 #include "keyboard.h"	
 #include "audio.h"
 
-enum { XC7Z_SDRDWRDMA = 1 };
+enum { XC7Z_SDRDWRDMA = 1, XC7Z_AUTO_CMD12 = 1 };
 
 
 /* Card Status Register*/
@@ -1324,7 +1324,8 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 			v = XSDPS_TM_BLK_CNT_EN_MASK |
 					XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
 		} else {
-			v = XSDPS_TM_AUTO_CMD12_EN_MASK |
+			v =
+				XC7Z_AUTO_CMD12 * XSDPS_TM_AUTO_CMD12_EN_MASK |
 				XSDPS_TM_BLK_CNT_EN_MASK |
 				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
 				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
@@ -1339,7 +1340,8 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 				XSDPS_TM_DAT_DIR_SEL_MASK |
 				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
 		} else {
-			v = XSDPS_TM_AUTO_CMD12_EN_MASK |
+			v =
+				XC7Z_AUTO_CMD12 * XSDPS_TM_AUTO_CMD12_EN_MASK |
 				XSDPS_TM_BLK_CNT_EN_MASK |
 				XSDPS_TM_DAT_DIR_SEL_MASK |
 				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
@@ -2743,19 +2745,18 @@ static int multisectorWriteProblems(UINT count)
 	{
 		return 1;
 	}
-#endif /* CPUSTYLE_STM32H7XX */
+#endif /* CPUSTYLE_XXX */
 	return 0;
 }
 
 static int multisectorReadProblems(UINT count)
 {
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
-	// CPUSTYLE_XC7Z: with CMD23 can not read
 	if (count > 1)
 	{
 		return 1;
 	}
-#endif /* CPUSTYLE_STM32H7XX */
+#endif /* CPUSTYLE_XXX */
 	return 0;
 }
 
