@@ -2745,8 +2745,8 @@ static int multisectorWriteProblems(UINT count)
 
 static int multisectorReadProblems(UINT count)
 {
-	return 0;
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
+	// CPUSTYLE_XC7Z: with CMD23 can not read
 	if (count > 1)
 	{
 		return 1;
@@ -3278,9 +3278,12 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		bussupport1b = array_get_bits(sdhost_sdcard_SCR, 64, 48, 1); //(sdhost_sdcard_SCR [1] & 0x01) != 0;
 		bussupport4b = array_get_bits(sdhost_sdcard_SCR, 64, 51, 1); //(sdhost_sdcard_SCR [1] & 0x04) != 0;
 		sdhost_use_cmd20 = array_get_bits(sdhost_sdcard_SCR, 64, 32, 1); //(sdhost_sdcard_SCR [3] & 0x01) != 0;
-		#if ! CPUSTYLE_R7S721
-		sdhost_use_cmd23 = array_get_bits(sdhost_sdcard_SCR, 64, 33, 1); //(sdhost_sdcard_SCR [3] & 0x02) != 0;
-		#endif /* ! CPUSTYLE_R7S721 */
+		#if ! CPUSTYLE_R7S721// && ! CPUSTYLE_XC7Z
+			sdhost_use_cmd23 = array_get_bits(sdhost_sdcard_SCR, 64, 33, 1); //(sdhost_sdcard_SCR [3] & 0x02) != 0;
+		#else
+			sdhost_use_cmd23 = 0;
+		#endif /* ! CPUSTYLE_R7S721 && ! CPUSTYLE_XC7Z */
+
 	}
 #endif /* WITHSDHCHW */
 

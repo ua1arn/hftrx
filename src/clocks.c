@@ -11110,13 +11110,15 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
 			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
-			0x008000uL;	// SDCLK_Frequency_Select: 80h - base clock divided by 256
+			(0x80uL << 8) |	// SDCLK_Frequency_Select: 80h - base clock divided by 256
+			0;
 	}
 	else
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
 			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
-			0x000100uL;	// SDCLK_Frequency_Select: 04h - base clock divided by 8
+			(0x10uL << 8) |	// SDCLK_Frequency_Select: 10h - base clock divided by 32
+			0;
 	}
 
 	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
