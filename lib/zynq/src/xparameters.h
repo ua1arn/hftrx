@@ -39,13 +39,13 @@
 #define XPAR_AXI_DMA_0_BASEADDR 0x40400000
 #define XPAR_AXI_DMA_0_HIGHADDR 0x4040FFFF
 #define XPAR_AXI_DMA_0_SG_INCLUDE_STSCNTRL_STRM 0
-#define XPAR_AXI_DMA_0_INCLUDE_MM2S_DRE 0
+#define XPAR_AXI_DMA_0_INCLUDE_MM2S_DRE 1
 #define XPAR_AXI_DMA_0_INCLUDE_S2MM_DRE 0
 #define XPAR_AXI_DMA_0_INCLUDE_MM2S 1
 #define XPAR_AXI_DMA_0_INCLUDE_S2MM 0
 #define XPAR_AXI_DMA_0_M_AXI_MM2S_DATA_WIDTH 32
 #define XPAR_AXI_DMA_0_M_AXI_S2MM_DATA_WIDTH 32
-#define XPAR_AXI_DMA_0_INCLUDE_SG 1
+#define XPAR_AXI_DMA_0_INCLUDE_SG 0
 #define XPAR_AXI_DMA_0_ENABLE_MULTI_CHANNEL 0
 #define XPAR_AXI_DMA_0_NUM_MM2S_CHANNELS 1
 #define XPAR_AXI_DMA_0_NUM_S2MM_CHANNELS 1
@@ -53,7 +53,7 @@
 #define XPAR_AXI_DMA_0_S2MM_BURST_SIZE 16
 #define XPAR_AXI_DMA_0_MICRO_DMA 0
 #define XPAR_AXI_DMA_0_ADDR_WIDTH 32
-#define XPAR_AXI_DMA_0_SG_LENGTH_WIDTH 23
+#define XPAR_AXI_DMA_0_SG_LENGTH_WIDTH 16
 
 
 /* Definitions for peripheral AXI_DMA_1 */
@@ -62,12 +62,12 @@
 #define XPAR_AXI_DMA_1_HIGHADDR 0x4041FFFF
 #define XPAR_AXI_DMA_1_SG_INCLUDE_STSCNTRL_STRM 0
 #define XPAR_AXI_DMA_1_INCLUDE_MM2S_DRE 0
-#define XPAR_AXI_DMA_1_INCLUDE_S2MM_DRE 0
+#define XPAR_AXI_DMA_1_INCLUDE_S2MM_DRE 1
 #define XPAR_AXI_DMA_1_INCLUDE_MM2S 0
 #define XPAR_AXI_DMA_1_INCLUDE_S2MM 1
 #define XPAR_AXI_DMA_1_M_AXI_MM2S_DATA_WIDTH 32
 #define XPAR_AXI_DMA_1_M_AXI_S2MM_DATA_WIDTH 32
-#define XPAR_AXI_DMA_1_INCLUDE_SG 1
+#define XPAR_AXI_DMA_1_INCLUDE_SG 0
 #define XPAR_AXI_DMA_1_ENABLE_MULTI_CHANNEL 0
 #define XPAR_AXI_DMA_1_NUM_MM2S_CHANNELS 1
 #define XPAR_AXI_DMA_1_NUM_S2MM_CHANNELS 1
@@ -75,7 +75,7 @@
 #define XPAR_AXI_DMA_1_S2MM_BURST_SIZE 16
 #define XPAR_AXI_DMA_1_MICRO_DMA 0
 #define XPAR_AXI_DMA_1_ADDR_WIDTH 32
-#define XPAR_AXI_DMA_1_SG_LENGTH_WIDTH 23
+#define XPAR_AXI_DMA_1_SG_LENGTH_WIDTH 16
 
 
 /******************************************************************/
@@ -85,12 +85,12 @@
 #define XPAR_AXIDMA_0_BASEADDR 0x40400000
 #define XPAR_AXIDMA_0_SG_INCLUDE_STSCNTRL_STRM 0
 #define XPAR_AXIDMA_0_INCLUDE_MM2S 1
-#define XPAR_AXIDMA_0_INCLUDE_MM2S_DRE 0
+#define XPAR_AXIDMA_0_INCLUDE_MM2S_DRE 1
 #define XPAR_AXIDMA_0_M_AXI_MM2S_DATA_WIDTH 32
 #define XPAR_AXIDMA_0_INCLUDE_S2MM 0
 #define XPAR_AXIDMA_0_INCLUDE_S2MM_DRE 0
 #define XPAR_AXIDMA_0_M_AXI_S2MM_DATA_WIDTH 32
-#define XPAR_AXIDMA_0_INCLUDE_SG 1
+#define XPAR_AXIDMA_0_INCLUDE_SG 0
 #define XPAR_AXIDMA_0_ENABLE_MULTI_CHANNEL 0
 #define XPAR_AXIDMA_0_NUM_MM2S_CHANNELS 1
 #define XPAR_AXIDMA_0_NUM_S2MM_CHANNELS 1
@@ -98,7 +98,7 @@
 #define XPAR_AXIDMA_0_S2MM_BURST_SIZE 16
 #define XPAR_AXIDMA_0_MICRO_DMA 0
 #define XPAR_AXIDMA_0_c_addr_width 32
-#define XPAR_AXIDMA_0_c_sg_length_width 23
+#define XPAR_AXIDMA_0_c_sg_length_width 16
 
 /* Canonical definitions for peripheral AXI_DMA_1 */
 #define XPAR_AXIDMA_1_DEVICE_ID XPAR_AXI_DMA_1_DEVICE_ID
@@ -108,9 +108,9 @@
 #define XPAR_AXIDMA_1_INCLUDE_MM2S_DRE 0
 #define XPAR_AXIDMA_1_M_AXI_MM2S_DATA_WIDTH 32
 #define XPAR_AXIDMA_1_INCLUDE_S2MM 1
-#define XPAR_AXIDMA_1_INCLUDE_S2MM_DRE 0
+#define XPAR_AXIDMA_1_INCLUDE_S2MM_DRE 1
 #define XPAR_AXIDMA_1_M_AXI_S2MM_DATA_WIDTH 32
-#define XPAR_AXIDMA_1_INCLUDE_SG 1
+#define XPAR_AXIDMA_1_INCLUDE_SG 0
 #define XPAR_AXIDMA_1_ENABLE_MULTI_CHANNEL 0
 #define XPAR_AXIDMA_1_NUM_MM2S_CHANNELS 1
 #define XPAR_AXIDMA_1_NUM_S2MM_CHANNELS 1
@@ -118,7 +118,7 @@
 #define XPAR_AXIDMA_1_S2MM_BURST_SIZE 16
 #define XPAR_AXIDMA_1_MICRO_DMA 0
 #define XPAR_AXIDMA_1_c_addr_width 32
-#define XPAR_AXIDMA_1_c_sg_length_width 23
+#define XPAR_AXIDMA_1_c_sg_length_width 16
 
 
 /******************************************************************/
@@ -355,6 +355,11 @@
 #define XPAR_PS7_SLCR_0_S_AXI_HIGHADDR 0xF8000FFF
 
 
+/* Definitions for peripheral PS7_SMCC_0 */
+#define XPAR_PS7_SMCC_0_S_AXI_BASEADDR 0xE000E000
+#define XPAR_PS7_SMCC_0_S_AXI_HIGHADDR 0xE100EFFF
+
+
 /******************************************************************/
 
 /* Definitions for driver GPIOPS */
@@ -372,6 +377,31 @@
 #define XPAR_XGPIOPS_0_DEVICE_ID XPAR_PS7_GPIO_0_DEVICE_ID
 #define XPAR_XGPIOPS_0_BASEADDR 0xE000A000
 #define XPAR_XGPIOPS_0_HIGHADDR 0xE000AFFF
+
+
+/******************************************************************/
+
+/* Definitions for driver NANDPS */
+#define XPAR_XNANDPS_NUM_INSTANCES 1U
+
+/* Definitions for peripheral PS7_NAND_0 */
+#define XPAR_PS7_NAND_0_DEVICE_ID 0U
+#define XPAR_PS7_NAND_0_BASEADDR 0xE1000000U
+#define XPAR_PS7_NAND_0_HIGHADDR 0xE1000FFFU
+#define XPAR_PS7_NAND_0_NAND_CLK_FREQ_HZ 100000000U
+#define XPAR_PS7_NAND_0_SMC_BASEADDR 0xE000E000U
+#define XPAR_PS7_NAND_0_NAND_WIDTH 8U
+
+
+/******************************************************************/
+
+/* Canonical definitions for peripheral PS7_NAND_0 */
+#define XPAR_XNANDPS_0_DEVICE_ID XPAR_PS7_NAND_0_DEVICE_ID
+#define XPAR_XNANDPS_0_CPU_BASEADDR 0xE1000000U
+#define XPAR_XNANDPS_0_CPU_HIGHADDR 0xE1000FFFU
+#define XPAR_XNANDPS_0_NAND_CLK_FREQ_HZ 100000000U
+#define XPAR_XNANDPS_0_SMC_BASEADDR 0xE000E000U
+#define XPAR_XNANDPS_0_NAND_WIDTH 8U
 
 
 /******************************************************************/
@@ -443,39 +473,6 @@
 #define XPAR_SCUWDT_0_DEVICE_ID XPAR_PS7_SCUWDT_0_DEVICE_ID
 #define XPAR_SCUWDT_0_BASEADDR 0xF8F00620
 #define XPAR_SCUWDT_0_HIGHADDR 0xF8F006FF
-
-
-/******************************************************************/
-
-/* Definitions for driver SDPS */
-#define XPAR_XSDPS_NUM_INSTANCES 1
-
-/* Definitions for peripheral PS7_SD_0 */
-#define XPAR_PS7_SD_0_DEVICE_ID 0
-#define XPAR_PS7_SD_0_BASEADDR 0xE0100000
-#define XPAR_PS7_SD_0_HIGHADDR 0xE0100FFF
-#define XPAR_PS7_SD_0_SDIO_CLK_FREQ_HZ 100000000
-#define XPAR_PS7_SD_0_HAS_CD 0
-#define XPAR_PS7_SD_0_HAS_WP 0
-#define XPAR_PS7_SD_0_BUS_WIDTH 0
-#define XPAR_PS7_SD_0_MIO_BANK 0
-#define XPAR_PS7_SD_0_HAS_EMIO 0
-
-
-/******************************************************************/
-
-#define XPAR_PS7_SD_0_IS_CACHE_COHERENT 0
-/* Canonical definitions for peripheral PS7_SD_0 */
-#define XPAR_XSDPS_0_DEVICE_ID XPAR_PS7_SD_0_DEVICE_ID
-#define XPAR_XSDPS_0_BASEADDR 0xE0100000
-#define XPAR_XSDPS_0_HIGHADDR 0xE0100FFF
-#define XPAR_XSDPS_0_SDIO_CLK_FREQ_HZ 100000000
-#define XPAR_XSDPS_0_HAS_CD 0
-#define XPAR_XSDPS_0_HAS_WP 0
-#define XPAR_XSDPS_0_BUS_WIDTH 0
-#define XPAR_XSDPS_0_MIO_BANK 0
-#define XPAR_XSDPS_0_HAS_EMIO 0
-#define XPAR_XSDPS_0_IS_CACHE_COHERENT 0
 
 
 /******************************************************************/

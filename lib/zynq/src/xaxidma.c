@@ -65,7 +65,6 @@
 /***************************** Include Files *********************************/
 
 #include "xaxidma.h"
-#include "formats.h"
 
 /************************** Constant Definitions *****************************/
 
@@ -245,7 +244,7 @@ int XAxiDma_CfgInitialize(XAxiDma * InstancePtr, XAxiDma_Config *Config)
 	}
 
 	if (!TimeOut) {
-		PRINTF("Failed reset in"
+		xdbg_printf(XDBG_DEBUG_ERROR, "Failed reset in"
 							"initialize\r\n");
 
 		/* Need system hard reset to recover
@@ -412,7 +411,7 @@ static int XAxiDma_Start(XAxiDma * InstancePtr)
 
 	if (!InstancePtr->Initialized) {
 
-		PRINTF("Start: Driver not initialized "
+		xdbg_printf(XDBG_DEBUG_ERROR, "Start: Driver not initialized "
 				"%d\r\n", InstancePtr->Initialized);
 
 		return XST_NOT_SGDMA;
@@ -511,7 +510,7 @@ int XAxiDma_Pause(XAxiDma * InstancePtr)
 
 	if (!InstancePtr->Initialized) {
 
-		PRINTF("Pause: Driver not initialized"
+		xdbg_printf(XDBG_DEBUG_ERROR, "Pause: Driver not initialized"
 					" %d\r\n",InstancePtr->Initialized);
 
 		return XST_NOT_SGDMA;
@@ -581,7 +580,7 @@ int XAxiDma_Resume(XAxiDma * InstancePtr)
 
 	if (!InstancePtr->Initialized) {
 
-		PRINTF("Resume: Driver not initialized"
+		xdbg_printf(XDBG_DEBUG_ERROR, "Resume: Driver not initialized"
 		" %d\r\n",InstancePtr->Initialized);
 
 		return XST_NOT_SGDMA;
@@ -593,7 +592,7 @@ int XAxiDma_Resume(XAxiDma * InstancePtr)
 		Status = XAxiDma_Start(InstancePtr);
 
 		if (Status != XST_SUCCESS) {
-			PRINTF("Resume: failed to start"
+			xdbg_printf(XDBG_DEBUG_ERROR, "Resume: failed to start"
 				" engine %d\r\n", Status);
 
 			return Status;
@@ -609,7 +608,7 @@ int XAxiDma_Resume(XAxiDma * InstancePtr)
 		if(XAxiDma_HasSg(InstancePtr)) {
 			Status = XAxiDma_BdRingStart(TxRingPtr);
 			if (Status != XST_SUCCESS) {
-				PRINTF("Resume: failed"
+				xdbg_printf(XDBG_DEBUG_ERROR, "Resume: failed"
 				" to start tx ring %d\r\n", Status);
 
 				return XST_DMA_ERROR;
@@ -629,7 +628,7 @@ int XAxiDma_Resume(XAxiDma * InstancePtr)
 			if(XAxiDma_HasSg(InstancePtr)) {
 				Status = XAxiDma_BdRingStart(RxRingPtr);
 				if (Status != XST_SUCCESS) {
-					PRINTF("Resume: failed"
+					xdbg_printf(XDBG_DEBUG_ERROR, "Resume: failed"
 					"to start rx ring %d\r\n", Status);
 
 					return XST_DMA_ERROR;
@@ -662,7 +661,7 @@ static int XAxiDma_Started(XAxiDma * InstancePtr)
 
 	if (!InstancePtr->Initialized) {
 
-		PRINTF("Started: Driver not initialized"
+		xdbg_printf(XDBG_DEBUG_ERROR, "Started: Driver not initialized"
 		" %d\r\n",InstancePtr->Initialized);
 
 		return 0;
@@ -829,7 +828,7 @@ u32 XAxiDma_SimpleTransfer(XAxiDma *InstancePtr, UINTPTR BuffAddr, u32 Length,
 	/* If Scatter Gather is included then, cannot submit
 	 */
 	if (XAxiDma_HasSg(InstancePtr)) {
-		PRINTF("Simple DMA mode is not"
+		xdbg_printf(XDBG_DEBUG_ERROR, "Simple DMA mode is not"
 							" supported\r\n");
 
 		return XST_FAILURE;
@@ -842,7 +841,7 @@ u32 XAxiDma_SimpleTransfer(XAxiDma *InstancePtr, UINTPTR BuffAddr, u32 Length,
 		}
 
 		if (!InstancePtr->HasMm2S) {
-			PRINTF("MM2S channel is not"
+			xdbg_printf(XDBG_DEBUG_ERROR, "MM2S channel is not"
 							"supported\r\n");
 
 			return XST_FAILURE;
@@ -906,7 +905,7 @@ u32 XAxiDma_SimpleTransfer(XAxiDma *InstancePtr, UINTPTR BuffAddr, u32 Length,
 
 
 		if (!InstancePtr->HasS2Mm) {
-			PRINTF("S2MM channel is not"
+			xdbg_printf(XDBG_DEBUG_ERROR, "S2MM channel is not"
 							" supported\r\n");
 
 			return XST_FAILURE;
