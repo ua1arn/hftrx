@@ -2773,7 +2773,7 @@ static int multisectorWriteProblems(UINT count)
 
 static int multisectorReadProblems(UINT count)
 {
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	if (count > 1)
 	{
 		return 1;
@@ -2879,7 +2879,7 @@ DRESULT SD_disk_write(
 		}
 		//PRINTF(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED okay\n"));
 
-		if (sdhost_use_cmd23 != 0)	// set block count
+		if (sdhost_hardware_cmd12() == 0 && sdhost_use_cmd23 != 0)	// set block count
 		{
 			// set block count
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT, DEFAULT_TRANSFER_MODE), count, 0);	// CMD23
@@ -3023,7 +3023,7 @@ DRESULT SD_disk_read(
 	{
 		//PRINTF(PSTR("read multiple blocks: count=%d\n"), count);
 		// read multiple blocks
-		if (sdhost_use_cmd23 != 0)	// set block count
+		if (sdhost_hardware_cmd12() == 0 && sdhost_use_cmd23 != 0)	// set block count
 		{
 			// set block count
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT, DEFAULT_TRANSFER_MODE), count, 0);	// CMD23
