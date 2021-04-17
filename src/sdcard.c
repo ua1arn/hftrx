@@ -1349,7 +1349,7 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 			v =
 				XC7Z_AUTO_CMD12 * XSDPS_TM_AUTO_CMD12_EN_MASK |
 				XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
+				XC7Z_AUTO_CMD12 * XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
 				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
 		}
 	}
@@ -1364,7 +1364,7 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 		} else {
 			v =
 				XC7Z_AUTO_CMD12 * XSDPS_TM_AUTO_CMD12_EN_MASK |
-				XSDPS_TM_BLK_CNT_EN_MASK |
+				XC7Z_AUTO_CMD12 * XSDPS_TM_BLK_CNT_EN_MASK |
 				XSDPS_TM_DAT_DIR_SEL_MASK |
 				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
 				XSDPS_TM_MUL_SIN_BLK_SEL_MASK;
@@ -2874,7 +2874,7 @@ DRESULT SD_disk_write(
 		// Setting a number of write blocks to be pre-erased (ACMD23)
 		if (sdhost_short_acmd_resp_R1(SD_CMD_SD_APP_SET_NWB_PREERASED, count & 0x7FFFFF, & resp, DEFAULT_TRANSFER_MODE) != 0) // ACMD23
 		{
-			PRINTF(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED error\n"));
+			PRINTF(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED error, count=%u\n"), (unsigned) count);
 			return RES_ERROR;
 		}
 		//PRINTF(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED okay\n"));
@@ -2885,7 +2885,7 @@ DRESULT SD_disk_write(
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT, DEFAULT_TRANSFER_MODE), count, 0);	// CMD23
 			if (sdhost_get_R1(SD_CMD_SET_BLOCK_COUNT, & resp) != 0)	// get R1
 			{
-				PRINTF(PSTR("SD_CMD_SET_BLOCK_COUNT error (count=%u)\n"), (unsigned) count);
+				PRINTF(PSTR("SD_CMD_SET_BLOCK_COUNT error, count=%u\n"), (unsigned) count);
 				return RES_ERROR;
 			}
 		}
@@ -2904,7 +2904,7 @@ DRESULT SD_disk_write(
 		if (sdhost_get_R1(SD_CMD_WRITE_MULT_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
-			PRINTF(PSTR("SD_CMD_WRITE_MULT_BLOCK error\n"));
+			PRINTF(PSTR("SD_CMD_WRITE_MULT_BLOCK error, count=%u\n"), (unsigned) count);
 			return RES_ERROR;
 		}
 
@@ -2915,31 +2915,27 @@ DRESULT SD_disk_write(
 
 		if (sdhost_dpsm_wait((uintptr_t) buff, txmode, 512 * count) != 0)
 		{
-			PRINTF(PSTR("SD_disk_write: sdhost_dpsm_wait error\n"));
+			PRINTF(PSTR("SD_disk_write: sdhost_dpsm_wait error, count=%u\n"), (unsigned) count);
 			DMA_sdio_cancel();
 			if (sdhost_stop_transmission() != 0)
-				PRINTF(PSTR("SD_disk_write 2: sdhost_stop_transmission error\n"));
+				PRINTF(PSTR("SD_disk_write 2: sdhost_stop_transmission error, count=%u\n"), (unsigned) count);
 			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone(txmode) != 0)
 		{
 			DMA_sdio_cancel();
-			PRINTF(PSTR("SD_disk_write 2: DMA_sdio_waitdone error\n"));
+			PRINTF(PSTR("SD_disk_write 2: DMA_sdio_waitdone error, count=%u\n"), (unsigned) count);
 			return RES_ERROR;
 		}
 		else
 		{
 			sdhost_dpsm_wait_fifo_empty();
 			DMA_sdio_cancel();
-
-			#if ! CPUSTYLE_R7S721 && ! CPUSTYLE_XC7Z
-			// В процессоре CPUSTYLE_R7S721 и CPUSTYLE_XC7Z команда CMD12 формируется аппаратурой
-			if (sdhost_use_cmd23 == 0)	// set block count
+			if (sdhost_hardware_cmd12() == 0 || sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
-					PRINTF(PSTR("SD_disk_write 3: sdhost_stop_transmission error\n"));
+					PRINTF(PSTR("SD_disk_write 3: sdhost_stop_transmission error, count=%u\n"), (unsigned) count);
 			}
-			#endif /* ! CPUSTYLE_R7S721 */
 		}
 		//PRINTF(PSTR("write multiblock, count=%d okay\n"), count);
 		return RES_OK;
@@ -3046,36 +3042,32 @@ DRESULT SD_disk_read(
 		if (sdhost_get_R1(SD_CMD_READ_MULT_BLOCK, & resp) != 0)
 		{
 			DMA_sdio_cancel();
-			PRINTF(PSTR("SD_CMD_READ_MULT_BLOCK error\n"));
+			PRINTF(PSTR("SD_CMD_READ_MULT_BLOCK error, count=%u\n"), (unsigned) count);
 			return RES_ERROR;
 		}
 		if (sdhost_dpsm_wait((uintptr_t) buff, txmode, 512 * count) != 0)
 		{
-			PRINTF(PSTR("SD_disk_read 2: sdhost_dpsm_wait error\n"));
+			PRINTF(PSTR("SD_disk_read 2: sdhost_dpsm_wait error, count=%u\n"), (unsigned) count);
 			DMA_sdio_cancel();
 			if (sdhost_stop_transmission() != 0)
-				PRINTF(PSTR("SD_disk_read 2: sdhost_stop_transmission error\n"));
+				PRINTF(PSTR("SD_disk_read 2: sdhost_stop_transmission error, count=%u\n"), (unsigned) count);
 			return RES_ERROR;
 		}
 		else if (DMA_sdio_waitdone(txmode) != 0)
 		{
 			DMA_sdio_cancel();
-			PRINTF(PSTR("SD_disk_read 2: DMA_sdio_waitdone error\n"));
+			PRINTF(PSTR("SD_disk_read 2: DMA_sdio_waitdone error, count=%u\n"), (unsigned) count);
 			return RES_ERROR;
 		}
 		else
 		{
 			sdhost_dpsm_wait_fifo_empty();
 			DMA_sdio_cancel();
-
-			#if ! CPUSTYLE_R7S721 && ! CPUSTYLE_XC7Z
-			// В процессоре CPUSTYLE_R7S721 и CPUSTYLE_XC7Z команда CMD12 формируется аппаратурой
-			if (sdhost_use_cmd23 == 0)	// set block count
+			if (sdhost_hardware_cmd12() == 0 || sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
-					PRINTF(PSTR("SD_disk_read 3: sdhost_stop_transmission error\n"));
+					PRINTF(PSTR("SD_disk_read 3: sdhost_stop_transmission error, count=%u\n"), (unsigned) count);
 			}
-			#endif /* ! CPUSTYLE_R7S721 */
 			return RES_OK;
 		}
 	}
