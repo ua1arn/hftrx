@@ -343,8 +343,7 @@ typedef struct gtc_regs {
 // SD Controller (sdio)
 typedef struct sd_regs {
     __IO uint32_t SYS_DMA_ADDR                   ; /* 0x0000 System DMA Address Register */
-    __IO uint16_t BLOCK_SIZE                     ; /* 0x0004 Block Size Register */
-    __IO uint16_t BLOCK_COUNT                    ; /* 0x0006 Block Count Register */
+    __IO uint32_t Block_Size_Block_Count         ; /* 0x0004 Block Size Register */
     __IO uint32_t ARG                     		 ; /* 0x0008 Argument Register */
     __IO uint32_t CMD_TRANSFER_MODE              ; /* 0x000C Command Register, Transfer Mode Register */
     __IO uint32_t RESP_0                         ; /* 0x0010 Response Register 0 */

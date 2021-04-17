@@ -591,8 +591,8 @@ static int zynq_wait_for_command(void)
 //	RX	SAI2_B	DMA2	Stream6	Channel 4	
 static void DMA_SDIO_setparams(
 	uintptr_t addr,
-	uint32_t length0,
-	uint32_t count,
+	uint_fast32_t length0,
+	uint_fast32_t count,
 	uint_fast8_t direction	// 0: Peripheral-to-memory, 1: Memory-to-peripherial
 	)
 {
@@ -834,10 +834,12 @@ static void DMA_SDIO_setparams(
 	 * This register specifies the block size for block
 	 * data transfers for CMD17, CMD18, CMD24, CMD25, and CMD53.
 	 */
-	SD0->BLOCK_SIZE = length0;	// bits [11:0] - Transfer_Block_Size
 	SD0->SYS_DMA_ADDR = addr;
-	/* start DMA transfer */
-	SD0->BLOCK_COUNT = count;
+	SD0->Block_Size_Block_Count =
+			(((unsigned long) length0) << 0) |	// Transfer_Block_Size
+			(((unsigned long) count) << 16) | // Blocks_Count_for_Current_Transfer
+			(0x07uL << 12) |	// Host_SDMA_Buffer_Size  - 111b - 512KB(Detects A18 Carry out)
+			0;
 
 #else
 	#error Wrong CPUSTYLE_xxx
