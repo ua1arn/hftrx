@@ -308,8 +308,30 @@ static uint8_t sdhost_sdcard_CSD [16];
 static uint_fast32_t sdhost_CardType = SDIO_STD_CAPACITY_SD_CARD_V1_1;
 static uint32_t sdhost_SDType = SD_STD_CAPACITY;
 
-static uint_fast8_t sdhost_use_cmd23;
+static uint_fast8_t sdhost_use_cmd23;	// set block count
 static uint_fast8_t sdhost_use_cmd20;
+
+/* Automatic CMD12 issue */
+static uint_fast8_t sdhost_hardware_cmd12(void)
+{
+#if CPUSTYLE_R7S721
+	return 1;
+
+#elif CPUSTYLE_STM32MP1
+	return 0;
+
+#elif CPUSTYLE_STM32F
+	return 0;
+
+#elif CPUSTYLE_XC7Z
+	return XC7Z_AUTO_CMD12;
+
+#else
+	#error Undefined CPUSTYLE_XXX
+	return 0;
+
+#endif
+}
 
 #if ! WITHSDHCHW
 // SPI SD CARD (MMC SD)
@@ -2857,7 +2879,7 @@ DRESULT SD_disk_write(
 		}
 		//PRINTF(PSTR("SD_CMD_SD_APP_SET_NWB_PREERASED okay\n"));
 
-		if (sdhost_use_cmd23 != 0)
+		if (sdhost_use_cmd23 != 0)	// set block count
 		{
 			// set block count
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT, DEFAULT_TRANSFER_MODE), count, 0);	// CMD23
@@ -2912,7 +2934,7 @@ DRESULT SD_disk_write(
 
 			#if ! CPUSTYLE_R7S721 && ! CPUSTYLE_XC7Z
 			// В процессоре CPUSTYLE_R7S721 и CPUSTYLE_XC7Z команда CMD12 формируется аппаратурой
-			if (sdhost_use_cmd23 == 0)
+			if (sdhost_use_cmd23 == 0)	// set block count
 			{
 				if (sdhost_stop_transmission() != 0)
 					PRINTF(PSTR("SD_disk_write 3: sdhost_stop_transmission error\n"));
@@ -3005,7 +3027,7 @@ DRESULT SD_disk_read(
 	{
 		//PRINTF(PSTR("read multiple blocks: count=%d\n"), count);
 		// read multiple blocks
-		if (sdhost_use_cmd23 != 0)
+		if (sdhost_use_cmd23 != 0)	// set block count
 		{
 			// set block count
 			sdhost_short_resp(encode_cmd(SD_CMD_SET_BLOCK_COUNT, DEFAULT_TRANSFER_MODE), count, 0);	// CMD23
@@ -3048,7 +3070,7 @@ DRESULT SD_disk_read(
 
 			#if ! CPUSTYLE_R7S721 && ! CPUSTYLE_XC7Z
 			// В процессоре CPUSTYLE_R7S721 и CPUSTYLE_XC7Z команда CMD12 формируется аппаратурой
-			if (sdhost_use_cmd23 == 0)
+			if (sdhost_use_cmd23 == 0)	// set block count
 			{
 				if (sdhost_stop_transmission() != 0)
 					PRINTF(PSTR("SD_disk_read 3: sdhost_stop_transmission error\n"));
@@ -3252,7 +3274,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	uint_fast8_t bussupport4b = 0;
 	uint_fast8_t bussupport1b = 1;
 #endif /* WITHSDHCHW4BIT */
-	sdhost_use_cmd23 = 0;
+	sdhost_use_cmd23 = 0;	// set block count
 	sdhost_use_cmd20 = 0;
 //#if 1 && WITHSDHCHW
 	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
@@ -3282,7 +3304,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 		bussupport1b = array_get_bits(sdhost_sdcard_SCR, 64, 48, 1); //(sdhost_sdcard_SCR [1] & 0x01) != 0;
 		bussupport4b = array_get_bits(sdhost_sdcard_SCR, 64, 50, 1); //(sdhost_sdcard_SCR [1] & 0x04) != 0;
 		sdhost_use_cmd20 = array_get_bits(sdhost_sdcard_SCR, 64, 32, 1); //(sdhost_sdcard_SCR [3] & 0x01) != 0;
-		sdhost_use_cmd23 = array_get_bits(sdhost_sdcard_SCR, 64, 33, 1); //(sdhost_sdcard_SCR [3] & 0x02) != 0;
+		sdhost_use_cmd23 = array_get_bits(sdhost_sdcard_SCR, 64, 33, 1); //(sdhost_sdcard_SCR [3] & 0x02) != 0;	// set block count
 
 		PRINTF("Support: 1b=%d, 4b=%d, cmd20=%d, cmd23=%d\n", bussupport1b, bussupport4b, sdhost_use_cmd20, sdhost_use_cmd23);
 	}
