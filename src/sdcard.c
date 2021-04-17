@@ -437,7 +437,8 @@ static int zynq_wait_for_transfer(uint_fast8_t txmode)
 	{
 		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint32_t psts = SD0->PRESENT_STATE;
-		//PRINTF("DMA_sdio_waitdone: SD0->INT_STATUS=%08lX\n", SD0->INT_STATUS);
+		const uint32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
+		//PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
 		if ((status & (1uL << 7)) != 0) // Card_Removal
 		{
 			SD0->INT_STATUS = (1uL << 7); // Card_Removal
@@ -477,7 +478,8 @@ static int zynq_wait_for_transfer(uint_fast8_t txmode)
 	{
 		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint32_t psts = SD0->PRESENT_STATE;
-		PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX\n", status, psts);
+		const uint32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
+		PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
 		if ((status & (1uL << 7)) != 0) // Card_Removal
 		{
 			SD0->INT_STATUS = (1uL << 7); // Card_Removal
@@ -1304,14 +1306,14 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 #define ACMD13	 (XSDPS_APP_CMD_PREFIX + 0x0DU)
 #define CMD16	 0x10U
 #define CMD17	 0x11U	// SD_CMD_READ_SINGLE_BLOCK
-#define CMD18	 0x12U
+#define CMD18	 0x12U	// SD_CMD_READ_MULT_BLOCK
 #define CMD19	 0x13U
 #define CMD20	 0x14U
 #define CMD21	 0x15U
 #define CMD23	 0x17U
 #define ACMD23	 (XSDPS_APP_CMD_PREFIX + 0x17U)
 #define CMD24	 0x18U
-#define CMD25	 0x19U
+#define CMD25	 0x19U	// SD_CMD_WRITE_MULT_BLOCK
 #define CMD41	 0x29U
 #define ACMD41	 (XSDPS_APP_CMD_PREFIX + 0x29U)
 #define ACMD42	 (XSDPS_APP_CMD_PREFIX + 0x2AU)
@@ -1345,14 +1347,18 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 
 		// WRITE
 		if (BlkCnt == 1U) {
-			v = XSDPS_TM_BLK_CNT_EN_MASK |
-					XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
+			v =
+				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
+				XSDPS_TM_BLK_CNT_EN_MASK |		// Block_Count_Enable (0 - infinite transfer)
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
+				0;
 		} else {
 			v =
+				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
+				XSDPS_TM_BLK_CNT_EN_MASK |	// Block_Count_Enable (0 - infinite transfer)
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
 				XC7Z_AUTO_CMD12 * XSDPS_TM_AUTO_CMD12_EN_MASK |
-				XSDPS_TM_BLK_CNT_EN_MASK |
-				XC7Z_AUTO_CMD12 * XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
-				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
+				0;
 		}
 	}
 	else
@@ -1361,16 +1367,19 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 
 		if (BlkCnt == 1U) {
 			v =
-				XSDPS_TM_BLK_CNT_EN_MASK |	// Block_Count_Enable (0 - infinite transfer)
 				XSDPS_TM_DAT_DIR_SEL_MASK |	// 1 - Read (Card to Host)
-				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
+				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
+				XSDPS_TM_BLK_CNT_EN_MASK |	// Block_Count_Enable (0 - infinite transfer)
+				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
+				0;
 		} else {
 			v =
-				XC7Z_AUTO_CMD12 * XSDPS_TM_AUTO_CMD12_EN_MASK |
-				XSDPS_TM_BLK_CNT_EN_MASK |		// Block_Count_Enable (0 - infinite transfer)
 				XSDPS_TM_DAT_DIR_SEL_MASK |	// 1 - Read (Card to Host)
+				XSDPS_TM_MUL_SIN_BLK_SEL_MASK |
+				XSDPS_TM_BLK_CNT_EN_MASK |		// Block_Count_Enable (0 - infinite transfer)
 				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
-				XSDPS_TM_MUL_SIN_BLK_SEL_MASK;
+				XC7Z_AUTO_CMD12 * XSDPS_TM_AUTO_CMD12_EN_MASK |
+				0;
 		}
 	}
 	return v;
@@ -1500,14 +1509,12 @@ static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 		RetVal |= RESP_R1B;
 		break;
 	case CMD17:	// SD_CMD_READ_SINGLE_BLOCK
-	case CMD18:
+	case CMD18: // SD_CMD_READ_MULT_BLOCK
 	case CMD19:
 	case CMD21:
-		RetVal |= RESP_R1 | XSDPS_DAT_PRESENT_SEL_MASK;
-		break;
 	case CMD23:
 	case CMD24:
-	case CMD25:
+	case CMD25:	// SD_CMD_WRITE_MULT_BLOCK
 		RetVal |= RESP_R1 | XSDPS_DAT_PRESENT_SEL_MASK;
 		break;
 	case CMD52:
