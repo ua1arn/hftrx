@@ -1358,14 +1358,15 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 		// READ
 
 		if (BlkCnt == 1U) {
-			v = XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_DAT_DIR_SEL_MASK |
+			v =
+				XSDPS_TM_BLK_CNT_EN_MASK |	// Block_Count_Enable (0 - infinite transfer)
+				XSDPS_TM_DAT_DIR_SEL_MASK |	// 1 - Read (Card to Host)
 				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK;
 		} else {
 			v =
 				XC7Z_AUTO_CMD12 * XSDPS_TM_AUTO_CMD12_EN_MASK |
-				XC7Z_AUTO_CMD12 * XSDPS_TM_BLK_CNT_EN_MASK |
-				XSDPS_TM_DAT_DIR_SEL_MASK |
+				XSDPS_TM_BLK_CNT_EN_MASK |		// Block_Count_Enable (0 - infinite transfer)
+				XSDPS_TM_DAT_DIR_SEL_MASK |	// 1 - Read (Card to Host)
 				XC7Z_SDRDWRDMA * XSDPS_TM_DMA_EN_MASK |
 				XSDPS_TM_MUL_SIN_BLK_SEL_MASK;
 		}
