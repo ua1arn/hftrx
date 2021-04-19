@@ -5609,7 +5609,7 @@ static void xc7z1_ddr_pll_initialize(void)
 			0;
 	//	EMIT_MASKWRITE(0XF8000104, 0x0007F000U ,0x00020000U),	// DDR_PLL_CTRL
 	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x0007F000U)) |
-			0x00020000U |
+			((uint_fast32_t) DDR_PLL_MUL << 12) |
 			0;
 	//	EMIT_MASKWRITE(0XF8000104, 0x00000010U ,0x00000010U),	// DDR_PLL_CTRL
 	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000010U)) |
@@ -5633,8 +5633,8 @@ static void xc7z1_ddr_pll_initialize(void)
 			0;
 	//	EMIT_MASKWRITE(0XF8000124, 0xFFF00003U ,0x0C200003U),	// DDR_CLK_CTRL
 	SCLR->DDR_CLK_CTRL = (SCLR->DDR_CLK_CTRL & ~ (0xFFF00003U)) |
-			(3uL << 26) |	// DDR_2XCLK_DIVISOR
-			(2uL << 20) |	// DDR_3XCLK_DIVISOR (only even)
+			((uint_fast32_t) DDR_2XCLK_DIVISOR << 26) |	// DDR_2XCLK_DIVISOR
+			((uint_fast32_t) DDR_3XCLK_DIVISOR << 20) |	// DDR_3XCLK_DIVISOR (only even)
 			(0x01uL << 1) |	// DDR_2XCLKACT
 			(0x01uL << 0) | // DDR_3XCLKACT
 			0;
@@ -5645,11 +5645,11 @@ static void xc7z1_io_pll_initialize(void)
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	//	EMIT_MASKWRITE(0XF8000118, 0x003FFFF0U ,0x000FA240U),	// IO_PLL_CFG
 	SCLR->IO_PLL_CFG = (SCLR->IO_PLL_CFG & ~ (0x003FFFF0U)) |
-			0x000FA240U |
+			0x000FA240uL |
 			0;
 	//	EMIT_MASKWRITE(0XF8000108, 0x0007F000U ,0x00030000U),	// IO_PLL_CTRL
-	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x0007F000U)) |
-			0x00030000U |
+	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x0007F000U)) |	// PLL_FDIV
+			((uint_fast32_t) IO_PLL_MUL << 12) |
 			0;
 	//	EMIT_MASKWRITE(0XF8000108, 0x00000010U ,0x00000010U),	// IO_PLL_CTRL
 	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000010U)) |
@@ -10350,6 +10350,8 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 #elif CPUSTYLE_XC7Z
 
+	const unsigned long ref = xc7z1_get_sdio_freq();
+	PRINTF("hardware_sdhost_setspeed: ref=%lu\n", ref);
 	if (ticksfreq <= 400000uL)
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
