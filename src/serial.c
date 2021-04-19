@@ -1216,7 +1216,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 			(0x01) |	// CLKACT0 - UART 0 reference clock active
 			0;
 
-	uint32_t r = 0; // Temporary value variable
+	uint32_t r; // Temporary value variable
 	r = UART0->CR;
 	r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
 	r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
@@ -1228,12 +1228,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	UART0->MR |= XUARTPS_MR_PARITY_NONE; 	// Set "No parity mode"
 	UART0->MR |= XUARTPS_MR_STOPMODE_1_BIT; // Set "1 stop bit"
 	UART0->MR |= XUARTPS_MR_CHMODE_NORM; 	// Set "Normal mode"
-//
-//	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-//	  UART0->BAUDDIV = 6; // ("BDIV")
-//	  UART0->BAUDGEN = 124; // ("CD")
-//	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
-//
+
 	UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
 
 	r = UART0->CR;
@@ -2364,7 +2359,7 @@ xxxx!;
 			(0x02) |	// CLKACT1 - UART 1 reference clock active
 			0;
 
-	uint32_t r = 0; // Temporary value variable
+	uint32_t r; // Temporary value variable
 	r = UART1->CR;
 	r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
 	r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
@@ -2376,12 +2371,7 @@ xxxx!;
 	UART1->MR |= XUARTPS_MR_PARITY_NONE; 	// Set "No parity mode"
 	UART1->MR |= XUARTPS_MR_STOPMODE_1_BIT; // Set "1 stop bit"
 	UART1->MR |= XUARTPS_MR_CHMODE_NORM; 	// Set "Normal mode"
-//
-//	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-//	  UART1->BAUDDIV = 6; // ("BDIV")
-//	  UART1->BAUDGEN = 124; // ("CD")
-//	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
-//
+
 	UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
 
 	r = UART1->CR;
