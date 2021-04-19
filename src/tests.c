@@ -6050,6 +6050,47 @@ void hightests(void)
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 #if 0
 	{
+		PRINTF("CPU speed changing test:\n");
+		stm32mp1_pll1_slow(1);
+		TP();
+		local_delay_ms(500);
+		stm32mp1_pll1_slow(0);
+		TP();
+		local_delay_ms(500);
+		stm32mp1_pll1_slow(1);
+		TP();
+		local_delay_ms(500);
+		stm32mp1_pll1_slow(0);
+		TP();
+		local_delay_ms(500);
+		stm32mp1_pll1_slow(1);
+		TP();
+		local_delay_ms(500);
+
+		for (;0;)
+		{
+			char c;
+			if (dbg_getchar(& c))
+			{
+				switch (c)
+				{
+				case '1':
+					stm32mp1_pll1_slow(1);
+					break;
+				case '0':
+					stm32mp1_pll1_slow(0);
+					break;
+				}
+				dbg_putchar(c);
+				if (c == 0x1b)
+					break;
+			}
+		}
+		PRINTF("CPU speed changing test done.\n");
+	}
+#endif
+#if 0
+	{
 		// gnu11 tests
 		enum e1 { WORKMASK1 = -1 << 7 };
 		uint32_t v1 = WORKMASK1;
