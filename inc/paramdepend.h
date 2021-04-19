@@ -753,6 +753,18 @@ extern "C" {
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
+#elif defined(_WIN32)
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+
+	#define DACVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define TICKS_FREQUENCY 200
+
+
 #else
 
 	#error Undefined CPUSTYLE_XXX
