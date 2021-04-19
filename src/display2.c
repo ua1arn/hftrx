@@ -294,6 +294,8 @@ static const COLORPAIR_T colors_1mode [1] =
 	{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
 
+#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
+
 // Тестовая функция - прототип для элементов отображения
 static void
 display2_testvidget(
@@ -311,6 +313,7 @@ display2_testvidget(
 	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 50, "Test", COLORMAIN_WHITE);
 
 }
+#endif /* (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 
 // todo: switch off -Wunused-function
 
@@ -475,7 +478,8 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 }
 #endif /* WITHTX */
 
-#if WITHINTEGRATEDDSP
+#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
+
 enum
 {
 	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
@@ -510,7 +514,8 @@ static void printsigwnd(void)
 	}
 	PRINTF(PSTR("};\n"));
 }
-#endif /* WITHINTEGRATEDDSP */
+
+#endif /*  (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 
 #if LCDMODE_LTDC && WITHBARS
 
@@ -2228,6 +2233,8 @@ static void display2_mode3_a(
 	display2_text_P(x, y, labels, colors_1mode, 0);
 }
 
+#if WITHTOUCHGUI
+
 static void display2_mode_lower_a(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -2240,6 +2247,7 @@ static void display2_mode_lower_a(
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), labels, colors_1mode [0].fg);
 }
 
+#endif /* WITHTOUCHGUI */
 
 // SSB/CW/AM/FM/...
 static void display2_mode3_b(
@@ -2971,6 +2979,15 @@ enum
 		{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_T_X20_Y2_IGOR
 

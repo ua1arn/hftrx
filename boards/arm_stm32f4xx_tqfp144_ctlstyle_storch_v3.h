@@ -42,10 +42,20 @@
 			// normal operation frequency
 			#define REF1_MUL 216		// 2*216.000 MHz (192 <= PLLN <= 432)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_7WS
+		#elif CPUSTYLE_STM32H7XX && 0
+			// high  operation frequency - revision V
+			#define REF1_MUL 480		// 2*480.000 MHz (192 <= PLLN <= 432)
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
+			#define PWR_D3CR_VOS_value (PWR_D3CR_VOS_0 * 3)
+			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_4WS
+			#define PLL2_DIVP 4
 		#elif CPUSTYLE_STM32H7XX
-			// normal operation frequency
+			// normal operation frequency - revision Y
 			#define REF1_MUL 384		// 2*384.000 MHz (192 <= PLLN <= 432)
+			#define REF3_MUL 135		// 2*135.000 MHz (192 <= PLLN <= 432)
+			#define PWR_D3CR_VOS_value (PWR_D3CR_VOS_0 * 3)
 			#define HARDWARE_FLASH_LATENCY FLASH_ACR_LATENCY_2WS
+			#define PLL2_DIVP 4
 		#endif
 
 	#else
@@ -172,7 +182,7 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
+	#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
 	//#define LCDMODE_WH2004	1	/* тип применяемого индикатора 20*4 */
@@ -199,7 +209,7 @@
 	//#define LCDMODE_S1D13781_REFOSC_MHZ	50	/* Частота генератора, установленного на контроллере дисплея */
 	//#define LCDMODE_ILI9225	1	/* Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С */
 	//#define LCDMODE_ILI9225_TOPDOWN	1	/* LCDMODE_ILI9225 - перевернуть изображение (для выводов слева от экрана) */
-	#define LCDMODE_UC1608	1		/* Индикатор 240*128 с контроллером UC1608.- монохромный */
+	//#define LCDMODE_UC1608	1		/* Индикатор 240*128 с контроллером UC1608.- монохромный */
 	//#define LCDMODE_UC1608_TOPDOWN	1	/* LCDMODE_UC1608 - перевернуть изображение (для выводов сверху) */
 	//#define LCDMODE_ST7735	1	/* Индикатор 160*128 с контроллером Sitronix ST7735 - TFT панель 160 * 128 HY-1.8-SPI */
 	//#define LCDMODE_ST7735_TOPDOWN	1	/* LCDMODE_ST7735 - перевернуть изображение (для выводов справа) */
@@ -481,6 +491,16 @@
 		PWRI = 14,			// PC4
 		FWD = 14, REF = 15,	// PC5	SWR-meter
 	#endif /* WITHSWRMTR */
+
+		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+
 		KI0 = 10, KI1 = 11, KI2 = 12, KI3 = 0, KI4 = 1	// клавиатура
 	};
 
