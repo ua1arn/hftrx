@@ -435,18 +435,20 @@ static int zynq_wait_for_transfer(uint_fast8_t txmode)
 {
 	for (;;)
 	{
-		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
-		const uint32_t psts = SD0->PRESENT_STATE;
-		const uint32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
+		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		const uint_fast32_t psts = SD0->PRESENT_STATE;
+		const uint_fast32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
 		//PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
 		if ((status & (1uL << 7)) != 0) // Card_Removal
 		{
 			SD0->INT_STATUS = (1uL << 7); // Card_Removal
+			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
 		if ((status & (1uL << 6)) != 0) // Card_Insertion
 		{
 			SD0->INT_STATUS = (1uL << 6); // Card_Insertion
+			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
 		if ((status & (1uL << 15)) != 0)
@@ -476,18 +478,20 @@ static int zynq_wait_for_transfer(uint_fast8_t txmode)
 	// DMA_sdio_waitdone
 	for (;;)
 	{
-		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
-		const uint32_t psts = SD0->PRESENT_STATE;
-		const uint32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
-		PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
+		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		const uint_fast32_t psts = SD0->PRESENT_STATE;
+		const uint_fast32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
+		//PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
 		if ((status & (1uL << 7)) != 0) // Card_Removal
 		{
 			SD0->INT_STATUS = (1uL << 7); // Card_Removal
+			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
 		if ((status & (1uL << 6)) != 0) // Card_Insertion
 		{
 			SD0->INT_STATUS = (1uL << 6); // Card_Insertion
+			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
 		if ((status & (1uL << 15)) != 0)
@@ -542,16 +546,18 @@ static int zynq_wait_for_command(void)
 {
 	for (;;)
 	{
-		const uint32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
-		const uint32_t psts = SD0->PRESENT_STATE;
+		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
+		const uint_fast32_t psts = SD0->PRESENT_STATE;
 		if ((status & (1uL << 7)) != 0) // Card_Removal
 		{
 			SD0->INT_STATUS = (1uL << 7); // Card_Removal
+			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
 		if ((status & (1uL << 6)) != 0) // Card_Insertion
 		{
 			SD0->INT_STATUS = (1uL << 6); // Card_Insertion
+			hardware_sdhost_detect((SD0->PRESENT_STATE >> 16) & 0x01);	// Card_Inserted
 			return 1;
 		}
 //		if ((psts & (3uL << 0)) != 0)	// Command_Inhibit_DAT | Command_Inhibit_CMD

@@ -11256,11 +11256,16 @@ void hardware_sdhost_initialize(void)
 
 #elif CPUSTYLE_XC7Z
 
-	//EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
+	const unsigned sdioix = 0;	// SD0
+
+//    SCLR->SDIO_RST_CTRL |= (0x11uL << sdioix);
+//    SCLR->SDIO_RST_CTRL &= ~ (0x11uL << sdioix);
+
+    //EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
 		(16uL << 8) | // DIVISOR
 		(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
-		(0x01uL << 0) | // CLKACT0 - SDIO 0 reference clock active
+		(0x01uL << sdioix) | // CLKACT0 - SDIO 0 reference clock active
 		0;
 
 
@@ -11309,7 +11314,7 @@ void hardware_sdhost_initialize(void)
 }
 
 // в ответ на прерывание изменения состояния card detect
-void hardware_sdhost_detect(uint_fast8_t present)
+void hardware_sdhost_detect(uint_fast8_t Card_Inserted)
 {
 #if CPUSTYLE_XC7Z
 
@@ -11360,10 +11365,8 @@ void hardware_sdhost_detect(uint_fast8_t present)
 			1 * (0x01uL << 8) |	// 1 - Power on
 			0;
 
-    SCLR->SDIO_RST_CTRL |= 0x11;
-    SCLR->SDIO_RST_CTRL &= ~ 0x11;
 
-    hardware_sdhost_initialize();
+    //hardware_sdhost_initialize();
 
  #endif
 }
