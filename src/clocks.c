@@ -5529,10 +5529,9 @@ static const unsigned long ps7_peripherals_init_data_3_0[] = {
 		EMIT_MASKWRITE(0XF8000B4C, 0x00000180U ,0x00000000U),	// DDRIOB_DATA1
 		EMIT_MASKWRITE(0XF8000B50, 0x00000180U ,0x00000180U),	// DDRIOB_DIFF0
 		EMIT_MASKWRITE(0XF8000B54, 0x00000180U ,0x00000000U),	// DDRIOB_DIFF1
-		EMIT_MASKWRITE(0XE000D000, 0x00080000U ,0x00080000U),	// XQSPIPS_CR_OFFSET
-		EMIT_MASKWRITE(0XF8007000, 0x20000000U ,0x00000000U),	// Register (devcfg) XDCFG_CTRL_OFFSET
 		EMIT_EXIT(),
 	};
+
 
 static int ps7_init(void)
 {
@@ -6018,6 +6017,9 @@ sysinit_pll_initialize(void)
 		xc7z1_io_pll_initialize();
 
 		ps7_init();
+
+		XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
+		XDCFG->CTRL &= ~ (1uL << 29);	// PCFG_POR_CNT_4K
 
 	#endif /* WITHISBOOTLOADER */
 

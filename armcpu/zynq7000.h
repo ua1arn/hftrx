@@ -430,6 +430,15 @@ typedef struct devcfg_regs {
 #define XDCFG_STATUS_PCFG_INIT			0x00000010
 #define XDCFG_MCTRL_PCAP_LPBK			0x00000010
 
+// Quad-SPI Flash Controller (qspi)
+typedef struct qspi_regs {
+	__IO uint32_t CR;				/* 0x0000 QSPI configuration register */
+	__IO uint32_t SR;				/* 0x0004 QSPI interrupt status register */
+	__IO uint32_t IER;				/* 0x0008 Interrupt Enable register */
+	__IO uint32_t IDR;				/* 0x000C Interrupt disable register */
+	__IO uint32_t IMR;				/* 0x0010 Interrupt mask register */
+} XQSPIPS_Registers;
+
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
 #define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
@@ -521,6 +530,7 @@ typedef struct devcfg_regs {
 #define DMAC0_S_BASE 	(0xF8003000uL)
 #define SWDT_BASE  		(0xF8005000uL)
 #define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
+#define XQSPIPS_BASE  	(0XE000D000uL)
 
 #define QSPI_LINEAR_BASE  (0xfc000000uL)
 
@@ -535,6 +545,7 @@ typedef struct devcfg_regs {
 #define SD0							((SD_Registers *) SD0_BASE)
 #define SD1							((SD_Registers *) SD1_BASE)
 #define XDCFG						((XDCFG_Registers *) XDCFG_BASE)
+#define XQSPIPS						((XQSPIPS_Registers *) XQSPIPS_BASE)
 
 #ifdef __cplusplus
 }
