@@ -3524,12 +3524,12 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		(void) RCC->USBCKSELR;
 	}
 
-	ASSERT(((RCC->USBCKSELR & RCC_USBCKSELR_USBOSRC_Msk) >> RCC_USBCKSELR_USBOSRC_Pos) != 0 || PLL4_FREQ_R == 48000000uL);
+	ASSERT(stm32mp1_get_usbotg_freq() == 48000000uL);
 
-// не требуется... запущено в bootloader
-//	// USBPHYC already initialized
-//	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
-//		return HAL_OK;
+	// не требуется... запущено в bootloader
+	//	// USBPHYC already initialized
+	//	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
+	//		return HAL_OK;
 
 	if (1)
 	{
@@ -3545,39 +3545,21 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
 		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
-		uint_fast32_t refclk;
-		switch ((RCC->USBCKSELR & RCC_USBCKSELR_USBPHYSRC_Msk) >> RCC_USBCKSELR_USBPHYSRC_Pos)
-		{
-		case 0x00:
-			// hse_ker_ck
-			refclk = WITHCPUXTAL;
-			break;
-		case 0x01:
-			// pll4_r_ck
-			refclk = PLL4_FREQ_R;
-			break;
-		case 0x02:
-			// hse_ker_ck/2
-			refclk = WITHCPUXTAL / 2;
-			break;
-		default:
-			ASSERT(0);
-			return HAL_ERROR;
-		}
-		ASSERT(refclk >= 19200000uL && refclk <= 38400000uL);
+		uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
+		ASSERT(usbphyref >= 19200000uL && usbphyref <= 38400000uL);
 		const uint_fast32_t ODF = 0;	// игнорируется
 		// 1440 MHz
-		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, refclk);
+		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, usbphyref);
 		const uint_fast32_t N = d.quot;
 
 		const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
-		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / refclk;
+		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / usbphyref;
 
 //		uint_fast64_t FRACT = (uint_fast64_t) USBPHYCPLLFREQUENCY << 16;
 //		FRACT /= pll4_r_ck;
 //		FRACT = FRACT - (d.quot << 16);
 
-		//PRINTF("USB_HS_PHYCInit: pll4_r_ck=%u, N=%u, FRACT=%u, ODF=%u\n", refclk, N, (unsigned) (FRACT & 0xFFFF), ODF);
+		//PRINTF("USB_HS_PHYCInit: usbphyref=%u, N=%u, FRACT=%u, ODF=%u\n", usbphyref, N, (unsigned) (FRACT & 0xFFFF), ODF);
 
 		USBPHYC->PLL =
 				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |

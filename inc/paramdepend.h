@@ -206,16 +206,16 @@ extern "C" {
 
 		//
 		#if WITHCPUXOSC
-			// с генератором
+			// с внешним генератором
 			#define	REFINFREQ WITHCPUXOSC
 		#elif WITHCPUXTAL
-			// с кварцем
+			// с внешним кварцевым резонатором
 			#define	REFINFREQ WITHCPUXTAL
 		#elif CPUSTYLE_STM32H7XX
-			// На внутреннем генераторе
+			// На внутреннем RC генераторе
 			#define	REFINFREQ 64000000uL
 		#else /* WITHCPUXTAL */
-			// На внутреннем генераторе
+			// На внутреннем RC генераторе
 			#define	REFINFREQ 16000000uL
 		#endif /* WITHCPUXTAL */
 
@@ -608,8 +608,6 @@ extern "C" {
 	//#define GICC_CTLR		(INTC.ICCICR)
 	//#define GICD_IPRIORITYRn(n) (((volatile uint8_t *) & INTC.ICDIPR0) [(n)])
 
-	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
-
 	// GIC_SetConfiguration parameters
 	#define GIC_CONFIG_EDGE 0x03
 	#define GIC_CONFIG_LEVEL 0x01
@@ -662,42 +660,43 @@ extern "C" {
 		AF_EVENT		//!< AF15 - SYSTEM (EVENTOUT)
 	} GPIO_AFLH_t;
 
-	// все параметры требуют уточнения, пока заглушки
-	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
-	//#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
-
-	#define HSIFREQ 64000000uL
+	/* Частоты встроенных RC генераторов процессора */
+	#define HSI64FREQ 64000000uL
 	#define CSIFREQ 4000000uL
 	#define LSIFREQ 32000uL
 
 	//
 	#if WITHCPUXOSC
-		// с генератором
-		#define	REFINFREQ WITHCPUXOSC
+		// с внешним генератором
+		#define	REF1INFREQ WITHCPUXOSC
+		#define	REF2INFREQ REF1INFREQ
+
 	#elif WITHCPUXTAL
-		// с кварцем
-		#define	REFINFREQ WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REF1INFREQ WITHCPUXTAL
+		#define	REF2INFREQ REF1INFREQ
+
 	#else /* WITHCPUXTAL */
-		// На внутреннем генераторе
-		#define	REFINFREQ HSIFREQ
+		// На внутреннем RC генераторе
+		#define	REF1INFREQ (stm32mp1_get_hsi_freq())
+		#define	REF2INFREQ HSI64FREQ
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ	(REFINFREQ / (PLL1DIVM) * (PLL1DIVN) / (PLL1DIVP))
+	#define CPU_FREQ	(stm32mp1_get_pll1_p_freq())
 	//#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
-	#define DDR_FREQ 	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
-	#define PLL3_FREQ	(REFINFREQ / (PLL3DIVM) * (PLL3DIVN))
-	#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
-	#define PLL4_FREQ_R	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN) / (PLL4DIVR))
+	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+	unsigned long stm32mp1_get_pll1_p_freq(void);	// MPU frequency
+	unsigned long stm32mp1_get_pll4_r_freq(void);
+	unsigned long stm32mp1_get_usbphy_freq(void);
+	unsigned long stm32mp1_get_usbotg_freq(void);
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
 	// ADC clock frequency: 1..20 MHz
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
-	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
@@ -731,13 +730,11 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
-
 	#if WITHCPUXOSC
-		// с генератором
+		// с внешним генератором
 		#define	REFINFREQ WITHCPUXOSC
 	#elif WITHCPUXTAL
-		// с кварцем
+		// с внешним кварцевым резонатором
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 

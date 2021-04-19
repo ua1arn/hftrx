@@ -471,6 +471,7 @@ void spool_systimerbundle2(void);
 void spool_elkeybundle(void);
 void sysinit_pll_initialize(void);	// PLL initialize
 void hardware_adc_startonescan(void);
+void stm32mp1_pll1_slow(uint_fast8_t slow);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
