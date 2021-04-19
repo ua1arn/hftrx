@@ -2432,18 +2432,25 @@ xxxx!;
 	void RAMFUNC_NONILINE UART4_IRQHandler(void)
 	{
 		const uint_fast32_t isr = UART4->ISR;
+		const uint_fast32_t cr1 = UART4->CR1;
 
-		if (isr & USART_ISR_RXNE_RXFNE)
-			HARDWARE_UART4_ONRXCHAR(UART4->RDR);
-		if (isr & USART_ISR_ORE)
+		if (cr1 & USART_CR1_RXNEIE)
 		{
-			UART4->ICR = USART_ICR_ORECF;
-			HARDWARE_UART4_ONOVERFLOW();
+			if (isr & USART_ISR_RXNE_RXFNE)
+				HARDWARE_UART4_ONRXCHAR(UART4->RDR);
+			if (isr & USART_ISR_ORE)
+			{
+				UART4->ICR = USART_ICR_ORECF;
+				HARDWARE_UART4_ONOVERFLOW();
+			}
+			if (isr & USART_ISR_FE)
+				UART4->ICR = USART_ICR_FECF;
 		}
-		if (isr & USART_ISR_FE)
-			UART4->ICR = USART_ICR_FECF;
-		if (isr & USART_ISR_TXE_TXFNF)
-			HARDWARE_UART4_ONTXCHAR(UART4);
+		if (cr1 & USART_CR1_TXEIE)
+		{
+			if (isr & USART_ISR_TXE_TXFNF)
+				HARDWARE_UART4_ONTXCHAR(UART4);
+		}
 	}
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
@@ -3487,28 +3494,28 @@ xxxx!;
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	void RAMFUNC_NONILINE USART4_Handler(void)
+	void RAMFUNC_NONILINE USART7_Handler(void)
 	{
-		const uint_fast32_t csr = USART4->US_CSR;
+		const uint_fast32_t csr = USART7->US_CSR;
 
 		if (csr & US_CSR_RXRDY)
-			HARDWARE_UART4_ONRXCHAR(USART1->US_RHR);
+			HARDWARE_UART7_ONRXCHAR(USART7->US_RHR);
 		if (csr & US_CSR_TXRDY)
-			HARDWARE_UART4_ONTXCHAR(USART1);
+			HARDWARE_UART7_ONTXCHAR(USART7);
 	}
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	void RAMFUNC_NONILINE UART4_IRQHandler(void)
+	void RAMFUNC_NONILINE UART7_IRQHandler(void)
 	{
-		const uint_fast32_t sr = UART4->SR;
+		const uint_fast32_t sr = UART7->SR;
 
 		if (sr & (USART_SR_RXNE | USART_SR_ORE | USART_SR_FE | USART_SR_NE))
-			HARDWARE_UART4_ONRXCHAR(UART4->DR);
+			HARDWARE_UART7_ONRXCHAR(UART7->DR);
 		if (sr & (USART_SR_ORE | USART_SR_FE | USART_SR_NE))
-			HARDWARE_UART4_ONOVERFLOW();
+			HARDWARE_UART7_ONOVERFLOW();
 		if (sr & USART_SR_TXE)
-			HARDWARE_UART4_ONTXCHAR(UART4);
+			HARDWARE_UART7_ONTXCHAR(UART7);
 	}
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
@@ -3516,8 +3523,34 @@ xxxx!;
 	void RAMFUNC_NONILINE UART7_IRQHandler(void)
 	{
 		const uint_fast32_t isr = UART7->ISR;
+		const uint_fast32_t cr1 = UART7->CR1;
 
-		if (isr & USART_ISR_RXNE_RXFNE)
+		if (cr1 & USART_CR1_RXNEIE)
+		{
+			if (isr & USART_ISR_RXNE_RXFNE)
+				HARDWARE_UART7_ONRXCHAR(UART7->RDR);
+			if (isr & USART_ISR_ORE)
+			{
+				UART7->ICR = USART_ICR_ORECF;
+				HARDWARE_UART7_ONOVERFLOW();
+			}
+			if (isr & USART_ISR_FE)
+				UART7->ICR = USART_ICR_FECF;
+		}
+		if (cr1 & USART_CR1_TXEIE)
+		{
+			if (isr & USART_ISR_TXE_TXFNF)
+				HARDWARE_UART7_ONTXCHAR(UART7);
+		}
+	}
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
+
+	void RAMFUNC_NONILINE UART7_IRQHandler(void)
+	{
+		const uint_fast32_t isr = UART7->ISR;
+
+		if (isr & USART_ISR_RXNE)
 			HARDWARE_UART7_ONRXCHAR(UART7->RDR);
 		if (isr & USART_ISR_ORE)
 		{
@@ -3526,131 +3559,26 @@ xxxx!;
 		}
 		if (isr & USART_ISR_FE)
 			UART7->ICR = USART_ICR_FECF;
-		if (isr & USART_ISR_TXE_TXFNF)
-			HARDWARE_UART7_ONTXCHAR(UART7);
-	}
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
-
-	void RAMFUNC_NONILINE UART4_IRQHandler(void)
-	{
-		const uint_fast32_t isr = UART4->ISR;
-
-		if (isr & USART_ISR_RXNE)
-			HARDWARE_UART4_ONRXCHAR(UART4->RDR);
-		if (isr & USART_ISR_ORE)
-		{
-			UART4->ICR = USART_ICR_ORECF;
-			HARDWARE_UART4_ONOVERFLOW();
-		}
-		if (isr & USART_ISR_FE)
-			UART4->ICR = USART_ICR_FECF;
 		if (isr & USART_ISR_TXE)
-			HARDWARE_UART4_ONTXCHAR(UART4);
-	}
-
-#elif CPUSTYLE_AT91SAM7S
-
-	#if HARDWARE_ARM_USEUSART0
-		static RAMFUNC_NONILINE void AT91F_US0Handler(void)
-		{
-			const uint_fast32_t csr = AT91C_BASE_US0->US_CSR;
-
-			if (csr & AT91C_US_RXRDY)
-				HARDWARE_UART4_ONRXCHAR(AT91C_BASE_US0->US_RHR);
-			if (csr & AT91C_US_TXRDY)
-				HARDWARE_UART4_ONTXCHAR(AT91C_BASE_US0);
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		static RAMFUNC_NONILINE void AT91F_US1Handler(void)
-		{
-			const uint_fast32_t csr = AT91C_BASE_US1->US_CSR;
-
-			if (csr & AT91C_US_RXRDY)
-				HARDWARE_UART4_ONRXCHAR(AT91C_BASE_US1->US_RHR);
-			if (csr & AT91C_US_TXRDY)
-				HARDWARE_UART4_ONTXCHAR(AT91C_BASE_US1);
-		}
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif		/* HARDWARE_ARM_USEUSART0 */
-
-#elif CPUSTYLE_ATMEGA328
-
-	ISR(USART_RX_vect)
-	{
-		HARDWARE_UART4_ONRXCHAR(UDR0);
-	}
-
-	ISR(USART_TX_vect)
-	{
-		HARDWARE_UART4_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	ISR(USART1_RX_vect)
-	{
-		HARDWARE_UART4_ONRXCHAR(UDR0);
-	}
-
-	ISR(USART1_TX_vect)
-	{
-		HARDWARE_UART4_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATMEGA32
-
-	ISR(USART_RXC_vect)
-	{
-		HARDWARE_UART4_ONRXCHAR(UDR);
-	}
-
-	ISR(USART_TXC_vect)
-	{
-		HARDWARE_UART4_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATMEGA128
-
-	ISR(USART1_RX_vect)
-	{
-		HARDWARE_UART4_ONRXCHAR(UDR1);
-	}
-
-	ISR(USART1_TX_vect)
-	{
-		HARDWARE_UART4_ONTXCHAR(NULL);
-	}
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	ISR(USARTE1_RXC_vect)
-	{
-		HARDWARE_UART4_ONRXCHAR(USARTE1.DATA);
-	}
-
-	ISR(USARTE1_DRE_vect)
-	{
-		HARDWARE_UART4_ONTXCHAR(& USARTE1);
+			HARDWARE_UART7_ONTXCHAR(UART7);
 	}
 
 #elif CPUSTYLE_R7S721
 
 	// Приём символа он последовательного порта
-	static void SCIFRXI3_IRQHandler(void)
+	static void SCIFRXI7_IRQHandler(void)
 	{
-		(void) SCIF3.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
-		SCIF3.SCFSR = (uint16_t) ~ SCIF3_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
-		uint_fast8_t n = (SCIF3.SCFDR & SCIF3_SCFDR_R) >> SCIF3_SCFDR_R_SHIFT;
+		(void) SCIF7.SCFSR;						// Перед сбросом бита RDF должно произойти его чтение в ненулевом состоянии
+		SCIF7.SCFSR = (uint16_t) ~ SCIF7_SCFSR_RDF;	// RDF=0 читать незачем (в примерах странное - сбрасывабтся и другие биты)
+		uint_fast8_t n = (SCIF7.SCFDR & SCIF7_SCFDR_R) >> SCIF7_SCFDR_R_SHIFT;
 		while (n --)
-			HARDWARE_UART4_ONRXCHAR(SCIF3.SCFRDR & SCIF3_SCFRDR_D);
+			HARDWARE_UART7_ONRXCHAR(SCIF7.SCFRDR & SCIF7_SCFRDR_D);
 	}
 
 	// Передача символа в последовательный порт
-	static void SCIFTXI3_IRQHandler(void)
+	static void SCIFTXI7_IRQHandler(void)
 	{
-		HARDWARE_UART4_ONTXCHAR(& SCIF3);
+		HARDWARE_UART7_ONTXCHAR(& SCIF7);
 	}
 
 #else
@@ -4600,18 +4528,25 @@ xxxx!;
 	void RAMFUNC_NONILINE UART5_IRQHandler(void)
 	{
 		const uint_fast32_t isr = UART5->ISR;
+		const uint_fast32_t cr1 = UART5->CR1;
 
-		if (isr & USART_ISR_RXNE_RXFNE)
-			HARDWARE_UART5_ONRXCHAR(UART5->RDR);
-		if (isr & USART_ISR_ORE)
+		if (cr1 & USART_CR1_RXNEIE)
 		{
-			UART5->ICR = USART_ICR_ORECF;
-			HARDWARE_UART5_ONOVERFLOW();
+			if (isr & USART_ISR_RXNE_RXFNE)
+				HARDWARE_UART5_ONRXCHAR(UART5->RDR);
+			if (isr & USART_ISR_ORE)
+			{
+				UART5->ICR = USART_ICR_ORECF;
+				HARDWARE_UART5_ONOVERFLOW();
+			}
+			if (isr & USART_ISR_FE)
+				UART5->ICR = USART_ICR_FECF;
 		}
-		if (isr & USART_ISR_FE)
-			UART5->ICR = USART_ICR_FECF;
-		if (isr & USART_ISR_TXE_TXFNF)
-			HARDWARE_UART5_ONTXCHAR(UART5);
+		if (cr1 & USART_CR1_TXEIE)
+		{
+			if (isr & USART_ISR_TXE_TXFNF)
+				HARDWARE_UART5_ONTXCHAR(UART5);
+		}
 	}
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32L0XX || CPUSTYLE_STM32F7XX
