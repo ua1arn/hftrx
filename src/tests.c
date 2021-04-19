@@ -6048,6 +6048,29 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && CPUSTYLE_XC7Z
+	{
+		PRINTF("GEM0 test:\n");
+		SCLR->GEM0_CLK_CTRL = //(SCLR->GEM0_CLK_CTRL & ~ (0x00uL)) |
+				((uint_fast32_t) 0x00 << 20) |	// DIVISOR1
+				((uint_fast32_t) 0x3C << 8) |	// DIVISOR
+				((uint_fast32_t) 0x00 << 4) |	// SRCSEL: 00x: IO PLL
+				((uint_fast32_t) 0x01 << 0) |	// CLKACT
+				0;
+		(void) SCLR->GEM0_CLK_CTRL;
+		PRINTF("GEM0 test: SCLR->GEM0_CLK_CTRL=%08lX\n", SCLR->GEM0_CLK_CTRL);
+		PRINTF("GEM0 test: offset=%04lX GEM0->MODULE_ID=%08lX\n", offsetof(XEMACPS_Registers, MODULE_ID), GEM0->MODULE_ID);
+		PRINTF("GEM0 test: offset=%04lX GEM0->DESIGN_CFG5=%08lX\n", offsetof(XEMACPS_Registers, DESIGN_CFG5), GEM0->DESIGN_CFG5);
+		PRINTF("GEM0 test: offset=%04lX GEM0->FRAMES_1024TO1518B_TX=%08lX\n", offsetof(XEMACPS_Registers, FRAMES_1024TO1518B_TX), GEM0->FRAMES_1024TO1518B_TX);
+		PRINTF("GEM0 test: offset=%04lX GEM0->JAB_RX=%08lX\n", offsetof(XEMACPS_Registers, JAB_RX), GEM0->JAB_RX);
+		PRINTF("GEM0 test: offset=%04lX GEM0->TIMER_STROBE_S=%08lX\n", offsetof(XEMACPS_Registers, TIMER_STROBE_S), GEM0->TIMER_STROBE_S);
+		PRINTF("GEM0 test: offset=%04lX GEM0->PTP_PEER_RX_NS=%08lX\n", offsetof(XEMACPS_Registers, PTP_PEER_RX_NS), GEM0->PTP_PEER_RX_NS);
+		PRINTF("GEM0 test: offset=%04lX GEM0->DESIGN_CFG5=%08lX\n", offsetof(XEMACPS_Registers, DESIGN_CFG5), GEM0->DESIGN_CFG5);
+
+		ASSERT(GEM0->MODULE_ID == 0x00020118uL);
+		PRINTF("GEM0 test done\n");
+	}
+#endif
 #if 0
 	{
 		PRINTF("CPU speed changing test:\n");
