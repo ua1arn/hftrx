@@ -5673,25 +5673,30 @@ static void xc7z1_io_pll_initialize(void)
 			0;
 }
 
+static unsigned long xc7z1_get_pllsreference_freq(void)
+{
+	return WITHCPUXOSC;
+}
+
 static uint_fast64_t xc7z1_get_arm_pll_freq(void)
 {
 	const uint_fast32_t arm_pll_mul = (SCLR->ARM_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
-	return (uint_fast64_t) WITHCPUXOSC * arm_pll_mul;
+	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * arm_pll_mul;
 }
 
 static uint_fast64_t xc7z1_get_ddr_pll_freq(void)
 {
 	const uint_fast32_t ddr_pll_mul = (SCLR->DDR_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
-	return (uint_fast64_t) WITHCPUXOSC * ddr_pll_mul;
+	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * ddr_pll_mul;
 }
 
 static uint_fast64_t xc7z1_get_io_pll_freq(void)
 {
 	const uint_fast32_t io_pll_mul = (SCLR->IO_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
-	return (uint_fast64_t) WITHCPUXOSC * io_pll_mul;
+	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * io_pll_mul;
 }
 
 unsigned long  xc7z1_get_arm_freq(void)
