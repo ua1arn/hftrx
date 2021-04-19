@@ -6018,7 +6018,7 @@ sysinit_pll_initialize(void)
 
 		ps7_init();
 
-		XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 		XDCFG->CTRL &= ~ (1uL << 29);	// PCFG_POR_CNT_4K
 
 	#endif /* WITHISBOOTLOADER */

@@ -1228,6 +1228,14 @@ static void spidf_iostart(
 	// при передаче формируется только команла и адрес при необходимости
 }
 
+#elif WIHSPIDFHW && CPUSTYLE_XC7Z
+
+void spidf_initialize(void)
+{
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
+}
+
 #endif /* WIHSPIDFHW */
 
 /* получить 32-бит значение */
