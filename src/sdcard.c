@@ -2789,7 +2789,7 @@ static int multisectorWriteProblems(UINT count)
 
 static int multisectorReadProblems(UINT count)
 {
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 	if (count > 1)
 	{
 		return 1;
