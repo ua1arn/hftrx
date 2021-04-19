@@ -10577,6 +10577,7 @@ void hardware_sdhost_detect(uint_fast8_t Card_Inserted)
 	//	For All in Software register. The card detect is
 	//	active regardless of the SD Bus Power.
 
+	return;
 
 	// SD_Bus_Power off
 	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
