@@ -3583,6 +3583,7 @@ static void dosaveserialport(const char * fname)
 		PRINTF(PSTR("can not start recording\n"));
 		return;	//die(rc);
 	}
+	PRINTF(PSTR("Write the file content: '%s'\n"), fname);
 
 	rxqclear();	// очистить буфер принятых символов
 
