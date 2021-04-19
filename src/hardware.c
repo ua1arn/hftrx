@@ -3562,6 +3562,18 @@ void cpu_initdone(void)
 #endif /* WITHISBOOTLOADER */
 }
 
+void arm_hardware_reset(void)
+{
+#if defined (__NVIC_PRIO_BITS)
+	NVIC_SystemReset();
+#endif /* defined (__NVIC_PRIO_BITS) */
+#if CPUSTYLE_STM32MP1
+	RCC->MP_GRSTCSETR = RCC_MP_GRSTCSETR_MPSYSRST_Msk;
+#endif /* CPUSTYLE_STM32MP1 */
+	for (;;)
+		;
+}
+
 // optimizer test: from electronix.ru - should be one divmod call
 /*
 uint8_t xxxxxpos(uint8_t num) // num = 0..8
@@ -3745,103 +3757,6 @@ int __attribute__((used)) (_getpid)(int id)
 {
 	return (-1);
 }
-
-#if defined(RTC1_TYPE)
-
-#include <time.h>
-#include <sys/_timeval.h>
-
-/* поддержка получения времени */
-int _gettimeofday(struct timeval *p, void *tz)
-{
-	const time_t XSEC_PER_DAY = (time_t) 24 * 60 * 60;
-
-	if (p != NULL)
-	{
-		// получаем локальное время в секундах из компонент
-		uint_fast16_t year;
-		uint_fast8_t month, dayofmonth;
-		uint_fast8_t hour, minute, secounds;
-
-		board_rtc_getdatetime( & year, & month, & dayofmonth, & hour, & minute, & secounds);
-
-		static const unsigned int years [2] [13] =
-		{
-			{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 }, /* Normal */
-			{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }, /* Leap   */
-		};
-
-//		unsigned int leap = 0;
-//		float Leap_check = 0.0;
-
-		/* сколько лет прошло с 1980 года? */
-		/* делим разность текущего и 1980 годов на 4 */
-		/* если результат деления - без остатка, то текущий год - високосный */
-		/* если результат деления - с остатком, то текущий год -  нормальный */
-//
-//		Leap_check = ((float) ((year) - 1980)) / 4.; /* деление на предмет */
-//		/* выявления остатка  */
-//		leap = ((int) ((year) - 1980)) / 4; /* деление с обрезанием остатка*/
-//
-//		if (Leap_check == leap)
-//			leap = 1; /* сравнение (leap=1 - вис.год) */
-//
-//		else
-//			leap = 0;
-
-		const div_t d = div(year - 1980, 4);
-		const int leap = d.rem == 0;
-
-		/* число секунд в этих годах
-		 SEC_PER_DAY*(((year)-1980)*365 + ((year)-1980)/4 + 0\1);
-
-		 сколько секунд в предыдущих месяцах текущего года?
-		 SEC_PER_DAY*years[leap][(month)-1];
-
-		 сколько секунд прошло за предыдущие дни текущего месяца?
-		 SEC_PER_DAY*((day)-1);
-
-		 сколько секунд прошло за предыдущие часы текущего дня?
-		 3600*(hour);
-
-		 сколько секунд прошло за предыдущие минуты текущего часа?
-		 60*(min);
-
-		 число отдельных секунд
-		 (sec);    */
-
-		if (leap != 0)
-		{
-			p->tv_sec = XSEC_PER_DAY * (((year) - 1980) * 365 + ((year) - 1980) / 4 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
-					+ 3600 * (hour) + 60 * (minute) + (secounds);
-		}
-		else
-		{
-			p->tv_sec = XSEC_PER_DAY
-					* (((year) - 1980) * 365 + ((year) - 1980) / 4 + 1 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
-					+ 3600 * (hour) + 60 * (minute) + (secounds);
-		}
-		p->tv_usec = 0;
-	}
-
-	return 0;
-}
-
-#else
-
-#include <time.h>
-#include <sys/_timeval.h>
-
-
-int _gettimeofday(struct timeval *p, void *tz)
-{
-	if (p != NULL)
-	{
-	}
-	return 0;
-}
-
-#endif
 
 #ifdef __cplusplus
 }
