@@ -6051,14 +6051,17 @@ void hightests(void)
 #if 0 && CPUSTYLE_XC7Z
 	{
 		PRINTF("GEM0 test:\n");
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 		SCLR->GEM0_CLK_CTRL = //(SCLR->GEM0_CLK_CTRL & ~ (0x00uL)) |
-				((uint_fast32_t) 0x00 << 20) |	// DIVISOR1
-				((uint_fast32_t) 0x3C << 8) |	// DIVISOR
+				((uint_fast32_t) 0x08 << 20) |	// DIVISOR1
+				((uint_fast32_t) 0x05 << 8) |	// DIVISOR
 				((uint_fast32_t) 0x00 << 4) |	// SRCSEL: 00x: IO PLL
 				((uint_fast32_t) 0x01 << 0) |	// CLKACT
 				0;
-		(void) SCLR->GEM0_CLK_CTRL;
+		SCLR->GEM0_RCLK_CTRL = 0x0000001uL;
+
 		PRINTF("GEM0 test: SCLR->GEM0_CLK_CTRL=%08lX\n", SCLR->GEM0_CLK_CTRL);
+		PRINTF("GEM0 test: SCLR->GEM0_RCLK_CTRL=%08lX\n", SCLR->GEM0_RCLK_CTRL);
 		PRINTF("GEM0 test: offset=%04lX GEM0->MODULE_ID=%08lX\n", offsetof(XEMACPS_Registers, MODULE_ID), GEM0->MODULE_ID);
 		PRINTF("GEM0 test: offset=%04lX GEM0->DESIGN_CFG5=%08lX\n", offsetof(XEMACPS_Registers, DESIGN_CFG5), GEM0->DESIGN_CFG5);
 		PRINTF("GEM0 test: offset=%04lX GEM0->FRAMES_1024TO1518B_TX=%08lX\n", offsetof(XEMACPS_Registers, FRAMES_1024TO1518B_TX), GEM0->FRAMES_1024TO1518B_TX);
