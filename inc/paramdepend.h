@@ -738,8 +738,9 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ	(REFINFREQ / (ARM_PLL_DIV) * (ARM_PLL_MUL))
-	unsigned long xc7z1_get_arm_pll_freq(void);
+	#define CPU_FREQ	(xc7z1_get_arm_freq())
+	unsigned long  xc7z1_get_arm_freq(void);
+	#define BOARD_SPI_FREQ (xc7z1_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt

@@ -23,8 +23,8 @@
 	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
 	#define ARM_PLL_MUL	40
 	#define ARM_PLL_DIV	2
-	#define SELOUT_CLK (WITHCPUXOSC * 3)
 	#define SCLR_UART_CLK_CTRL_DIVISOR 16
+	#define SCLR_SDIO_CLK_CTRL_DIVISOR 16
 
 	#if WITHI2SCLOCKFROMPIN
 		#define FPGADECIMATION 2560
