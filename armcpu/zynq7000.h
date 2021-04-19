@@ -131,11 +131,11 @@ typedef enum IRQn
 
 /** @name Register Map
  *
+ * UART Controller (UART)
  * Registers of the UART.
  * @{
  */
-typedef struct
-{
+typedef struct xuartps_regs {
     volatile uint32_t CR;            /**< Control Register */
     volatile uint32_t MR;            /**< Mode Register */
     volatile uint32_t IER;           /**< Interrupt Enable */
@@ -151,10 +151,28 @@ typedef struct
     volatile uint32_t FIFO;          /**< FIFO */
     volatile uint32_t BAUDDIV;       /**< Baud Rate Divider "DIV" */
     volatile uint32_t FLOWDEL;       /**< Flow Delay */
-    volatile uint32_t RESERVED1;
-    volatile uint32_t RESERVED2;
+    uint32_t RESERVED1;
+    uint32_t RESERVED2;
     volatile uint32_t TXWM;            /* TX FIFO Trigger Level */
-} UART_Registers;
+} XUARTPS_Registers;
+
+#define XUARTPS_CR_TXRST	0x00000002uL  /**< TX logic reset */
+#define XUARTPS_CR_RXRST	0x00000001uL  /**< RX logic reset */
+
+#define XUARTPS_MR_CHMODE_NORM		0x00000000uL /**< Normal mode */
+#define XUARTPS_MR_STOPMODE_1_BIT	0x00000000uL /**< 1 stop bit */
+#define XUARTPS_MR_PARITY_NONE		0x00000020uL /**< No parity mode */
+#define XUARTPS_MR_CHARLEN_8_BIT	0x00000000uL /**< 8 bits data */
+#define XUARTPS_MR_CLKSEL			0x00000001uL /**< Input clock selection */
+
+#define XUARTPS_SR_TNFUL	0x00004000uL /**< TX FIFO Nearly Full Status */
+#define XUARTPS_SR_TACTIVE	0x00000800uL /**< TX active */
+#define XUARTPS_SR_RXEMPTY	0x00000002uL /**< RX FIFO empty */
+
+#define XUARTPS_CR_TX_DIS	0x00000020uL  /**< TX disabled. */
+#define XUARTPS_CR_TX_EN	0x00000010uL  /**< TX enabled */
+#define XUARTPS_CR_RX_DIS	0x00000008uL  /**< RX disabled. */
+#define XUARTPS_CR_RX_EN	0x00000004uL  /**< RX enabled */
 
 /* system watchdog timer */
 typedef struct swdt_regs {
@@ -475,25 +493,6 @@ typedef struct qspi_regs {
 #define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
 #define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
 
-
-#define XUARTPS_CR_TXRST	0x00000002U  /**< TX logic reset */
-#define XUARTPS_CR_RXRST	0x00000001U  /**< RX logic reset */
-
-#define XUARTPS_MR_CHMODE_NORM		0x00000000UL /**< Normal mode */
-#define XUARTPS_MR_STOPMODE_1_BIT	0x00000000UL /**< 1 stop bit */
-#define XUARTPS_MR_PARITY_NONE		0x00000020UL /**< No parity mode */
-#define XUARTPS_MR_CHARLEN_8_BIT	0x00000000UL /**< 8 bits data */
-#define XUARTPS_MR_CLKSEL			0x00000001UL /**< Input clock selection */
-
-#define XUARTPS_SR_TNFUL	0x00004000UL /**< TX FIFO Nearly Full Status */
-#define XUARTPS_SR_TACTIVE	0x00000800UL /**< TX active */
-#define XUARTPS_SR_RXEMPTY	0x00000002UL /**< RX FIFO empty */
-
-#define XUARTPS_CR_TX_DIS	0x00000020UL  /**< TX disabled. */
-#define XUARTPS_CR_TX_EN	0x00000010UL  /**< TX enabled */
-#define XUARTPS_CR_RX_DIS	0x00000008UL  /**< RX disabled. */
-#define XUARTPS_CR_RX_EN	0x00000004UL  /**< RX enabled */
-
 /* memory addresses */
 /* assumes sram is mapped at 0 the first MB of sdram is covered by it */
 #define SDRAM_BASE          (0x00100000)
@@ -538,8 +537,8 @@ typedef struct qspi_regs {
 #define GTC 						((GTC_Registers *) GLOBAL_TIMER_BASE)
 #define SCLR 						((SLCR_Registers *) SLCR_BASE)
 #define SWDT                       	((SWDT_Registers *) SWDT_BASE)
-#define UART0                       ((UART_Registers *) UART0_BASE)
-#define UART1                       ((UART_Registers *) UART1_BASE)
+#define UART0                       ((XUARTPS_Registers *) UART0_BASE)
+#define UART1                       ((XUARTPS_Registers *) UART1_BASE)
 #define SPI0                       	((SPI_Registers *) SPI0_BASE)
 #define SPI1                       	((SPI_Registers *) SPI1_BASE)
 #define SD0							((SD_Registers *) SD0_BASE)
