@@ -10361,7 +10361,10 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 #elif CPUSTYLE_XC7Z
 
 	const unsigned long ref = xc7z1_get_sdio_freq();
-	PRINTF("hardware_sdhost_setspeed: ref=%lu\n", ref);
+	unsigned divider = calcdivround2(ref / 2, ticksfreq);
+	divider = ulmin(divider, 255);
+	divider = ulmax(divider, 1);
+	PRINTF("hardware_sdhost_setspeed: ref=%lu, divider=%u\n", ref, divider);
 	if (ticksfreq <= 400000uL)
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
@@ -10373,7 +10376,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	{
 		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
 			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
-			(0x10uL << 8) |	// SDCLK_Frequency_Select: 10h - base clock divided by 32
+			((uint_fast32_t) divider << 8) |	// SDCLK_Frequency_Select: 10h - base clock divided by 32
 			0;
 	}
 
@@ -10528,8 +10531,8 @@ void hardware_sdhost_initialize(void)
 
 
 	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
-		(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x0F0000uL)) |
-		0x0E0000uL;	// Data_Timeout_Counter_Value
+		(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ ((0x0FuL << 16))) |
+		(0x0EuL << 16);	// Data_Timeout_Counter_Value
 
 	// SD_Bus_Power off
 	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
