@@ -372,7 +372,8 @@
 		#define WITHENCODER2	1		/* есть второй валкодер */
 		#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 		#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#elif 0
+		//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
+	#elif 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
@@ -383,7 +384,8 @@
 
 		#define WITHENCODER2	1		/* есть второй валкодер */
 		#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
-		#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+		//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
+		#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	#endif
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
@@ -410,6 +412,7 @@
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
+	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
@@ -524,6 +527,9 @@
 	#if WITHPOTPOWER
 		POTPOWER = 6,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
+	#if WITHPOTNFMSQL
+		POTNFMSQL = 6,
+	#endif /* WITHPOTNFMSQL */
 
 	#if WITHTHERMOLEVEL
 		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
