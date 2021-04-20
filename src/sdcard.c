@@ -438,7 +438,7 @@ static int zynq_wait_for_transfer(uint_fast8_t txmode)
 		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint_fast32_t psts = SD0->PRESENT_STATE;
 		const uint_fast32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
-		//PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
+		//PRINTF("zynq_wait_for_transfer: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
 		if ((status & (1uL << 7)) != 0) // Card_Removal
 		{
 			SD0->INT_STATUS = (1uL << 7); // Card_Removal
@@ -481,7 +481,7 @@ static int zynq_wait_for_transfer(uint_fast8_t txmode)
 		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint_fast32_t psts = SD0->PRESENT_STATE;
 		const uint_fast32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
-		//PRINTF("DMA_sdio_waitdone: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
+		//PRINTF("zynq_wait_for_transfer: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
 		if ((status & (1uL << 7)) != 0) // Card_Removal
 		{
 			SD0->INT_STATUS = (1uL << 7); // Card_Removal
@@ -548,6 +548,8 @@ static int zynq_wait_for_command(void)
 	{
 		const uint_fast32_t status = SD0->INT_STATUS;	// bits are Readable, write a one to clear
 		const uint_fast32_t psts = SD0->PRESENT_STATE;
+		const uint_fast32_t hgapctl = SD0->HOST_CTRL_BLOCK_GAP_CTRL;
+		//PRINTF("zynq_wait_for_command: status=%08lX, psts=%08lX, hgapctl=%08lX\n", status, psts, hgapctl);
 		if ((status & (1uL << 7)) != 0) // Card_Removal
 		{
 			SD0->INT_STATUS = (1uL << 7); // Card_Removal
@@ -2789,7 +2791,7 @@ static int multisectorWriteProblems(UINT count)
 
 static int multisectorReadProblems(UINT count)
 {
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	if (count > 1)
 	{
 		return 1;
@@ -2947,10 +2949,13 @@ DRESULT SD_disk_write(
 		{
 			sdhost_dpsm_wait_fifo_empty();
 			DMA_sdio_cancel();
-			if (sdhost_hardware_cmd12() == 0 || sdhost_use_cmd23 == 0)
+			if (sdhost_hardware_cmd12() == 0 && sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
+				{
 					PRINTF(PSTR("SD_disk_write 3: sdhost_stop_transmission error, count=%u\n"), (unsigned) count);
+					return RES_ERROR;
+				}
 			}
 		}
 		//PRINTF(PSTR("write multiblock, count=%d okay\n"), count);
@@ -3079,10 +3084,13 @@ DRESULT SD_disk_read(
 		{
 			sdhost_dpsm_wait_fifo_empty();
 			DMA_sdio_cancel();
-			if (sdhost_hardware_cmd12() == 0 || sdhost_use_cmd23 == 0)
+			if (sdhost_hardware_cmd12() == 0 && sdhost_use_cmd23 == 0)
 			{
 				if (sdhost_stop_transmission() != 0)
+				{
 					PRINTF(PSTR("SD_disk_read 3: sdhost_stop_transmission error, count=%u\n"), (unsigned) count);
+					return RES_ERROR;
+				}
 			}
 			return RES_OK;
 		}
