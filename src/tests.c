@@ -3519,7 +3519,7 @@ static void printtextfile(const char * filename)
 		{
 			// если буфер не заполнен - читаем
 			rc = f_read(& Fil, rbuff, sizeof rbuff, &br);	/* Read a chunk of file */
-			if (rc || !br) 
+			if (rc != FR_OK || !br)
 				break;			/* Error or end of file */
 			i = 0;		// начальное положение указателя в буфере для вывода данных
 			showprogress(filepos, fulllength);
