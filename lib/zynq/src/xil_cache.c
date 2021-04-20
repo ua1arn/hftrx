@@ -92,6 +92,8 @@
 #include "xil_errata.h"
 #include "xil_exception.h"
 
+#if 0
+
 /************************** Function Prototypes ******************************/
 
 /************************** Variable Definitions *****************************/
@@ -1615,6 +1617,8 @@ void Xil_L2CacheStoreLine(u32 adr)
 	/* synchronize the processor */
 	dsb();
 }
+#endif
+
 #endif
 
 #endif /* CPUSTYLE_XC7Z */

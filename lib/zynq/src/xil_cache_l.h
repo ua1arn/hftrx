@@ -33,6 +33,7 @@ extern "C" {
 #endif
 
 /************************** Function Prototypes ******************************/
+#if 0
 
 void Xil_DCacheInvalidateLine(u32 adr);
 void Xil_DCacheFlushLine(u32 adr);
@@ -64,6 +65,7 @@ void Xil_L2CacheFlush(void);
 void Xil_L2CacheFlushLine(u32 adr);
 void Xil_L2CacheFlushRange(u32 adr, u32 len);
 void Xil_L2CacheStoreLine(u32 adr);
+#endif
 
 #ifdef __cplusplus
 }

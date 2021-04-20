@@ -32,7 +32,7 @@ xdma_flush16tx(uintptr_t addr)
 
 void xc7z_dma_transmit(XAxiDma * dmaptr, UINTPTR buffer, size_t buffer_len)
 {
-	Xil_DCacheFlushRange(buffer, buffer_len);
+	arm_hardware_flush((uintptr_t) buffer, buffer_len);
 	int Status = XAxiDma_SimpleTransfer(& xc7z_axidma_af_tx, buffer, buffer_len, XAXIDMA_DMA_TO_DEVICE);
 	if (Status != XST_SUCCESS)
 	{
