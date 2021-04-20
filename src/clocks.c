@@ -5415,7 +5415,7 @@ static const unsigned long ps7_clock_init_data_3_0[] = {
 		EMIT_MASKWRITE(0XF8000168, 0x00003F31U ,0x00000801U),	// PCAP_CLK_CTRL
 		EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
 		EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
-		EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
+		//EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
 		EMIT_EXIT(),
 	};
 
@@ -6009,6 +6009,8 @@ sysinit_pll_initialize(void)
 		SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
 		SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
 
+		SCLR->APER_CLK_CTRL = 0;	// All AMBA Clock control disable
+
 		// PLL только в bootloader.
 		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
 
@@ -6020,6 +6022,7 @@ sysinit_pll_initialize(void)
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 		XDCFG->CTRL &= ~ (1uL << 29);	// PCFG_POR_CNT_4K
+		SCLR->APER_CLK_CTRL |= (0x01uL << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 
 	#endif /* WITHISBOOTLOADER */
 
@@ -10514,6 +10517,8 @@ void hardware_sdhost_initialize(void)
 //    SCLR->SDIO_RST_CTRL |= (0x11uL << sdioix);
 //    SCLR->SDIO_RST_CTRL &= ~ (0x11uL << sdioix);
 
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << (10 + sdioix));	// APER_CLK_CTRL.SDI0_CPU_1XCLKACT
     //EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
 		((uint_fast32_t) SCLR_SDIO_CLK_CTRL_DIVISOR << 8) | // DIVISOR

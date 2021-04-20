@@ -642,7 +642,6 @@ typedef struct xemacps_regs {
 #define DMAC0_S_BASE 	(0xF8003000uL)
 #define SWDT_BASE  		(0xF8005000uL)
 #define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
-#define XQSPIPS_BASE  	(0XE000D000uL)
 
 #define QSPI_LINEAR_BASE  (0xfC000000uL)
 
@@ -657,7 +656,7 @@ typedef struct xemacps_regs {
 #define SD0				((SD_Registers *) SD0_BASE)
 #define SD1				((SD_Registers *) SD1_BASE)
 #define XDCFG			((XDCFG_Registers *) XDCFG_BASE)
-#define XQSPIPS			((XQSPIPS_Registers *) XQSPIPS_BASE)
+#define XQSPIPS			((XQSPIPS_Registers *) QSPI_BASE)
 #define GEM0			((XEMACPS_Registers *) GEM0_BASE)
 #define GEM1			((XEMACPS_Registers *) GEM1_BASE)
 
