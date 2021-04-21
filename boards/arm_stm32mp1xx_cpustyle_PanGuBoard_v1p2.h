@@ -1094,6 +1094,21 @@
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
+#if 1
+	#define BOARD_SII902X_RESET_BIT	(1uL << 13)	// PanGu board: HDMI_RST PA13
+
+	#define BOARD_SII902X_RESET_SET(state) do { \
+			if (state) \
+				(GPIOA)->BSRR = BSRR_S(BOARD_SII902X_RESET_BIT); \
+			else \
+				(GPIOA)->BSRR = BSRR_C(BOARD_SII902X_RESET_BIT); \
+		} while (0)
+
+	#define BOARD_SII902X_INITIALIZE() do { \
+			arm_hardware_pioa_outputs(BOARD_SII902X_RESET_BIT, 1 * BOARD_SII902X_RESET_BIT); \
+		} while (0)
+#endif
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			I2S2HW_POOLDOWN(); \
@@ -1106,6 +1121,7 @@
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
 			USBD_FS_INITIALIZE(); \
+			BOARD_SII902X_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9A_H_INCLUDED */

@@ -4611,7 +4611,9 @@ static int i2c_smbus_write_byte_data(
 	return 0;
 }
 
-enum { SII9022_ADDR_W = 0x7A, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
+enum { SII9022_ADDR_W = 0x72, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
+//enum { SII9022_ADDR_W = 0x7A, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
+//enum { SII9022_ADDR_W = 0xC0, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
 
 static int sii9022x_regmap_write(uint_fast8_t reg, uint_fast8_t data)
 {
@@ -5173,9 +5175,9 @@ static void sii902x_poweroff(struct sii902x_data *sii9022x)
 
 static void sii902x_reset(struct sii902x_data *sii9022x)
 {
-//	gpio_direction_output(sii9022x->reset_pin, 0);
-//	local_delay_ms(100);
-//	gpio_direction_output(sii9022x->reset_pin, 1);
+	BOARD_SII902X_RESET_SET(0);
+	local_delay_ms(100);
+	BOARD_SII902X_RESET_SET(1);
 }
 
 static int sii902x_set_avi_infoframe(struct sii902x_data *sii9022x)
@@ -5699,6 +5701,8 @@ static int sii902x_probe(struct i2c_client *client,
 
 void sii9022_initialize(void)
 {
+	sii902x_reset(NULL);
+
 	sii902x_detect_version(NULL);
 	{
 		// SII9022 test
