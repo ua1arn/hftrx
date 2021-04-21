@@ -411,7 +411,7 @@
 	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
-	//#define WITHANTSELECT	1	// Управление переключением антенн
+	#define WITHANTSELECT	1	// Управление переключением антенн
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
