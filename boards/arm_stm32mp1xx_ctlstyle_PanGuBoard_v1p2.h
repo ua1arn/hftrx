@@ -242,7 +242,7 @@
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
-	//#define LCDMODEX_SII9022 1	/* 1280 * 720 siiI9022A HDMI Transmitter */
+	#define LCDMODEX_SII9022 1	/* 1280 * 720 siiI9022A HDMI Transmitter */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */

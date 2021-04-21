@@ -48,10 +48,6 @@
 		VBP = 2,					/* Vertical back porch        */
 		VFP = 4,					/* Vertical front porch       */
 
-		/* Accumulated parameters for this display */
-		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
-
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
 		// SYNC MODE: MODE="0". DE must be grounded
@@ -80,14 +76,16 @@
 		  * When selected sync mode, de must be grounded.
 		  */     
 		HSYNC = 40,				/* Horizontal synchronization 1..40 */
+		HBP = 6,				/* Horizontal back porch      */
 		HFP = 210,				/* Horizontal front porch  16..354   */
 
 		VSYNC = 20,				/* Vertical synchronization 1..20  */
+		VBP = 3,				/* Vertical back porch      */
 		VFP = 22,				/* Vertical front porch  7..147     */
 
 		/* Accumulated parameters for this display */
-		LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
-		TOPMARGIN = 23,			/* vertical blanking EXACTLY */
+		//LEFTMARGIN = 46,		/* horizontal blanking EXACTLY */
+		//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
@@ -103,7 +101,7 @@
 	};
 	#define LTDC_DOTCLK	30000000uL	// частота пикселей при работе с интерфейсом RGB
 
-#elif LCDMODE_AT070TNA2
+#elif 1 && LCDMODE_AT070TNA2
 
 	/* AT070TNA2 panel (1024*600) - 7" display HV mode */
 	// HX8282-A01.pdf, page 38
@@ -119,18 +117,16 @@
 		  * When selected sync mode, de must be grounded.
 		  */     
 		HSYNC = 140,			/* Horizontal synchronization 1..140 */
-		HFP = 160,				/* Horizontal front porch  16..216   */
 		HBP = 20,				/* Horizontal back porch  xxx   */
+		HFP = 160,				/* Horizontal front porch  16..216   */
 
 		VSYNC = 20,				/* Vertical synchronization 1..20  */
-		VFP = 12,				/* Vertical front porch  1..127     */
 		VBP = 3,				/* Vertical back porch  xxx   */
+		VFP = 12,				/* Vertical front porch  1..127     */
 
 		/* Accumulated parameters for this display */
 		//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
 		//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
-		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
@@ -143,7 +139,7 @@
 	#define LTDC_DOTCLK	51200000uL	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 
 
-#elif 0//LCDMODE_AT070TNA2
+#elif 0 && LCDMODE_AT070TNA2
 
 	/* AT070TNA2 panel (1024*600) - 7" display HV mode */
 	// HX8282-A01.pdf, page 38
@@ -176,18 +172,16 @@
 		  * When selected sync mode, de must be grounded.
 		  */
 		HSYNC = 136,			/* Horizontal synchronization 1..140 */
+		HBP = xxx,				/* Horizontal back porch  xxx   */
 		HFP = 110,				/* Horizontal front porch  16..216   */
-		HBP = 124,				/* Horizontal back porch  xxx   */
 
 		VSYNC = 6,				/* Vertical synchronization 1..20  */
+		VBP = xx,				/* Vertical back porch  xxx   */
 		VFP = 5,				/* Vertical front porch  1..127     */
-		VBP = 19,				/* Vertical back porch  xxx   */
 
 		/* Accumulated parameters for this display */
 		//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
 		//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
-		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
@@ -217,10 +211,6 @@
 		VBP = 2,					/* Vertical back porch        */
 		VFP = 2,					/* Vertical front porch       */
 
-		/* TODO: should be changed Accumulated parameters for this display */
-		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
-
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
 		DENEG = 0,				/* DE polarity: (normal: DE is 0 while sync) */
@@ -246,10 +236,6 @@
 		VSYNC = 2,				/* Vertical synchronization   */
 		VBP = 2,					/* Vertical back porch        */
 		VFP = 4,					/* Vertical front porch       */
-
-		/* Accumulated parameters for this display */
-		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 
 		VSYNCNEG = 1,			/* Negative polarity required for VSYNC signal */
 		HSYNCNEG = 1,			/* Negative polarity required for HSYNC signal */
@@ -284,10 +270,6 @@
 		VBP = 11,					/* Vertical back porch        */
 		VFP = 16,				/* Vertical front porch  7..147     */
 
-		/* Accumulated parameters for this display */
-		LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
-		TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
-
 		// MODE: DE/SYNC mode select.
 		// DE MODE: MODE="1", VS and HS must pull high.
 		// SYNC MODE: MODE="0". DE must be grounded
@@ -310,6 +292,9 @@
 
 enum
 {
+	/* Accumulated parameters for this display */
+	LEFTMARGIN = HSYNC + HBP,	/* horizontal delay before DE start */
+	TOPMARGIN = VSYNC + VBP,	/* vertical delay before DE start */
 	HFULL = LEFTMARGIN + WIDTH + HFP,	/* horizontal full period */
 	VFULL = TOPMARGIN + HEIGHT + VFP	/* vertical full period */
 };
@@ -4441,8 +4426,188 @@ void board_gpu_initialize(void)
 //#include <linux/delay.h>
 //#include "msm_fb.h"
 
-#define DEVICE_NAME "sii9022"
+// See
+//	SiI9020 HDMI PanelLink Transmitter Programmer’s Reference
+//	SiI-PR-1032-0.74
+//	https://github.com/facchinm/kernel-brain/tree/master/drivers/hdmi
+
+#define SII9022_ID_902xA		0xb0
+
+#define HDMI_I2C_MONITOR_ADDRESS	0x50
+
+#define SII9022_VIDEO_DATA_BASE_REG	0x00
+#define SII9022_PIXEL_CLK_LSB_REG	(SII9022_VIDEO_DATA_BASE_REG + 0x00)
+#define SII9022_PIXEL_CLK_MSB_REG	(SII9022_VIDEO_DATA_BASE_REG + 0x01)
+#define SII9022_VFREQ_LSB_REG		(SII9022_VIDEO_DATA_BASE_REG + 0x02)
+#define SII9022_VFREQ_MSB_REG		(SII9022_VIDEO_DATA_BASE_REG + 0x03)
+#define SII9022_PIXELS_LSB_REG		(SII9022_VIDEO_DATA_BASE_REG + 0x04)
+#define SII9022_PIXELS_MSB_REG		(SII9022_VIDEO_DATA_BASE_REG + 0x05)
+#define SII9022_LINES_LSB_REG		(SII9022_VIDEO_DATA_BASE_REG + 0x06)
+#define SII9022_LINES_MSB_REG		(SII9022_VIDEO_DATA_BASE_REG + 0x07)
+
+#define SII9022_PIXEL_REPETITION_REG	0x08
+
+#define SII9022_AVI_IN_FORMAT_REG	0x09
+#define SII9022_AVI_OUT_FORMAT_REG	0x0a
+#define SII9022_AVI_INFOFRAME_BASE_REG	0x0c
+#define SII9022_AVI_INFOFRAME_LEN	14
+
+#define SII9022_SYS_CTRL_DATA_REG	0x1a
+#define SII9022_DEVICE_ID_REG		0x1b
+#define SII9022_DEVICE_REV_ID_REG	0x1c
+#define SII9022_DEVICE_TPI_ID_REG	0x1d
+#define SII9022_DEVICE_HDCP_REV_REG	0x30
+
+#define SII9022_POWER_STATE_CTRL_REG	0x1e
+
+
+#define SII9022_IRQ_ENABLE_REG		0x3c
+#define SII9022_IRQ_STATUS_REG		0x3d
+
+#define SII9022_TPI_RQB_REG		0xc7
+
+#define SII9022_HPD_DELAY_DEBOUNCE	0x7c
+#define SII9022_TMDS_CONT_REG		0x82
+
+/* Indirect internal register access */
+#define HDMI_IND_SET_PAGE		0xbc
+#define HDMI_IND_OFFSET			0xbd
+#define HDMI_IND_VALUE			0xbe
+
+/* AVI InfoFrame */
+#define HDMI_CPI_MISC_IF_SELECT_REG     0xbf
+#define HDMI_CPI_MISC_IF_OFFSET         0xC0
+
+/* Audio  */
+#define HDMI_TPI_I2S_ENABLE_MAPPING_REG 0x1f
+#define HDMI_TPI_I2S_INPUT_CONFIG_REG   0x20
+#define HDMI_TPI_I2S_STRM_HDR_BASE      0x21
+#define HDMI_TPI_I2S_STRM_HDR_0_REG     (HDMI_TPI_I2S_STRM_HDR_BASE + 0)
+#define HDMI_TPI_I2S_STRM_HDR_1_REG     (HDMI_TPI_I2S_STRM_HDR_BASE + 1)
+#define HDMI_TPI_I2S_STRM_HDR_2_REG     (HDMI_TPI_I2S_STRM_HDR_BASE + 2)
+#define HDMI_TPI_I2S_STRM_HDR_3_REG     (HDMI_TPI_I2S_STRM_HDR_BASE + 3)
+#define HDMI_TPI_I2S_STRM_HDR_4_REG     (HDMI_TPI_I2S_STRM_HDR_BASE + 4)
+#define HDMI_TPI_AUDIO_CONFIG_BYTE2_REG	0x26
+#define HDMI_TPI_AUDIO_CONFIG_BYTE3_REG	0x27
+#define HDMI_TPI_AUDIO_CONFIG_BYTE4_REG	0x28
+
+/* SII9022_SYS_CTRL_DATA_REG */
+#define SII9022_SYS_CTRL_DDC_BUS_GRANTED	BIT(1)
+#define SII9022_SYS_CTRL_DDC_BUS_REQUEST	BIT(2)
+
+/* HDMI_TPI_AUDIO_CONFIG_BYTE2_REG  */
+#define TPI_AUDIO_CODING_STREAM_HEADER		(0 << 0)
+#define TPI_AUDIO_CODING_PCM			(1 << 0)
+#define TPI_AUDIO_CODING_AC3			(2 << 0)
+#define TPI_AUDIO_CODING_MPEG1			(3 << 0)
+#define TPI_AUDIO_CODING_MP3			(4 << 0)
+#define TPI_AUDIO_CODING_MPEG2			(5 << 0)
+#define TPI_AUDIO_CODING_AAC			(6 << 0)
+#define TPI_AUDIO_CODING_DTS			(7 << 0)
+#define TPI_AUDIO_CODING_ATRAC			(8 << 0)
+#define TPI_AUDIO_MUTE_DISABLE			(0 << 4)
+#define TPI_AUDIO_MUTE_ENABLE			(1 << 4)
+#define TPI_AUDIO_LAYOUT_2_CHANNELS		(0 << 5)
+#define TPI_AUDIO_LAYOUT_8_CHANNELS		(1 << 5)
+#define TPI_AUDIO_INTERFACE_DISABLE		(0 << 6)
+#define TPI_AUDIO_INTERFACE_SPDIF		(1 << 6)
+#define TPI_AUDIO_INTERFACE_I2S			(2 << 6)
+
+/* HDMI_TPI_AUDIO_CONFIG_BYTE3_REG  */
+#define TPI_AUDIO_CHANNEL_STREAM		(0 << 0)
+#define TPI_AUDIO_2_CHANNEL			(1 << 0)
+#define TPI_AUDIO_8_CHANNEL			(7 << 0)
+#define TPI_AUDIO_FREQ_STREAM			(0 << 3)
+#define TPI_AUDIO_FREQ_32KHZ			(1 << 3)
+#define TPI_AUDIO_FREQ_44KHZ			(2 << 3)
+#define TPI_AUDIO_FREQ_48KHZ			(3 << 3)
+#define TPI_AUDIO_FREQ_88KHZ			(4 << 3)
+#define TPI_AUDIO_FREQ_96KHZ			(5 << 3)
+#define TPI_AUDIO_FREQ_176KHZ			(6 << 3)
+#define TPI_AUDIO_FREQ_192KHZ			(7 << 3)
+#define TPI_AUDIO_SAMPLE_SIZE_STREAM		(0 << 6)
+#define TPI_AUDIO_SAMPLE_SIZE_16		(1 << 6)
+#define TPI_AUDIO_SAMPLE_SIZE_20		(2 << 6)
+#define TPI_AUDIO_SAMPLE_SIZE_24		(3 << 6)
+
+/* HDMI_TPI_I2S_ENABLE_MAPPING_REG  */
+#define TPI_I2S_CONFIG_FIFO0			(0 << 0)
+#define TPI_I2S_CONFIG_FIFO1			(1 << 0)
+#define TPI_I2S_CONFIG_FIFO2			(2 << 0)
+#define TPI_I2S_CONFIG_FIFO3			(3 << 0)
+#define TPI_I2S_LEFT_RIGHT_SWAP			(1 << 2)
+#define TPI_I2S_AUTO_DOWNSAMPLE			(1 << 3)
+#define TPI_I2S_SELECT_SD0			(0 << 4)
+#define TPI_I2S_SELECT_SD1			(1 << 4)
+#define TPI_I2S_SELECT_SD2			(2 << 4)
+#define TPI_I2S_SELECT_SD3			(3 << 4)
+#define TPI_I2S_FIFO_ENABLE			(1 << 7)
+
+/* HDMI_TPI_I2S_INPUT_CONFIG_REG  */
+#define TPI_I2S_FIRST_BIT_SHIFT_YES		(0 << 0)
+#define TPI_I2S_FIRST_BIT_SHIFT_NO		(1 << 0)
+#define TPI_I2S_SD_DIRECTION_MSB_FIRST		(0 << 1)
+#define TPI_I2S_SD_DIRECTION_LSB_FIRST		(1 << 1)
+#define TPI_I2S_SD_JUSTIFY_LEFT			(0 << 2)
+#define TPI_I2S_SD_JUSTIFY_RIGHT		(1 << 2)
+#define TPI_I2S_WS_POLARITY_LOW			(0 << 3)
+#define TPI_I2S_WS_POLARITY_HIGH		(1 << 3)
+#define TPI_I2S_MCLK_MULTIPLIER_128		(0 << 4)
+#define TPI_I2S_MCLK_MULTIPLIER_256		(1 << 4)
+#define TPI_I2S_MCLK_MULTIPLIER_384		(2 << 4)
+#define TPI_I2S_MCLK_MULTIPLIER_512		(3 << 4)
+#define TPI_I2S_MCLK_MULTIPLIER_768		(4 << 4)
+#define TPI_I2S_MCLK_MULTIPLIER_1024		(5 << 4)
+#define TPI_I2S_MCLK_MULTIPLIER_1152		(6 << 4)
+#define TPI_I2S_MCLK_MULTIPLIER_192		(7 << 4)
+#define TPI_I2S_SCK_EDGE_FALLING		(0 << 7)
+#define TPI_I2S_SCK_EDGE_RISING			(1 << 7)
+
+#define SII9022_EDID_LEN			256
+#define ONE_BLOCK_EDID_LEN			128
+
+enum sii9022_power_state {
+	SII9022_POWER_STATE_D0,
+	SII9022_POWER_STATE_D2,
+	SII9022_POWER_STATE_D3_HOT,
+	SII9022_POWER_STATE_D3_COLD,
+};
+
+//#define DEVICE_NAME "sii9022"
 #define SII9022_DEVICE_ID   0xB0
+
+
+struct i2c_client { int a; };
+
+static int i2c_master_send(
+	struct i2c_client *client,
+	const uint8_t * buff,
+	unsigned cnt
+	)
+{
+
+	return 0;
+}
+
+static int i2c_smbus_read_byte_data(
+	struct i2c_client *client,
+	unsigned reg
+	)
+{
+
+	return 0;
+}
+
+static int i2c_smbus_write_byte_data(
+	struct i2c_client *client,
+	unsigned reg,
+	unsigned val
+	)
+{
+
+	return 0;
+}
+
 
 struct sii9022_i2c_addr_data{
 	uint8_t addr;
@@ -4500,7 +4665,7 @@ static struct sii9022_i2c_addr_data regset2 [] = {
 };
 
 static int send_i2c_data(struct i2c_client *client,
-			 struct sii9022_i2c_addr_data *regset,
+			 const struct sii9022_i2c_addr_data *regset,
 			 int size)
 {
 	int i;
@@ -4532,7 +4697,7 @@ static int sii9022_enable(struct i2c_client *client)
 	} while ((rc != SII9022_DEVICE_ID) && retries--);
 
 	if (rc != SII9022_DEVICE_ID)
-		return -ENODEV;
+		return -1;
 
 	rc = i2c_smbus_write_byte_data(client, 0x1A, 0x11);
 	if (rc)
@@ -4541,7 +4706,7 @@ static int sii9022_enable(struct i2c_client *client)
 	count = ARRAY_SIZE(video_mode_data);
 	rc = i2c_master_send(client, video_mode_data, count);
 	if (rc != count) {
-		rc = -EIO;
+		rc = -1;
 		goto enable_exit;
 	}
 
@@ -4551,7 +4716,7 @@ static int sii9022_enable(struct i2c_client *client)
 	count = ARRAY_SIZE(avi_io_format);
 	rc = i2c_master_send(client, avi_io_format, count);
 	if (rc != count) {
-		rc = -EIO;
+		rc = -1;
 		goto enable_exit;
 	}
 
@@ -4562,7 +4727,7 @@ static int sii9022_enable(struct i2c_client *client)
 	count = ARRAY_SIZE(video_infoframe);
 	rc = i2c_master_send(client, video_infoframe, count);
 	if (rc != count) {
-		rc = -EIO;
+		rc = -1;
 		goto enable_exit;
 	}
 
@@ -4573,7 +4738,7 @@ static int sii9022_enable(struct i2c_client *client)
 	count = ARRAY_SIZE(misc_infoframe);
 	rc = i2c_master_send(client, misc_infoframe, count);
 	if (rc != count) {
-		rc = -EIO;
+		rc = -1;
 		goto enable_exit;
 	}
 
@@ -4583,78 +4748,130 @@ static int sii9022_enable(struct i2c_client *client)
 
 	return 0;
 enable_exit:
-	printk(KERN_ERR "%s: exited rc=%d\n", __func__, rc);
+	PRINTF("%s: exited rc=%d\n", __func__, rc);
 	return rc;
 }
 
-static const struct i2c_device_id hmdi_sii_id[] = {
-	{ DEVICE_NAME, 0 },
-	{ }
-};
+//static const struct i2c_device_id hmdi_sii_id[] = {
+//	{ DEVICE_NAME, 0 },
+//	{ }
+//};
 
-static int hdmi_sii_probe(struct i2c_client *client,
-			const struct i2c_device_id *id)
-{
-	int rc;
+//static int hdmi_sii_probe(struct i2c_client *client,
+//			const struct i2c_device_id *id)
+//{
+//	int rc;
+//
+//	if (!i2c_check_functionality(client->adapter,
+//				     I2C_FUNC_SMBUS_BYTE | I2C_FUNC_I2C))
+//		return -1;
+//	rc = hdmi_sii_enable(client);
+//	return rc;
+//}
 
-	if (!i2c_check_functionality(client->adapter,
-				     I2C_FUNC_SMBUS_BYTE | I2C_FUNC_I2C))
-		return -ENODEV;
-	rc = hdmi_sii_enable(client);
-	return rc;
-}
 
+//static struct i2c_driver hdmi_sii_i2c_driver = {
+//	.driver = {
+//		.name = DEVICE_NAME,
+//		.owner = THIS_MODULE,
+//	},
+//	.probe = hdmi_sii_probe,
+//	.remove =  __exit_p(hdmi_sii_remove),
+//	.id_table = hmdi_sii_id,
+//};
 
-static struct i2c_driver hdmi_sii_i2c_driver = {
-	.driver = {
-		.name = DEVICE_NAME,
-		.owner = THIS_MODULE,
-	},
-	.probe = hdmi_sii_probe,
-	.remove =  __exit_p(hdmi_sii_remove),
-	.id_table = hmdi_sii_id,
-};
+//	sii902x 0-0039: product id = 9022
+//	sii902x 0-0039: hardware version B0-02-03-00
 
 void sii9022_initialize(void)
 {
-	int ret;
-	struct msm_panel_info pinfo;
+	{
+		// SII9022 test
+		enum { SII9022_ADDR_W = 0x72, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
+		// SA0 = 0
+		uint8_t v0, v1, v2;
 
-	if (msm_fb_detect_client("hdmi_sii9022"))
-		return 0;
+		////%%TP();
+		i2c2_start(SII9022_ADDR_W);
+		i2c2_write_withrestart(SII9022_DEVICE_ID_REG);
+		i2c2_start(SII9022_ADDR_R);
+		i2c2_read(& v0, I2C_READ_ACK_1);	// ||
+		i2c2_read(& v1, I2C_READ_ACK);	// ||
+		i2c2_read(& v2, I2C_READ_NACK);	// ||
+		////%%TP();
+		PRINTF("sii9022: test=0x%02X, 0x%02X, 0x%02X\n", v0, v1, v2);
+	}
+	{
+		// SII9022 test
+		enum { SII9022_ADDR_W = 0x7A, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
+		// SA0 = 0
+		uint8_t v0, v1, v2;
 
-	pinfo.xres = 1280;
-	pinfo.yres = 720;
-	pinfo.type = HDMI_PANEL;
-	pinfo.pdest = DISPLAY_1;
-	pinfo.wait_cycle = 0;
-	pinfo.bpp = 24;
-	pinfo.fb_num = 2;
-	pinfo.clk_rate = 74250000;
+		////%%TP();
+		i2c2_start(SII9022_ADDR_W);
+		i2c2_write_withrestart(SII9022_DEVICE_ID_REG);
+		i2c2_start(SII9022_ADDR_R);
+		i2c2_read(& v0, I2C_READ_ACK_1);	// ||
+		i2c2_read(& v1, I2C_READ_ACK);	// ||
+		i2c2_read(& v2, I2C_READ_NACK);	// ||
+		////%%TP();
+		PRINTF("sii9022: test=0x%02X, 0x%02X, 0x%02X\n", v0, v1, v2);
+	}
+	{
+		// SII9022 test
+		enum { SII9022_ADDR_W = 0xC0, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
+		// SA0 = 0
+		uint8_t v0, v1, v2;
 
-	pinfo.lcdc.h_back_porch = 124;
-	pinfo.lcdc.h_front_porch = 110;
-	pinfo.lcdc.h_pulse_width = 136;
-	pinfo.lcdc.v_back_porch = 19;
-	pinfo.lcdc.v_front_porch = 5;
-	pinfo.lcdc.v_pulse_width = 6;
-	pinfo.lcdc.border_clr = 0;
-	pinfo.lcdc.underflow_clr = 0xff;
-	pinfo.lcdc.hsync_skew = 0;
-
-	ret = lcdc_device_register(&pinfo);
-	if (ret) {
-		printk(KERN_ERR "%s: failed to register device\n", __func__);
-		goto init_exit;
+		////%%TP();
+		i2c2_start(SII9022_ADDR_W);
+		i2c2_write_withrestart(SII9022_DEVICE_ID_REG);
+		i2c2_start(SII9022_ADDR_R);
+		i2c2_read(& v0, I2C_READ_ACK_1);	// ||
+		i2c2_read(& v1, I2C_READ_ACK);	// ||
+		i2c2_read(& v2, I2C_READ_NACK);	// ||
+		////%%TP();
+		PRINTF("sii9022: test=0x%02X, 0x%02X, 0x%02X\n", v0, v1, v2);
 	}
 
-	ret = i2c_add_driver(&hdmi_sii_i2c_driver);
-	if (ret)
-		printk(KERN_ERR "%s: failed to add i2c driver\n", __func__);
-
-init_exit:
-	//return ret;
-	;
+	//	int ret;
+//	struct msm_panel_info pinfo;
+//
+//	if (msm_fb_detect_client("hdmi_sii9022"))
+//		return 0;
+//
+//	pinfo.xres = 1280;
+//	pinfo.yres = 720;
+//	pinfo.type = HDMI_PANEL;
+//	pinfo.pdest = DISPLAY_1;
+//	pinfo.wait_cycle = 0;
+//	pinfo.bpp = 24;
+//	pinfo.fb_num = 2;
+//	pinfo.clk_rate = 74250000;
+//
+//	pinfo.lcdc.h_back_porch = 124;
+//	pinfo.lcdc.h_front_porch = 110;
+//	pinfo.lcdc.h_pulse_width = 136;
+//	pinfo.lcdc.v_back_porch = 19;
+//	pinfo.lcdc.v_front_porch = 5;
+//	pinfo.lcdc.v_pulse_width = 6;
+//	pinfo.lcdc.border_clr = 0;
+//	pinfo.lcdc.underflow_clr = 0xff;
+//	pinfo.lcdc.hsync_skew = 0;
+//
+//	ret = lcdc_device_register(&pinfo);
+//	if (ret) {
+//		PRINTF("%s: failed to register device\n", __func__);
+//		goto init_exit;
+//	}
+//
+//	ret = i2c_add_driver(&hdmi_sii_i2c_driver);
+//	if (ret)
+//		PRINTF("%s: failed to add i2c driver\n", __func__);
+//
+//init_exit:
+//	//return ret;
+//	;
 }
 #endif /* LCDMODEX_SII9022 */
 
