@@ -4611,16 +4611,13 @@ static int i2c_smbus_write_byte_data(
 	return 0;
 }
 
+// Transmitter Programming Interface (TPI) device address
+// CI2CA = LOW, 49-Ball / 81-Ball / 72-Pin
 enum { SII9022_ADDR_W = 0x72, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
-//enum { SII9022_ADDR_W = 0x7A, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
-//enum { SII9022_ADDR_W = 0xC0, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
 
 static int sii9022x_regmap_write(uint_fast8_t reg, uint_fast8_t data)
 {
-	unsigned addrw = SII9022_ADDR_W;
-	unsigned addrr = addrw | 0x01;
-
-	i2c2_start(addrw);
+	i2c2_start(SII9022_ADDR_W);
 	i2c2_write(reg);
 	i2c2_write(data);
 	i2c2_waitsend();
@@ -4631,16 +4628,12 @@ static int sii9022x_regmap_write(uint_fast8_t reg, uint_fast8_t data)
 
 static int sii9022x_regmap_bulk_write(uint_fast8_t reg, const uint8_t * buff, uint_fast8_t count)
 {
-	unsigned addrw = SII9022_ADDR_W;
-	//unsigned addrr = SII9022_ADDR_R;
-
-	i2c2_start(addrw);
+	i2c2_start(SII9022_ADDR_W);
 	i2c2_write(reg);
 	while (count --)
 		i2c2_write(* buff ++);
 	i2c2_waitsend();
 	i2c2_stop();
-
 
 	return 0;
 }
@@ -5550,9 +5543,9 @@ static int sii902x_detect_version(struct sii902x_data *sii9022x)
 static int sii902x_probe(struct i2c_client *client,
 			 const struct i2c_device_id *id)
 {
-//	struct sii902x_data *sii9022x;
+	struct sii902x_data *sii9022x;
 //	struct regmap *regmap;
-//	int ret;
+	int ret;
 //
 //	sii9022x = devm_kzalloc(&client->dev, sizeof(sii9022x), GFP_KERNEL);
 //	if (sii9022x == NULL)
@@ -5581,41 +5574,41 @@ static int sii902x_probe(struct i2c_client *client,
 //		}
 //	}
 //
-//	/*
-//	 * The following is the Initialization process
-//	 * Take reference on SiI9022A PR page 8
-//	 */
-//
-//	/* Step 1.1: hardware reset */
-//	sii902x_reset(sii9022x);
-//
-//	/* Set termination to default */
-//	ret = sii9022x_regmap_write(SII9022_TMDS_CONT_REG, 0x25);
-//	if (ret < 0) {
-//		PRINTF("failed set termination to default\n");
-//		return -1;
-//	}
-//
-//	/* Set hardware debounce to 64 ms */
-//	ret = sii9022x_regmap_write(SII9022_HPD_DELAY_DEBOUNCE, 0x14);
-//	if (ret < 0) {
-//		PRINTF("failed set hw debounce to 64 ms\n");
-//		return -1;
-//	}
-//
-//	/* Step 1.2: enable TPI mode */
-//	ret = sii9022x_regmap_write(SII9022_TPI_RQB_REG, 0x00);
-//	if (ret < 0) {
-//		PRINTF("can not enable TPI mode\n");
-//		return -1;
-//	}
-//
-//	/* Step 2: detect product id and version */
-//	ret = sii902x_detect_version(sii9022x);
-//	if (ret < 0) {
-//		PRINTF("detect sii902x failed\n");
-//		return -1;
-//	}
+	/*
+	 * The following is the Initialization process
+	 * Take reference on SiI9022A PR page 8
+	 */
+
+	/* Step 1.1: hardware reset */
+	sii902x_reset(sii9022x);
+
+	/* Set termination to default */
+	ret = sii9022x_regmap_write(SII9022_TMDS_CONT_REG, 0x25);
+	if (ret < 0) {
+		PRINTF("failed set termination to default\n");
+		return -1;
+	}
+
+	/* Set hardware debounce to 64 ms */
+	ret = sii9022x_regmap_write(SII9022_HPD_DELAY_DEBOUNCE, 0x14);
+	if (ret < 0) {
+		PRINTF("failed set hw debounce to 64 ms\n");
+		return -1;
+	}
+
+	/* Step 1.2: enable TPI mode */
+	ret = sii9022x_regmap_write(SII9022_TPI_RQB_REG, 0x00);
+	if (ret < 0) {
+		PRINTF("can not enable TPI mode\n");
+		return -1;
+	}
+
+	/* Step 2: detect product id and version */
+	ret = sii902x_detect_version(sii9022x);
+	if (ret < 0) {
+		PRINTF("detect sii902x failed\n");
+		return -1;
+	}
 //
 //	INIT_WORK(&(sii9022x->work), det_worker);
 //
@@ -5701,57 +5694,9 @@ static int sii902x_probe(struct i2c_client *client,
 
 void sii9022_initialize(void)
 {
-	sii902x_reset(NULL);
+	//sii902x_reset(NULL);
 
-	sii902x_detect_version(NULL);
-	{
-		// SII9022 test
-		enum { SII9022_ADDR_W = 0x72, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
-		// SA0 = 0
-		uint8_t v0, v1, v2;
-
-		////%%TP();
-		i2c2_start(SII9022_ADDR_W);
-		i2c2_write_withrestart(SII9022_DEVICE_ID_REG);
-		i2c2_start(SII9022_ADDR_R);
-		i2c2_read(& v0, I2C_READ_ACK_1);	// ||
-		i2c2_read(& v1, I2C_READ_ACK);	// ||
-		i2c2_read(& v2, I2C_READ_NACK);	// ||
-		////%%TP();
-		PRINTF("sii9022: test=0x%02X, 0x%02X, 0x%02X\n", v0, v1, v2);
-	}
-	{
-		// SII9022 test
-		enum { SII9022_ADDR_W = 0x7A, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
-		// SA0 = 0
-		uint8_t v0, v1, v2;
-
-		////%%TP();
-		i2c2_start(SII9022_ADDR_W);
-		i2c2_write_withrestart(SII9022_DEVICE_ID_REG);
-		i2c2_start(SII9022_ADDR_R);
-		i2c2_read(& v0, I2C_READ_ACK_1);	// ||
-		i2c2_read(& v1, I2C_READ_ACK);	// ||
-		i2c2_read(& v2, I2C_READ_NACK);	// ||
-		////%%TP();
-		PRINTF("sii9022: test=0x%02X, 0x%02X, 0x%02X\n", v0, v1, v2);
-	}
-	{
-		// SII9022 test
-		enum { SII9022_ADDR_W = 0xC0, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
-		// SA0 = 0
-		uint8_t v0, v1, v2;
-
-		////%%TP();
-		i2c2_start(SII9022_ADDR_W);
-		i2c2_write_withrestart(SII9022_DEVICE_ID_REG);
-		i2c2_start(SII9022_ADDR_R);
-		i2c2_read(& v0, I2C_READ_ACK_1);	// ||
-		i2c2_read(& v1, I2C_READ_ACK);	// ||
-		i2c2_read(& v2, I2C_READ_NACK);	// ||
-		////%%TP();
-		PRINTF("sii9022: test=0x%02X, 0x%02X, 0x%02X\n", v0, v1, v2);
-	}
+	sii902x_probe(NULL, NULL);
 
 	//	int ret;
 //	struct msm_panel_info pinfo;
