@@ -5412,28 +5412,6 @@ static void disableAllIRQs(void)
 }
 #endif /* (__CORTEX_A != 0) */
 
-#if (WITHTWIHW || WITHTWISW)
-static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t register_id)
-{
-	uint8_t v0, v1, v2, v3;
-
-	//i2c_start(i2caddr | 0x00);
-	//i2c_write_withrestart(register_id);
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_1);	// ||
-	i2c_read(& v1, I2C_READ_ACK);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_NACK);	// ||
-
-	return
-			(((unsigned long) v3) << 24) |
-			(((unsigned long) v2) << 16) |
-			(((unsigned long) v1) << 8) |
-			(((unsigned long) v0) << 0) |
-			0;
-}
-#endif
-
 #if WITHOPENVG
 /*------------------------------------------------------------------------
  *
@@ -6291,7 +6269,34 @@ void hightests(void)
 		unsigned i;
 		for (i = 1; i < 127; ++ i)
 		{
-			PRINTF("I2C 7-bit addr %02X: ID=%08lX\n", i, any_rd_reg_32bits(i * 2, 0));
+			uint8_t v;
+			unsigned addrw = i * 2;
+			unsigned addrr = addrw + 1;
+			////%%TP();
+			i2c_start(addrw);
+			i2c_write_withrestart(0x1B);
+			i2c_start(addrr);
+			i2c_read(& v, I2C_READ_ACK_NACK);
+			////%%TP();
+			PRINTF("I2C addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
+		}
+	}
+#endif
+#if 0 && (WITHTWIHW || WITHTWISW)
+	{
+		unsigned i;
+		for (i = 1; i < 127; ++ i)
+		{
+			uint8_t v;
+			unsigned addrw = i * 2;
+			unsigned addrr = addrw + 1;
+			////%%TP();
+			i2c2_start(addrw);
+			i2c2_write_withrestart(0x1B);
+			i2c2_start(addrr);
+			i2c2_read(& v, I2C_READ_ACK_NACK);
+			////%%TP();
+			PRINTF("I2C2 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
 		}
 	}
 #endif
