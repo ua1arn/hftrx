@@ -1429,7 +1429,9 @@ void display_hardware_initialize(void)
 	tc358768_initialize();
 	panel_initialize();
 #endif /* LCDMODETX_TC358778XBG */
-
+#if LCDMODEX_SII9022
+	sii9022_initialize();
+#endif /* LCDMODEX_SII9022 */
 
 #if LCDMODE_HARD_SPI
 #elif LCDMODE_HARD_I2C

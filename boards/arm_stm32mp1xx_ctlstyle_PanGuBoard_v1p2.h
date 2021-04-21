@@ -214,6 +214,10 @@
 #if WITHISBOOTLOADER
 	#define LCDMODE_DUMMY	1
 
+	//#define LCDMODEX_SII9022 1	/* 1280 * 720 siiI9022A HDMI Transmitter */
+	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
+	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
+
 #else /* WITHISBOOTLOADER */
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_DUMMY	1
@@ -237,6 +241,8 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+
+	//#define LCDMODEX_SII9022 1	/* 1280 * 720 siiI9022A HDMI Transmitter */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
@@ -519,7 +525,7 @@
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 1
+	#if 0
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */

@@ -432,6 +432,9 @@ void tc358768_deinitialize(void);
 void panel_initialize(void);
 void panel_deinitialize(void);
 
+void sii9022_initialize(void);
+
+
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
 void display_flush(void);	// для framebufer дисплеев - вытолкнуть кэш память
