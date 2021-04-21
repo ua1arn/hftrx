@@ -1602,23 +1602,19 @@ void i2c_stop(void)
 
 void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 { 
-	volatile int n;
 	char x, d=0;
 	SET_TWD(); 
 	i2c_dly();
-	for(x=0; x<8; x++) 
+	for (x = 0; x < 8; x ++)
 	{
-		n = 10000;
+		int n;
+		n = 1000;
 		do {
 			SET_TWCK();
 			i2c_dly();
-		}
-		while (n -- && GET_TWCK() == 0)    // wait for any SCL clock stretching
-			;
-		d *= 2;
+		} while (n -- && GET_TWCK() == 0);    // wait for any SCL clock stretching
 		i2c_dly();
-		if (GET_TWD() != 0) 
-			d += 1;
+		d = d * 2 + (GET_TWD() != 0);
 		CLR_TWCK();
 		i2c_dly();
 	} 
@@ -1650,7 +1646,7 @@ void i2c_write(uint_fast8_t d)
 {
 	uint_fast8_t x;
 	//char b;
-	for (x = 8; x != 0; x --) 
+	for (x = 8; x != 0; x --, d <<= 1)
 	{
 		if (d & 0x80) 
 		{
@@ -1666,7 +1662,6 @@ void i2c_write(uint_fast8_t d)
 		i2c_dly();
 		//SCL = 1;
 		SET_TWCK();
-		d <<= 1;
 		//SCL = 0;
 		i2c_dly();
 		CLR_TWCK();
@@ -1738,23 +1733,19 @@ void i2c2_stop(void)
 
 void i2c2_read(uint8_t *data, uint_fast8_t ack_type)
 {
-	volatile int n;
 	char x, d=0;
 	SET2_TWD();
 	i2c_dly();
-	for(x=0; x<8; x++)
+	for (x = 0; x < 8; x ++)
 	{
-		n = 10000;
+		int n;
+		n = 1000;
 		do {
 			SET2_TWCK();
 			i2c_dly();
-		}
-		while (n -- && GET2_TWCK() == 0)    // wait for any SCL clock stretching
-			;
-		d *= 2;
+		} while (n -- && GET2_TWCK() == 0);    // wait for any SCL clock stretching
 		i2c_dly();
-		if (GET2_TWD() != 0)
-			d += 1;
+		d = d * 2 + (GET2_TWD() != 0);
 		CLR2_TWCK();
 		i2c_dly();
 	}
@@ -1786,7 +1777,7 @@ void i2c2_write(uint_fast8_t d)
 {
 	uint_fast8_t x;
 	//char b;
-	for (x = 8; x != 0; x --)
+	for (x = 8; x != 0; x --, d <<= 1)
 	{
 		if (d & 0x80)
 		{
@@ -1802,7 +1793,6 @@ void i2c2_write(uint_fast8_t d)
 		i2c_dly();
 		//SCL = 1;
 		SET2_TWCK();
-		d <<= 1;
 		//SCL = 0;
 		i2c_dly();
 		CLR2_TWCK();
