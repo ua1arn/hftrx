@@ -940,6 +940,7 @@ unsigned long stm32mp1_get_pll1_p_freq(void)
 }
 
 // MPU frequency
+// mpuss_ck
 unsigned long stm32mp1_get_mpuss_freq(void)
 {
 	//	0x0: The MPUDIV is disabled; i.e. no clock generated
@@ -948,7 +949,7 @@ unsigned long stm32mp1_get_mpuss_freq(void)
 	//	0x3: The mpuss_ck is equal to pll1_p_ck divided by 8
 	//	others: The mpuss_ck is equal to pll1_p_ck divided by 16
 
-	const uint_fast32_t mpudiv = 1uL << (((RCC->MPCKDIVR & RCC_MPCKDIVR_MPUDIV_Msk) >> RCC_MPCKDIVR_MPUDIV_Pos));
+	const uint_fast32_t mpudiv = 1uL << ((RCC->MPCKDIVR & RCC_MPCKDIVR_MPUDIV_Msk) >> RCC_MPCKDIVR_MPUDIV_Pos);
 
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
@@ -2425,7 +2426,7 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
+		((uint_fast32_t) 0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
@@ -2472,7 +2473,7 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1_P
+		((uint_fast32_t) 0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1_P
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
@@ -2575,7 +2576,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
+		((uint_fast32_t) 0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
