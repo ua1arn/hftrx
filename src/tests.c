@@ -6127,6 +6127,7 @@ void hightests(void)
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		ASSERT(tiger != NULL);
 		unsigned cnt;
+		PRINTF("tiger: test started, CPU_FREQ=%lu kHz\n", (unsigned long) (CPU_FREQ / 1000));
 		for (cnt = 0;; ++ cnt)
 		{
 			const time_t start = time(NULL);

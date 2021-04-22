@@ -948,7 +948,7 @@ unsigned long stm32mp1_get_mpuss_freq(void)
 	//	0x3: The mpuss_ck is equal to pll1_p_ck divided by 8
 	//	others: The mpuss_ck is equal to pll1_p_ck divided by 16
 
-	const uint_fast32_t mpudiv = 1uL << ((RCC->MPCKDIVR & RCC_MPCKDIVR_MPUDIV_Msk) >> RCC_MPCKDIVR_MPUDIV_Pos));
+	const uint_fast32_t mpudiv = 1uL << (((RCC->MPCKDIVR & RCC_MPCKDIVR_MPUDIV_Msk) >> RCC_MPCKDIVR_MPUDIV_Pos));
 
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
