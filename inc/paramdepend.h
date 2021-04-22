@@ -682,12 +682,12 @@ extern "C" {
 		#define	REF2INFREQ HSI64FREQ
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ	(stm32mp1_get_pll1_p_freq())
+	#define CPU_FREQ	(stm32mp1_get_mpuss_freq())
 	//#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
 	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
-	unsigned long stm32mp1_get_pll1_p_freq(void);	// MPU frequency
+	unsigned long stm32mp1_get_mpuss_freq(void);	// MPU frequency
 	unsigned long stm32mp1_get_pll4_r_freq(void);
 	unsigned long stm32mp1_get_usbphy_freq(void);
 	unsigned long stm32mp1_get_usbotg_freq(void);

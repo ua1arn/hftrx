@@ -939,6 +939,35 @@ unsigned long stm32mp1_get_pll1_p_freq(void)
 	return stm32mp1_get_pll1_freq() / pll1divp;
 }
 
+// MPU frequency
+unsigned long stm32mp1_get_mpuss_freq(void)
+{
+	//	0x0: The MPUDIV is disabled; i.e. no clock generated
+	//	0x1: The mpuss_ck is equal to pll1_p_ck divided by 2 (default after reset)
+	//	0x2: The mpuss_ck is equal to pll1_p_ck divided by 4
+	//	0x3: The mpuss_ck is equal to pll1_p_ck divided by 8
+	//	others: The mpuss_ck is equal to pll1_p_ck divided by 16
+
+	const uint_fast32_t mpudiv = 1uL << ((RCC->MPCKDIVR & RCC_MPCKDIVR_MPUDIV_Msk) >> RCC_MPCKDIVR_MPUDIV_Pos));
+
+	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
+	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	switch ((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRC_Msk) >> RCC_MPCKSELR_MPUSRC_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32mp1_get_hsi_freq();
+	case 0x01:
+		return stm32mp1_get_hse_freq();
+	case 0x02:
+		return stm32mp1_get_pll1_p_freq();
+	case 0x03:
+		return stm32mp1_get_pll1_p_freq() / mpudiv;
+	}
+}
+
 // PLL2 methods
 unsigned long stm32mp1_get_pll2_freq(void)
 {
