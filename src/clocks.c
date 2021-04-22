@@ -864,8 +864,8 @@ unsigned long stm32mp1_get_hse_freq(void)
 // hsi_ker_ck
 unsigned long stm32mp1_get_hsi_freq(void)
 {
-	const uint32_t hsi = HSI64FREQ;
-	const uint32_t hsidiv = (RCC->HSICFGR & RCC_HSICFGR_HSIDIV_Msk) >> RCC_HSICFGR_HSIDIV_Pos;
+	const uint_fast32_t hsi = HSI64FREQ;
+	const uint_fast32_t hsidiv = (RCC->HSICFGR & RCC_HSICFGR_HSIDIV_Msk) >> RCC_HSICFGR_HSIDIV_Pos;
 	return hsi >> hsidiv;
 }
 
@@ -928,54 +928,54 @@ unsigned long stm32mp1_get_pll4_ref_freq(void)
 // PLL1 methods
 unsigned long stm32mp1_get_pll1_freq(void)
 {
-	const uint32_t pll1divn = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVN_Msk) >> RCC_PLL1CFGR1_DIVN_Pos) + 1;
-	const uint32_t pll1divm = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVM1_Msk) >> RCC_PLL1CFGR1_DIVM1_Pos) + 1;
+	const uint_fast32_t pll1divn = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVN_Msk) >> RCC_PLL1CFGR1_DIVN_Pos) + 1;
+	const uint_fast32_t pll1divm = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVM1_Msk) >> RCC_PLL1CFGR1_DIVM1_Pos) + 1;
 	return (uint_fast64_t) stm32mp1_get_pll1_2_ref_freq() * pll1divn / pll1divm;
 }
 
 unsigned long stm32mp1_get_pll1_p_freq(void)
 {
-	const uint32_t pll1divp = ((RCC->PLL1CFGR2 & RCC_PLL1CFGR2_DIVP_Msk) >> RCC_PLL1CFGR2_DIVP_Pos) + 1;
+	const uint_fast32_t pll1divp = ((RCC->PLL1CFGR2 & RCC_PLL1CFGR2_DIVP_Msk) >> RCC_PLL1CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll1_freq() / pll1divp;
 }
 
 // PLL2 methods
 unsigned long stm32mp1_get_pll2_freq(void)
 {
-	const uint32_t pll2divn = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVN_Msk) >> RCC_PLL2CFGR1_DIVN_Pos) + 1;
-	const uint32_t pll2divm = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVM2_Msk) >> RCC_PLL2CFGR1_DIVM2_Pos) + 1;
+	const uint_fast32_t pll2divn = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVN_Msk) >> RCC_PLL2CFGR1_DIVN_Pos) + 1;
+	const uint_fast32_t pll2divm = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVM2_Msk) >> RCC_PLL2CFGR1_DIVM2_Pos) + 1;
 	return (uint_fast64_t) stm32mp1_get_pll1_2_ref_freq() * pll2divn / pll2divm;
 }
 
 unsigned long stm32mp1_get_pll2_p_freq(void)
 {
-	const uint32_t pll2divp = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVP_Msk) >> RCC_PLL2CFGR2_DIVP_Pos) + 1;
+	const uint_fast32_t pll2divp = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVP_Msk) >> RCC_PLL2CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll2_freq() / pll2divp;
 }
 
 // PLL3 methods
 unsigned long stm32mp1_get_pll3_freq(void)
 {
-	const uint32_t pll3divn = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVN_Msk) >> RCC_PLL3CFGR1_DIVN_Pos) + 1;
-	const uint32_t pll3divm = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVM3_Msk) >> RCC_PLL3CFGR1_DIVM3_Pos) + 1;
+	const uint_fast32_t pll3divn = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVN_Msk) >> RCC_PLL3CFGR1_DIVN_Pos) + 1;
+	const uint_fast32_t pll3divm = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVM3_Msk) >> RCC_PLL3CFGR1_DIVM3_Pos) + 1;
 	return (uint_fast64_t) stm32mp1_get_pll3_ref_freq() * pll3divn / pll3divm;
 }
 
 unsigned long stm32mp1_get_pll3_p_freq(void)
 {
-	const uint32_t pll3divp = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVP_Msk) >> RCC_PLL3CFGR2_DIVP_Pos) + 1;
+	const uint_fast32_t pll3divp = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVP_Msk) >> RCC_PLL3CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divp;
 }
 
 unsigned long stm32mp1_get_pll3_q_freq(void)
 {
-	const uint32_t pll3divq = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVQ_Msk) >> RCC_PLL3CFGR2_DIVQ_Pos) + 1;
+	const uint_fast32_t pll3divq = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVQ_Msk) >> RCC_PLL3CFGR2_DIVQ_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divq;
 }
 
 unsigned long stm32mp1_get_pll3_r_freq(void)
 {
-	const uint32_t pll3divr = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVR_Msk) >> RCC_PLL3CFGR2_DIVR_Pos) + 1;
+	const uint_fast32_t pll3divr = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVR_Msk) >> RCC_PLL3CFGR2_DIVR_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divr;
 }
 
@@ -990,19 +990,19 @@ unsigned long stm32mp1_get_pll4_freq(void)
 
 unsigned long stm32mp1_get_pll4_q_freq(void)
 {
-	const uint32_t pll4divq = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVQ_Msk) >> RCC_PLL4CFGR2_DIVQ_Pos) + 1;
+	const uint_fast32_t pll4divq = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVQ_Msk) >> RCC_PLL4CFGR2_DIVQ_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divq;
 }
 
 unsigned long stm32mp1_get_pll4_p_freq(void)
 {
-	const uint32_t pll4divp = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVP_Msk) >> RCC_PLL4CFGR2_DIVP_Pos) + 1;
+	const uint_fast32_t pll4divp = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVP_Msk) >> RCC_PLL4CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divp;
 }
 
 unsigned long stm32mp1_get_pll4_r_freq(void)
 {
-	const uint32_t pll4divr = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVR_Msk) >> RCC_PLL4CFGR2_DIVR_Pos) + 1;
+	const uint_fast32_t pll4divr = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVR_Msk) >> RCC_PLL4CFGR2_DIVR_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divr;
 }
 
@@ -2414,15 +2414,15 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 	(void) RCC->PLL1CR;
 
 	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
-		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
-		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
+		((uint_fast32_t) (PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
+		((uint_fast32_t) (PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
 	(void) RCC->PLL1CFGR1;
 
 	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
-		((pll1divp - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
-		((PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
-		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
+		((uint_fast32_t) (pll1divp - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
+		((uint_fast32_t) (PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
+		((uint_fast32_t) (PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
 	(void) RCC->PLL1CFGR2;
 
@@ -2634,15 +2634,15 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL1CR;
 
 	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
-		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
-		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
+		((uint_fast32_t) (PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
+		((uint_fast32_t) (PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
 	(void) RCC->PLL1CFGR1;
 
 	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
-		((PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
-		((PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
-		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
+		((uint_fast32_t) (PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
+		((uint_fast32_t) (PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
+		((uint_fast32_t) (PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
 	(void) RCC->PLL1CFGR2;
 
@@ -2669,9 +2669,9 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CFGR1;
 
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
-		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
-		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
-		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
 		0;
 	(void) RCC->PLL2CFGR2;
 
@@ -2705,10 +2705,10 @@ static void stm32mp1_pll_initialize(void)
 	#if WITHCPUXOSC || WITHCPUXTAL
 		// с внешним генератором
 		// с внешним кварцем
-		(0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
+		((uint_fast32_t) 0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
 	#else
 		// На внутреннем генераторе
-		(0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
+		((uint_fast32_t) 0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
 	#endif
 		0;
 	while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
@@ -2718,16 +2718,16 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL4CR;
 
 	RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVN_Msk | RCC_PLL4CFGR1_DIVM4_Msk)) |
-		((PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
-		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
+		((uint_fast32_t) (PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
+		((uint_fast32_t) (PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
 	(void) RCC->PLL4CFGR1;
 
 	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock());
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
-		((PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
-		//((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
-		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
+		//((uint_fast32_t) (pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
 	(void) RCC->PLL4CFGR2;
 
@@ -2759,7 +2759,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x2: axiss_ck / 3
 	//	others: axiss_ck / 4
 	RCC->AXIDIVR = (RCC->AXIDIVR & ~ (RCC_AXIDIVR_AXIDIV_Msk)) |
-		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
+		((uint_fast32_t) (0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
 		0;
 	while((RCC->AXIDIVR & RCC_AXIDIVR_AXIDIVRDY_Msk) == 0)
 		;
@@ -2772,7 +2772,7 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: mlhclk / 8
 	//0x4: mlhclk / 16
 	RCC->APB1DIVR = (RCC->APB1DIVR & ~ (RCC_APB1DIVR_APB1DIV_Msk)) |
-		((1) << RCC_APB1DIVR_APB1DIV_Pos) |	// div2
+		((uint_fast32_t) (1) << RCC_APB1DIVR_APB1DIV_Pos) |	// div2
 		0;
 	while((RCC->APB1DIVR & RCC_APB1DIVR_APB1DIVRDY_Msk) == 0)
 		;
@@ -2785,7 +2785,7 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: mlhclk / 8
 	//0x4: mlhclk / 16
 	RCC->APB2DIVR = (RCC->APB2DIVR & ~ (RCC_APB2DIVR_APB2DIV_Msk)) |
-		((1) << RCC_APB2DIVR_APB2DIV_Pos) |	// div2
+		((uint_fast32_t) (1) << RCC_APB2DIVR_APB2DIV_Pos) |	// div2
 		0;
 	while((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIVRDY_Msk) == 0)
 		;
@@ -2798,7 +2798,7 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: hclk / 8
 	//others: hclk / 16
 	RCC->APB3DIVR = (RCC->APB3DIVR & ~ (RCC_APB3DIVR_APB3DIV_Msk)) |
-		((1) << RCC_APB3DIVR_APB3DIV_Pos) |	// div2
+		((uint_fast32_t) (1) << RCC_APB3DIVR_APB3DIV_Pos) |	// div2
 		0;
 	while((RCC->APB3DIVR & RCC_APB3DIVR_APB3DIVRDY_Msk) == 0)
 		;
@@ -2810,14 +2810,14 @@ static void stm32mp1_pll_initialize(void)
 	//	0x3: aclk / 8
 	//	others: aclk / 16
 	RCC->APB4DIVR = (RCC->APB4DIVR & ~ (RCC_APB4DIVR_APB4DIV_Msk)) |
-		((0x02 - 1) << RCC_APB4DIVR_APB4DIV_Pos) |	// div2
+		((uint_fast32_t) (0x02 - 1) << RCC_APB4DIVR_APB4DIV_Pos) |	// div2
 		0;
 	while((RCC->APB4DIVR & RCC_APB4DIVR_APB4DIVRDY_Msk) == 0)
 		;
 
 	// APB5 Output divisor
 	RCC->APB5DIVR = (RCC->APB5DIVR & ~ (RCC_APB5DIVR_APB5DIV_Msk)) |
-		((0x04 - 1) << RCC_APB5DIVR_APB5DIV_Pos) |	// div4
+		((uint_fast32_t) (0x04 - 1) << RCC_APB5DIVR_APB5DIV_Pos) |	// div4
 		0;
 	while((RCC->APB5DIVR & RCC_APB5DIVR_APB5DIVRDY_Msk) == 0)
 		;
@@ -2828,7 +2828,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1_P
+		((uint_fast32_t) 0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1_P
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
@@ -2849,7 +2849,7 @@ static void stm32mp1_pll_initialize(void)
 	//others: axiss_ck is gated
 	// axiss_ck 266 MHz Max
 	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
-			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// pll2_p_ck
+			((uint_fast32_t) 0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// pll2_p_ck
 			0;
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
@@ -2864,10 +2864,10 @@ static void stm32mp1_pll_initialize(void)
 	#if WITHCPUXOSC || WITHCPUXTAL
 		// с внешним генератором
 		// с внешним кварцем
-		(0x01 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSE
+		((uint_fast32_t) 0x01 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSE
 	#else
 		// На внутреннем генераторе
-		(0x00 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSI
+		((uint_fast32_t) 0x00 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSI
 	#endif
 		0;
 	while ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY_Msk) == 0)
@@ -2896,8 +2896,8 @@ static void stm32mp1_pll_initialize(void)
 	//	0x3: csi_ker_ck clock selected as kernel peripheral clock
 	//	0x4: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART24CKSELR = (RCC->UART24CKSELR & ~ (RCC_UART24CKSELR_UART24SRC_Msk)) |
-		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// hsi_ker_ck
-		//(0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
+		((uint_fast32_t) 0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// hsi_ker_ck
+		//((uint_fast32_t) 0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
 		0;
 	(void) RCC->UART24CKSELR;
 #endif /* WITHUART2HW || WITHUART4HW */
@@ -2925,8 +2925,8 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: csi_ker_ck clock selected as kernel peripheral clock
 	//0x4: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART78CKSELR = (RCC->UART78CKSELR & ~ (RCC_UART78CKSELR_UART78SRC_Msk)) |
-		(0x02 << RCC_UART78CKSELR_UART78SRC_Pos) |	// hsi_ker_ck
-		//(0x00 << RCC_UART78CKSELR_UART78SRC_Pos) |	// pclk1
+		((uint_fast32_t) 0x02 << RCC_UART78CKSELR_UART78SRC_Pos) |	// hsi_ker_ck
+		//((uint_fast32_t) 0x00 << RCC_UART78CKSELR_UART78SRC_Pos) |	// pclk1
 		0;
 	(void) RCC->UART78CKSELR;
 #endif /* WITHUART7HW || WITHUART8HW */
@@ -2939,7 +2939,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x3: hsi_ker_ck clock selected as kernel peripheral clock (default after reset)
 	//	others: reserved, the kernel clock is disabled
 	RCC->SDMMC12CKSELR = (RCC->SDMMC12CKSELR & ~ (RCC_SDMMC12CKSELR_SDMMC12SRC_Msk)) |
-		(0x3 << RCC_SDMMC12CKSELR_SDMMC12SRC_Pos) |	// hsi_ker_ck
+		((uint_fast32_t) 0x3 << RCC_SDMMC12CKSELR_SDMMC12SRC_Pos) |	// hsi_ker_ck
 		0;
 	(void) RCC->SDMMC12CKSELR;
 #endif /* WITHSDHCHW */
@@ -2951,7 +2951,7 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: per_ck clock selected as kernel peripheral clock
 	//0x4: pll3_r_ck clock selected as kernel peripheral clock
 	RCC->SPI2S1CKSELR = (RCC->SPI2S1CKSELR & ~ (RCC_SPI2S1CKSELR_SPI1SRC_Msk)) |
-		(0x03 << RCC_SPI2S1CKSELR_SPI1SRC_Pos) |	// per_ck
+		((uint_fast32_t) 0x03 << RCC_SPI2S1CKSELR_SPI1SRC_Pos) |	// per_ck
 		0;
 	(void) RCC->SPI2S1CKSELR;
 #endif /* WITHSPIHW */
@@ -2962,7 +2962,7 @@ static void stm32mp1_pll_initialize(void)
 	//0x2: pll4_p_ck clock selected as kernel peripheral clock
 	//0x3: per_ck clock selected as kernel peripheral clock
 	RCC->QSPICKSELR = (RCC->QSPICKSELR & ~ (RCC_QSPICKSELR_QSPISRC_Msk)) |
-	(0x03 << RCC_QSPICKSELR_QSPISRC_Pos) |	// per_ck
+	((uint_fast32_t) 0x03 << RCC_QSPICKSELR_QSPISRC_Pos) |	// per_ck
 		0;
 	(void) RCC->QSPICKSELR;
 #endif /* WIHSPIDFHW */
@@ -2974,7 +2974,7 @@ static void stm32mp1_pll_initialize(void)
 	//	1: The Timers kernel clock is equal to mlhclk if APB1DIV is corresponding to division by 1, 2
 	//	or 4, else it is equal to 4 x Fpclk1
 	RCC->TIMG1PRER = (RCC->TIMG1PRER & ~ (RCC_TIMG1PRER_TIMG1PRE_Msk)) |
-		(0x00 << RCC_TIMG1PRER_TIMG1PRE_Pos) |
+		((uint_fast32_t) 0x00 << RCC_TIMG1PRER_TIMG1PRE_Pos) |
 		0;
 	(void) RCC->TIMG1PRER;
 	while ((RCC->TIMG1PRER & RCC_TIMG1PRER_TIMG1PRERDY_Msk) == 0)
@@ -3003,8 +3003,8 @@ static void stm32mp1_pll_initialize(void)
 	//  0x1: pll4_r_ck clock selected as kernel peripheral clock
 	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 	RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-		(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |		// 50 MHz max pll4_r_ck
-		(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |		// 38.4 MHz max pll4_r_ck
+		((uint_fast32_t) 0x00 << RCC_USBCKSELR_USBOSRC_Pos) |		// 50 MHz max pll4_r_ck
+		((uint_fast32_t) 0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |		// 38.4 MHz max pll4_r_ck
 		0;
 	(void) RCC->USBCKSELR;
 
@@ -3018,7 +3018,7 @@ static void stm32mp1_pll_initialize(void)
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
-	const uint32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
+	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	ASSERT(pll4divq >= 1);
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVQ_Msk)) |
 		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
@@ -3035,7 +3035,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 unsigned long hardware_get_dotclock(unsigned long dotfreq)
 {
-	const uint32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
+	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	return stm32mp1_get_pll4_freq() / pll4divq;
 }
 
