@@ -6129,7 +6129,7 @@ void hightests(void)
 		unsigned cnt;
 		for (cnt = 0;; ++ cnt)
 		{
-			PRINTF("tiger: cnt=%u\n", cnt);
+			const time_t start = time(NULL);
 			uint_fast8_t kbch, repeat;
 
 			if ((repeat = kbd_scan(& kbch)) != 0)
@@ -6140,6 +6140,8 @@ void hightests(void)
 			rendertiger(tiger, DIM_X, DIM_Y);
 			rendertest2(DIM_X, DIM_Y);
 			display_flush();		// наблюдаем процесс
+			const time_t end = time(NULL);
+			PRINTF("tiger: cnt=%u, %d S\n", cnt, (int) (end - start));
 		}
 		PS_destruct(tiger);
 
