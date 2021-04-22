@@ -3597,26 +3597,26 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	if (1)
 	{
 		// USBH_HS_DP1, USBH_HS_DM1
-		PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
+		//PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
 //		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			0;
-		//USBPHYC_PHY1->TUNE = 0x04070004;
-		//(void) USBPHYC_PHY1->TUNE;
+		USBPHYC_PHY1->TUNE = 0x04070004;
+		(void) USBPHYC_PHY1->TUNE;
 	}
 	if (1)
 	{
 		// USBH_HS_DP2, USBH_HS_DM2
-		PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
+		//PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
 //		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			(0x00 << ssss) |
 //			0;
-		//USBPHYC_PHY2->TUNE = 0x04070004;
-		//(void) USBPHYC_PHY2->TUNE;
+		USBPHYC_PHY2->TUNE = 0x04070004;
+		(void) USBPHYC_PHY2->TUNE;
 	}
 
 	//PRINTF("USB_HS_PHYCInit done\n");
@@ -6620,7 +6620,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	const int mul2 = bigbuff ? 3 : 1;	// tx fifo buffers
 	PCD_TypeDef * const USBx = hpcd->Instance;
 
-	PRINTF(PSTR("usbd_fifo_initialize: bigbuff=%d, fullsize=%u, power-on GRXFSIZ=%u\n"), (int) bigbuff, (unsigned) fullsize, USBx->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
+	//PRINTF(PSTR("usbd_fifo_initialize: bigbuff=%d, fullsize=%u, power-on GRXFSIZ=%u\n"), (int) bigbuff, (unsigned) fullsize, USBx->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
 	// DocID028270 Rev 2 (RM0410): 41.11.3 FIFO RAM allocation
 	// DocID028270 Rev 2 (RM0410): 41.16.6 Device programming model
 
@@ -6663,7 +6663,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	const uint_fast16_t last4dummy = last4;
 #endif /* WITHUSBCDCACM */
 
-	PRINTF(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
+	//PRINTF(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 
 #if WITHUSBUAC
 
@@ -6696,7 +6696,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		PRINTF(PSTR("usbd_fifo_initialize2 - UAC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		//PRINTF(PSTR("usbd_fifo_initialize2 - UAC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #if WITHUSBUACIN2
 	{
@@ -6710,7 +6710,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		PRINTF(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		//PRINTF(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUACIN */
@@ -6768,7 +6768,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 				ASSERT(last4 >= size4);
 				last4 -= size4;
 				USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-				PRINTF(PSTR("usbd_fifo_initialize4 CDC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+				//PRINTF(PSTR("usbd_fifo_initialize4 CDC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 			}
 		}
 
@@ -6790,7 +6790,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		//PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBCDCEEM */
 
@@ -6816,7 +6816,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4int);
 		last4 -= size4int;
 		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
-		PRINTF(PSTR("usbd_fifo_initialize4 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		//PRINTF(PSTR("usbd_fifo_initialize4 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 
 #endif /* WITHUSBRNDIS */
@@ -6830,11 +6830,11 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
-		PRINTF(PSTR("usbd_fifo_initialize8 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		//PRINTF(PSTR("usbd_fifo_initialize8 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 #endif /* WITHUSBHID */
 
-	PRINTF(PSTR("usbd_fifo_initialize9: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
+	//PRINTF(PSTR("usbd_fifo_initialize9: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
 
 	/* control endpoint TX FIFO */
 	{
@@ -6843,7 +6843,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 		ASSERT(last4 >= size4);
 		last4 -= size4;
 		USBx->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
-		PRINTF(PSTR("usbd_fifo_initialize10 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+		//PRINTF(PSTR("usbd_fifo_initialize10 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
 	}
 	/* control endpoint RX FIFO */
 	{
@@ -6859,7 +6859,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 				1 +
 				addplaces;
 
-		PRINTF(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes (last4=%u, size4=%u)\n"), 4 * size4, 4 * (full4 - last4), last4, size4);
+		//PRINTF(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes (last4=%u, size4=%u)\n"), 4 * size4, 4 * (full4 - last4), last4, size4);
 		ASSERT(last4 >= size4);
 		USBx->GRXFSIZ = (USBx->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
 			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - то что осталось
@@ -6879,7 +6879,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 	}
 	else
 	{
-		PRINTF(PSTR("usbd_fifo_initialize: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
+		//PRINTF(PSTR("usbd_fifo_initialize: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
 #if 0
 		// Диагностическая выдача использованного объёма FIFO RAM
 		char b [64];

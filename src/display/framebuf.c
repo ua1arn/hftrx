@@ -2291,7 +2291,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 {
 	unsigned i;
 
-	PRINTF("display2_xltrgb24: init indexed colors\n");
+	//PRINTF("display2_xltrgb24: init indexed colors\n");
 
 	for (i = 0; i < 256; ++ i)
 	{
@@ -2376,7 +2376,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #endif /* COLORSTYLE_ATS52 */
 
 #elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
-	PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");
+	//PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
 
