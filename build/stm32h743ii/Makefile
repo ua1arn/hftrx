@@ -22,6 +22,7 @@ TRGT = arm-none-eabi-
 
 #
 CC   = $(TRGT)gcc
+GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size
@@ -183,11 +184,11 @@ $(OBJDIR)/%.o: %.s
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
 %ram.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
 	$(SIZE) --format=sysv --radix=16 $@
 
 %rom.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
 	$(SIZE) --format=sysv --radix=16 $@
 
 %hex: %elf
