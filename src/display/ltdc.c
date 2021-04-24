@@ -4977,9 +4977,16 @@ struct hdmi_avi_infoframe {
 	unsigned short right_bar;
 };
 
-int hdmi_avi_infoframe_init(struct hdmi_avi_infoframe *frame);
+int hdmi_avi_infoframe_init(struct hdmi_avi_infoframe *frame)
+{
+	return 0;
+}
+
 ssize_t hdmi_avi_infoframe_pack(struct hdmi_avi_infoframe *frame, void *buffer,
-				size_t size);
+				size_t size)
+{
+	return 0;
+}
 
 enum hdmi_spd_sdi {
 	HDMI_SPD_SDI_UNKNOWN,
@@ -5540,10 +5547,12 @@ static int sii902x_detect_version(struct sii902x_data *sii9022x)
 	return 0;
 }
 
+static struct sii902x_data d0;
+
 static int sii902x_probe(struct i2c_client *client,
 			 const struct i2c_device_id *id)
 {
-	struct sii902x_data *sii9022x;
+	struct sii902x_data *sii9022x = & d0;
 //	struct regmap *regmap;
 	int ret;
 //
@@ -5697,6 +5706,7 @@ void sii9022_initialize(void)
 	//sii902x_reset(NULL);
 
 	sii902x_probe(NULL, NULL);
+	sii902x_setup(& d0);
 
 	//	int ret;
 //	struct msm_panel_info pinfo;

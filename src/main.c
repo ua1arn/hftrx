@@ -19,9 +19,9 @@
 #include "audio.h"
 #include "codecs.h"
 
-#if WITHUSEAUDIOREC || WITHUSESDCARD
+#if WITHUSEFATFS
 	#include "sdcard.h"
-#endif /* WITHUSEAUDIOREC || WITHUSESDCARD */
+#endif /* WITHUSEFATFS */
 
 #include <string.h>
 #include <ctype.h>

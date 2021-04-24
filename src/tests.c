@@ -11,10 +11,7 @@
 #include "keyboard.h"
 #include "encoder.h"
 
-#include <math.h>
 #include "src/gui/gui.h"
-#include <stdio.h>
-
 #include "display/display.h"
 #include "formats.h"
 #include "codecs.h"
@@ -26,10 +23,13 @@
 	#include "sdcard.h"
 #endif /* WITHUSEFATFS */
 
+#include <math.h>
+#include <stdio.h>
+#include <time.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 
 
 #if 0
@@ -54,43 +54,43 @@ static void showpos(uint_fast8_t pos)
 // e-inc support functions
 static uint_fast8_t eink_lcd_busy(void)
 {
-	enum { WORKMASK = 1U << 1 };	/* PB1 */
+	enum { WORKMASK = 1uL << 1 };	/* PB1 */
 	arm_hardware_piob_inputs(WORKMASK);
 	return (GPIOB->IDR & WORKMASK) != 0;
 }
 static void eink_lcd_discharge(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 3 };	/* PB3 */
+	enum { WORKMASK = 1uL << 3 };	/* PB3 */
 	arm_hardware_piob_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
 static void eink_lcd_backlight(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 4 };	/* PB4 */
+	enum { WORKMASK = 1uL << 4 };	/* PB4 */
 	arm_hardware_piob_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
 static void eink_lcd_on_border(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 4 };	/* PB4 */
+	enum { WORKMASK = 1uL << 4 };	/* PB4 */
 	arm_hardware_piob_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
 static void eink_lcd_toggle_border(void)
 {
-	enum { WORKMASK = 1U << 4 };	/* PB4 */
+	enum { WORKMASK = 1uL << 4 };	/* PB4 */
 	GPIOB->ODR ^= WORKMASK;			// border bit
 }
 static void eink_lcd_pwron(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 5 };	/* PB5 */
+	enum { WORKMASK = 1uL << 5 };	/* PB5 */
 	arm_hardware_piob_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
 
 static void test_cpu_pwron(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 11 };	/* PA11 */
+	enum { WORKMASK = 1uL << 11 };	/* PA11 */
 	arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
@@ -4861,8 +4861,8 @@ static void ledsinit(void)
 #define LED_TARGET_PORT_S(v) do { R7S721_TARGET_PORT_S(7, v); } while (0)
 #define LED_TARGET_PORT_C(v) do { R7S721_TARGET_PORT_C(7, v); } while (0)
 
-enum { LEDBIT = 1U << 1 }; // P7_1
-enum { SW1BIT = 1U << 9 }; // P1_9
+enum { LEDBIT = 1uL << 1 }; // P7_1
+enum { SW1BIT = 1uL << 9 }; // P1_9
 
 #if 0 && WITHDEBUG && WITHUART1HW
 // "трассировка" с помощью выдачи на SPI порт информации о сработавших прерываниях
@@ -6602,7 +6602,7 @@ void hightests(void)
 		#define RELAY_DDR DDRD		// переключение на вывод - управление трактом передачи и манипуляцией
 
 		// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
-		#define RELAY_BIT		(1U << PD5)
+		#define RELAY_BIT		(1uL << PD5)
 
 		RELAY_DDR |= RELAY_BIT;
 		unsigned offtime = 100;
@@ -6879,12 +6879,12 @@ void hightests(void)
 		HARDWARE_SDIOPOWER_INITIALIZE();
 		HARDWARE_SDIOPOWER_SET(1);
 
-		arm_hardware_piod_outputs((1U << 2), 1 * (1U << 2));	/* PD2 - SDIO_CMD	*/
-		arm_hardware_pioc_outputs((1U << 12), 1 * (1U << 12));	/* PC12 - SDIO_CK	*/
-		arm_hardware_pioc_outputs((1U << 8), 1 * (1U << 8));	/* PC8 - SDIO_D0	*/
-		arm_hardware_pioc_outputs((1U << 9), 1 * (1U << 9));	/* PC9 - SDIO_D1	*/
-		arm_hardware_pioc_outputs((1U << 10), 1 * (1U << 10));	/* PC10 - SDIO_D2	*/
-		arm_hardware_pioc_outputs((1U << 11), 1 * (1U << 11));	/* PC11 - SDIO_D3	*/
+		arm_hardware_piod_outputs((1uL << 2), 1 * (1uL << 2));	/* PD2 - SDIO_CMD	*/
+		arm_hardware_pioc_outputs((1uL << 12), 1 * (1uL << 12));	/* PC12 - SDIO_CK	*/
+		arm_hardware_pioc_outputs((1uL << 8), 1 * (1uL << 8));	/* PC8 - SDIO_D0	*/
+		arm_hardware_pioc_outputs((1uL << 9), 1 * (1uL << 9));	/* PC9 - SDIO_D1	*/
+		arm_hardware_pioc_outputs((1uL << 10), 1 * (1uL << 10));	/* PC10 - SDIO_D2	*/
+		arm_hardware_pioc_outputs((1uL << 11), 1 * (1uL << 11));	/* PC11 - SDIO_D3	*/
 
 		int i;
 		for (i = 0;; ++ i)
@@ -6896,12 +6896,12 @@ void hightests(void)
 			int f4 = (i & (1 << 4)) != 0;
 			int f5 = (i & (1 << 5)) != 0;
 
-			arm_hardware_piod_outputs((1U << 2), f0 * (1U << 2));	/* PD2 - SDIO_CMD	*/
-			arm_hardware_pioc_outputs((1U << 12), f1 * (1U << 12));	/* PC12 - SDIO_CK	*/
-			arm_hardware_pioc_outputs((1U << 8), f2 * (1U << 8));	/* PC8 - SDIO_D0	*/
-			arm_hardware_pioc_outputs((1U << 9), f3 * (1U << 9));	/* PC9 - SDIO_D1	*/
-			arm_hardware_pioc_outputs((1U << 10), f4 * (1U << 10));	/* PC10 - SDIO_D2	*/
-			arm_hardware_pioc_outputs((1U << 11), f5 * (1U << 11));	/* PC11 - SDIO_D3	*/
+			arm_hardware_piod_outputs((1uL << 2), f0 * (1uL << 2));	/* PD2 - SDIO_CMD	*/
+			arm_hardware_pioc_outputs((1uL << 12), f1 * (1uL << 12));	/* PC12 - SDIO_CK	*/
+			arm_hardware_pioc_outputs((1uL << 8), f2 * (1uL << 8));	/* PC8 - SDIO_D0	*/
+			arm_hardware_pioc_outputs((1uL << 9), f3 * (1uL << 9));	/* PC9 - SDIO_D1	*/
+			arm_hardware_pioc_outputs((1uL << 10), f4 * (1uL << 10));	/* PC10 - SDIO_D2	*/
+			arm_hardware_pioc_outputs((1uL << 11), f5 * (1uL << 11));	/* PC11 - SDIO_D3	*/
 
 		}
 	}
@@ -8432,7 +8432,7 @@ void midtests(void)
 #if 0 && CPUSTYLE_R7S721
 	// тестирование скорости после инициализации MMU
 	{
-		const uint32_t mask = (1U << 13);	// P6_13
+		const uint32_t mask = (1uL << 13);	// P6_13
 		// R7S721 pins
 		arm_hardware_pio6_outputs(mask, mask);
 		for (;;)
@@ -9009,7 +9009,7 @@ void lowtests(void)
 #if 0 && CPUSTYLE_R7S721
 	// тестирование скорости до инициализации MMU
 	{
-		const uint32_t mask = (1U << 13);	// P6_13
+		const uint32_t mask = (1uL << 13);	// P6_13
 		// R7S721 pins
 		arm_hardware_pio6_outputs(mask, mask);
 		for (;;)
@@ -9026,7 +9026,7 @@ void lowtests(void)
 		// Формирование импульсов на выводе процессора
 		for (;;)
 		{
-			//const uint32_t WORKMASK = 1UL << 31;	// PA31
+			//const uint32_t WORKMASK = 1uL << 31;	// PA31
 			const uint32_t WORKMASK =
 				(1uL << 13) |		// BP13
 				(1uL << 14) |		// BP14

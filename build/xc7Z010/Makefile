@@ -248,15 +248,15 @@ boot.bin: boot_ant.bif $(PROJECT)_boot.elf
 
 $(OBJSC) $(ZOBJSC):
 	@mkdir -p $(@D)
-	$(CC) -std=c99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -o $@ -std=gnu99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
 
 $(OBJSCPP) $(ZOBJSCPP):
 	@mkdir -p $(@D)
-	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
 $(OBJSA) $(ZOBJSA):
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@))) -o $@
+	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
 %_boot.elf: $(OBJS) $(ZYNQLIB)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@

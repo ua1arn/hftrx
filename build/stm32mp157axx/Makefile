@@ -100,8 +100,6 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = $(PRJROOT)/src
-
 # Define ASM defines here
 UADEFS += 
 
@@ -115,7 +113,7 @@ CPPSRC +=
 ASRC +=
 
 # List all user directories here
-UINCDIR += ../.. ../../inc
+UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
@@ -127,15 +125,11 @@ ULIBS +=
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
-#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR) $(LWIPDIR) 
-SRCDIRS = $(PRJROOT)/src
+#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR) 
+SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR) 
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
-
-# debug target
-allX:
-	@echo $(CPPSRC)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
@@ -191,9 +185,9 @@ all: APP2 $(PROJECT)_app.stm32 app.hex
 
 allZ:
 	@echo Src
-	@echo $(CSRC)
+	@echo $(abspath $(CSRC))
 	@echo Obj at $(OBJDIR)
-	@echo $(OBJS)
+	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2 fsbl.stm32 boot.hex
   
@@ -222,15 +216,15 @@ app.hex: $(PROJECT)_app.stm32
 
 $(OBJSC):
 	@mkdir -p $(@D)
-	$(CC) -std=c99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -o $@ -std=gnu99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
 
 $(OBJSCPP):
 	@mkdir -p $(@D)
-	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
 $(OBJSA):
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@))) -o $@
+	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
 %_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
