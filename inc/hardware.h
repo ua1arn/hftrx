@@ -964,7 +964,14 @@ void xc7z_hardware_initialize(void);
 }
 #endif /* __cplusplus */
 
-#include "product.h"
+#if 1
+	#include "product.h"
+#else
+	#include "boards/arm_stm32h7xx_tqfp100_ctlstyle_storch_v7z_vt.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_stm32h7xx_tqfp100_cpustyle_storch_v7z_vt.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
+#endif
+
 #include "taildefs.h"
 
 #endif // HARDWARE_H_INCLUDED
