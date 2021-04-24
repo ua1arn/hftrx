@@ -104,6 +104,7 @@ static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DS
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
 static uint_fast8_t		glob_tx_bpsk_enable;	/* разрешение прямого формирования модуляции в FPGA */
+static uint_fast8_t		glob_seqphase = SEQPHASE_INIT;		/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
 static uint_fast8_t		glob_mode_wfm;
 static uint_fast8_t		glob_adcfifo;
 static uint_fast8_t		glob_xvrtr;
@@ -5352,6 +5353,17 @@ board_set_tx_bpsk_enable(uint_fast8_t v)
 	}
 }
 
+/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
+void
+board_set_seqphase(uint_fast8_t n)
+{
+	if (glob_seqphase != n)
+	{
+		glob_seqphase = n;
+		board_ctlreg1changed();
+	}
+}
+
 void
 board_set_mode_wfm(uint_fast8_t v)
 {
@@ -5666,7 +5678,7 @@ board_set_bcdfreq100k(uint_fast16_t bcdfreq)
 }
 
 void 
-board_ctl_set_vco(
+board_set_lo1vco(
 	uint_fast8_t n)	// 0..3 - code of VCO
 {
 	if (glob_vco != n)
@@ -5678,7 +5690,7 @@ board_ctl_set_vco(
 
 
 void 
-board_setlo2xtal(
+board_set_lo2xtal(
 	uint_fast8_t n)	// code of xtal
 {
 	if (glob_lo2xtal != n)
@@ -6197,7 +6209,7 @@ void board_pll1_set_vco(pllhint_t hint)
 #elif defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
 #elif MULTIVFO
 	// В этом случае hint храние код ГУН
-	board_ctl_set_vco((uint_fast8_t) hint % HYBRID_NVFOS);	/* выбор ГУН, соответствующего требуемой частоте генерации */
+	board_set_lo1vco((uint_fast8_t) hint % HYBRID_NVFOS);	/* выбор ГУН, соответствующего требуемой частоте генерации */
 	board_update();						/* вывести забуферированные изменения в регистры */
 #else
 	// В этом случае hint храние код ГУН

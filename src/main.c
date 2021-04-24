@@ -3075,7 +3075,9 @@ filter_t fi_2p0_455 =
 	#endif /* WITHPABIASTRIM */
 	uint8_t gtxgate;	/* разрешение предусилителя */
 	uint8_t bkindelay;	/* задержка отпускания BREAK-IN */
+	uint8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 	uint8_t rxtxdelay;	/* приём-передача */
+
 	uint8_t txrxdelay;	/* передача-приём */
 
 
@@ -3883,7 +3885,7 @@ enum
 	static const uint_fast8_t pretxdelay = 0;
 #endif
 
-
+	static uint_fast8_t grgbeep;	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 	#if (CTLSTYLE_SW2016MINI)
 		static uint_fast8_t rxtxdelay = 45;	/* в единицах mS. модифицируется через меню - задержка перехода прём-передача */
 		static uint_fast8_t txrxdelay = 15;	/* в единицах mS. модифицируется через меню - задержка перехода передача-прём */
@@ -7579,7 +7581,7 @@ update_lo2(
 	)
 {
 #if FQMODEL_UW3DI
-	board_setlo2xtal(getlo2xtal(lsb, hint));	// установка номера кварца
+	board_set_lo2xtal(getlo2xtal(lsb, hint));	// установка номера кварца
 #elif defined (PLL2_TYPE) && (LO2_SIDE != LOCODE_INVALID)
 	(void) hint;
 	prog_pll2_r(getplo2r(workfilter, tx));		/* программирование PLL2 в случае управляемой частоты второго гетеродина */
@@ -9343,6 +9345,7 @@ updateboard(
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 		}
 		#endif /* WITHIF4DSP */
+		seq_set_rgbeep(grgbeep);	/* разрешение (не-0) или запрещение (0) формирования roger beep */
 		seq_set_rxtxdelay(rxtxdelay, txrxdelay, pretxdelay ? txrxdelay : 0);	/* установить задержку пре переходе на передачу и обратно. */
 		board_sidetone_setfreq(gcwpitch10 * CWPITCHSCALE);	// Минимум - 400 герц (определено набором команд CAT Kenwood).
 		board_set_classamode(gclassamode);	/* использование режима клвсс А при передаче */
@@ -16988,6 +16991,16 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		& rxtxdelay,
 		getzerobase, 
+	},
+	{
+		QLABEL2("RGR BERP", "Roger Beep"), 7, 0, RJ_ON,	ISTEP5,	/* разрешение (не-0) или запрещение (0) формирования roger beep */
+		ITEM_VALUE,
+		0, 1,						/* разрешение (не-0) или запрещение (0) формирования roger beep */
+		offsetof(struct nvmap, grgbeep),
+		nvramoffs0,
+		NULL,
+		& grgbeep,
+		getzerobase,
 	},
 	{
 		QLABEL("TXRX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */

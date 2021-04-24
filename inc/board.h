@@ -109,6 +109,7 @@ void board_set_dacstraight(uint_fast8_t v);	/* Требуется формиро
 void board_set_dactest(uint_fast8_t v);	/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 void board_set_tx_inh_enable(uint_fast8_t v);	/* разрешение реакции на вход tx_inh */
 void board_set_tx_bpsk_enable(uint_fast8_t v);	/* разрешение прямого формирования модуляции в FPGA */
+void board_set_seqphase(uint_fast8_t v);	// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
 void board_set_mode_wfm(uint_fast8_t v);
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LTC2208 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LTC2208 */
@@ -155,14 +156,15 @@ void board_set_gainnfmrx(int_fast16_t n);	/* дополнительное уси
 void board_set_gvad605(uint_fast8_t v);		/* напряжение на AD605 (управление усилением тракта ПЧ */
 void board_set_fsadcpower10(int_fast16_t v);		/*	Мощность, соответствующая full scale от IF ADC */
 uint_fast32_t board_get_fqmeter(void);			/* получить значение измеренной частоты */
-void board_ctl_set_vco(uint_fast8_t n);	// 0..3, 0..5 - code of VCO
-void board_setlo2xtal(uint_fast8_t n);	// номер кварца для интерполяционного приемника
+void board_set_lo1vco(uint_fast8_t n);	// 0..3, 0..5 - code of VCO
+void board_set_lo2xtal(uint_fast8_t n);	// номер кварца для интерполяционного приемника
 void board_codec2_nreset(uint_fast8_t v);	/* формирование сигнала "RESET" для codec2. 0 - снять ресет. */
 void board_set_modem_speed100(uint_fast32_t v);	// скорость передачи с точностью 1/100 бод
 void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
 
 void board_lcd_rs(uint_fast8_t v);	// выставить уровень на сигнале lcd register select - не требуется board_update
 void board_lcd_reset(uint_fast8_t v);	// выставить уровень на сигнале lcd reset
+void board_set_modem_mode(uint_fast8_t v);	// применяемая модуляция
 
 /* звуки - подзвучка нажатий и самоконтроль в телеграфе */
 /* вызывается при запрещённых прерываниях. */

@@ -641,7 +641,11 @@ void seq_ask_txstate(
 	system_enableIRQ();
 }
 
-
+// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
+uint_fast8_t seq_get_phase(void)
+{
+	return SEQPHASE_INIT;
+}
 
 #else	/* WITHTX */
 
@@ -694,5 +698,10 @@ seq_set_bkin_enable(
 {
 }
 
+// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
+uint_fast8_t seq_get_phase(void)
+{
+	return SEQPHASE_INIT;
+}
 
 #endif	/* WITHTX */
