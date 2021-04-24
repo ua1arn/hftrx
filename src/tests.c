@@ -6117,6 +6117,61 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
+#if 0
+	#include "dsp3D.h"
+	{
+
+
+
+		static const float32_t dsp3dModel [122] = {
+					8,	// numVert
+					12,	// numFaces
+			//         VERTEXES
+			//   coords    normals
+			 1,	1, 1, 	0,0,1, // 0
+			 1, 1,-1, 	0,-1,0, // 1
+			 1,-1, 1, 	-1,0,0, // 2
+			 1,-1,-1, 	0,0,-1, // 3
+			-1, 1, 1, 	1,0,0, // 4
+			-1, 1,-1, 	0,1,0, // 5
+			-1,-1, 1, 	0,0,0, // 6
+			-1, -1,-1, 	0,0,0, // 7
+
+			//         FACES
+			//    Indexes     RGB
+			0,1,2,   255,255,255,
+			1,2,3,   255,255,255,
+			0,1,4,   255,255,255,
+			1,4,5,   255,255,255,
+			0,4,6,   255,255,255,
+			0,2,6,   255,255,255,
+			2,3,6,   255,255,255,
+			3,6,7,   255,255,255,
+			1,3,7,   255,255,255,
+			1,5,7,   255,255,255,
+			5,6,7,   255,255,255,
+			4,5,6,   255,255,255,
+
+		};
+
+		dsp3D_init();
+		dsp3D_setCameraPosition(0,0,10);
+		dsp3D_setLightPosition(0,0,10);
+		dsp3D_setCameraTarget(0,0,0);
+
+
+		for (;;)
+		{
+			colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+
+			meshRotation[0]+=0.01;
+			meshRotation[1]+=0.01;
+			meshRotation[2]+=0.01;
+			dsp3D_renderFlat(dsp3dModel);
+			display_nextfb();
+		}
+	}
+#endif
 #if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -8178,7 +8233,7 @@ void hightests(void)
 			uint_fast8_t i;
 			for (i = 0; i < HYBRID_NVFOS; ++ i)
 			{
-				board_ctl_set_vco(i);
+				board_set_lo1vco(i);
 				board_update();		/* вывести забуферированные изменения в регистры */
 				local_delay_ms(500);
 			}

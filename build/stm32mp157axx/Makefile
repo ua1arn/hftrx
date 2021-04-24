@@ -60,6 +60,7 @@ CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
+DSP3DDIR = $(PRJROOT)/lib/dsp3D
 
 OBJDIR = obj
 
@@ -82,7 +83,8 @@ DINCDIR = \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
+	$(OPENVGDIR)/src \
+	$(DSP3DDIR)/inc
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
