@@ -8016,6 +8016,9 @@ enum
 #endif /* WITHSUBTONES */
 	SNDI_KEYBEEP,		// меньшие номера - более приоритетные звуки
 	SNDI_SIDETONE,
+#if WITHIF4DSP
+	SNDI_RGRBRRP,	/* roger beep */
+#endif /* WITHIF4DSP */
 #if WITHSIDETONEDEBUG
 	SNDI_DEBUG,
 #endif /* WITHSIDETONEDEBUG */
@@ -8109,6 +8112,39 @@ board_sidetone_setfreq(
 	}
 }
 
+#if WITHIF4DSP
+
+/* roger beep - установка тона */
+/* вызывается из update hardware (user mode).	*/
+void
+board_rgrbeep_setfreq(
+	uint_least16_t tonefreq)	/* tonefreq - частота в герцах. Минимум - 400 герц (определено набором команд CAT). */
+{
+	enum { sndi = SNDI_RGRBRRP };
+	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
+	{
+		system_disableIRQ();
+		SPIN_LOCK(& gpreilock);
+		board_sounds_resched();
+		SPIN_UNLOCK(& gpreilock);
+		system_enableIRQ();
+	}
+}
+
+/* roger beep (вызывается из обработчика перрываний sequencer) */
+void board_rgrbeep_enable(uint_fast8_t state)
+{
+	const uint_fast8_t v = state != 0;
+	enum { sndi = SNDI_RGRBRRP };
+
+	if (gstate [sndi] != v)
+	{
+		gstate [sndi] = v;
+		board_sounds_resched();
+	}
+}
+
+#endif /* WITHIF4DSP */
 
 /* подзвучка клавиш (вызывается из обработчика перрываний) */
 void board_keybeep_enable(uint_fast8_t state)

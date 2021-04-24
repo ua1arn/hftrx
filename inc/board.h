@@ -172,10 +172,13 @@ void board_beep_initialize(void);
 
 void board_sidetone_setfreq(uint_least16_t freq);	/* freq - частота в герцах. Минимум - 400 герц (определено набором команд CAT).*/
 void board_keybeep_setfreq(uint_least16_t freq);	/* freq - частота в герцах. */
+void board_rgrbeep_setfreq(uint_least16_t freq);	/* roger beep - установка тона */
+
 /* функции разрешения выдачи звукового сигнала - могут перекрываться. */
 void board_sidetone_enable(uint_fast8_t state);
 /* вызывается при запрещённых прерываниях. */
 void board_keybeep_enable(uint_fast8_t state);
+void board_rgrbeep_enable(uint_fast8_t state);	/* roger beep (вызывается из обработчика перрываний sequencer) */
 void board_testsound_enable(uint_fast8_t state);
 void board_subtone_setfreq(uint_least16_t tonefreq01);	/* tonefreq - частота в десятых долях герца. */
 void board_subtone_enable(uint_fast8_t state);

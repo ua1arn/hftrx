@@ -9343,6 +9343,7 @@ updateboard(
 			board_set_gdigiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
+			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
 		}
 		#endif /* WITHIF4DSP */
 		seq_set_rgbeep(grgbeep);	/* разрешение (не-0) или запрещение (0) формирования roger beep */
@@ -16841,6 +16842,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* WITHIF4DSP */
+#if WITHIF4DSP
+	{
+		QLABEL2("RGR BERP", "Roger Beep"), 7, 0, RJ_ON,	ISTEP5,	/* разрешение (не-0) или запрещение (0) формирования roger beep */
+		ITEM_VALUE,
+		0, 1,						/* разрешение (не-0) или запрещение (0) формирования roger beep */
+		offsetof(struct nvmap, grgbeep),
+		nvramoffs0,
+		NULL,
+		& grgbeep,
+		getzerobase,
+	},
+#endif /* WITHIF4DSP */
 
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
@@ -16978,7 +16991,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& maxpwrcali,
-		getzerobase, 
+		getzerobase,
 	},
 #endif
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
@@ -16991,16 +17004,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		& rxtxdelay,
 		getzerobase, 
-	},
-	{
-		QLABEL2("RGR BERP", "Roger Beep"), 7, 0, RJ_ON,	ISTEP5,	/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		ITEM_VALUE,
-		0, 1,						/* разрешение (не-0) или запрещение (0) формирования roger beep */
-		offsetof(struct nvmap, grgbeep),
-		nvramoffs0,
-		NULL,
-		& grgbeep,
-		getzerobase,
 	},
 	{
 		QLABEL("TXRX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */
