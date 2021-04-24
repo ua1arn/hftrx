@@ -8206,17 +8206,21 @@ board_subtone_setfreq(
 #endif /* WITHSUBTONES */
 }
 
-void board_subtone_enable(uint_fast8_t state)
+void board_subtone_enable_user(uint_fast8_t state)
 {
 #if WITHSUBTONES
 	const uint_fast8_t v = state != 0;
 	enum { sndi = SNDI_SUBTONE };
 
+	system_disableIRQ();
+	SPIN_LOCK(& gpreilock);
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
+	SPIN_UNLOCK(& gpreilock);
+	system_enableIRQ();
 #endif /* WITHSUBTONES */
 }
 
@@ -8228,11 +8232,13 @@ void board_beep_initialize(void)
 
 #if WITHSIDETONEDEBUG
 
-	enum { sndi = SNDI_DEBUG };
-	gstate [sndi] = 1;
-	if (board_calcs_setfreq(sndi, 1000 * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		board_sounds_resched();
+		enum { sndi = SNDI_DEBUG };
+		gstate [sndi] = 1;
+		if (board_calcs_setfreq(sndi, 1000 * 10) != 0)	/* если частота изменилась - перепрограммируем */
+		{
+			board_sounds_resched();
+		}
 	}
 #endif /* WITHSIDETONEDEBUG */
 }
@@ -8280,7 +8286,7 @@ board_subtone_setfreq(
 }
 /* функция - заглушка */
 /* subtone */
-void board_subtone_enable(uint_fast8_t state)
+void board_subtone_enable_user(uint_fast8_t state)
 {
 }
 
