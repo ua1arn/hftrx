@@ -104,6 +104,7 @@ static uint_fast8_t		glob_flt_reset_n;	// сброс фильтров в FPGA DS
 static uint_fast8_t		glob_dactest;		/* вместо выхода интерполятора к ЦАП передатчика подключается выход NCO */
 static uint_fast8_t		glob_tx_inh_enable;	/* разрешение реакции FPGA на вход tx_inh */
 static uint_fast8_t		glob_tx_bpsk_enable;	/* разрешение прямого формирования модуляции в FPGA */
+static uint_fast8_t		glob_seqphase = SEQPHASE_INIT;		/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
 static uint_fast8_t		glob_mode_wfm;
 static uint_fast8_t		glob_adcfifo;
 static uint_fast8_t		glob_xvrtr;
@@ -5352,6 +5353,17 @@ board_set_tx_bpsk_enable(uint_fast8_t v)
 	}
 }
 
+/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
+void
+board_set_seqphase(uint_fast8_t n)
+{
+	if (glob_seqphase != n)
+	{
+		glob_seqphase = n;
+		board_ctlreg1changed();
+	}
+}
+
 void
 board_set_mode_wfm(uint_fast8_t v)
 {
@@ -5666,7 +5678,7 @@ board_set_bcdfreq100k(uint_fast16_t bcdfreq)
 }
 
 void 
-board_ctl_set_vco(
+board_set_lo1vco(
 	uint_fast8_t n)	// 0..3 - code of VCO
 {
 	if (glob_vco != n)
@@ -5678,7 +5690,7 @@ board_ctl_set_vco(
 
 
 void 
-board_setlo2xtal(
+board_set_lo2xtal(
 	uint_fast8_t n)	// code of xtal
 {
 	if (glob_lo2xtal != n)
@@ -6197,7 +6209,7 @@ void board_pll1_set_vco(pllhint_t hint)
 #elif defined(PLL1_TYPE) && (PLL1_TYPE == PLL_TYPE_SI570)
 #elif MULTIVFO
 	// В этом случае hint храние код ГУН
-	board_ctl_set_vco((uint_fast8_t) hint % HYBRID_NVFOS);	/* выбор ГУН, соответствующего требуемой частоте генерации */
+	board_set_lo1vco((uint_fast8_t) hint % HYBRID_NVFOS);	/* выбор ГУН, соответствующего требуемой частоте генерации */
 	board_update();						/* вывести забуферированные изменения в регистры */
 #else
 	// В этом случае hint храние код ГУН
@@ -6532,6 +6544,130 @@ static uint_fast8_t board_fpga_get_NSTATUS(void)
 }
 #endif
 
+#if WITHFPGALOAD_DCFG
+
+// See also
+// https://github.com/jameswalmsley/bitthunder/blob/master/arch/arm/mach/zynq/devcfg.c
+
+
+static void zynq_slcr_unlock(void) {
+	SCLR->SLCR_UNLOCK = 0xdf0d;
+}
+
+static void zynq_slcr_lock(void) {
+	SCLR->SLCR_LOCK = 0x767b;
+}
+
+#if 0
+static void zynq_slcr_cpu_start(unsigned ulCoreID)
+{
+	zynq_slcr_unlock();
+	SCLR->A9_CPU_RST_CTRL &= ~((SLCR_A9_CPU_CLKSTOP | SLCR_A9_CPU_RST) << ulCoreID);
+}
+
+static void zynq_slcr_cpu_stop(unsigned ulCoreID)
+{
+	SCLR->A9_CPU_RST_CTRL = (SLCR_A9_CPU_CLKSTOP | SLCR_A9_CPU_RST) << ulCoreID;
+}
+#endif
+
+static void zynq_slcr_preload_fpga(void)
+{
+	SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
+	SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
+	SCLR->LVL_SHFTR_EN  = 0xA;	// Enable output level shifters.
+}
+
+void zynq_slcr_postload_fpga(void) {
+	SCLR->LVL_SHFTR_EN 	= 0xF;	// Enable all level shifters.
+	SCLR->FPGA_RST_CTRL = 0;	// De-assert AXI interface resets.
+}
+
+static void devcfg_reset_pl(void) {
+
+	XDCFG->CTRL |= XDCFG_CTRL_PCFG_PROG_B;				// Setting PCFG_PROGB signal to high
+	while((XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT) == 0)	// Wait for PL for reset
+		;
+	XDCFG->CTRL &= ~ XDCFG_CTRL_PCFG_PROG_B;				// Setting PCFG_PROGB signal to low
+	while((XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT) != 0)	// Wait for PL for status set
+		;
+	XDCFG->CTRL |= XDCFG_CTRL_PCFG_PROG_B;
+	while((XDCFG->STATUS & XDCFG_STATUS_PCFG_INIT) == 0)	// Wait for PL for status set
+		;
+}
+
+
+/**
+ *	This assumes a single write request will be generated.
+ **/
+static void devcfg_write(void)
+{
+	// About format see
+	// PG374 (v1.0) June 3, 2020
+	// pg374-dfx-controller.pdf
+
+	// Transfer the data.
+	const uint_fast32_t dma_flags = 0x01;
+	size_t nwords;
+	const uint32_t * const p = getbitimage(& nwords);
+
+	ASSERT((((uintptr_t) p) % 4) == 0);
+
+	XDCFG->DMA_SRC_ADDR = (uintptr_t) p | dma_flags;
+	XDCFG->DMA_DST_ADDR = 0xFFFFFFFF;
+
+	XDCFG->DMA_SRC_LEN = nwords;
+	XDCFG->DMA_DST_LEN = 0;
+
+	while((XDCFG->INT_STS &  XDCFG_INT_STS_DMA_DONE_INT) == 0)
+		;
+
+	XDCFG->INT_STS = XDCFG_INT_STS_DMA_DONE_INT;	// Clear DMA_DONE status
+}
+
+/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+static void board_fpga_loader_XDCFG(void)
+{
+	PRINTF("board_fpga_loader_XDCFG start: boot_mode=%08lX\n", SCLR->BOOT_MODE);
+
+	zynq_slcr_unlock();
+	zynq_slcr_preload_fpga();
+	zynq_slcr_lock();
+
+	devcfg_reset_pl();
+
+	devcfg_write();
+
+	unsigned w = 1000;
+	while (-- w && (XDCFG->INT_STS & XDCFG_INT_STS_PCFG_DONE) == 0)
+		local_delay_ms(1);
+	if (w == 0)
+	{
+		PRINTF("board_fpga_loader_XDCFG: INT_STS_PCFG_DONE wait error.\n");
+	}
+
+	zynq_slcr_unlock();
+	zynq_slcr_postload_fpga();
+	zynq_slcr_lock();
+
+	PRINTF("board_fpga_loader_XDCFG done.\n");
+}
+
+#endif /* WITHFPGALOAD_DCFG */
+
+#if WITHFPGALOAD_DCFG
+static ALIGNX_BEGIN const FLASHMEMINIT uint32_t bitimage0 [] ALIGNX_END =
+{
+#include "rbfimages.h"
+};
+/* получить расположение в памяти и количество элементов в массиве для загрузки PS ZYNQ */
+const uint32_t * getbitimage(size_t * count)
+{
+	* count = sizeof bitimage0 / sizeof bitimage0 [0];
+	return & bitimage0 [0];
+}
+#endif /* WITHFPGALOAD_DCFG */
+
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
 
@@ -6557,7 +6693,7 @@ static void board_fpga_loader_initialize(void)
 
 #if ! (CPUSTYLE_R7S721 || 0)
 /* на процессоре renesas образ располагается в памяти, испольщуемой для хранений буферов DSP части */
-static const FLASHMEMINIT uint16_t rbfimage0 [] =
+static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
 {
 #include "rbfimages.h"
 };
@@ -7183,6 +7319,9 @@ void board_init_io(void)
 	spi_initialize();
 #endif /* WITHSPIHW || WITHSPISW */
 
+#if WITHFPGALOAD_DCFG
+	board_fpga_loader_XDCFG();	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+#endif /* WITHFPGALOAD_DCFG */
 #if WITHFPGALOAD_PS
 	/* FPGA загружается процессором с помощью SPI */
 	board_fpga_loader_initialize();
@@ -8185,6 +8324,9 @@ static const uint_fast8_t adcinputs [] =
 #if WITHPOTAFGAIN
 	POTAFGAIN,
 #endif /* WITHPOTAFGAIN */
+#if WITHPOTNFMSQL
+	POTNFMSQL,
+#endif /* WITHPOTNFMSQL */
 #if WITHCURRLEVEL2
 	PASENSEIX2,		// 100W PA current sense - ACS712-30 chip
 	PAREFERIX2,
@@ -9088,3 +9230,100 @@ mcp3208_read(
 }
 #endif /* WITHSPIHW || WITHSPISW */
 
+
+#if defined(RTC1_TYPE)
+
+#include <time.h>
+#include <sys/_timeval.h>
+
+/* поддержка получения времени */
+int _gettimeofday(struct timeval *p, void *tz)
+{
+	const time_t XSEC_PER_DAY = (time_t) 24 * 60 * 60;
+
+	if (p != NULL)
+	{
+		// получаем локальное время в секундах из компонент
+		uint_fast16_t year;
+		uint_fast8_t month, dayofmonth;
+		uint_fast8_t hour, minute, secounds;
+
+		board_rtc_getdatetime( & year, & month, & dayofmonth, & hour, & minute, & secounds);
+
+		static const unsigned int years [2] [13] =
+		{
+			{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 }, /* Normal */
+			{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }, /* Leap   */
+		};
+
+//		unsigned int leap = 0;
+//		float Leap_check = 0.0;
+
+		/* сколько лет прошло с 1980 года? */
+		/* делим разность текущего и 1980 годов на 4 */
+		/* если результат деления - без остатка, то текущий год - високосный */
+		/* если результат деления - с остатком, то текущий год -  нормальный */
+//
+//		Leap_check = ((float) ((year) - 1980)) / 4.; /* деление на предмет */
+//		/* выявления остатка  */
+//		leap = ((int) ((year) - 1980)) / 4; /* деление с обрезанием остатка*/
+//
+//		if (Leap_check == leap)
+//			leap = 1; /* сравнение (leap=1 - вис.год) */
+//
+//		else
+//			leap = 0;
+
+		const div_t d = div(year - 1980, 4);
+		const int leap = d.rem == 0;
+
+		/* число секунд в этих годах
+		 SEC_PER_DAY*(((year)-1980)*365 + ((year)-1980)/4 + 0\1);
+
+		 сколько секунд в предыдущих месяцах текущего года?
+		 SEC_PER_DAY*years[leap][(month)-1];
+
+		 сколько секунд прошло за предыдущие дни текущего месяца?
+		 SEC_PER_DAY*((day)-1);
+
+		 сколько секунд прошло за предыдущие часы текущего дня?
+		 3600*(hour);
+
+		 сколько секунд прошло за предыдущие минуты текущего часа?
+		 60*(min);
+
+		 число отдельных секунд
+		 (sec);    */
+
+		if (leap != 0)
+		{
+			p->tv_sec = XSEC_PER_DAY * (((year) - 1980) * 365 + ((year) - 1980) / 4 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
+					+ 3600 * (hour) + 60 * (minute) + (secounds);
+		}
+		else
+		{
+			p->tv_sec = XSEC_PER_DAY
+					* (((year) - 1980) * 365 + ((year) - 1980) / 4 + 1 + years [leap] [(month) - 1] + ((dayofmonth) - 1))
+					+ 3600 * (hour) + 60 * (minute) + (secounds);
+		}
+		p->tv_usec = 0;
+	}
+
+	return 0;
+}
+
+#else
+
+#include <time.h>
+#include <sys/_timeval.h>
+
+
+int _gettimeofday(struct timeval *p, void *tz)
+{
+	if (p != NULL)
+	{
+	}
+	return 0;
+}
+
+#endif

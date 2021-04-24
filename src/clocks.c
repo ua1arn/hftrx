@@ -22,8 +22,10 @@ calcdivround2(
 	return (ref < freq) ? 1 : ((ref + freq / 2) / freq);
 }
 
+#if defined(STM32F401xC)
 
-#if CPUSTYLE_STM32F4XX
+
+#elif CPUSTYLE_STM32F4XX
 
 unsigned long stm32f4xx_get_spi1_freq(void)
 {
@@ -41,6 +43,15 @@ unsigned long hardware_get_spi_freq(void)
 
 #elif CPUSTYLE_STM32F7XX
 
+
+/* частоты, подающиеся на периферию */
+//#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+//#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+
+#define BOARD_USART1_FREQ (stm32f7xx_get_usart1_freq())
+
 unsigned long stm32f7xx_get_hse_freq(void)
 {
 #if WITHCPUXTAL
@@ -53,35 +64,353 @@ unsigned long stm32f7xx_get_hse_freq(void)
 #endif
 }
 
-
-#if WITHSPIHW
-unsigned long stm32f7xx_get_spi1_freq(void)
+unsigned long stm32f7xx_get_pll_freq(void)
 {
-	return PCLK1_FREQ;
+	const unsigned long pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	const unsigned long plln = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN_Msk) >> RCC_PLLCFGR_PLLN_Pos;
+
+	return (uint_fast64_t) REFINFREQ * plln / pllm;
 }
 
-#endif /* WITHSPIHW */
+unsigned long stm32f7xx_get_pllsai_freq(void)
+{
+	const unsigned long pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	const unsigned long pllsain = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIN_Msk) >> RCC_PLLSAICFGR_PLLSAIN_Pos;
 
-#if WITHSPIHW
+	return (uint_fast64_t) REFINFREQ * pllsain / pllm;
+}
+
+unsigned long stm32f7xx_get_plli2s_freq(void)
+{
+	const unsigned long pllm = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	const unsigned long plli2sn = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SN_Msk) >> RCC_PLLI2SCFGR_PLLI2SN_Pos;
+
+	return (uint_fast64_t) REFINFREQ * plli2sn / pllm;
+}
+
+unsigned long stm32f7xx_get_pll_p_freq(void)
+{
+	const unsigned long pll = stm32f7xx_get_pll_freq();
+	switch ((RCC->PLLCFGR & RCC_PLLCFGR_PLLP_Msk) >> RCC_PLLCFGR_PLLP_Pos)
+	{
+	default:
+	case 0x00: return pll / 2;
+	case 0x01: return pll / 4;
+	case 0x02: return pll / 6;
+	case 0x03: return pll / 8;
+	}
+}
+
+// PLLCLK=PLL_P
+// HSI/HSE/PLLCLK
+// SWS
+unsigned long stm32f7xx_get_sys_freq(void)
+{
+	//	00: HSI oscillator used as the system clock
+	//	01: HSE oscillator used as the system clock
+	//	10: PLL used as the
+	switch ((RCC->CFGR & RCC_CFGR_SWS_Msk) >> RCC_CFGR_SWS_Pos)
+	{
+	default:
+	case 0x00: return HSIFREQ;
+	case 0x01: return stm32f7xx_get_hse_freq();
+	case 0x02: return stm32f7xx_get_pll_p_freq();
+	}
+}
+
+// AHB prescaler
+// HPRE output
+unsigned long stm32f7xx_get_ahb_freq(void)
+{
+	//	0xxx: system clock not divided
+	//	1000: system clock divided by 2
+	//	1001: system clock divided by 4
+	//	1010: system clock divided by 8
+	//	1011: system clock divided by 16
+	//	1100: system clock divided by 64
+	//	1101: system clock divided by 128
+	//	1110: system clock divided by 256
+	//	1111: system clock divided by 512
+	const unsigned long sys = stm32f7xx_get_sys_freq();
+	switch ((RCC->CFGR & RCC_CFGR_HPRE_Msk) >> RCC_CFGR_HPRE_Pos)
+	{
+	default: return sys;
+	case 0x08: return sys / 2;
+	case 0x09: return sys / 4;
+	case 0x0A: return sys / 8;
+	case 0x0B: return sys / 16;
+	case 0x0C: return sys / 64;
+	case 0x0D: return sys / 128;
+	case 0x0E: return sys / 256;
+	case 0x0F: return sys / 512;
+	}
+}
+
+// TODO: проверить
+// APB Low-speed prescaler (APB1)
+// PPRE1 output
+unsigned long hardware_get_apb1_freq(void)
+{
+	//	0xx: AHB clock not divided
+	//	100: AHB clock divided by 2
+	//	101: AHB clock divided by 4
+	//	110: AHB clock divided by 8
+	//	111: AHB clock divided by 16
+	const unsigned long ahb = stm32f7xx_get_ahb_freq();
+	switch ((RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos)
+	{
+	default: return ahb;
+	case 0x04: return ahb / 2;
+	case 0x05: return ahb / 4;
+	case 0x06: return ahb / 8;
+	case 0x07: return ahb / 16;
+	}
+}
+
+// TODO: проверить
+unsigned long hardware_get_apb1_tim_freq(void)
+{
+	const unsigned long sysclk = stm32f7xx_get_sys_freq();
+	const uint8_t timpre = (RCC->DCKCFGR1 & RCC_DCKCFGR1_TIMPRE_Msk) != 0;
+
+	// timpre 0:
+	//	If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, TIMxCLK = PCLKx. Otherwise, the timer clock frequencies are set to
+	//	twice to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 2xPCLKx.
+
+	// timpre 1:
+	//	If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, 2 or 4, TIMxCLK = HCLK. Otherwise, the timer clock frequencies are set
+	//	to four times to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 4xPCLKx.
+
+	const unsigned long ahb = stm32f7xx_get_ahb_freq();
+	switch ((RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos)
+	{
+	default: return ahb;
+	case 0x04: return timpre ? ahb / 1 : ahb / 2;
+	case 0x05: return timpre ? ahb / 2 : ahb / 4;
+	case 0x06: return timpre ? ahb / 4 : ahb / 8;
+	case 0x07: return timpre ? ahb / 8 : ahb / 16;
+	}
+}
+
+// TODO: проверить
+// APB high-speed prescaler (APB2)
+// PPRE2 output
+unsigned long hardware_get_apb2_freq(void)
+{
+	//	0xx: AHB clock not divided
+	//	100: AHB clock divided by 2
+	//	101: AHB clock divided by 4
+	//	110: AHB clock divided by 8
+	//	111: AHB clock divided by 16
+	const unsigned long ahb = stm32f7xx_get_ahb_freq();
+	switch ((RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos)
+	{
+	default: return ahb;
+	case 0x04: return ahb / 2;
+	case 0x05: return ahb / 4;
+	case 0x06: return ahb / 8;
+	case 0x07: return ahb / 16;
+	}
+}
+
+// TODO: проверить
+unsigned long hardware_get_apb2_tim_freq(void)
+{
+	const unsigned long sysclk = stm32f7xx_get_sys_freq();
+	const uint8_t timpre = (RCC->DCKCFGR1 & RCC_DCKCFGR1_TIMPRE_Msk) != 0;
+
+	// timpre 0:
+	//	If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, TIMxCLK = PCLKx. Otherwise, the timer clock frequencies are set to
+	//	twice to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 2xPCLKx.
+
+	// timpre 1:
+	//	If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, 2 or 4, TIMxCLK = HCLK. Otherwise, the timer clock frequencies are set
+	//	to four times to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 4xPCLKx.
+
+	const unsigned long ahb = stm32f7xx_get_ahb_freq();
+	switch ((RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos)
+	{
+	default: return ahb;
+	case 0x04: return timpre ? ahb / 1 : ahb / 2;
+	case 0x05: return timpre ? ahb / 2 : ahb / 4;
+	case 0x06: return timpre ? ahb / 4 : ahb / 8;
+	case 0x07: return timpre ? ahb / 8 : ahb / 16;
+	}
+}
+
+// TODO: проверить
+unsigned long stm32f7xx_get_pclk1_freq(void)
+{
+	return hardware_get_apb1_freq();
+}
+
+// TODO: проверить
+unsigned long stm32f7xx_get_pclk2_freq(void)
+{
+	return hardware_get_apb2_freq();
+}
+
+// TODO: проверить
 // получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
 unsigned long hardware_get_spi_freq(void)
 {
-	return stm32f7xx_get_spi1_freq();
+	const unsigned long sysclk = stm32f7xx_get_sys_freq();
+	return sysclk / 4;
 }
 
-#endif /* WITHSPIHW */
+unsigned long stm32f7xx_get_usart1_freq(void)
+{
+	//	00: APB2 clock (PCLK2) is selected as USART 1 clock
+	//	01: System clock is selected as USART 1 clock
+	//	10: HSI clock is selected as USART 1 clock
+	//	11: LSE clock is selected as USART 1 clock
+	switch ((RCC->DCKCFGR2 & RCC_DCKCFGR2_USART1SEL_Msk) >> RCC_DCKCFGR2_USART1SEL_Pos)
+	{
+	default:
+	case 0x00: return stm32f7xx_get_pclk2_freq();
+	case 0x01: return stm32f7xx_get_sys_freq();
+	case 0x02: return HSIFREQ;
+	case 0x03: return LSEFREQ;
+	}
+}
+
+unsigned long stm32f7xx_get_usart2_freq(void)
+{
+	//	00: APB1 clock (PCLK1) is selected as USART 2 clock
+	//	01: System clock is selected as USART 2 clock
+	//	10: HSI clock is selected as USART 2 clock
+	//	11: LSE clock is selected as USART 2 clock
+	switch ((RCC->DCKCFGR2 & RCC_DCKCFGR2_USART2SEL_Msk) >> RCC_DCKCFGR2_USART2SEL_Pos)
+	{
+	default:
+	case 0x00: return stm32f7xx_get_pclk1_freq();
+	case 0x01: return stm32f7xx_get_sys_freq();
+	case 0x02: return HSIFREQ;
+	case 0x03: return LSEFREQ;
+	}
+}
+
+unsigned long stm32f7xx_get_usart3_freq(void)
+{
+	//	00: APB1 clock (PCLK1) is selected as USART 3 clock
+	//	01: System clock is selected as USART 3 clock
+	//	10: HSI clock is selected as USART 3 clock
+	//	11: LSE clock is selected as USART 3 clock
+	switch ((RCC->DCKCFGR2 & RCC_DCKCFGR2_USART3SEL_Msk) >> RCC_DCKCFGR2_USART3SEL_Pos)
+	{
+	default:
+	case 0x00: return stm32f7xx_get_pclk1_freq();
+	case 0x01: return stm32f7xx_get_sys_freq();
+	case 0x02: return HSIFREQ;
+	case 0x03: return LSEFREQ;
+	}
+}
+
+unsigned long stm32f7xx_get_uart4_freq(void)
+{
+	//	00: APB1 clock (PCLK1) is selected as USART 4 clock
+	//	01: System clock is selected as USART 4 clock
+	//	10: HSI clock is selected as USART 4 clock
+	//	11: LSE clock is selected as USART 4 clock
+	switch ((RCC->DCKCFGR2 & RCC_DCKCFGR2_UART4SEL_Msk) >> RCC_DCKCFGR2_UART4SEL_Pos)
+	{
+	default:
+	case 0x00: return stm32f7xx_get_pclk1_freq();
+	case 0x01: return stm32f7xx_get_sys_freq();
+	case 0x02: return HSIFREQ;
+	case 0x03: return LSEFREQ;
+	}
+}
+
+unsigned long stm32f7xx_get_uart5_freq(void)
+{
+	//	00: APB1 clock (PCLK1) is selected as USART 5 clock
+	//	01: System clock is selected as USART 5 clock
+	//	10: HSI clock is selected as USART 5 clock
+	//	11: LSE clock is selected as USART 5 clock
+	switch ((RCC->DCKCFGR2 & RCC_DCKCFGR2_UART5SEL_Msk) >> RCC_DCKCFGR2_UART5SEL_Pos)
+	{
+	default:
+	case 0x00: return stm32f7xx_get_pclk1_freq();
+	case 0x01: return stm32f7xx_get_sys_freq();
+	case 0x02: return HSIFREQ;
+	case 0x03: return LSEFREQ;
+	}
+}
+
+unsigned long stm32f7xx_get_usart6_freq(void)
+{
+	//	00: APB2 clock (PCLK2) is selected as USART 6 clock
+	//	01: System clock is selected as USART 6 clock
+	//	10: HSI clock is selected as USART 6 clock
+	//	11: LSE clock is selected as USART 6 clock
+	switch ((RCC->DCKCFGR2 & RCC_DCKCFGR2_USART6SEL_Msk) >> RCC_DCKCFGR2_USART6SEL_Pos)
+	{
+	default:
+	case 0x00: return stm32f7xx_get_pclk2_freq();
+	case 0x01: return stm32f7xx_get_sys_freq();
+	case 0x02: return HSIFREQ;
+	case 0x03: return LSEFREQ;
+	}
+}
+
+unsigned long stm32f7xx_get_uart7_freq(void)
+{
+	//	00: APB1 clock (PCLK1) is selected as USART 7 clock
+	//	01: System clock is selected as USART 7 clock
+	//	10: HSI clock is selected as USART 7 clock
+	//	11: LSE clock is selected as USART 7 clock
+	switch ((RCC->DCKCFGR2 & RCC_DCKCFGR2_UART7SEL_Msk) >> RCC_DCKCFGR2_UART7SEL_Pos)
+	{
+	default:
+	case 0x00: return stm32f7xx_get_pclk1_freq();
+	case 0x01: return stm32f7xx_get_sys_freq();
+	case 0x02: return HSIFREQ;
+	case 0x03: return LSEFREQ;
+	}
+}
+
+unsigned long stm32f7xx_get_uart8_freq(void)
+{
+	//	00: APB1 clock (PCLK1) is selected as USART 8 clock
+	//	01: System clock is selected as USART 8 clock
+	//	10: HSI clock is selected as USART 8 clock
+	//	11: LSE clock is selected as USART 8 clock
+	switch ((RCC->DCKCFGR2 & RCC_DCKCFGR2_UART8SEL_Msk) >> RCC_DCKCFGR2_UART8SEL_Pos)
+	{
+	default:
+	case 0x00: return stm32f7xx_get_pclk1_freq();
+	case 0x01: return stm32f7xx_get_sys_freq();
+	case 0x02: return HSIFREQ;
+	case 0x03: return LSEFREQ;
+	}
+}
 
 #elif CPUSTYLE_STM32H7XX
 
 
 /* частоты, подающиеся на периферию */
-#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
-#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
-#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+//#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
+//#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
+//#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
 #define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 #define BOARD_ADC_FREQ (stm32h7xx_get_adc_freq())
+
+// See Table 8. Register boundary addresses
+#define BOARD_USART1_FREQ 	(stm32h7xx_get_usart1_6_freq())
+#define BOARD_USART2_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
+#define BOARD_USART3_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
+#define BOARD_TIM3_FREQ 	(stm32h7xx_get_timx_freq())	// TIM2..TIM7, TIM12..TIM14, LPTIM1, : APB1 D2 bus
 
 unsigned long stm32h7xx_get_hse_freq(void)
 {
@@ -97,7 +426,7 @@ unsigned long stm32h7xx_get_hse_freq(void)
 
 unsigned long stm32h7xx_get_pll1_freq(void)
 {
-	const uint32_t pll1divm1 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM1_Msk) >> RCC_PLLCKSELR_DIVM1_Pos);	// reference divider - not need 1substracted
+	const uint32_t pll1divm1 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM1_Msk) >> RCC_PLLCKSELR_DIVM1_Pos);	// reference divisor - not need 1substracted
 	const uint32_t pll1divn1 = ((RCC->PLL1DIVR & RCC_PLL1DIVR_N1_Msk) >> RCC_PLL1DIVR_N1_Pos) + 1;
 	return (uint_fast64_t) REFINFREQ * pll1divn1 / pll1divm1;
 }
@@ -116,7 +445,7 @@ unsigned long stm32h7xx_get_pll1_q_freq(void)
 
 unsigned long stm32h7xx_get_pll2_freq(void)
 {
-	const uint32_t pll2divm2 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM2_Msk) >> RCC_PLLCKSELR_DIVM2_Pos);	// reference divider - not need 1substracted
+	const uint32_t pll2divm2 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM2_Msk) >> RCC_PLLCKSELR_DIVM2_Pos);	// reference divisor - not need 1substracted
 	const uint32_t pll2divn2 = ((RCC->PLL2DIVR & RCC_PLL2DIVR_N2_Msk) >> RCC_PLL2DIVR_N2_Pos) + 1;
 	return (uint_fast64_t) REFINFREQ * pll2divn2 / pll2divm2;
 }
@@ -135,7 +464,7 @@ unsigned long stm32h7xx_get_pll2_q_freq(void)
 
 unsigned long stm32h7xx_get_pll3_freq(void)
 {
-	const uint32_t pll3divm3 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM3_Msk) >> RCC_PLLCKSELR_DIVM3_Pos);	// reference divider - not need 1substracted
+	const uint32_t pll3divm3 = ((RCC->PLLCKSELR & RCC_PLLCKSELR_DIVM3_Msk) >> RCC_PLLCKSELR_DIVM3_Pos);	// reference divisor - not need 1substracted
 	const uint32_t pll3divn3 = ((RCC->PLL3DIVR & RCC_PLL3DIVR_N3_Msk) >> RCC_PLL3DIVR_N3_Pos) + 1;
 	return (uint_fast64_t) REFINFREQ * pll3divn3 / pll3divm3;
 }
@@ -174,8 +503,12 @@ unsigned long stm32h7xx_get_sys_freq(void)
 	}
 }
 
+// sys_d1cpre_ck
+// rcc_c_ck
+// rcc_fclk_c
 unsigned long stm32h7xx_get_stm32h7xx_get_d1cpre_freq(void)
 {
+	const unsigned long sys_ck = stm32h7xx_get_sys_freq();
 	//	0xxx: sys_ck not divided (default after reset)
 	//	1000: sys_ck divided by 2
 	//	1001: sys_ck divided by 4
@@ -187,21 +520,22 @@ unsigned long stm32h7xx_get_stm32h7xx_get_d1cpre_freq(void)
 	//	1111: sys_ck divided by 512
 	switch ((RCC->D1CFGR & RCC_D1CFGR_D1CPRE_Msk) >> RCC_D1CFGR_D1CPRE_Pos)
 	{
-	default: return stm32h7xx_get_sys_freq();
-	case 0x08: return stm32h7xx_get_sys_freq() / 2;
-	case 0x09: return stm32h7xx_get_sys_freq() / 4;
-	case 0x0A: return stm32h7xx_get_sys_freq() / 8;
-	case 0x0B: return stm32h7xx_get_sys_freq() / 16;
-	case 0x0C: return stm32h7xx_get_sys_freq() / 64;
-	case 0x0D: return stm32h7xx_get_sys_freq() / 128;
-	case 0x0E: return stm32h7xx_get_sys_freq() / 256;
-	case 0x0F: return stm32h7xx_get_sys_freq() / 512;
+	default: return sys_ck;
+	case 0x08: return sys_ck / 2;
+	case 0x09: return sys_ck / 4;
+	case 0x0A: return sys_ck / 8;
+	case 0x0B: return sys_ck / 16;
+	case 0x0C: return sys_ck / 64;
+	case 0x0D: return sys_ck / 128;
+	case 0x0E: return sys_ck / 256;
+	case 0x0F: return sys_ck / 512;
 	}
 
 }
 
 unsigned long stm32h7xx_get_hclk3_freq(void)
 {
+	const unsigned long rcc_d1cpre = stm32h7xx_get_stm32h7xx_get_d1cpre_freq();
 	// HPRE output
 	//	0xxx: rcc_hclk3 = sys_d1cpre_ck (default after reset)
 	//	1000: rcc_hclk3 = sys_d1cpre_ck / 2
@@ -214,24 +548,34 @@ unsigned long stm32h7xx_get_hclk3_freq(void)
 	//	1111: rcc_hclk3 = sys_d1cpre_ck / 512
 	switch ((RCC->D1CFGR & RCC_D1CFGR_HPRE_Msk) >> RCC_D1CFGR_HPRE_Pos)
 	{
-	default: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq();
-	case 0x08: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 2;
-	case 0x09: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 4;
-	case 0x0A: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 8;
-	case 0x0B: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 16;
-	case 0x0C: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 64;
-	case 0x0D: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 128;
-	case 0x0E: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 256;
-	case 0x0F: return stm32h7xx_get_stm32h7xx_get_d1cpre_freq() / 512;
+	default: return rcc_d1cpre;
+	case 0x08: return rcc_d1cpre / 2;
+	case 0x09: return rcc_d1cpre / 4;
+	case 0x0A: return rcc_d1cpre / 8;
+	case 0x0B: return rcc_d1cpre / 16;
+	case 0x0C: return rcc_d1cpre / 64;
+	case 0x0D: return rcc_d1cpre / 128;
+	case 0x0E: return rcc_d1cpre / 256;
+	case 0x0F: return rcc_d1cpre / 512;
 	}
 }
 
+// HPRE output
+unsigned long stm32h7xx_get_aclk_freq(void)
+{
+	return stm32h7xx_get_hclk3_freq();
+}
+
+// HPRE output
+// rcc_hclk1
 unsigned long stm32h7xx_get_hclk1_freq(void)
 {
 	return stm32h7xx_get_hclk3_freq();
 }
 
-unsigned long stm32h7xx_get_pclk2_freq(void)
+// HPRE output
+// rcc_hclk2
+unsigned long stm32h7xx_get_hclk2_freq(void)
 {
 	return stm32h7xx_get_hclk3_freq();
 }
@@ -278,6 +622,68 @@ unsigned long stm32h7xx_get_apb2_freq(void)
 	}
 }
 
+// Table 56. Ratio between clock timer and pclk
+// rcc_timx_ker_ck
+// APB1 timers
+unsigned long stm32h7xx_get_timx_freq(void)
+{
+	const unsigned long rcc_hclk1 = stm32h7xx_get_hclk1_freq();
+	const uint8_t timpre = (RCC->CFGR & RCC_CFGR_TIMPRE) != 0;
+	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE1_Msk) >> RCC_D2CFGR_D2PPRE1_Pos)
+	{
+	default: return rcc_hclk1;
+	case 0x05: return timpre ? rcc_hclk1 / 1 : rcc_hclk1 / 2;
+	case 0x06: return timpre ? rcc_hclk1 / 2 : rcc_hclk1 / 4;
+	case 0x07: return timpre ? rcc_hclk1 / 4 : rcc_hclk1 / 8;
+	}
+}
+
+// Table 56. Ratio between clock timer and pclk
+// rcc_pclk1
+unsigned long stm32h7xx_get_pclk1_freq(void)
+{
+	const unsigned long rcc_hclk1 = stm32h7xx_get_hclk1_freq();
+	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE1_Msk) >> RCC_D2CFGR_D2PPRE1_Pos)
+	{
+	default: return rcc_hclk1;
+	case 0x04: return rcc_hclk1 / 2;
+	case 0x05: return rcc_hclk1 / 4;
+	case 0x06: return rcc_hclk1 / 8;
+	case 0x07: return rcc_hclk1 / 16;
+	}
+}
+
+// Table 56. Ratio between clock timer and pclk
+// rcc_timy_ker_ck
+// APB2 timers
+unsigned long stm32h7xx_get_timy_freq(void)
+{
+	const unsigned long rcc_hclk1 = stm32h7xx_get_hclk2_freq();
+	const uint8_t timpre = (RCC->CFGR & RCC_CFGR_TIMPRE) != 0;
+	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE2_Msk) >> RCC_D2CFGR_D2PPRE2_Pos)
+	{
+	default: return rcc_hclk1;
+	case 0x05: return timpre ? rcc_hclk1 / 1 : rcc_hclk1 / 2;
+	case 0x06: return timpre ? rcc_hclk1 / 2 : rcc_hclk1 / 4;
+	case 0x07: return timpre ? rcc_hclk1 / 4 : rcc_hclk1 / 8;
+	}
+}
+
+// Table 56. Ratio between clock timer and pclk
+// rcc_pclk2
+unsigned long stm32h7xx_get_pclk2_freq(void)
+{
+	const unsigned long rcc_hclk1 = stm32h7xx_get_hclk2_freq();
+	switch ((RCC->D2CFGR & RCC_D2CFGR_D2PPRE2_Msk) >> RCC_D2CFGR_D2PPRE2_Pos)
+	{
+	default: return rcc_hclk1;
+	case 0x04: return rcc_hclk1 / 2;
+	case 0x05: return rcc_hclk1 / 4;
+	case 0x06: return rcc_hclk1 / 8;
+	case 0x07: return rcc_hclk1 / 16;
+	}
+}
+
 unsigned long stm32h7xx_get_per_freq(void)
 {
 	// CKPERSEL
@@ -289,10 +695,77 @@ unsigned long stm32h7xx_get_per_freq(void)
 	{
 	case 0x00: return HSIFREQ;
 	case 0x01: return CSIFREQ;
-	case 0x02: stm32h7xx_get_hse_freq();
+	case 0x02: return stm32h7xx_get_hse_freq();
 	default: return HSIFREQ;
 	}
 }
+
+// D1PPRE output
+// rcc_pclk3
+unsigned long stm32h7xx_get_pclk3_freq(void)
+{
+	const unsigned long rcc_hclk3 = stm32h7xx_get_hclk3_freq();	// HPRE output
+	//	0xx: rcc_pclk3 = rcc_hclk3 (default after reset)
+	//	100: rcc_pclk3 = rcc_hclk3 / 2
+	//	101: rcc_pclk3 = rcc_hclk3 / 4
+	//	110: rcc_pclk3 = rcc_hclk3 / 8
+	//	111: rcc_pclk3 = rcc_hclk3 / 16
+
+	switch ((RCC->D1CFGR & RCC_D1CFGR_D1PPRE_Msk) >> RCC_D1CFGR_D1PPRE_Pos)
+	{
+	default: return rcc_hclk3;
+	case 0x04: return rcc_hclk3 / 2;
+	case 0x05: return rcc_hclk3 / 4;
+	case 0x06: return rcc_hclk3 / 8;
+	case 0x07: return rcc_hclk3 / 16;
+	}
+}
+
+// USART1 and 6 kernel clock source selection
+unsigned long stm32h7xx_get_usart1_6_freq(void)
+{
+	//	000: rcc_pclk2 clock is selected as kernel clock (default after reset)
+	//	001: pll2_q_ck clock is selected as kernel clock
+	//	010: pll3_q_ck clock is selected as kernel clock
+	//	011: hsi_ker_ck clock is selected as kernel clock
+	//	100: csi_ker_ck clock is selected as kernel clock
+	//	101: lse_ck clock is selected as kernel clock
+	//	others: reserved, the kernel clock is disabled
+	switch ((RCC->D2CCIP1R & RCC_D2CCIP2R_USART16SEL_Msk) >> RCC_D2CCIP2R_USART16SEL_Pos)
+	{
+	case 0x00: return stm32h7xx_get_pclk2_freq();	// D2PPRE2 output
+	case 0x01: return stm32h7xx_get_pll2_q_freq();
+	case 0x02: return stm32h7xx_get_pll3_q_freq();
+	case 0x03: return HSIFREQ;
+	case 0x04: return CSIFREQ;
+	case 0x05: return LSEFREQ;
+	default: return HSIFREQ;
+	}
+}
+
+// USART2/3, UART4,5, 7/8 (APB1) kernel clock source selection
+unsigned long stm32h7xx_get_usart2_to_8_freq(void)
+{
+	// RCC Domain 2 Kernel Clock Configuration Register
+	//	000: rcc_pclk1 clock is selected as kernel clock (default after reset)
+	//	001: pll2_q_ck clock is selected as kernel clock
+	//	010: pll3_q_ck clock is selected as kernel clock
+	//	011: hsi_ker_ck clock is selected as kernel clock
+	//	100: csi_ker_ck clock is selected as kernel clock
+	//	101: lse_ck clock is selected as kernel clock
+	// others: reserved, the kernel clock is disabled
+	switch ((RCC->D2CCIP1R & RCC_D2CCIP2R_USART28SEL_Msk) >> RCC_D2CCIP2R_USART28SEL_Pos)
+	{
+	case 0x00: return stm32h7xx_get_pclk1_freq();	// D2PPRE1 output
+	case 0x01: return stm32h7xx_get_pll2_q_freq();
+	case 0x02: return stm32h7xx_get_pll3_q_freq();
+	case 0x03: return HSIFREQ;
+	case 0x04: return CSIFREQ;
+	case 0x05: return LSEFREQ;
+	default: return HSIFREQ;
+	}
+}
+
 
 unsigned long stm32h7xx_get_spi1_2_3_freq(void)
 {
@@ -339,7 +812,6 @@ unsigned long stm32h7xx_get_spi4_5_freq(void)
 	}
 }
 
-#if WITHCPUADCHW
 unsigned long stm32h7xx_get_adc_freq(void)
 {
 	//	00: pll2_p_ck clock selected as kernel peripheral clock (default after reset)
@@ -354,24 +826,27 @@ unsigned long stm32h7xx_get_adc_freq(void)
 	case 0x02: return stm32h7xx_get_per_freq();
 	}
 }
-#endif /* WITHCPUADCHW */
 
-#if WITHSPIHW
 // получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
 unsigned long hardware_get_spi_freq(void)
 {
 	return stm32h7xx_get_spi1_2_3_freq();
 }
 
-#endif /* WITHSPIHW */
-
 #elif CPUSTYLE_STM32MP1
 
 /* частоты, подающиеся на периферию */
-//#define PCLK1_FREQ (stm32mp1_get_pclk1_freq())
-//#define	PCLK2_FREQ (stm32mp1_get_pclk2_freq())	// 84 MHz PCLK2 frequency
-//#define PER_CK_FREQ (stm32mp1_get_per_freq())	// 2. The per_ck clock could be hse_ck, hsi_ker_ck or csi_ker_ck according to CKPERSEL selection.
-#define BOARD_ADC_FREQ (stm32mp1_get_adc_freq())
+#define BOARD_USART1_FREQ 	(stm32mp1_uart1_get_freq())
+#define BOARD_USART2_FREQ 	(stm32mp1_uart2_4_get_freq())
+#define BOARD_USART3_FREQ 	(stm32mp1_uart3_5_get_freq())
+#define BOARD_UART4_FREQ 	(stm32mp1_uart2_4_get_freq())
+#define BOARD_UART5_FREQ 	(stm32mp1_uart3_5_get_freq())
+#define BOARD_USART6_FREQ 	(stm32mp1_usart6_get_freq())
+#define BOARD_UART7_FREQ 	(stm32mp1_uart7_8_get_freq())
+#define BOARD_UART8_FREQ 	(stm32mp1_uart7_8_get_freq())
+#define BOARD_TIM3_FREQ 	(stm32mp1_get_timg1_freq())
+#define BOARD_TIM5_FREQ 	(stm32mp1_get_timg1_freq())
+#define BOARD_ADC_FREQ 		(stm32mp1_get_adc_freq())
 
 unsigned long stm32mp1_get_hse_freq(void)
 {
@@ -385,51 +860,152 @@ unsigned long stm32mp1_get_hse_freq(void)
 #endif
 }
 
+// hsi_ck
+// hsi_ker_ck
+unsigned long stm32mp1_get_hsi_freq(void)
+{
+	const uint_fast32_t hsi = HSI64FREQ;
+	const uint_fast32_t hsidiv = (RCC->HSICFGR & RCC_HSICFGR_HSIDIV_Msk) >> RCC_HSICFGR_HSIDIV_Pos;
+	return hsi >> hsidiv;
+}
+
+unsigned long stm32mp1_get_pll1_2_ref_freq(void)
+{
+	// PLL1, PLL2 source mux
+	// 0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	// 0x1: HSE selected as PLL clock (hse_ck)
+	switch ((RCC->RCK12SELR & RCC_RCK12SELR_PLL12SRC_Msk) >> RCC_RCK12SELR_PLL12SRC_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32mp1_get_hsi_freq();
+	case 0x01:
+		return stm32mp1_get_hse_freq();
+	}
+}
+
+unsigned long stm32mp1_get_pll3_ref_freq(void)
+{
+	// PLL3 source mux
+	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as PLL clock (hse_ck)
+	//	0x2: CSI selected as PLL clock (csi_ck)
+	//	0x3: No clock send to DIVMx divisor and PLLs
+	switch ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRC_Msk) >> RCC_RCK3SELR_PLL3SRC_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32mp1_get_hsi_freq();
+	case 0x01:
+		return stm32mp1_get_hse_freq();
+	case 0x02:
+		return CSIFREQ;
+	}
+}
+
+unsigned long stm32mp1_get_pll4_ref_freq(void)
+{
+	// PLL4 source mux
+	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as PLL clock (hse_ck)
+	//	0x2: CSI selected as PLL clock (csi_ck)
+	//	0x3: Signal I2S_CKIN used as reference clock
+	switch ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRC_Msk) >> RCC_RCK4SELR_PLL4SRC_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32mp1_get_hsi_freq();
+	case 0x01:
+		return stm32mp1_get_hse_freq();
+	case 0x02:
+		return CSIFREQ;
+#if (defined BOARD_I2S_CKIN_FREQ)
+	case 0x03: return BOARD_I2S_CKIN_FREQ;
+#endif /* (defined BOARD_I2S_CKIN_FREQ) */
+	}
+}
+
 // PLL1 methods
 unsigned long stm32mp1_get_pll1_freq(void)
 {
-	const uint32_t pll1divn = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVN_Msk) >> RCC_PLL1CFGR1_DIVN_Pos) + 1;
-	const uint32_t pll1divm = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVM1_Msk) >> RCC_PLL1CFGR1_DIVM1_Pos) + 1;
-	return (uint_fast64_t) REFINFREQ * pll1divn / pll1divm;
+	const uint_fast32_t pll1divn = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVN_Msk) >> RCC_PLL1CFGR1_DIVN_Pos) + 1;
+	const uint_fast32_t pll1divm = ((RCC->PLL1CFGR1 & RCC_PLL1CFGR1_DIVM1_Msk) >> RCC_PLL1CFGR1_DIVM1_Pos) + 1;
+	return (uint_fast64_t) stm32mp1_get_pll1_2_ref_freq() * pll1divn / pll1divm;
+}
+
+unsigned long stm32mp1_get_pll1_p_freq(void)
+{
+	const uint_fast32_t pll1divp = ((RCC->PLL1CFGR2 & RCC_PLL1CFGR2_DIVP_Msk) >> RCC_PLL1CFGR2_DIVP_Pos) + 1;
+	return stm32mp1_get_pll1_freq() / pll1divp;
+}
+
+// MPU frequency
+// mpuss_ck
+unsigned long stm32mp1_get_mpuss_freq(void)
+{
+	//	0x0: The MPUDIV is disabled; i.e. no clock generated
+	//	0x1: The mpuss_ck is equal to pll1_p_ck divided by 2 (default after reset)
+	//	0x2: The mpuss_ck is equal to pll1_p_ck divided by 4
+	//	0x3: The mpuss_ck is equal to pll1_p_ck divided by 8
+	//	others: The mpuss_ck is equal to pll1_p_ck divided by 16
+
+	const uint_fast32_t mpudiv = 1uL << ((RCC->MPCKDIVR & RCC_MPCKDIVR_MPUDIV_Msk) >> RCC_MPCKDIVR_MPUDIV_Pos);
+
+	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
+	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	switch ((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRC_Msk) >> RCC_MPCKSELR_MPUSRC_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32mp1_get_hsi_freq();
+	case 0x01:
+		return stm32mp1_get_hse_freq();
+	case 0x02:
+		return stm32mp1_get_pll1_p_freq();
+	case 0x03:
+		return stm32mp1_get_pll1_p_freq() / mpudiv;
+	}
 }
 
 // PLL2 methods
 unsigned long stm32mp1_get_pll2_freq(void)
 {
-	const uint32_t pll2divn = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVN_Msk) >> RCC_PLL2CFGR1_DIVN_Pos) + 1;
-	const uint32_t pll2divm = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVM2_Msk) >> RCC_PLL2CFGR1_DIVM2_Pos) + 1;
-	return (uint_fast64_t) REFINFREQ * pll2divn / pll2divm;
+	const uint_fast32_t pll2divn = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVN_Msk) >> RCC_PLL2CFGR1_DIVN_Pos) + 1;
+	const uint_fast32_t pll2divm = ((RCC->PLL2CFGR1 & RCC_PLL2CFGR1_DIVM2_Msk) >> RCC_PLL2CFGR1_DIVM2_Pos) + 1;
+	return (uint_fast64_t) stm32mp1_get_pll1_2_ref_freq() * pll2divn / pll2divm;
 }
 
 unsigned long stm32mp1_get_pll2_p_freq(void)
 {
-	const uint32_t pll2divp = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVP_Msk) >> RCC_PLL2CFGR2_DIVP_Pos) + 1;
+	const uint_fast32_t pll2divp = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVP_Msk) >> RCC_PLL2CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll2_freq() / pll2divp;
 }
 
 // PLL3 methods
 unsigned long stm32mp1_get_pll3_freq(void)
 {
-	const uint32_t pll3divn = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVN_Msk) >> RCC_PLL3CFGR1_DIVN_Pos) + 1;
-	const uint32_t pll3divm = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVM3_Msk) >> RCC_PLL3CFGR1_DIVM3_Pos) + 1;
-	return (uint_fast64_t) REFINFREQ * pll3divn / pll3divm;
+	const uint_fast32_t pll3divn = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVN_Msk) >> RCC_PLL3CFGR1_DIVN_Pos) + 1;
+	const uint_fast32_t pll3divm = ((RCC->PLL3CFGR1 & RCC_PLL3CFGR1_DIVM3_Msk) >> RCC_PLL3CFGR1_DIVM3_Pos) + 1;
+	return (uint_fast64_t) stm32mp1_get_pll3_ref_freq() * pll3divn / pll3divm;
 }
 
 unsigned long stm32mp1_get_pll3_p_freq(void)
 {
-	const uint32_t pll3divp = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVP_Msk) >> RCC_PLL3CFGR2_DIVP_Pos) + 1;
+	const uint_fast32_t pll3divp = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVP_Msk) >> RCC_PLL3CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divp;
 }
 
 unsigned long stm32mp1_get_pll3_q_freq(void)
 {
-	const uint32_t pll3divq = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVQ_Msk) >> RCC_PLL3CFGR2_DIVQ_Pos) + 1;
+	const uint_fast32_t pll3divq = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVQ_Msk) >> RCC_PLL3CFGR2_DIVQ_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divq;
 }
 
 unsigned long stm32mp1_get_pll3_r_freq(void)
 {
-	const uint32_t pll3divr = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVR_Msk) >> RCC_PLL3CFGR2_DIVR_Pos) + 1;
+	const uint_fast32_t pll3divr = ((RCC->PLL3CFGR2 & RCC_PLL3CFGR2_DIVR_Msk) >> RCC_PLL3CFGR2_DIVR_Pos) + 1;
 	return stm32mp1_get_pll3_freq() / pll3divr;
 }
 
@@ -439,24 +1015,24 @@ unsigned long stm32mp1_get_pll4_freq(void)
 	//#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
 	const uint32_t pll4divn = ((RCC->PLL4CFGR1 & RCC_PLL4CFGR1_DIVN_Msk) >> RCC_PLL4CFGR1_DIVN_Pos) + 1;
 	const uint32_t pll4divm = ((RCC->PLL4CFGR1 & RCC_PLL4CFGR1_DIVM4_Msk) >> RCC_PLL4CFGR1_DIVM4_Pos) + 1;
-	return (uint_fast64_t) REFINFREQ * pll4divn / pll4divm;
+	return (uint_fast64_t) stm32mp1_get_pll4_ref_freq() * pll4divn / pll4divm;
 }
 
 unsigned long stm32mp1_get_pll4_q_freq(void)
 {
-	const uint32_t pll4divq = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVQ_Msk) >> RCC_PLL4CFGR2_DIVQ_Pos) + 1;
+	const uint_fast32_t pll4divq = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVQ_Msk) >> RCC_PLL4CFGR2_DIVQ_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divq;
 }
 
 unsigned long stm32mp1_get_pll4_p_freq(void)
 {
-	const uint32_t pll4divp = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVP_Msk) >> RCC_PLL4CFGR2_DIVP_Pos) + 1;
+	const uint_fast32_t pll4divp = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVP_Msk) >> RCC_PLL4CFGR2_DIVP_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divp;
 }
 
 unsigned long stm32mp1_get_pll4_r_freq(void)
 {
-	const uint32_t pll4divr = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVR_Msk) >> RCC_PLL4CFGR2_DIVR_Pos) + 1;
+	const uint_fast32_t pll4divr = ((RCC->PLL4CFGR2 & RCC_PLL4CFGR2_DIVR_Msk) >> RCC_PLL4CFGR2_DIVR_Pos) + 1;
 	return stm32mp1_get_pll4_freq() / pll4divr;
 }
 
@@ -470,10 +1046,10 @@ unsigned long stm32mp1_get_axiss_freq(void)
 	// axiss_ck 266 MHz Max
 	switch ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRC_Msk) >> RCC_ASSCKSELR_AXISSRC_Pos)
 	{
-	case 0x00: return HSIFREQ;
+	case 0x00: return stm32mp1_get_hsi_freq();
 	case 0x01: return stm32mp1_get_hse_freq();
 	case 0x02: return stm32mp1_get_pll2_p_freq();
-	default: return HSIFREQ;
+	default: return HSI64FREQ;
 	}
 }
 
@@ -486,10 +1062,10 @@ unsigned long stm32mp1_get_per_freq(void)
 	//0x3: Clock disabled
 	switch ((RCC->CPERCKSELR & RCC_CPERCKSELR_CKPERSRC_Msk) >> RCC_CPERCKSELR_CKPERSRC_Pos)
 	{
-	case 0x00:	return HSIFREQ;
+	case 0x00:	return stm32mp1_get_hsi_freq();
 	case 0x01:	return CSIFREQ;
 	case 0x02:	return stm32mp1_get_hse_freq();
-	default: return HSIFREQ;
+	default: return HSI64FREQ;
 	}
 
 }
@@ -503,7 +1079,7 @@ unsigned long stm32mp1_get_mcuss_freq(void)
 	switch ((RCC->MSSCKSELR & RCC_MSSCKSELR_MCUSSRC_Msk) >> RCC_MSSCKSELR_MCUSSRC_Pos)
 	{
 	default:
-	case 0x00: return HSIFREQ;
+	case 0x00: return stm32mp1_get_hsi_freq();
 	case 0x01: return stm32mp1_get_hse_freq();
 	case 0x02: return CSIFREQ;
 	case 0x03: return stm32mp1_get_pll3_p_freq();
@@ -513,7 +1089,7 @@ unsigned long stm32mp1_get_mcuss_freq(void)
 // hclk5, hclk6, aclk
 unsigned long stm32mp1_get_aclk_freq(void)
 {
-	// AXI, AHB5 and AHB6 clock divider
+	// AXI, AHB5 and AHB6 clock divisor
 	//	0x0: axiss_ck (default after reset)
 	//	0x1: axiss_ck / 2
 	//	0x2: axiss_ck / 3
@@ -563,7 +1139,7 @@ unsigned long stm32mp1_get_mlhclk_freq(void)
 // 104.5 MHz max
 unsigned long stm32mp1_get_pclk1_freq(void)
 {
-	// APB1 Output divider (output max 104.5 MHz)
+	// APB1 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
 	//0x0: mlhclk (default after reset)
 	//0x1: mlhclk / 2
@@ -585,7 +1161,7 @@ unsigned long stm32mp1_get_pclk1_freq(void)
 // 104.5 MHz max
 unsigned long stm32mp1_get_pclk2_freq(void)
 {
-	// APB2 Output divider (output max 104.5 MHz)
+	// APB2 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
 	//0x0: mlhclk (default after reset)
 	//0x1: mlhclk / 2
@@ -607,7 +1183,7 @@ unsigned long stm32mp1_get_pclk2_freq(void)
 // 104.5 MHz max
 unsigned long stm32mp1_get_pclk3_freq(void)
 {
-	// APB3 Output divider (output max 104.5 MHz)
+	// APB3 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
 	//0x0: mlhclk (default after reset)
 	//0x1: mlhclk / 2
@@ -629,7 +1205,7 @@ unsigned long stm32mp1_get_pclk3_freq(void)
 // 133 MHz max
 unsigned long stm32mp1_get_pclk4_freq(void)
 {
-	// APB4 Output divider
+	// APB4 Output divisor
 	//	0x0: aclk (default after reset)
 	//	0x1: aclk / 2
 	//	0x2: aclk / 4
@@ -649,7 +1225,7 @@ unsigned long stm32mp1_get_pclk4_freq(void)
 // 133 MHz max
 unsigned long stm32mp1_get_pclk5_freq(void)
 {
-	// APB5 Output divider
+	// APB5 Output divisor
 	//	0x0: aclk (default after reset)
 	//	0x1: aclk / 2
 	//	0x2: aclk / 4
@@ -665,8 +1241,41 @@ unsigned long stm32mp1_get_pclk5_freq(void)
 	}
 }
 
-#if WITHUART1HW
-unsigned long stm32mp1_uart1_get_clock(void)
+unsigned long stm32mp1_get_usbphy_freq(void)
+{
+	//	0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll4_r_ck clock selected as kernel peripheral clock
+	//	0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+	//	other: Clock disabled
+	switch ((RCC->USBCKSELR & RCC_USBCKSELR_USBPHYSRC_Msk) >> RCC_USBCKSELR_USBPHYSRC_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32mp1_get_hse_freq();
+	case 0x01:
+		return stm32mp1_get_pll4_r_freq();
+	case 0x02:
+		return stm32mp1_get_hse_freq();
+		break;
+	}
+}
+
+unsigned long stm32mp1_get_usbotg_freq(void)
+{
+	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+
+	switch ((RCC->USBCKSELR & RCC_USBCKSELR_USBOSRC_Msk) >> RCC_USBCKSELR_USBOSRC_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32mp1_get_pll4_r_freq();
+	case 0x01:
+		return 48000000uL; //rcc_ck_usbo_48m;
+	}
+}
+
+unsigned long stm32mp1_uart1_get_freq(void)
 {
 	//	0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
@@ -677,11 +1286,11 @@ unsigned long stm32mp1_uart1_get_clock(void)
 	switch ((RCC->UART1CKSELR & RCC_UART1CKSELR_UART1SRC_Msk) >> RCC_UART1CKSELR_UART1SRC_Pos)
 	{
 	case 0x00:
-		return PCLK5_FREQ;
+		return stm32mp1_get_pclk5_freq();
 	case 0x01:
 		return stm32mp1_get_pll3_q_freq();
 	case 0x02:
-		return HSIFREQ;
+		return stm32mp1_get_hsi_freq();
 	case 0x03:
 		return CSIFREQ;
 	case 0x04:
@@ -689,13 +1298,11 @@ unsigned long stm32mp1_uart1_get_clock(void)
 	case 0x05:
 		return stm32mp1_get_hse_freq();
 	default:
-		return HSIFREQ;
+		return HSI64FREQ;
 	}
 }
-#endif /* WITHUART1HW */
 
-#if WITHUART2HW || WITHUART4HW
-unsigned long stm32mp1_uart24_get_clock(void)
+unsigned long stm32mp1_uart2_4_get_freq(void)
 {
 	// UART2, UART4
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
@@ -710,20 +1317,18 @@ unsigned long stm32mp1_uart24_get_clock(void)
 	case 0x01:
 		return stm32mp1_get_pll4_q_freq();
 	case 0x02:
-		return HSIFREQ;
+		return stm32mp1_get_hsi_freq();
 	case 0x03:
 		return CSIFREQ;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:
-		return HSIFREQ;
+		return HSI64FREQ;
 	}
 
 }
-#endif /* WITHUART2HW || WITHUART4HW */
 
-#if WITHUART3HW || WITHUART5HW
-unsigned long stm32mp1_uart35_get_clock(void)
+unsigned long stm32mp1_uart3_5_get_freq(void)
 {
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -738,19 +1343,17 @@ unsigned long stm32mp1_uart35_get_clock(void)
 	case 0x01:
 		return stm32mp1_get_pll4_q_freq();
 	case 0x02:
-		return HSIFREQ;
+		return stm32mp1_get_hsi_freq();
 	case 0x03:
 		return CSIFREQ;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:
-		return HSIFREQ;
+		return HSI64FREQ;
 	}
 }
-#endif /* WITHUART3HW || WITHUART5HW */
 
-#if WITHUART7HW || WITHUART8HW
-unsigned long stm32mp1_uart78_get_clock(void)
+unsigned long stm32mp1_uart7_8_get_freq(void)
 {
 	// UART7, UART8
 	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
@@ -765,17 +1368,39 @@ unsigned long stm32mp1_uart78_get_clock(void)
 	case 0x01:
 		return stm32mp1_get_pll4_q_freq();
 	case 0x02:
-		return HSIFREQ;
+		return stm32mp1_get_hsi_freq();
 	case 0x03:
 		return CSIFREQ;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:
-		return HSIFREQ;
+		return HSI64FREQ;
 	}
 
 }
-#endif /* WITHUART7HW || WITHUART8HW */
+
+unsigned long stm32mp1_sdmmc1_2_get_freq(void)
+{
+	// SDMMC1
+	//	0x0: hclk6 clock selected as kernel peripheral clock
+	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
+	//	0x2: pll4_p_ck clock selected as kernel peripheral clock
+	//	0x3: hsi_ker_ck clock selected as kernel peripheral clock (default after reset)
+	//	others: reserved, the kernel clock is disabled
+	switch ((RCC->SDMMC12CKSELR & RCC_SDMMC12CKSELR_SDMMC12SRC_Msk) >> RCC_SDMMC12CKSELR_SDMMC12SRC_Pos)
+	{
+	case 0x00:
+		return stm32mp1_get_hclk6_freq();
+	case 0x01:
+		return stm32mp1_get_pll3_r_freq();
+	case 0x02:
+		return stm32mp1_get_pll4_p_freq();
+	case 0x03:
+		return stm32mp1_get_hsi_freq();
+	default:
+		return HSI64FREQ;
+	}
+}
 
 // частота для деления таймером
 // timg1_ck: TIM2, TIM3, TIM4, TIM5, TIM6, TIM7, TIM12, TIM13 and TIM14
@@ -813,7 +1438,6 @@ unsigned long stm32mp1_get_timg2_freq(void)
 	}
 }
 
-#if WITHSPIHW
 unsigned long stm32mp1_get_spi1_freq(void)
 {
 	//	0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
@@ -834,9 +1458,7 @@ unsigned long stm32mp1_get_spi1_freq(void)
 	default: return stm32mp1_get_per_freq();
 	}
 }
-#endif /* WITHSPIHW */
 
-#if WITHCPUADCHW
 unsigned long stm32mp1_get_adc_freq(void)
 {
 	//	0x0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
@@ -851,16 +1473,30 @@ unsigned long stm32mp1_get_adc_freq(void)
 	default: return stm32mp1_get_per_freq();
 	}
 }
-#endif /* WITHCPUADCHW */
 
-#if WITHSPIHW
 // получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
 unsigned long hardware_get_spi_freq(void)
 {
 	return stm32mp1_get_spi1_freq();
 }
 
-#endif /* WITHSPIHW */
+#elif CPUSTYLE_STM32F1XX && defined (STM32F101xB)
+
+// placeholders
+#define BOARD_USART1_FREQ (CPU_FREQ / 1)
+#define BOARD_SPI_FREQ (CPU_FREQ / 1)
+#define BOARD_I2C_FREQ (CPU_FREQ / 1)
+#define BOARD_TIM3_FREQ (CPU_FREQ / 1)
+#warning TODO: use real clocks
+
+#elif CPUSTYLE_STM32F1XX && defined (STM32F103xB)
+
+// placeholders
+#define BOARD_USART1_FREQ (CPU_FREQ / 1)
+#define BOARD_SPI_FREQ (CPU_FREQ / 1)
+#define BOARD_I2C_FREQ (CPU_FREQ / 1)
+#define BOARD_TIM3_FREQ (CPU_FREQ / 1)
+#warning TODO: use real clocks
 
 #endif /* CPUSTYLE_STM32MP1 */
 
@@ -926,48 +1562,6 @@ static unsigned long ulmax(
 #if CPUSTYLE_STM32MP1
 
 #elif CPUSTYLE_STM32F
-
-	/* для устройств на шине APB1 (up to 36 MHz) */
-	static uint_fast32_t
-	calcdivround_pclk1(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
-		)
-	{
-		return calcdivround2(PCLK1_FREQ, freq);
-	}
-
-	/* для устройств на шине APB2 (up to 72 MHz) */
-	static uint_fast32_t
-	calcdivround_pclk2(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
-		)
-	{
-		return calcdivround2(PCLK2_FREQ, freq);
-	}
-
-#if defined (PCLK3_TIMERS_FREQ)
-	/* для устройств на шине APB2 (up to 72 MHz) */
-	static uint_fast32_t
-	calcdivround_pclk3_timers(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в герцах. */
-		)
-	{
-		return calcdivround2(PCLK3_TIMERS_FREQ, freq);
-	}
-
-#endif /* defined (PCLK3_TIMERS_FREQ) */
-
-#if SIDETONE_TARGET_BIT != 0
-	/* для устройств на шине APB2 (up to 72 MHz) */
-	static uint_fast32_t
-	NOINLINEAT
-	calcdivround10_pclk2(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в десятых долях герца. */
-		)
-	{
-		return calcdivround2(10UL * PCLK2_FREQ, freq);
-	}
-#endif /* SIDETONE_TARGET_BIT != 0 */
 
 #elif CPUSTYLE_R7S721
 
@@ -1058,17 +1652,6 @@ static unsigned long ulmax(
 
 	#define SYSTICK_FREQ CPU_FREQ
 
-#if SIDETONE_TARGET_BIT != 0
-	static uint_fast32_t
-	NOINLINEAT
-	calcdivround10(
-		uint_fast32_t freq		/* требуемая частота на выходе делителя, в десятых долях герца. */
-		)
-	{
-		return calcdivround2(10UL * CPU_FREQ, freq);
-	}
-#endif /* SIDETONE_TARGET_BIT != 0 */
-
 #endif
 
  // возврат позиции старшего значащего бита в числе
@@ -1091,7 +1674,7 @@ countbits2(
 static uint_fast8_t
 //NOINLINEAT
 calcdivider(
-	uint_fast32_t divider, // ожидаемый коэффициент деления всей системы
+	uint_fast32_t divisor, // ожидаемый коэффициент деления всей системы
 	uint_fast8_t width,			// количество разрядов в счётчике
 	uint_fast16_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
 	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
@@ -1106,7 +1689,7 @@ calcdivider(
 		if ((taps & prescaler) != 0)
 		{
 			// такой предделитель существует.
-			const uint_fast32_t modulus = ((divider + prescaler / 2) / prescaler) - substract;
+			const uint_fast32_t modulus = ((divisor + prescaler / 2) / prescaler) - substract;
 			if (countbits2(modulus) <= width)
 			{
 				// найдена подходящая комбинация
@@ -1330,1084 +1913,6 @@ void hardware_spi_io_delay(void)
 	__NOP();
 #endif
 }
-
-
-#if WITHUART1HW
-
-void
-hardware_uart1_set_speed(uint_fast32_t baudrate)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART0->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART0->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART0->US_MR &= ~ US_MR_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART1->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART1->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART1->US_MR &= ~ US_MR_OVER;
-		}
-
-	#elif HARDWARE_ARM_USEUART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART0->UART_BRGR = value;
-	#elif HARDWARE_ARM_USEUART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART1->UART_BRGR = value;
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
-
-	#if HARDWARE_ARM_USEUSART0
-		AT91C_BASE_US0->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		AT91C_BASE_US1->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
-		}
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR0A |= (1U << U2X0);
-	else
-		UCSR0A &= ~ (1U << U2X0);
-
-	UBRR0 = value;	/* Значение получено уже уменьшенное на 1 */
-
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR0A |= (1U << U2X0);
-	else
-		UCSR0A &= ~ (1U << U2X0);
-
-	UBRR0H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR0L = value & 0xff;
-
-#elif CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSRA |= (1U << U2X);
-	else
-		UCSRA &= ~ (1U << U2X);
-
-	UBRRH = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRRL = value & 0xff;
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE0.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE0.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
-#elif CPUSTYLE_STM32MP1
-
-	// uart1
-	USART1->BRR = calcdivround2(stm32mp1_uart1_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYLE_STM32F
-
-	// uart1 on apb2 up to 72/36 MHz
-
-	USART1->BRR = calcdivround_pclk2(baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYPE_TMS320F2833X
-
-	const unsigned long lspclk = CPU_FREQ / 4;
-	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
-
-	SCIAHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
-	SCIALBAUD = (brr - 1) >> 0;
-
-#elif CPUSTYLE_R7S721
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
-
-	SCIF0.SCSMR = (SCIF0.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF0.SCEMR = (SCIF0.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF0.SCBRR = value;	/* Bit rate register */
-
-#elif CPUSTYLE_XC7Z
-
-	  uint32_t r; // Temporary value variable
-	  r = UART0->CR;
-	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
-	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
-	  UART0->CR = r;
-	  unsigned long sel_clk = SELOUT_CLK;
-	  unsigned long bdiv = 8;
-	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-	  UART0->BAUDDIV = bdiv - 1; // ("BDIV")
-	  UART0->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
-	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
-	  UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
-
-	  r = UART0->CR;
-	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
-	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
-	  UART0->CR = r;
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-#endif /* WITHUART1HW */
-
-
-#if WITHUART2HW
-
-void
-hardware_uart2_set_speed(uint_fast32_t baudrate)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART0->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART0->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART0->US_MR &= ~ US_MR_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART1->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART1->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART1->US_MR &= ~ US_MR_OVER;
-		}
-
-	#elif HARDWARE_ARM_USEUART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART0->UART_BRGR = value;
-	#elif HARDWARE_ARM_USEUART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART1->UART_BRGR = value;
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
-
-	#if HARDWARE_ARM_USEUSART0
-		AT91C_BASE_US0->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		AT91C_BASE_US1->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
-		}
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X1);
-	else
-		UCSR1A &= ~ (1U << U2X1);
-
-	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
-
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X1);
-	else
-		UCSR1A &= ~ (1U << U2X1);
-
-	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR1L = value & 0xff;
-
-#elif CPUSTYLE_ATMEGA
-
-	#error WITHUART2HW not supported with CPUSTYLE_ATMEGA
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE1.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE1.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
-#elif CPUSTYLE_STM32MP1
-
-	// uart2
-	USART2->BRR = calcdivround2(stm32mp1_uart24_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYLE_STM32F
-
-	// uart2 on apb1
-
-	USART2->BRR = calcdivround_pclk1(baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYPE_TMS320F2833X
-
-	const unsigned long lspclk = CPU_FREQ / 4;
-	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
-
-	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
-	SCIBLBAUD = (brr - 1) >> 0;
-
-#elif CPUSTYLE_R7S721
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
-
-	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF3.SCBRR = value;	/* Bit rate register */
-
-#elif CPUSTYLE_XC7Z
-
-	  uint32_t r; // Temporary value variable
-	  r = UART1->CR;
-	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
-	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
-	  UART1->CR = r;
-	  unsigned long sel_clk = SELOUT_CLK;
-	  unsigned long bdiv = 8;
-	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
-	  UART1->BAUDDIV = bdiv - 1; // ("BDIV")
-	  UART1->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
-	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
-	  UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
-
-	  r = UART1->CR;
-	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
-	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
-	  UART1->CR = r;
-
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-#endif /* WITHUART2HW */
-
-
-#if WITHUART4HW
-
-void
-hardware_uart4_set_speed(uint_fast32_t baudrate)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART0->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART0->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART0->US_MR &= ~ US_MR_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART1->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART1->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART1->US_MR &= ~ US_MR_OVER;
-		}
-
-	#elif HARDWARE_ARM_USEUART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART0->UART_BRGR = value;
-	#elif HARDWARE_ARM_USEUART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART1->UART_BRGR = value;
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
-
-	#if HARDWARE_ARM_USEUSART0
-		AT91C_BASE_US0->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		AT91C_BASE_US1->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
-		}
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X1);
-	else
-		UCSR1A &= ~ (1U << U2X1);
-
-	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
-
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X1);
-	else
-		UCSR1A &= ~ (1U << U2X1);
-
-	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR1L = value & 0xff;
-
-#elif CPUSTYLE_ATMEGA
-
-	#error WITHUART2HW not supported with CPUSTYLE_ATMEGA
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE1.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE1.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
-#elif CPUSTYLE_STM32MP1
-
-	// uart4
-	UART4->BRR = calcdivround2(stm32mp1_uart24_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYLE_STM32F
-
-	// uart2 on apb1
-
-	USART2->BRR = calcdivround_pclk1(baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYPE_TMS320F2833X
-
-	const unsigned long lspclk = CPU_FREQ / 4;
-	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
-
-	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
-	SCIBLBAUD = (brr - 1) >> 0;
-
-#elif CPUSTYLE_R7S721
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
-
-	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF3.SCBRR = value;	/* Bit rate register */
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-#endif /* WITHUART4HW */
-
-
-#if WITHUART5HW
-
-void
-hardware_uart5_set_speed(uint_fast32_t baudrate)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART0->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART0->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART0->US_MR &= ~ US_MR_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART5
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART5->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART5->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART5->US_MR &= ~ US_MR_OVER;
-		}
-
-	#elif HARDWARE_ARM_USEUART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART0->UART_BRGR = value;
-	#elif HARDWARE_ARM_USEUART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART1->UART_BRGR = value;
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
-
-	#if HARDWARE_ARM_USEUSART0
-		AT91C_BASE_US0->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART5
-		AT91C_BASE_US1->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
-		}
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X1);
-	else
-		UCSR1A &= ~ (1U << U2X1);
-
-	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
-
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X1);
-	else
-		UCSR1A &= ~ (1U << U2X1);
-
-	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR1L = value & 0xff;
-
-#elif CPUSTYLE_ATMEGA
-
-	#error WITHUART5HW not supported with CPUSTYLE_ATMEGA
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE1.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE1.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
-#elif CPUSTYLE_STM32MP1
-
-	// uart5
-	UART5->BRR = calcdivround2(stm32mp1_uart35_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYLE_STM32F
-
-	// uart5 on apb1
-
-	USART2->BRR = calcdivround_pclk1(baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYPE_TMS320F2833X
-
-	const unsigned long lspclk = CPU_FREQ / 4;
-	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
-
-	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
-	SCIBLBAUD = (brr - 1) >> 0;
-
-#elif CPUSTYLE_R7S721
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
-
-	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF3.SCBRR = value;	/* Bit rate register */
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-#endif /* WITHUART5HW */
-
-#if WITHUART7HW
-
-void
-hardware_uart7_set_speed(uint_fast32_t baudrate)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	#if HARDWARE_ARM_USEUSART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART0->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART0->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART0->US_MR &= ~ US_MR_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
-		USART1->US_BRGR = value;
-		if (prei == 0)
-		{
-			USART1->US_MR |= US_MR_OVER;
-		}
-		else
-		{
-			USART1->US_MR &= ~ US_MR_OVER;
-		}
-
-	#elif HARDWARE_ARM_USEUART0
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART0->UART_BRGR = value;
-	#elif HARDWARE_ARM_USEUART1
-		// Использование автоматического расчёта предделителя
-		unsigned value;
-		calcdivider(calcdivround2(CPU_FREQ. baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
-		UART1->UART_BRGR = value;
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_AT91SAM7S
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
-
-	#if HARDWARE_ARM_USEUSART0
-		AT91C_BASE_US0->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
-		}
-	#elif HARDWARE_ARM_USEUSART1
-		AT91C_BASE_US1->US_BRGR = value;
-		if (prei == 0)
-		{
-			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
-		}
-		else
-		{
-			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
-		}
-	#else	/* HARDWARE_ARM_USExxx */
-		#error Wrong HARDWARE_ARM_USExxx value
-	#endif
-
-#elif CPUSTYLE_ATMEGA_XXX4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X1);
-	else
-		UCSR1A &= ~ (1U << U2X1);
-
-	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
-
-
-#elif CPUSTYLE_ATMEGA128
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
-
-	if (prei == 0)
-		UCSR1A |= (1U << U2X1);
-	else
-		UCSR1A &= ~ (1U << U2X1);
-
-	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
-	UBRR1L = value & 0xff;
-
-#elif CPUSTYLE_ATMEGA
-
-	#error WITHUART2HW not supported with CPUSTYLE_ATMEGA
-
-#elif CPUSTYLE_ATXMEGAXXXA4
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ. baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
-	if (prei == 0)
-		USARTE1.CTRLB |= USART_CLK2X_bm;
-	else
-		USARTE1.CTRLB &= ~USART_CLK2X_bm;
-	// todo: проверить требование к порядку обращения к портам
-	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
-	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
-
-#elif CPUSTYLE_STM32MP1
-
-	// uart7
-	UART7->BRR = calcdivround2(stm32mp1_uart78_get_clock(), baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYLE_STM32F
-
-	// uart2 on apb1
-
-	USART2->BRR = calcdivround_pclk1(baudrate);		// младшие 4 бита - это дробная часть.
-
-#elif CPUSTYPE_TMS320F2833X
-
-	const unsigned long lspclk = CPU_FREQ / 4;
-	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
-
-	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
-	SCIBLBAUD = (brr - 1) >> 0;
-
-#elif CPUSTYLE_R7S721
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
-
-	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
-		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
-		0;
-	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
-		0 * 0x80 |						// BGDM
-		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
-		0;
-	SCIF3.SCBRR = value;	/* Bit rate register */
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-
-}
-
-#endif /* WITHUART7HW */
-
-#if WITHTWIHW
-
-void hardware_twi_master_configure(void)
-{
-#if CPUSTYLE_ATMEGA
-
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQSCL_CLOCK * 2) - 8, ATMEGA_TWBR_WIDTH, ATMEGA_TWBR_TAPS, & value, 0);
-
-	TWSR = prei; 	/* prescaler */
-	TWBR = value;
-	TWCR = (1U << TWEN);
-
-#elif CPUSTYLE_AT91SAM7S
-
-	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TWI) | (1UL << AT91C_ID_PIOA);
-	//
-    // Reset the TWI
-    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_SWRST;
-    (void) AT91C_BASE_TWI->TWI_RHR;
-
-    // Set master mode
-    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_MSEN;
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQSCL_CLOCK * 2) - 3, AT91SAM7_TWI_WIDTH, AT91SAM7_TWI_TAPS, & value, 0);
-
-    AT91C_BASE_TWI->TWI_CWGR = (prei << 16) | (value << 8) | value;
-
-#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	PMC->PMC_PCER0 = (1UL << ID_TWI0);	 // разрешить тактированние этого блока
-	//
-    // Reset the TWI
-    TWI0->TWI_CR = TWI_CR_SWRST;
-    (void) TWI0->TWI_RHR;
-
-    // Set master mode
-    TWI0->TWI_CR = TWI_CR_MSEN;
-	// Использование автоматического расчёта предделителя
-	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQSCL_CLOCK * 2) - 4, ATSAM3S_TWI_WIDTH, ATSAM3S_TWI_TAPS, & value, 1);
-	//prei = 0;
-	//value = 70;
-    TWI0->TWI_CWGR = TWI_CWGR_CKDIV(prei) | TWI_CWGR_CHDIV(value) | TWI_CWGR_CLDIV(value);
-
-#elif CPUSTYLE_ATXMEGA
-
-	TARGET_TWI.MASTER.BAUD = ((CPU_FREQ / (2 * SCL_CLOCK)) - 5);
-	TARGET_TWI.MASTER.CTRLA = TWI_MASTER_ENABLE_bm;
-  	//TARGET_TWI.MASTER.CTRLB = TWI_MASTER_SMEN_bm;
-	TARGET_TWI.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
-
-#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
-
-	//конфигурирую непосредствено І2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	(void) RCC->APB1ENR;
-
-	I2C1->CR1 |= I2C_CR1_SWRST;
-	I2C1->CR1 &= ~ I2C_CR1_SWRST;
-	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
-
-/*
-	The FREQ bits must be configured with the APB clock frequency value (I2C peripheral
-	connected to APB). The FREQ field is used by the peripheral to generate data setup and
-	hold times compliant with the I2C specifications. The minimum allowed frequency is 2 MHz,
-	the maximum frequency is limited by the maximum APB frequency (42 MHz) and an intrinsic
-	limitation of 46 MHz.
-
-*/
-
-	I2C1->CR2 = (I2C1->CR2 & ~ (I2C_CR2_FREQ)) |
-		((I2C_CR2_FREQ_0 * 42) & I2C_CR2_FREQ) |
-		0;
-	// (1000 ns / 125 ns = 8 + 1)
-	// (1000 ns / 22 ns = 45 + 1)
-	I2C1->TRISE = 46; //время установления логического уровня в количестве цыклах тактового генератора I2C
-
-	I2C1->CCR = (I2C1->CCR & ~ (I2C_CCR_CCR | I2C_CCR_FS | I2C_CCR_DUTY)) |
-		(calcdivround_pclk1(SCL_CLOCK * 25) & I2C_CCR_CCR) |	// Делитель для получения 10 МГц (400 кHz * 25)
-	#if SCL_CLOCK == 400000UL
-		I2C_CCR_FS |
-		I2C_CCR_DUTY | // T high = 9 * CCR * TPCLK1, T low = 16 * CCR * TPCLK1: full cycle = 25 * CCR * TPCLK1
-	#endif /* SCL_CLOCK == 400000UL */
-		0;
-
-	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // включаю тактирование переферии І2С
-
-#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
-
-	//конфигурирую непосредствено І2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	(void) RCC->APB1ENR;
-    // set I2C1 clock to PCLCK (72/64/36 MHz)
-    RCC->CFGR3 |= RCC_CFGR3_I2C1SW;		// PCLK1_FREQ or PCLK2_FREQ (PCLK of this BUS, PCLK1) selected as I2C spi clock source
-
-
-	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
-
-	//I2C1->CR2 = (I2C1->CR2 & ~I2C_CR2_FREQ) | I2C_CR2_FREQ_0 * ( PCLK2_FREQ / SCL_CLOCK); // частота тактирования модуля I2C1 до делителя равна FREQ_IN
-	//I2C1->CR2 = I2C_CR2_FREQ_0 * 4; //255; // |= I2C_CR2_FREQ;	// debug
-
-	I2C1->TIMINGR = (I2C1->TIMINGR & ~ I2C_TIMINGR_PRESC) | (4UL << 28);
-
-	//I2C1->CCR &= ~I2C_CCR_CCR;
-	//I2C1->CCR |= (1000/(2*40000)) * ((I2C1->CR2&I2C_CR2_FREQ) / I2C_CR2_FREQ_0); // конечный коэффциент деления
-	////I2C1->CCR = 40; //36; // / 4;	//|= I2C_CCR_CCR;	// debug
-	//I2C1->CCR |= I2C_CCR_FS;
-
-	//I2C1->TRISE = 9; //время установления логического уровня в количестве циклов тактового генератора I2C
-
-    // disable analog filter
-    I2C1->CR1 |= I2C_CR1_ANFOFF;
-    // from stm32f3_i2c_calc.py (400KHz, 125ns rise/fall time, no AF/DFN)
-    const uint_fast8_t sdadel = 7;
-    const uint_fast8_t scldel = 5;
-    I2C1->TIMINGR = 0x30000C19 | ((scldel & 0x0F) << 20) | ((sdadel & 0x0F) << 16);
-
-	I2C1->CR1 |= I2C_CR1_PE; // включаю тактирование периферии І2С
-
-#elif CPUSTYLE_STM32F7XX
-	//конфигурирую непосредствено І2С
-	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
-	(void) RCC->APB1ENR;
-
-	// Disable the I2Cx peripheral
-	I2C1->CR1 &= ~ I2C_CR1_PE;
-	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
-		;
-
-	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
-	I2C1->TIMINGR =
-		//0x00912732 |		// Discovery BSP code from ST examples
-		0x00913742 |		// подобрано для 400 кГц
-		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
-		0;
-
-
-
-	// Use 7-bit addresses
-	I2C1->CR2 &= ~ I2C_CR2_ADD10;
-
-	// Enable auto-end mode
-	//I2C1->CR2 |= I2C_CR2_AUTOEND;
-
-	// Disable the analog filter
-	I2C1->CR1 |= I2C_CR1_ANFOFF;
-
-	// Disable NOSTRETCH
-	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
-
-	// Enable the I2Cx peripheral
-	I2C1->CR1 |= I2C_CR1_PE;
-
-#elif CPUSTYLE_STM32H7XX
-	//конфигурирую непосредствено І2С
-	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
-	(void) RCC->APB1LENR;
-
-	// Disable the I2Cx peripheral
-	I2C1->CR1 &= ~ I2C_CR1_PE;
-	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
-		;
-
-	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
-	I2C1->TIMINGR =
-		//0x00912732 |		// Discovery BSP code from ST examples
-		0x00913742 |		// подобрано для 400 кГц
-		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
-		0;
-
-
-
-	// Use 7-bit addresses
-	I2C1->CR2 &= ~ I2C_CR2_ADD10;
-
-	// Enable auto-end mode
-	//I2C1->CR2 |= I2C_CR2_AUTOEND;
-
-	// Disable the analog filter
-	I2C1->CR1 |= I2C_CR1_ANFOFF;
-
-	// Disable NOSTRETCH
-	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
-
-	// Enable the I2Cx peripheral
-	I2C1->CR1 |= I2C_CR1_PE;
-
-#else
-	#warning Undefined CPUSTYLE_XXX
-#endif
-}
-
-#endif /* WITHTWIHW */
-
 
 #if CPUSTYLE_STM32MP1
 
@@ -2662,6 +2167,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
+	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
 	SysTick_Config(calcdivround2(SYSTICK_FREQ, ticksfreq));	// Call SysTick_Handler
 
 #elif CPUSTYLE_ATMEGA328
@@ -2688,7 +2194,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Timer/Counter 0 initialization
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
 	TCCR0A = (1u << WGM01);	// CTC mode = 0x02
 	TCCR0B = prei + 1; // прескалер
 	OCR0A = value;	// делитель - программирование полного периода
@@ -2703,7 +2209,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Timer/Counter 0 initialization
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATMEGA128_TIMER0_WIDTH, ATMEGA128_TIMER0_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA128_TIMER0_WIDTH, ATMEGA128_TIMER0_TAPS, & value, 1);
 	TCCR0 = (1U << WGM01) | (prei + 1);	// прескалер
 	OCR0 = value;	// делитель - программирование полного периода
 
@@ -2717,7 +2223,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	// Timer/Counter 0 initialization
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, & value, 1);
 	TCCR0 = (1U << WGM01) | (prei + 1);	// прескалер
 	OCR0 = value;	// делитель - программирование полного периода
 
@@ -2729,7 +2235,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	/* const uint_fast8_t prei = */ calcdivider(calcdivround2(CPU_FREQticksfreq), AT91SAM7_PITPIV_WIDTH, AT91SAM7_PITPIV_TAPS, & value, 1);
+	/* const uint_fast8_t prei = */ calcdivider(calcdivround2(CPU_FREQ, ticksfreq), AT91SAM7_PITPIV_WIDTH, AT91SAM7_PITPIV_TAPS, & value, 1);
 
 	// Periodic interval timer enable - see TICKS_FREQUENCY
 	AT91C_BASE_PITC->PITC_PIMR =
@@ -2753,7 +2259,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
 	// программирование таймера
 	TCC0.CCA = value;	// timer/counter C0, compare register A, see TCC0_CCA_vect
 	TCC0.CTRLA = (prei + 1);
@@ -2796,7 +2302,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(stm32mp1_get_timg1_freq(), ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM5_FREQ, ticksfreq), STM32F_TIM5_TIMER_WIDTH, STM32F_TIM5_TIMER_TAPS, & value, 1);
 
 	TIM5->PSC = ((1UL << prei) - 1);
 	TIM5->ARR = value;
@@ -2805,7 +2311,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	arm_hardware_set_handler_system(TIM5_IRQn, TIM5_IRQHandler);
 
 	// Prepare funcionality: use CNTP
-	const uint_fast32_t gtimfreq = HSIFREQ;
+	const uint_fast32_t gtimfreq = stm32mp1_get_hsi_freq();
 
 	PL1_SetCounterFrequency(gtimfreq);	// CNTFRQ
 
@@ -2877,6 +2383,112 @@ uint_fast8_t stm32mp1_overdrived(void)
 	return (rpn & 0x80) != 0;
 }
 
+void stm32mp1_pll1_slow(uint_fast8_t slow)
+{
+	const uint32_t pll1divp = slow ? PLL1DIVP * 6 : PLL1DIVP;
+	// переключение на HSI на всякий случай перед программированием PLL
+	// HSI ON
+	RCC->OCENSETR = RCC_OCENSETR_HSION;
+	(void) RCC->OCENSETR;
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY) == 0)
+		;
+
+	// Wait for HSI ready
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY_Msk) == 0)
+		;
+
+	// HSIDIV
+	//	0x0: Division by 1, hsi_ck (hsi_ker_ck) = 64 MHz (default after reset)
+	//	0x1: Division by 2, hsi_ck (hsi_ker_ck) = 32 MHz
+	//	0x2: Division by 4, hsi_ck (hsi_ker_ck) = 16 MHz
+	//	0x3: Division by 8, hsi_ck (hsi_ker_ck) = 8 MHz
+	RCC->HSICFGR = (RCC->HSICFGR & ! (RCC_HSICFGR_HSIDIV_Msk)) |
+		(0uL << RCC_HSICFGR_HSIDIV_Pos) |
+		0;
+	(void) RCC->HSICFGR;
+
+	// Wait for HSI DIVIDER ready
+	while ((RCC->OCRDYR & RCC_OCRDYR_HSIDIVRDY_Msk) == 0)
+		;
+
+	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as AXI sub-system clock (hse_ck)
+	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
+	//others: axiss_ck is gated
+	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
+			(0x00 << RCC_ASSCKSELR_AXISSRC_Pos) |	// HSI
+			0;
+	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
+		;
+
+	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
+	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
+		((uint_fast32_t) 0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
+		0;
+	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
+		;
+
+	// Stop PLL1
+	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
+	(void) RCC->PLL1CR;
+	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
+	(void) RCC->PLL1CR;
+	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
+		;
+
+
+	RCC->PLL1CR = (RCC->PLL1CR & ~ (RCC_PLL1CR_DIVPEN_Msk | RCC_PLL1CR_DIVQEN_Msk | RCC_PLL1CR_DIVREN_Msk));
+	(void) RCC->PLL1CR;
+
+	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
+		((uint_fast32_t) (PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
+		((uint_fast32_t) (PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
+		0;
+	(void) RCC->PLL1CFGR1;
+
+	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
+		((uint_fast32_t) (pll1divp - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
+		((uint_fast32_t) (PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
+		((uint_fast32_t) (PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
+		0;
+	(void) RCC->PLL1CFGR2;
+
+	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
+	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
+		;
+
+	RCC->PLL1CR &= ~ RCC_PLL1CR_SSCG_CTRL_Msk;
+	(void) RCC->PLL1CR;
+
+	RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output enable
+	(void) RCC->PLL1CR;
+
+
+	// Значения 0x02 и 0x03 проверены - 0x03 действительно ниже тактовая
+	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
+	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
+		((uint_fast32_t) 0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1_P
+		0;
+	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
+		;
+
+	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
+	//0x1: HSE selected as AXI sub-system clock (hse_ck)
+	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
+	//others: axiss_ck is gated
+	// axiss_ck 266 MHz Max
+	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
+			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// pll2_p_ck
+			0;
+	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
+		;
+}
 
 static void stm32mp1_pll_initialize(void)
 {
@@ -2964,7 +2576,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
+		((uint_fast32_t) 0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
@@ -3000,11 +2612,19 @@ static void stm32mp1_pll_initialize(void)
 		;
 
 	#if WITHCPUXOSC
-		#error rr1
 		// с внешним генератором
-		// HSEBYP
+		RCC->OCENCLRR = RCC_OCENCLRR_HSEON;
+		(void) RCC->OCENCLRR;
+		while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) != 0)
+			;
+		RCC->OCENSETR = RCC_OCENSETR_DIGBYP;
+		(void) RCC->OCENSETR;
 		RCC->OCENSETR = RCC_OCENSETR_HSEBYP;
 		(void) RCC->OCENSETR;
+		RCC->OCENSETR = RCC_OCENSETR_HSEON;
+		(void) RCC->OCENSETR;
+		while ((RCC->OCRDYR & RCC_OCRDYR_HSERDY) == 0)
+			;
 
 	#elif WITHCPUXTAL
 		//#error rr2
@@ -3044,15 +2664,15 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL1CR;
 
 	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
-		((PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
-		((PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
+		((uint_fast32_t) (PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
+		((uint_fast32_t) (PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
 		0;
 	(void) RCC->PLL1CFGR1;
 
 	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
-		((PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
-		((PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
-		((PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
+		((uint_fast32_t) (PLL1DIVP - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
+		((uint_fast32_t) (PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
+		((uint_fast32_t) (PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
 		0;
 	(void) RCC->PLL1CFGR2;
 
@@ -3079,9 +2699,9 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CFGR1;
 
 	RCC->PLL2CFGR2 = (RCC->PLL2CFGR2 & ~ (RCC_PLL2CFGR2_DIVP_Msk | RCC_PLL2CFGR2_DIVQ_Msk | RCC_PLL2CFGR2_DIVR_Msk)) |
-		((PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
-		((PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
-		((PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL2DIVP - 1) << RCC_PLL2CFGR2_DIVP_Pos) |	// pll2_p_ck - AXI clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL2DIVQ - 1) << RCC_PLL2CFGR2_DIVQ_Pos) |	// GPU clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL2DIVR - 1) << RCC_PLL2CFGR2_DIVR_Pos) |	// DDR clock (1..128 -> 0x00..0x7f)
 		0;
 	(void) RCC->PLL2CFGR2;
 
@@ -3115,10 +2735,10 @@ static void stm32mp1_pll_initialize(void)
 	#if WITHCPUXOSC || WITHCPUXTAL
 		// с внешним генератором
 		// с внешним кварцем
-		(0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
+		((uint_fast32_t) 0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
 	#else
 		// На внутреннем генераторе
-		(0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
+		((uint_fast32_t) 0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
 	#endif
 		0;
 	while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
@@ -3128,16 +2748,16 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL4CR;
 
 	RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVN_Msk | RCC_PLL4CFGR1_DIVM4_Msk)) |
-		((PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
-		((PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
+		((uint_fast32_t) (PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
+		((uint_fast32_t) (PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
 		0;
 	(void) RCC->PLL4CFGR1;
 
 	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock());
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
-		((PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
-		//((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
-		((PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
+		//((uint_fast32_t) (pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
+		((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
 	(void) RCC->PLL4CFGR2;
 
@@ -3163,18 +2783,18 @@ static void stm32mp1_pll_initialize(void)
 
 #endif /* PLL4 */
 
-	// AXI, AHB5 and AHB6 clock divider
+	// AXI, AHB5 and AHB6 clock divisor
 	//	0x0: axiss_ck (default after reset)
 	//	0x1: axiss_ck / 2
 	//	0x2: axiss_ck / 3
 	//	others: axiss_ck / 4
 	RCC->AXIDIVR = (RCC->AXIDIVR & ~ (RCC_AXIDIVR_AXIDIV_Msk)) |
-		((0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
+		((uint_fast32_t) (0x01 - 1) << RCC_AXIDIVR_AXIDIV_Pos) |	// div1 (no divide)
 		0;
 	while((RCC->AXIDIVR & RCC_AXIDIVR_AXIDIVRDY_Msk) == 0)
 		;
 
-	// APB1 Output divider (output max 104.5 MHz)
+	// APB1 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
 	//0x0: mlhclk (default after reset)
 	//0x1: mlhclk / 2
@@ -3182,12 +2802,12 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: mlhclk / 8
 	//0x4: mlhclk / 16
 	RCC->APB1DIVR = (RCC->APB1DIVR & ~ (RCC_APB1DIVR_APB1DIV_Msk)) |
-		((1) << RCC_APB1DIVR_APB1DIV_Pos) |	// div2
+		((uint_fast32_t) (1) << RCC_APB1DIVR_APB1DIV_Pos) |	// div2
 		0;
 	while((RCC->APB1DIVR & RCC_APB1DIVR_APB1DIVRDY_Msk) == 0)
 		;
 
-	// APB2 Output divider (output max 104.5 MHz)
+	// APB2 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
 	//0x0: mlhclk (default after reset)
 	//0x1: mlhclk / 2
@@ -3195,12 +2815,12 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: mlhclk / 8
 	//0x4: mlhclk / 16
 	RCC->APB2DIVR = (RCC->APB2DIVR & ~ (RCC_APB2DIVR_APB2DIV_Msk)) |
-		((1) << RCC_APB2DIVR_APB2DIV_Pos) |	// div2
+		((uint_fast32_t) (1) << RCC_APB2DIVR_APB2DIV_Pos) |	// div2
 		0;
 	while((RCC->APB2DIVR & RCC_APB2DIVR_APB2DIVRDY_Msk) == 0)
 		;
 
-	// APB3 Output divider (output max 104.5 MHz)
+	// APB3 Output divisor (output max 104.5 MHz)
 	// Input MLHCK (209 MHz max)
 	//0x0: hclk (default after reset)
 	//0x1: hclk / 2
@@ -3208,26 +2828,26 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: hclk / 8
 	//others: hclk / 16
 	RCC->APB3DIVR = (RCC->APB3DIVR & ~ (RCC_APB3DIVR_APB3DIV_Msk)) |
-		((1) << RCC_APB3DIVR_APB3DIV_Pos) |	// div2
+		((uint_fast32_t) (1) << RCC_APB3DIVR_APB3DIV_Pos) |	// div2
 		0;
 	while((RCC->APB3DIVR & RCC_APB3DIVR_APB3DIVRDY_Msk) == 0)
 		;
 
-	// APB4 Output divider
+	// APB4 Output divisor
 	//	0x0: aclk (default after reset)
 	//	0x1: aclk / 2
 	//	0x2: aclk / 4
 	//	0x3: aclk / 8
 	//	others: aclk / 16
 	RCC->APB4DIVR = (RCC->APB4DIVR & ~ (RCC_APB4DIVR_APB4DIV_Msk)) |
-		((0x02 - 1) << RCC_APB4DIVR_APB4DIV_Pos) |	// div2
+		((uint_fast32_t) (0x02 - 1) << RCC_APB4DIVR_APB4DIV_Pos) |	// div2
 		0;
 	while((RCC->APB4DIVR & RCC_APB4DIVR_APB4DIVRDY_Msk) == 0)
 		;
 
-	// APB5 Output divider
+	// APB5 Output divisor
 	RCC->APB5DIVR = (RCC->APB5DIVR & ~ (RCC_APB5DIVR_APB5DIV_Msk)) |
-		((0x04 - 1) << RCC_APB5DIVR_APB5DIV_Pos) |	// div4
+		((uint_fast32_t) (0x04 - 1) << RCC_APB5DIVR_APB5DIV_Pos) |	// div4
 		0;
 	while((RCC->APB5DIVR & RCC_APB5DIVR_APB5DIVRDY_Msk) == 0)
 		;
@@ -3238,7 +2858,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
 	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		(0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1
+		((uint_fast32_t) 0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1_P
 		0;
 	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
@@ -3259,7 +2879,7 @@ static void stm32mp1_pll_initialize(void)
 	//others: axiss_ck is gated
 	// axiss_ck 266 MHz Max
 	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
-			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// pll2_p_ck
+			((uint_fast32_t) 0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// pll2_p_ck
 			0;
 	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
 		;
@@ -3269,15 +2889,15 @@ static void stm32mp1_pll_initialize(void)
 	//0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
 	//0x1: HSE selected as PLL clock (hse_ck)
 	//0x2: CSI selected as PLL clock (csi_ck)
-	//0x3: No clock send to DIVMx divider and PLLs
+	//0x3: No clock send to DIVMx divisor and PLLs
 	RCC->RCK3SELR = (RCC->RCK3SELR & ~ (RCC_RCK3SELR_PLL3SRC_Msk)) |
 	#if WITHCPUXOSC || WITHCPUXTAL
 		// с внешним генератором
 		// с внешним кварцем
-		(0x01 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSE
+		((uint_fast32_t) 0x01 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSE
 	#else
 		// На внутреннем генераторе
-		(0x00 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSI
+		((uint_fast32_t) 0x00 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSI
 	#endif
 		0;
 	while ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY_Msk) == 0)
@@ -3306,8 +2926,8 @@ static void stm32mp1_pll_initialize(void)
 	//	0x3: csi_ker_ck clock selected as kernel peripheral clock
 	//	0x4: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART24CKSELR = (RCC->UART24CKSELR & ~ (RCC_UART24CKSELR_UART24SRC_Msk)) |
-		(0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// hsi_ker_ck
-		//(0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
+		((uint_fast32_t) 0x02 << RCC_UART24CKSELR_UART24SRC_Pos) |	// hsi_ker_ck
+		//((uint_fast32_t) 0x00 << RCC_UART24CKSELR_UART24SRC_Pos) |	// pclk1
 		0;
 	(void) RCC->UART24CKSELR;
 #endif /* WITHUART2HW || WITHUART4HW */
@@ -3335,8 +2955,8 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: csi_ker_ck clock selected as kernel peripheral clock
 	//0x4: hse_ker_ck clock selected as kernel peripheral clock
 	RCC->UART78CKSELR = (RCC->UART78CKSELR & ~ (RCC_UART78CKSELR_UART78SRC_Msk)) |
-		(0x02 << RCC_UART78CKSELR_UART78SRC_Pos) |	// hsi_ker_ck
-		//(0x00 << RCC_UART78CKSELR_UART78SRC_Pos) |	// pclk1
+		((uint_fast32_t) 0x02 << RCC_UART78CKSELR_UART78SRC_Pos) |	// hsi_ker_ck
+		//((uint_fast32_t) 0x00 << RCC_UART78CKSELR_UART78SRC_Pos) |	// pclk1
 		0;
 	(void) RCC->UART78CKSELR;
 #endif /* WITHUART7HW || WITHUART8HW */
@@ -3349,7 +2969,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x3: hsi_ker_ck clock selected as kernel peripheral clock (default after reset)
 	//	others: reserved, the kernel clock is disabled
 	RCC->SDMMC12CKSELR = (RCC->SDMMC12CKSELR & ~ (RCC_SDMMC12CKSELR_SDMMC12SRC_Msk)) |
-		(0x3 << RCC_SDMMC12CKSELR_SDMMC12SRC_Pos) |	// hsi_ker_ck
+		((uint_fast32_t) 0x3 << RCC_SDMMC12CKSELR_SDMMC12SRC_Pos) |	// hsi_ker_ck
 		0;
 	(void) RCC->SDMMC12CKSELR;
 #endif /* WITHSDHCHW */
@@ -3361,7 +2981,7 @@ static void stm32mp1_pll_initialize(void)
 	//0x3: per_ck clock selected as kernel peripheral clock
 	//0x4: pll3_r_ck clock selected as kernel peripheral clock
 	RCC->SPI2S1CKSELR = (RCC->SPI2S1CKSELR & ~ (RCC_SPI2S1CKSELR_SPI1SRC_Msk)) |
-		(0x03 << RCC_SPI2S1CKSELR_SPI1SRC_Pos) |	// per_ck
+		((uint_fast32_t) 0x03 << RCC_SPI2S1CKSELR_SPI1SRC_Pos) |	// per_ck
 		0;
 	(void) RCC->SPI2S1CKSELR;
 #endif /* WITHSPIHW */
@@ -3372,7 +2992,7 @@ static void stm32mp1_pll_initialize(void)
 	//0x2: pll4_p_ck clock selected as kernel peripheral clock
 	//0x3: per_ck clock selected as kernel peripheral clock
 	RCC->QSPICKSELR = (RCC->QSPICKSELR & ~ (RCC_QSPICKSELR_QSPISRC_Msk)) |
-	(0x03 << RCC_QSPICKSELR_QSPISRC_Pos) |	// per_ck
+	((uint_fast32_t) 0x03 << RCC_QSPICKSELR_QSPISRC_Pos) |	// per_ck
 		0;
 	(void) RCC->QSPICKSELR;
 #endif /* WIHSPIDFHW */
@@ -3384,7 +3004,7 @@ static void stm32mp1_pll_initialize(void)
 	//	1: The Timers kernel clock is equal to mlhclk if APB1DIV is corresponding to division by 1, 2
 	//	or 4, else it is equal to 4 x Fpclk1
 	RCC->TIMG1PRER = (RCC->TIMG1PRER & ~ (RCC_TIMG1PRER_TIMG1PRE_Msk)) |
-		(0x00 << RCC_TIMG1PRER_TIMG1PRE_Pos) |
+		((uint_fast32_t) 0x00 << RCC_TIMG1PRER_TIMG1PRE_Pos) |
 		0;
 	(void) RCC->TIMG1PRER;
 	while ((RCC->TIMG1PRER & RCC_TIMG1PRER_TIMG1PRERDY_Msk) == 0)
@@ -3413,8 +3033,8 @@ static void stm32mp1_pll_initialize(void)
 	//  0x1: pll4_r_ck clock selected as kernel peripheral clock
 	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 	RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-		(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |		// 50 MHz max pll4_r_ck
-		(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |		// 38.4 MHz max pll4_r_ck
+		((uint_fast32_t) 0x00 << RCC_USBCKSELR_USBOSRC_Pos) |		// 50 MHz max pll4_r_ck
+		((uint_fast32_t) 0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |		// 38.4 MHz max pll4_r_ck
 		0;
 	(void) RCC->USBCKSELR;
 
@@ -3428,7 +3048,7 @@ static void stm32mp1_pll_initialize(void)
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
-	const uint32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
+	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	ASSERT(pll4divq >= 1);
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVQ_Msk)) |
 		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
@@ -3445,8 +3065,8 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 unsigned long hardware_get_dotclock(unsigned long dotfreq)
 {
-	const uint32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
-	return PLL4_FREQ / pll4divq;
+	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
+	return stm32mp1_get_pll4_freq() / pll4divq;
 }
 
 #endif /* CPUSTYLE_STM32MP1 */
@@ -3833,7 +3453,7 @@ static void program_mckr_pres(unsigned long presvalue)
 // If a new value for CSS field corresponds to PLL Clock,
 static void program_mckr_switchtopll_a(void)
 {
-	program_mckr_pres(PMC_MCKR_PRES_CLK_2);	// with /2 divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK_2);	// with /2 divisor
 	program_mckr_css(PMC_MCKR_CSS_PLLA_CLK);
 }
 
@@ -3842,9 +3462,9 @@ static void program_mckr_switchtomain(void)
 {
 	program_mckr_css(PMC_MCKR_CSS_MAIN_CLK);
 #ifdef PMC_MCKR_PRES_CLK_1
-	program_mckr_pres(PMC_MCKR_PRES_CLK_1);	// w/o divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK_1);	// w/o divisor
 #else
-	program_mckr_pres(PMC_MCKR_PRES_CLK);	// w/o divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK);	// w/o divisor
 #endif
 }
 
@@ -3961,9 +3581,9 @@ static void program_mckr_switchtoslow(void)
 {
 	program_mckr_css(PMC_MCKR_CSS_SLOW_CLK);
 #ifdef PMC_MCKR_PRES_CLK_1
-	program_mckr_pres(PMC_MCKR_PRES_CLK_1);	// w/o divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK_1);	// w/o divisor
 #else
-	program_mckr_pres(PMC_MCKR_PRES_CLK);	// w/o divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK);	// w/o divisor
 #endif
 }
 
@@ -4201,7 +3821,7 @@ stm32f4xx_pll_initialize(void)
 static void
 stm32f4xx_pllsai_initialize(void)
 {
-	//#error TODO: write code to imitialize SAI PLL and LTDC output divider
+	//#error TODO: write code to imitialize SAI PLL and LTDC output divisor
 	/* для устройств на шине APB2 (up to 72 MHz) */
 	auto uint_fast32_t
 	calcdivround_saifreq(
@@ -4221,7 +3841,7 @@ stm32f4xx_pllsai_initialize(void)
 	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
 	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
 		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-		((value * RCC_PLLSAICFGR_PLLSAIR_0) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divider, 2..7
+		((value * RCC_PLLSAICFGR_PLLSAIR_0) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divisor, 2..7
 		0;
 
 	RCC->DCKCFGR = (RCC->DCKCFGR & ~ RCC_DCKCFGR_PLLSAIDIVR) |
@@ -4235,7 +3855,7 @@ stm32f4xx_pllsai_initialize(void)
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
-	//#error TODO: write code to imitialize SAI PLL and LTDC output divider
+	//#error TODO: write code to imitialize SAI PLL and LTDC output divisor
 	/* для устройств на шине APB2 (up to 72 MHz) */
 	auto uint_fast32_t
 	calcdivround_saifreq(
@@ -4254,7 +3874,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
 	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
 		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-		((value * RCC_PLLSAICFGR_PLLSAIR_0) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divider, 2..7
+		((value * RCC_PLLSAICFGR_PLLSAIR_0) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divisor, 2..7
 		0;
 
 	RCC->DCKCFGR = (RCC->DCKCFGR & ~ RCC_DCKCFGR_PLLSAIDIVR) |
@@ -4404,7 +4024,7 @@ stm32f7xx_pll_initialize(void)
 		;
 
 	RCC->DCKCFGR1 = (RCC->DCKCFGR1 & ~ RCC_DCKCFGR1_TIMPRE) |
-		((0x00 << 24) & RCC_DCKCFGR1_TIMPRE)	|	// Timers clocks prescalers selection
+		(0 << RCC_DCKCFGR1_TIMPRE_Pos)	|	// Timers clocks prescalers selection
 		0;
 
 	#if WITHSAICLOCKFROMPIN
@@ -4453,7 +4073,7 @@ stm32f7xx_pllsai_initialize(void)
 	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
 	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
 		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divider, 2..7
+		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divisor, 2..7
 		0;
 
 	RCC->DCKCFGR1 = (RCC->DCKCFGR1 & ~ RCC_DCKCFGR1_PLLSAIDIVR) |
@@ -4636,7 +4256,7 @@ stm32h7xx_pll_initialize(void)
 
 	// PLL1 setup
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM1) |
-		((REF1_DIV << RCC_PLLCKSELR_DIVM1_Pos) & RCC_PLLCKSELR_DIVM1) |	// Reference divider - не требуется корректировань число
+		((REF1_DIV << RCC_PLLCKSELR_DIVM1_Pos) & RCC_PLLCKSELR_DIVM1) |	// Reference divisor - не требуется корректировань число
 		0;
 	//
 	const uint32_t stm32h7xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// Как было сделано при инициализации PLL
@@ -4671,7 +4291,7 @@ stm32h7xx_pll_initialize(void)
 	// PLL2 P output used for SAI1, SAI2, SAI3 clocking
 
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM2) |
-		((REF2_DIV << RCC_PLLCKSELR_DIVM2_Pos) & RCC_PLLCKSELR_DIVM2) |	// Reference divider - не требуется корректировань число
+		((REF2_DIV << RCC_PLLCKSELR_DIVM2_Pos) & RCC_PLLCKSELR_DIVM2) |	// Reference divisor - не требуется корректировань число
 		0;
 	//
 	RCC->PLL2DIVR = (RCC->PLL2DIVR & ~ (RCC_PLL2DIVR_N2 | RCC_PLL2DIVR_P2)) |
@@ -4704,7 +4324,7 @@ stm32h7xx_pll_initialize(void)
 #if WITHUSEPLL3
 
 	RCC->PLLCKSELR = (RCC->PLLCKSELR & ~ RCC_PLLCKSELR_DIVM3) |
-		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divider - не требуется корректировань число
+		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divisor - не требуется корректировань число
 		0;
 	//
 	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, display_getdotclock());
@@ -4849,7 +4469,7 @@ static void stm32h7xx_pllsai_initialize(void)
 	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
 	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
 		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divider, 2..7
+		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divisor, 2..7
 		0;
 
 	RCC->DCKCFGR = (RCC->DCKCFGR & ~ RCC_DCKCFGR_PLLSAIDIVR) |
@@ -5110,7 +4730,7 @@ static void program_mckr_pres(unsigned long presvalue)
 // If a new value for CSS field corresponds to PLL Clock,
 static void program_mckr_switchtopll_a(void)
 {
-	program_mckr_pres(PMC_MCKR_PRES_CLK_2);	// with /2 divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK_2);	// with /2 divisor
 	program_mckr_css(PMC_MCKR_CSS_PLLA_CLK);
 }
 
@@ -5119,9 +4739,9 @@ static void program_mckr_switchtomain(void)
 {
 	program_mckr_css(PMC_MCKR_CSS_MAIN_CLK);
 #ifdef PMC_MCKR_PRES_CLK_1
-	program_mckr_pres(PMC_MCKR_PRES_CLK_1);	// w/o divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK_1);	// w/o divisor
 #else
-	program_mckr_pres(PMC_MCKR_PRES_CLK);	// w/o divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK);	// w/o divisor
 #endif
 }
 
@@ -5238,9 +4858,9 @@ static void program_mckr_switchtoslow(void)
 {
 	program_mckr_css(PMC_MCKR_CSS_SLOW_CLK);
 #ifdef PMC_MCKR_PRES_CLK_1
-	program_mckr_pres(PMC_MCKR_PRES_CLK_1);	// w/o divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK_1);	// w/o divisor
 #else
-	program_mckr_pres(PMC_MCKR_PRES_CLK);	// w/o divider
+	program_mckr_pres(PMC_MCKR_PRES_CLK);	// w/o divisor
 #endif
 }
 
@@ -5488,7 +5108,7 @@ void hardware_tim21_initialize(void)
 {
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(1000), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM21_FREQ, 1000), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	// test: initialize TIM21, PA3 - output
 	// TIM5 включён на выход TIM2
@@ -5624,9 +5244,570 @@ lowlevel_stm32l0xx_pll_clock(void)
 #endif /* CPUSTYLE_STM32L0XX */
 
 
-// PLL and caches inuitialize
+#if CPUSTYLE_XC7Z
+
+XGpioPs xc7z_gpio;
+
+void xc7z_hardware_initialize(void)
+{
+	int Status;
+
+	// GPIO init
+	XGpioPs_Config * ConfigPtr;
+	ConfigPtr = XGpioPs_LookupConfig(XPAR_XGPIOPS_0_DEVICE_ID);
+	Status = XGpioPs_CfgInitialize(& xc7z_gpio, ConfigPtr, ConfigPtr->BaseAddr);
+	if (Status != XST_SUCCESS)
+		PRINTF("PS GPIO init error\n");
+}
+
+/* Opcode exit is 0 all the time */
+#define OPCODE_EXIT       0U
+#define OPCODE_CLEAR      1U
+#define OPCODE_WRITE      2U
+#define OPCODE_MASKWRITE  3U
+#define OPCODE_MASKPOLL   4U
+#define OPCODE_MASKDELAY  5U
+#define NEW_PS7_ERR_CODE 1
+
+/* Encode number of arguments in last nibble */
+#define EMIT_EXIT()                   ( (OPCODE_EXIT      << 4 ) | 0 )
+#define EMIT_CLEAR(addr)              ( (OPCODE_CLEAR     << 4 ) | 1 ) , addr
+#define EMIT_WRITE(addr,val)          ( (OPCODE_WRITE     << 4 ) | 2 ) , addr, val
+#define EMIT_MASKWRITE(addr,mask,val) ( (OPCODE_MASKWRITE << 4 ) | 3 ) , addr, mask, val
+#define EMIT_MASKPOLL(addr,mask)      ( (OPCODE_MASKPOLL  << 4 ) | 2 ) , addr, mask
+#define EMIT_MASKDELAY(addr,mask)      ( (OPCODE_MASKDELAY << 4 ) | 2 ) , addr, mask
+
+/* Returns codes of ps7_init* */
+#define PS7_INIT_SUCCESS		(0)
+#define PS7_INIT_CORRUPT		(1)
+#define PS7_INIT_TIMEOUT		(2)
+#define PS7_POLL_FAILED_DDR_INIT	(3)
+#define PS7_POLL_FAILED_DMA		(4)
+#define PS7_POLL_FAILED_PLL		(5)
+
+#define PCW_SILICON_VERSION_1	0
+#define PCW_SILICON_VERSION_2	1
+#define PCW_SILICON_VERSION_3	2
+
+/* For delay calculation using global registers*/
+#define SCU_GLOBAL_TIMER_COUNT_L32	0xF8F00200
+#define SCU_GLOBAL_TIMER_COUNT_U32	0xF8F00204
+#define SCU_GLOBAL_TIMER_CONTROL	0xF8F00208
+#define SCU_GLOBAL_TIMER_AUTO_INC	0xF8F00218
+#define APU_FREQ  666666666
+
+#define PS7_MASK_POLL_TIME 100000000
+
+#define __arch_getb(a)			(*(volatile uint8_t *)(a))
+#define __arch_getw(a)			(*(volatile uint16_t *)(a))
+#define __arch_getl(a)			(*(volatile uint32_t *)(a))
+#define __arch_getq(a)			(*(volatile uint64_t *)(a))
+
+#define __arch_putb(v,a)		(*(volatile uint8_t *)(a) = (v))
+#define __arch_putw(v,a)		(*(volatile uint16_t *)(a) = (v))
+#define __arch_putl(v,a)		(*(volatile uint32_t *)(a) = (v))
+#define __arch_putq(v,a)		(*(volatile uint64_t *)(a) = (v))
+
+#define __raw_writeb(v,a)	__arch_putb(v,a)
+#define __raw_writew(v,a)	__arch_putw(v,a)
+#define __raw_writel(v,a)	__arch_putl(v,a)
+#define __raw_writeq(v,a)	__arch_putq(v,a)
+
+#define __raw_readb(a)		__arch_getb(a)
+#define __raw_readw(a)		__arch_getw(a)
+#define __raw_readl(a)		__arch_getl(a)
+#define __raw_readq(a)		__arch_getq(a)
+
+/* IO accessors. No memory barriers desired. */
+static inline void iowrite(unsigned long val, uintptr_t addr)
+{
+	__raw_writel(val, addr);
+}
+
+static inline unsigned long ioread(uintptr_t addr)
+{
+	return __raw_readl(addr);
+}
+
+/* start timer */
+static void perf_start_clock(void)
+{
+	iowrite((1 << 0) | /* Timer Enable */
+		(1 << 3) | /* Auto-increment */
+		(0 << 8), /* Pre-scale */
+		SCU_GLOBAL_TIMER_CONTROL);
+}
+
+/* Compute mask for given delay in miliseconds*/
+static unsigned long get_number_of_cycles_for_delay(unsigned long delay)
+{
+	return (APU_FREQ / (2 * 1000)) * delay;
+}
+
+/* stop timer */
+static void perf_disable_clock(void)
+{
+	iowrite(0, SCU_GLOBAL_TIMER_CONTROL);
+}
+
+/* stop timer and reset timer count regs */
+static void perf_reset_clock(void)
+{
+	perf_disable_clock();
+	iowrite(0, SCU_GLOBAL_TIMER_COUNT_L32);
+	iowrite(0, SCU_GLOBAL_TIMER_COUNT_U32);
+}
+
+static void perf_reset_and_start_timer(void)
+{
+	perf_reset_clock();
+	perf_start_clock();
+}
+
+int ps7_config(const unsigned long * ps7_config_init)
+{
+	const unsigned long *ptr = ps7_config_init;
+
+    unsigned long  opcode;            // current instruction ..
+    unsigned long  args[16];           // no opcode has so many args ...
+    int  numargs;           // number of arguments of this instruction
+    int  j;                 // general purpose index
+
+    volatile uint32_t *addr;         // some variable to make code readable
+    unsigned long  val,mask;              // some variable to make code readable
+
+    int finish = -1 ;           // loop while this is negative !
+    int i = 0;                  // Timeout variable
+
+    while( finish < 0 ) {
+        numargs = ptr[0] & 0xF;
+        opcode = ptr[0] >> 4;
+
+        for( j = 0 ; j < numargs ; j ++ )
+            args[j] = ptr[j+1];
+        ptr += numargs + 1;
+
+
+        switch ( opcode ) {
+
+        case OPCODE_EXIT:
+            finish = PS7_INIT_SUCCESS;
+            break;
+
+        case OPCODE_CLEAR:
+            addr = (volatile uint32_t*) args[0];
+            *addr = 0;
+            break;
+
+        case OPCODE_WRITE:
+            addr = (volatile uint32_t*) args[0];
+            val = args[1];
+            *addr = val;
+            break;
+
+        case OPCODE_MASKWRITE:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            val = args[2];
+            *addr = ( val & mask ) | ( *addr & ~mask);
+            break;
+
+        case OPCODE_MASKPOLL:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            i = 0;
+            while (!(*addr & mask)) {
+                if (i == PS7_MASK_POLL_TIME) {
+                    finish = PS7_INIT_TIMEOUT;
+                    break;
+                }
+                i++;
+            }
+            break;
+        case OPCODE_MASKDELAY:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            int delay = get_number_of_cycles_for_delay(mask);
+            perf_reset_and_start_timer();
+            while ((*addr < delay)) {
+            }
+            break;
+        default:
+            finish = PS7_INIT_CORRUPT;
+            break;
+        }
+    }
+    return finish;
+}
+
+static const unsigned long ps7_clock_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8000128, 0x03F03F01U ,0x00700F01U),	// DCI_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000168, 0x00003F31U ,0x00000801U),	// PCAP_CLK_CTRL
+		EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+		EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+		//EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
+		EMIT_EXIT(),
+	};
+
+static const unsigned long ps7_ddr_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000084U),	// ddrc_ctrl, reg_ddrc_soft_rstb = 0
+		EMIT_MASKWRITE(0XF8006004, 0x0007FFFFU ,0x00001082U),	// Two_rank_cfg
+		EMIT_MASKWRITE(0XF8006008, 0x03FFFFFFU ,0x03C0780FU),
+		EMIT_MASKWRITE(0XF800600C, 0x03FFFFFFU ,0x02001001U),
+		EMIT_MASKWRITE(0XF8006010, 0x03FFFFFFU ,0x00014001U),
+		EMIT_MASKWRITE(0XF8006014, 0x001FFFFFU ,0x0004159BU),
+		EMIT_MASKWRITE(0XF8006018, 0xF7FFFFFFU ,0x44E458D3U),
+		EMIT_MASKWRITE(0XF800601C, 0xFFFFFFFFU ,0x7282BCE5U),
+		EMIT_MASKWRITE(0XF8006020, 0x7FDFFFFCU ,0x270872D0U),
+		EMIT_MASKWRITE(0XF8006024, 0x0FFFFFC3U ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006028, 0x00003FFFU ,0x00002007U),
+		EMIT_MASKWRITE(0XF800602C, 0xFFFFFFFFU ,0x00000008U),
+		EMIT_MASKWRITE(0XF8006030, 0xFFFFFFFFU ,0x00040B30U),
+		EMIT_MASKWRITE(0XF8006034, 0x13FF3FFFU ,0x000116D4U),
+		EMIT_MASKWRITE(0XF8006038, 0x00000003U ,0x00000000U),
+		EMIT_MASKWRITE(0XF800603C, 0x000FFFFFU ,0x00000666U),
+		EMIT_MASKWRITE(0XF8006040, 0xFFFFFFFFU ,0xFFFF0000U),
+		EMIT_MASKWRITE(0XF8006044, 0x0FFFFFFFU ,0x0FF55555U),
+		EMIT_MASKWRITE(0XF8006048, 0x0003F03FU ,0x0003C008U),
+		EMIT_MASKWRITE(0XF8006050, 0xFF0F8FFFU ,0x77010800U),
+		EMIT_MASKWRITE(0XF8006058, 0x00010000U ,0x00000000U),
+		EMIT_MASKWRITE(0XF800605C, 0x0000FFFFU ,0x00005003U),
+		EMIT_MASKWRITE(0XF8006060, 0x000017FFU ,0x0000003EU),
+		EMIT_MASKWRITE(0XF8006064, 0x00021FE0U ,0x00020000U),
+		EMIT_MASKWRITE(0XF8006068, 0x03FFFFFFU ,0x00284141U),
+		EMIT_MASKWRITE(0XF800606C, 0x0000FFFFU ,0x00001610U),
+		EMIT_MASKWRITE(0XF8006078, 0x03FFFFFFU ,0x00466111U),
+		EMIT_MASKWRITE(0XF800607C, 0x000FFFFFU ,0x00032222U),
+		EMIT_MASKWRITE(0XF80060A4, 0xFFFFFFFFU ,0x10200802U),
+		EMIT_MASKWRITE(0XF80060A8, 0x0FFFFFFFU ,0x0690CB73U),
+		EMIT_MASKWRITE(0XF80060AC, 0x000001FFU ,0x000001FEU),
+		EMIT_MASKWRITE(0XF80060B0, 0x1FFFFFFFU ,0x1CFFFFFFU),
+		EMIT_MASKWRITE(0XF80060B4, 0x00000200U ,0x00000200U),
+		EMIT_MASKWRITE(0XF80060B8, 0x01FFFFFFU ,0x00200066U),
+		EMIT_MASKWRITE(0XF80060C4, 0x00000003U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060C8, 0x000000FFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060DC, 0x00000001U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060F0, 0x0000FFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80060F4, 0x0000000FU ,0x00000008U),
+		EMIT_MASKWRITE(0XF8006114, 0x000000FFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006118, 0x7FFFFFCFU ,0x40000001U),
+		EMIT_MASKWRITE(0XF800611C, 0x7FFFFFCFU ,0x40000001U),
+		EMIT_MASKWRITE(0XF8006120, 0x7FFFFFCFU ,0x40000000U),
+		EMIT_MASKWRITE(0XF8006124, 0x7FFFFFCFU ,0x40000000U),
+		EMIT_MASKWRITE(0XF800612C, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006130, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006134, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006138, 0x000FFFFFU ,0x00029000U),
+		EMIT_MASKWRITE(0XF8006140, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006144, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006148, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF800614C, 0x000FFFFFU ,0x00000035U),
+		EMIT_MASKWRITE(0XF8006154, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006158, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF800615C, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006160, 0x000FFFFFU ,0x00000080U),
+		EMIT_MASKWRITE(0XF8006168, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF800616C, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF8006170, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF8006174, 0x001FFFFFU ,0x000000F9U),
+		EMIT_MASKWRITE(0XF800617C, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006180, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006184, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006188, 0x000FFFFFU ,0x000000C0U),
+		EMIT_MASKWRITE(0XF8006190, 0x6FFFFEFEU ,0x00040080U),
+		EMIT_MASKWRITE(0XF8006194, 0x000FFFFFU ,0x0001FC82U),
+		EMIT_MASKWRITE(0XF8006204, 0xFFFFFFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF8006208, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF800620C, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006210, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006214, 0x000703FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006218, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF800621C, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006220, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF8006224, 0x000F03FFU ,0x000003FFU),
+		EMIT_MASKWRITE(0XF80062A8, 0x00000FF5U ,0x00000000U),
+		EMIT_MASKWRITE(0XF80062AC, 0xFFFFFFFFU ,0x00000000U),
+		EMIT_MASKWRITE(0XF80062B0, 0x003FFFFFU ,0x00005125U),
+		EMIT_MASKWRITE(0XF80062B4, 0x0003FFFFU ,0x000012A8U),
+		EMIT_MASKPOLL(0XF8000B74, 0x00002000U),					// DDRIOB_DCI_STATUS
+		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000085U),	// ddrc_ctrl, reg_ddrc_soft_rstb = 1
+		EMIT_MASKPOLL(0XF8006054, 0x00000007U),					// mode_sts_reg
+		EMIT_EXIT(),
+	};
+
+static const unsigned long ps7_mio_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8000B40, 0x00000FFFU ,0x00000600U),	// DDRIOB_ADDR0
+		EMIT_MASKWRITE(0XF8000B44, 0x00000FFFU ,0x00000600U),	// DDRIOB_ADDR1
+		EMIT_MASKWRITE(0XF8000B48, 0x00000FFFU ,0x00000672U),
+		EMIT_MASKWRITE(0XF8000B4C, 0x00000FFFU ,0x00000800U),
+		EMIT_MASKWRITE(0XF8000B50, 0x00000FFFU ,0x00000674U),
+		EMIT_MASKWRITE(0XF8000B54, 0x00000FFFU ,0x00000800U),
+		EMIT_MASKWRITE(0XF8000B58, 0x00000FFFU ,0x00000600U),	// DDRIOB_CLOCK
+		EMIT_MASKWRITE(0XF8000B5C, 0xFFFFFFFFU ,0x0018C61CU),	// DDRIOB_DRIVE_SLEW_ADDR
+		EMIT_MASKWRITE(0XF8000B60, 0xFFFFFFFFU ,0x00F9861CU),
+		EMIT_MASKWRITE(0XF8000B64, 0xFFFFFFFFU ,0x00F9861CU),
+		EMIT_MASKWRITE(0XF8000B68, 0xFFFFFFFFU ,0x00F9861CU),	// DDRIOB_DRIVE_SLEW_CLOCK
+		EMIT_MASKWRITE(0XF8000B6C, 0x00007FFFU ,0x00000220U),	// DDRIOB_DDR_CTRL
+		EMIT_MASKWRITE(0XF8000B70, 0x00000001U ,0x00000001U),	// DDRIOB_DCI_CTRL
+		EMIT_MASKWRITE(0XF8000B70, 0x00000021U ,0x00000020U),	// DDRIOB_DCI_CTRL
+		EMIT_MASKWRITE(0XF8000B70, 0x07FEFFFFU ,0x00000823U),	// DDRIOB_DCI_CTRL
+		EMIT_EXIT(),
+};
+
+static const unsigned long ps7_peripherals_init_data_3_0[] = {
+		EMIT_MASKWRITE(0XF8000B48, 0x00000180U ,0x00000180U),	// DDRIOB_DATA0
+		EMIT_MASKWRITE(0XF8000B4C, 0x00000180U ,0x00000000U),	// DDRIOB_DATA1
+		EMIT_MASKWRITE(0XF8000B50, 0x00000180U ,0x00000180U),	// DDRIOB_DIFF0
+		EMIT_MASKWRITE(0XF8000B54, 0x00000180U ,0x00000000U),	// DDRIOB_DIFF1
+		EMIT_EXIT(),
+	};
+
+
+static int ps7_init(void)
+{
+	int ret;
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+
+	ret = ps7_config(ps7_mio_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_clock_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_ddr_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_peripherals_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	return PS7_INIT_SUCCESS;
+}
+
+static void xc7z1_arm_pll_initialize(void)
+{
+	const uint_fast32_t arm_pll_mul = ARM_PLL_MUL;	// ARM_PLL_CFG.PLL_FDIV
+	const uint_fast32_t arm_pll_div = ARM_PLL_DIV;	// ARM_CLK_CTRL.DIVISOR
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	//	EMIT_MASKWRITE(0XF8000110, 0x003FFFF0U ,0x000FA220U),	// ARM_PLL_CFG
+	SCLR->ARM_PLL_CFG = (SCLR->ARM_PLL_CFG & ~ (0x003FFFF0U)) |
+			0x000FA220U |
+			0;
+	//	EMIT_MASKWRITE(0XF8000100, 0x0007F000U ,0x00028000U),	// ARM_PLL_CTRL
+	SCLR->ARM_PLL_CTRL = (SCLR->ARM_PLL_CTRL & ~ (0x0007F000U)) |
+			(arm_pll_mul << 12) |	// PLL_FDIV (multiplier)
+			0;
+
+	//	EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000010U),	// ARM_PLL_CTRL
+	SCLR->ARM_PLL_CTRL |= 0x0010uL;	// PLL_BYPASS_FORCE
+
+	//	EMIT_MASKWRITE(0XF8000100, 0x00000001U ,0x00000001U),	// ARM_PLL_CTRL
+	SCLR->ARM_PLL_CTRL |= 0x0001uL;	// PLL_RESET
+	//	EMIT_MASKWRITE(0XF8000100, 0x00000001U ,0x00000000U),	// ARM_PLL_CTRL
+	SCLR->ARM_PLL_CTRL &= ~ 0x0001uL;	// PLL_RESET
+
+	//	EMIT_MASKPOLL(0XF800010C, 0x00000001U),					// PLL_STATUS
+	while ((SCLR->PLL_STATUS & (0x01uL << 0)) == 0)	// ARM_PLL_LOCK
+		;
+	//	EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000000U),	// ARM_PLL_CTRL
+	SCLR->ARM_PLL_CTRL &= ~ 0x0010uL;	// PLL_BYPASS_FORCE
+
+	//	EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),	// ARM_CLK_CTRL
+	SCLR->ARM_CLK_CTRL = (SCLR->ARM_CLK_CTRL & ~ (0x1F003F30U)) |
+			(0x01uL << 28) |	// CPU_PERI_CLKACT
+			(0x01uL << 27) |	// CPU_1XCLKACT
+			(0x01uL << 26) |	// CPU_2XCLKACT
+			(0x01uL << 25) |	// CPU_3OR2XCLKACT
+			(0x01uL << 24) |	// CPU_6OR4XCLKACT
+			(arm_pll_div << 8) |	// DIVISOR - Frequency divisor for the CPU clock source.
+			(0x00uL << 4) |	// SRCSEL: 0x: ARM PLL
+			0;
+}
+
+static void xc7z1_ddr_pll_initialize(void)
+{
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	//	EMIT_MASKWRITE(0XF8000114, 0x003FFFF0U ,0x0012C220U),	// DDR_PLL_CFG
+	SCLR->DDR_PLL_CFG = (SCLR->DDR_PLL_CFG & ~ (0x003FFFF0U)) |
+			0x0012C220U |
+			0;
+	//	EMIT_MASKWRITE(0XF8000104, 0x0007F000U ,0x00020000U),	// DDR_PLL_CTRL
+	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x0007F000U)) |
+			((uint_fast32_t) DDR_PLL_MUL << 12) |
+			0;
+	//	EMIT_MASKWRITE(0XF8000104, 0x00000010U ,0x00000010U),	// DDR_PLL_CTRL
+	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000010U)) |
+			0x00000010U |
+			0;
+	//	EMIT_MASKWRITE(0XF8000104, 0x00000001U ,0x00000001U),	// DDR_PLL_CTRL
+	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000001U)) |
+			0x00000001U |
+			0;
+	//	EMIT_MASKWRITE(0XF8000104, 0x00000001U ,0x00000000U),	// DDR_PLL_CTRL
+	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000001U)) |
+			0x00000000U |
+			0;
+
+	//	EMIT_MASKPOLL(0XF800010C, 0x00000002U),					// PLL_STATUS
+	while ((SCLR->PLL_STATUS & (0x01uL << 1)) == 0)	// DDR_PLL_LOCK
+		;
+	//	EMIT_MASKWRITE(0XF8000104, 0x00000010U ,0x00000000U),	// DDR_PLL_CTRL
+	SCLR->DDR_PLL_CTRL = (SCLR->DDR_PLL_CTRL & ~ (0x00000010U)) |
+			0x00000000U |
+			0;
+	//	EMIT_MASKWRITE(0XF8000124, 0xFFF00003U ,0x0C200003U),	// DDR_CLK_CTRL
+	SCLR->DDR_CLK_CTRL = (SCLR->DDR_CLK_CTRL & ~ (0xFFF00003U)) |
+			((uint_fast32_t) DDR_2XCLK_DIVISOR << 26) |	// DDR_2XCLK_DIVISOR
+			((uint_fast32_t) DDR_3XCLK_DIVISOR << 20) |	// DDR_3XCLK_DIVISOR (only even)
+			(0x01uL << 1) |	// DDR_2XCLKACT
+			(0x01uL << 0) | // DDR_3XCLKACT
+			0;
+}
+
+static void xc7z1_io_pll_initialize(void)
+{
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	//	EMIT_MASKWRITE(0XF8000118, 0x003FFFF0U ,0x000FA240U),	// IO_PLL_CFG
+	SCLR->IO_PLL_CFG = (SCLR->IO_PLL_CFG & ~ (0x003FFFF0U)) |
+			0x000FA240uL |
+			0;
+	//	EMIT_MASKWRITE(0XF8000108, 0x0007F000U ,0x00030000U),	// IO_PLL_CTRL
+	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x0007F000U)) |	// PLL_FDIV
+			((uint_fast32_t) IO_PLL_MUL << 12) |
+			0;
+	//	EMIT_MASKWRITE(0XF8000108, 0x00000010U ,0x00000010U),	// IO_PLL_CTRL
+	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000010U)) |
+			0x00000010U |
+			0;
+	//	EMIT_MASKWRITE(0XF8000108, 0x00000001U ,0x00000001U),	// IO_PLL_CTRL
+	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000001U)) |
+			0x00000001U |
+			0;
+	//	EMIT_MASKWRITE(0XF8000108, 0x00000001U ,0x00000000U),	// IO_PLL_CTRL
+	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000001U)) |
+			0x00000000U |
+			0;
+
+	//	EMIT_MASKPOLL(0XF800010C, 0x00000004U),					// PLL_STATUS
+	while ((SCLR->PLL_STATUS & (0x01uL << 2)) == 0)	// IO_PLL_LOCK
+		;
+	//	EMIT_MASKWRITE(0XF8000108, 0x00000010U ,0x00000000U),	// IO_PLL_CTRL
+	SCLR->IO_PLL_CTRL = (SCLR->IO_PLL_CTRL & ~ (0x00000010U)) |
+			0x00000000U |
+			0;
+}
+
+static unsigned long xc7z1_get_pllsreference_freq(void)
+{
+	return WITHCPUXOSC;
+}
+
+static uint_fast64_t xc7z1_get_arm_pll_freq(void)
+{
+	const uint_fast32_t arm_pll_mul = (SCLR->ARM_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
+
+	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * arm_pll_mul;
+}
+
+static uint_fast64_t xc7z1_get_ddr_pll_freq(void)
+{
+	const uint_fast32_t ddr_pll_mul = (SCLR->DDR_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
+
+	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * ddr_pll_mul;
+}
+
+static uint_fast64_t xc7z1_get_io_pll_freq(void)
+{
+	const uint_fast32_t io_pll_mul = (SCLR->IO_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
+
+	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * io_pll_mul;
+}
+
+unsigned long  xc7z1_get_arm_freq(void)
+{
+	const uint_fast32_t divisor = (SCLR->ARM_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
+
+	return xc7z1_get_arm_pll_freq() / divisor;
+}
+
+unsigned long  xc7z1_get_ddr_x2clk_freq(void)
+{
+	const uint_fast32_t divisor = (SCLR->DDR_CLK_CTRL >> 26) & 0x003F;	// [31:26] DDR_2XCLK_DIVISOR
+
+	return xc7z1_get_ddr_pll_freq() / divisor;
+}
+
+unsigned long  xc7z1_get_ddr_x3clk_freq(void)
+{
+	const uint_fast32_t divisor = (SCLR->DDR_CLK_CTRL >> 20) & 0x003F;	// [25:20] DDR_2XCLK_DIVISOR
+
+	return xc7z1_get_ddr_pll_freq() / divisor;
+}
+
+unsigned long  xc7z1_get_uart_freq(void)
+{
+	const uint_fast32_t divisor = (SCLR->UART_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
+	switch ((SCLR->UART_CLK_CTRL & 0x30) >> 4)	// SRCSEL
+	{
+	default:
+	case 0x00:
+		// 0x: Source for generated clock is IO PLL.
+		return xc7z1_get_io_pll_freq() / divisor;
+	case 0x01:
+		// 10: Source for generated clock is ARM PLL.
+		return xc7z1_get_arm_pll_freq() / divisor;
+	case 0x03:
+		// 11: Source for generated clock is DDR PLL
+		return xc7z1_get_ddr_pll_freq() / divisor;
+	}
+}
+
+unsigned long xc7z1_get_sdio_freq(void)
+{
+	const uint_fast32_t divisor = (SCLR->SDIO_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
+	switch ((SCLR->SDIO_CLK_CTRL & 0x30) >> 4)	// SRCSEL
+	{
+	default:
+	case 0x00:
+		// 0x: Source for generated clock is IO PLL.
+		return xc7z1_get_io_pll_freq() / divisor;
+	case 0x01:
+		// 10: Source for generated clock is ARM PLL.
+		return xc7z1_get_arm_pll_freq() / divisor;
+	case 0x03:
+		// 11: Source for generated clock is DDR PLL
+		return xc7z1_get_ddr_pll_freq() / divisor;
+	}
+}
+
+unsigned long  xc7z1_get_spi_freq(void)
+{
+	const uint_fast32_t divisor = (SCLR->SPI_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
+	switch ((SCLR->SPI_CLK_CTRL & 0x30) >> 4)	// SRCSEL
+	{
+	default:
+	case 0x00:
+		// 0x: Source for generated clock is IO PLL.
+		return xc7z1_get_io_pll_freq() / divisor;
+	case 0x01:
+		// 10: Source for generated clock is ARM PLL.
+		return xc7z1_get_arm_pll_freq() / divisor;
+	case 0x03:
+		// 11: Source for generated clock is DDR PLL
+		return xc7z1_get_ddr_pll_freq() / divisor;
+	}
+}
+
+#endif /* CPUSTYLE_XC7Z */
+
+// PLL initialize
 void FLASHMEMINITFUNC
-sysinit_pll_cache_initialize(void)
+sysinit_pll_initialize(void)
 {
 #if CPUSTYLE_STM32F1XX
 
@@ -5646,11 +5827,24 @@ sysinit_pll_cache_initialize(void)
 		__DSB();
 	}
 
+	cpu_stm32f1xx_setmapr(0);	/* переключить отладочный интерфейс в SWD */
+	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     //включить тактирование power management
+	(void) RCC->APB1ENR;
+	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_2V8 | PWR_CR_PVDE;
+
 #elif CPUSTYLE_STM32F4XX
 
 	stm32f4xx_pll_initialize();
 	stm32f4xx_MCOx_test();
 	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
+
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
+	(void) RCC->APB1ENR;
+
+	#if WITHUSESAIPLL
+		stm32f4xx_pllsai_initialize();
+	#endif /* WITHUSESAIPLL */
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -5680,11 +5874,12 @@ sysinit_pll_cache_initialize(void)
 //	RCC->AHB4ENR |= RCC_AHB4ENR_D3SRAM1EN;
 //	(void) RCC->AHB4ENR;
 
-	SCB_InvalidateICache();
-	SCB_EnableICache();
+	//RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
+	//__DSB();
 
-	SCB_InvalidateDCache();
-	SCB_EnableDCache();
+	#if WITHUSESAIPLL
+		stm32h7xx_pllsai_initialize();
+	#endif /* WITHUSESAIPLL */
 
 #elif CPUSTYLE_STM32F7XX
 
@@ -5694,26 +5889,28 @@ sysinit_pll_cache_initialize(void)
 	stm32f7xx_pllsai_initialize();
 #endif /* WITHUSESAIPLL */
 
-	SCB_InvalidateICache();
-	SCB_EnableICache();
-
-	SCB_InvalidateDCache();
-	SCB_EnableDCache();
-
 	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
 	(void) RCC->APB1ENR;
-
-	arm_hardware_flush_all();
 
 #elif CPUSTYLE_STM32F30X
 
 	stm32f30x_pll_clock();
 	stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
 
+	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
+	(void) RCC->APB1ENR;
+	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
+
 #elif CPUSTYLE_STM32F0XX
 
 	stm32f0xx_pll_clock();
 	//stm32f0xx_hsi_clock();
+
+	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
+	(void) RCC->APB1ENR;
+	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
 
 #elif CPUSTYLE_STM32L0XX
 
@@ -5730,19 +5927,26 @@ sysinit_pll_cache_initialize(void)
 	//lowlevel_stm32l0xx_pll_clock();
 	lowlevel_stm32l0xx_hsi_clock();
 
+	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
+	(void) RCC->APB1ENR;
+	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
+
 #elif CPUSTYLE_ATSAM3S
 
 	// Disable Watchdog
 	WDT->WDT_MR = WDT_MR_WDDIS;
 	sam3s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
-	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
+	// только из SRAM
+	arm_cpu_atsam3s_pll_initialize();
 
 #elif CPUSTYLE_ATSAM4S
 
 	// Disable Watchdog
 	WDT->WDT_MR = WDT_MR_WDDIS;
 	sam4s_init_clock_12_RC12();	// программирует на работу от 12 МГц RC - для ускорения работы.
-	// инициализация PLL и программирование wait states (только из SRAM) делается позже.
+	// только из SRAM
+	arm_cpu_atsam4s_pll_initialize();
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -5766,6 +5970,8 @@ sysinit_pll_cache_initialize(void)
 		#error Unsupported CPU_FREQ value
 	#endif
 
+	usb_disable();
+
 #elif CPUSTYLE_AT91SAM9XE
 
 	// Disable Watchdog
@@ -5779,6 +5985,8 @@ sysinit_pll_cache_initialize(void)
 
 	//cp15_enable_i_cache();
 	__set_SCTLR(__get_SCTLR() | SCTLR_I_Msk);
+
+	usb_disable();
 
 #elif CPUSTYLE_R7S721
 
@@ -5811,25 +6019,13 @@ sysinit_pll_cache_initialize(void)
 		(void) CPG.SYSCR3;
 	}
 #endif /* WITHISBOOTLOADER */
-
-#if ! WITHISBOOTLOADER
-	// Перенесено в cpu_initialize
-	// Не получается разместить эти функции во FLASH
-	L1C_EnableCaches();
-	L1C_EnableBTAC();
-	//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
-	#if (__L2C_PRESENT == 1)
-	  // Enable Level 2 Cache
-	  L2C_Enable();
-	#endif
-#endif /* ! WITHISBOOTLOADER */
 	/* далее будет выполняться копирование data и инициализация bss - для нормальной работы RESET требуется без DATA CACHE */
 
 #elif CPUSTYLE_STM32MP1
 
 	#if WITHISBOOTLOADER
 		// PLL только в bootloader.
-		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
+		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
 		stm32mp1_pll_initialize();
 	#endif /* WITHISBOOTLOADER */
 
@@ -5838,94 +6034,34 @@ sysinit_pll_cache_initialize(void)
 
 #elif CPUSTYLE_XC7Z
 	#if WITHISBOOTLOADER
+
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		SCLR->FPGA_RST_CTRL	= 0xF;	// Assert FPGA top-level output resets.
+		SCLR->LVL_SHFTR_EN 	= 0;	// Disable the level shifters.
+
+		SCLR->APER_CLK_CTRL = 0;	// All AMBA Clock control disable
+
 		// PLL только в bootloader.
-		// посеольку программа выполняется из DDR RAM, пеерпрограммировать PLL нельзя.
-		//xc7z1_pll_initialize();
+		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
+
+		xc7z1_arm_pll_initialize();
+		xc7z1_ddr_pll_initialize();
+		xc7z1_io_pll_initialize();
+
+		ps7_init();
+
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		XDCFG->CTRL &= ~ (1uL << 29);	// PCFG_POR_CNT_4K
+		SCLR->APER_CLK_CTRL |= (0x01uL << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
+
 	#endif /* WITHISBOOTLOADER */
+
+	xc7z_hardware_initialize();
 
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
-
-#if CPUSTYLE_STM32F1XX
-
-	cpu_stm32f1xx_setmapr(0);	/* переключить отладочный интерфейс в SWD */
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     //включить тактирование power management
-	__DSB();
-	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_2V8 | PWR_CR_PVDE;
-
-#elif CPUSTYLE_STM32F4XX
-
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
-	__DSB();
-
-	#if WITHUSESAIPLL
-		stm32f4xx_pllsai_initialize();
-	#endif /* WITHUSESAIPLL */
-
-#elif CPUSTYLE_STM32H7XX
-
-	//RCC->APB1ENR |= RCC_APB1ENR_PWREN;	// включить тактирование power management
-	//__DSB();
-
-	#if WITHUSESAIPLL
-		stm32h7xx_pllsai_initialize();
-	#endif /* WITHUSESAIPLL */
-
-#elif CPUSTYLE_STM32F7XX
-
-#elif CPUSTYLE_STM32F0XX
-
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	(void) RCC->APB1ENR;
-	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
-
-#elif CPUSTYLE_STM32L0XX
-
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	(void) RCC->APB1ENR;
-	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
-
-#elif CPUSTYLE_STM32F30X
-
-	// Разрешить работу компаратора напряжения питания (нужно для разряда емкостей преобразователя питания дисплея)
-	RCC->APB1ENR |= RCC_APB1ENR_PWREN;     // включить тактирование power management
-	(void) RCC->APB1ENR;
-	PWR->CR = (PWR->CR & ~ PWR_CR_PLS) | PWR_CR_PLS_LEV3 | PWR_CR_PVDE;
-
-#elif CPUSTYLE_ATSAM3S
-	// только из SRAM
-	arm_cpu_atsam3s_pll_initialize();
-
-#elif CPUSTYLE_ATSAM4S
-	// только из SRAM
-	arm_cpu_atsam4s_pll_initialize();
-
-#elif CPUSTYLE_AT91SAM7S
-
-	usb_disable();
-
-#else
-	//#warning Undefined CPUSTYLE_XXX
-
-#endif
-
-#if ! CPUSTYLE_R7S721	// выше комментарий почему
-	#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-
-		L1C_EnableCaches();
-		L1C_EnableBTAC();
-		//__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
-		#if (__L2C_PRESENT == 1)
-		  // Enable Level 2 Cache
-		  L2C_Enable();
-		#endif
-	#endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
-#endif /*  ! CPUSTYLE_R7S721 */
 }
 
 
@@ -6689,7 +6825,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQspispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATMEGA_SPCR_WIDTH, ATMEGA_SPCR_TAPS, & value, 1);
 	const uint_fast8_t spcr = spcr_spsr [prei].spcr | (1U << SPE) | (1U << MSTR);
 	// С FRAM FM25L04 работает MODE3 и MODE0
 	spcr_val [spispeedindex][SPIC_MODE0] = (0U << CPOL) | (0U << CPHA) | spcr;
@@ -6705,7 +6841,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQspispeed), ATXMEGA_SPIBR_WIDTH, ATXMEGA_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, spispeed), ATXMEGA_SPIBR_WIDTH, ATXMEGA_SPIBR_TAPS, & value, 1);
 	const uint_fast8_t ctl = spi_ctl [prei] | SPI_MASTER_bm | SPI_ENABLE_bm;
 	// С FRAM FM25L04 работает MODE3 и MODE0
 	spi_ctl_val [spispeedindex][SPIC_MODE0] = SPI_MODE_0_gc | ctl;	// SPI MODE0,
@@ -6716,7 +6852,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 
 	const uint_fast32_t cr1baudrate = (prei * SPI_CR1_BR_0) & SPI_CR1_BR;
 	// When the SSM bit is set, the NSS pin input is replaced with the value from the SSI bit.
@@ -6748,7 +6884,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
 	unsigned value;	/* делителя нет, есть только прескалер - значение делителя не используется */
-	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), STM32F_SPIBR_WIDTH, STM32F_SPIBR_TAPS, & value, 1);
 
 	const uint_fast32_t cr1baudrate = (prei * SPI_CR1_BR_0) & SPI_CR1_BR;
 	const uint_fast32_t cr1bits = SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_MSTR | SPI_CR1_SPE | cr1baudrate;
@@ -8577,7 +8713,7 @@ void hardware_adc_initialize(void)
 
 
 	unsigned prescal;
-	calcdivider(calcdivround2(CPU_FREQADC_FREQ), ATSAM3S_ADC_PRESCAL_WIDTH, ATSAM3S_ADC_PRESCAL_TAPS, & prescal, 1);
+	calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATSAM3S_ADC_PRESCAL_WIDTH, ATSAM3S_ADC_PRESCAL_TAPS, & prescal, 1);
 	// Settling time to change offset and gain
 	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
     const unsigned int tracktime = ulmin(16, ulmax(1, (205 + (tADCnS / 2)) / (tADCnS == 0 ? 1 : tADCnS)));
@@ -8617,7 +8753,7 @@ void hardware_adc_initialize(void)
 	// Track and Hold Acquisition Time - 600 nS
 
 	unsigned prescal;
-	calcdivider(calcdivround2(CPU_FREQADC_FREQ), AT91SAM7_ADC_PRESCAL_WIDTH, AT91SAM7_ADC_PRESCAL_TAPS, & prescal, 1);
+	calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), AT91SAM7_ADC_PRESCAL_WIDTH, AT91SAM7_ADC_PRESCAL_TAPS, & prescal, 1);
 	const unsigned long tADCnS = (1000000000UL + (ADC_FREQ / 2)) / ADC_FREQ;	// Количество наносекунд в периоде частоты ADC_FREQ
     const unsigned int shtm = ulmin(15, ulmax(0, (600 + (tADCnS / 2)) / (tADCnS == 0 ? 1 : tADCnS)));
 
@@ -8649,7 +8785,7 @@ void hardware_adc_initialize(void)
 	// Использование автоматического расчёта предделителя
 	// Хотя, 128 (prei = 6) годится для всех частот - 8 МГц и выше. Ниже - уменьшаем.
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQADC_FREQ), ATMEGA_ADPS_WIDTH, ATMEGA_ADPS_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATMEGA_ADPS_WIDTH, ATMEGA_ADPS_TAPS, & value, 1);
 
 	#if CPUSTYLE_ATMEGA_XXX4
 
@@ -8669,7 +8805,7 @@ void hardware_adc_initialize(void)
 	// Использование автоматического расчёта предделителя
 	// Хотя, 128 (prei = 6) годится для всех частот - 8 МГц и выше. Ниже - уменьшаем.
 	////unsigned value;
-	////const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQADC_FREQ), ATXMEGA_ADPS_WIDTH, ATXMEGA_ADPS_TAPS, & value, 1);
+	////const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ADC_FREQ), ATXMEGA_ADPS_WIDTH, ATXMEGA_ADPS_TAPS, & value, 1);
 
 	////ADCA.PRESCALER = prei;
 	//DIDR0 = build_adc_mask();	// запретить цифровые входы на входах АЦП
@@ -8976,7 +9112,7 @@ void hardware_adc_initialize(void)
 	__DSB();
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(ADC_FREQ), 0, (8 | 4 | 2), & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_ADC_FREQ, ADC_FREQ), 0, (8 | 4 | 2), & value, 0);
 	// STM32F767
 	// STM32F429
 	static const uint_fast8_t presc [] =
@@ -9349,7 +9485,7 @@ void hardware_lfm_setupdatefreq(unsigned ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC0->TC_CHANNEL [0].TC_CMR =
 		(TC0->TC_CHANNEL [0].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
 	TC0->TC_CHANNEL [0].TC_RC = value;	// программирование полного периода
@@ -9358,7 +9494,7 @@ void hardware_lfm_setupdatefreq(unsigned ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC0.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC0.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
 	AT91C_BASE_TCB->TCB_TC0.TC_RC = value;	// программирование полного периода
@@ -9697,25 +9833,25 @@ hardware_calc_sound_params(
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	return calcdivider(calcdivround10(tonefreq * 2), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, pvalue, 1);
+	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_AT91SAM7S
 
-	return calcdivider(calcdivround10(tonefreq * 2), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, pvalue, 1);
+	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATMEGA328
 	//
 	// compare match после записи делителя отменяется на один цикл
 	// timer0 - 8 bit wide.
 	// генерация сигнала самоконтроля на PD6(OC0A) - выход делителя на 2
-	return calcdivider(calcdivround10(tonefreq * 2), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, pvalue, 1);
+	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATMEGA_TIMER0_WIDTH, ATMEGA_TIMER0_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATMEGA_XXX4
 	//
 	// timer2 - 8 bit wide.
 	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
 	// Пототму в расчёте используется tonefreq * 2
-	return calcdivider(calcdivround10(tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
+	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATMEGA128
 	// ATMega128/ATMega64
@@ -9724,7 +9860,7 @@ hardware_calc_sound_params(
 	// timer2 - 8 bit wide.
 	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
 	// Пототму в расчёте используется tonefreq * 2
-	return calcdivider(calcdivround10(tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
+	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATMEGA32
 
@@ -9732,18 +9868,18 @@ hardware_calc_sound_params(
 	// timer2 - 8 bit wide.
 	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
 	// Пототму в расчёте используется tonefreq * 2
-	return calcdivider(calcdivround10(tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
+	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATMEGA_TIMER2_WIDTH, ATMEGA_TIMER2_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_ATXMEGAXXXA4
 
-	return calcdivider(calcdivround10(tonefreq * 2), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, pvalue, 1);
+	return calcdivider(calcdivround2(10UL * CPU_FREQ, tonefreq * 2), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, pvalue, 1);
 
 #elif CPUSTYLE_STM32F
 
 	// for tim1 use apb2, for other apb1
 	// now - tim4
 	// TIM4 - 16-bit timer
-	return calcdivider(calcdivround10_pclk2(tonefreq), STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, pvalue, 1);
+	return calcdivider(calcdivround2(10UL * PCLK2_FREQ, tonefreq), STM32F_TIM4_TIMER_WIDTH, STM32F_TIM4_TIMER_TAPS, pvalue, 1);
 
 #else
 	#warning Undefined CPUSTYLE_XXX
@@ -9894,7 +10030,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC2->TC_CHANNEL [2].TC_CMR =
 		(TC0->TC_CHANNEL [2].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
 	TC2->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
@@ -9903,7 +10039,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC2.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
 	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// программирование полного периода
@@ -9912,7 +10048,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
 	// WGM12 = WGMn2 bit in timer 1
 	// (1U << WGM12) - mode4: CTC
 	TCCR1B = (1U << WGM12) | (prei + 1);	// прескалер
@@ -9922,7 +10058,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
 
 	// программирование таймера
 	TCC1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
@@ -9938,7 +10074,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(stm32mp1_get_timg1_freq(), ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -9951,7 +10087,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(PCLK1_TIMERS_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -9963,7 +10099,7 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_pclk2(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -9991,7 +10127,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQ, ticksfreq), ATSAM3S_TIMER_WIDTH, ATSAM3S_TIMER_TAPS, & value, 1);
 	TC0->TC_CHANNEL [2].TC_CMR =
 		(TC0->TC_CHANNEL [2].TC_CMR & ~ TC_CMR_TCCLKS_Msk) | tc_cmr_tcclks [prei];
 	TC0->TC_CHANNEL [2].TC_RC = value;	// программирование полного периода
@@ -10000,7 +10136,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQ, ticksfreq), AT91SAM7_TIMER_WIDTH, AT91SAM7_TIMER_TAPS, & value, 1);
 	AT91C_BASE_TCB->TCB_TC2.TC_CMR =
 		(AT91C_BASE_TCB->TCB_TC2.TC_CMR & ~ AT91C_TC_CLKS) | tc_cmr_clks [prei];
 	AT91C_BASE_TCB->TCB_TC2.TC_RC = value;	// программирование полного периода
@@ -10009,7 +10145,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQ, ticksfreq), ATMEGA_TIMER1_WIDTH, ATMEGA_TIMER1_TAPS, & value, 1);
 	// WGM12 = WGMn2 bit in timer 1
 	// (1U << WGM12) - mode4: CTC
 	TCCR1B = (1U << WGM12) | (prei + 1);	// прескалер
@@ -10019,7 +10155,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 
 	// Использование автоматического расчёта предделителя
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(CPU_FREQ, ticksfreq), ATXMEGA_TIMER_WIDTH, ATXMEGA_TIMER_TAPS, & value, 1);
 
 	// программирование таймера
 	TCC1.CCA = value;	// timer/counter C1, compare register A, see TCC1_CCA_vect
@@ -10035,7 +10171,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(PCLK1_TIMERS_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -10047,7 +10183,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround_pclk2(ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -10069,7 +10205,7 @@ void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale)
 	// TIM7 on APB1
 	// Use basic timer
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(scale * calcdivround2(stm32mp1_get_timg1_freq(), ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(scale * calcdivround2(BOARD_TIM3_FREQ, ticksfreq), STM32F_TIM3_TIMER_WIDTH, STM32F_TIM3_TIMER_TAPS, & value, 1);
 
 	TIM3->PSC = ((1UL << prei) - 1) & TIM_PSC_PSC;
 	TIM3->ARR = value;
@@ -10110,6 +10246,12 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_WIDBUS)) |
 		(use4bit != 0 ? 0x01 : 0x00) * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 		0;
+
+#elif CPUSTYLE_XC7Z
+
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL = (SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x02uL)) |
+				(use4bit != 0) * 0x02uL |	// Data_Transfer_Width_SD1_or_SD4
+				0;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -10233,18 +10375,45 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
 	// See RCC_PLLCFGR_PLLQ usage
-	const uint32_t SDMMCCLK = HSIFREQ;
+	const uint32_t SDMMCCLK = stm32mp1_sdmmc1_2_get_freq();
 	// Использование автоматического расчёта делителя
 	// Источником тактирования SDMMC сейчас установлен внутренний генератор 48 МГц
 	//const uint32_t stm32f4xx_48mhz = PLL_FREQ / stm32h7xx_pllq;
-	const unsigned value = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
+	const unsigned clkdiv = ulmin(calcdivround2(SDMMCCLK / 2, ticksfreq), 0x03FF);
 
 	//PRINTF(PSTR("hardware_sdhost_setspeed: stm32h7xx_pllq=%lu, SDMMCCLK=%lu, PLL_FREQ=%lu\n"), (unsigned long) stm32h7xx_pllq, SDMMCCLK, PLL_FREQ);
 	//PRINTF(PSTR("hardware_sdhost_setspeed: CLKCR_CLKDIV=%lu\n"), (unsigned long) value);
 
 	SDMMC1->CLKCR = (SDMMC1->CLKCR & ~ (SDMMC_CLKCR_CLKDIV_Msk)) |
-		((value << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
+		((clkdiv << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
 
+
+#elif CPUSTYLE_XC7Z
+
+	const unsigned long ref = xc7z1_get_sdio_freq();
+	unsigned divider = calcdivround2(ref / 2, ticksfreq);
+	divider = ulmin(divider, 255);
+	divider = ulmax(divider, 1);
+	PRINTF("hardware_sdhost_setspeed: ref=%lu, divider=%u\n", ref, divider);
+	if (ticksfreq <= 400000uL)
+	{
+		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
+			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
+			(0x80uL << 8) |	// SDCLK_Frequency_Select: 80h - base clock divided by 256
+			0;
+	}
+	else
+	{
+		SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
+			(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ (0x00FF00uL)) |
+			((uint_fast32_t) divider << 8) |	// SDCLK_Frequency_Select: 10h - base clock divided by 32
+			0;
+	}
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= 0x01;	// Internal_Clock_Enable
+	// Wait Internal_Clock_Stable
+	while ((SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & 0x02) == 0)
+		;
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -10374,6 +10543,60 @@ void hardware_sdhost_initialize(void)
 	// разрешить тактирование карты памяти
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
 
+#elif CPUSTYLE_XC7Z
+
+	const unsigned sdioix = 0;	// SD0
+
+//    SCLR->SDIO_RST_CTRL |= (0x11uL << sdioix);
+//    SCLR->SDIO_RST_CTRL &= ~ (0x11uL << sdioix);
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << (10 + sdioix));	// APER_CLK_CTRL.SDI0_CPU_1XCLKACT
+    //EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
+	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
+		((uint_fast32_t) SCLR_SDIO_CLK_CTRL_DIVISOR << 8) | // DIVISOR
+		(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+		(0x01uL << sdioix) | // CLKACT0 - SDIO 0 reference clock active
+		0;
+
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL =
+		(SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL & ~ ((0x0FuL << 16))) |
+		(0x0EuL << 16);	// Data_Timeout_Counter_Value
+
+	// SD_Bus_Power off
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			0 * (0x01uL << 8) |	// 0 - Power off
+			0;
+	// SD_Bus_Voltage_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x07uL << 9)) |
+			(0x07uL << 9) |	// 111b - 3.3 Flattop
+			0;
+	// SD_Bus_Power on
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			1 * (0x01uL << 8) |	// 1 - Power on
+			0;
+	// DMA_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x03uL << 3)) |
+			(0x00uL << 3) |	// SDMA select
+			0;
+
+	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора
+	ASSERT(((SD0->Vendor_Version_Number & 0xFFFF0000uL) >> 16) == 0x8901uL);
+
+	hardware_sdhost_setbuswidth(0);
+	hardware_sdhost_setspeed(400000uL);
+
+//	PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+//	PRINTF("SD0->CAPABILITIES.SDMA_Support=%d\n", (SD0->CAPABILITIES >> 22) & 0x01);
+//	PRINTF("SD0->CAPABILITIES.Voltage_Support_3_3_V=%d\n", (SD0->CAPABILITIES >> 24) & 0x01);
+
+	//arm_hardware_set_handler_system(SDIO0_IRQn, SDIO0_IRQHandler);
+
 #else
 
 	#error Wrong CPUSTYLE_xxx
@@ -10381,4 +10604,1134 @@ void hardware_sdhost_initialize(void)
 #endif
 }
 
+// в ответ на прерывание изменения состояния card detect
+void hardware_sdhost_detect(uint_fast8_t Card_Inserted)
+{
+#if CPUSTYLE_XC7Z
+
+	//	This bit indicates whether a card has been
+	//	inserted. Changing from 0 to 1 generates a Card
+	//	Insertion interrupt in the Normal Interrupt Status
+	//	register and changing from 1 to 0 generates a
+	//	Card Removal Interrupt in the Normal Interrupt
+	//	Status register. The Software Reset For All in the
+	//	Software Reset register shall not affect this bit. If
+	//	a Card is removed while its power is on and its
+	//	clock is oscillating, the HC shall clear SD Bus
+	//	Power in the Power Control register and SD Clock
+	//	Enable in the Clock control register. In addition
+	//	the HD should clear the HC by the Software Reset
+	//	For All in Software register. The card detect is
+	//	active regardless of the SD Bus Power.
+
+	return;
+
+	// SD_Bus_Power off
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			0 * (0x01uL << 8) |	// 0 - Power off
+			0;
+
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL |= (1uL << 24);	// Software_Reset_for_All
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+		PRINTF("SD0->CAPABILITIES=%08lX\n", SD0->CAPABILITIES);
+	SD0->TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL &= ~ (1uL << 24);	// Software_Reset_for_All
+
+	// SD_Bus_Voltage_Select
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x07uL << 9)) |
+			(0x07uL << 9) |	// 111b - 3.3 Flattop
+			0;
+	// SD_Bus_Power on
+	SD0->HOST_CTRL_BLOCK_GAP_CTRL =
+			(SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x01uL << 8)) |
+			1 * (0x01uL << 8) |	// 1 - Power on
+			0;
+
+
+    //hardware_sdhost_initialize();
+
+ #endif
+}
+
 #endif /* WITHSDHCHW */
+
+
+#if WITHUART1HW
+
+void
+hardware_uart1_set_speed(uint_fast32_t baudrate)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	#if HARDWARE_ARM_USEUSART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART0->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART0->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART0->US_MR &= ~ US_MR_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART1->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART1->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART1->US_MR &= ~ US_MR_OVER;
+		}
+
+	#elif HARDWARE_ARM_USEUART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART0->UART_BRGR = value;
+	#elif HARDWARE_ARM_USEUART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART1->UART_BRGR = value;
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+
+	#if HARDWARE_ARM_USEUSART0
+		AT91C_BASE_US0->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		AT91C_BASE_US1->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+		}
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_ATMEGA_XXX4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR0A |= (1U << U2X0);
+	else
+		UCSR0A &= ~ (1U << U2X0);
+
+	UBRR0 = value;	/* Значение получено уже уменьшенное на 1 */
+
+
+#elif CPUSTYLE_ATMEGA128
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR0A |= (1U << U2X0);
+	else
+		UCSR0A &= ~ (1U << U2X0);
+
+	UBRR0H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR0L = value & 0xff;
+
+#elif CPUSTYLE_ATMEGA
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSRA |= (1U << U2X);
+	else
+		UCSRA &= ~ (1U << U2X);
+
+	UBRRH = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRRL = value & 0xff;
+
+#elif CPUSTYLE_ATXMEGAXXXA4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	if (prei == 0)
+		USARTE0.CTRLB |= USART_CLK2X_bm;
+	else
+		USARTE0.CTRLB &= ~USART_CLK2X_bm;
+	// todo: проверить требование к порядку обращения к портам
+	USARTE0.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE0.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+
+#elif CPUSTYLE_STM32MP1
+
+	// usart1
+	USART1->BRR = calcdivround2(BOARD_USART1_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
+
+	// uart1 on apb2 up to 72/36 MHz
+
+	USART1->BRR = calcdivround2(BOARD_USART1_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYPE_TMS320F2833X
+
+	const unsigned long lspclk = CPU_FREQ / 4;
+	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
+
+	SCIAHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
+	SCIALBAUD = (brr - 1) >> 0;
+
+#elif CPUSTYLE_R7S721
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+
+	SCIF0.SCSMR = (SCIF0.SCSMR & ~ 0x03) |
+		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
+		0;
+	SCIF0.SCEMR = (SCIF0.SCEMR & ~ (0x80 | 0x01)) |
+		0 * 0x80 |						// BGDM
+		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
+		0;
+	SCIF0.SCBRR = value;	/* Bit rate register */
+
+#elif CPUSTYLE_XC7Z
+
+	  uint32_t r; // Temporary value variable
+	  r = UART0->CR;
+	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
+	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
+	  UART0->CR = r;
+	  const unsigned long sel_clk = xc7z1_get_uart_freq();
+	  const unsigned long bdiv = 8;
+	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
+	  UART0->BAUDDIV = bdiv - 1; // ("BDIV")
+	  UART0->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
+	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
+	  UART0->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+
+	  r = UART0->CR;
+	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
+	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
+	  UART0->CR = r;
+
+#else
+	#warning Undefined CPUSTYLE_XXX
+#endif
+
+}
+
+#endif /* WITHUART1HW */
+
+
+#if WITHUART2HW
+
+void
+hardware_uart2_set_speed(uint_fast32_t baudrate)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	#if HARDWARE_ARM_USEUSART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART0->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART0->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART0->US_MR &= ~ US_MR_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART1->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART1->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART1->US_MR &= ~ US_MR_OVER;
+		}
+
+	#elif HARDWARE_ARM_USEUART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART0->UART_BRGR = value;
+	#elif HARDWARE_ARM_USEUART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART1->UART_BRGR = value;
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+
+	#if HARDWARE_ARM_USEUSART0
+		AT91C_BASE_US0->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		AT91C_BASE_US1->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+		}
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_ATMEGA_XXX4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
+
+
+#elif CPUSTYLE_ATMEGA128
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1L = value & 0xff;
+
+#elif CPUSTYLE_ATMEGA
+
+	#error WITHUART2HW not supported with CPUSTYLE_ATMEGA
+
+#elif CPUSTYLE_ATXMEGAXXXA4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	if (prei == 0)
+		USARTE1.CTRLB |= USART_CLK2X_bm;
+	else
+		USARTE1.CTRLB &= ~USART_CLK2X_bm;
+	// todo: проверить требование к порядку обращения к портам
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+
+#elif CPUSTYLE_STM32MP1
+
+	// uart2
+	USART2->BRR = calcdivround2(BOARD_USART2_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
+
+	// uart2 on apb1
+
+	USART2->BRR = calcdivround2(BOARD_USART2_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYPE_TMS320F2833X
+
+	const unsigned long lspclk = CPU_FREQ / 4;
+	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
+
+	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
+	SCIBLBAUD = (brr - 1) >> 0;
+
+#elif CPUSTYLE_R7S721
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+
+	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
+		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
+		0;
+	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
+		0 * 0x80 |						// BGDM
+		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
+		0;
+	SCIF3.SCBRR = value;	/* Bit rate register */
+
+#elif CPUSTYLE_XC7Z
+
+	  uint32_t r; // Temporary value variable
+	  r = UART1->CR;
+	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
+	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
+	  UART1->CR = r;
+	  const unsigned long sel_clk = xc7z1_get_uart_freq();
+	  const unsigned long bdiv = 8;
+	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
+	  UART1->BAUDDIV = bdiv - 1; // ("BDIV")
+	  UART1->BAUDGEN = calcdivround2(sel_clk, baudrate * bdiv); // ("CD")
+	  // Baud Rate = 100Mhz / (124 * (6 + 1)) = 115200 bps
+	  UART1->CR |= (XUARTPS_CR_TXRST | XUARTPS_CR_RXRST); // TX & RX logic reset
+
+	  r = UART1->CR;
+	  r |= XUARTPS_CR_RX_EN | XUARTPS_CR_TX_EN; // Set TX & RX enabled
+	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
+	  UART1->CR = r;
+
+
+#else
+	#warning Undefined CPUSTYLE_XXX
+#endif
+
+}
+
+#endif /* WITHUART2HW */
+
+
+#if WITHUART4HW
+
+void
+hardware_uart4_set_speed(uint_fast32_t baudrate)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	#if HARDWARE_ARM_USEUSART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART0->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART0->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART0->US_MR &= ~ US_MR_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART1->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART1->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART1->US_MR &= ~ US_MR_OVER;
+		}
+
+	#elif HARDWARE_ARM_USEUART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART0->UART_BRGR = value;
+	#elif HARDWARE_ARM_USEUART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART1->UART_BRGR = value;
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+
+	#if HARDWARE_ARM_USEUSART0
+		AT91C_BASE_US0->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		AT91C_BASE_US1->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+		}
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_ATMEGA_XXX4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
+
+
+#elif CPUSTYLE_ATMEGA128
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1L = value & 0xff;
+
+#elif CPUSTYLE_ATMEGA
+
+	#error WITHUART2HW not supported with CPUSTYLE_ATMEGA
+
+#elif CPUSTYLE_ATXMEGAXXXA4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	if (prei == 0)
+		USARTE1.CTRLB |= USART_CLK2X_bm;
+	else
+		USARTE1.CTRLB &= ~USART_CLK2X_bm;
+	// todo: проверить требование к порядку обращения к портам
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+
+#elif CPUSTYLE_STM32MP1
+
+	// uart4
+	UART4->BRR = calcdivround2(BOARD_UART4_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
+
+	// uart4 on apb1
+
+	UART4->BRR = calcdivround2(BOARD_UART4_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYPE_TMS320F2833X
+
+	const unsigned long lspclk = CPU_FREQ / 4;
+	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
+
+	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
+	SCIBLBAUD = (brr - 1) >> 0;
+
+#elif CPUSTYLE_R7S721
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+
+	SCIF3.SCSMR = (SCIF3.SCSMR & ~ 0x03) |
+		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
+		0;
+	SCIF3.SCEMR = (SCIF3.SCEMR & ~ (0x80 | 0x01)) |
+		0 * 0x80 |						// BGDM
+		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
+		0;
+	SCIF3.SCBRR = value;	/* Bit rate register */
+
+#else
+	#warning Undefined CPUSTYLE_XXX
+#endif
+
+}
+
+#endif /* WITHUART4HW */
+
+
+#if WITHUART5HW
+
+void
+hardware_uart5_set_speed(uint_fast32_t baudrate)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	#if HARDWARE_ARM_USEUSART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART0->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART0->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART0->US_MR &= ~ US_MR_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART5
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART5->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART5->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART5->US_MR &= ~ US_MR_OVER;
+		}
+
+	#elif HARDWARE_ARM_USEUART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART0->UART_BRGR = value;
+	#elif HARDWARE_ARM_USEUART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART1->UART_BRGR = value;
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+
+	#if HARDWARE_ARM_USEUSART0
+		AT91C_BASE_US0->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART5
+		AT91C_BASE_US1->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+		}
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_ATMEGA_XXX4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
+
+
+#elif CPUSTYLE_ATMEGA128
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1L = value & 0xff;
+
+#elif CPUSTYLE_ATMEGA
+
+	#error WITHUART5HW not supported with CPUSTYLE_ATMEGA
+
+#elif CPUSTYLE_ATXMEGAXXXA4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	if (prei == 0)
+		USARTE1.CTRLB |= USART_CLK2X_bm;
+	else
+		USARTE1.CTRLB &= ~USART_CLK2X_bm;
+	// todo: проверить требование к порядку обращения к портам
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+
+#elif CPUSTYLE_STM32MP1
+
+	// uart5
+	UART5->BRR = calcdivround2(BOARD_UART5_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
+
+	// uart5 on apb1
+
+	USART5->BRR = calcdivround2(BOARD_UART5_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYPE_TMS320F2833X
+
+	const unsigned long lspclk = CPU_FREQ / 4;
+	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
+
+	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
+	SCIBLBAUD = (brr - 1) >> 0;
+
+#elif CPUSTYLE_R7S721
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+
+	SCIF4.SCSMR = (SCIF4.SCSMR & ~ 0x03) |
+		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
+		0;
+	SCIF4.SCEMR = (SCIF4.SCEMR & ~ (0x80 | 0x01)) |
+		0 * 0x80 |						// BGDM
+		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
+		0;
+	SCIF4.SCBRR = value;	/* Bit rate register */
+
+#else
+	#warning Undefined CPUSTYLE_XXX
+#endif
+
+}
+
+#endif /* WITHUART5HW */
+
+#if WITHUART7HW
+
+void
+hardware_uart7_set_speed(uint_fast32_t baudrate)
+{
+#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	#if HARDWARE_ARM_USEUSART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART0->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART0->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART0->US_MR &= ~ US_MR_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_USART_BRGR_WIDTH, ATSAM3S_USART_BRGR_TAPS, & value, 0);
+		USART1->US_BRGR = value;
+		if (prei == 0)
+		{
+			USART1->US_MR |= US_MR_OVER;
+		}
+		else
+		{
+			USART1->US_MR &= ~ US_MR_OVER;
+		}
+
+	#elif HARDWARE_ARM_USEUART0
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART0->UART_BRGR = value;
+	#elif HARDWARE_ARM_USEUART1
+		// Использование автоматического расчёта предделителя
+		unsigned value;
+		calcdivider(calcdivround2(CPU_FREQ, baudrate), ATSAM3S_UART_BRGR_WIDTH, ATSAM3S_UART_BRGR_TAPS, & value, 0);
+		UART1->UART_BRGR = value;
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_AT91SAM7S
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), AT91SAM7_USART_BRGR_WIDTH, AT91SAM7_USART_BRGR_TAPS, & value, 0);
+
+	#if HARDWARE_ARM_USEUSART0
+		AT91C_BASE_US0->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US0->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US0->US_MR &= ~ AT91C_US_OVER;
+		}
+	#elif HARDWARE_ARM_USEUSART1
+		AT91C_BASE_US1->US_BRGR = value;
+		if (prei == 0)
+		{
+			AT91C_BASE_US1->US_MR |= AT91C_US_OVER;
+		}
+		else
+		{
+			AT91C_BASE_US1->US_MR &= ~ AT91C_US_OVER;
+		}
+	#else	/* HARDWARE_ARM_USExxx */
+		#error Wrong HARDWARE_ARM_USExxx value
+	#endif
+
+#elif CPUSTYLE_ATMEGA_XXX4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1 = value;	/* Значение получено уже уменьшенное на 1 */
+
+
+#elif CPUSTYLE_ATMEGA128
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATMEGA_UBR_WIDTH, ATMEGA_UBR_TAPS, & value, 1);
+
+	if (prei == 0)
+		UCSR1A |= (1U << U2X1);
+	else
+		UCSR1A &= ~ (1U << U2X1);
+
+	UBRR1H = (value >> 8) & 0xff;	/* Значение получено уже уменьшенное на 1 */
+	UBRR1L = value & 0xff;
+
+#elif CPUSTYLE_ATMEGA
+
+	#error WITHUART2HW not supported with CPUSTYLE_ATMEGA
+
+#elif CPUSTYLE_ATXMEGAXXXA4
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, baudrate), ATXMEGA_UBR_WIDTH, ATXMEGA_UBR_TAPS, & value, 1);
+	if (prei == 0)
+		USARTE1.CTRLB |= USART_CLK2X_bm;
+	else
+		USARTE1.CTRLB &= ~USART_CLK2X_bm;
+	// todo: проверить требование к порядку обращения к портам
+	USARTE1.BAUDCTRLA = (value & 0xff);	/* Значение получено уже уменьшенное на 1 */
+	USARTE1.BAUDCTRLB = (ATXMEGA_UBR_BSEL << 4) | ((value >> 8) & 0x0f);
+
+#elif CPUSTYLE_STM32MP1
+
+	// uart7
+	UART7->BRR = calcdivround2(BOARD_UART7_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYLE_STM32F
+
+	// uart7 on apb1
+
+	USART7->BRR = calcdivround2(BOARD_UART7_FREQ, baudrate);		// младшие 4 бита - это дробная часть.
+
+#elif CPUSTYPE_TMS320F2833X
+
+	const unsigned long lspclk = CPU_FREQ / 4;
+	const unsigned long brr = (lspclk / 8) / baudrate;	// @ CPU_FREQ = 100 MHz, 9600 can not be programmed
+
+	SCIBHBAUD = (brr - 1) >> 8;		// write 8 bits, not 16
+	SCIBLBAUD = (brr - 1) >> 0;
+
+#elif CPUSTYLE_R7S721
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround_p1clock(baudrate), R7S721_SCIF_SCBRR_WIDTH, R7S721_SCIF_SCBRR_TAPS, & value, 1);
+
+	SCIF6.SCSMR = (SCIF6.SCSMR & ~ 0x03) |
+		scemr_scsmr [prei].scsmr |	// prescaler: 0: /1, 1: /4, 2: /16, 3: /64
+		0;
+	SCIF6.SCEMR = (SCIF6.SCEMR & ~ (0x80 | 0x01)) |
+		0 * 0x80 |						// BGDM
+		scemr_scsmr [prei].scemr |	// ABCS = 8/16 clocks per bit
+		0;
+	SCIF6.SCBRR = value;	/* Bit rate register */
+
+#else
+	#warning Undefined CPUSTYLE_XXX
+#endif
+
+}
+
+#endif /* WITHUART7HW */
+
+#if WITHTWIHW
+
+void hardware_twi_master_configure(void)
+{
+#if CPUSTYLE_ATMEGA
+
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 8, ATMEGA_TWBR_WIDTH, ATMEGA_TWBR_TAPS, & value, 0);
+
+	TWSR = prei; 	/* prescaler */
+	TWBR = value;
+	TWCR = (1U << TWEN);
+
+#elif CPUSTYLE_AT91SAM7S
+
+	AT91C_BASE_PMC->PMC_PCER = (1UL << AT91C_ID_TWI) | (1UL << AT91C_ID_PIOA);
+	//
+    // Reset the TWI
+    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_SWRST;
+    (void) AT91C_BASE_TWI->TWI_RHR;
+
+    // Set master mode
+    AT91C_BASE_TWI->TWI_CR = AT91C_TWI_MSEN;
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 3, AT91SAM7_TWI_WIDTH, AT91SAM7_TWI_TAPS, & value, 0);
+
+    AT91C_BASE_TWI->TWI_CWGR = (prei << 16) | (value << 8) | value;
+
+#elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
+
+	PMC->PMC_PCER0 = (1UL << ID_TWI0);	 // разрешить тактированние этого блока
+	//
+    // Reset the TWI
+    TWI0->TWI_CR = TWI_CR_SWRST;
+    (void) TWI0->TWI_RHR;
+
+    // Set master mode
+    TWI0->TWI_CR = TWI_CR_MSEN;
+	// Использование автоматического расчёта предделителя
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(CPU_FREQ, SCL_CLOCK * 2) - 4, ATSAM3S_TWI_WIDTH, ATSAM3S_TWI_TAPS, & value, 1);
+	//prei = 0;
+	//value = 70;
+    TWI0->TWI_CWGR = TWI_CWGR_CKDIV(prei) | TWI_CWGR_CHDIV(value) | TWI_CWGR_CLDIV(value);
+
+#elif CPUSTYLE_ATXMEGA
+
+	TARGET_TWI.MASTER.BAUD = ((CPU_FREQ / (2 * SCL_CLOCK)) - 5);
+	TARGET_TWI.MASTER.CTRLA = TWI_MASTER_ENABLE_bm;
+  	//TARGET_TWI.MASTER.CTRLB = TWI_MASTER_SMEN_bm;
+	TARGET_TWI.MASTER.STATUS = TWI_MASTER_BUSSTATE_IDLE_gc;
+
+#elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
+
+	//конфигурирую непосредствено І2С
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	(void) RCC->APB1ENR;
+
+	I2C1->CR1 |= I2C_CR1_SWRST;
+	I2C1->CR1 &= ~ I2C_CR1_SWRST;
+	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
+
+/*
+	The FREQ bits must be configured with the APB clock frequency value (I2C peripheral
+	connected to APB). The FREQ field is used by the peripheral to generate data setup and
+	hold times compliant with the I2C specifications. The minimum allowed frequency is 2 MHz,
+	the maximum frequency is limited by the maximum APB frequency (42 MHz) and an intrinsic
+	limitation of 46 MHz.
+
+*/
+
+	I2C1->CR2 = (I2C1->CR2 & ~ (I2C_CR2_FREQ)) |
+		((I2C_CR2_FREQ_0 * 42) & I2C_CR2_FREQ) |
+		0;
+	// (1000 ns / 125 ns = 8 + 1)
+	// (1000 ns / 22 ns = 45 + 1)
+	I2C1->TRISE = 46; //время установления логического уровня в количестве цыклах тактового генератора I2C
+
+	I2C1->CCR = (I2C1->CCR & ~ (I2C_CCR_CCR | I2C_CCR_FS | I2C_CCR_DUTY)) |
+		(calcdivround2(BOARD_I2C_FREQ, SCL_CLOCK * 25) & I2C_CCR_CCR) |	// Делитель для получения 10 МГц (400 кHz * 25)
+	#if SCL_CLOCK == 400000UL
+		I2C_CCR_FS |
+		I2C_CCR_DUTY | // T high = 9 * CCR * TPCLK1, T low = 16 * CCR * TPCLK1: full cycle = 25 * CCR * TPCLK1
+	#endif /* SCL_CLOCK == 400000UL */
+		0;
+
+	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // включаю тактирование переферии І2С
+
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
+
+	//конфигурирую непосредствено І2С
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	(void) RCC->APB1ENR;
+    // set I2C1 clock to PCLCK (72/64/36 MHz)
+    RCC->CFGR3 |= RCC_CFGR3_I2C1SW;		// PCLK1_FREQ or PCLK2_FREQ (PCLK of this BUS, PCLK1) selected as I2C spi clock source
+
+
+	I2C1->CR1 &= ~ I2C_CR1_PE; // все конфигурации необходимо проводить только со сброшеным битом PE
+
+	//I2C1->CR2 = (I2C1->CR2 & ~I2C_CR2_FREQ) | I2C_CR2_FREQ_0 * ( PCLK2_FREQ / SCL_CLOCK); // частота тактирования модуля I2C1 до делителя равна FREQ_IN
+	//I2C1->CR2 = I2C_CR2_FREQ_0 * 4; //255; // |= I2C_CR2_FREQ;	// debug
+
+	I2C1->TIMINGR = (I2C1->TIMINGR & ~ I2C_TIMINGR_PRESC) | (4UL << 28);
+
+	//I2C1->CCR &= ~I2C_CCR_CCR;
+	//I2C1->CCR |= (1000/(2*40000)) * ((I2C1->CR2&I2C_CR2_FREQ) / I2C_CR2_FREQ_0); // конечный коэффциент деления
+	////I2C1->CCR = 40; //36; // / 4;	//|= I2C_CCR_CCR;	// debug
+	//I2C1->CCR |= I2C_CCR_FS;
+
+	//I2C1->TRISE = 9; //время установления логического уровня в количестве циклов тактового генератора I2C
+
+    // disable analog filter
+    I2C1->CR1 |= I2C_CR1_ANFOFF;
+    // from stm32f3_i2c_calc.py (400KHz, 125ns rise/fall time, no AF/DFN)
+    const uint_fast8_t sdadel = 7;
+    const uint_fast8_t scldel = 5;
+    I2C1->TIMINGR = 0x30000C19 | ((scldel & 0x0F) << 20) | ((sdadel & 0x0F) << 16);
+
+	I2C1->CR1 |= I2C_CR1_PE; // включаю тактирование периферии І2С
+
+#elif CPUSTYLE_STM32F7XX
+	//конфигурирую непосредствено І2С
+	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
+	(void) RCC->APB1ENR;
+
+	// Disable the I2Cx peripheral
+	I2C1->CR1 &= ~ I2C_CR1_PE;
+	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
+		;
+
+	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
+	I2C1->TIMINGR =
+		//0x00912732 |		// Discovery BSP code from ST examples
+		0x00913742 |		// подобрано для 400 кГц
+		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
+		0;
+
+
+
+	// Use 7-bit addresses
+	I2C1->CR2 &= ~ I2C_CR2_ADD10;
+
+	// Enable auto-end mode
+	//I2C1->CR2 |= I2C_CR2_AUTOEND;
+
+	// Disable the analog filter
+	I2C1->CR1 |= I2C_CR1_ANFOFF;
+
+	// Disable NOSTRETCH
+	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
+
+	// Enable the I2Cx peripheral
+	I2C1->CR1 |= I2C_CR1_PE;
+
+#elif CPUSTYLE_STM32H7XX
+	//конфигурирую непосредствено І2С
+	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
+	(void) RCC->APB1LENR;
+
+	// Disable the I2Cx peripheral
+	I2C1->CR1 &= ~ I2C_CR1_PE;
+	while ((I2C1->CR1 & I2C_CR1_PE) != 0)
+		;
+
+	// Set timings. Asuming I2CCLK is 50 MHz (APB1 clock source)
+	I2C1->TIMINGR =
+		//0x00912732 |		// Discovery BSP code from ST examples
+		0x00913742 |		// подобрано для 400 кГц
+		4 * (1uL << I2C_TIMINGR_PRESC_Pos) |			// prescaler, was: 0
+		0;
+
+
+
+	// Use 7-bit addresses
+	I2C1->CR2 &= ~ I2C_CR2_ADD10;
+
+	// Enable auto-end mode
+	//I2C1->CR2 |= I2C_CR2_AUTOEND;
+
+	// Disable the analog filter
+	I2C1->CR1 |= I2C_CR1_ANFOFF;
+
+	// Disable NOSTRETCH
+	I2C1->CR1 |= I2C_CR1_NOSTRETCH;
+
+	// Enable the I2Cx peripheral
+	I2C1->CR1 |= I2C_CR1_PE;
+
+#else
+	#warning Undefined CPUSTYLE_XXX
+#endif
+}
+
+#endif /* WITHTWIHW */
+

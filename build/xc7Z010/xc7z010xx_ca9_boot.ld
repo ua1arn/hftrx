@@ -5,10 +5,10 @@
 MEMORY
 {
   FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
-  OCM (rwx)	: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
-  TTB (rwx)  	: ORIGIN = 0xFFFF0000, LENGTH = 16k		/* first 16 kB OCM3 for TTB */
-  OCM3 (rwx)	: ORIGIN = 0xFFFF4000, LENGTH = 47k		/* OCM3 - on-chip memory 64k - 16k - 1k for TTB */
-  DDR3 (rwx) 	: ORIGIN = 0x00100000, LENGTH = 191M 	/* lower 64MB reserved for image, DDR3 single chip NT5CC128M16IP-DI */
+  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
+  TTB (rwx)  	: ORIGIN = 0xFFFF0000, LENGTH = 16k		/* last 16 kB OCM3 for TTB */
+  OCM3 (rwx)	: ORIGIN = 0xFFFF4000, LENGTH = 0x00BE00		/* OCM3 - on-chip memory 64k - 16k - 512 for TTB */
+  DDR3 (rwx) 	: ORIGIN = 0x01100000, LENGTH = 16M 	/* lower 16MB reserved for image */
 }
 
 /* Library configurations */
@@ -59,7 +59,6 @@ SECTIONS
 
 		KEEP(*(.text*))
 		KEEP(*(.itcm*))
-		. = ALIGN(4);
 	} > OCM
 
 	.ARM.extab :
@@ -166,7 +165,7 @@ SECTIONS
 
 	} > OCM
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
 		. = ALIGN(32);
@@ -174,42 +173,42 @@ SECTIONS
 		KEEP(*(COMMON))
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > OCM
+	} > OCM3
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
 		KEEP(*(.noinit*))
 		. = ALIGN(32);
-	} > OCM
+	} > OCM3
 
-	.vram :
+	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
 		KEEP(*(.framebuff*))
 		. = ALIGN(64);
-	} > OCM
+	} > DDR3
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
 		__end__ = .;
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > OCM
+	} > OCM3
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (COPY):
+	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
-	} > OCM
+	} > OCM3
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(OCM) + LENGTH(OCM);
+	__StackTop = ORIGIN(OCM3) + LENGTH(OCM3);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 

@@ -177,7 +177,7 @@ SECTIONS
 
 	} > RAM
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
 		. = ALIGN(32);
@@ -187,21 +187,21 @@ SECTIONS
 		__bss_end__ = .;
 	} > RAM
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
 		KEEP(*(.noinit*))
 		. = ALIGN(32);
 	} > RAM
 
-	.vram :
+	.vram (NOLOAD):
 	{
 		. = ALIGN(64);
 		KEEP(*(.framebuff*))
 		. = ALIGN(64);
 	} > DDR3
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
 		__end__ = .;
@@ -213,7 +213,7 @@ SECTIONS
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (COPY):
+	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
 	} > RAM

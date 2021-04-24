@@ -188,7 +188,7 @@ SECTIONS
 	. = __etext2 + __data2_end__ - __data2_start__;
 
 
-	.bss :
+	.bss (NOLOAD):
 	{
 		__bss_start__ = .;
 		. = ALIGN(32);
@@ -198,7 +198,7 @@ SECTIONS
 		__bss_end__ = .;
 	} > RAM
 
-	.noinit :
+	.noinit (NOLOAD):
 	{
 		. = ALIGN(64);
 		KEEP(*(.noinit*))
@@ -207,7 +207,7 @@ SECTIONS
 		. = ALIGN(64);
 	} > RAM
 
-	.heap (COPY):
+	.heap (NOLOAD):
 	{
 		__HeapBase = .;
 		__end__ = .;
@@ -219,7 +219,7 @@ SECTIONS
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
 	 * values to stack symbols later */
-	.stack_dummy (COPY):
+	.stack_dummy (NOLOAD):
 	{
 		KEEP(*(.stack*))
 	} > RAM

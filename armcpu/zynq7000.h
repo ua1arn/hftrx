@@ -131,264 +131,449 @@ typedef enum IRQn
 
 /** @name Register Map
  *
+ * UART Controller (UART)
  * Registers of the UART.
  * @{
  */
-typedef struct
-{
-    volatile uint32_t CR;            /**< Control Register */
-    volatile uint32_t MR;            /**< Mode Register */
-    volatile uint32_t IER;           /**< Interrupt Enable */
-    volatile uint32_t IDR;           /**< Interrupt Disable */
-    volatile uint32_t IMR;           /**< Interrupt Mask */
-    volatile uint32_t ISR;           /**< Interrupt Status */
-    volatile uint32_t BAUDGEN;       /**< Baud Rate Generator "CD" */
-    volatile uint32_t RXTOUT;        /**< RX Timeout */
-    volatile uint32_t RXWM;          /**< RX FIFO Trigger Level */
-    volatile uint32_t MODEMCR;       /**< Modem Control */
-    volatile uint32_t MODEMSR;       /**< Modem Status */
-    volatile uint32_t SR;            /**< Channel Status */
-    volatile uint32_t FIFO;          /**< FIFO */
-    volatile uint32_t BAUDDIV;       /**< Baud Rate Divider "DIV" */
-    volatile uint32_t FLOWDEL;       /**< Flow Delay */
-    volatile uint32_t RESERVED1;
-    volatile uint32_t RESERVED2;
-    volatile uint32_t TXWM;            /* TX FIFO Trigger Level */
-} UART_Registers;
+typedef struct xuartps_regs {
+    __IO uint32_t CR;            /**< Control Register */
+    __IO uint32_t MR;            /**< Mode Register */
+    __IO uint32_t IER;           /**< Interrupt Enable */
+    __IO uint32_t IDR;           /**< Interrupt Disable */
+    __IO uint32_t IMR;           /**< Interrupt Mask */
+    __IO uint32_t ISR;           /**< Interrupt Status */
+    __IO uint32_t BAUDGEN;       /**< Baud Rate Generator "CD" */
+    __IO uint32_t RXTOUT;        /**< RX Timeout */
+    __IO uint32_t RXWM;          /**< RX FIFO Trigger Level */
+    __IO uint32_t MODEMCR;       /**< Modem Control */
+    __IO uint32_t MODEMSR;       /**< Modem Status */
+    __IO uint32_t SR;            /**< Channel Status */
+    __IO uint32_t FIFO;          /**< FIFO */
+    __IO uint32_t BAUDDIV;       /**< Baud Rate Divider "DIV" */
+    __IO uint32_t FLOWDEL;       /**< Flow Delay */
+    uint32_t RESERVED1;
+    uint32_t RESERVED2;
+    __IO uint32_t TXWM;            /* TX FIFO Trigger Level */
+} XUARTPS_Registers;
+
+#define XUARTPS_CR_TXRST	0x00000002uL  /**< TX logic reset */
+#define XUARTPS_CR_RXRST	0x00000001uL  /**< RX logic reset */
+
+#define XUARTPS_MR_CHMODE_NORM		0x00000000uL /**< Normal mode */
+#define XUARTPS_MR_STOPMODE_1_BIT	0x00000000uL /**< 1 stop bit */
+#define XUARTPS_MR_PARITY_NONE		0x00000020uL /**< No parity mode */
+#define XUARTPS_MR_CHARLEN_8_BIT	0x00000000uL /**< 8 bits data */
+#define XUARTPS_MR_CLKSEL			0x00000001uL /**< Input clock selection */
+
+#define XUARTPS_SR_TNFUL	0x00004000uL /**< TX FIFO Nearly Full Status */
+#define XUARTPS_SR_TACTIVE	0x00000800uL /**< TX active */
+#define XUARTPS_SR_RXEMPTY	0x00000002uL /**< RX FIFO empty */
+
+#define XUARTPS_CR_TX_DIS	0x00000020uL  /**< TX disabled. */
+#define XUARTPS_CR_TX_EN	0x00000010uL  /**< TX enabled */
+#define XUARTPS_CR_RX_DIS	0x00000008uL  /**< RX disabled. */
+#define XUARTPS_CR_RX_EN	0x00000004uL  /**< RX enabled */
 
 /* system watchdog timer */
 typedef struct swdt_regs {
-	volatile uint32_t MODE;
-	volatile uint32_t CONTROL;
-	volatile uint32_t RESTART;
-	volatile uint32_t STATUS;
+	__IO uint32_t MODE;
+	__IO uint32_t CONTROL;
+	__IO uint32_t RESTART;
+	__IO uint32_t STATUS;
 } SWDT_Registers;
 
 
 /* SLCR registers */
 typedef struct slcr_regs {
-	volatile uint32_t SCL;                             // Secure Configuration Lock
-	volatile uint32_t SLCR_LOCK;                       // SLCR Write Protection Lock
-	volatile uint32_t SLCR_UNLOCK;                     // SLCR Write Protection Unlock
-	volatile uint32_t SLCR_LOCKSTA;                    // SLCR Write Protection Status
+	__IO uint32_t SCL;                             // Secure Configuration Lock
+	__IO uint32_t SLCR_LOCK;                       // SLCR Write Protection Lock
+	__IO uint32_t SLCR_UNLOCK;                     // SLCR Write Protection Unlock
+	__IO uint32_t SLCR_LOCKSTA;                    // SLCR Write Protection Status
     uint32_t reserved0[60];
-    volatile uint32_t ARM_PLL_CTRL;                    // ARM PLL Control
-    volatile uint32_t DDR_PLL_CTRL;                    // DDR PLL Control
-    volatile  uint32_t IO_PLL_CTRL;                     // IO PLL Control
-    volatile uint32_t PLL_STATUS;                      // PLL Status
-    volatile uint32_t ARM_PLL_CFG;                     // ARM PLL Configuration
-    volatile uint32_t DDR_PLL_CFG;                     // DDR PLL Configuration
-    volatile uint32_t IO_PLL_CFG;                      // IO PLL Configuration
+    __IO uint32_t ARM_PLL_CTRL;                    // ARM PLL Control
+    __IO uint32_t DDR_PLL_CTRL;                    // DDR PLL Control
+    __IO  uint32_t IO_PLL_CTRL;                     // IO PLL Control
+    __IO uint32_t PLL_STATUS;                      // PLL Status
+    __IO uint32_t ARM_PLL_CFG;                     // ARM PLL Configuration
+    __IO uint32_t DDR_PLL_CFG;                     // DDR PLL Configuration
+    __IO uint32_t IO_PLL_CFG;                      // IO PLL Configuration
     uint32_t reserved1[1];
-    volatile uint32_t ARM_CLK_CTRL;                    // CPU Clock Control
-    volatile uint32_t DDR_CLK_CTRL;                    // DDR Clock Control
-    volatile uint32_t DCI_CLK_CTRL;                    // DCI clock control
-    volatile uint32_t APER_CLK_CTRL;                   // AMBA Peripheral Clock Control
-    volatile uint32_t USB0_CLK_CTRL;                   // USB 0 ULPI Clock Control
-    volatile uint32_t USB1_CLK_CTRL;                   // USB 1 ULPI Clock Control
-    volatile uint32_t GEM0_RCLK_CTRL;                  // GigE 0 Rx Clock and Rx Signals Select
-    volatile uint32_t GEM1_RCLK_CTRL;                  // GigE 1 Rx Clock and Rx Signals Select
-    volatile uint32_t GEM0_CLK_CTRL;                   // GigE 0 Ref Clock Control
-    volatile uint32_t GEM1_CLK_CTRL;                   // GigE 1 Ref Clock Control
-    volatile uint32_t SMC_CLK_CTRL;                    // SMC Ref Clock Control
-    volatile uint32_t LQSPI_CLK_CTRL;                  // Quad SPI Ref Clock Control
-    volatile uint32_t SDIO_CLK_CTRL;                   // SDIO Ref Clock Control
-    volatile uint32_t UART_CLK_CTRL;                   // UART Ref Clock Control
-    volatile uint32_t SPI_CLK_CTRL;                    // SPI Ref Clock Control
-    volatile uint32_t CAN_CLK_CTRL;                    // CAN Ref Clock Control
-    volatile uint32_t CAN_MIOCLK_CTRL;                 // CAN MIO Clock Control
-    volatile uint32_t DBG_CLK_CTRL;                    // SoC Debug Clock Control
-    volatile uint32_t PCAP_CLK_CTRL;                   // PCAP Clock Control
-    volatile uint32_t TOPSW_CLK_CTRL;                  // Central Interconnect Clock Control
-    volatile uint32_t FPGA0_CLK_CTRL;                  // PL Clock 0 Output control
-    volatile uint32_t FPGA0_THR_CTRL;                  // PL Clock 0 Throttle control
-    volatile uint32_t FPGA0_THR_CNT;                   // PL Clock 0 Throttle Count control
-    volatile uint32_t FPGA0_THR_STA;                   // PL Clock 0 Throttle Status read
-    volatile uint32_t FPGA1_CLK_CTRL;                  // PL Clock 1 Output control
-    volatile uint32_t FPGA1_THR_CTRL;                  // PL Clock 1 Throttle control
-    volatile uint32_t FPGA1_THR_CNT;                   // PL Clock 1 Throttle Count
-    volatile uint32_t FPGA1_THR_STA;                   // PL Clock 1 Throttle Status control
-    volatile uint32_t FPGA2_CLK_CTRL;                  // PL Clock 2 output control
-    volatile uint32_t FPGA2_THR_CTRL;                  // PL Clock 2 Throttle Control
-    volatile uint32_t FPGA2_THR_CNT;                   // PL Clock 2 Throttle Count
-    volatile uint32_t FPGA2_THR_STA;                   // PL Clock 2 Throttle Status
-    volatile uint32_t FPGA3_CLK_CTRL;                  // PL Clock 3 output control
-    volatile uint32_t FPGA3_THR_CTRL;                  // PL Clock 3 Throttle Control
-    volatile uint32_t FPGA3_THR_CNT;                   // PL Clock 3 Throttle Count
-    volatile uint32_t FPGA3_THR_STA;                   // PL Clock 3 Throttle Status
+    __IO uint32_t ARM_CLK_CTRL;                    // CPU Clock Control
+    __IO uint32_t DDR_CLK_CTRL;                    // DDR Clock Control
+    __IO uint32_t DCI_CLK_CTRL;                    // DCI clock control
+    __IO uint32_t APER_CLK_CTRL;                   // AMBA Peripheral Clock Control
+    __IO uint32_t USB0_CLK_CTRL;                   // USB 0 ULPI Clock Control
+    __IO uint32_t USB1_CLK_CTRL;                   // USB 1 ULPI Clock Control
+    __IO uint32_t GEM0_RCLK_CTRL;                  // GigE 0 Rx Clock and Rx Signals Select
+    __IO uint32_t GEM1_RCLK_CTRL;                  // GigE 1 Rx Clock and Rx Signals Select
+    __IO uint32_t GEM0_CLK_CTRL;                   // GigE 0 Ref Clock Control
+    __IO uint32_t GEM1_CLK_CTRL;                   // GigE 1 Ref Clock Control
+    __IO uint32_t SMC_CLK_CTRL;                    // SMC Ref Clock Control
+    __IO uint32_t LQSPI_CLK_CTRL;                  // Quad SPI Ref Clock Control
+    __IO uint32_t SDIO_CLK_CTRL;                   // SDIO Ref Clock Control
+    __IO uint32_t UART_CLK_CTRL;                   // UART Ref Clock Control
+    __IO uint32_t SPI_CLK_CTRL;                    // SPI Ref Clock Control
+    __IO uint32_t CAN_CLK_CTRL;                    // CAN Ref Clock Control
+    __IO uint32_t CAN_MIOCLK_CTRL;                 // CAN MIO Clock Control
+    __IO uint32_t DBG_CLK_CTRL;                    // SoC Debug Clock Control
+    __IO uint32_t PCAP_CLK_CTRL;                   // PCAP Clock Control
+    __IO uint32_t TOPSW_CLK_CTRL;                  // Central Interconnect Clock Control
+    __IO uint32_t FPGA0_CLK_CTRL;                  // PL Clock 0 Output control
+    __IO uint32_t FPGA0_THR_CTRL;                  // PL Clock 0 Throttle control
+    __IO uint32_t FPGA0_THR_CNT;                   // PL Clock 0 Throttle Count control
+    __IO uint32_t FPGA0_THR_STA;                   // PL Clock 0 Throttle Status read
+    __IO uint32_t FPGA1_CLK_CTRL;                  // PL Clock 1 Output control
+    __IO uint32_t FPGA1_THR_CTRL;                  // PL Clock 1 Throttle control
+    __IO uint32_t FPGA1_THR_CNT;                   // PL Clock 1 Throttle Count
+    __IO uint32_t FPGA1_THR_STA;                   // PL Clock 1 Throttle Status control
+    __IO uint32_t FPGA2_CLK_CTRL;                  // PL Clock 2 output control
+    __IO uint32_t FPGA2_THR_CTRL;                  // PL Clock 2 Throttle Control
+    __IO uint32_t FPGA2_THR_CNT;                   // PL Clock 2 Throttle Count
+    __IO uint32_t FPGA2_THR_STA;                   // PL Clock 2 Throttle Status
+    __IO uint32_t FPGA3_CLK_CTRL;                  // PL Clock 3 output control
+    __IO uint32_t FPGA3_THR_CTRL;                  // PL Clock 3 Throttle Control
+    __IO uint32_t FPGA3_THR_CNT;                   // PL Clock 3 Throttle Count
+    __IO uint32_t FPGA3_THR_STA;                   // PL Clock 3 Throttle Status
     uint32_t reserved2[5];
-    volatile uint32_t CLK_621_TRUE;                    // CPU Clock Ratio Mode select
+    __IO uint32_t CLK_621_TRUE;                    // CPU Clock Ratio Mode select
     uint32_t reserved3[14];
-    volatile uint32_t PSS_RST_CTRL;                    // PS Software Reset Control
-    volatile uint32_t DDR_RST_CTRL;                    // DDR Software Reset Control
-    volatile uint32_t TOPSW_RST_CTRL;                  // Central Interconnect Reset Control
-    volatile uint32_t DMAC_RST_CTRL;                   // DMAC Software Reset Control
-    volatile uint32_t USB_RST_CTRL;                    // USB Software Reset Control
-    volatile uint32_t GEM_RST_CTRL;                    // Gigabit Ethernet SW Reset Control
-    volatile uint32_t SDIO_RST_CTRL;                   // SDIO Software Reset Control
-    volatile uint32_t SPI_RST_CTRL;                    // SPI Software Reset Control
-    volatile uint32_t CAN_RST_CTRL;                    // CAN Software Reset Control
-    volatile uint32_t I2C_RST_CTRL;                    // I2C Software Reset Control
-    volatile uint32_t UART_RST_CTRL;                   // UART Software Reset Control
-    volatile uint32_t GPIO_RST_CTRL;                   // GPIO Software Reset Control
-    volatile uint32_t LQSPI_RST_CTRL;                  // Quad SPI Software Reset Control
-    volatile uint32_t SMC_RST_CTRL;                    // SMC Software Reset Control
-    volatile uint32_t OCM_RST_CTRL;                    // OCM Software Reset Control
+    __IO uint32_t PSS_RST_CTRL;                    // PS Software Reset Control
+    __IO uint32_t DDR_RST_CTRL;                    // DDR Software Reset Control
+    __IO uint32_t TOPSW_RST_CTRL;                  // Central Interconnect Reset Control
+    __IO uint32_t DMAC_RST_CTRL;                   // DMAC Software Reset Control
+    __IO uint32_t USB_RST_CTRL;                    // USB Software Reset Control
+    __IO uint32_t GEM_RST_CTRL;                    // Gigabit Ethernet SW Reset Control
+    __IO uint32_t SDIO_RST_CTRL;                   // SDIO Software Reset Control
+    __IO uint32_t SPI_RST_CTRL;                    // SPI Software Reset Control
+    __IO uint32_t CAN_RST_CTRL;                    // CAN Software Reset Control
+    __IO uint32_t I2C_RST_CTRL;                    // I2C Software Reset Control
+    __IO uint32_t UART_RST_CTRL;                   // UART Software Reset Control
+    __IO uint32_t GPIO_RST_CTRL;                   // GPIO Software Reset Control
+    __IO uint32_t LQSPI_RST_CTRL;                  // Quad SPI Software Reset Control
+    __IO uint32_t SMC_RST_CTRL;                    // SMC Software Reset Control
+    __IO uint32_t OCM_RST_CTRL;                    // OCM Software Reset Control
     uint32_t reserved4[1];
-    volatile uint32_t FPGA_RST_CTRL;                   // FPGA Software Reset Control
-    volatile uint32_t A9_CPU_RST_CTRL;                 // CPU Reset and Clock control
+    __IO uint32_t FPGA_RST_CTRL;                   // FPGA Software Reset Control
+    __IO uint32_t A9_CPU_RST_CTRL;                 // CPU Reset and Clock control
     uint32_t reserved5[1];
-    volatile uint32_t RS_AWDT_CTRL;                    // Watchdog Timer Reset Control
+    __IO uint32_t RS_AWDT_CTRL;                    // Watchdog Timer Reset Control
     uint32_t reserved6[2];
-    volatile uint32_t REBOOT_STATUS;                   // Reboot Status, persistent
-    volatile uint32_t BOOT_MODE;                       // Boot Mode Strapping Pins
+    __IO uint32_t REBOOT_STATUS;                   // Reboot Status, persistent
+    __IO uint32_t BOOT_MODE;                       // Boot Mode Strapping Pins
     uint32_t reserved7[40];
-    volatile uint32_t APU_CTRL;                        // APU Control
-    volatile uint32_t WDT_CLK_SEL;                     // SWDT clock source select
+    __IO uint32_t APU_CTRL;                        // APU Control
+    __IO uint32_t WDT_CLK_SEL;                     // SWDT clock source select
     uint32_t reserved8[78];
-    volatile uint32_t TZ_DMA_NS;                       // DMAC TrustZone Config
-    volatile uint32_t TZ_DMA_IRQ_NS;                   // DMAC TrustZone Config for Interrupts
-    volatile uint32_t TZ_DMA_PERIPH_NS;                // DMAC TrustZone Config for Peripherals
+    __IO uint32_t TZ_DMA_NS;                       // DMAC TrustZone Config
+    __IO uint32_t TZ_DMA_IRQ_NS;                   // DMAC TrustZone Config for Interrupts
+    __IO uint32_t TZ_DMA_PERIPH_NS;                // DMAC TrustZone Config for Peripherals
     uint32_t reserved9[57];
-    volatile uint32_t PSS_IDCODE;                      // PS IDCODE
+    __IO uint32_t PSS_IDCODE;                      // PS IDCODE
     uint32_t reserved10[51];
-    volatile uint32_t DDR_URGENT;                      // DDR Urgent Control
+    __IO uint32_t DDR_URGENT;                      // DDR Urgent Control
     uint32_t reserved11[2];
-    volatile uint32_t DDR_CAL_START;                   // DDR Calibration Start Triggers
+    __IO uint32_t DDR_CAL_START;                   // DDR Calibration Start Triggers
     uint32_t reserved12[1];
-    volatile uint32_t DDR_REF_START;                   // DDR Refresh Start Triggers
-    volatile uint32_t DDR_CMD_STA;                     // DDR Command Store Status
-    volatile uint32_t DDR_URGENT_SEL;                  // DDR Urgent Select
-    volatile uint32_t DDR_DFI_STATUS;                  // DDR DFI status
+    __IO uint32_t DDR_REF_START;                   // DDR Refresh Start Triggers
+    __IO uint32_t DDR_CMD_STA;                     // DDR Command Store Status
+    __IO uint32_t DDR_URGENT_SEL;                  // DDR Urgent Select
+    __IO uint32_t DDR_DFI_STATUS;                  // DDR DFI status
     uint32_t reserved13[55];
-    volatile uint32_t MIO_PIN_00;                      // MIO Pin 0 Control
-    volatile uint32_t MIO_PIN_01;                      // MIO Pin 1 Control
-    volatile uint32_t MIO_PIN_02;                      // MIO Pin 2 Control
-    volatile uint32_t MIO_PIN_03;                      // MIO Pin 3 Control
-    volatile uint32_t MIO_PIN_04;                      // MIO Pin 4 Control
-    volatile uint32_t MIO_PIN_05;                      // MIO Pin 5 Control
-    volatile uint32_t MIO_PIN_06;                      // MIO Pin 6 Control
-    volatile uint32_t MIO_PIN_07;                      // MIO Pin 7 Control
-    volatile uint32_t MIO_PIN_08;                      // MIO Pin 8 Control
-    volatile uint32_t MIO_PIN_09;                      // MIO Pin 9 Control
-    volatile uint32_t MIO_PIN_10;                      // MIO Pin 10 Control
-    volatile uint32_t MIO_PIN_11;                      // MIO Pin 11 Control
-    volatile uint32_t MIO_PIN_12;                      // MIO Pin 12 Control
-    volatile uint32_t MIO_PIN_13;                      // MIO Pin 13 Control
-    volatile uint32_t MIO_PIN_14;                      // MIO Pin 14 Control
-    volatile uint32_t MIO_PIN_15;                      // MIO Pin 15 Control
-    volatile uint32_t MIO_PIN_16;                      // MIO Pin 16 Control
-    volatile uint32_t MIO_PIN_17;                      // MIO Pin 17 Control
-    volatile uint32_t MIO_PIN_18;                      // MIO Pin 18 Control
-    volatile uint32_t MIO_PIN_19;                      // MIO Pin 19 Control
-    volatile uint32_t MIO_PIN_20;                      // MIO Pin 20 Control
-    volatile uint32_t MIO_PIN_21;                      // MIO Pin 21 Control
-    volatile uint32_t MIO_PIN_22;                      // MIO Pin 22 Control
-    volatile uint32_t MIO_PIN_23;                      // MIO Pin 23 Control
-    volatile uint32_t MIO_PIN_24;                      // MIO Pin 24 Control
-    volatile uint32_t MIO_PIN_25;                      // MIO Pin 25 Control
-    volatile uint32_t MIO_PIN_26;                      // MIO Pin 26 Control
-    volatile uint32_t MIO_PIN_27;                      // MIO Pin 27 Control
-    volatile uint32_t MIO_PIN_28;                      // MIO Pin 28 Control
-    volatile uint32_t MIO_PIN_29;                      // MIO Pin 29 Control
-    volatile uint32_t MIO_PIN_30;                      // MIO Pin 30 Control
-    volatile uint32_t MIO_PIN_31;                      // MIO Pin 31 Control
-    volatile uint32_t MIO_PIN_32;                      // MIO Pin 32 Control
-    volatile uint32_t MIO_PIN_33;                      // MIO Pin 33 Control
-    volatile uint32_t MIO_PIN_34;                      // MIO Pin 34 Control
-    volatile uint32_t MIO_PIN_35;                      // MIO Pin 35 Control
-    volatile uint32_t MIO_PIN_36;                      // MIO Pin 36 Control
-    volatile uint32_t MIO_PIN_37;                      // MIO Pin 37 Control
-    volatile uint32_t MIO_PIN_38;                      // MIO Pin 38 Control
-    volatile uint32_t MIO_PIN_39;                      // MIO Pin 39 Control
-    volatile uint32_t MIO_PIN_40;                      // MIO Pin 40 Control
-    volatile uint32_t MIO_PIN_41;                      // MIO Pin 41 Control
-    volatile uint32_t MIO_PIN_42;                      // MIO Pin 42 Control
-    volatile uint32_t MIO_PIN_43;                      // MIO Pin 43 Control
-    volatile uint32_t MIO_PIN_44;                      // MIO Pin 44 Control
-    volatile uint32_t MIO_PIN_45;                      // MIO Pin 45 Control
-    volatile uint32_t MIO_PIN_46;                      // MIO Pin 46 Control
-    volatile uint32_t MIO_PIN_47;                      // MIO Pin 47 Control
-    volatile uint32_t MIO_PIN_48;                      // MIO Pin 48 Control
-    volatile uint32_t MIO_PIN_49;                      // MIO Pin 49 Control
-    volatile uint32_t MIO_PIN_50;                      // MIO Pin 50 Control
-    volatile uint32_t MIO_PIN_51;                      // MIO Pin 51 Control
-    volatile uint32_t MIO_PIN_52;                      // MIO Pin 52 Control
-    volatile uint32_t MIO_PIN_53;                      // MIO Pin 53 Control
+    __IO uint32_t MIO_PIN [54];                      // MIO Pin 0 Control
     uint32_t reserved14[11];
-    volatile uint32_t MIO_LOOPBACK;                    // Loopback function within MIO
+    __IO uint32_t MIO_LOOPBACK;                    // Loopback function within MIO
     uint32_t reserved15[1];
-    volatile uint32_t MIO_MST_TRI0;                    // MIO pin Tri-state Enables, 31:0
-    volatile uint32_t MIO_MST_TRI1;                    // MIO pin Tri-state Enables, 53:32
+    __IO uint32_t MIO_MST_TRI0;                    // MIO pin Tri-state Enables, 31:0
+    __IO uint32_t MIO_MST_TRI1;                    // MIO pin Tri-state Enables, 53:32
     uint32_t reserved16[7];
-    volatile uint32_t SD0_WP_CD_SEL;                   // SDIO 0 WP CD select
-    volatile uint32_t SD1_WP_CD_SEL;                   // SDIO 1 WP CD select
+    __IO uint32_t SD0_WP_CD_SEL;                   // SDIO 0 WP CD select
+    __IO uint32_t SD1_WP_CD_SEL;                   // SDIO 1 WP CD select
     uint32_t reserved17[50];
-    volatile uint32_t LVL_SHFTR_EN;                    // Level Shifters Enable
+    __IO uint32_t LVL_SHFTR_EN;                    // Level Shifters Enable
     uint32_t reserved18[3];
-    volatile uint32_t OCM_CFG;                         // OCM Address Mapping
+    __IO uint32_t OCM_CFG;                         // OCM Address Mapping
     uint32_t reserved19[66];
-    volatile uint32_t RESERVED;                        // Reserved
+    __IO uint32_t RESERVED;                        // Reserved
     uint32_t reserved20[56];
-    volatile uint32_t GPIOB_CTRL;                      // PS IO Buffer Control
-    volatile uint32_t GPIOB_CFG_CMOS18;                // MIO GPIOB CMOS 1.8V config
-    volatile uint32_t GPIOB_CFG_CMOS25;                // MIO GPIOB CMOS 2.5V config
-    volatile uint32_t GPIOB_CFG_CMOS33;                // MIO GPIOB CMOS 3.3V config
+    __IO uint32_t GPIOB_CTRL;                      // PS IO Buffer Control
+    __IO uint32_t GPIOB_CFG_CMOS18;                // MIO GPIOB CMOS 1.8V config
+    __IO uint32_t GPIOB_CFG_CMOS25;                // MIO GPIOB CMOS 2.5V config
+    __IO uint32_t GPIOB_CFG_CMOS33;                // MIO GPIOB CMOS 3.3V config
     uint32_t reserved21[1];
-    volatile uint32_t GPIOB_CFG_HSTL;                  // MIO GPIOB HSTL config
-    volatile uint32_t GPIOB_DRVR_BIAS_CTRL;            // MIO GPIOB Driver Bias Control
+    __IO uint32_t GPIOB_CFG_HSTL;                  // MIO GPIOB HSTL config
+    __IO uint32_t GPIOB_DRVR_BIAS_CTRL;            // MIO GPIOB Driver Bias Control
     uint32_t reserved22[9];
-    volatile uint32_t DDRIOB_ADDR0;                    // DDR IOB Config for A[14:0], CKE and DRST_B
-    volatile uint32_t DDRIOB_ADDR1;                    // DDR IOB Config for BA[2:0], ODT, CS_B, WE_B, RAS_B and CAS_B
-    volatile uint32_t DDRIOB_DATA0;                    // DDR IOB Config for Data 15:0
-    volatile uint32_t DDRIOB_DATA1;                    // DDR IOB Config for Data 31:16
-    volatile uint32_t DDRIOB_DIFF0;                    // DDR IOB Config for DQS 1:0
-    volatile uint32_t DDRIOB_DIFF1;                    // DDR IOB Config for DQS 3:2
-    volatile uint32_t DDRIOB_CLOCK;                    // DDR IOB Config for Clock Output
-    volatile uint32_t DDRIOB_DRIVE_SLEW_ADDR;          // Drive and Slew controls for Address and Command pins of the DDR Interface
-    volatile uint32_t DDRIOB_DRIVE_SLEW_DATA;          // Drive and Slew controls for DQ pins of the DDR Interface
-    volatile uint32_t DDRIOB_DRIVE_SLEW_DIFF;          // Drive and Slew controls for DQS pins of the DDR Interface
-    volatile uint32_t DDRIOB_DRIVE_SLEW_CLOCK;         // Drive and Slew controls for Clock pins of the DDR Interface
-    volatile uint32_t DDRIOB_DDR_CTRL;                 // DDR IOB Buffer Control
-    volatile uint32_t DDRIOB_DCI_CTRL;                 // DDR IOB DCI Config
-    volatile uint32_t DDRIOB_DCI_STATUS;               // DDR IO Buffer DCI Status
+    __IO uint32_t DDRIOB_ADDR0;                    // DDR IOB Config for A[14:0], CKE and DRST_B
+    __IO uint32_t DDRIOB_ADDR1;                    // DDR IOB Config for BA[2:0], ODT, CS_B, WE_B, RAS_B and CAS_B
+    __IO uint32_t DDRIOB_DATA0;                    // DDR IOB Config for Data 15:0
+    __IO uint32_t DDRIOB_DATA1;                    // DDR IOB Config for Data 31:16
+    __IO uint32_t DDRIOB_DIFF0;                    // DDR IOB Config for DQS 1:0
+    __IO uint32_t DDRIOB_DIFF1;                    // DDR IOB Config for DQS 3:2
+    __IO uint32_t DDRIOB_CLOCK;                    // DDR IOB Config for Clock Output
+    __IO uint32_t DDRIOB_DRIVE_SLEW_ADDR;          // Drive and Slew controls for Address and Command pins of the DDR Interface
+    __IO uint32_t DDRIOB_DRIVE_SLEW_DATA;          // Drive and Slew controls for DQ pins of the DDR Interface
+    __IO uint32_t DDRIOB_DRIVE_SLEW_DIFF;          // Drive and Slew controls for DQS pins of the DDR Interface
+    __IO uint32_t DDRIOB_DRIVE_SLEW_CLOCK;         // Drive and Slew controls for Clock pins of the DDR Interface
+    __IO uint32_t DDRIOB_DDR_CTRL;                 // DDR IOB Buffer Control
+    __IO uint32_t DDRIOB_DCI_CTRL;                 // DDR IOB DCI Config
+    __IO uint32_t DDRIOB_DCI_STATUS;               // DDR IO Buffer DCI Status
 } SLCR_Registers;
 
 #define ZYNQ_MIO_CNT    54
 
+#define SLCR_A9_CPU_CLKSTOP	0x10
+#define SLCR_A9_CPU_RST		0x01
+
+#define ZYNQ_SLCR_BOOT_MODE_ARM_PLL_BYPASS 		0x00000010
+#define ZYNQ_SLCR_BOOT_MODE_IO_PLL_BYPASS		0x00000010
+#define ZYNQ_SLCR_BOOT_MODE_BOOT_MODE 			0x0000000F
+
 /* SPI */
 typedef struct spi_regs {
-	volatile uint32_t CR; 		/*	SPI Configuration.	 */
-	volatile uint32_t SR; 		/*	SPI Interrupt Status	 */
-	volatile uint32_t IER; 		/*	Interrupt Enable. 	 */
-	volatile uint32_t IDR; 		/*	Interrupt disable. 	 */
-	volatile uint32_t IMR; 		/*	Interrupt mask. 	 */
-	volatile uint32_t ER; 		/*	SPI Controller Enable.	 */
-	volatile uint32_t DR; 		/*	Delay Control 	 */
-	volatile uint32_t TXD; 		/*	Transmit Data. 	 */
-	volatile uint32_t RXD; 		/*	Receive Data. 	 */
-	volatile uint32_t SICR; 	/*	Slave Idle Count.	 */
-	volatile uint32_t TXWR; 	/*	TX_FIFO Threshold. 	 */
-	volatile uint32_t RXWR;		/* 0x0000002C	RX FIFO Threshold.	 */
+	__IO uint32_t CR; 		/*	SPI Configuration.	 */
+	__IO uint32_t SR; 		/*	SPI Interrupt Status	 */
+	__IO uint32_t IER; 		/*	Interrupt Enable. 	 */
+	__IO uint32_t IDR; 		/*	Interrupt disable. 	 */
+	__IO uint32_t IMR; 		/*	Interrupt mask. 	 */
+	__IO uint32_t ER; 		/*	SPI Controller Enable.	 */
+	__IO uint32_t DR; 		/*	Delay Control 	 */
+	__IO uint32_t TXD; 		/*	Transmit Data. 	 */
+	__IO uint32_t RXD; 		/*	Receive Data. 	 */
+	__IO uint32_t SICR; 	/*	Slave Idle Count.	 */
+	__IO uint32_t TXWR; 	/*	TX_FIFO Threshold. 	 */
+	__IO uint32_t RXWR;		/* 0x0000002C	RX FIFO Threshold.	 */
 	uint32_t reserved1 [(0xfc - 0x30) / 4];
-	volatile uint32_t Mod_id_reg0;	/* 0x000000FC	Module ID. 	 */
+	__IO uint32_t Mod_id_reg0;	/* 0x000000FC	Module ID. 	 */
 } SPI_Registers;
 
 // Global Timer Registers offsets
 typedef struct gtc_regs {
-	volatile uint32_t GTCTRL; 	// Global_Timer_Counter_Register0
-	volatile uint32_t GTCTRH; 	// Global_Timer_Counter_Register1
-	volatile uint32_t GTCLR; 	// Control
-	volatile uint32_t GTISR; 	// Interrupt Status
-	volatile uint32_t GTCOMPL;	// Comparator_Value_Register0
-	volatile uint32_t GTCOMPH; 	// Comparator_Value_Register1
-	volatile uint32_t GTCAIR; 	// Auto_increment_Register
+	__IO uint32_t GTCTRL; 	// Global_Timer_Counter_Register0
+	__IO uint32_t GTCTRH; 	// Global_Timer_Counter_Register1
+	__IO uint32_t GTCLR; 	// Control
+	__IO uint32_t GTISR; 	// Interrupt Status
+	__IO uint32_t GTCOMPL;	// Comparator_Value_Register0
+	__IO uint32_t GTCOMPH; 	// Comparator_Value_Register1
+	__IO uint32_t GTCAIR; 	// Auto_increment_Register
 } GTC_Registers;
+
+// https://github.com/yuhuidream/crane/blob/bc4d2b830839c0678ee5ae249378d5cf606dfa9e/arch/asr/include/SDH_v3_1.h
+// SD Controller (sdio)
+typedef struct sd_regs {
+    __IO uint32_t SYS_DMA_ADDR                   ; /* 0x0000 System DMA Address Register */
+    __IO uint32_t Block_Size_Block_Count         ; /* 0x0004 Block Size Register */
+    __IO uint32_t ARG                     		 ; /* 0x0008 Argument Register */
+    __IO uint32_t CMD_TRANSFER_MODE              ; /* 0x000C Command Register, Transfer Mode Register */
+    __IO uint32_t RESP_0                         ; /* 0x0010 Response Register 0 */
+    __IO uint32_t RESP_1                         ; /* 0x0014 Response Register 1 */
+    __IO uint32_t RESP_2                         ; /* 0x0018 Response Register 2 */
+    __IO uint32_t RESP_3                         ; /* 0x001C Response Register 3 */
+    __IO uint32_t BUFFER_DATA_PORT               ; /* 0x0020 Buffer Data Port Register */
+    __IO uint32_t PRESENT_STATE                  ; /* 0x0024 Present State Register 1 */
+    __IO uint32_t HOST_CTRL_BLOCK_GAP_CTRL       ; /* 0x0028 Host Control Register */
+    __IO uint32_t TIMEOUT_CTRL_SW_RESET_CLOCK_CTRL; /* 0x002C Timeout Control/Software Reset Register, Clock Control Register */
+    __IO uint32_t INT_STATUS            		 ; /* 0x0030 Interrupt Status Register */
+    __IO uint32_t INT_STATUS_EN           		 ; /* 0x0034 Interrupt Status Enable Register */
+    __IO uint32_t INT_STATUS_INT_EN       		 ; /* 0x0038 Interrupt Status Interrupt Enable Register */
+    __IO uint8_t AUTO_CMD12_ERROR_STATUS        ; /* 0x003C Auto CMD12 Error Status Register */
+    uint8_t reserved0 [3];
+    __IO uint32_t CAPABILITIES                   ; /* 0x0040 Capabilities Register 1 */
+    uint32_t reserved1 [1];
+    __IO uint32_t MAX_CURRENT                    ; /* 0x0048 Maximum Current Register 1 */
+    uint32_t reserved2 [1];
+    __IO uint16_t FORCE_EVENT_AUTO_CMD12_ERROR   ; /* 0x0050 Force Event Auto cmd12 Error Register */
+    __IO uint16_t FORCE_EVENT_FOR_ERROR_STATUS   ; /* 0x0052 Force Event for Error Status Register */
+    __IO uint32_t ADMA_ERROR_STATUS              ; /* 0x0054 ADMA Error Status Register */
+    __IO uint32_t ADMA_SYS_ADDR                  ; /* 0x0058 ADMA System Address Register */
+    uint32_t reserved3 [1];
+    __IO uint32_t Boot_Timeout_control           ; /* 0x0060 Boot Timeout control register */
+    __IO uint32_t Debug_Selection            	 ; /* 0x0064 Debug Selection Register */
+    uint8_t reserved4 [0x00F0 - 0x68];
+    __IO uint8_t SPI_interrupt_support           ; /* 0x00F0 SPI interrupt support register */
+    uint8_t reserved5 [0x00FC - 0x00F1];
+    __IO uint32_t Vendor_Version_Number          ; /* 0x00FC Shared Bus Control Register */
+} SD_Registers;
+
+// See also
+// https://github.com/jameswalmsley/bitthunder/blob/master/arch/arm/mach/zynq/devcfg.c
+// Device Configuration Interface (devcfg)
+typedef struct devcfg_regs {
+	__IO uint32_t CTRL;				/* 0x0000 Control Register */
+	__IO uint32_t LOCK;				/* 0x0004 Locks for the Control Register */
+	__IO uint32_t CFG;				/* 0x0008 Configuration Register */
+	__IO uint32_t INT_STS;			/* 0x000C Interrupt Status */
+	__IO uint32_t INT_MASK;			/* 0x0010 Interrupt Mask */
+	__IO uint32_t STATUS;			/* 0x0014 Miscellaneous Status */
+	__IO uint32_t DMA_SRC_ADDR;		/* 0x0018 DMA Source Address */
+	__IO uint32_t DMA_DST_ADDR;		/* 0x001C DMA Destination Address */
+	__IO uint32_t DMA_SRC_LEN;		/* 0x0020 DMA Source Transfer Length */
+	__IO uint32_t DMA_DST_LEN;		/* 0x0024 DMA Destination Transfer Length */
+	uint32_t reserved1;
+	__IO uint32_t MULTIBOOT_ADDR;	/* 0x002C Multi-Boot Address Pointer */
+	uint32_t reserved2;
+	__IO uint32_t UNLOCK;			/* 0x0034 Unlock Control */
+	uint8_t reserved3 [0x0080 - 0x0038];
+	__IO uint32_t MCTRL;			/* 0x0080 Miscellaneous Control */
+	uint8_t reserved4 [0x0100 - 0x0084];
+	__IO uint32_t XADCIF_CFG;		/* 0x0100 XADC Interface Configuration */
+	__IO uint32_t XADCIF_INT_STS;	/* 0x0114 XADC Interface Interrupt Status */
+	__IO uint32_t XADCIF_INT_MASK;	/* 0x0118 XADC Interface Interrupt Mask */
+	__IO uint32_t XADCIF_MSTS;		/* 0x010C XADC Interface Miscellaneous Status */
+	__IO uint32_t XADCIF_CMDFIFO;	/* 0x0110 XADC Interface Command FIFO Data Port */
+	__IO uint32_t XADCIF_RDFIFO;	/* 0x0114 XADC Interface Data FIFO Data Port */
+	__IO uint32_t XADCIF_MCTL;		/* 0x0118 XADC Interface Miscellaneous Control */
+} XDCFG_Registers;
+
+#define XDCFG_CTRL_DAP_EN				0x00000007
+#define XDCFG_CTRL_DBGEN				0x00000008
+#define XDCFG_CTRL_NIDEN				0x00000010
+#define XDCFG_CTRL_SPIDEN				0x00000020
+#define XDCFG_CTRL_SPNIDEN				0x00000040
+#define XDCFG_CTRL_SEC_EN				0x00000080
+#define XDCFG_CTRL_SEU_EN				0x00000100
+#define XDCFG_CTRL_PCFG_AES_EN			0x00000E00
+#define XDCFG_CTRL_PCFG_AES_FUSE 		0x00001000
+#define XDCFG_CTRL_USER_MODE 			0x00008000
+#define XDCFG_CTRL_JTAG_CHAIN_DIS 		0x00800000
+#define XDCFG_CTRL_MULTIBOOT_EN 		0x01000000
+#define XDCFG_CTRL_QUARTER_PCAP_RATE 	0x02000000
+#define XDCFG_CTRL_PCAP_MODE 			0x04000000
+#define XDCFG_CTRL_PCAP_PR 				0x08000000
+#define XDCFG_CTRL_PCFG_POR_CNT_4K		0x20000000
+#define XDCFG_CTRL_PCFG_PROG_B 			0x40000000
+#define XDCFG_CTRL_FORCE_RESET 			0x80000000
+#define XDCFG_INT_STS_DMA_DONE_INT  	0x00002000
+#define XDCFG_INT_STS_DMA_PCAP_DONE		0x00001000
+#define XDCFG_INT_STS_PCFG_DONE			0x00000004
+#define XDCFG_STATUS_PCFG_INIT			0x00000010
+#define XDCFG_MCTRL_PCAP_LPBK			0x00000010
+
+// Quad-SPI Flash Controller (qspi)
+typedef struct qspi_regs {
+	__IO uint32_t CR;				/* 0x0000 QSPI configuration register */
+	__IO uint32_t SR;				/* 0x0004 QSPI interrupt status register */
+	__IO uint32_t IER;				/* 0x0008 Interrupt Enable register */
+	__IO uint32_t IDR;				/* 0x000C Interrupt disable register */
+	__IO uint32_t IMR;				/* 0x0010 Interrupt mask register */
+} XQSPIPS_Registers;
+
+// See https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/include/platform/gem.h
+// Gigabit Ethernet Controller (GEM)
+typedef struct xemacps_regs {
+	__IO uint32_t NET_CTRL;
+	__IO uint32_t NET_CFG;
+	__IO uint32_t NET_STATUS;
+	uint32_t ___RESERVED1;
+	__IO uint32_t DMA_CFG;
+	__IO uint32_t TX_STATUS;
+	__IO uint32_t RX_QBAR;
+	__IO uint32_t TX_QBAR;
+	__IO uint32_t RX_STATUS;
+	__IO uint32_t INTR_STATUS;
+	__IO uint32_t INTR_EN;
+	__IO uint32_t INTR_DIS;
+	__IO uint32_t INTR_MASK;
+	__IO uint32_t PHY_MAINT;
+	__IO uint32_t RX_PAUSEQ;
+	__IO uint32_t TX_PAUSEQ;
+	uint32_t ___RESERVED2[16];
+	__IO uint32_t HASH_BOT;
+	__IO uint32_t HASH_TOP;
+	__IO uint32_t SPEC_ADDR1_BOT;
+	__IO uint32_t SPEC_ADDR1_TOP;
+	__IO uint32_t SPEC_ADDR2_BOT;
+	__IO uint32_t SPEC_ADDR2_TOP;
+	__IO uint32_t SPEC_ADDR3_BOT;
+	__IO uint32_t SPEC_ADDR3_TOP;
+	__IO uint32_t SPEC_ADDR4_BOT;
+	__IO uint32_t SPEC_ADDR4_TOP;
+	__IO uint32_t TYPE_ID_MATCH1;
+	__IO uint32_t TYPE_ID_MATCH2;
+	__IO uint32_t TYPE_ID_MATCH3;
+	__IO uint32_t TYPE_ID_MATCH4;
+	__IO uint32_t WAKE_ON_LAN;
+	__IO uint32_t IPG_STRETCH;
+	__IO uint32_t STACKED_VLAN;
+	__IO uint32_t TX_PFC_PAUSE;
+	__IO uint32_t SPEC_ADDR1_MASK_BOT;
+	__IO uint32_t SPEC_ADDR1_MASK_TOP;
+	uint32_t ___RESERVED3[11];
+	__IO uint32_t MODULE_ID;					/**< 0x00FC	xxx */
+	__IO uint32_t OCTETS_TX_BOT;
+	__IO uint32_t OCTETS_TX_TOP;
+	__IO uint32_t FRAMES_TX;
+	__IO uint32_t BROADCAST_FRAMES_TX;
+	__IO uint32_t MULTI_FRAMES_TX;
+	__IO uint32_t PAUSE_FRAMES_TX;
+	__IO uint32_t FRAMES_64B_TX;				/**< 0x0118	xxx */
+	__IO uint32_t FRAMES_65TO127B_TX;
+	__IO uint32_t FRAMES_128TO255B_TX;
+	__IO uint32_t FRAMES_256TO511B_TX;
+	__IO uint32_t FRAMES_512TO1023B_TX;
+	__IO uint32_t FRAMES_1024TO1518B_TX;		/**< 0x012C	xxx */
+	uint32_t ___RESERVED4;
+	__IO uint32_t TX_UNDER_RUNS;
+	__IO uint32_t SINGLE_COLLISN_FRAMES;
+	__IO uint32_t MULTI_COLLISN_FRAMES;
+	__IO uint32_t EXCESSIVE_COLLISNS;
+	__IO uint32_t LATE_COLLISNS;
+	__IO uint32_t DEFERRED_TX_FRAMES;
+	__IO uint32_t CARRIER_SENSE_ERRS;
+	__IO uint32_t OCTETS_RX_BOT;
+	__IO uint32_t OCTETS_RX_TOP;
+	__IO uint32_t FRAMES_RX;
+	__IO uint32_t BDCAST_FAMES_RX;
+	__IO uint32_t MULTI_FRAMES_RX;
+	__IO uint32_t PAUSE_RX;
+	__IO uint32_t FRAMES_64B_RX;			/**< 0x0168	xxx */
+	__IO uint32_t FRAMES_65TO127B_RX;
+	__IO uint32_t FRAMES_128TO255B_RX;
+	__IO uint32_t FRAMES_256TO511B_RX;
+	__IO uint32_t FRAMES_512TO1023B_RX;
+	__IO uint32_t FRAMES_1024TO1518B_RX;	/**< 0x017C	xxx */
+	uint32_t ___RESERVED5;
+	__IO uint32_t UNDERSZ_RX;				/**< 0x0184	xxx */
+	__IO uint32_t OVERSZ_RX;
+	__IO uint32_t JAB_RX;					/**< 0x018C	Jabbers received */
+	__IO uint32_t FCS_ERRORS;				/**< 0x0190	xxx */
+	__IO uint32_t LENGTH_FIELD_ERRORS;		/**< 0x0194	xxx */
+	__IO uint32_t RX_SYMBOL_ERRORS;			/**< 0x0198	xxx */
+	__IO uint32_t ALIGN_ERRORS;				/**< 0x019C	xxx */
+	__IO uint32_t RX_RESOURCE_ERRORS;		/**< 0x01A0	xxx */
+	__IO uint32_t RX_OVERRUN_ERRORS;		/**< 0x01A4	xxx */
+	__IO uint32_t IP_HDR_CSUM_ERRORS;		/**< 0x01A8	xxx */
+	__IO uint32_t TCP_CSUM_ERRORS;			/**< 0x01AC	xxx */
+	__IO uint32_t UDP_CSUM_ERRORS;			/**< 0x01B0	xxx */
+	uint8_t ___RESERVED6 [0x01C8 - 0x01B4];
+	__IO uint32_t TIMER_STROBE_S;			/**< 0x01C8	xxx */
+	__IO uint32_t TIMER_STROBE_NS;
+	__IO uint32_t TIMER_S;
+	__IO uint32_t TIMER_NS;
+	__IO uint32_t TIMER_ADJUST;
+	__IO uint32_t TIMER_INCR;
+	__IO uint32_t PTP_TX_S;
+	__IO uint32_t PTP_TX_NS;
+	__IO uint32_t PTP_RX_S;
+	__IO uint32_t PTP_RX_NS;
+	__IO uint32_t PTP_PEER_TX_S;
+	__IO uint32_t PTP_PEER_TX_NS;
+	__IO uint32_t PTP_PEER_RX_S;
+	__IO uint32_t PTP_PEER_RX_NS;	/**< 0x01FC	PTP peer event frame received nanoseconds */
+	uint32_t ___RESERVED7 [33];		// changed from 22 in original text
+	__IO uint32_t DESIGN_CFG2;		/**< 0x0284	Design Configuration 2 */
+	__IO uint32_t DESIGN_CFG3;		/**< 0x0288	Design Configuration 3 */
+	__IO uint32_t DESIGN_CFG4;		/**< 0x028C	Design Configuration 4 */
+	__IO uint32_t DESIGN_CFG5;		/**< 0x0290	Design Configuration 5 */
+} XEMACPS_Registers;
+
+/* Verify the entries match the TRM offset to validate the struct */
+//STATIC_ASSERT(offsetof(XEMACPS_Registers, TIMER_STROBE_S) == 0x01C8);
+//STATIC_ASSERT(offsetof(XEMACPS_Registers, DESIGN_CFG5) == 0x0290);
 
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
-#define PL310_TAG_RAM_LATENCY ((1 << 8) | (1 << 4) | (1 << 0))
-#define PL310_DATA_RAM_LATENCY ((1 << 8) | (2 << 4) | (1 << 0))
+#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
+#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
 
 /* Verify the entries match the TRM offset to validate the struct */
 //STATIC_ASSERT(offsetof(struct slcr_regs, SCL) == 0x0);
@@ -421,25 +606,6 @@ typedef struct gtc_regs {
 #define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
 #define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
 
-
-#define XUARTPS_CR_TXRST	0x00000002U  /**< TX logic reset */
-#define XUARTPS_CR_RXRST	0x00000001U  /**< RX logic reset */
-
-#define XUARTPS_MR_CHMODE_NORM		0x00000000UL /**< Normal mode */
-#define XUARTPS_MR_STOPMODE_1_BIT	0x00000000UL /**< 1 stop bit */
-#define XUARTPS_MR_PARITY_NONE		0x00000020UL /**< No parity mode */
-#define XUARTPS_MR_CHARLEN_8_BIT	0x00000000UL /**< 8 bits data */
-#define XUARTPS_MR_CLKSEL			0x00000001UL /**< Input clock selection */
-
-#define XUARTPS_SR_TNFUL	0x00004000UL /**< TX FIFO Nearly Full Status */
-#define XUARTPS_SR_TACTIVE	0x00000800UL /**< TX active */
-#define XUARTPS_SR_RXEMPTY	0x00000002UL /**< RX FIFO empty */
-
-#define XUARTPS_CR_TX_DIS	0x00000020UL  /**< TX disabled. */
-#define XUARTPS_CR_TX_EN	0x00000010UL  /**< TX enabled */
-#define XUARTPS_CR_RX_DIS	0x00000008UL  /**< RX disabled. */
-#define XUARTPS_CR_RX_EN	0x00000004UL  /**< RX enabled */
-
 /* memory addresses */
 /* assumes sram is mapped at 0 the first MB of sdram is covered by it */
 #define SDRAM_BASE          (0x00100000)
@@ -460,11 +626,11 @@ typedef struct gtc_regs {
 #define SPI1_BASE  (0xE0007000uL)
 #define CAN0_BASE  (0xE0008000uL)
 #define CAN1_BASE  (0xE0009000uL)
-#define GPIO_BASE  (0xE000a000uL)
-#define GEM0_BASE  (0xE000b000uL) // gigabit eth controller
-#define GEM1_BASE  (0xE000x000uL) // ""
-#define QSPI_BASE  (0xE000d000uL)
-#define SMCC_BASE  (0xE000e000uL) // PL353 shared memory controller
+#define GPIO_BASE  (0xE000A000uL)
+#define GEM0_BASE  (0xE000B000uL) // gigabit eth controller
+#define GEM1_BASE  (0xE000C000uL) // ""
+#define QSPI_BASE  (0xE000D000uL)
+#define SMCC_BASE  (0xE000E000uL) // PL353 shared memory controller
 
 #define SD0_BASE   (0xE0100000uL)
 #define SD1_BASE   (0xE0101000uL)
@@ -475,17 +641,24 @@ typedef struct gtc_regs {
 #define DMAC0_NS_BASE 	(0xF8004000uL)
 #define DMAC0_S_BASE 	(0xF8003000uL)
 #define SWDT_BASE  		(0xF8005000uL)
+#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
 
-#define QSPI_LINEAR_BASE  (0xfc000000uL)
+#define QSPI_LINEAR_BASE  (0xfC000000uL)
 
 
-#define GTC 						((GTC_Registers *) GLOBAL_TIMER_BASE)
-#define SCLR 						((SLCR_Registers *) SLCR_BASE)
-#define SWDT                       	((SWDT_Registers *) SWDT_BASE)
-#define UART0                       ((UART_Registers *) UART0_BASE)
-#define UART1                       ((UART_Registers *) UART1_BASE)
-#define SPI0                       	((SPI_Registers *) SPI0_BASE)
-#define SPI1                       	((SPI_Registers *) SPI1_BASE)
+#define GTC 			((GTC_Registers *) GLOBAL_TIMER_BASE)
+#define SCLR 			((SLCR_Registers *) SLCR_BASE)
+#define SWDT            ((SWDT_Registers *) SWDT_BASE)
+#define UART0           ((XUARTPS_Registers *) UART0_BASE)
+#define UART1           ((XUARTPS_Registers *) UART1_BASE)
+#define SPI0            ((SPI_Registers *) SPI0_BASE)
+#define SPI1            ((SPI_Registers *) SPI1_BASE)
+#define SD0				((SD_Registers *) SD0_BASE)
+#define SD1				((SD_Registers *) SD1_BASE)
+#define XDCFG			((XDCFG_Registers *) XDCFG_BASE)
+#define XQSPIPS			((XQSPIPS_Registers *) QSPI_BASE)
+#define GEM0			((XEMACPS_Registers *) GEM0_BASE)
+#define GEM1			((XEMACPS_Registers *) GEM1_BASE)
 
 
 #ifdef __cplusplus

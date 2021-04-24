@@ -22,14 +22,15 @@ TRGT = arm-none-eabi-
 
 #
 CC   = $(TRGT)gcc
+GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
-CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-2.1.2
+CMSISDIR = ../../CMSIS_5/CMSIS
+LWIPDIR = ../../src/lwip-1.4.1
 
 OBJDIR = ./obj
 
@@ -56,7 +57,7 @@ DINCDIR = \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http \
+	$(LWIPDIR)/apps/httpserver_raw \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
@@ -172,7 +173,7 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -std=gnu11 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -std=gnu99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
@@ -183,11 +184,11 @@ $(OBJDIR)/%.o: %.s
 	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.s, $@))) -o $@
 
 %ram.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(LDFLAGS_RAM) $(LIBS) -o $@
 	$(SIZE) --format=sysv --radix=16 $@
 
 %rom.elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
+	$(GPP) $(OBJS) $(LDFLAGS_ROM) $(LIBS) -o $@
 	$(SIZE) --format=sysv --radix=16 $@
 
 %hex: %elf

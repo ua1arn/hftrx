@@ -28,11 +28,9 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+#define USERFIRSTSBLOCK 0
 
-
-#if WITHDEBUG
+#if 1//WITHDEBUG
 	//#define WITHUART1HW	1	/* MIO46 UART0_RXD MIO47 UART0_TXD  Используется периферийный контроллер последовательного порта UART00 */
 	#define WITHUART2HW	1	/*	MIO49 UART1_RXD MIO48 UART1_TXD Используется периферийный контроллер последовательного порта UART1 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
@@ -49,6 +47,9 @@
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
@@ -100,6 +101,9 @@
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+
+	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -347,6 +351,55 @@
 #endif /* (WITHCAT && WITHCAT_CDC) */
 
 #if WITHSDHCHW
+
+	// J11
+	// SD0 signals
+	//	PS_MIO40_CD_CLK
+	//	PS_MIO41_CD_CMD
+	//	PS_MIO42_CD_D0
+	//	PS_MIO43_CD_D1
+	//	PS_MIO44_CD_D2
+	//	PS_MIO45_CD_D3
+	//	PS_MIO46_CD_SW
+	//	PS_MIO50_CD_WP
+
+	// return: 0 - no disk
+	#define HARDWARE_SDIOSENSE_CD() ((SD0->PRESENT_STATE & (1uL << 18)) != 0) /* получить состояние датчика CARD PRESENT */
+	// return: ! 0 - write protect
+	#define HARDWARE_SDIOSENSE_WP() 0//((SD0->PRESENT_STATE & (1uL << 19)) == 0) /* получить состояние датчика CARD WRITE PROTECT */
+
+	#define HARDWARE_SDIO_HANGOFF() do { \
+		} while (0)
+	// SD0 signals
+	//	PS_MIO40_CD_CLK
+	//	PS_MIO41_CD_CMD
+	//	PS_MIO42_CD_D0
+	//	PS_MIO43_CD_D1
+	//	PS_MIO44_CD_D2
+	//	PS_MIO45_CD_D3
+	// 46 SDIO 0 CD Select
+	// 50 SDIO 0 WP Select
+	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
+	#define HARDWARE_SDIO_INITIALIZE() do { \
+			SCLR->SD0_WP_CD_SEL = \
+					(46uL << 16) |	/* 46 SDIO 0 CD Select */ \
+					(50uL << 0) |	/* 50 SDIO 0 WP Select */ \
+					0; \
+			mio_mode(40, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
+			mio_mode(41, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
+			mio_mode(42, 0x00001680uL);	/*  PS_MIO42_CD_D0 */ \
+			mio_mode(43, 0x00001680uL);	/*  PS_MIO43_CD_D1 */ \
+			mio_mode(44, 0x00001680uL);	/*  PS_MIO44_CD_D2 */ \
+			mio_mode(45, 0x00001680uL);	/*  PS_MIO45_CD_D3 */ \
+		} while (0)
+	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
+		} while (0)
+	#define HARDWARE_SDIOPOWER_INITIALIZE() do { \
+		} while (0)
+
+#endif /* WITHSDHCHW */
+
+#if WITHSDHCHW && 0
 	#if WITHSDHCHW4BIT
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
 			arm_hardware_piod_altfn50(1uL << 2, AF_SDIO);	/* PD2 - SDIO_CMD	*/ \
@@ -603,27 +656,7 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-#if WITHUART1HW
-	// WITHUART1HW
-	// MIO46 UART0_RXD MIO47 UART0_TXD
-	#define HARDWARE_UART1_INITIALIZE() do { \
-		mio_mode(47, 0x000016E0uL);	/*  MIO47 UART0_TXD */ \
-		mio_mode(46, 0x000016E1uL);	/*  MIO46 UART0_RXD */ \
-		} while (0)
-
-#endif /* WITHUART1HW */
-
-#if WITHUART2HW && 0
-	// little board
-	// WITHUART2HW
-	#define HARDWARE_UART2_INITIALIZE() do { \
-		mio_mode(48, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
-		mio_mode(49, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
-		} while (0)
-
-#endif /* WITHUART2HW */
-
-#if WITHUART2HW && 1
+#if WITHUART2HW
 	// antminer
 	// WITHUART2HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
@@ -965,12 +998,12 @@
 	#if WITHSDRAMHW
 		// Bootloader parameters
 		#define BOOTLOADER_RAMAREA SDRAM_BASE	/* адрес ОЗУ, куда перемещать application */
-		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
-		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
+		#define BOOTLOADER_RAMSIZE SDRAM_APERTURE_SIZE	// 255M
+		#define BOOTLOADER_RAMPAGESIZE	(16 * 1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
 		#define USBD_DFU_RAM_XFER_SIZE 4096
 	#endif /* WITHSDRAMHW */
 
-	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
+	#define BOOTLOADER_FLASHSIZE (16 * 1024uL * 1024uL)	// 16M FLASH CHIP
 	#define BOOTLOADER_SELFBASE QSPI_LINEAR_BASE	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
 

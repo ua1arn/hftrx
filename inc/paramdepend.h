@@ -206,24 +206,26 @@ extern "C" {
 
 		//
 		#if WITHCPUXOSC
-			// с генератором
+			// с внешним генератором
 			#define	REFINFREQ WITHCPUXOSC
 		#elif WITHCPUXTAL
-			// с кварцем
+			// с внешним кварцевым резонатором
 			#define	REFINFREQ WITHCPUXTAL
 		#elif CPUSTYLE_STM32H7XX
-			// На внутреннем генераторе
+			// На внутреннем RC генераторе
 			#define	REFINFREQ 64000000uL
 		#else /* WITHCPUXTAL */
-			// На внутреннем генераторе
+			// На внутреннем RC генераторе
 			#define	REFINFREQ 16000000uL
 		#endif /* WITHCPUXTAL */
 
-		#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
-		#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
-		#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
-
 		#if defined(STM32F401xC)
+
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+
+			#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
+			#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
+			#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
 
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
@@ -234,12 +236,17 @@ extern "C" {
 			#define CPU_FREQ (PLL_FREQ / 4)	// 172032000uL
 
 			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
-			#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			//#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
+			//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
+			//#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
+			//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
  		#elif CPUSTYLE_STM32H7XX
+
+			#define PLL_FREQ	(REFINFREQ / REF1_DIV * REF1_MUL)
+			#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
+			#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
 
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
@@ -253,27 +260,39 @@ extern "C" {
 			#define HSI48FREQ 48000000uL
 			#define CSIFREQ 4000000uL
 
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
 		#elif CPUSTYLE_STM32F7XX
 
-			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+
+
+			unsigned long stm32f7xx_get_pll_freq(void);
+			unsigned long stm32f7xx_get_plli2s_freq(void);
+			unsigned long stm32f7xx_get_pllsai_freq(void);
+
+			#define PLL_FREQ	(stm32f7xx_get_pll_freq())
+			//#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
+			//#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
+
+			#define PLLI2S_FREQ (stm32f7xx_get_plli2s_freq())
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
 
-			#define PLLSAI_FREQ (REFINFREQ / REF1_DIV * SAIREF1_MUL)
+			#define PLLSAI_FREQ (stm32f7xx_get_pllsai_freq())
 			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
 
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
-
-			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+
+			#define HSIFREQ 16000000uL
 
 		#elif CPUSTYLE_STM32F4XX
 
+			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
+
+
 			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
 			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
 
@@ -283,10 +302,10 @@ extern "C" {
 			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
 
 			/* частоты, подающиеся на периферию */
-			#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			//#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+			//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
+			//#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+			//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
 		#endif
@@ -589,8 +608,6 @@ extern "C" {
 	//#define GICC_CTLR		(INTC.ICCICR)
 	//#define GICD_IPRIORITYRn(n) (((volatile uint8_t *) & INTC.ICDIPR0) [(n)])
 
-	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
-
 	// GIC_SetConfiguration parameters
 	#define GIC_CONFIG_EDGE 0x03
 	#define GIC_CONFIG_LEVEL 0x01
@@ -643,42 +660,43 @@ extern "C" {
 		AF_EVENT		//!< AF15 - SYSTEM (EVENTOUT)
 	} GPIO_AFLH_t;
 
-	// все параметры требуют уточнения, пока заглушки
-	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
-	//#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
-
-	#define HSIFREQ 64000000uL
+	/* Частоты встроенных RC генераторов процессора */
+	#define HSI64FREQ 64000000uL
 	#define CSIFREQ 4000000uL
 	#define LSIFREQ 32000uL
 
 	//
 	#if WITHCPUXOSC
-		// с генератором
-		#define	REFINFREQ WITHCPUXOSC
+		// с внешним генератором
+		#define	REF1INFREQ WITHCPUXOSC
+		#define	REF2INFREQ REF1INFREQ
+
 	#elif WITHCPUXTAL
-		// с кварцем
-		#define	REFINFREQ WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REF1INFREQ WITHCPUXTAL
+		#define	REF2INFREQ REF1INFREQ
+
 	#else /* WITHCPUXTAL */
-		// На внутреннем генераторе
-		#define	REFINFREQ HSIFREQ
+		// На внутреннем RC генераторе
+		#define	REF1INFREQ (stm32mp1_get_hsi_freq())
+		#define	REF2INFREQ HSI64FREQ
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ	(REFINFREQ / (PLL1DIVM) * (PLL1DIVN) / (PLL1DIVP))
+	#define CPU_FREQ	(stm32mp1_get_mpuss_freq())
 	//#define AXISS_FREQ	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVP))
-	#define DDR_FREQ 	(REFINFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
-	#define PLL3_FREQ	(REFINFREQ / (PLL3DIVM) * (PLL3DIVN))
-	#define PLL4_FREQ	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN))
-	#define PLL4_FREQ_R	(REFINFREQ / (PLL4DIVM) * (PLL4DIVN) / (PLL4DIVR))
+	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+	unsigned long stm32mp1_get_mpuss_freq(void);	// MPU frequency
+	unsigned long stm32mp1_get_pll4_r_freq(void);
+	unsigned long stm32mp1_get_usbphy_freq(void);
+	unsigned long stm32mp1_get_usbotg_freq(void);
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
 	// ADC clock frequency: 1..20 MHz
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
-	//#define SPISPEED (PCLK1_FREQ / 16)	/* 3.5 MHz на SCLK - требуемая скорость передачи по SPI */
-	//#define SPISPEED (PCLK1_FREQ / 8)	/* 7 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
@@ -712,17 +730,17 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-	#define ARM_CA9_CACHELEVELMAX	1	/* максимальный уровень cache в процессоре */
-
 	#if WITHCPUXOSC
-		// с генератором
+		// с внешним генератором
 		#define	REFINFREQ WITHCPUXOSC
 	#elif WITHCPUXTAL
-		// с кварцем
+		// с внешним кварцевым резонатором
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ (REFINFREQ * 20)
+	#define CPU_FREQ	(xc7z1_get_arm_freq())
+	unsigned long  xc7z1_get_arm_freq(void);
+	#define BOARD_SPI_FREQ (xc7z1_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
@@ -732,6 +750,18 @@ extern "C" {
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+#elif defined(_WIN32)
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+
+	#define DACVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
+	#define TICKS_FREQUENCY 200
+
 
 #else
 
@@ -1088,10 +1118,18 @@ extern "C" {
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_AT070TN90 */
 
-#if LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
+#if 1 && LCDMODE_AT070TNA2	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 1024
 	#define DIM_Y 600
+	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
+#endif /* LCDMODE_AT070TNA2 */
+
+#if 0 && LCDMODE_AT070TNA2	/* xxxx panel (1280*720) - 10" display */
+	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
+	#define DIM_X 1280
+	#define DIM_Y 720
 	#define LCDMODE_COLORED	1
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_AT070TNA2 */
@@ -1276,6 +1314,15 @@ extern "C" {
 #elif DIM_X == 1024 && DIM_Y == 600
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+
+#elif DIM_X == 1280 && DIM_Y == 720
+	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
+	//#define DSTYLE_G_X1280_Y720	1	/* xxxxx panel (1280*720) - 7" display */
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
@@ -1499,6 +1546,9 @@ extern "C" {
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
+	#define WITHLCDBACKLIGHTMIN 0
+	#define WITHLCDBACKLIGHTMAX 1
+
 #elif CTLREGSTYLE_SW2012CN
 	// управляющие регистры SW2012MINI COLOR 2 c цветным дисплеем ILI9163 и регулировкой выходной мощности
 	// управляющие регистры SW2016MINI
@@ -1528,6 +1578,9 @@ extern "C" {
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
 
+#define WITHLCDBACKLIGHTMIN 0
+#define WITHLCDBACKLIGHTMAX 1
+
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB
 
 	#define WITHPOWERTRIM		1	// Имеется управление мощностью
@@ -1554,6 +1607,9 @@ extern "C" {
 	//#define	BOARD_AGCCODE_1		0x01
 	#define WITHAGCMODENONE		1	/* Режимами АРУ не управляем */
 	#define BOARD_AGCCODE_OFF	0
+
+#define WITHLCDBACKLIGHTMIN 0
+#define WITHLCDBACKLIGHTMAX 1
 
 #elif CTLREGSTYLE_SW2013SF
 

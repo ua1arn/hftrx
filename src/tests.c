@@ -11,10 +11,7 @@
 #include "keyboard.h"
 #include "encoder.h"
 
-#include <math.h>
 #include "src/gui/gui.h"
-#include <stdio.h>
-
 #include "display/display.h"
 #include "formats.h"
 #include "codecs.h"
@@ -26,10 +23,13 @@
 	#include "sdcard.h"
 #endif /* WITHUSEFATFS */
 
+#include <math.h>
+#include <stdio.h>
+#include <time.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 
 
 #if 0
@@ -54,43 +54,43 @@ static void showpos(uint_fast8_t pos)
 // e-inc support functions
 static uint_fast8_t eink_lcd_busy(void)
 {
-	enum { WORKMASK = 1U << 1 };	/* PB1 */
+	enum { WORKMASK = 1uL << 1 };	/* PB1 */
 	arm_hardware_piob_inputs(WORKMASK);
 	return (GPIOB->IDR & WORKMASK) != 0;
 }
 static void eink_lcd_discharge(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 3 };	/* PB3 */
+	enum { WORKMASK = 1uL << 3 };	/* PB3 */
 	arm_hardware_piob_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
 static void eink_lcd_backlight(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 4 };	/* PB4 */
+	enum { WORKMASK = 1uL << 4 };	/* PB4 */
 	arm_hardware_piob_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
 static void eink_lcd_on_border(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 4 };	/* PB4 */
+	enum { WORKMASK = 1uL << 4 };	/* PB4 */
 	arm_hardware_piob_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
 static void eink_lcd_toggle_border(void)
 {
-	enum { WORKMASK = 1U << 4 };	/* PB4 */
+	enum { WORKMASK = 1uL << 4 };	/* PB4 */
 	GPIOB->ODR ^= WORKMASK;			// border bit
 }
 static void eink_lcd_pwron(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 5 };	/* PB5 */
+	enum { WORKMASK = 1uL << 5 };	/* PB5 */
 	arm_hardware_piob_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
 
 static void test_cpu_pwron(uint_fast8_t state)
 {
-	enum { WORKMASK = 1U << 11 };	/* PA11 */
+	enum { WORKMASK = 1uL << 11 };	/* PA11 */
 	arm_hardware_pioa_outputs(WORKMASK, WORKMASK * (state != 0));
 
 }
@@ -3519,7 +3519,7 @@ static void printtextfile(const char * filename)
 		{
 			// если буфер не заполнен - читаем
 			rc = f_read(& Fil, rbuff, sizeof rbuff, &br);	/* Read a chunk of file */
-			if (rc || !br) 
+			if (rc != FR_OK || !br)
 				break;			/* Error or end of file */
 			i = 0;		// начальное положение указателя в буфере для вывода данных
 			showprogress(filepos, fulllength);
@@ -3583,6 +3583,7 @@ static void dosaveserialport(const char * fname)
 		PRINTF(PSTR("can not start recording\n"));
 		return;	//die(rc);
 	}
+	PRINTF(PSTR("Write the file content: '%s'\n"), fname);
 
 	rxqclear();	// очистить буфер принятых символов
 
@@ -3666,10 +3667,10 @@ static void test_recodstart(void)
 /* записать в буфер для ответа 32-бит значение */
 unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
 {
-	buff [0] = LO_BYTE(v);
-	buff [1] = HI_BYTE(v);
-	buff [2] = HI_24BY(v);
-	buff [3] = HI_32BY(v);
+	buff [0] = v >> 0;
+	buff [1] = v >> 8;
+	buff [2] = v >> 16;
+	buff [3] = v >> 24;
 
 	return 4;
 }
@@ -4860,8 +4861,8 @@ static void ledsinit(void)
 #define LED_TARGET_PORT_S(v) do { R7S721_TARGET_PORT_S(7, v); } while (0)
 #define LED_TARGET_PORT_C(v) do { R7S721_TARGET_PORT_C(7, v); } while (0)
 
-enum { LEDBIT = 1U << 1 }; // P7_1
-enum { SW1BIT = 1U << 9 }; // P1_9
+enum { LEDBIT = 1uL << 1 }; // P7_1
+enum { SW1BIT = 1uL << 9 }; // P1_9
 
 #if 0 && WITHDEBUG && WITHUART1HW
 // "трассировка" с помощью выдачи на SPI порт информации о сработавших прерываниях
@@ -5410,28 +5411,6 @@ static void disableAllIRQs(void)
 
 }
 #endif /* (__CORTEX_A != 0) */
-
-#if (WITHTWIHW || WITHTWISW)
-static uint_fast32_t any_rd_reg_32bits(uint_fast8_t i2caddr, uint_fast8_t register_id)
-{
-	uint8_t v0, v1, v2, v3;
-
-	//i2c_start(i2caddr | 0x00);
-	//i2c_write_withrestart(register_id);
-	i2c_start(i2caddr | 0x01);
-	i2c_read(& v0, I2C_READ_ACK_1);	// ||
-	i2c_read(& v1, I2C_READ_ACK);	// ||
-	i2c_read(& v2, I2C_READ_ACK);	// ||
-	i2c_read(& v3, I2C_READ_NACK);	// ||
-
-	return
-			(((unsigned long) v3) << 24) |
-			(((unsigned long) v2) << 16) |
-			(((unsigned long) v1) << 8) |
-			(((unsigned long) v0) << 0) |
-			0;
-}
-#endif
 
 #if WITHOPENVG
 /*------------------------------------------------------------------------
@@ -6047,7 +6026,84 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 1 && CPUSTYLE_XC7Z
+	{
+		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
+	}
+#endif
+#if 0 && CPUSTYLE_XC7Z
+	{
+		PRINTF("GEM0 test:\n");
 
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		SCLR->APER_CLK_CTRL |= (0x01uL << 6);	// APER_CLK_CTRL.GEM0_CPU_1XCLKACT
+		SCLR->GEM0_CLK_CTRL = //(SCLR->GEM0_CLK_CTRL & ~ (0x00uL)) |
+				((uint_fast32_t) 0x08 << 20) |	// DIVISOR1
+				((uint_fast32_t) 0x05 << 8) |	// DIVISOR
+				((uint_fast32_t) 0x00 << 4) |	// SRCSEL: 00x: IO PLL
+				((uint_fast32_t) 0x01 << 0) |	// CLKACT
+				0;
+		SCLR->GEM0_RCLK_CTRL = 0x0000001uL;
+
+
+		ASSERT(GEM0->MODULE_ID == 0x00020118uL);
+		PRINTF("GEM0 test done\n");
+	}
+#endif
+#if 0
+	{
+		PRINTF("CPU speed changing test:\n");
+		stm32mp1_pll1_slow(1);
+		TP();
+		local_delay_ms(500);
+		stm32mp1_pll1_slow(0);
+		TP();
+		local_delay_ms(500);
+		stm32mp1_pll1_slow(1);
+		TP();
+		local_delay_ms(500);
+		stm32mp1_pll1_slow(0);
+		TP();
+		local_delay_ms(500);
+		stm32mp1_pll1_slow(1);
+		TP();
+		local_delay_ms(500);
+
+		for (;0;)
+		{
+			char c;
+			if (dbg_getchar(& c))
+			{
+				switch (c)
+				{
+				case '1':
+					stm32mp1_pll1_slow(1);
+					break;
+				case '0':
+					stm32mp1_pll1_slow(0);
+					break;
+				}
+				dbg_putchar(c);
+				if (c == 0x1b)
+					break;
+			}
+		}
+		PRINTF("CPU speed changing test done.\n");
+	}
+#endif
+#if 0
+	{
+		// gnu11 tests
+		enum e1 { WORKMASK1 = -1 << 7 };
+		uint32_t v1 = WORKMASK1;
+		enum e2 { WORKMASK2 = -1 << 15 };
+		uint32_t v2 = WORKMASK2;
+		PRINTF("v1=%08lX, v2=%08lX, %u, %u\n", v1, v2, sizeof (enum e1), sizeof (enum e2));
+		for (;;)
+			;
+
+	}
+#endif
 #if 1 && defined (__GNUC__)
 	{
 
@@ -6071,9 +6127,10 @@ void hightests(void)
 		PS* const tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
 		ASSERT(tiger != NULL);
 		unsigned cnt;
+		PRINTF("tiger: test started, CPU_FREQ=%lu kHz\n", (unsigned long) (CPU_FREQ / 1000));
 		for (cnt = 0;; ++ cnt)
 		{
-			PRINTF("tiger: cnt=%u\n", cnt);
+			const time_t start = time(NULL);
 			uint_fast8_t kbch, repeat;
 
 			if ((repeat = kbd_scan(& kbch)) != 0)
@@ -6084,6 +6141,8 @@ void hightests(void)
 			rendertiger(tiger, DIM_X, DIM_Y);
 			rendertest2(DIM_X, DIM_Y);
 			display_flush();		// наблюдаем процесс
+			const time_t end = time(NULL);
+			PRINTF("tiger: cnt=%u, %d S\n", cnt, (int) (end - start));
 		}
 		PS_destruct(tiger);
 
@@ -6147,7 +6206,7 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
-#if 1 && (__L2C_PRESENT == 1)
+#if 0 && (__L2C_PRESENT == 1)
 	{
 		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
 		// ZYNQ: RTL release R3p2
@@ -6159,8 +6218,8 @@ void hightests(void)
 		//PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_GetID() >> 6) & 0x0F);
 		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
 
-		PRINTF("L2C Data RAM latencies: %08lX\n", (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C)); // reg1_data_ram_control
-		PRINTF("L2C Tag RAM latencies: %08lX\n", (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
+		PRINTF("L2C Data RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C)); // reg1_data_ram_control
+		PRINTF("L2C Tag RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
 	}
 #endif
 #if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
@@ -6185,10 +6244,27 @@ void hightests(void)
 //		}
 	}
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+#if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
+	{
+		// SCU registers dump
+		// ZYNQ7000:
+		//	SCU Control Register=00000002
+		//	SCU Configuration Register=00000501
+		//	SCU CPU Power Status Register=03030000
+		//	Filtering Start Address Register=00100000
+		//	Filtering End Address Register=FFE00000
+		//PRINTF("SCU_CONTROL_BASE=%08lX\n", SCU_CONTROL_BASE);
+		PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
+		PRINTF("SCU Configuration Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [1]);	// 0x04
+		PRINTF("SCU CPU Power Status Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);	// 0x08
+		PRINTF("Filtering Start Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x10]);	// 0x40
+		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
+	}
+#endif
 #if 0 && CPUSTYLE_STM32MP1
 	{
-		PRINTF("stm32mp1_get_per_freq()=%lu\n",stm32mp1_get_per_freq());
-		PRINTF("stm32mp1_get_axiss_freq()=%lu\n",stm32mp1_get_axiss_freq());
+		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
+		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
 	}
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
@@ -6196,7 +6272,34 @@ void hightests(void)
 		unsigned i;
 		for (i = 1; i < 127; ++ i)
 		{
-			PRINTF("I2C 7-bit addr %02X: ID=%08lX\n", i, any_rd_reg_32bits(i * 2, 0));
+			uint8_t v;
+			unsigned addrw = i * 2;
+			unsigned addrr = addrw + 1;
+			////%%TP();
+			i2c_start(addrw);
+			i2c_write_withrestart(0x1B);
+			i2c_start(addrr);
+			i2c_read(& v, I2C_READ_ACK_NACK);
+			////%%TP();
+			PRINTF("I2C addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
+		}
+	}
+#endif
+#if 0 && (WITHTWIHW || WITHTWISW)
+	{
+		unsigned i;
+		for (i = 1; i < 127; ++ i)
+		{
+			uint8_t v;
+			unsigned addrw = i * 2;
+			unsigned addrr = addrw + 1;
+			////%%TP();
+			i2c2_start(addrw);
+			i2c2_write_withrestart(0x1B);
+			i2c2_start(addrr);
+			i2c2_read(& v, I2C_READ_ACK_NACK);
+			////%%TP();
+			PRINTF("I2C2 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
 		}
 	}
 #endif
@@ -6499,7 +6602,7 @@ void hightests(void)
 		#define RELAY_DDR DDRD		// переключение на вывод - управление трактом передачи и манипуляцией
 
 		// Управление передатчиком - сигналы TXPATH_ENABLE (PA11) и TXPATH_ENABLE_CW (PA10) - активны при нуле на выходе.
-		#define RELAY_BIT		(1U << PD5)
+		#define RELAY_BIT		(1uL << PD5)
 
 		RELAY_DDR |= RELAY_BIT;
 		unsigned offtime = 100;
@@ -6776,12 +6879,12 @@ void hightests(void)
 		HARDWARE_SDIOPOWER_INITIALIZE();
 		HARDWARE_SDIOPOWER_SET(1);
 
-		arm_hardware_piod_outputs((1U << 2), 1 * (1U << 2));	/* PD2 - SDIO_CMD	*/
-		arm_hardware_pioc_outputs((1U << 12), 1 * (1U << 12));	/* PC12 - SDIO_CK	*/
-		arm_hardware_pioc_outputs((1U << 8), 1 * (1U << 8));	/* PC8 - SDIO_D0	*/
-		arm_hardware_pioc_outputs((1U << 9), 1 * (1U << 9));	/* PC9 - SDIO_D1	*/
-		arm_hardware_pioc_outputs((1U << 10), 1 * (1U << 10));	/* PC10 - SDIO_D2	*/
-		arm_hardware_pioc_outputs((1U << 11), 1 * (1U << 11));	/* PC11 - SDIO_D3	*/
+		arm_hardware_piod_outputs((1uL << 2), 1 * (1uL << 2));	/* PD2 - SDIO_CMD	*/
+		arm_hardware_pioc_outputs((1uL << 12), 1 * (1uL << 12));	/* PC12 - SDIO_CK	*/
+		arm_hardware_pioc_outputs((1uL << 8), 1 * (1uL << 8));	/* PC8 - SDIO_D0	*/
+		arm_hardware_pioc_outputs((1uL << 9), 1 * (1uL << 9));	/* PC9 - SDIO_D1	*/
+		arm_hardware_pioc_outputs((1uL << 10), 1 * (1uL << 10));	/* PC10 - SDIO_D2	*/
+		arm_hardware_pioc_outputs((1uL << 11), 1 * (1uL << 11));	/* PC11 - SDIO_D3	*/
 
 		int i;
 		for (i = 0;; ++ i)
@@ -6793,12 +6896,12 @@ void hightests(void)
 			int f4 = (i & (1 << 4)) != 0;
 			int f5 = (i & (1 << 5)) != 0;
 
-			arm_hardware_piod_outputs((1U << 2), f0 * (1U << 2));	/* PD2 - SDIO_CMD	*/
-			arm_hardware_pioc_outputs((1U << 12), f1 * (1U << 12));	/* PC12 - SDIO_CK	*/
-			arm_hardware_pioc_outputs((1U << 8), f2 * (1U << 8));	/* PC8 - SDIO_D0	*/
-			arm_hardware_pioc_outputs((1U << 9), f3 * (1U << 9));	/* PC9 - SDIO_D1	*/
-			arm_hardware_pioc_outputs((1U << 10), f4 * (1U << 10));	/* PC10 - SDIO_D2	*/
-			arm_hardware_pioc_outputs((1U << 11), f5 * (1U << 11));	/* PC11 - SDIO_D3	*/
+			arm_hardware_piod_outputs((1uL << 2), f0 * (1uL << 2));	/* PD2 - SDIO_CMD	*/
+			arm_hardware_pioc_outputs((1uL << 12), f1 * (1uL << 12));	/* PC12 - SDIO_CK	*/
+			arm_hardware_pioc_outputs((1uL << 8), f2 * (1uL << 8));	/* PC8 - SDIO_D0	*/
+			arm_hardware_pioc_outputs((1uL << 9), f3 * (1uL << 9));	/* PC9 - SDIO_D1	*/
+			arm_hardware_pioc_outputs((1uL << 10), f4 * (1uL << 10));	/* PC10 - SDIO_D2	*/
+			arm_hardware_pioc_outputs((1uL << 11), f5 * (1uL << 11));	/* PC11 - SDIO_D3	*/
 
 		}
 	}
@@ -8329,7 +8432,7 @@ void midtests(void)
 #if 0 && CPUSTYLE_R7S721
 	// тестирование скорости после инициализации MMU
 	{
-		const uint32_t mask = (1U << 13);	// P6_13
+		const uint32_t mask = (1uL << 13);	// P6_13
 		// R7S721 pins
 		arm_hardware_pio6_outputs(mask, mask);
 		for (;;)
@@ -8906,7 +9009,7 @@ void lowtests(void)
 #if 0 && CPUSTYLE_R7S721
 	// тестирование скорости до инициализации MMU
 	{
-		const uint32_t mask = (1U << 13);	// P6_13
+		const uint32_t mask = (1uL << 13);	// P6_13
 		// R7S721 pins
 		arm_hardware_pio6_outputs(mask, mask);
 		for (;;)
@@ -8923,7 +9026,7 @@ void lowtests(void)
 		// Формирование импульсов на выводе процессора
 		for (;;)
 		{
-			//const uint32_t WORKMASK = 1UL << 31;	// PA31
+			//const uint32_t WORKMASK = 1uL << 31;	// PA31
 			const uint32_t WORKMASK =
 				(1uL << 13) |		// BP13
 				(1uL << 14) |		// BP14

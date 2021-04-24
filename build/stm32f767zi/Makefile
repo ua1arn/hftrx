@@ -28,7 +28,7 @@ HEX  = $(CP) -O ihex -R .noinit -R .bss
 BIN  = $(CP) -O binary -R .noinit -R .bss
 
 CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-2.1.2
+LWIPDIR = ../../src/lwip-1.4.1
 OBJDIR = ./obj
 
 # Define optimisation level here
@@ -162,7 +162,7 @@ ROM: $(OBJS) $(PROJECT)_rom.elf $(PROJECT)_rom.hex
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) -std=gnu11 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -std=gnu99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst obj/%, %, $(patsubst %.o, %.c, $@))) -o $@
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)

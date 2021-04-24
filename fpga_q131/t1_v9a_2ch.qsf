@@ -213,7 +213,6 @@ set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_RO
 set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 set_instance_assignment -name FAST_INPUT_REGISTER ON -to adc_ovfl
 set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to dac_d
-set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_rand
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_pga
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "1 MHz" -to adc_shdn
 set_instance_assignment -name IO_MAXIMUM_TOGGLE_RATE "10 MHz" -to cpu_miso

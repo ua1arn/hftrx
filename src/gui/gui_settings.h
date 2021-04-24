@@ -23,6 +23,7 @@ enum {
 	sliders_h = 18,				// от центра (*2)
 	button_round_radius = 5,	// радиус закругления кнопки
 	window_title_height = 26,	// высота области заголовка окна
+	edge_step = 15,				// отступ от границ окна
 	window_close_button_size = window_title_height,
 	window_title_indent = 20,	// горизонтальный отступ заголовка
 	touch_area_enlarge = 5,		// увеличение области вокруг элементов для упрощения попадания по мелким элементам

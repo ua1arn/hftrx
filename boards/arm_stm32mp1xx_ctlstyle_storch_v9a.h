@@ -387,6 +387,7 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9a_2ch.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
@@ -517,6 +518,7 @@
 	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
+	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
@@ -571,11 +573,12 @@
 	/* Board hardware configuration */
 	#define DDS1_TYPE DDS_TYPE_FPGAV1
 	#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
-	//#define WITHTSCINT	1				/* тестирование без кварца 32.768 кГц */
+	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
 	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
+	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define WITH_GT911_INTERRUPTS	1
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
@@ -624,6 +627,9 @@
 	#if WITHPOTAFGAIN
 		POTAFGAIN = AFGAIN_IXI,
 	#endif /* WITHPOTAFGAIN */
+	#if WITHPOTNFMSQL
+		POTNFMSQL = IFGAIN_IXI,
+	#endif /* WITHPOTNFMSQL */
 
 	#if WITHREFSENSOR
 		VREFIX = 17,		// Reference voltage

@@ -47,16 +47,8 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(CMSISDIR)/Core/Include \
 	$(CMSISDIR)/DSP/Include \
-	$(CMSISDIR)/DSP/ComputeLibrary/Include \
 	$(CMSISDIR)/DSP/Source \
-	$(CMSISDIR)/DSP/PrivateInclude \
-	$(LWIPDIR)/src/include \
-	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http \
-	$(OPENVGDIR)/include/VG \
-	$(OPENVGDIR)/include \
-	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src
+	$(CMSISDIR)/DSP/PrivateInclude
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC

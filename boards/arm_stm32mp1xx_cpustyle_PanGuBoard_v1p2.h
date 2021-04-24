@@ -655,6 +655,10 @@
 #endif /* WITHKEYBOARD */
 
 #if 1 // WITHTWISW
+
+	// I2C2
+	// I2C5: 0x72, 0x7A, 0xC0
+
 	// PH4 I2C2_SCL
 	// PH5 I2C2_SDA
 	#define TARGET_TWI_TWCK		(1u << 4)		// PH4 I2C2_SCL
@@ -686,12 +690,12 @@
 	// DCMI (J26), HDMI (U13 SII9022ACNU), AUDIO CODEC (U16, CS42L51-CNZR)
 	// PA11 I2C5_SCL
 	// PA12 I2C5_SDA
-	#define TARGET_TWI2_TWCK	(1u << 12)		// PA11 I2C5_SCL
+	#define TARGET_TWI2_TWCK	(1u << 11)		// PA11 I2C5_SCL
 	#define TARGET_TWI2_TWCK_PIN		(GPIOA->IDR)
 	#define TARGET_TWI2_TWCK_PORT_C(v) do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_TWI2_TWCK_PORT_S(v) do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 
-	#define TARGET_TWI2_TWD		(1u << 15)		// PA12 I2C5_SDA
+	#define TARGET_TWI2_TWD		(1u << 12)		// PA12 I2C5_SDA
 	#define TARGET_TWI2_TWD_PIN		(GPIOA->IDR)
 	#define TARGET_TWI2_TWD_PORT_C(v) do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_TWI2_TWD_PORT_S(v) do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
@@ -1090,6 +1094,21 @@
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
+#if 1
+	#define BOARD_SII902X_RESET_BIT	(1uL << 13)	// PanGu board: HDMI_RST PA13
+
+	#define BOARD_SII902X_RESET_SET(state) do { \
+			if (state) \
+				(GPIOA)->BSRR = BSRR_S(BOARD_SII902X_RESET_BIT); \
+			else \
+				(GPIOA)->BSRR = BSRR_C(BOARD_SII902X_RESET_BIT); \
+		} while (0)
+
+	#define BOARD_SII902X_INITIALIZE() do { \
+			arm_hardware_pioa_outputs(BOARD_SII902X_RESET_BIT, 1 * BOARD_SII902X_RESET_BIT); \
+		} while (0)
+#endif
+
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			I2S2HW_POOLDOWN(); \
@@ -1102,6 +1121,7 @@
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
 			USBD_FS_INITIALIZE(); \
+			BOARD_SII902X_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9A_H_INCLUDED */

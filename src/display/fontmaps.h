@@ -26,19 +26,35 @@ extern const FLASHMEM uint8_t S1D13781_smallfont_LTDC [][15][2];
 extern const FLASHMEM uint8_t S1D13781_smallfont2_LTDC [][16][2];
 extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
 //
-//extern const FLASHMEM uint8_t uc1601s_bigfont [13][2][12];
-//extern const FLASHMEM uint8_t uc1601s_halffont [12][2][10];
-//extern const FLASHMEM uint8_t uc1601s_font [] [6];
-//extern const FLASHMEM uint8_t uc1601s_bigfont [13][2][12];
-//extern const FLASHMEM uint8_t uc1601s_halffont [12][2][12];
-//
-//extern const FLASHMEM uint8_t uc1608_bigfont [13][5][24];
-//extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
-//extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
-//
-//extern const FLASHMEM uint8_t uc1608_bigfont [13][5][24];
-//extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
-//extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
+#if LCDMODE_LTDC
+
+	#define SMALLCHARH 15 /* Font height */
+	#define SMALLCHARW 16 /* Font width */
+	#define SMALLCHARH2 16 /* Font height */
+	#define SMALLCHARW2 10 /* Font width */
+	#define SMALLCHARH3 8 /* Font height */
+	#define SMALLCHARW3 8 /* Font width */
+
+#else /* LCDMODE_LTDC */
+
+	#if FONTSTYLE_ITALIC
+		extern const FLASHMEM uint8_t uc1601s_bigfont [13][2][12];
+		extern const FLASHMEM uint8_t uc1601s_halffont [12][2][12];
+	#else /* FONTSTYLE_ITALIC */
+		extern const FLASHMEM uint8_t uc1601s_bigfont [13][2][12];
+		extern const FLASHMEM uint8_t uc1601s_halffont [12][2][10];
+	#endif /* FONTSTYLE_ITALIC */
+	extern const FLASHMEM uint8_t uc1601s_font [] [6];
+
+	extern const FLASHMEM uint8_t uc1608_bigfont [13][5][24];
+	extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
+	extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
+
+	extern const FLASHMEM uint8_t uc1608_bigfont [13][5][24];
+	extern const FLASHMEM uint8_t uc1608_halffont [12][5][14];
+	extern const FLASHMEM uint8_t uc1608_smallfont [][2][8];
+
+#endif /* LCDMODE_LTDC */
 
 #if  LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341
 
@@ -72,13 +88,6 @@ extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
 	#endif /* DSTYLE_G_X320_Y240 */
 
 #else
-
-	#define SMALLCHARH 15 /* Font height */
-	#define SMALLCHARW 16 /* Font width */
-	#define SMALLCHARH2 16 /* Font height */
-	#define SMALLCHARW2 10 /* Font width */
-	#define SMALLCHARH3 8 /* Font height */
-	#define SMALLCHARW3 8 /* Font width */
 
 #endif
 

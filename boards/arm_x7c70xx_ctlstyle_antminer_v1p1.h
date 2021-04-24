@@ -19,97 +19,18 @@
 	#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
-	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
-	#define SELOUT_CLK (WITHCPUXOSC * 3)
-
 	// Варианты конфигурации тактирования
-	// ref1_ck, ref2_ck - 8..16 MHz
-	// PLL1, PLL2 VCOs
-	#if 1
-		//#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
+	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
+	#define ARM_PLL_MUL	40
+	#define ARM_PLL_DIV	2
+	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
 
-		// PLL1_1600
-		#define PLL1DIVM	2	// ref1_ck = 12 MHz
-		#define PLL1DIVP	1	// MPU
-		#define PLL1DIVQ	2
-		#define PLL1DIVR	2
+	#define DDR_PLL_MUL 32	// DDR_PLL_CTRL.PLL_FDIV value - 1066.656 MHz
+	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
+	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz
 
-		//#define PLL1DIVN	54	// 12*54 = 648 MHz
-		//#define PLL1DIVN	66	// 12*66 = 792 MHz
-		#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
-
-		// PLL2_1600
-#if 1
-		#define PLL2DIVM	2	// ref2_ck = 12 MHz
-		#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
-		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-		#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-#elif 0
-		#define PLL2DIVM	2	// ref2_ck = 12 MHz
-		#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
-		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-		#define PLL2DIVR	4	// DDR clock divider = 132 MHz
-#else
-		/* bad boards DDR3 clock = 300 MHz */
-		#define PLL2DIVM	2	// ref2_ck = 12 MHz
-		#define PLL2DIVN	50	// 600 MHz Valid division rations for DIVN: between 25 and 100
-		#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-		#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
-		#define PLL2DIVR	2	// DDR clock divider = 300 MHz
-#endif
-
-		// PLL3_800
-
-		// PLL4_800
-		#define PLL4DIVM	2	// ref2_ck = 12 MHz
-		#define PLL4DIVN	64	// 768 MHz
-		#define PLL4DIVP	2	// div2
-		//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
-		#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
-		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
-
-	#else
-		// HSI version (HSI=64 MHz)
-		// PLL1_1600
-		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
-		#define PLL1DIVP	1	// MPU
-		#define PLL1DIVQ	2
-		#define PLL1DIVR	2
-		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-		//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
-		#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
-
-#if 1
-		// PLL2_1600
-		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
-		#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
-		#define PLL2DIVQ	1	// GPU clock divider
-		#define PLL2DIVR	1	// DDR clock divider
-#else
-		// PLL2_1600
-		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL2DIVN	61//41	// 12.8 * 41 = 524.8 MHz
-		#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
-		#define PLL2DIVQ	2//1	// GPU clock divider
-		#define PLL2DIVR	3//1	// DDR clock divider
-#endif
-
-		// PLL3_800
-		// pll3_p_ck -> mcuss_ck - 209 MHz Max
-		#define PLL3DIVM	5	// ref2_ck = 12.8 MHz
-
-		// PLL4_800
-		#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL4DIVN	60	// 12.8 * 60 = 768 MHz
-		#define PLL4DIVP	2	// div2
-		//#define PLL4DIVQ	25	// LTDC clock divider = 30.72 MHz
-		#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
-		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
-
-	#endif
+	#define SCLR_UART_CLK_CTRL_DIVISOR 16
+	#define SCLR_SDIO_CLK_CTRL_DIVISOR 16
 
 	#if WITHI2SCLOCKFROMPIN
 		#define FPGADECIMATION 2560
@@ -266,7 +187,6 @@
 
 #if WITHISBOOTLOADER
 
-	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	// +++ заглушки для плат с DSP обработкой
 	#define	BOARD_AGCCODE_ON	0x00
 	#define	BOARD_AGCCODE_OFF	0x01
@@ -285,9 +205,15 @@
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
+
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	#define WITHUSEFATFS		1	// FatFS
+	#define WITHISBOOTLOADERFATFS 1
+	#define WITHISBOOTLOADERIMAGE "tc1_xc7z010_app.xyl32"
 
 #else /* WITHISBOOTLOADER */
 
@@ -332,7 +258,7 @@
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 
-	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
@@ -353,6 +279,8 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
+	#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_ant.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -383,7 +311,7 @@
 	#define WITHDISPLAYSWR_FPS	25
 	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-	#if 1
+	#if 0
 		#define WITHTOUCHGUI		1
 		//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHALPHA			64

@@ -144,15 +144,15 @@ uint_fast8_t stmpe811_TS_GetXYZ(
 	uint_fast32_t vdataXY;
 	uint_fast16_t xx, yy;
 
-#if WITHTSCINT
+#if WITH_STMPE811_INTERRUPTS
 	if (! tscpresent || ! tsc_int)
 		return 0;
 
 	tsc_int = 0;
-#else
+#else /* WITH_STMPE811_INTERRUPTS */
 	if (! tscpresent)
 		return 0;
-#endif
+#endif /* WITH_STMPE811_INTERRUPTS */
 
 	uint_fast8_t sta = i2cperiph_read8(DeviceAddr, STMPE811_REG_FIFO_STA);
 	if ((sta & 0x10) == 0)
@@ -248,10 +248,10 @@ static void stmpe811_TS_Start(uint_fast8_t DeviceAddr)
 		  0
 		  );
 
-#if WITHTSCINT
+#if WITH_STMPE811_INTERRUPTS
   i2cperiph_write8(DeviceAddr, STMPE811_REG_INT_CTRL, 0x07);
   i2cperiph_write8(DeviceAddr, STMPE811_REG_INT_EN, STMPE811_GIT_TOUCH);
-#endif
+#endif /* WITH_STMPE811_INTERRUPTS */
 
   /*  Clear all the status pending bits if any */
   i2cperiph_write8(DeviceAddr, STMPE811_REG_INT_STA, 0xFF);
@@ -260,8 +260,8 @@ static void stmpe811_TS_Start(uint_fast8_t DeviceAddr)
   local_delay_ms(2);
 }
 
-static void
-stmpe811_handler(void)
+void
+stmpe811_interrupt_handler(void)
 {
 	tsc_int = 1;
 }
@@ -284,11 +284,9 @@ void stmpe811_initialize(void)
 	{
 		stmpe811_TS_Start(BOARD_I2C_STMPE811);
 
-#if WITHTSCINT
-	const portholder_t int_pin = 1uL << 3;		/* P5_3 */
-	arm_hardware_pio5_inputs(int_pin);
-	arm_hardware_pio5_onchangeinterrupt(int_pin, 1, ARM_SYSTEM_PRIORITY, stmpe811_handler);	// P5_3 interrupt, rising edge sensitive
-#endif
+	#if WITH_STMPE811_INTERRUPTS
+		BOARD_STMPE811_INT_CONNECT();
+	#endif /* WITH_STMPE811_INTERRUPTS */
 	}
 }
 

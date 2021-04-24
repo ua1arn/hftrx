@@ -246,5 +246,6 @@ enum
 #define BOARD_NOTCH_OFF 0	// stub
 #define BOARD_NOTCH_MANUAL 1	// stub
 #define WITHLCDBACKLIGHTMIN 0	// stub
+#define WITHLCDBACKLIGHTMAX 1	// stub
 
 #endif /* ATMEGA_CTLSTYLE_V9CN6_H_INCLUDED */

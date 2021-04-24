@@ -1,6 +1,4 @@
 *.hex
-*.o
-*.d
 *.eep
 *.map
 *.elf

@@ -208,6 +208,14 @@ enum
 #if WITHPOTWPM
 	POTWPM = 4,		// потенциометр управления скоростью передачи в телеграфе
 #endif
+
+	XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+	REFMRRIX = BOARD_ADCMRRIN(2),
+	FWDMRRIX = BOARD_ADCMRRIN(3),
+	PWRMRRIX = FWDMRRIX,
+	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+
 	KI0 = 6, KI1 = 7	// клавиатура
 };
 

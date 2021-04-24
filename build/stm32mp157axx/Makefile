@@ -19,6 +19,19 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
+UADEFS += -D"WITHSMPSYSTEM"
+
+PRJROOT := ../..
+
+# Define project name here
+PROJECT = tc1_stm32mp157axx
+
+# Define linker script file here
+LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
+LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
+
+# List all user C define here, like -D_DEBUG=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -27,14 +40,6 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
-
-CMSISDIR = ../../../CMSIS_5/CMSIS
-LWIPDIR = ../../src/lwip-2.1.2
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = ../../src/OpenVG
-
-OBJDIR2 = obj
-OBJDIR = ./$(OBJDIR2)
 
 # This product incorporates the ARM dual-core Cortex-A7 MPCore, where the IP version is r0p5
 # debug architecture ARMv7.1.
@@ -45,16 +50,21 @@ CORE += -mfpu=neon-vfpv4
 #CORE += -mfpu=vfpv4
 
 # Define optimisation level here
-# ony -Og for app
+# olny -Og for app
 # Application
 #OPT = -Og
 OPT = -Ofast
 LTO = -flto
 
+CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
+
+OBJDIR = obj
+
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
-
-UADEFS += -D"WITHSMPSYSTEM"
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
@@ -90,18 +100,6 @@ DLIBS = -lm
 # Start of user section
 #
 
-SRCDIR = ../../src
-
-# Define project name here
-PROJECT = tc1_stm32mp157axx
-
-# Define linker script file here
-LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
-LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
-
-# List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
-
 # Define ASM defines here
 UADEFS += 
 
@@ -112,11 +110,10 @@ CSRC +=
 CPPSRC +=
 
 # List ASM source files here
-ASRC += \
- $(SRCDIR)/crt_CortexA.S
+ASRC +=
 
 # List all user directories here
-UINCDIR += ../.. ../../inc
+UINCDIR += $(PRJROOT) $(PRJROOT)/inc
 
 # List the user directory to look for the libraries here
 ULIBDIR +=
@@ -124,10 +121,21 @@ ULIBDIR +=
 # List all user libraries here
 ULIBS += 
 
-#SRC_EXCLUDES += ../../tools/rbf2c.c
-CSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c  $(SRCDIR)/*/*/*/*/*.c))
-CPPSRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.cpp $(SRCDIR)/*/*.cpp $(SRCDIR)/*/*/*.cpp $(SRCDIR)/*/*/*/*.cpp $(SRCDIR)/*/*/*/*/*.cpp))
-VPATH = $(SRCDIR)
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
+
+#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR) 
+SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR) 
+
+CSRC += $(call rwildcard, $(SRCDIRS), *.c)
+CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
+
+# not all .S files in directory need
+#ASRC += $(call rwildcard, $(SRCDIRS), *.S)
+ASRC += $(PRJROOT)/src/crt_CortexA.S
+
+VPATH = $(PRJROOT)
 
 #
 # End of user defines
@@ -138,9 +146,13 @@ INCDIR  = $(patsubst %,-I%,$(DINCDIR) $(UINCDIR))
 LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
-OBJS 	+= $(patsubst $(SRCDIR)/%.S,$(OBJDIR)/%.o,$(ASRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(CSRC))
-OBJS 	+= $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(CPPSRC))
+
+OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
+OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
+
+OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+
 LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
@@ -171,6 +183,12 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 all: APP2 $(PROJECT)_app.stm32 app.hex
 
+allZ:
+	@echo Src
+	@echo $(abspath $(CSRC))
+	@echo Obj at $(OBJDIR)
+	@echo $(abspath $(OBJS))
+
 bootloader: BOOT2 fsbl.stm32 boot.hex
   
 app_run: $(PROJECT)_app.stm32
@@ -180,9 +198,9 @@ app_run: $(PROJECT)_app.stm32
 flash: $(PROJECT)_app.stm32
 	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.stm32
 
-BOOT2: version $(OBJS) $(PROJECT)_boot.elf $(PROJECT)_boot.bin
+BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
-APP2: version $(OBJS) $(PROJECT)_app.elf $(PROJECT)_app.bin
+APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.stm32: $(PROJECT)_boot.bin
 	./stm32image -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
@@ -196,18 +214,17 @@ $(PROJECT)_app.stm32: $(PROJECT)_app.bin
 app.hex: $(PROJECT)_app.stm32
 	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.stm32 >$@
 
-
-$(OBJDIR)/%.o: %.c
+$(OBJSC):
 	@mkdir -p $(@D)
-	$(CC) -std=gnu11 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.c, $@))) -o $@
+	$(CC) -o $@ -std=gnu99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
 
-$(OBJDIR)/%.o: %.cpp
+$(OBJSCPP):
 	@mkdir -p $(@D)
-	$(GPP) -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.cpp, $@))) -o $@
+	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
-$(OBJDIR)/%.o: %.S
+$(OBJSA):
 	@mkdir -p $(@D)
-	$(AS) -c $(ASFLAGS) $(addprefix $(SRCDIR)/, $(patsubst $(OBJDIR2)/%, %, $(patsubst %.o, %.S, $@))) -o $@
+	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
 %_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@

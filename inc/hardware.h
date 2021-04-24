@@ -461,6 +461,7 @@ extern "C" {
 
 
 void cpu_initialize(void);
+void arm_hardware_reset(void);
 void cpu_initdone(void);	// секция init больше не нужна
 uint_fast32_t cpu_getdebugticks(void);	// получение из аппаратного счетчика монотонно увеличивающегося кода
 
@@ -468,8 +469,9 @@ void tickers_initialize(void);
 void spool_systimerbundle1(void);
 void spool_systimerbundle2(void);
 void spool_elkeybundle(void);
-void sysinit_pll_cache_initialize(void);	// PLL and caches inuitialize
+void sysinit_pll_initialize(void);	// PLL initialize
 void hardware_adc_startonescan(void);
+void stm32mp1_pll1_slow(uint_fast8_t slow);
 
 void hardware_timer_initialize(uint_fast32_t ticksfreq);
 
@@ -752,6 +754,8 @@ void SDIO_IRQHandler(void);
 void SDMMC1_IRQHandler(void);
 void DMA2_Stream6_IRQHandler(void);
 
+void SDIO0_IRQHandler(void);	// ZYNQ
+
 void SysTick_Handler(void);
 void Reset_CPUn_Handler(void);
 
@@ -805,6 +809,7 @@ uint_fast32_t hardware_dcdc_calcdivider(uint_fast32_t freq);
 void hardware_sdhost_initialize(void);
 void hardware_sdhost_setspeed(unsigned long ticksfreq);
 void hardware_sdhost_setbuswidth(uint_fast8_t use4bit);
+void hardware_sdhost_detect(uint_fast8_t present);		// в ответ на прерывание изменения состояния card detect
 
 void lowtests(void);
 void midtests(void);
@@ -946,11 +951,27 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
+#if CPUSTYLE_XC7Z
+#include "lib/zynq/src/xgpiops.h"
+#include "zynq_test.h"
+
+extern XGpioPs xc7z_gpio;
+
+void xc7z_hardware_initialize(void);
+#endif /* CPUSTYLE_XC7Z */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#include "product.h"
+#if 1
+	#include "product.h"
+#else
+	#include "boards/arm_stm32h7xx_tqfp100_ctlstyle_storch_v7z_vt.h"	// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, TFT 4.3", 2xmini-USB, mini SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_stm32h7xx_tqfp100_cpustyle_storch_v7z_vt.h"	// Rmainunit_v5l.pcb (mini USBx2, wide display interface) - mini RX
+#endif
+
 #include "taildefs.h"
 
 #endif // HARDWARE_H_INCLUDED

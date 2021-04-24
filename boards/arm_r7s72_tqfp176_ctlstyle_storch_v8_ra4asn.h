@@ -365,8 +365,8 @@
 	#define WITHDISPLAY_FPS		25
 	#define WITHDISPLAYSWR_FPS	25
 
-	#define WITHMAXPWRCALI		74	/* калибровочный параметр PWR-метра */
-	#define WITHSWRCALI			50	/* калибровочный параметр SWR-метра */
+	#define WITHMAXPWRCALI		150	/* калибровочный параметр PWR-метра */
+	#define WITHSWRCALI			150	/* калибровочный параметр SWR-метра */
 
 	#define WITHTOUCHGUI		1
 	#define WITHALPHA			64
@@ -451,7 +451,7 @@
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	//#define WITHTSCINT	1
+	//#define WITH_STMPE811_INTERRUPTS	1
 	#define WITH_GT911_INTERRUPTS	1
 	#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
@@ -529,7 +529,7 @@
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHTHERMOLEVEL */
 
-	#if 1
+	#if 0
 		// main board - 5W
 
 		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -563,8 +563,17 @@
 		PWRI = FWD,
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 напряжения питания ACS712ELCTR-30B-T).
+		THERMOMRRIX = BOARD_ADCMRRIN(0),  // кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX = BOARD_ADCMRRIN(1),  // кеш - индекc не должен повторяться в конфигурации
+		REFMRRIX = BOARD_ADCMRRIN(2),
+		FWDMRRIX = BOARD_ADCMRRIN(3),
+		PWRMRRIX = FWDMRRIX,
+		VOLTMRRIX = BOARD_ADCMRRIN(4),  // кеш - индекc не должен повторяться в конфигурации
+		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),    // кеш - индекc не должен повторяться в конфигурации
+		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),    // кеш - индекc не должен повторяться в конфигурации
 	#endif
 
 		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 6, KI4 = 7		// клавиатура

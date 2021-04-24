@@ -23,6 +23,7 @@ typedef struct editfreq_tag
 	uint32_t val;
 	uint8_t num;
 	uint8_t key;
+	uint8_t error;
 } editfreq_t;
 
 typedef struct editfreq2_tag
@@ -585,8 +586,16 @@ void display_1fmenu(
 	#define LABELBACK			COLORMAIN_BLACK
 
 #else /* COLORSTYLE_RED */
-	#define DESIGNBIGCOLOR 		COLORMAIN_YELLOW 	// GOLD
-	#define DESIGNBIGCOLORB 	COLORMAIN_SPECTRUMBG2		// цвет частоты дополнительного приемника
+
+	#if LCDMODE_MAIN_L8
+		#define DESIGNBIGCOLOR 		COLORMAIN_WHITE //COLORMAIN_YELLOW 	// GOLD
+		#define DESIGNBIGCOLORB 	COLORMAIN_WHITE //COLORMAIN_SPECTRUMBG2		// цвет частоты дополнительного приемника
+		#define DESIGNBIGCOLORBINACTIVE COLORMAIN_SPECTRUMBG2
+	#else /* LCDMODE_MAIN_L8 */
+		#define DESIGNBIGCOLOR 		COLORMAIN_WHITE //COLORMAIN_YELLOW 	// GOLD
+		#define DESIGNBIGCOLORB 	COLORMAIN_WHITE //COLORMAIN_SPECTRUMBG2		// цвет частоты дополнительного приемника
+		#define DESIGNBIGCOLORBINACTIVE COLORMAIN_GRAY
+	#endif /* LCDMODE_MAIN_L8 */
 
 	#define FMENUACTIVETEXT		COLORMAIN_WHITE
 	#define FMENUACTIVEBACK		COLORMAIN_DARKGREEN

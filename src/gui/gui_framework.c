@@ -44,6 +44,9 @@ static btn_bg_t btn_bg [] = {
 	{ 40, 40, },
 #elif WITHGUISTYLE_MINI
 	{ 94, 30, },
+	{ 86, 44, },
+	{ 50, 50, },
+	{ 30, 30, },
 #endif
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
@@ -51,7 +54,7 @@ enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
-static button_t close_button = { 0, 0, 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
+static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
 void gui_set_encoder2_rotate (int_fast8_t rotate)
 {
@@ -205,7 +208,7 @@ void reset_tracking(void)
 	gui.vector_move_y = 0;
 }
 
-/* Получить данные трекинга */
+/* Получить относительные координаты перемещения точки касания экрана */
 void get_gui_tracking(int_fast8_t * x, int_fast8_t * y)
 {
 	* x = gui.vector_move_x;
@@ -547,9 +550,13 @@ void open_window(window_t * win)
 /* при mode = WINDOW_POSITION_MANUAL в качестве необязательных параметров передать xmax и ymax */
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
-	uint_fast8_t edge_step = 20;
 	uint_fast8_t title_length = strlen(win->name) * SMALLCHARW;
-	uint_fast16_t xmax = 0, ymax = 0;
+	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y;
+
+#if WITHGUISTYLE_MINI
+	// Для разрешения 480х272 окна всегда полноэкранные
+	mode = WINDOW_POSITION_FULLSCREEN;
+#endif
 
 	switch (mode)
 	{
@@ -563,6 +570,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		}
 		break;
 
+	case WINDOW_POSITION_FULLSCREEN:
 	case WINDOW_POSITION_AUTO:
 		{
 			if (win->bh_ptr != NULL)
@@ -611,28 +619,75 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		}
 		break;
 
-	case WINDOW_POSITION_FULLSCREEN:
-		{
-			const window_t * win_main = get_win(WINDOW_MAIN);
-			const uint_fast8_t h = win_main->bh_ptr[0].h;
-
-			win->x1 = 0;
-			win->y1 = 0;
-			win->w = WITHGUIMAXX;
-			win->h = WITHGUIMAXY - h;
-		}
-	break;
-
 	default:
 
 		break;
 	}
 
-	if (mode != WINDOW_POSITION_FULLSCREEN)
+	// Выравнивание массива оконных элементов по центру окна
+
+	if (mode == WINDOW_POSITION_FULLSCREEN)
 	{
-		win->w = xmax > title_length ? (xmax + edge_step) : (title_length + edge_step * 2);
+		shift_x = (win->w - xmax) / 2;
+		shift_y = (win->h - ymax) / 2 + (strcmp(win->name, "") ? window_title_height : 0);
+	}
+	else
+	{
+		shift_x = edge_step;
+		shift_y = window_title_height + edge_step;
+	}
+
+	if (win->bh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->bh_count; i++)
+		{
+			button_t * bh = & win->bh_ptr [i];
+			bh->x1 += shift_x;
+			bh->y1 += shift_y;
+			ASSERT(bh->x1 + bh->w < WITHGUIMAXX);
+			ASSERT(bh->y1 + bh->h < WITHGUIMAXY);
+		}
+	}
+
+	if (win->lh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->lh_count; i++)
+		{
+			label_t * lh = & win->lh_ptr [i];
+			lh->x += shift_x;
+			lh->y += shift_y;
+			ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
+			ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+		}
+	}
+
+	if (win->sh_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->sh_count; i++)
+		{
+			slider_t * sh = & win->sh_ptr [i];
+			sh->x += shift_x;
+			sh->y += shift_y;
+//			ASSERT(sh->x < WITHGUIMAXX);
+//			ASSERT(sh->y < WITHGUIMAXY);
+		}
+	}
+
+	if (mode == WINDOW_POSITION_FULLSCREEN)
+	{
+		const window_t * win_main = get_win(WINDOW_MAIN);
+		const uint_fast8_t h = win_main->bh_ptr[0].h;
+
+		win->x1 = 0;
+		win->y1 = 0;
+		win->w = WITHGUIMAXX;
+		win->h = WITHGUIMAXY - h - (strcmp(win->name, "") ? window_title_height : 0);
+	}
+	else
+	{
+		win->w = xmax > title_length ? (xmax + edge_step * 2) : (title_length + edge_step * 2);
 		win->w = (win->is_close && win->w < title_length + window_close_button_size * 2) ? (win->w + window_close_button_size) : win->w;
-		win->h = ymax + edge_step;
+		win->h = ymax + shift_y + edge_step;
 		win->y1 = ALIGN_Y - win->h / 2;
 
 		switch (win->align_mode)
@@ -660,6 +715,11 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		ASSERT(win->x1 + win->w < WITHGUIMAXX);
 		ASSERT(win->y1 + win->h < WITHGUIMAXY);
 	}
+
+	win->draw_x1 = win->x1 + edge_step;
+	win->draw_y1 = win->y1 + edge_step + (strcmp(win->name, "") ? window_title_height : 0);
+	win->draw_x2 = win->w - edge_step;
+	win->draw_y2 = win->h - edge_step;
 
 	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	elements_state(win);
@@ -724,7 +784,7 @@ static void draw_button(const button_t * const bh)
 
 	if ((x1 + bh->w >= WITHGUIMAXX) || (y1 + bh->h >= WITHGUIMAXY))
 	{
-		PRINTF("%s %s\n", bh->name, bh->text);
+		PRINTF("%s %s x+w: %d y+h: %d\n", bh->name, bh->text, x1 + bh->w, y1 + bh->h);
 		ASSERT(0);
 	}
 

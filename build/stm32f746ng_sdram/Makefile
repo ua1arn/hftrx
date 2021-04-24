@@ -26,7 +26,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 HEX  = $(CP) -O ihex -R .bss -R .heap
 BIN  = $(CP) -O binary -R .bss -R .heap
 
-CMSISDIR = ../../../CMSIS_5/CMSIS
+CMSISDIR = ../../CMSIS_5/CMSIS
 LWIPDIR = ../../src/lwip-2.1.2
 OBJDIR = ./obj
 
@@ -50,11 +50,12 @@ DINCDIR = \
 	$(CMSISDIR)/Core/Include \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/DSP/ComputeLibrary/Include \
+	$(CMSISDIR)/Core/Source \
 	$(CMSISDIR)/DSP/Source \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/src/apps/http \
+	$(LWIPDIR)/apps/httpserver_raw \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \

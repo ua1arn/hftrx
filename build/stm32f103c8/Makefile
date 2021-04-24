@@ -31,7 +31,7 @@ CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
 
 # Define optimisation level here
-OPT = -Ofast
+OPT = -Os
 LTO = -flto
 
 MCU  = cortex-m3
@@ -139,7 +139,7 @@ CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: ROM
 
 flash: ROM
-	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -rst
+	ST-LINK_CLI.exe -Q -V -P $(PROJECT)_rom.hex -c UR -HardRst
 	
 app_run:
 	ST-LINK_CLI.exe -Q -rst

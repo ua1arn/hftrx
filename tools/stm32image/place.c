@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void placeto(unsigned sector)
+int placeto(unsigned sector)
 {
 	FILE * disk = fopen("test.img", "r+b");
 	FILE * bootloader = fopen("app.stm32", "rb");
@@ -18,7 +18,7 @@ void placeto(unsigned sector)
 		fputc(c, disk);
 	}
 	fclose(bootloader);
-	fclose(disk);
+	return fclose(disk);
 }
 
 int main(void)

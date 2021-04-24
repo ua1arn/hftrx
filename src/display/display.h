@@ -386,7 +386,9 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 #endif /* LCDMODE_LTDC */
 
-#if (__CORTEX_A != 0) ||  (__CORTEX_M != 0)
+#ifndef DCACHEROWSIZE
+	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
+#elif (__CORTEX_A != 0) ||  (__CORTEX_M != 0)
 	#define GXALIGN (DCACHEROWSIZE / LCDMODE_PIXELSIZE)	/* количество пикселей в строке видеобуфера кратно этому заначению */
 #else
 	#define GXALIGN 1	/* количество пикселей в строке видеобуфера кратно этому заначению */
@@ -429,6 +431,9 @@ void tc358768_initialize(void);
 void tc358768_deinitialize(void);
 void panel_initialize(void);
 void panel_deinitialize(void);
+
+void sii9022_initialize(void);
+
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);

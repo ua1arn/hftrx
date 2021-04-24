@@ -529,6 +529,17 @@ void elkey_set_slope(uint_fast8_t slope);	// скорость уменьшени
 uint_fast8_t elkey_get_output(void);
 uint_fast8_t elkey_getnextcw(void);	// Получение символа для передачи (только верхний регистр)
 
+
+/* состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче) */
+// Параметр функции board_set_seqphase()
+enum
+{
+	SEQPHASE_INIT,	// RX
+	SEQPHASE_FULLTX,	// TX
+	//
+	SEQPHASE_COUNT
+};
+
 /* обработка меню - установить задержку пре переходе на передачу и обратно. */
 void seq_set_rxtxdelay(
 	uint_fast8_t rxtxdelay, 
@@ -545,6 +556,8 @@ void seq_ask_txstate(
 	uint_fast8_t tx);	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 
 void seq_purge(void);	/* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */
+
+uint_fast8_t seq_get_phase(void);	// состояние секвенсора (промежуточные состояния для подготовки передачи и переключения реле при передаче)
 
 uint_fast8_t hardware_getshutdown(void);	/* возвращаем запрос на выключение - от компаратора питания */
 

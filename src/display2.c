@@ -269,14 +269,16 @@ static const COLORPAIR_T colors_1stateBlue [1] =
 
 // Параметры отображения частоты дополнительного приемника
 // синий
-static const COLORPAIR_T colors_1freqB [1] =
+static const COLORPAIR_T colors_2freqB [2] =
 {
+	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
 	{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
 // Параметры отображения режима дополнительного приемника
 // синий
-static const COLORPAIR_T colors_1modeB [1] =
+static const COLORPAIR_T colors_2modeB [2] =
 {
+	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
 	{	DESIGNBIGCOLORB,	LABELBACK,	},
 };
 
@@ -291,6 +293,8 @@ static const COLORPAIR_T colors_1mode [1] =
 {
 	{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
+
+#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
 // Тестовая функция - прототип для элементов отображения
 static void
@@ -309,6 +313,7 @@ display2_testvidget(
 	colpip_string_tbg(colmain_fb_draw(), DIM_X, DIM_Y, x, y + 50, "Test", COLORMAIN_WHITE);
 
 }
+#endif /* (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 
 // todo: switch off -Wunused-function
 
@@ -466,10 +471,15 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
 	return swr10;
 }
-
+#else
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
+{
+	return 0;
+}
 #endif /* WITHTX */
 
-#if WITHINTEGRATEDDSP
+#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
+
 enum
 {
 	NOVERLAP = 1 << WITHFFTOVERLAPPOW2,		// Количество перекрывающися буферов FFT спектра
@@ -504,7 +514,8 @@ static void printsigwnd(void)
 	}
 	PRINTF(PSTR("};\n"));
 }
-#endif /* WITHINTEGRATEDDSP */
+
+#endif /*  (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE */
 
 #if LCDMODE_LTDC && WITHBARS
 
@@ -1294,8 +1305,10 @@ static void display_freqchr_b(
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
+	uint_fast8_t state;
+	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 
-	colmain_setcolors3(colors_1freqB [0].fg, colors_1freq [0].bg, colors_1freqB [0].fg);
+	colmain_setcolors3(colors_2freqB [state].fg, colors_2freqB [state].bg, colors_2freqB [state].fg);
 	if (pctx != NULL && pctx->type == DCTX_FREQ)
 	{
 #if WITHDIRECTFREQENER
@@ -1331,10 +1344,12 @@ static void display2_freqX_b(
 	uint_fast8_t rj;
 	uint_fast8_t fullwidth = display_getfreqformat(& rj);
 	const uint_fast8_t comma = 3 - rj;
+	uint_fast8_t state;
+	hamradio_get_vfomode3_value(& state);	// state - признак активного SPLIT (0/1)
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	colmain_setcolors(colors_1freqB [0].fg, colors_1freqB [0].bg);
+	colmain_setcolors(colors_2freqB [state].fg, colors_2freqB [state].bg);
 	uint_fast8_t lowhalf = HALFCOUNT_SMALL - 1;
 	do
 	{
@@ -1668,7 +1683,8 @@ static void display2_notch5(
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 	int_fast32_t freq;
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
-	const char FLASHMEM * const labels [2] = { hamradio_get_notchtype5_P(), hamradio_get_notchtype5_P(), };
+	const char FLASHMEM * const label = hamradio_get_notchtype5_P();
+	const char FLASHMEM * const labels [2] = { label, label, };
 	display2_text_P(x, y, labels, colors_2state, state);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
@@ -1712,7 +1728,7 @@ static void display2_vfomode3(
 	dctx_t * pctx
 	)
 {
-	uint_fast8_t state;
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
 	display2_text(x, y, labels, colors_1state, 0);
 }
@@ -1725,7 +1741,7 @@ static void display_vfomode5(
 	dctx_t * pctx
 	)
 {
-	uint_fast8_t state;
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode5_value(& state), };
 	display2_text(x, y, labels, colors_1state, 0);
 }
@@ -2033,7 +2049,7 @@ static void display2_mainsub3(
 	)
 {
 #if WITHUSEDUALWATCH
-	uint_fast8_t state;
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	hamradio_get_vfomode5_value(& state);
 	const char FLASHMEM * const label = hamradio_get_mainsubrxmode3_value_P();
 	ASSERT(strlen(label) == 3);
@@ -2191,7 +2207,7 @@ static void display_vfomode1(
 	dctx_t * pctx
 	)
 {
-	uint_fast8_t state;
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const label = hamradio_get_vfomode3_value(& state);
 
 	colmain_setcolors(LABELTEXT, LABELBACK);
@@ -2217,6 +2233,8 @@ static void display2_mode3_a(
 	display2_text_P(x, y, labels, colors_1mode, 0);
 }
 
+#if WITHTOUCHGUI
+
 static void display2_mode_lower_a(
 	uint_fast8_t x,
 	uint_fast8_t y,
@@ -2229,6 +2247,7 @@ static void display2_mode_lower_a(
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, GRID2X(x), GRID2Y(y), labels, colors_1mode [0].fg);
 }
 
+#endif /* WITHTOUCHGUI */
 
 // SSB/CW/AM/FM/...
 static void display2_mode3_b(
@@ -2237,9 +2256,12 @@ static void display2_mode3_b(
 	dctx_t * pctx
 	)
 {
-	const char FLASHMEM * const labels [1] = { hamradio_get_mode_b_value_P(), };
+	const char FLASHMEM * const label = hamradio_get_mode_b_value_P();
+	const char FLASHMEM * const labels [2] = { label, label };
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
+	hamradio_get_vfomode3_value(& state);
 	ASSERT(strlen(labels [0]) == 3);
-	display2_text_P(x, y, labels, colors_1modeB, 0);
+	display2_text_P(x, y, labels, colors_2modeB, state);
 }
 
 // dd.dV - 5 places
@@ -2957,6 +2979,15 @@ enum
 		{	16, 0,	display2_lockstate4,	REDRM_MODE, REDRSUBSET_MENU, },	// состояние блокировки валкодера
 	#endif /* WITHMENU */
 	};
+#if WITHMENU
+	void display2_getmultimenu(multimenuwnd_t * p)
+	{
+		p->multilinemenu_max_rows = 1;
+		p->ystep = 1;	// количество ячеек разметки на одну строку меню
+		p->reverse = 0;
+		p->valuew = 8;	/* количество текстовых символов занимаемых полем вывола значения в меню. */
+	}
+#endif /* WITHMENU */
 
 #elif DSTYLE_T_X20_Y2_IGOR
 
@@ -4630,7 +4661,6 @@ enum
 			{	0,	9,	display2_bars,		REDRM_BARS, PG0, },	// S-METER, SWR-METER, POWER-METER
 			{	0,	10,	display2_legend,	REDRM_MODE, PG0, },	// Отображение оцифровки шкалы S-метра
 			/* ---------------------------------- */
-			{
 			{	0,	9,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
 			{	0,	9,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
 			{	0,	9,	display2_spectrum,	REDRM_BARS, PG1, },// подготовка изображения спектра

@@ -750,38 +750,6 @@ hwacc_fillrect_u32(
 
 #endif /* LCDMODE_PIXELSIZE == 4 */
 
-#if WITHDMA2DHW
-
-void arm_hardware_dma2d_initialize(void)
-{
-#if CPUSTYLE_STM32H7XX
-	/* Enable the DMA2D Clock */
-	RCC->AHB3ENR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
-	(void) RCC->AHB3ENR;
-
-#else /* CPUSTYLE_STM32H7XX */
-	/* Enable the DMA2D Clock */
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2DEN;	/* DMA2D clock enable */
-	(void) RCC->AHB1ENR;
-
-#endif /* CPUSTYLE_STM32H7XX */
-
-	/* set AXI master timer */
-	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT_Msk | DMA2D_AMTCR_EN_Msk)) |
-		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
-		(DMA2D_AMTCR_DT_ENABLE << DMA2D_AMTCR_EN_Pos) |
-		0;
-#if 0
-	static ALIGNX_BEGIN uint32_t clut [256] ALIGNX_END;
-	memset(clut, 0xFF, sizeof clut);
-	arm_hardware_flush((uintptr_t) clut, sizeof clut);
-	DMA2D->FGCMAR = (uintptr_t) clut;
-	DMA2D->BGCMAR = (uintptr_t) clut;
-#endif
-}
-
-#endif /* WITHDMA2DHW */
-
 extern const char * savestring;
 
 // получить адрес требуемой позиции в буфере
@@ -2323,7 +2291,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 {
 	unsigned i;
 
-	PRINTF("display2_xltrgb24: init indexed colors\n");
+	//PRINTF("display2_xltrgb24: init indexed colors\n");
 
 	for (i = 0; i < 256; ++ i)
 	{
@@ -2408,7 +2376,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #endif /* COLORSTYLE_ATS52 */
 
 #elif LCDMODE_COLORED && ! LCDMODE_DUMMY	/* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
-	PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");
+	//PRINTF("display2_xltrgb24: init RRRRRGGG GGGBBBBB colos\n");
 	// Обычная таблица - все цвета могут быть использованы как индекс
 	// Водопад отображается без использования инлдексов цветов
 
@@ -2425,5 +2393,37 @@ void display2_xltrgb24(COLOR24_T * xltable)
 #endif /* LCDMODE_MAIN_L8 && LCDMODE_PIP_L8 */
 }
 
-
 #endif /* ! (LCDMODE_DUMMY || LCDMODE_HD44780) */
+
+#if WITHDMA2DHW
+
+void arm_hardware_dma2d_initialize(void)
+{
+#if CPUSTYLE_STM32H7XX
+	/* Enable the DMA2D Clock */
+	RCC->AHB3ENR |= RCC_AHB3ENR_DMA2DEN;	/* DMA2D clock enable */
+	(void) RCC->AHB3ENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	/* Enable the DMA2D Clock */
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2DEN;	/* DMA2D clock enable */
+	(void) RCC->AHB1ENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+
+	/* set AXI master timer */
+	DMA2D->AMTCR = (DMA2D->AMTCR & ~ (DMA2D_AMTCR_DT_Msk | DMA2D_AMTCR_EN_Msk)) |
+		(DMA2D_AMTCR_DT_VALUE << DMA2D_AMTCR_DT_Pos) |
+		(DMA2D_AMTCR_DT_ENABLE << DMA2D_AMTCR_EN_Pos) |
+		0;
+#if 0
+	static ALIGNX_BEGIN uint32_t clut [256] ALIGNX_END;
+	memset(clut, 0xFF, sizeof clut);
+	arm_hardware_flush((uintptr_t) clut, sizeof clut);
+	DMA2D->FGCMAR = (uintptr_t) clut;
+	DMA2D->BGCMAR = (uintptr_t) clut;
+#endif
+}
+
+#endif /* WITHDMA2DHW */
+
