@@ -297,7 +297,8 @@
 	//#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 	//#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define FORMATFROMLIBRARY 	1
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
