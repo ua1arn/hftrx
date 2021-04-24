@@ -3090,7 +3090,7 @@ filter_t fi_2p0_455 =
 
 #if WITHSUBTONES
 	uint8_t gsubtonei;	// номер subtone
-	uint8_t gsbtonenable;	// разрешить формирование subtone
+	uint8_t gctssenable;	// разрешить формирование subtone
 #endif /* WITHSUBTONES */
 
 #endif /* WITHTX */
@@ -3807,7 +3807,7 @@ enum
 		};
 
 		static uint_fast8_t gsubtonei = 18;	// частота subtone = 77.0 герц
-		static uint_fast8_t gsbtonenable;	// разрешить формирование subtone
+		static uint_fast8_t gctssenable;	// разрешить формирование subtone
 	#endif /* WITHSUBTONES */
 
 
@@ -9066,7 +9066,7 @@ updateboard(
 
 		#if WITHIF4DSP
 			#if WITHTX && WITHSUBTONES
-				board_set_subtonelevel(gsbtonenable && gtx && getmodetempl(txsubmode)->subtone ? gsubtonelevel : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+				board_set_subtonelevel(gctssenable && gtx && getmodetempl(txsubmode)->subtone ? gsubtonelevel : 0);	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 			#endif /* WITHTX && WITHSUBTONES */
 			board_set_aflowcutrx(bwseti_getlow(bwseti));	/* Нижняя частота среза фильтра НЧ по приему */
 			board_set_afhighcutrx(bwseti_gethigh(bwseti));	/* Верхняя частота среза фильтра НЧ по приему */
@@ -9099,7 +9099,7 @@ updateboard(
 			#if WITHSUBTONES
 				// Установка параметров  Continuous Tone-Coded Squelch System or CTCSS
 				board_subtone_setfreq(gsubtones [gsubtonei]);	// частота subtone (до десятых долей герца).
-				board_subtone_enable_user(gsbtonenable && gtx && getmodetempl(txsubmode)->subtone);
+				board_subtone_enable_user(gctssenable && gtx && getmodetempl(txsubmode)->subtone);
 			#endif /* WITHSUBTONES */
 			#if WITHVOX
 				vox_enable(gvoxenable && getmodetempl(txsubmode)->vox, voxdelay);		/* разрешение голосового управления переходом на передачу */
@@ -15403,7 +15403,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHUSBCDCACM == 0 */
 	{
-		QLABEL("CAT DTR "), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("CAT DTR "), 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, cat1dtrenable),
@@ -15414,7 +15414,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHTX
 	{
-		QLABEL("CAT RTS "), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("CAT RTS "), 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1,
 		offsetof(struct nvmap, cat1rtsenable),
@@ -15436,7 +15436,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	#endif /* WITHTX */
 #if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
 	{
-		QLABEL("CAT2 DTR"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("CAT2 DTR"), 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, cat2dtrenable),
@@ -15447,7 +15447,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#if WITHTX
 	{
-		QLABEL("CAT2 RTS"), 7, 3, RJ_YES,	ISTEP1,
+		QLABEL("CAT2 RTS"), 7, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
 		0, 1, 
 		offsetof(struct nvmap, cat2rtsenable),
@@ -15487,10 +15487,10 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("CTCSS   "), 8, 3, RJ_ON,	ISTEP1,	//  Continuous Tone-Coded Squelch System or CTCSS control
 		ITEM_VALUE,
 		0, 1, 
-		offsetof(struct nvmap, gsbtonenable),
+		offsetof(struct nvmap, gctssenable),
 		nvramoffs0,
 		NULL,
-		& gsbtonenable,
+		& gctssenable,
 		getzerobase, 
 	},
 	{
