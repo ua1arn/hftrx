@@ -6164,18 +6164,18 @@ void hightests(void)
 
 			//         FACES
 			//    Indexes     RGB
-			0,1,2,   0, 255, 0,
-			1,2,3,   0, 255, 0,
-			0,1,4,   0, 255, 0,
-			1,4,5,   0, 255, 0,
-			0,4,6,   0, 255, 0,
-			0,2,6,   0, 255, 0,
-			2,3,6,   0, 255, 0,
-			3,6,7,   0, 255, 0,
-			1,3,7,   0, 255, 0,
-			1,5,7,   0, 255, 0,
-			5,6,7,   0, 255, 0,
-			4,5,6,   0, 255, 0,
+			0+8,1+8,2+8,   0, 255, 0,
+			1+8,2+8,3+8,   0, 255, 0,
+			0+8,1+8,4+8,   0, 255, 0,
+			1+8,4+8,5+8,   0, 255, 0,
+			0+8,4+8,6+8,   0, 255, 0,
+			0+8,2+8,6+8,   0, 255, 0,
+			2+8,3+8,6+8,   0, 255, 0,
+			3+8,6+8,7+8,   0, 255, 0,
+			1+8,3+8,7+8,   0, 255, 0,
+			1+8,5+8,7+8,   0, 255, 0,
+			5+8,6+8,7+8,   0, 255, 0,
+			4+8,5+8,6+8,   0, 255, 0,
 
 		};
 
@@ -6184,9 +6184,11 @@ void hightests(void)
 		dsp3D_setLightPosition(0,0,30);
 		dsp3D_setCameraTarget(0,0,0);
 
-
+		unsigned cnt = 0;
+		PRINTF("3d: test started, CPU_FREQ=%lu kHz\n", (unsigned long) (CPU_FREQ / 1000));
 		for (;;)
 		{
+			const time_t start = time(NULL);
 			meshRotation[0] = 0;
 			meshRotation[1] = 0;
 			meshRotation[2] = 0;
@@ -6199,12 +6201,15 @@ void hightests(void)
 				meshRotation[1]+=a;
 				//meshRotation[2]+=a;
 
-				dsp3D_renderFlat(dsp3dModel);
-				//dsp3D_renderWireframe(dsp3dModel);
+				//dsp3D_renderGouraud(dsp3dModel);
+				//dsp3D_renderFlat(dsp3dModel);
+				dsp3D_renderWireframe(dsp3dModel);
 
 				display_nextfb();
-				//local_delay_ms(100);
+				local_delay_ms(100);
 			}
+			const time_t end = time(NULL);
+			PRINTF("rd: cnt=%u, %d S\n", cnt, (int) (end - start));
 		}
 	}
 #endif
