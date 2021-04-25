@@ -80,6 +80,7 @@ void dsp3D_LL_clearScreen(color32_t color)
 void dsp3D_LL_switchScreen(void)
 {
 	// YOUR IMPLEMENTATION
+	display_nextfb();
 }
 
 void dsp3D_LL_writeToDepthBuffer(int32_t x, int32_t y, float32_t value)
