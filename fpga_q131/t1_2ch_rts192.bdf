@@ -629,38 +629,6 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -1600 -1104 -1536 -1056)
-	(text "AND2" (rect 1 0 25 10)(font "Arial" (font_size 6)))
-	(text "inst72" (rect 3 37 32 49)(font "Arial" ))
-	(port
-		(pt 0 16)
-		(input)
-		(text "IN1" (rect 2 7 19 19)(font "Courier New" (bold))(invisible))
-		(text "IN1" (rect 2 7 19 19)(font "Courier New" (bold))(invisible))
-		(line (pt 0 16)(pt 14 16))
-	)
-	(port
-		(pt 0 32)
-		(input)
-		(text "IN2" (rect 2 23 19 35)(font "Courier New" (bold))(invisible))
-		(text "IN2" (rect 2 23 19 35)(font "Courier New" (bold))(invisible))
-		(line (pt 0 32)(pt 14 32))
-	)
-	(port
-		(pt 64 24)
-		(output)
-		(text "OUT" (rect 48 15 65 27)(font "Courier New" (bold))(invisible))
-		(text "OUT" (rect 48 15 65 27)(font "Courier New" (bold))(invisible))
-		(line (pt 42 24)(pt 64 24))
-	)
-	(drawing
-		(line (pt 14 12)(pt 30 12))
-		(line (pt 14 37)(pt 31 37))
-		(line (pt 14 12)(pt 14 37))
-		(arc (pt 31 37)(pt 30 12)(rect 18 12 43 37))
-	)
-)
-(symbol
 	(rect -1792 -1088 -1744 -1056)
 	(text "NOT" (rect 1 0 21 10)(font "Arial" (font_size 6)))
 	(text "inst73" (rect 3 21 32 33)(font "Arial" ))
@@ -4345,9 +4313,48 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -3464 1152 -3256 1536)
+	(rect -1608 -1104 -1544 -1056)
+	(text "AND3" (rect 1 0 25 10)(font "Arial" (font_size 6)))
+	(text "inst72" (rect 3 37 32 49)(font "Arial" ))
+	(port
+		(pt 0 16)
+		(input)
+		(text "IN1" (rect 2 7 19 19)(font "Courier New" (bold))(invisible))
+		(text "IN1" (rect 2 7 19 19)(font "Courier New" (bold))(invisible))
+		(line (pt 0 16)(pt 16 16))
+	)
+	(port
+		(pt 0 24)
+		(input)
+		(text "IN2" (rect 2 15 19 27)(font "Courier New" (bold))(invisible))
+		(text "IN2" (rect 2 15 19 27)(font "Courier New" (bold))(invisible))
+		(line (pt 0 24)(pt 16 24))
+	)
+	(port
+		(pt 0 32)
+		(input)
+		(text "IN3" (rect 2 23 19 35)(font "Courier New" (bold))(invisible))
+		(text "IN3" (rect 2 23 19 35)(font "Courier New" (bold))(invisible))
+		(line (pt 0 32)(pt 16 32))
+	)
+	(port
+		(pt 64 24)
+		(output)
+		(text "OUT" (rect 48 15 65 27)(font "Courier New" (bold))(invisible))
+		(text "OUT" (rect 48 15 65 27)(font "Courier New" (bold))(invisible))
+		(line (pt 43 24)(pt 64 24))
+	)
+	(drawing
+		(line (pt 16 12)(pt 31 12))
+		(line (pt 16 37)(pt 31 37))
+		(line (pt 16 12)(pt 16 37))
+		(arc (pt 31 36)(pt 31 12)(rect 19 12 44 37))
+	)
+)
+(symbol
+	(rect -3464 1152 -3256 1568)
 	(text "ctlbridge" (rect 5 0 53 14)(font "Arial" (font_size 8)))
-	(text "inst13" (rect 8 368 37 380)(font "Arial" ))
+	(text "inst13" (rect 8 400 37 412)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -4502,8 +4509,15 @@ applicable agreement for further details.
 		(text "tx_loopback" (rect 119 347 187 361)(font "Arial" (font_size 8)))
 		(line (pt 208 352)(pt 192 352))
 	)
+	(port
+		(pt 208 368)
+		(output)
+		(text "txdac_en" (rect 0 0 53 14)(font "Arial" (font_size 8)))
+		(text "txdac_en" (rect 134 363 187 377)(font "Arial" (font_size 8)))
+		(line (pt 208 368)(pt 192 368))
+	)
 	(drawing
-		(rectangle (rect 16 16 192 368))
+		(rectangle (rect 16 16 192 400))
 	)
 )
 (connector
@@ -6132,21 +6146,8 @@ applicable agreement for further details.
 	(pt -1936 -1056)
 )
 (connector
-	(text "mode_tx" (rect -1694 -1104 -1652 -1092)(font "Arial" ))
-	(pt -1600 -1088)
-	(pt -1704 -1088)
-)
-(connector
-	(pt -1600 -1072)
-	(pt -1744 -1072)
-)
-(connector
 	(pt -1816 -1072)
 	(pt -1792 -1072)
-)
-(connector
-	(pt -1536 -1080)
-	(pt -1144 -1080)
 )
 (connector
 	(pt -1096 -1080)
@@ -7050,7 +7051,7 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "tx_loopback" (rect -3238 1488 -3179 1500)(font "Arial" ))
+	(text "tx_loopback" (rect -3230 1488 -3171 1500)(font "Arial" ))
 	(pt -3256 1504)
 	(pt -3176 1504)
 )
@@ -7062,6 +7063,37 @@ applicable agreement for further details.
 	(text "tx_loopback" (rect -4726 392 -4667 404)(font "Arial" ))
 	(pt -4728 408)
 	(pt -4640 408)
+)
+(connector
+	(pt -1608 -1088)
+	(pt -1616 -1088)
+)
+(connector
+	(text "txdac_en" (rect -1694 -1096 -1650 -1084)(font "Arial" ))
+	(pt -1696 -1080)
+	(pt -1608 -1080)
+)
+(connector
+	(pt -1616 -1088)
+	(pt -1616 -1096)
+)
+(connector
+	(text "mode_tx" (rect -1686 -1112 -1644 -1100)(font "Arial" ))
+	(pt -1616 -1096)
+	(pt -1696 -1096)
+)
+(connector
+	(pt -1544 -1080)
+	(pt -1144 -1080)
+)
+(connector
+	(pt -1744 -1072)
+	(pt -1608 -1072)
+)
+(connector
+	(text "txdac_en" (rect -3214 1504 -3170 1516)(font "Arial" ))
+	(pt -3256 1520)
+	(pt -3176 1520)
 )
 (junction (pt -2616 -480))
 (junction (pt -2936 -696))

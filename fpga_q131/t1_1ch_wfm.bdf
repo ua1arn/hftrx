@@ -3395,9 +3395,9 @@ applicable agreement for further details.
 	)
 )
 (symbol
-	(rect -3536 1000 -3328 1384)
+	(rect -3536 1000 -3328 1416)
 	(text "ctlbridge" (rect 5 0 53 14)(font "Arial" (font_size 8)))
-	(text "inst13" (rect 8 368 37 380)(font "Arial" ))
+	(text "inst13" (rect 8 400 37 412)(font "Arial" ))
 	(port
 		(pt 0 32)
 		(input)
@@ -3552,8 +3552,15 @@ applicable agreement for further details.
 		(text "tx_loopback" (rect 119 347 187 361)(font "Arial" (font_size 8)))
 		(line (pt 208 352)(pt 192 352))
 	)
+	(port
+		(pt 208 368)
+		(output)
+		(text "txdac_en" (rect 0 0 53 14)(font "Arial" (font_size 8)))
+		(text "txdac_en" (rect 134 363 187 377)(font "Arial" (font_size 8)))
+		(line (pt 208 368)(pt 192 368))
+	)
 	(drawing
-		(rectangle (rect 16 16 192 368))
+		(rectangle (rect 16 16 192 400))
 	)
 )
 (connector
