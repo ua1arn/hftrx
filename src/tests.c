@@ -6195,8 +6195,6 @@ void hightests(void)
 			float a;
 			for (a = 0; a < 7; a += 0.001f)
 			{
-				colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
-
 				meshRotation[0]+=a;
 				meshRotation[1]+=a;
 				//meshRotation[2]+=a;
@@ -6205,7 +6203,7 @@ void hightests(void)
 				//dsp3D_renderFlat(dsp3dModel);
 				dsp3D_renderWireframe(dsp3dModel);
 
-				display_nextfb();
+				dsp3D_present();
 				local_delay_ms(100);
 			}
 			const time_t end = time(NULL);
