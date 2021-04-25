@@ -263,8 +263,10 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHIFDACWIDTH	16		// 1 бит знак и 31 бит значащих
+	#define WITHIFADCWIDTH	16		// 1 бит знак и 31 бит значащих
+	typedef int16_t IFADCvalue_t;
+	typedef int16_t IFDACvalue_t;
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */

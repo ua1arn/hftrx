@@ -565,8 +565,8 @@ uintptr_t getfilled_dmabuffer32tx_main(void);
 uintptr_t getfilled_dmabuffer32tx_sub(void);
 uintptr_t getfilled_dmabuffer16phones(void);
 
-void dsp_extbuffer32rx(const int32_t * buff);	// RX
-void dsp_extbuffer32wfm(const int32_t * buff);	// RX
+void dsp_extbuffer32rx(const IFADCvalue_t * buff);	// RX
+void dsp_extbuffer32wfm(const IFADCvalue_t * buff);	// RX
 void dsp_addsidetone(aubufv_t * buff, int usebuf);			// перед передачей по DMA в аудиокодек
 
 void processing_dmabuffer16rx(uintptr_t addr);	// обработать буфер после оцифровки AF ADC
