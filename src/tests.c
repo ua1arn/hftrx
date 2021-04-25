@@ -6123,9 +6123,9 @@ void hightests(void)
 
 
 
-		static const float32_t dsp3dModel [122] = {
-					8,	// numVert
-					12,	// numFaces
+		static const float32_t dsp3dModel [] = {
+					16,	// numVert
+					24,	// numFaces
 			//         VERTEXES
 			//   coords    normals
 			 1,	1, 1, 	0,0,1, // 0
@@ -6136,39 +6136,75 @@ void hightests(void)
 			-1, 1,-1, 	0,1,0, // 5
 			-1,-1, 1, 	0,0,0, // 6
 			-1, -1,-1, 	0,0,0, // 7
+			//         VERTEXES
+			//   coords    normals
+			 1-3,	1-3, 1-3, 	0,0,1, // 0
+			 1-3, 1-3,-1-3, 	0,-1,0, // 1
+			 1-3,-1-3, 1-3, 	-1,0,0, // 2
+			 1-3,-1-3,-1-3, 	0,0,-1, // 3
+			-1-3, 1-3, 1-3, 	1,0,0, // 4
+			-1-3, 1-3,-1-3, 	0,1,0, // 5
+			-1-3,-1-3, 1-3, 	0,0,0, // 6
+			-1-3, -1-3,-1-3, 	0,0,0, // 7
 
 			//         FACES
 			//    Indexes     RGB
-			0,1,2,   255,255,255,
-			1,2,3,   255,255,255,
-			0,1,4,   255,255,255,
-			1,4,5,   255,255,255,
-			0,4,6,   255,255,255,
-			0,2,6,   255,255,255,
-			2,3,6,   255,255,255,
-			3,6,7,   255,255,255,
-			1,3,7,   255,255,255,
-			1,5,7,   255,255,255,
-			5,6,7,   255,255,255,
-			4,5,6,   255,255,255,
+			0,1,2,   255, 0, 0,
+			1,2,3,   255, 0, 0,
+			0,1,4,   255, 0, 0,
+			1,4,5,   255, 0, 0,
+			0,4,6,   255, 0, 0,
+			0,2,6,   255, 0, 0,
+			2,3,6,   255, 0, 0,
+			3,6,7,   255, 0, 0,
+			1,3,7,   255, 0, 0,
+			1,5,7,   255, 0, 0,
+			5,6,7,   255, 0, 0,
+			4,5,6,   255, 0, 0,
+
+			//         FACES
+			//    Indexes     RGB
+			0,1,2,   0, 255, 0,
+			1,2,3,   0, 255, 0,
+			0,1,4,   0, 255, 0,
+			1,4,5,   0, 255, 0,
+			0,4,6,   0, 255, 0,
+			0,2,6,   0, 255, 0,
+			2,3,6,   0, 255, 0,
+			3,6,7,   0, 255, 0,
+			1,3,7,   0, 255, 0,
+			1,5,7,   0, 255, 0,
+			5,6,7,   0, 255, 0,
+			4,5,6,   0, 255, 0,
 
 		};
 
 		dsp3D_init();
-		dsp3D_setCameraPosition(0,0,10);
-		dsp3D_setLightPosition(0,0,10);
+		dsp3D_setCameraPosition(0,0,30);
+		dsp3D_setLightPosition(0,0,30);
 		dsp3D_setCameraTarget(0,0,0);
 
 
 		for (;;)
 		{
-			colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
+			meshRotation[0] = 0;
+			meshRotation[1] = 0;
+			meshRotation[2] = 0;
+			float a;
+			for (a = 0; a < 7; a += 0.001f)
+			{
+				colmain_fillrect(colmain_fb_draw(), DIM_X, DIM_Y, 0, 0, DIM_X, DIM_Y, display_getbgcolor());
 
-			meshRotation[0]+=0.01;
-			meshRotation[1]+=0.01;
-			meshRotation[2]+=0.01;
-			dsp3D_renderFlat(dsp3dModel);
-			display_nextfb();
+				meshRotation[0]+=a;
+				meshRotation[1]+=a;
+				//meshRotation[2]+=a;
+
+				dsp3D_renderFlat(dsp3dModel);
+				//dsp3D_renderWireframe(dsp3dModel);
+
+				display_nextfb();
+				//local_delay_ms(100);
+			}
 		}
 	}
 #endif

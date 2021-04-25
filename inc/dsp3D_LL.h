@@ -48,7 +48,7 @@ The dsp3D_ll provides low level interface to the hardware.
 #include "arm_math.h"
 
 #ifndef SCREEN_WIDTH
-#define SCREEN_WIDTH 			(DIM_X)
+#define SCREEN_WIDTH 			(DIM_X - 16)
 #endif
 
 #ifndef SCREEN_HEIGHT
@@ -89,7 +89,7 @@ void dsp3D_LL_switchScreen(void);
  * @param[in]  pos    The position
  * @param[in]  value  The value
  */
-void dsp3D_LL_writeToDepthBuffer(uint32_t pos, float32_t value);
+void dsp3D_LL_writeToDepthBuffer(int32_t x, int32_t y, float32_t value);
 
 /**
  * @brief      Read a float from position of depth buffer
@@ -98,7 +98,7 @@ void dsp3D_LL_writeToDepthBuffer(uint32_t pos, float32_t value);
  *
  * @return     The value
  */
-float32_t dsp3D_LL_readFromDepthBuffer(uint32_t pos);
+float32_t dsp3D_LL_readFromDepthBuffer(int32_t x, int32_t y);
 
 /**
  * @brief      Clear the depth buffer
