@@ -3669,6 +3669,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	return (i);
 }
 
+#if WITHUSEMALLOC
 #if CPUSTYLE_STM32MP1 || (CPUSTYLE_XC7Z && ! WITHISBOOTLOADER)
 
 	static RAMHEAP uint8_t heapplace [64 * 1024uL * 1024uL];
@@ -3678,7 +3679,6 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	static RAMHEAP uint8_t heapplace [8 * 1024uL];
 
 #endif /* CPUSTYLE_STM32MP1 */
-
 extern int __HeapBase;
 extern int __HeapLimit;
 
@@ -3706,6 +3706,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 
 	return (caddr_t) prev_heap;
 }
+#endif /* WITHUSEMALLOC */
 
 // Corte-A9 reauire
 
