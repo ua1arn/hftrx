@@ -27,19 +27,251 @@ calcdivround2(
 
 #elif CPUSTYLE_STM32F4XX
 
+unsigned long stm32f4xx_get_hse_freq(void)
+{
+#if WITHCPUXTAL
+	return WITHCPUXTAL;
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 16000000uL;
+#endif
+}
+
+unsigned long stm32f4xx_get_hsi_freq(void)
+{
+	return HSIFREQ;	// 16 MHz
+}
+
+unsigned long stm32f4xx_get_pllreference_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	return stm32f4xx_get_hse_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_pll_freq(void)
+{
+	const uint_fast32_t mulval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN_Msk) >> RCC_PLLCFGR_PLLN_Pos;
+	return stm32f4xx_get_pllreference_freq() * mulval;
+}
+
+unsigned long stm32f4xx_get_pll_p_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLP_Msk) >> RCC_PLLCFGR_PLLP_Pos;
+	return stm32f4xx_get_pll_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_pll_q_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLQ_Msk) >> RCC_PLLCFGR_PLLQ_Pos;
+	return stm32f4xx_get_pll_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_plli2s_freq(void)
+{
+	const uint_fast32_t mulval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SN_Msk) >> RCC_PLLI2SCFGR_PLLI2SN_Pos;
+	return stm32f4xx_get_pllreference_freq() * mulval;
+}
+
+unsigned long stm32f4xx_get_plli2s_q_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SQ_Msk) >> RCC_PLLI2SCFGR_PLLI2SQ_Pos;
+	return stm32f4xx_get_plli2s_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_plli2s_r_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SR_Msk) >> RCC_PLLI2SCFGR_PLLI2SR_Pos;
+	return stm32f4xx_get_plli2s_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_pllsai_freq(void)
+{
+	const uint_fast32_t mulval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIN_Msk) >> RCC_PLLSAICFGR_PLLSAIN_Pos;
+	return stm32f4xx_get_pllreference_freq() * mulval;
+}
+
+unsigned long stm32f4xx_get_pllsai_q_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIQ_Msk) >> RCC_PLLSAICFGR_PLLSAIQ_Pos;
+	return stm32f4xx_get_pllsai_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_pllsai_r_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIR_Msk) >> RCC_PLLSAICFGR_PLLSAIR_Pos;
+	return stm32f4xx_get_pllsai_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_sysclk_freq(void)
+{
+	//	00: HSI oscillator used as the system clock
+	//	01: HSE oscillator used as the system clock
+	//	10: PLL used as the system clock
+	//	11: not applicable
+	switch ((RCC->CFGR & RCC_CFGR_SW_Msk) >> RCC_CFGR_SW_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32f4xx_get_hsi_freq();
+	case 0x01:
+		return stm32f4xx_get_hse_freq();
+	case 0x02:
+		return stm32f4xx_get_pll_p_freq();
+	}
+}
+
+unsigned long stm32f4xx_get_ahb_freq(void)
+{
+	//	0xxx: system clock not divided
+	//	1000: system clock divided by 2
+	//	1001: system clock divided by 4
+	//	1010: system clock divided by 8
+	//	1011: system clock divided by 16
+	//	1100: system clock divided by 64
+	//	1101: system clock divided by 128
+	//	1110: system clock divided by 256
+	//	1111: system clock divided by 512
+	switch ((RCC->CFGR & RCC_CFGR_HPRE_Msk) >> RCC_CFGR_HPRE_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32f4xx_get_sysclk_freq();
+	case 0x08:
+		return stm32f4xx_get_sysclk_freq() / 2;
+	case 0x09:
+		return stm32f4xx_get_sysclk_freq() / 4;
+	case 0x0A:
+		return stm32f4xx_get_sysclk_freq() / 8;
+	case 0x0B:
+		return stm32f4xx_get_sysclk_freq() / 16;
+	case 0x0C:
+		return stm32f4xx_get_sysclk_freq() / 64;
+	case 0x0D:
+		return stm32f4xx_get_sysclk_freq() / 128;
+	case 0x0E:
+		return stm32f4xx_get_sysclk_freq() / 256;
+	case 0x0F:
+		return stm32f4xx_get_sysclk_freq() / 512;
+	}
+}
+
+unsigned long stm32f4xx_get_hclk_freq(void)
+{
+	return stm32f4xx_get_ahb_freq();
+}
+
+// PPRE2: APB high-speed prescaler (APB2)
+unsigned long stm32f4xx_get_apb2_freq(void)
+{
+	const uint_fast32_t ppre2 = (RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos;
+	switch (ppre2)
+	{
+	default:
+	case 0x00:
+		return stm32f4xx_get_ahb_freq();
+	case 0x04:
+		return stm32f4xx_get_ahb_freq() / 2;
+	case 0x05:
+		return stm32f4xx_get_ahb_freq() / 4;
+	case 0x06:
+		return stm32f4xx_get_ahb_freq() / 8;
+	case 0x07:
+		return stm32f4xx_get_ahb_freq() / 16;
+	}
+}
+
+// PPRE1: APB Low speed prescaler (APB1)
+unsigned long stm32f4xx_get_apb1_freq(void)
+{
+	const uint_fast32_t ppre1 = (RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos;
+	switch (ppre1)
+	{
+	default:
+	case 0x00:
+		return stm32f4xx_get_ahb_freq();
+	case 0x04:
+		return stm32f4xx_get_ahb_freq() / 2;
+	case 0x05:
+		return stm32f4xx_get_ahb_freq() / 4;
+	case 0x06:
+		return stm32f4xx_get_ahb_freq() / 8;
+	case 0x07:
+		return stm32f4xx_get_ahb_freq() / 16;
+	}
+}
+// PPRE2: APB high-speed prescaler (APB2)
+unsigned long stm32f4xx_get_apb2timer_freq(void)
+{
+	const uint_fast32_t timpre  = (RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE_Msk) >> RCC_DCKCFGR_TIMPRE_Pos;
+	const uint_fast32_t ppre2 = (RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos;
+	//	0: If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, TIMxCLK = PCLKx. Otherwise, the timer clock frequencies are set to
+	//	twice to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 2xPCLKx.
+	//	1:If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, 2 or 4, TIMxCLK = HCLK. Otherwise, the timer clock frequencies are set
+	//	to four times to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 4xPCLKx.
+	switch (ppre2)
+	{
+	default:
+	case 0x00:	// /1
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq();
+	case 0x04:	// /2
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq();
+	case 0x05:	// /4
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq() / 2;
+	case 0x06:	// /8
+		return timpre ? stm32f4xx_get_ahb_freq() / 2 : stm32f4xx_get_ahb_freq() / 4;
+	case 0x07:	// /16
+		return timpre ? stm32f4xx_get_ahb_freq() / 4 : stm32f4xx_get_ahb_freq() / 8;
+	}
+}
+
+// PPRE1: APB Low speed prescaler (APB1)
+unsigned long stm32f4xx_get_apb1timer_freq(void)
+{
+	const uint_fast32_t timpre  = (RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE_Msk) >> RCC_DCKCFGR_TIMPRE_Pos;
+	const uint_fast32_t ppre1 = (RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos;
+	//	0: If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, TIMxCLK = PCLKx. Otherwise, the timer clock frequencies are set to
+	//	twice to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 2xPCLKx.
+	//	1:If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, 2 or 4, TIMxCLK = HCLK. Otherwise, the timer clock frequencies are set
+	//	to four times to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 4xPCLKx.
+	switch (ppre1)
+	{
+	default:
+	case 0x00:	// /1
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq();
+	case 0x04:	// /2
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq();
+	case 0x05:	// /4
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq() / 2;
+	case 0x06:	// /8
+		return timpre ? stm32f4xx_get_ahb_freq() / 2 : stm32f4xx_get_ahb_freq() / 4;
+	case 0x07:	// /16
+		return timpre ? stm32f4xx_get_ahb_freq() / 4 : stm32f4xx_get_ahb_freq() / 8;
+	}
+}
+
 unsigned long stm32f4xx_get_spi1_freq(void)
 {
-	return PCLK1_FREQ;
+	return stm32f4xx_get_apb2_freq();
 }
 
-#if WITHSPIHW
-// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
-unsigned long hardware_get_spi_freq(void)
+unsigned long stm32f4xx_get_tim3_freq(void)
 {
-	return stm32f4xx_get_spi1_freq();
+	return stm32f4xx_get_apb1timer_freq();
 }
 
-#endif /* WITHSPIHW */
+#define SYSTICK_FREQ (stm32f4xx_get_sysclk_freq() / 8)
+#define BOARD_TIM3_FREQ (stm32f4xx_get_tim3_freq())
+#define BOARD_ADC_FREQ (stm32f4xx_get_apb2_freq())
 
 #elif CPUSTYLE_STM32F7XX
 
@@ -3660,11 +3892,11 @@ lowlevel_sam3s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 #endif /* CPUSTYLE_ATSAM3S */
 
 
-#if CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
+#if CPUSTYLE_STM32F7XX
 // Настроить выход PLLQ на 48 МГц
 static uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
-	const uint32_t stm32f4xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// Как было сделано при инициализации PLL
+	const uint32_t stm32f4xx_pllq = calcdivround2(stm32f7xx_get_pll_freq(), 48000000uL);	// Как было сделано при инициализации PLL
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
 	RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLQ) |
@@ -3688,6 +3920,30 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void)
 
 
 #if CPUSTYLE_STM32F4XX
+
+// Настроить выход PLLQ на 48 МГц
+static uint_fast32_t stm32f7xx_pllq_initialize(void)
+{
+	const uint32_t stm32f4xx_pllq = calcdivround2(stm32f4xx_get_pll_freq(), 48000000uL);	// Как было сделано при инициализации PLL
+	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
+	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
+	RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLQ) |
+		((RCC_PLLCFGR_PLLQ_0 * stm32f4xx_pllq) & RCC_PLLCFGR_PLLQ) |
+		0;
+
+#if defined(RCC_DCKCFGR2_CK48MSEL)
+	RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_CK48MSEL)) |
+		0 * RCC_DCKCFGR2_CK48MSEL |
+		0;
+#elif defined(RCC_DCKCFGR_CK48MSEL)
+	// stm32f469x, stm32f479xx
+	RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_CK48MSEL)) |
+		0 * RCC_DCKCFGR_CK48MSEL |
+		0;
+#endif /* defined(CC_DCKCFGR2_CK48MSEL) */
+
+	return stm32f4xx_pllq;
+}
 
 static void
 stm32f4xx_pll_initialize(void)
