@@ -126,7 +126,7 @@
 	#if 0
 		#define DIRECT_80M0_X1		1	/* Тактовый генератор на плате 80.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
-	#elif 0
+	#elif 1
 		#define DIRECT_100M0_X1		1	/* Тактовый генератор на плате 100.0 МГц */
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
@@ -173,15 +173,15 @@
 	#define	FONTSTYLE_ITALIC	1	// Использовать альтернативный шрифт
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	#define KEYB_RAVEN24	1	/* расположение кнопок для Воробей с DSP обработкой */
+	//#define KEYB_RAVEN24	1	/* расположение кнопок для Воробей с DSP обработкой */
 	//#define KEYB_RAVEN24_RA1AGO	1	/* выставочный экземпляр */
-	//#define KEYB_RAVEN20_V5	1		/* при отладке UART2 - 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
+	#define KEYB_RAVEN20_V5	1		/* при отладке UART2 - 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
 	// --- Особые варианты расположения кнопок на клавиатуре
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
-	#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
+	#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
+	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
 	//#define LCDMODE_WH2004	1	/* тип применяемого индикатора 20*4 */
 	//#define LCDMODE_RDX0077	1	/* Индикатор 128*64 с контроллером UC1601.  */
@@ -260,8 +260,8 @@
 
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	#define WITHUSESDCARD	1		// Включение поддержки SD CARD
-	#define WITHUSEAUDIOREC	1		// Запись звука на SD CARD
+	//#define WITHUSESDCARD	1		// Включение поддержки SD CARD
+	//#define WITHUSEAUDIOREC	1		// Запись звука на SD CARD
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
@@ -430,7 +430,7 @@ enum
 	PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 	PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 
-	KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 3, KI4 = 6, KI5 = 7	// клавиатура
+	KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 3, KI4 = 6/*, KI5 = 7	*/// клавиатура
 };
 
 //#define KI_COUNT 1	// количество используемых под клавиатуру входов АЦП
