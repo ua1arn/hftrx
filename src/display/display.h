@@ -310,6 +310,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 	#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
 
+		// RBG named order
 		typedef uint_fast32_t COLORMAIN_T;
 		typedef uint32_t PACKEDCOLORMAIN_T;
 

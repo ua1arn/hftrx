@@ -9364,6 +9364,7 @@ int _gettimeofday(struct timeval *p, void *tz)
 {
 	if (p != NULL)
 	{
+		memset(p, 0, sizeof * p);
 	}
 	return 0;
 }
