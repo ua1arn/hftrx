@@ -62,9 +62,14 @@ void  OSReleaseMutex(void);
 		return RETVAL;\
 	}
 
-#define RI_IF_ERROR(COND, ERRORCODE, RETVAL) \
-	if(COND) { context->setError(ERRORCODE); OSReleaseMutex(); return RETVAL; }
-
+#if 1
+	#define RI_IF_ERROR(COND, ERRORCODE, RETVAL) do { \
+		if(COND) { context->setError(ERRORCODE); OSReleaseMutex(); return RETVAL; } \
+	} while (0)
+#else
+	#define RI_IF_ERROR(COND, ERRORCODE, RETVAL) do { \
+	} while (0)
+#endif
 //all API functions must call this as their last operation (also functions that don't return values)
 //NOTE: don't evaluate anything or read state in RETVAL (it'll be executed after the mutex has been released)
 #define RI_RETURN(RETVAL) \

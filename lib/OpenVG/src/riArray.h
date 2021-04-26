@@ -162,7 +162,19 @@ public:
 	RI_INLINE void			push_back( const Item& item )	//throws bad_alloc
 	{
 		if( m_size >= m_allocated )
-			reserve( (!m_allocated) ? 8 : m_allocated * 2 );	//by default, reserve 8. throws bad_alloc if runs out of memory
+		{
+			if (m_allocated == 0)
+			{
+				reserve(8);	//by default, reserve 8. throws bad_alloc if runs out of memory
+			}
+			else
+			{
+				int planned = m_allocated * 2;
+				while (planned < m_size)
+				 	planned *= 2;
+				reserve(planned);	//throws bad_alloc if runs out of memory
+			}
+		}
 		m_array[m_size++] = item;
 	}
 	RI_INLINE int			size() const				{ return m_size; }
