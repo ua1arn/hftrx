@@ -43,6 +43,7 @@
 /************************** Constant Definitions ****************************/
 
 /**************************** Type Definitions ******************************/
+#if 0
 
 typedef struct {
 	Xil_ExceptionHandler Handler;
@@ -354,4 +355,5 @@ void Xil_UndefinedExceptionHandler(void *CallBackRef){
 		;
 	}
 }
+#endif
 #endif

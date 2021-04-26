@@ -209,7 +209,7 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEFATFS		1	// FatFS
 	#define WITHISBOOTLOADERFATFS 1
