@@ -31,6 +31,7 @@
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 #define USERFIRSTSBLOCK 0
+#define WITHPS7BOARD_EBAZ4205 1
 
 
 #if WITHDEBUG

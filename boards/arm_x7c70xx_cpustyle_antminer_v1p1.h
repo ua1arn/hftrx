@@ -29,6 +29,7 @@
 #endif /* WITHINTEGRATEDDSP */
 
 #define USERFIRSTSBLOCK 0
+#define WITHPS7BOARD_ANTMINER 1
 
 #if 1//WITHDEBUG
 	//#define WITHUART1HW	1	/* MIO46 UART0_RXD MIO47 UART0_TXD  Используется периферийный контроллер последовательного порта UART00 */
