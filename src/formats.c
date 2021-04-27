@@ -349,6 +349,8 @@ safestrcpy(char * dst, size_t blen, const char * src)
 
 #if WITHDEBUG
 
+static RAMDTCM SPINLOCK_t printflock = SPINLOCK_INIT;
+
 #if FORMATFROMLIBRARY
 
 /*	Formatted output to standart output stream.	*/
@@ -357,6 +359,7 @@ safestrcpy(char * dst, size_t blen, const char * src)
 
 void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
+	SPIN_LOCK(& printflock);
 	char b [128];	// see stack sizes for interrupt handlers
 	va_list	ap;
 	va_start(ap, format);
@@ -365,6 +368,7 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 	dbg_puts_impl(b);
 
 	va_end(ap);
+	SPIN_UNLOCK(& printflock);
 }
 
 #else /* FORMATFROMLIBRARY */

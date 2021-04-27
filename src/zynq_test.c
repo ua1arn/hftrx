@@ -4,17 +4,17 @@
 #include "formats.h"
 #include <math.h>
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER
 #include "lib/zynq/src/xaxidma.h"
 #include "lib/zynq/src/xaxidma_bdring.h"
 #include "lib/zynq/src/xparameters.h"
 #include "lib/zynq/src/xil_types.h"
 #include "lib/zynq/src/xstatus.h"
 
-#define DATA_FIFO_FABRIC_INTERRUPT		63
-
 XAxiDma xc7z_axidma_af_tx;
 XAxiDma xc7z_axidma_if_rx;
+
+size_t rx_buf_size = DMABUFFSIZE32RX * 2;
 
 uintptr_t dma_invalidate32rx(uintptr_t addr);
 void xc7z_dma_intHandler_af_tx(void);
@@ -36,14 +36,40 @@ void xc7z_dma_transmit(XAxiDma * dmaptr, UINTPTR buffer, size_t buffer_len)
 	int Status = XAxiDma_SimpleTransfer(& xc7z_axidma_af_tx, buffer, buffer_len, XAXIDMA_DMA_TO_DEVICE);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("dma transfet error %d\n", Status);
+		PRINTF("dma transmit error %d\n", Status);
 		ASSERT(0);
 	}
 }
 
+void xc7z_dma_receive(XAxiDma * dmaptr, UINTPTR buffer, size_t buffer_len)
+{
+	int Status = XAxiDma_SimpleTransfer(& xc7z_axidma_if_rx, buffer, buffer_len, XAXIDMA_DEVICE_TO_DMA);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("dma receive error %d\n", Status);
+		ASSERT(0);
+	}
+	while (XAxiDma_Busy(& xc7z_axidma_if_rx, XAXIDMA_DEVICE_TO_DMA));
+}
+
 static void xc7z_dma_init_rx(void)
 {
+	XAxiDma_Config * rxConfig = XAxiDma_LookupConfig(XPAR_AXI_DMA_1_DEVICE_ID);
+	int Status = XAxiDma_CfgInitialize(& xc7z_axidma_if_rx, rxConfig);
 
+	if (Status != XST_SUCCESS) {
+		xil_printf("Initialization failed %d\r\n", Status);
+		ASSERT(0);
+	}
+
+	if(XAxiDma_HasSg(& xc7z_axidma_if_rx))
+	{
+		xil_printf("Device configured as SG mode \r\n");
+		ASSERT(0);
+	}
+
+	XAxiDma_IntrDisable(& xc7z_axidma_if_rx, XAXIDMA_IRQ_ALL_MASK, XAXIDMA_DEVICE_TO_DMA);
+	XAxiDma_IntrDisable(& xc7z_axidma_if_rx, XAXIDMA_IRQ_ALL_MASK, XAXIDMA_DMA_TO_DEVICE);
 }
 
 static void xc7z_dma_init_tx(void)
@@ -70,6 +96,10 @@ static void xc7z_dma_init_tx(void)
 
 void xc7z_dma_init_af_tx(void)
 {
+	xc7z_dma_init_rx();
+	//arm_hardware_set_handler_realtime(DATA_FIFO_FABRIC_INTERRUPT, xc7z_data_fifo_INThandler);
+	local_delay_ms(50);
+
 	xc7z_dma_init_tx();
 
 	// пнуть для запуска прерываний, без этого не идут
@@ -87,21 +117,27 @@ void xc7z_dma_init_af_tx(void)
 
 void xc7z_dma_intHandler_af_tx(void)
 {
+	static uint_fast16_t ccc = 0;
+
 	uintptr_t a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
+//	xc7z_dma_receive(& xc7z_axidma_if_rx, a1, rx_buf_size);
 	processing_dmabuffer32rx(a1);
 	release_dmabuffer32rx(a1);
 
-	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
-	processing_dmabuffer32rx(a1);
-	release_dmabuffer32rx(a1);
+	uintptr_t a2 = dma_invalidate32rx(allocate_dmabuffer32rx());
+//	xc7z_dma_receive(& xc7z_axidma_if_rx, a2, rx_buf_size);
+	processing_dmabuffer32rx(a2);
+	release_dmabuffer32rx(a2);
 
-	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
-	processing_dmabuffer32rx(a1);
-	release_dmabuffer32rx(a1);
+	uintptr_t a3 = dma_invalidate32rx(allocate_dmabuffer32rx());
+//	xc7z_dma_receive(& xc7z_axidma_if_rx, a3, rx_buf_size);
+	processing_dmabuffer32rx(a3);
+	release_dmabuffer32rx(a3);
 
-	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
-	processing_dmabuffer32rx(a1);
-	release_dmabuffer32rx(a1);
+	uintptr_t a4 = dma_invalidate32rx(allocate_dmabuffer32rx());
+//	xc7z_dma_receive(& xc7z_axidma_if_rx, a4, rx_buf_size);
+	processing_dmabuffer32rx(a4);
+	release_dmabuffer32rx(a4);
 
 	//dbg_putchar('-');
 
@@ -113,11 +149,6 @@ void xc7z_dma_intHandler_af_tx(void)
 
 	release_dmabuffer16(addr);
 	//dbg_putchar('.');
-}
-
-void xc7z_data_fifo(void)
-{
-	TP();
 }
 
 #endif /* CPUSTYLE_XC7Z */

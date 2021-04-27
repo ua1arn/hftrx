@@ -75,7 +75,7 @@
 #define XPAR_AXI_DMA_1_S2MM_BURST_SIZE 16
 #define XPAR_AXI_DMA_1_MICRO_DMA 0
 #define XPAR_AXI_DMA_1_ADDR_WIDTH 32
-#define XPAR_AXI_DMA_1_SG_LENGTH_WIDTH 16
+#define XPAR_AXI_DMA_1_SG_LENGTH_WIDTH 20
 
 
 /******************************************************************/
@@ -118,7 +118,7 @@
 #define XPAR_AXIDMA_1_S2MM_BURST_SIZE 16
 #define XPAR_AXIDMA_1_MICRO_DMA 0
 #define XPAR_AXIDMA_1_c_addr_width 32
-#define XPAR_AXIDMA_1_c_sg_length_width 16
+#define XPAR_AXIDMA_1_c_sg_length_width 20
 
 
 /******************************************************************/

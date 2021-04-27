@@ -6,4 +6,6 @@
 *.stm32
 *.nec32
 *.bin
+bitstream*.h
+*.xyl32
 !fsbl_4205.elf
