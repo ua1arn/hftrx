@@ -58,7 +58,7 @@ Tested on ST's 32F746-Discovery board and ST's 32F769-Discovery board
 
 #include "dsp3D_LL.h"
 
-#include "stdint.h"
+#include <stdint.h>
 #include "arm_math.h"
 
 /* defines -----------------------------------------------------------------*/

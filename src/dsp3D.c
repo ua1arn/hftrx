@@ -96,7 +96,7 @@ arm_matrix_instance_f32 instance_matrix_worldView;
 
 float32_t dsp3D_clamp(float32_t value);
 float32_t dsp3D_interpolate(float32_t min, float32_t max, float32_t gradient);
-float32_t dsp3D_computeNDotL(float32_t *vertex, float32_t *normal, float32_t *lightPosition);
+float32_t dsp3D_computeNDotL(const float32_t *vertex, const float32_t *normal, const float32_t *lightPosition);
 void dsp3D_vectorNormalTransform(float32_t *v, float32_t *m, float32_t *result);
 void dsp3D_vectorCrossProduct(float32_t *a, float32_t *b, float32_t *v);
 void dsp3D_vectorNorm(const float32_t *a, float32_t *v);
@@ -117,7 +117,7 @@ void dsp3D_processScanLineFlat(int32_t y, float32_t ndotl, const float32_t* pa, 
 void dsp3D_swapArray(float32_t *a, float32_t *b);
 void dsp3D_drawFaceFlat(float32_t *p1, float32_t *p2, float32_t *p3, color32_t color);
 void dsp3D_drawFaceGouraud(float32_t *p1, float32_t *p2, float32_t *p3, color32_t color);
-void dsp3D_calculateFaceNormal(const float32_t *a, const float32_t *b, const float32_t *c, float32_t *m, float32_t *n);
+void dsp3D_calculateFaceNormal(const float32_t *a, const float32_t *b, const float32_t *c, const float32_t *m, float32_t *n);
 
 void dsp3D_generateMatrices(void);
 
@@ -174,7 +174,7 @@ float32_t dsp3D_interpolate(float32_t minv, float32_t maxv, float32_t gradient)
 	return (minv + (maxv - minv) * dsp3D_clamp(gradient));
 }
 
-float32_t dsp3D_computeNDotL(float32_t *vertex, float32_t *normal, float32_t *lightPosition)
+float32_t dsp3D_computeNDotL(const float32_t *vertex, const float32_t *normal, const float32_t *lightPosition)
 {
 	float32_t lightDirection[3];
 	float32_t normalNorm[3];
@@ -287,28 +287,38 @@ void dsp3D_generatePerspectiveFovMatrixLH(float32_t fov, float32_t aspect, float
 	int32_t x, y;
 	float32_t yScale, q;
 	
-	yScale = 1.0 / tan(fov * 0.5);
+	yScale = 1.0 / tanf(fov * (float32_t) 0.5);
 	q = zfar / (zfar - znear);
 
 	for(x = 0; x < 4; x++)
   		for(y = 0; y < 4; y++)
    			m[x * 4 + y] = 0;
 
-	m[0] = yScale / aspect;
-	m[5] = yScale;
+	if (aspect > 1)
+	{
+		m[0] = yScale / aspect;
+		m[5] = yScale;
+	}
+	else
+	{
+		m[0] = yScale;
+		m[5] = yScale * aspect;
+	}
 	m[10] = q;
-	m[11] = 1.0;
+	m[11] = 1;
 	m[14] = - q * znear;
 }
 
 void dsp3D_generateRotationMatrix(float32_t yaw, float32_t pitch, float32_t roll, float32_t *m)
 {
-	float32_t s_y = arm_sin_f32(yaw * 0.5);
-	float32_t c_y = arm_cos_f32(yaw * 0.5);
-	float32_t s_p = arm_sin_f32(pitch * 0.5);
-	float32_t c_p = arm_cos_f32(pitch * 0.5);
-	float32_t s_r = arm_sin_f32(roll * 0.5);
-	float32_t c_r = arm_cos_f32(roll * 0.5);
+	const float32_t half = 0.5;
+
+	float32_t s_y = arm_sin_f32(yaw * half);
+	float32_t c_y = arm_cos_f32(yaw * half);
+	float32_t s_p = arm_sin_f32(pitch * half);
+	float32_t c_p = arm_cos_f32(pitch * half);
+	float32_t s_r = arm_sin_f32(roll * half);
+	float32_t c_r = arm_cos_f32(roll * half);
 
 	float32_t x = c_y * s_p * c_r + s_y * c_p * s_r;
 	float32_t y = s_y * c_p * c_r - c_y * s_p * s_r;
@@ -405,8 +415,8 @@ void dsp3D_drawPointDepthBuffer(int32_t x, int32_t y, float32_t z, color32_t col
 {
 	if((x > -1) && (x < SCREEN_WIDTH) && (y > -1) && (y < SCREEN_HEIGHT))
 	{
-		if(dsp3D_LL_readFromDepthBuffer(x, y) < z)
-			return;
+//		if(dsp3D_LL_readFromDepthBuffer(x, y) < z)
+//			return;
 
 		dsp3D_LL_writeToDepthBuffer(x, y, z);
 		dsp3D_LL_drawPoint(x, y, color);
@@ -675,7 +685,7 @@ void dsp3D_drawFaceFlat(float32_t *v1, float32_t *v2, float32_t *v3, color32_t c
                 dsp3D_processScanLineFlat(y, ndotl, v2, v3, v1, v3, color);
 }
 
-void dsp3D_calculateFaceNormal(const float32_t *a, const float32_t *b, const float32_t *c, float32_t *m, float32_t *n)
+void dsp3D_calculateFaceNormal(const float32_t *a, const float32_t *b, const float32_t *c, const float32_t *m, float32_t *n)
 {
 	float32_t h[3];
 	float32_t hn[3];
@@ -797,21 +807,6 @@ void dsp3D_renderFlat(const float32_t * dsp3dModel)
 {
 	uint32_t i;
 	uint32_t numVert, numFaces;
-	
-	float32_t vertex_transform_a[9];
-	float32_t vertex_transform_b[9];
-	float32_t vertex_transform_c[9];
-	float32_t vertex_a[3];
-	float32_t vertex_b[3];
-	float32_t vertex_c[3];
-	float32_t vertex_norm_a[3];
-	float32_t vertex_norm_b[3];
-	float32_t vertex_norm_c[3];
-
-	float32_t camToPointVector[3];
-	float32_t faceNormalNormalized[3];
-	float32_t camToPointVectorNormalized[3];
-	float32_t cullingAngle;
 
 	dsp3D_generateMatrices();
 
@@ -822,6 +817,21 @@ void dsp3D_renderFlat(const float32_t * dsp3dModel)
 	{
 		uint32_t a, b, c;
 		uint8_t RGBr, RGBg, RGBb;
+
+		float32_t vertex_transform_a[9];
+		float32_t vertex_transform_b[9];
+		float32_t vertex_transform_c[9];
+		float32_t vertex_a[3];
+		float32_t vertex_b[3];
+		float32_t vertex_c[3];
+		float32_t vertex_norm_a[3];
+		float32_t vertex_norm_b[3];
+		float32_t vertex_norm_c[3];
+
+		float32_t camToPointVector[3];
+		float32_t faceNormalNormalized[3];
+		float32_t camToPointVectorNormalized[3];
+		float32_t cullingAngle;
 
 		a = dsp3dModel[2 + numVert * 6 + i * 6 + 0];
 		b = dsp3dModel[2 + numVert * 6 + i * 6 + 1];

@@ -65,8 +65,12 @@ void dsp3D_LL_drawPoint(uint32_t x, uint32_t y, color32_t color)
 	if(y > maxY)
 		maxY = y;
 
+	if (x >= (DIM_X - 16))
+		return;
+	if (y >= (DIM_Y - 0))
+		return;
 	// YOUR IMPLEMENTATION
-	* colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x + 16, y) = color; // dest address
+	* colmain_mem_at(colmain_fb_draw(), DIM_X, DIM_Y, x, y) = color; // dest address
 }
 
 static float32_t dbuf0 [DIM_Y][DIM_X];
@@ -86,6 +90,10 @@ void dsp3D_LL_switchScreen(void)
 void dsp3D_LL_writeToDepthBuffer(int32_t x, int32_t y, float32_t value)
 {
 	// YOUR IMPLEMENTATION
+	if (x >= (DIM_X - 16))
+		return;
+	if (y >= (DIM_Y - 0))
+		return;
 	dbuf0 [y][x] = value;
 }
 
