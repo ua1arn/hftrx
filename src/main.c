@@ -11181,7 +11181,9 @@ directctlupdate(
 {
 	uint_fast8_t changed = 0;
 	uint_fast8_t changedtx = 0;
+#if WITHTX
 	changedtx |= flagne_u8(& gtx, seq_get_txstate());	// текущее состояние прием или передача
+#endif /* WITHTX */
 
 	if (display_refreshenabled_wpm())
 	{
