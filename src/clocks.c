@@ -5701,8 +5701,8 @@ int ps7_config(const unsigned long * ps7_config_init)
 static const unsigned long ps7_clock_init_data_3_0[] = {
 		EMIT_MASKWRITE(0XF8000128, 0x03F03F01U ,0x00700F01U),	// DCI_CLK_CTRL
 		EMIT_MASKWRITE(0XF8000168, 0x00003F31U ,0x00000801U),	// PCAP_CLK_CTRL
-		EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
-		EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+		//EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+		//EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
 		//EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
 		EMIT_EXIT(),
 	};
@@ -5909,7 +5909,7 @@ unsigned long ps7_pll_init_data_3_0[] = {
     // .. .. .. ==> 0XF8000120[28:28] = 0x00000001U
     // .. .. ..     ==> MASK : 0x10000000U    VAL : 0x10000000U
     // .. .. ..
-    EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),
+    ////EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),
     // .. .. FINISH: ARM PLL INIT
     // .. .. START: DDR PLL INIT
     // .. .. PLL_RES = 0x2
@@ -6119,12 +6119,12 @@ unsigned long ps7_clock_init_data_3_0[] = {
     // .. .. ==> 0XF8000170[25:20] = 0x00000004U
     // .. ..     ==> MASK : 0x03F00000U    VAL : 0x00400000U
     // .. ..
-    EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL
+    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL
     // .. .. CLK_621_TRUE = 0x1
     // .. .. ==> 0XF80001C4[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
     // .. ..
-    EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+    //EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
     // .. .. DMA_CPU_2XCLKACT = 0x1
     // .. .. ==> 0XF800012C[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
@@ -9768,7 +9768,7 @@ unsigned long ps7_pll_init_data_2_0[] = {
     // .. .. .. ==> 0XF8000120[28:28] = 0x00000001U
     // .. .. ..     ==> MASK : 0x10000000U    VAL : 0x10000000U
     // .. .. ..
-    EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),
+    ////EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),
     // .. .. FINISH: ARM PLL INIT
     // .. .. START: DDR PLL INIT
     // .. .. PLL_RES = 0x2
@@ -9978,12 +9978,12 @@ unsigned long ps7_clock_init_data_2_0[] = {
     // .. .. ==> 0XF8000170[25:20] = 0x00000004U
     // .. ..     ==> MASK : 0x03F00000U    VAL : 0x00400000U
     // .. ..
-    EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),
+    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),
     // .. .. CLK_621_TRUE = 0x1
     // .. .. ==> 0XF80001C4[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
     // .. ..
-    EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+    //EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
     // .. .. DMA_CPU_2XCLKACT = 0x1
     // .. .. ==> 0XF800012C[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
@@ -13779,7 +13779,7 @@ unsigned long ps7_pll_init_data_1_0[] = {
     // .. .. .. ==> 0XF8000120[28:28] = 0x00000001U
     // .. .. ..     ==> MASK : 0x10000000U    VAL : 0x10000000U
     // .. .. ..
-    EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),
+    ////EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),
     // .. .. FINISH: ARM PLL INIT
     // .. .. START: DDR PLL INIT
     // .. .. PLL_RES = 0x2
@@ -13989,12 +13989,12 @@ unsigned long ps7_clock_init_data_1_0[] = {
     // .. .. ==> 0XF8000170[25:20] = 0x00000004U
     // .. ..     ==> MASK : 0x03F00000U    VAL : 0x00400000U
     // .. ..
-    EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),
+    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),
     // .. .. CLK_621_TRUE = 0x1
     // .. .. ==> 0XF80001C4[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
     // .. ..
-    EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+    //EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
     // .. .. DMA_CPU_2XCLKACT = 0x1
     // .. .. ==> 0XF800012C[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
@@ -17695,7 +17695,7 @@ static void xc7z1_arm_pll_initialize(void)
 	//	EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000000U),	// ARM_PLL_CTRL
 	SCLR->ARM_PLL_CTRL &= ~ 0x0010uL;	// PLL_BYPASS_FORCE
 
-	//	EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),	// ARM_CLK_CTRL
+	//	////EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),	// ARM_CLK_CTRL
 	SCLR->ARM_CLK_CTRL = (SCLR->ARM_CLK_CTRL & ~ (0x1F003F30U)) |
 			(0x01uL << 28) |	// CPU_PERI_CLKACT
 			(0x01uL << 27) |	// CPU_1XCLKACT
@@ -18130,6 +18130,16 @@ sysinit_pll_initialize(void)
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 		XDCFG->CTRL &= ~ (1uL << 29);	// PCFG_POR_CNT_4K
+
+		////EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+		SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
+				0x00400800U |
+				0;
+		////EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+		SCLR->CLK_621_TRUE = (SCLR->CLK_621_TRUE & ~ (0x00000001U)) |
+				0x00000001U |
+				0;
+
 		SCLR->APER_CLK_CTRL |= (0x01uL << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 
 	#endif /* WITHISBOOTLOADER */
