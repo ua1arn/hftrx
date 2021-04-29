@@ -105,6 +105,7 @@ DLIBS = -lm
 # Start of user section
 #
 
+#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS = $(PRJROOT)/src
 
 # Define project name here
@@ -175,6 +176,7 @@ OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
 # .S and .s files ugnored
 ZCSRC += $(call rwildcard, $(ZYNQLIBSRC), *.c)
 ZCPPSRC += $(call rwildcard, $(ZYNQLIBSRC), *.cpp)
+ZASRC += $(call rwildcard, $(ZYNQLIBSRC), *.S)
 
 ZOBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(ZCSRC))
 ZOBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(ZCPPSRC))
