@@ -2808,17 +2808,17 @@ sysintt_sdram_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_debug_initialize(void)
 {
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
-	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
+	#if WITHDEBUG && __CORTEX_M == 7U
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
 		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 		DWT->LAR = 0x00000000;	// Key value for lock
-	#endif /* WITHDEBUG && WITHINTEGRATEDDSP */
+	#endif /* WITHDEBUG && __CORTEX_M == 7U */
 
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
 
 #if (__CORTEX_A != 0)
 
