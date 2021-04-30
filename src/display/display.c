@@ -1741,6 +1741,7 @@ void display_hardware_initialize(void)
 	}
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
+	PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
 	arm_hardware_ltdc_initialize(frames, vdmode);
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());

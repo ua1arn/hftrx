@@ -1679,14 +1679,25 @@ void arm_hardware_ltdc_L8_palette(void)
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
-uint_fast32_t display_getdotclock(const videomode_t * vdmode)
+unsigned long display_getdotclock(const videomode_t * vdmode)
 {
-	return vdmode->ltdc_dotclk;
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+
+	return (uint_fast32_t) vdmode->fps * HFULL * VFULL;
+	//return vdmode->ltdc_dotclk;
 }
 
 #else /* WITHLTDCHW */
 
-uint_fast32_t display_getdotclock(const videomode_t * vdmode)
+unsigned long display_getdotclock(const videomode_t * vdmode)
 {
 	return 1000000uL;
 }
