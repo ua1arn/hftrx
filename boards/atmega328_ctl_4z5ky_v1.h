@@ -245,11 +245,28 @@ enum
 { 
 	SMETERIX = 5,	// S-meter
 	PWRI = 5,		// Индикатор мощности передатчика
+
+	XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+	REFMRRIX = BOARD_ADCMRRIN(2),
+	FWDMRRIX = BOARD_ADCMRRIN(3),
+	PWRMRRIX = FWDMRRIX,
+	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+	PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+
 	KI0 = 4	// клавиатура
 };
 
 #define KI_COUNT 1	// количество используемых под клавиатуру входов АЦП
 #define KI_LIST	KI0,	// инициализаторы для функции перекодировки
 
+// stubs
+#define WITHLCDBACKLIGHTMIN 0
+#define WITHLCDBACKLIGHTMAX 0
+#define BOARD_NOTCH_OFF 0
+#define BOARD_NOTCH_AUTO 1
+#define BOARD_NOTCH_MANUAL 2
+#define WITHPOWERTRIMMAX 100
 
 #endif /* ATMEGA328_CTL_4Z5KY_V1_H_INCLUDED */

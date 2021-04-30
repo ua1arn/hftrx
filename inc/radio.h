@@ -55,43 +55,6 @@ typedef uint_least64_t phase_t;
 #define WITHBOTTOMDBMIN 80
 #define WITHBOTTOMDBMAX 160
 
-#if WITHBOTTOMDBVAL
-#define WITHBOTTOMDBDEFAULT WITHBOTTOMDBVAL
-#else
-#define WITHBOTTOMDBDEFAULT 130
-#endif /* WITHBOTTOMDBVAL */
-
-#if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX) 
-	#if WITHIFSHIFT
-		#error Can not be defined WITHIFSHIFT together with FQMODEL_DCTRX
-	#endif
-	#if WITHPBT
-		#error Can not be defined WITHPBT together with FQMODEL_DCTRX
-	#endif
-	#if WITHDUALBFO
-		#error Can not be defined WITHDUALBFO together with FQMODEL_DCTRX
-	#endif
-	#if WITHFIXEDBFO
-		#error Can not be defined WITHFIXEDBFO together with FQMODEL_DCTRX
-	#endif
-	#if WITHDUALFLTR
-		#error Can not be defined WITHDUALFLTR together with FQMODEL_DCTRX
-	#endif
-#endif
-
-#if WITHPOTGAIN	// Для совместимости с теми конфигурациями, где разрешются регулировки только парой
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-#endif /* WITHPOTGAIN */
-
-#if ELKEY328
-	#define CWWPMMIN	12 //328 10
-	#define CWWPMMAX	30 //328 60
-#else
-	#define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
-	#define CWWPMMAX	60
-#endif
-
 #define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
 #define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
 

@@ -837,7 +837,7 @@ void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 #endif /* WITHAFEQUALIZER */
 
 
-#if __STDC__
+#if __STDC__ && ! CPUSTYLE_ATMEGA
 
 #define MAXFLOAT	3.40282347e+38F
 
@@ -865,7 +865,7 @@ void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 #define M_LOG2_E        _M_LN2
 #define M_INVLN2        1.4426950408889633870E0  /* 1 / log(2) */
 
-#endif
+#endif /* __STDC__ && ! CPUSTYLE_ATMEGA */
 
 #ifdef __cplusplus
 }
