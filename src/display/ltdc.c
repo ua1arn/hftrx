@@ -1637,6 +1637,7 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
 
+	xc7z1_setltdcfreq(vdmode);
 	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, frames, (unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE, vdmode);
 	if (Status != XST_SUCCESS)
 	{

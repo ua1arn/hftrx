@@ -4738,7 +4738,7 @@ unsigned long ps7_clock_init_data_3_0[] = {
     // .. .. ==> 0XF8000170[25:20] = 0x00000004U
     // .. ..     ==> MASK : 0x03F00000U    VAL : 0x00400000U
     // .. ..
-    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL
+    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// 	// FPGA0_CLK_CTRL PL Clock 0 Output control
     // .. .. CLK_621_TRUE = 0x1
     // .. .. ==> 0XF80001C4[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
@@ -8597,7 +8597,7 @@ unsigned long ps7_clock_init_data_2_0[] = {
     // .. .. ==> 0XF8000170[25:20] = 0x00000004U
     // .. ..     ==> MASK : 0x03F00000U    VAL : 0x00400000U
     // .. ..
-    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),
+    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
     // .. .. CLK_621_TRUE = 0x1
     // .. .. ==> 0XF80001C4[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
@@ -12608,7 +12608,7 @@ unsigned long ps7_clock_init_data_1_0[] = {
     // .. .. ==> 0XF8000170[25:20] = 0x00000004U
     // .. ..     ==> MASK : 0x03F00000U    VAL : 0x00400000U
     // .. ..
-    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),
+    //EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
     // .. .. CLK_621_TRUE = 0x1
     // .. .. ==> 0XF80001C4[0:0] = 0x00000001U
     // .. ..     ==> MASK : 0x00000001U    VAL : 0x00000001U
@@ -12669,7 +12669,7 @@ unsigned long ps7_clock_init_data_1_0[] = {
     // .. .. ==> 0XF800012C[24:24] = 0x00000001U
     // .. ..     ==> MASK : 0x01000000U    VAL : 0x01000000U
     // .. ..
-    EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C000DU),
+    //EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C000DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
     // .. FINISH: CLOCK CONTROL SLCR REGISTERS
     // .. START: THIS SHOULD BE BLANK
     // .. FINISH: THIS SHOULD BE BLANK

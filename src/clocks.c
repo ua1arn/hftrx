@@ -2123,6 +2123,13 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 		{ SCEMR_x16, 	SCSMR_DIV64, }, 	/* /1024 = 16 * 64 */
 	};
 
+#elif CPUSTYLE_XC7Z
+
+	enum
+	{
+		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
+	};
+
 #else
 	//#warning Undefined CPUSTYLE_XXX
 #endif
@@ -5649,7 +5656,7 @@ static uint_fast64_t xc7z1_get_ddr_pll_freq(void)
 	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * ddr_pll_mul;
 }
 
-static uint_fast64_t xc7z1_get_io_pll_freq(void)
+ uint_fast64_t xc7z1_get_io_pll_freq(void)
 {
 	const uint_fast32_t io_pll_mul = (SCLR->IO_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
@@ -5729,6 +5736,25 @@ unsigned long  xc7z1_get_spi_freq(void)
 		// 11: Source for generated clock is DDR PLL
 		return xc7z1_get_ddr_pll_freq() / divisor;
 	}
+}
+
+
+void xc7z1_setltdcfreq(const videomode_t * vdmode)
+{
+	unsigned long f1 = (unsigned long) ( xc7z1_get_io_pll_freq() / 1000);
+	unsigned long f2 = display_getdotclock(vdmode) / 1000;
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(f1, f2), XC7Z_FPGAx_CLK_WIDTH, XC7Z_FPGAx_CLK_TAPS, & value, 0);
+
+	PRINTF("xc7z1_setltdcfreq: div0=%u, div1=%u\n", 1u << prei, value);
+
+	// PL Clock 0 Output control
+	SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
+			(((uint_fast32_t) 1 << prei) << 8) | // 13:8DIVISOR0 - First cascade divider.
+			((uint_fast32_t) value << 20) | // 25:20 DIVISOR1 - Second cascade divide
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			0;
+
 }
 
 #endif /* CPUSTYLE_XC7Z */
@@ -5981,9 +6007,35 @@ sysinit_pll_initialize(void)
 		XDCFG->CTRL &= ~ (1uL << 29);	// PCFG_POR_CNT_4K
 
 		////EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+
+		// PL Clock 0 Output control
 		SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
-				0x00400800U |
+				((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 				0;
+
+		// PL Clock 1 Output control
+		SCLR->FPGA1_CLK_CTRL = (SCLR->FPGA1_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
+
+		// PL Clock 2 Output control
+		SCLR->FPGA2_CLK_CTRL = (SCLR->FPGA2_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
+
+		// PL Clock 3 Output control
+		SCLR->FPGA3_CLK_CTRL = (SCLR->FPGA3_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
+
 		////EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
 		SCLR->CLK_621_TRUE = (SCLR->CLK_621_TRUE & ~ (0x00000001U)) |
 				0x00000001U |
