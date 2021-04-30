@@ -111,7 +111,6 @@ void xc7z_dma_init_af_tx(void)
 	//xc7z_dma_init_rx();
 	//arm_hardware_set_handler_realtime(XPAR_FABRIC_DATAFIFO_0_VEC_ID, xc7z_datafifo_inthandler);
 
-	xc7z_if_data_init();
 	xc7z_dma_init_tx();
 
 	// пнуть для запуска прерываний, без этого не идут
