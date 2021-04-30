@@ -5115,7 +5115,7 @@ static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * 
 
 // Тестирование - заменить приянтые квадратуры синтезированными
 static void
-inject_testsignals(int32_t * const dbuff)
+inject_testsignals(IFADCvalue_t * const dbuff)
 {
 #ifdef DMABUF32RX0I
 	// приёмник
@@ -5141,7 +5141,7 @@ inject_testsignals(int32_t * const dbuff)
 
 // Обработка полученного от DMA буфера с выборками или квадратурами (или двухканальный приём).
 // Вызывается на ARM_REALTIME_PRIORITY уровне.
-void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
+void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 {
 	ASSERT(buff != NULL);
 	ASSERT(gwprof < NPROF);
@@ -5192,8 +5192,8 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 		//savesampleout32stereo(intn_to_tx(dual.IV, 24), intn_to_tx(dual.QV, 24));	// кодек получает 24 бита left justified в 32-х битном числе.
 //		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		recordsampleUAC(
-			buff [i + DMABUF32RXI] >> (32 - UACIN_AUDIO48_SAMPLEBITS),
-			buff [i + DMABUF32RXQ] >> (32 - UACIN_AUDIO48_SAMPLEBITS)
+			buff [i + DMABUF32RXI] >> (WITHIFADCWIDTH - UACIN_AUDIO48_SAMPLEBITS),
+			buff [i + DMABUF32RXQ] >> (WITHIFADCWIDTH - UACIN_AUDIO48_SAMPLEBITS)
 			);
 
 #elif WITHSUSBSPKONLY
@@ -5260,7 +5260,7 @@ void RAMFUNC dsp_extbuffer32rx(const int32_t * buff)
 
 	#if 0
 			// Тестирование - заменить приянтые квадратуры синтезированными
-			inject_testsignals((int32_t *) (buff + i));
+			inject_testsignals((IFADCvalue_t *) (buff + i));
 
 	#endif
 
