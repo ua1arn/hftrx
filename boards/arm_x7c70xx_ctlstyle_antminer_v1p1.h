@@ -26,9 +26,9 @@
 	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
 
 	// PL Clock 0 Output control
-	// ~33 MHz
+	// ~50 MHz
 	#define SCLR_FPGA0_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA0_CLK_CTRL_DIVISOR1 6
+	#define SCLR_FPGA0_CLK_CTRL_DIVISOR1 4
 
 	// PL Clock 1 Output control
 	// ~50 MHz
