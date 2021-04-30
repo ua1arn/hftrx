@@ -979,6 +979,7 @@
 	} while (0)
 	/* управление состоянием сигнала MODE 7" панели */
 	#define HARDWARE_LTDC_SET_MODE(state) do { \
+		const uint32_t MODEmask = 0 * (1U << 3); /* Pxx - MODEmask */ \
 		const uint32_t DEmask = (1U << 7); /* PK7 */ \
 		arm_hardware_piok_outputs(MODEmask, (state != 0) * MODEmask); /* PF4 MODE=state */ \
 	} while (0)
