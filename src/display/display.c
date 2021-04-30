@@ -1409,7 +1409,7 @@ void display_hardware_initialize(void)
 #endif /* WITHMDMAHW */
 
 #if WITHLTDCHW
-
+	const videomode_t * const vdmode = & vdmode0;
 	colmain_fb_initialize();
 	uintptr_t frames [LCDMODE_MAIN_PAGES];
 	unsigned i;
@@ -1419,18 +1419,18 @@ void display_hardware_initialize(void)
 	}
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
-	arm_hardware_ltdc_initialize(frames);
+	arm_hardware_ltdc_initialize(frames, vdmode);
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 	arm_hardware_ltdc_L8_palette();
 #endif /* WITHLTDCHW */
 
 #if LCDMODETX_TC358778XBG
-	tc358768_initialize();
-	panel_initialize();
+	tc358768_initialize(vdmode);
+	panel_initialize(vdmode);
 #endif /* LCDMODETX_TC358778XBG */
 #if LCDMODEX_SII9022
-	sii9022_initialize();
+	sii9022_initialize(vdmode);
 #endif /* LCDMODEX_SII9022 */
 
 #if LCDMODE_HARD_SPI

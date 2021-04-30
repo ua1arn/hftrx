@@ -2985,7 +2985,7 @@ static void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->PLL4CFGR1;
 
-	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock());
+	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock(& vdmode0));
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
 		((uint_fast32_t) (PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
 		//((uint_fast32_t) (pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
@@ -4089,7 +4089,7 @@ stm32f4xx_pllsai_initialize(void)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 	// Настройка PLLSAI
@@ -4123,7 +4123,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
@@ -4319,7 +4319,7 @@ stm32f7xx_pllsai_initialize(void)
 #if defined (RCC_PLLSAICFGR_PLLSAIR)
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
@@ -4362,7 +4362,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 }
@@ -4583,25 +4583,25 @@ stm32h7xx_pll_initialize(void)
 		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divisor - не требуется корректировань число
 		0;
 	//
-	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, display_getdotclock());
-	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3 | RCC_PLL3DIVR_R3)) |
-		(((REF3_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3) |
-		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3) |	// нужно для нормального переключения SPI clock USB clock
+	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, display_getdotclock(& vdmode0));
+	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3_Msk | RCC_PLL3DIVR_R3_Msk)) |
+		(((REF3_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3_Msk) |
+		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3_Msk) |	// нужно для нормального переключения SPI clock USB clock
 		0;
-	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN | RCC_PLLCFGR_PLL3RGE | RCC_PLLCFGR_PLL3VCOSEL)) |
+	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN_Msk | RCC_PLLCFGR_PLL3RGE_Msk | RCC_PLLCFGR_PLL3VCOSEL_Msk)) |
 		RCC_PLLCFGR_DIVR3EN |	// This bit can be written only when the PLL3 is disabled (PLL3ON = ‘0’ and PLL3RDY = ‘0’).
 #if PLL3_FREQ >= 150000000uL && PLL3_FREQ <= 420000000uL
-		1 * RCC_PLLCFGR_PLL3VCOSEL |	// 1: Medium VCO range: 150 to 420 MHz
+		1 * RCC_PLLCFGR_PLL3VCOSEL_Msk |	// 1: Medium VCO range: 150 to 420 MHz
 #else
-		0 * RCC_PLLCFGR_PLL3VCOSEL |	// 0: Wide VCO range: 192 to 836 MHz (default after reset)
+		0 * RCC_PLLCFGR_PLL3VCOSEL_Msk |	// 0: Wide VCO range: 192 to 836 MHz (default after reset)
 #endif
 		0 * RCC_PLLCFGR_PLL3RGE_0 |	// 00: The PLL3 input (ref3_ck) clock range frequency is between 1 and 2 MHz
 		0;
 
-	RCC->CR |= RCC_CR_PLL3ON;				// Включил PLL3
+	RCC->CR |= RCC_CR_PLL3ON_Msk;				// Включил PLL3
 
 
-	while ((RCC->CR & RCC_CR_PLL3RDY) == 0)	// пока заработает PLL
+	while ((RCC->CR & RCC_CR_PLL3RDY_Msk) == 0)	// пока заработает PLL
 		;
 
 #endif /* WITHUSEPLL3 */
@@ -4609,15 +4609,15 @@ stm32h7xx_pll_initialize(void)
 	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
 	/* Блок настройки ФЛЭШ */
 	/* Reserved bits must be kept cleared. */
-	FLASH->ACR = (FLASH->ACR & ~ (FLASH_ACR_LATENCY | FLASH_ACR_WRHIGHFREQ)) |
+	FLASH->ACR = (FLASH->ACR & ~ (FLASH_ACR_LATENCY_Msk | FLASH_ACR_WRHIGHFREQ_Msk)) |
 		(FLASH_ACR_WRHIGHFREQ_0 * 3) |
-		flash_acr_latency |		//Задержка для работы с памятью
+		(flash_acr_latency << FLASH_ACR_LATENCY_Pos) |		//Задержка для работы с памятью
 		0;
 
 	while ((FLASH->ACR & FLASH_ACR_LATENCY) != flash_acr_latency)
 		;
 
-	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW)) |
+	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW_Msk)) |
 		RCC_CFGR_SW_PLL1 | // PLL as system clock
 		0;
 
@@ -4629,26 +4629,26 @@ stm32h7xx_pll_initialize(void)
 
 	// RCC Domain 1 Kernel Clock Configuration Register
 	// Set per_ck clock output
-	RCC->D1CCIPR = (RCC->D1CCIPR & ~ (RCC_D1CCIPR_CKPERSEL)) |
+	RCC->D1CCIPR = (RCC->D1CCIPR & ~ (RCC_D1CCIPR_CKPERSEL_Msk)) |
 		0 * RCC_D1CCIPR_CKPERSEL_0 |	// 00: hsi_ker_ck clock selected as per_ck clock (default after reset) - 64 MHz - used as PER_CK_FREQ
 		0;
 
 	// RCC Domain 1 Kernel Clock Configuration Register
-	RCC->D1CCIPR = (RCC->D1CCIPR & ~ (RCC_D1CCIPR_SDMMCSEL)) |
+	RCC->D1CCIPR = (RCC->D1CCIPR & ~ (RCC_D1CCIPR_SDMMCSEL_Msk)) |
 #if WITHSDHCHW
-		0 * RCC_D1CCIPR_SDMMCSEL |			// 0: pll1_q_ck clock is selected as kernel peripheral clock (default after reset)
+		0 * RCC_D1CCIPR_SDMMCSEL_Msk |			// 0: pll1_q_ck clock is selected as kernel peripheral clock (default after reset)
 #endif /* WITHSDHCHW */
 		0;
 
 	// RCC Domain 2 Kernel Clock Configuration Register
-	RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SPI123SEL | RCC_D2CCIP1R_SPI45SEL)) |
+	RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SPI123SEL_Msk | RCC_D2CCIP1R_SPI45SEL_Msk)) |
 		4 * RCC_D2CCIP1R_SPI123SEL_0 |		// per_ck
 		3 * RCC_D2CCIP1R_SPI45SEL_0 |		// 011: hsi_ker_ck clock is selected as kernel clock
 		0;
 	// RCC Domain 2 Kernel Clock Configuration Register
 	RCC->D2CCIP2R = (RCC->D2CCIP2R & ~ (
-					RCC_D2CCIP2R_USART16SEL | RCC_D2CCIP2R_USART28SEL |
-					RCC_D2CCIP2R_RNGSEL | RCC_D2CCIP2R_I2C123SEL)) |
+					RCC_D2CCIP2R_USART16SEL_Msk | RCC_D2CCIP2R_USART28SEL_Msk |
+					RCC_D2CCIP2R_RNGSEL_Msk | RCC_D2CCIP2R_I2C123SEL_Msk)) |
 		0 * RCC_D2CCIP2R_USART16SEL_0 |		// rcc_pclk2
 		0 * RCC_D2CCIP2R_USART28SEL_0 |		// rcc_pclk1
 		1 * RCC_D2CCIP2R_RNGSEL_0 |			// 01: pll1_q_ck clock is selected as kernel clock
@@ -4658,7 +4658,7 @@ stm32h7xx_pll_initialize(void)
 	// Выбор источника тактирования блока USB
 	// RCC Domain 2 Kernel Clock Configuration Register
 	// USBOTG 1 and 2 kernel clock source selection
-	RCC->D2CCIP2R = (RCC->D2CCIP2R & ~ (RCC_D2CCIP2R_USBSEL)) |
+	RCC->D2CCIP2R = (RCC->D2CCIP2R & ~ (RCC_D2CCIP2R_USBSEL_Msk)) |
 		1 * RCC_D2CCIP2R_USBSEL_0 |			// pll1_q_ck
 		//3 * RCC_D2CCIP2R_USBSEL_0 |			// hsi48_ck
 		0;
@@ -4674,7 +4674,7 @@ stm32h7xx_pll_initialize(void)
 	{
 		// Тестирование тактовой частоты - подача на сигнал MCO1
 		arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);			/* PA0 MCO1 */
-		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE)) |
+		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_MCO1_Msk | RCC_CFGR_MCO1PRE_Msk)) |
 			1 * RCC_CFGR_MCO1PRE_0 |	// divide to 1: bypass
 			3 * RCC_CFGR_MCO1_0 |	// 011: PLL1 clock selected (pll1_q_ck)
 			0;
@@ -4690,7 +4690,7 @@ stm32h7xx_pll_initialize(void)
 // Версия для STM32H7 возвращает текушее значение делитедя.
 static uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
-	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1) >> RCC_PLL1DIVR_Q1_Pos) + 1;
+	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1_Msk) >> RCC_PLL1DIVR_Q1_Pos) + 1;
 	return stm32h7xx_pllq;
 }
 
@@ -4716,24 +4716,24 @@ static void stm32h7xx_pllsai_initialize(void)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
 	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
-	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
-		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divisor, 2..7
+	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN_Msk | /*RCC_PLLSAICFGR_PLLSAIQ_Msk | */ RCC_PLLSAICFGR_PLLSAIR_Msk)) |
+		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN_Msk) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
+		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR_Msk) |	// PLLI2SR bits - output divisor, 2..7
 		0;
 
 	RCC->DCKCFGR = (RCC->DCKCFGR & ~ RCC_DCKCFGR_PLLSAIDIVR) |
-		((prei << RCC_DCKCFGR_PLLSAIDIVR_Pos) & RCC_DCKCFGR_PLLSAIDIVR) |	// division factor for LCD_CLK. 2: PLLSAIDIVR = /8  3: PLLSAIDIVR = /16
+		((prei << RCC_DCKCFGR_PLLSAIDIVR_Pos) & RCC_DCKCFGR_PLLSAIDIVR_Msk) |	// division factor for LCD_CLK. 2: PLLSAIDIVR = /8  3: PLLSAIDIVR = /16
 		0;
 
-	RCC->CR |= RCC_CR_PLLSAION;				// Включил PLL
-	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
+	RCC->CR |= RCC_CR_PLLSAION_Msk;				// Включил PLL
+	while ((RCC->CR & RCC_CR_PLLSAIRDY_Msk) == 0)	// пока заработает PLL
 		;
 }
 
@@ -4749,41 +4749,41 @@ lowlevel_stm32f10x_pll_clock(void)
 	#if WITHCPUXOSC
 		// Внешний генератор
 		// Enable HSI
-		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) |
-			RCC_CR_HSEON |
-			RCC_CR_HSEBYP |
+		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON_Msk | RCC_CR_HSION_Msk | RCC_CR_HSEBYP_Msk)) |
+			RCC_CR_HSEON_Msk |
+			RCC_CR_HSEBYP_Msk |
 			0;
-		while (!(RCC->CR & RCC_CR_HSERDY))
+		while (!(RCC->CR & RCC_CR_HSERDY_Msk))
 			;
 	#elif WITHCPUXTAL
 		// внешний кварцевый резонатор
 		// Enable HSI
-		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSEON;
-		while (!(RCC->CR & RCC_CR_HSERDY))
+		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON_Msk | RCC_CR_HSION_Msk | RCC_CR_HSEBYP_Msk)) | RCC_CR_HSEON_Msk;
+		while (!(RCC->CR & RCC_CR_HSERDY_Msk))
 			;
 	#else /* WITHCPUXTAL */
 		// внутренний генератор
 		// Enable HSI
-		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSION;
-		while (!(RCC->CR & RCC_CR_HSIRDY))
+		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON_Msk | RCC_CR_HSION_Msk | RCC_CR_HSEBYP_Msk)) | RCC_CR_HSION_Msk;
+		while (!(RCC->CR & RCC_CR_HSIRDY_Msk))
 			;
 	#endif /* WITHCPUXTAL */
 
 	// Enable Prefetch Buffer
-	FLASH->ACR |= FLASH_ACR_PRFTBE;
+	FLASH->ACR |= FLASH_ACR_PRFTBE_Msk;
 
 #if (CPU_FREQ < 24000000ul)
 	// Flash 0 wait state
-    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_0;
+    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | FLASH_ACR_LATENCY_0;
 #elif (CPU_FREQ <= 48000000ul)
 	// Flash 1 wait state
-    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_1;
+    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | FLASH_ACR_LATENCY_1;
 #else
  	// Flash 2 wait state (if freq in 24..48 MHz range - 1WS.)
 	#if CPUSTYLE_STM32F1XX
-		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_2;
+		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | FLASH_ACR_LATENCY_2;
 	#else
-		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_1;
+		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | FLASH_ACR_LATENCY_1;
 	#endif
 #endif
 
