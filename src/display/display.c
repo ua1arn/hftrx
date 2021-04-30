@@ -1426,7 +1426,7 @@ const videomode_t vdmode0 =
 #else
 	.board_modevalue = UINT_MAX,	// MODE set for 7" display
 #endif
-	.ltdc_dotclk = 9000000uL,	// частота пикселей при работе с интерфейсом RGB
+	//.ltdc_dotclk = 9000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
 	/* SONY PSP-1000 display (4.3") required. */
@@ -1477,7 +1477,7 @@ const videomode_t vdmode0 =
 #else
 	.board_modevalue = UINT_MAX,	// MODE set for 7" display
 #endif
-	.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
+	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
 
@@ -1522,7 +1522,7 @@ const videomode_t vdmode0 =
 #else
 	.board_modevalue = UINT_MAX,	// MODE set for 7" display
 #endif
-	.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
+	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 	.fps = 60	/* frames per secound */
 };
 
@@ -1585,7 +1585,7 @@ const videomode_t vdmode0 =
 #else
 	.board_modevalue = UINT_MAX,	// MODE set for 7" display
 #endif
-	.ltdc_dotclk = 74250000uL,	// частота пикселей при работе с интерфейсом RGB
+	//.ltdc_dotclk = 74250000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
 
@@ -1618,8 +1618,8 @@ const videomode_t vdmode0 =
 #else
 	.board_modevalue = UINT_MAX,	// MODE set for 7" display
 #endif
-	.ltdc_dotclk = 24000000uL,	// частота пикселей при работе с интерфейсом RGB
-	.fps = x60	/* frames per secound */
+	//.ltdc_dotclk = 24000000uL,	// частота пикселей при работе с интерфейсом RGB
+	.fps = 60	/* frames per secound */
 };
 
 #elif LCDMODE_ILI9341
@@ -1652,7 +1652,7 @@ static const const videomode_t vdmode0 =
 #else
 	.board_modevalue = UINT_MAX,	// MODE set for 7" display
 #endif
-	.ltdc_dotclk = 3000000uL,	// частота пикселей при работе с интерфейсом RGB
+	//.ltdc_dotclk = 3000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
 
@@ -1700,7 +1700,8 @@ const videomode_t vdmode0 =
 #else
 	.board_modevalue = UINT_MAX,	// MODE set for 7" display
 #endif
-	.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
+	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
+	.fps = 60	/* frames per secound */
 };
 
 #else

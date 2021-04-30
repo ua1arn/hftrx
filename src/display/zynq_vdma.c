@@ -235,7 +235,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 	dispPtr->vdmaConfig.Stride = dispPtr->stride;
 	for (i = 0; i < LCDMODE_MAIN_PAGES; i++)
 	{
-		dispPtr->vdmaConfig.FrameStoreStartAddr[i] = (u32)dispPtr->framePtr[i];
+		dispPtr->vdmaConfig.FrameStoreStartAddr[i] = dispPtr->framePhyAddr[i];
 	}
 
 	/*
@@ -312,7 +312,7 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 	dispPtr->dynClkAddr = dynClkAddr;
 	for (i = 0; i < LCDMODE_MAIN_PAGES; i++)
 	{
-		dispPtr->framePtr[i] = (u8 *) frames [i];
+		dispPtr->framePhyAddr[i] = frames [i];
 	}
 	dispPtr->state = DISPLAY_STOPPED;
 	dispPtr->stride = stride;

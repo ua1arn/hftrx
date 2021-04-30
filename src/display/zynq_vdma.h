@@ -52,7 +52,7 @@ typedef struct {
 	XAxiVdma_DmaSetup vdmaConfig;     /* VDMA channel configuration */
 	XVtc vtc; 					      /* VTC driver struct */
 	videomode_t vMode; 				  /* Current video mode */
-	u8 *framePtr [LCDMODE_MAIN_PAGES]; 		  /* Array of pointers to the frame buffers */
+	uintptr_t framePhyAddr [LCDMODE_MAIN_PAGES]; 		  /* Array of pointers to the frame buffers */
 	u32 stride; 					  /* The line stride of the frame buffers, in bytes */
 	double pxlFreq; 				  /* Frequency of clock currently being generated, maybe not exactly with vMode.freq */
 	u32 curFrame; 					  /* Current frame being displayed */
