@@ -740,6 +740,7 @@ typedef struct videomode_tag
 	unsigned board_dereset; /* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
 	unsigned board_modevalue;	/* UINT_MAX - нет управления mode */
 	unsigned long ltdc_dotclk;
+	unsigned fps;	/* frames per secound */
 
 } videomode_t;
 
