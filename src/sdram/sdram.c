@@ -4323,6 +4323,7 @@ static const unsigned long ps7_clock_init_data_3_0[] = {
 		//EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
 		//EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
 		//EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
+	    EMIT_MASKWRITE(0XF800012C, 0x01000000U ,0x01000000U),		// APER_CLK_CTRL AMBA Peripheral Clock Control
 		EMIT_EXIT(),
 	};
 
@@ -4799,7 +4800,8 @@ unsigned long ps7_clock_init_data_3_0[] = {
     // .. .. ==> 0XF800012C[24:24] = 0x00000001U
     // .. ..     ==> MASK : 0x01000000U    VAL : 0x01000000U
     // .. ..
-    EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C000DU),	// APER_CLK_CTRL
+    EMIT_MASKWRITE(0XF800012C, 0x01000000U ,0x01000000U),		// APER_CLK_CTRL AMBA Peripheral Clock Control
+    //EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C000DU),		// APER_CLK_CTRL AMBA Peripheral Clock Control
     // .. FINISH: CLOCK CONTROL SLCR REGISTERS
     // .. START: THIS SHOULD BE BLANK
     // .. FINISH: THIS SHOULD BE BLANK
@@ -7956,7 +7958,7 @@ unsigned long ps7_peripherals_init_data_3_0[] = {
     // .. ==> 0XF8000008[15:0] = 0x0000DF0DU
     // ..     ==> MASK : 0x0000FFFFU    VAL : 0x0000DF0DU
     // ..
-    EMIT_WRITE(0XF8000008, 0x0000DF0DU),
+    EMIT_WRITE(0XF8000008, 0x0000DF0DU),	// SLCR_UNLOCK
     // .. FINISH: SLCR SETTINGS
     // .. START: DDR TERM/IBUF_DISABLE_MODE SETTINGS
     // .. IBUF_DISABLE_MODE = 0x1
@@ -7966,7 +7968,7 @@ unsigned long ps7_peripherals_init_data_3_0[] = {
     // .. ==> 0XF8000B48[8:8] = 0x00000001U
     // ..     ==> MASK : 0x00000100U    VAL : 0x00000100U
     // ..
-    EMIT_MASKWRITE(0XF8000B48, 0x00000180U ,0x00000180U),
+    EMIT_MASKWRITE(0XF8000B48, 0x00000180U ,0x00000180U),	// DDRIOB_DATA0
     // .. IBUF_DISABLE_MODE = 0x1
     // .. ==> 0XF8000B4C[7:7] = 0x00000001U
     // ..     ==> MASK : 0x00000080U    VAL : 0x00000080U
@@ -7974,7 +7976,7 @@ unsigned long ps7_peripherals_init_data_3_0[] = {
     // .. ==> 0XF8000B4C[8:8] = 0x00000001U
     // ..     ==> MASK : 0x00000100U    VAL : 0x00000100U
     // ..
-    EMIT_MASKWRITE(0XF8000B4C, 0x00000180U ,0x00000180U),
+    EMIT_MASKWRITE(0XF8000B4C, 0x00000180U ,0x00000180U),	// DDRIOB_DATA1
     // .. IBUF_DISABLE_MODE = 0x1
     // .. ==> 0XF8000B50[7:7] = 0x00000001U
     // ..     ==> MASK : 0x00000080U    VAL : 0x00000080U
@@ -7982,7 +7984,7 @@ unsigned long ps7_peripherals_init_data_3_0[] = {
     // .. ==> 0XF8000B50[8:8] = 0x00000001U
     // ..     ==> MASK : 0x00000100U    VAL : 0x00000100U
     // ..
-    EMIT_MASKWRITE(0XF8000B50, 0x00000180U ,0x00000180U),
+    EMIT_MASKWRITE(0XF8000B50, 0x00000180U ,0x00000180U),	// DDRIOB_DIFF0
     // .. IBUF_DISABLE_MODE = 0x1
     // .. ==> 0XF8000B54[7:7] = 0x00000001U
     // ..     ==> MASK : 0x00000080U    VAL : 0x00000080U
@@ -7990,14 +7992,14 @@ unsigned long ps7_peripherals_init_data_3_0[] = {
     // .. ==> 0XF8000B54[8:8] = 0x00000001U
     // ..     ==> MASK : 0x00000100U    VAL : 0x00000100U
     // ..
-    EMIT_MASKWRITE(0XF8000B54, 0x00000180U ,0x00000180U),
+    EMIT_MASKWRITE(0XF8000B54, 0x00000180U ,0x00000180U),	// DDRIOB_DIFF1
     // .. FINISH: DDR TERM/IBUF_DISABLE_MODE SETTINGS
     // .. START: LOCK IT BACK
     // .. LOCK_KEY = 0X767B
     // .. ==> 0XF8000004[15:0] = 0x0000767BU
     // ..     ==> MASK : 0x0000FFFFU    VAL : 0x0000767BU
     // ..
-    //EMIT_WRITE(0XF8000004, 0x0000767BU),
+    //EMIT_WRITE(0XF8000004, 0x0000767BU),	// lock
     // .. FINISH: LOCK IT BACK
     // .. START: SRAM/NOR SET OPMODE
     // .. FINISH: SRAM/NOR SET OPMODE
@@ -8658,7 +8660,7 @@ unsigned long ps7_clock_init_data_2_0[] = {
     // .. .. ==> 0XF800012C[24:24] = 0x00000001U
     // .. ..     ==> MASK : 0x01000000U    VAL : 0x01000000U
     // .. ..
-    EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C000DU),
+    //EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C000DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
     // .. FINISH: CLOCK CONTROL SLCR REGISTERS
     // .. START: THIS SHOULD BE BLANK
     // .. FINISH: THIS SHOULD BE BLANK
@@ -12669,7 +12671,7 @@ unsigned long ps7_clock_init_data_1_0[] = {
     // .. .. ==> 0XF800012C[24:24] = 0x00000001U
     // .. ..     ==> MASK : 0x01000000U    VAL : 0x01000000U
     // .. ..
-    //EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C000DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
+		//EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C000DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
     // .. FINISH: CLOCK CONTROL SLCR REGISTERS
     // .. START: THIS SHOULD BE BLANK
     // .. FINISH: THIS SHOULD BE BLANK
@@ -16277,9 +16279,14 @@ static int ps7_init(void)
 	if (ret != PS7_INIT_SUCCESS)
 		return ret;
 
+//	char c;
+//	while (dbg_getchar(&c) == 0)
+//		;
+//	TP();
 	ret = ps7_config(ps7_peripherals_init_data_3_0);
 	if (ret != PS7_INIT_SUCCESS)
 		return ret;
+	//TP();
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	return PS7_INIT_SUCCESS;
@@ -16289,7 +16296,7 @@ static int ps7_init(void)
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
 	PRINTF("arm_hardware_sdram_initialize start\n");
-	ps7_init();
+	VERIFY(PS7_INIT_SUCCESS == ps7_init());
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }
 #endif
