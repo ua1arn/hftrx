@@ -21042,11 +21042,16 @@ uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 		default:
 		case BWSET_SINGLE:
 			if (rotate < 0)
+			{
 				p->left10_width10 = prevfreq(p->left10_width10, p->left10_width10 - p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_low);
+				updateboard (1, 0);
+			}
 			if (rotate > 0)
+			{
 				p->left10_width10 = nextfreq(p->left10_width10, p->left10_width10 + p->limits->granulationleft, p->limits->granulationleft, p->limits->left10_width10_high);
+				updateboard (1, 0);
+			}
 
-			updateboard (1, 0);
 			low = p->left10_width10;
 		}
 	return low;
