@@ -1857,6 +1857,7 @@ static void window_tx_power_process(void)
 	static slider_t * sl_pwr_level = NULL, * sl_pwr_tuner_level = NULL;
 	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
 	static uint_fast16_t power_min, power_max;
+	static uint_fast8_t update = 0;
 	slider_t * sl;
 
 	if (win->first_call)
@@ -1865,7 +1866,8 @@ static void window_tx_power_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER,  NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", "OK", },
+			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", 	   "OK", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_lowtune_enable", "",   },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1927,11 +1929,17 @@ static void window_tx_power_process(void)
 		sl_pwr_tuner_level->step = 3;
 		sl_pwr_tuner_level->value = normalize(tune_power, power_min, power_max, 100);
 
-		button_t * bh = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-		bh->x1 = (sl_pwr_level->x + sl_pwr_level->size) / 2 - (bh->w / 2);
-		bh->y1 = lbl_tune_power->y + interval;
-		bh->visible = VISIBLE;
+		button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
+		btn_tx_pwr_OK->x1 = (sl_pwr_level->x + sl_pwr_level->size) / 2 - (btn_tx_pwr_OK->w / 2);
+		btn_tx_pwr_OK->y1 = lbl_tune_power->y + interval;
+		btn_tx_pwr_OK->visible = VISIBLE;
 
+		button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
+		btn_lowtune_enable->x1 = btn_tx_pwr_OK->x1 + btn_tx_pwr_OK->w + 20;
+		btn_lowtune_enable->y1 = btn_tx_pwr_OK->y1;
+		btn_lowtune_enable->visible = VISIBLE;
+
+		update = 1;
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -1943,10 +1951,17 @@ static void window_tx_power_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
+			button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
 
 			if (bh == btn_tx_pwr_OK)
 			{
 				close_all_windows();
+			}
+			else if (bh == btn_lowtune_enable)
+			{
+				gui_nvram.tune_powerdown_enable = gui_nvram.tune_powerdown_enable ? 0 : 1;
+				save_settings();
+				update = 1;
 			}
 		}
 		else if (IS_SLIDER_MOVE)
@@ -1972,6 +1987,16 @@ static void window_tx_power_process(void)
 
 		break;
 	}
+
+	if (update)
+	{
+		update = 0;
+
+		button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
+		local_snprintf_P(btn_lowtune_enable->text, ARRAY_SIZE(btn_lowtune_enable->text), "Low power|tune %s", gui_nvram.tune_powerdown_enable ? "en" : "dis");
+		btn_lowtune_enable->is_locked = gui_nvram.tune_powerdown_enable ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+	}
+
 #endif /* WITHPOWERTRIM */
 }
 
@@ -2964,7 +2989,6 @@ static void window_gui_settings_process(void)
 
 		static const button_t buttons [] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step", 		"", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_lowtune_enable",  "", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3003,17 +3027,10 @@ static void window_gui_settings_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
-			button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
 
 			if (bh == btn_enc2_step)
 			{
 				gui_nvram.enc2step_pos = (gui_nvram.enc2step_pos + 1 ) % enc2step_vals;
-				save_settings();
-				update = 1;
-			}
-			else if (bh == btn_lowtune_enable)
-			{
-				gui_nvram.tune_powerdown_enable = gui_nvram.tune_powerdown_enable ? 0 : 1;
 				save_settings();
 				update = 1;
 			}
@@ -3030,10 +3047,6 @@ static void window_gui_settings_process(void)
 		update = 0;
 		button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
 		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), "Enc2 step|%s", enc2step [gui_nvram.enc2step_pos].label);
-
-		button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
-		local_snprintf_P(btn_lowtune_enable->text, ARRAY_SIZE(btn_lowtune_enable->text), "Low power|tune %s", gui_nvram.tune_powerdown_enable ? "en" : "dis");
-		btn_lowtune_enable->is_locked = gui_nvram.tune_powerdown_enable ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 	}
 }
 
