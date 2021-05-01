@@ -418,21 +418,22 @@ static void gui_main_process(void)
 
 	// параметры полосы пропускания фильтра
 	{
-		static uint_fast8_t bp_type, bp_low, bp_high;
+		static uint_fast8_t bp_wide;
+		static uint_fast16_t bp_low, bp_high;
 		if (update)
 		{
+			bp_wide = hamradio_get_bp_type_wide();
 			bp_high = hamradio_get_high_bp(0);
 			bp_low = hamradio_get_low_bp(0) * 10;
-			bp_type = hamradio_get_bp_type();
-			bp_high = bp_type ? (bp_high * 100) : (bp_high * 10);
+			bp_high = bp_wide ? (bp_high * 100) : (bp_high * 10);
 		}
 		local_snprintf_P(buf, buflen, PSTR("AF"));
 		xx = current_place * lbl_place_width + 7;
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1 + (y2 - y1) / 2, buf, COLORMAIN_WHITE);
 		xx += SMALLCHARW2 * 3;
-		local_snprintf_P(buf, buflen, bp_type ? (PSTR("L %d")) : (PSTR("W %d")), bp_low);
+		local_snprintf_P(buf, buflen, bp_wide ? (PSTR("L %u")) : (PSTR("W %u")), bp_low);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y1, buf, COLORMAIN_WHITE);
-		local_snprintf_P(buf, buflen, bp_type ? (PSTR("H %d")) : (PSTR("P %d")), bp_high);
+		local_snprintf_P(buf, buflen, bp_wide ? (PSTR("H %u")) : (PSTR("P %u")), bp_high);
 		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y2, buf, COLORMAIN_WHITE);
 	}
 
@@ -3742,8 +3743,8 @@ static void window_af_process(void)
 		bp_t.updated = 0;
 
 		char str_low [TEXT_ARRAY_SIZE], str_high [TEXT_ARRAY_SIZE];
-		uint_fast8_t bp_type = hamradio_get_bp_type();
-		if (bp_type)						// BWSET_WIDE
+		const uint_fast8_t bp_wide = hamradio_get_bp_type_wide();
+		if (bp_wide)						// BWSET_WIDE
 		{
 			strcpy(str_low,  "Low  cut ");
 			strcpy(str_high, "High cut ");
@@ -3760,21 +3761,21 @@ static void window_af_process(void)
 		ASSERT(bp_t.select < win->lh_count);
 		win->lh_ptr [bp_t.select].color = COLORMAIN_YELLOW;
 
-		label_t * lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
-		label_t * lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
-		label_t * lbl_afr = find_gui_element(TYPE_LABEL, win, "lbl_afr");
-		label_t * lbl_ifshift = find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
+		label_t * const lbl_low = find_gui_element(TYPE_LABEL, win, "lbl_low");
+		label_t * const lbl_high = find_gui_element(TYPE_LABEL, win, "lbl_high");
+		label_t * const lbl_afr = find_gui_element(TYPE_LABEL, win, "lbl_afr");
+		label_t * const lbl_ifshift = find_gui_element(TYPE_LABEL, win, "lbl_ifshift");
 
-		uint_fast8_t val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
-		local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4d"), str_low, val_low * 10);
+		uint_fast16_t val_low = hamradio_get_low_bp(bp_t.select == TYPE_BP_LOW ? (bp_t.change * 5) : 0);
+		local_snprintf_P(lbl_low->text, ARRAY_SIZE(lbl_low->text), PSTR("%s: %4u"), str_low, val_low * 10);
 
-		uint_fast8_t val_high = hamradio_get_high_bp(bp_t.select == TYPE_BP_HIGH ? bp_t.change : 0) * (bp_type ? 100 : 10);
-		local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4d"), str_high, val_high);
+		uint_fast16_t val_high = hamradio_get_high_bp(bp_t.select == TYPE_BP_HIGH ? bp_t.change : 0) * (bp_wide ? 100 : 10);
+		local_snprintf_P(lbl_high->text, ARRAY_SIZE(lbl_high->text), PSTR("%s: %4u"), str_high, val_high);
 
 		local_snprintf_P(lbl_afr->text, ARRAY_SIZE(lbl_afr->text), PSTR("AFR      : %+4d "),
 				hamradio_afresponce(bp_t.select == TYPE_AFR ? bp_t.change : 0));
 
-		int16_t shift = hamradio_if_shift(bp_t.select == TYPE_IF_SHIFT ? bp_t.change : 0);
+		int_fast16_t shift = hamradio_if_shift(bp_t.select == TYPE_IF_SHIFT ? bp_t.change : 0);
 		if (shift)
 			local_snprintf_P(lbl_ifshift->text, ARRAY_SIZE(lbl_ifshift->text), PSTR("IF shift :%+5d"), shift);
 		else

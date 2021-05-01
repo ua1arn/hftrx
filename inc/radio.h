@@ -3308,7 +3308,7 @@ uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик вклю�
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
-uint_fast8_t hamradio_get_bp_type(void);
+uint_fast8_t hamradio_get_bp_type_wide(void);	// не-0: параметры полосы пропускания - пара нижний срез/верхний срез
 void hamradio_set_agc_slow(void);
 void hamradio_set_agc_fast(void);
 uint_fast8_t hamradio_get_agc_type(void);

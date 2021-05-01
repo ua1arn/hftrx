@@ -21009,14 +21009,14 @@ uint_fast8_t hamradio_get_agc_type(void)	// 0 - slow, 1 - fast
 		return 1;
 }
 
-uint_fast8_t hamradio_get_bp_type(void)
+uint_fast8_t hamradio_get_bp_type_wide(void)
 {
 	const uint_fast8_t tx = hamradio_get_tx();
 	const uint_fast8_t asubmode = getasubmode(0);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
 	const uint_fast8_t pos = bwsetpos [bwseti];
-	return bwsetsc [bwseti].prop [pos]->type;
+	return bwsetsc [bwseti].prop [pos]->type == BWSET_PAIR;
 }
 
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
