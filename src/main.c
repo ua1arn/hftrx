@@ -21080,9 +21080,9 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 
 	default:
 	case BWSET_SINGLE:
-		if (rotate != 0 && gcwpitch10 + rotate * CWPITCHSCALE <= 190 && gcwpitch10 + rotate * CWPITCHSCALE >= 40)
+		if (rotate != 0 && gcwpitch10 + rotate <= CWPITCHMAX10 && gcwpitch10 + rotate >= CWPITCHMIN10)
 		{
-			gcwpitch10 += rotate * CWPITCHSCALE;
+			gcwpitch10 += rotate;
 			updateboard (1, 0);
 		}
 		high = gcwpitch10;
