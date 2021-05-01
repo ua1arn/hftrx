@@ -42,6 +42,8 @@ enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 enum {
 	enc2step_default = 1,
 	micprofile_default = UINT8_MAX,
+	tune_powerdown_enable_default = 1,
+	tune_powerdown_value_default = WITHPOWERTRIMATU
 };
 
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
@@ -56,6 +58,12 @@ void load_settings(void)
 
 	if (gui_nvram.enc2step_pos == 255)
 		gui_nvram.enc2step_pos = enc2step_default;
+
+	if (gui_nvram.tune_powerdown_enable == 255)
+		gui_nvram.tune_powerdown_enable = tune_powerdown_enable_default;
+
+	if (gui_nvram.tune_powerdown_value == 255)
+		gui_nvram.tune_powerdown_value = tune_powerdown_value_default;
 
 #if WITHAFCODEC1HAVEPROC
 	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
@@ -148,6 +156,7 @@ static void gui_main_process(void)
 	const uint_fast8_t num_places = 8;
 	const uint_fast8_t lbl_place_width = 100;
 	uint_fast8_t update = 0;
+	static uint_fast8_t tune_backup_power;
 
 	if (win->first_call)
 	{
@@ -186,6 +195,8 @@ static void gui_main_process(void)
 
 		load_settings();
 		elements_state(win);
+
+		tune_backup_power = hamradio_get_tx_power();
 	}
 
 	GET_FROM_WM_QUEUE
@@ -279,6 +290,7 @@ static void gui_main_process(void)
 #if WITHTX
 			else if (bh == btn_txrx)
 			{
+				hamradio_set_tx_power(tune_backup_power);
 				hamradio_moxmode(1);
 				update = 1;
 			}
@@ -292,6 +304,17 @@ static void gui_main_process(void)
 #if WITHTX
 			if (bh == btn_txrx)
 			{
+				if (gui_nvram.tune_powerdown_enable)
+				{
+					if (hamradio_tunemode(0))
+						hamradio_set_tx_power(tune_backup_power);
+					else
+					{
+						tune_backup_power = hamradio_get_tx_power();
+						hamradio_set_tx_power(gui_nvram.tune_powerdown_value);
+					}
+				}
+
 				hamradio_tunemode(1);
 				update = 1;
 			}
@@ -536,6 +559,8 @@ static void gui_main_process(void)
 
 	// быстрое меню 2-го энкодера
 	{
+		hamradio_gui_enc2_update();
+
 		if (gui_enc2_menu.state)
 		{
 			local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.param);
@@ -556,9 +581,9 @@ static void gui_main_process(void)
 	}
 
 	{
-	#if WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
+	#if 0 //WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
 		static ldiv_t t;
-		if (hamradio_get_tx())// && get_gui_1sec_timer())
+		if (hamradio_get_tx())
 		{
 			t = ldiv(hamradio_get_temperature_value(), 10);
 			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
@@ -2938,6 +2963,7 @@ static void window_gui_settings_process(void)
 
 		static const button_t buttons [] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step", "", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_lowtune_enable", "", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2976,10 +3002,17 @@ static void window_gui_settings_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
+			button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
 
 			if (bh == btn_enc2_step)
 			{
 				gui_nvram.enc2step_pos = (gui_nvram.enc2step_pos + 1 ) % enc2step_vals;
+				save_settings();
+				update = 1;
+			}
+			else if (bh == btn_lowtune_enable)
+			{
+				gui_nvram.tune_powerdown_enable = gui_nvram.tune_powerdown_enable ? 0 : 1;
 				save_settings();
 				update = 1;
 			}
@@ -2995,7 +3028,11 @@ static void window_gui_settings_process(void)
 	{
 		update = 0;
 		button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
-		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), PSTR("Enc2 step|%s"), enc2step [gui_nvram.enc2step_pos].label);
+		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), "Enc2 step|%s", enc2step [gui_nvram.enc2step_pos].label);
+
+		button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
+		local_snprintf_P(btn_lowtune_enable->text, ARRAY_SIZE(btn_lowtune_enable->text), "Low power|tune %s", gui_nvram.tune_powerdown_enable ? "en" : "dis");
+		btn_lowtune_enable->is_locked = gui_nvram.tune_powerdown_enable ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 	}
 }
 

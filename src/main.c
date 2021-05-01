@@ -6705,13 +6705,7 @@ uif_encoder2_press(void)
 #else
 	enc2_menu.state = enc2state;
 	if (enc2state != ENC2STATE_INITIALIZE)
-	{
-		const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
-		safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-		enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
-		enc2_menu.updated = 1;
-		gui_encoder2_menu(& enc2_menu);
-	}
+		hamradio_gui_enc2_update();
 #endif /* ! WITHTOUCHGUI */
 }
 
@@ -6735,9 +6729,8 @@ uif_encoder2_hold(void)
 #if ! WITHTOUCHGUI
 	display_redrawmodestimed(1);
 #else
-	enc2_menu.state = enc2state;
 	if (enc2state == ENC2STATE_INITIALIZE)
-		gui_encoder2_menu(& enc2_menu);
+		hamradio_gui_enc2_update();
 #endif /* ! WITHTOUCHGUI */
 }
 
@@ -19865,12 +19858,7 @@ hamradio_initialize(void)
 	gui_initialize();
 
 #if WITHENCODER2
-	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
-	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-	enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
-	enc2_menu.updated = 1;
-	enc2_menu.state = enc2state;
-	gui_encoder2_menu(& enc2_menu);
+	hamradio_gui_enc2_update();
 #endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
 }
@@ -20361,11 +20349,7 @@ hamradio_main_step(void)
 			{
 				nrotate2 = 0;
 #if WITHTOUCHGUI && WITHENCODER2
-				const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
-				safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
-				enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
-				enc2_menu.updated = 1;
-				gui_encoder2_menu(& enc2_menu);
+				hamradio_gui_enc2_update();
 				display2_mode_subset(0);
 #else
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
@@ -21660,6 +21644,16 @@ void hamradio_save_gui_settings(const void * ptr)
 		ptr ++;
 		offset ++;
 	}
+}
+
+void hamradio_gui_enc2_update(void)
+{
+	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
+	safestrcpy(enc2_menu.param, ARRAY_SIZE(enc2_menu.param), text);
+	enc2menu_value(enc2pos, INT_MAX, enc2_menu.val, ARRAY_SIZE(enc2_menu.val));
+	enc2_menu.updated = 1;
+	enc2_menu.state = enc2state;
+	gui_encoder2_menu(& enc2_menu);
 }
 #endif /* WITHTOUCHGUI */
 

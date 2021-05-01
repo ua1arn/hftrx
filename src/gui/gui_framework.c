@@ -68,8 +68,45 @@ void gui_set_encoder2_rotate (int_fast8_t rotate)
 	}
 }
 
+void dump_queue(window_t * win)
+{
+	if (! win->queue.size)
+		return;
+
+	PRINTF("dump WM queue window '%s'\n", win->name);
+
+	if (win->queue.size == WM_MAX_QUEUE_SIZE)
+		PRINTF("WM stack full!\n");
+
+	for (uint_fast8_t i = 0; i < win->queue.size; i ++)
+	{
+		switch(win->queue.data[i].message)
+		{
+		case WM_MESSAGE_UPDATE:
+			PRINTF("%d: WM_MESSAGE_UPDATE\n", i);
+			break;
+
+		case WM_MESSAGE_ACTION:
+			PRINTF("%d: WM_MESSAGE_ACTION: element type - %d, action - %d\n", i, win->queue.data[i].type, win->queue.data[i].action);
+			break;
+
+		case WM_MESSAGE_ENC2_ROTATE:
+			PRINTF("%d: WM_MESSAGE_ENC2_ROTATE: direction - %d\n", i, win->queue.data[i].action);
+			break;
+
+		case WM_MESSAGE_KEYB_CODE:
+			PRINTF("%d: WM_MESSAGE_KEYB_CODE: code - %d\n", i, win->queue.data[i].action);
+			break;
+
+		default:
+			PRINTF("%d: unknown message type! - \n", i, win->queue.data[i].message);
+			break;
+		}
+	}
+}
+
 // WM_MESSAGE_ACTION: 		element_type type, uintptr_t element_ptr, uint_fast8_t action
-// WM_MESSAGE_ENC2_ROTATE : int_fast8_t rotate
+// WM_MESSAGE_ENC2_ROTATE:  int_fast8_t rotate
 // WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
 // WM_MESSAGE_UPDATE: 		nothing
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
@@ -77,23 +114,36 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	if (win->queue.size >= WM_MAX_QUEUE_SIZE)
 		return 0;					// очередь переполнена, ошибка
 
+	//dump_queue(win);
+
 	va_list arg;
 
 	switch (message)
 	{
 	case WM_MESSAGE_ACTION:
-
+	{
 		va_start(arg, message);
 
-		win->queue.data [win->queue.size].message = WM_MESSAGE_ACTION;
-		win->queue.data [win->queue.size].type = va_arg(arg, uint_fast8_t);
-		win->queue.data [win->queue.size].ptr = va_arg(arg, uintptr_t);
-		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
-		win->queue.size ++;
+		uint_fast8_t type = va_arg(arg, uint_fast8_t);
+		uintptr_t ptr = va_arg(arg, uintptr_t);
+		int_fast8_t action = va_arg(arg, int_fast8_t);
 
 		va_end(arg);
 
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		if (win->queue.data [ind].message == WM_MESSAGE_ACTION && win->queue.data [ind].type == type && win->queue.data [ind].action == action)
+			return 1;
+		else
+		{
+			win->queue.data [win->queue.size].message = WM_MESSAGE_ACTION;
+			win->queue.data [win->queue.size].type = type;
+			win->queue.data [win->queue.size].ptr = ptr;
+			win->queue.data [win->queue.size].action = action;
+			win->queue.size ++;
+		}
+
 		return 1;
+	}
 		break;
 
 	case WM_MESSAGE_ENC2_ROTATE:
@@ -1113,7 +1163,7 @@ static void set_state_record(gui_element_t * val)
 			if (bh->state == RELEASED || bh->state == LONG_PRESSED)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED))
-					PRINTF("WM stack on window '%s' full!\n", val->win->name);
+					dump_queue(val->win);
 			}
 			break;
 
@@ -1126,12 +1176,12 @@ static void set_state_record(gui_element_t * val)
 			if (lh->state == RELEASED)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, PRESSED))
-					PRINTF("WM stack on window '%s' full!\n", val->win->name);
+					dump_queue(val->win);
 			}
 			else if (lh->state == PRESSED && lh->is_trackable)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_LABEL, lh, MOVING))
-					PRINTF("WM stack on window '%s' full!\n", val->win->name);
+					dump_queue(val->win);
 			}
 			break;
 
@@ -1145,7 +1195,7 @@ static void set_state_record(gui_element_t * val)
 			{
 				slider_process(sh);
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_SLIDER, sh, PRESSED))
-					PRINTF("WM stack on window '%s' full!\n", val->win->name);
+					dump_queue(val->win);
 			}
 			break;
 
@@ -1158,7 +1208,7 @@ static void set_state_record(gui_element_t * val)
 			if (ta->state == RELEASED)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, PRESSED))
-					PRINTF("WM stack on window '%s' full!\n", val->win->name);
+					dump_queue(val->win);
 			}
 			break;
 
