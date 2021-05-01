@@ -1714,7 +1714,6 @@ const videomode_t vdmode0 =
  * настройка портов для последующей работы с дополнительными (кроме последовательного канала)
  * сигналами дисплея.
  */
-uint_fast64_t xc7z1_get_io_pll_freq(void);
 
 /* вызывается при запрещённых прерываниях. */
 void display_hardware_initialize(void)
@@ -1745,7 +1744,6 @@ void display_hardware_initialize(void)
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
 	PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
-	PRINTF("xc7z1_get_io_pll_freq=%lu\n", (unsigned long) (xc7z1_get_io_pll_freq() / 1000000));
 	arm_hardware_ltdc_initialize(frames, vdmode);
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
