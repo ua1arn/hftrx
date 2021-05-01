@@ -1693,7 +1693,7 @@ static void window_tx_vox_process(void)
 
 		ldiv_t d = ldiv(hamradio_get_vox_delay(), 100);
 		lbl_vox_delay->x = 0;
-		lbl_vox_delay->y = interval;
+		lbl_vox_delay->y = 10;
 		lbl_vox_delay->visible = VISIBLE;
 		local_snprintf_P(lbl_vox_delay->text, ARRAY_SIZE(lbl_vox_delay->text), PSTR("Delay: %d.%d"), d.quot, d.rem / 10);
 
@@ -1878,7 +1878,7 @@ static void window_tx_power_process(void)
 		uint_fast8_t tune_power = hamradio_get_tx_tune_power();
 
 		lbl_tx_power->x = 0;
-		lbl_tx_power->y = interval;
+		lbl_tx_power->y = 10;
 		lbl_tx_power->visible = VISIBLE;
 		local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power);
 
@@ -2179,7 +2179,7 @@ static void window_ap_reverb_process(void)
 		hamradio_get_reverb_loss_limits(& loss_min, & loss_max);
 
 		lbl_reverbDelay->x = 0;
-		lbl_reverbDelay->y = interval;
+		lbl_reverbDelay->y = 10;
 		lbl_reverbDelay->visible = VISIBLE;
 		local_snprintf_P(lbl_reverbDelay->text, ARRAY_SIZE(lbl_reverbDelay->text), PSTR("Delay: %3d ms"), hamradio_get_reverb_delay());
 
@@ -2329,7 +2329,7 @@ static void window_ap_mic_eq_process(void)
 		eq_base = hamradio_getequalizerbase();
 		eq_limit = abs(eq_base) * 2;
 
-		x = 0;
+		x = 50;
 		y = 0;
 		slider_t * sl = NULL;
 
@@ -2488,7 +2488,7 @@ static void window_ap_mic_process(void)
 		lbl_micAGC = find_gui_element(TYPE_LABEL, win, "lbl_micAGC");
 
 		lbl_micLevel->x = 0;
-		lbl_micLevel->y = interval;
+		lbl_micLevel->y = 10;
 		lbl_micLevel->visible = VISIBLE;
 		local_snprintf_P(lbl_micLevel->text, ARRAY_SIZE(lbl_micLevel->text), PSTR("Level: %3d"), hamradio_get_mik1level());
 
@@ -2788,7 +2788,7 @@ static void window_notch_process(void)
 		label_t * lbl_type = find_gui_element(TYPE_LABEL, win, "lbl_type");
 
 		lbl_freq->x = 0;
-		lbl_freq->y = interval;
+		lbl_freq->y = 15;
 		lbl_freq->visible = VISIBLE;
 
 		lbl_width->x = lbl_freq->x;
@@ -2806,15 +2806,12 @@ static void window_notch_process(void)
 		button_t * btn_Auto = find_gui_element(TYPE_BUTTON, win, "btn_Auto");
 		button_t * btn_Manual = find_gui_element(TYPE_BUTTON, win, "btn_Manual");
 
-		uint_fast16_t x = lbl_freq->x + get_label_width(lbl_freq);
-		uint_fast16_t y = lbl_freq->y + get_label_height(lbl_freq) / 2 - btn_freqm->h / 2;
-
-		btn_freqm->x1 = x;
-		btn_freqm->y1 = y;
+		btn_freqm->x1 = lbl_freq->x + get_label_width(lbl_freq);
+		btn_freqm->y1 = lbl_freq->y + get_label_height(lbl_freq) / 2 - btn_freqm->h / 2;
 		btn_freqm->visible = VISIBLE;
 
 		btn_freqp->x1 = btn_freqm->x1 + btn_freqm->w + 10;
-		btn_freqp->y1 = y;
+		btn_freqp->y1 = btn_freqm->y1;
 		btn_freqp->visible = VISIBLE;
 
 		btn_widthm->x1 = btn_freqm->x1;
