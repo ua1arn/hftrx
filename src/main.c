@@ -285,7 +285,9 @@ static uint_fast8_t getbankindex_ab(uint_fast8_t ab);
 static uint_fast8_t getbankindex_pathi(uint_fast8_t pathi);
 static uint_fast8_t getbankindex_tx(uint_fast8_t tx);
 static uint_fast8_t getbankindex_ab_fordisplay(uint_fast8_t ab);
-static void updateboard(uint_fast8_t full, uint_fast8_t mute);
+//static void updateboard(uint_fast8_t full, uint_fast8_t mute);
+static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * file, int line);
+#define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
 static uint_fast8_t getactualmainsubrx(void);
 
@@ -8774,9 +8776,11 @@ flagne_u32_cat(dualctl32_t * oldval, uint_fast32_t v, uint_fast8_t catindex)
  Учитывается состояние tunemode - режим настройки передатчика, при этом параметр tx не-ноль.
  */
 static void
-updateboard(
+updateboardZZZ(
 	uint_fast8_t full, 
-	uint_fast8_t mute 
+	uint_fast8_t mute,
+	const char * file,
+	int line
 	)
 {
 	/* параметры, вычисляемые по updateboard(full=1) */
@@ -8835,6 +8839,14 @@ updateboard(
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
 
+	if (full2 != 0 && full == 0)
+	{
+		PRINTF("full2 added from %s/%d\n", file, line);
+	}
+	if (full != 0)
+	{
+		PRINTF("full passed from %s/%d\n", file, line);
+	}
 #if WITHCAT
 	if (aistate != 0)
 	{
