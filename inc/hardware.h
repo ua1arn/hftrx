@@ -967,7 +967,8 @@ void sys_check_timeouts(void);	/* LWIP support */
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */
-#define UNUSED(x) ((void)(x))
+
+//#define UNUSED(x) ((void)(x))
 
 #define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
 

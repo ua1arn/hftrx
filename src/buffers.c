@@ -17,8 +17,11 @@
 
 #include "list.h"
 #include "audio.h"
+
+#if WITHUSBHW
 #include "usb/usb200.h"
 #include "usb/usbch9.h"
+#endif /* WITHUSBHW */
 
 #include <string.h>		// for memset
 
@@ -294,11 +297,13 @@ static RAMDTCM LIST_HEAD2 speexfree16;		// Свободные буферы
 static RAMDTCM LIST_HEAD2 speexready16;	// Буферы для обработки speex
 static RAMDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 
+#if WITHUSBHW
 static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacoutalt;
+#endif /* WITHUSBHW */
 
 static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
