@@ -79,7 +79,7 @@
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
 
 	#else
 		// HSI version (HSI=64 MHz)
@@ -119,7 +119,7 @@
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
 
 	#endif
 
