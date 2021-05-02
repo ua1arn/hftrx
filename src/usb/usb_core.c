@@ -3413,10 +3413,10 @@ USB_GetSNPSiD(USB_OTG_GlobalTypeDef *USBx)
 {
 #if CPUSTYLE_STM32H7XX
 	return USBx->GSNPSID;
-#elif CPUSTYLE_STM32MP1
-	return USB_OTG_CORE_ID_320A;
+#elif 0//CPUSTYLE_STM32MP1
+	return USB_OTG_CORE_ID_320A;	// really: 0x4F54330A
 #else
-	return * (__IO uint32_t *) (& USBx->CID + 0x1U);
+	return * (& USBx->CID + 1);
 #endif
 }
 
@@ -3748,8 +3748,9 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTy
 
 		/* Enables control of a High Speed USB PHY */
 		USB_HS_PHYCInit();
+		PRINTF("USB_GetSNPSiD=%08lX\n", USB_GetSNPSiD(USBx));
 
-		if(cfg->use_external_vbus == USB_ENABLE)
+		if (cfg->use_external_vbus == USB_ENABLE)
 		{
 			USBx->GUSBCFG |= USB_OTG_GUSBCFG_ULPIEVBUSD;
 			(void) USBx->GUSBCFG;
