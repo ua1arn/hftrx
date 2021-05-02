@@ -12,28 +12,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
-	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
-#else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
-	#define ARMI2SMCLKX(scale)	(ARMSAIMCLK * (uint_fast64_t) (scale) / 256)
-#endif /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
-
-#define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
-
-#if WITHDTMFPROCESSING
-
-	#define ARMI2SRATE			((unsigned long) 8000)	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATE100		((unsigned long) ARMI2SRATEX(100))
-
-#else /* WITHDTMFPROCESSING */
-
-	#define ARMI2SRATE			((unsigned long) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATE100		((unsigned long) (ARMI2SRATEX(100)))
-
-#endif /* WITHDTMFPROCESSING */
-
 #define MODEMBUFFERSIZE8	1024
 
 #if WITHUSEDUALWATCH
@@ -486,6 +464,7 @@ typedef struct
 
 #endif /* WITHDSPLOCALFIR */
 
+// DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
@@ -495,16 +474,38 @@ typedef struct
 
 	#define FPGADECIMATION 2560uL
 	#define FPGADIVIDERATIO 5uL
-	#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-	#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
+	#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+	#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
 
-	#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-	#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
+	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
 
 #else
 	#define HARDWARE_DACSCALE	(1)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
 #endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
+
+#if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
+	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
+#else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
+	#define ARMI2SMCLKX(scale)	(ARMSAIMCLK * (uint_fast64_t) (scale) / 256)
+#endif /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
+
+#define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
+
+#if WITHDTMFPROCESSING
+
+	#define ARMI2SRATE			((unsigned long) 8000)	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATE100		((unsigned long) ARMI2SRATEX(100))
+
+#else /* WITHDTMFPROCESSING */
+
+	#define ARMI2SRATE			((unsigned long) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATE100		((unsigned long) (ARMI2SRATEX(100)))
+
+#endif /* WITHDTMFPROCESSING */
 
 #if WITHDSPLOCALFIR
 	/* Фильтрация квадратур осуществляется процессором */
