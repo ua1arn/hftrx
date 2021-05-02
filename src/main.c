@@ -20,8 +20,11 @@
 #include "codecs.h"
 
 #if WITHUSEFATFS
-	#include "sdcard.h"
+	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
+#if WITHUSESDCARD
+	#include "sdcard.h"
+#endif /* WITHUSESDCARD */
 
 #include <string.h>
 #include <ctype.h>
