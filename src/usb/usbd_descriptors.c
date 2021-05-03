@@ -4,6 +4,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
+#undef USE_HAL_DRIVER
 
 #include "hardware.h"
 #include "board.h"

@@ -31,7 +31,7 @@ LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
 LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1 -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -61,6 +61,7 @@ LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
+USBXDIR = $(PRJROOT)/src/usbx
 
 OBJDIR = obj
 
@@ -71,6 +72,11 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
+	$(PRJROOT)/armcpu \
+	$(PRJROOT)/src/Drivers/STM32MP1xx_HAL_Driver/Inc \
+	$(PRJROOT)/src/Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
+	$(PRJROOT)/src/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
+	$(USBXDIR)/Inc \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/DSP/ComputeLibrary/Include \

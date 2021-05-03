@@ -264,6 +264,7 @@ typedef struct
   */
 #define USB_OTG_ULPI_PHY                       1U
 #define USB_OTG_EMBEDDED_PHY                   2U
+#define USB_OTG_HS_EMBEDDED_PHY                3U
 /**
   * @}
   */
