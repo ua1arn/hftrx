@@ -137,7 +137,8 @@ ULIBS +=
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(USBXDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
-SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(USBXDIR)
+SRCDIRS += $(PRJROOT)/src
+#SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(USBXDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

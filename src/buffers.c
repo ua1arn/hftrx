@@ -1007,10 +1007,14 @@ static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
 	debugcount_mikeadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 
+#if WITHUSBUAC
 	if (uacoutmike == 0)
 		buffers_tomodulators16(p);
 	else
 		buffers_tonull16(p);
+#else /* WITHUSBUAC */
+	buffers_tomodulators16(p);
+#endif /* WITHUSBUAC */
 
 }
 
@@ -1021,11 +1025,15 @@ static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 	ASSERT(p->tag3 == p);
 	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
 	// в динамики будет направлен после модулятора
+#if WITHUSBUAC
 
 	if (uacoutplayer && uacoutmike)
 		buffers_tophones16(p);
 	else
 		buffers_tonull16(p);
+#else /* WITHUSBUAC */
+	buffers_tonull16(p);
+#endif /* WITHUSBUAC */
 }
 
 // +++ Коммутация потоков аудиоданных
@@ -1035,10 +1043,14 @@ buffers_savefromrxout(voice16_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
+#if WITHUSBUAC
 	if (uacoutplayer != 0)
 		buffers_tonull16(p);
 	else
 		buffers_tophones16(p);
+#else /* WITHUSBUAC */
+	buffers_tophones16(p);
+#endif /* WITHUSBUAC */
 }
 
 
@@ -2637,13 +2649,17 @@ void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
 /* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_uacplayer(uint_fast8_t v)
 {
+#if WITHUSBUAC
 	uacoutplayer = v;
+#endif /* WITHUSBUAC */
 }
 
 /* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 void board_set_uacmike(uint_fast8_t v)
 {
+#if WITHUSBUAC
 	uacoutmike = v;
+#endif /* WITHUSBUAC */
 }
 
 
