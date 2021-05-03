@@ -729,7 +729,7 @@ unsigned long stm32h7xx_get_sys_freq(void)
 	switch ((RCC->CFGR & RCC_CFGR_SWS_Msk) >> RCC_CFGR_SWS_Pos)
 	{
 	default: return HSIFREQ;
-	case 0x01: return CSIFREQ;
+	case 0x01: return CSI_VALUE;
 	case 0x02: return stm32h7xx_get_hse_freq();
 	case 0x03: return stm32h7xx_get_pll1_p_freq();
 	}
@@ -926,7 +926,7 @@ unsigned long stm32h7xx_get_per_freq(void)
 	switch ((RCC->D1CCIPR & RCC_D1CCIPR_CKPERSEL_Msk) >> RCC_D1CCIPR_CKPERSEL_Pos)
 	{
 	case 0x00: return HSIFREQ;
-	case 0x01: return CSIFREQ;
+	case 0x01: return CSI_VALUE;
 	case 0x02: return stm32h7xx_get_hse_freq();
 	default: return HSIFREQ;
 	}
@@ -969,7 +969,7 @@ unsigned long stm32h7xx_get_usart1_6_freq(void)
 	case 0x01: return stm32h7xx_get_pll2_q_freq();
 	case 0x02: return stm32h7xx_get_pll3_q_freq();
 	case 0x03: return HSIFREQ;
-	case 0x04: return CSIFREQ;
+	case 0x04: return CSI_VALUE;
 	case 0x05: return LSEFREQ;
 	default: return HSIFREQ;
 	}
@@ -992,7 +992,7 @@ unsigned long stm32h7xx_get_usart2_to_8_freq(void)
 	case 0x01: return stm32h7xx_get_pll2_q_freq();
 	case 0x02: return stm32h7xx_get_pll3_q_freq();
 	case 0x03: return HSIFREQ;
-	case 0x04: return CSIFREQ;
+	case 0x04: return CSI_VALUE;
 	case 0x05: return LSEFREQ;
 	default: return HSIFREQ;
 	}
@@ -1038,7 +1038,7 @@ unsigned long stm32h7xx_get_spi4_5_freq(void)
 	case 0x01: return stm32h7xx_get_pll2_q_freq();
 	case 0x02: return stm32h7xx_get_pll3_q_freq();
 	case 0x03: return HSIFREQ;
-	case 0x04: return CSIFREQ;
+	case 0x04: return CSI_VALUE;
 	case 0x05: return stm32h7xx_get_hse_freq();
 	default: return HSIFREQ;
 	}
@@ -1131,7 +1131,7 @@ unsigned long stm32mp1_get_pll3_ref_freq(void)
 	case 0x01:
 		return stm32mp1_get_hse_freq();
 	case 0x02:
-		return CSIFREQ;
+		return CSI_VALUE;
 	}
 }
 
@@ -1150,7 +1150,7 @@ unsigned long stm32mp1_get_pll4_ref_freq(void)
 	case 0x01:
 		return stm32mp1_get_hse_freq();
 	case 0x02:
-		return CSIFREQ;
+		return CSI_VALUE;
 #if (defined BOARD_I2S_CKIN_FREQ)
 	case 0x03: return BOARD_I2S_CKIN_FREQ;
 #endif /* (defined BOARD_I2S_CKIN_FREQ) */
@@ -1295,7 +1295,7 @@ unsigned long stm32mp1_get_per_freq(void)
 	switch ((RCC->CPERCKSELR & RCC_CPERCKSELR_CKPERSRC_Msk) >> RCC_CPERCKSELR_CKPERSRC_Pos)
 	{
 	case 0x00:	return stm32mp1_get_hsi_freq();
-	case 0x01:	return CSIFREQ;
+	case 0x01:	return CSI_VALUE;
 	case 0x02:	return stm32mp1_get_hse_freq();
 	default: return HSI64FREQ;
 	}
@@ -1313,7 +1313,7 @@ unsigned long stm32mp1_get_mcuss_freq(void)
 	default:
 	case 0x00: return stm32mp1_get_hsi_freq();
 	case 0x01: return stm32mp1_get_hse_freq();
-	case 0x02: return CSIFREQ;
+	case 0x02: return CSI_VALUE;
 	case 0x03: return stm32mp1_get_pll3_p_freq();
 	}
 }
@@ -1524,7 +1524,7 @@ unsigned long stm32mp1_uart1_get_freq(void)
 	case 0x02:
 		return stm32mp1_get_hsi_freq();
 	case 0x03:
-		return CSIFREQ;
+		return CSI_VALUE;
 	case 0x04:
 		return stm32mp1_get_pll4_q_freq();
 	case 0x05:
@@ -1551,7 +1551,7 @@ unsigned long stm32mp1_uart2_4_get_freq(void)
 	case 0x02:
 		return stm32mp1_get_hsi_freq();
 	case 0x03:
-		return CSIFREQ;
+		return CSI_VALUE;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:
@@ -1577,7 +1577,7 @@ unsigned long stm32mp1_uart3_5_get_freq(void)
 	case 0x02:
 		return stm32mp1_get_hsi_freq();
 	case 0x03:
-		return CSIFREQ;
+		return CSI_VALUE;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:
@@ -1602,7 +1602,7 @@ unsigned long stm32mp1_uart7_8_get_freq(void)
 	case 0x02:
 		return stm32mp1_get_hsi_freq();
 	case 0x03:
-		return CSIFREQ;
+		return CSI_VALUE;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:

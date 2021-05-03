@@ -539,7 +539,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
 static USBH_StatusTypeDef USBH_MSC_BOT_Abort(USBH_HandleTypeDef *phost, uint8_t lun, uint8_t dir)
 {
   /* Prevent unused argument(s) compilation warning */
-  UNUSED(lun);
+	(void) (lun);
 
   USBH_StatusTypeDef status = USBH_FAIL;
   MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;

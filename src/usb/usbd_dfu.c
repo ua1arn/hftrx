@@ -14,7 +14,7 @@
 #include "board.h"
 #include "audio.h"
 #include "formats.h"
-#include "usb_core.h"
+#include "usbx_core.h"
 
 
 

@@ -31,7 +31,8 @@ LDSCRIPT_BOOT = ./stm32mp15xx_ca7_boot.ld
 LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"STM32MP153Dxx"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"EGL_STATIC_LIBRARY"=1 -D"STM32MP153Dxx"=1
+#UDEFS += -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -61,6 +62,9 @@ LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
+USBXDIR = $(PRJROOT)/lib/stm32mp1/usbx
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 
 OBJDIR = obj
 
@@ -71,6 +75,11 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
+	$(PRJROOT)/armcpu \
+	$(HALDIR)/Inc \
+	$(MDLWUSBDIR)/Core/Inc \
+	$(MDLWUSBDIR)/Class/CDC/Inc \
+	$(USBXDIR)/Inc \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/DSP/ComputeLibrary/Include \
@@ -127,8 +136,9 @@ ULIBS +=
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
-#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
-SRCDIRS = $(PRJROOT)/src
+#SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(USBXDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
+SRCDIRS += $(PRJROOT)/src
+#SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(USBXDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

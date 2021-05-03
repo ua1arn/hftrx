@@ -4,6 +4,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
+#undef USE_HAL_DRIVER
 
 #include "hardware.h"
 #include "board.h"
@@ -20,7 +21,7 @@
 
 #include "usb200.h"
 #include "usbch9.h"
-#include "usb_core.h"
+#include "usbx_core.h"
 
 // UAC audio device
 // USB\VID_FFFF&PID_0736&REV_0100&MI_00

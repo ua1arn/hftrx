@@ -13,7 +13,7 @@
 #include "audio.h"
 #include "src/display/display.h"
 #include "formats.h"
-#include "usb_core.h"
+#include "usbx_core.h"
 #include <string.h>
 
 

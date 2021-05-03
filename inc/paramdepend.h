@@ -257,7 +257,7 @@ extern "C" {
 
 			#define HSIFREQ 64000000uL
 			#define HSI48FREQ 48000000uL
-			#define CSIFREQ 4000000uL
+			#define CSI_VALUE 4000000uL
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
@@ -652,7 +652,7 @@ extern "C" {
 
 	/* Частоты встроенных RC генераторов процессора */
 	#define HSI64FREQ 64000000uL
-	#define CSIFREQ 4000000uL
+	#define CSI_VALUE 4000000U
 	#define LSIFREQ 32000uL
 
 	//
