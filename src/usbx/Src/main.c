@@ -23,7 +23,6 @@
 #include "main.h"
 #include "usb_device.h"
 //#include "src/usb/usbx_core.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -58,6 +57,11 @@ static void MX_GPIO_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint32_t SystemCoreClock = 266000000uL;
+uint32_t HAL_RCC_GetHCLKFreq(void)
+{
+	return SystemCoreClock;
+}
 
 void board_usb_initialize(void)
 {
