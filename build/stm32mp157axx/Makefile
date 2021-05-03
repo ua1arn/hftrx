@@ -22,6 +22,7 @@ TRGT = arm-none-eabi-
 UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
+OBJDIR = obj
 
 # Define project name here
 PROJECT = tc1_stm32mp157axx
@@ -66,8 +67,6 @@ USBXDIR = $(PRJROOT)/lib/stm32mp1/usbx
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 
-OBJDIR = obj
-
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
 
@@ -80,6 +79,7 @@ DINCDIR = \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWUSBDIR)/Class/CDC/Inc \
 	$(USBXDIR)/Inc \
+	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/DSP/ComputeLibrary/Include \
@@ -92,8 +92,7 @@ DINCDIR = \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
-	$(OPENVGDIR)/src \
-	$(DSP3DDIR)/inc
+	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
 #DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
