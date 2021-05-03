@@ -431,8 +431,8 @@ typedef struct message
 	void * tag3;
 } message_t;
 
-static RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
-static RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
+static volatile RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
+static volatile RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 static RAMDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
 
 #if WITHBUFFERSDEBUG
