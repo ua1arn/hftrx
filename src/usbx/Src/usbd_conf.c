@@ -20,6 +20,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#include "hardware.h"
+
 #include "stm32mp1xx.h"
 #include "stm32mp1xx_hal.h"
 #include "usbd_def.h"
@@ -527,7 +529,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   hpcd_USB_OTG_HS.pData = pdev;
   pdev->pData = &hpcd_USB_OTG_HS;
 
-  hpcd_USB_OTG_HS.Instance = USB_OTG_HS;
+  hpcd_USB_OTG_HS.Instance = WITHUSBHW_DEVICE;
   hpcd_USB_OTG_HS.Init.dev_endpoints = 8;
   hpcd_USB_OTG_HS.Init.speed = PCD_SPEED_FULL;
   hpcd_USB_OTG_HS.Init.dma_enable = DISABLE;
