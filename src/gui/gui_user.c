@@ -290,7 +290,11 @@ static void gui_main_process(void)
 #if WITHTX
 			else if (bh == btn_txrx)
 			{
-				hamradio_set_tx_power(tune_backup_power);
+				if (hamradio_tunemode(0))
+					hamradio_set_tx_power(tune_backup_power);
+				else
+					tune_backup_power = hamradio_get_tx_power();
+
 				hamradio_moxmode(1);
 				update = 1;
 			}
@@ -1979,6 +1983,8 @@ static void window_tx_power_process(void)
 				uint_fast8_t power = power_min + normalize(sl->value, 0, 100, power_max - power_min);
 				local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"),power);
 				hamradio_set_tx_tune_power(power);
+				gui_nvram.tune_powerdown_value = power;
+				save_settings();
 			}
 		}
 		break;
