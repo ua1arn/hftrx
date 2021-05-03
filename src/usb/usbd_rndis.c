@@ -15,7 +15,7 @@
 
 
 #include "formats.h"
-#include "usb_core.h"
+#include "usbx_core.h"
 
 #include "lwip/opt.h"
 #include "lwip/init.h"

@@ -18,7 +18,7 @@
 #include "gpio.h"
 #include "spi.h"
 
-#include "usb_core.h"
+#include "usbx_core.h"
 
 
 // CDC class-specific request codes

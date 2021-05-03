@@ -15,7 +15,7 @@
 #if WITHUSBHW && WITHUSBCDCEEM
 
 #include "formats.h"
-#include "usb_core.h"
+#include "usbx_core.h"
 
 
 #define BPOOL_FLAG_BPOOL_FULL 0x00000001

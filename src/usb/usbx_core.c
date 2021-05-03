@@ -21,7 +21,7 @@
 
 #include "usb200.h"
 #include "usbch9.h"
-#include "usb_core.h"
+#include "usbx_core.h"
 
 //static uint_fast8_t notseq;
 
@@ -5737,8 +5737,8 @@ void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg)
 void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg)
 {
   /* Prevent unused argument(s) compilation warning */
-  UNUSED(hpcd);
-  UNUSED(msg);
+  (void) (hpcd);
+  (void) (msg);
 }
 
 #endif
@@ -5757,8 +5757,8 @@ void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg)
 void HAL_PCDEx_BCD_Callback(PCD_HandleTypeDef *hpcd, PCD_BCD_MsgTypeDef msg)
 {
   /* Prevent unused argument(s) compilation warning */
-  UNUSED(hpcd);
-  UNUSED(msg);
+	(void) (hpcd);
+	(void) (msg);
 }
 
 /**
