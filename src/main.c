@@ -8839,14 +8839,14 @@ updateboardZZZ(
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
 
-	if (full2 != 0 && full == 0)
-	{
-		PRINTF("full2 added from %s/%d\n", file, line);
-	}
-	if (full != 0)
-	{
-		PRINTF("full passed from %s/%d\n", file, line);
-	}
+//	if (full2 != 0 && full == 0)
+//	{
+//		PRINTF("full2 added from %s/%d\n", file, line);
+//	}
+//	if (full != 0)
+//	{
+//		PRINTF("full passed from %s/%d\n", file, line);
+//	}
 #if WITHCAT
 	if (aistate != 0)
 	{
