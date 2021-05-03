@@ -13629,7 +13629,7 @@ processmessages(
 // Запрос отложенного вызова user-mode функций
 uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 {
-	// предотвращение повторного включенияв очередь того же запроса
+	// предотвращение повторного включения в очередь того же запроса
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
@@ -13642,13 +13642,14 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
+	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
 	return 0;
 }
 
 // Запрос отложенного вызова user-mode функций
 uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2)
 {
-	// предотвращение повторного включенияв очередь того же запроса
+	// предотвращение повторного включения в очередь того же запроса
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
@@ -13662,13 +13663,14 @@ uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
+	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
 	return 0;
 }
 
 // Запрос отложенного вызова user-mode функций
 uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 {
-	// предотвращение повторного включенияв очередь того же запроса
+	// предотвращение повторного включения в очередь того же запроса
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
@@ -13683,6 +13685,7 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
+	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
 	return 0;
 }
 
@@ -21912,7 +21915,8 @@ void bootloader_copyapp(
 
 // Сюда попадаем из USB DFU клвсса при приходе команды
 // DFU_Detach после USBD_Stop
-void bootloader_detach(uintptr_t ip)
+static void
+bootloader_launch_app(uintptr_t ip)
 {
 	__disable_irq();
 	arm_hardware_flush_all();
@@ -21965,7 +21969,7 @@ void bootloader_deffereddetach(void * arg)
 			board_usb_deactivate();
 		board_usb_deinitialize();
 #endif /* WITHUSBHW */
-		bootloader_detach(ip);
+		bootloader_launch_app(ip);
 	}
 	else
 	{
@@ -22155,7 +22159,7 @@ static void bootloader_fatfs_mainloop(void)
 #if WITHDEBUG
 	local_delay_ms(100);
 #endif /* WITHDEBUG */
-	bootloader_detach(ip);
+	bootloader_launch_app(ip);
 #endif /* BOOTLOADER_RAMSIZE */
 }
 
@@ -22260,7 +22264,7 @@ ddd:
 	board_usb_deinitialize();
 #endif /* WITHUSBHW */
 #if BOOTLOADER_RAMSIZE
-	bootloader_detach(ip);
+	bootloader_launch_app(ip);
 #endif /* BOOTLOADER_RAMSIZE */
 }
 #endif /* WITHISBOOTLOADERFATFS */

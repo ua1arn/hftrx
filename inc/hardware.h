@@ -911,7 +911,6 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
-void bootloader_detach(uintptr_t ip);
 void bootloader_deffereddetach(void * arg);
 
 
