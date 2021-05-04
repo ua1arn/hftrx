@@ -67,6 +67,8 @@
 #define HAL_UART_MODULE_ENABLED
 #define HAL_USART_MODULE_ENABLED
 #define HAL_WWDG_MODULE_ENABLED
+#define HAL_LTDC_MODULE_ENABLED
+#define HAL_DSI_MODULE_ENABLED
 
 /* ########################## Register Callbacks selection ############################## */
 /**
@@ -277,6 +279,14 @@
 #ifdef HAL_QSPI_MODULE_ENABLED
  #include "stm32mp1xx_hal_qspi.h"
 #endif /* HAL_QSPI_MODULE_ENABLED */
+
+#ifdef HAL_DSI_MODULE_ENABLED
+ #include "stm32mp1xx_hal_dsi.h"
+#endif /* HAL_DSI_MODULE_ENABLED */
+
+#ifdef HAL_LTDC_MODULE_ENABLED
+ #include "stm32mp1xx_hal_ltdc.h"
+#endif /* HAL_LTDC_MODULE_ENABLED */
 
 #ifdef HAL_RNG_MODULE_ENABLED
  #include "stm32mp1xx_hal_rng.h"
