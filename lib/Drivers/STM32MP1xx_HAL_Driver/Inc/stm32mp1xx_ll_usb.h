@@ -138,16 +138,32 @@ typedef struct
 
   uint8_t   even_odd_frame;       /*!< IFrame parity
                                        This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
+	#if 0
+	  // нигде не используется
+	  uint8_t   even_odd_frame; /*!< IFrame parity
+	                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
+	#endif
 
-  uint16_t  tx_fifo_num;          /*!< Transmission FIFO number
-                                       This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
+	#if CPUSTYLE_R7S721
+
+	  // RENESAS specific field
+	  //uint_fast8_t	pipe_num;
+
+	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+
+	  // STM32 specific field
+	  uint_fast8_t  tx_fifo_num;    /*!< Transmission FIFO number
+	                                 This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
+
+	#endif /* CPUSTYLE_R7S721 */
+
 
   uint32_t  maxpacket;            /*!< Endpoint Max packet size
                                        This parameter must be a number between Min_Data = 0 and Max_Data = 64KB */
 
   uint8_t   *xfer_buff;           /*!< Pointer to transfer buffer                                               */
+	  uintptr_t  dma_addr;       /*!< 32 bits aligned transfer buffer address                                  */
 
-  uint32_t  dma_addr;             /*!< 32 bits aligned transfer buffer address                                  */
 
   uint32_t  xfer_len;             /*!< Current transfer length                                                  */
 

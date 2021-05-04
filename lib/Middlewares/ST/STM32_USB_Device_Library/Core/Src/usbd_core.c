@@ -61,6 +61,113 @@
   * @{
   */
 
+uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
+{
+	return a < b ? a : b;
+}
+
+uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
+{
+	return a > b ? a : b;
+}
+
+uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
+{
+	return a < b ? a : b;
+}
+
+uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
+{
+	return a > b ? a : b;
+}
+
+/* получить 32-бит значение */
+uint_fast32_t
+USBD_peek_u32(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [3] << 24) +
+		((uint_fast32_t) buff [2] << 16) +
+		((uint_fast32_t) buff [1] << 8) +
+		((uint_fast32_t) buff [0] << 0);
+}
+
+/* записать в буфер для ответа 32-бит значение */
+unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+	buff [3] = HI_32BY(v);
+
+	return 4;
+}
+
+/* получить 32-бит значение */
+/* Big endian memory layout */
+uint_fast32_t
+USBD_peek_u32_BE(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [0] << 24) +
+		((uint_fast32_t) buff [1] << 16) +
+		((uint_fast32_t) buff [2] << 8) +
+		((uint_fast32_t) buff [3] << 0);
+}
+
+/* записать в буфер для ответа 32-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
+{
+	buff [3] = LO_BYTE(v);
+	buff [2] = HI_BYTE(v);
+	buff [1] = HI_24BY(v);
+	buff [0] = HI_32BY(v);
+
+	return 4;
+}
+
+/* записать в буфер для ответа 24-бит значение */
+unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+
+	return 3;
+}
+
+/* записать в буфер для ответа 16-бит значение */
+unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+
+	return 2;
+}
+
+/* записать в буфер для ответа 16-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v)
+{
+	buff [1] = LO_BYTE(v);
+	buff [0] = HI_BYTE(v);
+
+	return 2;
+}
+
+/* записать в буфер для ответа 8-бит значение */
+unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
+{
+	buff [0] = v;
+
+	return 1;
+}
+
 /**
   * @}
   */
@@ -86,6 +193,7 @@
   * @param  id: Low level core index
   * @retval None
   */
+#if 0
 USBD_StatusTypeDef USBD_Init(USBD_HandleTypeDef *pdev,
                              USBD_DescriptorsTypeDef *pdesc, uint8_t id)
 {
@@ -120,6 +228,66 @@ USBD_StatusTypeDef USBD_Init(USBD_HandleTypeDef *pdev,
 
   return ret;
 }
+#endif
+/**
+* @brief  USBD_Init2
+*         Initializes the device stack and load the class driver
+* @param  pdev: device instance
+* @param  pdesc: Descriptor structure address
+* @param  id: Low level core index
+* @retval None
+*/
+USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
+{
+	USBD_StatusTypeDef ret = USBD_OK;
+	/* Check whether the USB Host handle is valid */
+	if (pdev == NULL)
+	{
+		//PRINTF("Invalid Device handle\n");
+		return USBD_FAIL;
+	}
+	pdev->nClasses = 0;
+
+
+	/* Set Device initial State */
+	  pdev->dev_state = USBD_STATE_DEFAULT;
+	 // pdev->id = DEVICE_HS;
+	/* Initialize low level driver */
+	/* Init Device Library,Add Supported Class and Start the library*/
+	//USBD_LL_Init(& hpcd_USB_OTG, pdev);
+	  /* Initialize low level driver */
+	  ret = USBD_LL_Init(pdev);
+
+	  return ret;
+}
+/**
+  * @brief  USBD_AddClass
+  *         Link class driver to Device Core.
+  * @param  pDevice : Device Handle
+  * @param  pclass: Class handle
+  * @retval USBD Status
+  */
+USBD_StatusTypeDef  USBD_AddClass(USBD_HandleTypeDef *pdev, const USBD_ClassTypeDef *pclass)
+{
+	USBD_StatusTypeDef   status = USBD_FAIL;
+	if (pclass != NULL && pdev->nClasses < USBD_MAX_NUM_CLASSES)
+	{
+		/* link the class to the USB Device handle */
+		pdev->pClasses [pdev->nClasses ++] = pclass;
+		status = USBD_OK;
+
+		/* Инициализации, которые необходимо выполнить до разрешения прерываний */
+		if (pclass->ColdInit != NULL)
+			pclass->ColdInit();
+	}
+	else
+	{
+		//USBD_ErrLog("Can not register device class %p", pclass);
+		status = USBD_FAIL;
+	}
+
+	return status;
+}
 
 /**
   * @brief  USBD_DeInit
@@ -138,16 +306,23 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
   pdev->dev_state = USBD_STATE_DEFAULT;
 
   /* Free Class Resources */
-  if (pdev->pClass != NULL)
-  {
-    pdev->pClass->DeInit(pdev, (uint8_t)pdev->dev_config);
-    pdev->pClass = NULL;
-    pdev->pUserData = NULL;
-  }
+//  if (pdev->pClass != NULL)
+//  {
+//    pdev->pClass->DeInit(pdev, (uint8_t)pdev->dev_config);
+//    pdev->pClass = NULL;
+//    pdev->pUserData = NULL;
+//  }
 
   /* Free Device descriptors resources */
-  pdev->pDesc = NULL;
-  pdev->pConfDesc = NULL;
+  //pdev->pDesc = NULL;
+  //pdev->pConfDesc = NULL;
+	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+	{
+		if (pdev->pClasses [di]->DeInit != NULL)
+		{
+			pdev->pClasses [di]->DeInit(pdev, pdev->dev_config [0]);
+		}
+	}
 
   /* DeInitialize low level driver */
   ret = USBD_LL_DeInit(pdev);
@@ -162,6 +337,7 @@ USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
   * @param  pclass: Class handle
   * @retval USBD Status
   */
+#if 0
 USBD_StatusTypeDef USBD_RegisterClass(USBD_HandleTypeDef *pdev, USBD_ClassTypeDef *pclass)
 {
   uint16_t len = 0U;
@@ -192,6 +368,7 @@ USBD_StatusTypeDef USBD_RegisterClass(USBD_HandleTypeDef *pdev, USBD_ClassTypeDe
 
   return USBD_OK;
 }
+#endif
 
 /**
   * @brief  USBD_Start
@@ -213,16 +390,23 @@ USBD_StatusTypeDef USBD_Start(USBD_HandleTypeDef *pdev)
   */
 USBD_StatusTypeDef USBD_Stop(USBD_HandleTypeDef *pdev)
 {
-  /* Disconnect USB Device */
-  (void)USBD_LL_Stop(pdev);
+	/* Disconnect USB Device */
+	(void)USBD_LL_Stop(pdev);
 
-  /* Free Class Resources */
-  if (pdev->pClass != NULL)
-  {
-    (void)pdev->pClass->DeInit(pdev, (uint8_t)pdev->dev_config);
-  }
+	/* Free Class Resources */
+//	if (pdev->pClass != NULL)
+//	{
+//		(void)pdev->pClass->DeInit(pdev, (uint8_t)pdev->dev_config);
+//	}
+	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+	{
+		if (pdev->pClasses [di]->DeInit != NULL)
+		{
+			pdev->pClasses [di]->DeInit(pdev, pdev->dev_config [0]);
+		}
+	}
 
-  return USBD_OK;
+	return USBD_OK;
 }
 
 /**
@@ -251,11 +435,17 @@ USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 {
   USBD_StatusTypeDef ret = USBD_FAIL;
 
-  if (pdev->pClass != NULL)
-  {
-    /* Set configuration and Start the Class */
-    ret = (USBD_StatusTypeDef)pdev->pClass->Init(pdev, cfgidx);
-  }
+//  if (pdev->pClass != NULL)
+//  {
+//    /* Set configuration and Start the Class */
+//    ret = (USBD_StatusTypeDef)pdev->pClass->Init(pdev, cfgidx);
+//  }
+	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+	{
+		ret = pdev->pClasses [di]->Init(pdev, cfgidx);
+		if (ret == USBD_FAIL)
+			break;
+	}
 
   return ret;
 }
@@ -270,10 +460,17 @@ USBD_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 USBD_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef *pdev, uint8_t cfgidx)
 {
   /* Clear configuration and De-initialize the Class process */
-  if (pdev->pClass != NULL)
-  {
-    pdev->pClass->DeInit(pdev, cfgidx);
-  }
+//  if (pdev->pClass != NULL)
+//  {
+//    pdev->pClass->DeInit(pdev, cfgidx);
+//  }
+	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+	{
+		if (pdev->pClasses [di]->DeInit != NULL)
+		{
+			pdev->pClasses [di]->DeInit(pdev, cfgidx);
+		}
+	}
 
   return USBD_OK;
 }
@@ -347,10 +544,17 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev,
       {
         if (pdev->dev_state == USBD_STATE_CONFIGURED)
         {
-          if (pdev->pClass->EP0_RxReady != NULL)
-          {
-            pdev->pClass->EP0_RxReady(pdev);
-          }
+//          if (pdev->pClass->EP0_RxReady != NULL)
+//          {
+//            pdev->pClass->EP0_RxReady(pdev);
+//          }
+          	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+          	{
+          		if (pdev->pClasses [di]->EP0_RxReady != NULL)
+          		{
+          			pdev->pClasses [di]->EP0_RxReady(pdev);
+          		}
+          	}
         }
 
         (void)USBD_CtlSendStatus(pdev);
@@ -374,15 +578,22 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev,
   {
     if (pdev->dev_state == USBD_STATE_CONFIGURED)
     {
-      if (pdev->pClass->DataOut != NULL)
-      {
-        ret = (USBD_StatusTypeDef)pdev->pClass->DataOut(pdev, epnum);
-
-        if (ret != USBD_OK)
-        {
-          return ret;
-        }
-      }
+//      if (pdev->pClass->DataOut != NULL)
+//      {
+//        ret = (USBD_StatusTypeDef)pdev->pClass->DataOut(pdev, epnum);
+//
+//        if (ret != USBD_OK)
+//        {
+//          return ret;
+//        }
+//      }
+      	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+      	{
+      		if (pdev->pClasses [di]->DataOut != NULL)
+      		{
+      			pdev->pClasses [di]->DataOut(pdev, epnum);
+      		}
+      	}
     }
   }
 
@@ -434,10 +645,17 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
         {
           if (pdev->dev_state == USBD_STATE_CONFIGURED)
           {
-            if (pdev->pClass->EP0_TxSent != NULL)
-            {
-              pdev->pClass->EP0_TxSent(pdev);
-            }
+//            if (pdev->pClass->EP0_TxSent != NULL)
+//            {
+//              pdev->pClass->EP0_TxSent(pdev);
+//            }
+          	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+          	{
+          		if (pdev->pClasses [di]->EP0_TxSent != NULL)
+          		{
+          			pdev->pClasses [di]->EP0_TxSent(pdev);
+          		}
+          	}
           }
           (void)USBD_LL_StallEP(pdev, 0x80U);
           (void)USBD_CtlReceiveStatus(pdev);
@@ -465,15 +683,22 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
   {
     if (pdev->dev_state == USBD_STATE_CONFIGURED)
     {
-      if (pdev->pClass->DataIn != NULL)
-      {
-        ret = (USBD_StatusTypeDef)pdev->pClass->DataIn(pdev, epnum);
-
-        if (ret != USBD_OK)
-        {
-          return ret;
-        }
-      }
+//      if (pdev->pClass->DataIn != NULL)
+//      {
+//        ret = (USBD_StatusTypeDef)pdev->pClass->DataIn(pdev, epnum);
+//
+//        if (ret != USBD_OK)
+//        {
+//          return ret;
+//        }
+//      }
+    	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+    	{
+    		if (pdev->pClasses [di]->DataIn != NULL)
+    		{
+    			pdev->pClasses [di]->DataIn(pdev, epnum);
+    		}
+    	}
     }
   }
 
@@ -492,21 +717,29 @@ USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef *pdev)
   /* Upon Reset call user call back */
   pdev->dev_state = USBD_STATE_DEFAULT;
   pdev->ep0_state = USBD_EP0_IDLE;
-  pdev->dev_config = 0U;
+  pdev->dev_config [0] = 0U;
+  pdev->dev_config [1] = 0U;
   pdev->dev_remote_wakeup = 0U;
 
-  if (pdev->pClass == NULL)
-  {
-    return USBD_FAIL;
-  }
+//  if (pdev->pClass == NULL)
+//  {
+//    return USBD_FAIL;
+//  }
 
-  if (pdev->pClassData != NULL)
-  {
-    if (pdev->pClass->DeInit != NULL)
-    {
-      (void)pdev->pClass->DeInit(pdev, (uint8_t)pdev->dev_config);
-    }
-  }
+//  if (pdev->pClassData != NULL)
+//  {
+//    if (pdev->pClass->DeInit != NULL)
+//    {
+//      (void)pdev->pClass->DeInit(pdev, (uint8_t)pdev->dev_config);
+//    }
+//  }
+	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+	{
+		if (pdev->pClasses [di]->DeInit != NULL)
+		{
+			pdev->pClasses [di]->DeInit(pdev, pdev->dev_config [0]);
+		}
+	}
 
   /* Open EP0 OUT */
   (void)USBD_LL_OpenEP(pdev, 0x00U, USBD_EP_TYPE_CTRL, USB_MAX_EP0_SIZE);
@@ -578,17 +811,24 @@ USBD_StatusTypeDef USBD_LL_Resume(USBD_HandleTypeDef *pdev)
 
 USBD_StatusTypeDef USBD_LL_SOF(USBD_HandleTypeDef *pdev)
 {
-  if (pdev->pClass == NULL)
-  {
-    return USBD_FAIL;
-  }
+//  if (pdev->pClass == NULL)
+//  {
+//    return USBD_FAIL;
+//  }
 
   if (pdev->dev_state == USBD_STATE_CONFIGURED)
   {
-    if (pdev->pClass->SOF != NULL)
-    {
-      (void)pdev->pClass->SOF(pdev);
-    }
+//    if (pdev->pClass->SOF != NULL)
+//    {
+//      (void)pdev->pClass->SOF(pdev);
+//    }
+		for (unsigned di = 0; di < pdev->nClasses; ++ di)
+		{
+			if (pdev->pClasses [di]->SOF != NULL)
+			{
+				pdev->pClasses [di]->SOF(pdev);
+			}
+		}
   }
 
   return USBD_OK;
@@ -603,17 +843,24 @@ USBD_StatusTypeDef USBD_LL_SOF(USBD_HandleTypeDef *pdev)
 USBD_StatusTypeDef USBD_LL_IsoINIncomplete(USBD_HandleTypeDef *pdev,
                                            uint8_t epnum)
 {
-  if (pdev->pClass == NULL)
-  {
-    return USBD_FAIL;
-  }
+//  if (pdev->pClass == NULL)
+//  {
+//    return USBD_FAIL;
+//  }
 
   if (pdev->dev_state == USBD_STATE_CONFIGURED)
   {
-    if (pdev->pClass->IsoINIncomplete != NULL)
-    {
-      (void)pdev->pClass->IsoINIncomplete(pdev, epnum);
-    }
+//    if (pdev->pClass->IsoINIncomplete != NULL)
+//    {
+//      (void)pdev->pClass->IsoINIncomplete(pdev, epnum);
+//    }
+		for (unsigned di = 0; di < pdev->nClasses; ++ di)
+		{
+			if (pdev->pClasses [di]->IsoINIncomplete != NULL)
+			{
+				pdev->pClasses [di]->IsoINIncomplete(pdev, epnum);
+			}
+		}
   }
 
   return USBD_OK;
@@ -628,17 +875,24 @@ USBD_StatusTypeDef USBD_LL_IsoINIncomplete(USBD_HandleTypeDef *pdev,
 USBD_StatusTypeDef USBD_LL_IsoOUTIncomplete(USBD_HandleTypeDef *pdev,
                                             uint8_t epnum)
 {
-  if (pdev->pClass == NULL)
-  {
-    return USBD_FAIL;
-  }
+//  if (pdev->pClass == NULL)
+//  {
+//    return USBD_FAIL;
+//  }
 
   if (pdev->dev_state == USBD_STATE_CONFIGURED)
   {
-    if (pdev->pClass->IsoOUTIncomplete != NULL)
-    {
-      (void)pdev->pClass->IsoOUTIncomplete(pdev, epnum);
-    }
+//    if (pdev->pClass->IsoOUTIncomplete != NULL)
+//    {
+//      (void)pdev->pClass->IsoOUTIncomplete(pdev, epnum);
+//    }
+		for (unsigned di = 0; di < pdev->nClasses; ++ di)
+		{
+			if (pdev->pClasses [di]->IsoOUTIncomplete != NULL)
+			{
+				pdev->pClasses [di]->IsoOUTIncomplete(pdev, epnum);
+			}
+		}
   }
 
   return USBD_OK;
@@ -669,10 +923,17 @@ USBD_StatusTypeDef USBD_LL_DevDisconnected(USBD_HandleTypeDef *pdev)
   /* Free Class Resources */
   pdev->dev_state = USBD_STATE_DEFAULT;
 
-  if (pdev->pClass != NULL)
-  {
-    (void)pdev->pClass->DeInit(pdev, (uint8_t)pdev->dev_config);
-  }
+//  if (pdev->pClass != NULL)
+//  {
+//    (void)pdev->pClass->DeInit(pdev, (uint8_t)pdev->dev_config);
+//  }
+	for (unsigned di = 0; di < pdev->nClasses; ++ di)
+	{
+		if (pdev->pClasses [di]->DeInit != NULL)
+		{
+			pdev->pClasses [di]->DeInit(pdev, pdev->dev_config [0]);
+		}
+	}
 
   return USBD_OK;
 }

@@ -27,7 +27,7 @@
 #include "usbd_def.h"
 #include "usbd_core.h"
 
-#include "usbd_cdc.h"
+//#include "usbd_cdc.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -332,7 +332,7 @@ static void PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 {
-  USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, (uint8_t *)hpcd->Setup);
+  USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, (uint8_t *)hpcd->PSetup);
 }
 
 /**
@@ -523,8 +523,12 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
   */
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 {
+	/* Link The driver to the stack */
+//	hpcd->pData = pdev;
+//	pdev->pData = hpcd;
   /* Init USB Ip. */
-  if (pdev->id == DEVICE_HS) {
+  //if (pdev->id == DEVICE_HS)
+  {
   /* Link the driver to the stack. */
   hpcd_USB_OTG_HS.pData = pdev;
   pdev->pData = &hpcd_USB_OTG_HS;
@@ -840,11 +844,11 @@ void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg)
   * @param  size: Size of allocated memory
   * @retval None
   */
-void *USBD_static_malloc(uint32_t size)
-{
-  static uint32_t mem[(sizeof(USBD_CDC_HandleTypeDef)/4)+1];/* On 32-bit boundary */
-  return mem;
-}
+//void *USBD_static_malloc(uint32_t size)
+//{
+//  static uint32_t mem[(sizeof(USBD_CDC_HandleTypeDef)/4)+1];/* On 32-bit boundary */
+//  return mem;
+//}
 
 /**
   * @brief  Dummy memory free

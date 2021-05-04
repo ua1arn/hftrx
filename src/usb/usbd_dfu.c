@@ -15,6 +15,7 @@
 #include "audio.h"
 #include "formats.h"
 #include "usbx_core.h"
+#include "usbd_def.h"
 
 
 

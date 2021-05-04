@@ -23,11 +23,13 @@
 #include "hardware.h"
 #include "formats.h"
 
+#include "src/usb/usbx_core.h"
+
 #include "usb_device.h"
 #include "usbd_core.h"
 #include "usbd_desc.h"
-#include "usbd_cdc.h"
-#include "usbd_cdc_if.h"
+//#include "usbd_cdc.h"
+//#include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -69,25 +71,51 @@ void MX_USB_DEVICE_Init(void)
   /* USER CODE BEGIN USB_DEVICE_Init_PreTreatment */
   /* USER CODE END USB_DEVICE_Init_PreTreatment */
 
-  /* Init Device Library, add supported class and start the library. */
-  if (USBD_Init(&hUsbDeviceHS, &HS_Desc, DEVICE_HS) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_RegisterClass(&hUsbDeviceHS, &USBD_CDC) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_CDC_RegisterInterface(&hUsbDeviceHS, &USBD_Interface_fops_HS) != USBD_OK)
-  {
-    Error_Handler();
-  }
-  if (USBD_Start(&hUsbDeviceHS) != USBD_OK)
-  {
-    Error_Handler();
-  }
+//  /* Init Device Library, add supported class and start the library. */
+//  if (USBD_Init(&hUsbDeviceHS, &HS_Desc, DEVICE_HS) != USBD_OK)
+//  {
+//    Error_Handler();
+//  }
+//  if (USBD_RegisterClass(&hUsbDeviceHS, &USBD_CDC) != USBD_OK)
+//  {
+//    Error_Handler();
+//  }
+//  if (USBD_CDC_RegisterInterface(&hUsbDeviceHS, &USBD_Interface_fops_HS) != USBD_OK)
+//  {
+//    Error_Handler();
+//  }
+//  if (USBD_Start(&hUsbDeviceHS) != USBD_OK)
+//  {
+//    Error_Handler();
+//  }
 
-  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
+	USBD_Init2(& hUsbDeviceHS);
+
+	// поддержка работы бутлоадера на платах, где есть подпитка VBUS от DP через защитные диоды
+	//device_vbusbefore = hardware_usbd_get_vbusnow();
+	//PRINTF(PSTR("hardware_usbd_initialize: device_vbusbefore=%d\n"), (int) device_vbusbefore);
+
+#if WITHUSBUAC
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_UAC);
+#endif /* WITHUSBUAC */
+#if WITHUSBCDCACM
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_CDCACM);
+#endif /* WITHUSBCDCACM */
+#if WITHUSBDFU
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_DFU);
+#endif /* WITHUSBDFU */
+#if WITHUSBCDCEEM
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_CDC_EEM);
+#endif /* WITHUSBCDCEEM */
+#if WITHUSBRNDIS
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_RNDIS);
+#endif /* WITHUSBRNDIS */
+
+	if (USBD_Start(&hUsbDeviceHS) != USBD_OK)
+	{
+		Error_Handler();
+	}
+ /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
   
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
 }

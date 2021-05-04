@@ -14,6 +14,7 @@
 #include "src/display/display.h"
 #include "formats.h"
 #include "usbx_core.h"
+#include "usbd_def.h"
 #include <string.h>
 
 
@@ -161,9 +162,9 @@ static RAMBIGDTCM uint_fast16_t uacinsize = 0;
 static RAMBIGDTCM uintptr_t uacinrtsaddr = 0;
 static RAMBIGDTCM uint_fast16_t uacinrtssize = 0;
 
-static USBALIGN_BEGIN uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
+static __ALIGN_BEGIN uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE] __ALIGN_END;
 
-static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
+static __ALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
 
 static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
@@ -481,7 +482,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 
 static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	static RAMBIGDTCM USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
+	static RAMBIGDTCM __ALIGN_BEGIN uint8_t buff [32] __ALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 #if WITHUSBWCID
@@ -909,6 +910,12 @@ const USBD_ClassTypeDef USBD_CLASS_UAC =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+void __weak refreshDMA_uacin(void)
+{
+}
 
 
 #endif /* WITHUSBHW && WITHUSBUAC */
