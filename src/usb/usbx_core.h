@@ -184,6 +184,8 @@ typedef enum
   USBD_SPEED_LOW   = 2,
 } USBD_SpeedTypeDef;
 
+#if ! defined ( USE_HAL_DRIVER )
+
 /* Following USB Device status */
 typedef enum {
   USBD_OK   = 0,
@@ -208,7 +210,6 @@ typedef struct _Device_cb
 	USBD_StatusTypeDef  (*IsoOUTIncomplete) (struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
 
 } USBD_ClassTypeDef;
-
 
 /**
   * @brief  HAL Status structures definition
@@ -267,6 +268,8 @@ typedef enum {
   URB_STALL
 
 } USB_OTG_URBStateTypeDef;
+
+#endif /* ! defined ( USE_HAL_DRIVER ) */
 
 /**
   * @brief  Host channel States  definition

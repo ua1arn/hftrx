@@ -230,18 +230,18 @@ struct _USBD_HandleTypeDef;
 
 typedef struct _Device_cb
 {
-	USBD_StatusTypeDef (*Init)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);
-	USBD_StatusTypeDef (*DeInit)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);
+	USBD_StatusTypeDef (*Init)(struct _USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+	USBD_StatusTypeDef (*DeInit)(struct _USBD_HandleTypeDef *pdev, uint8_t cfgidx);
   /* Control Endpoints*/
 	USBD_StatusTypeDef (*Setup)(struct _USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req);
 	USBD_StatusTypeDef (*EP0_TxSent)(struct _USBD_HandleTypeDef *pdev);
 	USBD_StatusTypeDef (*EP0_RxReady)(struct _USBD_HandleTypeDef *pdev);
   /* Class Specific Endpoints*/
-	USBD_StatusTypeDef (*DataIn)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
-	USBD_StatusTypeDef (*DataOut)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
+	USBD_StatusTypeDef (*DataIn)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
+	USBD_StatusTypeDef (*DataOut)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
 	USBD_StatusTypeDef (*SOF)(struct _USBD_HandleTypeDef *pdev);
-	USBD_StatusTypeDef (*IsoINIncomplete)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
-	USBD_StatusTypeDef (*IsoOUTIncomplete)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
+	USBD_StatusTypeDef (*IsoINIncomplete)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
+	USBD_StatusTypeDef (*IsoOUTIncomplete)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
 
   uint8_t  *(*GetHSConfigDescriptor)(uint16_t *length);
   uint8_t  *(*GetFSConfigDescriptor)(uint16_t *length);
