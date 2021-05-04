@@ -21,7 +21,6 @@
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
 
-
 /** @addtogroup STM32_USBD_STATE_DEVICE_LIBRARY
   * @{
   */
@@ -379,202 +378,136 @@ USBD_StatusTypeDef USBD_StdEPReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
   */
 static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-  uint16_t len = 0U;
-  uint8_t *pbuf = NULL;
-  uint8_t err = 0U;
+	uint16_t len;
+	const uint8_t *pbuf;
+	const uint_fast8_t index = LO_BYTE(req->wValue);
 
-  switch (req->wValue >> 8)
-  {
-#if ((USBD_LPM_ENABLED == 1U) || (USBD_CLASS_BOS_ENABLED == 1U))
-    case USB_DESC_TYPE_BOS:
-      if (pdev->pDesc->GetBOSDescriptor != NULL)
-      {
-        pbuf = pdev->pDesc->GetBOSDescriptor(pdev->dev_speed, &len);
-      }
-      else
-      {
-        USBD_CtlError(pdev, req);
-        err++;
-      }
-      break;
-#endif
-    case USB_DESC_TYPE_DEVICE:
-      pbuf = pdev->pDesc->GetDeviceDescriptor(pdev->dev_speed, &len);
-      break;
+	//PRINTF(PSTR("USBD_GetDescriptor: %d, wLength=%04X (%d dec), ix=%u\n"), (int) HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue));
 
-    case USB_DESC_TYPE_CONFIGURATION:
-      if (pdev->dev_speed == USBD_SPEED_HIGH)
-      {
-        pbuf = pdev->pClass->GetHSConfigDescriptor(&len);
-        pbuf[1] = USB_DESC_TYPE_CONFIGURATION;
-      }
-      else
-      {
-        pbuf = pdev->pClass->GetFSConfigDescriptor(&len);
-        pbuf[1] = USB_DESC_TYPE_CONFIGURATION;
-      }
-      break;
+	switch (HI_BYTE(req->wValue))
+	{
+	case USB_DESC_TYPE_DEVICE:
+		len = DeviceDescrTbl [0].size;
+		pbuf = DeviceDescrTbl [0].data;
+		break;
 
-    case USB_DESC_TYPE_STRING:
-      switch ((uint8_t)(req->wValue))
-      {
-        case USBD_IDX_LANGID_STR:
-          if (pdev->pDesc->GetLangIDStrDescriptor != NULL)
-          {
-            pbuf = pdev->pDesc->GetLangIDStrDescriptor(pdev->dev_speed, &len);
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
-            err++;
-          }
-          break;
+	case USB_DESC_TYPE_CONFIGURATION:
+		if (index < ARRAY_SIZE(ConfigDescrTbl) && ConfigDescrTbl [index].size != 0)
+		{
+			len = ConfigDescrTbl [index].size;
+			pbuf = ConfigDescrTbl [index].data;
+		}
+		else
+		{
+			//TP();
+			USBD_CtlError(pdev, req);
+			return;
+		}
+		break;
 
-        case USBD_IDX_MFC_STR:
-          if (pdev->pDesc->GetManufacturerStrDescriptor != NULL)
-          {
-            pbuf = pdev->pDesc->GetManufacturerStrDescriptor(pdev->dev_speed, &len);
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
-            err++;
-          }
-          break;
+	case USB_DESC_TYPE_STRING:
+		{
+			const uint_fast16_t LangID = LO_BYTE(req->wIndex);
+			switch (index)
+			{
+			case 0x65:
+			case 0xF8:
+				// Запрос появляется при запуске MixW2
+				//len = StringDescrTbl [STRING_ID_7].size;
+				//pbuf = StringDescrTbl [STRING_ID_7].data;
+				//break;
+				//TP();
+				USBD_CtlError(pdev, req);
+				return;
 
-        case USBD_IDX_PRODUCT_STR:
-          if (pdev->pDesc->GetProductStrDescriptor != NULL)
-          {
-            pbuf = pdev->pDesc->GetProductStrDescriptor(pdev->dev_speed, &len);
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
-            err++;
-          }
-          break;
+			case 0xEE:
+				// WCID devices support
+				// Microsoft OS String Descriptor, ReqLength=0x12
+				// See OS_Desc_Intro.doc, Table 3 describes the OS string descriptor’s fields.
+				if (MsftStringDescr [0].data != NULL && MsftStringDescr [0].size != 0)
+				{
+					len = MsftStringDescr [0].size;
+					pbuf = MsftStringDescr [0].data;
+				}
+				else
+				{
+					USBD_CtlError(pdev, req);
+					return;
+				}
+				break;
 
-        case USBD_IDX_SERIAL_STR:
-          if (pdev->pDesc->GetSerialStrDescriptor != NULL)
-          {
-            pbuf = pdev->pDesc->GetSerialStrDescriptor(pdev->dev_speed, &len);
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
-            err++;
-          }
-          break;
+			default:
+				if (index < usbd_get_stringsdesc_count() && StringDescrTbl [index].size != 0)
+				{
+					len = StringDescrTbl [index].size;
+					pbuf = StringDescrTbl [index].data;
+				}
+				else
+				{
+					//TP();
+					//PRINTF(PSTR("USBD_GetDescriptor: %02X\n"), HI_BYTE(req->wValue));
+					USBD_CtlError(pdev, req);
+					return;
+				}
+				break;
+			} /* case */
+		}
+		break;
 
-        case USBD_IDX_CONFIG_STR:
-          if (pdev->pDesc->GetConfigurationStrDescriptor != NULL)
-          {
-            pbuf = pdev->pDesc->GetConfigurationStrDescriptor(pdev->dev_speed, &len);
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
-            err++;
-          }
-          break;
+	case USB_DESC_TYPE_DEVICE_QUALIFIER:
+		if (index < ARRAY_SIZE(DeviceQualifierTbl) && DeviceQualifierTbl [index].size != 0)
+		{
+			len = DeviceQualifierTbl [index].size;
+			pbuf = DeviceQualifierTbl [index].data;
+		}
+		else
+		{
+			////TP();
+			USBD_CtlError(pdev, req);
+			return;
+		}
+		break;
 
-        case USBD_IDX_INTERFACE_STR:
-          if (pdev->pDesc->GetInterfaceStrDescriptor != NULL)
-          {
-            pbuf = pdev->pDesc->GetInterfaceStrDescriptor(pdev->dev_speed, &len);
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
-            err++;
-          }
-          break;
+	case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
+		if (pdev->dev_speed == USBD_SPEED_HIGH && index < ARRAY_SIZE(DeviceQualifierTbl) && DeviceQualifierTbl [index].size != 0)
+		{
+			len = OtherSpeedConfigurationTbl [index].size;
+			pbuf = OtherSpeedConfigurationTbl [index].data;
+		}
+		else
+		{
+			//TP();
+			USBD_CtlError(pdev, req);
+			return;
+		}
+		break;
 
-        default:
-#if (USBD_SUPPORT_USER_STRING_DESC == 1U)
-          if (pdev->pClass->GetUsrStrDescriptor != NULL)
-          {
-            pbuf = pdev->pClass->GetUsrStrDescriptor(pdev, (req->wValue), &len);
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
-            err++;
-          }
-#endif
+	case USB_DESC_TYPE_BOS:
+		if (BinaryDeviceObjectStoreTbl [0].size != 0)
+		{
+			len = BinaryDeviceObjectStoreTbl [0].size;
+			pbuf = BinaryDeviceObjectStoreTbl [0].data;
+		}
+		else
+		{
+			//TP();
+			USBD_CtlError(pdev, req);
+			return;
+		}
+		break;
 
-#if (USBD_CLASS_USER_STRING_DESC == 1U)
-          if (pdev->pDesc->GetUserStrDescriptor != NULL)
-          {
-            pbuf = pdev->pDesc->GetUserStrDescriptor(pdev->dev_speed, (req->wValue), &len);
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
-            err++;
-          }
-#endif
+	default:
+		//TP();
+		USBD_CtlError(pdev, req);
+		return;
+	}
 
-#if ((USBD_CLASS_USER_STRING_DESC == 0U) && (USBD_SUPPORT_USER_STRING_DESC == 0U))
-          USBD_CtlError(pdev, req);
-          err++;
-#endif
-          break;
-      }
-      break;
+	if ((len != 0) && (req->wLength != 0))
+	{
+		//PRINTF(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u, datalen=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue), len);
+		USBD_CtlSendData(pdev, pbuf, MIN(len, req->wLength));
+	}
 
-    case USB_DESC_TYPE_DEVICE_QUALIFIER:
-      if (pdev->dev_speed == USBD_SPEED_HIGH)
-      {
-        pbuf = pdev->pClass->GetDeviceQualifierDescriptor(&len);
-      }
-      else
-      {
-        USBD_CtlError(pdev, req);
-        err++;
-      }
-      break;
-
-    case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
-      if (pdev->dev_speed == USBD_SPEED_HIGH)
-      {
-        pbuf = pdev->pClass->GetOtherSpeedConfigDescriptor(&len);
-        pbuf[1] = USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION;
-      }
-      else
-      {
-        USBD_CtlError(pdev, req);
-        err++;
-      }
-      break;
-
-    default:
-      USBD_CtlError(pdev, req);
-      err++;
-      break;
-  }
-
-  if (err != 0U)
-  {
-    return;
-  }
-
-  if (req->wLength != 0U)
-  {
-    if (len != 0U)
-    {
-      len = MIN(len, req->wLength);
-      (void)USBD_CtlSendData(pdev, pbuf, len);
-    }
-    else
-    {
-      USBD_CtlError(pdev, req);
-    }
-  }
-  else
-  {
-    (void)USBD_CtlSendStatus(pdev);
-  }
 }
 
 

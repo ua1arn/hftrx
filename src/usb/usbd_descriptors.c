@@ -21,7 +21,9 @@
 
 #include "usb200.h"
 #include "usbch9.h"
-#include "usbx_core.h"
+//#include "usbx_core.h"
+#include "usbd_ctlreq.h"
+#include "usbd_ioreq.h"
 
 // UAC audio device
 // USB\VID_FFFF&PID_0736&REV_0100&MI_00
@@ -4518,7 +4520,7 @@ struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
 struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
 struct descholder BinaryDeviceObjectStoreTbl [1];
 struct descholder HIDReportDescrTbl [1];
-struct descholder ExtOsPropDescTbl [INTERFACE_count];
+struct descholder ExtOsPropDescTbl [32];
 
 
 uint_fast8_t usbd_get_stringsdesc_count(void)

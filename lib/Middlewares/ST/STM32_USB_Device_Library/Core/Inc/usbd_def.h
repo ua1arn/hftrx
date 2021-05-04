@@ -243,13 +243,13 @@ typedef struct _Device_cb
 	USBD_StatusTypeDef (*IsoINIncomplete)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
 	USBD_StatusTypeDef (*IsoOUTIncomplete)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
 
-  uint8_t  *(*GetHSConfigDescriptor)(uint16_t *length);
-  uint8_t  *(*GetFSConfigDescriptor)(uint16_t *length);
-  uint8_t  *(*GetOtherSpeedConfigDescriptor)(uint16_t *length);
-  uint8_t  *(*GetDeviceQualifierDescriptor)(uint16_t *length);
-#if (USBD_SUPPORT_USER_STRING_DESC == 1U)
-  uint8_t  *(*GetUsrStrDescriptor)(struct _USBD_HandleTypeDef *pdev, uint8_t index,  uint16_t *length);
-#endif
+//  uint8_t  *(*GetHSConfigDescriptor)(uint16_t *length);
+//  uint8_t  *(*GetFSConfigDescriptor)(uint16_t *length);
+//  uint8_t  *(*GetOtherSpeedConfigDescriptor)(uint16_t *length);
+//  uint8_t  *(*GetDeviceQualifierDescriptor)(uint16_t *length);
+//#if (USBD_SUPPORT_USER_STRING_DESC == 1U)
+//  uint8_t  *(*GetUsrStrDescriptor)(struct _USBD_HandleTypeDef *pdev, uint8_t index,  uint16_t *length);
+//#endif
 
 } USBD_ClassTypeDef;
 
@@ -351,6 +351,13 @@ __STATIC_INLINE uint16_t SWAPBYTE(uint8_t *addr)
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #endif
 
+
+#define  HI_32BY(w)  (((w) >> 24) & 0xFF)   /* Extract 31..24 bits from unsigned word */
+#define  HI_24BY(w)  (((w) >> 16) & 0xFF)   /* Extract 23..16 bits from unsigned word */
+#define  HI_BYTE(w)  (((w) >> 8) & 0xFF)   /* Extract high-order byte from unsigned word */
+#define  LO_BYTE(w)  ((w) & 0xFF)          /* Extract low-order byte from unsigned word */
+
+
 #if  defined ( __GNUC__ )
 #ifndef __weak
 #define __weak   __attribute__((weak))
@@ -400,6 +407,28 @@ __STATIC_INLINE uint16_t SWAPBYTE(uint8_t *addr)
 /** @defgroup USBD_DEF_Exported_FunctionsPrototype
   * @{
   */
+
+void usbd_descriptors_initialize(uint_fast8_t deschs);
+
+struct descholder
+{
+	const uint8_t * data;
+	unsigned size;
+};
+
+#define USBD_CONFIGCOUNT 4
+
+extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor
+extern struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
+extern struct descholder StringDescrTbl [];
+extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
+extern struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
+extern struct descholder BinaryDeviceObjectStoreTbl [1];
+extern struct descholder HIDReportDescrTbl [1];
+uint_fast8_t usbd_get_stringsdesc_count(void);
+extern struct descholder ExtOsPropDescTbl [32];
 
 /**
   * @}

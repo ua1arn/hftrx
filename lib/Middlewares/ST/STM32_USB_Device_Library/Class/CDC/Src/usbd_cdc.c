@@ -149,10 +149,10 @@ USBD_ClassTypeDef  USBD_CDC =
   NULL,
   NULL,
   NULL,
-  USBD_CDC_GetHSCfgDesc,
-  USBD_CDC_GetFSCfgDesc,
-  USBD_CDC_GetOtherSpeedCfgDesc,
-  USBD_CDC_GetDeviceQualifierDescriptor,
+//  USBD_CDC_GetHSCfgDesc,
+//  USBD_CDC_GetFSCfgDesc,
+//  USBD_CDC_GetOtherSpeedCfgDesc,
+//  USBD_CDC_GetDeviceQualifierDescriptor,
 };
 
 /* USB CDC device Configuration Descriptor */
