@@ -425,14 +425,14 @@ static RAMDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти ч�
 typedef struct message
 {
 	void * tag2;
-	LIST_ENTRY item;
+	volatile VLIST_ENTRY item;
 	uint8_t type;
 	uint8_t data [MSGBUFFERSIZE8];
 	void * tag3;
 } message_t;
 
-static volatile RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
-static volatile RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
+static volatile RAMDTCM VLIST_ENTRY msgsfree8;		// Свободные буферы
+static volatile RAMDTCM VLIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 static RAMDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
 
 #if WITHBUFFERSDEBUG
@@ -860,7 +860,7 @@ void buffers_initialize(void)
 		p->tag2 = p;
 		p->tag3 = p;
 		//InitializeListHead2(& p->item);
-		InsertHeadList(& msgsfree8, & p->item);
+		InsertHeadVList(& msgsfree8, & p->item);
 	}
 	SPINLOCK_INITIALIZE(& locklistmsg8);
 }
@@ -875,7 +875,7 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 	SPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsready8))
 	{
-		PLIST_ENTRY t = RemoveTailList(& msgsready8);
+		PVLIST_ENTRY t = RemoveTailVList(& msgsready8);
 		SPIN_UNLOCK(& locklistmsg8);
 		system_enableIRQ();
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
@@ -897,7 +897,7 @@ void releasemsgbuffer_user(uint8_t * dest)
 	ASSERT(p->tag3 == p);
 	system_disableIRQ();
 	SPIN_LOCK(& locklistmsg8);
-	InsertHeadList(& msgsfree8, & p->item);
+	InsertHeadVList(& msgsfree8, & p->item);
 	SPIN_UNLOCK(& locklistmsg8);
 	system_enableIRQ();
 }
@@ -908,7 +908,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 	SPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsfree8))
 	{
-		PLIST_ENTRY t = RemoveTailList(& msgsfree8);
+		PVLIST_ENTRY t = RemoveTailVList(& msgsfree8);
 		SPIN_UNLOCK(& locklistmsg8);
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		ASSERT(p->tag2 == p);
@@ -929,7 +929,7 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 	ASSERT(p->tag3 == p);
 	p->type = type;
 	SPIN_LOCK(& locklistmsg8);
-	InsertHeadList(& msgsready8, & p->item);
+	InsertHeadVList(& msgsready8, & p->item);
 	SPIN_UNLOCK(& locklistmsg8);
 }
 
