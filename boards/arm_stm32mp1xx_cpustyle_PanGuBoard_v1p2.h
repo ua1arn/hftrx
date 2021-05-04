@@ -133,14 +133,19 @@
 	//#define WITHCAT7_CDC	1	// сетевой интерфейс SLIP на CDC
 	#define WITHMODEM_CDC	1
 
-//	#if WITHINTEGRATEDDSP
-//
-//		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-//		#if WITHRTS96 || WITHRTS192
-//			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-//		#endif /* WITHRTS96 || WITHRTS192 */
+	#if WITHINTEGRATEDDSP
+
+		//#define WITHUAC2		1	/* UAC2 support */
+		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#if WITHRTS96 || WITHRTS192
+			#define WITHUSBUACIN	1
+			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+		#else /* WITHRTS96 || WITHRTS192 */
+			#define WITHUSBUACIN	1
+		#endif /* WITHRTS96 || WITHRTS192 */
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
-//	#endif /* WITHINTEGRATEDDSP */
+	#endif /* WITHINTEGRATEDDSP */
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
