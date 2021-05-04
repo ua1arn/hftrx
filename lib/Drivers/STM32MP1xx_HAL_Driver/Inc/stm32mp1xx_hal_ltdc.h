@@ -525,7 +525,7 @@ typedef  void (*pLTDC_CallbackTypeDef)(LTDC_HandleTypeDef *hltdc);  /*!< pointer
   */
 
 /* Include LTDC HAL Extension module */
-#include "stm32h7xx_hal_ltdc_ex.h"
+#include "stm32mp1xx_hal_ltdc_ex.h"
 
 /* Exported functions --------------------------------------------------------*/
 /** @addtogroup LTDC_Exported_Functions

@@ -1006,7 +1006,7 @@ typedef struct
 
   uint32_t LTDC_BackgroundColor;         /*!< configures the background  */
 
-} LTDC_InitTypeDef;
+} LTDCx_InitTypeDef;
 
 /** 
   * @brief  LTDC Layer structure definition  
@@ -1172,12 +1172,12 @@ LTDC_LayerInit(LTDC_Layer_TypeDef* LTDC_Layerx, const LTDC_Layer_InitTypeDef* LT
   * @brief  Initializes the LTDC peripheral according to the specified parameters
   *         in the LTDC_InitStruct.
   * @note   This function can be used only when the LTDC is disabled.
-  * @param  LTDC_InitStruct: pointer to a LTDC_InitTypeDef structure that contains
+  * @param  LTDC_InitStruct: pointer to a LTDCx_InitTypeDef structure that contains
   *         the configuration information for the specified LTDC peripheral.
   * @retval None
   */
 
-static void LTDC_Init(LTDC_InitTypeDef* LTDC_InitStruct)
+static void LTDCx_Init(LTDCx_InitTypeDef* LTDC_InitStruct)
 {
 	uint32_t horizontalsync = 0;
 	uint32_t accumulatedHBP = 0;
@@ -1214,7 +1214,7 @@ static void LTDC_Init(LTDC_InitTypeDef* LTDC_InitStruct)
 		0;
 }
 
-static void LCD_LayerInit(
+static void LCDx_LayerInit(
 	LTDC_Layer_TypeDef* LTDC_Layerx, 
 	unsigned hs,	// same as AccumulatedHBP + 1
 	unsigned vs,		// same as LTDC_AccumulatedVBP + 1
@@ -1336,7 +1336,7 @@ static void LCD_LayerInitMain(
 }
 
 /* Изменение настроек для работы слоя как "нижнего" при формированиии наложения */
-static void LCD_LayerInitPIP(
+static void LCDx_LayerInitPIP(
 	LTDC_Layer_TypeDef* LTDC_Layerx
 	)
 {
@@ -1408,7 +1408,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode);	// подключение к выводам процессора сигналов периферийного контроллера
 
 	/* LTDC Initialization -------------------------------------------------------*/
-	LTDC_InitTypeDef LTDC_InitStruct;
+	LTDCx_InitTypeDef LTDC_InitStruct;
 
 	pipparams_t mainwnd = { 0, 0, DIM_SECOND, DIM_FIRST };
 
@@ -1453,9 +1453,9 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	/* Configure R,G,B component values for LCD background color */                   
 	LTDC_InitStruct.LTDC_BackgroundColor = 0;		// all 0 - black
 
-	LTDC_Init(& LTDC_InitStruct);
+	LTDCx_Init(& LTDC_InitStruct);
 
-	LTDC_Init(& LTDC_InitStruct);
+	LTDCx_Init(& LTDC_InitStruct);
 
 
 	/* LTDC initialization end ---------------------------------------------------*/
@@ -1464,20 +1464,20 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	// Bottom layer - LTDC_Layer1
 #if LCDMODE_MAIN_L24
 
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 3, sizeof (PACKEDCOLORMAIN_T));
 
 #elif LCDMODE_MAIN_L8
 
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORMAIN_T));
 
 #elif LCDMODE_MAIN_ARGB888
 
 	/* Без палитры */
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORMAIN_T));
 
 #else
 	/* Без палитры */
-	LCD_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
+	LCDx_LayerInit(LAYER_MAIN, LEFTMARGIN, TOPMARGIN, & mainwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORMAIN_T));
 
 #endif /* LCDMODE_MAIN_L8 */
 
@@ -1486,24 +1486,24 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
 	// Bottom layer
-	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
-	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
+	LCDx_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_L8, 1, sizeof (PACKEDCOLORPIP_T));
+	LCDx_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #elif LCDMODE_PIP_RGB565
 
 	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
 	// Bottom layer
-	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
-	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
+	LCDx_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_RGB565, 1, sizeof (PACKEDCOLORPIP_T));
+	LCDx_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #elif LCDMODE_PIP_RGB888
 
 	LCD_LayerInitMain(LAYER_MAIN);	// довести инициализацию
 
 	// Bottom layer
-	LCD_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
-	LCD_LayerInitPIP(LAYER_PIP);	// довести инициализацию
+	LCDx_LayerInit(LAYER_PIP, LEFTMARGIN, TOPMARGIN, & pipwnd, LTDC_Pixelformat_ARGB8888, 1, sizeof (PACKEDCOLORPIP_T));
+	LCDx_LayerInitPIP(LAYER_PIP);	// довести инициализацию
 
 #endif /* LCDMODE_PIP_RGB565 */
 
