@@ -21,6 +21,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+#include "formats.h"
+#include "src/usb/usbch9.h"
 
 #include "stm32mp1xx.h"
 #include "stm32mp1xx_hal.h"
@@ -61,6 +63,7 @@ void SystemClock_Config(void);
 /* Private functions ---------------------------------------------------------*/
 
 /* USER CODE BEGIN 1 */
+#include "stm32mp1xx_ll_pwr.h"
 
 /* USER CODE END 1 */
 
@@ -74,18 +77,20 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 {
 #if CPUSTYLE_STM32MP1
 	// Set 3.3 volt DETECTOR enable
-	PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
-	(void) PWR->CR3;
-	while ((PWR->CR3 & PWR_CR3_USB33DEN_Msk) == 0)
+	LL_PWR_EnableUSBVoltageDetector();
+	while (LL_PWR_IsEnabledUSBVoltageDetector() == 0)
 		;
 
 	// Wait 3.3 volt REGULATOR ready
-	while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
+	while (LL_PWR_IsActiveFlag_USB() == 0)
 		;
 
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+	__HAL_RCC_USBO_CLK_ENABLE();
+	__HAL_RCC_USBO_CLK_SLEEP_ENABLE();
+
+	//RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+	//RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
 	(void) RCC->MP_AHB2LPENSETR;
 
 	if (pcdHandle->Instance == USB1_OTG_HS)	// legacy name is USB_OTG_HS
@@ -512,6 +517,330 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
   USBD_LL_DevDisconnected((USBD_HandleTypeDef*)hpcd->pData);
 }
 
+
+
+
+/*  TXn min size = 16 words. (n  : Transmit FIFO index)
+    When a TxFIFO is not used, the Configuration should be as follows:
+        case 1 :  n > m    and Txn is not used    (n,m  : Transmit FIFO indexes)
+       --> Txm can use the space allocated for Txn.
+       case2  :  n < m    and Txn is not used    (n,m  : Transmit FIFO indexes)
+       --> Txn should be configured with the minimum space of 16 words
+   The FIFO is used optimally when used TxFIFOs are allocated in the top
+       of the FIFO.Ex: use EP1 and EP2 as IN instead of EP1 and EP3 as IN ones.
+   When DMA is used 3n * FIFO locations should be reserved for internal DMA registers */
+
+static uint32_t usbd_makeTXFSIZ(uint_fast16_t base, uint_fast16_t size)
+{
+	return
+		((uint32_t) size << USB_OTG_DIEPTXF_INEPTXFD_Pos) |
+		((uint32_t) base << USB_OTG_DIEPTXF_INEPTXSA_Pos) |
+		0;
+}
+
+// Преобразование размера в байтах размера данных в требования к fifo
+// Расчет аргумента функции HAL_PCDEx_SetRxFiFo, HAL_PCDEx_SetTxFiFo
+static uint_fast16_t size2buff4(uint_fast16_t size)
+{
+	const uint_fast16_t size4 = (size + 3) / 4;		// размер в 32-бит значениях
+	return MAX(0x10, size4);
+}
+
+static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsize, uint_fast8_t bigbuff)
+{
+	unsigned offset;
+	const int add3tx = bigbuff ? 3 : 1;	// tx fifo add places
+	const int mul2 = bigbuff ? 3 : 1;	// tx fifo buffers
+	PCD_TypeDef * const USBx = hpcd->Instance;
+
+	//PRINTF(PSTR("usbd_fifo_initialize: bigbuff=%d, fullsize=%u, power-on GRXFSIZ=%u\n"), (int) bigbuff, (unsigned) fullsize, USBx->GRXFSIZ & USB_OTG_GRXFSIZ_RXFD);
+	// DocID028270 Rev 2 (RM0410): 41.11.3 FIFO RAM allocation
+	// DocID028270 Rev 2 (RM0410): 41.16.6 Device programming model
+
+/*
+3. Set up the Data FIFO RAM for each of the FIFOs –
+	Program the OTG_GRXFSIZ register, to be able to receive control OUT data and setup data.
+	If thresholding is not enabled, at a minimum, this must be equal to
+	1 max packet size of control endpoint 0 +
+	2 Words (for the status of the control OUT data packet) +
+	10 Words (for setup packets). –
+	Program the OTG_DIEPTXF0 register (depending on the FIFO number chosen)
+	to be able to transmit control IN data.
+	At a minimum, this must be equal to 1 max packet size of control endpoint 0.
+
+*/
+	uint_fast16_t maxoutpacketsize4 = size2buff4(USB_OTG_MAX_EP0_SIZE);
+
+	// добавление шести обеспечивает работу конфигурации с единственным устройством HID
+	maxoutpacketsize4 += 6;
+
+	//uint_fast16_t base4;
+	uint_fast8_t numcontrolendpoints = 1;
+	uint_fast8_t numoutendpoints = 1;
+
+	// при addplaces = 3 появился звук на передаче в трансивер (при 2-х компортах)
+	// но если CDC и UAC включать поодиночке, обмен не нарушается и при 0.
+	// todo: найти все-таки документ https://www.synopsys.com/ip_prototyping_kit_usb3otgv2_drd_pc.pdf
+	// еще интересен QL-Hi-Speed-USB-2.0-OTG-Controller-Data-Sheet.pdf
+
+	uint_fast8_t addplaces = 3;
+
+	const uint_fast16_t full4 = fullsize / 4;
+	uint_fast16_t last4 = full4;
+	uint_fast16_t base4 = 0;
+
+#if WITHUSBCDCACM
+	// параметры TX FIFO для ендпоинтов, в которые никогда не будут идти данные для передачи
+	const uint_fast16_t size4dummy = 0;//0x10;//bigbuff ? 0x10 : 4;
+	//last4 -= size4dummy;
+	const uint_fast16_t last4dummy = last4;
+#endif /* WITHUSBCDCACM */
+
+	//PRINTF(PSTR("usbd_fifo_initialize1: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
+
+#if WITHUSBUAC
+
+#if WITHUSBUACIN2
+	#if WITHRTS96
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#elif WITHRTS192
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#else /* WITHRTS96 || WITHRTS192 */
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#endif /* WITHRTS96 || WITHRTS192 */
+#else /* WITHUSBUACIN2 */
+	#if WITHRTS96
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#elif WITHRTS192
+		const int nuacinpackets = 1 * mul2, nuacoutpackets = 1 * mul2;
+	#else /* WITHRTS96 || WITHRTS192 */
+		const int nuacinpackets = 2 * mul2, nuacoutpackets = 1 * mul2;
+	#endif /* WITHRTS96 || WITHRTS192 */
+#endif /* WITHUSBUACIN2 */
+
+#if WITHUSBUACIN
+	{
+		/* endpoint передачи звука в компьютер */
+		const uint_fast8_t pipe = (USBD_EP_AUDIO_IN) & 0x7F;
+
+		const uint_fast16_t uacinmaxpacket = usbd_getuacinmaxpacket();
+
+		const uint_fast16_t size4 = nuacinpackets * (size2buff4(uacinmaxpacket) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		//PRINTF(PSTR("usbd_fifo_initialize2 - UAC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+#if WITHUSBUACIN2
+	{
+		/* endpoint передачи звука (спектра) в компьютер */
+		const uint_fast8_t pipe = (USBD_EP_RTS_IN) & 0x7F;
+
+		const int nuacinpackets = 1 * mul2;
+		const uint_fast16_t uacinmaxpacket = usbd_getuacinrtsmaxpacket();
+
+		const uint_fast16_t size4 = nuacinpackets * (size2buff4(uacinmaxpacket) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		//PRINTF(PSTR("usbd_fifo_initialize3 - UAC3 %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+#endif /* WITHUSBUACIN2 */
+#endif /* WITHUSBUACIN */
+#if WITHUSBUACOUT
+	{
+		numoutendpoints += 1;
+		maxoutpacketsize4 = MAX(maxoutpacketsize4, nuacoutpackets * size2buff4(UACOUT_AUDIO48_DATASIZE));
+	}
+#endif /* WITHUSBUACOUT */
+#endif /* WITHUSBUAC */
+
+#if WITHUSBCDCACM
+#if WITHUSBCDCACMINTSHARING
+	{
+		const uint_fast8_t pipeint = USBD_EP_CDCACM_INTSHARED & 0x7F;
+		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+	}
+#endif /* WITHUSBCDCACMINTSHARING */
+	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
+	{
+	#if ! WITHUSBCDCACMINTSHARING
+		{
+			const uint_fast8_t pipeint =  USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset) & 0x7F;
+			USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+		}
+	#endif /* ! WITHUSBCDCACMINTSHARING */
+		{
+			/* полнофункциональное устройство */
+			const uint_fast8_t pipe = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset) & 0x7F;
+			numoutendpoints += 1;
+			if (bigbuff == 0 && offset > 0)
+			{
+				// на маленьких контроллерах только первый USB CDC может обмениваться данными
+				USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4dummy, size4dummy);
+
+			}
+			else
+			{
+				#if WITHUSBUAC
+					#if WITHUSBUACIN2
+						const int ncdcindatapackets = 1 * mul2, ncdcoutdatapackets = 3;
+					#elif WITHRTS96 || WITHRTS192
+						const int ncdcindatapackets = 2 * mul2, ncdcoutdatapackets = 3;
+					#else /* WITHRTS96 || WITHRTS192 */
+						const int ncdcindatapackets = 2 * mul2, ncdcoutdatapackets = 3;
+					#endif /* WITHRTS96 || WITHRTS192 */
+				#else /* WITHUSBUAC */
+					const int ncdcindatapackets = 4, ncdcoutdatapackets = 4;
+				#endif /* WITHUSBUAC */
+
+				maxoutpacketsize4 = MAX(maxoutpacketsize4, ncdcoutdatapackets * size2buff4(VIRTUAL_COM_PORT_OUT_DATA_SIZE));
+
+
+				const uint_fast16_t size4 = ncdcindatapackets * (size2buff4(VIRTUAL_COM_PORT_IN_DATA_SIZE) + add3tx);
+				ASSERT(last4 >= size4);
+				last4 -= size4;
+				USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+				//PRINTF(PSTR("usbd_fifo_initialize4 CDC %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+			}
+		}
+
+	}
+#endif /* WITHUSBCDCACM */
+
+#if WITHUSBCDCEEM
+	{
+		/* полнофункциональное устройство */
+		const uint_fast8_t pipe = USBD_EP_CDCEEM_IN & 0x7F;
+
+		numoutendpoints += 1;
+		const int ncdceemindatapackets = 1 * mul2 + 1, ncdceemoutdatapackets = 3;
+
+		maxoutpacketsize4 = MAX(maxoutpacketsize4, ncdceemoutdatapackets * size2buff4(USBD_CDCEEM_BUFSIZE));
+
+
+		const uint_fast16_t size4 = ncdceemindatapackets * (size2buff4(USBD_CDCEEM_BUFSIZE) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		//PRINTF(PSTR("usbd_fifo_initialize5 EEM %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+#endif /* WITHUSBCDCEEM */
+
+#if WITHUSBRNDIS
+	{
+		/* полнофункциональное устройство */
+		const uint_fast8_t pipe = (USBD_EP_RNDIS_IN + 0) & 0x7F;
+		const uint_fast8_t pipeint = (USBD_EP_RNDIS_INT + 0) & 0x7F;
+		numoutendpoints += 1;
+		const int
+			nrndisindatapackets = 3,
+			nrndisintdatapackets = 3,
+			nrndisoutdatapackets = 3;
+
+		maxoutpacketsize4 = MAX(maxoutpacketsize4, nrndisoutdatapackets * size2buff4(USBD_RNDIS_OUT_BUFSIZE));
+
+
+		const uint_fast16_t size4 = nrndisindatapackets * (size2buff4(USBD_RNDIS_IN_BUFSIZE) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		const uint_fast16_t size4int = nrndisintdatapackets * (size2buff4(USBD_RNDIS_INT_SIZE) + add3tx);
+		ASSERT(last4 >= size4int);
+		last4 -= size4int;
+		USBx->DIEPTXF [pipeint - 1] = usbd_makeTXFSIZ(last4, size4int);
+		//PRINTF(PSTR("usbd_fifo_initialize4 RNDIS %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+
+#endif /* WITHUSBRNDIS */
+
+#if WITHUSBHID && 0
+	{
+		/* ... устройство */
+		const uint_fast8_t pipe = USBD_EP_HIDMOUSE_INT & 0x7F;
+
+		const uint_fast16_t size4 = size2buff4(HIDMOUSE_INT_DATA_SIZE);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		USBx->DIEPTXF [pipe - 1] = usbd_makeTXFSIZ(last4, size4);
+		//PRINTF(PSTR("usbd_fifo_initialize8 HID %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+#endif /* WITHUSBHID */
+
+	//PRINTF(PSTR("usbd_fifo_initialize9: 4*(full4-last4)=%u\n"), 4 * (full4 - last4));
+
+	/* control endpoint TX FIFO */
+	{
+		/* Установить размер TX FIFO EP0 */
+		const uint_fast16_t size4 = 2 * (size2buff4(USB_OTG_MAX_EP0_SIZE) + add3tx);
+		ASSERT(last4 >= size4);
+		last4 -= size4;
+		USBx->DIEPTXF0_HNPTXFSIZ = usbd_makeTXFSIZ(last4, size4);
+		//PRINTF(PSTR("usbd_fifo_initialize10 TX FIFO %u bytes: 4*(full4-last4)=%u\n"), 4 * size4, 4 * (full4 - last4));
+	}
+	/* control endpoint RX FIFO */
+	{
+		/* Установить размер RX FIFO -  теперь все что осталоь - используем last4 вместо size4 */
+		// (4 * number of control endpoints + 6) +
+		// ((largest USB packet used / 4) + 1 for status information) +
+		// (2 * number of OUT endpoints) +
+		// 1 for Global NAK
+		const uint_fast16_t size4 =
+				(4 * numcontrolendpoints + 6) +
+				(maxoutpacketsize4 + 1) +
+				(2 * numoutendpoints) +
+				1 +
+				addplaces;
+
+		//PRINTF(PSTR("usbd_fifo_initialize11 RX FIFO %u bytes: 4*(full4-last4)=%u bytes (last4=%u, size4=%u)\n"), 4 * size4, 4 * (full4 - last4), last4, size4);
+		ASSERT(last4 >= size4);
+		USBx->GRXFSIZ = (USBx->GRXFSIZ & ~ USB_OTG_GRXFSIZ_RXFD) |
+			(last4 << USB_OTG_GRXFSIZ_RXFD_Pos) |	// was: size4 - то что осталось
+			0;
+		base4 += size4;
+	}
+
+	if (base4 > last4 || last4 > full4)
+	{
+		char b [64];
+		PRINTF(PSTR("usbd_fifo_initialize error: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
+//		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("used=%u"), (base4 * 4) + (fullsize - last4 * 4));
+//		colmain_setcolors(COLORMAIN_RED, BGCOLOR);
+//		display_at(0, 0, b);
+		for (;;)
+			;
+	}
+	else
+	{
+		//PRINTF(PSTR("usbd_fifo_initialize: base4=%u, last4=%u, fullsize=%u\n"), (base4 * 4), (last4 * 4), fullsize);
+#if 0
+		// Диагностическая выдача использованного объёма FIFO RAM
+		char b [64];
+
+		local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("used=%u"), (base4 * 4) + (fullsize - last4 * 4));
+		colmain_setcolors(COLORMAIN_GREEN, BGCOLOR);
+		display_at(0, 0, b);
+		HARDWARE_DELAY_MS(2000);
+#endif
+	}
+
+	(void) USB_FlushRxFifo(USBx);
+	(void) USB_FlushTxFifo(USBx, 0x10U); /* all Tx FIFOs */
+}
+
+uint_fast8_t
+USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
+{
+#if CPUSTYLE_STM32MP1
+	return 1;
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
+	return (USBx->CID & (0x1U << 8)) != 0U;
+#else
+		return 0;
+#endif
+}
+
+
 /*******************************************************************************
                        LL Driver Interface (USB Device Library --> PCD)
 *******************************************************************************/
@@ -564,9 +893,28 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   HAL_PCD_RegisterIsoOutIncpltCallback(&hpcd_USB_OTG_HS, PCD_ISOOUTIncompleteCallback);
   HAL_PCD_RegisterIsoInIncpltCallback(&hpcd_USB_OTG_HS, PCD_ISOINIncompleteCallback);
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+
+#if 1
+
+#if CPUSTYLE_R7S721
+	usbd_pipes_initialize(hpcd);
+#else /* CPUSTYLE_R7S721 */
+	if (USB_Is_OTG_HS(hpcd_USB_OTG_HS.Instance))
+	{
+		// У OTH_HS размер FIFO 4096 байт
+		usbd_fifo_initialize(&hpcd_USB_OTG_HS, 4096, 1);
+	}
+	else
+	{
+		// У OTH_FS размер FIFO 1280 байт
+		usbd_fifo_initialize(&hpcd_USB_OTG_HS, 1280, 0);
+	}
+#endif /* CPUSTYLE_R7S721 */
+#else
   HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_HS, 0x200);
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 0, 0x80);
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 1, 0x174);
+#endif
   }
   return USBD_OK;
 }
