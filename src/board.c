@@ -5859,7 +5859,9 @@ prog_dds1_ftw(const ftw_t * value)
 
 #else	/* LO1PHASES */
 
-	#if (DDS1_TYPE == DDS_TYPE_AD9852)
+	#if CPUSTYLE_XC7Z
+		xc7z_dds_ftw(value);
+	#elif (DDS1_TYPE == DDS_TYPE_AD9852)
 		prog_ad9852_freq1(targetdds1, value);
 		prog_pulse_ioupdate();
 	#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)

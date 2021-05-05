@@ -30,6 +30,11 @@ void xc7z_dma_intHandler_af_tx(void);
 void xc7z_datafifo_inthandler(void);
 int XLlFifo_iRead_Aligned(XLlFifo *InstancePtr, void *BufPtr, unsigned WordCount);
 
+void xc7z_dds_ftw(const uint_least64_t * val)
+{
+	XGpio_DiscreteWrite(& xc7z_nco, 1, * val);
+}
+
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
 static uintptr_t
@@ -50,6 +55,7 @@ void xc7z_dma_transmit(UINTPTR buffer, size_t buffer_len)
 		PRINTF("dma transmit error %d\n", Status);
 		ASSERT(0);
 	}
+	while(XAxiDma_Busy(& xc7z_axidma_af_tx, XAXIDMA_DMA_TO_DEVICE));
 }
 
 //void xc7z_dma_receive(UINTPTR buffer, size_t buffer_len)
@@ -150,7 +156,7 @@ void xc7z_dma_init_af_tx(void)
 		ASSERT(0);
 	}
 
-	XGpio_DiscreteWrite(& xc7z_nco, 1, 612630528); // 7011
+//	XGpio_DiscreteWrite(& xc7z_nco, 1, 612630528); // 7011
 }
 
 void xc7z_dma_intHandler_af_tx(void)
@@ -200,6 +206,7 @@ void xc7z_datafifo_inthandler(void)
 	{
 		rx_buf = dma_invalidate32rx(allocate_dmabuffer32rx());
 		XLlFifo_iRead_Aligned(& fifo, (int32_t *) rx_buf, 19);
+		//PRINTF("%x\n", *(volatile int32_t*) (rx_buf + 10));
 		processing_dmabuffer32rx(rx_buf);
 		release_dmabuffer32rx(rx_buf);
 		XLlFifo_IntClear(& fifo, XLLF_INT_RFPF_MASK);
