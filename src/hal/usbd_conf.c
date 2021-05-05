@@ -45,9 +45,91 @@
 /* Private variables ---------------------------------------------------------*/
 USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status);
 
+
 /* USER CODE END PV */
 
-PCD_HandleTypeDef hpcd_USB_OTG_HS;
+
+/* PCD Handle Structure */
+static RAMBIGDTCM USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
+/* USB Device Core handle declaration */
+/*static */ RAMBIGDTCM USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
+
+/* HCD Handle Structure */
+static RAMBIGDTCM USBALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG USBALIGN_END;
+/* USB Host Core handle declaration */
+/*static */RAMBIGDTCM  USBALIGN_BEGIN USBH_HandleTypeDef hUSB_Host USBALIGN_END;
+static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+
+
+
+/* USER CODE BEGIN 1 */
+/**
+  * @brief This function handles USB On The Go HS global interrupt.
+  */
+void OTG_HS_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_HS_IRQn 0 */
+
+  /* USER CODE END OTG_HS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG);
+  /* USER CODE BEGIN OTG_HS_IRQn 1 */
+
+  /* USER CODE END OTG_HS_IRQn 1 */
+}
+
+void device_OTG_HS_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_HS_IRQn 0 */
+
+  /* USER CODE END OTG_HS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG);
+  /* USER CODE BEGIN OTG_HS_IRQn 1 */
+
+  /* USER CODE END OTG_HS_IRQn 1 */
+}
+
+void device_OTG_FS_IRQHandler(void)
+{
+  /* USER CODE BEGIN OTG_HS_IRQn 0 */
+
+  /* USER CODE END OTG_HS_IRQn 0 */
+  HAL_PCD_IRQHandler(&hpcd_USB_OTG);
+  /* USER CODE BEGIN OTG_HS_IRQn 1 */
+
+  /* USER CODE END OTG_HS_IRQn 1 */
+}
+
+void device_OTG_HS_EP1_OUT_IRQHandler(void)
+{
+	  HAL_PCD_IRQHandler(&hpcd_USB_OTG);
+}
+
+void device_OTG_HS_EP1_IN_IRQHandler(void)
+{
+	  HAL_PCD_IRQHandler(&hpcd_USB_OTG);
+}
+
+
+void RAMFUNC_NONILINE device_USBI0_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
+}
+
+void RAMFUNC_NONILINE device_USBI1_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
+}
+
+void RAMFUNC_NONILINE host_USBI0_IRQHandler(void)
+{
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+}
+
+void RAMFUNC_NONILINE host_USBI1_IRQHandler(void)
+{
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+}
+
 void Error_Handler(void)
 {
 	ASSERT(0);
@@ -960,8 +1042,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   //if (pdev->id == DEVICE_HS)
   {
   /* Link the driver to the stack. */
-  hpcd_USB_OTG_HS.pData = pdev;
-  pdev->pData = &hpcd_USB_OTG_HS;
+  hpcd_USB_OTG.pData = pdev;
+  pdev->pData = &hpcd_USB_OTG;
 #if CPUSTYLE_R7S721
 	// Значение ep0_mps и speed обновится после reset шины
 	#if WITHUSBDEV_HSDESC
@@ -976,42 +1058,42 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	hpcd->Init.dev_endpoints = 15;
 
 #else
-  hpcd_USB_OTG_HS.Instance = WITHUSBHW_DEVICE;
-  hpcd_USB_OTG_HS.Init.dev_endpoints = 8;
+  hpcd_USB_OTG.Instance = WITHUSBHW_DEVICE;
+  hpcd_USB_OTG.Init.dev_endpoints = 8;
   #if WITHUSBDEV_HSDESC
-	hpcd_USB_OTG_HS.Init.speed = PCD_SPEED_HIGH;
+	hpcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
   #else /* WITHUSBDEV_HSDESC */
-	hpcd_USB_OTG_HS.Init.speed = PCD_SPEED_FULL;
+	hpcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
   #endif /* WITHUSBDEV_HSDESC */
-  hpcd_USB_OTG_HS.Init.dma_enable = DISABLE;
-  hpcd_USB_OTG_HS.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-  hpcd_USB_OTG_HS.Init.Sof_enable = DISABLE;
-  hpcd_USB_OTG_HS.Init.low_power_enable = DISABLE;
-  hpcd_USB_OTG_HS.Init.lpm_enable = DISABLE;
-  hpcd_USB_OTG_HS.Init.vbus_sensing_enable = ENABLE;
-  hpcd_USB_OTG_HS.Init.use_dedicated_ep1 = DISABLE;
-  hpcd_USB_OTG_HS.Init.use_external_vbus = DISABLE;
+  hpcd_USB_OTG.Init.dma_enable = DISABLE;
+  hpcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+  hpcd_USB_OTG.Init.Sof_enable = DISABLE;
+  hpcd_USB_OTG.Init.low_power_enable = DISABLE;
+  hpcd_USB_OTG.Init.lpm_enable = DISABLE;
+  hpcd_USB_OTG.Init.vbus_sensing_enable = ENABLE;
+  hpcd_USB_OTG.Init.use_dedicated_ep1 = DISABLE;
+  hpcd_USB_OTG.Init.use_external_vbus = DISABLE;
 
 #endif
-  if (HAL_PCD_Init(&hpcd_USB_OTG_HS) != HAL_OK)
+  if (HAL_PCD_Init(&hpcd_USB_OTG) != HAL_OK)
   {
     Error_Handler( );
   }
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
   /* Register USB PCD CallBacks */
-  HAL_PCD_RegisterCallback(&hpcd_USB_OTG_HS, HAL_PCD_SOF_CB_ID, PCD_SOFCallback);
-  HAL_PCD_RegisterCallback(&hpcd_USB_OTG_HS, HAL_PCD_SETUPSTAGE_CB_ID, PCD_SetupStageCallback);
-  HAL_PCD_RegisterCallback(&hpcd_USB_OTG_HS, HAL_PCD_RESET_CB_ID, PCD_ResetCallback);
-  HAL_PCD_RegisterCallback(&hpcd_USB_OTG_HS, HAL_PCD_SUSPEND_CB_ID, PCD_SuspendCallback);
-  HAL_PCD_RegisterCallback(&hpcd_USB_OTG_HS, HAL_PCD_RESUME_CB_ID, PCD_ResumeCallback);
-  HAL_PCD_RegisterCallback(&hpcd_USB_OTG_HS, HAL_PCD_CONNECT_CB_ID, PCD_ConnectCallback);
-  HAL_PCD_RegisterCallback(&hpcd_USB_OTG_HS, HAL_PCD_DISCONNECT_CB_ID, PCD_DisconnectCallback);
+  HAL_PCD_RegisterCallback(&hpcd_USB_OTG, HAL_PCD_SOF_CB_ID, PCD_SOFCallback);
+  HAL_PCD_RegisterCallback(&hpcd_USB_OTG, HAL_PCD_SETUPSTAGE_CB_ID, PCD_SetupStageCallback);
+  HAL_PCD_RegisterCallback(&hpcd_USB_OTG, HAL_PCD_RESET_CB_ID, PCD_ResetCallback);
+  HAL_PCD_RegisterCallback(&hpcd_USB_OTG, HAL_PCD_SUSPEND_CB_ID, PCD_SuspendCallback);
+  HAL_PCD_RegisterCallback(&hpcd_USB_OTG, HAL_PCD_RESUME_CB_ID, PCD_ResumeCallback);
+  HAL_PCD_RegisterCallback(&hpcd_USB_OTG, HAL_PCD_CONNECT_CB_ID, PCD_ConnectCallback);
+  HAL_PCD_RegisterCallback(&hpcd_USB_OTG, HAL_PCD_DISCONNECT_CB_ID, PCD_DisconnectCallback);
 
-  HAL_PCD_RegisterDataOutStageCallback(&hpcd_USB_OTG_HS, PCD_DataOutStageCallback);
-  HAL_PCD_RegisterDataInStageCallback(&hpcd_USB_OTG_HS, PCD_DataInStageCallback);
-  HAL_PCD_RegisterIsoOutIncpltCallback(&hpcd_USB_OTG_HS, PCD_ISOOUTIncompleteCallback);
-  HAL_PCD_RegisterIsoInIncpltCallback(&hpcd_USB_OTG_HS, PCD_ISOINIncompleteCallback);
+  HAL_PCD_RegisterDataOutStageCallback(&hpcd_USB_OTG, PCD_DataOutStageCallback);
+  HAL_PCD_RegisterDataInStageCallback(&hpcd_USB_OTG, PCD_DataInStageCallback);
+  HAL_PCD_RegisterIsoOutIncpltCallback(&hpcd_USB_OTG, PCD_ISOOUTIncompleteCallback);
+  HAL_PCD_RegisterIsoInIncpltCallback(&hpcd_USB_OTG, PCD_ISOINIncompleteCallback);
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 
 #if 1
@@ -1019,21 +1101,21 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 #if CPUSTYLE_R7S721
 	usbd_pipes_initialize(hpcd);
 #else /* CPUSTYLE_R7S721 */
-	if (USB_Is_OTG_HS(hpcd_USB_OTG_HS.Instance))
+	if (USB_Is_OTG_HS(hpcd_USB_OTG.Instance))
 	{
 		// У OTH_HS размер FIFO 4096 байт
-		usbd_fifo_initialize(&hpcd_USB_OTG_HS, 4096, 1, hpcd_USB_OTG_HS.Init.dma_enable);
+		usbd_fifo_initialize(&hpcd_USB_OTG, 4096, 1, hpcd_USB_OTG.Init.dma_enable);
 	}
 	else
 	{
 		// У OTH_FS размер FIFO 1280 байт
-		usbd_fifo_initialize(&hpcd_USB_OTG_HS, 1280, 0, hpcd_USB_OTG_HS.Init.dma_enable);
+		usbd_fifo_initialize(&hpcd_USB_OTG, 1280, 0, hpcd_USB_OTG.Init.dma_enable);
 	}
 #endif /* CPUSTYLE_R7S721 */
 #else
-  HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_HS, 0x200);
-  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 0, 0x80);
-  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_HS, 1, 0x174);
+  HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG, 0x200);
+  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG, 0, 0x80);
+  HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG, 1, 0x174);
 #endif
   }
   return USBD_OK;
