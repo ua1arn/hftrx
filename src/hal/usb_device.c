@@ -60,6 +60,43 @@ USBD_HandleTypeDef hUsbDeviceHS;
  */
 /* USER CODE BEGIN 1 */
 
+
+// BOOTLOADER support
+static uint_fast8_t device_vbusbefore;
+
+uint_fast8_t hardware_usbd_get_vbusbefore(void)
+{
+	return device_vbusbefore;
+}
+
+static uint_fast8_t hardware_usbd_get_vbusnow0(void)
+{
+#if CPUSTYLE_R7S721
+	return (WITHUSBHW_DEVICE->INTSTS0 & USB_INTSTS0_VBSTS) != 0;
+
+#elif (CPUSTYLE_STM32F || CPUSTYLE_STM32MP1) && defined (USB_OTG_GOTGCTL_BSESVLD_Msk) && WITHUSBDEV_VBUSSENSE
+	return (WITHUSBHW_DEVICE->GOTGCTL & USB_OTG_GOTGCTL_BSESVLD_Msk) != 0;
+
+#else /* CPUSTYLE_R7S721 */
+	return 0;
+
+#endif /* CPUSTYLE_R7S721 */
+}
+
+
+uint_fast8_t hardware_usbd_get_vbusnow(void)
+{
+	uint_fast8_t st0;
+	uint_fast8_t st = hardware_usbd_get_vbusnow0();
+
+	do
+	{
+		st0 = st;
+		st = hardware_usbd_get_vbusnow0();
+	} while (st0 != st);
+	return st;
+}
+
 /* USER CODE END 1 */
 
 /**
@@ -92,7 +129,7 @@ void MX_USB_DEVICE_Init(void)
 	USBD_Init2(& hUsbDeviceHS);
 
 	// поддержка работы бутлоадера на платах, где есть подпитка VBUS от DP через защитные диоды
-	//device_vbusbefore = hardware_usbd_get_vbusnow();
+	device_vbusbefore = hardware_usbd_get_vbusnow();
 	//PRINTF(PSTR("hardware_usbd_initialize: device_vbusbefore=%d\n"), (int) device_vbusbefore);
 
 #if WITHUSBUAC
