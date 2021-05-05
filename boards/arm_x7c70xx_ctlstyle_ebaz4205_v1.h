@@ -87,7 +87,8 @@
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+		//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+		#define DIRECT_49M152_X1	1
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
@@ -199,6 +200,9 @@
 	//#define LCDMODE_ILI9341_TOPDOWN	1	/* LCDMODE_ILI9341 - перевернуть изображение (для выводов справа) */
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif /* WITHISBOOTLOADER */
+
+	typedef int16_t IFADCvalue_t;
+	typedef int16_t IFDACvalue_t;
 
 #if WITHISBOOTLOADER
 
