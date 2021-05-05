@@ -86,11 +86,12 @@ void device_OTG_HS_EP1_IN_IRQHandler(void);
 void device_OTG_HS_IRQHandler(void);
 void device_OTG_FS_IRQHandler(void);
 
+
 void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 {
 #if CPUSTYLE_R7S721
 
-	if (hpcd->Instance == & USB200)
+	if (pcdHandle->Instance == & USB200)
 	{
 		arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
 
@@ -101,7 +102,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		HARDWARE_USB0_INITIALIZE();
 
 	}
-	else if (hpcd->Instance == & USB201)
+	else if (pcdHandle->Instance == & USB201)
 	{
 		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
 

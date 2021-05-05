@@ -368,6 +368,7 @@ extern "C" {
 	#include "armcpu/rza_io_regrw.h"	// iobitmasks
 
 	#include "irq_ctrl.h"
+	#include "rza1xx_hal.h"
 
 
 	#define DCACHEROWSIZE 32

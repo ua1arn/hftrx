@@ -109,5 +109,27 @@ void device_OTG_HS_EP1_IN_IRQHandler(void)
 {
 	  HAL_PCD_IRQHandler(&hpcd_USB_OTG_HS);
 }
+
+
+void RAMFUNC_NONILINE device_USBI0_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG_HS);
+}
+
+void RAMFUNC_NONILINE device_USBI1_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG_HS);
+}
+
+void RAMFUNC_NONILINE host_USBI0_IRQHandler(void)
+{
+	HAL_HCD_IRQHandler(& hpcd_USB_OTG_HS);
+}
+
+void RAMFUNC_NONILINE host_USBI1_IRQHandler(void)
+{
+	HAL_HCD_IRQHandler(& hpcd_USB_OTG_HS);
+}
+
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -23,6 +23,8 @@
 #ifndef __USB_DEVICE__H__
 #define __USB_DEVICE__H__
 
+#include "hardware.h"
+
 #ifdef __cplusplus
  extern "C" {
 #endif
