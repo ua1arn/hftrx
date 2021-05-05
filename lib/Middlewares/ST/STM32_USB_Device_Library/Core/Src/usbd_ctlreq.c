@@ -16,7 +16,8 @@
   *
   ******************************************************************************
   */
-
+#include "hardware.h"
+#include "formats.h"
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
@@ -415,7 +416,6 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 		}
 		else
 		{
-			//TP();
 			USBD_CtlError(pdev, req);
 			return;
 		}
@@ -432,7 +432,6 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 				//len = StringDescrTbl [STRING_ID_7].size;
 				//pbuf = StringDescrTbl [STRING_ID_7].data;
 				//break;
-				//TP();
 				USBD_CtlError(pdev, req);
 				return;
 
@@ -460,7 +459,6 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 				}
 				else
 				{
-					//TP();
 					//PRINTF(PSTR("USBD_GetDescriptor: %02X\n"), HI_BYTE(req->wValue));
 					USBD_CtlError(pdev, req);
 					return;
@@ -478,7 +476,6 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 		}
 		else
 		{
-			////TP();
 			USBD_CtlError(pdev, req);
 			return;
 		}
@@ -492,7 +489,6 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 		}
 		else
 		{
-			//TP();
 			USBD_CtlError(pdev, req);
 			return;
 		}
@@ -506,14 +502,12 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 		}
 		else
 		{
-			//TP();
 			USBD_CtlError(pdev, req);
 			return;
 		}
 		break;
 
 	default:
-		//TP();
 		USBD_CtlError(pdev, req);
 		return;
 	}
@@ -577,7 +571,7 @@ static void USBD_SetAddress(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef
   */
 static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-  USBD_StatusTypeDef ret = USBD_OK;
+	USBD_StatusTypeDef ret = USBD_OK;
   const uint_fast8_t cfgidx = LO_BYTE(req->wValue);
 
   if (cfgidx > USBD_MAX_NUM_CONFIGURATION)
@@ -812,8 +806,10 @@ void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, uint8_t *pdata)
   * @param  req: usb request
   * @retval None
   */
-void USBD_CtlError(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
+void (USBD_CtlError)(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req, const char * file, int line)
 {
+	PRINTF("USBD_CtlError: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+	PRINTF("USBD_CtlError: %s(%d)\n", file, line);
   UNUSED(req);
 
   (void)USBD_LL_StallEP(pdev, 0x80U);

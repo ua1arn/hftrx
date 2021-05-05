@@ -44,7 +44,7 @@ extern "C" {
   * @{
   */
 
-#define USBD_MAX_NUM_INTERFACES                     1U
+#define USBD_MAX_NUM_INTERFACES                     32U
 #define USBD_MAX_NUM_CONFIGURATION                  1U
 #define USBD_MAX_STR_DESC_SIZ                       0x100U
 #define USBD_SELF_POWERED                           1U
