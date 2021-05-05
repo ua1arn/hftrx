@@ -32,7 +32,6 @@
 //#include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN Includes */
-
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN PV */
@@ -42,6 +41,7 @@
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
+void Error_Handler(void);
 
 /* USER CODE END PFP */
 

@@ -28,10 +28,11 @@
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "hardware.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "main.h"
 
 #if CPUSTYLE_R7S721
 	#include "rza1xx_hal.h"
