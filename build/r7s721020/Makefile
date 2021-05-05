@@ -76,7 +76,6 @@ DADEFS = -D__ASSEMBLY__=1
 DINCDIR = \
 	$(PRJROOT)/armcpu \
 	$(MDLWUSBDIR)/Core/Inc \
-	$(MDLWUSBDIR)/Class/CDC/Inc \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \

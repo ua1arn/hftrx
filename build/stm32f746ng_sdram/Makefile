@@ -75,7 +75,6 @@ DINCDIR = \
 	$(PRJROOT)/armcpu \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
-	$(MDLWUSBDIR)/Class/CDC/Inc \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core/Include \
