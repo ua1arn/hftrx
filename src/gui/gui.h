@@ -55,6 +55,7 @@ struct gui_nvram_t {
 	uint8_t micprofile;
 	uint8_t tune_powerdown_enable;
 	uint8_t tune_powerdown_value;
+	uint8_t freq_swipe_enable;
 } ATTRPACKED;
 
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
