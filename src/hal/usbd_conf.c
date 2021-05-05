@@ -924,6 +924,19 @@ USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 #endif
 }
 
+static uint_fast8_t hardware_usbd_get_vbusnow0(void)
+{
+#if CPUSTYLE_R7S721
+	return (WITHUSBHW_DEVICE->INTSTS0 & USB_INTSTS0_VBSTS) != 0;
+
+#elif (CPUSTYLE_STM32F || CPUSTYLE_STM32MP1) && defined (USB_OTG_GOTGCTL_BSESVLD_Msk) && WITHUSBDEV_VBUSSENSE
+	return (WITHUSBHW_DEVICE->GOTGCTL & USB_OTG_GOTGCTL_BSESVLD_Msk) != 0;
+
+#else /* CPUSTYLE_R7S721 */
+	return 0;
+
+#endif /* CPUSTYLE_R7S721 */
+}
 
 /*******************************************************************************
                        LL Driver Interface (USB Device Library --> PCD)
@@ -945,7 +958,20 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   /* Link the driver to the stack. */
   hpcd_USB_OTG_HS.pData = pdev;
   pdev->pData = &hpcd_USB_OTG_HS;
+#if CPUSTYLE_R7S721
+	// Значение ep0_mps и speed обновится после reset шины
+	#if WITHUSBDEV_HSDESC
+		hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
+		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
+	#else /* WITHUSBDEV_HSDESC */
+		hpcd->Init.pcd_speed = PCD_SPEED_FULL;
+		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE;
+	#endif /* WITHUSBDEV_HSDESC */
+	hpcd->Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
+	hpcd->Init.dev_endpoints = 15;
+
+#else
   hpcd_USB_OTG_HS.Instance = WITHUSBHW_DEVICE;
   hpcd_USB_OTG_HS.Init.dev_endpoints = 8;
   #if WITHUSBDEV_HSDESC
@@ -961,6 +987,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   hpcd_USB_OTG_HS.Init.vbus_sensing_enable = ENABLE;
   hpcd_USB_OTG_HS.Init.use_dedicated_ep1 = DISABLE;
   hpcd_USB_OTG_HS.Init.use_external_vbus = DISABLE;
+
+#endif
   if (HAL_PCD_Init(&hpcd_USB_OTG_HS) != HAL_OK)
   {
     Error_Handler( );

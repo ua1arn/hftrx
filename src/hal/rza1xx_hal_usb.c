@@ -33,6 +33,7 @@
 #include "usb_device.h"
 #include "usbd_core.h"
 
+#include "rza1xx_hal.h"
 
 static uint_fast8_t
 usbd_epaddr2pipe(uint_fast8_t ep_addr)
@@ -2997,6 +2998,186 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
 {
 	return HAL_OK;
 }
+// Place for USB_xxx functions
+/**
+  * @brief  USB_SetDevAddress : Stop the usb device mode
+  * @param  USBx : Selected device
+  * @param  address : new device address to be assigned
+  *          This parameter can be a value from 0 to 255
+  * @retval HAL status
+  */
+HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint_fast8_t address)
+{
+	return HAL_OK;
+}
+
+/**
+  * @brief  Initializes the USB Core
+  * @param  USBx: USB Instance
+  * @param  cfg : pointer to a USB_OTG_CfgTypeDef structure that contains
+  *         the configuration information for the specified USBx peripheral.
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, const USB_OTG_CfgTypeDef *cfg)
+{
+	// P1 clock (66.7 MHz max) period = 15 ns
+	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
+	// TODO: compute BWAIT value on-the-fly
+	// Use P1CLOCK_FREQ
+	const uint_fast32_t bwait = ulmin32(ulmax32(calcdivround2(P1CLOCK_FREQ, 15000000uL), 2) - 2, 63);
+	USBx->BUSWAIT = (bwait << USB_BUSWAIT_BWAIT_SHIFT) & USB_BUSWAIT_BWAIT;	// 5 cycles = 75 nS minimum
+	(void) USBx->BUSWAIT;
+
+	USBx->SUSPMODE &= ~ USB_SUSPMODE_SUSPM;	// SUSPM 0: The clock supplied to this module is stopped.
+	(void) USBx->SUSPMODE;
+
+	// This setting shared for USB200 and USB201
+	SYSCFG0_0 = (SYSCFG0_0 & ~ (USB_SYSCFG_UPLLE | USB_SYSCFG_UCKSEL)) |
+		1 * USB_SYSCFG_UPLLE |	// UPLLE 1: Enables operation of the internal PLL.
+		1 * USB_SYSCFG_UCKSEL |	// UCKSEL 1: The 12-MHz EXTAL clock is selected.
+		0;
+	(void) SYSCFG0_0;
+	HARDWARE_DELAY_MS(2);	// required 1 ms delay - see R01UH0437EJ0200 Rev.2.00 28.4.1 System Control and Oscillation Control
+
+	USBx->SUSPMODE |= USB_SUSPMODE_SUSPM;	// SUSPM 1: The clock supplied to this module is enabled.
+	(void) USBx->SUSPMODE;
+
+	return HAL_OK;
+}
+
+/**
+  * @brief  USB_DevInit : Initializes the USB_OTG controller registers
+  *         for device mode
+  * @param  USBx : Selected device
+  * @param  cfg  : pointer to a USB_OTG_CfgTypeDef structure that contains
+  *         the configuration information for the specified USBx peripheral.
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, const USB_OTG_CfgTypeDef * cfg)
+{
+	unsigned i;
+
+	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
+	(void) USBx->SYSCFG0;
+
+	USBx->SOFCFG =
+		//USB_SOFCFG_BRDYM |	// BRDYM
+		0;
+	(void) USBx->SOFCFG;
+
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
+			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
+			0 * USB_SYSCFG_DRPD |	// DRPD 0: Pulling down the lines is disabled.
+			0;
+	(void) USBx->SYSCFG0;
+
+	USBx->SYSCFG0 |= USB_SYSCFG_USBE;	// USBE 1: USB module operation is enabled.
+	(void) USBx->SYSCFG0;
+
+	//PRINTF("USB_DevInit: cfg->speed=%d\n", (int) cfg->speed);
+	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
+			(cfg->pcd_speed == PCD_SPEED_HIGH) * USB_SYSCFG_HSE |	// HSE
+			0;
+	(void) USBx->SYSCFG0;
+
+	USBx->INTSTS0 = 0;
+	USBx->INTSTS1 = 0;
+
+	USBx->INTENB0 =
+		(cfg->Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		1 * USB_INTENB0_DVSE |	// DVSE
+		//1 * USB_INTENB0_VBSE |	// VBSE
+		1 * USB_INTENB0_CTRE |	// CTRE
+		1 * USB_INTENB0_BEMPE |	// BEMPE
+		1 * USB_INTENB0_NRDYE |	// NRDYE
+		1 * USB_INTENB0_BRDYE |	// BRDYE
+		1 * USB_INTENB0_RSME |	// RSME
+		0;
+	USBx->INTENB1 = 0;
+
+	// When the function controller mode is selected, set all the bits in this register to 0.
+	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i)
+	{
+		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
+
+		// Reserved bits: The write value should always be 0.
+		* DEVADDn = 0;
+		(void) * DEVADDn;
+	}
+
+	return HAL_OK;
+}
+
+
+/**
+  * @brief  USB_StopDevice : Stop the usb device mode
+  * @param  USBx : Selected device
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_StopDevice(USB_OTG_GlobalTypeDef *USBx)
+{
+	return HAL_OK;
+}
+
+
+// RENESAS specific function
+static uint_fast8_t USB_GetAdress(USB_OTG_GlobalTypeDef * USBx)
+{
+	return (USBx->USBADDR & USB_USBADDR_USBADDR) >> USB_USBADDR_USBADDR_SHIFT;
+}
+
+// RENESAS specific function
+void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd)
+{
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	//PRINTF(PSTR("HAL_PCD_AdressedCallback\n"));
+
+	if (pdev->dev_state == USBD_STATE_CONFIGURED)
+	{
+		TP();
+		USBD_CtlError(pdev, & pdev->request);
+	}
+	else
+	{
+		const uint_fast8_t dev_addr = USB_GetAdress(USBx);
+		pdev->dev_address = dev_addr;
+		//USBD_LL_SetUSBAddress(pdev, dev_addr);
+		//USBD_CtlSendStatus(pdev);
+
+		if (dev_addr != 0)
+		{
+			pdev->dev_state = USBD_STATE_ADDRESSED;
+		}
+		else
+		{
+			pdev->dev_state = USBD_STATE_DEFAULT;
+		}
+	}
+
+}
+
+/**
+  * @brief  USB_OTG_FlushTxFifo : Flush a Tx FIFO
+  * @param  USBx : Selected device
+  * @param  num : FIFO number
+  *         This parameter can be a value from 1 to 15
+            16 means Flush all Tx FIFOs
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_FlushTxFifoEx(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
+{
+	return HAL_OK;
+}
+
+
+static uint_fast8_t
+USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
+{
+	return 1;
+}
+
+
 
 
 #endif /* CPUSTYLE_R7S721 */

@@ -187,10 +187,33 @@ USBD_StatusTypeDef USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
   				pdev->pClasses [di]->Setup(pdev, req);
   			}
 
-            if ((req->wLength == 0U) && (ret == USBD_OK))
-            {
-              (void)USBD_CtlSendStatus(pdev);
-            }
+//            if ((req->wLength == 0U) && (ret == USBD_OK))
+//            {
+//              (void)USBD_CtlSendStatus(pdev);
+			// Уже какой-то ответ в обработчике сформирован.
+			// Если нет - ошибка, там надо вызвать например USBD_CtlSendStatus
+			// Этот запрос был без данных
+			//USBD_CtlSendStatus(pdev); // по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
+//            }
+			if (req->wLength == 0)
+			{
+				//TP();
+				//PRINTF(PSTR("USBD_StdItfReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+				// Уже какой-то ответ в обработчике сформирован.
+				// Если нет - ошибка, там надо вызвать например USBD_CtlSendStatus
+				// Этот запрос был без данных
+				//USBD_CtlSendStatus(pdev); // по идее, в обработчике Setup должен быть вызван USBD_CtlSendStatus/USBD_CtlError
+			}
+			else
+			{
+#if CPUSTYLE_R7S721
+				// FIXME: Hack code!!!!
+				if ((req->bmRequest & USB_REQ_TYPE_DIR) == 0)
+				{
+					((PCD_HandleTypeDef *) pdev->pData)->run_later_ctrl_comp = 1;
+				}
+#endif /* CPUSTYLE_R7S721 */
+			}
           }
           else
           {
