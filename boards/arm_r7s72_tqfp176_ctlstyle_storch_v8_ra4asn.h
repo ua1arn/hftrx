@@ -19,13 +19,6 @@
 	#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 336		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 240		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
@@ -465,7 +458,7 @@
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	#define WITHPOWERTRIMATU	30	// Значение для работы автотюнера
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */

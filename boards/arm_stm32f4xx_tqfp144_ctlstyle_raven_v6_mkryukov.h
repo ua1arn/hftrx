@@ -78,17 +78,6 @@
 
 	#endif
 
-	#define FPGADECIMATION 2560
-	// +++
-	// todo: разобраться с использованием этих строк
-	#define FPGADIVIDERATIO 5
-	#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-	#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-	// ---
-
-	#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-	#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-
 	/* модели синтезаторов - схемы частотообразования */
 
 	/* Версии частотных схем - с преобразованием "наверх" */

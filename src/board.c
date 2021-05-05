@@ -9274,6 +9274,7 @@ mcp3208_read(
 }
 #endif /* WITHSPIHW || WITHSPISW */
 
+#if ! CPUSTYLE_ATMEGA
 
 #if defined(RTC1_TYPE)
 
@@ -9372,3 +9373,6 @@ int _gettimeofday(struct timeval *p, void *tz)
 }
 
 #endif
+#endif /* ! CPUSTYLE_ATMEGA */
+
+

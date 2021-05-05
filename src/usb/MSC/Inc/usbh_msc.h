@@ -27,7 +27,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 //#include "usbh_core.h"
-#include "src/usb/usb_core.h"
+#include "src/usb/usbx_core.h"
 #include "usbh_msc_bot.h"
 #include "usbh_msc_scsi.h"
 

@@ -15,17 +15,8 @@
 #if WITHUSBHW && WITHUSBCDCEEM
 
 #include "formats.h"
-#include "usb_core.h"
-
-#if WITHLWIP
-
-#include "lwip/opt.h"
-#include "lwip/init.h"
-#include "lwip/pbuf.h"
-#include "lwip/netif.h"
-#include "lwip/autoip.h"
-#include "netif/etharp.h"
-#include "lwip/ip.h"
+#include "usbx_core.h"
+#include "usbd_def.h"
 
 
 #define BPOOL_FLAG_BPOOL_FULL 0x00000001
@@ -116,7 +107,7 @@ typedef struct _USBD_CDC_EEM_Itf
   int8_t (* Control)       (uint8_t, uint8_t * , uint16_t);
   int8_t (* Receive)       (uint8_t *, uint32_t *);
 
-}USBD_CDC_EEM_ItfTypeDef;
+} USBD_CDC_EEM_ItfTypeDef;
 
 
 typedef struct
@@ -238,8 +229,8 @@ uint8_t  USBD_CDC_EEM_TransmitPacket     (USBD_HandleTypeDef *pdev,
 /* Create buffer for reception and transmission           */
 /* It's up to user to redefine and/or remove those define */
 /* Received Data over USB are stored in this buffer       */
-ALIGNX_BEGIN static uint8_t eem_rx_buffer_pool_fs[EEM_RX_DATA_SIZE * EEM_RX_BUF_CNT]; ALIGNX_END;
-ALIGNX_BEGIN static uint8_t eem_tx_buffer_pool_fs[EEM_TX_DATA_SIZE * EEM_TX_BUF_CNT]; ALIGNX_END;
+__ALIGN_BEGIN static uint8_t eem_rx_buffer_pool_fs[EEM_RX_DATA_SIZE * EEM_RX_BUF_CNT]; __ALIGN_END;
+__ALIGN_BEGIN static uint8_t eem_tx_buffer_pool_fs[EEM_TX_DATA_SIZE * EEM_TX_BUF_CNT]; __ALIGN_END;
 
 static uint8_t* get_bpool(t_eem_bpool_idx_enum bidx, uint32_t *bpool_size){
   if (bidx == EEM_RX_BUFFER){
@@ -365,260 +356,6 @@ static void cdceem_send(const uint8_t *data, int size)
 	eemtxready = 0;
 	system_enableIRQ();
 }
-
-typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
-
-static cdcdeem_rxproc_t cdceem_rxproc = NULL;
-
-//static struct netif test_netif1, test_netif2;
-
-/**
- * This function should do the actual transmission of the packet. The packet is
- * contained in the pbuf that is passed to the function. This pbuf
- * might be chained.
- *
- * @param netif the lwip network interface structure for this ethernetif
- * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
- * @return ERR_OK if the packet could be sent
- *         an err_t value if the packet couldn't be sent
- *
- * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
- *       strange results. You might consider waiting for space in the DMA queue
- *       to become availale since the stack doesn't retry to send a packet
- *       dropped because of memory failure (except for the TCP timers).
- */
-
-// Transceiving Ethernet packets
-static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
-{
-	//PRINTF("cdceem_linkoutput_fn\n");
-    int i;
-    struct pbuf *q;
-    static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
-    int size = 0;
-
-    for (i = 0; i < 200; i++)
-    {
-        if (cdceem_can_send()) break;
-        local_delay_ms(1);
-    }
-
-    if (! cdceem_can_send())
-    {
-		return ERR_MEM;
-    }
-
-	pbuf_header(p, - ETH_PAD_SIZE);
-    size = pbuf_copy_partial(p, data, sizeof data, 0);
-    cdceem_send(data, size);
-
-    return ERR_OK;
-}
-
-
-static struct netif cdceem_netif_data;
-
-
-
-struct netif  * getNetifData(void)
-{
-	return & cdceem_netif_data;
-}
-
-
-static err_t cdceem_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
-{
-	err_t e = etharp_output(netif, p, ipaddr);
-	if (e == ERR_OK)
-	{
-		// добавляем свои заголовки требуеющиеся для физического уповня
-
-	}
-	return e;
-}
-
-static err_t netif_init_cb(struct netif *netif)
-{
-	//PRINTF("cdc eem netif_init_cb\n");
-	LWIP_ASSERT("netif != NULL", (netif != NULL));
-#if LWIP_NETIF_HOSTNAME
-	/* Initialize interface hostname */
-	netif->hostname = "storch";
-#endif /* LWIP_NETIF_HOSTNAME */
-	netif->mtu = CDCEEM_MTU;
-	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
-	netif->state = NULL;
-	netif->name[0] = 'E';
-	netif->name[1] = 'X';
-	netif->output = etharp_output; //cdceem_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
-												// и слкдующий callback linkoutput не требовался бы вообще
-	netif->linkoutput = cdceem_linkoutput_fn;	// используется внутри etharp_output
-	return ERR_OK;
-}
-
-
-typedef struct cdceembuf_tag
-{
-	LIST_ENTRY item;
-	struct pbuf *frame;
-} cdceembuf_t;
-
-
-static LIST_ENTRY cdceem_free;
-static LIST_ENTRY cdceem_ready;
-
-static void cdceem_buffers_initialize(void)
-{
-	static RAMFRAMEBUFF cdceembuf_t sliparray [64];
-	unsigned i;
-
-	InitializeListHead(& cdceem_free);	// Незаполненные
-	InitializeListHead(& cdceem_ready);	// Для обработки
-
-	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
-	{
-		cdceembuf_t * const p = & sliparray [i];
-		InsertHeadList(& cdceem_free, & p->item);
-	}
-}
-
-static int cdceem_buffers_alloc(cdceembuf_t * * tp)
-{
-	if (! IsListEmpty(& cdceem_free))
-	{
-		const PLIST_ENTRY t = RemoveTailList(& cdceem_free);
-		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
-		* tp = p;
-		return 1;
-	}
-	if (! IsListEmpty(& cdceem_ready))
-	{
-		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
-		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
-		* tp = p;
-		return 1;
-	}
-	return 0;
-}
-
-static int cdceem_buffers_ready_user(cdceembuf_t * * tp)
-{
-	system_disableIRQ();
-	if (! IsListEmpty(& cdceem_ready))
-	{
-		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
-		system_enableIRQ();
-		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
-		* tp = p;
-		return 1;
-	}
-	system_enableIRQ();
-	return 0;
-}
-
-
-static void cdceem_buffers_release(cdceembuf_t * p)
-{
-	InsertHeadList(& cdceem_free, & p->item);
-}
-
-static void cdceem_buffers_release_user(cdceembuf_t * p)
-{
-	system_disableIRQ();
-	cdceem_buffers_release(p);
-	system_enableIRQ();
-}
-
-// сохранить принятый
-static void cdceem_buffers_rx(cdceembuf_t * p)
-{
-	InsertHeadList(& cdceem_ready, & p->item);
-}
-
-static void on_packet(const uint8_t *data, int size)
-{
-	cdceembuf_t * p;
-	if (cdceem_buffers_alloc(& p) != 0)
-	{
-		struct pbuf *frame;
-		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
-		if (frame == NULL)
-		{
-			TP();
-			cdceem_buffers_release(p);
-			return;
-		}
-		pbuf_header(frame, - ETH_PAD_SIZE);
-		err_t e = pbuf_take(frame, data, size);
-		pbuf_header(frame, + ETH_PAD_SIZE);
-		if (e == ERR_OK)
-		{
-			p->frame = frame;
-			cdceem_buffers_rx(p);
-		}
-		else
-		{
-			pbuf_free(frame);
-			cdceem_buffers_release(p);
-		}
-	}
-}
-
-
-
-// Receiving Ethernet packets
-// user-mode function
-void usb_polling(void)
-{
-	cdceembuf_t * p;
-	if (cdceem_buffers_ready_user(& p) != 0)
-	{
-		struct pbuf * const frame = p->frame;
-		cdceem_buffers_release_user(p);
-
-		err_t e = ethernet_input(p->frame, & cdceem_netif_data);
-		if (e != ERR_OK)
-		{
-			  /* This means the pbuf is freed or consumed,
-			     so the caller doesn't have to free it again */
-		}
-
-	}
-}
-
-
-void init_netif(void)
-{
-	cdceem_buffers_initialize();
-	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
-
-	static const  uint8_t hwaddrv [6]  = { HWADDR };
-
-	static ip_addr_t netmask;// [4] = NETMASK;
-	static ip_addr_t gateway;// [4] = GATEWAY;
-
-	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
-	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
-
-	static ip_addr_t vaddr;// [4]  = IPADDR;
-	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
-
-	struct netif  *netif = & cdceem_netif_data;
-	netif->hwaddr_len = 6;
-	memcpy(netif->hwaddr, hwaddrv, 6);
-
-	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
-#if LWIP_AUTOIP
-	  autoip_start(netif);
-#endif /* LWIP_AUTOIP */
-	netif_set_default(netif);
-
-	while (!netif_is_up(netif))
-		;
-
-}
-
-#endif /* WITHLWIP */
 
 // CDC class-specific request codes
 // (usbcdc11.pdf, 6.2, Table 46)
@@ -1855,6 +1592,272 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
+
+
+
+#if WITHLWIP
+
+#include "lwip/opt.h"
+#include "lwip/init.h"
+#include "lwip/pbuf.h"
+#include "lwip/netif.h"
+#include "lwip/autoip.h"
+#include "netif/etharp.h"
+#include "lwip/ip.h"
+
+typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
+
+static cdcdeem_rxproc_t cdceem_rxproc = NULL;
+
+//static struct netif test_netif1, test_netif2;
+
+/**
+ * This function should do the actual transmission of the packet. The packet is
+ * contained in the pbuf that is passed to the function. This pbuf
+ * might be chained.
+ *
+ * @param netif the lwip network interface structure for this ethernetif
+ * @param p the MAC packet to send (e.g. IP packet including MAC addresses and type)
+ * @return ERR_OK if the packet could be sent
+ *         an err_t value if the packet couldn't be sent
+ *
+ * @note Returning ERR_MEM here if a DMA queue of your MAC is full can lead to
+ *       strange results. You might consider waiting for space in the DMA queue
+ *       to become availale since the stack doesn't retry to send a packet
+ *       dropped because of memory failure (except for the TCP timers).
+ */
+
+// Transceiving Ethernet packets
+static err_t cdceem_linkoutput_fn(struct netif *netif, struct pbuf *p)
+{
+	//PRINTF("cdceem_linkoutput_fn\n");
+    int i;
+    struct pbuf *q;
+    static uint8_t data [ETH_PAD_SIZE + CDCEEM_MTU + 14 + 4];
+    int size = 0;
+
+    for (i = 0; i < 200; i++)
+    {
+        if (cdceem_can_send()) break;
+        local_delay_ms(1);
+    }
+
+    if (! cdceem_can_send())
+    {
+		return ERR_MEM;
+    }
+
+	pbuf_header(p, - ETH_PAD_SIZE);
+    size = pbuf_copy_partial(p, data, sizeof data, 0);
+    cdceem_send(data, size);
+
+    return ERR_OK;
+}
+
+
+static struct netif cdceem_netif_data;
+
+
+
+struct netif  * getNetifData(void)
+{
+	return & cdceem_netif_data;
+}
+
+
+static err_t cdceem_output_fn(struct netif *netif, struct pbuf *p, const ip4_addr_t *ipaddr)
+{
+	err_t e = etharp_output(netif, p, ipaddr);
+	if (e == ERR_OK)
+	{
+		// добавляем свои заголовки требуеющиеся для физического уповня
+
+	}
+	return e;
+}
+
+static err_t netif_init_cb(struct netif *netif)
+{
+	//PRINTF("cdc eem netif_init_cb\n");
+	LWIP_ASSERT("netif != NULL", (netif != NULL));
+#if LWIP_NETIF_HOSTNAME
+	/* Initialize interface hostname */
+	netif->hostname = "storch";
+#endif /* LWIP_NETIF_HOSTNAME */
+	netif->mtu = CDCEEM_MTU;
+	netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_UP;
+	netif->state = NULL;
+	netif->name[0] = 'E';
+	netif->name[1] = 'X';
+	netif->output = etharp_output; //cdceem_output_fn;	// если бы не требовалось добавлять ethernet заголовки, передачва делалась бы тут.
+												// и слкдующий callback linkoutput не требовался бы вообще
+	netif->linkoutput = cdceem_linkoutput_fn;	// используется внутри etharp_output
+	return ERR_OK;
+}
+
+
+typedef struct cdceembuf_tag
+{
+	LIST_ENTRY item;
+	struct pbuf *frame;
+} cdceembuf_t;
+
+
+static LIST_ENTRY cdceem_free;
+static LIST_ENTRY cdceem_ready;
+
+static void cdceem_buffers_initialize(void)
+{
+	static RAMFRAMEBUFF cdceembuf_t sliparray [64];
+	unsigned i;
+
+	InitializeListHead(& cdceem_free);	// Незаполненные
+	InitializeListHead(& cdceem_ready);	// Для обработки
+
+	for (i = 0; i < (sizeof sliparray / sizeof sliparray [0]); ++ i)
+	{
+		cdceembuf_t * const p = & sliparray [i];
+		InsertHeadList(& cdceem_free, & p->item);
+	}
+}
+
+static int cdceem_buffers_alloc(cdceembuf_t * * tp)
+{
+	if (! IsListEmpty(& cdceem_free))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& cdceem_free);
+		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	if (! IsListEmpty(& cdceem_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
+		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	return 0;
+}
+
+static int cdceem_buffers_ready_user(cdceembuf_t * * tp)
+{
+	system_disableIRQ();
+	if (! IsListEmpty(& cdceem_ready))
+	{
+		const PLIST_ENTRY t = RemoveTailList(& cdceem_ready);
+		system_enableIRQ();
+		cdceembuf_t * const p = CONTAINING_RECORD(t, cdceembuf_t, item);
+		* tp = p;
+		return 1;
+	}
+	system_enableIRQ();
+	return 0;
+}
+
+
+static void cdceem_buffers_release(cdceembuf_t * p)
+{
+	InsertHeadList(& cdceem_free, & p->item);
+}
+
+static void cdceem_buffers_release_user(cdceembuf_t * p)
+{
+	system_disableIRQ();
+	cdceem_buffers_release(p);
+	system_enableIRQ();
+}
+
+// сохранить принятый
+static void cdceem_buffers_rx(cdceembuf_t * p)
+{
+	InsertHeadList(& cdceem_ready, & p->item);
+}
+
+static void on_packet(const uint8_t *data, int size)
+{
+	cdceembuf_t * p;
+	if (cdceem_buffers_alloc(& p) != 0)
+	{
+		struct pbuf *frame;
+		frame = pbuf_alloc(PBUF_RAW, size + ETH_PAD_SIZE, PBUF_POOL);
+		if (frame == NULL)
+		{
+			TP();
+			cdceem_buffers_release(p);
+			return;
+		}
+		pbuf_header(frame, - ETH_PAD_SIZE);
+		err_t e = pbuf_take(frame, data, size);
+		pbuf_header(frame, + ETH_PAD_SIZE);
+		if (e == ERR_OK)
+		{
+			p->frame = frame;
+			cdceem_buffers_rx(p);
+		}
+		else
+		{
+			pbuf_free(frame);
+			cdceem_buffers_release(p);
+		}
+	}
+}
+
+
+
+// Receiving Ethernet packets
+// user-mode function
+void usb_polling(void)
+{
+	cdceembuf_t * p;
+	if (cdceem_buffers_ready_user(& p) != 0)
+	{
+		struct pbuf * const frame = p->frame;
+		cdceem_buffers_release_user(p);
+
+		err_t e = ethernet_input(p->frame, & cdceem_netif_data);
+		if (e != ERR_OK)
+		{
+			  /* This means the pbuf is freed or consumed,
+			     so the caller doesn't have to free it again */
+		}
+
+	}
+}
+
+
+void init_netif(void)
+{
+	cdceem_buffers_initialize();
+	cdceem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
+
+	static const  uint8_t hwaddrv [6]  = { HWADDR };
+
+	static ip_addr_t netmask;// [4] = NETMASK;
+	static ip_addr_t gateway;// [4] = GATEWAY;
+
+	IP4_ADDR(& netmask, myNETMASK [0], myNETMASK [1], myNETMASK [2], myNETMASK [3]);
+	IP4_ADDR(& gateway, myGATEWAY [0], myGATEWAY [1], myGATEWAY [2], myGATEWAY [3]);
+
+	static ip_addr_t vaddr;// [4]  = IPADDR;
+	IP4_ADDR(& vaddr, myIP [0], myIP [1], myIP [2], myIP [3]);
+
+	struct netif  *netif = & cdceem_netif_data;
+	netif->hwaddr_len = 6;
+	memcpy(netif->hwaddr, hwaddrv, 6);
+
+	netif = netif_add(netif, & vaddr, & netmask, & gateway, NULL, netif_init_cb, ip_input);
+#if LWIP_AUTOIP
+	  autoip_start(netif);
+#endif /* LWIP_AUTOIP */
+	netif_set_default(netif);
+
+	while (!netif_is_up(netif))
+		;
+
+}
+
+#endif /* WITHLWIP */
 
 #endif /* WITHUSBHW && WITHUSBCDCEEM */
 

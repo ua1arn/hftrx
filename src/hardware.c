@@ -131,6 +131,9 @@ uint32_t sys_now(void)
 RAMFUNC void spool_systimerbundle1(void)
 {
 	//beacon_255();
+#ifdef USE_HAL_DRIVER
+	HAL_IncTick();
+#endif /* USE_HAL_DRIVER */
 
 #if WITHLWIP
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
@@ -2808,17 +2811,17 @@ sysintt_sdram_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_debug_initialize(void)
 {
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
-	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
+	#if WITHDEBUG && __CORTEX_M == 7U
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
 		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 		DWT->LAR = 0x00000000;	// Key value for lock
-	#endif /* WITHDEBUG && WITHINTEGRATEDDSP */
+	#endif /* WITHDEBUG && __CORTEX_M == 7U */
 
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
 
 #if (__CORTEX_A != 0)
 
@@ -3220,6 +3223,7 @@ void Reset_CPUn_Handler(void)
 
 void cpump_initialize(void)
 {
+	SystemCoreClock = CPU_FREQ;
 
 #if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM

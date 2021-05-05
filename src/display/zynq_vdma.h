@@ -9,6 +9,7 @@
 #include <xvtc.h>
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 
+#if 0
 typedef struct {
 	char label[64];  /* Label describing the resolution */
 	uint_fast32_t width;		 /* Width(horizon) of the active video frame */
@@ -38,6 +39,7 @@ static const VideoMode VMODE_800x480 = {
 	.vpol = 0,
 	.freq = 50
 };
+#endif
 
 typedef enum {
 	DISPLAY_STOPPED = 0,
@@ -49,8 +51,8 @@ typedef struct {
 	XAxiVdma *vdma; 				  /* VDMA driver struct */
 	XAxiVdma_DmaSetup vdmaConfig;     /* VDMA channel configuration */
 	XVtc vtc; 					      /* VTC driver struct */
-	VideoMode vMode; 				  /* Current video mode */
-	u8 *framePtr [LCDMODE_MAIN_PAGES]; 		  /* Array of pointers to the frame buffers */
+	videomode_t vMode; 				  /* Current video mode */
+	uintptr_t framePhyAddr [LCDMODE_MAIN_PAGES]; 		  /* Array of pointers to the frame buffers */
 	u32 stride; 					  /* The line stride of the frame buffers, in bytes */
 	double pxlFreq; 				  /* Frequency of clock currently being generated, maybe not exactly with vMode.freq */
 	u32 curFrame; 					  /* Current frame being displayed */
@@ -71,8 +73,8 @@ int Vdma_Start(XAxiVdma *InstancePtr);
 
 int DisplayStop(DisplayCtrl *dispPtr);
 int DisplayStart(DisplayCtrl *dispPtr);
-int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, const uintptr_t * frames, u32 stride, VideoMode VMODE);
-int DisplaySetMode(DisplayCtrl *dispPtr, const VideoMode *newMode);
+int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, const uintptr_t * frames, u32 stride, const videomode_t * VMODE);
+int DisplaySetMode(DisplayCtrl *dispPtr, const videomode_t * newMode);
 int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex);
 
 #endif /* ZYNQ_VDMA_H_INCLUDED */

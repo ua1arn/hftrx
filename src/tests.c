@@ -20,8 +20,10 @@
 
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
-	#include "sdcard.h"
 #endif /* WITHUSEFATFS */
+#if WITHUSESDCARD
+	#include "sdcard.h"
+#endif /* WITHUSESDCARD */
 
 #include <math.h>
 #include <stdio.h>

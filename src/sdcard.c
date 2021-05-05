@@ -2485,28 +2485,28 @@ static uint_fast8_t sdhost_get_R3(uint_fast32_t * resp32)
   * @param  p : Pointer to SDMMC register base  
   * @retval None
   */  
-#define __SDMMC_CMDTRANS_ENABLE(p)  ((p)->CMD |= SDMMC_CMD_CMDTRANS) 
+//#define __SDMMC_CMDTRANS_ENABLE(p)  ((p)->CMD |= SDMMC_CMD_CMDTRANS)
 
 /**
   * @brief  Disable the CMDTRANS mode.
   * @param  p : Pointer to SDMMC register base  
   * @retval None
   */  
-#define __SDMMC_CMDTRANS_DISABLE(p)  ((p)->CMD &= ~SDMMC_CMD_CMDTRANS) 
+//#define __SDMMC_CMDTRANS_DISABLE(p)  ((p)->CMD &= ~SDMMC_CMD_CMDTRANS)
 
 /**
   * @brief  Enable the CMDSTOP mode.
   * @param  p : Pointer to SDMMC register base
   * @retval None
   */
-#define __SDMMC_CMDSTOP_ENABLE(p)  ((p)->CMD |= SDMMC_CMD_CMDSTOP)
+//#define __SDMMC_CMDSTOP_ENABLE(p)  ((p)->CMD |= SDMMC_CMD_CMDSTOP)
 
 /**
   * @brief  Disable the CMDSTOP mode.
   * @param  p : Pointer to SDMMC register base
   * @retval None
   */
-#define __SDMMC_CMDSTOP_DISABLE(p)  ((p)->CMD &= ~SDMMC_CMD_CMDSTOP)
+//#define __SDMMC_CMDSTOP_DISABLE(p)  ((p)->CMD &= ~SDMMC_CMD_CMDSTOP)
 
 static uint_fast8_t sdhost_stop_transmission(void)
 {

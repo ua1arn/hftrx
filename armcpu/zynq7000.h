@@ -108,7 +108,6 @@ typedef enum IRQn
 #define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
 
 #define __CORTEX_A                    9U      /*!< Cortex-A# Core                              */
-//#define __CA_REV                 0x0005U      /*!< Core revision r0p0                          */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
@@ -120,7 +119,7 @@ typedef enum IRQn
 #define TIMER_BASE				PRIV_TIMER_BASE
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
-#define __CA_REV         0x0000    /*!< Core revision r0       */
+#define __CA_REV         		    0x0000    /*!< Core revision r0p0       */
 
 #include "core_ca.h"
 #include "system_zynq7000.h"

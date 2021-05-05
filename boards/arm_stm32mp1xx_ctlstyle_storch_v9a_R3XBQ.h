@@ -79,7 +79,7 @@
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
 
 	#else
 		// HSI version (HSI=64 MHz)
@@ -119,18 +119,11 @@
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
 
 	#endif
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 172		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 172		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)

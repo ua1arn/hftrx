@@ -368,6 +368,7 @@ extern "C" {
 	#include "armcpu/rza_io_regrw.h"	// iobitmasks
 
 	#include "irq_ctrl.h"
+	#include "rza1xx_hal.h"
 
 
 	#define DCACHEROWSIZE 32
@@ -716,7 +717,39 @@ void arm_hardware_dma2d_initialize(void);	// Graphic 2D engine
 void arm_hardware_mdma_initialize(void);	// Graphic 2D engine
 void arm_hardware_sdram_initialize(void);	// External memory region(s)
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames);	// LCD-TFT Controller (LTDC) with framebuffer
+
+typedef struct videomode_tag
+{
+	unsigned width; 		/* LCD pixel width            */
+	unsigned height; 		/* LCD pixel height           */
+	unsigned hsync; 		/* horizontal synchronization */
+	unsigned hbp; 			/* horizontal back porch      */
+	unsigned hfp; 			/* horizontal front porch     */
+
+	unsigned vsync; 		/* vertical synchronization   */
+	unsigned vbp; 			/* vertical back porch        */
+	unsigned vfp; 			/* vertical front porch       */
+
+	// mode: de/sync mode select.
+	// de mode: mode="1", vs and hs must pull high.
+	// sync mode: mode="0". de must be grounded
+	unsigned vsyncneg; 		/* negative polarity required for vsync signal */
+	unsigned hsyncneg; 		/* negative polarity required for hsync signal */
+	unsigned deneg; 		/* negative de polarity: (normal: de is 0 while sync) */
+	unsigned board_demode; 	/* 0: static signal, 1: de controlled */
+	unsigned board_devalue;	/* DE level if static signal */
+	unsigned board_dereset; /* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
+	unsigned board_modevalue;	/* UINT_MAX - нет управления mode */
+	//unsigned long ltdc_dotclk;
+	unsigned fps;	/* frames per secound */
+
+} videomode_t;
+
+extern const videomode_t vdmode0;
+void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
+unsigned long display_getdotclock(const videomode_t * vdmode);
+void xc7z1_setltdcfreq(const videomode_t * vdmode);
+
 void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
@@ -879,7 +912,6 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
-void bootloader_detach(uintptr_t ip);
 void bootloader_deffereddetach(void * arg);
 
 
@@ -924,8 +956,6 @@ unsigned long hardware_get_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
 uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz clock
 
-uint_fast32_t display_getdotclock(void);
-
 int toshiba_ddr_power_init(void);
 void stpmic1_dump_regulators(void);
 
@@ -937,7 +967,8 @@ void sys_check_timeouts(void);	/* LWIP support */
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */
-#define UNUSED(x) ((void)(x))
+
+//#define UNUSED(x) ((void)(x))
 
 #define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
 

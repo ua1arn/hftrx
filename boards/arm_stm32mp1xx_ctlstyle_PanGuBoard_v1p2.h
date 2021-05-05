@@ -79,7 +79,7 @@
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
 
 	#else
 		// HSI version (HSI=64 MHz)
@@ -119,18 +119,11 @@
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
 
 	#endif
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 172		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 172		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
@@ -237,8 +230,10 @@
 	//#define LCDMODE_V2B 1	/* только главный экран 16 бит RGB565 (одна страница), без PIP */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 
-	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
-	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
+	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
+	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
+	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
@@ -475,7 +470,7 @@
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	//#define WITHCAT		1	/* используется CAT */
+	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
@@ -521,12 +516,12 @@
 		#endif
 		//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
-	#if 1
+	#if 0
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 1
+	#if 0
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */

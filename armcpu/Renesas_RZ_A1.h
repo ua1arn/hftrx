@@ -705,7 +705,7 @@ typedef enum IRQn
 
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
-#define __CA_REV         0x0000    /*!< Core revision r0       */
+#define __CA_REV         0x0000    /*!< Core revision r0p0       */
 
 #include "core_ca.h"
 #include "system_Renesas_RZ_A1.h"
