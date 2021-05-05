@@ -5,7 +5,7 @@
 
 #if CPUSTYLE_STM32F
 
-#define assert_param(expr) do { } while (0)
+//#define assert_param(expr) do { } while (0)
 /**
   * @brief  FMC SDRAM Bank address
   */

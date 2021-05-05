@@ -42,14 +42,15 @@
 #define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 #define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #if 1
 	// use FS
+	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	//#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 #else
 	// USE HS with ULPI
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HIGHSPEEDULPI	1

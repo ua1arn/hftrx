@@ -21,6 +21,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+
+#if WITHUSBHW
+
 #include "formats.h"
 #include "gpio.h"
 #include "src/usb/usbch9.h"
@@ -1364,5 +1367,6 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status)
   return usb_status;
 }
 
+#endif /* WITHUSBHW */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
