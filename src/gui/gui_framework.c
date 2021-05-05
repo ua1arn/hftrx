@@ -1129,7 +1129,7 @@ static void update_gui_elements_list(void)
 			p->y2 = (ta->y1 + ta->h) > WITHGUIMAXY ? WITHGUIMAXY : (ta->y1 + ta->h);
 			p->state = ta->state;
 			p->visible = ta->visible;
-			p->is_trackable = 0;
+			p->is_trackable = ta->is_trackable;
 			p->is_long_press = 0;
 		}
 	}
@@ -1210,6 +1210,11 @@ static void set_state_record(gui_element_t * val)
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, PRESSED))
 					dump_queue(val->win);
 			}
+			else if (ta->state == PRESSED && ta->is_trackable)
+			{
+				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
+					dump_queue(val->win);
+			}
 			break;
 
 		default:
@@ -1247,7 +1252,7 @@ static void process_gui(void)
 
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
-		for (uint_fast8_t i = 0; i < gui_element_count; i ++)
+		for (uint_fast8_t i = gui_element_count - 1; i >= 0; i --)
 		{
 			p = & gui_elements [i];
 			w = p->win;
