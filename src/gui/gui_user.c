@@ -41,6 +41,7 @@ enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 
 enum {
 	enc2step_default = 1,
+	freq_swipe_enable_default = 1,
 	micprofile_default = UINT8_MAX,
 	tune_powerdown_enable_default = 1,
 	tune_powerdown_value_default = WITHPOWERTRIMATU
@@ -64,6 +65,9 @@ void load_settings(void)
 
 	if (gui_nvram.tune_powerdown_value == 255)
 		gui_nvram.tune_powerdown_value = tune_powerdown_value_default;
+
+	if (gui_nvram.freq_swipe_enable == 255)
+		gui_nvram.freq_swipe_enable = freq_swipe_enable_default;
 
 #if WITHAFCODEC1HAVEPROC
 	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
@@ -157,6 +161,7 @@ static void gui_main_process(void)
 	const uint_fast8_t lbl_place_width = 100;
 	uint_fast8_t update = 0;
 	static uint_fast8_t tune_backup_power;
+	static uint_fast8_t freq_swipe_step;
 
 	if (win->first_call)
 	{
@@ -184,6 +189,15 @@ static void gui_main_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
+		static const touch_area_t ta [] = {
+			{ DIM_X, DIM_Y - FOOTER_HEIGHT, CANCELLED, WINDOW_MAIN, VISIBLE, 1, INT32_MAX, "ta_freq", },
+		};
+		win->ta_count = ARRAY_SIZE(ta);
+		uint_fast16_t ta_size = sizeof(ta);
+		win->ta_ptr = malloc(ta_size);
+		GUI_MEM_ASSERT(win->ta_ptr);
+		memcpy(win->ta_ptr, ta, ta_size);
+
 		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
 		{
 			button_t * bh = & win->bh_ptr [id];
@@ -203,6 +217,21 @@ static void gui_main_process(void)
 	{
 	case WM_MESSAGE_ACTION:
 
+		if (IS_AREA_MOVE)
+		{
+			touch_area_t * th = (touch_area_t *) ptr;
+			touch_area_t * ta_freq = find_gui_element(TYPE_TOUCH_AREA, win, "ta_freq");
+
+			if (th == ta_freq && gui_nvram.freq_swipe_enable)
+			{
+				int_fast8_t move_x = 0, move_y = 0;
+				get_gui_tracking(& move_x, & move_y);
+				if (move_x != 0)
+					hamradio_set_freq(hamradio_get_freq_rx() - (move_x * freq_swipe_step));
+				reset_tracking();
+			}
+		}
+
 		if (IS_BUTTON_PRESS)	// обработка короткого нажатия кнопок
 		{
 			button_t * bh = (button_t *) ptr;
@@ -213,7 +242,6 @@ static void gui_main_process(void)
 			button_t * btn_Options = find_gui_element(TYPE_BUTTON, win, "btn_Options");
 			button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = find_gui_element(TYPE_BUTTON, win, "btn_Receive");
-
 
 			if (bh == btn_notch)
 			{
@@ -366,6 +394,8 @@ static void gui_main_process(void)
 
 	if (update)											// обновление состояния элементов при действиях с ними, а также при запросах из базовой системы
 	{
+		freq_swipe_step = display_zoomedbw() / DIM_X;
+
 		button_t * btn_notch = find_gui_element(TYPE_BUTTON, win, "btn_notch");
 		btn_notch->is_locked = hamradio_get_gnotch() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		uint_fast8_t notch_type = hamradio_get_gnotchtype();
@@ -2988,16 +3018,14 @@ static void window_gui_settings_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step", 		"", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step",  "", },
+			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe", "", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
 		win->bh_ptr = malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		x = 0;
-		y = 0;
 
 		for (uint_fast8_t i = 0, r = 1; i < win->bh_count; i ++, r ++)
 		{
@@ -3027,10 +3055,18 @@ static void window_gui_settings_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
+			button_t * btn_freq_swipe = find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe");
 
 			if (bh == btn_enc2_step)
 			{
 				gui_nvram.enc2step_pos = (gui_nvram.enc2step_pos + 1 ) % enc2step_vals;
+				save_settings();
+				update = 1;
+			}
+
+			if (bh == btn_freq_swipe)
+			{
+				gui_nvram.freq_swipe_enable = ! gui_nvram.freq_swipe_enable;
 				save_settings();
 				update = 1;
 			}
@@ -3047,6 +3083,10 @@ static void window_gui_settings_process(void)
 		update = 0;
 		button_t * btn_enc2_step = find_gui_element(TYPE_BUTTON, win, "btn_enc2_step");
 		local_snprintf_P(btn_enc2_step->text, ARRAY_SIZE(btn_enc2_step->text), "Enc2 step|%s", enc2step [gui_nvram.enc2step_pos].label);
+
+		button_t * btn_freq_swipe = find_gui_element(TYPE_BUTTON, win, "btn_freq_swipe");
+		btn_freq_swipe->is_locked = gui_nvram.freq_swipe_enable != 0;
+		local_snprintf_P(btn_freq_swipe->text, ARRAY_SIZE(btn_freq_swipe->text), "Freq swipe|%s", btn_freq_swipe->is_locked ? "enable" : "disable");
 	}
 }
 
