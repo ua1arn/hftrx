@@ -25,8 +25,6 @@
 #include "src/usb/usbch9.h"
 #include "src/usb/usbx_core.h"
 
-#include "stm32mp1xx.h"
-#include "stm32mp1xx_hal.h"
 #include "usbd_def.h"
 #include "usbd_core.h"
 
@@ -47,7 +45,12 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status);
 /* USER CODE END PV */
 
 PCD_HandleTypeDef hpcd_USB_OTG_HS;
-void Error_Handler(void);
+void Error_Handler(void)
+{
+	ASSERT(0);
+	for (;;)
+		;
+}
 
 /* External functions --------------------------------------------------------*/
 void SystemClock_Config(void);
@@ -623,7 +626,7 @@ static uint_fast16_t size2buff4(uint_fast16_t size)
 	return MAX(0x10, size4);
 }
 
-static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsize, uint_fast8_t bigbuff)
+static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsize, uint_fast8_t bigbuff, uint_fast8_t dma)
 {
 	unsigned offset;
 	const int add3tx = bigbuff ? 3 : 1;	// tx fifo add places
@@ -983,12 +986,12 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	if (USB_Is_OTG_HS(hpcd_USB_OTG_HS.Instance))
 	{
 		// У OTH_HS размер FIFO 4096 байт
-		usbd_fifo_initialize(&hpcd_USB_OTG_HS, 4096, 1);
+		usbd_fifo_initialize(&hpcd_USB_OTG_HS, 4096, 1, hpcd_USB_OTG_HS.Init.dma_enable);
 	}
 	else
 	{
 		// У OTH_FS размер FIFO 1280 байт
-		usbd_fifo_initialize(&hpcd_USB_OTG_HS, 1280, 0);
+		usbd_fifo_initialize(&hpcd_USB_OTG_HS, 1280, 0, hpcd_USB_OTG_HS.Init.dma_enable);
 	}
 #endif /* CPUSTYLE_R7S721 */
 #else
@@ -1245,7 +1248,7 @@ void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *hpcd, PCD_LPM_MsgTypeDef msg)
   case PCD_LPM_L0_ACTIVE:
     if (hpcd->Init.low_power_enable)
     {
-      SystemClock_Config();
+////      SystemClock_Config();
 
       /* Reset SLEEPDEEP bit of Cortex System Control Register. */
 ////      SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));

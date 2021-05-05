@@ -135,4 +135,48 @@ void MX_USB_DEVICE_DeInit(void)
   * @}
   */
 
+/* Private user code ---------------------------------------------------------*/
+/* This variable is updated in three ways:
+    1) by calling CMSIS function SystemCoreClockUpdate()
+    2) by calling HAL API function HAL_RCC_GetHCLKFreq()
+    3) each time HAL_RCC_ClockConfig() is called to configure the system clock frequency
+       Note: If you use this function to configure the system clock; then there
+             is no need to call the 2 first functions listed above, since SystemCoreClock
+             variable is updated automatically.
+*/
+//uint32_t SystemCoreClock = 16000000;
+//uint32_t HAL_RCC_GetHCLKFreq(void)
+//{
+//	return SystemCoreClock;
+//}
+
+void board_usb_initialize(void)
+{
+#if WITHUSBDEV_HSDESC
+	usbd_descriptors_initialize(1);
+
+#else /* WITHUSBDEV_HSDESC */
+	usbd_descriptors_initialize(0);
+
+#endif /* WITHUSBDEV_HSDESC */
+
+	  MX_USB_DEVICE_Init();
+
+}
+
+void board_usb_deinitialize(void)
+{
+	MX_USB_DEVICE_DeInit();
+}
+
+void board_usb_activate(void)
+{
+
+}
+
+void board_usb_deactivate(void)
+{
+
+}
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
