@@ -16,6 +16,28 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 
+#if (USE_RTOS == 1U)
+  /* Reserved for future use */
+  #error "USE_RTOS should be 0 in the current HAL release"
+#else
+  #define __HAL_LOCK(__HANDLE__)                                           \
+                                do{                                        \
+                                    if((__HANDLE__)->Lock == HAL_LOCKED)   \
+                                    {                                      \
+                                       return HAL_BUSY;                    \
+                                    }                                      \
+                                    else                                   \
+                                    {                                      \
+                                       (__HANDLE__)->Lock = HAL_LOCKED;    \
+                                    }                                      \
+                                  }while (0U)
+
+  #define __HAL_UNLOCK(__HANDLE__)                                          \
+                                  do{                                       \
+                                      (__HANDLE__)->Lock = HAL_UNLOCKED;    \
+                                    }while (0U)
+#endif /* USE_RTOS */
+
 #if  defined ( __GNUC__ )
   #ifndef __weak
     #define __weak   __attribute__((weak))
@@ -96,6 +118,8 @@ extern "C" {
 
 #endif
 
+#define __HAL_PCD_ENABLE(__HANDLE__)            //           (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
+#define __HAL_PCD_DISABLE(__HANDLE__)           //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
 
 /** @defgroup PCD_Speed PCD Speed
   * @{
@@ -136,6 +160,10 @@ typedef enum
   HAL_LOCKED   = 0x01U  
 } HAL_LockTypeDef;
 
+
+#define UNUSED(X) (void)X      /* To avoid gcc/g++ warnings */
+
+#define HAL_MAX_DELAY      0xFFFFFFFFU
 
 typedef struct st_usb20  USB_OTG_GlobalTypeDef;
 
@@ -818,6 +846,27 @@ uint32_t          HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr
 /**
   * @}
   */
+
+#define EP_ADDR_MSK                            0xFU
+
+
+/** @defgroup USB_LL_EP_Type USB Low Layer EP Type
+  * @{
+  */
+#define EP_TYPE_CTRL                           0U
+#define EP_TYPE_ISOC                           1U
+#define EP_TYPE_BULK                           2U
+#define EP_TYPE_INTR                           3U
+#define EP_TYPE_MSK                            3U
+/**
+  * @}
+  */
+
+extern uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
+void HAL_Delay(uint32_t Delay);
+void HAL_IncTick(void);
+
+uint_fast8_t usbd_epaddr2pipe(uint_fast8_t ep_addr);
 
 #ifdef __cplusplus
 }

@@ -35,7 +35,7 @@
 
 #include "rza1xx_hal.h"
 
-static uint_fast8_t
+uint_fast8_t
 usbd_epaddr2pipe(uint_fast8_t ep_addr)
 {
 	switch (ep_addr)
@@ -1006,6 +1006,281 @@ USB_WritePacketNec(PCD_TypeDef * const USBx, uint_fast8_t pipe, const uint8_t * 
 	return 0;	// OK
 }
 
+
+/**
+  * @brief  Set the USB Device address.
+  * @param  hpcd PCD handle
+  * @param  address new device address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_SetAddress(PCD_HandleTypeDef *hpcd, uint8_t address)
+{
+  __HAL_LOCK(hpcd);
+  hpcd->USB_Address = address;
+  (void)USB_SetDevAddress(hpcd->Instance, address);
+  __HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
+/**
+  * @brief  Open and configure an endpoint.
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @param  ep_mps endpoint max packet size
+  * @param  ep_type endpoint type
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_Open(PCD_HandleTypeDef *hpcd, uint8_t ep_addr,
+                                  uint16_t ep_mps, uint8_t ep_type)
+{
+  HAL_StatusTypeDef  ret = HAL_OK;
+  PCD_EPTypeDef *ep;
+
+  if ((ep_addr & 0x80U) == 0x80U)
+  {
+    ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 1U;
+  }
+  else
+  {
+    ep = &hpcd->OUT_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 0U;
+  }
+
+  ep->num = ep_addr & EP_ADDR_MSK;
+  ep->maxpacket = ep_mps;
+  ep->type = ep_type;
+
+//  if (ep->is_in != 0U)
+//  {
+//    /* Assign a Tx FIFO */
+//    ep->tx_fifo_num = ep->num;
+//  }
+  /* Set initial data PID. */
+  if (ep_type == EP_TYPE_BULK)
+  {
+    ep->data_pid_start = 0U;
+  }
+
+  __HAL_LOCK(hpcd);
+  (void)USB_ActivateEndpoint(hpcd->Instance, ep);
+  __HAL_UNLOCK(hpcd);
+
+  return ret;
+}
+
+/**
+  * @brief  Deactivate an endpoint.
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_Close(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+  PCD_EPTypeDef *ep;
+
+  if ((ep_addr & 0x80U) == 0x80U)
+  {
+    ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 1U;
+  }
+  else
+  {
+    ep = &hpcd->OUT_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 0U;
+  }
+  ep->num   = ep_addr & EP_ADDR_MSK;
+
+  __HAL_LOCK(hpcd);
+  (void)USB_DeactivateEndpoint(hpcd->Instance, ep);
+  __HAL_UNLOCK(hpcd);
+  return HAL_OK;
+}
+
+
+/**
+  * @brief  Receive an amount of data.
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @param  pBuf pointer to the reception buffer
+  * @param  len amount of data to be received
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, uint8_t *pBuf, uint32_t len)
+{
+  PCD_EPTypeDef *ep;
+
+  ep = &hpcd->OUT_ep[ep_addr & EP_ADDR_MSK];
+
+  /*setup and start the Xfer */
+  ep->xfer_buff = pBuf;
+  ep->xfer_len = len;
+  ep->xfer_count = 0U;
+  ep->is_in = 0U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+
+  if (hpcd->Init.dma_enable == 1U)
+  {
+    ep->dma_addr = (uint32_t)pBuf;
+  }
+
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+  }
+  else
+  {
+    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+  }
+
+  return HAL_OK;
+}
+/**
+  * @brief  Send an amount of data
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @param  pBuf pointer to the transmission buffer
+  * @param  len amount of data to be sent
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, const uint8_t *pBuf, uint32_t len)
+{
+  PCD_EPTypeDef *ep;
+
+  ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+
+  /*setup and start the Xfer */
+  ep->xfer_buff = (uint8_t *) pBuf;
+  ep->xfer_len = len;
+  ep->xfer_count = 0U;
+  ep->is_in = 1U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+
+  if (hpcd->Init.dma_enable == 1U)
+  {
+    ep->dma_addr = (uint32_t)pBuf;
+  }
+
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+  }
+  else
+  {
+    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+  }
+
+  return HAL_OK;
+}
+
+/**
+  * @brief  Set a STALL condition over an endpoint
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+  PCD_EPTypeDef *ep;
+
+  if (((uint32_t)ep_addr & EP_ADDR_MSK) > hpcd->Init.dev_endpoints)
+  {
+    return HAL_ERROR;
+  }
+
+  if ((0x80U & ep_addr) == 0x80U)
+  {
+    ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 1U;
+  }
+  else
+  {
+    ep = &hpcd->OUT_ep[ep_addr];
+    ep->is_in = 0U;
+  }
+
+  ep->is_stall = 1U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+
+  __HAL_LOCK(hpcd);
+
+  (void)USB_EPSetStall(hpcd->Instance, ep);
+
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+    (void)USB_EP0_OutStart(hpcd->Instance, (uint8_t)hpcd->Init.dma_enable, (uint8_t *)hpcd->Setup);
+  }
+
+  __HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
+
+/**
+  * @brief  Clear a STALL condition over in an endpoint
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+  PCD_EPTypeDef *ep;
+
+  if (((uint32_t)ep_addr & 0x0FU) > hpcd->Init.dev_endpoints)
+  {
+    return HAL_ERROR;
+  }
+
+  if ((0x80U & ep_addr) == 0x80U)
+  {
+    ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 1U;
+  }
+  else
+  {
+    ep = &hpcd->OUT_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 0U;
+  }
+
+  ep->is_stall = 0U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+
+  __HAL_LOCK(hpcd);
+  (void)USB_EPClearStall(hpcd->Instance, ep);
+  __HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
+
+/**
+  * @brief  Flush an endpoint
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+  __HAL_LOCK(hpcd);
+
+  if ((ep_addr & 0x80U) == 0x80U)
+  {
+    (void)USB_FlushTxFifo(hpcd->Instance, (uint32_t)ep_addr & EP_ADDR_MSK);
+  }
+  else
+  {
+    (void)USB_FlushRxFifo(hpcd->Instance);
+  }
+
+  __HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
+
+uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+  return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
+}
+
 static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
 {
 	const uint_fast16_t usbreq = USBx->USBREQ;
@@ -1119,266 +1394,6 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		USBD_CtlError(pdev, & pdev->request);
 		break;
 	}
-}
-
-static void
-usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
-{
-	unsigned offset;
-	PCD_TypeDef * const USBx = hpcd->Instance;
-	PRINTF(PSTR("usbd_pipes_initialize\n"));
-	/*
-		at initialize:
-		usbd_handler_brdy: после инициализации появляется для тех pipe, у которых dir=0 (read direction)
-	*/
-	{
-		USBx->DCPCFG =
-				0x0000;
-		USBx->DCPMAXP =
-				(USB_OTG_MAX_EP0_SIZE << USB_DCPMAXP_MXPS_SHIFT) & USB_DCPMAXP_MXPS;
-		USBx->DCPCTR &= ~ USB_DCPCTR_PID;
-		USBx->DCPCTR = 0;
-	}
-	unsigned bufnumb64 = 0x10;
-#if WITHUSBCDCACM
-#if WITHUSBCDCACMINTSHARING
-	{
-		// Прерывание CDC в компьютер из трансивера
-		const uint_fast8_t epnum = USBD_EP_CDCACM_INTSHARED;
-		const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
-		const uint_fast8_t dir = 1;
-		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
-			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
-			0;
-		const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
-		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * 1; // * 2 for DBLB
-		ASSERT(bufnumb64 <= 0x100);
-
-		USBx->PIPESEL = 0;
-	}
-#endif
-	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
-	{
-#if ! WITHUSBCDCACMINTSHARING
-		{
-			// Прерывание CDC в компьютер из трансивера
-			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset);
-			const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
-			const uint_fast8_t dir = 1;
-			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-			USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-			while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-				;
-			USBx->PIPECFG =
-				(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-				dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-				2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
-				0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
-				0;
-			const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
-			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-			USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
-			bufnumb64 += bufsize64 * 1; // * 2 for DBLB
-			ASSERT(bufnumb64 <= 0x100);
-
-			USBx->PIPESEL = 0;
-		}
-#endif /* WITHUSBCDCACMINTSHARING */
-		{
-			// Данные CDC из компьютера в трансивер
-			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset);
-			const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
-			const uint_fast8_t dir = 0;
-			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-			USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-			while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-				;
-			USBx->PIPECFG =
-				(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
-				dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
-				1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
-				1 * (1u << 9) |				// DBLB
-				0;
-			const unsigned bufsize64 = (VIRTUAL_COM_PORT_OUT_DATA_SIZE + 63) / 64;
-			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-			USBx->PIPEMAXP = VIRTUAL_COM_PORT_OUT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
-			bufnumb64 += bufsize64 * 2; // * 2 for DBLB
-			ASSERT(bufnumb64 <= 0x100);
-
-			USBx->PIPESEL = 0;
-		}
-		{
-			// Данные CDC в компьютер из трансивера
-			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset);
-			const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
-			const uint_fast8_t dir = 1;
-			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-			USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-			while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-				;
-			USBx->PIPECFG =
-				(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-				dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-				1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
-				1 * USB_PIPECFG_DBLB |		// DBLB
-				0;
-			const unsigned bufsize64 = (VIRTUAL_COM_PORT_IN_DATA_SIZE + 63) / 64;
-			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-			USBx->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
-			bufnumb64 += bufsize64 * 2; // * 2 for DBLB
-			ASSERT(bufnumb64 <= 0x100);
-
-			USBx->PIPESEL = 0;
-		}
-	}
-#endif /* WITHUSBCDCACM */
-
-#if WITHUSBUACIN
-	if (1)
-	{
-		// Данные AUDIO из трансивера в компьютер
-		// Используется канал DMA D1
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_IN;	// PIPE2
-		const uint_fast8_t epnum = USBD_EP_AUDIO_IN;
-		const uint_fast8_t dir = 1;
-		const uint_fast16_t maxpacket = usbd_getuacinmaxpacket();
-		const uint_fast8_t dblb = 0;	// убрано, т.к PIPEMAXP динамически меняется - поведение не понятно.
-		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		ASSERT(pipe == 2);
-		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
-			dblb * USB_PIPECFG_DBLB |		// DBLB
-			0;
-		//USBx->PIPEPERI =
-		//	1 * (1U << 12) |	// IFS
-		//	0;
-		const unsigned bufsize64 = (maxpacket + 63) / 64;
-		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		USBx->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * (dblb + 1); // * 2 for DBLB
-		ASSERT(bufnumb64 <= 0x100);
-
-		USBx->PIPESEL = 0;
-	}
-#endif /* WITHUSBUACIN */
-
-#if WITHUSBUACOUT
-	if (1)
-	{
-		// Данные AUDIO из компьютера в трансивер
-		// Используется канал DMA D0
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_ISOC_OUT;	// PIPE1
-		const uint_fast8_t epnum = USBD_EP_AUDIO_OUT;
-		const uint_fast8_t dir = 0;
-		const uint_fast16_t maxpacket = UACOUT_AUDIO48_DATASIZE;
-		const uint_fast8_t dblb = 1;
-		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		ASSERT(pipe == 1);
-		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
-			dblb * USB_PIPECFG_DBLB |		// DBLB
-			0;
-
-		const unsigned bufsize64 = (maxpacket + 63) / 64;
-		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		USBx->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * (dblb + 1); // * 2 for DBLB
-		ASSERT(bufnumb64 <= 0x100);
-
-		USBx->PIPESEL = 0;
-	}
-#endif /* WITHUSBUACOUT */
-
-#if WITHUSBCDCEEM
-	if (1)
-	{
-		// Данные CDC EEM из компьютера в трансивер
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDCEEM_OUT;	// PIPE12
-		const uint_fast8_t epnum = USBD_EP_CDCEEM_OUT;
-		const uint_fast8_t dir = 0;
-		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		ASSERT(pipe == 12);
-		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
-			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
-			1 * (1u << 9) |				// DBLB
-			0;
-		const unsigned bufsize64 = (USBD_CDCEEM_BUFSIZE + 63) / 64;
-
-		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		USBx->PIPEMAXP = USBD_CDCEEM_BUFSIZE << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
-		ASSERT(bufnumb64 <= 0x100);
-
-		USBx->PIPESEL = 0;
-	}
-	if (1)
-	{
-		// Данные CDC в компьютер из трансивера
-		const uint_fast8_t pipe = HARDWARE_USBD_PIPE_CDCEEM_IN;	// PIPE13
-		const uint_fast8_t epnum = USBD_EP_CDCEEM_IN;
-		const uint_fast8_t dir = 1;
-		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
-
-		USBx->PIPESEL = pipe << USB_PIPESEL_PIPESEL_SHIFT;
-		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
-			;
-		ASSERT(pipe == 13);
-		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
-			1 * USB_PIPECFG_DBLB |		// DBLB
-			0;
-		const unsigned bufsize64 = (USBD_CDCEEM_BUFSIZE + 63) / 64;
-
-		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
-		USBx->PIPEMAXP = USBD_CDCEEM_BUFSIZE << USB_PIPEMAXP_MXPS_SHIFT;
-		bufnumb64 += bufsize64 * 2; // * 2 for DBLB
-		ASSERT(bufnumb64 <= 0x100);
-
-		USBx->PIPESEL = 0;
-	}
-#endif /* WITHUSBCDCEEM */
-
-	/*
-	uint_fast8_t pipe;
-	for (pipe = 1; pipe <= 15; ++ pipe)
-	{
-		USBx->PIPESEL = pipe;
-		PRINTF(PSTR("USB pipe%02d PIPEBUF=%04X PIPEMAXP=%u\n"), pipe, USBx->PIPEBUF, USBx->PIPEMAXP & USB_PIPEMAXP_MXPS);
-	}
-	*/
 }
 
 #if defined (WITHUSBHW_DEVICE)
@@ -3006,6 +3021,19 @@ HAL_StatusTypeDef  USB_SetDevAddress (USB_OTG_GlobalTypeDef *USBx, uint8_t addre
 }
 
 /**
+  * @brief  USB_OTG_FlushTxFifo : Flush a Tx FIFO
+  * @param  USBx : Selected device
+  * @param  num : FIFO number
+  *         This parameter can be a value from 1 to 15
+            16 means Flush all Tx FIFOs
+  * @retval HAL status
+  */
+HAL_StatusTypeDef USB_FlushTxFifoEx(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
+{
+	return HAL_OK;
+}
+
+/**
   * @brief  Initializes the USB Core
   * @param  USBx: USB Instance
   * @param  cfg : pointer to a USB_OTG_CfgTypeDef structure that contains
@@ -3152,16 +3180,197 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd)
 }
 
 /**
-  * @brief  USB_OTG_FlushTxFifo : Flush a Tx FIFO
-  * @param  USBx : Selected device
-  * @param  num : FIFO number
-  *         This parameter can be a value from 1 to 15
-            16 means Flush all Tx FIFOs
+  * @brief  Initializes the PCD according to the specified
+  *         parameters in the PCD_InitTypeDef and create the associated handle.
+  * @param  hpcd: PCD handle
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_FlushTxFifoEx(USB_OTG_GlobalTypeDef *USBx, uint_fast8_t num)
+HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd)
 {
-	return HAL_OK;
+	  USB_OTG_GlobalTypeDef *USBx;
+	  uint8_t i;
+
+	  /* Check the PCD handle allocation */
+	  if (hpcd == NULL)
+	  {
+	    return HAL_ERROR;
+	  }
+
+	  /* Check the parameters */
+	  //assert_param(IS_PCD_ALL_INSTANCE(hpcd->Instance));
+
+	  USBx = hpcd->Instance;
+
+	  if (hpcd->State == HAL_PCD_STATE_RESET)
+	  {
+	    /* Allocate lock resource and initialize it */
+	    hpcd->Lock = HAL_UNLOCKED;
+
+	#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+	    hpcd->SOFCallback = HAL_PCD_SOFCallback;
+	    hpcd->SetupStageCallback = HAL_PCD_SetupStageCallback;
+	    hpcd->ResetCallback = HAL_PCD_ResetCallback;
+	    hpcd->SuspendCallback = HAL_PCD_SuspendCallback;
+	    hpcd->ResumeCallback = HAL_PCD_ResumeCallback;
+	    hpcd->ConnectCallback = HAL_PCD_ConnectCallback;
+	    hpcd->DisconnectCallback = HAL_PCD_DisconnectCallback;
+	    hpcd->DataOutStageCallback = HAL_PCD_DataOutStageCallback;
+	    hpcd->DataInStageCallback = HAL_PCD_DataInStageCallback;
+	    hpcd->ISOOUTIncompleteCallback = HAL_PCD_ISOOUTIncompleteCallback;
+	    hpcd->ISOINIncompleteCallback = HAL_PCD_ISOINIncompleteCallback;
+	    hpcd->LPMCallback = HAL_PCDEx_LPM_Callback;
+	    hpcd->BCDCallback = HAL_PCDEx_BCD_Callback;
+
+	    if (hpcd->MspInitCallback == NULL)
+	    {
+	      hpcd->MspInitCallback = HAL_PCD_MspInit;
+	    }
+
+	    /* Init the low level hardware */
+	    hpcd->MspInitCallback(hpcd);
+	#else
+	    /* Init the low level hardware : GPIO, CLOCK, NVIC... */
+	    HAL_PCD_MspInit(hpcd);
+	#endif /* (USE_HAL_PCD_REGISTER_CALLBACKS) */
+	  }
+
+	  hpcd->State = HAL_PCD_STATE_BUSY;
+
+	  /* Disable DMA mode for FS instance */
+//	  if ((USBx->CID & (0x1U << 8)) == 0U)
+//	  {
+//	    hpcd->Init.dma_enable = 0U;
+//	  }
+
+	  /* Disable the Interrupts */
+	  __HAL_PCD_DISABLE(hpcd);
+
+	  /*Init the Core (common init.) */
+	  if (USB_CoreInit(USBx, hpcd->Init) != HAL_OK)
+	  {
+	    hpcd->State = HAL_PCD_STATE_ERROR;
+	    return HAL_ERROR;
+	  }
+
+	  /* Force Device Mode*/
+	  (void)USB_SetCurrentMode(USBx, USB_DEVICE_MODE);
+
+	  /* Init endpoints structures */
+	  for (i = 0U; i < hpcd->Init.dev_endpoints; i++)
+	  {
+	    /* Init ep structure */
+	    hpcd->IN_ep[i].is_in = 1U;
+	    hpcd->IN_ep[i].num = i;
+	    //hpcd->IN_ep[i].tx_fifo_num = i;
+	    /* Control until ep is activated */
+	    hpcd->IN_ep[i].type = EP_TYPE_CTRL;
+	    hpcd->IN_ep[i].maxpacket = 0U;
+	    hpcd->IN_ep[i].xfer_buff = 0U;
+	    hpcd->IN_ep[i].xfer_len = 0U;
+	  }
+
+	  for (i = 0U; i < hpcd->Init.dev_endpoints; i++)
+	  {
+	    hpcd->OUT_ep[i].is_in = 0U;
+	    hpcd->OUT_ep[i].num = i;
+	    /* Control until ep is activated */
+	    hpcd->OUT_ep[i].type = EP_TYPE_CTRL;
+	    hpcd->OUT_ep[i].maxpacket = 0U;
+	    hpcd->OUT_ep[i].xfer_buff = 0U;
+	    hpcd->OUT_ep[i].xfer_len = 0U;
+	  }
+
+	  /* Init Device */
+	  if (USB_DevInit(USBx, hpcd->Init) != HAL_OK)
+	  {
+	    hpcd->State = HAL_PCD_STATE_ERROR;
+	    return HAL_ERROR;
+	  }
+
+	  hpcd->USB_Address = 0U;
+	  hpcd->State = HAL_PCD_STATE_READY;
+
+	  /* Activate LPM */
+//	  if (hpcd->Init.lpm_enable == 1U)
+//	  {
+//	    (void)HAL_PCDEx_ActivateLPM(hpcd);
+//	  }
+
+	  (void)USB_DevDisconnect(USBx);
+
+	  return HAL_OK;
+}
+
+/**
+  * @brief  DeInitializes the PCD peripheral.
+  * @param  hpcd: PCD handle
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
+{
+	  /* Check the PCD handle allocation */
+	  if (hpcd == NULL)
+	  {
+	    return HAL_ERROR;
+	  }
+
+	  hpcd->State = HAL_PCD_STATE_BUSY;
+
+	  /* Stop Device */
+	  if (USB_StopDevice(hpcd->Instance) != HAL_OK)
+	  {
+	    return HAL_ERROR;
+	  }
+
+	#if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
+	  if (hpcd->MspDeInitCallback == NULL)
+	  {
+	    hpcd->MspDeInitCallback = HAL_PCD_MspDeInit; /* Legacy weak MspDeInit  */
+	  }
+
+	  /* DeInit the low level hardware */
+	  hpcd->MspDeInitCallback(hpcd);
+	#else
+	  /* DeInit the low level hardware: CLOCK, NVIC.*/
+	  HAL_PCD_MspDeInit(hpcd);
+	#endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
+
+	  hpcd->State = HAL_PCD_STATE_RESET;
+
+	  return HAL_OK;
+}
+
+/**
+  * @}
+  */
+
+/**
+  * @brief  Start The USB OTG Device.
+  * @param  hpcd: PCD handle
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd)
+{
+  __HAL_LOCK(hpcd);
+  USB_DevConnect (hpcd->Instance);
+  __HAL_PCD_ENABLE(hpcd);
+  __HAL_UNLOCK(hpcd);
+  return HAL_OK;
+}
+
+/**
+  * @brief  Stop The USB OTG Device.
+  * @param  hpcd: PCD handle
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd)
+{
+  __HAL_LOCK(hpcd);
+  __HAL_PCD_DISABLE(hpcd);
+  USB_StopDevice(hpcd->Instance);
+  USB_DevDisconnect (hpcd->Instance);
+  __HAL_UNLOCK(hpcd);
+  return HAL_OK;
 }
 
 
@@ -3170,9 +3379,6 @@ USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 {
 	return 1;
 }
-
-
-
 
 #endif /* CPUSTYLE_R7S721 */
 
