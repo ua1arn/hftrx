@@ -73,10 +73,37 @@ void SystemClock_Config(void);
 *******************************************************************************/
 /* MSP Init */
 void OTG_HS_IRQHandler(void);
+void device_USBI0_IRQHandler(void);
+void device_USBI1_IRQHandler(void);
 
 void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 {
-#if CPUSTYLE_STM32MP1
+#if CPUSTYLE_R7S721
+
+	if (hpcd->Instance == & USB200)
+	{
+		arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
+
+		/* ---- Supply clock to the USB20(channel 0) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB0_INITIALIZE();
+
+	}
+	else if (hpcd->Instance == & USB201)
+	{
+		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
+
+		/* ---- Supply clock to the USB20(channel 1) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		HARDWARE_USB1_INITIALIZE();
+	}
+
+#elif CPUSTYLE_STM32MP1
 	// Set 3.3 volt DETECTOR enable
 	LL_PWR_EnableUSBVoltageDetector();
 	while (LL_PWR_IsEnabledUSBVoltageDetector() == 0)
@@ -303,28 +330,77 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 {
-//  if(pcdHandle->Instance==USB_OTG_HS)
-//  {
-//  /* USER CODE BEGIN USB_OTG_HS_MspDeInit 0 */
-//
-//  /* USER CODE END USB_OTG_HS_MspDeInit 0 */
-//    /* Peripheral clock disable */
-//    __HAL_RCC_USB_OTG_HS_CLK_DISABLE();
-//
-//    /**USB_OTG_HS GPIO Configuration
-//    PB13     ------> USB_OTG_HS_VBUS
-//    PB14     ------> USB_OTG_HS_DM
-//    PB15     ------> USB_OTG_HS_DP
-//    */
-//    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15);
-//
-//    /* Peripheral interrupt Deinit*/
-//    HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
-//
-//  /* USER CODE BEGIN USB_OTG_HS_MspDeInit 1 */
-//
-//  /* USER CODE END USB_OTG_HS_MspDeInit 1 */
-//  }
+#if CPUSTYLE_R7S721
+
+	if (pcdHandle->Instance == & USB200)
+	{
+		const IRQn_ID_t int_id = USBI0_IRQn;
+		IRQ_Disable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 0) ---- */
+		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		//(void) CPG.STBCR7;			/* Dummy read */
+
+		//HARDWARE_USB0_UNINITIALIZE();
+
+	}
+	else if (pcdHandle->Instance == & USB201)
+	{
+		const IRQn_ID_t int_id = USBI1_IRQn;
+		IRQ_Disable(int_id);
+
+		/* ---- Supply clock to the USB20(channel 1) ---- */
+		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
+		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
+		(void) CPG.STBCR7;			/* Dummy read */
+
+		//HARDWARE_USB1_UNINITIALIZE();
+	}
+	pcdHandle->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
+	pcdHandle->Instance->INTENB0 = 0;
+	pcdHandle->Instance->INTENB1 = 0;
+
+#elif CPUSTYLE_STM32H7XX
+
+	  if (pcdHandle->Instance == USB1_OTG_HS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_HS_IRQn);
+	  }
+	  else if (pcdHandle->Instance == USB2_OTG_FS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_FS_IRQn);
+	  }
+
+#elif CPUSTYLE_STM32MP1
+
+	  if (pcdHandle->Instance == USB_OTG_HS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    IRQ_Disable(OTG_IRQn);
+	  }
+
+#elif CPUSTYLE_STM32F
+
+#if defined (USB_OTG_HS)
+	  if (pcdHandle->Instance == USB_OTG_HS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_HS_IRQn);
+	  }
+#endif /* defined (USB_OTG_HS) */
+#if defined (USB_OTG_FS)
+	  if (pcdHandle->Instance == USB_OTG_FS)
+	  {
+	    /* Peripheral interrupt Deinit*/
+	    NVIC_DisableIRQ(OTG_FS_IRQn);
+	  }
+#endif /* defined (USB_OTG_FS) */
+
+#else
+	#error HAL_PCD_MspDeInit should be implemented
+#endif
 }
 
 /**

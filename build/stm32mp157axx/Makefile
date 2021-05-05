@@ -33,7 +33,7 @@ LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"EGL_STATIC_LIBRARY"=1 -D"STM32MP153Dxx"=1
-#UDEFS += -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
+UDEFS += -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -137,7 +137,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(USBXDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
-#SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(USBXDIR)
+SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(USBXDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

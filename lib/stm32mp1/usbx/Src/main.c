@@ -76,7 +76,18 @@ void board_usb_initialize(void)
 	  MX_USB_DEVICE_Init();
 
 }
+
+void board_usb_deinitialize(void)
+{
+	MX_USB_DEVICE_DeInit();
+}
+
 void board_usb_activate(void)
+{
+
+}
+
+void board_usb_deactivate(void)
 {
 
 }
