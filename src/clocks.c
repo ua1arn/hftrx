@@ -5760,10 +5760,15 @@ void xc7z1_setltdcfreq(const videomode_t * vdmode)
 
 #endif /* CPUSTYLE_XC7Z */
 
+uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
+
 // PLL initialize
 void FLASHMEMINITFUNC
 sysinit_pll_initialize(void)
 {
+#ifdef USE_HAL_DRIVER
+	HAL_Init();
+#endif /* USE_HAL_DRIVER */
 #if CPUSTYLE_STM32F1XX
 
 	lowlevel_stm32f10x_pll_clock();
@@ -6052,6 +6057,7 @@ sysinit_pll_initialize(void)
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
+	SystemCoreClock = CPU_FREQ;
 }
 
 

@@ -257,7 +257,9 @@ extern "C" {
 
 			#define HSIFREQ 64000000uL
 			#define HSI48FREQ 48000000uL
-			#define CSI_VALUE 4000000uL
+			#if !defined  (CSI_VALUE)
+			  #define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
+			#endif /* CSI_VALUE */
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 

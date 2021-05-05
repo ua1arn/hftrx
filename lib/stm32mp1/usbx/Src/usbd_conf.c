@@ -22,13 +22,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
 #include "formats.h"
+#include "gpio.h"
 #include "src/usb/usbch9.h"
 #include "src/usb/usbx_core.h"
 
 #include "usbd_def.h"
 #include "usbd_core.h"
-
-//#include "usbd_cdc.h"
+#include "usb_device.h"
 
 /* USER CODE BEGIN Includes */
 
@@ -67,7 +67,7 @@ void SystemClock_Config(void);
 /* Private functions ---------------------------------------------------------*/
 
 /* USER CODE BEGIN 1 */
-#include "stm32mp1xx_ll_pwr.h"
+//#include "stm32mp1xx_ll_pwr.h"
 
 /* USER CODE END 1 */
 
@@ -78,6 +78,10 @@ void SystemClock_Config(void);
 void OTG_HS_IRQHandler(void);
 void device_USBI0_IRQHandler(void);
 void device_USBI1_IRQHandler(void);
+void device_OTG_HS_EP1_OUT_IRQHandler(void);
+void device_OTG_HS_EP1_IN_IRQHandler(void);
+void device_OTG_HS_IRQHandler(void);
+void device_OTG_FS_IRQHandler(void);
 
 void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 {
@@ -417,7 +421,7 @@ static void PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 {
-  USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, (uint8_t *)hpcd->PSetup);
+  USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, (uint8_t *)hpcd->Setup);
 }
 
 /**
@@ -477,11 +481,11 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 {
   USBD_SpeedTypeDef speed = USBD_SPEED_FULL;
 
-  if ( hpcd->Init.core_speed == PCD_SPEED_HIGH)
+  if ( hpcd->Init.speed == PCD_SPEED_HIGH)
   {
     speed = USBD_SPEED_HIGH;
   }
-  else if ( hpcd->Init.core_speed == PCD_SPEED_FULL)
+  else if ( hpcd->Init.speed == PCD_SPEED_FULL)
   {
     speed = USBD_SPEED_FULL;
   }
@@ -945,9 +949,9 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   hpcd_USB_OTG_HS.Instance = WITHUSBHW_DEVICE;
   hpcd_USB_OTG_HS.Init.dev_endpoints = 8;
   #if WITHUSBDEV_HSDESC
-	hpcd_USB_OTG_HS.Init.core_speed = PCD_SPEED_HIGH;
+	hpcd_USB_OTG_HS.Init.speed = PCD_SPEED_HIGH;
   #else /* WITHUSBDEV_HSDESC */
-	hpcd_USB_OTG_HS.Init.core_speed = PCD_SPEED_FULL;
+	hpcd_USB_OTG_HS.Init.speed = PCD_SPEED_FULL;
   #endif /* WITHUSBDEV_HSDESC */
   hpcd_USB_OTG_HS.Init.dma_enable = DISABLE;
   hpcd_USB_OTG_HS.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;

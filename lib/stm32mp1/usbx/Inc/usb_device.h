@@ -33,15 +33,19 @@
  #elif CPUSTYLE_STM32MP1
 	#include "stm32mp1xx.h"
 	#include "stm32mp1xx_hal.h"
+	#include "stm32mp1xx_ll_pwr.h"
 #elif CPUSTYLE_STM32H7XX
 	#include "stm32h7xx.h"
 	#include "stm32h7xx_hal.h"
+	#include "stm32h7xx_ll_pwr.h"
 #elif CPUSTYLE_STM32F7XX
 	#include "stm32f7xx.h"
 	#include "stm32f7xx_hal.h"
+	#include "stm32f7xx_ll_pwr.h"
 #elif CPUSTYLE_STM32F4XX
 	#include "stm32f4xx.h"
 	#include "stm32f4xx_hal.h"
+	#include "stm32f4xx_ll_pwr.h"
 #endif
 #include "usbd_def.h"
 

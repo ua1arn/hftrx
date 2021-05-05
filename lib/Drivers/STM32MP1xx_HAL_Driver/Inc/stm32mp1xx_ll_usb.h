@@ -93,7 +93,7 @@ typedef struct
                                          This parameter Depends on the used USB core.
                                          This parameter must be a number between Min_Data = 1 and Max_Data = 15 */
 
-  uint32_t core_speed;                   /*!< USB Core speed.
+  uint32_t speed;                   /*!< USB Core speed.
                                          This parameter can be any value of @ref USB_Core_Speed                 */
 
   uint32_t dma_enable;              /*!< Enable or disable of the USB embedded DMA used only for OTG HS.        */
@@ -184,7 +184,7 @@ typedef struct
   uint8_t   ep_is_in;           /*!< Endpoint direction
                                      This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
-  uint8_t   core_speed;              /*!< USB Host speed.
+  uint8_t   speed;              /*!< USB Host speed.
                                      This parameter can be any value of @ref USB_Core_Speed_                    */
 
   uint8_t   do_ping;            /*!< Enable or disable the use of the PING protocol for HS mode.                */

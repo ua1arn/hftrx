@@ -28,7 +28,7 @@ extern "C" {
 #endif
 #include "hardware.h"
 /* Includes ------------------------------------------------------------------*/
-#include "stm32mp1xx_hal.h"
+//#include "stm32mp1xx_hal.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

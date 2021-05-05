@@ -225,7 +225,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
     hhcd->hc[ch_num].ep_is_in = 0U;
   }
 
-  hhcd->hc[ch_num].core_speed = speed;
+  hhcd->hc[ch_num].speed = speed;
 
   status =  USB_HC_Init(hhcd->Instance,
                         ch_num,
@@ -1439,7 +1439,7 @@ static void HCD_HC_OUT_IRQHandler(HCD_HandleTypeDef *hhcd, uint8_t chnum)
 
     if (hhcd->hc[ch_num].do_ping == 0U)
     {
-      if (hhcd->hc[ch_num].core_speed == HCD_DEVICE_SPEED_HIGH)
+      if (hhcd->hc[ch_num].speed == HCD_DEVICE_SPEED_HIGH)
       {
         hhcd->hc[ch_num].do_ping = 1U;
       }
@@ -1673,7 +1673,7 @@ static void HCD_Port_IRQHandler(HCD_HandleTypeDef *hhcd)
       }
       else
       {
-        if (hhcd->Init.core_speed == HCD_SPEED_FULL)
+        if (hhcd->Init.speed == HCD_SPEED_FULL)
         {
           USBx_HOST->HFIR = 60000U;
         }

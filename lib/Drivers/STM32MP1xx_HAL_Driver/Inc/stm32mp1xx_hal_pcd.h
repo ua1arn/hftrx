@@ -106,7 +106,7 @@ typedef struct
   __IO  uint32_t          ErrorCode;   /*!< PCD Error code                    */
   PCD_LPM_StateTypeDef    LPM_State;   /*!< LPM State                         */
   uint32_t                BESL;
-	__ALIGN_BEGIN uint32_t PSetup [12] __ALIGN_END;  /*!< Setup packet buffer                */
+  __ALIGN_BEGIN uint32_t Setup [12] __ALIGN_END;  /*!< Setup packet buffer                */
 
 
   uint32_t lpm_active;                 /*!< Enable or disable the Link Power Management .

@@ -131,6 +131,9 @@ uint32_t sys_now(void)
 RAMFUNC void spool_systimerbundle1(void)
 {
 	//beacon_255();
+#ifdef USE_HAL_DRIVER
+	HAL_IncTick();
+#endif /* USE_HAL_DRIVER */
 
 #if WITHLWIP
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
@@ -3220,6 +3223,7 @@ void Reset_CPUn_Handler(void)
 
 void cpump_initialize(void)
 {
+	SystemCoreClock = CPU_FREQ;
 
 #if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM
