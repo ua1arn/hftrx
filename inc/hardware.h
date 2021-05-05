@@ -368,6 +368,7 @@ extern "C" {
 	#include "armcpu/rza_io_regrw.h"	// iobitmasks
 
 	#include "irq_ctrl.h"
+	#include "rza1xx_hal.h"
 
 
 	#define DCACHEROWSIZE 32
@@ -988,6 +989,7 @@ extern uint8_t myGATEWAY [4];
 extern XGpioPs xc7z_gpio;
 
 void xc7z_hardware_initialize(void);
+void xc7z_dds_ftw(const uint_least64_t * val);
 #endif /* CPUSTYLE_XC7Z */
 
 #ifdef __cplusplus

@@ -140,7 +140,7 @@
 			#define WITHUSBUACIN	1
 			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 		#else /* WITHRTS96 || WITHRTS192 */
-			#define WITHUSBUACIN
+			#define WITHUSBUACIN	1
 		#endif /* WITHRTS96 || WITHRTS192 */
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 	#endif /* WITHINTEGRATEDDSP */

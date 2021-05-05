@@ -240,7 +240,7 @@ int_fast32_t buffers_dmabuffer16cachesize(void)
 typedef ALIGNX_BEGIN struct voices32tx_tag
 {
 	void * tag2;
-	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
+	ALIGNX_BEGIN IFDACvalue_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 	void * tag3;
 } ALIGNX_END voice32tx_t;
@@ -253,7 +253,7 @@ int_fast32_t buffers_dmabuffer32txcachesize(void)
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag
 {
-	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
+	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rx_t;
 
@@ -1992,7 +1992,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32rx((const int32_t *) addr);
+	dsp_extbuffer32rx((const IFADCvalue_t *) addr);
 
 #if WITHUSBUAC
 	static RAMDTCM unsigned rx32adc = 0;
@@ -2031,7 +2031,7 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32wfm((const int32_t *) addr);
+	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
 }
 
 #if WITHRTS192

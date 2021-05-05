@@ -1726,14 +1726,14 @@ uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   * @param  len amount of data to be sent
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, uint8_t *pBuf, uint32_t len)
+HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, const uint8_t *pBuf, uint32_t len)
 {
   PCD_EPTypeDef *ep;
 
   ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
 
   /*setup and start the Xfer */
-  ep->xfer_buff = pBuf;
+  ep->xfer_buff = (uint8_t *) pBuf;
   ep->xfer_len = len;
   ep->xfer_count = 0U;
   ep->is_in = 1U;

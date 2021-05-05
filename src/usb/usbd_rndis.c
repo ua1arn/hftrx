@@ -16,6 +16,7 @@
 
 #include "formats.h"
 #include "usbx_core.h"
+#include "usbd_def.h"
 
 #include "lwip/opt.h"
 #include "lwip/init.h"
@@ -429,12 +430,12 @@ static uint8_t station_hwaddr[6] = { STATION_HWADDR };
 static uint8_t permanent_hwaddr[6] = { PERMANENT_HWADDR };
 static rndis_state_t rndis_state = rndis_uninitialized;
 static uint32_t oid_packet_filter = 0x0000000;
-static USBALIGN_BEGIN uint8_t encapsulated_buffer [ENC_BUF_SIZE] USBALIGN_END;
+static __ALIGN_BEGIN uint8_t encapsulated_buffer [ENC_BUF_SIZE] __ALIGN_END;
 
 static uint16_t rndis_tx_data_size = 0;
 static int rndis_tx_transmitting = false;
 static int rndis_tx_ZLP = false;
-static USBALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] USBALIGN_END;
+static __ALIGN_BEGIN uint8_t usb_rx_buffer [USBD_RNDIS_OUT_BUFSIZE] __ALIGN_END;
 
 static uint8_t *rndis_tx_ptr = NULL;
 static int rndis_first_tx = 1;
@@ -996,7 +997,7 @@ static USBD_StatusTypeDef usbd_rndis_data_out(USBD_HandleTypeDef *pdev, uint_fas
 
 static void response_available(USBD_HandleTypeDef *pdev)
 {
-	static USBALIGN_BEGIN uint8_t sendState [8] USBALIGN_END;
+	static __ALIGN_BEGIN uint8_t sendState [8] __ALIGN_END;
 	uint_fast32_t code = 0x01;
 	uint_fast32_t reserved0 = 0x09;
 

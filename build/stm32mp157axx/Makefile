@@ -33,7 +33,7 @@ LDSCRIPT_APP = ./stm32mp15xx_ca7_app.ld
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_STM32MP1"=1 -D"EGL_STATIC_LIBRARY"=1 -D"STM32MP153Dxx"=1
-#UDEFS += -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
+UDEFS += -D"CORE_CA7"=1 -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
@@ -63,7 +63,7 @@ LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
-USBXDIR = $(PRJROOT)/lib/stm32mp1/usbx
+USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 
@@ -78,7 +78,7 @@ DINCDIR = \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWUSBDIR)/Class/CDC/Inc \
-	$(USBXDIR)/Inc \
+	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \
@@ -135,9 +135,9 @@ ULIBS +=
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
-#SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(USBXDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
+#SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
-#SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(USBXDIR)
+SRCDIRS += $(HALDIR) $(MDLWUSBDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)

@@ -20,7 +20,6 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 /* USER CODE BEGIN Includes */
 
 /* USER CODE END Includes */
@@ -67,7 +66,7 @@ void HAL_MspInit(void)
 
   /* USER CODE END MspInit 0 */
 
-  __HAL_RCC_HSEM_CLK_ENABLE();
+  //__HAL_RCC_HSEM_CLK_ENABLE();
 
 //  /* System interrupt init*/
 //  /* MemoryManagement_IRQn interrupt configuration */

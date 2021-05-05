@@ -46,7 +46,7 @@ extern "C" {
 #endif /* NULL */
 
 #ifndef USBD_MAX_NUM_INTERFACES
-#define USBD_MAX_NUM_INTERFACES                         1U
+#define USBD_MAX_NUM_INTERFACES                         32U
 #endif /* USBD_MAX_NUM_CONFIGURATION */
 
 #ifndef USBD_MAX_NUM_CONFIGURATION
@@ -93,6 +93,7 @@ extern "C" {
 #define  USB_REQ_TYPE_CLASS                             0x20U
 #define  USB_REQ_TYPE_VENDOR                            0x40U
 #define  USB_REQ_TYPE_MASK                              0x60U
+#define  USB_REQ_TYPE_DIR                               0x80	// IN for non-zero
 
 #define  USB_REQ_RECIPIENT_DEVICE                       0x00U
 #define  USB_REQ_RECIPIENT_INTERFACE                    0x01U
@@ -230,26 +231,27 @@ struct _USBD_HandleTypeDef;
 
 typedef struct _Device_cb
 {
-	USBD_StatusTypeDef (*Init)(struct _USBD_HandleTypeDef *pdev, uint8_t cfgidx);
-	USBD_StatusTypeDef (*DeInit)(struct _USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+	void (*ColdInit)(void);
+	USBD_StatusTypeDef (*Init)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);
+	USBD_StatusTypeDef (*DeInit)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx);
   /* Control Endpoints*/
-	USBD_StatusTypeDef (*Setup)(struct _USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef  *req);
+	USBD_StatusTypeDef (*Setup)(struct _USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef  *req);
 	USBD_StatusTypeDef (*EP0_TxSent)(struct _USBD_HandleTypeDef *pdev);
 	USBD_StatusTypeDef (*EP0_RxReady)(struct _USBD_HandleTypeDef *pdev);
   /* Class Specific Endpoints*/
-	USBD_StatusTypeDef (*DataIn)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
-	USBD_StatusTypeDef (*DataOut)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
+	USBD_StatusTypeDef (*DataIn)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
+	USBD_StatusTypeDef (*DataOut)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
 	USBD_StatusTypeDef (*SOF)(struct _USBD_HandleTypeDef *pdev);
-	USBD_StatusTypeDef (*IsoINIncomplete)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
-	USBD_StatusTypeDef (*IsoOUTIncomplete)(struct _USBD_HandleTypeDef *pdev, uint8_t epnum);
+	USBD_StatusTypeDef (*IsoINIncomplete)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
+	USBD_StatusTypeDef (*IsoOUTIncomplete)(struct _USBD_HandleTypeDef *pdev, uint_fast8_t epnum);
 
-  uint8_t  *(*GetHSConfigDescriptor)(uint16_t *length);
-  uint8_t  *(*GetFSConfigDescriptor)(uint16_t *length);
-  uint8_t  *(*GetOtherSpeedConfigDescriptor)(uint16_t *length);
-  uint8_t  *(*GetDeviceQualifierDescriptor)(uint16_t *length);
-#if (USBD_SUPPORT_USER_STRING_DESC == 1U)
-  uint8_t  *(*GetUsrStrDescriptor)(struct _USBD_HandleTypeDef *pdev, uint8_t index,  uint16_t *length);
-#endif
+//  uint8_t  *(*GetHSConfigDescriptor)(uint16_t *length);
+//  uint8_t  *(*GetFSConfigDescriptor)(uint16_t *length);
+//  uint8_t  *(*GetOtherSpeedConfigDescriptor)(uint16_t *length);
+//  uint8_t  *(*GetDeviceQualifierDescriptor)(uint16_t *length);
+//#if (USBD_SUPPORT_USER_STRING_DESC == 1U)
+//  uint8_t  *(*GetUsrStrDescriptor)(struct _USBD_HandleTypeDef *pdev, uint8_t index,  uint16_t *length);
+//#endif
 
 } USBD_ClassTypeDef;
 
@@ -272,23 +274,22 @@ typedef struct
 } USBD_DescriptorsTypeDef;
 
 /* USB Device handle structure */
-typedef struct
+typedef __ALIGN_BEGIN struct
 {
-  uint32_t status;
+  //uint32_t status;
+  __ALIGN_BEGIN uint8_t	epstatus [32] __ALIGN_END;	// used 2 elements
   uint32_t total_length;
   uint32_t rem_length;
   uint32_t maxpacket;
   uint16_t is_used;
   uint16_t bInterval;
-} USBD_EndpointTypeDef;
+} __ALIGN_END USBD_EndpointTypeDef;
+
+#define USBD_MAX_NUM_CLASSES 16
 
 /* USB Device handle structure */
-typedef struct _USBD_HandleTypeDef
+typedef __ALIGN_BEGIN struct _USBD_HandleTypeDef
 {
-  uint8_t                 id;
-  uint32_t                dev_config;
-  uint32_t                dev_default_config;
-  uint32_t                dev_config_status;
   USBD_SpeedTypeDef       dev_speed;
   USBD_EndpointTypeDef    ep_in[16];
   USBD_EndpointTypeDef    ep_out[16];
@@ -301,16 +302,20 @@ typedef struct _USBD_HandleTypeDef
   uint8_t                 dev_test_mode;
   uint32_t                dev_remote_wakeup;
   uint8_t                 ConfIdx;
+  __ALIGN_BEGIN uint8_t  dev_config [32] __ALIGN_END; // used 1 byte
+  __ALIGN_BEGIN uint8_t  dev_default_config [32] __ALIGN_END;	// used 1 byte
+  __ALIGN_BEGIN uint8_t  dev_config_status [32] __ALIGN_END;	// used two bytes
+
 
   USBD_SetupReqTypedef    request;
-  USBD_DescriptorsTypeDef *pDesc;
-  USBD_ClassTypeDef       *pClass;
-  void                    *pClassData;
-  void                    *pUserData;
-  void                    *pData;
-  void                    *pBosDesc;
-  void                    *pConfDesc;
-} USBD_HandleTypeDef;
+  //USBD_DescriptorsTypeDef *pDesc;
+  uint_fast8_t			nClasses;
+  const USBD_ClassTypeDef       *pClasses [USBD_MAX_NUM_CLASSES];
+  //void                    *pClassData [USBD_MAX_NUM_CLASSES];
+  //void                    *pUserData;
+  void                    *pData;  // PCD_HandleTypeDef*
+} __ALIGN_END USBD_HandleTypeDef;
+
 
 /**
   * @}
@@ -350,6 +355,13 @@ __STATIC_INLINE uint16_t SWAPBYTE(uint8_t *addr)
 #ifndef MAX
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #endif
+
+
+#define  HI_32BY(w)  (((w) >> 24) & 0xFF)   /* Extract 31..24 bits from unsigned word */
+#define  HI_24BY(w)  (((w) >> 16) & 0xFF)   /* Extract 23..16 bits from unsigned word */
+#define  HI_BYTE(w)  (((w) >> 8) & 0xFF)   /* Extract high-order byte from unsigned word */
+#define  LO_BYTE(w)  ((w) & 0xFF)          /* Extract low-order byte from unsigned word */
+
 
 #if  defined ( __GNUC__ )
 #ifndef __weak
@@ -400,6 +412,28 @@ __STATIC_INLINE uint16_t SWAPBYTE(uint8_t *addr)
 /** @defgroup USBD_DEF_Exported_FunctionsPrototype
   * @{
   */
+
+void usbd_descriptors_initialize(uint_fast8_t deschs);
+
+struct descholder
+{
+	const uint8_t * data;
+	unsigned size;
+};
+
+#define USBD_CONFIGCOUNT 4
+
+extern struct descholder MsftStringDescr [1];	// Microsoft OS String Descriptor
+extern struct descholder MsftCompFeatureDescr [1];	// Microsoft Compatible ID Feature Descriptor
+extern struct descholder StringDescrTbl [];
+extern struct descholder ConfigDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceDescrTbl [USBD_CONFIGCOUNT];
+extern struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
+extern struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
+extern struct descholder BinaryDeviceObjectStoreTbl [1];
+extern struct descholder HIDReportDescrTbl [1];
+uint_fast8_t usbd_get_stringsdesc_count(void);
+extern struct descholder ExtOsPropDescTbl [32];
 
 /**
   * @}

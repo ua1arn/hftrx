@@ -55,8 +55,25 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
-#if defined(USBPHYC)
-// STM32MP1xx
+#if defined (USB_OTG_FS) || defined (USB_OTG_HS)
+static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
+
+/* Exported functions --------------------------------------------------------*/
+/** @defgroup USB_LL_Exported_Functions USB Low Layer Exported Functions
+  * @{
+  */
+
+/** @defgroup USB_LL_Exported_Functions_Group1 Initialization/de-initialization functions
+  *  @brief    Initialization and Configuration functions
+  *
+@verbatim
+ ===============================================================================
+                      ##### Initialization/de-initialization functions #####
+ ===============================================================================
+
+@endverbatim
+  * @{
+  */
 
 #define ULL(v) ((unsigned long long) (v))
 #define UL(v) ((unsigned long) (v))
@@ -245,95 +262,6 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	return HAL_OK;
 }
 
-#elif defined(USB_HS_PHYC)
-// STM32F723xx, STM32F730xx, STM32F733xx
-
-/**
-  * @brief  Enables control of a High Speed USB PHYВ’s
-  *         Init the low level hardware : GPIO, CLOCK, NVIC...
-  * @param  USBx : Selected device
-  * @retval HAL status
-  */
-HAL_StatusTypeDef USB_HS_PHYCInit(void)
-{
-	PRINTF("USB_HS_PHYCInit start\n");
-  uint32_t count = 0;
-
-  /* Enable LDO */
-  USB_HS_PHYC->USB_HS_PHYC_LDO |= USB_HS_PHYC_LDO_ENABLE;
-
-  /* wait for LDO Ready */
-  while ((USB_HS_PHYC->USB_HS_PHYC_LDO & USB_HS_PHYC_LDO_STATUS) == RESET)
-  {
-    if (++count > 200000)
-    {
-      return HAL_TIMEOUT;
-    }
-  }
-
-  /* Controls PHY frequency operation selection */
-  if (REFINFREQ == 12000000) /* HSE = 12MHz */
-  {
-    USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x0 << 1);
-  }
-  else if (REFINFREQ == 12500000) /* HSE = 12.5MHz */
-  {
-    USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x2 << 1);
-  }
-  else if (REFINFREQ == 16000000) /* HSE = 16MHz */
-  {
-    USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x3 << 1);
-  }
-
-  else if (REFINFREQ == 24000000) /* HSE = 24MHz */
-  {
-    USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x4 << 1);
-  }
-  else if (REFINFREQ == 25000000) /* HSE = 25MHz */
-  {
-    USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x5 << 1);
-  }
-  else if (REFINFREQ == 32000000) /* HSE = 32MHz */
-  {
-    USB_HS_PHYC->USB_HS_PHYC_PLL = (uint32_t)(0x7 << 1);
-  }
-
-  /* Control the tuning interface of the High Speed PHY */
-  USB_HS_PHYC->USB_HS_PHYC_TUNE |= USB_HS_PHYC_TUNE_VALUE;
-
-  /* Enable PLL internal PHY */
-  USB_HS_PHYC->USB_HS_PHYC_PLL |= USB_HS_PHYC_PLL_PLLEN;
-
-  /* 2ms Delay required to get internal phy clock stable */
-  HARDWARE_DELAY_MS(2);
-
-	PRINTF("USB_HS_PHYCInit done\n");
- return HAL_OK;
-}
-
-#endif /* USB_HS_PHYC */
-
-
-#if defined (USB_OTG_FS) || defined (USB_OTG_HS)
-static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
-
-/* Exported functions --------------------------------------------------------*/
-/** @defgroup USB_LL_Exported_Functions USB Low Layer Exported Functions
-  * @{
-  */
-
-/** @defgroup USB_LL_Exported_Functions_Group1 Initialization/de-initialization functions
-  *  @brief    Initialization and Configuration functions
-  *
-@verbatim
- ===============================================================================
-                      ##### Initialization/de-initialization functions #####
- ===============================================================================
-
-@endverbatim
-  * @{
-  */
-
 /**
   * @brief  Initializes the USB Core
   * @param  USBx USB Instance
@@ -512,8 +440,8 @@ HAL_StatusTypeDef USB_SetTurnaroundTime(USB_OTG_GlobalTypeDef *USBx,
     UsbTrd = USBD_DEFAULT_TRDT_VALUE;
   }
 
-  USBx->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT;
-  USBx->GUSBCFG |= (uint32_t)((UsbTrd << 10) & USB_OTG_GUSBCFG_TRDT);
+  USBx->GUSBCFG &= ~USB_OTG_GUSBCFG_TRDT_Msk;
+  USBx->GUSBCFG |= (((uint32_t) UsbTrd << USB_OTG_GUSBCFG_TRDT_Pos) & USB_OTG_GUSBCFG_TRDT_Msk);
 
   return HAL_OK;
 }
@@ -616,6 +544,19 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
   USBx_DEVICE->DCFG |= DCFG_FRAME_INTERVAL_80;
 
   if (cfg.phy_itface == USB_OTG_ULPI_PHY)
+  {
+    if (cfg.speed == USBD_HS_SPEED)
+    {
+      /* Set Core speed to High speed mode */
+      (void)USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH);
+    }
+    else
+    {
+      /* Set Core speed to Full speed mode */
+      (void)USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH_IN_FULL);
+    }
+  }
+  else if (cfg.phy_itface == USB_OTG_HS_EMBEDDED_PHY)
   {
     if (cfg.speed == USBD_HS_SPEED)
     {
@@ -1594,7 +1535,7 @@ HAL_StatusTypeDef  USB_ActivateSetup(USB_OTG_GlobalTypeDef *USBx)
 HAL_StatusTypeDef USB_EP0_OutStart(USB_OTG_GlobalTypeDef *USBx, uint8_t dma, uint8_t *psetup)
 {
   uint32_t USBx_BASE = (uint32_t)USBx;
-  uint32_t gSNPSiD = *(__IO uint32_t *)(&USBx->CID + 0x1U);
+  uint32_t gSNPSiD = *(&USBx->CID + 0x1U);
 
   if (gSNPSiD > USB_OTG_CORE_ID_300A)
   {
@@ -1674,7 +1615,9 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
   /* Disable Battery chargin detector */
   USBx->GCCFG &= ~(USB_OTG_GCCFG_BCDEN);
 
-
+  // CID:
+  // H7: 0x0000 2300
+  // MP1: 0x0000 4000
   if ((USBx->CID & (0x1U << 8)) != 0U)
   {
     if (cfg.speed == USBH_FSLS_SPEED)
@@ -2019,6 +1962,9 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   uint16_t num_packets;
   uint16_t max_hc_pkt_count = 256U;
 
+  // CID:
+  // H7: 0x0000 2300
+  // MP1: 0x0000 4000
   if (((USBx->CID & (0x1U << 8)) != 0U) && (hc->speed == USBH_HS_SPEED))
   {
     /* in DMA mode host Core automatically issues ping  in case of NYET/NAK */

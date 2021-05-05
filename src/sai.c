@@ -3213,8 +3213,8 @@ static void r7s721_ssif1_dmarx_initialize(void)
 	DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 
 	/* Set Transfer Size */
-	DMAC2.N0TB_n = DMABUFFSIZE32RX * sizeof (int32_t);	// размер в байтах
-	DMAC2.N1TB_n = DMABUFFSIZE32RX * sizeof (int32_t);	// размер в байтах
+	DMAC2.N0TB_n = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);	// размер в байтах
+	DMAC2.N1TB_n = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRXI1 (receive data full)
@@ -3279,8 +3279,8 @@ static void r7s721_ssif1_dmatx_initialize(void)
     DMAC3.N1DA_n = (uintptr_t) & SSIF1.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
-    DMAC3.N0TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// размер в байтах
-    DMAC3.N1TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// размер в байтах
+    DMAC3.N0TB_n = DMABUFFSIZE32TX * sizeof (IFDACvalue_t);	// размер в байтах
+    DMAC3.N1TB_n = DMABUFFSIZE32TX * sizeof (IFDACvalue_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSITXI1 (transmit data empty)

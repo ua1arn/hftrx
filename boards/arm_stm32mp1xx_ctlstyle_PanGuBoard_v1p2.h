@@ -365,6 +365,8 @@
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	typedef int32_t IFADCvalue_t;
+	typedef int32_t IFDACvalue_t;
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
@@ -468,7 +470,7 @@
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	//#define WITHCAT		1	/* используется CAT */
+	#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
@@ -514,12 +516,12 @@
 		#endif
 		//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
-	#if 1
+	#if 0
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 1
+	#if 0
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */

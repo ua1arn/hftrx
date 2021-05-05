@@ -1342,7 +1342,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
       /* Set USB Turnaround time */
       (void)USB_SetTurnaroundTime(hpcd->Instance,
-                                  HAL_RCC_GetHCLKFreq(),
+    		  	  	  	  	  	  RCC_GetAXISSClockFreq(),	//HAL_RCC_GetHCLKFreq(),
                                   (uint8_t)hpcd->Init.speed);
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
@@ -1815,14 +1815,14 @@ uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   * @param  len amount of data to be sent
   * @retval HAL status
   */
-HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, uint8_t *pBuf, uint32_t len)
+HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, const uint8_t *pBuf, uint32_t len)
 {
   PCD_EPTypeDef *ep;
 
   ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
 
   /*setup and start the Xfer */
-  ep->xfer_buff = pBuf;
+  ep->xfer_buff = (uint8_t *) pBuf;
   ep->xfer_len = len;
   ep->xfer_count = 0U;
   ep->is_in = 1U;
@@ -2080,7 +2080,7 @@ static HAL_StatusTypeDef PCD_EP_OutXfrComplete_int(PCD_HandleTypeDef *hpcd, uint
 {
   USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
   uint32_t USBx_BASE = (uint32_t)USBx;
-  uint32_t gSNPSiD = *(__IO uint32_t *)(&USBx->CID + 0x1U);
+  uint32_t gSNPSiD = * (&USBx->CID + 0x1U);
   uint32_t DoepintReg = USBx_OUTEP(epnum)->DOEPINT;
 
   if (hpcd->Init.dma_enable == 1U)
@@ -2185,7 +2185,7 @@ static HAL_StatusTypeDef PCD_EP_OutSetupPacket_int(PCD_HandleTypeDef *hpcd, uint
 {
   USB_OTG_GlobalTypeDef *USBx = hpcd->Instance;
   uint32_t USBx_BASE = (uint32_t)USBx;
-  uint32_t gSNPSiD = *(__IO uint32_t *)(&USBx->CID + 0x1U);
+  uint32_t gSNPSiD = * (&USBx->CID + 0x1U);
   uint32_t DoepintReg = USBx_OUTEP(epnum)->DOEPINT;
 
   if ((gSNPSiD > USB_OTG_CORE_ID_300A) &&

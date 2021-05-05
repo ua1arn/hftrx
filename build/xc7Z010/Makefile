@@ -74,7 +74,7 @@ LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
-USBXDIR = $(PRJROOT)/lib/stm32mp1/usbx
+USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
 
@@ -89,7 +89,7 @@ DINCDIR = \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWUSBDIR)/Class/CDC/Inc \
-	$(USBXDIR)/Inc \
+	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \

@@ -114,7 +114,7 @@
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
@@ -129,28 +129,33 @@
 	//#define WITHUSBHOST_DMAENABLE 1
 
 
-	//#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
+	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHCAT7_CDC	1	// сетевой интерфейс SLIP на CDC
 	#define WITHMODEM_CDC	1
 
-//	#if WITHINTEGRATEDDSP
-//
-//		#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
-//		#if WITHRTS96 || WITHRTS192
-//			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
-//		#endif /* WITHRTS96 || WITHRTS192 */
-//		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
-//	#endif /* WITHINTEGRATEDDSP */
+	#if WITHINTEGRATEDDSP
 
-	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
-	//#define WITHUSBCDCACM_N	1	/* количество виртуальных последовательных портов */
+		//#define WITHUAC2		1	/* UAC2 support */
+		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
+		#if WITHRTS96 || WITHRTS192
+			#define WITHUSBUACIN	1
+			#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
+		#else /* WITHRTS96 || WITHRTS192 */
+			#define WITHUSBUACIN	1
+		#endif /* WITHRTS96 || WITHRTS192 */
+		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
+	#endif /* WITHINTEGRATEDDSP */
+
+	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
     //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
 	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-	#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-	//#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	#define WITHUSBWCID	1
 

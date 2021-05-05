@@ -23,6 +23,9 @@
 #include "usbch9.h"
 #include "usbx_core.h"
 
+#include "usbd_ctlreq.h"
+#include "usbd_ioreq.h"
+
 // UAC audio device
 // USB\VID_FFFF&PID_0736&REV_0100&MI_00
 // USB\VID_FFFF&PID_0736&MI_00
@@ -1127,7 +1130,7 @@ static unsigned UAC2_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACOUT_AUDIO48_DATASIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacoutmaxpacket());
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -2237,7 +2240,7 @@ static unsigned UAC1_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACOUT_AUDIO48_DATASIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacoutmaxpacket());
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -4518,7 +4521,7 @@ struct descholder OtherSpeedConfigurationTbl [USBD_CONFIGCOUNT];
 struct descholder DeviceQualifierTbl [USBD_CONFIGCOUNT];
 struct descholder BinaryDeviceObjectStoreTbl [1];
 struct descholder HIDReportDescrTbl [1];
-struct descholder ExtOsPropDescTbl [INTERFACE_count];
+struct descholder ExtOsPropDescTbl [32];
 
 
 uint_fast8_t usbd_get_stringsdesc_count(void)

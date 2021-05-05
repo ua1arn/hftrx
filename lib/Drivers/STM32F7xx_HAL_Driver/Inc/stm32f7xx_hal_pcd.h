@@ -104,7 +104,7 @@ typedef struct
   HAL_LockTypeDef         Lock;        /*!< PCD peripheral status             */
   __IO PCD_StateTypeDef   State;       /*!< PCD communication state           */
   __IO  uint32_t          ErrorCode;   /*!< PCD Error code                    */
-  uint32_t                Setup[12];   /*!< Setup packet buffer               */
+  __ALIGN_BEGIN uint32_t Setup [12] __ALIGN_END;  /*!< Setup packet buffer                */
   PCD_LPM_StateTypeDef    LPM_State;   /*!< LPM State                         */
   uint32_t                BESL;
 
@@ -358,7 +358,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr,
                                      uint8_t *pBuf, uint32_t len);
 
 HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr,
-                                      uint8_t *pBuf, uint32_t len);
+                                      const uint8_t *pBuf, uint32_t len);
 
 
 HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr);
