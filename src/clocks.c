@@ -628,6 +628,10 @@ unsigned long stm32f7xx_get_uart8_freq(void)
 
 #elif CPUSTYLE_STM32H7XX
 
+// HAL data
+//uint32_t SystemCoreClock = 64000000;
+uint32_t SystemD2Clock = 64000000;
+const  uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
 
 /* частоты, подающиеся на периферию */
 //#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
