@@ -759,12 +759,13 @@ USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef *pdev)
   * @brief  USBD_LL_SetSpeed
   *         Handle Reset event
   * @param  pdev: device instance
+  * @param  speed: USBD_SPEED_xxx
   * @retval status
   */
 USBD_StatusTypeDef USBD_LL_SetSpeed(USBD_HandleTypeDef *pdev,
                                     USBD_SpeedTypeDef speed)
 {
-  pdev->dev_speed = speed;
+  pdev->dev_speed = speed;	// USBD_SPEED_xxx for enumeration responce
 
   return USBD_OK;
 }

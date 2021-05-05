@@ -398,11 +398,11 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 {
   USBD_SpeedTypeDef speed = USBD_SPEED_FULL;
 
-  if ( hpcd->Init.speed == PCD_SPEED_HIGH)
+  if ( hpcd->Init.core_speed == PCD_SPEED_HIGH)
   {
     speed = USBD_SPEED_HIGH;
   }
-  else if ( hpcd->Init.speed == PCD_SPEED_FULL)
+  else if ( hpcd->Init.core_speed == PCD_SPEED_FULL)
   {
     speed = USBD_SPEED_FULL;
   }
@@ -865,7 +865,11 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 
   hpcd_USB_OTG_HS.Instance = WITHUSBHW_DEVICE;
   hpcd_USB_OTG_HS.Init.dev_endpoints = 8;
-  hpcd_USB_OTG_HS.Init.speed = PCD_SPEED_FULL;
+  #if WITHUSBDEV_HSDESC
+	hpcd_USB_OTG_HS.Init.core_speed = PCD_SPEED_HIGH;
+  #else /* WITHUSBDEV_HSDESC */
+	hpcd_USB_OTG_HS.Init.core_speed = PCD_SPEED_FULL;
+  #endif /* WITHUSBDEV_HSDESC */
   hpcd_USB_OTG_HS.Init.dma_enable = DISABLE;
   hpcd_USB_OTG_HS.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
   hpcd_USB_OTG_HS.Init.Sof_enable = DISABLE;

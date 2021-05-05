@@ -617,7 +617,20 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
 
   if (cfg.phy_itface == USB_OTG_ULPI_PHY)
   {
-    if (cfg.speed == USBD_HS_SPEED)
+    if (cfg.core_speed == USBD_HS_SPEED)
+    {
+      /* Set Core speed to High speed mode */
+      (void)USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH);
+    }
+    else
+    {
+      /* Set Core speed to Full speed mode */
+      (void)USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH_IN_FULL);
+    }
+  }
+  else if (cfg.phy_itface == USB_OTG_HS_EMBEDDED_PHY)
+  {
+    if (cfg.core_speed == USBD_HS_SPEED)
     {
       /* Set Core speed to High speed mode */
       (void)USB_SetDevSpeed(USBx, USB_OTG_SPEED_HIGH);
@@ -1674,10 +1687,12 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
   /* Disable Battery chargin detector */
   USBx->GCCFG &= ~(USB_OTG_GCCFG_BCDEN);
 
-
+  // CID:
+  // H7: 0x0000 2300
+  // MP1: 0x0000 4000
   if ((USBx->CID & (0x1U << 8)) != 0U)
   {
-    if (cfg.speed == USBH_FSLS_SPEED)
+    if (cfg.core_speed == USBH_FSLS_SPEED)
     {
       /* Force Device Enumeration to FS/LS mode only */
       USBx_HOST->HCFG |= USB_OTG_HCFG_FSLSS;
@@ -2019,7 +2034,10 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   uint16_t num_packets;
   uint16_t max_hc_pkt_count = 256U;
 
-  if (((USBx->CID & (0x1U << 8)) != 0U) && (hc->speed == USBH_HS_SPEED))
+  // CID:
+  // H7: 0x0000 2300
+  // MP1: 0x0000 4000
+  if (((USBx->CID & (0x1U << 8)) != 0U) && (hc->core_speed == USBH_HS_SPEED))
   {
     /* in DMA mode host Core automatically issues ping  in case of NYET/NAK */
     if ((dma == 1U) && ((hc->ep_type == EP_TYPE_CTRL) || (hc->ep_type == EP_TYPE_BULK)))

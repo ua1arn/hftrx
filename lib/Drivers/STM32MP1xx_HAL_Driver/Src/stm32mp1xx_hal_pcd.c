@@ -1338,12 +1338,12 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
     if (__HAL_PCD_GET_FLAG(hpcd, USB_OTG_GINTSTS_ENUMDNE))
     {
       (void)USB_ActivateSetup(hpcd->Instance);
-      hpcd->Init.speed = USB_GetDevSpeed(hpcd->Instance);
+      hpcd->Init.core_speed = USB_GetDevSpeed(hpcd->Instance);
 
       /* Set USB Turnaround time */
       (void)USB_SetTurnaroundTime(hpcd->Instance,
                                   HAL_RCC_GetHCLKFreq(),
-                                  (uint8_t)hpcd->Init.speed);
+                                  (uint8_t)hpcd->Init.core_speed);
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
       hpcd->ResetCallback(hpcd);
