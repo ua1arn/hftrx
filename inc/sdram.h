@@ -803,8 +803,6 @@ typedef struct
   */
 #define IS_FMC_REFRESH_COUNT(COUNT) ((COUNT) <= 8191)
 
-#elif CPUSTYLE_STM32MP157A || CPUSTYLE_STM32MP157D
-
 #endif
 
 #endif /* SDRAM_H_INCLUDED */
