@@ -152,6 +152,10 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 
 #endif /* WITHUSBUACIN2 */
 
+uint_fast16_t usbd_getuacoutmaxpacket(void)
+{
+	return UACOUT_AUDIO48_DATASIZE;
+}
 
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor

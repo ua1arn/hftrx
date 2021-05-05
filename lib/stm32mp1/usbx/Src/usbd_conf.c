@@ -23,6 +23,7 @@
 #include "hardware.h"
 #include "formats.h"
 #include "src/usb/usbch9.h"
+#include "src/usb/usbx_core.h"
 
 #include "stm32mp1xx.h"
 #include "stm32mp1xx_hal.h"
@@ -650,7 +651,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 #if WITHUSBUACOUT
 	{
 		numoutendpoints += 1;
-		maxoutpacketsize4 = MAX(maxoutpacketsize4, nuacoutpackets * size2buff4(UACOUT_AUDIO48_DATASIZE));
+		maxoutpacketsize4 = MAX(maxoutpacketsize4, nuacoutpackets * size2buff4(usbd_getuacoutmaxpacket()));
 	}
 #endif /* WITHUSBUACOUT */
 #endif /* WITHUSBUAC */

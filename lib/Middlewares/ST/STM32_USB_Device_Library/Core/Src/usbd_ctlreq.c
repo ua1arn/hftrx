@@ -70,13 +70,13 @@
 /** @defgroup USBD_REQ_Private_FunctionPrototypes
   * @{
   */
-static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
-static void USBD_SetAddress(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
-static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
-static void USBD_GetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
-static void USBD_GetStatus(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
-static void USBD_SetFeature(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
-static void USBD_ClrFeature(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
+static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static void USBD_SetAddress(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static void USBD_GetConfig(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static void USBD_GetStatus(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static void USBD_SetFeature(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
+static void USBD_ClrFeature(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req);
 static uint8_t USBD_GetLen(uint8_t *buf);
 
 /**
@@ -392,7 +392,7 @@ USBD_StatusTypeDef USBD_StdEPReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
   * @param  req: usb request
   * @retval status
   */
-static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	uint16_t len;
 	const uint8_t *pbuf;
@@ -534,7 +534,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
   * @param  req: usb request
   * @retval status
   */
-static void USBD_SetAddress(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void USBD_SetAddress(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
   uint8_t  dev_addr;
 
@@ -575,12 +575,10 @@ static void USBD_SetAddress(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
   * @param  req: usb request
   * @retval status
   */
-static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
   USBD_StatusTypeDef ret = USBD_OK;
-  static uint8_t cfgidx;
-
-  cfgidx = (uint8_t)(req->wValue);
+  const uint_fast8_t cfgidx = LO_BYTE(req->wValue);
 
   if (cfgidx > USBD_MAX_NUM_CONFIGURATION)
   {
@@ -594,7 +592,6 @@ static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReq
       if (cfgidx != 0U)
       {
           pdev->dev_config [0] = cfgidx;
-          pdev->dev_config [1] = 0;
 
         ret = USBD_SetClassConfig(pdev, cfgidx);
 
@@ -619,8 +616,7 @@ static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReq
       {
         pdev->dev_state = USBD_STATE_ADDRESSED;
         pdev->dev_config [0] = cfgidx;
-        pdev->dev_config [1] = 0;
-        (void)USBD_ClrClassConfig(pdev, cfgidx);
+         (void)USBD_ClrClassConfig(pdev, cfgidx);
         (void)USBD_CtlSendStatus(pdev);
       }
       else if (cfgidx != pdev->dev_config [0])
@@ -630,7 +626,6 @@ static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReq
 
         /* set new configuration */
         pdev->dev_config [0] = cfgidx;
-        pdev->dev_config [1] = 0;
 
         ret = USBD_SetClassConfig(pdev, cfgidx);
 
@@ -668,7 +663,7 @@ static USBD_StatusTypeDef USBD_SetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReq
   * @param  req: usb request
   * @retval status
   */
-static void USBD_GetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void USBD_GetConfig(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
   if (req->wLength != 1U)
   {
@@ -702,7 +697,7 @@ static void USBD_GetConfig(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
   * @param  req: usb request
   * @retval status
   */
-static void USBD_GetStatus(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void USBD_GetStatus(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
   switch (pdev->dev_state)
   {
@@ -743,7 +738,7 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
   * @param  req: usb request
   * @retval status
   */
-static void USBD_SetFeature(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void USBD_SetFeature(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
   if (req->wValue == USB_FEATURE_REMOTE_WAKEUP)
   {
@@ -760,7 +755,7 @@ static void USBD_SetFeature(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
   * @param  req: usb request
   * @retval status
   */
-static void USBD_ClrFeature(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
+static void USBD_ClrFeature(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
   switch (pdev->dev_state)
   {

@@ -741,6 +741,7 @@ extern const USBD_ClassTypeDef USBD_CLASS_RNDIS;
 
 uint_fast16_t usbd_getuacinrtsmaxpacket(void);
 uint_fast16_t usbd_getuacinmaxpacket(void);
+uint_fast16_t usbd_getuacoutmaxpacket(void);
 
 /* USB Host defines and prototypes */
 #include <string.h>

@@ -718,7 +718,6 @@ USBD_StatusTypeDef USBD_LL_Reset(USBD_HandleTypeDef *pdev)
   pdev->dev_state = USBD_STATE_DEFAULT;
   pdev->ep0_state = USBD_EP0_IDLE;
   pdev->dev_config [0] = 0U;
-  pdev->dev_config [1] = 0U;
   pdev->dev_remote_wakeup = 0U;
 
 //  if (pdev->pClass == NULL)

@@ -21,7 +21,8 @@
 
 #include "usb200.h"
 #include "usbch9.h"
-//#include "usbx_core.h"
+#include "usbx_core.h"
+
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
 
@@ -1129,7 +1130,7 @@ static unsigned UAC2_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACOUT_AUDIO48_DATASIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacoutmaxpacket());
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
@@ -2239,7 +2240,7 @@ static unsigned UAC1_fill_14_OUT48(uint_fast8_t fill, uint8_t * buff, unsigned m
 		return 0;
 	if (fill != 0 && buff != NULL)
 	{
-		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(UACOUT_AUDIO48_DATASIZE);
+		const uint_fast16_t wMaxPacketSize = encodeMaxPacketSize(usbd_getuacoutmaxpacket());
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						  /* bLength */
 		* buff ++ = USB_ENDPOINT_DESCRIPTOR_TYPE;         /* bDescriptorType */
