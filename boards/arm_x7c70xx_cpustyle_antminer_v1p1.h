@@ -933,7 +933,7 @@
 	} while (0)
 #endif
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
@@ -994,7 +994,7 @@
 		const uint32_t MODEmask = (1U << 3); /* PD3 - MODEmask */ \
 		arm_hardware_piod_outputs(MODEmask, (state != 0) * MODEmask); /* PF4 MODE=state */ \
 	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 	#if WITHSDRAMHW
 		// Bootloader parameters

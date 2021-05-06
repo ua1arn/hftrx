@@ -60,9 +60,12 @@ static void ltdc_panelcontrolling(const videomode_t * vdmode)
 #endif
 
 #else
+
 	if (vdmode->board_devalue != UINT_MAX)
 	{
+#if defined (HARDWARE_LTDC_SET_DISP)
 		HARDWARE_LTDC_SET_DISP(vdmode->board_demode, vdmode->board_devalue);
+#endif
 	}
 
 #endif
