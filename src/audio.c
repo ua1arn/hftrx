@@ -5730,12 +5730,23 @@ void dsp_initialize(void)
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
 
+	const unsigned ifadcwidth = ulmin16(WITHIFADCWIDTH, sizeof (IFADCvalue_t) * 8);
+	int_fast32_t adcFS;
 	// Разрядность приёмного тракта
-	#if WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA
-		const int_fast32_t adcFS = (0x7ffff000L >> (32 - WITHIFADCWIDTH));	/* 0x7ffff800L так как float имеет максимум 24 бита в мантиссе (23 явных и один - старший - подразумевается всегда единица) */
-	#else /* WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA */
-		const int_fast32_t adcFS = (((uint_fast64_t) 1 << (WITHIFADCWIDTH - 1)) - 1);
-	#endif /* WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA */
+	if (ifadcwidth > DSP_FLOAT_BITSMANTISSA)
+	{
+		adcFS = (0x7ffff000L >> (32 - ifadcwidth));	/* 0x7ffff800L так как float имеет максимум 24 бита в мантиссе (23 явных и один - старший - подразумевается всегда единица) */
+	}
+	else
+	{
+		adcFS = (((uint_fast64_t) 1 << (ifadcwidth - 1)) - 1);
+	}
+//	#if WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA
+//		const int_fast32_t adcFS = (0x7ffff000L >> (32 - WITHIFADCWIDTH));	/* 0x7ffff800L так как float имеет максимум 24 бита в мантиссе (23 явных и один - старший - подразумевается всегда единица) */
+//	#else /* WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA */
+//		const int_fast32_t adcFS = (((uint_fast64_t) 1 << (WITHIFADCWIDTH - 1)) - 1);
+//	#endif /* WITHIFADCWIDTH > DSP_FLOAT_BITSMANTISSA */
+	PRINTF("dsp_initialize: adcFS=%ld\n", (long) adcFS);
 
 	rxlevelfence = adcFS * db2ratio(- 1);
 	// Разрядность поступающего с микрофона сигнала
