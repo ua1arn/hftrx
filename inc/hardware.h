@@ -430,6 +430,8 @@ extern "C" {
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
 
+#elif CPUSTYPE_ALLWNV3S
+	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
 
 #elif \
 	defined (__TMS320C28X__) || \
