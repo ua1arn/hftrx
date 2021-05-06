@@ -156,18 +156,18 @@
 //#define  USB_REQ_SET_INTERFACE                          0x0B
 //#define  USB_REQ_SYNCH_FRAME                            0x0C
 
-
-/** @defgroup USBH_CTLREQ_Exported_Defines
-  * @{
-  */
-/*Standard Feature Selector for clear feature command*/
-#define FEATURE_SELECTOR_ENDPOINT         0x00
-#define FEATURE_SELECTOR_DEVICE           0x01
-
-
-#define INTERFACE_DESC_TYPE               0x04
-#define ENDPOINT_DESC_TYPE                0x05
-#define INTERFACE_DESC_SIZE               0x09
+//
+///** @defgroup USBH_CTLREQ_Exported_Defines
+//  * @{
+//  */
+///*Standard Feature Selector for clear feature command*/
+//#define FEATURE_SELECTOR_ENDPOINT         0x00
+//#define FEATURE_SELECTOR_DEVICE           0x01
+//
+//
+//#define INTERFACE_DESC_TYPE               0x04
+//#define ENDPOINT_DESC_TYPE                0x05
+//#define INTERFACE_DESC_SIZE               0x09
 //
 //#define  USB_LEN_DESC_HDR                               0x02
 //#define  USB_LEN_DEV_DESC                               0x12
@@ -176,12 +176,12 @@
 //#define  USB_LEN_EP_DESC                                0x07
 //#define  USB_LEN_OTG_DESC                               0x03
 //#define  USB_LEN_SETUP_PKT                              0x08
-
-/* bmRequestType :D7 Data Phase Transfer Direction  */
-#define  USB_REQ_DIR_MASK                               0x80
-#define  USB_H2D                                        0x00
-#define  USB_D2H                                        0x80
-
+//
+///* bmRequestType :D7 Data Phase Transfer Direction  */
+//#define  USB_REQ_DIR_MASK                               0x80
+//#define  USB_H2D                                        0x00
+//#define  USB_D2H                                        0x80
+//
 /* bmRequestType D6..5 Type */
 //#define  USB_REQ_TYPE_STANDARD                          0x00
 //#define  USB_REQ_TYPE_CLASS                             0x20

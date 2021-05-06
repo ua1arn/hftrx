@@ -31,6 +31,7 @@
 #include "src/usb/usbx_core.h"
 
 #include "usb_device.h"
+#include "usbh_core.h"
 #include "usbd_core.h"
 
 #include "rza1xx_hal.h"
@@ -1619,8 +1620,6 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	}
 }
 
-#if 0
-
 // Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
@@ -1830,64 +1829,6 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	    hc->urb_state  = URB_DONE;
 	}
 }
-
-void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
-{
-	if (hpcd->Instance == & USB200)
-	{
-		arm_hardware_set_handler_system(USBI0_IRQn, host_USBI0_IRQHandler);
-
-		/* ---- Supply clock to the USB20(channel 0) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		HARDWARE_USB0_INITIALIZE();
-	}
-	else if (hpcd->Instance == & USB201)
-	{
-		arm_hardware_set_handler_system(USBI1_IRQn, host_USBI1_IRQHandler);
-
-		/* ---- Supply clock to the USB20(channel 1) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		HARDWARE_USB1_INITIALIZE();
-	}
-}
-
-void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
-{
-	if (hpcd->Instance == & USB200)
-	{
-		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_Disable(int_id);
-
-		/* ---- Supply clock to the USB20(channel 0) ---- */
-		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		//(void) CPG.STBCR7;			/* Dummy read */
-
-		//HARDWARE_USB0_UNINITIALIZE();
-
-	}
-	else if (hpcd->Instance == & USB201)
-	{
-		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_Disable(int_id);
-
-		/* ---- Supply clock to the USB20(channel 1) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
-		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		//HARDWARE_USB1_UNINITIALIZE();
-	}
-	hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
-	hpcd->Instance->INTENB0 = 0;
-	hpcd->Instance->INTENB1 = 0;
-}
-
-#endif
 
 /**
   * @brief  Return Host Current Frame number

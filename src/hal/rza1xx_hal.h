@@ -118,6 +118,8 @@ extern "C" {
 
 #endif
 
+
+
 #define __HAL_PCD_ENABLE(__HANDLE__)            //           (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
 #define __HAL_PCD_DISABLE(__HANDLE__)           //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
 
@@ -463,6 +465,77 @@ typedef struct
   * @}
   */
 
+/** @addtogroup STM32H7xx_HAL_Driver
+  * @{
+  */
+
+/** @addtogroup HCD HCD
+  * @{
+  */
+
+/* Exported types ------------------------------------------------------------*/
+/** @defgroup HCD_Exported_Types HCD Exported Types
+  * @{
+  */
+
+/** @defgroup HCD_Exported_Types_Group1 HCD State Structure definition
+  * @{
+  */
+typedef enum
+{
+  HAL_HCD_STATE_RESET    = 0x00,
+  HAL_HCD_STATE_READY    = 0x01,
+  HAL_HCD_STATE_ERROR    = 0x02,
+  HAL_HCD_STATE_BUSY     = 0x03,
+  HAL_HCD_STATE_TIMEOUT  = 0x04
+} HCD_StateTypeDef;
+
+typedef USB_OTG_GlobalTypeDef   HCD_TypeDef;
+typedef USB_OTG_CfgTypeDef      HCD_InitTypeDef;
+typedef USB_OTG_HCTypeDef       HCD_HCTypeDef;
+typedef USB_OTG_URBStateTypeDef HCD_URBStateTypeDef;
+typedef USB_OTG_HCStateTypeDef  HCD_HCStateTypeDef;
+/**
+  * @}
+  */
+
+/** @defgroup HCD_Exported_Types_Group2 HCD Handle Structure definition
+  * @{
+  */
+#if (USE_HAL_HCD_REGISTER_CALLBACKS == 1U)
+typedef struct __HCD_HandleTypeDef
+#else
+typedef struct
+#endif /* USE_HAL_HCD_REGISTER_CALLBACKS */
+{
+  HCD_TypeDef               *Instance;  /*!< Register base address    */
+  HCD_InitTypeDef           Init;       /*!< HCD required parameters  */
+  HCD_HCTypeDef             hc[16];     /*!< Host channels parameters */
+  HAL_LockTypeDef           Lock;       /*!< HCD peripheral status    */
+  __IO HCD_StateTypeDef     State;      /*!< HCD communication state  */
+  __IO  uint32_t            ErrorCode;  /*!< HCD Error code           */
+  void                      *pData;     /*!< Pointer Stack Handler    */
+#if (USE_HAL_HCD_REGISTER_CALLBACKS == 1U)
+  void (* SOFCallback)(struct __HCD_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
+  void (* ConnectCallback)(struct __HCD_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Connect callback            */
+  void (* DisconnectCallback)(struct __HCD_HandleTypeDef *hhcd);                        /*!< USB OTG HCD Disconnect callback         */
+  void (* PortEnabledCallback)(struct __HCD_HandleTypeDef *hhcd);                       /*!< USB OTG HCD Port Enable callback        */
+  void (* PortDisabledCallback)(struct __HCD_HandleTypeDef *hhcd);                      /*!< USB OTG HCD Port Disable callback       */
+  void (* HC_NotifyURBChangeCallback)(struct __HCD_HandleTypeDef *hhcd, uint8_t chnum,
+                                      HCD_URBStateTypeDef urb_state);                   /*!< USB OTG HCD Host Channel Notify URB Change callback  */
+
+  void (* MspInitCallback)(struct __HCD_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Msp Init callback           */
+  void (* MspDeInitCallback)(struct __HCD_HandleTypeDef *hhcd);                         /*!< USB OTG HCD Msp DeInit callback         */
+#endif /* USE_HAL_HCD_REGISTER_CALLBACKS */
+} HCD_HandleTypeDef;
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
 HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_DeInit (PCD_HandleTypeDef *hpcd);
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd);
@@ -479,160 +552,6 @@ HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority);
 #define USB_FUNCTION_bmRequestTypeDir               (0x0080u)       /* b7  : Data transfer direction - IN if non-zero */
 #define USB_FUNCTION_bmRequestTypeType              (0x0060u)       /* b6-5: Type */
 #define USB_FUNCTION_bmRequestTypeRecip             (0x001Fu)       /* b4-0: Recipient USB_RECIPIENT_MASK */
-
-#if 0
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_ENDPOINTS      8
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_INTERFACES      10
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_CONFIGURATION      1
-
-/*----------   -----------*/
-#define USBH_KEEP_CFG_DESCRIPTOR      1
-
-/*----------   -----------*/
-#define USBH_MAX_NUM_SUPPORTED_CLASS      1
-
-/*----------   -----------*/
-#define USBH_MAX_SIZE_CONFIGURATION      1024
-
-/*----------   -----------*/
-#define USBH_MAX_DATA_BUFFER      1024
-
-/*----------   -----------*/
-#define USBH_DEBUG_LEVEL      0
-
-/*----------   -----------*/
-#define USBH_USE_OS      0
-
-/* Attached device structure */
-typedef struct
-{
-#if (USBH_KEEP_CFG_DESCRIPTOR == 1)
-	uint8_t                           CfgDesc_Raw [USBH_MAX_SIZE_CONFIGURATION];
-#endif
-	uint8_t                           Data [USBH_MAX_DATA_BUFFER];
-	uint8_t                           address;
-	uint8_t                           usb_otg_speed;
-	volatile uint8_t                      is_connected;
-	uint8_t                           current_interface;
-	USBH_DevDescTypeDef               DevDesc;
-	USBH_CfgDescTypeDef               CfgDesc;
-
-}USBH_DeviceTypeDef;
-
-struct _USBH_HandleTypeDef;
-
-/* USB Host Class structure */
-typedef struct
-{
-	const char          *Name;
-	uint8_t              ClassCode;
-	USBH_StatusTypeDef  (*Init)        (struct _USBH_HandleTypeDef *phost);
-	USBH_StatusTypeDef  (*DeInit)      (struct _USBH_HandleTypeDef *phost);
-	USBH_StatusTypeDef  (*Requests)    (struct _USBH_HandleTypeDef *phost);
-	USBH_StatusTypeDef  (*BgndProcess) (struct _USBH_HandleTypeDef *phost);
-	USBH_StatusTypeDef  (*SOFProcess) (struct _USBH_HandleTypeDef *phost);
-	void*                pData;
-} USBH_ClassTypeDef;
-
-#define USBHNPIPES 15
-/* USB Host handle structure */
-typedef struct _USBH_HandleTypeDef
-{
-	volatile HOST_StateTypeDef     gState;       /*  Host State Machine Value */
-	HOST_StateTypeDef	  gPushState;
-	uint_fast16_t		  gPushTicks;
-	ENUM_StateTypeDef     EnumState;    /* Enumeration state Machine */
-	ENUM_StateTypeDef     EnumPushedState;    /* Enumeration state Machine */
-	uint_fast16_t		  EnumPushTicks;
-	CMD_StateTypeDef      RequestState;
-	USBH_CtrlTypeDef      Control;
-	USBH_DeviceTypeDef    device;
-	USBH_ClassTypeDef*    pClass[USBH_MAX_NUM_SUPPORTED_CLASS];
-	USBH_ClassTypeDef*    pActiveClass;
-	uint32_t              ClassNumber;
-	uint32_t              Pipes [USBHNPIPES];
-	volatile uint32_t         Timer;
-	//uint8_t               id;
-	void*                 pData;
-	void                 (* pUser )(struct _USBH_HandleTypeDef *pHandle, uint8_t id);
-
-#if (USBH_USE_OS == 1)
-	osMessageQId          os_event;
-	osThreadId            thread;
-#endif
-
-} USBH_HandleTypeDef;
-
-
-USBH_StatusTypeDef  USBH_HandleEnum    (USBH_HandleTypeDef *phost);
-void                USBH_HandleSof     (USBH_HandleTypeDef *phost);
-USBH_StatusTypeDef  DeInitStateMachine(USBH_HandleTypeDef *phost);
-
-#if (USBH_USE_OS == 1)
-void USBH_Process_OS(void const * argument);
-#endif
-
-/** @defgroup HCD_Exported_Types_Group1 HCD State Structure definition
-  * @{
-  */
-typedef enum
-{
-  HAL_HCD_STATE_RESET    = 0x00,
-  HAL_HCD_STATE_READY    = 0x01,
-  HAL_HCD_STATE_ERROR    = 0x02,
-  HAL_HCD_STATE_BUSY     = 0x03,
-  HAL_HCD_STATE_TIMEOUT  = 0x04
-} HCD_StateTypeDef;
-
-typedef USB_OTG_CfgTypeDef      HCD_InitTypeDef;
-typedef USB_OTG_HCTypeDef       HCD_HCTypeDef ;
-typedef USB_OTG_URBStateTypeDef HCD_URBStateTypeDef ;
-typedef USB_OTG_HCStateTypeDef  HCD_HCStateTypeDef ;
-/**
-  * @}
-  */
-
-
-/** @defgroup HCD_Exported_Types_Group2 HCD Handle Structure definition
-  * @{
-  */
-typedef struct
-{
-  HCD_TypeDef               *Instance;  /*!< Register base address    */
-  HCD_InitTypeDef           Init;       /*!< HCD required parameters  */
-  HCD_HCTypeDef             hc [15];	/*!< Host channels parameters */
-  HAL_LockTypeDef           Lock;       /*!< HCD peripheral status    */
-  volatile HCD_StateTypeDef     State;      /*!< HCD communication state  */
-  void                      *pData;     /*!< Pointer Stack Handler    */
-} HCD_HandleTypeDef;
-
-#endif
-
-HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd);
-HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd);
-void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
-
-void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
-void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
-void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
-void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd);
-void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd);
-void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd);
-void HAL_PCD_ResumeCallback(PCD_HandleTypeDef *hpcd);
-void HAL_PCD_ISOOUTIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
-void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
-void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd);
-void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd);
-
-void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
-
-
 
 /* Exported functions --------------------------------------------------------*/
 /** @addtogroup USB_LL_Exported_Functions USB Low Layer Exported Functions
@@ -802,21 +721,26 @@ HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
 
-void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd);
+void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
+void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
+void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_SuspendCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_ResumeCallback(PCD_HandleTypeDef *hpcd);
+void HAL_PCD_ISOOUTIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
+void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
 void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd);
 
-void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
-void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
-void HAL_PCD_ISOOUTIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
-void HAL_PCD_ISOINIncompleteCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum);
+void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 /**
   * @}
   */
+
+void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd);
+
 
 /* Peripheral Control functions  **********************************************/
 /** @addtogroup PCD_Exported_Functions_Group3 Peripheral Control functions
