@@ -314,7 +314,7 @@ static USBH_StatusTypeDef USBH_MSC_ClassRequest(USBH_HandleTypeDef *phost)
       if (status == USBH_OK)
       {
         MSC_Handle->max_lun = ((MSC_Handle->max_lun & 0xFFU) > MAX_SUPPORTED_LUN) ? MAX_SUPPORTED_LUN : ((MSC_Handle->max_lun & 0xFFU) + 1U);
-        USBH_UsrLog("Number of supported LUN: %lu", MSC_Handle->max_lun);
+        USBH_UsrLog("Number of supported LUN: %d", (int) MSC_Handle->max_lun);
 
         for (i = 0U; i < MSC_Handle->max_lun; i++)
         {
