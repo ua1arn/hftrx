@@ -466,20 +466,37 @@ typedef struct
 
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
-	#define HARDWARE_DACSCALE	(0.82)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#if CPUSTYLE_XC7Z
+		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
+		#define HARDWARE_DACSCALE	(0.82)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-	#define FPGADECIMATION 2560uL
-	#define FPGADIVIDERATIO 5uL
-	#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
-	#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+		#define FPGADECIMATION 1024uL
+		#define FPGADIVIDERATIO 4uL
+		#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+		#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
 
-	#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
-	#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
 
+	#else /* CPUSTYLE_XC7Z */
+		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
+		#define HARDWARE_DACSCALE	(0.82)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+		#define FPGADECIMATION 2560uL
+		#define FPGADIVIDERATIO 5uL
+		#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+		#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+
+		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+
+	#endif /* CPUSTYLE_XC7Z */
 #else
 	#define HARDWARE_DACSCALE	(1)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 

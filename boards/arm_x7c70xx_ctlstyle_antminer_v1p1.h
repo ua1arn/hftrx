@@ -87,8 +87,9 @@
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
+		//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+		#define DIRECT_49M152_X1	1	/* Тактовый генератор 49.152 МГц */
+		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
