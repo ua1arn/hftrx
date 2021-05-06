@@ -10,9 +10,9 @@
 #ifndef ARM_LEECHE_PI_ZEROCTLSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_LEECHE_PI_ZEROCTLSTYLE_STORCH_V9A_H_INCLUDED 1
 
-//	#if ! defined(STM32MP153Dxx)
-//		#error Wrong CPU selected. STM32MP153Dxx expected
-//	#endif /* ! defined(STM32MP153Dxx) */
+	#if ! defined(CPUSTYPE_ALLWNV3S)
+		#error Wrong CPU selected. CPUSTYPE_ALLWNV3S expected
+	#endif /* ! defined(CPUSTYPE_ALLWNV3S) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -467,7 +467,7 @@
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	#define WITHCAT		1	/* используется CAT */
+	//#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */

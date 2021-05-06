@@ -33,12 +33,12 @@
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
 #if WITHDEBUG
-	//#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	#define WITHUART1HW	1	/* USART0 */
 	//#define WITHUART4HW	1	/* debug PanGu Board UART4_RX PB2, UART4_TX PG11 Используется периферийный контроллер последовательного порта #4 */
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART1		1
-//#define WITHDEBUG_USART1	1
+#define WITHCAT_USART1		1
+#define WITHDEBUG_USART1	1
 //#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
 //#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
@@ -592,12 +592,14 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART1HW
+// PF2 - USART0_TX
+// PF4 - USART0_RX
 #define HARDWARE_UART1_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = 0 * (1uL << 11); /* PG11: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = 0 * (1uL << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piog_altfn2(TXMASK, AF_USART1); /* AF4 */ \
-		arm_hardware_piob_altfn2(RXMASK, AF_USART1); /* AF4 */ \
-		arm_hardware_piob_updown(RXMASK, 0); \
+		const uint_fast32_t TXMASK = (1uL << 4); /* PF2 - USART0_TX */ \
+		const uint_fast32_t RXMASK = (1uL << 4); /* PF4 - USART0_RX - pull-up RX data */  \
+		arm_hardware_piof_altfn2(TXMASK, AF_USART1); /* AF4 */ \
+		arm_hardware_piof_altfn2(RXMASK, AF_USART1); /* AF4 */ \
+		arm_hardware_piof_updown(RXMASK, 0); \
 	} while (0)
 
 // WITHUART2HW
