@@ -133,6 +133,27 @@ void RAMFUNC_NONILINE host_USBI1_IRQHandler(void)
 //	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
 
+void host_OTG_HS_EP1_IN_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+#endif /* defined (WITHUSBHW_HOST) */
+}
+
+void host_OTG_FS_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+#endif /* defined (WITHUSBHW_HOST) */
+}
+
+void host_OTG_HS_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+#endif /* defined (WITHUSBHW_HOST) */
+}
+
 void Error_Handler(void)
 {
 	ASSERT(0);
@@ -526,7 +547,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	}
 #else
 	//PRINTF(PSTR("HAL_HCD_MspInit()\n"));
-	if (hcdHandle->Instance == USB_OTG_FS)
+	if (hpcd->Instance == USB_OTG_FS)
 	{
 		#if CPUSTYLE_STM32MP1
 
@@ -575,7 +596,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 
 		#endif
 	}
-	else if (hcdHandle->Instance == USB_OTG_HS)
+	else if (hpcd->Instance == USB_OTG_HS)
 	{
 	#if CPUSTYLE_STM32MP1
 
