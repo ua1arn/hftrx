@@ -18,7 +18,7 @@
 #include "usbx_core.h"
 #include "src/fatfs/ff.h"
 #include "src/fatfs/diskio.h"		/* FatFs lower layer API */
-#include "MSC/Inc/usbh_msc.h"
+#include "../../Class/MSC/Inc/usbh_msc.h"
 
 
 #if WITHUSEUSBFLASH
