@@ -107,8 +107,7 @@ MSC_LUNTypeDef;
 /* Structure for MSC process */
 typedef struct _MSC_Process
 {
-  uint8_t              max_lun;
-  uint8_t              Reserved[3];
+  uint32_t             max_lun;
   uint8_t              InPipe;
   uint8_t              OutPipe;
   uint8_t              OutEp;
@@ -172,18 +171,28 @@ extern USBH_ClassTypeDef  USBH_msc;
 /** @defgroup USBH_MSC_CORE_Exported_FunctionsPrototype
   * @{
   */
-uint8_t USBH_MSC_IsReady(USBH_HandleTypeDef *phost);
-uint8_t USBH_MSC_GetMaxLUN(USBH_HandleTypeDef *phost);
-uint8_t USBH_MSC_UnitIsReady(USBH_HandleTypeDef *phost, uint8_t lun);
 
-USBH_StatusTypeDef USBH_MSC_GetLUNInfo(USBH_HandleTypeDef *phost, uint8_t lun,
-                                       MSC_LUNTypeDef *info);
+/* Common APIs */
+uint8_t            USBH_MSC_IsReady(USBH_HandleTypeDef *phost);
 
-USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost, uint8_t lun,
-                                 uint32_t address, uint8_t *pbuf, uint32_t length);
+/* APIs for LUN */
+uint8_t            USBH_MSC_GetMaxLUN(USBH_HandleTypeDef *phost);
 
-USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost, uint8_t lun,
-                                  uint32_t address, uint8_t *pbuf, uint32_t length);
+uint8_t            USBH_MSC_UnitIsReady(USBH_HandleTypeDef *phost, uint8_t lun);
+
+USBH_StatusTypeDef USBH_MSC_GetLUNInfo(USBH_HandleTypeDef *phost, uint8_t lun, MSC_LUNTypeDef *info);
+
+USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
+                                 uint8_t lun,
+                                 uint32_t address,
+                                 uint8_t *pbuf,
+                                 uint32_t length);
+
+USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
+                                  uint8_t lun,
+                                  uint32_t address,
+                                  uint8_t *pbuf,
+                                  uint32_t length);
 /**
   * @}
   */

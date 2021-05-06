@@ -136,63 +136,6 @@ uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr);
 
 void  USBD_LL_Delay(uint32_t Delay);
 
-
-/* получить 32-бит значение */
-uint_fast32_t
-/* Low endian memory layout */
-USBD_peek_u32(
-	const uint8_t * buff
-	);
-
-/* записать в буфер для ответа 32-бит значение */
-/* Low endian memory layout */
-unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
-
-/* получить 24-бит значение */
-/* Low endian memory layout */
-uint_fast32_t
-USBD_peek_u24(
-	const uint8_t * buff
-	);
-
-/* записать в буфер для ответа 24-бит значение */
-/* Low endian memory layout */
-unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v);
-
-/* получить 16-бит значение */
-/* Low endian memory layout */
-uint_fast32_t
-USBD_peek_u16(
-	const uint8_t * buff
-	);
-
-/* записать в буфер для ответа 16-бит значение */
-unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v);
-
-/* получить 8-бит значение */
-uint_fast8_t
-USBD_peek_u8(
-	const uint8_t * buff
-	);
-
-/* записать в буфер для ответа 8-бит значение */
-unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v);
-
-/* получить 32-бит значение */
-/* Big endian memory layout */
-uint_fast32_t
-USBD_peek_u32_BE(
-	const uint8_t * buff
-	);
-
-/* записать в буфер для ответа n-бит значение */
-/* Big endian memory layout */
-unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v);
-unsigned USBD_poke_u24_BE(uint8_t * buff, uint_fast32_t v);
-unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v);
-
-
-
 #define USBD_WCID_VENDOR_CODE 0x44
 uint_fast16_t usbd_dfu_get_xfer_size(uint_fast8_t alt);
 

@@ -2690,11 +2690,6 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 	uacoutalt = v;
 }
 
-static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a < b ? a : b;
-}
-
 static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * sizeof (int16_t) bytes
 static uint_fast16_t uacoutbufflevel;	// количество байтовЮ на которые заполнен буфер
 

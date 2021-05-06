@@ -356,13 +356,6 @@ __STATIC_INLINE uint16_t SWAPBYTE(uint8_t *addr)
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #endif
 
-
-#define  HI_32BY(w)  (((w) >> 24) & 0xFF)   /* Extract 31..24 bits from unsigned word */
-#define  HI_24BY(w)  (((w) >> 16) & 0xFF)   /* Extract 23..16 bits from unsigned word */
-#define  HI_BYTE(w)  (((w) >> 8) & 0xFF)   /* Extract high-order byte from unsigned word */
-#define  LO_BYTE(w)  ((w) & 0xFF)          /* Extract low-order byte from unsigned word */
-
-
 #if  defined ( __GNUC__ )
 #ifndef __weak
 #define __weak   __attribute__((weak))
