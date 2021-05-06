@@ -541,7 +541,7 @@ Free:
 			} while (0)
 	#endif
 
-	#if LCDMODE_LTDC
+	#if WITHLTDCHW
 		enum
 		{
 			GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
@@ -564,7 +564,7 @@ Free:
 			if (demode != 0) break; \
 			} while (0)
 
-	#endif /* LCDMODE_LTDC */
+	#endif /* WITHLTDCHW */
 
 	#if WITHUART1HW
 		#define HARDWARE_UART1_INITIALIZE() do { \

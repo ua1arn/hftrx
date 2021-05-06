@@ -744,7 +744,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 
 	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
@@ -845,24 +845,24 @@
 			else  LS020_RESET_PORT_C(LS020_RESET); \
 		} while (0)
 
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 // Signal P3_9 control
-#if WITHFLATLINK && LCDMODE_LTDC
+#if WITHFLATLINK && WITHLTDCHW
 	// SN75LVDS83B FlatLink™ Transmitter shutdown control
 	// #SHTDN is a CMOS IN with pull down resistor approx. 100..200 kOhm
 	#define HARDWARE_LVDSTX_INITIALIZE() do { \
 		const uint32_t mask = (1U << 9); /* P3_9 */ \
 		arm_hardware_pio3_outputs(mask, 1 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
 	} while (0)
-#else /* WITHFLATLINK && LCDMODE_LTDC */
+#else /* WITHFLATLINK && WITHLTDCHW */
 	// SN75LVDS83B FlatLink™ Transmitter shutdown control
 	// #SHTDN is a CMOS IN with pull down resistor approx. 100..200 kOhm
 	#define HARDWARE_LVDSTX_INITIALIZE() do { \
 		const uint32_t mask = (1U << 9); /* P3_9 */ \
 		arm_hardware_pio3_outputs(mask, 0 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
 	} while (0)
-#endif /* WITHFLATLINK && LCDMODE_LTDC */
+#endif /* WITHFLATLINK && WITHLTDCHW */
 
 	#define HARDWARE_VBUS_ON_MASK (1U << 2)	/* P5_2 ~VBUS_ON */
 

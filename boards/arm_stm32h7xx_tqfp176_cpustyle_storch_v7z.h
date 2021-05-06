@@ -734,7 +734,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
@@ -812,7 +812,7 @@
 		const uint32_t MODE = (1U << 12); /* PG12 - mode */ \
 		arm_hardware_piog_outputs(MODE, (state != 0) * MODE);	/* PG12 MODE=state */ \
 	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \

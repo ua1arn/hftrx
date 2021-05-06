@@ -699,7 +699,7 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
@@ -750,7 +750,7 @@
 		while ((GPIOI->IDR & VSYNC) == 0) ; /* дождаться 1 */ \
 		arm_hardware_pioi_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 	#if WITHSDRAMHW
 		// Bootloader parameters

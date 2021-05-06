@@ -722,7 +722,7 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 
 	#if LCDMODE_LQ043T3DX02K
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
@@ -760,7 +760,7 @@
 		__DSB(); \
 	} while (0)
 
-#else /* LCDMODE_LTDC */
+#else /* WITHLTDCHW */
 	/* без TFT индикатора - запретить работу dc-dc преобразователя подсветки */
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		/* step-up backlight converter */ \
@@ -771,7 +771,7 @@
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
 	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 #if WITHDCDCFREQCTL
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
@@ -794,7 +794,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
@@ -850,7 +850,7 @@
 		const uint32_t mask = (1U << 4); /* PF4 - RS of HD4408 */ \
 		arm_hardware_piof_outputs(mask, (state != 0) * mask);	/* PF4 MODE=state */ \
 	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 #if WITHKEYBOARD
 	/* PF5: pull-up second encoder button */
