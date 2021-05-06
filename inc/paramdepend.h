@@ -574,6 +574,61 @@ extern "C" {
 
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	enum
+	{
+		R7S721_PIOALT_1	= 0x00,	/* 1st Alternative */
+		R7S721_PIOALT_2	= 0x01,	/* 2nd Alternative */
+		R7S721_PIOALT_3	= 0x02,	/* 3rd Alternative */
+		R7S721_PIOALT_4	= 0x03,	/* 4th Alternative */
+		R7S721_PIOALT_5	= 0x04,	/* 5th Alternative */
+		R7S721_PIOALT_6	= 0x05,	/* 6th Alternative */
+		R7S721_PIOALT_7	= 0x06,	/* 7th Alternative */
+		R7S721_PIOALT_8	= 0x07	/* 8th Alternative */
+	};
+
+	/* видимые в контроллере прерывания регистры от ARM CORE */
+	//#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
+
+	//#define GICC_PMR		(INTC.ICCPMR)	// 4.4.2 Interrupt Priority Mask Register, GICC_PMR
+	//#define GICC_RPR		((uint32_t) INTC.ICCRPR)	// 4.4.6 Running Priority Register, GICC_RPR
+	//#define GICC_HPPIR		(INTC.ICCHPIR)
+	//#define GICC_IAR		(INTC.ICCIAR)
+	//#define GICC_BPR		(INTC.ICCBPR)
+	//#define GICC_CTLR		(INTC.ICCICR)
+	//#define GICD_IPRIORITYRn(n) (((volatile uint8_t *) & INTC.ICDIPR0) [(n)])
+
+	// GIC_SetConfiguration parameters
+	#define GIC_CONFIG_EDGE 0x03
+	#define GIC_CONFIG_LEVEL 0x01
+
+#elif CPUSTYPE_ALLWNV3S
+
+	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
+	#define CPU_FREQ	(30 * WITHCPUXTAL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
+
+	#define BCLOCK_FREQ		(CPU_FREQ / 3)		// 120 MHz
+	#define P1CLOCK_FREQ	(CPU_FREQ / 6)		// 60 MHz
+	#define P0CLOCK_FREQ	(CPU_FREQ / 12)		// 30 MHz
+
+	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+
+	// ADC clock frequency: 1..20 MHz
+	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+
+	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
