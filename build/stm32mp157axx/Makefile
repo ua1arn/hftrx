@@ -270,5 +270,8 @@ version:
 -include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
 -include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*/*/*.d)
+-include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*/*/*/*.d)
 
 # *** EOF ***
