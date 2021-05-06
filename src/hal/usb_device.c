@@ -21,6 +21,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+
+#if WITHUSBHW
+
 #include "formats.h"
 
 #include "src/usb/usbx_core.h"
@@ -215,5 +218,6 @@ void board_usb_deactivate(void)
 {
 
 }
+#endif /* WITHUSBHW */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
