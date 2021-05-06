@@ -3582,6 +3582,18 @@ uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
+/* получить 24-бит значение */
+uint_fast32_t
+USBD_peek_u24(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [2] << 16) +
+		((uint_fast32_t) buff [1] << 8) +
+		((uint_fast32_t) buff [0] << 0);
+}
+
 /* получить 32-бит значение */
 uint_fast32_t
 USBD_peek_u32(

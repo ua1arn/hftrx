@@ -24,6 +24,11 @@
 - "stm32xxxxx_{eval}{discovery}_sdram.c"
 EndBSPDependencies */
 
+#include "hardware.h"
+#include "formats.h"
+
+#if WITHUSBHW
+
 /* Includes ------------------------------------------------------------------*/
 #include "../Inc/usbh_msc.h"
 #include "../Inc/usbh_msc_scsi.h"
@@ -175,12 +180,10 @@ USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity(USBH_HandleTypeDef *phost,
       if (error == USBH_OK)
       {
         /*assign the capacity*/
-        capacity->block_nbr = MSC_Handle->hbot.pbuf[3] | ((uint32_t)MSC_Handle->hbot.pbuf[2] << 8U) | \
-                              ((uint32_t)MSC_Handle->hbot.pbuf[1] << 16U) | ((uint32_t)MSC_Handle->hbot.pbuf[0] << 24U);
-
+    	capacity->block_nbr = USBD_peek_u32_BE(& MSC_Handle->hbot.pbuf[0]) + 1;	// last block LBA to number of blocks conversion
         /*assign the page length*/
-        capacity->block_size = (uint16_t)(MSC_Handle->hbot.pbuf[7] | ((uint32_t)MSC_Handle->hbot.pbuf[6] << 8U));
-      }
+        capacity->block_size = USBD_peek_u32_BE(& MSC_Handle->hbot.pbuf[4]);
+       }
       break;
 
     default:
@@ -234,7 +237,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Inquiry(USBH_HandleTypeDef *phost, uint8_t lun,
 
       if (error == USBH_OK)
       {
-        (void)USBH_memset(inquiry, 0, sizeof(SCSI_StdInquiryDataTypeDef));
+        USBH_memset(inquiry, 0, sizeof(SCSI_StdInquiryDataTypeDef));
         /*assign Inquiry Data */
         inquiry->DeviceType = MSC_Handle->hbot.pbuf[0] & 0x1FU;
         inquiry->PeripheralQualifier = MSC_Handle->hbot.pbuf[0] >> 5U;
@@ -351,16 +354,10 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write(USBH_HandleTypeDef *phost,
       MSC_Handle->hbot.cbw.field.CB[0]  = OPCODE_WRITE10;
 
       /*logical block address*/
-      MSC_Handle->hbot.cbw.field.CB[2]  = (((uint8_t *)(void *)&address)[3]);
-      MSC_Handle->hbot.cbw.field.CB[3]  = (((uint8_t *)(void *)&address)[2]);
-      MSC_Handle->hbot.cbw.field.CB[4]  = (((uint8_t *)(void *)&address)[1]);
-      MSC_Handle->hbot.cbw.field.CB[5]  = (((uint8_t *)(void *)&address)[0]);
-
+      USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[2], address);
 
       /*Transfer length */
-      MSC_Handle->hbot.cbw.field.CB[7]  = (((uint8_t *)(void *)&length)[1]) ;
-      MSC_Handle->hbot.cbw.field.CB[8]  = (((uint8_t *)(void *)&length)[0]) ;
-
+      USBD_poke_u16_BE(& MSC_Handle->hbot.cbw.field.CB[7], length);
 
       MSC_Handle->hbot.state = BOT_SEND_CBW;
       MSC_Handle->hbot.cmd_state = BOT_CMD_WAIT;
@@ -411,16 +408,10 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read(USBH_HandleTypeDef *phost,
       MSC_Handle->hbot.cbw.field.CB[0]  = OPCODE_READ10;
 
       /*logical block address*/
-      MSC_Handle->hbot.cbw.field.CB[2]  = (((uint8_t *)(void *)&address)[3]);
-      MSC_Handle->hbot.cbw.field.CB[3]  = (((uint8_t *)(void *)&address)[2]);
-      MSC_Handle->hbot.cbw.field.CB[4]  = (((uint8_t *)(void *)&address)[1]);
-      MSC_Handle->hbot.cbw.field.CB[5]  = (((uint8_t *)(void *)&address)[0]);
+       USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[2], address);
 
-
-      /*Transfer length */
-      MSC_Handle->hbot.cbw.field.CB[7]  = (((uint8_t *)(void *)&length)[1]) ;
-      MSC_Handle->hbot.cbw.field.CB[8]  = (((uint8_t *)(void *)&length)[0]) ;
-
+       /*Transfer length */
+       USBD_poke_u16_BE(& MSC_Handle->hbot.cbw.field.CB[7], length);
 
       MSC_Handle->hbot.state = BOT_SEND_CBW;
       MSC_Handle->hbot.cmd_state = BOT_CMD_WAIT;
@@ -464,3 +455,4 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read(USBH_HandleTypeDef *phost,
 
 
 
+#endif /* WITHUSBHW */
