@@ -93,26 +93,6 @@ typedef enum
 
 static RAMBIGDTCM uint8_t altinterfaces [INTERFACE_count];
 
-static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a > b ? a : b;
-}
-
-static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a > b ? a : b;
-}
-
 /*****************************************/
 #if WITHISBOOTLOADER && defined (USBD_DFU_RAM_XFER_SIZE)
 	#define PREPROCMAX(a, b) ((a) > (b) ? (a) : (b))

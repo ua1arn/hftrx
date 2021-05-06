@@ -18,26 +18,6 @@
 #include <string.h>
 
 
-static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a > b ? a : b;
-}
-
-static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a > b ? a : b;
-}
-
 // Fill Layout 1 Parameter Block
 static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
 {

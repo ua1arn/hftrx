@@ -172,26 +172,6 @@ static void notify(uint_fast8_t offset, uint_fast16_t state)
 static RAMBIGDTCM volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 
-static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a > b ? a : b;
-}
-
-static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a > b ? a : b;
-}
-
 static RAMBIGDTCM volatile uint_fast8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
 static RAMBIGDTCM __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
 static RAMBIGDTCM __ALIGN_BEGIN uint8_t cdcXbuffin [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_IN_DATA_SIZE] __ALIGN_END;
