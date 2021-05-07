@@ -8235,7 +8235,7 @@ typedef struct
 
 static void hamradio_autonotch_init(LMSData_t * const lmsd)
 {
-	lmsd->phonefence = (powf(2, WITHAFDACWIDTH - 1) - 1);
+	lmsd->phonefence = 1;
 	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);

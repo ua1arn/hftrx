@@ -305,8 +305,11 @@ static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выб�
 static RAMDTCM volatile uint_fast8_t uacoutalt;
 #endif /* WITHUSBHW */
 
-static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
-static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1);
+static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1);
+
+static void savesampleout16stereo_float_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 
 // USB AUDIO IN
 typedef ALIGNX_BEGIN struct uacin16_tag
@@ -666,12 +669,12 @@ void buffers_initialize(void)
 	deliverylist_initialize(& afoutfloat);
 
 	static subscribefloat_t afsample16reregister_user;
-	subscribefloat_user(& afoutfloat_user, & afsample16reregister_user, NULL, savesampleout16stereo_user);
+	subscribefloat_user(& afoutfloat_user, & afsample16reregister_user, NULL, savesampleout16stereo_float_user);
 
 #if WITHSKIPUSERMODE || CTLSTYLE_V3D
 
 	static subscribefloat_t afsample16reregister;
-	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16stereo);
+	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16stereo_float);
 
 #else /* WITHSKIPUSERMODE */
 
@@ -1163,8 +1166,8 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	ASSERT(p->tag3 == p);
 
 	// Использование данных.
-	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
-	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
+	v->ivqv [L] = adpt_input(& afcodecio, p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = adpt_input(& afcodecio, p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT16)
 	{
@@ -1205,8 +1208,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	ASSERT(p->tag3 == p);
 
 	// Использование данных.
-	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
-	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
+	v->ivqv [L] = p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
+	v->ivqv [R] = p->buff [pos * DMABUFSTEP16 + R];	// правый канал
 
 	if (++ pos >= CNT16)
 	{
@@ -1236,9 +1239,9 @@ void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = adpt_output(& afcodecio, ch0);	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = adpt_output(& afcodecio, ch1);	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -2151,9 +2154,8 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 }
 
 //////////////////////////////////////////
-// Поэлементное заполнение буфера AF DAC
-
-static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+// Поэлементное заполнение DMA буфера AF DAC
+static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2171,9 +2173,9 @@ static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = ch0;	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = ch1;	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -2185,7 +2187,9 @@ static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	}
 }
 
-static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+//////////////////////////////////////////
+// Поэлементное заполнение DMA буфера AF DAC
+static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2201,9 +2205,9 @@ static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = ch0;	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = ch1;	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -2212,6 +2216,18 @@ static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		p = NULL;
 	}
 }
+
+
+static void savesampleout16stereo_float_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	savesampleout16stereo_user(adpt_output(& afcodecio, ch0), adpt_output(& afcodecio, ch1));
+}
+
+static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	savesampleout16stereo(adpt_output(& afcodecio, ch0), adpt_output(& afcodecio, ch1));
+}
+
 
 #if WITHUSBUAC && WITHUSBHW
 
@@ -2994,7 +3010,7 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 
 #endif /* WITHUSBUAC */
 
-
+/* предполагается что тут значения нормирования в диапазоне -1..+1 */
 void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 {
 	PLIST_ENTRY t;
