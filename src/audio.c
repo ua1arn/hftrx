@@ -491,7 +491,6 @@ static RAMDTCM ncoftw_t angle_monofreq;
 static RAMDTCM ncoftw_t anglestep_monofreq2 = FTWAF(5600);
 static RAMDTCM ncoftw_t angle_monofreq2;
 
-#if 1
 // test IQ frequency
 static RAMFUNC FLOAT32P_t get_float_monofreq(void)
 {
@@ -507,7 +506,22 @@ static RAMFUNC FLOAT32P_t get_float_monofreq2(void)
 	angle_monofreq2 = FTWROUND(angle_monofreq2 + anglestep_monofreq2);
 	return v;
 }
-#endif
+
+FLOAT_t get_rout(void)
+{
+    // Формирование значения для ROUT
+	const FLOAT_t v = getcosf(angle_rout);
+	angle_rout = FTWROUND(angle_rout + anglestep_rout);
+	return v;
+}
+
+FLOAT_t get_lout(void)
+{
+	// Формирование значения для LOUT
+	const FLOAT_t v = getcosf(angle_lout);
+	angle_lout = FTWROUND(angle_lout + anglestep_lout);
+	return v;
+}
 #endif /* WITHLOOPBACKTEST */
 
 //////////////////////////////////////////
@@ -688,7 +702,7 @@ void adpt_initialize(
 {
 	/* Форматы с павающей точкой обеспечивают точное представление степеней двойки */
 	adp->inputK = POWF(2, - leftbit);
-	adp->outputK = POWF(2, leftbit) * db2ratio(- 1);
+	adp->outputK = POWF(2, leftbit) * db2ratio(- (FLOAT_t) 1 / 2);
 }
 
 // Вреобразование во внутреннее представление.
@@ -3764,7 +3778,7 @@ static RAMFUNC void processafadcsampleiq(
 			modem_demod_iq(iq);	// debug loopback
 	#endif /* WITHMODEMIQLOOPBACK */
 			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
-			savesampleout32stereo(vv, vv);
+			savesampleout32stereo(adpt_output(& ifcodecout, vv), adpt_output(& ifcodecout, vv));	// Запись в поток к передатчику I/Q значений.
 			savemoni16stereo(0, 0);
 			return;
 		}
@@ -3814,7 +3828,7 @@ static RAMFUNC void processafadcsample(
 		const FLOAT32P_t e1 = filter_fir4_tx_SSB_IQ(vfb, v_if.IV != 0);		// 1.85 kHz - фильтр имеет усиление 2.0
 		const FLOAT_t r = (e1.QV * v_if.QV + e1.IV * v_if.IV);	// переносим на выходную частоту ("+" - без инверсии).
 		// Интерфейс с ВЧ - одноканальный ADC/DAC
-		savesampleout32stereo(iq2tx(r * shape), 0);	// кодек получает 24 бита left justified в 32-х битном числе.
+		savesampleout32stereo(adpt_output(& ifcodecout, r * shape), 0);	// кодек получает 24 бита left justified в 32-х битном числе.
 	}
 	else
 	{
@@ -4207,8 +4221,8 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			const FLOAT32P_t vp1 = scalepair(vp0f, gain);
 			const FLOAT32P_t af = get_float_aflo_delta(0, pathi);	// средняя частота выходного спектра
 			r = (vp1.QV * af.QV + vp1.IV * af.IV); // переносим на выходную частоту ("+" - без инверсии).
-			//r = get_lout16() * 0.9f * 65536;
-			//r = af.IV * 0.9f * INT32_MAX;
+			//r = get_lout() * 0.9f;
+			//r = af.IV * 0.9f;
 			r *= agc_squelchopen(fltstrengthslow, pathi);
 		}
 		break;
@@ -4383,8 +4397,8 @@ static FLOAT32P_t loopbacktestaudio(FLOAT32P_t vi0, uint_fast8_t dspmode, FLOAT_
 #else
 
 	// Генерация двух тонов для разных каналов
-	vi.IV = get_lout16();		// тон 700 Hz
-	vi.QV = get_rout16();		// тон 500 Hz
+	vi.IV = get_lout();		// тон 700 Hz
+	vi.QV = get_rout();		// тон 500 Hz
 	//vi.QV = vi.IV;	// в правый канал копируем левый канал (микрофон)
 
 #endif
@@ -4809,7 +4823,7 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 {
 #if 0
 	// для тестирования шумоподавителя.
-	const FLOAT_t tone = get_lout16() * 0.9f;
+	const FLOAT_t tone = get_lout() * 0.9f;
 	ch0 = ch1 = tone;
 #endif
 #if WITHSKIPUSERMODE
@@ -4849,7 +4863,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 			const FLOAT_t a2 = demod_WFM(buff [i + DMABUF32RXWFM2I], buff [i + DMABUF32RXWFM2Q]);
 			const FLOAT_t a3 = demod_WFM(buff [i + DMABUF32RXWFM3I], buff [i + DMABUF32RXWFM3Q]);
 
-			//volatile const FLOAT_t left = get_lout16();
+			//volatile const FLOAT_t left = get_lout();
 			const FLOAT_t left = (a0 + a1 + a2 + a3) / 4;
 			save16demod(left, left);
 
@@ -5155,15 +5169,14 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 #if WITHUSBAUDIOSAI1
 		//processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
-		savesampleout32stereo(intn_to_tx(vi.IV, WITHAFADCWIDTH), intn_to_tx(vi.QV, WITHAFADCWIDTH));	// кодек получает 24 бита left justified в 32-х битном числе.
+		savesampleout32stereo(adpt_output(& ifcodecout, vi.IV), adpt_output(& ifcodecout, vi.QV));	// Запись в поток к передатчику I/Q значений.
 		//const INT32P_t dual = vi;
-		//const INT32P_t dual = { { get_lout24(), get_rout24() } }; // vi;
-		//savesampleout32stereo(intn_to_tx(dual.IV, 24), intn_to_tx(dual.QV, 24));	// кодек получает 24 бита left justified в 32-х битном числе.
-//		recordsampleUAC(dual.IV >> 8, dual.QV >> 8);	// Запись в UAC демодулированного сигнала без озвучки клавиш
+		//const INT32P_t dual = { { get_lout(), get_rout() } }; // vi;
+		savesampleout32stereo(adpt_output(& ifcodecout, dual.IV), adpt_output(& ifcodecout, dual.QV));	// Запись в поток к передатчику I/Q значений.
+//		recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		recordsampleUAC(
-			buff [i + DMABUF32RXI] >> (WITHIFADCWIDTH - UACIN_AUDIO48_SAMPLEBITS),
-			buff [i + DMABUF32RXQ] >> (WITHIFADCWIDTH - UACIN_AUDIO48_SAMPLEBITS)
-			);
+			adpt_input(& ifcodecout, buff [i + DMABUF32RXI]),
+			adpt_input(& ifcodecout, buff [i + DMABUF32RXQ])			);
 
 #elif WITHSUSBSPKONLY
 		// тестирование в режиме USB SPEAKER
@@ -5172,9 +5185,9 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		{
 			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 			INT32P_t dual;
-			dual.IV = get_lout16();		// тон 700 Hz
-			dual.QV = get_rout16();		// тон 500 Hz
-			savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// кодек получает 24 бита left justified в 32-х битном числе.
+			dual.IV = get_lout();		// тон 700 Hz
+			dual.QV = get_rout();		// тон 500 Hz
+			savesampleout32stereo(adpt_output(& ifcodecout, dual.IV), adpt_output(& ifcodecout, dual.QV));	// Запись в поток к передатчику I/Q значений.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
 			recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
@@ -5182,13 +5195,13 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		{
 			//const INT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 			const FLOAT32P_t dual = vi;
-			savesampleout32stereo(iq2tx(dual.IV), iq2tx(dual.QV));	// кодек получает 24 бита left justified в 32-х битном числе.
+			savesampleout32stereo(adpt_output(& ifcodecout, dual.IV), adpt_output(& ifcodecout, dual.QV));	// Запись в поток к передатчику I/Q значений.
 			//savesampleout16stereo(injectsidetone(dual.IV, sdtn), injectsidetone(dual.QV, sdtn));
-			recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
+			recordsampleUAC(get_lout(), get_rout());	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 		else
 		{
-			savesampleout32stereo(iq2tx(0), iq2tx(0));	// кодек получает 24 бита left justified в 32-х битном числе.
+			savesampleout32stereo(0, 0);	// кодек получает 24 бита left justified в 32-х битном числе.
 			recordsampleUAC(0, 0);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
@@ -5206,14 +5219,14 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		{
 			vi = getsampmlemike2();	// с микрофона (или 0, если ещё не запустился) */
 		}
-		savesampleout32stereo(vi.IV * 655356L, vi.QV * 655356L);
+		savesampleout32stereo(adpt_output(& ifcodecout, vi.IV), adpt_output(& ifcodecout, vi.QV));	// Запись в поток к передатчику I/Q значений.
 
 #elif WITHDTMFPROCESSING
 		// тестирование распозначания DTMF
 
 		INT32P_t dual;
-		//dual.IV = vi.IV; //get_lout16();
-		dual.IV = get_lout16();
+		//dual.IV = vi.IV; //get_lout();
+		dual.IV = get_lout();
 		dual.QV = 0;
 		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		// Тестирование распознавания DTMF
@@ -5248,9 +5261,9 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
-		//recordsampleUAC(get_lout16(), get_rout16());	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		save16demod(get_lout16(), get_rout16());		// данные игнорируются
-		//savesampleout32stereo(iq2tx(0), iq2tx(0));
+		//recordsampleUAC(get_lout(), get_rout());	// Запись в UAC демодулированного сигнала без озвучки клавиш
+		save16demod(get_lout(), get_rout());		// данные игнорируются
+		//savesampleout32stereo(0, 0);
 
 	#elif WITHUSEDUALWATCH
 
@@ -5271,7 +5284,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		else if (0)
 		{
 			// тест - обход приемной части.
-			save16demod(get_lout16(), get_rout16());
+			save16demod(get_lout(), get_rout());
 		}
 		else
 		{

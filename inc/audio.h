@@ -467,14 +467,14 @@ typedef struct
 
 // xxx_ctlstyle_raven_v1, xxx_ctlstyle_nucleo
 	/* параметры входного/выходного адаптеров */
-//#define WITHIFDACWIDTH	24		// 1 бит знак и 23 бит значащих
-//#define WITHIFADCWIDTH	24		// 1 бит знак и 23 бит значащих
+//#define WITHIFDACWIDTH	32//24		// 1 бит знак и 23 бит значащих
+//#define WITHIFADCWIDTH	32//24		// 1 бит знак и 23 бит значащих
 
 // arm_stm32f4xx_tqfp144_ctlstyle_32F429DISCO
 // DDC Module 1
 /* параметры входного/выходного адаптеров */
 //#define WITHIFDACWIDTH	16 //32		// 1 бит знак и 31 бит значащих
-//#define WITHIFADCWIDTH	24 //32		// 1 бит знак и 31 бит значащих
+//#define WITHIFADCWIDTH	32//24 //32		// 1 бит знак и 31 бит значащих
 
 
 #if CPUSTYLE_XC7Z
@@ -708,8 +708,8 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
 uint32_t allocate_dmabuffer192rts(void);
 
-int get_lout16(void); // тестовые функции
-int get_rout16(void);
+FLOAT_t get_lout(void); // тестовые функции
+FLOAT_t get_rout(void);
 
 void prog_dsplreg(void);
 void prog_fltlreg(void);
@@ -719,7 +719,6 @@ void prog_dsplreg_update(void);
 void prog_fltlreg_update(void);
 void board_dsp1regchanged(void);
 void prog_codec1reg(void);
-
 
 void board_set_trxpath(uint_fast8_t v);	/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 void board_set_mikemute(uint_fast8_t v);	/* отключить микрофонный усилитель */
