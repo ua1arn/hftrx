@@ -707,6 +707,60 @@ static FLOAT32P_t get_float4_iflo(void)
 
 //////////////////////////////////////////
 
+// Адаптер - преобращователь формата из внешнего по отношению к DSP блоку формата.
+// Внешние форматы - целочисденные - в основном определяются типами зранящимися в DMA буфере данными.
+// Внутренний формат - FLOAT_t в диапазоне -1..+1
+
+void adpt_initialize(
+	adpt_t * adp,
+	int leftbit	// leftbit - Номер бита слева от знакового во внешнем формате
+	)
+{
+	/* Форматы с павающей точкой обеспечивабт точное представление степеней двойки */
+	adp->inputK = POWF(2, - leftbit);
+	adp->outputK = POWF(2, leftbit);
+}
+
+// входное значение - "правильное" с точки зрения двоищного представления.
+// Обратить внимание на случаи 24-х битных форматов.
+FLOAT_t adpt_input(const adpt_t * adp, int32_t v)
+{
+	return (FLOAT_t) adp->inputK * v;
+}
+
+int32_t adpt_output(const adpt_t * adp, FLOAT_t v)
+{
+	return (int32_t) (adp->outputK * v);
+}
+
+adpt_t afcodecin;
+adpt_t afcodecout;
+adpt_t ifcodecin;
+adpt_t ifcodecout;
+adpt_t uac48io;
+adpt_t rts96io;
+adpt_t rts192io;
+
+static void adapterst_initialize(void)
+{
+	/* Аудиокодек */
+	adpt_initialize(& afcodecin, WITHAFADCWIDTH);
+	adpt_initialize(& afcodecout, WITHAFDACWIDTH);
+	/* IF codec / FPGA */
+	adpt_initialize(& ifcodecin, WITHIFADCWIDTH);
+	adpt_initialize(& ifcodecout, WITHIFDACWIDTH);
+
+	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS);
+#if WITHRTS96
+	adpt_initialize(& rts96io, UACIN_RTS96_SAMPLEBITS);
+#endif /* WITHRTS96 */
+#if WITHRTS192
+	adpt_initialize(& rts192io, UACIN_RTS192_SAMPLEBITS);
+#endif /* WITHRTS192 */
+}
+
+//////////////////////////////////////////
+
 #if 1
 
 // функции для замены стандартной библиотеки
@@ -5706,6 +5760,8 @@ void dsp_initialize(void)
 #endif /* WITHDSPLOCALFIR */
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
+
+	adapterst_initialize();
 
 	const unsigned ifadcwidth = ulmin16(WITHIFADCWIDTH, sizeof (IFADCvalue_t) * 8);
 	int_fast32_t adcFS;

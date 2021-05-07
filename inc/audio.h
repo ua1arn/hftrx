@@ -520,6 +520,24 @@ typedef struct
 	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH ratio
 #endif
 
+typedef struct adpt_tag
+{
+	FLOAT_t inputK;
+	FLOAT_t outputK;
+} adpt_t;
+
+FLOAT_t adpt_input(const adpt_t * adp, int32_t v);
+int32_t adpt_output(const adpt_t * adp, FLOAT_t v);
+void adpt_initialize(adpt_t * adp, int leftbit);	// leftbit - Номер бита слева от знакового во внешнем формате
+
+extern adpt_t afcodecin;
+extern adpt_t afcodecout;
+extern adpt_t ifcodecin;
+extern adpt_t ifcodecout;
+extern adpt_t uac48io;
+extern adpt_t rts96io;
+extern adpt_t rts192io;
+
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 	#if CPUSTYLE_XC7Z
