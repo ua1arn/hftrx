@@ -1091,6 +1091,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		{
 			const uint_fast16_t fftpos = raster2fftsingle(x, afsp.w, leftfftpos, rightfftpos);
 			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
+			// filterig
 			afsp.val_array [x] = afsp.val_array [x] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * afsp.fft_buf [fftpos];
 		}
 		arm_max_no_idx_f32(afsp.val_array, afsp.w, & afsp.max_val);	// поиск в отображаемой части
