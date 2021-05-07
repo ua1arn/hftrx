@@ -25,26 +25,6 @@
 	#define ARM_PLL_DIV	2
 	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
 
-	// PL Clock 0 Output control
-	// ~50 MHz
-	#define SCLR_FPGA0_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA0_CLK_CTRL_DIVISOR1 4
-
-	// PL Clock 1 Output control
-	// ~50 MHz
-	#define SCLR_FPGA1_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA1_CLK_CTRL_DIVISOR1 4
-
-	// PL Clock 2 Output control
-	// ~50 MHz
-	#define SCLR_FPGA2_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA2_CLK_CTRL_DIVISOR1 4
-
-	// PL Clock 3 Output control
-	// ~50 MHz
-	#define SCLR_FPGA3_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA3_CLK_CTRL_DIVISOR1 4
-
 	#define DDR_PLL_MUL 32	// DDR_PLL_CTRL.PLL_FDIV value - 1066.656 MHz
 	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
 	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz
@@ -53,6 +33,13 @@
 	#define SCLR_SDIO_CLK_CTRL_DIVISOR 16
 
 	#if WITHI2SCLOCKFROMPIN
+		#define FPGADECIMATION 1024
+		#define FPGADIVIDERATIO 5
+		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
+		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
+
+		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
+		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 172		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 172		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
@@ -88,8 +75,8 @@
 	#else
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
 		//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-		#define DIRECT_49M152_X1	1	/* Тактовый генератор 49.152 МГц */
-		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
+		#define DIRECT_49M152_X1	1
+		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
@@ -281,7 +268,7 @@
 	//
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	////#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -289,7 +276,7 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
 	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_4205.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
