@@ -509,14 +509,6 @@
 
 #endif /* WITHISBOOTLOADER */
 
-	/* параметры входногшо/выходного адаптеров */
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	typedef int16_t IFADCvalue_t;
-	typedef int16_t IFDACvalue_t;
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-
 	#define WITHMODESETFULLNFM 1
 	/* все возможные в данной конфигурации фильтры */
 	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)

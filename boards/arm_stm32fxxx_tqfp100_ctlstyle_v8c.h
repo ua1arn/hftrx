@@ -235,13 +235,6 @@
 	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define BOARD_FFTZOOM_POW2MAX 0	// Возможный масштабы FFT x1
 
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	typedef int32_t IFADCvalue_t;
-	typedef int32_t IFDACvalue_t;
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */

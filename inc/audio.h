@@ -208,26 +208,6 @@ extern "C" {
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
-#if CODEC1_FRAMEBITS == 64
-
-	typedef int32_t aubufv_t;
-	typedef int_fast32_t aufastbufv_t;
-	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
-	/* масштабирование сэмплов */
-	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
-	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
-
-#else /* CODEC1_FRAMEBITS == 64 */
-
-	typedef int16_t aubufv_t;
-	typedef int_fast16_t aufastbufv_t;
-	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
-	/* масштабирование сэмплов (заглушки) */
-	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
-	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
-
-#endif /* CODEC1_FRAMEBITS == 64 */
-
 #define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)	/* FPGA TX or IF CODEC TX	*/
@@ -463,6 +443,82 @@ typedef struct
 	#endif /* ! WITHDSPLOCALFIR */
 
 #endif /* WITHDSPLOCALFIR */
+
+#if CODEC1_FRAMEBITS == 64
+
+	typedef int32_t aubufv_t;
+	typedef int_fast32_t aufastbufv_t;
+	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+	/* масштабирование сэмплов */
+	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
+	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
+
+#else /* CODEC1_FRAMEBITS == 64 */
+	typedef int16_t aubufv_t;
+	typedef int_fast16_t aufastbufv_t;
+	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+	/* масштабирование сэмплов (заглушки) */
+	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
+	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
+
+#endif /* CODEC1_FRAMEBITS == 64 */
+
+// xxx_ctlstyle_raven_v1, xxx_ctlstyle_nucleo
+//#define WITHIFDACWIDTH	24		// 1 бит знак и 23 бит значащих
+//#define WITHIFADCWIDTH	24		// 1 бит знак и 23 бит значащих
+//#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+//#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+
+// arm_stm32f4xx_tqfp144_ctlstyle_32F429DISCO
+// DDC Module 1
+//#define WITHIFDACWIDTH	16 //32		// 1 бит знак и 31 бит значащих
+//#define WITHIFADCWIDTH	24 //32		// 1 бит знак и 31 бит значащих
+
+
+#if CPUSTYLE_XC7Z
+
+	/* параметры входного/выходного адаптеров */
+	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+	typedef int16_t IFADCvalue_t;	// элементы буфера DMA
+	typedef int16_t IFDACvalue_t;
+
+#else /* CPUSTYLE_XC7Z */
+
+	/* параметры входного/выходного адаптеров */
+	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+	typedef int32_t IFADCvalue_t;
+	typedef int32_t IFDACvalue_t;
+
+#endif /* CPUSTYLE_XC7Z */
+
+/* Обработка производится всегда в наибольшей разрядности учавствующих кодеков. */
+/* требуется согласовать разрядность данных IF и AF кодеков. */
+#if (WITHIFDACWIDTH > WITHAFADCWIDTH)
+	#define TXINSCALE		(1 << (WITHIFDACWIDTH - WITHAFADCWIDTH))		// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
+	#define TXOUTDENOM		1
+#elif (WITHIFDACWIDTH == WITHAFADCWIDTH)
+	#define TXINSCALE		1				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
+	#define TXOUTDENOM		1
+#else
+	#error Strange WITHIFDACWIDTH & WITHAFADCWIDTH relations
+#endif
+
+/* требуется согласовать разрядность данных IF и AF кодеков. */
+#if (WITHIFADCWIDTH > WITHAFDACWIDTH)
+	#define RXINSCALE		1
+	#define RXOUTDENOM		(1 << (WITHIFADCWIDTH - WITHAFDACWIDTH))				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
+#elif (WITHIFADCWIDTH == WITHAFDACWIDTH)
+	#define RXINSCALE		1
+	#define RXOUTDENOM		1				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
+#else
+	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH relations
+#endif
 
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC

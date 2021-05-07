@@ -222,12 +222,6 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-
-	#define WITHIFDACWIDTH	24		// 1 бит знак и 23 бит значащих
-	#define WITHIFADCWIDTH	24		// 1 бит знак и 23 бит значащих
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-	//
 	//#define WITHLOOPBACKTEST	1
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */

@@ -333,29 +333,6 @@ static RAMDTCM struct Complex Sig [FFTSizeFilters];
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
 
-/* Обработка производится всегда в наибольшей разрядности учавствующих кодеков. */
-/* требуется согласовать разрядность данных IF и AF кодеков. */
-#if (WITHIFDACWIDTH > WITHAFADCWIDTH)
-	#define TXINSCALE		(1 << (WITHIFDACWIDTH - WITHAFADCWIDTH))		// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
-	#define TXOUTDENOM		1
-#elif (WITHIFDACWIDTH == WITHAFADCWIDTH)
-	#define TXINSCALE		1				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
-	#define TXOUTDENOM		1
-#else
-	#error Strange WITHIFDACWIDTH & WITHAFADCWIDTH relations
-#endif
-
-/* требуется согласовать разрядность данных IF и AF кодеков. */
-#if (WITHIFADCWIDTH > WITHAFDACWIDTH)
-	#define RXINSCALE		1
-	#define RXOUTDENOM		(1 << (WITHIFADCWIDTH - WITHAFDACWIDTH))				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
-#elif (WITHIFADCWIDTH == WITHAFDACWIDTH)
-	#define RXINSCALE		1
-	#define RXOUTDENOM		1				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
-#else
-	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH relations
-#endif
-
 static RAMDTCM FLOAT_t txlevelfenceAM = INT32_MAX / 2;
 
 static RAMDTCM FLOAT_t txlevelfenceSSB = INT32_MAX / 2;
