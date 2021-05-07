@@ -342,8 +342,6 @@ static RAMDTCM FLOAT_t txlevelfenceNFM = (FLOAT_t) 1 / 2;
 static RAMDTCM FLOAT_t txlevelfenceBPSK = (FLOAT_t) 1 / 2;
 static RAMDTCM FLOAT_t txlevelfenceCW = (FLOAT_t) 1 / 2;
 
-static RAMDTCM FLOAT_t rxlevelfence = 1;
-
 static RAMDTCM uint_fast8_t gwprof = 0;	// work profile - индекс конфигурационной информации, испольуемый для работы */
 
 static RAMDTCM uint_fast8_t globDSPMode [NPROF] [2] = { { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE }, { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE } };
@@ -710,7 +708,7 @@ adpt_t ifcodecin;
 adpt_t ifcodecout;
 adpt_t uac48io;
 adpt_t rts96io;
-adpt_t rts192io;
+//adpt_t rts192io;	// чтобы обратить внимание при компиляции - при регистрации saveIQRTSxx
 adpt_t sdcardio;
 
 static void adapterst_initialize(void)
@@ -1025,7 +1023,7 @@ int dsp_mag2y(
 	int_fast16_t bottomdb		/* нижний предел спектроанализатора (positive number of decibels) */
 	)
 {
-	const FLOAT_t r = ratio2db(mag / rxlevelfence);
+	const FLOAT_t r = ratio2db(mag);
 	const int y = ymax - (int) ((r + topdb) * ymax / - (bottomdb - topdb));
 
 	if (y > ymax)
@@ -1325,8 +1323,8 @@ static void agc_parameters_initialize(volatile agcparams_t * agcp)
 	agcp->hungticks = NSAITICKS(300);			// 0.3 secounds
 
 	agcp->gainlimit = db2ratio(60);
-	agcp->mininput = 16;
-	agcp->levelfence = rxlevelfence;
+	agcp->mininput = db2ratio(- 160);
+	agcp->levelfence = 1;
 	agcp->agcfactor = agc_calcagcfactor(10);
 
 	//PRINTF(PSTR("agc_parameters_initialize: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1348,7 +1346,7 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// в сотнях милисекунд (0.1 секунды)
 
 	agcp->gainlimit = gainlimit;
-	agcp->levelfence = rxlevelfence * (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;
+	agcp->levelfence = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
 	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1393,7 +1391,7 @@ static void comp_parameters_initialize(volatile agcparams_t * agcp)
 	agcp->hungticks = NSAITICKS(300);			// 0.3 secounds
 
 	agcp->gainlimit = db2ratio(60);
-	agcp->mininput = 1;
+	agcp->mininput = db2ratio(- 160);
 	agcp->levelfence = txlevelfenceSSB;
 	agcp->agcfactor = (FLOAT_t) - 1;
 }
@@ -5088,19 +5086,19 @@ inject_testsignals(IFADCvalue_t * const dbuff)
 {
 #ifdef DMABUF32RX0I
 	// приёмник
-	const FLOAT32P_t simval = scalepair(get_float_monofreq(), rxlevelfence);	// frequency
+	const FLOAT32P_t simval = scalepair(get_float_monofreq(), (FLOAT_t) 1);	// frequency
 	dbuff [DMABUF32RX0I] = simval.IV;
 	dbuff [DMABUF32RX0Q] = simval.QV;
 
 #if WITHRTS96
 	// панорама
 	// previous - oldest
-	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
+	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), (FLOAT_t) 1);	// frequency2
 	dbuff [DMABUF32RTS0I] = simval0.IV;
 	dbuff [DMABUF32RTS0Q] = simval0.QV;
 
 	// current	- nevest
-	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), rxlevelfence);	// frequency2
+	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), (FLOAT_t) 1);	// frequency2
 	dbuff [DMABUF32RTS1I] = simval1.IV;
 	dbuff [DMABUF32RTS1Q] = simval1.QV;
 #endif /* WITHRTS96 */
@@ -5695,7 +5693,6 @@ void dsp_initialize(void)
 
 	adapterst_initialize();
 
-	rxlevelfence = 1;
 	// Разрядность поступающего с микрофона сигнала
 
 	agc_initialize();
