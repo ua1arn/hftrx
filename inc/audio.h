@@ -517,7 +517,7 @@ typedef struct
 	#define RXINSCALE		1
 	#define RXOUTDENOM		1				// характеризует разницу в разрядности АЦП источника сигнала и выходного ЦАП
 #else
-	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH relations
+	#error Strange WITHIFADCWIDTH & WITHAFDACWIDTH ratio
 #endif
 
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
