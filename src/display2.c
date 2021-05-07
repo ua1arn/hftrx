@@ -1095,7 +1095,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 			afsp.val_array [x] = afsp.val_array [x] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * afsp.fft_buf [fftpos];
 		}
 		arm_max_no_idx_f32(afsp.val_array, afsp.w, & afsp.max_val);	// поиск в отображаемой части
-		afsp.max_val = FMAXF(afsp.max_val, 1);
+		afsp.max_val = FMAXF(afsp.max_val, (FLOAT_t) 0.001);
 	}
 }
 
@@ -1113,7 +1113,8 @@ display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 				ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
 				for (unsigned x = 0; x < afsp.w; x ++)
 				{
-					const uint_fast16_t y_norm = normalize(afsp.val_array [x], 0, afsp.max_val, afsp.h - 2) + 1;
+					//const uint_fast16_t y_norm = normalize(afsp.val_array [x], 0, afsp.max_val, afsp.h - 2) + 1;
+					const uint_fast16_t y_norm = normalize(afsp.val_array [x] * 4096, 0, afsp.max_val * 4096, afsp.h - 2) + 1;
 					ASSERT(y_norm <= afsp.h);
 					ASSERT(afsp.y >= y_norm);
 					if (afsp.y >= y_norm)

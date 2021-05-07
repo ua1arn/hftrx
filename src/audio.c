@@ -700,13 +700,14 @@ void adpt_initialize(
 	int leftbit	// leftbit - Номер бита слева от знакового во внешнем формате
 	)
 {
+	int signpos = leftbit - 1;
 	/* Форматы с павающей точкой обеспечивают точное представление степеней двойки */
-	adp->inputK = POWF(2, - leftbit);
-	adp->outputK = POWF(2, leftbit) * db2ratio(- (FLOAT_t) 1 / 2);
+	adp->inputK = POWF(2, - signpos);
+	adp->outputK = POWF(2, signpos) * db2ratio(- (FLOAT_t) 0.5);
 }
 
 // Вреобразование во внутреннее представление.
-// входное значение - "правильное" с точки зрения двоищного представления.
+// входное значение - "правильное" с точки зрения двоичного представления.
 // Обратить внимание на случаи 24-х битных форматов.
 FLOAT_t adpt_input(const adpt_t * adp, int32_t v)
 {
