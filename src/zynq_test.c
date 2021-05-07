@@ -202,11 +202,11 @@ void xc7z_datafifo_inthandler(void)
 
 	u32 occ = XLlFifo_iRxOccupancy(& fifo);
 
-	if (occ > 19)
+	if (occ > 30)
 	{
 		rx_buf = dma_invalidate32rx(allocate_dmabuffer32rx());
-		XLlFifo_iRead_Aligned(& fifo, (int32_t *) rx_buf, 19);
-		//PRINTF("%x\n", *(volatile int32_t*) (rx_buf + 10));
+		XLlFifo_iRead_Aligned(& fifo, (uint32_t *) rx_buf, 19);
+//		PRINTF("%x\n", * (uint32_t *) (rx_buf + 10));
 		processing_dmabuffer32rx(rx_buf);
 		release_dmabuffer32rx(rx_buf);
 		XLlFifo_IntClear(& fifo, XLLF_INT_RFPF_MASK);
