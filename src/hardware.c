@@ -1467,6 +1467,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYPE_ALLWNV3S
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
