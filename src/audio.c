@@ -691,6 +691,7 @@ void adpt_initialize(
 	adp->outputK = POWF(2, leftbit) * db2ratio(- 1);
 }
 
+// Вреобразование во внутреннее представление.
 // входное значение - "правильное" с точки зрения двоищного представления.
 // Обратить внимание на случаи 24-х битных форматов.
 FLOAT_t adpt_input(const adpt_t * adp, int32_t v)
@@ -698,6 +699,7 @@ FLOAT_t adpt_input(const adpt_t * adp, int32_t v)
 	return (FLOAT_t) adp->inputK * v;
 }
 
+// Вреобразование во внешнее представление.
 int32_t adpt_output(const adpt_t * adp, FLOAT_t v)
 {
 	return (int32_t) (adp->outputK * v);
