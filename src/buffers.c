@@ -1220,7 +1220,7 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 }
 
 // звук для самоконтроля
-void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
+void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -1239,9 +1239,9 @@ void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = adpt_outputexact(& afcodecio, ch0);	// sample value
+	p->buff [n * DMABUFSTEP16 + L] = ch0;	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = adpt_outputexact(& afcodecio, ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = ch1;	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -2220,12 +2220,18 @@ static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 
 static void savesampleout16stereo_float_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	savesampleout16stereo_user(adpt_output(& afcodecio, ch0), adpt_output(& afcodecio, ch1));
+	savesampleout16stereo_user(
+		adpt_output(& afcodecio, ch0),
+		adpt_output(& afcodecio, ch1)
+		);
 }
 
 static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
-	savesampleout16stereo(adpt_output(& afcodecio, ch0), adpt_output(& afcodecio, ch1));
+	savesampleout16stereo(
+		adpt_output(& afcodecio, ch0),
+		adpt_output(& afcodecio, ch1)
+		);
 }
 
 

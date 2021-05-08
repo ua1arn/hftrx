@@ -691,9 +691,9 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 
 //////////////////////////////////////////
 
-// Адаптер - преобращователь формата из внешнего по отношению к DSP блоку формата.
-// Внешние форматы - целочисденные - в основном определяются типами зранящимися в DMA буфере данными.
-// Внутренний формат - FLOAT_t в диапазоне -1..+1
+// Адаптер - преобразователь формата из внешнего по отношению к DSP блоку формата.
+// Внешние форматы - целочисленные - в основном определяются типами зранящимися в DMA буфере данными.
+// Внутренний формат - FLOAT_t в диапазоне -1 .. +1
 
 void adpt_initialize(
 	adpt_t * adp,
@@ -746,14 +746,23 @@ static void adapterst_initialize(void)
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH);
 	/* SD CARD */
 	adpt_initialize(& sdcardio, 16);
-
+	/* канал звука USB AUDIO */
 	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS);
 #if WITHRTS96
+	/* канал квадратур USB AUDIO */
 	adpt_initialize(& rts96io, UACIN_RTS96_SAMPLEBITS);
 #endif /* WITHRTS96 */
 #if WITHRTS192
+	/* канал квадратур USB AUDIO */
 	adpt_initialize(& rts192io, UACIN_RTS192_SAMPLEBITS);
 #endif /* WITHRTS192 */
+}
+
+//////////////////////////////////////////
+
+void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
+{
+	savemoni16stereo(adpt_outputexact(& afcodecio, ch0), adpt_outputexact(& afcodecio, ch1));
 }
 
 //////////////////////////////////////////
@@ -3637,11 +3646,11 @@ static RAMFUNC FLOAT_t preparevi(
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
-		savemoni16stereo(0, 0);
+		savemonistereo(0, 0);
 		return 0;	//txlevelfenceBPSK;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_CW:
-		savemoni16stereo(0, 0);
+		savemonistereo(0, 0);
 		return txlevelfenceCW;	// постоянная составляющая с максимальным уровнем
 
 	case DSPCTL_MODE_TX_DIGI:
@@ -3657,7 +3666,7 @@ static RAMFUNC FLOAT_t preparevi(
 			// источник - микрофон
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
-			savemoni16stereo(vi0f, vi0f);
+			savemonistereo(vi0f, vi0f);
 			return injectsubtone(
 					txmikereverb(
 							txmikeagc(vi0f * txlevelXXX)
@@ -3669,35 +3678,35 @@ static RAMFUNC FLOAT_t preparevi(
 		default:
 			// источник - LINE IN или USB
 			// see glob_mik1level (0..100)
-			savemoni16stereo(vi0f, vi0f);
+			savemonistereo(vi0f, vi0f);
 			return injectsubtone(vi0f * txlevelXXX, ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 		case BOARD_TXAUDIO_NOISE:
 			// источник - шум
 			//vf = filter_fir_tx_MIKE((local_random(2UL * IFDACMAXVAL) - IFDACMAXVAL), 0);	// шум
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			savemoni16stereo(0, 0);
+			savemonistereo(0, 0);
 			return injectsubtone((int) (local_random(2 * txlevelfenceXXX_INTEGER - 1) - txlevelfenceXXX_INTEGER), ctcss);	// шум
 
 		case BOARD_TXAUDIO_2TONE:
 			// источник - двухтоновый сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			savemoni16stereo(0, 0);
+			savemonistereo(0, 0);
 			return injectsubtone(get_dualtonefloat() * txlevelXXX, ctcss);		// источник сигнала - двухтональный генератор для настройки
 
 		case BOARD_TXAUDIO_1TONE:
 			// источник - синусоидальный сигнал
 			// return audio sample in range [- txlevelfence.. + txlevelfence]
-			savemoni16stereo(0, 0);
+			savemonistereo(0, 0);
 			return injectsubtone(get_singletonefloat() * txlevelXXX, ctcss);
 
 		case BOARD_TXAUDIO_MUTE:
-			savemoni16stereo(0, 0);
+			savemonistereo(0, 0);
 			return injectsubtone(0, ctcss);
 		}
 	}
 	// В режиме приёма или bypass ничего не делаем.
-	savemoni16stereo(0, 0);
+	savemonistereo(0, 0);
 	return 0;
 }
 
@@ -3788,7 +3797,7 @@ static RAMFUNC void processafadcsampleiq(
 	#endif /* WITHMODEMIQLOOPBACK */
 			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
 			savesampleout32stereo(adpt_output(& ifcodecout, vv), adpt_output(& ifcodecout, vv));	// Запись в поток к передатчику I/Q значений.
-			savemoni16stereo(0, 0);
+			savemonistereo(0, 0);
 			return;
 		}
 #endif /* WITHMODEM */
