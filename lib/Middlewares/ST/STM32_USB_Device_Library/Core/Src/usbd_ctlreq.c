@@ -716,35 +716,37 @@ static void USBD_GetConfig(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef 
   */
 static void USBD_GetStatus(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-  switch (pdev->dev_state)
-  {
-    case USBD_STATE_DEFAULT:
-    case USBD_STATE_ADDRESSED:
-    case USBD_STATE_CONFIGURED:
-      if (req->wLength != 0x2U)
-      {
-        USBD_CtlError(pdev, req);
-        break;
-      }
+	switch (pdev->dev_state)
+	{
+	case USBD_STATE_DEFAULT:
+	case USBD_STATE_ADDRESSED:
+	case USBD_STATE_CONFIGURED:
+		if (req->wLength != 0x2U)
+		{
+			PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
+			USBD_CtlError(pdev, req);
+			break;
+		}
+		PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
+		pdev->dev_config_status [0] = 0;
+		pdev->dev_config_status [1] = 0;
 
 #if (USBD_SELF_POWERED == 1U)
-      USBD_poke_u16(pdev->dev_config_status, USB_CONFIG_SELF_POWERED);
-#else
-      USBD_poke_u16(pdev->dev_config_status, 0U);
+		pdev->dev_config_status [0] |= USB_CONFIG_SELF_POWERED;
 #endif
 
-      if (pdev->dev_remote_wakeup != 0U)
-      {
-        pdev->dev_config_status [0] |= USB_CONFIG_REMOTE_WAKEUP;	// 0x02 mask
-      }
+		if (pdev->dev_remote_wakeup)
+		{
+			pdev->dev_config_status [0] |= USB_CONFIG_REMOTE_WAKEUP;
+		}
 
-      (void)USBD_CtlSendData(pdev, pdev->dev_config_status, 2U);
-      break;
+		(void) USBD_CtlSendData(pdev, pdev->dev_config_status, MAX(2U, req->wLength));
+		break;
 
-    default:
-      USBD_CtlError(pdev, req);
-      break;
-  }
+	default:
+		USBD_CtlError(pdev, req);
+		break;
+	}
 }
 
 

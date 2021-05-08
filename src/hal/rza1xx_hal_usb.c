@@ -35,6 +35,7 @@
 #include "usbd_core.h"
 
 #include "rza1xx_hal.h"
+#include "rza1xx_hal_usb.h"
 
 uint_fast8_t
 usbd_epaddr2pipe(uint_fast8_t ep_addr)

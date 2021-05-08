@@ -142,8 +142,6 @@ struct _USBH_HandleTypeDef;
 
 #define USBHNPIPES 15
 
-void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
-
 
 
 typedef enum {
