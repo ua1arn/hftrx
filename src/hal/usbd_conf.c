@@ -1520,17 +1520,18 @@ static uint_fast8_t hardware_usbd_get_vbusnow0(void)
 USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 {
 	/* Link The driver to the stack */
-//	hpcd->pData = pdev;
-//	pdev->pData = hpcd;
-  /* Init USB Ip. */
-  //if (pdev->id == DEVICE_HS)
-  {
-  /* Link the driver to the stack. */
-  hpcd_USB_OTG.pData = pdev;
-  pdev->pData = &hpcd_USB_OTG;
+	//	hpcd->pData = pdev;
+	//	pdev->pData = hpcd;
+	/* Init USB Ip. */
+	hpcd_USB_OTG.Instance = WITHUSBHW_DEVICE;
+	//if (pdev->id == DEVICE_HS)
+	{
+		/* Link the driver to the stack. */
+		hpcd_USB_OTG.pData = pdev;
+		pdev->pData = & hpcd_USB_OTG;
 #if CPUSTYLE_R7S721
-	// Значение ep0_mps и speed обновится после reset шины
-	#if WITHUSBDEV_HSDESC
+		// Значение ep0_mps и speed обновится после reset шины
+#if WITHUSBDEV_HSDESC
 		//hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
 		hpcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
 		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
@@ -1538,13 +1539,12 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 		//hpcd->Init.pcd_speed = PCD_SPEED_FULL;
 		hpcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
 		//hpcd->Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE;
-	#endif /* WITHUSBDEV_HSDESC */
-	hpcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
+#endif /* WITHUSBDEV_HSDESC */
+		hpcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
-	hpcd_USB_OTG.Init.dev_endpoints = 15;
+		hpcd_USB_OTG.Init.dev_endpoints = 15;
 
 #else
-  hpcd_USB_OTG.Instance = WITHUSBHW_DEVICE;
   hpcd_USB_OTG.Init.dev_endpoints = 8;
   #if WITHUSBDEV_HSDESC
 	hpcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
@@ -1561,10 +1561,10 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   hpcd_USB_OTG.Init.use_external_vbus = DISABLE;
 
 #endif
-  if (HAL_PCD_Init(&hpcd_USB_OTG) != HAL_OK)
-  {
-    Error_Handler( );
-  }
+		if (HAL_PCD_Init( & hpcd_USB_OTG) != HAL_OK)
+		{
+			Error_Handler();
+		}
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
   /* Register USB PCD CallBacks */
@@ -1585,7 +1585,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 #if 1
 
 #if CPUSTYLE_R7S721
-	usbd_pipes_initialize(&hpcd_USB_OTG);
+		usbd_pipes_initialize( & hpcd_USB_OTG);
 #else /* CPUSTYLE_R7S721 */
 	if (USB_Is_OTG_HS(hpcd_USB_OTG.Instance))
 	{
@@ -1603,8 +1603,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG, 0, 0x80);
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG, 1, 0x174);
 #endif
-  }
-  return USBD_OK;
+	}
+	return USBD_OK;
 }
 
 /**
