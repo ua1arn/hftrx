@@ -95,7 +95,7 @@ SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
 DAbortAddr:    .word DAbort_Handler
 HypAddr:  	   .word Hyp_Handler
-IRQAddr:       .word IRQHandlerNested
+IRQAddr:       .word IRQ_HandlerNested
 FIQAddr:       .word FIQ_Handler
 
    .ltorg
@@ -336,8 +336,8 @@ ExitFunction:
 /* Entry point for the IRQ handler */
 /* ================================================================== */
 
-    .func   IRQHandlerNested
-IRQHandlerNested:
+    .func   IRQ_HandlerNested
+IRQ_HandlerNested:
 
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
