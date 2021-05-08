@@ -16843,6 +16843,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHENCODER2 */
 #endif /* WITHENCODER */
 
+#if WITHTX
 #if WITHIF4DSP
 	{
 		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
@@ -16867,6 +16868,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 #endif /* WITHIF4DSP */
+#endif /* WITHTX */
 
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
@@ -20544,6 +20546,12 @@ void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max)
 	* max = WITHPOWERTRIMMAX;
 }
 
+#else /* WITHPOWERTRIM */
+
+void hamradio_set_tx_power(uint_fast8_t v)
+{
+}
+
 #endif /* WITHPOWERTRIM */
 
 #endif /* WITHTX */
@@ -21669,6 +21677,7 @@ void hamradio_save_gui_settings(const void * ptr)
 	}
 }
 
+#if WITHENCODER2
 void hamradio_gui_enc2_update(void)
 {
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
@@ -21678,6 +21687,11 @@ void hamradio_gui_enc2_update(void)
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
 }
+#else /* WITHENCODER2 */
+void hamradio_gui_enc2_update(void)
+{
+}
+#endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
 
 // основной цикл программы при работе в режиме любительского премника
