@@ -3579,6 +3579,17 @@ static const codechw_t audiocodechw_xc7z =
 	"ZYNQ 7000 audio codec"
 };
 
+static const codechw_t ifcodechw_xc7z =
+{
+	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	xc7z_if_fifo_init,
+	hardware_dummy_enable,
+	hardware_dummy_enable,
+	"ZYNQ 7000 IF codec"
+};
+
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 	// other CPUs
 static const codechw_t fpgaspectrumhw_sai2 =
@@ -3744,7 +3755,7 @@ static const codechw_t * const channels [] =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_xc7z,				// Интерфейс к НЧ кодеку
-		//& fpgaiqhw_dummy,					// Интерфейс к IF кодеку/FPGA
+		& ifcodechw_xc7z,					// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_dummy,				// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 

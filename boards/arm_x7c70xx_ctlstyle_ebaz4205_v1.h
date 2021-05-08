@@ -188,8 +188,8 @@
 	// --- Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 #endif /* WITHISBOOTLOADER */
 
-	typedef int16_t IFADCvalue_t;
-	typedef int16_t IFDACvalue_t;
+	typedef int32_t IFADCvalue_t;
+	typedef int32_t IFDACvalue_t;
 
 #if WITHISBOOTLOADER
 
@@ -320,7 +320,8 @@
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
+			#define WITHAFGAINDEFAULT	180
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
