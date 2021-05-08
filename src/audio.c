@@ -3933,7 +3933,7 @@ static RAMFUNC ncoftwi_t demodulator_FM(
 enum { AMDSTAGES = 7, AMDOUT_IDX = (3 * AMDSTAGES) };
 
 
-struct amd
+struct amdemod
 {
 	//int run;
 	//int buff_size;					// buffer size
@@ -3967,7 +3967,7 @@ struct amd
 	//int levelfade;					// Fade Leveler switch
 };
 
-static RAMDTCM struct amd amds [NTRX];
+static RAMDTCM struct amdemod amds [NTRX];
 
 /* Получить информацию об ошибке настройки в режиме SAM */
 /* Получить значение отклонения частоты с точностью 0.1 герца */
@@ -3981,16 +3981,16 @@ uint_fast8_t hamradio_get_samdelta10(int_fast32_t * p, uint_fast8_t pathi)
 
 static RAMDTCM volatile int32_t saved_delta_fi [NTRX];	// force CCM allocation
 
-/* Получить значение отклонения частоты с точностью 0.1 герца */
+/* Получить значение отклонения частоты с точностью 0.1 герца для отображения на дисплее */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi)
 {
-	const uint_fast32_t sample_rate10 = ARMSAIRATE * 10;
+	const int_fast32_t sample_rate10 = ARMSAIRATE * 10;
 
 	* p = ((int_fast64_t) saved_delta_fi [pathi] * sample_rate10) >> 32;
 	return glob_dspmodes [pathi] == DSPCTL_MODE_RX_NFM;
 }
 
-static void init_amd(struct amd * a)
+static void init_amd(struct amdemod * a)
 {
 	a->phsi = 0;
 	a->fil_outi = 0;
@@ -4021,7 +4021,7 @@ static void init_amd(struct amd * a)
 
 static void 
 create_amd(
-	struct amd * a,
+	struct amdemod * a,
 	//int run,
 	//int mode,
 	//int levelfade,
@@ -4062,7 +4062,7 @@ create_amd(
 
 #if 0
 static void 
-flush_amd(struct amd * a)
+flush_amd(struct amdemod * a)
 {
 	a->dc = 0;
 	a->dc_insert = 0;
@@ -4086,7 +4086,7 @@ demodulator_SAM(
 	FLOAT_t ai, bi, aq, bq;
 	FLOAT_t ai_ps, bi_ps, aq_ps, bq_ps;
 
-	struct amd * const a = & amds [pathi];
+	struct amdemod * const a = & amds [pathi];
 
 	const FLOAT32P_t vco0 = getsincosf(a->phsi);
 	ai = vp1.IV * vco0.QV;
@@ -4186,7 +4186,8 @@ demodulator_SAM(
 // ПРИЁМ
 // Обрабатывается floating point квадратура
 // При необходимости применяется АРУ
-// Возвращается сэмпл - выход детектора, нормалтзованный для попадания в диапазон WITHAFDACWIDTH
+// Возвращается сэмпл - выход детектора
+// return audio sample in range [- 1 .. + 1]
 static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 	FLOAT32P_t vp0f,					// Квадратурные значения выборки
 	const uint_fast8_t dspmode, 
@@ -4307,26 +4308,30 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 
 #if WITHDSPEXTDDC
 
-// ПРИЁМ
+// ПРИЁМ ISB
 // Обрабатывается 32-х битная квадратура
 // Возвращается сэмпл - выход детектора
+// return pair of audio samples in range [- 1 .. + 1]
 static FLOAT32P_t processifadcsampleIQ_ISB(
-	const int32_t iv0, const int32_t qv0		// Квадратурные значения выборки
+	IFADCvalue_t iv0,	// Квадратурные значения выборки
+	IFADCvalue_t qv0,	// Квадратурные значения выборки
+	uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
-	enum { pathi = 0 };				// 0/1: main_RX/sub_RX
 	FLOAT32P_t rv = { 0 };
 
 	return rv;
 }
 
-// ПРИЁМ
+// ПРИЁМ остальных режимов
 // Обрабатывается 32-х битная квадратура
 // Возвращается сэмпл - выход детектора
+// return audio sample in range [- 1 .. + 1]
 static RAMFUNC FLOAT_t processifadcsampleIQ(
-	const uint32_t iv0, const uint32_t qv0,		// Квадратурные значения выборки
-	const uint_fast8_t dspmode, 
-	const uint_fast8_t pathi				// 0/1: main_RX/sub_RX
+	IFADCvalue_t iv0,	// Квадратурные значения выборки
+	IFADCvalue_t qv0,	// Квадратурные значения выборки
+	uint_fast8_t dspmode,
+	uint_fast8_t pathi				// 0/1: main_RX/sub_RX
 	)
 {
 	if (isdspmoderx(dspmode))
@@ -4350,8 +4355,8 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 // ПРИЁМ
 // Обрабатывается 24-х битное число.
 // Возвращается сэмпл - выход детектора
-//
-static RAMFUNC FLOAT_t processifadcsamplei(uint32_t v1, uint_fast8_t dspmode)
+// return audio sample in range [- 1 .. + 1]
+static RAMFUNC FLOAT_t processifadcsamplei(IFADCvalue_t v1, uint_fast8_t dspmode)
 {
 	const uint_fast8_t pathi = 0;
 
@@ -4704,7 +4709,7 @@ static RAMFUNC uint_fast8_t isneedmute(uint_fast8_t dspmode)
 #if WITHDSPEXTDDC && WITHRTS96
 // использование данных о спектре, передаваемых в общем фрейме
 static void RAMFUNC 
-saverts96(const int32_t * buff)
+saverts96(const IFADCvalue_t * buff)
 {
 	// формирование отображения спектра
 	// если используется конвертор на Rafael Micro R820T - требуется инверсия спектра
@@ -5176,8 +5181,9 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		savesampleout32stereo(adpt_output(& ifcodecout, dual.IV), adpt_output(& ifcodecout, dual.QV));	// Запись в поток к передатчику I/Q значений.
 //		recordsampleUAC(dual.IV, dual.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		recordsampleUAC(
-			adpt_input(& ifcodecout, buff [i + DMABUF32RXI]),
-			adpt_input(& ifcodecout, buff [i + DMABUF32RXQ])			);
+			adpt_input(& ifcodecout, buff [i + DMABUF32RXI] * rxgate),
+			adpt_input(& ifcodecout, buff [i + DMABUF32RXQ] * rxgate)
+			);
 
 #elif WITHSUSBSPKONLY
 		// тестирование в режиме USB SPEAKER
@@ -5274,11 +5280,12 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 		if (dspmodeA == DSPCTL_MODE_RX_ISB)
 		{
-			/* прием независимых боковых полос */
+			/* прием независимых боковых полос с приемника A */
 			// Обработка буфера с парами значений
 			const FLOAT32P_t pair = processifadcsampleIQ_ISB(
-				buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
-				buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX0I] * rxgate,
+				buff [i + DMABUF32RX0Q] * rxgate,
+				0	// MAIN RX
 				);	
 			save16demod(pair.IV, pair.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
@@ -5291,15 +5298,15 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		{
 			// buff data layout: I main/I sub/Q main/Q sub
 			const FLOAT_t rxA = processifadcsampleIQ(
-				buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
-				buff [i + DMABUF32RX0Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX0I] * rxgate,
+				buff [i + DMABUF32RX0Q] * rxgate,
 				dspmodeA,
 				0	// MAIN RX
 				);
 
 			const FLOAT_t rxB = processifadcsampleIQ(
-				buff [i + DMABUF32RX1I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
-				buff [i + DMABUF32RX1Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX1I] * rxgate,
+				buff [i + DMABUF32RX1Q] * rxgate,
 				dspmodeB,
 				1	// SUB RX
 				);	
@@ -5325,8 +5332,9 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 			/* прием независимых боковых полос */
 			// Обработка буфера с парами значений
 			const FLOAT32P_t rv = processifadcsampleIQ_ISB(
-				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
-				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX0I] * rxgate,
+				buff [i + DMABUF32RX0Q] * rxgate,
+				0	// MAIN RX
 				);	
 			save16demod(rv.IV, rv.QV);	/* к line output подключен модем - озвучку запрещаем */
 		}
@@ -5334,8 +5342,8 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		{
 			// Обработка буфера с парами значений
 			const FLOAT_t left = processifadcsampleIQ(
-				(int_fast32_t) buff [i + DMABUF32RX0I] * rxgate,	// Расширяем 24-х битные числа до 32 бит
-				(int_fast32_t) buff [i + DMABUF32RX0Q] * rxgate,	// Расширяем 24-х битные числа до 32 бит
+				buff [i + DMABUF32RX0I] * rxgate,
+				buff [i + DMABUF32RX0Q] * rxgate,
 				dspmodeA,
 				0		// MAIN RX
 				);	
