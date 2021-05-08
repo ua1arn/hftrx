@@ -499,10 +499,12 @@ typedef struct adpt_tag
 {
 	FLOAT_t inputK;
 	FLOAT_t outputK;
+	FLOAT_t outputKexact;
 } adpt_t;
 
 FLOAT_t adpt_input(const adpt_t * adp, int32_t v);
 int32_t adpt_output(const adpt_t * adp, FLOAT_t v);
+int32_t adpt_outputexact(const adpt_t * adp, FLOAT_t v);	// точное преобразование во внешнее представление.
 void adpt_initialize(adpt_t * adp, int leftbit);	// leftbit - Номер бита слева от знакового во внешнем формате
 
 extern adpt_t afcodecio;

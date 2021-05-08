@@ -1239,9 +1239,9 @@ void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = adpt_output(& afcodecio, ch0);	// sample value
+	p->buff [n * DMABUFSTEP16 + L] = adpt_outputexact(& afcodecio, ch0);	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = adpt_output(& afcodecio, ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = adpt_outputexact(& afcodecio, ch1);	// sample value
 #endif
 
 	if (++ n >= CNT16)

@@ -9061,7 +9061,7 @@ updateboardZZZ(
 			#if WITHIF4DSP
 				const uint_fast8_t agcseti = pamodetempl->agcseti;
 				board_set_agcrate(gagc [agcseti].rate);			/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
-				board_set_agc_scale(gagc [agcseti].scale);
+				board_set_agc_scale(gagc [agcseti].scale);		/* Для эксперементов по улучшению приема АМ */
 				board_set_agc_t0(gagc [agcseti].t0);
 				board_set_agc_t1(gagc [agcseti].t1);
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ

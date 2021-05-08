@@ -92,7 +92,7 @@ static uint_fast16_t 	glob_ifgain = BOARD_IFGAIN_MIN;
 static uint_fast8_t 	glob_dspmodes [2] = { DSPCTL_MODE_IDLE, DSPCTL_MODE_IDLE, };
 
 static uint_fast8_t		glob_agcrate [2] = { 20, 20 }; //10	// 10 дБ изменение входного на 1 дБ выходного
-static uint_fast8_t 	glob_agc_scale [2] = { 100, 100 }; // scale в процентах
+static uint_fast8_t 	glob_agc_scale [2] = { 100, 100 }; // scale в процентах - Для эксперементов по улучшению приема АМ
 static uint_fast8_t 	glob_agc_t0 [2] = { 0, 0 }; // chargespeedfast в милисекундах
 static uint_fast8_t 	glob_agc_t1 [2] = { 95, 95 }; // chargespeedslow в милисекундах
 static uint_fast8_t 	glob_agc_t2 [2] = { 2, 2 };	// dischargespeedslow в сотнях милисекунд (0.1 секунды)
@@ -704,9 +704,10 @@ void adpt_initialize(
 	/* Форматы с павающей точкой обеспечивают точное представление степеней двойки */
 	adp->inputK = POWF(2, - signpos);
 	adp->outputK = POWF(2, signpos) * db2ratio(- (FLOAT_t) 0.5);
+	adp->outputKexact = POWF(2, signpos);
 }
 
-// Вреобразование во внутреннее представление.
+// Преобразование во внутреннее представление.
 // входное значение - "правильное" с точки зрения двоичного представления.
 // Обратить внимание на случаи 24-х битных форматов.
 FLOAT_t adpt_input(const adpt_t * adp, int32_t v)
@@ -714,10 +715,16 @@ FLOAT_t adpt_input(const adpt_t * adp, int32_t v)
 	return (FLOAT_t) adp->inputK * v;
 }
 
-// Вреобразование во внешнее представление.
+// Преобразование во внешнее представление.
 int32_t adpt_output(const adpt_t * adp, FLOAT_t v)
 {
 	return (int32_t) (adp->outputK * v);
+}
+
+// точное преобразование во внешнее представление.
+int32_t adpt_outputexact(const adpt_t * adp, FLOAT_t v)
+{
+	return (int32_t) (adp->outputKexact * v);
 }
 
 adpt_t afcodecio;
@@ -1363,7 +1370,7 @@ static void agc_parameters_update(volatile agcparams_t * const agcp, FLOAT_t gai
 	agcp->hungticks = NSAITICKS(glob_agc_thung [pathi] * 100);			// в сотнях милисекунд (0.1 секунды)
 
 	agcp->gainlimit = gainlimit;
-	agcp->levelfence = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;
+	agcp->levelfence = (int) glob_agc_scale [pathi] * (FLOAT_t) 0.01;	/* Для эксперементов по улучшению приема АМ */
 	agcp->agcfactor = flatgain ? (FLOAT_t) -1 : agc_calcagcfactor(glob_agcrate [pathi]);
 
 	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
@@ -1375,20 +1382,20 @@ static void agc_smeter_parameters_update(volatile agcparams_t * const agcp)
 {
 	agcp->agcoff = 0;
 
-#if CTLSTYLE_OLEG4Z_V1
-	agcp->chargespeedfast = MAKETAUAF0();
-	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
-	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
-#else /* CTLSTYLE_OLEG4Z_V1 */
 	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
 	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
-#endif /* CTLSTYLE_OLEG4Z_V1 */
 	agcp->chargespeedslow = MAKETAUIF((FLOAT_t) 0.1);	// 100 mS
 	agcp->dischargespeedslow = MAKETAUIF((FLOAT_t) 0.4);	// 400 mS
 	agcp->hungticks = NSAITICKS(1000);			// в сотнях милисекунд (1 секунда)
 
 	agcp->gainlimit = db2ratio(60);
 	agcp->agcfactor = (FLOAT_t) -1;
+
+#if CTLSTYLE_OLEG4Z_V1
+	agcp->chargespeedfast = MAKETAUAF0();
+	agcp->chargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
+	agcp->dischargespeedfast = MAKETAUIF((FLOAT_t) 0.005);	// 5 mS
+#endif /* CTLSTYLE_OLEG4Z_V1 */
 
 	//PRINTF(PSTR("agc_parameters_update: dischargespeedfast=%f, chargespeedfast=%f\n"), agcp->dischargespeedfast, agcp->chargespeedfast);
 }
@@ -1501,7 +1508,8 @@ static RAMDTCM FLOAT_t VOXCHARGE = 0;
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 {
-	return mikeinlevel * UINT8_MAX;	// масшабирование к 0..255
+	uint_fast8_t v = mikeinlevel * UINT8_MAX;	// масшабирование к 0..255
+	return v > UINT8_MAX ? UINT8_MAX : v;
 }
 
 // Возвращает значения 0..255
@@ -5954,6 +5962,7 @@ board_set_agcrate(uint_fast8_t n)	/* на n децибел изменения в
 }
 
 // scale в процентах
+/* Для эксперементов по улучшению приема АМ */
 void
 board_set_agc_scale(uint_fast8_t n)	/* подстройка параметра АРУ */
 {
