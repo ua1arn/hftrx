@@ -394,8 +394,6 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd);
 /** @addtogroup USB_LL_Exported_Functions USB Low Layer Exported Functions
   * @{
   */
-#if 1//defined (USB_OTG_FS) || defined (USB_OTG_HS)
-
 HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg);
 HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg);
 HAL_StatusTypeDef USB_EnableGlobalInt(USB_OTG_GlobalTypeDef *USBx);
@@ -450,9 +448,6 @@ HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num);
 HAL_StatusTypeDef USB_StopHost(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_ActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
-
-#endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
-
 
 /* Exported functions --------------------------------------------------------*/
 /** @addtogroup PCD_Exported_Functions PCD Exported Functions

@@ -2237,7 +2237,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 	//PRINTF(PSTR("USB_EP0StartXfer\n"));
 	if (ep->is_in == 1)
 	{
-		//PRINTF(PSTR("USB_EP0StartXfer: IN direction, ep->xfer_len=%d, ep->maxpacket=%d\n"), (int) ep->xfer_len, (int) ep->maxpacket);
+		//PRINTF("%s: IN direction, ep->xfer_len=%d, ep->maxpacket=%d\n", __func__, (int) ep->xfer_len, (int) ep->maxpacket);
 
 		set_pid(USBx, pipe, DEVDRV_USBF_PID_NAK);
 
@@ -2264,7 +2264,7 @@ HAL_StatusTypeDef USB_EP0StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDe
 	}
 	else
 	{
-		//PRINTF(PSTR("USB_EP0StartXfer: OUT direction\n"));
+		//PRINTF("%s: OUT direction\n", __func__);
 		/* OUT endpoint */
 		if (ep->xfer_len > 0)
 		{
