@@ -1412,7 +1412,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 	 BRDYSTS=0x00000000
 	 INTSTS0=0x0000F899
 
-	 		(hpcd->Init.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+	 		(hpcd->Init.Sof_enable != DISABLE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
 		1 * USB_INTENB0_DVSE |	// DVSE
 		//1 * USB_INTENB0_VBSE |	// VBSE
 		1 * USB_INTENB0_CTRE |	// CTRE
@@ -2762,7 +2762,7 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 	USB_ResetPort2(USBx, 1);
 	//HAL_Delay(100U);                                 /* See Note #1 */
 	local_delay_ms(100);
-	USB_ResetPort2(USBx, 1);
+	USB_ResetPort2(USBx, 0);
 	//HAL_Delay(10U);
 	local_delay_ms(10);
 
@@ -2815,7 +2815,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 	to enable the corresponding interrupt output when the host controller mode is selected.
 	*/
 	USBx->INTENB0 =
-		(cfg.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		(cfg.Sof_enable != DISABLE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
 		//1 * USB_INTENB0_VBSE |	// VBSE
 		1 * USB_INTENB0_BEMPE |	// BEMPE
 		1 * USB_INTENB0_NRDYE |	// NRDYE
@@ -3056,7 +3056,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
 	USBx->INTSTS1 = 0;
 
 	USBx->INTENB0 =
-		(cfg.Sof_enable != USB_FALSE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
+		(cfg.Sof_enable != DISABLE) * USB_INTENB0_SOFE |	// SOFE	1: Frame Number Update Interrupt Enable
 		1 * USB_INTENB0_DVSE |	// DVSE
 		//1 * USB_INTENB0_VBSE |	// VBSE
 		1 * USB_INTENB0_CTRE |	// CTRE

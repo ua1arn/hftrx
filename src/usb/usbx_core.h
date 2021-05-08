@@ -88,9 +88,6 @@
   * @}
   */
 
-#define USB_FALSE    0
-#define USB_TRUE     (!USB_FALSE)
-
 #if CPUSTYLE_R7S721
 	typedef struct st_usb20  USB_OTG_GlobalTypeDef;
 #endif /* CPUSTYLE_R7S721 */
