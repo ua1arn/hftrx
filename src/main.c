@@ -20552,6 +20552,11 @@ void hamradio_set_tx_power(uint_fast8_t v)
 {
 }
 
+uint_fast8_t hamradio_get_tx_power(void)
+{
+	return 0;
+}
+
 #endif /* WITHPOWERTRIM */
 
 #endif /* WITHTX */
