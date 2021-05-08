@@ -1123,6 +1123,8 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 
   if (hpcd->Init.dma_enable == 1U)
   {
+	if (pBuf != NULL && len != 0)
+		arm_hardware_flush_invalidate((uintptr_t) pBuf, len);
     ep->dma_addr = (uint32_t)pBuf;
   }
 
@@ -1160,6 +1162,11 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 
   if (hpcd->Init.dma_enable == 1U)
   {
+		if (pBuf != NULL && len != 0)
+		{
+			ASSERT(((uintptr_t) pBuf % DCACHEROWSIZE) == 0);
+			arm_hardware_flush((uintptr_t) pBuf, len);
+		}
     ep->dma_addr = (uint32_t)pBuf;
   }
 

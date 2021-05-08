@@ -93,7 +93,7 @@ extern "C" {
 #define  USB_REQ_TYPE_CLASS                             0x20U
 #define  USB_REQ_TYPE_VENDOR                            0x40U
 #define  USB_REQ_TYPE_MASK                              0x60U
-#define  USB_REQ_TYPE_DIR                               0x80	// IN for non-zero
+#define  USB_REQ_TYPE_DIR                               0x80U	// IN for non-zero
 
 #define  USB_REQ_RECIPIENT_DEVICE                       0x00U
 #define  USB_REQ_RECIPIENT_INTERFACE                    0x01U
