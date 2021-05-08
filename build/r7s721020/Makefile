@@ -179,6 +179,7 @@ LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
+ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 
@@ -255,15 +256,6 @@ version:
 # 
 # Include the dependency files, should be the last of the makefile
 #
--include $(wildcard $(OBJDIR)/*.d)
--include $(wildcard $(OBJDIR)/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*/*/*/*.d)
+-include $(call rwildcard, $(OBJDIR), *.d)
 
 # *** EOF ***

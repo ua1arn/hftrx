@@ -216,6 +216,7 @@ LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
+ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 

@@ -127,6 +127,7 @@ LDFLAGS_ROM = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -T$(LDSCRIPT_ROM) -Wl,-Map=
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
+ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 
