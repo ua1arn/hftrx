@@ -135,7 +135,7 @@ ULIBS +=
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
-#SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
+#SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 

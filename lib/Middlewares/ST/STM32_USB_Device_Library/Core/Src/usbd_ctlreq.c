@@ -16,8 +16,7 @@
   *
   ******************************************************************************
   */
-#include "hardware.h"
-#include "formats.h"
+
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"
@@ -804,6 +803,7 @@ static void USBD_ClrFeature(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef
   */
 void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, uint8_t *pdata)
 {
+#if ! CPUSTYLE_R7S721
   uint8_t *pbuff = pdata;
 
   req->bmRequest = *(uint8_t *)(pbuff);
@@ -821,6 +821,7 @@ void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, uint8_t *pdata)
   pbuff++;
   pbuff++;
   req->wLength = SWAPBYTE(pbuff);
+#endif
 }
 
 

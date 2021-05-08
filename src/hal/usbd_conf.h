@@ -29,6 +29,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+#include "formats.h"	// debug PRINTF, TP and other
 
 #include <stdio.h>
 #include <stdlib.h>

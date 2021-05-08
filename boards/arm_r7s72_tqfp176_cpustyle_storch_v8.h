@@ -28,6 +28,12 @@
 #define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
 #define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 #define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+#define WITHDEBUG_USART2	1
+//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+#define WITHDEBUG_USART2	1
+#define WITHMODEM_USART2	1
+#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 #if WITHISBOOTLOADER
 
@@ -40,15 +46,10 @@
 	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
-	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
 	//#define WITHCAT_USART2	1
 	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
-	#define WITHDEBUG_USART2	1
-	#define WITHMODEM_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
@@ -76,6 +77,7 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
+#if WITHUSBHW
 	// USB device parameters
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
@@ -84,15 +86,9 @@
 	// USB host parameters
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
-	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
-
 	//#define WITHCAT_USART2	1
 	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
-	#define WITHDEBUG_USART2	1
-	#define WITHMODEM_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	#if WITHINTEGRATEDDSP
 
@@ -113,6 +109,8 @@
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	#define WITHUSBWCID	1
+
+#endif /* WITHUSBHW */
 
 #endif /* WITHISBOOTLOADER */
 
