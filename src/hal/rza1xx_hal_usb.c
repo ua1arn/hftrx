@@ -1294,8 +1294,8 @@ static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef 
 {
 	const uint_fast16_t usbreq = USBx->USBREQ;
 
-	req->bmRequest     = LO_BYTE(usbreq & USB_FUNCTION_bmRequestType); //(pdata [0] >> 0) & 0x00FF;
-	req->bRequest      = HI_BYTE(usbreq & USB_FUNCTION_bRequest); //(pdata [0] >> 8) & 0x00FF;
+	req->bmRequest     = LO_BYTE(usbreq); //(pdata [0] >> 0) & 0x00FF;
+	req->bRequest      = HI_BYTE(usbreq); //(pdata [0] >> 8) & 0x00FF;
 	req->wValue        = USBx->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
 	req->wIndex        = USBx->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
 	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;

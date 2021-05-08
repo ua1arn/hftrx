@@ -389,16 +389,6 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_DeInit (PCD_HandleTypeDef *hpcd);
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd);
-void HAL_MspInit(void);
-void HAL_MspDeInit(void);
-HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority);
-
-
-#define USB_FUNCTION_bRequest                       (0xFF00u)       /* b15-8:bRequest */
-#define USB_FUNCTION_bmRequestType                  (0x00FFu)       /* b7-0: bmRequestType */
-#define USB_FUNCTION_bmRequestTypeDir               (0x0080u)       /* b7  : Data transfer direction - IN if non-zero */
-#define USB_FUNCTION_bmRequestTypeType              (0x0060u)       /* b6-5: Type */
-#define USB_FUNCTION_bmRequestTypeRecip             (0x001Fu)       /* b4-0: Recipient USB_RECIPIENT_MASK */
 
 /* Exported functions --------------------------------------------------------*/
 /** @addtogroup USB_LL_Exported_Functions USB Low Layer Exported Functions

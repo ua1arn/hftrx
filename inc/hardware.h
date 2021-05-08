@@ -368,7 +368,9 @@ extern "C" {
 	#include "armcpu/rza_io_regrw.h"	// iobitmasks
 
 	#include "irq_ctrl.h"
+#ifdef USE_HAL_DRIVER
 	#include "rza1xx_hal.h"
+#endif /* USE_HAL_DRIVER */
 
 
 	#define DCACHEROWSIZE 32

@@ -149,6 +149,9 @@ HAL_StatusTypeDef HAL_DeInit(void);
 extern uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
 void HAL_Delay(uint32_t Delay);
 void HAL_IncTick(void);
+//HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority);
+void HAL_MspInit(void);
+void HAL_MspDeInit(void);
 
 #ifdef __cplusplus
 }
