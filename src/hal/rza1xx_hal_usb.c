@@ -1993,7 +1993,7 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
 	switch (mode)
 	{
 	case USB_OTG_DEVICE_MODE:
-		USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM01: Devide controller mode is selected
+		USBx->SYSCFG0 &= ~ USB_SYSCFG_DCFM;	// DCFM 0: Devide controller mode is selected
 		(void) USBx->SYSCFG0;
 		break;
 	case USB_OTG_HOST_MODE:
