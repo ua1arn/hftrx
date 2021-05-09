@@ -137,7 +137,8 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
-SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
+SRCDIRS += $(HALDIR)
+#SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
