@@ -18,10 +18,10 @@
 #include <string.h>
 #include <wchar.h>
 
-
+#include "usb_device.h"
+#include "usbd_def.h"
 #include "usb200.h"
 #include "usbch9.h"
-#include "usbx_core.h"
 
 #include "usbd_ctlreq.h"
 #include "usbd_ioreq.h"

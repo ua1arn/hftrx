@@ -26,8 +26,6 @@
 
 #include "formats.h"
 
-#include "src/usb/usbx_core.h"
-
 #include "usb_device.h"
 #include "usbd_core.h"
 //#include "usbd_desc.h"

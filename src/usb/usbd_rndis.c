@@ -15,8 +15,10 @@
 
 
 #include "formats.h"
-#include "usbx_core.h"
 #include "usbd_def.h"
+#include "usbd_core.h"
+#include "usb200.h"
+#include "usbch9.h"
 
 #include "lwip/opt.h"
 #include "lwip/init.h"

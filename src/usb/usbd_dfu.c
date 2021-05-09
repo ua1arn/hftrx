@@ -14,8 +14,10 @@
 #include "board.h"
 #include "audio.h"
 #include "formats.h"
-#include "usbx_core.h"
 #include "usbd_def.h"
+#include "usbd_core.h"
+#include "usb200.h"
+#include "usbch9.h"
 
 
 

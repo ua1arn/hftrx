@@ -13,8 +13,13 @@
 #include "audio.h"
 #include "src/display/display.h"
 #include "formats.h"
-#include "usbx_core.h"
+
+#include "usb_device.h"
 #include "usbd_def.h"
+#include "usbd_core.h"
+#include "usb200.h"
+#include "usbch9.h"
+
 #include <string.h>
 
 

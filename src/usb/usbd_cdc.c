@@ -18,8 +18,10 @@
 #include "gpio.h"
 #include "spi.h"
 
-#include "usbx_core.h"
 #include "usbd_def.h"
+#include "usbd_core.h"
+#include "usb200.h"
+#include "usbch9.h"
 
 
 // CDC class-specific request codes

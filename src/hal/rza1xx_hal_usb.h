@@ -17,6 +17,18 @@ extern "C" {
 #define __HAL_PCD_ENABLE(__HANDLE__)            //           (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
 #define __HAL_PCD_DISABLE(__HANDLE__)           //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
 
+/** @defgroup USB_Core_Speed_   USB Core Speed
+  * @{
+  */
+// Эти значения пишутся в регистр USB_OTG_DCFG после умножения на USB_OTG_DCFG_DSPD_0
+#define USB_OTG_SPEED_HIGH                     0U	// 00: High speed
+#define USB_OTG_SPEED_HIGH_IN_FULL             1U	// Full speed using HS
+#define USB_OTG_SPEED_LOW                      2U	// Reserved
+#define USB_OTG_SPEED_FULL                     3U	// Full speed using internal FS PHY
+/**
+  * @}
+  */
+
 /** @defgroup PCD_Speed PCD Speed
   * @{
   */
@@ -36,11 +48,28 @@ extern "C" {
   * @}
   */
 
+
+#define USB_OTG_HS_MAX_PACKET_SIZE           512U
+#define USB_OTG_FS_MAX_PACKET_SIZE           64U
+
+#define USB_OTG_MAX_EP0_SIZE                 64U
+
+
+/** @defgroup USB_Core_PHY_   USB Core PHY
+  * @{
+  */
+#define USB_OTG_ULPI_PHY                       1U
+#define USB_OTG_EMBEDDED_PHY                   2U
+#define USB_OTG_HS_EMBEDDED_PHY                3U
+/**
+  * @}
+  */
+
+
 typedef struct st_usb20  USB_OTG_GlobalTypeDef;
 
-typedef USB_OTG_GlobalTypeDef	PCD_TypeDef;		/* processor peripherial */
+typedef USB_OTG_GlobalTypeDef	PCD_TypeDef;	/* processor peripherial */
 typedef USB_OTG_GlobalTypeDef	HCD_TypeDef;	/* processor peripherial */
-typedef USB_OTG_GlobalTypeDef  PCD_TypeDef;
 
 
 typedef enum
@@ -627,6 +656,40 @@ uint_fast8_t usbd_epaddr2pipe(uint_fast8_t ep_addr);
 
 #define __HAL_HCD_ENABLE(__HANDLE__)       //            (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
 #define __HAL_HCD_DISABLE(__HANDLE__)       //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
+
+
+/** @defgroup USBH_CORE_Private_Defines
+  * @{
+  */
+
+
+typedef struct _InterfaceAssocDescriptor
+{
+  uint8_t   bLength;
+  uint8_t   bDescriptorType;
+  uint8_t	bFirstInterface;
+  uint8_t   bInterfaceCount;       /* Number of Interfaces */
+  uint8_t   bFunctionClass;
+  uint8_t   bFunctionSubClass;
+  uint8_t   bFunctionProtocol;
+  uint8_t   iConfiguration;       /*Index of String Descriptor Describing this configuration */
+} USBH_IfAssocDescTypeDef;
+
+#define USBH_MAX_PIPES_NBR                             15
+
+#define USBHNPIPES 15
+
+/* Exported macro ------------------------------------------------------------*/
+
+/**
+  * @}
+  */
+
+/** @defgroup PCD_PHY_Module PCD PHY Module
+  * @{
+  */
+#define PCD_PHY_ULPI                 1U
+#define PCD_PHY_EMBEDDED             2U
 
 #ifdef __cplusplus
 }

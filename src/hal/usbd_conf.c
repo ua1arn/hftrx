@@ -27,7 +27,6 @@
 #include "formats.h"
 #include "gpio.h"
 #include "src/usb/usbch9.h"
-#include "src/usb/usbx_core.h"
 
 #include "usbd_def.h"
 #include "usbd_core.h"
@@ -53,14 +52,23 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status);
 
 
 /* PCD Handle Structure */
-/*static*/ RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
+static RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
 /* USB Device Core handle declaration */
-/*static */ RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
+static RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
 
 /* HCD Handle Structure */
-/*static*/ RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
+static RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
 /* USB Host Core handle declaration */
-/*static */RAMBIGDTCM  __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
+static RAMBIGDTCM  __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
+
+//
+//typedef enum {
+//  APPLICATION_IDLE = 0,
+//  APPLICATION_START,
+//  APPLICATION_READY,
+//  APPLICATION_DISCONNECT,
+//} ApplicationTypeDef;
+
 //static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 

@@ -503,12 +503,11 @@ USBD_StatusTypeDef USBD_LL_DataOutStage(USBD_HandleTypeDef *pdev,
 USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
                                        uint8_t epnum, uint8_t *pdata)
 {
-  USBD_EndpointTypeDef *pep;
   USBD_StatusTypeDef ret;
 
   if (epnum == 0U)
   {
-    pep = &pdev->ep_in[0];
+	  USBD_EndpointTypeDef * const pep = &pdev->ep_in[0];
 
     if (pdev->ep0_state == USBD_EP0_DATA_IN)
     {
@@ -550,8 +549,12 @@ USBD_StatusTypeDef USBD_LL_DataInStage(USBD_HandleTypeDef *pdev,
           		}
           	}
           }
+#if ! CPUSTYLE_R7S721
+// by MGS
+// todo: fix this
           (void)USBD_LL_StallEP(pdev, 0x80U);
           (void)USBD_CtlReceiveStatus(pdev);
+#endif
         }
       }
     }
