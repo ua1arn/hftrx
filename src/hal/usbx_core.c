@@ -158,15 +158,15 @@ usbd_getpipe(const USB_OTG_EPTypeDef * ep)
 #endif /* CPUSTYLE_R7S721 */
 
 /* PCD Handle Structure */
-static RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
+extern RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
 /* USB Device Core handle declaration */
-/*static */ RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
+extern /*static */ RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
 
 /* HCD Handle Structure */
-static RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
+extern RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
 /* USB Host Core handle declaration */
-/*static */RAMBIGDTCM  __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
-static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+extern /*static */RAMBIGDTCM  __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
+//static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 
 #if CPUSTYLE_R7S721
@@ -1646,35 +1646,6 @@ static void RAMFUNC_NONILINE device_USBI1_IRQHandler(void)
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
-void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
-{
-
-	if (hpcd->Instance == & USB200)
-	{
-		arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
-
-		/* ---- Supply clock to the USB20(channel 0) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		HARDWARE_USB0_INITIALIZE();
-
-	}
-	else if (hpcd->Instance == & USB201)
-	{
-		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
-
-		/* ---- Supply clock to the USB20(channel 1) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		HARDWARE_USB1_INITIALIZE();
-	}
-
-}
-
-
 // Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 {
@@ -1895,7 +1866,7 @@ static void host_USBI1_IRQHandler(void)
 	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
 
-void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
+void __weak HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 {
 	if (hpcd->Instance == & USB200)
 	{
@@ -1920,7 +1891,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	}
 }
 
-void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
+void xxxHAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 {
 	if (hpcd->Instance == & USB200)
 	{
@@ -1952,59 +1923,6 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 }
 
 /**
-  * @brief  Return Host Current Frame number
-  * @param  USBx : Selected device
-  * @retval current frame number
-*/
-uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
-{
-	uint_fast16_t fn = (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
-	for (;;)
-	{
-		const uint_fast16_t fn2 = (USBx->FRMNUM & USB_FRMNUM_FRNM) >> USB_FRMNUM_FRNM_SHIFT;
-		if (fn == fn2)
-			break;
-		fn = fn2;
-
-	}
-	return fn;
-}
-
-uint_fast8_t USB_GetHostSpeedReady(USB_OTG_GlobalTypeDef *USBx)
-{
-	// 1xx: Reset handshake in progress
-	return (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) & 0x04) == 0;
-}
-
-/**
-  * @brief  Return Host Core speed
-  * @param  USBx : Selected device
-  * @retval speed : Host speed
-  *          This parameter can be one of these values:
-  *            @arg USB_OTG_SPEED_HIGH: High speed mode
-  *            @arg USB_OTG_SPEED_FULL: Full speed mode
-  *            @arg USB_OTG_SPEED_LOW: Low speed mode
-  */
-uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx)
-{
-	// 1xx: Reset handshake in progress
-	while (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) & 0x04)
-		dbg_putchar('^');
-
-	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
-	{
-	case 0x01:
-		return USB_OTG_SPEED_LOW;
-	case 0x02:
-		return USB_OTG_SPEED_FULL;
-	case 0x03:
-		return USB_OTG_SPEED_HIGH;
-	default:
-		return USB_OTG_SPEED_LOW;
-	}
-}
-
-/**
   * @brief  USB_GetDevSpeed :Return the Dev Speed
   * @param  USBx : Selected device
   * @retval speed : device speed
@@ -2029,61 +1947,6 @@ uint8_t USB_GetDevSpeed(USB_OTG_GlobalTypeDef *USBx)
 		return USB_OTG_SPEED_LOW;
 	}
 }
-
-/**
-  * @brief  USB_DriveVbus : activate or de-activate vbus
-  * @param  state : VBUS state
-  *          This parameter can be one of these values:
-  *           0 : VBUS Active
-  *           1 : VBUS Inactive
-  * @retval HAL status
-*/
-HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint8_t state)
-{
-	// renesas version
-	/*
-  uint32_t hprt0 = USBx_HPRT0;
-  hprt0 &= ~(USB_OTG_HPRT_PENA    | USB_OTG_HPRT_PCDET |
-                         USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG );
-
-  if (((hprt0 & USB_OTG_HPRT_PPWR) == 0 ) && (state == 1 ))
-  {
-    USBx_HPRT0 = (USB_OTG_HPRT_PPWR | hprt0);
-  }
-  if (((hprt0 & USB_OTG_HPRT_PPWR) == USB_OTG_HPRT_PPWR) && (state == 0 ))
-  {
-    USBx_HPRT0 = ((~USB_OTG_HPRT_PPWR) & hprt0);
-  }
-  */
-  return HAL_OK;
-}
-
-
-/**
-  * @brief  USB_EnableGlobalInt
-  *         Enables the controller's Global Int in the AHB Config reg
-  * @param  USBx : Selected device
-  * @retval HAL status
-  */
-HAL_StatusTypeDef USB_EnableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
-{
-  ////USBx->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
-  return HAL_OK;
-}
-
-
-/**
-  * @brief  USB_DisableGlobalInt
-  *         Disable the controller's Global Int in the AHB Config reg
-  * @param  USBx : Selected device
-  * @retval HAL status
-*/
-HAL_StatusTypeDef USB_DisableGlobalInt(USB_OTG_GlobalTypeDef *USBx)
-{
-  ////USBx->GAHBCFG &= ~ USB_OTG_GAHBCFG_GINT;
-  return HAL_OK;
-}
-
 
 #endif /* defined (WITHUSBHW_DEVICE) */
 
@@ -6303,7 +6166,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   * @param  hpcd: PCD handle
   * @retval None
   */
-void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
+void xxHAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 {
 	USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, (uint8_t *) hpcd->Setup);
 }
@@ -6314,7 +6177,7 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
   * @param  epnum: Endpoint Number - without direction bit
   * @retval None
   */
-void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
+void xxHAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
 	USBD_LL_DataOutStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->OUT_ep [epnum].xfer_buff);
 }
@@ -6325,7 +6188,7 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   * @param  epnum: Endpoint Number - without direction bit
   * @retval None
   */
-void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
+void xxHAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
 {
 	USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep [epnum].xfer_buff);
 }
@@ -6335,7 +6198,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   * @param  hpcd: PCD handle
   * @retval None
   */
-void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
+void xxHAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 {
 	USBD_LL_SOF((USBD_HandleTypeDef*)hpcd->pData);
 }
@@ -6345,7 +6208,7 @@ void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
   * @param  hpcd: PCD handle
   * @retval None
   */
-void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
+void xxHAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd)
 {
 	USBD_SpeedTypeDef speed = USBD_SPEED_FULL;
 
@@ -6810,183 +6673,6 @@ void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, uint8_t * pdata)
 		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 #endif
 }
-
-
-
-
-/**
-  * @brief  Starts the Low Level portion of the Device driver.
-  * @param  pdev: Device handle
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_Start(USBD_HandleTypeDef *pdev)
-{
-  HAL_PCD_Start((PCD_HandleTypeDef*)pdev->pData);
-  return USBD_OK;
-}
-
-/**
-  * @brief  Stops the Low Level portion of the Device driver.
-  * @param  pdev: Device handle
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_Stop (USBD_HandleTypeDef *pdev)
-{
-  HAL_PCD_Stop(pdev->pData);
-  return USBD_OK;
-}
-
-/**
-  * @brief  Opens an endpoint of the Low Level Driver.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @param  ep_type: Endpoint Type
-  * @param  ep_mps: Endpoint Max Packet Size
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_OpenEP(
-	USBD_HandleTypeDef *pdev,
-	uint8_t  ep_addr,
-	uint8_t  ep_type,
-	uint16_t ep_mps)
-{
-
-	HAL_PCD_EP_Open((PCD_HandleTypeDef*) pdev->pData,
-		ep_addr,
-		//ep_addr & 0x7F,	// tx_fifo_num
-		ep_mps,
-		ep_type);
-
-	return USBD_OK;
-}
-
-/**
-  * @brief  Closes an endpoint of the Low Level Driver.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_CloseEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
-{
-
-	HAL_PCD_EP_Close((PCD_HandleTypeDef*) pdev->pData, ep_addr);
-	return USBD_OK;
-}
-
-/**
-  * @brief  Flushes an endpoint of the Low Level Driver.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_FlushEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr)
-{
-  HAL_PCD_EP_Flush((PCD_HandleTypeDef*) pdev->pData, ep_addr);
-  return USBD_OK;
-}
-
-/**
-  * @brief  Sets a Stall condition on an endpoint of the Low Level Driver.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_StallEP(USBD_HandleTypeDef *pdev, uint8_t ep_addr)
-{
-  HAL_PCD_EP_SetStall((PCD_HandleTypeDef *) pdev->pData, ep_addr);
-  return USBD_OK;
-}
-
-/**
-  * @brief  Clears a Stall condition on an endpoint of the Low Level Driver.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_ClearStallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr)
-{
-	HAL_PCD_EP_ClrStall((PCD_HandleTypeDef *) pdev->pData, ep_addr);
-	return USBD_OK;
-}
-
-/**
-  * @brief  Returns Stall condition.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @retval Stall (1: Yes, 0: No)
-  */
-uint8_t USBD_LL_IsStallEP (USBD_HandleTypeDef *pdev, uint8_t ep_addr)
-{
-	PCD_HandleTypeDef *hpcd = (PCD_HandleTypeDef *) pdev->pData;
-
-	if ((ep_addr & 0x80) != 0)
-	{
-		return hpcd->IN_ep [ep_addr & 0x7F].is_stall;
-	}
-	else
-	{
-		return hpcd->OUT_ep [ep_addr & 0x7F].is_stall;
-	}
-}
-/**
-  * @brief  Assigns a USB address to the device.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_SetUSBAddress (USBD_HandleTypeDef *pdev, uint8_t dev_addr)
-{
-	HAL_PCD_SetAddress((PCD_HandleTypeDef*) pdev->pData, dev_addr);
-	return USBD_OK;
-}
-
-/**
-  * @brief  Transmits data over an endpoint.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @param  pbuf: Pointer to data to be sent
-  * @param  size: Data size
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_Transmit(USBD_HandleTypeDef *pdev,
-                                      uint8_t  ep_addr,
-									  const uint8_t  *pbuf,
-                                      uint32_t  size)
-{
-
-	HAL_PCD_EP_Transmit((PCD_HandleTypeDef*) pdev->pData, ep_addr, pbuf, size);
-	return USBD_OK;
-}
-
-/**
-  * @brief  Prepares an endpoint for reception.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @param  pbuf: Pointer to data to be received
-  * @param  size: Data size
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev,
-                                           uint8_t  ep_addr,
-                                           uint8_t  *pbuf,
-										   uint32_t  size)
-{
-
-	HAL_PCD_EP_Receive((PCD_HandleTypeDef*) pdev->pData, ep_addr, pbuf, size);
-	return USBD_OK;
-}
-
-/**
-  * @brief  Returns the last transfered packet size.
-  * @param  pdev: Device handle
-  * @param  ep_addr: Endpoint Number
-  * @retval Recived Data Size
-  */
-uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr)
-{
-	return HAL_PCD_EP_GetRxCount((PCD_HandleTypeDef*) pdev->pData, ep_addr);
-}
-
 /** @defgroup USBD_CORE_Private_Functions
 * @{
 */
@@ -9807,7 +9493,7 @@ USBH_StatusTypeDef  USBH_LL_NotifyURBChange (USBH_HandleTypeDef *phost)
   * @param  hpcd: PCD handle
   * @retval None
   */
-void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
+void xxHAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 {
 #if CPUSTYLE_R7S721
 
@@ -9883,108 +9569,6 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 }
 
 #ifdef WITHUSBHW_DEVICE
-
-/**
-  * @brief  Initializes the Low Level portion of the Device driver.
-  * @param  pdev: Device handle
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_Init(USBD_HandleTypeDef *pdev)
-{
-	/* Link The driver to the stack */
-	//	hpcd->pData = pdev;
-	//	pdev->pData = hpcd;
-	/* Init USB Ip. */
-	hpcd_USB_OTG.Instance = WITHUSBHW_DEVICE;
-
-	/* Link the driver to the stack. */
-	hpcd_USB_OTG.pData = pdev;
-	pdev->pData = & hpcd_USB_OTG;
-#if CPUSTYLE_R7S721
-	// Значение ep0_mps и speed обновится после reset шины
-	#if WITHUSBDEV_HSDESC
-		hpcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
-		//hpcd_USB_OTG.Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_HS_MAX_PACKET_SIZE;
-	#else /* WITHUSBDEV_HSDESC */
-		hpcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
-		//hpcd_USB_OTG.Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //USB_OTG_FS_MAX_PACKET_SIZE;
-	#endif /* WITHUSBDEV_HSDESC */
-	hpcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-
-	hpcd_USB_OTG.Init.dev_endpoints = 15;
-
-#else /* CPUSTYLE_R7S721 */
-
-	#if WITHUSBDEV_HSDESC
-		hpcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
-		//hpcd_USB_OTG.Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
-	#else /* WITHUSBDEV_HSDESC */
-		hpcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
-		//hpcd_USB_OTG.Init.ep0_mps = USB_OTG_MAX_EP0_SIZE; //DEP0CTL_MPS_64;
-	#endif /* WITHUSBDEV_HSDESC */
-
-	#if WITHUSBDEV_HIGHSPEEDULPI
-		hpcd_USB_OTG.Init.phy_itface = USB_OTG_ULPI_PHY;
-	#elif WITHUSBDEV_HIGHSPEEDPHYC
-		hpcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-	#else /* WITHUSBDEV_HIGHSPEEDULPI */
-		hpcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-	#endif /* WITHUSBDEV_HIGHSPEEDULPI */
-		hpcd_USB_OTG.Init.dev_endpoints = 9;	// or 6 for FS devices
-
-#endif /* CPUSTYLE_R7S721 */
-
-	#if WITHUSBDEV_VBUSSENSE	/* используется предопределенный вывод VBUS_SENSE */
-		hpcd_USB_OTG.Init.vbus_sensing_enable = USB_ENABLE;
-	#else /* WITHUSBDEV_VBUSSENSE */
-		hpcd_USB_OTG.Init.vbus_sensing_enable = USB_DISABLE;
-	#endif /* WITHUSBDEV_VBUSSENSE */
-
-	#if WITHUSBDEV_DMAENABLE
-		hpcd_USB_OTG.Init.dma_enable = USB_ENABLE; // xyz
-	#else /* WITHUSBDEV_DMAENABLE */
-		hpcd_USB_OTG.Init.dma_enable = USB_DISABLE; // xyz
-	#endif /* WITHUSBDEV_DMAENABLE */
-	hpcd_USB_OTG.Init.Sof_enable = USB_DISABLE;
-	hpcd_USB_OTG.Init.low_power_enable = USB_DISABLE;
-	hpcd_USB_OTG.Init.lpm_enable = USB_DISABLE;
-	hpcd_USB_OTG.Init.battery_charging_enable = USB_ENABLE;
-	hpcd_USB_OTG.Init.use_dedicated_ep1 = ! USB_ENABLE; // xyz
-	hpcd_USB_OTG.Init.use_external_vbus = USB_DISABLE;
-
-	if (HAL_PCD_Init(& hpcd_USB_OTG) != HAL_OK)
-	{
-		ASSERT(0);
-	}
-
-#if CPUSTYLE_R7S721
-	usbd_pipes_initialize(& hpcd_USB_OTG);
-#else /* CPUSTYLE_R7S721 */
-	if (USB_Is_OTG_HS(& hpcd_USB_OTG.Instance))
-	{
-		// У OTH_HS размер FIFO 4096 байт
-		usbd_fifo_initialize(& hpcd_USB_OTG, 4096, 1);
-	}
-	else
-	{
-		// У OTH_FS размер FIFO 1280 байт
-		usbd_fifo_initialize(& hpcd_USB_OTG, 1280, 0);
-	}
-#endif /* CPUSTYLE_R7S721 */
-	return USBD_OK;
-}
-
-/**
-  * @brief  De-Initializes the Low Level portion of the Device driver.
-  * @param  pdev: Device handle
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_LL_DeInit(USBD_HandleTypeDef *pdev)
-{
-	HAL_PCD_DeInit((PCD_HandleTypeDef*)pdev->pData);
-	return USBD_OK;
-}
-
 /**
 * @brief  USBD_Init2
 *         Initializes the device stack and load the class driver
@@ -10013,36 +9597,6 @@ USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
 
 	return USBD_OK;
 }
-
-/**
-* @brief  USBD_DeInit
-*         Re-Initialize th device library
-* @param  pdev: device instances
-* @retval status: status
-*/
-USBD_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *pdev)
-{
-	uint_fast8_t di;
-	/* Set Default State */
-	pdev->dev_state = USBD_STATE_DEFAULT;
-
-	/* Free Class Resources */
-	for (di = 0; di < pdev->nClasses; ++ di)
-	{
-		  /* For each device function */
-		  const USBD_ClassTypeDef * const pClass = pdev->pClasses [di];
-		  pClass->DeInit(pdev, pdev->dev_config [0]);
-	}
-
-	/* Stop the low level driver  */
-	USBD_LL_Stop(pdev);
-
-	/* Initialize low level driver */
-	USBD_LL_DeInit(pdev);
-
-	return USBD_OK;
-}
-
 
 // BOOTLOADER support
 static uint_fast8_t device_vbusbefore;
