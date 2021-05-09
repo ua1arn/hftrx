@@ -385,11 +385,6 @@ typedef struct
   * @}
   */
 
-HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd);
-HAL_StatusTypeDef HAL_PCD_DeInit (PCD_HandleTypeDef *hpcd);
-void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd);
-void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd);
-
 /* Exported functions --------------------------------------------------------*/
 /** @addtogroup USB_LL_Exported_Functions USB Low Layer Exported Functions
   * @{
@@ -433,6 +428,7 @@ void              USB_ClearInterrupts(USB_OTG_GlobalTypeDef *USBx, uint32_t inte
 HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg);
 HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint8_t freq);
 HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx);
+HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t status);
 HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint8_t state);
 uint32_t          USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 uint32_t          USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx);
@@ -462,6 +458,11 @@ HAL_StatusTypeDef HAL_PCD_Init(PCD_HandleTypeDef *hpcd);
 HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd);
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd);
+
+HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hpcd);
+HAL_StatusTypeDef HAL_HCD_DeInit (HCD_HandleTypeDef *hpcd);
+void HAL_HCD_MspInit(HCD_HandleTypeDef *hpcd);
+void HAL_HCD_MspDeInit(HCD_HandleTypeDef *hpcd);
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
 /** @defgroup HAL_PCD_Callback_ID_enumeration_definition HAL USB OTG PCD Callback ID enumeration definition

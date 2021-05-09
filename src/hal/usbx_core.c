@@ -39,6 +39,8 @@
 	//#define WITHDMAHW_UACOUT 1	// Устойчиво работает - но пропуск пакетов
 #endif /* CPUSTYLE_R7S721 */
 
+#if 0
+
 #if CPUSTYLE_R7S721
 
 uint_fast8_t
@@ -156,6 +158,7 @@ usbd_getpipe(const USB_OTG_EPTypeDef * ep)
 }
 
 #endif /* CPUSTYLE_R7S721 */
+#endif
 
 /* PCD Handle Structure */
 extern RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
@@ -168,6 +171,7 @@ extern RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
 extern /*static */RAMBIGDTCM  __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
 //static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
+#if 0
 
 #if CPUSTYLE_R7S721
 
@@ -697,7 +701,9 @@ void refreshDMA_uacin(void)
 }
 
 #endif /* CPUSTYLE_R7S721 */
+#endif
 
+#if 0
 #if CPUSTYLE_R7S721
 
 #define DEVDRV_USBF_PIPE_IDLE                       (0x00)
@@ -2933,6 +2939,8 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
 }
 
 #endif /* CPUSTYLE_R7S721 */
+#endif
+
 // here add DFU
 
 #if CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
@@ -3006,7 +3014,7 @@ HAL_StatusTypeDef USB_DeactivateDedicatedEndpoint(USB_OTG_GlobalTypeDef *USBx, U
 
 HAL_StatusTypeDef USB_DoPing(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num);
 
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721 && 0
 // Place for USB_xxx functions
 /**
   * @brief  USB_SetDevAddress : Stop the usb device mode
@@ -5645,6 +5653,8 @@ HAL_StatusTypeDef HAL_PCD_DeActivateRemoteWakeup(PCD_HandleTypeDef *hpcd)
 }
 #endif /* (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX) */
 
+#if 0
+
 /* Exported functions --------------------------------------------------------*/
 /** @defgroup PCD_Exported_Functions PCD Exported Functions
   * @{
@@ -6160,6 +6170,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
   return HAL_OK;
 }
+#endif
 
 /**
   * @brief  Setup stage callback
@@ -7638,7 +7649,7 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 
 #endif
 
-#if CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721 && 0
 
 // RENESAS specific function
 static uint_fast8_t USB_GetAdress(USB_OTG_GlobalTypeDef * USBx)
