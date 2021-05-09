@@ -537,7 +537,7 @@ extern adapter_t rts96out;
 extern adapter_t rts192out;
 extern adapter_t sdcardio;
 extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
-extern transform_t if2rts193out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
 
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
