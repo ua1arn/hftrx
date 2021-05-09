@@ -6647,6 +6647,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 }
 #endif /* (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX) */
 
+#if 1
 // На RENESAS ничего не делаем - req уже заполнен чтением из контроллера USB
 void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, uint8_t * pdata)
 {
@@ -7338,47 +7339,6 @@ static void USBD_SetAddress(USBD_HandleTypeDef *pdev,
 	}
 }
 
-#if CPUSTYLE_R7S721
-
-// RENESAS specific function
-static uint_fast8_t USB_GetAdress(USB_OTG_GlobalTypeDef * USBx)
-{
-	return (USBx->USBADDR & USB_USBADDR_USBADDR) >> USB_USBADDR_USBADDR_SHIFT;
-}
-
-// RENESAS specific function
-void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd)
-{
-	USBD_HandleTypeDef * const pdev = hpcd->pData;
-	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
-	//PRINTF(PSTR("HAL_PCD_AdressedCallback\n"));
-
-	if (pdev->dev_state == USBD_STATE_CONFIGURED)
-	{
-		TP();
-		USBD_CtlError(pdev, & pdev->request);
-	}
-	else
-	{
-		const uint_fast8_t dev_addr = USB_GetAdress(USBx);
-		pdev->dev_address = dev_addr;
-		//USBD_LL_SetUSBAddress(pdev, dev_addr);
-		//USBD_CtlSendStatus(pdev);
-
-		if (dev_addr != 0)
-		{
-			pdev->dev_state = USBD_STATE_ADDRESSED;
-		}
-		else
-		{
-			pdev->dev_state = USBD_STATE_DEFAULT;
-		}
-	}
-
-}
-
-#endif /* CPUSTYLE_R7S721 */
-
 /**
 * @brief  USBD_SetConfig
 *         Handle Set device configuration request
@@ -7675,6 +7635,51 @@ USBD_StatusTypeDef  USBD_StdDevReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypede
 
 	return ret;
 }
+
+#endif
+
+#if CPUSTYLE_R7S721
+
+// RENESAS specific function
+static uint_fast8_t USB_GetAdress(USB_OTG_GlobalTypeDef * USBx)
+{
+	return (USBx->USBADDR & USB_USBADDR_USBADDR) >> USB_USBADDR_USBADDR_SHIFT;
+}
+
+// RENESAS specific function
+void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd)
+{
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	//PRINTF(PSTR("HAL_PCD_AdressedCallback\n"));
+
+	if (pdev->dev_state == USBD_STATE_CONFIGURED)
+	{
+		TP();
+		USBD_CtlError(pdev, & pdev->request);
+	}
+	else
+	{
+		const uint_fast8_t dev_addr = USB_GetAdress(USBx);
+		pdev->dev_address = dev_addr;
+		//USBD_LL_SetUSBAddress(pdev, dev_addr);
+		//USBD_CtlSendStatus(pdev);
+
+		if (dev_addr != 0)
+		{
+			pdev->dev_state = USBD_STATE_ADDRESSED;
+		}
+		else
+		{
+			pdev->dev_state = USBD_STATE_DEFAULT;
+		}
+	}
+
+}
+
+#endif /* CPUSTYLE_R7S721 */
+
+#if 1
 /**
 * @brief  USBD_SetupStage
 *         Handle the setup stage
@@ -8023,35 +8028,7 @@ USBD_StatusTypeDef USBD_LL_DevDisconnected(USBD_HandleTypeDef  *pdev)
 
 	return USBD_OK;
 }
-
-/**
-  * @brief  USBD_AddClass
-  *         Link class driver to Device Core.
-  * @param  pDevice : Device Handle
-  * @param  pclass: Class handle
-  * @retval USBD Status
-  */
-USBD_StatusTypeDef  USBD_AddClass(USBD_HandleTypeDef *pdev, const USBD_ClassTypeDef *pclass)
-{
-	USBD_StatusTypeDef   status = USBD_FAIL;
-	if (pclass != NULL && pdev->nClasses < USBD_MAX_NUM_CLASSES)
-	{
-		/* link the class to the USB Device handle */
-		pdev->pClasses [pdev->nClasses ++] = pclass;
-		status = USBD_OK;
-
-		/* Инициализации, которые необходимо выполнить до разрешения прерываний */
-		if (pclass->ColdInit != NULL)
-			pclass->ColdInit();
-	}
-	else
-	{
-		//USBD_ErrLog("Can not register device class %p", pclass);
-		status = USBD_FAIL;
-	}
-
-	return status;
-}
+#endif
 
 #if (CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1)
 /**
@@ -9569,6 +9546,8 @@ void xxHAL_PCD_MspDeInit(PCD_HandleTypeDef *pcdHandle)
 }
 
 #ifdef WITHUSBHW_DEVICE
+
+#if 1
 /**
 * @brief  USBD_Init2
 *         Initializes the device stack and load the class driver
@@ -9597,6 +9576,37 @@ USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
 
 	return USBD_OK;
 }
+
+/**
+  * @brief  USBD_AddClass
+  *         Link class driver to Device Core.
+  * @param  pDevice : Device Handle
+  * @param  pclass: Class handle
+  * @retval USBD Status
+  */
+USBD_StatusTypeDef  USBD_AddClass(USBD_HandleTypeDef *pdev, const USBD_ClassTypeDef *pclass)
+{
+	USBD_StatusTypeDef   status = USBD_FAIL;
+	if (pclass != NULL && pdev->nClasses < USBD_MAX_NUM_CLASSES)
+	{
+		/* link the class to the USB Device handle */
+		pdev->pClasses [pdev->nClasses ++] = pclass;
+		status = USBD_OK;
+
+		/* Инициализации, которые необходимо выполнить до разрешения прерываний */
+		if (pclass->ColdInit != NULL)
+			pclass->ColdInit();
+	}
+	else
+	{
+		//USBD_ErrLog("Can not register device class %p", pclass);
+		status = USBD_FAIL;
+	}
+
+	return status;
+}
+
+#endif
 
 #if 0
 // BOOTLOADER support
@@ -10385,6 +10395,9 @@ uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
 
 #elif CPUSTYLE_R7S721
 #endif /* CPUSTYLE_STM32F */
+
+
+#if 0
 /**
   * @brief  USBH_LL_SetTimer
   *         Set the initial Host Timer tick
@@ -10395,7 +10408,7 @@ void  USBH_LL_SetTimer  (USBH_HandleTypeDef *phost, uint32_t time)
 {
 	phost->Timer = time;
 }
-
+#endif
 /**
   * @brief  Return the current Host frame number
   * @param  hhcd: HCD handle
