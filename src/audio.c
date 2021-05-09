@@ -697,7 +697,8 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 
 void adpt_initialize(
 	adpt_t * adp,
-	int leftbit	// leftbit - Номер бита слева от знакового во внешнем формате
+	int leftbit,	// Номер бита слева от знакового во внешнем формате в значащих разрядах
+	int rightspace	// количество незанятых битов справа.
 	)
 {
 	int signpos = leftbit - 1;
@@ -705,6 +706,7 @@ void adpt_initialize(
 	adp->inputK = POWF(2, - signpos);
 	adp->outputK = POWF(2, signpos) * db2ratio(- (FLOAT_t) 0.5);
 	adp->outputKexact = POWF(2, signpos);
+	adp->shifted = rightspace;
 }
 
 // Преобразование во внутреннее представление.
@@ -712,19 +714,19 @@ void adpt_initialize(
 // Обратить внимание на случаи 24-х битных форматов.
 FLOAT_t adpt_input(const adpt_t * adp, int32_t v)
 {
-	return (FLOAT_t) adp->inputK * v;
+	return (FLOAT_t) (v >> adp->shifted) * adp->inputK;
 }
 
 // Преобразование во внешнее представление.
 int32_t adpt_output(const adpt_t * adp, FLOAT_t v)
 {
-	return (int32_t) (adp->outputK * v);
+	return (int32_t) (adp->outputK * v) << adp->shifted;
 }
 
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexact(const adpt_t * adp, FLOAT_t v)
 {
-	return (int32_t) (adp->outputKexact * v);
+	return (int32_t) (adp->outputKexact * v) << adp->shifted;
 }
 
 adpt_t afcodecio;
@@ -739,22 +741,22 @@ static void adapterst_initialize(void)
 {
 	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
 	/* Аудиокодек */
-	adpt_initialize(& afcodecio, WITHADAPTERAFADCWIDTH);
+	adpt_initialize(& afcodecio, WITHADAPTERAFADCWIDTH, WITHADAPTERAFADCSHIFT);
 
 	/* IF codec / FPGA */
-	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH);
-	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH);
+	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
+	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
 	/* SD CARD */
-	adpt_initialize(& sdcardio, 16);
+	adpt_initialize(& sdcardio, 16, 0);
 	/* канал звука USB AUDIO */
-	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS);
+	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS, 0);
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */
-	adpt_initialize(& rts96io, UACIN_RTS96_SAMPLEBITS);
+	adpt_initialize(& rts96io, UACIN_RTS96_SAMPLEBITS, 0);
 #endif /* WITHRTS96 */
 #if WITHRTS192
 	/* канал квадратур USB AUDIO */
-	adpt_initialize(& rts192io, UACIN_RTS192_SAMPLEBITS);
+	adpt_initialize(& rts192io, UACIN_RTS192_SAMPLEBITS, 0);
 #endif /* WITHRTS192 */
 }
 

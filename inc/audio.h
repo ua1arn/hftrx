@@ -447,8 +447,10 @@ typedef struct
 #if CODEC1_FRAMEBITS == 64
 
 	/* параметры входного/выходного адаптеров */
-	#define WITHADAPTERAFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHADAPTERAFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERAFADCWIDTH	24		// 1 бит знак и 23 бит значащих
+	#define WITHADAPTERAFADCSHIFT	8		// количество незанятых битов справа.
+	#define WITHADAPTERAFDACWIDTH	24		// 1 бит знак и 23 бит значащих
+	#define WITHADAPTERAFDACSHIFT	8		// количество незанятых битов справа.
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
 	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
@@ -458,7 +460,9 @@ typedef struct
 
 	/* параметры входного/выходного адаптеров */
 	#define WITHADAPTERAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERAFADCSHIFT	0		// количество незанятых битов справа.
 	#define WITHADAPTERAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERAFDACSHIFT	0		// количество незанятых битов справа.
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
 	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
@@ -480,16 +484,20 @@ typedef struct
 #if CPUSTYLE_XC7Z
 
 	/* параметры входного/выходного адаптеров */
-	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	#define WITHADAPTERIFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
 	typedef int16_t IFADCvalue_t;	// элементы буфера DMA
 	typedef int16_t IFDACvalue_t;
 
 #else /* CPUSTYLE_XC7Z */
 
 	/* параметры входного/выходного адаптеров */
-	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
 	typedef int32_t IFADCvalue_t;
 	typedef int32_t IFDACvalue_t;
 
@@ -500,12 +508,13 @@ typedef struct adpt_tag
 	FLOAT_t inputK;
 	FLOAT_t outputK;
 	FLOAT_t outputKexact;
+	int shifted;
 } adpt_t;
 
 FLOAT_t adpt_input(const adpt_t * adp, int32_t v);
 int32_t adpt_output(const adpt_t * adp, FLOAT_t v);
 int32_t adpt_outputexact(const adpt_t * adp, FLOAT_t v);	// точное преобразование во внешнее представление.
-void adpt_initialize(adpt_t * adp, int leftbit);	// leftbit - Номер бита слева от знакового во внешнем формате
+void adpt_initialize(adpt_t * adp, int leftbit, int rightspace);
 
 extern adpt_t afcodecio;
 extern adpt_t ifcodecin;
