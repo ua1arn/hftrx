@@ -503,26 +503,40 @@ typedef struct
 
 #endif /* CPUSTYLE_XC7Z */
 
-typedef struct adpt_tag
+typedef struct adapter_tag
 {
 	FLOAT_t inputK;
 	FLOAT_t outputK;
 	FLOAT_t outputKexact;
+	int leftbit;
 	int shifted;
-} adpt_t;
+} adapter_t;
 
-FLOAT_t adpt_input(const adpt_t * adp, int32_t v);
-int32_t adpt_output(const adpt_t * adp, FLOAT_t v);
-int32_t adpt_outputexact(const adpt_t * adp, FLOAT_t v);	// точное преобразование во внешнее представление.
-void adpt_initialize(adpt_t * adp, int leftbit, int rightspace);
+typedef struct transform_tag
+{
+	int lshift32;
+	int rshift32;
+	int lshift64;
+	int rshift64;
+} transform_t;
 
-extern adpt_t afcodecio;
-extern adpt_t ifcodecin;
-extern adpt_t ifcodecout;
-extern adpt_t uac48io;
-extern adpt_t rts96io;
-extern adpt_t rts192io;
-extern adpt_t sdcardio;
+FLOAT_t adpt_input(const adapter_t * adp, int32_t v);
+int32_t adpt_output(const adapter_t * adp, FLOAT_t v);
+int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v);	// точное преобразование во внешнее представление.
+void adpt_initialize(adapter_t * adp, int leftbit, int rightspace);
+int32_t transform_do32(const transform_t * tfm, int32_t v); // точное преобразование между внешними представлениями.
+int64_t transform_do64(const transform_t * tfm, int64_t v); // точное преобразование между внешними представлениями.
+void transform_initialize(transform_t * tfm, const adapter_t * informat, const adapter_t * outformat);
+
+extern adapter_t afcodecio;
+extern adapter_t ifcodecin;
+extern adapter_t ifcodecout;
+extern adapter_t ifspectrumin;
+extern adapter_t uac48io;
+extern adapter_t rts96out;
+extern adapter_t rts192out;
+extern adapter_t sdcardio;
+extern transform_t if2rts96out;
 
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC

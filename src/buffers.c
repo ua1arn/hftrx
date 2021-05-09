@@ -2374,16 +2374,18 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			}
 
+			ch0 = transform_do32(& if2rts96out, ch0);
+			ch1 = transform_do32(& if2rts96out, ch1);
 			ASSERT(p->tag == BUFFTAG_RTS96);
 			ASSERT(p->tag2 == p);
 			ASSERT(p->tag3 == p);
 			ASSERT(DMABUFSTEP96RTS == 6);
+			p->u.buff [n ++] = ch0 >> 0;	// sample value
 			p->u.buff [n ++] = ch0 >> 8;	// sample value
 			p->u.buff [n ++] = ch0 >> 16;	// sample value
-			p->u.buff [n ++] = ch0 >> 24;	// sample value
+			p->u.buff [n ++] = ch1 >> 0;	// sample value
 			p->u.buff [n ++] = ch1 >> 8;	// sample value
 			p->u.buff [n ++] = ch1 >> 16;	// sample value
-			p->u.buff [n ++] = ch1 >> 24;	// sample value
 
 			if (n >= DMABUFFSIZE96RTS)
 			{

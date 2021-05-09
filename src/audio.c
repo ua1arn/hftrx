@@ -696,7 +696,7 @@ static FLOAT_t db2ratio(FLOAT_t valueDBb)
 // Внутренний формат - FLOAT_t в диапазоне -1 .. +1
 
 void adpt_initialize(
-	adpt_t * adp,
+	adapter_t * adp,
 	int leftbit,	// Номер бита слева от знакового во внешнем формате в значащих разрядах
 	int rightspace	// количество незанятых битов справа.
 	)
@@ -707,35 +707,75 @@ void adpt_initialize(
 	adp->outputK = POWF(2, signpos) * db2ratio(- (FLOAT_t) 0.5);
 	adp->outputKexact = POWF(2, signpos);
 	adp->shifted = rightspace;
+	adp->leftbit = leftbit;
 }
 
 // Преобразование во внутреннее представление.
 // входное значение - "правильное" с точки зрения двоичного представления.
 // Обратить внимание на случаи 24-х битных форматов.
-FLOAT_t adpt_input(const adpt_t * adp, int32_t v)
+FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 {
 	return (FLOAT_t) (v >> adp->shifted) * adp->inputK;
 }
 
 // Преобразование во внешнее представление.
-int32_t adpt_output(const adpt_t * adp, FLOAT_t v)
+int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 {
 	return (int32_t) (adp->outputK * v) << adp->shifted;
 }
 
 // точное преобразование во внешнее представление.
-int32_t adpt_outputexact(const adpt_t * adp, FLOAT_t v)
+int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 {
 	return (int32_t) (adp->outputKexact * v) << adp->shifted;
 }
 
-adpt_t afcodecio;
-adpt_t ifcodecin;
-adpt_t ifcodecout;
-adpt_t uac48io;
-adpt_t rts96io;
-//adpt_t rts192io;	// чтобы обратить внимание при компиляции - при регистрации saveIQRTSxx
-adpt_t sdcardio;
+// точное преобразование между внешними представлениями.
+void transform_initialize(
+	transform_t * tfm,
+	const adapter_t * informat,
+	const adapter_t * outformat
+	)
+{
+	const int inwidth = informat->leftbit + informat->shifted;
+	const int outwidth = outformat->leftbit + outformat->shifted;
+	tfm->lshift32 = 32 - inwidth;
+	tfm->rshift32 = 32 - outwidth;
+	tfm->lshift64 = 64 - inwidth;
+	tfm->rshift64 = 64 - outwidth;
+}
+
+// точное преобразование между внешними представлениями.
+// Знаковое число 32 бит
+int32_t transform_do32(
+	const transform_t * tfm,
+	int32_t v
+	)
+{
+
+	return (v << tfm->lshift32) >> tfm->rshift32;
+}
+
+// точное преобразование между внешними представлениями.
+// Знаковое число 64 бит
+int64_t transform_do64(
+	const transform_t * tfm,
+	int64_t v
+	)
+{
+
+	return (v << tfm->lshift64) >> tfm->rshift64;
+}
+
+adapter_t afcodecio;
+adapter_t ifcodecin;
+adapter_t ifspectrumin;
+adapter_t ifcodecout;
+adapter_t uac48io;
+adapter_t rts96out;
+//adapter_t rts192o;	// чтобы обратить внимание при компиляции - при регистрации saveIQRTSxx
+adapter_t sdcardio;
+transform_t if2rts96out;
 
 static void adapterst_initialize(void)
 {
@@ -746,17 +786,20 @@ static void adapterst_initialize(void)
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
+	adpt_initialize(& ifspectrumin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
 	/* SD CARD */
 	adpt_initialize(& sdcardio, 16, 0);
 	/* канал звука USB AUDIO */
 	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS, 0);
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */
-	adpt_initialize(& rts96io, UACIN_RTS96_SAMPLEBITS, 0);
+	adpt_initialize(& rts96out, UACIN_RTS96_SAMPLEBITS, 0);
+	transform_initialize(& if2rts96out, & ifspectrumin, & rts96out);
 #endif /* WITHRTS96 */
 #if WITHRTS192
 	/* канал квадратур USB AUDIO */
-	adpt_initialize(& rts192io, UACIN_RTS192_SAMPLEBITS, 0);
+	adpt_initialize(& rts192out, UACIN_RTS192_SAMPLEBITS, 0);
+	transform_initialize(& if2rts96out, & ifspectrumin, & rts192out);
 #endif /* WITHRTS192 */
 }
 

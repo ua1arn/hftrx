@@ -7189,8 +7189,8 @@ saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 		}
 		fftbuff_t * const pf = * ppf;
 
-		pf->largebuffI [filleds [i]] = adpt_input(& rts96io, qv);
-		pf->largebuffQ [filleds [i]] = adpt_input(& rts96io, iv);
+		pf->largebuffI [filleds [i]] = adpt_input(& ifspectrumin, qv);	// нормализованное к -1..+1
+		pf->largebuffQ [filleds [i]] = adpt_input(& ifspectrumin, iv);
 
 		if (++ filleds [i] >= LARGEFFT)
 		{
