@@ -9598,6 +9598,7 @@ USBD_StatusTypeDef USBD_Init2(USBD_HandleTypeDef *pdev)
 	return USBD_OK;
 }
 
+#if 0
 // BOOTLOADER support
 static uint_fast8_t device_vbusbefore;
 
@@ -9674,7 +9675,7 @@ static void board_usbd_initialize(void)
 {
 	hardware_usbd_initialize();
 }
-
+#endif
 
 #endif /* WITHUSBHW_DEVICE */
 
@@ -13506,99 +13507,6 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 #endif /* CPUSTYLE_STM32F */
 
 #endif
-
-// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-static void
-board_usb_tspool(void * ctx)
-{
-#if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUSB_Host);
-
-#endif /* defined (WITHUSBHW_HOST) */
-}
-
-void
-board_usb_spool(void)
-{
-#if defined (WITHUSBHW_HOST)
-	//USBH_Process(& hUSB_Host);
-
-#endif /* defined (WITHUSBHW_HOST) */
-}
-
-static ticker_t usbticker;
-
-#if WITHUSEUSBFLASH
-/* class definition */
-#include "MSC/Inc/usbh_msc.h"
-#endif /* WITHUSEUSBFLASH */
-
-/* вызывается при запрещённых прерываниях. */
-void board_usb_initialize(void)
-{
-	//PRINTF(PSTR("board_usb_initialize start.\n"));
-
-#if defined (WITHUSBHW_DEVICE)
-	board_usbd_initialize();	// USB device support
-#endif /* defined (WITHUSBHW_DEVICE) */
-
-#if defined (WITHUSBHW_HOST)
-	/* Init Host Library,Add Supported Class and Start the library*/
-	USBH_Init(& hUSB_Host, USBH_UserProcess);
-
-	#if WITHUSEUSBFLASH
-		USBH_RegisterClass(& hUSB_Host, & USBH_msc);
-	#endif /* WITHUSEUSBFLASH */
-	ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-
-#endif /* defined (WITHUSBHW_HOST) */
-
-	//PRINTF(PSTR("board_usb_initialize done.\n"));
-}
-
-/* вызывается при разрешённых прерываниях. */
-void board_usb_activate(void)
-{
-	PRINTF(PSTR("board_usb_activate start.\n"));
-
-#if defined (WITHUSBHW_DEVICE)
-	USBD_Start(& hUsbDevice);
-#endif /* defined (WITHUSBHW_DEVICE) */
-
-#if defined (WITHUSBHW_HOST)
-	USBH_Start(& hUSB_Host);
-#endif /* defined (WITHUSBHW_HOST) */
-
-	PRINTF(PSTR("board_usb_activate done.\n"));
-}
-
-/* вызывается при разрешённых прерываниях. */
-void board_usb_deactivate(void)
-{
-	//PRINTF(PSTR("board_usb_activate start.\n"));
-
-#if defined (WITHUSBHW_HOST)
-	USBH_Stop(& hUSB_Host);
-#endif /* defined (WITHUSBHW_HOST) */
-
-#if defined (WITHUSBHW_DEVICE)
-	  USBD_Stop(& hUsbDevice);
-#endif /* defined (WITHUSBHW_DEVICE) */
-
-	//PRINTF(PSTR("board_usb_activate done.\n"));
-}
-
-/* вызывается при разрешенных прерываниях. */
-void board_usb_deinitialize(void)
-{
-#if defined (WITHUSBHW_HOST)
-	USBH_DeInit(& hUSB_Host);
-#endif /* defined (WITHUSBHW_HOST) */
-
-#if defined (WITHUSBHW_DEVICE)
-	USBD_DeInit(& hUsbDevice);
-#endif /* defined (WITHUSBHW_DEVICE) */
-}
 
 uint_fast8_t hamradio_get_usbh_active(void)
 {
