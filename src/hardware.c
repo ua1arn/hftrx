@@ -1850,7 +1850,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 
 // Записать содержимое кэша данных в память
 // применяетмся после начальной инициализации среды выполнния
-void arm_hardware_flush_all(void)
+void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 {
 	L1C_CleanInvalidateDCacheAll();
 #if (__L2C_PRESENT == 1)
@@ -1861,7 +1861,6 @@ void arm_hardware_flush_all(void)
 #define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
 
 // Сейчас в эту память будем читать по DMA
-// Используется только в startup
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
