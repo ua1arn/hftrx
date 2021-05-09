@@ -730,7 +730,7 @@ int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 	return (int32_t) (adp->outputKexact * v) << adp->shifted;
 }
 
-// точное преобразование между внешними представлениями.
+// точное преобразование между внешними целочисленными представлениями.
 void transform_initialize(
 	transform_t * tfm,
 	const adapter_t * informat,
@@ -745,7 +745,7 @@ void transform_initialize(
 	tfm->rshift64 = 64 - outwidth;
 }
 
-// точное преобразование между внешними представлениями.
+// точное преобразование между внешними целочисленными представлениями.
 // Знаковое число 32 бит
 int32_t transform_do32(
 	const transform_t * tfm,
@@ -756,7 +756,7 @@ int32_t transform_do32(
 	return (v << tfm->lshift32) >> tfm->rshift32;
 }
 
-// точное преобразование между внешними представлениями.
+// точное преобразование между внешними целочисленными представлениями.
 // Знаковое число 64 бит
 int64_t transform_do64(
 	const transform_t * tfm,
@@ -773,9 +773,10 @@ adapter_t ifspectrumin;
 adapter_t ifcodecout;
 adapter_t uac48io;
 adapter_t rts96out;
-//adapter_t rts192o;	// чтобы обратить внимание при компиляции - при регистрации saveIQRTSxx
+adapter_t rts192o;
 adapter_t sdcardio;
-transform_t if2rts96out;
+transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
 
 static void adapterst_initialize(void)
 {
@@ -799,7 +800,7 @@ static void adapterst_initialize(void)
 #if WITHRTS192
 	/* канал квадратур USB AUDIO */
 	adpt_initialize(& rts192out, UACIN_RTS192_SAMPLEBITS, 0);
-	transform_initialize(& if2rts96out, & ifspectrumin, & rts192out);
+	transform_initialize(& if2rts192out, & ifspectrumin, & rts192out);
 #endif /* WITHRTS192 */
 }
 
