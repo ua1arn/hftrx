@@ -458,24 +458,32 @@ USBH_StatusTypeDef USBH_PTP_Process(USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef USBH_PTP_SendRequest(USBH_HandleTypeDef *phost, PTP_ContainerTypedef  *req)
 {
-  USBH_StatusTypeDef status = USBH_OK;
-  MTP_HandleTypeDef *MTP_Handle = (MTP_HandleTypeDef *)phost->pActiveClass->pData;
+	USBH_StatusTypeDef status = USBH_OK;
+	MTP_HandleTypeDef *MTP_Handle = (MTP_HandleTypeDef*) phost->pActiveClass->pData;
 
-  /* Clear PTP Data container*/
-  (void)USBH_memset(&(MTP_Handle->ptp.op_container), 0, sizeof(PTP_OpContainerTypedef));
+	/* Clear PTP Data container*/
+	(void) USBH_memset( & (MTP_Handle->ptp.op_container), 0, sizeof(PTP_OpContainerTypedef));
 
-  /* build appropriate USB container */
-  MTP_Handle->ptp.op_container.length = PTP_USB_BULK_REQ_LEN - ((sizeof(uint32_t) * (5U - (uint32_t)req->Nparam)));
-  MTP_Handle->ptp.op_container.type = PTP_USB_CONTAINER_COMMAND;
-  MTP_Handle->ptp.op_container.code = req->Code;
-  MTP_Handle->ptp.op_container.trans_id = req->Transaction_ID;
-  MTP_Handle->ptp.op_container.param1 = req->Param1;
-  MTP_Handle->ptp.op_container.param2 = req->Param2;
-  MTP_Handle->ptp.op_container.param3 = req->Param3;
-  MTP_Handle->ptp.op_container.param4 = req->Param4;
-  MTP_Handle->ptp.op_container.param5 = req->Param5;
+	/* build appropriate USB container */
+	MTP_Handle->ptp.op_container.length = PTP_USB_BULK_REQ_LEN - ((sizeof(uint32_t) * (5U - (uint32_t) req->Nparam)));
+	MTP_Handle->ptp.op_container.type = PTP_USB_CONTAINER_COMMAND;
+	MTP_Handle->ptp.op_container.code = req->Code;
+	MTP_Handle->ptp.op_container.trans_id = req->Transaction_ID;
+	switch (req->Nparam)
+	{
+	case 5:
+		MTP_Handle->ptp.op_container.param5 = req->Param5;
+	case 4:
+		MTP_Handle->ptp.op_container.param4 = req->Param4;
+	case 3:
+		MTP_Handle->ptp.op_container.param3 = req->Param3;
+	case 2:
+		MTP_Handle->ptp.op_container.param2 = req->Param2;
+	case 1:
+		MTP_Handle->ptp.op_container.param1 = req->Param1;
+	}
 
-  return status;
+	return status;
 }
 
 /**
