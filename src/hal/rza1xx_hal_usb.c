@@ -31,11 +31,16 @@
 #include "src/usb/usbx_core.h"
 
 #include "usb_device.h"
-#include "usbh_core.h"
 #include "usbd_core.h"
+#include "usbh_core.h"
+#include "usbh_def.h"
 
 #include "rza1xx_hal.h"
 #include "rza1xx_hal_usb.h"
+
+// на RENESAS для работы с изохронными ендпоинтами используется DMA
+//#define WITHDMAHW_UACIN 1		// при этой опции после пересоединения USB кабеля отваливается поток IN
+//#define WITHDMAHW_UACOUT 1	// Устойчиво работает - но пропуск пакетов
 
 uint_fast8_t
 usbd_epaddr2pipe(uint_fast8_t ep_addr)

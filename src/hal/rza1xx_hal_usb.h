@@ -624,6 +624,9 @@ void HAL_PCD_AdressedCallback(PCD_HandleTypeDef *hpcd);	// RENESAS specific
 
 uint_fast8_t usbd_epaddr2pipe(uint_fast8_t ep_addr);
 
+#define __HAL_HCD_ENABLE(__HANDLE__)       //            (void)USB_EnableGlobalInt ((__HANDLE__)->Instance)
+#define __HAL_HCD_DISABLE(__HANDLE__)       //           (void)USB_DisableGlobalInt ((__HANDLE__)->Instance)
+
 #ifdef __cplusplus
 }
 #endif
