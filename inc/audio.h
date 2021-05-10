@@ -484,20 +484,46 @@ typedef struct
 #if CPUSTYLE_XC7Z
 
 	/* параметры входного/выходного адаптеров */
+	// IF RX
 	#define WITHADAPTERIFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	// RTS
+	#define WITHADAPTERRTSADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERRTSADCSHIFT	0		// количество незанятых битов справа.
+	// IF TX
 	#define WITHADAPTERIFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
 	typedef int16_t IFADCvalue_t;	// элементы буфера DMA
 	typedef int16_t IFDACvalue_t;
 
+#elif 1
+
+	/* параметры входного/выходного адаптеров */
+	// IF RX
+	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	// RTS
+	#define WITHADAPTERRTSADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTSADCSHIFT	0		// количество незанятых битов справа.
+	// IF TX
+	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
+	typedef int32_t IFADCvalue_t;
+	typedef int32_t IFDACvalue_t;
+
+
 #else /* CPUSTYLE_XC7Z */
 
 	/* параметры входного/выходного адаптеров */
-	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
-	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
+	// IF RX
+	#define WITHADAPTERIFADCWIDTH	28		// 1 бит знак и 27 бит значащих
+	#define WITHADAPTERIFADCSHIFT	4		// количество незанятых битов справа.
+	// RTS
+	#define WITHADAPTERRTSADCWIDTH	24		// 1 бит знак и 23 бит значащих
+	#define WITHADAPTERRTSADCSHIFT	8		// количество незанятых битов справа.
+	// IF TX
+	#define WITHADAPTERIFDACWIDTH	28		// 1 бит знак и 27 бит значащих
+	#define WITHADAPTERIFDACSHIFT	4		// количество незанятых битов справа.
 	typedef int32_t IFADCvalue_t;
 	typedef int32_t IFDACvalue_t;
 
@@ -509,7 +535,9 @@ typedef struct adapter_tag
 	FLOAT_t outputK;
 	FLOAT_t outputKexact;
 	int leftbit;
-	int shifted;
+	int rightspace;
+	int lshift32;	// input convrtsion
+	int rshift32;
 } adapter_t;
 
 typedef struct transform_tag

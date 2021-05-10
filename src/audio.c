@@ -706,28 +706,33 @@ void adpt_initialize(
 	adp->inputK = POWF(2, - signpos);
 	adp->outputK = POWF(2, signpos) * db2ratio(- (FLOAT_t) 0.5);
 	adp->outputKexact = POWF(2, signpos);
-	adp->shifted = rightspace;
+	adp->rightspace = rightspace;
 	adp->leftbit = leftbit;
+	adp->lshift32 = 32 - leftbit - rightspace;
+	adp->rshift32 = 32 - leftbit;
+	PRINTF("adpt_initialize: leftbit=%d, rightspace=%d, lshift32=%d, rshift32=%d\n", leftbit, rightspace, adp->lshift32, adp->rshift32);
 }
 
 // Преобразование во внутреннее представление.
 // входное значение - "правильное" с точки зрения двоичного представления.
 // Обратить внимание на случаи 24-х битных форматов.
+// upd: теперь можно и неправильное - расширение знака выполняется при преобразовании.
 FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 {
-	return (FLOAT_t) (v >> adp->shifted) * adp->inputK;
+	return (FLOAT_t) ((v << adp->lshift32) >> adp->rshift32) * adp->inputK;
+	//return (FLOAT_t) (v >> adp->rightspace) * adp->inputK;
 }
 
 // Преобразование во внешнее представление.
 int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 {
-	return (int32_t) (adp->outputK * v) << adp->shifted;
+	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 {
-	return (int32_t) (adp->outputKexact * v) << adp->shifted;
+	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
 }
 
 // точное преобразование между внешними целочисленными представлениями.
@@ -737,8 +742,8 @@ void transform_initialize(
 	const adapter_t * outformat
 	)
 {
-	const int inwidth = informat->leftbit + informat->shifted;
-	const int outwidth = outformat->leftbit + outformat->shifted;
+	const int inwidth = informat->leftbit + informat->rightspace;
+	const int outwidth = outformat->leftbit + outformat->rightspace;
 	tfm->lshift32 = 32 - inwidth;
 	tfm->rshift32 = 32 - outwidth;
 	tfm->lshift64 = 64 - inwidth;
@@ -787,7 +792,7 @@ static void adapterst_initialize(void)
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
-	adpt_initialize(& ifspectrumin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
+	adpt_initialize(& ifspectrumin, WITHADAPTERRTSADCWIDTH, WITHADAPTERRTSADCSHIFT);
 	/* SD CARD */
 	adpt_initialize(& sdcardio, 16, 0);
 	/* канал звука USB AUDIO */
