@@ -56,14 +56,6 @@
 	#include "rbf/rbfimage_v7h_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7 - 32BIT audio
 #elif CTLSTYLE_OLEG4Z_V1 && (DDS1_CLK_MUL == 1)
 	#include "rbf/rbfimage_oleg4z.h"	// same as CTLSTYLE_RAVENDSP_V7, 1 RX & WFM
-#elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_192k.h"
-#elif CTLSTYLE_STORCH_V8 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_96k.h"
-#elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1) && WITHRTS192	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_192k.h"
-#elif CTLSTYLE_STORCH_V9 && (DDS1_CLK_MUL == 1)	// renesas & TFT panel on CPU
-	#include "rbf/rbfimage_v8t_96k.h"
 #else
 	#error Missing FPGA image file BOARD_BITIMAGE_NAME
 	0,
