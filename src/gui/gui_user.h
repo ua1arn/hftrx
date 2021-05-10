@@ -114,7 +114,7 @@ typedef bp_var_t display_var_t;
 typedef struct {
 	uint_fast16_t step;
 	char label [10];
-} enc2step_t;
+} val_step_t;
 
 #define GET_FROM_WM_QUEUE	uint_fast8_t type;	\
 							int_fast8_t action;	\
