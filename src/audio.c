@@ -757,7 +757,6 @@ int32_t transform_do32(
 	int32_t v
 	)
 {
-
 	return (v << tfm->lshift32) >> tfm->rshift32;
 }
 
@@ -768,10 +767,12 @@ int64_t transform_do64(
 	int64_t v
 	)
 {
-
 	return (v << tfm->lshift64) >> tfm->rshift64;
 }
 
+#if WITHDSPEXTFIR
+static adapter_t fpgafircoefsout;
+#endif /* #if WITHDSPEXTFIR */
 adapter_t afcodecio;
 adapter_t ifcodecin;
 adapter_t ifspectrumin;
@@ -785,8 +786,11 @@ transform_t if2rts192out;	// преобразование из выхода па
 
 static void adapterst_initialize(void)
 {
-	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
+#if WITHDSPEXTFIR
+	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
+#endif /* #if WITHDSPEXTFIR */
 	/* Аудиокодек */
+	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
 	adpt_initialize(& afcodecio, WITHADAPTERAFADCWIDTH, WITHADAPTERAFADCSHIFT);
 
 	/* IF codec / FPGA */
@@ -2152,13 +2156,14 @@ static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow
 // преобразование к целым
 static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoeff, int iCoefNum)
 {
-	const FLOAT_t scaleout = POWF(2, HARDWARE_COEFWIDTH - 1);
+	//const FLOAT_t scaleout = POWF(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
 	const int j = NtapCoeffs(iCoefNum);
 	// копируем результат.
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
-		lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
+		//lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
+		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);;
 	}
 }
 
@@ -2182,13 +2187,14 @@ static void fir_design_integer_lowpass_scaled(int_fast32_t *lCoeff, const FLOAT_
 // преобразование к целым
 static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoeff, int iCoefNum)
 {
-	const double scaleout = pow(2, HARDWARE_COEFWIDTH - 1);
+	//const double scaleout = pow(2, HARDWARE_COEFWIDTH - 1);
 	int iCnt;
 	const int j = NtapCoeffs(iCoefNum);
 	// копируем результат.
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
-		lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
+		//lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
+		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);;
 	}
 }
 
