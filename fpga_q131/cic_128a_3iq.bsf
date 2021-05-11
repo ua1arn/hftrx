@@ -110,8 +110,8 @@ applicable agreement for further details.
 	(port
 		(pt 232 32)
 		(output)
-		(text "out_data[31..0]" (rect 0 0 57 12)(font "Arial" ))
-		(text "out_data[31..0]" (rect 154 27 211 39)(font "Arial" ))
+		(text "out_data[27..0]" (rect 0 0 59 12)(font "Arial" ))
+		(text "out_data[27..0]" (rect 152 27 211 39)(font "Arial" ))
 		(line (pt 232 32)(pt 216 32)(line_width 3))
 	)
 	(port

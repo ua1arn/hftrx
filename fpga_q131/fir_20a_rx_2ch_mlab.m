@@ -6,13 +6,13 @@
 %Please input:                                      
 %data vector: 		stimulation(1:n)                
 %FILTER PARAMETER  
-%Input Data Width: 32
+%Input Data Width: 28
 %Decimation Factor: 20
 %MSB Truncated Bits:
 %MSB Satuated Bits :
 %LSB Truncated bits:
 %LSB Rounded bits  :
-%FIR Width (Full Calculation Width Before Output Width Adjust) :32 
+%FIR Width (Full Calculation Width Before Output Width Adjust) :28 
 %-----------------------------------------------------------------------------------------------------------
 %MegaWizard Scaled Coefficient Values
  function  output = fir_20a_rx_2ch_mlab(stimulation, output);
@@ -23,9 +23,9 @@
  MSB_TYPE  = 0;
  LSB_RM  = 24;
  LSB_TYPE  = 0;
- FIR_WIDTH  = 32 + MSB_RM + LSB_RM;
- OUT_WIDTH  = 32 ;  %32
-  DATA_WIDTH = 32;
+ FIR_WIDTH  = 28 + MSB_RM + LSB_RM;
+ OUT_WIDTH  = 28 ;  %28
+  DATA_WIDTH = 28;
  data_type = 1;
 
  % check size of inputs. 
