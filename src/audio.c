@@ -710,13 +710,13 @@ void adpt_initialize(
 	adp->leftbit = leftbit;
 	adp->lshift32 = 32 - leftbit - rightspace;
 	adp->rshift32 = 32 - leftbit;
-	PRINTF("adpt_initialize: leftbit=%d, rightspace=%d, lshift32=%d, rshift32=%d\n", leftbit, rightspace, adp->lshift32, adp->rshift32);
+	//PRINTF("adpt_initialize: leftbit=%d, rightspace=%d, lshift32=%d, rshift32=%d\n", leftbit, rightspace, adp->lshift32, adp->rshift32);
 }
 
 // Преобразование во внутреннее представление.
 // входное значение - "правильное" с точки зрения двоичного представления.
 // Обратить внимание на случаи 24-х битных форматов.
-// upd: теперь можно и неправильное - расширение знака выполняется при преобразовании.
+// UPD: теперь можно и неправильное - расширение знака выполняется при преобразовании.
 FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 {
 	return (FLOAT_t) ((v << adp->lshift32) >> adp->rshift32) * adp->inputK;
@@ -796,18 +796,19 @@ static void adapterst_initialize(void)
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
-	adpt_initialize(& ifspectrumin, WITHADAPTERRTSADCWIDTH, WITHADAPTERRTSADCSHIFT);
 	/* SD CARD */
 	adpt_initialize(& sdcardio, 16, 0);
 	/* канал звука USB AUDIO */
 	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS, 0);
 #if WITHRTS96
 	/* канал квадратур USB AUDIO */
+	adpt_initialize(& ifspectrumin, WITHADAPTERRTS96_WIDTH, WITHADAPTERRTS96_SHIFT);
 	adpt_initialize(& rts96out, UACIN_RTS96_SAMPLEBITS, 0);
 	transform_initialize(& if2rts96out, & ifspectrumin, & rts96out);
 #endif /* WITHRTS96 */
 #if WITHRTS192
 	/* канал квадратур USB AUDIO */
+	adpt_initialize(& ifspectrumin, WITHADAPTERRTS192_WIDTH, WITHADAPTERRTS192_SHIFT);
 	adpt_initialize(& rts192out, UACIN_RTS192_SAMPLEBITS, 0);
 	transform_initialize(& if2rts192out, & ifspectrumin, & rts192out);
 #endif /* WITHRTS192 */
@@ -4885,6 +4886,9 @@ demod_WFM(
 	int32_t q
 	)
 {
+	i = (i << (32 - WITHADAPTERRTS96_WIDTH - WITHADAPTERRTS96_SHIFT)) >> (32 - WITHADAPTERRTS96_WIDTH);
+	q = (q << (32 - WITHADAPTERRTS96_WIDTH - WITHADAPTERRTS96_SHIFT)) >> (32 - WITHADAPTERRTS96_WIDTH);
+
 	if (i == 0 && q == 0)
 		i = 1;
 
