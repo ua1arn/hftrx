@@ -6,7 +6,7 @@
 %Please input:                                      
 %data vector: 		stimulation(1:n)                
 %FILTER PARAMETER  
-%Input Data Width: 32
+%Input Data Width: 28
 %Decimation Factor: 5
 %MSB Truncated Bits:
 %MSB Satuated Bits :
@@ -21,11 +21,11 @@
  DECI_FACTOR  =  5;
  MSB_RM  = 2;
  MSB_TYPE  = 0;
- LSB_RM  = 24;
+ LSB_RM  = 20;
  LSB_TYPE  = 0;
  FIR_WIDTH  = 32 + MSB_RM + LSB_RM;
  OUT_WIDTH  = 32 ;  %32
-  DATA_WIDTH = 32;
+  DATA_WIDTH = 28;
  data_type = 1;
 
  % check size of inputs. 
