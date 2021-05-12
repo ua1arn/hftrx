@@ -1399,13 +1399,13 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	},
 	//AGCSETI_AM,
 	{
-#if 0
+#if 1
 		AGC_RATE_FLAT,		// agc_rate
 		100,	// agc_t0
 		100,	// agc_t1
 		1,		// agc_release10
 		100,	// agc_t4
-		5,		// agc_thung10
+		0,		// agc_thung10
 		25,		// agc_scale
 #else
 		AGC_RATE_FLAT,		// agc_rate
@@ -2836,6 +2836,7 @@ struct nvmap
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW режимах 50..100% */
+	uint16_t gdesignscale;	/* используется при калибровке параметров интерполятора */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
@@ -4168,7 +4169,11 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHIF4DSP
 #if WITHTX
-	#if WITHTXCWREDUCE
+	static uint_fast16_t gdesignscale = 100;		/* используется при калибровке параметров интерполятора */
+	#if WITHTXCPATHCALIBRATE
+		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	#elif WITHTXCWREDUCE
 		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
@@ -6412,6 +6417,20 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	},
 #endif /* WITHELKEY && ! WITHPOTWPM */
 #if WITHTX
+#if WITHTXCPATHCALIBRATE
+	{
+		"TX CALIBR",
+		RJ_UNSIGNED,		// rj
+		ISTEP1,
+		0, 150,		/* используется при калибровке параметров интерполятора */
+		offsetof(struct nvmap, gdesignscale),
+		nvramoffs0,
+		& gdesignscale,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 	{
 		"TX POWER ",
@@ -9348,8 +9367,9 @@ updateboardZZZ(
 			// 0..10000
 			board_set_dacscale(getbandf2adjust(bandf3hint) * (unsigned long) gdacscale);
 		#endif /* CPUDAC */
-			board_set_gdigiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+			board_set_digiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
+			board_set_designscale(gdesignscale);	/* используется при калибровке параметров интерполятора */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
 		}

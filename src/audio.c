@@ -155,9 +155,9 @@ static uint_fast8_t 	glob_moniflag = 1;		/* Уровень сигнала сам
 static uint_fast8_t 	glob_subtonelevel = 0;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
 static uint_fast8_t 	glob_amdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 static uint_fast16_t	glob_dacscale = 10000;	/* На какую часть (в процентах в квадрате) от полной амплитуды использцется ЦАП передатчика */
-static uint_fast16_t	glob_gdigiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+static uint_fast16_t	glob_digiscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 static uint_fast16_t	glob_cwscale = 100;	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-
+static uint_fast16_t	glob_designscale = 100;	/* используется при калибровке параметров интерполятора */
 static uint_fast8_t 	glob_digigainmax = 96;
 static uint_fast8_t		glob_gvad605 = UINT8_MAX;	/* напряжение на AD605 (управление усилением тракта ПЧ */
 
@@ -3701,6 +3701,11 @@ static RAMFUNC FLOAT_t preparevi(
 	const FLOAT_t txlevelXXX = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 	const int_fast32_t txlevelfenceXXX_INTEGER = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 
+#if WITHTXCPATHCALIBRATE
+	savemonistereo(0, 0);
+	return (FLOAT_t) glob_designscale / 100;
+#endif /* WITHTXCPATHCALIBRATE */
+
 	switch (dspmode)
 	{
 	case DSPCTL_MODE_TX_BPSK:
@@ -3867,7 +3872,11 @@ static RAMFUNC void processafadcsampleiq(
 #else /* WITHDSPLOCALFIR */
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
 #endif /* WITHDSPLOCALFIR */
+#if WITHTXCPATHCALIBRATE
+		savesampleout32stereo(adpt_outputexact(& ifcodecout, vfb.IV), adpt_outputexact(& ifcodecout, vfb.QV));	// Запись в поток к передатчику I/Q значений.
+#else /* WITHTXCPATHCALIBRATE */
 		savesampleout32stereo(adpt_output(& ifcodecout, vfb.IV), adpt_output(& ifcodecout, vfb.QV));	// Запись в поток к передатчику I/Q значений.
+#endif /* WITHTXCPATHCALIBRATE */
 	}
 	else
 	{
@@ -5705,8 +5714,12 @@ txparam_update(uint_fast8_t profile)
 {
 	const FLOAT_t txlevelfence = 1;	// контролировать по отсутствию индикации переполнения DUC при передаче
 
-	const FLOAT_t c1MODES = (FLOAT_t) HARDWARE_DACSCALE;	// предотвращение переполнения
-	const FLOAT_t c1DIGI = c1MODES * (FLOAT_t) glob_gdigiscale / 100;
+	#if WITHTXCPATHCALIBRATE
+		const FLOAT_t c1MODES = (FLOAT_t) glob_designscale / 100;	// предотвращение переполнения
+	#else /* WITHTXCPATHCALIBRATE */
+		const FLOAT_t c1MODES = (FLOAT_t) HARDWARE_DACSCALE;	// предотвращение переполнения
+	#endif
+	const FLOAT_t c1DIGI = c1MODES * (FLOAT_t) glob_digiscale / 100;
 	const FLOAT_t c1CW = c1MODES * (FLOAT_t) glob_cwscale / 100;
 
 	txlevelfenceAM = 	txlevelfence * c1CW;	// Для режимов с lo6=0 - у которых нет подавления нерабочей боковой
@@ -6229,11 +6242,11 @@ board_set_dacscale(uint_fast16_t n)	/* Использование амплиту
 }
 
 void 
-board_set_gdigiscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+board_set_digiscale(uint_fast16_t n)	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 {
-	if (glob_gdigiscale != n)
+	if (glob_digiscale != n)
 	{
-		glob_gdigiscale = n;
+		glob_digiscale = n;
 		board_dsp1regchanged();
 	}
 }
@@ -6248,6 +6261,15 @@ board_set_cwscale(uint_fast16_t n)	/* Увеличение усиления пр
 	}
 }
 
+void
+board_set_designscale(uint_fast16_t n)	/* используется при калибровке параметров интерполятора */
+{
+	if (glob_designscale != n)
+	{
+		glob_designscale = n;
+		board_dsp1regchanged();
+	}
+}
 void
 board_set_mik1level(uint_fast16_t n)	/* усиление микрофонного усилителя */
 {
