@@ -583,7 +583,9 @@ extern transform_t if2rts192out;	// преобразование из выход
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
 		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		#define HARDWARE_DACSCALE	(0.82)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
 		#define FPGADECIMATION 1024uL
 		#define FPGADIVIDERATIO 4uL
@@ -598,7 +600,9 @@ extern transform_t if2rts192out;	// преобразование из выход
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
 		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
-		#define HARDWARE_DACSCALE	(0.82)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
 		#define FPGADECIMATION 2560uL
 		#define FPGADIVIDERATIO 5uL
@@ -610,6 +614,7 @@ extern transform_t if2rts192out;	// преобразование из выход
 
 	#endif /* CPUSTYLE_XC7Z */
 #else
+	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
 	#define HARDWARE_DACSCALE	(1)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
 #endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */

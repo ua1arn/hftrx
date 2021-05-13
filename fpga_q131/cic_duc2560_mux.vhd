@@ -116,7 +116,7 @@ END SYN;
 -- Retrieval info:      <PRIVATE name = "activate_atstartup" value="1"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "window_location" value="center"  type="STRING"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Device Family" value="Cyclone IV E"  type="STRING"  enable="1" />
--- Retrieval info:      <PRIVATE name = "Number of Stages" value="8"  type="INTEGER"  enable="1" />
+-- Retrieval info:      <PRIVATE name = "Number of Stages" value="9"  type="INTEGER"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Rate Change Factor" value="2560"  type="INTEGER"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Differential Delay" value="1"  type="INTEGER"  enable="1" />
 -- Retrieval info:      <PRIVATE name = "Input Bit Width" value="28"  type="INTEGER"  enable="1" />
