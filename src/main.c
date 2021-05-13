@@ -2785,7 +2785,10 @@ struct nvmap
 	uint8_t gview3dss_mark;	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
+	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
+	uint8_t gwtfbeta100;	/* beta - парамеры видеофильтра водопада */
 #endif /* WITHSPECTRUMWF */
+
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
 #if WITHBCBANDS
 	uint8_t gbandsetbcast;	/* Broadcasting radio bands */
@@ -3495,6 +3498,8 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
+	static uint_fast8_t gspecbeta100 = 25;	/* beta = 0.1 .. 1.0 */
+	static uint_fast8_t gwtfbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -9333,10 +9338,11 @@ updateboardZZZ(
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
+			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
+			display2_set_filter_wtf(gwtfbeta100);	/* beta - парамеры видеофильтра водопада */
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
-
 	#if WITHAFEQUALIZER
 		board_set_equalizer_rx(geqrx);
 		board_set_equalizer_tx(geqtx);
@@ -9431,7 +9437,7 @@ updateboardZZZ(
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
 
-		/* просто нстройки тракта и не относящиеся к приёму-пеердаче. */
+		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
 		processcat_enable(catenable);
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
@@ -14181,6 +14187,26 @@ static const FLASHMEM struct menudef menutable [] =
 		nvramoffs0,
 		NULL,
 		& gtxloopback,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("BETA PAN"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		10, 100,							/* beta - парамеры видеофильтра спектра */
+		offsetof(struct nvmap, gspecbeta100),
+		nvramoffs0,
+		NULL,
+		& gspecbeta100,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("BETA WTF"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		10, 100,							/* beta - парамеры видеофильтра водопада */
+		offsetof(struct nvmap, gwtfbeta100),
+		nvramoffs0,
+		NULL,
+		& gwtfbeta100,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)

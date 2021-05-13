@@ -6910,14 +6910,15 @@ enum
 };
 
 // Параметры фильтров данных спектра и водопада
+// устанавливаются через меню
 #define DISPLAY_SPECTRUM_BETA (0.25)
 #define DISPLAY_WATERFALL_BETA (0.5)
 
-static const FLOAT_t spectrum_beta = (FLOAT_t) DISPLAY_SPECTRUM_BETA;					// incoming value coefficient
-static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) DISPLAY_SPECTRUM_BETA;	// old value coefficient
+static FLOAT_t spectrum_beta = (FLOAT_t) DISPLAY_SPECTRUM_BETA;					// incoming value coefficient
+static FLOAT_t spectrum_alpha = 1 - (FLOAT_t) DISPLAY_SPECTRUM_BETA;	// old value coefficient
 
-static const FLOAT_t waterfall_beta = (FLOAT_t) DISPLAY_WATERFALL_BETA;					// incoming value coefficient
-static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old value coefficient
+static FLOAT_t waterfall_beta = (FLOAT_t) DISPLAY_WATERFALL_BETA;					// incoming value coefficient
+static FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old value coefficient
 
 static RAMBIGDTCM FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
 static RAMBIGDTCM FLOAT_t Yold_wtf [ALLDX];
@@ -6943,6 +6944,24 @@ static FLOAT_t filter_spectrum(
 	const FLOAT_t Y = Yold_fft [x] * spectrum_alpha + spectrum_beta * val;
 	Yold_fft [x] = Y;
 	return Y;
+}
+
+/* парамеры видеофильтра спектра */
+void display2_set_filter_spe(uint_fast8_t v)
+{
+	ASSERT(v <= 100);
+	const FLOAT_t val = (int) v / (FLOAT_t) 100;
+	spectrum_beta = val;
+	spectrum_alpha = 1 - val;
+}
+
+/* парамеры видеофильтра водопада */
+void display2_set_filter_wtf(uint_fast8_t v)
+{
+	ASSERT(v <= 100);
+	const FLOAT_t val = (int) v / (FLOAT_t) 100;
+	waterfall_beta = val;
+	waterfall_alpha = 1 - val;
 }
 
 #if WITHVIEW_3DSS
