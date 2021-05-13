@@ -52,6 +52,8 @@ typedef uint_least64_t phase_t;
 #define WITHTOPDBMAX 60
 #define WITHTOPDBDEFAULT 30
 
+#define WITHBOTTOMDBTX 90
+
 #define WITHBOTTOMDBMIN 80
 #define WITHBOTTOMDBMAX 160
 
