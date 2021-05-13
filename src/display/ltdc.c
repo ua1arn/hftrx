@@ -766,7 +766,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	vdc5fb_update_all(vdc);
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode && ! vdmode->board_dereset);	// подключение к выводам процессора сигналов периферийного контроллера
+	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode);	// подключение к выводам процессора сигналов периферийного контроллера
 
 	ltdc_panelcontrolling(vdmode);
 
@@ -1409,7 +1409,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	display2_xltrgb24(xltrgb24);
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode && ! vdmode->board_dereset);	// подключение к выводам процессора сигналов периферийного контроллера
+	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode);	// подключение к выводам процессора сигналов периферийного контроллера
 
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDCx_InitTypeDef LTDC_InitStruct;
