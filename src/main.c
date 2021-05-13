@@ -1399,7 +1399,7 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 	},
 	//AGCSETI_AM,
 	{
-#if 1
+#if 0
 		AGC_RATE_FLAT,		// agc_rate
 		100,	// agc_t0
 		100,	// agc_t1
