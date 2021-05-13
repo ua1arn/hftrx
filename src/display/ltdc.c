@@ -30,6 +30,7 @@ static void ltdc_panelcontrolling(const videomode_t * vdmode)
 	if (vdmode->board_dereset)
 	{
 #if defined (HARDWARE_LTDC_SET_DISP)
+		//HARDWARE_LTDC_INITIALIZE(0);	// включаем строковую и кадровую синхронизацию
 		/* управление состоянием сигнала DISP панели */
 		/* SONY PSP-1000 display (4.3") required. */
 		HARDWARE_LTDC_SET_DISP(vdmode->board_demode, 0);
@@ -765,7 +766,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	vdc5fb_update_all(vdc);
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode);	// подключение к выводам процессора сигналов периферийного контроллера
+	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode && ! vdmode->board_dereset);	// подключение к выводам процессора сигналов периферийного контроллера
 
 	ltdc_panelcontrolling(vdmode);
 
@@ -1408,7 +1409,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	display2_xltrgb24(xltrgb24);
 
 	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode);	// подключение к выводам процессора сигналов периферийного контроллера
+	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode && ! vdmode->board_dereset);	// подключение к выводам процессора сигналов периферийного контроллера
 
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDCx_InitTypeDef LTDC_InitStruct;
@@ -1640,7 +1641,7 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 
 	Vdma_Init(&AxiVdma, AXI_VDMA_DEV_ID);
 
-	xc7z1_setltdcfreq(vdmode);
+	hardware_set_dotclock(display_getdotclock(vdmode));
 	Status = DisplayInitialize(& dispCtrl, & AxiVdma, DISP_VTC_ID, DYNCLK_BASEADDR, frames, (unsigned long) GXADJ(DIM_X) * LCDMODE_PIXELSIZE, vdmode);
 	if (Status != XST_SUCCESS)
 	{

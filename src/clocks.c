@@ -3293,6 +3293,12 @@ void hardware_set_dotclock(unsigned long dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	ASSERT(pll4divq >= 1);
+	// Stop PLL4
+	RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
+	(void) RCC->PLL4CR;
+	while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
+		;
+
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVQ_Msk)) |
 		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
 		0;
@@ -3301,11 +3307,13 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
 	(void) RCC->PLL4CR;
 
+	// Start PLL4
 	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
 	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
 		;
 }
 
+// округление тактовой частоты дисплейного контроллера к возможностям системы синхронизации
 unsigned long hardware_get_dotclock(unsigned long dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
@@ -5742,8 +5750,7 @@ unsigned long  xc7z1_get_spi_freq(void)
 	}
 }
 
-
-void xc7z1_setltdcfreq(const videomode_t * vdmode)
+void hardware_set_dotclock(const videomode_t * vdmode)
 {
 	unsigned long f1 = (unsigned long) ( xc7z1_get_io_pll_freq() / 1000);
 	unsigned long f2 = display_getdotclock(vdmode) / 1000;
