@@ -14190,7 +14190,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("BETA PAN"), 7, 0, 0,	ISTEP1,
+		QLABEL("BETA PAN"), 7, 2, 0,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра спектра */
 		offsetof(struct nvmap, gspecbeta100),
@@ -14200,7 +14200,7 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("BETA WTF"), 7, 0, 0,	ISTEP1,
+		QLABEL("BETA WTF"), 7, 2, 0,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра водопада */
 		offsetof(struct nvmap, gwtfbeta100),
