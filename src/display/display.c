@@ -1420,7 +1420,7 @@ const videomode_t vdmode0 =
 	.board_demode = 0,		/* 0: static signal, 1: DE controlled */
 	.board_devalue = 0,	/* DE level if static signal */	/* SONY PSP-1000 display (4.3") required. */
 	/* Используется при .board_demode = 0 */
-	.board_dereset = 1,		/* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
+	.lq43reset = 1,		/* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
 #if defined (BOARD_MODEVALUE)
 	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
 #else
@@ -1471,7 +1471,7 @@ const videomode_t vdmode0 =
 	.board_demode = 0,		/* 0: static signal, 1: DE controlled */
 #endif /* WITHLCDSYNCMODE */
 	.board_devalue = UINT_MAX,	// No DE signal static controlling
-	.board_dereset = 0,	// LQ043T3DX02K require DE reset
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 #if defined (BOARD_MODEVALUE)
 	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
 #else
@@ -1516,7 +1516,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.board_demode = 0		/* 0: static signal, 1: DE controlled */
 	.board_devalue = UINT_MAX,	// No DE signal static controlling
-	.board_dereset = 0,	// LQ043T3DX02K require DE reset
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 #if defined (BOARD_MODEVALUE)
 	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
 #else
@@ -1579,7 +1579,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.board_demode = 0,		/* 0: static signal, 1: DE controlled */
 	.board_devalue = UINT_MAX,	// No DE signal static controlling
-	.board_dereset = 0,	// LQ043T3DX02K require DE reset
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 #if defined (BOARD_MODEVALUE)
 	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
 #else
@@ -1612,7 +1612,7 @@ const videomode_t vdmode0 =
 	.deneg = 0,				/* DE polarity: (normal: DE is 0 while sync) */
 	.board_demode = 0		/* 0: static signal, 1: DE controlled */
 	.board_devalue = UINT_MAX,	// No DE signal static controlling
-	.board_dereset = 0,	// LQ043T3DX02K require DE reset
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 #if defined (BOARD_MODEVALUE)
 	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
 #else
@@ -1646,7 +1646,7 @@ static const const videomode_t vdmode0 =
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
 	.board_demode = 0		/* 0: static signal, 1: DE controlled */
 	.board_devalue = UINT_MAX,	// No DE signal static controlling
-	.board_dereset = 0,	// LQ043T3DX02K require DE reset
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 #if defined (BOARD_MODEVALUE)
 	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
 #else
@@ -1694,7 +1694,7 @@ const videomode_t vdmode0 =
 	.board_demode = 0,		/* 0: static signal, 1: DE controlled */
 #endif /* WITHLCDSYNCMODE */
 	.board_devalue = UINT_MAX,	// No DE signal static controlling
-	.board_dereset = 0,	// LQ043T3DX02K require DE reset
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
 #if defined (BOARD_MODEVALUE)
 	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
 #else

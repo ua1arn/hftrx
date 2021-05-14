@@ -27,10 +27,10 @@
 static void ltdc_panelcontrolling(const videomode_t * vdmode)
 {
 	// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
-	if (vdmode->board_dereset)
+	if (vdmode->lq43reset)
 	{
 #if defined (HARDWARE_LTDC_SET_DISP)
-		//HARDWARE_LTDC_INITIALIZE(0);	// включаем строковую и кадровую синхронизацию
+		HARDWARE_LTDC_INITIALIZE(0);	// включаем строковую и кадровую синхронизацию
 		/* управление состоянием сигнала DISP панели */
 		/* SONY PSP-1000 display (4.3") required. */
 		HARDWARE_LTDC_SET_DISP(vdmode->board_demode, 0);
