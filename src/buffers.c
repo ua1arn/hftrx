@@ -668,18 +668,20 @@ void buffers_initialize(void)
 	deliverylist_initialize(& afoutfloat_user);
 	deliverylist_initialize(& afoutfloat);
 
-	static subscribefloat_t afsample16reregister_user;
-	subscribefloat_user(& afoutfloat_user, & afsample16reregister_user, NULL, savesampleout16stereo_float_user);
 
-#if WITHSKIPUSERMODE || CTLSTYLE_V3D
+#if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
 
-	static subscribefloat_t afsample16reregister;
-	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16stereo_float);
+	// Обход user mode шумоподавителя
+	static subscribefloat_t afsample16register;
+	subscribefloat_user(& afoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
 
 #else /* WITHSKIPUSERMODE */
 
-	static subscribefloat_t afsample16reregister;
-	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16tospeex);
+	static subscribefloat_t afsample16register_user;
+	static subscribefloat_t afsample16register;
+
+	subscribefloat_user(& afoutfloat_user, & afsample16register_user, NULL, savesampleout16stereo_float_user);
+	subscribefloat_user(& afoutfloat, & afsample16register, NULL, savesampleout16tospeex);
 
 #endif /* WITHSKIPUSERMODE */
 

@@ -1063,10 +1063,12 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	{
 		afspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEAF, BOARD_WTYPE_SPECTRUM);
 	}
-#if CTLSTYLE_V3D
+#if 0 && CTLSTYLE_V3D
+	// делать так не стоит - afsp_save_sample функция работающая в user mode, из real time контекста её вызывать нельзя
+	// возможно нужен "переходник", выкачивающий из real time очереди для показа спектра
 	subscribefloat_user(& afoutfloat, & afspectreregister, NULL, afsp_save_sample);
 #else
-	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
+	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);	// выход sppeex и фильтра
 #endif /* CTLSTYLE_V3D */
 }
 
