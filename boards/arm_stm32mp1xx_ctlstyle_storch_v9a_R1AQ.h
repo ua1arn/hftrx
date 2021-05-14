@@ -123,15 +123,6 @@
 
 	#endif
 
-	#if WITHI2SCLOCKFROMPIN
-	#else /* WITHI2SCLOCKFROMPIN */
-		#define PLLI2SN_MUL 172		// 344.064 (192 <= PLLI2SN <= 432)
-		#define SAIREF1_MUL 172		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
-		// Частота формируется процессором
-		#define ARMI2SMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
-		#define ARMSAIMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
-	#endif /* WITHI2SCLOCKFROMPIN */
-
 	/* модели синтезаторов - схемы частотообразования */
 
 	/* Версии частотных схем - с преобразованием "наверх" */

@@ -391,55 +391,6 @@ static RAMFUNC FLOAT_t peekvalf(uint32_t a)
 }
 #endif
 
-#if 0//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
-
-static RAMFUNC int peekvali16(uint32_t a)
-{
-	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
-	const ncoftw_t quoter = 1UL << (TABLELOG2 - 2);
-	const ncoftw_t index = a & mask;
-	switch (a >> (TABLELOG2 - 2))	 // получить номер квадранта по индексу в таблице
-	{
-	case 0: return sintable4i32_fs [index] >> 16;
-	case 1: return sintable4i32_fs [quoter - index] >> 16;
-	case 2: return - sintable4i32_fs [index] >> 16;
-	case 3: return - sintable4i32_fs [quoter - index] >> 16;
-	}
-	return 0;
-}
-
-static RAMFUNC int peekvali24(uint32_t a)
-{
-	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
-	const ncoftw_t quoter = 1UL << (TABLELOG2 - 2);
-	const ncoftw_t index = a & mask;
-	switch (a >> (TABLELOG2 - 2))	 // получить номер квадранта по индексу в таблице
-	{
-	case 0: return sintable4i32_fs [index] >> 8;
-	case 1: return sintable4i32_fs [quoter - index] >> 8;
-	case 2: return - sintable4i32_fs [index] >> 8;
-	case 3: return - sintable4i32_fs [quoter - index] >> 8;
-	}
-	return 0;
-}
-
-static RAMFUNC int32_t peekvali32(uint32_t a)
-{
-	const ncoftw_t mask = (1UL << (TABLELOG2 - 2)) - 1;
-	const ncoftw_t quoter = 1UL << (TABLELOG2 - 2);
-	const ncoftw_t index = a & mask;
-	switch (a >> (TABLELOG2 - 2))	 // получить номер квадранта по индексу в таблице
-	{
-	case 0: return sintable4i32_fs [index];
-	case 1: return sintable4i32_fs [quoter - index];
-	case 2: return - sintable4i32_fs [index];
-	case 3: return - sintable4i32_fs [quoter - index];
-	}
-	return 0;
-}
-
-#endif /* WITHLOOPBACKTEST */
-
 static RAMFUNC FLOAT_t getsinf(ncoftw_t angle)
 {
 	FLOAT_t v;
@@ -475,7 +426,6 @@ static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
 }
 
 //////////////////////////////////////////
-#if 1//WITHLOOPBACKTEST || WITHSUSBSPKONLY || WITHUSBHEADSET
 
 static RAMDTCM ncoftw_t anglestep_lout = FTWAF(700), anglestep_rout = FTWAF(500);
 static RAMDTCM ncoftw_t angle_lout, angle_rout;
@@ -522,7 +472,6 @@ FLOAT_t get_lout(void)
 	angle_lout = FTWROUND(angle_lout + anglestep_lout);
 	return v;
 }
-#endif /* WITHLOOPBACKTEST */
 
 //////////////////////////////////////////
 static RAMDTCM ncoftw_t anglestep_sidetone;
@@ -5064,6 +5013,10 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			recordsampleUAC(left, right);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
+#if WITHUSBHEADSET || WITHUSBAUDIOSAI1
+		b [L] = adpt_outputexact(& afcodecio, left);
+		b [R] = adpt_outputexact(& afcodecio, right);
+#else /* WITHUSBHEADSET || WITHUSBAUDIOSAI1 */
 		switch (glob_mainsubrxmode)
 		{
 		default:
@@ -5096,6 +5049,7 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			}
 			break;
 		}
+#endif /* WITHUSBHEADSET || WITHUSBAUDIOSAI1 */
 	}
 }
 
@@ -5355,9 +5309,10 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
 		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
-		//recordsampleUAC(get_lout(), get_rout());	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		save16demod(get_lout(), get_rout());		// данные игнорируются
-		//savesampleout32stereo(0, 0);
+		save16demod(vi.IV, vi.QV);		// данные игнорируются
+		//FLOAT_t t = get_lout();
+		//save16demod(t, t);
+		//save16demod(get_lout(), get_rout());
 
 	#elif WITHUSEDUALWATCH
 

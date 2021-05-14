@@ -109,15 +109,9 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0);
 	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0x100);
 
-//{0x34, 0x139},
-//{0x35, 0x139},
-
 	// Установка уровня вывода на динамик
 	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0);
 	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0x100);
-//{0x36, 0x139},
-//{0x37, 0x139},
-
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
