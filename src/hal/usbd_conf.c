@@ -1558,8 +1558,18 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	#else /* WITHUSBDEV_HSDESC */
 		hpcd_USB_OTG.Init.speed = PCD_SPEED_FULL;
 	#endif /* WITHUSBDEV_HSDESC */
-	hpcd_USB_OTG.Init.dma_enable = DISABLE;
-	hpcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+	#if WITHUSBDEV_DMAENABLE
+		hpcd_USB_OTG.Init.dma_enable = ENABLE;
+	#else /* WITHUSBDEV_DMAENABLE */
+		hpcd_USB_OTG.Init.dma_enable = DISABLE;
+	#endif /* WITHUSBDEV_DMAENABLE */
+	#if WITHUSBDEV_HIGHSPEEDPHYC
+		hpcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+	#elif WITHUSBDEV_HIGHSPEEDULPI
+		hpcd_USB_OTG.Init.phy_itface = USB_OTG_ULPI_PHY;
+	#else
+		hpcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
+	#endif
 	hpcd_USB_OTG.Init.Sof_enable = DISABLE;
 	hpcd_USB_OTG.Init.low_power_enable = DISABLE;
 	hpcd_USB_OTG.Init.lpm_enable = DISABLE;
