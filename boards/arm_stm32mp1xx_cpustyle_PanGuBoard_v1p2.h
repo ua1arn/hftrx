@@ -974,19 +974,12 @@
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t VSmask = (1U << 13); 	/* PI13 - VSYNC */ \
 		const uint32_t DEmask = (1U << 7); /* PK7 */ \
-		if (demode != 0) break; \
 		/* while ((GPIOA->IDR & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOA->IDR & VSmask) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_piok_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
-	} while (0)
-	/* управление состоянием сигнала MODE 7" панели */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t MODEmask = 0 * (1U << 3); /* Pxx - MODEmask */ \
-		const uint32_t DEmask = (1U << 7); /* PK7 */ \
-		arm_hardware_piok_outputs(MODEmask, (state != 0) * MODEmask); /* PF4 MODE=state */ \
 	} while (0)
 #endif /* WITHLTDCHW */
 

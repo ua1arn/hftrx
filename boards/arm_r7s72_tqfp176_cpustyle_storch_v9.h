@@ -792,16 +792,9 @@
 		arm_hardware_pio6_alternative((1U << 7), R7S721_PIOALT_2);	/* P6_7 LCD0_DATA15 R7 */ \
 	} while (0)
 
-	/* управление состоянием сигнала MODE панели */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t MODE = (1U << 0); /* P7_0 MODE */ \
-		arm_hardware_pio7_outputs(MODE, (state != 0) * MODE);	/* P7_0 MODE=demode */ \
-	} while (0)
-
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
-		if (demode != 0) break; \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t demask = (1U << 7); /* P7_7 */ \
 		arm_hardware_pio7_outputs(demask, (state != 0) * demask);	/* P7_7 DE=state */ \
 	} while (0)

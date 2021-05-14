@@ -560,8 +560,7 @@ Free:
 			} while (0)
 		/* управление состоянием сигнала DISP панели */
 		/* demode values: 0: static signal, 1: DE controlled */
-		#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
-			if (demode != 0) break; \
+		#define HARDWARE_LTDC_SET_DISP(state) do { \
 			} while (0)
 
 	#endif /* WITHLTDCHW */

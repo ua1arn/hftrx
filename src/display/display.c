@@ -1417,15 +1417,7 @@ const videomode_t vdmode0 =
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.board_demode = 0,		/* 0: static signal, 1: DE controlled */
-	.board_devalue = 0,	/* DE level if static signal */	/* SONY PSP-1000 display (4.3") required. */
-	/* Используется при .board_demode = 0 */
 	.lq43reset = 1,		/* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
-#if defined (BOARD_MODEVALUE)
-	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
-#else
-	.board_modevalue = UINT_MAX,	// MODE set for 7" display
-#endif
 	//.ltdc_dotclk = 9000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
@@ -1465,18 +1457,7 @@ const videomode_t vdmode0 =
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-#if WITHLCDDEMODE
-	.board_demode = 1,		/* 0: static signal, 1: DE controlled */
-#else /* WITHLCDSYNCMODE */
-	.board_demode = 0,		/* 0: static signal, 1: DE controlled */
-#endif /* WITHLCDSYNCMODE */
-	.board_devalue = UINT_MAX,	// No DE signal static controlling
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-#if defined (BOARD_MODEVALUE)
-	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
-#else
-	.board_modevalue = UINT_MAX,	// MODE set for 7" display
-#endif
 	//.ltdc_dotclk = 30000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
@@ -1514,14 +1495,7 @@ const videomode_t vdmode0 =
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.board_demode = 0		/* 0: static signal, 1: DE controlled */
-	.board_devalue = UINT_MAX,	// No DE signal static controlling
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-#if defined (BOARD_MODEVALUE)
-	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
-#else
-	.board_modevalue = UINT_MAX,	// MODE set for 7" display
-#endif
 	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
 	.fps = 60	/* frames per secound */
 };
@@ -1577,14 +1551,7 @@ const videomode_t vdmode0 =
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.board_demode = 0,		/* 0: static signal, 1: DE controlled */
-	.board_devalue = UINT_MAX,	// No DE signal static controlling
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-#if defined (BOARD_MODEVALUE)
-	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
-#else
-	.board_modevalue = UINT_MAX,	// MODE set for 7" display
-#endif
 	//.ltdc_dotclk = 74250000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
@@ -1610,14 +1577,7 @@ const videomode_t vdmode0 =
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* DE polarity: (normal: DE is 0 while sync) */
-	.board_demode = 0		/* 0: static signal, 1: DE controlled */
-	.board_devalue = UINT_MAX,	// No DE signal static controlling
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-#if defined (BOARD_MODEVALUE)
-	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
-#else
-	.board_modevalue = UINT_MAX,	// MODE set for 7" display
-#endif
 	//.ltdc_dotclk = 24000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
@@ -1644,14 +1604,7 @@ static const const videomode_t vdmode0 =
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-	.board_demode = 0		/* 0: static signal, 1: DE controlled */
-	.board_devalue = UINT_MAX,	// No DE signal static controlling
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-#if defined (BOARD_MODEVALUE)
-	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
-#else
-	.board_modevalue = UINT_MAX,	// MODE set for 7" display
-#endif
 	//.ltdc_dotclk = 3000000uL,	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };
@@ -1688,18 +1641,7 @@ const videomode_t vdmode0 =
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
-#if WITHLCDDEMODE
-	.board_demode = 1,		/* 0: static signal, 1: DE controlled */
-#else /* WITHLCDSYNCMODE */
-	.board_demode = 0,		/* 0: static signal, 1: DE controlled */
-#endif /* WITHLCDSYNCMODE */
-	.board_devalue = UINT_MAX,	// No DE signal static controlling
 	.lq43reset = 0,	// LQ043T3DX02K require DE reset
-#if defined (BOARD_MODEVALUE)
-	.board_modevalue = BOARD_MODEVALUE,	// MODE set for 7" display
-#else
-	.board_modevalue = UINT_MAX,	// MODE set for 7" display
-#endif
 	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
 	.fps = 60	/* frames per secound */
 };

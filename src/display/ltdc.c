@@ -24,52 +24,30 @@
 
 // LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 
-static void ltdc_panelcontrolling(const videomode_t * vdmode)
+static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 {
 	// LQ043T3DX02K rules: While “VSYNC” is “Low”, don’t change “DISP” signal “Low” to “High”.
 	if (vdmode->lq43reset)
 	{
+		/* Configure the LCD Control pins */
+		HARDWARE_LTDC_INITIALIZE(0);
 #if defined (HARDWARE_LTDC_SET_DISP)
-		HARDWARE_LTDC_INITIALIZE(0);	// включаем строковую и кадровую синхронизацию
 		/* управление состоянием сигнала DISP панели */
 		/* SONY PSP-1000 display (4.3") required. */
-		HARDWARE_LTDC_SET_DISP(vdmode->board_demode, 0);
+		HARDWARE_LTDC_SET_DISP(0);
 		local_delay_ms(150);
-		HARDWARE_LTDC_SET_DISP(vdmode->board_demode, 1);
+		HARDWARE_LTDC_SET_DISP(1);
 #endif /* defined (HARDWARE_LTDC_SET_DISP) */
 	}
-	if (vdmode->board_modevalue != UINT_MAX)
+	else
 	{
-#if defined (HARDWARE_LTDC_SET_MODE)
-		HARDWARE_LTDC_SET_MODE(vdmode->board_modevalue);
-#endif /* defined (HARDWARE_LTDC_SET_MODE) */
+		/* Configure the LCD Control pins */
+#if WITHLCDDEMODE
+		HARDWARE_LTDC_INITIALIZE(1);	// подключение к выводам процессора сигналов периферийного контроллера
+#else /* WITHLCDDEMODE */
+		HARDWARE_LTDC_INITIALIZE(0);	// подключение к выводам процессора сигналов периферийного контроллера
+#endif /* WITHLCDDEMODE */
 	}
-
-#if 0
-
-#if defined (BOARD_DEVALUE)
-	/* управление состоянием сигнала DISP панели */
-	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, BOARD_DEVALUE);
-#elif defined (BOARD_DERESET)
-	/* SONY PSP-1000 display (4.3") required. */
-	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 0);
-	local_delay_ms(150);
-	HARDWARE_LTDC_SET_DISP(BOARD_DEMODE, 1);
-#endif
-#if defined (BOARD_MODEVALUE)
-	HARDWARE_LTDC_SET_MODE(BOARD_MODEVALUE);
-#endif
-
-#else
-
-	if (vdmode->board_devalue != UINT_MAX)
-	{
-#if defined (HARDWARE_LTDC_SET_DISP)
-		HARDWARE_LTDC_SET_DISP(vdmode->board_demode, vdmode->board_devalue);
-#endif
-	}
-
-#endif
 }
 
 #if CPUSTYLE_R7S721
@@ -765,10 +743,8 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 
 	vdc5fb_update_all(vdc);
 
-	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode);	// подключение к выводам процессора сигналов периферийного контроллера
 
-	ltdc_panelcontrolling(vdmode);
+	ltdc_tfcon_cfg(vdmode);
 
 #if LCDMODE_PIP_RGB565 || LCDMODE_PIP_L8
 	arm_hardware_ltdc_pip_off();
@@ -1408,9 +1384,6 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	COLOR24_T xltrgb24 [256];
 	display2_xltrgb24(xltrgb24);
 
-	/* Configure the LCD Control pins */
-	HARDWARE_LTDC_INITIALIZE(vdmode->board_demode);	// подключение к выводам процессора сигналов периферийного контроллера
-
 	/* LTDC Initialization -------------------------------------------------------*/
 	LTDCx_InitTypeDef LTDC_InitStruct;
 
@@ -1528,7 +1501,7 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
 
-	ltdc_panelcontrolling(vdmode);
+	ltdc_tfcon_cfg(vdmode);
 	//PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
 }
 

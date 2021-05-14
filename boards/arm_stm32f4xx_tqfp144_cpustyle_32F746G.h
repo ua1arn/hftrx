@@ -743,7 +743,7 @@
 		} while (0)
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t VSYNC = (1U << 9); \
 		const uint32_t mask = (1U << 12); \
 		while ((GPIOI->IDR & VSYNC) != 0) ; /* дождаться 0 */ \

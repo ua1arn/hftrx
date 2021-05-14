@@ -837,18 +837,12 @@
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DEmask controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+	#define HARDWARE_LTDC_SET_DISP( state) do { \
 		const uint32_t VSmask = (1U << 9); /* VSYNC PI9 */ \
 		const uint32_t DEmask = (1U << 13); /* DEmask PE13 */ \
-		if (demode != 0) break; \
 		while ((GPIOI->IDR & VSmask) != 0) ; /* дождаться 0 */ \
 		while ((GPIOI->IDR & VSmask) == 0) ; /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask);	/* DEmask=DISP, pin 31 - можно менять только при VSYNC=1 */ \
-	} while (0)
-	/* управление состоянием сигнала MODE 7" панели - на этой плате не используется */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t mask = (1U << 4); /* PF4 - RS of HD4408 */ \
-		arm_hardware_piof_outputs(mask, (state != 0) * mask);	/* PF4 MODE=state */ \
 	} while (0)
 #endif /* WITHLTDCHW */
 
