@@ -1527,9 +1527,24 @@ void USBPhyHw::forced_termination(uint16_t pipe, uint16_t status)
 
 ///////////////////////////////////////
 
-USBPhyHw usbhw0;
 extern PCD_HandleTypeDef hpcd_USB_OTG;
-extern "C" void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req);
+
+static void usbx_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
+{
+	const uint_fast16_t usbreq = USBx->USBREQ;
+
+	req->bmRequest     = LO_BYTE(usbreq); //(pdata [0] >> 0) & 0x00FF;
+	req->bRequest      = HI_BYTE(usbreq); //(pdata [0] >> 8) & 0x00FF;
+	req->wValue        = USBx->USBVAL; //(pdata [0] >> 16) & 0xFFFF;
+	req->wIndex        = USBx->USBINDX; //(pdata [1] >> 0) & 0xFFFF;
+	req->wLength       = USBx->USBLENG; //(pdata [1] >> 16) & 0xFFFF;
+
+#if 0
+	PRINTF("%s: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
+			__func__,
+		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+#endif
+}
 
 class USBrzev: public USBPhyEvents
 {
@@ -1544,9 +1559,9 @@ public:
 		PCD_HandleTypeDef *hpcd = & hpcd_USB_OTG;
 		USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 		USBD_HandleTypeDef * const pdev = (USBD_HandleTypeDef *) hpcd->pData;
-		usbhw0.ep0_setup_read_result((uint8_t *)hpcd->Setup, sizeof hpcd->Setup);
+		get_usb_phy()->ep0_setup_read_result((uint8_t *)hpcd->Setup, sizeof hpcd->Setup);
 		printhex(0, (uint8_t *)hpcd->Setup, sizeof hpcd->Setup);
-		usb_save_request(USBx, & pdev->request);
+		usbx_save_request(USBx, & pdev->request);
 		HAL_PCD_SetupStageCallback(hpcd);
 	}
 	void ep0_out()
@@ -1580,7 +1595,7 @@ public:
 	void start_process()
 	{
 		//PRINTF("USB start_process\n");
-		usbhw0.process();
+		get_usb_phy()->process();
 	}
 };
 USBrzev ev0;
@@ -1589,19 +1604,19 @@ extern "C"
 {
 	void rza1_usb_init()
 	{
-		usbhw0.init(& ev0);
+		get_usb_phy()->init(& ev0);
 	}
 	void rza1_usb_deinit()
 	{
-		usbhw0.deinit();
+		get_usb_phy()->deinit();
 	}
 	void rza1_usb_connect()
 	{
-		usbhw0.connect();
+		get_usb_phy()->connect();
 	}
 	void rza1_usb_disconnect()
 	{
-		usbhw0.disconnect();
+		get_usb_phy()->disconnect();
 	}
 }
 
