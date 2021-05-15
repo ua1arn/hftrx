@@ -20,19 +20,19 @@
 
 extern "C"
 {
-#include "r_typedefs.h"
-#include "iodefine.h"
+//#include "r_typedefs.h"
+//#include "iodefine.h"
 }
+#include "hardware.h"
 #include "USBPhyHw.h"
-#include "rza_io_regrw.h"
-#include "USBDevice_Types.h"
+//#include "rza_io_regrw.h"
 #include "USBEndpoints_RZ_A1.h"
 #include "USBPhy_RZ_A1_Def.h"
 
 
 /**** User Selection ****/
-#define USB_FUNCTION_CH        0
-#define USB_FUNCTION_HISPEED   0        // 1: High-Speed  0: Full-Speed
+#define USB_FUNCTION_CH        1
+#define USB_FUNCTION_HISPEED   1        // 1: High-Speed  0: Full-Speed
 
 #if (USB_FUNCTION_CH == 0)
 #define USB_MX       USB200
@@ -129,7 +129,7 @@ void USBPhyHw::init(USBPhyEvents *events)
     volatile uint8_t dummy_read;
 
     if (this->events == NULL) {
-        sleep_manager_lock_deep_sleep();
+        //sleep_manager_lock_deep_sleep();
     }
     this->events = events;
 
@@ -179,7 +179,7 @@ void USBPhyHw::deinit()
     (void)dummy_read;
 
     if (events != NULL) {
-        sleep_manager_unlock_deep_sleep();
+        //sleep_manager_unlock_deep_sleep();
     }
     events = NULL;
 }
@@ -1037,12 +1037,12 @@ uint8_t *USBPhyHw::write_fifo(uint16_t pipe, uint16_t count, uint8_t *write_p)
     }
     if ((odd & (uint16_t)0x0002u) != 0u) {
         set_mbw(pipe, USB_MBW_16);                            /* 16bit access */
-        p_reg->UINT16[H] = *((uint16_t *)write_p);
+        p_reg->UINT16[R_IO_H] = *((uint16_t *)write_p);
         write_p += sizeof(uint16_t);
     }
     if ((odd & (uint16_t)0x0001u) != 0u) {
         set_mbw(pipe, USB_MBW_8);                             /* 8bit access */
-        p_reg->UINT8[HH] = *write_p;
+        p_reg->UINT8[R_IO_HH] = *write_p;
         write_p++;
     }
 

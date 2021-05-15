@@ -955,12 +955,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 			;
 		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
+			(0x0F & epnum) * (1uL << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1uL << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			2 * (1uL << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
 			0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
 			0;
-		const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
+		const uint32_t bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
 		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 		USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * 1; // * 2 for DBLB
@@ -983,12 +983,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 				;
 			USBx->PIPECFG =
-				(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-				dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-				2 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
+				(0x0F & epnum) * (1uL << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+				dir * (1uL << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+				2 * (1uL << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 2: Interrupt transfer
 				0 * USB_PIPECFG_DBLB |		// DBLB - для interrupt должен быть 0
 				0;
-			const unsigned bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
+			const uint32_t bufsize64 = (VIRTUAL_COM_PORT_INT_SIZE + 63) / 64;
 			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 			USBx->PIPEMAXP = VIRTUAL_COM_PORT_INT_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 			bufnumb64 += bufsize64 * 1; // * 2 for DBLB
@@ -1008,12 +1008,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 				;
 			USBx->PIPECFG =
-				(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
-				dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
-				1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
-				1 * (1u << 9) |				// DBLB
+				(0x0F & epnum) * (1uL << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
+				dir * (1uL << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
+				1 * (1uL << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
+				1 * USB_PIPECFG_DBLB |				// DBLB
 				0;
-			const unsigned bufsize64 = (VIRTUAL_COM_PORT_OUT_DATA_SIZE + 63) / 64;
+			const uint32_t bufsize64 = (VIRTUAL_COM_PORT_OUT_DATA_SIZE + 63) / 64;
 			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 			USBx->PIPEMAXP = VIRTUAL_COM_PORT_OUT_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 			bufnumb64 += bufsize64 * 2; // * 2 for DBLB
@@ -1032,12 +1032,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			while ((USBx->PIPESEL & USB_PIPESEL_PIPESEL) != (pipe << USB_PIPESEL_PIPESEL_SHIFT))
 				;
 			USBx->PIPECFG =
-				(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-				dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-				1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
+				(0x0F & epnum) * (1uL << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+				dir * (1uL << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+				1 * (1uL << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
 				1 * USB_PIPECFG_DBLB |		// DBLB
 				0;
-			const unsigned bufsize64 = (VIRTUAL_COM_PORT_IN_DATA_SIZE + 63) / 64;
+			const uint32_t bufsize64 = (VIRTUAL_COM_PORT_IN_DATA_SIZE + 63) / 64;
 			USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 			USBx->PIPEMAXP = VIRTUAL_COM_PORT_IN_DATA_SIZE << USB_PIPEMAXP_MXPS_SHIFT;
 			bufnumb64 += bufsize64 * 2; // * 2 for DBLB
@@ -1065,15 +1065,15 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			;
 		ASSERT(pipe == 2);
 		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
+			(0x0F & epnum) * (1uL << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1uL << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			3 * (1uL << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
 			dblb * USB_PIPECFG_DBLB |		// DBLB
 			0;
 		//USBx->PIPEPERI =
-		//	1 * (1U << 12) |	// IFS
+		//	1 * (1uL << 12) |	// IFS
 		//	0;
-		const unsigned bufsize64 = (maxpacket + 63) / 64;
+		const uint32_t bufsize64 = (maxpacket + 63) / 64;
 		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 		USBx->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * (dblb + 1); // * 2 for DBLB
@@ -1100,13 +1100,13 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			;
 		ASSERT(pipe == 1);
 		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			3 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
+			(0x0F & epnum) * (1uL << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1uL << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			3 * (1uL << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 11: Isochronous transfer
 			dblb * USB_PIPECFG_DBLB |		// DBLB
 			0;
 
-		const unsigned bufsize64 = (maxpacket + 63) / 64;
+		const uint32_t bufsize64 = (maxpacket + 63) / 64;
 		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 		USBx->PIPEMAXP = maxpacket << USB_PIPEMAXP_MXPS_SHIFT;
 		bufnumb64 += bufsize64 * (dblb + 1); // * 2 for DBLB
@@ -1130,12 +1130,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			;
 		ASSERT(pipe == 12);
 		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
-			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
-			1 * (1u << 9) |				// DBLB
+			(0x0F & epnum) * (1uL << USB_PIPECFG_EPNUM_SHIFT) |	// EPNUM endpoint
+			dir * (1uL << USB_PIPECFG_DIR_SHIFT) |			// DIR 1: Transmitting direction 0: Receiving direction
+			1 * (1uL << USB_PIPECFG_TYPE_SHIFT) |			// TYPE 1: Bulk transfer
+			1 * (1uL << USB_PIPECFG_DBLB_SHIFT) |				// DBLB
 			0;
-		const unsigned bufsize64 = (USBD_CDCEEM_BUFSIZE + 63) / 64;
+		const uint32_t bufsize64 = (USBD_CDCEEM_BUFSIZE + 63) / 64;
 
 		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 		USBx->PIPEMAXP = USBD_CDCEEM_BUFSIZE << USB_PIPEMAXP_MXPS_SHIFT;
@@ -1157,12 +1157,12 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 			;
 		ASSERT(pipe == 13);
 		USBx->PIPECFG =
-			(0x0F & epnum) * (1u << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
-			dir * (1u << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
-			1 * (1u << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
+			(0x0F & epnum) * (1uL << USB_PIPECFG_EPNUM_SHIFT) |		// EPNUM endpoint
+			dir * (1uL << USB_PIPECFG_DIR_SHIFT) |		// DIR 1: Transmitting direction 0: Receiving direction
+			1 * (1uL << USB_PIPECFG_TYPE_SHIFT) |		// TYPE 1: Bulk transfer
 			1 * USB_PIPECFG_DBLB |		// DBLB
 			0;
-		const unsigned bufsize64 = (USBD_CDCEEM_BUFSIZE + 63) / 64;
+		const uint32_t bufsize64 = (USBD_CDCEEM_BUFSIZE + 63) / 64;
 
 		USBx->PIPEBUF = ((bufsize64 - 1) << USB_PIPEBUF_BUFSIZE_SHIFT) | (bufnumb64 << USB_PIPEBUF_BUFNMB_SHIFT);
 		USBx->PIPEMAXP = USBD_CDCEEM_BUFSIZE << USB_PIPEMAXP_MXPS_SHIFT;
@@ -1499,12 +1499,14 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 uint_fast8_t
 USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
 {
-#if CPUSTYLE_STM32MP1
+#if CPUSTYLE_R7S721
+	return 1;
+#elif CPUSTYLE_STM32MP1
 	return 1;
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
-	return (USBx->CID & (0x1U << 8)) != 0U;
+	return (USBx->CID & (0x1uL << 8)) != 0U;
 #else
-		return 0;
+	return 0;
 #endif
 }
 
@@ -1543,6 +1545,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	hpcd_USB_OTG.pData = pdev;
 	pdev->pData = & hpcd_USB_OTG;
 #if CPUSTYLE_R7S721
+	hpcd_USB_OTG.Init.dev_endpoints = 15;
 	// Значение ep0_mps и speed обновится после reset шины
 	#if WITHUSBDEV_HSDESC
 		//hpcd->Init.pcd_speed = PCD_SPEED_HIGH;
@@ -1555,7 +1558,8 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	#endif /* WITHUSBDEV_HSDESC */
 	hpcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
-	hpcd_USB_OTG.Init.dev_endpoints = 15;
+	hpcd_USB_OTG.Init.dma_enable = ENABLE;
+	hpcd_USB_OTG.Init.dma_enable = DISABLE;
 
 #else
 	hpcd_USB_OTG.Init.dev_endpoints = 9;	// STM32MP1/STM32H7: 1 i/o, 8 in, 8 out
