@@ -3321,11 +3321,5 @@ HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd)
 }
 
 
-static uint_fast8_t
-USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
-{
-	return 1;
-}
-
 #endif /* CPUSTYLE_R7S721 */
 

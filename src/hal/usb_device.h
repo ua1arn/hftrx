@@ -120,6 +120,8 @@
  uint_fast16_t usbd_getuacinmaxpacket(void);
  uint_fast16_t usbd_getuacoutmaxpacket(void);
 
+ uint_fast8_t USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx);
+
 /* USER CODE END FD */
 /**
   * @}

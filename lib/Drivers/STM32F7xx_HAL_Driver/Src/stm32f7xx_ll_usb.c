@@ -1452,7 +1452,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
   /* Disable VBUS sensing */
   USBx->GCCFG &= ~(USB_OTG_GCCFG_VBDEN);
 
-  if ((USBx->CID & (0x1U << 8)) != 0U)
+  if (USB_Is_OTG_HS(USBx))
   {
     if (cfg.speed == USBH_FSLS_SPEED)
     {
@@ -1493,7 +1493,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
   /* Clear any pending interrupts */
   USBx->GINTSTS = 0xFFFFFFFFU;
 
-  if ((USBx->CID & (0x1U << 8)) != 0U)
+  if (USB_Is_OTG_HS(USBx))
   {
     /* set Rx FIFO size */
     USBx->GRXFSIZ  = 0x200U;
@@ -1694,7 +1694,7 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
       }
       else
       {
-        if ((USBx->CID & (0x1U << 8)) != 0U)
+        if (USB_Is_OTG_HS(USBx))
         {
           USBx_HC((uint32_t)ch_num)->HCINTMSK |= USB_OTG_HCINTMSK_NYET |
                                                  USB_OTG_HCINTMSK_ACKM;
@@ -1796,7 +1796,7 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
   uint16_t num_packets;
   uint16_t max_hc_pkt_count = 256U;
 
-  if (((USBx->CID & (0x1U << 8)) != 0U) && (hc->speed == USBH_HS_SPEED))
+  if ((USB_Is_OTG_HS(USBx)) && (hc->speed == USBH_HS_SPEED))
   {
     /* in DMA mode host Core automatically issues ping  in case of NYET/NAK */
     if ((dma == 1U) && ((hc->ep_type == EP_TYPE_CTRL) || (hc->ep_type == EP_TYPE_BULK)))
