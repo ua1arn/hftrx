@@ -1552,7 +1552,7 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	hpcd_USB_OTG.Init.dev_endpoints = 15;
 
 #else
-	hpcd_USB_OTG.Init.dev_endpoints = 8;
+	hpcd_USB_OTG.Init.dev_endpoints = 9;	// STM32MP1/STM32H7: 1 i/o, 8 in, 8 out
 	#if WITHUSBDEV_HSDESC
 		hpcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
 	#else /* WITHUSBDEV_HSDESC */
@@ -1810,6 +1810,14 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, c
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBD_StatusTypeDef usb_status = USBD_OK;
 
+  if (hpcd_USB_OTG.Init.dma_enable == 1U)
+  {
+		if (pbuf != NULL && size != 0)
+		{
+			ASSERT(((uintptr_t) pbuf % DCACHEROWSIZE) == 0);
+			arm_hardware_flush((uintptr_t) pbuf, size);
+		}
+  }
   hal_status = HAL_PCD_EP_Transmit(pdev->pData, ep_addr, pbuf, size);
 
   usb_status =  USBD_Get_USB_Status(hal_status);
@@ -1827,14 +1835,19 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, c
   */
 USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev, uint8_t ep_addr, uint8_t *pbuf, uint32_t size)
 {
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBD_StatusTypeDef usb_status = USBD_OK;
+	HAL_StatusTypeDef hal_status = HAL_OK;
+	USBD_StatusTypeDef usb_status = USBD_OK;
 
-  hal_status = HAL_PCD_EP_Receive(pdev->pData, ep_addr, pbuf, size);
+	if (hpcd_USB_OTG.Init.dma_enable == 1U)
+	{
+		if (pbuf != NULL && size != 0)
+			arm_hardware_flush_invalidate((uintptr_t) pbuf, size);
+	}
+	hal_status = HAL_PCD_EP_Receive(pdev->pData, ep_addr, pbuf, size);
 
-  usb_status =  USBD_Get_USB_Status(hal_status);
+	usb_status =  USBD_Get_USB_Status(hal_status);
 
-  return usb_status;
+	return usb_status;
 }
 
 /**
