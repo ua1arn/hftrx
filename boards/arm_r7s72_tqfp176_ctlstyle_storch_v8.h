@@ -348,8 +348,8 @@
 	//#define WITHPOTNOTCH	1	/* используется регулировка частоты NOTCH фильтрач потенциометром */
 	//#define WITHPOTIFSHIFT	1	/* регулировка IF SHIFT	*/
 	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
@@ -442,7 +442,7 @@
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
 
-	#if 1
+	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 		#define WITHBBOX	1	// Black Box mode - устройство без органов управления
 		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
