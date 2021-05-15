@@ -123,6 +123,18 @@ gotosleep:
 	wfine
 	bne     gotosleep
 
+   /*
+    * Reset SCTLR Settings
+    */
+	MRC     p15, 0, R0, c1, c0, 0    // Read CP15 System Control register
+	BIC     R0, R0, #(0x1 << 12)     // Clear I bit 12 to disable I Cache
+	BIC     R0, R0, #(0x1 <<  2)     // Clear C bit  2 to disable D Cache
+	BIC     R0, R0, #0x1             // Clear M bit  0 to disable MMU
+	BIC     R0, R0, #(0x1 << 11)     // Clear Z bit 11 to disable branch prediction
+	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
+	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
+	ISB
+
   /*
     * Setup a stack for each mode
     */    
@@ -434,7 +446,18 @@ IRQ_HandlerNested:
     .func   Reset_CPU1_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU1_Handler:
-  /*
+   /*
+    * Reset SCTLR Settings
+    */
+	MRC     p15, 0, R0, c1, c0, 0    // Read CP15 System Control register
+	BIC     R0, R0, #(0x1 << 12)     // Clear I bit 12 to disable I Cache
+	BIC     R0, R0, #(0x1 <<  2)     // Clear C bit  2 to disable D Cache
+	BIC     R0, R0, #0x1             // Clear M bit  0 to disable MMU
+	BIC     R0, R0, #(0x1 << 11)     // Clear Z bit 11 to disable branch prediction
+	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
+	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
+	ISB
+   /*
     * Setup a stack for each mode
     */
    msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */
