@@ -719,9 +719,9 @@ int64_t transform_do64(
 	return (v << tfm->lshift64) >> tfm->rshift64;
 }
 
-#if WITHDSPEXTFIR
+//#if WITHDSPEXTFIR
 static adapter_t fpgafircoefsout;
-#endif /* #if WITHDSPEXTFIR */
+//#endif /* #if WITHDSPEXTFIR */
 adapter_t afcodecio;
 adapter_t ifcodecin;
 adapter_t ifspectrumin;
