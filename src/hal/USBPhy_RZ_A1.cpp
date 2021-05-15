@@ -15,15 +15,21 @@
  * limitations under the License.
  */
 
-
-#if defined(DEVICE_USBDEVICE) && DEVICE_USBDEVICE
-
-extern "C"
-{
-//#include "r_typedefs.h"
-//#include "iodefine.h"
-}
 #include "hardware.h"
+#include "formats.h"
+
+#if 0//CPUSTYLE_R7S721 && WITHUSBHW && defined(WITHUSBHW_DEVICE) //defined(DEVICE_USBDEVICE) && DEVICE_USBDEVICE
+
+#include "src/usb/usbch9.h"
+
+#include "usb_device.h"
+#include "usbd_core.h"
+#include "usbh_core.h"
+#include "usbh_def.h"
+
+#include "rza1xx_hal.h"
+#include "rza1xx_hal_usb.h"
+
 #include "USBPhyHw.h"
 //#include "rza_io_regrw.h"
 #include "USBEndpoints_RZ_A1.h"
@@ -32,13 +38,17 @@ extern "C"
 
 /**** User Selection ****/
 #define USB_FUNCTION_CH        1
-#define USB_FUNCTION_HISPEED   1        // 1: High-Speed  0: Full-Speed
+#if WITHUSBDEV_HSDESC
+	#define USB_FUNCTION_HISPEED   1        // 1: High-Speed  0: Full-Speed
+#else /* WITHUSBDEV_HSDESC */
+	#define USB_FUNCTION_HISPEED   0        // 1: High-Speed  0: Full-Speed
+#endif /* WITHUSBDEV_HSDESC */
 
 #if (USB_FUNCTION_CH == 0)
-#define USB_MX       USB200
+#define USB_MX       (* WITHUSBHW_DEVICE)
 #define USBIX_IRQn   USBI0_IRQn
 #else
-#define USB_MX       USB201
+#define USB_MX       (* WITHUSBHW_DEVICE)
 #define USBIX_IRQn   USBI1_IRQn
 #endif
 
@@ -126,6 +136,7 @@ USBPhyHw::~USBPhyHw()
 
 void USBPhyHw::init(USBPhyEvents *events)
 {
+	TP();
     volatile uint8_t dummy_read;
 
     if (this->events == NULL) {
@@ -148,7 +159,7 @@ void USBPhyHw::init(USBPhyEvents *events)
     (void)dummy_read;
 
     /* module reset and clock select */
-    reset_usb(USB_X1_48MHZ);                            /* USB_X1 48MHz */
+    reset_usb(USB_EXTAL_12MHZ);                            /* USB_X1 48MHz */
 
     /* Set to USB Function and select speed */
     USB_MX.SYSCFG0 &= ~USB_DPRPU;
@@ -198,17 +209,18 @@ void USBPhyHw::connect()
     USB_MX.SYSCFG0 |= USB_DPRPU;
 
     /* Enable USB */
-    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
-    GIC_SetPriority(USBIX_IRQn, 16);
-    GIC_SetConfiguration(USBIX_IRQn, 1);
-    GIC_EnableIRQ(USBIX_IRQn);
+//    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
+//    GIC_SetPriority(USBIX_IRQn, 16);
+//    GIC_SetConfiguration(USBIX_IRQn, 1);
+//    GIC_EnableIRQ(USBIX_IRQn);
+	arm_hardware_set_handler_system(USBIX_IRQn, _usbisr);
 }
 
 void USBPhyHw::disconnect()
 {
     /* Disable USB */
-    GIC_DisableIRQ(USBIX_IRQn);
-    InterruptHandlerRegister(USBIX_IRQn, NULL);
+//    GIC_DisableIRQ(USBIX_IRQn);
+//    InterruptHandlerRegister(USBIX_IRQn, NULL);
 
     /* Disable pullup on D+ */
     USB_MX.SYSCFG0 &= ~USB_DPRPU;
@@ -830,7 +842,7 @@ void USBPhyHw::process()
 
 void USBPhyHw::_usbisr(void)
 {
-    GIC_DisableIRQ(USBIX_IRQn);
+    //GIC_DisableIRQ(USBIX_IRQn);
 
     run_later_ctrl_comp = false;
 
@@ -844,8 +856,8 @@ void USBPhyHw::_usbisr(void)
     }
 
     /* Re-enable interrupt */
-    GIC_ClearPendingIRQ(USBIX_IRQn);
-    GIC_EnableIRQ(USBIX_IRQn);
+    //GIC_ClearPendingIRQ(USBIX_IRQn);
+    //GIC_EnableIRQ(USBIX_IRQn);
 }
 
 void USBPhyHw::chg_curpipe(uint16_t pipe, uint16_t isel)
@@ -1511,6 +1523,86 @@ void USBPhyHw::forced_termination(uint16_t pipe, uint16_t status)
 
     pipe_ctrl[pipe].enable = false;
     pipe_ctrl[pipe].status  = status;
+}
+
+///////////////////////////////////////
+
+USBPhyHw usbhw0;
+extern PCD_HandleTypeDef hpcd_USB_OTG;
+extern "C" void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req);
+
+class USBrzev: public USBPhyEvents
+{
+public:
+	void reset()
+	{
+		PRINTF("USB reset\n");
+	}
+	void ep0_setup()
+	{
+		PRINTF("USB ep0_setup\n");
+		PCD_HandleTypeDef *hpcd = & hpcd_USB_OTG;
+		USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+		USBD_HandleTypeDef * const pdev = (USBD_HandleTypeDef *) hpcd->pData;
+		usbhw0.ep0_setup_read_result((uint8_t *)hpcd->Setup, sizeof hpcd->Setup);
+		printhex(0, (uint8_t *)hpcd->Setup, sizeof hpcd->Setup);
+		usb_save_request(USBx, & pdev->request);
+		HAL_PCD_SetupStageCallback(hpcd);
+	}
+	void ep0_out()
+	{
+		PRINTF("USB ep0_out\n");
+	}
+	void ep0_in()
+	{
+		PRINTF("USB ep0_in\n");
+	}
+	void power(bool powered)
+	{
+		PRINTF("USB power: %d\n", (int) powered);
+	}
+	void suspend(bool suspended)
+	{
+		PRINTF("USB suspend: %d\n", (int) suspended);
+	}
+	void sof(int frame_number)
+	{
+		//PRINTF("USB sof: %d\n", frame_number);
+	}
+	void out(usb_ep_t endpoint)
+	{
+		PRINTF("USB power: %out\n", (int) endpoint);
+	}
+	void in(usb_ep_t endpoint)
+	{
+		PRINTF("USB in: %out\n", (int) endpoint);
+	}
+	void start_process()
+	{
+		//PRINTF("USB start_process\n");
+		usbhw0.process();
+	}
+};
+USBrzev ev0;
+
+extern "C"
+{
+	void rza1_usb_init()
+	{
+		usbhw0.init(& ev0);
+	}
+	void rza1_usb_deinit()
+	{
+		usbhw0.deinit();
+	}
+	void rza1_usb_connect()
+	{
+		usbhw0.connect();
+	}
+	void rza1_usb_disconnect()
+	{
+		usbhw0.disconnect();
+	}
 }
 
 #endif
