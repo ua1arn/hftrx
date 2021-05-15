@@ -17,6 +17,8 @@
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 
 	#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
+	#define USB_SYSCFG_UCKSEL_Value (1 * USB_SYSCFG_UCKSEL)	// 12 MHz XTAL
+	//#define USB_SYSCFG_UCKSEL_Value (0 * USB_SYSCFG_UCKSEL)	// 48 MHz OSC
 
 	#if WITHI2SCLOCKFROMPIN
 	#else /* WITHI2SCLOCKFROMPIN */
