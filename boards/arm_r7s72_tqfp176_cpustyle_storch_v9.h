@@ -99,7 +99,7 @@
 		#if WITHINTEGRATEDDSP
 
 			//#define WITHUAC2		1	/* UAC2 support */
-			//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+			//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 			#define WITHUSBUACIN	1
 			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */

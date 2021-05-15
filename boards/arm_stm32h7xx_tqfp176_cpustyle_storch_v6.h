@@ -65,7 +65,7 @@
 #if WITHINTEGRATEDDSP
 
 	//#define WITHUAC2		1	/* UAC2 support */
-	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 	#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 	#if WITHRTS96 || WITHRTS192
 		#define WITHUSBUACIN	1
