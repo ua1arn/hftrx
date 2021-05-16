@@ -8547,7 +8547,6 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
-	arm_scale_f32(p, ki, p, FIRBUFSIZE);
 #if WITHNOSPEEX
 	if (denoise)
 	{
@@ -8586,7 +8585,9 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 		if (pathi == 0)
 			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
 #else /* WITHLEAKYLMSANR */
+		arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
+		arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
 #endif /* WITHLEAKYLMSANR */
 		nrp->outsp = nrp->wire1;
 	}
@@ -8594,7 +8595,9 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 	{
 		// не делать даже коррекцию АЧХ
 #if ! WITHLEAKYLMSANR
+		arm_scale_f32(p, ki, p, FIRBUFSIZE);
 		speex_preprocess_estimate_update(nrp->st_handle, p);
+		arm_scale_f32(p, ko, p, FIRBUFSIZE);
 #endif /* ! WITHLEAKYLMSANR */
 		nrp->outsp = p;
 	}
@@ -8621,7 +8624,6 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 		nrp->outsp = nrp->wire1;
 	}
 #endif /* WITHNOSPEEX */
-	arm_scale_f32(nrp->outsp, ko, nrp->outsp, FIRBUFSIZE);
 }
 
 // user-mode processing
