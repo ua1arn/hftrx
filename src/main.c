@@ -8535,6 +8535,9 @@ static uint_fast8_t ispathprovessing(uint_fast8_t pathi)
 // обработка и сохранение в savesampleout16stereo_user()
 static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel_t * p)
 {
+	// FIXME: speex внутри использует целочисленные вычисления
+	static const float32_t ki = 32768;
+	static const float32_t ko = 1. / 32768;
 	const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
 	const uint_fast8_t pathsubmode = getsubmode(bi);
 	const uint_fast8_t mode = submodes [pathsubmode].mode;
@@ -8544,6 +8547,7 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
+	arm_scale_f32(p, ki, p, FIRBUFSIZE);
 #if WITHNOSPEEX
 	if (denoise)
 	{
@@ -8617,6 +8621,7 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 		nrp->outsp = nrp->wire1;
 	}
 #endif /* WITHNOSPEEX */
+	arm_scale_f32(nrp->outsp, ko, nrp->outsp, FIRBUFSIZE);
 }
 
 // user-mode processing
