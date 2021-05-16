@@ -1342,7 +1342,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 
       /* Set USB Turnaround time */
       (void)USB_SetTurnaroundTime(hpcd->Instance,
-    		  	  	  	  	  	  RCC_GetAXISSClockFreq(),	//HAL_RCC_GetHCLKFreq(),
+    		  	  	  	  	  	  HAL_RCC_GetAXISSFreq(),	//HAL_RCC_GetHCLKFreq(),
                                   (uint8_t)hpcd->Init.speed);
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)
