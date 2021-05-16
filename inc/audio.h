@@ -614,13 +614,10 @@ extern transform_t if2rts192out;	// преобразование из выход
 		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
-		#define FPGADECIMATION 1024uL
-		#define FPGADIVIDERATIO 5uL
-		#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+		#define FPGADECIMATION 1024uL	// должно быть кратно 256
 
-		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
+		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))	// 48 kHz
 
 	#else /* CPUSTYLE_XC7Z */
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
