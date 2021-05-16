@@ -167,7 +167,15 @@ OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
 
 LIBS    = $(DLIBS) $(ULIBS)
 
-MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
+MCFLAGS = \
+	$(CORE) \
+	-fno-math-errno \
+	-funroll-loops \
+	-fgraphite-identity \
+	-ffunction-sections \
+	-fdata-sections \
+	-ffat-lto-objects \
+	-ftree-vectorize
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.S=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
