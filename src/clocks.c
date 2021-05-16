@@ -5750,12 +5750,12 @@ unsigned long  xc7z1_get_spi_freq(void)
 	}
 }
 
-void hardware_set_dotclock(const videomode_t * vdmode)
+void hardware_set_dotclock(unsigned long dotfreq)
 {
 	unsigned long f1 = (unsigned long) ( xc7z1_get_io_pll_freq() / 1000);
-	unsigned long f2 = display_getdotclock(vdmode) / 1000;
+	dotfreq /= 1000;
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(f1, f2), XC7Z_FPGAx_CLK_WIDTH, XC7Z_FPGAx_CLK_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround2(f1, dotfreq), XC7Z_FPGAx_CLK_WIDTH, XC7Z_FPGAx_CLK_TAPS, & value, 0);
 
 	PRINTF("xc7z1_setltdcfreq: FPGA0_CLK_CTRL.DIVISOR0=%u, DIVISOR1=%u\n", 1u << prei, value);
 

@@ -615,7 +615,7 @@ extern transform_t if2rts192out;	// преобразование из выход
 		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
 		#define FPGADECIMATION 1024uL
-		#define FPGADIVIDERATIO 4uL
+		#define FPGADIVIDERATIO 5uL
 		#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
 		#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
 

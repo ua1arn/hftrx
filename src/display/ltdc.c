@@ -30,7 +30,9 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	if (vdmode->lq43reset)
 	{
 		/* Configure the LCD Control pins */
+#if defined (HARDWARE_LTDC_INITIALIZE)
 		HARDWARE_LTDC_INITIALIZE(0);
+#endif /* defined (HARDWARE_LTDC_INITIALIZE) */
 #if defined (HARDWARE_LTDC_SET_DISP)
 		/* управление состоянием сигнала DISP панели */
 		/* SONY PSP-1000 display (4.3") required. */
@@ -41,12 +43,14 @@ static void ltdc_tfcon_cfg(const videomode_t * vdmode)
 	}
 	else
 	{
+#if defined (HARDWARE_LTDC_INITIALIZE)
 		/* Configure the LCD Control pins */
 #if WITHLCDDEMODE
 		HARDWARE_LTDC_INITIALIZE(1);	// подключение к выводам процессора сигналов периферийного контроллера
 #else /* WITHLCDDEMODE */
 		HARDWARE_LTDC_INITIALIZE(0);	// подключение к выводам процессора сигналов периферийного контроллера
 #endif /* WITHLCDDEMODE */
+#endif /* defined (HARDWARE_LTDC_INITIALIZE) */
 	}
 }
 
