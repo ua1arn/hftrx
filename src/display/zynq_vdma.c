@@ -166,22 +166,28 @@ int DisplayStart(DisplayCtrl *dispPtr)
 		return XST_SUCCESS;
 	}
 
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
 	/*
 	 * Configure the vtc core with the display mode timing parameters
 	 */
 	vtcTiming.HActiveVideo = dispPtr->vMode.width;						    /* Horizontal Active Video Size */
-	vtcTiming.HFrontPorch = dispPtr->vMode.hps - dispPtr->vMode.width;	    /* Horizontal Front Porch Size */
-	vtcTiming.HSyncWidth = dispPtr->vMode.hpe - dispPtr->vMode.hps;		    /* Horizontal Sync Width */
-	vtcTiming.HBackPorch = dispPtr->vMode.hmax - dispPtr->vMode.hpe + 1;    /* Horizontal Back Porch Size */
-	vtcTiming.HSyncPolarity = dispPtr->vMode.hpol;	                        /* Horizontal Sync Polarity */
-	vtcTiming.VActiveVideo = dispPtr->vMode.height;	                        /* Vertical Active Video Size */
-	vtcTiming.V0FrontPorch = dispPtr->vMode.vps - dispPtr->vMode.height;    /* Vertical Front Porch Size */
-	vtcTiming.V0SyncWidth = dispPtr->vMode.vpe - dispPtr->vMode.vps;	    /* Vertical Sync Width */
-	vtcTiming.V0BackPorch = dispPtr->vMode.vmax - dispPtr->vMode.vpe + 1;;	/* Horizontal Back Porch Size */
-	vtcTiming.V1FrontPorch = dispPtr->vMode.vps - dispPtr->vMode.height;	/* Vertical Front Porch Size */
-	vtcTiming.V1SyncWidth = dispPtr->vMode.vpe - dispPtr->vMode.vps;	    /* Vertical Sync Width */
-	vtcTiming.V1BackPorch = dispPtr->vMode.vmax - dispPtr->vMode.vpe + 1;;	/* Horizontal Back Porch Size */
-	vtcTiming.VSyncPolarity = dispPtr->vMode.vpol;	                        /* Vertical Sync Polarity */
+	vtcTiming.HFrontPorch = dispPtr->vMode.hfp; //dispPtr->vMode.hps - dispPtr->vMode.width;	    /* Horizontal Front Porch Size */
+	vtcTiming.HSyncWidth = dispPtr->vMode.hsync; //dispPtr->vMode.hpe - dispPtr->vMode.hps;		    /* Horizontal Sync Width */
+	vtcTiming.HBackPorch = dispPtr->vMode.hbp; //dispPtr->vMode.hmax - dispPtr->vMode.hpe + 1;    /* Horizontal Back Porch Size */
+	vtcTiming.HSyncPolarity = ! dispPtr->vMode.hsyncneg;	                        /* Horizontal Sync Polarity */
+	vtcTiming.VActiveVideo = dispPtr->vMode.height;
+	/* Vertical Active Video Size */
+	vtcTiming.V0FrontPorch = dispPtr->vMode.vfp; //dispPtr->vMode.vps - dispPtr->vMode.height;    /* Vertical Front Porch Size */
+	vtcTiming.V0SyncWidth = dispPtr->vMode.vsync; //dispPtr->vMode.vpe - dispPtr->vMode.vps;	    /* Vertical Sync Width */
+	vtcTiming.V0BackPorch = dispPtr->vMode.vbp; //dispPtr->vMode.vmax - dispPtr->vMode.vpe + 1;	/* Horizontal Back Porch Size */
+
+	vtcTiming.V1FrontPorch = dispPtr->vMode.vfp; //dispPtr->vMode.vps - dispPtr->vMode.height;	/* Vertical Front Porch Size */
+	vtcTiming.V1SyncWidth = dispPtr->vMode.vsync; //dispPtr->vMode.vpe - dispPtr->vMode.vps;	    /* Vertical Sync Width */
+	vtcTiming.V1BackPorch = dispPtr->vMode.vbp; //dispPtr->vMode.vmax - dispPtr->vMode.vpe + 1;	/* Horizontal Back Porch Size */
+
+	vtcTiming.VSyncPolarity = ! dispPtr->vMode.vsyncneg;	                        /* Vertical Sync Polarity */
 	vtcTiming.Interlaced = 0;		                                        /* Interlaced / Progressive video */
 
 	/* Setup the VTC Source Select config structure. */
@@ -229,7 +235,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 	dispPtr->vdmaConfig.Stride = dispPtr->stride;
 	for (i = 0; i < LCDMODE_MAIN_PAGES; i++)
 	{
-		dispPtr->vdmaConfig.FrameStoreStartAddr[i] = (u32)dispPtr->framePtr[i];
+		dispPtr->vdmaConfig.FrameStoreStartAddr[i] = dispPtr->framePhyAddr[i];
 	}
 
 	/*
@@ -292,7 +298,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 **		Initializes the driver struct for use.
 **
 */
-int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, const uintptr_t * frames, u32 stride, VideoMode VMODE)
+int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynClkAddr, const uintptr_t * frames, u32 stride, const videomode_t * VMODE)
 {
 	int Status;
 	int i;
@@ -306,13 +312,13 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 	dispPtr->dynClkAddr = dynClkAddr;
 	for (i = 0; i < LCDMODE_MAIN_PAGES; i++)
 	{
-		dispPtr->framePtr[i] = (u8 *) frames [i];
+		dispPtr->framePhyAddr[i] = frames [i];
 	}
 	dispPtr->state = DISPLAY_STOPPED;
 	dispPtr->stride = stride;
 
 	/* Supported resolution */
-	dispPtr->vMode = VMODE;
+	dispPtr->vMode = * VMODE;
 
 
 	/* Initialize the VTC driver so that it's ready to use look up
@@ -361,7 +367,7 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 **		be called again).
 **
 */
-int DisplaySetMode(DisplayCtrl *dispPtr, const VideoMode *newMode)
+int DisplaySetMode(DisplayCtrl *dispPtr, const videomode_t *newMode)
 {
 	int Status;
 

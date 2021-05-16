@@ -25,6 +25,26 @@
 	#define ARM_PLL_DIV	2
 	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
 
+	// PL Clock 0 Output control
+	// ~50 MHz
+	#define SCLR_FPGA0_CLK_CTRL_DIVISOR0 8
+	#define SCLR_FPGA0_CLK_CTRL_DIVISOR1 4
+
+	// PL Clock 1 Output control
+	// ~50 MHz
+	#define SCLR_FPGA1_CLK_CTRL_DIVISOR0 8
+	#define SCLR_FPGA1_CLK_CTRL_DIVISOR1 4
+
+	// PL Clock 2 Output control
+	// ~50 MHz
+	#define SCLR_FPGA2_CLK_CTRL_DIVISOR0 8
+	#define SCLR_FPGA2_CLK_CTRL_DIVISOR1 4
+
+	// PL Clock 3 Output control
+	// ~50 MHz
+	#define SCLR_FPGA3_CLK_CTRL_DIVISOR0 8
+	#define SCLR_FPGA3_CLK_CTRL_DIVISOR1 4
+
 	#define DDR_PLL_MUL 32	// DDR_PLL_CTRL.PLL_FDIV value - 1066.656 MHz
 	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
 	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz
@@ -33,13 +53,6 @@
 	#define SCLR_SDIO_CLK_CTRL_DIVISOR 16
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 172		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 172		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
@@ -74,8 +87,9 @@
 		#define BANDSELSTYLERE_UPCONV56M_45M	1	/* Up-conversion with working band .030..45 MHz */
 	#else
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
-		#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
+		//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+		#define DIRECT_49M152_X1	1	/* Тактовый генератор 49.152 МГц */
+		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
@@ -263,12 +277,6 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	typedef int32_t IFADCvalue_t;
-	typedef int32_t IFDACvalue_t;
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
@@ -434,7 +442,7 @@
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
-	#if 1
+	#if 0
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */

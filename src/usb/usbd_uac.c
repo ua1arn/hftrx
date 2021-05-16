@@ -13,29 +13,15 @@
 #include "audio.h"
 #include "src/display/display.h"
 #include "formats.h"
-#include "usb_core.h"
+
+#include "usb_device.h"
+#include "usbd_def.h"
+#include "usbd_core.h"
+#include "usb200.h"
+#include "usbch9.h"
+
 #include <string.h>
 
-
-static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a > b ? a : b;
-}
-
-static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a > b ? a : b;
-}
 
 // Fill Layout 1 Parameter Block
 static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
@@ -151,6 +137,10 @@ uint_fast16_t usbd_getuacinrtsmaxpacket(void)
 
 #endif /* WITHUSBUACIN2 */
 
+uint_fast16_t usbd_getuacoutmaxpacket(void)
+{
+	return UACOUT_AUDIO48_DATASIZE;
+}
 
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
@@ -161,9 +151,9 @@ static RAMBIGDTCM uint_fast16_t uacinsize = 0;
 static RAMBIGDTCM uintptr_t uacinrtsaddr = 0;
 static RAMBIGDTCM uint_fast16_t uacinrtssize = 0;
 
-static USBALIGN_BEGIN uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE] USBALIGN_END;
+static __ALIGN_BEGIN uint8_t uacoutbuff [UACOUT_AUDIO48_DATASIZE] __ALIGN_END;
 
-static USBALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
+static __ALIGN_BEGIN uint8_t uac_ep0databuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
 
 
 static USBD_StatusTypeDef USBD_UAC_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
@@ -481,7 +471,7 @@ static unsigned USBD_UAC2_ClockSource_req(
 
 static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	static RAMBIGDTCM USBALIGN_BEGIN uint8_t buff [32] USBALIGN_END;	// was: 7
+	static RAMBIGDTCM __ALIGN_BEGIN uint8_t buff [32] __ALIGN_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 #if WITHUSBWCID
@@ -909,6 +899,12 @@ const USBD_ClassTypeDef USBD_CLASS_UAC =
 	NULL,	//USBD_XXX_IsoINIncomplete,	// IsoINIncomplete
 	NULL,	//USBD_XXX_IsoOUTIncomplete,	// IsoOUTIncomplete
 };
+
+// USB AUDIO
+// Канал DMA ещё занят - оставляем в очереди, иначе получить данные через getfilled_dmabufferx
+void __weak refreshDMA_uacin(void)
+{
+}
 
 
 #endif /* WITHUSBHW && WITHUSBUAC */

@@ -95,7 +95,7 @@ SWIAddr:       .word SWI_Handler
 PAbortAddr:    .word PAbort_Handler
 DAbortAddr:    .word DAbort_Handler
 HypAddr:  	   .word Hyp_Handler
-IRQAddr:       .word IRQHandlerNested
+IRQAddr:       .word IRQ_HandlerNested
 FIQAddr:       .word FIQ_Handler
 
    .ltorg
@@ -122,6 +122,18 @@ Reset_Handler7:
 gotosleep:
 	wfine
 	bne     gotosleep
+
+   /*
+    * Reset SCTLR Settings
+    */
+	MRC     p15, 0, R0, c1, c0, 0    // Read CP15 System Control register
+	BIC     R0, R0, #(0x1 << 12)     // Clear I bit 12 to disable I Cache
+	BIC     R0, R0, #(0x1 <<  2)     // Clear C bit  2 to disable D Cache
+	BIC     R0, R0, #0x1             // Clear M bit  0 to disable MMU
+	BIC     R0, R0, #(0x1 << 11)     // Clear Z bit 11 to disable branch prediction
+	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
+	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
+	ISB
 
   /*
     * Setup a stack for each mode
@@ -336,8 +348,8 @@ ExitFunction:
 /* Entry point for the IRQ handler */
 /* ================================================================== */
 
-    .func   IRQHandlerNested
-IRQHandlerNested:
+    .func   IRQ_HandlerNested
+IRQ_HandlerNested:
 
 	/* save interrupt context on the stack to allow nesting */
 	SUB		LR, LR, #4
@@ -434,7 +446,18 @@ IRQHandlerNested:
     .func   Reset_CPU1_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU1_Handler:
-  /*
+   /*
+    * Reset SCTLR Settings
+    */
+	MRC     p15, 0, R0, c1, c0, 0    // Read CP15 System Control register
+	BIC     R0, R0, #(0x1 << 12)     // Clear I bit 12 to disable I Cache
+	BIC     R0, R0, #(0x1 <<  2)     // Clear C bit  2 to disable D Cache
+	BIC     R0, R0, #0x1             // Clear M bit  0 to disable MMU
+	BIC     R0, R0, #(0x1 << 11)     // Clear Z bit 11 to disable branch prediction
+	BIC     R0, R0, #(0x1 << 13)     // Clear V bit 13 to disable hivecs
+	MCR     p15, 0, R0, c1, c0, 0    // Write value back to CP15 System Control register
+	ISB
+   /*
     * Setup a stack for each mode
     */
    msr   CPSR_c, #ARM_MODE_UNDEF | I_BIT | F_BIT   /* 0x1b Undefined Instruction Mode */

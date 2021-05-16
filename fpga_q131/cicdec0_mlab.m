@@ -17,10 +17,10 @@
 %                                                                                                                                       
 %FILTER PARAMETER                                                                                                                       
 %Input Data Type:	Signed
-%Input Data Width:	32
+%Input Data Width:	28
 %MSB Truncated Bits: 11
 %LSB Truncated bits:23
-%FIR Width (Full Calculation Width Before Output Width Adjust) :   66
+%FIR Width (Full Calculation Width Before Output Width Adjust) :   62
 %-----------------------------------------------------------------------------------------------------------
 
 	%MegaWizard Scaled Coefficient Values
@@ -31,9 +31,9 @@
 	MSB_TYPE  = 0;
 	LSB_RM  = 23;
 	LSB_TYPE  = 0;
-	FIR_WIDTH  = 66;
+	FIR_WIDTH  = 62;
 	OUT_WIDTH  = FIR_WIDTH - MSB_RM - LSB_RM ;
-	DATA_WIDTH = 32;
+	DATA_WIDTH = 28;
             
 	data_type= 1;
 

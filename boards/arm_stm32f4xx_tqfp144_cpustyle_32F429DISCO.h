@@ -541,7 +541,7 @@ Free:
 			} while (0)
 	#endif
 
-	#if LCDMODE_LTDC
+	#if WITHLTDCHW
 		enum
 		{
 			GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
@@ -560,11 +560,10 @@ Free:
 			} while (0)
 		/* управление состоянием сигнала DISP панели */
 		/* demode values: 0: static signal, 1: DE controlled */
-		#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
-			if (demode != 0) break; \
+		#define HARDWARE_LTDC_SET_DISP(state) do { \
 			} while (0)
 
-	#endif /* LCDMODE_LTDC */
+	#endif /* WITHLTDCHW */
 
 	#if WITHUART1HW
 		#define HARDWARE_UART1_INITIALIZE() do { \

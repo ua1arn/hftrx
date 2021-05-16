@@ -17,15 +17,10 @@
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через AUDIO_X1 сигнал интерфейса
 
 	#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
+	#define USB_SYSCFG_UCKSEL_Value (1 * USB_SYSCFG_UCKSEL)	// 12 MHz XTAL
+	//#define USB_SYSCFG_UCKSEL_Value (0 * USB_SYSCFG_UCKSEL)	// 48 MHz OSC
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 336		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 240		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
@@ -217,12 +212,6 @@
 
 	//#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	//#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	typedef int32_t IFADCvalue_t;
-	typedef int32_t IFDACvalue_t;
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETMIXONLY 1	// Use only product detector
@@ -329,12 +318,6 @@
 
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	typedef int32_t IFADCvalue_t;
-	typedef int32_t IFDACvalue_t;
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
 	//#define WITHLOOPBACKTEST	1
@@ -344,6 +327,7 @@
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
+	//#define WITHTXCPATHCALIBRATE 1	/* при изменении параметров интерполятора в FPGA выполняем калибровку */
 
 	// выбор накопителя
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
@@ -606,5 +590,11 @@
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
+
+	#if WITHRTS192
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_192k.h"
+	#else
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_96k.h"
+	#endif
 
 #endif /* ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED */

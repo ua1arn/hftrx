@@ -65,13 +65,13 @@
 #if WITHINTEGRATEDDSP
 
 	//#define WITHUAC2		1	/* UAC2 support */
-	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 	#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 	#if WITHRTS96 || WITHRTS192
 		#define WITHUSBUACIN	1
 		#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 	#else /* WITHRTS96 || WITHRTS192 */
-		#define WITHUSBUACIN
+		#define WITHUSBUACIN	1
 	#endif /* WITHRTS96 || WITHRTS192 */
 	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 #endif /* WITHINTEGRATEDDSP */
@@ -722,7 +722,7 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 
 	#if LCDMODE_LQ043T3DX02K
 		#define WITHLCDBACKLIGHTOFF	1	// Имеется управление включением/выключением подсветки дисплея
@@ -760,7 +760,7 @@
 		__DSB(); \
 	} while (0)
 
-#else /* LCDMODE_LTDC */
+#else /* WITHLTDCHW */
 	/* без TFT индикатора - запретить работу dc-dc преобразователя подсветки */
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		/* step-up backlight converter */ \
@@ -771,7 +771,7 @@
 	/* установка яркости и включение/выключение преобразователя подсветки */
 	#define HARDWARE_BL_SET(en, level) do { \
 	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 #if WITHDCDCFREQCTL
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
@@ -794,7 +794,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
@@ -837,20 +837,14 @@
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DEmask controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+	#define HARDWARE_LTDC_SET_DISP( state) do { \
 		const uint32_t VSmask = (1U << 9); /* VSYNC PI9 */ \
 		const uint32_t DEmask = (1U << 13); /* DEmask PE13 */ \
-		if (demode != 0) break; \
 		while ((GPIOI->IDR & VSmask) != 0) ; /* дождаться 0 */ \
 		while ((GPIOI->IDR & VSmask) == 0) ; /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask);	/* DEmask=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
-	/* управление состоянием сигнала MODE 7" панели - на этой плате не используется */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t mask = (1U << 4); /* PF4 - RS of HD4408 */ \
-		arm_hardware_piof_outputs(mask, (state != 0) * mask);	/* PF4 MODE=state */ \
-	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 #if WITHKEYBOARD
 	/* PF5: pull-up second encoder button */

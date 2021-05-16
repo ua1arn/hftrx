@@ -64,13 +64,13 @@
 #if WITHINTEGRATEDDSP
 
 	//#define WITHUAC2		1	/* UAC2 support */
-	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+	#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 	#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 	#if WITHRTS96 || WITHRTS192
 		#define WITHUSBUACIN	1
 		#define WITHUSBUACIN2		1	/* формируются три канала передачи звука */
 	#else /* WITHRTS96 || WITHRTS192 */
-		#define WITHUSBUACIN
+		#define WITHUSBUACIN	1
 	#endif /* WITHRTS96 || WITHRTS192 */
 	//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 #endif /* WITHINTEGRATEDDSP */
@@ -741,7 +741,7 @@
 		__DSB(); \
 	} while (0)
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
@@ -791,20 +791,14 @@
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t DEmask = (1U << 13); /* PE13 */ \
-		if (demode != 0) break; \
 		/* const uint32_t VSYNC = (1U << 9); */ /* PI9 */ \
 		/* while ((GPIOI->IDR & VSYNC) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOI->IDR & VSYNC) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
-	/* управление состоянием сигнала MODE 7" панели */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t MODE = (1U << 4); /* PF4 - mode */ \
-		arm_hardware_piof_outputs(MODE, (state != 0) * MODE);	/* PF4 MODE=state */ \
-	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \

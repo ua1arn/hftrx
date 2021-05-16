@@ -428,12 +428,12 @@ void display_nextfb(void);				/* переключаем на следующий 
 void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 
-void tc358768_initialize(void);
+void tc358768_initialize(const videomode_t * vdmode);
 void tc358768_deinitialize(void);
-void panel_initialize(void);
+void panel_initialize(const videomode_t * vdmode);
 void panel_deinitialize(void);
 
-void sii9022_initialize(void);
+void sii9022_initialize(const videomode_t * vdmode);
 
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */

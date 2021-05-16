@@ -41,7 +41,7 @@ architecture tb of cic_128a_2iq_tb is
   signal in1_data : std_logic_vector (25 downto 0);
   signal in2_data : std_logic_vector (25 downto 0);
   signal in3_data : std_logic_vector (25 downto 0);
-  signal out_data : std_logic_vector (31 downto 0);
+  signal out_data : std_logic_vector (27 downto 0);
   signal out_channel : std_logic_vector (1 downto 0);
   signal out_startofpacket : std_logic;
   signal out_endofpacket   : std_logic;
@@ -68,7 +68,7 @@ architecture tb of cic_128a_2iq_tb is
       in1_data          : in  std_logic_vector (25 downto 0);
       in2_data          : in  std_logic_vector (25 downto 0);
       in3_data          : in  std_logic_vector (25 downto 0);
-      out_data          : out std_logic_vector (31 downto 0);
+      out_data          : out std_logic_vector (27 downto 0);
       out_channel       : out std_logic_vector (1 downto 0);
       out_startofpacket : out std_logic;
       out_endofpacket   : out std_logic;

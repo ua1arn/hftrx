@@ -20,8 +20,11 @@
 #include "codecs.h"
 
 #if WITHUSEFATFS
-	#include "sdcard.h"
+	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
+#if WITHUSESDCARD
+	#include "sdcard.h"
+#endif /* WITHUSESDCARD */
 
 #include <string.h>
 #include <ctype.h>
@@ -1402,7 +1405,7 @@ static FLASHMEM const struct afsetitempl aft [AGCSETI_COUNT] =
 		100,	// agc_t1
 		1,		// agc_release10
 		100,	// agc_t4
-		5,		// agc_thung10
+		0,		// agc_thung10
 		25,		// agc_scale
 #else
 		AGC_RATE_FLAT,		// agc_rate
@@ -2782,7 +2785,10 @@ struct nvmap
 	uint8_t gview3dss_mark;	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
+	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
+	uint8_t gwtfbeta100;	/* beta - парамеры видеофильтра водопада */
 #endif /* WITHSPECTRUMWF */
+
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
 #if WITHBCBANDS
 	uint8_t gbandsetbcast;	/* Broadcasting radio bands */
@@ -2833,6 +2839,7 @@ struct nvmap
 	uint8_t gdacscale;		/* Использование амплитуды сигнала с ЦАП передатчика - 0..100% */
 	uint16_t ggaindigitx;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	uint16_t ggaincwtx;		/* Увеличение усиления при передаче в CW режимах 50..100% */
+	uint16_t gdesignscale;	/* используется при калибровке параметров интерполятора */
 	uint8_t	gcwedgetime;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
@@ -3491,6 +3498,8 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
+	static uint_fast8_t gspecbeta100 = 25;	/* beta = 0.1 .. 1.0 */
+	static uint_fast8_t gwtfbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -4165,7 +4174,11 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHIF4DSP
 #if WITHTX
-	#if WITHTXCWREDUCE
+	static uint_fast16_t gdesignscale = 100;		/* используется при калибровке параметров интерполятора */
+	#if WITHTXCPATHCALIBRATE
+		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+	#elif WITHTXCWREDUCE
 		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
@@ -6409,6 +6422,20 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 	},
 #endif /* WITHELKEY && ! WITHPOTWPM */
 #if WITHTX
+#if WITHTXCPATHCALIBRATE
+	{
+		"TX CALIBR",
+		RJ_UNSIGNED,		// rj
+		ISTEP1,
+		0, 150,		/* используется при калибровке параметров интерполятора */
+		offsetof(struct nvmap, gdesignscale),
+		nvramoffs0,
+		& gdesignscale,
+		NULL,
+		getzerobase, /* складывается со смещением и отображается */
+		enc2menu_adjust,	/* функция для изменения значения параметра */
+	},
+#endif
 #if WITHPOWERTRIM && ! WITHPOTPOWER
 	{
 		"TX POWER ",
@@ -8232,7 +8259,7 @@ typedef struct
 
 static void hamradio_autonotch_init(LMSData_t * const lmsd)
 {
-	lmsd->phonefence = (powf(2, WITHAFDACWIDTH - 1) - 1);
+	lmsd->phonefence = 1;
 	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
@@ -8508,6 +8535,9 @@ static uint_fast8_t ispathprovessing(uint_fast8_t pathi)
 // обработка и сохранение в savesampleout16stereo_user()
 static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel_t * p)
 {
+	// FIXME: speex внутри использует целочисленные вычисления
+	static const float32_t ki = 32768;
+	static const float32_t ko = 1. / 32768;
 	const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
 	const uint_fast8_t pathsubmode = getsubmode(bi);
 	const uint_fast8_t mode = submodes [pathsubmode].mode;
@@ -8517,6 +8547,7 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
+	arm_scale_f32(p, ki, p, FIRBUFSIZE);
 #if WITHNOSPEEX
 	if (denoise)
 	{
@@ -8590,6 +8621,7 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 		nrp->outsp = nrp->wire1;
 	}
 #endif /* WITHNOSPEEX */
+	arm_scale_f32(nrp->outsp, ko, nrp->outsp, FIRBUFSIZE);
 }
 
 // user-mode processing
@@ -9058,7 +9090,7 @@ updateboardZZZ(
 			#if WITHIF4DSP
 				const uint_fast8_t agcseti = pamodetempl->agcseti;
 				board_set_agcrate(gagc [agcseti].rate);			/* на n децибел изменения входного сигнала 1 дБ выходного. UINT8_MAX - "плоская" АРУ */
-				board_set_agc_scale(gagc [agcseti].scale);
+				board_set_agc_scale(gagc [agcseti].scale);		/* Для эксперементов по улучшению приема АМ */
 				board_set_agc_t0(gagc [agcseti].t0);
 				board_set_agc_t1(gagc [agcseti].t1);
 				board_set_agc_t2(gagc [agcseti].release10);		// время разряда медленной цепи АРУ
@@ -9301,9 +9333,9 @@ updateboardZZZ(
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
 			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdb);		/* верхний предел FFT */
-			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBMAX : gbottomdb);		/* нижний предел FFT */
+			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdb);		/* нижний предел FFT */
 			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwf);		/* верхний предел FFT для водопада */
-			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBMAX : gbottomdbwf);		/* нижний предел FFT для водопада */
+			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
@@ -9311,10 +9343,11 @@ updateboardZZZ(
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
+			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
+			display2_set_filter_wtf(gwtfbeta100);	/* beta - парамеры видеофильтра водопада */
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
-
 	#if WITHAFEQUALIZER
 		board_set_equalizer_rx(geqrx);
 		board_set_equalizer_tx(geqtx);
@@ -9345,8 +9378,9 @@ updateboardZZZ(
 			// 0..10000
 			board_set_dacscale(getbandf2adjust(bandf3hint) * (unsigned long) gdacscale);
 		#endif /* CPUDAC */
-			board_set_gdigiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+			board_set_digiscale(ggaindigitx);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 			board_set_cwscale(ggaincwtx);	/* Увеличение усиления при передаче в CW режимах 50..100% */
+			board_set_designscale(gdesignscale);	/* используется при калибровке параметров интерполятора */
 			board_set_amdepth(gamdepth);	/* Глубина модуляции в АМ - 0..100% */
 			board_rgrbeep_setfreq(1000);	/* roger beep - установка тона */
 		}
@@ -9408,7 +9442,7 @@ updateboardZZZ(
 		board_set_tuner_bypass(1);
 	#endif /* WITHAUTOTUNER */
 
-		/* просто нстройки тракта и не относящиеся к приёму-пеердаче. */
+		/* просто настройки тракта и не относящиеся к приёму-пеердаче. */
 	#if WITHCAT
 		processcat_enable(catenable);
 		cat_set_speed(catbr2int [catbaudrate] * BRSCALE);
@@ -13626,7 +13660,7 @@ processmessages(
 // Запрос отложенного вызова user-mode функций
 uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 {
-	// предотвращение повторного включенияв очередь того же запроса
+	// предотвращение повторного включения в очередь того же запроса
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
@@ -13639,13 +13673,14 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
+	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
 	return 0;
 }
 
 // Запрос отложенного вызова user-mode функций
 uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2)
 {
-	// предотвращение повторного включенияв очередь того же запроса
+	// предотвращение повторного включения в очередь того же запроса
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
@@ -13659,13 +13694,14 @@ uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
+	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
 	return 0;
 }
 
 // Запрос отложенного вызова user-mode функций
 uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3)
 {
-	// предотвращение повторного включенияв очередь того же запроса
+	// предотвращение повторного включения в очередь того же запроса
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
@@ -13680,6 +13716,7 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
+	dpclock_exit(lp);	// освобождаем в случае невозможности получить буфер
 	return 0;
 }
 
@@ -14155,6 +14192,26 @@ static const FLASHMEM struct menudef menutable [] =
 		nvramoffs0,
 		NULL,
 		& gtxloopback,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("BETA PAN"), 7, 2, 0,	ISTEP1,
+		ITEM_VALUE,
+		10, 100,							/* beta - парамеры видеофильтра спектра */
+		offsetof(struct nvmap, gspecbeta100),
+		nvramoffs0,
+		NULL,
+		& gspecbeta100,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("BETA WTF"), 7, 2, 0,	ISTEP1,
+		ITEM_VALUE,
+		10, 100,							/* beta - парамеры видеофильтра водопада */
+		offsetof(struct nvmap, gwtfbeta100),
+		nvramoffs0,
+		NULL,
+		& gwtfbeta100,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
@@ -16837,6 +16894,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHENCODER2 */
 #endif /* WITHENCODER */
 
+#if WITHTX
 #if WITHIF4DSP
 	{
 		QLABEL("NFM GAIN"), 7, 1, 0,	ISTEP1,		/* дополнительное усиление по НЧ в режиме приёма NFM 100..1000% */
@@ -16861,6 +16919,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 #endif /* WITHIF4DSP */
+#endif /* WITHTX */
 
 #if defined(REFERENCE_FREQ)
 #if defined (DAC1_TYPE)
@@ -20538,6 +20597,17 @@ void hamradio_get_tx_power_limits(uint_fast8_t * min, uint_fast8_t * max)
 	* max = WITHPOWERTRIMMAX;
 }
 
+#else /* WITHPOWERTRIM */
+
+void hamradio_set_tx_power(uint_fast8_t v)
+{
+}
+
+uint_fast8_t hamradio_get_tx_power(void)
+{
+	return 0;
+}
+
 #endif /* WITHPOWERTRIM */
 
 #endif /* WITHTX */
@@ -21663,6 +21733,7 @@ void hamradio_save_gui_settings(const void * ptr)
 	}
 }
 
+#if WITHENCODER2
 void hamradio_gui_enc2_update(void)
 {
 	const char FLASHMEM * const text = enc2menu_label_P(enc2pos);
@@ -21672,6 +21743,11 @@ void hamradio_gui_enc2_update(void)
 	enc2_menu.state = enc2state;
 	gui_encoder2_menu(& enc2_menu);
 }
+#else /* WITHENCODER2 */
+void hamradio_gui_enc2_update(void)
+{
+}
+#endif /* WITHENCODER2 */
 #endif /* WITHTOUCHGUI */
 
 // основной цикл программы при работе в режиме любительского премника
@@ -21909,7 +21985,8 @@ void bootloader_copyapp(
 
 // Сюда попадаем из USB DFU клвсса при приходе команды
 // DFU_Detach после USBD_Stop
-void bootloader_detach(uintptr_t ip)
+static void
+bootloader_launch_app(uintptr_t ip)
 {
 	__disable_irq();
 	arm_hardware_flush_all();
@@ -21962,7 +22039,7 @@ void bootloader_deffereddetach(void * arg)
 			board_usb_deactivate();
 		board_usb_deinitialize();
 #endif /* WITHUSBHW */
-		bootloader_detach(ip);
+		bootloader_launch_app(ip);
 	}
 	else
 	{
@@ -22152,7 +22229,7 @@ static void bootloader_fatfs_mainloop(void)
 #if WITHDEBUG
 	local_delay_ms(100);
 #endif /* WITHDEBUG */
-	bootloader_detach(ip);
+	bootloader_launch_app(ip);
 #endif /* BOOTLOADER_RAMSIZE */
 }
 
@@ -22257,7 +22334,7 @@ ddd:
 	board_usb_deinitialize();
 #endif /* WITHUSBHW */
 #if BOOTLOADER_RAMSIZE
-	bootloader_detach(ip);
+	bootloader_launch_app(ip);
 #endif /* BOOTLOADER_RAMSIZE */
 }
 #endif /* WITHISBOOTLOADERFATFS */

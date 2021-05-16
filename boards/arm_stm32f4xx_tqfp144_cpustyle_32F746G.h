@@ -42,19 +42,22 @@
 #define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 #define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
 
-#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 #if 1
 	// use FS
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	//#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USB_OTG_FS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+
 #else
 	// USE HS with ULPI
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HIGHSPEEDULPI	1
 	//#define WITHUSBDEV_HIGHSPEEDPHYC	1
-	////#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+
 #endif
 
 #define WITHUART1HW	1	/* PA9, PB7 Используется периферийный контроллер последовательного порта #1 */
@@ -696,7 +699,7 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC = 14,  /* LCD-TFT Alternate Function mapping */
@@ -740,14 +743,14 @@
 		} while (0)
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t VSYNC = (1U << 9); \
 		const uint32_t mask = (1U << 12); \
 		while ((GPIOI->IDR & VSYNC) != 0) ; /* дождаться 0 */ \
 		while ((GPIOI->IDR & VSYNC) == 0) ; /* дождаться 1 */ \
 		arm_hardware_pioi_outputs(mask, ((state) != 0) * mask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 	#if WITHSDRAMHW
 		// Bootloader parameters

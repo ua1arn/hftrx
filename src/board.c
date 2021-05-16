@@ -7058,7 +7058,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 
 	//const enum struct_type struct_type = MCV;
 	const enum coef_store_type coef_store_type = M4K;
-	const int sym = 1;
+	const int SYM = 1;	// symmetrical
 	const enum poly_type poly_type = SGL;
 	const int num_cycles = 512;
 	//const int coef_bit_width = 25;
@@ -7076,7 +7076,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 	//PRINTF("single_rate_out_write_mcv: coef_length=%d, half_len=%d\n", coef_length, half_len);
 	//if (struct_type == MCV )
 	{
-		if (sym != 0 && (poly_type == SGL || poly_type == DEC))
+		if (SYM != 0 && (poly_type == SGL || poly_type == DEC))
 		{
 			coef_length = half_len;
 		}
@@ -7107,7 +7107,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 			mcv_reload_zero_insert = 0;
 		}
 
-		if (sym == 0)
+		if (SYM == 0)
 		{
 			zeros_insert = 0;
 		}
@@ -9276,6 +9276,7 @@ mcp3208_read(
 }
 #endif /* WITHSPIHW || WITHSPISW */
 
+#if ! CPUSTYLE_ATMEGA
 
 #if defined(RTC1_TYPE)
 
@@ -9374,3 +9375,6 @@ int _gettimeofday(struct timeval *p, void *tz)
 }
 
 #endif
+#endif /* ! CPUSTYLE_ATMEGA */
+
+

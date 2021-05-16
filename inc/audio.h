@@ -12,28 +12,6 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
-	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
-#else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
-	#define ARMI2SMCLKX(scale)	(ARMSAIMCLK * (uint_fast64_t) (scale) / 256)
-#endif /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
-
-#define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
-
-#if WITHDTMFPROCESSING
-
-	#define ARMI2SRATE			((unsigned long) 8000)	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATE100		((unsigned long) ARMI2SRATEX(100))
-
-#else /* WITHDTMFPROCESSING */
-
-	#define ARMI2SRATE			((unsigned long) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
-	#define ARMI2SRATE100		((unsigned long) (ARMI2SRATEX(100)))
-
-#endif /* WITHDTMFPROCESSING */
-
 #define MODEMBUFFERSIZE8	1024
 
 #if WITHUSEDUALWATCH
@@ -275,26 +253,6 @@ extern "C" {
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
 
-#if CODEC1_FRAMEBITS == 64
-
-	typedef int32_t aubufv_t;
-	typedef int_fast32_t aufastbufv_t;
-	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
-	/* масштабирование сэмплов */
-	#define AUDIO16TOAUB(v) (((v) * 65536L))	/* не забывать, аргумент может быть FLOAT */
-	#define AUBTOAUDIO16(v) ((v) / 65536L)	/* не забывать, аргумент может быть FLOAT */
-
-#else /* CODEC1_FRAMEBITS == 64 */
-
-	typedef int16_t aubufv_t;
-	typedef int_fast16_t aufastbufv_t;
-	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
-	/* масштабирование сэмплов (заглушки) */
-	#define AUDIO16TOAUB(v) (v)	/* не забывать, аргумент может быть FLOAT */
-	#define AUBTOAUDIO16(v) (v)	/* не забывать, аргумент может быть FLOAT */
-
-#endif /* CODEC1_FRAMEBITS == 64 */
-
 #define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
 #define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)	/* FPGA TX or IF CODEC TX	*/
@@ -531,16 +489,202 @@ typedef struct
 
 #endif /* WITHDSPLOCALFIR */
 
+#if CODEC1_FRAMEBITS == 64
+
+	/* параметры входного/выходного адаптеров */
+	#define WITHADAPTERAFADCWIDTH	24		// 1 бит знак и 23 бит значащих
+	#define WITHADAPTERAFADCSHIFT	8		// количество незанятых битов справа.
+	#define WITHADAPTERAFDACWIDTH	24		// 1 бит знак и 23 бит значащих
+	#define WITHADAPTERAFDACSHIFT	8		// количество незанятых битов справа.
+	typedef int32_t aubufv_t;
+	typedef int_fast32_t aufastbufv_t;
+	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+
+
+#else /* CODEC1_FRAMEBITS == 64 */
+
+	/* параметры входного/выходного адаптеров */
+	#define WITHADAPTERAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERAFADCSHIFT	0		// количество незанятых битов справа.
+	#define WITHADAPTERAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERAFDACSHIFT	0		// количество незанятых битов справа.
+	typedef int16_t aubufv_t;
+	typedef int_fast16_t aufastbufv_t;
+	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
+
+#endif /* CODEC1_FRAMEBITS == 64 */
+
+// xxx_ctlstyle_raven_v1, xxx_ctlstyle_nucleo
+	/* параметры входного/выходного адаптеров */
+//#define WITHIFDACWIDTH	32//24		// 1 бит знак и 23 бит значащих
+//#define WITHIFADCWIDTH	32//24		// 1 бит знак и 23 бит значащих
+
+// arm_stm32f4xx_tqfp144_ctlstyle_32F429DISCO
+// DDC Module 1
+/* параметры входного/выходного адаптеров */
+//#define WITHIFDACWIDTH	16 //32		// 1 бит знак и 31 бит значащих
+//#define WITHIFADCWIDTH	32//24 //32		// 1 бит знак и 31 бит значащих
+
+
+#if CPUSTYLE_XC7Z
+
+	/* параметры входного/выходного адаптеров */
+	// IF RX
+	#define WITHADAPTERIFADCWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	// RTS96
+	#define WITHADAPTERRTS96_WIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERRTS96_SHIFT	0		// количество незанятых битов справа.
+	// RTS192
+	#define WITHADAPTERRTS192_WIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
+	// IF TX
+	#define WITHADAPTERIFDACWIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
+	typedef int16_t IFADCvalue_t;	// элементы буфера DMA
+	typedef int16_t IFDACvalue_t;
+
+#elif 0
+
+	/* параметры входного/выходного адаптеров */
+	// IF RX
+	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	// RTS96
+	#define WITHADAPTERRTS96_WIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTS96_SHIFT	0		// количество незанятых битов справа.
+	// RTS192
+	#define WITHADAPTERRTS192_WIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
+	// IF TX
+	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
+	typedef int32_t IFADCvalue_t;
+	typedef int32_t IFDACvalue_t;
+
+
+#else /* CPUSTYLE_XC7Z */
+
+	/* параметры входного/выходного адаптеров */
+	// IF RX
+	#define WITHADAPTERIFADCWIDTH	28		// 1 бит знак и 27 бит значащих
+	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
+	// RTS96
+	#define WITHADAPTERRTS96_WIDTH	28		// 1 бит знак и 27 бит значащих
+	#define WITHADAPTERRTS96_SHIFT	0		// количество незанятых битов справа.
+	// RTS192
+	#define WITHADAPTERRTS192_WIDTH	32		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
+	// IF TX
+	#define WITHADAPTERIFDACWIDTH	28		// 1 бит знак и 27 бит значащих
+	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
+	typedef int32_t IFADCvalue_t;
+	typedef int32_t IFDACvalue_t;
+
+#endif /* CPUSTYLE_XC7Z */
+
+typedef struct adapter_tag
+{
+	FLOAT_t inputK;
+	FLOAT_t outputK;
+	FLOAT_t outputKexact;
+	int leftbit;
+	int rightspace;
+	int lshift32;	// input convrtsion
+	int rshift32;
+} adapter_t;
+
+typedef struct transform_tag
+{
+	int lshift32;
+	int rshift32;
+	int lshift64;
+	int rshift64;
+} transform_t;
+
+FLOAT_t adpt_input(const adapter_t * adp, int32_t v);
+int32_t adpt_output(const adapter_t * adp, FLOAT_t v);
+int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v);	// точное преобразование между внешними целочисленными представлениями.
+void adpt_initialize(adapter_t * adp, int leftbit, int rightspace);
+int32_t transform_do32(const transform_t * tfm, int32_t v); // точное преобразование между внешними целочисленными представлениями.
+int64_t transform_do64(const transform_t * tfm, int64_t v); // точное преобразование между внешними целочисленными представлениями.
+void transform_initialize(transform_t * tfm, const adapter_t * informat, const adapter_t * outformat);
+
+extern adapter_t afcodecio;
+extern adapter_t ifcodecin;
+extern adapter_t ifcodecout;
+extern adapter_t ifspectrumin;
+extern adapter_t uac48io;
+extern adapter_t rts96out;
+extern adapter_t rts192out;
+extern adapter_t sdcardio;
+extern transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+extern transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+
+// DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-	// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
-	//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
-	#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
-	#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.22
-	#define HARDWARE_DACSCALE	(0.82)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+	#if CPUSTYLE_XC7Z
+		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+		#define FPGADECIMATION 1024uL
+		#define FPGADIVIDERATIO 4uL
+		#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+		#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+
+		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+
+	#else /* CPUSTYLE_XC7Z */
+		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
+		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
+		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA
+		#define HARDWARE_COEFWIDTH	24		// Разрядность коэффициентов. format is S0.23
+		// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
+		//#define HARDWARE_DACSCALE	(0.88)	// stages=8, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+		#define HARDWARE_DACSCALE	(0.71)	// stages=9, на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
+
+		#define FPGADECIMATION 2560uL
+		#define FPGADIVIDERATIO 5uL
+		#define EXTI2S_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+		#define EXTSAI_FREQ (DUCDDC_FREQ / FPGADIVIDERATIO)
+
+		#define ARMI2SMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+		#define ARMSAIMCLK	(DUCDDC_FREQ / (FPGADECIMATION / 256))
+
+	#endif /* CPUSTYLE_XC7Z */
 #else
+	// калибровка делается при использовании параметра WITHTXCPATHCALIBRATE
 	#define HARDWARE_DACSCALE	(1)	// на сколько уменьшаем от возможного выходной код для предотвращения переполнения выходлного сумматора
 
 #endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
+
+#if WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN
+	#define ARMI2SMCLKX(scale)	(DUCDDC_FREQ * (uint_fast64_t) (scale) / FPGADECIMATION)
+#else /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
+	#define ARMI2SMCLKX(scale)	(ARMSAIMCLK * (uint_fast64_t) (scale) / 256)
+#endif /* WITHDSPEXTFIR && WITHI2SCLOCKFROMPIN */
+
+#define ARMSAIRATE		(ARMSAIMCLK / 256)	// SAI sample rate (FPGA/IF CODEC side)
+
+#if WITHDTMFPROCESSING
+
+	#define ARMI2SRATE			((unsigned long) 8000)	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SRATE * (scale)))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATE100		((unsigned long) ARMI2SRATEX(100))
+
+#else /* WITHDTMFPROCESSING */
+
+	#define ARMI2SRATE			((unsigned long) (ARMI2SMCLK / 256))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATEX(scale)	((unsigned long) (ARMI2SMCLKX(scale)))	// I2S sample rate audio codec (human side)
+	#define ARMI2SRATE100		((unsigned long) (ARMI2SRATEX(100)))
+
+#endif /* WITHDTMFPROCESSING */
 
 #if WITHDSPLOCALFIR
 	/* Фильтрация квадратур осуществляется процессором */
@@ -654,7 +798,7 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфе�
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1);
+void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
@@ -677,8 +821,8 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 
 uint32_t allocate_dmabuffer192rts(void);
 
-int get_lout16(void); // тестовые функции
-int get_rout16(void);
+FLOAT_t get_lout(void); // тестовые функции
+FLOAT_t get_rout(void);
 
 void prog_dsplreg(void);
 void prog_fltlreg(void);
@@ -688,7 +832,6 @@ void prog_dsplreg_update(void);
 void prog_fltlreg_update(void);
 void board_dsp1regchanged(void);
 void prog_codec1reg(void);
-
 
 void board_set_trxpath(uint_fast8_t v);	/* Тракт, к которому относятся все последующие вызовы. При перередаяе используется индекс 0 */
 void board_set_mikemute(uint_fast8_t v);	/* отключить микрофонный усилитель */
@@ -873,7 +1016,7 @@ void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 #endif /* WITHAFEQUALIZER */
 
 
-#if __STDC__
+#if __STDC__ && ! CPUSTYLE_ATMEGA
 
 #define MAXFLOAT	3.40282347e+38F
 
@@ -901,7 +1044,7 @@ void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 #define M_LOG2_E        _M_LN2
 #define M_INVLN2        1.4426950408889633870E0  /* 1 / log(2) */
 
-#endif
+#endif /* __STDC__ && ! CPUSTYLE_ATMEGA */
 
 #ifdef __cplusplus
 }

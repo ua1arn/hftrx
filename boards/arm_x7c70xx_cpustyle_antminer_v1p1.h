@@ -933,7 +933,7 @@
 	} while (0)
 #endif
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
@@ -981,20 +981,14 @@
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t VSmask = (1U << 4); 	/* PA4 - VSYNC */ \
 		const uint32_t DEmask = (1U << 13); /* PE13 */ \
-		if (demode != 0) break; \
 		/* while ((GPIOA->IDR & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOA->IDR & VSmask) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
-	/* управление состоянием сигнала MODE 7" панели */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t MODEmask = (1U << 3); /* PD3 - MODEmask */ \
-		arm_hardware_piod_outputs(MODEmask, (state != 0) * MODEmask); /* PF4 MODE=state */ \
-	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 	#if WITHSDRAMHW
 		// Bootloader parameters
