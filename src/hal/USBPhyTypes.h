@@ -45,15 +45,15 @@ enum  {
 };
 typedef uint8_t usb_ep_attr_t;
 
-struct usb_ep_entry_t {
+typedef struct usb_ep_entry_tag {
     usb_ep_attr_t attributes;
     uint8_t byte_cost;
     uint16_t base_cost;
-};
+} usb_ep_entry_t;
 
-struct usb_ep_table_t {
+typedef struct usb_ep_table_tag {
     uint32_t resources;
     usb_ep_entry_t table[16];
-};
+} usb_ep_table_t;
 
 #endif

@@ -947,7 +947,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 	{
 		// Прерывание CDC в компьютер из трансивера
 		const uint_fast8_t epnum = USBD_EP_CDCACM_INTSHARED;
-		const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
+		const uint_fast8_t pipe = USBPhyHw_EP2PIPE(epnum);
 		const uint_fast8_t dir = 1;
 		//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -975,7 +975,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		{
 			// Прерывание CDC в компьютер из трансивера
 			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_INT, offset);
-			const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
+			const uint_fast8_t pipe = USBPhyHw_EP2PIPE(epnum);
 			const uint_fast8_t dir = 1;
 			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -1000,7 +1000,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		{
 			// Данные CDC из компьютера в трансивер
 			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset);
-			const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
+			const uint_fast8_t pipe = USBPhyHw_EP2PIPE(epnum);
 			const uint_fast8_t dir = 0;
 			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
@@ -1024,7 +1024,7 @@ usbd_pipes_initialize(PCD_HandleTypeDef * hpcd)
 		{
 			// Данные CDC в компьютер из трансивера
 			const uint_fast8_t epnum = USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset);
-			const uint_fast8_t pipe = usbd_epaddr2pipe(epnum);
+			const uint_fast8_t pipe = USBPhyHw_EP2PIPE(epnum);
 			const uint_fast8_t dir = 1;
 			//PRINTF(PSTR("usbd_pipe_initialize: pipe=%u endpoint=%02X\n"), pipe, epnum);
 
