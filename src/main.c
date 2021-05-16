@@ -8647,9 +8647,9 @@ audioproc_spool_user(void)
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
 	#if WITHUSEDUALWATCH
-			deliveryfloat(& afoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [1].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& speexoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [1].outsp [i]);	// to AUDIO codec
 	#else /* WITHUSEDUALWATCH */
-			deliveryfloat(& afoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [0].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& speexoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [0].outsp [i]);	// to AUDIO codec
 	#endif /* WITHUSEDUALWATCH */
 		}
 		// Освобождаем буфер

@@ -971,8 +971,8 @@ void subscribefloat(deliverylist_t * head, subscribefloat_t * target, void * ctx
 void subscribeint(deliverylist_t * head, subscribeint32_t * target, void * ctx, void (* pfn)(void * ctx, int_fast32_t ch0, int_fast32_t ch1));
 
 extern deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
-extern deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
-extern deliverylist_t afoutfloat;	// выход приемника
+extern deliverylist_t speexoutfloat_user;	// выход sppeex и фильтра
+extern deliverylist_t afdemodoutfloat_rt;	// выход приемника
 
 #if WITHAFEQUALIZER
 

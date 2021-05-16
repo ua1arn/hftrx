@@ -4867,13 +4867,13 @@ static void save16demod(FLOAT_t ch0, FLOAT_t ch1)
 	#if WITHUSEDUALWATCH
 		const FLOAT32P_t i = { { ch0, ch1, }, };
 		const FLOAT32P_t o = filter_fir_rx_AUDIO_Pair2(i);
-		deliveryfloat(& afoutfloat, o.IV, o.QV);
+		deliveryfloat(& afdemodoutfloat_rt, o.IV, o.QV);
 	#else /* WITHUSEDUALWATCH */
 		const FLOAT_t o = filter_fir_rx_AUDIO_A(ch0);
-		deliveryfloat(& afoutfloat, o, o);
+		deliveryfloat(& afdemodoutfloat_rt, o, o);
 	#endif /* WITHUSEDUALWATCH */
 #else /* WITHSKIPUSERMODE */
-		deliveryfloat(& afoutfloat, ch0, ch1);
+		deliveryfloat(& afdemodoutfloat_rt, ch0, ch1);
 #endif /* WITHSKIPUSERMODE */
 }
 

@@ -619,6 +619,7 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 	return 0;
 }
 
+// in realime context
 static void
 savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -648,8 +649,8 @@ savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
-deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
-deliverylist_t afoutfloat;	// выход приемника
+deliverylist_t speexoutfloat_user;	// выход sppeex и фильтра
+deliverylist_t afdemodoutfloat_rt;	// выход приемника
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -665,23 +666,23 @@ void buffers_initialize(void)
 #if WITHINTEGRATEDDSP
 
 	deliverylist_initialize(& rtstargetsint);
-	deliverylist_initialize(& afoutfloat_user);
-	deliverylist_initialize(& afoutfloat);
+	deliverylist_initialize(& speexoutfloat_user);
+	deliverylist_initialize(& afdemodoutfloat_rt);
 
 
 #if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
 
 	// Обход user mode шумоподавителя
 	static subscribefloat_t afsample16register;
-	subscribefloat_user(& afoutfloat, & afsample16register, NULL, savesampleout16stereo_float);
+	subscribefloat_user(& afdemodoutfloat_rt, & afsample16register, NULL, savesampleout16stereo_float);
 
 #else /* WITHSKIPUSERMODE */
 
 	static subscribefloat_t afsample16register_user;
 	static subscribefloat_t afsample16register;
 
-	subscribefloat_user(& afoutfloat_user, & afsample16register_user, NULL, savesampleout16stereo_float_user);
-	subscribefloat_user(& afoutfloat, & afsample16register, NULL, savesampleout16tospeex);
+	subscribefloat_user(& speexoutfloat_user, & afsample16register_user, NULL, savesampleout16stereo_float_user);
+	subscribefloat_user(& afdemodoutfloat_rt, & afsample16register, NULL, savesampleout16tospeex);
 
 #endif /* WITHSKIPUSERMODE */
 
