@@ -530,24 +530,6 @@ typedef struct
 
 	/* параметры входного/выходного адаптеров */
 	// IF RX
-	#define WITHADAPTERIFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
-	// RTS96
-	#define WITHADAPTERRTS96_WIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHADAPTERRTS96_SHIFT	0		// количество незанятых битов справа.
-	// RTS192
-	#define WITHADAPTERRTS192_WIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
-	// IF TX
-	#define WITHADAPTERIFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
-	typedef int16_t IFADCvalue_t;	// элементы буфера DMA
-	typedef int16_t IFDACvalue_t;
-
-#elif 0
-
-	/* параметры входного/выходного адаптеров */
-	// IF RX
 	#define WITHADAPTERIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHADAPTERIFADCSHIFT	0		// количество незанятых битов справа.
 	// RTS96
