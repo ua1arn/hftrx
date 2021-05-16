@@ -31,8 +31,8 @@
 
 /***************************** Include Files *********************************/
 
-#include <xaxivdma.h>
-#include <xparameters.h>
+#include "xaxivdma.h"
+#include "xparameters.h"
 
 /************************** Constant Definitions *****************************/
 

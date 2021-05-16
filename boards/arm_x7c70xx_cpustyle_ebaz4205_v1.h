@@ -697,8 +697,8 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	#define TARGET_TWI_TWCK_MIO			62		// EMIO 62
-	#define TARGET_TWI_TWD_MIO			61		// EMIO 61
+	#define TARGET_TWI_TWCK_MIO			58		// EMIO 58
+	#define TARGET_TWI_TWD_MIO			57		// EMIO 57
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству

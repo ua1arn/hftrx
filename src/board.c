@@ -5898,7 +5898,9 @@ prog_dds1_ftw(const ftw_t * value)
 void 
 prog_rts1_ftw(const ftw_t * value)
 {
-#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
+#if CPUSTYLE_XC7Z
+	xc7z_dds_rts(value);
+#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
 	prog_fpga_freq1_rts(targetfpga1, value);

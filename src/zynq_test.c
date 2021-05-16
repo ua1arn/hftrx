@@ -15,18 +15,20 @@
 
 XAxiDma xc7z_axidma_af_tx;
 XGpio xc7z_nco;
-XLlFifo fifo;
-uintptr_t rx_buf = 0;
-size_t rx_buf_size = DMABUFFSIZE32RX * 2;
+XLlFifo rx_fifo;
 
 uintptr_t dma_invalidate32rx(uintptr_t addr);
-void xc7z_dma_intHandler_af_tx(void);
 void xc7z_if_fifo_inthandler(void);
 int XLlFifo_iRead_Aligned(XLlFifo *InstancePtr, void *BufPtr, unsigned WordCount);
 
 void xc7z_dds_ftw(const uint_least64_t * val)
 {
 	XGpio_DiscreteWrite(& xc7z_nco, 1, * val);
+}
+
+void xc7z_dds_rts(const uint_least64_t * val)
+{
+	XGpio_DiscreteWrite(& xc7z_nco, 2, * val);
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
@@ -54,23 +56,24 @@ void xc7z_dma_transmit(UINTPTR buffer, size_t buffer_len)
 
 void xc7z_if_fifo_init(void)
 {
-	XLlFifo_Config *pConfig = XLlFfio_LookupConfig(XPAR_AXI_FIFO_0_DEVICE_ID);
-	int xStatus = XLlFifo_CfgInitialize(& fifo,pConfig,pConfig->BaseAddress);
+	XLlFifo_Config * pConfig_rx = XLlFfio_LookupConfig(XPAR_AXI_FIFO_0_DEVICE_ID);
+	int xStatus = XLlFifo_CfgInitialize(& rx_fifo, pConfig_rx, pConfig_rx->BaseAddress);
 	if(XST_SUCCESS != xStatus) {
-		xil_printf("XLlFifo_CfgInitialize fail %d \n", xStatus);
+		xil_printf("rx_fifo CfgInitialize fail %d \n", xStatus);
 		ASSERT(0);
 	}
 
 	// Check for the Reset value
-	u32 Status = XLlFifo_Status(& fifo);
-	XLlFifo_IntClear(& fifo, 0xffffffff);
-	Status = XLlFifo_Status(& fifo);
+	u32 Status = XLlFifo_Status(& rx_fifo);
+	XLlFifo_IntClear(& rx_fifo, 0xffffffff);
+	Status = XLlFifo_Status(& rx_fifo);
 	if(Status != 0) {
-		xil_printf("XLlFifo reset fail %x \n", Status);
+		xil_printf("rx_fifo reset fail %x \n", Status);
 		ASSERT(0);
 	}
 
-	XLlFifo_IntEnable(& fifo, XLLF_INT_RFPF_MASK);
+	XLlFifo_IntDisable(& rx_fifo, XLLF_INT_ALL_MASK);
+	XLlFifo_IntEnable(& rx_fifo, XLLF_INT_RFPF_MASK);
 	arm_hardware_set_handler_realtime(XPAR_FABRIC_LLFIFO_0_VEC_ID, xc7z_if_fifo_inthandler);
 
 	Status = XGpio_Initialize(& xc7z_nco, XPAR_AXI_GPIO_0_DEVICE_ID);
@@ -105,13 +108,13 @@ void xc7z_if_fifo_inthandler(void)
 	static uint_fast8_t rx_stage = 0;
 	static uint_fast8_t rx_index = 0;
 
-	if ( XLlFifo_iRxOccupancy(& fifo) > DMABUFFSIZE32RX)
+	if (XLlFifo_iRxOccupancy(& rx_fifo) > DMABUFFSIZE32RX)
 	{
-		rx_buf = allocate_dmabuffer32rx();
-		XLlFifo_iRead_Aligned(& fifo, (uint32_t *) rx_buf, DMABUFFSIZE32RX);
+		XLlFifo_IntClear(& rx_fifo, XLLF_INT_RFPF_MASK);
+		uintptr_t rx_buf = allocate_dmabuffer32rx();
+		XLlFifo_iRead_Aligned(& rx_fifo, (uint32_t *) rx_buf, DMABUFFSIZE32RX);
 		processing_dmabuffer32rx(rx_buf);
 		release_dmabuffer32rx(rx_buf);
-		XLlFifo_IntClear(& fifo, XLLF_INT_RFPF_MASK);
 		rx_stage ++;
 	}
 

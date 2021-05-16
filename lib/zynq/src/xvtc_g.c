@@ -13,8 +13,8 @@
 *
 *******************************************************************/
 
-#include <xparameters.h>
-#include <xvtc.h>
+#include "xparameters.h"
+#include "xvtc.h"
 
 /*
 * The configuration table for devices

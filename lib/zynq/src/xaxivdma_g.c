@@ -13,8 +13,8 @@
 *
 *******************************************************************/
 
-#include <xaxivdma.h>
-#include <xparameters.h>
+#include "xparameters.h"
+#include "xaxivdma.h"
 
 /*
 * The configuration table for devices

@@ -24,8 +24,8 @@
 
 /***************************** Include Files *********************************/
 
-#include <xaxivdma.h>
-#include <xil_io.h>
+#include "xil_io.h"
+#include "xaxivdma.h"
 
 
 /************************** Constant Definitions *****************************/

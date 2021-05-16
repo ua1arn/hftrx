@@ -53,8 +53,8 @@
 extern "C" {
 #endif
 
-#include <xil_types.h>
-#include <xil_io.h>
+#include "xil_types.h"
+#include "xil_io.h"
 
 
 /************************** Constant Definitions *****************************/
