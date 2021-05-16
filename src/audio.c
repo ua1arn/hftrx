@@ -2027,14 +2027,9 @@ static void fir_design_windowbuffL(double *dWindow, int iCoefNum)
 // Масштабирование для симметричного фильтра
 static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
 {
-	const int j = NtapCoeffs(iCoefNum);
-	int iCnt;
 	if (dScale == 1)
 		return;
-	for (iCnt = 0; iCnt < j; iCnt ++)
-	{
-		dCoeff [iCnt] *= dScale;
-	}
+	arm_scale_f32(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));
 }
 
 // Масштабирование для симметричного фильтра
