@@ -494,6 +494,7 @@ static RAMBIG FLOAT_t ifspec_wndfn [WITHFFTSIZEWIDE];
 static RAMBIG FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
 #endif /* WITHAFSPECTRE */
 
+// Формирование массива оконной функции.
 static void buildsigwndifspec(void)
 {
 	int i;
@@ -6932,7 +6933,7 @@ static FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old va
 
 static RAMBIGDTCM FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
 static RAMBIGDTCM FLOAT_t Yold_wtf [ALLDX];
-static RAMBIGDTCM FLOAT_t Yold_fft [ALLDX];
+static RAMBIGDTCM FLOAT_t Yold_spe [ALLDX];
 
 static FLOAT_t filter_waterfall(
 	uint_fast16_t x
@@ -6950,9 +6951,11 @@ static FLOAT_t filter_spectrum(
 	uint_fast16_t x
 	)
 {
+	ASSERT(x < ARRAY_SIZE(spavgarray));
+	ASSERT(x < ARRAY_SIZE(Yold_spe));
 	const FLOAT_t val = spavgarray [x];
-	const FLOAT_t Y = Yold_fft [x] * spectrum_alpha + spectrum_beta * val;
-	Yold_fft [x] = Y;
+	const FLOAT_t Y = Yold_spe [x] * spectrum_alpha + spectrum_beta * val;
+	Yold_spe [x] = Y;
 	return Y;
 }
 
@@ -7768,7 +7771,7 @@ static void display2_spectrum(
 			for (x = 0; x < ALLDX; ++ x)
 			{
 				// логарифм - в вертикальную координату
-				uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+				const uint_fast16_t ynew = SPDY - 1 - dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				if (x != 0)
 					display_pixelbuffer_line(spectmonoscr, ALLDX, SPDY, x - 1, ylast, x, ynew);
 				ylast = ynew;
@@ -7856,7 +7859,7 @@ static void display2_spectrum(
 				{
 					if (i == 0)
 					{
-						int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
+						const int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
 						uint_fast16_t dy, j;
 						* colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, current_3dss_step) = val;
@@ -7961,7 +7964,7 @@ static void display2_spectrum(
 			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 			{
 				// ломанная
-				int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
+				const int val = dsp_mag2y(filter_spectrum(x), SPDY - 1, glob_topdb, glob_bottomdb);
 				uint_fast16_t ynew = SPY0 + SPDY - 1 - val;
 
 				if (glob_view_style == VIEW_COLOR) 		// раскрашенный цветовым градиентом спектр
@@ -8039,8 +8042,8 @@ static void wflshiftleft(uint_fast16_t pixels)
 		return;
 
 	// двигаем буфер усреднения значений WTF и FFT
-	memmove(& Yold_fft [0], & Yold_fft [pixels], (ALLDX - pixels) * sizeof Yold_fft [0]);
-	memset(& Yold_fft [ALLDX - pixels], 0x00, pixels * sizeof Yold_fft[0]);
+	memmove(& Yold_spe [0], & Yold_spe [pixels], (ALLDX - pixels) * sizeof Yold_spe [0]);
+	memset(& Yold_spe [ALLDX - pixels], 0x00, pixels * sizeof Yold_spe[0]);
 
 	memmove(& Yold_wtf [0], & Yold_wtf [pixels], (ALLDX - pixels) * sizeof Yold_wtf [0]);
 	memset(& Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof Yold_wtf[0]);
@@ -8080,10 +8083,10 @@ static void wflshiftright(uint_fast16_t pixels)
 		return;
 
 	// двигаем буфер усреднения значений WTF и FFT
-	memmove(& Yold_fft [pixels], & Yold_fft [0], (ALLDX - pixels) * sizeof Yold_fft [0]);
-	memset(& Yold_fft [0], 0x00, pixels * sizeof Yold_fft [0]);
+	memmove(& Yold_spe [pixels], & Yold_spe [0], (ALLDX - pixels) * sizeof Yold_spe [0]);
+	memset(& Yold_spe [0], 0x00, pixels * sizeof Yold_spe [0]);
 
-	memmove(& Yold_wtf [pixels], &Yold_wtf [0], (ALLDX - pixels) * sizeof Yold_wtf [0]);
+	memmove(& Yold_wtf [pixels], & Yold_wtf [0], (ALLDX - pixels) * sizeof Yold_wtf [0]);
 	memset(& Yold_wtf [0], 0x00, pixels * sizeof Yold_wtf [0]);
 
 
