@@ -5501,7 +5501,7 @@ enum
 		PGunused
 	};
 
-	#if TUNE_TOP > 100000000uL
+	#if 1//TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 	#else
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -5669,7 +5669,7 @@ enum
 			PGunused
 		};
 
-	#if TUNE_TOP > 100000000uL
+	#if 1//TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 	#else
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
