@@ -248,8 +248,12 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_BITA		0
-	#define ENCODER_BITB		0
+	#define ENCODER_BITA		59
+	#define ENCODER_BITB		60
+	#define ENCODER_GPIO_BANK	2
+	#define ENCODER_GPIO_MASK	3
+	#define ENCODER_GPIO_SHIFT	5
+	#define ENCODER_BY_SPOOL	1
 
 	// Выводы подключения енкодера #2
 	#define ENCODER2_BITA		54
@@ -260,6 +264,8 @@
 
 	#define ENCODER_INITIALIZE() \
 		do { \
+			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER_BITA, 0); \
+			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER_BITA, 0); \
 			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER2_BITA, 0); \
 			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER2_BITB, 0); \
 		} while (0)

@@ -712,6 +712,8 @@ hardware_get_encoder_bits(void)
 #elif WITHENCODER && defined (ENCODER_BITS)
 	const portholder_t v = ENCODER_INPUT_PORT;
 	return ((v & ENCODER_BITA) != 0) * 2 + ((v & ENCODER_BITB) != 0);	// Биты идут не подряд
+#elif WITHENCODER && CPUSTYLE_XC7Z && defined (ENCODER_GPIO_BANK)
+	return ((XGpioPs_Read(& xc7z_gpio, ENCODER_GPIO_BANK) >> ENCODER_GPIO_SHIFT) & ENCODER_GPIO_MASK);
 #else /* WITHENCODER */
 	return 0;
 #endif /* WITHENCODER */
