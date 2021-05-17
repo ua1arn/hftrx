@@ -791,19 +791,19 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		{
 			const portholder_t bitpos1 = power8((ipins >> 4) & 0x0F);
 			// EXTI_EXTICR2: PZ[7]..PA[7], PZ[6]..PA[6], PZ[5]..PA[5], PZ[4]..PA[4],
-			EXTI->EXTICR [1] = (EXTI->EXTICR [1] & ~ (EXTI_EXTICR1_EXTI0 * bitpos1)) | (portcode * bitpos1);
+			EXTI->EXTICR [1] = (EXTI->EXTICR [1] & ~ (EXTI_EXTICR2_EXTI4 * bitpos1)) | (portcode * bitpos1);
 			(void) EXTI->EXTICR [1];
 		}
 		{
 			const portholder_t bitpos2 = power8((ipins >> 8) & 0x0F);
 			// EXTI_EXTICR3: PZ[11]..PA[11], PZ[10]..PA[10], PZ[9]..PA[9], PZ[8]..PA[8],
-			EXTI->EXTICR [2] = (EXTI->EXTICR [2] & ~ (EXTI_EXTICR1_EXTI0 * bitpos2)) | (portcode * bitpos2);
+			EXTI->EXTICR [2] = (EXTI->EXTICR [2] & ~ (EXTI_EXTICR3_EXTI8 * bitpos2)) | (portcode * bitpos2);
 			(void) EXTI->EXTICR [2];
 		}
 		{
 			const portholder_t bitpos3 = power8((ipins >> 12) & 0x0F);
 			// EXTI_EXTICR4: PZ[15]..PA[15], PZ[14]..PA[14], PZ[13]..PA[13], PZ[12]..PA[12],
-			EXTI->EXTICR [3] = (EXTI->EXTICR [3] & ~ (EXTI_EXTICR1_EXTI0 * bitpos3)) | (portcode * bitpos3);
+			EXTI->EXTICR [3] = (EXTI->EXTICR [3] & ~ (EXTI_EXTICR4_EXTI12 * bitpos3)) | (portcode * bitpos3);
 			(void) EXTI->EXTICR [3];
 		}
 		#else
