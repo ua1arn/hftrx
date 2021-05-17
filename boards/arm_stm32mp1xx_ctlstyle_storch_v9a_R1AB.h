@@ -397,13 +397,16 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+		//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	(BOARD_FFTZOOM_POW2MAX * 2)	/* Количество перекрывающися буферов FFT спектра (2^param). */
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#if 1
+		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+		#if 0
 			#define WITHTOUCHGUI		1
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			64
@@ -411,12 +414,15 @@
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
-		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
-		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+		//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	(BOARD_FFTZOOM_POW2MAX * 2)	/* Количество перекрывающися буферов FFT спектра (2^param). */
 		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		//#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	#define WITHVIEW_3DSS		1

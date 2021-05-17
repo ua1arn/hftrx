@@ -376,7 +376,6 @@
 	////#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
@@ -394,13 +393,37 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFFTOVERLAPPOW2	5		/* Количество перекрывающися буферов FFT спектра (2^param). */
-	#define WITHFFTSIZEWIDE 	1024	/* Отображение спектра и волопада */
-	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-	//#define WITHDISPLAY_FPS		25
-	#define WITHDISPLAYSWR_FPS	25
+	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+		//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	(BOARD_FFTZOOM_POW2MAX * 2)	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 15
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+		#if 0
+			#define WITHTOUCHGUI		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA			64
+			#define FORMATFROMLIBRARY 	1
+			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#endif
+	#elif LCDMODE_LQ043T3DX02K
+		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+		//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	(BOARD_FFTZOOM_POW2MAX * 2)	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAYSWR_FPS 15
+		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		//#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	#define WITHVIEW_3DSS		1
+	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
