@@ -1655,7 +1655,7 @@ static double testgain_float_DCL(const double * dCoeff, int iCoefNum)
 // Calculate window function (blackman-harris, hamming, rectangular)
 FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 {
-	const int n = iCoefNum - 1;
+	const FLOAT_t n = iCoefNum - 1;
 	const FLOAT_t a = (FLOAT_t) M_TWOPI * iCnt / n;
 	const FLOAT_t a2 = 2 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	const FLOAT_t a3 = 3 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
@@ -1768,7 +1768,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 // Calculate window function (blackman-harris, hamming, rectangular)
 static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
 {
-	const int n = iCoefNum - 1;
+	const double n = iCoefNum - 1;
 	const double a = (double) M_TWOPI * iCnt / n;
 	const double a2 = 2 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	const double a3 = 3 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
