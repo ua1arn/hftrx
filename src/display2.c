@@ -494,22 +494,6 @@ static RAMBIG FLOAT_t ifspec_wndfn [WITHFFTSIZEWIDE];
 static RAMBIG FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
 #endif /* WITHAFSPECTRE */
 
-// Формирование массива оконной функции.
-static void buildsigwndifspec(void)
-{
-	int i;
-	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
-	{
-		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
-	}
-#if WITHAFSPECTRE
-	for (i = 0; i < WITHFFTSIZEAF; ++ i)
-	{
-		afspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEAF, BOARD_WTYPE_SPECTRUM);
-	}
-#endif /* WITHAFSPECTRE */
-}
-
 static void printsigwnd(void)
 {
 	int i;
@@ -7051,16 +7035,16 @@ void display2_set_filter_wtf(uint_fast8_t v)
 
 
 // IIR filter before decimation
-#define FFTZOOM_IIR_STAGES 9
+#define ZOOMFFT_DECIM_STAGES_IIR 9
 
 // Дециматор для Zoom FFT
-#define FFTZOOM_FIR_TAPS 4	// Maximum taps from all zooms
+#define ZOOMFFT_DECIM_STAGES_FIR 4	// Maximum taps from all zooms
 
 struct zoom_param
 {
 	unsigned zoom;
 	unsigned numTaps;
-	const float32_t * pCoeffs;
+	const float32_t * pFIRCoeffs;
 	const float32_t * pIIRCoeffs;
 };
 
@@ -7069,54 +7053,30 @@ static const struct zoom_param zoom_params [] =
 	// x2 zoom lowpass
 	{
 		.zoom = 2,
-		.numTaps = FFTZOOM_FIR_TAPS,
-		.pCoeffs = (const float32_t[])
-		{
-			475.1179397144384210E-6,0.503905202786044337,0.503905202786044337,475.1179397144384210E-6
-		},
-		.pIIRCoeffs = (const float32_t[])
-		{
-			0.8532925292044,0,0,0,0,1,0.8833322961087,1,0.1236299808214,-0.7350834072447,0.9875433620142,0,0,0,0,1,1.342280599073,1,0.4562397651846,-0.4782312921079,2.028993125202,0,0,0,0,1,1.89580631004,1,0.8042973736597,-0.2291792806388,0.007914495910771,0,0,0,0,1,0.6767766059742,1,-0.04594374270934,-0.9200030070288,1,0,0,0,0
-		},
+		.numTaps = ZOOMFFT_DECIM_STAGES_FIR,
+		.pFIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
+		.pIIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.8384843639921, 0, 0, 0, 0, 1, 0.5130084793341, 1, 0.1784114407685, -0.6967733943344, 0.8744089756375, 0, 0, 0, 0, 1, 1.046379755684, 1, 0.3420998857106, -0.3982809814397, 1.83222755502, 0, 0, 0, 0, 1, 1.831496024383, 1, 0.5072844084012, -0.1179052535088, 0.01953722920982, 0, 0, 0, 0, 1, 0.3029841730578, 1, 0.09694668293684, -0.9095549467394, 1, 0, 0, 0, 0},
 	},
 	// x4 zoom lowpass
 	{
 		.zoom = 4,
-		.numTaps = FFTZOOM_FIR_TAPS,
-		.pCoeffs = (const float32_t[])
-		{
-			0.198273254218889416,0.298085149879260325,0.298085149879260325,0.198273254218889416
-		},
-		.pIIRCoeffs = (const float32_t[])
-		{
-			0.5839356339838,0,0,0,0,1,-0.771972117459,1,1.343915676465,-0.8135916285663,0.4782836785149,0,0,0,0,1,-0.136902479699,1,1.384012938487,-0.6599241585437,0.5710926297269,0,0,0,0,1,1.460561429795,1,1.42850177555,-0.5347308564118,0.006193916545061,0,0,0,0,1,-0.9693891605869,1,1.34943197558,-0.9418065619339,1,0,0,0,0
-		},
+		.numTaps = ZOOMFFT_DECIM_STAGES_FIR,
+		.pFIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
+		.pIIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6737499659657, 0, 0, 0, 0, 1, -1.102065194995, 1, 1.353694541279, -0.7896377861467, 0.53324811147, 0, 0, 0, 0, 1, -0.5853766477218, 1, 1.289175897987, -0.5882714065646, 0.6143152247695, 0, 0, 0, 0, 1, 1.182778527244, 1, 1.236309127239, -0.4063767082903, 0.01708381580242, 0, 0, 0, 0, 1, -1.245590418009, 1, 1.418191929315, -0.9374008035325, 1, 0, 0, 0, 0},
 	},
 	// x8 zoom lowpass
 	{
 		.zoom = 8,
-		.numTaps = FFTZOOM_FIR_TAPS,
-		.pCoeffs = (const float32_t[])
-		{
-			0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871
-		},
-		.pIIRCoeffs = (const float32_t[])
-		{
-			0.5178801132175,0,0,0,0,1,-1.62922673236,1,1.770291824795,-0.8960576854358,0.3574467243734,0,0,0,0,1,-1.330391295344,1,1.735672241982,-0.8097828924848,0.2223906792886,0,0,0,0,1,0.3866929321081,1,1.711258208935,-0.7397883181276,0.005701993747067,0,0,0,0,1,-1.703569409977,1,1.811062635903,-0.9679132120413,1,0,0,0,0
-		},
+		.numTaps = ZOOMFFT_DECIM_STAGES_FIR,
+		.pFIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
+		.pIIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6469981129046, 0, 0, 0, 0, 1, -1.750671284068, 1, 1.766710155669, -0.8829517893283, 0.4645312725883, 0, 0, 0, 0, 1, -1.553480572725, 1, 1.681513354365, -0.7637556184482, 0.2925692260954, 0, 0, 0, 0, 1, -0.1114766808264, 1, 1.601891439147, -0.6499504503566, 0.01652325734055, 0, 0, 0, 0, 1, -1.797298202754, 1, 1.831125104215, -0.9660534813317, 1, 0, 0, 0, 0},
 	},
 	// x16 zoom lowpass
 	{
 		.zoom = 16,
-		.numTaps = FFTZOOM_FIR_TAPS,
-		.pCoeffs = (const float32_t[])
-		{
-			0.199820836596682871,0.272777397353925699,0.272777397353925699,0.199820836596682871
-		},
-		.pIIRCoeffs = (const float32_t[])
-		{
-			0.5069794114512,0,0,0,0,1,-1.902257527901,1,1.913369602099,-0.9458258835145,0.3329212537442,0,0,0,0,1,-1.812084985979,1,1.880217497722,-0.8995884608839,0.1315803997161,0,0,0,0,1,-0.935339884295,1,1.853769133777,-0.8612990906983,0.005593913991087,0,0,0,0,1,-1.923016831809,1,1.943527765596,-0.9834898311558,1,0,0,0,0
-		},
+		.numTaps = ZOOMFFT_DECIM_STAGES_FIR,
+		.pFIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_FIR]){-0.05698952454792, 0.5574889164132, 0.5574889164132, -0.05698952454792},
+		.pIIRCoeffs = (const float32_t [ZOOMFFT_DECIM_STAGES_IIR * 5]){0.6500044972642, 0, 0, 0, 0, 1, -1.935616780918, 1, 1.908632776595, -0.9387888949475, 0.4599444315799, 0, 0, 0, 0, 1, -1.880017827578, 1, 1.851418291083, -0.8732990221737, 0.2087317940803, 0, 0, 0, 0, 1, -1.278402634611, 1, 1.794539349192, -0.80764043772, 0.01645106748385, 0, 0, 0, 0, 1, -1.948135342532, 1, 1.948194658987, -0.9825675157696, 1, 0, 0, 0, 0},
 	},
 };
 
@@ -7205,6 +7165,8 @@ static unsigned filleds [NOVERLAP]; // 0..LARGEFFT-1
 static void
 saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 {
+	const FLOAT_t ivf = adpt_input(& ifspectrumin, qv);	// нормализованное к -1..+1
+	const FLOAT_t qvf = adpt_input(& ifspectrumin, iv);	// нормализованное к -1..+1
 	unsigned i;
 	for (i = 0; i < NOVERLAP; ++ i)
 	{
@@ -7221,8 +7183,8 @@ saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 		}
 		fftbuff_t * const pf = * ppf;
 
-		pf->largebuffI [filleds [i]] = adpt_input(& ifspectrumin, qv);	// нормализованное к -1..+1
-		pf->largebuffQ [filleds [i]] = adpt_input(& ifspectrumin, iv);
+		pf->largebuffI [filleds [i]] = ivf;
+		pf->largebuffQ [filleds [i]] = qvf;
 
 		if (++ filleds [i] >= LARGEFFT)
 		{
@@ -7261,10 +7223,10 @@ void fftbuffer_initialize(void)
 
 union states
 {
-	float32_t iir_state [FFTZOOM_IIR_STAGES * 4];
-	float32_t fir_state [FFTZOOM_FIR_TAPS + LARGEFFT - 1];
+	float32_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 4];
+	float32_t fir_state [ZOOMFFT_DECIM_STAGES_FIR + LARGEFFT - 1];
 	float32_t cmplx_sig [NORMALFFT * 2];
-	uint16_t rbfimage_dummy [1];	// для предотвращения ругнаи компилятора на приведение типов
+	uint16_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
 };
 
 #if (CPUSTYLE_R7S721 || 0)
@@ -7285,11 +7247,77 @@ const uint16_t * getrbfimage(size_t * count)
 
 #define zoomfft_st (* (union states *) rbfimage0)
 
-#else /* (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
+#else /* (CPUSTYLE_R7S721 || 0) */
 
 static RAMBIGDTCM union states zoomfft_st;
 
-#endif /* (CPUSTYLE_R7S721 || CPUSTYLE_STM32MP1) */
+#endif /* (CPUSTYLE_R7S721 || 0) */
+
+void arm_biquad_cascade_df2T_f32_rolled(const arm_biquad_cascade_df2T_instance_f32 * S,const float32_t * pSrc,float32_t * pDst,uint32_t blockSize)
+{
+  const float32_t *pIn = pSrc;                         /* Source pointer */
+        float32_t *pOut = pDst;                        /* Destination pointer */
+        float32_t *pState = S->pState;                 /* State pointer */
+  const float32_t *pCoeffs = S->pCoeffs;               /* Coefficient pointer */
+        float32_t acc1;                                /* Accumulator */
+        float32_t b0, b1, b2, a1, a2;                  /* Filter coefficients */
+        float32_t Xn1;                                 /* Temporary input */
+        float32_t d1, d2;                              /* State variables */
+        uint32_t sample, stage = S->numStages;         /* Loop counters */
+
+  do
+  {
+     /* Reading the coefficients */
+     b0 = pCoeffs[0];
+     b1 = pCoeffs[1];
+     b2 = pCoeffs[2];
+     a1 = pCoeffs[3];
+     a2 = pCoeffs[4];
+
+     /* Reading the state values */
+     d1 = pState[0];
+     d2 = pState[1];
+
+     pCoeffs += 5U;
+
+      /* Initialize blkCnt with number of samples */
+      sample = blockSize;
+
+      while (sample > 0U) {
+        Xn1 = *pIn++;
+
+        acc1 = b0 * Xn1 + d1;
+
+        d1 = b1 * Xn1 + d2;
+        d1 += a1 * acc1;
+
+        d2 = b2 * Xn1;
+        d2 += a2 * acc1;
+
+        *pOut++ = acc1;
+
+        /* decrement loop counter */
+        sample--;
+      }
+
+      /* Store the updated state variables back into the state array */
+      pState[0] = d1;
+      pState[1] = d2;
+
+      pState += 2U;
+
+      /* The current stage output is given as the input to the next stage */
+      pIn = pDst;
+
+      /* Reset the output working pointer */
+      pOut = pDst;
+
+      /* decrement loop counter */
+      stage--;
+
+   } while (stage > 0U);
+
+}
 
 static void fftzoom_filer_decimate_ifspectrum(
 	const struct zoom_param * const prm,
@@ -7305,14 +7333,20 @@ static void fftzoom_filer_decimate_ifspectrum(
 
 	// Biquad LPF фильтр
 	// Initialize floating-point Biquad cascade filter.
-	arm_biquad_cascade_df2T_init_f32(& c.iir_config, FFTZOOM_IIR_STAGES, prm->pIIRCoeffs, zoomfft_st.iir_state);
-	arm_biquad_cascade_df2T_f32(& c.iir_config, buffer, buffer, usedSize);
+	arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, zoomfft_st.iir_state);
+#if defined(ARM_MATH_NEON)
+#error Need investigantions (see prm->pIIRCoeffs size)
+	arm_biquad_cascade_df2T_compute_coefs_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs);
+#endif /* defined(ARM_MATH_NEON) */
+	// TODO: ask UA3REO for comments about arm_biquad_cascade_df2T_f32_rolled
+	arm_biquad_cascade_df2T_f32_rolled(& c.iir_config, buffer, buffer, usedSize);
+	//arm_biquad_cascade_df2T_f32(& c.iir_config, buffer, buffer, usedSize);
 
 	// Дециматор
 	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& c.fir_config,
 						prm->numTaps,
 						prm->zoom,          // Decimation factor
-						prm->pCoeffs,
+						prm->pFIRCoeffs,
 						zoomfft_st.fir_state,            // Filter state variables
 						usedSize));
 	arm_fir_decimate_f32(& c.fir_config, buffer, buffer, usedSize);
@@ -7331,7 +7365,7 @@ static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT
 		VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& fir_config,
 							prm->numTaps,
 							prm->zoom,          // Decimation factor
-							prm->pCoeffs,
+							prm->pFIRCoeffs,
 							zoomfft_st.fir_state,       	// Filter state variables
 							usedSize));
 
@@ -7441,20 +7475,23 @@ display2_wfl_init(
 	)
 {
 	static subscribeint32_t rtsregister;
-
-	buildsigwndifspec();
+	int i;
+	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
+	{
+		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
+	}
 	//printsigwnd();	// печать оконных коэффициентов для формирования таблицы во FLASH
 	//toplogdb = LOG10F((FLOAT_t) INT32_MAX / waterfalrange);
 	fftbuffer_initialize();
 
 	subscribeint_user(& rtstargetsint, & rtsregister, NULL, saveIQRTSxx);
 
-	// Код взят из проекта Malamute
+	// Код взят из проекта Malamute (R3DI)
 	//PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
-	int i;
 	if (PALETTESIZE == 256)
 	{
 #if ! defined (COLORPIP_SHADED)
+		int i;
 		// Init 256 colors palette
 		ASSERT(PALETTESIZE == 256);
 		for (i = 0; i < PALETTESIZE; ++ i)

@@ -1764,6 +1764,44 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 	}
 }
 
+#if 0
+// takem from Wolf project (UA3REO)
+//Windowing
+//Dolphâ€“Chebyshev
+{
+	const float64_t atten = 100.0;
+	float64_t max = 0.0;
+	float64_t tg = pow(10.0, atten / 20.0);
+	float64_t x0 = cosh((1.0 / ((float64_t)FFT_SIZE - 1.0)) * acosh(tg));
+	float64_t M = (FFT_SIZE - 1) / 2;
+	if ((FFT_SIZE % 2) == 0)
+		M = M + 0.5; /* handle even length windows */
+	for (uint32_t nn = 0; nn < ((FFT_SIZE / 2) + 1); nn++)
+	{
+		float64_t n = nn - M;
+		float64_t sum = 0.0;
+		for (uint32_t i = 1; i <= M; i++)
+		{
+			float64_t cheby_poly = 0.0;
+			float64_t cp_x = x0 * cos(M_PI * i / (float64_t)FFT_SIZE);
+			float64_t cp_n = FFT_SIZE - 1;
+			if (fabs(cp_x) <= 1)
+				cheby_poly = cos(cp_n * acos(cp_x));
+			else
+				cheby_poly = cosh(cp_n * acosh(cp_x));
+
+			sum += cheby_poly * cos(2.0 * n * M_PI * (float64_t)i / (float64_t)FFT_SIZE);
+		}
+		window_multipliers[nn] = tg + 2 * sum;
+		window_multipliers[FFT_SIZE - nn - 1] = window_multipliers[nn];
+		if (window_multipliers[nn] > max)
+			max = window_multipliers[nn];
+	}
+	for (uint32_t nn = 0; nn < FFT_SIZE; nn++)
+		window_multipliers[nn] /= max; /* normalise everything */
+}
+
+#endif
 
 // Calculate window function (blackman-harris, hamming, rectangular)
 static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
