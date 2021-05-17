@@ -285,7 +285,7 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 	if ((DMA1->LISR & DMA_LISR_TCIF3) != 0)
 	{
 		DMA1->LIFCR = DMA_LIFCR_CTCIF3;	// Clear TC interrupt flag
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream3->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -314,7 +314,7 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 	if ((DMA1->LISR & DMA_LISR_TCIF0) != 0)
 	{
 		DMA1->LIFCR = DMA_LIFCR_CTCIF0;	// Clear TC interrupt flag
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream0->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -344,7 +344,7 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 	if ((DMA1->HISR & DMA_HISR_TCIF4) != 0)
 	{
 		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream4->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -1446,7 +1446,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 	if ((DMA2->HISR & DMA_HISR_TCIF5) != 0)
 	{
 		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream5->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -1477,7 +1477,7 @@ void DMA2_Stream1_IRQHandler(void)
 	if ((DMA2->LISR & DMA_LISR_TCIF1) != 0)
 	{
 		DMA2->LIFCR = DMA_LIFCR_CTCIF1;	// Clear TC interrupt flag
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		ASSERT((SAI1_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream1->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -2053,7 +2053,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_AUDIO48(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2083,7 +2083,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_32RX(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2115,7 +2115,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_32WFM(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2147,7 +2147,7 @@ void DMA2_Stream4_IRQHandler_16codec(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2177,7 +2177,7 @@ void DMA2_Stream4_IRQHandler_32txsub(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2882,7 +2882,7 @@ enum
 
 static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 {
-	__DMB();
+	//__DMB();
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2910,7 +2910,7 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 
 static void r7s721_ssif0_txdma(void)
 {
-	__DMB();
+	//__DMB();
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -3144,7 +3144,7 @@ static const codechw_t audiocodec_ssif0 =
 
 static void r7s721_ssif1_txdma(void)
 {
-	__DMB();
+	//__DMB();
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -3172,7 +3172,7 @@ static void r7s721_ssif1_txdma(void)
 
 static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 {
-	__DMB();
+	//__DMB();
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -3409,7 +3409,7 @@ static const codechw_t fpgacodechw_ssif1 =
 
 static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_handler(void)
 {
-	__DMB();
+	//__DMB();
 	DMAC4.CHCFG_n |= DMAC4_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
