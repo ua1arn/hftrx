@@ -856,18 +856,21 @@
 	} while (0)
 
 #if WITHLTDCHW
-	enum
-	{
-		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
-		GPIO_AF_LTDC9 = 9,  /* LCD-TFT Alternate Function mapping */
-		//GPIO_AF_LTDC3 = 3  /* LCD-TFT Alternate Function mapping */
-	};
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		const uint32_t MODEmask = (1U << 3); /* PD3 - MODEmask */ \
+		enum \
+		{ \
+			GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */ \
+			GPIO_AF_LTDC9 = 9,  /* LCD-TFT Alternate Function mapping */ \
+			GPIO_AF_LTDC3 = 3  /* LCD-TFT Alternate Function mapping */ \
+		}; \
+		const uint32_t MODEmask = (1U << 3); /* PD3 - FPLCD_CD */ \
+		const uint32_t RESETmask = (1U << 4); /* PD4 - FPLCD_RESET */ \
 		const uint32_t DEmask = (1U << 13); /* PE13 - DE */ \
 		const uint32_t HSmask = (1U << 6); /* PC6 - HSYNC */ \
 		const uint32_t VSmask = (1U << 4); 	/* PA4 - VSYNC */ \
+		/* LCD RESET */ \
+		arm_hardware_piod_outputs2m(RESETmask, RESETmask); /* PD4 - FPLCD_RESET */ \
 		/* Bit clock */ \
 		arm_hardware_piog_altfn50((1U << 7), GPIO_AF_LTDC14);		/* CLK PG7 */ \
 		/* Control */ \
