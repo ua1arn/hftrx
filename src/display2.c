@@ -7641,11 +7641,11 @@ display_colorgrid_3dss(
 
 #if WITHVIEW_3DSS
 enum {
-#if DIM_X == 480 && DIM_Y == 272
+#if DSTYLE_G_X480_Y272
 	MAX_3DSS_STEP = 21,
-#else
+#else /* DSTYLE_G_X480_Y272 */
 	MAX_3DSS_STEP = 42,
-#endif
+#endif /* DSTYLE_G_X480_Y272 */
 	Y_STEP = 2,
 	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,
@@ -7858,8 +7858,8 @@ static void display2_spectrum(
 					{
 						static uint_fast16_t x_old = 0;
 
-						uint_fast16_t x_d = * depth_map_3dss ++;
-						x_d |= (* depth_map_3dss ++) << 8;
+						uint_fast16_t x_d = * depth_map_3dss ++ & UINT8_MAX;
+						x_d |= (* depth_map_3dss ++ & UINT8_MAX) << 8;
 
 						if (x_old != x_d)
 						{
@@ -7891,8 +7891,8 @@ static void display2_spectrum(
 			ylast_sp = spy;
 			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 			{
-				uint_fast16_t y1 = * y_env ++;
-				y1 |= (* y_env ++) << 8;
+				uint_fast16_t y1 = * y_env ++ & UINT8_MAX;
+				y1 |= (* y_env ++ & UINT8_MAX) << 8;
 
 				if (x)
 					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_BLACK, 0);
