@@ -3498,8 +3498,8 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
-	static uint_fast8_t gspecbeta100 = 25;	/* beta = 0.1 .. 1.0 */
-	static uint_fast8_t gwtfbeta100 = 50;	/* beta = 0.1 .. 1.0 */
+	static uint_fast8_t gspecbeta100 = 80;	/* beta = 0.1 .. 1.0 */
+	static uint_fast8_t gwtfbeta100 = 80;	/* beta = 0.1 .. 1.0 */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
