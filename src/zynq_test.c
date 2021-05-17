@@ -4,20 +4,32 @@
 #include "formats.h"
 #include <math.h>
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER
 #include "lib/zynq/src/xaxidma.h"
 #include "lib/zynq/src/xaxidma_bdring.h"
 #include "lib/zynq/src/xparameters.h"
 #include "lib/zynq/src/xil_types.h"
 #include "lib/zynq/src/xstatus.h"
-
-#define DATA_FIFO_FABRIC_INTERRUPT		63
+#include "lib/zynq/src/xgpio.h"
+#include "lib/zynq/src/xllfifo.h"
 
 XAxiDma xc7z_axidma_af_tx;
-XAxiDma xc7z_axidma_if_rx;
+XGpio xc7z_nco;
+XLlFifo rx_fifo;
 
 uintptr_t dma_invalidate32rx(uintptr_t addr);
-void xc7z_dma_intHandler_af_tx(void);
+void xc7z_if_fifo_inthandler(void);
+int XLlFifo_iRead_Aligned(XLlFifo *InstancePtr, void *BufPtr, unsigned WordCount);
+
+void xc7z_dds_ftw(const uint_least64_t * val)
+{
+	XGpio_DiscreteWrite(& xc7z_nco, 1, * val);
+}
+
+void xc7z_dds_rts(const uint_least64_t * val)
+{
+	XGpio_DiscreteWrite(& xc7z_nco, 2, * val);
+}
 
 // Сейчас эта память будет записываться по DMA куда-то
 // Потом содержимое не требуется
@@ -30,23 +42,48 @@ xdma_flush16tx(uintptr_t addr)
 	return addr;
 }
 
-void xc7z_dma_transmit(XAxiDma * dmaptr, UINTPTR buffer, size_t buffer_len)
+void xc7z_dma_transmit(UINTPTR buffer, size_t buffer_len)
 {
 	arm_hardware_flush((uintptr_t) buffer, buffer_len);
 	int Status = XAxiDma_SimpleTransfer(& xc7z_axidma_af_tx, buffer, buffer_len, XAXIDMA_DMA_TO_DEVICE);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF("dma transfet error %d\n", Status);
+		PRINTF("dma transmit error %d\n", Status);
+		ASSERT(0);
+	}
+	while(XAxiDma_Busy(& xc7z_axidma_af_tx, XAXIDMA_DMA_TO_DEVICE));
+}
+
+void xc7z_if_fifo_init(void)
+{
+	XLlFifo_Config * pConfig_rx = XLlFfio_LookupConfig(XPAR_AXI_FIFO_0_DEVICE_ID);
+	int xStatus = XLlFifo_CfgInitialize(& rx_fifo, pConfig_rx, pConfig_rx->BaseAddress);
+	if(XST_SUCCESS != xStatus) {
+		xil_printf("rx_fifo CfgInitialize fail %d \n", xStatus);
+		ASSERT(0);
+	}
+
+	// Check for the Reset value
+	u32 Status = XLlFifo_Status(& rx_fifo);
+	XLlFifo_IntClear(& rx_fifo, 0xffffffff);
+	Status = XLlFifo_Status(& rx_fifo);
+	if(Status != 0) {
+		xil_printf("rx_fifo reset fail %x \n", Status);
+		ASSERT(0);
+	}
+
+	XLlFifo_IntDisable(& rx_fifo, XLLF_INT_ALL_MASK);
+	XLlFifo_IntEnable(& rx_fifo, XLLF_INT_RFPF_MASK);
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_LLFIFO_0_VEC_ID, xc7z_if_fifo_inthandler);
+
+	Status = XGpio_Initialize(& xc7z_nco, XPAR_AXI_GPIO_0_DEVICE_ID);
+	if (Status != XST_SUCCESS) {
+		PRINTF("nco init error %d\n", Status);
 		ASSERT(0);
 	}
 }
 
-static void xc7z_dma_init_rx(void)
-{
-
-}
-
-static void xc7z_dma_init_tx(void)
+void xc7z_dma_init_af_tx(void)
 {
 	XAxiDma_Config * txConfig = XAxiDma_LookupConfig(XPAR_AXI_DMA_0_DEVICE_ID);
 	int Status = XAxiDma_CfgInitialize(& xc7z_axidma_af_tx, txConfig);
@@ -64,60 +101,30 @@ static void xc7z_dma_init_tx(void)
 
 	XAxiDma_IntrDisable(& xc7z_axidma_af_tx, XAXIDMA_IRQ_ALL_MASK, XAXIDMA_DEVICE_TO_DMA);
 	XAxiDma_IntrDisable(& xc7z_axidma_af_tx, XAXIDMA_IRQ_ALL_MASK, XAXIDMA_DMA_TO_DEVICE);
-	XAxiDma_IntrEnable(& xc7z_axidma_af_tx, XAXIDMA_IRQ_ALL_MASK, XAXIDMA_DMA_TO_DEVICE);
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXIDMA_0_VEC_ID, xc7z_dma_intHandler_af_tx);
 }
 
-void xc7z_dma_init_af_tx(void)
+void xc7z_if_fifo_inthandler(void)
 {
-	xc7z_dma_init_tx();
+	static uint_fast8_t rx_stage = 0;
+	static uint_fast8_t rx_index = 0;
 
-	// пнуть для запуска прерываний, без этого не идут
-	double amp = 16383;
-	static u32 buf[128] __attribute__((aligned(64)));
-	for(int i = 0; i < 128; ++ i)
+	if (XLlFifo_iRxOccupancy(& rx_fifo) > DMABUFFSIZE32RX)
 	{
-		short left = (short) (cosf((double) i / 128 * 2 * M_PI) * amp);
-		short right = (short) (sinf((double) i / 128 * 2 * M_PI) * amp);
-		buf[i] = (left << 16) + (right & 0xFFFF);
+		XLlFifo_IntClear(& rx_fifo, XLLF_INT_RFPF_MASK);
+		uintptr_t rx_buf = allocate_dmabuffer32rx();
+		XLlFifo_iRead_Aligned(& rx_fifo, (uint32_t *) rx_buf, DMABUFFSIZE32RX);
+		processing_dmabuffer32rx(rx_buf);
+		release_dmabuffer32rx(rx_buf);
+		rx_stage ++;
 	}
 
-	xc7z_dma_transmit(& xc7z_axidma_af_tx, (UINTPTR) buf, 128);
-}
-
-void xc7z_dma_intHandler_af_tx(void)
-{
-	uintptr_t a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
-	processing_dmabuffer32rx(a1);
-	release_dmabuffer32rx(a1);
-
-	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
-	processing_dmabuffer32rx(a1);
-	release_dmabuffer32rx(a1);
-
-	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
-	processing_dmabuffer32rx(a1);
-	release_dmabuffer32rx(a1);
-
-	a1 = dma_invalidate32rx(allocate_dmabuffer32rx());
-	processing_dmabuffer32rx(a1);
-	release_dmabuffer32rx(a1);
-
-	//dbg_putchar('-');
-
-	u32 IrqStatus = XAxiDma_IntrGetIrq(& xc7z_axidma_af_tx, XAXIDMA_DMA_TO_DEVICE);
-	XAxiDma_IntrAckIrq(& xc7z_axidma_af_tx, IrqStatus, XAXIDMA_DMA_TO_DEVICE);
-
-	uintptr_t addr = getfilled_dmabuffer16phones();
-	xc7z_dma_transmit(& xc7z_axidma_af_tx, addr, DMABUFFSIZE16 * sizeof(aubufv_t));
-
-	release_dmabuffer16(addr);
-	//dbg_putchar('.');
-}
-
-void xc7z_data_fifo(void)
-{
-	TP();
+	if (rx_stage == 4)
+	{
+		uintptr_t addr = getfilled_dmabuffer16phones();
+		xc7z_dma_transmit(addr, DMABUFFSIZE16 * sizeof(aubufv_t));
+		release_dmabuffer16(addr);
+		rx_stage = 0;
+	}
 }
 
 #endif /* CPUSTYLE_XC7Z */

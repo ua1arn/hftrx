@@ -53,6 +53,10 @@ typedef struct {
 struct gui_nvram_t {
 	uint8_t enc2step_pos;
 	uint8_t micprofile;
+	uint8_t tune_powerdown_enable;
+	uint8_t tune_powerdown_value;
+	uint8_t freq_swipe_enable;
+	uint8_t freq_swipe_step;
 } ATTRPACKED;
 
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
@@ -72,6 +76,7 @@ void hamradio_goto_band_by_freq(uint_fast32_t f);
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
 void hamradio_load_gui_settings(void * ptr);
 void hamradio_save_gui_settings(const void * ptr);
+void hamradio_gui_enc2_update(void);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);

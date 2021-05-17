@@ -131,6 +131,9 @@ uint32_t sys_now(void)
 RAMFUNC void spool_systimerbundle1(void)
 {
 	//beacon_255();
+#ifdef USE_HAL_DRIVER
+	HAL_IncTick();
+#endif /* USE_HAL_DRIVER */
 
 #if WITHLWIP
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
@@ -1464,6 +1467,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYPE_ALLWNV3S
+	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_STM32MP1
 	// калибровано для 800 МГц процессора
 	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
@@ -1844,7 +1850,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 
 // Записать содержимое кэша данных в память
 // применяетмся после начальной инициализации среды выполнния
-void arm_hardware_flush_all(void)
+void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 {
 	L1C_CleanInvalidateDCacheAll();
 #if (__L2C_PRESENT == 1)
@@ -1855,7 +1861,6 @@ void arm_hardware_flush_all(void)
 #define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
 
 // Сейчас в эту память будем читать по DMA
-// Используется только в startup
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
@@ -2808,17 +2813,17 @@ sysintt_sdram_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_debug_initialize(void)
 {
-#if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
+#if __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U
 
-	#if WITHDEBUG && WITHINTEGRATEDDSP && CPUSTYLE_ARM_CM7
+	#if WITHDEBUG && __CORTEX_M == 7U
 		// Поддержка для функций диагностики быстродействия BEGINx_STAMP/ENDx_STAMP - audio.c
 		CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 		DWT->LAR = 0xC5ACCE55;	// Key value for unlock
 		DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 		DWT->LAR = 0x00000000;	// Key value for lock
-	#endif /* WITHDEBUG && WITHINTEGRATEDDSP */
+	#endif /* WITHDEBUG && __CORTEX_M == 7U */
 
-#endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
+#endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
 
 #if (__CORTEX_A != 0)
 
@@ -3220,6 +3225,7 @@ void Reset_CPUn_Handler(void)
 
 void cpump_initialize(void)
 {
+	SystemCoreClock = CPU_FREQ;
 
 #if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM
@@ -3557,6 +3563,126 @@ uint8_t xxxxxpos(uint8_t num) // num = 0..8
 
 */
 
+
+uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
+{
+	return a < b ? a : b;
+}
+
+uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
+{
+	return a > b ? a : b;
+}
+
+uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
+{
+	return a < b ? a : b;
+}
+
+uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
+{
+	return a > b ? a : b;
+}
+
+/* получить 24-бит значение */
+uint_fast32_t
+USBD_peek_u24(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [2] << 16) +
+		((uint_fast32_t) buff [1] << 8) +
+		((uint_fast32_t) buff [0] << 0);
+}
+
+/* получить 32-бит значение */
+uint_fast32_t
+USBD_peek_u32(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [3] << 24) +
+		((uint_fast32_t) buff [2] << 16) +
+		((uint_fast32_t) buff [1] << 8) +
+		((uint_fast32_t) buff [0] << 0);
+}
+
+/* записать в буфер для ответа 32-бит значение */
+unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+	buff [3] = HI_32BY(v);
+
+	return 4;
+}
+
+/* получить 32-бит значение */
+/* Big endian memory layout */
+uint_fast32_t
+USBD_peek_u32_BE(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast32_t) buff [0] << 24) +
+		((uint_fast32_t) buff [1] << 16) +
+		((uint_fast32_t) buff [2] << 8) +
+		((uint_fast32_t) buff [3] << 0);
+}
+
+/* записать в буфер для ответа 32-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
+{
+	buff [3] = LO_BYTE(v);
+	buff [2] = HI_BYTE(v);
+	buff [1] = HI_24BY(v);
+	buff [0] = HI_32BY(v);
+
+	return 4;
+}
+
+/* записать в буфер для ответа 24-бит значение */
+unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+	buff [2] = HI_24BY(v);
+
+	return 3;
+}
+
+/* записать в буфер для ответа 16-бит значение */
+unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v)
+{
+	buff [0] = LO_BYTE(v);
+	buff [1] = HI_BYTE(v);
+
+	return 2;
+}
+
+/* записать в буфер для ответа 16-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v)
+{
+	buff [1] = LO_BYTE(v);
+	buff [0] = HI_BYTE(v);
+
+	return 2;
+}
+
+/* записать в буфер для ответа 8-бит значение */
+unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
+{
+	buff [0] = v;
+
+	return 1;
+}
+
 #if CPUSTYLE_ARM
 
 // Используется в случае наличия ключа ld -nostartfiles
@@ -3669,6 +3795,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	return (i);
 }
 
+#if WITHUSEMALLOC
 #if CPUSTYLE_STM32MP1 || (CPUSTYLE_XC7Z && ! WITHISBOOTLOADER)
 
 	static RAMHEAP uint8_t heapplace [64 * 1024uL * 1024uL];
@@ -3678,7 +3805,6 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	static RAMHEAP uint8_t heapplace [8 * 1024uL];
 
 #endif /* CPUSTYLE_STM32MP1 */
-
 extern int __HeapBase;
 extern int __HeapLimit;
 
@@ -3706,6 +3832,7 @@ caddr_t __attribute__((used)) (_sbrk)(int incr)
 
 	return (caddr_t) prev_heap;
 }
+#endif /* WITHUSEMALLOC */
 
 // Corte-A9 reauire
 

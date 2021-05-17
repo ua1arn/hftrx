@@ -40,8 +40,8 @@ applicable agreement for further details.
 	(port
 		(pt 0 64)
 		(input)
-		(text "ast_sink_data[31..0]" (rect 0 0 79 12)(font "Arial" ))
-		(text "ast_sink_data[31..0]" (rect 21 59 100 71)(font "Arial" ))
+		(text "ast_sink_data[27..0]" (rect 0 0 80 12)(font "Arial" ))
+		(text "ast_sink_data[27..0]" (rect 21 59 101 71)(font "Arial" ))
 		(line (pt 0 64)(pt 16 64)(line_width 3))
 	)
 	(port

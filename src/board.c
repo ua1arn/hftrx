@@ -5859,7 +5859,9 @@ prog_dds1_ftw(const ftw_t * value)
 
 #else	/* LO1PHASES */
 
-	#if (DDS1_TYPE == DDS_TYPE_AD9852)
+	#if CPUSTYLE_XC7Z
+		xc7z_dds_ftw(value);
+	#elif (DDS1_TYPE == DDS_TYPE_AD9852)
 		prog_ad9852_freq1(targetdds1, value);
 		prog_pulse_ioupdate();
 	#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
@@ -5896,7 +5898,9 @@ prog_dds1_ftw(const ftw_t * value)
 void 
 prog_rts1_ftw(const ftw_t * value)
 {
-#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
+#if CPUSTYLE_XC7Z
+	xc7z_dds_rts(value);
+#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
 	prog_fpga_freq1_rts(targetfpga1, value);
@@ -7054,7 +7058,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 
 	//const enum struct_type struct_type = MCV;
 	const enum coef_store_type coef_store_type = M4K;
-	const int sym = 1;
+	const int SYM = 1;	// symmetrical
 	const enum poly_type poly_type = SGL;
 	const int num_cycles = 512;
 	//const int coef_bit_width = 25;
@@ -7072,7 +7076,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 	//PRINTF("single_rate_out_write_mcv: coef_length=%d, half_len=%d\n", coef_length, half_len);
 	//if (struct_type == MCV )
 	{
-		if (sym != 0 && (poly_type == SGL || poly_type == DEC))
+		if (SYM != 0 && (poly_type == SGL || poly_type == DEC))
 		{
 			coef_length = half_len;
 		}
@@ -7103,7 +7107,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 			mcv_reload_zero_insert = 0;
 		}
 
-		if (sym == 0)
+		if (SYM == 0)
 		{
 			zeros_insert = 0;
 		}
@@ -8016,6 +8020,9 @@ enum
 #endif /* WITHSUBTONES */
 	SNDI_KEYBEEP,		// меньшие номера - более приоритетные звуки
 	SNDI_SIDETONE,
+#if WITHIF4DSP
+	SNDI_RGRBRRP,	/* roger beep */
+#endif /* WITHIF4DSP */
 #if WITHSIDETONEDEBUG
 	SNDI_DEBUG,
 #endif /* WITHSIDETONEDEBUG */
@@ -8109,6 +8116,39 @@ board_sidetone_setfreq(
 	}
 }
 
+#if WITHIF4DSP
+
+/* roger beep - установка тона */
+/* вызывается из update hardware (user mode).	*/
+void
+board_rgrbeep_setfreq(
+	uint_least16_t tonefreq)	/* tonefreq - частота в герцах. Минимум - 400 герц (определено набором команд CAT). */
+{
+	enum { sndi = SNDI_RGRBRRP };
+	if (board_calcs_setfreq(sndi, tonefreq * 10) != 0)	/* если частота изменилась - перепрограммируем */
+	{
+		system_disableIRQ();
+		SPIN_LOCK(& gpreilock);
+		board_sounds_resched();
+		SPIN_UNLOCK(& gpreilock);
+		system_enableIRQ();
+	}
+}
+
+/* roger beep (вызывается из обработчика перрываний sequencer) */
+void board_rgrbeep_enable(uint_fast8_t state)
+{
+	const uint_fast8_t v = state != 0;
+	enum { sndi = SNDI_RGRBRRP };
+
+	if (gstate [sndi] != v)
+	{
+		gstate [sndi] = v;
+		board_sounds_resched();
+	}
+}
+
+#endif /* WITHIF4DSP */
 
 /* подзвучка клавиш (вызывается из обработчика перрываний) */
 void board_keybeep_enable(uint_fast8_t state)
@@ -8170,17 +8210,21 @@ board_subtone_setfreq(
 #endif /* WITHSUBTONES */
 }
 
-void board_subtone_enable(uint_fast8_t state)
+void board_subtone_enable_user(uint_fast8_t state)
 {
 #if WITHSUBTONES
 	const uint_fast8_t v = state != 0;
 	enum { sndi = SNDI_SUBTONE };
 
+	system_disableIRQ();
+	SPIN_LOCK(& gpreilock);
 	if (gstate [sndi] != v)
 	{
 		gstate [sndi] = v;
 		board_sounds_resched();
 	}
+	SPIN_UNLOCK(& gpreilock);
+	system_enableIRQ();
 #endif /* WITHSUBTONES */
 }
 
@@ -8192,11 +8236,13 @@ void board_beep_initialize(void)
 
 #if WITHSIDETONEDEBUG
 
-	enum { sndi = SNDI_DEBUG };
-	gstate [sndi] = 1;
-	if (board_calcs_setfreq(sndi, 1000 * 10) != 0)	/* если частота изменилась - перепрограммируем */
 	{
-		board_sounds_resched();
+		enum { sndi = SNDI_DEBUG };
+		gstate [sndi] = 1;
+		if (board_calcs_setfreq(sndi, 1000 * 10) != 0)	/* если частота изменилась - перепрограммируем */
+		{
+			board_sounds_resched();
+		}
 	}
 #endif /* WITHSIDETONEDEBUG */
 }
@@ -8244,7 +8290,7 @@ board_subtone_setfreq(
 }
 /* функция - заглушка */
 /* subtone */
-void board_subtone_enable(uint_fast8_t state)
+void board_subtone_enable_user(uint_fast8_t state)
 {
 }
 
@@ -9230,6 +9276,7 @@ mcp3208_read(
 }
 #endif /* WITHSPIHW || WITHSPISW */
 
+#if ! CPUSTYLE_ATMEGA
 
 #if defined(RTC1_TYPE)
 
@@ -9322,8 +9369,12 @@ int _gettimeofday(struct timeval *p, void *tz)
 {
 	if (p != NULL)
 	{
+		memset(p, 0, sizeof * p);
 	}
 	return 0;
 }
 
 #endif
+#endif /* ! CPUSTYLE_ATMEGA */
+
+

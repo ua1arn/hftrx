@@ -65,13 +65,6 @@
 	#endif
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 336		// 344.064 (192 <= PLLI2SN <= 432)
 		#define SAIREF1_MUL 240		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
@@ -229,12 +222,6 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
-
-	#define WITHIFDACWIDTH	24		// 1 бит знак и 23 бит значащих
-	#define WITHIFADCWIDTH	24		// 1 бит знак и 23 бит значащих
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-	//
 	//#define WITHLOOPBACKTEST	1
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */

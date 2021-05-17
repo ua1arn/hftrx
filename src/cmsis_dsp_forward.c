@@ -22,7 +22,7 @@
 	#include "FastMathFunctions/FastMathFunctions.c"
 	#include "FilteringFunctions/FilteringFunctions.c"
 	//#include "InterpolationFunctions/InterpolationFunctions.c"
-	//#include "MatrixFunctions/MatrixFunctions.c"
+	#include "MatrixFunctions/MatrixFunctions.c"
 
 	//#include "QuaternionMathFunctions/QuaternionMathFunctions.c"
 	#include "StatisticsFunctions/StatisticsFunctions.c"

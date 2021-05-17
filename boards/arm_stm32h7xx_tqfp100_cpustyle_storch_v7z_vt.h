@@ -734,7 +734,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 	enum
 	{
 		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
@@ -799,20 +799,14 @@
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t DEmask = (1U << 13); /* PE13 */ \
-		if (demode != 0) break; \
 		/* const uint32_t VSYNC = (1U << 9); */ /* PI9 */ \
 		/* while ((GPIOI->IDR & VSYNC) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOI->IDR & VSYNC) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask);	/* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
-	/* управление состоянием сигнала MODE 7" панели */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t MODE = (1U << 12); /* PG12 - mode */ \
-		arm_hardware_piog_outputs(MODE, (state != 0) * MODE);	/* PG12 MODE=state */ \
-	} while (0)
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 
 	#define BOARD_BLINK_BIT (1uL << 9)	// PD9 - LED1

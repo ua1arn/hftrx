@@ -52,45 +52,10 @@ typedef uint_least64_t phase_t;
 #define WITHTOPDBMAX 60
 #define WITHTOPDBDEFAULT 30
 
+#define WITHBOTTOMDBTX 90
+
 #define WITHBOTTOMDBMIN 80
 #define WITHBOTTOMDBMAX 160
-
-#if WITHBOTTOMDBVAL
-#define WITHBOTTOMDBDEFAULT WITHBOTTOMDBVAL
-#else
-#define WITHBOTTOMDBDEFAULT 130
-#endif /* WITHBOTTOMDBVAL */
-
-#if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX) 
-	#if WITHIFSHIFT
-		#error Can not be defined WITHIFSHIFT together with FQMODEL_DCTRX
-	#endif
-	#if WITHPBT
-		#error Can not be defined WITHPBT together with FQMODEL_DCTRX
-	#endif
-	#if WITHDUALBFO
-		#error Can not be defined WITHDUALBFO together with FQMODEL_DCTRX
-	#endif
-	#if WITHFIXEDBFO
-		#error Can not be defined WITHFIXEDBFO together with FQMODEL_DCTRX
-	#endif
-	#if WITHDUALFLTR
-		#error Can not be defined WITHDUALFLTR together with FQMODEL_DCTRX
-	#endif
-#endif
-
-#if WITHPOTGAIN	// Для совместимости с теми конфигурациями, где разрешются регулировки только парой
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
-#endif /* WITHPOTGAIN */
-
-#if ELKEY328
-	#define CWWPMMIN	12 //328 10
-	#define CWWPMMAX	30 //328 60
-#else
-	#define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
-	#define CWWPMMAX	60
-#endif
 
 #define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
 #define	BOARD_IFGAIN_MAX	255		/* код управления усилением ВЧ тракта */
@@ -2600,6 +2565,14 @@ void spool_0p128(void);	// OPERA support
 	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
 #endif	/* DIRECT_122M88_X1 */
 
+#if DIRECT_49M152_X1
+	#define LO1MODE_DIRECT	1
+	#define REFERENCE_FREQ	49152000uL
+	#define DDS1_CLK_MUL	1 		/* Умножитель в DDS1 */
+	#define DDS2_CLK_MUL	1		/* Умножитель в DDS2 */
+	#define DDS3_CLK_MUL	1		/* Умножитель в DDS3 */
+#endif	/* DIRECT_49M152_X1 */
+
 #if DIRECT_96M_X1
 	#define LO1MODE_DIRECT	1
 	#define REFERENCE_FREQ	96000000uL
@@ -3308,7 +3281,7 @@ uint_fast8_t hamradio_get_spkon_value(void);	// не-0: динамик вклю�
 void hamradio_change_submode(uint_fast8_t newsubmode, uint_fast8_t need_correct_freq);
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate);
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate);
-uint_fast8_t hamradio_get_bp_type(void);
+uint_fast8_t hamradio_get_bp_type_wide(void);	// не-0: параметры полосы пропускания - пара нижний срез/верхний срез
 void hamradio_set_agc_slow(void);
 void hamradio_set_agc_fast(void);
 uint_fast8_t hamradio_get_agc_type(void);
@@ -3444,6 +3417,10 @@ enum
 
 uint_fast8_t hamradio_get_gsmetertype(void);
 void display2_set_smetertype(uint_fast8_t v);
+
+
+void display2_set_filter_spe(uint_fast8_t v);	/* парамеры видеофильтра спектра */
+void display2_set_filter_wtf(uint_fast8_t v);	/* парамеры видеофильтра водопада */
 
 
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */

@@ -20,8 +20,10 @@
 
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
-	#include "sdcard.h"
 #endif /* WITHUSEFATFS */
+#if WITHUSESDCARD
+	#include "sdcard.h"
+#endif /* WITHUSESDCARD */
 
 #include <math.h>
 #include <stdio.h>
@@ -6021,6 +6023,106 @@ static void rendertestdynamic(int w, int h, int pos, int total)
 
 #endif /* WITHOPENVG */
 
+#if 1
+
+void setnormal(float * p, int state)
+{
+	int dir = state % 2;
+	int ix = state / 3;
+	p [0] = 0;
+	p [1] = 0;
+	p [2] = 0;
+
+	p [ix] = dir ? 1 : -1;
+}
+
+//
+//	Нормали Треугольников
+//	Нормаль к плоскости — это единичный вектор который направлен перпендикулярно к этой плоскости.
+//	Нормаль к треугольнику — это единичный вектор направленный перпендикулярно к треугольнику.
+//	Нормаль очень просто рассчитывается с помощью векторного произведения двух сторон
+//	треугольника(если вы помните, векторное произведение двух векторов дает нам
+//	перпендикулярный вектор к обоим) и нормализованный: его длина устанавливается в единицу.
+//	Вот псевдокод вычисления нормали:
+//
+//	треугольник( v1, v2, v3 )
+//	сторона1 = v2-v1
+//	сторона2 = v3-v1
+//	треугольник.нормаль = вектПроизведение(сторона1, сторона2).нормализировать()
+
+void calcnormaface(const float * model, int * faces, float normal [3])
+{
+	int nvertixes = model [0];
+	int nfaces = model [1];
+	const float * const bufvertixes = model + 2;
+	const float * const buffaces = bufvertixes + (nvertixes * 6);
+
+	int i;
+	for (i = 0; i < 3; ++ i)
+	{
+		int face = faces [i];
+	}
+}
+
+void calcnormaltriangle(const float * model)
+{
+	int nvertixes = model [0];
+	int nfaces = model [1];
+	const float * const bufvertixes = model + 2;
+	const float * const buffaces = bufvertixes + (nvertixes * 6);
+	int i;
+	int faces [nvertixes][3];
+	int foundfaces = 0;
+
+	for (i = 0; i < nvertixes; ++ i)
+	{
+		int j;
+		// Ищем faces, имеющие в себе данную вершину.
+		for (j = 0; j < nfaces && foundfaces < 3; ++ j)
+		{
+			if (
+					buffaces [j * 6 + 0] == i ||
+					buffaces [j * 6 + 1] == i ||
+					buffaces [j * 6 + 2] == i ||
+					0)
+			{
+				faces [i][foundfaces ++] = j;	// Нашли треугольник содержащий вершину
+			}
+		}
+		if (foundfaces != 3)
+		{
+			PRINTF("nvertixes = %d: faces should be 3 (foundfaces=%d)\n", nvertixes, foundfaces);
+			return;
+		}
+
+		//calcfacesnormal(model, )
+	}
+	for (i = 0; i < nvertixes; ++ i)
+	{
+		float normal [3][3];
+		int j;
+		// расчитать нормаль треугольников
+		for (j = 0; j < 3; ++ j)
+		{
+			calcnormaface(model, faces [i], normal [j]);
+		}
+	}
+//	int x1 = verticexs [0];
+//	int y1 = verticexs [1];
+//	int z1 = verticexs [3];
+}
+//	Вершинная Нормаль
+//	Это нормаль введенная для удобства вычислений.
+//	Это комбинированная нормаль от нормалей окружающих данную вершину треугольников.
+//	Это очень удобно, так как в вершинных шейдерах мы имеем дело с вершинами,
+//	а не с треугольниками.
+//	В любом случае в OpenGL у мы почти никогда и не имеем дела с треугольниками.
+//
+//	вершина v1, v2, v3, ....
+//	треугольник tr1, tr2, tr3 // они все используют вершину v1
+//	v1.нормаль = нормализовать( tr1.нормаль + tr2.нормаль + tr3.нормаль)
+#endif
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
@@ -6117,6 +6219,115 @@ void hightests(void)
 		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
+#if 0
+	#include "dsp3D.h"
+	{
+
+
+		static float32_t dsp3dModel [] = {
+				12,3,
+				//         VERTEXES
+				//   coords    normals
+				1,	1, 1, 	1,0,0, // 0
+				1, 1,-1, 	0,-1,0, // 1
+				1,-1, 1, 	-1,0,0, // 2
+				1,-1,-1, 	0,0,-1, // 3
+				3,	1, 1, 	1,0,0, // 0
+				3, 1,-1, 	0,-1,0, // 1
+				3,-1, 1, 	-1,0,0, // 2
+				3,-1,-1, 	0,0,-1, // 3
+				6,	1, 1, 	1,0,0, // 0
+				6, 1,-1, 	0,-1,0, // 1
+				6,-1, 1, 	-1,0,0, // 2
+				6,-1,-1, 	0,0,-1, // 3
+//				3,	1, 1, 	1,0,0, // 0
+//				3, 1,-1, 	0,-1,0, // 1
+//				3,-1, 1, 	-1,0,0, // 2
+//				3,-1,-1, 	0,0,-1, // 3
+
+				//         FACES
+				//    Indexes     RGB
+				0,1,2,   255,0,255,
+				//1,2,3,   255,0,255,
+				4,5,6,   0,0,255,
+				//5,6,7,   0,0,255,
+				8,9,10,   0,255,0,
+				//9,10,11,   0,255,0,
+		};
+
+//		calcnormaltriangle(dsp3dModel);
+//		TP();
+//		for (;;)
+//			;
+		dsp3D_init();
+		dsp3D_setCameraPosition(0,0,10);
+		dsp3D_setLightPosition(0,0,10);
+		dsp3D_setCameraTarget(0,0,0);
+
+		int phase = 0;
+		unsigned cnt = 0;
+		PRINTF("3d: test started, CPU_FREQ=%lu kHz\n", (unsigned long) (CPU_FREQ / 1000));
+		for (;;)
+		{
+			float * const buf = dsp3dModel + 5;
+			float * const buf2 = dsp3dModel + 11;
+			float * const buf3 = dsp3dModel + 17;
+			float * const buf4 = dsp3dModel + 23;
+//			setnormal(buf, phase % 6);
+//			setnormal(buf2, (phase / 6) % 6);
+//			setnormal(buf3, phase / 36);
+			//PRINTF("normal : %d, %d, %d", (int) buf [0], (int) buf [1], (int) buf [2]);
+			const time_t start = time(NULL);
+			meshRotation[0] = 0;
+			meshRotation[1] = 0;
+			meshRotation[2] = 0;
+			float a;
+			for (a = 0; a < 0.1; a += 0.001f)
+			{
+				meshRotation[0]+=a;
+				meshRotation[1]+=a;
+				//meshRotation[2]+=a;
+
+				//dsp3D_renderGouraud(dsp3dModel);
+				dsp3D_renderFlat(dsp3dModel);
+				//dsp3D_renderWireframe(dsp3dModel);
+//				char buff [64];
+//				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf [0], (int) buf [1], (int) buf [2]);
+//				display_at(20, 10, buff);
+//				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf2 [0], (int) buf2 [1], (int) buf2 [2]);
+//				display_at(20, 15, buff);
+//				snprintf(buff, 64, "normal : %d, %d, %d,", (int) buf3 [0], (int) buf3 [1], (int) buf3 [2]);
+//				display_at(20, 20, buff);
+				dsp3D_present();
+				local_delay_ms(25);
+				char c;
+				if (0 && dbg_getchar(& c))
+				{
+					switch (c)
+					{
+					case '0':
+					case '1':
+					case '2':
+					case '3':
+					case '4':
+					case '5':
+						setnormal(buf, c - '0');
+					default:
+					case ' ':
+						PRINTF("normal : %d, %d, %d,\n", (int) buf [0], (int) buf [1], (int) buf [2]);
+						break;
+					}
+				}
+
+			}
+			const time_t end = time(NULL);
+			PRINTF("3d: cnt=%u, %d S\n", cnt, (int) (end - start));
+			phase = phase + 1;
+			if (phase >= (6 * 6 * 6))
+				phase = 0;
+		}
+	}
+#endif
 #if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -6206,7 +6417,7 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
-#if 0 && (__L2C_PRESENT == 1)
+#if 1 && (__L2C_PRESENT == 1)
 	{
 		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
 		// ZYNQ: RTL release R3p2
@@ -6222,7 +6433,7 @@ void hightests(void)
 		PRINTF("L2C Tag RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
 	}
 #endif
-#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if 1 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		// GIC version diagnostics
 		// Renesas:
@@ -8178,7 +8389,7 @@ void hightests(void)
 			uint_fast8_t i;
 			for (i = 0; i < HYBRID_NVFOS; ++ i)
 			{
-				board_ctl_set_vco(i);
+				board_set_lo1vco(i);
 				board_update();		/* вывести забуферированные изменения в регистры */
 				local_delay_ms(500);
 			}

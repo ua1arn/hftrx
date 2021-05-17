@@ -19,31 +19,29 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
+UADEFS += -D"WITHSMPSYSTEM"
+
+PRJROOT := ../..
+OBJDIR = obj
+
+# Define project name here
+PROJECT = tc1_r7s721020
+
+# Define linker script file here
+LDSCRIPT_BOOT = ./r7s721020_boot.ld
+LDSCRIPT_APP = ./r7s721020_app.ld
+
+# List all user C define here, like -D_DEBUG=1
+UDEFS += -D"NDEBUG"=1 -DCPUSTYLE_R7S721=1 -DCPUSTYLE_R7S721020=1 -DTARGET_RZA1=TARGET_RZA1L -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 #
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
-HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
-BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
-
-#COMPUTEDIR = ../../../ComputeLibrary
-# Add to includes
-#	$(COMPUTEDIR)/arm_compute/core/NEON
-
-PRJROOT := ../..
-
-CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
-
-OBJDIR = obj
-
-# Define optimisation level here
-OPT = -Ofast
-LTO = -flto
+HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
+BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 
 # This product incorporates the ARM single-core Cortex-A9 MPCore, where the IP version is r3p0.
 #CORE = -march=armv7-a -mfloat-abi=hard -mfpu=vfpv3
@@ -54,6 +52,22 @@ CORE += -mfloat-abi=hard
 CORE += -mfpu=neon-vfpv3
 #CORE += -mlong-calls
 
+# Define optimisation level here
+# olny -Og for app
+# Application
+#OPT = -Og
+OPT = -Ofast
+LTO = -flto
+
+CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
+DSP3DDIR = $(PRJROOT)/lib/dsp3D
+USBXDIR = $(PRJROOT)/src/hal
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
+
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
 
@@ -61,6 +75,11 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
+	$(PRJROOT)/armcpu \
+	$(MDLWUSBDIR)/Core/Inc \
+	$(MDLWHOSTDIR)/Core/Inc \
+	$(USBXDIR) \
+	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/DSP/ComputeLibrary/Include \
@@ -69,20 +88,20 @@ DINCDIR = \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
-	$(LWIPDIR)/apps/httpserver_raw \
+	$(LWIPDIR)/src/apps/http \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
 	$(OPENVGDIR)/src
 
 # List the default directory to look for the libraries here
-DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
+#DLIBDIR = $(CMSISDIR)/DSP/Lib/GCC
 
 # List all default libraries here
-DLIBS = -lm
 #DLIBS = -lm -larm_cortexA9lneon_math
 #DLIBS = -lm -larm_cortexA9lfdp_math
-
+DLIBS = -lm
+#
 #
 # End of default section
 ##############################################################################################
@@ -91,20 +110,8 @@ DLIBS = -lm
 # Start of user section
 #
 
-# Define project name here
-PROJECT = tc1_r7s721020
-
-# Define linker script file here
-LDSCRIPT_BOOT = ./r7s721020_boot.ld
-LDSCRIPT_APP = ./r7s721020_app.ld
-
-# List all user C define here, like -D_DEBUG=1
-# RZ/A1H: R7S721001: CPUSTYLE_R7S721001
-# RZ/A1L: R7S721020: CPUSTYLE_R7S721020
-UDEFS = -DNDEBUG=1 -DCPUSTYLE_R7S721=1 -DCPUSTYLE_R7S721020=1 -DTARGET_RZA1=TARGET_RZA1L -DEGL_STATIC_LIBRARY=1
-
 # Define ASM defines here
-UADEFS = 
+UADEFS += 
 
 # List C source files here
 CSRC +=
@@ -112,6 +119,8 @@ CSRC +=
 # List C++ source files here
 CPPSRC +=
 
+# List ASM source files here
+ASRC +=
 
 # List all user directories here
 UINCDIR += $(PRJROOT) $(PRJROOT)/inc
@@ -126,15 +135,13 @@ ULIBS +=
 # https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
 rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
-#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR) $(LWIPDIR) 
-SRCDIRS = $(PRJROOT)/src
+#SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
+SRCDIRS += $(PRJROOT)/src
+SRCDIRS += $(HALDIR)
+SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
-
-# debug target
-allX:
-	@echo $(CPPSRC)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
@@ -157,10 +164,18 @@ OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 
 OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+
 LIBS    = $(DLIBS) $(ULIBS)
 
-MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
-#MCFLAGS = $(CORE) -fno-math-errno
+MCFLAGS = \
+	$(CORE) \
+	-fno-math-errno \
+	-funroll-loops \
+	-fgraphite-identity \
+	-ffunction-sections \
+	-fdata-sections \
+	-ffat-lto-objects \
+	-ftree-vectorize
 #
 #ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.S=.lst) $(ADEFS)
 ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
@@ -173,6 +188,7 @@ LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
+ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 
@@ -211,7 +227,7 @@ $(PROJECT)_app.nec32: $(PROJECT)_app.bin
 
 app.hex: $(PROJECT)_app.nec32
 	./bin2ihex -l 0x00020000 -s $(PROJECT)_app.nec32 >$@
-	
+
 $(OBJSC):
 	@mkdir -p $(@D)
 	$(CC) -o $@ -std=gnu99 -Wstrict-prototypes -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.c, $@)))
@@ -249,12 +265,6 @@ version:
 # 
 # Include the dependency files, should be the last of the makefile
 #
--include $(wildcard $(OBJDIR)/*.d)
--include $(wildcard $(OBJDIR)/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
+-include $(call rwildcard, $(OBJDIR), *.d)
 
 # *** EOF ***

@@ -15,11 +15,14 @@
 
 #if WITHUSBHW
 
-#include "usb_core.h"
 #include "src/fatfs/ff.h"
 #include "src/fatfs/diskio.h"		/* FatFs lower layer API */
-#include "MSC/Inc/usbh_msc.h"
+#include "../../Class/MSC/Inc/usbh_msc.h"
 
+#include "usbd_def.h"
+#include "usbd_core.h"
+#include "usb200.h"
+#include "usbch9.h"
 
 #if WITHUSEUSBFLASH
 

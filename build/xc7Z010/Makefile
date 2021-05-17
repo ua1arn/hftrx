@@ -20,7 +20,6 @@ TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
 PRJROOT := ../..
-
 OBJDIR = obj
 
 ZINQ_BOOT_DIR := E:
@@ -34,16 +33,6 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
-
-CMSISDIR = $(PRJROOT)/../CMSIS_5/CMSIS
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
-# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
-OPENVGDIR = $(PRJROOT)/lib/OpenVG
-
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
-
-# full qualified name
-ZYNQLIB = zynq7000.a
 
 # Cortex-A9 r3p0
 
@@ -72,8 +61,35 @@ UADEFS += -D"WITHSMPSYSTEM"
 
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
+
+
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
+
+# full qualified name
+ZYNQLIB = zynq7000.a
+
+
+CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
+# see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
+OPENVGDIR = $(PRJROOT)/lib/OpenVG
+DSP3DDIR = $(PRJROOT)/lib/dsp3D
+USBXDIR = $(PRJROOT)/src/hal
+MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
+HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
+
+# List all default C defines here, like -D_DEBUG=1
+DDEFS = 
+
+# List all default ASM defines here, like -D_DEBUG=1
+DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
+	$(PRJROOT)/armcpu \
+	$(HALDIR)/Inc \
+	$(MDLWUSBDIR)/Core/Inc \
+	$(USBXDIR) \
+	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \
 	$(CMSISDIR)/DSP/Include \
 	$(CMSISDIR)/DSP/ComputeLibrary/Include \
@@ -105,6 +121,7 @@ DLIBS = -lm
 # Start of user section
 #
 
+#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS = $(PRJROOT)/src
 
 # Define project name here
@@ -175,6 +192,7 @@ OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
 # .S and .s files ugnored
 ZCSRC += $(call rwildcard, $(ZYNQLIBSRC), *.c)
 ZCPPSRC += $(call rwildcard, $(ZYNQLIBSRC), *.cpp)
+ZASRC += $(call rwildcard, $(ZYNQLIBSRC), *.S)
 
 ZOBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(ZCSRC))
 ZOBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(ZCPPSRC))
@@ -198,6 +216,7 @@ LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
+ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 # Experemental optimisation flags
 #CPFLAGS += -fno-inline-small-functions 
@@ -287,13 +306,6 @@ version:
 # 
 # Include the dependency files, should be the last of the makefile
 #
--include $(wildcard $(OBJDIR)/*.d)
--include $(wildcard $(OBJDIR)/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*/*/*/*.d)
-
+-include $(call rwildcard, $(OBJDIR), *.d)
 
 # *** EOF ***

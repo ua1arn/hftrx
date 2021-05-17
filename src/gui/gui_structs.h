@@ -13,6 +13,7 @@
 #define IS_LABEL_PRESS			(type == TYPE_LABEL && action == PRESSED)
 #define IS_LABEL_MOVE			(type == TYPE_LABEL && action == MOVING)
 #define IS_AREA_TOUCHED 		(type == TYPE_TOUCH_AREA && action == PRESSED)
+#define IS_AREA_MOVE	 		(type == TYPE_TOUCH_AREA && action == MOVING)
 
 typedef enum {
 	TYPE_DUMMY,
@@ -86,6 +87,7 @@ typedef struct {
 	uint8_t state;
 	uint8_t parent;
 	uint8_t visible;
+	uint8_t is_trackable;
 	int32_t payload;
 	char name [NAME_ARRAY_SIZE];
 	uint8_t index;

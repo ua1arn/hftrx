@@ -36,7 +36,7 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
@@ -99,7 +99,7 @@
 		#if WITHINTEGRATEDDSP
 
 			//#define WITHUAC2		1	/* UAC2 support */
-			//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+			//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 			#define WITHUSBUACIN	1
 			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
@@ -744,7 +744,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 
 	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
@@ -792,16 +792,9 @@
 		arm_hardware_pio6_alternative((1U << 7), R7S721_PIOALT_2);	/* P6_7 LCD0_DATA15 R7 */ \
 	} while (0)
 
-	/* управление состоянием сигнала MODE панели */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t MODE = (1U << 0); /* P7_0 MODE */ \
-		arm_hardware_pio7_outputs(MODE, (state != 0) * MODE);	/* P7_0 MODE=demode */ \
-	} while (0)
-
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
-		if (demode != 0) break; \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t demask = (1U << 7); /* P7_7 */ \
 		arm_hardware_pio7_outputs(demask, (state != 0) * demask);	/* P7_7 DE=state */ \
 	} while (0)
@@ -845,24 +838,24 @@
 			else  LS020_RESET_PORT_C(LS020_RESET); \
 		} while (0)
 
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 // Signal P3_9 control
-#if WITHFLATLINK && LCDMODE_LTDC
+#if WITHFLATLINK && WITHLTDCHW
 	// SN75LVDS83B FlatLink™ Transmitter shutdown control
 	// #SHTDN is a CMOS IN with pull down resistor approx. 100..200 kOhm
 	#define HARDWARE_LVDSTX_INITIALIZE() do { \
 		const uint32_t mask = (1U << 9); /* P3_9 */ \
 		arm_hardware_pio3_outputs(mask, 1 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
 	} while (0)
-#else /* WITHFLATLINK && LCDMODE_LTDC */
+#else /* WITHFLATLINK && WITHLTDCHW */
 	// SN75LVDS83B FlatLink™ Transmitter shutdown control
 	// #SHTDN is a CMOS IN with pull down resistor approx. 100..200 kOhm
 	#define HARDWARE_LVDSTX_INITIALIZE() do { \
 		const uint32_t mask = (1U << 9); /* P3_9 */ \
 		arm_hardware_pio3_outputs(mask, 0 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
 	} while (0)
-#endif /* WITHFLATLINK && LCDMODE_LTDC */
+#endif /* WITHFLATLINK && WITHLTDCHW */
 
 	#define HARDWARE_VBUS_ON_MASK (1U << 2)	/* P5_2 ~VBUS_ON */
 

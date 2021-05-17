@@ -1063,10 +1063,12 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	{
 		afspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEAF, BOARD_WTYPE_SPECTRUM);
 	}
-#if CTLSTYLE_V3D
-	subscribefloat_user(& afoutfloat, & afspectreregister, NULL, afsp_save_sample);
+#if 0 && CTLSTYLE_V3D
+	// делать так не стоит - afsp_save_sample функция работающая в user mode, из real time контекста её вызывать нельзя
+	// возможно нужен "переходник", выкачивающий из real time очереди для показа спектра
+	subscribefloat_user(& afdemodoutfloat_rt, & afspectreregister, NULL, afsp_save_sample);
 #else
-	subscribefloat_user(& afoutfloat_user, & afspectreregister, NULL, afsp_save_sample);
+	subscribefloat_user(& speexoutfloat_user, & afspectreregister, NULL, afsp_save_sample);	// выход sppeex и фильтра
 #endif /* CTLSTYLE_V3D */
 }
 
@@ -1091,10 +1093,11 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		{
 			const uint_fast16_t fftpos = raster2fftsingle(x, afsp.w, leftfftpos, rightfftpos);
 			ASSERT(fftpos < ARRAY_SIZE(afsp.fft_buf));
+			// filterig
 			afsp.val_array [x] = afsp.val_array [x] * (FLOAT_t) 0.6 + (FLOAT_t) 0.4 * afsp.fft_buf [fftpos];
 		}
 		arm_max_no_idx_f32(afsp.val_array, afsp.w, & afsp.max_val);	// поиск в отображаемой части
-		afsp.max_val = FMAXF(afsp.max_val, 1);
+		afsp.max_val = FMAXF(afsp.max_val, (FLOAT_t) 0.001);
 	}
 }
 
@@ -1112,7 +1115,8 @@ display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 				ASSERT(afsp.w <= ARRAY_SIZE(afsp.val_array));
 				for (unsigned x = 0; x < afsp.w; x ++)
 				{
-					const uint_fast16_t y_norm = normalize(afsp.val_array [x], 0, afsp.max_val, afsp.h - 2) + 1;
+					//const uint_fast16_t y_norm = normalize(afsp.val_array [x], 0, afsp.max_val, afsp.h - 2) + 1;
+					const uint_fast16_t y_norm = normalize(afsp.val_array [x] * 4096, 0, afsp.max_val * 4096, afsp.h - 2) + 1;
 					ASSERT(y_norm <= afsp.h);
 					ASSERT(afsp.y >= y_norm);
 					if (afsp.y >= y_norm)
@@ -5497,7 +5501,7 @@ enum
 		PGunused
 	};
 
-	#if TUNE_TOP > 100000000uL
+	#if 1//TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 	#else
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -5665,7 +5669,7 @@ enum
 			PGunused
 		};
 
-	#if TUNE_TOP > 100000000uL
+	#if 1//TUNE_TOP > 100000000uL
 		#define DISPLC_WIDTH	9	// количество цифр в отображении частоты
 	#else
 		#define DISPLC_WIDTH	8	// количество цифр в отображении частоты
@@ -6908,14 +6912,15 @@ enum
 };
 
 // Параметры фильтров данных спектра и водопада
+// устанавливаются через меню
 #define DISPLAY_SPECTRUM_BETA (0.25)
 #define DISPLAY_WATERFALL_BETA (0.5)
 
-static const FLOAT_t spectrum_beta = (FLOAT_t) DISPLAY_SPECTRUM_BETA;					// incoming value coefficient
-static const FLOAT_t spectrum_alpha = 1 - (FLOAT_t) DISPLAY_SPECTRUM_BETA;	// old value coefficient
+static FLOAT_t spectrum_beta = (FLOAT_t) DISPLAY_SPECTRUM_BETA;					// incoming value coefficient
+static FLOAT_t spectrum_alpha = 1 - (FLOAT_t) DISPLAY_SPECTRUM_BETA;	// old value coefficient
 
-static const FLOAT_t waterfall_beta = (FLOAT_t) DISPLAY_WATERFALL_BETA;					// incoming value coefficient
-static const FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old value coefficient
+static FLOAT_t waterfall_beta = (FLOAT_t) DISPLAY_WATERFALL_BETA;					// incoming value coefficient
+static FLOAT_t waterfall_alpha = 1 - (FLOAT_t) DISPLAY_WATERFALL_BETA;	// old value coefficient
 
 static RAMBIGDTCM FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
 static RAMBIGDTCM FLOAT_t Yold_wtf [ALLDX];
@@ -6941,6 +6946,24 @@ static FLOAT_t filter_spectrum(
 	const FLOAT_t Y = Yold_fft [x] * spectrum_alpha + spectrum_beta * val;
 	Yold_fft [x] = Y;
 	return Y;
+}
+
+/* парамеры видеофильтра спектра */
+void display2_set_filter_spe(uint_fast8_t v)
+{
+	ASSERT(v <= 100);
+	const FLOAT_t val = (int) v / (FLOAT_t) 100;
+	spectrum_beta = val;
+	spectrum_alpha = 1 - val;
+}
+
+/* парамеры видеофильтра водопада */
+void display2_set_filter_wtf(uint_fast8_t v)
+{
+	ASSERT(v <= 100);
+	const FLOAT_t val = (int) v / (FLOAT_t) 100;
+	waterfall_beta = val;
+	waterfall_alpha = 1 - val;
 }
 
 #if WITHVIEW_3DSS
@@ -7187,8 +7210,8 @@ saveIQRTSxx(void * ctx, int_fast32_t iv, int_fast32_t qv)
 		}
 		fftbuff_t * const pf = * ppf;
 
-		pf->largebuffI [filleds [i]] = qv;
-		pf->largebuffQ [filleds [i]] = iv;
+		pf->largebuffI [filleds [i]] = adpt_input(& ifspectrumin, qv);	// нормализованное к -1..+1
+		pf->largebuffQ [filleds [i]] = adpt_input(& ifspectrumin, iv);
 
 		if (++ filleds [i] >= LARGEFFT)
 		{

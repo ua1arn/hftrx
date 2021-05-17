@@ -35,8 +35,8 @@
 
 /***************************** Include Files *********************************/
 
-#include <xparameters.h>
-#include <xvtc.h>
+#include "xvtc.h"
+#include "xparameters.h"
 
 /************************** Constant Definitions *****************************/
 

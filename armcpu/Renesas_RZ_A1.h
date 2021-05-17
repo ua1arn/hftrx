@@ -705,7 +705,7 @@ typedef enum IRQn
 
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
-#define __CA_REV         0x0000    /*!< Core revision r0       */
+#define __CA_REV         0x0000    /*!< Core revision r0p0       */
 
 #include "core_ca.h"
 #include "system_Renesas_RZ_A1.h"
@@ -1286,6 +1286,63 @@ typedef enum IRQn
 #define MD_CLKS       (1u << 3)
 
 /*@}*/ /* end of group Renesas_RZ_A1_GPIO */
+
+
+/** @addtogroup Exported_types
+  * @{
+  */
+typedef enum
+{
+  RESET = 0,
+  SET = !RESET
+} FlagStatus, ITStatus;
+
+typedef enum
+{
+  DISABLE = 0,
+  ENABLE = !DISABLE
+} FunctionalState;
+#define IS_FUNCTIONAL_STATE(STATE) (((STATE) == DISABLE) || ((STATE) == ENABLE))
+
+typedef enum
+{
+  ERROR = 0,
+  SUCCESS = !ERROR
+} ErrorStatus;
+
+/**
+  * @}
+  */
+
+
+/** @addtogroup Exported_macros
+  * @{
+  */
+#define SET_BIT(REG, BIT)     ((REG) |= (BIT))
+
+#define CLEAR_BIT(REG, BIT)   ((REG) &= ~(BIT))
+
+#define READ_BIT(REG, BIT)    ((REG) & (BIT))
+
+#define CLEAR_REG(REG)        ((REG) = (0x0))
+
+#define WRITE_REG(REG, VAL)   ((REG) = (VAL))
+
+#define READ_REG(REG)         ((REG))
+
+#define MODIFY_REG(REG, CLEARMASK, SETMASK)  WRITE_REG((REG), (((READ_REG(REG)) & (~(CLEARMASK))) | (SETMASK)))
+
+#define POSITION_VAL(VAL)     (__CLZ(__RBIT(VAL)))
+
+
+/**
+  * @}
+  */
+
+#ifdef USE_HAL_DRIVER
+	#include "rza1xx_hal.h"
+#endif /* USE_HAL_DRIVER */
+
 
 #ifdef __cplusplus
 }

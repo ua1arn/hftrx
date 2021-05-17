@@ -161,8 +161,8 @@
 
 /***************************** Include Files *********************************/
 
-#include <xenv.h>
-#include <xvtc.h>
+#include "xvtc.h"
+#include "xenv.h"
 
 /************************** Constant Definitions *****************************/
 

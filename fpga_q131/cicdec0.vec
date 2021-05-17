@@ -11,7 +11,7 @@ PATTERN
 0>    1
 5>    1
 95>  0 ;
-INPUTS data_in[31..0];
+INPUTS data_in[27..0];
 PATTERN         % test Inpluse %
 0>     0
 25725>  1
@@ -40,7 +40,7 @@ INPUTS coef_set_in;
 PATTERN
 0> 0 
 ;
-OUTPUTS fir_result[31..0];
+OUTPUTS fir_result[27..0];
 OUTPUTS done;
 OUTPUTS rdy_to_ld;
 OUTPUTS input_ch_id[0..0];

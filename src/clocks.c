@@ -27,19 +27,251 @@ calcdivround2(
 
 #elif CPUSTYLE_STM32F4XX
 
+unsigned long stm32f4xx_get_hse_freq(void)
+{
+#if WITHCPUXTAL
+	return WITHCPUXTAL;
+#elif WITHCPUXOSC
+	return WITHCPUXOSC;
+#else
+	#warning WITHCPUXOSC or WITHCPUXTAL should be defined
+	return 16000000uL;
+#endif
+}
+
+unsigned long stm32f4xx_get_hsi_freq(void)
+{
+	return HSIFREQ;	// 16 MHz
+}
+
+unsigned long stm32f4xx_get_pllreference_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLM_Msk) >> RCC_PLLCFGR_PLLM_Pos;
+	return stm32f4xx_get_hse_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_pll_freq(void)
+{
+	const uint_fast32_t mulval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLN_Msk) >> RCC_PLLCFGR_PLLN_Pos;
+	return stm32f4xx_get_pllreference_freq() * mulval;
+}
+
+unsigned long stm32f4xx_get_pll_p_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLP_Msk) >> RCC_PLLCFGR_PLLP_Pos;
+	return stm32f4xx_get_pll_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_pll_q_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLCFGR & RCC_PLLCFGR_PLLQ_Msk) >> RCC_PLLCFGR_PLLQ_Pos;
+	return stm32f4xx_get_pll_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_plli2s_freq(void)
+{
+	const uint_fast32_t mulval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SN_Msk) >> RCC_PLLI2SCFGR_PLLI2SN_Pos;
+	return stm32f4xx_get_pllreference_freq() * mulval;
+}
+
+unsigned long stm32f4xx_get_plli2s_q_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SQ_Msk) >> RCC_PLLI2SCFGR_PLLI2SQ_Pos;
+	return stm32f4xx_get_plli2s_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_plli2s_r_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLI2SCFGR & RCC_PLLI2SCFGR_PLLI2SR_Msk) >> RCC_PLLI2SCFGR_PLLI2SR_Pos;
+	return stm32f4xx_get_plli2s_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_pllsai_freq(void)
+{
+	const uint_fast32_t mulval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIN_Msk) >> RCC_PLLSAICFGR_PLLSAIN_Pos;
+	return stm32f4xx_get_pllreference_freq() * mulval;
+}
+
+unsigned long stm32f4xx_get_pllsai_q_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIQ_Msk) >> RCC_PLLSAICFGR_PLLSAIQ_Pos;
+	return stm32f4xx_get_pllsai_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_pllsai_r_freq(void)
+{
+	const uint_fast32_t divval = (RCC->PLLSAICFGR & RCC_PLLSAICFGR_PLLSAIR_Msk) >> RCC_PLLSAICFGR_PLLSAIR_Pos;
+	return stm32f4xx_get_pllsai_freq() / divval;
+}
+
+unsigned long stm32f4xx_get_sysclk_freq(void)
+{
+	//	00: HSI oscillator used as the system clock
+	//	01: HSE oscillator used as the system clock
+	//	10: PLL used as the system clock
+	//	11: not applicable
+	switch ((RCC->CFGR & RCC_CFGR_SW_Msk) >> RCC_CFGR_SW_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32f4xx_get_hsi_freq();
+	case 0x01:
+		return stm32f4xx_get_hse_freq();
+	case 0x02:
+		return stm32f4xx_get_pll_p_freq();
+	}
+}
+
+unsigned long stm32f4xx_get_ahb_freq(void)
+{
+	//	0xxx: system clock not divided
+	//	1000: system clock divided by 2
+	//	1001: system clock divided by 4
+	//	1010: system clock divided by 8
+	//	1011: system clock divided by 16
+	//	1100: system clock divided by 64
+	//	1101: system clock divided by 128
+	//	1110: system clock divided by 256
+	//	1111: system clock divided by 512
+	switch ((RCC->CFGR & RCC_CFGR_HPRE_Msk) >> RCC_CFGR_HPRE_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32f4xx_get_sysclk_freq();
+	case 0x08:
+		return stm32f4xx_get_sysclk_freq() / 2;
+	case 0x09:
+		return stm32f4xx_get_sysclk_freq() / 4;
+	case 0x0A:
+		return stm32f4xx_get_sysclk_freq() / 8;
+	case 0x0B:
+		return stm32f4xx_get_sysclk_freq() / 16;
+	case 0x0C:
+		return stm32f4xx_get_sysclk_freq() / 64;
+	case 0x0D:
+		return stm32f4xx_get_sysclk_freq() / 128;
+	case 0x0E:
+		return stm32f4xx_get_sysclk_freq() / 256;
+	case 0x0F:
+		return stm32f4xx_get_sysclk_freq() / 512;
+	}
+}
+
+unsigned long stm32f4xx_get_hclk_freq(void)
+{
+	return stm32f4xx_get_ahb_freq();
+}
+
+// PPRE2: APB high-speed prescaler (APB2)
+unsigned long stm32f4xx_get_apb2_freq(void)
+{
+	const uint_fast32_t ppre2 = (RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos;
+	switch (ppre2)
+	{
+	default:
+	case 0x00:
+		return stm32f4xx_get_ahb_freq();
+	case 0x04:
+		return stm32f4xx_get_ahb_freq() / 2;
+	case 0x05:
+		return stm32f4xx_get_ahb_freq() / 4;
+	case 0x06:
+		return stm32f4xx_get_ahb_freq() / 8;
+	case 0x07:
+		return stm32f4xx_get_ahb_freq() / 16;
+	}
+}
+
+// PPRE1: APB Low speed prescaler (APB1)
+unsigned long stm32f4xx_get_apb1_freq(void)
+{
+	const uint_fast32_t ppre1 = (RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos;
+	switch (ppre1)
+	{
+	default:
+	case 0x00:
+		return stm32f4xx_get_ahb_freq();
+	case 0x04:
+		return stm32f4xx_get_ahb_freq() / 2;
+	case 0x05:
+		return stm32f4xx_get_ahb_freq() / 4;
+	case 0x06:
+		return stm32f4xx_get_ahb_freq() / 8;
+	case 0x07:
+		return stm32f4xx_get_ahb_freq() / 16;
+	}
+}
+// PPRE2: APB high-speed prescaler (APB2)
+unsigned long stm32f4xx_get_apb2timer_freq(void)
+{
+	const uint_fast32_t timpre  = (RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE_Msk) >> RCC_DCKCFGR_TIMPRE_Pos;
+	const uint_fast32_t ppre2 = (RCC->CFGR & RCC_CFGR_PPRE2_Msk) >> RCC_CFGR_PPRE2_Pos;
+	//	0: If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, TIMxCLK = PCLKx. Otherwise, the timer clock frequencies are set to
+	//	twice to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 2xPCLKx.
+	//	1:If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, 2 or 4, TIMxCLK = HCLK. Otherwise, the timer clock frequencies are set
+	//	to four times to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 4xPCLKx.
+	switch (ppre2)
+	{
+	default:
+	case 0x00:	// /1
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq();
+	case 0x04:	// /2
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq();
+	case 0x05:	// /4
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq() / 2;
+	case 0x06:	// /8
+		return timpre ? stm32f4xx_get_ahb_freq() / 2 : stm32f4xx_get_ahb_freq() / 4;
+	case 0x07:	// /16
+		return timpre ? stm32f4xx_get_ahb_freq() / 4 : stm32f4xx_get_ahb_freq() / 8;
+	}
+}
+
+// PPRE1: APB Low speed prescaler (APB1)
+unsigned long stm32f4xx_get_apb1timer_freq(void)
+{
+	const uint_fast32_t timpre  = (RCC->DCKCFGR & RCC_DCKCFGR_TIMPRE_Msk) >> RCC_DCKCFGR_TIMPRE_Pos;
+	const uint_fast32_t ppre1 = (RCC->CFGR & RCC_CFGR_PPRE1_Msk) >> RCC_CFGR_PPRE1_Pos;
+	//	0: If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, TIMxCLK = PCLKx. Otherwise, the timer clock frequencies are set to
+	//	twice to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 2xPCLKx.
+	//	1:If the APB prescaler (PPRE1, PPRE2 in the RCC_CFGR register) is configured to a
+	//	division factor of 1, 2 or 4, TIMxCLK = HCLK. Otherwise, the timer clock frequencies are set
+	//	to four times to the frequency of the APB domain to which the timers are connected:
+	//	TIMxCLK = 4xPCLKx.
+	switch (ppre1)
+	{
+	default:
+	case 0x00:	// /1
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq();
+	case 0x04:	// /2
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq();
+	case 0x05:	// /4
+		return timpre ? stm32f4xx_get_hclk_freq() : stm32f4xx_get_ahb_freq() / 2;
+	case 0x06:	// /8
+		return timpre ? stm32f4xx_get_ahb_freq() / 2 : stm32f4xx_get_ahb_freq() / 4;
+	case 0x07:	// /16
+		return timpre ? stm32f4xx_get_ahb_freq() / 4 : stm32f4xx_get_ahb_freq() / 8;
+	}
+}
+
 unsigned long stm32f4xx_get_spi1_freq(void)
 {
-	return PCLK1_FREQ;
+	return stm32f4xx_get_apb2_freq();
 }
 
-#if WITHSPIHW
-// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
-unsigned long hardware_get_spi_freq(void)
+unsigned long stm32f4xx_get_tim3_freq(void)
 {
-	return stm32f4xx_get_spi1_freq();
+	return stm32f4xx_get_apb1timer_freq();
 }
 
-#endif /* WITHSPIHW */
+#define SYSTICK_FREQ (stm32f4xx_get_sysclk_freq() / 8)
+#define BOARD_TIM3_FREQ (stm32f4xx_get_tim3_freq())
+#define BOARD_ADC_FREQ (stm32f4xx_get_apb2_freq())
 
 #elif CPUSTYLE_STM32F7XX
 
@@ -396,6 +628,10 @@ unsigned long stm32f7xx_get_uart8_freq(void)
 
 #elif CPUSTYLE_STM32H7XX
 
+// HAL data
+//uint32_t SystemCoreClock = 64000000;
+uint32_t SystemD2Clock = 64000000;
+const  uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7, 8, 9};
 
 /* частоты, подающиеся на периферию */
 //#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
@@ -497,7 +733,7 @@ unsigned long stm32h7xx_get_sys_freq(void)
 	switch ((RCC->CFGR & RCC_CFGR_SWS_Msk) >> RCC_CFGR_SWS_Pos)
 	{
 	default: return HSIFREQ;
-	case 0x01: return CSIFREQ;
+	case 0x01: return CSI_VALUE;
 	case 0x02: return stm32h7xx_get_hse_freq();
 	case 0x03: return stm32h7xx_get_pll1_p_freq();
 	}
@@ -694,7 +930,7 @@ unsigned long stm32h7xx_get_per_freq(void)
 	switch ((RCC->D1CCIPR & RCC_D1CCIPR_CKPERSEL_Msk) >> RCC_D1CCIPR_CKPERSEL_Pos)
 	{
 	case 0x00: return HSIFREQ;
-	case 0x01: return CSIFREQ;
+	case 0x01: return CSI_VALUE;
 	case 0x02: return stm32h7xx_get_hse_freq();
 	default: return HSIFREQ;
 	}
@@ -737,7 +973,7 @@ unsigned long stm32h7xx_get_usart1_6_freq(void)
 	case 0x01: return stm32h7xx_get_pll2_q_freq();
 	case 0x02: return stm32h7xx_get_pll3_q_freq();
 	case 0x03: return HSIFREQ;
-	case 0x04: return CSIFREQ;
+	case 0x04: return CSI_VALUE;
 	case 0x05: return LSEFREQ;
 	default: return HSIFREQ;
 	}
@@ -760,7 +996,7 @@ unsigned long stm32h7xx_get_usart2_to_8_freq(void)
 	case 0x01: return stm32h7xx_get_pll2_q_freq();
 	case 0x02: return stm32h7xx_get_pll3_q_freq();
 	case 0x03: return HSIFREQ;
-	case 0x04: return CSIFREQ;
+	case 0x04: return CSI_VALUE;
 	case 0x05: return LSEFREQ;
 	default: return HSIFREQ;
 	}
@@ -806,7 +1042,7 @@ unsigned long stm32h7xx_get_spi4_5_freq(void)
 	case 0x01: return stm32h7xx_get_pll2_q_freq();
 	case 0x02: return stm32h7xx_get_pll3_q_freq();
 	case 0x03: return HSIFREQ;
-	case 0x04: return CSIFREQ;
+	case 0x04: return CSI_VALUE;
 	case 0x05: return stm32h7xx_get_hse_freq();
 	default: return HSIFREQ;
 	}
@@ -899,7 +1135,7 @@ unsigned long stm32mp1_get_pll3_ref_freq(void)
 	case 0x01:
 		return stm32mp1_get_hse_freq();
 	case 0x02:
-		return CSIFREQ;
+		return CSI_VALUE;
 	}
 }
 
@@ -918,7 +1154,7 @@ unsigned long stm32mp1_get_pll4_ref_freq(void)
 	case 0x01:
 		return stm32mp1_get_hse_freq();
 	case 0x02:
-		return CSIFREQ;
+		return CSI_VALUE;
 #if (defined BOARD_I2S_CKIN_FREQ)
 	case 0x03: return BOARD_I2S_CKIN_FREQ;
 #endif /* (defined BOARD_I2S_CKIN_FREQ) */
@@ -1063,7 +1299,7 @@ unsigned long stm32mp1_get_per_freq(void)
 	switch ((RCC->CPERCKSELR & RCC_CPERCKSELR_CKPERSRC_Msk) >> RCC_CPERCKSELR_CKPERSRC_Pos)
 	{
 	case 0x00:	return stm32mp1_get_hsi_freq();
-	case 0x01:	return CSIFREQ;
+	case 0x01:	return CSI_VALUE;
 	case 0x02:	return stm32mp1_get_hse_freq();
 	default: return HSI64FREQ;
 	}
@@ -1081,7 +1317,7 @@ unsigned long stm32mp1_get_mcuss_freq(void)
 	default:
 	case 0x00: return stm32mp1_get_hsi_freq();
 	case 0x01: return stm32mp1_get_hse_freq();
-	case 0x02: return CSIFREQ;
+	case 0x02: return CSI_VALUE;
 	case 0x03: return stm32mp1_get_pll3_p_freq();
 	}
 }
@@ -1292,7 +1528,7 @@ unsigned long stm32mp1_uart1_get_freq(void)
 	case 0x02:
 		return stm32mp1_get_hsi_freq();
 	case 0x03:
-		return CSIFREQ;
+		return CSI_VALUE;
 	case 0x04:
 		return stm32mp1_get_pll4_q_freq();
 	case 0x05:
@@ -1319,7 +1555,7 @@ unsigned long stm32mp1_uart2_4_get_freq(void)
 	case 0x02:
 		return stm32mp1_get_hsi_freq();
 	case 0x03:
-		return CSIFREQ;
+		return CSI_VALUE;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:
@@ -1345,7 +1581,7 @@ unsigned long stm32mp1_uart3_5_get_freq(void)
 	case 0x02:
 		return stm32mp1_get_hsi_freq();
 	case 0x03:
-		return CSIFREQ;
+		return CSI_VALUE;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:
@@ -1370,7 +1606,7 @@ unsigned long stm32mp1_uart7_8_get_freq(void)
 	case 0x02:
 		return stm32mp1_get_hsi_freq();
 	case 0x03:
-		return CSIFREQ;
+		return CSI_VALUE;
 	case 0x04:
 		return stm32mp1_get_hse_freq();
 	default:
@@ -1889,6 +2125,13 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 		{ SCEMR_x16, 	SCSMR_DIV16, }, 	/* /256 = 16 * 16 */
 		{ SCEMR_x8, 	SCSMR_DIV64, },  	/* /512 = 8 * 64 */
 		{ SCEMR_x16, 	SCSMR_DIV64, }, 	/* /1024 = 16 * 64 */
+	};
+
+#elif CPUSTYLE_XC7Z
+
+	enum
+	{
+		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
 	};
 
 #else
@@ -2753,7 +2996,7 @@ static void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->PLL4CFGR1;
 
-	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock());
+	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock(& vdmode0));
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
 		((uint_fast32_t) (PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
 		//((uint_fast32_t) (pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
@@ -3050,6 +3293,12 @@ void hardware_set_dotclock(unsigned long dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	ASSERT(pll4divq >= 1);
+	// Stop PLL4
+	RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
+	(void) RCC->PLL4CR;
+	while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
+		;
+
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVQ_Msk)) |
 		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
 		0;
@@ -3058,11 +3307,13 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
 	(void) RCC->PLL4CR;
 
+	// Start PLL4
 	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
 	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
 		;
 }
 
+// округление тактовой частоты дисплейного контроллера к возможностям системы синхронизации
 unsigned long hardware_get_dotclock(unsigned long dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
@@ -3660,11 +3911,11 @@ lowlevel_sam3s_init_pll_clock_xtal(unsigned pllmul, unsigned plldiv, unsigned ws
 #endif /* CPUSTYLE_ATSAM3S */
 
 
-#if CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F4XX
+#if CPUSTYLE_STM32F7XX
 // Настроить выход PLLQ на 48 МГц
 static uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
-	const uint32_t stm32f4xx_pllq = calcdivround2(PLL_FREQ, 48000000uL);	// Как было сделано при инициализации PLL
+	const uint32_t stm32f4xx_pllq = calcdivround2(stm32f7xx_get_pll_freq(), 48000000uL);	// Как было сделано при инициализации PLL
 	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
 	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
 	RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLQ) |
@@ -3688,6 +3939,30 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void)
 
 
 #if CPUSTYLE_STM32F4XX
+
+// Настроить выход PLLQ на 48 МГц
+static uint_fast32_t stm32f7xx_pllq_initialize(void)
+{
+	const uint32_t stm32f4xx_pllq = calcdivround2(stm32f4xx_get_pll_freq(), 48000000uL);	// Как было сделано при инициализации PLL
+	// PLLQ: Main PLL (PLL) division factor for USB OTG FS, SDIO and random number generator clocks
+	// Should be 48 MHz or less for SDIO and 48 MHz with small tolerance.
+	RCC->PLLCFGR = (RCC->PLLCFGR & ~ RCC_PLLCFGR_PLLQ) |
+		((RCC_PLLCFGR_PLLQ_0 * stm32f4xx_pllq) & RCC_PLLCFGR_PLLQ) |
+		0;
+
+#if defined(RCC_DCKCFGR2_CK48MSEL)
+	RCC->DCKCFGR2 = (RCC->DCKCFGR2 & ~ (RCC_DCKCFGR2_CK48MSEL)) |
+		0 * RCC_DCKCFGR2_CK48MSEL |
+		0;
+#elif defined(RCC_DCKCFGR_CK48MSEL)
+	// stm32f469x, stm32f479xx
+	RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_CK48MSEL)) |
+		0 * RCC_DCKCFGR_CK48MSEL |
+		0;
+#endif /* defined(CC_DCKCFGR2_CK48MSEL) */
+
+	return stm32f4xx_pllq;
+}
 
 static void
 stm32f4xx_pll_initialize(void)
@@ -3833,7 +4108,7 @@ stm32f4xx_pllsai_initialize(void)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f4xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 	// Настройка PLLSAI
@@ -3867,7 +4142,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
@@ -4063,7 +4338,7 @@ stm32f7xx_pllsai_initialize(void)
 #if defined (RCC_PLLSAICFGR_PLLSAIR)
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
@@ -4106,7 +4381,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32f7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 }
@@ -4327,25 +4602,25 @@ stm32h7xx_pll_initialize(void)
 		((REF3_DIV << RCC_PLLCKSELR_DIVM3_Pos) & RCC_PLLCKSELR_DIVM3) |	// Reference divisor - не требуется корректировань число
 		0;
 	//
-	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, display_getdotclock());
-	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3 | RCC_PLL3DIVR_R3)) |
-		(((REF3_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3) |
-		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3) |	// нужно для нормального переключения SPI clock USB clock
+	const uint32_t ltdc_divr = calcdivround2(PLL3_FREQ, display_getdotclock(& vdmode0));
+	RCC->PLL3DIVR = (RCC->PLL3DIVR & ~ (RCC_PLL3DIVR_N3_Msk | RCC_PLL3DIVR_R3_Msk)) |
+		(((REF3_MUL - 1) << RCC_PLL3DIVR_N3_Pos) & RCC_PLL3DIVR_N3_Msk) |
+		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3_Msk) |	// нужно для нормального переключения SPI clock USB clock
 		0;
-	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN | RCC_PLLCFGR_PLL3RGE | RCC_PLLCFGR_PLL3VCOSEL)) |
+	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN_Msk | RCC_PLLCFGR_PLL3RGE_Msk | RCC_PLLCFGR_PLL3VCOSEL_Msk)) |
 		RCC_PLLCFGR_DIVR3EN |	// This bit can be written only when the PLL3 is disabled (PLL3ON = ‘0’ and PLL3RDY = ‘0’).
 #if PLL3_FREQ >= 150000000uL && PLL3_FREQ <= 420000000uL
-		1 * RCC_PLLCFGR_PLL3VCOSEL |	// 1: Medium VCO range: 150 to 420 MHz
+		1 * RCC_PLLCFGR_PLL3VCOSEL_Msk |	// 1: Medium VCO range: 150 to 420 MHz
 #else
-		0 * RCC_PLLCFGR_PLL3VCOSEL |	// 0: Wide VCO range: 192 to 836 MHz (default after reset)
+		0 * RCC_PLLCFGR_PLL3VCOSEL_Msk |	// 0: Wide VCO range: 192 to 836 MHz (default after reset)
 #endif
 		0 * RCC_PLLCFGR_PLL3RGE_0 |	// 00: The PLL3 input (ref3_ck) clock range frequency is between 1 and 2 MHz
 		0;
 
-	RCC->CR |= RCC_CR_PLL3ON;				// Включил PLL3
+	RCC->CR |= RCC_CR_PLL3ON_Msk;				// Включил PLL3
 
 
-	while ((RCC->CR & RCC_CR_PLL3RDY) == 0)	// пока заработает PLL
+	while ((RCC->CR & RCC_CR_PLL3RDY_Msk) == 0)	// пока заработает PLL
 		;
 
 #endif /* WITHUSEPLL3 */
@@ -4353,15 +4628,15 @@ stm32h7xx_pll_initialize(void)
 	const portholder_t flash_acr_latency = HARDWARE_FLASH_LATENCY; // Задержка для работы с памятью 5 WS for 168 MHz at 3.3 volt
 	/* Блок настройки ФЛЭШ */
 	/* Reserved bits must be kept cleared. */
-	FLASH->ACR = (FLASH->ACR & ~ (FLASH_ACR_LATENCY | FLASH_ACR_WRHIGHFREQ)) |
+	FLASH->ACR = (FLASH->ACR & ~ (FLASH_ACR_LATENCY_Msk | FLASH_ACR_WRHIGHFREQ_Msk)) |
 		(FLASH_ACR_WRHIGHFREQ_0 * 3) |
-		flash_acr_latency |		//Задержка для работы с памятью
+		(flash_acr_latency << FLASH_ACR_LATENCY_Pos) |		//Задержка для работы с памятью
 		0;
 
 	while ((FLASH->ACR & FLASH_ACR_LATENCY) != flash_acr_latency)
 		;
 
-	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW)) |
+	RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_SW_Msk)) |
 		RCC_CFGR_SW_PLL1 | // PLL as system clock
 		0;
 
@@ -4373,26 +4648,26 @@ stm32h7xx_pll_initialize(void)
 
 	// RCC Domain 1 Kernel Clock Configuration Register
 	// Set per_ck clock output
-	RCC->D1CCIPR = (RCC->D1CCIPR & ~ (RCC_D1CCIPR_CKPERSEL)) |
+	RCC->D1CCIPR = (RCC->D1CCIPR & ~ (RCC_D1CCIPR_CKPERSEL_Msk)) |
 		0 * RCC_D1CCIPR_CKPERSEL_0 |	// 00: hsi_ker_ck clock selected as per_ck clock (default after reset) - 64 MHz - used as PER_CK_FREQ
 		0;
 
 	// RCC Domain 1 Kernel Clock Configuration Register
-	RCC->D1CCIPR = (RCC->D1CCIPR & ~ (RCC_D1CCIPR_SDMMCSEL)) |
+	RCC->D1CCIPR = (RCC->D1CCIPR & ~ (RCC_D1CCIPR_SDMMCSEL_Msk)) |
 #if WITHSDHCHW
-		0 * RCC_D1CCIPR_SDMMCSEL |			// 0: pll1_q_ck clock is selected as kernel peripheral clock (default after reset)
+		0 * RCC_D1CCIPR_SDMMCSEL_Msk |			// 0: pll1_q_ck clock is selected as kernel peripheral clock (default after reset)
 #endif /* WITHSDHCHW */
 		0;
 
 	// RCC Domain 2 Kernel Clock Configuration Register
-	RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SPI123SEL | RCC_D2CCIP1R_SPI45SEL)) |
+	RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SPI123SEL_Msk | RCC_D2CCIP1R_SPI45SEL_Msk)) |
 		4 * RCC_D2CCIP1R_SPI123SEL_0 |		// per_ck
 		3 * RCC_D2CCIP1R_SPI45SEL_0 |		// 011: hsi_ker_ck clock is selected as kernel clock
 		0;
 	// RCC Domain 2 Kernel Clock Configuration Register
 	RCC->D2CCIP2R = (RCC->D2CCIP2R & ~ (
-					RCC_D2CCIP2R_USART16SEL | RCC_D2CCIP2R_USART28SEL |
-					RCC_D2CCIP2R_RNGSEL | RCC_D2CCIP2R_I2C123SEL)) |
+					RCC_D2CCIP2R_USART16SEL_Msk | RCC_D2CCIP2R_USART28SEL_Msk |
+					RCC_D2CCIP2R_RNGSEL_Msk | RCC_D2CCIP2R_I2C123SEL_Msk)) |
 		0 * RCC_D2CCIP2R_USART16SEL_0 |		// rcc_pclk2
 		0 * RCC_D2CCIP2R_USART28SEL_0 |		// rcc_pclk1
 		1 * RCC_D2CCIP2R_RNGSEL_0 |			// 01: pll1_q_ck clock is selected as kernel clock
@@ -4402,7 +4677,7 @@ stm32h7xx_pll_initialize(void)
 	// Выбор источника тактирования блока USB
 	// RCC Domain 2 Kernel Clock Configuration Register
 	// USBOTG 1 and 2 kernel clock source selection
-	RCC->D2CCIP2R = (RCC->D2CCIP2R & ~ (RCC_D2CCIP2R_USBSEL)) |
+	RCC->D2CCIP2R = (RCC->D2CCIP2R & ~ (RCC_D2CCIP2R_USBSEL_Msk)) |
 		1 * RCC_D2CCIP2R_USBSEL_0 |			// pll1_q_ck
 		//3 * RCC_D2CCIP2R_USBSEL_0 |			// hsi48_ck
 		0;
@@ -4418,7 +4693,7 @@ stm32h7xx_pll_initialize(void)
 	{
 		// Тестирование тактовой частоты - подача на сигнал MCO1
 		arm_hardware_pioa_altfn50(1U << 8, AF_SYSTEM);			/* PA0 MCO1 */
-		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_MCO1 | RCC_CFGR_MCO1PRE)) |
+		RCC->CFGR = (RCC->CFGR & ~ (RCC_CFGR_MCO1_Msk | RCC_CFGR_MCO1PRE_Msk)) |
 			1 * RCC_CFGR_MCO1PRE_0 |	// divide to 1: bypass
 			3 * RCC_CFGR_MCO1_0 |	// 011: PLL1 clock selected (pll1_q_ck)
 			0;
@@ -4434,7 +4709,7 @@ stm32h7xx_pll_initialize(void)
 // Версия для STM32H7 возвращает текушее значение делитедя.
 static uint_fast32_t stm32f7xx_pllq_initialize(void)
 {
-	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1) >> RCC_PLL1DIVR_Q1_Pos) + 1;
+	const uint32_t stm32h7xx_pllq = ((RCC->PLL1DIVR & RCC_PLL1DIVR_Q1_Msk) >> RCC_PLL1DIVR_Q1_Pos) + 1;
 	return stm32h7xx_pllq;
 }
 
@@ -4460,24 +4735,24 @@ static void stm32h7xx_pllsai_initialize(void)
 	}
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock()), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
+	const uint_fast8_t prei = calcdivider(calcdivround_saifreq(display_getdotclock(& vdmode0)), STM32F_LTDC_DIV_WIDTH, STM32F_LTDC_DIV_TAPS, & value, 0);
 	ASSERT(value >= 2);
 	PRINTF(PSTR("stm32h7xx_pllsai_initialize: value=%u, prei=%u\n"), value, prei);
 
 	// Настройка PLLSAI
 	// Частота сравнения та же самая, что и в основной PLL
 	// RCC_PLLSAICFGR_PLLSAIQ используется, если для SAI используется отдельная PLL - эта.
-	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN | /*RCC_PLLSAICFGR_PLLSAIQ | */ RCC_PLLSAICFGR_PLLSAIR)) |
-		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
-		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR) |	// PLLI2SR bits - output divisor, 2..7
+	RCC->PLLSAICFGR = (RCC->PLLSAICFGR & ~ (RCC_PLLSAICFGR_PLLSAIN_Msk | /*RCC_PLLSAICFGR_PLLSAIQ_Msk | */ RCC_PLLSAICFGR_PLLSAIR_Msk)) |
+		((SAIREF1_MUL << RCC_PLLSAICFGR_PLLSAIN_Pos) & RCC_PLLSAICFGR_PLLSAIN_Msk) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
+		((value << RCC_PLLSAICFGR_PLLSAIR_Pos) & RCC_PLLSAICFGR_PLLSAIR_Msk) |	// PLLI2SR bits - output divisor, 2..7
 		0;
 
 	RCC->DCKCFGR = (RCC->DCKCFGR & ~ RCC_DCKCFGR_PLLSAIDIVR) |
-		((prei << RCC_DCKCFGR_PLLSAIDIVR_Pos) & RCC_DCKCFGR_PLLSAIDIVR) |	// division factor for LCD_CLK. 2: PLLSAIDIVR = /8  3: PLLSAIDIVR = /16
+		((prei << RCC_DCKCFGR_PLLSAIDIVR_Pos) & RCC_DCKCFGR_PLLSAIDIVR_Msk) |	// division factor for LCD_CLK. 2: PLLSAIDIVR = /8  3: PLLSAIDIVR = /16
 		0;
 
-	RCC->CR |= RCC_CR_PLLSAION;				// Включил PLL
-	while ((RCC->CR & RCC_CR_PLLSAIRDY) == 0)	// пока заработает PLL
+	RCC->CR |= RCC_CR_PLLSAION_Msk;				// Включил PLL
+	while ((RCC->CR & RCC_CR_PLLSAIRDY_Msk) == 0)	// пока заработает PLL
 		;
 }
 
@@ -4493,41 +4768,41 @@ lowlevel_stm32f10x_pll_clock(void)
 	#if WITHCPUXOSC
 		// Внешний генератор
 		// Enable HSI
-		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) |
-			RCC_CR_HSEON |
-			RCC_CR_HSEBYP |
+		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON_Msk | RCC_CR_HSION_Msk | RCC_CR_HSEBYP_Msk)) |
+			RCC_CR_HSEON_Msk |
+			RCC_CR_HSEBYP_Msk |
 			0;
-		while (!(RCC->CR & RCC_CR_HSERDY))
+		while (!(RCC->CR & RCC_CR_HSERDY_Msk))
 			;
 	#elif WITHCPUXTAL
 		// внешний кварцевый резонатор
 		// Enable HSI
-		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSEON;
-		while (!(RCC->CR & RCC_CR_HSERDY))
+		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON_Msk | RCC_CR_HSION_Msk | RCC_CR_HSEBYP_Msk)) | RCC_CR_HSEON_Msk;
+		while (!(RCC->CR & RCC_CR_HSERDY_Msk))
 			;
 	#else /* WITHCPUXTAL */
 		// внутренний генератор
 		// Enable HSI
-		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON | RCC_CR_HSION | RCC_CR_HSEBYP)) | RCC_CR_HSION;
-		while (!(RCC->CR & RCC_CR_HSIRDY))
+		RCC->CR = (RCC->CR & ~ (RCC_CR_HSEON_Msk | RCC_CR_HSION_Msk | RCC_CR_HSEBYP_Msk)) | RCC_CR_HSION_Msk;
+		while (!(RCC->CR & RCC_CR_HSIRDY_Msk))
 			;
 	#endif /* WITHCPUXTAL */
 
 	// Enable Prefetch Buffer
-	FLASH->ACR |= FLASH_ACR_PRFTBE;
+	FLASH->ACR |= FLASH_ACR_PRFTBE_Msk;
 
 #if (CPU_FREQ < 24000000ul)
 	// Flash 0 wait state
-    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_0;
+    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | FLASH_ACR_LATENCY_0;
 #elif (CPU_FREQ <= 48000000ul)
 	// Flash 1 wait state
-    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_1;
+    FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | FLASH_ACR_LATENCY_1;
 #else
  	// Flash 2 wait state (if freq in 24..48 MHz range - 1WS.)
 	#if CPUSTYLE_STM32F1XX
-		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_2;
+		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | FLASH_ACR_LATENCY_2;
 	#else
-		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY) | FLASH_ACR_LATENCY_1;
+		FLASH->ACR = (FLASH->ACR & ~FLASH_ACR_LATENCY_Msk) | FLASH_ACR_LATENCY_1;
 	#endif
 #endif
 
@@ -5260,334 +5535,6 @@ void xc7z_hardware_initialize(void)
 		PRINTF("PS GPIO init error\n");
 }
 
-/* Opcode exit is 0 all the time */
-#define OPCODE_EXIT       0U
-#define OPCODE_CLEAR      1U
-#define OPCODE_WRITE      2U
-#define OPCODE_MASKWRITE  3U
-#define OPCODE_MASKPOLL   4U
-#define OPCODE_MASKDELAY  5U
-#define NEW_PS7_ERR_CODE 1
-
-/* Encode number of arguments in last nibble */
-#define EMIT_EXIT()                   ( (OPCODE_EXIT      << 4 ) | 0 )
-#define EMIT_CLEAR(addr)              ( (OPCODE_CLEAR     << 4 ) | 1 ) , addr
-#define EMIT_WRITE(addr,val)          ( (OPCODE_WRITE     << 4 ) | 2 ) , addr, val
-#define EMIT_MASKWRITE(addr,mask,val) ( (OPCODE_MASKWRITE << 4 ) | 3 ) , addr, mask, val
-#define EMIT_MASKPOLL(addr,mask)      ( (OPCODE_MASKPOLL  << 4 ) | 2 ) , addr, mask
-#define EMIT_MASKDELAY(addr,mask)      ( (OPCODE_MASKDELAY << 4 ) | 2 ) , addr, mask
-
-/* Returns codes of ps7_init* */
-#define PS7_INIT_SUCCESS		(0)
-#define PS7_INIT_CORRUPT		(1)
-#define PS7_INIT_TIMEOUT		(2)
-#define PS7_POLL_FAILED_DDR_INIT	(3)
-#define PS7_POLL_FAILED_DMA		(4)
-#define PS7_POLL_FAILED_PLL		(5)
-
-#define PCW_SILICON_VERSION_1	0
-#define PCW_SILICON_VERSION_2	1
-#define PCW_SILICON_VERSION_3	2
-
-/* For delay calculation using global registers*/
-#define SCU_GLOBAL_TIMER_COUNT_L32	0xF8F00200
-#define SCU_GLOBAL_TIMER_COUNT_U32	0xF8F00204
-#define SCU_GLOBAL_TIMER_CONTROL	0xF8F00208
-#define SCU_GLOBAL_TIMER_AUTO_INC	0xF8F00218
-#define APU_FREQ  666666666
-
-#define PS7_MASK_POLL_TIME 100000000
-
-#define __arch_getb(a)			(*(volatile uint8_t *)(a))
-#define __arch_getw(a)			(*(volatile uint16_t *)(a))
-#define __arch_getl(a)			(*(volatile uint32_t *)(a))
-#define __arch_getq(a)			(*(volatile uint64_t *)(a))
-
-#define __arch_putb(v,a)		(*(volatile uint8_t *)(a) = (v))
-#define __arch_putw(v,a)		(*(volatile uint16_t *)(a) = (v))
-#define __arch_putl(v,a)		(*(volatile uint32_t *)(a) = (v))
-#define __arch_putq(v,a)		(*(volatile uint64_t *)(a) = (v))
-
-#define __raw_writeb(v,a)	__arch_putb(v,a)
-#define __raw_writew(v,a)	__arch_putw(v,a)
-#define __raw_writel(v,a)	__arch_putl(v,a)
-#define __raw_writeq(v,a)	__arch_putq(v,a)
-
-#define __raw_readb(a)		__arch_getb(a)
-#define __raw_readw(a)		__arch_getw(a)
-#define __raw_readl(a)		__arch_getl(a)
-#define __raw_readq(a)		__arch_getq(a)
-
-/* IO accessors. No memory barriers desired. */
-static inline void iowrite(unsigned long val, uintptr_t addr)
-{
-	__raw_writel(val, addr);
-}
-
-static inline unsigned long ioread(uintptr_t addr)
-{
-	return __raw_readl(addr);
-}
-
-/* start timer */
-static void perf_start_clock(void)
-{
-	iowrite((1 << 0) | /* Timer Enable */
-		(1 << 3) | /* Auto-increment */
-		(0 << 8), /* Pre-scale */
-		SCU_GLOBAL_TIMER_CONTROL);
-}
-
-/* Compute mask for given delay in miliseconds*/
-static unsigned long get_number_of_cycles_for_delay(unsigned long delay)
-{
-	return (APU_FREQ / (2 * 1000)) * delay;
-}
-
-/* stop timer */
-static void perf_disable_clock(void)
-{
-	iowrite(0, SCU_GLOBAL_TIMER_CONTROL);
-}
-
-/* stop timer and reset timer count regs */
-static void perf_reset_clock(void)
-{
-	perf_disable_clock();
-	iowrite(0, SCU_GLOBAL_TIMER_COUNT_L32);
-	iowrite(0, SCU_GLOBAL_TIMER_COUNT_U32);
-}
-
-static void perf_reset_and_start_timer(void)
-{
-	perf_reset_clock();
-	perf_start_clock();
-}
-
-int ps7_config(const unsigned long * ps7_config_init)
-{
-	const unsigned long *ptr = ps7_config_init;
-
-    unsigned long  opcode;            // current instruction ..
-    unsigned long  args[16];           // no opcode has so many args ...
-    int  numargs;           // number of arguments of this instruction
-    int  j;                 // general purpose index
-
-    volatile uint32_t *addr;         // some variable to make code readable
-    unsigned long  val,mask;              // some variable to make code readable
-
-    int finish = -1 ;           // loop while this is negative !
-    int i = 0;                  // Timeout variable
-
-    while( finish < 0 ) {
-        numargs = ptr[0] & 0xF;
-        opcode = ptr[0] >> 4;
-
-        for( j = 0 ; j < numargs ; j ++ )
-            args[j] = ptr[j+1];
-        ptr += numargs + 1;
-
-
-        switch ( opcode ) {
-
-        case OPCODE_EXIT:
-            finish = PS7_INIT_SUCCESS;
-            break;
-
-        case OPCODE_CLEAR:
-            addr = (volatile uint32_t*) args[0];
-            *addr = 0;
-            break;
-
-        case OPCODE_WRITE:
-            addr = (volatile uint32_t*) args[0];
-            val = args[1];
-            *addr = val;
-            break;
-
-        case OPCODE_MASKWRITE:
-            addr = (volatile uint32_t*) args[0];
-            mask = args[1];
-            val = args[2];
-            *addr = ( val & mask ) | ( *addr & ~mask);
-            break;
-
-        case OPCODE_MASKPOLL:
-            addr = (volatile uint32_t*) args[0];
-            mask = args[1];
-            i = 0;
-            while (!(*addr & mask)) {
-                if (i == PS7_MASK_POLL_TIME) {
-                    finish = PS7_INIT_TIMEOUT;
-                    break;
-                }
-                i++;
-            }
-            break;
-        case OPCODE_MASKDELAY:
-            addr = (volatile uint32_t*) args[0];
-            mask = args[1];
-            int delay = get_number_of_cycles_for_delay(mask);
-            perf_reset_and_start_timer();
-            while ((*addr < delay)) {
-            }
-            break;
-        default:
-            finish = PS7_INIT_CORRUPT;
-            break;
-        }
-    }
-    return finish;
-}
-
-static const unsigned long ps7_clock_init_data_3_0[] = {
-		EMIT_MASKWRITE(0XF8000128, 0x03F03F01U ,0x00700F01U),	// DCI_CLK_CTRL
-		EMIT_MASKWRITE(0XF8000168, 0x00003F31U ,0x00000801U),	// PCAP_CLK_CTRL
-		EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
-		EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
-		//EMIT_MASKWRITE(0XF800012C, 0x01FFCCCDU ,0x016C040DU),	// APER_CLK_CTRL AMBA Peripheral Clock Control
-		EMIT_EXIT(),
-	};
-
-static const unsigned long ps7_ddr_init_data_3_0[] = {
-		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000084U),	// ddrc_ctrl, reg_ddrc_soft_rstb = 0
-		EMIT_MASKWRITE(0XF8006004, 0x0007FFFFU ,0x00001082U),	// Two_rank_cfg
-		EMIT_MASKWRITE(0XF8006008, 0x03FFFFFFU ,0x03C0780FU),
-		EMIT_MASKWRITE(0XF800600C, 0x03FFFFFFU ,0x02001001U),
-		EMIT_MASKWRITE(0XF8006010, 0x03FFFFFFU ,0x00014001U),
-		EMIT_MASKWRITE(0XF8006014, 0x001FFFFFU ,0x0004159BU),
-		EMIT_MASKWRITE(0XF8006018, 0xF7FFFFFFU ,0x44E458D3U),
-		EMIT_MASKWRITE(0XF800601C, 0xFFFFFFFFU ,0x7282BCE5U),
-		EMIT_MASKWRITE(0XF8006020, 0x7FDFFFFCU ,0x270872D0U),
-		EMIT_MASKWRITE(0XF8006024, 0x0FFFFFC3U ,0x00000000U),
-		EMIT_MASKWRITE(0XF8006028, 0x00003FFFU ,0x00002007U),
-		EMIT_MASKWRITE(0XF800602C, 0xFFFFFFFFU ,0x00000008U),
-		EMIT_MASKWRITE(0XF8006030, 0xFFFFFFFFU ,0x00040B30U),
-		EMIT_MASKWRITE(0XF8006034, 0x13FF3FFFU ,0x000116D4U),
-		EMIT_MASKWRITE(0XF8006038, 0x00000003U ,0x00000000U),
-		EMIT_MASKWRITE(0XF800603C, 0x000FFFFFU ,0x00000666U),
-		EMIT_MASKWRITE(0XF8006040, 0xFFFFFFFFU ,0xFFFF0000U),
-		EMIT_MASKWRITE(0XF8006044, 0x0FFFFFFFU ,0x0FF55555U),
-		EMIT_MASKWRITE(0XF8006048, 0x0003F03FU ,0x0003C008U),
-		EMIT_MASKWRITE(0XF8006050, 0xFF0F8FFFU ,0x77010800U),
-		EMIT_MASKWRITE(0XF8006058, 0x00010000U ,0x00000000U),
-		EMIT_MASKWRITE(0XF800605C, 0x0000FFFFU ,0x00005003U),
-		EMIT_MASKWRITE(0XF8006060, 0x000017FFU ,0x0000003EU),
-		EMIT_MASKWRITE(0XF8006064, 0x00021FE0U ,0x00020000U),
-		EMIT_MASKWRITE(0XF8006068, 0x03FFFFFFU ,0x00284141U),
-		EMIT_MASKWRITE(0XF800606C, 0x0000FFFFU ,0x00001610U),
-		EMIT_MASKWRITE(0XF8006078, 0x03FFFFFFU ,0x00466111U),
-		EMIT_MASKWRITE(0XF800607C, 0x000FFFFFU ,0x00032222U),
-		EMIT_MASKWRITE(0XF80060A4, 0xFFFFFFFFU ,0x10200802U),
-		EMIT_MASKWRITE(0XF80060A8, 0x0FFFFFFFU ,0x0690CB73U),
-		EMIT_MASKWRITE(0XF80060AC, 0x000001FFU ,0x000001FEU),
-		EMIT_MASKWRITE(0XF80060B0, 0x1FFFFFFFU ,0x1CFFFFFFU),
-		EMIT_MASKWRITE(0XF80060B4, 0x00000200U ,0x00000200U),
-		EMIT_MASKWRITE(0XF80060B8, 0x01FFFFFFU ,0x00200066U),
-		EMIT_MASKWRITE(0XF80060C4, 0x00000003U ,0x00000000U),
-		EMIT_MASKWRITE(0XF80060C8, 0x000000FFU ,0x00000000U),
-		EMIT_MASKWRITE(0XF80060DC, 0x00000001U ,0x00000000U),
-		EMIT_MASKWRITE(0XF80060F0, 0x0000FFFFU ,0x00000000U),
-		EMIT_MASKWRITE(0XF80060F4, 0x0000000FU ,0x00000008U),
-		EMIT_MASKWRITE(0XF8006114, 0x000000FFU ,0x00000000U),
-		EMIT_MASKWRITE(0XF8006118, 0x7FFFFFCFU ,0x40000001U),
-		EMIT_MASKWRITE(0XF800611C, 0x7FFFFFCFU ,0x40000001U),
-		EMIT_MASKWRITE(0XF8006120, 0x7FFFFFCFU ,0x40000000U),
-		EMIT_MASKWRITE(0XF8006124, 0x7FFFFFCFU ,0x40000000U),
-		EMIT_MASKWRITE(0XF800612C, 0x000FFFFFU ,0x00029000U),
-		EMIT_MASKWRITE(0XF8006130, 0x000FFFFFU ,0x00029000U),
-		EMIT_MASKWRITE(0XF8006134, 0x000FFFFFU ,0x00029000U),
-		EMIT_MASKWRITE(0XF8006138, 0x000FFFFFU ,0x00029000U),
-		EMIT_MASKWRITE(0XF8006140, 0x000FFFFFU ,0x00000035U),
-		EMIT_MASKWRITE(0XF8006144, 0x000FFFFFU ,0x00000035U),
-		EMIT_MASKWRITE(0XF8006148, 0x000FFFFFU ,0x00000035U),
-		EMIT_MASKWRITE(0XF800614C, 0x000FFFFFU ,0x00000035U),
-		EMIT_MASKWRITE(0XF8006154, 0x000FFFFFU ,0x00000080U),
-		EMIT_MASKWRITE(0XF8006158, 0x000FFFFFU ,0x00000080U),
-		EMIT_MASKWRITE(0XF800615C, 0x000FFFFFU ,0x00000080U),
-		EMIT_MASKWRITE(0XF8006160, 0x000FFFFFU ,0x00000080U),
-		EMIT_MASKWRITE(0XF8006168, 0x001FFFFFU ,0x000000F9U),
-		EMIT_MASKWRITE(0XF800616C, 0x001FFFFFU ,0x000000F9U),
-		EMIT_MASKWRITE(0XF8006170, 0x001FFFFFU ,0x000000F9U),
-		EMIT_MASKWRITE(0XF8006174, 0x001FFFFFU ,0x000000F9U),
-		EMIT_MASKWRITE(0XF800617C, 0x000FFFFFU ,0x000000C0U),
-		EMIT_MASKWRITE(0XF8006180, 0x000FFFFFU ,0x000000C0U),
-		EMIT_MASKWRITE(0XF8006184, 0x000FFFFFU ,0x000000C0U),
-		EMIT_MASKWRITE(0XF8006188, 0x000FFFFFU ,0x000000C0U),
-		EMIT_MASKWRITE(0XF8006190, 0x6FFFFEFEU ,0x00040080U),
-		EMIT_MASKWRITE(0XF8006194, 0x000FFFFFU ,0x0001FC82U),
-		EMIT_MASKWRITE(0XF8006204, 0xFFFFFFFFU ,0x00000000U),
-		EMIT_MASKWRITE(0XF8006208, 0x000703FFU ,0x000003FFU),
-		EMIT_MASKWRITE(0XF800620C, 0x000703FFU ,0x000003FFU),
-		EMIT_MASKWRITE(0XF8006210, 0x000703FFU ,0x000003FFU),
-		EMIT_MASKWRITE(0XF8006214, 0x000703FFU ,0x000003FFU),
-		EMIT_MASKWRITE(0XF8006218, 0x000F03FFU ,0x000003FFU),
-		EMIT_MASKWRITE(0XF800621C, 0x000F03FFU ,0x000003FFU),
-		EMIT_MASKWRITE(0XF8006220, 0x000F03FFU ,0x000003FFU),
-		EMIT_MASKWRITE(0XF8006224, 0x000F03FFU ,0x000003FFU),
-		EMIT_MASKWRITE(0XF80062A8, 0x00000FF5U ,0x00000000U),
-		EMIT_MASKWRITE(0XF80062AC, 0xFFFFFFFFU ,0x00000000U),
-		EMIT_MASKWRITE(0XF80062B0, 0x003FFFFFU ,0x00005125U),
-		EMIT_MASKWRITE(0XF80062B4, 0x0003FFFFU ,0x000012A8U),
-		EMIT_MASKPOLL(0XF8000B74, 0x00002000U),					// DDRIOB_DCI_STATUS
-		EMIT_MASKWRITE(0XF8006000, 0x0001FFFFU ,0x00000085U),	// ddrc_ctrl, reg_ddrc_soft_rstb = 1
-		EMIT_MASKPOLL(0XF8006054, 0x00000007U),					// mode_sts_reg
-		EMIT_EXIT(),
-	};
-
-static const unsigned long ps7_mio_init_data_3_0[] = {
-		EMIT_MASKWRITE(0XF8000B40, 0x00000FFFU ,0x00000600U),	// DDRIOB_ADDR0
-		EMIT_MASKWRITE(0XF8000B44, 0x00000FFFU ,0x00000600U),	// DDRIOB_ADDR1
-		EMIT_MASKWRITE(0XF8000B48, 0x00000FFFU ,0x00000672U),
-		EMIT_MASKWRITE(0XF8000B4C, 0x00000FFFU ,0x00000800U),
-		EMIT_MASKWRITE(0XF8000B50, 0x00000FFFU ,0x00000674U),
-		EMIT_MASKWRITE(0XF8000B54, 0x00000FFFU ,0x00000800U),
-		EMIT_MASKWRITE(0XF8000B58, 0x00000FFFU ,0x00000600U),	// DDRIOB_CLOCK
-		EMIT_MASKWRITE(0XF8000B5C, 0xFFFFFFFFU ,0x0018C61CU),	// DDRIOB_DRIVE_SLEW_ADDR
-		EMIT_MASKWRITE(0XF8000B60, 0xFFFFFFFFU ,0x00F9861CU),
-		EMIT_MASKWRITE(0XF8000B64, 0xFFFFFFFFU ,0x00F9861CU),
-		EMIT_MASKWRITE(0XF8000B68, 0xFFFFFFFFU ,0x00F9861CU),	// DDRIOB_DRIVE_SLEW_CLOCK
-		EMIT_MASKWRITE(0XF8000B6C, 0x00007FFFU ,0x00000220U),	// DDRIOB_DDR_CTRL
-		EMIT_MASKWRITE(0XF8000B70, 0x00000001U ,0x00000001U),	// DDRIOB_DCI_CTRL
-		EMIT_MASKWRITE(0XF8000B70, 0x00000021U ,0x00000020U),	// DDRIOB_DCI_CTRL
-		EMIT_MASKWRITE(0XF8000B70, 0x07FEFFFFU ,0x00000823U),	// DDRIOB_DCI_CTRL
-		EMIT_EXIT(),
-};
-
-static const unsigned long ps7_peripherals_init_data_3_0[] = {
-		EMIT_MASKWRITE(0XF8000B48, 0x00000180U ,0x00000180U),	// DDRIOB_DATA0
-		EMIT_MASKWRITE(0XF8000B4C, 0x00000180U ,0x00000000U),	// DDRIOB_DATA1
-		EMIT_MASKWRITE(0XF8000B50, 0x00000180U ,0x00000180U),	// DDRIOB_DIFF0
-		EMIT_MASKWRITE(0XF8000B54, 0x00000180U ,0x00000000U),	// DDRIOB_DIFF1
-		EMIT_EXIT(),
-	};
-
-
-static int ps7_init(void)
-{
-	int ret;
-
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-
-	ret = ps7_config(ps7_mio_init_data_3_0);
-	if (ret != PS7_INIT_SUCCESS)
-		return ret;
-
-	ret = ps7_config(ps7_clock_init_data_3_0);
-	if (ret != PS7_INIT_SUCCESS)
-		return ret;
-
-	ret = ps7_config(ps7_ddr_init_data_3_0);
-	if (ret != PS7_INIT_SUCCESS)
-		return ret;
-
-	ret = ps7_config(ps7_peripherals_init_data_3_0);
-	if (ret != PS7_INIT_SUCCESS)
-		return ret;
-
-	return PS7_INIT_SUCCESS;
-}
-
 static void xc7z1_arm_pll_initialize(void)
 {
 	const uint_fast32_t arm_pll_mul = ARM_PLL_MUL;	// ARM_PLL_CFG.PLL_FDIV
@@ -5617,7 +5564,7 @@ static void xc7z1_arm_pll_initialize(void)
 	//	EMIT_MASKWRITE(0XF8000100, 0x00000010U ,0x00000000U),	// ARM_PLL_CTRL
 	SCLR->ARM_PLL_CTRL &= ~ 0x0010uL;	// PLL_BYPASS_FORCE
 
-	//	EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),	// ARM_CLK_CTRL
+	//	////EMIT_MASKWRITE(0XF8000120, 0x1F003F30U ,0x1F000200U),	// ARM_CLK_CTRL
 	SCLR->ARM_CLK_CTRL = (SCLR->ARM_CLK_CTRL & ~ (0x1F003F30U)) |
 			(0x01uL << 28) |	// CPU_PERI_CLKACT
 			(0x01uL << 27) |	// CPU_1XCLKACT
@@ -5721,7 +5668,7 @@ static uint_fast64_t xc7z1_get_ddr_pll_freq(void)
 	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * ddr_pll_mul;
 }
 
-static uint_fast64_t xc7z1_get_io_pll_freq(void)
+ uint_fast64_t xc7z1_get_io_pll_freq(void)
 {
 	const uint_fast32_t io_pll_mul = (SCLR->IO_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
@@ -5803,12 +5750,36 @@ unsigned long  xc7z1_get_spi_freq(void)
 	}
 }
 
+void hardware_set_dotclock(unsigned long dotfreq)
+{
+	unsigned long f1 = (unsigned long) ( xc7z1_get_io_pll_freq() / 1000);
+	dotfreq /= 1000;
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(f1, dotfreq), XC7Z_FPGAx_CLK_WIDTH, XC7Z_FPGAx_CLK_TAPS, & value, 0);
+
+	PRINTF("xc7z1_setltdcfreq: FPGA0_CLK_CTRL.DIVISOR0=%u, DIVISOR1=%u\n", 1u << prei, value);
+
+#if 0
+	// PL Clock 0 Output control
+	SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
+			(((uint_fast32_t) 1 << prei) << 8) | // 13:8 DIVISOR0 - First cascade divider.
+			((uint_fast32_t) value << 20) | // 25:20 DIVISOR1 - Second cascade divide
+			(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+			0;
+#endif
+}
+
 #endif /* CPUSTYLE_XC7Z */
+
+uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
 
 // PLL initialize
 void FLASHMEMINITFUNC
 sysinit_pll_initialize(void)
 {
+#ifdef USE_HAL_DRIVER
+	HAL_Init();
+#endif /* USE_HAL_DRIVER */
 #if CPUSTYLE_STM32F1XX
 
 	lowlevel_stm32f10x_pll_clock();
@@ -6048,10 +6019,45 @@ sysinit_pll_initialize(void)
 		xc7z1_ddr_pll_initialize();
 		xc7z1_io_pll_initialize();
 
-		ps7_init();
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 		XDCFG->CTRL &= ~ (1uL << 29);	// PCFG_POR_CNT_4K
+
+		////EMIT_MASKWRITE(0XF8000170, 0x03F03F30U ,0x00400800U),	// FPGA0_CLK_CTRL PL Clock 0 Output control
+
+		// PL Clock 0 Output control
+		SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA0_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
+
+		// PL Clock 1 Output control
+		SCLR->FPGA1_CLK_CTRL = (SCLR->FPGA1_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA1_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
+
+		// PL Clock 2 Output control
+		SCLR->FPGA2_CLK_CTRL = (SCLR->FPGA2_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA2_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
+
+		// PL Clock 3 Output control
+		SCLR->FPGA3_CLK_CTRL = (SCLR->FPGA3_CLK_CTRL & ~ (0x03F03F30U)) |
+				((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR0 << 8) | // 13:8DIVISOR0 - First cascade divider.
+				((uint_fast32_t) SCLR_FPGA3_CLK_CTRL_DIVISOR1 << 20) | // 25:20 DIVISOR1 - Second cascade divide
+				(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
+				0;
+
+		////EMIT_MASKWRITE(0XF80001C4, 0x00000001U ,0x00000001U),	// CLK_621_TRUE CPU Clock Ratio Mode select
+		SCLR->CLK_621_TRUE = (SCLR->CLK_621_TRUE & ~ (0x00000001U)) |
+				0x00000001U |
+				0;
+
 		SCLR->APER_CLK_CTRL |= (0x01uL << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 
 	#endif /* WITHISBOOTLOADER */
@@ -6062,6 +6068,7 @@ sysinit_pll_initialize(void)
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
+	SystemCoreClock = CPU_FREQ;
 }
 
 

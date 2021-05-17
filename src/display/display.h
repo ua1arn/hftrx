@@ -310,6 +310,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 
 	#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
 
+		// RBG named order
 		typedef uint_fast32_t COLORMAIN_T;
 		typedef uint32_t PACKEDCOLORMAIN_T;
 
@@ -427,12 +428,12 @@ void display_nextfb(void);				/* переключаем на следующий 
 void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 
-void tc358768_initialize(void);
+void tc358768_initialize(const videomode_t * vdmode);
 void tc358768_deinitialize(void);
-void panel_initialize(void);
+void panel_initialize(const videomode_t * vdmode);
 void panel_deinitialize(void);
 
-void sii9022_initialize(void);
+void sii9022_initialize(const videomode_t * vdmode);
 
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */

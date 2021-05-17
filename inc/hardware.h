@@ -378,6 +378,7 @@ extern "C" {
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
 
 #elif CPUSTYLE_STM32MP1
@@ -403,6 +404,7 @@ extern "C" {
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
 
 
@@ -428,6 +430,33 @@ extern "C" {
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
 	#endif /* __ARM_NEON */
+
+#elif CPUSTYPE_ALLWNV3S
+	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
+	//
+	//	ARM Cortex TM -A7 MP1 Processor
+	//	Thumb-2 Technology
+	//	Support NEON Advanced SIMD(Single Instruction Multiple Data)instruction for acceleration of media and signal processing functions
+	//	Support Large Physical Address Extensions(LPAE)
+	//	VFPv4 Floating Point Unit
+	//	32KB L1 Instruction cache and 32KB L1 Data cache
+	//	128KB L2 cache
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "armcpu/alwnrv3s.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+	#endif /* __ARM_NEON */
+
 
 
 #elif \
@@ -716,7 +745,34 @@ void arm_hardware_dma2d_initialize(void);	// Graphic 2D engine
 void arm_hardware_mdma_initialize(void);	// Graphic 2D engine
 void arm_hardware_sdram_initialize(void);	// External memory region(s)
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames);	// LCD-TFT Controller (LTDC) with framebuffer
+
+typedef struct videomode_tag
+{
+	unsigned width; 		/* LCD pixel width            */
+	unsigned height; 		/* LCD pixel height           */
+	unsigned hsync; 		/* horizontal synchronization */
+	unsigned hbp; 			/* horizontal back porch      */
+	unsigned hfp; 			/* horizontal front porch     */
+
+	unsigned vsync; 		/* vertical synchronization   */
+	unsigned vbp; 			/* vertical back porch        */
+	unsigned vfp; 			/* vertical front porch       */
+
+	// mode: de/sync mode select.
+	// de mode: mode="1", vs and hs must pull high.
+	// sync mode: mode="0". de must be grounded
+	unsigned vsyncneg; 		/* negative polarity required for vsync signal */
+	unsigned hsyncneg; 		/* negative polarity required for hsync signal */
+	unsigned deneg; 		/* negative de polarity: (normal: de is 0 while sync) */
+	unsigned lq43reset; /* требуется формирование сигнала RESET для панели по этому выводу после начала формирования синхронизации */
+	unsigned fps;	/* frames per secound */
+
+} videomode_t;
+
+extern const videomode_t vdmode0;
+void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
+unsigned long display_getdotclock(const videomode_t * vdmode);
+
 void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
@@ -879,7 +935,6 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
-void bootloader_detach(uintptr_t ip);
 void bootloader_deffereddetach(void * arg);
 
 
@@ -924,8 +979,6 @@ unsigned long hardware_get_dotclock(unsigned long dotfreq);
 void hardware_nonguiyield(void);
 uint_fast8_t stm32mp1_overdrived(void);	// return 1 if CPU supports 800 MHz clock
 
-uint_fast32_t display_getdotclock(void);
-
 int toshiba_ddr_power_init(void);
 void stpmic1_dump_regulators(void);
 
@@ -937,7 +990,8 @@ void sys_check_timeouts(void);	/* LWIP support */
 
 #define USBALIGN_BEGIN __attribute__ ((aligned (64)))
 #define USBALIGN_END /* nothing */
-#define UNUSED(x) ((void)(x))
+
+//#define UNUSED(x) ((void)(x))
 
 #define AUDIORECBUFFSIZE16 (16384)	// размер данных должен быть не меньше размера кластера на SD карте
 
@@ -958,7 +1012,74 @@ extern uint8_t myGATEWAY [4];
 extern XGpioPs xc7z_gpio;
 
 void xc7z_hardware_initialize(void);
+void xc7z_dds_ftw(const uint_least64_t * val);
+void xc7z_dds_rts(const uint_least64_t * val);
 #endif /* CPUSTYLE_XC7Z */
+
+
+/* получить 32-бит значение */
+uint_fast32_t
+/* Low endian memory layout */
+USBD_peek_u32(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 32-бит значение */
+/* Low endian memory layout */
+unsigned USBD_poke_u32(uint8_t * buff, uint_fast32_t v);
+
+/* получить 24-бит значение */
+/* Low endian memory layout */
+uint_fast32_t
+USBD_peek_u24(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 24-бит значение */
+/* Low endian memory layout */
+unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v);
+
+/* получить 16-бит значение */
+/* Low endian memory layout */
+uint_fast32_t
+USBD_peek_u16(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 16-бит значение */
+unsigned USBD_poke_u16(uint8_t * buff, uint_fast16_t v);
+
+/* получить 8-бит значение */
+uint_fast8_t
+USBD_peek_u8(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа 8-бит значение */
+unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v);
+
+/* получить 32-бит значение */
+/* Big endian memory layout */
+uint_fast32_t
+USBD_peek_u32_BE(
+	const uint8_t * buff
+	);
+
+/* записать в буфер для ответа n-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v);
+unsigned USBD_poke_u24_BE(uint8_t * buff, uint_fast32_t v);
+unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v);
+
+uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b);
+uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b);
+uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b);
+uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
+
+#define  HI_32BY(w)  (((w) >> 24) & 0xFF)   /* Extract 31..24 bits from unsigned word */
+#define  HI_24BY(w)  (((w) >> 16) & 0xFF)   /* Extract 23..16 bits from unsigned word */
+#define  HI_BYTE(w)  (((w) >> 8) & 0xFF)   /* Extract high-order byte from unsigned word */
+#define  LO_BYTE(w)  ((w) & 0xFF)          /* Extract low-order byte from unsigned word */
 
 #ifdef __cplusplus
 }

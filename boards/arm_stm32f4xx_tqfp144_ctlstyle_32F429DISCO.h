@@ -278,9 +278,6 @@
 	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define FPGADIVIDERATIO 5
 	#define EXTSAI_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
-	// DDC Module 1
-	#define WITHIFDACWIDTH	16 //32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	24 //32		// 1 бит знак и 31 бит значащих
 
 	#define EXTI2S_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
 	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону

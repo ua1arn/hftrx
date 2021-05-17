@@ -17,8 +17,11 @@
 
 #include "list.h"
 #include "audio.h"
+
+#if WITHUSBHW
 #include "usb/usb200.h"
 #include "usb/usbch9.h"
+#endif /* WITHUSBHW */
 
 #include <string.h>		// for memset
 
@@ -237,7 +240,7 @@ int_fast32_t buffers_dmabuffer16cachesize(void)
 typedef ALIGNX_BEGIN struct voices32tx_tag
 {
 	void * tag2;
-	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32TX] ALIGNX_END;
+	ALIGNX_BEGIN IFDACvalue_t buff [DMABUFFSIZE32TX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 	void * tag3;
 } ALIGNX_END voice32tx_t;
@@ -250,7 +253,7 @@ int_fast32_t buffers_dmabuffer32txcachesize(void)
 // I/Q data from FPGA or IF CODEC
 typedef ALIGNX_BEGIN struct voices32rx_tag
 {
-	ALIGNX_BEGIN int32_t buff [DMABUFFSIZE32RX] ALIGNX_END;
+	ALIGNX_BEGIN IFADCvalue_t buff [DMABUFFSIZE32RX] ALIGNX_END;
 	ALIGNX_BEGIN LIST_ENTRY item ALIGNX_END;
 } ALIGNX_END voice32rx_t;
 
@@ -294,14 +297,19 @@ static RAMDTCM LIST_HEAD2 speexfree16;		// Свободные буферы
 static RAMDTCM LIST_HEAD2 speexready16;	// Буферы для обработки speex
 static RAMDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 
+#if WITHUSBHW
 static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacoutalt;
+#endif /* WITHUSBHW */
 
-static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
-static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1);
+static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1);
+
+static void savesampleout16stereo_float_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
+static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1);
 
 // USB AUDIO IN
 typedef ALIGNX_BEGIN struct uacin16_tag
@@ -420,14 +428,14 @@ static RAMDTCM LIST_HEAD2 modemsrx8;	// Буферы с принятымти ч�
 typedef struct message
 {
 	void * tag2;
-	LIST_ENTRY item;
+	volatile VLIST_ENTRY item;
 	uint8_t type;
 	uint8_t data [MSGBUFFERSIZE8];
 	void * tag3;
 } message_t;
 
-static RAMDTCM LIST_ENTRY msgsfree8;		// Свободные буферы
-static RAMDTCM LIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
+static volatile RAMDTCM VLIST_ENTRY msgsfree8;		// Свободные буферы
+static volatile RAMDTCM VLIST_ENTRY msgsready8;		// Заполненные - готовые к обработке
 static RAMDTCM SPINLOCK_t locklistmsg8 = SPINLOCK_INIT;
 
 #if WITHBUFFERSDEBUG
@@ -611,6 +619,7 @@ denoise16_t * allocate_dmabuffer16denoise(void)
 	return 0;
 }
 
+// in realime context
 static void
 savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 {
@@ -640,8 +649,8 @@ savesampleout16tospeex(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 }
 
 deliverylist_t rtstargetsint;	// выход обработчика DMA приема от FPGA
-deliverylist_t afoutfloat_user;	// выход sppeex и фильтра
-deliverylist_t afoutfloat;	// выход приемника
+deliverylist_t speexoutfloat_user;	// выход sppeex и фильтра
+deliverylist_t afdemodoutfloat_rt;	// выход приемника
 
 #endif /* WITHINTEGRATEDDSP */
 
@@ -657,21 +666,23 @@ void buffers_initialize(void)
 #if WITHINTEGRATEDDSP
 
 	deliverylist_initialize(& rtstargetsint);
-	deliverylist_initialize(& afoutfloat_user);
-	deliverylist_initialize(& afoutfloat);
+	deliverylist_initialize(& speexoutfloat_user);
+	deliverylist_initialize(& afdemodoutfloat_rt);
 
-	static subscribefloat_t afsample16reregister_user;
-	subscribefloat_user(& afoutfloat_user, & afsample16reregister_user, NULL, savesampleout16stereo_user);
 
-#if WITHSKIPUSERMODE || CTLSTYLE_V3D
+#if WITHUSBHEADSET || WITHSKIPUSERMODE || CTLSTYLE_V3D
 
-	static subscribefloat_t afsample16reregister;
-	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16stereo);
+	// Обход user mode шумоподавителя
+	static subscribefloat_t afsample16register;
+	subscribefloat_user(& afdemodoutfloat_rt, & afsample16register, NULL, savesampleout16stereo_float);
 
 #else /* WITHSKIPUSERMODE */
 
-	static subscribefloat_t afsample16reregister;
-	subscribefloat_user(& afoutfloat, & afsample16reregister, NULL, savesampleout16tospeex);
+	static subscribefloat_t afsample16register_user;
+	static subscribefloat_t afsample16register;
+
+	subscribefloat_user(& speexoutfloat_user, & afsample16register_user, NULL, savesampleout16stereo_float_user);
+	subscribefloat_user(& afdemodoutfloat_rt, & afsample16register, NULL, savesampleout16tospeex);
 
 #endif /* WITHSKIPUSERMODE */
 
@@ -855,7 +866,7 @@ void buffers_initialize(void)
 		p->tag2 = p;
 		p->tag3 = p;
 		//InitializeListHead2(& p->item);
-		InsertHeadList(& msgsfree8, & p->item);
+		InsertHeadVList(& msgsfree8, & p->item);
 	}
 	SPINLOCK_INITIALIZE(& locklistmsg8);
 }
@@ -870,7 +881,7 @@ uint_fast8_t takemsgready_user(uint8_t * * dest)
 	SPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsready8))
 	{
-		PLIST_ENTRY t = RemoveTailList(& msgsready8);
+		PVLIST_ENTRY t = RemoveTailVList(& msgsready8);
 		SPIN_UNLOCK(& locklistmsg8);
 		system_enableIRQ();
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
@@ -892,7 +903,7 @@ void releasemsgbuffer_user(uint8_t * dest)
 	ASSERT(p->tag3 == p);
 	system_disableIRQ();
 	SPIN_LOCK(& locklistmsg8);
-	InsertHeadList(& msgsfree8, & p->item);
+	InsertHeadVList(& msgsfree8, & p->item);
 	SPIN_UNLOCK(& locklistmsg8);
 	system_enableIRQ();
 }
@@ -903,7 +914,7 @@ size_t takemsgbufferfree_low(uint8_t * * dest)
 	SPIN_LOCK(& locklistmsg8);
 	if (! IsListEmpty(& msgsfree8))
 	{
-		PLIST_ENTRY t = RemoveTailList(& msgsfree8);
+		PVLIST_ENTRY t = RemoveTailVList(& msgsfree8);
 		SPIN_UNLOCK(& locklistmsg8);
 		message_t * const p = CONTAINING_RECORD(t, message_t, item);
 		ASSERT(p->tag2 == p);
@@ -924,7 +935,7 @@ void placesemsgbuffer_low(uint_fast8_t type, uint8_t * dest)
 	ASSERT(p->tag3 == p);
 	p->type = type;
 	SPIN_LOCK(& locklistmsg8);
-	InsertHeadList(& msgsready8, & p->item);
+	InsertHeadVList(& msgsready8, & p->item);
 	SPIN_UNLOCK(& locklistmsg8);
 }
 
@@ -1002,10 +1013,14 @@ static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
 	debugcount_mikeadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 
+#if WITHUSBUAC
 	if (uacoutmike == 0)
 		buffers_tomodulators16(p);
 	else
 		buffers_tonull16(p);
+#else /* WITHUSBUAC */
+	buffers_tomodulators16(p);
+#endif /* WITHUSBUAC */
 
 }
 
@@ -1016,11 +1031,15 @@ static RAMFUNC void buffers_aftermodulators(voice16_t * p)
 	ASSERT(p->tag3 == p);
 	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
 	// в динамики будет направлен после модулятора
+#if WITHUSBUAC
 
 	if (uacoutplayer && uacoutmike)
 		buffers_tophones16(p);
 	else
 		buffers_tonull16(p);
+#else /* WITHUSBUAC */
+	buffers_tonull16(p);
+#endif /* WITHUSBUAC */
 }
 
 // +++ Коммутация потоков аудиоданных
@@ -1030,10 +1049,14 @@ buffers_savefromrxout(voice16_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
+#if WITHUSBUAC
 	if (uacoutplayer != 0)
 		buffers_tonull16(p);
 	else
 		buffers_tophones16(p);
+#else /* WITHUSBUAC */
+	buffers_tophones16(p);
+#endif /* WITHUSBUAC */
 }
 
 
@@ -1146,8 +1169,8 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	ASSERT(p->tag3 == p);
 
 	// Использование данных.
-	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
-	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
+	v->ivqv [L] = adpt_input(& afcodecio, p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = adpt_input(& afcodecio, p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT16)
 	{
@@ -1188,8 +1211,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	ASSERT(p->tag3 == p);
 
 	// Использование данных.
-	v->ivqv [L] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
-	v->ivqv [R] = AUBTOAUDIO16(p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
+	v->ivqv [L] = p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
+	v->ivqv [R] = p->buff [pos * DMABUFSTEP16 + R];	// правый канал
 
 	if (++ pos >= CNT16)
 	{
@@ -1200,7 +1223,7 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 }
 
 // звук для самоконтроля
-void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
+void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -1219,9 +1242,9 @@ void savemoni16stereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = ch0;	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = ch1;	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -1975,7 +1998,7 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32rx((const int32_t *) addr);
+	dsp_extbuffer32rx((const IFADCvalue_t *) addr);
 
 #if WITHUSBUAC
 	static RAMDTCM unsigned rx32adc = 0;
@@ -2014,7 +2037,7 @@ void RAMFUNC processing_dmabuffer32wfm(uintptr_t addr)
 	// подсчёт скорости в сэмплах за секунду
 	debugcount_rx32wfm += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
-	dsp_extbuffer32wfm((const int32_t *) addr);
+	dsp_extbuffer32wfm((const IFADCvalue_t *) addr);
 }
 
 #if WITHRTS192
@@ -2134,9 +2157,8 @@ void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 }
 
 //////////////////////////////////////////
-// Поэлементное заполнение буфера AF DAC
-
-static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+// Поэлементное заполнение DMA буфера AF DAC
+static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2154,9 +2176,9 @@ static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = ch0;	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = ch1;	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -2168,7 +2190,9 @@ static void savesampleout16stereo_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	}
 }
 
-static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+//////////////////////////////////////////
+// Поэлементное заполнение DMA буфера AF DAC
+static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -2184,9 +2208,9 @@ static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = AUDIO16TOAUB(ch0);		// sample value
+	p->buff [n * DMABUFSTEP16 + L] = ch0;	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = AUDIO16TOAUB(ch1);	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = ch1;	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -2195,6 +2219,24 @@ static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		p = NULL;
 	}
 }
+
+
+static void savesampleout16stereo_float_user(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	savesampleout16stereo_user(
+		adpt_output(& afcodecio, ch0),
+		adpt_output(& afcodecio, ch1)
+		);
+}
+
+static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
+{
+	savesampleout16stereo(
+		adpt_output(& afcodecio, ch0),
+		adpt_output(& afcodecio, ch1)
+		);
+}
+
 
 #if WITHUSBUAC && WITHUSBHW
 
@@ -2327,6 +2369,7 @@ static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 				ASSERT(p->tag == BUFFTAG_RTS96);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
+				ASSERT(DMABUFSTEP96RTS == 6);
 			}
 			else if (! isrts96())
 			{
@@ -2335,16 +2378,15 @@ static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 				return;
 			}
 
-			ASSERT(p->tag == BUFFTAG_RTS96);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
-			ASSERT(DMABUFSTEP96RTS == 6);
+			ch0 = transform_do32(& if2rts96out, ch0);
+			ch1 = transform_do32(& if2rts96out, ch1);
+
+			p->u.buff [n ++] = ch0 >> 0;	// sample value
 			p->u.buff [n ++] = ch0 >> 8;	// sample value
 			p->u.buff [n ++] = ch0 >> 16;	// sample value
-			p->u.buff [n ++] = ch0 >> 24;	// sample value
+			p->u.buff [n ++] = ch1 >> 0;	// sample value
 			p->u.buff [n ++] = ch1 >> 8;	// sample value
 			p->u.buff [n ++] = ch1 >> 16;	// sample value
-			p->u.buff [n ++] = ch1 >> 24;	// sample value
 
 			if (n >= DMABUFFSIZE96RTS)
 			{
@@ -2460,10 +2502,11 @@ static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 					return;
 				uint32_t addr = allocate_dmabuffer192rts();
 				p = CONTAINING_RECORD(addr, voice192rts_t, u.buff);
+				n = 0;
+
 				ASSERT(p->tag == BUFFTAG_RTS192);
 				ASSERT(p->tag2 == p);
 				ASSERT(p->tag3 == p);
-				n = 0;
 			}
 			else if (! isrts192())
 			{
@@ -2471,10 +2514,9 @@ static void savesampleout16stereo(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 				p = NULL;
 				return;
 			}
+			ch0 = transform_do32(& if2rts192out, ch0);
+			ch1 = transform_do32(& if2rts192out, ch1);
 
-			ASSERT(p->tag == BUFFTAG_RTS192);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
 			p->u.buff [n ++] = ch0;	// sample value
 			p->u.buff [n ++] = ch1;	// sample value
 
@@ -2632,13 +2674,17 @@ void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
 /* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_uacplayer(uint_fast8_t v)
 {
+#if WITHUSBUAC
 	uacoutplayer = v;
+#endif /* WITHUSBUAC */
 }
 
 /* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 void board_set_uacmike(uint_fast8_t v)
 {
+#if WITHUSBUAC
 	uacoutmike = v;
+#endif /* WITHUSBUAC */
 }
 
 
@@ -2667,11 +2713,6 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 {
 	//PRINTF(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
 	uacoutalt = v;
-}
-
-static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a < b ? a : b;
 }
 
 static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * sizeof (int16_t) bytes
@@ -2978,7 +3019,7 @@ void release_dmabufferxrts(uintptr_t addr)	/* освободить буфер о
 
 #endif /* WITHUSBUAC */
 
-
+/* предполагается что тут значения нормирования в диапазоне -1..+1 */
 void deliveryfloat(deliverylist_t * list, FLOAT_t ch0, FLOAT_t ch1)
 {
 	PLIST_ENTRY t;

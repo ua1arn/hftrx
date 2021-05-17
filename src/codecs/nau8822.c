@@ -109,15 +109,9 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 	nau8822_setreg(NAU8822_LOUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0);
 	nau8822_setreg(NAU8822_ROUT1_HP_CONTROL, vmutehp | (levelhp & 0x3F) | 0x100);
 
-//{0x34, 0x139},
-//{0x35, 0x139},
-
 	// Установка уровня вывода на динамик
 	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0);
 	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, vmutespk | (levelspk & 0x3F) | 0x100);
-//{0x36, 0x139},
-//{0x37, 0x139},
-
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
@@ -259,6 +253,18 @@ nau8822_ilog2(
 static void nau8822_initialize_fullduplex(void)
 {
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
+	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
+	unsigned long NAU8822_AUDIO_INTERFACE_WLEN_val;
+	unsigned long NAU8822_MISC_8B_val;
+	switch (WITHADAPTERAFADCWIDTH)
+	{
+	default:
+	case 32: NAU8822_AUDIO_INTERFACE_WLEN_val = 0x060; NAU8822_MISC_8B_val = 0x00; break;
+	case 24: NAU8822_AUDIO_INTERFACE_WLEN_val = 0x040; NAU8822_MISC_8B_val = 0x00; break;
+	case 20: NAU8822_AUDIO_INTERFACE_WLEN_val = 0x020; NAU8822_MISC_8B_val = 0x00; break;
+	case 16: NAU8822_AUDIO_INTERFACE_WLEN_val = 0x000; NAU8822_MISC_8B_val = 0x00; break;
+	case 8: NAU8822_AUDIO_INTERFACE_WLEN_val = 0x00; NAU8822_MISC_8B_val = 0x040; break;
+	}
 
 #if CODEC_TYPE_NAU8822_MASTER
 	const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
@@ -298,23 +304,19 @@ static void nau8822_initialize_fullduplex(void)
 
 #if WITHI2S_FORMATI2S_PHILIPS
 	// I2S mode
-	#if CODEC1_FRAMEBITS == 64
-		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | 0x060);	// reg 0x04, I2S, 32 bit
-	#else /* CODEC1_FRAMEBITS == 64 */
-		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | 0x000);	// reg 0x04, I2S, 16 bit
-	#endif /* CODEC1_FRAMEBITS == 64 */
+	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | NAU8822_AUDIO_INTERFACE_WLEN_val);	// reg 0x04, I2S, 16 bit
 
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 	// LJ mode
-	#if CODEC1_FRAMEBITS == 64
-		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | 0x060);	// reg 0x04, LJ, 32 bit
-	#else /* CODEC1_FRAMEBITS == 64 */
-		nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | 0x000);	// reg 0x04, LJ, 16 bit
-	#endif /* CODEC1_FRAMEBITS == 64 */
+	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | NAU8822_AUDIO_INTERFACE_WLEN_val);	// reg 0x04, LJ, 32 bit
 
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
 
 	//nau8822_setreg(NAU8822_COMPANDING_CONTROL, 0x000);	// reg 0x05 = 0 reset state
+	nau8822_setreg(NAU8822_MISC, 	// reg 0x3C,
+		0x20 |
+		NAU8822_MISC_8B_val |			// 8-bit word length enable
+		0);
 
 	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 	// reg 0x07,
 		NAU8822_ADDITIONAL_CONTROL_SMPLR_val |			// SMPLR=0x05 (8 kHz)

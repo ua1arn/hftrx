@@ -24,7 +24,7 @@ coef_pow2       : FALSE
 coef_sbf_left   : 0
 coef_sbf_right  : 23
 data_type       : SGN 
-in_bit_width    : 32
+in_bit_width    : 28
 in_sbf_lt       : 0
 in_sbf_rt       : 0
 num_ch          : 2
@@ -61,13 +61,13 @@ blank_num_sys   : 0
 rate_ctrl       : RATE_CTRL_OFF 
 atlantic_out    : MASTER 
 atlantic_in     : MASTER 
-fir_bit_width   : 66
+fir_bit_width   : 62
 num_coef_mem     : 1
 coef_mem_width  : 24
 coef_mem_addr   : 9
 num_coef_one_mem : 1
 fmax			: 0
-num_lc			: 67090
+num_lc			: 58741
 num_m4k			: 18
 num_m512			: 0
 num_MRAM			: 0

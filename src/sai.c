@@ -3213,8 +3213,8 @@ static void r7s721_ssif1_dmarx_initialize(void)
 	DMAC2.N1DA_n = dma_invalidate32rx(allocate_dmabuffer32rx());
 
 	/* Set Transfer Size */
-	DMAC2.N0TB_n = DMABUFFSIZE32RX * sizeof (int32_t);	// размер в байтах
-	DMAC2.N1TB_n = DMABUFFSIZE32RX * sizeof (int32_t);	// размер в байтах
+	DMAC2.N0TB_n = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);	// размер в байтах
+	DMAC2.N1TB_n = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSIRXI1 (receive data full)
@@ -3279,8 +3279,8 @@ static void r7s721_ssif1_dmatx_initialize(void)
     DMAC3.N1DA_n = (uintptr_t) & SSIF1.SSIFTDR;	// Fixed destination address
 
     /* Set Transfer Size */
-    DMAC3.N0TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// размер в байтах
-    DMAC3.N1TB_n = DMABUFFSIZE32TX * sizeof (int32_t);	// размер в байтах
+    DMAC3.N0TB_n = DMABUFFSIZE32TX * sizeof (IFDACvalue_t);	// размер в байтах
+    DMAC3.N1TB_n = DMABUFFSIZE32TX * sizeof (IFDACvalue_t);	// размер в байтах
 
 	// Values from Table 9.4 On-Chip Peripheral Module Requests
 	// SSITXI1 (transmit data empty)
@@ -3579,6 +3579,17 @@ static const codechw_t audiocodechw_xc7z =
 	"ZYNQ 7000 audio codec"
 };
 
+static const codechw_t ifcodechw_xc7z =
+{
+	hardware_dummy_initialize,	// added...
+	hardware_dummy_initialize,
+	hardware_dummy_initialize,
+	xc7z_if_fifo_init,
+	hardware_dummy_enable,
+	hardware_dummy_enable,
+	"ZYNQ 7000 IF codec"
+};
+
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 	// other CPUs
 static const codechw_t fpgaspectrumhw_sai2 =
@@ -3744,7 +3755,7 @@ static const codechw_t * const channels [] =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_xc7z,				// Интерфейс к НЧ кодеку
-		//& fpgaiqhw_dummy,					// Интерфейс к IF кодеку/FPGA
+		& ifcodechw_xc7z,					// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_dummy,				// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 

@@ -28,6 +28,12 @@
 #define WIHSPIDFHW	1	/* аппаратное обслуживание DATA FLASH */
 #define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 #define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+#define WITHDEBUG_USART2	1
+//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
+#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
+#define WITHDEBUG_USART2	1
+#define WITHMODEM_USART2	1
+#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 #if WITHISBOOTLOADER
 
@@ -36,19 +42,14 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
-	//#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
+	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
 	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
-	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
 
 	//#define WITHCAT_USART2	1
 	//#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
-	#define WITHDEBUG_USART2	1
-	#define WITHMODEM_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	//#define WITHUSBUAC		1	/* использовать виртуальную звуковую плату на USB соединении */
 	//#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
@@ -76,6 +77,7 @@
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
+#if WITHUSBHW
 	// USB device parameters
 	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
@@ -84,20 +86,14 @@
 	// USB host parameters
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
-	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
-	#define WITHUART2HW	1	/* Используется периферийный контроллер последовательного порта #2 SCIF3 */
-
 	//#define WITHCAT_USART2	1
 	#define WITHCAT_CDC			1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHMODEM_CDC		1
-	#define WITHDEBUG_USART2	1
-	#define WITHMODEM_USART2	1
-	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 	#if WITHINTEGRATEDDSP
 
 		//#define WITHUAC2		1	/* UAC2 support */
-		//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввожа/вывода (без спектра) */
+		//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 		#define WITHUSBUACIN	1
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
@@ -113,6 +109,8 @@
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	#define WITHUSBWCID	1
+
+#endif /* WITHUSBHW */
 
 #endif /* WITHISBOOTLOADER */
 
@@ -725,7 +723,7 @@
 	} while (0)
 #endif /* WITHDCDCFREQCTL */
 
-#if LCDMODE_LTDC
+#if WITHLTDCHW
 
 	#define LS020_RESET_PORT_S(v) do {	R7S721_TARGET_PORT_S(7, v); } while (0)
 	#define LS020_RESET_PORT_C(v) do {	R7S721_TARGET_PORT_C(7, v); } while (0)
@@ -774,15 +772,9 @@
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
-	#define HARDWARE_LTDC_SET_DISP(demode, state) do { \
-		if (demode != 0) break; \
+	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t mask = (1U << 7); /* P7_7 */ \
 		arm_hardware_pio7_outputs(mask, (state != 0) * mask);	/* P7_7 DE=state */ \
-	} while (0)
-	/* управление состоянием сигнала MODE панели */
-	#define HARDWARE_LTDC_SET_MODE(state) do { \
-		const uint32_t MODE = (1U << 0); /* P7_0 MODE */ \
-		arm_hardware_pio7_outputs(MODE, (state != 0) * MODE);	/* P7_0 MODE=demode */ \
 	} while (0)
 
 
@@ -802,7 +794,7 @@
 			else  LS020_RESET_PORT_C(LS020_RESET); \
 		} while (0)
 
-#else /* LCDMODE_LTDC */
+#else /* WITHLTDCHW */
 
 	//#define WRITEE_BIT				(1u << 12)	// RD/~WR  P3_12 - должен быть в "0" - как при записи - для управления буферами на шине данных LCD
 
@@ -825,24 +817,24 @@
 			else  LS020_RESET_PORT_C(LS020_RESET); \
 		} while (0)
 
-#endif /* LCDMODE_LTDC */
+#endif /* WITHLTDCHW */
 
 // Signal P3_9 control
-#if WITHFLATLINK && LCDMODE_LTDC
+#if WITHFLATLINK && WITHLTDCHW
 	// SN75LVDS83B FlatLink™ Transmitter shutdown control
 	// #SHTDN is a CMOS IN with pull down resistor approx. 100..200 kOhm
 	#define HARDWARE_LVDSTX_INITIALIZE() do { \
 		const uint32_t mask = (1U << 9); /* P3_9 */ \
 		arm_hardware_pio3_outputs(mask, 1 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
 	} while (0)
-#else /* WITHFLATLINK && LCDMODE_LTDC */
+#else /* WITHFLATLINK && WITHLTDCHW */
 	// SN75LVDS83B FlatLink™ Transmitter shutdown control
 	// #SHTDN is a CMOS IN with pull down resistor approx. 100..200 kOhm
 	#define HARDWARE_LVDSTX_INITIALIZE() do { \
 		const uint32_t mask = (1U << 9); /* P3_9 */ \
 		arm_hardware_pio3_outputs(mask, 0 * mask); /* 0 - Transmitter off, 1 - Transmitter work */ \
 	} while (0)
-#endif /* WITHFLATLINK && LCDMODE_LTDC */
+#endif /* WITHFLATLINK && WITHLTDCHW */
 
 	#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 

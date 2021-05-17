@@ -112,6 +112,42 @@ typedef enum
 	// нет дешифратора адреса - прямое управление сигналами CS имеющихся SPI устройств.
 #endif
 
+#if WITHBOTTOMDBVAL
+#define WITHBOTTOMDBDEFAULT WITHBOTTOMDBVAL
+#else
+#define WITHBOTTOMDBDEFAULT 130
+#endif /* WITHBOTTOMDBVAL */
+
+#if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX)
+	#if WITHIFSHIFT
+		#error Can not be defined WITHIFSHIFT together with FQMODEL_DCTRX
+	#endif
+	#if WITHPBT
+		#error Can not be defined WITHPBT together with FQMODEL_DCTRX
+	#endif
+	#if WITHDUALBFO
+		#error Can not be defined WITHDUALBFO together with FQMODEL_DCTRX
+	#endif
+	#if WITHFIXEDBFO
+		#error Can not be defined WITHFIXEDBFO together with FQMODEL_DCTRX
+	#endif
+	#if WITHDUALFLTR
+		#error Can not be defined WITHDUALFLTR together with FQMODEL_DCTRX
+	#endif
+#endif
+
+#if WITHPOTGAIN	// Для совместимости с теми конфигурациями, где разрешются регулировки только парой
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+#endif /* WITHPOTGAIN */
+
+#if ELKEY328
+	#define CWWPMMIN	12 //328 10
+	#define CWWPMMAX	30 //328 60
+#else
+	#define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
+	#define CWWPMMAX	60
+#endif
 
 
 typedef struct spinlock_tag {
@@ -224,6 +260,19 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMBIGDTCM_MDMA		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
+#elif (CPUSTYPE_ALLWNV3S)
+	#define FLASHMEMINIT	//__attribute__((section(".initdata"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define FLASHMEMINITFUNC//	__attribute__((section(".initfunc"))) /* не требуется быстрый доступ - например образ загружаемый в FPGA */
+	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
+	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
+	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
+	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
+	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIG			//__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
+	#define RAMHEAP __attribute__((used, section(".heap"), aligned(64))) // memory used as heap zone
 #elif (CPUSTYLE_STM32F7XX) && WITHSDRAMHW
 //	#pragma name .data .sdramdata
 //	#pragma name .bss .sdrambss

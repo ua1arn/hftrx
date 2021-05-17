@@ -17,6 +17,7 @@
 	#error PLEASE, DO NOT USE THIS FILE DIRECTLY. USE FILE "hardware.h" INSTEAD.
 #endif
 
+#define CMSIS_device_header "hardware.h"
 #ifndef NIGHTBUILD
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
@@ -258,6 +259,10 @@
 	#include <boards/arm_x7c70xx_ctlstyle_ebaz4205_v1.h>	// плата EBAZ4205
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include <boards/arm_x7c70xx_cpustyle_ebaz4205_v1.h>	// плата EBAZ4205
+#elif CPUSTYPE_ALLWNV3S && CTLSTYLE_STORCH_V7	// Lichee Pi Zero
+	#include "boards/arm_allwv3s_ctlstyle_LicheePiZero.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_allwv3s_cpustyle_LicheePiZero.h"
 #elif CPUSTYLE_STM32F && CTLSTYLE_OLEG4Z_V1	// 2xUSB, STM32F767ZIT6, FPGA EP4CE22E22I7N & R820T2
 	#include "boards/arm_stm32f4xx_tqfp144_ctlstyle_oleg4z_v1.h"	// Rmainunit_v5fm.pcb (USBx2, wide display interface)
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */

@@ -52,12 +52,6 @@
 	#endif
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define I2SCLOCKINFREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO / 2)
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO / 2)
 	#else /* WITHI2SCLOCKFROMPIN */
 		#define PLLI2SN_MUL 84		// 172032000UL
 		#define SAIREF1_MUL 72		// 288 MHz
@@ -240,11 +234,6 @@
 	//#define WITHDSPLOCALFIR 1			/* Фильтрация квадратур осуществляется процессором */
 	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	//#define BOARD_FFTZOOM_POW2MAX 0	// Возможный масштабы FFT x1
-
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */

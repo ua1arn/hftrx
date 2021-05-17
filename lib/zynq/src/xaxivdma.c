@@ -52,8 +52,8 @@
 
 /***************************** Include Files *********************************/
 
-#include <xaxivdma.h>
-#include <xaxivdma_i.h>
+#include "xaxivdma.h"
+#include "xaxivdma_i.h"
 
 /************************** Constant Definitions *****************************/
 /* The polling upon starting the hardware

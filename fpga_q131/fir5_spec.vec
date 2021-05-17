@@ -11,7 +11,7 @@ PATTERN
 0>    1
 5>    1
 95>  0 ;
-INPUTS data_in[31..0];
+INPUTS data_in[27..0];
 PATTERN         % test Inpluse %
 0>     0
 1325>  1

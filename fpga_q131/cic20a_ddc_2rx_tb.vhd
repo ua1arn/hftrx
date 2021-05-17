@@ -37,8 +37,8 @@ architecture tb of cic20a_ddc_2rx_tb is
   signal clk_cnt : integer 	:=0;
   signal reset_n : std_logic;
   signal clken : std_logic;
-  signal in_data : std_logic_vector (31 downto 0);
-  signal out_data : std_logic_vector (31 downto 0);
+  signal in_data : std_logic_vector (27 downto 0);
+  signal out_data : std_logic_vector (27 downto 0);
   signal in_startofpacket : std_logic;
   signal in_endofpacket   : std_logic;
   signal out_channel : std_logic_vector (1 downto 0);
@@ -65,8 +65,8 @@ architecture tb of cic20a_ddc_2rx_tb is
       reset_n           : in  std_logic;
       in_ready          : out std_logic;
       in_valid          : in  std_logic;
-      in_data           : in  std_logic_vector (31 downto 0);
-      out_data          : out std_logic_vector (31 downto 0);
+      in_data           : in  std_logic_vector (27 downto 0);
+      out_data          : out std_logic_vector (27 downto 0);
       in_startofpacket  : in  std_logic;
       in_endofpacket    : in  std_logic;
       out_channel       : out std_logic_vector (1 downto 0);
@@ -163,7 +163,7 @@ begin
     variable rdata  : line;
   begin
       if(reset_n = '0') then
-        in_data  <= std_logic_vector(to_signed(0, 32));
+        in_data  <= std_logic_vector(to_signed(0, 28));
         in_valid <= '0';
         end_test <= '0';
         cnt_sent <= 0;
@@ -175,7 +175,7 @@ begin
               readline(r_file, rdata);
               read(rdata, data_r);
               in_valid <= '1';
-              in_data  <= std_logic_vector(to_signed(data_r, 32));
+              in_data  <= std_logic_vector(to_signed(data_r, 28));
             else
               in_data <= std_logic_vector(signed(not in_data) + 1);
             end if;
@@ -193,7 +193,7 @@ begin
             if (in_valid = '1' and in_ready = '1') then
               end_test <= '1';
               in_valid <= '0';
-              in_data  <= std_logic_vector(to_signed(0, 32));
+              in_data  <= std_logic_vector(to_signed(0, 28));
             else
               in_valid <= '1';
               in_data  <= in_data;

@@ -290,10 +290,10 @@ extern "C" {
 
 /***************************** Include Files *********************************/
 
-#include <xaxivdma_hw.h>
-#include <xaxivdma_i.h>
-#include <xstatus.h>
-#include <xil_assert.h>
+#include "xaxivdma_hw.h"
+#include "xaxivdma_i.h"
+#include "xstatus.h"
+#include "xil_assert.h"
 
 
 /************************** Constant Definitions *****************************/

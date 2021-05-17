@@ -1239,38 +1239,6 @@ void spidf_initialize(void)
 
 #endif /* WIHSPIDFHW */
 
-/* получить 32-бит значение */
-static uint_fast32_t
-USBD_peek_u32(
-	const uint8_t * buff
-	)
-{
-	return
-		((uint_fast32_t) buff [3] << 24) +
-		((uint_fast32_t) buff [2] << 16) +
-		((uint_fast32_t) buff [1] << 8) +
-		((uint_fast32_t) buff [0] << 0);
-}
-
-/* получить 32-бит значение */
-static uint_fast32_t
-USBD_peek_u24(
-	const uint8_t * buff
-	)
-{
-	return
-		((uint_fast32_t) buff [2] << 16) +
-		((uint_fast32_t) buff [1] << 8) +
-		((uint_fast32_t) buff [0] << 0);
-}
-
-static unsigned long ulmin(
-	unsigned long a,
-	unsigned long b)
-{
-	return a < b ? a : b;
-}
-
 /* снять защиту записи для следующей команды */
 void writeEnableDATAFLASH(void)
 {
@@ -1524,8 +1492,8 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 	//PRINTF(PSTR("Write to address %08lX %02X\n"), flashoffset, len);
 	while (len != 0)
 	{
-		unsigned long offset = flashoffset & 0xFF;
-		unsigned long part = ulmin(len, ulmin(256, 256 - offset));
+		const unsigned long offset = flashoffset & 0xFF;
+		const unsigned long part = ulmin32(len, ulmin32(256, 256 - offset));
 
 		if (writesinglepageDATAFLASH(flashoffset, data, part))
 			return 1;

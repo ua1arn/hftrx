@@ -114,7 +114,8 @@ void board_set_mode_wfm(uint_fast8_t v);
 void board_set_dither(uint_fast8_t v);	/* управление зашумлением в LTC2208 */
 void board_set_adcrand(uint_fast8_t v);	/* управление интерфейсом в LTC2208 */
 void board_set_dacscale(uint_fast16_t n);	/* Использование амплитуды сигнала с ЦАП передатчика - 0..100.00% */
-void board_set_gdigiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+void board_set_digiscale(uint_fast16_t n);	/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+void board_set_designscale(uint_fast16_t n);	/* используется при калибровке параметров интерполятора */
 void board_set_cwscale(uint_fast16_t n);	/* Уменьшение усиления при передаче в CW режимах 50..100% */
 void board_set_dac1(uint_fast8_t n);	/* подстройка опорного генератора */
 void board_set_bglight(uint_fast8_t dispoff, uint_fast8_t dispbright);	/* Включение подсветки дисплея */
@@ -172,13 +173,16 @@ void board_beep_initialize(void);
 
 void board_sidetone_setfreq(uint_least16_t freq);	/* freq - частота в герцах. Минимум - 400 герц (определено набором команд CAT).*/
 void board_keybeep_setfreq(uint_least16_t freq);	/* freq - частота в герцах. */
+void board_rgrbeep_setfreq(uint_least16_t freq);	/* roger beep - установка тона */
+
 /* функции разрешения выдачи звукового сигнала - могут перекрываться. */
 void board_sidetone_enable(uint_fast8_t state);
 /* вызывается при запрещённых прерываниях. */
 void board_keybeep_enable(uint_fast8_t state);
+void board_rgrbeep_enable(uint_fast8_t state);	/* roger beep (вызывается из обработчика перрываний sequencer) */
 void board_testsound_enable(uint_fast8_t state);
 void board_subtone_setfreq(uint_least16_t tonefreq01);	/* tonefreq - частота в десятых долях герца. */
-void board_subtone_enable(uint_fast8_t state);
+void board_subtone_enable_user(uint_fast8_t state);
 
 /* загрузка коэффициентов FIR фильтра в FPGA */
 void board_fpga_fir_initialize(void);

@@ -5,8 +5,8 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Трансивер с DSP обработкой "Аист" на процессоре
-// rmainunit_v5km0.pcb, rmainunit_v5km1.pcb STM32H743IIT6, 2xUSB, SD-CARD, NAU8822L и FPGA EP4CE22E22I7N
+// Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
+// rmainunit_v5km7.pcb STM32MP1xx, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
 #ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
@@ -79,7 +79,7 @@
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
 
 	#else
 		// HSI version (HSI=64 MHz)
@@ -119,25 +119,9 @@
 		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
 		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_ITH FS)
+		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
 
 	#endif
-
-	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define EXTI2S_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-		#define EXTSAI_FREQ (REFERENCE_FREQ * DDS1_CLK_MUL / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-		#define ARMSAIMCLK	(REFERENCE_FREQ * DDS1_CLK_MUL / (FPGADECIMATION / 256))
-	#else /* WITHI2SCLOCKFROMPIN */
-		#define PLLI2SN_MUL 172		// 344.064 (192 <= PLLI2SN <= 432)
-		#define SAIREF1_MUL 172		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
-		// Частота формируется процессором
-		#define ARMI2SMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
-		#define ARMSAIMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
-	#endif /* WITHI2SCLOCKFROMPIN */
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -332,7 +316,7 @@
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
-	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
+	#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
@@ -371,10 +355,6 @@
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
-	#define WITHIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHIFADCWIDTH	32		// 1 бит знак и 31 бит значащих
-	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
 	//
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */

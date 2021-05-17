@@ -233,14 +233,13 @@ extern "C" {
 			//#define PLLSAI_FREQ (REFINFREQ / REF1_DIV * SAIREF1_MUL)
 			//#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
 
-			#define CPU_FREQ (PLL_FREQ / 4)	// 172032000uL
+			#define CPU_FREQ (stm32f4xx_get_sysclk_freq())	// 172032000uL
 
 			/* частоты, подающиеся на периферию */
 			//#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
 			//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
 			//#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
 			//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
  		#elif CPUSTYLE_STM32H7XX
 
@@ -258,7 +257,9 @@ extern "C" {
 
 			#define HSIFREQ 64000000uL
 			#define HSI48FREQ 48000000uL
-			#define CSIFREQ 4000000uL
+			#if !defined  (CSI_VALUE)
+			  #define CSI_VALUE    4000000U /*!< Value of the Internal oscillator in Hz*/
+			#endif /* CSI_VALUE */
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
@@ -268,7 +269,7 @@ extern "C" {
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
-
+			unsigned long stm32f7xx_get_sys_freq(void);
 			unsigned long stm32f7xx_get_pll_freq(void);
 			unsigned long stm32f7xx_get_plli2s_freq(void);
 			unsigned long stm32f7xx_get_pllsai_freq(void);
@@ -283,30 +284,21 @@ extern "C" {
 			#define PLLSAI_FREQ (stm32f7xx_get_pllsai_freq())
 			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
 
-			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
-			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+			#define CPU_FREQ (stm32f7xx_get_sys_freq())	// 172032000uL
 
 			#define HSIFREQ 16000000uL
 
 		#elif CPUSTYLE_STM32F4XX
 
+			unsigned long stm32f4xx_get_sysclk_freq(void);
+			unsigned long stm32f4xx_get_spi1_freq(void);
+
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
+			#define CPU_FREQ (stm32f4xx_get_sysclk_freq())	// 172032000uL
+			#define BOARD_SPI_FREQ (stm32f4xx_get_spi1_freq())
 
-			#define PLLI2S_FREQ (REFINFREQ / REF1_DIV * PLLI2SN_MUL)
-			#define	PLLI2S_FREQ_OUT (PLLI2S_FREQ / 2)		// Frequency after PLLI2S_DivQ
-
-			#define PLLSAI_FREQ (REFINFREQ / REF1_DIV * SAIREF1_MUL)
-			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
-
-			#define CPU_FREQ (PLL_FREQ / 2)	// 172032000uL
-
-			/* частоты, подающиеся на периферию */
-			//#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
-			//#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-			//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+			#define HSIFREQ 16000000uL	// 16 MHz
 
 		#endif
 
@@ -582,6 +574,61 @@ extern "C" {
 
 	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
 	/* тип для хранения данных, считанных с АЦП */
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	enum
+	{
+		R7S721_PIOALT_1	= 0x00,	/* 1st Alternative */
+		R7S721_PIOALT_2	= 0x01,	/* 2nd Alternative */
+		R7S721_PIOALT_3	= 0x02,	/* 3rd Alternative */
+		R7S721_PIOALT_4	= 0x03,	/* 4th Alternative */
+		R7S721_PIOALT_5	= 0x04,	/* 5th Alternative */
+		R7S721_PIOALT_6	= 0x05,	/* 6th Alternative */
+		R7S721_PIOALT_7	= 0x06,	/* 7th Alternative */
+		R7S721_PIOALT_8	= 0x07	/* 8th Alternative */
+	};
+
+	/* видимые в контроллере прерывания регистры от ARM CORE */
+	//#define ARM_CA9_PRIORITYSHIFT 3	/* ICCPMR[7:3] is valid bit */
+
+	//#define GICC_PMR		(INTC.ICCPMR)	// 4.4.2 Interrupt Priority Mask Register, GICC_PMR
+	//#define GICC_RPR		((uint32_t) INTC.ICCRPR)	// 4.4.6 Running Priority Register, GICC_RPR
+	//#define GICC_HPPIR		(INTC.ICCHPIR)
+	//#define GICC_IAR		(INTC.ICCIAR)
+	//#define GICC_BPR		(INTC.ICCBPR)
+	//#define GICC_CTLR		(INTC.ICCICR)
+	//#define GICD_IPRIORITYRn(n) (((volatile uint8_t *) & INTC.ICDIPR0) [(n)])
+
+	// GIC_SetConfiguration parameters
+	#define GIC_CONFIG_EDGE 0x03
+	#define GIC_CONFIG_LEVEL 0x01
+
+#elif CPUSTYPE_ALLWNV3S
+
+	//#define WITHCPUXTAL 12000000uL			/* На процессоре установлен кварц 12.000 МГц */
+	#define CPU_FREQ	(30 * WITHCPUXTAL)		/* 12 MHz * 30 - clock mode 0, xtal 12 MHz */
+
+	#define BCLOCK_FREQ		(CPU_FREQ / 3)		// 120 MHz
+	#define P1CLOCK_FREQ	(CPU_FREQ / 6)		// 60 MHz
+	#define P0CLOCK_FREQ	(CPU_FREQ / 12)		// 30 MHz
+
+	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
+
+	// ADC clock frequency: 1..20 MHz
+	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
+	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
+
+	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
+
+	//#define HARDWARE_ADCINPUTS	40	/* до 8-ти входов АЦП */
+	/* тип для хранения данных, считанных с АЦП */
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
@@ -662,7 +709,7 @@ extern "C" {
 
 	/* Частоты встроенных RC генераторов процессора */
 	#define HSI64FREQ 64000000uL
-	#define CSIFREQ 4000000uL
+	#define CSI_VALUE 4000000U
 	#define LSIFREQ 32000uL
 
 	//

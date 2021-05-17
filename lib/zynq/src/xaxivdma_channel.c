@@ -55,10 +55,10 @@
 ******************************************************************************/
 
 /***************************** Include Files *********************************/
-#include <xaxivdma.h>
-#include <xaxivdma_hw.h>
-#include <xaxivdma_i.h>
-#include <xstatus.h>
+#include "xaxivdma_hw.h"
+#include "xaxivdma_i.h"
+#include "xstatus.h"
+#include "xaxivdma.h"
 
 /************************** Constant Definitions *****************************/
 /* Number of polling loops to do to check for reset completion

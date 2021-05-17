@@ -47,8 +47,8 @@ extern "C" {
 #endif
 
 #include <string.h>        /* memset */
-#include <xil_types.h>
-#include <xdebug.h>
+#include "xil_types.h"
+#include "xdebug.h"
 
 /************************** Constant Definitions *****************************/
 /**************************** Type Definitions *******************************/
