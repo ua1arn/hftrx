@@ -490,6 +490,9 @@ enum
 };
 
 static RAMBIG FLOAT_t ifspec_wndfn [WITHFFTSIZEWIDE];
+#if WITHAFSPECTRE
+static RAMBIG FLOAT_t afspec_wndfn [WITHFFTSIZEAF];
+#endif /* WITHAFSPECTRE */
 
 static void buildsigwndifspec(void)
 {
@@ -498,17 +501,22 @@ static void buildsigwndifspec(void)
 	{
 		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
 	}
+#if WITHAFSPECTRE
+	for (i = 0; i < WITHFFTSIZEAF; ++ i)
+	{
+		afspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEAF, BOARD_WTYPE_SPECTRUM);
+	}
+#endif /* WITHAFSPECTRE */
 }
 
 static void printsigwnd(void)
 {
+	int i;
+
 	PRINTF(PSTR("static const FLASHMEM FLOAT_t ifspec_wndfn [%u] =\n"), (unsigned) WITHFFTSIZEWIDE);
 	PRINTF(PSTR("{\n"));
-
-	int i;
 	for (i = 0; i < WITHFFTSIZEWIDE; ++ i)
 	{
-		ifspec_wndfn [i] = fir_design_window(i, WITHFFTSIZEWIDE, BOARD_WTYPE_SPECTRUM);
 		int el = ((i + 1) % 4) == 0;
 		PRINTF(PSTR("\t" "%+1.20f%s"), ifspec_wndfn [i], el ? ",\n" : ", ");
 	}
@@ -1083,7 +1091,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		fftzoom_af(afsp.raw_buf, AFSP_DECIMATIONPOW2, WITHFFTSIZEAF);
 		// осталась половина буфера
 
-		arm_mult_f32(afsp.raw_buf, ifspec_wndfn, afsp.raw_buf, WITHFFTSIZEAF); // apply window function
+		arm_mult_f32(afsp.raw_buf, afspec_wndfn, afsp.raw_buf, WITHFFTSIZEAF); // apply window function
 		arm_rfft_fast_f32(& afsp.instance, afsp.raw_buf, afsp.fft_buf, 0); // 0-прямое, 1-обратное
 		afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
 		arm_cmplx_mag_f32(afsp.fft_buf, afsp.fft_buf, WITHFFTSIZEAF);
