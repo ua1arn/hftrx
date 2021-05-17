@@ -79,10 +79,10 @@
 #define HAL_SPDIFRX_MODULE_ENABLED
 #define HAL_DFSDM_MODULE_ENABLED
 #define HAL_LPTIM_MODULE_ENABLED
-//#define HAL_GPIO_MODULE_ENABLED
-//#define HAL_EXTI_MODULE_ENABLED
-//#define HAL_DMA_MODULE_ENABLED
-//#define HAL_FLASH_MODULE_ENABLED
+#define HAL_GPIO_MODULE_ENABLED
+#define HAL_EXTI_MODULE_ENABLED
+#define HAL_DMA_MODULE_ENABLED
+#define HAL_FLASH_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
 
@@ -186,9 +186,9 @@
                                                                               /*  Warning: Must be set to higher priority for HAL_Delay()  */
                                                                               /*  and HAL_GetTick() usage under interrupt context          */
 #define  USE_RTOS                     0U
-#define  PREFETCH_ENABLE              0U
-#define  INSTRUCTION_CACHE_ENABLE     0U
-#define  DATA_CACHE_ENABLE            0U
+#define  PREFETCH_ENABLE              1U
+#define  INSTRUCTION_CACHE_ENABLE     1U
+#define  DATA_CACHE_ENABLE            1U
 
 #define  USE_HAL_ADC_REGISTER_CALLBACKS         0U /* ADC register callback disabled       */
 #define  USE_HAL_CAN_REGISTER_CALLBACKS         0U /* CAN register callback disabled       */
