@@ -7856,15 +7856,17 @@ static void display2_spectrum(
 					}
 					else
 					{
-						static uint_fast16_t x_old = 0;
+						static uint_fast16_t x_old = UINT16_MAX;
 
 						uint_fast16_t x_d = * depth_map_3dss ++ & UINT8_MAX;
 						x_d |= (* depth_map_3dss ++ & UINT8_MAX) << 8;
+						if (x_d >= ALLDX)
+							return;
 
 						if (x_old != x_d)
 						{
 							uint_fast16_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
-							int_fast8_t h = y0 - y1 - i / 2;		// высота пика
+							int_fast16_t h = y0 - y1 - i / 2;		// высота пика
 							h = h < 0 ? 0 : h;
 
 							for (; h > 0; h --)
@@ -7893,6 +7895,9 @@ static void display2_spectrum(
 			{
 				uint_fast16_t y1 = * y_env ++ & UINT8_MAX;
 				y1 |= (* y_env ++ & UINT8_MAX) << 8;
+
+				if (y1 >= BUFDIM_Y)
+					return;
 
 				if (x)
 					colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, y1, COLORMAIN_BLACK, 0);
