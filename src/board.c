@@ -6692,11 +6692,10 @@ static void board_fpga_loader_initialize(void)
 	HARDWARE_FPGA_LOADER_INITIALIZE();
 }
 
-
 #if WITHFPGALOAD_PS
 
 #if ! (CPUSTYLE_R7S721 || 0)
-/* на процессоре renesas образ располагается в памяти, испольщуемой для хранений буферов DSP части */
+/* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
 static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
 {
 #include "rbfimages.h"
