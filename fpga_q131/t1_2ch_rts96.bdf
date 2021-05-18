@@ -6839,15 +6839,6 @@ applicable agreement for further details.
 	(bus)
 )
 (connector
-	(text "coreclk" (rect -5334 -712 -5299 -700)(font "Arial" ))
-	(pt -5336 -696)
-	(pt -5112 -696)
-)
-(connector
-	(pt -5112 -696)
-	(pt -4544 -696)
-)
-(connector
 	(pt -3232 -232)
 	(pt -3560 -232)
 )
@@ -7135,11 +7126,6 @@ applicable agreement for further details.
 (connector
 	(pt -4176 -696)
 	(pt -3496 -696)
-	(color 255 0 0)
-)
-(connector
-	(pt -3496 -696)
-	(pt -2672 -696)
 	(color 255 0 0)
 )
 (connector
@@ -8056,14 +8042,6 @@ applicable agreement for further details.
 	(pt -2256 -568)
 )
 (connector
-	(pt -2696 -832)
-	(pt -2728 -832)
-)
-(connector
-	(pt -2696 -928)
-	(pt -2728 -928)
-)
-(connector
 	(text "mode_tx" (rect -2798 -864 -2756 -852)(font "Arial" ))
 	(pt -2696 -848)
 	(pt -2800 -848)
@@ -8076,10 +8054,6 @@ applicable agreement for further details.
 (connector
 	(pt -2696 -816)
 	(pt -2712 -816)
-)
-(connector
-	(pt -2712 -816)
-	(pt -2712 -912)
 )
 (connector
 	(pt -2600 -928)
@@ -8096,22 +8070,6 @@ applicable agreement for further details.
 (connector
 	(pt -2600 -832)
 	(pt -2568 -832)
-)
-(connector
-	(pt -4496 -728)
-	(pt -2728 -728)
-)
-(connector
-	(pt -2728 -728)
-	(pt -928 -728)
-)
-(connector
-	(pt -2728 -928)
-	(pt -2728 -832)
-)
-(connector
-	(pt -2728 -832)
-	(pt -2728 -728)
 )
 (connector
 	(pt -2392 -632)
@@ -8302,14 +8260,6 @@ applicable agreement for further details.
 	(pt -2880 -400)
 )
 (connector
-	(pt -2824 -912)
-	(pt -2712 -912)
-)
-(connector
-	(pt -2712 -912)
-	(pt -2696 -912)
-)
-(connector
 	(text "main_ch" (rect -2286 -448 -2245 -436)(font "Arial" ))
 	(pt -2384 -432)
 	(pt -2248 -432)
@@ -8317,18 +8267,6 @@ applicable agreement for further details.
 (connector
 	(pt -2392 -616)
 	(pt -2424 -616)
-)
-(connector
-	(pt -2424 -696)
-	(pt -2424 -616)
-)
-(connector
-	(pt -2672 -696)
-	(pt -2424 -696)
-)
-(connector
-	(pt -2424 -696)
-	(pt -2144 -696)
 )
 (connector
 	(text "main_valid" (rect -2558 -624 -2505 -612)(font "Arial" ))
@@ -8357,6 +8295,78 @@ applicable agreement for further details.
 (connector
 	(pt -2256 -568)
 	(pt -2112 -568)
+)
+(connector
+	(pt -4496 -728)
+	(pt -928 -728)
+)
+(connector
+	(pt -2712 -816)
+	(pt -2712 -912)
+)
+(connector
+	(pt -2824 -912)
+	(pt -2712 -912)
+)
+(connector
+	(pt -2712 -912)
+	(pt -2696 -912)
+)
+(connector
+	(pt -2696 -928)
+	(pt -2728 -928)
+	(color 255 0 0)
+)
+(connector
+	(pt -2728 -832)
+	(pt -2696 -832)
+	(color 255 0 0)
+)
+(connector
+	(pt -2728 -832)
+	(pt -2728 -696)
+	(color 255 0 0)
+)
+(connector
+	(pt -2728 -928)
+	(pt -2728 -832)
+	(color 255 0 0)
+)
+(connector
+	(pt -3496 -696)
+	(pt -2728 -696)
+	(color 255 0 0)
+)
+(connector
+	(text "coreclk" (rect -5334 -712 -5299 -700)(font "Arial" ))
+	(pt -5336 -696)
+	(pt -5112 -696)
+	(color 255 0 0)
+)
+(connector
+	(pt -5112 -696)
+	(pt -4544 -696)
+	(color 255 0 0)
+)
+(connector
+	(pt -2728 -696)
+	(pt -2672 -696)
+	(color 255 0 0)
+)
+(connector
+	(pt -2672 -696)
+	(pt -2424 -696)
+	(color 255 0 0)
+)
+(connector
+	(pt -2424 -696)
+	(pt -2144 -696)
+	(color 255 0 0)
+)
+(connector
+	(pt -2424 -696)
+	(pt -2424 -616)
+	(color 255 0 0)
 )
 (junction (pt -1592 -696))
 (junction (pt -4384 -696))
@@ -8445,10 +8455,10 @@ applicable agreement for further details.
 (junction (pt -4048 -16))
 (junction (pt -4032 0))
 (junction (pt -2112 -568))
-(junction (pt -2728 -832))
-(junction (pt -2728 -728))
-(junction (pt -2712 -912))
 (junction (pt -2424 -696))
+(junction (pt -2728 -696))
+(junction (pt -2712 -912))
+(junction (pt -2728 -832))
 (text "Previous" (rect -2280 1000 -2231 1014)(font "Arial" (font_size 8)))
 (text "Current" (rect -2280 1096 -2238 1110)(font "Arial" (font_size 8)))
 (text "Previous" (rect -1904 -112 -1855 -98)(font "Arial" (font_size 8)))
