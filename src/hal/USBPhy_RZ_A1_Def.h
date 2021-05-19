@@ -109,8 +109,8 @@
 #define USB_DPRPU               (0x0010u)   /* b4: D+ pull up control */
 #define USB_DMRPU               (0x0008u)   /* b3: D- pull up control */ /* For low speed */
 #define USB_UCKSEL              (0x0004u)   /* b2: USB clock select */
-#define USB_EXTAL_12MHZ         (0x0004u)   /* EXTAL 12MHz */
-#define USB_X1_48MHZ            (0x0000u)   /* USB_X1 48MHz */
+//#define USB_EXTAL_12MHZ         (0x0004u)   /* EXTAL 12MHz */
+//#define USB_X1_48MHZ            (0x0000u)   /* USB_X1 48MHz */
 #define USB_UPLLE               (0x0002u)   /* b1: USB internal PLL enable */
 #define USB_USBE                (0x0001u)   /* b0: USB module enable */
 

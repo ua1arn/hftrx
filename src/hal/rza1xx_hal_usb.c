@@ -203,7 +203,7 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
 	}
 
     /* module reset and clock select */
-    USBPhyHw_reset_usb(USBx, USB_EXTAL_12MHZ);                            /* USB_X1 48MHz */
+    USBPhyHw_reset_usb(USBx, USB_SYSCFG_UCKSEL_Value);                            /* USB_X1 48MHz */
 
     /* Set to USB Function and select speed */
     USBx->SYSCFG0 &= ~USB_DPRPU;
@@ -1623,7 +1623,15 @@ void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
         USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
     }
 #endif
-    USBx->BUSWAIT = (uint16_t)(USB_BWAIT_3 & USB_BWAIT);   /* 3 : 5 access cycles  waits */
+	// P1 clock (66.7 MHz max) period = 15 ns
+	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
+	// TODO: compute BWAIT value on-the-fly
+	// Use P1CLOCK_FREQ
+	const uint_fast32_t bwait = MIN(MAX(calcdivround2(P1CLOCK_FREQ, 15000000uL), 2) - 2, 63);
+	USBx->BUSWAIT = (bwait << USB_BUSWAIT_BWAIT_SHIFT) & USB_BUSWAIT_BWAIT;	// 5 cycles = 75 nS minimum
+	(void) USBx->BUSWAIT;
+    //USBx->BUSWAIT = (uint16_t)(USB_BWAIT_3 & USB_BWAIT);   /* 3 : 5 access cycles  waits */
+
     USBx->CFIFOSEL  = USB_MBW_32;
     USBx->D0FIFOSEL = USB_MBW_32;
     USBx->D1FIFOSEL = USB_MBW_32;
