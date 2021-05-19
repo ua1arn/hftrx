@@ -57,9 +57,9 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe);
 uint16_t USBPhyHw_PIPE2FIFO(uint16_t pipe);
 void USBPhyHw_forced_termination(PCD_HandleTypeDef *hpcd, uint16_t pipe, uint16_t status);
 int USBPhyHw_chk_vbsts(USB_OTG_GlobalTypeDef * USBx);
-void USBPhyHw__usbisr(void);
-void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx);
-void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx);
+//void USBPhyHw__usbisr(void);
+//void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx);
+//void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx);
 void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode);
 
 
@@ -175,9 +175,11 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe)
 
 
 /**** User Selection ****/
-
-void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
+// looks like USB_DevInit
+//void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
+HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
+	unsigned i;
 //
 //    if (this->events == NULL) {
 //        //sleep_manager_lock_deep_sleep();
@@ -189,14 +191,11 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
 
     /* Disable IRQ */
 
-    if (USBx == & USB200)
-	{
+    if (USBx == & USB200) {
 		GIC_DisableIRQ(USBI0_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71);
 		(void) CPG.STBCR7;
-	}
-	else if (USBx == & USB201)
-	{
+	} else if (USBx == & USB201) {
 		GIC_DisableIRQ(USBI1_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71 | CPG_STBCR7_MSTP70);
 		(void) CPG.STBCR7;
@@ -217,26 +216,27 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
 	const uint8_t usb_speed_HS =    0;        // 1: High-Speed  0: Full-Speed
 #endif /* WITHUSBDEV_HSDESC */
     if (usb_speed_HS == 0) {
-        USBx->SYSCFG0 &= ~USB_HSE;                     /* Full-Speed */
+        USBx->SYSCFG0 &= ~ USB_HSE;                     /* Full-Speed */
     } else {
         USBx->SYSCFG0 |= USB_HSE;                      /* High-Speed */
     }
     local_delay_us(1500);
 
 	// When the function controller mode is selected, set all the bits in this register to 0.
-	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i)
-	{
+	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i) {
 		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
 
 		// Reserved bits: The write value should always be 0.
 		* DEVADDn = 0;
 		(void) * DEVADDn;
 	}
+
+	return HAL_OK;
 }
 
 void USBPhyHw_deinit(USB_OTG_GlobalTypeDef * USBx)
 {
-    USBPhyHw_disconnect(USBx);
+	USB_DevDisconnect(USBx);
 
     if (USBx == & USB200)
 	{
@@ -262,7 +262,29 @@ int USBPhyHw_powered(USB_OTG_GlobalTypeDef * USBx)
     return 1;
 }
 
-void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
+
+static void device_USBI0_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
+}
+
+static void device_USBI1_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
+}
+
+static void host_USBI0_IRQHandler(void)
+{
+//	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+}
+
+static void host_USBI1_IRQHandler(void)
+{
+//	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+}
+
+//void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
+HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 {
     /* Enable pullup on D+ */
     USBx->INTENB0 |= (USB_VBSE | USB_SOFE | USB_DVSE | USB_CTRE | USB_BEMPE | USB_NRDYE | USB_BRDYE);
@@ -271,20 +293,23 @@ void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
     /* Enable USB */
     if (USBx == & USB200)
 	{
-    	arm_hardware_set_handler_system(USBI0_IRQn, USBPhyHw__usbisr);
+    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
 	}
 	else if (USBx == & USB201)
 	{
-		arm_hardware_set_handler_system(USBI1_IRQn, USBPhyHw__usbisr);
+		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
 	}
 //    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
 //    GIC_SetPriority(USBIX_IRQn, 16);
 //    GIC_SetConfiguration(USBIX_IRQn, 1);
 //    GIC_EnableIRQ(USBIX_IRQn);
 	//arm_hardware_set_handler_system(USBIX_IRQn, _usbisr);
+
+    return HAL_OK;
 }
 
-void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx)
+//void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx)
+HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
 {
     /* Disable USB */
 //    GIC_DisableIRQ(USBIX_IRQn);
@@ -304,6 +329,8 @@ void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx)
     USBx->SYSCFG0 |= USB_DCFM;
     local_delay_ms(1);
     USBx->SYSCFG0 &= ~USB_DCFM;
+
+    return HAL_OK;
 }
 
 void USBPhyHw_configure(USB_OTG_GlobalTypeDef * USBx)
@@ -909,8 +936,9 @@ void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
     }
 }
 
+// Renesas, usb device
 //void USBPhyHw__usbisr(void)
-void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
+void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
@@ -1627,54 +1655,54 @@ uint16_t USBPhyHw_PIPE2FIFO(uint16_t pipe)
 
 void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
 {
-#if (USB_FUNCTION_CH == 0)
-    if ((USB200.SYSCFG0 & USB_UPLLE) == USB_UPLLE) {
-        if ((USB200.SYSCFG0 & USB_UCKSEL) != clockmode) {
+    if (USBx == & USB200) {
+        if ((USB200.SYSCFG0 & USB_UPLLE) == USB_UPLLE) {
+            if ((USB200.SYSCFG0 & USB_UCKSEL) != clockmode) {
+                USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+                USB200.SYSCFG0 = 0;
+                USB200.SYSCFG0 = (clockmode | USB_UPLLE);
+                local_delay_us(1000);
+                USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
+            } else {
+                USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+                local_delay_us(1000);
+                USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
+            }
+        } else {
             USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
             USB200.SYSCFG0 = 0;
             USB200.SYSCFG0 = (clockmode | USB_UPLLE);
             local_delay_us(1000);
             USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
-        } else {
-            USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-            local_delay_us(1000);
-            USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
         }
-    } else {
-        USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-        USB200.SYSCFG0 = 0;
-        USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-        local_delay_us(1000);
-        USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
-    }
-#else
-    /* UCKSEL and UPLLE bit is only USB0. If USB1, set to SYSCFG0 for USB0. */
-    if ((USB200.SYSCFG0 & USB_UPLLE) == USB_UPLLE) {
-        if ((USB200.SYSCFG0 & USB_UCKSEL) != clockmode) {
-            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-            USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-            USB201.SYSCFG0 = 0;
-            USB200.SYSCFG0 = 0;
-            USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-            local_delay_us(1000);
-            USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
-            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
-        } else {
-            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-            local_delay_us(1000);
-            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
-        }
-    } else {
-        USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-        USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-        USB201.SYSCFG0 = 0;
-        USB200.SYSCFG0 = 0;
-        USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-        local_delay_us(1000);
-        USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
-        USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
-    }
-#endif
+	} else if (USBx == & USB201) {
+	    /* UCKSEL and UPLLE bit is only USB0. If USB1, set to SYSCFG0 for USB0. */
+	    if ((USB200.SYSCFG0 & USB_UPLLE) == USB_UPLLE) {
+	        if ((USB200.SYSCFG0 & USB_UCKSEL) != clockmode) {
+	            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	            USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	            USB201.SYSCFG0 = 0;
+	            USB200.SYSCFG0 = 0;
+	            USB200.SYSCFG0 = (clockmode | USB_UPLLE);
+	            local_delay_us(1000);
+	            USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	        } else {
+	            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	            local_delay_us(1000);
+	            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	        }
+	    } else {
+	        USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	        USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	        USB201.SYSCFG0 = 0;
+	        USB200.SYSCFG0 = 0;
+	        USB200.SYSCFG0 = (clockmode | USB_UPLLE);
+	        local_delay_us(1000);
+	        USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	        USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	    }
+	}
 	// P1 clock (66.7 MHz max) period = 15 ns
 	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
 	// TODO: compute BWAIT value on-the-fly
@@ -2906,7 +2934,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 
 */
 // Renesas, usb device
-void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
+void HAL_PCD_IRQHandlerOld(PCD_HandleTypeDef *hpcd)
 {
 	//__DMB();
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
@@ -3667,7 +3695,7 @@ HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EP
   * @param  USBx : Selected device
   * @retval HAL status
   */
-HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef  USB_DevDisconnectOld (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
 
@@ -3687,7 +3715,7 @@ HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
   * @param  USBx : Selected device
   * @retval HAL status
   */
-HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef  USB_DevConnectOld (USB_OTG_GlobalTypeDef *USBx)
 {
 	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
 
@@ -4508,7 +4536,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef 
   *         the configuration information for the specified USBx peripheral.
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
+HAL_StatusTypeDef USB_DevInitOld(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
 	unsigned i;
 
