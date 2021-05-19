@@ -178,7 +178,7 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe)
 /**** User Selection ****/
 // looks like USB_DevInit
 //void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
-HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
+HAL_StatusTypeDef USB_DevInitNew(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
 	unsigned i;
 //
@@ -675,7 +675,7 @@ int USBPhyHw_endpoint_read(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint, uint8_t *
 }
 
 //uint32_t USBPhyHw_endpoint_read_result(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
-uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+uint32_t HAL_PCD_EP_GetRxCountNew(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     uint16_t pipe = USBPhyHw_EP2PIPE(ep_addr);
@@ -985,7 +985,7 @@ void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
 
 // Renesas, usb device
 //void USBPhyHw__usbisr(void)
-void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
+void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
 {
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
@@ -2865,7 +2865,7 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   return HAL_OK;
 }
 
-uint32_t HAL_PCD_EP_GetRxCountOld(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
 	return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
 }
@@ -3003,7 +3003,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 
 */
 // Renesas, usb device
-void HAL_PCD_IRQHandlerOld(PCD_HandleTypeDef *hpcd)
+void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//__DMB();
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
@@ -4605,7 +4605,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef 
   *         the configuration information for the specified USBx peripheral.
   * @retval HAL status
   */
-HAL_StatusTypeDef USB_DevInitOld(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
+HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
 	unsigned i;
 
