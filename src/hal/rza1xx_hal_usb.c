@@ -400,54 +400,58 @@ uint32_t USBPhyHw_ep0_set_max_packet(uint32_t max_packet)
     return MAX_PACKET_SIZE_EP0;
 }
 
-void events_suspend(PCD_HandleTypeDef *hpcd, int state)
+static void events_suspend(PCD_HandleTypeDef *hpcd, int state)
 {
 	PRINTF("%s:\n", __func__);
 	HAL_PCD_SuspendCallback(hpcd);
 
 }
 
-void events_sof(PCD_HandleTypeDef *hpcd, unsigned framenum)
+static void events_sof(PCD_HandleTypeDef *hpcd, unsigned framenum)
 {
 	//PRINTF("%s:\n", __func__);
 	HAL_PCD_SOFCallback(hpcd);
 
 }
 
-void events_reset(PCD_HandleTypeDef *hpcd)
+static void events_reset(PCD_HandleTypeDef *hpcd)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 	HAL_PCD_ResetCallback(hpcd);
 
 }
 
-void events_ep0_setup(PCD_HandleTypeDef *hpcd)
+static void events_address(PCD_HandleTypeDef *hpcd)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
+	HAL_PCD_AdressedCallback(hpcd);
+
+}
+
+static void events_ep0_setup(PCD_HandleTypeDef *hpcd)
+{
+	//PRINTF("%s:\n", __func__);
 	HAL_PCD_SetupStageCallback(hpcd);
 
 }
 
-void events_ep0_in(PCD_HandleTypeDef *hpcd)
+static void events_ep0_in(PCD_HandleTypeDef *hpcd)
 {
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
 	//PRINTF("%s:\n", __func__);
 	USBD_SetupReqTypedef *req = & pdev->request;
-	PRINTF("%s: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
-			__func__,
-		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
 
 	PCD_EPTypeDef *ep;
 
 	ep = &hpcd->IN_ep[0 & EP_ADDR_MSK];
 	ep->xfer_buff += ep->maxpacket;	// пересланный размер может отличаться от максимального
-	ep->xfer_count += ep->maxpacket;	// ?
-	PRINTF("%s: ep->xfer_buff=%p, ep->xfer_count=%u, ep->maxpacket=%u\n", __func__, ep->xfer_buff, ep->xfer_count, ep->maxpacket);
+	//ep->xfer_count += ep->maxpacket;	// ?
+	//PRINTF("%s: ep->xfer_buff=%p, ep->xfer_count=%u, ep->maxpacket=%u\n", __func__, ep->xfer_buff, ep->xfer_count, ep->maxpacket);
 	HAL_PCD_DataInStageCallback(hpcd, 0);
 
 }
 
-void events_ep0_out(PCD_HandleTypeDef *hpcd)
+static void events_ep0_out(PCD_HandleTypeDef *hpcd)
 {
 	unsigned bcnt = hpcd->pipe_ctrl[USB_PIPE0].data_cnt;
 	PCD_EPTypeDef *ep;
@@ -460,14 +464,14 @@ void events_ep0_out(PCD_HandleTypeDef *hpcd)
 
 }
 
-void events_in(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
+static void events_in(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
 {
 	PRINTF("%s:\n", __func__);
 	HAL_PCD_DataInStageCallback(hpcd, endpoint);
 
 }
 
-void events_out(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
+static void events_out(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
 {
 	uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
 	PRINTF("%s:\n", __func__);
@@ -536,7 +540,7 @@ void ctrl_end(PCD_HandleTypeDef *hpcd, uint16_t err)
 
 void USBPhyHw_ep0_write(PCD_HandleTypeDef *hpcd, uint8_t *buffer, uint32_t size)
 {
-	PRINTF("%s: buffer=%p, size=%u\n", __func__, buffer, size);
+	//PRINTF("%s: buffer=%p, size=%u\n", __func__, buffer, size);
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     if ((buffer == NULL) || (size == 0)) {
         USBPhyHw_set_pid(USBx, USB_PIPE0, USB_PID_BUF);            /* Set BUF */
@@ -802,7 +806,8 @@ void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
                 events_reset(hpcd);
                 break;
             case USB_DS_ADDS :
-                break;
+                events_address(hpcd);
+              break;
             case USB_DS_CNFG :
                 break;
             case USB_DS_SPD_POWR :
@@ -1184,7 +1189,7 @@ void USBPhyHw_fifo_to_buf(PCD_HandleTypeDef *hpcd, uint16_t pipe)
 
 uint8_t *USBPhyHw_write_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t count, uint8_t *write_p)
 {
-	PRINTF("%s: count=%u, write_p=%p\n", __func__, count, write_p);
+	//PRINTF("%s: count=%u, write_p=%p\n", __func__, count, write_p);
 	volatile iodefine_reg32_t * const p_reg = USBPhyHw_get_fifo_reg(USBx, pipe);
     uint16_t even;
     uint16_t odd;
@@ -1215,7 +1220,6 @@ uint8_t *USBPhyHw_write_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16
 uint16_t USBPhyHw_write_data(PCD_HandleTypeDef *hpcd, uint16_t pipe)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
-    volatile uint16_t *p_reg;
     uint16_t size;
     uint16_t count;
     uint16_t mxps;
@@ -1276,9 +1280,10 @@ uint16_t USBPhyHw_write_data(PCD_HandleTypeDef *hpcd, uint16_t pipe)
 
     /* Check data count to remain */
     if (hpcd->pipe_ctrl [pipe].data_cnt < (uint32_t)size) {
+        volatile uint16_t * const p_reg = USBPhyHw_get_fifoctr_reg(USBx, pipe);
+
     	hpcd->pipe_ctrl [pipe].data_cnt = 0u;                  /* Clear data count */
 
-        p_reg = USBPhyHw_get_fifoctr_reg(USBx, pipe);
         if ((*p_reg & USB_BVAL) == 0u) {                /* Check BVAL */
             *p_reg |= USB_BVAL;                         /* Short Packet */
         }
