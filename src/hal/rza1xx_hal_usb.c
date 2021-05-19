@@ -189,13 +189,13 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
 
     /* Disable IRQ */
 
-    if (WITHUSBHW_DEVICE == & USB200)
+    if (USBx == & USB200)
 	{
 		GIC_DisableIRQ(USBI0_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71);
 		(void) CPG.STBCR7;
 	}
-	else if (WITHUSBHW_DEVICE == & USB201)
+	else if (USBx == & USB201)
 	{
 		GIC_DisableIRQ(USBI1_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71 | CPG_STBCR7_MSTP70);
