@@ -686,8 +686,8 @@ uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 int USBPhyHw_endpoint_write(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint, uint8_t *data, uint32_t size)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
-    volatile uint16_t *p_reg;
     uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
+    volatile uint16_t * const p_reg = USBPhyHw_get_pipectr_reg(USBx, pipe);
 
     if (hpcd->pipe_ctrl [pipe].status == USB_DATA_STALL) {
         return 0;
@@ -705,7 +705,6 @@ int USBPhyHw_endpoint_write(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint, uint8_t 
     USBx->BRDYSTS = (uint16_t)((~(1 << pipe)) & BRDYSTS_MASK);     /* BRDY Status Clear */
     USBx->NRDYSTS = (uint16_t)((~(1 << pipe)) & NRDYSTS_MASK);     /* NRDY Status Clear */
 
-    p_reg = USBPhyHw_get_pipectr_reg(USBx, pipe);
     /* Buffer Clear */
     *p_reg |= USB_ACLRM;
     *p_reg &= ~USB_ACLRM;
