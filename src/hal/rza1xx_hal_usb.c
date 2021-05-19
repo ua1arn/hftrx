@@ -179,14 +179,14 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe)
 
 
 /**** User Selection ****/
-#if WITHUSBDEV_HSDESC
-	static const uint8_t _usb_speed =    1;        // 1: High-Speed  0: Full-Speed
-#else /* WITHUSBDEV_HSDESC */
-	static const uint8_t _usb_speed =    0;        // 1: High-Speed  0: Full-Speed
-#endif /* WITHUSBDEV_HSDESC */
 
 void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
 {
+#if WITHUSBDEV_HSDESC
+	const uint8_t _usb_speed =    1;        // 1: High-Speed  0: Full-Speed
+#else /* WITHUSBDEV_HSDESC */
+	const uint8_t _usb_speed =    0;        // 1: High-Speed  0: Full-Speed
+#endif /* WITHUSBDEV_HSDESC */
 //
 //    if (this->events == NULL) {
 //        //sleep_manager_lock_deep_sleep();
