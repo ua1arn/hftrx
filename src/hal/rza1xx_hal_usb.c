@@ -62,6 +62,7 @@ int USBPhyHw_chk_vbsts(USB_OTG_GlobalTypeDef * USBx);
 //void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx);
 void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode);
 
+static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req);
 
 // на RENESAS для работы с изохронными ендпоинтами используется DMA
 //#define WITHDMAHW_UACIN 1		// при этой опции после пересоединения USB кабеля отваливается поток IN
@@ -402,48 +403,81 @@ uint32_t USBPhyHw_ep0_set_max_packet(uint32_t max_packet)
 void events_suspend(PCD_HandleTypeDef *hpcd, int state)
 {
 	PRINTF("%s:\n", __func__);
+	HAL_PCD_SuspendCallback(hpcd);
 
 }
 
 void events_sof(PCD_HandleTypeDef *hpcd, unsigned framenum)
 {
 	//PRINTF("%s:\n", __func__);
+	HAL_PCD_SOFCallback(hpcd);
 
 }
 
 void events_reset(PCD_HandleTypeDef *hpcd)
 {
 	PRINTF("%s:\n", __func__);
+	HAL_PCD_ResetCallback(hpcd);
 
 }
 
 void events_ep0_setup(PCD_HandleTypeDef *hpcd)
 {
 	PRINTF("%s:\n", __func__);
+	HAL_PCD_SetupStageCallback(hpcd);
 
 }
 
 void events_ep0_in(PCD_HandleTypeDef *hpcd)
 {
-	PRINTF("%s:\n", __func__);
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	//PRINTF("%s:\n", __func__);
+	USBD_SetupReqTypedef *req = & pdev->request;
+	PRINTF("%s: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
+			__func__,
+		req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+
+	PCD_EPTypeDef *ep;
+
+	ep = &hpcd->IN_ep[0 & EP_ADDR_MSK];
+	ep->xfer_buff += ep->maxpacket;	// пересланный размер может отличаться от максимального
+	ep->xfer_count += ep->maxpacket;	// ?
+	PRINTF("%s: ep->xfer_buff=%p, ep->xfer_count=%u, ep->maxpacket=%u\n", __func__, ep->xfer_buff, ep->xfer_count, ep->maxpacket);
+	HAL_PCD_DataInStageCallback(hpcd, 0);
 
 }
 
 void events_ep0_out(PCD_HandleTypeDef *hpcd)
 {
-	PRINTF("%s:\n", __func__);
+	unsigned bcnt = hpcd->pipe_ctrl[USB_PIPE0].data_cnt;
+	PCD_EPTypeDef *ep;
+	PRINTF("%s: bcnt=%u\n", __func__, bcnt);
+
+	ep = &hpcd->OUT_ep[0 & EP_ADDR_MSK];
+	ep->xfer_buff += bcnt;
+	ep->xfer_count += bcnt;
+	HAL_PCD_DataOutStageCallback(hpcd, 0);
 
 }
 
 void events_in(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
 {
 	PRINTF("%s:\n", __func__);
+	HAL_PCD_DataInStageCallback(hpcd, endpoint);
 
 }
 
 void events_out(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
 {
+	uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
 	PRINTF("%s:\n", __func__);
+	unsigned bcnt = hpcd->pipe_ctrl[pipe].data_cnt;
+	PCD_EPTypeDef *ep;
+
+	ep = &hpcd->OUT_ep[endpoint & EP_ADDR_MSK];
+	ep->xfer_buff += bcnt;
+	ep->xfer_count += bcnt;
+	HAL_PCD_DataOutStageCallback(hpcd, endpoint);
 
 }
 
@@ -475,21 +509,34 @@ uint32_t USBPhyHw_ep0_read_result(PCD_HandleTypeDef *hpcd)
 
 void ctl_end(PCD_HandleTypeDef *hpcd, uint16_t err)
 {
+	PRINTF("%s: err=%u\n", __func__, err);
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	USBD_CtlError(pdev, & pdev->request);
 
 }
 
 void data_end(PCD_HandleTypeDef *hpcd, uint16_t fifo, uint16_t err)
 {
+	PRINTF("%s: err=%u\n", __func__, err);
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	USBD_CtlError(pdev, & pdev->request);
 
 }
 
 void ctrl_end(PCD_HandleTypeDef *hpcd, uint16_t err)
 {
+	PRINTF("%s: err=%u\n", __func__, err);
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	USBD_CtlError(pdev, & pdev->request);
 
 }
 
 void USBPhyHw_ep0_write(PCD_HandleTypeDef *hpcd, uint8_t *buffer, uint32_t size)
 {
+	PRINTF("%s: buffer=%p, size=%u\n", __func__, buffer, size);
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     if ((buffer == NULL) || (size == 0)) {
         USBPhyHw_set_pid(USBx, USB_PIPE0, USB_PID_BUF);            /* Set BUF */
@@ -678,9 +725,8 @@ void USBPhyHw_endpoint_abort(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
 void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
 	//__DMB();
-	//USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
-	//USBD_HandleTypeDef * const pdev = hpcd->pData;
     /* Register Save */
     uint16_t intsts0 = USBx->INTSTS0;
     uint16_t brdysts = USBx->BRDYSTS;
@@ -843,6 +889,8 @@ void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
                 *bufO++ = USBx->USBVAL;   /* data[2] data[3] <= wValue */
                 *bufO++ = USBx->USBINDX;  /* data[4] data[5] <= wIndex */
                 *bufO++ = USBx->USBLENG;  /* data[6] data[7] <= wLength */
+
+        		usb_save_request(USBx, & pdev->request);
             }
         }
 
@@ -1136,11 +1184,11 @@ void USBPhyHw_fifo_to_buf(PCD_HandleTypeDef *hpcd, uint16_t pipe)
 
 uint8_t *USBPhyHw_write_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t count, uint8_t *write_p)
 {
-	volatile iodefine_reg32_t * p_reg;
+	PRINTF("%s: count=%u, write_p=%p\n", __func__, count, write_p);
+	volatile iodefine_reg32_t * const p_reg = USBPhyHw_get_fifo_reg(USBx, pipe);
     uint16_t even;
     uint16_t odd;
 
-    p_reg = USBPhyHw_get_fifo_reg(USBx, pipe);
     USBPhyHw_set_mbw(USBx, pipe, USB_MBW_32);                                /* 32bit access */
     for (even = (uint16_t)(count >> 2); (even != 0); --even) {
         p_reg->UINT32 = *((uint32_t *)write_p);
@@ -2646,11 +2694,13 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
-    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+    //(void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+	  USBPhyHw_ep0_read(hpcd, pBuf, len);
   }
   else
   {
-    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+    //(void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+	  USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
   }
 
   return HAL_OK;
@@ -2683,11 +2733,13 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
-    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+    //(void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+	  USBPhyHw_ep0_write(hpcd, (uint8_t *) pBuf, len);
   }
   else
   {
-    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+    //(void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+	  USBPhyHw_endpoint_write(hpcd, ep_addr, (uint8_t *) pBuf, len);
   }
 
   return HAL_OK;
@@ -2724,7 +2776,16 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
   __HAL_LOCK(hpcd);
 
-  (void)USB_EPSetStall(hpcd->Instance, ep);
+ // (void)USB_EPSetStall(hpcd->Instance, ep);
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+	  USBPhyHw_ep0_stall(hpcd);
+  }
+  else
+  {
+	  USBPhyHw_endpoint_stall(hpcd, ep_addr);
+
+  }
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
@@ -2766,7 +2827,16 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   ep->num = ep_addr & EP_ADDR_MSK;
 
   __HAL_LOCK(hpcd);
-  (void)USB_EPClearStall(hpcd->Instance, ep);
+//  (void)USB_EPClearStall(hpcd->Instance, ep);
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+	  USBPhyHw_endpoint_unstall(hpcd, 0);
+  }
+  else
+  {
+	  USBPhyHw_endpoint_unstall(hpcd, ep_addr);
+
+  }
   __HAL_UNLOCK(hpcd);
 
   return HAL_OK;
