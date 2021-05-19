@@ -1343,8 +1343,8 @@ void cpu_initialize(void)
 		#endif /* (__L2C_PRESENT == 1) */
 		#if (__L2C_PRESENT == 1)
 			// Enable Level 2 Cache
-			L2C_Enable();
 			L2C_InvAllByWay();
+			L2C_Enable();
 		#endif
 	#endif /* WITHISBOOTLOADER */
 

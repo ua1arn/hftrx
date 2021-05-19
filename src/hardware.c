@@ -3044,16 +3044,16 @@ sysinit_cache_L2_cpu0_initialize(void)
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
 
-	#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
-		L2C_Disable();
-		* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
-		* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
-	#endif /* (__L2C_PRESENT == 1) */
-	#if (__L2C_PRESENT == 1)
-		// Enable Level 2 Cache
-		L2C_Enable();
-		L2C_InvAllByWay();
-	#endif
+		#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
+			L2C_Disable();
+			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
+			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
+		#endif /* (__L2C_PRESENT == 1) */
+		#if (__L2C_PRESENT == 1)
+			// Enable Level 2 Cache
+			L2C_InvAllByWay();
+			L2C_Enable();
+		#endif
 	//arm_hardware_flush_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
