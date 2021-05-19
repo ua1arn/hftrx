@@ -52,14 +52,14 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status);
 
 
 /* PCD Handle Structure */
- RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
+static RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
 /* USB Device Core handle declaration */
 static RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
 
 /* HCD Handle Structure */
 static RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
 /* USB Host Core handle declaration */
-static RAMBIGDTCM  __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
+static RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
 
 //
 //typedef enum {

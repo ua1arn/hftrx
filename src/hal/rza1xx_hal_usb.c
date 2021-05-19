@@ -36,8 +36,6 @@
 #include "USBPhy_RZ_A1_Def.h"
 #include "USBPhyTypes.h"
 
- extern PCD_HandleTypeDef hpcd_USB_OTG;
-
 volatile uint16_t *USBPhyHw_get_pipectr_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
 volatile uint16_t *USBPhyHw_get_pipetre_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
 volatile uint16_t *USBPhyHw_get_pipetrn_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
@@ -221,7 +219,7 @@ HAL_StatusTypeDef USB_DevInitNew(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef
     } else {
         USBx->SYSCFG0 |= USB_HSE;                      /* High-Speed */
     }
-    local_delay_us(1500);
+    HARDWARE_DELAY_US(1500);
 
 	// When the function controller mode is selected, set all the bits in this register to 0.
 	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i) {
@@ -264,42 +262,22 @@ int USBPhyHw_powered(USB_OTG_GlobalTypeDef * USBx)
 }
 
 
-static void device_USBI0_IRQHandler(void)
-{
-	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
-}
-
-static void device_USBI1_IRQHandler(void)
-{
-	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
-}
-
-static void host_USBI0_IRQHandler(void)
-{
-//	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
-}
-
-static void host_USBI1_IRQHandler(void)
-{
-//	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
-}
-
 //void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
-HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
     /* Enable pullup on D+ */
     USBx->INTENB0 |= (USB_VBSE | USB_SOFE | USB_DVSE | USB_CTRE | USB_BEMPE | USB_NRDYE | USB_BRDYE);
     USBx->SYSCFG0 |= USB_DPRPU;
 
     /* Enable USB */
-    if (USBx == & USB200)
-	{
-    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
-	}
-	else if (USBx == & USB201)
-	{
-		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
-	}
+//    if (USBx == & USB200)
+//	{
+//    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
+//	}
+//	else if (USBx == & USB201)
+//	{
+//		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
+//	}
 //    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
 //    GIC_SetPriority(USBIX_IRQn, 16);
 //    GIC_SetConfiguration(USBIX_IRQn, 1);
@@ -310,25 +288,25 @@ HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
 }
 
 //void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx)
-HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
+HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
     /* Disable USB */
 //    GIC_DisableIRQ(USBIX_IRQn);
 //    InterruptHandlerRegister(USBIX_IRQn, NULL);
-    if (USBx == & USB200)
-	{
-    	GIC_DisableIRQ(USBI0_IRQn);
-	}
-	else if (USBx == & USB201)
-	{
-		GIC_DisableIRQ(USBI1_IRQn);
-	}
+//  if (USBx == & USB200)
+//	{
+//    	GIC_DisableIRQ(USBI0_IRQn);
+//	}
+//	else if (USBx == & USB201)
+//	{
+//		GIC_DisableIRQ(USBI1_IRQn);
+//	}
 
     /* Disable pullup on D+ */
     USBx->SYSCFG0 &= ~USB_DPRPU;
-    local_delay_ms(1);
+    HARDWARE_DELAY_MS(1);
     USBx->SYSCFG0 |= USB_DCFM;
-    local_delay_ms(1);
+    HARDWARE_DELAY_MS(1);
     USBx->SYSCFG0 &= ~USB_DCFM;
 
     return HAL_OK;
@@ -1029,7 +1007,7 @@ void USBPhyHw_chg_curpipe(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t 
     *p_reg = buf;
 
     do {
-        local_delay_us(1);
+        HARDWARE_DELAY_US(1);
         buf = *p_reg;
     } while ((buf & (uint16_t)(USB_ISEL | USB_CURPIPE)) != (uint16_t)(isel_val | pipe));
 }
@@ -1047,7 +1025,7 @@ uint16_t USBPhyHw_is_set_frdy(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint1
         if ((uint16_t)(buffer & USB_FRDY) == USB_FRDY) {
             return (buffer);
         }
-        local_delay_us(1);
+        HARDWARE_DELAY_US(1);
     }
 
     return (USB_FIFOERROR);
@@ -1441,7 +1419,7 @@ void USBPhyHw_set_pid(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t new_
             *p_reg |= new_pid;
 
             do {
-                local_delay_us(1);
+                HARDWARE_DELAY_US(1);
                 p_reg = USBPhyHw_get_pipectr_reg(USBx, pipe);
             } while ((*p_reg & USB_PBUSY) == USB_PBUSY);
             break;
@@ -1708,18 +1686,18 @@ void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
                 USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
                 USB200.SYSCFG0 = 0;
                 USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-                local_delay_us(1000);
+                HARDWARE_DELAY_US(1000);
                 USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
             } else {
                 USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-                local_delay_us(1000);
+                HARDWARE_DELAY_US(1000);
                 USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
             }
         } else {
             USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
             USB200.SYSCFG0 = 0;
             USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-            local_delay_us(1000);
+            HARDWARE_DELAY_US(1000);
             USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
         }
 	} else if (USBx == & USB201) {
@@ -1731,12 +1709,12 @@ void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
 	            USB201.SYSCFG0 = 0;
 	            USB200.SYSCFG0 = 0;
 	            USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-	            local_delay_us(1000);
+	            HARDWARE_DELAY_US(1000);
 	            USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	        } else {
 	            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-	            local_delay_us(1000);
+	            HARDWARE_DELAY_US(1000);
 	            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	        }
 	    } else {
@@ -1745,7 +1723,7 @@ void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
 	        USB201.SYSCFG0 = 0;
 	        USB200.SYSCFG0 = 0;
 	        USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-	        local_delay_us(1000);
+	        HARDWARE_DELAY_US(1000);
 	        USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	        USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
 	    }
@@ -1774,9 +1752,9 @@ int USBPhyHw_chk_vbsts(USB_OTG_GlobalTypeDef * USBx)
     /* VBUS chattering cut */
     do {
         buf1 = USBx->INTSTS0;
-        local_delay_us(10);
+        HARDWARE_DELAY_US(10);
         buf2 = USBx->INTSTS0;
-        local_delay_us(10);
+        HARDWARE_DELAY_US(10);
         buf3 = USBx->INTSTS0;
     } while (((buf1 & USB_VBSTS) != (buf2 & USB_VBSTS)) || ((buf2 & USB_VBSTS) != (buf3 & USB_VBSTS)));
 
@@ -2433,7 +2411,7 @@ static uint_fast8_t usbd_wait_fifo(
 			(USBx->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) ||
 			(USBx->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
 	{
-		local_delay_us(1);
+		HARDWARE_DELAY_US(1);
 		if (-- waitcnt == 0)
 		{
             return 1;
@@ -2693,13 +2671,13 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
-    //(void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-	  USBPhyHw_ep0_read(hpcd, pBuf, len);
+    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+	  //USBPhyHw_ep0_read(hpcd, pBuf, len);
   }
   else
   {
-    //(void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-	  USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
+    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+	  //USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
   }
 
   return HAL_OK;
@@ -2732,13 +2710,13 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
-    //(void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-	  USBPhyHw_ep0_write(hpcd, (uint8_t *) pBuf, len);
+    (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+	  //USBPhyHw_ep0_write(hpcd, (uint8_t *) pBuf, len);
   }
   else
   {
-    //(void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-	  USBPhyHw_endpoint_write(hpcd, ep_addr, (uint8_t *) pBuf, len);
+    (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+	  //USBPhyHw_endpoint_write(hpcd, ep_addr, (uint8_t *) pBuf, len);
   }
 
   return HAL_OK;
@@ -2775,7 +2753,9 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
   __HAL_LOCK(hpcd);
 
- // (void)USB_EPSetStall(hpcd->Instance, ep);
+#if 1
+  (void)USB_EPSetStall(hpcd->Instance, ep);
+#else
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
 	  USBPhyHw_ep0_stall(hpcd);
@@ -2785,7 +2765,7 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 	  USBPhyHw_endpoint_stall(hpcd, ep_addr);
 
   }
-
+#endif
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
     (void)USB_EP0_OutStart(hpcd->Instance, (uint8_t)hpcd->Init.dma_enable, (uint8_t *)hpcd->Setup);
@@ -2826,7 +2806,9 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   ep->num = ep_addr & EP_ADDR_MSK;
 
   __HAL_LOCK(hpcd);
-//  (void)USB_EPClearStall(hpcd->Instance, ep);
+#if 1
+  (void)USB_EPClearStall(hpcd->Instance, ep);
+#else
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
 	  USBPhyHw_endpoint_unstall(hpcd, 0);
@@ -2836,6 +2818,7 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 	  USBPhyHw_endpoint_unstall(hpcd, ep_addr);
 
   }
+#endif
   __HAL_UNLOCK(hpcd);
 
   return HAL_OK;
@@ -3760,46 +3743,6 @@ HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EP
 }
 
 /**
-  * @brief  USB_DevDisconnect : Disconnect the USB device by disabling the pull-up/pull-down
-  * @param  USBx : Selected device
-  * @retval HAL status
-  */
-HAL_StatusTypeDef  USB_DevDisconnectOld (USB_OTG_GlobalTypeDef *USBx)
-{
-	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
-
-	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
-			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
-			0 * USB_SYSCFG_DRPD |	// DRPD0: Pulling down the lines is disabled.
-			0;
-	(void) USBx->SYSCFG0;
-
-	HARDWARE_DELAY_MS(3);
-
-	return HAL_OK;
-}
-
-/**
-  * @brief  USB_DevConnect : Connect the USB device by enabling the pull-up/pull-down
-  * @param  USBx : Selected device
-  * @retval HAL status
-  */
-HAL_StatusTypeDef  USB_DevConnectOld (USB_OTG_GlobalTypeDef *USBx)
-{
-	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
-
-	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
-			1 * USB_SYSCFG_DPRPU |	// DPRPU 1: Pulling up the D+ line is enabled.
-			0 * USB_SYSCFG_DRPD |	// DRPD 0: Pulling down the lines is disabled.
-			0;
-	(void) USBx->SYSCFG0;
-
-	HARDWARE_DELAY_MS(3);
-
-	return HAL_OK;
-}
-
-/**
   * @brief  USB_EP0StartXfer : setup and starts a transfer over the EP  0
   * @param  USBx : Selected device
   * @param  ep: pointer to endpoint structure
@@ -4341,10 +4284,10 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 {
 	USB_ResetPort2(USBx, 1);
 	//HAL_Delay(100U);                                 /* See Note #1 */
-	local_delay_ms(100);
+	HARDWARE_DELAY_MS(100);
 	USB_ResetPort2(USBx, 0);
 	//HAL_Delay(10U);
-	local_delay_ms(10);
+	HARDWARE_DELAY_MS(10);
 
 	return HAL_OK;
 }
