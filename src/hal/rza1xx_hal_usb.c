@@ -674,10 +674,11 @@ int USBPhyHw_endpoint_read(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint, uint8_t *
     return 1;
 }
 
-uint32_t USBPhyHw_endpoint_read_result(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
+//uint32_t USBPhyHw_endpoint_read_result(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
+uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
-    uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
+    uint16_t pipe = USBPhyHw_EP2PIPE(ep_addr);
 
     return hpcd->pipe_ctrl [pipe].req_size;
 }
@@ -2865,10 +2866,9 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   return HAL_OK;
 }
 
-uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+uint32_t HAL_PCD_EP_GetRxCountOld(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
-  //return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
-  return USBPhyHw_endpoint_read_result(hpcd, ep_addr);
+	return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
 }
 
 static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
