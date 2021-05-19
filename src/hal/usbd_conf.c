@@ -136,7 +136,7 @@ static void host_USBI0_IRQHandler(void)
 //	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
 
-static void ost_USBI1_IRQHandler(void)
+static void host_USBI1_IRQHandler(void)
 {
 //	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
