@@ -222,6 +222,16 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
         USBx->SYSCFG0 |= USB_HSE;                      /* High-Speed */
     }
     local_delay_us(1500);
+
+	// When the function controller mode is selected, set all the bits in this register to 0.
+	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i)
+	{
+		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
+
+		// Reserved bits: The write value should always be 0.
+		* DEVADDn = 0;
+		(void) * DEVADDn;
+	}
 }
 
 void USBPhyHw_deinit(USB_OTG_GlobalTypeDef * USBx)
