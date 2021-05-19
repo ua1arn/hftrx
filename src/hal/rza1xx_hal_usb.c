@@ -455,7 +455,7 @@ static void events_ep0_out(PCD_HandleTypeDef *hpcd)
 {
 	unsigned bcnt = hpcd->pipe_ctrl[USB_PIPE0].data_cnt;
 	PCD_EPTypeDef *ep;
-	PRINTF("%s: bcnt=%u\n", __func__, bcnt);
+	//PRINTF("%s: bcnt=%u\n", __func__, bcnt);
 
 	ep = &hpcd->OUT_ep[0 & EP_ADDR_MSK];
 	ep->xfer_buff += bcnt;
@@ -466,15 +466,18 @@ static void events_ep0_out(PCD_HandleTypeDef *hpcd)
 
 static void events_in(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
 {
-	PRINTF("%s:\n", __func__);
-	HAL_PCD_DataInStageCallback(hpcd, endpoint);
+	//PRINTF("%s:\n", __func__);
+	PCD_EPTypeDef *ep;
+	ep = &hpcd->OUT_ep[endpoint & EP_ADDR_MSK];
+	ep->xfer_buff += ep->maxpacket;	// пересланный размер может отличаться от максимального
+	HAL_PCD_DataInStageCallback(hpcd, endpoint & EP_ADDR_MSK);
 
 }
 
 static void events_out(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
 {
 	uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 	unsigned bcnt = hpcd->pipe_ctrl[pipe].data_cnt;
 	PCD_EPTypeDef *ep;
 
