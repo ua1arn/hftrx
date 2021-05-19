@@ -65,6 +65,7 @@ int USBPhyHw_chk_vbsts(USB_OTG_GlobalTypeDef * USBx);
 void USBPhyHw__usbisr(void);
 void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx);
 void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx);
+void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode);
 
 
 // на RENESAS для работы с изохронными ендпоинтами используется DMA
@@ -182,11 +183,6 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe)
 
 void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
 {
-#if WITHUSBDEV_HSDESC
-	const uint8_t _usb_speed =    1;        // 1: High-Speed  0: Full-Speed
-#else /* WITHUSBDEV_HSDESC */
-	const uint8_t _usb_speed =    0;        // 1: High-Speed  0: Full-Speed
-#endif /* WITHUSBDEV_HSDESC */
 //
 //    if (this->events == NULL) {
 //        //sleep_manager_lock_deep_sleep();
@@ -212,7 +208,7 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
 	}
 
     /* module reset and clock select */
-    reset_usb(USB_EXTAL_12MHZ);                            /* USB_X1 48MHz */
+    USBPhyHw_reset_usb(USBx, USB_EXTAL_12MHZ);                            /* USB_X1 48MHz */
 
     /* Set to USB Function and select speed */
     USBx->SYSCFG0 &= ~USB_DPRPU;
@@ -220,7 +216,12 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
     USBx->SYSCFG0 &= ~USB_DCFM;                        /* USB Functoin */
     USBx->SYSCFG0 |= USB_USBE;
 
-    if (_usb_speed == 0) {
+#if WITHUSBDEV_HSDESC
+	const uint8_t usb_speed_HS =    1;        // 1: High-Speed  0: Full-Speed
+#else /* WITHUSBDEV_HSDESC */
+	const uint8_t usb_speed_HS =    0;        // 1: High-Speed  0: Full-Speed
+#endif /* WITHUSBDEV_HSDESC */
+    if (usb_speed_HS == 0) {
         USBx->SYSCFG0 &= ~USB_HSE;                     /* Full-Speed */
     } else {
         USBx->SYSCFG0 |= USB_HSE;                      /* High-Speed */
@@ -366,14 +367,58 @@ uint32_t USBPhyHw_ep0_set_max_packet(uint32_t max_packet)
     return MAX_PACKET_SIZE_EP0;
 }
 
+void events_suspend(PCD_HandleTypeDef *hpcd, int state)
+{
+	PRINTF("%s:\n", __func__);
+
+}
+
+void events_sof(PCD_HandleTypeDef *hpcd, unsigned framenum)
+{
+	//PRINTF("%s:\n", __func__);
+
+}
+
+void events_reset(PCD_HandleTypeDef *hpcd)
+{
+	PRINTF("%s:\n", __func__);
+
+}
+
 void events_ep0_setup(PCD_HandleTypeDef *hpcd)
 {
+	PRINTF("%s:\n", __func__);
+
+}
+
+void events_ep0_in(PCD_HandleTypeDef *hpcd)
+{
+	PRINTF("%s:\n", __func__);
+
+}
+
+void events_ep0_out(PCD_HandleTypeDef *hpcd)
+{
+	PRINTF("%s:\n", __func__);
+
+}
+
+void events_in(PCD_HandleTypeDef *hpcd, uint16_t ep)
+{
+	PRINTF("%s:\n", __func__);
+
+}
+
+void events_out(PCD_HandleTypeDef *hpcd, uint16_t ep)
+{
+	PRINTF("%s:\n", __func__);
 
 }
 
 void USBPhyHw_ep0_setup_read_result(PCD_HandleTypeDef *hpcd, uint8_t *buffer, uint32_t size)
 {
     memcpy(buffer, hpcd->setup_buffer, size);
+
 }
 
 void USBPhyHw_ep0_read(PCD_HandleTypeDef *hpcd, uint8_t *data, uint32_t size)
@@ -598,8 +643,7 @@ void USBPhyHw_endpoint_abort(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
     USBPhyHw_forced_termination(hpcd, USBPhyHw_EP2PIPE(endpoint), (uint16_t)USB_DATA_NONE);
 }
 
-//void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
-void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
+void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	//__DMB();
@@ -633,7 +677,7 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
     if ((ists0 & USB_RESM) == USB_RESM) {
         USBx->INTSTS0 = (uint16_t)~USB_RESM;
         USBx->INTENB0 &= (~USB_RSME);        /* RESM interrupt disable */
-        events_suspend(1);
+        events_suspend(hpcd, 1);
     }
 
     /***** Vbus change *****/
@@ -662,7 +706,7 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
     /***** SOFR change *****/
     else if ((ists0 & USB_SOFR) == USB_SOFR) {
         USBx->INTSTS0 = (uint16_t)~USB_SOFR;
-        events_sof(USBx->FRMNUM & USB_FRNM);
+        events_sof(hpcd, USBx->FRMNUM & USB_FRNM);
     }
 
     /***** Processing device state *****/
@@ -677,7 +721,7 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
                 USBx->DCPCFG = 0;                    /* DCP configuration register  (0x5C) */
                 USBx->DCPMAXP = MAX_PACKET_SIZE_EP0; /* DCP maxpacket size register (0x5E) */
 
-                events_reset();
+                events_reset(hpcd);
                 break;
             case USB_DS_ADDS :
                 break;
@@ -687,7 +731,7 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
             case USB_DS_SPD_DFLT :
             case USB_DS_SPD_ADDR :
             case USB_DS_SPD_CNFG :
-                events_suspend(0);
+                events_suspend(hpcd, 0);
                 break;
             default :
                 break;
@@ -716,7 +760,7 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
                 default :
                     break;
             }
-            events_ep0_in();
+            events_ep0_in(hpcd);
         } else {
             switch (USBPhyHw_read_data(hpcd, USB_PIPE0)) {
                 case USB_READEND :
@@ -737,13 +781,13 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
                 default :
                     break;
             }
-            events_ep0_out();
+            events_ep0_out(hpcd);
         }
     } else if (((ists0 & USB_BEMP) == USB_BEMP) && ((ests & USB_BEMP0) == USB_BEMP0)) {
         /* ==== BEMP PIPE0 ==== */
         USBx->BEMPSTS = (uint16_t)((~USB_BEMP0) & BEMPSTS_MASK);
 
-        events_ep0_in();
+        events_ep0_in(hpcd);
     } else if (((ists0 & USB_NRDY) == USB_NRDY) && ((nsts & USB_NRDY0) == USB_NRDY0)) {
         /* ==== NRDY PIPE0 ==== */
         USBx->NRDYSTS = (uint16_t)((~USB_NRDY0) & NRDYSTS_MASK);
@@ -810,11 +854,11 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
                     if (USB_BUF2FIFO == (uint16_t)(USBx->PIPECFG & USB_DIRFIELD)) {
                         /* write */
                         USBPhyHw_buf_to_fifo(hpcd, i);         /* Buffer to FIFO data write */
-                        events_in(USBPhyHw_PIPE2EP(i));
+                        events_in(hpcd, USBPhyHw_PIPE2EP(i));
                     } else {
                         /* read */
                         USBPhyHw_fifo_to_buf(hpcd, i);         /* FIFO to Buffer data read */
-                        events_out(USBPhyHw_PIPE2EP(i));
+                        events_out(hpcd, USBPhyHw_PIPE2EP(i));
                     }
                 }
             }
@@ -837,7 +881,7 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
                             USBx->BEMPENB |= (1 << i);
                         }
                     }
-                    events_in(USBPhyHw_PIPE2EP(i));
+                    events_in(hpcd, USBPhyHw_PIPE2EP(i));
                 }
             }
         }
@@ -860,9 +904,10 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
     }
 }
 
-void USBPhyHw__usbisr(void)
+//void USBPhyHw__usbisr(void)
+void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
 {
-	PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
+	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     //GIC_DisableIRQ(USBIX_IRQn);
 
