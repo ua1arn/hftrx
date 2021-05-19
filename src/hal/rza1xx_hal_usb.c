@@ -1571,6 +1571,48 @@ uint16_t USBPhyHw_PIPE2FIFO(uint16_t pipe)
 
     return fifo_use;
 }
+#else
+
+uint16_t USBPhyHw_PIPE2FIFO(uint16_t pipe)
+{
+    //const struct PIPECFGREC *cfg;
+    uint16_t fifo_use;
+
+    if (pipe == USB_PIPE0) {
+        fifo_use = USB_FUNCTION_CFIFO_USE;
+    } else {
+    	switch (pipe) {
+#if WITHDMAHW_UACIN
+    	case HARDWARE_USBD_PIPE_ISOC_IN:
+            fifo_use = USB_FUNCTION_D1FIFO_USE;
+            break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+    	case HARDWARE_USBD_PIPE_ISOC_OUT:
+            fifo_use = USB_FUNCTION_D0FIFO_USE;
+            break;
+#endif /* WITHNDMA_UACOUT */
+    	default:
+            fifo_use = USB_FUNCTION_CFIFO_USE;
+            break;
+    	}
+//        for (cfg = &def_pipecfg[0]; cfg->pipesel != 0; cfg++) {
+//            if ((cfg->pipesel & USB_CURPIPE) == pipe) {
+//                break;
+//            }
+//        }
+//        if ((cfg->pipesel & USB_FUNCTION_D0FIFO_USE) == USB_FUNCTION_D0FIFO_USE) {
+//            fifo_use = USB_FUNCTION_D0FIFO_USE;
+//        } else if ((cfg->pipesel & USB_FUNCTION_D1FIFO_USE) == USB_FUNCTION_D1FIFO_USE) {
+//            fifo_use = USB_FUNCTION_D1FIFO_USE;
+//        } else {
+//            fifo_use = USB_FUNCTION_CFIFO_USE;
+//        }
+    }
+
+    return fifo_use;
+}
+
 #endif
 
 void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
