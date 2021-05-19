@@ -2867,7 +2867,8 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
 uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
-  return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
+  //return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
+  return USBPhyHw_endpoint_read_result(hpcd, ep_addr);
 }
 
 static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
