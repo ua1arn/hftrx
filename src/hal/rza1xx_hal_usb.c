@@ -511,30 +511,21 @@ uint32_t USBPhyHw_ep0_read_result(PCD_HandleTypeDef *hpcd)
     return hpcd->pipe_ctrl[USB_PIPE0].req_size;
 }
 
-void ctl_end(PCD_HandleTypeDef *hpcd, uint16_t err)
+static void data_end(PCD_HandleTypeDef *hpcd, uint16_t fifo, uint16_t err)
 {
-	PRINTF("%s: err=%u\n", __func__, err);
+	//PRINTF("%s: err=%u\n", __func__, err);
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
-	USBD_CtlError(pdev, & pdev->request);
+	//USBD_CtlError(pdev, & pdev->request);
 
 }
 
-void data_end(PCD_HandleTypeDef *hpcd, uint16_t fifo, uint16_t err)
+static void ctrl_end(PCD_HandleTypeDef *hpcd, uint16_t err)
 {
-	PRINTF("%s: err=%u\n", __func__, err);
+	//PRINTF("%s: err=%u\n", __func__, err);
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
 	USBD_HandleTypeDef * const pdev = hpcd->pData;
-	USBD_CtlError(pdev, & pdev->request);
-
-}
-
-void ctrl_end(PCD_HandleTypeDef *hpcd, uint16_t err)
-{
-	PRINTF("%s: err=%u\n", __func__, err);
-	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
-	USBD_HandleTypeDef * const pdev = hpcd->pData;
-	USBD_CtlError(pdev, & pdev->request);
+	//USBD_CtlError(pdev, & pdev->request);
 
 }
 
