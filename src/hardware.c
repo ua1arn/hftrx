@@ -3007,13 +3007,18 @@ sysinit_cache_initialize(void)
 
 	#endif /* __DCACHE_PRESENT */
 
-	arm_hardware_flush_all();
+	//arm_hardware_flush_all();
 #endif /* (__CORTEX_M != 0) */
 
 #if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
 
-	#if (CPUSTYLE_R7S721 && ! WITHISBOOTLOADER)
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
+		L1C_InvalidateDCacheAll();
+		L1C_InvalidateICacheAll();
+		L1C_InvalidateBTAC();
+		L1C_EnableCaches();
+		L1C_EnableBTAC();
 		L1C_EnableCaches();
 		L1C_EnableBTAC();
 		#if (__CORTEX_A == 9U)
@@ -3033,10 +3038,10 @@ sysinit_cache_initialize(void)
 }
 
 static void FLASHMEMINITFUNC
-sysinit_cache_cpu0_initialize(void)
+sysinit_cache_L2_cpu0_initialize(void)
 {
 #if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	#if (CPUSTYLE_R7S721 && ! WITHISBOOTLOADER)
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
 
 	#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
@@ -3049,7 +3054,7 @@ sysinit_cache_cpu0_initialize(void)
 		L2C_Enable();
 		L2C_InvAllByWay();
 	#endif
-	arm_hardware_flush_all();
+	//arm_hardware_flush_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
@@ -3058,9 +3063,9 @@ static void FLASHMEMINITFUNC
 sysinit_cache_cpu1_initialize(void)
 {
 #if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	#if (CPUSTYLE_R7S721 && ! WITHISBOOTLOADER)
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
-		arm_hardware_flush_all();
+		//arm_hardware_flush_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
@@ -3074,12 +3079,12 @@ SystemInit(void)
 {
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
-	sysinit_cache_initialize();	// caches iniitialize
-	sysinit_cache_cpu0_initialize();	// L2 cache, SCU initialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
+	sysinit_cache_initialize();	// caches iniitialize
+	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
 }
 
 
@@ -3191,10 +3196,10 @@ void Reset_CPUn_Handler(void)
 #endif /* (__CORTEX_A == 9U) */
 
 	sysinit_fpu_initialize();
-	sysinit_cache_initialize();	// caches iniitialize
-	sysinit_cache_cpu1_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
+	sysinit_cache_initialize();	// caches iniitialize
+	sysinit_cache_cpu1_initialize();
 
 	arm_gic_initialize();
 //	GIC_CPUInterfaceInit();
@@ -3202,6 +3207,11 @@ void Reset_CPUn_Handler(void)
 //	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 //#endif /* WITHNESTEDINTERRUPTS */
 
+	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
 	#if (__L2C_PRESENT == 1)

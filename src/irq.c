@@ -1325,9 +1325,12 @@ void cpu_initialize(void)
 #endif
 
 #if CPUSTYLE_R7S721
-	#if 1
-		// Перенесено из systeminit
+	#if WITHISBOOTLOADER
+		// Перенесено из SystemInit
 		// Не получается разместить эти функции во FLASH
+		L1C_InvalidateDCacheAll();
+		L1C_InvalidateICacheAll();
+		L1C_InvalidateBTAC();
 		L1C_EnableCaches();
 		L1C_EnableBTAC();
 		__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
@@ -1343,7 +1346,7 @@ void cpu_initialize(void)
 			L2C_Enable();
 			L2C_InvAllByWay();
 		#endif
-	#endif
+	#endif /* WITHISBOOTLOADER */
 
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
