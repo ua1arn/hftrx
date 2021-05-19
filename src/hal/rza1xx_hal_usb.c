@@ -1,10 +1,5 @@
-/*
- * rza1xx_hal_usb.c
- *
- *  Created on: May 5, 2021
- *      Author: gena
- */
 /* $Id$ */
+// rza1xx_hal_usb.c
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
 // автор Гена Завидовский mgs2001@mail.ru
@@ -403,13 +398,13 @@ void events_ep0_out(PCD_HandleTypeDef *hpcd)
 
 }
 
-void events_in(PCD_HandleTypeDef *hpcd, uint16_t ep)
+void events_in(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
 {
 	PRINTF("%s:\n", __func__);
 
 }
 
-void events_out(PCD_HandleTypeDef *hpcd, uint16_t ep)
+void events_out(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
 {
 	PRINTF("%s:\n", __func__);
 
