@@ -6961,16 +6961,10 @@ void display2_set_filter_wtf(uint_fast8_t v)
 	waterfall_alpha = 1 - val;
 }
 
-#if WITHVIEW_3DSS
-	enum { ADD_Y_3DSS = 15 };
-#else
-	enum { ADD_Y_3DSS = 0 };
-#endif
-
 #if defined (COLORPIP_SHADED)
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY + ADD_Y_3DSS)] ALIGNX_END;	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = COLORPIP_BASE };
@@ -6997,7 +6991,7 @@ void display2_set_filter_wtf(uint_fast8_t v)
 #elif WITHFASTWATERFLOW
 
 	/* быстрое отображение водопада (но требует больше памяти) */
-	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY + ADD_Y_3DSS)] ALIGNX_END;	// массив "водопада"
+	static ALIGNX_BEGIN RAMFRAMEBUFF PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFDY)] ALIGNX_END;	// массив "водопада"
 	enum { WFROWS = WFDY };
 
 	enum { PALETTESIZE = 256 };
@@ -7641,11 +7635,7 @@ display_colorgrid_3dss(
 
 #if WITHVIEW_3DSS
 enum {
-#if DSTYLE_G_X480_Y272
-	MAX_3DSS_STEP = 21,
-#else /* DSTYLE_G_X480_Y272 */
 	MAX_3DSS_STEP = 42,
-#endif /* DSTYLE_G_X480_Y272 */
 	Y_STEP = 2,
 	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,
@@ -7653,13 +7643,11 @@ enum {
 	SPY_3DSS_H = SPY_3DSS / 4
 };
 
-#define DEPTH_MAP_3DSS_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY + ADD_Y_3DSS, 0, MAX_3DSS_STEP + 1)
-#define SP_CONTRAST_Y_DEFAULT	colmain_mem_at(wfjarray, ALLDX, WFDY + ADD_Y_3DSS, 0, MAX_3DSS_STEP * 3 + 1)
+uint_fast16_t depth_map_3dss [MAX_3DSS_STEP][ALLDX];
+uint_fast16_t envelope_y [ALLDX];
 
 static void init_depth_map_3dss(void)
 {
-	PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
-
 	for (int_fast8_t i = 0; i < MAX_3DSS_STEP; i ++)
 	{
 		uint_fast16_t range = HALF_ALLDX - 1 - i * Y_STEP;
@@ -7673,10 +7661,7 @@ static void init_depth_map_3dss(void)
 			else
 				x1 = HALF_ALLDX + normalize(x, HALF_ALLDX, ALLDX - 1, range);
 
-			* depth_map_3dss = (x1 >> 0) & UINT8_MAX;
-			depth_map_3dss ++;
-			* depth_map_3dss = (x1 >> 8) & UINT8_MAX;
-			depth_map_3dss ++;
+			depth_map_3dss[i][x] = x1;
 		}
 	}
 }
@@ -7816,8 +7801,6 @@ static void display2_spectrum(
 
 			uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
 			uint_fast16_t ylast_sp = 0;
-			PACKEDCOLORMAIN_T * depth_map_3dss = DEPTH_MAP_3DSS_DEFAULT;
-			PACKEDCOLORMAIN_T * y_env = SP_CONTRAST_Y_DEFAULT;
 			int i;
 
 			for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
@@ -7847,19 +7830,14 @@ static void display2_spectrum(
 							colmain_line(colorpip, BUFDIM_X, BUFDIM_Y, x - 1, ylast_sp, x, ynew, COLORMAIN_WHITE, 1);
 						}
 
-						* y_env = ((ynew - 2) >> 0) & UINT8_MAX;
-						y_env ++;
-						* y_env = ((ynew - 2) >> 8) & UINT8_MAX;
-						y_env ++;
-
+						envelope_y [x] = ynew - 2;
 						ylast_sp = ynew;
 					}
 					else
 					{
 						static uint_fast16_t x_old = UINT16_MAX;
+						uint_fast16_t x_d = depth_map_3dss[i - 1][x];
 
-						uint_fast16_t x_d = * depth_map_3dss ++ & UINT8_MAX;
-						x_d |= (* depth_map_3dss ++ & UINT8_MAX) << 8;
 						if (x_d >= ALLDX)
 							return;
 
@@ -7889,12 +7867,10 @@ static void display2_spectrum(
 				current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
 
 			// увеличение контрастности спектра на фоне панорамы
-			y_env = SP_CONTRAST_Y_DEFAULT;
 			ylast_sp = spy;
 			for (uint_fast16_t x = 0; x < ALLDX; ++ x)
 			{
-				uint_fast16_t y1 = * y_env ++ & UINT8_MAX;
-				y1 |= (* y_env ++ & UINT8_MAX) << 8;
+				uint_fast16_t y1 = envelope_y [x];
 
 				if (y1 >= BUFDIM_Y)
 					return;
