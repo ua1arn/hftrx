@@ -2457,6 +2457,10 @@ extern "C" {
 
 #endif /* WITHTOUCHGUI */
 
+#if defined WITHVIEW_3DSS && (! defined CPUSTYLE_XC7Z && ! defined CPUSTYLE_STM32MP1 && ! defined CPUSTYLE_R7S721)
+	#undef WITHVIEW_3DSS								// WITHVIEW_3DSS только для конфигураций с достаточным объемом памяти
+#endif
+
 #if WITHKEEPNVRAM && defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
 	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together
 #endif
