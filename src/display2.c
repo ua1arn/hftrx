@@ -7643,8 +7643,8 @@ enum {
 	SPY_3DSS_H = SPY_3DSS / 4
 };
 
-uint_fast16_t depth_map_3dss [MAX_3DSS_STEP][ALLDX];
-uint_fast16_t envelope_y [ALLDX];
+static uint16_t depth_map_3dss [MAX_3DSS_STEP][ALLDX];
+static uint16_t envelope_y [ALLDX];
 
 static void init_depth_map_3dss(void)
 {
