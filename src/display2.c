@@ -7635,8 +7635,15 @@ display_colorgrid_3dss(
 
 #if WITHVIEW_3DSS
 enum {
+#if CPUSTYLE_XC7Z
+	MAX_3DSS_STEP = WFROWS,
+	Y_STEP = 1,
+	DEPTH_ATTENUATION = 4,
+#else
 	MAX_3DSS_STEP = 42,
 	Y_STEP = 2,
+	DEPTH_ATTENUATION = 2,
+#endif /* #if CPUSTYLE_XC7Z */
 	MAX_DELAY_3DSS = 1,
 	HALF_ALLDX = ALLDX / 2,
 	SPY_3DSS = SPDY,
@@ -7844,7 +7851,7 @@ static void display2_spectrum(
 						if (x_old != x_d)
 						{
 							uint_fast16_t y1 = y0 - * colmain_mem_at(wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
-							int_fast16_t h = y0 - y1 - i / 2;		// высота пика
+							int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
 							h = h < 0 ? 0 : h;
 
 							for (; h > 0; h --)
