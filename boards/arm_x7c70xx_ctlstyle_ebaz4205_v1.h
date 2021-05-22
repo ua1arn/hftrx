@@ -286,10 +286,11 @@
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
 		#define WITHVIEW_3DSS		1
-		//#define WITHDEFAULTVIEW		VIEW_3DSS
+		#define WITHDEFAULTVIEW		VIEW_3DSS
 		#define WITHVIEW_3DSS_MARK	1
 		#define WITHDISPLAY_FPS		25
 		#define WITHDISPLAYSWR_FPS	25
+		#define WITHSPECBETA_DEFAULT	30
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 		#if 1

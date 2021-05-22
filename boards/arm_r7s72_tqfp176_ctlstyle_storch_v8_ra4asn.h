@@ -351,6 +351,7 @@
 
 	#define WITHDISPLAY_FPS		25
 	#define WITHDISPLAYSWR_FPS	25
+	#define WITHSPECBETA_DEFAULT	30
 
 	#define WITHMAXPWRCALI		150	/* калибровочный параметр PWR-метра */
 	#define WITHSWRCALI			150	/* калибровочный параметр SWR-метра */
