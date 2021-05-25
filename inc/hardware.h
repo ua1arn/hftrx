@@ -1008,15 +1008,16 @@ extern uint8_t myGATEWAY [4];
 
 #if CPUSTYLE_XC7Z
 #include "lib/zynq/src/xgpiops.h"
+#include "lib/zynq/src/xiicps.h"
 #include "zynq_test.h"
 
 extern XGpioPs xc7z_gpio;
+extern XIicPs xc7z_iic;
 
 void xc7z_hardware_initialize(void);
 void xc7z_dds_ftw(const uint_least64_t * val);
 void xc7z_dds_rts(const uint_least64_t * val);
 #endif /* CPUSTYLE_XC7Z */
-
 
 /* получить 32-бит значение */
 uint_fast32_t

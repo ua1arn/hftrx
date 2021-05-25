@@ -11,6 +11,27 @@
 #include "formats.h"
 #include "gpio.h"
 
+#if TSC1_TYPE == TSC_TYPE_SOFTWARE
+#include "softtsc.h"
+
+uint_fast8_t
+board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	static uint_fast16_t x = 0, y = 0;
+
+	if (softtsc_getXY(& x, & y))
+	{
+		* xr = x;
+		* yr = y;
+		return 1;
+	}
+	* xr = x;
+	* yr = y;
+	return 0;
+}
+
+#endif
+
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_STMPE811)
 #include "stmpe811.h"
 
@@ -120,6 +141,13 @@ void board_tsc_initialize(void)
 		ASSERT(0);
 	}
 #endif /* TSC1_TYPE == TSC_TYPE_FT5336 */
+
+#if TSC1_TYPE == TSC_TYPE_SOFTWARE
+	if (softtsc_initialize())
+		PRINTF("software TSC initialization successful\n");
+	else
+		PRINTF("software TSC initialization error\n");
+#endif /* TSC1_TYPE == TSC_TYPE_SOFTWARE */
 }
 
 #if TSC1_TYPE == TSC_TYPE_S3402
