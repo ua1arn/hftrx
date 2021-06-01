@@ -6,72 +6,70 @@
 /*****************************************************************************/
 /**
 *
-* @file xiicps_sinit.c
-* @addtogroup iicps_v3_11
+* @file xgpiops_sinit.c
+* @addtogroup gpiops_v3_7
 * @{
 *
-* The implementation of the XIicPs component's static initialization
-* functionality.
+* This file contains the implementation of the XGpioPs driver's static
+* initialization functionality.
+*
+* @note		None.
 *
 * <pre>
+*
 * MODIFICATION HISTORY:
 *
-* Ver   Who    Date     Changes
-* ----- ------ -------- --------------------------------------------
-* 1.00a drg/jz 01/30/10 First release
-* 3.00	sk	   01/31/15	Modified the code according to MISRAC 2012 Compliant.
+* Ver   Who  Date     Changes
+* ----- ---- -------- -----------------------------------------------
+* 1.00a sv   01/15/10 First Release
+* 3.00  kvn  02/13/15 Modified code for MISRA-C:2012 compliance.
 * </pre>
 *
 ******************************************************************************/
 
 /***************************** Include Files *********************************/
 
-#include "xstatus.h"
+#include "xgpiops.h"
 #include "xparameters.h"
-#include "xiicps.h"
 
 /************************** Constant Definitions *****************************/
-
 
 /**************************** Type Definitions *******************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
-
 /************************** Function Prototypes ******************************/
 
 /************************** Variable Definitions *****************************/
-extern XIicPs_Config XIicPs_ConfigTable[XPAR_XIICPS_NUM_INSTANCES];
+extern XGpioPs_Config XGpioPs_ConfigTable[XPAR_XGPIOPS_NUM_INSTANCES];
 
 /*****************************************************************************/
 /**
 *
-* @brief
-* Looks up the device configuration based on the unique device ID. A table
-* contains the configuration info for each device in the system.
+* This function looks for the device configuration based on the unique device
+* ID. The table XGpioPs_ConfigTable[] contains the configuration information
+* for each device in the system.
 *
-* @param	DeviceId contains the ID of the device to look up the
-*		configuration for.
+* @param	DeviceId is the unique device ID of the device being looked up.
 *
-* @return	A pointer to the configuration found or NULL if the specified
-*		device ID was not found. See xiicps.h for the definition of
-*		XIicPs_Config.
+* @return	A pointer to the configuration table entry corresponding to the
+*		given device ID, or NULL if no match is found.
 *
 * @note		None.
 *
 ******************************************************************************/
-XIicPs_Config *XIicPs_LookupConfig(u16 DeviceId)
+XGpioPs_Config *XGpioPs_LookupConfig(u16 DeviceId)
 {
-	XIicPs_Config *CfgPtr = NULL;
-	s32 Index;
+	XGpioPs_Config *CfgPtr = NULL;
+	u32 Index;
 
-	for (Index = 0; Index < XPAR_XIICPS_NUM_INSTANCES; Index++) {
-		if (XIicPs_ConfigTable[Index].DeviceId == DeviceId) {
-			CfgPtr = &XIicPs_ConfigTable[Index];
+	for (Index = 0U; Index < (u32)XPAR_XGPIOPS_NUM_INSTANCES; Index++) {
+		if (XGpioPs_ConfigTable[Index].DeviceId == DeviceId) {
+			CfgPtr = &XGpioPs_ConfigTable[Index];
 			break;
 		}
 	}
 
-	return (XIicPs_Config *)CfgPtr;
+	return (XGpioPs_Config *)CfgPtr;
 }
 /** @} */

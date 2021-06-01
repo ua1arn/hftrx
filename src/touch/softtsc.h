@@ -1,7 +1,5 @@
 #include "hardware.h"
 
-#define SOFTW_I2C_ADDR	8
-
 enum {
 	SOFTTSC_INIT = 1,
 	SOFTTSC_READ

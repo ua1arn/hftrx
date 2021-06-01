@@ -1,22 +1,26 @@
 #include <TouchScreen.h>
-#include <Wire.h>
 
 const uint8_t YP   = A1;                               // Вывод Y+ должен быть подключен к аналоговому входу
 const uint8_t XM   = A0;                               // Вывод X- должен быть подключен к аналоговому входу
-const uint8_t YM   = 13;                               // Вывод Y-
-const uint8_t XP   = 12;                               // Вывод X+
+const uint8_t YM   = 6;                                // Вывод Y-
+const uint8_t XP   = 7;                                // Вывод X+
 
 #define SCREEN_WIDTH   800
 #define SCREEN_HEIGHT  480
 #define CALIBRATE_OFFSET  35
 
-static uint16_t xPos[9] = { 273, 577, 960, 275, 958, 275, 578, 955, 577 };
-static uint16_t yPos[9] = { 177, 177, 177, 538, 538, 890, 886, 888, 540 };
+static uint16_t xPos[9] = {  85, 513, 940,  83, 942,  85, 519, 944, 513 };
+static uint16_t yPos[9] = { 196, 200, 195, 538, 538, 863, 866, 866, 527 };
 static float touch_x0, touch_x1, touch_x2, touch_x3, touch_x4, touch_x5, touch_x6, touch_x7, touch_x8, touch_y0, touch_y1, touch_y2, touch_y3, touch_y4, touch_y5, touch_y6, touch_y7, touch_y8;
 
-TouchScreen ts = TouchScreen(XP, YP, XM, YM, 300);
+TouchScreen ts = TouchScreen(XP, YP, XM, YM, 600);
 
-uint8_t received_command = 0;
+volatile byte received_command = 0;
+static uint16_t ts_x, ts_y, ts_pr;
+
+const byte tx_queue_size = 10;
+volatile byte tx_queue [tx_queue_size];
+volatile byte tx_ind = 0;
 
 bool beetween(float a, float b, float val)
 {
@@ -38,6 +42,10 @@ void Get_Touch_XY(volatile uint16_t *x_kor, volatile uint16_t *y_kor)
     touch_x = (touch_x + tsp.x) / 2;
     touch_y = (touch_y + tsp.y) / 2;
   }
+  ts_pr = tsp.z;
+  
+//  if (ts_pr > 50 && ts_pr < 800)
+//    Serial.println((String) "Raw: x "+touch_x+"; y "+touch_y);
   
   //определяем в какую из 4-х частей экрана попадает нажатие, запоминаем края нужной части
   uint8_t area = 0;
@@ -172,53 +180,83 @@ void Get_Touch_XY(volatile uint16_t *x_kor, volatile uint16_t *y_kor)
   * y_kor = true_y; 
 }
 
-void dataRcv(int numBytes)
+void dataRqst(byte cmd)
 {
-  while(Wire.available()) {
-    received_command = Wire.read();
-  }
+    tx_ind = 0;
+  
+    switch (cmd) {
+      case 0x01:
+        spi_send_byte(0xBA);
+        break;
+  
+      case 0x02:
+        Get_Touch_XY(& ts_x, & ts_y);
+        //Serial.println((String) "x "+ts_x+"; y "+ts_y);
+        ts_x = constrain(ts_x, 0, SCREEN_WIDTH - 1);
+        ts_y = constrain(ts_y, 0, SCREEN_HEIGHT - 1);
+      
+        if (ts_pr > 50 && ts_pr < 800)
+        {
+          spi_send_byte(1);
+          spi_send_byte(ts_x >> 8);
+          spi_send_byte(ts_x & 0xFF);
+          spi_send_byte(ts_y >> 8);
+          spi_send_byte(ts_y & 0xFF);
+        }
+        else
+        {
+          spi_send_byte(0);
+          spi_send_byte(0);
+          spi_send_byte(0);
+          spi_send_byte(0);
+          spi_send_byte(0);
+        }
+        break;
+       
+      default: 
+        break;  
+    }
+
+    received_command = 0;
 }
 
-void dataRqst()
+void spi_send_byte(uint8_t data)
 {
-  switch (received_command) {
-    case 0x01:
-      Wire.write(0xBA);
-      break;
+    if(tx_ind >= tx_queue_size)
+      return;
+    
+    tx_queue[tx_ind] = data;
+    tx_ind ++;
 
-    case 0x02:
-      if (ts.pressure() > 100 && ts.pressure() < 400)
-      { 
-        uint16_t x = 0, y = 0; 
-        Get_Touch_XY(& x, & y);
-         
-        Wire.write(1);
-        Wire.write((uint8_t) (x >> 8));
-        Wire.write((uint8_t) (x & 0xFF));
-        Wire.write((uint8_t) (y >> 8));
-        Wire.write((uint8_t) (y & 0xFF));
-      }
-      else
-      {
-        Wire.write(0);
-        Wire.write(0xFF);
-        Wire.write(0xFF);
-        Wire.write(0xFF);
-        Wire.write(0xFF);
-      }
-      break;
+//    Serial.print((String) tx_ind + ": ");
+//    for (int i = 0; i < tx_ind; i ++)
+//      Serial.print((String) tx_queue[i]+"; ");
+//
+//    Serial.println("");
+}
 
-    default: 
-      break; 
-  }
+ISR(SPI_STC_vect)
+{
+    volatile byte p = SPDR;
+    received_command = p < 10 ? p : received_command;
+
+    if (tx_ind)
+    {
+      tx_ind --;
+      SPDR = tx_queue[tx_ind];
+    }
+    else
+    {
+      SPDR = 0;
+    }
 }
 
 void setup(void){ 
     Serial.begin(115200); 
-    Wire.begin(8);
-    Wire.onReceive(dataRcv);
-    Wire.onRequest(dataRqst);
-    Wire.setClock(100000);
+
+    SPCR = B00000000;
+    SPCR |= (1 << SPE) | (1 << SPIE) | (1 << CPOL) | (1 << CPHA );
+    pinMode(MISO, OUTPUT);
 
     float xc_top = xPos[1]; //центр экрана по верхним калибровкам (160px)
     float xc_center = xPos[8]; //центр экрана X (160px)
@@ -247,14 +285,13 @@ void setup(void){
     touch_y6 = yPos[6] + ((yPos[6] - yc_center) / (SCREEN_HEIGHT / 2 - CALIBRATE_OFFSET))*CALIBRATE_OFFSET; //координаты нижнего края по центру
     touch_y7 = yPos[7] - ((yc_right - yPos[7]) / (SCREEN_HEIGHT / 2 - CALIBRATE_OFFSET))*CALIBRATE_OFFSET; //координаты Y нижнего-правого угла
     touch_y8 = yPos[8]; //координаты Y центра
-} 
-void loop(){ 
-//  TSPoint p = ts.getPoint();
-//  if(p.z > 100 && p.z < 400)
-//  { 
-//    uint16_t x = 0, y = 0;
-//    Get_Touch_XY(& x, & y);
-//    Serial.println((String) "("+x+","+y+")");
-//    delay(50);
-//  }
+}
+
+void loop(){
+    delay(5);
+  
+    if (received_command > 0 && received_command < 10)
+    {
+      dataRqst(received_command);
+    } 
 }

@@ -5859,7 +5859,7 @@ prog_dds1_ftw(const ftw_t * value)
 
 #else	/* LO1PHASES */
 
-	#if CPUSTYLE_XC7Z
+	#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 		xc7z_dds_ftw(value);
 	#elif (DDS1_TYPE == DDS_TYPE_AD9852)
 		prog_ad9852_freq1(targetdds1, value);
@@ -5898,7 +5898,7 @@ prog_dds1_ftw(const ftw_t * value)
 void 
 prog_rts1_ftw(const ftw_t * value)
 {
-#if CPUSTYLE_XC7Z
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	xc7z_dds_rts(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
@@ -7306,6 +7306,10 @@ uint_fast8_t boad_mike_adcoverflow(void)
 void board_init_io(void)
 {
 	board_gpio_init();			/* инициализация на вывод битов PIO процессора, если некоторые биты управляются напрямую без SPI */
+
+#if CPUSTYLE_XC7Z
+	xc7z_hardware_initialize();
+#endif /* CPUSTYLE_XC7Z */
 
 #if WITHFPGAWAIT_AS
 	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */

@@ -14,18 +14,17 @@
 *******************************************************************/
 
 #include "xparameters.h"
-#include "xiicps.h"
+#include "xgpiops.h"
 
 /*
 * The configuration table for devices
 */
 
-XIicPs_Config XIicPs_ConfigTable[XPAR_XIICPS_NUM_INSTANCES] =
+XGpioPs_Config XGpioPs_ConfigTable[XPAR_XGPIOPS_NUM_INSTANCES] =
 {
 	{
-		XPAR_PS7_I2C_0_DEVICE_ID,
-		XPAR_PS7_I2C_0_BASEADDR,
-		XPAR_PS7_I2C_0_I2C_CLK_FREQ_HZ
+		XPAR_PS7_GPIO_0_DEVICE_ID,
+		XPAR_PS7_GPIO_0_BASEADDR
 	}
 };
 

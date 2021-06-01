@@ -19,7 +19,21 @@ extern "C" {
 void spi_initialize(void);	// отдельно инициализация SPI
 
 #if WITHSPISW
-	#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+	#if CPUSTYLE_XC7Z
+		#define SCLK_NPULSE() do { 							\
+			SPI_SCLK_C(); hardware_spi_io_delay(); 			\
+			SPI_SCLK_S(); hardware_spi_io_delay(); 			\
+		} while (0)
+
+	#define SDO_SET(val) do { 								\
+			if ((val) != 0) 								\
+				{ SPI_MOSI_S(); hardware_spi_io_delay();  } \
+			else 											\
+				{ SPI_MOSI_C(); hardware_spi_io_delay();  } \
+		} while (0)
+
+
+	#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 		// при программной реализации SPI
 		// поддерживается режим SPI MODE 3
 		#define SCLK_SET() do { \

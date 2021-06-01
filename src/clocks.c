@@ -2150,6 +2150,8 @@ void hardware_spi_io_delay(void)
 	__NOP();
 #elif	CPUSTYLE_ARM_CM0
 	__NOP();
+#elif CPUSTYLE_XC7Z
+	local_delay_us(5);
 #else
 	// Cortex A9
 	__NOP();
@@ -5522,7 +5524,6 @@ lowlevel_stm32l0xx_pll_clock(void)
 #if CPUSTYLE_XC7Z
 
 XGpioPs xc7z_gpio;
-XIicPs xc7z_iic;
 
 void xc7z_hardware_initialize(void)
 {
@@ -5534,22 +5535,6 @@ void xc7z_hardware_initialize(void)
 	Status = XGpioPs_CfgInitialize(& xc7z_gpio, ConfigPtr, ConfigPtr->BaseAddr);
 	if (Status != XST_SUCCESS)
 		PRINTF("PS GPIO init error\n");
-
-	// I2C PS init
-	XIicPs_Config * Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);
-	Status = XIicPs_CfgInitialize(& xc7z_iic, Config, Config->BaseAddress);
-	if (Status != XST_SUCCESS) {
-		PRINTF("XIicPs_CfgInitialize error %d\n", Status);
-		ASSERT(0);
-	}
-
-	Status = XIicPs_SelfTest(& xc7z_iic);
-	if (Status != XST_SUCCESS) {
-		PRINTF("XIicPs_SelfTest error %d\n", Status);
-		ASSERT(0);
-	}
-
-	XIicPs_SetSClk(& xc7z_iic, 100000);
 }
 
 static void xc7z1_arm_pll_initialize(void)
