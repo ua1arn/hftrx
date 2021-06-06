@@ -189,7 +189,7 @@
  *  N18 PL					<- Clock 49,152 MHz
  *
  *  Bottom side:
- *  F12	MIO35 R2539 unsolder 20k resistor and up
+ *  F12	MIO35 R2539 up		preamp
  *  E16 MIO31 R2435 right
  *  E13 MIO38 R2443 right
  *  C15 MIO30 R2434 right
@@ -197,6 +197,8 @@
  *  C16 MIO28 R2441 right
  *
  */
+
+#define PREAMP_MIO	35
 
 #define LS020_RS_INITIALIZE() \
 	do { \

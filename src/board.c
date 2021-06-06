@@ -4768,6 +4768,19 @@ prog_ctrlreg(uint_fast8_t plane)
 	spi_unselect(target);
 }
 
+#elif CTLREGMODE_ZYNQ_4205
+
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+	XGpioPs_SetDirectionPin(&xc7z_gpio, PREAMP_MIO, 1);
+	XGpioPs_SetOutputEnablePin(&xc7z_gpio, PREAMP_MIO, 1);
+	XGpioPs_WritePin(&xc7z_gpio, PREAMP_MIO, ! glob_preamp);
+}
+
 #elif CTLREGMODE_NOCTLREG
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */

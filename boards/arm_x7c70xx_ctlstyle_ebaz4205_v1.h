@@ -67,7 +67,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
+	//#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_ZYNQ_4205	1
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
@@ -462,8 +463,8 @@
 	//#define DDS2_TYPE DDS_TYPE_AD9834
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	////#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
-	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	#define TSC1_TYPE TSC_TYPE_SOFTWARE
+	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_SOFTWARE
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
