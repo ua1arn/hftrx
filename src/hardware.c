@@ -3237,9 +3237,10 @@ void Reset_CPUn_Handler(void)
 
 void cpump_initialize(void)
 {
+#if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
+
 	SystemCoreClock = CPU_FREQ;
 
-#if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM
 
 #if (__CORTEX_A == 9U)
