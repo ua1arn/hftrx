@@ -4776,9 +4776,7 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-	XGpioPs_SetDirectionPin(&xc7z_gpio, PREAMP_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, PREAMP_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, PREAMP_MIO, ! glob_preamp);
+	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
 }
 
 #elif CTLREGMODE_NOCTLREG

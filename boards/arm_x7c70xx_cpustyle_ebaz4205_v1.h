@@ -598,21 +598,17 @@
 	#define targetnvram		TARGET_NVRAM_MIO	// nvram FM25L256
 	#define targetsofttsc	TARGET_SOFTTSC_MIO	// software tsc
 
-	#define SPI_CS_SET(v)	XGpioPs_WritePin(& xc7z_gpio, v, 0);
+	#define SPI_CS_SET(v)	xc7z_writepin(v, 0);
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			XGpioPs_WritePin(& xc7z_gpio, TARGET_NVRAM_MIO, 1);		\
-			XGpioPs_WritePin(& xc7z_gpio, TARGET_SOFTTSC_MIO, 1);	\
+			xc7z_writepin(TARGET_NVRAM_MIO, 1);		\
+			xc7z_writepin(TARGET_SOFTTSC_MIO, 1);	\
 		} while(0)
 
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, TARGET_NVRAM_MIO, 1);		\
-			XGpioPs_SetOutputEnablePin(& xc7z_gpio, TARGET_NVRAM_MIO, 1);	\
-			XGpioPs_SetDirectionPin(& xc7z_gpio, TARGET_SOFTTSC_MIO, 1);		\
-			XGpioPs_SetOutputEnablePin(& xc7z_gpio, TARGET_SOFTTSC_MIO, 1);	\
 		} while (0)
 
 	// MOSI & SCK port
@@ -620,33 +616,21 @@
 	#define	SPI_MOSI_MIO 	60
 	#define	SPI_MISO_MIO 	61
 
-	#define SPI_SCLK_C()	do { XGpioPs_WritePin(& xc7z_gpio, SPI_SCLK_MIO, 0); __DSB(); } while (0)
-	#define SPI_SCLK_S()	do { XGpioPs_WritePin(& xc7z_gpio, SPI_SCLK_MIO, 1); __DSB(); } while (0)
+	#define SPI_SCLK_C()	do { xc7z_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
+	#define SPI_SCLK_S()	do { xc7z_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_MOSI_C()	do { XGpioPs_WritePin(& xc7z_gpio, SPI_MOSI_MIO, 0); __DSB(); } while (0)
-	#define SPI_MOSI_S()	do { XGpioPs_WritePin(& xc7z_gpio, SPI_MOSI_MIO, 1); __DSB(); } while (0)
+	#define SPI_MOSI_C()	do { xc7z_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
+	#define SPI_MOSI_S()	do { xc7z_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(XGpioPs_ReadPin(& xc7z_gpio, SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, SPI_SCLK_MIO, 1);  	\
-			XGpioPs_SetOutputEnablePin(& xc7z_gpio, SPI_SCLK_MIO, 1);  	\
-			XGpioPs_SetDirectionPin(& xc7z_gpio, SPI_MOSI_MIO, 1);  	\
-			XGpioPs_SetOutputEnablePin(& xc7z_gpio, SPI_MOSI_MIO, 1);  	\
-			XGpioPs_SetDirectionPin(& xc7z_gpio, SPI_MISO_MIO, 0);  	\
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, SPI_SCLK_MIO, 1); 		\
-			XGpioPs_SetOutputEnablePin(& xc7z_gpio, SPI_SCLK_MIO, 1);	\
-			XGpioPs_SetDirectionPin(& xc7z_gpio, SPI_MOSI_MIO, 1);		\
-			XGpioPs_SetOutputEnablePin(& xc7z_gpio, SPI_MOSI_MIO, 1);	\
 		} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, SPI_SCLK_MIO, 0);		\
-			XGpioPs_SetDirectionPin(& xc7z_gpio, SPI_MOSI_MIO, 0);		\
-			XGpioPs_SetDirectionPin(& xc7z_gpio, SPI_MISO_MIO, 0);		\
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
@@ -673,7 +657,7 @@
 	#define TARGET_ENC2BTN_BIT_MIO 		56
 
 #if WITHENCODER2
-	#define TARGET_ENC2BTN_GET (XGpioPs_ReadPin(& xc7z_gpio, TARGET_ENC2BTN_BIT_MIO) == 0)
+	#define TARGET_ENC2BTN_GET (xc7z_readpin(TARGET_ENC2BTN_BIT_MIO) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -683,7 +667,6 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, TARGET_ENC2BTN_BIT_MIO, 0); \
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -878,14 +861,12 @@
 	#define TARGET_BL_ENABLE_MIO	28
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		XGpioPs_SetDirectionPin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, 1); \
-		XGpioPs_SetOutputEnablePin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, 1); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 
 	#define HARDWARE_BL_SET(en, level) do { \
-		XGpioPs_WritePin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, en); \
+		xc7z_writepin(TARGET_BL_ENABLE_MIO, en); \
 	} while (0)
 #endif
 
@@ -1034,15 +1015,13 @@
 	#define ZYNQBOARD_BLINK_LED 58 /* LED_R */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		XGpioPs_SetDirectionPin(& xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
 			{ \
-				XGpioPs_WritePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
+				xc7z_writepin(ZYNQBOARD_BLINK_LED, 1); \
 			} else { \
-				XGpioPs_WritePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 0); \
+				xc7z_writepin(ZYNQBOARD_BLINK_LED, 0); \
 			} \
 		} while (0)
 
