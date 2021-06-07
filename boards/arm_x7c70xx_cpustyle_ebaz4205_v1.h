@@ -257,16 +257,11 @@
 	// Выводы подключения енкодера #1
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		54
-	#define ENCODER2_BITB		55
-	#define ENCODER2_GPIO_BANK	2
-	#define ENCODER2_GPIO_MASK	3
-	#define ENCODER2_GPIO_SHIFT	0
+	#define ENCODER2_BITA		55
+	#define ENCODER2_BITB		54
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER2_BITA, 0); \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER2_BITB, 0); \
 		} while (0)
 #endif
 

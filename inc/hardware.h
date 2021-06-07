@@ -1010,8 +1010,6 @@ extern uint8_t myGATEWAY [4];
 #include "lib/zynq/src/xgpiops.h"
 #include "zynq_test.h"
 
-extern XGpioPs xc7z_gpio;
-
 void xc7z_hardware_initialize(void);
 u8 xc7z_readpin(u8 pin);
 void xc7z_writepin(u8 pin, u8 val);

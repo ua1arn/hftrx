@@ -5523,7 +5523,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #if CPUSTYLE_XC7Z
 
-XGpioPs xc7z_gpio;
+static XGpioPs xc7z_gpio;
 
 void xc7z_hardware_initialize(void)
 {
@@ -5550,25 +5550,25 @@ u8 xc7z_readpin(u8 pin)
 		Bank = 0;
 		PinNumber = pin;
 	}
-	else if (pin > 31 && pin <= 53)		/* 32 - 53, Bank 1 */
+	else if (pin >= 32 && pin <= 53)		/* 32 - 53, Bank 1 */
 	{
 		Bank = 1;
 		PinNumber = pin - 32;
 	}
-	else if (pin > 54 && pin <= 85)		/* 54 - 85, Bank 2 */
+	else if (pin >= 54 && pin <= 85)		/* 54 - 85, Bank 2 */
 	{
 		Bank = 2;
 		PinNumber = pin - 54;
 	}
-	else if (pin > 86 && pin <= 117)	/* 86 - 117 Bank 3 */
+	else if (pin >= 86 && pin <= 117)	/* 86 - 117 Bank 3 */
 	{
 		Bank = 3;
 		PinNumber = pin - 86;
 	}
 
 	u32 DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
-			  ((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
-			  XGPIOPS_DIRM_OFFSET);
+			((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET);
 
 	DirModeReg &= ~ ((u32)1 << (u32)PinNumber);
 
@@ -5597,17 +5597,17 @@ void xc7z_writepin(u8 pin, u8 val)
 		Bank = 0;
 		PinNumber = pin;
 	}
-	else if (pin > 31 && pin <= 53)		/* 32 - 53, Bank 1 */
+	else if (pin >= 32 && pin <= 53)		/* 32 - 53, Bank 1 */
 	{
 		Bank = 1;
 		PinNumber = pin - 32;
 	}
-	else if (pin > 54 && pin <= 85)		/* 54 - 85, Bank 2 */
+	else if (pin >= 54 && pin <= 85)		/* 54 - 85, Bank 2 */
 	{
 		Bank = 2;
 		PinNumber = pin - 54;
 	}
-	else if (pin > 86 && pin <= 117)	/* 86 - 117 Bank 3 */
+	else if (pin >= 86 && pin <= 117)	/* 86 - 117 Bank 3 */
 	{
 		Bank = 3;
 		PinNumber = pin - 86;
@@ -5622,20 +5622,20 @@ void xc7z_writepin(u8 pin, u8 val)
 	}
 
 	u32 DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
-					      ((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
-					      XGPIOPS_DIRM_OFFSET);
+			((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET);
 	DirModeReg |= ((u32)1 << (u32)PinNumber);
 	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
-				 ((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
-				 XGPIOPS_DIRM_OFFSET, DirModeReg);
+			((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET, DirModeReg);
 
 	u32 OpEnableReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
-		       ((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
-		       XGPIOPS_OUTEN_OFFSET);
+		    ((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+		    XGPIOPS_OUTEN_OFFSET);
 	OpEnableReg |= ((u32)1 << (u32)PinNumber);
 	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
-				  ((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
-				  XGPIOPS_OUTEN_OFFSET, OpEnableReg);
+			((u32)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
 
 	/*
 	 * Get the 32 bit value to be written to the Mask/Data register where
@@ -5644,8 +5644,8 @@ void xc7z_writepin(u8 pin, u8 val)
 	DataVar &= (u32)0x01;
 	Value = ~((u32)1 << (PinNumber + 16U)) & ((DataVar << PinNumber) | 0xFFFF0000U);
 	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
-			  ((u32)(Bank) * XGPIOPS_DATA_MASK_OFFSET) +
-			  RegOffset, Value);
+			((u32)(Bank) * XGPIOPS_DATA_MASK_OFFSET) +
+			RegOffset, Value);
 }
 
 static void xc7z1_arm_pll_initialize(void)
