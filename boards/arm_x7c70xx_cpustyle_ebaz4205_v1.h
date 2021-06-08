@@ -162,16 +162,16 @@
 /* 	Available ports on EBAZ4205 board:
  *
  *	Top side:
- *  A19	MIO16 (R2608 left)
- *  B18	MIO18 (R2609 left)
+ *  A19	MIO16 (R2608 left)	COL4_MIO
+ *  B18	MIO18 (R2609 left)	COL2_MIO
  *  A15	MIO26 (X3 6)
  *  D13	MIO27 (X3 5)
- *  С18	MIO39 (R2444 left)
- *  D16	MIO46 (R2445B left)
- *  B14	MIO47 (R2446 left)
- *  B12	MIO48 (R2447 left)
- *  C12	MIO49 (R2445 left)
- *  B13	MIO50 (R2543 left)
+ *  С18	MIO39 (R2444 left)	COL3_MIO
+ *  D16	MIO46 (R2445B left)	COL1_MIO
+ *  B14	MIO47 (R2446 left)	ROW3_MIO
+ *  B12	MIO48 (R2447 left)	ROW1_MIO
+ *  C12	MIO49 (R2445 left)	ROW4_MIO
+ *  B13	MIO50 (R2543 left)	ROW2_MIO
  *
  *  L14	PL (R2609 right)
  *  N16	PL (R2608 right)
@@ -588,22 +588,20 @@
 #if WITHSPIHW || WITHSPISW
 
 	#define TARGET_NVRAM_MIO	62	// nvram FM25L256
-	#define TARGET_SOFTTSC_MIO	63	// software tsc
 
 	#define targetnvram		TARGET_NVRAM_MIO	// nvram FM25L256
-	#define targetsofttsc	TARGET_SOFTTSC_MIO	// software tsc
 
 	#define SPI_CS_SET(v)	xc7z_writepin(v, 0);
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
 			xc7z_writepin(TARGET_NVRAM_MIO, 1);		\
-			xc7z_writepin(TARGET_SOFTTSC_MIO, 1);	\
 		} while(0)
 
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
+			xc7z_gpio_output(TARGET_NVRAM_MIO); \
 		} while (0)
 
 	// MOSI & SCK port
@@ -620,6 +618,9 @@
 	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
+		xc7z_gpio_output(SPI_SCLK_MIO); \
+		xc7z_gpio_output(SPI_MOSI_MIO); \
+		xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
@@ -630,6 +631,7 @@
 
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
 		} while (0)
+
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 		} while (0)
 
@@ -651,6 +653,16 @@
 
 	#define TARGET_ENC2BTN_BIT_MIO 		56
 
+	#define ROW1_MIO	46
+	#define ROW2_MIO	18
+	#define ROW3_MIO	39
+	#define ROW4_MIO	16
+
+	#define COL1_MIO	49
+	#define COL2_MIO	47
+	#define COL3_MIO	50
+	#define COL4_MIO	48
+
 #if WITHENCODER2
 	#define TARGET_ENC2BTN_GET (xc7z_readpin(TARGET_ENC2BTN_BIT_MIO) == 0)
 #endif /* WITHENCODER2 */
@@ -662,6 +674,15 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
+		xc7z_gpio_input(TARGET_ENC2BTN_BIT_MIO); \
+		xc7z_gpio_input(COL1_MIO);	\
+		xc7z_gpio_input(COL2_MIO);	\
+		xc7z_gpio_input(COL3_MIO);	\
+		xc7z_gpio_input(COL4_MIO);	\
+		xc7z_gpio_output(ROW1_MIO);	\
+		xc7z_gpio_output(ROW2_MIO);	\
+		xc7z_gpio_output(ROW3_MIO);	\
+		xc7z_gpio_output(ROW4_MIO);	\
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -856,6 +877,7 @@
 	#define TARGET_BL_ENABLE_MIO	28
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
+		xc7z_gpio_output(TARGET_BL_ENABLE_MIO); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
@@ -1010,6 +1032,7 @@
 	#define ZYNQBOARD_BLINK_LED 58 /* LED_R */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
+		xc7z_gpio_output(ZYNQBOARD_BLINK_LED); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \

@@ -36,17 +36,25 @@
 
 #define TWISOFT_INITIALIZE() do { } while(0)
 
-#define SET_TWCK() do { xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
+#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
 
-#define CLR_TWCK() do { xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
+#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
 
-#define SET_TWD() do { xc7z_writepin(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while(0)
+#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while(0)
 
-#define CLR_TWD() do { xc7z_writepin(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
+#define CLR_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
 
-#define GET_TWCK() (xc7z_readpin(TARGET_TWI_TWCK_MIO))
+uint8_t GET_TWCK(void)
+{
+	xc7z_gpio_input(TARGET_TWI_TWCK_MIO);
+	return xc7z_readpin(TARGET_TWI_TWCK_MIO);
+}
 
-#define GET_TWD() (xc7z_readpin(TARGET_TWI_TWD_MIO))
+uint8_t GET_TWD(void)
+{
+	xc7z_gpio_input(TARGET_TWI_TWD_MIO);
+	return xc7z_readpin(TARGET_TWI_TWD_MIO);
+}
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 

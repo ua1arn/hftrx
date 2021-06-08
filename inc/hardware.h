@@ -1013,6 +1013,8 @@ extern uint8_t myGATEWAY [4];
 void xc7z_hardware_initialize(void);
 u8 xc7z_readpin(u8 pin);
 void xc7z_writepin(u8 pin, u8 val);
+void xc7z_gpio_input(u8 pin);
+void xc7z_gpio_output(u8 pin);
 void xc7z_dds_ftw(const uint_least64_t * val);
 void xc7z_dds_rts(const uint_least64_t * val);
 #endif /* CPUSTYLE_XC7Z */
