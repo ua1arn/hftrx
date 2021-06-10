@@ -11,6 +11,8 @@
 
 #if CPUSTYLE_R7S721
 
+//#define WITHNEWUSBHAL 1
+
 #include "board.h"
 #include "audio.h"
 #include "formats.h"
@@ -172,11 +174,11 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe)
 #endif
 ////////////////////////////////
 
-
+#if WITHNEWUSBHAL
 /**** User Selection ****/
 // looks like USB_DevInit
 //void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
-HAL_StatusTypeDef USB_DevInitNew(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
+HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
 	unsigned i;
 //
@@ -232,6 +234,7 @@ HAL_StatusTypeDef USB_DevInitNew(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef
 
 	return HAL_OK;
 }
+#endif /* WITHNEWUSBHAL */
 
 void USBPhyHw_deinit(USB_OTG_GlobalTypeDef * USBx)
 {
@@ -652,14 +655,22 @@ int USBPhyHw_endpoint_read(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint, uint8_t *
     return 1;
 }
 
+
+#if WITHNEWUSBHAL
 //uint32_t USBPhyHw_endpoint_read_result(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
-uint32_t HAL_PCD_EP_GetRxCountNew(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     uint16_t pipe = USBPhyHw_EP2PIPE(ep_addr);
 
     return hpcd->pipe_ctrl [pipe].req_size;
 }
+#else /* WITHNEWUSBHAL */
+uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+	return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
+}
+#endif /* WITHNEWUSBHAL */
 
 int USBPhyHw_endpoint_write(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint, uint8_t *data, uint32_t size)
 {
@@ -961,9 +972,10 @@ void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
     }
 }
 
+#if WITHNEWUSBHAL
 // Renesas, usb device
 //void USBPhyHw__usbisr(void)
-void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
+void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
@@ -985,6 +997,7 @@ void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
     //GIC_ClearPendingIRQ(USBIX_IRQn);
     //GIC_EnableIRQ(USBIX_IRQn);
 }
+#endif /* WITHNEWUSBHAL */
 
 void USBPhyHw_chg_curpipe(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t isel)
 {
@@ -2710,13 +2723,19 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
+#if WITHNEWUSBHAL
+	USBPhyHw_ep0_write(hpcd, (uint8_t *) pBuf, len);
+#else /* WITHNEWUSBHAL */
     (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-	  //USBPhyHw_ep0_write(hpcd, (uint8_t *) pBuf, len);
+#endif /* WITHNEWUSBHAL */
   }
   else
   {
+#if WITHNEWUSBHAL
+	  USBPhyHw_endpoint_write(hpcd, ep_addr, (uint8_t *) pBuf, len);
+#else /* WITHNEWUSBHAL */
     (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-	  //USBPhyHw_endpoint_write(hpcd, ep_addr, (uint8_t *) pBuf, len);
+#endif /* WITHNEWUSBHAL */
   }
 
   return HAL_OK;
@@ -2753,7 +2772,7 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
   __HAL_LOCK(hpcd);
 
-#if 1
+#if ! WITHNEWUSBHAL
   (void)USB_EPSetStall(hpcd->Instance, ep);
 #else
   if ((ep_addr & EP_ADDR_MSK) == 0U)
@@ -2806,7 +2825,7 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   ep->num = ep_addr & EP_ADDR_MSK;
 
   __HAL_LOCK(hpcd);
-#if 1
+#if ! WITHNEWUSBHAL
   (void)USB_EPClearStall(hpcd->Instance, ep);
 #else
   if ((ep_addr & EP_ADDR_MSK) == 0U)
@@ -2846,11 +2865,6 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   __HAL_UNLOCK(hpcd);
 
   return HAL_OK;
-}
-
-uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
-{
-	return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
 }
 
 static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
@@ -2985,6 +2999,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		1 * USB_INTENB0_RSME |	// RSME
 
 */
+#if ! WITHNEWUSBHAL
 // Renesas, usb device
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
@@ -3191,6 +3206,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 	}
 }
+
+#endif /* ! WITHNEWUSBHAL */
 
 // Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
@@ -4540,6 +4557,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef 
 	return HAL_OK;
 }
 
+#if ! WITHNEWUSBHAL
 /**
   * @brief  USB_DevInit : Initializes the USB_OTG controller registers
   *         for device mode
@@ -4602,7 +4620,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
 
 	return HAL_OK;
 }
-
+#endif /* ! WITHNEWUSBHAL */
 
 /**
   * @brief  USB_StopDevice : Stop the usb device mode
