@@ -313,11 +313,6 @@
 #define XPAR_PS7_SLCR_0_S_AXI_HIGHADDR 0xF8000FFF
 
 
-/* Definitions for peripheral PS7_SMCC_0 */
-#define XPAR_PS7_SMCC_0_S_AXI_BASEADDR 0xE000E000
-#define XPAR_PS7_SMCC_0_S_AXI_HIGHADDR 0xE100EFFF
-
-
 /******************************************************************/
 
 /* Definitions for driver GPIO */
@@ -381,31 +376,6 @@
 #define XPAR_AXI_FIFO_0_AXI4_HIGHADDR 0U
 #define XPAR_AXI_FIFO_0_DATA_INTERFACE_TYPE 0U
 
-
-
-/******************************************************************/
-
-/* Definitions for driver NANDPS */
-#define XPAR_XNANDPS_NUM_INSTANCES 1U
-
-/* Definitions for peripheral PS7_NAND_0 */
-#define XPAR_PS7_NAND_0_DEVICE_ID 0U
-#define XPAR_PS7_NAND_0_BASEADDR 0xE1000000U
-#define XPAR_PS7_NAND_0_HIGHADDR 0xE1000FFFU
-#define XPAR_PS7_NAND_0_NAND_CLK_FREQ_HZ 100000000U
-#define XPAR_PS7_NAND_0_SMC_BASEADDR 0xE000E000U
-#define XPAR_PS7_NAND_0_NAND_WIDTH 8U
-
-
-/******************************************************************/
-
-/* Canonical definitions for peripheral PS7_NAND_0 */
-#define XPAR_XNANDPS_0_DEVICE_ID XPAR_PS7_NAND_0_DEVICE_ID
-#define XPAR_XNANDPS_0_CPU_BASEADDR 0xE1000000U
-#define XPAR_XNANDPS_0_CPU_HIGHADDR 0xE1000FFFU
-#define XPAR_XNANDPS_0_NAND_CLK_FREQ_HZ 100000000U
-#define XPAR_XNANDPS_0_SMC_BASEADDR 0xE000E000U
-#define XPAR_XNANDPS_0_NAND_WIDTH 8U
 
 
 /******************************************************************/

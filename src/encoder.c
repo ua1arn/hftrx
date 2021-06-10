@@ -215,10 +215,6 @@ void encoder_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 static void
 enc_spool(void * ctx)
 {
-#if ENCODER_BY_SPOOL
-	spool_encinterrupt();
-#endif
-
 	global_disableIRQ();
 	SPIN_LOCK(& enc1lock);
 

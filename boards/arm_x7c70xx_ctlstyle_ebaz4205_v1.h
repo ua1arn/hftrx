@@ -67,7 +67,8 @@
 
 	// --- вариации прошивки, специфические для разных частот
 
-	#define CTLREGMODE_NOCTLREG	1
+	//#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_ZYNQ_4205	1
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
@@ -100,7 +101,8 @@
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
 	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	//#define KEYB_FPANEL20_V0A_RA1AGO	1	/* перевернутый */
-	#define KEYBOARD_SINGLE	1
+	//#define KEYBOARD_SINGLE	1
+	#define KEYBOARD_MATRIX_4x4	1
 
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
@@ -299,7 +301,8 @@
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT	180
+			#define WITHAFGAINDEFAULT	150
+			#define WITHCPUTEMPERATURE	1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
@@ -439,22 +442,22 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
-	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
+	#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
 	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
 
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
-	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE DDS_TYPE_FPGAV1
+	#define DDS1_TYPE DDS_TYPE_ZYNQ_PL
 	//#define PLL1_TYPE PLL_TYPE_SI570
 	//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
 	//#define DDS1_TYPE DDS_TYPE_AD9951
@@ -463,6 +466,7 @@
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	////#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_SOFTWARE
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
@@ -472,8 +476,8 @@
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	////#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
-	////#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z
 	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры

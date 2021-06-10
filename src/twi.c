@@ -34,97 +34,26 @@
 
 #elif CPUSTYLE_XC7Z
 
-/*
-void TWISOFT_INITIALIZE(void)
+#define TWISOFT_INITIALIZE() do { } while(0)
+
+#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
+
+#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
+
+#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while(0)
+
+#define CLR_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
+
+uint8_t GET_TWCK(void)
 {
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);	// "1" получается открытым стоком
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);	// "1" получается открытым стоком
+	xc7z_gpio_input(TARGET_TWI_TWCK_MIO);
+	return xc7z_readpin(TARGET_TWI_TWCK_MIO);
 }
 
-// "1" получается открытым стоком
-#define SET_TWCK() do { \
-		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); \
-		hardware_spi_io_delay(); \
-	} while (0)	// SCL = 1
-// "0" притягиваем к земле
-#define CLR_TWCK() do { \
-		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); \
-		hardware_spi_io_delay(); \
-	} while (0)	// SCL = 0
-// "1" получается открытым стоком
-#define SET_TWD() do { \
-		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); \
-		hardware_spi_io_delay(); \
-	} while (0)	// SDA = 1
-// "0" притягиваем к земле
-#define CLR_TWD() do { \
-		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); \
-		hardware_spi_io_delay(); \
-	} while (0)	// SDA = 0
-
-// всегда вызывается когда отпустили шину
-#define GET_TWCK() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO) != 0)
-#define GET_TWD() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO) != 0)
-*/
-
-void TWISOFT_INITIALIZE(void)
+uint8_t GET_TWD(void)
 {
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-}
-
-void SET_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	hardware_spi_io_delay();
-}
-
-void CLR_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
-	hardware_spi_io_delay();
-}
-
-void SET_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	hardware_spi_io_delay();
-}
-
-void CLR_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
-	hardware_spi_io_delay();
-}
-
-uint_fast8_t GET_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
-	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO);
-}
-
-uint_fast8_t GET_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
-	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO);
+	xc7z_gpio_input(TARGET_TWI_TWD_MIO);
+	return xc7z_readpin(TARGET_TWI_TWD_MIO);
 }
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA

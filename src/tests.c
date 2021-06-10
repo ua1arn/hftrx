@@ -7524,6 +7524,32 @@ void hightests(void)
 			;
 	}
 #endif
+#if 0
+	// разметка для 9-точечной калибровки тачскрина
+	display2_bgreset();
+	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	uint8_t c = 35;
+
+	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORMAIN_WHITE);			// 1
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORMAIN_WHITE);		// 2
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORMAIN_WHITE);		// 3
+
+	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);		// 4
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 5
+
+	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);		// 6
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 7
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 8
+
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
+
+	arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set((uintptr_t) fr);
+
+	for(;;) {}
+#endif
 #if 0 && defined (TSC1_TYPE)
 #include "touch\touch.h"
 

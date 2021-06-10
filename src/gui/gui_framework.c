@@ -1388,7 +1388,7 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 				// вывод заголовка окна
 				if (strcmp(win->name, ""))
 				{
-					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, window_title_height, 20);
+					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR);
 					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + window_title_indent, win->y1 + 5, win->name, COLORMAIN_BLACK);
 				}
 

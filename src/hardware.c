@@ -22,6 +22,145 @@
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
+#if CPUSTYLE_XC7Z
+
+#include "lib/zynq/src/xadcps.h"
+#include "lib/zynq/src/xgpiops.h"
+
+static XGpioPs xc7z_gpio;
+static XAdcPs xc7z_xadc;
+
+void xc7z_hardware_initialize(void)
+{
+	int Status;
+
+	// GPIO PS init
+	XGpioPs_Config * gpiocfg = XGpioPs_LookupConfig(XPAR_XGPIOPS_0_DEVICE_ID);
+	Status = XGpioPs_CfgInitialize(& xc7z_gpio, gpiocfg, gpiocfg->BaseAddr);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("PS GPIO init error\n");
+		ASSERT(0);
+	}
+
+	XAdcPs_Config * xadccfg = XAdcPs_LookupConfig(XPAR_XADCPS_0_DEVICE_ID);
+	XAdcPs_CfgInitialize(& xc7z_xadc, xadccfg, xadccfg->BaseAddress);
+
+	Status = XAdcPs_SelfTest(& xc7z_xadc);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("XADC init error\n");
+		ASSERT(0);
+	}
+
+	XAdcPs_SetSequencerMode(& xc7z_xadc, XADCPS_SEQ_MODE_SAFE);
+}
+
+float xc7z_get_cpu_temperature(void)
+{
+	u32 TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
+	return XAdcPs_RawToTemperature(TempRawData);
+}
+
+uint8_t xc7z_readpin(uint8_t pin)
+{
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
+
+	uint8_t Bank = 0;
+	uint8_t PinNumber = 0;
+
+	GPIO_BANK_DEFINE();
+
+	uint8_t val = (XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_DATA_BANK_OFFSET) +
+			XGPIOPS_DATA_RO_OFFSET) >> (uint32_t)PinNumber) & (uint32_t)1;
+
+	return val;
+}
+
+void xc7z_writepin(uint8_t pin, uint8_t val)
+{
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
+
+	uint8_t Bank = 0;
+	uint8_t PinNumber = 0;
+	uint32_t RegOffset;
+	uint32_t DataVar = val;
+	uint32_t Value;
+
+	GPIO_BANK_DEFINE();
+
+	if (PinNumber > 15U) {
+		/* There are only 16 data bits in bit maskable register. */
+		PinNumber -= (uint8_t)16;
+		RegOffset = XGPIOPS_DATA_MSW_OFFSET;
+	} else {
+		RegOffset = XGPIOPS_DATA_LSW_OFFSET;
+	}
+
+	/*
+	 * Get the 32 bit value to be written to the Mask/Data register where
+	 * the upper 16 bits is the mask and lower 16 bits is the data.
+	 */
+	DataVar &= (uint32_t)0x01;
+	Value = ~((uint32_t)1 << (PinNumber + 16U)) & ((DataVar << PinNumber) | 0xFFFF0000U);
+	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_DATA_MASK_OFFSET) +
+			RegOffset, Value);
+}
+
+void xc7z_gpio_input(uint8_t pin)
+{
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
+
+	uint8_t Bank = 0;
+	uint8_t PinNumber = 0;
+
+	GPIO_BANK_DEFINE();
+
+	uint32_t DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET);
+
+	DirModeReg &= ~ ((uint32_t)1 << (uint32_t)PinNumber);
+
+	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET, DirModeReg);
+}
+
+void xc7z_gpio_output(uint8_t pin)
+{
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
+
+	uint8_t Bank = 0;
+	uint8_t PinNumber = 0;
+
+	GPIO_BANK_DEFINE();
+
+	uint32_t DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET);
+	DirModeReg |= ((uint32_t)1 << (uint32_t)PinNumber);
+	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET, DirModeReg);
+
+	uint32_t OpEnableReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_OUTEN_OFFSET);
+	OpEnableReg |= ((uint32_t)1 << (uint32_t)PinNumber);
+	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
+}
+
+#endif /* CPUSTYLE_XC7Z */
+
 /* 
 	Машинно-независимый обработчик прерываний.
 	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
@@ -712,8 +851,6 @@ hardware_get_encoder_bits(void)
 #elif WITHENCODER && defined (ENCODER_BITS)
 	const portholder_t v = ENCODER_INPUT_PORT;
 	return ((v & ENCODER_BITA) != 0) * 2 + ((v & ENCODER_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER && CPUSTYLE_XC7Z && defined (ENCODER_GPIO_BANK)
-	return ((XGpioPs_Read(& xc7z_gpio, ENCODER_GPIO_BANK) >> ENCODER_GPIO_SHIFT) & ENCODER_GPIO_MASK);
 #else /* WITHENCODER */
 	return 0;
 #endif /* WITHENCODER */
@@ -730,8 +867,8 @@ hardware_get_encoder2_bits(void)
 #elif WITHENCODER && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER && CPUSTYLE_XC7Z && defined (ENCODER2_GPIO_BANK)
-	return ((XGpioPs_Read(& xc7z_gpio, ENCODER2_GPIO_BANK) >> ENCODER2_GPIO_SHIFT) & ENCODER2_GPIO_MASK);
+#elif WITHENCODER && CPUSTYLE_XC7Z
+	return ((xc7z_readpin(ENCODER2_BITA) != 0) * 2 + (xc7z_readpin(ENCODER2_BITB) != 0));
 #else /* WITHENCODER */
 	return 0;
 #endif /* WITHENCODER */
@@ -3237,9 +3374,10 @@ void Reset_CPUn_Handler(void)
 
 void cpump_initialize(void)
 {
+#if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
+
 	SystemCoreClock = CPU_FREQ;
 
-#if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM
 
 #if (__CORTEX_A == 9U)

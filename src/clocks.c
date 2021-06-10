@@ -2150,6 +2150,8 @@ void hardware_spi_io_delay(void)
 	__NOP();
 #elif	CPUSTYLE_ARM_CM0
 	__NOP();
+#elif CPUSTYLE_XC7Z
+	local_delay_us(5);
 #else
 	// Cortex A9
 	__NOP();
@@ -5518,22 +5520,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #endif /* CPUSTYLE_STM32L0XX */
 
-
 #if CPUSTYLE_XC7Z
-
-XGpioPs xc7z_gpio;
-
-void xc7z_hardware_initialize(void)
-{
-	int Status;
-
-	// GPIO init
-	XGpioPs_Config * ConfigPtr;
-	ConfigPtr = XGpioPs_LookupConfig(XPAR_XGPIOPS_0_DEVICE_ID);
-	Status = XGpioPs_CfgInitialize(& xc7z_gpio, ConfigPtr, ConfigPtr->BaseAddr);
-	if (Status != XST_SUCCESS)
-		PRINTF("PS GPIO init error\n");
-}
 
 static void xc7z1_arm_pll_initialize(void)
 {

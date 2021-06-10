@@ -196,6 +196,29 @@ extern "C" {
 		ZYNQ_IORW32(GPIO_OEN(bank)) &= ~ mask; /* When OEN[x]==0, the output driver is disabled */ \
 		} while (0)
 
+#define GPIO_BANK_DEFINE()	do {									\
+								if (pin <= 31)						\
+								{									\
+									Bank = 0;						\
+									PinNumber = pin;				\
+								}									\
+								else if (pin >= 32 && pin <= 53)	\
+								{									\
+									Bank = 1;						\
+									PinNumber = pin - 32;			\
+								}									\
+								else if (pin >= 54 && pin <= 85)	\
+								{									\
+									Bank = 2;						\
+									PinNumber = pin - 54;			\
+								}									\
+								else if (pin >= 86 && pin <= 117)	\
+								{									\
+									Bank = 3;						\
+									PinNumber = pin - 86;			\
+								}									\
+							} while(0)
+
 
 #endif /* CPUSTYLE_STM32F */
 

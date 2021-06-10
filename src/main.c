@@ -19833,10 +19833,6 @@ static void initialize2(void)
 	//blinkmain();
 #endif /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
 
-#if CPUSTYLE_XC7Z
-	xc7z_hardware_initialize();
-#endif /* CPUSTYLE_XC7Z */
-
 	(void) mclearnvram;
 
 #if WITHDEBUG

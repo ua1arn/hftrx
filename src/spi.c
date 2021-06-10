@@ -19,7 +19,7 @@ const uint_fast8_t rbvalues [8] =
 
 #if WITHSPIHW || WITHSPISW
 
-	#if ! defined (SPI_ALLCS_BITS)
+	#if ! defined (SPI_ALLCS_BITS) && ! CPUSTYLE_XC7Z
 		#error SPI_ALLCS_BITS should be defined in any cases
 	#endif
 
@@ -71,7 +71,11 @@ spi_hwinit255(void)
 static void
 spi_cs_disable(void)
 {
-#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#if CPUSTYLE_XC7Z
+
+	SPI_ALLCS_DISABLE();
+
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT	
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -140,7 +144,11 @@ spi_cs_enable(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#if CPUSTYLE_XC7Z
+
+	SPI_CS_SET(target);
+
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -333,7 +341,9 @@ prog_spi_to_write_impl(void)
 	{
 		SCLK_NPULSE();	/* latch to chips */
 
-		#if SPI_BIDIRECTIONAL
+		#if CPUSTYLE_XC7Z
+			return SPI_TARGET_MISO_PIN != 0;
+		#elif SPI_BIDIRECTIONAL
 			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;
 		#else /* SPI_BIDIRECTIONAL */
 			return (SPI_TARGET_MISO_PIN & SPI_MISO_BIT) != 0;
