@@ -730,6 +730,7 @@ adapter_t uac48io;
 adapter_t rts96out;
 adapter_t rts192o;
 adapter_t sdcardio;
+adapter_t nfmdemod;
 transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
 transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
 
@@ -761,6 +762,7 @@ static void adapterst_initialize(void)
 	adpt_initialize(& rts192out, UACIN_RTS192_SAMPLEBITS, 0);
 	transform_initialize(& if2rts192out, & ifspectrumin, & rts192out);
 #endif /* WITHRTS192 */
+	adpt_initialize(& nfmdemod, 32, 0);
 }
 
 //////////////////////////////////////////
@@ -4321,7 +4323,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
-			const FLOAT_t sample = saved_delta_fi [pathi]; //(FLOAT_t) M_SQRT1_2;
+			const FLOAT_t sample = adpt_input(& nfmdemod, saved_delta_fi [pathi]);
 			r = sample * agc_squelchopen(fltstrengthslow, pathi);
 		}
 		else
