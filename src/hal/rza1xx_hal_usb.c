@@ -2684,13 +2684,19 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
+#if WITHNEWUSBHAL
+	  USBPhyHw_ep0_read(hpcd, pBuf, len);
+#else /* WITHNEWUSBHAL */
     (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-	  //USBPhyHw_ep0_read(hpcd, pBuf, len);
+#endif /* WITHNEWUSBHAL */
   }
   else
   {
+#if WITHNEWUSBHAL
+	  USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
+#else /* WITHNEWUSBHAL */
     (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
-	  //USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
+#endif /* WITHNEWUSBHAL */
   }
 
   return HAL_OK;
