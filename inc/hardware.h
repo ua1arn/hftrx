@@ -406,7 +406,7 @@ extern "C" {
 		//#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
-	#define ARM_MATH_AUTOVECTORIZE 1
+	//#define ARM_MATH_AUTOVECTORIZE 1
 
 
 #elif CPUSTYLE_XC7Z
