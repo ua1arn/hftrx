@@ -1007,14 +1007,15 @@ extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
 #if CPUSTYLE_XC7Z
-#include "lib/zynq/src/xgpiops.h"
+
 #include "zynq_test.h"
 
 void xc7z_hardware_initialize(void);
-u8 xc7z_readpin(u8 pin);
-void xc7z_writepin(u8 pin, u8 val);
-void xc7z_gpio_input(u8 pin);
-void xc7z_gpio_output(u8 pin);
+float xc7z_get_cpu_temperature(void);
+uint8_t xc7z_readpin(uint8_t pin);
+void xc7z_writepin(uint8_t pin, uint8_t val);
+void xc7z_gpio_input(uint8_t pin);
+void xc7z_gpio_output(uint8_t pin);
 void xc7z_dds_ftw(const uint_least64_t * val);
 void xc7z_dds_rts(const uint_least64_t * val);
 #endif /* CPUSTYLE_XC7Z */

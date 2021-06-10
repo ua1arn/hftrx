@@ -198,6 +198,10 @@
  *
  */
 
+#if WITHCPUTEMPERATURE
+	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
+#endif /* WITHCPUTEMPERATURE */
+
 #define PREAMP_MIO	35
 
 #define LS020_RS_INITIALIZE() \
