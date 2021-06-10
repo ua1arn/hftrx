@@ -38,6 +38,8 @@
 #include "USBPhy_RZ_A1_Def.h"
 #include "USBPhyTypes.h"
 
+extern PCD_HandleTypeDef hpcd_USB_OTG;
+
 volatile uint16_t *USBPhyHw_get_pipectr_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
 volatile uint16_t *USBPhyHw_get_pipetre_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
 volatile uint16_t *USBPhyHw_get_pipetrn_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
@@ -265,6 +267,16 @@ int USBPhyHw_powered(USB_OTG_GlobalTypeDef * USBx)
 }
 
 
+static void device_USBI0_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
+}
+
+static void device_USBI1_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
+}
+
 //void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
 HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
@@ -273,14 +285,14 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
     USBx->SYSCFG0 |= USB_DPRPU;
 
     /* Enable USB */
-//    if (USBx == & USB200)
-//	{
-//    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
-//	}
-//	else if (USBx == & USB201)
-//	{
-//		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
-//	}
+    if (USBx == & USB200)
+	{
+    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
+	}
+	else if (USBx == & USB201)
+	{
+		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
+	}
 //    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
 //    GIC_SetPriority(USBIX_IRQn, 16);
 //    GIC_SetConfiguration(USBIX_IRQn, 1);
@@ -296,14 +308,14 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
     /* Disable USB */
 //    GIC_DisableIRQ(USBIX_IRQn);
 //    InterruptHandlerRegister(USBIX_IRQn, NULL);
-//  if (USBx == & USB200)
-//	{
-//    	GIC_DisableIRQ(USBI0_IRQn);
-//	}
-//	else if (USBx == & USB201)
-//	{
-//		GIC_DisableIRQ(USBI1_IRQn);
-//	}
+    if (USBx == & USB200)
+	{
+    	GIC_DisableIRQ(USBI0_IRQn);
+	}
+	else if (USBx == & USB201)
+	{
+		GIC_DisableIRQ(USBI1_IRQn);
+	}
 
     /* Disable pullup on D+ */
     USBx->SYSCFG0 &= ~USB_DPRPU;
