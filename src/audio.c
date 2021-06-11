@@ -121,10 +121,10 @@ static uint_fast8_t 	glob_mikebust20db;	/* Включение усилителя
 static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
 static uint_fast8_t		glob_mikehclip;			/* параметр ограничителя микрофона	*/
-#if defined(CODEC1_TYPE)
+#if defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS)
 static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
-#endif /* defined(CODEC1_TYPE) */
+#endif /* defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS) */
 
 #if WITHAFEQUALIZER
 static uint_fast8_t 	glob_equalizer_rx;
@@ -5905,8 +5905,9 @@ prog_codec1reg(void)
 	// also use glob_mik1level
 	ifc1->setvolume(glob_afgain, glob_afmute, glob_dsploudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikebust20db, glob_mik1level, glob_lineamp);
+#if defined (HARDWARE_CODEC1_NPROCPARAMS)
 	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
-
+#endif /* defined (HARDWARE_CODEC1_NPROCPARAMS) */
 #endif /* defined(CODEC1_TYPE) */
 }
 
