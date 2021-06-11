@@ -19,11 +19,11 @@
 #define CS42L51_ADDRESS_R (CS42L51_ADDRESS_W | 0x01)
 
 void cs42l51_setreg(
-	uint_fast8_t regv,			/* 7 bit value */
-	uint_fast16_t datav			/* 9 bit value */
+	uint_fast8_t regv,			/* 8 bit map byte value */
+	uint_fast8_t datav			/* 8 bit value */
 	)
 {
-	const uint_fast16_t fulldata = regv * 512 + (datav & 0x1ff);
+	const uint_fast16_t fulldata = regv * 256 + (datav & 0xff);
 
 #if CODEC_TYPE_CS42L51_USE_SPI
 	// кодек управляется по SPI
@@ -52,8 +52,8 @@ void cs42l51_setreg(
 
 	// кодек управляется по I2C
 	i2c2_start(CS42L51_ADDRESS_W);
-	i2c2_write(fulldata >> 8);
-	i2c2_write(fulldata >> 0);
+	i2c2_write(regv);
+	i2c2_write(datav);
 	i2c2_waitsend();
 	i2c2_stop();
 
