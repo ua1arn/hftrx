@@ -365,6 +365,8 @@ static void display2_legend_tx(
 
 // Параметры отображения спектра и водопада
 
+static int_fast16_t lvlgridstep = 12;	// Шаг сетки уровней в децибелах
+
 #if 1
 	// полностью частота до килогерц
 	static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки для рисования
@@ -7542,6 +7544,13 @@ display_colorgrid_xor(
 	display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 }
 
+// Преобразовать отношение выраженное в децибелах к "разам" отношения напряжений.
+
+static FLOAT_t db2ratio(FLOAT_t valueDBb)
+{
+	return POWF(10, valueDBb / 20);
+}
+
 // отрисовка маркеров частот
 static
 void
@@ -7553,7 +7562,7 @@ display_colorgrid_set(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркр на центре
+	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркер на центре
 	const COLORPIP_T color = COLORPIP_GRIDCOLOR2;
 	const uint_fast8_t markerh = 10;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки
@@ -7562,11 +7571,10 @@ display_colorgrid_set(
 	int_fast32_t df;	// кратное сетке значение
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
-		uint_fast16_t xmarker;
 		if (df > - halfbw)
 		{
 			// Маркер частоты кратной glob_gridstep - XOR линию
-			xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
+			const uint_fast16_t xmarker = deltafreq2x_abs(f0, df, bw, ALLDX);
 			if (xmarker != UINT16_MAX)
 			{
 				char buf2 [16];
@@ -7584,6 +7592,17 @@ display_colorgrid_set(
 		}
 	}
 	display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
+
+	// Маркеры уровней сигналов
+#if 1
+	int_fast16_t lvl;
+	for (lvl = glob_topdb / lvlgridstep * lvlgridstep; lvl < glob_bottomdb; lvl += lvlgridstep)
+	{
+		const int valy = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
+
+		display_colorbuf_set_hline(buffer, BUFDIM_X, BUFDIM_Y, 0, valy, ALLDX, color0);	// Level marker
+	}
+#endif
 }
 
 // отрисовка маркеров частот для 3DSS
@@ -7597,7 +7616,7 @@ display_colorgrid_3dss(
 	int_fast32_t bw		// span
 	)
 {
-	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркр на центре
+	const COLORPIP_T color0 = COLORPIP_GRIDCOLOR;	// макркер на центре
 	const COLORPIP_T color = COLORPIP_GREEN;
 	const uint_fast16_t row = row0 + h + 3;
 	const int_fast32_t go = f0 % (int) glob_gridstep;	// шаг сетки

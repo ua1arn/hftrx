@@ -933,6 +933,19 @@ display_colorbuf_set_vline(
 	COLORPIP_T color
 	);
 
+// Нарисовать горизонтальную цветную полосу
+// Формат RGB565
+void
+display_colorbuf_set_hline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	uint_fast16_t w,	// ширина
+	COLORPIP_T color
+	);
+
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
 colmain_mem_at_debug(

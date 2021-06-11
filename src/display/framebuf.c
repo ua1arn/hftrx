@@ -818,6 +818,27 @@ display_colorbuf_set_vline(
 		colpip_point(buffer, dx, dy, col, row0 ++, color);
 }
 
+// Нарисовать горизонтальную цветную полосу
+// Формат RGB565
+void
+display_colorbuf_set_hline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col0,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	uint_fast16_t w,	// ширина
+	COLORPIP_T color
+	)
+{
+	ASSERT(row0 < dy);
+	ASSERT((col0 + w) <= dx);
+	/* рисуем прямоугольник высотой в 1 пиксель */
+	//colmain_fillrect(buffer, dx, dy, col0, row0, w, 1, color);
+	while (w --)
+		colpip_point(buffer, dx, dy, col0 ++, row0, color);
+}
+
 // заполнение прямоугольной области в видеобуфере
 void colpip_fillrect(
 	PACKEDCOLORPIP_T * buffer,
