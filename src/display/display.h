@@ -988,6 +988,7 @@ void board_set_view3dss_mark(int_fast16_t v);	/* Для VIEW_3DSS - индика
 void board_set_showdbm(uint_fast8_t v);			// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 void board_set_afspeclow(int_fast16_t v);		// нижняя частота отображения спектроанализатора
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
+void board_set_lvlgridstep(uint_fast8_t v);		/* Шаг сетки уровней в децибелах */
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
 uint_fast8_t colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)

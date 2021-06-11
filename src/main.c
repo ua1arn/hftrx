@@ -2787,6 +2787,8 @@ struct nvmap
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
 	uint8_t gwtfbeta100;	/* beta - парамеры видеофильтра водопада */
+	uint8_t glvlgridstep;	/* Шаг сетки уровней в децибелах */
+
 #endif /* WITHSPECTRUMWF */
 
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
@@ -3498,6 +3500,7 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
+	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
 #if defined (WITHSPECBETA_DEFAULT)
 	static uint_fast8_t gspecbeta100 = WITHSPECBETA_DEFAULT;
 #else
@@ -9348,6 +9351,7 @@ updateboardZZZ(
 			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
+			board_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
 			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
@@ -14182,6 +14186,16 @@ static const FLASHMEM struct menudef menutable [] =
 		nvramoffs0,
 		NULL,
 		& gbottomdbwf,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("STEP DB "), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
+		offsetof(struct nvmap, glvlgridstep),
+		nvramoffs0,
+		NULL,
+		& glvlgridstep,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{

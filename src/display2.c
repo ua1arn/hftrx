@@ -365,8 +365,6 @@ static void display2_legend_tx(
 
 // Параметры отображения спектра и водопада
 
-static int_fast16_t lvlgridstep = 12;	// Шаг сетки уровней в децибелах
-
 #if 1
 	// полностью частота до килогерц
 	static int_fast16_t glob_gridstep = 10000; //1 * glob_griddigit;	// 10, 20. 50 kHz - шаг сетки для рисования
@@ -401,6 +399,8 @@ static uint_fast8_t glob_smetertype = SMETER_TYPE_DIAL;	/* выбор внешн
 
 static int_fast16_t glob_afspeclow = 300;	// нижняя частота отображения спектроанализатора
 static int_fast16_t glob_afspechigh = 3400;	// верхняя частота отображения спектроанализатора
+
+static uint_fast8_t glob_lvlgridstep = 12;	// Шаг сетки уровней в децибелах. (0-отключаем отображение сетки уровней)
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
@@ -7594,15 +7594,16 @@ display_colorgrid_set(
 	display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
 
 	// Маркеры уровней сигналов
-#if 1
-	int_fast16_t lvl;
-	for (lvl = glob_topdb / lvlgridstep * lvlgridstep; lvl < glob_bottomdb; lvl += lvlgridstep)
+	if (glob_lvlgridstep != 0)
 	{
-		const int valy = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
+		int_fast16_t lvl;
+		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl < glob_bottomdb; lvl += glob_lvlgridstep)
+		{
+			const int valy = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
 
-		display_colorbuf_set_hline(buffer, BUFDIM_X, BUFDIM_Y, 0, valy, ALLDX, color0);	// Level marker
+			display_colorbuf_set_hline(buffer, BUFDIM_X, BUFDIM_Y, 0, valy, ALLDX, color0);	// Level marker
+		}
 	}
-#endif
 }
 
 // отрисовка маркеров частот для 3DSS
@@ -9090,6 +9091,13 @@ void
 board_set_bottomdb(int_fast16_t v)
 {
 	glob_bottomdb = v;
+}
+
+/* Шаг сетки уровней в децибелах. (0-отключаем отображение сетки уровней) */
+void
+board_set_lvlgridstep(uint_fast8_t v)
+{
+	glob_lvlgridstep = v;
 }
 
 /* верхний предел FFT - waterflow */
