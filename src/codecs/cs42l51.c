@@ -15,6 +15,8 @@
 
 #include "audio.h"
 
+// https://github.com/STMicroelectronics/STM32CubeL4/blob/master/Drivers/BSP/Components/cs42l51/cs42l51.c
+
 #define CS42L51_ADDRESS_W 0x94	// AD0 (pin 04) tied low.
 #define CS42L51_ADDRESS_R (CS42L51_ADDRESS_W | 0x01)
 
