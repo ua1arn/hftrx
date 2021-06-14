@@ -11722,6 +11722,8 @@ void hardware_twi_master_configure(void)
 	// Enable the I2Cx peripheral
 	I2C1->CR1 |= I2C_CR1_PE;
 
+#elif CPUSTYLE_XC7Z
+
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif

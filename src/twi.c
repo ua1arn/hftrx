@@ -34,6 +34,8 @@
 
 #elif CPUSTYLE_XC7Z
 
+#if WITHTWISW
+
 #define TWISOFT_INITIALIZE() do { } while(0)
 
 #define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
@@ -55,6 +57,8 @@ uint8_t GET_TWD(void)
 	xc7z_gpio_input(TARGET_TWI_TWD_MIO);
 	return xc7z_readpin(TARGET_TWI_TWD_MIO);
 }
+
+#endif /* WITHTWISW */
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
@@ -1417,6 +1421,98 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 		* data = TARGET_TWI.MASTER.DATA;
 		break;
 	}
+}
+
+#elif CPUSTYLE_XC7Z
+
+#include "lib/zynq/src/xiicps.h"
+
+static XIicPs xc7z_iicps;
+static uint16_t iic_address = 0;
+
+void i2c_initialize(void)
+{
+	XIicPs_Config *Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);
+	XIicPs_CfgInitialize(& xc7z_iicps, Config, Config->BaseAddress);
+
+	int Status = XIicPs_SelfTest(& xc7z_iicps);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("iicps init error %d\n", Status);
+		ASSERT(0);
+	}
+	XIicPs_SetSClk(& xc7z_iicps, 100000);
+	XIicPs_SetOptions(& xc7z_iicps, XIICPS_7_BIT_ADDR_OPTION);
+	XIicPs_ClearOptions(& xc7z_iicps, XIICPS_10_BIT_ADDR_OPTION | XIICPS_SLAVE_MON_OPTION | XIICPS_REP_START_OPTION);
+}
+
+uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+{
+	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+
+	int Status = XIicPs_MasterRecvPolled(& xc7z_iicps, buf, size, slave_address >> 1);
+	if (Status != XST_SUCCESS)
+		PRINTF("iicps receive error %d from address %x\n", Status, slave_address);
+
+	return Status;
+}
+
+uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
+{
+	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+
+	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, buf, size, slave_address >> 1);
+	if (Status != XST_SUCCESS)
+		PRINTF("iicps write error %d to address %x\n", Status, slave_address);
+
+	return Status;
+}
+
+void i2c_start(uint_fast8_t address)
+{
+	iic_address = address;
+}
+
+void i2c_waitsend(void)
+{
+	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+}
+
+void i2c_stop(void)
+{
+	iic_address = 0;
+}
+
+void i2c_write(uint_fast8_t byte)
+{
+	if (iic_address)
+	{
+		uint8_t buf = byte;
+		int Status = i2chw_write(iic_address, & buf, 1);
+		if (Status != XST_SUCCESS) {
+			PRINTF("iicps send error %d\n", Status);
+		}
+	}
+	else
+		PRINTF("iicps send: not ready\n");
+}
+
+void i2c_write_withrestart(uint_fast8_t data)
+{
+	i2c_write(data);
+}
+
+void i2c_read(uint8_t * data, uint_fast8_t ack_type)
+{
+	if (iic_address)
+	{
+		int Status = i2chw_read(iic_address, & data, 1);
+		if (Status != XST_SUCCESS) {
+			PRINTF("iicps receive error %d\n", Status);
+		}
+	}
+	else
+		PRINTF("iicps receive: not ready\n");
 }
 
 #else

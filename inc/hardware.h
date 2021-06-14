@@ -740,6 +740,9 @@ void i2c2_stop(void);
 
 void hardware_twi_master_configure(void);
 
+uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size);
+uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size);
+
 uint32_t hardware_get_random(void);
 
 void arm_hardware_dma2d_initialize(void);	// Graphic 2D engine

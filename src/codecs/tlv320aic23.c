@@ -62,11 +62,21 @@ static void tlv320aic23_setreg(
 #else /* CODEC_TYPE_TLV320AIC23B_USE_SPI */
 
 	// кодек управляется по I2C
+
+#if WITHTWISW
+
 	i2c_start(TLV320AIC23_ADDRESS_W);
 	i2c_write(fulldata >> 8);
 	i2c_write(fulldata >> 0);
 	i2c_waitsend();
 	i2c_stop();
+
+#elif WITHTWIHW
+
+	uint8_t buf[2] = { (fulldata >> 8), (fulldata & 0xFF), };
+	i2chw_write(TLV320AIC23_ADDRESS_W, buf, 2);
+
+#endif /* WITHTWISW */
 
 #endif /* CODEC_TYPE_TLV320AIC23B_USE_SPI */
 }
