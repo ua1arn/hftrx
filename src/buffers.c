@@ -1211,8 +1211,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	ASSERT(p->tag3 == p);
 
 	// Использование данных.
-	v->ivqv [L] = p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
-	v->ivqv [R] = p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+	v->ivqv [L] = adpt_input(& afcodecio, p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = adpt_input(& afcodecio, p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT16)
 	{
