@@ -767,13 +767,6 @@ static void adapterst_initialize(void)
 
 //////////////////////////////////////////
 
-void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
-{
-	savemoni16stereo(adpt_outputexact(& afcodecio, ch0), adpt_outputexact(& afcodecio, ch1));
-}
-
-//////////////////////////////////////////
-
 #if 1
 
 // функции для замены стандартной библиотеки
