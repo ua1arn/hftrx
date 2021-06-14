@@ -1506,7 +1506,7 @@ void i2c_read(uint8_t * data, uint_fast8_t ack_type)
 {
 	if (iic_address)
 	{
-		int Status = i2chw_read(iic_address, & data, 1);
+		int Status = i2chw_read(iic_address, data, 1);
 		if (Status != XST_SUCCESS) {
 			PRINTF("iicps receive error %d\n", Status);
 		}
