@@ -19,8 +19,8 @@
 #define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -184,7 +184,11 @@
  *  N20	PL 3-6    EMIO60	spi mosi
  *  P18	PL 3-7    EMIO61	spi miso
  *  M17	PL 3-8    EMIO62	spi fram
- *  N17	PL 3-9    EMIO63	spi software tsc
+ *  N17	PL 3-9    EMIO63
+ *  D18	PL 1-14	  iicps hw	scl
+ *  D19	PL 1-16	  iicps hw	sda
+ *  E19 PL 1-18	  EMIO64	touch int
+ *  K17 PL 1-18	  EMIO65	touch reset
  *
  *  N18 PL					<- Clock 49,152 MHz
  *
@@ -197,6 +201,25 @@
  *  C16 MIO28 R2441 right
  *
  */
+
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+
+	void gt911_interrupt_handler(void);
+	#define BOARD_GT911_INT_PIN 	64
+	#define BOARD_GT911_RESET_PIN 	65
+
+	#define BOARD_GT911_RESET_SET(v) do { if (v) xc7z_writepin(BOARD_GT911_RESET_PIN, 1); else xc7z_writepin(BOARD_GT911_RESET_PIN, 0);  } while (0)
+
+	#define BOARD_GT911_INT_SET(v) do { if (v) xc7z_writepin(BOARD_GT911_INT_PIN, 1); else xc7z_writepin(BOARD_GT911_INT_PIN, 0); } while (0)
+
+	#define BOARD_GT911_RESET_INITIO_1() do { xc7z_gpio_output(BOARD_GT911_RESET_PIN); xc7z_gpio_output(BOARD_GT911_INT_PIN); } while (0)
+
+	#define BOARD_GT911_RESET_INITIO_2() do { xc7z_gpio_input(BOARD_GT911_INT_PIN); } while (0)
+
+	#define BOARD_GT911_INT_CONNECT() do { \
+	} while (0)
+
+#endif
 
 #if WITHCPUTEMPERATURE
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
@@ -697,8 +720,8 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	#define TARGET_TWI_TWCK_MIO			58		// EMIO 58
-	#define TARGET_TWI_TWD_MIO			57		// EMIO 57
+	#define TARGET_TWI_TWCK_MIO			66		// EMIO 58
+	#define TARGET_TWI_TWD_MIO			67		// EMIO 57
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
