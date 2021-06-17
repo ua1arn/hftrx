@@ -221,7 +221,7 @@ static uint_fast8_t getbandgain(const uint_fast8_t * p, uint_fast8_t procenable)
 	};
 	return procenable ? gains [p [0]] : 12;
 #else
-	ASSEERT(p [0] <= 24);
+	ASSERT(p [0] <= 24);
 	return procenable ? 24 - p [0] : 12;
 #endif
 }
