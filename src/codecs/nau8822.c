@@ -170,13 +170,60 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 	}
 }
 
+//
 // 01100 = 0.0dB default unity gain value
 // 00000 = +12dB
+// 00001 = +11dB
+// 00010 = +10dB
+// 00011 = +9dB
+// 00100 = +8dB
+// 00101 = +7dB
+// 00110 = +6dB
+// 00111 = +5dB
+// 01000 = +4dB
+// 01001 = +3dB
+// 01010 = +2dB
+// 01010 = +1dB
+// 01100 = +0dB
+
 // 11000 = -12dB
 // 11001 and larger values are reserved
-static uint_fast8_t getbandgain(const uint_fast8_t * gain, uint_fast8_t procenable)
+static uint_fast8_t getbandgain(const uint_fast8_t * p, uint_fast8_t procenable)
 {
-	return procenable ? 24 - gain [0] : 12;
+#if 0
+	static const uint8_t gains [25] =
+	{
+			0x18,	// -12dB
+			0x17,	// -11dB
+			0x16,	// -10dB
+			0x15,	// -9dB
+			0x14,	// -8dB
+			0x13,	// -7dB
+			0x12,	// -6dB
+			0x11,	// -5dB
+			0x10,	// -4dB
+			0x0F,	// -3dB
+			0x0E,	// -2dB
+			0x0D,	// -1dB
+			0x0C,	// +0dB
+			0x0B,	// +1dB
+			0x0A,	// +2dB
+			0x09,	// +3dB
+			0x08,	// +4dB
+			0x07,	// +5dB
+			0x06,	// +6dB
+			0x05,	// +7dB
+			0x04,	// +8dB
+			0x03,	// +9dB
+			0x02,	// +10dB
+			0x01,	// +11dB
+			0x00,	// +12dB
+	};
+	return procenable ? gains [p [0]] : 12;
+#else
+	ASSEERT(p [0] <= 24);
+	return procenable ? 24 - p [0] : 12;
+#endif
 }
 
 /* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
