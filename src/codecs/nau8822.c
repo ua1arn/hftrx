@@ -126,29 +126,46 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 	{
 		// переключение на линейный вход
 		// Line input подключены к LAUXIN, RAUXIN
-		//const uint_fast8_t auxinpgaval = 0x1; // 1..7: -12..+6 dB
+#if 0
+		//const uint_fast8_t auxinpgaval = 0x1; // 1..7: -12..+6 dB, 5: 0 dB
 		const uint_fast8_t auxinpgaval = (linegain - WITHLINEINGAINMIN) * (0x07 - 0x01) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + 0x01;
-		//const uint_fast8_t auxinpgaval = 0x10;	// 0x10 - default, 0x00..0x3f mean -12 db..+35.25 dB in 0.75 dB step
 		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, 0x40 | 0);	// PGA muted
 		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, 0x40 | 0x100);	// write both valuse simultaneously
 		//
 		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, auxinpgaval);	// LLINEIN disconnected, LAUXIN connected w/o gain
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, auxinpgaval);	// RLINEIN disconnected, RAUXIN connected w/o gain
+#else
+		const uint_fast8_t adcdigvol = (linegain - WITHLINEINGAINMIN) * (255) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + 0x00;
+		nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
+		nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
 		//
+		const uint_fast8_t auxinpgaval = 0x05; // 1..7: -12..+6 dB, 5: 0 dB
+		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, auxinpgaval);	// LLINEIN disconnected, LAUXIN connected w/o gain
+		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, auxinpgaval);	// RLINEIN disconnected, RAUXIN connected w/o gain
+#endif
 	}
 	else
 	{
 		// переключение на микрофон
 		// Микрофон подключен к LMICN, LMICP=common
 		//const uint_fast8_t mikepgaval = 0x10;	// 0x10 - default, 0x00..0x3f mean -12 db..+35.25 dB in 0.75 dB step
+#if 0
 		const uint_fast8_t mikepgaval = (mikegain - WITHMIKEINGAINMIN) * (0x3f) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
 		//
 		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA volume control setting = 0.0dB
 		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, 0x40 | mikepgaval | 0x100);	// 0x40 = PGA in muted condition not connected to RADC Mix/Boost stage
+#else
+		const uint_fast8_t adcdigvol = (mikegain - WITHMIKEINGAINMIN) * (255) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
+		nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
+		nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
+
+		const uint_fast8_t mikepgaval = 0x10;
+		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA muted
+		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, mikepgaval | 0x100);	// write both valuse simultaneously
+#endif
 		// 
 		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikebust20db != 0));	// 0x100 - 20 dB boost ON
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
-		//
 	}
 }
 
@@ -255,7 +272,7 @@ static void nau8822_initialize_fullduplex(void)
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
 	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
 	unsigned long NAU8822_AUDIO_INTERFACE_WLEN_val;
-	unsigned long NAU8822_MISC_8B_val;
+	unsigned long NAU8822_MISC_8B_val;	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
 	switch (WITHADAPTERAFADCWIDTH)
 	{
 	default:
@@ -318,6 +335,7 @@ static void nau8822_initialize_fullduplex(void)
 		NAU8822_MISC_8B_val |			// 8-bit word length enable
 		0);
 
+	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
 	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 	// reg 0x07,
 		NAU8822_ADDITIONAL_CONTROL_SMPLR_val |			// SMPLR=0x05 (8 kHz)
 		0);
@@ -329,14 +347,15 @@ static void nau8822_initialize_fullduplex(void)
 		0);
 
 	// Установка параметров умножителя за ЦАП не требуется - всегда максимальный уровень.
-	//nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 255 | 0);
-	//nau8822_setreg(NAU8822_RIGHT_DAC_DIGITAL_VOLUME, 255 | 0x100);
+	nau8822_setreg(NAU8822_LEFT_DAC_DIGITAL_VOLUME, 255 | 0);
+	nau8822_setreg(NAU8822_RIGHT_DAC_DIGITAL_VOLUME, 255 | 0x100);
+
 //{0xb , 0x1ff},
 //{0xc , 0x1ff},
 
 	//[AA_AUXIN_HP/Audio Control] 
 	nau8822_setreg(NAU8822_DAC_CONTROL, 0x008);	// was: 0x00c - removed automute
-	nau8822_setreg(NAU8822_ADC_CONTROL, 0x108);
+	nau8822_setreg(NAU8822_ADC_CONTROL, 0x108);	// HP filter enable, 128x oversampling for better SNR
 //Noise gate
 //{0x23,0x18);
 
@@ -357,9 +376,9 @@ static void nau8822_initialize_fullduplex(void)
 
 	// Установка чувствительность АЦП не требуется - стоит максимальная после сброса
 	// но на всякий слуяай для понятности програмируем.
-	const uint_fast8_t mklevel = 255;
-	nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, mklevel | 0);
-	nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, mklevel | 0x100);
+	const uint_fast8_t adcdigvol = 255;
+	nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
+	nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
 
 	nau8822_setreg(NAU8822_DAC_DITHER, 0x000);	// dither off
 
