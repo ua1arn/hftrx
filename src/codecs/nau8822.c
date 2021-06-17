@@ -15,7 +15,8 @@
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 //
 // Управление кодеком NOVOTON NAU8822L
-//
+// https://www.nuvoton.com/products/smart-home-audio/audio-converters/audio-codec-series/nau8822lyg/
+
 #include "audio.h"
 #include "nau8822.h"
 
@@ -169,6 +170,14 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 	}
 }
 
+// 01100 = 0.0dB default unity gain value
+// 00000 = +12dB
+// 11000 = -12dB
+// 11001 and larger values are reserved
+static uint_fast8_t getbandgain(const uint_fast8_t * gain, uint_fast8_t procenable)
+{
+	return procenable ? 24 - gain [0] : 12;
+}
 
 /* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 static void nau8822_setprocparams(
@@ -178,7 +187,7 @@ static void nau8822_setprocparams(
 {
 	//debug_printf_P(PSTR("codec: procenable=%d, gains={ %2d,%2d,%2d,%2d,%2d }\n"), procenable, gains [0], gains [1], gains [2], gains [3], gains [4]);
 	//enum { wide = 0, freq = 1 }; // default settings
-	enum { wide = 1, freq = 0 }; // default settings
+	enum { wide = 1, freq = 0 };
 
 	// Смысл значения freq
 	//	freq	EQ1 (High Pass) EQ2 (Band Pass) EQ3 (Band Pass) EQ4 (Band Pass) EQ5 (Low Pass) 
@@ -188,68 +197,33 @@ static void nau8822_setprocparams(
 	//	3 		175Hz 			500Hz 			1.4kHz 			4.1kHz 			11.7kHz 
 
 	// Назначение работы эквалайзера в ртакте ADC делается битом 0x100 в ргистре NAU8822_EQ1
-	if (procenable == 0)
-	{
-		// Выключено - все значения по умолчанию
-		// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
-		enum { gain = 0 }; // default settings
-		nau8822_setreg(NAU8822_EQ1, // low cutoff - 0x22C reset value
-			1 * (1u << 8) |	// 1 = block operates on digital stream to DAC
-			freq * (1u << 5) | // Equalizer band 1 low pass -3dB cut-off frequency selection
-			(12 - gain) * (1u << 0) | // EQ Band 1 digital gain control.
-			0);
-		nau8822_setreg(NAU8822_EQ2, // peak 1 - 0x02C reset value
-			wide * (1u << 8) |	// 0 = narrow band characteristic
-			freq * (1u << 5) | // Equalizer Band 2 center frequency selection
-			(12 - gain) * (1u << 0) | // EQ Band 2 digital gain control.
-			0);
-		nau8822_setreg(NAU8822_EQ3, // peak 2 - 0x02C reset value
-			wide * (1u << 8) |	// 0 = narrow band characteristic
-			freq * (1u << 5) | // Equalizer Band 3 center frequency selection
-			(12 - gain) * (1u << 0) | // EQ Band 3 digital gain control.
-			0);
-		nau8822_setreg(NAU8822_EQ4, // peak 3 - 0x02C reset value
-			wide * (1u << 8) |	// 0 = narrow band characteristic
-			freq * (1u << 5) | // Equalizer Band 4 center frequency selection
-			(12 - gain) * (1u << 0) | // EQ Band 4 digital gain control.
-			0);
-		nau8822_setreg(NAU8822_EQ5, // high curoff - 0x02C reset value
-			freq * (1u << 5) | // Equalizer Band 5 high pass -3dB cut-off frequency selection
-			(12 - gain) * (1u << 0) | // EQ Band 5 digital gain control.
-			0);
-	}
-	else
-	{
-#if HARDWARE_CODEC1_NPROCPARAMS != 5
-	#error Wrong value of HARDWARE_CODEC1_NPROCPARAMS
-#endif
-		// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
-		// Включено
-		nau8822_setreg(NAU8822_EQ1, // low cutoff - 0x22C reset value
-			0 * (1u << 8) |	// 0 = block operates on digital stream from ADC, 1 = block operates on digital stream to DAC
-			freq * (1u << 5) | // Equalizer band 1 low pass -3dB cut-off frequency selection
-			(24 - gains [0]) * (1u << 0) | // EQ Band 1 digital gain control.
-			0);
-		nau8822_setreg(NAU8822_EQ2, // peak 1 - 0x02C reset value
-			wide * (1u << 8) |	// 0 = narrow band characteristic
-			freq * (1u << 5) | // Equalizer Band 2 center frequency selection
-			(24 - gains [1]) * (1u << 0) | // EQ Band 2 digital gain control.
-			0);
-		nau8822_setreg(NAU8822_EQ3, // peak 2 - 0x02C reset value
-			wide * (1u << 8) |	// 0 = narrow band characteristic
-			freq * (1u << 5) | // Equalizer Band 3 center frequency selection
-			(24 - gains [2]) * (1u << 0) | // EQ Band 3 digital gain control.
-			0);
-		nau8822_setreg(NAU8822_EQ4, // peak 3 - 0x02C reset value
-			wide * (1u << 8) |	// 0 = narrow band characteristic
-			freq * (1u << 5) | // Equalizer Band 4 center frequency selection
-			(24 - gains [3]) * (1u << 0) | // EQ Band 4 digital gain control.
-			0);
-		nau8822_setreg(NAU8822_EQ5, // high curoff - 0x02C reset value
-			freq * (1u << 5) | // Equalizer Band 5 high pass -3dB cut-off frequency selection
-			(24 - gains [4]) * (1u << 0) | // EQ Band 5 digital gain control.
-			0);
-	}
+
+	// Выключено - все значения по умолчанию
+	// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
+	nau8822_setreg(NAU8822_EQ1, // low cutoff - 0x22C reset value
+		1 * (1u << 8) |	// 1 = block operates on digital stream to DAC
+		freq * (1u << 5) | // EQ1CF Equalizer band 1 low pass -3dB cut-off frequency selection
+		getbandgain(gains + 0, procenable) * (1u << 0) | // EQ Band 1 digital gain control.
+		0);
+	nau8822_setreg(NAU8822_EQ2, // peak 1 - 0x02C reset value
+		wide * (1u << 8) |	// EQ2BW 0 = narrow band characteristic
+		freq * (1u << 5) | // EQ2CF Equalizer Band 2 center frequency selection
+		getbandgain(gains + 1, procenable) * (1u << 0) | // EQ Band 2 digital gain control.
+		0);
+	nau8822_setreg(NAU8822_EQ3, // peak 2 - 0x02C reset value
+		wide * (1u << 8) |	// EQ3BW 0 = narrow band characteristic
+		freq * (1u << 5) | // EQ3CF Equalizer Band 3 center frequency selection
+		getbandgain(gains + 2, procenable) * (1u << 0) | // EQ Band 3 digital gain control.
+		0);
+	nau8822_setreg(NAU8822_EQ4, // peak 3 - 0x02C reset value
+		wide * (1u << 8) |	// EQ4BW 0 = narrow band characteristic
+		freq * (1u << 5) | // EQ4CF Equalizer Band 4 center frequency selection
+		getbandgain(gains + 3, procenable) * (1u << 0) | // EQ Band 4 digital gain control.
+		0);
+	nau8822_setreg(NAU8822_EQ5, // high curoff - 0x02C reset value
+		freq * (1u << 5) | // EQ5CF Equalizer Band 5 low pass -3dB cut-off frequency selection
+		getbandgain(gains + 4, procenable) * (1u << 0) | // EQ Band 5 digital gain control.
+		0);
 }
 
 // возврат степени 2 от числа (не являющиеся 1 2 4 8... округляются до ближайшего меньшего).
@@ -315,17 +289,20 @@ static void nau8822_initialize_fullduplex(void)
 	nau8822_setreg(NAU8822_LOUT2_SPK_CONTROL, level | 0);
 	nau8822_setreg(NAU8822_ROUT2_SPK_CONTROL, level | 0x100);
 
+	// R1 Bit 8, DCBUFEN, set to logic = 1 if setting up for greater than 3.60V operation
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_1, 0x1cd); // was: 0x1cd - pll off, input to internal bias buffer in high-Z floating condition
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_2, 0x1bf); // was: 0x1bf - right pga off - 0x1b7
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_3, 0x1ef); // was: 0x1ff - reserved=0
 
 #if WITHI2S_FORMATI2S_PHILIPS
 	// I2S mode
-	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | NAU8822_AUDIO_INTERFACE_WLEN_val);	// reg 0x04, I2S, 16 bit
+	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
+	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | NAU8822_AUDIO_INTERFACE_WLEN_val);	// reg 0x04, I2S
 
 #else /* WITHI2S_FORMATI2S_PHILIPS */
 	// LJ mode
-	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | NAU8822_AUDIO_INTERFACE_WLEN_val);	// reg 0x04, LJ, 32 bit
+	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
+	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | NAU8822_AUDIO_INTERFACE_WLEN_val);	// reg 0x04, LJ
 
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
 
@@ -335,7 +312,6 @@ static void nau8822_initialize_fullduplex(void)
 		NAU8822_MISC_8B_val |			// 8-bit word length enable
 		0);
 
-	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
 	nau8822_setreg(NAU8822_ADDITIONAL_CONTROL, 	// reg 0x07,
 		NAU8822_ADDITIONAL_CONTROL_SMPLR_val |			// SMPLR=0x05 (8 kHz)
 		0);
@@ -363,7 +339,14 @@ static void nau8822_initialize_fullduplex(void)
 	nau8822_setreg(NAU8822_RIGHT_SPK_SUBMIXER, 0x10);	// use RMIX as BTL channel
 
 	//nau8822_setreg(NAU8822_OUTPUT_CONTROL, 0x063 | 0x01c); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
-	nau8822_setreg(NAU8822_OUTPUT_CONTROL, 0x01e); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
+	//nau8822_setreg(NAU8822_OUTPUT_CONTROL, 0x01e); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
+	nau8822_setreg(NAU8822_OUTPUT_CONTROL,
+			(1uL << 4) |	// AUX1BST
+			(1uL << 3) |	// AUX2BST
+			(1uL << 2) |	// SPKBST: LSPKOUT and RSPKOUT speaker amplifier gain boost control
+			(1uL << 1) |	// TSEN
+			0
+			); // AUXOUT1, AUXOUT2, LSPKOUT and RSPKOUT x1.5 gain
 
 	//nau8822_setreg(NAU8822_AUX2_MIXER_CONTROL, 0x040);	// 0x40 - AUX2 muted, 0x01 (default) - connected to LEFT DAC
 	//nau8822_setreg(NAU8822_AUX1_MIXER_CONTROL, 0x040);	// 0x40 - AUX1 muted, 0x01 (default) - connected to RIGHT DAC
