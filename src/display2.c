@@ -7219,7 +7219,11 @@ void fftbuffer_initialize(void)
 
 union states
 {
+#if defined(ARM_MATH_NEON)
+	float32_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 8];
+#else /* defined(ARM_MATH_NEON) */
 	float32_t iir_state [ZOOMFFT_DECIM_STAGES_IIR * 4];
+#endif /* defined(ARM_MATH_NEON) */
 	float32_t fir_state [ZOOMFFT_DECIM_STAGES_FIR + LARGEFFT - 1];
 	float32_t cmplx_sig [NORMALFFT * 2];
 	uint16_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
@@ -7262,14 +7266,20 @@ static void fftzoom_filer_decimate_ifspectrum(
 	const unsigned usedSize = NORMALFFT * prm->zoom;
 
 	// Biquad LPF фильтр
+#if defined(ARM_MATH_NEON)
+	float32_t IIRCoeffs_NEON [ZOOMFFT_DECIM_STAGES_IIR * 32];
+
+	// Initialize floating-point Biquad cascade filter.
+	arm_copy_f32(prm->pIIRCoeffs, IIRCoeffs_NEON, ZOOMFFT_DECIM_STAGES_IIR * 5);
+    arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, IIRCoeffs_NEON, zoomfft_st.iir_state);
+    arm_biquad_cascade_df2T_compute_coefs_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, IIRCoeffs_NEON);
+
+#else /* defined(ARM_MATH_NEON) */
 	// Initialize floating-point Biquad cascade filter.
 	arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, zoomfft_st.iir_state);
-#if defined(ARM_MATH_NEON)
-#error Need investigantions (see prm->pIIRCoeffs size)
-	arm_biquad_cascade_df2T_compute_coefs_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs);
-#endif /* defined(ARM_MATH_NEON) */
-	// TODO: ask UA3REO for comments about arm_biquad_cascade_df2T_f32_rolled
 	arm_biquad_cascade_df2T_f32(& c.iir_config, buffer, buffer, usedSize);
+
+#endif /* defined(ARM_MATH_NEON) */
 
 	// Дециматор
 	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& c.fir_config,

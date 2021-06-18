@@ -171,8 +171,11 @@ extern "C" {
 	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
@@ -192,8 +195,11 @@ extern "C" {
 	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F4XX
 
@@ -212,8 +218,11 @@ extern "C" {
 	#define ICACHEROWSIZE 16U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F30X
 
@@ -228,8 +237,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -243,8 +255,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F0XX
 
@@ -258,8 +273,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32L0XX
 
@@ -272,8 +290,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_ATSAM3S
 
@@ -287,8 +308,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_ATSAM4S
 
@@ -302,8 +326,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_MK20DX	// Teensy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
 
@@ -316,8 +343,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -334,6 +364,14 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+
+
 #elif CPUSTYLE_AT91SAM9XE
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
@@ -348,6 +386,13 @@ extern "C" {
 	#define __STATIC_INLINE  static inline
 
 	#include "tdmi7_gcc.h"
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_R7S721
 
@@ -373,13 +418,15 @@ extern "C" {
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(DCACHEROWSIZE)))
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32MP1
 
@@ -407,6 +454,7 @@ extern "C" {
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 
 #elif CPUSTYLE_XC7Z
@@ -430,7 +478,10 @@ extern "C" {
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYPE_ALLWNV3S
 	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
@@ -456,9 +507,10 @@ extern "C" {
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
-
-
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif \
 	defined (__TMS320C28X__) || \
