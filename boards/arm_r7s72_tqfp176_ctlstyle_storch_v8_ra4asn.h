@@ -443,6 +443,7 @@
 	//#define WITH_GT911_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
+	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 #endif /* WITHISBOOTLOADER */

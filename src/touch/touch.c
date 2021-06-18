@@ -96,6 +96,17 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336) */
 
+
+#if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046
+
+uint_fast8_t
+board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	return 0;
+}
+
+#endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046 */
+
 #if defined (TSC1_TYPE)
 
 void board_tsc_initialize(void)
@@ -119,6 +130,10 @@ void board_tsc_initialize(void)
 		PRINTF("ft5336 initialization error\n");
 	}
 #endif /* TSC1_TYPE == TSC_TYPE_FT5336 */
+
+#if TSC1_TYPE == TSC_TYPE_XPT2046
+
+#endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
 }
 
 #if TSC1_TYPE == TSC_TYPE_S3402

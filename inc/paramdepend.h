@@ -1055,6 +1055,7 @@ extern "C" {
 #define TSC_TYPE_GT911		62	// Capacitive touch screen controller Goodix GT911
 #define TSC_TYPE_S3402		63	// Capacitive touch screen controller S3402 (on panel H497TLB01.4)
 #define TSC_TYPE_FT5336 	64	// Capacitive touch screen controller FocalTech FT5336
+#define TSC_TYPE_XPT2046 	65	// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO., LTD http://www.xptek.com.cn
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
