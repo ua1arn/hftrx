@@ -7364,7 +7364,7 @@ dsp_getspectrumrow(
 	const unsigned usedsize = NORMALFFT << zoompow2;
 	float32_t * const largesigI = pf->largebuffI + LARGEFFT - usedsize;
 	float32_t * const largesigQ = pf->largebuffQ + LARGEFFT - usedsize;
-
+	float32_t * const fftinpt = zoomfft_st.cmplx_sig;
 	if (zoompow2 > 0)
 	{
 		ASSERT(ARRAY_SIZE(zoom_params) >= zoompow2);
@@ -7375,14 +7375,14 @@ dsp_getspectrumrow(
 	}
 
 	// Подготовить массив комплексных чисел для преобразования в частотную область
-	make_cmplx(zoomfft_st.cmplx_sig, NORMALFFT, largesigQ, largesigI);
+	make_cmplx(fftinpt, NORMALFFT, largesigQ, largesigI);
 
 	release_fftbuffer(pf);
 
-	arm_cmplx_mult_real_f32(zoomfft_st.cmplx_sig, ifspec_wndfn, zoomfft_st.cmplx_sig,  NORMALFFT);	// Применить оконную функцию к IQ буферу
+	arm_cmplx_mult_real_f32(fftinpt, ifspec_wndfn, fftinpt,  NORMALFFT);	// Применить оконную функцию к IQ буферу
 	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, NORMALFFT));
-	arm_cfft_f32(& fftinstance, zoomfft_st.cmplx_sig, 0, 1);	// forward transform
-	arm_cmplx_mag_f32(zoomfft_st.cmplx_sig, zoomfft_st.cmplx_sig, NORMALFFT);	/* Calculate magnitudes */
+	arm_cfft_f32(& fftinstance, fftinpt, 0, 1);	// forward transform
+	arm_cmplx_mag_f32(fftinpt, fftinpt, NORMALFFT);	/* Calculate magnitudes */
 
 	enum { visiblefftsize = (int_fast64_t) NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM };
 	enum { fftsize = NORMALFFT };
@@ -7390,7 +7390,7 @@ dsp_getspectrumrow(
 	for (x = 0; x < dx; ++ x)
 	{
 		const int fftpos = raster2fft(x, dx, fftsize, visiblefftsize);
-		hbase [x] = zoomfft_st.cmplx_sig [fftpos] * fftcoeff;
+		hbase [x] = fftinpt [fftpos] * fftcoeff;
 	}
 	return 1;
 }
