@@ -18,6 +18,10 @@
 // Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
 // SPI interface used
 
+// При необходимости разместить в файле конфигурации платы.
+//#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
+//#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
+
 #define tscspeed SPIC_SPEED1M
 #define tscmode SPIC_MODE0
 
@@ -146,20 +150,28 @@ tcsnormalize(
 uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	const spitarget_t target = targettsc1;
-
 	/* top left raw data values */
-	static uint_fast16_t xrawmin = 3610;
-	static uint_fast16_t yrawmin = 3640;
+	static uint_fast16_t xrawmin = 330;
+	static uint_fast16_t yrawmin = 510;
+
 	/* bottom right raw data values */
-	static uint_fast16_t xrawmax = 330;
-	static uint_fast16_t yrawmax = 510;
+	static uint_fast16_t xrawmax = 3610;
+	static uint_fast16_t yrawmax = 3640;
 
 	uint_fast16_t x = xpt2046_read(target, XPT2046_X);
 	uint_fast16_t y = xpt2046_read(target, XPT2046_Y);
 	uint_fast16_t z1 = xpt2046_read(target, XPT2046_Z1);
 
+#if BOARD_TSC1_XMIRROR
+	* xr = tcsnormalize(x, xrawmax, xrawmin, DIM_X - 1);
+#else /* BOARD_TSC1_XMIRROR */
 	* xr = tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
-	* yr = tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
+#endif /* BOARD_TSC1_XMIRROR */
+#if BOARD_TSC1_YMIRROR
+	* yr = tcsnormalize(x, yrawmax, yrawmin, DIM_Y - 1);
+#else /* BOARD_TSC1_YMIRROR */
+	* yr = tcsnormalize(x, yrawmin, yrawmax, DIM_Y - 1);
+#endif /* BOARD_TSC1_YMIRROR */
 
 	return z1 > XPT2046_Z1_THRESHOLD;
 }
