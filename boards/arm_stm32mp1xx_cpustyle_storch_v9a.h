@@ -535,6 +535,7 @@
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
 	#define targetuc1608 targetext1	/* LCD with positive chip select signal	*/
+	#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
