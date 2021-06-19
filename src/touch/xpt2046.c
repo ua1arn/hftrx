@@ -148,7 +148,7 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	const spitarget_t target = targettsc1;
 
 	/* top left raw data values */
-	static uint_fast16_t xrawmin = 3710;
+	static uint_fast16_t xrawmin = 3610;
 	static uint_fast16_t yrawmin = 3640;
 	/* bottom right raw data values */
 	static uint_fast16_t xrawmax = 330;
