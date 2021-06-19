@@ -7563,6 +7563,7 @@ void hightests(void)
 		colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 
 		// touch screen test
+		PRINTF(PSTR("touch screen test:\n"));
 		for (;;)
 		{
 			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();

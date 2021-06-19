@@ -18,16 +18,37 @@
 // Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO.,LTD http://www.xptek.com.cn
 // SPI interface used
 
+#define tscspeed SPIC_SPEED1M
+#define tscmode SPIC_MODE0
+
+#define XPT2046_DFR_MODE 	0x00
+#define XPT2046_SER_MODE 	0x04
+#define XPT2046_CONTROL  	0x80
+#define XPT2046_A0			0x10
+#define XPT2046_8BIT_MODE	0x08
+#define XPT2046_PD0  		0x01	// full-power (PD0 = 1), not go into power-down (PD0 = 1) ???
+#define XPT2046_PD1  		0x02
+
+enum XPTCoordinate
+{
+	XPT2046_X  = 1 * XPT2046_A0 | XPT2046_DFR_MODE,	// Длинная сторона на 320x240
+	XPT2046_Y  = 5 * XPT2046_A0 | XPT2046_DFR_MODE,	// Короткая сторона на 320x240
+	XPT2046_Z1 = 3 * XPT2046_A0 | XPT2046_DFR_MODE,
+	XPT2046_Z2 = 4 * XPT2046_A0 | XPT2046_DFR_MODE,
+	XPT2046_TEMP = 7 * XPT2046_A0 | XPT2046_SER_MODE		// Термодачик
+};
+
+#define XPT2046_Z1_THRESHOLD 10
+
 // See https://github.com/ikeji/Ender3Firmware/blob/ef1f9d25eb2cd084ce929e1ad4163ef0a3e88142/Marlin/src/feature/touch/xpt2046.cpp
 // https://github.com/Bodmer/TFT_Touch/blob/master/TFT_Touch.cpp
-
-#define targettsc1 targetext1	/* PE8 ext1 on front panel */
-
+// https://github.com/MarlinFirmware/Marlin/blob/2.0.x/Marlin/src/lcd/touch/touch_buttons.cpp
+// MKS Robin Mini/firmware/Marlin2.0-MKS-Robin_mini/Marlin/src/HAL/HAL_STM32F1/xpt2046.h
 
 #if WITHSPIHW || WITHSPISW
 
 // Read XPT2046 ADC
-static uint_fast32_t
+static uint_fast16_t
 xpt2046_read(
 	spitarget_t target,
 	uint_fast8_t cmd
@@ -38,13 +59,11 @@ xpt2046_read(
 	// где формируется время выборки, не попадала на паузу между байтами.
 	uint_fast32_t rv;
 
-	enum { CMDPOS = 16 };
+	enum { CMDPOS = 13 };
 	enum { DATAPOS = 0 };
-	const spi_speeds_t tscspeed = SPIC_SPEED4M;
-	const spi_modes_t tscmode = SPIC_MODE0;
 
-	// PD0=1 & PD1=1: Device is always powered. Reference is on and ADC is on.
-	cmd |= XPT2046_CONTROL | XPT2046_PD0 | XPT2046_PD1;
+	cmd |= XPT2046_CONTROL;
+	cmd |= XPT2046_PD0 | XPT2046_PD1;	// PD0=1 & PD1=1: Device is always powered. Reference is on and ADC is on.
 
 #if WITHSPI32BIT
 
@@ -88,7 +107,7 @@ xpt2046_read(
 
 #endif
 
-	return (rv >> DATAPOS);// & 0x0FFF;	// 12 bit ADC
+	return (rv >> DATAPOS) & 0x0FFF;	// 12 bit ADC
 }
 #endif /* WITHSPIHW || WITHSPISW */
 
@@ -126,39 +145,42 @@ tcsnormalize(
 
 uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
+	const spitarget_t target = targettsc1;
+
 	/* top left raw data values */
-	static uint_fast16_t xrawmin = 70;
-	static uint_fast16_t yrawmin = 3890;
+	static uint_fast16_t xrawmin = 3710;
+	static uint_fast16_t yrawmin = 3640;
 	/* bottom right raw data values */
-	static uint_fast16_t xrawmax = 3990;
-	static uint_fast16_t yrawmax = 150;
+	static uint_fast16_t xrawmax = 330;
+	static uint_fast16_t yrawmax = 510;
 
-	uint_fast16_t x, y;
-
-	x = xpt2046_read(targettsc1, 0x00);
-	y = xpt2046_read(targettsc1, 0x00);
+	uint_fast16_t x = xpt2046_read(target, XPT2046_X);
+	uint_fast16_t y = xpt2046_read(target, XPT2046_Y);
+	uint_fast16_t z1 = xpt2046_read(target, XPT2046_Z1);
 
 	* xr = tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
 	* yr = tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
 
-	return 0;
+	return z1 > XPT2046_Z1_THRESHOLD;
 }
-
-// MKS Robin Mini/firmware/Marlin2.0-MKS-Robin_mini/Marlin/src/HAL/HAL_STM32F1/xpt2046.h
 
 void xpt2046_initialize(void)
 {
-	PRINTF("xpt2046_initialize start.\n");
+	const spitarget_t target = targettsc1;
+	const unsigned t = xpt2046_read(target, XPT2046_TEMP);
+	PRINTF("xpt2046_initialize. t=%u\n", t);
+#if 0
 	for (;;)
 	{
-		unsigned x = xpt2046_read(targettsc1, XPT2046_X | XPT2046_DFR_MODE);
-		unsigned y = xpt2046_read(targettsc1, XPT2046_Y | XPT2046_DFR_MODE);
-		unsigned z1 = xpt2046_read(targettsc1, XPT2046_Z1 | XPT2046_DFR_MODE);
-		//unsigned z2 = xpt2046_read(targettsc1, XPT2046_Z2);
-		int st = z1 > XPT2046_Z1_THRESHOLD;
-		PRINTF("xpt2046: x=%08X, y=%08X z1=%08X, st=%d\n", x, y, z1, st);
+		const unsigned x = xpt2046_read(target, XPT2046_X);
+		const unsigned y = xpt2046_read(target, XPT2046_Y);
+		const unsigned z1 = xpt2046_read(target, XPT2046_Z1);
+		//unsigned z2 = xpt2046_read(target, XPT2046_Z2);
+		const int st = z1 > XPT2046_Z1_THRESHOLD;
+		PRINTF("xpt2046: x=%u, y=%u z1=%u, st=%d\n", x, y, z1, st);
 	}
-	PRINTF("xpt2046_initialize done.\n");
+#endif
+	//PRINTF("xpt2046_initialize done.\n");
 }
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_XPT2046) */
