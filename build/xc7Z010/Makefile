@@ -300,8 +300,8 @@ clean: version
 	-$(RM) $(OBJS)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) bitstream_ant.h
-	-$(RM) bitstream_4205.h
+	-$(RM) bitstream_ant_10.h bitstream_ant_20.h
+	-$(RM) bitstream_4205_10.h
 
 version:
 	$(CC) --version
