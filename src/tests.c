@@ -6328,6 +6328,22 @@ void hightests(void)
 		}
 	}
 #endif
+#if 0
+	{
+		unsigned pin;
+		PRINTF("zynq pin & bank calculations test.\n");
+		for (pin = 0; pin < 118; ++ pin)
+		{
+			uint_fast8_t Bank;
+			uint_fast8_t PinNumber;
+
+			GPIO_BANK_DEFINE(pin, Bank, PinNumber);
+			ASSERT(Bank == GPIO_PIN2BANK(pin));
+			ASSERT(PinNumber == GPIO_PIN2BITPOS(pin));
+		}
+		PRINTF("zynq pin & bank calculations test passed.\n");
+	}
+#endif
 #if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку

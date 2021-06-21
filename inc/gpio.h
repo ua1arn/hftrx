@@ -156,8 +156,11 @@ extern "C" {
 				0 \
 		)
 
-	#define GPIO_PIN2BANK(pin) (pin / 32)
-	#define GPIO_PIN2MASK(pin) ((portholder_t) 1 << (pin % 32))
+	//#define GPIO_PIN2BANK(pin) (pin / 32)
+	//#define GPIO_PIN2MASK(pin) ((portholder_t) 1 << ((pin) % 32))
+	#define GPIO_PIN2BANK(pin) ((pin) < 32 ? 0 : (pin) < 54 ? 1 : (pin) < 86 ? 2 : 3)
+	#define GPIO_PIN2BITPOS(pin) ((pin) < 32 ? (pin) : (pin) < 54 ? ((pin) - 32) : (pin) < 86 ? ((pin) - 54) : ((pin) - 86))
+	#define GPIO_PIN2MASK(pin) ((portholder_t) 1 << GPIO_PIN2BITPOS(pin))
 
 	#define GPIO_BANK_DEFINE(pin, Bank, PinNumber)   \
 	do { \
