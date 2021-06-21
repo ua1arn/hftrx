@@ -25,41 +25,12 @@
 	#define ARM_PLL_DIV	2
 	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
 
-	// PL Clock 0 Output control
-	// ~50 MHz
-	#define SCLR_FPGA0_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA0_CLK_CTRL_DIVISOR1 4
-
-	// PL Clock 1 Output control
-	// ~50 MHz
-	#define SCLR_FPGA1_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA1_CLK_CTRL_DIVISOR1 4
-
-	// PL Clock 2 Output control
-	// ~50 MHz
-	#define SCLR_FPGA2_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA2_CLK_CTRL_DIVISOR1 4
-
-	// PL Clock 3 Output control
-	// ~50 MHz
-	#define SCLR_FPGA3_CLK_CTRL_DIVISOR0 8
-	#define SCLR_FPGA3_CLK_CTRL_DIVISOR1 4
-
 	#define DDR_PLL_MUL 32	// DDR_PLL_CTRL.PLL_FDIV value - 1066.656 MHz
 	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
 	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz
 
 	#define SCLR_UART_CLK_CTRL_DIVISOR 16
 	#define SCLR_SDIO_CLK_CTRL_DIVISOR 16
-
-	#if WITHI2SCLOCKFROMPIN
-	#else /* WITHI2SCLOCKFROMPIN */
-		#define PLLI2SN_MUL 172		// 344.064 (192 <= PLLI2SN <= 432)
-		#define SAIREF1_MUL 172		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
-		// Частота формируется процессором
-		#define ARMI2SMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
-		#define ARMSAIMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
-	#endif /* WITHI2SCLOCKFROMPIN */
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -88,15 +59,14 @@
 	#else
 		//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
 		//#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
-		#define DIRECT_49M152_X1	1	/* Тактовый генератор 49.152 МГц */
-		#define BANDSELSTYLERE_UPCONV56M_36M	1	/* Up-conversion with working band .030..36 MHz */
+		#define DIRECT_49M152_X1	1
+		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 
 	// --- вариации прошивки, специфические для разных частот
-
-	#define CTLREGMODE_NOCTLREG	1
+	#define CTLREGMODE_ZYNQ_4205	1
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
@@ -129,6 +99,9 @@
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
 	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	//#define KEYB_FPANEL20_V0A_RA1AGO	1	/* перевернутый */
+	#define KEYBOARD_SINGLE	1
+	//#define KEYBOARD_MATRIX_4x4	1
+
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
@@ -219,10 +192,8 @@
 	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
-
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
-
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEFATFS		1	// FatFS
@@ -259,8 +230,8 @@
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	#define WITHSAI1_FRAMEBITS 64	// Полный размер фрейма - только один приемник без спектра.
-	//#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
+	//#define WITHSAI1_FRAMEBITS 64	// Полный размер фрейма - только один приемник без спектра.
+	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
 	//#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 	//#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
@@ -281,7 +252,7 @@
 	//
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	////#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
-	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -289,7 +260,7 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
 	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_ant.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
@@ -310,24 +281,27 @@
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
-	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-	#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-	#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
-	#define WITHVIEW_3DSS		1
-	//#define WITHDEFAULTVIEW		VIEW_3DSS
-	#define WITHVIEW_3DSS_MARK	1
-	#define WITHDISPLAY_FPS		25
-	#define WITHDISPLAYSWR_FPS	25
-	#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-	#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-	#if 0
-		#define WITHTOUCHGUI		1
-		//#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHALPHA			64
-		#define FORMATFROMLIBRARY 	1
-		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	#endif
+		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		#define WITHDISPLAY_FPS		25
+		#define WITHDISPLAYSWR_FPS	25
+		#define WITHSPECBETA_DEFAULT	30
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		#define WITHCPUTEMPERATURE	1
+		#if 0
+			#define WITHTOUCHGUI		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA			64
+			#define FORMATFROMLIBRARY 	1
+			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
+			#define WITHAFGAINDEFAULT	150
+			#define WITHVIEW_3DSS		1
+			#define WITHDEFAULTVIEW		VIEW_3DSS
+			#define WITHVIEW_3DSS_MARK	1
+		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
@@ -401,7 +375,6 @@
 		#define SHORTSET7	1
 	#endif
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
-
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
@@ -480,7 +453,7 @@
 
 	#define MODEL_DIRECT	1	/* использовать прямой синтез, а не гибридный */
 	/* Board hardware configuration */
-	#define DDS1_TYPE DDS_TYPE_FPGAV1
+	#define DDS1_TYPE DDS_TYPE_ZYNQ_PL
 	//#define PLL1_TYPE PLL_TYPE_SI570
 	//#define PLL1_FRACTIONAL_LENGTH	28	/* Si570: lower 28 bits is a fractional part */
 	//#define DDS1_TYPE DDS_TYPE_AD9951
@@ -489,6 +462,7 @@
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	//#define RTC1_TYPE RTC_TYPE_STM32F4xx	/* STM32F4xx/STM32F7xx internal RTC peripherial */
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_GT911
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
@@ -498,7 +472,7 @@
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	//#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z

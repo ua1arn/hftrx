@@ -415,7 +415,7 @@ u16 XAdcPs_GetMinMaxMeasurement(XAdcPs *InstancePtr, u8 MeasurementType)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
 	Xil_AssertNonvoid((MeasurementType <= XADCPS_MAX_VCCPDRO) ||
 			((MeasurementType >= XADCPS_MIN_VCCPINT) &&
-			(MeasurementType <= XADCPS_MIN_VCCPDRO)))
+			(MeasurementType <= XADCPS_MIN_VCCPDRO)));
 
 	/*
 	 * Read and return the specified Minimum/Maximum measurement.

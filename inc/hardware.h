@@ -791,6 +791,7 @@ void i2c2_waitsend(void);	// Вызвать после последнего i2c_
 void i2c2_stop(void);
 
 void hardware_twi_master_configure(void);
+void i2chw_initialize(void);
 
 uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size);
 uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size);

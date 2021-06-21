@@ -1428,9 +1428,8 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 #include "lib/zynq/src/xiicps.h"
 
 static XIicPs xc7z_iicps;
-static uint16_t iic_address = 0;
 
-void i2c_initialize(void)
+void i2chw_initialize(void)
 {
 	XIicPs_Config *Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);
 	XIicPs_CfgInitialize(& xc7z_iicps, Config, Config->BaseAddress);
@@ -1467,60 +1466,14 @@ uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
 
 	return Status;
 }
-
-void i2c_start(uint_fast8_t address)
-{
-	iic_address = address;
-}
-
-void i2c_waitsend(void)
-{
-	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
-}
-
-void i2c_stop(void)
-{
-	iic_address = 0;
-}
-
-void i2c_write(uint_fast8_t byte)
-{
-	if (iic_address)
-	{
-		uint8_t buf = byte;
-		int Status = i2chw_write(iic_address, & buf, 1);
-		if (Status != XST_SUCCESS) {
-			PRINTF("iicps send error %d\n", Status);
-		}
-	}
-	else
-		PRINTF("iicps send: not ready\n");
-}
-
-void i2c_write_withrestart(uint_fast8_t data)
-{
-	i2c_write(data);
-}
-
-void i2c_read(uint8_t * data, uint_fast8_t ack_type)
-{
-	if (iic_address)
-	{
-		int Status = i2chw_read(iic_address, data, 1);
-		if (Status != XST_SUCCESS) {
-			PRINTF("iicps receive error %d\n", Status);
-		}
-	}
-	else
-		PRINTF("iicps receive: not ready\n");
-}
-
 #else
 	#error I2C hardware implementation for CPUSTYPE_xxx is not avaliable
 
 #endif // CPUSTYLE_ATMEGA
 
-#elif WITHTWISW
+#endif
+
+#if WITHTWISW
 
 // программно-реализованный I2C интерфейс
 
@@ -1550,6 +1503,9 @@ void i2c_initialize(void)
 	// программирование выводов, управляющих I2C
 	TWISOFT_INITIALIZE();
 
+#if WITHTWIHW
+	TWIHARD_INITIALIZE();
+#endif
 
 #if 0
 	uint_fast8_t i;

@@ -67,19 +67,22 @@ static void gt911_intconnect(void)
 
 void gt911_set_reg(uint_fast16_t reg)
 {
-#if WITHTWISW
+#if WITHTWIHW
+	uint8_t buf[2] = { (reg >> 8), (reg & 0xFF), };
+	i2chw_write(gt911_addr, buf, 2);
+#elif WITHTWISW
 	i2c_start(gt911_addr);
 	i2c_write(reg >> 8);
 	i2c_write(reg & 0xFF);
-#elif WITHTWIHW
-	uint8_t buf[2] = { (reg >> 8), (reg & 0xFF), };
-	i2chw_write(gt911_addr, buf, 2);
 #endif
 }
 
 void gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 {
-#if WITHTWISW
+#if WITHTWIHW
+	gt911_set_reg(reg);
+	i2chw_read(gt911_addr, buf, len);
+#elif WITHTWISW
 	uint_fast8_t k = 0;
 
 	gt911_set_reg(reg);
@@ -102,22 +105,19 @@ void gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 		}
 		i2c_read(buf ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
 	}
-#elif WITHTWIHW
-	gt911_set_reg(reg);
-	i2chw_read(gt911_addr, buf, len);
 #endif
 }
 
 void gt911_write_reg(uint_fast16_t reg, uint8_t val)
 {
-#if WITHTWISW
+#if WITHTWIHW
+	uint8_t buf[3] = { (reg >> 8), (reg & 0xFF), val, };
+	i2chw_write(gt911_addr, buf, 3);
+#elif WITHTWISW
 	i2c_start(gt911_addr);
 	i2c_write(reg >> 8);
 	i2c_write(reg & 0xFF);
 	i2c_write(val);
-#elif WITHTWIHW
-	uint8_t buf[3] = { (reg >> 8), (reg & 0xFF), val, };
-	i2chw_write(gt911_addr, buf, 3);
 #endif
 }
 

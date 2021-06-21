@@ -20,7 +20,7 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -164,8 +164,8 @@
  *	Top side:
  *  A19	MIO16 (R2608 left)	COL4_MIO
  *  B18	MIO18 (R2609 left)	COL2_MIO
- *  A15	MIO26 (X3 6)		scl iicps hw, external pullup needed
- *  D13	MIO27 (X3 5)		sda iicps hw, external pullup needed
+ *  A15	MIO26 (X3 6)
+ *  D13	MIO27 (X3 5)
  *  С18	MIO39 (R2444 left)	COL3_MIO
  *  D16	MIO46 (R2445B left)	COL1_MIO
  *  B14	MIO47 (R2446 left)	ROW3_MIO
@@ -625,7 +625,7 @@
 			xc7z_writepin(TARGET_NVRAM_MIO, 1);		\
 		} while(0)
 
-	/* инициализация лиий выбора периферийных микросхем */
+	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
 			xc7z_gpio_output(TARGET_NVRAM_MIO); \
@@ -720,12 +720,12 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	#define TARGET_TWI_TWCK_MIO			66		// EMIO 58
-	#define TARGET_TWI_TWD_MIO			67		// EMIO 57
+	#define TARGET_TWI_TWCK_MIO			58		// EMIO 58
+	#define TARGET_TWI_TWD_MIO			57		// EMIO 57
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { } while (0)
+	#define	TWIHARD_INITIALIZE() do { i2chw_initialize(); } while (0)
 
 
 #endif // WITHTWISW
