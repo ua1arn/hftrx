@@ -109,12 +109,6 @@ uint8_t xc7z_readpin(uint8_t pin)
 
 void xc7z_writepin(uint8_t pin, uint8_t val)
 {
-	if (pin < ZYNQ_MIO_CNT)
-	{
-		//gpio_pin_output_state(pin, val);
-		//return;
-	}
-
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
 
@@ -128,7 +122,7 @@ void xc7z_writepin(uint8_t pin, uint8_t val)
 
 	if (PinNumber > 15U) {
 		/* There are only 16 data bits in bit maskable register. */
-		PinNumber -= (uint8_t)16;
+		PinNumber -= 16;
 		RegOffset = XGPIOPS_DATA_MSW_OFFSET;
 	} else {
 		RegOffset = XGPIOPS_DATA_LSW_OFFSET;
@@ -139,7 +133,7 @@ void xc7z_writepin(uint8_t pin, uint8_t val)
 	 * the upper 16 bits is the mask and lower 16 bits is the data.
 	 */
 	DataVar &= (uint32_t)0x01;
-	Value = ~((uint32_t)1 << (PinNumber + 16U)) & ((DataVar << PinNumber) | 0xFFFF0000U);
+	Value = ~((uint32_t)1 << (PinNumber + 16)) & ((DataVar << PinNumber) | 0xFFFF0000U);
 	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
 			((uint32_t)(Bank) * XGPIOPS_DATA_MASK_OFFSET) +
 			RegOffset, Value);
@@ -149,11 +143,8 @@ void xc7z_gpio_input(uint8_t pin)
 {
 	if (pin < ZYNQ_MIO_CNT)
 	{
-		gpio_input(pin);
-		return;
+		MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 	}
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (1uL << 22);	// APER_CLK_CTRL.GPIO_CPU_1XCLKACT
 
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
@@ -178,11 +169,8 @@ void xc7z_gpio_output(uint8_t pin)
 {
 	if (pin < ZYNQ_MIO_CNT)
 	{
-		gpio_output(pin, 1);
-		//return;
+		MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 	}
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (1uL << 22);	// APER_CLK_CTRL.GPIO_CPU_1XCLKACT
 
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
@@ -192,18 +180,20 @@ void xc7z_gpio_output(uint8_t pin)
 
 	GPIO_BANK_DEFINE();
 
+	// XGPIOPS_DIRM_OFFSET = 0x00000204U
 	uint32_t DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
 			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
 			XGPIOPS_DIRM_OFFSET);
-	DirModeReg |= ((uint32_t)1 << (uint32_t)PinNumber);
+	DirModeReg |= ((uint32_t)1 << PinNumber);
 	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
 			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
 			XGPIOPS_DIRM_OFFSET, DirModeReg);
 
+	// XGPIOPS_OUTEN_OFFSET = 0x0208
 	uint32_t OpEnableReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
 			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
 			XGPIOPS_OUTEN_OFFSET);
-	OpEnableReg |= ((uint32_t)1 << (uint32_t)PinNumber);
+	OpEnableReg |= ((uint32_t)1 << PinNumber);
 	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
 			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
 			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
