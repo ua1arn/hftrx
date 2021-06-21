@@ -277,11 +277,11 @@ $(OBJSA) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS) $(ZYNQLIB)
+%_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS) $(ZYNQLIB)
+%_app.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
