@@ -34,6 +34,8 @@ void xc7z_hardware_initialize(void)
 {
 	int Status;
 
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (1uL << 22);	// APER_CLK_CTRL.GPIO_CPU_1XCLKACT
 	// GPIO PS init
 	XGpioPs_Config * gpiocfg = XGpioPs_LookupConfig(XPAR_XGPIOPS_0_DEVICE_ID);
 	Status = XGpioPs_CfgInitialize(& xc7z_gpio, gpiocfg, gpiocfg->BaseAddr);
@@ -61,6 +63,32 @@ float xc7z_get_cpu_temperature(void)
 	u32 TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
 	return XAdcPs_RawToTemperature(TempRawData);
 }
+
+#define GPIO_BANK_DEFINE()	do { Bank = pin / 32, PinNumber = pin % 32; } while(0)
+
+#define GPIO_BANK_DEFINEx()    do {                                    \
+                                if (pin <= 31)                        \
+                                {                                    \
+                                    Bank = 0;                        \
+                                    PinNumber = pin;                \
+                                }                                    \
+                                else if (pin >= 32 && pin <= 53)    \
+                                {                                    \
+                                    Bank = 1;                        \
+                                    PinNumber = pin - 32;            \
+                                }                                    \
+                                else if (pin >= 54 && pin <= 85)    \
+                                {                                    \
+                                    Bank = 2;                        \
+                                    PinNumber = pin - 54;            \
+                                }                                    \
+                                else if (pin >= 86 && pin <= 117)    \
+                                {                                    \
+                                    Bank = 3;                        \
+                                    PinNumber = pin - 86;            \
+                                }                                    \
+                            } while(0)
+
 
 uint8_t xc7z_readpin(uint8_t pin)
 {
@@ -113,6 +141,9 @@ void xc7z_writepin(uint8_t pin, uint8_t val)
 
 void xc7z_gpio_input(uint8_t pin)
 {
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (1uL << 22);	// APER_CLK_CTRL.GPIO_CPU_1XCLKACT
+
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
 
@@ -134,6 +165,9 @@ void xc7z_gpio_input(uint8_t pin)
 
 void xc7z_gpio_output(uint8_t pin)
 {
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (1uL << 22);	// APER_CLK_CTRL.GPIO_CPU_1XCLKACT
+
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
 
