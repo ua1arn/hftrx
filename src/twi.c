@@ -1431,6 +1431,10 @@ static XIicPs xc7z_iicps;
 
 void i2chw_initialize(void)
 {
+	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
+
 	XIicPs_Config *Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);
 	XIicPs_CfgInitialize(& xc7z_iicps, Config, Config->BaseAddress);
 
