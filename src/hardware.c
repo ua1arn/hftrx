@@ -64,9 +64,9 @@ float xc7z_get_cpu_temperature(void)
 	return XAdcPs_RawToTemperature(TempRawData);
 }
 
-#define GPIO_BANK_DEFINE()	do { Bank = pin / 32, PinNumber = pin % 32; } while(0)
+#define GPIO_BANK_DEFINEx()	do { Bank = pin / 32, PinNumber = pin % 32; } while(0)
 
-#define GPIO_BANK_DEFINEx()    do {                                    \
+#define GPIO_BANK_DEFINE()    do {                                    \
                                 if (pin <= 31)                        \
                                 {                                    \
                                     Bank = 0;                        \
