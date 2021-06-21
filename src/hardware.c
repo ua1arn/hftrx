@@ -111,8 +111,8 @@ void xc7z_writepin(uint8_t pin, uint8_t val)
 {
 	if (pin < ZYNQ_MIO_CNT)
 	{
-		gpio_pin_output_state(pin, val);
-		return;
+		//gpio_pin_output_state(pin, val);
+		//return;
 	}
 
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
@@ -179,7 +179,7 @@ void xc7z_gpio_output(uint8_t pin)
 	if (pin < ZYNQ_MIO_CNT)
 	{
 		gpio_output(pin, 1);
-		return;
+		//return;
 	}
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (1uL << 22);	// APER_CLK_CTRL.GPIO_CPU_1XCLKACT
