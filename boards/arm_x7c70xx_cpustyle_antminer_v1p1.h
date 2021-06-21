@@ -400,12 +400,12 @@
 					(46uL << 16) |	/* 46 SDIO 0 CD Select */ \
 					(50uL << 0) |	/* 50 SDIO 0 WP Select */ \
 					0; \
-			mio_mode(40, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
-			mio_mode(41, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
-			mio_mode(42, 0x00001680uL);	/*  PS_MIO42_CD_D0 */ \
-			mio_mode(43, 0x00001680uL);	/*  PS_MIO43_CD_D1 */ \
-			mio_mode(44, 0x00001680uL);	/*  PS_MIO44_CD_D2 */ \
-			mio_mode(45, 0x00001680uL);	/*  PS_MIO45_CD_D3 */ \
+			MIO_SET_MODE(40, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
+			MIO_SET_MODE(41, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
+			MIO_SET_MODE(42, 0x00001680uL);	/*  PS_MIO42_CD_D0 */ \
+			MIO_SET_MODE(43, 0x00001680uL);	/*  PS_MIO43_CD_D1 */ \
+			MIO_SET_MODE(44, 0x00001680uL);	/*  PS_MIO44_CD_D2 */ \
+			MIO_SET_MODE(45, 0x00001680uL);	/*  PS_MIO45_CD_D3 */ \
 		} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
 		} while (0)
@@ -628,8 +628,8 @@
 	// antminer
 	// WITHUART2HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		mio_mode(48, 0x000016E0uL);	/*  MIO_PIN_48 UART1_TXD */ \
-		mio_mode(49, 0x000016E1uL);	/*  MIO_PIN_49 UART1_RXD */ \
+		MIO_SET_MODE(48, 0x000016E0uL);	/*  MIO_PIN_48 UART1_TXD */ \
+		MIO_SET_MODE(49, 0x000016E1uL);	/*  MIO_PIN_49 UART1_RXD */ \
 		} while (0)
 
 #endif /* WITHUART2HW */

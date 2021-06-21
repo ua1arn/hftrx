@@ -64,41 +64,16 @@ float xc7z_get_cpu_temperature(void)
 	return XAdcPs_RawToTemperature(TempRawData);
 }
 
-#define GPIO_BANK_DEFINEx()	do { Bank = pin / 32, PinNumber = pin % 32; } while(0)
-
-#define GPIO_BANK_DEFINE()    do {                                    \
-                                if (pin <= 31)                        \
-                                {                                    \
-                                    Bank = 0;                        \
-                                    PinNumber = pin;                \
-                                }                                    \
-                                else if (pin >= 32 && pin <= 53)    \
-                                {                                    \
-                                    Bank = 1;                        \
-                                    PinNumber = pin - 32;            \
-                                }                                    \
-                                else if (pin >= 54 && pin <= 85)    \
-                                {                                    \
-                                    Bank = 2;                        \
-                                    PinNumber = pin - 54;            \
-                                }                                    \
-                                else if (pin >= 86 && pin <= 117)    \
-                                {                                    \
-                                    Bank = 3;                        \
-                                    PinNumber = pin - 86;            \
-                                }                                    \
-                            } while(0)
-
 
 uint8_t xc7z_readpin(uint8_t pin)
 {
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
 
-	uint8_t Bank = 0;
-	uint8_t PinNumber = 0;
+	uint_fast8_t Bank;
+	uint_fast8_t PinNumber;
 
-	GPIO_BANK_DEFINE();
+	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
 
 	uint8_t val = (XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
 			((uint32_t)(Bank) * XGPIOPS_DATA_BANK_OFFSET) +
@@ -112,13 +87,16 @@ void xc7z_writepin(uint8_t pin, uint8_t val)
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
 
-	uint8_t Bank = 0;
-	uint8_t PinNumber = 0;
+	uint_fast8_t Bank;
+	uint_fast8_t PinNumber;
 	uint32_t RegOffset;
 	uint32_t DataVar = val;
 	uint32_t Value;
 
-	GPIO_BANK_DEFINE();
+	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
+
+	GPIO_BANK_OUTPUT_STATE(Bank, 1uL << PinNumber, !! val << PinNumber);
+	return;
 
 	if (PinNumber > 15U) {
 		/* There are only 16 data bits in bit maskable register. */
@@ -149,10 +127,10 @@ void xc7z_gpio_input(uint8_t pin)
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
 
-	uint8_t Bank = 0;
-	uint8_t PinNumber = 0;
+	uint_fast8_t Bank;
+	uint_fast8_t PinNumber;
 
-	GPIO_BANK_DEFINE();
+	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
 
 	uint32_t DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
 			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
@@ -175,10 +153,10 @@ void xc7z_gpio_output(uint8_t pin)
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);
 
-	uint8_t Bank = 0;
-	uint8_t PinNumber = 0;
+	uint_fast8_t Bank;
+	uint_fast8_t PinNumber;
 
-	GPIO_BANK_DEFINE();
+	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
 
 	// XGPIOPS_DIRM_OFFSET = 0x00000204U
 	uint32_t DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
