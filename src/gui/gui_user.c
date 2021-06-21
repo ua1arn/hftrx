@@ -610,7 +610,7 @@ static void gui_main_process(void)
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
 	local_snprintf_P(buf, buflen, PSTR("%2.1f"), cpu_temp);
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y2, buf, cpu_temp > 60.0 ? COLORMAIN_RED : COLORMAIN_WHITE);
-#endif /* CPUSTYLE_XC7Z */
+#endif /* WITHCPUTEMPERATURE */
 
 	current_place ++;	// 8
 

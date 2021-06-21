@@ -6328,7 +6328,7 @@ void hightests(void)
 		}
 	}
 #endif
-#if 0 && WITHOPENVG
+#if 1 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
 		board_update();
@@ -6353,7 +6353,11 @@ void hightests(void)
 			rendertest2(DIM_X, DIM_Y);
 			display_flush();		// наблюдаем процесс
 			const time_t end = time(NULL);
-			PRINTF("tiger: cnt=%u, %d S\n", cnt, (int) (end - start));
+#if WITHCPUTEMPERATURE
+		PRINTF("tiger: cnt=%u, %d s, t=%f\n", cnt, (int) (end - start), GET_CPU_TEMPERATURE());
+#else /* WITHCPUTEMPERATURE */
+		PRINTF("tiger: cnt=%u, %d s\n", cnt, (int) (end - start));
+#endif /* WITHCPUTEMPERATURE */
 		}
 		PS_destruct(tiger);
 
