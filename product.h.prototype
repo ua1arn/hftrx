@@ -252,7 +252,8 @@
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 1
-	#include "boards/arm_x7c70xx_ctlstyle_antminer_v1p1.h"
+	#include "boards/arm_x7c70xx_ctlstyle_antminer_20_v1p1.h"	// 7020
+	//#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_x7c70xx_cpustyle_antminer_v1p1.h"
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7
