@@ -996,7 +996,7 @@
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 #if 1
-	#define ZYNQBOARD_BLINK_LED 58 /* LED_R */
+	#define ZYNQBOARD_BLINK_LED 37 /* PS_MIO37_LED_R LED_R */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 		xc7z_gpio_output(ZYNQBOARD_BLINK_LED); \
