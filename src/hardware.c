@@ -109,14 +109,14 @@ uint8_t xc7z_readpin(uint8_t pin)
 
 void xc7z_writepin(uint8_t pin, uint8_t val)
 {
-	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
-	ASSERT(pin < xc7z_gpio.MaxPinNum);
-
 	if (pin < ZYNQ_MIO_CNT)
 	{
 		gpio_pin_output_state(pin, val);
 		return;
 	}
+
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
 
 	uint8_t Bank = 0;
 	uint8_t PinNumber = 0;
