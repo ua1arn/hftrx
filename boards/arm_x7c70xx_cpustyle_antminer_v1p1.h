@@ -1000,17 +1000,14 @@
 	#define ZYNQBOARD_LED_GREEN 38 /* PS_MIO38_LED_G */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		/*xc7z_gpio_output(ZYNQBOARD_LED_RED); */\
-		gpio_output(ZYNQBOARD_LED_RED, 1); \
+			xc7z_gpio_output(ZYNQBOARD_LED_RED); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
 			{ \
-				/*xc7z_writepin(ZYNQBOARD_LED_RED, 1); */\
-				gpio_pin_output_state(ZYNQBOARD_LED_RED, 1); \
+				xc7z_writepin(ZYNQBOARD_LED_RED, 1); \
 			} else { \
-				/*xc7z_writepin(ZYNQBOARD_LED_RED, 0); */\
-				gpio_pin_output_state(ZYNQBOARD_LED_RED, 0); \
+				xc7z_writepin(ZYNQBOARD_LED_RED, 0); \
 			} \
 		} while (0)
 
