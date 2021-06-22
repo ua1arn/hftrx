@@ -4,7 +4,7 @@ rst -system
 after 3000
 #targets -set -filter {jtag_cable_name =~ "Xilinx Virtual Cable localhost:2542" && level==0 && jtag_device_ctx=="jsn-XVC-localhost:2542-13722093-0"}
 targets -set -filter {jtag_cable_name =~ "Platform Cable USB II 13724327082a01" && level==0 && jtag_device_ctx=="jsn-DLC10-13724327082a01-4ba00477-0"}
-fpga -file bitstream_ant.bit
+fpga -file bitstream_ant_20.bit
 configparams force-mem-access 1
 targets -set -nocase -filter {name =~"APU*"}
 source ps7_init_ant.tcl
