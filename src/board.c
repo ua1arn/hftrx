@@ -609,60 +609,63 @@ static void setlevelindicator(long code)	// в кодах ЦАП
 static void 
 prog_gpioreg(void)
 {
+#if defined (PREAMP_MIO)
+	xc7z_gpio_output(PREAMP_MIO);
+	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
+#endif /* defined (PREAMP_MIO) */
+#if LS020_RESET
+	LS020_RESET_SET(glob_lcdreset);	// LCD reset bit
+#endif /* LS020_RESET */
 
-	#if LS020_RESET
-		LS020_RESET_SET(glob_lcdreset);	// LCD reset bit
-	#endif /* LS020_RESET */
+#if TARGET_CS4272_RESET_BIT
+	// CODEC2 reset
+	if (glob_codec2_nreset == 0)
+		TARGET_CS4272_RESET_PORT_S(TARGET_CS4272_RESET_BIT);
+	else
+		TARGET_CS4272_RESET_PORT_C(TARGET_CS4272_RESET_BIT);
+#endif /* TARGET_CS4272_RESET_BIT */
 
-	#if TARGET_CS4272_RESET_BIT
-		// CODEC2 reset
-		if (glob_codec2_nreset == 0)
-			TARGET_CS4272_RESET_PORT_S(TARGET_CS4272_RESET_BIT);
-		else
-			TARGET_CS4272_RESET_PORT_C(TARGET_CS4272_RESET_BIT);
-	#endif /* TARGET_CS4272_RESET_BIT */
+#if TARGET_DDSRESET_BIT
+	// DDS RESET
+	if (glob_reset_n == 0)
+		TARGET_DDSRESET_PORT_S(TARGET_DDSRESET_BIT);
+	else
+		TARGET_DDSRESET_PORT_C(TARGET_DDSRESET_BIT);
+#endif /* TARGET_DDSRESET_BIT */
 
-	#if TARGET_DDSRESET_BIT
-		// DDS RESET
-		if (glob_reset_n == 0)
-			TARGET_DDSRESET_PORT_S(TARGET_DDSRESET_BIT);
-		else
-			TARGET_DDSRESET_PORT_C(TARGET_DDSRESET_BIT);
-	#endif /* TARGET_DDSRESET_BIT */
+#if defined (TARGET_BAND_DATA_SET)
+	// Band select
+	TARGET_BAND_DATA_SET(glob_bandf);
+#endif /* defined (TARGET_BAND_DATA_SET) */
 
-	#if defined (TARGET_BAND_DATA_SET)
-		// Band select
-		TARGET_BAND_DATA_SET(glob_bandf);
-	#endif /* defined (TARGET_BAND_DATA_SET) */
+#if defined (TARGET_BANDF3_DATA_TX_SET)
+	// Band select
+	TARGET_BANDF3_DATA_TX_SET(glob_bandf3, glob_tx);
+#endif /* defined (TARGET_BANDF3_DATA_TX_SET) */
 
-	#if defined (TARGET_BANDF3_DATA_TX_SET)
-		// Band select
-		TARGET_BANDF3_DATA_TX_SET(glob_bandf3, glob_tx);
-	#endif /* defined (TARGET_BANDF3_DATA_TX_SET) */
+#if defined (HARDWARE_SDIOPOWER_SET)
+	// SD CARD POWER ENABLE BIT
+	HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
+#endif /* defined (HARDWARE_SDIOPOWER_SET) */
 
-	#if defined (HARDWARE_SDIOPOWER_SET)
-		// SD CARD POWER ENABLE BIT
-		HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
-	#endif /* defined (HARDWARE_SDIOPOWER_SET) */
+#if defined (TARGET_USBFS_VBUSON_SET)
+	// USB FLASH POWER ENABLE BIT
+	TARGET_USBFS_VBUSON_SET(glob_hostvbuson);
+#endif /* defined (TARGET_USBFS_VBUSON_SET) */
 
-	#if defined (TARGET_USBFS_VBUSON_SET)
-		// USB FLASH POWER ENABLE BIT
-		TARGET_USBFS_VBUSON_SET(glob_hostvbuson);
-	#endif /* defined (TARGET_USBFS_VBUSON_SET) */
+#if defined (HARDWARE_BL_SET)
+	// яркость подсветки
+	HARDWARE_BL_SET(! glob_bglightoff, glob_bglight);
+#endif /* defined (HARDWARE_BL_SET) */
 
-	#if defined (HARDWARE_BL_SET)
-		// яркость подсветки
-		HARDWARE_BL_SET(! glob_bglightoff, glob_bglight);
-	#endif /* defined (HARDWARE_BL_SET) */
-
-	#if defined (HARDWARE_DAC_ALC)
-	//#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
-		// ALC
-		// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
-		//HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-		HARDWARE_DAC_ALC((WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-	//#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
-	#endif /* defined (HARDWARE_DAC_ALC) */
+#if defined (HARDWARE_DAC_ALC)
+//#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
+	// ALC
+	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
+	//HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
+	HARDWARE_DAC_ALC((WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
+//#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
+#endif /* defined (HARDWARE_DAC_ALC) */
 }
 
 
@@ -4776,8 +4779,9 @@ static void
 //NOINLINEAT
 prog_ctrlreg(uint_fast8_t plane)
 {
-	xc7z_gpio_output(PREAMP_MIO);
-	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
+// Перенес в prog_gpioreg
+//	xc7z_gpio_output(PREAMP_MIO);
+//	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
 }
 
 #elif CTLREGMODE_NOCTLREG
