@@ -186,7 +186,7 @@
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
 #endif /* WITHCPUTEMPERATURE */
 
-#define PREAMP_MIO	63
+//#define PREAMP_MIO	63
 
 #define LS020_RS_INITIALIZE() \
 	do { \
