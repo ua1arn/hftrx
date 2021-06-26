@@ -6492,10 +6492,19 @@ void hightests(void)
 		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
 	}
 #endif
-#if 0 && CPUSTYLE_STM32MP1
+#if 0 && CPUSTYLE_STM32MP1 && WITHDEBUG
 	{
 		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
 		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
+	}
+#endif
+#if 1 && defined (DDRPHYC) && WITHDEBUG
+	{
+		// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
+		PRINTF("stm32mp1_ddr_init results: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
+				DDRPHYC->DX0DQSTR, DDRPHYC->DX1DQSTR,
+				DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
+
 	}
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
