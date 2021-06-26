@@ -98,62 +98,74 @@ static uint8_t USBD_GetLen(uint8_t *buf);
   */
 USBD_StatusTypeDef USBD_StdDevReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-  USBD_StatusTypeDef ret = USBD_OK;
+	USBD_StatusTypeDef ret = USBD_OK;
 
-  switch (req->bmRequest & USB_REQ_TYPE_MASK)
-  {
-    case USB_REQ_TYPE_CLASS:
-    case USB_REQ_TYPE_VENDOR:
-      //ret = (USBD_StatusTypeDef)pdev->pClass->Setup(pdev, req);
+	switch (req->bmRequest & USB_REQ_TYPE_MASK)
+	{
+	case USB_REQ_TYPE_CLASS:
+	case USB_REQ_TYPE_VENDOR:
+		//ret = (USBD_StatusTypeDef)pdev->pClass->Setup(pdev, req);
 		for (unsigned di = 0; di < pdev->nClasses; ++ di)
 		{
 			pdev->pClasses [di]->Setup(pdev, req);
 		}
-      break;
+		break;
 
-    case USB_REQ_TYPE_STANDARD:
-      switch (req->bRequest)
-      {
-        case USB_REQ_GET_DESCRIPTOR:
-          USBD_GetDescriptor(pdev, req);
-          break;
+	case USB_REQ_TYPE_STANDARD:
+		switch (req->bRequest)
+		{
+		case USB_REQ_GET_DESCRIPTOR:
+			USBD_GetDescriptor(pdev, req);
+			break;
 
-        case USB_REQ_SET_ADDRESS:
-          USBD_SetAddress(pdev, req);
-          break;
+		case USB_REQ_SET_ADDRESS:
+			USBD_SetAddress(pdev, req);
+			break;
 
-        case USB_REQ_SET_CONFIGURATION:
-          ret = USBD_SetConfig(pdev, req);
-          break;
+		case USB_REQ_SET_CONFIGURATION:
+			ret = USBD_SetConfig(pdev, req);
+			break;
 
-        case USB_REQ_GET_CONFIGURATION:
-          USBD_GetConfig(pdev, req);
-          break;
+		case USB_REQ_GET_CONFIGURATION:
+			USBD_GetConfig(pdev, req);
+			break;
 
-        case USB_REQ_GET_STATUS:
-          USBD_GetStatus(pdev, req);
-          break;
+		case USB_REQ_GET_STATUS:
+			USBD_GetStatus(pdev, req);
+			break;
 
-        case USB_REQ_SET_FEATURE:
-          USBD_SetFeature(pdev, req);
-          break;
+		case USB_REQ_SET_FEATURE:
+			USBD_SetFeature(pdev, req);
+			break;
 
-        case USB_REQ_CLEAR_FEATURE:
-          USBD_ClrFeature(pdev, req);
-          break;
+		case USB_REQ_CLEAR_FEATURE:
+			USBD_ClrFeature(pdev, req);
+			break;
 
-        default:
-          USBD_CtlError(pdev, req);
-          break;
-      }
-      break;
+		case USBD_WCID_VENDOR_CODE:
+			// WCID devices support
+			if (MsftCompFeatureDescr [0].size != 0)
+			{
+				USBD_CtlSendData(pdev, MsftCompFeatureDescr [0].data, MIN(MsftCompFeatureDescr [0].size, req->wLength));
+			}
+			else
+			{
+				USBD_CtlError(pdev, req);
+			}
+			break;
 
-    default:
-      USBD_CtlError(pdev, req);
-      break;
-  }
+		default:
+			USBD_CtlError(pdev, req);
+			break;
+		}
+		break;
 
-  return ret;
+	default:
+		USBD_CtlError(pdev, req);
+		break;
+	}
+
+	return ret;
 }
 
 /**
