@@ -6494,6 +6494,9 @@ void hightests(void)
 #endif
 #if 0 && CPUSTYLE_STM32MP1 && WITHDEBUG
 	{
+		unsigned long stm32mp1_get_per_freq(void);
+		unsigned long stm32mp1_get_axiss_freq(void);
+
 		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
 		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
 	}
@@ -7488,10 +7491,15 @@ void hightests(void)
 		//disableAllIRQs();
 		for (cnt = 0; ; ++ cnt)
 		{
+			const time_t tstart = time(NULL);
 			//GridTest();
 			BarTest();
-			PRINTF("BarTest: %u\n", cnt);
+			const time_t tend = time(NULL);
+			PRINTF("BarTest: %u, %ds, pixelsize=%d\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE);
 		}
+		// @650 MHz, L8, soft: 33s
+		// @650 MHz, L8, MDMA: 33s
+		// @650 MHz, RGB565, MDMA: 33s
 	}
 #endif
 #if 0
