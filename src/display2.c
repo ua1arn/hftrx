@@ -6773,7 +6773,7 @@ typedef struct {
 	uint_fast16_t h;
 	float32_t max_val;
 	float32_t val_array [DIM_X];
-	arm_rfft_fast_instance_f32 instance;
+	arm_rfft_fast_instance_f32 rfft_instance;
 } afsp_t;
 
 #endif /* WITHAFSPECTRE */
@@ -6980,7 +6980,7 @@ display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx
 	gvars.afsp.h = 40;
 	gvars.afsp.is_ready = 0;
 
-	VERIFY(ARM_MATH_SUCCESS == arm_rfft_fast_init_f32(& gvars.afsp.instance, WITHFFTSIZEAF));
+	VERIFY(ARM_MATH_SUCCESS == arm_rfft_fast_init_f32(& gvars.afsp.rfft_instance, WITHFFTSIZEAF));
 
 	int i;
 	for (i = 0; i < WITHFFTSIZEAF; ++ i)
@@ -7009,7 +7009,7 @@ display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pct
 		// осталась половина буфера
 
 		arm_mult_f32(gvars.afsp.raw_buf, gvars.afspec_wndfn, gvars.afsp.raw_buf, WITHFFTSIZEAF); // apply window function
-		arm_rfft_fast_f32(& gvars.afsp.instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0); // 0-прямое, 1-обратное
+		arm_rfft_fast_f32(& gvars.afsp.rfft_instance, gvars.afsp.raw_buf, gvars.afsp.fft_buf, 0); // 0-прямое, 1-обратное
 		gvars.afsp.is_ready = 0;	// буфер больше не нужен... но он заполняется так же в user mode
 		arm_cmplx_mag_f32(gvars.afsp.fft_buf, gvars.afsp.fft_buf, WITHFFTSIZEAF);
 
@@ -7308,9 +7308,9 @@ static void fftzoom_filer_decimate_ifspectrum(
 	float32_t IIRCoeffs_NEON [ZOOMFFT_DECIM_STAGES_IIR * 32];
 
 	// Initialize floating-point Biquad cascade filter.
-	arm_copy_f32(prm->pIIRCoeffs, IIRCoeffs_NEON, ZOOMFFT_DECIM_STAGES_IIR * 5);
+	//arm_copy_f32(prm->pIIRCoeffs, IIRCoeffs_NEON, ZOOMFFT_DECIM_STAGES_IIR * 5);
     arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, IIRCoeffs_NEON, gvars.iir_state);
-    arm_biquad_cascade_df2T_compute_coefs_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, IIRCoeffs_NEON);
+    arm_biquad_cascade_df2T_compute_coefs_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs);
 
 #else /* defined(ARM_MATH_NEON) */
 	// Initialize floating-point Biquad cascade filter.
@@ -7653,8 +7653,8 @@ display2_wfl_init(
 
 	fft_avg_clear();	// Сброс фильтра
 	wfl_avg_clear();	// Сброс фильтра
-	wflclear0();	// Очистка водопада (без учета последней записаной строки)
 
+	wflclear0();	// Очистка водопада (без учета последней записаной строки)
 	uint_fast16_t y;
 	for (y = 0; y < WFROWS; ++ y)
 	{
