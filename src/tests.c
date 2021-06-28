@@ -5157,7 +5157,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 
 
 
@@ -5209,7 +5209,7 @@ static void BarTest(void)
 {
 	//PRINTF("BarTest\n");
 	int forever = 0;
-	unsigned n = 2000;
+	unsigned n = 20000;
 	for (;forever || n --;)
 	{                    /* Until user enters a key...   */
 		const int r = local_randomgr(256);
@@ -5224,8 +5224,11 @@ static void BarTest(void)
 		int y2 = local_randomgr(DIM_Y);
 
 		display_solidbar(x, y, x2, y2, color);
+		// MDMA работает минуя кеш-память
+#if ! defined (WITHMDMAHW) && ! defined (WITHDMA2DHW)
 		display_flush();
-		local_delay_ms(5);
+#endif /* ! defined (WITHMDMAHW) && ! defined (WITHDMA2DHW) */
+		//local_delay_ms(5);
 	}
 
 	//getch();             /* Pause for user's response    */
@@ -6492,7 +6495,7 @@ void hightests(void)
 		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
 	}
 #endif
-#if 0 && CPUSTYLE_STM32MP1 && WITHDEBUG
+#if 1 && CPUSTYLE_STM32MP1 && WITHDEBUG
 	{
 		unsigned long stm32mp1_get_per_freq(void);
 		unsigned long stm32mp1_get_axiss_freq(void);
@@ -7497,9 +7500,10 @@ void hightests(void)
 			const time_t tend = time(NULL);
 			PRINTF("BarTest: %u, %ds, pixelsize=%d\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE);
 		}
-		// @650 MHz, L8, soft: 33s
-		// @650 MHz, L8, MDMA: 33s
-		// @650 MHz, RGB565, MDMA: 33s
+		// @650 MHz, L8, soft: 33.2s (w cache: 0.8s)
+		// @650 MHz, L8, MDMA: (no cache - 0.9s..1s)
+		// @650 MHz, RGB565, MDMA: (no cache - 1.4s)
+		// @650 MHz, ARGB8888, MDMA: (no cache - 2.5s)
 	}
 #endif
 #if 0

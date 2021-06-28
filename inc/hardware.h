@@ -830,7 +830,8 @@ extern const videomode_t vdmode0;
 void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
 unsigned long display_getdotclock(const videomode_t * vdmode);
 
-void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
+void arm_hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr);	/* Set MAIN frame buffer address. No waiting for VSYNC. */
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 void arm_hardware_ltdc_L8_palette(void);	// Palette reload

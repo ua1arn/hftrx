@@ -819,7 +819,29 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 	(void) vdc->GR3_UPDATE;
 }
 
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+
+	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
+	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
+
+	// GR2_IBUS_VEN in GR2_UPDATE is 1.
+	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
+	// GR2_P_VEN in GR2_UPDATE is 1.
+
+	vdc->GR2_UPDATE = (
+		(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+		//(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+		//(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+		0);
+	(void) vdc->GR2_UPDATE;
+}
+
 /* set bottom buffer start */
+/* Set MAIN frame buffer address. Wait for VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -1588,9 +1610,18 @@ void arm_hardware_ltdc_L8_palette(void)
 	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
 #endif /* LCDMODE_PIP_L8 */
 }
-//LCDMODE_MAIN_L8
 
-/* Set MAIN frame buffer address. */
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+{
+	LAYER_MAIN->CFBAR = p;
+	(void) LAYER_MAIN->CFBAR;
+	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
+	(void) LAYER_MAIN->CR;
+	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Immediate Reload. */
+}
+
+/* Set MAIN frame buffer address. Wait for VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	LAYER_MAIN->CFBAR = p;
@@ -1637,6 +1668,12 @@ void arm_hardware_ltdc_L8_palette(void)
 {
 }
 
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+{
+	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
+}
+
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t addr)
 {
@@ -1647,6 +1684,11 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 	//#error Wrong CPUSTYLE_xxxx
 
 void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+{
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 }
 

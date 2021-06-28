@@ -719,7 +719,10 @@ display_reset(void)
 void display_set_contrast(uint_fast8_t v)
 {
 }
+
 // для framebufer дисплеев - вытолкнуть кэш память
+// Функция используется только в тестах и для выдачи аварийных сообщений.
+// Ждать синхронизации дисплея не требуется.
 void display_flush(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
@@ -727,7 +730,7 @@ void display_flush(void)
 //	snprintf(s, 32, "FLUSH=%08lX", (unsigned long) frame);
 //	display_at(0, 0, s);
 	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
-	arm_hardware_ltdc_main_set(frame);
+	arm_hardware_ltdc_main_set_no_vsync(frame);
 }
 
 void display_nextfb(void)
