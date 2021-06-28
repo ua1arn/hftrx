@@ -138,7 +138,7 @@ static uint_fast8_t
 mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 {
 	if (bus == 0 && xinc == 0)
-		return 0;
+		return 4;
 	if (xinc == 0)
 		return 0;
 
