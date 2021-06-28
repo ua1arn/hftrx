@@ -2020,7 +2020,7 @@ void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 // Сейчас в эту память будем читать по DMA
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
-	ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((addr % DCACHEROWSIZE) == 0);
 	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
