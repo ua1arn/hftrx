@@ -7501,7 +7501,7 @@ void hightests(void)
 			PRINTF("BarTest: %u, %ds, pixelsize=%d\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE);
 		}
 		// Divide result by 10
-		// Renesas RZ/A1L, @360 MHz, L8, software (w cache: 8.5s..8.6s)
+		// Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
 		// Renesas RZ/A1L, @360 MHz, L8, software (no cache: 0.2s)
 		// STM32MP157, @650 MHz, L8, software (w cache: 0.8s)
 		// STM32MP157, @650 MHz, L8, hardware MDMA: (no cache - 0.9s..1s)
