@@ -7501,12 +7501,12 @@ void hightests(void)
 			PRINTF("BarTest: %u, %ds, pixelsize=%d\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE);
 		}
 		// Divide result by 10
-		// Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
-		// Renesas RZ/A1L, @360 MHz, L8, software (no cache: 0.2s)
-		// STM32MP157, @650 MHz, L8, software (w cache: 0.8s)
-		// STM32MP157, @650 MHz, L8, hardware MDMA: (no cache - 0.9s..1s)
-		// STM32MP157, @650 MHz, RGB565, hardware MDMA: (no cache - 1.4s)
-		// STM32MP157, @650 MHz, ARGB8888, hardware MDMA: (no cache - 2.5s)
+		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
+		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (no cache: 0.2s)
+		// 800x480, STM32MP157, @650 MHz, L8, software (w cache: 0.8s)
+		// 800x480, STM32MP157, @650 MHz, L8, hardware MDMA: (no cache - 0.9s..1s)
+		// 800x480, STM32MP157, @650 MHz, RGB565, hardware MDMA: (no cache - 1.4s)
+		// 800x480, STM32MP157, @650 MHz, ARGB8888, hardware MDMA: (no cache - 2.5s)
 	}
 #endif
 #if 0
