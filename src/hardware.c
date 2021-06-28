@@ -2032,80 +2032,112 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 
 		do
 		{
-			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
-			L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
-		#if (__L2C_PRESENT == 1)
-			// Clean cache by physical address
-			L2C_InvPa((void *) mva);
-		#endif
+			L1C_InvalidateDCacheMVA((void *) op_addr);	// очистить кэш
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 
 		__DSB();
 		__ISB();
+
+#if (__L2C_PRESENT == 1)
+		int32_t op_size2 = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr2 = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// Clean cache by physical address
+			L2C_310->INV_LINE_PA = op_addr2;
+			op_addr2 += DCACHEROWSIZE;
+			op_size2 -= DCACHEROWSIZE;
+		} while (op_size2 > 0);
+		L2C_310->CACHE_SYNC = 0x0;	// These operations stall the slave ports until they are complete.
+
+		__DSB();
+		__ISB();
+#endif /* (__L2C_PRESENT == 1) */
 	}
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 {
-	ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((addr % DCACHEROWSIZE) == 0);
 	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		int32_t op_size = dsize + (addr & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr = addr /* & ~(DCACHEROWSIZE - 1U) */;
 
 		__DSB();
 
 		do
 		{
-			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
-			L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
-		#if (__L2C_PRESENT == 1)
-			// предполагается, что размер строки L2 и L2 cache равны
-			// Clean cache by physical address
-			L2C_CleanPa((void *) mva);
-		#endif
+			L1C_CleanDCacheMVA((void *) op_addr);		// записать буфер, кэш продолжает хранить
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 
 		__DSB();
 		__ISB();
+
+#if (__L2C_PRESENT == 1)
+		int32_t op_size2 = dsize + (addr & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr2 = addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// предполагается, что размер строки L1 и L2 cache равны
+			// Clean cache by physical address
+			L2C_310->CLEAN_LINE_PA = op_addr2;
+			op_addr2 += DCACHEROWSIZE;
+			op_size2 -= DCACHEROWSIZE;
+		} while (op_size2 > 0);
+		L2C_310->CACHE_SYNC = 0x0;	// These operations stall the slave ports until they are complete.
+
+		__DSB();
+		__ISB();
+#endif /* (__L2C_PRESENT == 1) */
 	}
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
-	ASSERT((addr % DCACHEROWSIZE) == 0);
+	//ASSERT((addr % DCACHEROWSIZE) == 0);
 	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
 	if (dsize > 0)
 	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		int32_t op_size = dsize + (addr & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr = addr /* & ~(DCACHEROWSIZE - 1U) */;
 
 		__DSB();
 
 		do
 		{
-			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
-			L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
-		#if (__L2C_PRESENT == 1)
-			// предполагается, что размер строки L2 и L2 cache равны
-			// Clean cache by physical address
-			L2C_CleanInvPa((void *) mva);
-		#endif
+			L1C_CleanInvalidateDCacheMVA((void *) op_addr);		// записать буфер, каш очищен
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
+		__DSB();
+		__ISB();
+
+#if (__L2C_PRESENT == 1)
+		int32_t op_size2 = dsize + (addr & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr2 = addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// предполагается, что размер строки L1 и L2 cache равны
+			// Clean cache by physical address
+			L2C_310->CLEAN_INV_LINE_PA = op_addr2;
+			op_addr2 += DCACHEROWSIZE;
+			op_size2 -= DCACHEROWSIZE;
+		} while (op_size2 > 0);
+		L2C_310->CACHE_SYNC = 0x0;	// These operations stall the slave ports until they are complete.
 
 		__DSB();
 		__ISB();
+#endif /* (__L2C_PRESENT == 1) */
 	}
 }
 
