@@ -7500,10 +7500,13 @@ void hightests(void)
 			const time_t tend = time(NULL);
 			PRINTF("BarTest: %u, %ds, pixelsize=%d\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE);
 		}
-		// @650 MHz, L8, soft: 33.2s (w cache: 0.8s)
-		// @650 MHz, L8, MDMA: (no cache - 0.9s..1s)
-		// @650 MHz, RGB565, MDMA: (no cache - 1.4s)
-		// @650 MHz, ARGB8888, MDMA: (no cache - 2.5s)
+		// Divide result by 10
+		// Renesas RZ/A1L, @360 MHz, L8, software (w cache: 8.5s..8.6s)
+		// Renesas RZ/A1L, @360 MHz, L8, software (no cache: 0.2s)
+		// STM32MP157, @650 MHz, L8, software (w cache: 0.8s)
+		// STM32MP157, @650 MHz, L8, hardware MDMA: (no cache - 0.9s..1s)
+		// STM32MP157, @650 MHz, RGB565, hardware MDMA: (no cache - 1.4s)
+		// STM32MP157, @650 MHz, ARGB8888, hardware MDMA: (no cache - 2.5s)
 	}
 #endif
 #if 0
