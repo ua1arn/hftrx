@@ -2005,6 +2005,120 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 
 #elif (__CORTEX_A != 0)
 
+__STATIC_FORCEINLINE void L1_CleanDCache_by_Addr (volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			L1C_CleanDCacheMVA((void*) op_addr);		// записать буфер, кэш продолжает хранить
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
+	}
+}
+
+__STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr (volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			L1C_CleanInvalidateDCacheMVA((void*) op_addr);
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
+	}
+}
+
+__STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr (volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+
+		__DSB();
+
+		do
+		{
+			L1C_InvalidateDCacheMVA((void*) op_addr);
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+
+		__DSB();
+		__ISB();
+	}
+}
+
+#if (__L2C_PRESENT == 1)
+
+__STATIC_FORCEINLINE void L2_CleanDCache_by_Addr (volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// Clean cache by physical address
+			L2C_310->CLEAN_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+	}
+}
+
+__STATIC_FORCEINLINE void L2_CleanInvalidateDCache_by_Addr (volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// Clean and Invalidate cache by physical address
+			L2C_310->CLEAN_INV_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+	}
+}
+
+__STATIC_FORCEINLINE void L2_InvalidateDCache_by_Addr (volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// Invalidate cache by physical address
+			L2C_310->INV_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+	}
+}
+#endif /* (__L2C_PRESENT == 1) */
+
 // Записать содержимое кэша данных в память
 // применяетмся после начальной инициализации среды выполнния
 void FLASHMEMINITFUNC arm_hardware_flush_all(void)
@@ -2023,38 +2137,10 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 	//ASSERT((addr % DCACHEROWSIZE) == 0);
 	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
-
-		__DSB();
-
-		do
-		{
-			L1C_InvalidateDCacheMVA((void *) op_addr);	// очистить кэш
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-
-		__DSB();
-		__ISB();
-
+	L1_InvalidateDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
-		int32_t op_size2 = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr2 = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
-		do
-		{
-			// Clean cache by physical address
-			L2C_310->INV_LINE_PA = op_addr2;	// Atomic operation. These operations stall the slave ports until they are complete.
-			op_addr2 += DCACHEROWSIZE;
-			op_size2 -= DCACHEROWSIZE;
-		} while (op_size2 > 0);
-
-		__DSB();
-		__ISB();
+	L2_InvalidateDCache_by_Addr((void *) addr, dsize);
 #endif /* (__L2C_PRESENT == 1) */
-	}
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
@@ -2063,39 +2149,10 @@ void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 	//ASSERT((addr % DCACHEROWSIZE) == 0);
 	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (addr & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = addr /* & ~(DCACHEROWSIZE - 1U) */;
-
-		__DSB();
-
-		do
-		{
-			L1C_CleanDCacheMVA((void *) op_addr);		// записать буфер, кэш продолжает хранить
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-
-		__DSB();
-		__ISB();
-
+	L1_CleanDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
-		int32_t op_size2 = dsize + (addr & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr2 = addr /* & ~(DCACHEROWSIZE - 1U) */;
-		do
-		{
-			// предполагается, что размер строки L1 и L2 cache равны
-			// Clean cache by physical address
-			L2C_310->CLEAN_LINE_PA = op_addr2;	// Atomic operation. These operations stall the slave ports until they are complete.
-			op_addr2 += DCACHEROWSIZE;
-			op_size2 -= DCACHEROWSIZE;
-		} while (op_size2 > 0);
-
-		__DSB();
-		__ISB();
+	L2_CleanDCache_by_Addr((void *) addr, dsize);
 #endif /* (__L2C_PRESENT == 1) */
-	}
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
@@ -2104,38 +2161,10 @@ void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 	//ASSERT((addr % DCACHEROWSIZE) == 0);
 	//ASSERT((dsize % DCACHEROWSIZE) == 0);
 
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (addr & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = addr /* & ~(DCACHEROWSIZE - 1U) */;
-
-		__DSB();
-
-		do
-		{
-			L1C_CleanInvalidateDCacheMVA((void *) op_addr);		// записать буфер, каш очищен
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-		__DSB();
-		__ISB();
-
+	L1_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
-		int32_t op_size2 = dsize + (addr & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr2 = addr /* & ~(DCACHEROWSIZE - 1U) */;
-		do
-		{
-			// предполагается, что размер строки L1 и L2 cache равны
-			// Clean cache by physical address
-			L2C_310->CLEAN_INV_LINE_PA = op_addr2;	// Atomic operation. These operations stall the slave ports until they are complete.
-			op_addr2 += DCACHEROWSIZE;
-			op_size2 -= DCACHEROWSIZE;
-		} while (op_size2 > 0);
-
-		__DSB();
-		__ISB();
+	L2_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
 #endif /* (__L2C_PRESENT == 1) */
-	}
 }
 
 #else
