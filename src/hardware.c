@@ -2015,7 +2015,7 @@ void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 #endif
 }
 
-#define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
+//#define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
 
 // Сейчас в эту память будем читать по DMA
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
@@ -2046,11 +2046,10 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 		do
 		{
 			// Clean cache by physical address
-			L2C_310->INV_LINE_PA = op_addr2;
+			L2C_310->INV_LINE_PA = op_addr2;	// Atomic operation. These operations stall the slave ports until they are complete.
 			op_addr2 += DCACHEROWSIZE;
 			op_size2 -= DCACHEROWSIZE;
 		} while (op_size2 > 0);
-		L2C_310->CACHE_SYNC = 0x0;	// These operations stall the slave ports until they are complete.
 
 		__DSB();
 		__ISB();
@@ -2088,11 +2087,10 @@ void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 		{
 			// предполагается, что размер строки L1 и L2 cache равны
 			// Clean cache by physical address
-			L2C_310->CLEAN_LINE_PA = op_addr2;
+			L2C_310->CLEAN_LINE_PA = op_addr2;	// Atomic operation. These operations stall the slave ports until they are complete.
 			op_addr2 += DCACHEROWSIZE;
 			op_size2 -= DCACHEROWSIZE;
 		} while (op_size2 > 0);
-		L2C_310->CACHE_SYNC = 0x0;	// These operations stall the slave ports until they are complete.
 
 		__DSB();
 		__ISB();
@@ -2129,11 +2127,10 @@ void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 		{
 			// предполагается, что размер строки L1 и L2 cache равны
 			// Clean cache by physical address
-			L2C_310->CLEAN_INV_LINE_PA = op_addr2;
+			L2C_310->CLEAN_INV_LINE_PA = op_addr2;	// Atomic operation. These operations stall the slave ports until they are complete.
 			op_addr2 += DCACHEROWSIZE;
 			op_size2 -= DCACHEROWSIZE;
 		} while (op_size2 > 0);
-		L2C_310->CACHE_SYNC = 0x0;	// These operations stall the slave ports until they are complete.
 
 		__DSB();
 		__ISB();
