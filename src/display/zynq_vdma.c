@@ -11,6 +11,23 @@
 #include <xil_io.h>
 #include "zynq_vdma.h"
 
+static XVtc vtc;
+volatile uint8_t vdma_sync = 0;
+
+void vtc_inthandler (void)
+{
+	u32 PendingIntr = XVtc_IntrGetPending(& vtc);
+	XVtc_IntrClear(& vtc, PendingIntr);
+
+	if (PendingIntr == XVTC_IXR_G_VBLANK_MASK)
+	{
+		system_disableIRQ();
+		vdma_sync = 1;
+		//dbg_putchar('.');
+		system_enableIRQ();
+	}
+}
+
 /************************************************************************/
 /*																		*/
 /*	display_ctrl.c	--	Digilent Display Controller Driver				*/
@@ -335,6 +352,10 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 		return (XST_FAILURE);
 	}
 
+	XVtc_IntrEnable(&(dispPtr->vtc), XVTC_IXR_G_VBLANK_MASK);
+	arm_hardware_set_handler_system(XPAR_FABRIC_V_TC_0_IRQ_INTR, vtc_inthandler);
+	vtc = dispPtr->vtc;
+
 	dispPtr->vdma = vdma;
 
 	/*
@@ -416,8 +437,9 @@ int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex)
 	 * If currently running, then the DMA needs to be told to start reading from the desired frame
 	 * at the end of the current frame
 	 */
-	if (dispPtr->state == DISPLAY_RUNNING)
+	if (dispPtr->state == DISPLAY_RUNNING && vdma_sync)
 	{
+		vdma_sync = 0;
 		Status = XAxiVdma_StartParking(dispPtr->vdma, dispPtr->curFrame, XAXIVDMA_READ);
 		if (Status != XST_SUCCESS)
 		{
