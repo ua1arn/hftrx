@@ -1613,7 +1613,7 @@ static unsigned fill_UAC2_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 }
 
 
-/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
+/* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
 static unsigned fill_UAC2_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	uint_fast8_t ialt = 0;
@@ -2430,7 +2430,7 @@ static unsigned fill_UAC1_IN48_function(uint_fast8_t fill, uint8_t * p, unsigned
 	return n;
 }
 
-/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
+/* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
 static unsigned fill_UAC1_IN48_INRTS_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	uint_fast8_t ialt = 0;
@@ -2518,7 +2518,7 @@ typedef struct audiopath_tag
 } audiopath_t;
 
 #if WITHUSBUACIN && WITHUSBUACOUT
-/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
+/* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
 static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	unsigned n = 0;
@@ -2660,13 +2660,13 @@ static unsigned fill_UAC1_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 	unsigned n = 0;
 
 #if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
-	/* отдельные функции для передачи в компьютер спектра и двунапрапвленная звука */
+	/* отдельные функции для передачи в компьютер спектра и двунапаправленная звука */
 	n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
 	#if WITHRTS96 || WITHRTS192
 		n += fill_UAC1_INRTS_function(fill, p + n, maxsize - n, highspeed, 1);
 	#endif /* WITHRTS96 || WITHRTS192 */
 
-#else
+#else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 	#if WITHUSBUACIN2
 		/* отдельные функции для передачи в компьютер спектра и звука */
 		n += fill_UAC1_IN48_function(fill, p + n, maxsize - n, highspeed, 0);
@@ -2677,17 +2677,17 @@ static unsigned fill_UAC1_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 		#endif /* WITHRTS96 || WITHRTS192 */
 
 	#elif WITHUSBUACIN
-		/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
+		/* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
 		n += fill_UAC1_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUACIN2 */
 
-#if WITHUSBUACOUT
+	#if WITHUSBUACOUT
 
-	n += fill_UAC1_OUT48_function(fill, p + n, maxsize - n, highspeed, 2);
-#endif /* WITHUSBUACOUT */
+		n += fill_UAC1_OUT48_function(fill, p + n, maxsize - n, highspeed, 2);
+	#endif /* WITHUSBUACOUT */
 
-#endif
+#endif /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 
 	return n;
 }
@@ -2711,7 +2711,7 @@ static unsigned fill_UAC2_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 		#endif /* WITHRTS96 || WITHRTS192 */
 
 	#else /* WITHUSBUACIN2 */
-		/* на одном устройстве различные форматы для передачи в компьютер для передачи спектра и звука */
+		/* на одном устройстве различные форматы для передачи в компьютер спектра и звука */
 		n += fill_UAC2_IN48_INRTS_function(fill, p + n, maxsize - n, highspeed, 0);
 
 	#endif /* WITHUSBUACIN2 */
