@@ -10,7 +10,6 @@
 #if WITHUSBHW && WITHUSBCDCACM
 
 #include "board.h"
-#include "audio.h"
 #include "src/display/display.h"
 #include "formats.h"
 #include <string.h>
