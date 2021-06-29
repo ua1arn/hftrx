@@ -1648,6 +1648,10 @@ static double testgain_float_DCL(const double * dCoeff, int iCoefNum)
 	*/
 
 // Calculate window function (blackman-harris, hamming, rectangular)
+// https://www.edn.com/windowing-functions-improve-fft-results-part-i/
+// https://en.wikipedia.org/wiki/Window_function
+// https://www.weisang.com/en/documentation/fourierspectrumtaperingwindows_en/
+
 FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 {
 	const FLOAT_t n = iCoefNum - 1;
@@ -1662,7 +1666,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 	{
 	default:
 	case BOARD_WTYPE_BLACKMAN_HARRIS:
-		// Blackman-Harris
+		// Blackman-Harris (same as MATLAB)
 		{
 			const FLOAT_t w = (
 				+ (FLOAT_t) 0.35875 
@@ -1706,6 +1710,21 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 				);	// blackman-harris
 			return w;
 		}
+	case BOARD_WTYPE_BLACKMAN_HARRIS_4TERM:
+		// Blackman-Harris (4-term)
+		// Cos4 Blackman-Harris -74dB W=4
+		// 0.40217-0.49703*cos(2*π*i/(n-1))+0.09892*cos(4*π*i/(n-1))-0.00188*cos(6*π*i/(n-1)), i=0..n-1
+		// https://www.edn.com/windowing-functions-improve-fft-results-part-ii/
+		// 0.40217, 0.49703, 0.09892, and 0.00188.
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.40217
+				- (FLOAT_t) 0.49703 * COSF(a)
+				+ (FLOAT_t) 0.09892 * COSF(a2)
+				- (FLOAT_t) 0.00188 * COSF(a3)
+				);
+			return w;
+		}
 	case BOARD_WTYPE_BLACKMAN_HARRIS_7TERM:
 		// Blackman-Harris 7-term
 		// На float с одинарной точностью не имеет смысла переходить с BOARD_WTYPE_BLACKMAN_HARRIS
@@ -1733,7 +1752,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 			return w;
 		}
 	case BOARD_WTYPE_NUTTALL:
-		// Nuttall
+		// Nuttall window, continuous first derivative
 		{
 			const FLOAT_t w = (
 				+ (FLOAT_t) 0.355768
