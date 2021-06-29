@@ -1732,6 +1732,17 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 				);	
 			return w;
 		}
+	case BOARD_WTYPE_NUTTALL:
+		// Nuttall
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.355768
+				- (FLOAT_t) 0.487396 * COSF(a)
+				+ (FLOAT_t) 0.144232 * COSF(a2)
+				- (FLOAT_t) 0.012604 * COSF(a3)
+				);
+			return w;
+		}
 	case BOARD_WTYPE_HAMMING:
 		// Hamming
 		{
