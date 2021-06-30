@@ -21437,6 +21437,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params [j]);
 	}
 
+	save_i8(RMT_MICEQ_BASE(cell), mp->eq_enable);
 	save_i8(RMT_MICBOOST_BASE(cell), mp->mikebust20db);
 	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
 	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
