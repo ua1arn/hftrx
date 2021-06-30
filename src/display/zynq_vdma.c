@@ -21,10 +21,8 @@ void vtc_inthandler (void)
 
 	if (PendingIntr == XVTC_IXR_G_VBLANK_MASK)
 	{
-		system_disableIRQ();
 		vdma_sync = 1;
 		//dbg_putchar('.');
-		system_enableIRQ();
 	}
 }
 
@@ -143,7 +141,7 @@ int DisplayStop(DisplayCtrl *dispPtr)
 
 	if (XAxiVdma_GetDmaChannelErrors(dispPtr->vdma, XAXIVDMA_READ))
 	{
-		xdbg_printf(XDBG_DEBUG_GENERAL, "Clearing DMA errors...\r\n");
+		PRINTF("Clearing DMA errors...\n");
 		XAxiVdma_ClearDmaChannelErrors(dispPtr->vdma, XAXIVDMA_READ, 0xFFFFFFFF);
 		return XST_DMA_ERROR;
 	}
@@ -174,7 +172,7 @@ int DisplayStart(DisplayCtrl *dispPtr)
 	XVtc_Timing vtcTiming;
 	XVtc_SourceSelect SourceSelect;
 
-	PRINTF( "display start entered\r\n");
+	PRINTF( "ZYNQ VDMA: display start entered\n");
 	/*
 	 * If already started, do nothing
 	 */
@@ -262,30 +260,30 @@ int DisplayStart(DisplayCtrl *dispPtr)
 
 
 
-	PRINTF( "preform vdma  transfer \r\n");
+	PRINTF( "ZYNQ VDMA: preform vdma transfer\n");
 
 	Status = XAxiVdma_DmaConfig(dispPtr->vdma, XAXIVDMA_READ, &(dispPtr->vdmaConfig));
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF( "Read channel config failed %d\r\n", Status);
+		PRINTF( "ZYNQ VDMA: Read channel config failed %d\n", Status);
 		return XST_FAILURE;
 	}
 	Status = XAxiVdma_DmaSetBufferAddr(dispPtr->vdma, XAXIVDMA_READ, dispPtr->vdmaConfig.FrameStoreStartAddr);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF( "Read channel set buffer address failed %d\r\n", Status);
+		PRINTF( "ZYNQ VDMA: Read channel set buffer address failed %d\n", Status);
 		return XST_FAILURE;
 	}
 	Status = XAxiVdma_DmaStart(dispPtr->vdma, XAXIVDMA_READ);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF( "Start read transfer failed %d\r\n", Status);
+		PRINTF( "ZYNQ VDMA: Start read transfer failed %d\n", Status);
 		return XST_FAILURE;
 	}
 	Status = XAxiVdma_StartParking(dispPtr->vdma, dispPtr->curFrame, XAXIVDMA_READ);
 	if (Status != XST_SUCCESS)
 	{
-		PRINTF( "Unable to park the channel %d\r\n", Status);
+		PRINTF( "ZYNQ VDMA: Unable to park the channel %d\n", Status);
 		return XST_FAILURE;
 	}
 
@@ -342,10 +340,6 @@ int DisplayInitialize(DisplayCtrl *dispPtr, XAxiVdma *vdma, u16 vtcId, u32 dynCl
 	 * configuration in the config table, then initialize it.
 	 */
 	vtcConfig = XVtc_LookupConfig(vtcId);
-	/* Checking Config variable */
-	if (NULL == vtcConfig) {
-		return (XST_FAILURE);
-	}
 	Status = XVtc_CfgInitialize(&(dispPtr->vtc), vtcConfig, vtcConfig->BaseAddress);
 	/* Checking status */
 	if (Status != (XST_SUCCESS)) {
@@ -400,7 +394,7 @@ int DisplaySetMode(DisplayCtrl *dispPtr, const videomode_t *newMode)
 		Status = DisplayStop(dispPtr);
 		if (Status != XST_SUCCESS)
 		{
-			xdbg_printf(XDBG_DEBUG_GENERAL, "Cannot change mode, unable to stop display %d\r\n", Status);
+			PRINTF("ZYNQ VDMA: Cannot change mode, unable to stop display %d\n", Status);
 			return XST_FAILURE;
 		}
 	}
@@ -439,11 +433,13 @@ int DisplayChangeFrame(DisplayCtrl *dispPtr, u32 frameIndex)
 	 */
 	if (dispPtr->state == DISPLAY_RUNNING && vdma_sync)
 	{
+		system_disableIRQ();
 		vdma_sync = 0;
+		system_enableIRQ();
 		Status = XAxiVdma_StartParking(dispPtr->vdma, dispPtr->curFrame, XAXIVDMA_READ);
 		if (Status != XST_SUCCESS)
 		{
-			xdbg_printf(XDBG_DEBUG_GENERAL, "Cannot change frame, unable to start parking %d\r\n", Status);
+			PRINTF("ZYNQ VDMA: Cannot change frame, unable to start parking %d\n", Status);
 			return XST_FAILURE;
 		}
 	}
@@ -473,7 +469,7 @@ void ReadErrorCallBack(void *CallbackRef, u32 Mask)
 
 	if (Mask & XAXIVDMA_IXR_ERROR_MASK)
 	{
-		PRINTF("VDMA READ ERROR!\r\n" );
+		PRINTF("VDMA READ ERROR!\n" );
 	}
 }
 
@@ -484,36 +480,13 @@ void Vdma_Init(XAxiVdma *InstancePtr, u32 DeviceId)
 	int Status;
 
 	Config = XAxiVdma_LookupConfig(DeviceId);
-	if (!Config) {
-		PRINTF("No video DMA found for ID %d\r\n",DeviceId );
-		return;
-	}
-
-	/* Initialize DMA engine */
 	Status = XAxiVdma_CfgInitialize(InstancePtr, Config, Config->BaseAddress);
 	if (Status != XST_SUCCESS) {
-		PRINTF("vdma Configuration Initialization failed %d\r\n", Status);
+		PRINTF("ZYNQ VDMA: Configuration Initialization failed %d\n", Status);
 		return;
 	}
 
-//	Status = XAxiVdma_SetFrmStore(InstancePtr, NUMBER_OF_READ_FRAMES, XAXIVDMA_READ);
-//	if (Status != XST_SUCCESS) {
-//
-//		PRINTF(
-//		    "Setting Frame Store Number Failed in Read Channel"
-//							" %d\r\n", Status);
-//		return;
-//	}
-
-
-//	Status = ReadSetup(InstancePtr);
-//	if (Status != XST_SUCCESS) {
-//		PRINTF("vdma Configuration ReadSetup failed %d\r\n", Status);
-//		return;
-//	}
-
-	PRINTF("vdma Configuration Initialization success status %d\r\n",Status);
-
+	PRINTF("ZYNQ VDMA: Configuration Initialization success\n");
 }
 
 int Vdma_Start(XAxiVdma *InstancePtr)
@@ -522,8 +495,7 @@ int Vdma_Start(XAxiVdma *InstancePtr)
 
 	Status = XAxiVdma_DmaStart(InstancePtr, XAXIVDMA_READ);
 	if (Status != XST_SUCCESS) {
-		PRINTF(
-		    "Start read transfer failed %d\r\n", Status);
+		PRINTF("ZYNQ VDMA: Start read transfer failed %d\n", Status);
 
 		return XST_FAILURE;
 	}
