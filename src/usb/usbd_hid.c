@@ -8,11 +8,11 @@
 #include "usbd_desc.h"
 #include "usbd_def.h"
 #include "usbd_core.h"
-//#include "usb200.h"
-//#include "usbch9.h"
+#include "usb200.h"
+#include "usbch9.h"
 
-//#define HID_EPIN_ADDR                              0x81U
-//#define HID_EPIN_SIZE                              0x04U
+//#define USBD_EP_HIDMOUSE_INT                              0x81U
+//#define HIDMOUSE_INT_DATA_SIZE                              0x04U
 
 //#define USB_HID_CONFIG_DESC_SIZ                    34U
 //#define USB_HID_DESC_SIZ                           9U
@@ -62,6 +62,7 @@ static USBD_HID_HandleTypeDef hHid;
   * @param  buff: pointer to report
   * @retval status
   */
+#if 0
 uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t len)
 {
   USBD_HID_HandleTypeDef * const hhid = & hHid;
@@ -76,13 +77,13 @@ uint8_t USBD_HID_SendReport(USBD_HandleTypeDef *pdev, uint8_t *report, uint16_t 
     if (hhid->state == HID_IDLE)
     {
       hhid->state = HID_BUSY;
-      (void)USBD_LL_Transmit(pdev, HID_EPIN_ADDR, report, len);
+      (void)USBD_LL_Transmit(pdev, USBD_EP_HIDMOUSE_INT, report, len);
     }
   }
 
   return (uint8_t)USBD_OK;
 }
-
+#endif
 /**
   * @brief  USBD_HID_GetPollingInterval
   *         return polling interval from endpoint descriptor
@@ -112,13 +113,51 @@ uint32_t USBD_HID_GetPollingInterval(USBD_HandleTypeDef *pdev)
 }
 
 static USBD_StatusTypeDef USBD_HID_Init(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
-{
+ {
+	UNUSED(cfgidx);
+
+//	USBD_HID_HandleTypeDef *hhid;
+
+	USBD_HID_HandleTypeDef *const hhid = &hHid;
+	//hhid = USBD_malloc (sizeof(USBD_HID_HandleTypeDef));
+
+	if (hhid == NULL) {
+		//pdev->pClassData = NULL;
+		return (uint8_t) USBD_EMEM;
+	}
+
+	//pdev->pClassData = (void*) hhid;
+//
+//	if (pdev->dev_speed == USBD_SPEED_HIGH) {
+//		pdev->ep_in [USBD_EP_HIDMOUSE_INT & 0xFU].bInterval = HID_HS_BINTERVAL;
+//	} else /* LOW and FULL-speed endpoints */
+//	{
+//		pdev->ep_in [USBD_EP_HIDMOUSE_INT & 0xFU].bInterval = HID_FS_BINTERVAL;
+//	}
+//
+//	/* Open EP IN */
+//	(void) USBD_LL_OpenEP(pdev, USBD_EP_HIDMOUSE_INT, USBD_EP_TYPE_INTR, HIDMOUSE_INT_DATA_SIZE);
+//	pdev->ep_in [USBD_EP_HIDMOUSE_INT & 0xFU].is_used = 1U;
+
+	hhid->state = HID_IDLE;
 
 	return USBD_OK;
 }
 
 static USBD_StatusTypeDef USBD_HID_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t cfgidx)
-{
+ {
+	UNUSED(cfgidx);
+
+	/* Close HID EPs */
+//	(void) USBD_LL_CloseEP(pdev, USBD_EP_HIDMOUSE_INT);
+//	pdev->ep_in[USBD_EP_HIDMOUSE_INT & 0xFU].is_used = 0U;
+//	pdev->ep_in[USBD_EP_HIDMOUSE_INT & 0xFU].bInterval = 0U;
+
+	/* Free allocated memory */
+//	if (pdev->pClassData != NULL) {
+//		(void) USBD_free(pdev->pClassData);
+//		pdev->pClassData = NULL;
+//	}
 
 	return USBD_OK;
 }
@@ -161,8 +200,8 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			break;
 
 		default:
-			USBD_CtlError(pdev, req);
-			ret = USBD_FAIL;
+			//	USBD_CtlError(pdev, req);
+			//	ret = USBD_FAIL;
 			break;
 		}
 		break;
@@ -221,19 +260,19 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			break;
 
 		default:
-			USBD_CtlError(pdev, req);
+			//	USBD_CtlError(pdev, req);
 			ret = USBD_FAIL;
 			break;
 		}
 		break;
 
 	default:
-		USBD_CtlError(pdev, req);
+		//	USBD_CtlError(pdev, req);
 		ret = USBD_FAIL;
 		break;
 	}
 
-	return ret;
+	return USBD_FAIL;
 }
 
 static USBD_StatusTypeDef USBD_HID_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)

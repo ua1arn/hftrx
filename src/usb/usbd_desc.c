@@ -3887,16 +3887,16 @@ static const uint8_t hid_report_desc_telephony [] =
     0xc0                           // END_COLLECTION
 };
 
+// HID Report Descriptor used for this function
+//#define HIDREPORTDESC HID_report_desc_keyboard
+#define HIDREPORTDESC HID_report_desc_mouse
+//#define HIDREPORTDESC HID_report_desc_display
+//#define HIDREPORTDESC hid_report_desc_telephony
+
 
 /* HID Human Interface Device */
 static unsigned fill_HID_XXXX_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed)
 {
-	// HID Report Descriptor used for this function
-	#define HIDREPORTDESC HID_report_desc_keyboard
-	//#define HIDREPORTDESC HID_report_desc_mouse
-	//#define HIDREPORTDESC HID_report_desc_display
-	//#define HIDREPORTDESC hid_report_desc_telephony
-
 	const void * const pattern = HIDREPORTDESC;
 	const unsigned patternlength = sizeof HIDREPORTDESC;
 	//
