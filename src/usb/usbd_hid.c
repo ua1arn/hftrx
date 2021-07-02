@@ -118,7 +118,7 @@ static USBD_StatusTypeDef USBD_HID_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
 
 //	USBD_HID_HandleTypeDef *hhid;
 
-	USBD_HID_HandleTypeDef *const hhid = &hHid;
+	USBD_HID_HandleTypeDef *const hhid = & hHid;
 	//hhid = USBD_malloc (sizeof(USBD_HID_HandleTypeDef));
 
 	if (hhid == NULL) {
@@ -164,7 +164,7 @@ static USBD_StatusTypeDef USBD_HID_DeInit(USBD_HandleTypeDef *pdev, uint_fast8_t
 
 static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
  {
-	USBD_HID_HandleTypeDef *const hhid = &hHid;
+	USBD_HID_HandleTypeDef *const hhid = & hHid;
 	USBD_StatusTypeDef ret = USBD_OK;
 	uint16_t len;
 	const uint8_t *pbuf;
@@ -182,26 +182,27 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 	case USB_REQ_TYPE_CLASS:
 		switch (req->bRequest) {
 		case HID_REQ_SET_PROTOCOL:
-			hhid->Protocol = (uint8_t) (req->wValue);
+			hhid->Protocol = LO_BYTE(req->wValue);
 			USBD_CtlSendStatus(pdev);
 			break;
 
 		case HID_REQ_GET_PROTOCOL:
-			(void) USBD_CtlSendData(pdev, (uint8_t*) &hhid->Protocol, 1U);
+			(void) USBD_CtlSendData(pdev, (uint8_t*) & hhid->Protocol, 1U);
 			break;
 
 		case HID_REQ_SET_IDLE:
-			hhid->IdleState = (uint8_t) (req->wValue >> 8);
+			hhid->IdleState = HI_BYTE(req->wValue);
 			USBD_CtlSendStatus(pdev);
 			break;
 
 		case HID_REQ_GET_IDLE:
-			(void) USBD_CtlSendData(pdev, (uint8_t*) &hhid->IdleState, 1U);
+			(void) USBD_CtlSendData(pdev, (uint8_t*) & hhid->IdleState, 1U);
 			break;
 
 		default:
-			//	USBD_CtlError(pdev, req);
-			//	ret = USBD_FAIL;
+			TP();
+			USBD_CtlError(pdev, req);
+			ret = USBD_FAIL;
 			break;
 		}
 		break;
@@ -211,13 +212,14 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			if (pdev->dev_state == USBD_STATE_CONFIGURED) {
 				(void) USBD_CtlSendData(pdev, (uint8_t*) &status_info, 2U);
 			} else {
+				TP();
 				USBD_CtlError(pdev, req);
 				ret = USBD_FAIL;
 			}
 			break;
 //
 	        case USB_REQ_GET_DESCRIPTOR:
-	          if ((req->wValue >> 8) == HID_REPORT_DESC)
+	          if (HI_BYTE(req->wValue) == HID_REPORT_DESC)
 	          {
 	            len = MIN(HIDReportDescrTbl [0].size, req->wLength);
 	            pbuf = HIDReportDescrTbl [0].data;
@@ -229,7 +231,8 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 //	          }
 	          else
 	          {
-	            USBD_CtlError(pdev, req);
+				//TP();
+	            //USBD_CtlError(pdev, req);
 	            ret = USBD_FAIL;
 	            break;
 	          }
@@ -238,8 +241,9 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 
 		case USB_REQ_GET_INTERFACE:
 			if (pdev->dev_state == USBD_STATE_CONFIGURED) {
-				(void) USBD_CtlSendData(pdev, (uint8_t*) &hhid->AltSetting, 1U);
+				(void) USBD_CtlSendData(pdev, (uint8_t*) & hhid->AltSetting, 1U);
 			} else {
+				TP();
 				USBD_CtlError(pdev, req);
 				ret = USBD_FAIL;
 			}
@@ -247,7 +251,7 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 
 		case USB_REQ_SET_INTERFACE:
 			if (pdev->dev_state == USBD_STATE_CONFIGURED) {
-				hhid->AltSetting = (uint8_t) (req->wValue);
+				hhid->AltSetting = LO_BYTE(req->wValue);
 				USBD_CtlSendStatus(pdev);
 			} else {
 				USBD_CtlError(pdev, req);
@@ -260,26 +264,29 @@ static USBD_StatusTypeDef USBD_HID_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 			break;
 
 		default:
-			//	USBD_CtlError(pdev, req);
+			//TP();
+			//USBD_CtlError(pdev, req);
 			ret = USBD_FAIL;
 			break;
 		}
 		break;
 
 	default:
-		//	USBD_CtlError(pdev, req);
+		//TP();
+		//USBD_CtlError(pdev, req);
 		ret = USBD_FAIL;
 		break;
 	}
 
-	return USBD_FAIL;
+	return USBD_OK;
 }
 
 static USBD_StatusTypeDef USBD_HID_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t epnum)
 {
-	  /* Ensure that the FIFO is empty before a new transfer, this condition could
-	  be caused by  a new transfer before the end of the previous transfer */
-	  //((USBD_HID_HandleTypeDef *)pdev->pClassData)->state = HID_IDLE;
+	/* Ensure that the FIFO is empty before a new transfer, this condition could
+	be caused by  a new transfer before the end of the previous transfer */
+	USBD_HID_HandleTypeDef *const hhid = & hHid;
+	hhid->state = HID_IDLE;
 
 
 	return USBD_OK;
