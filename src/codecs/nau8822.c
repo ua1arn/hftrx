@@ -160,9 +160,10 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 		nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
 		nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
 
-		const uint_fast8_t mikepgaval = 0x10;
-		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA muted
-		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, mikepgaval | 0x100);	// write both valuse simultaneously
+		// перенесено в main.c
+//		const uint_fast8_t mikepgaval = 0x3F;
+//		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA programming
+//		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, mikepgaval | 0x100);	// Write both valuse simultaneously
 #endif
 		// 
 		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikebust20db != 0));	// 0x100 - 20 dB boost ON

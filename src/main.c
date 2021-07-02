@@ -2747,6 +2747,7 @@ struct nvmap
 	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
 	uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
 	uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+	uint8_t PGAGAIN;	// 0x00..0x3F input PGA volume control setting
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHTX
 	uint8_t	ggrptxparams; // последний посещённый пункт группы
@@ -4182,6 +4183,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	uint_fast8_t ALCEN = 0;	// only left channel ALC enabled
 	uint_fast8_t ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
 	uint_fast8_t ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
+	uint_fast8_t PGAGAIN = 0x20;	// 0x00..0x3F input PGA volume control setting
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHIF4DSP
 #if WITHTX
@@ -9506,6 +9508,12 @@ updateboardZZZ(
 					(ALCNTH << 0) |
 					0;
 			nau8822_setreg(NAU8822_NOISE_GATE, ngctl1);
+
+			// MIKE PGA GAIN
+			const uint_fast8_t mikepgaval = PGAGAIN;	// 0x00..0x3F input PGA volume control setting
+			nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA programming
+			nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, mikepgaval | 0x100);	// Write both valuse simultaneously
+
 		}
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 		board_update();		/* вывести забуферированные изменения в регистры */
@@ -16074,6 +16082,16 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& ALCMNGAIN,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("PGAGAIN "), 7, 0, 0,	ISTEP1,		/* input PGA volume control setting */
+		ITEM_VALUE,
+		0x00, 0x3F,
+		offsetof(struct nvmap, PGAGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
+		nvramoffs0,
+		NULL,
+		& PGAGAIN,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
