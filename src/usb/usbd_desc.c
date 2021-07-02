@@ -53,7 +53,7 @@
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
 //#define USB_FUNCTION_VENDOR_ID	0x1D6B	// Linux Foundation
 
-// From STMicroelectronics Comunication Device Class driver (CDC) INF FILE:
+// From STMicroelectronics Communication Device Class driver (CDC) INF FILE:
 //#define USB_FUNCTION_VENDOR_ID	0x0483	// STM
 //#define USB_FUNCTION_PRODUCT_ID	0x5740
 //#define USB_FUNCTION_RELEASE_NO	0x0200
