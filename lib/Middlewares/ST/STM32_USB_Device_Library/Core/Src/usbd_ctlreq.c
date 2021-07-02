@@ -752,11 +752,11 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef 
 	case USBD_STATE_CONFIGURED:
 		if (req->wLength != 0x2U)
 		{
-			PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
+			//PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
 			USBD_CtlError(pdev, req);
 			break;
 		}
-		PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
+		//PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
 		pdev->dev_config_status [0] = 0;
 		pdev->dev_config_status [1] = 0;
 
