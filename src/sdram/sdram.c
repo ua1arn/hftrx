@@ -994,9 +994,12 @@ static void panic(void)
 		;
 }
 
+unsigned long stm32mp1_get_pll2_r_freq(void);
+
 // DDR clock in Hz
 unsigned long stm32mp_ddr_clk_get_rate(unsigned long id)
 {
+	return stm32mp1_get_pll2_r_freq();
 	return DDR_FREQ;
 /*
 	int p = stm32mp1_clk_get_parent(id);
@@ -3917,7 +3920,7 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-	PRINTF("arm_hardware_sdram_initialize start\n");
+	PRINTF("arm_hardware_sdram_initialize start. %lu\n", stm32mp1_get_pll2_r_freq() / 1000000);
 
 	if (1)
 	{

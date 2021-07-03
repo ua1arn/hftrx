@@ -1219,6 +1219,12 @@ unsigned long stm32mp1_get_pll2_p_freq(void)
 	return stm32mp1_get_pll2_freq() / pll2divp;
 }
 
+unsigned long stm32mp1_get_pll2_r_freq(void)
+{
+	const uint_fast32_t pll2divr = ((RCC->PLL2CFGR2 & RCC_PLL2CFGR2_DIVR_Msk) >> RCC_PLL2CFGR2_DIVR_Pos) + 1;
+	return stm32mp1_get_pll2_freq() / pll2divr;
+}
+
 // PLL3 methods
 unsigned long stm32mp1_get_pll3_freq(void)
 {
