@@ -6593,6 +6593,30 @@ void hightests(void)
 		}
 	}
 #endif
+#if 0 && defined (TZC) && WITHDEBUG
+	{
+
+        const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x1f;
+        uint_fast8_t i;
+        PRINTF("TZC=%p\n", TZC);
+        for (i = 0; i <= lastregion; ++ i)
+        {
+            volatile uint32_t * const REG_ATTRIBUTESx = & TZC->REG_ATTRIBUTESO + (i * 8);
+            volatile uint32_t * const REG_ID_ACCESSx = & TZC->REG_ID_ACCESSO + (i * 8);
+            volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
+            volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
+            volatile uint32_t * const REG_TOP_LOWx = & TZC->REG_TOP_LOWO + (i * 8);
+            volatile uint32_t * const REG_TOP_HIGHx = & TZC->REG_TOP_HIGHO + (i * 8);
+
+            PRINTF("TZC->REG_BASE_LOW%d=%08lX ", i, * REG_BASE_LOWx);
+            PRINTF("REG_BASE_HIGH%d=%08lX ", i, * REG_BASE_HIGHx);
+            PRINTF("REG_TOP_LOW%d=%08lX ", i, * REG_TOP_LOWx);
+            PRINTF("REG_TOP_HIGH%d=%08lX ", i, * REG_TOP_HIGHx);
+            PRINTF("REG_ATTRIBUTES%d=%08lX ", i, * REG_ATTRIBUTESx);
+            PRINTF("REG_ID_ACCESS%d=%08lX\n", i, * REG_ID_ACCESSx);
+        }
+	}
+#endif
 #if 0 && WITHDEBUG
 	{
 		// FPU speed test
