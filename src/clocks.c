@@ -2758,8 +2758,8 @@ static void stm32mp1_pll_initialize(void)
 	//	0x2: The mpuss_ck is equal to pll1_p_ck divided by 4
 	//	0x3: The mpuss_ck is equal to pll1_p_ck divided by 8
 	//	others: The mpuss_ck is equal to pll1_p_ck divided by 16
-	RCC->MPCKDIVR = (RCC->MPCKDIVR ? ~ (RCC_MPCKDIVR_MPUDIV_Msk)) |
-		(0x02uL << RCC_MPCKDIVR_MPUDIV_pos) |	// pll1_p_ck divided by 4
+	RCC->MPCKDIVR = (RCC->MPCKDIVR &= ~ (RCC_MPCKDIVR_MPUDIV_Msk)) |
+		(0x02uL << RCC_MPCKDIVR_MPUDIV_Pos) |	// pll1_p_ck divided by 4
 		0;
 
 	// Stop PLL4
