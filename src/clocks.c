@@ -1190,7 +1190,7 @@ unsigned long stm32mp1_get_mpuss_freq(void)
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
-	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / (2 ^ MPUDIV)).
 	switch ((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRC_Msk) >> RCC_MPCKSELR_MPUSRC_Pos)
 	{
 	default:
@@ -2634,112 +2634,22 @@ uint_fast8_t stm32mp1_overdrived(void)
 	return (rpn & 0x80) != 0;
 }
 
+// Снижение тактовой частоты процессора для уменьшения потребления
 void stm32mp1_pll1_slow(uint_fast8_t slow)
 {
-	const uint32_t pll1divp = slow ? PLL1DIVP * 6 : PLL1DIVP;
-	// переключение на HSI на всякий случай перед программированием PLL
-	// HSI ON
-	RCC->OCENSETR = RCC_OCENSETR_HSION;
-	(void) RCC->OCENSETR;
-	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY) == 0)
-		;
-
-	// Wait for HSI ready
-	while ((RCC->OCRDYR & RCC_OCRDYR_HSIRDY_Msk) == 0)
-		;
-
-	// HSIDIV
-	//	0x0: Division by 1, hsi_ck (hsi_ker_ck) = 64 MHz (default after reset)
-	//	0x1: Division by 2, hsi_ck (hsi_ker_ck) = 32 MHz
-	//	0x2: Division by 4, hsi_ck (hsi_ker_ck) = 16 MHz
-	//	0x3: Division by 8, hsi_ck (hsi_ker_ck) = 8 MHz
-	RCC->HSICFGR = (RCC->HSICFGR & ! (RCC_HSICFGR_HSIDIV_Msk)) |
-		(0uL << RCC_HSICFGR_HSIDIV_Pos) |
-		0;
-	(void) RCC->HSICFGR;
-
-	// Wait for HSI DIVIDER ready
-	while ((RCC->OCRDYR & RCC_OCRDYR_HSIDIVRDY_Msk) == 0)
-		;
-
-	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
-	//0x1: HSE selected as AXI sub-system clock (hse_ck)
-	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
-	//others: axiss_ck is gated
-	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
-			(0x00 << RCC_ASSCKSELR_AXISSRC_Pos) |	// HSI
-			0;
-	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
-		;
-
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
-	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / (2 ^ MPUDIV)).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		((uint_fast32_t) 0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
-		0;
-	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
-		;
-
-	// Stop PLL1
-	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
-	(void) RCC->PLL1CR;
-	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
-	(void) RCC->PLL1CR;
-	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
-		;
-
-
-	RCC->PLL1CR = (RCC->PLL1CR & ~ (RCC_PLL1CR_DIVPEN_Msk | RCC_PLL1CR_DIVQEN_Msk | RCC_PLL1CR_DIVREN_Msk));
-	(void) RCC->PLL1CR;
-
-	RCC->PLL1CFGR1 = (RCC->PLL1CFGR1 & ~ (RCC_PLL1CFGR1_DIVN_Msk | RCC_PLL1CFGR1_DIVM1_Msk)) |
-		((uint_fast32_t) (PLL1DIVM - 1) << RCC_PLL1CFGR1_DIVM1_Pos) |
-		((uint_fast32_t) (PLL1DIVN - 1) << RCC_PLL1CFGR1_DIVN_Pos) |
-		0;
-	(void) RCC->PLL1CFGR1;
-
-	RCC->PLL1CFGR2 = (RCC->PLL1CFGR2 & ~ (RCC_PLL1CFGR2_DIVP_Msk | RCC_PLL1CFGR2_DIVQ_Msk | RCC_PLL1CFGR2_DIVR_Msk)) |
-		((uint_fast32_t) (pll1divp - 1) << RCC_PLL1CFGR2_DIVP_Pos) |
-		((uint_fast32_t) (PLL1DIVQ - 1) << RCC_PLL1CFGR2_DIVQ_Pos) |
-		((uint_fast32_t) (PLL1DIVR - 1) << RCC_PLL1CFGR2_DIVR_Pos) |
-		0;
-	(void) RCC->PLL1CFGR2;
-
-	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
-	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
-		;
-
-	RCC->PLL1CR &= ~ RCC_PLL1CR_SSCG_CTRL_Msk;
-	(void) RCC->PLL1CR;
-
-	RCC->PLL1CR |= RCC_PLL1CR_DIVPEN_Msk;	// P output enable
-	(void) RCC->PLL1CR;
-
-
-	// Значения 0x02 и 0x03 проверены - 0x03 действительно ниже тактовая
-	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
-	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
-	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
-	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
-	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
-		((uint_fast32_t) 0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1_P
-		0;
-	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
-		;
-
-	//0x0: HSI selected as AXI sub-system clock (hsi_ck) (default after reset)
-	//0x1: HSE selected as AXI sub-system clock (hse_ck)
-	//0x2: PLL2 selected as AXI sub-system clock (pll2_p_ck)
-	//others: axiss_ck is gated
-	// axiss_ck 266 MHz Max
-	RCC->ASSCKSELR = (RCC->ASSCKSELR & ~ (RCC_ASSCKSELR_AXISSRC_Msk)) |
-			(0x02 << RCC_ASSCKSELR_AXISSRC_Pos) |	// pll2_p_ck
+			((slow ? 0x03uL : 0x02uL) << RCC_MPCKSELR_MPUSRC_Pos) |
 			0;
-	while ((RCC->ASSCKSELR & RCC_ASSCKSELR_AXISSRCRDY_Msk) == 0)
+	while((RCC->MPCKSELR & RCC_MPCKSELR_MPUSRCRDY_Msk) == 0)
 		;
 }
+
+
+#if WITHISBOOTLOADER
 
 static void stm32mp1_pll_initialize(void)
 {
@@ -2825,7 +2735,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
-	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / (2 ^ MPUDIV)).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
 		((uint_fast32_t) 0x00 << RCC_MPCKSELR_MPUSRC_Pos) |	// HSI
 		0;
@@ -2841,6 +2751,16 @@ static void stm32mp1_pll_initialize(void)
 		0;
 	while((RCC->MSSCKSELR & RCC_MSSCKSELR_MCUSSRCRDY_Msk) == 0)
 		;
+
+	// Для работы функции снижения тактовой частоты процессора
+	//	0x0: The MPUDIV is disabled; i.e. no clock generated
+	//	0x1: The mpuss_ck is equal to pll1_p_ck divided by 2 (default after reset)
+	//	0x2: The mpuss_ck is equal to pll1_p_ck divided by 4
+	//	0x3: The mpuss_ck is equal to pll1_p_ck divided by 8
+	//	others: The mpuss_ck is equal to pll1_p_ck divided by 16
+	RCC->MPCKDIVR = (RCC->MPCKDIVR ? ~ (RCC_MPCKDIVR_MPUDIV_Msk)) |
+		(0x02uL << RCC_MPCKDIVR_MPUDIV_pos) |	// pll1_p_ck divided by 4
+		0;
 
 	// Stop PLL4
 	RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
@@ -3107,7 +3027,7 @@ static void stm32mp1_pll_initialize(void)
 	//	0x0: HSI selected as MPU sub-system clock (hsi_ck) (default after reset)
 	//	0x1: HSE selected as MPU sub-system clock (hse_ck)
 	//	0x2: PLL1 selected as MPU sub-system clock (pll1_p_ck)
-	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / 2 MPUDIV).
+	//	0x3: PLL1 via MPUDIV is selected as MPU sub-system clock (pll1_p_ck / (2 ^ MPUDIV)).
 	RCC->MPCKSELR = (RCC->MPCKSELR & ~ (RCC_MPCKSELR_MPUSRC_Msk)) |
 		((uint_fast32_t) 0x02uL << RCC_MPCKSELR_MPUSRC_Pos) |	// PLL1_P
 		0;
@@ -3296,6 +3216,7 @@ static void stm32mp1_pll_initialize(void)
 
 #endif /* WITHELKEY */
 }
+#endif /* WITHISBOOTLOADER */
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
