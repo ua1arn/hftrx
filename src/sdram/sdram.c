@@ -3920,7 +3920,7 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-	PRINTF("arm_hardware_sdram_initialize start. %lu\n", stm32mp1_get_pll2_r_freq() / 1000000);
+	PRINTF("arm_hardware_sdram_initialize start.\n");
 
 	if (1)
 	{
