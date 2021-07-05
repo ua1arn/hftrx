@@ -1138,7 +1138,7 @@ static void update_gui_elements_list(void)
 /* Системный обработчик слайдера в момент его перемещения */
 static void slider_process(slider_t * sl)
 {
-	uint16_t v = sl->value + round((sl->orientation ? gui.vector_move_x : gui.vector_move_y) / sl->step);
+	int v = sl->value + roundf((sl->orientation ? gui.vector_move_x : gui.vector_move_y) / sl->step);
 	if (v >= 0 && v <= sl->size / sl->step)
 		sl->value = v;
 	reset_tracking();
