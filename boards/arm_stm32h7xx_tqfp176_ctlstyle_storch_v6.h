@@ -296,7 +296,6 @@
 	#define WITHVIEW_3DSS		1
 	//#define WITHDEFAULTVIEW		VIEW_3DSS
 	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
-	#define WITHFFTOVERLAPPOW2	0	/* Количество перекрывающися буферов FFT спектра (2^param). */
 	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
