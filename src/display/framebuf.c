@@ -2375,7 +2375,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_GREEN     	, COLOR24(0x00, 0xFF, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_RED       	, COLOR24(0xFF, 0x00, 0x00));
 
-	fillfour_xltrgb24(xltable, COLORPIP_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
+	fillfour_xltrgb24(xltable, COLORMAIN_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
 	// код (COLORPIP_BASE + 15) освободися. GUI_MENUSELECTCOLOR?
 
 #if COLORSTYLE_ATS52
