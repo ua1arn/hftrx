@@ -3602,6 +3602,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 
 #if DDR_FREQ <= 300000000uL
 	// less or equal 300 MHz
+	// DDR3 timings only 6-6-6 (in  according AN5168
 	#if WITHHWDDR3_1GBIT
 		#include "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
 	#elif WITHHWDDR3_2GBIT
