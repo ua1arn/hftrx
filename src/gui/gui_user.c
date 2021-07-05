@@ -162,12 +162,12 @@ void gui_user_actions_after_close_window(void)
 
 static void gui_main_process(void)
 {
-	window_t * win = get_win(WINDOW_MAIN);
+	window_t * const win = get_win(WINDOW_MAIN);
 
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	char buf [TEXT_ARRAY_SIZE];
 	const uint_fast8_t buflen = ARRAY_SIZE(buf);
-	uint_fast16_t y1 = 125, y2 = 145, current_place = 0, xx;
+	uint_fast16_t y1 = 125, y2 = 145, current_place = 0;
 	const uint_fast8_t num_places = 8;
 	const uint_fast8_t lbl_place_width = 100;
 	uint_fast8_t update = 0;
@@ -275,14 +275,14 @@ static void gui_main_process(void)
 				}
 				else
 				{
-					window_t * win = get_win(WINDOW_BANDS);
+					window_t * const win = get_win(WINDOW_BANDS);
 					open_window(win);
 					footer_buttons_state(DISABLED, btn_Bands);
 				}
 			}
 			else if (bh == btn_Memory)
 			{
-				window_t * win = get_win(WINDOW_MEMORY);
+				window_t * const win = get_win(WINDOW_MEMORY);
 				if (win->state == NON_VISIBLE)
 				{
 					open_window(win);
@@ -305,7 +305,7 @@ static void gui_main_process(void)
 				}
 				else
 				{
-					window_t * win = get_win(WINDOW_OPTIONS);
+					window_t * const win = get_win(WINDOW_OPTIONS);
 					open_window(win);
 					footer_buttons_state(DISABLED, btn_Options);
 				}
@@ -321,7 +321,7 @@ static void gui_main_process(void)
 				}
 				else
 				{
-					window_t * win = get_win(WINDOW_RECEIVE);
+					window_t * const win = get_win(WINDOW_RECEIVE);
 					open_window(win);
 					footer_buttons_state(DISABLED, btn_Receive);
 				}
@@ -365,7 +365,7 @@ static void gui_main_process(void)
 #endif /* WITHTX */
 			if (bh == btn_notch)
 			{
-				window_t * win = get_win(WINDOW_NOTCH);
+				window_t * const win = get_win(WINDOW_NOTCH);
 				if (win->state == NON_VISIBLE)
 				{
 					open_window(win);
@@ -465,6 +465,8 @@ static void gui_main_process(void)
 	{
 		static uint_fast8_t bp_wide;
 		static uint_fast16_t bp_low, bp_high;
+		uint_fast16_t xx;
+
 		if (update)
 		{
 			bp_wide = hamradio_get_bp_type_wide();
@@ -487,6 +489,8 @@ static void gui_main_process(void)
 	// значение сдвига частоты
 	{
 		static int_fast16_t if_shift;
+		uint_fast16_t xx;
+
 		if (update)
 			if_shift = hamradio_if_shift(0);
 		xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -509,6 +513,8 @@ static void gui_main_process(void)
 	// AGC
 	{
 		static int_fast8_t agc;
+		uint_fast16_t xx;
+
 		if (update)
 			agc = hamradio_get_agc_type();
 		xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -525,6 +531,8 @@ static void gui_main_process(void)
 	{
 #if WITHIF4DSP
 		static int_fast32_t z;
+		uint_fast16_t xx;
+
 		if (update)
 			z = display_zoomedbw() / 1000;
 		local_snprintf_P(buf, buflen, PSTR("SPAN"));
@@ -541,6 +549,8 @@ static void gui_main_process(void)
 	{
 #if WITHVOLTLEVEL
 		static ldiv_t v;
+		uint_fast16_t xx;
+
 		if (update)
 			v = ldiv(hamradio_get_volt_value(), 10);
 		local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
@@ -554,25 +564,28 @@ static void gui_main_process(void)
 #if WITHCURRLEVEL || WITHCURRLEVEL2
 		if (hamradio_get_tx())
 		{
+			uint_fast16_t xx;
+			xx = current_place * lbl_place_width + lbl_place_width / 2;
+
 			static int_fast16_t drain;
 			if (update)
 			{
 				drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
-				if (drain < 0)
-				{
-					drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
-				}
+//				if (drain < 0)
+//				{
+//					drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
+//				}
 			}
 
 	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
 			// для больших токов (более 9 ампер)
-			ldiv_t t = ldiv(drain / 10, 10);
-			local_snprintf_P(buf, buflen, PSTR("%2d.%01dA"), t.quot, t.rem);
+			const ldiv_t t = ldiv(drain / 10, 10);
+			local_snprintf_P(buf, buflen, PSTR("%2d.%01dA"), t.quot, ABS(t.rem));
 
 	#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 			// Датчик тока до 5 ампер
-			ldiv_t t = ldiv(drain, 100);
-			local_snprintf_P(buf, buflen, PSTR("%d.%02dA"), t.quot, t.rem);
+			const ldiv_t t = ldiv(drain, 100);
+			local_snprintf_P(buf, buflen, PSTR("%d.%02dA"), t.quot, ABS(t.rem));
 
 	#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
 
@@ -588,6 +601,8 @@ static void gui_main_process(void)
 #if defined (RTC1_TYPE)
 		static uint_fast16_t year;
 		static uint_fast8_t month, day, hour, minute, secounds;
+		uint_fast16_t xx;
+
 		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 		local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 		xx = current_place * lbl_place_width + lbl_place_width / 2;
@@ -616,6 +631,8 @@ static void gui_main_process(void)
 
 	// быстрое меню 2-го энкодера
 	{
+		uint_fast16_t xx;
+
 		hamradio_gui_enc2_update();
 
 		if (gui_enc2_menu.state)
@@ -639,10 +656,9 @@ static void gui_main_process(void)
 
 	{
 	#if 0 //WITHTHERMOLEVEL	// температура выходных транзисторов (при передаче)
-		static ldiv_t t;
 		if (hamradio_get_tx())
 		{
-			t = ldiv(hamradio_get_temperature_value(), 10);
+			const ldiv_t t = ldiv(hamradio_get_temperature_value(), 10);
 			local_snprintf_P(buf, buflen, PSTR("%d.%dC "), t.quot, t.rem);
 			PRINTF("%s\n", buf);		// пока вывод в консоль
 		}
@@ -654,7 +670,7 @@ static void gui_main_process(void)
 
 static void window_memory_process(void)
 {
-	window_t * win = get_win(WINDOW_MEMORY);
+	window_t * const win = get_win(WINDOW_MEMORY);
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
@@ -785,7 +801,7 @@ static void window_memory_process(void)
 
 static void window_bands_process(void)
 {
-	window_t * win = get_win(WINDOW_BANDS);
+	window_t * const win = get_win(WINDOW_BANDS);
 	static band_array_t bands [30];
 
 	if (win->first_call)
@@ -912,7 +928,7 @@ static void window_bands_process(void)
 
 			if (bh == btn_Freq)
 			{
-				window_t * win = get_win(WINDOW_FREQ);
+				window_t * const win = get_win(WINDOW_FREQ);
 				open_window(win);
 				hamradio_set_lockmode(1);
 				hamradio_enable_keyboard_redirect();
@@ -936,7 +952,7 @@ static void window_bands_process(void)
 
 static void window_options_process(void)
 {
-	window_t * win = get_win(WINDOW_OPTIONS);
+	window_t * const win = get_win(WINDOW_OPTIONS);
 
 	if (win->first_call)
 	{
@@ -1002,34 +1018,34 @@ static void window_options_process(void)
 
 			if (bh == btn_Utils)
 			{
-				window_t * win = get_win(WINDOW_UTILS);
+				window_t * const win = get_win(WINDOW_UTILS);
 				open_window(win);
 			}
 			else if (bh == btn_gui)
 			{
-				window_t * win = get_win(WINDOW_GUI_SETTINGS);
+				window_t * const win = get_win(WINDOW_GUI_SETTINGS);
 				open_window(win);
 			}
 			else if (bh == btn_TXsett)
 			{
-				window_t * win = get_win(WINDOW_TX_SETTINGS);
+				window_t * const win = get_win(WINDOW_TX_SETTINGS);
 				open_window(win);
 			}
 			else if (bh == btn_AUDsett)
 			{
-				window_t * win = get_win(WINDOW_AUDIOSETTINGS);
+				window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
 				open_window(win);
 			}
 			else if (bh == btn_SysMenu)
 			{
-				window_t * win = get_win(WINDOW_MENU);
+				window_t * const win = get_win(WINDOW_MENU);
 				open_window(win);
 				hamradio_enable_encoder2_redirect();
 			}
 #if WITHSPECTRUMWF && WITHMENU
 			else if (bh == btn_Display)
 			{
-				window_t * win = get_win(WINDOW_DISPLAY);
+				window_t * const win = get_win(WINDOW_DISPLAY);
 				open_window(win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
@@ -1047,7 +1063,7 @@ static void window_options_process(void)
 static void window_display_process(void)
 {
 #if WITHSPECTRUMWF && WITHMENU
-	window_t * win = get_win(WINDOW_DISPLAY);
+	window_t * const win = get_win(WINDOW_DISPLAY);
 	static display_var_t display_t;
 
 	if (win->first_call)
@@ -1300,7 +1316,7 @@ static void window_display_process(void)
 
 static void window_utilites_process(void)
 {
-	window_t * win = get_win(WINDOW_UTILS);
+	window_t * const win = get_win(WINDOW_UTILS);
 	uint_fast8_t update = 0;
 
 	if (win->first_call)
@@ -1352,7 +1368,7 @@ static void window_utilites_process(void)
 #if WITHTX
 			if (bh == btn_SWRscan)
 			{
-				window_t * winSWR = get_win(WINDOW_SWR_SCANNER);
+				window_t * const winSWR = get_win(WINDOW_SWR_SCANNER);
 				open_window(winSWR);
 			}
 #endif /* WITHTX */
@@ -1397,7 +1413,7 @@ static void window_swrscan_process(void)
 	static uint_fast8_t swr_scan_enable = 0;		// флаг разрешения сканирования КСВ
 	static uint_fast8_t swr_scan_stop = 0;			// флаг нажатия кнопки Stop во время сканирования
 	static uint_fast8_t * y_vals;					// массив КСВ в виде отсчетов по оси Y графика
-	window_t * win = get_win(WINDOW_SWR_SCANNER);
+	window_t * const win = get_win(WINDOW_SWR_SCANNER);
 	uint_fast8_t averageFactor = 3;
 
 	if (win->first_call)
@@ -1563,7 +1579,7 @@ static void window_swrscan_process(void)
 		colmain_line(fr, DIM_X, DIM_Y, gr_x, gr_y, win->x1 + x1, gr_y, COLORMAIN_WHITE, 0);
 
 		char buf [5];
-		uint_fast8_t l = 1, row_step = round((y0 - y1) / 3);
+		uint_fast8_t l = 1, row_step = roundf((y0 - y1) / 3);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), l++);
 		colpip_string3_tbg(fr, DIM_X, DIM_Y, gr_x - SMALLCHARW3 * 2, gr_y - SMALLCHARH3 / 2, buf, COLORMAIN_WHITE);
 		for(int_fast16_t yy = y0 - row_step; yy > y1; yy -= row_step)
@@ -1598,7 +1614,7 @@ static void window_swrscan_process(void)
 
 static void window_tx_process(void)
 {
-	window_t * win = get_win(WINDOW_TX_SETTINGS);
+	window_t * const win = get_win(WINDOW_TX_SETTINGS);
 	uint_fast8_t update = 0;
 
 	if (win->first_call)
@@ -1648,13 +1664,13 @@ static void window_tx_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			window_t * winTX = get_win(WINDOW_TX_SETTINGS);
-			window_t * winPower = get_win(WINDOW_TX_POWER);
-			window_t * winVOX = get_win(WINDOW_TX_VOX_SETT);
-			button_t * btn_tx_vox = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox");
-			button_t * btn_tx_power = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_power");
-			button_t * btn_tx_vox_settings = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
+			button_t * const bh = (button_t *) ptr;
+			window_t * const winTX = get_win(WINDOW_TX_SETTINGS);
+			window_t * const winPower = get_win(WINDOW_TX_POWER);
+			window_t * const winVOX = get_win(WINDOW_TX_VOX_SETT);
+			button_t * const btn_tx_vox = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox");
+			button_t * const btn_tx_power = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_power");
+			button_t * const btn_tx_vox_settings = find_gui_element(TYPE_BUTTON, winTX, "btn_tx_vox_settings");
 
 #if WITHPOWERTRIM
 			if (bh == btn_tx_power)
@@ -1713,7 +1729,7 @@ static void window_tx_process(void)
 static void window_tx_vox_process(void)
 {
 #if WITHVOX
-	window_t * win = get_win(WINDOW_TX_VOX_SETT);
+	window_t * const win = get_win(WINDOW_TX_VOX_SETT);
 
 	static slider_t * sl_vox_delay = NULL, * sl_vox_level = NULL, * sl_avox_level = NULL;
 	static label_t * lbl_vox_delay = NULL, * lbl_vox_level = NULL, * lbl_avox_level = NULL;
@@ -1908,7 +1924,7 @@ static void window_tx_vox_process(void)
 static void window_tx_power_process(void)
 {
 #if WITHPOWERTRIM
-	window_t * win = get_win(WINDOW_TX_POWER);
+	window_t * const win = get_win(WINDOW_TX_POWER);
 
 	static slider_t * sl_pwr_level = NULL, * sl_pwr_tuner_level = NULL;
 	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
@@ -2062,7 +2078,7 @@ static void window_tx_power_process(void)
 
 static void window_audiosettings_process(void)
 {
-	window_t * win = get_win(WINDOW_AUDIOSETTINGS);
+	window_t * const win = get_win(WINDOW_AUDIOSETTINGS);
 	uint_fast8_t update = 0;
 
 	if (win->first_call)
@@ -2117,19 +2133,19 @@ static void window_audiosettings_process(void)
 
 		if (IS_BUTTON_PRESS)
 		{
-			button_t * bh = (button_t *) ptr;
-			window_t * winAP = get_win(WINDOW_AUDIOSETTINGS);
-			window_t * winEQ = get_win(WINDOW_AP_MIC_EQ);
-			window_t * winRS = get_win(WINDOW_AP_REVERB_SETT);
-			window_t * winMIC = get_win(WINDOW_AP_MIC_SETT);
-			window_t * winMICpr = get_win(WINDOW_AP_MIC_PROF);
-			button_t * btn_reverb = find_gui_element(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
-			button_t * btn_reverb_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
-			button_t * btn_monitor = find_gui_element(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
-			button_t * btn_mic_eq = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
-			button_t * btn_mic_eq_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq_settings");	// MIC EQ settingss
-			button_t * btn_mic_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
-			button_t * btn_mic_profiles = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
+			button_t * const bh = (button_t *) ptr;
+			window_t * const winAP = get_win(WINDOW_AUDIOSETTINGS);
+			window_t * const winEQ = get_win(WINDOW_AP_MIC_EQ);
+			window_t * const winRS = get_win(WINDOW_AP_REVERB_SETT);
+			window_t * const winMIC = get_win(WINDOW_AP_MIC_SETT);
+			window_t * const winMICpr = get_win(WINDOW_AP_MIC_PROF);
+			button_t * const btn_reverb = find_gui_element(TYPE_BUTTON, winAP, "btn_reverb");						// reverb on/off
+			button_t * const btn_reverb_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_reverb_settings");	// reverb settings
+			button_t * const btn_monitor = find_gui_element(TYPE_BUTTON, winAP, "btn_monitor");					// monitor on/off
+			button_t * const btn_mic_eq = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq");						// MIC EQ on/off
+			button_t * const btn_mic_eq_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_eq_settings");	// MIC EQ settingss
+			button_t * const btn_mic_settings = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_settings");			// mic settings
+			button_t * const btn_mic_profiles = find_gui_element(TYPE_BUTTON, winAP, "btn_mic_profiles");			// mic profiles
 
 			if (bh == btn_reverb_settings)
 			{
@@ -2231,7 +2247,7 @@ static void window_audiosettings_process(void)
 static void window_ap_reverb_process(void)
 {
 #if WITHREVERB
-	window_t * win = get_win(WINDOW_AP_REVERB_SETT);
+	window_t * const win = get_win(WINDOW_AP_REVERB_SETT);
 
 	static label_t * lbl_reverbDelay = NULL, * lbl_reverbLoss = NULL;
 	static slider_t * sl_reverbDelay = NULL, * sl_reverbLoss = NULL;
@@ -2380,7 +2396,7 @@ static void window_ap_mic_eq_process(void)
 {
 #if WITHAFCODEC1HAVEPROC
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	window_t * win = get_win(WINDOW_AP_MIC_EQ);
+	window_t * const win = get_win(WINDOW_AP_MIC_EQ);
 
 	label_t * lbl = NULL;
 	static uint_fast8_t eq_limit, eq_base = 0;
@@ -2535,7 +2551,7 @@ static void window_ap_mic_eq_process(void)
 static void window_ap_mic_process(void)
 {
 #if WITHAFCODEC1HAVEPROC
-	window_t * win = get_win(WINDOW_AP_MIC_SETT);
+	window_t * const win = get_win(WINDOW_AP_MIC_SETT);
 
 	static slider_t * sl_micLevel = NULL, * sl_micClip = NULL, * sl_micAGC = NULL;
 	static label_t * lbl_micLevel = NULL, * lbl_micClip = NULL, * lbl_micAGC = NULL;
@@ -2755,7 +2771,7 @@ static void window_ap_mic_process(void)
 static void window_ap_mic_prof_process(void)
 {
 #if WITHAFCODEC1HAVEPROC
-	window_t * win = get_win(WINDOW_AP_MIC_PROF);
+	window_t * const win = get_win(WINDOW_AP_MIC_PROF);
 
 	if (win->first_call)
 	{
@@ -2857,7 +2873,7 @@ static void window_ap_mic_prof_process(void)
 
 static void window_notch_process(void)
 {
-	window_t * win = get_win(WINDOW_NOTCH);
+	window_t * const win = get_win(WINDOW_NOTCH);
 	static notch_var_t notch;
 
 	if (win->first_call)
@@ -3036,7 +3052,7 @@ static void window_notch_process(void)
 
 static void window_gui_settings_process(void)
 {
-	window_t * win = get_win(WINDOW_GUI_SETTINGS);
+	window_t * const win = get_win(WINDOW_GUI_SETTINGS);
 	uint_fast8_t update = 0;
 
 	if (win->first_call)
@@ -3135,7 +3151,7 @@ static void window_gui_settings_process(void)
 
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
 {
-	window_t * win = get_win(WINDOW_UIF);
+	window_t * const win = get_win(WINDOW_UIF);
 	if (win->state == NON_VISIBLE)
 	{
 		close_window(DONT_OPEN_PARENT_WINDOW);
@@ -3160,7 +3176,7 @@ static void window_uif_process(void)
 	static button_t * button_up, * button_down;
 	static uint_fast16_t window_center_x;
 	static uint_fast8_t reinit = 0;
-	window_t * win = get_win(WINDOW_UIF);
+	window_t * const win = get_win(WINDOW_UIF);
 	int_fast8_t rotate = 0;
 
 	if (win->first_call)
@@ -3267,7 +3283,7 @@ static void window_uif_process(void)
 
 void gui_open_sys_menu(void)
 {
-	window_t * win = get_win(WINDOW_MENU);
+	window_t * const win = get_win(WINDOW_MENU);
 	static uint_fast8_t backup_parent = NO_PARENT_WINDOW;
 
 	if (check_for_parent_window() == NO_PARENT_WINDOW && win->parent_id != NO_PARENT_WINDOW)
@@ -3326,7 +3342,7 @@ void gui_user_actions_after_close_window(void)
 
 void minigui_main_process(void)
 {
-	window_t * win = get_win(WINDOW_MAIN);
+	window_t * const win = get_win(WINDOW_MAIN);
 
 	if (win->first_call)
 	{
@@ -3397,7 +3413,7 @@ void minigui_main_process(void)
 				}
 				else
 				{
-					window_t * win = get_win(WINDOW_MENU);
+					window_t * const win = get_win(WINDOW_MENU);
 					open_window(win);
 					footer_buttons_state(DISABLED, btn_settings);
 				}
@@ -3411,7 +3427,7 @@ void minigui_main_process(void)
 				}
 				else
 				{
-					window_t * win = get_win(WINDOW_BANDS);
+					window_t * const win = get_win(WINDOW_BANDS);
 					open_window(win);
 					footer_buttons_state(DISABLED, btn_Bands);
 				}
@@ -3427,7 +3443,7 @@ void minigui_main_process(void)
 				}
 				else
 				{
-					window_t * win = get_win(WINDOW_RECEIVE);
+					window_t * const win = get_win(WINDOW_RECEIVE);
 					open_window(win);
 					footer_buttons_state(DISABLED, btn_Receive);
 				}
@@ -3458,7 +3474,7 @@ void minigui_main_process(void)
 
 static void minigui_window_bands_process(void)
 {
-	window_t * win = get_win(WINDOW_BANDS);
+	window_t * const win = get_win(WINDOW_BANDS);
 	static band_array_t bands [30];
 
 	if (win->first_call)
@@ -3584,7 +3600,7 @@ static void minigui_window_bands_process(void)
 
 			if (bh == btn_Freq)
 			{
-				window_t * win = get_win(WINDOW_FREQ);
+				window_t * const win = get_win(WINDOW_FREQ);
 				open_window(win);
 				hamradio_set_lockmode(1);
 				hamradio_enable_keyboard_redirect();
@@ -3610,7 +3626,7 @@ static void minigui_window_bands_process(void)
 
 static void minigui_main_menu_process(void)
 {
-	window_t * win = get_win(WINDOW_MAIN_MENU);
+	window_t * const win = get_win(WINDOW_MAIN_MENU);
 
 	if (win->first_call)
 	{
@@ -3681,7 +3697,7 @@ void gui_open_sys_menu(void)
 
 static void window_af_process(void)
 {
-	window_t * win = get_win(WINDOW_AF);
+	window_t * const win = get_win(WINDOW_AF);
 	static bp_var_t bp_t;
 
 	if (win->first_call)
@@ -3883,7 +3899,7 @@ static void window_af_process(void)
 
 static void window_mode_process(void)
 {
-	window_t * win = get_win(WINDOW_MODES);
+	window_t * const win = get_win(WINDOW_MODES);
 
 	if (win->first_call)
 	{
@@ -3955,7 +3971,7 @@ static void window_mode_process(void)
 
 static void window_receive_process(void)
 {
-	window_t * win = get_win(WINDOW_RECEIVE);
+	window_t * const win = get_win(WINDOW_RECEIVE);
 	uint_fast8_t update = 0;
 
 	if (win->first_call)
@@ -4024,7 +4040,7 @@ static void window_receive_process(void)
 			}
 			else if (bh == btn_AF)
 			{
-				window_t * win = get_win(WINDOW_AF);
+				window_t * const win = get_win(WINDOW_AF);
 				open_window(win);
 			}
 			else if (bh == btn_AGC)
@@ -4034,7 +4050,7 @@ static void window_receive_process(void)
 			}
 			else if (bh == btn_mode)
 			{
-				window_t * win = get_win(WINDOW_MODES);
+				window_t * const win = get_win(WINDOW_MODES);
 				open_window(win);
 			}
 		}
@@ -4071,7 +4087,7 @@ static void window_freq_process (void)
 {
 	static label_t * lbl_freq;
 	static editfreq_t editfreq;
-	window_t * win = get_win(WINDOW_FREQ);
+	window_t * const win = get_win(WINDOW_FREQ);
 	static const char * win_title = "Freq:";
 
 	if (win->first_call)
@@ -4196,12 +4212,17 @@ static void window_menu_process(void)
 {
 	static uint_fast8_t menu_is_scrolling = 0;
 	static button_t * button_up = NULL, * button_down = NULL;
-	window_t * win = get_win(WINDOW_MENU);
+	window_t * const win = get_win(WINDOW_MENU);
 	int_fast8_t move_x = 0, move_y = 0, rotate = 0;
 	static label_t * selected_label = NULL;
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level, enc2_code = KBD_CODE_MAX;
+
 	static menu_t menu [MENU_COUNT];
+	static menu_t * const mep = & menu [MENU_PARAMS];
+	static menu_t * const meg = & menu [MENU_GROUPS];
+	static menu_t * const mev = & menu [MENU_VALS];
+
 	uint_fast8_t is_moving_label = 0;
 
 #if WITHGUISTYLE_COMMON
@@ -4265,17 +4286,17 @@ static void window_menu_process(void)
 		button_up->visible = NON_VISIBLE;
 		button_down->visible = NON_VISIBLE;
 
-		menu [MENU_GROUPS].add_id = 0;
-		menu [MENU_GROUPS].selected_str = 0;
-		menu [MENU_GROUPS].selected_label = 0;
-		menu [MENU_PARAMS].add_id = 0;
-		menu [MENU_PARAMS].selected_str = 0;
-		menu [MENU_PARAMS].selected_label = 0;
-		menu [MENU_VALS].add_id = 0;
-		menu [MENU_VALS].selected_str = 0;
-		menu [MENU_VALS].selected_label = 0;
+		meg->add_id = 0;
+		meg->selected_str = 0;
+		meg->selected_label = 0;
+		mep->add_id = 0;
+		mep->selected_str = 0;
+		mep->selected_label = 0;
+		mev->add_id = 0;
+		mev->selected_str = 0;
+		mev->selected_label = 0;
 
-		menu [MENU_GROUPS].first_id = 0;
+		meg->first_id = 0;
 		for (i = 0; i < win->lh_count; i ++)
 		{
 			lh = & win->lh_ptr [i];
@@ -4283,51 +4304,51 @@ static void window_menu_process(void)
 				break;
 		}
 
-		menu [MENU_GROUPS].last_id = -- i;
-		menu [MENU_GROUPS].num_rows = menu [MENU_GROUPS].last_id - menu [MENU_GROUPS].first_id;
+		meg->last_id = -- i;
+		meg->num_rows = meg->last_id - meg->first_id;
 
-		menu [MENU_PARAMS].first_id = ++ i;
+		mep->first_id = ++ i;
 		for (; i < win->lh_count; i ++)
 		{
 			lh = & win->lh_ptr [i];
 			if (strcmp(lh->name, "lbl_params"))
 				break;
 		}
-		menu [MENU_PARAMS].last_id = -- i;
-		menu [MENU_PARAMS].num_rows = menu [MENU_PARAMS].last_id - menu [MENU_PARAMS].first_id;
+		mep->last_id = -- i;
+		mep->num_rows = mep->last_id - mep->first_id;
 
-		menu [MENU_VALS].first_id = ++ i;
+		mev->first_id = ++ i;
 		for (; i < win->lh_count; i ++)
 		{
 			lh = & win->lh_ptr [i];
 			if (strcmp(lh->name, "lbl_vals"))
 				break;
 		}
-		menu [MENU_VALS].last_id = -- i;
-		menu [MENU_VALS].num_rows = menu [MENU_VALS].last_id - menu [MENU_VALS].first_id;
+		mev->last_id = -- i;
+		mev->num_rows = mev->last_id - mev->first_id;
 
-		menu [MENU_GROUPS].count = hamradio_get_multilinemenu_block_groups(menu [MENU_GROUPS].menu_block) - 1;
+		meg->count = hamradio_get_multilinemenu_block_groups(meg->menu_block) - 1;
 		xn = 0;
 		yn = 0;
-		for(i = 0; i <= menu [MENU_GROUPS].num_rows; i ++)
+		for(i = 0; i <= meg->num_rows; i ++)
 		{
-			lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-			strcpy(lh->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
+			lh = & win->lh_ptr [meg->first_id + i];
+			strcpy(lh->text, meg->menu_block [i + meg->add_id].name);
 			lh->visible = VISIBLE;
-			lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+			lh->color = i == meg->selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 			lh->x = xn;
 			lh->y = yn;
 			yn += int_rows;
 		}
 
-		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
-				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
+		mep->count = hamradio_get_multilinemenu_block_params(mep->menu_block,
+				meg->menu_block [meg->selected_str].index, MENU_ARRAY_SIZE) - 1;
 		xn += int_col2;
 		yn = 0;
-		for(i = 0; i <= menu [MENU_PARAMS].num_rows; i ++)
+		for(i = 0; i <= mep->num_rows; i ++)
 		{
-			lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-			strcpy(lh->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
+			lh = & win->lh_ptr [mep->first_id + i];
+			strcpy(lh->text, mep->menu_block [i + mep->add_id].name);
 			lh->visible = VISIBLE;
 			lh->color = COLORMAIN_WHITE;
 			lh->x = xn;
@@ -4335,21 +4356,21 @@ static void window_menu_process(void)
 			yn += int_rows;
 		}
 
-		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
-		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block, menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, menu [MENU_VALS].count);
+		mev->count = mep->count < mev->num_rows ? mep->count : mev->num_rows;
+		hamradio_get_multilinemenu_block_vals(mev->menu_block, mep->menu_block [mep->selected_str].index, mev->count);
 		xn += int_col3;
 		yn = 0;
-		for(lh = NULL, i = 0; i <= menu [MENU_VALS].num_rows; i ++)
+		for(lh = NULL, i = 0; i <= mev->num_rows; i ++)
 		{
-			lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+			lh = & win->lh_ptr [mev->first_id + i];
 			lh->x = xn;
 			lh->y = yn;
 			yn += int_rows;
 			lh->visible = NON_VISIBLE;
 			lh->color = COLORMAIN_WHITE;
-			if (menu [MENU_VALS].count < i)
+			if (mev->count < i)
 				continue;
-			strcpy(lh->text, menu [MENU_VALS].menu_block [i + menu [MENU_VALS].add_id].name);
+			strcpy(lh->text, mev->menu_block [i + mev->add_id].name);
 			lh->visible = VISIBLE;
 		}
 
@@ -4377,20 +4398,20 @@ static void window_menu_process(void)
 			selected_label = (label_t *) ptr;
 			if (strcmp(selected_label->name, "lbl_group") == 0)
 			{
-				menu [MENU_GROUPS].selected_label = selected_label->index;
+				meg->selected_label = selected_label->index;
 				menu_label_touched = 1;
 				menu_level = MENU_GROUPS;
 			}
 			else if (strcmp(selected_label->name, "lbl_params") == 0)
 			{
-				menu [MENU_PARAMS].selected_label = selected_label->index;
+				mep->selected_label = selected_label->index;
 				menu_label_touched = 1;
 				menu_level = MENU_PARAMS;
 			}
 			else if (strcmp(selected_label->name, "lbl_vals") == 0)
 			{
-				menu [MENU_VALS].selected_label = selected_label->index;
-				menu [MENU_PARAMS].selected_label = menu [MENU_VALS].selected_label;
+				mev->selected_label = selected_label->index;
+				mep->selected_label = mev->selected_label;
 				menu_label_touched = 1;
 				menu_level = MENU_VALS;
 			}
@@ -4420,35 +4441,39 @@ static void window_menu_process(void)
 		static uint_fast8_t start_str_group = 0, start_str_params = 0;
 		if (! menu_is_scrolling)
 		{
-			start_str_group = menu [MENU_GROUPS].add_id;
-			start_str_params = menu [MENU_PARAMS].add_id;
+			// завершили scroll
+			start_str_group = meg->add_id;
+			start_str_params = mep->add_id;
 		}
-		ldiv_t r = ldiv(move_y, int_rows);
+		const ldiv_t r = ldiv(move_y, int_rows);
 		if (strcmp(selected_label->name, "lbl_group") == 0)
 		{
-			int_fast8_t q = start_str_group - r.quot;
-			menu [MENU_GROUPS].add_id = q <= 0 ? 0 : q;
-			menu [MENU_GROUPS].add_id = (menu [MENU_GROUPS].add_id + menu [MENU_GROUPS].num_rows) > menu [MENU_GROUPS].count ?
-					(menu [MENU_GROUPS].count - menu [MENU_GROUPS].num_rows) : menu [MENU_GROUPS].add_id;
-			menu [MENU_GROUPS].selected_str = menu [MENU_GROUPS].selected_label + menu [MENU_GROUPS].add_id;
+			const int_fast8_t q = start_str_group - r.quot;
+			meg->add_id = q <= 0 ? 0 : q;
+			meg->add_id = (meg->add_id + meg->num_rows) > meg->count ?
+					(meg->count - meg->num_rows) : meg->add_id;
+			meg->selected_str = meg->selected_label + meg->add_id;
 			menu_level = MENU_GROUPS;
-			menu [MENU_PARAMS].add_id = 0;
-			menu [MENU_PARAMS].selected_str = 0;
-			menu [MENU_PARAMS].selected_label = 0;
-			menu [MENU_VALS].add_id = 0;
-			menu [MENU_VALS].selected_str = 0;
-			menu [MENU_VALS].selected_label = 0;
+			mep->add_id = 0;
+			mep->selected_str = 0;
+			mep->selected_label = 0;
+			mev->add_id = 0;
+			mev->selected_str = 0;
+			mev->selected_label = 0;
 		}
-		else if (strcmp(selected_label->name, "lbl_params") == 0 && menu [MENU_PARAMS].count > menu [MENU_PARAMS].num_rows)
+		else if (strcmp(selected_label->name, "lbl_params") == 0 &&
+				mep->count > mep->num_rows)
 		{
 			int_fast8_t q = start_str_params - r.quot;
-			menu [MENU_PARAMS].add_id = q <= 0 ? 0 : q;
-			menu [MENU_PARAMS].add_id = (menu [MENU_PARAMS].add_id + menu [MENU_PARAMS].num_rows) > menu [MENU_PARAMS].count ?
-					(menu [MENU_PARAMS].count - menu [MENU_PARAMS].num_rows) : menu [MENU_PARAMS].add_id;
-			menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
-			menu [MENU_VALS].add_id = menu [MENU_PARAMS].add_id;
-			menu [MENU_VALS].selected_str = menu [MENU_PARAMS].selected_str;
-			menu [MENU_VALS].selected_label = menu [MENU_PARAMS].selected_label;
+			mep->add_id = q <= 0 ? 0 : q;
+			mep->add_id =
+					(mep->add_id + mep->num_rows) > mep->count ?
+						(mep->count - mep->num_rows) :
+						mep->add_id;
+			mep->selected_str = mep->selected_label + mep->add_id;
+			mev->add_id = mep->add_id;
+			mev->selected_str = mep->selected_str;
+			mev->selected_label = mep->selected_label;
 			menu_level = MENU_PARAMS;
 		}
 		menu_is_scrolling = 1;
@@ -4475,12 +4500,12 @@ static void window_menu_process(void)
 			menu_level = --menu_level == MENU_OFF ? MENU_OFF : menu_level;
 			if (menu_level == MENU_GROUPS)
 			{
-				menu [MENU_PARAMS].add_id = 0;
-				menu [MENU_PARAMS].selected_str = 0;
-				menu [MENU_PARAMS].selected_label = 0;
-				menu [MENU_VALS].add_id = 0;
-				menu [MENU_VALS].selected_str = 0;
-				menu [MENU_VALS].selected_label = 0;
+				mep->add_id = 0;
+				mep->selected_str = 0;
+				mep->selected_label = 0;
+				mev->add_id = 0;
+				mev->selected_str = 0;
+				mev->selected_label = 0;
 			}
 		}
 
@@ -4488,8 +4513,8 @@ static void window_menu_process(void)
 		label_t * lh = NULL;
 		if (menu_level == MENU_VALS)
 		{
-			menu [MENU_VALS].selected_label = menu [MENU_PARAMS].selected_label;
-			lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_VALS].selected_label];
+			mev->selected_label = mep->selected_label;
+			lh = & win->lh_ptr [mev->first_id + mev->selected_label];
 
 			button_down->visible = VISIBLE;
 			button_down->x1 = lh->x - button_down->w - 10;
@@ -4498,16 +4523,16 @@ static void window_menu_process(void)
 			button_up->visible = VISIBLE;
 			button_up->x1 = lh->x + get_label_width(lh) + 10;
 			button_up->y1 = button_down->y1;
-			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= meg->num_rows; i++)
 			{
-				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+				lh = & win->lh_ptr [meg->first_id + i];
+				lh->color = i == meg->selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
-				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+				lh = & win->lh_ptr [mep->first_id + i];
+				lh->color = i == mep->selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
-				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
-				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_YELLOW : COLORMAIN_GRAY;
+				lh = & win->lh_ptr [mev->first_id + i];
+				lh->color = i == mep->selected_label ? COLORMAIN_YELLOW : COLORMAIN_GRAY;
 			}
 			menu_label_touched = 0;
 		}
@@ -4515,15 +4540,15 @@ static void window_menu_process(void)
 		{
 			button_down->visible = NON_VISIBLE;
 			button_up->visible = NON_VISIBLE;
-			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= meg->num_rows; i++)
 			{
-				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
+				lh = & win->lh_ptr [meg->first_id + i];
+				lh->color = i == meg->selected_label ? COLORMAIN_BLACK : COLORMAIN_GRAY;
 
-				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-				lh->color = i == menu [MENU_PARAMS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+				lh = & win->lh_ptr [mep->first_id + i];
+				lh->color = i == mep->selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 
-				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+				lh = & win->lh_ptr [mev->first_id + i];
 				lh->color = COLORMAIN_WHITE;
 			}
 		}
@@ -4531,15 +4556,15 @@ static void window_menu_process(void)
 		{
 			button_down->visible = NON_VISIBLE;
 			button_up->visible = NON_VISIBLE;
-			for (uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+			for (uint_fast8_t i = 0; i <= meg->num_rows; i++)
 			{
-				lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-				lh->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+				lh = & win->lh_ptr [meg->first_id + i];
+				lh->color = i == meg->selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 
-				lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
+				lh = & win->lh_ptr [mep->first_id + i];
 				lh->color = COLORMAIN_WHITE;
 
-				lh = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+				lh = & win->lh_ptr [mev->first_id + i];
 				lh->color = COLORMAIN_WHITE;
 			}
 		}
@@ -4559,11 +4584,11 @@ static void window_menu_process(void)
 
 	if (rotate != 0 && menu_level == MENU_VALS)
 	{
-		menu [MENU_PARAMS].selected_str = menu [MENU_PARAMS].selected_label + menu [MENU_PARAMS].add_id;
-		label_t * lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_PARAMS].selected_label];
-		strcpy(lh->text, hamradio_gui_edit_menu_item(menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].selected_str].index, rotate));
+		mep->selected_str = mep->selected_label + mep->add_id;
+		label_t * lh = & win->lh_ptr [mev->first_id + mep->selected_label];
+		strcpy(lh->text, hamradio_gui_edit_menu_item(mep->menu_block [mep->selected_str].index, rotate));
 
-		lh = & win->lh_ptr [menu [MENU_VALS].first_id + menu [MENU_VALS].selected_label];
+		lh = & win->lh_ptr [mev->first_id + mev->selected_label];
 		button_up->x1 = lh->x + get_label_width(lh) + 10;
 	}
 
@@ -4578,8 +4603,8 @@ static void window_menu_process(void)
 		else if (menu_label_touched)
 			menu [menu_level].selected_str = menu [menu_level].selected_label + menu [menu_level].add_id;
 
-		menu [MENU_PARAMS].count = hamradio_get_multilinemenu_block_params(menu [MENU_PARAMS].menu_block,
-				menu [MENU_GROUPS].menu_block [menu [MENU_GROUPS].selected_str].index, MENU_ARRAY_SIZE) - 1;
+		mep->count = hamradio_get_multilinemenu_block_params(mep->menu_block,
+				meg->menu_block [meg->selected_str].index, MENU_ARRAY_SIZE) - 1;
 
 		if (rotate > 0)
 		{
@@ -4601,30 +4626,30 @@ static void window_menu_process(void)
 		}
 
 		if (menu_level == MENU_GROUPS)
-			for(uint_fast8_t i = 0; i <= menu [MENU_GROUPS].num_rows; i++)
+			for(uint_fast8_t i = 0; i <= meg->num_rows; i++)
 			{
-				label_t * l = & win->lh_ptr [menu [MENU_GROUPS].first_id + i];
-				strcpy(l->text, menu [MENU_GROUPS].menu_block [i + menu [MENU_GROUPS].add_id].name);
-				l->color = i == menu [MENU_GROUPS].selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+				label_t * l = & win->lh_ptr [meg->first_id + i];
+				strcpy(l->text, meg->menu_block [i + meg->add_id].name);
+				l->color = i == meg->selected_label ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 			}
 
-		menu [MENU_VALS].count = menu [MENU_PARAMS].count < menu [MENU_VALS].num_rows ? menu [MENU_PARAMS].count : menu [MENU_VALS].num_rows;
-		hamradio_get_multilinemenu_block_vals(menu [MENU_VALS].menu_block,  menu [MENU_PARAMS].menu_block [menu [MENU_PARAMS].add_id].index, menu [MENU_VALS].count);
+		mev->count = mep->count < mev->num_rows ? mep->count : mev->num_rows;
+		hamradio_get_multilinemenu_block_vals(mev->menu_block,  mep->menu_block [mep->add_id].index, mev->count);
 
-		for(uint_fast8_t i = 0; i <= menu [MENU_PARAMS].num_rows; i++)
+		for(uint_fast8_t i = 0; i <= mep->num_rows; i++)
 		{
-			label_t * lp = & win->lh_ptr [menu [MENU_PARAMS].first_id + i];
-			label_t * lv = & win->lh_ptr [menu [MENU_VALS].first_id + i];
+			label_t * lp = & win->lh_ptr [mep->first_id + i];
+			label_t * lv = & win->lh_ptr [mev->first_id + i];
 
 			lp->visible = NON_VISIBLE;
 			lp->state = DISABLED;
 			lv->visible = NON_VISIBLE;
 			lv->state = DISABLED;
-			if (i > menu [MENU_PARAMS].count)
+			if (i > mep->count)
 				continue;
-			strcpy(lp->text, menu [MENU_PARAMS].menu_block [i + menu [MENU_PARAMS].add_id].name);
-			strncpy(lv->text, menu [MENU_VALS].menu_block [i].name, 15);
-			lp->color = i == menu [MENU_PARAMS].selected_label && menu_level > MENU_GROUPS ? COLORMAIN_BLACK : COLORMAIN_WHITE;
+			strcpy(lp->text, mep->menu_block [i + mep->add_id].name);
+			strncpy(lv->text, mev->menu_block [i].name, 15);
+			lp->color = i == mep->selected_label && menu_level > MENU_GROUPS ? COLORMAIN_BLACK : COLORMAIN_WHITE;
 			lp->visible = VISIBLE;
 			lp->state = CANCELLED;
 			lv->visible = VISIBLE;
@@ -4638,12 +4663,12 @@ static void window_menu_process(void)
 	{
 	case MENU_PARAMS:
 	case MENU_VALS:
-		lh = & win->lh_ptr [menu [MENU_PARAMS].first_id + menu [MENU_PARAMS].selected_label];
+		lh = & win->lh_ptr [mep->first_id + mep->selected_label];
 		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_col3 - 20,
 				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 
 	case MENU_GROUPS:
-		lh = & win->lh_ptr [menu [MENU_GROUPS].first_id + menu [MENU_GROUPS].selected_label];
+		lh = & win->lh_ptr [meg->first_id + meg->selected_label];
 		colpip_rect(colmain_fb_draw(), DIM_X, DIM_Y, win->x1 + lh->x - 5, win->y1 + lh->y - 5, win->x1 + lh->x + int_col2 - 20,
 				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 	}
