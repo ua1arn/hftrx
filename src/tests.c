@@ -6497,11 +6497,9 @@ void hightests(void)
 #endif
 #if 1 && CPUSTYLE_STM32MP1 && WITHDEBUG
 	{
-		unsigned long stm32mp1_get_per_freq(void);
-		unsigned long stm32mp1_get_axiss_freq(void);
-
 		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
 		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
+		PRINTF("stm32mp1_get_pll2_r_freq()=%lu (DDR3)\n", stm32mp1_get_pll2_r_freq());
 	}
 #endif
 #if 1 && defined (DDRPHYC) && WITHDEBUG

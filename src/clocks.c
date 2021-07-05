@@ -9,6 +9,7 @@
 
 #include "board.h"
 #include "gpio.h"
+#include "clocks.h"
 #include "spi.h"
 #include "formats.h"	// for debug prints
 

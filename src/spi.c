@@ -6,10 +6,11 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include <stdlib.h>
+#include "clocks.h"
 #include "spi.h"
 #include "gpio.h"
 #include "formats.h"
+#include <stdlib.h>
 
 // битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =

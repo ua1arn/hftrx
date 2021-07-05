@@ -269,11 +269,6 @@ extern "C" {
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
-			unsigned long stm32f7xx_get_sys_freq(void);
-			unsigned long stm32f7xx_get_pll_freq(void);
-			unsigned long stm32f7xx_get_plli2s_freq(void);
-			unsigned long stm32f7xx_get_pllsai_freq(void);
-
 			#define PLL_FREQ	(stm32f7xx_get_pll_freq())
 			//#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
 			//#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
@@ -289,9 +284,6 @@ extern "C" {
 			#define HSIFREQ 16000000uL
 
 		#elif CPUSTYLE_STM32F4XX
-
-			unsigned long stm32f4xx_get_sysclk_freq(void);
-			unsigned long stm32f4xx_get_spi1_freq(void);
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
@@ -734,10 +726,6 @@ extern "C" {
 	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
-	unsigned long stm32mp1_get_mpuss_freq(void);	// MPU frequency
-	unsigned long stm32mp1_get_pll4_r_freq(void);
-	unsigned long stm32mp1_get_usbphy_freq(void);
-	unsigned long stm32mp1_get_usbotg_freq(void);
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
@@ -786,7 +774,6 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	(xc7z1_get_arm_freq())
-	unsigned long  xc7z1_get_arm_freq(void);
 	#define BOARD_SPI_FREQ (xc7z1_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200

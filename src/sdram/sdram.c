@@ -994,8 +994,6 @@ static void panic(void)
 		;
 }
 
-unsigned long stm32mp1_get_pll2_r_freq(void);
-
 // DDR clock in Hz
 unsigned long stm32mp_ddr_clk_get_rate(unsigned long id)
 {
