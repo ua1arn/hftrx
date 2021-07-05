@@ -1252,7 +1252,7 @@ static void process_gui(void)
 
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
-		for (uint_fast8_t i = gui_element_count - 1; i >= 0; i --)
+		for (int i = gui_element_count - 1; i >= 0; i --)
 		{
 			p = & gui_elements [i];
 			w = p->win;
