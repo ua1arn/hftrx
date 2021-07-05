@@ -1252,10 +1252,13 @@ static void process_gui(void)
 
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
+		ASSERT(gui_element_count != 0);
 		for (int i = gui_element_count - 1; i >= 0; i --)
 		{
+			ASSERT(i < ARRAY_SIZE(gui_elements));
 			p = & gui_elements [i];
 			w = p->win;
+			ASSERT(w != NULL);
 			uint_fast16_t x1 = p->x1 + w->x1, y1 = p->y1 + w->y1;
 			uint_fast16_t x2 = p->x2 + w->x1, y2 = p->y2 + w->y1;
 
@@ -1302,6 +1305,7 @@ static void process_gui(void)
 		{
 			if (gui.is_touching_screen)
 			{
+				ASSERT(p != NULL);
 				p->state = PRESSED;
 				set_state_record(p);
 
@@ -1319,6 +1323,7 @@ static void process_gui(void)
 		}
 		else
 		{
+			ASSERT(p != NULL);
 			gui.state = CANCELLED;
 			p->state = CANCELLED;
 			set_state_record(p);
@@ -1327,6 +1332,7 @@ static void process_gui(void)
 	}
 	if (gui.state == RELEASED)
 	{
+		ASSERT(p != NULL);
 		p->state = RELEASED;			// для запуска обработчика нажатия
 		if(! is_long_press)				// если было долгое нажатие, обработчик по короткому не запускать
 			set_state_record(p);
