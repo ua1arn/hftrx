@@ -473,6 +473,7 @@ static void gui_main_process(void)
 			bp_high = hamradio_get_high_bp(0);
 			bp_low = hamradio_get_low_bp(0) * 10;
 			bp_high = bp_wide ? (bp_high * 100) : (bp_high * 10);
+			PRINTF("bp: w=%u h=%u l=%u\n", bp_wide, bp_high, bp_low);
 		}
 		local_snprintf_P(buf, buflen, PSTR("AF"));
 		xx = current_place * lbl_place_width + 7;
