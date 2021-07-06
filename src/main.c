@@ -21111,21 +21111,24 @@ void hamradio_set_agc_slow(void)
 
 uint_fast8_t hamradio_get_agc_type(void)	// 0 - slow, 1 - fast
 {
+	const uint_fast8_t pathi = 0;
 	const FLASHMEM struct modetempl * pamodetempl;
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	pamodetempl = getmodetempl(asubmode);
 	const uint_fast8_t agcseti = pamodetempl->agcseti;
 
-	if (gagc [agcseti].release10 == 5)		// Как иначе вытянуть признак, пока не придумал. Надо переделать
+	if (gagc [agcseti].release10 >= 5)		// 0.5 секунды и более - считаем медланная. Как иначе вытянуть признак, пока не придумал. Надо переделать
 		return 0;
 	else
 		return 1;
 }
 
+// 1 - wide (SSB style), 0 - narow (CW style)
 uint_fast8_t hamradio_get_bp_type_wide(void)
 {
+	const uint_fast8_t pathi = 0;
 	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
 	const uint_fast8_t pos = bwsetpos [bwseti];
@@ -21134,13 +21137,15 @@ uint_fast8_t hamradio_get_bp_type_wide(void)
 
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 {
+	const uint_fast8_t pathi = 0;
 	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-	uint_fast16_t low;
 	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+
+	uint_fast16_t low;
 	switch (p->type)
 		{
 		case BWSET_PAIR:
@@ -21153,6 +21158,7 @@ uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 			break;
 
 		default:
+			ASSERT(0);
 		case BWSET_SINGLE:
 			if (rotate < 0)
 			{
@@ -21172,13 +21178,14 @@ uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 {
+	const uint_fast8_t pathi = 0;
 	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-	uint_fast16_t high;
 	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+	uint_fast16_t high;
 
 	switch (p->type)
 	{
@@ -21192,6 +21199,7 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 		break;
 
 	default:
+		ASSERT(0);
 	case BWSET_SINGLE:
 		if (rotate != 0 && gcwpitch10 + rotate <= CWPITCHMAX10 && gcwpitch10 + rotate >= CWPITCHMIN10)
 		{
@@ -21205,12 +21213,13 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 
 int_fast8_t hamradio_afresponce(int_fast8_t v)
 {
+	const uint_fast8_t pathi = 0;
 	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
 	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 
 	if (v > 0)
 		p->afresponce = calc_next(p->afresponce, AFRESPONCEMIN, AFRESPONCEMAX);
