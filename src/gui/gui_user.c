@@ -233,7 +233,7 @@ static void gui_main_process(void)
 			touch_area_t * th = (touch_area_t *) ptr;
 			touch_area_t * ta_freq = find_gui_element(TYPE_TOUCH_AREA, win, "ta_freq");
 
-			if (th == ta_freq && gui_nvram.freq_swipe_enable)
+			if (th == ta_freq && gui_nvram.freq_swipe_enable && check_for_parent_window() == NO_PARENT_WINDOW)
 			{
 				int_fast8_t move_x = 0, move_y = 0;
 				get_gui_tracking(& move_x, & move_y);
@@ -621,7 +621,7 @@ static void gui_main_process(void)
 	if (update)
 		cpu_temp = GET_CPU_TEMPERATURE();
 
-	xx = current_place * lbl_place_width + lbl_place_width / 2;
+	uint_fast16_t xx = current_place * lbl_place_width + lbl_place_width / 2;
 	local_snprintf_P(buf, buflen, PSTR("CPU temp"));
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y1, buf, COLORMAIN_WHITE);
 	local_snprintf_P(buf, buflen, PSTR("%2.1f"), cpu_temp);
