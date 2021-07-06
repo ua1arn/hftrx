@@ -107,7 +107,6 @@ void xc7z_dma_init_af_tx(void)
 void xc7z_if_fifo_inthandler(void)
 {
 	static uint_fast8_t rx_stage = 0;
-	static uint_fast8_t rx_index = 0;
 
 	if (XLlFifo_iRxOccupancy(& rx_fifo) > DMABUFFSIZE32RX)
 	{
