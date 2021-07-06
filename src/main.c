@@ -21489,7 +21489,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 #endif /* WITHAFCODEC1HAVEPROC */
 
-uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t is_bcast_need)
+uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t bandscount, uint_fast8_t is_bcast_need)
 {
 	uint_fast8_t count = 0;
 
@@ -21497,7 +21497,8 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t is_bcast_need
 	{
 		if (existingbandsingle(i, 0))		// check for HAM bands
 		{
-			band_array_t * b = & bands [count];
+			ASSERT(count < bandscount);
+			band_array_t * const b = & bands [count];
 			const char * l = get_band_label(i);
 
 			b->index = i;
@@ -21522,7 +21523,8 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t is_bcast_need
 		{
 			if (existingbandsingle(i, 1))		// check for broadcast bands
 			{
-				band_array_t * b = & bands [count];
+				ASSERT(count < bandscount);
+				band_array_t * const b = & bands [count];
 				const char * l = get_band_label(i);
 
 				b->index = i;
