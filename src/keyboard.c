@@ -34,7 +34,7 @@ enum
 
 
 static uint_fast8_t
-getstablev8(volatile uint_fast8_t * p)
+getstablev8(const volatile uint_fast8_t * p)
 {
 	uint_fast8_t v1 = * p;
 	uint_fast8_t v2;
@@ -48,7 +48,7 @@ getstablev8(volatile uint_fast8_t * p)
 }
 
 static uint_fast16_t
-getstablev16(volatile uint_fast16_t * p)
+getstablev16(const volatile uint_fast16_t * p)
 {
 	uint_fast8_t v1 = * p;
 	uint_fast8_t v2;

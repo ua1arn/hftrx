@@ -203,7 +203,7 @@ typedef struct dualctl32_tag
 } dualctl32_t;
 
 static uint_fast8_t
-getstablev8(volatile uint_fast8_t * p)
+getstablev8(const volatile uint_fast8_t * p)
 {
 	if (sizeof * p == 1)
 		return * p;
@@ -221,7 +221,7 @@ getstablev8(volatile uint_fast8_t * p)
 }
 
 static uint_fast16_t
-getstablev16(volatile uint_fast16_t * p)
+getstablev16(const volatile uint_fast16_t * p)
 {
 	if (sizeof * p == 1)
 		return * p;
