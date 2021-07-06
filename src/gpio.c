@@ -1061,7 +1061,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 			#if CPUSTYLE_STM32H7XX
 				RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;     // включить тактирование альтернативных функций
-				(void) RCC->AHB4ENRs;
+				(void) RCC->APB4ENR;
 			#else /* CPUSTYLE_STM32H7XX */
 				RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;     // включить тактирование альтернативных функций
 				(void) RCC->APB2ENR;
@@ -3123,7 +3123,7 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 #elif (CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX) && defined (RCC_AHBENR_GPIOFEN)
 
 	RCC->AHBENR |= RCC_AHBENR_GPIOFEN;	/* I/O port F clock enable */
-	(void) RCC->AHB4ENRs;
+	(void) RCC->AHBENR;
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOF, opins, initialstate);
 	// Установка режима выводов
