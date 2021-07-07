@@ -1544,7 +1544,7 @@ uint32_t hardware_get_random(void)
 		if ((RCC->AHB2ENR & RCC_AHB2ENR_RNGEN) == 0)
 		{
 			RCC->AHB2ENR |= RCC_AHB2ENR_RNGEN;	/* RNG clock enable */
-			__DSB();
+			(void) RCC->AHB2ENR;
 			RNG->CR |= RNG_CR_RNGEN;
 		}
 
@@ -1558,7 +1558,7 @@ uint32_t hardware_get_random(void)
 	if ((RCC->AHBENR & RCC_AHBENR_RNGEN) == 0)
 	{
 		RCC->AHBENR |= RCC_AHBENR_RNGEN;	/* RNG clock enable */
-		__DSB();
+		(void) RCC->AHBENR;
 		RNG->CR |= RNG_CR_RNGEN;
 	}
 
