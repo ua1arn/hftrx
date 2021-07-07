@@ -971,11 +971,14 @@ extern "C" {
 	#pragma GCC diagnostic ignored "-Wunused-variable"
 	#pragma GCC diagnostic ignored "-Wunused-const-variable"
 	#pragma GCC diagnostic error "-Wwrite-strings"
+
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
+
 	#define ATTRPACKED __attribute__ ((packed))
 	#define ATTRNORETURN __attribute__ ((__noreturn__))
 	#define KEYWORDPACKED __packed
+
 #else                           
 	#if defined   (__CC_ARM)      /* ARM Compiler */
 		#define __ALIGN4_BEGIN    __align(4)  
@@ -987,7 +990,12 @@ extern "C" {
 		#define __ALIGN4_BEGIN    __align(4) 
 		#define __ALIGN4_END
 	#endif /* __CC_ARM */  
-#endif /* __GNUC__ */ 
+
+	#define ATTRPACKED __attribute__ ((packed))
+	#define ATTRNORETURN __attribute__ ((__noreturn__))
+	#define KEYWORDPACKED __packed
+
+#endif /* __GNUC__ */
 
 
 

@@ -2009,20 +2009,21 @@ __STATIC_FORCEINLINE void L1_CleanDCache_by_Addr (volatile void *addr, int32_t d
 {
 	if (dsize > 0)
 	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr = (uintptr_t) addr & ~ (DCACHEROWSIZE - 1U);
 
-		__DSB();
+//		__DSB();
 
 		do
 		{
-			L1C_CleanDCacheMVA((void*) op_addr);		// записать буфер, кэш продолжает хранить
+			//L1C_CleanDCacheMVA((void*) op_addr);		// with __DMB();
+			__set_DCCMVAC(op_addr);
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 
-		__DSB();
-		__ISB();
+//		__DSB();
+//		__ISB();
 	}
 }
 
@@ -2030,20 +2031,21 @@ __STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr (volatile void *addr,
 {
 	if (dsize > 0)
 	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr = (uintptr_t) addr & ~ (DCACHEROWSIZE - 1U);
 
-		__DSB();
+//		__DSB();
 
 		do
 		{
-			L1C_CleanInvalidateDCacheMVA((void*) op_addr);
+			//L1C_CleanInvalidateDCacheMVA((void*) op_addr);	// with __DMB();
+			__set_DCCIMVAC(op_addr);
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 
-		__DSB();
-		__ISB();
+//		__DSB();
+//		__ISB();
 	}
 }
 
@@ -2051,20 +2053,21 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr (volatile void *addr, int3
 {
 	if (dsize > 0)
 	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_addr = (uintptr_t) addr & ~ (DCACHEROWSIZE - 1U);
 
-		__DSB();
+//		__DSB();
 
 		do
 		{
-			L1C_InvalidateDCacheMVA((void*) op_addr);
+			//L1C_InvalidateDCacheMVA((void*) op_addr);	// with __DMB();
+			__set_DCIMVAC(op_addr);
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 
-		__DSB();
-		__ISB();
+//		__DSB();
+//		__ISB();
 	}
 }
 
