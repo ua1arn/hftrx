@@ -360,8 +360,8 @@ void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
 	char b [128];	// see stack sizes for interrupt handlers
 	va_list	ap;
-	va_start(ap, format);
 
+	va_start(ap, format);
 	vsnprintf(b, sizeof b / sizeof b [0], format, ap);
 	va_end(ap);
 
