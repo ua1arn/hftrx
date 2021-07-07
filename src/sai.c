@@ -73,7 +73,7 @@ dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer16cachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush(addr, buffers_dmabuffer16cachesize());
+	arm_hardware_flush_invalidate(addr, buffers_dmabuffer16cachesize());
 	return addr;
 }
 
@@ -103,7 +103,7 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer32txcachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush(addr,  buffers_dmabuffer32txcachesize());
+	arm_hardware_flush_invalidate(addr,  buffers_dmabuffer32txcachesize());
 	return addr;
 }
 
