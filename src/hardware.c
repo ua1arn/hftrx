@@ -2005,75 +2005,59 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 
 #elif (__CORTEX_A != 0)
 
-__STATIC_FORCEINLINE void L1_CleanDCache_by_Addr (volatile void *addr, int32_t dsize)
+//	MVA
+//	For more information about the possible meaning when the table shows that an MVA is required see Terms used in
+//	describing the maintenance operations on page B2-1272. When the data is stated to be an MVA, it does not have to
+//	be cache line aligned.
+
+__STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr & ~ (DCACHEROWSIZE - 1U);
-
-//		__DSB();
-
+		uintptr_t op_addr = (uintptr_t) addr;
 		do
 		{
-			//L1C_CleanDCacheMVA((void*) op_addr);		// with __DMB();
-			__set_DCCMVAC(op_addr);
+			L1C_CleanDCacheMVA((void *) op_addr);	// With DMB. Clean data cache line by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-
-//		__DSB();
-//		__ISB();
 	}
 }
 
-__STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr (volatile void *addr, int32_t dsize)
+__STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr & ~ (DCACHEROWSIZE - 1U);
-
-//		__DSB();
-
+		uintptr_t op_addr = (uintptr_t) addr;
 		do
 		{
-			//L1C_CleanInvalidateDCacheMVA((void*) op_addr);	// with __DMB();
-			__set_DCCIMVAC(op_addr);
+			L1C_CleanInvalidateDCacheMVA((void *) op_addr);	// With DMB. Clean and Invalidate data cache by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-
-//		__DSB();
-//		__ISB();
 	}
 }
 
-__STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr (volatile void *addr, int32_t dsize)
+__STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr & ~ (DCACHEROWSIZE - 1U);
-
-//		__DSB();
-
+		uintptr_t op_addr = (uintptr_t) addr;
 		do
 		{
-			//L1C_InvalidateDCacheMVA((void*) op_addr);	// with __DMB();
-			__set_DCIMVAC(op_addr);
+			L1C_InvalidateDCacheMVA((void *) op_addr);	// With DMB. Invalidate data cache line by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-
-//		__DSB();
-//		__ISB();
 	}
 }
 
 #if (__L2C_PRESENT == 1)
 
-__STATIC_FORCEINLINE void L2_CleanDCache_by_Addr (volatile void *addr, int32_t dsize)
+__STATIC_FORCEINLINE void L2_CleanDCache_by_Addr(volatile void *addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -2089,7 +2073,7 @@ __STATIC_FORCEINLINE void L2_CleanDCache_by_Addr (volatile void *addr, int32_t d
 	}
 }
 
-__STATIC_FORCEINLINE void L2_CleanInvalidateDCache_by_Addr (volatile void *addr, int32_t dsize)
+__STATIC_FORCEINLINE void L2_CleanInvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -2105,7 +2089,7 @@ __STATIC_FORCEINLINE void L2_CleanInvalidateDCache_by_Addr (volatile void *addr,
 	}
 }
 
-__STATIC_FORCEINLINE void L2_InvalidateDCache_by_Addr (volatile void *addr, int32_t dsize)
+__STATIC_FORCEINLINE void L2_InvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
@@ -2132,8 +2116,6 @@ void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 #endif
 }
 
-//#define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
-
 // Сейчас в эту память будем читать по DMA
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
@@ -2155,9 +2137,6 @@ void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
-	//ASSERT((addr % DCACHEROWSIZE) == 0);
-	//ASSERT((dsize % DCACHEROWSIZE) == 0);
-
 	L1_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
 	L2_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
