@@ -2016,13 +2016,15 @@ __STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t ds
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_addr = (uintptr_t) addr;
+		__DSB();
 		do
 		{
 			__set_DCCMVAC(op_addr);	// Clean data cache line by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		//  __ASM volatile ("dmb 0xF":::"memory");
 	}
 }
 
@@ -2032,13 +2034,15 @@ __STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, 
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_addr = (uintptr_t) addr;
+		__DSB();
 		do
 		{
 			__set_DCCIMVAC(op_addr);	// Clean and Invalidate data cache by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		//  __ASM volatile ("dmb 0xF":::"memory");
 	}
 }
 
@@ -2048,13 +2052,15 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_addr = (uintptr_t) addr;
+		__DSB();
 		do
 		{
 			__set_DCIMVAC(op_addr);	// Invalidate data cache line by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		// Cache Invalidate operation is not follow memory-write
+		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2671,7 +2677,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 #define APRWval 		0x03	/* Full access */
 #define APROval 		0x06	/* All write accesses generate Permission faults */
 #define DOMAINval	0x0F
-#define SECTIONval	0x02
+#define SECTIONval	0x02	/* 0b10, Section or Supersection */
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
