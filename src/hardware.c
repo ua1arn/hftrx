@@ -2137,9 +2137,6 @@ void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 // Сейчас в эту память будем читать по DMA
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
-	//ASSERT((addr % DCACHEROWSIZE) == 0);
-	//ASSERT((dsize % DCACHEROWSIZE) == 0);
-
 	L1_InvalidateDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
 	L2_InvalidateDCache_by_Addr((void *) addr, dsize);
@@ -2149,9 +2146,6 @@ void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 {
-	//ASSERT((addr % DCACHEROWSIZE) == 0);
-	//ASSERT((dsize % DCACHEROWSIZE) == 0);
-
 	L1_CleanDCache_by_Addr((void *) addr, dsize);
 #if (__L2C_PRESENT == 1)
 	L2_CleanDCache_by_Addr((void *) addr, dsize);
