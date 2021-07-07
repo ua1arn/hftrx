@@ -2003,7 +2003,7 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, dsize);	// DCCIMVAC register used.
 }
 
-#elif (__CORTEX_A != 0)
+#elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 //	MVA
 //	For more information about the possible meaning when the table shows that an MVA is required see Terms used in
@@ -2177,7 +2177,7 @@ uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
-#elif (__CORTEX_A != 0)
+#elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	{
 		uint32_t result;
 		// Read CCNT Register
@@ -2244,7 +2244,7 @@ void irqlog_print(void)
 }
 #endif
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 #include "hardware.h"
 #include "formats.h"
@@ -3020,7 +3020,7 @@ sysinit_debug_initialize(void)
 
 #endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 	#if WITHDEBUG
 	{
@@ -3057,7 +3057,7 @@ sysinit_debug_initialize(void)
 	}
 	#endif /* WITHDEBUG */
 
-#endif /* (__CORTEX_A != 0) */
+#endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
 
 #if WITHDEBUG
 	HARDWARE_DEBUG_INITIALIZE();
@@ -3065,7 +3065,7 @@ sysinit_debug_initialize(void)
 #endif /* WITHDEBUG */
 }
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 /** \brief  Set HVBAR
 
     This function assigns the given value to the Hyp Vector Base Address Register.
@@ -3077,12 +3077,12 @@ __STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
 	// cp, op1, Rt, CRn, CRm, op2
   __set_CP(15, 4, hvbar, 12, 0, 0);
 }
-#endif /* (__CORTEX_A != 0) */
+#endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
 
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 	extern unsigned long __Vectors;
 
@@ -3104,7 +3104,7 @@ static void FLASHMEMINITFUNC
 sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
 #if 0 && WITHDEBUG
@@ -3179,13 +3179,6 @@ sysinit_mmu_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_cache_initialize(void)
 {
-#if CPUSTYLE_AT91SAM9XE
-
-	//cp15_enable_i_cache();
-	__set_SCTLR(__get_SCTLR() | SCTLR_I_Msk);
-
-#endif /* CPUSTYLE_AT91SAM9XE */
-
 #if (__CORTEX_M != 0)
 	#if __ICACHE_PRESENT
 
@@ -3203,7 +3196,7 @@ sysinit_cache_initialize(void)
 	//arm_hardware_flush_all();
 #endif /* (__CORTEX_M != 0) */
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
@@ -3233,7 +3226,7 @@ sysinit_cache_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_cache_L2_cpu0_initialize(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
 
@@ -3281,7 +3274,7 @@ SystemInit(void)
 }
 
 
-#if  (__CORTEX_A != 0)
+#if  (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 static void cortexa_cpuinfo(void)
 {

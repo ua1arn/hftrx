@@ -374,8 +374,11 @@ extern "C" {
 
 #elif CPUSTYLE_AT91SAM9XE
 
+	// ARM926EJ-S
+
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-	#define	CPUSTYLE_ARM7TDMI	1
+	#define	CPUSTYLE_ARM9		1
+
 	#include "armcpu/at91sam9xe512.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
