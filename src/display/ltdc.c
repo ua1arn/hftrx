@@ -1511,6 +1511,9 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 #endif /* LCDMODE_PIP_RGB565 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		; //hardware_nonguiyield();
 
 	/* Enable the LTDC */
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
@@ -1526,6 +1529,8 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		;//hardware_nonguiyield();
 
 	ltdc_tfcon_cfg(vdmode);
 	//PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
@@ -1539,6 +1544,8 @@ arm_hardware_ltdc_deinitialize(void)
 	LAYER_MAIN->CR &= ~ LTDC_LxCR_LEN;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
+	//while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+	//	;//hardware_nonguiyield();
 
 #if CPUSTYLE_STM32H7XX
     /* Reset pulse to LTDC */
@@ -1601,13 +1608,19 @@ void arm_hardware_ltdc_L8_palette(void)
 	display2_xltrgb24(xltrgb24);
 #if LCDMODE_MAIN_L8
 	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+
 	/* LTDC reload configuration */
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		;//hardware_nonguiyield();
 #endif /* LCDMODE_PIP_L8 */
 #if LCDMODE_PIP_L8
+	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+
 	/* LTDC reload configuration */
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
-	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		;//hardware_nonguiyield();
 #endif /* LCDMODE_PIP_L8 */
 }
 
@@ -1618,7 +1631,10 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 	(void) LAYER_MAIN->CFBAR;
 	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
 	(void) LAYER_MAIN->CR;
+
 	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Immediate Reload. */
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		hardware_nonguiyield();
 }
 
 /* Set MAIN frame buffer address. Wait for VSYNC. */
