@@ -109,6 +109,7 @@ void dump_queue(window_t * win)
 // WM_MESSAGE_ENC2_ROTATE:  int_fast8_t rotate
 // WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
 // WM_MESSAGE_UPDATE: 		nothing
+// WM_MESSAGE_CLOSE: 		nothing
 uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 {
 	if (win->queue.size >= WM_MAX_QUEUE_SIZE)
@@ -190,6 +191,21 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		if (win->queue.data [ind].message != WM_MESSAGE_UPDATE)		// предотвращение дублей сообщения WM_MESSAGE_UPDATE
 		{
 			win->queue.data [win->queue.size].message = WM_MESSAGE_UPDATE;
+			win->queue.data [win->queue.size].type = UINT8_MAX;
+			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
+			win->queue.data [win->queue.size].action = INT8_MAX;
+			win->queue.size ++;
+		}
+	}
+		return 1;
+		break;
+
+	case WM_MESSAGE_CLOSE:
+	{
+		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;
+		if (win->queue.data [ind].message != WM_MESSAGE_CLOSE)		// предотвращение дублей сообщения WM_MESSAGE_CLOSE
+		{
+			win->queue.data [win->queue.size].message = WM_MESSAGE_CLOSE;
 			win->queue.data [win->queue.size].type = UINT8_MAX;
 			win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
 			win->queue.data [win->queue.size].action = INT8_MAX;
@@ -572,6 +588,12 @@ void close_window(uint_fast8_t parent_action) // 0 - не открывать par
 		window_t * win = get_win(gui.win [1]);
 		win->state = NON_VISIBLE;
 		elements_state(win);
+
+		if (put_to_wm_queue(win, WM_MESSAGE_CLOSE))
+			win->onVisibleProcess();
+		else
+			dump_queue(win);
+
 		free_win_ptr(win);
 		gui.win [1] = NO_PARENT_WINDOW;
 

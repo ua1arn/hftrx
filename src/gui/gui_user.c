@@ -802,7 +802,7 @@ static void window_memory_process(void)
 static void window_bands_process(void)
 {
 	window_t * const win = get_win(WINDOW_BANDS);
-	static band_array_t bands [36];
+	static band_array_t * bands = NULL;
 
 	if (win->first_call)
 	{
@@ -821,7 +821,8 @@ static void window_bands_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		win->bh_count = hamradio_get_bands(bands, ARRAY_SIZE(bands), 1) + 1;
+		win->bh_count = hamradio_get_bands(& bands, 1) + 1;
+		GUI_MEM_ASSERT(bands);
 		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
 		win->bh_ptr = calloc(win->bh_count, sizeof (button_t));
 		GUI_MEM_ASSERT(win->bh_ptr);
@@ -939,6 +940,11 @@ static void window_bands_process(void)
 				close_all_windows();
 			}
 		}
+		break;
+
+	case WM_MESSAGE_CLOSE:
+
+		free(bands);
 		break;
 
 	default:
