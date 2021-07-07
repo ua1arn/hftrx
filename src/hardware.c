@@ -2006,21 +2006,21 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 #elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 //	MVA
-//	For more information about the possible meaning when the table shows that an MVA is required see Terms used in
-//	describing the maintenance operations on page B2-1272. When the data is stated to be an MVA, it does not have to
-//	be cache line aligned.
+//	For more information about the possible meaning when the table shows that an MVA is required
+// 	see Terms used in describing the maintenance operations on page B2-1272.
+// 	When the data is stated to be an MVA, it does not have to be cache line aligned.
 
 __STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t dsize)
 {
 	if (dsize > 0)
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr;
+		uintptr_t op_mva = (uintptr_t) addr;
 		__DSB();
 		do
 		{
-			__set_DCCMVAC(op_addr);	// Clean data cache line by address.
-			op_addr += DCACHEROWSIZE;
+			__set_DCCMVAC(op_mva);	// Clean data cache line by address.
+			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
@@ -2033,12 +2033,12 @@ __STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, 
 	if (dsize > 0)
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr;
+		uintptr_t op_mva = (uintptr_t) addr;
 		__DSB();
 		do
 		{
-			__set_DCCIMVAC(op_addr);	// Clean and Invalidate data cache by address.
-			op_addr += DCACHEROWSIZE;
+			__set_DCCIMVAC(op_mva);	// Clean and Invalidate data cache by address.
+			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
@@ -2051,11 +2051,11 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 	if (dsize > 0)
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
-		uintptr_t op_addr = (uintptr_t) addr;
+		uintptr_t op_mva = (uintptr_t) addr;
 		do
 		{
-			__set_DCIMVAC(op_addr);	// Invalidate data cache line by address.
-			op_addr += DCACHEROWSIZE;
+			__set_DCIMVAC(op_mva);	// Invalidate data cache line by address.
+			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		// Cache Invalidate operation is not follow by memory-writes
