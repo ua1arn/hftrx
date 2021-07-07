@@ -2374,7 +2374,10 @@ void IRQ_Handler_GICv2(void)
 
 	//dbg_putchar('1');
 	//const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
-	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
+
+	//const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID in high bits, Interrupt ID
+	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID - use GIC_AcknowledgePending
+
 	const IRQn_ID_t int_id = gicc_iar & INT_ID_MASK;
 
 	// IHI0048B_b_gic_architecture_specification.pdf
@@ -2386,7 +2389,7 @@ void IRQ_Handler_GICv2(void)
 
 	if (int_id >= 1020)
 	{
-		//dbg_putchar('2');
+//		dbg_putchar('2');
 //		SPIN_LOCK(& giclock);
 //		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 //		SPIN_UNLOCK(& giclock);
@@ -2424,6 +2427,7 @@ void IRQ_Handler_GICv2(void)
 	}
 	else
 	{
+//		dbg_putchar('3');
 //		SPIN_LOCK(& giclock);
 //		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
 //		SPIN_UNLOCK(& giclock);
