@@ -2052,15 +2052,13 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 	{
 		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
 		uintptr_t op_addr = (uintptr_t) addr;
-		__DSB();
 		do
 		{
 			__set_DCIMVAC(op_addr);	// Invalidate data cache line by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-		// Cache Invalidate operation is not follow memory-write
-		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		// Cache Invalidate operation is not follow by memory-writes
 	}
 }
 
