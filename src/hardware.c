@@ -2018,10 +2018,11 @@ __STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t ds
 		uintptr_t op_addr = (uintptr_t) addr;
 		do
 		{
-			L1C_CleanDCacheMVA((void *) op_addr);	// With DMB. Clean data cache line by address.
+			__set_DCCMVAC(op_addr);	// Clean data cache line by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2033,10 +2034,11 @@ __STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, 
 		uintptr_t op_addr = (uintptr_t) addr;
 		do
 		{
-			L1C_CleanInvalidateDCacheMVA((void *) op_addr);	// With DMB. Clean and Invalidate data cache by address.
+			__set_DCCIMVAC(op_addr);	// Clean and Invalidate data cache by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2048,10 +2050,11 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 		uintptr_t op_addr = (uintptr_t) addr;
 		do
 		{
-			L1C_InvalidateDCacheMVA((void *) op_addr);	// With DMB. Invalidate data cache line by address.
+			__set_DCIMVAC(op_addr);	// Invalidate data cache line by address.
 			op_addr += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -3366,6 +3369,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 static RAMDTCM SPINLOCK_t cpu1init;
 
+// Инициализация второго ппрцессора
 void Reset_CPUn_Handler(void)
 {
 #if (__CORTEX_A == 9U)
