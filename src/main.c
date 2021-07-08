@@ -30,6 +30,8 @@
 #include <ctype.h>
 #include <math.h>
 
+//#define WITHRTTY 1
+
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
 
@@ -8250,6 +8252,830 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 
 #endif /* WITHLEAKYLMSANR */
 
+#if WITHRTTY
+
+#define TRX_SAMPLERATE ARMI2SRATE
+
+#define IIR_BIQUAD_MAX_SECTIONS 15
+#define IIR_BIQUAD_SECTION_ORDER 2
+
+typedef struct iir_filter {
+    int sections;
+    int sect_ord;
+    double a[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
+    double b[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
+    double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
+} iir_filter_t;
+
+iir_filter_t *biquad_create(int sections);
+void biquad_delete(iir_filter_t *filter);
+double biquad_update(iir_filter_t *filter, double x);
+void iir_freq_resp(iir_filter_t *filter, double *h, double fs, double f);
+void biquad_zero(struct iir_filter *filter);
+void biquad_init_lowpass(iir_filter_t *filter, double fs, double f);
+void biquad_init_highpass(iir_filter_t *filter, double fs, double f);
+void biquad_init_bandpass(iir_filter_t *filter, double fs, double f1, double f2);
+void biquad_init_bandstop(iir_filter_t *filter, double fs, double f1, double f2);
+
+
+typedef struct {
+    float re;
+    float im;
+} complex_s;
+
+typedef struct {
+    double re;
+    double im;
+} complex_d;
+
+static void complex_mul(complex_d *a, complex_d *b);
+static void complex_div(complex_d *p, complex_d *q);
+
+static void biquad_init_band(iir_filter_t *filter, double fs, double f1, double f2, int stop);
+
+
+iir_filter_t *biquad_create(int sections)
+{
+	static iir_filter_t filter_designer;
+
+	memset(&filter_designer, 0x00, sizeof(iir_filter_t));
+
+    filter_designer.sections = sections;
+    filter_designer.sect_ord = IIR_BIQUAD_SECTION_ORDER;
+
+	memset(filter_designer.a, 0x00, sizeof(filter_designer.a));
+	memset(filter_designer.b, 0x00, sizeof(filter_designer.b));
+	memset(filter_designer.d, 0x00, sizeof(filter_designer.d));
+
+    return & filter_designer;
+}
+
+void iir_freq_resp(iir_filter_t *filter, double *h, double fs, double f)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    double w = 2.0 * M_PI * f / fs;
+    complex_d _z, m, p, q;
+    int i, k;
+
+    /* On unit circle, 1/z = ~z (complex conjugate) */
+
+    _z.re = cos(w);
+    _z.im = -sin(w);
+
+    m.re = 1.0;
+    m.im = 0.0;
+
+    for (i = 0; i < filter->sections; i += 1)
+    {
+        k = filter->sect_ord;
+        p.re = b[k];
+        p.im = 0;
+        while (k > 0) {
+            k -= 1.0;
+            complex_mul(&p, &_z);
+            p.re += b[k];
+        }
+
+        k = filter->sect_ord;
+        q.re = a[k];
+        q.im = 0;
+        while (k > 0) {
+            k -= 1.0;
+            complex_mul(&q, &_z);
+            q.re += a[k];
+        }
+
+        complex_div(&p, &q);
+        complex_mul(&m, &p);
+        a += filter->sect_ord + 1;
+        b += filter->sect_ord + 1;
+    }
+
+    h[0] = m.re;
+    h[1] = m.im;
+}
+
+double biquad_update(struct iir_filter *filter, double x)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    double *d = filter->d;
+    int stages = filter->sections;
+    int k;
+    double y;
+
+    for (k = 0; k < stages; k += 1) {
+        y = x * b[0];
+        y += d[0] * b[1] + d[1] * b[2];
+        y -= d[2] * a[1] + d[3] * a[2];
+        d[1] = d[0];
+        d[0] = x;
+        x = y;
+        d += 2;
+        a += 3;
+        b += 3;
+    }
+    d[1] = d[0];
+    d[0] = x;
+
+    return x;
+}
+
+void biquad_zero(struct iir_filter *filter)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    int n;
+    int i;
+
+    n = filter->sections;
+    for (i = 0; i < n; i += 1) {
+        b[0] = 0;
+        b[1] = 0;
+        b[2] = 0;
+        a[0] = 0;
+        a[1] = 0;
+        a[2] = 0;
+    }
+}
+
+void biquad_init_lowpass(struct iir_filter *filter, double fs, double f)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    double w = 2.0 * M_PI * f / fs;
+    double phi, alpha;
+    int i, k;
+    int n;
+
+    n = filter->sections;
+    for (i = 0; i < n; i += 1) {
+        k = n - i - 1.0;
+        phi = M_PI / (4.0 * n) * (k * 2.0 + 1.0);
+        alpha = sin(w) * cos(phi);
+
+        b[0] = (1.0 - cos(w)) / (2.0 * (1.0 + alpha));
+        b[1] = (1.0 - cos(w)) / (1.0 + alpha);
+        b[2] = (1.0 - cos(w)) / (2.0 * (1.0 + alpha));
+        a[0] = 1.0;
+        a[1] = -2.0 * cos(w) / (1.0 + alpha);
+        a[2] = (1.0 - alpha) / (1.0 + alpha);
+        a += 3;
+        b += 3;
+    }
+
+    for (i = 0; i < (n + 1) * 2; i += 1)
+        filter->d[i] = 0;
+}
+
+void biquad_init_highpass(struct iir_filter *filter, double fs, double f) {
+    double *a = filter->a;
+    double *b = filter->b;
+    double w = 2.0 * M_PI * f / fs;
+    double phi, alpha;
+    int n, i, k;
+
+    n = filter->sections;
+
+    for (i = 0; i < n; i += 1) {
+        k = n - i - 1;
+        phi = M_PI / (4.0 * n) * (k * 2.0 + 1.0);
+        alpha = sin(w) * cos(phi);
+
+        b[0] = (1.0 + cos(w)) / (2.0 * (1.0 + alpha));
+        b[1] = -(1.0 + cos(w)) / (1.0 + alpha);
+        b[2] = (1.0 + cos(w)) / (2.0 * (1.0 + alpha));
+        a[1] = -2.0 * cos(w) / (1.0 + alpha);
+        a[2] = (1.0 - alpha) / (1.0 + alpha);
+        a += 3;
+        b += 3;
+    }
+
+    for (i = 0; i < (n + 1) * 2; i += 1)
+        filter->d[i] = 0;
+}
+
+void biquad_init_bandpass(struct iir_filter *filter, double fs, double f1, double f2)
+{
+	return biquad_init_band(filter, fs, f1, f2, 0);
+}
+
+void biquad_init_bandstop(struct iir_filter *filter, double fs, double f1, double f2)
+{
+	return biquad_init_band(filter, fs, f1, f2, 1);
+}
+
+static void complex_square(complex_d *s)
+{
+    double x, y;
+
+    x = s->re;
+    y = s->im;
+
+    s->re = x * x - y * y;
+    s->im = 2.0 * x * y;
+}
+
+static void complex_sqrt(complex_d *s)
+{
+    double x, y;
+    double r, phi;
+
+    x = s->re;
+    y = s->im;
+    if (x == 0 && y == 0) {
+        return;
+    }
+
+    /* Converting to polar */
+    phi = atan2(y, x);
+    r = sqrt(x * x + y * y);
+
+    /* Square root */
+    phi /= 2.0;
+    r = sqrt(r);
+
+    /* Back to cartesian */
+    s->re = r * cos(phi);
+    s->im = r * sin(phi);
+}
+
+static void complex_mul(complex_d *a, complex_d *b)
+{
+    double x, y;
+
+    x = a->re * b->re - a->im * b->im;
+    y = a->re * b->im + a->im * b->re;
+
+    a->re = x;
+    a->im = y;
+}
+
+static void complex_div(complex_d *p, complex_d *q)
+{
+    double x, y;
+    double r, phi;
+    complex_d b;
+
+    x = q->re;
+    y = q->im;
+    if (x == 0 && y == 0) {
+        return;
+    }
+
+    /* Converting to polar */
+    phi = atan2(y, x);
+    r = sqrt(x * x + y * y);
+
+    /* Reciprocal */
+    phi = -phi;
+    r = 1.0 / r;
+
+    /* Back to cartesian */
+    b.re = r * cos(phi);
+    b.im = r * sin(phi);
+
+    complex_mul(p, &b);
+}
+
+/*
+ *  Convert from continuous (s) to discrete (z)
+ *  using bilinear transform
+ *  ts: sample period (T)
+ */
+
+static void bilinear_transform(complex_d *z, complex_d *s, double ts)
+{
+    complex_d p, q;
+    double x = s->re;
+    double y = s->im;
+
+    x *= ts / 2.0;
+    y *= ts / 2.0;
+    p.re = 1.0 + x;
+    p.im = y;
+    q.re = 1.0 - x;
+    q.im = -y;
+    complex_div(&p, &q);
+    *z = p;
+}
+
+/*
+ *  Compute bandpass or bandstop filter parameters
+ */
+
+static void biquad_init_band(struct iir_filter *filter, double fs, double f1, double f2, int stop)
+{
+    double ts = 1.0 / fs;
+    double bw, f;
+    double w;
+    complex_d p, q;
+    complex_d z, s;
+    double phi;
+    complex_d _z, p_lp, p_bp;
+    double k, x, y;
+    double wa1, wa2, wa;
+    double *a = filter->a;
+    double *b = filter->b;
+    int n, i;
+
+    f = sqrt(f1 * f2);
+    w = 2.0 * M_PI * f / fs;
+
+    /* Map to continuous-time frequencies (pre-warp) */
+
+    wa1 = 2.0 * fs * tan(M_PI * f1 * ts);
+    wa2 = 2.0 * fs * tan(M_PI * f2 * ts);
+
+    bw = wa2 - wa1;
+    wa = sqrt(wa1 * wa2);
+
+    n = filter->sections;
+
+    for (i = 0; i < n; i += 1) {
+        phi = M_PI / 2.0 + M_PI * (2.0 * i + 1.0) / (n * 2.0);
+        x = cos(phi);
+        y = sin(phi);
+
+        p_lp.re = x * bw / (wa * 2.0);
+        p_lp.im = y * bw / (wa * 2.0);
+
+        /*
+         *  Map every low-pass pole to a complex conjugate
+         *  pair of band-bass poles
+         */
+
+        s = p_lp;
+        complex_square(&s);
+        s.re = 1.0 - s.re;
+        s.im = 0.0 - s.im;
+        complex_sqrt(&s);
+        x = p_lp.re - s.im;
+        y = p_lp.im + s.re;
+        p_bp.re = x * wa;
+        p_bp.im = y * wa;
+
+        /*
+         *  Convert every pair from continuous (s)
+         *  to discrete (z) using bilinear transform
+         */
+
+        bilinear_transform(&z, &p_bp, ts);
+
+        x = z.re;
+        y = z.im;
+
+        /*
+         *  Find denominator coefficients from
+         *  the complex conjugate pair of poles
+         */
+
+        a[0] = 1.0;
+        a[1] = -2 * x;
+        a[2] = x * x + y * y;
+
+        if (stop) {
+            /* Band-stop: zeros at Ï‰ and ~Ï‰ */
+            s.re = 0;
+            s.im = wa;
+            bilinear_transform(&z, &s, ts);
+            x = z.re;
+            y = z.im;
+
+            b[0] = 1.0;
+            b[1] = -2.0 * x;
+            b[2] = x * x + y * y;
+        } else {
+            /* Band-pass: zeros at Â±1 */
+            b[0] = 1.0;
+            b[1] = 0.0;
+            b[2] = -1.0;
+        }
+
+        /* Scale the parameters to get unity gain in the bassband */
+
+        if (stop) {
+            /* Band-stop: unity gain at zero frequency */
+            _z.re = 1.0;
+            _z.im = 0.0;
+        } else {
+            /* Band-pass: unity gain at Ï‰ */
+            _z.re = cos(w);
+            _z.im = -sin(w);
+        }
+
+        p.re = b[2];
+        p.im = 0;
+        complex_mul(&p, &_z);
+        p.re += b[1];
+        complex_mul(&p, &_z);
+        p.re += b[0];
+
+        q.re = a[2];
+        q.im = 0;
+        complex_mul(&q, &_z);
+        q.re += a[1];
+        complex_mul(&q, &_z);
+        q.re += 1.0;
+
+        complex_div(&p, &q);
+
+        x = p.re;
+        y = p.im;
+        k = 1.0 / sqrt(x * x + y * y);
+
+        b[0] *= k;
+        b[1] *= k;
+        b[2] *= k;
+
+        a += filter->sect_ord + 1;
+        b += filter->sect_ord + 1;
+    }
+
+    for (i = 0; i < (n + 1) * 2; i += 1)
+        filter->d[i] = 0;
+}
+
+void fill_biquad_coeffs(iir_filter_t *filter, float32_t *coeffs, uint8_t sect_num)
+{
+	//transpose and save coefficients
+	uint16_t ind = 0;
+	for(uint8_t sect = 0; sect < sect_num; sect++)
+	{
+		coeffs[ind + 0] = filter->b[sect * 3 + 0];
+		coeffs[ind + 1] = filter->b[sect * 3 + 1];
+		coeffs[ind + 2] = filter->b[sect * 3 + 2];
+		coeffs[ind + 3] = -filter->a[sect * 3 + 1];
+		coeffs[ind + 4] = -filter->a[sect * 3 + 2];
+		ind += 5;
+	}
+}
+
+#define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
+
+#if (defined(LAY_800x480))
+#define RTTY_DECODER_STRLEN 66 // length of decoded string
+#else
+#define RTTY_DECODER_STRLEN 30 // length of decoded string
+#endif
+
+#define RTTY_LPF_STAGES 2
+#define RTTY_BPF_STAGES 2
+#define RTTY_BPF_WIDTH (RTTY_Shift / 4)
+
+#define RTTY_SYMBOL_CODE (0b11011)
+#define RTTY_LETTER_CODE (0b11111)
+
+typedef enum {
+	RTTY_STATE_WAIT_START,
+	RTTY_STATE_BIT,
+} rtty_state_t;
+
+typedef enum {
+	RTTY_MODE_LETTERS,
+	RTTY_MODE_SYMBOLS
+} rtty_charSetMode_t;
+
+typedef enum {
+    RTTY_STOP_1,
+    RTTY_STOP_1_5,
+    RTTY_STOP_2
+} rtty_stopbits_t;
+
+// Public variables
+//extern char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1];
+
+// Public methods
+extern void RTTYDecoder_Init(void);                   // initialize the CW decoder
+extern void RTTYDecoder_Process(const float32_t *bufferIn, unsigned len); // start CW decoder for the data block
+
+
+//Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
+
+//char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1] = {0}; // decoded string
+
+static rtty_state_t RTTY_State = RTTY_STATE_WAIT_START;
+static rtty_charSetMode_t RTTY_charSetMode = RTTY_MODE_LETTERS;
+static uint16_t RTTY_oneBitSampleCount = 0;
+static uint8_t RTTY_byteResult = 0;
+static uint16_t RTTY_byteResult_bnum = 0;
+static int32_t RTTY_DPLLBitPhase;
+static int32_t RTTY_DPLLOldVal;
+
+//lpf
+static float32_t RTTY_LPF_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES] = {0};
+static float32_t RTTY_LPF_Filter_State[2 * RTTY_LPF_STAGES];
+static arm_biquad_cascade_df2T_instance_f32 RTTY_LPF_Filter;
+
+//mark
+static float32_t RTTY_Mark_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+static float32_t RTTY_Mark_Filter_State[2 * RTTY_BPF_STAGES];
+static arm_biquad_cascade_df2T_instance_f32 RTTY_Mark_Filter;
+
+//space
+static float32_t RTTY_Space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+static float32_t RTTY_Space_Filter_State[2 * RTTY_BPF_STAGES];
+static arm_biquad_cascade_df2T_instance_f32 RTTY_Space_Filter;
+
+static const char RTTY_Letters[] = {
+	'\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
+	'\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
+	'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
+	'O', 'B', 'G', ' ', 'M', 'X', 'V', ' '};
+
+static const char RTTY_Symbols[32] = {
+	'\0', '3', '\n', '-', ' ', '\a', '8', '7',
+	'\r', '$', '4', '\'', ',', '!', ':', '(',
+	'5', '"', ')', '2', '#', '6', '0', '1',
+	'9', '?', '&', ' ', '.', '/', ';', ' '};
+
+static int RTTYDecoder_waitForStartBit(float32_t sample);
+static int RTTYDecoder_getBitDPLL(float32_t sample, int *val_p);
+static int RTTYDecoder_demodulator(float32_t sample);
+static float32_t RTTYDecoder_decayavg(float32_t average, float32_t input, int weight);
+
+static float RTTY_Speed = 50; //45.45;
+static int RTTY_Shift = 455; //170;
+static int RTTY_Freq = 1200;
+static int RTTY_StopBits = RTTY_STOP_1;
+
+void RTTYDecoder_Init(void)
+{
+	//speed
+	RTTY_oneBitSampleCount = (uint16_t)roundf((float32_t)TRX_SAMPLERATE / RTTY_Speed);
+
+	//RTTY LPF Filter
+	iir_filter_t *filter = biquad_create(RTTY_LPF_STAGES);
+	biquad_init_lowpass(filter, TRX_SAMPLERATE, RTTY_Speed * 2);
+	fill_biquad_coeffs(filter, RTTY_LPF_Filter_Coeffs, RTTY_LPF_STAGES);
+	arm_biquad_cascade_df2T_init_f32(&RTTY_LPF_Filter, RTTY_LPF_STAGES, RTTY_LPF_Filter_Coeffs, RTTY_LPF_Filter_State);
+
+	//RTTY mark filter
+	filter = biquad_create(RTTY_BPF_STAGES);
+	biquad_init_bandpass(filter, TRX_SAMPLERATE, (RTTY_Freq - RTTY_Shift / 2) - RTTY_BPF_WIDTH / 2, (RTTY_Freq - RTTY_Shift / 2) + RTTY_BPF_WIDTH / 2);
+	fill_biquad_coeffs(filter, RTTY_Mark_Filter_Coeffs, RTTY_BPF_STAGES);
+	arm_biquad_cascade_df2T_init_f32(&RTTY_Mark_Filter, RTTY_BPF_STAGES, RTTY_Mark_Filter_Coeffs, RTTY_Mark_Filter_State);
+
+	//RTTY space filter
+	filter = biquad_create(RTTY_BPF_STAGES);
+	biquad_init_bandpass(filter, TRX_SAMPLERATE, (RTTY_Freq + RTTY_Shift / 2) - RTTY_BPF_WIDTH / 2, (RTTY_Freq + RTTY_Shift / 2) + RTTY_BPF_WIDTH / 2);
+	fill_biquad_coeffs(filter, RTTY_Space_Filter_Coeffs, RTTY_BPF_STAGES);
+	arm_biquad_cascade_df2T_init_f32(&RTTY_Space_Filter, RTTY_BPF_STAGES, RTTY_Space_Filter_Coeffs, RTTY_Space_Filter_State);
+
+	//text
+//	sprintf(RTTY_Decoder_Text, " RTTY: -");
+//	addSymbols(RTTY_Decoder_Text, RTTY_Decoder_Text, RTTY_DECODER_STRLEN, " ", 1);
+//	LCD_UpdateQuery.TextBar = 1;
+}
+
+void RTTYDecoder_Process(const float32_t *bufferIn, unsigned len)
+{
+	for (uint32_t buf_pos = 0; buf_pos < len; buf_pos++)
+	{
+		switch (RTTY_State)
+		{
+		case RTTY_STATE_WAIT_START: // not synchronized, need to wait for start bit
+			if (RTTYDecoder_waitForStartBit(bufferIn[buf_pos]))
+			{
+				RTTY_State = RTTY_STATE_BIT;
+				RTTY_byteResult_bnum = 1;
+				RTTY_byteResult = 0;
+			}
+			break;
+		case RTTY_STATE_BIT:
+			// reading 7 more bits
+			if (RTTY_byteResult_bnum < 8)
+			{
+				int bitResult = 0;
+				if (RTTYDecoder_getBitDPLL(bufferIn[buf_pos], &bitResult))
+				{
+					switch (RTTY_byteResult_bnum)
+					{
+					case 6: // stop bit 1
+					case 7: // stop bit 2
+						if (bitResult == 0)
+						{
+							// not in sync
+							RTTY_State = RTTY_STATE_WAIT_START;
+						}
+						if (RTTY_StopBits != RTTY_STOP_2 && RTTY_byteResult_bnum == 6)
+						{
+							// we pretend to be at the 7th bit after receiving the first stop bit if we have less than 2 stop bits
+							// this omits check for 1.5 bit condition but we should be more or less safe here, may cause
+							// a little more unaligned receive but without that shortcut we simply cannot receive these configurations
+							// so it is worth it
+							RTTY_byteResult_bnum = 7;
+						}
+						break;
+					default:
+						RTTY_byteResult |= (bitResult ? 1 : 0) << (RTTY_byteResult_bnum - 1);
+					}
+					RTTY_byteResult_bnum++;
+				}
+			}
+			if (RTTY_byteResult_bnum == 8 && RTTY_State == RTTY_STATE_BIT)
+			{
+				char charResult;
+
+				switch (RTTY_byteResult)
+				{
+				case RTTY_LETTER_CODE:
+					RTTY_charSetMode = RTTY_MODE_LETTERS;
+					// println(" ^L^");
+					break;
+				case RTTY_SYMBOL_CODE:
+					RTTY_charSetMode = RTTY_MODE_SYMBOLS;
+					// println(" ^F^");
+					break;
+				default:
+					switch (RTTY_charSetMode)
+					{
+					case RTTY_MODE_SYMBOLS:
+						charResult = RTTY_Symbols[RTTY_byteResult];
+						break;
+					case RTTY_MODE_LETTERS:
+					default:
+						charResult = RTTY_Letters[RTTY_byteResult];
+						break;
+					}
+					//RESULT !!!!
+					//print(charResult);
+					PRINTF("%c", charResult);
+//					char str[2] = {0};
+//					str[0] = charResult;
+//					if (strlen(RTTY_Decoder_Text) >= RTTY_DECODER_STRLEN)
+//						shiftTextLeft(RTTY_Decoder_Text, 1);
+//					strcat(RTTY_Decoder_Text, str);
+//					LCD_UpdateQuery.TextBar = 1;
+					break;
+				}
+				RTTY_State = RTTY_STATE_WAIT_START;
+			}
+		}
+	}
+}
+
+// this function returns only 1 when the start bit is successfully received
+static int RTTYDecoder_waitForStartBit(float32_t sample)
+{
+	int retval = 0;
+	int bitResult;
+	static int16_t wait_for_start_state = 0;
+	static int16_t wait_for_half = 0;
+
+	bitResult = RTTYDecoder_demodulator(sample);
+
+	switch (wait_for_start_state)
+	{
+	case 0:
+		// waiting for a falling edge
+		if (bitResult != 0)
+		{
+			wait_for_start_state++;
+		}
+		break;
+	case 1:
+		if (bitResult != 1)
+		{
+			wait_for_start_state++;
+		}
+		break;
+	case 2:
+		wait_for_half = RTTY_oneBitSampleCount / 2;
+		wait_for_start_state++;
+		/* no break */
+	case 3:
+		wait_for_half--;
+		if (wait_for_half == 0)
+		{
+			retval = (bitResult == 0);
+			wait_for_start_state = 0;
+		}
+		break;
+	}
+	return retval;
+}
+
+// this function returns 1 once at the half of a bit with the bit's value
+static int RTTYDecoder_getBitDPLL(float32_t sample, int *val_p)
+{
+	static int phaseChanged = 0;
+	int retval = 0;
+
+	if (RTTY_DPLLBitPhase < RTTY_oneBitSampleCount)
+	{
+		*val_p = RTTYDecoder_demodulator(sample);
+
+		if (!phaseChanged && *val_p != RTTY_DPLLOldVal)
+		{
+			if (RTTY_DPLLBitPhase < RTTY_oneBitSampleCount / 2)
+			{
+				RTTY_DPLLBitPhase += RTTY_oneBitSampleCount / 32; // early
+			}
+			else
+			{
+				RTTY_DPLLBitPhase -= RTTY_oneBitSampleCount / 32; // late
+			}
+			phaseChanged = 1;
+		}
+		RTTY_DPLLOldVal = *val_p;
+		RTTY_DPLLBitPhase++;
+	}
+
+	if (RTTY_DPLLBitPhase >= RTTY_oneBitSampleCount)
+	{
+		RTTY_DPLLBitPhase -= RTTY_oneBitSampleCount;
+		retval = 1;
+	}
+
+	return retval;
+}
+
+// adapted from https://github.com/ukhas/dl-fldigi/blob/master/src/include/misc.h
+static float32_t RTTYDecoder_decayavg(float32_t average, float32_t input, int weight)
+{
+	float32_t retval;
+	if (weight <= 1)
+	{
+		retval = input;
+	}
+	else
+	{
+		retval = ((input - average) / (float32_t)weight) + average;
+	}
+	return retval;
+}
+
+// this function returns the bit value of the current sample
+static int RTTYDecoder_demodulator(float32_t sample)
+{
+	float32_t space_mag = 0;
+	float32_t mark_mag = 0;
+	arm_biquad_cascade_df2T_f32(&RTTY_Space_Filter, &sample, &space_mag, 1);
+	arm_biquad_cascade_df2T_f32(&RTTY_Mark_Filter, &sample, &mark_mag, 1);
+
+	float32_t v1 = 0.0;
+	// calculating the RMS of the two lines (squaring them)
+	space_mag *= space_mag;
+	mark_mag *= mark_mag;
+
+	// RTTY decoding with ATC = automatic threshold correction
+	float32_t helper = space_mag;
+	space_mag = mark_mag;
+	mark_mag = helper;
+	static float32_t mark_env = 0.0;
+	static float32_t space_env = 0.0;
+	static float32_t mark_noise = 0.0;
+	static float32_t space_noise = 0.0;
+	// experiment to implement an ATC (Automatic threshold correction), DD4WH, 2017_08_24
+	// everything taken from FlDigi, licensed by GNU GPLv2 or later
+	// https://github.com/ukhas/dl-fldigi/blob/master/src/cw_rtty/rtty.cxx
+	// calculate envelope of the mark and space signals
+	// uses fast attack and slow decay
+	mark_env = RTTYDecoder_decayavg(mark_env, mark_mag, (mark_mag > mark_env) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 16);
+	space_env = RTTYDecoder_decayavg(space_env, space_mag, (space_mag > space_env) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 16);
+	// calculate the noise on the mark and space signals
+	mark_noise = RTTYDecoder_decayavg(mark_noise, mark_mag, (mark_mag < mark_noise) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 48);
+	space_noise = RTTYDecoder_decayavg(space_noise, space_mag, (space_mag < space_noise) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 48);
+	// the noise floor is the lower signal of space and mark noise
+	float32_t noise_floor = (space_noise < mark_noise) ? space_noise : mark_noise;
+
+	// Linear ATC, section 3 of www.w7ay.net/site/Technical/ATC
+	// v1 = space_mag - mark_mag - 0.5 * (space_env - mark_env);
+
+	// Compensating for the noise floor by using clipping
+	float32_t mclipped = 0.0, sclipped = 0.0;
+	mclipped = mark_mag > mark_env ? mark_env : mark_mag;
+	sclipped = space_mag > space_env ? space_env : space_mag;
+	if (mclipped < noise_floor)
+	{
+		mclipped = noise_floor;
+	}
+	if (sclipped < noise_floor)
+	{
+		sclipped = noise_floor;
+	}
+
+	// Optimal ATC (Section 6 of of www.w7ay.net/site/Technical/ATC)
+	v1 = (mclipped - noise_floor) * (mark_env - noise_floor) - (sclipped - noise_floor) * (space_env - noise_floor) - 0.25 * ((mark_env - noise_floor) * (mark_env - noise_floor) - (space_env - noise_floor) * (space_env - noise_floor));
+	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);
+
+	// RTTY without ATC, which works very well too!
+	// inverting line 1
+	/*mark_mag *= -1;
+
+	// summing the two lines
+	v1 = mark_mag + space_mag;
+
+	// lowpass filtering the summed line
+	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);*/
+
+	return (v1 > 0) ? 0 : 1;
+}
+
+#endif /* WITHRTTY */
+
 #if WITHLMSAUTONOTCH
 
 enum {
@@ -8646,6 +9472,9 @@ audioproc_spool_user(void)
 	speexel_t * p;
 	if (takespeexready_user(& p))
 	{
+#if WITHRTTY
+		RTTYDecoder_Process(p + 0 * FIRBUFSIZE, FIRBUFSIZE);
+#endif /* WITHRTTY */
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;
 		for (pathi = 0; pathi < NTRX; ++ pathi)
@@ -19938,6 +20767,9 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
+#if WITHRTTY
+	RTTYDecoder_Init();
+#endif /* WITHRTTY */
 #endif /* WITHINTEGRATEDDSP */
 
 	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
