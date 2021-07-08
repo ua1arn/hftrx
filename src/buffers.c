@@ -1531,6 +1531,8 @@ static RAMFUNC void buffers_resample(void)
 	buffers_savefromresampling(p);
 }
 
+// вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
+// Параметр - количество сэмплов (стерео пар или квадратур) в обмене этого обработчика.
 void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 {
 	static RAMDTCM unsigned n = 0;
@@ -1547,6 +1549,8 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 
 #else /* WITHUSBUAC */
 
+// вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
+// Параметр - количество сэмплов (стерео пар или квадратур) в обмене этого обработчика.
 void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 {
 }

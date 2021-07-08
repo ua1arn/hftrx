@@ -106,7 +106,9 @@ void xc7z_dma_init_af_tx(void)
 
 void xc7z_if_fifo_inthandler(void)
 {
-	static uint_fast8_t rx_stage = 0;
+	enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
+	enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
+	static unsigned rx_stage = 0;
 
 	if (XLlFifo_iRxOccupancy(& rx_fifo) >= DMABUFFSIZE32RX)
 	{
@@ -115,16 +117,16 @@ void xc7z_if_fifo_inthandler(void)
 		XLlFifo_iRead_Aligned(& rx_fifo, (uint32_t *) rx_buf, DMABUFFSIZE32RX);
 		processing_dmabuffer32rx(rx_buf);
 		release_dmabuffer32rx(rx_buf);
-		rx_stage ++;
-		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
+		rx_stage += CNT32RX;	// количество сэмплолв прошельших по каналу обмена с FPGA
+		buffers_resampleuacin(CNT32RX);
 	}
 
-	if (rx_stage == 4)
+	while (rx_stage >= CNT16)
 	{
-		uintptr_t addr = getfilled_dmabuffer16phones();
+		const uintptr_t addr = getfilled_dmabuffer16phones();
 		xc7z_dma_transmit(addr, DMABUFFSIZE16 * sizeof(aubufv_t));
 		release_dmabuffer16(addr);
-		rx_stage = 0;
+		rx_stage -= CNT16;
 	}
 }
 #else
