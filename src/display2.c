@@ -7794,6 +7794,19 @@ display_colorgrid_set(
 	const int_fast32_t gs = (int) glob_gridstep;	// шаг сетки
 	const int_fast32_t halfbw = bw / 2;
 	int_fast32_t df;	// кратное сетке значение
+
+	// Маркеры уровней сигналов
+	if (glob_lvlgridstep != 0)
+	{
+		int_fast16_t lvl;
+		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl < glob_bottomdb; lvl += glob_lvlgridstep)
+		{
+			const int valy = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
+
+			display_colorbuf_set_hline(buffer, BUFDIM_X, BUFDIM_Y, 0, valy, ALLDX, color);	// Level marker
+		}
+	}
+
 	for (df = - halfbw / gs * gs - go; df < halfbw; df += gs)
 	{
 		if (df > - halfbw)
@@ -7817,18 +7830,6 @@ display_colorgrid_set(
 		}
 	}
 	display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, ALLDX / 2, row0, h, color0);	// center frequency marker
-
-	// Маркеры уровней сигналов
-	if (glob_lvlgridstep != 0)
-	{
-		int_fast16_t lvl;
-		for (lvl = glob_topdb / glob_lvlgridstep * glob_lvlgridstep; lvl < glob_bottomdb; lvl += glob_lvlgridstep)
-		{
-			const int valy = dsp_mag2y(db2ratio(- lvl), h - 1, glob_topdb, glob_bottomdb);
-
-			display_colorbuf_set_hline(buffer, BUFDIM_X, BUFDIM_Y, 0, valy, ALLDX, color);	// Level marker
-		}
-	}
 }
 
 // отрисовка маркеров частот для 3DSS
