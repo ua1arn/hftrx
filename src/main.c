@@ -8797,7 +8797,7 @@ static float32_t RTTYDecoder_decayavg(float32_t average, float32_t input, int we
 
 static float RTTY_Speed = 50; //45.45;
 static int RTTY_Shift = 455; //170;
-static int RTTY_Freq = 1200;
+static int RTTY_Freq = 1500;
 static int RTTY_StopBits = RTTY_STOP_1;
 
 void RTTYDecoder_Init(void)
