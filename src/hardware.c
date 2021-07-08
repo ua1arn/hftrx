@@ -2264,8 +2264,10 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
+#if 0//CPUSTYLE_R7S721
+
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQ_Handler_GICv1(void)
+void IRQ_Handler_GIC(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
@@ -2306,6 +2308,8 @@ void IRQ_Handler_GICv1(void)
 	IRQ_EndOfInterrupt(irqn);
 }
 
+#elif 1//CPUSTYLE_R7S721
+
 #define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
 #define PENDING_G1_INTID	1022uL
@@ -2338,11 +2342,11 @@ unsigned int gicv2_get_pending_interrupt_id(void)
 	return id;
 }
 
-static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
+//static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 
 /* Вызывается из crt_stm32mp1.s со сброшенным флагом прерываний */
 // Sww ARM IHI 0048B.b document
-void IRQ_Handler_GICv2(void)
+void IRQ_Handler_GIC(void)
 {
 	// per-cpu:
 	// GICC_AHPPIR
@@ -2355,8 +2359,8 @@ void IRQ_Handler_GICv2(void)
 	// global:
 	// GICD_IPRIORITYR
 
-	//dbg_putchar('1');
-	//const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
+	  /* Dummy read to avoid GIC 390 errata 801120 */
+	(void) GICInterface->HPPIR;
 
 	//const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID in high bits, Interrupt ID
 	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID - use GIC_AcknowledgePending
@@ -2422,48 +2426,11 @@ void IRQ_Handler_GICv2(void)
 	//GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
 	GICInterface->EOIR = gicc_iar;
 }
-
+#endif
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if 0
-/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQ_HandlerOld(void)
-{
-	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
-	const uint32_t icciar = GICC_IAR;				/* GICC_IAR */
-	const IRQn_ID_t int_id = icciar & INTC_ICCIAR_ACKINTID;
-
-	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
-	// IHI0048B_b_gic_architecture_specification.pdf
-	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
-
-	if (int_id >= 1020)
-	{
-		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-	}
-	else if (int_id != 0 || (INTC.ICDABR0 & 0x0001) != 0)
-	{
-		void (* f)(void) = IRQ_GetHandler(int_id);	    /* Call interrupt handler */
-
-	#if WITHNESTEDINTERRUPTS
-
-		__enable_irq();						/* modify I bit in CPSR */
-		(* f)();	    /* Call interrupt handler */
-		__disable_irq();					/* modify I bit in CPSR */
-
-	#else /* WITHNESTEDINTERRUPTS */
-
-		(* f)();	    /* Call interrupt handler */
-
-	#endif /* WITHNESTEDINTERRUPTS */
-		INTC.ICCEOIR = int_id;				/* GICC_EOIR */
-	}
-	else
-	{
-		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-	}
-}
 
 /******************************************************************************
 * Function Name: r7s721_intc_initialize
