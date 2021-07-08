@@ -2372,10 +2372,11 @@ void IRQ_Handler_GICv2(void)
 
 	if (int_id >= 1020)
 	{
-//		dbg_putchar('2');
-//		SPIN_LOCK(& giclock);
-//		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-//		SPIN_UNLOCK(& giclock);
+		//dbg_putchar('2');
+		//SPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		//SPIN_UNLOCK(& giclock);
 
 	}
 	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
@@ -2410,10 +2411,11 @@ void IRQ_Handler_GICv2(void)
 	}
 	else
 	{
-//		dbg_putchar('3');
-//		SPIN_LOCK(& giclock);
-//		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-//		SPIN_UNLOCK(& giclock);
+		//dbg_putchar('3');
+		//SPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		//SPIN_UNLOCK(& giclock);
 	}
 	//dbg_putchar(' ');
 
