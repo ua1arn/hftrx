@@ -374,7 +374,9 @@ extern "C" {
 
 #elif CPUSTYLE_AT91SAM9XE
 
-	// ARM926EJ-S
+	// ARM926EJ-S ARMv5TEJ
+	// Use -mcpu=arm926ej-s -mfloat-abi=soft
+	// arm-none-eabi-gcc.exe -mcpu=arm926ej-s -mfloat-abi=soft -E -dM  -c -o tt.o tt.c
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM9		1
