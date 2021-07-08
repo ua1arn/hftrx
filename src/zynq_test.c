@@ -108,7 +108,7 @@ void xc7z_if_fifo_inthandler(void)
 {
 	static uint_fast8_t rx_stage = 0;
 
-	if (XLlFifo_iRxOccupancy(& rx_fifo) > DMABUFFSIZE32RX)
+	if (XLlFifo_iRxOccupancy(& rx_fifo) >= DMABUFFSIZE32RX)
 	{
 		XLlFifo_IntClear(& rx_fifo, XLLF_INT_RFPF_MASK);
 		uintptr_t rx_buf = allocate_dmabuffer32rx();
