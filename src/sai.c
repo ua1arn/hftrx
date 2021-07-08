@@ -1463,6 +1463,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
+		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
 	}
 
 	//DMAERR(DMA2, DMA2_Stream5, HISR, HIFCR, DMA_HISR_TEIF5, DMA_HIFCR_CTEIF5);
@@ -2099,6 +2100,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_32RX(void)
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
+		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
 	}
 
 	//DMAERR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
@@ -3194,6 +3196,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
+	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
 }
 
 // FPGA/IF codec

@@ -745,6 +745,7 @@ void processing_dmabuffer32rx(uintptr_t addr);
 void release_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
+void buffers_resampleuacin(unsigned nsamples);
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);

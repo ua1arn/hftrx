@@ -116,6 +116,7 @@ void xc7z_if_fifo_inthandler(void)
 		processing_dmabuffer32rx(rx_buf);
 		release_dmabuffer32rx(rx_buf);
 		rx_stage ++;
+		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
 	}
 
 	if (rx_stage == 4)
