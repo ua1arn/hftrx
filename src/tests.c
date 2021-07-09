@@ -5471,7 +5471,7 @@ static void disableAllIRQs(void)
 #endif
 
 
-#if 1
+#if 0
 
 #include "tiger.h"
 
