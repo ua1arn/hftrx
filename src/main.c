@@ -9398,7 +9398,7 @@ static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float*
 #endif /* WITHNOSPEEX */
 
 /* на слабых процессорах второй приемник без NR и автонотч */
-static uint_fast8_t ispathprovessing(uint_fast8_t pathi)
+static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
 #if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 	return 1;
@@ -9432,8 +9432,8 @@ static void afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 	const uint_fast8_t pathsubmode = getsubmode(bi);
 	const uint_fast8_t mode = submodes [pathsubmode].mode;
 	const uint_fast8_t noprocessing = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
-	const uint_fast8_t denoise = ispathprovessing(pathi) && ! noprocessing && gnoisereducts [mode];
-	const uint_fast8_t anotch = ispathprovessing(pathi)  && ! noprocessing && ! (gtx || mode == MODE_DIGI || gdatamode) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
+	const uint_fast8_t denoise = ispathprocessing(pathi) && ! noprocessing && gnoisereducts [mode];
+	const uint_fast8_t anotch = ispathprocessing(pathi)  && ! noprocessing && ! (gtx || mode == MODE_DIGI || gdatamode) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
