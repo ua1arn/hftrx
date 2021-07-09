@@ -2264,7 +2264,7 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-#if 0//CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721
 
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
 void IRQ_Handler_GIC(void)
@@ -2360,7 +2360,7 @@ void IRQ_Handler_GIC(void)
 	// GICD_IPRIORITYR
 
 	  /* Dummy read to avoid GIC 390 errata 801120 */
-	(void) GICInterface->HPPIR;
+	////(void) GICInterface->HPPIR;
 
 	//const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID in high bits, Interrupt ID
 	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID - use GIC_AcknowledgePending
