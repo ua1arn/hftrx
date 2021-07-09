@@ -2264,7 +2264,7 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-#if CPUSTYLE_R7S721
+#if 0//CPUSTYLE_R7S721
 
 /* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
 void IRQ_Handler_GIC(void)
@@ -2359,13 +2359,24 @@ void IRQ_Handler_GIC(void)
 	// global:
 	// GICD_IPRIORITYR
 
-	  /* Dummy read to avoid GIC 390 errata 801120 */
-	////(void) GICInterface->HPPIR;
+//	const unsigned int gicver = (GIC_GetInterfaceId() >> 16) & 0x0F;
+
+
+//	switch (gicver)
+//	{
+//	case 0x01:	// GICv1
+//		/* Dummy read to avoid GIC 390 errata 801120 */
+//		(void) GICInterface->HPPIR;
+//		break;
+//	default:
+//		break;
+//	}
+	(void) GICInterface->HPPIR;
 
 	//const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID in high bits, Interrupt ID
 	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID - use GIC_AcknowledgePending
 
-	const IRQn_ID_t int_id = gicc_iar & INT_ID_MASK;
+	const IRQn_ID_t int_id = gicc_iar & 0x3ffuL;
 
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
