@@ -3364,11 +3364,15 @@ void Reset_CPUn_Handler(void)
 	sysinit_cache_initialize();	// caches iniitialize
 	sysinit_cache_cpu1_initialize();
 
-	arm_gic_initialize();
-//	GIC_CPUInterfaceInit();
-//#if WITHNESTEDINTERRUPTS
-//	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
-//#endif /* WITHNESTEDINTERRUPTS */
+	{
+		GIC_Enable();
+	#if CPUSTYLE_R7S721
+		r7s721_intc_initialize();
+	#endif /* CPUSTYLE_R7S721 */
+	#if WITHNESTEDINTERRUPTS
+		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+	#endif /* WITHNESTEDINTERRUPTS */
+	}
 
 	L1C_InvalidateDCacheAll();
 	L1C_InvalidateICacheAll();

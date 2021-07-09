@@ -792,30 +792,6 @@ uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 uint32_t gARM_BASEPRI_ALL_ENABLED;
 
 
-void
-arm_gic_initialize(void)
-{
-	IRQ_Initialize();
-
-	GIC_Enable();
-
-#if CPUSTYLE_R7S721
-	r7s721_intc_initialize();
-#endif /* CPUSTYLE_R7S721 */
-
-#if WITHNESTEDINTERRUPTS
-	gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
-	gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
-	gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
-
-	gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
-	gARM_BASEPRI_ONLY_OVERREALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
-	gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
-
-	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
-#endif /* WITHNESTEDINTERRUPTS */
-}
-
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
 #if (__CORTEX_M != 0)
@@ -1406,7 +1382,25 @@ void cpu_initialize(void)
 
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-	arm_gic_initialize();
+	{
+		IRQ_Initialize();	// GIC_Enable() inside
+		//GIC_Enable();
+	#if CPUSTYLE_R7S721
+		r7s721_intc_initialize();
+	#endif /* CPUSTYLE_R7S721 */
+
+	#if WITHNESTEDINTERRUPTS
+		gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
+		gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
+		gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
+
+		gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
+		gARM_BASEPRI_ONLY_OVERREALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
+		gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
+
+		GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
+	#endif /* WITHNESTEDINTERRUPTS */
+	}
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 	//PRINTF("cpu_initialize done\n");
