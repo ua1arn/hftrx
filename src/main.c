@@ -294,6 +294,17 @@ static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * fi
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
 static uint_fast8_t getactualmainsubrx(void);
 
+#if WITHIF4DSP
+struct rxaproc_tag;
+static void afpmute(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static void afpcw(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static void afpcwtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static void afpssb(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static void afpssbtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static void afprtty(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static void afpmute(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+#endif /* WITHIF4DSP */
+
 #if WITHCAT
 
 static void processcat_enable(uint_fast8_t catenable);
@@ -1588,6 +1599,7 @@ struct modetempl
 	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
 	uint_fast8_t txaprofgp;		// группа профилей обработки звука
 	uint_fast8_t agcseti;			// параметры слухового приема
+	void (* afproc [2])(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
 #else /* WITHIF4DSP */
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
@@ -1626,6 +1638,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_CW,				// группа профилей обработки звука
 		AGCSETI_CW,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1658,6 +1671,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1690,6 +1704,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_AM,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
@@ -1723,6 +1738,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_AM,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
@@ -1756,6 +1772,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_NFM,				// группа профилей обработки звука
 		AGCSETI_FLAT,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_FM, BOARD_DETECTOR_FM, }, 		/* FM detector used */
 #endif /* WITHIF4DSP */
@@ -1788,6 +1805,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_DRM,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1820,6 +1838,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1854,6 +1873,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_WFM, BOARD_DETECTOR_WFM, },		/* WFM detector used */
 #endif /* WITHIF4DSP */
@@ -1891,6 +1911,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1927,6 +1948,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
+		{ afprtty, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1960,6 +1982,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpmute, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1997,6 +2020,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -2030,6 +2054,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpmute, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -9382,8 +9407,23 @@ static uint_fast8_t ispathprovessing(uint_fast8_t pathi)
 #endif
 }
 
-// обработка и сохранение в savesampleout16stereo_user()
-static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel_t * p)
+// user-mode processing
+// На выходе формируется тишина
+static void afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+{
+	nrp->outsp = p;
+	arm_fill_f32(0, p, FIRBUFSIZE);
+}
+
+// user-mode processing
+// На выходе формируется тишина
+static void afpmute(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+{
+	nrp->outsp = p;
+	arm_fill_f32(0, p, FIRBUFSIZE);
+}
+
+static void afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
 	static const float32_t ki = 32768;
@@ -9474,7 +9514,10 @@ static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel
 		nrp->outsp = nrp->wire1;
 	}
 #endif /* WITHNOSPEEX */
+
 }
+
+
 
 // user-mode processing
 void
@@ -9498,8 +9541,11 @@ audioproc_spool_user(void)
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			rxaproc_t * const nrp = & rxaprocs [pathi];
+			const uint_fast8_t tx = hamradio_get_tx();
+			const uint_fast8_t asubmode = getasubmode(pathi);
+			const uint_fast8_t amode = submodes [asubmode].mode;
 			// nrp->outsp указывает на результат обработки
-			processingonebuff(pathi, nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
+			mdt [amode].afproc [tx] (pathi, nrp, p + pathi * FIRBUFSIZE);
 		}
 		//////////////////////////////////////////////
 		// Save results
