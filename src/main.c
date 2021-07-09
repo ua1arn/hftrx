@@ -30,8 +30,6 @@
 #include <ctype.h>
 #include <math.h>
 
-//#define WITHRTTY 1
-
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
 
@@ -2498,6 +2496,9 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
 			{ 4, SUBMODE_AM, SUBMODE_SAM, SUBMODE_CWZ, SUBMODE_DRM, },
 			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
+		#if WITHRTTY
+			{ 1, SUBMODE_RTTY, },
+		#endif /* WITHRTTY */
 		};
 	#else /* WITHMODEM */
 	static const uint_fast8_t modes [][4] =
@@ -4077,7 +4078,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 
 static uint_fast8_t gmoderows [2];		/* индексом используется результат функции getbankindex_xxx(tx) */
 										/* номер режима работы в маске (номер тройки бит) */
-static uint_fast8_t gmodecolmaps4 [2] [4];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 #if WITHSPKMUTE
 	static uint_fast8_t gmutespkr;		/*  выключение динамика */
 #endif /* WITHSPKMUTE */
@@ -4978,6 +4979,16 @@ static const FLASHMEM submodeprops_t submodes [SUBMODE_COUNT] =
 		UINT8_MAX,	/* Kenwood cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"FDV", 
+	},
+#endif /* WITHFREEDV */
+#if WITHRTTY
+	/* SUBMODE_RTTY */
+	{
+		0,
+		MODE_RTTY,/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"TTY",
 	},
 #endif /* WITHFREEDV */
 #endif /* WITHMODESETSMART */
@@ -6008,7 +6019,7 @@ copybankstate(
 	gantennas [tbi] = gantennas [sbi];
 #endif /* WITHANTSELECT */
 
-	memcpy(gmodecolmaps4 [tbi], gmodecolmaps4 [sbi], sizeof gmodecolmaps4 [tbi]);
+	memcpy(gmodecolmaps [tbi], gmodecolmaps [sbi], sizeof gmodecolmaps [tbi]);
 }
 
 /* сохранить все частоту настройки в соответствующий диапазон, ячейку памяти или VFO. */
@@ -6034,7 +6045,7 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 
 	uint_fast8_t i;
 	for (i = 0; i < MODEROW_COUNT; ++ i)
-		save_i8(RMT_MODECOLS_BASE(b, i), gmodecolmaps4 [bi] [i]);
+		save_i8(RMT_MODECOLS_BASE(b, i), gmodecolmaps [bi] [i]);
 
 #if ! WITHONEATTONEAMP
 	save_i8(RMT_PAMP_BASE(b), gpamps [bi]);
@@ -6076,10 +6087,10 @@ getmodecol(
 	uint_fast8_t def,
 	uint_fast8_t bi)		/* bank index */
 {
-	uint_fast8_t v = gmodecolmaps4 [bi] [index];
+	uint_fast8_t v = gmodecolmaps [bi] [index];
 	if (v > upper)
 	{
-		gmodecolmaps4 [bi] [index] = def;
+		gmodecolmaps [bi] [index] = def;
 		return def;
 	}
 	return v;
@@ -6094,7 +6105,7 @@ putmodecol(
 	const uint_fast8_t bi		/* bank index */
 	)
 {
-	gmodecolmaps4 [bi] [index] = v;
+	gmodecolmaps [bi] [index] = v;
 }
 
 /* получение режима работы "по умолчанию" для частоты. */
@@ -7006,14 +7017,14 @@ loadnewband(
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
 
 	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps4 [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow][0] - 1, defcol);
+	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow][0] - 1, defcol);
 
 	gmoderows [bi] = loadvfy8up(RMT_MODEROW_BASE(b), 0, MODEROW_COUNT - 1, defrow);
 
 	uint_fast8_t i;
 	for (i = 0; i < MODEROW_COUNT; ++ i)
 	{
-		gmodecolmaps4 [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, i), 0, 255, 255);	// везде прописывается 255 - потом ещё уточним.
+		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, i), 0, 255, 255);	// везде прописывается 255 - потом ещё уточним.
 	}
 #if WITHAUTOTUNER
 	// todo: добавить учет включенной антенны
@@ -9473,7 +9484,14 @@ audioproc_spool_user(void)
 	if (takespeexready_user(& p))
 	{
 #if WITHRTTY
-		RTTYDecoder_Process(p + 0 * FIRBUFSIZE, FIRBUFSIZE);
+		// прием телетайпа в приемнике A
+		const uint_fast8_t bi = getbankindex_pathi(0);	/* vfo bank index by pathi */
+		const uint_fast8_t pathsubmode = getsubmode(bi);
+		const uint_fast8_t mode = submodes [pathsubmode].mode;
+		if (mode == MODE_RTTY)
+		{
+			RTTYDecoder_Process(p + 0 * FIRBUFSIZE, FIRBUFSIZE);
+		}
 #endif /* WITHRTTY */
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;

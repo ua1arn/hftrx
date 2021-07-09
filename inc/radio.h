@@ -207,6 +207,9 @@ enum {
 	#if WITHFREEDV
 		SUBMODE_FREEDV,
 	#endif /* WITHFREEDV */
+	#if WITHRTTY
+		SUBMODE_RTTY,
+	#endif /* WITHRTTY */
 #endif
 	//
 	SUBMODE_COUNT
