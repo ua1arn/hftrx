@@ -6456,17 +6456,15 @@ void hightests(void)
 		PRINTF("L2C Tag RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
 	}
 #endif
-#if 1 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		// GIC version diagnostics
-		// Renesas:
-		//	arm_gic_initialize: ARM GICv1
+		// Renesas: ARM GICv1
 		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
-		// STM32MP1:
-		//	arm_gic_initialize: ARM GICv2
+		// STM32MP1: ARM GICv2
 		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
-		// ZINQ ?
-		//	GICInterface->IIDR=?, GICDistributor->IIDR=?
+		// ZINQ XC7Z010: ARM GICv1
+		//	GICInterface->IIDR=3901243B, GICDistributor->IIDR=0102043B
 
 		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
 
