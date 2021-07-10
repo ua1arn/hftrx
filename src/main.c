@@ -1467,7 +1467,8 @@ static agcp_t gagc [AGCSETI_COUNT];
 #endif /* WITHIF4DSP */
 
 #define	DEFAULT_DRM_PITCH	12000	/* тон DRM - 12 кГц*/
-#define	DEFAULT_RTTY_PITCH	2125	/* тон DIGI modes - 2.125 кГц */
+// The standard mark and space tones are 2125 hz and 2295 hz respectively
+#define	DEFAULT_RTTY_PITCH	1275	/* mark тон DIGI modes - 2.125 кГц (1275 2125) */
 
 #if WITHIF4DSP
 	#if (LO4_SIDE == LOCODE_LOWER) || (LO4_SIDE == LOCODE_UPPER) || (LO4_SIDE == LOCODE_INVALID)
@@ -8843,9 +8844,14 @@ static int RTTYDecoder_getBitDPLL(float32_t sample, int *val_p);
 static int RTTYDecoder_demodulator(float32_t sample);
 static float32_t RTTYDecoder_decayavg(float32_t average, float32_t input, int weight);
 
+// FSK shift: 170 200 425 850
+// FSK tone freq 1275 2125
+
 static float RTTY_Speed = 50; //45.45;
-static int RTTY_Shift = 455; //170;
-static int RTTY_Freq = 1500;
+#define	RTTY_Shift 455 //170;
+// The standard mark and space tones are 2125 hz and 2295 hz respectively
+#define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+#define	RTTY_FreqSpace (DEFAULT_RTTY_PITCH + RTTY_Shift)
 static int RTTY_StopBits = RTTY_STOP_1;
 
 void RTTYDecoder_Init(void)
@@ -8861,13 +8867,13 @@ void RTTYDecoder_Init(void)
 
 	//RTTY mark filter
 	filter = biquad_create(RTTY_BPF_STAGES);
-	biquad_init_bandpass(filter, TRX_SAMPLERATE, (RTTY_Freq - RTTY_Shift / 2) - RTTY_BPF_WIDTH / 2, (RTTY_Freq - RTTY_Shift / 2) + RTTY_BPF_WIDTH / 2);
+	biquad_init_bandpass(filter, TRX_SAMPLERATE, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
 	fill_biquad_coeffs(filter, RTTY_Mark_Filter_Coeffs, RTTY_BPF_STAGES);
 	arm_biquad_cascade_df2T_init_f32(&RTTY_Mark_Filter, RTTY_BPF_STAGES, RTTY_Mark_Filter_Coeffs, RTTY_Mark_Filter_State);
 
 	//RTTY space filter
 	filter = biquad_create(RTTY_BPF_STAGES);
-	biquad_init_bandpass(filter, TRX_SAMPLERATE, (RTTY_Freq + RTTY_Shift / 2) - RTTY_BPF_WIDTH / 2, (RTTY_Freq + RTTY_Shift / 2) + RTTY_BPF_WIDTH / 2);
+	biquad_init_bandpass(filter, TRX_SAMPLERATE, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
 	fill_biquad_coeffs(filter, RTTY_Space_Filter_Coeffs, RTTY_BPF_STAGES);
 	arm_biquad_cascade_df2T_init_f32(&RTTY_Space_Filter, RTTY_BPF_STAGES, RTTY_Space_Filter_Coeffs, RTTY_Space_Filter_State);
 
@@ -9420,14 +9426,6 @@ static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 }
 
 // user-mode processing
-// На выходе формируется тишина
-static void afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
-{
-	nrp->outsp = p;
-	arm_fill_f32(0, p, FIRBUFSIZE);
-}
-
-// user-mode processing
 // На выходе входной сигнал без изменений
 static void afnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 {
@@ -9527,6 +9525,22 @@ static void afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 }
 
 
+// user-mode processing
+// На выходе формируется тишина
+// прием телетайпа в приемнике A
+static void afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+{
+#if WITHRTTY
+	if (pathi == 0)
+	{
+		RTTYDecoder_Process(p, FIRBUFSIZE);
+	}
+#endif /* WITHRTTY */
+	//nrp->outsp = p;
+	//arm_fill_f32(0, p, FIRBUFSIZE);
+	afnoproc(pathi, nrp, p);
+}
+
 
 // user-mode processing
 void
@@ -9535,16 +9549,6 @@ audioproc_spool_user(void)
 	speexel_t * p;
 	if (takespeexready_user(& p))
 	{
-#if WITHRTTY
-		// прием телетайпа в приемнике A
-		const uint_fast8_t bi = getbankindex_pathi(0);	/* vfo bank index by pathi */
-		const uint_fast8_t pathsubmode = getsubmode(bi);
-		const uint_fast8_t mode = submodes [pathsubmode].mode;
-		if (mode == MODE_RTTY)
-		{
-			RTTYDecoder_Process(p + 0 * FIRBUFSIZE, FIRBUFSIZE);
-		}
-#endif /* WITHRTTY */
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;
 		for (pathi = 0; pathi < NTRX; ++ pathi)
