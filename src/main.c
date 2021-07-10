@@ -1805,7 +1805,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_DRM,
-		{ afpcw, afnoproc, }, // afproc
+		{ afnoproc, afnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1838,7 +1838,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
-		{ afpcw, afnoproc, }, // afproc
+		{ afnoproc, afnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
