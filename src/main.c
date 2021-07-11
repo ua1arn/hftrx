@@ -296,13 +296,12 @@ static uint_fast8_t getactualmainsubrx(void);
 
 #if WITHIF4DSP
 struct rxaproc_tag;
-static void afnoproc(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static void afpcw(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static void afpcwtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static void afpssb(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static void afpssbtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static void afprtty(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static void afnoproc(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpnoproc(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpcw(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpcwtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpssb(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpssbtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afprtty(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
 #endif /* WITHIF4DSP */
 
 #if WITHCAT
@@ -1600,7 +1599,7 @@ struct modetempl
 	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
 	uint_fast8_t txaprofgp;		// группа профилей обработки звука
 	uint_fast8_t agcseti;			// параметры слухового приема
-	void (* afproc [2])(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
+	float32_t * (* afproc [2])(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
 #else /* WITHIF4DSP */
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
@@ -1639,7 +1638,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_CW,				// группа профилей обработки звука
 		AGCSETI_CW,
-		{ afpcw, afnoproc, }, // afproc
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1672,7 +1671,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
-		{ afpcw, afnoproc, }, // afproc
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1705,7 +1704,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_AM,
-		{ afpcw, afnoproc, }, // afproc
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
@@ -1739,7 +1738,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_AM,
-		{ afpcw, afnoproc, }, // afproc
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
@@ -1773,7 +1772,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_NFM,				// группа профилей обработки звука
 		AGCSETI_FLAT,
-		{ afpcw, afnoproc, }, // afproc
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_FM, BOARD_DETECTOR_FM, }, 		/* FM detector used */
 #endif /* WITHIF4DSP */
@@ -1806,7 +1805,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_DRM,
-		{ afnoproc, afnoproc, }, // afproc
+		{ afpnoproc, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1839,7 +1838,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
-		{ afnoproc, afnoproc, }, // afproc
+		{ afpnoproc, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1874,7 +1873,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
-		{ afpcw, afnoproc, }, // afproc
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_WFM, BOARD_DETECTOR_WFM, },		/* WFM detector used */
 #endif /* WITHIF4DSP */
@@ -1912,7 +1911,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
-		{ afnoproc, afnoproc, }, // afproc - сигнал не обрабатывается
+		{ afpnoproc, afpnoproc, }, // afproc - сигнал не обрабатывается
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1949,7 +1948,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
-		{ afprtty, afnoproc, }, // afproc
+		{ afprtty, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1983,7 +1982,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
-		{ afnoproc, afnoproc, }, // afproc
+		{ afpnoproc, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -2021,7 +2020,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
-		{ afpcw, afnoproc, }, // afproc
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -2055,7 +2054,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
-		{ afpcw, afnoproc, }, // afproc
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -9244,8 +9243,6 @@ typedef struct rxaproc_tag
 	// LMS auto notch
 	LMSData_t lmsanotch;
 #endif /* WITHLMSAUTONOTCH */
-
-	speexel_t * outsp;	/* pointer to buffer with result of processing */
 } rxaproc_t;
 
 static RAMBIGDTCM rxaproc_t rxaprocs [NTRX];
@@ -9254,15 +9251,15 @@ static RAMBIGDTCM rxaproc_t rxaprocs [NTRX];
 
 #if ! WITHNOSPEEX
 
-	#if SPEEXNN == 64
+	#if FIRBUFSIZE == 64
 		#define SPEEXALLOCSIZE (NTRX * 15584)
-	#elif SPEEXNN == 128
+	#elif FIRBUFSIZE == 128
 		#define SPEEXALLOCSIZE (NTRX * 22584)
-	#elif SPEEXNN == 256
+	#elif FIRBUFSIZE == 256
 		#define SPEEXALLOCSIZE (NTRX * 38584)
-	#elif SPEEXNN == 512
+	#elif FIRBUFSIZE == 512
 		#define SPEEXALLOCSIZE (NTRX * 75448)
-	#elif SPEEXNN == 1024
+	#elif FIRBUFSIZE == 1024
 		#define SPEEXALLOCSIZE (NTRX * 149176)
 	#endif
 
@@ -9328,36 +9325,43 @@ void speex_free (void *ptr)
 	#endif /* SPEEXALLOCSIZE */
 #endif /* WITHUSEMALLOC */
 
+/* на слабых процессорах второй приемник без NR и автонотч */
+static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
+{
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S
+	return 1;
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S */
+	return pathi == 0;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S */
+}
+
 static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
 
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
-		const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
-		const uint_fast8_t pathsubmode = getsubmode(bi);
-		const uint_fast8_t mode = submodes [pathsubmode].mode;
+		const uint_fast8_t amode = getamode(pathi);
 #if ! WITHNOSPEEX
-		spx_int32_t denoise = gnoisereducts [mode];
+		spx_int32_t denoise = ispathprocessing(pathi) && gnoisereducts [amode];
 		spx_int32_t supress = - (int) gnoisereductvl;
 #endif /* ! WITHNOSPEEX */
-
 		rxaproc_t * const nrp = & rxaprocs [pathi];
+
 		// Получение параметров эквалайзера
 		float32_t * const dCoefs = nrp->firEQcoeff;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
 		fir_expand_symmetric(dCoefs, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
+
 #if WITHNOSPEEX
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = nrp->st_handle;
 		ASSERT(st != NULL);
 
-		//static float32_t speexEQresp [SPEEXNN];	// распределение усиления по частотам
-		//dsp_recalceq(pathi, speexEQresp);	// for SPEEX - equalizer in frequency domain
-
+		//PRINTF("speex_update_rx: amode=%d, pathi=%d, denoise=%d, supress=%d\n", (int) amode, (int) pathi, (int) denoise, (int) supress);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
-		//speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQresp);
+
 #endif /* WITHNOSPEEX */
 	}
 }
@@ -9381,7 +9385,8 @@ static void InitNoiseReduction(void)
 		nrp->refnew = 0;
 #else /* WITHNOSPEEX */
 
-		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
+		nrp->st_handle = speex_preprocess_state_init(FIRBUFSIZE, ARMI2SRATE);
+		//PRINTF("InitNoiseReduction: pathi=%d\n", (int) pathi);
 
 #endif /* WITHNOSPEEX */
 
@@ -9413,40 +9418,28 @@ static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float*
 
 #endif /* WITHNOSPEEX */
 
-/* на слабых процессорах второй приемник без NR и автонотч */
-static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
-{
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
-	return 1;
-#else
-	return pathi == 0;
-#endif
-}
-
 // user-mode processing
 // На выходе входной сигнал без изменений
-static void afnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
 	static const float32_t ki = 32768;
 	static const float32_t ko = 1. / 32768;
-	//nrp->outsp = p;
-	//arm_fill_f32(0, p, FIRBUFSIZE);
 #if WITHNOSPEEX
 	// не делать даже коррекцию АЧХ
 	nrp->outsp = p;
 #else /* WITHNOSPEEX */
 	// не делать даже коррекцию АЧХ
 	#if ! WITHLEAKYLMSANR
-		arm_scale_f32(p, ki, p, FIRBUFSIZE);
-		speex_preprocess_estimate_update(nrp->st_handle, p);
-		arm_scale_f32(p, ko, p, FIRBUFSIZE);
+//		arm_scale_f32(p, ki, p, FIRBUFSIZE);
+//		speex_preprocess_estimate_update(nrp->st_handle, p);
+//		arm_scale_f32(p, ko, p, FIRBUFSIZE);
 	#endif /* ! WITHLEAKYLMSANR */
-	nrp->outsp = p;
+	return p;
 #endif /* WITHNOSPEEX */
 }
 
-static void afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
 	static const float32_t ki = 32768;
@@ -9457,67 +9450,46 @@ static void afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
+
 #if WITHNOSPEEX
 	if (denoise)
 	{
 		// Filtering and denoise.
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
-		nrp->outsp = p;
+		return p;
 	}
 	else
 	{
 		// Filtering only.
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
-		nrp->outsp = nrp->wire1;
+		return nrp->wire1;
 	}
 #else /* WITHNOSPEEX */
-	if (denoise)
+
+	// Filtering and denoise.
+	BEGIN_STAMP();
+	arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+	END_STAMP();
+	if (anotch)
 	{
-		// Filtering and denoise.
-		BEGIN_STAMP();
-		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
-		END_STAMP();
-		if (anotch)
-		{
-			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
-		}
-		else
-		{
-			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
-		}
-#if WITHLEAKYLMSANR
-		if (pathi == 0)
-			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
-#else /* WITHLEAKYLMSANR */
-		arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
-		speex_preprocess_run(nrp->st_handle, nrp->wire1);
-		arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
-#endif /* WITHLEAKYLMSANR */
-		nrp->outsp = nrp->wire1;
+		hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
 	}
 	else
 	{
-		// Filtering only.
-		ASSERT(p != NULL);
-		ASSERT(nrp->wire1 != NULL);
-		BEGIN_STAMP();
-		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
-		END_STAMP();
-		if (anotch)
-		{
-			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
-		}
-		else
-		{
-			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
-		}
-#if WITHAFEQUALIZER
-		audio_rx_equalizer(nrp->wire1, FIRBUFSIZE);
-#endif /* WITHAFEQUALIZER */
-
-		nrp->outsp = nrp->wire1;
+		hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
 	}
+
+#if WITHLEAKYLMSANR
+	if (pathi == 0)
+		AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
+#else /* WITHLEAKYLMSANR */
+	arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
+	speex_preprocess_run(nrp->st_handle, nrp->wire1);
+	arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
+#endif /* WITHLEAKYLMSANR */
+	return nrp->wire1;
+
 #endif /* WITHNOSPEEX */
 
 }
@@ -9526,7 +9498,7 @@ static void afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 // user-mode processing
 // На выходе формируется тишина
 // прием телетайпа в приемнике A
-static void afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static float32_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 {
 #if WITHRTTY
 	if (pathi == 0)
@@ -9536,7 +9508,7 @@ static void afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 #endif /* WITHRTTY */
 	//nrp->outsp = p;
 	//arm_fill_f32(0, p, FIRBUFSIZE);
-	afnoproc(pathi, nrp, p);
+	return afpnoproc(pathi, nrp, p);
 }
 
 
@@ -9549,12 +9521,13 @@ audioproc_spool_user(void)
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;
+		float32_t * outsp [NTRX];
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			rxaproc_t * const nrp = & rxaprocs [pathi];
 			const uint_fast8_t amode = getamode(pathi);
 			// nrp->outsp указывает на результат обработки
-			mdt [amode].afproc [gtx] (pathi, nrp, p + pathi * FIRBUFSIZE);
+			outsp [pathi] = mdt [amode].afproc [gtx] (pathi, nrp, p + pathi * FIRBUFSIZE);
 		}
 		//////////////////////////////////////////////
 		// Save results
@@ -9562,9 +9535,9 @@ audioproc_spool_user(void)
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
 	#if WITHUSEDUALWATCH
-			deliveryfloat(& speexoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [1].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& speexoutfloat_user, outsp [0] [i], outsp [1] [i]);	// to AUDIO codec
 	#else /* WITHUSEDUALWATCH */
-			deliveryfloat(& speexoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [0].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& speexoutfloat_user, outsp [0] [i], outsp [0] [i]);	// to AUDIO codec
 	#endif /* WITHUSEDUALWATCH */
 		}
 		// Освобождаем буфер
@@ -10177,10 +10150,10 @@ updateboardZZZ(
 			board_set_adcfifo(gadcfifo);
 			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
 		#endif /* WITHDSPEXTDDC */
-		#if WITHIF4DSP
-			speex_update_rx();
-		#endif /* WITHIF4DSP */
 		} /* (gtx == 0) */
+	#if WITHIF4DSP
+		speex_update_rx();
+	#endif /* WITHIF4DSP */
 
 	#if defined (RTC1_TYPE)
 		board_setrtcstrobe(grtcstrobe);

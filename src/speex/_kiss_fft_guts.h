@@ -134,12 +134,12 @@ struct kiss_fft_state{
 #  define KISS_FFT_SIN(phase)  floorf(MIN(32767f,MAX(-32767f,.5f+32768f * sinf (phase))))
 #  define HALF_OF(x) ((x)>>1)
 #elif defined(USE_SIMD)
-#  define KISS_FFT_COS(phase) _mm_set1_ps( cos(phase) )
-#  define KISS_FFT_SIN(phase) _mm_set1_ps( sin(phase) )
+#  define KISS_FFT_COS(phase) _mm_set1_ps( cosf(phase) )
+#  define KISS_FFT_SIN(phase) _mm_set1_ps( sinf(phase) )
 #  define HALF_OF(x) ((x)*_mm_set1_ps(.5f))
 #else
-#  define KISS_FFT_COS(phase) (kiss_fft_scalar) cos(phase)
-#  define KISS_FFT_SIN(phase) (kiss_fft_scalar) sin(phase)
+#  define KISS_FFT_COS(phase) ((kiss_fft_scalar) cosf(phase))
+#  define KISS_FFT_SIN(phase) ((kiss_fft_scalar) sinf(phase))
 #  define HALF_OF(x) ((x)*.5f)
 #endif
 

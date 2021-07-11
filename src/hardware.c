@@ -3856,7 +3856,7 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 }
 
 #if WITHUSEMALLOC
-#if CPUSTYLE_STM32MP1 || (CPUSTYLE_XC7Z && ! WITHISBOOTLOADER)
+#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S) && ! WITHISBOOTLOADER
 
 	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
 

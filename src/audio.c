@@ -358,7 +358,17 @@ static RAMBIGDTCM FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// п�
 
 //static void * fft_lookup;
 
-static RAMDTCM struct Complex Sig [FFTSizeFilters];
+
+// Используется при формировании корректированной АЧХ звука. Должно быть размером достаточным, чтобы влезли используемые фильтры
+#define FFTSizeFilters 1024
+
+struct ComplexHFTRX
+{
+	FLOAT_t real;
+	FLOAT_t imag;
+};
+
+static RAMDTCM struct ComplexHFTRX Sig [FFTSizeFilters];
 
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
@@ -2923,12 +2933,6 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 #endif
 }
 
-// for speex equalizer responce buffer
-static int freq2index(unsigned freq)
-{
-	return (uint_fast64_t) freq * SPEEXNN * 2 / ARMI2SRATE;
-}
-
 // calculate 1/2 of coefficients
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 {
@@ -3019,36 +3023,6 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
 		break;
 	}
-}
-
-
-static void copytospeex(float * frame)
-{
-	ASSERT((FFTSizeFilters / 2) == SPEEXNN);
-	unsigned i;
-	for (i = 0; i < SPEEXNN; ++ i)
-	{
-		struct Complex * const sig = & Sig [i];
-		frame [i] = SQRTF(sig->real * sig->real + sig->imag * sig->imag);
-	}
-#if 0
-	const FLOAT_t r1 = db2ratio(- 100);
-	const FLOAT_t r2 = db2ratio(- 80);
-	const FLOAT_t r3 = db2ratio(- 60);
-
-	/* Удаление постоянной составляющей по возможности */
-	frame [0] *= r1;
-	frame [1] *= r2;
-	frame [2] *= r3;
-#endif
-}
-
-// for SPEEX - equalizer in frequency domain
-void dsp_recalceq(uint_fast8_t pathi, float * frame)
-{
-	dsp_recalceq_coeffs(pathi, FIRCoef_rx_AUDIO [gwprof] [pathi], Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
-	imp_response(FIRCoef_rx_AUDIO [gwprof] [pathi], Ntap_rx_AUDIO);	// Получение АЧХ из коэффициентов симмметричного FIR
-	copytospeex(frame);
 }
 
 #if WITHMODEM

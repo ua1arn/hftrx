@@ -20,6 +20,8 @@ extern "C" {
 	#define NTRX 1	/* количество трактов приемника. */
 #endif /* WITHUSEDUALWATCH */
 
+#define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
+
 /* Применённая система диспетчеризации требует,
    чтобы во всех буферах помещалось не меньше сэмплов,
    чем в DMABUFFSIZE32RX
@@ -426,12 +428,6 @@ FLOAT_t local_exp(FLOAT_t x);
 FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
 FLOAT_t local_log(FLOAT_t x);
 FLOAT_t local_log10(FLOAT_t X);
-	
-struct Complex
-{
-	FLOAT_t real;
-	FLOAT_t imag;
-};
 
 /* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
 #define IV ivqv [0]
@@ -446,15 +442,6 @@ typedef struct
 {
 	int_fast32_t ivqv [2];
 } INT32P_t;
-
-
-#if WITHNOSPEEX
-	#define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
-
-#else /* WITHNOSPEEX */
-	#define FIRBUFSIZE SPEEXNN
-
-#endif /* WITHNOSPEEX */
 
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
@@ -905,7 +892,6 @@ void endstamp3(void);
 
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX - equalizer in frequency domain
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
 void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap);			// Duplicate symmetrical part of coeffs.
 
