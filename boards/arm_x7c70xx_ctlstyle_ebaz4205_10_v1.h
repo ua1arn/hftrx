@@ -25,6 +25,26 @@
 	#define ARM_PLL_DIV	2
 	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
 
+	// PL Clock 0 Output control
+	// ~50 MHz
+	#define SCLR_FPGA0_CLK_CTRL_DIVISOR0 8
+	#define SCLR_FPGA0_CLK_CTRL_DIVISOR1 4
+
+	// PL Clock 1 Output control
+	// ~50 MHz
+	#define SCLR_FPGA1_CLK_CTRL_DIVISOR0 8
+	#define SCLR_FPGA1_CLK_CTRL_DIVISOR1 4
+
+	// PL Clock 2 Output control
+	// ~50 MHz
+	#define SCLR_FPGA2_CLK_CTRL_DIVISOR0 8
+	#define SCLR_FPGA2_CLK_CTRL_DIVISOR1 4
+
+	// PL Clock 3 Output control
+	// ~50 MHz
+	#define SCLR_FPGA3_CLK_CTRL_DIVISOR0 8
+	#define SCLR_FPGA3_CLK_CTRL_DIVISOR1 4
+
 	#define DDR_PLL_MUL 32	// DDR_PLL_CTRL.PLL_FDIV value - 1066.656 MHz
 	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
 	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz

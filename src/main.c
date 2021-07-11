@@ -3766,7 +3766,8 @@ enum
 	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
-	static const uint_fast8_t gagcoff = 0;
+	static const uint_fast8_t gagcoff;
+	static const uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 #endif /* WITHIF4DSP */
 
 #define NRLEVELMAX 60
