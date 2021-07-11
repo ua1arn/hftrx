@@ -7308,12 +7308,11 @@ static void fftzoom_filer_decimate_ifspectrum(
 
 	// Biquad LPF фильтр
 #if defined(ARM_MATH_NEON)
-	float32_t IIRCoeffs_NEON [ZOOMFFT_DECIM_STAGES_IIR * 32];
+	float32_t IIRCoeffs_NEON [ZOOMFFT_DECIM_STAGES_IIR * 8];
 
 	// Initialize floating-point Biquad cascade filter.
-	//arm_copy_f32(prm->pIIRCoeffs, IIRCoeffs_NEON, ZOOMFFT_DECIM_STAGES_IIR * 5);
+    arm_biquad_cascade_df2T_compute_coefs_f32(ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, IIRCoeffs_NEON);
     arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, IIRCoeffs_NEON, gvars.iir_state);
-    arm_biquad_cascade_df2T_compute_coefs_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs);
 
 #else /* defined(ARM_MATH_NEON) */
 	// Initialize floating-point Biquad cascade filter.
