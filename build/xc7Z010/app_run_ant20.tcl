@@ -7,7 +7,7 @@ targets -set -filter {jtag_cable_name =~ "Platform Cable USB II 13724327082a01" 
 fpga -file bitstream_ant_20.bit
 configparams force-mem-access 1
 targets -set -nocase -filter {name =~"APU*"}
-source ps7_init_ant.tcl
+source ps7_init_ant20.tcl
 ps7_init
 ps7_post_config
 targets -set -nocase -filter {name =~ "*A9*#0"}
