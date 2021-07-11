@@ -2266,7 +2266,7 @@ void irqlog_print(void)
 
 #if 0//CPUSTYLE_R7S721
 
-/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
 void IRQ_Handler_GIC(void)
 {
 	//dbg_putchar('/');
@@ -2344,8 +2344,8 @@ unsigned int gicv2_get_pending_interrupt_id(void)
 
 //static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 
-/* Вызывается из crt_stm32mp1.s со сброшенным флагом прерываний */
-// Sww ARM IHI 0048B.b document
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+// See ARM IHI 0048B.b document
 void IRQ_Handler_GIC(void)
 {
 	// per-cpu:

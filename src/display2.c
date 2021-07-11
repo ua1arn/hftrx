@@ -7307,19 +7307,19 @@ static void fftzoom_filer_decimate_ifspectrum(
 	const unsigned usedSize = NORMALFFT * prm->zoom;
 
 	// Biquad LPF фильтр
-#if defined(ARM_MATH_NEON)
+#if defined (ARM_MATH_NEON)
 	float32_t IIRCoeffs_NEON [ZOOMFFT_DECIM_STAGES_IIR * 8];
 
 	// Initialize floating-point Biquad cascade filter.
     arm_biquad_cascade_df2T_compute_coefs_f32(ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, IIRCoeffs_NEON);
     arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, IIRCoeffs_NEON, gvars.iir_state);
 
-#else /* defined(ARM_MATH_NEON) */
+#else /* defined (ARM_MATH_NEON) */
 	// Initialize floating-point Biquad cascade filter.
 	arm_biquad_cascade_df2T_init_f32(& c.iir_config, ZOOMFFT_DECIM_STAGES_IIR, prm->pIIRCoeffs, gvars.iir_state);
 	arm_biquad_cascade_df2T_f32(& c.iir_config, buffer, buffer, usedSize);
 
-#endif /* defined(ARM_MATH_NEON) */
+#endif /* defined (ARM_MATH_NEON) */
 
 	// Дециматор
 	VERIFY(ARM_MATH_SUCCESS == arm_fir_decimate_init_f32(& c.fir_config,
