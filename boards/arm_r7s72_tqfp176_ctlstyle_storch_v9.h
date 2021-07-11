@@ -395,6 +395,7 @@
 	// --- Эти строки можно отключать, уменьшая функциональность готового изделия
 
 	#define WITHMODESETFULLNFM 1
+	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	#define WITHELKEY	1

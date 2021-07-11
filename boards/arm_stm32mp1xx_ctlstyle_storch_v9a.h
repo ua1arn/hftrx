@@ -592,6 +592,8 @@
 #endif /* WITHISBOOTLOADER */
 
 	#define WITHMODESETFULLNFM 1
+	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
+
 	/* все возможные в данной конфигурации фильтры */
 	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 	/* все возможные в данной конфигурации фильтры для передачи */
