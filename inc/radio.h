@@ -67,7 +67,7 @@ typedef uint_least64_t phase_t;
 #define WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
 
 #define WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
-#define WITHMIKEINGAINMAX	255		/* код управления усилением входа с микрофона */
+#define WITHMIKEINGAINMAX	100		/* код управления усилением входа с микрофона */
 
 #define WITHMIKECLIPMIN		0
 #define WITHMIKECLIPMAX		90

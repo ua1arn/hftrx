@@ -2768,7 +2768,7 @@ struct nvmap
 #endif /* LCDMODE_COLORED */
 
 #if WITHMIC1LEVEL
-	uint16_t mik1level;
+	uint16_t gmik1level;
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
@@ -2776,7 +2776,6 @@ struct nvmap
 	uint8_t ALCEN;// = 1;	// only left channel ALC enabled
 	uint8_t ALCMXGAIN;// = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
 	uint8_t ALCMNGAIN;// = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
-	uint8_t PGAGAIN;	// 0x00..0x3F input PGA volume control setting
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHTX
 	uint8_t	ggrptxparams; // последний посещённый пункт группы
@@ -4204,7 +4203,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 
 #if WITHMIC1LEVEL
-	static uint_fast16_t mik1level = WITHMIKEINGAINMAX;
+	static uint_fast16_t gmik1level = (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 2 + WITHMIKEINGAINMIN;
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	uint_fast8_t ALCNEN = 0;	// ALC noise gate function control bit
@@ -4212,7 +4211,6 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	uint_fast8_t ALCEN = 0;	// only left channel ALC enabled
 	uint_fast8_t ALCMXGAIN = 7;	// Set maximum gain limit for PGA volume setting changes under ALC control
 	uint_fast8_t ALCMNGAIN = 0;	// Set minimum gain value limit for PGA volume setting changes under ALC control
-	uint_fast8_t PGAGAIN = 0x20;	// 0x00..0x3F input PGA volume control setting
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 #if WITHIF4DSP
 #if WITHTX
@@ -6522,9 +6520,9 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_UNSIGNED,
 		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
-		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
+		offsetof(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
 		nvramoffs0,
-		& mik1level,
+		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
@@ -10311,7 +10309,7 @@ updateboardZZZ(
 		board_set_classamode(gclassamode);	/* использование режима клвсс А при передаче */
 		board_set_txgate(gtxgate);		/* разрешение драйвера и оконечного усилителя */
 		#if WITHMIC1LEVEL
-			board_set_mik1level(mik1level);
+			board_set_mik1level(gmik1level);
 		#endif /* WITHMIC1LEVEL */
 		board_set_autotune(reqautotune);
 	#endif /* WITHTX */
@@ -10412,11 +10410,6 @@ updateboardZZZ(
 					(ALCNTH << 0) |
 					0;
 			nau8822_setreg(NAU8822_NOISE_GATE, ngctl1);
-
-			// MIKE PGA GAIN
-			const uint_fast8_t mikepgaval = PGAGAIN;	// 0x00..0x3F input PGA volume control setting
-			nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA programming
-			nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, mikepgaval | 0x100);	// Write both valuse simultaneously
 
 		}
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
@@ -16655,9 +16648,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
-		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
+		offsetof(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
 		nvramoffs0,
-		& mik1level,
+		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
@@ -16986,16 +16979,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& ALCMNGAIN,
-		getzerobase, /* складывается со смещением и отображается */
-	},
-	{
-		QLABEL("PGAGAIN "), 7, 0, 0,	ISTEP1,		/* input PGA volume control setting */
-		ITEM_VALUE,
-		0x00, 0x3F,
-		offsetof(struct nvmap, PGAGAIN),	/* Set minimum gain value limit for PGA volume setting changes under ALC contro */
-		nvramoffs0,
-		NULL,
-		& PGAGAIN,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
@@ -19110,7 +19093,7 @@ void display2_menu_valxx(
 
 	case RJ_COMPILED:
 		{
-			static const FLASHMEM char msg [] = __DATE__ " " __TIME__;
+			static const FLASHMEM char msg [] = __DATE__ ";// " __TIME__;
 			width = VALUEW;
 			comma = strlen_P(msg);
 			display_menu_string_P(x, y, msg, width, comma);
@@ -21756,15 +21739,15 @@ void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max)
 
 uint_fast8_t hamradio_get_mik1level(void)
 {
-	return mik1level;
+	return gmik1level;
 }
 
 void hamradio_set_mik1level(uint_fast8_t v)
 {
 	ASSERT(v >= WITHMIKEINGAINMIN);
 	ASSERT(v <= WITHMIKEINGAINMAX);
-	mik1level = v;
-	save_i8(offsetof(struct nvmap, mik1level), mik1level);
+	gmik1level = v;
+	save_i8(offsetof(struct nvmap, gmik1level), gmik1level);
 	updateboard(1, 0);
 }
 
@@ -22359,7 +22342,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 
 	mp->cell_saved = 1;
 	mp->mikebust20db = gmikebust20db;
-	mp->level = mik1level;
+	mp->level = gmik1level;
 	mp->agc = gmikeagc;
 	mp->agcgain = gmikeagcgain;
 	mp->clip = gmikehclip;
@@ -22389,7 +22372,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 	if (mp->cell_saved && set)
 	{
 		gmikebust20db = mp->mikebust20db;
-		mik1level = mp->level;
+		gmik1level = mp->level;
 		gmikeagc = mp->agc;
 		gmikeagcgain = mp->agcgain;
 		gmikehclip = mp->clip;

@@ -149,22 +149,13 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 	{
 		// переключение на микрофон
 		// Микрофон подключен к LMICN, LMICP=common
-		//const uint_fast8_t mikepgaval = 0x10;	// 0x10 - default, 0x00..0x3f mean -12 db..+35.25 dB in 0.75 dB step
-#if 0
-		const uint_fast8_t mikepgaval = (mikegain - WITHMIKEINGAINMIN) * (0x3f) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
-		//
-		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA volume control setting = 0.0dB
-		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, 0x40 | mikepgaval | 0x100);	// 0x40 = PGA in muted condition not connected to RADC Mix/Boost stage
-#else
-		const uint_fast8_t adcdigvol = (mikegain - WITHMIKEINGAINMIN) * (255) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
+		const uint_fast8_t adcdigvol = 255;
 		nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
 		nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
-
-		// перенесено в main.c
-//		const uint_fast8_t mikepgaval = 0x3F;
-//		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA programming
-//		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, mikepgaval | 0x100);	// Write both valuse simultaneously
-#endif
+		//
+		const uint_fast8_t mikepgaval = (mikegain - WITHMIKEINGAINMIN) * (0x3F) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
+		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA programming
+		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, mikepgaval | 0x100);	// Write both valuse simultaneously
 		// 
 		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikebust20db != 0));	// 0x100 - 20 dB boost ON
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
