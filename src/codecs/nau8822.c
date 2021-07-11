@@ -127,38 +127,32 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 	{
 		// переключение на линейный вход
 		// Line input подключены к LAUXIN, RAUXIN
-#if 0
-		//const uint_fast8_t auxinpgaval = 0x1; // 1..7: -12..+6 dB, 5: 0 dB
-		const uint_fast8_t auxinpgaval = (linegain - WITHLINEINGAINMIN) * (0x07 - 0x01) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + 0x01;
-		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, 0x40 | 0);	// PGA muted
-		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, 0x40 | 0x100);	// write both valuse simultaneously
+		const uint_fast8_t inppgagain = 0x40;	// PGA muted
+		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, inppgagain | 0);
+		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, inppgagain | 0x100);	// write both valuse simultaneously
 		//
-		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, auxinpgaval);	// LLINEIN disconnected, LAUXIN connected w/o gain
-		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, auxinpgaval);	// RLINEIN disconnected, RAUXIN connected w/o gain
-#else
-		const uint_fast8_t adcdigvol = (linegain - WITHLINEINGAINMIN) * (255) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + 0x00;
-		nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
-		nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
-		//
-		const uint_fast8_t auxinpgaval = 0x05; // 1..7: -12..+6 dB, 5: 0 dB
-		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, auxinpgaval);	// LLINEIN disconnected, LAUXIN connected w/o gain
-		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, auxinpgaval);	// RLINEIN disconnected, RAUXIN connected w/o gain
-#endif
+		// 1..7: -12..+6 dB, 5: 0 dB, 0: off
+		const uint_fast8_t adcboostcontrol = (linegain - WITHLINEINGAINMIN) * (0x07) / (WITHLINEINGAINMAX - WITHLINEINGAINMIN) + 0x00;
+		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, adcboostcontrol);	// LLINEIN disconnected, LAUXIN connected w/o gain
+		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, adcboostcontrol);	// RLINEIN disconnected, RAUXIN connected w/o gain
+		// Микрофон подключен к LMICN, LMICP=common
+		// LLIN отключен от PGA
+		nau8822_setreg(NAU8822_INPUT_CONTROL, 0x003);
 	}
 	else
 	{
 		// переключение на микрофон
 		// Микрофон подключен к LMICN, LMICP=common
-		const uint_fast8_t adcdigvol = 255;
-		nau8822_setreg(NAU8822_LEFT_ADC_DIGITAL_VOLUME, adcdigvol | 0);
-		nau8822_setreg(NAU8822_RIGHT_ADC_DIGITAL_VOLUME, adcdigvol | 0x100);
 		//
-		const uint_fast8_t mikepgaval = (mikegain - WITHMIKEINGAINMIN) * (0x3F) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
-		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA programming
-		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, mikepgaval | 0x100);	// Write both valuse simultaneously
+		const uint_fast8_t inppgagain = (mikegain - WITHMIKEINGAINMIN) * (0x3F) / (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) + 0x00;
+		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, inppgagain | 0);
+		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, inppgagain | 0x100);	// Write both valuse simultaneously
 		// 
 		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikebust20db != 0));	// 0x100 - 20 dB boost ON
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
+		// Микрофон подключен к LMICN, LMICP=common
+		// LLIN отключен от PGA
+		nau8822_setreg(NAU8822_INPUT_CONTROL, 0x003);
 	}
 }
 
