@@ -7405,6 +7405,15 @@ dsp_getspectrumrow(
 	float32_t * const largesigI = pf->largebuffI + LARGEFFT - usedsize;
 	float32_t * const largesigQ = pf->largebuffQ + LARGEFFT - usedsize;
 	float32_t * const fftinpt = gvars.cmplx_sig;
+
+	//beginstamp();	// performance diagnostics
+	// ARM_MATH_LOOPUNROLL=1, ARM_MATH_NEON=1
+	// STM32MP1: -Og -mfpu=neon-vfpv4 : dtmax=286188, dtlast=237885,
+	// STM32MP1: -Ofast -flto -mfpu=neon-vfpv4 : dtmax=224095, dtlast=174349
+	// STM32MP1: -Ofast -flto -mfpu=vfpv4 : dtmax=236905, dtlast=183697
+	// ARM_MATH_NEON=1
+	// STM32MP1: -Ofast -flto -mfpu=neon-vfpv4 : dtmax=226855, dtlast=200977
+
 	if (zoompow2 > 0)
 	{
 		ASSERT(ARRAY_SIZE(zoom_params) >= zoompow2);
@@ -7423,6 +7432,8 @@ dsp_getspectrumrow(
 	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, NORMALFFT));
 	arm_cfft_f32(& fftinstance, fftinpt, 0, 1);	// forward transform
 	arm_cmplx_mag_f32(fftinpt, fftinpt, NORMALFFT);	/* Calculate magnitudes */
+
+	//endstamp();	// performance diagnostics
 
 	enum { visiblefftsize = (int_fast64_t) NORMALFFT * SPECTRUMWIDTH_MULT / SPECTRUMWIDTH_DENOM };
 	enum { fftsize = NORMALFFT };

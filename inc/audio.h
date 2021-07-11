@@ -896,6 +896,13 @@ uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Пол
 uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦП микрофонного тракта */
 
 void dsp_speed_diagnostics(void);	/* DSP speed test */
+void beginstamp(void);
+void endstamp(void);
+void beginstamp2(void);
+void endstamp2(void);
+void beginstamp3(void);
+void endstamp3(void);
+
 void buffers_diagnostics(void);
 void dtmftest(void);
 void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX - equalizer in frequency domain

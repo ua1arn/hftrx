@@ -295,6 +295,36 @@ static uint_fast8_t		glob_dsploudspeaker_off;
 
 #endif /* WITHDEBUG */
 
+void beginstamp(void)
+{
+	BEGIN_STAMP();
+}
+
+void endstamp(void)
+{
+	END_STAMP();
+}
+
+void beginstamp2(void)
+{
+	BEGIN_STAMP2();
+}
+
+void endstamp2(void)
+{
+	END_STAMP2();
+}
+
+void beginstamp3(void)
+{
+	BEGIN_STAMP3();
+}
+
+void endstamp3(void)
+{
+	END_STAMP3();
+}
+
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 	// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 	// Параметры для передачи в FPGA
@@ -3393,7 +3423,7 @@ static RAMFUNC FLOAT_t agc_measure_float(
 	uint_fast8_t pathi
 	)
 {
-	BEGIN_STAMP3();
+	//BEGIN_STAMP3();
 
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	volatile agcstate_t * const st = & rxagcstate [pathi];
@@ -3408,7 +3438,7 @@ static RAMFUNC FLOAT_t agc_measure_float(
 	agc_perform(agcp, st, strength);	// измеритель уровня сигнала
 	//END_STAMP();
 
-	END_STAMP3();
+	//END_STAMP3();
 	return agc_result_slow(st);
 }
 
