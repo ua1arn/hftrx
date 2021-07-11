@@ -243,11 +243,14 @@ bitstream_4205_10.h: bitstream_4205_10.bit
 	
 bootloader: BOOT2
   
-app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
-	xsct.bat app_run_4205.tcl 
+#app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
+#	xsct.bat app_run_4205.tcl 
   
-#app_run: $(PROJECT)_app.elf bitstream_ant_20.bit app_run_ant.tcl
-#	xsct.bat app_run_ant.tcl
+app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
+	xsct.bat app_run_ant10.tcl  
+  
+#app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
+#	xsct.bat app_run_ant10.tcl
 
 lib: $(ZYNQLIB)
 
