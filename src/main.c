@@ -19067,7 +19067,10 @@ void display2_menu_valxx(
 
 	case RJ_COMPILED:
 		{
-			static const FLASHMEM char msg [] = __DATE__ ";// " __TIME__;
+			static const FLASHMEM char msg [] =
+					__DATE__
+					//" " __TIME__
+					;
 			width = VALUEW;
 			comma = strlen_P(msg);
 			display_menu_string_P(x, y, msg, width, comma);
