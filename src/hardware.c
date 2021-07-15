@@ -3747,6 +3747,7 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 
 // Используется в случае наличия ключа ld -nostartfiles
 // Так же смотреть вокруг software_init_hook
+// see https://github.com/gmarkall/newlib/blob/de33102df7309e77441dfc76aa8cdef6d26da209/newlib/libc/sys/arm/crt0.S#L1
 
 #ifdef __cplusplus
 extern "C" {
