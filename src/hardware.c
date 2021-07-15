@@ -3745,13 +3745,15 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 
 #if CPUSTYLE_ARM
 
-// Используется в случае наличия ключа ld -nostartfiles
-// Так же смотреть вокруг software_init_hook
-// see https://github.com/gmarkall/newlib/blob/de33102df7309e77441dfc76aa8cdef6d26da209/newlib/libc/sys/arm/crt0.S#L1
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+#if (__CORTEX_M == 0)
+
+// Используется в случае наличия ключа ld -nostartfiles
+// Так же смотреть вокруг software_init_hook
+// see https://github.com/gmarkall/newlib/blob/de33102df7309e77441dfc76aa8cdef6d26da209/newlib/libc/sys/arm/crt0.S#L1
 
 extern int main(void);
 extern void __libc_init_array(void);
@@ -3779,6 +3781,8 @@ void _fini(void)
 	for (;;)
 		;
 }
+
+#endif /* (__CORTEX_M == 0) */
 
 #ifdef __cplusplus
 }
