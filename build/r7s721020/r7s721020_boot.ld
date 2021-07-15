@@ -43,6 +43,7 @@ SECTIONS
 {
 	.text :
 	{
+		KEEP(*(.startup0))
 		KEEP(*(.init))
 		KEEP(*(.initfunc*))
 		KEEP(*(.initdata*))

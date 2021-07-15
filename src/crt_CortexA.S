@@ -101,7 +101,7 @@ FIQAddr:       .word FIQ_Handler
    .ltorg
 
 
-   .section .init, "ax"
+   .section .startup0, "ax"
    .code 32
    
    .extern _start
