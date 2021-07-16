@@ -94,13 +94,32 @@ DHCP_TYPE dhcp_data;
 static struct udp_pcb *pcb = NULL;
 static dhcp_config_t *config = NULL;
 
+
+static uint32_t getsafe32(const uint8_t * p)
+{
+	return
+			((uint32_t) p [0] << 0) |
+			((uint32_t) p [1] << 8) |
+			((uint32_t) p [2] << 16) |
+			((uint32_t) p [3] << 24) |
+			0;
+}
+
+static void putsafe32(uint8_t * p, uint32_t v)
+{
+	p [0] = (v >> 0) & 0xFF;
+	p [1] = (v >> 8) & 0xFF;
+	p [2] = (v >> 16) & 0xFF;
+	p [3] = (v >> 24) & 0xFF;
+}
+
 char magic_cookie[] = {0x63,0x82,0x53,0x63};
 
 static dhcp_entry_t *entry_by_ip(uint32_t ip)
 {
 	int i;
 	for (i = 0; i < config->num_entry; i++)
-		if (*(uint32_t *)config->entries[i].addr == ip)
+		if (getsafe32(config->entries[i].addr) == ip)
 			return &config->entries[i];
 	return NULL;
 }
@@ -165,7 +184,7 @@ int fill_options(void *dest,
 	/* dhcp server identifier */
 	*ptr++ = DHCP_SERVERID;
 	*ptr++ = 4;
-	*(uint32_t *)ptr = serverid;
+	putsafe32(ptr, serverid);
 	ptr += 4;
 
 	/* lease time */
@@ -179,7 +198,7 @@ int fill_options(void *dest,
 	/* subnet mask */
 	*ptr++ = DHCP_SUBNETMASK;
 	*ptr++ = 4;
-	*(uint32_t *)ptr = subnet;
+	putsafe32(ptr, subnet);
 	ptr += 4;
 
 	/* router */
@@ -187,7 +206,7 @@ int fill_options(void *dest,
 	{
 		*ptr++ = DHCP_ROUTER;
 		*ptr++ = 4;
-		*(uint32_t *)ptr = router;
+		putsafe32(ptr, router);
 		ptr += 4;
 	}
 
@@ -206,7 +225,7 @@ int fill_options(void *dest,
 	{
 		*ptr++ = DHCP_DNSSERVER;
 		*ptr++ = 4;
-		*(uint32_t *)ptr = dns;
+		putsafe32(ptr, dns);
 		ptr += 4;
 	}
 
@@ -234,7 +253,8 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 			dhcp_data.dp_op = 2; /* reply */
 			dhcp_data.dp_secs = 0;
 			dhcp_data.dp_flags = 0;
-			*(uint32_t *)dhcp_data.dp_yiaddr = *(uint32_t *)entry->addr;
+			//*(uint32_t *)dhcp_data.dp_yiaddr = *(uint32_t *)entry->addr;
+			memcpy(dhcp_data.dp_yiaddr, entry->addr, 4);
 			memcpy(dhcp_data.dp_magic, magic_cookie, 4);
 
 			memset(dhcp_data.dp_options, 0, sizeof(dhcp_data.dp_options));
@@ -242,11 +262,11 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 			fill_options(dhcp_data.dp_options,
 				DHCP_OFFER,
 				config->domain,
-				*(uint32_t *)config->dns,
+				getsafe32(config->dns),
 				entry->lease, 
-				*(uint32_t *)config->addr,
-				*(uint32_t *)config->addr, 
-				*(uint32_t *)entry->subnet);
+				getsafe32(config->addr),
+				getsafe32(config->addr),
+				getsafe32(entry->subnet));
 
 			pp = pbuf_alloc(PBUF_TRANSPORT, sizeof(dhcp_data), PBUF_POOL);
 			if (pp == NULL) break;
@@ -267,7 +287,7 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 			if (entry != NULL) free_entry(entry);
 
 			/* 3. find requested ipaddr */
-			entry = entry_by_ip(*(uint32_t *)ptr);
+			entry = entry_by_ip(getsafe32(ptr));
 			if (entry == NULL) break;
 			if (!is_vacant(entry)) break;
 
@@ -284,11 +304,11 @@ static void udp_recv_proc(void *arg, struct udp_pcb *upcb, struct pbuf *p, const
 			fill_options(dhcp_data.dp_options,
 				DHCP_ACK,
 				config->domain,
-				*(uint32_t *)config->dns,
+				getsafe32(config->dns),
 				entry->lease, 
-				*(uint32_t *)config->addr,
-				*(uint32_t *)config->addr, 
-				*(uint32_t *)entry->subnet);
+				getsafe32(config->addr),
+				getsafe32(config->addr),
+				getsafe32(entry->subnet));
 
 			/* 6. send ACK */
 			pp = pbuf_alloc(PBUF_TRANSPORT, sizeof(dhcp_data), PBUF_POOL);
