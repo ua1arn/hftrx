@@ -287,6 +287,17 @@ typedef USB_OTG_GlobalTypeDef  PCD_TypeDef;
 typedef USB_OTG_CfgTypeDef     PCD_InitTypeDef;
 typedef USB_OTG_EPTypeDef      PCD_EPTypeDef;
 
+
+#define PIPE_NUM      (16)
+
+typedef struct {
+	int        enable;
+	uint16_t    status;
+	uint32_t    req_size;
+	uint32_t    data_cnt;
+	uint8_t     *p_data;
+} pipe_ctrl_t;
+
 /**
   * @brief  PCD Handle Structure definition
   */
@@ -316,6 +327,8 @@ typedef struct
                                        This parameter can be set to ENABLE or DISABLE        */
   void                    *pData;      /*!< Pointer to upper stack Handler */
   uint_fast8_t            run_later_ctrl_comp;	// Renesas hardware specific item
+  pipe_ctrl_t pipe_ctrl[PIPE_NUM];
+  uint16_t setup_buffer[32];
 
 
 #if (USE_HAL_PCD_REGISTER_CALLBACKS == 1U)

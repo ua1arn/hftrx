@@ -54,6 +54,7 @@ SECTIONS
 
 		*(.text*)
 
+		KEEP(*(.startup0))
 		KEEP(*(.init))
 		KEEP(*(.fini))
 

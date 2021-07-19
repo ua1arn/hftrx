@@ -19,7 +19,7 @@
 #define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
@@ -162,36 +162,70 @@
 /* 	Available ports on EBAZ4205 board:
  *
  *	Top side:
- *  A19	MIO16 (R2608 left)
- *  B18	MIO18 (R2609 left)
- *  A15	MIO26 (X3 6)		<-> SCL
- *  D13	MIO27 (X3 5)		<-> SDA
- *  С18	MIO39 (R2444 left)
- *  D16	MIO46 (R2445B left)
- *  B14	MIO47 (R2446 left)
- *  B12	MIO48 (R2447 left)
- *  C12	MIO49 (R2445 left)
- *  B13	MIO50 (R2543 left)
+ *  A19	MIO16 (R2608 left)	COL4_MIO
+ *  B18	MIO18 (R2609 left)	COL2_MIO
+ *  A15	MIO26 (X3 6)
+ *  D13	MIO27 (X3 5)
+ *  С18	MIO39 (R2444 left)	COL3_MIO
+ *  D16	MIO46 (R2445B left)	COL1_MIO
+ *  B14	MIO47 (R2446 left)	ROW3_MIO
+ *  B12	MIO48 (R2447 left)	ROW1_MIO
+ *  C12	MIO49 (R2445 left)	ROW4_MIO
+ *  B13	MIO50 (R2543 left)	ROW2_MIO
  *
  *  L14	PL (R2609 right)
  *  N16	PL (R2608 right)
  *  V13 PL (J3 3) EMIO54	<- ENCODER2 BITA
  *  U12 PL (J3 4) EMIO55	<- ENCODER2 BITB
- *  V15 PL (J5 3) EMIO56	<- ENCODER2 button
- *  V12 PL (J5 4) EMIO57
- *  W14	PL		  EMIO58	-> red led
+ *  V12 PL (J5 4) EMIO56	<- ENCODER2 button
+ *  U19 PL 3-20   EMIO57	<-> SDA
+ *  V20	PL 3-19   EMIO58	<-> SCL
+ *  M19	PL 3-5    EMIO59	spi sclk
+ *  N20	PL 3-6    EMIO60	spi mosi
+ *  P18	PL 3-7    EMIO61	spi miso
+ *  M17	PL 3-8    EMIO62	spi fram
+ *  N17	PL 3-9    EMIO63
+ *  D18	PL 1-14	  iicps hw	scl
+ *  D19	PL 1-16	  iicps hw	sda
+ *  E19 PL 1-18	  EMIO64	touch int
+ *  K17 PL 1-18	  EMIO65	touch reset
  *
  *  N18 PL					<- Clock 49,152 MHz
  *
  *  Bottom side:
- *  F12	MIO35 R2539 unsolder 20k resistor and up
+ *  F12	MIO35 R2539 up		preamp
  *  E16 MIO31 R2435 right
- *  E13 MIO38 R2443 right	<- SPI MISO
- *  C15 MIO30 R2434 right	-> SPI MOSI
- *  C13 MIO29 R2442 right	-> SPI SCK
- *  C16 MIO28 R2441 right	-> FRAM CS
+ *  E13 MIO38 R2443 right
+ *  C15 MIO30 R2434 right
+ *  C13 MIO29 R2442 right
+ *  C16 MIO28 R2441 right
  *
  */
+
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+
+	void gt911_interrupt_handler(void);
+	#define BOARD_GT911_INT_PIN 	64
+	#define BOARD_GT911_RESET_PIN 	65
+
+	#define BOARD_GT911_RESET_SET(v) do { if (v) xc7z_writepin(BOARD_GT911_RESET_PIN, 1); else xc7z_writepin(BOARD_GT911_RESET_PIN, 0);  } while (0)
+
+	#define BOARD_GT911_INT_SET(v) do { if (v) xc7z_writepin(BOARD_GT911_INT_PIN, 1); else xc7z_writepin(BOARD_GT911_INT_PIN, 0); } while (0)
+
+	#define BOARD_GT911_RESET_INITIO_1() do { xc7z_gpio_output(BOARD_GT911_RESET_PIN); xc7z_gpio_output(BOARD_GT911_INT_PIN); } while (0)
+
+	#define BOARD_GT911_RESET_INITIO_2() do { xc7z_gpio_input(BOARD_GT911_INT_PIN); } while (0)
+
+	#define BOARD_GT911_INT_CONNECT() do { \
+	} while (0)
+
+#endif
+
+#if WITHCPUTEMPERATURE
+	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
+#endif /* WITHCPUTEMPERATURE */
+
+#define PREAMP_MIO	35
 
 #define LS020_RS_INITIALIZE() \
 	do { \
@@ -248,20 +282,13 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_BITA		0
-	#define ENCODER_BITB		0
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		54
-	#define ENCODER2_BITB		55
-	#define ENCODER2_GPIO_BANK	2
-	#define ENCODER2_GPIO_MASK	3
-	#define ENCODER2_GPIO_SHIFT	0
+	#define ENCODER2_BITA		55
+	#define ENCODER2_BITB		54
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER2_BITA, 0); \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, ENCODER2_BITB, 0); \
 		} while (0)
 #endif
 
@@ -412,12 +439,12 @@
 					(46uL << 16) |	/* 46 SDIO 0 CD Select */ \
 					(50uL << 0) |	/* 50 SDIO 0 WP Select */ \
 					0; \
-			mio_mode(40, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
-			mio_mode(41, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
-			mio_mode(42, 0x00001680uL);	/*  PS_MIO42_CD_D0 */ \
-			mio_mode(43, 0x00001680uL);	/*  PS_MIO43_CD_D1 */ \
-			mio_mode(44, 0x00001680uL);	/*  PS_MIO44_CD_D2 */ \
-			mio_mode(45, 0x00001680uL);	/*  PS_MIO45_CD_D3 */ \
+			MIO_SET_MODE(40, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
+			MIO_SET_MODE(41, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
+			MIO_SET_MODE(42, 0x00001680uL);	/*  PS_MIO42_CD_D0 */ \
+			MIO_SET_MODE(43, 0x00001680uL);	/*  PS_MIO43_CD_D1 */ \
+			MIO_SET_MODE(44, 0x00001680uL);	/*  PS_MIO44_CD_D2 */ \
+			MIO_SET_MODE(45, 0x00001680uL);	/*  PS_MIO45_CD_D3 */ \
 		} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
 		} while (0)
@@ -586,70 +613,52 @@
 //#define SPI_IOUPDATE_BIT		(1uL << 15)	// * PA15
 
 #if WITHSPIHW || WITHSPISW
-	#define SPI_ALLCS_BANK	0	// желательно все сигналы чипселект поместить в один банк
-	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ALLCS_PORT_S(v)	do { gpio_bank_output_state(SPI_ALLCS_BANK, (v), (v)); __DSB(); } while (0)
-	#define SPI_ALLCS_PORT_C(v)	do { gpio_bank_output_state(SPI_ALLCS_BANK, (v), ~ (v)); __DSB(); } while (0)
 
-	#define TARGET_NVRAM_MIO	28	// nvram FM25L256
-	#define TARGET_FPGA1_MIO	1	// A7 не разведено
+	#define TARGET_NVRAM_MIO	62	// nvram FM25L256
 
-	#define targetnvram		(1uL << ((TARGET_NVRAM_MIO) % 32))		// nvram FM25L256
-	#define targetfpga1		(1uL << ((TARGET_FPGA1_MIO) % 32))		// FPGA control registers CS1
+	#define targetnvram		TARGET_NVRAM_MIO	// nvram FM25L256
 
-	// Здесь должны быть перечислены все биты формирования CS в устройстве.
-	#define SPI_ALLCS_BITS ( \
-		targetnvram		| 	/* nvram FM25L256 */ \
-		targetfpga1		| 	/* FPGA control registers CS1 */ \
-		0)
+	#define SPI_CS_SET(v)	xc7z_writepin(v, 0);
 
-	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
+	#define SPI_ALLCS_DISABLE() \
+		do { \
+			xc7z_writepin(TARGET_NVRAM_MIO, 1);		\
+		} while(0)
 
-	/* инициализация лиий выбора периферийных микросхем */
+	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			gpio_output(TARGET_NVRAM_MIO, 1); \
-			gpio_output(TARGET_FPGA1_MIO, 1); \
+			xc7z_gpio_output(TARGET_NVRAM_MIO); \
 		} while (0)
 
 	// MOSI & SCK port
-	#define	SPI_SCLK_MIO 	29
-	#define	SPI_MOSI_MIO 	30
-	#define	SPI_MISO_MIO 	38
+	#define	SPI_SCLK_MIO 	59
+	#define	SPI_MOSI_MIO 	60
+	#define	SPI_MISO_MIO 	61
 
-	#define	SPI_SCLK_BIT	(1uL << (SPI_SCLK_MIO % 32))	// бит, через который идет синхронизация SPI
-	#define	SPI_SCLK_BANK	(SPI_SCLK_MIO / 32)
+	#define SPI_SCLK_C()	do { xc7z_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
+	#define SPI_SCLK_S()	do { xc7z_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
 
-	#define	SPI_MOSI_BIT	(1uL << (SPI_MOSI_MIO % 32))	// бит, через который идет синхронизация SPI
-	#define	SPI_MOSI_BANK	(SPI_MOSI_MIO / 32)
+	#define SPI_MOSI_C()	do { xc7z_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
+	#define SPI_MOSI_S()	do { xc7z_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
 
-	#define	SPI_MISO_BIT	(1uL << (SPI_MISO_MIO % 32))	// бит, через который идет ввод данных SPI
-	#define	SPI_MISO_BANK	(SPI_MISO_MIO / 32)
-
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { gpio_bank_output_state(SPI_SCLK_BANK, (v), ~ (v)); __DSB(); } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { gpio_bank_output_state(SPI_SCLK_BANK, (v), (v)); __DSB(); } while (0)
-
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { gpio_bank_output_state(SPI_MOSI_BANK, (v), ~ (v)); __DSB(); } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { gpio_bank_output_state(SPI_MOSI_BANK, (v), (v)); __DSB(); } while (0)
-
-	#define SPI_TARGET_MISO_PIN		(ZYNQ_IORW32(GPIO_DATA_RO(SPI_MISO_BANK)))
+	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-			gpio_output(SPI_SCLK_MIO, 1); /*  */ \
-			gpio_output(SPI_MOSI_MIO, 1); /*  */ \
-			gpio_input(SPI_MISO_MIO); /*  */ \
+		xc7z_gpio_output(SPI_SCLK_MIO); \
+		xc7z_gpio_output(SPI_MOSI_MIO); \
+		xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
+
 	#define HARDWARE_SPI_CONNECT() do { \
-			gpio_output(SPI_SCLK_MIO, 1); /*  */ \
-			gpio_output(SPI_MOSI_MIO, 1); /*  */ \
 		} while (0)
+
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			gpio_input(SPI_SCLK_MIO, 1); /*  */ \
-			gpio_input(SPI_MOSI_MIO, 1); /*  */ \
-			gpio_input(SPI_MISO_MIO); /*  */ \
 		} while (0)
+
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
 		} while (0)
+
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 		} while (0)
 
@@ -661,22 +670,28 @@
 	// little board
 	// WITHUART1HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		mio_mode(24, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
-		mio_mode(25, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
+		MIO_SET_MODE(24, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
+		MIO_SET_MODE(25, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
 		} while (0)
 
 #endif /* WITHUART2HW */
 
 #if WITHKEYBOARD
-	/* PE15: pull-up second encoder button */
 
 	#define TARGET_ENC2BTN_BIT_MIO 		56
-	#define TARGET_ENC2BTN_GPIO_BANK	2
-	#define TARGET_ENC2BTN_GPIO_MASK	1
-	#define TARGET_ENC2BTN_GPIO_SHIFT	3
+
+	#define ROW1_MIO	46
+	#define ROW2_MIO	18
+	#define ROW3_MIO	39
+	#define ROW4_MIO	16
+
+	#define COL1_MIO	49
+	#define COL2_MIO	47
+	#define COL3_MIO	50
+	#define COL4_MIO	48
 
 #if WITHENCODER2
-	#define TARGET_ENC2BTN_GET (((XGpioPs_Read(& xc7z_gpio, TARGET_ENC2BTN_GPIO_BANK) >> TARGET_ENC2BTN_GPIO_SHIFT) & TARGET_ENC2BTN_GPIO_MASK) == 0)
+	#define TARGET_ENC2BTN_GET (xc7z_readpin(TARGET_ENC2BTN_BIT_MIO) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -686,7 +701,15 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-			XGpioPs_SetDirectionPin(& xc7z_gpio, TARGET_ENC2BTN_BIT_MIO, 0); \
+		xc7z_gpio_input(TARGET_ENC2BTN_BIT_MIO); \
+		xc7z_gpio_input(COL1_MIO);	\
+		xc7z_gpio_input(COL2_MIO);	\
+		xc7z_gpio_input(COL3_MIO);	\
+		xc7z_gpio_input(COL4_MIO);	\
+		xc7z_gpio_output(ROW1_MIO);	\
+		xc7z_gpio_output(ROW2_MIO);	\
+		xc7z_gpio_output(ROW3_MIO);	\
+		xc7z_gpio_output(ROW4_MIO);	\
 		} while (0)
 
 #else /* WITHKEYBOARD */
@@ -702,7 +725,7 @@
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { } while (0)
+	#define	TWIHARD_INITIALIZE() do { i2chw_initialize(); } while (0)
 
 
 #endif // WITHTWISW
@@ -881,14 +904,13 @@
 	#define TARGET_BL_ENABLE_MIO	28
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		XGpioPs_SetDirectionPin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, 1); \
-		XGpioPs_SetOutputEnablePin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, 1); \
+		xc7z_gpio_output(TARGET_BL_ENABLE_MIO); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 
 	#define HARDWARE_BL_SET(en, level) do { \
-		XGpioPs_WritePin(& xc7z_gpio, TARGET_BL_ENABLE_MIO, en); \
+		xc7z_writepin(TARGET_BL_ENABLE_MIO, en); \
 	} while (0)
 #endif
 
@@ -1037,15 +1059,14 @@
 	#define ZYNQBOARD_BLINK_LED 58 /* LED_R */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-		XGpioPs_SetDirectionPin(& xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
+		xc7z_gpio_output(ZYNQBOARD_BLINK_LED); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
 			{ \
-				XGpioPs_WritePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 1); \
+				xc7z_writepin(ZYNQBOARD_BLINK_LED, 1); \
 			} else { \
-				XGpioPs_WritePin(&xc7z_gpio, ZYNQBOARD_BLINK_LED, 0); \
+				xc7z_writepin(ZYNQBOARD_BLINK_LED, 0); \
 			} \
 		} while (0)
 

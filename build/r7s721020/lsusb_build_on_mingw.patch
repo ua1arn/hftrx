@@ -1,0 +1,206 @@
+diff --git a/configure.ac b/configure.ac
+index 21bb6b2..f7dedfe 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -17,7 +17,7 @@ AC_CHECK_FUNCS([nl_langinfo iconv])
+ 
+ PKG_CHECK_MODULES(LIBUSB, libusb-1.0 >= 1.0.14)
+ 
+-PKG_CHECK_MODULES(UDEV, libudev >= 196)
++# PKG_CHECK_MODULES(UDEV, libudev >= 196)
+ 
+ AC_CONFIG_HEADERS([config.h])
+ AC_CONFIG_FILES([
+diff --git a/lsusb-t.c b/lsusb-t.c
+index 6733311..ad8e202 100644
+--- a/lsusb-t.c
++++ b/lsusb-t.c
+@@ -322,7 +322,8 @@ static void add_usb_interface(const char *d_name)
+ 	SYSFS_INTx(d_name, e, bNumEndpoints);
+ 	l = snprintf(link, MY_PATH_MAX, "%s/%s/driver", sys_bus_usb_devices, d_name);
+ 	if (l > 0 && l < MY_PATH_MAX) {
+-		l = readlink(link, driver, MY_PATH_MAX);
++		//l = readlink(link, driver, MY_PATH_MAX);
++		l = -1;
+ 		if (l >= 0) {
+ 			if (l < MY_PATH_MAX - 1)
+ 				driver[l] = '\0';
+@@ -385,7 +386,8 @@ static void add_usb_device(const char *d_name)
+ 	SYSFS_STR(d_name, d, speed);
+ 	l = snprintf(link, MY_PATH_MAX, "%s/%s/driver", sys_bus_usb_devices, d_name);
+ 	if (l > 0 && l < MY_PATH_MAX) {
+-		l = readlink(link, driver, MY_PATH_MAX);
++		// l = readlink(link, driver, MY_PATH_MAX);
++		l = -1;
+ 		if (l >= 0) {
+ 			if (l < MY_PATH_MAX - 1)
+ 				driver[l] = '\0';
+@@ -406,7 +408,8 @@ static void get_roothub_driver(struct usbbusnode *b, const char *d_name)
+ 	int l;
+ 	l = snprintf(link, MY_PATH_MAX, "%s/%s/../driver", sys_bus_usb_devices, d_name);
+ 	if (l > 0 && l < MY_PATH_MAX) {
+-		l = readlink(link, path, MY_PATH_MAX);
++		// l = readlink(link, path, MY_PATH_MAX);
++		l = -1;
+ 		if (l >= 0) {
+ 			if (l < MY_PATH_MAX - 1)
+ 				path[l] = '\0';
+diff --git a/names.c b/names.c
+index 8142c96..bfc2106 100644
+--- a/names.c
++++ b/names.c
+@@ -21,7 +21,7 @@
+ #include <stdio.h>
+ #include <ctype.h>
+ 
+-#include <libudev.h>
++//#include <libudev.h>
+ 
+ #include "usb-spec.h"
+ #include "names.h"
+@@ -43,8 +43,8 @@ static unsigned int hashnum(unsigned int num)
+ 
+ /* ---------------------------------------------------------------------- */
+ 
+-static struct udev *udev = NULL;
+-static struct udev_hwdb *hwdb = NULL;
++//static struct udev *udev = NULL;
++//static struct udev_hwdb *hwdb = NULL;
+ static struct audioterminal *audioterminals_hash[HASHSZ] = { NULL, };
+ static struct videoterminal *videoterminals_hash[HASHSZ] = { NULL, };
+ static struct genericstrtable *hiddescriptors_hash[HASHSZ] = { NULL, };
+@@ -113,10 +113,12 @@ static const char *hwdb_get(const char *modalias, const char *key)
+ {
+ 	struct udev_list_entry *entry;
+ 
++#if 0
+ 	udev_list_entry_foreach(entry, udev_hwdb_get_properties_list_entry(hwdb, modalias, 0))
+ 		if (strcmp(udev_list_entry_get_name(entry), key) == 0)
+ 			return udev_list_entry_get_value(entry);
+ 
++#endif
+ 	return NULL;
+ }
+ 
+@@ -407,6 +409,7 @@ int names_init(void)
+ {
+ 	int r;
+ 
++#if 0
+ 	udev = udev_new();
+ 	if (!udev)
+ 		r = -1;
+@@ -415,6 +418,7 @@ int names_init(void)
+ 		if (!hwdb)
+ 			r = -1;
+ 	}
++#endif
+ 
+ 	r = hash_tables();
+ 
+@@ -423,6 +427,8 @@ int names_init(void)
+ 
+ void names_exit(void)
+ {
++#if 0
+ 	hwdb = udev_hwdb_unref(hwdb);
+ 	udev = udev_unref(udev);
++#endif
+ }
+diff --git a/sysfs.c b/sysfs.c
+index 9602278..e1c7c1d 100644
+--- a/sysfs.c
++++ b/sysfs.c
+@@ -8,7 +8,7 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <stdio.h>
+-#include <linux/limits.h>
++// #include <linux/limits.h>
+ 
+ #include <libusb.h>
+ 
+diff --git a/usbhid-dump/src/usbhid-dump.c b/usbhid-dump/src/usbhid-dump.c
+index 45da1ed..de03488 100644
+--- a/usbhid-dump/src/usbhid-dump.c
++++ b/usbhid-dump/src/usbhid-dump.c
+@@ -912,7 +912,7 @@ main(int argc, char **argv)
+     bool                dump_stream     = false;
+     unsigned int        stream_timeout  = 60000;
+ 
+-    struct sigaction    sa;
++   // struct sigaction    sa;
+ 
+     /*
+      * Extract program invocation name
+@@ -1003,6 +1003,7 @@ main(int argc, char **argv)
+     if (optind < argc)
+         USAGE_ERROR("Positional arguments are not accepted");
+ 
++#if 0
+     /*
+      * Setup signal handlers
+      */
+@@ -1035,6 +1036,7 @@ main(int argc, char **argv)
+     sigaction(SIGUSR1, &sa, NULL);
+     sa.sa_handler = stream_resume_sighandler;
+     sigaction(SIGUSR2, &sa, NULL);
++#endif
+ 
+     /* Make stdout buffered - we will flush it explicitly */
+     setbuf(stdout, NULL);
+@@ -1043,6 +1045,7 @@ main(int argc, char **argv)
+     result = run(dump_descriptor, dump_stream, stream_timeout,
+                  bus_num, dev_addr, vid, pid, iface_num);
+ 
++#if 0
+     /*
+      * Restore signal handlers
+      */
+@@ -1061,6 +1064,7 @@ main(int argc, char **argv)
+     if (exit_signum != 0)
+         raise(exit_signum);
+ 
++#endif
+     return result;
+ }
+ 
+diff --git a/usbmisc.c b/usbmisc.c
+index ba0591f..2c64469 100644
+--- a/usbmisc.c
++++ b/usbmisc.c
+@@ -37,7 +37,8 @@ static int readlink_recursive(const char *path, char *buf, size_t bufsize)
+ 	char *ptemp;
+ 	int ret;
+ 
+-	ret = readlink(path, buf, bufsize-1);
++	//ret = readlink(path, buf, bufsize-1);
++	ret = 0;
+ 
+ 	if (ret > 0) {
+ 		buf[ret] = 0;
+diff --git a/usbreset.c b/usbreset.c
+index a4f1f98..3e2eba7 100644
+--- a/usbreset.c
++++ b/usbreset.c
+@@ -14,9 +14,9 @@
+ #include <ctype.h>
+ #include <limits.h>
+ #include <dirent.h>
+-#include <sys/ioctl.h>
++// #include <sys/ioctl.h>
+ 
+-#include <linux/usbdevice_fs.h>
++// #include <linux/usbdevice_fs.h>
+ 
+ 
+ /* static char *usbfs = NULL; */
+@@ -148,7 +148,7 @@ static void reset_device(struct usbentry *dev)
+ 
+ 	fd = open(path, O_WRONLY);
+ 	if (fd  > -1) {
+-		if (ioctl(fd, USBDEVFS_RESET, 0) < 0)
++		if (0) //  && ioctl(fd, USBDEVFS_RESET, 0) < 0)
+ 			printf("failed [%s]\n", strerror(errno));
+ 		else
+ 			printf("ok\n");

@@ -63,6 +63,7 @@ SECTIONS
 		__Vectors_Size = __Vectors_End - __Vectors;
 		
 		. = ALIGN(32);
+		KEEP(*(.startup0))
 		KEEP(*(.init))
 		KEEP(*(.initfunc*))
 		KEEP(*(.initdata*))

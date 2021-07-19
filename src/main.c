@@ -22,9 +22,9 @@
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
-#if WITHUSESDCARD
+#if WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK
 	#include "sdcard.h"
-#endif /* WITHUSESDCARD */
+#endif /* WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK */
 
 #include <string.h>
 #include <ctype.h>
@@ -203,7 +203,7 @@ typedef struct dualctl32_tag
 } dualctl32_t;
 
 static uint_fast8_t
-getstablev8(volatile uint_fast8_t * p)
+getstablev8(const volatile uint_fast8_t * p)
 {
 	if (sizeof * p == 1)
 		return * p;
@@ -221,7 +221,7 @@ getstablev8(volatile uint_fast8_t * p)
 }
 
 static uint_fast16_t
-getstablev16(volatile uint_fast16_t * p)
+getstablev16(const volatile uint_fast16_t * p)
 {
 	if (sizeof * p == 1)
 		return * p;
@@ -293,6 +293,16 @@ static void updateboardZZZ(uint_fast8_t full, uint_fast8_t mute, const char * fi
 #define updateboard(full, mute) do { updateboardZZZ((full), (mute), __FILE__, __LINE__); } while (0)
 static uint_fast8_t getsubmode(uint_fast8_t bi);		/* bi: vfo bank index */
 static uint_fast8_t getactualmainsubrx(void);
+
+#if WITHIF4DSP
+struct rxaproc_tag;
+static float32_t * afpnoproc(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpcw(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpcwtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpssb(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afpssbtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static float32_t * afprtty(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+#endif /* WITHIF4DSP */
 
 #if WITHCAT
 
@@ -1456,7 +1466,8 @@ static agcp_t gagc [AGCSETI_COUNT];
 #endif /* WITHIF4DSP */
 
 #define	DEFAULT_DRM_PITCH	12000	/* тон DRM - 12 кГц*/
-#define	DEFAULT_RTTY_PITCH	2125	/* тон DIGI modes - 2.125 кГц */
+// The standard mark and space tones are 2125 hz and 2295 hz respectively
+#define	DEFAULT_RTTY_PITCH	1275	/* mark тон DIGI modes - 2.125 кГц (1275 2125) */
 
 #if WITHIF4DSP
 	#if (LO4_SIDE == LOCODE_LOWER) || (LO4_SIDE == LOCODE_UPPER) || (LO4_SIDE == LOCODE_INVALID)
@@ -1588,6 +1599,7 @@ struct modetempl
 	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
 	uint_fast8_t txaprofgp;		// группа профилей обработки звука
 	uint_fast8_t agcseti;			// параметры слухового приема
+	float32_t * (* afproc [2])(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
 #else /* WITHIF4DSP */
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
@@ -1626,6 +1638,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_CW,				// группа профилей обработки звука
 		AGCSETI_CW,
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1658,6 +1671,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1690,6 +1704,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_AM,
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
@@ -1723,6 +1738,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_AM,
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_AM, BOARD_DETECTOR_AM, }, 		/* AM detector used */
 #endif /* WITHIF4DSP */
@@ -1756,6 +1772,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_NFM,				// группа профилей обработки звука
 		AGCSETI_FLAT,
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_FM, BOARD_DETECTOR_FM, }, 		/* FM detector used */
 #endif /* WITHIF4DSP */
@@ -1788,6 +1805,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_AM,				// группа профилей обработки звука
 		AGCSETI_DRM,
+		{ afpnoproc, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_MUTE, BOARD_DETECTOR_MUTE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1820,6 +1838,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpnoproc, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_TUNE, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1854,6 +1873,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_WFM, BOARD_DETECTOR_WFM, },		/* WFM detector used */
 #endif /* WITHIF4DSP */
@@ -1891,6 +1911,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
+		{ afpnoproc, afpnoproc, }, // afproc - сигнал не обрабатывается
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1927,6 +1948,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
+		{ afprtty, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1960,6 +1982,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MUTE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpnoproc, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -1997,6 +2020,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 	#endif /* WITHUSBUAC */
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, },		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -2030,6 +2054,7 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
+		{ afpcw, afpnoproc, }, // afproc
 #else /* WITHIF4DSP */
 		{ BOARD_DETECTOR_SSB, BOARD_DETECTOR_SSB, }, 		/* ssb detector used */
 #endif /* WITHIF4DSP */
@@ -2496,6 +2521,9 @@ static const char * get_band_label(vindex_t b)	/* b: диапазон в таб�
 			{ 2, SUBMODE_CWR, SUBMODE_CW, },
 			{ 4, SUBMODE_AM, SUBMODE_SAM, SUBMODE_CWZ, SUBMODE_DRM, },
 			{ 3, SUBMODE_NFM, SUBMODE_DGU, SUBMODE_DGL, },
+		#if WITHRTTY
+			{ 1, SUBMODE_RTTY, },
+		#endif /* WITHRTTY */
 		};
 	#else /* WITHMODEM */
 	static const uint_fast8_t modes [][4] =
@@ -2739,7 +2767,7 @@ struct nvmap
 #endif /* LCDMODE_COLORED */
 
 #if WITHMIC1LEVEL
-	uint16_t mik1level;
+	uint16_t gmik1level;
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	uint8_t ALCNEN;// = 0;	// ALC noise gate function control bit
@@ -2787,6 +2815,8 @@ struct nvmap
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
 	uint8_t gwtfbeta100;	/* beta - парамеры видеофильтра водопада */
+	uint8_t glvlgridstep;	/* Шаг сетки уровней в децибелах */
+
 #endif /* WITHSPECTRUMWF */
 
 	uint8_t gshowdbm;	/* Отображение уровня сигнала в dBm или S-memter */
@@ -3498,8 +3528,17 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
-	static uint_fast8_t gspecbeta100 = 25;	/* beta = 0.1 .. 1.0 */
+	static uint_fast8_t glvlgridstep = 12;	/* Шаг сетки уровней в децибелах */
+#if defined (WITHSPECBETA_DEFAULT)
+	static uint_fast8_t gspecbeta100 = WITHSPECBETA_DEFAULT;
+#else
+	static uint_fast8_t gspecbeta100 = 50;	/* beta = 0.1 .. 1.0 */
+#endif /* WITHSPECBETA_DEFAULT */
+#if defined (WITHWTFBETA_DEFAULT)
+	static uint_fast8_t gwtfbeta100 = WITHWTFBETA_DEFAULT;
+#else
 	static uint_fast8_t gwtfbeta100 = 50;	/* beta = 0.1 .. 1.0 */
+#endif /* WITHWTFBETA_DEFAULT */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -3727,7 +3766,8 @@ enum
 	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
-	static const uint_fast8_t gagcoff = 0;
+	static const uint_fast8_t gagcoff;
+	static const uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 #endif /* WITHIF4DSP */
 
 #define NRLEVELMAX 60
@@ -4063,7 +4103,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 
 static uint_fast8_t gmoderows [2];		/* индексом используется результат функции getbankindex_xxx(tx) */
 										/* номер режима работы в маске (номер тройки бит) */
-static uint_fast8_t gmodecolmaps4 [2] [4];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
+static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й размерности используется результат функции getbankindex_xxx(tx) */
 #if WITHSPKMUTE
 	static uint_fast8_t gmutespkr;		/*  выключение динамика */
 #endif /* WITHSPKMUTE */
@@ -4163,7 +4203,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 
 
 #if WITHMIC1LEVEL
-	static uint_fast16_t mik1level = WITHMIKEINGAINMAX;
+	static uint_fast16_t gmik1level = (WITHMIKEINGAINMAX - WITHMIKEINGAINMIN) / 2 + WITHMIKEINGAINMIN;
 #endif /* WITHMIC1LEVEL */
 #if defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L)
 	uint_fast8_t ALCNEN = 0;	// ALC noise gate function control bit
@@ -4963,6 +5003,16 @@ static const FLASHMEM submodeprops_t submodes [SUBMODE_COUNT] =
 		UINT8_MAX,	/* Kenwood cat mode code */
 		0,			/* полоса фильтра режима, возвращаемая через CAT */
 		"FDV", 
+	},
+#endif /* WITHFREEDV */
+#if WITHRTTY
+	/* SUBMODE_RTTY */
+	{
+		0,
+		MODE_RTTY,/* индекс семейства режимов */
+		UINT8_MAX,	/* Kenwood cat mode code */
+		0,			/* полоса фильтра режима, возвращаемая через CAT */
+		"TTY",
 	},
 #endif /* WITHFREEDV */
 #endif /* WITHMODESETSMART */
@@ -5993,7 +6043,7 @@ copybankstate(
 	gantennas [tbi] = gantennas [sbi];
 #endif /* WITHANTSELECT */
 
-	memcpy(gmodecolmaps4 [tbi], gmodecolmaps4 [sbi], sizeof gmodecolmaps4 [tbi]);
+	memcpy(gmodecolmaps [tbi], gmodecolmaps [sbi], sizeof gmodecolmaps [tbi]);
 }
 
 /* сохранить все частоту настройки в соответствующий диапазон, ячейку памяти или VFO. */
@@ -6019,7 +6069,7 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 
 	uint_fast8_t i;
 	for (i = 0; i < MODEROW_COUNT; ++ i)
-		save_i8(RMT_MODECOLS_BASE(b, i), gmodecolmaps4 [bi] [i]);
+		save_i8(RMT_MODECOLS_BASE(b, i), gmodecolmaps [bi] [i]);
 
 #if ! WITHONEATTONEAMP
 	save_i8(RMT_PAMP_BASE(b), gpamps [bi]);
@@ -6061,10 +6111,10 @@ getmodecol(
 	uint_fast8_t def,
 	uint_fast8_t bi)		/* bank index */
 {
-	uint_fast8_t v = gmodecolmaps4 [bi] [index];
+	uint_fast8_t v = gmodecolmaps [bi] [index];
 	if (v > upper)
 	{
-		gmodecolmaps4 [bi] [index] = def;
+		gmodecolmaps [bi] [index] = def;
 		return def;
 	}
 	return v;
@@ -6079,7 +6129,7 @@ putmodecol(
 	const uint_fast8_t bi		/* bank index */
 	)
 {
-	gmodecolmaps4 [bi] [index] = v;
+	gmodecolmaps [bi] [index] = v;
 }
 
 /* получение режима работы "по умолчанию" для частоты. */
@@ -6470,9 +6520,9 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_UNSIGNED,
 		ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
-		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
+		offsetof(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
 		nvramoffs0,
-		& mik1level,
+		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
@@ -6991,14 +7041,14 @@ loadnewband(
 	const uint_fast8_t  defcol = locatesubmode(defsubmode, & defrow);	/* строка/колонка для SSB . А что делать если не найдено? */
 
 	// прописываем режим работы по умолчанию для данного диапазона
-	gmodecolmaps4 [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow][0] - 1, defcol);
+	gmodecolmaps [bi] [defrow] = loadvfy8up(RMT_MODECOLS_BASE(b, defrow), 0, modes [defrow][0] - 1, defcol);
 
 	gmoderows [bi] = loadvfy8up(RMT_MODEROW_BASE(b), 0, MODEROW_COUNT - 1, defrow);
 
 	uint_fast8_t i;
 	for (i = 0; i < MODEROW_COUNT; ++ i)
 	{
-		gmodecolmaps4 [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, i), 0, 255, 255);	// везде прописывается 255 - потом ещё уточним.
+		gmodecolmaps [bi] [i] = loadvfy8up(RMT_MODECOLS_BASE(b, i), 0, 255, 255);	// везде прописывается 255 - потом ещё уточним.
 	}
 #if WITHAUTOTUNER
 	// todo: добавить учет включенной антенны
@@ -8002,6 +8052,18 @@ getasubmode(uint_fast8_t pathi)
 #endif /* WITHMODESETSMART */
 	return submode;
 }
+
+// get actual mode
+// Только показ названия режима (и CAT) используют getsubmode(bi);
+// Для установки режимов надо использовать данную функцию.
+static uint_fast8_t
+getamode(uint_fast8_t pathi)
+{
+	const uint_fast8_t asubmode = getasubmode(pathi);
+	return gdatamode && getactualtune() == 0 ? MODE_DIGI :  submodes [asubmode].mode;
+}
+
+
 /*
  * Установка параметров, влияющих на работу валкодера, цветовой схемой дисплея.
  */
@@ -8237,6 +8299,835 @@ void AudioDriver_LeakyLmsNr(float32_t * in_buff, float32_t * out_buff, int buff_
 
 #endif /* WITHLEAKYLMSANR */
 
+#if WITHRTTY
+
+#define TRX_SAMPLERATE ARMI2SRATE
+
+#define IIR_BIQUAD_MAX_SECTIONS 15
+#define IIR_BIQUAD_SECTION_ORDER 2
+
+typedef struct iir_filter {
+    int sections;
+    int sect_ord;
+    double a[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
+    double b[IIR_BIQUAD_MAX_SECTIONS * (IIR_BIQUAD_SECTION_ORDER + 1)];
+    double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
+} iir_filter_t;
+
+iir_filter_t *biquad_create(int sections);
+void biquad_delete(iir_filter_t *filter);
+double biquad_update(iir_filter_t *filter, double x);
+void iir_freq_resp(iir_filter_t *filter, double *h, double fs, double f);
+void biquad_zero(struct iir_filter *filter);
+void biquad_init_lowpass(iir_filter_t *filter, double fs, double f);
+void biquad_init_highpass(iir_filter_t *filter, double fs, double f);
+void biquad_init_bandpass(iir_filter_t *filter, double fs, double f1, double f2);
+void biquad_init_bandstop(iir_filter_t *filter, double fs, double f1, double f2);
+
+
+typedef struct {
+    float re;
+    float im;
+} complex_s;
+
+typedef struct {
+    double re;
+    double im;
+} complex_d;
+
+static void complex_mul(complex_d *a, complex_d *b);
+static void complex_div(complex_d *p, complex_d *q);
+
+static void biquad_init_band(iir_filter_t *filter, double fs, double f1, double f2, int stop);
+
+
+iir_filter_t *biquad_create(int sections)
+{
+	static iir_filter_t filter_designer;
+
+	memset(&filter_designer, 0x00, sizeof(iir_filter_t));
+
+    filter_designer.sections = sections;
+    filter_designer.sect_ord = IIR_BIQUAD_SECTION_ORDER;
+
+	memset(filter_designer.a, 0x00, sizeof(filter_designer.a));
+	memset(filter_designer.b, 0x00, sizeof(filter_designer.b));
+	memset(filter_designer.d, 0x00, sizeof(filter_designer.d));
+
+    return & filter_designer;
+}
+
+void iir_freq_resp(iir_filter_t *filter, double *h, double fs, double f)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    double w = 2.0 * M_PI * f / fs;
+    complex_d _z, m, p, q;
+    int i, k;
+
+    /* On unit circle, 1/z = ~z (complex conjugate) */
+
+    _z.re = cos(w);
+    _z.im = -sin(w);
+
+    m.re = 1.0;
+    m.im = 0.0;
+
+    for (i = 0; i < filter->sections; i += 1)
+    {
+        k = filter->sect_ord;
+        p.re = b[k];
+        p.im = 0;
+        while (k > 0) {
+            k -= 1.0;
+            complex_mul(&p, &_z);
+            p.re += b[k];
+        }
+
+        k = filter->sect_ord;
+        q.re = a[k];
+        q.im = 0;
+        while (k > 0) {
+            k -= 1.0;
+            complex_mul(&q, &_z);
+            q.re += a[k];
+        }
+
+        complex_div(&p, &q);
+        complex_mul(&m, &p);
+        a += filter->sect_ord + 1;
+        b += filter->sect_ord + 1;
+    }
+
+    h[0] = m.re;
+    h[1] = m.im;
+}
+
+double biquad_update(struct iir_filter *filter, double x)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    double *d = filter->d;
+    int stages = filter->sections;
+    int k;
+    double y;
+
+    for (k = 0; k < stages; k += 1) {
+        y = x * b[0];
+        y += d[0] * b[1] + d[1] * b[2];
+        y -= d[2] * a[1] + d[3] * a[2];
+        d[1] = d[0];
+        d[0] = x;
+        x = y;
+        d += 2;
+        a += 3;
+        b += 3;
+    }
+    d[1] = d[0];
+    d[0] = x;
+
+    return x;
+}
+
+void biquad_zero(struct iir_filter *filter)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    int n;
+    int i;
+
+    n = filter->sections;
+    for (i = 0; i < n; i += 1) {
+        b[0] = 0;
+        b[1] = 0;
+        b[2] = 0;
+        a[0] = 0;
+        a[1] = 0;
+        a[2] = 0;
+    }
+}
+
+void biquad_init_lowpass(struct iir_filter *filter, double fs, double f)
+{
+    double *a = filter->a;
+    double *b = filter->b;
+    double w = 2.0 * M_PI * f / fs;
+    double phi, alpha;
+    int i, k;
+    int n;
+
+    n = filter->sections;
+    for (i = 0; i < n; i += 1) {
+        k = n - i - 1.0;
+        phi = M_PI / (4.0 * n) * (k * 2.0 + 1.0);
+        alpha = sin(w) * cos(phi);
+
+        b[0] = (1.0 - cos(w)) / (2.0 * (1.0 + alpha));
+        b[1] = (1.0 - cos(w)) / (1.0 + alpha);
+        b[2] = (1.0 - cos(w)) / (2.0 * (1.0 + alpha));
+        a[0] = 1.0;
+        a[1] = -2.0 * cos(w) / (1.0 + alpha);
+        a[2] = (1.0 - alpha) / (1.0 + alpha);
+        a += 3;
+        b += 3;
+    }
+
+    for (i = 0; i < (n + 1) * 2; i += 1)
+        filter->d[i] = 0;
+}
+
+void biquad_init_highpass(struct iir_filter *filter, double fs, double f) {
+    double *a = filter->a;
+    double *b = filter->b;
+    double w = 2.0 * M_PI * f / fs;
+    double phi, alpha;
+    int n, i, k;
+
+    n = filter->sections;
+
+    for (i = 0; i < n; i += 1) {
+        k = n - i - 1;
+        phi = M_PI / (4.0 * n) * (k * 2.0 + 1.0);
+        alpha = sin(w) * cos(phi);
+
+        b[0] = (1.0 + cos(w)) / (2.0 * (1.0 + alpha));
+        b[1] = -(1.0 + cos(w)) / (1.0 + alpha);
+        b[2] = (1.0 + cos(w)) / (2.0 * (1.0 + alpha));
+        a[1] = -2.0 * cos(w) / (1.0 + alpha);
+        a[2] = (1.0 - alpha) / (1.0 + alpha);
+        a += 3;
+        b += 3;
+    }
+
+    for (i = 0; i < (n + 1) * 2; i += 1)
+        filter->d[i] = 0;
+}
+
+void biquad_init_bandpass(struct iir_filter *filter, double fs, double f1, double f2)
+{
+	return biquad_init_band(filter, fs, f1, f2, 0);
+}
+
+void biquad_init_bandstop(struct iir_filter *filter, double fs, double f1, double f2)
+{
+	return biquad_init_band(filter, fs, f1, f2, 1);
+}
+
+static void complex_square(complex_d *s)
+{
+    double x, y;
+
+    x = s->re;
+    y = s->im;
+
+    s->re = x * x - y * y;
+    s->im = 2.0 * x * y;
+}
+
+static void complex_sqrt(complex_d *s)
+{
+    double x, y;
+    double r, phi;
+
+    x = s->re;
+    y = s->im;
+    if (x == 0 && y == 0) {
+        return;
+    }
+
+    /* Converting to polar */
+    phi = atan2(y, x);
+    r = sqrt(x * x + y * y);
+
+    /* Square root */
+    phi /= 2.0;
+    r = sqrt(r);
+
+    /* Back to cartesian */
+    s->re = r * cos(phi);
+    s->im = r * sin(phi);
+}
+
+static void complex_mul(complex_d *a, complex_d *b)
+{
+    double x, y;
+
+    x = a->re * b->re - a->im * b->im;
+    y = a->re * b->im + a->im * b->re;
+
+    a->re = x;
+    a->im = y;
+}
+
+static void complex_div(complex_d *p, complex_d *q)
+{
+    double x, y;
+    double r, phi;
+    complex_d b;
+
+    x = q->re;
+    y = q->im;
+    if (x == 0 && y == 0) {
+        return;
+    }
+
+    /* Converting to polar */
+    phi = atan2(y, x);
+    r = sqrt(x * x + y * y);
+
+    /* Reciprocal */
+    phi = -phi;
+    r = 1.0 / r;
+
+    /* Back to cartesian */
+    b.re = r * cos(phi);
+    b.im = r * sin(phi);
+
+    complex_mul(p, &b);
+}
+
+/*
+ *  Convert from continuous (s) to discrete (z)
+ *  using bilinear transform
+ *  ts: sample period (T)
+ */
+
+static void bilinear_transform(complex_d *z, complex_d *s, double ts)
+{
+    complex_d p, q;
+    double x = s->re;
+    double y = s->im;
+
+    x *= ts / 2.0;
+    y *= ts / 2.0;
+    p.re = 1.0 + x;
+    p.im = y;
+    q.re = 1.0 - x;
+    q.im = -y;
+    complex_div(&p, &q);
+    *z = p;
+}
+
+/*
+ *  Compute bandpass or bandstop filter parameters
+ */
+
+static void biquad_init_band(struct iir_filter *filter, double fs, double f1, double f2, int stop)
+{
+    double ts = 1.0 / fs;
+    double bw, f;
+    double w;
+    complex_d p, q;
+    complex_d z, s;
+    double phi;
+    complex_d _z, p_lp, p_bp;
+    double k, x, y;
+    double wa1, wa2, wa;
+    double *a = filter->a;
+    double *b = filter->b;
+    int n, i;
+
+    f = sqrt(f1 * f2);
+    w = 2.0 * M_PI * f / fs;
+
+    /* Map to continuous-time frequencies (pre-warp) */
+
+    wa1 = 2.0 * fs * tan(M_PI * f1 * ts);
+    wa2 = 2.0 * fs * tan(M_PI * f2 * ts);
+
+    bw = wa2 - wa1;
+    wa = sqrt(wa1 * wa2);
+
+    n = filter->sections;
+
+    for (i = 0; i < n; i += 1) {
+        phi = M_PI / 2.0 + M_PI * (2.0 * i + 1.0) / (n * 2.0);
+        x = cos(phi);
+        y = sin(phi);
+
+        p_lp.re = x * bw / (wa * 2.0);
+        p_lp.im = y * bw / (wa * 2.0);
+
+        /*
+         *  Map every low-pass pole to a complex conjugate
+         *  pair of band-bass poles
+         */
+
+        s = p_lp;
+        complex_square(&s);
+        s.re = 1.0 - s.re;
+        s.im = 0.0 - s.im;
+        complex_sqrt(&s);
+        x = p_lp.re - s.im;
+        y = p_lp.im + s.re;
+        p_bp.re = x * wa;
+        p_bp.im = y * wa;
+
+        /*
+         *  Convert every pair from continuous (s)
+         *  to discrete (z) using bilinear transform
+         */
+
+        bilinear_transform(&z, &p_bp, ts);
+
+        x = z.re;
+        y = z.im;
+
+        /*
+         *  Find denominator coefficients from
+         *  the complex conjugate pair of poles
+         */
+
+        a[0] = 1.0;
+        a[1] = -2 * x;
+        a[2] = x * x + y * y;
+
+        if (stop) {
+            /* Band-stop: zeros at Ï‰ and ~Ï‰ */
+            s.re = 0;
+            s.im = wa;
+            bilinear_transform(&z, &s, ts);
+            x = z.re;
+            y = z.im;
+
+            b[0] = 1.0;
+            b[1] = -2.0 * x;
+            b[2] = x * x + y * y;
+        } else {
+            /* Band-pass: zeros at Â±1 */
+            b[0] = 1.0;
+            b[1] = 0.0;
+            b[2] = -1.0;
+        }
+
+        /* Scale the parameters to get unity gain in the bassband */
+
+        if (stop) {
+            /* Band-stop: unity gain at zero frequency */
+            _z.re = 1.0;
+            _z.im = 0.0;
+        } else {
+            /* Band-pass: unity gain at Ï‰ */
+            _z.re = cos(w);
+            _z.im = -sin(w);
+        }
+
+        p.re = b[2];
+        p.im = 0;
+        complex_mul(&p, &_z);
+        p.re += b[1];
+        complex_mul(&p, &_z);
+        p.re += b[0];
+
+        q.re = a[2];
+        q.im = 0;
+        complex_mul(&q, &_z);
+        q.re += a[1];
+        complex_mul(&q, &_z);
+        q.re += 1.0;
+
+        complex_div(&p, &q);
+
+        x = p.re;
+        y = p.im;
+        k = 1.0 / sqrt(x * x + y * y);
+
+        b[0] *= k;
+        b[1] *= k;
+        b[2] *= k;
+
+        a += filter->sect_ord + 1;
+        b += filter->sect_ord + 1;
+    }
+
+    for (i = 0; i < (n + 1) * 2; i += 1)
+        filter->d[i] = 0;
+}
+
+void fill_biquad_coeffs(iir_filter_t *filter, float32_t *coeffs, uint8_t sect_num)
+{
+	//transpose and save coefficients
+	uint16_t ind = 0;
+	for(uint8_t sect = 0; sect < sect_num; sect++)
+	{
+		coeffs[ind + 0] = filter->b[sect * 3 + 0];
+		coeffs[ind + 1] = filter->b[sect * 3 + 1];
+		coeffs[ind + 2] = filter->b[sect * 3 + 2];
+		coeffs[ind + 3] = -filter->a[sect * 3 + 1];
+		coeffs[ind + 4] = -filter->a[sect * 3 + 2];
+		ind += 5;
+	}
+}
+
+#define BIQUAD_COEFF_IN_STAGE 5													  // coefficients in manual Notch filter order
+
+#if (defined(LAY_800x480))
+#define RTTY_DECODER_STRLEN 66 // length of decoded string
+#else
+#define RTTY_DECODER_STRLEN 30 // length of decoded string
+#endif
+
+#define RTTY_LPF_STAGES 2
+#define RTTY_BPF_STAGES 2
+#define RTTY_BPF_WIDTH (RTTY_Shift / 4)
+
+#define RTTY_SYMBOL_CODE (0b11011)
+#define RTTY_LETTER_CODE (0b11111)
+
+typedef enum {
+	RTTY_STATE_WAIT_START,
+	RTTY_STATE_BIT,
+} rtty_state_t;
+
+typedef enum {
+	RTTY_MODE_LETTERS,
+	RTTY_MODE_SYMBOLS
+} rtty_charSetMode_t;
+
+typedef enum {
+    RTTY_STOP_1,
+    RTTY_STOP_1_5,
+    RTTY_STOP_2
+} rtty_stopbits_t;
+
+// Public variables
+//extern char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1];
+
+// Public methods
+extern void RTTYDecoder_Init(void);                   // initialize the CW decoder
+extern void RTTYDecoder_Process(const float32_t *bufferIn, unsigned len); // start CW decoder for the data block
+
+
+//Ported from https://github.com/df8oe/UHSDR/blob/active-devel/mchf-eclipse/drivers/audio/rtty.c
+
+//char RTTY_Decoder_Text[RTTY_DECODER_STRLEN + 1] = {0}; // decoded string
+
+static rtty_state_t RTTY_State = RTTY_STATE_WAIT_START;
+static rtty_charSetMode_t RTTY_charSetMode = RTTY_MODE_LETTERS;
+static uint16_t RTTY_oneBitSampleCount = 0;
+static uint8_t RTTY_byteResult = 0;
+static uint16_t RTTY_byteResult_bnum = 0;
+static int32_t RTTY_DPLLBitPhase;
+static int32_t RTTY_DPLLOldVal;
+
+//lpf
+static float32_t RTTY_LPF_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_LPF_STAGES] = {0};
+static float32_t RTTY_LPF_Filter_State[2 * RTTY_LPF_STAGES];
+static arm_biquad_cascade_df2T_instance_f32 RTTY_LPF_Filter;
+
+//mark
+static float32_t RTTY_Mark_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+static float32_t RTTY_Mark_Filter_State[2 * RTTY_BPF_STAGES];
+static arm_biquad_cascade_df2T_instance_f32 RTTY_Mark_Filter;
+
+//space
+static float32_t RTTY_Space_Filter_Coeffs[BIQUAD_COEFF_IN_STAGE * RTTY_BPF_STAGES];
+static float32_t RTTY_Space_Filter_State[2 * RTTY_BPF_STAGES];
+static arm_biquad_cascade_df2T_instance_f32 RTTY_Space_Filter;
+
+static const char RTTY_Letters[] = {
+	'\0', 'E', '\n', 'A', ' ', 'S', 'I', 'U',
+	'\r', 'D', 'R', 'J', 'N', 'F', 'C', 'K',
+	'T', 'Z', 'L', 'W', 'H', 'Y', 'P', 'Q',
+	'O', 'B', 'G', ' ', 'M', 'X', 'V', ' '};
+
+static const char RTTY_Symbols[32] = {
+	'\0', '3', '\n', '-', ' ', '\a', '8', '7',
+	'\r', '$', '4', '\'', ',', '!', ':', '(',
+	'5', '"', ')', '2', '#', '6', '0', '1',
+	'9', '?', '&', ' ', '.', '/', ';', ' '};
+
+static int RTTYDecoder_waitForStartBit(float32_t sample);
+static int RTTYDecoder_getBitDPLL(float32_t sample, int *val_p);
+static int RTTYDecoder_demodulator(float32_t sample);
+static float32_t RTTYDecoder_decayavg(float32_t average, float32_t input, int weight);
+
+// FSK shift: 170 200 425 850
+// FSK tone freq 1275 2125
+
+static float RTTY_Speed = 50; //45.45;
+#define	RTTY_Shift 455 //170;
+// The standard mark and space tones are 2125 hz and 2295 hz respectively
+#define RTTY_FreqMark DEFAULT_RTTY_PITCH		// /* mark тон DIGI modes - 2.125 кГц (1275 2125) */
+#define	RTTY_FreqSpace (DEFAULT_RTTY_PITCH + RTTY_Shift)
+static int RTTY_StopBits = RTTY_STOP_1;
+
+void RTTYDecoder_Init(void)
+{
+	//speed
+	RTTY_oneBitSampleCount = (uint16_t)roundf((float32_t)TRX_SAMPLERATE / RTTY_Speed);
+
+	//RTTY LPF Filter
+	iir_filter_t *filter = biquad_create(RTTY_LPF_STAGES);
+	biquad_init_lowpass(filter, TRX_SAMPLERATE, RTTY_Speed * 2);
+	fill_biquad_coeffs(filter, RTTY_LPF_Filter_Coeffs, RTTY_LPF_STAGES);
+	arm_biquad_cascade_df2T_init_f32(&RTTY_LPF_Filter, RTTY_LPF_STAGES, RTTY_LPF_Filter_Coeffs, RTTY_LPF_Filter_State);
+
+	//RTTY mark filter
+	filter = biquad_create(RTTY_BPF_STAGES);
+	biquad_init_bandpass(filter, TRX_SAMPLERATE, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
+	fill_biquad_coeffs(filter, RTTY_Mark_Filter_Coeffs, RTTY_BPF_STAGES);
+	arm_biquad_cascade_df2T_init_f32(&RTTY_Mark_Filter, RTTY_BPF_STAGES, RTTY_Mark_Filter_Coeffs, RTTY_Mark_Filter_State);
+
+	//RTTY space filter
+	filter = biquad_create(RTTY_BPF_STAGES);
+	biquad_init_bandpass(filter, TRX_SAMPLERATE, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
+	fill_biquad_coeffs(filter, RTTY_Space_Filter_Coeffs, RTTY_BPF_STAGES);
+	arm_biquad_cascade_df2T_init_f32(&RTTY_Space_Filter, RTTY_BPF_STAGES, RTTY_Space_Filter_Coeffs, RTTY_Space_Filter_State);
+
+	//text
+//	sprintf(RTTY_Decoder_Text, " RTTY: -");
+//	addSymbols(RTTY_Decoder_Text, RTTY_Decoder_Text, RTTY_DECODER_STRLEN, " ", 1);
+//	LCD_UpdateQuery.TextBar = 1;
+}
+
+void RTTYDecoder_Process(const float32_t *bufferIn, unsigned len)
+{
+	for (uint32_t buf_pos = 0; buf_pos < len; buf_pos++)
+	{
+		switch (RTTY_State)
+		{
+		case RTTY_STATE_WAIT_START: // not synchronized, need to wait for start bit
+			if (RTTYDecoder_waitForStartBit(bufferIn[buf_pos]))
+			{
+				RTTY_State = RTTY_STATE_BIT;
+				RTTY_byteResult_bnum = 1;
+				RTTY_byteResult = 0;
+			}
+			break;
+		case RTTY_STATE_BIT:
+			// reading 7 more bits
+			if (RTTY_byteResult_bnum < 8)
+			{
+				int bitResult = 0;
+				if (RTTYDecoder_getBitDPLL(bufferIn[buf_pos], &bitResult))
+				{
+					switch (RTTY_byteResult_bnum)
+					{
+					case 6: // stop bit 1
+					case 7: // stop bit 2
+						if (bitResult == 0)
+						{
+							// not in sync
+							RTTY_State = RTTY_STATE_WAIT_START;
+						}
+						if (RTTY_StopBits != RTTY_STOP_2 && RTTY_byteResult_bnum == 6)
+						{
+							// we pretend to be at the 7th bit after receiving the first stop bit if we have less than 2 stop bits
+							// this omits check for 1.5 bit condition but we should be more or less safe here, may cause
+							// a little more unaligned receive but without that shortcut we simply cannot receive these configurations
+							// so it is worth it
+							RTTY_byteResult_bnum = 7;
+						}
+						break;
+					default:
+						RTTY_byteResult |= (bitResult ? 1 : 0) << (RTTY_byteResult_bnum - 1);
+					}
+					RTTY_byteResult_bnum++;
+				}
+			}
+			if (RTTY_byteResult_bnum == 8 && RTTY_State == RTTY_STATE_BIT)
+			{
+				char charResult;
+
+				switch (RTTY_byteResult)
+				{
+				case RTTY_LETTER_CODE:
+					RTTY_charSetMode = RTTY_MODE_LETTERS;
+					// println(" ^L^");
+					break;
+				case RTTY_SYMBOL_CODE:
+					RTTY_charSetMode = RTTY_MODE_SYMBOLS;
+					// println(" ^F^");
+					break;
+				default:
+					switch (RTTY_charSetMode)
+					{
+					case RTTY_MODE_SYMBOLS:
+						charResult = RTTY_Symbols[RTTY_byteResult];
+						break;
+					case RTTY_MODE_LETTERS:
+					default:
+						charResult = RTTY_Letters[RTTY_byteResult];
+						break;
+					}
+					//RESULT !!!!
+					//print(charResult);
+					PRINTF("%c", charResult);
+//					char str[2] = {0};
+//					str[0] = charResult;
+//					if (strlen(RTTY_Decoder_Text) >= RTTY_DECODER_STRLEN)
+//						shiftTextLeft(RTTY_Decoder_Text, 1);
+//					strcat(RTTY_Decoder_Text, str);
+//					LCD_UpdateQuery.TextBar = 1;
+					break;
+				}
+				RTTY_State = RTTY_STATE_WAIT_START;
+			}
+		}
+	}
+}
+
+// this function returns only 1 when the start bit is successfully received
+static int RTTYDecoder_waitForStartBit(float32_t sample)
+{
+	int retval = 0;
+	int bitResult;
+	static int16_t wait_for_start_state = 0;
+	static int16_t wait_for_half = 0;
+
+	bitResult = RTTYDecoder_demodulator(sample);
+
+	switch (wait_for_start_state)
+	{
+	case 0:
+		// waiting for a falling edge
+		if (bitResult != 0)
+		{
+			wait_for_start_state++;
+		}
+		break;
+	case 1:
+		if (bitResult != 1)
+		{
+			wait_for_start_state++;
+		}
+		break;
+	case 2:
+		wait_for_half = RTTY_oneBitSampleCount / 2;
+		wait_for_start_state++;
+		/* no break */
+	case 3:
+		wait_for_half--;
+		if (wait_for_half == 0)
+		{
+			retval = (bitResult == 0);
+			wait_for_start_state = 0;
+		}
+		break;
+	}
+	return retval;
+}
+
+// this function returns 1 once at the half of a bit with the bit's value
+static int RTTYDecoder_getBitDPLL(float32_t sample, int *val_p)
+{
+	static int phaseChanged = 0;
+	int retval = 0;
+
+	if (RTTY_DPLLBitPhase < RTTY_oneBitSampleCount)
+	{
+		*val_p = RTTYDecoder_demodulator(sample);
+
+		if (!phaseChanged && *val_p != RTTY_DPLLOldVal)
+		{
+			if (RTTY_DPLLBitPhase < RTTY_oneBitSampleCount / 2)
+			{
+				RTTY_DPLLBitPhase += RTTY_oneBitSampleCount / 32; // early
+			}
+			else
+			{
+				RTTY_DPLLBitPhase -= RTTY_oneBitSampleCount / 32; // late
+			}
+			phaseChanged = 1;
+		}
+		RTTY_DPLLOldVal = *val_p;
+		RTTY_DPLLBitPhase++;
+	}
+
+	if (RTTY_DPLLBitPhase >= RTTY_oneBitSampleCount)
+	{
+		RTTY_DPLLBitPhase -= RTTY_oneBitSampleCount;
+		retval = 1;
+	}
+
+	return retval;
+}
+
+// adapted from https://github.com/ukhas/dl-fldigi/blob/master/src/include/misc.h
+static float32_t RTTYDecoder_decayavg(float32_t average, float32_t input, int weight)
+{
+	float32_t retval;
+	if (weight <= 1)
+	{
+		retval = input;
+	}
+	else
+	{
+		retval = ((input - average) / (float32_t)weight) + average;
+	}
+	return retval;
+}
+
+// this function returns the bit value of the current sample
+static int RTTYDecoder_demodulator(float32_t sample)
+{
+	float32_t space_mag = 0;
+	float32_t mark_mag = 0;
+	arm_biquad_cascade_df2T_f32(&RTTY_Space_Filter, &sample, &space_mag, 1);
+	arm_biquad_cascade_df2T_f32(&RTTY_Mark_Filter, &sample, &mark_mag, 1);
+
+	float32_t v1 = 0.0;
+	// calculating the RMS of the two lines (squaring them)
+	space_mag *= space_mag;
+	mark_mag *= mark_mag;
+
+	// RTTY decoding with ATC = automatic threshold correction
+	float32_t helper = space_mag;
+	space_mag = mark_mag;
+	mark_mag = helper;
+	static float32_t mark_env = 0.0;
+	static float32_t space_env = 0.0;
+	static float32_t mark_noise = 0.0;
+	static float32_t space_noise = 0.0;
+	// experiment to implement an ATC (Automatic threshold correction), DD4WH, 2017_08_24
+	// everything taken from FlDigi, licensed by GNU GPLv2 or later
+	// https://github.com/ukhas/dl-fldigi/blob/master/src/cw_rtty/rtty.cxx
+	// calculate envelope of the mark and space signals
+	// uses fast attack and slow decay
+	mark_env = RTTYDecoder_decayavg(mark_env, mark_mag, (mark_mag > mark_env) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 16);
+	space_env = RTTYDecoder_decayavg(space_env, space_mag, (space_mag > space_env) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 16);
+	// calculate the noise on the mark and space signals
+	mark_noise = RTTYDecoder_decayavg(mark_noise, mark_mag, (mark_mag < mark_noise) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 48);
+	space_noise = RTTYDecoder_decayavg(space_noise, space_mag, (space_mag < space_noise) ? RTTY_oneBitSampleCount / 4 : RTTY_oneBitSampleCount * 48);
+	// the noise floor is the lower signal of space and mark noise
+	float32_t noise_floor = (space_noise < mark_noise) ? space_noise : mark_noise;
+
+	// Linear ATC, section 3 of www.w7ay.net/site/Technical/ATC
+	// v1 = space_mag - mark_mag - 0.5 * (space_env - mark_env);
+
+	// Compensating for the noise floor by using clipping
+	float32_t mclipped = 0.0, sclipped = 0.0;
+	mclipped = mark_mag > mark_env ? mark_env : mark_mag;
+	sclipped = space_mag > space_env ? space_env : space_mag;
+	if (mclipped < noise_floor)
+	{
+		mclipped = noise_floor;
+	}
+	if (sclipped < noise_floor)
+	{
+		sclipped = noise_floor;
+	}
+
+	// Optimal ATC (Section 6 of of www.w7ay.net/site/Technical/ATC)
+	v1 = (mclipped - noise_floor) * (mark_env - noise_floor) - (sclipped - noise_floor) * (space_env - noise_floor) - 0.25 * ((mark_env - noise_floor) * (mark_env - noise_floor) - (space_env - noise_floor) * (space_env - noise_floor));
+	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);
+
+	// RTTY without ATC, which works very well too!
+	// inverting line 1
+	/*mark_mag *= -1;
+
+	// summing the two lines
+	v1 = mark_mag + space_mag;
+
+	// lowpass filtering the summed line
+	arm_biquad_cascade_df2T_f32(&RTTY_LPF_Filter, &v1, &v1, 1);*/
+
+	return (v1 > 0) ? 0 : 1;
+}
+
+#endif /* WITHRTTY */
+
 #if WITHLMSAUTONOTCH
 
 enum {
@@ -8353,8 +9244,6 @@ typedef struct rxaproc_tag
 	// LMS auto notch
 	LMSData_t lmsanotch;
 #endif /* WITHLMSAUTONOTCH */
-
-	speexel_t * outsp;	/* pointer to buffer with result of processing */
 } rxaproc_t;
 
 static RAMBIGDTCM rxaproc_t rxaprocs [NTRX];
@@ -8363,15 +9252,15 @@ static RAMBIGDTCM rxaproc_t rxaprocs [NTRX];
 
 #if ! WITHNOSPEEX
 
-	#if SPEEXNN == 64
+	#if FIRBUFSIZE == 64
 		#define SPEEXALLOCSIZE (NTRX * 15584)
-	#elif SPEEXNN == 128
+	#elif FIRBUFSIZE == 128
 		#define SPEEXALLOCSIZE (NTRX * 22584)
-	#elif SPEEXNN == 256
+	#elif FIRBUFSIZE == 256
 		#define SPEEXALLOCSIZE (NTRX * 38584)
-	#elif SPEEXNN == 512
+	#elif FIRBUFSIZE == 512
 		#define SPEEXALLOCSIZE (NTRX * 75448)
-	#elif SPEEXNN == 1024
+	#elif FIRBUFSIZE == 1024
 		#define SPEEXALLOCSIZE (NTRX * 149176)
 	#endif
 
@@ -8437,36 +9326,43 @@ void speex_free (void *ptr)
 	#endif /* SPEEXALLOCSIZE */
 #endif /* WITHUSEMALLOC */
 
+/* на слабых процессорах второй приемник без NR и автонотч */
+static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
+{
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S
+	return 1;
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S */
+	return pathi == 0;
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S */
+}
+
 static void speex_update_rx(void)
 {
 	uint_fast8_t pathi;
 
 	for (pathi = 0; pathi < NTRX; ++ pathi)
 	{
-		const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
-		const uint_fast8_t pathsubmode = getsubmode(bi);
-		const uint_fast8_t mode = submodes [pathsubmode].mode;
+		const uint_fast8_t amode = getamode(pathi);
 #if ! WITHNOSPEEX
-		spx_int32_t denoise = gnoisereducts [mode];
+		spx_int32_t denoise = ispathprocessing(pathi) && gnoisereducts [amode];
 		spx_int32_t supress = - (int) gnoisereductvl;
 #endif /* ! WITHNOSPEEX */
-
 		rxaproc_t * const nrp = & rxaprocs [pathi];
+
 		// Получение параметров эквалайзера
 		float32_t * const dCoefs = nrp->firEQcoeff;
 		dsp_recalceq_coeffs(pathi, dCoefs, Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
 		fir_expand_symmetric(dCoefs, Ntap_rx_AUDIO);	// Duplicate symmetrical part of coeffs.
+
 #if WITHNOSPEEX
 #else /* WITHNOSPEEX */
 		SpeexPreprocessState * const st = nrp->st_handle;
 		ASSERT(st != NULL);
 
-		//static float32_t speexEQresp [SPEEXNN];	// распределение усиления по частотам
-		//dsp_recalceq(pathi, speexEQresp);	// for SPEEX - equalizer in frequency domain
-
+		//PRINTF("speex_update_rx: amode=%d, pathi=%d, denoise=%d, supress=%d\n", (int) amode, (int) pathi, (int) denoise, (int) supress);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_DENOISE, & denoise);
 		speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_NOISE_SUPPRESS, & supress);
-		//speex_preprocess_ctl(st, SPEEX_PREPROCESS_SET_EQUALIZER, speexEQresp);
+
 #endif /* WITHNOSPEEX */
 	}
 }
@@ -8490,7 +9386,8 @@ static void InitNoiseReduction(void)
 		nrp->refnew = 0;
 #else /* WITHNOSPEEX */
 
-		nrp->st_handle = speex_preprocess_state_init(SPEEXNN, ARMI2SRATE);
+		nrp->st_handle = speex_preprocess_state_init(FIRBUFSIZE, ARMI2SRATE);
+		//PRINTF("InitNoiseReduction: pathi=%d\n", (int) pathi);
 
 #endif /* WITHNOSPEEX */
 
@@ -8522,109 +9419,99 @@ static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float*
 
 #endif /* WITHNOSPEEX */
 
-/* на слабых процессорах второй приемник без NR и автонотч */
-static uint_fast8_t ispathprovessing(uint_fast8_t pathi)
-{
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
-	return 1;
-#else
-	return pathi == 0;
-#endif
-}
-
-// обработка и сохранение в savesampleout16stereo_user()
-static void processingonebuff(uint_fast8_t pathi, rxaproc_t * const nrp, speexel_t * p)
+// user-mode processing
+// На выходе входной сигнал без изменений
+static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
 	static const float32_t ki = 32768;
 	static const float32_t ko = 1. / 32768;
-	const uint_fast8_t bi = getbankindex_pathi(pathi);	/* vfo bank index */
-	const uint_fast8_t pathsubmode = getsubmode(bi);
-	const uint_fast8_t mode = submodes [pathsubmode].mode;
-	const uint_fast8_t noprocessing = gtx || mode == MODE_DIGI || gdatamode;	// не делать даже коррекцию АЧХ
-	const uint_fast8_t denoise = ispathprovessing(pathi) && ! noprocessing && gnoisereducts [mode];
-	const uint_fast8_t anotch = ispathprovessing(pathi)  && ! noprocessing && ! (gtx || mode == MODE_DIGI || gdatamode) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
+#if WITHNOSPEEX
+	// не делать даже коррекцию АЧХ
+	nrp->outsp = p;
+#else /* WITHNOSPEEX */
+	// не делать даже коррекцию АЧХ
+	#if ! WITHLEAKYLMSANR
+//		arm_scale_f32(p, ki, p, FIRBUFSIZE);
+//		speex_preprocess_estimate_update(nrp->st_handle, p);
+//		arm_scale_f32(p, ko, p, FIRBUFSIZE);
+	#endif /* ! WITHLEAKYLMSANR */
+	return p;
+#endif /* WITHNOSPEEX */
+}
+
+static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+{
+	// FIXME: speex внутри использует целочисленные вычисления
+	static const float32_t ki = 32768;
+	static const float32_t ko = 1. / 32768;
+	const uint_fast8_t amode = getamode(pathi);
+	const uint_fast8_t denoise = ispathprocessing(pathi) && gnoisereducts [amode];
+	const uint_fast8_t anotch = ispathprocessing(pathi) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
 	//////////////////////////////////////////////
 	// Filtering
 	// Use CMSIS DSP interface
+
 #if WITHNOSPEEX
 	if (denoise)
 	{
 		// Filtering and denoise.
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
-		nrp->outsp = p;
-	}
-	else if (noprocessing)
-	{
-		// не делать даже коррекцию АЧХ
-		nrp->outsp = p;
+		return p;
 	}
 	else
 	{
 		// Filtering only.
 		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
-		nrp->outsp = nrp->wire1;
+		return nrp->wire1;
 	}
 #else /* WITHNOSPEEX */
-	if (denoise)
+
+	// Filtering and denoise.
+	BEGIN_STAMP();
+	arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+	END_STAMP();
+	if (anotch)
 	{
-		// Filtering and denoise.
-		BEGIN_STAMP();
-		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
-		END_STAMP();
-		if (anotch)
-		{
-			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
-		}
-		else
-		{
-			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
-		}
-#if WITHLEAKYLMSANR
-		if (pathi == 0)
-			AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
-#else /* WITHLEAKYLMSANR */
-		arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
-		speex_preprocess_run(nrp->st_handle, nrp->wire1);
-		arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
-#endif /* WITHLEAKYLMSANR */
-		nrp->outsp = nrp->wire1;
-	}
-	else if (noprocessing)
-	{
-		// не делать даже коррекцию АЧХ
-#if ! WITHLEAKYLMSANR
-		arm_scale_f32(p, ki, p, FIRBUFSIZE);
-		speex_preprocess_estimate_update(nrp->st_handle, p);
-		arm_scale_f32(p, ko, p, FIRBUFSIZE);
-#endif /* ! WITHLEAKYLMSANR */
-		nrp->outsp = p;
+		hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
 	}
 	else
 	{
-		// Filtering only.
-		ASSERT(p != NULL);
-		ASSERT(nrp->wire1 != NULL);
-		BEGIN_STAMP();
-		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
-		END_STAMP();
-		if (anotch)
-		{
-			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, nrp->wire1);
-		}
-		else
-		{
-			hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
-		}
-#if WITHAFEQUALIZER
-		audio_rx_equalizer(nrp->wire1, FIRBUFSIZE);
-#endif /* WITHAFEQUALIZER */
-
-		nrp->outsp = nrp->wire1;
+		hamradio_autonotch_process(& nrp->lmsanotch, nrp->wire1, p);	// результат не используем
 	}
+
+#if WITHLEAKYLMSANR
+	if (pathi == 0)
+		AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
+#else /* WITHLEAKYLMSANR */
+	arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
+	speex_preprocess_run(nrp->st_handle, nrp->wire1);
+	arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
+#endif /* WITHLEAKYLMSANR */
+	return nrp->wire1;
+
 #endif /* WITHNOSPEEX */
+
 }
+
+
+// user-mode processing
+// На выходе формируется тишина
+// прием телетайпа в приемнике A
+static float32_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+{
+#if WITHRTTY
+	if (pathi == 0)
+	{
+		RTTYDecoder_Process(p, FIRBUFSIZE);
+	}
+#endif /* WITHRTTY */
+	//nrp->outsp = p;
+	//arm_fill_f32(0, p, FIRBUFSIZE);
+	return afpnoproc(pathi, nrp, p);
+}
+
 
 // user-mode processing
 void
@@ -8635,11 +9522,13 @@ audioproc_spool_user(void)
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;
+		float32_t * outsp [NTRX];
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			rxaproc_t * const nrp = & rxaprocs [pathi];
+			const uint_fast8_t amode = getamode(pathi);
 			// nrp->outsp указывает на результат обработки
-			processingonebuff(pathi, nrp, p + pathi * FIRBUFSIZE);	// CMSIS DSP or SPEEX
+			outsp [pathi] = mdt [amode].afproc [gtx] (pathi, nrp, p + pathi * FIRBUFSIZE);
 		}
 		//////////////////////////////////////////////
 		// Save results
@@ -8647,9 +9536,9 @@ audioproc_spool_user(void)
 		for (i = 0; i < FIRBUFSIZE; ++ i)
 		{
 	#if WITHUSEDUALWATCH
-			deliveryfloat(& speexoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [1].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& speexoutfloat_user, outsp [0] [i], outsp [1] [i]);	// to AUDIO codec
 	#else /* WITHUSEDUALWATCH */
-			deliveryfloat(& speexoutfloat_user, rxaprocs [0].outsp [i], rxaprocs [0].outsp [i]);	// to AUDIO codec
+			deliveryfloat(& speexoutfloat_user, outsp [0] [i], outsp [0] [i]);	// to AUDIO codec
 	#endif /* WITHUSEDUALWATCH */
 		}
 		// Освобождаем буфер
@@ -9262,10 +10151,10 @@ updateboardZZZ(
 			board_set_adcfifo(gadcfifo);
 			board_set_adcoffset(gadcoffset + getadcoffsbase()); /* смещение для выходного сигнала с АЦП */
 		#endif /* WITHDSPEXTDDC */
-		#if WITHIF4DSP
-			speex_update_rx();
-		#endif /* WITHIF4DSP */
 		} /* (gtx == 0) */
+	#if WITHIF4DSP
+		speex_update_rx();
+	#endif /* WITHIF4DSP */
 
 	#if defined (RTC1_TYPE)
 		board_setrtcstrobe(grtcstrobe);
@@ -9340,6 +10229,7 @@ updateboardZZZ(
 			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwf);		/* нижний предел FFT для водопада */
 			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
+			board_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
 			board_set_view3dss_mark(gview3dss_mark);	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 			board_set_tx_loopback(gtxloopback && gtx);	/* включение спектроанализатора сигнала передачи */
@@ -9393,7 +10283,7 @@ updateboardZZZ(
 		board_set_classamode(gclassamode);	/* использование режима клвсс А при передаче */
 		board_set_txgate(gtxgate);		/* разрешение драйвера и оконечного усилителя */
 		#if WITHMIC1LEVEL
-			board_set_mik1level(mik1level);
+			board_set_mik1level(gmik1level);
 		#endif /* WITHMIC1LEVEL */
 		board_set_autotune(reqautotune);
 	#endif /* WITHTX */
@@ -9494,6 +10384,7 @@ updateboardZZZ(
 					(ALCNTH << 0) |
 					0;
 			nau8822_setreg(NAU8822_NOISE_GATE, ngctl1);
+
 		}
 #endif /* defined(CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_NAU8822L) */
 		board_update();		/* вывести забуферированные изменения в регистры */
@@ -13455,6 +14346,11 @@ static void dpc_1stimer(void * arg)
 #if WITHTOUCHGUI
 	gui_update();
 #endif /*WITHTOUCHGUI */
+
+#if WITHCPUTEMPERATURE && ! WITHTOUCHGUI && 1
+	uint8_t c = GET_CPU_TEMPERATURE();
+	PRINTF(PSTR("CPU temp: %dC\n"), c);
+#endif
 }
 
 static void
@@ -14174,6 +15070,16 @@ static const FLASHMEM struct menudef menutable [] =
 		nvramoffs0,
 		NULL,
 		& gbottomdbwf,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+	{
+		QLABEL("STEP DB "), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		0, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
+		offsetof(struct nvmap, glvlgridstep),
+		nvramoffs0,
+		NULL,
+		& glvlgridstep,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -15716,9 +16622,9 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		QLABEL("MIC LEVL"), 7, 0, 0,	ISTEP1,		/* подстройка усиления микрофонного усилителя через меню. */
 		ITEM_VALUE,
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX,
-		offsetof(struct nvmap, mik1level),	/* усиление микрофонного усилителя */
+		offsetof(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
 		nvramoffs0,
-		& mik1level,
+		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
 	},
@@ -18161,7 +19067,10 @@ void display2_menu_valxx(
 
 	case RJ_COMPILED:
 		{
-			static const FLASHMEM char msg [] = __DATE__ " " __TIME__;
+			static const FLASHMEM char msg [] =
+					__DATE__
+					//" " __TIME__
+					;
 			width = VALUEW;
 			comma = strlen_P(msg);
 			display_menu_string_P(x, y, msg, width, comma);
@@ -19825,10 +20734,6 @@ static void initialize2(void)
 	//blinkmain();
 #endif /* NVRAM_TYPE == NVRAM_TYPE_FM25XXXX */
 
-#if CPUSTYLE_XC7Z
-	xc7z_hardware_initialize();
-#endif /* CPUSTYLE_XC7Z */
-
 	(void) mclearnvram;
 
 #if WITHDEBUG
@@ -19897,6 +20802,9 @@ hamradio_initialize(void)
 #if WITHINTEGRATEDDSP	/* в программу включена инициализация и запуск DSP части. */
 	dsp_initialize();		// цифровая обработка подготавливается
 	InitNoiseReduction();
+#if WITHRTTY
+	RTTYDecoder_Init();
+#endif /* WITHRTTY */
 #endif /* WITHINTEGRATEDDSP */
 
 	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
@@ -20808,15 +21716,15 @@ void hamradio_get_mic_level_limits(uint_fast8_t * min, uint_fast8_t * max)
 
 uint_fast8_t hamradio_get_mik1level(void)
 {
-	return mik1level;
+	return gmik1level;
 }
 
 void hamradio_set_mik1level(uint_fast8_t v)
 {
 	ASSERT(v >= WITHMIKEINGAINMIN);
 	ASSERT(v <= WITHMIKEINGAINMAX);
-	mik1level = v;
-	save_i8(offsetof(struct nvmap, mik1level), mik1level);
+	gmik1level = v;
+	save_i8(offsetof(struct nvmap, gmik1level), gmik1level);
 	updateboard(1, 0);
 }
 
@@ -21070,21 +21978,24 @@ void hamradio_set_agc_slow(void)
 
 uint_fast8_t hamradio_get_agc_type(void)	// 0 - slow, 1 - fast
 {
+	const uint_fast8_t pathi = 0;
 	const FLASHMEM struct modetempl * pamodetempl;
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	pamodetempl = getmodetempl(asubmode);
 	const uint_fast8_t agcseti = pamodetempl->agcseti;
 
-	if (gagc [agcseti].release10 == 5)		// Как иначе вытянуть признак, пока не придумал. Надо переделать
+	if (gagc [agcseti].release10 >= 5)		// 0.5 секунды и более - считаем медланная. Как иначе вытянуть признак, пока не придумал. Надо переделать
 		return 0;
 	else
 		return 1;
 }
 
+// 1 - wide (SSB style), 0 - narow (CW style)
 uint_fast8_t hamradio_get_bp_type_wide(void)
 {
+	const uint_fast8_t pathi = 0;
 	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
 	const uint_fast8_t pos = bwsetpos [bwseti];
@@ -21093,13 +22004,15 @@ uint_fast8_t hamradio_get_bp_type_wide(void)
 
 uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 {
+	const uint_fast8_t pathi = 0;
 	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-	uint_fast16_t low;
 	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+
+	uint_fast16_t low;
 	switch (p->type)
 		{
 		case BWSET_PAIR:
@@ -21112,6 +22025,7 @@ uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 			break;
 
 		default:
+			ASSERT(0);
 		case BWSET_SINGLE:
 			if (rotate < 0)
 			{
@@ -21131,13 +22045,14 @@ uint_fast8_t hamradio_get_low_bp(int_least16_t rotate)
 
 uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 {
+	const uint_fast8_t pathi = 0;
 	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
-	uint_fast16_t high;
 	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
+	uint_fast16_t high;
 
 	switch (p->type)
 	{
@@ -21151,6 +22066,7 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 		break;
 
 	default:
+		ASSERT(0);
 	case BWSET_SINGLE:
 		if (rotate != 0 && gcwpitch10 + rotate <= CWPITCHMAX10 && gcwpitch10 + rotate >= CWPITCHMIN10)
 		{
@@ -21164,12 +22080,13 @@ uint_fast8_t hamradio_get_high_bp(int_least16_t rotate)
 
 int_fast8_t hamradio_afresponce(int_fast8_t v)
 {
+	const uint_fast8_t pathi = 0;
 	const uint_fast8_t tx = hamradio_get_tx();
-	const uint_fast8_t asubmode = getasubmode(0);
+	const uint_fast8_t asubmode = getasubmode(pathi);
 	const uint_fast8_t amode = submodes [asubmode].mode;
 	const uint_fast8_t bwseti = mdt [amode].bwsetis [tx];
 	const uint_fast8_t pos = bwsetpos [bwseti];
-	bwprop_t * p = bwsetsc [bwseti].prop [pos];
+	bwprop_t * const p = bwsetsc [bwseti].prop [pos];
 
 	if (v > 0)
 		p->afresponce = calc_next(p->afresponce, AFRESPONCEMIN, AFRESPONCEMAX);
@@ -21402,7 +22319,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 
 	mp->cell_saved = 1;
 	mp->mikebust20db = gmikebust20db;
-	mp->level = mik1level;
+	mp->level = gmik1level;
 	mp->agc = gmikeagc;
 	mp->agcgain = gmikeagcgain;
 	mp->clip = gmikehclip;
@@ -21414,6 +22331,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 		save_i8(RMT_MICEQPARAMS_BASE(cell, j), mp->eq_params [j]);
 	}
 
+	save_i8(RMT_MICEQ_BASE(cell), mp->eq_enable);
 	save_i8(RMT_MICBOOST_BASE(cell), mp->mikebust20db);
 	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
 	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
@@ -21431,7 +22349,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 	if (mp->cell_saved && set)
 	{
 		gmikebust20db = mp->mikebust20db;
-		mik1level = mp->level;
+		gmik1level = mp->level;
 		gmikeagc = mp->agc;
 		gmikeagcgain = mp->agcgain;
 		gmikehclip = mp->clip;
@@ -21447,7 +22365,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 #endif /* WITHAFCODEC1HAVEPROC */
 
-uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t is_bcast_need)
+uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need)
 {
 	uint_fast8_t count = 0;
 
@@ -21455,21 +22373,23 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t is_bcast_need
 	{
 		if (existingbandsingle(i, 0))		// check for HAM bands
 		{
-			band_array_t * b = & bands [count];
-			const char * l = get_band_label(i);
-
-			b->index = i;
-			b->init_freq = get_band_init(i);
-			b->type = BAND_TYPE_HAM;
-			if (strcmp(l, ""))
+			if (! count_only)
 			{
-				strcpy(b->name, l);
-			}
-			else
-			{
-				local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
-			}
+				band_array_t * const b = & bands [count];
+				const char * l = get_band_label(i);
 
+				b->index = i;
+				b->init_freq = get_band_init(i);
+				b->type = BAND_TYPE_HAM;
+				if (strcmp(l, ""))
+				{
+					strcpy(b->name, l);
+				}
+				else
+				{
+					local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
+				}
+			}
 			count ++;
 		}
 	}
@@ -21480,19 +22400,22 @@ uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t is_bcast_need
 		{
 			if (existingbandsingle(i, 1))		// check for broadcast bands
 			{
-				band_array_t * b = & bands [count];
-				const char * l = get_band_label(i);
+				if (! count_only)
+				{
+					band_array_t * const b = & bands [count];
+					const char * l = get_band_label(i);
 
-				b->index = i;
-				b->init_freq = get_band_init(i);
-				b->type = BAND_TYPE_BROADCAST;
-				if (strcmp(l, ""))
-				{
-					strcpy(b->name, l);
-				}
-				else
-				{
-					local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
+					b->index = i;
+					b->init_freq = get_band_init(i);
+					b->type = BAND_TYPE_BROADCAST;
+					if (strcmp(l, ""))
+					{
+						strcpy(b->name, l);
+					}
+					else
+					{
+						local_snprintf_P(b->name, ARRAY_SIZE(b->name), PSTR("%ldk"), (long) (b->init_freq / 1000));
+					}
 				}
 				count ++;
 			}

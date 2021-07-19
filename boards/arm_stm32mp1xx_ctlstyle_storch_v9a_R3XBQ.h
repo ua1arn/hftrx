@@ -29,108 +29,101 @@
 	//#define WITHUSESAII2S	1	/* I2S PLL	*/
 
 	#define LSEFREQ 32768uL
+	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
+	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
-	// Варианты конфигурации тактирования
-	// ref1_ck, ref2_ck - 8..16 MHz
-	// PLL1, PLL2 VCOs
+	#if WITHISBOOTLOADER
+		// Варианты конфигурации тактирования
+		// ref1_ck, ref2_ck - 8..16 MHz
+		// PLL1, PLL2 VCOs
+		#if WITHCPUXTAL || WITHCPUXOSC
+
+			// PLL1_1600
+			#define PLL1DIVM	2	// ref1_ck = 12 MHz
+			#define PLL1DIVP	1	// MPU
+			#define PLL1DIVQ	2
+			#define PLL1DIVR	2
+
+			//#define PLL1DIVN	54	// 12*54 = 648 MHz
+			//#define PLL1DIVN	66	// 12*66 = 792 MHz
+			#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
+
+			// PLL2_1600
 	#if 1
-		#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
-		//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
-
-		// PLL1_1600
-		#define PLL1DIVM	2	// ref1_ck = 12 MHz
-		#define PLL1DIVP	1	// MPU
-		#define PLL1DIVQ	2
-		#define PLL1DIVR	2
-
-		//#define PLL1DIVN	54	// 12*54 = 648 MHz
-		//#define PLL1DIVN	66	// 12*66 = 792 MHz
-		#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
-
-		// PLL2_1600
-#if 1
-		#define PLL2DIVM	2	// ref2_ck = 12 MHz
-		#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
-		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-		#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-#elif 0
-		#define PLL2DIVM	2	// ref2_ck = 12 MHz
-		#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
-		#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-		#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-		#define PLL2DIVR	4	// DDR clock divider = 132 MHz
-#else
-		/* bad boards DDR3 clock = 300 MHz */
-		#define PLL2DIVM	2	// ref2_ck = 12 MHz
-		#define PLL2DIVN	50	// 600 MHz Valid division rations for DIVN: between 25 and 100
-		#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-		#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
-		#define PLL2DIVR	2	// DDR clock divider = 300 MHz
-#endif
-
-		// PLL3_800
-
-		// PLL4_800
-		#define PLL4DIVM	2	// ref2_ck = 12 MHz
-		#define PLL4DIVN	64	// 768 MHz
-		#define PLL4DIVP	2	// div2
-		//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
-		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
-		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
-		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
-
+			#define PLL2DIVM	2	// ref2_ck = 12 MHz
+			#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
+			#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
+			#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
+			#define PLL2DIVR	1	// DDR clock divider = 528 MHz
+	#elif 0
+			#define PLL2DIVM	2	// ref2_ck = 12 MHz
+			#define PLL2DIVN	66	// 528 MHz Valid division rations for DIVN: between 25 and 100
+			#define PLL2DIVP	3	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
+			#define PLL2DIVQ	2	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
+			#define PLL2DIVR	2	// DDR clock divider = 528 MHz
 	#else
-		// HSI version (HSI=64 MHz)
-		// PLL1_1600
-		#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
-		#define PLL1DIVP	1	// MPU
-		#define PLL1DIVQ	2
-		#define PLL1DIVR	2
-		//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-		//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
-		#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
-
-#if 1
-		// PLL2_1600
-		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
-		#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
-		#define PLL2DIVQ	1	// GPU clock divider
-		#define PLL2DIVR	1	// DDR clock divider
-#else
-		// PLL2_1600
-		#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL2DIVN	61//41	// 12.8 * 41 = 524.8 MHz
-		#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
-		#define PLL2DIVQ	2//1	// GPU clock divider
-		#define PLL2DIVR	3//1	// DDR clock divider
-#endif
-
-		// PLL3_800
-		// pll3_p_ck -> mcuss_ck - 209 MHz Max
-		#define PLL3DIVM	5	// ref2_ck = 12.8 MHz
-
-		// PLL4_800
-		#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
-		#define PLL4DIVN	60	// 12.8 * 60 = 768 MHz
-		#define PLL4DIVP	2	// div2
-		//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
-		//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
-		//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-		#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
-
+			/* bad boards DDR3 clock = 300 MHz */
+			#define PLL2DIVM	2	// ref2_ck = 12 MHz
+			#define PLL2DIVN	50	// 600 MHz Valid division rations for DIVN: between 25 and 100
+			#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
+			#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
+			#define PLL2DIVR	2	// DDR clock divider = 300 MHz
 	#endif
 
-	#if WITHI2SCLOCKFROMPIN
-	#else /* WITHI2SCLOCKFROMPIN */
-		#define PLLI2SN_MUL 172		// 344.064 (192 <= PLLI2SN <= 432)
-		#define SAIREF1_MUL 172		// 245.76 / 1.024 = 240 (49 <= PLLSAIN <= 432)
-		// Частота формируется процессором
-		#define ARMI2SMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
-		#define ARMSAIMCLK	12288000 //(PLLSAI_FREQ_OUT / 14)
-	#endif /* WITHI2SCLOCKFROMPIN */
+			// PLL3_800
+
+			// PLL4_800
+			#define PLL4DIVM	2	// ref2_ck = 12 MHz
+			#define PLL4DIVN	64	// 768 MHz
+			#define PLL4DIVP	2	// div2
+			//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
+			//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
+			//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
+			//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
+			#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
+
+		#else
+			// HSI version (HSI=64 MHz)
+			// PLL1_1600
+			#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
+			#define PLL1DIVP	1	// MPU
+			#define PLL1DIVQ	2
+			#define PLL1DIVR	2
+			//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
+			//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
+			#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
+
+	#if 1
+			// PLL2_1600
+			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
+			#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
+			#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
+			#define PLL2DIVQ	1	// GPU clock divider
+			#define PLL2DIVR	1	// DDR clock divider
+	#else
+			// PLL2_1600
+			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
+			#define PLL2DIVN	61//41	// 12.8 * 41 = 524.8 MHz
+			#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
+			#define PLL2DIVQ	2//1	// GPU clock divider
+			#define PLL2DIVR	3//1	// DDR clock divider
+	#endif
+
+			// PLL3_800
+			// pll3_p_ck -> mcuss_ck - 209 MHz Max
+			#define PLL3DIVM	5	// ref2_ck = 12.8 MHz
+
+			// PLL4_800
+			#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
+			#define PLL4DIVN	60	// 12.8 * 60 = 768 MHz
+			#define PLL4DIVP	2	// div2
+			//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
+			//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
+			//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
+			#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
+
+		#endif
+	#endif /* WITHISBOOTLOADER */
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -397,12 +390,14 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+		//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
 		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
 		#if 1
 			#define WITHTOUCHGUI		1
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
@@ -411,12 +406,14 @@
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
-		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
-		#define WITHFFTOVERLAPPOW2	3	/* Количество перекрывающися буферов FFT спектра (2^param). */
+		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+		//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		//#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	#define WITHVIEW_3DSS		1

@@ -8,6 +8,7 @@
 #include "gt911.h"
 
 static uint_fast8_t gt911_addr = 0;
+static uint_fast8_t tscpresetnt = 0;
 
 static void gt911_io_initialize(void)
 {
@@ -66,13 +67,22 @@ static void gt911_intconnect(void)
 
 void gt911_set_reg(uint_fast16_t reg)
 {
+#if WITHTWIHW
+	uint8_t buf[2] = { (reg >> 8), (reg & 0xFF), };
+	i2chw_write(gt911_addr, buf, 2);
+#elif WITHTWISW
 	i2c_start(gt911_addr);
 	i2c_write(reg >> 8);
 	i2c_write(reg & 0xFF);
+#endif
 }
 
 void gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 {
+#if WITHTWIHW
+	gt911_set_reg(reg);
+	i2chw_read(gt911_addr, buf, len);
+#elif WITHTWISW
 	uint_fast8_t k = 0;
 
 	gt911_set_reg(reg);
@@ -95,6 +105,20 @@ void gt911_read(uint_fast16_t reg, uint8_t * buf, size_t len)
 		}
 		i2c_read(buf ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
 	}
+#endif
+}
+
+void gt911_write_reg(uint_fast16_t reg, uint8_t val)
+{
+#if WITHTWIHW
+	uint8_t buf[3] = { (reg >> 8), (reg & 0xFF), val, };
+	i2chw_write(gt911_addr, buf, 3);
+#elif WITHTWISW
+	i2c_start(gt911_addr);
+	i2c_write(reg >> 8);
+	i2c_write(reg & 0xFF);
+	i2c_write(val);
+#endif
 }
 
 uint16_t gt911_readInput(GTPoint * point)
@@ -108,15 +132,14 @@ uint16_t gt911_readInput(GTPoint * point)
 	if (! buf_state)
 		return 0;
 
-	touch_num = buf [0] & 0x7f;
+	touch_num = buf [0] & 0x0F;
 	if (touch_num > 0)
 	{
 		/* получение координат первой точки касания */
 		point->x = (buf [2] << 0) | (buf [3] << 8);
 		point->y = (buf [4] << 0) | (buf [5] << 8);
 	}
-	gt911_set_reg(GOODIX_READ_COORD_ADDR);
-	i2c_write(0);
+	gt911_write_reg(GOODIX_READ_COORD_ADDR, 0);
 
 	return touch_num;
 }
@@ -143,17 +166,12 @@ uint_fast8_t gt911_readChecksum(void)
 	return gt911_calcChecksum(buf, len);
 }
 
-void gt911_readConfig(uint8_t * config)
-{
-	gt911_read(GT_REG_CFG, config, GOODIX_CONFIG_911_LENGTH);
-}
-
 void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 {
 	uint_fast8_t len = GOODIX_CONFIG_911_LENGTH;
 	uint16_t pos = 0;
 	uint8_t cfg [len];
-	gt911_readConfig(cfg);
+	gt911_read(GT_REG_CFG, cfg, GOODIX_CONFIG_911_LENGTH);
 
 	cfg [1] = (maxX & 0xff);
 	cfg [2] = (maxX >> 8);
@@ -164,8 +182,7 @@ void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 	cfg [len - 1] = 1;
 
 	while (pos < len) {
-		gt911_set_reg(GT_REG_CFG + pos);
-		i2c_write(cfg [pos]);
+		gt911_write_reg(GT_REG_CFG + pos, cfg [pos]);
 		pos ++;
 	}
 }
@@ -179,15 +196,13 @@ uint_fast16_t gt911_productID(void) {
 	return res;
 }
 
-static uint_fast8_t tscpresetnt;
-
 uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 {
 	if (! tscpresetnt || ! gt911_interrupt_get())
 		return 0;
 
 	GTPoint points[5]; //points buffer
-	int8_t contacts;
+	uint8_t contacts;
 	contacts = gt911_readInput(points);
 
 	if (contacts == 0)
@@ -209,8 +224,7 @@ uint_fast8_t gt911_initialize(void)
 		return 0;
 
 	gt911_fwResolution(DIM_X, DIM_Y);
-	gt911_set_reg(GOODIX_READ_COORD_ADDR);
-	i2c_write(0);
+	gt911_write_reg(GOODIX_READ_COORD_ADDR, 0);
 	tscpresetnt = 1;
 
 	gt911_intconnect();

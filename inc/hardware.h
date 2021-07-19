@@ -171,8 +171,11 @@ extern "C" {
 	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
@@ -192,8 +195,11 @@ extern "C" {
 	#define ICACHEROWSIZE 32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F4XX
 
@@ -212,8 +218,11 @@ extern "C" {
 	#define ICACHEROWSIZE 16U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F30X
 
@@ -228,8 +237,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F1XX
 
@@ -243,8 +255,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32F0XX
 
@@ -258,8 +273,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32L0XX
 
@@ -272,8 +290,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_ATSAM3S
 
@@ -287,8 +308,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_ATSAM4S
 
@@ -302,8 +326,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_MK20DX	// Teensy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
 
@@ -316,8 +343,11 @@ extern "C" {
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
-		#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -334,10 +364,23 @@ extern "C" {
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
 
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+
+
 #elif CPUSTYLE_AT91SAM9XE
 
+	// ARM926EJ-S ARMv5TEJ
+	// Use -mcpu=arm926ej-s -mfloat-abi=soft
+	// arm-none-eabi-gcc.exe -mcpu=arm926ej-s -mfloat-abi=soft -E -dM  -c -o tt.o tt.c
+
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-	#define	CPUSTYLE_ARM7TDMI	1
+	#define	CPUSTYLE_ARM9		1
+
 	#include "armcpu/at91sam9xe512.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
@@ -348,6 +391,13 @@ extern "C" {
 	#define __STATIC_INLINE  static inline
 
 	#include "tdmi7_gcc.h"
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_R7S721
 
@@ -373,13 +423,15 @@ extern "C" {
 	#define DCACHEROWSIZE 32
 	#define ICACHEROWSIZE 32
 
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_BEGIN __attribute__ ((aligned(DCACHEROWSIZE)))
 	#define ALIGNX_END /* nothing */
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYLE_STM32MP1
 
@@ -406,6 +458,8 @@ extern "C" {
 		//#define ARM_MATH_NEON 1
 		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 
 #elif CPUSTYLE_XC7Z
@@ -429,7 +483,10 @@ extern "C" {
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif CPUSTYPE_ALLWNV3S
 	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
@@ -455,9 +512,10 @@ extern "C" {
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
 	#endif /* __ARM_NEON */
-
-
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
 #elif \
 	defined (__TMS320C28X__) || \
@@ -627,8 +685,6 @@ void hardware_dac_ch2_setvalue(uint_fast16_t v);	// вывод 12-битного
 
 void hardware_spi_io_delay(void);
 
-unsigned long hardware_get_spi_freq(void);	// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
-
 void cat2_parsechar(uint_fast8_t c);				/* вызывается из обработчика прерываний */
 void cat2_rxoverflow(void);							/* вызывается из обработчика прерываний */
 void cat2_disconnect(void);							/* вызывается из обработчика прерываний произошёл разрыв связи при работе по USB CDC */
@@ -738,6 +794,10 @@ void i2c2_waitsend(void);	// Вызвать после последнего i2c_
 void i2c2_stop(void);
 
 void hardware_twi_master_configure(void);
+void i2chw_initialize(void);
+
+uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size);
+uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size);
 
 uint32_t hardware_get_random(void);
 
@@ -773,7 +833,8 @@ extern const videomode_t vdmode0;
 void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode);	// LCD-TFT Controller (LTDC) with framebuffer
 unsigned long display_getdotclock(const videomode_t * vdmode);
 
-void arm_hardware_ltdc_main_set(uintptr_t addr);	// Set MAIN frame buffer address.
+void arm_hardware_ltdc_main_set(uintptr_t addr);	/* Set MAIN frame buffer address. Wait for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr);	/* Set MAIN frame buffer address. No waiting for VSYNC. */
 void arm_hardware_ltdc_pip_set(uintptr_t addr);	// Set PIP frame buffer address.
 void arm_hardware_ltdc_pip_off(void);	// Turn PIP off (main layer only).
 void arm_hardware_ltdc_L8_palette(void);	// Palette reload
@@ -825,6 +886,7 @@ void r7s721_adi_irq_handler(void);
 void TIM3_IRQHandler(void);
 void TIM5_IRQHandler(void);
 
+void r7s721_intc_initialize(void);
 
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */
 typedef struct adcinmap_tag
@@ -845,7 +907,6 @@ uint_fast8_t isadchw(uint_fast8_t adci); // Проверка что индекс
 
 
 void cpump_initialize(void);
-void arm_gic_initialize(void);
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 
@@ -1006,16 +1067,18 @@ extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
 #if CPUSTYLE_XC7Z
-#include "lib/zynq/src/xgpiops.h"
+
 #include "zynq_test.h"
 
-extern XGpioPs xc7z_gpio;
-
 void xc7z_hardware_initialize(void);
+float xc7z_get_cpu_temperature(void);
+uint8_t xc7z_readpin(uint8_t pin);
+void xc7z_writepin(uint8_t pin, uint8_t val);
+void xc7z_gpio_input(uint8_t pin);
+void xc7z_gpio_output(uint8_t pin);
 void xc7z_dds_ftw(const uint_least64_t * val);
 void xc7z_dds_rts(const uint_least64_t * val);
 #endif /* CPUSTYLE_XC7Z */
-
 
 /* получить 32-бит значение */
 uint_fast32_t
@@ -1094,5 +1157,6 @@ uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
 #endif
 
 #include "taildefs.h"
+#include "clocks.h"
 
 #endif // HARDWARE_H_INCLUDED

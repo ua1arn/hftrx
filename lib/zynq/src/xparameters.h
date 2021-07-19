@@ -313,11 +313,6 @@
 #define XPAR_PS7_SLCR_0_S_AXI_HIGHADDR 0xF8000FFF
 
 
-/* Definitions for peripheral PS7_SMCC_0 */
-#define XPAR_PS7_SMCC_0_S_AXI_BASEADDR 0xE000E000
-#define XPAR_PS7_SMCC_0_S_AXI_HIGHADDR 0xE100EFFF
-
-
 /******************************************************************/
 
 /* Definitions for driver GPIO */
@@ -362,6 +357,28 @@
 
 /******************************************************************/
 
+/* Definitions for driver IICPS */
+#define XPAR_XIICPS_NUM_INSTANCES 1
+
+/* Definitions for peripheral PS7_I2C_0 */
+#define XPAR_PS7_I2C_0_DEVICE_ID 0
+#define XPAR_PS7_I2C_0_BASEADDR 0xE0004000
+#define XPAR_PS7_I2C_0_HIGHADDR 0xE0004FFF
+#define XPAR_PS7_I2C_0_I2C_CLK_FREQ_HZ 111111115
+
+
+/******************************************************************/
+
+/* Canonical definitions for peripheral PS7_I2C_0 */
+#define XPAR_XIICPS_0_DEVICE_ID XPAR_PS7_I2C_0_DEVICE_ID
+#define XPAR_XIICPS_0_BASEADDR 0xE0004000
+#define XPAR_XIICPS_0_HIGHADDR 0xE0004FFF
+#define XPAR_XIICPS_0_I2C_CLK_FREQ_HZ 111111115
+
+
+/******************************************************************/
+
+/* Definition for input Clock */
 /* Definitions for driver LLFIFO */
 #define XPAR_XLLFIFO_NUM_INSTANCES 1U
 
@@ -385,38 +402,15 @@
 
 /******************************************************************/
 
-/* Definitions for driver NANDPS */
-#define XPAR_XNANDPS_NUM_INSTANCES 1U
-
-/* Definitions for peripheral PS7_NAND_0 */
-#define XPAR_PS7_NAND_0_DEVICE_ID 0U
-#define XPAR_PS7_NAND_0_BASEADDR 0xE1000000U
-#define XPAR_PS7_NAND_0_HIGHADDR 0xE1000FFFU
-#define XPAR_PS7_NAND_0_NAND_CLK_FREQ_HZ 100000000U
-#define XPAR_PS7_NAND_0_SMC_BASEADDR 0xE000E000U
-#define XPAR_PS7_NAND_0_NAND_WIDTH 8U
-
-
-/******************************************************************/
-
-/* Canonical definitions for peripheral PS7_NAND_0 */
-#define XPAR_XNANDPS_0_DEVICE_ID XPAR_PS7_NAND_0_DEVICE_ID
-#define XPAR_XNANDPS_0_CPU_BASEADDR 0xE1000000U
-#define XPAR_XNANDPS_0_CPU_HIGHADDR 0xE1000FFFU
-#define XPAR_XNANDPS_0_NAND_CLK_FREQ_HZ 100000000U
-#define XPAR_XNANDPS_0_SMC_BASEADDR 0xE000E000U
-#define XPAR_XNANDPS_0_NAND_WIDTH 8U
-
-
-/******************************************************************/
-
 /* Definitions for Fabric interrupts connected to ps7_scugic_0 */
 #define XPAR_FABRIC_AXI_FIFO_MM_S_0_INTERRUPT_INTR 61U
+#define XPAR_FABRIC_V_TC_0_IRQ_INTR 62U
 
 /******************************************************************/
 
 /* Canonical definitions for Fabric interrupts connected to ps7_scugic_0 */
 #define XPAR_FABRIC_LLFIFO_0_VEC_ID XPAR_FABRIC_AXI_FIFO_MM_S_0_INTERRUPT_INTR
+#define XPAR_FABRIC_VTC_0_VEC_ID XPAR_FABRIC_V_TC_0_IRQ_INTR
 
 /******************************************************************/
 

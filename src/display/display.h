@@ -933,6 +933,19 @@ display_colorbuf_set_vline(
 	COLORPIP_T color
 	);
 
+// Нарисовать горизонтальную цветную полосу
+// Формат RGB565
+void
+display_colorbuf_set_hline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	uint_fast16_t w,	// ширина
+	COLORPIP_T color
+	);
+
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
 colmain_mem_at_debug(
@@ -975,6 +988,7 @@ void board_set_view3dss_mark(int_fast16_t v);	/* Для VIEW_3DSS - индика
 void board_set_showdbm(uint_fast8_t v);			// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 void board_set_afspeclow(int_fast16_t v);		// нижняя частота отображения спектроанализатора
 void board_set_afspechigh(int_fast16_t v);		// верхняя частота отображения спектроанализатора
+void board_set_lvlgridstep(uint_fast8_t v);		/* Шаг сетки уровней в децибелах */
 
 PACKEDCOLORMAIN_T * colmain_fb_draw(void);		// буфер для построения изображения
 uint_fast8_t colmain_fb_next(void);				// переключиться на использование для DRAW следующего фреймбуфера (его номер возвращается)
@@ -1019,6 +1033,21 @@ void ltdc_horizontal_pixels(
 	PACKEDCOLORMAIN_T * tgr,		// target raster
 	const FLASHMEM uint8_t * raster,
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
+	);
+
+// Для произвольного шрифта
+uint_fast16_t
+RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
+	const FLASHMEM uint8_t * fontraster,
+	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
+	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
+	uint_fast8_t height,	// строк в символе по вертикали
+	uint_fast8_t bytesw,	// байтов в одной строке символа
+	PACKEDCOLORMAIN_T * const __restrict buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y,
+	uint_fast8_t cc
 	);
 
 // Установить прозрачность для прямоугольника

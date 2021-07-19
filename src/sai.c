@@ -73,7 +73,7 @@ dma_flush16tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer16cachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush(addr, buffers_dmabuffer16cachesize());
+	arm_hardware_flush_invalidate(addr, buffers_dmabuffer16cachesize());
 	return addr;
 }
 
@@ -103,7 +103,7 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 {
 	ASSERT((addr % DCACHEROWSIZE) == 0);
 	ASSERT((buffers_dmabuffer32txcachesize() % DCACHEROWSIZE) == 0);
-	arm_hardware_flush(addr,  buffers_dmabuffer32txcachesize());
+	arm_hardware_flush_invalidate(addr,  buffers_dmabuffer32txcachesize());
 	return addr;
 }
 
@@ -285,7 +285,7 @@ void RAMFUNC_NONILINE DMA1_Stream3_IRQHandler(void)
 	if ((DMA1->LISR & DMA_LISR_TCIF3) != 0)
 	{
 		DMA1->LIFCR = DMA_LIFCR_CTCIF3;	// Clear TC interrupt flag
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream3->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -314,7 +314,7 @@ void RAMFUNC_NONILINE DMA1_Stream0_IRQHandler(void)
 	if ((DMA1->LISR & DMA_LISR_TCIF0) != 0)
 	{
 		DMA1->LIFCR = DMA_LIFCR_CTCIF0;	// Clear TC interrupt flag
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream0->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -344,7 +344,7 @@ void RAMFUNC_NONILINE DMA1_Stream4_IRQHandler(void)
 	if ((DMA1->HISR & DMA_HISR_TCIF4) != 0)
 	{
 		DMA1->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		//ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA1_Stream4->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -373,11 +373,11 @@ DMA_I2S2_TX_initialize(void)
 	/* SPI2_TX - Stream4, Channel0 */ 
 	/* DMA для передачи по I2S2*/
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA1EN; // включил DMA1
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_DMA1LPEN; // включил DMA1
+	RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_DMA1LPEN; // включил DMA1
 	(void) RCC->MP_AHB2LPENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	// DMAMUX1 channels 0 to 7 are connected to DMA1 channels 0 to 7
 	// DMAMUX1 channels 8 to 15 are connected to DMA2 channels 0 to 7
@@ -482,7 +482,7 @@ DMA_I2S3_RX_initialize(void)
 {
 	/* I2S3_RX - DMA1, Stream0, Channel0 */ 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA1EN; // включил DMA1
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA1_Stream0->PAR = (uintptr_t) & SPI3->RXDR;
@@ -543,11 +543,11 @@ DMA_I2S2_RX_initialize(void)
 {
 	/* I2S2_RX - DMA1, Stream0, Channel0 */
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA1EN; // включил DMA1
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA1EN; // включил DMA1
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_DMA1LPEN; // включил DMA1
+	RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_DMA1LPEN; // включил DMA1
 	(void) RCC->MP_AHB2LPENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA1_Stream0->PAR = (uintptr_t) & SPI2->RXDR;
@@ -1446,7 +1446,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 	if ((DMA2->HISR & DMA_HISR_TCIF5) != 0)
 	{
 		DMA2->HIFCR = DMA_HIFCR_CTCIF5;	// Clear TC interrupt flag соответствующий stream
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		ASSERT((SAI1_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream5->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -1463,6 +1463,7 @@ void RAMFUNC_NONILINE DMA2_Stream5_IRQHandler(void)
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
+		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
 	}
 
 	//DMAERR(DMA2, DMA2_Stream5, HISR, HIFCR, DMA_HISR_TEIF5, DMA_HIFCR_CTEIF5);
@@ -1477,7 +1478,7 @@ void DMA2_Stream1_IRQHandler(void)
 	if ((DMA2->LISR & DMA_LISR_TCIF1) != 0)
 	{
 		DMA2->LIFCR = DMA_LIFCR_CTCIF1;	// Clear TC interrupt flag
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 		ASSERT((SAI1_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream1->CR & DMA_SxCR_CT) != 0;
 		if (b != 0)
@@ -1506,9 +1507,9 @@ static void DMA_SAI1_A_TX_initialize(void)
 	/* SAI1_A - Stream1, Channel0 */ 
 	/* DMA для передачи по I2S2*/
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA2EN; // включил DMA2
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream1->PAR = (uintptr_t) & SAI1_Block_A->DR;
@@ -1569,9 +1570,9 @@ static void DMA_SAI1_B_RX_initialize(void)
 {
 	/* SAI1_B - Stream5, Channel0 */ 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA2EN; // включил DMA2
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
@@ -2053,7 +2054,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_AUDIO48(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2083,7 +2084,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_32RX(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2099,6 +2100,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_32RX(void)
 			processing_dmabuffer32rx(addr);
 			release_dmabuffer32rx(addr);
 		}
+		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
 	}
 
 	//DMAERR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
@@ -2115,7 +2117,7 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_32WFM(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2147,7 +2149,7 @@ void DMA2_Stream4_IRQHandler_16codec(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2177,7 +2179,7 @@ void DMA2_Stream4_IRQHandler_32txsub(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF4;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_A->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream4->CR & DMA_SxCR_CT) != 0;
-		__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 
 		if (b != 0)
 		{
@@ -2203,9 +2205,9 @@ static void DMA_SAI2_A_TX_initialize_32TXSUB(void)
 {
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA2EN; // включил DMA2
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
@@ -2266,9 +2268,9 @@ static void DMA_SAI2_A_TX_initialize_32TXSUB(void)
 static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 {
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA2EN; // включил DMA2
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream4->PAR = (uintptr_t) & SAI2_Block_A->DR;
@@ -2330,9 +2332,9 @@ static void DMA_SAI2_A_TX_initializeAUDIO48(void)
 static void DMA_SAI2_B_RX_initialize_RTS192(void)
 {
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA2EN; // включил DMA2
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
@@ -2394,9 +2396,9 @@ static void DMA_SAI2_B_RX_initialize_RTS192(void)
 static void DMA_SAI2_B_RX_initializeAUDIO48(void)
 {
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA2EN; // включил DMA2
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
@@ -2711,9 +2713,9 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 	PRINTF(PSTR("DMA_SAI2_B_RX_initializeWFM start.\n"));
 
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMA2EN; // включил DMA2
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMA2EN; // включил DMA2
 	(void) RCC->MP_AHB2ENSETR;
-	RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
+	RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_DMAMUXEN; // включил DMAMUX
 	(void) RCC->MP_AHB2ENSETR;
 	enum { ch = 0, DMA_SxCR_CHSEL_0 = 0 };
 	DMA2_Stream7->PAR = (uintptr_t) & SAI2_Block_B->DR;
@@ -2882,7 +2884,7 @@ enum
 
 static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 {
-	__DMB();
+	//__DMB();
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -2910,7 +2912,7 @@ static RAMFUNC_NONILINE void r7s721_ssif0_rxdma(void)
 
 static void r7s721_ssif0_txdma(void)
 {
-	__DMB();
+	//__DMB();
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -3144,7 +3146,7 @@ static const codechw_t audiocodec_ssif0 =
 
 static void r7s721_ssif1_txdma(void)
 {
-	__DMB();
+	//__DMB();
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -3172,7 +3174,7 @@ static void r7s721_ssif1_txdma(void)
 
 static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 {
-	__DMB();
+	//__DMB();
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.
 	// 0: Next0 Register Set
@@ -3194,6 +3196,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma(void)
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
 	}
+	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
 }
 
 // FPGA/IF codec
@@ -3409,7 +3412,7 @@ static const codechw_t fpgacodechw_ssif1 =
 
 static RAMFUNC_NONILINE void r7s721_ssif2_rxdma_handler(void)
 {
-	__DMB();
+	//__DMB();
 	DMAC4.CHCFG_n |= DMAC4_CHCFG_n_REN;	// REN bit
 	// SR (bt 7)
 	// Indicates the register set currently selected in register mode.

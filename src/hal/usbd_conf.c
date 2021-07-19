@@ -52,14 +52,14 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status);
 
 
 /* PCD Handle Structure */
-static RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
+RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
 /* USB Device Core handle declaration */
 static RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
 
 /* HCD Handle Structure */
 static RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
 /* USB Host Core handle declaration */
-static RAMBIGDTCM  __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
+static RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
 
 //
 //typedef enum {
@@ -121,22 +121,22 @@ void device_OTG_HS_EP1_IN_IRQHandler(void)
 }
 
 
-void RAMFUNC_NONILINE device_USBI0_IRQHandler(void)
+static void device_USBI0_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
-void RAMFUNC_NONILINE device_USBI1_IRQHandler(void)
+static void device_USBI1_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
 }
 
-void RAMFUNC_NONILINE host_USBI0_IRQHandler(void)
+static void host_USBI0_IRQHandler(void)
 {
 //	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
 
-void RAMFUNC_NONILINE host_USBI1_IRQHandler(void)
+static void host_USBI1_IRQHandler(void)
 {
 //	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
 }
@@ -575,9 +575,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 			while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 				;
 
-			RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+			RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
 			(void) RCC->MP_AHB2ENSETR;
-			RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+			RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
 			(void) RCC->MP_AHB2LPENSETR;
 
 			arm_hardware_set_handler_system(OTG_IRQn, host_OTG_FS_IRQHandler);
@@ -624,9 +624,9 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 		while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
 			;
 
-		RCC->MP_AHB2ENSETR = RCC_MC_AHB2ENSETR_USBOEN;
+		RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
 		(void) RCC->MP_AHB2ENSETR;
-		RCC->MP_AHB2LPENSETR = RCC_MC_AHB2LPENSETR_USBOLPEN;
+		RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
 		(void) RCC->MP_AHB2LPENSETR;
 
 		arm_hardware_set_handler_system(OTG_IRQn, host_OTG_HS_IRQHandler);

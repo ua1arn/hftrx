@@ -115,7 +115,7 @@ static volatile uint_fast8_t seqpushtime;	// Возможные количств
 
 
 static uint_fast8_t
-getstablev8(volatile uint_fast8_t * p)
+getstablev8(const volatile uint_fast8_t * p)
 {
 	uint_fast8_t v1 = * p;
 	uint_fast8_t v2;

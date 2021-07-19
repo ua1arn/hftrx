@@ -20,6 +20,8 @@ extern "C" {
 	#define NTRX 1	/* количество трактов приемника. */
 #endif /* WITHUSEDUALWATCH */
 
+#define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
+
 /* Применённая система диспетчеризации требует,
    чтобы во всех буферах помещалось не меньше сэмплов,
    чем в DMABUFFSIZE32RX
@@ -252,10 +254,10 @@ extern "C" {
 
 /* если приоритет прерываний USB не выше чем у аудиобработки - она должна длиться не более 1 мс (WITHRTS192 - 0.5 ms) */
 #define DMABUFCLUSTER	19	// Прерывания по приему от IF CODEC или FPGA RX должны происходить не реже 1 раз в милисекунду (чтобы USB работать могло) */
-
-#define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * 4)		/* AF CODEC */
+#define DMABUFSCALE		4	// внутрений параметр, указыват на сколько реже ьулут происходить прерывания по обмену буфрами от остальны каналов по отношению к приему от FPGA
+#define DMABUFFSIZE16	(DMABUFCLUSTER * DMABUFSTEP16 * DMABUFSCALE)		/* AF CODEC */
 #define DMABUFFSIZE32RX (DMABUFCLUSTER * DMABUFSTEP32RX)		/* FPGA RX or IF CODEC RX */
-#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * 4)	/* FPGA TX or IF CODEC TX	*/
+#define DMABUFFSIZE32TX (DMABUFCLUSTER * DMABUFSTEP32TX * DMABUFSCALE)	/* FPGA TX or IF CODEC TX	*/
 
 
 // stereo, 16 bit samples
@@ -401,8 +403,10 @@ enum
 	BOARD_WTYPE_BLACKMAN_HARRIS_MOD,
 	BOARD_WTYPE_BLACKMAN_HARRIS_3TERM,
 	BOARD_WTYPE_BLACKMAN_HARRIS_3TERM_MOD,
+	BOARD_WTYPE_BLACKMAN_HARRIS_4TERM,
 	BOARD_WTYPE_BLACKMAN_HARRIS_7TERM,
 	BOARD_WTYPE_BLACKMAN_NUTTALL,
+	BOARD_WTYPE_NUTTALL,		// Nuttall window, continuous first derivative
 	BOARD_WTYPE_HAMMING,
 	BOARD_WTYPE_HANN,
 	BOARD_WTYPE_RECTANGULAR,
@@ -410,8 +414,8 @@ enum
 	BOARD_WTYPE_count
 };
 
-#define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_MOD
-#define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_BLACKMAN_HARRIS_3TERM //BOARD_WTYPE_HAMMING
+#define BOARD_WTYPE_FILTERS BOARD_WTYPE_BLACKMAN_HARRIS_4TERM
+#define BOARD_WTYPE_SPECTRUM BOARD_WTYPE_NUTTALL	// такой же тип окна испольуется по умолчанию в HDSDR
 
 FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype); // Calculate window function (blackman-harris, hamming, rectangular)
 
@@ -424,12 +428,6 @@ FLOAT_t local_exp(FLOAT_t x);
 FLOAT_t local_pow(FLOAT_t x, FLOAT_t y);
 FLOAT_t local_log(FLOAT_t x);
 FLOAT_t local_log10(FLOAT_t X);
-	
-struct Complex
-{
-	FLOAT_t real;
-	FLOAT_t imag;
-};
 
 /* для возможности работы с функциями сопроцессора NEON - vld1_f32 например */
 #define IV ivqv [0]
@@ -444,15 +442,6 @@ typedef struct
 {
 	int_fast32_t ivqv [2];
 } INT32P_t;
-
-
-#if WITHNOSPEEX
-	#define FIRBUFSIZE 1024	/* это не порядок фильтра, просто размер буфера при передачи данных к user mode обработчику */
-
-#else /* WITHNOSPEEX */
-	#define FIRBUFSIZE SPEEXNN
-
-#endif /* WITHNOSPEEX */
 
 // Ограничение алгоритма генерации параметров фильтра - нечётное значение Ntap.
 // Кроме того, для функций фильтрации с использованием симметрии коэффициентов, требуется кратность 2 половины Ntap
@@ -743,6 +732,7 @@ void processing_dmabuffer32rx(uintptr_t addr);
 void release_dmabuffer32rx(uintptr_t addr);
 void processing_dmabuffer32rts(uintptr_t addr);
 void processing_dmabuffer32wfm(uintptr_t addr);
+void buffers_resampleuacin(unsigned nsamples);
 
 int_fast32_t buffers_dmabuffer32rxcachesize(void);
 int_fast32_t buffers_dmabuffer32txcachesize(void);
@@ -777,7 +767,7 @@ void savemodemtxbuffer(uint8_t * dest, unsigned size_t);	// Готов буфе�
 void releasemodembuffer(uint8_t * dest);
 void releasemodembuffer_low(uint8_t * dest);
 
-void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1);
+void savemonistereo(FLOAT_t ch0, FLOAT_t ch1);
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
@@ -833,9 +823,6 @@ void board_set_subtonelevel(uint_fast8_t n);	/* Уровень сигнала CT
 void board_set_amdepth(uint_fast8_t n);		/* Глубина модуляции в АМ - 0..100% */
 void board_set_swapiq(uint_fast8_t v);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 void board_set_swaprts(uint_fast8_t v);	/* если используется конвертор на Rafael Micro R820T - требуется инверсия спектра */
-void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
-void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
-void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 void board_set_lo6(int_fast32_t f);
 void board_set_fullbw6(int_fast16_t f);	/* Установка частоты среза фильтров ПЧ в алгоритме Уивера - параметр полная полоса пропускания */
 
@@ -896,9 +883,15 @@ uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Пол
 uint_fast8_t dsp_getmikeadcoverflow(void); /* получения признака переполнения АЦП микрофонного тракта */
 
 void dsp_speed_diagnostics(void);	/* DSP speed test */
+void beginstamp(void);
+void endstamp(void);
+void beginstamp2(void);
+void endstamp2(void);
+void beginstamp3(void);
+void endstamp3(void);
+
 void buffers_diagnostics(void);
 void dtmftest(void);
-void dsp_recalceq(uint_fast8_t pathi, float * frame);	// for SPEEX - equalizer in frequency domain
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum);	// calculate 1/2 of coefficients
 void fir_expand_symmetric(FLOAT_t * dCoeff, int Ntap);			// Duplicate symmetrical part of coeffs.
 
@@ -933,6 +926,10 @@ void uacout_buffer_start(void);
 void uacout_buffer_stop(void);
 void uacout_buffer_save_system(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits);
 void uacout_buffer_save_realtime(const uint8_t * buff, uint_fast16_t size, uint_fast8_t ichannels, uint_fast8_t ibits);
+
+void buffers_set_uacinalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
+void buffers_set_uacoutalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC OUT interface */
+void buffers_set_uacinrtsalt(uint_fast8_t v);	/* выбор альтернативной конфигурации для UAC IN interface */
 
 /* Получение пары (левый и правый) сжмплов для воспроизведения через аудиовыход трансивера.
  * Возврат 0, если нет ничего для воспроизведения.

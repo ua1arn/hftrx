@@ -451,6 +451,7 @@
 
 #define targetuc1608	targetext1 
 #define targetlcd		targetext1
+#define targettsc1 		targetext1	/* XPT2046 SPI chip select signal */
 
 // Здесь должны быть перечислены все биты формирования CS в устройстве.
 #define SPI_ALLCS_BITS ( \

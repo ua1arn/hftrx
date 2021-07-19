@@ -997,6 +997,7 @@ static void panic(void)
 // DDR clock in Hz
 unsigned long stm32mp_ddr_clk_get_rate(unsigned long id)
 {
+	return stm32mp1_get_pll2_r_freq();
 	return DDR_FREQ;
 /*
 	int p = stm32mp1_clk_get_parent(id);
@@ -1829,7 +1830,7 @@ static void stm32mp1_ddrphy_init(struct stm32mp1_ddrphy *phy, uint32_t pir)
 		mmio_read_32((uintptr_t)&phy->pir));
 
 	/* Need to wait 10 configuration clock before start polling */
-	local_delay_us(10);
+	local_delay_us(10 * 5);
 
 	/* Wait DRAM initialization and Gate Training Evaluation complete */
 	stm32mp1_ddrphy_idone_wait(phy);
@@ -3429,7 +3430,7 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	mmio_clrbits_32(priv->rcc + RCC_DDRITFCR, RCC_DDRITFCR_DDRCAPBRST);
 
 	/* 1.4. wait 128 cycles to permit initialization of end logic */
-	local_delay_us(2);
+	local_delay_us(2 * 5);
 	/* For PCLK = 133MHz => 1 us is enough, 2 to allow lower frequency */
 
 	/* 1.5. initialize registers ddr_umctl2 */
@@ -3584,10 +3585,24 @@ static void stm32mp1_ddr_init(struct ddr_info *priv,
 	VERBOSE("[0x%lx] pctrl_1 = 0x%x\n",
 		(uintptr_t)&priv->ctl->pctrl_1,
 		mmio_read_32((uintptr_t)&priv->ctl->pctrl_1));
+
+
+	// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
+	VERBOSE("stm32mp1_ddr_init: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
+			DDRPHYC->DX0DQSTR, DDRPHYC->DX1DQSTR,
+			DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
+//	DDRPHYC->DX0DQSTR = (DDRPHYC->DX0DQSTR & ~ (DDRPHYC_DX0DQSTR_R0DGPS_Msk | DDRPHYC_DX0DQSTR_R0DGSL_Msk)) | 0x00;
+//	DDRPHYC->DX1DQSTR = (DDRPHYC->DX1DQSTR & ~ (DDRPHYC_DX1DQSTR_R0DGPS_Msk | DDRPHYC_DX1DQSTR_R0DGSL_Msk)) | 0x00;
+//	DDRPHYC->DX2DQSTR = (DDRPHYC->DX2DQSTR & ~ (DDRPHYC_DX2DQSTR_R0DGPS_Msk | DDRPHYC_DX2DQSTR_R0DGSL_Msk)) | 0x00;
+//	DDRPHYC->DX3DQSTR = (DDRPHYC->DX3DQSTR & ~ (DDRPHYC_DX3DQSTR_R0DGPS_Msk | DDRPHYC_DX3DQSTR_R0DGSL_Msk)) | 0x00;
+//	VERBOSE("stm32mp1_ddr_init: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
+//			DDRPHYC->DX0DQSTR, DDRPHYC->DX1DQSTR,
+//			DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
 }
 
 #if DDR_FREQ <= 300000000uL
 	// less or equal 300 MHz
+	// DDR3 timings only 6-6-6 (in  according AN5168
 	#if WITHHWDDR3_1GBIT
 		#include "stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
 	#elif WITHHWDDR3_2GBIT
@@ -3904,7 +3919,7 @@ static uint32_t ddr_check_rand(unsigned long sizeee)
 // NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
 void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 {
-	PRINTF("arm_hardware_sdram_initialize start\n");
+	PRINTF("arm_hardware_sdram_initialize start.\n");
 
 	if (1)
 	{

@@ -12,7 +12,6 @@
 #include <math.h>
 
 #include "board.h"
-#include "audio.h"
 
 #include "formats.h"	// for debug prints
 #include "spi.h"

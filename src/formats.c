@@ -349,7 +349,6 @@ safestrcpy(char * dst, size_t blen, const char * src)
 
 #if WITHDEBUG
 
-static RAMDTCM SPINLOCK_t printflock = SPINLOCK_INIT;
 
 #if FORMATFROMLIBRARY
 
@@ -359,16 +358,14 @@ static RAMDTCM SPINLOCK_t printflock = SPINLOCK_INIT;
 
 void debug_printf_P(const FLASHMEM char *__restrict format, ... )
 {
-	SPIN_LOCK(& printflock);
 	char b [128];	// see stack sizes for interrupt handlers
 	va_list	ap;
+
 	va_start(ap, format);
-
 	vsnprintf(b, sizeof b / sizeof b [0], format, ap);
-	dbg_puts_impl(b);
-
 	va_end(ap);
-	SPIN_UNLOCK(& printflock);
+
+	dbg_puts_impl(b);
 }
 
 #else /* FORMATFROMLIBRARY */

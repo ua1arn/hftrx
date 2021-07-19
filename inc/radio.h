@@ -67,7 +67,7 @@ typedef uint_least64_t phase_t;
 #define WITHLINEINGAINMAX	255		/* код управления усилением входа с линии */
 
 #define WITHMIKEINGAINMIN	0		/* код управления усилением входа с микрофона */
-#define WITHMIKEINGAINMAX	255		/* код управления усилением входа с микрофона */
+#define WITHMIKEINGAINMAX	100		/* код управления усилением входа с микрофона */
 
 #define WITHMIKECLIPMIN		0
 #define WITHMIKECLIPMAX		90
@@ -88,7 +88,7 @@ typedef uint_least64_t phase_t;
 //#define WITHFILTSOFTMAX		100		/* код управления сглаживанием скатов фильтра основной селекции на приёме */
 
 #define WITHREVERBDELAYMIN 5	/* минимальная задержка ревербератора (ms) */
-#define WITHREVERBDELAYMAX 200	/* максимальная задержка ревербератора (ms) */
+#define WITHREVERBDELAYMAX 150	/* максимальная задержка ревербератора (ms) */
 
 #define WITHREVERBLOSSMIN 6		/* минимальное ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
 #define WITHREVERBLOSSMAX 39	/* максимальная ослабление на возврате ревербератора (dB) - кратно ISTEP3 */
@@ -207,6 +207,9 @@ enum {
 	#if WITHFREEDV
 		SUBMODE_FREEDV,
 	#endif /* WITHFREEDV */
+	#if WITHRTTY
+		SUBMODE_RTTY,
+	#endif /* WITHRTTY */
 #endif
 	//
 	SUBMODE_COUNT

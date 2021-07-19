@@ -21,9 +21,9 @@
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
-#if WITHUSESDCARD
+#if WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK
 	#include "sdcard.h"
-#endif /* WITHUSESDCARD */
+#endif /* WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK */
 
 #include <math.h>
 #include <stdio.h>
@@ -5157,7 +5157,7 @@ static void sdtick(void)
 }
 #endif
 
-#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY && 0
+#if LCDMODE_COLORED && ! DSTYLE_G_DUMMY
 
 
 
@@ -5209,7 +5209,7 @@ static void BarTest(void)
 {
 	//PRINTF("BarTest\n");
 	int forever = 0;
-	unsigned n = 2000;
+	unsigned n = 20000;
 	for (;forever || n --;)
 	{                    /* Until user enters a key...   */
 		const int r = local_randomgr(256);
@@ -5224,8 +5224,11 @@ static void BarTest(void)
 		int y2 = local_randomgr(DIM_Y);
 
 		display_solidbar(x, y, x2, y2, color);
+		// MDMA работает минуя кеш-память
+#if ! defined (WITHMDMAHW) && ! defined (WITHDMA2DHW)
 		display_flush();
-		local_delay_ms(5);
+#endif /* ! defined (WITHMDMAHW) && ! defined (WITHDMA2DHW) */
+		//local_delay_ms(5);
 	}
 
 	//getch();             /* Pause for user's response    */
@@ -5468,7 +5471,7 @@ static void disableAllIRQs(void)
 #endif
 
 
-#if 1
+#if 0
 
 #include "tiger.h"
 
@@ -6328,6 +6331,22 @@ void hightests(void)
 		}
 	}
 #endif
+#if 0
+	{
+		unsigned pin;
+		PRINTF("zynq pin & bank calculations test.\n");
+		for (pin = 0; pin < 118; ++ pin)
+		{
+			uint_fast8_t Bank;
+			uint_fast8_t PinNumber;
+
+			GPIO_BANK_DEFINE(pin, Bank, PinNumber);
+			ASSERT(Bank == GPIO_PIN2BANK(pin));
+			ASSERT(PinNumber == GPIO_PIN2BITPOS(pin));
+		}
+		PRINTF("zynq pin & bank calculations test passed.\n");
+	}
+#endif
 #if 0 && WITHOPENVG
 	{
 		board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
@@ -6353,7 +6372,11 @@ void hightests(void)
 			rendertest2(DIM_X, DIM_Y);
 			display_flush();		// наблюдаем процесс
 			const time_t end = time(NULL);
-			PRINTF("tiger: cnt=%u, %d S\n", cnt, (int) (end - start));
+#if WITHCPUTEMPERATURE
+		PRINTF("tiger: cnt=%u, %d s, t=%f\n", cnt, (int) (end - start), GET_CPU_TEMPERATURE());
+#else /* WITHCPUTEMPERATURE */
+		PRINTF("tiger: cnt=%u, %d s\n", cnt, (int) (end - start));
+#endif /* WITHCPUTEMPERATURE */
 		}
 		PS_destruct(tiger);
 
@@ -6433,17 +6456,15 @@ void hightests(void)
 		PRINTF("L2C Tag RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
 	}
 #endif
-#if 1 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 	{
 		// GIC version diagnostics
-		// Renesas:
-		//	arm_gic_initialize: ARM GICv1
+		// Renesas: ARM GICv1
 		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
-		// STM32MP1:
-		//	arm_gic_initialize: ARM GICv2
+		// STM32MP1: ARM GICv2
 		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
-		// ZINQ ?
-		//	GICInterface->IIDR=?, GICDistributor->IIDR=?
+		// ZINQ XC7Z010: ARM GICv1
+		//	GICInterface->IIDR=3901243B, GICDistributor->IIDR=0102043B
 
 		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
 
@@ -6472,10 +6493,25 @@ void hightests(void)
 		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
 	}
 #endif
-#if 0 && CPUSTYLE_STM32MP1
+#if 1 && CPUSTYLE_STM32MP1 && WITHDEBUG
 	{
 		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
 		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
+		PRINTF("stm32mp1_get_pll2_r_freq()=%lu (DDR3)\n", stm32mp1_get_pll2_r_freq());
+	}
+#endif
+#if 1 && defined (DDRPHYC) && WITHDEBUG
+	{
+		// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
+		PRINTF("stm32mp1_ddr_init results: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
+				DDRPHYC->DX0DQSTR, DDRPHYC->DX1DQSTR,
+				DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
+
+		// 16 bit single-chip DDR3:
+		// PanGu board: stm32mp1_ddr_init results: DX0DQSTR=3DB02001, DX1DQSTR=3DB02001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+		// board v2: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+		// voard v3: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+
 	}
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
@@ -6551,6 +6587,30 @@ void hightests(void)
 		case 0x81: PRINTF(PSTR("STM32MP157Dx\n")); break;
 		default: PRINTF(PSTR("STN32MP1 RPN=%02X\n"), rpn); break;
 		}
+	}
+#endif
+#if 0 && defined (TZC) && WITHDEBUG
+	{
+
+        const uint_fast8_t lastregion = TZC->BUILD_CONFIG & 0x1f;
+        uint_fast8_t i;
+        PRINTF("TZC=%p\n", TZC);
+        for (i = 0; i <= lastregion; ++ i)
+        {
+            volatile uint32_t * const REG_ATTRIBUTESx = & TZC->REG_ATTRIBUTESO + (i * 8);
+            volatile uint32_t * const REG_ID_ACCESSx = & TZC->REG_ID_ACCESSO + (i * 8);
+            volatile uint32_t * const REG_BASE_LOWx = & TZC->REG_BASE_LOWO + (i * 8);
+            volatile uint32_t * const REG_BASE_HIGHx = & TZC->REG_BASE_HIGHO + (i * 8);
+            volatile uint32_t * const REG_TOP_LOWx = & TZC->REG_TOP_LOWO + (i * 8);
+            volatile uint32_t * const REG_TOP_HIGHx = & TZC->REG_TOP_HIGHO + (i * 8);
+
+            PRINTF("TZC->REG_BASE_LOW%d=%08lX ", i, * REG_BASE_LOWx);
+            PRINTF("REG_BASE_HIGH%d=%08lX ", i, * REG_BASE_HIGHx);
+            PRINTF("REG_TOP_LOW%d=%08lX ", i, * REG_TOP_LOWx);
+            PRINTF("REG_TOP_HIGH%d=%08lX ", i, * REG_TOP_HIGHx);
+            PRINTF("REG_ATTRIBUTES%d=%08lX ", i, * REG_ATTRIBUTESx);
+            PRINTF("REG_ID_ACCESS%d=%08lX\n", i, * REG_ID_ACCESSx);
+        }
 	}
 #endif
 #if 0 && WITHDEBUG
@@ -7459,10 +7519,19 @@ void hightests(void)
 		//disableAllIRQs();
 		for (cnt = 0; ; ++ cnt)
 		{
+			const time_t tstart = time(NULL);
 			//GridTest();
 			BarTest();
-			PRINTF("BarTest: %u\n", cnt);
+			const time_t tend = time(NULL);
+			PRINTF("BarTest: %u, %ds, pixelsize=%d\n", cnt, (int) (tend - tstart), LCDMODE_PIXELSIZE);
 		}
+		// Divide result by 10
+		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (w cache: 5.6s..5.7s)
+		// 800x480, Renesas RZ/A1L, @360 MHz, L8, software (no cache: 0.2s)
+		// 800x480, STM32MP157, @650 MHz, L8, software (w cache: 0.8s)
+		// 800x480, STM32MP157, @650 MHz, L8, hardware MDMA: (no cache - 0.9s..1s)
+		// 800x480, STM32MP157, @650 MHz, RGB565, hardware MDMA: (no cache - 1.4s)
+		// 800x480, STM32MP157, @650 MHz, ARGB8888, hardware MDMA: (no cache - 2.5s)
 	}
 #endif
 #if 0
@@ -7524,6 +7593,32 @@ void hightests(void)
 			;
 	}
 #endif
+#if 0
+	// разметка для 9-точечной калибровки тачскрина
+	display2_bgreset();
+	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	uint8_t c = 35;
+
+	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, 0 + c, 3, 3, COLORMAIN_WHITE);			// 1
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, 0 + c, 3, 3, COLORMAIN_WHITE);		// 2
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, 0 + c, 3, 3, COLORMAIN_WHITE);		// 3
+
+	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);		// 4
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 5
+
+	colmain_fillrect(fr, DIM_X, DIM_Y, 0 + c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);		// 6
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 7
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X - c, DIM_Y - c, 3, 3, COLORMAIN_WHITE);	// 8
+
+	colmain_fillrect(fr, DIM_X, DIM_Y, DIM_X / 2, DIM_Y / 2, 3, 3, COLORMAIN_WHITE);	// 9
+
+	arm_hardware_flush((uintptr_t) fr, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
+	arm_hardware_ltdc_main_set((uintptr_t) fr);
+
+	for(;;) {}
+#endif
 #if 0 && defined (TSC1_TYPE)
 #include "touch\touch.h"
 
@@ -7537,6 +7632,7 @@ void hightests(void)
 		colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 
 		// touch screen test
+		PRINTF(PSTR("touch screen test:\n"));
 		for (;;)
 		{
 			PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();

@@ -54,6 +54,7 @@ SECTIONS
 		__Vectors_Size = __Vectors_End - __Vectors;
 		*(.text*)
 
+		KEEP(*(.startup0))
 		KEEP(*(.init))
 		KEEP(*(.fini))
 

@@ -469,6 +469,19 @@ static unsigned USBD_UAC2_ClockSource_req(
 	return 0;
 }
 
+//	As described in the Introducing EZ-USB® chapter on page 13 the host and device maintain a data toggle bit, which is toggled
+//	between data packet transfers. There are certain times when the firmware must reset an endpoint’s data toggle bit to ’0’:
+//	■ After a configuration changes (for example, after the host issues a Set Configuration request).
+//	■ After an interface’s alternate setting changes (i.e., after the host issues a Set Interface request).
+//	■ After the host sends a ‘Clear Feature - Endpoint Stall’ request to an endpoint.
+//	For the first two, the firmware must clear the data toggle bits for all endpoints contained in the affected interfaces. For the
+//	third, only one endpoint’s data toggle bit is cleared.
+//	The TOGCTL register contains bits to set or clear an endpoint data toggle bit, as well as to read the current state of a toggle
+//	bit.
+//	At this writing, there is no known reason for firmware to set an endpoint toggle to ‘1’. Also, since the EZ-USB handles all
+//	data toggle management, normally there is no reason to know the state of a data toggle. These capabilities are included in
+//	the TOGCTL register for completeness and debug purposes.
+
 static USBD_StatusTypeDef USBD_UAC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
 	static RAMBIGDTCM __ALIGN_BEGIN uint8_t buff [32] __ALIGN_END;	// was: 7

@@ -62,11 +62,21 @@ static void tlv320aic23_setreg(
 #else /* CODEC_TYPE_TLV320AIC23B_USE_SPI */
 
 	// кодек управляется по I2C
+
+#if WITHTWISW
+
 	i2c_start(TLV320AIC23_ADDRESS_W);
 	i2c_write(fulldata >> 8);
 	i2c_write(fulldata >> 0);
 	i2c_waitsend();
 	i2c_stop();
+
+#elif WITHTWIHW
+
+	uint8_t buf[2] = { (fulldata >> 8), (fulldata & 0xFF), };
+	i2chw_write(TLV320AIC23_ADDRESS_W, buf, 2);
+
+#endif /* WITHTWISW */
 
 #endif /* CODEC_TYPE_TLV320AIC23B_USE_SPI */
 }
@@ -158,9 +168,9 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 static void tlv320aic23_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk)
 {
 	uint_fast8_t level = (gain - BOARD_AFGAIN_MIN) * (TLV320AIC23_OUT_VOL_MAX - TLV320AIC23_OUT_VOL_MIN) / (BOARD_AFGAIN_MAX - BOARD_AFGAIN_MIN) + TLV320AIC23_OUT_VOL_MIN;
-	(void) mutespk;	// управления громкостью на линейном выходе в этом кодеке нет
+	uint_fast8_t mute_all = mute != 0 || mutespk != 0;
 	tlv320aic23_setreg(TLV320AIC23_LCHNVOL, 
-		(mute == 0) * (level & TLV320AIC23_OUT_VOL_MASK) |
+		(mute_all == 0) * (level & TLV320AIC23_OUT_VOL_MASK) |
 		TLV320AIC23_LRS_ENABLED |	/* левый и правый одновременно */
 		0 * TLV320AIC23_LZC_ON |	/* синхронизация с переходом через "0" */
 		0

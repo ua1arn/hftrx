@@ -819,7 +819,29 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 	(void) vdc->GR3_UPDATE;
 }
 
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+{
+	struct st_vdc5 * const vdc = & VDC50;
+
+	SETREG32_CK(& vdc->GR2_FLM_RD, 1, 0, 1);		// GR2_R_ENB Frame Buffer Read Enable 1: Frame buffer reading is enabled.
+	SETREG32_CK(& vdc->GR2_FLM2, 32, 0, p);			// GR2_BASE
+	SETREG32_CK(& vdc->GR2_AB1, 2, 0,	0x02);		// GR2_DISP_SEL 2: Current graphics display
+
+	// GR2_IBUS_VEN in GR2_UPDATE is 1.
+	// GR2_IBUS_VEN and GR2_P_VEN in GR2_UPDATE are 1.
+	// GR2_P_VEN in GR2_UPDATE is 1.
+
+	vdc->GR2_UPDATE = (
+		(1 << 8) |	// GR2_UPDATE Frame Buffer Read Control Register Update
+		//(1 << 4) |	// GR2_P_VEN Graphics Display Register Update
+		//(1 << 0) |	// GR2_IBUS_VEN Frame Buffer Read Control Register Update
+		0);
+	(void) vdc->GR2_UPDATE;
+}
+
 /* set bottom buffer start */
+/* Set MAIN frame buffer address. Wait for VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -1350,9 +1372,13 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	hardware_set_dotclock(display_getdotclock(vdmode));
 
 #if CPUSTYLE_STM32H7XX
+
 	/* Enable the LTDC Clock */
 	RCC->APB3ENR |= RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
 	(void) RCC->APB3ENR;
+	RCC->APB3LPENR |= RCC_APB3LPENR_LTDCLPEN_Msk;	/* LTDC clock enable */
+	(void) RCC->APB3LPENR;
+
 
 #elif CPUSTYLE_STM32MP1
 
@@ -1489,6 +1515,9 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 #endif /* LCDMODE_PIP_RGB565 */
 
 	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		; //hardware_nonguiyield();
 
 	/* Enable the LTDC */
 	LTDC->GCR |= LTDC_GCR_LTDCEN;
@@ -1504,6 +1533,8 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 
 	/* LTDC reload configuration */  
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		;//hardware_nonguiyield();
 
 	ltdc_tfcon_cfg(vdmode);
 	//PRINTF(PSTR("arm_hardware_ltdc_initialize done\n"));
@@ -1517,6 +1548,8 @@ arm_hardware_ltdc_deinitialize(void)
 	LAYER_MAIN->CR &= ~ LTDC_LxCR_LEN;
 	(void) LAYER_MAIN->CR;
 	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
+	//while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+	//	;//hardware_nonguiyield();
 
 #if CPUSTYLE_STM32H7XX
     /* Reset pulse to LTDC */
@@ -1579,18 +1612,36 @@ void arm_hardware_ltdc_L8_palette(void)
 	display2_xltrgb24(xltrgb24);
 #if LCDMODE_MAIN_L8
 	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+
 	/* LTDC reload configuration */
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		;//hardware_nonguiyield();
 #endif /* LCDMODE_PIP_L8 */
 #if LCDMODE_PIP_L8
+	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+
 	/* LTDC reload configuration */
 	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
-	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		;//hardware_nonguiyield();
 #endif /* LCDMODE_PIP_L8 */
 }
-//LCDMODE_MAIN_L8
 
-/* Set MAIN frame buffer address. */
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+{
+	LAYER_MAIN->CFBAR = p;
+	(void) LAYER_MAIN->CFBAR;
+	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
+	(void) LAYER_MAIN->CR;
+
+	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Immediate Reload. */
+	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+		hardware_nonguiyield();
+}
+
+/* Set MAIN frame buffer address. Wait for VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	LAYER_MAIN->CFBAR = p;
@@ -1637,6 +1688,12 @@ void arm_hardware_ltdc_L8_palette(void)
 {
 }
 
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
+{
+	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
+}
+
 /* Set MAIN frame buffer address. */
 void arm_hardware_ltdc_main_set(uintptr_t addr)
 {
@@ -1647,6 +1704,11 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 	//#error Wrong CPUSTYLE_xxxx
 
 void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+{
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 }
 
@@ -1693,9 +1755,9 @@ void board_gpu_initialize(void)
 {
 	PRINTF("board_gpu_initialize start.\n");
 
-	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_GPUEN;
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_GPUEN;
 	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_GPULPEN;
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_GPULPEN;
 	(void) RCC->MP_AHB6LPENSETR;
 
 	PRINTF("board_gpu_initialize: PRODUCTID=%08lX\n", (unsigned long) GPU->PRODUCTID);
@@ -1714,9 +1776,9 @@ void board_gpu_initialize(void)
 {
 	PRINTF("board_gpu_initialize start.\n");
 
-	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_GPUEN;
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_GPUEN;
 	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_GPULPEN;
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_GPULPEN;
 	(void) RCC->MP_AHB6LPENSETR;
 
 	PRINTF("board_gpu_initialize: PRODUCTID=%08lX\n", (unsigned long) GPU->PRODUCTID);

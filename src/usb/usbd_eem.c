@@ -21,6 +21,10 @@
 #include "usbch9.h"
 
 
+typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
+
+static cdcdeem_rxproc_t cdceem_rxproc = NULL;
+
 #define BPOOL_FLAG_BPOOL_FULL 0x00000001
 
 typedef enum _eem_bpool_idx_enum {
@@ -369,26 +373,6 @@ static USBALIGN_BEGIN uint8_t cdceem1buffin [USBD_CDCEEM_BUFSIZE] USBALIGN_END;
 static RAMDTCM uint_fast16_t cdceem1buffinlevel;
 static USBALIGN_BEGIN uint8_t cdceem_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] USBALIGN_END;
 
-
-static uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b)
-{
-	return a > b ? a : b;
-}
-
-static uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a < b ? a : b;
-}
-
-static uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
-{
-	return a > b ? a : b;
-}
 
 
 /* Собираем поток из CDC EEM USB пакетов */
@@ -837,12 +821,13 @@ static int8_t CDC_EEM_Init_FS(void)
 {
   /* USER CODE BEGIN 3 */
   /* Set Application Buffers */
+#if 0
   USBD_CDC_EEM_SetTxBuffer(&hUsbDevice, UserTxBufferFS, EEM_TX_DATA_SIZE, 0);
   USBD_CDC_EEM_SetRxBuffer(&hUsbDevice, UserRxBufferFS, EEM_RX_DATA_SIZE);
 
   init_eem_pkt_bpool(EEM_RX_BUFFER);
   init_eem_pkt_bpool(EEM_TX_BUFFER);
-
+#endif
   return (USBD_OK);
   /* USER CODE END 3 */
 }
@@ -1606,10 +1591,6 @@ const USBD_ClassTypeDef USBD_CLASS_CDC_EEM =
 #include "lwip/autoip.h"
 #include "netif/etharp.h"
 #include "lwip/ip.h"
-
-typedef void (*cdcdeem_rxproc_t)(const uint8_t *data, int size);
-
-static cdcdeem_rxproc_t cdceem_rxproc = NULL;
 
 //static struct netif test_netif1, test_netif2;
 

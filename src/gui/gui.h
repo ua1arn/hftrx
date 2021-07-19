@@ -71,7 +71,7 @@ const char * hamradio_get_submode_label(uint_fast8_t v);
 uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set);
 void hamradio_save_mic_profile(uint_fast8_t cell);
 void hamradio_clean_mic_profile(uint_fast8_t cell);
-uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t is_bcast_need);
+uint_fast8_t hamradio_get_bands(band_array_t * bands, uint_fast8_t count_only, uint_fast8_t is_bcast_need);
 void hamradio_goto_band_by_freq(uint_fast32_t f);
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
 void hamradio_load_gui_settings(void * ptr);

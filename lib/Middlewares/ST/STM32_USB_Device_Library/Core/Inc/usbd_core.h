@@ -136,7 +136,6 @@ uint32_t USBD_LL_GetRxDataSize(USBD_HandleTypeDef *pdev, uint8_t  ep_addr);
 
 void  USBD_LL_Delay(uint32_t Delay);
 
-#define USBD_WCID_VENDOR_CODE 0x44
 uint_fast16_t usbd_dfu_get_xfer_size(uint_fast8_t alt);
 
 /**

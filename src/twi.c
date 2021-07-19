@@ -34,98 +34,31 @@
 
 #elif CPUSTYLE_XC7Z
 
-/*
-void TWISOFT_INITIALIZE(void)
+#if WITHTWISW
+
+#define TWISOFT_INITIALIZE() do { } while(0)
+
+#define SET_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
+
+#define CLR_TWCK() do { xc7z_gpio_output(TARGET_TWI_TWCK_MIO); xc7z_writepin(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
+
+#define SET_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while(0)
+
+#define CLR_TWD() do { xc7z_gpio_output(TARGET_TWI_TWD_MIO); xc7z_writepin(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
+
+uint8_t GET_TWCK(void)
 {
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);		// устанавливаем в "0" - и далее состояние не меняется.
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);	// "1" получается открытым стоком
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);	// "1" получается открытым стоком
+	xc7z_gpio_input(TARGET_TWI_TWCK_MIO);
+	return xc7z_readpin(TARGET_TWI_TWCK_MIO);
 }
 
-// "1" получается открытым стоком
-#define SET_TWCK() do { \
-		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0); \
-		hardware_spi_io_delay(); \
-	} while (0)	// SCL = 1
-// "0" притягиваем к земле
-#define CLR_TWCK() do { \
-		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1); \
-		hardware_spi_io_delay(); \
-	} while (0)	// SCL = 0
-// "1" получается открытым стоком
-#define SET_TWD() do { \
-		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0); \
-		hardware_spi_io_delay(); \
-	} while (0)	// SDA = 1
-// "0" притягиваем к земле
-#define CLR_TWD() do { \
-		XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); \
-		XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1); \
-		hardware_spi_io_delay(); \
-	} while (0)	// SDA = 0
-
-// всегда вызывается когда отпустили шину
-#define GET_TWCK() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO) != 0)
-#define GET_TWD() ( XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO) != 0)
-*/
-
-void TWISOFT_INITIALIZE(void)
+uint8_t GET_TWD(void)
 {
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
+	xc7z_gpio_input(TARGET_TWI_TWD_MIO);
+	return xc7z_readpin(TARGET_TWI_TWD_MIO);
 }
 
-void SET_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	hardware_spi_io_delay();
-}
-
-void CLR_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
-	hardware_spi_io_delay();
-}
-
-void SET_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	hardware_spi_io_delay();
-}
-
-void CLR_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_SetOutputEnablePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 1);
-	XGpioPs_WritePin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
-	hardware_spi_io_delay();
-}
-
-uint_fast8_t GET_TWCK(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO, 0);
-	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWCK_MIO);
-}
-
-uint_fast8_t GET_TWD(void)
-{
-	XGpioPs_SetDirectionPin(&xc7z_gpio, TARGET_TWI_TWD_MIO, 0);
-	return XGpioPs_ReadPin(&xc7z_gpio, TARGET_TWI_TWD_MIO);
-}
+#endif /* WITHTWISW */
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
@@ -1490,12 +1423,61 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	}
 }
 
+#elif CPUSTYLE_XC7Z
+
+#include "lib/zynq/src/xiicps.h"
+
+static XIicPs xc7z_iicps;
+
+void i2chw_initialize(void)
+{
+	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
+
+	XIicPs_Config *Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);
+	XIicPs_CfgInitialize(& xc7z_iicps, Config, Config->BaseAddress);
+
+	int Status = XIicPs_SelfTest(& xc7z_iicps);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("iicps init error %d\n", Status);
+		ASSERT(0);
+	}
+	XIicPs_SetSClk(& xc7z_iicps, 100000);
+	XIicPs_SetOptions(& xc7z_iicps, XIICPS_7_BIT_ADDR_OPTION);
+	XIicPs_ClearOptions(& xc7z_iicps, XIICPS_10_BIT_ADDR_OPTION | XIICPS_SLAVE_MON_OPTION | XIICPS_REP_START_OPTION);
+}
+
+uint16_t i2chw_read(uint16_t slave_address, uint8_t * buf, uint32_t size)
+{
+	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+
+	int Status = XIicPs_MasterRecvPolled(& xc7z_iicps, buf, size, slave_address >> 1);
+	if (Status != XST_SUCCESS)
+		PRINTF("iicps receive error %d from address %x\n", Status, slave_address);
+
+	return Status;
+}
+
+uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
+{
+	while (XIicPs_BusIsBusy(& xc7z_iicps)) { }
+
+	int Status = XIicPs_MasterSendPolled(& xc7z_iicps, buf, size, slave_address >> 1);
+	if (Status != XST_SUCCESS)
+		PRINTF("iicps write error %d to address %x\n", Status, slave_address);
+
+	return Status;
+}
 #else
 	#error I2C hardware implementation for CPUSTYPE_xxx is not avaliable
 
 #endif // CPUSTYLE_ATMEGA
 
-#elif WITHTWISW
+#endif
+
+#if WITHTWISW
 
 // программно-реализованный I2C интерфейс
 
@@ -1525,6 +1507,9 @@ void i2c_initialize(void)
 	// программирование выводов, управляющих I2C
 	TWISOFT_INITIALIZE();
 
+#if WITHTWIHW
+	TWIHARD_INITIALIZE();
+#endif
 
 #if 0
 	uint_fast8_t i;

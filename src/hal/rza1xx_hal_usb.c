@@ -1,10 +1,5 @@
-/*
- * rza1xx_hal_usb.c
- *
- *  Created on: May 5, 2021
- *      Author: gena
- */
 /* $Id$ */
+// rza1xx_hal_usb.c
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
 // автор Гена Завидовский mgs2001@mail.ru
@@ -15,6 +10,8 @@
 #include "hardware.h"
 
 #if CPUSTYLE_R7S721
+
+//#define WITHNEWUSBHAL 1
 
 #include "board.h"
 #include "audio.h"
@@ -41,6 +38,7 @@
 #include "USBPhy_RZ_A1_Def.h"
 #include "USBPhyTypes.h"
 
+extern PCD_HandleTypeDef hpcd_USB_OTG;
 
 volatile uint16_t *USBPhyHw_get_pipectr_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
 volatile uint16_t *USBPhyHw_get_pipetre_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
@@ -48,36 +46,25 @@ volatile uint16_t *USBPhyHw_get_pipetrn_reg(USB_OTG_GlobalTypeDef * USBx, uint16
 volatile uint16_t *USBPhyHw_get_fifosel_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
 volatile iodefine_reg32_t *USBPhyHw_get_fifo_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
 volatile uint16_t *USBPhyHw_get_fifoctr_reg(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
-void USBPhyHw_buf_to_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
-void USBPhyHw_fifo_to_buf(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
+void USBPhyHw_buf_to_fifo(PCD_HandleTypeDef *hpcd, uint16_t pipe);
+void USBPhyHw_fifo_to_buf(PCD_HandleTypeDef *hpcd, uint16_t pipe);
 void USBPhyHw_chg_curpipe(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t isel);
 void USBPhyHw_set_mbw(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t data);
 void USBPhyHw_set_pid(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t new_pid);
 uint16_t USBPhyHw_get_pid(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
-uint16_t USBPhyHw_write_data(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
-uint16_t USBPhyHw_read_data(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe);
+uint16_t USBPhyHw_write_data(PCD_HandleTypeDef *hpcd, uint16_t pipe);
+uint16_t USBPhyHw_read_data(PCD_HandleTypeDef *hpcd, uint16_t pipe);
 uint16_t USBPhyHw_EP2PIPE(uint16_t endpoint);
 uint16_t USBPhyHw_PIPE2EP(uint16_t pipe);
 uint16_t USBPhyHw_PIPE2FIFO(uint16_t pipe);
-void USBPhyHw_forced_termination(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t status);
+void USBPhyHw_forced_termination(PCD_HandleTypeDef *hpcd, uint16_t pipe, uint16_t status);
 int USBPhyHw_chk_vbsts(USB_OTG_GlobalTypeDef * USBx);
-void USBPhyHw__usbisr(void);
-void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx);
-void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx);
+//void USBPhyHw__usbisr(void);
+//void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx);
+//void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx);
+void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode);
 
-
-#define PIPE_NUM      (16)
-
-typedef struct {
-	int        enable;
-	uint16_t    status;
-	uint32_t    req_size;
-	uint32_t    data_cnt;
-	uint8_t     *p_data;
-} pipe_ctrl_t;
-
-static pipe_ctrl_t pipe_ctrl[PIPE_NUM];
-static uint16_t setup_buffer[32];
+static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req);
 
 // на RENESAS для работы с изохронными ендпоинтами используется DMA
 //#define WITHDMAHW_UACIN 1		// при этой опции после пересоединения USB кабеля отваливается поток IN
@@ -189,18 +176,13 @@ uint16_t USBPhyHw_PIPE2EP(uint16_t pipe)
 #endif
 ////////////////////////////////
 
-
+#if WITHNEWUSBHAL
 /**** User Selection ****/
-#if WITHUSBDEV_HSDESC
-	static const uint8_t _usb_speed =    1;        // 1: High-Speed  0: Full-Speed
-#else /* WITHUSBDEV_HSDESC */
-	static const uint8_t _usb_speed =    0;        // 1: High-Speed  0: Full-Speed
-#endif /* WITHUSBDEV_HSDESC */
-
-static int run_later_ctrl_comp = 0;
-
-void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
+// looks like USB_DevInit
+//void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
+HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
+	unsigned i;
 //
 //    if (this->events == NULL) {
 //        //sleep_manager_lock_deep_sleep();
@@ -212,21 +194,18 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
 
     /* Disable IRQ */
 
-    if (WITHUSBHW_DEVICE == & USB200)
-	{
+    if (USBx == & USB200) {
 		GIC_DisableIRQ(USBI0_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71);
 		(void) CPG.STBCR7;
-	}
-	else if (WITHUSBHW_DEVICE == & USB201)
-	{
+	} else if (USBx == & USB201) {
 		GIC_DisableIRQ(USBI1_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71 | CPG_STBCR7_MSTP70);
 		(void) CPG.STBCR7;
 	}
 
     /* module reset and clock select */
-    reset_usb(USB_EXTAL_12MHZ);                            /* USB_X1 48MHz */
+    USBPhyHw_reset_usb(USBx, USB_SYSCFG_UCKSEL_Value);                            /* USB_X1 48MHz */
 
     /* Set to USB Function and select speed */
     USBx->SYSCFG0 &= ~USB_DPRPU;
@@ -234,17 +213,34 @@ void USBPhyHw_init(USB_OTG_GlobalTypeDef * USBx)
     USBx->SYSCFG0 &= ~USB_DCFM;                        /* USB Functoin */
     USBx->SYSCFG0 |= USB_USBE;
 
-    if (_usb_speed == 0) {
-        USBx->SYSCFG0 &= ~USB_HSE;                     /* Full-Speed */
+#if WITHUSBDEV_HSDESC
+	const uint8_t usb_speed_HS =    1;        // 1: High-Speed  0: Full-Speed
+#else /* WITHUSBDEV_HSDESC */
+	const uint8_t usb_speed_HS =    0;        // 1: High-Speed  0: Full-Speed
+#endif /* WITHUSBDEV_HSDESC */
+    if (usb_speed_HS == 0) {
+        USBx->SYSCFG0 &= ~ USB_HSE;                     /* Full-Speed */
     } else {
         USBx->SYSCFG0 |= USB_HSE;                      /* High-Speed */
     }
-    local_delay_us(1500);
+    HARDWARE_DELAY_US(1500);
+
+	// When the function controller mode is selected, set all the bits in this register to 0.
+	for (i = 0; i < USB20_DEVADD0_COUNT; ++ i) {
+		volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + i;
+
+		// Reserved bits: The write value should always be 0.
+		* DEVADDn = 0;
+		(void) * DEVADDn;
+	}
+
+	return HAL_OK;
 }
+#endif /* WITHNEWUSBHAL */
 
 void USBPhyHw_deinit(USB_OTG_GlobalTypeDef * USBx)
 {
-    USBPhyHw_disconnect(USBx);
+	USB_DevDisconnect(USBx);
 
     if (USBx == & USB200)
 	{
@@ -270,7 +266,19 @@ int USBPhyHw_powered(USB_OTG_GlobalTypeDef * USBx)
     return 1;
 }
 
-void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
+
+static void device_USBI0_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
+}
+
+static void device_USBI1_IRQHandler(void)
+{
+	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
+}
+
+//void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
+HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
     /* Enable pullup on D+ */
     USBx->INTENB0 |= (USB_VBSE | USB_SOFE | USB_DVSE | USB_CTRE | USB_BEMPE | USB_NRDYE | USB_BRDYE);
@@ -279,20 +287,23 @@ void USBPhyHw_connect(USB_OTG_GlobalTypeDef * USBx)
     /* Enable USB */
     if (USBx == & USB200)
 	{
-    	arm_hardware_set_handler_system(USBI0_IRQn, USBPhyHw__usbisr);
+    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
 	}
 	else if (USBx == & USB201)
 	{
-		arm_hardware_set_handler_system(USBI1_IRQn, USBPhyHw__usbisr);
+		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
 	}
 //    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
 //    GIC_SetPriority(USBIX_IRQn, 16);
 //    GIC_SetConfiguration(USBIX_IRQn, 1);
 //    GIC_EnableIRQ(USBIX_IRQn);
 	//arm_hardware_set_handler_system(USBIX_IRQn, _usbisr);
+
+    return HAL_OK;
 }
 
-void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx)
+//void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx)
+HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
     /* Disable USB */
 //    GIC_DisableIRQ(USBIX_IRQn);
@@ -308,10 +319,12 @@ void USBPhyHw_disconnect(USB_OTG_GlobalTypeDef * USBx)
 
     /* Disable pullup on D+ */
     USBx->SYSCFG0 &= ~USB_DPRPU;
-    local_delay_ms(1);
+    HARDWARE_DELAY_MS(1);
     USBx->SYSCFG0 |= USB_DCFM;
-    local_delay_ms(1);
+    HARDWARE_DELAY_MS(1);
     USBx->SYSCFG0 &= ~USB_DCFM;
+
+    return HAL_OK;
 }
 
 void USBPhyHw_configure(USB_OTG_GlobalTypeDef * USBx)
@@ -380,16 +393,107 @@ uint32_t USBPhyHw_ep0_set_max_packet(uint32_t max_packet)
     return MAX_PACKET_SIZE_EP0;
 }
 
-void USBPhyHw_ep0_setup_read_result(USB_OTG_GlobalTypeDef * USBx, uint8_t *buffer, uint32_t size)
+static void events_suspend(PCD_HandleTypeDef *hpcd, int state)
 {
-    memcpy(buffer, setup_buffer, size);
+	PRINTF("%s:\n", __func__);
+	HAL_PCD_SuspendCallback(hpcd);
+
 }
 
-void USBPhyHw_ep0_read(USB_OTG_GlobalTypeDef * USBx, uint8_t *data, uint32_t size)
+static void events_sof(PCD_HandleTypeDef *hpcd, unsigned framenum)
 {
-    pipe_ctrl[USB_PIPE0].req_size  = size;
-    pipe_ctrl[USB_PIPE0].data_cnt  = size;
-    pipe_ctrl[USB_PIPE0].p_data    = data;
+	//PRINTF("%s:\n", __func__);
+	HAL_PCD_SOFCallback(hpcd);
+
+}
+
+static void events_reset(PCD_HandleTypeDef *hpcd)
+{
+	//PRINTF("%s:\n", __func__);
+	HAL_PCD_ResetCallback(hpcd);
+
+}
+
+static void events_address(PCD_HandleTypeDef *hpcd)
+{
+	//PRINTF("%s:\n", __func__);
+	HAL_PCD_AdressedCallback(hpcd);
+
+}
+
+static void events_ep0_setup(PCD_HandleTypeDef *hpcd)
+{
+	//PRINTF("%s:\n", __func__);
+	HAL_PCD_SetupStageCallback(hpcd);
+
+}
+
+static void events_ep0_in(PCD_HandleTypeDef *hpcd)
+{
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	//PRINTF("%s:\n", __func__);
+	USBD_SetupReqTypedef *req = & pdev->request;
+
+	PCD_EPTypeDef *ep;
+
+	ep = &hpcd->IN_ep[0 & EP_ADDR_MSK];
+	ep->xfer_buff += ep->maxpacket;	// пересланный размер может отличаться от максимального
+	//ep->xfer_count += ep->maxpacket;	// ?
+	//PRINTF("%s: ep->xfer_buff=%p, ep->xfer_count=%u, ep->maxpacket=%u\n", __func__, ep->xfer_buff, ep->xfer_count, ep->maxpacket);
+	HAL_PCD_DataInStageCallback(hpcd, 0);
+
+}
+
+static void events_ep0_out(PCD_HandleTypeDef *hpcd)
+{
+	unsigned bcnt = hpcd->pipe_ctrl[USB_PIPE0].data_cnt;
+	PCD_EPTypeDef *ep;
+	//PRINTF("%s: bcnt=%u\n", __func__, bcnt);
+
+	ep = &hpcd->OUT_ep[0 & EP_ADDR_MSK];
+	ep->xfer_buff += bcnt;
+	ep->xfer_count += bcnt;
+	HAL_PCD_DataOutStageCallback(hpcd, 0);
+
+}
+
+static void events_in(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
+{
+	//PRINTF("%s:\n", __func__);
+	PCD_EPTypeDef *ep;
+	ep = &hpcd->OUT_ep[endpoint & EP_ADDR_MSK];
+	ep->xfer_buff += ep->maxpacket;	// пересланный размер может отличаться от максимального
+	HAL_PCD_DataInStageCallback(hpcd, endpoint & EP_ADDR_MSK);
+
+}
+
+static void events_out(PCD_HandleTypeDef *hpcd, uint16_t endpoint)
+{
+	uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
+	//PRINTF("%s:\n", __func__);
+	unsigned bcnt = hpcd->pipe_ctrl[pipe].data_cnt;
+	PCD_EPTypeDef *ep;
+
+	ep = &hpcd->OUT_ep[endpoint & EP_ADDR_MSK];
+	ep->xfer_buff += bcnt;
+	ep->xfer_count += bcnt;
+	HAL_PCD_DataOutStageCallback(hpcd, endpoint);
+
+}
+
+void USBPhyHw_ep0_setup_read_result(PCD_HandleTypeDef *hpcd, uint8_t *buffer, uint32_t size)
+{
+    memcpy(buffer, hpcd->setup_buffer, size);
+
+}
+
+void USBPhyHw_ep0_read(PCD_HandleTypeDef *hpcd, uint8_t *data, uint32_t size)
+{
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+
+	hpcd->pipe_ctrl[USB_PIPE0].req_size  = size;
+	hpcd->pipe_ctrl[USB_PIPE0].data_cnt  = size;
+	hpcd->pipe_ctrl[USB_PIPE0].p_data    = data;
 
     USBPhyHw_chg_curpipe(USBx, USB_PIPE0, USB_ISEL_READ);      /* Switch FIFO and pipe number. */
     USBx->CFIFOCTR = USB_BCLR;                 /* Buffer clear */
@@ -398,21 +502,41 @@ void USBPhyHw_ep0_read(USB_OTG_GlobalTypeDef * USBx, uint8_t *data, uint32_t siz
     USBx->NRDYENB |= (1 << USB_PIPE0);         /* Enable not ready interrupt */
 }
 
-uint32_t USBPhyHw_ep0_read_result(USB_OTG_GlobalTypeDef * USBx)
+uint32_t USBPhyHw_ep0_read_result(PCD_HandleTypeDef *hpcd)
 {
-    return pipe_ctrl[USB_PIPE0].req_size;
+    return hpcd->pipe_ctrl[USB_PIPE0].req_size;
 }
 
-void USBPhyHw_ep0_write(USB_OTG_GlobalTypeDef * USBx, uint8_t *buffer, uint32_t size)
+static void data_end(PCD_HandleTypeDef *hpcd, uint16_t fifo, uint16_t err)
 {
+	//PRINTF("%s: err=%u\n", __func__, err);
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	//USBD_CtlError(pdev, & pdev->request);
+
+}
+
+static void ctrl_end(PCD_HandleTypeDef *hpcd, uint16_t err)
+{
+	//PRINTF("%s: err=%u\n", __func__, err);
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
+	//USBD_CtlError(pdev, & pdev->request);
+
+}
+
+void USBPhyHw_ep0_write(PCD_HandleTypeDef *hpcd, uint8_t *buffer, uint32_t size)
+{
+	//PRINTF("%s: buffer=%p, size=%u\n", __func__, buffer, size);
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     if ((buffer == NULL) || (size == 0)) {
         USBPhyHw_set_pid(USBx, USB_PIPE0, USB_PID_BUF);            /* Set BUF */
         return;
     }
 
-    pipe_ctrl[USB_PIPE0].req_size  = size;
-    pipe_ctrl[USB_PIPE0].data_cnt  = size;
-    pipe_ctrl[USB_PIPE0].p_data    = buffer;
+    hpcd->pipe_ctrl[USB_PIPE0].req_size  = size;
+    hpcd->pipe_ctrl[USB_PIPE0].data_cnt  = size;
+    hpcd->pipe_ctrl[USB_PIPE0].p_data    = buffer;
 
     USBPhyHw_chg_curpipe(USBx, USB_PIPE0, USB_ISEL_WRITE);         /* Switch FIFO and pipe number. */
     USBx->CFIFOCTR = USB_BCLR;                     /* Buffer clear */
@@ -420,7 +544,7 @@ void USBPhyHw_ep0_write(USB_OTG_GlobalTypeDef * USBx, uint8_t *buffer, uint32_t 
     USBx->BEMPSTS = (uint16_t)((~(1 << USB_PIPE0)) & BEMPSTS_MASK);
 
     /* Peripheral control sequence */
-    switch (USBPhyHw_write_data(USBx, USB_PIPE0)) {
+    switch (USBPhyHw_write_data(hpcd, USB_PIPE0)) {
         case USB_WRITING :                          /* Continue of data write */
             USBx->BRDYENB |= (1 << USB_PIPE0);     /* Enable Ready interrupt */
             USBx->NRDYENB |= (1 << USB_PIPE0);     /* Enable Not Ready Interrupt */
@@ -433,31 +557,34 @@ void USBPhyHw_ep0_write(USB_OTG_GlobalTypeDef * USBx, uint8_t *buffer, uint32_t 
             USBPhyHw_set_pid(USBx, USB_PIPE0, USB_PID_BUF);
             break;
         case USB_FIFOERROR :                        /* FIFO access error */
-            ctrl_end((uint16_t)USB_DATA_ERR);
+            ctrl_end(hpcd, (uint16_t)USB_DATA_ERR);
             break;
         default :
             break;
     }
 }
 
-void USBPhyHw_ep0_stall(USB_OTG_GlobalTypeDef * USBx)
+void USBPhyHw_ep0_stall(PCD_HandleTypeDef *hpcd)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     USBPhyHw_set_pid(USBx, USB_PIPE0, USB_PID_STALL);
-    run_later_ctrl_comp = 0;
+    hpcd->run_later_ctrl_comp = 0;
 }
 
-void USBPhyHw_endpoint_stall(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint)
+void USBPhyHw_endpoint_stall(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
 {
-    uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+   uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
 
     USBPhyHw_set_pid(USBx, pipe, USB_PID_STALL);
 
-    pipe_ctrl[pipe].enable = 0;
-    pipe_ctrl[pipe].status = USB_DATA_STALL;
+    hpcd->pipe_ctrl [pipe].enable = 0;
+    hpcd->pipe_ctrl [pipe].status = USB_DATA_STALL;
 }
 
-void USBPhyHw_endpoint_unstall(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint)
+void USBPhyHw_endpoint_unstall(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
     volatile uint16_t *p_reg;
 
@@ -470,26 +597,27 @@ void USBPhyHw_endpoint_unstall(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint)
     *p_reg |= USB_ACLRM;
     *p_reg &= ~USB_ACLRM;
 
-    pipe_ctrl[pipe].enable = 0;
-    pipe_ctrl[pipe].status = USB_DATA_NONE;
+    hpcd->pipe_ctrl [pipe].enable = 0;
+    hpcd->pipe_ctrl [pipe].status = USB_DATA_NONE;
 }
 
-int USBPhyHw_endpoint_read(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint, uint8_t *data, uint32_t size)
+int USBPhyHw_endpoint_read(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint, uint8_t *data, uint32_t size)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     uint16_t mxps;
     uint16_t trncnt;
     volatile uint16_t *p_reg;
     uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
 
-    if (pipe_ctrl[pipe].status == USB_DATA_STALL) {
+    if (hpcd->pipe_ctrl [pipe].status == USB_DATA_STALL) {
         return 0;
     }
 
-    pipe_ctrl[pipe].status   = USB_DATA_READING;
-    pipe_ctrl[pipe].req_size = size;
-    pipe_ctrl[pipe].data_cnt = size;
-    pipe_ctrl[pipe].p_data   = data;
-    pipe_ctrl[pipe].enable   = 1;
+    hpcd->pipe_ctrl [pipe].status   = USB_DATA_READING;
+    hpcd->pipe_ctrl [pipe].req_size = size;
+    hpcd->pipe_ctrl [pipe].data_cnt = size;
+    hpcd->pipe_ctrl [pipe].p_data   = data;
+    hpcd->pipe_ctrl [pipe].enable   = 1;
 
     USBPhyHw_set_pid(USBx, pipe, USB_PID_NAK);                                     /* Set NAK */
 
@@ -539,27 +667,38 @@ int USBPhyHw_endpoint_read(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint, uint
     return 1;
 }
 
-uint32_t USBPhyHw_endpoint_read_result(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint)
-{
-    uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
 
-    return pipe_ctrl[pipe].req_size;
+#if WITHNEWUSBHAL
+//uint32_t USBPhyHw_endpoint_read_result(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
+uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+    uint16_t pipe = USBPhyHw_EP2PIPE(ep_addr);
+
+    return hpcd->pipe_ctrl [pipe].req_size;
 }
-
-int USBPhyHw_endpoint_write(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint, uint8_t *data, uint32_t size)
+#else /* WITHNEWUSBHAL */
+uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 {
-    volatile uint16_t *p_reg;
-    uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
+	return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
+}
+#endif /* WITHNEWUSBHAL */
 
-    if (pipe_ctrl[pipe].status == USB_DATA_STALL) {
+int USBPhyHw_endpoint_write(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint, uint8_t *data, uint32_t size)
+{
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+    uint16_t pipe = USBPhyHw_EP2PIPE(endpoint);
+    volatile uint16_t * const p_reg = USBPhyHw_get_pipectr_reg(USBx, pipe);
+
+    if (hpcd->pipe_ctrl [pipe].status == USB_DATA_STALL) {
         return 0;
     }
 
-    pipe_ctrl[pipe].status   = USB_DATA_WRITING;
-    pipe_ctrl[pipe].req_size = size;
-    pipe_ctrl[pipe].data_cnt = size;
-    pipe_ctrl[pipe].p_data   = data;
-    pipe_ctrl[pipe].enable   = 1;
+    hpcd->pipe_ctrl [pipe].status   = USB_DATA_WRITING;
+    hpcd->pipe_ctrl [pipe].req_size = size;
+    hpcd->pipe_ctrl [pipe].data_cnt = size;
+    hpcd->pipe_ctrl [pipe].p_data   = data;
+    hpcd->pipe_ctrl [pipe].enable   = 1;
 
     USBPhyHw_set_pid(USBx, pipe, USB_PID_NAK);                                     /* Set NAK */
 
@@ -567,28 +706,26 @@ int USBPhyHw_endpoint_write(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint, uin
     USBx->BRDYSTS = (uint16_t)((~(1 << pipe)) & BRDYSTS_MASK);     /* BRDY Status Clear */
     USBx->NRDYSTS = (uint16_t)((~(1 << pipe)) & NRDYSTS_MASK);     /* NRDY Status Clear */
 
-    p_reg = USBPhyHw_get_pipectr_reg(USBx, pipe);
     /* Buffer Clear */
     *p_reg |= USB_ACLRM;
     *p_reg &= ~USB_ACLRM;
 
-    USBPhyHw_buf_to_fifo(USBx, pipe);                                              /* Buffer to FIFO data write */
+    USBPhyHw_buf_to_fifo(hpcd, pipe);                                              /* Buffer to FIFO data write */
     USBPhyHw_set_pid(USBx, pipe, USB_PID_BUF);                                     /* Set BUF */
 
     return 1;
 }
 
-void USBPhyHw_endpoint_abort(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint)
+void USBPhyHw_endpoint_abort(PCD_HandleTypeDef *hpcd, usb_ep_t endpoint)
 {
-    USBPhyHw_forced_termination(USBx, USBPhyHw_EP2PIPE(endpoint), (uint16_t)USB_DATA_NONE);
+    USBPhyHw_forced_termination(hpcd, USBPhyHw_EP2PIPE(endpoint), (uint16_t)USB_DATA_NONE);
 }
 
-void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
-//void HAL_PCD_IRQHandlerNew(PCD_HandleTypeDef *hpcd)
+void USBPhyHw_process(PCD_HandleTypeDef *hpcd)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	USBD_HandleTypeDef * const pdev = hpcd->pData;
 	//__DMB();
-	//USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
-	//USBD_HandleTypeDef * const pdev = hpcd->pData;
     /* Register Save */
     uint16_t intsts0 = USBx->INTSTS0;
     uint16_t brdysts = USBx->BRDYSTS;
@@ -617,7 +754,7 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
     if ((ists0 & USB_RESM) == USB_RESM) {
         USBx->INTSTS0 = (uint16_t)~USB_RESM;
         USBx->INTENB0 &= (~USB_RSME);        /* RESM interrupt disable */
-        events_suspend(1);
+        events_suspend(hpcd, 1);
     }
 
     /***** Vbus change *****/
@@ -629,8 +766,8 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
         } else {
             /* USB detach */
             for (i = USB_MIN_PIPE_NO; i < PIPE_NUM; i++) {
-                if (pipe_ctrl[i].enable) {
-                    USBPhyHw_forced_termination(USBx, i, (uint16_t)USB_DATA_NONE);
+                if (hpcd->pipe_ctrl[i].enable) {
+                    USBPhyHw_forced_termination(hpcd, i, (uint16_t)USB_DATA_NONE);
                 }
             }
             USBx->INTSTS0 = 0;
@@ -646,7 +783,7 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
     /***** SOFR change *****/
     else if ((ists0 & USB_SOFR) == USB_SOFR) {
         USBx->INTSTS0 = (uint16_t)~USB_SOFR;
-        events_sof(USBx->FRMNUM & USB_FRNM);
+        events_sof(hpcd, USBx->FRMNUM & USB_FRNM);
     }
 
     /***** Processing device state *****/
@@ -661,17 +798,18 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
                 USBx->DCPCFG = 0;                    /* DCP configuration register  (0x5C) */
                 USBx->DCPMAXP = MAX_PACKET_SIZE_EP0; /* DCP maxpacket size register (0x5E) */
 
-                events_reset();
+                events_reset(hpcd);
                 break;
             case USB_DS_ADDS :
-                break;
+                events_address(hpcd);
+              break;
             case USB_DS_CNFG :
                 break;
             case USB_DS_SPD_POWR :
             case USB_DS_SPD_DFLT :
             case USB_DS_SPD_ADDR :
             case USB_DS_SPD_CNFG :
-                events_suspend(0);
+                events_suspend(hpcd, 0);
                 break;
             default :
                 break;
@@ -686,7 +824,7 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
         /* When operating by the peripheral function, usb_brdy_pipe() is executed with PIPEx request because */
         /* two BRDY messages are issued even when the demand of PIPE0 and PIPEx has been generated at the same time. */
         if ((USBx->CFIFOSEL & USB_ISEL_WRITE) == USB_ISEL_WRITE) {
-            switch (USBPhyHw_write_data(USBx, USB_PIPE0)) {
+            switch (USBPhyHw_write_data(hpcd, USB_PIPE0)) {
                 case USB_WRITEEND :
                 case USB_WRITESHRT :
                     USBx->BRDYENB &= (~(1 << USB_PIPE0));
@@ -695,39 +833,39 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
                     USBPhyHw_set_pid(USBx, USB_PIPE0, USB_PID_BUF);
                     break;
                 case USB_FIFOERROR :
-                    ctrl_end((uint16_t)USB_DATA_ERR);
+                    ctrl_end(hpcd, (uint16_t)USB_DATA_ERR);
                     break;
                 default :
                     break;
             }
-            events_ep0_in();
+            events_ep0_in(hpcd);
         } else {
-            switch (USBPhyHw_read_data(USBx, USB_PIPE0)) {
+            switch (USBPhyHw_read_data(hpcd, USB_PIPE0)) {
                 case USB_READEND :
                 case USB_READSHRT :
                     USBx->BRDYENB &= (~(1 << USB_PIPE0));
-                    pipe_ctrl[USB_PIPE0].req_size -= pipe_ctrl[USB_PIPE0].data_cnt;
+                    hpcd->pipe_ctrl[USB_PIPE0].req_size -= hpcd->pipe_ctrl[USB_PIPE0].data_cnt;
                     break;
                 case USB_READING :
                     USBPhyHw_set_pid(USBx, USB_PIPE0, USB_PID_BUF);
                     break;
                 case USB_READOVER :
-                    ctrl_end((uint16_t)USB_DATA_OVR);
-                    pipe_ctrl[USB_PIPE0].req_size -= pipe_ctrl[USB_PIPE0].data_cnt;
+                    ctrl_end(hpcd, (uint16_t)USB_DATA_OVR);
+                    hpcd->pipe_ctrl[USB_PIPE0].req_size -= hpcd->pipe_ctrl[USB_PIPE0].data_cnt;
                     break;
                 case USB_FIFOERROR :
-                    ctrl_end((uint16_t)USB_DATA_ERR);
+                    ctrl_end(hpcd, (uint16_t)USB_DATA_ERR);
                     break;
                 default :
                     break;
             }
-            events_ep0_out();
+            events_ep0_out(hpcd);
         }
     } else if (((ists0 & USB_BEMP) == USB_BEMP) && ((ests & USB_BEMP0) == USB_BEMP0)) {
         /* ==== BEMP PIPE0 ==== */
         USBx->BEMPSTS = (uint16_t)((~USB_BEMP0) & BEMPSTS_MASK);
 
-        events_ep0_in();
+        events_ep0_in(hpcd);
     } else if (((ists0 & USB_NRDY) == USB_NRDY) && ((nsts & USB_NRDY0) == USB_NRDY0)) {
         /* ==== NRDY PIPE0 ==== */
         USBx->NRDYSTS = (uint16_t)((~USB_NRDY0) & NRDYSTS_MASK);
@@ -744,13 +882,15 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
         if (stginfo != USB_CS_IDST) {
             if (((USB_CS_RDDS == stginfo) || (USB_CS_WRDS == stginfo)) || (USB_CS_WRND == stginfo)) {
                 /* Save request register */
-                uint16_t *bufO = &setup_buffer[0];
+                uint16_t *bufO = &hpcd->setup_buffer[0];
 
                 USBx->INTSTS0 = (uint16_t)~USB_VALID;
                 *bufO++ = USBx->USBREQ;   /* data[0] <= bmRequest, data[1] <= bmRequestType */
                 *bufO++ = USBx->USBVAL;   /* data[2] data[3] <= wValue */
                 *bufO++ = USBx->USBINDX;  /* data[4] data[5] <= wIndex */
                 *bufO++ = USBx->USBLENG;  /* data[6] data[7] <= wLength */
+
+        		usb_save_request(USBx, & pdev->request);
             }
         }
 
@@ -759,14 +899,14 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
             case USB_CS_IDST :  /* Idle or setup stage */
                 break;
             case USB_CS_RDDS :  /* Control read data stage */
-                events_ep0_setup();
+                events_ep0_setup(hpcd);
                 break;
             case USB_CS_WRDS :  /* Control write data stage */
-                events_ep0_setup();
+                events_ep0_setup(hpcd);
                 break;
             case USB_CS_WRND :  /* Status stage of a control write where there is no data stage. */
-                events_ep0_setup();
-                run_later_ctrl_comp = 1;
+                events_ep0_setup(hpcd);
+                hpcd->run_later_ctrl_comp = 1;
                 break;
             case USB_CS_RDSS :  /* Control read status stage */
                 USBx->DCPCTR |= USB_CCPL;
@@ -776,7 +916,7 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
                 break;
             case USB_CS_SQER :  /* Control sequence error */
             default :           /* Illegal */
-                ctrl_end((uint16_t)USB_DATA_ERR);
+                ctrl_end(hpcd, (uint16_t)USB_DATA_ERR);
                 break;
         }
     }
@@ -789,16 +929,16 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
         for (i = USB_MIN_PIPE_NO; i < PIPE_NUM; i++) {
             if ((bsts & USB_BITSET(i)) != 0u) {
                 /* Interrupt check */
-                if (pipe_ctrl[i].enable) {
+                if (hpcd->pipe_ctrl[i].enable) {
                     USBx->PIPESEL = i;
                     if (USB_BUF2FIFO == (uint16_t)(USBx->PIPECFG & USB_DIRFIELD)) {
                         /* write */
-                        USBPhyHw_buf_to_fifo(USBx, i);         /* Buffer to FIFO data write */
-                        events_in(USBPhyHw_PIPE2EP(i));
+                        USBPhyHw_buf_to_fifo(hpcd, i);         /* Buffer to FIFO data write */
+                        events_in(hpcd, USBPhyHw_PIPE2EP(i));
                     } else {
                         /* read */
-                        USBPhyHw_fifo_to_buf(USBx, i);         /* FIFO to Buffer data read */
-                        events_out(USBPhyHw_PIPE2EP(i));
+                        USBPhyHw_fifo_to_buf(hpcd, i);         /* FIFO to Buffer data read */
+                        events_out(hpcd, USBPhyHw_PIPE2EP(i));
                     }
                 }
             }
@@ -810,18 +950,18 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
         for (i = USB_MIN_PIPE_NO; i < PIPE_NUM; i++) {
             if ((ests & USB_BITSET(i)) != 0) {
                 /* Interrupt check */
-                if (pipe_ctrl[i].enable) {
+                if (hpcd->pipe_ctrl[i].enable) {
                     /* MAX packet size error ? */
                     if (((USBPhyHw_get_pid(USBx, i) & USB_PID_STALL) == USB_PID_STALL) || ((USBPhyHw_get_pid(USBx, i) & USB_PID_STALL2) == USB_PID_STALL2)) {
-                        USBPhyHw_forced_termination(USBx, i, (uint16_t)USB_DATA_STALL);
+                        USBPhyHw_forced_termination(hpcd, i, (uint16_t)USB_DATA_STALL);
                     } else {
                         if ((i >= USB_PIPE6) || ((*USBPhyHw_get_pipectr_reg(USBx, i) & USB_INBUFM) != USB_INBUFM)) {
-                            data_end(i, (uint16_t)USB_DATA_NONE);       /* End of data transfer */
+                            data_end(hpcd, i, (uint16_t)USB_DATA_NONE);       /* End of data transfer */
                         } else {
                             USBx->BEMPENB |= (1 << i);
                         }
                     }
-                    events_in(USBPhyHw_PIPE2EP(i));
+                    events_in(hpcd, USBPhyHw_PIPE2EP(i));
                 }
             }
         }
@@ -832,7 +972,7 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
         for (i = USB_MIN_PIPE_NO; i < PIPE_NUM; i++) {
             if ((nsts & USB_BITSET(i)) != 0) {
                 /* Interrupt check */
-                if (pipe_ctrl[i].enable) {
+                if (hpcd->pipe_ctrl[i].enable) {
                     if (((USBPhyHw_get_pid(USBx, i) & USB_PID_STALL) != USB_PID_STALL) && ((USBPhyHw_get_pid(USBx, i) & USB_PID_STALL2) != USB_PID_STALL2)) {
                         USBPhyHw_set_pid(USBx, i, USB_PID_BUF);
                     }
@@ -844,26 +984,32 @@ void USBPhyHw_process(USB_OTG_GlobalTypeDef * USBx)
     }
 }
 
-void USBPhyHw__usbisr(void)
+#if WITHNEWUSBHAL
+// Renesas, usb device
+//void USBPhyHw__usbisr(void)
+void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
+	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     //GIC_DisableIRQ(USBIX_IRQn);
 
-    run_later_ctrl_comp = 0;
+	hpcd->run_later_ctrl_comp = 0;
 
     //events_start_process();
-    USBPhyHw_process(WITHUSBHW_DEVICE);
+    USBPhyHw_process(hpcd);
 
-    if (run_later_ctrl_comp) {
-    	WITHUSBHW_DEVICE->DCPCTR &= (~USB_PID);
-    	WITHUSBHW_DEVICE->DCPCTR |= USB_PID_BUF;
+    if (hpcd->run_later_ctrl_comp) {
+    	USBx->DCPCTR &= (~USB_PID);
+    	USBx->DCPCTR |= USB_PID_BUF;
 
-    	WITHUSBHW_DEVICE->DCPCTR |= USB_CCPL;
+    	USBx->DCPCTR |= USB_CCPL;
     }
 
     /* Re-enable interrupt */
     //GIC_ClearPendingIRQ(USBIX_IRQn);
     //GIC_EnableIRQ(USBIX_IRQn);
 }
+#endif /* WITHNEWUSBHAL */
 
 void USBPhyHw_chg_curpipe(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t isel)
 {
@@ -886,7 +1032,7 @@ void USBPhyHw_chg_curpipe(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t 
     *p_reg = buf;
 
     do {
-        local_delay_us(1);
+        HARDWARE_DELAY_US(1);
         buf = *p_reg;
     } while ((buf & (uint16_t)(USB_ISEL | USB_CURPIPE)) != (uint16_t)(isel_val | pipe));
 }
@@ -904,7 +1050,7 @@ uint16_t USBPhyHw_is_set_frdy(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint1
         if ((uint16_t)(buffer & USB_FRDY) == USB_FRDY) {
             return (buffer);
         }
-        local_delay_us(1);
+        HARDWARE_DELAY_US(1);
     }
 
     return (USB_FIFOERROR);
@@ -943,8 +1089,9 @@ uint8_t *USBPhyHw_read_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_
     return read_p;
 }
 
-uint16_t USBPhyHw_read_data(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
+uint16_t USBPhyHw_read_data(PCD_HandleTypeDef *hpcd, uint16_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     volatile uint16_t *p_reg;
     uint16_t count;
     uint16_t buffer;
@@ -967,13 +1114,13 @@ uint16_t USBPhyHw_read_data(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
         mxps = (uint16_t)(USBx->PIPEMAXP & USB_MXPS);
     }
 
-    if (pipe_ctrl[pipe].data_cnt < dtln) {
+    if (hpcd->pipe_ctrl [pipe].data_cnt < dtln) {
         /* Buffer Over ? */
         end_flag = USB_READOVER;
         USBPhyHw_set_pid(USBx, pipe, USB_PID_NAK);             /* Set NAK */
-        count = (uint16_t)pipe_ctrl[pipe].data_cnt;
-        pipe_ctrl[pipe].data_cnt = dtln;
-    } else if (pipe_ctrl[pipe].data_cnt == dtln) {
+        count = (uint16_t)hpcd->pipe_ctrl [pipe].data_cnt;
+        hpcd->pipe_ctrl [pipe].data_cnt = dtln;
+    } else if (hpcd->pipe_ctrl [pipe].data_cnt == dtln) {
         /* Just Receive Size */
         count = dtln;
         if ((count == 0) || ((dtln % mxps) != 0)) {
@@ -1004,45 +1151,46 @@ uint16_t USBPhyHw_read_data(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
         p_reg = USBPhyHw_get_fifoctr_reg(USBx, pipe);
         *p_reg = USB_BCLR;                      /* Clear BCLR */
     } else {
-        pipe_ctrl[pipe].p_data = USBPhyHw_read_fifo(USBx, pipe, count, pipe_ctrl[pipe].p_data);
+    	hpcd->pipe_ctrl [pipe].p_data = USBPhyHw_read_fifo(USBx, pipe, count, hpcd->pipe_ctrl [pipe].p_data);
     }
-    pipe_ctrl[pipe].data_cnt -= count;
+    hpcd->pipe_ctrl [pipe].data_cnt -= count;
 
     return end_flag;
 }
 
-void USBPhyHw_fifo_to_buf(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
+void USBPhyHw_fifo_to_buf(PCD_HandleTypeDef *hpcd, uint16_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     /* Check FIFO access sequence */
-    switch (USBPhyHw_read_data(USBx, pipe)) {
+    switch (USBPhyHw_read_data(hpcd, pipe)) {
         case USB_READING :                                      /* Continue of data read */
             break;
         case USB_READEND :                                      /* End of data read */
-            data_end(pipe, (uint16_t)USB_DATA_OK);
-            pipe_ctrl[pipe].req_size -= pipe_ctrl[pipe].data_cnt;
+            data_end(hpcd, pipe, (uint16_t)USB_DATA_OK);
+            hpcd->pipe_ctrl [pipe].req_size -= hpcd->pipe_ctrl [pipe].data_cnt;
             break;
         case USB_READSHRT :                                     /* End of data read */
-            data_end(pipe, (uint16_t)USB_DATA_SHT);
-            pipe_ctrl[pipe].req_size -= pipe_ctrl[pipe].data_cnt;
+            data_end(hpcd, pipe, (uint16_t)USB_DATA_SHT);
+            hpcd->pipe_ctrl [pipe].req_size -= hpcd->pipe_ctrl [pipe].data_cnt;
             break;
         case USB_READOVER :                                     /* Buffer over */
-            USBPhyHw_forced_termination(USBx, pipe, (uint16_t)USB_DATA_OVR);
-            pipe_ctrl[pipe].req_size -= pipe_ctrl[pipe].data_cnt;
+            USBPhyHw_forced_termination(hpcd, pipe, (uint16_t)USB_DATA_OVR);
+            hpcd->pipe_ctrl [pipe].req_size -= hpcd->pipe_ctrl [pipe].data_cnt;
             break;
         case USB_FIFOERROR :                                    /* FIFO access error */
         default:
-            USBPhyHw_forced_termination(USBx, pipe, (uint16_t)USB_DATA_ERR);
+            USBPhyHw_forced_termination(hpcd, pipe, (uint16_t)USB_DATA_ERR);
             break;
     }
 }
 
 uint8_t *USBPhyHw_write_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t count, uint8_t *write_p)
 {
-	volatile iodefine_reg32_t * p_reg;
+	//PRINTF("%s: count=%u, write_p=%p\n", __func__, count, write_p);
+	volatile iodefine_reg32_t * const p_reg = USBPhyHw_get_fifo_reg(USBx, pipe);
     uint16_t even;
     uint16_t odd;
 
-    p_reg = USBPhyHw_get_fifo_reg(USBx, pipe);
     USBPhyHw_set_mbw(USBx, pipe, USB_MBW_32);                                /* 32bit access */
     for (even = (uint16_t)(count >> 2); (even != 0); --even) {
         p_reg->UINT32 = *((uint32_t *)write_p);
@@ -1066,9 +1214,9 @@ uint8_t *USBPhyHw_write_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16
     return write_p;
 }
 
-uint16_t USBPhyHw_write_data(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
+uint16_t USBPhyHw_write_data(PCD_HandleTypeDef *hpcd, uint16_t pipe)
 {
-    volatile uint16_t *p_reg;
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     uint16_t size;
     uint16_t count;
     uint16_t mxps;
@@ -1110,8 +1258,8 @@ uint16_t USBPhyHw_write_data(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
     }
 
     /* Data size check */
-    if (pipe_ctrl[pipe].data_cnt <= (uint32_t)size) {
-        count = (uint16_t)pipe_ctrl[pipe].data_cnt;
+    if (hpcd->pipe_ctrl [pipe].data_cnt <= (uint32_t)size) {
+        count = (uint16_t)hpcd->pipe_ctrl [pipe].data_cnt;
         if (count == 0) {
             end_flag = USB_WRITESHRT;                   /* Null Packet is end of write */
         } else if ((count % mxps) != 0) {
@@ -1125,30 +1273,32 @@ uint16_t USBPhyHw_write_data(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
         count = size;
     }
 
-    pipe_ctrl[pipe].p_data = USBPhyHw_write_fifo(USBx, pipe, count, pipe_ctrl[pipe].p_data);
+    hpcd->pipe_ctrl [pipe].p_data = USBPhyHw_write_fifo(USBx, pipe, count, hpcd->pipe_ctrl [pipe].p_data);
 
     /* Check data count to remain */
-    if (pipe_ctrl[pipe].data_cnt < (uint32_t)size) {
-        pipe_ctrl[pipe].data_cnt = 0u;                  /* Clear data count */
+    if (hpcd->pipe_ctrl [pipe].data_cnt < (uint32_t)size) {
+        volatile uint16_t * const p_reg = USBPhyHw_get_fifoctr_reg(USBx, pipe);
 
-        p_reg = USBPhyHw_get_fifoctr_reg(USBx, pipe);
+    	hpcd->pipe_ctrl [pipe].data_cnt = 0u;                  /* Clear data count */
+
         if ((*p_reg & USB_BVAL) == 0u) {                /* Check BVAL */
             *p_reg |= USB_BVAL;                         /* Short Packet */
         }
     } else {
-        pipe_ctrl[pipe].data_cnt -= count;              /* Total data count - count */
+    	hpcd->pipe_ctrl [pipe].data_cnt -= count;              /* Total data count - count */
     }
 
     return end_flag;
 }
 
-void USBPhyHw_buf_to_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
+void USBPhyHw_buf_to_fifo(PCD_HandleTypeDef *hpcd, uint16_t pipe)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     /* Disable Ready Interrupt */
     USBx->BRDYENB &= (~(1 << pipe));
 
     /* Peripheral control sequence */
-    switch (USBPhyHw_write_data(USBx, pipe)) {
+    switch (USBPhyHw_write_data(hpcd, pipe)) {
         case USB_WRITING :                          /* Continue of data write */
             USBx->BRDYENB |= (1 << pipe);          /* Enable Ready Interrupt */
             USBx->NRDYENB |= (1 << pipe);          /* Enable Not Ready Interrupt */
@@ -1160,7 +1310,7 @@ void USBPhyHw_buf_to_fifo(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe)
             break;
         case USB_FIFOERROR :                        /* FIFO access error */
         default:
-            USBPhyHw_forced_termination(USBx, pipe, (uint16_t)USB_DATA_ERR);
+            USBPhyHw_forced_termination(hpcd, pipe, (uint16_t)USB_DATA_ERR);
             break;
     }
 }
@@ -1294,7 +1444,7 @@ void USBPhyHw_set_pid(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t new_
             *p_reg |= new_pid;
 
             do {
-                local_delay_us(1);
+                HARDWARE_DELAY_US(1);
                 p_reg = USBPhyHw_get_pipectr_reg(USBx, pipe);
             } while ((*p_reg & USB_PBUSY) == USB_PBUSY);
             break;
@@ -1454,8 +1604,8 @@ void USBPhyHw_endpoint_remove(USB_OTG_GlobalTypeDef * USBx, usb_ep_t endpoint)
     USBx->PIPESEL = pipe;              /* Pipe select */
     USBx->PIPECFG = 0;
 
-    pipe_ctrl[pipe].enable = 0;
-    pipe_ctrl[pipe].status = USB_DATA_NONE;
+    pipe_ctrl [pipe].enable = 0;
+    pipe_ctrl [pipe].status = USB_DATA_NONE;
 }
 
 uint16_t USBPhyHw_EP2PIPE(uint16_t endpoint)
@@ -1509,59 +1659,109 @@ uint16_t USBPhyHw_PIPE2FIFO(uint16_t pipe)
 
     return fifo_use;
 }
+#else
+
+uint16_t USBPhyHw_PIPE2FIFO(uint16_t pipe)
+{
+    //const struct PIPECFGREC *cfg;
+    uint16_t fifo_use;
+
+    if (pipe == USB_PIPE0) {
+        fifo_use = USB_FUNCTION_CFIFO_USE;
+    } else {
+    	switch (pipe) {
+#if WITHDMAHW_UACIN
+    	case HARDWARE_USBD_PIPE_ISOC_IN:
+            fifo_use = USB_FUNCTION_D1FIFO_USE;
+            break;
+#endif /* WITHDMAHW_UACIN */
+#if WITHDMAHW_UACOUT
+    	case HARDWARE_USBD_PIPE_ISOC_OUT:
+            fifo_use = USB_FUNCTION_D0FIFO_USE;
+            break;
+#endif /* WITHNDMA_UACOUT */
+    	default:
+            fifo_use = USB_FUNCTION_CFIFO_USE;
+            break;
+    	}
+//        for (cfg = &def_pipecfg[0]; cfg->pipesel != 0; cfg++) {
+//            if ((cfg->pipesel & USB_CURPIPE) == pipe) {
+//                break;
+//            }
+//        }
+//        if ((cfg->pipesel & USB_FUNCTION_D0FIFO_USE) == USB_FUNCTION_D0FIFO_USE) {
+//            fifo_use = USB_FUNCTION_D0FIFO_USE;
+//        } else if ((cfg->pipesel & USB_FUNCTION_D1FIFO_USE) == USB_FUNCTION_D1FIFO_USE) {
+//            fifo_use = USB_FUNCTION_D1FIFO_USE;
+//        } else {
+//            fifo_use = USB_FUNCTION_CFIFO_USE;
+//        }
+    }
+
+    return fifo_use;
+}
+
 #endif
 
 void USBPhyHw_reset_usb(USB_OTG_GlobalTypeDef * USBx, uint16_t clockmode)
 {
-#if (USB_FUNCTION_CH == 0)
-    if ((USB200.SYSCFG0 & USB_UPLLE) == USB_UPLLE) {
-        if ((USB200.SYSCFG0 & USB_UCKSEL) != clockmode) {
+    if (USBx == & USB200) {
+        if ((USB200.SYSCFG0 & USB_UPLLE) == USB_UPLLE) {
+            if ((USB200.SYSCFG0 & USB_UCKSEL) != clockmode) {
+                USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+                USB200.SYSCFG0 = 0;
+                USB200.SYSCFG0 = (clockmode | USB_UPLLE);
+                HARDWARE_DELAY_US(1000);
+                USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
+            } else {
+                USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+                HARDWARE_DELAY_US(1000);
+                USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
+            }
+        } else {
             USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
             USB200.SYSCFG0 = 0;
             USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-            local_delay_us(1000);
-            USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
-        } else {
-            USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-            local_delay_us(1000);
+            HARDWARE_DELAY_US(1000);
             USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
         }
-    } else {
-        USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-        USB200.SYSCFG0 = 0;
-        USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-        local_delay_us(1000);
-        USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
-    }
-#else
-    /* UCKSEL and UPLLE bit is only USB0. If USB1, set to SYSCFG0 for USB0. */
-    if ((USB200.SYSCFG0 & USB_UPLLE) == USB_UPLLE) {
-        if ((USB200.SYSCFG0 & USB_UCKSEL) != clockmode) {
-            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-            USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-            USB201.SYSCFG0 = 0;
-            USB200.SYSCFG0 = 0;
-            USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-            local_delay_us(1000);
-            USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
-            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
-        } else {
-            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-            local_delay_us(1000);
-            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
-        }
-    } else {
-        USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-        USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
-        USB201.SYSCFG0 = 0;
-        USB200.SYSCFG0 = 0;
-        USB200.SYSCFG0 = (clockmode | USB_UPLLE);
-        local_delay_us(1000);
-        USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
-        USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
-    }
-#endif
-    USBx->BUSWAIT = (uint16_t)(USB_BWAIT_3 & USB_BWAIT);   /* 3 : 5 access cycles  waits */
+	} else if (USBx == & USB201) {
+	    /* UCKSEL and UPLLE bit is only USB0. If USB1, set to SYSCFG0 for USB0. */
+	    if ((USB200.SYSCFG0 & USB_UPLLE) == USB_UPLLE) {
+	        if ((USB200.SYSCFG0 & USB_UCKSEL) != clockmode) {
+	            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	            USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	            USB201.SYSCFG0 = 0;
+	            USB200.SYSCFG0 = 0;
+	            USB200.SYSCFG0 = (clockmode | USB_UPLLE);
+	            HARDWARE_DELAY_US(1000);
+	            USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	        } else {
+	            USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	            HARDWARE_DELAY_US(1000);
+	            USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	        }
+	    } else {
+	        USB201.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	        USB200.SUSPMODE &= ~(USB_SUSPMODE_SUSPM);
+	        USB201.SYSCFG0 = 0;
+	        USB200.SYSCFG0 = 0;
+	        USB200.SYSCFG0 = (clockmode | USB_UPLLE);
+	        HARDWARE_DELAY_US(1000);
+	        USB200.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	        USB201.SUSPMODE |= USB_SUSPMODE_SUSPM;
+	    }
+	}
+	// P1 clock (66.7 MHz max) period = 15 ns
+	// The cycle period required to consecutively access registers of this controller must be at least 67 ns.
+	// TODO: compute BWAIT value on-the-fly
+	// Use P1CLOCK_FREQ
+	const uint_fast32_t bwait = MIN(MAX(calcdivround2(P1CLOCK_FREQ, 15000000uL), 2) - 2, 63);
+	USBx->BUSWAIT = (bwait << USB_BUSWAIT_BWAIT_SHIFT) & USB_BUSWAIT_BWAIT;	// 5 cycles = 75 nS minimum
+	(void) USBx->BUSWAIT;
+    //USBx->BUSWAIT = (uint16_t)(USB_BWAIT_3 & USB_BWAIT);   /* 3 : 5 access cycles  waits */
+
     USBx->CFIFOSEL  = USB_MBW_32;
     USBx->D0FIFOSEL = USB_MBW_32;
     USBx->D1FIFOSEL = USB_MBW_32;
@@ -1577,9 +1777,9 @@ int USBPhyHw_chk_vbsts(USB_OTG_GlobalTypeDef * USBx)
     /* VBUS chattering cut */
     do {
         buf1 = USBx->INTSTS0;
-        local_delay_us(10);
+        HARDWARE_DELAY_US(10);
         buf2 = USBx->INTSTS0;
-        local_delay_us(10);
+        HARDWARE_DELAY_US(10);
         buf3 = USBx->INTSTS0;
     } while (((buf1 & USB_VBSTS) != (buf2 & USB_VBSTS)) || ((buf2 & USB_VBSTS) != (buf3 & USB_VBSTS)));
 
@@ -1609,8 +1809,9 @@ void USBPhyHw_ctrl_end(USB_OTG_GlobalTypeDef * USBx, uint16_t status)
     }
 }
 
-void USBPhyHw_data_end(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t status)
+void USBPhyHw_data_end(PCD_HandleTypeDef *hpcd, uint16_t pipe, uint16_t status)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     volatile uint16_t *p_reg;
 
     /* Disable Interrupt */
@@ -1627,25 +1828,26 @@ void USBPhyHw_data_end(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t sta
         *p_reg |= USB_TRCLR;
     }
 
-    if (pipe_ctrl[pipe].enable) {
+    if (hpcd->pipe_ctrl [pipe].enable) {
         /* Check PIPE TYPE */
         USBx->PIPESEL = pipe;                  /* Pipe select */
         if ((USBx->PIPECFG & USB_TYPFIELD) != USB_TYPFIELD_ISO) {
             /* Transfer information set */
-            pipe_ctrl[pipe].enable = 0;
-            pipe_ctrl[pipe].status = status;
+        	hpcd->pipe_ctrl [pipe].enable = 0;
+        	hpcd->pipe_ctrl [pipe].status = status;
         } else if ((uint16_t)(USBx->PIPECFG & USB_DIRFIELD) == USB_BUF2FIFO) {
             /* ISO OUT Transfer (restart) */
-            pipe_ctrl[pipe].status = USB_DATA_WRITING;
+        	hpcd->pipe_ctrl [pipe].status = USB_DATA_WRITING;
         } else {
             /* ISO IN Transfer (restart) */
-            pipe_ctrl[pipe].status = USB_DATA_READING;
+        	hpcd->pipe_ctrl [pipe].status = USB_DATA_READING;
         }
     }
 }
 
-void USBPhyHw_forced_termination(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, uint16_t status)
+void USBPhyHw_forced_termination(PCD_HandleTypeDef *hpcd, uint16_t pipe, uint16_t status)
 {
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
     volatile uint16_t *p_reg;
 
     /* Disable Interrupt */
@@ -1671,8 +1873,8 @@ void USBPhyHw_forced_termination(USB_OTG_GlobalTypeDef * USBx, uint16_t pipe, ui
     *p_reg |= USB_ACLRM;
     *p_reg &= ~USB_ACLRM;
 
-    pipe_ctrl[pipe].enable = 0;
-    pipe_ctrl[pipe].status  = status;
+    hpcd->pipe_ctrl [pipe].enable = 0;
+    hpcd->pipe_ctrl [pipe].status  = status;
 }
 
 
@@ -2234,7 +2436,7 @@ static uint_fast8_t usbd_wait_fifo(
 			(USBx->CFIFOSEL & USB_CFIFOSEL_CURPIPE) != (pipe << USB_CFIFOSEL_CURPIPE_SHIFT) ||
 			(USBx->CFIFOCTR & USB_CFIFOCTR_FRDY) == 0)	// FRDY
 	{
-		local_delay_us(1);
+		HARDWARE_DELAY_US(1);
 		if (-- waitcnt == 0)
 		{
             return 1;
@@ -2494,11 +2696,19 @@ HAL_StatusTypeDef HAL_PCD_EP_Receive(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, u
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
+#if WITHNEWUSBHAL
+	  USBPhyHw_ep0_read(hpcd, pBuf, len);
+#else /* WITHNEWUSBHAL */
     (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+#endif /* WITHNEWUSBHAL */
   }
   else
   {
+#if WITHNEWUSBHAL
+	  USBPhyHw_endpoint_read(hpcd, ep_addr, pBuf, len);
+#else /* WITHNEWUSBHAL */
     (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+#endif /* WITHNEWUSBHAL */
   }
 
   return HAL_OK;
@@ -2531,11 +2741,19 @@ HAL_StatusTypeDef HAL_PCD_EP_Transmit(PCD_HandleTypeDef *hpcd, uint8_t ep_addr, 
 
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
+#if WITHNEWUSBHAL
+	USBPhyHw_ep0_write(hpcd, (uint8_t *) pBuf, len);
+#else /* WITHNEWUSBHAL */
     (void)USB_EP0StartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+#endif /* WITHNEWUSBHAL */
   }
   else
   {
+#if WITHNEWUSBHAL
+	  USBPhyHw_endpoint_write(hpcd, ep_addr, (uint8_t *) pBuf, len);
+#else /* WITHNEWUSBHAL */
     (void)USB_EPStartXfer(hpcd->Instance, ep, (uint8_t)hpcd->Init.dma_enable);
+#endif /* WITHNEWUSBHAL */
   }
 
   return HAL_OK;
@@ -2572,8 +2790,19 @@ HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
 
   __HAL_LOCK(hpcd);
 
+#if ! WITHNEWUSBHAL
   (void)USB_EPSetStall(hpcd->Instance, ep);
+#else
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+	  USBPhyHw_ep0_stall(hpcd);
+  }
+  else
+  {
+	  USBPhyHw_endpoint_stall(hpcd, ep_addr);
 
+  }
+#endif
   if ((ep_addr & EP_ADDR_MSK) == 0U)
   {
     (void)USB_EP0_OutStart(hpcd->Instance, (uint8_t)hpcd->Init.dma_enable, (uint8_t *)hpcd->Setup);
@@ -2614,7 +2843,19 @@ HAL_StatusTypeDef HAL_PCD_EP_ClrStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   ep->num = ep_addr & EP_ADDR_MSK;
 
   __HAL_LOCK(hpcd);
+#if ! WITHNEWUSBHAL
   (void)USB_EPClearStall(hpcd->Instance, ep);
+#else
+  if ((ep_addr & EP_ADDR_MSK) == 0U)
+  {
+	  USBPhyHw_endpoint_unstall(hpcd, 0);
+  }
+  else
+  {
+	  USBPhyHw_endpoint_unstall(hpcd, ep_addr);
+
+  }
+#endif
   __HAL_UNLOCK(hpcd);
 
   return HAL_OK;
@@ -2642,11 +2883,6 @@ HAL_StatusTypeDef HAL_PCD_EP_Flush(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
   __HAL_UNLOCK(hpcd);
 
   return HAL_OK;
-}
-
-uint32_t HAL_PCD_EP_GetRxCount(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
-{
-  return hpcd->OUT_ep[ep_addr & EP_ADDR_MSK].xfer_count;
 }
 
 static void usb_save_request(USB_OTG_GlobalTypeDef * USBx, USBD_SetupReqTypedef *req)
@@ -2781,6 +3017,7 @@ static void usbd_handle_ctrt(PCD_HandleTypeDef *hpcd, uint_fast8_t ctsq)
 		1 * USB_INTENB0_RSME |	// RSME
 
 */
+#if ! WITHNEWUSBHAL
 // Renesas, usb device
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
@@ -2987,6 +3224,8 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		USBx->DCPCTR |= USB_DCPCTR_CCPL;	// CCPL
 	}
 }
+
+#endif /* ! WITHNEWUSBHAL */
 
 // Renesas, usb host
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
@@ -3539,46 +3778,6 @@ HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EP
 }
 
 /**
-  * @brief  USB_DevDisconnect : Disconnect the USB device by disabling the pull-up/pull-down
-  * @param  USBx : Selected device
-  * @retval HAL status
-  */
-HAL_StatusTypeDef  USB_DevDisconnect (USB_OTG_GlobalTypeDef *USBx)
-{
-	//PRINTF(PSTR("USB_DevDisconnect (USBx=%p)\n"), USBx);
-
-	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
-			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
-			0 * USB_SYSCFG_DRPD |	// DRPD0: Pulling down the lines is disabled.
-			0;
-	(void) USBx->SYSCFG0;
-
-	HARDWARE_DELAY_MS(3);
-
-	return HAL_OK;
-}
-
-/**
-  * @brief  USB_DevConnect : Connect the USB device by enabling the pull-up/pull-down
-  * @param  USBx : Selected device
-  * @retval HAL status
-  */
-HAL_StatusTypeDef  USB_DevConnect (USB_OTG_GlobalTypeDef *USBx)
-{
-	//PRINTF(PSTR("USB_DevConnect (USBx=%p)\n"), USBx);
-
-	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
-			1 * USB_SYSCFG_DPRPU |	// DPRPU 1: Pulling up the D+ line is enabled.
-			0 * USB_SYSCFG_DRPD |	// DRPD 0: Pulling down the lines is disabled.
-			0;
-	(void) USBx->SYSCFG0;
-
-	HARDWARE_DELAY_MS(3);
-
-	return HAL_OK;
-}
-
-/**
   * @brief  USB_EP0StartXfer : setup and starts a transfer over the EP  0
   * @param  USBx : Selected device
   * @param  ep: pointer to endpoint structure
@@ -4120,10 +4319,10 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 {
 	USB_ResetPort2(USBx, 1);
 	//HAL_Delay(100U);                                 /* See Note #1 */
-	local_delay_ms(100);
+	HARDWARE_DELAY_MS(100);
 	USB_ResetPort2(USBx, 0);
 	//HAL_Delay(10U);
-	local_delay_ms(10);
+	HARDWARE_DELAY_MS(10);
 
 	return HAL_OK;
 }
@@ -4376,6 +4575,7 @@ HAL_StatusTypeDef USB_CoreInit(USB_OTG_GlobalTypeDef * USBx, USB_OTG_CfgTypeDef 
 	return HAL_OK;
 }
 
+#if ! WITHNEWUSBHAL
 /**
   * @brief  USB_DevInit : Initializes the USB_OTG controller registers
   *         for device mode
@@ -4438,7 +4638,7 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
 
 	return HAL_OK;
 }
-
+#endif /* ! WITHNEWUSBHAL */
 
 /**
   * @brief  USB_StopDevice : Stop the usb device mode
@@ -4682,6 +4882,4 @@ HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd)
   return HAL_OK;
 }
 
-
 #endif /* CPUSTYLE_R7S721 */
-

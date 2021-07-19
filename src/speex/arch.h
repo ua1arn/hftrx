@@ -35,12 +35,6 @@
 #ifndef ARCH_H
 #define ARCH_H
 
-
-// Используется при формировании корректированной АЧХ звука. Должно быть размером достаточным, чтобы влезли используемые фильтры
-#define FFTSizeFilters 1024
-
-#define SPEEXNN (FFTSizeFilters / 2)
-
 //#define FIXED_POINT
 #define FLOATING_POINT
 

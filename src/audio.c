@@ -121,10 +121,10 @@ static uint_fast8_t 	glob_mikebust20db;	/* Включение усилителя
 static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
 static uint_fast8_t		glob_mikehclip;			/* параметр ограничителя микрофона	*/
-#if defined(CODEC1_TYPE)
+#if defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS)
 static uint_fast8_t 	glob_mikeequal;	// Включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 static uint_fast8_t		glob_codec1_gains [HARDWARE_CODEC1_NPROCPARAMS]; // = { -2, -1, -3, +6, +9 };	// параметры эквалайзера
-#endif /* defined(CODEC1_TYPE) */
+#endif /* defined(CODEC1_TYPE) && defined (HARDWARE_CODEC1_NPROCPARAMS) */
 
 #if WITHAFEQUALIZER
 static uint_fast8_t 	glob_equalizer_rx;
@@ -295,6 +295,36 @@ static uint_fast8_t		glob_dsploudspeaker_off;
 
 #endif /* WITHDEBUG */
 
+void beginstamp(void)
+{
+	BEGIN_STAMP();
+}
+
+void endstamp(void)
+{
+	END_STAMP();
+}
+
+void beginstamp2(void)
+{
+	BEGIN_STAMP2();
+}
+
+void endstamp2(void)
+{
+	END_STAMP2();
+}
+
+void beginstamp3(void)
+{
+	BEGIN_STAMP3();
+}
+
+void endstamp3(void)
+{
+	END_STAMP3();
+}
+
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
 	// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 	// Параметры для передачи в FPGA
@@ -328,7 +358,17 @@ static RAMBIGDTCM FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// п�
 
 //static void * fft_lookup;
 
-static RAMDTCM struct Complex Sig [FFTSizeFilters];
+
+// Используется при формировании корректированной АЧХ звука. Должно быть размером достаточным, чтобы влезли используемые фильтры
+#define FFTSizeFilters 1024
+
+struct ComplexHFTRX
+{
+	FLOAT_t real;
+	FLOAT_t imag;
+};
+
+static RAMDTCM struct ComplexHFTRX Sig [FFTSizeFilters];
 
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
@@ -730,6 +770,7 @@ adapter_t uac48io;
 adapter_t rts96out;
 adapter_t rts192o;
 adapter_t sdcardio;
+adapter_t nfmdemod;
 transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
 transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
 
@@ -761,13 +802,7 @@ static void adapterst_initialize(void)
 	adpt_initialize(& rts192out, UACIN_RTS192_SAMPLEBITS, 0);
 	transform_initialize(& if2rts192out, & ifspectrumin, & rts192out);
 #endif /* WITHRTS192 */
-}
-
-//////////////////////////////////////////
-
-void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
-{
-	savemoni16stereo(adpt_outputexact(& afcodecio, ch0), adpt_outputexact(& afcodecio, ch1));
+	adpt_initialize(& nfmdemod, 32, 0);
 }
 
 //////////////////////////////////////////
@@ -1653,9 +1688,13 @@ static double testgain_float_DCL(const double * dCoeff, int iCoefNum)
 	*/
 
 // Calculate window function (blackman-harris, hamming, rectangular)
+// https://www.edn.com/windowing-functions-improve-fft-results-part-i/
+// https://en.wikipedia.org/wiki/Window_function
+// https://www.weisang.com/en/documentation/fourierspectrumtaperingwindows_en/
+
 FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 {
-	const int n = iCoefNum - 1;
+	const FLOAT_t n = iCoefNum - 1;
 	const FLOAT_t a = (FLOAT_t) M_TWOPI * iCnt / n;
 	const FLOAT_t a2 = 2 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	const FLOAT_t a3 = 3 * (FLOAT_t) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
@@ -1667,7 +1706,7 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 	{
 	default:
 	case BOARD_WTYPE_BLACKMAN_HARRIS:
-		// Blackman-Harris
+		// Blackman-Harris (same as MATLAB)
 		{
 			const FLOAT_t w = (
 				+ (FLOAT_t) 0.35875 
@@ -1711,6 +1750,21 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 				);	// blackman-harris
 			return w;
 		}
+	case BOARD_WTYPE_BLACKMAN_HARRIS_4TERM:
+		// Blackman-Harris (4-term)
+		// Cos4 Blackman-Harris -74dB W=4
+		// 0.40217-0.49703*cos(2*π*i/(n-1))+0.09892*cos(4*π*i/(n-1))-0.00188*cos(6*π*i/(n-1)), i=0..n-1
+		// https://www.edn.com/windowing-functions-improve-fft-results-part-ii/
+		// 0.40217, 0.49703, 0.09892, and 0.00188.
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.40217
+				- (FLOAT_t) 0.49703 * COSF(a)
+				+ (FLOAT_t) 0.09892 * COSF(a2)
+				- (FLOAT_t) 0.00188 * COSF(a3)
+				);
+			return w;
+		}
 	case BOARD_WTYPE_BLACKMAN_HARRIS_7TERM:
 		// Blackman-Harris 7-term
 		// На float с одинарной точностью не имеет смысла переходить с BOARD_WTYPE_BLACKMAN_HARRIS
@@ -1735,6 +1789,17 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 				+ (FLOAT_t) 0.1365995 * COSF(a2) 
 				- (FLOAT_t) 0.0106411 * COSF(a3)
 				);	
+			return w;
+		}
+	case BOARD_WTYPE_NUTTALL:
+		// Nuttall window, continuous first derivative
+		{
+			const FLOAT_t w = (
+				+ (FLOAT_t) 0.355768
+				- (FLOAT_t) 0.487396 * COSF(a)
+				+ (FLOAT_t) 0.144232 * COSF(a2)
+				- (FLOAT_t) 0.012604 * COSF(a3)
+				);
 			return w;
 		}
 	case BOARD_WTYPE_HAMMING:
@@ -1764,11 +1829,49 @@ FLOAT_t fir_design_window(int iCnt, int iCoefNum, int wtype)
 	}
 }
 
+#if 0
+// takem from Wolf project (UA3REO)
+//Windowing
+//Dolphâ€“Chebyshev
+{
+	const float64_t atten = 100.0;
+	float64_t max = 0.0;
+	float64_t tg = pow(10.0, atten / 20.0);
+	float64_t x0 = cosh((1.0 / ((float64_t)FFT_SIZE - 1.0)) * acosh(tg));
+	float64_t M = (FFT_SIZE - 1) / 2;
+	if ((FFT_SIZE % 2) == 0)
+		M = M + 0.5; /* handle even length windows */
+	for (uint32_t nn = 0; nn < ((FFT_SIZE / 2) + 1); nn++)
+	{
+		float64_t n = nn - M;
+		float64_t sum = 0.0;
+		for (uint32_t i = 1; i <= M; i++)
+		{
+			float64_t cheby_poly = 0.0;
+			float64_t cp_x = x0 * cos(M_PI * i / (float64_t)FFT_SIZE);
+			float64_t cp_n = FFT_SIZE - 1;
+			if (fabs(cp_x) <= 1)
+				cheby_poly = cos(cp_n * acos(cp_x));
+			else
+				cheby_poly = cosh(cp_n * acosh(cp_x));
+
+			sum += cheby_poly * cos(2.0 * n * M_PI * (float64_t)i / (float64_t)FFT_SIZE);
+		}
+		window_multipliers[nn] = tg + 2 * sum;
+		window_multipliers[FFT_SIZE - nn - 1] = window_multipliers[nn];
+		if (window_multipliers[nn] > max)
+			max = window_multipliers[nn];
+	}
+	for (uint32_t nn = 0; nn < FFT_SIZE; nn++)
+		window_multipliers[nn] /= max; /* normalise everything */
+}
+
+#endif
 
 // Calculate window function (blackman-harris, hamming, rectangular)
 static double fir_design_windowL(int iCnt, int iCoefNum, int wtype)
 {
-	const int n = iCoefNum - 1;
+	const double n = iCoefNum - 1;
 	const double a = (double) M_TWOPI * iCnt / n;
 	const double a2 = 2 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
 	const double a3 = 3 * (double) M_TWOPI * iCnt / n;	// для повышения точности умножение перенесено до деления
@@ -2830,12 +2933,6 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 #endif
 }
 
-// for speex equalizer responce buffer
-static int freq2index(unsigned freq)
-{
-	return (uint_fast64_t) freq * SPEEXNN * 2 / ARMI2SRATE;
-}
-
 // calculate 1/2 of coefficients
 void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 {
@@ -2926,36 +3023,6 @@ void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
 		fir_design_passtrough(dCoeff, iCoefNum, 1);		// сигнал через НЧ фильтр не проходит
 		break;
 	}
-}
-
-
-static void copytospeex(float * frame)
-{
-	ASSERT((FFTSizeFilters / 2) == SPEEXNN);
-	unsigned i;
-	for (i = 0; i < SPEEXNN; ++ i)
-	{
-		struct Complex * const sig = & Sig [i];
-		frame [i] = SQRTF(sig->real * sig->real + sig->imag * sig->imag);
-	}
-#if 0
-	const FLOAT_t r1 = db2ratio(- 100);
-	const FLOAT_t r2 = db2ratio(- 80);
-	const FLOAT_t r3 = db2ratio(- 60);
-
-	/* Удаление постоянной составляющей по возможности */
-	frame [0] *= r1;
-	frame [1] *= r2;
-	frame [2] *= r3;
-#endif
-}
-
-// for SPEEX - equalizer in frequency domain
-void dsp_recalceq(uint_fast8_t pathi, float * frame)
-{
-	dsp_recalceq_coeffs(pathi, FIRCoef_rx_AUDIO [gwprof] [pathi], Ntap_rx_AUDIO);	// calculate 1/2 of coefficients
-	imp_response(FIRCoef_rx_AUDIO [gwprof] [pathi], Ntap_rx_AUDIO);	// Получение АЧХ из коэффициентов симмметричного FIR
-	copytospeex(frame);
 }
 
 #if WITHMODEM
@@ -3330,7 +3397,7 @@ static RAMFUNC FLOAT_t agc_measure_float(
 	uint_fast8_t pathi
 	)
 {
-	BEGIN_STAMP3();
+	//BEGIN_STAMP3();
 
 	const volatile agcparams_t * const agcp = & rxagcparams [gwagcprofrx] [pathi];
 	volatile agcstate_t * const st = & rxagcstate [pathi];
@@ -3345,7 +3412,7 @@ static RAMFUNC FLOAT_t agc_measure_float(
 	agc_perform(agcp, st, strength);	// измеритель уровня сигнала
 	//END_STAMP();
 
-	END_STAMP3();
+	//END_STAMP3();
 	return agc_result_slow(st);
 }
 
@@ -4283,7 +4350,7 @@ static RAMFUNC_NONILINE FLOAT_t baseband_demodulator(
 			//const int fdelta10 = ((int64_t) saved_delta_fi [pathi] * ARMSAIRATE * 10) >> 32;	// Отклнение частоты в 0.1 герц единицах
 			// значение для прослушивания
 			// 0.707 == M_SQRT1_2
-			const FLOAT_t sample = saved_delta_fi [pathi]; //(FLOAT_t) M_SQRT1_2;
+			const FLOAT_t sample = adpt_input(& nfmdemod, saved_delta_fi [pathi]);
 			r = sample * agc_squelchopen(fltstrengthslow, pathi);
 		}
 		else
@@ -5865,8 +5932,9 @@ prog_codec1reg(void)
 	// also use glob_mik1level
 	ifc1->setvolume(glob_afgain, glob_afmute, glob_dsploudspeaker_off);
 	ifc1->setlineinput(glob_lineinput, glob_mikebust20db, glob_mik1level, glob_lineamp);
+#if defined (HARDWARE_CODEC1_NPROCPARAMS)
 	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
-
+#endif /* defined (HARDWARE_CODEC1_NPROCPARAMS) */
 #endif /* defined(CODEC1_TYPE) */
 }
 

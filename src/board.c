@@ -609,60 +609,63 @@ static void setlevelindicator(long code)	// в кодах ЦАП
 static void 
 prog_gpioreg(void)
 {
+#if defined (PREAMP_MIO)
+	xc7z_gpio_output(PREAMP_MIO);
+	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
+#endif /* defined (PREAMP_MIO) */
+#if LS020_RESET
+	LS020_RESET_SET(glob_lcdreset);	// LCD reset bit
+#endif /* LS020_RESET */
 
-	#if LS020_RESET
-		LS020_RESET_SET(glob_lcdreset);	// LCD reset bit
-	#endif /* LS020_RESET */
+#if TARGET_CS4272_RESET_BIT
+	// CODEC2 reset
+	if (glob_codec2_nreset == 0)
+		TARGET_CS4272_RESET_PORT_S(TARGET_CS4272_RESET_BIT);
+	else
+		TARGET_CS4272_RESET_PORT_C(TARGET_CS4272_RESET_BIT);
+#endif /* TARGET_CS4272_RESET_BIT */
 
-	#if TARGET_CS4272_RESET_BIT
-		// CODEC2 reset
-		if (glob_codec2_nreset == 0)
-			TARGET_CS4272_RESET_PORT_S(TARGET_CS4272_RESET_BIT);
-		else
-			TARGET_CS4272_RESET_PORT_C(TARGET_CS4272_RESET_BIT);
-	#endif /* TARGET_CS4272_RESET_BIT */
+#if TARGET_DDSRESET_BIT
+	// DDS RESET
+	if (glob_reset_n == 0)
+		TARGET_DDSRESET_PORT_S(TARGET_DDSRESET_BIT);
+	else
+		TARGET_DDSRESET_PORT_C(TARGET_DDSRESET_BIT);
+#endif /* TARGET_DDSRESET_BIT */
 
-	#if TARGET_DDSRESET_BIT
-		// DDS RESET
-		if (glob_reset_n == 0)
-			TARGET_DDSRESET_PORT_S(TARGET_DDSRESET_BIT);
-		else
-			TARGET_DDSRESET_PORT_C(TARGET_DDSRESET_BIT);
-	#endif /* TARGET_DDSRESET_BIT */
+#if defined (TARGET_BAND_DATA_SET)
+	// Band select
+	TARGET_BAND_DATA_SET(glob_bandf);
+#endif /* defined (TARGET_BAND_DATA_SET) */
 
-	#if defined (TARGET_BAND_DATA_SET)
-		// Band select
-		TARGET_BAND_DATA_SET(glob_bandf);
-	#endif /* defined (TARGET_BAND_DATA_SET) */
+#if defined (TARGET_BANDF3_DATA_TX_SET)
+	// Band select
+	TARGET_BANDF3_DATA_TX_SET(glob_bandf3, glob_tx);
+#endif /* defined (TARGET_BANDF3_DATA_TX_SET) */
 
-	#if defined (TARGET_BANDF3_DATA_TX_SET)
-		// Band select
-		TARGET_BANDF3_DATA_TX_SET(glob_bandf3, glob_tx);
-	#endif /* defined (TARGET_BANDF3_DATA_TX_SET) */
+#if defined (HARDWARE_SDIOPOWER_SET)
+	// SD CARD POWER ENABLE BIT
+	HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
+#endif /* defined (HARDWARE_SDIOPOWER_SET) */
 
-	#if defined (HARDWARE_SDIOPOWER_SET)
-		// SD CARD POWER ENABLE BIT
-		HARDWARE_SDIOPOWER_SET(glob_sdcardpoweron);
-	#endif /* defined (HARDWARE_SDIOPOWER_SET) */
+#if defined (TARGET_USBFS_VBUSON_SET)
+	// USB FLASH POWER ENABLE BIT
+	TARGET_USBFS_VBUSON_SET(glob_hostvbuson);
+#endif /* defined (TARGET_USBFS_VBUSON_SET) */
 
-	#if defined (TARGET_USBFS_VBUSON_SET)
-		// USB FLASH POWER ENABLE BIT
-		TARGET_USBFS_VBUSON_SET(glob_hostvbuson);
-	#endif /* defined (TARGET_USBFS_VBUSON_SET) */
+#if defined (HARDWARE_BL_SET)
+	// яркость подсветки
+	HARDWARE_BL_SET(! glob_bglightoff, glob_bglight);
+#endif /* defined (HARDWARE_BL_SET) */
 
-	#if defined (HARDWARE_BL_SET)
-		// яркость подсветки
-		HARDWARE_BL_SET(! glob_bglightoff, glob_bglight);
-	#endif /* defined (HARDWARE_BL_SET) */
-
-	#if defined (HARDWARE_DAC_ALC)
-	//#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
-		// ALC
-		// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
-		//HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-		HARDWARE_DAC_ALC((WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
-	//#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
-	#endif /* defined (HARDWARE_DAC_ALC) */
+#if defined (HARDWARE_DAC_ALC)
+//#if WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL
+	// ALC
+	// регулировка напряжения на REFERENCE INPUT TXDAC AD9744
+	//HARDWARE_DAC_ALC((glob_opowerlevel - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
+	HARDWARE_DAC_ALC((WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
+//#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
+#endif /* defined (HARDWARE_DAC_ALC) */
 }
 
 
@@ -4768,6 +4771,19 @@ prog_ctrlreg(uint_fast8_t plane)
 	spi_unselect(target);
 }
 
+#elif CTLREGMODE_ZYNQ_4205
+
+	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+// Перенес в prog_gpioreg
+//	xc7z_gpio_output(PREAMP_MIO);
+//	xc7z_writepin(PREAMP_MIO, ! glob_preamp);
+}
+
 #elif CTLREGMODE_NOCTLREG
 
 	#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -5859,7 +5875,7 @@ prog_dds1_ftw(const ftw_t * value)
 
 #else	/* LO1PHASES */
 
-	#if CPUSTYLE_XC7Z
+	#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 		xc7z_dds_ftw(value);
 	#elif (DDS1_TYPE == DDS_TYPE_AD9852)
 		prog_ad9852_freq1(targetdds1, value);
@@ -5898,7 +5914,7 @@ prog_dds1_ftw(const ftw_t * value)
 void 
 prog_rts1_ftw(const ftw_t * value)
 {
-#if CPUSTYLE_XC7Z
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
 	xc7z_dds_rts(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
@@ -6692,11 +6708,10 @@ static void board_fpga_loader_initialize(void)
 	HARDWARE_FPGA_LOADER_INITIALIZE();
 }
 
-
 #if WITHFPGALOAD_PS
 
 #if ! (CPUSTYLE_R7S721 || 0)
-/* на процессоре renesas образ располагается в памяти, испольщуемой для хранений буферов DSP части */
+/* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
 static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
 {
 #include "rbfimages.h"
@@ -7306,6 +7321,10 @@ uint_fast8_t boad_mike_adcoverflow(void)
 */
 void board_init_io(void)
 {
+#if CPUSTYLE_XC7Z
+	xc7z_hardware_initialize();
+#endif /* CPUSTYLE_XC7Z */
+
 	board_gpio_init();			/* инициализация на вывод битов PIO процессора, если некоторые биты управляются напрямую без SPI */
 
 #if WITHFPGAWAIT_AS
@@ -9114,6 +9133,35 @@ board_get_pressed_key(void)
 	}
 
 #endif	/* KBD_MASK */
+
+#if KEYBOARD_MATRIX_4x4
+
+	static const uint_fast8_t row_table [4] = { ROW1_MIO, ROW2_MIO, ROW3_MIO, ROW4_MIO, };
+	static const uint_fast8_t col_table [4] = { COL1_MIO, COL2_MIO, COL3_MIO, COL4_MIO, };
+	uint8_t i = AKBDEND + 1;
+	enum {
+		cols = ARRAY_SIZE(col_table),
+		rows = ARRAY_SIZE(row_table)
+	};
+
+	for (uint8_t r = 0; r < rows; r ++)
+	{
+		xc7z_writepin(row_table[r], 0);
+
+		for (uint8_t c = 0; c < cols; c ++)
+		{
+			if (xc7z_readpin(col_table [c]) == 0)
+			{
+				xc7z_writepin(row_table[r], 1);
+				return i;
+			}
+			i ++;
+		}
+
+		xc7z_writepin(row_table[r], 1);
+	}
+
+#endif /* KEYBOARD_MATRIX_4x4 */
 
 	return KEYBOARD_NOKEY;
 }

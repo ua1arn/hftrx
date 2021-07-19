@@ -9,9 +9,6 @@
 
 #if WITHINTEGRATEDDSP
 
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	//#define ARM_MATH_NEON 1
-
 	#include "BasicMathFunctions/BasicMathFunctions.c"
 	//#include "BayesFunctions/BayesFunctions.c"
 	#include "CommonTables/CommonTables.c"
@@ -22,7 +19,7 @@
 	#include "FastMathFunctions/FastMathFunctions.c"
 	#include "FilteringFunctions/FilteringFunctions.c"
 	//#include "InterpolationFunctions/InterpolationFunctions.c"
-	#include "MatrixFunctions/MatrixFunctions.c"
+	//#include "MatrixFunctions/MatrixFunctions.c"
 
 	//#include "QuaternionMathFunctions/QuaternionMathFunctions.c"
 	#include "StatisticsFunctions/StatisticsFunctions.c"

@@ -138,7 +138,7 @@ static uint_fast8_t
 mdma_getburst(uint_fast16_t tlen, uint_fast8_t bus, uint_fast8_t xinc)
 {
 	if (bus == 0 && xinc == 0)
-		return 0;
+		return 4;
 	if (xinc == 0)
 		return 0;
 
@@ -202,7 +202,7 @@ mdma_startandwait(void)
 		ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
 		hardware_nonguiyield();
 	}
-	__DMB();	//ensure the ordering of data cache maintenance operations and their effects
+	//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
 	ASSERT((MDMA_CH->CISR & MDMA_CISR_TEIF_Msk) == 0);	/* Channel x transfer error interrupt flag */
 
 }
@@ -210,12 +210,12 @@ mdma_startandwait(void)
 void arm_hardware_mdma_initialize(void)
 {
 #if CPUSTYLE_STM32MP1
-	/* Enable the DMA2D Clock */
-	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
+	/* Enable the MDMA Clock */
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
 	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR |= RCC_MC_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
 	(void) RCC->MP_AHB6LPENSETR;
-	//RCC->MP_TZAHB6ENSETR |= RCC_MP_TZAHB6ENSETR_MDMAEN;
+	//RCC->MP_TZAHB6ENSETR = RCC_MP_TZAHB6ENSETR_MDMAEN;
 	//(void) RCC->MP_TZAHB6ENSETR;
 
 	/* SYSCFG clock enable */
@@ -232,14 +232,14 @@ void arm_hardware_mdma_initialize(void)
 	(void) SYSCFG->ICNR;
 
 #elif CPUSTYLE_STM32H7XX
-	/* Enable the DMA2D Clock */
+	/* Enable the MDMA Clock */
 	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
 	(void) RCC->AHB3ENR;
 	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
 	(void) RCC->AHB3LPENR;
 
 #else /* CPUSTYLE_STM32H7XX */
-	/* Enable the DMA2D Clock */
+	/* Enable the MDMA Clock */
 	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
 	(void) RCC->AHB1ENR;
 	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
@@ -816,6 +816,27 @@ display_colorbuf_set_vline(
 	//colmain_fillrect(buffer, dx, dy, col, row0, 1, h, color);
 	while (h --)
 		colpip_point(buffer, dx, dy, col, row0 ++, color);
+}
+
+// Нарисовать горизонтальную цветную полосу
+// Формат RGB565
+void
+display_colorbuf_set_hline(
+	PACKEDCOLORPIP_T * buffer,
+	uint_fast16_t dx,	// ширина буфера
+	uint_fast16_t dy,	// высота буфера
+	uint_fast16_t col0,	// горизонтальная координата начального пикселя (0..dx-1) слева направо
+	uint_fast16_t row0,	// вертикальная координата начального пикселя (0..dy-1) сверху вниз
+	uint_fast16_t w,	// ширина
+	COLORPIP_T color
+	)
+{
+	ASSERT(row0 < dy);
+	ASSERT((col0 + w) <= dx);
+	/* рисуем прямоугольник высотой в 1 пиксель */
+	//colmain_fillrect(buffer, dx, dy, col0, row0, w, 1, color);
+	while (w --)
+		colpip_point(buffer, dx, dy, col0 ++, row0, color);
 }
 
 // заполнение прямоугольной области в видеобуфере
@@ -2052,15 +2073,17 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 	char cc
 	)
 {
-	const uint_fast8_t width = SMALLCHARW3;
 	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
-	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
-	}
-	return x + width;
+	return ltdc_horizontal_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, c);
+//	const uint_fast8_t width = SMALLCHARW3;
+//	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+//	uint_fast8_t cgrow;
+//	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+//	{
+//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
+//	}
+//	return x + width;
 }
 
 static void
@@ -2354,7 +2377,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_GREEN     	, COLOR24(0x00, 0xFF, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_RED       	, COLOR24(0xFF, 0x00, 0x00));
 
-	fillfour_xltrgb24(xltable, COLORPIP_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
+	fillfour_xltrgb24(xltable, COLORMAIN_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
 	// код (COLORPIP_BASE + 15) освободися. GUI_MENUSELECTCOLOR?
 
 #if COLORSTYLE_ATS52

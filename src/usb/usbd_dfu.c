@@ -12,7 +12,6 @@
 #include "gpio.h"
 #include "spi.h"
 #include "board.h"
-#include "audio.h"
 #include "formats.h"
 #include "usbd_def.h"
 #include "usbd_core.h"

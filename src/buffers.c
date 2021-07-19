@@ -1211,8 +1211,8 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 	ASSERT(p->tag3 == p);
 
 	// Использование данных.
-	v->ivqv [L] = p->buff [pos * DMABUFSTEP16 + L];	// микрофон или левый канал
-	v->ivqv [R] = p->buff [pos * DMABUFSTEP16 + R];	// правый канал
+	v->ivqv [L] = adpt_input(& afcodecio, p->buff [pos * DMABUFSTEP16 + L]);	// микрофон или левый канал
+	v->ivqv [R] = adpt_input(& afcodecio, p->buff [pos * DMABUFSTEP16 + R]);	// правый канал
 
 	if (++ pos >= CNT16)
 	{
@@ -1223,7 +1223,7 @@ RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 }
 
 // звук для самоконтроля
-void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1)
+void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
@@ -1242,9 +1242,9 @@ void savemoni16stereo(int_fast32_t ch0, int_fast32_t ch1)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 
-	p->buff [n * DMABUFSTEP16 + L] = ch0;	// sample value
+	p->buff [n * DMABUFSTEP16 + L] = adpt_outputexact(& afcodecio, ch0);	// sample value
 #if DMABUFSTEP16 > 1
-	p->buff [n * DMABUFSTEP16 + R] = ch1;	// sample value
+	p->buff [n * DMABUFSTEP16 + R] = adpt_outputexact(& afcodecio, ch1);	// sample value
 #endif
 
 	if (++ n >= CNT16)
@@ -1531,7 +1531,32 @@ static RAMFUNC void buffers_resample(void)
 	buffers_savefromresampling(p);
 }
 
+// вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
+// Параметр - количество сэмплов (стерео пар или квадратур) в обмене этого обработчика.
+void RAMFUNC buffers_resampleuacin(unsigned nsamples)
+{
+	static RAMDTCM unsigned n = 0;
+	n += nsamples;
+	while (n >= CNT16)
+	{
+		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
+#if ! WITHI2SHW
+		release_dmabuffer16(getfilled_dmabuffer16phones());
+#endif /* WITHI2SHW */
+		n -= CNT16;
+	}
+}
+
+#else /* WITHUSBUAC */
+
+// вызывается из какой-либо функции обслуживания I2S каналов (все синхронны).
+// Параметр - количество сэмплов (стерео пар или квадратур) в обмене этого обработчика.
+void RAMFUNC buffers_resampleuacin(unsigned nsamples)
+{
+}
+
 #endif /* WITHUSBUAC */
+
 // --- Коммутация потоков аудиоданных
 
 #if WITHUSEAUDIOREC
@@ -1999,19 +2024,6 @@ void RAMFUNC processing_dmabuffer32rx(uintptr_t addr)
 	debugcount_rx32adc += CNT32RX;	// в буфере пары сэмплов по четыре байта
 #endif /* WITHBUFFERSDEBUG */
 	dsp_extbuffer32rx((const IFADCvalue_t *) addr);
-
-#if WITHUSBUAC
-	static RAMDTCM unsigned rx32adc = 0;
-	rx32adc += CNT32RX; 
-	while (rx32adc >= CNT16)
-	{
-		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
-#if ! WITHI2SHW
-		release_dmabuffer16(getfilled_dmabuffer16phones());
-#endif /* WITHI2SHW */
-		rx32adc -= CNT16;
-	}
-#endif /* WITHUSBUAC */
 }
 
 void release_dmabuffer32rx(uintptr_t addr)

@@ -11,6 +11,8 @@ volatile uint_fast8_t tsc_int = 0;
 
 int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte, uint8_t * r_buffer)
 {
+#if WITHTWISW
+
 	i2c_start(d_adr);
 	i2c_write_withrestart(r_adr);		// Register 135
 	i2c_start(d_adr | 1);
@@ -36,37 +38,57 @@ int32_t i2cperiph_readN(uint_fast8_t d_adr, uint_fast8_t r_adr, uint32_t r_byte,
 		i2c_read(r_buffer ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
 		return 0;
 	}
+
+#elif WITHTWIHW
+
+	uint8_t bufw = r_adr;
+	i2chw_write(d_adr, & bufw, 1);
+	i2chw_read(d_adr, r_buffer, r_byte);
+	return 0;
+
+#endif
 }
 
 void i2cperiph_write8(uint_fast8_t DeviceAddr, uint_fast8_t reg, uint_fast8_t val)
 {
+#if WITHTWISW
 	i2c_start(DeviceAddr);
 	i2c_write(reg);		// Register 135
 	i2c_write(val);
 	i2c_waitsend();
 	i2c_stop();
+#elif WITHTWIHW
+	uint8_t bufw[2] = { reg, val, };
+	i2chw_write(DeviceAddr, bufw, 2);
+#endif
 }
 
 uint_fast16_t i2cperiph_read8(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 {
 	uint8_t v;
-
+#if WITHTWISW
 	i2c_start(DeviceAddr);
 	i2c_write_withrestart(reg);		// Register 135
 	i2c_start(DeviceAddr | 1);
 	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+#elif WITHTWIHW
+	i2cperiph_readN(DeviceAddr, reg, 1, & v);
+#endif
 	return v;
 }
 
 uint_fast16_t i2cperiph_read16(uint_fast8_t DeviceAddr, uint_fast8_t reg)
 {
 	uint8_t v [2];
-
+#if WITHTWISW
 	i2c_start(DeviceAddr);
 	i2c_write_withrestart(reg);		// Register 135
 	i2c_start(DeviceAddr | 1);
 	i2c_read(& v [0], I2C_READ_ACK_1);
 	i2c_read(& v [1], I2C_READ_NACK);
+#elif WITHTWIHW
+	i2cperiph_readN(DeviceAddr, reg, 2, v);
+#endif
 	return v [0] * 256 + v [1];
 }
 

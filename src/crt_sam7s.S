@@ -89,7 +89,7 @@ FIQAddr:       .word FIQ_Handler
    .ltorg
 
 
-   .section .init, "ax"
+   .section .startup0, "ax"
    .code 32
    
    .global Reset_Handler7

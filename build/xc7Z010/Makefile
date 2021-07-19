@@ -51,8 +51,7 @@ CORE += -mfpu=neon-vfpv3
 # only -Og for app
 # Application
 #OPT = -Og
-OPT = -Ofast
-LTO = -flto
+OPT = -Ofast -flto
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -205,14 +204,14 @@ LIBS    = $(DLIBS) $(ULIBS)
 
 MCFLAGS = $(CORE) -fno-math-errno -funroll-loops -fgraphite-identity -ffunction-sections -fdata-sections -ffat-lto-objects -ftree-vectorize
 #
-#ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 -Wa,-amhls=$(<:.S=.lst) $(ADEFS)
-ASFLAGS = $(MCFLAGS) $(OPT) $(LTO) -g -gdwarf-2 $(ADEFS)
-#CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
-CPFLAGS = $(MCFLAGS) $(OPT) $(LTO) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
+#ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 -Wa,-amhls=$(<:.S=.lst) $(ADEFS)
+ASFLAGS = $(MCFLAGS) $(OPT) -g -gdwarf-2 $(ADEFS)
+#CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -mthumb-interwork -fomit-frame-pointer -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
+CPFLAGS = $(MCFLAGS) $(OPT) -gdwarf-2 -fomit-frame-pointer -Wall $(DEFS) $(MAKE_DEFINES)
 
 # see also -Xlinker --print-gc-sections
-LDFLAGS_BOOT = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
-LDFLAGS_APP = $(MCFLAGS) $(LTO) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
+LDFLAGS_BOOT = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_BOOT) -Wl,-Map=$(PROJECT)_boot.map,--cref $(LIBDIR)
+LDFLAGS_APP = $(MCFLAGS) $(OPT) -nostartfiles -Xlinker --gc-sections -T$(LDSCRIPT_APP) -Wl,-Map=$(PROJECT)_app.map,--cref $(LIBDIR)
 
 # Generate dependency information
 CPFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
@@ -230,22 +229,28 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-all: bitstream_4205.h bitstream_ant.h $(PROJECT)_app.xyl32
+all: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h $(PROJECT)_app.xyl32
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
-bitstream_ant.h: bitstream_ant.bit
-	./bit2c bitstream_ant.bit bitstream_ant.h
+bitstream_ant_10.h: bitstream_ant_10.bit
+	./bit2c bitstream_ant_10.bit bitstream_ant_10.h
 
-bitstream_4205.h: bitstream_4205.bit
-	./bit2c bitstream_4205.bit bitstream_4205.h
+bitstream_ant_20.h: bitstream_ant_20.bit
+	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
+
+bitstream_4205_10.h: bitstream_4205_10.bit
+	./bit2c bitstream_4205_10.bit bitstream_4205_10.h
 	
 bootloader: BOOT2
   
-app_run: $(PROJECT)_app.elf bitstream_4205.bit app_run_4205.tcl
-	xsct.bat app_run_4205.tcl 
+#app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
+#	xsct.bat app_run_4205.tcl 
   
-#app_run: $(PROJECT)_app.elf bitstream_ant.bit app_run_ant.tcl
-#	xsct.bat app_run_ant.tcl
+app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
+	xsct.bat app_run_ant10.tcl  
+  
+#app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
+#	xsct.bat app_run_ant10.tcl
 
 lib: $(ZYNQLIB)
 
@@ -277,11 +282,11 @@ $(OBJSA) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS) $(ZYNQLIB)
+%_boot.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS) $(ZYNQLIB)
+%_app.elf: $(OBJS)
 	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
@@ -297,8 +302,8 @@ clean: version
 	-$(RM) $(OBJS)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) bitstream_ant.h
-	-$(RM) bitstream_4205.h
+	-$(RM) bitstream_ant_10.h bitstream_ant_20.h
+	-$(RM) bitstream_4205_10.h
 
 version:
 	$(CC) --version

@@ -148,6 +148,9 @@ void MX_USB_DEVICE_Init(void)
 #if WITHUSBRNDIS
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_RNDIS);
 #endif /* WITHUSBRNDIS */
+#if WITHUSBHID
+	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_HID);
+#endif /* WITHUSBHID */
 
 	if (USBD_Start(&hUsbDeviceHS) != USBD_OK)
 	{

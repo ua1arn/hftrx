@@ -22,6 +22,163 @@
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
+#if CPUSTYLE_XC7Z
+
+#include "lib/zynq/src/xadcps.h"
+#include "lib/zynq/src/xgpiops.h"
+
+static XGpioPs xc7z_gpio;
+static XAdcPs xc7z_xadc;
+
+void xc7z_hardware_initialize(void)
+{
+	int Status;
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (1uL << 22);	// APER_CLK_CTRL.GPIO_CPU_1XCLKACT
+	// GPIO PS init
+	XGpioPs_Config * gpiocfg = XGpioPs_LookupConfig(XPAR_XGPIOPS_0_DEVICE_ID);
+	Status = XGpioPs_CfgInitialize(& xc7z_gpio, gpiocfg, gpiocfg->BaseAddr);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("PS GPIO init error\n");
+		ASSERT(0);
+	}
+
+	XAdcPs_Config * xadccfg = XAdcPs_LookupConfig(XPAR_XADCPS_0_DEVICE_ID);
+	XAdcPs_CfgInitialize(& xc7z_xadc, xadccfg, xadccfg->BaseAddress);
+
+	Status = XAdcPs_SelfTest(& xc7z_xadc);
+	if (Status != XST_SUCCESS)
+	{
+		PRINTF("XADC init error\n");
+		ASSERT(0);
+	}
+
+	XAdcPs_SetSequencerMode(& xc7z_xadc, XADCPS_SEQ_MODE_SAFE);
+}
+
+float xc7z_get_cpu_temperature(void)
+{
+	u32 TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
+	return XAdcPs_RawToTemperature(TempRawData);
+}
+
+
+uint8_t xc7z_readpin(uint8_t pin)
+{
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
+
+	uint_fast8_t Bank;
+	uint_fast8_t PinNumber;
+
+	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
+
+	uint8_t val = (XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_DATA_BANK_OFFSET) +
+			XGPIOPS_DATA_RO_OFFSET) >> (uint32_t)PinNumber) & (uint32_t)1;
+
+	return val;
+}
+
+void xc7z_writepin(uint8_t pin, uint8_t val)
+{
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
+
+	uint_fast8_t Bank;
+	uint_fast8_t PinNumber;
+	uint32_t RegOffset;
+	uint32_t DataVar = val;
+	uint32_t Value;
+
+	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
+
+	GPIO_BANK_OUTPUT_STATE(Bank, 1uL << PinNumber, !! val << PinNumber);
+	return;
+
+	if (PinNumber > 15U) {
+		/* There are only 16 data bits in bit maskable register. */
+		PinNumber -= 16;
+		RegOffset = XGPIOPS_DATA_MSW_OFFSET;
+	} else {
+		RegOffset = XGPIOPS_DATA_LSW_OFFSET;
+	}
+
+	/*
+	 * Get the 32 bit value to be written to the Mask/Data register where
+	 * the upper 16 bits is the mask and lower 16 bits is the data.
+	 */
+	DataVar &= (uint32_t)0x01;
+	Value = ~((uint32_t)1 << (PinNumber + 16)) & ((DataVar << PinNumber) | 0xFFFF0000U);
+	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_DATA_MASK_OFFSET) +
+			RegOffset, Value);
+}
+
+void xc7z_gpio_input(uint8_t pin)
+{
+	if (pin < ZYNQ_MIO_CNT)
+	{
+		MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+	}
+
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
+
+	uint_fast8_t Bank;
+	uint_fast8_t PinNumber;
+
+	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
+
+	uint32_t DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET);
+
+	DirModeReg &= ~ ((uint32_t)1 << (uint32_t)PinNumber);
+
+	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET, DirModeReg);
+}
+
+void xc7z_gpio_output(uint8_t pin)
+{
+	if (pin < ZYNQ_MIO_CNT)
+	{
+		MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+	}
+
+	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
+	ASSERT(pin < xc7z_gpio.MaxPinNum);
+
+	uint_fast8_t Bank;
+	uint_fast8_t PinNumber;
+
+	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
+
+	// XGPIOPS_DIRM_OFFSET = 0x00000204U
+	uint32_t DirModeReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET);
+	DirModeReg |= ((uint32_t)1 << PinNumber);
+	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_DIRM_OFFSET, DirModeReg);
+
+	// XGPIOPS_OUTEN_OFFSET = 0x0208
+	uint32_t OpEnableReg = XGpioPs_ReadReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_OUTEN_OFFSET);
+	OpEnableReg |= ((uint32_t)1 << PinNumber);
+	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
+			((uint32_t)(Bank) * XGPIOPS_REG_MASK_OFFSET) +
+			XGPIOPS_OUTEN_OFFSET, OpEnableReg);
+}
+
+#endif /* CPUSTYLE_XC7Z */
+
 /* 
 	Машинно-независимый обработчик прерываний.
 	Вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
@@ -728,8 +885,8 @@ hardware_get_encoder2_bits(void)
 #elif WITHENCODER && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER && CPUSTYLE_XC7Z && defined (ENCODER2_GPIO_BANK)
-	return ((XGpioPs_Read(& xc7z_gpio, ENCODER2_GPIO_BANK) >> ENCODER2_GPIO_SHIFT) & ENCODER2_GPIO_MASK);
+#elif WITHENCODER && CPUSTYLE_XC7Z
+	return ((xc7z_readpin(ENCODER2_BITA) != 0) * 2 + (xc7z_readpin(ENCODER2_BITB) != 0));
 #else /* WITHENCODER */
 	return 0;
 #endif /* WITHENCODER */
@@ -1387,7 +1544,7 @@ uint32_t hardware_get_random(void)
 		if ((RCC->AHB2ENR & RCC_AHB2ENR_RNGEN) == 0)
 		{
 			RCC->AHB2ENR |= RCC_AHB2ENR_RNGEN;	/* RNG clock enable */
-			__DSB();
+			(void) RCC->AHB2ENR;
 			RNG->CR |= RNG_CR_RNGEN;
 		}
 
@@ -1401,7 +1558,7 @@ uint32_t hardware_get_random(void)
 	if ((RCC->AHBENR & RCC_AHBENR_RNGEN) == 0)
 	{
 		RCC->AHBENR |= RCC_AHBENR_RNGEN;	/* RNG clock enable */
-		__DSB();
+		(void) RCC->AHBENR;
 		RNG->CR |= RNG_CR_RNGEN;
 	}
 
@@ -1846,7 +2003,115 @@ void arm_hardware_flush_invalidate(uintptr_t base, int_fast32_t dsize)
 	SCB_CleanInvalidateDCache_by_Addr((void *) base, dsize);	// DCCIMVAC register used.
 }
 
-#elif (__CORTEX_A != 0)
+#elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
+
+//	MVA
+//	For more information about the possible meaning when the table shows that an MVA is required
+// 	see Terms used in describing the maintenance operations on page B2-1272.
+// 	When the data is stated to be an MVA, it does not have to be cache line aligned.
+
+__STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_mva = (uintptr_t) addr;
+		__DSB();
+		do
+		{
+			__set_DCCMVAC(op_mva);	// Clean data cache line by address.
+			op_mva += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		//  __ASM volatile ("dmb 0xF":::"memory");
+	}
+}
+
+__STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_mva = (uintptr_t) addr;
+		__DSB();
+		do
+		{
+			__set_DCCIMVAC(op_mva);	// Clean and Invalidate data cache by address.
+			op_mva += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
+		//  __ASM volatile ("dmb 0xF":::"memory");
+	}
+}
+
+__STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uintptr_t) addr) & (DCACHEROWSIZE - 1U));
+		uintptr_t op_mva = (uintptr_t) addr;
+		do
+		{
+			__set_DCIMVAC(op_mva);	// Invalidate data cache line by address.
+			op_mva += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+		// Cache Invalidate operation is not follow by memory-writes
+	}
+}
+
+#if (__L2C_PRESENT == 1)
+
+__STATIC_FORCEINLINE void L2_CleanDCache_by_Addr(volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// Clean cache by physical address
+			L2C_310->CLEAN_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+	}
+}
+
+__STATIC_FORCEINLINE void L2_CleanInvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// Clean and Invalidate cache by physical address
+			L2C_310->CLEAN_INV_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+	}
+}
+
+__STATIC_FORCEINLINE void L2_InvalidateDCache_by_Addr(volatile void *addr, int32_t dsize)
+{
+	if (dsize > 0)
+	{
+		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
+		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
+		do
+		{
+			// Invalidate cache by physical address
+			L2C_310->INV_LINE_PA = op_addr;	// Atomic operation. These operations stall the slave ports until they are complete.
+			op_addr += DCACHEROWSIZE;
+			op_size -= DCACHEROWSIZE;
+		} while (op_size > 0);
+	}
+}
+#endif /* (__L2C_PRESENT == 1) */
 
 // Записать содержимое кэша данных в память
 // применяетмся после начальной инициализации среды выполнния
@@ -1858,98 +2123,31 @@ void FLASHMEMINITFUNC arm_hardware_flush_all(void)
 #endif
 }
 
-#define MK_MVA(addr) ((uintptr_t) (addr) & ~ (uintptr_t) (DCACHEROWSIZE - 1))
-
 // Сейчас в эту память будем читать по DMA
 void arm_hardware_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
-	ASSERT((addr % DCACHEROWSIZE) == 0);
-	//ASSERT((dsize % DCACHEROWSIZE) == 0);
-
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
-
-		__DSB();
-
-		do
-		{
-			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
-			L1C_InvalidateDCacheMVA((void *) mva);	// очистить кэш
-		#if (__L2C_PRESENT == 1)
-			// Clean cache by physical address
-			L2C_InvPa((void *) mva);
-		#endif
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-
-		__DSB();
-		__ISB();
-	}
+	L1_InvalidateDCache_by_Addr((void *) addr, dsize);
+#if (__L2C_PRESENT == 1)
+	L2_InvalidateDCache_by_Addr((void *) addr, dsize);
+#endif /* (__L2C_PRESENT == 1) */
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
 void arm_hardware_flush(uintptr_t addr, int_fast32_t dsize)
 {
-	ASSERT((addr % DCACHEROWSIZE) == 0);
-	//ASSERT((dsize % DCACHEROWSIZE) == 0);
-
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
-
-		__DSB();
-
-		do
-		{
-			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
-			L1C_CleanDCacheMVA((void *) mva);		// записать буфер, кэш продолжает хранить
-		#if (__L2C_PRESENT == 1)
-			// предполагается, что размер строки L2 и L2 cache равны
-			// Clean cache by physical address
-			L2C_CleanPa((void *) mva);
-		#endif
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-
-		__DSB();
-		__ISB();
-	}
+	L1_CleanDCache_by_Addr((void *) addr, dsize);
+#if (__L2C_PRESENT == 1)
+	L2_CleanDCache_by_Addr((void *) addr, dsize);
+#endif /* (__L2C_PRESENT == 1) */
 }
 
 // Сейчас эта память будет записываться по DMA куда-то. Потом содержимое не требуется
 void arm_hardware_flush_invalidate(uintptr_t addr, int_fast32_t dsize)
 {
-	ASSERT((addr % DCACHEROWSIZE) == 0);
-	//ASSERT((dsize % DCACHEROWSIZE) == 0);
-
-	if (dsize > 0)
-	{
-		int32_t op_size = dsize + (((uint32_t) addr) & (DCACHEROWSIZE - 1U));
-		uint32_t op_addr = (uint32_t) addr /* & ~(DCACHEROWSIZE - 1U) */;
-
-		__DSB();
-
-		do
-		{
-			const uintptr_t mva = MK_MVA(op_addr);	/* register accepts only 32byte aligned values, only bits 31..5 are valid */
-			L1C_CleanInvalidateDCacheMVA((void *) mva);	// записать буфер, очистить кэш
-		#if (__L2C_PRESENT == 1)
-			// предполагается, что размер строки L2 и L2 cache равны
-			// Clean cache by physical address
-			L2C_CleanInvPa((void *) mva);
-		#endif
-			op_addr += DCACHEROWSIZE;
-			op_size -= DCACHEROWSIZE;
-		} while (op_size > 0);
-
-		__DSB();
-		__ISB();
-	}
+	L1_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
+#if (__L2C_PRESENT == 1)
+	L2_CleanInvalidateDCache_by_Addr((void *) addr, dsize);
+#endif /* (__L2C_PRESENT == 1) */
 }
 
 #else
@@ -1986,7 +2184,7 @@ uint_fast32_t cpu_getdebugticks(void)
 {
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 	return DWT->CYCCNT;	// use TIMESTAMP_GET();
-#elif (__CORTEX_A != 0)
+#elif (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	{
 		uint32_t result;
 		// Read CCNT Register
@@ -2053,7 +2251,7 @@ void irqlog_print(void)
 }
 #endif
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 #include "hardware.h"
 #include "formats.h"
@@ -2066,8 +2264,10 @@ void irqlog_print(void)
 
 #if defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQ_Handler_GICv1(void)
+#if 0//CPUSTYLE_R7S721
+
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+void IRQ_Handler_GIC(void)
 {
 	//dbg_putchar('/');
 	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
@@ -2108,6 +2308,8 @@ void IRQ_Handler_GICv1(void)
 	IRQ_EndOfInterrupt(irqn);
 }
 
+#elif 1//CPUSTYLE_R7S721
+
 #define INT_ID_MASK		0x3ffuL
 /* Interrupt IDs reported by the HPPIR and IAR registers */
 #define PENDING_G1_INTID	1022uL
@@ -2140,11 +2342,11 @@ unsigned int gicv2_get_pending_interrupt_id(void)
 	return id;
 }
 
-static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
+//static RAMDTCM SPINLOCK_t giclock = SPINLOCK_INIT;
 
-/* Вызывается из crt_stm32mp1.s со сброшенным флагом прерываний */
-// Sww ARM IHI 0048B.b document
-void IRQ_Handler_GICv2(void)
+/* Вызывается из crt_CortexA.S со сброшенным флагом разрешения прерываний */
+// See ARM IHI 0048B.b document
+void IRQ_Handler_GIC(void)
 {
 	// per-cpu:
 	// GICC_AHPPIR
@@ -2157,10 +2359,24 @@ void IRQ_Handler_GICv2(void)
 	// global:
 	// GICD_IPRIORITYR
 
-	//dbg_putchar('1');
-	//const uint_fast32_t gicc_hppir = gicv2_get_pending_interrupt_id(); //GICInterface->HPPIR; //GIC_GetHighPendingIRQ();	/* GICC_HPPIR */
-	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID
-	const IRQn_ID_t int_id = gicc_iar & INT_ID_MASK;
+//	const unsigned int gicver = (GIC_GetInterfaceId() >> 16) & 0x0F;
+
+
+//	switch (gicver)
+//	{
+//	case 0x01:	// GICv1
+//		/* Dummy read to avoid GIC 390 errata 801120 */
+//		(void) GICInterface->HPPIR;
+//		break;
+//	default:
+//		break;
+//	}
+	(void) GICInterface->HPPIR;
+
+	//const uint_fast32_t gicc_iar = GIC_AcknowledgePending(); // CPUID in high bits, Interrupt ID
+	const uint_fast32_t gicc_iar = GICInterface->IAR; // CPUID, Interrupt ID - use GIC_AcknowledgePending
+
+	const IRQn_ID_t int_id = gicc_iar & 0x3ffuL;
 
 	// IHI0048B_b_gic_architecture_specification.pdf
 	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
@@ -2172,9 +2388,10 @@ void IRQ_Handler_GICv2(void)
 	if (int_id >= 1020)
 	{
 		//dbg_putchar('2');
-//		SPIN_LOCK(& giclock);
-//		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-//		SPIN_UNLOCK(& giclock);
+		//SPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		//SPIN_UNLOCK(& giclock);
 
 	}
 	else if (int_id != 0 /* || GIC_GetIRQStatus(0) != 0 */)
@@ -2209,183 +2426,20 @@ void IRQ_Handler_GICv2(void)
 	}
 	else
 	{
-//		SPIN_LOCK(& giclock);
-//		GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-//		SPIN_UNLOCK(& giclock);
+		//dbg_putchar('3');
+		//SPIN_LOCK(& giclock);
+		//GIC_SetPriority(0, GIC_GetPriority(0));	// GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
+		GICDistributor->IPRIORITYR [0] = GICDistributor->IPRIORITYR [0];
+		//SPIN_UNLOCK(& giclock);
 	}
 	//dbg_putchar(' ');
 
 	//GIC_EndInterrupt(gicc_iar);	/* CPUID, EOINTID */
 	GICInterface->EOIR = gicc_iar;
 }
-
+#endif
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
-
-#if 0
-/* Вызывается из crt_r7s721.s со сброшенным флагом прерываний */
-void IRQ_HandlerOld(void)
-{
-	/* const uint32_t icchpir = */ (void) GICC_HPPIR;	/* GICC_HPPIR */
-	const uint32_t icciar = GICC_IAR;				/* GICC_IAR */
-	const IRQn_ID_t int_id = icciar & INTC_ICCIAR_ACKINTID;
-
-	// See R01UH0437EJ0200 Rev.2.00 7.8.3 Reading Interrupt ID Values from Interrupt Acknowledge Register (ICCIAR)
-	// IHI0048B_b_gic_architecture_specification.pdf
-	// See ARM IHI 0048B.b 3.4.2 Special interrupt numbers when a GIC supports interrupt grouping
-
-	if (int_id >= 1020)
-	{
-		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-	}
-	else if (int_id != 0 || (INTC.ICDABR0 & 0x0001) != 0)
-	{
-		void (* f)(void) = IRQ_GetHandler(int_id);	    /* Call interrupt handler */
-
-	#if WITHNESTEDINTERRUPTS
-
-		__enable_irq();						/* modify I bit in CPSR */
-		(* f)();	    /* Call interrupt handler */
-		__disable_irq();					/* modify I bit in CPSR */
-
-	#else /* WITHNESTEDINTERRUPTS */
-
-		(* f)();	    /* Call interrupt handler */
-
-	#endif /* WITHNESTEDINTERRUPTS */
-		INTC.ICCEOIR = int_id;				/* GICC_EOIR */
-	}
-	else
-	{
-		GICD_IPRIORITYRn(0) = GICD_IPRIORITYRn(0);
-	}
-}
-
-/******************************************************************************
-* Function Name: r7s721_intc_initialize
-* Description  : Executes initial setting for the INTC.
-*              : The interrupt mask level is set to 31 to receive interrupts
-*              : with the interrupt priority level 0 to 30.
-* Arguments    : none
-* Return Value : none
-******************************************************************************/
-static void r7s721_intc_initializeOld(void)
-{
-
-	/* ==== Total number of registers ==== */
-	enum { INTC_ICDISR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISR0_COUNT
-	enum { INTC_ICDICFR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 15) / 16 };	// 37 == INTC_ICDICFR0_COUNT
-	enum { INTC_ICDIPR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 3) /  4 };	// 147 == INTC_ICDIPR0_COUNT
-	enum { INTC_ICDIPTR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 3) /  4 };	// 147 == INTC_ICDIPTR0_COUNT
-	//enum { INTC_ICDISER_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISER0_COUNT
-	enum { INTC_ICDICER_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDICER0_COUNT
-
-	/* Initial value table of Interrupt Configuration Registers */
-	// Table 4-19 GICD_ICFGR Int_config[0] encoding in some early GIC implementations
-	// каждая пара бит кодирует:
-
-	// [0] == 0: Corresponding interrupt is handled using the N-N model.
-	// [0] == 1: Corresponding interrupt is handled using the 1-N model.
-	// [1] == 0: Corresponding interrupt is level-sensitive.
-	// [1] == 1: Corresponding interrupt is edge-triggered.
-	static const uint32_t intc_icdicfrn_table [INTC_ICDICFR_REG_TOTAL] =
-	{                          /*           Interrupt ID */
-		0xAAAAAAAA,            /* ICDICFR0  :  15 to   0 */
-		0x00000055,            /* ICDICFR1  :  19 to  16 */
-		0xFFFD5555,            /* ICDICFR2  :  47 to  32 */
-		0x555FFFFF,            /* ICDICFR3  :  63 to  48 */
-		0x55555555,            /* ICDICFR4  :  79 to  64 */
-		0x55555555,            /* ICDICFR5  :  95 to  80 */
-		0x55555555,            /* ICDICFR6  : 111 to  96 */
-		0x55555555,            /* ICDICFR7  : 127 to 112 */
-		0x5555F555,            /* ICDICFR8  : 143 to 128 */
-		0x55555555,            /* ICDICFR9  : 159 to 144 */
-		0x55555555,            /* ICDICFR10 : 175 to 160 */
-		0xF5555555,            /* ICDICFR11 : 191 to 176 */
-		0xF555F555,            /* ICDICFR12 : 207 to 192 */
-		0x5555F555,            /* ICDICFR13 : 223 to 208 */
-		0x55555555,            /* ICDICFR14 : 239 to 224 */
-		0x55555555,            /* ICDICFR15 : 255 to 240 */
-		0x55555555,            /* ICDICFR16 : 271 to 256 */
-		0xFD555555,            /* ICDICFR17 : 287 to 272 */
-		0x55555557,            /* ICDICFR18 : 303 to 288 */
-		0x55555555,            /* ICDICFR19 : 319 to 304 */
-		0x55555555,            /* ICDICFR20 : 335 to 320 */
-		0x5F555555,            /* ICDICFR21 : 351 to 336 */
-		0xFD55555F,            /* ICDICFR22 : 367 to 352 */
-		0x55555557,            /* ICDICFR23 : 383 to 368 */
-		0x55555555,            /* ICDICFR24 : 399 to 384 */
-		0x55555555,            /* ICDICFR25 : 415 to 400 */
-		0x55555555,            /* ICDICFR26 : 431 to 416 */
-		0x55555555,            /* ICDICFR27 : 447 to 432 */
-		0x55555555,            /* ICDICFR28 : 463 to 448 */
-		0x55555555,            /* ICDICFR29 : 479 to 464 */
-		0x55555555,            /* ICDICFR30 : 495 to 480 */
-		0x55555555,            /* ICDICFR31 : 511 to 496 */
-		0x55555555,            /* ICDICFR32 : 527 to 512 */
-		0x55555555,            /* ICDICFR33 : 543 to 528 */
-		0x55555555,            /* ICDICFR34 : 559 to 544 */
-		0x55555555,            /* ICDICFR35 : 575 to 560 */
-		0x00155555             /* ICDICFR36 : 586 to 576 */
-	};
-
-    uint16_t offset;
-    volatile uint32_t * addr;
-
-	//GIC_Enable();	// инициализирует не совсем так как надо для работы
-
-	/* default interrut handlers setup */
-    for (offset = 0; offset < IRQ_GIC_LINE_COUNT; ++ offset)
-    {
-        //intc_func_table [offset] = Userdef_INTC_Dummy_Interrupt;    /* Set all interrupts default handlers */
-    }
-
-    /* ==== Initial setting 1 to receive GIC interrupt request ==== */
-    /* Interrupt Security Registers setting */
-    addr = (volatile uint32_t *) & INTC.ICDISR0;
-    for (offset = 0; offset < INTC_ICDISR_REG_TOTAL; ++ offset)
-    {
-        * (addr + offset) = 0x00000000uL;    /* Set all interrupts to be secured */
-    }
-
-    /* Interrupt Configuration Registers setting */
-    addr = (volatile uint32_t *) & INTC.ICDICFR0;
-    for (offset = 0; offset < INTC_ICDICFR_REG_TOTAL; ++ offset)
-    {
-        * (addr + offset) = intc_icdicfrn_table [offset];
-    }
-
-    /* Interrupt Priority Registers setting */
-    addr = (volatile uint32_t *) & GICD_IPRIORITYRn(0);
-    for (offset = 0; offset < INTC_ICDIPR_REG_TOTAL; ++ offset)
-    {
-        /* Set the priority for all interrupts to 31 */
-        * (addr + offset) = 31 * 0x01010101uL;
-    }
-
-    /* Interrupt Processor Targets Registers setting */
-    /* Initialise ICDIPTR8 to ICDIPTRn                     */
-    /* (n = The number of interrupt sources / 4)           */
-    /*   - ICDIPTR0 to ICDIPTR4 are dedicated for main CPU */
-    /*   - ICDIPTR5 is dedicated for sub CPU               */
-    /*   - ICDIPTR6 to 7 are reserved                      */
-    addr = (volatile uint32_t *) & INTC.ICDIPTR0;
-    for (offset = 8; offset < INTC_ICDIPTR_REG_TOTAL; ++ offset)
-    {
-    	/* Set the target for all interrupts to main CPU */
-        * (addr + offset) = 0x01010101uL;
-    }
-
-    /* Interrupt Clear-Enable Registers setting */
-    addr = (volatile uint32_t *) & INTC.ICDICER0;
-    for (offset = 0; offset < INTC_ICDICER_REG_TOTAL; ++ offset)
-    {
-    	 /* Set all interrupts to be disabled */
-    	* (addr + offset) = 0xFFFFFFFFuL;
-    }
-}
-
-#endif
 
 uint8_t __attribute__ ((section(".stack"), used, aligned(64))) mystack [2048];
 /******************************************************************************/
@@ -2473,7 +2527,7 @@ M_SIZE_IO_2     EQU     2550            ; [Area11] I/O area 2
 #define APRWval 		0x03	/* Full access */
 #define APROval 		0x06	/* All write accesses generate Permission faults */
 #define DOMAINval	0x0F
-#define SECTIONval	0x02
+#define SECTIONval	0x02	/* 0b10, Section or Supersection */
 
 /* Table B3-10 TEX, C, and B encodings when TRE == 0 */
 
@@ -2825,7 +2879,7 @@ sysinit_debug_initialize(void)
 
 #endif /* __CORTEX_M == 3U || __CORTEX_M == 4U || __CORTEX_M == 7U */
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 	#if WITHDEBUG
 	{
@@ -2862,7 +2916,7 @@ sysinit_debug_initialize(void)
 	}
 	#endif /* WITHDEBUG */
 
-#endif /* (__CORTEX_A != 0) */
+#endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
 
 #if WITHDEBUG
 	HARDWARE_DEBUG_INITIALIZE();
@@ -2870,7 +2924,7 @@ sysinit_debug_initialize(void)
 #endif /* WITHDEBUG */
 }
 
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 /** \brief  Set HVBAR
 
     This function assigns the given value to the Hyp Vector Base Address Register.
@@ -2882,12 +2936,12 @@ __STATIC_FORCEINLINE void __set_HVBAR(uint32_t hvbar)
 	// cp, op1, Rt, CRn, CRm, op2
   __set_CP(15, 4, hvbar, 12, 0, 0);
 }
-#endif /* (__CORTEX_A != 0) */
+#endif /* (__CORTEX_A != 0) || CPUSTYLE_ARM9 */
 
 static void FLASHMEMINITFUNC
 sysinit_vbar_initialize(void)
 {
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 	extern unsigned long __Vectors;
 
@@ -2909,7 +2963,7 @@ static void FLASHMEMINITFUNC
 sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
-#if (__CORTEX_A != 0)
+#if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
 #if 0 && WITHDEBUG
@@ -2984,13 +3038,6 @@ sysinit_mmu_initialize(void)
 static void FLASHMEMINITFUNC
 sysinit_cache_initialize(void)
 {
-#if CPUSTYLE_AT91SAM9XE
-
-	//cp15_enable_i_cache();
-	__set_SCTLR(__get_SCTLR() | SCTLR_I_Msk);
-
-#endif /* CPUSTYLE_AT91SAM9XE */
-
 #if (__CORTEX_M != 0)
 	#if __ICACHE_PRESENT
 
@@ -3005,13 +3052,18 @@ sysinit_cache_initialize(void)
 
 	#endif /* __DCACHE_PRESENT */
 
-	arm_hardware_flush_all();
+	//arm_hardware_flush_all();
 #endif /* (__CORTEX_M != 0) */
 
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
 
-	#if (CPUSTYLE_R7S721 && ! WITHISBOOTLOADER)
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
+		L1C_InvalidateDCacheAll();
+		L1C_InvalidateICacheAll();
+		L1C_InvalidateBTAC();
+		L1C_EnableCaches();
+		L1C_EnableBTAC();
 		L1C_EnableCaches();
 		L1C_EnableBTAC();
 		#if (__CORTEX_A == 9U)
@@ -3031,23 +3083,23 @@ sysinit_cache_initialize(void)
 }
 
 static void FLASHMEMINITFUNC
-sysinit_cache_cpu0_initialize(void)
+sysinit_cache_L2_cpu0_initialize(void)
 {
-#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	#if (CPUSTYLE_R7S721 && ! WITHISBOOTLOADER)
+#if (__CORTEX_A == 7U) || (__CORTEX_A == 9U) || CPUSTYLE_ARM9
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
 
-	#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
-		L2C_Disable();
-		* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
-		* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
-	#endif /* (__L2C_PRESENT == 1) */
-	#if (__L2C_PRESENT == 1)
-		// Enable Level 2 Cache
-		L2C_Enable();
-		L2C_InvAllByWay();
-	#endif
-	arm_hardware_flush_all();
+		#if (__L2C_PRESENT == 1) && defined (PL310_DATA_RAM_LATENCY)
+			L2C_Disable();
+			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C) = PL310_DATA_RAM_LATENCY;	// reg1_data_ram_control
+			* (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108) = PL310_TAG_RAM_LATENCY;	// reg1_tag_ram_control
+		#endif /* (__L2C_PRESENT == 1) */
+		#if (__L2C_PRESENT == 1)
+			// Enable Level 2 Cache
+			L2C_InvAllByWay();
+			L2C_Enable();
+		#endif
+	//arm_hardware_flush_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
@@ -3056,9 +3108,9 @@ static void FLASHMEMINITFUNC
 sysinit_cache_cpu1_initialize(void)
 {
 #if (__CORTEX_A == 7U) || (__CORTEX_A == 9U)
-	#if (CPUSTYLE_R7S721 && ! WITHISBOOTLOADER)
+	#if (CPUSTYLE_R7S721 && WITHISBOOTLOADER)
 	#else
-		arm_hardware_flush_all();
+		//arm_hardware_flush_all();
 	#endif
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 }
@@ -3072,16 +3124,16 @@ SystemInit(void)
 {
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
-	sysinit_cache_initialize();	// caches iniitialize
-	sysinit_cache_cpu0_initialize();	// L2 cache, SCU initialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
+	sysinit_cache_initialize();	// caches iniitialize
+	sysinit_cache_L2_cpu0_initialize();	// L2 cache, SCU initialize
 }
 
 
-#if  (__CORTEX_A != 0)
+#if  (__CORTEX_A != 0) || CPUSTYLE_ARM9
 
 static void cortexa_cpuinfo(void)
 {
@@ -3132,9 +3184,9 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	RCC->MP_APB5LPENSETR = RCC_MP_APB5LPENSETR_RTCAPBLPEN;  // Включить тактирование
 	(void) RCC->MP_APB5LPENSETR;
 
-	RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
+	RCC->MP_AHB5ENSETR = RCC_MP_AHB5ENSETR_BKPSRAMEN;
 	(void) RCC->MP_AHB5ENSETR;
-	RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
+	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_BKPSRAMLPEN;
 	(void) RCC->MP_AHB5LPENSETR;
 
 	/* Write entrypoint in backup RAM register */
@@ -3173,6 +3225,7 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 static RAMDTCM SPINLOCK_t cpu1init;
 
+// Инициализация второго ппрцессора
 void Reset_CPUn_Handler(void)
 {
 #if (__CORTEX_A == 9U)
@@ -3189,17 +3242,23 @@ void Reset_CPUn_Handler(void)
 #endif /* (__CORTEX_A == 9U) */
 
 	sysinit_fpu_initialize();
-	sysinit_cache_initialize();	// caches iniitialize
-	sysinit_cache_cpu1_initialize();
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_ttbr_initialize();		// TODO: убрать работу с L2 для второго процессора - Загрузка TTBR, инвалидация кеш памяти и включение MMU
+	sysinit_cache_initialize();	// caches iniitialize
+	sysinit_cache_cpu1_initialize();
 
-	arm_gic_initialize();
-//	GIC_CPUInterfaceInit();
-//#if WITHNESTEDINTERRUPTS
-//	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
-//#endif /* WITHNESTEDINTERRUPTS */
+	{
+		GIC_Enable();
+	#if WITHNESTEDINTERRUPTS
+		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+	#endif /* WITHNESTEDINTERRUPTS */
+	}
 
+	L1C_InvalidateDCacheAll();
+	L1C_InvalidateICacheAll();
+	L1C_InvalidateBTAC();
+	L1C_EnableCaches();
+	L1C_EnableBTAC();
 	L1C_EnableCaches();
 	L1C_EnableBTAC();
 	#if (__L2C_PRESENT == 1)
@@ -3225,9 +3284,10 @@ void Reset_CPUn_Handler(void)
 
 void cpump_initialize(void)
 {
+#if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
+
 	SystemCoreClock = CPU_FREQ;
 
-#if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
 #if WITHSMPSYSTEM
 
 #if (__CORTEX_A == 9U)
@@ -3685,12 +3745,15 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 
 #if CPUSTYLE_ARM
 
-// Используется в случае наличия ключа ld -nostartfiles
-// Так же смотреть вокруг software_init_hook
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
+#if (__CORTEX_M == 0)
+
+// Используется в случае наличия ключа ld -nostartfiles
+// Так же смотреть вокруг software_init_hook
+// see https://github.com/gmarkall/newlib/blob/de33102df7309e77441dfc76aa8cdef6d26da209/newlib/libc/sys/arm/crt0.S#L1
 
 extern int main(void);
 extern void __libc_init_array(void);
@@ -3718,6 +3781,8 @@ void _fini(void)
 	for (;;)
 		;
 }
+
+#endif /* (__CORTEX_M == 0) */
 
 #ifdef __cplusplus
 }
@@ -3796,9 +3861,9 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 }
 
 #if WITHUSEMALLOC
-#if CPUSTYLE_STM32MP1 || (CPUSTYLE_XC7Z && ! WITHISBOOTLOADER)
+#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S) && ! WITHISBOOTLOADER
 
-	static RAMHEAP uint8_t heapplace [64 * 1024uL * 1024uL];
+	static RAMHEAP uint8_t heapplace [48 * 1024uL * 1024uL];
 
 #else /* CPUSTYLE_STM32MP1 */
 

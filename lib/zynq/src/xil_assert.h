@@ -32,6 +32,7 @@
 #define XIL_ASSERT_H	/* by using protection macros */
 
 #include <xil_types.h>
+#include "formats.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -148,9 +149,9 @@ typedef void (*Xil_AssertCallback) (const char8 *File, s32 Line);
 
 #else
 
-#define Xil_AssertVoid(Expression)
+#define Xil_AssertVoid(Expression)		ASSERT(Expression)
 #define Xil_AssertVoidAlways()
-#define Xil_AssertNonvoid(Expression)
+#define Xil_AssertNonvoid(Expression)	ASSERT(Expression)
 #define Xil_AssertNonvoidAlways()
 
 #endif

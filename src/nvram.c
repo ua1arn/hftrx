@@ -336,7 +336,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 
 	#else /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 
-		PWR->CR1 |= PWR_CR1_DBP;  
+		PWR->CR1 |= PWR_CR1_DBP;  // 1: Write access to RTC and backup domain registers enabled.
 		(void) PWR->CR1;
 		while ((PWR->CR1 & PWR_CR1_DBP) == 0)
 			;
@@ -356,7 +356,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 
 	#else /* CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX */
 
-		PWR->CR1 &= ~ PWR_CR1_DBP;
+		PWR->CR1 &= ~ PWR_CR1_DBP;	// Write access to RTC and backup domain registers disabled.
 		(void) PWR->CR1;
 		while ((PWR->CR1 & PWR_CR1_DBP) != 0)
 			;
@@ -373,9 +373,9 @@ void nvram_initialize(void)
 
 	#if CPUSTYLE_STM32MP1
 
-		RCC->MP_AHB5ENSETR = RCC_MC_AHB5ENSETR_BKPSRAMEN;
+		RCC->MP_AHB5ENSETR = RCC_MP_AHB5ENSETR_BKPSRAMEN;
 		(void) RCC->MP_AHB5ENSETR;
-		RCC->MP_AHB5LPENSETR = RCC_MC_AHB5LPENSETR_BKPSRAMLPEN;
+		RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_BKPSRAMLPEN;
 		(void) RCC->MP_AHB5LPENSETR;
 
 		stm32f4xx_bdenable();
@@ -459,7 +459,7 @@ nvram_write(nvramaddress_t addr, const uint8_t * data, uint_fast8_t len)
 	{
 		ASSERT(0);
 	}
-	arm_hardware_flush((uintptr_t) BKPSRAM_BASE, 4096);
+	//arm_hardware_flush((uintptr_t) BKPSRAM_BASE, 4096);
 	stm32f4xx_bddisable();
 
 #elif (NVRAM_TYPE == NVRAM_TYPE_CPUEEPROM)

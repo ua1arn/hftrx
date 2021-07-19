@@ -94,13 +94,7 @@ static void irq_modes_print(void)
 #if CPUSTYLE_R7S721
 
 
-static void Userdef_INTC_Dummy_Interrupt(void)
-{
-	const IRQn_ID_t irqn = IRQ_GetActiveIRQ();
-	PRINTF(PSTR("Userdef_INTC_Dummy_Interrupt(), irqn=%d\n"), (int) irqn);
-	for (;;)
-		;
-}
+#if 0
 
 /******************************************************************************
 * Function Name: r7s721_intc_initialize
@@ -110,7 +104,133 @@ static void Userdef_INTC_Dummy_Interrupt(void)
 * Arguments    : none
 * Return Value : none
 ******************************************************************************/
-static void r7s721_intc_initialize(void)
+static void r7s721_intc_initializeOld(void)
+{
+
+	/* ==== Total number of registers ==== */
+	enum { INTC_ICDISR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISR0_COUNT
+	enum { INTC_ICDICFR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 15) / 16 };	// 37 == INTC_ICDICFR0_COUNT
+	enum { INTC_ICDIPR_REG_TOTAL   = (IRQ_GIC_LINE_COUNT + 3) /  4 };	// 147 == INTC_ICDIPR0_COUNT
+	enum { INTC_ICDIPTR_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 3) /  4 };	// 147 == INTC_ICDIPTR0_COUNT
+	//enum { INTC_ICDISER_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDISER0_COUNT
+	enum { INTC_ICDICER_REG_TOTAL  = (IRQ_GIC_LINE_COUNT + 31) / 32 };	// 19 == INTC_ICDICER0_COUNT
+
+	/* Initial value table of Interrupt Configuration Registers */
+	// Table 4-19 GICD_ICFGR Int_config[0] encoding in some early GIC implementations
+	// каждая пара бит кодирует:
+
+	// [0] == 0: Corresponding interrupt is handled using the N-N model.
+	// [0] == 1: Corresponding interrupt is handled using the 1-N model.
+	// [1] == 0: Corresponding interrupt is level-sensitive.
+	// [1] == 1: Corresponding interrupt is edge-triggered.
+	static const uint32_t intc_icdicfrn_table [INTC_ICDICFR_REG_TOTAL] =
+	{                          /*           Interrupt ID */
+		0xAAAAAAAA,            /* ICDICFR0  :  15 to   0 */
+		0x00000055,            /* ICDICFR1  :  19 to  16 */
+		0xFFFD5555,            /* ICDICFR2  :  47 to  32 */
+		0x555FFFFF,            /* ICDICFR3  :  63 to  48 */
+		0x55555555,            /* ICDICFR4  :  79 to  64 */
+		0x55555555,            /* ICDICFR5  :  95 to  80 */
+		0x55555555,            /* ICDICFR6  : 111 to  96 */
+		0x55555555,            /* ICDICFR7  : 127 to 112 */
+		0x5555F555,            /* ICDICFR8  : 143 to 128 */
+		0x55555555,            /* ICDICFR9  : 159 to 144 */
+		0x55555555,            /* ICDICFR10 : 175 to 160 */
+		0xF5555555,            /* ICDICFR11 : 191 to 176 */
+		0xF555F555,            /* ICDICFR12 : 207 to 192 */
+		0x5555F555,            /* ICDICFR13 : 223 to 208 */
+		0x55555555,            /* ICDICFR14 : 239 to 224 */
+		0x55555555,            /* ICDICFR15 : 255 to 240 */
+		0x55555555,            /* ICDICFR16 : 271 to 256 */
+		0xFD555555,            /* ICDICFR17 : 287 to 272 */
+		0x55555557,            /* ICDICFR18 : 303 to 288 */
+		0x55555555,            /* ICDICFR19 : 319 to 304 */
+		0x55555555,            /* ICDICFR20 : 335 to 320 */
+		0x5F555555,            /* ICDICFR21 : 351 to 336 */
+		0xFD55555F,            /* ICDICFR22 : 367 to 352 */
+		0x55555557,            /* ICDICFR23 : 383 to 368 */
+		0x55555555,            /* ICDICFR24 : 399 to 384 */
+		0x55555555,            /* ICDICFR25 : 415 to 400 */
+		0x55555555,            /* ICDICFR26 : 431 to 416 */
+		0x55555555,            /* ICDICFR27 : 447 to 432 */
+		0x55555555,            /* ICDICFR28 : 463 to 448 */
+		0x55555555,            /* ICDICFR29 : 479 to 464 */
+		0x55555555,            /* ICDICFR30 : 495 to 480 */
+		0x55555555,            /* ICDICFR31 : 511 to 496 */
+		0x55555555,            /* ICDICFR32 : 527 to 512 */
+		0x55555555,            /* ICDICFR33 : 543 to 528 */
+		0x55555555,            /* ICDICFR34 : 559 to 544 */
+		0x55555555,            /* ICDICFR35 : 575 to 560 */
+		0x00155555             /* ICDICFR36 : 586 to 576 */
+	};
+
+    uint16_t offset;
+    volatile uint32_t * addr;
+
+	//GIC_Enable();	// инициализирует не совсем так как надо для работы
+
+	/* default interrut handlers setup */
+    for (offset = 0; offset < IRQ_GIC_LINE_COUNT; ++ offset)
+    {
+        //intc_func_table [offset] = Userdef_INTC_Dummy_Interrupt;    /* Set all interrupts default handlers */
+    }
+
+    /* ==== Initial setting 1 to receive GIC interrupt request ==== */
+    /* Interrupt Security Registers setting */
+    addr = (volatile uint32_t *) & INTC.ICDISR0;
+    for (offset = 0; offset < INTC_ICDISR_REG_TOTAL; ++ offset)
+    {
+        * (addr + offset) = 0x00000000uL;    /* Set all interrupts to be secured */
+    }
+
+    /* Interrupt Configuration Registers setting */
+    addr = (volatile uint32_t *) & INTC.ICDICFR0;
+    for (offset = 0; offset < INTC_ICDICFR_REG_TOTAL; ++ offset)
+    {
+        * (addr + offset) = intc_icdicfrn_table [offset];
+    }
+
+    /* Interrupt Priority Registers setting */
+    addr = (volatile uint32_t *) & GICD_IPRIORITYRn(0);
+    for (offset = 0; offset < INTC_ICDIPR_REG_TOTAL; ++ offset)
+    {
+        /* Set the priority for all interrupts to 31 */
+        * (addr + offset) = 31 * 0x01010101uL;
+    }
+
+    /* Interrupt Processor Targets Registers setting */
+    /* Initialise ICDIPTR8 to ICDIPTRn                     */
+    /* (n = The number of interrupt sources / 4)           */
+    /*   - ICDIPTR0 to ICDIPTR4 are dedicated for main CPU */
+    /*   - ICDIPTR5 is dedicated for sub CPU               */
+    /*   - ICDIPTR6 to 7 are reserved                      */
+    addr = (volatile uint32_t *) & INTC.ICDIPTR0;
+    for (offset = 8; offset < INTC_ICDIPTR_REG_TOTAL; ++ offset)
+    {
+    	/* Set the target for all interrupts to main CPU */
+        * (addr + offset) = 0x01010101uL;
+    }
+
+    /* Interrupt Clear-Enable Registers setting */
+    addr = (volatile uint32_t *) & INTC.ICDICER0;
+    for (offset = 0; offset < INTC_ICDICER_REG_TOTAL; ++ offset)
+    {
+    	 /* Set all interrupts to be disabled */
+    	* (addr + offset) = 0xFFFFFFFFuL;
+    }
+}
+
+#endif
+
+/******************************************************************************
+* Function Name: r7s721_intc_initialize
+* Description  : Executes initial setting for the INTC.
+*              : The interrupt mask level is set to 31 to receive interrupts
+*              : with the interrupt priority level 0 to 30.
+* Arguments    : none
+* Return Value : none
+******************************************************************************/
+void r7s721_intc_initialize(void)
 {
 
 	static const uint32_t modes [] =
@@ -711,7 +831,7 @@ static void r7s721_intc_initialize(void)
 		VERIFY(0 == IRQ_Disable(irqn));
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
 		VERIFY(0 == IRQ_SetPriority(irqn, 31));
-		VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
+		//VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
 		GIC_SetGroup(irqn, 0);
 	}
 
@@ -791,30 +911,6 @@ uint32_t gARM_BASEPRI_ONLY_REALTIME;
 uint32_t gARM_BASEPRI_ONLY_OVERREALTIME;
 uint32_t gARM_BASEPRI_ALL_ENABLED;
 
-
-void
-arm_gic_initialize(void)
-{
-	IRQ_Initialize();
-
-	GIC_Enable();
-
-#if CPUSTYLE_R7S721
-	r7s721_intc_initialize();
-#endif /* CPUSTYLE_R7S721 */
-
-#if WITHNESTEDINTERRUPTS
-	gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
-	gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
-	gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
-
-	gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
-	gARM_BASEPRI_ONLY_OVERREALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
-	gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
-
-	GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
-#endif /* WITHNESTEDINTERRUPTS */
-}
 
 #endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
 
@@ -1325,9 +1421,12 @@ void cpu_initialize(void)
 #endif
 
 #if CPUSTYLE_R7S721
-	#if 1
-		// Перенесено из systeminit
+	#if WITHISBOOTLOADER
+		// Перенесено из SystemInit
 		// Не получается разместить эти функции во FLASH
+		L1C_InvalidateDCacheAll();
+		L1C_InvalidateICacheAll();
+		L1C_InvalidateBTAC();
 		L1C_EnableCaches();
 		L1C_EnableBTAC();
 		__set_ACTLR(__get_ACTLR() | ACTLR_L1PE_Msk);	// Enable Dside prefetch
@@ -1340,10 +1439,10 @@ void cpu_initialize(void)
 		#endif /* (__L2C_PRESENT == 1) */
 		#if (__L2C_PRESENT == 1)
 			// Enable Level 2 Cache
-			L2C_Enable();
 			L2C_InvAllByWay();
+			L2C_Enable();
 		#endif
-	#endif
+	#endif /* WITHISBOOTLOADER */
 
 	/* TN-RZ*-A011A/E recommends switch off USB_X1 if usb USB not used */
 	CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -1403,7 +1502,25 @@ void cpu_initialize(void)
 
 #elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
 
-	arm_gic_initialize();
+	{
+		IRQ_Initialize();	// GIC_Enable() inside
+		//GIC_Enable();
+	#if CPUSTYLE_R7S721
+		r7s721_intc_initialize();
+	#endif /* CPUSTYLE_R7S721 */
+
+	#if WITHNESTEDINTERRUPTS
+		gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT);	// value for GIC_SetPriority
+		gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetPriority
+		gARM_SYSTEM_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);		// value for GIC_SetPriority
+
+		gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS);	// value for GIC_SetInterfacePriorityMask
+		gARM_BASEPRI_ONLY_OVERREALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_RT);	// value for GIC_SetInterfacePriorityMask
+		gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER);	// value for GIC_SetInterfacePriorityMask
+
+		GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
+	#endif /* WITHNESTEDINTERRUPTS */
+	}
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 	//PRINTF("cpu_initialize done\n");

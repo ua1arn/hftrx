@@ -98,62 +98,76 @@ static uint8_t USBD_GetLen(uint8_t *buf);
   */
 USBD_StatusTypeDef USBD_StdDevReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
 {
-  USBD_StatusTypeDef ret = USBD_OK;
+	USBD_StatusTypeDef ret = USBD_OK;
 
-  switch (req->bmRequest & USB_REQ_TYPE_MASK)
-  {
-    case USB_REQ_TYPE_CLASS:
-    case USB_REQ_TYPE_VENDOR:
-      //ret = (USBD_StatusTypeDef)pdev->pClass->Setup(pdev, req);
+	if ((req->bmRequest & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_VENDOR && req->bRequest == USBD_WCID_VENDOR_CODE)
+	{
+		// WCID devices support - WINUSB driver request
+		if (MsftCompFeatureDescr [0].size != 0)
+		{
+			USBD_CtlSendData(pdev, MsftCompFeatureDescr [0].data, MIN(MsftCompFeatureDescr [0].size, req->wLength));
+		}
+		else
+		{
+			USBD_CtlError(pdev, req);
+		}
+		return ret;
+	}
+
+	switch (req->bmRequest & USB_REQ_TYPE_MASK)
+	{
+	case USB_REQ_TYPE_CLASS:
+	case USB_REQ_TYPE_VENDOR:
+		//ret = (USBD_StatusTypeDef)pdev->pClass->Setup(pdev, req);
 		for (unsigned di = 0; di < pdev->nClasses; ++ di)
 		{
 			pdev->pClasses [di]->Setup(pdev, req);
 		}
-      break;
+		break;
 
-    case USB_REQ_TYPE_STANDARD:
-      switch (req->bRequest)
-      {
-        case USB_REQ_GET_DESCRIPTOR:
-          USBD_GetDescriptor(pdev, req);
-          break;
+	case USB_REQ_TYPE_STANDARD:
+		switch (req->bRequest)
+		{
+		case USB_REQ_GET_DESCRIPTOR:
+			USBD_GetDescriptor(pdev, req);
+			break;
 
-        case USB_REQ_SET_ADDRESS:
-          USBD_SetAddress(pdev, req);
-          break;
+		case USB_REQ_SET_ADDRESS:
+			USBD_SetAddress(pdev, req);
+			break;
 
-        case USB_REQ_SET_CONFIGURATION:
-          ret = USBD_SetConfig(pdev, req);
-          break;
+		case USB_REQ_SET_CONFIGURATION:
+			ret = USBD_SetConfig(pdev, req);
+			break;
 
-        case USB_REQ_GET_CONFIGURATION:
-          USBD_GetConfig(pdev, req);
-          break;
+		case USB_REQ_GET_CONFIGURATION:
+			USBD_GetConfig(pdev, req);
+			break;
 
-        case USB_REQ_GET_STATUS:
-          USBD_GetStatus(pdev, req);
-          break;
+		case USB_REQ_GET_STATUS:
+			USBD_GetStatus(pdev, req);
+			break;
 
-        case USB_REQ_SET_FEATURE:
-          USBD_SetFeature(pdev, req);
-          break;
+		case USB_REQ_SET_FEATURE:
+			USBD_SetFeature(pdev, req);
+			break;
 
-        case USB_REQ_CLEAR_FEATURE:
-          USBD_ClrFeature(pdev, req);
-          break;
+		case USB_REQ_CLEAR_FEATURE:
+			USBD_ClrFeature(pdev, req);
+			break;
 
-        default:
-          USBD_CtlError(pdev, req);
-          break;
-      }
-      break;
+		default:
+			USBD_CtlError(pdev, req);
+			break;
+		}
+		break;
 
-    default:
-      USBD_CtlError(pdev, req);
-      break;
-  }
+	default:
+		USBD_CtlError(pdev, req);
+		break;
+	}
 
-  return ret;
+	return ret;
 }
 
 /**
@@ -177,9 +191,29 @@ USBD_StatusTypeDef USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
         case USBD_STATE_DEFAULT:
         case USBD_STATE_ADDRESSED:
         case USBD_STATE_CONFIGURED:
-
-          if (LOBYTE(req->wIndex) <= USBD_MAX_NUM_INTERFACES)
           {
+  			// Extended Properties OS Descriptor support
+  			// wIndex==0x05. Indicates that the request is for an extended properties OS descriptor.
+  			if (req->bRequest == USBD_WCID_VENDOR_CODE && req->wIndex == 0x05)
+  			{
+  				const uint_fast8_t ifc = LO_BYTE(req->wValue);
+  				//PRINTF(PSTR("MS USBD_StdItfReq: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n"), req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+  				// Extended Properties OS Descriptor
+  				// See OS_Desc_Ext_Prop.doc, Extended Properties Descriptor Format
+
+  				// Extended Properties OS Descriptor support
+  				if (ifc < ARRAY_SIZE(ExtOsPropDescTbl) && ExtOsPropDescTbl[ifc].size != 0)
+  				{
+  					USBD_CtlSendData(pdev, ExtOsPropDescTbl[ifc].data, MIN(ExtOsPropDescTbl[ifc].size, req->wLength));
+  				}
+  				else
+  				{
+  					//TP();
+  					USBD_CtlError(pdev, req);
+  					return USBD_OK;
+  				}
+  			}
+
             //ret = (USBD_StatusTypeDef)pdev->pClass->Setup(pdev, req);
   			for (unsigned di = 0; di < pdev->nClasses; ++ di)
   			{
@@ -213,10 +247,6 @@ USBD_StatusTypeDef USBD_StdItfReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef
 				}
 #endif /* CPUSTYLE_R7S721 */
 			}
-          }
-          else
-          {
-            USBD_CtlError(pdev, req);
           }
           break;
 
@@ -347,7 +377,7 @@ USBD_StatusTypeDef USBD_StdEPReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
 
               USBD_poke_u16(pep->epstatus, 0x0000U);
 
-              (void)USBD_CtlSendData(pdev, pep->epstatus, 2U);
+              (void)USBD_CtlSendData(pdev, pep->epstatus, MIN(2U, req->wLength));
               break;
 
             case USBD_STATE_CONFIGURED:
@@ -384,7 +414,7 @@ USBD_StatusTypeDef USBD_StdEPReq(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef 
                   USBD_poke_u16(pep->epstatus, 0x0000U);
               }
 
-              (void)USBD_CtlSendData(pdev, pep->epstatus, 2U);
+              (void)USBD_CtlSendData(pdev, pep->epstatus, MIN(2U, req->wLength));
               break;
 
             default:
@@ -692,11 +722,11 @@ static void USBD_GetConfig(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef 
       case USBD_STATE_DEFAULT:
       case USBD_STATE_ADDRESSED:
         pdev->dev_default_config [0] = 0U;
-        (void)USBD_CtlSendData(pdev, pdev->dev_default_config, 1U);
+        (void)USBD_CtlSendData(pdev, pdev->dev_default_config, MIN(1U, req->wLength));
         break;
 
       case USBD_STATE_CONFIGURED:
-        (void)USBD_CtlSendData(pdev, pdev->dev_config, 1U);
+        (void)USBD_CtlSendData(pdev, pdev->dev_config, MIN(1U, req->wLength));
         break;
 
       default:
@@ -722,11 +752,11 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef 
 	case USBD_STATE_CONFIGURED:
 		if (req->wLength != 0x2U)
 		{
-			PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
+			//PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
 			USBD_CtlError(pdev, req);
 			break;
 		}
-		PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
+		//PRINTF("USBD_GetStatus: req->wLength=%u\n", req->wLength);
 		pdev->dev_config_status [0] = 0;
 		pdev->dev_config_status [1] = 0;
 
@@ -739,7 +769,7 @@ static void USBD_GetStatus(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef 
 			pdev->dev_config_status [0] |= USB_CONFIG_REMOTE_WAKEUP;
 		}
 
-		(void) USBD_CtlSendData(pdev, pdev->dev_config_status, MAX(2U, req->wLength));
+		(void) USBD_CtlSendData(pdev, pdev->dev_config_status, MIN(2U, req->wLength));
 		break;
 
 	default:

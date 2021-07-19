@@ -870,7 +870,7 @@ static uint_fast8_t DMA_sdio_waitdone(uint_fast8_t txmode)
 	while ((SDHI0.SD_INFO2 & (1uL << 13)) == 0)	// SCLKDIVEN
 		;
 	SDHI0.CC_EXT_MODE &= ~ (1uL << 1);	// DMASDRW
-	__DMB();
+	//__DMB();
 	return 0;
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
@@ -878,7 +878,7 @@ static uint_fast8_t DMA_sdio_waitdone(uint_fast8_t txmode)
 	// check result
 	if ((SDMMC1->STA & (SDMMC_STA_DATAEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT)) != SDMMC_STA_DATAEND)
 	{
-		__DMB();
+		//__DMB();
 		return 1;
 	}
 	return 0;
@@ -902,7 +902,7 @@ static uint_fast8_t DMA_sdio_waitdone(uint_fast8_t txmode)
 			;
 		//DMA2_Stream6->CR |= DMA_SxCR_EN;	// перезапуск DMA
 	}
-	__DMB();
+	//__DMB();
 	return 0;
 
 #elif CPUSTYLE_XC7Z

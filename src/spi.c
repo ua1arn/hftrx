@@ -6,10 +6,11 @@
 //
 
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
-#include <stdlib.h>
+#include "clocks.h"
 #include "spi.h"
 #include "gpio.h"
 #include "formats.h"
+#include <stdlib.h>
 
 // битовые маски, соответствующие биту в байте по его номеру.
 const uint_fast8_t rbvalues [8] =
@@ -19,7 +20,7 @@ const uint_fast8_t rbvalues [8] =
 
 #if WITHSPIHW || WITHSPISW
 
-	#if ! defined (SPI_ALLCS_BITS)
+	#if ! defined (SPI_ALLCS_BITS) && ! CPUSTYLE_XC7Z
 		#error SPI_ALLCS_BITS should be defined in any cases
 	#endif
 
@@ -71,7 +72,11 @@ spi_hwinit255(void)
 static void
 spi_cs_disable(void)
 {
-#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#if CPUSTYLE_XC7Z
+
+	SPI_ALLCS_DISABLE();
+
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT	
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -140,7 +145,11 @@ spi_cs_enable(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#if CPUSTYLE_XC7Z
+
+	SPI_CS_SET(target);
+
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#if WITHSPISPLIT
 		/* для двух разных потребителей формируются отдельные сигналы MOSI, SCK, CS */
@@ -333,7 +342,9 @@ prog_spi_to_write_impl(void)
 	{
 		SCLK_NPULSE();	/* latch to chips */
 
-		#if SPI_BIDIRECTIONAL
+		#if CPUSTYLE_XC7Z
+			return SPI_TARGET_MISO_PIN != 0;
+		#elif SPI_BIDIRECTIONAL
 			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;
 		#else /* SPI_BIDIRECTIONAL */
 			return (SPI_TARGET_MISO_PIN & SPI_MISO_BIT) != 0;
@@ -600,6 +611,7 @@ void spi_initialize(void)
 #if defined (SPISPEED400k) || defined (SPISPEED100k)
 	hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);		// 100 kHz for MICROCHIP MCP3204/MCP3208
 	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
+	hardware_spi_master_setfreq(SPIC_SPEED1M, 1000000uL);	/* 1 MHz для XPT2046 */
 	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);	/* 4 MHz для CS4272 */
 	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);	/* 10 MHz для ILI9341 */
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
@@ -949,9 +961,9 @@ static void spidf_iostart(
 void spidf_initialize(void)
 {
 #if CPUSTYLE_STM32MP1
-	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_QSPIEN;
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_QSPIEN;
 	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_QSPILPEN;
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_QSPILPEN;
 	(void) RCC->MP_AHB6LPENSETR;
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX

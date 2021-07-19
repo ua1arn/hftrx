@@ -269,11 +269,6 @@ extern "C" {
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
-			unsigned long stm32f7xx_get_sys_freq(void);
-			unsigned long stm32f7xx_get_pll_freq(void);
-			unsigned long stm32f7xx_get_plli2s_freq(void);
-			unsigned long stm32f7xx_get_pllsai_freq(void);
-
 			#define PLL_FREQ	(stm32f7xx_get_pll_freq())
 			//#define PLL2_FREQ	(REFINFREQ / REF2_DIV * REF2_MUL)	// STM32H7xxx
 			//#define PLL3_FREQ	(REFINFREQ / REF3_DIV * REF3_MUL)	// STM32H7xxx
@@ -289,9 +284,6 @@ extern "C" {
 			#define HSIFREQ 16000000uL
 
 		#elif CPUSTYLE_STM32F4XX
-
-			unsigned long stm32f4xx_get_sysclk_freq(void);
-			unsigned long stm32f4xx_get_spi1_freq(void);
 
 			#define LSEFREQ 32768uL	// должно быть в файле конфигурации платы
 
@@ -734,10 +726,6 @@ extern "C" {
 	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
-	unsigned long stm32mp1_get_mpuss_freq(void);	// MPU frequency
-	unsigned long stm32mp1_get_pll4_r_freq(void);
-	unsigned long stm32mp1_get_usbphy_freq(void);
-	unsigned long stm32mp1_get_usbotg_freq(void);
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
@@ -786,7 +774,6 @@ extern "C" {
 	#endif /* WITHCPUXTAL */
 
 	#define CPU_FREQ	(xc7z1_get_arm_freq())
-	unsigned long  xc7z1_get_arm_freq(void);
 	#define BOARD_SPI_FREQ (xc7z1_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
@@ -984,11 +971,14 @@ extern "C" {
 	#pragma GCC diagnostic ignored "-Wunused-variable"
 	#pragma GCC diagnostic ignored "-Wunused-const-variable"
 	#pragma GCC diagnostic error "-Wwrite-strings"
+
 	#define __ALIGN4_END    __attribute__ ((aligned (4)))
 	#define __ALIGN4_BEGIN         
+
 	#define ATTRPACKED __attribute__ ((packed))
 	#define ATTRNORETURN __attribute__ ((__noreturn__))
 	#define KEYWORDPACKED __packed
+
 #else                           
 	#if defined   (__CC_ARM)      /* ARM Compiler */
 		#define __ALIGN4_BEGIN    __align(4)  
@@ -1000,7 +990,12 @@ extern "C" {
 		#define __ALIGN4_BEGIN    __align(4) 
 		#define __ALIGN4_END
 	#endif /* __CC_ARM */  
-#endif /* __GNUC__ */ 
+
+	#define ATTRPACKED __attribute__ ((packed))
+	#define ATTRNORETURN __attribute__ ((__noreturn__))
+	#define KEYWORDPACKED __packed
+
+#endif /* __GNUC__ */
 
 
 
@@ -1015,6 +1010,7 @@ extern "C" {
 #define DDS_TYPE_FPGAV1		7	// NCO, DDC/DUC
 #define DDS_TYPE_FPGAV2		8	// NCO, DDC/DUC
 #define DDS_TYPE_ATTINY2313	9	// experemental: nco=/7, dds=/9
+#define DDS_TYPE_ZYNQ_PL 	10
 
 #define	ADC_TYPE_AD9246		15
 
@@ -1040,6 +1036,7 @@ extern "C" {
 #define CODEC_TYPE_CS4272		42	// CS CS4272
 #define CODEC_TYPE_NAU8822L		43	// NUVOTON NAU8822L
 #define CODEC_TYPE_WM8994		44	// CIRRUS LOGIC WM8994ECS/R
+#define CODEC_TYPE_CS42L51		45	// CIRRUS LOGIC CS42L51
 
 #define RTC_TYPE_DS1305		50	/* MAXIM DS1305EN RTC clock chip with SPI interface */
 #define RTC_TYPE_DS1307		51	/* MAXIM DS1307/DS3231 RTC clock chip with I2C interface */
@@ -1053,6 +1050,7 @@ extern "C" {
 #define TSC_TYPE_GT911		62	// Capacitive touch screen controller Goodix GT911
 #define TSC_TYPE_S3402		63	// Capacitive touch screen controller S3402 (on panel H497TLB01.4)
 #define TSC_TYPE_FT5336 	64	// Capacitive touch screen controller FocalTech FT5336
+#define TSC_TYPE_XPT2046 	65	// Resistive touch screen controller SHENZHEN XPTEK TECHNOLOGY CO., LTD http://www.xptek.com.cn
 
 // Start of NVRAM definitions section
 // NOTE: DO NOT USE any types of FLASH memory chips, only EEPROM or FRAM chips are supported.
@@ -2264,11 +2262,11 @@ extern "C" {
 	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V2
-	/* только главный экран с тремя видеобуферами L8, без PIP */
+	/* только главный экран с двумя видеобуферами L8, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	#define LCDMODE_MAIN_L8	1
 	//#define LCDMODE_MAIN_RGB565	1
-	#define LCDMODE_MAIN_PAGES	3
+	#define LCDMODE_MAIN_PAGES	2
 	#define LCDMODE_PIXELSIZE 1
 
 	//#define LCDMODE_PIP_L8	1
@@ -2324,7 +2322,7 @@ extern "C" {
 	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V2A
-	/* только главный экран 16 бит (три страницы), без PIP */
+	/* только главный экран 16 бит двумя видеобуферами, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
@@ -2343,7 +2341,7 @@ extern "C" {
 	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V2A_2PAGE
-	/* только главный экран 16 бит (две страницы), без PIP */
+	/* только главный экран 16 бит двумя видеобуферами, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
@@ -2362,6 +2360,25 @@ extern "C" {
 	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V5A
+	/* только главный экран с двумя видеобуферами 32 бит ARGB888, без PIP */
+	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
+	//#define LCDMODE_MAIN_L8	1
+	#define LCDMODE_MAIN_ARGB888	1
+	#define LCDMODE_MAIN_PAGES	2
+	#define LCDMODE_PIXELSIZE 4
+
+	//#define LCDMODE_PIP_L8	1
+	//#define LCDMODE_PIP_RGB888	1
+	//#define LCDMODE_PIP_PAGES	3
+	//#define COLORPIP_SHADED 128
+
+	//#define LCDMODE_MAIN_L8		1	/* используется 8 бит на пиксель представление экрана. Иначе - 16 бит - RGB565. */
+	//#define LCDMODE_PIP_RGB565	1	/* используется PIP с форматом 16 бит - RGB565 */
+	//#define LCDMODE_PIP_L8	1	/* используется PIP с форматом 8 бит - индексные цвета */
+
+	#define WITHFASTWATERFLOW 1
+
+#elif LCDMODE_V5B
 	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
@@ -2381,7 +2398,7 @@ extern "C" {
 	#define WITHFASTWATERFLOW 1
 
 #elif LCDMODE_V2B
-	/* только главный экран 16 бит (одна страница), без PIP */
+	/* только главный экран 16 бит двумя видеобуферами, без PIP */
 	#define LCDMODE_LTDC	1		/* Use framebuffer-based LCD-TFT Controller (LTDC) */
 	//#define LCDMODE_MAIN_L8	1
 	#define LCDMODE_MAIN_RGB565	1
@@ -2456,6 +2473,10 @@ extern "C" {
 #endif /* ! defined WITHGUIHEAP || WITHGUIHEAP < (80 * 1024uL) */
 
 #endif /* WITHTOUCHGUI */
+
+#if defined WITHVIEW_3DSS && (! defined CPUSTYLE_XC7Z && ! defined CPUSTYLE_STM32MP1 && ! defined CPUSTYLE_R7S721)
+	#undef WITHVIEW_3DSS								// WITHVIEW_3DSS только для конфигураций с достаточным объемом памяти
+#endif
 
 #if WITHKEEPNVRAM && defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
 	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together
