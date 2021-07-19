@@ -6508,6 +6508,8 @@ void hardware_spi_master_initialize(void)
 	// Настроим модуль SPI.
 	RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // подать тактирование
 	(void) RCC->APB2ENR;
+	RCC->APB2LPENR |= RCC_APB2LPENR_SPI1LPEN; // подать тактирование
+	(void) RCC->APB2LPENR;
 	//SPI1->CR1 = 0x0000;             //очистить первый управляющий регистр
 	//SPI1->CR2 = 0x0000;
 

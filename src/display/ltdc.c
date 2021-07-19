@@ -1372,9 +1372,13 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	hardware_set_dotclock(display_getdotclock(vdmode));
 
 #if CPUSTYLE_STM32H7XX
+
 	/* Enable the LTDC Clock */
 	RCC->APB3ENR |= RCC_APB3ENR_LTDCEN;	/* LTDC clock enable */
 	(void) RCC->APB3ENR;
+	RCC->APB3LPENR |= RCC_APB3LPENR_LTDCLPEN_Msk;	/* LTDC clock enable */
+	(void) RCC->APB3LPENR;
+
 
 #elif CPUSTYLE_STM32MP1
 
