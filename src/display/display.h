@@ -1039,14 +1039,15 @@ void ltdc_horizontal_pixels(
 uint_fast16_t
 RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
-	uint_fast8_t width,		// пикселей в символе по горизонтали
+	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
+	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
 	PACKEDCOLORMAIN_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y,
-	char cc
+	uint_fast8_t cc
 	);
 
 // Установить прозрачность для прямоугольника

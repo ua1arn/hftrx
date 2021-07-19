@@ -505,24 +505,24 @@ void RAMFUNC ltdc_horizontal_pixels(
 uint_fast16_t
 RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
 	const FLASHMEM uint8_t * fontraster,
-	uint_fast8_t width,		// пикселей в символе по горизонтали
+	uint_fast8_t width,		// пикселей в символе по горизонтали знакогнератора
+	uint_fast8_t width2,	// пикселей в символе по горизонтали отображается (для уменьшеных в ширину символов большиз шрифтов)
 	uint_fast8_t height,	// строк в символе по вертикали
 	uint_fast8_t bytesw,	// байтов в одной строке символа
 	PACKEDCOLORMAIN_T * const __restrict buffer,
 	const uint_fast16_t dx,
 	const uint_fast16_t dy,
 	uint_fast16_t x, uint_fast16_t y,
-	char cc
+	uint_fast8_t c
 	)
 {
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 	uint_fast8_t cgrow;
 	for (cgrow = 0; cgrow < height; ++ cgrow)
 	{
 		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdc_horizontal_pixels(tgr, & fontraster [(c * height + cgrow) * bytesw], width);
+		ltdc_horizontal_pixels(tgr, & fontraster [(c * height + cgrow) * bytesw], width2);
 	}
-	return x + width;
+	return x + width2;
 }
 
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
@@ -534,7 +534,8 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	return ltdc_horizontal_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, x, y, cc);
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	return ltdc_horizontal_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, x, y, c);
 //	const uint_fast8_t width = SMALLCHARW;
 //	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
 //	uint_fast8_t cgrow;
@@ -555,13 +556,14 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
-	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdc_horizontal_pixels(tgr, S1D13781_bigfont_LTDC [c] [cgrow], width);
-	}
-	return x + width;
+	return ltdc_horizontal_put_char_unified(S1D13781_bigfont_LTDC [0] [0], BIGCHARW, width, BIGCHARH, sizeof S1D13781_bigfont_LTDC [0] [0], buffer, dx, dy, x, y, c);
+//	uint_fast8_t cgrow;
+//	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
+//	{
+//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		ltdc_horizontal_pixels(tgr, S1D13781_bigfont_LTDC [c] [cgrow], width);
+//	}
+//	return x + width;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
@@ -573,13 +575,14 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = HALFCHARW;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
-	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
-	}
-	return x + width;
+	return ltdc_horizontal_put_char_unified(S1D13781_halffont_LTDC [0] [0], HALFCHARW, width, HALFCHARH, sizeof S1D13781_halffont_LTDC [0] [0], buffer, dx, dy, x, y, c);
+//	uint_fast8_t cgrow;
+//	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
+//	{
+//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		ltdc_horizontal_pixels(tgr, S1D13781_halffont_LTDC [c] [cgrow], width);
+//	}
+//	return x + width;
 }
 
 #else /* LCDMODE_HORFILL */
