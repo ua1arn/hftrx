@@ -8842,9 +8842,9 @@ void hardware_adc_initialize(void)
 	HARDWARE_ADC_INITIALIZE(ainmask);
 
 	#if CPUSTYLE_STM32MP1
-		RCC->MP_AHB2ENSETR |= RCC_MC_AHB2ENSETR_ADC12EN;	// Затактировали АЦП
+		RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_ADC12EN;	// Затактировали АЦП
 		(void) RCC->MP_AHB2ENSETR;
-		RCC->MP_AHB2LPENSETR |= RCC_MC_AHB2LPENSETR_ADC12LPEN;	// Затактировали АЦП
+		RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_ADC12LPEN;	// Затактировали АЦП
 		(void) RCC->MP_AHB2LPENSETR;
 
 	#elif CPUSTYLE_STM32H7XX
@@ -10443,9 +10443,9 @@ void hardware_sdhost_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MP_AHB6ENSETR |= RCC_MC_AHB6ENSETR_SDMMC1EN;   // подаем тактирование на SDMMC1
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_SDMMC1EN;   // подаем тактирование на SDMMC1
 	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR |= RCC_MC_AHB6LPENSETR_SDMMC1LPEN;   // подаем тактирование на SDMMC1
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_SDMMC1LPEN;   // подаем тактирование на SDMMC1
 	(void) RCC->MP_AHB6LPENSETR;
 
 	HARDWARE_SDIO_INITIALIZE();	// Подсоединить контроллер к выводам процессора

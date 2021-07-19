@@ -210,10 +210,10 @@ mdma_startandwait(void)
 void arm_hardware_mdma_initialize(void)
 {
 #if CPUSTYLE_STM32MP1
-	/* Enable the DMA2D Clock */
-	RCC->MP_AHB6ENSETR = RCC_MC_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
+	/* Enable the MDMA Clock */
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_MDMAEN;	/* MDMA clock enable */
 	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR = RCC_MC_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_MDMALPEN;	/* MDMA clock enable */
 	(void) RCC->MP_AHB6LPENSETR;
 	//RCC->MP_TZAHB6ENSETR = RCC_MP_TZAHB6ENSETR_MDMAEN;
 	//(void) RCC->MP_TZAHB6ENSETR;
@@ -232,14 +232,14 @@ void arm_hardware_mdma_initialize(void)
 	(void) SYSCFG->ICNR;
 
 #elif CPUSTYLE_STM32H7XX
-	/* Enable the DMA2D Clock */
+	/* Enable the MDMA Clock */
 	RCC->AHB3ENR |= RCC_AHB3ENR_MDMAEN_Msk;	/* MDMA clock enable */
 	(void) RCC->AHB3ENR;
 	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
 	(void) RCC->AHB3LPENR;
 
 #else /* CPUSTYLE_STM32H7XX */
-	/* Enable the DMA2D Clock */
+	/* Enable the MDMA Clock */
 	RCC->AHB1ENR |= RCC_AHB1ENR_MDMAEN;	/* MDMA clock enable */
 	(void) RCC->AHB1ENR;
 	RCC->AHB3LPENR |= RCC_AHB3LPENR_MDMALPEN_Msk;
