@@ -2073,15 +2073,16 @@ RAMFUNC_NONILINE ltdc_horizontal_put_char_small3(
 	char cc
 	)
 {
-	const uint_fast8_t width = SMALLCHARW3;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
-	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
-	}
-	return x + width;
+	return ltdc_horizontal_put_char_unified(S1D13781_smallfont3_LTDC [0], SMALLCHARW3, SMALLCHARH3, sizeof S1D13781_smallfont3_LTDC [0], buffer, dx, dy, x, y, cc);
+//	const uint_fast8_t width = SMALLCHARW3;
+//	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+//	uint_fast8_t cgrow;
+//	for (cgrow = 0; cgrow < SMALLCHARH3; ++ cgrow)
+//	{
+//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		ltdc_horizontal_pixels(tgr, & S1D13781_smallfont3_LTDC [c] [cgrow], width);
+//	}
+//	return x + width;
 }
 
 static void

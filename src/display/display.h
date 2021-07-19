@@ -1035,6 +1035,20 @@ void ltdc_horizontal_pixels(
 	uint_fast16_t width	// number of bits (start from LSB first byte in raster)
 	);
 
+// Для произвольного шрифта
+uint_fast16_t
+RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
+	const FLASHMEM uint8_t * fontraster,
+	uint_fast8_t width,		// пикселей в символе по горизонтали
+	uint_fast8_t height,	// строк в символе по вертикали
+	uint_fast8_t bytesw,	// байтов в одной строке символа
+	PACKEDCOLORMAIN_T * const __restrict buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y,
+	char cc
+	);
+
 // Установить прозрачность для прямоугольника
 void display_transparency(
 	uint_fast16_t x1, uint_fast16_t y1,

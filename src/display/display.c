@@ -501,6 +501,30 @@ void RAMFUNC ltdc_horizontal_pixels(
 	//arm_hardware_flush((uintptr_t) tgr, sizeof (* tgr) * width);
 }
 
+
+uint_fast16_t
+RAMFUNC_NONILINE ltdc_horizontal_put_char_unified(
+	const FLASHMEM uint8_t * fontraster,
+	uint_fast8_t width,		// пикселей в символе по горизонтали
+	uint_fast8_t height,	// строк в символе по вертикали
+	uint_fast8_t bytesw,	// байтов в одной строке символа
+	PACKEDCOLORMAIN_T * const __restrict buffer,
+	const uint_fast16_t dx,
+	const uint_fast16_t dy,
+	uint_fast16_t x, uint_fast16_t y,
+	char cc
+	)
+{
+	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+	uint_fast8_t cgrow;
+	for (cgrow = 0; cgrow < height; ++ cgrow)
+	{
+		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+		ltdc_horizontal_pixels(tgr, & fontraster [(c * height + cgrow) * bytesw], width);
+	}
+	return x + width;
+}
+
 // Вызов этой функции только внутри display_wrdata_begin() и display_wrdata_end();
 // return new x
 static uint_fast16_t
@@ -510,15 +534,16 @@ ltdc_horizontal_put_char_small(uint_fast16_t x, uint_fast16_t y, char cc)
 	PACKEDCOLORMAIN_T * const buffer = colmain_fb_draw();
 	const uint_fast16_t dx = DIM_X;
 	const uint_fast16_t dy = DIM_Y;
-	const uint_fast8_t width = SMALLCHARW;
-	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
-	uint_fast8_t cgrow;
-	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
-	{
-		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
-		ltdc_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
-	}
-	return x + width;
+	return ltdc_horizontal_put_char_unified(S1D13781_smallfont_LTDC [0] [0], SMALLCHARW, SMALLCHARH, sizeof S1D13781_smallfont_LTDC [0] [0], buffer, dx, dy, x, y, cc);
+//	const uint_fast8_t width = SMALLCHARW;
+//	const uint_fast8_t c = smallfont_decode((unsigned char) cc);
+//	uint_fast8_t cgrow;
+//	for (cgrow = 0; cgrow < SMALLCHARH; ++ cgrow)
+//	{
+//		PACKEDCOLORMAIN_T * const tgr = colmain_mem_at(buffer, dx, dy, x, y + cgrow);
+//		ltdc_horizontal_pixels(tgr, S1D13781_smallfont_LTDC [c] [cgrow], width);
+//	}
+//	return x + width;
 }
 
 // Вызов этой функции только внутри display_wrdatabig_begin() и display_wrdatabig_end();
