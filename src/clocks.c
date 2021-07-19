@@ -2545,9 +2545,9 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MP_APB1ENSETR |= RCC_MP_APB1ENSETR_TIM5EN;   // подаем тактирование на TIM5
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_TIM5EN;   // подаем тактирование на TIM5
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR |= RCC_MP_APB1LPENSETR_TIM5LPEN;   // подаем тактирование на TIM5
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_TIM5LPEN;   // подаем тактирование на TIM5
 	(void) RCC->MP_APB1LPENSETR;
 
 	TIM5->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
@@ -9932,9 +9932,9 @@ hardware_elkey_timer_initialize(void)
 
 #elif CPUSTYLE_STM32MP1
 
-	RCC->MP_APB1ENSETR |= RCC_MP_APB1ENSETR_TIM3EN;   // подаем тактирование на TIM3
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_TIM3EN;   // подаем тактирование на TIM3
 	(void) RCC->MP_APB1ENSETR;
-	RCC->MP_APB1LPENSETR |= RCC_MP_APB1LPENSETR_TIM3LPEN;   // подаем тактирование на TIM3
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_TIM3LPEN;   // подаем тактирование на TIM3
 	(void) RCC->MP_APB1LPENSETR;
 
 	TIM3->DIER = TIM_DIER_UIE;        	 // разрешить событие от таймера
