@@ -40,7 +40,7 @@
 		#if WITHCPUXTAL || WITHCPUXOSC
 
 			// PLL1_1600
-			#define PLL1DIVM	2	// ref1_ck = 12 MHz
+			#define PLL1DIVM	2	// ref1_ck = 12 MHz (8..16 MHz valid)
 			#define PLL1DIVP	1	// MPU
 			#define PLL1DIVQ	2
 			#define PLL1DIVR	2
@@ -51,20 +51,22 @@
 
 			// PLL2_1600
 	#if 1
-			#define PLL2DIVM	2	// ref2_ck = 12 MHz
+			#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
 			#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
 			#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 			#define PLL2DIVR	1	// DDR clock divider = 528 MHz
 	#elif 0
-			#define PLL2DIVM	2	// ref2_ck = 12 MHz
+			// PLL2_1600
+			#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
 			#define PLL2DIVN	66	// 528 MHz Valid division rations for DIVN: between 25 and 100
 			#define PLL2DIVP	3	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	2	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 			#define PLL2DIVR	2	// DDR clock divider = 528 MHz
 	#else
+			// PLL2_1600
 			/* bad boards DDR3 clock = 300 MHz */
-			#define PLL2DIVM	2	// ref2_ck = 12 MHz
+			#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
 			#define PLL2DIVN	50	// 600 MHz Valid division rations for DIVN: between 25 and 100
 			#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
@@ -74,7 +76,7 @@
 			// PLL3_800
 
 			// PLL4_800
-			#define PLL4DIVM	2	// ref2_ck = 12 MHz
+			#define PLL4DIVM	2	// ref2_ck = 12 MHz (4..16 MHz valid)
 			#define PLL4DIVN	64	// 768 MHz
 			#define PLL4DIVP	2	// div2
 			//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
@@ -86,7 +88,7 @@
 		#else
 			// HSI version (HSI=64 MHz)
 			// PLL1_1600
-			#define PLL1DIVM	5	// ref1_ck = 12.8 MHz
+			#define PLL1DIVM	5	// ref1_ck = 12.8 MHz (8..16 MHz valid)
 			#define PLL1DIVP	1	// MPU
 			#define PLL1DIVQ	2
 			#define PLL1DIVR	2
@@ -96,14 +98,14 @@
 
 	#if 1
 			// PLL2_1600
-			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
+			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz (8..16 MHz valid)
 			#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
 			#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 			#define PLL2DIVQ	1	// GPU clock divider
 			#define PLL2DIVR	1	// DDR clock divider
 	#else
 			// PLL2_1600
-			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
+			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz (8..16 MHz valid)
 			#define PLL2DIVN	61//41	// 12.8 * 41 = 524.8 MHz
 			#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 			#define PLL2DIVQ	2//1	// GPU clock divider
@@ -112,10 +114,10 @@
 
 			// PLL3_800
 			// pll3_p_ck -> mcuss_ck - 209 MHz Max
-			#define PLL3DIVM	5	// ref2_ck = 12.8 MHz
+			#define PLL3DIVM	5	// ref3_ck = 12.8 MHz (4..16 MHz valid)
 
 			// PLL4_800
-			#define PLL4DIVM	5	// ref2_ck = 12.8 MHz
+			#define PLL4DIVM	5	// ref2_ck = 12.8 MHz  (4..16 MHz valid)
 			#define PLL4DIVN	60	// 12.8 * 60 = 768 MHz
 			#define PLL4DIVP	2	// div2
 			//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
