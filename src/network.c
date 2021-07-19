@@ -528,6 +528,29 @@ void httpd_post_data_recved(void *connection, u16_t recved_len);
 
 #if SYS_LIGHTWEIGHT_PROT
 
+#if (__CORTEX_M != 0)
+
+sys_prot_t sys_arch_protect(void)
+{
+	const uint32_t primask =__get_PRIMASK();
+	__disable_irq();
+	return primask & 0x01;
+}
+
+void sys_arch_unprotect(sys_prot_t c)
+{
+	if (c)
+	{
+		__enable_irq();
+	}
+	else
+	{
+		__disable_irq();
+	}
+}
+
+#elif (__CORTEX_A != 0)
+
 // Taken from https://github.com/kslemb/ARM-K/blob/master/vic/isr.c
 
 
@@ -581,6 +604,7 @@ void sys_arch_unprotect(sys_prot_t pval)
 {
 	Restore_IRQ(pval);
 }
+#endif
 
 #endif /* SYS_LIGHTWEIGHT_PROT */
 
@@ -614,7 +638,17 @@ void network_initialize(void)
 
 #endif /*  WITHLWIP */
 
+#if 1
+
+uint8_t myIP [4] = { 192, 168, 17, 33 };
+uint8_t myNETMASK [4] = {255, 255, 255, 0};
+uint8_t myGATEWAY [4] = { 0, 0, 0, 0 };
+
+#else
+
 uint8_t myIP [4] = { 172, 210, 72, 198 };		// ��� �������� ������ � ���������� �� �������� ��������� �������
 //uint8_t myIP [4] = { 192, 168, 7, 1 };		// ������ � ����
 uint8_t myNETMASK [4] = {255, 0, 0, 0};
 uint8_t myGATEWAY [4] = { 172, 171, 242, 248 };
+
+#endif
