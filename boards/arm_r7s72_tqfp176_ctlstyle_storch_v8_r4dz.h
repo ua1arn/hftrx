@@ -335,6 +335,7 @@
 
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	//#define WITHALTERNATIVEFONTS    1
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 	////#define WITHTHERMOLEVEL	1	/* отображение температуры */

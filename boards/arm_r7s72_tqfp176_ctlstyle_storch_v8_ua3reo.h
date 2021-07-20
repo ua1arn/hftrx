@@ -333,6 +333,7 @@
 	#define WITHIF4DSP	1	// "Дятел"
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 
+	//#define WITHALTERNATIVEFONTS    1
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
