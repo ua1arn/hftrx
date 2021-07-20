@@ -21,6 +21,19 @@
 #define FONTSHERE 1
 
 #include "fontmaps.h"
+
+#if WITHALTERNATIVEFONTS
+	uint8_t const * font_big = ltdc_CenturyGothic_big [0] [0];
+	uint8_t const * font_half = ltdc_CenturyGothic_half [0] [0];
+	const size_t size_bigfont = sizeof ltdc_CenturyGothic_big [0] [0];
+	const size_t size_halffont = sizeof ltdc_CenturyGothic_half [0] [0];
+#else
+	uint8_t const * font_big = S1D13781_bigfont_LTDC [0] [0];
+	uint8_t const * font_half = S1D13781_halffont_LTDC [0] [0];
+	const size_t size_bigfont = sizeof S1D13781_bigfont_LTDC [0] [0];
+	const size_t size_halffont = sizeof S1D13781_halffont_LTDC [0] [0];
+#endif /* WITHALTERNATIVEFONTS */
+
 //
 //#if ! LCDMODE_LTDC_L24
 //#include "./byte2crun.h"
@@ -556,7 +569,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_big(uint_fast16_t
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = ((cc == '.' || cc == '#') ? BIGCHARW_NARROW  : BIGCHARW);	// полнаяширина символа в пикселях
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(S1D13781_bigfont_LTDC [0] [0], BIGCHARW, width, BIGCHARH, sizeof S1D13781_bigfont_LTDC [0] [0], buffer, dx, dy, x, y, c);
+	return ltdc_horizontal_put_char_unified(font_big, BIGCHARW, width, BIGCHARH, size_bigfont, buffer, dx, dy, x, y, c);
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < BIGCHARH; ++ cgrow)
 //	{
@@ -575,7 +588,7 @@ static uint_fast16_t RAMFUNC_NONILINE ltdc_horizontal_put_char_half(uint_fast16_
 	const uint_fast16_t dy = DIM_Y;
 	const uint_fast8_t width = HALFCHARW;
     const uint_fast8_t c = bigfont_decode((unsigned char) cc);
-	return ltdc_horizontal_put_char_unified(S1D13781_halffont_LTDC [0] [0], HALFCHARW, width, HALFCHARH, sizeof S1D13781_halffont_LTDC [0] [0], buffer, dx, dy, x, y, c);
+	return ltdc_horizontal_put_char_unified(font_half, HALFCHARW, width, HALFCHARH, size_halffont, buffer, dx, dy, x, y, c);
 //	uint_fast8_t cgrow;
 //	for (cgrow = 0; cgrow < HALFCHARH; ++ cgrow)
 //	{

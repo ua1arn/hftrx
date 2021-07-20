@@ -143,7 +143,7 @@
 	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
 	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 
-	#define LCDMODE_V5A	1	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
+	#define LCDMODE_V5B	1	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
 
 	//#define LCDMODE_V2B 1	/* только главный экран 16 бит RGB565 (одна страница), без PIP */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
@@ -282,7 +282,7 @@
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
-	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_ant_10.h"
+	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_ant_20.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -304,23 +304,24 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-		#define WITHDISPLAY_FPS		25
-		#define WITHDISPLAYSWR_FPS	25
+		#define WITHFFTSIZEWIDE 		1024	/* Отображение спектра и волопада */
+		#define WITHDISPLAY_FPS			30
+		#define WITHDISPLAYSWR_FPS		30
 		#define WITHSPECBETA_DEFAULT	30
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-		#define WITHCPUTEMPERATURE	1
-		#if 0
+		#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
+		#define WITHCPUTEMPERATURE		1
+		#if 1
 			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
+			#define WITHUSEMALLOC		1		/* разрешение поддержки malloc/free/calloc/realloc */
 			#define WITHAFGAINDEFAULT	150
 			#define WITHVIEW_3DSS		1
 			#define WITHDEFAULTVIEW		VIEW_3DSS
 			#define WITHVIEW_3DSS_MARK	1
+			#define WITHALTERNATIVEFONTS	1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
