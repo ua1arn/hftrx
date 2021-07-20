@@ -43,9 +43,7 @@
 	#define LWIP_RAW                        1
 	#define LWIP_NETCONN                    0
 	#define LWIP_SOCKET                     0
-#if ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED
-	#define LWIP_DHCP                       1
-#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED */
+	//#define LWIP_DHCP                       1	/* DHCP client */
 	#define LWIP_ICMP                       1
 	#define LWIP_UDP                        1
 	#define LWIP_TCP                        1
@@ -75,9 +73,7 @@
 	#define LWIP_RAW                        1
 	#define LWIP_NETCONN                    0
 	#define LWIP_SOCKET                     0
-#if 1//ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED
-	#define LWIP_DHCP                       1
-#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED */
+	//#define LWIP_DHCP                       1	/* DHCP client */
 	#define LWIP_ICMP                       1
 	#define LWIP_UDP                        1
 	#define LWIP_TCP                        1
