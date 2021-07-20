@@ -189,58 +189,140 @@ line_loop:
 
 /* low-level CPU peripherials init */
 
-	ldr   	r2, =SystemInit
-	mov   	lr, pc
-	bx    	r2     /* And jump... */
+   ldr   r2, =SystemInit
+   mov   lr, pc
+   bx    r2     /* And jump... */
 
-	msr   	CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
-	ldr   	sp, =__stack
-	mov   	lr, #0
+   msr   CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT     /* 0x13 Supervisor Mode */
+   ldr   sp, =__stack
+    mov   lr, #0
 
-	ldr    	r4, =__copy_table_start__
-	ldr     r5, =__copy_table_end__
+/*  Firstly it copies data from read only memory to RAM. There are two schemes
+ *  to copy. One can copy more than one sections. Another can only copy
+ *  one section.  The former scheme needs more instructions and read-only
+ *  data to implement than the latter.
+ *  Macro __STARTUP_COPY_MULTIPLE is used to choose between two schemes.  */
+
+#if 1 //def __STARTUP_COPY_MULTIPLE
+/*  Multiple sections scheme.
+ *
+ *  Between symbol address __copy_table_start__ and __copy_table_end__,
+ *  there are array of triplets, each of which specify:
+ *    offset 0: LMA of start of a section to copy from
+ *    offset 4: VMA of start of a section to copy to
+ *    offset 8: size of the section to copy. Must be multiply of 4
+ *
+ *  All addresses must be aligned to 4 bytes boundary.
+ */
+	ldr	r4, =__copy_table_start__
+	ldr	r5, =__copy_table_end__
 
 .L_loop0:
-	cmp		r4, r5
-	bge      .L_loop0_done
-	ldr      r1, [r4]                /* source address */
-	ldr      r2, [r4, #4]            /* destination address */
-	ldr      r3, [r4, #8]            /* word count */
-	lsl      r3, r3, #2              /* byte count */
+	cmp	r4, r5
+	bge	.L_loop0_done
+	ldr	r1, [r4]
+	ldr	r2, [r4, #4]
+	ldr	r3, [r4, #8]
 
 .L_loop0_0:
-	subs     r3, #4                  /* decrement byte count */
-	ittt     ge
-	ldrge    r0, [r1, r3]
-	strge    r0, [r2, r3]
-	bge      .L_loop0_0
+	subs	r3, #4
+	ittt	ge
+	ldrge	r0, [r1, r3]
+	strge	r0, [r2, r3]
+	bge	.L_loop0_0
 
-	adds     r4, #12
-	b        .L_loop0
+	adds	r4, #12
+	b	.L_loop0
+
 .L_loop0_done:
+#else
+/*  Single section scheme.
+ *
+ *  The ranges of copy from/to are specified by following symbols
+ *    __etext: LMA of start of the section to copy from. Usually end of text
+ *    __data_start__: VMA of start of the section to copy to
+ *    __data_end__: VMA of end of the section to copy to
+ *
+ *  All addresses must be aligned to 4 bytes boundary.
+ */
+	ldr	r1, =__etext
+	ldr	r2, =__data_start__
+	ldr	r3, =__data_end__
 
-	ldr      r3, =__zero_table_start__
-	ldr      r4, =__zero_table_end__
+.L_loop1:
+	cmp	r2, r3
+	ittt	lt
+	ldrlt	r0, [r1], #4
+	strlt	r0, [r2], #4
+	blt	.L_loop1
+#endif /*__STARTUP_COPY_MULTIPLE */
+
+/*  This part of work usually is done in C library startup code. Otherwise,
+ *  define this macro to enable it in this startup.
+ *
+ *  There are two schemes too. One can clear multiple BSS sections. Another
+ *  can only clear one section. The former is more size expensive than the
+ *  latter.
+ *
+ *  Define macro __STARTUP_CLEAR_BSS_MULTIPLE to choose the former.
+ *  Otherwise efine macro __STARTUP_CLEAR_BSS to choose the later.
+ */
+#if 1 //def __STARTUP_CLEAR_BSS_MULTIPLE
+/*  Multiple sections scheme.
+ *
+ *  Between symbol address __copy_table_start__ and __copy_table_end__,
+ *  there are array of tuples specifying:
+ *    offset 0: Start of a BSS section
+ *    offset 4: Size of this BSS section. Must be multiply of 4
+ */
+	ldr	r3, =__zero_table_start__
+	ldr	r4, =__zero_table_end__
 
 .L_loop2:
-	cmp      r3, r4
-	bge      .L_loop2_done
-	ldr      r1, [r3]                /* destination address */
-	ldr      r2, [r3, #4]            /* word count */
-	lsl      r2, r2, #2              /* byte count */
-	movs     r0, #0
+	cmp	r3, r4
+	bge	.L_loop2_done
+	ldr	r1, [r3]
+	ldr	r2, [r3, #4]
+	ldr r0, =0
+	//movs	r0, 0
 
 .L_loop2_0:
-	subs     r2, #4                  /* decrement byte count */
-	itt      ge
-	strge    r0, [r1, r2]
-	bge      .L_loop2_0
+	subs	r2, #4
+	itt	ge
+	strge	r0, [r1, r2]
+	bge	.L_loop2_0
 
-	adds     r3, #8
-	b        .L_loop2
+	adds	r3, #8
+	b	.L_loop2
 .L_loop2_done:
+#elif defined (__STARTUP_CLEAR_BSS)
+/*  Single BSS section scheme.
+ *
+ *  The BSS section is specified by following symbols
+ *    __bss_start__: start of the BSS section.
+ *    __bss_end__: end of the BSS section.
+ *
+ *  Both addresses must be aligned to 4 bytes boundary.
+ */
+	ldr	r1, =__bss_start__
+	ldr	r2, =__bss_end__
+	ldr r0, =0
+	//movs	r0, 0
+.L_loop3:
+	cmp	r1, r2
+	itt	lt
+	strlt	r0, [r1], #4
+	blt	.L_loop3
+#endif /* __STARTUP_CLEAR_BSS_MULTIPLE || __STARTUP_CLEAR_BSS */
 
-	bl       _start
+#ifndef __NO_SYSTEM_INIT
+	/* bl	SystemInit */
+#endif
+
+#ifndef __START
+#define __START _start
+#endif
+	bl	__START
                        
 ExitFunction:
    nop
