@@ -3702,7 +3702,7 @@ void stm32mp1_ddr_get_config(struct stm32mp1_ddr_config * cfg)
 	cfg->c_map.addrmap11 = DDR_ADDRMAP11;
 
 	cfg->p_reg.pgcr = 	 DDR_PGCR;
-	cfg->p_reg.aciocr = 	 DDR_ACIOCR;
+	cfg->p_reg.aciocr = 	 (DDR_ACIOCR & ~ (DDRPHYC_ACIOCR_ACSR_Msk)) | (0x02uL << DDRPHYC_ACIOCR_ACSR_Pos);
 	cfg->p_reg.dxccr = 	 DDR_DXCCR;
 	cfg->p_reg.dsgcr = 	 DDR_DSGCR;
 	cfg->p_reg.dcr = 		 DDR_DCR;
