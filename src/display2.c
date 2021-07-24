@@ -7735,6 +7735,17 @@ deltafreq2x_abs(
 }
 
 #define MARKERH 10
+
+static uint_fast8_t
+isvisibletext(
+	uint_fast16_t dx, // ширина буфера
+	uint_fast16_t x, // начало строки
+	uint_fast16_t w	// ширина строки со значением частоты
+	)
+{
+	return (x + w) <= dx;
+}
+
 // отрисовка маркеров частот
 static
 void
@@ -7766,9 +7777,10 @@ display_colorgrid_xor(
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
 				freqw = strwidth3(buf2);
-				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
+				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
+				if (isvisibletext(BUFDIM_X, xtext, freqw))
 				{
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf2, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, COLORPIP_YELLOW);
 					display_colorbuf_xor_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + MARKERH, h - MARKERH, color);
 				}
 				else
@@ -7829,9 +7841,10 @@ display_colorgrid_set(
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
 				freqw = strwidth3(buf2);
-				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
+				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
+				if (isvisibletext(BUFDIM_X, xtext, freqw))
 				{
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row0, buf2, COLORPIP_YELLOW);
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row0, buf2, COLORPIP_YELLOW);
 					display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0 + markerh, h - markerh, color);
 				}
 				else
@@ -7873,9 +7886,9 @@ display_colorgrid_3dss(
 				uint_fast16_t freqw;	// ширина строки со значением частоты
 				local_snprintf_P(buf2, ARRAY_SIZE(buf2), gridfmt_2, glob_gridwc, (long) ((f0 + df) / glob_griddigit % glob_gridmod));
 				freqw = strwidth3(buf2);
-
-				if (xmarker > freqw / 2 && xmarker < (ALLDX - freqw / 2))
-					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xmarker - freqw / 2, row, buf2, COLORPIP_YELLOW);
+				uint_fast16_t xtext = xmarker >= (freqw + 1) / 2 ? xmarker - (freqw + 1) / 2 : UINT16_MAX;
+				if (isvisibletext(BUFDIM_X, xtext, freqw))
+					colpip_string3_tbg(buffer, BUFDIM_X, BUFDIM_Y, xtext, row, buf2, COLORPIP_YELLOW);
 
 				display_colorbuf_set_vline(buffer, BUFDIM_X, BUFDIM_Y, xmarker, row0, h, color);
 			}
