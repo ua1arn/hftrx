@@ -9424,8 +9424,8 @@ static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float*
 static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
-	static const float32_t ki = 32768;
-	static const float32_t ko = 1. / 32768;
+//	static const float32_t ki = 32768;
+//	static const float32_t ko = 1. / 32768;
 #if WITHNOSPEEX
 	// не делать даже коррекцию АЧХ
 	nrp->outsp = p;
@@ -9485,9 +9485,12 @@ static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * 
 	if (pathi == 0)
 		AudioDriver_LeakyLmsNr(nrp->wire1, nrp->wire1, FIRBUFSIZE, 0);
 #else /* WITHLEAKYLMSANR */
-	arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
-	speex_preprocess_run(nrp->st_handle, nrp->wire1);
-	arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
+	if (ispathprocessing(pathi))
+	{
+		arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
+		speex_preprocess_run(nrp->st_handle, nrp->wire1);
+		arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
+	}
 #endif /* WITHLEAKYLMSANR */
 	return nrp->wire1;
 
