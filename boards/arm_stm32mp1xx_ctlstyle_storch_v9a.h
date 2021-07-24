@@ -638,6 +638,7 @@
 		POTPOWER = 6,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
 
+	//#define WITHALTERNATIVEFONTS    1
 
 	#if WITHAUTOTUNER_AVBELNN
 

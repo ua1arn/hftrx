@@ -25,6 +25,12 @@ extern const FLASHMEM uint8_t S1D13781_halffont_LTDC [12][56][4];
 extern const FLASHMEM uint8_t S1D13781_smallfont_LTDC [][15][2];
 extern const FLASHMEM uint8_t S1D13781_smallfont2_LTDC [][16][2];
 extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
+
+#if WITHALTERNATIVEFONTS
+extern const FLASHMEM uint8_t ltdc_CenturyGothic_big [13][56][5];
+extern const FLASHMEM uint8_t ltdc_CenturyGothic_half [12][56][4];
+#endif /* WITHALTERNATIVEFONTS */
+
 //
 #if LCDMODE_LTDC
 
@@ -140,6 +146,10 @@ extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
 	#include "./fonts/S1D13781_font_small_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
+#if WITHALTERNATIVEFONTS
+	#include "./fonts/ltdc_CenturyGothic_big.h"
+	#include "./fonts/ltdc_CenturyGothic_half.h"
+#endif /* WITHALTERNATIVEFONTS */
 
 #elif DSTYLE_G_X800_Y480
 	// в знакогенераторе изображения символов "по горизонтали"
@@ -148,6 +158,10 @@ extern const FLASHMEM uint8_t S1D13781_smallfont3_LTDC [][8];
 	#include "./fonts/S1D13781_font_small_LTDC.h"
 	#include "./fonts/S1D13781_font_half_LTDC.h"
 	#include "./fonts/S1D13781_font_big_LTDC.h"
+#if WITHALTERNATIVEFONTS
+	#include "./fonts/ltdc_CenturyGothic_big.h"
+	#include "./fonts/ltdc_CenturyGothic_half.h"
+#endif /* WITHALTERNATIVEFONTS */
 
 #elif DSTYLE_G_X240_Y128
 
