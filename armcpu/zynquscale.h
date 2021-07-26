@@ -105,7 +105,7 @@ typedef enum IRQn
 #define GIC_DISTRIB_BASE  (CPUPRIV_BASE + 0x1000uL)
 #define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
 
-#define __CORTEX_A                    9U      /*!< Cortex-A# Core                              */
+#define __CORTEX_A                    53U      /*!< Cortex-A# Core                              */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */

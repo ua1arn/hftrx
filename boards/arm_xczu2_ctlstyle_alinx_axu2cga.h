@@ -219,7 +219,7 @@
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEFATFS		1	// FatFS
 	#define WITHISBOOTLOADERFATFS 1
-	#define WITHISBOOTLOADERIMAGE "tc1_xc7z010_app.xyl32"
+	#define WITHISBOOTLOADERIMAGE "tc1_xczu2_app.xyl32"
 
 #else /* WITHISBOOTLOADER */
 

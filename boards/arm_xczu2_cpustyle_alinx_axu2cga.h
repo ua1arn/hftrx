@@ -625,11 +625,11 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHUART2HW
-	// antminer
+	// alinx axu2cga
 	// WITHUART2HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		MIO_SET_MODE(48, 0x000016E0uL);	/*  MIO_PIN_48 UART1_TXD */ \
-		MIO_SET_MODE(49, 0x000016E1uL);	/*  MIO_PIN_49 UART1_RXD */ \
+		MIO_SET_MODE(24, 0x000016E0uL);	/*  MIO_PIN_24 UART1_TXD */ \
+		MIO_SET_MODE(25, 0x000016E1uL);	/*  MIO_PIN_25 UART1_RXD */ \
 		} while (0)
 
 #endif /* WITHUART2HW */

@@ -20,7 +20,7 @@ const uint_fast8_t rbvalues [8] =
 
 #if WITHSPIHW || WITHSPISW
 
-	#if ! defined (SPI_ALLCS_BITS) && ! CPUSTYLE_XC7Z
+	#if ! defined (SPI_ALLCS_BITS) && ! CPUSTYLE_XC7Z && ! CPUSTYLE_XCZU
 		#error SPI_ALLCS_BITS should be defined in any cases
 	#endif
 
@@ -72,7 +72,7 @@ spi_hwinit255(void)
 static void
 spi_cs_disable(void)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	SPI_ALLCS_DISABLE();
 
@@ -145,7 +145,7 @@ spi_cs_enable(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	SPI_CS_SET(target);
 
@@ -342,7 +342,7 @@ prog_spi_to_write_impl(void)
 	{
 		SCLK_NPULSE();	/* latch to chips */
 
-		#if CPUSTYLE_XC7Z
+		#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 			return SPI_TARGET_MISO_PIN != 0;
 		#elif SPI_BIDIRECTIONAL
 			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;
@@ -1240,7 +1240,7 @@ static void spidf_iostart(
 	// при передаче формируется только команла и адрес при необходимости
 }
 
-#elif WIHSPIDFHW && CPUSTYLE_XC7Z
+#elif WIHSPIDFHW && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 
 void spidf_initialize(void)
 {

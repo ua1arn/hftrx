@@ -265,7 +265,7 @@ $(PROJECT)_app.xyl32: $(PROJECT)_app.bin
 BOOT2: version boot.bin
 	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
 
-boot.bin: boot_ant.bif $(PROJECT)_boot.elf
+boot.bin: boot_alinx_axu2cga.bif $(PROJECT)_boot.elf
 	bootgen -arch zynqmp -image boot_alinx_axu2cga.bif -w on -o $@
 
 $(OBJSC) $(ZOBJSC):

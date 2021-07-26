@@ -22,7 +22,7 @@
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #include "lib/zynq/src/xadcps.h"
 #include "lib/zynq/src/xgpiops.h"

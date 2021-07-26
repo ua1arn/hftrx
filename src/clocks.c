@@ -2134,7 +2134,14 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 		{ SCEMR_x16, 	SCSMR_DIV64, }, 	/* /1024 = 16 * 64 */
 	};
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
+	enum
+	{
+		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
+	};
+
+#elif CPUSTYLE_XCZU
 
 	enum
 	{
@@ -2157,7 +2164,7 @@ void hardware_spi_io_delay(void)
 	__NOP();
 #elif	CPUSTYLE_ARM_CM0
 	__NOP();
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	local_delay_us(5);
 #else
 	// Cortex A9
@@ -2230,7 +2237,7 @@ void hardware_spi_io_delay(void)
 		spool_elkeybundle();
 	}
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	// Используется только один из обработчиков
 
@@ -2243,14 +2250,16 @@ void hardware_spi_io_delay(void)
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
-	// Private timer use
-	void
-	PTIM_Handler(void)
-	{
-		PTIM_ClearEventFlag();
-		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
-		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
-	}
+	#if (__CORTEX_A == 5U) || (__CORTEX_A == 9U)
+		// Private timer use
+		void
+		PTIM_Handler(void)
+		{
+			PTIM_ClearEventFlag();
+			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+		}
+	#endif
 
 #elif CPUSTYLE_STM32F
 
@@ -2577,7 +2586,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	//arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	#ifdef BOARD_BLINK_INITIALIZE
 		BOARD_BLINK_INITIALIZE();
@@ -2599,7 +2608,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 		GTC->GTCLR |= 0x1;	// Timer_Enable
 
 	#else
-
+		// (__CORTEX_A == 5U) || (__CORTEX_A == 9U)
 		// Private timer use
 		// Disable Private Timer and set load value
 		PTIM_SetControl(0);
@@ -5448,7 +5457,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #endif /* CPUSTYLE_STM32L0XX */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 static void xc7z1_arm_pll_initialize(void)
 {
@@ -5684,7 +5693,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 #endif
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
 
@@ -5918,7 +5927,7 @@ sysinit_pll_initialize(void)
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	#if WITHISBOOTLOADER
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
@@ -10171,7 +10180,7 @@ void hardware_sdhost_setbuswidth(uint_fast8_t use4bit)
 		(use4bit != 0 ? 0x01 : 0x00) * SDMMC_CLKCR_WIDBUS_0 |	// 01: 4-wide bus mode: SDMMC_D[3:0] used
 		0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	SD0->HOST_CTRL_BLOCK_GAP_CTRL = (SD0->HOST_CTRL_BLOCK_GAP_CTRL & ~ (0x02uL)) |
 				(use4bit != 0) * 0x02uL |	// Data_Transfer_Width_SD1_or_SD4
@@ -10312,7 +10321,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 		((clkdiv << SDMMC_CLKCR_CLKDIV_Pos) & SDMMC_CLKCR_CLKDIV_Msk);
 
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	const unsigned long ref = xc7z1_get_sdio_freq();
 	unsigned divider = calcdivround2(ref / 2, ticksfreq);
@@ -10467,7 +10476,7 @@ void hardware_sdhost_initialize(void)
 	// разрешить тактирование карты памяти
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	const unsigned sdioix = 0;	// SD0
 
@@ -10531,7 +10540,7 @@ void hardware_sdhost_initialize(void)
 // в ответ на прерывание изменения состояния card detect
 void hardware_sdhost_detect(uint_fast8_t Card_Inserted)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	//	This bit indicates whether a card has been
 	//	inserted. Changing from 0 to 1 generates a Card
@@ -10750,7 +10759,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF0.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	  uint32_t r; // Temporary value variable
 	  r = UART0->CR;
@@ -10936,7 +10945,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 		0;
 	SCIF3.SCBRR = value;	/* Bit rate register */
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	  uint32_t r; // Temporary value variable
 	  r = UART1->CR;
@@ -11652,7 +11661,7 @@ void hardware_twi_master_configure(void)
 	// Enable the I2Cx peripheral
 	I2C1->CR1 |= I2C_CR1_PE;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #else
 	#warning Undefined CPUSTYLE_XXX
