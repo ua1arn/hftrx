@@ -38,6 +38,10 @@
 	#define GUI_SOFTWARE_RENDERING		0
 #endif
 
+#if ! WITHALTERNATIVELAYOUT
+	#define GUI_SHOW_INFOBAR				1
+#endif /* ! WITHALTERNATIVELAYOUT */
+
 enum {
 	sliders_width = 8,			// ширина шкалы слайдера
 	sliders_w = 12,				// размеры ползунка слайдера
