@@ -97,24 +97,23 @@ typedef enum IRQn
 /*                Device Specific Peripheral Section                          */
 /******************************************************************************/
 
-#define CPUPRIV_BASE      (0xF8F00000uL)
-#define SCU_CONTROL_BASE  (CPUPRIV_BASE + 0x0000uL)
-#define GIC_PROC_BASE     (CPUPRIV_BASE + 0x0100uL)
-#define GLOBAL_TIMER_BASE (CPUPRIV_BASE + 0x0200uL)
-#define PRIV_TIMER_BASE   (CPUPRIV_BASE + 0x0600uL)
-#define GIC_DISTRIB_BASE  (CPUPRIV_BASE + 0x1000uL)
-#define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
+//#define CPUPRIV_BASE      (0xF8F00000uL)
+//#define SCU_CONTROL_BASE  (CPUPRIV_BASE + 0x0000uL)
+//#define GLOBAL_TIMER_BASE (CPUPRIV_BASE + 0x0200uL)
+//#define PRIV_TIMER_BASE   (CPUPRIV_BASE + 0x0600uL)
+//#define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
+#define GLOBAL_TIMER_BASE 0
 
 #define __CORTEX_A                    53U      /*!< Cortex-A# Core                              */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
 #define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
 #define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
-#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present                  */
+#define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
-#define GIC_DISTRIBUTOR_BASE         GIC_DISTRIB_BASE                        /*!< (GIC DIST  ) Base Address */
-#define GIC_INTERFACE_BASE           GIC_PROC_BASE                        /*!< (GIC CPU IF) Base Address */
-#define L2C_310_BASE                 L2CACHE_BASE                        /*!< (PL310     ) Base Address */
-#define TIMER_BASE				PRIV_TIMER_BASE
+#define GIC_DISTRIBUTOR_BASE         0xF9000000                        /*!< (GIC DIST  ) Base Address */
+#define GIC_INTERFACE_BASE           0xF9002000                        /*!< (GIC CPU IF) Base Address */
+//#define L2C_310_BASE                 L2CACHE_BASE                        /*!< (PL310     ) Base Address */
+//#define TIMER_BASE				PRIV_TIMER_BASE
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0       */
@@ -613,24 +612,28 @@ typedef struct xemacps_regs {
 #define SRAM_SIZE           (0x00040000)
 
 /* hardware base addresses */
-#define UART0_BASE (0xE0000000uL)
-#define UART1_BASE (0xE0001000uL)
-#define USB0_BASE  (0xE0002000uL)
-#define USB1_BASE  (0xE0003000uL)
-#define I2C0_BASE  (0xE0004000uL)
-#define I2C1_BASE  (0xE0005000uL)
-#define SPI0_BASE  (0xE0006000uL)
-#define SPI1_BASE  (0xE0007000uL)
-#define CAN0_BASE  (0xE0008000uL)
-#define CAN1_BASE  (0xE0009000uL)
-#define GPIO_BASE  (0xE000A000uL)
-#define GEM0_BASE  (0xE000B000uL) // gigabit eth controller
-#define GEM1_BASE  (0xE000C000uL) // ""
-#define QSPI_BASE  (0xE000D000uL)
-#define SMCC_BASE  (0xE000E000uL) // PL353 shared memory controller
-
-#define SD0_BASE   (0xE0100000uL)
-#define SD1_BASE   (0xE0101000uL)
+#define UART0_BASE 	(0xFF000000uL)
+#define UART1_BASE 	(0xFF010000uL)
+#define USB0_BASE  	(0xFF9D0000uL)
+#define USB1_BASE  	(0xFF9E0000uL)
+#define I2C0_BASE  	(0xFF020000uL)
+#define I2C1_BASE  	(0xFF030000uL)
+#define SPI0_BASE  	(0xFF040000uL)
+#define SPI1_BASE  	(0xFF050000uL)
+#define CAN0_BASE  	(0xFF060000uL)
+#define CAN1_BASE  	(0xFF070000uL)
+#define GPIO_BASE  	(0xFF0A0000uL)
+#define GEM0_BASE  	(0xFF0B0000uL) // gigabit eth controller
+#define GEM1_BASE  	(0xFF0C0000uL) // ""
+#define GEM2_BASE  	(0xFF0D0000uL) // ""
+#define GEM3_BASE  	(0xFF0E0000uL) // ""
+#define QSPI_BASE  	(0xFF0F0000uL)
+#define SD0_BASE   	(0xFF160000uL)
+#define SD1_BASE   	(0xFF170000uL)
+#define RTC_BASE  	(0xFFA60000uL)
+#define XPPU_BASE  	(0xFF980000uL)
+#define XPPUsink_BASE  	(0xFF980000uL)
+#define CSU_BASE  	(0xFFCA0000uL)
 
 #define SLCR_BASE  		(0xF8000000uL)
 #define TTC0_BASE  		(0xF8001000uL)

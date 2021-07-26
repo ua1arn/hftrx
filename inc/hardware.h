@@ -490,6 +490,7 @@ extern "C" {
 
 #elif CPUSTYLE_XCZU
 	// Zynq UltraScale+ Device
+	// r0p4-50rel0
 	// XCZU2..XCZU9, XCZU11
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
