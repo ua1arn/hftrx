@@ -488,6 +488,29 @@ extern "C" {
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
+#elif CPUSTYLE_XCZU
+	// Zynq UltraScale+ Device
+	// XCZU2..XCZU9, XCZU11
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "armcpu/zynquscale.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 32
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+
+
 #elif CPUSTYPE_ALLWNV3S
 	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
 	//

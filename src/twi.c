@@ -32,7 +32,7 @@
 	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
 	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #if WITHTWISW
 
@@ -1423,7 +1423,7 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	}
 }
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #include "lib/zynq/src/xiicps.h"
 

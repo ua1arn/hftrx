@@ -6131,12 +6131,12 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 1 && CPUSTYLE_XC7Z
+#if 1 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	{
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	{
 		PRINTF("GEM0 test:\n");
 
@@ -9123,7 +9123,7 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	{
 		// калибровка программной задержки
 		for (;;)

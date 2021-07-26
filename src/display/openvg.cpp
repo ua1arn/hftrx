@@ -52,7 +52,7 @@ void openvg_init(PACKEDCOLORMAIN_T * const * frames)
 	VGImageFormat f = VG_sRGB_565;
 	if (isBigEndian())
 		f = VG_sBGR_565;
-#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z
+#elif LCDMODE_MAIN_ARGB888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	VGImageFormat f = VG_sXRGB_8888;	// 1+3 byte format
 	 if(isBigEndian())
 		 f = VG_sBGRX_8888;

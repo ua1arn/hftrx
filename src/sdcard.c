@@ -323,7 +323,7 @@ static uint_fast8_t sdhost_hardware_cmd12(void)
 #elif CPUSTYLE_STM32F
 	return 0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	return XC7Z_AUTO_CMD12;
 
 #else
@@ -422,7 +422,7 @@ void SDIO_IRQHandler(void)
 		;
 }
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 void SDIO0_IRQHandler(void)
 {
@@ -839,7 +839,7 @@ static void DMA_SDIO_setparams(
 	DMA2_Stream6->CR |= DMA_SxCR_EN;
 
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	/*
 	 * This register specifies the block size for block
 	 * data transfers for CMD17, CMD18, CMD24, CMD25, and CMD53.
@@ -905,7 +905,7 @@ static uint_fast8_t DMA_sdio_waitdone(uint_fast8_t txmode)
 	//__DMB();
 	return 0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	// DMA_sdio_waitdone
 	return zynq_wait_for_transfer(txmode);
 
@@ -948,7 +948,7 @@ static void DMA_sdio_cancel(void)
 		//DMA2_Stream6->CR |= DMA_SxCR_EN;	// перезапуск DMA
 	}
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -962,7 +962,7 @@ static void DMA_sdio_cancel(void)
 
 #elif CPUSTYLE_STM32F4XX
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1099,7 +1099,7 @@ static uint_fast8_t sdhost_dpsm_wait(uintptr_t addr, uint_fast8_t txmode, uint_f
 	PRINTF(PSTR("sdhost_dpsm_wait error, STA=%08lX\n"), SDIO->STA);
 	return 1;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	if (! XC7Z_SDRDWRDMA)
 	{
@@ -1185,7 +1185,7 @@ static void sdhost_dpsm_wait_fifo_empty(void)
 			break;
 	}
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #else
 	#error Wrong CPUSTYLE_xxx
@@ -1257,7 +1257,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 		//0 * SDIO_DCTRL_SDIOEN |		// If this bit is set, the DPSM performs an SD I/O-card-specific operation.
 		0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	//PRINTF("sdhost_dpsm_prepare: tx=%d, status=%08lX, psts=%08lX\n", txmode, SD0->INT_STATUS, SD0->PRESENT_STATE);
 
 #else
@@ -1309,7 +1309,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 #define XSDPS_CARD_SDCOMBO	4U
 #define XSDPS_CHIP_EMMC		5U
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	/** @name Transfer Mode and Command Register
 	 *
@@ -1377,7 +1377,7 @@ static void sdhost_dpsm_prepare(uintptr_t addr, uint_fast8_t txmode, uint_fast32
 #endif
 
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 {
@@ -1432,7 +1432,7 @@ static uint_fast32_t getTransferMode(int txmode, unsigned BlkCnt)
 	return DEFAULT_TRANSFER_MODE;
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 // CPUSTYLE_R7S721 SD_CMD bits
 // 
@@ -1487,7 +1487,7 @@ static portholder_t encode_cmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 //		return cmd;
 //	}
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
 
 	uint_fast32_t RetVal = (cmd & 0x3FuL) << SDMMC_CMD_CMDINDEX_Pos;
@@ -1629,7 +1629,7 @@ static portholder_t encode_appcmd(uint_fast8_t cmd, uint_fast32_t TransferMode)
 //		return cmd;
 //	}
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	// возврат значения подготовленного для записи в регистр CMD_TRANSFER_MODE
 
 	uint_fast32_t RetVal = (cmd & 0x3FuL) << SDMMC_CMD_CMDINDEX_Pos;
@@ -1733,7 +1733,7 @@ static void sdhost_no_resp(portholder_t cmd, uint_fast32_t arg)
 		0 * SDIO_CMD_SDIOSUSPEND |
 		0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	// sdhost_no_resp
 	SD0->ARG = arg;
@@ -1807,7 +1807,7 @@ static void sdhost_short_resp(portholder_t cmd, uint_fast32_t arg, uint_fast8_t 
 		0 * SDIO_CMD_SDIOSUSPEND |
 		0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	// sdhost_short_resp
 	SD0->ARG = arg;
@@ -1880,7 +1880,7 @@ static void sdhost_long_resp(portholder_t cmd, uint_fast32_t arg)
 		0 * SDIO_CMD_SDIOSUSPEND |
 		0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	// sdhost_long_resp
 	SD0->ARG = arg;
@@ -1930,7 +1930,7 @@ static uint_fast8_t sdhost_verify_resp(uint_fast8_t cmd)
 	}
 	return 0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	return 0;
 
 #else
@@ -2026,7 +2026,7 @@ static uint_fast8_t sdhost_get_none_resp(void)
 	SDIO->ICR = SDIO_STATIC_FLAGS;
 	return 0;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	// sdhost_get_none_resp
 	return zynq_wait_for_command();
 
@@ -2143,7 +2143,7 @@ static uint_fast8_t sdhost_get_resp(void)
 	SDIO->ICR = SDIO_STATIC_FLAGS;
 	return ec;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	// sdhost_get_resp
 	return zynq_wait_for_command();
 
@@ -2252,7 +2252,7 @@ static uint_fast8_t sdhost_get_resp_nocrc(void)
 	SDIO->ICR = SDIO_STATIC_FLAGS;
 	return ec;
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	// sdhost_get_resp_nocrc
 	return zynq_wait_for_command();
 
@@ -2293,7 +2293,7 @@ static uint_fast32_t sdhost_get_resp32bit(void)
 
 	return SDIO->RESP1;		// Card Status[39:8]
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	return SD0->RESP_0;	// Card Status [39:8]
 
@@ -2405,7 +2405,7 @@ static void sdhost_get_resp128bit(uint8_t * resp128)
 		resp128 [14] = SDIO->RESP4 >> 8;
 		resp128 [15] = 0;				// CRC-7 and stop bit
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 		resp128 [0] = SD0->RESP_3 >> 16;	// R127 to 120 (8 bit)
 		resp128 [1] = SD0->RESP_3 >> 8;
@@ -2788,7 +2788,7 @@ static uint32_t SDWriteBlock(uint32_t address, const void* buffer, uint32_t size
 
 static int multisectorWriteProblems(UINT count)
 {
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	if (count > 1)
 	{
 		return 1;

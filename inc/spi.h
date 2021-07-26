@@ -19,7 +19,7 @@ extern "C" {
 void spi_initialize(void);	// отдельно инициализация SPI
 
 #if WITHSPISW
-	#if CPUSTYLE_XC7Z
+	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		#define SCLK_NPULSE() do { 							\
 			SPI_SCLK_C(); hardware_spi_io_delay(); 			\
 			SPI_SCLK_S(); hardware_spi_io_delay(); 			\

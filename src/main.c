@@ -9329,11 +9329,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S */
 }
 
 static void speex_update_rx(void)
@@ -14342,9 +14342,9 @@ static void dpc_1stimer(void * arg)
 	sys_check_timeouts();
 #endif /* WITHLWIP */
 
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #if WITHTOUCHGUI
 	gui_update();
@@ -19057,6 +19057,8 @@ void display2_menu_valxx(
 			}
 #elif CPUSTYLE_XC7Z
 			msg = PSTR("ZYNQ 7000");
+#elif CPUSTYLE_XCZU
+			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
 			msg = PSTR("RENESAS");
 #else
@@ -21436,7 +21438,7 @@ hamradio_main_step(void)
 			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
-#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif
 		}
@@ -22976,7 +22978,7 @@ void bootloader_deffereddetach(void * arg)
 #endif /* BOOTLOADER_RAMSIZE */
 }
 
-#if CPUSTYLE_XC7Z	// мигалка
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
 
 static unsigned volatile tmpressed;
 static unsigned volatile pressflag;
@@ -23056,7 +23058,7 @@ tsc_spool(void * ctx)
 //	}
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #if WITHISBOOTLOADERFATFS
 
@@ -23168,20 +23170,20 @@ static void bootloader_mainloop(void)
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
-#if CPUSTYLE_XC7Z	// мигалка
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
 	static ticker_t tscticker;
 	system_disableIRQ();
 	ticker_initialize(& tscticker, 1, tsc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	system_enableIRQ();
 	gpio_output(37, 0);		/* LED_R */
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
 	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
 ddd:
 	;
-#if CPUSTYLE_XC7Z	// мигалка
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
 
 	if (getrefresh())
 	{

@@ -3569,7 +3569,7 @@ static const codechw_t fpgaspectrumhw_ssif2 =
 
 #endif /* WITHSAI2HW */
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 static const codechw_t audiocodechw_xc7z =
 {
@@ -3754,7 +3754,7 @@ static const codechw_t * const channels [] =
 		//& fpgaspectrumhw_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_xc7z,				// Интерфейс к НЧ кодеку

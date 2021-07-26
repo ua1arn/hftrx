@@ -65,7 +65,8 @@ extern "C" {
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
-	#elif CPUSTYLE_XC7Z
+	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
 		#if WITHSAI1_FRAMEBITS == 64
 
 			#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
@@ -515,7 +516,7 @@ typedef struct
 //#define WITHIFADCWIDTH	32//24 //32		// 1 бит знак и 31 бит значащих
 
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	/* параметры входного/выходного адаптеров */
 	// IF RX
@@ -594,7 +595,7 @@ extern transform_t if2rts192out;	// преобразование из выход
 
 // DUCDDC_FREQ = REFERENCE_FREQ * DDS1_CLK_MUL
 #if WITHDSPEXTFIR || WITHDSPEXTDDC
-	#if CPUSTYLE_XC7Z
+	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		// Параметры фильтров в случае использования FPGA с фильтром на квадратурных каналах
 		//#define Ntap_trxi_IQ		1535	// Фильтр в FPGA (1024+512-1)
 		#define Ntap_trxi_IQ		1023	// Фильтр в FPGA

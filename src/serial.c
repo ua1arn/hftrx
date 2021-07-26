@@ -287,7 +287,7 @@ void nmea_disconnect(void)
 		HARDWARE_UART1_ONTXCHAR(& SCIF0);
 	}
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 
 #else

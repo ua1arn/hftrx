@@ -1657,7 +1657,7 @@ void arm_hardware_ltdc_main_set(uintptr_t p)
 	}
 }
 
-#elif CPUSTYLE_XC7Z && 1
+#elif (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && 1
 #include "zynq_vdma.h"
 
 static DisplayCtrl dispCtrl;

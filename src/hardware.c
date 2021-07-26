@@ -2701,6 +2701,30 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
+#elif CPUSTYLE_XCZU
+
+	// Все сравнения должны быть не точнее 1 MB
+
+	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory), DDR3_SCU
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0x00100000uL && a < 0x40000000uL)			//  DDR3 - 255 MB
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0xE1000000uL && a < 0xE6000000uL)			//  SMC (Static Memory Controller)
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0x40000000uL && a < 0xFC000000uL)	// PL, peripherials
+		return addrbase | TTB_PARA_DEVICE;
+
+	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
+
+	if (a >= 0xFFF00000uL)			// OCM (On Chip Memory) is mapped high
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #else
 
 	// Все сравнения должны быть не точнее 1 MB
