@@ -454,6 +454,7 @@ static void gui_main_process(void)
 #endif /* WITHTX */
 	}
 
+#if GUI_SHOW_INFOBAR
 	// разметка инфобара
 	for(uint_fast8_t i = 1; i < num_places; i++)
 	{
@@ -664,6 +665,7 @@ static void gui_main_process(void)
 		}
 #endif /* WITHTHERMOLEVEL */
 	}
+#endif /* GUI_SHOW_INFOBAR */
 }
 
 // *********************************************************************************************************************************************************************
