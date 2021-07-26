@@ -40,7 +40,7 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 # Cortex™-A9 based processing system (PS) and 28 nm Xilinx programmable logic (PL) in a single device. The ARM Cortex-A9 CPUs are
 # the heart of the PS and also include on-chip memory, external memory interfaces, and a rich set of peripheral connectivity interfaces.
 
-CORE = -mcpu=cortex-a9 
+CORE = -mcpu=cortex-a53 
 CORE += -mfloat-abi=hard 
 #CORE += -mfpu=vfpv3
 #CORE += -mfpu=neon
@@ -124,18 +124,18 @@ DLIBS = -lm
 SRCDIRS = $(PRJROOT)/src
 
 # Define project name here
-PROJECT = tc1_xczu11
+PROJECT = tc1_xczu2
 
 # Define linker script file here
-LDSCRIPT_BOOT = ./xc7z010xx_ca9_boot.ld
-LDSCRIPT_APP = ./xc7z010xx_ca9_app.ld
+LDSCRIPT_BOOT = ./xczuxx_ca53_boot.ld
+LDSCRIPT_APP = ./xczuxx_ca53_app.ld
 
 # Ultrascale:
 # 	CPUSTYLE_XCZU
 # 	XCZU2..XCZU9, XCZU11
 #
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_XCZU"=1 -D"XCZU11"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_XCZU"=1 -D"XCZU2"=1 -D"EGL_STATIC_LIBRARY"=1
 
 # Define ASM defines here
 UADEFS += 
