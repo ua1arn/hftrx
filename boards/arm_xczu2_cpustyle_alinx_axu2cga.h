@@ -369,14 +369,14 @@
 
 	// J11
 	// SD0 signals
-	//	PS_MIO40_CD_CLK
-	//	PS_MIO41_CD_CMD
-	//	PS_MIO42_CD_D0
-	//	PS_MIO43_CD_D1
-	//	PS_MIO44_CD_D2
-	//	PS_MIO45_CD_D3
-	//	PS_MIO46_CD_SW
-	//	PS_MIO50_CD_WP
+	//	PS_MIO51_CD_CLK
+	//	PS_MIO50_CD_CMD
+	//	PS_MIO46_CD_D0
+	//	PS_MIO47_CD_D1
+	//	PS_MIO48_CD_D2
+	//	PS_MIO49_CD_D3
+	//	PS_MIO45_CD_SW
+	//	not use WP
 
 	// return: 0 - no disk
 	#define HARDWARE_SDIOSENSE_CD() ((SD0->PRESENT_STATE & (1uL << 18)) != 0) /* получить состояние датчика CARD PRESENT */
@@ -386,26 +386,25 @@
 	#define HARDWARE_SDIO_HANGOFF() do { \
 		} while (0)
 	// SD0 signals
-	//	PS_MIO40_CD_CLK
-	//	PS_MIO41_CD_CMD
-	//	PS_MIO42_CD_D0
-	//	PS_MIO43_CD_D1
-	//	PS_MIO44_CD_D2
-	//	PS_MIO45_CD_D3
-	// 46 SDIO 0 CD Select
-	// 50 SDIO 0 WP Select
+	//	PS_MIO51_CD_CLK
+	//	PS_MIO50_CD_CMD
+	//	PS_MIO46_CD_D0
+	//	PS_MIO47_CD_D1
+	//	PS_MIO48_CD_D2
+	//	PS_MIO49_CD_D3
+	//	PS_MIO45_CD_SW
+	//	not use WP
 	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
 	#define HARDWARE_SDIO_INITIALIZE() do { \
 			SCLR->SD0_WP_CD_SEL = \
-					(46uL << 16) |	/* 46 SDIO 0 CD Select */ \
-					(50uL << 0) |	/* 50 SDIO 0 WP Select */ \
+					(45uL << 16) |	/* 45 SDIO 0 CD Select */ \
 					0; \
-			MIO_SET_MODE(40, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
-			MIO_SET_MODE(41, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
-			MIO_SET_MODE(42, 0x00001680uL);	/*  PS_MIO42_CD_D0 */ \
-			MIO_SET_MODE(43, 0x00001680uL);	/*  PS_MIO43_CD_D1 */ \
-			MIO_SET_MODE(44, 0x00001680uL);	/*  PS_MIO44_CD_D2 */ \
-			MIO_SET_MODE(45, 0x00001680uL);	/*  PS_MIO45_CD_D3 */ \
+			MIO_SET_MODE(51, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
+			MIO_SET_MODE(50, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
+			MIO_SET_MODE(46, 0x00001680uL);	/*  PS_MIO42_CD_D0 */ \
+			MIO_SET_MODE(47, 0x00001680uL);	/*  PS_MIO43_CD_D1 */ \
+			MIO_SET_MODE(48, 0x00001680uL);	/*  PS_MIO44_CD_D2 */ \
+			MIO_SET_MODE(49, 0x00001680uL);	/*  PS_MIO45_CD_D3 */ \
 		} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
 		} while (0)
