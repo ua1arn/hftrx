@@ -4,11 +4,11 @@
 
 MEMORY
 {
-  FLASH (rx) 	: ORIGIN = 0xFC000000, LENGTH = 16M		/* W25Q32FVZPIG */
-  OCM (rwx)		: ORIGIN = 0x00000000, LENGTH = 192k	/* OCM - on-chip memory 192k */
+  FLASH (rx) 	: ORIGIN = 0xC0000000, LENGTH = 16M		/* W25Q32FVZPIG */
+  OCM (rwx)		: ORIGIN = 0xFFFC0000, LENGTH = 192k	/* OCM - on-chip memory 256k */
   TTB (rwx)  	: ORIGIN = 0xFFFF0000, LENGTH = 16k		/* last 16 kB OCM3 for TTB */
   OCM3 (rwx)	: ORIGIN = 0xFFFF4000, LENGTH = 0x00BE00		/* OCM3 - on-chip memory 64k - 16k - 512 for TTB */
-  DDR3 (rwx) 	: ORIGIN = 0x01100000, LENGTH = 16M 	/* lower 16MB reserved for image */
+  DDR3 (rwx) 	: ORIGIN = 0x01000000, LENGTH = 16M 	/* lower 16MB reserved for image */
 }
 
 /* Library configurations */

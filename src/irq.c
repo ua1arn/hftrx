@@ -1163,6 +1163,153 @@ static void vectors_relocate(void)
 }
 #endif /* (__CORTEX_M != 0) */
 
+#if 0//( __ARM_ARCH == 8)
+// Armv8.1-M Mainline
+// Armv8-M Baseline
+// Armv8-M Mainline
+//
+void
+Default_Handler(void)
+{
+	PRINTF(PSTR("Default_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+NMI_Handler(void)
+{
+	PRINTF(PSTR("NMI_Handler trapped\n"));
+	for (;;)
+		; // WDT->WDT_CR = WDT_CR_WDRSTT | WDT_CR_KEY(0xA5);
+}
+
+void
+MemManage_Handler(void)
+{
+	PRINTF(PSTR("MemManage_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+BusFault_Handler(void)
+{
+	PRINTF(PSTR("BusFault_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+UsageFault_Handler(void)
+{
+	PRINTF(PSTR("UsageFault_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+SVC_Handler(void)
+{
+	PRINTF(PSTR("SVC_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+DebugMon_Handler(void)
+{
+	PRINTF(PSTR("DebugMon_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+void
+PendSV_Handler(void)
+{
+	PRINTF(PSTR("PendSV_Handler trapped\n"));
+	for (;;)
+		;
+}
+
+typedef void (* IntFunc)(void);
+
+extern unsigned long __stack;
+
+/**
+ * \brief This is the code that gets called on processor reset.
+ * To initialize the device, and call the main() routine.
+ */
+
+void Reset_Handler(void)
+{
+	  __set_PSP((uint32_t)(&__stack));
+
+	#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
+	  __set_MSPLIM((uint32_t)(&__STACK_LIMIT));
+	  __set_PSPLIM((uint32_t)(&__STACK_LIMIT));
+
+	  __TZ_set_STACKSEAL_S((uint32_t *)(&__STACK_SEAL));
+	#endif
+
+	  SystemInit();                             /* CMSIS System Initialization */
+	  __PROGRAM_START();                        /* Enter PreMain (C library entry point) */
+}
+/*------------------------------------------------------------------------------
+ *         Exception Table
+ *------------------------------------------------------------------------------*/
+
+
+const
+__VECTOR_TABLE_ATTRIBUTE
+IntFunc __Vectors [512] = {
+
+    /* Configure Initial Stack Pointer, using linker-generated symbols */
+    (IntFunc)(& __stack),
+    Reset_Handler,
+    NMI_Handler,
+    HardFault_Handler,
+    MemManage_Handler,
+    BusFault_Handler,
+    UsageFault_Handler,
+	SecureFault_Handler,
+	NULL,         /* Reserved */
+	NULL,         /* Reserved */
+	NULL,         /* Reserved */
+    SVC_Handler,
+    DebugMon_Handler,
+	NULL,                  /* Reserved  */
+    PendSV_Handler,		/* -2 */
+    SysTick_Handler,	/* -1 */
+};
+
+#if 0
+
+// Таблица находится в области вне Data Cache
+// Отладочная печать тут еще недопустима.
+static VTRATTR volatile IntFunc ramVectors [512];
+
+static void vectors_relocate(void)
+{
+	unsigned i;
+
+	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	memcpy((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4);
+	for (i = NVIC_USER_IRQ_OFFSET; i < (sizeof ramVectors / sizeof ramVectors [0]); ++ i)
+	{
+		ramVectors [i] = Default_Handler;
+	}
+	SCB->VTOR = (uint32_t) & ramVectors;
+
+	// Отладочная печать тут еще недопустима.
+	//PRINTF(PSTR("SCB->VTOR=%08lX\n"), SCB->VTOR);
+	//ASSERT(memcmp((void *) ramVectors, __Vectors, NVIC_USER_IRQ_OFFSET * 4) == 0);
+	//ASSERT(SCB->VTOR == (uint32_t) & ramVectors);
+}
+#endif
+
+#endif /* ( __ARM_ARCH == 8) */
+
 #if CPUSTYLE_ARM && WITHSMPSYSTEM
 
 // http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dai0321a/BIHEJCHB.html

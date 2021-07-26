@@ -37,6 +37,8 @@ BIN  = $(CP) -O binary -R .noinit -R .bss -R .vram -R .heap
 # Cortex-A53 r0p4-50rel0
 # Neon r0p4-00rel0
 
+# The Cortex-A53 processor is a mid-range, low-power processor that implements the Armv8-A architecture
+
 CORE = -mcpu=cortex-a53 
 CORE += -mfloat-abi=hard 
 #CORE += -mfpu=vfpv4
