@@ -1624,6 +1624,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_XCZU
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYPE_ALLWNV3S
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
@@ -3244,6 +3246,20 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	/* Generate an IT to core 1 */
 	__SEV();
 }
+
+#elif CPUSTYLE_XCZU
+
+// See also:
+//	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+{
+	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
+	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
+	/* Generate an IT to core 1 */
+	__SEV();
+}
+
 
 #endif /* CPUSTYLE_STM32MP1 */
 

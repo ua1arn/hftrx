@@ -1089,7 +1089,7 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #include "zynq_test.h"
 
@@ -1101,7 +1101,7 @@ void xc7z_gpio_input(uint8_t pin);
 void xc7z_gpio_output(uint8_t pin);
 void xc7z_dds_ftw(const uint_least64_t * val);
 void xc7z_dds_rts(const uint_least64_t * val);
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 /* получить 32-бит значение */
 uint_fast32_t

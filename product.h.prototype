@@ -251,6 +251,10 @@
 	//#include "boards/arm_stm32mp1xx_ctlstyle_storch_v9a_RK1AQ.h"	// rmainunit_v5km7.pcb STM32MP153DAB, TFT 4.3", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_stm32mp1xx_cpustyle_storch_v9a.h"	// rmainunit_v5km7.pcb STM32MP153DAB
+#elif CPUSTYLE_XCZU && CTLSTYLE_STORCH_V7
+	#include "boards/arm_xczu2_ctlstyle_alinx_axu2cga.h"
+	#include "paramdepend.h"							/* проверка зависимостей параметров конфигурации */
+	#include "boards/arm_xczu2_cpustyle_alinx_axu2cga.h"
 #elif CPUSTYLE_XC7Z && CTLSTYLE_STORCH_V7 && 1
 	#include "boards/arm_x7c70xx_ctlstyle_antminer_20_v1p1.h"	// 7020
 	//#include "boards/arm_x7c70xx_ctlstyle_antminer_10_v1p1.h"	// 7020

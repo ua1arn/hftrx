@@ -233,27 +233,21 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-all: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h $(PROJECT)_app.xyl32
+all: bitstream_alinx_axu2cga.h $(PROJECT)_app.xyl32
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
-bitstream_ant_10.h: bitstream_ant_10.bit
-	./bit2c bitstream_ant_10.bit bitstream_ant_10.h
-
-bitstream_ant_20.h: bitstream_ant_20.bit
-	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
-
-bitstream_4205_10.h: bitstream_4205_10.bit
-	./bit2c bitstream_4205_10.bit bitstream_4205_10.h
+bitstream_alinx_axu2cga.h: bitstream_alinx_axu2cga.bit
+	./bit2c bitstream_alinx_axu2cga.bit bitstream_alinx_axu2cga.h
 	
 bootloader: BOOT2
   
 #app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
 #	xsct.bat app_run_4205.tcl 
   
-app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
+app_run: $(PROJECT)_app.elf bitstream_alinx_axu2cga.bit app_run_ant10.tcl
 	xsct.bat app_run_ant10.tcl  
   
-#app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
+#app_run: $(PROJECT)_app.elf bitstream_alinx_axu2cga.bit app_run_ant10.tcl
 #	xsct.bat app_run_ant10.tcl
 
 lib: $(ZYNQLIB)
@@ -272,7 +266,7 @@ BOOT2: version boot.bin
 	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
 
 boot.bin: boot_ant.bif $(PROJECT)_boot.elf
-	bootgen -arch zynq -image boot_ant.bif -w on -o $@
+	bootgen -arch zynqmp -image boot_alinx_axu2cga.bif -w on -o $@
 
 $(OBJSC) $(ZOBJSC):
 	@mkdir -p $(@D)
@@ -306,8 +300,7 @@ clean: version
 	-$(RM) $(OBJS)
 	-$(RM) $(PROJECT)_boot.elf $(PROJECT)_boot.map
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
-	-$(RM) bitstream_ant_10.h bitstream_ant_20.h
-	-$(RM) bitstream_4205_10.h
+	-$(RM) bitstream_alinx_axu2cga.h
 
 version:
 	$(CC) --version
