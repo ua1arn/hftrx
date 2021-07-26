@@ -120,7 +120,7 @@ typedef enum IRQn
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0       */
 
 #include "core_ca.h"
-#include "system_zynq7000.h"
+#include "system_zynqultrascale.h"
 
 // See
 // https://github.com/mtk-watch/android_trusty/blob/320a422109b955a03443ae92b011ade929a3f812/external/lk/platform/zynq/swdt.c
