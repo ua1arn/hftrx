@@ -4,7 +4,7 @@
 #include "formats.h"
 #include <math.h>
 
-#if CPUSTYLE_XC7Z && ! WITHISBOOTLOADER
+#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHISBOOTLOADER
 #if WITHRTS96
 #include "lib/zynq/src/xaxidma.h"
 #include "lib/zynq/src/xaxidma_bdring.h"

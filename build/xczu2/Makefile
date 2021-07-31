@@ -240,14 +240,10 @@ bitstream_alinx_axu2cga.h: bitstream_alinx_axu2cga.bit
 	
 bootloader: BOOT2
   
-#app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
-#	xsct.bat app_run_4205.tcl 
   
-app_run: $(PROJECT)_app.elf bitstream_alinx_axu2cga.bit app_run_ant10.tcl
-	xsct.bat app_run_ant10.tcl  
-  
-#app_run: $(PROJECT)_app.elf bitstream_alinx_axu2cga.bit app_run_ant10.tcl
-#	xsct.bat app_run_ant10.tcl
+app_run: $(PROJECT)_app.elf bitstream_alinx_axu2cga.bit app_run_axu2cga.tcl
+	xsct.bat app_run_axu2cga.tcl  
+ 
 
 lib: $(ZYNQLIB)
 
