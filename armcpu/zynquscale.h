@@ -102,7 +102,7 @@ typedef enum IRQn
 //#define GLOBAL_TIMER_BASE (CPUPRIV_BASE + 0x0200uL)
 //#define PRIV_TIMER_BASE   (CPUPRIV_BASE + 0x0600uL)
 //#define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
-#define GLOBAL_TIMER_BASE 0
+//#define GLOBAL_TIMER_BASE 0
 
 #define __CORTEX_A                    53U      /*!< Cortex-A# Core                              */
 #define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
@@ -634,14 +634,18 @@ typedef struct xemacps_regs {
 #define XPPU_BASE  	(0xFF980000uL)
 #define XPPUsink_BASE  	(0xFF980000uL)
 #define CSU_BASE  	(0xFFCA0000uL)
-
-#define SLCR_BASE  		(0xF8000000uL)
-#define TTC0_BASE  		(0xF8001000uL)
-#define TTC1_BASE  		(0xF8002000uL)
-#define DMAC0_NS_BASE 	(0xF8004000uL)
-#define DMAC0_S_BASE 	(0xF8003000uL)
-#define SWDT_BASE  		(0xF8005000uL)
-#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
+#define CSU_ROM_BASE  	(0xFFC40000uL)
+#define CSU_RAM_BASE  	(0xFFC00000uL)
+#define PMU_ROM_BASE  	(0xFFD00000uL)
+#define PMU_RAM_BASE  	(0xFFDC0000uL)
+//
+//#define SLCR_BASE  		(0xF8000000uL)
+//#define TTC0_BASE  		(0xF8001000uL)
+//#define TTC1_BASE  		(0xF8002000uL)
+//#define DMAC0_NS_BASE 	(0xF8004000uL)
+//#define DMAC0_S_BASE 	(0xF8003000uL)
+//#define SWDT_BASE  		(0xF8005000uL)
+//#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
 
 #define QSPI_LINEAR_BASE  (0xfC000000uL)
 
