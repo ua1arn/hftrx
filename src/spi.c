@@ -1421,9 +1421,17 @@ int testchipDATAFLASH(void)
 		//printhex(ptp, buff32, 256);
 		/* Print density information. */
 		if ((dword2 & 0x80000000uL) == 0)
-			PRINTF("SFDP: density=%08lX (%u Kbi)\n", dword2, (dword2 >> 10) + 1);
+		{
+			const unsigned Kbi = (dword2 >> 10) + 1;
+			const unsigned MB = (dword2 >> 23) + 1;
+			PRINTF("SFDP: density=%08lX (%u Kbi, %u MB)\n", dword2, Kbi, MB);
+		}
 		else
-			PRINTF("SFDP: density=%08lX (%u Mbi)\n", dword2, 1uL << ((dword2 & 0x7FFFFFFF) - 10));
+		{
+			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
+			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
+			PRINTF("SFDP: density=%08lX (%u Mbi, %u MB)\n", dword2, Mbi, MB);
+		}
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
