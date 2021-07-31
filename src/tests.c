@@ -6209,17 +6209,100 @@ void hightests(void)
 
 	}
 #endif
+#if 0 && WITHDEBUG
+	{
+		const time_t t = time(NULL);
+
+		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
+	}
+#endif
 #if 1 && defined (__GNUC__)
 	{
 
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if 0 && WITHDEBUG
+#if 0 && (__CORTEX_A != 0)
 	{
-		const time_t t = time(NULL);
 
-		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
+		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+		__set_FPEXC(__get_FPEXC() | 0x80000000uL);
+		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+	}
+#endif
+#if 1 && (__L2C_PRESENT == 1)
+	{
+		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
+		// ZYNQ: RTL release R3p2
+		// RTL release 0x8 denotes r3p2 code of the cache controller
+		// RTL release 0x9 denotes r3p3 code of the cache controller.
+		PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_GetID());	// L2C_GetID()
+		//PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_GetID() >> 24) & 0xFF);
+		//PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_GetID() >> 10) & 0x3F);
+		//PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_GetID() >> 6) & 0x0F);
+		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
+
+		PRINTF("L2C Data RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C)); // reg1_data_ram_control
+		PRINTF("L2C Tag RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
+	}
+#endif
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	{
+		// GIC version diagnostics
+		// Renesas: ARM GICv1
+		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
+		// STM32MP1: ARM GICv2
+		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
+		// ZINQ XC7Z010: ARM GICv1
+		//	GICInterface->IIDR=3901243B, GICDistributor->IIDR=0102043B
+
+		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
+
+//		switch (ICPIDR1 & 0x0F)
+//		{
+//		case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+//		case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+//		default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
+//		}
+	}
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+#if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
+	{
+		// SCU registers dump
+		// ZYNQ7000:
+		//	SCU Control Register=00000002
+		//	SCU Configuration Register=00000501
+		//	SCU CPU Power Status Register=03030000
+		//	Filtering Start Address Register=00100000
+		//	Filtering End Address Register=FFE00000
+		//PRINTF("SCU_CONTROL_BASE=%08lX\n", SCU_CONTROL_BASE);
+		PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
+		PRINTF("SCU Configuration Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [1]);	// 0x04
+		PRINTF("SCU CPU Power Status Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);	// 0x08
+		PRINTF("Filtering Start Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x10]);	// 0x40
+		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
+	}
+#endif
+#if 1 && CPUSTYLE_STM32MP1 && WITHDEBUG
+	{
+		PRINTF("stm32mp1_get_mpuss_freq()=%lu (MPU)\n", stm32mp1_get_mpuss_freq());
+		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
+		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
+		PRINTF("stm32mp1_get_pll2_r_freq()=%lu (DDR3)\n", stm32mp1_get_pll2_r_freq());
+	}
+#endif
+#if 1 && defined (DDRPHYC) && WITHDEBUG
+	{
+		// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
+		PRINTF("stm32mp1_ddr_init results: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
+				DDRPHYC->DX0DQSTR, DDRPHYC->DX1DQSTR,
+				DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
+
+		// 16 bit single-chip DDR3:
+		// PanGu board: stm32mp1_ddr_init results: DX0DQSTR=3DB02001, DX1DQSTR=3DB02001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+		// board v2: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+		// voard v3: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+
 	}
 #endif
 #if 0
@@ -6430,88 +6513,6 @@ void hightests(void)
 		}
 
 	#endif
-	}
-#endif
-#if 0 && (__CORTEX_A != 0)
-	{
-
-		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
-		__set_FPEXC(__get_FPEXC() | 0x80000000uL);
-		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
-	}
-#endif
-#if 1 && (__L2C_PRESENT == 1)
-	{
-		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
-		// ZYNQ: RTL release R3p2
-		// RTL release 0x8 denotes r3p2 code of the cache controller
-		// RTL release 0x9 denotes r3p3 code of the cache controller.
-		PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_GetID());	// L2C_GetID()
-		//PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_GetID() >> 24) & 0xFF);
-		//PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_GetID() >> 10) & 0x3F);
-		//PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_GetID() >> 6) & 0x0F);
-		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
-
-		PRINTF("L2C Data RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C)); // reg1_data_ram_control
-		PRINTF("L2C Tag RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
-	}
-#endif
-#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	{
-		// GIC version diagnostics
-		// Renesas: ARM GICv1
-		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
-		// STM32MP1: ARM GICv2
-		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
-		// ZINQ XC7Z010: ARM GICv1
-		//	GICInterface->IIDR=3901243B, GICDistributor->IIDR=0102043B
-
-		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
-
-//		switch (ICPIDR1 & 0x0F)
-//		{
-//		case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
-//		case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-//		default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
-//		}
-	}
-#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
-#if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
-	{
-		// SCU registers dump
-		// ZYNQ7000:
-		//	SCU Control Register=00000002
-		//	SCU Configuration Register=00000501
-		//	SCU CPU Power Status Register=03030000
-		//	Filtering Start Address Register=00100000
-		//	Filtering End Address Register=FFE00000
-		//PRINTF("SCU_CONTROL_BASE=%08lX\n", SCU_CONTROL_BASE);
-		PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
-		PRINTF("SCU Configuration Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [1]);	// 0x04
-		PRINTF("SCU CPU Power Status Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);	// 0x08
-		PRINTF("Filtering Start Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x10]);	// 0x40
-		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
-	}
-#endif
-#if 1 && CPUSTYLE_STM32MP1 && WITHDEBUG
-	{
-		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
-		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
-		PRINTF("stm32mp1_get_pll2_r_freq()=%lu (DDR3)\n", stm32mp1_get_pll2_r_freq());
-	}
-#endif
-#if 1 && defined (DDRPHYC) && WITHDEBUG
-	{
-		// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
-		PRINTF("stm32mp1_ddr_init results: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
-				DDRPHYC->DX0DQSTR, DDRPHYC->DX1DQSTR,
-				DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
-
-		// 16 bit single-chip DDR3:
-		// PanGu board: stm32mp1_ddr_init results: DX0DQSTR=3DB02001, DX1DQSTR=3DB02001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
-		// board v2: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
-		// voard v3: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
-
 	}
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
