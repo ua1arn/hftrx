@@ -14518,6 +14518,8 @@ static void ehci_itd_fill(uint32_t * itd)
 }
 
 
+#if 0
+
 #include "ehci.h"
 
 
@@ -14546,8 +14548,6 @@ struct ehci_device * usb_hub_get_drvdata2 ( struct usb_bus *bus )
 {
 	return & ehci_device0;
 }
-
-#if 1
 
 /** @file
  *

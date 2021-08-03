@@ -511,14 +511,14 @@
          struct ehci_periodic_frame *frame;
  
          /** List of all endpoints */
-         struct list_head endpoints;
+         //struct list_head endpoints;
          /** Asynchronous schedule */
-         struct list_head async;
+         //struct list_head async;
          /** Periodic schedule
           *
           * Listed in decreasing order of endpoint interval.
           */
-         struct list_head periodic;
+         //struct list_head periodic;
  
          /** USB bus */
          struct usb_bus *bus;
@@ -531,14 +531,15 @@
          /** USB endpoint */
          struct usb_endpoint *ep;
          /** List of all endpoints */
-         struct list_head list;
+         //struct list_head list;
          /** Endpoint schedule */
-         struct list_head schedule;
+         //struct list_head schedule;
  
          /** Transfer descriptor ring */
          struct ehci_ring ring;
  };
  
+ struct pci_device;
  extern unsigned int ehci_companion ( struct pci_device *pci );
  
  #endif /* _IPXE_EHCI_H */
