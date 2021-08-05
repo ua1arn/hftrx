@@ -919,8 +919,8 @@ The general blending formula is: BC = BF1 x C + BF2 x Cs
 /** @defgroup LTDC_Reload 
   * @{
   */
-#define LTDC_IMReload                     LTDC_SRCR_IMR                         /*!< Immediately Reload. */
-#define LTDC_VBReload                     LTDC_SRCR_VBR                         /*!< Vertical Blanking Reload. */
+#define LTDC_IMReload                     LTDC_SRCR_IMR_Msk                         /*!< Immediately Reload. */
+#define LTDC_VBReload                     LTDC_SRCR_VBR_Msk                         /*!< Vertical Blanking Reload. */
 
 /**
   * @}
@@ -1286,7 +1286,7 @@ static void LCDx_LayerInit(
 	//LTDC_LayerCmd(LTDC_Layer1, ENABLE); 
 	//LTDC_LayerCmd(LTDC_Layer2, ENABLE);
 	/* Enable LTDC_Layer by setting LEN bit */
-	////LTDC_Layerx->CR |= LTDC_LxCR_LEN;
+	////LTDC_Layerx->CR |= LTDC_LxCR_LEN_Msk;
 
 	/* LTDC configuration reload */  
 }
@@ -1514,9 +1514,13 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 
 #endif /* LCDMODE_PIP_RGB565 */
 
-	LTDC->SRCR = LTDC_SRCR_IMR;	/*!< Immediately Reload. */
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		; //hardware_nonguiyield();
+	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/*!< Immediately Reload. */
+	(void) LTDC->SRCR;
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 		; //hardware_nonguiyield();
 
 	/* Enable the LTDC */
@@ -1531,9 +1535,12 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
 #endif /* LCDMODE_PIP_L8 */
 
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		; //hardware_nonguiyield();
 	/* LTDC reload configuration */  
-	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
-	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
+	(void) LTDC->SRCR;
+	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
 		;//hardware_nonguiyield();
 
 	ltdc_tfcon_cfg(vdmode);
@@ -1543,12 +1550,12 @@ arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmod
 void
 arm_hardware_ltdc_deinitialize(void)
 {
-	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
+	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN_Msk;
 	(void) LAYER_PIP->CR;
-	LAYER_MAIN->CR &= ~ LTDC_LxCR_LEN;
+	LAYER_MAIN->CR &= ~ LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
-	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
-	//while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
+	//while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
 	//	;//hardware_nonguiyield();
 
 #if CPUSTYLE_STM32H7XX
@@ -1585,13 +1592,16 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
 	LAYER_PIP->CFBAR = p;
 	(void) LAYER_PIP->CFBAR;
-	LAYER_PIP->CR |= LTDC_LxCR_LEN;
+	LAYER_PIP->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_PIP->CR;
-	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
+	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+	(void) LTDC->SRCR;
 	if (LCDMODE_MAIN_PAGES > 1)
 	{
 		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+		while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 			hardware_nonguiyield();
 	}
 }
@@ -1599,9 +1609,10 @@ void arm_hardware_ltdc_pip_set(uintptr_t p)
 /* Turn PIP off (main layer only). */
 void arm_hardware_ltdc_pip_off(void)
 {
-	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN;
+	LAYER_PIP->CR &= ~ LTDC_LxCR_LEN_Msk;
 	(void) LAYER_PIP->CR;
-	LTDC->SRCR = LTDC_SRCR_VBR;	/* Vertical Blanking Reload. */
+	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+	(void) LTDC->SRCR;
 }
 
 /* Palette reload */
@@ -1614,16 +1625,18 @@ void arm_hardware_ltdc_L8_palette(void)
 	fillLUT_L8(LAYER_MAIN, xltrgb24);	// загрузка палитры - имеет смысл до Reload
 
 	/* LTDC reload configuration */
-	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
-	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
+	(void) LTDC->SRCR;
+	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
 		;//hardware_nonguiyield();
 #endif /* LCDMODE_PIP_L8 */
 #if LCDMODE_PIP_L8
 	fillLUT_L8(LAYER_PIP, xltrgb24);	// загрузка палитры - имеет смысл до Reload
 
 	/* LTDC reload configuration */
-	LTDC->SRCR = LTDC_SRCR_IMR;	/* Immediately Reload. */
-	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediately Reload. */
+	(void) LTDC->SRCR;
+	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
 		;//hardware_nonguiyield();
 #endif /* LCDMODE_PIP_L8 */
 }
@@ -1631,28 +1644,36 @@ void arm_hardware_ltdc_L8_palette(void)
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
 	LAYER_MAIN->CFBAR = p;
 	(void) LAYER_MAIN->CFBAR;
-	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
+	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
 
-	LTDC->SRCR = LTDC_SRCR_IMR_Msk;	/* Immediate Reload. */
-	while ((LTDC->SRCR & LTDC_SRCR_IMR) != 0)
+	LTDC->SRCR |= LTDC_SRCR_IMR_Msk;	/* Immediate Reload. */
+	(void) LTDC->SRCR;
+	while ((LTDC->SRCR & LTDC_SRCR_IMR_Msk) != 0)
 		hardware_nonguiyield();
 }
 
 /* Set MAIN frame buffer address. Wait for VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
+	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
+	while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
+		hardware_nonguiyield();
 	LAYER_MAIN->CFBAR = p;
 	(void) LAYER_MAIN->CFBAR;
-	LAYER_MAIN->CR |= LTDC_LxCR_LEN;
+	LAYER_MAIN->CR |= LTDC_LxCR_LEN_Msk;
 	(void) LAYER_MAIN->CR;
-	LTDC->SRCR = LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+	LTDC->SRCR |= LTDC_SRCR_VBR_Msk;	/* Vertical Blanking Reload. */
+	(void) LTDC->SRCR;
 	if (LCDMODE_MAIN_PAGES > 1)
 	{
 		/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
-		while ((LTDC->SRCR & LTDC_SRCR_VBR) != 0)
+		while ((LTDC->SRCR & (LTDC_SRCR_VBR_Msk | LTDC_SRCR_IMR_Msk)) != 0)
 			hardware_nonguiyield();
 	}
 }
@@ -1723,6 +1744,7 @@ void arm_hardware_ltdc_L8_palette(void)
 
 #endif /* CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 */
 
+/* Получить желаемую частоту pixel clock для данного видеорежима. */
 unsigned long display_getdotclock(const videomode_t * vdmode)
 {
 	/* Accumulated parameters for this display */
