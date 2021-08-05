@@ -69,9 +69,9 @@
 #define HAL_PCD_MODULE_ENABLED
 #define HAL_HCD_MODULE_ENABLED
 #define HAL_DSI_MODULE_ENABLED
+//#define HAL_ETH_MODULE_ENABLED
 #define HAL_WWDG_MODULE_ENABLED
 #define HAL_QSPI_MODULE_ENABLED
-#define HAL_DSI_MODULE_ENABLED
 #define HAL_LTDC_MODULE_ENABLED
 #define HAL_CEC_MODULE_ENABLED
 #define HAL_FMPI2C_MODULE_ENABLED
@@ -246,6 +246,10 @@
  #include "stm32mp1xx_hal_rcc.h"
 #endif /* HAL_RCC_MODULE_ENABLED */
 
+#ifdef HAL_ETH_MODULE_ENABLED
+  #include "stm32mp1xx_hal_eth.h"
+#endif /* HAL_ETH_MODULE_ENABLED */
+
 #ifdef HAL_EXTI_MODULE_ENABLED
  #include "stm32mp1xx_hal_exti.h"
 #endif /* HAL_EXTI_MODULE_ENABLED */
@@ -393,10 +397,6 @@
 #ifdef HAL_HCD_MODULE_ENABLED
  #include "stm32mp1xx_hal_hcd.h"
 #endif /* HAL_HCD_MODULE_ENABLED */
-
-#ifdef HAL_DSI_MODULE_ENABLED
- #include "stm32mp1xx_hal_dsi.h"
-#endif /* HAL_DSI_MODULE_ENABLED */
 
 #ifdef HAL_WWDG_MODULE_ENABLED
  #include "stm32mp1xx_hal_wwdg.h"

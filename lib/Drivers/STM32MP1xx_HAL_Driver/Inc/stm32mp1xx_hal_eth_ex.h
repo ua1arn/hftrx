@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_hal_eth_ex.h
+  * @file    stm32mp1xx_hal_eth_ex.h
   * @author  MCD Application Team
   * @brief   Header file of ETH HAL Extended module.
   ******************************************************************************
@@ -28,7 +28,7 @@
 #if defined(ETH)
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32h7xx_hal_def.h"
+#include "stm32mp1xx_hal_def.h"
 
 /** @addtogroup STM32H7xx_HAL_Driver
   * @{

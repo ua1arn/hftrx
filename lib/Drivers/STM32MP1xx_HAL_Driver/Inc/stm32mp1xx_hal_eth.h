@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_hal_eth.h
+  * @file    stm32mp1xx_hal_eth.h
   * @author  MCD Application Team
   * @brief   Header file of ETH HAL module.
   ******************************************************************************
@@ -27,7 +27,7 @@
 
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32h7xx_hal_def.h"
+#include "stm32mp1xx_hal_def.h"
 
 #if defined(ETH)
 
@@ -1559,7 +1559,7 @@ typedef struct{
   */
 
 /* Include ETH HAL Extension module */
-#include "stm32h7xx_hal_eth_ex.h"
+#include "stm32mp1xx_hal_eth_ex.h"
 
 /* Exported functions --------------------------------------------------------*/
 
