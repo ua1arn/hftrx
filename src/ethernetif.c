@@ -16,6 +16,7 @@
   *
   ******************************************************************************
   */
+#if WITHETHHW
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
@@ -707,4 +708,6 @@ void ethernet_link_check_state(struct netif *netif)
 #endif /* defined (ETH) && WITHLWIP */
 /* USER CODE END 8 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+#endif /* WITHETHHW */
 

@@ -30,6 +30,7 @@
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ANTMINER 1
