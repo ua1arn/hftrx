@@ -1279,6 +1279,28 @@ unsigned long stm32mp1_get_pll4_r_freq(void)
 	return stm32mp1_get_pll4_freq() / pll4divr;
 }
 
+// Ethernet controller freq
+// ETHSRC
+unsigned long stm32mp1_get_eth_freq(void)
+{
+	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
+	//0x1: pll3_q_ck clock selected as kernel peripheral clock
+	//others: the kernel clock is disabled
+	switch ((RCC->ETHCKSELR & RCC_ETHCKSELR_ETHSRC_Msk) >> RCC_ETHCKSELR_ETHSRC_Pos)
+	{
+	default:
+	case 0x00: return stm32mp1_get_pll4_p_freq();
+	case 0x01: return stm32mp1_get_pll3_q_freq();
+	}
+}
+
+// clk_ptp_ref_i
+unsigned long stm32mp1_get_ethptp_freq(void)
+{
+	const unsigned long d = ((RCC->ETHCKSELR & RCC_ETHCKSELR_ETHPTPDIV_Msk) >> RCC_ETHCKSELR_ETHPTPDIV_Pos) + 1;
+	return stm32mp1_get_eth_freq() / d;
+}
+
 // Internal AXI clock frequency
 unsigned long stm32mp1_get_axiss_freq(void)
 {

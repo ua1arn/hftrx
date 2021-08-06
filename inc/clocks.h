@@ -99,6 +99,8 @@ unsigned long stm32mp1_get_pll4_freq(void);
 unsigned long stm32mp1_get_pll4_q_freq(void);
 unsigned long stm32mp1_get_pll4_p_freq(void);
 unsigned long stm32mp1_get_pll4_r_freq(void);
+unsigned long stm32mp1_get_eth_freq(void);
+unsigned long stm32mp1_get_ethptp_freq(void);
 unsigned long stm32mp1_get_axiss_freq(void);
 unsigned long stm32mp1_get_per_freq(void);
 unsigned long stm32mp1_get_mcuss_freq(void);
