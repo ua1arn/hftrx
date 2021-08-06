@@ -234,7 +234,7 @@ static void nau8822_setprocparams(
 	// Выключено - все значения по умолчанию
 	// digital gain control должно быть в диапазоне 0..24 (+12 db .. -12dB), 12 соответствует 0 dB
 	nau8822_setreg(NAU8822_EQ1, // low cutoff - 0x22C reset value
-		1 * (1u << 8) |	// 1 = block operates on digital stream to DAC
+		0 * (1u << 8) |	// 0 = block operates on digital stream from ADC
 		freq * (1u << 5) | // EQ1CF Equalizer band 1 low pass -3dB cut-off frequency selection
 		getbandgain(gains + 0, procenable) * (1u << 0) | // EQ Band 1 digital gain control.
 		0);
