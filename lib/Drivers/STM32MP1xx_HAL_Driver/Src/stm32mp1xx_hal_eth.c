@@ -351,6 +351,11 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
   ETH_MAC_MDIO_ClkConfig(heth);
 
   /*------------------ MAC LPI 1US Tic Counter Configuration --------------------*/
+  /*
+   * Program 1-microsecond-tick counter register (ETH_MAC1USTCR) as per the
+   * frequency of the clock used for accessing the CSR slave port.
+   * eth_hclk
+   */
   WRITE_REG(heth->Instance->MAC1USTCR, (((uint32_t)HAL_RCC_GetHCLKFreq() / ETH_MAC_US_TICK) - 1U));
 
   /*------------------ MAC, MTL and DMA default Configuration ----------------*/
@@ -1513,17 +1518,17 @@ void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
 
 
   /* ETH DMA Error */
-  if(__HAL_ETH_DMA_GET_IT(heth, ETH_DMACSR_AIS))
+  if(__HAL_ETH_DMA_GET_IT(heth, ETH_DMAC0SR_AIS))
   {
     if(__HAL_ETH_DMA_GET_IT_SOURCE(heth, ETH_DMACIER_AIE))
     {
       heth->ErrorCode |= HAL_ETH_ERROR_DMA;
 
       /* if fatal bus error occurred */
-      if (__HAL_ETH_DMA_GET_IT(heth, ETH_DMACSR_FBE))
+      if (__HAL_ETH_DMA_GET_IT(heth, ETH_DMAC0SR_FBE))
       {
         /* Get DMA error code  */
-        heth->DMAErrorCode = READ_BIT(heth->Instance->DMACSR, (ETH_DMACSR_FBE | ETH_DMACSR_TPS | ETH_DMACSR_RPS));
+        heth->DMAErrorCode = READ_BIT(heth->Instance->DMAC0SR, (ETH_DMAC0SR_FBE | ETH_DMAC0SR_TPS | ETH_DMAC0SR_RPS));
 
         /* Disable all interrupts */
         __HAL_ETH_DMA_DISABLE_IT(heth, ETH_DMACIER_NIE | ETH_DMACIER_AIE);
@@ -2058,7 +2063,7 @@ void HAL_ETH_SetMDIOClockRange(ETH_HandleTypeDef *heth)
   tmpreg &= ~ETH_MACMDIOAR_CR;
 
 	/* Get hclk frequency value */
-  hclk = HAL_RCC_GetHCLKFreq();
+  hclk = HAL_RCC_GetAXISSFreq(); //HAL_RCC_GetHCLKFreq();
 
 	/* Set CR bits depending on hclk value */
   if((hclk >= 20000000U)&&(hclk < 35000000U))
@@ -2609,7 +2614,7 @@ static void ETH_MAC_MDIO_ClkConfig(ETH_HandleTypeDef *heth)
   tmpreg &= ~ETH_MACMDIOAR_CR;
 
   /* Get hclk frequency value */
-  hclk = HAL_RCC_GetHCLKFreq();
+  hclk = HAL_RCC_GetAXISSFreq(); //HAL_RCC_GetHCLKFreq();
 
   /* Set CR bits depending on hclk value */
   if((hclk >= 20000000U)&&(hclk < 35000000U))
@@ -2669,14 +2674,14 @@ static void ETH_DMATxDescListInit(ETH_HandleTypeDef *heth)
 
   heth->TxDescList.CurTxDesc = 0;
 
-  /* Set Transmit Descriptor Ring Length */
-  WRITE_REG(heth->Instance->DMACTDRLR, (ETH_TX_DESC_CNT -1));
+  /* Set Transmit Descriptor 0 Ring Length */
+  WRITE_REG(heth->Instance->DMAC0TXRLR, (ETH_TX_DESC_CNT -1));
 
-  /* Set Transmit Descriptor List Address */
-  WRITE_REG(heth->Instance->DMACTDLAR, (uint32_t) heth->Init.TxDesc);
+  /* Set Transmit Descriptor 0 List Address */
+  WRITE_REG(heth->Instance->DMAC0TXDLAR, (uint32_t) heth->Init.TxDesc);
 
-  /* Set Transmit Descriptor Tail pointer */
-  WRITE_REG(heth->Instance->DMACTDTPR, (uint32_t) heth->Init.TxDesc);
+  /* Set Transmit Descriptor 0 Tail pointer */
+  WRITE_REG(heth->Instance->DMAC0TXDTPR, (uint32_t) heth->Init.TxDesc);
 }
 
 /**
@@ -2702,7 +2707,7 @@ static void ETH_DMARxDescListInit(ETH_HandleTypeDef *heth)
     WRITE_REG(dmarxdesc->BackupAddr0, 0x0);
     WRITE_REG(dmarxdesc->BackupAddr1, 0x0);
 
-    /* Set Rx descritors addresses */
+    /* Set Rx descriptors addresses */
     WRITE_REG(heth->RxDescList.RxDesc[i], (uint32_t)dmarxdesc);
   }
 
@@ -2712,14 +2717,14 @@ static void ETH_DMARxDescListInit(ETH_HandleTypeDef *heth)
   WRITE_REG(heth->RxDescList.ItMode, 0);
   WRITE_REG(heth->RxDescList.AppContextDesc, 0);
 
-  /* Set Receive Descriptor Ring Length */
-  WRITE_REG(heth->Instance->DMACRDRLR, ((uint32_t)(ETH_RX_DESC_CNT - 1)));
+  /* Set Receive Descriptor 0 Ring Length */
+  WRITE_REG(heth->Instance->DMAC0RXRLR, ((uint32_t)(ETH_RX_DESC_CNT - 1)));
 
-  /* Set Receive Descriptor List Address */
-  WRITE_REG(heth->Instance->DMACRDLAR, (uint32_t) heth->Init.RxDesc);
+  /* Set Receive Descriptor 0 List Address */
+  WRITE_REG(heth->Instance->DMAC0RXDLAR, (uint32_t) heth->Init.RxDesc);
 
-  /* Set Receive Descriptor Tail pointer Address */
-  WRITE_REG(heth->Instance->DMACRDTPR, ((uint32_t)(heth->Init.RxDesc + (uint32_t)(ETH_RX_DESC_CNT - 1))));
+  /* Set Receive Descriptor 0 Tail pointer Address */
+  WRITE_REG(heth->Instance->DMAC0RXDTPR, ((uint32_t)(heth->Init.RxDesc + (uint32_t)(ETH_RX_DESC_CNT - 1))));
 }
 
 /**
