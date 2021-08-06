@@ -768,7 +768,7 @@ void display_flush(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
 //	char s [32];
-//	snprintf(s, 32, "FLUSH=%08lX", (unsigned long) frame);
+//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) frame);
 //	display_at(0, 0, s);
 	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set_no_vsync(frame);
@@ -779,7 +779,7 @@ void display_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();	// Тот буфер, в котором рисовали, станет отображаемым
 //	char s [32];
-//	snprintf(s, 32, "BUFF=%08lX", (unsigned long) frame);
+//	local_snprintf_P(s, 32, "B=%08lX ", (unsigned long) frame);
 //	display_at(0, 0, s);
 	ASSERT((frame % DCACHEROWSIZE) == 0);
 	arm_hardware_flush_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
