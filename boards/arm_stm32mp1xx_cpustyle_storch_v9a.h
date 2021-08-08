@@ -604,10 +604,12 @@
 		arm_hardware_piod_updown(RXMASK, 0); \
 	} while (0)
 
+#define TARGET_ENC2BTN_BIT (1U << 15)	// PE15 - second encoder button with pull-up
+
 #if WITHKEYBOARD
 	/* PE15: pull-up second encoder button */
 
-	#define TARGET_ENC2BTN_BIT (1U << 15)	// PE15 - second encoder button with pull-up
+	//#define TARGET_ENC2BTN_BIT (1U << 15)	// PE15 - second encoder button with pull-up
 	#define TARGET_POWERBTN_BIT 0//(1U << 8)	// PAxx - ~CPU_POWER_SW signal
 
 #if WITHENCODER2
@@ -1074,9 +1076,10 @@
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_USERBOOT_BIT	(1uL << 1)	/* PB1: ~USER_BOOT */
-	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
+	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->IDR) & TARGET_ENC2BTN_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
+			arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
+			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); /* set as input with pull-up */ \
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
