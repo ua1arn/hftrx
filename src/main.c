@@ -3137,7 +3137,7 @@ filter_t fi_2p0_455 =
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
 	uint8_t voltcalibr100mV;	/* калибровочный параметр измерителя напряжения АКБ - Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта */
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
-
+	uint16_t gipacali;
 #if WITHELKEY
 	uint8_t	ggrpelkey; // последний посещённый пункт группы
 	uint8_t elkeywpm;	/* скорость электронного ключа */
@@ -4087,7 +4087,17 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	uint_fast8_t voltcalibr100mV = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
+#if WITHCURRLEVEL
 
+	// Корректировка показаний измерителя тока оконечного каскада
+	#define IPACALI_RANGE 500
+	#define IPACALI_BASE (IPACALI_RANGE / 2)
+	static int_fast32_t getipacalibase(void)
+	{
+		return - IPACALI_BASE;
+	}
+	static uint_fast16_t gipacali = IPACALI_BASE;
+#endif /* WITHCURRLEVEL */
 #if WITHDIRECTFREQENER
 	static uint_fast8_t editfreqmode;		/* Режим прямого ввода частоты */
 	static uint_fast32_t editfreq;		/* значение частоты, которое редактируем */
@@ -11422,7 +11432,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 #endif /* WITHCURRLEVEL2 */
 
-	return curr10;
+	return curr10 + (gipacali + getipacalibase());
 }
 
 #endif /* WITHCURRLEVEL */
@@ -16275,16 +16285,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getadcoffsbase,	/* складывается со смещением и отображается */
 	},
-	{
-		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gdactest),
-		nvramoffs0,
-		NULL,
-		& gdactest,
-		getzerobase, 
-	},
 #endif /* WITHDSPEXTDDC */
 #if WITHTX
 #if WITHVOX
@@ -17720,6 +17720,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 #endif /* WITHPABIASTRIM && WITHTX */
+#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
+	{
+		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gdactest),
+		nvramoffs0,
+		NULL,
+		& gdactest,
+		getzerobase,
+	},
+#endif /* WITHDSPEXTDDC */
 
 #endif /* WITHTX */
 
@@ -17911,9 +17923,21 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& voltcalibr100mV,
-		getzerobase, 
+		getzerobase,
 	},
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
+#if WITHCURRLEVEL
+	{
+		QLABEL("IPA CALI"), 5 + WSIGNFLAG, 2, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
+		ITEM_VALUE,
+		0, IPACALI_RANGE,
+		offsetof(struct nvmap, gipacali),
+		nvramoffs0,
+		& gipacali,
+		NULL,
+		getipacalibase,
+	},
+#endif /* WITHCURRLEVEL */
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
 	{
