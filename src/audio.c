@@ -6257,6 +6257,7 @@ board_set_dacscale(uint_fast16_t n)	/* Использование амплиту
 		glob_dacscale = n;
 		board_dsp1regchanged();
 	}
+	PRINTF("board_set_dacscale = %d\n", (int) glob_dacscale);
 }
 
 void 

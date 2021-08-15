@@ -5471,7 +5471,7 @@ static void disableAllIRQs(void)
 #endif
 
 
-#if 0
+#if WITHOPENVG && 1
 
 #include "tiger.h"
 
@@ -5747,7 +5747,7 @@ static void rendertiger(PS* const tiger, int w, int h)
 
 }
 
-#endif /* tiger */
+#endif /* WITHOPENVG */
 /*--------------------------------------------------------------*/
 
 // See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
