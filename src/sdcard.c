@@ -18,10 +18,6 @@
 #include "fatfs/ff.h"	
 #include "fatfs/diskio.h"		/* FatFs lower layer API */
 
-#include "display/display.h"	/* используем функцию получения рабочей частоты */
-#include "keyboard.h"	
-#include "audio.h"
-
 enum { XC7Z_SDRDWRDMA = 1, XC7Z_AUTO_CMD12 = 1 };
 
 
