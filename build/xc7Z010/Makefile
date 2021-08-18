@@ -16,7 +16,8 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT = arm-none-eabi-
+TRGT2 = arm-none-eabi
+TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
 PRJROOT := ../..
@@ -28,7 +29,7 @@ ZINQ_BOOT_DIR := E:
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar
+AR   = $(TRGT)ar --plugin ../lib/gcc/$(TRGT2)/10.2.1/liblto_plugin-0.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
