@@ -458,7 +458,7 @@ void nmea_parsechar(uint_fast8_t c)
 				board_adc_store_data(VOLTSOURCE, strtol(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 
 				static dpclock_t dpc_ua1ceituner;
-				board_dpc(& dpc_ua1ceituner, ua1ceituner_send, NULL);
+				VERIFY(board_dpc(& dpc_ua1ceituner, ua1ceituner_send, NULL));
 
 			}
 		}

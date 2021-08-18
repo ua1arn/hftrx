@@ -14367,22 +14367,25 @@ static void dpc_1stimer(void * arg)
 }
 
 static void
-poke_u32(volatile uint8_t * p, uintptr_t v)
+poke_uintptr(volatile uint8_t * p, uintptr_t v)
 {
-	p [0] = (v >> 0) & 0xFF;
-	p [1] = (v >> 8) & 0xFF;
-	p [2] = (v >> 16) & 0xFF;
-	p [3] = (v >> 24) & 0xFF;
+	p [0] = (v >> 24) & 0xFF;
+	p [1] = (v >> 16) & 0xFF;
+	p [2] = (v >> 8) & 0xFF;
+	p [3] = (v >> 0) & 0xFF;
 }
 
 static uintptr_t
-peek_u32(volatile const uint8_t * p)
+peek_uintptr(volatile const uint8_t * p)
 {
-	return
-		((uint_fast32_t) p [0] << 0) +
-		((uint_fast32_t) p [1] << 8) +
-		((uint_fast32_t) p [2] << 16) +
-		((uint_fast32_t) p [3] << 24);
+	uintptr_t v = 0;
+
+	v = (v << 8) + * p ++;
+	v = (v << 8) + * p ++;
+	v = (v << 8) + * p ++;
+	v = (v << 8) + * p ++;
+
+	return v;
 }
 
 
@@ -14540,13 +14543,15 @@ processmessages(
 			void * arg3;
 			dpclock_t * lp;
 
-			func = (uintptr_t) peek_u32(buff + 1);
-			arg1 = (void *) peek_u32(buff + 5);
-			arg2 = (void *) peek_u32(buff + 9);
-			arg3 = (void *) peek_u32(buff + 13);
-			lp = (dpclock_t *) peek_u32(buff + 17);
+			ASSERT(MSGBUFFERSIZE8 >= 21);
 
-			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была вощмодность самого себя повторно запросить
+			func = (uintptr_t) peek_uintptr(buff + 1);
+			arg1 = (void *) peek_uintptr(buff + 5);
+			arg2 = (void *) peek_uintptr(buff + 9);
+			arg3 = (void *) peek_uintptr(buff + 13);
+			lp = (dpclock_t *) peek_uintptr(buff + 17);
+
+			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была возможность самого себя повторно запросить
 			switch (buff [0])
 			{
 			case 1:
@@ -14575,12 +14580,13 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
+	ASSERT(MSGBUFFERSIZE8 >= 21);
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 1;
-		poke_u32(buff + 1, (uintptr_t) func);
-		poke_u32(buff + 5, (uintptr_t) arg);
-		poke_u32(buff + 17, (uintptr_t) lp);
+		poke_uintptr(buff + 1, (uintptr_t) func);
+		poke_uintptr(buff + 5, (uintptr_t) arg);
+		poke_uintptr(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -14595,13 +14601,14 @@ uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
+	ASSERT(MSGBUFFERSIZE8 >= 21);
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 2;
-		poke_u32(buff + 1, (uintptr_t) func);
-		poke_u32(buff + 5, (uintptr_t) arg1);
-		poke_u32(buff + 9, (uintptr_t) arg2);
-		poke_u32(buff + 17, (uintptr_t) lp);
+		poke_uintptr(buff + 1, (uintptr_t) func);
+		poke_uintptr(buff + 5, (uintptr_t) arg1);
+		poke_uintptr(buff + 9, (uintptr_t) arg2);
+		poke_uintptr(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -14616,14 +14623,15 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
+	ASSERT(MSGBUFFERSIZE8 >= 21);
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 3;
-		poke_u32(buff + 1, (uintptr_t) func);
-		poke_u32(buff + 5, (uintptr_t) arg1);
-		poke_u32(buff + 9, (uintptr_t) arg2);
-		poke_u32(buff + 13, (uintptr_t) arg3);
-		poke_u32(buff + 17, (uintptr_t) lp);
+		poke_uintptr(buff + 1, (uintptr_t) func);
+		poke_uintptr(buff + 5, (uintptr_t) arg1);
+		poke_uintptr(buff + 9, (uintptr_t) arg2);
+		poke_uintptr(buff + 13, (uintptr_t) arg3);
+		poke_uintptr(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -14637,7 +14645,7 @@ void spool_secound(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& dpc_1slock, dpc_1stimer, NULL);
+	VERIFY(board_dpc(& dpc_1slock, dpc_1stimer, NULL));
 }
 
 /* Установка сиквенсору запроса на передачу.	*/
