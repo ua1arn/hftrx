@@ -93,7 +93,7 @@
 	#if WITHINTEGRATEDDSP
 
 		//#define WITHUAC2		1	/* UAC2 support */
-		//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+		#define WITHUSBUACINOUTRENESAS	1	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
 		#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 		#define WITHUSBUACIN	1
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
@@ -107,7 +107,7 @@
 	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
 	//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	#define WITHUSBWCID	1
 
 #endif /* WITHUSBHW */
