@@ -436,8 +436,6 @@
 	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
-#endif /* WITHISBOOTLOADER */
-
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
@@ -472,6 +470,8 @@
 		#define WITHBBOXTX		1		// автоматический переход на передачу
 		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_2TONE	// 2: 2tone, 1: noise 
 	#endif
+
+#endif /* WITHISBOOTLOADER */
 
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
 
