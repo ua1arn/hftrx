@@ -1395,14 +1395,6 @@ buffers_savetouacin(uacin16_t * p)
 
 #if WITHUSBUAC
 
-static RAMFUNC unsigned long ulmin(
-	unsigned long a,
-	unsigned long b
-	)
-{
-	return a < b ? a : b;
-}
-
 // возвращает количество полученых сэмплов
 static RAMFUNC unsigned getsamplemsuacout(
 	aubufv_t * buff,	// текущая позиция в целевом буфере
@@ -1499,7 +1491,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 		SPIN_UNLOCK(& locklist16);
 	}
 
-	const unsigned chunk = ulmin(sizes [part], size);
+	const unsigned chunk = ulmin32(sizes [part], size);
 
 	memcpy(buff, datas [part], chunk * sizeof (* buff));
 
@@ -1694,7 +1686,7 @@ unsigned savesamplesplay_user(
 	}
 
 	//PRINTF("savesamplesplay_user: length=%u\n", length);
-	unsigned chunk = ulmin(size, length);
+	unsigned chunk = ulmin32(size, length);
 	memcpy(p, buff, chunk);
 	saveplaybuffer(p, chunk);
 	return chunk;
