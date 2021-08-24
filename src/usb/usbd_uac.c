@@ -103,21 +103,18 @@ static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_f
 	return n;
 }
 
-
-
-
 uint_fast16_t usbd_getuacinmaxpacket(void)
 {
 	uint_fast16_t maxpacket = UACIN_AUDIO48_DATASIZE;
 
-#if ! WITHUSBUACIN2
+#if ! WITHUSBUACIN2 || WITHUSBUACINOUTRENESAS
 	#if WITHRTS96
 		maxpacket = ulmax16(maxpacket, UACIN_RTS96_DATASIZE);
 	#endif /* WITHRTS96 */
 	#if WITHRTS192
 		maxpacket = ulmax16(maxpacket, UACIN_RTS192_DATASIZE);
 	#endif /* WITHRTS192 */
-#endif /* ! WITHUSBUACIN2 */
+#endif /* ! WITHUSBUACIN2 || WITHUSBUACINOUTRENESAS */
 	return maxpacket;
 }
 
