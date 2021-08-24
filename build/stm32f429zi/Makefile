@@ -31,6 +31,7 @@ PROJECT = tc1_stm32f429zi
 
 # Define linker script file here
 LDSCRIPT_APP = ./STM32F429ZI_rom.ld
+ARCHDIR = $(PRJROOT)/arch/stm32f4xx
 
 # List all user C define here, like -D_DEBUG=1
 
@@ -72,7 +73,7 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(PRJROOT)/armcpu \
+	$(ARCHDIR) \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
@@ -136,6 +137,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
+SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)

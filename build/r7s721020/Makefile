@@ -30,6 +30,7 @@ PROJECT = tc1_r7s721020
 # Define linker script file here
 LDSCRIPT_BOOT = ./r7s721020_boot.ld
 LDSCRIPT_APP = ./r7s721020_app.ld
+ARCHDIR = $(PRJROOT)/arch/renesasRZA1
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS += -D"NDEBUG"=1 -DCPUSTYLE_R7S721=1 -DCPUSTYLE_R7S721020=1 -DTARGET_RZA1=TARGET_RZA1L -D"EGL_STATIC_LIBRARY"=1
@@ -74,7 +75,7 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(PRJROOT)/armcpu \
+	$(ARCHDIR) \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
@@ -136,6 +137,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
+SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR)
 SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
 

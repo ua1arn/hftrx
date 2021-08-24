@@ -61,6 +61,7 @@ UADEFS += -D"WITHSMPSYSTEM"
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
 
+ARCHDIR = $(PRJROOT)/arch/zynqmp
 
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
 
@@ -84,7 +85,7 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(PRJROOT)/armcpu \
+	$(ARCHDIR) \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(USBXDIR) \
@@ -122,6 +123,7 @@ DLIBS = -lm
 
 #SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS = $(PRJROOT)/src
+SRCDIRS += $(ARCHDIR)
 
 # Define project name here
 PROJECT = tc1_xczu2

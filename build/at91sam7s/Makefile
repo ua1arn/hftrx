@@ -27,8 +27,10 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
+PRJROOT = ../..
 CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
+ARCHDIR = $(PRJROOT)/arch/at91sam
 
 # Define optimisation level here
 #OPT = -Ofast
@@ -60,6 +62,7 @@ DLIBS = -lm
 #
 
 SRCDIR = ../../src
+SRCDIRS += $(ARCHDIR)
 
 # Define project name here
 PROJECT = tc1_at91sam7s64

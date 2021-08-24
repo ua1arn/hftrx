@@ -160,7 +160,7 @@ extern "C" {
 
 	#define CORE_CM7 1	/* for STM32H745 dual-core config */
 
-	#include "armcpu/stm32h7xx.h"
+	#include "arch/stm32h7xx/stm32h7xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
@@ -184,7 +184,7 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM7	1		/* архитектура процессора CORTEX M7 */
 
-	#include "armcpu/stm32f7xx.h"
+	#include "arch/stm32f7xx/stm32f7xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
@@ -207,7 +207,7 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M4 */
 
-	#include "armcpu/stm32f4xx.h"
+	#include "arch/stm32f4xx/stm32f4xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -231,7 +231,7 @@ extern "C" {
 	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
 
 	// STM32F303VC processors
-	#include "armcpu/stm32f30x.h"
+	#include "arch/stm32f30x/stm32f30x.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -249,7 +249,7 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM3	1		/* архитектура процессора CORTEX M3 */
 
-	#include "armcpu/stm32f1xx.h"
+	#include "arch/stm32f1xx/stm32f1xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -267,7 +267,7 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	
-	#include "armcpu/stm32f0xx.h"
+	#include "arch/stm32f0xx/stm32f0xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -284,7 +284,7 @@ extern "C" {
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
-	#include "armcpu/stm32l0xx.h"
+	#include "arch/stm32l0xx/stm32l0xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -337,7 +337,7 @@ extern "C" {
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
 	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
 
-	#include "armcpu/MK20D5.h"
+	#include "arch/mk20/MK20D5.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
@@ -353,13 +353,13 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM7TDMI	1
-	#include "armcpu/at91sam7s64.h"
+	#include "arch/at91sam/at91sam7s64.h"
 
 	#define __ASM            __asm           /*!< asm keyword for GNU Compiler          */
 	#define __INLINE         inline          /*!< inline keyword for GNU Compiler       */
 	#define __STATIC_INLINE  static inline
 
-	#include "tdmi7_gcc.h"
+	#include "arch/tdmi7_gcc.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
@@ -381,7 +381,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM9		1
 
-	#include "armcpu/at91sam9xe512.h"
+	#include "arch/at91sam/at91sam9xe512.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
@@ -390,7 +390,7 @@ extern "C" {
 	#define __INLINE         inline          /*!< inline keyword for GNU Compiler       */
 	#define __STATIC_INLINE  static inline
 
-	#include "tdmi7_gcc.h"
+	#include "arch/tdmi7_gcc.h"
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
@@ -413,9 +413,9 @@ extern "C" {
 
 	//#define TARGET_RZA1             (TARGET_RZA1L)	// перенесено в Makefile
 
-	#include "armcpu/Renesas_RZ_A1.h"	// IRQs, some bitss
-	#include "armcpu/iodefine.h"		// peripherial registers
-	#include "armcpu/rza_io_regrw.h"	// iobitmasks
+	#include "arch/renesasRZA1/Renesas_RZ_A1.h"	// IRQs, some bitss
+	#include "arch/renesasRZA1/iodefine.h"		// peripherial registers
+	#include "arch/renesasRZA1/rza_io_regrw.h"	// iobitmasks
 
 	#include "irq_ctrl.h"
 
@@ -445,7 +445,7 @@ extern "C" {
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "armcpu/stm32mp1xx.h"
+	#include "arch/stm32mp1xx/stm32mp1xx.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
@@ -472,7 +472,7 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "armcpu/zynq7000.h"
+	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 32
@@ -495,7 +495,7 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "armcpu/zynquscale.h"
+	#include "arch/zynqmp/zynquscale.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 32
@@ -525,7 +525,7 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "armcpu/alwnrv3s.h"
+	#include "arch/alwnrv3s/alwnrv3s.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
