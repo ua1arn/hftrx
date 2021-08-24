@@ -3214,7 +3214,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	if ((intsts0msk & USB_INTSTS0_VBINT) != 0)	// VBINT
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_VBINT;	// Clear VBINT - enabled by VBSE
-		PRINTF(PSTR("HAL_PCD_IRQHandler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
+		//PRINTF(PSTR("HAL_PCD_IRQHandler trapped - VBINT, VBSTS=%d\n"), (intsts0 & USB_INTSTS0_VBSTS) != 0);
 	//	usbd_handle_vbuse(usbd_getvbus());
 	}
 	if (hpcd->run_later_ctrl_comp != 0)
