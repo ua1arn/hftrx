@@ -37,6 +37,7 @@ val_step_t freq_swipe_step [] = {
 	{ 1, "by screen", },
 	{ 2, "1/2", },
 	{ 4, "1/4", },
+	{ 100, "100 Hz", },
 };
 
 struct gui_nvram_t gui_nvram;
@@ -48,8 +49,8 @@ enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
 
 enum {
 	enc2step_default = 1,
-	freq_swipe_step_default = 0,
-	freq_swipe_enable_default = 1,
+	freq_swipe_step_default = 100,
+	freq_swipe_enable_default = 0,
 	micprofile_default = UINT8_MAX,
 	tune_powerdown_enable_default = 1,
 	tune_powerdown_value_default = WITHPOWERTRIMATU
@@ -409,7 +410,10 @@ static void gui_main_process(void)
 
 	if (update)											// обновление состояния элементов при действиях с ними, а также при запросах из базовой системы
 	{
-		freq_swipe = display_zoomedbw() / DIM_X / freq_swipe_step[gui_nvram.freq_swipe_step].step;
+		if (freq_swipe_step[gui_nvram.freq_swipe_step].step >= 100)
+			freq_swipe = freq_swipe_step[gui_nvram.freq_swipe_step].step;
+		else
+			freq_swipe = display_zoomedbw() / DIM_X / freq_swipe_step[gui_nvram.freq_swipe_step].step;
 
 		button_t * btn_notch = find_gui_element(TYPE_BUTTON, win, "btn_notch");
 		btn_notch->is_locked = hamradio_get_gnotch() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
