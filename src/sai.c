@@ -3605,6 +3605,9 @@ static const codechw_t fpgaspectrumhw_sai2 =
 	hardware_dummy_enable,
 	"sai2-fpga spectrum for WFM"
 };
+#else
+
+	#warning Codecs not defined for this CPUSTYLE_XXX
 
 #endif /* CPUSTYLE_STM32F */
 

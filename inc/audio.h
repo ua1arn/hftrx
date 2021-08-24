@@ -80,10 +80,10 @@ extern "C" {
 				// buff data layout: I main/I sub/Q main/Q sub
 				#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
-		#define DMABUF32RX0I	0		// RX0, I
-		#define DMABUF32RX0Q	1		// RX0, Q
-		#define DMABUF32RX1I	2		// RX1, I
-		#define DMABUF32RX1Q	3		// RX1, Q
+			#define DMABUF32RX0I	0		// RX0, I
+			#define DMABUF32RX0Q	1		// RX0, Q
+			#define DMABUF32RX1I	2		// RX1, I
+			#define DMABUF32RX1Q	3		// RX1, Q
 
 		#if WITHRTS96
 			#define DMABUF32RTS0I	4		// RTS0, I	// previous - oldest
@@ -92,26 +92,29 @@ extern "C" {
 			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
 		#endif /* WITHRTS96 */
 		
-				// Slot S0, S4: Oldest sample (T-3)
-				// Slot S1, S5: Old sample (T-2)
-				// Slot S2, S6: Old sample (T-1)
-				// Slot S3, S7: Newest sample (T-0)
-				#define DMABUF32RXWFM0I	0		// WFM OLDEST
-				#define DMABUF32RXWFM0Q	4		// WFM
-				#define DMABUF32RXWFM1I	1		// WFM
-				#define DMABUF32RXWFM1Q	5		// WFM
-				#define DMABUF32RXWFM2I	2		// WFM
-				#define DMABUF32RXWFM2Q	6		// WFM
-				#define DMABUF32RXWFM3I	3		// WFM NEWEST
-				#define DMABUF32RXWFM3Q	7		// WFM
+			// Slot S0, S4: Oldest sample (T-3)
+			// Slot S1, S5: Old sample (T-2)
+			// Slot S2, S6: Old sample (T-1)
+			// Slot S3, S7: Newest sample (T-0)
+			#define DMABUF32RXWFM0I	0		// WFM OLDEST
+			#define DMABUF32RXWFM0Q	4		// WFM
+			#define DMABUF32RXWFM1I	1		// WFM
+			#define DMABUF32RXWFM1Q	5		// WFM
+			#define DMABUF32RXWFM2I	2		// WFM
+			#define DMABUF32RXWFM2Q	6		// WFM
+			#define DMABUF32RXWFM3I	3		// WFM NEWEST
+			#define DMABUF32RXWFM3Q	7		// WFM
 
-				#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
-				#define DMABUF32TXI	0		// TX, I
-				#define DMABUF32TXQ	1		// TX, Q
-		#endif
+			#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+			#define DMABUF32TXI	0		// TX, I
+			#define DMABUF32TXQ	1		// TX, Q
+
+		#endif /* WITHSAI1_FRAMEBITS */
+
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+
 		#if WITHSAI1_FRAMEBITS == 64
 
 			#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
@@ -155,7 +158,43 @@ extern "C" {
 				#define DMABUF32TXQ	1		// TX, Q
 		#endif
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
+	#else
+		#warning Define I2S layout for this CPUSTYLE_XXX
 
+		// buff data layout: I main/I sub/Q main/Q sub
+		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+
+		#define DMABUF32RX0I	0		// RX0, I
+		#define DMABUF32RX1I	1		// RX1, I
+		#define DMABUF32RX0Q	4		// RX0, Q
+		#define DMABUF32RX1Q	5		// RX1, Q
+
+		#define DMABUFSTEP32TX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
+		#define DMABUF32TXI	0		// TX, I
+		#define DMABUF32TXQ	4		// TX, Q
+
+		#if WITHRTS96
+			#define DMABUF32RTS0I	2		// RTS0, I	// previous - oldest
+			#define DMABUF32RTS0Q	6		// RTS0, Q	// previous
+			#define DMABUF32RTS1I	3		// RTS1, I	// current	- nevest
+			#define DMABUF32RTS1Q	7		// RTS1, Q	// current
+		#endif /* WITHRTS96 */
+
+
+		// Slot S0, S4: Oldest sample (T-3)
+		// Slot S1, S5: Old sample (T-2)
+		// Slot S2, S6: Old sample (T-1)
+		// Slot S3, S7: Newest sample (T-0)
+		#define DMABUF32RXWFM0I	0		// WFM OLDEST
+		#define DMABUF32RXWFM0Q	4		// WFM
+		#define DMABUF32RXWFM1I	1		// WFM
+		#define DMABUF32RXWFM1Q	5		// WFM
+		#define DMABUF32RXWFM2I	2		// WFM
+		#define DMABUF32RXWFM2Q	6		// WFM
+		#define DMABUF32RXWFM3I	3		// WFM NEWEST
+		#define DMABUF32RXWFM3Q	7		// WFM
+
+		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 	#endif
 
 #else /* WITHDSPEXTDDC */

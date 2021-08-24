@@ -297,9 +297,12 @@ static RAMDTCM LIST_HEAD2 speexfree16;		// Свободные буферы
 static RAMDTCM LIST_HEAD2 speexready16;	// Буферы для обработки speex
 static RAMDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 
+#if WITHUSBUAC
+static RAMDTCM volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+static RAMDTCM volatile uint_fast8_t uacoutmike;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+#endif /* WITHUSBUAC */
+
 #if WITHUSBHW
-static RAMDTCM volatile uint_fast8_t uacoutplayer = 0;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-static RAMDTCM volatile uint_fast8_t uacoutmike = 0;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 static RAMDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
 static RAMDTCM volatile uint_fast8_t uacoutalt;
