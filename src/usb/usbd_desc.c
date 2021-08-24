@@ -2531,6 +2531,7 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 {
 	unsigned n = 0;
 	uint_fast8_t ialt = 0;
+	uint_fast8_t oalt = 0;
 
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;	/* AUDIO receiever out control interface */
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
@@ -2604,9 +2605,9 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 
 	// OUT data flow: modulator
 	// INTERFACE_AUDIO_SPK - audio streaming interface
-	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, 0, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, oalt ++, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
 
-	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, 1, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, oalt ++, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalOutID);	/* USB Speaker Audio Streaming Interface Descriptor (for output TERMINAL_UACOUT48 + offset) */
 	n += UAC1_FormatTypeDescroptor_OUT48(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
 	n += UAC1_fill_14_OUT48(fill, p + n, maxsize - n, epout, highspeed);	/* Endpoint USBD_EP_AUDIO_OUT - Standard Descriptor */
