@@ -4109,6 +4109,7 @@ static void window_freq_process (void)
 	static editfreq_t editfreq;
 	window_t * const win = get_win(WINDOW_FREQ);
 	static const char * win_title = "Freq:";
+	uint_fast8_t update = 0;
 
 	if (win->first_call)
 	{
@@ -4173,6 +4174,7 @@ static void window_freq_process (void)
 		{
 			button_t * bh = (button_t *) ptr;
 			editfreq.key = bh->payload;
+			update = 1;
 		}
 		break;
 
@@ -4181,50 +4183,55 @@ static void window_freq_process (void)
 		break;
 	}
 
-	if (editfreq.key != BUTTON_CODE_DONE)
+	if (update)
 	{
-		if (editfreq.error)
+		update = 0;
+
+		if (editfreq.key != BUTTON_CODE_DONE)
 		{
-			editfreq.val = 0;
-			editfreq.num = 0;
-		}
-
-		editfreq.error = 0;
-
-		switch (editfreq.key)
-		{
-		case BUTTON_CODE_BK:
-			if (editfreq.num > 0)
+			if (editfreq.error)
 			{
-				editfreq.val /= 10;
-				editfreq.num --;
+				editfreq.val = 0;
+				editfreq.num = 0;
 			}
-			break;
 
-		case BUTTON_CODE_OK:
-			if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
+			editfreq.error = 0;
+
+			switch (editfreq.key)
 			{
-				close_all_windows();
+			case BUTTON_CODE_BK:
+				if (editfreq.num > 0)
+				{
+					editfreq.val /= 10;
+					editfreq.num --;
+				}
+				break;
+
+			case BUTTON_CODE_OK:
+				if (hamradio_set_freq(editfreq.val * 1000) || editfreq.val == 0)
+				{
+					close_all_windows();
+				}
+				else
+					editfreq.error = 1;
+
+				break;
+
+			default:
+				if (editfreq.num < 6)
+				{
+					editfreq.val  = editfreq.val * 10 + editfreq.key;
+					if (editfreq.val)
+						editfreq.num ++;
+				}
 			}
+			editfreq.key = BUTTON_CODE_DONE;
+
+			if (editfreq.error)
+				local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s ERROR", win_title);
 			else
-				editfreq.error = 1;
-
-			break;
-
-		default:
-			if (editfreq.num < 6)
-			{
-				editfreq.val  = editfreq.val * 10 + editfreq.key;
-				if (editfreq.val)
-					editfreq.num ++;
-			}
+				local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s %d k", win_title, editfreq.val);
 		}
-		editfreq.key = BUTTON_CODE_DONE;
-
-		if (editfreq.error)
-			local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s ERROR", win_title);
-		else
-			local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s %d k", win_title, editfreq.val);
 	}
 }
 
