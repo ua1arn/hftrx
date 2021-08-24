@@ -56,12 +56,16 @@
 			#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 			#define PLL2DIVR	1	// DDR clock divider = 528 MHz
+
+			#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
 	#elif 0
 			#define PLL2DIVM	2	// ref2_ck = 12 MHz
 			#define PLL2DIVN	66	// 528 MHz Valid division rations for DIVN: between 25 and 100
 			#define PLL2DIVP	3	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	2	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 			#define PLL2DIVR	2	// DDR clock divider = 528 MHz
+
+			#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
 	#else
 			/* bad boards DDR3 clock = 300 MHz */
 			#define PLL2DIVM	2	// ref2_ck = 12 MHz
@@ -69,6 +73,8 @@
 			#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
 			#define PLL2DIVR	2	// DDR clock divider = 300 MHz
+
+			#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
 	#endif
 
 			// PLL3_800
@@ -101,6 +107,8 @@
 			#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 			#define PLL2DIVQ	1	// GPU clock divider
 			#define PLL2DIVR	1	// DDR clock divider
+
+			#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
 	#else
 			// PLL2_1600
 			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
@@ -108,6 +116,8 @@
 			#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 			#define PLL2DIVQ	2//1	// GPU clock divider
 			#define PLL2DIVR	3//1	// DDR clock divider
+
+			#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
 	#endif
 
 			// PLL3_800
@@ -532,7 +542,7 @@
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 0
+	#if 1
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
