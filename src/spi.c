@@ -1409,7 +1409,7 @@ int testchipDATAFLASH(void)
 			return 0;
 		uint8_t buff32 [len4 * 4];
 		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
-		const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
+		//const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
 		const uint_fast32_t dword2 = USBD_peek_u32(buff32 + 4 * 1);
 		const uint_fast32_t dword3 = USBD_peek_u32(buff32 + 4 * 2);
 		const uint_fast32_t dword4 = USBD_peek_u32(buff32 + 4 * 3);
@@ -1419,6 +1419,8 @@ int testchipDATAFLASH(void)
 		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
 		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
 		//printhex(ptp, buff32, 256);
+
+		///////////////////////////////////
 		/* Print density information. */
 		if ((dword2 & 0x80000000uL) == 0)
 		{
@@ -1432,6 +1434,16 @@ int testchipDATAFLASH(void)
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
 			PRINTF("SFDP: density=%08lX (%u Mbi, %u MB)\n", dword2, Mbi, MB);
 		}
+		///////////////////////////////////
+		// dword8, dword9 - 4KB Erase opcode, Sector size, Sector erase opcode
+		const unsigned sct1 = (dword8 >> 0) & 0xFFFF;
+		const unsigned sct2 = (dword8 >> 16) & 0xFFFF;
+		const unsigned sct3 = (dword9 >> 0) & 0xFFFF;
+		const unsigned sct4 = (dword9 >> 16) & 0xFFFF;
+		PRINTF("SFDP: opco1..4: %04X,%04X,%04X,%04X\n", (sct1 >> 8) & 0xFF, (sct2 >> 8) & 0xFF, (sct3 >> 8) & 0xFF, (sct4 >> 8) & 0xFF);
+		PRINTF("SFDP: size1..4: %lu,%lu,%lu,%lu\n", 1uL << (sct1 & 0xFF), 1uL << (sct2 & 0xFF), 1uL << (sct3 & 0xFF), 1uL << (sct4 & 0xFF));
+
+		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
