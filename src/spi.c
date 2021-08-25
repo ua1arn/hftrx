@@ -1355,6 +1355,11 @@ unsigned char mf_devid1;	// device ID (part 1)
 unsigned char mf_devid2;	// device ID (part 2)
 unsigned char mf_dlen;	// Extended Device Information String Length
 
+
+static uint_fast8_t sectorEraseCmd = 0xD8;			// 64KB SECTOR ERASE
+static uint_fast32_t sectorSize = (1uL << 16);		// default sectoir size 64kB
+static uint_fast32_t chipSize = BOOTLOADER_FLASHSIZE;	// default chip size
+
 int testchipDATAFLASH(void)
 {
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
@@ -1427,22 +1432,37 @@ int testchipDATAFLASH(void)
 			const unsigned Kbi = (dword2 >> 10) + 1;
 			const unsigned MB = (dword2 >> 23) + 1;
 			PRINTF("SFDP: density=%08lX (%u Kbi, %u MB)\n", dword2, Kbi, MB);
+			chipSize = (dword2 >> 3) + 1uL;
 		}
 		else
 		{
 			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
 			PRINTF("SFDP: density=%08lX (%u Mbi, %u MB)\n", dword2, Mbi, MB);
+			chipSize = 1uL << ((dword2 & 0x7FFFFFFF) - 3);
 		}
 		///////////////////////////////////
 		// dword8, dword9 - 4KB Erase opcode, Sector size, Sector erase opcode
-		const unsigned sct1 = (dword8 >> 0) & 0xFFFF;
-		const unsigned sct2 = (dword8 >> 16) & 0xFFFF;
-		const unsigned sct3 = (dword9 >> 0) & 0xFFFF;
-		const unsigned sct4 = (dword9 >> 16) & 0xFFFF;
-		PRINTF("SFDP: opco1..4: %04X,%04X,%04X,%04X\n", (sct1 >> 8) & 0xFF, (sct2 >> 8) & 0xFF, (sct3 >> 8) & 0xFF, (sct4 >> 8) & 0xFF);
-		PRINTF("SFDP: size1..4: %lu,%lu,%lu,%lu\n", 1uL << (sct1 & 0xFF), 1uL << (sct2 & 0xFF), 1uL << (sct3 & 0xFF), 1uL << (sct4 & 0xFF));
-
+		// Автоматическое определение наибольшего размера сектора
+		unsigned sct [4];
+		sct [0] = (dword8 >> 0) & 0xFFFF;
+		sct [1] = (dword8 >> 16) & 0xFFFF;
+		sct [2] = (dword9 >> 0) & 0xFFFF;
+		sct [3] = (dword9 >> 16) & 0xFFFF;
+		PRINTF("SFDP: opco1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		PRINTF("SFDP: size1..4: %lu,%lu,%lu,%lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		unsigned i;
+		unsigned sctMAX = 0;
+		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
+		{
+			if ((sctMAX & 0xFF) < (sct [i] & 0xFF))
+				sctMAX = sct [i];
+		}
+		if (sctMAX != 0)
+		{
+			sectorEraseCmd = (sctMAX >> 8) & 0xFF;
+			sectorSize = 1uL << (sctMAX & 0xFF);
+		}
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 		// установка кодов операции
@@ -1477,6 +1497,17 @@ int prepareDATAFLASH(void)
 	return timed_dataflash_read_status();
 }
 
+unsigned long sectorsizeDATAFLASH(void)
+{
+	return sectorSize;
+}
+
+unsigned long chipsizeDATAFLASH(void)
+{
+
+	return chipSize;
+}
+
 int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
 	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
@@ -1490,7 +1521,7 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	spidf_iostart(SPDIFIO_WRITE, 0xD8, SPDFIO_1WIRE, 0, 0, 1, flashoffset);		/* 64KB SECTOR ERASE */
+	spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
 	spidf_unselect();	/* done sending data to target chip */
 	//timed_dataflash_read_status(target);
 	return 0;

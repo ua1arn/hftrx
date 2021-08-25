@@ -646,7 +646,7 @@
 	#define BOOTLOADER_APPBASE 0x50000000	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_APPSIZE BOOTLOADER_FLASHSIZE	// 2048 - 128
 
-	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
+	//#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
 
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q128JV"

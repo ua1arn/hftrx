@@ -4840,7 +4840,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHUSBHID */
 	
 #if WITHUSBDFU
-#if BOOTLOADER_APPSIZE
+#if defined (BOOTLOADER_APPSIZE)
 	{
 		extern unsigned char mf_id;	// Manufacturer ID
 		extern unsigned char mf_devid1;	// device ID (part 1)
@@ -4862,8 +4862,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			status ? USBD_DFU_FLASHNAME : flashname,
 			(unsigned long) BOOTLOADER_APPBASE,
-			(unsigned) (BOOTLOADER_APPSIZE / BOOTLOADER_PAGESIZE),
-			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			(unsigned) (BOOTLOADER_APPSIZE / sectorsizeDATAFLASH()),
+			(unsigned) (sectorsizeDATAFLASH() / 1024)
 			);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
@@ -4871,7 +4871,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* BOOTLOADER_APPSIZE */
+#endif /* defined (BOOTLOADER_APPSIZE) */
 #if BOOTLOADER_SELFSIZE
 	{
 		// Re-write bootloader parameters
@@ -4882,8 +4882,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			USBD_DFU_FLASHNAME,
 			(unsigned long) BOOTLOADER_SELFBASE,
-			(unsigned) (BOOTLOADER_SELFSIZE / BOOTLOADER_PAGESIZE),
-			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			(unsigned) (BOOTLOADER_SELFSIZE / sectorsizeDATAFLASH()),
+			(unsigned) (sectorsizeDATAFLASH() / 1024)
 			);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);

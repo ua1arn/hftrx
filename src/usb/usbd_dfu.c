@@ -205,15 +205,15 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 
 	}
 #if BOOTLOADER_SELFSIZE
-	else if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
+	else if (Addr >= BOOTLOADER_SELFBASE && (Addr + sectorsizeDATAFLASH()) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
 		// физическое выполненеие записи
 		if (sectoreraseDATAFLASH(Addr))
 			return USBD_FAIL;
 	}
 #endif /* BOOTLOADER_SELFSIZE */
-#if BOOTLOADER_APPSIZE
-	else if (Addr >= BOOTLOADER_APPBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
+#if defined(BOOTLOADER_APPSIZE)
+	else if (Addr >= BOOTLOADER_APPBASE && (Addr + sectorsizeDATAFLASH()) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
 	{
 		// физическое выполненеие записи
 		if (sectoreraseDATAFLASH(Addr))
@@ -248,7 +248,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 			return USBD_FAIL;
 	}
 #endif /* BOOTLOADER_SELFSIZE */
-#if BOOTLOADER_APPSIZE
+#if defined(BOOTLOADER_APPSIZE)
 	else if (dest >= BOOTLOADER_APPBASE && (dest + Len) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
 	{
 		// физическое выполненеие записи
@@ -316,7 +316,7 @@ static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_
 		//PRINTF("Cmd=%d,st1=%02X (Addr=%08lX) ", Cmd, st, (unsigned long) Addr);
 	}
 #endif /* BOOTLOADER_SELFSIZE */
-#if BOOTLOADER_APPSIZE
+#if defined(BOOTLOADER_APPSIZE)
 	else if (Addr >= BOOTLOADER_APPBASE && (Addr + 1) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
 	{
 		st = dataflash_read_status();
