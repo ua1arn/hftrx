@@ -185,15 +185,15 @@ static void gui_main_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 	"RX", 				},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	"Bands", 			},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  	"Memory", 			},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", 	},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1",  	 	"", 				},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", 				},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_txrx", 		"RX", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", 	"Bands", 			},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Memory",  	"Memory", 			},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", 	},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1",  	 	"", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -976,12 +976,12 @@ static void window_options_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_SysMenu", "System|settings", 	},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_AUDsett", "Audio|settings", 	},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_TXsett",  "Transmit|settings", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Display", "Display|settings", 	},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_gui",     "GUI|settings", 		},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Utils",   "Utils", 			},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_SysMenu", "System|settings", 	},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_AUDsett", "Audio|settings", 	},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_TXsett",  "Transmit|settings", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Display", "Display|settings", 	},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_gui",     "GUI|settings", 		},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Utils",   "Utils", 			},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1090,17 +1090,17 @@ static void window_display_process(void)
 		display_t.updated = 1;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom", 		"", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_view", 		"", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_params", 		"", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_topSP_m", 		"-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_topSP_p", 		"+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_bottomSP_m", 	"-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_bottomSP_p", 	"+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_topWF_m", 		"-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_topWF_p", 		"+", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_bottomWF_m", 	"-", },
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_bottomWF_p", 	"+", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_zoom", 		"", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_view", 		"", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_DISPLAY, NON_VISIBLE, INT32_MAX, "btn_params", 		"", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_topSP_m", 		"-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_topSP_p", 		"+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_bottomSP_m", 	"-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_bottomSP_p", 	"+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_topWF_m", 		"-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_topWF_p", 		"+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, -1, 		"btn_bottomWF_m", 	"-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_DISPLAY, NON_VISIBLE, 1,  		"btn_bottomWF_p", 	"+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1342,7 +1342,7 @@ static void window_utilites_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1438,8 +1438,8 @@ static void window_swrscan_process(void)
 		button_t * bh = NULL;
 
 		static const button_t buttons [] = {
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_start", "Start", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_OK", 	  "OK",    },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_start", "Start", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_SWR_SCANNER, 	NON_VISIBLE, INT32_MAX,  "btn_swr_OK", 	  "OK",    },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1641,9 +1641,9 @@ static void window_tx_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox", 	 	 	"VOX|OFF", 		},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox_settings", 	"VOX|settings", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_power", 	 	"TX power", 	},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox", 	 	 	"VOX|OFF", 		},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_vox_settings", 	"VOX|settings", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_SETTINGS, 	NON_VISIBLE, INT32_MAX, "btn_tx_power", 	 	"TX power", 	},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1757,7 +1757,7 @@ static void window_tx_vox_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, INT32_MAX, "btn_tx_vox_OK", "OK", },
+			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_VOX_SETT, NON_VISIBLE, INT32_MAX, "btn_tx_vox_OK", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1953,8 +1953,8 @@ static void window_tx_power_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", 	   "OK", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_lowtune_enable", "",   },
+			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", 	   "OK", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_lowtune_enable", "",   },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2105,13 +2105,13 @@ static void window_audiosettings_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb", 		 "Reverb|OFF", 		 },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq", 		 "MIC EQ|OFF", 		 },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_profiles", 	 "MIC|profiles", 	 },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_monitor", 		 "Monitor|disabled", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb_settings", "Reverb|settings",  },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq_settings", "MIC EQ|settings",  },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_settings", 	 "MIC|settings", 	 },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb", 		 "Reverb|OFF", 		 },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq", 		 "MIC EQ|OFF", 		 },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_profiles", 	 "MIC|profiles", 	 },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_monitor", 		 "Monitor|disabled", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_reverb_settings", "Reverb|settings",  },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_eq_settings", "MIC EQ|settings",  },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AUDIOSETTINGS, NON_VISIBLE, INT32_MAX, "btn_mic_settings", 	 "MIC|settings", 	 },
 
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -2274,7 +2274,7 @@ static void window_ap_reverb_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, INT32_MAX, "btn_REVs_ok", "OK", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_REVERB_SETT,	NON_VISIBLE, INT32_MAX, "btn_REVs_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2427,7 +2427,7 @@ static void window_ap_mic_eq_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, INT32_MAX, "btn_EQ_ok", "OK", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_EQ, 	NON_VISIBLE, INT32_MAX, "btn_EQ_ok", "OK", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2578,9 +2578,9 @@ static void window_ap_mic_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_agc",   "AGC|OFF",   },
-			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_boost", "Boost|OFF", },
-			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_OK",    "OK", 		  },
+			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_agc",   "AGC|OFF",   },
+			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_boost", "Boost|OFF", },
+			{  86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_AP_MIC_SETT, NON_VISIBLE, INT32_MAX, "btn_mic_OK",    "OK", 		  },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2899,12 +2899,12 @@ static void window_notch_process(void)
 		notch.updated = 1;
 
 		static const button_t buttons [] = {
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_freq-",  "-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_freq+",  "+", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_width-", "-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_width+", "+", },
-			{ 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 0,  "btn_Auto",   "Auto",   },
-			{ 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_Manual", "Manual", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_freq-",  "-", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_freq+",  "+", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_NOTCH, NON_VISIBLE, -1, "btn_width-", "-", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_width+", "+", },
+			{ 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_NOTCH, NON_VISIBLE, 0,  "btn_Auto",   "Auto",   },
+			{ 80, 35, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_NOTCH, NON_VISIBLE, 1,  "btn_Manual", "Manual", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3077,9 +3077,9 @@ static void window_gui_settings_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step",  "", },
-			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe", "", },
-			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe_step", "", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_enc2_step",  "", },
+			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe", "", },
+			{ 110, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_GUI_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_swipe_step", "", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3201,8 +3201,8 @@ static void window_uif_process(void)
 		static const uint_fast8_t win_width = 170;
 
 		static const button_t buttons [] = {
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, -1, "btn_UIF-", "-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_UIF, NON_VISIBLE, 1, "btn_UIF+",  "+", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_UIF, NON_VISIBLE, -1, "btn_UIF-", "-", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_UIF, NON_VISIBLE, 1,  "btn_UIF+", "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3377,11 +3377,11 @@ void minigui_main_process(void)
 
 		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands", "Bands", },
-			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", "Receive", },
-			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_3", "", },
-			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_4", "", },
-			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_settings", "Settings", },
+			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Bands",    "Bands", },
+			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive",  "Receive", },
+			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_3", 	   "", },
+			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_4", 	   "", },
+			{ 94, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_settings", "Settings", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3660,10 +3660,10 @@ static void minigui_main_menu_process(void)
 
 		static const button_t buttons [] = {
 		//   x1, y1, w, h,  onClickHandler,   state,   	is_locked, is_long_press, parent,   	visible,      payload,	 name, 		text
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_1", "1", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_2", "2", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_3", "3", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_4", "4", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_1", "1", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_2", "2", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_3", "3", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN_MENU, NON_VISIBLE, INT32_MAX, "btn_4", "4", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3732,14 +3732,14 @@ static void window_af_process(void)
 		bp_t.updated = 1;
 
 		static const button_t buttons [] = {
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_low_m", 	"-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_low_p", 	"+", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_high_m", 	"-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_high_p", 	"+", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_afr_m", 	"-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_afr_p", 	"+", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_ifshift_m", "-", },
-			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_ifshift_p", "+", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_low_m", 	"-", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_low_p", 	"+", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_high_m", "-", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_high_p", "+", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_afr_m", 	"-", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_afr_p", 	"+", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, -1, "btn_ifshift_m", "-", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_AF, NON_VISIBLE, 1,  "btn_ifshift_p", "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -3933,14 +3933,14 @@ static void window_mode_process(void)
 		win->first_call = 0;
 
 		static const button_t buttons [] = {
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btn_ModeLSB", "LSB", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btn_ModeCW",  "CW",  },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "btn_ModeAM",  "AM",  },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "btn_ModeDGL", "DGL", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "btn_ModeUSB", "USB", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "btn_ModeCWR", "CWR", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "btn_ModeNFM", "NFM", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "btn_ModeDGU", "DGU", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_LSB, "btn_ModeLSB", "LSB", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CW,  "btn_ModeCW",  "CW",  },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_AM,  "btn_ModeAM",  "AM",  },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGL, "btn_ModeDGL", "DGL", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_USB, "btn_ModeUSB", "USB", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_CWR, "btn_ModeCWR", "CWR", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_NFM, "btn_ModeNFM", "NFM", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MODES, NON_VISIBLE, SUBMODE_DGU, "btn_ModeDGU", "DGU", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -4006,11 +4006,11 @@ static void window_receive_process(void)
 		update = 1;
 
 		static const button_t buttons [] = {
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_att",    "", 			},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AGC", 	  "", 			},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_mode",   "Mode", 		},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_preamp", "", 			},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AF",  	  "AF|filter", 	},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_att",    "", 			},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AGC", 	 "", 			},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_mode",   "Mode", 		},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_preamp", "", 			},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AF",  	 "AF|filter", 	},
 
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
@@ -4123,18 +4123,18 @@ static void window_freq_process (void)
 		button_t * bh = NULL;
 
 		static const button_t buttons [] = {
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 1, 		 		"btn_Freq1",  "1", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 2, 		 		"btn_Freq2",  "2", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 3, 		 		"btn_Freq3",  "3", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_BK, 	"btn_FreqBK", "<-", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 4, 	 			"btn_Freq4",  "4", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 5, 				"btn_Freq5",  "5", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 6, 				"btn_Freq6",  "6", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_OK, 	"btn_FreqOK", "OK", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 7, 				"btn_Freq7",  "7", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 8,  				"btn_Freq8",  "8", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 9, 		 		"btn_Freq9",  "9", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_FREQ, NON_VISIBLE, 0, 	 			"btn_Freq0",  "0", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 1, 		 		"btn_Freq1",  "1", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 2, 		 		"btn_Freq2",  "2", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 3, 		 		"btn_Freq3",  "3", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_BK, "btn_FreqBK", "<-", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 4, 	 			"btn_Freq4",  "4", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 5, 				"btn_Freq5",  "5", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 6, 				"btn_Freq6",  "6", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_OK, "btn_FreqOK", "OK", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 7, 				"btn_Freq7",  "7", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 8,  			"btn_Freq8",  "8", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 9, 		 		"btn_Freq9",  "9", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 0, 	 			"btn_Freq0",  "0", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -4277,8 +4277,8 @@ static void window_menu_process(void)
 		label_t * lh;
 
 		static const button_t buttons [] = {
-			{ BUTTON_SIZE, BUTTON_SIZE, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, -1, "btn_SysMenu-", "-", },
-			{ BUTTON_SIZE, BUTTON_SIZE, CANCELLED, BUTTON_NON_LOCKED, 0, WINDOW_MENU, NON_VISIBLE, 1,  "btn_SysMenu+", "+", },
+			{ BUTTON_SIZE, BUTTON_SIZE, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_MENU, NON_VISIBLE, -1, "btn_SysMenu-", "-", },
+			{ BUTTON_SIZE, BUTTON_SIZE, CANCELLED, BUTTON_NON_LOCKED, 1, 0, WINDOW_MENU, NON_VISIBLE, 1,  "btn_SysMenu+", "+", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);

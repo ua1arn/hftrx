@@ -67,6 +67,7 @@ enum {
 	window_close_button_size = window_title_height,
 	window_title_indent = 20,	// горизонтальный отступ заголовка
 	touch_area_enlarge = 5,		// увеличение области вокруг элементов для упрощения попадания по мелким элементам
+	autorepeat_delay = 4,		// задержка автоповтора действий
 };
 
 #endif /* GUI_STRUCTS_H_INCLUDED */

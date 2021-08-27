@@ -242,7 +242,7 @@
 			#define WITHAFGAINDEFAULT	150
 			#define WITHCPUTEMPERATURE	1
 			#define WITHALTERNATIVEFONTS	1
-			#define WITHALTERNATIVELAYOUT	1
+//			#define WITHALTERNATIVELAYOUT	1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

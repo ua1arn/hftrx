@@ -54,7 +54,7 @@ enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
-static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
+static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
 void gui_set_encoder2_rotate (int_fast8_t rotate)
 {
@@ -420,6 +420,11 @@ void elements_state (window_t * win)
 			button_t * bh = & b [i];
 			if (win->state)
 			{
+				if (bh->is_long_press && bh->is_repeating)
+				{
+					PRINTF("ERROR: invalid combination of properties 'is_long_press' and 'is_repeating' on button %s\n", bh->name);
+					ASSERT(0);
+				}
 				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
 				gui_elements [gui_element_count].link = bh;
 				gui_elements [gui_element_count].win = win;
@@ -1117,6 +1122,7 @@ static void update_gui_elements_list(void)
 			p->visible = bh->visible;
 			p->is_trackable = 0;
 			p->is_long_press = bh->is_long_press;
+			p->is_repeating = bh->is_repeating;
 		}
 		else if (p->type == TYPE_LABEL)
 		{
@@ -1129,6 +1135,7 @@ static void update_gui_elements_list(void)
 			p->visible = lh->visible;
 			p->is_trackable = lh->is_trackable;
 			p->is_long_press = 0;
+			p->is_repeating = 0;
 		}
 		else if (p->type == TYPE_SLIDER)
 		{
@@ -1141,6 +1148,7 @@ static void update_gui_elements_list(void)
 			p->visible = sh->visible;
 			p->is_trackable = 1;
 			p->is_long_press = 0;
+			p->is_repeating = 0;
 		}
 		else if (p->type == TYPE_TOUCH_AREA)
 		{
@@ -1153,6 +1161,7 @@ static void update_gui_elements_list(void)
 			p->visible = ta->visible;
 			p->is_trackable = ta->is_trackable;
 			p->is_long_press = 0;
+			p->is_repeating = 0;
 		}
 	}
 }
@@ -1182,7 +1191,7 @@ static void set_state_record(gui_element_t * val)
 			gui.selected_type = TYPE_BUTTON;
 			gui.selected_link = val;
 			bh->state = val->state;
-			if (bh->state == RELEASED || bh->state == LONG_PRESSED)
+			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED))
 					dump_queue(val->win);
@@ -1255,6 +1264,7 @@ static void process_gui(void)
 	static window_t * w = NULL;
 	const uint_fast8_t long_press_limit = 20;
 	static uint_fast8_t is_long_press = 0;		// 1 - долгое нажатие уже обработано
+	static uint_fast8_t is_repeating = 0, repeating_cnt = 0;
 
 #if defined (TSC1_TYPE)
 	if (board_tsc_getxy(& tx, & ty))
@@ -1289,6 +1299,7 @@ static void process_gui(void)
 			{
 				gui.state = PRESSED;
 				is_long_press = 0;
+				is_repeating = 0;
 				long_press_counter = 0;
 				break;
 			}
@@ -1316,29 +1327,58 @@ static void process_gui(void)
 				gui.is_tracking = 1;
 //				PRINTF(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 			}
+
 			p->state = PRESSED;
 			set_state_record(p);
 
 			x_old = gui.last_pressed_x;
 			y_old = gui.last_pressed_y;
 		}
-		else if (w->x1 + p->x1 < gui.last_pressed_x && w->x1 + p->x2 > gui.last_pressed_x
-				&& w->y1 + p->y1 < gui.last_pressed_y && w->y1 + p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
+		else if (w->x1 + p->x1 < gui.last_pressed_x && w->x1 + p->x2 > gui.last_pressed_x &&
+				 w->y1 + p->y1 < gui.last_pressed_y && w->y1 + p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
 		{
 			if (gui.is_touching_screen)
 			{
 				ASSERT(p != NULL);
 				p->state = PRESSED;
-				set_state_record(p);
 
-				if(gui.state != LONG_PRESSED && ! is_long_press && p->is_long_press)
-					long_press_counter ++;
-
-				if(long_press_counter > long_press_limit && p->is_long_press)
+				if (is_repeating)
 				{
-					long_press_counter = 0;
-					gui.state = LONG_PRESSED;
+					repeating_cnt ++;
+					if (repeating_cnt > autorepeat_delay)
+					{
+						repeating_cnt = 0;
+						p->state = PRESS_REPEATING;		// для запуска обработчика нажатия
+						set_state_record(p);
+					}
 				}
+				else
+					set_state_record(p);
+
+				if (p->is_long_press)
+				{
+					if(gui.state != LONG_PRESSED && ! is_long_press)
+						long_press_counter ++;
+
+					if(long_press_counter > long_press_limit)
+					{
+						long_press_counter = 0;
+						gui.state = LONG_PRESSED;
+					}
+				}
+				else if (p->is_repeating)
+				{
+					if (! is_repeating)
+						long_press_counter ++;
+
+					if(long_press_counter > long_press_limit)
+					{
+						long_press_counter = 0;
+						repeating_cnt = 0;
+						is_repeating = 1;
+					}
+				}
+
 			}
 			else
 				gui.state = RELEASED;
@@ -1352,6 +1392,7 @@ static void process_gui(void)
 			gui.is_after_touch = 1; 	// точка непрерывного касания вышла за пределы выбранного элемента, не поддерживающего tracking
 		}
 	}
+
 	if (gui.state == RELEASED)
 	{
 		ASSERT(p != NULL);
@@ -1364,7 +1405,7 @@ static void process_gui(void)
 		gui.state = CANCELLED;
 		gui.is_tracking = 0;
 	}
-	if (gui.state == LONG_PRESSED)
+	else if (gui.state == LONG_PRESSED)
 	{
 		p->state = LONG_PRESSED;		// для запуска обработчика нажатия
 		set_state_record(p);
