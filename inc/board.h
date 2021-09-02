@@ -289,6 +289,7 @@ void board_usb_activate(void);
 void board_usb_deactivate(void);
 void board_usb_deinitialize(void);
 void board_usb_spool(void);
+void board_usbh_polling(void);
 
 void board_ehci_initialize(void);
 void board_gpu_initialize(void);	// Graphic processor unit

@@ -38,8 +38,8 @@ DSTATUS USB_Initialize (
 	)
 {
 	  /* CAUTION : USB Host library has to be initialized in the application */
+	PRINTF(PSTR("USB_Initialize: drv=%d\n"), (int) drv);
 	return 0;
-	//PRINTF(PSTR("disk_initialize: drv=%d\n"), (int) drv);
 	if (1)
 	{
 		//if (HCD_IsDeviceConnected(&USB_OTG_Core) && TM_USB_MSCHOST_INT_Result == TM_USB_MSCHOST_Result_Connected) {

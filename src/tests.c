@@ -4071,6 +4071,7 @@ static void diskio_test(void)
 
 			case 'z':
 				mmcInitialize();
+				PRINTF(PSTR("mmcInitialize.\n"));
 				break;
 				
 			//case 't':
