@@ -4336,56 +4336,6 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 }
 
 /**
-* @brief  USB_ResetPort2 : Reset Host Port
-  * @param  USBx : Selected device
-  * @param  status : activate reset
-  * @retval HAL status
-  * @note : (1)The application must wait at least 10 ms
-  *   before clearing the reset bit.
-  */
-// вызывается только для HOST
-// See https://git.um.si/grega.mocnik/mbed-os-ext/blob/master/Connectivity/features/unsupported/USBHost/targets/TARGET_RENESAS/TARGET_VK_RZ_A1H/usb1/src/host/usb1_host_usbsig.c
-
-HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t status)
-{
-	const portholder_t vbits =
-			USB_DVSTCTR0_WKUP |
-			USB_DVSTCTR0_RWUPE |
-			USB_DVSTCTR0_USBRST |
-			USB_DVSTCTR0_RESUME |
-			USB_DVSTCTR0_UACT |
-			0;
-
-	// status 0: reset off, 1: reset on
-	PRINTF("USB_ResetPort: status=%u\n", (unsigned) status);
-
-	if (status)
-	{
-		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) | USB_DVSTCTR0_USBRST;
-		(void) USBx->DVSTCTR0;
-		// Надо бы дождаться... Но виснем
-//		while ((USBx->SYSSTS0 & USB_SYSSTS0_HTACT) != 0)
-//			;
-		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_UACT;
-		(void) USBx->DVSTCTR0;
-	}
-	else
-	{
-//		USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_HSE)) |
-//				0 * USB_SYSCFG_HSE |	// HSE
-//				0;
-//		(void) USBx->SYSCFG0;
-
-		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) | USB_DVSTCTR0_UACT;
-		(void) USBx->DVSTCTR0;
-		USBx->DVSTCTR0 = (USBx->DVSTCTR0 & vbits) & ~ USB_DVSTCTR0_USBRST;
-		(void) USBx->DVSTCTR0;
-	}
-
-	return HAL_OK;
-}
-
-/**
   * @brief  USB_HostInit : Initializes the USB OTG controller registers
   *         for Host mode
   * @param  USBx : Selected device
