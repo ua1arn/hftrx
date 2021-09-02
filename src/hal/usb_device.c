@@ -36,6 +36,10 @@
 /* USER CODE END Includes */
 #include "usbh_core.h"
 
+#if WITHUSEUSBFLASH
+#include "../../Class/MSC/Inc/usbh_msc.h"
+#endif /* WITHUSEUSBFLASH */
+
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
@@ -52,11 +56,13 @@ void Error_Handler(void);
 USBD_HandleTypeDef hUsbDeviceHS;
 #endif /* defined (WITHUSBHW_DEVICE) */
 
-#if defined (WITHUSBHW_DEVICE)
+#if defined (WITHUSBHW_HOST)
 /* USB Device Core handle declaration. */
 USBH_HandleTypeDef hUsbHostHS;
 
-#endif /* defined (WITHUSBHW_DEVICE) */
+static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+
+#endif /* defined (WITHUSBHW_HOST) */
 /*
  * -- Insert your variables declaration here --
  */
@@ -212,18 +218,19 @@ static void
 board_usb_tspool(void * ctx)
 {
 #if defined (WITHUSBHW_HOST)
-	USBH_Process(& hUSB_Host);
+	USBH_Process(& hUsbHostHS);
 
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
 void MX_USB_HOST_Init(void)
 {
+	static ticker_t usbticker;
 	/* Init Host Library,Add Supported Class and Start the library*/
-	USBH_Init(& hUSB_Host, USBH_UserProcess);
+	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
 	#if WITHUSEUSBFLASH
-		USBH_RegisterClass(& hUSB_Host, & USBH_msc);
+		USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
 	#endif /* WITHUSEUSBFLASH */
 	ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 
@@ -258,6 +265,10 @@ void MX_USB_HOST_DeInit(void)
 //	return SystemCoreClock;
 //}
 
+
+
+#endif /* WITHUSBHW */
+
 void board_usb_initialize(void)
 {
 #if WITHUSBDEV_HSDESC
@@ -289,22 +300,42 @@ void board_usb_deinitialize(void)
 void board_usb_activate(void)
 {
 #if defined (WITHUSBHW_DEVICE)
-	if (USBD_Start(&hUsbDeviceHS) != USBD_OK)
+	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
 	{
 		Error_Handler();
 	}
 #endif /* defined (WITHUSBHW_DEVICE) */
 #if defined (WITHUSBHW_HOST)
-	  if (USBH_Start(&hUsbHostHS) != USBH_OK)
-	  {
-	    Error_Handler();
-	  }
+	if (USBH_Start(& hUsbHostHS) != USBH_OK)
+	{
+		Error_Handler();
+	}
 #endif /* defined (WITHUSBHW_HOST) */
 }
 
 void board_usb_deactivate(void)
 {
+	//PRINTF(PSTR("board_usb_activate start.\n"));
+
+#if defined (WITHUSBHW_HOST)
+	USBH_Stop(& hUsbHostHS);
+#endif /* defined (WITHUSBHW_HOST) */
+
+#if defined (WITHUSBHW_DEVICE)
+	USBD_Stop(& hUsbDeviceHS);
+#endif /* defined (WITHUSBHW_DEVICE) */
+
+	//PRINTF(PSTR("board_usb_activate done.\n"));
 }
-#endif /* WITHUSBHW */
+
+uint_fast8_t hamradio_get_usbh_active(void)
+{
+#if WITHUSBHW && defined (WITHUSBHW_HOST)
+	return hUsbHostHS.device.is_connected != 0 && hUsbHostHS.gState == HOST_CLASS;
+	return hUsbHostHS.device.is_connected != 0;
+#else
+	return  0;
+#endif /* WITHUSBHW && defined (WITHUSBHW_HOST) */
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

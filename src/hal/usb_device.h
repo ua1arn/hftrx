@@ -133,6 +133,17 @@
 /**
   * @}
   */
+ void MX_USB_HOST_Init(void);
+
+ void MX_USB_HOST_Process(void);
+
+ /** Status of the application. */
+ typedef enum {
+   APPLICATION_IDLE = 0,
+   APPLICATION_START,
+   APPLICATION_READY,
+   APPLICATION_DISCONNECT
+ }ApplicationTypeDef;
 
 #ifdef __cplusplus
 }
