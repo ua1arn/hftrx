@@ -486,6 +486,7 @@ void              USB_ClearInterrupts(USB_OTG_GlobalTypeDef *USBx, uint32_t inte
 HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg);
 HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint8_t freq);
 HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx);
+HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t resetActiveState);
 HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint8_t state);
 uint32_t          USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 uint32_t          USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx);

@@ -1052,6 +1052,16 @@ HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
 }
 
 /**
+  * @brief  Reset the host port.
+  * @param  hhcd HCD handle
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_HCD_ResetPort2(HCD_HandleTypeDef *hhcd, uint8_t resetActiveState)
+{
+  return (USB_ResetPort2(hhcd->Instance, resetActiveState));
+}
+
+/**
   * @}
   */
 
@@ -1152,6 +1162,11 @@ uint32_t HAL_HCD_GetCurrentFrame(HCD_HandleTypeDef *hhcd)
 uint32_t HAL_HCD_GetCurrentSpeed(HCD_HandleTypeDef *hhcd)
 {
   return (USB_GetHostSpeed(hhcd->Instance));
+}
+
+uint_fast8_t HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd)
+{
+  return 1;
 }
 
 /**

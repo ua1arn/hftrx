@@ -1504,6 +1504,29 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 }
 
 /**
+  * @brief  USB_ResetPort2 : Reset Host Port without long delay
+  * @param  USBx  Selected device
+  * @retval HAL status
+  * @note (1)The application must wait at least 10 ms
+  *   before clearing the reset bit.
+  */
+HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t resetActiveState)
+{
+  uint32_t USBx_BASE = (uint32_t)USBx;
+
+  __IO uint32_t hprt0 = 0U;
+
+  hprt0 = USBx_HPRT0;
+
+  hprt0 &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |
+             USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG | USB_OTG_HPRT_PRST);
+
+  USBx_HPRT0 = (!! resetActiveState * USB_OTG_HPRT_PRST | hprt0);
+
+  return HAL_OK;
+}
+
+/**
   * @brief  USB_DriveVbus : activate or de-activate vbus
   * @param  state  VBUS state
   *          This parameter can be one of these values:
