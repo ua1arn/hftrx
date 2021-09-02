@@ -52,15 +52,15 @@ void Error_Handler(void);
 /* USER CODE END PFP */
 
 #if defined (WITHUSBHW_DEVICE)
-/* USB Device Core handle declaration. */
-USBD_HandleTypeDef hUsbDeviceHS;
+	/* USB Device Core handle declaration. */
+	RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST)
-/* USB Device Core handle declaration. */
-USBH_HandleTypeDef hUsbHostHS;
+	/* USB Host Core handle declaration. */
+	RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
-static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 #endif /* defined (WITHUSBHW_HOST) */
 /*

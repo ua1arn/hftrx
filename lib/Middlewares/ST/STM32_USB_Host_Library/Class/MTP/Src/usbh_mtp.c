@@ -429,9 +429,9 @@ static USBH_StatusTypeDef USBH_MTP_Process(USBH_HandleTypeDef *phost)
         USBH_DbgLog("Standard version : %x", MTP_Handle->info.devinfo.StandardVersion);
         USBH_DbgLog("Vendor ExtID : %s", (MTP_Handle->info.devinfo.VendorExtensionID == 6) ? "MTP" : "NOT SUPPORTED");
         USBH_DbgLog("Functional mode : %s", (MTP_Handle->info.devinfo.FunctionalMode == 0U) ? "Standard" : "Vendor");
-        USBH_DbgLog("Number of Supported Operation(s) : %d", MTP_Handle->info.devinfo.OperationsSupported_len);
-        USBH_DbgLog("Number of Supported Events(s) : %d", MTP_Handle->info.devinfo.EventsSupported_len);
-        USBH_DbgLog("Number of Supported Proprieties : %d", MTP_Handle->info.devinfo.DevicePropertiesSupported_len);
+        USBH_DbgLog("Number of Supported Operation(s) : %d", (int) MTP_Handle->info.devinfo.OperationsSupported_len);
+        USBH_DbgLog("Number of Supported Events(s) : %d", (int) MTP_Handle->info.devinfo.EventsSupported_len);
+        USBH_DbgLog("Number of Supported Proprieties : %d", (int) MTP_Handle->info.devinfo.DevicePropertiesSupported_len);
         USBH_DbgLog("Manufacturer : %s", MTP_Handle->info.devinfo.Manufacturer);
         USBH_DbgLog("Model : %s", MTP_Handle->info.devinfo.Model);
         USBH_DbgLog("Device version : %s", MTP_Handle->info.devinfo.DeviceVersion);
@@ -455,10 +455,10 @@ static USBH_StatusTypeDef USBH_MTP_Process(USBH_HandleTypeDef *phost)
 
       if (status == USBH_OK)
       {
-        USBH_DbgLog("Number of storage ID items : %d", MTP_Handle->info.storids.n);
+        USBH_DbgLog("Number of storage ID items : %d", (int) MTP_Handle->info.storids.n);
         for (idx  = 0U; idx < MTP_Handle->info.storids.n; idx ++)
         {
-          USBH_DbgLog("storage#%d ID : %x", idx, MTP_Handle->info.storids.Storage[idx]);
+          USBH_DbgLog("storage#%d ID : %x", (int) idx, (unsigned) MTP_Handle->info.storids.Storage[idx]);
         }
 
         MTP_Handle->current_storage_unit = 0U;
@@ -977,7 +977,7 @@ static USBH_StatusTypeDef USBH_MTP_Events(USBH_HandleTypeDef *phost)
   */
 static void MTP_DecodeEvent(USBH_HandleTypeDef *phost)
 {
-  MTP_HandleTypeDef *MTP_Handle = (MTP_HandleTypeDef *)phost->pActiveClass->pData;
+  MTP_HandleTypeDef * const MTP_Handle = (MTP_HandleTypeDef *)phost->pActiveClass->pData;
 
   uint16_t code;
   uint32_t param1;
@@ -989,67 +989,67 @@ static void MTP_DecodeEvent(USBH_HandleTypeDef *phost)
   switch (code)
   {
     case PTP_EC_Undefined:
-      USBH_DbgLog("EVT: PTP_EC_Undefined in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_Undefined in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_CancelTransaction:
-      USBH_DbgLog("EVT: PTP_EC_CancelTransaction in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_CancelTransaction in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_ObjectAdded:
-      USBH_DbgLog("EVT: PTP_EC_ObjectAdded in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_ObjectAdded in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_ObjectRemoved:
-      USBH_DbgLog("EVT: PTP_EC_ObjectRemoved in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_ObjectRemoved in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_StoreAdded:
-      USBH_DbgLog("EVT: PTP_EC_StoreAdded in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_StoreAdded in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_StoreRemoved:
-      USBH_DbgLog("EVT: PTP_EC_StoreRemoved in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_StoreRemoved in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_DevicePropChanged:
-      USBH_DbgLog("EVT: PTP_EC_DevicePropChanged in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_DevicePropChanged in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_ObjectInfoChanged:
-      USBH_DbgLog("EVT: PTP_EC_ObjectInfoChanged in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_ObjectInfoChanged in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_DeviceInfoChanged:
-      USBH_DbgLog("EVT: PTP_EC_DeviceInfoChanged in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_DeviceInfoChanged in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_RequestObjectTransfer:
-      USBH_DbgLog("EVT: PTP_EC_RequestObjectTransfer in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_RequestObjectTransfer in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_StoreFull:
-      USBH_DbgLog("EVT: PTP_EC_StoreFull in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_StoreFull in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_DeviceReset:
-      USBH_DbgLog("EVT: PTP_EC_DeviceReset in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_DeviceReset in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_StorageInfoChanged :
-      USBH_DbgLog("EVT: PTP_EC_StorageInfoChanged in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_StorageInfoChanged in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_CaptureComplete :
-      USBH_DbgLog("EVT: PTP_EC_CaptureComplete in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_CaptureComplete in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     case PTP_EC_UnreportedStatus :
-      USBH_DbgLog("EVT: PTP_EC_UnreportedStatus in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("EVT: PTP_EC_UnreportedStatus in session %u", (unsigned) (unsigned) MTP_Handle->ptp.session_id);
       break;
 
     default :
-      USBH_DbgLog("Received unknown event in session %u", MTP_Handle->ptp.session_id);
+      USBH_DbgLog("Received unknown event in session %u", (unsigned) MTP_Handle->ptp.session_id);
       break;
   }
 

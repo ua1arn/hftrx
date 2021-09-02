@@ -30,7 +30,7 @@
 //#include "src/fatfs/ff.h"
 #define USB_DEFAULT_BLOCK_SIZE 512
 
-extern USBH_HandleTypeDef hUSB_Host;
+extern USBH_HandleTypeDef hUsbHostHS;
 
 static
 DSTATUS USB_Initialize (
@@ -61,7 +61,7 @@ DSTATUS USB_Status (
 {
 	DRESULT res = RES_ERROR;
 
-	if (USBH_MSC_UnitIsReady(&hUSB_Host, lun))
+	if (USBH_MSC_UnitIsReady(&hUsbHostHS, lun))
 	{
 		res = RES_OK;	// STA_NOINIT or STA_NODISK or STA_PROTECT
 	}
@@ -85,13 +85,13 @@ DRESULT USB_disk_write(
 	  DRESULT res = RES_ERROR;
 	  MSC_LUNTypeDef info;
 
-	  if(USBH_MSC_Write(&hUSB_Host, lun, sector, (BYTE *)buff, count) == USBH_OK)
+	  if(USBH_MSC_Write(&hUsbHostHS, lun, sector, (BYTE *)buff, count) == USBH_OK)
 	  {
 	    res = RES_OK;
 	  }
 	  else
 	  {
-	    USBH_MSC_GetLUNInfo(&hUSB_Host, lun, &info);
+	    USBH_MSC_GetLUNInfo(&hUsbHostHS, lun, &info);
 
 	    switch (info.sense.asc)
 	    {
@@ -128,13 +128,13 @@ DRESULT USB_disk_read(
 	  DRESULT res = RES_ERROR;
 	  MSC_LUNTypeDef info;
 
-	  if(USBH_MSC_Read(&hUSB_Host, lun, sector, buff, count) == USBH_OK)
+	  if(USBH_MSC_Read(&hUsbHostHS, lun, sector, buff, count) == USBH_OK)
 	  {
 	    res = RES_OK;
 	  }
 	  else
 	  {
-	    USBH_MSC_GetLUNInfo(&hUSB_Host, lun, &info);
+	    USBH_MSC_GetLUNInfo(&hUsbHostHS, lun, &info);
 
 	    switch (info.sense.asc)
 	    {
@@ -173,7 +173,7 @@ DRESULT USB_Get_Sector_Count (
 	DRESULT res;
 	MSC_LUNTypeDef info;
 
-    if (USBH_MSC_GetLUNInfo(&hUSB_Host, lun, &info) == USBH_OK)
+    if (USBH_MSC_GetLUNInfo(&hUsbHostHS, lun, &info) == USBH_OK)
     {
 		* buff = info.capacity.block_nbr;
 		res = RES_OK;
@@ -195,7 +195,7 @@ DRESULT USB_Get_Block_Size(
 	DRESULT res;
 	MSC_LUNTypeDef info;
 
-    if (USBH_MSC_GetLUNInfo(&hUSB_Host, lun, &info) == USBH_OK)
+    if (USBH_MSC_GetLUNInfo(&hUsbHostHS, lun, &info) == USBH_OK)
     {
 		* buff = info.capacity.block_size / USB_DEFAULT_BLOCK_SIZE;
 		res = RES_OK;

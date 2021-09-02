@@ -25,6 +25,7 @@
 
 #include "board.h"
 #include "formats.h"
+#include "gpio.h"
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbh_core.h"
@@ -42,11 +43,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE END PV */
-
-/* HCD Handle Structure */
-static RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
-/* USB Host Core handle declaration */
-static RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
 void Error_Handler(void);
 
 /* USER CODE BEGIN 0 */
@@ -63,6 +59,11 @@ USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status);
 
 /* USER CODE BEGIN 1 */
 
+
+/* HCD Handle Structure */
+static RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
+/* USB Host Core handle declaration */
+
 void host_OTG_HS_EP1_IN_IRQHandler(void)
 {
 #if defined (WITHUSBHW_HOST)
@@ -78,6 +79,20 @@ void host_OTG_FS_IRQHandler(void)
 }
 
 void host_OTG_HS_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+#endif /* defined (WITHUSBHW_HOST) */
+}
+
+void host_USBI0_IRQHandler(void)
+{
+#if defined (WITHUSBHW_HOST)
+	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
+#endif /* defined (WITHUSBHW_HOST) */
+}
+
+void host_USBI1_IRQHandler(void)
 {
 #if defined (WITHUSBHW_HOST)
 	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
@@ -360,16 +375,73 @@ void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd)
   */
 USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 {
-  /* Init USB_IP */
+
+	/* Init USB_IP */
+	/* Link The driver to the stack */
+	hhcd_USB_OTG.pData = phost;
+	phost->pData = & hhcd_USB_OTG;
+
+	hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
+
+#if CPUSTYLE_R7S721
+	hhcd_USB_OTG.Init.Host_channels = 16;
+	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL; //PCD_SPEED_HIGH; При high не происходит SACK
+	hhcd_USB_OTG.Init.enable = DISABLE;
+	hhcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
+
+#elif CPUSTYLE_STM32MP1
+	hhcd_USB_OTG.Init.Host_channels = 16;
+	hhcd_USB_OTG.Init.speed = PCD_SPEED_HIGH;
+	#if WITHUSBHOST_DMAENABLE
+		hhcd_USB_OTG.Init.dma_enable = ENABLE;	 // xyz HOST
+	#else /* WITHUSBHOST_DMAENABLE */
+		hhcd_USB_OTG.Init.dma_enable = DISABLE;	 // xyz HOST
+	#endif /* WITHUSBHOST_DMAENABLE */
+	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+	hhcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+	#if WITHUSBHOST_HIGHSPEEDULPI
+		hhcd_USB_OTG.Init.phy_itface = USB_OTG_ULPI_PHY;
+	#elif WITHUSBHOST_HIGHSPEEDPHYC
+		hhcd_USB_OTG.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
+	#else /* WITHUSBHOST_HIGHSPEEDULPI */
+		hhcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
+	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
+#else /* CPUSTYLE_R7S721 */
+	hhcd_USB_OTG.Init.Host_channels = 16;
+	hhcd_USB_OTG.Init.pcd_speed = PCD_SPEED_FULL;
+	#if WITHUSBHOST_DMAENABLE
+		hhcd_USB_OTG.Init.dma_enable = USB_ENABLE;	 // xyz HOST
+	#else /* WITHUSBHOST_DMAENABLE */
+		hhcd_USB_OTG.Init.dma_enable = USB_DISABLE;	 // xyz HOST
+	#endif /* WITHUSBHOST_DMAENABLE */
+	hhcd_USB_OTG.Init.phy_itface = HCD_PHY_EMBEDDED;
+
+#endif /* CPUSTYLE_R7S721 */
+
+	hhcd_USB_OTG.Init.Sof_enable = DISABLE;
+	if (HAL_HCD_Init(& hhcd_USB_OTG) != HAL_OK)
+	{
+		ASSERT(0);
+	}
+
+	USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(& hhcd_USB_OTG));
+	return USBH_OK;
+
+	/* Init USB_IP */
   if (1) {
   /* Link the driver to the stack. */
   hhcd_USB_OTG.pData = phost;
   phost->pData = &hhcd_USB_OTG;
 
-  hhcd_USB_OTG.Instance = USB_OTG_HS;
+  hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
   hhcd_USB_OTG.Init.Host_channels = 12;
   hhcd_USB_OTG.Init.speed = HCD_SPEED_FULL;
-  hhcd_USB_OTG.Init.dma_enable = DISABLE;
+	#if WITHUSBHOST_DMAENABLE
+	hhcd_USB_OTG.Init.dma_enable = ENABLE;	 // xyz HOST
+	#else /* WITHUSBHOST_DMAENABLE */
+	hhcd_USB_OTG.Init.dma_enable = DISABLE;	 // xyz HOST
+	#endif /* WITHUSBHOST_DMAENABLE */
   hhcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
   hhcd_USB_OTG.Init.Sof_enable = DISABLE;
   hhcd_USB_OTG.Init.low_power_enable = DISABLE;
