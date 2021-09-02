@@ -34,6 +34,7 @@
 
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
+#include "usbh_core.h"
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -46,9 +47,16 @@ void Error_Handler(void);
 
 /* USER CODE END PFP */
 
+#if defined (WITHUSBHW_DEVICE)
 /* USB Device Core handle declaration. */
 USBD_HandleTypeDef hUsbDeviceHS;
+#endif /* defined (WITHUSBHW_DEVICE) */
 
+#if defined (WITHUSBHW_DEVICE)
+/* USB Device Core handle declaration. */
+USBH_HandleTypeDef hUsbHostHS;
+
+#endif /* defined (WITHUSBHW_DEVICE) */
 /*
  * -- Insert your variables declaration here --
  */
@@ -61,7 +69,7 @@ USBD_HandleTypeDef hUsbDeviceHS;
  */
 /* USER CODE BEGIN 1 */
 
-
+#if defined (WITHUSBHW_DEVICE)
 // BOOTLOADER support
 static uint_fast8_t device_vbusbefore;
 
@@ -152,10 +160,6 @@ void MX_USB_DEVICE_Init(void)
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_HID);
 #endif /* WITHUSBHID */
 
-	if (USBD_Start(&hUsbDeviceHS) != USBD_OK)
-	{
-		Error_Handler();
-	}
  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
   
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
@@ -168,6 +172,69 @@ void MX_USB_DEVICE_DeInit(void)
 		Error_Handler();
 	}
 }
+
+#endif /* defined (WITHUSBHW_DEVICE) */
+
+#if defined (WITHUSBHW_HOST)
+
+
+/*
+ * user callback definition
+*/
+static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
+{
+
+	/* USER CODE BEGIN CALL_BACK_1 */
+	switch(id)
+	{
+	case HOST_USER_SELECT_CONFIGURATION:
+		break;
+
+	case HOST_USER_DISCONNECTION:
+		Appli_state = APPLICATION_DISCONNECT;
+		break;
+
+	case HOST_USER_CLASS_ACTIVE:
+		Appli_state = APPLICATION_READY;
+		break;
+
+	case HOST_USER_CONNECTION:
+		Appli_state = APPLICATION_START;
+		break;
+
+	default:
+		break;
+	}
+	/* USER CODE END CALL_BACK_1 */
+}
+// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+static void
+board_usb_tspool(void * ctx)
+{
+#if defined (WITHUSBHW_HOST)
+	USBH_Process(& hUSB_Host);
+
+#endif /* defined (WITHUSBHW_HOST) */
+}
+
+void MX_USB_HOST_Init(void)
+{
+	/* Init Host Library,Add Supported Class and Start the library*/
+	USBH_Init(& hUSB_Host, USBH_UserProcess);
+
+	#if WITHUSEUSBFLASH
+		USBH_RegisterClass(& hUSB_Host, & USBH_msc);
+	#endif /* WITHUSEUSBFLASH */
+	ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+
+}
+
+void MX_USB_HOST_DeInit(void)
+{
+
+}
+#endif /* defined (WITHUSBHW_HOST) */
+
 /**
   * @}
   */
@@ -201,23 +268,42 @@ void board_usb_initialize(void)
 
 #endif /* WITHUSBDEV_HSDESC */
 
-	  MX_USB_DEVICE_Init();
-
+#if defined (WITHUSBHW_DEVICE)
+	MX_USB_DEVICE_Init();
+#endif /* defined (WITHUSBHW_DEVICE) */
+#if defined (WITHUSBHW_HOST)
+	MX_USB_HOST_Init();
+#endif /* defined (WITHUSBHW_HOST) */
 }
 
 void board_usb_deinitialize(void)
 {
+#if defined (WITHUSBHW_HOST)
+	MX_USB_HOST_DeInit();
+#endif /* defined (WITHUSBHW_HOST) */
+#if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_DeInit();
+#endif /* defined (WITHUSBHW_DEVICE) */
 }
 
 void board_usb_activate(void)
 {
-
+#if defined (WITHUSBHW_DEVICE)
+	if (USBD_Start(&hUsbDeviceHS) != USBD_OK)
+	{
+		Error_Handler();
+	}
+#endif /* defined (WITHUSBHW_DEVICE) */
+#if defined (WITHUSBHW_HOST)
+	  if (USBH_Start(&hUsbHostHS) != USBH_OK)
+	  {
+	    Error_Handler();
+	  }
+#endif /* defined (WITHUSBHW_HOST) */
 }
 
 void board_usb_deactivate(void)
 {
-
 }
 #endif /* WITHUSBHW */
 

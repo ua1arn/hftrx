@@ -22952,6 +22952,9 @@ static void
 bootloader_launch_app(uintptr_t ip)
 {
 	__disable_irq();
+#if WITHUSBHW
+		board_usb_deinitialize();
+#endif /* WITHUSBHW */
 	arm_hardware_flush_all();
 
 #if (__L2C_PRESENT == 1)
@@ -23000,7 +23003,6 @@ void bootloader_deffereddetach(void * arg)
 #if WITHUSBHW
 		if (usbactivated)
 			board_usb_deactivate();
-		board_usb_deinitialize();
 #endif /* WITHUSBHW */
 		bootloader_launch_app(ip);
 	}
@@ -23185,7 +23187,6 @@ static void bootloader_fatfs_mainloop(void)
 #endif /* BOOTLOADER_RAMSIZE */
 #if WITHUSBHW
 	board_usb_deactivate();
-	board_usb_deinitialize();
 #endif /* WITHUSBHW */
 #if BOOTLOADER_RAMSIZE
 	PRINTF("bootloader_fatfs_mainloop start: run '%s' at %08lX\n", IMAGENAME, ip);
