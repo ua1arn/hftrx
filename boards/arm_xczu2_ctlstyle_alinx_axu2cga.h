@@ -217,7 +217,6 @@
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEFATFS		1	// FatFS
 	#define WITHISBOOTLOADERFATFS 1
 	#define WITHISBOOTLOADERIMAGE "tc1_xczu2_app.xyl32"
 
@@ -297,7 +296,6 @@
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	//#define WITHUSEFATFS		1	// FatFS
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"

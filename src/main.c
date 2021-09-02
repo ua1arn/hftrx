@@ -22,9 +22,9 @@
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
-#if WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK
+#if WITHUSEFATFS
 	#include "sdcard.h"
-#endif /* WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK */
+#endif /* WITHUSEFATFS */
 
 #include <string.h>
 #include <ctype.h>

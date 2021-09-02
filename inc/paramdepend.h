@@ -2509,6 +2509,9 @@ extern "C" {
 	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together
 #endif
 
+// Поддержка FatFS если запрошена поддержка однорго из носителей
+#define WITHUSEFATFS (WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK)
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
