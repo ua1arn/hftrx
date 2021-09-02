@@ -1265,20 +1265,6 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #endif /* (CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F) */
 
-uint_fast8_t
-USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
-{
-#if CPUSTYLE_R7S721
-	return 1;
-#elif CPUSTYLE_STM32MP1
-	return 1;
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
-	return (USBx->CID & (0x1uL << 8)) != 0U;
-#else
-	return 0;
-#endif
-}
-
 #if defined (WITHUSBHW_DEVICE)
 
 static uint_fast8_t hardware_usbd_get_vbusnow0(void)

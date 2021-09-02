@@ -2308,12 +2308,20 @@ HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx)
 
   return HAL_OK;
 }
+
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 
 
 /**
   * @}
   */
+
+
+uint_fast8_t
+USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
+{
+	return 1;
+}
 
 /**
   * @}
