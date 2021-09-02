@@ -14503,6 +14503,10 @@ processmessages(
 		}
 #endif /* WITHCAT */
 
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
+
 #if WITHLWIP
 		/* LWIP */
 		usb_polling();     // usb device polling

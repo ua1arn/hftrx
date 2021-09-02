@@ -271,7 +271,7 @@ void MX_USB_HOST_DeInit(void)
 
 void board_usb_initialize(void)
 {
-	PRINTF("board_usb_initialize\n");
+	//PRINTF("board_usb_initialize\n");
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
 
@@ -286,7 +286,7 @@ void board_usb_initialize(void)
 #if defined (WITHUSBHW_HOST)
 	MX_USB_HOST_Init();
 #endif /* defined (WITHUSBHW_HOST) */
-	PRINTF("board_usb_initialize done\n");
+	//PRINTF("board_usb_initialize done\n");
 }
 
 void board_usb_deinitialize(void)
@@ -301,7 +301,7 @@ void board_usb_deinitialize(void)
 
 void board_usb_activate(void)
 {
-	PRINTF("board_usb_activate\n");
+	//PRINTF("board_usb_activate\n");
 #if defined (WITHUSBHW_DEVICE)
 	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
 	{
@@ -309,13 +309,12 @@ void board_usb_activate(void)
 	}
 #endif /* defined (WITHUSBHW_DEVICE) */
 #if defined (WITHUSBHW_HOST)
-	PRINTF("USBH_Start\n");
 	if (USBH_Start(& hUsbHostHS) != USBH_OK)
 	{
 		Error_Handler();
 	}
 #endif /* defined (WITHUSBHW_HOST) */
-	PRINTF("board_usb_activate done\n");
+	//PRINTF("board_usb_activate done\n");
 }
 
 void board_usb_deactivate(void)

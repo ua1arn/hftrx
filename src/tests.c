@@ -3598,7 +3598,10 @@ static void dosaveserialport(const char * fname)
 		char kbch;
 		char c;
 
-		if (dbg_getchar(& kbch) != 0)
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
+	if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
 			{
@@ -3926,6 +3929,9 @@ static void diskio_test(void)
 		static int testdataval;
 		int i;
 
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4097,6 +4103,9 @@ static void fatfs_filesystest(int speedtest)
 
 	for (;;)
 	{
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 		char c;
 		if (dbg_getchar(& c))
 		{

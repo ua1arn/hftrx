@@ -3238,6 +3238,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	const uint_fast16_t intsts1msk = intsts1 & USBx->INTENB1;
 
 	//PRINTF(PSTR("HAL_HCD_IRQHandler trapped, intsts0=%04X, intsts0msk=%04X, intsts1=%04X, intsts1msk=%04X\n"), intsts0, intsts0msk, intsts1, intsts1msk);
+	//PRINTF(PSTR("HAL_HCD_IRQHandler trapped, hhcd=%p, USBx=%p, host=%p\n"), hhcd, USBx, hhcd->pData);
 	if ((intsts0msk & USB_INTSTS0_SOFR) != 0)	// SOFR
 	{
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_SOFR;	// Clear SOFR
@@ -3270,7 +3271,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	if ((intsts0msk & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
 		uint_fast8_t pipe;
-		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
+		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
 
 /*
 	  	unsigned bcnt;
@@ -3394,7 +3395,9 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	}
 	if ((intsts1msk & USB_INTSTS1_ATTCH) != 0)	// ATTCH
 	{
+		ASSERT((USBx->INTSTS1 & USB_INTSTS1_ATTCH) != 0);
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_ATTCH;
+		ASSERT((USBx->INTSTS1 & USB_INTSTS1_ATTCH) == 0);
 		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - ATTCH\n"));
 		HAL_HCD_Connect_Callback(hhcd);
 	}
@@ -3406,6 +3409,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	}
 	if ((intsts1msk & USB_INTSTS1_SIGN) != 0)	// SIGN
 	{
+		const unsigned ch_num = 0;
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SIGN;
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SIGN\n"));
 		//HAL_HCD_Connect_Callback(hhcd);
@@ -3416,10 +3420,16 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	    hc->state = HC_XFRC;
 	    hc->ErrCnt = 1;
 	    hc->toggle_in ^= 1;
-	    hc->urb_state  = URB_DONE;
+	    hc->urb_state  = URB_NOTREADY;
+#if (USE_HAL_HCD_REGISTER_CALLBACKS == 1U)
+      hhcd->HC_NotifyURBChangeCallback(hhcd, (uint8_t)ch_num, hhcd->hc[ch_num].urb_state);
+#else
+      HAL_HCD_HC_NotifyURBChange_Callback(hhcd, (uint8_t)ch_num, hhcd->hc[ch_num].urb_state);
+#endif /* USE_HAL_HCD_REGISTER_CALLBACKS */
 	}
 	if ((intsts1msk & USB_INTSTS1_SACK) != 0)	// SACK
 	{
+		const unsigned ch_num = 0;
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SACK;
 		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - SACK\n"));
 		//HAL_HCD_Connect_Callback(hhcd);
@@ -3434,6 +3444,12 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	    hc->ErrCnt = 0;
 	    hc->toggle_in ^= 1;
 	    hc->urb_state  = URB_DONE;
+
+#if (USE_HAL_HCD_REGISTER_CALLBACKS == 1U)
+      hhcd->HC_NotifyURBChangeCallback(hhcd, (uint8_t)ch_num, hhcd->hc[ch_num].urb_state);
+#else
+      HAL_HCD_HC_NotifyURBChange_Callback(hhcd, (uint8_t)ch_num, hhcd->hc[ch_num].urb_state);
+#endif /* USE_HAL_HCD_REGISTER_CALLBACKS */
 	}
 }
 
@@ -4337,7 +4353,7 @@ HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t status)
 			0;
 
 	// status 0: reset off, 1: reset on
-	PRINTF("USB_ResetPort: status=%u\n", (unsigned) status);
+	//PRINTF("USB_ResetPort: status=%u\n", (unsigned) status);
 
 	if (status)
 	{
@@ -5274,6 +5290,12 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
   hhcd->hc[ch_num].xfer_count = 0U;
   hhcd->hc[ch_num].ch_num = ch_num;
   hhcd->hc[ch_num].state = HC_IDLE;
+
+  if (direction == 0)
+  {
+	  // OUT
+	  printhex(0, pbuff, length);
+  }
 
   return USB_HC_StartXfer(hhcd->Instance, &hhcd->hc[ch_num], (uint8_t)hhcd->Init.dma_enable);
 }
