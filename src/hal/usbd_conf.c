@@ -22,7 +22,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
 
-#if WITHUSBHW
+#if WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
 #include "formats.h"
 #include "gpio.h"
@@ -1743,6 +1743,6 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status)
   return usb_status;
 }
 
-#endif /* WITHUSBHW */
+#endif /* WITHUSBHW && defined (WITHUSBHW_DEVICE) */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
