@@ -14645,7 +14645,8 @@ void spool_secound(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	VERIFY(board_dpc(& dpc_1slock, dpc_1stimer, NULL));
+	board_dpc(& dpc_1slock, dpc_1stimer, NULL);	// при работе тестов никто не прокачивает очередь DPC
+	//VERIFY(board_dpc(& dpc_1slock, dpc_1stimer, NULL));
 }
 
 /* Установка сиквенсору запроса на передачу.	*/
