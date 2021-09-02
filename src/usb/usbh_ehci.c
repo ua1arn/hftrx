@@ -10267,65 +10267,7 @@ uint32_t USB_GetCurrentFrame (USB_OTG_GlobalTypeDef *USBx)
 
 #elif CPUSTYLE_R7S721
 #endif /* CPUSTYLE_STM32F */
-/**
-  * @brief  USBH_LL_SetTimer
-  *         Set the initial Host Timer tick
-  * @param  phost: Host Handle
-  * @retval None
-  */
-void  USBH_LL_SetTimer  (USBH_HandleTypeDef *phost, uint32_t time)
-{
-	phost->Timer = time;
-}
 
-/**
-  * @brief  Return the current Host frame number
-  * @param  hhcd: HCD handle
-  * @retval Current Host frame number
-  */
-uint32_t HAL_HCD_GetCurrentFrame(HCD_HandleTypeDef *hhcd)
-{
-	return (USB_GetCurrentFrame(hhcd->Instance));
-}
-
-
-/**
-  * @brief  Initialize the host driver
-  * @param  hhcd: HCD handle
-  * @retval HAL status
-  */
-HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd)
-{
-	/* Check the HCD handle allocation */
-	if (hhcd == NULL)
-	{
-		return HAL_ERROR;
-	}
-
-	/* Check the parameters */
-	//assert_param(IS_HCD_ALL_INSTANCE(hhcd->Instance));
-
-	hhcd->State = HAL_HCD_STATE_BUSY;
-
-	/* Init the low level hardware : GPIO, CLOCK, NVIC... */
-	HAL_HCD_MspInit(hhcd);
-
-	/* Disable the Interrupts */
-	__HAL_HCD_DISABLE(hhcd);
-
-	/*Init the Core (common init.) */
-	USB_CoreInit(hhcd->Instance, & hhcd->Init);
-
-	/* Force Host Mode*/
-	USB_SetCurrentMode(hhcd->Instance, USB_OTG_HOST_MODE);
-
-	/* Init Host */
-	USB_HostInit(hhcd->Instance, & hhcd->Init);
-
-	hhcd->State = HAL_HCD_STATE_READY;
-
-	return HAL_OK;
-}
 
 
 #if defined (WITHUSBHW_HOST)

@@ -685,6 +685,27 @@ uint16_t USBPhyHw_EP2PIPE(uint16_t ep_addr);
 /**
   * @}
   */
+/* I/O operation functions  ***************************************************/
+/** @addtogroup HCD_Exported_Functions_Group2 Input and Output operation functions
+  * @{
+  */
+HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd, uint8_t ch_num,
+                                           uint8_t direction, uint8_t ep_type,
+                                           uint8_t token, uint8_t *pbuff,
+                                           uint16_t length, uint8_t do_ping);
+
+/* Non-Blocking mode: Interrupt */
+void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_SOF_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_PortEnabled_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
+                                         HCD_URBStateTypeDef urb_state);
+/**
+  * @}
+  */
 
 HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd);
 HAL_StatusTypeDef HAL_HCD_DeInit(HCD_HandleTypeDef *hhcd);
@@ -717,8 +738,23 @@ uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
   * @}
   */
 
-#define PCD_PHY_ULPI                 1U
+/** @defgroup HCD_Speed PCD Speed
+  * @{
+  */
+#define HCD_SPEED_HIGH               0U
+#define HCD_SPEED_HIGH_IN_FULL       1U
+#define HCD_SPEED_FULL               2U
+/**
+  * @}
+  */
+
+//#define PCD_PHY_ULPI                 1U
 #define PCD_PHY_EMBEDDED             2U
+
+#define HC_PID_DATA0                           0U
+#define HC_PID_DATA2                           1U
+#define HC_PID_DATA1                           2U
+#define HC_PID_SETUP                           3U
 
 #ifdef __cplusplus
 }
