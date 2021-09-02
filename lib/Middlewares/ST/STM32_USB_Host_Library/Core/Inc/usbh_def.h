@@ -149,6 +149,7 @@ extern "C" {
 #define  USB_DESC_TYPE_DEVICE_QUALIFIER                    0x06U
 #define  USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION           0x07U
 #define  USB_DESC_TYPE_INTERFACE_POWER                     0x08U
+#define	 USB_DESC_TYPE_ASSOC							   0x0BU
 #define  USB_DESC_TYPE_HID                                 0x21U
 #define  USB_DESC_TYPE_HID_REPORT                          0x22U
 
@@ -308,6 +309,18 @@ typedef struct _ConfigurationDescriptor
 }
 USBH_CfgDescTypeDef;
 
+
+typedef struct _InterfaceAssocDescriptor
+{
+  uint8_t   bLength;
+  uint8_t   bDescriptorType;
+  uint8_t	bFirstInterface;
+  uint8_t   bInterfaceCount;       /* Number of Interfaces */
+  uint8_t   bFunctionClass;
+  uint8_t   bFunctionSubClass;
+  uint8_t   bFunctionProtocol;
+  uint8_t   iConfiguration;       /*Index of String Descriptor Describing this configuration */
+} USBH_IfAssocDescTypeDef;
 
 /* Following USB Host status */
 typedef enum
