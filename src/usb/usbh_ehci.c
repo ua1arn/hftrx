@@ -17,11 +17,26 @@
 #include <string.h>
 
 
-#if WITHUSBHW && 0
+#if WITHUSBHW
 
 #include "usb200.h"
 #include "usbch9.h"
-#include "usb_core.h"
+#include "usbh_core.h"
+
+
+// See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
+
+/* HCD Handle Structure */
+static RAMBIGDTCM USBALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG USBALIGN_END;
+/* USB Host Core handle declaration */
+/*static */RAMBIGDTCM  USBALIGN_BEGIN USBH_HandleTypeDef hUSB_Host USBALIGN_END;
+
+
+#endif /* WITHUSBHW */
+
+#if WITHUSBHW && 0
+
+static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 //static uint_fast8_t notseq;
 
@@ -259,18 +274,6 @@ unsigned USBD_poke_u8(uint8_t * buff, uint_fast8_t v)
 /**
   * @}
   */
-
-/* PCD Handle Structure */
-static RAMBIGDTCM USBALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG USBALIGN_END;
-/* USB Device Core handle declaration */
-/*static */ RAMBIGDTCM USBALIGN_BEGIN USBD_HandleTypeDef hUsbDevice USBALIGN_END;
-
-/* HCD Handle Structure */
-static RAMBIGDTCM USBALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG USBALIGN_END;
-/* USB Host Core handle declaration */
-/*static */RAMBIGDTCM  USBALIGN_BEGIN USBH_HandleTypeDef hUSB_Host USBALIGN_END;
-static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
-
 
 #if CPUSTYLE_R7S721
 
@@ -16632,6 +16635,31 @@ static void ehci_bus_poll ( struct usb_bus *bus ) {
  	PRINTF("board_ehci_initialize done.\n");
  }
 
- #endif /* WITHEHCIHW */
+USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
+		uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t *pbuff,
+		uint16_t length, uint8_t do_ping) {
+	return USBH_OK;
+}
+
+USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
+		uint8_t pipe) {
+	return USBH_OK;
+}
+
+uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe) {
+	return 0;
+}
+
+uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe) {
+	return 0;
+}
+
+USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe,
+		uint8_t toggle) {
+	return USBH_OK;
+}
+
+
+#endif /* WITHEHCIHW */
 
 

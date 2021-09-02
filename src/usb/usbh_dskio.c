@@ -30,6 +30,8 @@
 //#include "src/fatfs/ff.h"
 #define USB_DEFAULT_BLOCK_SIZE 512
 
+extern USBH_HandleTypeDef hUSB_Host;
+
 static
 DSTATUS USB_Initialize (
 	BYTE drv				/* Physical drive nmuber (0..) */

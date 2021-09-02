@@ -10,6 +10,24 @@
 #include <ctype.h>
 #include <string.h>
 
+#if WITHSDHCHW
+
+enum
+{
+
+	EV_SD_ERROR = 1,
+	EV_SD_READY = 2,
+	EV_SD_DATA = 4
+
+};
+
+enum { WAIT_ANY = 0 };
+typedef uint_fast8_t events_t;
+
+static int WaitEvents(events_t e, int type);
+
+#endif /* WITHSDHCHW */
+
 #if WITHUSESDCARD
 
 #include "board.h"
@@ -963,90 +981,6 @@ static void DMA_sdio_cancel(void)
 #else
 	#error Wrong CPUSTYLE_xxx
 #endif
-
-
-#if CPUSTYLE_STM32F7XX
-
-void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
-{
-}
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-static volatile int sd_event_xx;
-static volatile int sd_event_value;
-
-enum
-{
-
-	EV_SD_ERROR = 1,
-	EV_SD_READY = 2,
-	EV_SD_DATA = 4
-
-};
-
-enum { WAIT_ANY = 0 };
-typedef uint_fast8_t events_t;
-
-
-static void
-SetEvents(events_t v)
-{
-	sd_event_xx = 1;
-	sd_event_value = v;
-}
-
-static int
-WaitEvents(events_t e, int type)
-{
-	unsigned long t;
-	for (t = 0; t < 100000000; ++ t)
-	{
-		system_disableIRQ();
-		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
-		{
-			sd_event_xx = 0;
-			system_enableIRQ();
-			return EV_SD_READY;
-		}
-		system_enableIRQ();
-	}
-	PRINTF("WaitEvents: timeout\n");
-	return EV_SD_ERROR;
-}
-
-
-//SDMMC1 Interrupt
-void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
-{
-   const uint32_t f = SDMMC1->STA & SDMMC1->MASK;
-   events_t e = 0;
-   if (f & (SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT))
-   {
-      //Command path error
-      e |= EV_SD_ERROR;
-      //Mask error interrupts, leave flags in STA for the further analisys
-      SDMMC1->MASK &= ~(SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT);
-   }
-   if (f & (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT))
-   {
-      //We have finished the command execution
-      e |= EV_SD_READY;
-      SDMMC1->MASK &= ~ (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
-      SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC);
-   }
-   const uint_fast32_t fdata = f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
-   if (fdata)
-   {
-      //We have finished the data send/receive
-      e |= EV_SD_DATA;
-      SDMMC1->MASK &= ~(SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
-   }
-
-   SetEvents(e);
-}
-
-#endif /* CPUSTYLE_STM32H7XX */
 
 
 // Ожидание окончания обмена data path state machine
@@ -4756,3 +4690,78 @@ const struct drvfunc MMC_drvfunc =
 #endif /* WITHSDHCHW */
 
 #endif /* WITHUSESDCARD */
+
+#if WITHSDHCHW
+
+#if CPUSTYLE_STM32F7XX
+
+void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
+{
+}
+
+#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+
+static volatile int sd_event_xx;
+static volatile int sd_event_value;
+
+
+static void
+SetEvents(events_t v)
+{
+	sd_event_xx = 1;
+	sd_event_value = v;
+}
+
+static int
+WaitEvents(events_t e, int type)
+{
+	unsigned long t;
+	for (t = 0; t < 100000000; ++ t)
+	{
+		system_disableIRQ();
+		if (sd_event_xx != 0 /*&& (sd_event_value & e) != 0 */)
+		{
+			sd_event_xx = 0;
+			system_enableIRQ();
+			return EV_SD_READY;
+		}
+		system_enableIRQ();
+	}
+	PRINTF("WaitEvents: timeout\n");
+	return EV_SD_ERROR;
+}
+
+
+//SDMMC1 Interrupt
+void /*__attribute__((interrupt)) */ SDMMC1_IRQHandler(void)
+{
+   const uint32_t f = SDMMC1->STA & SDMMC1->MASK;
+   events_t e = 0;
+   if (f & (SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT))
+   {
+      //Command path error
+      e |= EV_SD_ERROR;
+      //Mask error interrupts, leave flags in STA for the further analisys
+      SDMMC1->MASK &= ~(SDMMC_STA_CCRCFAIL | SDMMC_STA_CTIMEOUT);
+   }
+   if (f & (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT))
+   {
+      //We have finished the command execution
+      e |= EV_SD_READY;
+      SDMMC1->MASK &= ~ (SDMMC_STA_CMDREND | SDMMC_STA_CMDSENT);
+      SDMMC1->ICR = (SDMMC_ICR_CMDRENDC | SDMMC_ICR_CMDSENTC);
+   }
+   const uint_fast32_t fdata = f & (SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
+   if (fdata)
+   {
+      //We have finished the data send/receive
+      e |= EV_SD_DATA;
+      SDMMC1->MASK &= ~(SDMMC_STA_DATAEND | SDMMC_STA_DBCKEND | SDMMC_STA_DCRCFAIL | SDMMC_STA_DTIMEOUT);
+   }
+
+   SetEvents(e);
+}
+
+#endif /* CPUSTYLE_STM32H7XX */
+
+#endif /* WITHSDHCHW */
