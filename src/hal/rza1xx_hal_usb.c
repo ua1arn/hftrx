@@ -3168,7 +3168,11 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 		USBx->INTSTS0 = (uint16_t) ~ USB_INTSTS0_DVST;	// Clear DVSE
 		switch ((intsts0 & USB_INTSTS0_DVSQ) >> USB_INTSTS0_DVSQ_SHIFT)
 		{
+		case 0x00:
+			// 000: Powered state
+			break;
 		case 0x01:
+			// 001: Default state
 			if (USB_GetDevSpeed(hpcd->Instance) == USB_OTG_SPEED_HIGH)
 			{
 				hpcd->Init.speed = PCD_SPEED_HIGH;
@@ -3333,6 +3337,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 			  		printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, bcnt);	// DEBUG
 			  		//hc->xfer_buff += bcnt;
 			  		//hc->xfer_count += bcnt;
+			  		USBx->BRDYENB &= ~ 0x01;		// test
 		  		}
 				//HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 		  		hc->toggle_in ^= 1;
@@ -3382,10 +3387,15 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		}
 #endif
 	}
-	if ((intsts1msk & USB_INTSTS1_BCHG) != 0)	// BCHG
+	if ((intsts1msk & USB_INTSTS1_BCHG) != 0)	// BCHG - сейчас отключено.
 	{
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_BCHG;
-		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BCHG\n"));
+		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - BCHG\n"));
+		if (HAL_HCD_GetCurrentSpeedReady(hhcd))
+		{
+			// куда поставить?
+			HAL_HCD_PortEnabled_Callback(hhcd);
+		}
 	}
 	if ((intsts1msk & USB_INTSTS1_DTCH) != 0)	// DTCH
 	{
@@ -3395,10 +3405,9 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	}
 	if ((intsts1msk & USB_INTSTS1_ATTCH) != 0)	// ATTCH
 	{
-		ASSERT((USBx->INTSTS1 & USB_INTSTS1_ATTCH) != 0);
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_ATTCH;
-		ASSERT((USBx->INTSTS1 & USB_INTSTS1_ATTCH) == 0);
 		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - ATTCH\n"));
+		HAL_HCD_PortEnabled_Callback(hhcd);	// пока тут
 		HAL_HCD_Connect_Callback(hhcd);
 	}
 	if ((intsts0msk & (1uL << USB_INTSTS0_VBINT_SHIFT)) != 0)	// VBINT
@@ -3897,7 +3906,7 @@ HAL_StatusTypeDef USB_EPStartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTypeDef
 
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDef *hc, uint8_t dma)
 {
-	PRINTF("USB_HC_StartXfer, xfer_buff=%p, ep_is_in=%d, ch_num=%d, ep_num=%d, xfer_len=%d\n", hc->xfer_buff, (int) hc->ep_is_in, (int) hc->ch_num, (int) hc->ep_num, (int) hc->xfer_len);
+	//PRINTF("USB_HC_StartXfer, xfer_buff=%p, ep_is_in=%d, ch_num=%d, ep_num=%d, xfer_len=%d\n", hc->xfer_buff, (int) hc->ep_is_in, (int) hc->ch_num, (int) hc->ep_num, (int) hc->xfer_len);
 	ASSERT(dma == 0);
 	uint8_t  is_oddframe;
 	uint16_t num_packets = 0;
@@ -4032,10 +4041,10 @@ HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx, USB_OTG_HCTypeDe
 	    		ASSERT(hc->xfer_len >= 8);
 	    		ASSERT((USBx->DCPCTR & USB_DCPCTR_SUREQ) == 0);
 
-				PRINTF("USB_HC_StartXfer: DCPMAXP=%08lX, dev_addr=%d, bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
-						(unsigned long) USBx->DCPMAXP,
-						(int) hc->dev_addr,
-						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
+//				PRINTF("USB_HC_StartXfer: DCPMAXP=%08lX, dev_addr=%d, bmRequestType=%02X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n",
+//						(unsigned long) USBx->DCPMAXP,
+//						(int) hc->dev_addr,
+//						pSetup->b.bmRequestType, pSetup->b.bRequest, pSetup->b.wValue.w, pSetup->b.wIndex.w, pSetup->b.wLength.w);
 
 				USBx->USBREQ =
 						((pSetup->b.bRequest << USB_USBREQ_BREQUEST_SHIFT) & USB_USBREQ_BREQUEST) |
@@ -4459,7 +4468,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 		0;
 
 	USBx->INTENB1 =
-		//1 * USB_INTENB1_BCHGE |	// BCHG
+		//1 * USB_INTENB1_BCHGE |		// BCHG
 		1 * USB_INTENB1_DTCHE |		// DTCH
 		1 * USB_INTENB1_ATTCHE |	// ATTCH
 		1 * USB_INTENB1_SIGNE |		// SIGN
