@@ -118,7 +118,7 @@
 	//#define WITHUSBHOST_DMAENABLE 1
 
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_EHCI		EHCI
+	//#define WITHUSBHW_EHCI		USB1_EHCI
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */

@@ -440,7 +440,12 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
   hhcd_USB_OTG.pData = phost;
   phost->pData = &hhcd_USB_OTG;
 
-  hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
+#if defined (WITHUSBHW_EHCI)
+	hhcd_USB_OTG.Instance = WITHUSBHW_EHCI;
+#else
+	hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
+#endif
+
   hhcd_USB_OTG.Init.Host_channels = 12;
   hhcd_USB_OTG.Init.speed = HCD_SPEED_FULL;
 	#if WITHUSBHOST_DMAENABLE
