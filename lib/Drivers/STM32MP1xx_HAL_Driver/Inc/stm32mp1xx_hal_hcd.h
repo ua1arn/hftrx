@@ -18,8 +18,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_HAL_HCD_H
-#define STM32H7xx_HAL_HCD_H
+#ifndef STM32MP1xx_HAL_HCD_H
+#define STM32MP1xx_HAL_HCD_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +29,7 @@ extern "C" {
 #include "stm32mp1xx_ll_usb.h"
 
 #if defined (USB_OTG_FS) || defined (USB_OTG_HS)
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 
@@ -309,6 +309,6 @@ uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
 }
 #endif
 
-#endif /* STM32H7xx_HAL_HCD_H */
+#endif /* STM32MP1xx_HAL_HCD_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
