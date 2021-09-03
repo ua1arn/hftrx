@@ -2242,16 +2242,14 @@ static void ehci_bus_poll ( struct usb_bus *bus ) {
 
 #endif
 
-HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef * const EHCIxU, uint8_t state)
-{
+HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIxU, uint8_t state) {
 
-	  return HAL_OK;
+	return HAL_OK;
 }
 
-HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef * const EHCIxU)
-{
+HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIxU) {
 
-	  return HAL_OK;
+	return HAL_OK;
 }
 
 /**
@@ -2290,31 +2288,55 @@ void USBH_EHCI_IRQHandler(void)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
+#if CPUSTYLE_STM32MP1
+	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_USBHEN;
+	(void) RCC->MP_AHB6ENSETR;
+	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_USBHLPEN;
+	(void) RCC->MP_AHB6LPENSETR;
+	if (0) {
+		/* SYSCFG clock enable */
+		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
+		(void) RCC->MP_APB3ENSETR;
+		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
+		(void) RCC->MP_APB3LPENSETR;
+		/*
+		 * Interconnect update : select master using the port 1.
+		 * MCU interconnect (USBH) = AXI_M1, AXI_M2.
+		 */
+		//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
+		//		(void) SYSCFG->ICNR;
+		//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
+		//		(void) SYSCFG->ICNR;
+	}
+	USB_HS_PHYCInit();	// move to USB_CoreInit
 
- 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_USBHEN;
- 	(void) RCC->MP_AHB6ENSETR;
- 	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_USBHLPEN;
- 	(void) RCC->MP_AHB6LPENSETR;
- 	if (0)
- 	{
- 		/* SYSCFG clock enable */
- 		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
- 		(void) RCC->MP_APB3ENSETR;
- 		RCC->MP_APB3LPENSETR = RCC_MP_APB3LPENSETR_SYSCFGLPEN;
- 		(void) RCC->MP_APB3LPENSETR;
- 		/*
- 		 * Interconnect update : select master using the port 1.
- 		 * MCU interconnect (USBH) = AXI_M1, AXI_M2.
- 		 */
- //		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
- //		(void) SYSCFG->ICNR;
- //		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
- //		(void) SYSCFG->ICNR;
- 	}
- 	USB_HS_PHYCInit();	// move to USB_CoreInit
+	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
+	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
 
- 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
- 	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
+#else
+
+	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
+
+#endif
+}
+
+void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
+{
+#if CPUSTYLE_STM32MP1
+
+	IRQ_Disable(USBH_OHCI_IRQn);
+	IRQ_Disable(USBH_EHCI_IRQn);
+
+	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6LPENCLRR_USBHLPEN;
+	(void) RCC->MP_AHB6ENCLRR;
+	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_USBHEN;
+	(void) RCC->MP_AHB6ENCLRR;
+
+#else
+
+	#warning HAL_EHCI_MspDeInit Not implemented for CPUSTYLE_xxxxx
+
+#endif
 }
 
 
@@ -2324,15 +2346,15 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hhcd)
-{
-  __HAL_LOCK(hhcd);
-  __HAL_EHCI_ENABLE(hhcd);
-  (void)EHCI_DriveVbus(hhcd->Instance, 1U);
-  __HAL_UNLOCK(hhcd);
+ {
+	__HAL_LOCK(hhcd);
+	__HAL_EHCI_ENABLE(hhcd);
+	(void) EHCI_DriveVbus(hhcd->Instance, 1U);
+	__HAL_UNLOCK(hhcd);
 
-	board_ehci_initialize(& hhcd_USB_EHCI);		// USB EHCI controller tests
+	board_ehci_initialize(&hhcd_USB_EHCI);		// USB EHCI controller tests
 
-return HAL_OK;
+	return HAL_OK;
 }
 
 /**
