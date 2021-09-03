@@ -1317,7 +1317,7 @@ static void display2_usbsts3(
 	dctx_t * pctx
 	)
 {
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	const uint_fast8_t active = hamradio_get_usbh_active();
 	#if LCDMODE_COLORED
 		colmain_setcolors(TXRXMODECOLOR, active ? MODECOLORBG_TX : MODECOLORBG_RX);
@@ -1325,7 +1325,7 @@ static void display2_usbsts3(
 	#else /* LCDMODE_COLORED */
 		display_at_P(x, y, active ? PSTR("USB") : PSTR("   "));
 	#endif /* LCDMODE_COLORED */
-#endif /* defined (WITHUSBHW_HOST) */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
 
 void display_2states(
