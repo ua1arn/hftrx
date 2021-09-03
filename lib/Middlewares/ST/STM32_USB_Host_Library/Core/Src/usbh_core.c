@@ -899,8 +899,8 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
 		/* Get FULL Device Desc  */
 		ReqStatus = USBH_Get_DevDesc(phost, USB_DEVICE_DESC_SIZE);
 		if (ReqStatus == USBH_OK) {
-			USBH_UsrLog("PID: %xh", phost->device.DevDesc.idProduct);
-			USBH_UsrLog("VID: %xh", phost->device.DevDesc.idVendor);
+			USBH_UsrLog("PID: %04xh", (unsigned) phost->device.DevDesc.idProduct);
+			USBH_UsrLog("VID: %04xh", (unsigned) phost->device.DevDesc.idVendor);
 
 			phost->EnumState = ENUM_SET_ADDR;
 		} else if (ReqStatus == USBH_NOT_SUPPORTED) {
