@@ -27,14 +27,6 @@
 #include "formats.h"
 
 #include "usb_device.h"
-#include "usbd_core.h"
-//#include "usbd_desc.h"
-//#include "usbd_cdc.h"
-//#include "usbd_cdc_if.h"
-
-/* USER CODE BEGIN Includes */
-/* USER CODE END Includes */
-#include "usbh_core.h"
 
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"
@@ -187,7 +179,7 @@ void MX_USB_DEVICE_DeInit(void)
 /*
  * user callback definition
 */
-static void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
+void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 {
 
 	/* USER CODE BEGIN CALL_BACK_1 */
@@ -283,17 +275,17 @@ void board_usb_initialize(void)
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_Init();
 #endif /* defined (WITHUSBHW_DEVICE) */
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_Init();
-#endif /* defined (WITHUSBHW_HOST) */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 	//PRINTF("board_usb_initialize done\n");
 }
 
 void board_usb_deinitialize(void)
 {
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_DeInit();
-#endif /* defined (WITHUSBHW_HOST) */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_DeInit();
 #endif /* defined (WITHUSBHW_DEVICE) */
@@ -308,12 +300,12 @@ void board_usb_activate(void)
 		Error_Handler();
 	}
 #endif /* defined (WITHUSBHW_DEVICE) */
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	if (USBH_Start(& hUsbHostHS) != USBH_OK)
 	{
 		Error_Handler();
 	}
-#endif /* defined (WITHUSBHW_HOST) */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 	//PRINTF("board_usb_activate done\n");
 }
 
@@ -321,9 +313,9 @@ void board_usb_deactivate(void)
 {
 	//PRINTF(PSTR("board_usb_activate start.\n"));
 
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	USBH_Stop(& hUsbHostHS);
-#endif /* defined (WITHUSBHW_HOST) */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 
 #if defined (WITHUSBHW_DEVICE)
 	USBD_Stop(& hUsbDeviceHS);
@@ -334,20 +326,20 @@ void board_usb_deactivate(void)
 
 void board_usbh_polling(void)
 {
-#if defined (WITHUSBHW_HOST)
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	USBH_Process(& hUsbHostHS);
 
-#endif /* defined (WITHUSBHW_HOST) */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
 
 uint_fast8_t hamradio_get_usbh_active(void)
 {
-#if WITHUSBHW && defined (WITHUSBHW_HOST)
+#if WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
 	return hUsbHostHS.device.is_connected != 0 && hUsbHostHS.gState == HOST_CLASS;
 	return hUsbHostHS.device.is_connected != 0;
 #else
 	return  0;
-#endif /* WITHUSBHW && defined (WITHUSBHW_HOST) */
+#endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

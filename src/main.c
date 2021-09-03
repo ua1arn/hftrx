@@ -20459,9 +20459,6 @@ lowinitialize(void)
 #if WITHUSBHW
 	board_usb_initialize();		// USB device and host support
 #endif /* WITHUSBHW */
-#if WITHEHCIHW
-	board_ehci_initialize();		// USB EHCI controller
-#endif /* WITHEHCIHW */
 #if WITHGPUHW
 	board_gpu_initialize();		// GPU controller
 #endif /* WITHGPUHW */

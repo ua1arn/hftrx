@@ -26,11 +26,10 @@
 
 #if WITHUSEUSBFLASH
 
+#include "usb_device.h"
 #include "sdcard.h"
 //#include "src/fatfs/ff.h"
 #define USB_DEFAULT_BLOCK_SIZE 512
-
-extern USBH_HandleTypeDef hUsbHostHS;
 
 static
 DSTATUS USB_Initialize (

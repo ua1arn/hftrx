@@ -58,6 +58,14 @@
 #include "usbd_def.h"
 
 /* USER CODE BEGIN INCLUDE */
+#include "usbd_core.h"
+//#include "usbd_desc.h"
+//#include "usbd_cdc.h"
+//#include "usbd_cdc_if.h"
+
+/* USER CODE BEGIN Includes */
+/* USER CODE END Includes */
+#include "usbh_core.h"
 
 /* USER CODE END INCLUDE */
 
@@ -134,6 +142,7 @@
   * @}
   */
  void MX_USB_HOST_Init(void);
+ void MX_USB_HOST_DeInit(void);
 
  void MX_USB_HOST_Process(void);
 
@@ -144,6 +153,8 @@
    APPLICATION_READY,
    APPLICATION_DISCONNECT
  }ApplicationTypeDef;
+
+ extern USBH_HandleTypeDef hUsbHostHS;
 
 #ifdef __cplusplus
 }

@@ -21,7 +21,7 @@
 
 #include "hardware.h"
 
-#if WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+#if WITHUSBHW && defined (WITHUSBHW_HOST)
 
 #include "board.h"
 #include "formats.h"
@@ -381,15 +381,9 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 	hhcd_USB_OTG.pData = phost;
 	phost->pData = & hhcd_USB_OTG;
 
-#if defined (WITHUSBHW_EHCI)
-	hhcd_USB_OTG.Instance = WITHUSBHW_EHCI;
-#else
 	hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
-#endif
 
-#if defined (WITHUSBHW_EHCI)
-
-#elif CPUSTYLE_R7S721
+#if CPUSTYLE_R7S721
 	hhcd_USB_OTG.Init.Host_channels = 16;
 	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL; //PCD_SPEED_HIGH; При high не происходит SACK
 	hhcd_USB_OTG.Init.dma_enable = DISABLE;
@@ -821,6 +815,6 @@ USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status)
   return usb_status;
 }
 
-#endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
+#endif /* WITHUSBHW && defined (WITHUSBHW_HOST) */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
