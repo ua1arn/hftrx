@@ -183,7 +183,7 @@ typedef struct {
 	wm_message_t message;			// тип сообщения
 	element_type_t type;			// тип элемента
 	uintptr_t ptr;
-	int_fast8_t action;
+	int action;						// для передачи информации опо повороте валкодера - знаковое значение
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI

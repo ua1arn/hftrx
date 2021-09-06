@@ -236,7 +236,7 @@ static void gui_main_process(void)
 
 			if (th == ta_freq && gui_nvram.freq_swipe_enable && check_for_parent_window() == NO_PARENT_WINDOW)
 			{
-				int_fast8_t move_x = 0, move_y = 0;
+				int_fast16_t move_x = 0, move_y = 0;
 				get_gui_tracking(& move_x, & move_y);
 				if (move_x != 0)
 					hamradio_set_freq(hamradio_get_freq_rx() - (move_x * freq_swipe));
@@ -3189,7 +3189,7 @@ static void window_uif_process(void)
 	static uint_fast16_t window_center_x;
 	static uint_fast8_t reinit = 0;
 	window_t * const win = get_win(WINDOW_UIF);
-	int_fast8_t rotate = 0;
+	int rotate = 0;
 
 	if (win->first_call)
 	{
@@ -4241,7 +4241,8 @@ static void window_menu_process(void)
 	static uint_fast8_t menu_is_scrolling = 0;
 	static button_t * button_up = NULL, * button_down = NULL;
 	window_t * const win = get_win(WINDOW_MENU);
-	int_fast8_t move_x = 0, move_y = 0, rotate = 0;
+	int_fast16_t move_x = 0, move_y = 0;
+	int rotate = 0;
 	static label_t * selected_label = NULL;
 	static uint_fast8_t menu_label_touched = 0;
 	static uint_fast8_t menu_level, enc2_code = KBD_CODE_MAX;

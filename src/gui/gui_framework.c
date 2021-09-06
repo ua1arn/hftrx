@@ -125,9 +125,9 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	{
 		va_start(arg, message);
 
-		uint_fast8_t type = va_arg(arg, uint_fast8_t);
-		uintptr_t ptr = va_arg(arg, uintptr_t);
-		int_fast8_t action = va_arg(arg, int_fast8_t);
+		uint_fast8_t type = va_arg(arg, int);
+		uintptr_t ptr = (uintptr_t) va_arg(arg, void *);
+		int_fast8_t action = va_arg(arg, int);
 
 		va_end(arg);
 
@@ -150,7 +150,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	case WM_MESSAGE_ENC2_ROTATE:
 
 		va_start(arg, message);
-		int_fast8_t r = va_arg(arg, int_fast8_t);
+		int r = va_arg(arg, int);
 		va_end(arg);
 
 		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;				// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
@@ -177,7 +177,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		win->queue.data [win->queue.size].message = WM_MESSAGE_KEYB_CODE;
 		win->queue.data [win->queue.size].type = UINT8_MAX;
 		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
-		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
+		win->queue.data [win->queue.size].action = va_arg(arg, int);
 		win->queue.size ++;
 
 		va_end(arg);
@@ -226,7 +226,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	return 0;
 }
 
-wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action)
+wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int * action)
 {
 	if (! win->queue.size)
 		return WM_NO_MESSAGE;							// очередь сообщений пустая
@@ -275,7 +275,7 @@ void reset_tracking(void)
 }
 
 /* Получить относительные координаты перемещения точки касания экрана */
-void get_gui_tracking(int_fast8_t * x, int_fast8_t * y)
+void get_gui_tracking(int_fast16_t * x, int_fast16_t * y)
 {
 	* x = gui.vector_move_x;
 	* y = gui.vector_move_y;
