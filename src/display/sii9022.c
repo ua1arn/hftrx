@@ -274,6 +274,27 @@ static uint_fast8_t sii9022x_regmap_read(uint_fast8_t reg, int * retvalue)
 
 }
 
+struct i2c_msg {
+        uint16_t addr; /* slave address            */
+        uint16_t flags;
+#define I2C_M_TEN       0x0010  /* this is a ten bit chip address */
+#define I2C_M_RD        0x0001  /* read data, from slave to master */
+#define I2C_M_STOP      0x8000  /* if I2C_FUNC_PROTOCOL_MANGLING */
+#define I2C_M_NOSTART       0x4000  /* if I2C_FUNC_NOSTART */
+#define I2C_M_REV_DIR_ADDR  0x2000  /* if I2C_FUNC_PROTOCOL_MANGLING */
+#define I2C_M_IGNORE_NAK    0x1000  /* if I2C_FUNC_PROTOCOL_MANGLING */
+#define I2C_M_NO_RD_ACK     0x0800  /* if I2C_FUNC_PROTOCOL_MANGLING */
+#define I2C_M_RECV_LEN      0x0400  /* length will be first received byte */
+        uint16_t len;      /* msg length               */
+        uint8_t *buf;      /* pointer to msg data          */
+};
+
+// DDC Master access
+int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+{
+	return 0;
+	return -1;
+}
 
 #if 1
 //
@@ -1134,50 +1155,50 @@ static void sii902x_edid_parse_ext_blk(unsigned char *edid,
 static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 			     unsigned char *edid, struct sii902x_edid_cfg *cfg)
 {
-//	uint8_t buf[2] = {0, 0};
-//	int dat = 0;
-//	struct i2c_msg msg[2] = {
-//		{
-//			.addr	= addr,
-//			.flags	= 0,
-//			.len	= 1,
-//			.buf	= buf,
-//		}, {
-//			.addr	= addr,
-//			.flags	= I2C_M_RD,
-//			.len	= ONE_BLOCK_EDID_LEN,
-//			.buf	= edid,
-//		},
-//	};
-//
-//	if (adp == NULL)
-//		return -1;
-//
-//	memset(edid, 0, SII9022_EDID_LEN);
-//
-//	buf[0] = 0x00;
-//	dat = i2c_transfer(adp, msg, 2);
-//
-//	/* need read ext block? Only support one more blk now*/
-//	if (edid[0x7E]) {
-//		if (edid[0x7E] > 1) {
-//			PRINTF("Edid has %d ext block, but now only support 1 ext blk\n",
-//				 edid[0x7E]);
-//			return -1;
-//		}
-//
-//		/* Add a delay to read extension block */
-//		local_delay_ms(20);
-//
-//		buf[0] = ONE_BLOCK_EDID_LEN;
-//		msg[1].buf = edid + ONE_BLOCK_EDID_LEN;
-//		dat = i2c_transfer(adp, msg, 2);
-//		if (dat < 0)
-//			return dat;
-//
-//		/* edid ext block parsing */
-//		sii902x_edid_parse_ext_blk(edid + ONE_BLOCK_EDID_LEN, cfg);
-//	}
+	uint8_t buf[2] = {0, 0};
+	int dat = 0;
+	struct i2c_msg msg[2] = {
+		{
+			.addr	= addr,
+			.flags	= 0,
+			.len	= 1,
+			.buf	= buf,
+		}, {
+			.addr	= addr,
+			.flags	= I2C_M_RD,
+			.len	= ONE_BLOCK_EDID_LEN,
+			.buf	= edid,
+		},
+	};
+
+	if (adp == NULL)
+		return -1;
+
+	memset(edid, 0, SII9022_EDID_LEN);
+
+	buf[0] = 0x00;
+	dat = i2c_transfer(adp, msg, 2);
+
+	/* need read ext block? Only support one more blk now*/
+	if (edid[0x7E]) {
+		if (edid[0x7E] > 1) {
+			PRINTF("Edid has %d ext block, but now only support 1 ext blk\n",
+				 edid[0x7E]);
+			return -1;
+		}
+
+		/* Add a delay to read extension block */
+		local_delay_ms(20);
+
+		buf[0] = ONE_BLOCK_EDID_LEN;
+		msg[1].buf = edid + ONE_BLOCK_EDID_LEN;
+		dat = i2c_transfer(adp, msg, 2);
+		if (dat < 0)
+			return dat;
+
+		/* edid ext block parsing */
+		sii902x_edid_parse_ext_blk(edid + ONE_BLOCK_EDID_LEN, cfg);
+	}
 
 	return 0;
 }
@@ -1199,6 +1220,7 @@ static int sii902x_read_edid(struct sii902x_data *sii9022x)
 
 	if (!cnt) {
 		ret = -1;
+		TP();
 		goto done;
 	}
 
@@ -1209,6 +1231,7 @@ static int sii902x_read_edid(struct sii902x_data *sii9022x)
 				sii9022x->edid, &sii9022x->edid_cfg);
 	if (ret) {
 		ret = -1;
+		TP();
 		goto done;
 	}
 
@@ -1223,8 +1246,10 @@ static int sii902x_read_edid(struct sii902x_data *sii9022x)
 	} while ((dat & 0x6) && cnt);
 
 	if (!cnt)
+	{
 		ret = -1;
-
+		TP();
+	}
 done:
 	sii9022x_regmap_write(SII9022_SYS_CTRL_DATA_REG, old);
 	return ret;
@@ -1378,6 +1403,8 @@ static int sii902x_detect_version(struct sii902x_data *sii9022x)
 	return 0;
 }
 
+static struct i2c_adapter d0adapter;
+static struct i2c_client d0client;
 static struct sii902x_data d0;
 
 static int sii902x_probe(struct i2c_client *client,
@@ -1398,7 +1425,7 @@ static int sii902x_probe(struct i2c_client *client,
 //	}
 //
 //	sii9022x->regmap = regmap;
-//	sii9022x->client = client;
+	sii9022x->client = client;
 //
 //	if (client->dev.of_node) {
 //		of_property_read_u32(client->dev.of_node, "resolution",
@@ -1537,11 +1564,17 @@ void sii9022x_initialize(const videomode_t * vdmode)
 	struct sii902x_data *sii9022x = & d0;
 	//sii902x_reset(NULL);
 
-	d0.edid_cfg.hdmi_cap = 0;
-	VERIFY(sii902x_probe(NULL, NULL) == 0);
+	d0client.adapter = & d0adapter;
+	d0.edid_cfg.hdmi_cap = 1;
+	VERIFY(sii902x_probe(& d0client, NULL) == 0);
 
-	sii902x_setup(sii9022x);
-	sii902x_poweron(sii9022x);
+	if (sii902x_read_edid(sii9022x) < 0) {
+		PRINTF(
+			"Sii902x: read edid fail\n");
+	} else {
+		sii902x_setup(sii9022x);
+		sii902x_poweron(sii9022x);
+	}
 
 	//	int ret;
 //	struct msm_panel_info pinfo;
