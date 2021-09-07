@@ -367,7 +367,7 @@ static void  USBH_ParseDevDesc(USBH_DevDescTypeDef *dev_desc, uint8_t *buf,
     case 16:
     case 32:
     case 64:
-      dev_desc->bMaxPacketSize = dev_desc->bMaxPacketSize;
+      //dev_desc->bMaxPacketSize = dev_desc->bMaxPacketSize;
       break;
 
     default:
