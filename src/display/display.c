@@ -1742,6 +1742,7 @@ void display_hardware_initialize(void)
 	panel_initialize(vdmode);
 #endif /* LCDMODETX_TC358778XBG */
 #if LCDMODEX_SII9022A
+	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
 	sii9022x_initialize(vdmode);
 #endif /* LCDMODEX_SII9022A */
 

@@ -11,13 +11,13 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
-// Доработки для LS020 Василий Линывый, livas60@mail.ru
-//
+
 
 #include "hardware.h"
 
 
 #if LCDMODEX_SII9022A
+/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
 
 #include "src/gui/gui.h"
 #include "board.h"

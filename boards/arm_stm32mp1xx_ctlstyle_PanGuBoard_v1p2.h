@@ -211,7 +211,7 @@
 #if WITHISBOOTLOADER
 	#define LCDMODE_DUMMY	1
 
-	//#define LCDMODEX_SII9022A 1	/* 1280 * 720 siiI9022A HDMI Transmitter */
+	//#define LCDMODEX_SII9022A 1	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
 	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
 
@@ -241,7 +241,7 @@
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
-	#define LCDMODEX_SII9022A 1	/* 1280 * 720 siiI9022A HDMI Transmitter */
+	#define LCDMODEX_SII9022A 1	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
@@ -502,7 +502,7 @@
 	#endif /* WITHTX */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
-	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
@@ -541,7 +541,7 @@
 		#define WITHOPENVG	1		/* Использоывние OpenVG (khronos.org) - -fexceptions required */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 1
+	#if 0
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
@@ -549,6 +549,7 @@
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
+	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика
