@@ -599,15 +599,111 @@ struct hdmi_avi_infoframe {
 	unsigned short right_bar;
 };
 
+
+static void hdmi_infoframe_checksum(void *buffer, size_t size)
+{
+	uint8_t *ptr = buffer;
+	uint8_t csum = 0;
+	size_t i;
+
+	/* compute checksum */
+	for (i = 0; i < size; i++)
+		csum += ptr[i];
+
+	ptr[3] = 256 - csum;
+}
+
+/**
+ * hdmi_avi_infoframe_init() - initialize an HDMI AVI infoframe
+ * @frame: HDMI AVI infoframe
+ *
+ * Returns 0 on success or a negative error code on failure.
+ */
 int hdmi_avi_infoframe_init(struct hdmi_avi_infoframe *frame)
 {
+	memset(frame, 0, sizeof(*frame));
+
+	frame->type = HDMI_INFOFRAME_TYPE_AVI;
+	frame->version = 2;
+	frame->length = 13;
 	return 0;
 }
 
+/**
+ * hdmi_avi_infoframe_pack() - write HDMI AVI infoframe to binary buffer
+ * @frame: HDMI AVI infoframe
+ * @buffer: destination buffer
+ * @size: size of buffer
+ *
+ * Packs the information contained in the @frame structure into a binary
+ * representation that can be written into the corresponding controller
+ * registers. Also computes the checksum as required by section 5.3.5 of
+ * the HDMI 1.4 specification.
+ *
+ * Returns the number of bytes packed into the binary buffer or a negative
+ * error code on failure.
+ */
 ssize_t hdmi_avi_infoframe_pack(struct hdmi_avi_infoframe *frame, void *buffer,
 				size_t size)
 {
-	return 0;
+	uint8_t *ptr = buffer;
+	size_t length;
+
+	length = HDMI_INFOFRAME_HEADER_SIZE + frame->length;
+
+	if (size < length)
+		return -1;
+
+	memset(buffer, 0, length);
+
+	ptr[0] = frame->type;
+	ptr[1] = frame->version;
+	ptr[2] = frame->length;
+	ptr[3] = 0; /* checksum */
+
+	/* start infoframe payload */
+	ptr += HDMI_INFOFRAME_HEADER_SIZE;
+
+	ptr[0] = ((frame->colorspace & 0x3) << 5) | (frame->scan_mode & 0x3);
+
+	if (frame->active_info_valid)
+		ptr[0] |= B(4);
+
+	if (frame->horizontal_bar_valid)
+		ptr[0] |= B(3);
+
+	if (frame->vertical_bar_valid)
+		ptr[0] |= B(2);
+
+	ptr[1] = ((frame->colorimetry & 0x3) << 6) |
+		 ((frame->picture_aspect & 0x3) << 4) |
+		 (frame->active_aspect & 0xf);
+
+	ptr[2] = ((frame->extended_colorimetry & 0x7) << 4) |
+		 ((frame->quantization_range & 0x3) << 2) |
+		 (frame->nups & 0x3);
+
+	if (frame->itc)
+		ptr[2] |= B(7);
+
+	ptr[3] = frame->video_code & 0x7f;
+
+	ptr[4] = ((frame->ycc_quantization_range & 0x3) << 6) |
+		 ((frame->content_type & 0x3) << 4) |
+		 (frame->pixel_repeat & 0xf);
+
+	ptr[5] = frame->top_bar & 0xff;
+	ptr[6] = (frame->top_bar >> 8) & 0xff;
+	ptr[7] = frame->bottom_bar & 0xff;
+	ptr[8] = (frame->bottom_bar >> 8) & 0xff;
+	ptr[9] = frame->left_bar & 0xff;
+	ptr[10] = (frame->left_bar >> 8) & 0xff;
+	ptr[11] = frame->right_bar & 0xff;
+	ptr[12] = (frame->right_bar >> 8) & 0xff;
+
+	hdmi_infoframe_checksum(buffer, length);
+
+	return length;
 }
 
 enum hdmi_spd_sdi {
@@ -841,7 +937,7 @@ static void sii902x_setup(struct sii902x_data *sii9022x)
 	int i;
 
 	//dev_dbg(&sii9022x->client->dev, "Sii902x: setup..\n");
-
+	PRINTF("sii902x_setup:\n");
 	/* Power up */
 	sii9022x_regmap_write(SII9022_POWER_STATE_CTRL_REG, 0x00);
 
@@ -879,6 +975,7 @@ static void sii902x_setup(struct sii902x_data *sii9022x)
 	sii9022x_regmap_write(SII9022_AVI_OUT_FORMAT_REG, 0x10);
 
 	sii902x_set_avi_infoframe(sii9022x);
+	PRINTF("sii902x_setup done.\n");
 }
 
 static void sii902x_edid_parse_ext_blk(unsigned char *edid,
@@ -1325,10 +1422,14 @@ static int sii902x_probe(struct i2c_client *client,
 
 void sii9022x_initialize(const videomode_t * vdmode)
 {
+	struct sii902x_data *sii9022x = & d0;
 	//sii902x_reset(NULL);
 
-	sii902x_probe(NULL, NULL);
-	sii902x_setup(& d0);
+	d0.edid_cfg.hdmi_cap = 0;
+	VERIFY(sii902x_probe(NULL, NULL) == 0);
+
+	sii902x_setup(sii9022x);
+	sii902x_poweron(sii9022x);
 
 	//	int ret;
 //	struct msm_panel_info pinfo;
