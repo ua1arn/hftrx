@@ -433,7 +433,7 @@ void tc358768_deinitialize(void);
 void panel_initialize(const videomode_t * vdmode);
 void panel_deinitialize(void);
 
-void sii9022_initialize(const videomode_t * vdmode);
+void sii9022x_initialize(const videomode_t * vdmode);
 
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
