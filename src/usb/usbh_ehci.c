@@ -2279,7 +2279,35 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  	const uint_fast32_t usbsts = EHCIx->USBSTS;
 
- 	EHCIx->USBSTS = ~ usbsts;
+ 	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT)
+ 	{
+ 		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
+ 	}
+
+ 	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
+ 	{
+ 		EHCIx->USBSTS = (0x01uL << 1);	// Clear USB Error Interrupt (USBERRINT) interrupt
+ 	}
+
+ 	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
+ 	{
+ 		EHCIx->USBSTS = (0x01uL << 2);	// Clear Port Change Detect interrupt
+ 	}
+
+ 	if ((usbsts & (0x01uL << 3)))	// Frame List Rollower
+ 	{
+ 		EHCIx->USBSTS = (0x01uL << 3);	// Clear Frame List Rollower interrupt
+ 	}
+
+ 	if ((usbsts & (0x01uL << 4)))	// Host System Error
+ 	{
+ 		EHCIx->USBSTS = (0x01uL << 4);	// Clear Host System Error interrupt
+ 	}
+
+ 	if ((usbsts & (0x01uL << 5)))	// Interrupt On Async Advance
+ 	{
+ 		EHCIx->USBSTS = (0x01uL << 5);	// Clear Interrupt On Async Advance
+ 	}
 }
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
@@ -2573,11 +2601,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
 
 
-	//PRINTF("board_ehci_initialize: USBINTR=%08lX\n", EHCIx->USBINTR);
  	EHCIx->USBINTR |=
- 			//~ 0 |
- 			(1uL << 0);
- 	//PRINTF("board_ehci_initialize: USBINTR=%08lX\n", EHCIx->USBINTR);
+ 			(1uL << 5) |	// Interrupt on ASync Advance Enable
+ 			(1uL << 4) |	// Host System Error Interrupt Enable
+ 			(1uL << 3) |	// Frame List Interrupt Enable
+ 			(1uL << 2) |	// Port Change Interrupt Enable
+ 			(1uL << 1) |	// USB Error Interrupt Enable
+ 			(1uL << 0) |	// USB Interrupt Enable
+			0;
 
  	PRINTF("board_ehci_initialize done.\n");
  }
