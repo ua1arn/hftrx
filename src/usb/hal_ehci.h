@@ -354,6 +354,7 @@ typedef struct
   void                      *pData;     /*!< Pointer Stack Handler    */
 	unsigned long nports;
 	__IO uint32_t * portsc;
+	EhciController ehci;
 #if (USE_HAL_EHCI_REGISTER_CALLBACKS == 1U)
   void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
   void (* ConnectCallback)(struct __EHCI_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Connect callback            */

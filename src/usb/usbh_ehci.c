@@ -2229,10 +2229,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
  	hehci->portsc = ((__IO unsigned long *) (opregspacebase + 0x0044));
 
+
+ 	hehci->ehci.opRegs = (EhciOpRegs *) opregspacebase;
+ 	hehci->ehci.capRegs = (EhciCapRegs *) EHCIx;
+
  	PRINTF("board_ehci_initialize: nports=%u\n", hehci->nports);
  	for (i = 0; i < hehci->nports; ++ i)
  	{
- 		PRINTF("board_ehci_initialize: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
+ 		PRINTF("board_ehci_initialize: PORTSC[%u]=%08lX\n", i, hehci->ehci.opRegs->ports [i]);
  	}
 
  	// https://habr.com/ru/post/426421/
@@ -2305,6 +2309,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	// Чистим статус
  	//hc->opRegs->usbSts = ~0;
      EHCIx->USBSTS = ~ 0uL;
+     ASSERT(& EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
  	// Enable controller
  	// Запускаем контроллер, 8 микро-фреймов, включаем
  	// последовательную и асинхронную очередь
@@ -2312,7 +2317,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
      EHCIx->USBCMD =
      		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
  			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
- 			CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
+ 			//CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
  			//CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
  			//CMD_RS |	// Run/Stop
  			0;
@@ -2341,6 +2346,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	////local_delay_ms(20);
 	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
 	////local_delay_ms(30);
+	PRINTF("fl=%08lX %08lX\n", hehci->ehci.frameList, EHCIx->PERIODICLISTBASE);
 
  //	USBH_EHCI_IRQn
  	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
@@ -2350,7 +2356,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	EHCIx->USBINTR |=
  			(1uL << 5) |	// Interrupt on ASync Advance Enable
  			(1uL << 4) |	// Host System Error Interrupt Enable
- 			(1uL << 3) |	// Frame List Interrupt Enable
+ 			//(1uL << 3) |	// Frame List Rollower Interrupt Enable
  			(1uL << 2) |	// Port Change Interrupt Enable
  			(1uL << 1) |	// USB Error Interrupt Enable
  			(1uL << 0) |	// USB Interrupt Enable
