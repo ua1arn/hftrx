@@ -2051,7 +2051,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
  	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
- 	PRINTF("HAL_EHCI_Init\n");
+ 	//PRINTF("HAL_EHCI_Init\n");
  	return HAL_OK;
 }
 
