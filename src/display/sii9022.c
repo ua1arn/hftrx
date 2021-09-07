@@ -17,7 +17,7 @@
 #include "hardware.h"
 
 
-#if LCDMODEX_SII9022
+#if LCDMODEX_SII9022A
 
 #include "src/gui/gui.h"
 #include "board.h"
@@ -188,7 +188,7 @@
 #define SII9022_EDID_LEN			256
 #define ONE_BLOCK_EDID_LEN			128
 
-enum sii9022_power_state {
+enum sii9022x_power_state {
 	SII9022_POWER_STATE_D0,
 	SII9022_POWER_STATE_D2,
 	SII9022_POWER_STATE_D3_HOT,
@@ -274,7 +274,7 @@ static uint_fast8_t sii9022x_regmap_read(uint_fast8_t reg, int * retvalue)
 
 }
 
-struct sii9022_i2c_addr_data{
+struct sii9022x_i2c_addr_data{
 	uint8_t addr;
 	uint8_t data;
 };
@@ -291,7 +291,7 @@ static const uint8_t avi_io_format [] = {
 };
 
 /* power state */
-static const struct sii9022_i2c_addr_data regset0 [] = {
+static const struct sii9022x_i2c_addr_data regset0 [] = {
 	{ 0x60, 0x04 },
 	{ 0x63, 0x00 },
 	{ 0x1E, 0x00 },
@@ -304,7 +304,7 @@ static const uint8_t video_infoframe [] = {
 };
 
 /* configure audio */
-static const struct sii9022_i2c_addr_data regset1 [] = {
+static const struct sii9022x_i2c_addr_data regset1 [] = {
 	{ 0x26, 0x90 },
 	{ 0x20, 0x90 },
 	{ 0x1F, 0x80 },
@@ -324,13 +324,13 @@ static const uint8_t misc_infoframe [] = {
 };
 
 /* set HDMI, active */
-static struct sii9022_i2c_addr_data regset2 [] = {
+static struct sii9022x_i2c_addr_data regset2 [] = {
 	{ 0x1A, 0x01 },
 	{ 0x3D, 0x00 },
 };
 
 static int send_i2c_data(struct i2c_client *client,
-			 const struct sii9022_i2c_addr_data *regset,
+			 const struct sii9022x_i2c_addr_data *regset,
 			 int size)
 {
 	int i;
@@ -346,7 +346,7 @@ static int send_i2c_data(struct i2c_client *client,
 	return rc;
 }
 
-static int sii9022_enable(struct i2c_client *client)
+static int sii9022x_enable(struct i2c_client *client)
 {
 	int rc;
 	int retries = 10;
@@ -741,7 +741,7 @@ struct sii902x_data {
 	uint32_t i2s_fifo_routing[4];
 };
 
-//static const struct regmap_config sii9022_regmap_config = {
+//static const struct regmap_config sii9022x_regmap_config = {
 //	.reg_bits = 8,
 //	.val_bits = 8,
 //};
@@ -1182,7 +1182,7 @@ static int sii902x_probe(struct i2c_client *client,
 //	if (sii9022x == NULL)
 //		return -ENOMEM;
 //
-//	regmap = devm_regmap_init_i2c(client, &sii9022_regmap_config);
+//	regmap = devm_regmap_init_i2c(client, &sii9022x_regmap_config);
 //	if (IS_ERR(regmap)) {
 //		PRINTF("failed to init regmap\n");
 //		return PTR_ERR(regmap);
@@ -1269,7 +1269,7 @@ static int sii902x_probe(struct i2c_client *client,
 //	i2c_set_clientdata(client, sii9022x);
 //
 //#ifdef CONFIG_SND_ATMEL_SOC_SII9022
-//	sii9022_hdmi_codec_register(&client->dev);
+//	sii9022x_hdmi_codec_register(&client->dev);
 //#endif
 //
 	return 0;
@@ -1323,7 +1323,7 @@ static int sii902x_probe(struct i2c_client *client,
 //	sii902x 0-0039: product id = 9022
 //	sii902x 0-0039: hardware version B0-02-03-00
 
-void sii9022_initialize(const videomode_t * vdmode)
+void sii9022x_initialize(const videomode_t * vdmode)
 {
 	//sii902x_reset(NULL);
 
@@ -1369,4 +1369,4 @@ void sii9022_initialize(const videomode_t * vdmode)
 //	//return ret;
 //	;
 }
-#endif /* LCDMODEX_SII9022 */
+#endif /* LCDMODEX_SII9022A */

@@ -1741,9 +1741,9 @@ void display_hardware_initialize(void)
 	tc358768_initialize(vdmode);
 	panel_initialize(vdmode);
 #endif /* LCDMODETX_TC358778XBG */
-#if LCDMODEX_SII9022
-	sii9022_initialize(vdmode);
-#endif /* LCDMODEX_SII9022 */
+#if LCDMODEX_SII9022A
+	sii9022x_initialize(vdmode);
+#endif /* LCDMODEX_SII9022A */
 
 #if LCDMODE_HARD_SPI
 #elif LCDMODE_HARD_I2C
