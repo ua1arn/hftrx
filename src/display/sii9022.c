@@ -219,8 +219,14 @@ static int i2c_smbus_read_byte_data(
 	unsigned reg
 	)
 {
-
 	return 0;
+//	union i2c_smbus_data data;
+//	int status;
+//
+//	status = i2c_smbus_xfer(client->adapter, client->addr, client->flags,
+//				I2C_SMBUS_READ, command,
+//				I2C_SMBUS_BYTE_DATA, &data);
+//	return (status < 0) ? status : data.byte;
 }
 
 static int i2c_smbus_write_byte_data(
@@ -229,8 +235,12 @@ static int i2c_smbus_write_byte_data(
 	unsigned val
 	)
 {
-
 	return 0;
+//	union i2c_smbus_data data;
+//	data.byte = value;
+//	return i2c_smbus_xfer(client->adapter, client->addr, client->flags,
+//			      I2C_SMBUS_WRITE, command,
+//			      I2C_SMBUS_BYTE_DATA, &data);
 }
 
 // Transmitter Programming Interface (TPI) device address
