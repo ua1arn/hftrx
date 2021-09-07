@@ -274,37 +274,62 @@ static uint_fast8_t sii9022x_regmap_read(uint_fast8_t reg, int * retvalue)
 
 }
 
-struct sii9022x_i2c_addr_data{
+
+#if 1
+//
+// https://github.com/StNick/android_kernel_samsung_lt03lte/blob/d3ee502b07290cd8b62836534365e0c744a6a001/drivers/video/msm/hdmi_sii9022.c
+
+/* Copyright (c) 2009-2010, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
+
+//#include <linux/i2c.h>
+//#include <linux/delay.h>
+//#include "msm_fb.h"
+
+#define DEVICE_NAME "sii9022"
+#define SII9022_DEVICE_ID   0xB0
+
+struct sii9022_i2c_addr_data{
 	uint8_t addr;
 	uint8_t data;
 };
 
 /* video mode data */
-static const uint8_t video_mode_data [] = {
+static uint8_t video_mode_data[] = {
 	0x00,
 	0xF9, 0x1C, 0x70, 0x17, 0x72, 0x06, 0xEE, 0x02,
 };
 
-static const uint8_t avi_io_format [] = {
+static uint8_t avi_io_format[] = {
 	0x09,
 	0x00, 0x00,
 };
 
 /* power state */
-static const struct sii9022x_i2c_addr_data regset0 [] = {
+static struct sii9022_i2c_addr_data regset0[] = {
 	{ 0x60, 0x04 },
 	{ 0x63, 0x00 },
 	{ 0x1E, 0x00 },
 };
 
-static const uint8_t video_infoframe [] = {
+static uint8_t video_infoframe[] = {
 	0x0C,
 	0xF0, 0x00, 0x68, 0x00, 0x04, 0x00, 0x19, 0x00,
 	0xE9, 0x02, 0x04, 0x01, 0x04, 0x06,
 };
 
 /* configure audio */
-static const struct sii9022x_i2c_addr_data regset1 [] = {
+static struct sii9022_i2c_addr_data regset1[] = {
 	{ 0x26, 0x90 },
 	{ 0x20, 0x90 },
 	{ 0x1F, 0x80 },
@@ -317,20 +342,20 @@ static const struct sii9022x_i2c_addr_data regset1 [] = {
 };
 
 /* enable audio */
-static const uint8_t misc_infoframe [] = {
+static uint8_t misc_infoframe[] = {
 	0xBF,
 	0xC2, 0x84, 0x01, 0x0A, 0x6F, 0x02, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
 /* set HDMI, active */
-static struct sii9022x_i2c_addr_data regset2 [] = {
+static struct sii9022_i2c_addr_data regset2[] = {
 	{ 0x1A, 0x01 },
 	{ 0x3D, 0x00 },
 };
 
 static int send_i2c_data(struct i2c_client *client,
-			 const struct sii9022x_i2c_addr_data *regset,
+			 struct sii9022_i2c_addr_data *regset,
 			 int size)
 {
 	int i;
@@ -346,7 +371,7 @@ static int send_i2c_data(struct i2c_client *client,
 	return rc;
 }
 
-static int sii9022x_enable(struct i2c_client *client)
+static int hdmi_sii_enable(struct i2c_client *client)
 {
 	int rc;
 	int retries = 10;
@@ -416,6 +441,93 @@ enable_exit:
 	PRINTF("%s: exited rc=%d\n", __func__, rc);
 	return rc;
 }
+//
+//static const struct i2c_device_id hmdi_sii_id[] = {
+//	{ DEVICE_NAME, 0 },
+//	{ }
+//};
+//
+//static int hdmi_sii_probe(struct i2c_client *client,
+//			const struct i2c_device_id *id)
+//{
+//	int rc;
+//
+//	if (!i2c_check_functionality(client->adapter,
+//				     I2C_FUNC_SMBUS_BYTE | I2C_FUNC_I2C))
+//		return -ENODEV;
+//	rc = hdmi_sii_enable(client);
+//	return rc;
+//}
+
+
+/*
+static struct i2c_driver hdmi_sii_i2c_driver = {
+	.driver = {
+		.name = DEVICE_NAME,
+		.owner = THIS_MODULE,
+	},
+	.probe = hdmi_sii_probe,
+	.remove =  __exit_p(hdmi_sii_remove),
+	.id_table = hmdi_sii_id,
+};
+*/
+//
+//static int /* __init */ hdmi_sii_init(void)
+//{
+//	int ret;
+//	struct msm_panel_info pinfo;
+//
+//	if (msm_fb_detect_client("hdmi_sii9022"))
+//		return 0;
+//
+//	pinfo.xres = 1280;
+//	pinfo.yres = 720;
+//	MSM_FB_SINGLE_MODE_PANEL(&pinfo);
+//	pinfo.type = HDMI_PANEL;
+//	pinfo.pdest = DISPLAY_1;
+//	pinfo.wait_cycle = 0;
+//	pinfo.bpp = 18;
+//	pinfo.fb_num = 2;
+//	pinfo.clk_rate = 74250000;
+//
+//	pinfo.lcdc.h_back_porch = 124;
+//	pinfo.lcdc.h_front_porch = 110;
+//	pinfo.lcdc.h_pulse_width = 136;
+//	pinfo.lcdc.v_back_porch = 19;
+//	pinfo.lcdc.v_front_porch = 5;
+//	pinfo.lcdc.v_pulse_width = 6;
+//	pinfo.lcdc.border_clr = 0;
+//	pinfo.lcdc.underflow_clr = 0xff;
+//	pinfo.lcdc.hsync_skew = 0;
+//
+//	ret = lcdc_device_register(&pinfo);
+//	if (ret) {
+//		PRINTF("%s: failed to register device\n", __func__);
+//		goto init_exit;
+//	}
+//
+//	ret = i2c_add_driver(&hdmi_sii_i2c_driver);
+//	if (ret)
+//		PRINTF("%s: failed to add i2c driver\n", __func__);
+//
+//init_exit:
+//	return ret;
+//}
+//
+//static void /* __exit */ hdmi_sii_exit(void)
+//{
+//	i2c_del_driver(&hdmi_sii_i2c_driver);
+//}
+
+//module_init(hdmi_sii_init);
+//module_exit(hdmi_sii_exit);
+//MODULE_LICENSE("GPL v2");
+//MODULE_VERSION("0.1");
+//MODULE_AUTHOR("Qualcomm Innovation Center, Inc.");
+//MODULE_DESCRIPTION("SiI9022 HDMI driver");
+//MODULE_ALIAS("platform:hdmi-sii9022");
+
+#endif
 
 struct i2c_device_id
 {
