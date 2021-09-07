@@ -1991,6 +1991,7 @@ HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
   */
 uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 {
+ 	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	return EHCIx->FRINDEX;
@@ -2005,6 +2006,7 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
 	unsigned i;
+ 	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
  	PRINTF("HAL_EHCI_IRQHandler: USBSTS=%08lX\n", EHCIx->USBSTS);
  	for (i = 0; i < hehci->nports; ++ i)
@@ -2047,6 +2049,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
+ 	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
  	PRINTF("HAL_EHCI_Init\n");
  	return HAL_OK;
@@ -2130,6 +2133,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
   */
 HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
  {
+ 	EhciController * const ehci = & hehci->ehci;
 	__HAL_LOCK(hehci);
 	__HAL_EHCI_ENABLE(hehci);
 	(void) EHCI_DriveVbus(hehci->Instance, 1U);
@@ -2148,6 +2152,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 
 HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 {
+ 	EhciController * const ehci = & hehci->ehci;
   __HAL_LOCK(hehci);
   (void)EHCI_StopHost(hehci->Instance);
   __HAL_UNLOCK(hehci);
@@ -2162,6 +2167,8 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	PRINTF("board_ehci_initialize start.\n");
 
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
+ 	EhciController * const ehci = & hehci->ehci;
+
  	HAL_EHCI_MspInit(hehci);
 
  	static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
@@ -2229,7 +2236,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
  	hehci->portsc = ((__IO unsigned long *) (opregspacebase + 0x0044));
 
-
+ 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
  	hehci->ehci.opRegs = (EhciOpRegs *) opregspacebase;
  	hehci->ehci.capRegs = (EhciCapRegs *) EHCIx;
 
