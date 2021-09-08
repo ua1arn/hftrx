@@ -928,7 +928,7 @@
 		const uint32_t HSmask = (1U << 12); 	/* PI12 - HSYNC */ \
 		const uint32_t VSmask = (1U << 13); 	/* PI13 - VSYNC */ \
 		/* Bit clock */ \
-		arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC14);		/* CLK PI14 */ \
+		arm_hardware_pioi_altfn50((1U << 14), GPIO_AF_LTDC14);		/* CLK PI14 */ \
 		/* Synchronisation signals */ \
 		arm_hardware_pioi_altfn50(VSmask, GPIO_AF_LTDC14);	/* PI13 VSYNC */ \
 		arm_hardware_pioi_altfn50(HSmask, GPIO_AF_LTDC14);	/* PI12 HSYNC */ \
