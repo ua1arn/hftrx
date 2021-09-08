@@ -1973,7 +1973,7 @@ static void ehci_bus_poll ( struct usb_bus *bus ) {
 #endif
 
 HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_t state) {
-	PRINTF("EHCI_DriveVbus: state=%d\n", (int) state);
+	//PRINTF("EHCI_DriveVbus: state=%d\n", (int) state);
 	board_set_usbhostvbuson(state);
 	board_update();
 	return HAL_OK;
@@ -2229,6 +2229,12 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
  	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
  	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
+ 	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
+ 				((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F,
+				((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
+				((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01,
+				((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
+				((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
  	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
 
  	// Calculate Operational Register Space base address
@@ -2240,7 +2246,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	hehci->ehci.opRegs = (EhciOpRegs *) opregspacebase;
  	hehci->ehci.capRegs = (EhciCapRegs *) EHCIx;
 
- 	PRINTF("board_ehci_initialize: nports=%u\n", hehci->nports);
+ 	//PRINTF("board_ehci_initialize: nports=%u\n", hehci->nports);
  	for (i = 0; i < hehci->nports; ++ i)
  	{
  		PRINTF("board_ehci_initialize: PORTSC[%u]=%08lX\n", i, hehci->ehci.opRegs->ports [i]);
@@ -2279,7 +2285,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
      uint_fast32_t eecp = (EHCIx->HCCPARAMS & HCCPARAMS_EECP_MASK) >> HCCPARAMS_EECP_SHIFT;
      if (eecp >= 0x40)
      {
-     	PRINTF("board_ehci_initialize: eecp=%08lX\n", (unsigned long) eecp);
+     	//PRINTF("board_ehci_initialize: eecp=%08lX\n", (unsigned long) eecp);
         // Disable BIOS legacy support
  //        uint legsup = PciRead32(id, eecp + USBLEGSUP);
  //
