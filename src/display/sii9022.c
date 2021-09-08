@@ -417,12 +417,15 @@ struct sii9022_i2c_addr_data{
 
 /* video mode data */
 static uint8_t video_mode_data[] = {
-	0x00,
-	0xF9, 0x1C, 0x70, 0x17, 0x72, 0x06, 0xEE, 0x02,
+	SII9022_VIDEO_DATA_BASE_REG,
+	0xF9, 0x1C,
+	0x70, 0x17,
+	0x72, 0x06,
+	0xEE, 0x02,
 };
 
 static uint8_t avi_io_format[] = {
-	0x09,
+	SII9022_AVI_IN_FORMAT_REG,
 	0x00, 0x00,
 };
 
@@ -1172,7 +1175,7 @@ static int sii902x_set_avi_infoframe(struct sii902x_data *sii9022x)
 	return 0;
 }
 
-static void sii902x_setup(struct sii902x_data *sii9022x)
+static void sii902x_setup(struct sii902x_data *sii9022x, const videomode_t * vdmode)
 {
 	uint16_t data[4];
 	uint8_t *tmp;
@@ -1186,10 +1189,10 @@ static void sii902x_setup(struct sii902x_data *sii9022x)
 	/* set TPI video mode */
 	switch (sii9022x->resolution) {
 	case 1080: /* 1080P30 timing */
-		data[0] = 7425;
-		data[1] = 6000;
-		data[2] = 2200;
-		data[3] = 1125;
+		data[0] = 7425;		// pixel clk
+		data[1] = 6000;		// vfreq
+		data[2] = 2200;		// pixels
+		data[3] = 1125;		// lines
 		break;
 	case 900: /* 1440 x 900 timing */
 		data[0] = 8875;
@@ -1205,9 +1208,26 @@ static void sii902x_setup(struct sii902x_data *sii9022x)
 		break;
 	}
 
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+
+	data[0] = display_getdotclock(vdmode) / 1000 / 10;		// pixel clk
+	data[1] = vdmode->fps * 100;		// vfreq
+	data[2] = HFULL;		// pixels
+	data[3] = VFULL;		// lines
+
+	PRINTF("pixel clk=%u, vfreq=%u, pixels=%u, lines=%u\n", data[0], data[1], data[2], data[3]);
+
 	tmp = (uint8_t *)data;
 	for (i = 0; i < 8; i++)
-		sii9022x_regmap_write(i, tmp[i]);
+		sii9022x_regmap_write(SII9022_VIDEO_DATA_BASE_REG + i, tmp[i]);
 
 	/* input bus/pixel: full pixel wide (24bit), rising edge */
 	sii9022x_regmap_write(SII9022_PIXEL_REPETITION_REG, 0x60);
@@ -1692,11 +1712,11 @@ void sii9022x_initialize(const videomode_t * vdmode)
 		PRINTF(
 			"Sii902x: read edid fail\n");
 	} else {
-		sii902x_setup(sii9022x);
+		sii902x_setup(sii9022x, vdmode);
 		sii902x_poweron(sii9022x);
 	}
 	hdmi_sii_enable(& d0client);
-
+	PRINTF("d0.edid_cfg.hdmi_cap=%d\n", d0.edid_cfg.hdmi_cap);
 	//	int ret;
 //	struct msm_panel_info pinfo;
 //
