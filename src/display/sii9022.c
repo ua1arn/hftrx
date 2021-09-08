@@ -210,8 +210,7 @@ static int i2c_master_send(
 {
 	unsigned i;
 	i2c2_start(SII9022_ADDR_W);
-	i2c2_write(buff [0]);
-	for (i = 1; i < cnt; ++ i)
+	for (i = 0; i < cnt; ++ i)
 		i2c2_write(buff [i]);
 	i2c2_waitsend();
 	i2c2_stop();
@@ -225,9 +224,9 @@ static int i2c_smbus_read_byte_data(
 {
 	uint8_t v;
 
-	i2c2_start(HDMI_I2C_MONITOR_ADDRESS * 2);
+	i2c2_start(SII9022_ADDR_W);
 	i2c2_write_withrestart(reg);
-	i2c2_start(HDMI_I2C_MONITOR_ADDRESS * 2 | 0x01);
+	i2c2_start(SII9022_ADDR_R);
 	i2c2_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
 
 	return v;
@@ -246,7 +245,7 @@ static int i2c_smbus_write_byte_data(
 	unsigned val
 	)
 {
-	i2c2_start(HDMI_I2C_MONITOR_ADDRESS * 2);
+	i2c2_start(SII9022_ADDR_W);
 	i2c2_write(reg);
 	i2c2_write(val);
 	i2c2_waitsend();
@@ -299,9 +298,10 @@ static int32_t i2c2periph_writeN(uint_fast8_t d_adr, uint32_t w_byte, const uint
 {
 #if WITHTWISW
 
-	i2c2_start(d_adr + 2);	// write access
+	i2c2_start(d_adr * 2);	// write access
 	while (w_byte --)
 		i2c2_write(* w_buffer ++);
+	//i2c2_stop();
 	return 0;
 
 #elif WITHTWIHW
@@ -497,13 +497,16 @@ static int hdmi_sii_enable(struct i2c_client *client)
 
 	do {
 		local_delay_ms(1);
-		rc = i2c_smbus_read_byte_data(client, 0x1B);
+		rc = i2c_smbus_read_byte_data(client, SII9022_DEVICE_ID_REG);
 	} while ((rc != SII9022_DEVICE_ID) && retries--);
 
 	if (rc != SII9022_DEVICE_ID)
+	{
+		TP();
 		return -1;
+	}
 
-	rc = i2c_smbus_write_byte_data(client, 0x1A, 0x11);
+	rc = i2c_smbus_write_byte_data(client, SII9022_SYS_CTRL_DATA_REG, 0x11);
 	if (rc)
 	{
 		TP();
@@ -518,7 +521,7 @@ static int hdmi_sii_enable(struct i2c_client *client)
 		goto enable_exit;
 	}
 
-	rc = i2c_smbus_write_byte_data(client, 0x08, 0x20);
+	rc = i2c_smbus_write_byte_data(client, SII9022_PIXEL_REPETITION_REG, 0x20);
 	if (rc)
 		goto enable_exit;
 	count = ARRAY_SIZE(avi_io_format);
@@ -1284,9 +1287,9 @@ static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 	}
 
 	memset(edid, 0, SII9022_EDID_LEN);
-
 	buf[0] = 0x00;
 	dat = i2c_transfer(adp, msg, 2);
+
 	printhex(0, edid, ONE_BLOCK_EDID_LEN);
 
 	/* need read ext block? Only support one more blk now*/
@@ -1308,6 +1311,7 @@ static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 			TP();
 			return dat;
 		}
+		printhex(ONE_BLOCK_EDID_LEN, edid + ONE_BLOCK_EDID_LEN, ONE_BLOCK_EDID_LEN);
 
 		/* edid ext block parsing */
 		sii902x_edid_parse_ext_blk(edid + ONE_BLOCK_EDID_LEN, cfg);
