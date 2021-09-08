@@ -485,7 +485,7 @@ static int send_i2c_data(struct i2c_client *client,
 	return rc;
 }
 
-static int hdmi_sii_enable(struct i2c_client *client)
+static int hdmi_sii_enable(struct i2c_client *client, const videomode_t * vdmode)
 {
 	int rc;
 	int retries = 10;
@@ -515,6 +515,21 @@ static int hdmi_sii_enable(struct i2c_client *client)
 		TP();
 		goto enable_exit;
 	}
+
+	/* Accumulated parameters for this display */
+	const unsigned HEIGHT = vdmode->height;	/* height */
+	const unsigned WIDTH = vdmode->width;	/* width */
+	const unsigned HSYNC = vdmode->hsync;	/*  */
+	const unsigned VSYNC = vdmode->vsync;	/*  */
+	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
+	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
+	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
+	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
+
+	USBD_poke_u16(video_mode_data + 1, display_getdotclock(vdmode) / 1000 / 10);		// pixel clk
+	USBD_poke_u16(video_mode_data + 3, vdmode->fps * 100);		// vfreq
+	USBD_poke_u16(video_mode_data + 5, HFULL);		// pixels
+	USBD_poke_u16(video_mode_data + 7, VFULL);		// lines
 
 	count = ARRAY_SIZE(video_mode_data);
 	rc = i2c_master_send(client, video_mode_data, count);
@@ -1705,7 +1720,6 @@ void sii9022x_initialize(const videomode_t * vdmode)
 	//sii902x_reset(NULL);
 
 	d0client.adapter = & d0adapter;
-	d0.edid_cfg.hdmi_cap = 1;
 	VERIFY(sii902x_probe(& d0client, NULL) == 0);
 
 	if (sii902x_read_edid(sii9022x) < 0) {
@@ -1715,7 +1729,8 @@ void sii9022x_initialize(const videomode_t * vdmode)
 		sii902x_setup(sii9022x, vdmode);
 		sii902x_poweron(sii9022x);
 	}
-	hdmi_sii_enable(& d0client);
+
+	//hdmi_sii_enable(& d0client, vdmode);
 	PRINTF("d0.edid_cfg.hdmi_cap=%d\n", d0.edid_cfg.hdmi_cap);
 	//	int ret;
 //	struct msm_panel_info pinfo;
