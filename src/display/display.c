@@ -1729,7 +1729,7 @@ void display_hardware_initialize(void)
 	}
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
-	PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
+	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
 	arm_hardware_ltdc_initialize(frames, vdmode);
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
@@ -1771,7 +1771,7 @@ void display_wakeup(void)
 	}
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
-	PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
+	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
     arm_hardware_ltdc_initialize(frames, vdmode);
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
@@ -1780,7 +1780,7 @@ void display_wakeup(void)
 #endif /* LCDMODETX_TC358778XBG */
 #if LCDMODEX_SII9022A
     // siiI9022A Lattice Semiconductor Corp HDMI Transmitter
-    sii9022x_wakeup();
+    sii9022x_wakeup(vdmode);
 #endif /* LCDMODEX_SII9022A */
 }
 

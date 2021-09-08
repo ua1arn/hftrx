@@ -14645,7 +14645,7 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 
 static dpclock_t dpc_1slock;
 /* Вызывается из обработчика прерываний раз в секунду */
-void spool_secound(void * ctx)
+static void spool_secound(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
@@ -20448,11 +20448,14 @@ lowinitialize(void)
 	display_hardware_initialize();
 
 	static ticker_t displayticker;
+	static ticker_t ticker_1S;
 
 	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
 	// Инициализация таймера и списка регистрирумых обработчиков
 	hardware_timer_initialize(TICKS_FREQUENCY);
+
 	ticker_initialize(& displayticker, 1, display_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_initialize(& ticker_1S, NTICKS(1000), spool_secound, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
 

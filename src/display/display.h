@@ -429,12 +429,17 @@ void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 
 void tc358768_initialize(const videomode_t * vdmode);
+void tc358768_wakeup(const videomode_t * vdmode);
 void tc358768_deinitialize(void);
-void panel_initialize(const videomode_t * vdmode);
-void panel_deinitialize(void);
 
+// siiI9022A Lattice Semiconductor Corp HDMI Transmitter
 void sii9022x_initialize(const videomode_t * vdmode);
+void sii9022x_wakeup(const videomode_t * vdmode);
+void sii9022x_deinitialize(void);
 
+void panel_initialize(const videomode_t * vdmode);
+void panel_wakeup(void);
+void panel_deinitialize(void);
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);

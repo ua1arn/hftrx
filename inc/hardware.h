@@ -678,8 +678,6 @@ void hardware_adc_initialize(void);
 ///* все возможные в данной конфигурации фильтры */
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
 
-void spool_secound(void * ctx);		// вызывается раз в секунду из таймерного прерывания.
-
 void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
 
 // получить прескалер и значение для программирования таймера
