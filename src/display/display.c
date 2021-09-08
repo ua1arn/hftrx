@@ -1759,6 +1759,32 @@ void display_hardware_initialize(void)
 	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
+void display_wakeup(void)
+{
+#if WITHLTDCHW
+	const videomode_t * const vdmode = & vdmode0;
+	colmain_fb_initialize();
+	uintptr_t frames [LCDMODE_MAIN_PAGES];
+	unsigned i;
+	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+	{
+		frames [i] = (uintptr_t) fbfX [i];
+	}
+	// STM32xxx LCD-TFT Controller (LTDC)
+	// RENESAS Video Display Controller 5
+	PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
+    arm_hardware_ltdc_initialize(frames, vdmode);
+#endif /* WITHLTDCHW */
+#if LCDMODETX_TC358778XBG
+    tc358768_wakeup();
+    panel_wakeup();
+#endif /* LCDMODETX_TC358778XBG */
+#if LCDMODEX_SII9022A
+    // siiI9022A Lattice Semiconductor Corp HDMI Transmitter
+    sii9022x_wakeup();
+#endif /* LCDMODEX_SII9022A */
+}
+
 // Palette reload
 void display_palette(void)
 {
