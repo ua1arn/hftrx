@@ -41,6 +41,11 @@
 //#include <linux/delay.h>
 //#include "msm_fb.h"
 
+
+// Transmitter Programming Interface (TPI) device address
+// CI2CA = LOW, 49-Ball / 81-Ball / 72-Pin
+enum { SII9022_ADDR_W = 0x72, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
+
 // See
 //	SiI9020 HDMI PanelLink Transmitter Programmer’s Reference
 //	SiI-PR-1032-0.74
@@ -203,8 +208,14 @@ static int i2c_master_send(
 	unsigned cnt
 	)
 {
-
-	return 0;
+	unsigned i;
+	i2c2_start(SII9022_ADDR_W);
+	i2c2_write(buff [0]);
+	for (i = 1; i < cnt; ++ i)
+		i2c2_write(buff [i]);
+	i2c2_waitsend();
+	i2c2_stop();
+	return cnt;
 }
 
 static int i2c_smbus_read_byte_data(
@@ -212,7 +223,14 @@ static int i2c_smbus_read_byte_data(
 	unsigned reg
 	)
 {
-	return 0;
+	uint8_t v;
+
+	i2c2_start(HDMI_I2C_MONITOR_ADDRESS * 2);
+	i2c2_write_withrestart(reg);
+	i2c2_start(HDMI_I2C_MONITOR_ADDRESS * 2 | 0x01);
+	i2c2_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+
+	return v;
 //	union i2c_smbus_data data;
 //	int status;
 //
@@ -228,6 +246,11 @@ static int i2c_smbus_write_byte_data(
 	unsigned val
 	)
 {
+	i2c2_start(HDMI_I2C_MONITOR_ADDRESS * 2);
+	i2c2_write(reg);
+	i2c2_write(val);
+	i2c2_waitsend();
+	i2c2_stop();
 	return 0;
 //	union i2c_smbus_data data;
 //	data.byte = value;
@@ -235,10 +258,6 @@ static int i2c_smbus_write_byte_data(
 //			      I2C_SMBUS_WRITE, command,
 //			      I2C_SMBUS_BYTE_DATA, &data);
 }
-
-// Transmitter Programming Interface (TPI) device address
-// CI2CA = LOW, 49-Ball / 81-Ball / 72-Pin
-enum { SII9022_ADDR_W = 0x72, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
 
 static int sii9022x_regmap_write(uint_fast8_t reg, uint_fast8_t data)
 {
@@ -263,7 +282,6 @@ static int sii9022x_regmap_bulk_write(uint_fast8_t reg, const uint8_t * buff, ui
 	return 0;
 }
 
-
 static uint_fast8_t sii9022x_regmap_read(uint_fast8_t reg, int * retvalue)
 {
 	uint8_t v;
@@ -275,6 +293,63 @@ static uint_fast8_t sii9022x_regmap_read(uint_fast8_t reg, int * retvalue)
 	* retvalue = v;
 	return 0;
 
+}
+
+static int32_t i2c2periph_writeN(uint_fast8_t d_adr, uint32_t w_byte, const uint8_t * w_buffer)
+{
+#if WITHTWISW
+
+	i2c2_start(d_adr + 2);	// write access
+	while (w_byte --)
+		i2c2_write(* w_buffer ++);
+	return 0;
+
+#elif WITHTWIHW
+
+	uint8_t bufw = r_adr;
+	i2c2hw_write(d_adr, & bufw, 1);				// write access
+	i2c2hw_write(d_adr, r_buffer, r_byte);					// write access
+	return 0;
+
+#endif
+}
+
+static int32_t i2c2periph_readN(uint_fast8_t d_adr, uint32_t r_byte, uint8_t * r_buffer)
+{
+#if WITHTWISW
+
+	i2c2_start(d_adr * 2 | 0x01);	// read access
+	if (r_byte == 1)
+	{
+		uint_fast8_t v;
+		i2c2_read(r_buffer, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+		return 0;
+	}
+	else if (r_byte == 2)
+	{
+		i2c2_read(r_buffer ++, I2C_READ_ACK_1);	/* чтение первого байта ответа */
+		i2c2_read(r_buffer ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
+		return 0;
+	}
+	else
+	{
+		i2c2_read(r_buffer ++, I2C_READ_ACK_1);	/* чтение первого байта ответа */
+		while (r_byte -- > 2)
+		{
+			i2c2_read(r_buffer ++, I2C_READ_ACK);	/* чтение промежуточного байта ответа */
+		}
+		i2c2_read(r_buffer ++, I2C_READ_NACK);	/* чтение последнего байта ответа */
+		return 0;
+	}
+
+#elif WITHTWIHW
+
+	uint8_t bufw = r_adr;
+	i2c2hw_write(d_adr, & bufw, 1);				// write access
+	i2c2hw_read(d_adr, r_buffer, r_byte);		// read access
+	return 0;
+
+#endif
 }
 
 struct i2c_msg {
@@ -295,6 +370,18 @@ struct i2c_msg {
 // DDC Master access
 int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 {
+	unsigned msg;
+	for (msg = 0; msg < num; ++ msg)
+	{
+		if (msgs [msg].flags & I2C_M_RD)
+		{
+			i2c2periph_readN(msgs [msg].addr, msgs [msg].len, msgs [msg].buf);
+		}
+		else
+		{
+			i2c2periph_writeN(msgs [msg].addr, msgs [msg].len, msgs [msg].buf);
+		}
+	}
 	return 0;
 	return -1;
 }
@@ -403,7 +490,10 @@ static int hdmi_sii_enable(struct i2c_client *client)
 
 	rc = i2c_smbus_write_byte_data(client, 0xC7, 0x00);
 	if (rc)
+	{
+		TP();
 		goto enable_exit;
+	}
 
 	do {
 		local_delay_ms(1);
@@ -415,12 +505,16 @@ static int hdmi_sii_enable(struct i2c_client *client)
 
 	rc = i2c_smbus_write_byte_data(client, 0x1A, 0x11);
 	if (rc)
+	{
+		TP();
 		goto enable_exit;
+	}
 
 	count = ARRAY_SIZE(video_mode_data);
 	rc = i2c_master_send(client, video_mode_data, count);
 	if (rc != count) {
 		rc = -1;
+		TP();
 		goto enable_exit;
 	}
 
@@ -431,6 +525,7 @@ static int hdmi_sii_enable(struct i2c_client *client)
 	rc = i2c_master_send(client, avi_io_format, count);
 	if (rc != count) {
 		rc = -1;
+		TP();
 		goto enable_exit;
 	}
 
@@ -442,23 +537,31 @@ static int hdmi_sii_enable(struct i2c_client *client)
 	rc = i2c_master_send(client, video_infoframe, count);
 	if (rc != count) {
 		rc = -1;
+		TP();
 		goto enable_exit;
 	}
 
 	rc = send_i2c_data(client, regset1, ARRAY_SIZE(regset1));
 	if (rc)
+	{
+		TP();
 		goto enable_exit;
+	}
 
 	count = ARRAY_SIZE(misc_infoframe);
 	rc = i2c_master_send(client, misc_infoframe, count);
 	if (rc != count) {
 		rc = -1;
+		TP();
 		goto enable_exit;
 	}
 
 	rc = send_i2c_data(client, regset2, ARRAY_SIZE(regset2));
 	if (rc)
+	{
+		TP();
 		goto enable_exit;
+	}
 
 	return 0;
 enable_exit:
@@ -1162,12 +1265,12 @@ static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 	int dat = 0;
 	struct i2c_msg msg[2] = {
 		{
-			.addr	= addr,
+			.addr	= addr,		// HDMI_I2C_MONITOR_ADDRESS
 			.flags	= 0,
 			.len	= 1,
 			.buf	= buf,
 		}, {
-			.addr	= addr,
+			.addr	= addr,		// HDMI_I2C_MONITOR_ADDRESS
 			.flags	= I2C_M_RD,
 			.len	= ONE_BLOCK_EDID_LEN,
 			.buf	= edid,
@@ -1175,12 +1278,16 @@ static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 	};
 
 	if (adp == NULL)
+	{
+		TP();
 		return -1;
+	}
 
 	memset(edid, 0, SII9022_EDID_LEN);
 
 	buf[0] = 0x00;
 	dat = i2c_transfer(adp, msg, 2);
+	printhex(0, edid, ONE_BLOCK_EDID_LEN);
 
 	/* need read ext block? Only support one more blk now*/
 	if (edid[0x7E]) {
@@ -1197,7 +1304,10 @@ static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 		msg[1].buf = edid + ONE_BLOCK_EDID_LEN;
 		dat = i2c_transfer(adp, msg, 2);
 		if (dat < 0)
+		{
+			TP();
 			return dat;
+		}
 
 		/* edid ext block parsing */
 		sii902x_edid_parse_ext_blk(edid + ONE_BLOCK_EDID_LEN, cfg);
@@ -1581,6 +1691,7 @@ void sii9022x_initialize(const videomode_t * vdmode)
 		sii902x_setup(sii9022x);
 		sii902x_poweron(sii9022x);
 	}
+	hdmi_sii_enable(& d0client);
 
 	//	int ret;
 //	struct msm_panel_info pinfo;

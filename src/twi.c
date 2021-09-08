@@ -1493,6 +1493,9 @@ uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
 static void i2c_dly(void)
 {
 	local_delay_us(5);
+#if LCDMODEX_SII9022A
+	local_delay_us(25);
+#endif /* LCDMODEX_SII9022A */
 #if PCF8576C
 	local_delay_us(15);
 #endif /* PCF8576C */
