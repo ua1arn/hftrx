@@ -12,7 +12,6 @@
 #if LCDMODEX_SII9022A
 /* siiI9022A Lattice Semiconductor Corp. HDMI Transmitter */
 
-#include "src/gui/gui.h"
 #include "board.h"
 #include "display.h"
 #include "formats.h"

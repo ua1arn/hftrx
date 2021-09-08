@@ -2085,7 +2085,7 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 
 	};
 	// spcr и spsr - скорость SPI. Индексы соответствуют номерам битов в ATMEGA_SPCR_TAPS
-	// Document: 8272E–AVR–04/2013, Table 18-5. Relationship between SCK and the oscillator frequency.
+	// Document: 8272E-AVR-04/2013, Table 18-5. Relationship between SCK and the oscillator frequency.
 	static const FLASHMEM struct spcr_spsr_tag { uint_fast8_t spsr, spcr; } spcr_spsr [] =
 	{
 		{ (1U << SPI2X), 	(0U << SPR1) | (0U << SPR0), }, 	/* /2 */
@@ -4502,8 +4502,8 @@ stm32h7xx_pll_initialize(void)
 		(((stm32h7xx_pllq - 1) << RCC_PLL1DIVR_Q1_Pos) & RCC_PLL1DIVR_Q1) |	// нужно для нормального переключения SPI clock USB clock
 		0;
 	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVQ1EN | RCC_PLLCFGR_PLL1VCOSEL | RCC_PLLCFGR_PLL1RGE)) |
-		RCC_PLLCFGR_DIVP1EN |	// This bit can be written only when the PLL1 is disabled (PLL1ON = ‘0’ and PLL1RDY = ‘0’).
-		RCC_PLLCFGR_DIVQ1EN |	// This bit can be written only when the PLL1 is disabled (PLL1ON = ‘0’ and PLL1RDY = ‘0’).
+		RCC_PLLCFGR_DIVP1EN |	// This bit can be written only when the PLL1 is disabled (PLL1ON = '0' and PLL1RDY = '0').
+		RCC_PLLCFGR_DIVQ1EN |	// This bit can be written only when the PLL1 is disabled (PLL1ON = '0' and PLL1RDY = '0').
 #if PLL_FREQ >= 150000000uL && PLL_FREQ <= 420000000uL
 		1 * RCC_PLLCFGR_PLL1VCOSEL |	// 1: Medium VCO range: 150 to 420 MHz
 #else
@@ -4535,7 +4535,7 @@ stm32h7xx_pll_initialize(void)
 		(((PLL2_DIVP - 1) << RCC_PLL2DIVR_P2_Pos) & RCC_PLL2DIVR_P2) |
 		0;
 	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR2EN | RCC_PLLCFGR_PLL2RGE | RCC_PLLCFGR_PLL2VCOSEL)) |
-		RCC_PLLCFGR_DIVP2EN |	// This bit can be written only when the PLL2 is disabled (PLL2ON = ‘0’ and PLL3RDY = ‘0’).
+		RCC_PLLCFGR_DIVP2EN |	// This bit can be written only when the PLL2 is disabled (PLL2ON = '0' and PLL3RDY = '0').
 #if PLL2_FREQ >= 150000000uL && PLL2_FREQ <= 420000000uL
 		1 * RCC_PLLCFGR_PLL2VCOSEL |	// 1: Medium VCO range: 150 to 420 MHz
 #else
@@ -4569,7 +4569,7 @@ stm32h7xx_pll_initialize(void)
 		(((ltdc_divr - 1) << RCC_PLL3DIVR_R3_Pos) & RCC_PLL3DIVR_R3_Msk) |	// нужно для нормального переключения SPI clock USB clock
 		0;
 	RCC->PLLCFGR = (RCC->PLLCFGR & ~ (RCC_PLLCFGR_DIVR3EN_Msk | RCC_PLLCFGR_PLL3RGE_Msk | RCC_PLLCFGR_PLL3VCOSEL_Msk)) |
-		RCC_PLLCFGR_DIVR3EN |	// This bit can be written only when the PLL3 is disabled (PLL3ON = ‘0’ and PLL3RDY = ‘0’).
+		RCC_PLLCFGR_DIVR3EN |	// This bit can be written only when the PLL3 is disabled (PLL3ON = '0' and PLL3RDY = '0').
 #if PLL3_FREQ >= 150000000uL && PLL3_FREQ <= 420000000uL
 		1 * RCC_PLLCFGR_PLL3VCOSEL_Msk |	// 1: Medium VCO range: 150 to 420 MHz
 #else
@@ -9553,7 +9553,7 @@ void hardware_sounds_setfreq(
 	// compare match после записи делителя отменяется на один цикл
 	// timer2 - 8 bit wide.
 	// генерация сигнала самоконтроля на PD6(OC0A) - выход делителя на 2
-	// TCCR2B – Timer/Counter Control Register B
+	// TCCR2B - Timer/Counter Control Register B
 	const uint_fast8_t tccrXBval = (prei + 1);
 	if ((TCCR0B != tccrXBval) || (OCR0A > value))	// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
 	{
@@ -9570,7 +9570,7 @@ void hardware_sounds_setfreq(
 	// timer2 - 8 bit wide.
 	// генерация сигнала самоконтроля на PD7(OC2) - выход делителя на 2
 	// Пототму в расчёте используется tonefreq * 2
-	// TCCR2B – Timer/Counter Control Register B
+	// TCCR2B - Timer/Counter Control Register B
 	const uint_fast8_t tccrXBval = (prei + 1);
 	if ((TCCR2B != tccrXBval) || (OCR2A > value))	// таймер может отработать до максимального значения счётчика, если уменьшаем TOP
 	{
@@ -11549,7 +11549,7 @@ void hardware_twi_master_configure(void)
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
 
-	//конфигурирую непосредствено І2С
+	//конфигурирую непосредствено I2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
 	(void) RCC->APB1ENR;
 
@@ -11581,11 +11581,11 @@ void hardware_twi_master_configure(void)
 	#endif /* SCL_CLOCK == 400000UL */
 		0;
 
-	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // включаю тактирование переферии І2С
+	I2C1->CR1 |= I2C_CR1_ACK | I2C_CR1_PE; // включаю тактирование переферии I2С
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 
-	//конфигурирую непосредствено І2С
+	//конфигурирую непосредствено I2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
 	(void) RCC->APB1ENR;
     // set I2C1 clock to PCLCK (72/64/36 MHz)
@@ -11613,10 +11613,10 @@ void hardware_twi_master_configure(void)
     const uint_fast8_t scldel = 5;
     I2C1->TIMINGR = 0x30000C19 | ((scldel & 0x0F) << 20) | ((sdadel & 0x0F) << 16);
 
-	I2C1->CR1 |= I2C_CR1_PE; // включаю тактирование периферии І2С
+	I2C1->CR1 |= I2C_CR1_PE; // включаю тактирование периферии I2С
 
 #elif CPUSTYLE_STM32F7XX
-	//конфигурирую непосредствено І2С
+	//конфигурирую непосредствено I2С
 	RCC->APB1ENR |= (RCC_APB1ENR_I2C1EN); //вкл тактирование контроллера I2C
 	(void) RCC->APB1ENR;
 
@@ -11650,7 +11650,7 @@ void hardware_twi_master_configure(void)
 	I2C1->CR1 |= I2C_CR1_PE;
 
 #elif CPUSTYLE_STM32H7XX
-	//конфигурирую непосредствено І2С
+	//конфигурирую непосредствено I2С
 	RCC->APB1LENR |= (RCC_APB1LENR_I2C1EN); //вкл тактирование контроллера I2C
 	(void) RCC->APB1LENR;
 
