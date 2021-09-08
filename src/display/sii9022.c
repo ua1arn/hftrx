@@ -1,10 +1,3 @@
-/*
- * sii9022.c
- *
- *  Created on: Apr 30, 2021
- *      Author: gena
- */
-
 /* $Id$ */
 //
 // Проект HF Dream Receiver (КВ приёмник мечты)
@@ -17,7 +10,7 @@
 
 
 #if LCDMODEX_SII9022A
-/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
+/* siiI9022A Lattice Semiconductor Corp. HDMI Transmitter */
 
 #include "src/gui/gui.h"
 #include "board.h"
@@ -114,8 +107,8 @@
 #define HDMI_TPI_AUDIO_CONFIG_BYTE4_REG	0x28
 
 /* SII9022_SYS_CTRL_DATA_REG */
-#define SII9022_SYS_CTRL_DDC_BUS_GRANTED	BIT(1)
-#define SII9022_SYS_CTRL_DDC_BUS_REQUEST	BIT(2)
+#define SII9022_SYS_CTRL_DDC_BUS_GRANTED	(1u << 1)
+#define SII9022_SYS_CTRL_DDC_BUS_REQUEST	(1u << 2)
 
 /* HDMI_TPI_AUDIO_CONFIG_BYTE2_REG  */
 #define TPI_AUDIO_CODING_STREAM_HEADER		(0 << 0)
@@ -1213,6 +1206,9 @@ static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 	return 0;
 }
 
+//#define SII9022_SYS_CTRL_DDC_BUS_GRANTED	BIT(1)
+//#define SII9022_SYS_CTRL_DDC_BUS_REQUEST	BIT(2)
+
 static int sii902x_read_edid(struct sii902x_data *sii9022x)
 {
 	struct i2c_client *client = sii9022x->client;
@@ -1221,12 +1217,12 @@ static int sii902x_read_edid(struct sii902x_data *sii9022x)
 	/* Request DDC bus */
 	sii9022x_regmap_read(SII9022_SYS_CTRL_DATA_REG, &old);
 
-	sii9022x_regmap_write(SII9022_SYS_CTRL_DATA_REG, old | 0x4);
+	sii9022x_regmap_write(SII9022_SYS_CTRL_DATA_REG, old | SII9022_SYS_CTRL_DDC_BUS_REQUEST);
 	do {
 		cnt--;
 		local_delay_ms(20);
 		sii9022x_regmap_read(SII9022_SYS_CTRL_DATA_REG, &dat);
-	} while ((!(dat & 0x2)) && cnt);
+	} while ((!(dat & SII9022_SYS_CTRL_DDC_BUS_GRANTED)) && cnt);
 
 	if (!cnt) {
 		ret = -1;
@@ -1234,7 +1230,7 @@ static int sii902x_read_edid(struct sii902x_data *sii9022x)
 		goto done;
 	}
 
-	sii9022x_regmap_write(SII9022_SYS_CTRL_DATA_REG, old | 0x06);
+	sii9022x_regmap_write(SII9022_SYS_CTRL_DATA_REG, old | SII9022_SYS_CTRL_DDC_BUS_GRANTED | SII9022_SYS_CTRL_DDC_BUS_REQUEST);
 
 	/* edid reading */
 	ret = sii902x_edid_read(client->adapter, HDMI_I2C_MONITOR_ADDRESS,
@@ -1250,10 +1246,10 @@ static int sii902x_read_edid(struct sii902x_data *sii9022x)
 	do {
 		cnt--;
 		sii9022x_regmap_write(SII9022_SYS_CTRL_DATA_REG,
-			     old & ~0x6);
+			     old & ~ (SII9022_SYS_CTRL_DDC_BUS_GRANTED | SII9022_SYS_CTRL_DDC_BUS_REQUEST));
 		local_delay_ms(20);
 		sii9022x_regmap_read(SII9022_SYS_CTRL_DATA_REG, &dat);
-	} while ((dat & 0x6) && cnt);
+	} while ((dat & (SII9022_SYS_CTRL_DDC_BUS_GRANTED | SII9022_SYS_CTRL_DDC_BUS_REQUEST)) && cnt);
 
 	if (!cnt)
 	{
