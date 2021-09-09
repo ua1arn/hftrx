@@ -708,8 +708,8 @@
 			arm_hardware_pioa_opendrain(TARGET_TWI2_TWD, TARGET_TWI2_TWD);  	/* PA12 I2C5_SDA */ \
 		} while (0) 
 	#define	TWISOFT2_DEINITIALIZE() do { \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWCK); 	/* PA11 I2C5_SCL */ \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWD);	/* PA12 I2C5_SDA */ \
+			arm_hardware_pioa_inputs(TARGET_TWI2_TWCK); 	/* PA11 I2C5_SCL */ \
+			arm_hardware_pioa_inputs(TARGET_TWI2_TWD);	/* PA12 I2C5_SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
