@@ -11,7 +11,6 @@
 #if WITHUSBHW && WITHEHCIHW
 
 #include "board.h"
-#include "audio.h"
 #include "formats.h"
 #include "gpio.h"
 
