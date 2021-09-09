@@ -46,7 +46,7 @@
 enum { SII9022_ADDR_W = 0x72, SII9022_ADDR_R = SII9022_ADDR_W | 0x01 };
 
 // See
-//	SiI9020 HDMI PanelLink Transmitter Programmer’s Reference
+//	SiI9020 HDMI PanelLink Transmitter Programmer's Reference
 //	SiI-PR-1032-0.74
 //	https://github.com/facchinm/kernel-brain/tree/master/drivers/hdmi
 
@@ -384,330 +384,6 @@ int i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
 	return 0;
 	return -1;
 }
-
-#if 1
-//
-// https://github.com/StNick/android_kernel_samsung_lt03lte/blob/d3ee502b07290cd8b62836534365e0c744a6a001/drivers/video/msm/hdmi_sii9022.c
-
-/* Copyright (c) 2009-2010, The Linux Foundation. All rights reserved.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 and
- * only version 2 as published by the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- */
-
-//#include <linux/i2c.h>
-//#include <linux/delay.h>
-//#include "msm_fb.h"
-
-#define DEVICE_NAME "sii9022"
-#define SII9022_DEVICE_ID   0xB0
-
-struct sii9022_i2c_addr_data{
-	uint8_t addr;
-	uint8_t data;
-};
-
-/* video mode data */
-static uint8_t video_mode_data[] = {
-	SII9022_VIDEO_DATA_BASE_REG,
-	0xF9, 0x1C,
-	0x70, 0x17,
-	0x72, 0x06,
-	0xEE, 0x02,
-};
-
-static uint8_t avi_io_format[] = {
-	SII9022_AVI_IN_FORMAT_REG,
-	0x00, 0x00,
-};
-
-/* power state */
-static struct sii9022_i2c_addr_data regset0[] = {
-	{ 0x60, 0x04 },
-	{ 0x63, 0x00 },
-	{ 0x1E, 0x00 },
-};
-
-static uint8_t video_infoframe[] = {
-	0x0C,
-	0xF0, 0x00, 0x68, 0x00, 0x04, 0x00, 0x19, 0x00,
-	0xE9, 0x02, 0x04, 0x01, 0x04, 0x06,
-};
-
-/* configure audio */
-static struct sii9022_i2c_addr_data regset1[] = {
-	{ 0x26, 0x90 },
-	{ 0x20, 0x90 },
-	{ 0x1F, 0x80 },
-	{ 0x26, 0x80 },
-	{ 0x24, 0x02 },
-	{ 0x25, 0x0B },
-	{ 0xBC, 0x02 },
-	{ 0xBD, 0x24 },
-	{ 0xBE, 0x02 },
-};
-
-/* enable audio */
-static uint8_t misc_infoframe[] = {
-	0xBF,
-	0xC2, 0x84, 0x01, 0x0A, 0x6F, 0x02, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-};
-
-/* set HDMI, active */
-static struct sii9022_i2c_addr_data regset2[] = {
-	{ 0x1A, 0x01 },
-	{ 0x3D, 0x00 },
-};
-
-static int send_i2c_data(struct i2c_client *client,
-			 struct sii9022_i2c_addr_data *regset,
-			 int size)
-{
-	int i;
-	int rc = 0;
-
-	for (i = 0; i < size; i++) {
-		rc = i2c_smbus_write_byte_data(
-			client,
-			regset[i].addr, regset[i].data);
-		if (rc)
-			break;
-	}
-	return rc;
-}
-
-static int hdmi_sii_enable(struct i2c_client *client, const videomode_t * vdmode)
-{
-	int rc;
-	int retries = 10;
-	int count;
-
-	rc = i2c_smbus_write_byte_data(client, 0xC7, 0x00);
-	if (rc)
-	{
-		TP();
-		goto enable_exit;
-	}
-
-	do {
-		local_delay_ms(1);
-		rc = i2c_smbus_read_byte_data(client, SII9022_DEVICE_ID_REG);
-	} while ((rc != SII9022_DEVICE_ID) && retries--);
-
-	if (rc != SII9022_DEVICE_ID)
-	{
-		TP();
-		return -1;
-	}
-
-	rc = i2c_smbus_write_byte_data(client, SII9022_SYS_CTRL_DATA_REG, 0x11);
-	if (rc)
-	{
-		TP();
-		goto enable_exit;
-	}
-
-	/* Accumulated parameters for this display */
-	const unsigned HEIGHT = vdmode->height;	/* height */
-	const unsigned WIDTH = vdmode->width;	/* width */
-	const unsigned HSYNC = vdmode->hsync;	/*  */
-	const unsigned VSYNC = vdmode->vsync;	/*  */
-	const unsigned LEFTMARGIN = HSYNC + vdmode->hbp;	/* horizontal delay before DE start */
-	const unsigned TOPMARGIN = VSYNC + vdmode->vbp;	/* vertical delay before DE start */
-	const unsigned HFULL = LEFTMARGIN + WIDTH + vdmode->hfp;	/* horizontal full period */
-	const unsigned VFULL = TOPMARGIN + HEIGHT + vdmode->vfp;	/* vertical full period */
-
-	USBD_poke_u16(video_mode_data + 1, display_getdotclock(vdmode) / 1000 / 10);		// pixel clk
-	USBD_poke_u16(video_mode_data + 3, vdmode->fps * 100);		// vfreq
-	USBD_poke_u16(video_mode_data + 5, HFULL);		// pixels
-	USBD_poke_u16(video_mode_data + 7, VFULL);		// lines
-
-	count = ARRAY_SIZE(video_mode_data);
-	rc = i2c_master_send(client, video_mode_data, count);
-	if (rc != count) {
-		rc = -1;
-		TP();
-		goto enable_exit;
-	}
-
-	rc = i2c_smbus_write_byte_data(client, SII9022_PIXEL_REPETITION_REG, 0x20);
-	if (rc)
-		goto enable_exit;
-	count = ARRAY_SIZE(avi_io_format);
-	rc = i2c_master_send(client, avi_io_format, count);
-	if (rc != count) {
-		rc = -1;
-		TP();
-		goto enable_exit;
-	}
-
-	rc = send_i2c_data(client, regset0, ARRAY_SIZE(regset0));
-	if (rc)
-		goto enable_exit;
-
-	count = ARRAY_SIZE(video_infoframe);
-	rc = i2c_master_send(client, video_infoframe, count);
-	if (rc != count) {
-		rc = -1;
-		TP();
-		goto enable_exit;
-	}
-
-	rc = send_i2c_data(client, regset1, ARRAY_SIZE(regset1));
-	if (rc)
-	{
-		TP();
-		goto enable_exit;
-	}
-
-	count = ARRAY_SIZE(misc_infoframe);
-	rc = i2c_master_send(client, misc_infoframe, count);
-	if (rc != count) {
-		rc = -1;
-		TP();
-		goto enable_exit;
-	}
-
-	rc = send_i2c_data(client, regset2, ARRAY_SIZE(regset2));
-	if (rc)
-	{
-		TP();
-		goto enable_exit;
-	}
-
-	return 0;
-enable_exit:
-	PRINTF("%s: exited rc=%d\n", __func__, rc);
-	return rc;
-}
-//
-//static const struct i2c_device_id hmdi_sii_id[] = {
-//	{ DEVICE_NAME, 0 },
-//	{ }
-//};
-//
-//static int hdmi_sii_probe(struct i2c_client *client,
-//			const struct i2c_device_id *id)
-//{
-//	int rc;
-//
-//	if (!i2c_check_functionality(client->adapter,
-//				     I2C_FUNC_SMBUS_BYTE | I2C_FUNC_I2C))
-//		return -ENODEV;
-//	rc = hdmi_sii_enable(client);
-//	return rc;
-//}
-
-
-/*
-static struct i2c_driver hdmi_sii_i2c_driver = {
-	.driver = {
-		.name = DEVICE_NAME,
-		.owner = THIS_MODULE,
-	},
-	.probe = hdmi_sii_probe,
-	.remove =  __exit_p(hdmi_sii_remove),
-	.id_table = hmdi_sii_id,
-};
-*/
-//
-//static int /* __init */ hdmi_sii_init(void)
-//{
-//	int ret;
-//	struct msm_panel_info pinfo;
-//
-//	if (msm_fb_detect_client("hdmi_sii9022"))
-//		return 0;
-//
-//	pinfo.xres = 1280;
-//	pinfo.yres = 720;
-//	MSM_FB_SINGLE_MODE_PANEL(&pinfo);
-//	pinfo.type = HDMI_PANEL;
-//	pinfo.pdest = DISPLAY_1;
-//	pinfo.wait_cycle = 0;
-//	pinfo.bpp = 18;
-//	pinfo.fb_num = 2;
-//	pinfo.clk_rate = 74250000;
-//
-//	pinfo.lcdc.h_back_porch = 124;
-//	pinfo.lcdc.h_front_porch = 110;
-//	pinfo.lcdc.h_pulse_width = 136;
-//	pinfo.lcdc.v_back_porch = 19;
-//	pinfo.lcdc.v_front_porch = 5;
-//	pinfo.lcdc.v_pulse_width = 6;
-//	pinfo.lcdc.border_clr = 0;
-//	pinfo.lcdc.underflow_clr = 0xff;
-//	pinfo.lcdc.hsync_skew = 0;
-//
-//	ret = lcdc_device_register(&pinfo);
-//	if (ret) {
-//		PRINTF("%s: failed to register device\n", __func__);
-//		goto init_exit;
-//	}
-//
-//	ret = i2c_add_driver(&hdmi_sii_i2c_driver);
-//	if (ret)
-//		PRINTF("%s: failed to add i2c driver\n", __func__);
-//
-//init_exit:
-//	return ret;
-//}
-//
-//static void /* __exit */ hdmi_sii_exit(void)
-//{
-//	i2c_del_driver(&hdmi_sii_i2c_driver);
-//}
-
-//module_init(hdmi_sii_init);
-//module_exit(hdmi_sii_exit);
-//MODULE_LICENSE("GPL v2");
-//MODULE_VERSION("0.1");
-//MODULE_AUTHOR("Qualcomm Innovation Center, Inc.");
-//MODULE_DESCRIPTION("SiI9022 HDMI driver");
-//MODULE_ALIAS("platform:hdmi-sii9022");
-
-#endif
-
-struct i2c_device_id
-{
-	int a;
-};
-
-//static const struct i2c_device_id hmdi_sii_id[] = {
-//	{ DEVICE_NAME, 0 },
-//	{ }
-//};
-
-//static int hdmi_sii_probe(struct i2c_client *client,
-//			const struct i2c_device_id *id)
-//{
-//	int rc;
-//
-//	if (!i2c_check_functionality(client->adapter,
-//				     I2C_FUNC_SMBUS_BYTE | I2C_FUNC_I2C))
-//		return -1;
-//	rc = hdmi_sii_enable(client);
-//	return rc;
-//}
-
-
-//static struct i2c_driver hdmi_sii_i2c_driver = {
-//	.driver = {
-//		.name = DEVICE_NAME,
-//		.owner = THIS_MODULE,
-//	},
-//	.probe = hdmi_sii_probe,
-//	.remove =  __exit_p(hdmi_sii_remove),
-//	.id_table = hmdi_sii_id,
-//};
 
 #if 1
 //	https://github.com/facchinm/kernel-brain/blob/master/drivers/hdmi/encoder-sii9022.c
@@ -1196,31 +872,32 @@ static void sii902x_setup(struct sii902x_data *sii9022x, const videomode_t * vdm
 	int i;
 
 	//dev_dbg(&sii9022x->client->dev, "Sii902x: setup..\n");
-	PRINTF("sii902x_setup:\n");
+	//PRINTF("sii902x_setup:\n");
 	/* Power up */
 	sii9022x_regmap_write(SII9022_POWER_STATE_CTRL_REG, 0x00);
 
 	/* set TPI video mode */
-	switch (sii9022x->resolution) {
-	case 1080: /* 1080P30 timing */
-		data[0] = 7425;		// pixel clk
-		data[1] = 6000;		// vfreq
-		data[2] = 2200;		// pixels
-		data[3] = 1125;		// lines
-		break;
-	case 900: /* 1440 x 900 timing */
-		data[0] = 8875;
-		data[1] = 6000;
-		data[2] = 1600;
-		data[3] = 926;
-		break;
-	default: /* 720P60 timing */
-		data[0] = 7425;
-		data[1] = 6000;
-		data[2] = 1650;
-		data[3] = 750;
-		break;
-	}
+//	switch (sii9022x->resolution) {
+
+//	case 1080: /* 1080P30 timing */
+//		data[0] = 7425;		// pixel clk
+//		data[1] = 6000;		// vfreq
+//		data[2] = 2200;		// pixels
+//		data[3] = 1125;		// lines
+//		break;
+//	case 900: /* 1440 x 900 timing */
+//		data[0] = 8875;
+//		data[1] = 6000;
+//		data[2] = 1600;
+//		data[3] = 926;
+//		break;
+//	default: /* 720P60 timing */
+//		data[0] = 7425;
+//		data[1] = 6000;
+//		data[2] = 1650;
+//		data[3] = 750;
+//		break;
+//	}
 
 	/* Accumulated parameters for this display */
 	const unsigned HEIGHT = vdmode->height;	/* height */
@@ -1237,7 +914,7 @@ static void sii902x_setup(struct sii902x_data *sii9022x, const videomode_t * vdm
 	data[2] = HFULL;		// pixels
 	data[3] = VFULL;		// lines
 
-	PRINTF("pixel clk=%u, vfreq=%u, pixels=%u, lines=%u\n", data[0], data[1], data[2], data[3]);
+	//PRINTF("pixel clk=%u, vfreq=%u, pixels=%u, lines=%u\n", data[0], data[1], data[2], data[3]);
 
 	tmp = (uint8_t *)data;
 	for (i = 0; i < 8; i++)
@@ -1251,7 +928,7 @@ static void sii902x_setup(struct sii902x_data *sii9022x, const videomode_t * vdm
 	sii9022x_regmap_write(SII9022_AVI_OUT_FORMAT_REG, 0x10);
 
 	sii902x_set_avi_infoframe(sii9022x);
-	PRINTF("sii902x_setup done.\n");
+	//PRINTF("sii902x_setup done.\n");
 }
 
 static void sii902x_edid_parse_ext_blk(unsigned char *edid,
@@ -1324,7 +1001,7 @@ static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 	buf[0] = 0x00;
 	dat = i2c_transfer(adp, msg, 2);
 
-	printhex(0, edid, ONE_BLOCK_EDID_LEN);
+	//printhex(0, edid, ONE_BLOCK_EDID_LEN);
 
 	/* need read ext block? Only support one more blk now*/
 	if (edid[0x7E]) {
@@ -1345,7 +1022,7 @@ static int sii902x_edid_read(struct i2c_adapter *adp, unsigned short addr,
 			TP();
 			return dat;
 		}
-		printhex(ONE_BLOCK_EDID_LEN, edid + ONE_BLOCK_EDID_LEN, ONE_BLOCK_EDID_LEN);
+		//printhex(ONE_BLOCK_EDID_LEN, edid + ONE_BLOCK_EDID_LEN, ONE_BLOCK_EDID_LEN);
 
 		/* edid ext block parsing */
 		sii902x_edid_parse_ext_blk(edid + ONE_BLOCK_EDID_LEN, cfg);
@@ -1561,8 +1238,7 @@ static struct i2c_adapter d0adapter;
 static struct i2c_client d0client;
 static struct sii902x_data d0;
 
-static int sii902x_probe(struct i2c_client *client,
-			 const struct i2c_device_id *id)
+static int sii902x_probe(struct i2c_client *client)
 {
 	struct sii902x_data *sii9022x = & d0;
 //	struct regmap *regmap;
@@ -1719,7 +1395,7 @@ void sii9022x_initialize(const videomode_t * vdmode)
 	//sii902x_reset(NULL);
 
 	d0client.adapter = & d0adapter;
-	VERIFY(sii902x_probe(& d0client, NULL) == 0);
+	VERIFY(sii902x_probe(& d0client) == 0);
 
 	if (sii902x_read_edid(sii9022x) < 0) {
 		PRINTF(
@@ -1728,46 +1404,15 @@ void sii9022x_initialize(const videomode_t * vdmode)
 		sii902x_setup(sii9022x, vdmode);
 		sii902x_poweron(sii9022x);
 	}
+}
 
-	//hdmi_sii_enable(& d0client, vdmode);
-	PRINTF("d0.edid_cfg.hdmi_cap=%d\n", d0.edid_cfg.hdmi_cap);
-	//	int ret;
-//	struct msm_panel_info pinfo;
-//
-//	if (msm_fb_detect_client("hdmi_sii9022"))
-//		return 0;
-//
-//	pinfo.xres = 1280;
-//	pinfo.yres = 720;
-//	pinfo.type = HDMI_PANEL;
-//	pinfo.pdest = DISPLAY_1;
-//	pinfo.wait_cycle = 0;
-//	pinfo.bpp = 24;
-//	pinfo.fb_num = 2;
-//	pinfo.clk_rate = 74250000;
-//
-//	pinfo.lcdc.h_back_porch = 124;
-//	pinfo.lcdc.h_front_porch = 110;
-//	pinfo.lcdc.h_pulse_width = 136;
-//	pinfo.lcdc.v_back_porch = 19;
-//	pinfo.lcdc.v_front_porch = 5;
-//	pinfo.lcdc.v_pulse_width = 6;
-//	pinfo.lcdc.border_clr = 0;
-//	pinfo.lcdc.underflow_clr = 0xff;
-//	pinfo.lcdc.hsync_skew = 0;
-//
-//	ret = lcdc_device_register(&pinfo);
-//	if (ret) {
-//		PRINTF("%s: failed to register device\n", __func__);
-//		goto init_exit;
-//	}
-//
-//	ret = i2c_add_driver(&hdmi_sii_i2c_driver);
-//	if (ret)
-//		PRINTF("%s: failed to add i2c driver\n", __func__);
-//
-//init_exit:
-//	//return ret;
-//	;
+void sii9022x_deinitialize(void)
+{
+
+}
+
+void sii9022x_wakeup(const videomode_t * vdmode)
+{
+
 }
 #endif /* LCDMODEX_SII9022A */
