@@ -39,8 +39,6 @@ void Error_Handler(void);
 #include "../../Class/MSC/Inc/usbh_msc.h"
 #endif /* WITHUSEUSBFLASH */
 
-void board_ehci_initialize(EHCI_HandleTypeDef * hehci);
-
 
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
 
@@ -2095,6 +2093,205 @@ static void ehci_bus_poll ( struct usb_bus *bus ) {
 
 #endif
 
+
+// USe in HAL_EHCI_Start
+ // USB EHCI controller
+void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
+{
+ 	PRINTF("board_ehci_initialize start.\n");
+
+ 	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
+ 	EhciController * const ehci = & hehci->ehci;
+
+ 	HAL_EHCI_MspInit(hehci);
+
+     ehci_itd_fill(itd0);
+     ehci_queue_fill(queue0, (uintptr_t) queue0);
+
+     unsigned i;
+	for (i = 0; i < ARRAY_SIZE(asyncbuff); ++ i)
+     {
+     	asyncbuff [i] = 0x01;	// 0 - valid, 1 - invalid
+     }
+ 	// Periodic frame list
+     for (i = 0; i < FLS; ++ i)
+     {
+     	framesbuff [i] = 0x01;	// 0 - valid, 1 - invalid
+     }
+
+     framesbuff [0] =
+     		(uintptr_t) & itd0 |
+ 			(0uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
+ 			(0uL << 0);	// 0 - valid, 1 - invalid
+     framesbuff [1] =
+     		(uintptr_t) & queue0 |
+ 			(1uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
+ 			(0uL << 0);	// 0 - valid, 1 - invalid
+
+     arm_hardware_flush((uintptr_t) framesbuff, sizeof framesbuff);
+     arm_hardware_flush((uintptr_t) asyncbuff, sizeof asyncbuff);
+     arm_hardware_flush((uintptr_t) itd0, sizeof itd0);
+     arm_hardware_flush((uintptr_t) queue0, sizeof queue0);
+
+  	// power cycle for USB dongle
+// 	board_set_usbhostvbuson(0);
+// 	board_update();
+// 	HARDWARE_DELAY_MS(200);
+//	board_set_usbhostvbuson(1);
+//	board_update();
+//	HARDWARE_DELAY_MS(200);
+
+     // https://github.com/pdoane/osdev/blob/master/usb/ehci.c
+
+ 	// USBH_EHCI_HCICAPLENGTH == EHCIx->HCCAPBASE
+ 	// USBH_EHCI_HCSPARAMS == EHCIx->HCSPARAMS
+ 	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
+ 	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
+ 	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
+
+ 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
+ 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
+ 	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
+ 				((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F,
+				((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
+				((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01,
+				((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
+				((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
+ 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
+
+ 	// Calculate Operational Register Space base address
+ 	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
+ 	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
+ 	hehci->portsc = ((__IO unsigned long *) (opregspacebase + 0x0044));
+
+ 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
+ 	hehci->ehci.opRegs = (EhciOpRegs *) opregspacebase;
+ 	hehci->ehci.capRegs = (EhciCapRegs *) EHCIx;
+
+ 	// https://habr.com/ru/post/426421/
+ 	// Read the Command register
+ 	// Читаем командный регистр
+ 	// Write it back, setting bit 2 (the Reset bit)
+ 	// Записываем его обратно, выставляя бит 2(Reset)
+ 	// and making sure the two schedule Enable bits are clear.
+ 	// и проверяем, что 2 очереди выключены
+ 	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+ 	// A small delay here would be good. You don't want to read
+ 	// Небольшая задержка здесь будет неплоха, Вы не должны читать
+ 	// the register before it has a chance to actually set the bit
+ 	// регистр перед тем, как у него не появится шанса выставить бит
+ 	(void) EHCIx->USBCMD;
+ 	// Now wait for the controller to clear the reset bit.
+ 	// Ждем пока контроллер сбросит бит Reset
+ 	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
+ 		;
+ 	// Again, a small delay here would be good to allow the
+ 	// reset to actually become complete.
+ 	// Опять задержка
+ 	(void) EHCIx->USBCMD;
+ 	// wait for the halted bit to become set
+ 	// Ждем пока бит Halted не будет выставлен
+ 	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
+ 		;
+ 	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
+ 	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
+
+
+     // Check extended capabilities
+     uint_fast32_t eecp = (EHCIx->HCCPARAMS & HCCPARAMS_EECP_MASK) >> HCCPARAMS_EECP_SHIFT;
+     if (eecp >= 0x40)
+     {
+     	//PRINTF("board_ehci_initialize: eecp=%08lX\n", (unsigned long) eecp);
+        // Disable BIOS legacy support
+ //        uint legsup = PciRead32(id, eecp + USBLEGSUP);
+ //
+ //        if (legsup & USBLEGSUP_HC_BIOS)
+ //        {
+ //            PciWrite32(id, eecp + USBLEGSUP, legsup | USBLEGSUP_HC_OS);
+ //            for (;;)
+ //            {
+ //                legsup = PciRead32(id, eecp + USBLEGSUP);
+ //                if (~legsup & USBLEGSUP_HC_BIOS && legsup & USBLEGSUP_HC_OS)
+ //                {
+ //                    break;
+ //                }
+ //            }
+ //        }
+     }
+ 	// Disable interrupts
+ 	// Отключаем прерывания
+ 	//hc->opRegs->usbIntr = 0;
+     EHCIx->USBINTR = 0;
+ 	// Setup frame list
+ 	// Устанавливаем ссылку на фреймлист
+ 	//hc->opRegs->frameIndex = 0;
+     EHCIx->FRINDEX = 0;
+ 	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
+     EHCIx->PERIODICLISTBASE = (uintptr_t) framesbuff;
+ 	// копируем адрес асинхронной очереди в регистр
+ 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
+     EHCIx->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+ 	// Устанавливаем сегмент в 0
+ 	//hc->opRegs->ctrlDsSegment = 0;
+     EHCIx->CTRLDSSEGMENT = 0x00000000;
+ 	// Clear status
+ 	// Чистим статус
+ 	//hc->opRegs->usbSts = ~0;
+     EHCIx->USBSTS = ~ 0uL;
+     ASSERT(& EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
+
+ 	// Configure all devices to be managed by the EHCI
+ 	// Говорим, что завершили
+ 	//hc->opRegs->configFlag = 1;
+ 	//WOR(configFlagO, 1);
+	//
+	//PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) EHCIx->USBCMD);
+	//PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) EHCIx->USBSTS);
+	//PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) EHCIx->USBINTR);
+	//PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) EHCIx->CTRLDSSEGMENT);
+	//PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) EHCIx->PERIODICLISTBASE);
+	//PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) EHCIx->ASYNCLISTADDR);
+	////PRINTF("board_ehci_initialize: asyncbuff=%08lX\n", (unsigned long) & asyncbuff);
+	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
+	////local_delay_ms(10);
+	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
+	////local_delay_ms(20);
+	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
+	////local_delay_ms(30);
+	//PRINTF("fl=%08lX %08lX\n", hehci->ehci.frameList, EHCIx->PERIODICLISTBASE);
+
+ //	USBH_EHCI_IRQn
+ 	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
+ 	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
+
+
+
+  	/* Route all ports to EHCI controller */
+	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
+ 	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
+
+	/* Enable power to all ports */
+  	{
+ 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+
+		portsc &= ~EHCI_PORTSC_CHANGE;
+		portsc |= EHCI_PORTSC_PP;
+
+ 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
+ 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 	}
+
+	/* Wait 20ms after potentially enabling power to a port */
+	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
+ 	local_delay_ms(50);
+
+
+	hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] |= (1uL << 12);	// Port Power
+
+
+ 	PRINTF("board_ehci_initialize done.\n");
+}
+
 HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_t state) {
 	//PRINTF("EHCI_DriveVbus: state=%d\n", (int) state);
 	board_set_usbhostvbuson(state);
@@ -2641,203 +2838,6 @@ uint32_t HAL_EHCI_HC_GetXferCount(EHCI_HandleTypeDef *hhcd, uint8_t chnum)
   return hhcd->hc[chnum].xfer_count;
 }
 
-// USe in HAL_EHCI_Start
- // USB EHCI controller
-void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
-{
- 	PRINTF("board_ehci_initialize start.\n");
-
- 	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
- 	EhciController * const ehci = & hehci->ehci;
-
- 	HAL_EHCI_MspInit(hehci);
-
-     ehci_itd_fill(itd0);
-     ehci_queue_fill(queue0, (uintptr_t) queue0);
-
-     unsigned i;
-	for (i = 0; i < ARRAY_SIZE(asyncbuff); ++ i)
-     {
-     	asyncbuff [i] = 0x01;	// 0 - valid, 1 - invalid
-     }
- 	// Periodic frame list
-     for (i = 0; i < FLS; ++ i)
-     {
-     	framesbuff [i] = 0x01;	// 0 - valid, 1 - invalid
-     }
-
-     framesbuff [0] =
-     		(uintptr_t) & itd0 |
- 			(0uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
- 			(0uL << 0);	// 0 - valid, 1 - invalid
-     framesbuff [1] =
-     		(uintptr_t) & queue0 |
- 			(1uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
- 			(0uL << 0);	// 0 - valid, 1 - invalid
-
-     arm_hardware_flush((uintptr_t) framesbuff, sizeof framesbuff);
-     arm_hardware_flush((uintptr_t) asyncbuff, sizeof asyncbuff);
-     arm_hardware_flush((uintptr_t) itd0, sizeof itd0);
-     arm_hardware_flush((uintptr_t) queue0, sizeof queue0);
-
-  	// power cycle for USB dongle
-// 	board_set_usbhostvbuson(0);
-// 	board_update();
-// 	HARDWARE_DELAY_MS(200);
-//	board_set_usbhostvbuson(1);
-//	board_update();
-//	HARDWARE_DELAY_MS(200);
-
-     // https://github.com/pdoane/osdev/blob/master/usb/ehci.c
-
- 	// USBH_EHCI_HCICAPLENGTH == EHCIx->HCCAPBASE
- 	// USBH_EHCI_HCSPARAMS == EHCIx->HCSPARAMS
- 	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
- 	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
- 	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
-
- 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
- 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
- 	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
- 				((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F,
-				((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
-				((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01,
-				((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
-				((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
- 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
-
- 	// Calculate Operational Register Space base address
- 	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
- 	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
- 	hehci->portsc = ((__IO unsigned long *) (opregspacebase + 0x0044));
-
- 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
- 	hehci->ehci.opRegs = (EhciOpRegs *) opregspacebase;
- 	hehci->ehci.capRegs = (EhciCapRegs *) EHCIx;
-
- 	// https://habr.com/ru/post/426421/
- 	// Read the Command register
- 	// Читаем командный регистр
- 	// Write it back, setting bit 2 (the Reset bit)
- 	// Записываем его обратно, выставляя бит 2(Reset)
- 	// and making sure the two schedule Enable bits are clear.
- 	// и проверяем, что 2 очереди выключены
- 	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
- 	// A small delay here would be good. You don't want to read
- 	// Небольшая задержка здесь будет неплоха, Вы не должны читать
- 	// the register before it has a chance to actually set the bit
- 	// регистр перед тем, как у него не появится шанса выставить бит
- 	(void) EHCIx->USBCMD;
- 	// Now wait for the controller to clear the reset bit.
- 	// Ждем пока контроллер сбросит бит Reset
- 	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
- 		;
- 	// Again, a small delay here would be good to allow the
- 	// reset to actually become complete.
- 	// Опять задержка
- 	(void) EHCIx->USBCMD;
- 	// wait for the halted bit to become set
- 	// Ждем пока бит Halted не будет выставлен
- 	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
- 		;
- 	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
- 	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
-
-
-     // Check extended capabilities
-     uint_fast32_t eecp = (EHCIx->HCCPARAMS & HCCPARAMS_EECP_MASK) >> HCCPARAMS_EECP_SHIFT;
-     if (eecp >= 0x40)
-     {
-     	//PRINTF("board_ehci_initialize: eecp=%08lX\n", (unsigned long) eecp);
-        // Disable BIOS legacy support
- //        uint legsup = PciRead32(id, eecp + USBLEGSUP);
- //
- //        if (legsup & USBLEGSUP_HC_BIOS)
- //        {
- //            PciWrite32(id, eecp + USBLEGSUP, legsup | USBLEGSUP_HC_OS);
- //            for (;;)
- //            {
- //                legsup = PciRead32(id, eecp + USBLEGSUP);
- //                if (~legsup & USBLEGSUP_HC_BIOS && legsup & USBLEGSUP_HC_OS)
- //                {
- //                    break;
- //                }
- //            }
- //        }
-     }
- 	// Disable interrupts
- 	// Отключаем прерывания
- 	//hc->opRegs->usbIntr = 0;
-     EHCIx->USBINTR = 0;
- 	// Setup frame list
- 	// Устанавливаем ссылку на фреймлист
- 	//hc->opRegs->frameIndex = 0;
-     EHCIx->FRINDEX = 0;
- 	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-     EHCIx->PERIODICLISTBASE = (uintptr_t) framesbuff;
- 	// копируем адрес асинхронной очереди в регистр
- 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-     EHCIx->ASYNCLISTADDR = (uintptr_t) asyncbuff;
- 	// Устанавливаем сегмент в 0
- 	//hc->opRegs->ctrlDsSegment = 0;
-     EHCIx->CTRLDSSEGMENT = 0x00000000;
- 	// Clear status
- 	// Чистим статус
- 	//hc->opRegs->usbSts = ~0;
-     EHCIx->USBSTS = ~ 0uL;
-     ASSERT(& EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
-
- 	// Configure all devices to be managed by the EHCI
- 	// Говорим, что завершили
- 	//hc->opRegs->configFlag = 1;
- 	//WOR(configFlagO, 1);
-	//
-	//PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) EHCIx->USBCMD);
-	//PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) EHCIx->USBSTS);
-	//PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) EHCIx->USBINTR);
-	//PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) EHCIx->CTRLDSSEGMENT);
-	//PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) EHCIx->PERIODICLISTBASE);
-	//PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) EHCIx->ASYNCLISTADDR);
-	////PRINTF("board_ehci_initialize: asyncbuff=%08lX\n", (unsigned long) & asyncbuff);
-	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-	////local_delay_ms(10);
-	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-	////local_delay_ms(20);
-	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-	////local_delay_ms(30);
-	//PRINTF("fl=%08lX %08lX\n", hehci->ehci.frameList, EHCIx->PERIODICLISTBASE);
-
- //	USBH_EHCI_IRQn
- 	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
- 	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
-
-
-
-  	/* Route all ports to EHCI controller */
-	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
- 	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
-
-	/* Enable power to all ports */
-  	{
- 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
-
-		portsc &= ~EHCI_PORTSC_CHANGE;
-		portsc |= EHCI_PORTSC_PP;
-
- 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
- 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
- 	}
-
-	/* Wait 20ms after potentially enabling power to a port */
-	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
- 	local_delay_ms(50);
-
-
-	hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] |= (1uL << 12);	// Port Power
-
-
- 	PRINTF("board_ehci_initialize done.\n");
- }
 
 
 /**
