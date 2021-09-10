@@ -49,15 +49,31 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci);
 enum { FLS = 256, FLS_code = 2 };
 
 static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
+// isochronious transaction descriptors
 static __attribute__((used, aligned(32))) uint32_t itd0 [16];
 static __attribute__((used, aligned(32))) uint32_t queue0 [16];
 
+static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024];
+// Periodic frame list
+static __attribute__((used, aligned(4096))) uint32_t framesbuff [FLS];
+
+
+static uint32_t cpu_to_le32(unsigned long v)
+{
+	return v;
+}
+
+static uint16_t cpu_to_le16(unsigned long v)
+{
+	return v;
+}
 
 static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
 {
 	qh [0] = (qnext & 0xFFFFFFC0) | (1uL << 1);
 }
 
+// isochronious transaction descriptor
 static void ehci_itd_fill(uint32_t * itd)
 {
 	itd [0] = 0x01;
@@ -2443,7 +2459,48 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   hehci->hc[ch_num].state = HC_IDLE;
 
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
-  return HAL_ERROR;
+
+  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) asyncbuff;
+	memset ( head0, 0, sizeof ( *head0 ) );
+	head0->chr = cpu_to_le32 ( EHCI_CHR_HEAD );
+	head0->cache.next = cpu_to_le32 ( EHCI_LINK_TERMINATE );
+	head0->cache.status = EHCI_STATUS_HALTED;
+#if 0
+	ehci_async_schedule ( ehci );
+	writel ( virt_to_phys ( head0 ),
+			ehci->op + EHCI_OP_ASYNCLISTADDR );
+
+	/* Use async queue head to determine control data structure segment */
+	ehci->ctrldssegment =
+			( ( ( uint64_t ) virt_to_phys ( head0 ) ) >> 32 );
+	if ( ehci->addr64 ) {
+		writel ( ehci->ctrldssegment, ehci->op + EHCI_OP_CTRLDSSEGMENT);
+	} else if ( ehci->ctrldssegment ) {
+		DBGC ( ehci, "EHCI %s CTRLDSSEGMENT not supported\n",
+				ehci->name );
+		rc = -ENOTSUP;
+		goto err_ctrldssegment;
+	}
+#endif
+	head0->cache.low [0] = (uintptr_t) pbuff;
+	head0->cache.low [1] = (uintptr_t) pbuff;
+	head0->cache.low [2] = (uintptr_t) pbuff;
+	head0->cache.high [0] = 0;
+	head0->cache.high [1] = 0;
+	head0->cache.high [2] = 0;
+	head0->cache.len = cpu_to_le16 ( length | 0 );
+	head0->cache.flags = ( 0 | EHCI_FL_CERR_MAX );
+
+	PRINTF("before activate:\n");
+	printhex(0, (void *) head0, sizeof * head0);
+	head0->cache.status = EHCI_STATUS_ACTIVE;
+
+	local_delay_ms(200);
+	PRINTF("after activate:\n");
+	printhex(0, (void *) head0, sizeof * head0);
+	PRINTF("after activate:\n");
+	printhex(0, (void *) pbuff, length);
+  return HAL_OK;
 }
 
 /**
@@ -2493,14 +2550,11 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
      ehci_queue_fill(queue0, (uintptr_t) queue0);
 
      unsigned i;
-
- 	static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024];
- 	for (i = 0; i < ARRAY_SIZE(asyncbuff); ++ i)
+	for (i = 0; i < ARRAY_SIZE(asyncbuff); ++ i)
      {
      	asyncbuff [i] = 0x01;	// 0 - valid, 1 - invalid
      }
  	// Periodic frame list
- 	static __attribute__((used, aligned(4096))) uint32_t framesbuff [FLS];
      for (i = 0; i < FLS; ++ i)
      {
      	framesbuff [i] = 0x01;	// 0 - valid, 1 - invalid
