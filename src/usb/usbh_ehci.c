@@ -2247,6 +2247,154 @@ HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
   return HAL_OK;
 }
 
+
+/**
+  * @brief  Submit a new URB for processing.
+  * @param  hhcd HCD handle
+  * @param  ch_num Channel number.
+  *         This parameter can be a value from 1 to 15
+  * @param  direction Channel number.
+  *          This parameter can be one of these values:
+  *           0 : Output / 1 : Input
+  * @param  ep_type Endpoint Type.
+  *          This parameter can be one of these values:
+  *            EP_TYPE_CTRL: Control type/
+  *            EP_TYPE_ISOC: Isochronous type/
+  *            EP_TYPE_BULK: Bulk type/
+  *            EP_TYPE_INTR: Interrupt type/
+  * @param  token Endpoint Type.
+  *          This parameter can be one of these values:
+  *            0: HC_PID_SETUP / 1: HC_PID_DATA1
+  * @param  pbuff pointer to URB data
+  * @param  length Length of URB data
+  * @param  do_ping activate do ping protocol (for high speed only).
+  *          This parameter can be one of these values:
+  *           0 : do ping inactive / 1 : do ping active
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
+                                           uint8_t ch_num,
+                                           uint8_t direction,
+                                           uint8_t ep_type,
+                                           uint8_t token,
+                                           uint8_t *pbuff,
+                                           uint16_t length,
+                                           uint8_t do_ping)
+{
+  hehci->hc[ch_num].ep_is_in = direction;
+  hehci->hc[ch_num].ep_type  = ep_type;
+
+  if (token == 0U)
+  {
+    hehci->hc[ch_num].data_pid = HC_PID_SETUP;
+    hehci->hc[ch_num].do_ping = do_ping;
+  }
+  else
+  {
+    hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+  }
+
+  /* Manage Data Toggle */
+  switch (ep_type)
+  {
+    case EP_TYPE_CTRL:
+      if ((token == 1U) && (direction == 0U)) /*send data */
+      {
+        if (length == 0U)
+        {
+          /* For Status OUT stage, Length==0, Status Out PID = 1 */
+          hehci->hc[ch_num].toggle_out = 1U;
+        }
+
+        /* Set the Data Toggle bit as per the Flag */
+        if (hehci->hc[ch_num].toggle_out == 0U)
+        {
+          /* Put the PID 0 */
+          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+        }
+        else
+        {
+          /* Put the PID 1 */
+          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+        }
+      }
+      break;
+
+    case EP_TYPE_BULK:
+      if (direction == 0U)
+      {
+        /* Set the Data Toggle bit as per the Flag */
+        if (hehci->hc[ch_num].toggle_out == 0U)
+        {
+          /* Put the PID 0 */
+          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+        }
+        else
+        {
+          /* Put the PID 1 */
+          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+        }
+      }
+      else
+      {
+        if (hehci->hc[ch_num].toggle_in == 0U)
+        {
+          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+        }
+        else
+        {
+          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+        }
+      }
+
+      break;
+    case EP_TYPE_INTR:
+      if (direction == 0U)
+      {
+        /* Set the Data Toggle bit as per the Flag */
+        if (hehci->hc[ch_num].toggle_out == 0U)
+        {
+          /* Put the PID 0 */
+          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+        }
+        else
+        {
+          /* Put the PID 1 */
+          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+        }
+      }
+      else
+      {
+        if (hehci->hc[ch_num].toggle_in == 0U)
+        {
+          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+        }
+        else
+        {
+          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+        }
+      }
+      break;
+
+    case EP_TYPE_ISOC:
+      hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+      break;
+
+    default:
+      break;
+  }
+
+  hehci->hc[ch_num].xfer_buff = pbuff;
+  hehci->hc[ch_num].xfer_len  = length;
+  hehci->hc[ch_num].urb_state = URB_IDLE;
+  hehci->hc[ch_num].xfer_count = 0U;
+  hehci->hc[ch_num].ch_num = ch_num;
+  hehci->hc[ch_num].state = HC_IDLE;
+
+  //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
+  return HAL_ERROR;
+}
+
 // USe in HAL_EHCI_Start
  // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
@@ -2536,16 +2684,16 @@ USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status)
  */
 USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t *pbuff,
-		uint16_t length, uint8_t do_ping) {
+		uint16_t length, uint8_t do_ping)
+{
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
-//   hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
-//                                         ep_type, token, pbuff, length,
-//                                         do_ping);
-	//PRINTF("USBH_LL_SubmitURB:\n");
-	//printhex(0, pbuff, length);
-	hal_status = HAL_ERROR;
+	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
+								 ep_type, token, pbuff, length,
+								 do_ping);
+//	PRINTF("USBH_LL_SubmitURB:\n");
+//	printhex(0, pbuff, length);
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
 
