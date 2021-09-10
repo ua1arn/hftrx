@@ -463,24 +463,16 @@ USBH_StatusTypeDef USBH_ReEnumerate(USBH_HandleTypeDef *phost)
   return USBH_OK;
 }
 
-
 static void USBH_ProcessDelay(
 	USBH_HandleTypeDef *phost,
 	HOST_StateTypeDef state,
 	unsigned delayMS
 	)
 {
-	const uint_fast16_t nticks = NTICKS(delayMS);
-	if (nticks > 1)
-	{
-		phost->gPushTicks = nticks;
-		phost->gPushState = state;
-		phost->gState = HOST_DELAY;
-	}
-	else
-	{
-		phost->gState = state;
-	}
+	phost->tickstart = sys_now();
+	phost->wait = ulmax32(delayMS, 1000 / TICKS_FREQUENCY);
+	phost->gState = HOST_DELAY;
+	phost->gPushState = state;
 }
 
 
@@ -864,7 +856,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
       break;
 
 	case HOST_DELAY:
-		if (--phost->gPushTicks == 0)
+		if  ((sys_now() - phost->tickstart) >= phost->wait)
 			phost->gState = phost->gPushState;
 		break;
 

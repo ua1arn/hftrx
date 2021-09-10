@@ -1188,5 +1188,6 @@ unsigned long ulmax(unsigned long a, unsigned long b);
 
 #include "taildefs.h"
 #include "clocks.h"
+uint32_t sys_now(void);
 
 #endif // HARDWARE_H_INCLUDED

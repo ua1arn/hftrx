@@ -484,7 +484,9 @@ typedef struct _USBH_HandleTypeDef
 {
 	  __IO HOST_StateTypeDef     gState;       /*  Host State Machine Value */
 	  __IO HOST_StateTypeDef     gPushState;       /*  Host State Machine Value */
-	  uint32_t              gPushTicks;
+	  //uint32_t              gPushTicks;
+	  uint32_t tickstart;
+	  uint32_t wait;
   ENUM_StateTypeDef     EnumState;    /* Enumeration state Machine */
   CMD_StateTypeDef      RequestState;
   USBH_CtrlTypeDef      Control;
