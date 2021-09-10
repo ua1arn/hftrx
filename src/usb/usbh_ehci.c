@@ -7,7 +7,6 @@
 
 #include "hardware.h"
 
-
 #if WITHUSBHW && WITHEHCIHW
 
 #include "board.h"
@@ -20,6 +19,9 @@
 #include "usbch9.h"
 #include "usbh_core.h"
 #include "ehci.h"
+#include "ipxe/usb.h"
+
+#include <string.h>
 
 void Error_Handler(void);
 
@@ -39,14 +41,22 @@ void Error_Handler(void);
 
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci);
 
-#include <string.h>
 
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
+
+// Taken from
+//	https://github.com/xushanpu123/xsp-daily-work/blob/ce4b31db29a560400ac948053b451a2122631490/rCore-Tutorial-v3/qemu-5.0.0/roms/ipxe/src/drivers/usb/ehci.c
+//	https://github.com/xushanpu123/xsp-daily-work/blob/ce4b31db29a560400ac948053b451a2122631490/rCore-Tutorial-v3/qemu-5.0.0/roms/ipxe/src/include/ipxe/usb.h
+
 
 #define DBG_LOG 1
 
 #define ENOTSUP 1
 #define ENOMEM 1
+#define ETIMEDOUT 1
+#define ENOBUFS 1
+#define ENODEV 1
+#define ECANCELED 1
 
 //enum { FLS = 1024, FLS_code = 0 };
 //enum { FLS = 512, FLS_code = 1 };
@@ -62,19 +72,30 @@ static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024];
 static __attribute__((used, aligned(4096))) uint32_t framesbuff [FLS];
 
 
-static uint32_t cpu_to_le32(unsigned long v)
+static void * zalloc(size_t size)
 {
-	return v;
+	return malloc(size);
 }
 
-static uint16_t cpu_to_le16(unsigned long v)
+static void * malloc_phys(size_t size, size_t alignv)
 {
-	return v;
+	return malloc(size);
 }
 
-static uintptr_t virt_to_phys(void * v)
+static void  free_phys(void * p, size_t size)
 {
-	return (uintptr_t) v;
+
+}
+
+
+static void wmb(void)
+{
+	__DMB();
+}
+
+static void rmb(void)
+{
+	__DMB();
 }
 
 static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
@@ -112,29 +133,7 @@ static void writel(uint32_t v, void * a)
 }
 
 
-#if 0
-
-struct usb_hub
-{
-	int v;
-};
-
-struct usb_bus
-{
-	struct usb_hub *hub;
-};
-static struct usb_hub usb_hub0;
-static struct ehci_device ehci_device0;
-
-struct ehci_device * usb_hub_get_drvdata ( struct usb_hub *hub )
-{
-	return & ehci_device0;
-}
-
-struct ehci_device * usb_hub_get_drvdata2 ( struct usb_bus *bus )
-{
-	return & ehci_device0;
-}
+#if 1
 
 /** @file
  *
@@ -421,7 +420,7 @@ static int ehci_legacy_prevent_release;
 //		}
 //
 //		/* Delay */
-//		mdelay ( 1 );
+//		local_delay_ms ( 1 );
 //	}
 //
 //	/* BIOS did not release ownership.  Claim it forcibly by
@@ -477,40 +476,40 @@ static int ehci_legacy_prevent_release;
  *
  * @v ehci              EHCI device
  */
-static void ehci_poll_companions ( struct ehci_device *ehci ) {
-	struct usb_bus *bus;
-	struct device_description *desc;
-
-	/* Poll any USB buses belonging to child companion controllers */
-	for_each_usb_bus ( bus ) {
-
-		/* Get underlying devices description */
-		desc = &bus->dev->desc;
-
-		/* Skip buses that are not PCI devices */
-		if ( desc->bus_type != BUS_TYPE_PCI )
-			continue;
-
-		/* Skip buses that are not part of the same PCI device */
-		if ( PCI_FIRST_FUNC ( desc->location ) !=
-				PCI_FIRST_FUNC ( ehci->bus->dev->desc.location ) )
-			continue;
-
-		/* Skip buses that are not UHCI or OHCI PCI devices */
-		if ( ( desc->class != PCI_CLASS ( PCI_CLASS_SERIAL,
-				PCI_CLASS_SERIAL_USB,
-				PCI_CLASS_SERIAL_USB_UHCI ))&&
-				( desc->class != PCI_CLASS ( PCI_CLASS_SERIAL,
-						PCI_CLASS_SERIAL_USB,
-						PCI_CLASS_SERIAL_USB_OHCI ) ))
-			continue;
-
-		/* Poll child companion controller bus */
-		PRINTF("EHCI %s polling companion %s\n",
-				ehci->name, bus->name );
-		usb_poll ( bus );
-	}
-}
+//static void ehci_poll_companions ( struct ehci_device *ehci ) {
+//	struct usb_bus *bus;
+//	struct device_description *desc;
+//
+//	/* Poll any USB buses belonging to child companion controllers */
+//	for_each_usb_bus ( bus ) {
+//
+//		/* Get underlying devices description */
+//		desc = &bus->dev->desc;
+//
+//		/* Skip buses that are not PCI devices */
+//		if ( desc->bus_type != BUS_TYPE_PCI )
+//			continue;
+//
+//		/* Skip buses that are not part of the same PCI device */
+//		if ( PCI_FIRST_FUNC ( desc->location ) !=
+//				PCI_FIRST_FUNC ( ehci->bus->dev->desc.location ) )
+//			continue;
+//
+//		/* Skip buses that are not UHCI or OHCI PCI devices */
+//		if ( ( desc->class != PCI_CLASS ( PCI_CLASS_SERIAL,
+//				PCI_CLASS_SERIAL_USB,
+//				PCI_CLASS_SERIAL_USB_UHCI ))&&
+//				( desc->class != PCI_CLASS ( PCI_CLASS_SERIAL,
+//						PCI_CLASS_SERIAL_USB,
+//						PCI_CLASS_SERIAL_USB_OHCI ) ))
+//			continue;
+//
+//		/* Poll child companion controller bus */
+//		PRINTF("EHCI %s polling companion %s\n",
+//				ehci->name, bus->name );
+//		usb_poll ( bus );
+//	}
+//}
 
 /**
  * Locate EHCI companion controller
@@ -518,25 +517,25 @@ static void ehci_poll_companions ( struct ehci_device *ehci ) {
  * @v pci               PCI device
  * @ret busdevfn        EHCI companion controller bus:dev.fn (if any)
  */
-unsigned int ehci_companion ( struct pci_device *pci ) {
-	struct pci_device tmp;
-	unsigned int busdevfn;
-	int rc;
-
-	/* Look for an EHCI function on the same PCI device */
-	busdevfn = pci->busdevfn;
-	while ( ++busdevfn <= PCI_LAST_FUNC ( pci->busdevfn ) ) {
-		pci_init ( &tmp, busdevfn );
-		if ( ( rc = pci_read_config ( &tmp ) ) != 0 )
-			continue;
-		if ( tmp.class == PCI_CLASS ( PCI_CLASS_SERIAL,
-				PCI_CLASS_SERIAL_USB,
-				PCI_CLASS_SERIAL_USB_EHCI ) )
-			return busdevfn;
-	}
-
-	return 0;
-}
+//unsigned int ehci_companion ( struct pci_device *pci ) {
+//	struct pci_device tmp;
+//	unsigned int busdevfn;
+//	int rc;
+//
+//	/* Look for an EHCI function on the same PCI device */
+//	busdevfn = pci->busdevfn;
+//	while ( ++busdevfn <= PCI_LAST_FUNC ( pci->busdevfn ) ) {
+//		pci_init ( &tmp, busdevfn );
+//		if ( ( rc = pci_read_config ( &tmp ) ) != 0 )
+//			continue;
+//		if ( tmp.class == PCI_CLASS ( PCI_CLASS_SERIAL,
+//				PCI_CLASS_SERIAL_USB,
+//				PCI_CLASS_SERIAL_USB_EHCI ) )
+//			return busdevfn;
+//	}
+//
+//	return 0;
+//}
 
 /******************************************************************************
  *
@@ -587,7 +586,7 @@ static int ehci_stop ( struct ehci_device *ehci ) {
 			return 0;
 
 		/* Delay */
-		mdelay ( 1 );
+		local_delay_ms ( 1 );
 	}
 
 	PRINTF("EHCI %s timed out waiting for stop\n", ehci->name );
@@ -625,7 +624,7 @@ static int ehci_reset ( struct ehci_device *ehci ) {
 			return 0;
 
 		/* Delay */
-		mdelay ( 1 );
+		local_delay_ms ( 1 );
 	}
 
 	PRINTF("EHCI %s timed out waiting for reset\n", ehci->name );
@@ -960,7 +959,7 @@ static int ehci_async_del ( struct ehci_endpoint *endpoint ) {
 		}
 
 		/* Delay */
-		mdelay ( 1 );
+		local_delay_ms ( 1 );
 	}
 
 	/* Bad things will probably happen now */
@@ -987,21 +986,21 @@ static void ehci_periodic_schedule ( struct ehci_device *ehci ) {
 	 * safely run concurrently with hardware execution of the
 	 * schedule.
 	 */
-	DBGCP ( ehci, "EHCI %s periodic schedule: ", ehci->name );
+	PRINTF("EHCI %s periodic schedule: ", ehci->name );
 	link = EHCI_LINK_TERMINATE;
 	list_for_each_entry_reverse ( endpoint, &ehci->periodic, schedule ) {
 		queue = endpoint->ring.head;
 		queue->link = cpu_to_le32 ( link );
 		wmb();
-		DBGCP ( ehci, "%s%d",
+		PRINTF("%s%d",
 				( ( link == EHCI_LINK_TERMINATE ) ? "" : "<-" ),
 				endpoint->ep->interval );
 		link = ehci_link_qh ( queue );
 	}
-	DBGCP ( ehci, "\n" );
+	PRINTF("\n" );
 
 	/* Populate periodic frame list */
-	DBGCP ( ehci, "EHCI %s periodic frame list:", ehci->name );
+	PRINTF("EHCI %s periodic frame list:", ehci->name );
 	frames = EHCI_PERIODIC_FRAMES ( ehci->flsize );
 	for ( i = 0 ; i < frames ; i++ ) {
 
@@ -1028,7 +1027,7 @@ static void ehci_periodic_schedule ( struct ehci_device *ehci ) {
 			if ( endpoint->ep->interval <= max_interval ) {
 				queue = endpoint->ring.head;
 				link = ehci_link_qh ( queue );
-				DBGCP ( ehci, " %d:%d",
+				PRINTF(" %d:%d",
 						i, endpoint->ep->interval );
 				break;
 			}
@@ -1036,7 +1035,7 @@ static void ehci_periodic_schedule ( struct ehci_device *ehci ) {
 		ehci->frame[i].link = cpu_to_le32 ( link );
 	}
 	wmb();
-	DBGCP ( ehci, "\n" );
+	PRINTF("\n" );
 }
 
 /**
@@ -1077,7 +1076,7 @@ static int ehci_periodic_del ( struct ehci_endpoint *endpoint ) {
 	ehci_periodic_schedule ( ehci );
 
 	/* Delay for a whole USB frame (with a 100% safety margin) */
-	mdelay ( 2 );
+	local_delay_ms ( 2 );
 
 	return 0;
 }
@@ -1670,7 +1669,7 @@ static int ehci_root_open ( struct usb_hub *hub ) {
 	}
 
 	/* Wait 20ms after potentially enabling power to a port */
-	mdelay ( EHCI_PORT_POWER_DELAY_MS );
+	local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 
 	return 0;
 }
@@ -1713,7 +1712,7 @@ static int ehci_root_enable ( struct usb_hub *hub, struct usb_port *port ) {
 	portsc &= ~( EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
 	portsc |= EHCI_PORTSC_PR;
 	writel ( portsc, ehci->op + EHCI_OP_PORTSC ( port->address ) );
-	mdelay ( USB_RESET_DELAY_MS );
+	local_delay_ms ( USB_RESET_DELAY_MS );
 	portsc &= ~EHCI_PORTSC_PR;
 	writel ( portsc, ehci->op + EHCI_OP_PORTSC ( port->address ) );
 
@@ -1731,7 +1730,7 @@ static int ehci_root_enable ( struct usb_hub *hub, struct usb_port *port ) {
 		}
 
 		/* Delay */
-		mdelay ( 1 );
+		local_delay_ms ( 1 );
 	}
 
 	PRINTF("EHCI %s-%d timed out waiting for port to reset\n",
@@ -1745,10 +1744,10 @@ static int ehci_root_enable ( struct usb_hub *hub, struct usb_port *port ) {
 	writel ( portsc, ehci->op + EHCI_OP_PORTSC ( port->address ) );
 
 	/* Delay to allow child companion controllers to settle */
-	mdelay ( EHCI_DISOWN_DELAY_MS );
+	local_delay_ms ( EHCI_DISOWN_DELAY_MS );
 
 	/* Poll child companion controllers */
-	ehci_poll_companions ( ehci );
+	//ehci_poll_companions ( ehci );
 
 	return -ENODEV;
 }
@@ -2513,15 +2512,15 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	head0->cache.len = cpu_to_le16 ( length | 0 );
 	head0->cache.flags = ( 0 | EHCI_FL_CERR_MAX );
 
-	PRINTF("before activate:\n");
-	printhex(0, (void *) head0, sizeof * head0);
-	head0->cache.status = EHCI_STATUS_ACTIVE;
-
-	local_delay_ms(200);
-	PRINTF("after activate:\n");
-	printhex(0, (void *) head0, sizeof * head0);
-	PRINTF("after activate:\n");
-	printhex(0, (void *) pbuff, length);
+//	PRINTF("before activate:\n");
+//	printhex(0, (void *) head0, sizeof * head0);
+//	head0->cache.status = EHCI_STATUS_ACTIVE;
+//
+//	local_delay_ms(200);
+//	PRINTF("after activate:\n");
+//	printhex(0, (void *) head0, sizeof * head0);
+//	PRINTF("after activate:\n");
+//	printhex(0, (void *) pbuff, length);
   return HAL_OK;
 }
 
@@ -2745,7 +2744,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	}
 
 	/* Wait 20ms after potentially enabling power to a port */
-	//mdelay ( EHCI_PORT_POWER_DELAY_MS );
+	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
  	local_delay_ms(50);
 
 
@@ -2819,8 +2818,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t *pbuff,
 		uint16_t length, uint8_t do_ping)
 {
-	PRINTF("USBH_LL_SubmitURB:\n");
-	printhex(0, pbuff, length);
+	//PRINTF("USBH_LL_SubmitURB:\n");
+	//printhex(0, pbuff, length);
 
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
