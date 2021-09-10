@@ -505,14 +505,25 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
   {
     case HOST_IDLE :
 
-      if ((phost->device.is_connected) != 0U)
-      {
-        USBH_UsrLog("USB Device Connected");
+		if (phost->device.is_connected)
+		{
+			//USBH_UsrLog(PSTR("USBH_Process: phost->device.is_connected"));
+			/* Wait for 200 ms after connection */
+			USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_ON, 200);
+		}
+		break;
 
+	case HOST_DEV_BUS_RESET_ON:
+		//USBH_UsrLog(PSTR("USBH_Process: HOST_DEV_BUS_RESET_ON"));
+		USBH_LL_ResetPort2(phost, 1);
+		USBH_ProcessDelay(phost, HOST_DEV_BUS_RESET_OFF, 50);
+		break;
+
+	case HOST_DEV_BUS_RESET_OFF:
+		//USBH_UsrLog(PSTR("USBH_Process: HOST_DEV_BUS_RESET_OFF"));
+		USBH_LL_ResetPort2(phost, 0);
         /* Wait for 200 ms after connection */
         phost->gState = HOST_DEV_WAIT_FOR_ATTACHMENT;
-        USBH_Delay(200U);
-        (void)USBH_LL_ResetPort(phost);
 
         /* Make sure to start with Default address */
         phost->device.address = USBH_ADDRESS_DEFAULT;
@@ -526,7 +537,6 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         (void)osMessageQueuePut(phost->os_event, &phost->os_msg, 0U, 0U);
 #endif
 #endif
-      }
       break;
 
     case HOST_DEV_WAIT_FOR_ATTACHMENT: /* Wait for Port Enabled */
@@ -845,6 +855,11 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 #endif
 #endif
       break;
+
+	case HOST_DELAY:
+		if (--phost->gPushTicks == 0)
+			phost->gState = phost->gPushState;
+		break;
 
     case HOST_ABORT_STATE:
     default :

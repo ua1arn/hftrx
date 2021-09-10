@@ -2543,8 +2543,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 //   hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 //                                         ep_type, token, pbuff, length,
 //                                         do_ping);
-	PRINTF("USBH_LL_SubmitURB:\n");
-	printhex(0, pbuff, length);
+	//PRINTF("USBH_LL_SubmitURB:\n");
+	//printhex(0, pbuff, length);
 	hal_status = HAL_ERROR;
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
@@ -2674,26 +2674,6 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 }
 
 /**
-  * @brief  Reset the Host port of the low level driver.
-  * @param  phost: Host handle
-  * @retval USBH status
-  */
-USBH_StatusTypeDef USBH_LL_ResetPort(USBH_HandleTypeDef *phost)
-{
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBH_StatusTypeDef usb_status = USBH_OK;
-//
-//  hal_status = HAL_EHCI_ResetPort(phost->pData);
-//
-  USBH_LL_ResetPort2(phost, 1);
-  HAL_Delay(100U);                                 /* See Note #1 */
-  USBH_LL_ResetPort2(phost, 0);
-  usb_status = USBH_Get_USB_Status(hal_status);
-  HAL_Delay(10);
-
-  return usb_status;
-}
-/**
   * @brief  USBH_LL_ResetPort2
   *         Reset the Host Port of the Low Level Driver.
   * @param  phost: Host handle
@@ -2721,7 +2701,6 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
  		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
  		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
 
- 		local_delay_ms(10);
 	}
 	else
 	{
@@ -2733,7 +2712,8 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
  		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
 
 	}
-	HAL_Delay(1);
+	local_delay_ms(1);
+	//HAL_Delay(1);
 
 
 	usb_status = USBH_Get_USB_Status(hal_status);
@@ -2803,7 +2783,8 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
   */
 void USBH_Delay(uint32_t Delay)
 {
-  HAL_Delay(Delay);
+	//HAL_Delay(Delay);
+	local_delay_ms(Delay);
 }
 
 /**

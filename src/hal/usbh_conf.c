@@ -783,7 +783,8 @@ uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe)
   */
 void USBH_Delay(uint32_t Delay)
 {
-  HAL_Delay(Delay);
+	//HAL_Delay(Delay);
+	local_delay_ms(Delay);
 }
 
 /**
