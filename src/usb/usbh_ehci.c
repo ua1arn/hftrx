@@ -2003,7 +2003,7 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 
 /**
   * @brief  Connect callback.
-  * @param  hhcd: HCD handle
+  * @param  hhcd: EHCI handle
   * @retval None
   */
 void HAL_EHCI_Connect_Callback(EHCI_HandleTypeDef *hehci)
@@ -2013,7 +2013,7 @@ void HAL_EHCI_Connect_Callback(EHCI_HandleTypeDef *hehci)
 
 /**
   * @brief  Disconnect callback.
-  * @param  hhcd: HCD handle
+  * @param  hhcd: EHCI handle
   * @retval None
   */
 void HAL_EHCI_Disconnect_Callback(EHCI_HandleTypeDef *hehci)
@@ -2023,7 +2023,7 @@ void HAL_EHCI_Disconnect_Callback(EHCI_HandleTypeDef *hehci)
 
 /**
 * @brief  Port Port Enabled callback.
-  * @param  hhcd: HCD handle
+  * @param  hhcd: EHCI handle
   * @retval None
   */
 void HAL_EHCI_PortEnabled_Callback(EHCI_HandleTypeDef *hehci)
@@ -2203,7 +2203,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 
 /**
   * @brief  Start the host driver.
-  * @param  hehci HCD handle
+  * @param  hehci EHCI handle
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
@@ -2232,7 +2232,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 
 /**
   * @brief  Stop the host driver.
-  * @param  hehci HCD handle
+  * @param  hehci EHCI handle
   * @retval HAL status
   */
 
@@ -2250,7 +2250,7 @@ HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 
 /**
   * @brief  Submit a new URB for processing.
-  * @param  hhcd HCD handle
+  * @param  hhcd EHCI handle
   * @param  ch_num Channel number.
   *         This parameter can be a value from 1 to 15
   * @param  direction Channel number.
@@ -2393,6 +2393,38 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
   return HAL_ERROR;
+}
+
+/**
+  * @brief  Return  URB state for a channel.
+  * @param  hhcd EHCI handle
+  * @param  chnum Channel number.
+  *         This parameter can be a value from 1 to 15
+  * @retval URB state.
+  *          This parameter can be one of these values:
+  *            URB_IDLE/
+  *            URB_DONE/
+  *            URB_NOTREADY/
+  *            URB_NYET/
+  *            URB_ERROR/
+  *            URB_STALL
+  */
+EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hhcd, uint8_t chnum)
+{
+  return hhcd->hc[chnum].urb_state;
+}
+
+
+/**
+  * @brief  Return the last host transfer size.
+  * @param  hhcd EHCI handle
+  * @param  chnum Channel number.
+  *         This parameter can be a value from 1 to 15
+  * @retval last transfer size in byte
+  */
+uint32_t HAL_EHCI_HC_GetXferCount(EHCI_HandleTypeDef *hhcd, uint8_t chnum)
+{
+  return hhcd->hc[chnum].xfer_count;
 }
 
 // USe in HAL_EHCI_Start
@@ -2686,14 +2718,15 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t *pbuff,
 		uint16_t length, uint8_t do_ping)
 {
+	PRINTF("USBH_LL_SubmitURB:\n");
+	printhex(0, pbuff, length);
+
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
 	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 								 ep_type, token, pbuff, length,
 								 do_ping);
-	PRINTF("USBH_LL_SubmitURB:\n");
-	printhex(0, pbuff, length);
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
 
@@ -2716,8 +2749,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
-	return URB_ERROR;
-	//return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
+	return USBH_FAIL;
+	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
 uint_fast8_t USBH_LL_GetSpeedReady(USBH_HandleTypeDef *phost) {
@@ -2878,7 +2911,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
   */
 uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
-  return 0; //HAL_EHCI_HC_GetXferCount(phost->pData, pipe);
+  return HAL_EHCI_HC_GetXferCount(phost->pData, pipe);
 }
 
 /**
