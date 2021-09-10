@@ -2294,7 +2294,9 @@ void USBH_EHCI_IRQHandler(void)
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 	PRINTF("%s:\n", __func__);
+
 #if CPUSTYLE_STM32MP1
+
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_USBHEN;
 	(void) RCC->MP_AHB6ENSETR;
 	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_USBHLPEN;
@@ -2329,12 +2331,20 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
 	PRINTF("%s:\n", __func__);
+
 #if CPUSTYLE_STM32MP1
 
 	IRQ_Disable(USBH_OHCI_IRQn);
 	IRQ_Disable(USBH_EHCI_IRQn);
 
-	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6LPENCLRR_USBHLPEN;
+	/* Perform USBH reset */
+	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_USBHRST;
+	(void) RCC->AHB6RSTSETR;
+	RCC->AHB6RSTCLRR = RCC_AHB6RSTCLRR_USBHRST;
+	(void) RCC->AHB6RSTCLRR;
+
+	/* Clock Off */
+	RCC->MP_AHB6LPENCLRR = RCC_MP_AHB6LPENCLRR_USBHLPEN;
 	(void) RCC->MP_AHB6ENCLRR;
 	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_USBHEN;
 	(void) RCC->MP_AHB6ENCLRR;
@@ -3321,13 +3331,14 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 
 void MX_USB_HOST_Init(void)
 {
-	static ticker_t usbticker;
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
 	#if WITHUSEUSBFLASH
 		USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
 	#endif /* WITHUSEUSBFLASH */
+
+	//static ticker_t usbticker;
 	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	//ticker_add(& usbticker);
 }
