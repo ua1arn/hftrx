@@ -2418,17 +2418,17 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 // 	}
  	if (1)
  	{
- 	 	for (i = 0; i < hehci->nports; ++ i)
+ 		i = 0;
+ 		// появляется port change detect interrupt если обращаемся на ports [0]
+ 	 	//for (i = 0; i < hehci->nports; ++ i)
  	 	{
  	 		hehci->ehci.opRegs->ports [i] |= EHCI_PORTSC_PR;	// Port reset on
  	 		(void) hehci->ehci.opRegs->ports [i];
- 	 	}
-  	 	for (i = 0; i < hehci->nports; ++ i)
- 	 	{
+ 	 		local_delay_ms(100);
  	 		hehci->ehci.opRegs->ports [i] &= ~ EHCI_PORTSC_PR;	// Port reset off
  	 		(void) hehci->ehci.opRegs->ports [i];
+ 	 		local_delay_ms(100);
  	 	}
- 	 	//local_delay_ms(250);
  	}
 
  	PRINTF("board_ehci_initialize done.\n");
