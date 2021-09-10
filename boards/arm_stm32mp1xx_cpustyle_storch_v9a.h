@@ -69,7 +69,7 @@
 	//#define WITHUSBHW_HOST		USB_OTG_HS
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBHOST_DMAENABLE 1
-	#define WITHEHCIHW_EHCIPORT 1	// 0: USB_DP1 & USB_DM1, 1: USB_DP2 & USB_DM2
+	#define WITHEHCIHW_EHCIPORT 0
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -120,7 +120,7 @@
 
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHEHCIHW_EHCIPORT 1	// 0: USB_DP1 & USB_DM1, 1: USB_DP2 & USB_DM2
+	#define WITHEHCIHW_EHCIPORT 0
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1

@@ -311,7 +311,7 @@ void HAL_HCD_SOF_Callback(HCD_HandleTypeDef *hhcd)
 }
 
 /**
-  * @brief  SOF callback.
+  * @brief  Connect callback.
   * @param  hhcd: HCD handle
   * @retval None
   */
@@ -321,7 +321,7 @@ void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd)
 }
 
 /**
-  * @brief  SOF callback.
+  * @brief  Disconnect callback.
   * @param  hhcd: HCD handle
   * @retval None
   */
@@ -344,6 +344,7 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
   USBH_LL_NotifyURBChange(hhcd->pData);
 #endif
 }
+
 /**
 * @brief  Port Port Enabled callback.
   * @param  hhcd: HCD handle

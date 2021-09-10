@@ -1981,6 +1981,9 @@ HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_
 HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
 
 	PRINTF("%s:\n", __func__);
+ 	//USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
+
+ 	EHCIx->USBINTR = 0;
 	return HAL_OK;
 }
 
@@ -1999,22 +2002,47 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 
 
 /**
+  * @brief  Connect callback.
+  * @param  hhcd: HCD handle
+  * @retval None
+  */
+void HAL_EHCI_Connect_Callback(EHCI_HandleTypeDef *hehci)
+{
+  USBH_LL_Connect(hehci->pData);
+}
+
+/**
+  * @brief  Disconnect callback.
+  * @param  hhcd: HCD handle
+  * @retval None
+  */
+void HAL_EHCI_Disconnect_Callback(EHCI_HandleTypeDef *hehci)
+{
+  USBH_LL_Disconnect(hehci->pData);
+}
+
+/**
+* @brief  Port Port Enabled callback.
+  * @param  hhcd: HCD handle
+  * @retval None
+  */
+void HAL_EHCI_PortEnabled_Callback(EHCI_HandleTypeDef *hehci)
+{
+  USBH_LL_PortEnabled(hehci->pData);
+}
+
+/**
   * @brief  Handle USB_EHCI interrupt request.
   * @param  hehci USB_EHCI handle
   * @retval None
   */
 void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
-	unsigned i;
  	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
  	PRINTF("HAL_EHCI_IRQHandler: USBSTS=%08lX\n", EHCIx->USBSTS);
- 	for (i = 0; i < hehci->nports; ++ i)
- 	{
- 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
- 	}
 
- 	const uint_fast32_t usbsts = EHCIx->USBSTS;
+ 	const uint_fast32_t usbsts = EHCIx->USBSTS & EHCIx->USBINTR;
 
  	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT)
  	{
@@ -2026,30 +2054,67 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 1);	// Clear USB Error Interrupt (USBERRINT) interrupt
  		PRINTF("HAL_EHCI_IRQHandler: USB Error\n");
+ 		unsigned i;
+ 		for (i = 0; i < hehci->nports; ++ i)
+ 	 	{
+ 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
+ 	 	}
  	}
 
  	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
  	{
  		EHCIx->USBSTS = (0x01uL << 2);	// Clear Port Change Detect interrupt
  		PRINTF("HAL_EHCI_IRQHandler: Port Change Detect\n");
- 	}
+ 		// PORTSC[0]=00001002 - on disconnect
+ 		// PORTSC[0]=00001803 - on connect
+ 		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+// 		unsigned i;
+// 		for (i = 0; i < hehci->nports; ++ i)
+// 	 	{
+// 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
+// 	 	}
+ 		if ((portsc & EHCI_PORTSC_CCS) == 0)
+ 		{
+ 			HAL_EHCI_Disconnect_Callback(hehci);
+ 		}
+ 		else
+ 		{
+ 			HAL_EHCI_PortEnabled_Callback(hehci);	// пока тут
+ 			HAL_EHCI_Connect_Callback(hehci);
+ 		}
+	}
 
  	if ((usbsts & (0x01uL << 3)))	// Frame List Rollower
  	{
  		EHCIx->USBSTS = (0x01uL << 3);	// Clear Frame List Rollower interrupt
  		PRINTF("HAL_EHCI_IRQHandler: Frame List Rollower\n");
+ 		unsigned i;
+ 		for (i = 0; i < hehci->nports; ++ i)
+ 	 	{
+ 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
+ 	 	}
  	}
 
  	if ((usbsts & (0x01uL << 4)))	// Host System Error
  	{
  		EHCIx->USBSTS = (0x01uL << 4);	// Clear Host System Error interrupt
  		PRINTF("HAL_EHCI_IRQHandler: Host System Error\n");
+ 		unsigned i;
+ 		for (i = 0; i < hehci->nports; ++ i)
+ 	 	{
+ 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
+ 	 	}
  	}
 
  	if ((usbsts & (0x01uL << 5)))	// Interrupt On Async Advance
  	{
  		EHCIx->USBSTS = (0x01uL << 5);	// Clear Interrupt On Async Advance
  		PRINTF("HAL_EHCI_IRQHandler: Interrupt On Async Advance\n");
+ 		unsigned i;
+ 		for (i = 0; i < hehci->nports; ++ i)
+ 	 	{
+ 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
+ 	 	}
  	}
 }
 
@@ -2059,6 +2124,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
  	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
  	//PRINTF("HAL_EHCI_Init\n");
+
+ 	board_ehci_initialize(hehci);
  	return HAL_OK;
 }
 
@@ -2148,7 +2215,17 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 	(void) EHCI_DriveVbus(hehci->Instance, 1U);
 	__HAL_UNLOCK(hehci);
 
-	board_ehci_initialize(&hhcd_USB_EHCI);		// USB EHCI controller tests
+
+ 	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
+ 	EHCIx->USBINTR |=
+ 			INTR_IOAA |	// Interrupt on ASync Advance Enable
+			INTR_HSE |	// Host System Error Interrupt Enable
+ 			//INTR_FLR |	// Frame List Rollower Interrupt Enable
+			INTR_PCD |	// Port Change Interrupt Enable
+			INTR_ERROR |	// USB Error Interrupt Enable
+			INTR_USBINT |	// USB Interrupt Enable
+			0;
+
 
 	return HAL_OK;
 }
@@ -2370,14 +2447,32 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
 
 
- 	EHCIx->USBINTR |=
- 			(1uL << 5) |	// Interrupt on ASync Advance Enable
- 			(1uL << 4) |	// Host System Error Interrupt Enable
- 			//(1uL << 3) |	// Frame List Rollower Interrupt Enable
- 			(1uL << 2) |	// Port Change Interrupt Enable
- 			(1uL << 1) |	// USB Error Interrupt Enable
- 			(1uL << 0) |	// USB Interrupt Enable
-			0;
+
+  	/* Route all ports to EHCI controller */
+	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
+ 	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
+
+	/* Enable power to all ports */
+//	for ( i = 1 ; i <= ehci->ports ; i++ ) {
+//		portsc = readl ( ehci->op + EHCI_OP_PORTSC ( i ) );
+//		portsc &= ~EHCI_PORTSC_CHANGE;
+//		portsc |= EHCI_PORTSC_PP;
+//		writel ( portsc, ehci->op + EHCI_OP_PORTSC ( i ) );
+//	}
+ 	for (i = 0; i < hehci->nports; ++ i)
+ 	{
+ 		unsigned long portsc = ehci->opRegs->ports [i];
+
+		portsc &= ~EHCI_PORTSC_CHANGE;
+		portsc |= EHCI_PORTSC_PP;
+
+ 		ehci->opRegs->ports [i] = portsc;
+ 		(void) ehci->opRegs->ports [i];
+ 	}
+
+	/* Wait 20ms after potentially enabling power to a port */
+	//mdelay ( EHCI_PORT_POWER_DELAY_MS );
+ 	local_delay_ms(50);
 
 
  	for (i = 0; i < hehci->nports; ++ i)
@@ -2430,6 +2525,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	 		local_delay_ms(100);
  	 	}
  	}
+
 
  	PRINTF("board_ehci_initialize done.\n");
  }
