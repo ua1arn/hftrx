@@ -585,8 +585,10 @@ static void vox_spool(void * ctx)
 void seq_initialize(void)
 {
 	ticker_initialize(& seqticker, 1, seq_spool_ticks, NULL);
+	ticker_add(& seqticker);
 #if WITHTX && WITHVOX
 	adcdone_initialize(& voxoribet, vox_spool, NULL);
+	adcdone_add(& voxoribet);
 #endif /* WITHTX && WITHVOX */
 
 	hardware_ptt_port_initialize();		// инициализация входов управления режимом передачи и запрета передачи
@@ -687,6 +689,7 @@ void seq_ask_txstate(uint_fast8_t tx)
 void seq_initialize(void)
 {
 	ticker_initialize(& seqticker, 1, seq_spool_ticks, NULL);
+	ticker_add(& seqticker);
 }
 
 /* очистка запомненных нажатий до этого момента. Вызывается из user-mode программы */

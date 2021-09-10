@@ -18,7 +18,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 void board_reset(void);			// выдача сигнала reset_n
-void board_init_io(void);
+void board_initialize(void);
 //void board_init_io2(void);	// debug
 void board_init_chips(void);
 void board_init_chips2(void);

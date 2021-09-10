@@ -343,7 +343,7 @@ uint_fast8_t kbd_get_ishold(uint_fast8_t flag)
 /* инициализация переменных работы с клавиатурой */
 void kbd_initialize(void)
 {
-	static ticker_t ticker;
+	static ticker_t kbdticker;
 	static adcdone_t aevent;
 
 	// todo: все присвоения нулями могут быть убраны.
@@ -353,8 +353,10 @@ void kbd_initialize(void)
 	////kbd_repeat = 0;
 #if KEYBOARD_USE_ADC
 	adcdone_initialize(& aevent, kbd_spool, NULL);
+	adcdone_add(& aevent);
 #else /* KEYBOARD_USE_ADC */
-	ticker_initialize(& ticker, 1, kbd_spool, NULL);
+	ticker_initialize(& kbdticker, 1, kbd_spool, NULL);
+	ticker_add(& kbdticker);
 #endif /* KEYBOARD_USE_ADC */
 }
 

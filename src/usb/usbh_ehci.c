@@ -2860,7 +2860,7 @@ void MX_USB_HOST_Init(void)
 		USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
 	#endif /* WITHUSEUSBFLASH */
 	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-
+	//ticker_add(& usbticker);
 }
 
 void MX_USB_HOST_DeInit(void)

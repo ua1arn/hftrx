@@ -999,7 +999,7 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 
 typedef struct ticker_tag
 {
-	LIST_ENTRY item;
+	VLIST_ENTRY item;
 	unsigned period;
 	//unsigned fired;
 	unsigned ticks;		// текущее количество тиков
@@ -1007,15 +1007,21 @@ typedef struct ticker_tag
 	void * ctx;
 } ticker_t;
 
+void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
+void ticker_add(ticker_t * p);
+void ticker_del(ticker_t * p);
+
 typedef struct adcdone_tag
 {
-	LIST_ENTRY item;
+	VLIST_ENTRY item;
 	void (* cb)(void *);
 	void * ctx;
 } adcdone_t;
 
-void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
 void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
+void adcdone_add(adcdone_t * p);
+void adcdone_del(adcdone_t * p);
+
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_deffereddetach(void * arg);
@@ -1160,6 +1166,8 @@ uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b);
 uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b);
 uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b);
 uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
+unsigned long ulmin(unsigned long a, unsigned long b);
+unsigned long ulmax(unsigned long a, unsigned long b);
 
 #define  HI_32BY(w)  (((w) >> 24) & 0xFF)   /* Extract 31..24 bits from unsigned word */
 #define  HI_24BY(w)  (((w) >> 16) & 0xFF)   /* Extract 23..16 bits from unsigned word */

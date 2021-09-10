@@ -662,6 +662,7 @@ void buffers_initialize(void)
 {
 #if WITHBUFFERSDEBUG
 	ticker_initialize(& buffticker, 1, buffers_spool, NULL);
+	ticker_add(& buffticker);
 #endif /* WITHBUFFERSDEBUG */
 
 	unsigned i;

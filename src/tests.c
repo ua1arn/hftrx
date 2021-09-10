@@ -7240,6 +7240,7 @@ void hightests(void)
 		static ticker_t test_recordticker;
 		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_add(& test_recordticker);
 		system_enableIRQ();
 		{
  			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
@@ -7275,6 +7276,7 @@ void hightests(void)
 		static ticker_t test_recordticker;
 		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_add(& test_recordticker);
 		system_enableIRQ();
 		fatfs_filesystest(1);
 	}
@@ -9081,7 +9083,7 @@ nestedirqtest(void)
 			dbg_putchar(c);
 		}
 	}
-	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
+	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	hardware_timer_initialize(3);
 	arm_hardware_set_handler_system(OSTMI0TINT_IRQn, r7s721_ostm0_interrupt_test);
 	hardware_elkey_timer_initialize();

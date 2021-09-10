@@ -206,8 +206,8 @@ RAMFUNC void spool_elkeyinputsbundle(void)
 }
 
 
-static LIST_ENTRY tickers;
-static LIST_ENTRY adcdones;
+static VLIST_ENTRY tickers;
+static VLIST_ENTRY adcdones;
 //static unsigned nowtick;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
@@ -217,14 +217,18 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 	p->ticks = 0;
 	p->cb = cb;
 	p->ctx = ctx;
-	InsertHeadList(& tickers, & p->item);
+}
+
+void ticker_add(ticker_t * p)
+{
+	InsertHeadVList(& tickers, & p->item);
 }
 
 static void tickers_spool(void)
 {
 
 	//++ nowtick;
-	PLIST_ENTRY t;
+	PVLIST_ENTRY t;
 	for (t = tickers.Blink; t != & tickers; t = t->Blink)
 	{
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
@@ -246,25 +250,30 @@ void tickers_initialize(void)
 
 }
 
-// регистрируются обработчики конца преобразвания АЦП
+// инициализация списка обработчиков конца преобразования АЦП
 void adcdones_initialize(void)
 {
 	InitializeListHead(& adcdones);
 }
 
-// регистрируются обработчики конца преобразвания АЦП
+// регистрируются обработчики конца преобразования АЦП
 void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx)
 {
 	p->cb = cb;
 	p->ctx = ctx;
-	InsertHeadList(& adcdones, & p->item);
+}
+
+// регистрируется обработчик конца преобразования АЦП
+void adcdone_add(adcdone_t * p)
+{
+	InsertHeadVList(& adcdones, & p->item);
 }
 
 static void adcdones_spool(void)
 {
 
 	//++ nowtick;
-	PLIST_ENTRY t;
+	PVLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{
 		adcdone_t * const p = CONTAINING_RECORD(t, adcdone_t, item);
@@ -305,24 +314,6 @@ RAMFUNC void spool_systimerbundle1(void)
 // Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 RAMFUNC void spool_systimerbundle2(void)
 {
-#if 1 && defined (BOARD_BLINK_SETSTATE)
-	{
-	#if WITHISBOOTLOADER
-		const unsigned thalf = 100;	// Toggle every 100 ms
-	#else /* WITHISBOOTLOADER */
-		const unsigned thalf = 500;	// Toggle every 500 ms
-	#endif /* WITHISBOOTLOADER */
-		// BLINK test
-		static unsigned count;
-		if (++ count >= NTICKS(thalf))
-		{
-			count = 0;
-			static uint_fast8_t state;
-			state = ! state;
-			BOARD_BLINK_SETSTATE(state);
-		}
-	}
-#endif /* defined (BOARD_BLINK_SETSTATE) */
 
 #if WITHCPUADCHW
 	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
@@ -3663,6 +3654,20 @@ uint8_t xxxxxpos(uint8_t num) // num = 0..8
 
 */
 
+
+unsigned long ulmin(
+	unsigned long a,
+	unsigned long b)
+{
+	return a < b ? a : b;
+}
+
+unsigned long ulmax(
+	unsigned long a,
+	unsigned long b)
+{
+	return a > b ? a : b;
+}
 
 uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
 {

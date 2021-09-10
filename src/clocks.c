@@ -1766,20 +1766,6 @@ unsigned long hardware_get_spi_freq(void)
 #endif /* CPUSTYLE_STM32MP1 */
 
 
-static unsigned long ulmin(
-	unsigned long a,
-	unsigned long b)
-{
-	return a < b ? a : b;
-}
-
-static unsigned long ulmax(
-	unsigned long a,
-	unsigned long b)
-{
-	return a > b ? a : b;
-}
-
 
 
 // ATMega32 timers:

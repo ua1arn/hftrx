@@ -7317,9 +7317,20 @@ uint_fast8_t boad_mike_adcoverflow(void)
 #endif /* WITHIF4DSP */
 }
 
+#if defined (BOARD_BLINK_SETSTATE)
+
+static void blinktest(void * ctx)
+{
+	static uint_fast8_t state;
+	state = ! state;
+	BOARD_BLINK_SETSTATE(state);
+}
+
+#endif /* defined (BOARD_BLINK_SETSTATE) */
+
 /* инициализация при запрещённых прерываниях.
 */
-void board_init_io(void)
+void board_initialize(void)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_hardware_initialize();
@@ -7371,6 +7382,19 @@ void board_init_io(void)
 #if WITHCPUADCHW
 	board_adc_initialize();
 #endif /* WITHCPUADCHW */
+
+#if defined (BOARD_BLINK_SETSTATE)
+	{
+#if WITHISBOOTLOADER
+	const unsigned thalf = 100;	// Toggle every 100 ms
+#else /* WITHISBOOTLOADER */
+	const unsigned thalf = 500;	// Toggle every 500 ms
+#endif /* WITHISBOOTLOADER */
+	static ticker_t ticker_blinks;
+	ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
+	ticker_add(& ticker_blinks);
+	}
+#endif /* defined (BOARD_BLINK_SETSTATE) */
 }
 
 #if defined (RTC1_TYPE)
@@ -8837,6 +8861,7 @@ adcfilters_initialize(void)
 
 	// вызов board_adc_filtering() по заверщению цикла АЦП
 	adcdone_initialize(& adcevent, board_adc_filtering, NULL);
+	adcdone_add(& adcevent);
 
 
 //#if ! WITHCPUADCHW

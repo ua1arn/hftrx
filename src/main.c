@@ -166,20 +166,6 @@ static uint_fast32_t
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t bottom);
 
-static unsigned long ulmin(
-	unsigned long a,
-	unsigned long b)
-{
-	return a < b ? a : b;
-}
-
-static unsigned long ulmax(
-	unsigned long a,
-	unsigned long b)
-{
-	return a > b ? a : b;
-}
-
 
 extern volatile uint_fast8_t spool_lfm_enable;
 extern volatile uint_fast8_t spool_lfm_flag;
@@ -20443,19 +20429,21 @@ lowinitialize(void)
 
 #endif /* WITHMODEM */
 
-	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
+	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
+	// Инициализация таймера и списка регистрирумых обработчиков
+	hardware_timer_initialize(TICKS_FREQUENCY);
+
+	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 	display_hardware_initialize();
 
 	static ticker_t displayticker;
 	static ticker_t ticker_1S;
 
-	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
-	// Инициализация таймера и списка регистрирумых обработчиков
-	hardware_timer_initialize(TICKS_FREQUENCY);
-
 	ticker_initialize(& displayticker, 1, display_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& displayticker);
 	ticker_initialize(& ticker_1S, NTICKS(1000), spool_secound, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& ticker_1S);
 
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
 
@@ -20466,7 +20454,7 @@ lowinitialize(void)
 	board_gpu_initialize();		// GPU controller
 #endif /* WITHGPUHW */
 #if WITHENCODER
-	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_init_io - иначе не собирается под Cortex-A9.
+	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
 #endif /* WITHENCODER */
 
 #if WITHLFM
@@ -23212,6 +23200,7 @@ static void bootloader_mainloop(void)
 	static ticker_t tscticker;
 	system_disableIRQ();
 	ticker_initialize(& tscticker, 1, tsc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& tscticker);
 	system_enableIRQ();
 	gpio_output(37, 0);		/* LED_R */
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
