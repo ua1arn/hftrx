@@ -43,6 +43,10 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci);
 
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
 
+#define DBG_LOG 1
+
+#define ENOTSUP 1
+#define ENOMEM 1
 
 //enum { FLS = 1024, FLS_code = 0 };
 //enum { FLS = 512, FLS_code = 1 };
@@ -68,6 +72,11 @@ static uint16_t cpu_to_le16(unsigned long v)
 	return v;
 }
 
+static uintptr_t virt_to_phys(void * v)
+{
+	return (uintptr_t) v;
+}
+
 static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
 {
 	qh [0] = (qnext & 0xFFFFFFC0) | (1uL << 1);
@@ -87,20 +96,33 @@ static uint8_t readb(void * a)
 	return * (volatile uint8_t *) a;
 }
 
+static uint16_t readw(void * a)
+{
+	return * (volatile uint16_t *) a;
+}
+
 static uint32_t readl(void * a)
 {
 	return * (volatile uint32_t *) a;
 }
 
-static void writel(void * a, uint32_t v)
+static void writel(uint32_t v, void * a)
 {
 	* (volatile uint32_t *) a = v;
 }
 
 
-#if 0
+#if 1
 
+struct usb_hub
+{
+	int v;
+};
 
+struct usb_bus
+{
+	struct usb_hub *hub;
+};
 static struct usb_hub usb_hub0;
 static struct ehci_device ehci_device0;
 
@@ -145,7 +167,7 @@ struct ehci_device * usb_hub_get_drvdata2 ( struct usb_bus *bus )
  * @v ehci              EHCI device
  * @v regs              MMIO registers
  */
-static void ehci_init (  ehci_device *ehci, void *regs ) {
+static void ehci_init ( struct ehci_device *ehci, void *regs ) {
 	uint32_t hcsparams;
 	uint32_t hccparams;
 	size_t caplength;
@@ -154,13 +176,13 @@ static void ehci_init (  ehci_device *ehci, void *regs ) {
 	ehci->cap = regs;
 	caplength = readb ( ehci->cap + EHCI_CAP_CAPLENGTH );
 	ehci->op = ( ehci->cap + caplength );
-	DBGC2 ( ehci, "EHCI %s cap %08lx op %08lx\n", ehci->name,
+	PRINTF("EHCI %s cap %08lx op %08lx\n", ehci->name,
 			virt_to_phys ( ehci->cap ), virt_to_phys ( ehci->op ) );
 
 	/* Read structural parameters */
 	hcsparams = readl ( ehci->cap + EHCI_CAP_HCSPARAMS );
 	ehci->ports = EHCI_HCSPARAMS_PORTS ( hcsparams );
-	DBGC ( ehci, "EHCI %s has %d ports\n", ehci->name, ehci->ports );
+	PRINTF("EHCI %s has %d ports\n", ehci->name, ehci->ports );
 
 	/* Read capability parameters 1 */
 	hccparams = readl ( ehci->cap + EHCI_CAP_HCCPARAMS );
@@ -168,7 +190,7 @@ static void ehci_init (  ehci_device *ehci, void *regs ) {
 	ehci->flsize = ( EHCI_HCCPARAMS_FLSIZE ( hccparams ) ?
 			EHCI_FLSIZE_SMALL : EHCI_FLSIZE_DEFAULT );
 	ehci->eecp = EHCI_HCCPARAMS_EECP ( hccparams );
-	DBGC2 ( ehci, "EHCI %s %d-bit flsize %d\n", ehci->name,
+	PRINTF("EHCI %s %d-bit flsize %d\n", ehci->name,
 			( ehci->addr64 ? 64 : 32 ), ehci->flsize );
 }
 
@@ -181,31 +203,31 @@ static void ehci_init (  ehci_device *ehci, void *regs ) {
  * @v offset            Offset to previous extended capability instance, or zero
  * @ret offset          Offset to extended capability, or zero if not found
  */
-static unsigned int ehci_extended_capability ( struct ehci_device *ehci,
-		struct pci_device *pci,
-		unsigned int id,
-		unsigned int offset ) {
-	uint32_t eecp;
-
-	/* Locate the extended capability */
-	while ( 1 ) {
-
-		/* Locate first or next capability as applicable */
-		if ( offset ) {
-			pci_read_config_dword ( pci, offset, &eecp );
-			offset = EHCI_EECP_NEXT ( eecp );
-		} else {
-			offset = ehci->eecp;
-		}
-		if ( ! offset )
-			return 0;
-
-		/* Check if this is the requested capability */
-		pci_read_config_dword ( pci, offset, &eecp );
-		if ( EHCI_EECP_ID ( eecp ) == id )
-			return offset;
-	}
-}
+//static unsigned int ehci_extended_capability ( struct ehci_device *ehci,
+//		struct pci_device *pci,
+//		unsigned int id,
+//		unsigned int offset ) {
+//	uint32_t eecp;
+//
+//	/* Locate the extended capability */
+//	while ( 1 ) {
+//
+//		/* Locate first or next capability as applicable */
+//		if ( offset ) {
+//			pci_read_config_dword ( pci, offset, &eecp );
+//			offset = EHCI_EECP_NEXT ( eecp );
+//		} else {
+//			offset = ehci->eecp;
+//		}
+//		if ( ! offset )
+//			return 0;
+//
+//		/* Check if this is the requested capability */
+//		pci_read_config_dword ( pci, offset, &eecp );
+//		if ( EHCI_EECP_ID ( eecp ) == id )
+//			return offset;
+//	}
+//}
 
 /**
  * Calculate buffer alignment
@@ -283,26 +305,26 @@ static __unused void ehci_dump ( struct ehci_device *ehci ) {
 		return;
 
 	/* Dump capability registers */
-	caplength = readb ( ehci->cap + EHCI_CAP_CAPLENGTH );
-	hciversion = readw ( ehci->cap + EHCI_CAP_HCIVERSION );
-	hcsparams = readl ( ehci->cap + EHCI_CAP_HCSPARAMS );
-	hccparams = readl ( ehci->cap + EHCI_CAP_HCCPARAMS );
-	DBGC ( ehci, "EHCI %s caplen %02x hciversion %04x hcsparams %08x "
+	caplength = readb ( (uint8_t *) ehci->cap + EHCI_CAP_CAPLENGTH );
+	hciversion = readw ( (uint8_t *) ehci->cap + EHCI_CAP_HCIVERSION );
+	hcsparams = readl ( (uint8_t *) ehci->cap + EHCI_CAP_HCSPARAMS );
+	hccparams = readl ( (uint8_t *) ehci->cap + EHCI_CAP_HCCPARAMS );
+	PRINTF("EHCI %s caplen %02x hciversion %04x hcsparams %08x "
 			"hccparams %08x\n", ehci->name, caplength, hciversion,
 			hcsparams,  hccparams );
 
 	/* Dump operational registers */
-	usbcmd = readl ( ehci->op + EHCI_OP_USBCMD );
-	usbsts = readl ( ehci->op + EHCI_OP_USBSTS );
-	usbintr = readl ( ehci->op + EHCI_OP_USBINTR );
-	frindex = readl ( ehci->op + EHCI_OP_FRINDEX );
-	ctrldssegment = readl ( ehci->op + EHCI_OP_CTRLDSSEGMENT );
-	periodiclistbase = readl ( ehci->op + EHCI_OP_PERIODICLISTBASE );
-	asynclistaddr = readl ( ehci->op + EHCI_OP_ASYNCLISTADDR );
-	configflag = readl ( ehci->op + EHCI_OP_CONFIGFLAG );
-	DBGC ( ehci, "EHCI %s usbcmd %08x usbsts %08x usbint %08x frindx "
+	usbcmd = readl ( (uint8_t *) ehci->op + EHCI_OP_USBCMD );
+	usbsts = readl ( (uint8_t *) ehci->op + EHCI_OP_USBSTS );
+	usbintr = readl ( (uint8_t *) ehci->op + EHCI_OP_USBINTR );
+	frindex = readl ( (uint8_t *) ehci->op + EHCI_OP_FRINDEX );
+	ctrldssegment = readl ( (uint8_t *) ehci->op + EHCI_OP_CTRLDSSEGMENT );
+	periodiclistbase = readl ( (uint8_t *) ehci->op + EHCI_OP_PERIODICLISTBASE );
+	asynclistaddr = readl ( (uint8_t *) ehci->op + EHCI_OP_ASYNCLISTADDR );
+	configflag = readl ( (uint8_t *) ehci->op + EHCI_OP_CONFIGFLAG );
+	PRINTF("EHCI %s usbcmd %08x usbsts %08x usbint %08x frindx "
 			"%08x\n", ehci->name, usbcmd, usbsts, usbintr, frindex );
-	DBGC ( ehci, "EHCI %s ctrlds %08x period %08x asyncl %08x cfgflg "
+	PRINTF("EHCI %s ctrlds %08x period %08x asyncl %08x cfgflg "
 			"%08x\n", ehci->name, ctrldssegment, periodiclistbase,
 			asynclistaddr, configflag );
 }
@@ -323,32 +345,32 @@ static int ehci_legacy_prevent_release;
  * @v ehci              EHCI device
  * @v pci               PCI device
  */
-static void ehci_legacy_init ( struct ehci_device *ehci,
-		struct pci_device *pci ) {
-	unsigned int legacy;
-	uint8_t bios;
-
-	/* Locate USB legacy support capability (if present) */
-	legacy = ehci_extended_capability ( ehci, pci, EHCI_EECP_ID_LEGACY, 0 );
-	if ( ! legacy ) {
-		/* Not an error; capability may not be present */
-		DBGC ( ehci, "EHCI %s has no USB legacy support capability\n",
-				ehci->name );
-		return;
-	}
-
-	/* Check if legacy USB support is enabled */
-	pci_read_config_byte ( pci, ( legacy + EHCI_USBLEGSUP_BIOS ), &bios );
-	if ( ! ( bios & EHCI_USBLEGSUP_BIOS_OWNED ) ) {
-		/* Not an error; already owned by OS */
-		DBGC ( ehci, "EHCI %s USB legacy support already disabled\n",
-				ehci->name );
-		return;
-	}
-
-	/* Record presence of USB legacy support capability */
-	ehci->legacy = legacy;
-}
+//static void ehci_legacy_init ( struct ehci_device *ehci,
+//		struct pci_device *pci ) {
+//	unsigned int legacy;
+//	uint8_t bios;
+//
+//	/* Locate USB legacy support capability (if present) */
+//	legacy = ehci_extended_capability ( ehci, pci, EHCI_EECP_ID_LEGACY, 0 );
+//	if ( ! legacy ) {
+//		/* Not an error; capability may not be present */
+//		PRINTF("EHCI %s has no USB legacy support capability\n",
+//				ehci->name );
+//		return;
+//	}
+//
+//	/* Check if legacy USB support is enabled */
+//	pci_read_config_byte ( pci, ( legacy + EHCI_USBLEGSUP_BIOS ), &bios );
+//	if ( ! ( bios & EHCI_USBLEGSUP_BIOS_OWNED ) ) {
+//		/* Not an error; already owned by OS */
+//		PRINTF("EHCI %s USB legacy support already disabled\n",
+//				ehci->name );
+//		return;
+//	}
+//
+//	/* Record presence of USB legacy support capability */
+//	ehci->legacy = legacy;
+//}
 
 /**
  * Claim ownership from BIOS
@@ -356,59 +378,59 @@ static void ehci_legacy_init ( struct ehci_device *ehci,
  * @v ehci              EHCI device
  * @v pci               PCI device
  */
-static void ehci_legacy_claim ( struct ehci_device *ehci,
-		struct pci_device *pci ) {
-	unsigned int legacy = ehci->legacy;
-	uint32_t ctlsts;
-	uint8_t bios;
-	unsigned int i;
-
-	/* Do nothing unless legacy support capability is present */
-	if ( ! legacy )
-		return;
-
-	/* Dump original SMI usage */
-	pci_read_config_dword ( pci, ( legacy + EHCI_USBLEGSUP_CTLSTS ),
-			&ctlsts );
-	if ( ctlsts ) {
-		DBGC ( ehci, "EHCI %s BIOS using SMIs: %08x\n",
-				ehci->name, ctlsts );
-	}
-
-	/* Claim ownership */
-	pci_write_config_byte ( pci, ( legacy + EHCI_USBLEGSUP_OS ),
-			EHCI_USBLEGSUP_OS_OWNED );
-
-	/* Wait for BIOS to release ownership */
-	for ( i = 0 ; i < EHCI_USBLEGSUP_MAX_WAIT_MS ; i++ ) {
-
-		/* Check if BIOS has released ownership */
-		pci_read_config_byte ( pci, ( legacy + EHCI_USBLEGSUP_BIOS ),
-				&bios );
-		if ( ! ( bios & EHCI_USBLEGSUP_BIOS_OWNED ) ) {
-			DBGC ( ehci, "EHCI %s claimed ownership from BIOS\n",
-					ehci->name );
-			pci_read_config_dword ( pci, ( legacy +
-					EHCI_USBLEGSUP_CTLSTS ),
-					&ctlsts );
-			if ( ctlsts ) {
-				DBGC ( ehci, "EHCI %s warning: BIOS retained "
-						"SMIs: %08x\n", ehci->name, ctlsts );
-			}
-			return;
-		}
-
-		/* Delay */
-		mdelay ( 1 );
-	}
-
-	/* BIOS did not release ownership.  Claim it forcibly by
-	 * disabling all SMIs.
-	 */
-	DBGC ( ehci, "EHCI %s could not claim ownership from BIOS: forcibly "
-			"disabling SMIs\n", ehci->name );
-	pci_write_config_dword ( pci, ( legacy + EHCI_USBLEGSUP_CTLSTS ), 0 );
-}
+//static void ehci_legacy_claim ( struct ehci_device *ehci,
+//		struct pci_device *pci ) {
+//	unsigned int legacy = ehci->legacy;
+//	uint32_t ctlsts;
+//	uint8_t bios;
+//	unsigned int i;
+//
+//	/* Do nothing unless legacy support capability is present */
+//	if ( ! legacy )
+//		return;
+//
+//	/* Dump original SMI usage */
+//	pci_read_config_dword ( pci, ( legacy + EHCI_USBLEGSUP_CTLSTS ),
+//			&ctlsts );
+//	if ( ctlsts ) {
+//		PRINTF("EHCI %s BIOS using SMIs: %08x\n",
+//				ehci->name, ctlsts );
+//	}
+//
+//	/* Claim ownership */
+//	pci_write_config_byte ( pci, ( legacy + EHCI_USBLEGSUP_OS ),
+//			EHCI_USBLEGSUP_OS_OWNED );
+//
+//	/* Wait for BIOS to release ownership */
+//	for ( i = 0 ; i < EHCI_USBLEGSUP_MAX_WAIT_MS ; i++ ) {
+//
+//		/* Check if BIOS has released ownership */
+//		pci_read_config_byte ( pci, ( legacy + EHCI_USBLEGSUP_BIOS ),
+//				&bios );
+//		if ( ! ( bios & EHCI_USBLEGSUP_BIOS_OWNED ) ) {
+//			PRINTF("EHCI %s claimed ownership from BIOS\n",
+//					ehci->name );
+//			pci_read_config_dword ( pci, ( legacy +
+//					EHCI_USBLEGSUP_CTLSTS ),
+//					&ctlsts );
+//			if ( ctlsts ) {
+//				PRINTF("EHCI %s warning: BIOS retained "
+//						"SMIs: %08x\n", ehci->name, ctlsts );
+//			}
+//			return;
+//		}
+//
+//		/* Delay */
+//		mdelay ( 1 );
+//	}
+//
+//	/* BIOS did not release ownership.  Claim it forcibly by
+//	 * disabling all SMIs.
+//	 */
+//	PRINTF("EHCI %s could not claim ownership from BIOS: forcibly "
+//			"disabling SMIs\n", ehci->name );
+//	pci_write_config_dword ( pci, ( legacy + EHCI_USBLEGSUP_CTLSTS ), 0 );
+//}
 
 /**
  * Release ownership back to BIOS
@@ -416,32 +438,32 @@ static void ehci_legacy_claim ( struct ehci_device *ehci,
  * @v ehci              EHCI device
  * @v pci               PCI device
  */
-static void ehci_legacy_release ( struct ehci_device *ehci,
-		struct pci_device *pci ) {
-	unsigned int legacy = ehci->legacy;
-	uint32_t ctlsts;
-
-	/* Do nothing unless legacy support capability is present */
-	if ( ! legacy )
-		return;
-
-	/* Do nothing if releasing ownership is prevented */
-	if ( ehci_legacy_prevent_release ) {
-		DBGC ( ehci, "EHCI %s not releasing ownership to BIOS\n",
-				ehci->name );
-		return;
-	}
-
-	/* Release ownership */
-	pci_write_config_byte ( pci, ( legacy + EHCI_USBLEGSUP_OS ), 0 );
-	DBGC ( ehci, "EHCI %s released ownership to BIOS\n", ehci->name );
-
-	/* Dump restored SMI usage */
-	pci_read_config_dword ( pci, ( legacy + EHCI_USBLEGSUP_CTLSTS ),
-			&ctlsts );
-	DBGC ( ehci, "EHCI %s BIOS reclaimed SMIs: %08x\n",
-			ehci->name, ctlsts );
-}
+//static void ehci_legacy_release ( struct ehci_device *ehci,
+//		struct pci_device *pci ) {
+//	unsigned int legacy = ehci->legacy;
+//	uint32_t ctlsts;
+//
+//	/* Do nothing unless legacy support capability is present */
+//	if ( ! legacy )
+//		return;
+//
+//	/* Do nothing if releasing ownership is prevented */
+//	if ( ehci_legacy_prevent_release ) {
+//		PRINTF("EHCI %s not releasing ownership to BIOS\n",
+//				ehci->name );
+//		return;
+//	}
+//
+//	/* Release ownership */
+//	pci_write_config_byte ( pci, ( legacy + EHCI_USBLEGSUP_OS ), 0 );
+//	PRINTF("EHCI %s released ownership to BIOS\n", ehci->name );
+//
+//	/* Dump restored SMI usage */
+//	pci_read_config_dword ( pci, ( legacy + EHCI_USBLEGSUP_CTLSTS ),
+//			&ctlsts );
+//	PRINTF("EHCI %s BIOS reclaimed SMIs: %08x\n",
+//			ehci->name, ctlsts );
+//}
 
 /******************************************************************************
  *
@@ -484,7 +506,7 @@ static void ehci_poll_companions ( struct ehci_device *ehci ) {
 			continue;
 
 		/* Poll child companion controller bus */
-		DBGC2 ( ehci, "EHCI %s polling companion %s\n",
+		PRINTF("EHCI %s polling companion %s\n",
 				ehci->name, bus->name );
 		usb_poll ( bus );
 	}
@@ -568,7 +590,7 @@ static int ehci_stop ( struct ehci_device *ehci ) {
 		mdelay ( 1 );
 	}
 
-	DBGC ( ehci, "EHCI %s timed out waiting for stop\n", ehci->name );
+	PRINTF("EHCI %s timed out waiting for stop\n", ehci->name );
 	return -ETIMEDOUT;
 }
 
@@ -606,7 +628,7 @@ static int ehci_reset ( struct ehci_device *ehci ) {
 		mdelay ( 1 );
 	}
 
-	DBGC ( ehci, "EHCI %s timed out waiting for reset\n", ehci->name );
+	PRINTF("EHCI %s timed out waiting for reset\n", ehci->name );
 	return -ETIMEDOUT;
 }
 
@@ -651,7 +673,7 @@ static int ehci_ring_alloc ( struct ehci_device *ehci,
 		goto err_alloc_queue;
 	}
 	if ( ( rc = ehci_ctrl_reachable ( ehci, ring->head ) ) != 0 ) {
-		DBGC ( ehci, "EHCI %s queue head unreachable\n", ehci->name );
+		PRINTF("EHCI %s queue head unreachable\n", ehci->name );
 		goto err_unreachable_queue;
 	}
 	memset ( ring->head, 0, sizeof ( *ring->head ) );
@@ -669,7 +691,7 @@ static int ehci_ring_alloc ( struct ehci_device *ehci,
 	for ( i = 0 ; i < EHCI_RING_COUNT ; i++ ) {
 		desc = &ring->desc[i];
 		if ( ( rc = ehci_ctrl_reachable ( ehci, desc ) ) != 0 ) {
-			DBGC ( ehci, "EHCI %s descriptor unreachable\n",
+			PRINTF("EHCI %s descriptor unreachable\n",
 					ehci->name );
 			goto err_unreachable_desc;
 		}
@@ -942,7 +964,7 @@ static int ehci_async_del ( struct ehci_endpoint *endpoint ) {
 	}
 
 	/* Bad things will probably happen now */
-	DBGC ( ehci, "EHCI %s timed out waiting for asynchronous schedule "
+	PRINTF("EHCI %s timed out waiting for asynchronous schedule "
 			"to advance\n", ehci->name );
 	return -ETIMEDOUT;
 }
@@ -1249,7 +1271,7 @@ static void ehci_endpoint_close ( struct usb_endpoint *ep ) {
 		/* No way to prevent hardware from continuing to
 		 * access the memory, so leak it.
 		 */
-		DBGC ( ehci, "EHCI %s %s could not unschedule: %s\n",
+		PRINTF("EHCI %s %s could not unschedule: %s\n",
 				usb->name, usb_endpoint_name ( ep ), strerror ( rc ) );
 		return;
 	}
@@ -1483,7 +1505,7 @@ static void ehci_endpoint_poll ( struct ehci_endpoint *endpoint ) {
 		 */
 		if ( status & EHCI_STATUS_HALTED ) {
 			rc = -EIO_STATUS ( status );
-			DBGC ( ehci, "EHCI %s %s completion %d failed (status "
+			PRINTF("EHCI %s %s completion %d failed (status "
 					"%02x): %s\n", usb->name,
 					usb_endpoint_name ( ep ), index, status,
 					strerror ( rc ) );
@@ -1566,7 +1588,7 @@ static int ehci_device_address ( struct usb_device *usb ) {
 	address = usb_alloc_address ( bus );
 	if ( address < 0 ) {
 		rc = address;
-		DBGC ( ehci, "EHCI %s could not allocate address: %s\n",
+		PRINTF("EHCI %s could not allocate address: %s\n",
 				usb->name, strerror ( rc ) );
 		goto err_alloc_address;
 	}
@@ -1682,7 +1704,7 @@ static int ehci_root_enable ( struct usb_hub *hub, struct usb_port *port ) {
 	portsc = readl ( ehci->op + EHCI_OP_PORTSC ( port->address ) );
 	line = EHCI_PORTSC_LINE_STATUS ( portsc );
 	if ( line == EHCI_PORTSC_LINE_STATUS_LOW ) {
-		DBGC ( ehci, "EHCI %s-%d detected low-speed device: "
+		PRINTF("EHCI %s-%d detected low-speed device: "
 				"disowning\n", ehci->name, port->address );
 		goto disown;
 	}
@@ -1703,7 +1725,7 @@ static int ehci_root_enable ( struct usb_hub *hub, struct usb_port *port ) {
 		if ( ! ( portsc & EHCI_PORTSC_PR ) ) {
 			if ( portsc & EHCI_PORTSC_PED )
 				return 0;
-			DBGC ( ehci, "EHCI %s-%d not enabled after reset: "
+			PRINTF("EHCI %s-%d not enabled after reset: "
 					"disowning\n", ehci->name, port->address );
 			goto disown;
 		}
@@ -1712,7 +1734,7 @@ static int ehci_root_enable ( struct usb_hub *hub, struct usb_port *port ) {
 		mdelay ( 1 );
 	}
 
-	DBGC ( ehci, "EHCI %s-%d timed out waiting for port to reset\n",
+	PRINTF("EHCI %s-%d timed out waiting for port to reset\n",
 			ehci->name, port->address );
 	return -ETIMEDOUT;
 
@@ -1768,7 +1790,7 @@ static int ehci_root_speed ( struct usb_hub *hub, struct usb_port *port ) {
 
 	/* Read port status */
 	portsc = readl ( ehci->op + EHCI_OP_PORTSC ( port->address ) );
-	DBGC2 ( ehci, "EHCI %s-%d status is %08x\n",
+	PRINTF("EHCI %s-%d status is %08x\n",
 			ehci->name, port->address, portsc );
 	ccs = ( portsc & EHCI_PORTSC_CCS );
 	csc = ( portsc & EHCI_PORTSC_CSC );
@@ -1812,7 +1834,7 @@ static int ehci_root_clear_tt ( struct usb_hub *hub, struct usb_port *port,
 	struct ehci_device *ehci = usb_hub_get_drvdata ( hub );
 
 	/* Should never be called; this is a root hub */
-	DBGC ( ehci, "EHCI %s-%d nonsensical CLEAR_TT for %s %s\n", ehci->name,
+	PRINTF("EHCI %s-%d nonsensical CLEAR_TT for %s %s\n", ehci->name,
 			port->address, ep->usb->name, usb_endpoint_name ( ep ) );
 
 	return -ENOTSUP;
@@ -1887,7 +1909,7 @@ static int ehci_bus_open ( struct usb_bus *bus ) {
 	if ( ehci->addr64 ) {
 		writel ( ehci->ctrldssegment, ehci->op + EHCI_OP_CTRLDSSEGMENT);
 	} else if ( ehci->ctrldssegment ) {
-		DBGC ( ehci, "EHCI %s CTRLDSSEGMENT not supported\n",
+		PRINTF("EHCI %s CTRLDSSEGMENT not supported\n",
 				ehci->name );
 		rc = -ENOTSUP;
 		goto err_ctrldssegment;
@@ -1902,7 +1924,7 @@ static int ehci_bus_open ( struct usb_bus *bus ) {
 		goto err_alloc_frame;
 	}
 	if ( ( rc = ehci_ctrl_reachable ( ehci, ehci->frame ) ) != 0 ) {
-		DBGC ( ehci, "EHCI %s frame list unreachable\n", ehci->name );
+		PRINTF("EHCI %s frame list unreachable\n", ehci->name );
 		goto err_unreachable_frame;
 	}
 	ehci_periodic_schedule ( ehci );
@@ -1994,7 +2016,7 @@ static void ehci_bus_poll ( struct usb_bus *bus ) {
 
 	/* Report fatal errors */
 	if ( change & EHCI_USBSTS_SYSERR )
-		DBGC ( ehci, "EHCI %s host system error\n", ehci->name );
+		PRINTF("EHCI %s host system error\n", ehci->name );
 }
 
 #endif
@@ -2476,7 +2498,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	if ( ehci->addr64 ) {
 		writel ( ehci->ctrldssegment, ehci->op + EHCI_OP_CTRLDSSEGMENT);
 	} else if ( ehci->ctrldssegment ) {
-		DBGC ( ehci, "EHCI %s CTRLDSSEGMENT not supported\n",
+		PRINTF("EHCI %s CTRLDSSEGMENT not supported\n",
 				ehci->name );
 		rc = -ENOTSUP;
 		goto err_ctrldssegment;
