@@ -44,6 +44,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci);
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
 
 
+//enum { FLS = 1024, FLS_code = 0 };
+//enum { FLS = 512, FLS_code = 1 };
+enum { FLS = 256, FLS_code = 2 };
+
+static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
+static __attribute__((used, aligned(32))) uint32_t itd0 [16];
+static __attribute__((used, aligned(32))) uint32_t queue0 [16];
+
 
 static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
 {
@@ -56,21 +64,25 @@ static void ehci_itd_fill(uint32_t * itd)
 }
 
 
-#if 0
-
-
-
 typedef uintptr_t physaddr_t;
 
-uint32_t readl(void * a)
+static uint8_t readb(void * a)
+{
+	return * (volatile uint8_t *) a;
+}
+
+static uint32_t readl(void * a)
 {
 	return * (volatile uint32_t *) a;
 }
 
-void writel(void * a, uint32_t v)
+static void writel(void * a, uint32_t v)
 {
 	* (volatile uint32_t *) a = v;
 }
+
+
+#if 0
 
 
 static struct usb_hub usb_hub0;
@@ -1984,6 +1996,28 @@ HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
  	//USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
 
  	EHCIx->USBINTR = 0;
+
+
+	/* Clear run/stop bit */
+ 	unsigned long usbcmd;
+	usbcmd = EHCIx->USBCMD;
+	usbcmd &= ~( EHCI_USBCMD_RUN | EHCI_USBCMD_PERIODIC |
+			EHCI_USBCMD_ASYNC );
+	EHCIx->USBCMD = usbcmd;
+
+	unsigned i;
+	/* Wait for device to stop */
+	for ( i = 0 ; i < 100 ; i++ ) {
+		unsigned long usbsts;
+		/* Check if device is stopped */
+		usbsts = EHCIx->USBSTS;
+		if ( usbsts & EHCI_USBSTS_HCH )
+			return 0;
+
+		/* Delay */
+		local_delay_ms( 1 );
+	}
+
 	return HAL_OK;
 }
 
@@ -2209,14 +2243,26 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
  {
 	PRINTF("%s:\n", __func__);
- 	EhciController * const ehci = & hehci->ehci;
-	__HAL_LOCK(hehci);
-	__HAL_EHCI_ENABLE(hehci);
-	(void) EHCI_DriveVbus(hehci->Instance, 1U);
-	__HAL_UNLOCK(hehci);
-
-
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
+	EhciController * const ehci = & hehci->ehci;
+ 	// Enable controller
+ 	// Запускаем контроллер, 8 микро-фреймов, включаем
+ 	// последовательную и асинхронную очередь
+ 	//hc->opRegs->usbCmd = (8 << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
+     EHCIx->USBCMD =
+     		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
+ 			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
+ 			//CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
+ 			//CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
+ 			//CMD_RS |	// Run/Stop
+ 			0;
+
+     EHCIx->USBCMD |= CMD_RS;
+ 	(void) EHCIx->USBCMD;
+
+  	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
+ 		;
+
  	EHCIx->USBINTR |=
  			INTR_IOAA |	// Interrupt on ASync Advance Enable
 			INTR_HSE |	// Host System Error Interrupt Enable
@@ -2225,6 +2271,11 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 			INTR_ERROR |	// USB Error Interrupt Enable
 			INTR_USBINT |	// USB Interrupt Enable
 			0;
+
+	__HAL_LOCK(hehci);
+	__HAL_EHCI_ENABLE(hehci);
+	(void) EHCI_DriveVbus(hehci->Instance, 1U);
+	__HAL_UNLOCK(hehci);
 
 
 	return HAL_OK;
@@ -2438,11 +2489,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
  	HAL_EHCI_MspInit(hehci);
 
- 	static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
-
-     static __attribute__((used, aligned(32))) uint32_t itd0 [16];
-     static __attribute__((used, aligned(32))) uint32_t queue0 [16];
-
      ehci_itd_fill(itd0);
      ehci_queue_fill(queue0, (uintptr_t) queue0);
 
@@ -2453,10 +2499,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
      {
      	asyncbuff [i] = 0x01;	// 0 - valid, 1 - invalid
      }
-
- 	//enum { FLS = 1024, FLS_code = 0 };
-     //enum { FLS = 512, FLS_code = 1 };
-     enum { FLS = 256, FLS_code = 2 };
  	// Periodic frame list
  	static __attribute__((used, aligned(4096))) uint32_t framesbuff [FLS];
      for (i = 0; i < FLS; ++ i)
@@ -2584,23 +2626,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	//hc->opRegs->usbSts = ~0;
      EHCIx->USBSTS = ~ 0uL;
      ASSERT(& EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
- 	// Enable controller
- 	// Запускаем контроллер, 8 микро-фреймов, включаем
- 	// последовательную и асинхронную очередь
- 	//hc->opRegs->usbCmd = (8 << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
-     EHCIx->USBCMD =
-     		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
- 			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
- 			//CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
- 			//CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
- 			//CMD_RS |	// Run/Stop
- 			0;
-
-     EHCIx->USBCMD |= CMD_RS;
- 	(void) EHCIx->USBCMD;
-
-  	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
- 		;
 
  	// Configure all devices to be managed by the EHCI
  	// Говорим, что завершили
