@@ -1394,7 +1394,7 @@ int testchipDATAFLASH(void)
 	uint8_t buff8 [8];
 	readSFDPDATAFLASH(0x000000, buff8, 8);
 
-	uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
+	const uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
 
 	//PRINTF(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
 	if (signature == 0x50444653)
@@ -1450,18 +1450,22 @@ int testchipDATAFLASH(void)
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
 		PRINTF("SFDP: opco1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		PRINTF("SFDP: size1..4: %lu,%lu,%lu,%lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
 		unsigned i;
-		unsigned sctMAX = 0;
+		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
 		{
-			if ((sctMAX & 0xFF) < (sct [i] & 0xFF))
-				sctMAX = sct [i];
+			const unsigned newsct = sct [i];
+			if ((newsct & 0xFF) == 0)
+				continue;
+			if (sctRESULT == 0 || (sctRESULT & 0xFF) > (newsct & 0xFF))
+				sctRESULT = newsct;
 		}
-		if (sctMAX != 0)
+		if (sctRESULT != 0)
 		{
-			sectorEraseCmd = (sctMAX >> 8) & 0xFF;
-			sectorSize = 1uL << (sctMAX & 0xFF);
+			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
+			sectorSize = 1uL << (sctRESULT & 0xFF);
+			PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (sctRESULT >> 8) & 0xFF, 1uL << (sctRESULT & 0xFF));
 		}
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
