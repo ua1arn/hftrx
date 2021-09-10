@@ -2692,8 +2692,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 								 ep_type, token, pbuff, length,
 								 do_ping);
-//	PRINTF("USBH_LL_SubmitURB:\n");
-//	printhex(0, pbuff, length);
+	PRINTF("USBH_LL_SubmitURB:\n");
+	printhex(0, pbuff, length);
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
 

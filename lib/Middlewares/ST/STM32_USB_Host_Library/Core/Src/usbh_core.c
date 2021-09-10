@@ -522,12 +522,13 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 	case HOST_DEV_BUS_RESET_OFF:
 		//USBH_UsrLog(PSTR("USBH_Process: HOST_DEV_BUS_RESET_OFF"));
 		USBH_LL_ResetPort2(phost, 0);
-        /* Wait for 200 ms after connection */
-        phost->gState = HOST_DEV_WAIT_FOR_ATTACHMENT;
 
         /* Make sure to start with Default address */
         phost->device.address = USBH_ADDRESS_DEFAULT;
         phost->Timeout = 0U;
+
+       /* Wait for 200 ms after connection */
+		USBH_ProcessDelay(phost, HOST_DEV_WAIT_FOR_ATTACHMENT, 200);
 
 #if (USBH_USE_OS == 1U)
         phost->os_msg = (uint32_t)USBH_PORT_EVENT;
@@ -545,7 +546,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
       {
         USBH_UsrLog("USB Device Reset Completed");
         phost->device.RstCnt = 0U;
-        phost->gState = HOST_DEV_ATTACHED;
+        phost->gState = HOST_DEV_ATTACHED_WAITSPEED;
       }
       else
       {
@@ -579,15 +580,21 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 #endif
       break;
 
-    case HOST_DEV_ATTACHED :
+    case HOST_DEV_ATTACHED_WAITSPEED:
+    	/* todo: переделать - сперва ждём, потом проверяем скорость */
+    	if (USBH_LL_GetSpeedReady(phost))
+    	{
+            /* Wait for 100 ms after Reset */
+    		USBH_ProcessDelay(phost, HOST_DEV_ATTACHED, 100);
+    	}
+ 		break;
+
+   case HOST_DEV_ATTACHED :
 
       if (phost->pUser != NULL)
       {
         phost->pUser(phost, HOST_USER_CONNECTION);
       }
-
-      /* Wait for 100 ms after Reset */
-      USBH_Delay(100U);
 
       phost->device.speed = (uint8_t)USBH_LL_GetSpeed(phost);
 
