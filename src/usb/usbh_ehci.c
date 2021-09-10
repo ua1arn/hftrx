@@ -79,12 +79,25 @@ static void * zalloc(size_t size)
 //extern size_t usedmem;
 //extern size_t maxusedmem;
 
-extern void * /*__malloc */ alloc_memblock ( size_t size, size_t align,
+static void * /*__malloc */ alloc_memblock ( size_t size, size_t align,
 					size_t offset );
-extern void free_memblock ( void *ptr, size_t size );
+static void free_memblock ( void *ptr, size_t size );
 //extern void mpopulate ( void *start, size_t len );
 //extern void mdumpfree ( void );
 
+static void * /*__malloc */ alloc_memblock ( size_t size, size_t align,
+					size_t offset )
+{
+	ASSERT(offset == 0);
+	void * p = malloc(size + align);
+	uintptr_t a = (((uintptr_t) p) | (align - 1)) + 1;
+	return (void *) a;
+}
+
+static void free_memblock ( void *ptr, size_t size )
+{
+
+}
 /**
  * Allocate memory with specified physical alignment and offset
  *
