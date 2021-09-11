@@ -82,8 +82,6 @@
 #define HAL_EXTI_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
-#define HAL_PWR_MODULE_ENABLED
-#define HAL_RCC_MODULE_ENABLED
 
 /* ########################## Register Callbacks selection ############################## */
 /**
@@ -325,10 +323,6 @@
 #ifdef HAL_PWR_MODULE_ENABLED
  #include "stm32mp1xx_hal_pwr.h"
 #endif /* HAL_PWR_MODULE_ENABLED */
-
-#ifdef HAL_RCC_MODULE_ENABLED
- #include "stm32mp1xx_hal_rcc.h"
-#endif /* HAL_RCC_MODULE_ENABLED */
 
 #ifdef HAL_QSPI_MODULE_ENABLED
  #include "stm32mp1xx_hal_qspi.h"

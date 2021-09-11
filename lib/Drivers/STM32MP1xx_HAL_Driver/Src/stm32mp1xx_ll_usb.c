@@ -39,6 +39,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx_hal.h"
+#include "stm32mp1xx_ll_rcc.h"
 
 /** @addtogroup STM32H7xx_LL_USB_DRIVER
   * @{
@@ -182,7 +183,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
 		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
-		uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
+		uint_fast32_t usbphyref = LL_RCC_GetUSBPHYClockFreq(LL_RCC_USBPHY_CLKSOURCE);
+		//uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
 		//ASSERT(usbphyref >= 19200000uL && usbphyref <= 38400000uL);
 		const uint_fast32_t ODF = 0;	// игнорируется
 		// 1440 MHz
