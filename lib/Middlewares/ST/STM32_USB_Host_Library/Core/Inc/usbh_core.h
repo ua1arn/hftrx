@@ -113,6 +113,7 @@ USBH_StatusTypeDef   USBH_LL_Init(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_DeInit(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_Start(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_Stop(USBH_HandleTypeDef *phost);
+USBH_StatusTypeDef   USBH_LL_StopHC(USBH_HandleTypeDef *phost, uint8_t chnum); // MORI
 
 USBH_StatusTypeDef   USBH_LL_Connect(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_Disconnect(USBH_HandleTypeDef *phost);
@@ -166,6 +167,10 @@ void USBH_LL_SetTimer(USBH_HandleTypeDef *phost, uint32_t time);
 void USBH_LL_IncTimer(USBH_HandleTypeDef *phost);
 
 void USBH_Delay(uint32_t Delay);
+
+// MORI
+extern USBH_HandleTypeDef hUSBHost[5];
+extern HCD_HandleTypeDef _hHCD[2];
 
 /**
   * @}

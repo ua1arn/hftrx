@@ -101,6 +101,25 @@ extern "C" {
 
 #define USBH_MAX_EP_PACKET_SIZE                            0x400U
 
+// ++ from MORI
+// https://github.com/mori-br/STM32F4HUB
+//#define USBH_ADDRESS_DEFAULT                     0
+//#define USBH_ADDRESS_ASSIGNED                    1
+//#define USBH_MPS_DEFAULT                         0x40
+//#define USBH_MPS_LOWSPEED                        8
+// -- from MORI
+
+/** @defgroup USBH_CORE_Private_Defines
+  * @{
+  */
+#define USBH_ADDRESS_DEFAULT                     0x00U
+#define USBH_ADDRESS_ASSIGNED                    0x01U
+#define USBH_MPS_DEFAULT                         0x40U
+#define USBH_MPS_LOWSPEED                        0x08U
+/**
+  * @}
+  */
+
 #define  USB_LEN_DESC_HDR                                  0x02U
 #define  USB_LEN_DEV_DESC                                  0x12U
 #define  USB_LEN_CFG_DESC                                  0x09U
@@ -511,6 +530,20 @@ typedef struct _USBH_HandleTypeDef
 #endif
   uint32_t              os_msg;
 #endif
+
+
+  // MORI
+    __IO uint8_t valid;
+    __IO uint8_t busy;
+
+  //  __IO uint8_t transfering;
+
+    uint8_t hub;
+    uint8_t address;
+
+    uint8_t prescaler;
+    uint8_t interfaces;
+    void*   USBH_ClassTypeDef_pData[USBH_MAX_NUM_INTERFACES];
 
 } USBH_HandleTypeDef;
 

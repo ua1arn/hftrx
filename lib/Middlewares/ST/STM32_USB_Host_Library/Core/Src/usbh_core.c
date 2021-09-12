@@ -37,16 +37,6 @@
   */
 
 
-/** @defgroup USBH_CORE_Private_Defines
-  * @{
-  */
-#define USBH_ADDRESS_DEFAULT                     0x00U
-#define USBH_ADDRESS_ASSIGNED                    0x01U
-#define USBH_MPS_DEFAULT                         0x40U
-/**
-  * @}
-  */
-
 /** @defgroup USBH_CORE_Private_Macros
   * @{
   */
@@ -68,7 +58,6 @@ osThreadAttr_t USBH_Thread_Atrr;
 /**
   * @}
   */
-
 
 /** @defgroup USBH_CORE_Private_Functions
   * @{
@@ -815,6 +804,25 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
       break;
 
     case HOST_DEV_DISCONNECTED :
+
+    	// MORI - Hub disconnecting, remove all plugged devices
+    	{
+    		int i;
+    		for(i = 1; i < ARRAY_SIZE(hUSBHost); ++i)
+    		{
+    			if(hUSBHost[i].valid)
+    			{
+    				if(hUSBHost[i].pActiveClass != NULL)
+    				{
+    					hUSBHost[i].pActiveClass->DeInit(&hUSBHost[i]);
+    					hUSBHost[i].pActiveClass = NULL;
+    				}
+
+    				memset(&hUSBHost[i], 0, sizeof(USBH_HandleTypeDef));
+    			}
+    		}
+    	}
+
       phost->device.is_disconnected = 0U;
 
       (void)DeInitStateMachine(phost);
@@ -1330,6 +1338,11 @@ USBH_StatusTypeDef  USBH_LL_Connect(USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef  USBH_LL_Disconnect(USBH_HandleTypeDef *phost)
 {
+
+	// MORI - Always select the root device, mainly if its a hub
+	USBH_HandleTypeDef *pphost = &hUSBHost[0];
+	HCD_HandleTypeDef *phHCD   = &_hHCD[pphost->id];
+
   /* update device connection states */
   phost->device.is_disconnected = 1U;
   phost->device.is_connected = 0U;

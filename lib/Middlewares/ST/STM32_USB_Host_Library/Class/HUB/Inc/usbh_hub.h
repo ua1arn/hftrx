@@ -34,7 +34,7 @@
 #define USB_HUB_CLASS     					 0x09
 #define HUB_MIN_POLL	  					 200
 
-#define MAX_HUB_PORTS 						 4
+#define MAX_HUB_PORTS 						 8
 
 #define USB_DESCRIPTOR_HUB                   0x29
 #define USB_REQUEST_GET_DESCRIPTOR           0x06
@@ -123,8 +123,10 @@ typedef struct __attribute__ ((packed)) _USB_HUB_DESCRIPTOR
 	uint16_t wHubCharacteristics;   //
     uint8_t  bPwrOn2PwrGood;        // Time (in 2 ms intervals) from the time the power-on sequence begins on a port until power is good on that port
     uint8_t  bHubContrCurrent;      // Maximum current requirements of the Hub Controller electronics in mA
-    uint8_t  DeviceRemovable;       // Indicates if a port has a removable device attached.
-    uint8_t  PortPwrCtrlMask;       // This field exists for reasons of compatibility with software written for 1.0 compliant devices.
+    // Next two fields one byte or more depend on bNbrPorts value
+    // See bNbrPorts specs at '11.23.2.1 Hub Descriptor' of usb_20.pdf
+    //uint8_t  DeviceRemovable;       // Indicates if a port has a removable device attached.
+    //uint8_t  PortPwrCtrlMask;       // This field exists for reasons of compatibility with software written for 1.0 compliant devices.
 
 } USB_HUB_DESCRIPTOR;
 
