@@ -970,6 +970,7 @@ usb_hub_get_drvdata ( struct usb_hub *hub ) {
 static inline __attribute__ (( always_inline )) struct usb_port *
 usb_port ( struct usb_hub *hub, unsigned int address ) {
 
+	ASSERT(address >= 1);
 	return &hub->port[ address - 1 ];
 }
 

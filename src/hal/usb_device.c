@@ -237,6 +237,12 @@ void MX_USB_HOST_DeInit(void)
 {
 
 }
+
+void MX_USB_HOST_Process(void)
+{
+	USBH_Process(& hUsbHostHS);
+}
+
 #endif /* defined (WITHUSBHW_HOST) */
 
 /**
@@ -333,8 +339,7 @@ void board_usb_deactivate(void)
 void board_usbh_polling(void)
 {
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
-	USBH_Process(& hUsbHostHS);
-
+	MX_USB_HOST_Process();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 }
 
