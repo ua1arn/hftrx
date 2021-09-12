@@ -66,6 +66,7 @@ void Error_Handler(void);
 //enum { FLS = 512, FLS_code = 1 };
 enum { FLS = 256, FLS_code = 2 };
 
+#if 0
 static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
 // isochronious transaction descriptors
 static __attribute__((used, aligned(32))) uint32_t itd0 [16];
@@ -75,6 +76,40 @@ static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024];
 // Periodic frame list
 static __attribute__((used, aligned(4096))) uint32_t framesbuff [FLS];
 
+
+static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
+{
+	qh [0] = (qnext & 0xFFFFFFC0) | (1uL << 1);
+}
+
+// isochronious transaction descriptor
+static void ehci_itd_fill(uint32_t * itd)
+{
+	itd [0] = 0x01;
+}
+
+#endif
+
+struct ehci_device ehcidevice0 = {
+		.regs = (uintptr_t) WITHUSBHW_EHCI,
+		.endpoints = LIST_HEAD_INIT(ehcidevice0.endpoints),
+		.async = LIST_HEAD_INIT(ehcidevice0.async),
+		.periodic = LIST_HEAD_INIT(ehcidevice0.periodic),
+		.name = "STM32MP1 EHCI"
+};
+static struct usb_bus usbbus0 = {
+		.priv = & ehcidevice0
+};
+
+static struct usb_device usbdev0 = {
+		.priv = & ehcidevice0,
+};
+
+static struct usb_hub usbhub0 = {
+		.bus = & usbbus0,
+		.priv = & ehcidevice0,
+		.name = "Root hub"
+};
 
 static void * zalloc(size_t size)
 {
@@ -190,36 +225,24 @@ static void rmb(void)
 	__DMB();
 }
 
-static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
-{
-	qh [0] = (qnext & 0xFFFFFFC0) | (1uL << 1);
-}
-
-// isochronious transaction descriptor
-static void ehci_itd_fill(uint32_t * itd)
-{
-	itd [0] = 0x01;
-}
-
-
 typedef uintptr_t physaddr_t;
 
-static uint8_t readb(void * a)
+static uint8_t readb(physaddr_t a)
 {
 	return * (volatile uint8_t *) a;
 }
 
-static uint16_t readw(void * a)
+static uint16_t readw(physaddr_t a)
 {
 	return * (volatile uint16_t *) a;
 }
 
-static uint32_t readl(void * a)
+static uint32_t readl(physaddr_t a)
 {
 	return * (volatile uint32_t *) a;
 }
 
-static void writel(uint32_t v, void * a)
+static void writel(uint32_t v, physaddr_t a)
 {
 	* (volatile uint32_t *) a = v;
 }
@@ -264,19 +287,19 @@ static void ehci_init ( struct ehci_device *ehci, void *regs ) {
 	size_t caplength;
 
 	/* Locate capability and operational registers */
-	ehci->cap = regs;
-	caplength = readb ( ehci->cap + EHCI_CAP_CAPLENGTH );
-	ehci->op = ( ehci->cap + caplength );
+	ehci->cap = (uintptr_t) regs;
+	caplength = readb ( (physaddr_t) ehci->cap + EHCI_CAP_CAPLENGTH );
+	ehci->op = ( (physaddr_t) ehci->cap + caplength );
 	PRINTF("EHCI %s cap %08lx op %08lx\n", ehci->name,
-			virt_to_phys ( ehci->cap ), virt_to_phys ( ehci->op ) );
+			virt_to_phys ( (void *) ehci->cap ), virt_to_phys ( (void *) ehci->op ) );
 
 	/* Read structural parameters */
-	hcsparams = readl ( ehci->cap + EHCI_CAP_HCSPARAMS );
+	hcsparams = readl ( (physaddr_t) ehci->cap + EHCI_CAP_HCSPARAMS );
 	ehci->ports = EHCI_HCSPARAMS_PORTS ( hcsparams );
 	PRINTF("EHCI %s has %d ports\n", ehci->name, ehci->ports );
 
 	/* Read capability parameters 1 */
-	hccparams = readl ( ehci->cap + EHCI_CAP_HCCPARAMS );
+	hccparams = readl ( (physaddr_t) ehci->cap + EHCI_CAP_HCCPARAMS );
 	ehci->addr64 = EHCI_HCCPARAMS_ADDR64 ( hccparams );
 	ehci->flsize = ( EHCI_HCCPARAMS_FLSIZE ( hccparams ) ?
 			EHCI_FLSIZE_SMALL : EHCI_FLSIZE_DEFAULT );
@@ -396,23 +419,23 @@ static __unused void ehci_dump ( struct ehci_device *ehci ) {
 		return;
 
 	/* Dump capability registers */
-	caplength = readb ( (uint8_t *) ehci->cap + EHCI_CAP_CAPLENGTH );
-	hciversion = readw ( (uint8_t *) ehci->cap + EHCI_CAP_HCIVERSION );
-	hcsparams = readl ( (uint8_t *) ehci->cap + EHCI_CAP_HCSPARAMS );
-	hccparams = readl ( (uint8_t *) ehci->cap + EHCI_CAP_HCCPARAMS );
+	caplength = readb ( ehci->cap + EHCI_CAP_CAPLENGTH );
+	hciversion = readw ( ehci->cap + EHCI_CAP_HCIVERSION );
+	hcsparams = readl ( ehci->cap + EHCI_CAP_HCSPARAMS );
+	hccparams = readl ( ehci->cap + EHCI_CAP_HCCPARAMS );
 	PRINTF("EHCI %s caplen %02x hciversion %04x hcsparams %08x "
 			"hccparams %08x\n", ehci->name, caplength, hciversion,
 			hcsparams,  hccparams );
 
 	/* Dump operational registers */
-	usbcmd = readl ( (uint8_t *) ehci->op + EHCI_OP_USBCMD );
-	usbsts = readl ( (uint8_t *) ehci->op + EHCI_OP_USBSTS );
-	usbintr = readl ( (uint8_t *) ehci->op + EHCI_OP_USBINTR );
-	frindex = readl ( (uint8_t *) ehci->op + EHCI_OP_FRINDEX );
-	ctrldssegment = readl ( (uint8_t *) ehci->op + EHCI_OP_CTRLDSSEGMENT );
-	periodiclistbase = readl ( (uint8_t *) ehci->op + EHCI_OP_PERIODICLISTBASE );
-	asynclistaddr = readl ( (uint8_t *) ehci->op + EHCI_OP_ASYNCLISTADDR );
-	configflag = readl ( (uint8_t *) ehci->op + EHCI_OP_CONFIGFLAG );
+	usbcmd = readl ( ehci->op + EHCI_OP_USBCMD );
+	usbsts = readl ( ehci->op + EHCI_OP_USBSTS );
+	usbintr = readl ( ehci->op + EHCI_OP_USBINTR );
+	frindex = readl ( ehci->op + EHCI_OP_FRINDEX );
+	ctrldssegment = readl ( ehci->op + EHCI_OP_CTRLDSSEGMENT );
+	periodiclistbase = readl ( ehci->op + EHCI_OP_PERIODICLISTBASE );
+	asynclistaddr = readl ( ehci->op + EHCI_OP_ASYNCLISTADDR );
+	configflag = readl ( ehci->op + EHCI_OP_CONFIGFLAG );
 	PRINTF("EHCI %s usbcmd %08x usbsts %08x usbint %08x frindx "
 			"%08x\n", ehci->name, usbcmd, usbsts, usbintr, frindex );
 	PRINTF("EHCI %s ctrlds %08x period %08x asyncl %08x cfgflg "
@@ -1637,26 +1660,26 @@ static void ehci_endpoint_poll ( struct ehci_endpoint *endpoint ) {
  * @v usb               USB device
  * @ret rc              Return status code
  */
-static int ehci_device_open ( struct usb_device *usb ) {
-	struct ehci_device *ehci = usb_bus_get_hostdata ( usb->port->hub->bus );
-
-	usb_set_hostdata ( usb, ehci );
-	return 0;
-}
+//static int ehci_device_open ( struct usb_device *usb ) {
+//	struct ehci_device *ehci = usb_bus_get_hostdata ( usb->port->hub->bus );
+//
+//	usb_set_hostdata ( usb, ehci );
+//	return 0;
+//}
 
 /**
  * Close device
  *
  * @v usb               USB device
  */
-static void ehci_device_close ( struct usb_device *usb ) {
-	struct ehci_device *ehci = usb_get_hostdata ( usb );
-	struct usb_bus *bus = ehci->bus;
-
-	/* Free device address, if assigned */
-	if ( usb->address )
-		usb_free_address ( bus, usb->address );
-}
+//static void ehci_device_close ( struct usb_device *usb ) {
+//	struct ehci_device *ehci = usb_get_hostdata ( usb );
+//	struct usb_bus *bus = ehci->bus;
+//
+//	/* Free device address, if assigned */
+//	if ( usb->address )
+//		usb_free_address ( bus, usb->address );
+//}
 
 /**
  * Assign device address
@@ -2124,6 +2147,9 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
  	HAL_EHCI_MspInit(hehci);
 
+ 	ehci_init(& ehcidevice0, hehci->Instance);
+
+#if 0
      ehci_itd_fill(itd0);
      ehci_queue_fill(queue0, (uintptr_t) queue0);
 
@@ -2151,7 +2177,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
      arm_hardware_flush((uintptr_t) asyncbuff, sizeof asyncbuff);
      arm_hardware_flush((uintptr_t) itd0, sizeof itd0);
      arm_hardware_flush((uintptr_t) queue0, sizeof queue0);
-
+#endif
   	// power cycle for USB dongle
 // 	board_set_usbhostvbuson(0);
 // 	board_update();
@@ -2167,16 +2193,16 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
  	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
  	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
-
- 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
- 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
- 	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
- 				((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F,
-				((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
-				((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01,
-				((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
-				((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
- 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
+//
+// 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
+// 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
+// 	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
+// 				((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F,
+//				((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
+//				((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01,
+//				((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
+//				((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
+// 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
 
  	// Calculate Operational Register Space base address
  	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
@@ -2241,18 +2267,20 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	// Отключаем прерывания
  	//hc->opRegs->usbIntr = 0;
      EHCIx->USBINTR = 0;
+
+     VERIFY(ehci_bus_open(& usbbus0) == 0);
  	// Setup frame list
  	// Устанавливаем ссылку на фреймлист
  	//hc->opRegs->frameIndex = 0;
      EHCIx->FRINDEX = 0;
  	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-     EHCIx->PERIODICLISTBASE = (uintptr_t) framesbuff;
+    // EHCIx->PERIODICLISTBASE = (uintptr_t) framesbuff;
  	// копируем адрес асинхронной очереди в регистр
  	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-     EHCIx->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+     //EHCIx->ASYNCLISTADDR = (uintptr_t) asyncbuff;
  	// Устанавливаем сегмент в 0
  	//hc->opRegs->ctrlDsSegment = 0;
-     EHCIx->CTRLDSSEGMENT = 0x00000000;
+     //EHCIx->CTRLDSSEGMENT = 0x00000000;
  	// Clear status
  	// Чистим статус
  	//hc->opRegs->usbSts = ~0;
@@ -2283,8 +2311,9 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
  	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
 
+     VERIFY(ehci_root_open(& usbhub0) == 0);
 
-
+#if 0
   	/* Route all ports to EHCI controller */
 	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
  	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
@@ -2306,7 +2335,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 
 	hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] |= (1uL << 12);	// Port Power
-
+#endif
 
  	PRINTF("board_ehci_initialize done.\n");
 }
@@ -2781,12 +2810,13 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   hehci->hc[ch_num].state = HC_IDLE;
 
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
+//
+//  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) asyncbuff;
+//	memset ( head0, 0, sizeof ( *head0 ) );
+//	head0->chr = cpu_to_le32 ( EHCI_CHR_HEAD );
+//	head0->cache.next = cpu_to_le32 ( EHCI_LINK_TERMINATE );
+//	head0->cache.status = EHCI_STATUS_HALTED;
 
-  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) asyncbuff;
-	memset ( head0, 0, sizeof ( *head0 ) );
-	head0->chr = cpu_to_le32 ( EHCI_CHR_HEAD );
-	head0->cache.next = cpu_to_le32 ( EHCI_LINK_TERMINATE );
-	head0->cache.status = EHCI_STATUS_HALTED;
 #if 0
 	ehci_async_schedule ( ehci );
 	writel ( virt_to_phys ( head0 ),
@@ -2804,14 +2834,14 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		goto err_ctrldssegment;
 	}
 #endif
-	head0->cache.low [0] = (uintptr_t) pbuff;
-	head0->cache.low [1] = (uintptr_t) pbuff;
-	head0->cache.low [2] = (uintptr_t) pbuff;
-	head0->cache.high [0] = 0;
-	head0->cache.high [1] = 0;
-	head0->cache.high [2] = 0;
-	head0->cache.len = cpu_to_le16 ( length | 0 );
-	head0->cache.flags = ( 0 | EHCI_FL_CERR_MAX );
+//	head0->cache.low [0] = (uintptr_t) pbuff;
+//	head0->cache.low [1] = (uintptr_t) pbuff;
+//	head0->cache.low [2] = (uintptr_t) pbuff;
+//	head0->cache.high [0] = 0;
+//	head0->cache.high [1] = 0;
+//	head0->cache.high [2] = 0;
+//	head0->cache.len = cpu_to_le16 ( length | 0 );
+//	head0->cache.flags = ( 0 | EHCI_FL_CERR_MAX );
 
 //	PRINTF("before activate:\n");
 //	printhex(0, (void *) head0, sizeof * head0);
@@ -2822,7 +2852,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //	printhex(0, (void *) head0, sizeof * head0);
 //	PRINTF("after activate:\n");
 //	printhex(0, (void *) pbuff, length);
-  return HAL_OK;
+  return HAL_ERROR;
 }
 
 /**

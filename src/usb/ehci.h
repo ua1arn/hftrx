@@ -482,14 +482,14 @@
  /** An EHCI device */
  struct ehci_device {
          /** Registers */
-         void *regs;
+	 	 uintptr_t regs;
          /** Name */
          const char *name;
  
          /** Capability registers */
-         void *cap;
+         uintptr_t cap;
          /** Operational registers */
-         void *op;
+         uintptr_t op;
  
          /** Number of ports */
          unsigned int ports;
