@@ -47,7 +47,17 @@
 //
 // http://blog.metrotek.spb.ru/2011/07/07/usb-set-na-cortex-m3/
 
-#define USB_FUNCTION_BCD_USB	0x0200	// 0x0201 in ST samples
+// See https://community.osr.com/discussion/249588/where-is-the-usb-2-1-specification
+//	The value of the bcdUSB field in the standard USB 2.0 Device Descriptor is used to indicate that the device supports the request to read the BOS Descriptor (i.e. GetDescriptor(BOS)). Devices that support the BOS descriptor must have a bcdUSB value of 0201H or larger.
+// USB2_LinkPowerMangement_ECN[final].pdf
+// See Binary Device Object Store (BOS) Descriptor
+
+#if (USBD_LPM_ENABLED == 1)
+	#define USB_FUNCTION_BCD_USB	0x0200	// 0x0201 in ST samples
+#else /* (USBD_LPM_ENABLED == 1) */
+	#define USB_FUNCTION_BCD_USB	0x0200
+#endif /* (USBD_LPM_ENABLED == 1) */
+
 #define USB_FUNCTION_VENDOR_ID	0xFFFF	// Generic
 //#define USB_FUNCTION_VENDOR_ID	0x041C	// Altera Corp.
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
@@ -246,6 +256,21 @@ static uint_fast16_t encodeMaxPacketSize(uint_fast32_t size)
 		return (0x01 << 11) | ((size + 1) / 2);	// 513..1024
 	else
 		return (0x02 << 11) | ((size + 2) / 3);	// 683..1024
+}
+
+// возврат степени 2 от числа (не являющиеся 1 2 4 8... округляются до ближайшего меньшего).
+static uint_fast8_t
+usb_ilog2(
+	unsigned long v		// число на анализ
+	)
+{
+	uint_fast8_t n;
+	ASSERT(v != 0);
+
+	for (n = 0; v != 1; ++ n)
+		v >>= 1;
+
+	return n;
 }
 
 // See audio10.pdf - 3.7.2.3 Audio Channel Cluster Format
@@ -4204,7 +4229,7 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 		* buff ++ = USB_DEVICE_CLASS_MISCELLANEOUS;		/*  4:bDeviceClass */
 		* buff ++ = 2;		                            /*  5:bDeviceSubClass - Common Class Sub Class */
 		* buff ++ = 1;									/*  6:bDeviceProtocol - Interface Association Descriptor protocol */
-		* buff ++ = USB_OTG_MAX_EP0_SIZE;               /*  7:bMaxPacketSize0 (for DCP) */
+		* buff ++ = USB_OTG_MAX_EP0_SIZE;               /*  7:bMaxPacketSize0 (for DCP), For 3x: 09H is the only valid value in this field when operating at Gen X speed. */
 		* buff ++ = LO_BYTE(USB_FUNCTION_VENDOR_ID);    /*  8:idVendor_lo */
 		* buff ++ = HI_BYTE(USB_FUNCTION_VENDOR_ID);	/*  9:idVendor_hi */
 		* buff ++ = LO_BYTE(USB_FUNCTION_PRODUCT_ID);   /* 10:idProduct_lo */
@@ -4240,7 +4265,7 @@ static unsigned fill_DeviceQualifier_descriptor(
 		* buff ++ = USB_DEVICE_CLASS_MISCELLANEOUS;			/*  4:bDeviceClass - Miscellaneous */
 		* buff ++ = 2;										/*  5:bDeviceSubClass - Common Class Sub Class */
 		* buff ++ = 1;										/*  6:bDeviceProtocol - Interface Association Descriptor protocol */
-		* buff ++ = USB_OTG_MAX_EP0_SIZE;                   /*  7:bMaxPacketSize0 (for DCP) */
+		* buff ++ = USB_OTG_MAX_EP0_SIZE;                   /*  7:bMaxPacketSize0 (for DCP), For 3x: 09H is the only valid value in this field when operating at Gen X speed. */
 		* buff ++ = bNumConfigurations;                     /*  8:bNumConfigurations - number of other-speed configurations */
 		* buff ++ = 0;                                      /*  9:bReserved */
 	}
@@ -4257,7 +4282,9 @@ static unsigned fill_devcaps_usb20ext(uint_fast8_t fill, uint8_t * buff, unsigne
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast32_t bmAttributes = 
+#if (USBD_LPM_ENABLED == 1)
 			(1uL << 1) |	/* Link Power Management capability bit set */
+#endif /* (USBD_LPM_ENABLED == 1) */
 			0;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bLength */
@@ -4315,6 +4342,7 @@ static unsigned fill_DevCaps_group(uint_fast8_t fill, uint8_t * p, unsigned maxs
 	return n;
 }
 
+// Binary Device Object Store (BOS) Descriptor
 static unsigned fill_BinaryDeviceObjectStore_descriptor(uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t bNumDeviceCaps = 2;
@@ -4767,7 +4795,11 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 
 	// Binary Device Object Store (BOS) Descriptor
-	if (USB_FUNCTION_BCD_USB > 0x0201)
+	// The value of the bcdUSB field in the standard USB 2.0 Device Descriptor
+	// is used to indicate that the device supports the request to
+	// read the BOS Descriptor (i.e. GetDescriptor(BOS)).
+	// Devices that support the BOS descriptor must have a bcdUSB value of 0201H or larger.
+	if (USB_FUNCTION_BCD_USB >= 0x0201)
 	{
 		unsigned partlen;
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
