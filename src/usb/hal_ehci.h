@@ -162,27 +162,27 @@ typedef struct EhciOpRegs
 // ------------------------------------------------------------------------------------------------
 // Port Status and Control Registers
 
-#define PORT_CONNECTION                 (1uL << 0)    // Current Connect Status
-#define PORT_CONNECTION_CHANGE          (1uL << 1)    // Connect Status Change
-#define PORT_ENABLE                     (1uL << 2)    // Port Enabled
-#define PORT_ENABLE_CHANGE              (1uL << 3)    // Port Enable Change
-#define PORT_OVER_CURRENT               (1uL << 4)    // Over-current Active
-#define PORT_OVER_CURRENT_CHANGE        (1uL << 5)    // Over-current Change
-#define PORT_FPR                        (1uL << 6)    // Force Port Resume
-#define PORT_SUSPEND                    (1uL << 7)    // Suspend
-#define PORT_RESET                      (1uL << 8)    // Port Reset
-#define PORT_LS_MASK                    (3uL << 10)   // Line Status
-#define PORT_LS_SHIFT                   10
-#define PORT_POWER                      (1uL << 12)   // Port Power
-#define PORT_OWNER                      (1uL << 13)   // Port Owner
-#define PORT_IC_MASK                    (3uL << 14)   // Port Indicator Control
-#define PORT_IC_SHIFT                   14
-#define PORT_TC_MASK                    (15uL << 16)  // Port Test Control
-#define PORT_TC_SHIFT                   16
-#define PORT_WKCNNT_E                   (1uL << 20)   // Wake on Connect Enable
-#define PORT_WKDSCNNT_E                 (1uL << 21)   // Wake on Disconnect Enable
-#define PORT_WKOC_E                     (1uL << 22)   // Wake on Over-current Enable
-#define PORT_RWC                        (PORT_CONNECTION_CHANGE | PORT_ENABLE_CHANGE | PORT_OVER_CURRENT_CHANGE)
+#define PORTSC_CONNECTION                 (1uL << 0)    // Current Connect Status
+#define PORTSC_CONNECTION_CHANGE          (1uL << 1)    // Connect Status Change
+#define PORTSC_ENABLE                     (1uL << 2)    // Port Enabled
+#define PORTSC_ENABLE_CHANGE              (1uL << 3)    // Port Enable Change
+#define PORTSC_OVER_CURRENT               (1uL << 4)    // Over-current Active
+#define PORTSC_OVER_CURRENT_CHANGE        (1uL << 5)    // Over-current Change
+#define PORTSC_FPR                        (1uL << 6)    // Force Port Resume
+#define PORTSC_SUSPEND                    (1uL << 7)    // Suspend
+#define PORTSC_RESET                      (1uL << 8)    // Port Reset
+#define PORTSC_LS_MASK                    (3uL << 10)   // Line Status
+#define PORTSC_LS_SHIFT                   10
+#define PORTSC_POWER                      (1uL << 12)   // Port Power
+#define PORTSC_OWNER                      (1uL << 13)   // Port Owner
+#define PORTSC_IC_MASK                    (3uL << 14)   // Port Indicator Control
+#define PORTSC_IC_SHIFT                   14
+#define PORTSC_TC_MASK                    (15uL << 16)  // Port Test Control
+#define PORTSC_TC_SHIFT                   16
+#define PORTSC_WKCNNT_E                   (1uL << 20)   // Wake on Connect Enable
+#define PORTSC_WKDSCNNT_E                 (1uL << 21)   // Wake on Disconnect Enable
+#define PORTSC_WKOC_E                     (1uL << 22)   // Wake on Over-current Enable
+#define PORTSC_RWC                        (PORTSC_CONNECTION_CHANGE | PORTSC_ENABLE_CHANGE | PORTSC_OVER_CURRENT_CHANGE)
 
 // ------------------------------------------------------------------------------------------------
 // Transfer Descriptor

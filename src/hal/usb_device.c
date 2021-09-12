@@ -52,6 +52,10 @@ void Error_Handler(void);
 	/* USB Host Core handle declaration. */
 	RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
+	// MORI
+//	USBH_HandleTypeDef hUSBHost[5];
+//	HCD_HandleTypeDef _hHCD[2];
+
 	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 #endif /* defined (WITHUSBHW_HOST) */

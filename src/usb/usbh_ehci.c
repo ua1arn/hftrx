@@ -29,6 +29,11 @@ void Error_Handler(void);
 	/* USB Host Core handle declaration. */
 	RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
+	// MORI
+	USBH_HandleTypeDef hUSBHost[5];
+//	HCD_HandleTypeDef _hHCD[2];
+//	EHCI_HandleTypeDef _hEHCI[2];
+
 	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 	static RAMBIGDTCM __ALIGN_BEGIN EHCI_HandleTypeDef hhcd_USB_EHCI __ALIGN_END;
@@ -38,6 +43,7 @@ void Error_Handler(void);
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"
 #endif /* WITHUSEUSBFLASH */
+#include "../../Class/HUB/Inc/usbh_hub.h"
 
 
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
@@ -3350,6 +3356,9 @@ void MX_USB_HOST_Init(void)
 	#if WITHUSEUSBFLASH
 		USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
 	#endif /* WITHUSEUSBFLASH */
+	#if 0
+		USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
+	#endif /* 1 */
 
 	//static ticker_t usbticker;
 	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
