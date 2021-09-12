@@ -1076,6 +1076,9 @@ usb_bus_get_hostdata ( struct usb_bus *bus ) {
  */
 static inline __attribute__ (( always_inline )) void
 usb_poll ( struct usb_bus *bus ) {
+	ASSERT(bus);
+	ASSERT(bus->host);
+	ASSERT(bus->host->poll);
 	bus->host->poll ( bus );
 }
 

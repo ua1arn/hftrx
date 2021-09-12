@@ -61,6 +61,7 @@ void Error_Handler(void);
 #define ENOBUFS 1
 #define ENODEV 1
 #define ECANCELED 1
+#define ENOENT 1
 
 //enum { FLS = 1024, FLS_code = 0 };
 //enum { FLS = 512, FLS_code = 1 };
@@ -98,10 +99,15 @@ struct ehci_device ehcidevice0 = {
 		.name = "STM32MP1 EHCI"
 };
 
-static struct usb_device usbdev0 = {
-		.priv = & ehcidevice0,
-};
+static struct usb_port usbport0 = {
 
+};
+//static struct usb_device usbdev0 = {
+//		.priv = & ehcidevice0,
+//		.port = & usbport0
+//};
+
+static struct usb_device * usbdev0;
 static struct usb_hub * hub0;
 
 static struct usb_bus usbbus0 = {
@@ -128,6 +134,7 @@ static void * /*__malloc */ alloc_memblock ( size_t size, size_t align,
 {
 	ASSERT(offset == 0);
 	void * p = malloc(size + align);
+	memset(p, 0, size + align);
 	uintptr_t a = (((uintptr_t) p) | (align - 1)) + 1;
 	return (void *) a;
 }
@@ -295,7 +302,7 @@ struct io_buffer * alloc_iob_raw ( size_t len, size_t align, size_t offset ) {
 	align = ( 1UL << align_log2 );
 
 	/* Calculate length threshold */
-	assert ( align >= padding );
+	ASSERT ( align >= padding );
 	threshold = ( align - padding );
 
 	/* Allocate buffer plus an inline descriptor as a single unit,
@@ -334,7 +341,7 @@ struct io_buffer * alloc_iob_raw ( size_t len, size_t align, size_t offset ) {
 	/* Populate descriptor */
 	iobuf->head = iobuf->data = iobuf->tail = data;
 	iobuf->end = ( data + len );
-
+	//PRINTF("alloc_iob_raw: %p, head=%p, end=%p\n", iobuf, iobuf->head, iobuf->end);
 	return iobuf;
 }
 
@@ -372,9 +379,9 @@ void free_iob ( struct io_buffer *iobuf ) {
 		return;
 
 	/* Sanity checks */
-	assert ( iobuf->head <= iobuf->data );
-	assert ( iobuf->data <= iobuf->tail );
-	assert ( iobuf->tail <= iobuf->end );
+	ASSERT ( iobuf->head <= iobuf->data );
+	ASSERT ( iobuf->data <= iobuf->tail );
+	ASSERT ( iobuf->tail <= iobuf->end );
 
 	/* Free buffer */
 	len = ( iobuf->end - iobuf->head );
@@ -479,6 +486,41 @@ struct usb_port * usb_root_hub_port ( struct usb_device *usb ) {
 }
 
 /**
+ * Allocate device address
+ *
+ * @v bus		USB bus
+ * @ret address		Device address, or negative error
+ */
+int usb_alloc_address ( struct usb_bus *bus ) {
+	unsigned int address;
+
+	/* Find first free device address */
+	address = ffsll ( ~bus->addresses );
+	if ( ! address )
+		return -ENOENT;
+
+	/* Mark address as used */
+	bus->addresses |= ( 1ULL << ( address - 1 ) );
+
+	return address;
+}
+
+/**
+ * Free device address
+ *
+ * @v bus		USB bus
+ * @v address		Device address
+ */
+void usb_free_address ( struct usb_bus *bus, unsigned int address ) {
+
+	/* Sanity check */
+	assert ( address > 0 );
+	assert ( bus->addresses & ( 1ULL << ( address - 1 ) ) );
+
+	/* Mark address as free */
+	bus->addresses &= ~( 1ULL << ( address - 1 ) );
+}
+/**
  * Get USB transaction translator
  *
  * @v usb		USB device
@@ -501,6 +543,57 @@ struct usb_port * usb_transaction_translator ( struct usb_device *usb ) {
 }
 
 /**
+ * Complete USB control transfer
+ *
+ * @v ep		USB endpoint
+ * @v iobuf		I/O buffer
+ * @v rc		Completion status code
+ */
+static void usb_control_complete ( struct usb_endpoint *ep,
+				   struct io_buffer *iobuf, int rc ) {
+	struct usb_device *usb = ep->usb;
+	struct usb_control_pseudo_header *pshdr;
+
+	/* Record completion status in buffer */
+	pshdr = iob_push ( iobuf, sizeof ( *pshdr ) );
+	pshdr->rc = rc;
+
+	/* Add to list of completed I/O buffers */
+	list_add_tail ( &iobuf->list, &usb->complete );
+}
+
+/** USB control endpoint driver operations */
+static struct usb_endpoint_driver_operations usb_control_operations = {
+	.complete = usb_control_complete,
+};
+
+/**
+ * Allocate USB device
+ *
+ * @v port		USB port
+ * @ret usb		USB device, or NULL on allocation failure
+ */
+static struct usb_device * alloc_usb ( struct usb_port *port ) {
+	struct usb_hub *hub = port->hub;
+	struct usb_bus *bus = hub->bus;
+	struct usb_device *usb;
+
+	/* Allocate and initialise structure */
+	usb = zalloc ( sizeof ( *usb ) );
+	if ( ! usb )
+		return NULL;
+	snprintf ( usb->name, sizeof ( usb->name ), "%s%c%d", hub->name,
+		   ( hub->usb ? '.' : '-' ), port->address );
+	usb->port = port;
+	INIT_LIST_HEAD ( &usb->functions );
+	usb->host = &bus->op->device;
+	usb_endpoint_init ( &usb->control, usb, &usb_control_operations );
+	INIT_LIST_HEAD ( &usb->complete );
+
+	return usb;
+}
+
+/**
  * Issue USB control transaction
  *
  * @v usb		USB device
@@ -514,6 +607,11 @@ struct usb_port * usb_transaction_translator ( struct usb_device *usb ) {
 int usb_control ( struct usb_device *usb, unsigned int request,
 		  unsigned int value, unsigned int index, void *data,
 		  size_t len ) {
+	ASSERT(usb);
+	ASSERT(usb->port);
+	ASSERT(usb->port->hub);
+	ASSERT(usb->port->hub->bus);
+
 	struct usb_bus *bus = usb->port->hub->bus;
 	struct usb_endpoint *ep = &usb->control;
 	struct io_buffer *iobuf;
@@ -539,7 +637,6 @@ int usb_control ( struct usb_device *usb, unsigned int request,
 	} else {
 		memcpy ( iobuf->data, data, len );
 	}
-
 	/* Enqueue message */
 	if ( ( rc = usb_message ( ep, request, value, index, iobuf ) ) != 0 )
 		goto err_message;
@@ -583,7 +680,7 @@ int usb_control ( struct usb_device *usb, unsigned int request,
 			}
 
 			/* Copy completion to data buffer, if applicable */
-			assert ( iob_len ( cmplt ) <= len );
+			ASSERT ( iob_len ( cmplt ) <= len );
 			if ( request & USB_DIR_IN )
 				memcpy ( data, cmplt->data, iob_len ( cmplt ) );
 			free_iob ( cmplt );
@@ -664,19 +761,29 @@ static int usb_endpoint_reset ( struct usb_endpoint *ep ) {
 	unsigned int type;
 	int rc;
 
+	TP();
 	/* Sanity check */
-	assert ( ! list_empty ( &ep->halted ) );
+	ASSERT ( ! list_empty ( &ep->halted ) );
+	TP();
 
+	ASSERT(ep->host);
+	TP();
+	ASSERT(ep->host->reset);
+	TP();
 	/* Reset endpoint */
+	ASSERT(ep->host);
 	if ( ( rc = ep->host->reset ( ep ) ) != 0 ) {
+		TP();
 		PRINTF("USB %s %s could not reset: %s\n",
 		       usb->name, usb_endpoint_name ( ep ), strerror ( rc ) );
 		return rc;
 	}
+	TP();
 
 	/* Clear transaction translator, if applicable */
 	if ( ( rc = usb_endpoint_clear_tt ( ep ) ) != 0 )
 		return rc;
+	TP();
 
 	/* Clear endpoint halt, if applicable */
 	type = ( ep->attributes & USB_ENDPOINT_ATTR_TYPE_MASK );
@@ -688,10 +795,12 @@ static int usb_endpoint_reset ( struct usb_endpoint *ep ) {
 		       usb->name, usb_endpoint_name ( ep ), strerror ( rc ) );
 		return rc;
 	}
+	TP();
 
 	/* Remove from list of halted endpoints */
 	list_del ( &ep->halted );
 	INIT_LIST_HEAD ( &ep->halted );
+	TP();
 
 	PRINTF("USB %s %s reset\n",
 	       usb->name, usb_endpoint_name ( ep ) );
@@ -743,7 +852,7 @@ int usb_message ( struct usb_endpoint *ep, unsigned int request,
 	int rc;
 
 	/* Sanity check */
-	assert ( iob_headroom ( iobuf ) >= sizeof ( *packet ) );
+	ASSERT ( iob_headroom ( iobuf ) >= sizeof ( *packet ) );
 
 	/* Fail immediately if device has been unplugged */
 	if ( port->disconnected )
@@ -833,7 +942,7 @@ void usb_complete_err ( struct usb_endpoint *ep, struct io_buffer *iobuf,
 	struct usb_device *usb = ep->usb;
 
 	/* Decrement fill level */
-	assert ( ep->fill > 0 );
+	ASSERT ( ep->fill > 0 );
 	ep->fill--;
 
 	/* Schedule reset, if applicable */
@@ -1918,10 +2027,11 @@ static void ehci_endpoint_update ( struct usb_endpoint *ep ) {
  */
 static int ehci_endpoint_open ( struct usb_endpoint *ep ) {
 	struct usb_device *usb = ep->usb;
+	ASSERT(usb);
 	struct ehci_device *ehci = usb_get_hostdata ( usb );
+	ASSERT(ehci);
 	struct ehci_endpoint *endpoint;
 	int rc;
-
 	/* Allocate and initialise structure */
 	endpoint = zalloc ( sizeof ( *endpoint ) );
 	if ( ! endpoint ) {
@@ -1971,8 +2081,8 @@ static void ehci_endpoint_close ( struct usb_endpoint *ep ) {
 		/* No way to prevent hardware from continuing to
 		 * access the memory, so leak it.
 		 */
-//		PRINTF("EHCI %s %s could not unschedule: %s\n",
-//				usb->name, usb_endpoint_name ( ep ), strerror ( rc ) );
+		PRINTF("EHCI %s %s could not unschedule: %s\n",
+				usb->name, usb_endpoint_name ( ep ), strerror ( rc ) );
 		return;
 	}
 
@@ -2000,14 +2110,23 @@ static void ehci_endpoint_close ( struct usb_endpoint *ep ) {
  * @ret rc              Return status code
  */
 static int ehci_endpoint_reset ( struct usb_endpoint *ep ) {
+	TP();
 	struct ehci_endpoint *endpoint = usb_endpoint_get_hostdata ( ep );
+	TP();
 	struct ehci_ring *ring = &endpoint->ring;
+	TP();
+	PRINTF("ring=%p\n", ring);
+	ASSERT(ring);
+	ASSERT(ring->head);
 	struct ehci_transfer_descriptor *cache = &ring->head->cache;
+	TP();
 	uint32_t link;
+	TP();
 
+	ASSERT(cache);
 	/* Sanity checks */
-	ASSERT( ! ( cache->status & EHCI_STATUS_ACTIVE ) );
-	ASSERT( cache->status & EHCI_STATUS_HALTED );
+	////ASSERT( ! ( cache->status & EHCI_STATUS_ACTIVE ) );
+	////ASSERT( cache->status & EHCI_STATUS_HALTED );
 
 	/* Reset residual count */
 	ring->residual = 0;
@@ -2285,9 +2404,7 @@ static int ehci_device_address ( struct usb_device *usb ) {
 	ASSERT( ep0 != NULL );
 
 	/* Allocate device address */
-	//address = usb_alloc_address ( bus );
-	static unsigned cntaddress;
-	address = ++ cntaddress;
+	address = usb_alloc_address ( bus );
 	if ( address < 0 ) {
 		rc = address;
 		PRINTF("EHCI %s could not allocate address: %s\n",
@@ -2569,10 +2686,12 @@ static void ehci_root_poll ( struct usb_hub *hub, struct usb_port *port ) {
 	EHCI_HandleTypeDef * const hehci = & hhcd_USB_EHCI;
 	if ((portsc & EHCI_PORTSC_CCS) == 0)
 	{
+		PRINTF("Disconnected...\n");
 		HAL_EHCI_Disconnect_Callback(hehci);
 	}
 	else
 	{
+		PRINTF("Connected...\n");
 		HAL_EHCI_PortEnabled_Callback(hehci);	// пока тут
 		HAL_EHCI_Connect_Callback(hehci);
 	}
@@ -2784,6 +2903,8 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
  	HAL_EHCI_MspInit(hehci);
  	ehci_init(& ehcidevice0, hehci->Instance);
+    INIT_LIST_HEAD(& ehcidevice0.endpoints);
+    INIT_LIST_HEAD(& ehcidevice0.async);
 
  	VERIFY(ehci_reset(& ehcidevice0) == 0);
 	ehci_dump(& ehcidevice0);
@@ -2851,7 +2972,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
  	hehci->ehci.opRegs = (EhciOpRegs *) opregspacebase;
  	hehci->ehci.capRegs = (EhciCapRegs *) EHCIx;
-#if 0
+#if 1
  	// https://habr.com/ru/post/426421/
  	// Read the Command register
  	// Читаем командный регистр
@@ -2910,11 +3031,22 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
     hub0 = alloc_usb_hub(& usbbus0, NULL, 2, & ehci_operations.root);
     usb_hub_set_drvdata(hub0, & ehcidevice0);
     usbbus0.hub = hub0;
+    usbbus0.host = & ehci_operations.bus;
+    usbport0.hub = hub0;
+    usbdev0 = alloc_usb(& usbport0);
+    usbdev0->control.host = & ehci_operations.endpoint;
+    INIT_LIST_HEAD(& usbdev0->complete);
+    INIT_LIST_HEAD(& usbdev0->list);
+    INIT_LIST_HEAD(& usbdev0->control.halted);
+    INIT_LIST_HEAD(& usbdev0->control.recycled);
+	//ehci_root_disable(usbdev0);
+
+    //usb_endpoint_set_hostdata(& usbdev0->control);
 	VERIFY(ehci_bus_open(& usbbus0) == 0);	// also perforn ehci_run
-	ehci_dump(& ehcidevice0);
+	//ehci_dump(& ehcidevice0);
+	VERIFY(ehci_device_open(usbdev0) == 0);
 
 	VERIFY(ehci_root_open(hub0) == 0);
-	ehci_dump(& ehcidevice0);
 
 //	VERIFY(ehci_root_enable(hub, usb_port (hub, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 //	ehci_dump(& ehcidevice0);
@@ -3613,9 +3745,15 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
-	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
-								 ep_type, token, pbuff, length,
-								 do_ping);
+//	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
+//								 ep_type, token, pbuff, length,
+//								 do_ping);
+	hal_status = (0 == usb_control(usbdev0,
+			  ((struct usb_setup_packet *)pbuff)->request,
+			  ((struct usb_setup_packet *)pbuff)->value,
+			  ((struct usb_setup_packet *)pbuff)->index,
+			  pbuff, length
+			  )) ? HAL_OK : HAL_TIMEOUT;
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
 
@@ -3773,7 +3911,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 //
 
 		VERIFY(ehci_root_disable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
-		//ehci_dump(& ehcidevice0);
+		//ehci_root_close(hub0);	/* Route all ports back to companion controllers */
 	}
 	else
 	{
@@ -3784,8 +3922,8 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 // 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
 // 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
 
-		VERIFY(ehci_root_enable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
-		//ehci_dump(& ehcidevice0);
+		VERIFY(ehci_root_open(hub0) == 0);	/* Enable power to all ports */
+		//VERIFY(ehci_root_enable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 
 	}
 	local_delay_ms(1);
@@ -3829,6 +3967,7 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num,
 //  hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
 //                               dev_address, speed, ep_type, mps);
 //
+  ehci_endpoint_open(& usbdev0->control);
   usb_status = USBH_Get_USB_Status(hal_status);
 
   return usb_status;
@@ -3847,6 +3986,7 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
 //
 //  hal_status = HAL_EHCI_HC_Halt(phost->pData, pipe);
 //
+  //ehci_endpoint_clolse(& usbdev0->control);
   usb_status = USBH_Get_USB_Status(hal_status);
 
   return usb_status;
