@@ -4073,7 +4073,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	uint_fast8_t voltcalibr100mV = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
-#if WITHCURRLEVEL
+#if (WITHCURRLEVEL || WITHCURRLEVEL2)
 
 	// Корректировка показаний измерителя тока оконечного каскада
 	#define IPACALI_RANGE 500
@@ -4083,7 +4083,7 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 		return - IPACALI_BASE;
 	}
 	static uint_fast16_t gipacali = IPACALI_BASE;
-#endif /* WITHCURRLEVEL */
+#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 #if WITHDIRECTFREQENER
 	static uint_fast8_t editfreqmode;		/* Режим прямого ввода частоты */
 	static uint_fast32_t editfreq;		/* значение частоты, которое редактируем */
@@ -11421,7 +11421,7 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 	return curr10 + (gipacali + getipacalibase());
 }
 
-#endif /* WITHCURRLEVEL */
+#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 
 uint_fast8_t hamradio_get_tx(void)
 {
@@ -17925,7 +17925,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
-#if WITHCURRLEVEL
+#if (WITHCURRLEVEL || WITHCURRLEVEL2)
 	{
 		QLABEL("IPA CALI"), 5 + WSIGNFLAG, 2, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
 		ITEM_VALUE,
@@ -17936,7 +17936,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getipacalibase,
 	},
-#endif /* WITHCURRLEVEL */
+#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
 	{
