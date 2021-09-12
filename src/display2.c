@@ -1320,8 +1320,8 @@ static void display2_usbsts3(
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	const uint_fast8_t active = hamradio_get_usbh_active();
 	#if LCDMODE_COLORED
-		colmain_setcolors(TXRXMODECOLOR, active ? MODECOLORBG_TX : MODECOLORBG_RX);
-		display_at_P(x, y, PSTR("USB"));
+		static const FLASHMEM char text_usb [] = "USB";
+		display_2states_P(x, y, active, text_usb, text_usb);
 	#else /* LCDMODE_COLORED */
 		display_at_P(x, y, active ? PSTR("USB") : PSTR("   "));
 	#endif /* LCDMODE_COLORED */
@@ -6090,7 +6090,7 @@ enum
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		//{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
+		{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
@@ -6280,7 +6280,7 @@ enum
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		//{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
+		{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 		{	39, DLE1,	display2_currlevel5, REDRM_VOLT, PGALL, },	// PA drain current d.dd without "A"
