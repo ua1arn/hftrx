@@ -73,7 +73,7 @@ static __IO USB_PORT_CHANGE HUB_Change;
 static __IO uint8_t HUB_CurPort = 0;
 static __IO USB_HUB_PORT_STATUS *HUB_ChangeInfo = 0;
 
-static uint8_t  HUB_NumPorts = 0;
+static uint8_t  HUB_NumPorts = 0;	// See bNbrPorts specs
 static uint16_t HUB_PwrGood  = 0;
 
 static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
