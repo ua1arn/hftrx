@@ -32,6 +32,18 @@
 	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
+	//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+	//	48 MHz clock source to be provided to the USBO:
+	// USBOSRC
+	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+	// USBPHYSRC
+	//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+	//  0x1: pll4_r_ck clock selected as kernel peripheral clock
+	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+	#define RCC_USBCKSELR_USBOSRC_VAL 1
+	#define RCC_USBCKSELR_USBPHYSRC_VAL 0
+
 	#if WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
 		// ref1_ck, ref2_ck - 8..16 MHz

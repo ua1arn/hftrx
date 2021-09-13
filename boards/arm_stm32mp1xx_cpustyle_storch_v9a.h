@@ -59,8 +59,7 @@
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define RCC_USBCKSELR_USBOSRC_VAL 1
-	#define RCC_USBCKSELR_USBPHYSRC_VAL 0
+	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
@@ -110,8 +109,7 @@
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
-	#define RCC_USBCKSELR_USBOSRC_VAL 1
-	#define RCC_USBCKSELR_USBPHYSRC_VAL 0
+	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
@@ -779,18 +777,22 @@
 	PA11     ------> USB_OTG_FS_DM
 	PA12     ------> USB_OTG_FS_DP 
 	*/
-	#define USBPHYC_MISC_SWITHOST_Msk		B(0)
 	#define USBPHYC_MISC_SWITHOST_Pos		0
+	#define USBPHYC_MISC_SWITHOST_Msk (0x01uL << USBPHYC_MISC_SWITHOST_Pos)
+	#define USBPHYC_MISC_PPCKDIS_Pos		1
+	#define USBPHYC_MISC_PPCKDIS_Msk (0x03uL << USBPHYC_MISC_PPCKDIS_Pos)
+
 	#define	USBD_EHCI_INITIALIZE() do { \
 		RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN; \
 		(void) RCC->MP_APB4ENSETR; \
 		RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN; \
 		(void) RCC->MP_APB4LPENSETR; \
 		/* STM32_USBPHYC_MISC bit fields */ \
-		/*	0: Select OTG controller for 2nd PHY port */ \
-		/*	1: Select Host controller for 2nd PHY port */ \
-		USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk)) | \
+		/*	SWITHOST 0: Select OTG controller for 2nd PHY port */ \
+		/*	SWITHOST 1: Select Host controller for 2nd PHY port */ \
+		USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk | USBPHYC_MISC_PPCKDIS_Msk)) | \
 			(USBPHYC_MISC_SWITHOST_VAL << USBPHYC_MISC_SWITHOST_Pos) |	/* 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port */ \
+			(USBPHYC_MISC_PPCKDIS_VAL << USBPHYC_MISC_PPCKDIS_Pos) | \
 			0; \
 		(void) USBPHYC->MISC; \
 		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \

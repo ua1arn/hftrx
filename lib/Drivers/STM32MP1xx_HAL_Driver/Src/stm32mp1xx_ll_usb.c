@@ -128,10 +128,6 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
 #define USBPHYC_PLL_PLLDITHEN0_Msk		B(30)	// PLL dither 2 (triangular)
 #define USBPHYC_PLL_PLLDITHEN1_Msk		B(31)	// PLL dither 1 (rectangular)
 
-/* STM32_USBPHYC_MISC bit fields */
-#define USBPHYC_MISC_SWITHOST_Msk		B(0)
-#define USBPHYC_MISC_SWITHOST_Pos		0
-
 HAL_StatusTypeDef USB_HS_PHYCDeInit(void)
 {
 	/* reset */
@@ -144,6 +140,7 @@ HAL_StatusTypeDef USB_HS_PHYCDeInit(void)
 	(void) RCC->MP_APB4ENCLRR;
 	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_USBPHYLPEN;
 	(void) RCC->MP_APB4LPENCLRR;
+
 	return HAL_OK;
 }
 
@@ -166,12 +163,12 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
 
 	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
-	uint_fast32_t usbphyref = LL_RCC_GetUSBPHYClockFreq(LL_RCC_USBPHY_CLKSOURCE);
+	const uint_fast32_t usbphyref = LL_RCC_GetUSBPHYClockFreq(LL_RCC_USBPHY_CLKSOURCE);
 	//uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
 	//ASSERT(usbphyref >= 19200000uL && usbphyref <= 38400000uL);
 	const uint_fast32_t ODF = 0;	// игнорируется
 	// 1440 MHz
-	const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, usbphyref);
+	const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY / 4, usbphyref / 4);
 	const uint_fast32_t N = d.quot;
 
 	const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
@@ -193,14 +190,16 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 			USBPHYC_PLL_PLLFRACIN_Msk |
 			USBPHYC_PLL_PLLODF_Msk |
 			USBPHYC_PLL_PLLNDIV_Msk |
+			USBPHYC_PLL_PLLSTRBYP_Msk |
 			0;
 
 	const uint32_t PLLFRACCTL_VAL = (d.rem != 0);
 	const uint32_t newPLLvalue =
-		((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя.
+		(((N) << USBPHYC_PLL_PLLNDIV_Pos) & USBPHYC_PLL_PLLNDIV_Msk) |	// Целая часть делителя.
 		((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
-		(((FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
+		((PLLFRACCTL_VAL * (FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
 		(PLLFRACCTL_VAL * USBPHYC_PLL_PLLFRACCTL_Msk) |
+		(1 * USBPHYC_PLL_PLLSTRBYP_Msk) |
 		USBPHYC_PLL_PLLDITHEN0_Msk |
 		USBPHYC_PLL_PLLDITHEN1_Msk |
 		0;
@@ -214,14 +213,9 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) != 0)
 			;
 		PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
+
 		USBPHYC->PLL = (USBPHYC->PLL & ~ (validmask)) | newPLLvalue;
 		(void) USBPHYC->PLL;
-
-		if (PLLFRACCTL_VAL)
-		{
-			USBPHYC->PLL |= USBPHYC_PLL_PLLSTRBYP_Msk;
-			(void) USBPHYC->PLL;
-		}
 
 		PRINTF("USB_HS_PHYCInit: start PLL.\n");
 		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
