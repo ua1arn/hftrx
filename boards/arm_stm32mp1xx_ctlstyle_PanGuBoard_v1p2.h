@@ -239,7 +239,7 @@
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
 	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
-	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 	#define LCDMODEX_SII9022A 1	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
 
