@@ -3380,6 +3380,12 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	}
 	USB_HS_PHYCInit();
 
+	// OHCI at USB1HSFSP2_BASE
+	// EHCI at USB1HSFSP1_BASE
+	//printhex(USB1HSFSP2_BASE, (void *) USB1HSFSP2_BASE, 0x0058);
+	volatile uint32_t * const HcCommandStatus = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x008); // HcCommandStatus Register
+	* HcCommandStatus |= 0x00000001uL;	// HCR HostControllerReset
+
 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
 	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
 
@@ -3425,7 +3431,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
- {
+{
 	PRINTF("%s:\n", __func__);
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
 	EhciController * const ehci = & hehci->ehci;
@@ -3437,11 +3443,11 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
      		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
  			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
  			//CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
- 			//CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
- 			//CMD_RS |	// Run/Stop
+ 			CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
+ 			//CMD_RS |	// Run/Stop 1=Run, 0-stop
  			0;
 
-     EHCIx->USBCMD |= CMD_RS;
+     EHCIx->USBCMD |= CMD_RS;	// 1=Run, 0-stop
  	(void) EHCIx->USBCMD;
 
   	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
@@ -3457,11 +3463,11 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 			INTR_USBINT |	// USB Interrupt Enable
 			0;
 #endif
+
 	__HAL_LOCK(hehci);
 	__HAL_EHCI_ENABLE(hehci);
 	(void) EHCI_DriveVbus(hehci->Instance, 1U);
 	__HAL_UNLOCK(hehci);
-
 
 	return HAL_OK;
 }

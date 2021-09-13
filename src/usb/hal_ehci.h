@@ -111,7 +111,7 @@ typedef struct EhciOpRegs
 // ------------------------------------------------------------------------------------------------
 // USB Command Register
 
-#define CMD_RS                          (1uL << 0)    // Run/Stop
+#define CMD_RS                          (1uL << 0)    // Run/Stop 1=Run, 0-stop
 #define CMD_HCRESET                     (1uL << 1)    // Host Controller Reset
 #define CMD_FLS_MASK                    (3uL << 2)    // Frame List Size
 #define CMD_FLS_SHIFT                   2
