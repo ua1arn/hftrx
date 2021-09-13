@@ -91,6 +91,16 @@ static void ehci_itd_fill(uint32_t * itd)
 
 #endif
 
+
+/** List of USB buses */
+struct list_head usb_buses = LIST_HEAD_INIT ( usb_buses );
+
+/** List of changed ports */
+static struct list_head usb_changed = LIST_HEAD_INIT ( usb_changed );
+
+/** List of halted endpoints */
+static struct list_head usb_halted = LIST_HEAD_INIT ( usb_halted );
+
 struct ehci_device ehcidevice0 = {
 		.regs = (uintptr_t) WITHUSBHW_EHCI,
 		.endpoints = LIST_HEAD_INIT(ehcidevice0.endpoints),
@@ -430,6 +440,14 @@ struct usb_hub * alloc_usb_hub ( struct usb_bus *bus, struct usb_device *usb,
 
 	return hub;
 }
+
+void usb_port_changed ( struct usb_port *port ) {
+
+	/* Record hub port status change */
+	list_del ( &port->changed );
+	list_add_tail ( &port->changed, &usb_changed );
+}
+
 /** @file
  *
  * USB Enhanced Host Controller Interface (EHCI) driver
@@ -447,10 +465,6 @@ struct usb_hub * alloc_usb_hub ( struct usb_bus *bus, struct usb_device *usb,
  * reported to usb_complete_err().
  */
 #define EIO_STATUS( status ) (-1)
-
-
-// list of halted endpoints
-static struct list_head usb_halted = LIST_HEAD_INIT(usb_halted);
 
 
 /** USB control transfer pseudo-header */
@@ -2118,8 +2132,8 @@ static int ehci_endpoint_reset ( struct usb_endpoint *ep ) {
 
 	ASSERT(cache);
 	/* Sanity checks */
-	////ASSERT( ! ( cache->status & EHCI_STATUS_ACTIVE ) );
-	////ASSERT( cache->status & EHCI_STATUS_HALTED );
+	ASSERT( ! ( cache->status & EHCI_STATUS_ACTIVE ) );
+	ASSERT( cache->status & EHCI_STATUS_HALTED );
 
 	/* Reset residual count */
 	ring->residual = 0;
@@ -2680,7 +2694,7 @@ static void ehci_root_poll ( struct usb_hub *hub, struct usb_port *port ) {
 
 	//PRINTF("ehci_root_poll: port %d, disconnected=%d\n", port->address, port->disconnected);;
 	/* Report port status change */
-	////usb_port_changed ( port );
+	usb_port_changed ( port );
 	EHCI_HandleTypeDef * const hehci = & hhcd_USB_EHCI;
 	if ((portsc & EHCI_PORTSC_CCS) == 0)
 	{
