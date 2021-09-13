@@ -9,6 +9,9 @@
 #ifndef _IPXE_LIST_H
 #define _IPXE_LIST_H
 
+#include "hardware.h"
+#include "formats.h"
+
 #include "types.h"
 /** @file
  *
@@ -21,7 +24,7 @@
 //FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 
 #include <stddef.h>
-#include <assert.h>
+#include <ASSERT.h>
 
 /** A doubly-linked list entry (or list head) */
 struct list_head {
@@ -62,11 +65,11 @@ struct list_head {
  * @v list		List entry or head
  */
 #define list_check( list ) ( {					\
-	assert ( (list) != NULL );				\
-	assert ( (list)->prev != NULL );			\
-	assert ( (list)->next != NULL );			\
-	assert ( (list)->next->prev == (list) );		\
-	assert ( (list)->prev->next == (list) );		\
+	ASSERT ( (list) != NULL );				\
+	ASSERT ( (list)->prev != NULL );			\
+	ASSERT ( (list)->next != NULL );			\
+	ASSERT ( (list)->next->prev == (list) );		\
+	ASSERT ( (list)->prev->next == (list) );		\
 	} )
 
 /**
@@ -193,7 +196,7 @@ extern int extern_list_is_last ( const struct list_head *list,
  */
 #define list_cut_position( new, list, entry ) do {		\
 	list_check ( (new) );					\
-	assert ( list_empty ( (new) ) );			\
+	ASSERT ( list_empty ( (new) ) );			\
 	list_check ( (list) );					\
 	list_check ( (entry) );					\
 	extern_list_cut_position ( (new), (list), (entry) );	\
@@ -529,7 +532,7 @@ extern int extern_list_contains ( struct list_head *entry,
  * @v member		Name of list field within iterator's type
  */
 #define list_check_contains_entry( entry, head, member ) do {		      \
-	assert ( list_contains_entry ( (entry), (head), member ) );	      \
+	ASSERT ( list_contains_entry ( (entry), (head), member ) );	      \
 	} while ( 0 )
 
 #endif /* _IPXE_LIST_H */

@@ -99,14 +99,6 @@ struct ehci_device ehcidevice0 = {
 		.name = "STM32MP1 EHCI"
 };
 
-static struct usb_port usbport0 = {
-
-};
-//static struct usb_device usbdev0 = {
-//		.priv = & ehcidevice0,
-//		.port = & usbport0
-//};
-
 static struct usb_device * usbdev0;
 static struct usb_hub * hub0;
 
@@ -623,7 +615,6 @@ int usb_control ( struct usb_device *usb, unsigned int request,
 	struct usb_control_pseudo_header *pshdr;
 	unsigned int i;
 	int rc;
-
 	/* Allocate I/O buffer */
 	iobuf = alloc_iob ( sizeof ( *headroom ) + len );
 	if ( ! iobuf ) {
@@ -1802,9 +1793,11 @@ static void ehci_periodic_schedule ( struct ehci_device *ehci ) {
 		queue = endpoint->ring.head;
 		queue->link = cpu_to_le32 ( link );
 		wmb();
-		PRINTF("%s%d",
+		PRINTF("%s%d[%p]",
 				( ( link == EHCI_LINK_TERMINATE ) ? "" : "<-" ),
-				endpoint->ep->interval );
+				endpoint->ep->interval,
+				queue
+				);
 		link = ehci_link_qh ( queue );
 	}
 	PRINTF("\n" );
@@ -2618,23 +2611,28 @@ static int ehci_root_speed ( struct usb_hub *hub, struct usb_port *port ) {
 
 	/* Record disconnections and clear changes */
 	port->disconnected |= csc;
+	port->disconnected = csc;
 	writel ( portsc, ehci->op + EHCI_OP_PORTSC ( port->address ) );
 
 	/* Determine port speed */
 	if ( ! ccs ) {
 		/* Port not connected */
 		speed = USB_SPEED_NONE;
+		PRINTF("speed = USB_SPEED_NONE\n");
 	} else if ( line == EHCI_PORTSC_LINE_STATUS_LOW ) {
 		/* Detected as low-speed */
 		speed = USB_SPEED_LOW;
+		PRINTF("speed = USB_SPEED_LOW\n");
 	} else if ( ped ) {
 		/* Port already enabled: must be high-speed */
 		speed = USB_SPEED_HIGH;
+		PRINTF("speed = USB_SPEED_HIGH\n");
 	} else {
 		/* Not low-speed and not yet enabled.  Could be either
 		 * full-speed or high-speed; we can't yet tell.
 		 */
 		speed = USB_SPEED_FULL;
+		PRINTF("speed = USB_SPEED_FULL\n");
 	}
 	port->speed = speed;
 	return 0;
@@ -2686,12 +2684,15 @@ static void ehci_root_poll ( struct usb_hub *hub, struct usb_port *port ) {
 	EHCI_HandleTypeDef * const hehci = & hhcd_USB_EHCI;
 	if ((portsc & EHCI_PORTSC_CCS) == 0)
 	{
+		port->disconnected = 1;
 		PRINTF("Disconnected...\n");
 		HAL_EHCI_Disconnect_Callback(hehci);
 	}
 	else
 	{
+		port->disconnected = 0;
 		PRINTF("Connected...\n");
+		VERIFY(0 == ehci_root_speed(port->hub, usb_port(port->hub, port->address)));
 		HAL_EHCI_PortEnabled_Callback(hehci);	// пока тут
 		HAL_EHCI_Connect_Callback(hehci);
 	}
@@ -3028,17 +3029,21 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	//hc->opRegs->usbIntr = 0;
     // EHCIx->USBINTR = 0;
 
-    hub0 = alloc_usb_hub(& usbbus0, NULL, 2, & ehci_operations.root);
+    hub0 = alloc_usb_hub(& usbbus0, NULL, 2, & ehci_operations.root); // also Initialise port list
     usb_hub_set_drvdata(hub0, & ehcidevice0);
     usbbus0.hub = hub0;
     usbbus0.host = & ehci_operations.bus;
-    usbport0.hub = hub0;
-    usbdev0 = alloc_usb(& usbport0);
+    struct usb_port * port = usb_port ( hub0, WITHEHCIHW_EHCIPORT + 1 );
+    ASSERT(port->address == (WITHEHCIHW_EHCIPORT + 1));
+
+    usbdev0 = alloc_usb(port);
     usbdev0->control.host = & ehci_operations.endpoint;
     INIT_LIST_HEAD(& usbdev0->complete);
     INIT_LIST_HEAD(& usbdev0->list);
     INIT_LIST_HEAD(& usbdev0->control.halted);
     INIT_LIST_HEAD(& usbdev0->control.recycled);
+    usbdev0->control.attributes = USB_ENDPOINT_ATTR_CONTROL;
+    usbdev0->control.mtu = 64;
 	//ehci_root_disable(usbdev0);
 
     //usb_endpoint_set_hostdata(& usbdev0->control);
@@ -3967,7 +3972,7 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num,
 //  hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
 //                               dev_address, speed, ep_type, mps);
 //
-  ehci_endpoint_open(& usbdev0->control);
+  hal_status =  ehci_endpoint_open(& usbdev0->control) == 0 ? HAL_OK : HAL_ERROR;
   usb_status = USBH_Get_USB_Status(hal_status);
 
   return usb_status;
@@ -3986,7 +3991,7 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
 //
 //  hal_status = HAL_EHCI_HC_Halt(phost->pData, pipe);
 //
-  //ehci_endpoint_clolse(& usbdev0->control);
+ ehci_endpoint_close(& usbdev0->control);
   usb_status = USBH_Get_USB_Status(hal_status);
 
   return usb_status;

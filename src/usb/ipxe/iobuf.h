@@ -7,6 +7,10 @@
 #ifndef _IPXE_IOBUF_H
 #define _IPXE_IOBUF_H
 
+
+#include "hardware.h"
+#include "formats.h"
+
 /** @file
  *
  * I/O buffers
@@ -16,7 +20,7 @@
 //FILE_LICENCE ( GPL2_OR_LATER_OR_UBDL );
 
 #include <stdint.h>
-#include <assert.h>
+#include <ASSERT.h>
 #include "list.h"
 
 /**
@@ -69,7 +73,7 @@ static inline void * iob_reserve ( struct io_buffer *iobuf, size_t len ) {
 #define iob_reserve( iobuf, len ) ( {			\
 	void *__result;					\
 	__result = iob_reserve ( (iobuf), (len) );	\
-	assert ( (iobuf)->tail <= (iobuf)->end );	\
+	ASSERT ( (iobuf)->tail <= (iobuf)->end );	\
 	__result; } )
 
 /**
@@ -86,7 +90,7 @@ static inline void * iob_push ( struct io_buffer *iobuf, size_t len ) {
 #define iob_push( iobuf, len ) ( {			\
 	void *__result;					\
 	__result = iob_push ( (iobuf), (len) );		\
-	assert ( (iobuf)->data >= (iobuf)->head );	\
+	ASSERT ( (iobuf)->data >= (iobuf)->head );	\
 	__result; } )
 
 /**
@@ -98,13 +102,13 @@ static inline void * iob_push ( struct io_buffer *iobuf, size_t len ) {
  */
 static inline void * iob_pull ( struct io_buffer *iobuf, size_t len ) {
 	iobuf->data += len;
-	assert ( iobuf->data <= iobuf->tail );
+	ASSERT ( iobuf->data <= iobuf->tail );
 	return iobuf->data;
 }
 #define iob_pull( iobuf, len ) ( {			\
 	void *__result;					\
 	__result = iob_pull ( (iobuf), (len) );		\
-	assert ( (iobuf)->data <= (iobuf)->tail );	\
+	ASSERT ( (iobuf)->data <= (iobuf)->tail );	\
 	__result; } )
 
 /**
@@ -122,7 +126,7 @@ static inline void * iob_put ( struct io_buffer *iobuf, size_t len ) {
 #define iob_put( iobuf, len ) ( {			\
 	void *__result;					\
 	__result = iob_put ( (iobuf), (len) );		\
-	assert ( (iobuf)->tail <= (iobuf)->end );	\
+	ASSERT ( (iobuf)->tail <= (iobuf)->end );	\
 	__result; } )
 
 /**
@@ -136,7 +140,7 @@ static inline void iob_unput ( struct io_buffer *iobuf, size_t len ) {
 }
 #define iob_unput( iobuf, len ) do {			\
 	iob_unput ( (iobuf), (len) );			\
-	assert ( (iobuf)->tail >= (iobuf)->data );	\
+	ASSERT ( (iobuf)->tail >= (iobuf)->data );	\
 	} while ( 0 )
 
 /**
