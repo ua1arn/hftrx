@@ -3268,7 +3268,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 2);	// Clear Port Change Detect interrupt
  		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
- 		PRINTF("HAL_EHCI_IRQHandler: Port Change Detect, portsc=%08lX, ls=%lu, pe=%lu\n", portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01);
+ 		PRINTF("HAL_EHCI_IRQHandler: Port Change Detect, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
  		// PORTSC[0]=00001002 - on disconnect
  		// PORTSC[0]=00001803 - on connect
 // 		unsigned i;
