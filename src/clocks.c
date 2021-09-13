@@ -2902,7 +2902,8 @@ static void stm32mp1_pll_initialize(void)
 	RCC->PLL2CR |= RCC_PLL2CR_DIVQEN_Msk;	// GPU clock
 	(void) RCC->PLL2CR;
 
-#if WITHSDRAMHW
+#if 1//WITHSDRAMHW
+	// В загркзчике еще может и не быть этой периферии
 	RCC->PLL2CR |= RCC_PLL2CR_DIVREN_Msk;	// DDR clock
 	(void) RCC->PLL2CR;
 #endif /* WITHSDRAMHW */
@@ -3091,7 +3092,8 @@ static void stm32mp1_pll_initialize(void)
 		;
 
 
-#if WITHUART1HW
+#if 1//WITHUART1HW
+	// В загркзчике еще может и не быть этой периферии
 	// usart1
 	//	0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
@@ -3105,7 +3107,8 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->UART1CKSELR;
 #endif /* WITHUART1HW */
 
-#if WITHUART2HW || WITHUART4HW
+#if 1//WITHUART2HW || WITHUART4HW
+	// В загркзчике еще может и не быть этой периферии
 	// UART2, UART4
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3119,7 +3122,8 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->UART24CKSELR;
 #endif /* WITHUART2HW || WITHUART4HW */
 
-#if WITHUART3HW || WITHUART5HW
+#if 1//WITHUART3HW || WITHUART5HW
+	// В загркзчике еще может и не быть этой периферии
 	// UART3, UART5
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3134,7 +3138,8 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->UART35CKSELR;
 #endif /* WITHUART3HW || WITHUART5HW */
 
-#if WITHUART7HW || WITHUART8HW
+#if 1//WITHUART7HW || WITHUART8HW
+	// В загркзчике еще может и не быть этой периферии
 	// UART7, UART8
 	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3148,7 +3153,8 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->UART78CKSELR;
 #endif /* WITHUART7HW || WITHUART8HW */
 
-#if WITHSDHCHW
+#if 1//WITHSDHCHW
+	// В загркзчике еще может и не быть этой периферии
 	// SDMMC1
 	//	0x0: hclk6 clock selected as kernel peripheral clock
 	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
@@ -3161,7 +3167,8 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->SDMMC12CKSELR;
 #endif /* WITHSDHCHW */
 
-#if WITHSPIHW
+#if 1//WITHSPIHW
+	// В загркзчике еще может и не быть этой периферии
 	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll3_q_ck clock selected as kernel peripheral clock
 	//0x2: I2S_CKIN clock selected as kernel peripheral clock
@@ -3173,7 +3180,8 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->SPI2S1CKSELR;
 #endif /* WITHSPIHW */
 
-#if WIHSPIDFHW
+#if 1//WIHSPIDFHW
+	// В загркзчике еще может и не быть этой периферии
 	//0x0: aclk clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll3_r_ck clock selected as kernel peripheral clock
 	//0x2: pll4_p_ck clock selected as kernel peripheral clock
@@ -3209,9 +3217,10 @@ static void stm32mp1_pll_initialize(void)
 	while ((RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRERDY_Msk) == 0)
 		;
 
-#if 0//WITHUSBHW
-	// Делается в USB_HS_PHYCInit, в случаек неиспользования USB_OTG_HS_EMBEDDED_PHY надо инициализировать
-	//
+#if 1//WITHUSBHW || WITHEHCIHW
+	// В загркзчике еще может и не быть этой периферии
+	//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+	//	48 MHz clock source to be provided to the USBO:
 	// USBOSRC
 	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
 	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
@@ -3220,12 +3229,12 @@ static void stm32mp1_pll_initialize(void)
 	//  0x1: pll4_r_ck clock selected as kernel peripheral clock
 	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 	RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-		((uint_fast32_t) 0x00 << RCC_USBCKSELR_USBOSRC_Pos) |		// 50 MHz max pll4_r_ck
-		((uint_fast32_t) 0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |		// 38.4 MHz max pll4_r_ck
+		(RCC_USBCKSELR_USBOSRC_VAL << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m or pll4_r_ck (можно использовать только 48 МГц)
+		(RCC_USBCKSELR_USBPHYSRC_VAL << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max hse_ker_ck	- входная частота для PHYC PLL
 		0;
 	(void) RCC->USBCKSELR;
 
-#endif /* WITHUSBHW */
+#endif /* WITHUSBHW || WITHEHCIHW */
 
 #if WITHELKEY
 	// TIM3 used

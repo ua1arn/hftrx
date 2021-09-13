@@ -53,7 +53,7 @@
 // See Binary Device Object Store (BOS) Descriptor
 
 #if (USBD_LPM_ENABLED == 1)
-	#define USB_FUNCTION_BCD_USB	0x0200	// 0x0201 in ST samples
+	#define USB_FUNCTION_BCD_USB	0x0201	// 0x0201 in ST samples
 #else /* (USBD_LPM_ENABLED == 1) */
 	#define USB_FUNCTION_BCD_USB	0x0200
 #endif /* (USBD_LPM_ENABLED == 1) */

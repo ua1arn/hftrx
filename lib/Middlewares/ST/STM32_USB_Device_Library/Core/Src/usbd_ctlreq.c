@@ -534,7 +534,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 		break;
 
 	case USB_DESC_TYPE_OTHER_SPEED_CONFIGURATION:
-		if (pdev->dev_speed == USBD_SPEED_HIGH && index < ARRAY_SIZE(DeviceQualifierTbl) && DeviceQualifierTbl [index].size != 0)
+		if (pdev->dev_speed == USBD_SPEED_HIGH && index < ARRAY_SIZE(OtherSpeedConfigurationTbl) && OtherSpeedConfigurationTbl [index].size != 0)
 		{
 			len = OtherSpeedConfigurationTbl [index].size;
 			pbuf = OtherSpeedConfigurationTbl [index].data;

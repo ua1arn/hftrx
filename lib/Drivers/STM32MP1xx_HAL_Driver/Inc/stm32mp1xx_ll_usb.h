@@ -488,6 +488,7 @@ HAL_StatusTypeDef USB_ActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
 uint_fast8_t USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_HS_PHYCInit(void);
+HAL_StatusTypeDef USB_HS_PHYCDeInit(void);
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 
 /**

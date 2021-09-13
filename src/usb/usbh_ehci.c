@@ -3347,6 +3347,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #if CPUSTYLE_STM32MP1
 
+	USBD_EHCI_INITIALIZE();
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_USBHEN;
 	(void) RCC->MP_AHB6ENSETR;
 	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_USBHLPEN;
@@ -3366,7 +3367,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
 		//		(void) SYSCFG->ICNR;
 	}
-	USB_HS_PHYCInit();	// move to USB_CoreInit
+	USB_HS_PHYCInit();
 
 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
 	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
