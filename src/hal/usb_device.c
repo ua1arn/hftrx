@@ -300,6 +300,9 @@ void board_usb_deinitialize(void)
 #if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_DeInit();
 #endif /* defined (WITHUSBHW_DEVICE) */
+#if (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC)
+	USB_HS_PHYCDeInit();
+#endif /* (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC) */
 }
 
 /* вызывается при разрешённых прерываниях. */

@@ -779,7 +779,20 @@
 	PA11     ------> USB_OTG_FS_DM
 	PA12     ------> USB_OTG_FS_DP 
 	*/
-	#define	USBD_FS_INITIALIZE() do { \
+	#define USBPHYC_MISC_SWITHOST_Msk		B(0)
+	#define USBPHYC_MISC_SWITHOST_Pos		0
+	#define	USBD_EHCI_INITIALIZE() do { \
+		RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN; \
+		(void) RCC->MP_APB4ENSETR; \
+		RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN; \
+		(void) RCC->MP_APB4LPENSETR; \
+		/* STM32_USBPHYC_MISC bit fields */ \
+		/*	0: Select OTG controller for 2nd PHY port */ \
+		/*	1: Select Host controller for 2nd PHY port */ \
+		USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk)) | \
+			(USBPHYC_MISC_SWITHOST_VAL << USBPHYC_MISC_SWITHOST_Pos) |	/* 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port */ \
+			0; \
+		(void) USBPHYC->MISC; \
 		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
 		} while (0)
 
@@ -1100,7 +1113,7 @@
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
-			USBD_FS_INITIALIZE(); \
+			USBD_EHCI_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9A_H_INCLUDED */

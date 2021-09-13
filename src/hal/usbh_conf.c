@@ -137,6 +137,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	{
 		#if CPUSTYLE_STM32MP1
 
+			USBD_EHCI_INITIALIZE();
 			// Set 3.3 volt DETECTOR enable
 			PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
 			(void) PWR->CR3;
@@ -186,6 +187,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 	{
 	#if CPUSTYLE_STM32MP1
 
+		USBD_EHCI_INITIALIZE();
 		// Set 3.3 volt DETECTOR enable
 		PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
 		(void) PWR->CR3;
