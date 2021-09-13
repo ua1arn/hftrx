@@ -67,7 +67,7 @@ void Error_Handler(void);
 //enum { FLS = 512, FLS_code = 1 };
 enum { FLS = 256, FLS_code = 2 };
 
-#if 0
+#if 1
 static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
 // isochronious transaction descriptors
 static __attribute__((used, aligned(32))) uint32_t itd0 [16];
@@ -2707,6 +2707,8 @@ static void ehci_root_poll ( struct usb_hub *hub, struct usb_port *port ) {
 		port->disconnected = 0;
 		PRINTF("Connected...\n");
 		VERIFY(0 == ehci_root_speed(port->hub, usb_port(port->hub, port->address)));
+		local_delay_ms(100);
+		VERIFY(0 == ehci_root_speed(port->hub, usb_port(port->hub, port->address)));
 		HAL_EHCI_PortEnabled_Callback(hehci);	// пока тут
 		HAL_EHCI_Connect_Callback(hehci);
 	}
@@ -2917,14 +2919,15 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	EhciController * const ehci = & hehci->ehci;
 
  	HAL_EHCI_MspInit(hehci);
- 	ehci_init(& ehcidevice0, hehci->Instance);
-    INIT_LIST_HEAD(& ehcidevice0.endpoints);
-    INIT_LIST_HEAD(& ehcidevice0.async);
 
- 	VERIFY(ehci_reset(& ehcidevice0) == 0);
-	ehci_dump(& ehcidevice0);
+// 	ehci_init(& ehcidevice0, hehci->Instance);
+//    INIT_LIST_HEAD(& ehcidevice0.endpoints);
+//    INIT_LIST_HEAD(& ehcidevice0.async);
+//
+// 	VERIFY(ehci_reset(& ehcidevice0) == 0);
+//	ehci_dump(& ehcidevice0);
 
-#if 0
+#if 1
      ehci_itd_fill(itd0);
      ehci_queue_fill(queue0, (uintptr_t) queue0);
 
@@ -3017,6 +3020,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
 
 #endif
+#if 0
      // Check extended capabilities
      uint_fast32_t eecp = (EHCIx->HCCPARAMS & HCCPARAMS_EECP_MASK) >> HCCPARAMS_EECP_SHIFT;
      if (eecp >= 0x40)
@@ -3038,11 +3042,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  //            }
  //        }
      }
+#endif
+
  	// Disable interrupts
  	// Отключаем прерывания
  	//hc->opRegs->usbIntr = 0;
-    // EHCIx->USBINTR = 0;
+    EHCIx->USBINTR = 0;
 
+#if 0
     hub0 = alloc_usb_hub(& usbbus0, NULL, 2, & ehci_operations.root); // also Initialise port list
     usb_hub_set_drvdata(hub0, & ehcidevice0);
     usbbus0.hub = hub0;
@@ -3069,20 +3076,21 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 //	VERIFY(ehci_root_enable(hub, usb_port (hub, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 //	ehci_dump(& ehcidevice0);
+#endif
 
-#if 0
+#if 1
  	// Setup frame list
  	// Устанавливаем ссылку на фреймлист
  	//hc->opRegs->frameIndex = 0;
      EHCIx->FRINDEX = 0;
  	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-    // EHCIx->PERIODICLISTBASE = (uintptr_t) framesbuff;
+    EHCIx->PERIODICLISTBASE = (uintptr_t) framesbuff;
  	// копируем адрес асинхронной очереди в регистр
  	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-     //EHCIx->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+    EHCIx->ASYNCLISTADDR = (uintptr_t) asyncbuff;
  	// Устанавливаем сегмент в 0
  	//hc->opRegs->ctrlDsSegment = 0;
-     //EHCIx->CTRLDSSEGMENT = 0x00000000;
+    EHCIx->CTRLDSSEGMENT = 0x00000000;
  	// Clear status
  	// Чистим статус
  	//hc->opRegs->usbSts = ~0;
@@ -3114,28 +3122,30 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
  	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
 
-#if 0
+#if 1
+
   	/* Route all ports to EHCI controller */
 	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
  	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
+ 	(void) ehci->opRegs->configFlag;
 
 	/* Enable power to all ports */
+ 	unsigned porti= WITHEHCIHW_EHCIPORT;
+ 	//for (porti = 0; porti < hehci->nports; ++ porti)
   	{
- 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		unsigned long portsc = ehci->opRegs->ports [porti];
 
 		portsc &= ~EHCI_PORTSC_CHANGE;
+		//portsc |= EHCI_PORTSC_OWNER;	// ???
 		portsc |= EHCI_PORTSC_PP;
 
- 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
- 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		ehci->opRegs->ports [porti] = portsc;
+ 		(void) ehci->opRegs->ports [porti];
  	}
-
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
- 	local_delay_ms(50);
+	local_delay_ms(50);
 
-
-	hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] |= (1uL << 12);	// Port Power
 #endif
 
  	PRINTF("board_ehci_initialize done.\n");
@@ -3162,6 +3172,7 @@ HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
 	usbcmd &= ~( EHCI_USBCMD_RUN | EHCI_USBCMD_PERIODIC |
 			EHCI_USBCMD_ASYNC );
 	EHCIx->USBCMD = usbcmd;
+	(void) EHCIx->USBCMD;
 
 	unsigned i;
 	/* Wait for device to stop */
@@ -3170,7 +3181,7 @@ HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
 		/* Check if device is stopped */
 		usbsts = EHCIx->USBSTS;
 		if ( usbsts & EHCI_USBSTS_HCH )
-			return 0;
+			return HAL_OK;
 
 		/* Delay */
 		local_delay_ms( 1 );
@@ -3256,10 +3267,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
  	{
  		EHCIx->USBSTS = (0x01uL << 2);	// Clear Port Change Detect interrupt
- 		//PRINTF("HAL_EHCI_IRQHandler: Port Change Detect\n");
+ 		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		PRINTF("HAL_EHCI_IRQHandler: Port Change Detect, portsc=%08lX, ls=%lu, pe=%lu\n", portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01);
  		// PORTSC[0]=00001002 - on disconnect
  		// PORTSC[0]=00001803 - on connect
- 		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
 // 		unsigned i;
 // 		for (i = 0; i < hehci->nports; ++ i)
 // 	 	{
@@ -3279,12 +3290,12 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (0x01uL << 3)))	// Frame List Rollower
  	{
  		EHCIx->USBSTS = (0x01uL << 3);	// Clear Frame List Rollower interrupt
- 		PRINTF("HAL_EHCI_IRQHandler: Frame List Rollower\n");
- 		unsigned i;
- 		for (i = 0; i < hehci->nports; ++ i)
- 	 	{
- 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
- 	 	}
+// 		PRINTF("HAL_EHCI_IRQHandler: Frame List Rollower\n");
+// 		unsigned i;
+// 		for (i = 0; i < hehci->nports; ++ i)
+// 	 	{
+// 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
+// 	 	}
  	}
 
  	if ((usbsts & (0x01uL << 4)))	// Host System Error
@@ -3336,9 +3347,9 @@ void USBH_OHCI_IRQHandler(void)
 
 void USBH_EHCI_IRQHandler(void)
 {
-	ASSERT(0);
+	//ASSERT(0);
 	//ehci_bus_poll(& usbbus0);
-	//HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
+	HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
 }
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
@@ -3436,11 +3447,11 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
   	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
  		;
 
-#if 0
+#if 1
  	EHCIx->USBINTR |=
  			INTR_IOAA |	// Interrupt on ASync Advance Enable
 			INTR_HSE |	// Host System Error Interrupt Enable
- 			//INTR_FLR |	// Frame List Rollower Interrupt Enable
+ 			INTR_FLR |	// Frame List Rollower Interrupt Enable - требуется для опознания HIGH SPEED устройств
 			INTR_PCD |	// Port Change Interrupt Enable
 			INTR_ERROR |	// USB Error Interrupt Enable
 			INTR_USBINT |	// USB Interrupt Enable
@@ -3768,12 +3779,13 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 //	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 //								 ep_type, token, pbuff, length,
 //								 do_ping);
-	hal_status = (0 == usb_control(usbdev0,
-			  ((struct usb_setup_packet *)pbuff)->request,
-			  ((struct usb_setup_packet *)pbuff)->value,
-			  ((struct usb_setup_packet *)pbuff)->index,
-			  pbuff, length
-			  )) ? HAL_OK : HAL_TIMEOUT;
+
+//	hal_status = (0 == usb_control(usbdev0,
+//			  ((struct usb_setup_packet *)pbuff)->request,
+//			  ((struct usb_setup_packet *)pbuff)->value,
+//			  ((struct usb_setup_packet *)pbuff)->index,
+//			  pbuff, length
+//			  )) ? HAL_OK : HAL_TIMEOUT;
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
 
@@ -3921,28 +3933,28 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 	if (resetIsActive)
 	{
-// 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
-// 		/* Reset port */
-// 		portsc &= ~( EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
-// 		portsc |= EHCI_PORTSC_PR;
-//
-// 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
-// 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
-//
+ 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		/* Reset port */
+ 		portsc &= ~( EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
+ 		portsc |= EHCI_PORTSC_PR;
 
-		VERIFY(ehci_root_disable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
+ 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
+ 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+
+
+////		VERIFY(ehci_root_disable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 		//ehci_root_close(hub0);	/* Route all ports back to companion controllers */
 	}
 	else
 	{
-// 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
-// 		/* Release Reset port */
-// 		portsc &= ~EHCI_PORTSC_PR;	 /** Port reset */
-//
-// 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
-// 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		/* Release Reset port */
+ 		portsc &= ~EHCI_PORTSC_PR;	 /** Port reset */
 
-		VERIFY(ehci_root_open(hub0) == 0);	/* Enable power to all ports */
+ 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
+ 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+
+////		VERIFY(ehci_root_open(hub0) == 0);	/* Enable power to all ports */
 		//VERIFY(ehci_root_enable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 
 	}
@@ -3987,7 +3999,7 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num,
 //  hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
 //                               dev_address, speed, ep_type, mps);
 //
-  hal_status =  ehci_endpoint_open(& usbdev0->control) == 0 ? HAL_OK : HAL_ERROR;
+  ////hal_status =  ehci_endpoint_open(& usbdev0->control) == 0 ? HAL_OK : HAL_ERROR;
   usb_status = USBH_Get_USB_Status(hal_status);
 
   return usb_status;
@@ -4006,7 +4018,7 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
 //
 //  hal_status = HAL_EHCI_HC_Halt(phost->pData, pipe);
 //
- ehci_endpoint_close(& usbdev0->control);
+ ////ehci_endpoint_close(& usbdev0->control);
   usb_status = USBH_Get_USB_Status(hal_status);
 
   return usb_status;
@@ -4224,7 +4236,7 @@ void MX_USB_HOST_DeInit(void)
 void MX_USB_HOST_Process(void)
 {
 	USBH_Process(& hUsbHostHS);
-	ehci_bus_poll(& usbbus0);
+	//ehci_bus_poll(& usbbus0);
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */
