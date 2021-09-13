@@ -201,6 +201,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
 		RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
 		(void) RCC->MP_AHB2LPENSETR;
 
+		USB_HS_PHYCInit();
 		arm_hardware_set_handler_system(OTG_IRQn, host_OTG_HS_IRQHandler);
 
 	#elif CPUSTYLE_STM32H7XX

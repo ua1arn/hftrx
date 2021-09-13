@@ -119,28 +119,44 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
 #define USBPHYC_PLL_PLLODF_Pos		7
 #define USBPHYC_PLL_PLLFRACIN_Msk	GENMASK(25, 10)
 #define USBPHYC_PLL_PLLFRACIN_Pos	10
-#define USBPHYC_PLL_PLLEN_Msk			BIT(26)
-#define USBPHYC_PLL_PLLSTRB_Msk			BIT(27)
-#define USBPHYC_PLL_PLLSTRBYP_Msk		BIT(28)
-#define USBPHYC_PLL_PLLFRACCTL_Msk		BIT(29)
-#define USBPHYC_PLL_PLLDITHEN0_Msk		BIT(30)	// PLL dither 2 (triangular)
-#define USBPHYC_PLL_PLLDITHEN1_Msk		BIT(31)	// PLL dither 1 (rectangular)
+#define USBPHYC_PLL_PLLEN_Msk			B(26)
+#define USBPHYC_PLL_PLLSTRB_Msk			B(27)
+#define USBPHYC_PLL_PLLSTRBYP_Msk		B(28)
+#define USBPHYC_PLL_PLLFRACCTL_Msk		B(29)
+#define USBPHYC_PLL_PLLDITHEN0_Msk		B(30)	// PLL dither 2 (triangular)
+#define USBPHYC_PLL_PLLDITHEN1_Msk		B(31)	// PLL dither 1 (rectangular)
 
 /* STM32_USBPHYC_MISC bit fields */
-#define USBPHYC_MISC_SWITHOST_Msk		BIT(0)
+#define USBPHYC_MISC_SWITHOST_Msk		B(0)
 #define USBPHYC_MISC_SWITHOST_Pos		0
 
+HAL_StatusTypeDef USB_HS_PHYCDeInit(void)
+{
+	/* reset */
+	RCC->APB4RSTSETR = RCC_APB4RSTSETR_USBPHYRST;
+	(void) RCC->APB4RSTSETR;
+	RCC->APB4RSTCLRR = RCC_APB4RSTCLRR_USBPHYRST;
+	(void) RCC->APB4RSTCLRR;
+	/* turn clock off */
+	RCC->MP_APB4ENCLRR = RCC_MP_APB4ENCLRR_USBPHYEN;
+	(void) RCC->MP_APB4ENCLRR;
+	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_USBPHYLPEN;
+	(void) RCC->MP_APB4LPENCLRR;
+	return HAL_OK;
+}
 
 // STM32MP1 UTMI interface
 HAL_StatusTypeDef USB_HS_PHYCInit(void)
 {
 	//PRINTF("USB_HS_PHYCInit start\n");
+	// USBPHYC already initialized
+	if ((RCC->MP_APB4ENSETR & RCC_MP_APB4ENSETR_USBPHYEN) != 0)
+		return HAL_OK;
 	// Clock source
 	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN;
 	(void) RCC->MP_APB4ENSETR;
 	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN;
 	(void) RCC->MP_APB4LPENSETR;
-
 	if (1)
 	{
 		//	In addition, if the USBO is used in full-speed mode only, the application can choose the
@@ -153,21 +169,20 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//  0x1: pll4_r_ck clock selected as kernel peripheral clock
 		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
 		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m
+			(RCC_USBCKSELR_USBOSRC_VAL << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m
 			//(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max pll4_r_ck (можно использовать только 48 МГц)
 
 			//(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck	- входная частота для PHYC PLL
-			(0x00 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max hse_ker_ck	- входная частота для PHYC PLL
+			(RCC_USBCKSELR_USBPHYSRC_VAL << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max hse_ker_ck	- входная частота для PHYC PLL
 			0;
 		(void) RCC->USBCKSELR;
 	}
 
 	//ASSERT(stm32mp1_get_usbotg_freq() == 48000000uL);
 
-	// не требуется... запущено в bootloader
-	//	// USBPHYC already initialized
-	//	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
-	//		return HAL_OK;
+	// USBPHYC already initialized
+//	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
+//		return HAL_OK;
 
 	if (1)
 	{
@@ -225,14 +240,6 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		//PRINTF("USB_HS_PHYCInit: start PLL done.\n");
 	}
 
-	// MISC
-	//	0: Select OTG controller for 2nd PHY port
-	//	1: Select Host controller for 2nd PHY port
-	USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk)) |
-		(0x00 << USBPHYC_MISC_SWITHOST_Pos) |	// 0: Select OTG controller for 2nd PHY port
-		0;
-	(void) USBPHYC->MISC;
-
 	if (1)
 	{
 		// USBH_HS_DP1, USBH_HS_DM1
@@ -257,6 +264,18 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		USBPHYC_PHY2->TUNE = 0x04070004;
 		(void) USBPHYC_PHY2->TUNE;
 	}
+
+	/* STM32_USBPHYC_MISC bit fields */
+	#define USBPHYC_MISC_SWITHOST_Msk		B(0)
+	#define USBPHYC_MISC_SWITHOST_Pos		0
+
+	// MISC
+	//	0: Select OTG controller for 2nd PHY port
+	//	1: Select Host controller for 2nd PHY port
+	USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk)) |
+		(USBPHYC_MISC_SWITHOST_VAL << USBPHYC_MISC_SWITHOST_Pos) |	// 0: Select OTG controller for 2nd PHY port
+		0;
+	(void) USBPHYC->MISC;
 
 	//PRINTF("USB_HS_PHYCInit done\n");
 	return HAL_OK;
