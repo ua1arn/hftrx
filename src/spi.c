@@ -1449,7 +1449,7 @@ int testchipDATAFLASH(void)
 		sct [1] = (dword8 >> 16) & 0xFFFF;
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
-		PRINTF("SFDP: opco1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
 		PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
@@ -1458,7 +1458,7 @@ int testchipDATAFLASH(void)
 			const unsigned newsct = sct [i];
 			if ((newsct & 0xFF) == 0)
 				continue;
-			if (sctRESULT == 0 || (sctRESULT & 0xFF) > (newsct & 0xFF))
+			if (sctRESULT == 0 || (sctRESULT & 0xFF) < (newsct & 0xFF))
 				sctRESULT = newsct;
 		}
 		if (sctRESULT != 0)
