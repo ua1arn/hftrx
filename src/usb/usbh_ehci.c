@@ -2970,16 +2970,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
  	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
  	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
-//
-// 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
-// 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
-// 	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
-// 				((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F,
-//				((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
-//				((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01,
-//				((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
-//				((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
-// 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
 
  	// Calculate Operational Register Space base address
  	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
@@ -3123,14 +3113,22 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 #if 1
 
+ 	unsigned porti = WITHEHCIHW_EHCIPORT;
+
+	/* Print state of all ports */
+ 	for (porti = 0; porti < hehci->nports; ++ porti)
+  	{
+ 		unsigned long portsc = ehci->opRegs->ports [porti];
+ 		PRINTF("portsc[%u]=%08lX\n", porti, portsc);
+ 	}
+
   	/* Route all ports to EHCI controller */
 	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
  	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
  	(void) ehci->opRegs->configFlag;
 
 	/* Enable power to all ports */
- 	unsigned porti= WITHEHCIHW_EHCIPORT;
- 	//for (porti = 0; porti < hehci->nports; ++ porti)
+ 	for (porti = 0; porti < hehci->nports; ++ porti)
   	{
  		unsigned long portsc = ehci->opRegs->ports [porti];
 
@@ -3146,6 +3144,16 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	local_delay_ms(50);
 
 #endif
+//
+// 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
+ 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
+ 	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
+ 				((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F,
+				((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
+				((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01,
+				((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
+				((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
+// 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
 
  	PRINTF("board_ehci_initialize done.\n");
 }
@@ -3442,7 +3450,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
      		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
  			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
  			//CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
- 			CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
+ 			//CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
  			//CMD_RS |	// Run/Stop 1=Run, 0-stop
  			0;
 
