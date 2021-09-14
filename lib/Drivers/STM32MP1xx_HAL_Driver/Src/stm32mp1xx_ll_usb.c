@@ -227,31 +227,34 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
 			;
 		PRINTF("USB_HS_PHYCInit: start PLL done.\n");
-	}
 
-	if (1)
-	{
-		// USBH_HS_DP1, USBH_HS_DM1
-		//PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
-//		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
-//			(0x00 << ssss) |
-//			(0x00 << ssss) |
-//			(0x00 << ssss) |
-//			0;
-		USBPHYC_PHY1->TUNE = 0x04070004;
-		(void) USBPHYC_PHY1->TUNE;
-	}
-	if (1)
-	{
-		// USBH_HS_DP2, USBH_HS_DM2
-		//PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
-//		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
-//			(0x00 << ssss) |
-//			(0x00 << ssss) |
-//			(0x00 << ssss) |
-//			0;
-		USBPHYC_PHY2->TUNE = 0x04070004;
-		(void) USBPHYC_PHY2->TUNE;
+		// TUNE base: 5A00610C 5A00620C
+		//PRINTF("TUNE base: %p %p\n", & USBPHYC_PHY1->TUNE, & USBPHYC_PHY2->TUNE);
+
+		if (0)
+		{
+			// USBH_HS_DP1, USBH_HS_DM1
+			//PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
+	//		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
+	//			(0x00 << ssss) |
+	//			(0x00 << ssss) |
+	//			(0x00 << ssss) |
+	//			0;
+			USBPHYC_PHY1->TUNE = 0x04070004;
+			(void) USBPHYC_PHY1->TUNE;
+		}
+		if (0)
+		{
+			// USBH_HS_DP2, USBH_HS_DM2
+			//PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
+	//		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
+	//			(0x00 << ssss) |
+	//			(0x00 << ssss) |
+	//			(0x00 << ssss) |
+	//			0;
+			USBPHYC_PHY2->TUNE = 0x04070004;
+			(void) USBPHYC_PHY2->TUNE;
+		}
 	}
 
 	//PRINTF("USB_HS_PHYCInit done\n");
