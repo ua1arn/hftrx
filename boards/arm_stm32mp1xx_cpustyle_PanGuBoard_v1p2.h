@@ -842,6 +842,7 @@
 		/* STM32_USBPHYC_MISC bit fields */ \
 		/*	SWITHOST 0: Select OTG controller for 2nd PHY port */ \
 		/*	SWITHOST 1: Select Host controller for 2nd PHY port */ \
+		/*	EHCI controller hard wired to 1st PHY port */ \
 		USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk | USBPHYC_MISC_PPCKDIS_Msk)) | \
 			(USBPHYC_MISC_SWITHOST_VAL << USBPHYC_MISC_SWITHOST_Pos) |	/* 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port */ \
 			(USBPHYC_MISC_PPCKDIS_VAL << USBPHYC_MISC_PPCKDIS_Pos) | \
