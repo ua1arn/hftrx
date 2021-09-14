@@ -68,21 +68,21 @@
  /** USB legacy support extended capability */
  #define EHCI_EECP_ID_LEGACY 1
  
- /** USB legacy support BIOS owned semaphore */
- #define EHCI_USBLEGSUP_BIOS 0x02
- 
- /** USB legacy support BIOS ownership flag */
- #define EHCI_USBLEGSUP_BIOS_OWNED 0x01
- 
- /** USB legacy support OS owned semaphore */
- #define EHCI_USBLEGSUP_OS 0x03
- 
- /** USB legacy support OS ownership flag */
- #define EHCI_USBLEGSUP_OS_OWNED 0x01
- 
- /** USB legacy support control/status */
- #define EHCI_USBLEGSUP_CTLSTS 0x04
- 
+// /** USB legacy support BIOS owned semaphore */
+// #define EHCI_USBLEGSUP_BIOS 0x02
+//
+// /** USB legacy support BIOS ownership flag */
+// #define EHCI_USBLEGSUP_BIOS_OWNED 0x01
+//
+// /** USB legacy support OS owned semaphore */
+// #define EHCI_USBLEGSUP_OS 0x03
+//
+// /** USB legacy support OS ownership flag */
+// #define EHCI_USBLEGSUP_OS_OWNED 0x01
+//
+// /** USB legacy support control/status */
+// #define EHCI_USBLEGSUP_CTLSTS 0x04
+//
  /** USB command register */
  #define EHCI_OP_USBCMD 0x00
  

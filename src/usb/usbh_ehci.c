@@ -2909,8 +2909,7 @@ static struct usb_host_operations ehci_operations = {
 #endif
 
 
-// USe in HAL_EHCI_Start
- // USB EHCI controller
+// USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 {
  	PRINTF("board_ehci_initialize start.\n");
