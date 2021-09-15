@@ -2899,7 +2899,7 @@ static struct usb_host_operations ehci_operations = {
 static void asynclist_item(struct ehci_queue_head * p)
 {
 	memset (p, 0, sizeof * p);
-	p->link = ehci_link_qh(p);
+	p->link = ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
 //	p->current = 0;
@@ -2920,8 +2920,8 @@ static void asynclist_item(struct ehci_queue_head * p)
 //	p->cache.high [4] = 0;
 
 	p->cache.len = 0;
-	p->chr = cpu_to_le32( EHCI_CHR_HEAD);
-	p->cache.next = cpu_to_le32( EHCI_LINK_TERMINATE);
+	p->chr = cpu_to_le32(EHCI_CHR_HEAD);
+	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->cache.status = EHCI_STATUS_HALTED;
 }
 
