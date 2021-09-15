@@ -2536,7 +2536,7 @@ static int ehci_root_enable ( struct usb_hub *hub, struct usb_port *port ) {
 	}
 
 	/* Reset port */
-	portsc &= ~( EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
+	portsc &= ~( 0*EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
 	portsc |= EHCI_PORTSC_PR;
 	writel ( portsc, ehci->op + EHCI_OP_PORTSC ( port->address ) );
 	local_delay_ms ( USB_RESET_DELAY_MS );
@@ -3272,11 +3272,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	 	}
  	}
 
- 	//if ((usbsts & (0x01uL << 2)))	// Port Change Detect
+ 	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
  	{
  		EHCIx->USBSTS = (0x01uL << 2);	// Clear Port Change Detect interrupt
  		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
- 		PRINTF("HAL_EHCI_IRQHandler: Port Change Detect, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
+		PRINTF("HAL_EHCI_IRQHandler: Port Change Detect, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
  		// PORTSC[0]=00001002 - on disconnect
  		// PORTSC[0]=00001803 - on connect
 // 		unsigned i;
@@ -3317,12 +3317,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (0x01uL << 4)))	// Host System Error
  	{
  		EHCIx->USBSTS = (0x01uL << 4);	// Clear Host System Error interrupt
- 		PRINTF("HAL_EHCI_IRQHandler: Host System Error\n");
- 		unsigned i;
- 		for (i = 0; i < hehci->nports; ++ i)
- 	 	{
- 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
- 	 	}
+ 		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+		PRINTF("HAL_EHCI_IRQHandler: Host System Error, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
  	}
 
  	if ((usbsts & (0x01uL << 5)))	// Interrupt On Async Advance
@@ -3402,8 +3398,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	volatile uint32_t * const HcCommandStatus = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x008); // HcCommandStatus Register
 	* HcCommandStatus |= 0x00000001uL;	// HCR HostControllerReset
 
-	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
-	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
+//	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
+//	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
 
 #else
 
@@ -3458,8 +3454,8 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
      EHCIx->USBCMD =
      		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
  			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
- 			//CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
- 			//CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
+ 			CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
+ 			CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
  			//CMD_RS |	// Run/Stop 1=Run, 0-stop
  			0;
 
@@ -3469,7 +3465,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
   	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
  		;
 
-#if 0
+#if 1
  	EHCIx->USBINTR |=
  			INTR_IOAA |	// Interrupt on ASync Advance Enable
 			INTR_HSE |	// Host System Error Interrupt Enable
@@ -3953,13 +3949,13 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
-	PRINTF("USBH_LL_ResetPort2: 1 active=%d, : PORTSC[%u]=%08lX\n", (int) resetIsActive, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	PRINTF("USBH_LL_ResetPort1: 2 active=%d, : USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 	if (resetIsActive)
 	{
  		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
  		/* Reset port */
- 		portsc &= ~( EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
+ 		portsc &= ~( 0*EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
  		portsc |= EHCI_PORTSC_PR;
 
  		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
@@ -3980,9 +3976,9 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 		//VERIFY(ehci_root_enable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 
 	}
-	local_delay_ms(1);
+	local_delay_ms(1000);
 	//HAL_Delay(1);
-	PRINTF("USBH_LL_ResetPort2: 2 active=%d, : PORTSC[%u]=%08lX\n", (int) resetIsActive, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 
 	usb_status = USBH_Get_USB_Status(hal_status);
