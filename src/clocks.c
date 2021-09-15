@@ -281,7 +281,7 @@ unsigned long stm32f4xx_get_tim3_freq(void)
 //#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 //#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 //#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 #define BOARD_USART1_FREQ (stm32f7xx_get_usart1_freq())
 
@@ -351,6 +351,12 @@ unsigned long stm32f7xx_get_sys_freq(void)
 	}
 }
 
+// TODO: check
+unsigned long stm32f7xx_get_sysclk_freq(void)
+{
+	return stm32f7xx_get_sys_freq();
+}
+
 // AHB prescaler
 // HPRE output
 unsigned long stm32f7xx_get_ahb_freq(void)
@@ -382,7 +388,7 @@ unsigned long stm32f7xx_get_ahb_freq(void)
 // TODO: проверить
 // APB Low-speed prescaler (APB1)
 // PPRE1 output
-unsigned long hardware_get_apb1_freq(void)
+unsigned long stm32f7xx_get_apb1_freq(void)
 {
 	//	0xx: AHB clock not divided
 	//	100: AHB clock divided by 2
@@ -401,7 +407,7 @@ unsigned long hardware_get_apb1_freq(void)
 }
 
 // TODO: проверить
-unsigned long hardware_get_apb1_tim_freq(void)
+unsigned long stm32f7xx_get_apb1_tim_freq(void)
 {
 	const unsigned long sysclk = stm32f7xx_get_sys_freq();
 	const uint8_t timpre = (RCC->DCKCFGR1 & RCC_DCKCFGR1_TIMPRE_Msk) != 0;
@@ -432,7 +438,7 @@ unsigned long hardware_get_apb1_tim_freq(void)
 // TODO: проверить
 // APB high-speed prescaler (APB2)
 // PPRE2 output
-unsigned long hardware_get_apb2_freq(void)
+unsigned long stm32f7xx_get_apb2_freq(void)
 {
 	//	0xx: AHB clock not divided
 	//	100: AHB clock divided by 2
@@ -451,7 +457,7 @@ unsigned long hardware_get_apb2_freq(void)
 }
 
 // TODO: проверить
-unsigned long hardware_get_apb2_tim_freq(void)
+unsigned long stm32f7xx_get_apb2_tim_freq(void)
 {
 	const unsigned long sysclk = stm32f7xx_get_sys_freq();
 	const uint8_t timpre = (RCC->DCKCFGR1 & RCC_DCKCFGR1_TIMPRE_Msk) != 0;
@@ -626,6 +632,12 @@ unsigned long stm32f7xx_get_uart8_freq(void)
 	case 0x03: return LSEFREQ;
 	}
 }
+
+
+#define SYSTICK_FREQ (stm32f7xx_get_sysclk_freq() / 8)
+#define BOARD_TIM3_FREQ (stm32f7xx_get_apb1_tim_freq())	// TODO: verify
+#define BOARD_ADC_FREQ (stm32f7xx_get_apb2_freq())
+#define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())	// TODO: verify
 
 #elif CPUSTYLE_STM32H7XX
 
