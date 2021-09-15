@@ -637,7 +637,7 @@ unsigned long stm32f7xx_get_uart8_freq(void)
 #define SYSTICK_FREQ (stm32f7xx_get_sysclk_freq() / 8)
 #define BOARD_TIM3_FREQ (stm32f7xx_get_apb1_tim_freq())	// TODO: verify
 #define BOARD_ADC_FREQ (stm32f7xx_get_apb2_freq())
-#define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())	// TODO: verify
+#define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())
 
 #elif CPUSTYLE_STM32H7XX
 
@@ -8159,7 +8159,6 @@ void hardware_spi_master_read_frame(
 }
 
 #endif /* WITHSPIHWDMA */
-
 
 #if WITHSPI16BIT
 
