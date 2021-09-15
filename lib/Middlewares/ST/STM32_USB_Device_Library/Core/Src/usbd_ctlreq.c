@@ -864,8 +864,8 @@ void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, uint8_t *pdata)
   */
 void (USBD_CtlError)(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req, const char * file, int line)
 {
-	PRINTF("USBD_CtlError: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-	PRINTF("USBD_CtlError: %s(%d)\n", file, line);
+//	PRINTF("USBD_CtlError: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+//	PRINTF("USBD_CtlError: %s(%d)\n", file, line);
   UNUSED(req);
 
   (void)USBD_LL_StallEP(pdev, 0x80U);
