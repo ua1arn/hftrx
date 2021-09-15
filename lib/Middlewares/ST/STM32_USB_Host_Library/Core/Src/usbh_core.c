@@ -20,7 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
-#include "formats.h"
+//#include "formats.h"
 #include "usbh_core.h"
 
 
@@ -723,7 +723,6 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
         for (idx = 0U; idx < phost->ClassNumber; idx++)
         {
-        	PRINTF("Examine over %u at idx[%u]: %p\n", phost->ClassNumber, idx, phost->pClass[idx]);
           if (phost->pClass[idx]->ClassCode == phost->device.CfgDesc.Itf_Desc[0].bInterfaceClass)
           {
             phost->pActiveClass = phost->pClass[idx];
