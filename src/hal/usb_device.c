@@ -31,6 +31,8 @@
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"
 #endif /* WITHUSEUSBFLASH */
+#include "../../Class/HID/Inc/usbh_hid.h"
+#include "../../Class/HUB/Inc/usbh_hub.h"
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -225,9 +227,13 @@ void MX_USB_HOST_Init(void)
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
-	#if WITHUSEUSBFLASH
-		USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
-	#endif /* WITHUSEUSBFLASH */
+#if WITHUSEUSBFLASH
+	USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
+#endif /* WITHUSEUSBFLASH */
+#if 1
+	USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
+	USBH_RegisterClass(& hUsbHostHS, & HID_Class);
+#endif /* WITHUSEUSBFLASH */
 	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	//ticker_add(& usbticker);
 

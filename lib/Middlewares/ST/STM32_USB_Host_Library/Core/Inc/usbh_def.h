@@ -207,7 +207,7 @@ extern "C" {
 #endif /* USBH_MAX_PIPES_NBR */
 
 #define USBH_DEVICE_ADDRESS_DEFAULT                        0x00U
-#define USBH_DEVICE_ADDRESS                                0x01U
+//#define USBH_DEVICE_ADDRESS                                0x01U
 
 #define USBH_MAX_ERROR_COUNT                               0x02U
 

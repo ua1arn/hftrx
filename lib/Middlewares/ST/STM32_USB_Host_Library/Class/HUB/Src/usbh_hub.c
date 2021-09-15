@@ -88,11 +88,11 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 	HUB_ChangeInfo = 0;
 	HUB_CurPort = 0;
 
-	int h = 1;
-	for(; h < ARRAY_SIZE(hUSBHost); ++h)
-	{
-		memset(&hUSBHost[h], 0, sizeof(USBH_HandleTypeDef));
-	}
+//	int h = 1;
+//	for(; h < ARRAY_SIZE(hUSBHost); ++h)
+//	{
+//		memset(&hUSBHost[h], 0, sizeof(USBH_HandleTypeDef));
+//	}
 
 	interface = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, 0x00, 0x00);
 
@@ -226,8 +226,8 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
      		break;
 
     	case HUB_GET_DATA:
-			if(hUSBHost[1].busy)
-				break;
+//			if(hUSBHost[1].busy)
+//				break;
 
     	    USBH_InterruptReceiveData(phost, HUB_Handle->buffer, HUB_Handle->length, HUB_Handle->InPipe);
     	    HUB_Handle->state = HUB_POLL;
@@ -555,7 +555,9 @@ static uint8_t port_changed(uint8_t *b)
 
 void detach(USBH_HandleTypeDef *_phost, uint16_t idx)
 {
-	USBH_HandleTypeDef *pphost = &hUSBHost[idx];
+	return;
+	//USBH_HandleTypeDef *pphost = &hUSBHost[idx];
+	USBH_HandleTypeDef *pphost = & hUsbHostHS;
 	if(pphost->valid)
 	{
 USBH_UsrLog("detach %d", pphost->address);
@@ -595,7 +597,9 @@ USBH_UsrLog("detach %d", pphost->address);
 
 static void attach(USBH_HandleTypeDef *phost, uint16_t idx, uint8_t lowspeed)
 {
-	USBH_HandleTypeDef *pphost = &hUSBHost[idx];
+	return;
+	//USBH_HandleTypeDef *pphost = &hUSBHost[idx];
+	USBH_HandleTypeDef *pphost = &hUsbHostHS;
 USBH_UsrLog("attach %d", idx);
 
 	if(pphost->valid)
@@ -604,7 +608,7 @@ USBH_UsrLog("attach %d", idx);
 		detach(pphost, idx);
 	}
 
-	pphost->id 					= hUSBHost[0].id;
+	pphost->id 					= 0;//hUSBHost[0].id;
 	pphost->address 			= idx;
 	pphost->hub 				= 0;
 	pphost->pActiveClass 		= NULL;
@@ -626,11 +630,11 @@ USBH_UsrLog("attach %d", idx);
 	pphost->device.speed   		= lowspeed ? USBH_SPEED_LOW : USBH_SPEED_FULL;
 	pphost->device.is_connected = 1;
 
-	HCD_HandleTypeDef *phHCD =  &_hHCD[pphost->id];
-	USBH_LL_SetTimer (pphost, HAL_HCD_GetCurrentFrame(phHCD));
+//	HCD_HandleTypeDef *phHCD =  &_hHCD[pphost->id];
+//	USBH_LL_SetTimer (pphost, HAL_HCD_GetCurrentFrame(phHCD));
 
 	/* link the class tgo the USB Host handle */
-    pphost->pClass[pphost->ClassNumber++] = USBH_HID_CLASS;
+//    pphost->pClass[pphost->ClassNumber++] = USBH_HID_CLASS;
 //    pphost->pClass[pphost->ClassNumber++] = USBH_MSC_CLASS;
 
     pphost->gState = HOST_ENUMERATION;

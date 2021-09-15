@@ -172,6 +172,8 @@ void USBH_Delay(uint32_t Delay);
 extern USBH_HandleTypeDef hUSBHost[5];
 extern HCD_HandleTypeDef _hHCD[2];
 
+extern USBH_HandleTypeDef hUsbHostHS;
+
 /**
   * @}
   */
