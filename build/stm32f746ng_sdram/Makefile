@@ -64,7 +64,7 @@ DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-HALDIR = $(PRJROOT)/lib/Drivers/STM32H7xx_HAL_Driver
+HALDIR = $(PRJROOT)/lib/Drivers/STM32F7xx_HAL_Driver
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
