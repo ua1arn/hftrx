@@ -3948,13 +3948,13 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
-	PRINTF("USBH_LL_ResetPort1: 2 active=%d, : USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	PRINTF("USBH_LL_ResetPort1: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 	if (resetIsActive)
 	{
  		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
  		/* Reset port */
- 		portsc &= ~( 0*EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
+ 		portsc &= ~ (EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
  		portsc |= EHCI_PORTSC_PR;
 
  		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
@@ -3977,7 +3977,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	}
 	local_delay_ms(1000);
 	//HAL_Delay(1);
-	PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	PRINTF("USBH_LL_ResetPort1: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 
 	usb_status = USBH_Get_USB_Status(hal_status);
