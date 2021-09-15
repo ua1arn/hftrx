@@ -280,6 +280,7 @@ extern "C" {
 			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
 
 			#define CPU_FREQ (stm32f7xx_get_sys_freq())	// 172032000uL
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
 			#define HSIFREQ 16000000uL
 
