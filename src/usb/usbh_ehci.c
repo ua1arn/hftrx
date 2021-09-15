@@ -77,20 +77,6 @@ static __attribute__((used, aligned(32))) struct ehci_queue_head asynclisthead;
 // Periodic Schedule list - PERIODICLISTBASE use
 static __attribute__((used, aligned(4096))) uint32_t periodic [FLS];
 
-// typ: 0x00 - ISO, 0x01 - Queue Head (QH), 0x02 - Split Trabs (siTD), 0x03 - Frame Span (FSTN)
-static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext, int typ)
-{
-	// 3.3.1 Next Link Pointer
-	qh [0] =
-		(qnext & 0xFFFFFFC0) |	// horizontal ptr
-		((uint32_t) typ << 1) |		// typ: 0x00 - ISO, 0x01 - Queue Head (QH), 0x02 - Split Trabs (siTD), 0x03 - Frame Span (FSTN)
-		(0ul << 0) |		// Terminate: 0 - valid, 1 - not valid
-		0;
-	// 3.3.2 iTD Transaction Status And Control List
-	qh [1] =
-			0;
-}
-
 #endif
 
 
@@ -2910,6 +2896,34 @@ static struct usb_host_operations ehci_operations = {
 
 #endif
 
+static void asynclist_item(struct ehci_queue_head * p)
+{
+	memset (p, 0, sizeof * p);
+	p->link = ehci_link_qh(p);
+//	p->chr = 0;
+//	p->cap = 0;
+//	p->current = 0;
+//	p->cache.next = 0;
+//	p->cache.alt = 0;
+//	p->cache.status = 0;
+//	p->cache.flags = 0;
+//	p->cache.len = 0;
+//	p->cache.low [0] = 0;
+//	p->cache.high [0] = 0;
+//	p->cache.low [1] = 0;
+//	p->cache.high [1] = 0;
+//	p->cache.low [2] = 0;
+//	p->cache.high [2] = 0;
+//	p->cache.low [3] = 0;
+//	p->cache.high [3] = 0;
+//	p->cache.low [4] = 0;
+//	p->cache.high [4] = 0;
+
+	p->cache.len = 0;
+	p->chr = cpu_to_le32( EHCI_CHR_HEAD);
+	p->cache.next = cpu_to_le32( EHCI_LINK_TERMINATE);
+	p->cache.status = EHCI_STATUS_HALTED;
+}
 
 // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
@@ -2930,35 +2944,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 #if 1
 
-	//ehci_queue_fill(queue0 [0], (uintptr_t) queue0 [1], 0x01);
-	//ehci_queue_fill(queue0 [1], (uintptr_t) queue0 [0], 0x02);
-
-	asynclisthead.link = ehci_link_qh(& asynclisthead);
-//	asynclisthead.chr = 0;
-//	asynclisthead.cap = 0;
-//	asynclisthead.current = 0;
-//	asynclisthead.cache.next = 0;
-//	asynclisthead.cache.alt = 0;
-//	asynclisthead.cache.status = 0;
-//	asynclisthead.cache.flags = 0;
-//	asynclisthead.cache.len = 0;
-//	asynclisthead.cache.low [0] = 0;
-//	asynclisthead.cache.high [0] = 0;
-//	asynclisthead.cache.low [1] = 0;
-//	asynclisthead.cache.high [1] = 0;
-//	asynclisthead.cache.low [2] = 0;
-//	asynclisthead.cache.high [2] = 0;
-//	asynclisthead.cache.low [3] = 0;
-//	asynclisthead.cache.high [3] = 0;
-//	asynclisthead.cache.low [4] = 0;
-//	asynclisthead.cache.high [4] = 0;
-
-
-	//memset ( & asynclisthead, 0, sizeof asynclisthead );
-	asynclisthead.chr = cpu_to_le32 ( EHCI_CHR_HEAD );
-	asynclisthead.cache.next = cpu_to_le32 ( EHCI_LINK_TERMINATE );
-	asynclisthead.cache.status = EHCI_STATUS_HALTED;
-
+	asynclist_item(& asynclisthead);
 	unsigned i;
 	// Periodic frame list
 	for (i = 0; i < ARRAY_SIZE(periodic); ++ i)
@@ -3087,11 +3073,11 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	//hc->opRegs->frameIndex = 0;
 	EHCIx->FRINDEX = 0;
 	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-	EHCIx->PERIODICLISTBASE = (uintptr_t) periodic;
+	EHCIx->PERIODICLISTBASE = virt_to_phys(& periodic);
 
 	// копируем адрес асинхронной очереди в регистр
 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-	EHCIx->ASYNCLISTADDR = (uintptr_t) & asynclisthead;
+	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclisthead);
 	// Устанавливаем сегмент в 0
 	//hc->opRegs->ctrlDsSegment = 0;
 	EHCIx->CTRLDSSEGMENT = 0x00000000;
