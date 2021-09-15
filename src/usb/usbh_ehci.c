@@ -65,22 +65,35 @@ void Error_Handler(void);
 
 //enum { FLS = 1024, FLS_code = 0 };
 //enum { FLS = 512, FLS_code = 1 };
-enum { FLS = 256, FLS_code = 2 };
+//enum { FLS = 256, FLS_code = 2 };
+enum { FLS_code = 2, FLS = 1024 >> FLS_code};
 
 #if 1
 static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
 // isochronious transaction descriptors
 static __attribute__((used, aligned(32))) uint32_t itd0 [16];
-static __attribute__((used, aligned(32))) uint32_t queue0 [16];
+static __attribute__((used, aligned(32))) uint32_t queue0 [2] [16];	// for ASYNCLISTADDR
 
-static __attribute__((used, aligned(4096))) uint32_t asyncbuff [1024];
+// Asynchronous Schedule list - ASYNCLISTADDR use
+// list of queue headers
+static __attribute__((used, aligned(4096))) uint32_t async [1024] [4];
+
 // Periodic frame list
-static __attribute__((used, aligned(4096))) uint32_t framesbuff [FLS];
+// Periodic Schedule list - PERIODICLISTBASE use
+static __attribute__((used, aligned(4096))) uint32_t periodic [FLS];
 
-
-static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext)
+// typ: 0x00 - ISO, 0x01 - Queue Head (QH), 0x02 - Split Trabs (siTD), 0x03 - Frame Span (FSTN)
+static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext, int typ)
 {
-	qh [0] = (qnext & 0xFFFFFFC0) | (1uL << 1);
+	// 3.3.1 Next Link Pointer
+	qh [0] =
+		(qnext & 0xFFFFFFC0) |	// horizontal ptr
+		((uint32_t) typ << 1) |		// typ: 0x00 - ISO, 0x01 - Queue Head (QH), 0x02 - Split Trabs (siTD), 0x03 - Frame Span (FSTN)
+		(0ul << 0) |		// Terminate: 0 - valid, 1 - not valid
+		0;
+	// 3.3.2 iTD Transaction Status And Control List
+	qh [1] =
+			0;
 }
 
 // isochronious transaction descriptor
@@ -2928,30 +2941,37 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 #if 1
      ehci_itd_fill(itd0);
-     ehci_queue_fill(queue0, (uintptr_t) queue0);
+
+     ehci_queue_fill(queue0 [0], (uintptr_t) queue0 [1], 0x01);
+     ehci_queue_fill(queue0 [1], (uintptr_t) queue0 [0], 0x02);
 
      unsigned i;
-	for (i = 0; i < ARRAY_SIZE(asyncbuff); ++ i)
+	for (i = 0; i < ARRAY_SIZE(async); ++ i)
      {
-     	asyncbuff [i] = 0x01;	// 0 - valid, 1 - invalid
+     	async [i] [0] = 0x01;	// 0 - valid, 1 - invalid
+     	async [i] [1] = 0x01;	// 0 - valid, 1 - invalid
+     	async [i] [2] = 0x01;	// 0 - valid, 1 - invalid
+     	async [i] [3] = 0x01;	// 0 - valid, 1 - invalid
      }
  	// Periodic frame list
      for (i = 0; i < FLS; ++ i)
      {
-     	framesbuff [i] = 0x01;	// 0 - valid, 1 - invalid
-     }
+      	periodic [i] = 0x01;	// 0 - valid, 1 - invalid
+      }
 
-     framesbuff [0] =
+#if 0
+     periodic [0] =
      		(uintptr_t) & itd0 |
  			(0uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
  			(0uL << 0);	// 0 - valid, 1 - invalid
-     framesbuff [1] =
+     periodic [1] =
      		(uintptr_t) & queue0 |
  			(1uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
  			(0uL << 0);	// 0 - valid, 1 - invalid
+#endif
 
-     arm_hardware_flush((uintptr_t) framesbuff, sizeof framesbuff);
-     arm_hardware_flush((uintptr_t) asyncbuff, sizeof asyncbuff);
+     arm_hardware_flush((uintptr_t) periodic, sizeof periodic);
+     arm_hardware_flush((uintptr_t) async, sizeof async);
      arm_hardware_flush((uintptr_t) itd0, sizeof itd0);
      arm_hardware_flush((uintptr_t) queue0, sizeof queue0);
 #endif
@@ -3073,10 +3093,11 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
  	//hc->opRegs->frameIndex = 0;
      EHCIx->FRINDEX = 0;
  	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-    EHCIx->PERIODICLISTBASE = (uintptr_t) framesbuff;
+    EHCIx->PERIODICLISTBASE = (uintptr_t) periodic;
+
  	// копируем адрес асинхронной очереди в регистр
  	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-    EHCIx->ASYNCLISTADDR = (uintptr_t) asyncbuff;
+    EHCIx->ASYNCLISTADDR = (uintptr_t) queue0; //async;
  	// Устанавливаем сегмент в 0
  	//hc->opRegs->ctrlDsSegment = 0;
     EHCIx->CTRLDSSEGMENT = 0x00000000;
@@ -3098,7 +3119,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	//PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) EHCIx->CTRLDSSEGMENT);
 	//PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) EHCIx->PERIODICLISTBASE);
 	//PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) EHCIx->ASYNCLISTADDR);
-	////PRINTF("board_ehci_initialize: asyncbuff=%08lX\n", (unsigned long) & asyncbuff);
+	////PRINTF("board_ehci_initialize: async=%08lX\n", (unsigned long) & async);
 	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
 	////local_delay_ms(10);
 	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
@@ -3647,7 +3668,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
 //
-//  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) asyncbuff;
+//  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) async;
 //	memset ( head0, 0, sizeof ( *head0 ) );
 //	head0->chr = cpu_to_le32 ( EHCI_CHR_HEAD );
 //	head0->cache.next = cpu_to_le32 ( EHCI_LINK_TERMINATE );
