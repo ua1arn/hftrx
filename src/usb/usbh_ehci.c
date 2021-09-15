@@ -30,7 +30,7 @@ void Error_Handler(void);
 	RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
 	// MORI
-	USBH_HandleTypeDef hUSBHost[5];
+//	USBH_HandleTypeDef hUSBHost[5];
 //	HCD_HandleTypeDef _hHCD[2];
 //	EHCI_HandleTypeDef _hEHCI[2];
 
@@ -43,6 +43,7 @@ void Error_Handler(void);
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"
 #endif /* WITHUSEUSBFLASH */
+#include "../../Class/HID/Inc/usbh_hid.h"
 #include "../../Class/HUB/Inc/usbh_hub.h"
 
 
@@ -63,20 +64,14 @@ void Error_Handler(void);
 #define ECANCELED 1
 #define ENOENT 1
 
-//enum { FLS = 1024, FLS_code = 0 };
-//enum { FLS = 512, FLS_code = 1 };
-//enum { FLS = 256, FLS_code = 2 };
-enum { FLS_code = 2, FLS = 1024 >> FLS_code};
+enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
 
 #if 1
-static __attribute__((used, aligned(4096))) uint8_t buff0 [4096];
-// isochronious transaction descriptors
-static __attribute__((used, aligned(32))) uint32_t itd0 [16];
-static __attribute__((used, aligned(32))) uint32_t queue0 [2] [16];	// for ASYNCLISTADDR
+
 
 // Asynchronous Schedule list - ASYNCLISTADDR use
 // list of queue headers
-static __attribute__((used, aligned(4096))) uint32_t async [1024] [4];
+static __attribute__((used, aligned(32))) struct ehci_queue_head asynclisthead;
 
 // Periodic frame list
 // Periodic Schedule list - PERIODICLISTBASE use
@@ -94,12 +89,6 @@ static void ehci_queue_fill(uint32_t * qh, uintptr_t qnext, int typ)
 	// 3.3.2 iTD Transaction Status And Control List
 	qh [1] =
 			0;
-}
-
-// isochronious transaction descriptor
-static void ehci_itd_fill(uint32_t * itd)
-{
-	itd [0] = 0x01;
 }
 
 #endif
@@ -2925,12 +2914,12 @@ static struct usb_host_operations ehci_operations = {
 // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 {
- 	PRINTF("board_ehci_initialize start.\n");
+	PRINTF("board_ehci_initialize start.\n");
 
- 	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
- 	EhciController * const ehci = & hehci->ehci;
+	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) hehci->Instance;
+	EhciController *const ehci = & hehci->ehci;
 
- 	HAL_EHCI_MspInit(hehci);
+	HAL_EHCI_MspInit(hehci);
 
 // 	ehci_init(& ehcidevice0, hehci->Instance);
 //    INIT_LIST_HEAD(& ehcidevice0.endpoints);
@@ -2940,42 +2929,47 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 //	ehci_dump(& ehcidevice0);
 
 #if 1
-     ehci_itd_fill(itd0);
 
-     ehci_queue_fill(queue0 [0], (uintptr_t) queue0 [1], 0x01);
-     ehci_queue_fill(queue0 [1], (uintptr_t) queue0 [0], 0x02);
+	//ehci_queue_fill(queue0 [0], (uintptr_t) queue0 [1], 0x01);
+	//ehci_queue_fill(queue0 [1], (uintptr_t) queue0 [0], 0x02);
 
-     unsigned i;
-	for (i = 0; i < ARRAY_SIZE(async); ++ i)
-     {
-     	async [i] [0] = 0x01;	// 0 - valid, 1 - invalid
-     	async [i] [1] = 0x01;	// 0 - valid, 1 - invalid
-     	async [i] [2] = 0x01;	// 0 - valid, 1 - invalid
-     	async [i] [3] = 0x01;	// 0 - valid, 1 - invalid
-     }
- 	// Periodic frame list
-     for (i = 0; i < FLS; ++ i)
-     {
-      	periodic [i] = 0x01;	// 0 - valid, 1 - invalid
-      }
+	asynclisthead.link = ehci_link_qh(& asynclisthead);
+//	asynclisthead.chr = 0;
+//	asynclisthead.cap = 0;
+//	asynclisthead.current = 0;
+//	asynclisthead.cache.next = 0;
+//	asynclisthead.cache.alt = 0;
+//	asynclisthead.cache.status = 0;
+//	asynclisthead.cache.flags = 0;
+//	asynclisthead.cache.len = 0;
+//	asynclisthead.cache.low [0] = 0;
+//	asynclisthead.cache.high [0] = 0;
+//	asynclisthead.cache.low [1] = 0;
+//	asynclisthead.cache.high [1] = 0;
+//	asynclisthead.cache.low [2] = 0;
+//	asynclisthead.cache.high [2] = 0;
+//	asynclisthead.cache.low [3] = 0;
+//	asynclisthead.cache.high [3] = 0;
+//	asynclisthead.cache.low [4] = 0;
+//	asynclisthead.cache.high [4] = 0;
 
-#if 0
-     periodic [0] =
-     		(uintptr_t) & itd0 |
- 			(0uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
- 			(0uL << 0);	// 0 - valid, 1 - invalid
-     periodic [1] =
-     		(uintptr_t) & queue0 |
- 			(1uL << 1) |	//  0 — изосинхронный TD(iTD), 1 — очередь QH,
- 			(0uL << 0);	// 0 - valid, 1 - invalid
+
+	//memset ( & asynclisthead, 0, sizeof asynclisthead );
+	asynclisthead.chr = cpu_to_le32 ( EHCI_CHR_HEAD );
+	asynclisthead.cache.next = cpu_to_le32 ( EHCI_LINK_TERMINATE );
+	asynclisthead.cache.status = EHCI_STATUS_HALTED;
+
+	unsigned i;
+	// Periodic frame list
+	for (i = 0; i < ARRAY_SIZE(periodic); ++ i)
+	{
+		periodic [i] = 0x01;	// 0 - valid, 1 - invalid
+	}
+
+	arm_hardware_flush((uintptr_t) periodic, sizeof periodic);
+	arm_hardware_flush((uintptr_t) & asynclisthead, sizeof asynclisthead);
 #endif
-
-     arm_hardware_flush((uintptr_t) periodic, sizeof periodic);
-     arm_hardware_flush((uintptr_t) async, sizeof async);
-     arm_hardware_flush((uintptr_t) itd0, sizeof itd0);
-     arm_hardware_flush((uintptr_t) queue0, sizeof queue0);
-#endif
-  	// power cycle for USB dongle
+	// power cycle for USB dongle
 // 	board_set_usbhostvbuson(0);
 // 	board_update();
 // 	HARDWARE_DELAY_MS(200);
@@ -2983,50 +2977,50 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 //	board_update();
 //	HARDWARE_DELAY_MS(200);
 
-     // https://github.com/pdoane/osdev/blob/master/usb/ehci.c
+	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
 
- 	// USBH_EHCI_HCICAPLENGTH == EHCIx->HCCAPBASE
- 	// USBH_EHCI_HCSPARAMS == EHCIx->HCSPARAMS
- 	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
- 	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
- 	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
+	// USBH_EHCI_HCICAPLENGTH == EHCIx->HCCAPBASE
+	// USBH_EHCI_HCSPARAMS == EHCIx->HCSPARAMS
+	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
+	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
+	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
 
- 	// Calculate Operational Register Space base address
- 	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
- 	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
- 	hehci->portsc = ((__IO unsigned long *) (opregspacebase + 0x0044));
+	// Calculate Operational Register Space base address
+	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
+	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
+	hehci->portsc = ((__IO unsigned long*) (opregspacebase + 0x0044));
 
- 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
- 	hehci->ehci.opRegs = (EhciOpRegs *) opregspacebase;
- 	hehci->ehci.capRegs = (EhciCapRegs *) EHCIx;
+	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
+	hehci->ehci.opRegs = (EhciOpRegs*) opregspacebase;
+	hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
 #if 1
- 	// https://habr.com/ru/post/426421/
- 	// Read the Command register
- 	// Читаем командный регистр
- 	// Write it back, setting bit 2 (the Reset bit)
- 	// Записываем его обратно, выставляя бит 2(Reset)
- 	// and making sure the two schedule Enable bits are clear.
- 	// и проверяем, что 2 очереди выключены
- 	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
- 	// A small delay here would be good. You don't want to read
- 	// Небольшая задержка здесь будет неплоха, Вы не должны читать
- 	// the register before it has a chance to actually set the bit
- 	// регистр перед тем, как у него не появится шанса выставить бит
- 	(void) EHCIx->USBCMD;
- 	// Now wait for the controller to clear the reset bit.
- 	// Ждем пока контроллер сбросит бит Reset
- 	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
- 		;
- 	// Again, a small delay here would be good to allow the
- 	// reset to actually become complete.
- 	// Опять задержка
- 	(void) EHCIx->USBCMD;
- 	// wait for the halted bit to become set
- 	// Ждем пока бит Halted не будет выставлен
- 	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
- 		;
- 	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
- 	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
+	// https://habr.com/ru/post/426421/
+	// Read the Command register
+	// Читаем командный регистр
+	// Write it back, setting bit 2 (the Reset bit)
+	// Записываем его обратно, выставляя бит 2(Reset)
+	// and making sure the two schedule Enable bits are clear.
+	// и проверяем, что 2 очереди выключены
+	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+	// A small delay here would be good. You don't want to read
+	// Небольшая задержка здесь будет неплоха, Вы не должны читать
+	// the register before it has a chance to actually set the bit
+	// регистр перед тем, как у него не появится шанса выставить бит
+	(void) EHCIx->USBCMD;
+	// Now wait for the controller to clear the reset bit.
+	// Ждем пока контроллер сбросит бит Reset
+	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
+		;
+	// Again, a small delay here would be good to allow the
+	// reset to actually become complete.
+	// Опять задержка
+	(void) EHCIx->USBCMD;
+	// wait for the halted bit to become set
+	// Ждем пока бит Halted не будет выставлен
+	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
+		;
+	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
+	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
 
 #endif
 #if 0
@@ -3053,10 +3047,10 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
      }
 #endif
 
- 	// Disable interrupts
- 	// Отключаем прерывания
- 	//hc->opRegs->usbIntr = 0;
-    EHCIx->USBINTR = 0;
+	// Disable interrupts
+	// Отключаем прерывания
+	//hc->opRegs->usbIntr = 0;
+	EHCIx->USBINTR = 0;
 
 #if 0
     hub0 = alloc_usb_hub(& usbbus0, NULL, 2, & ehci_operations.root); // also Initialise port list
@@ -3088,30 +3082,30 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 #endif
 
 #if 1
- 	// Setup frame list
- 	// Устанавливаем ссылку на фреймлист
- 	//hc->opRegs->frameIndex = 0;
-     EHCIx->FRINDEX = 0;
- 	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-    EHCIx->PERIODICLISTBASE = (uintptr_t) periodic;
+	// Setup frame list
+	// Устанавливаем ссылку на фреймлист
+	//hc->opRegs->frameIndex = 0;
+	EHCIx->FRINDEX = 0;
+	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
+	EHCIx->PERIODICLISTBASE = (uintptr_t) periodic;
 
- 	// копируем адрес асинхронной очереди в регистр
- 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-    EHCIx->ASYNCLISTADDR = (uintptr_t) queue0; //async;
- 	// Устанавливаем сегмент в 0
- 	//hc->opRegs->ctrlDsSegment = 0;
-    EHCIx->CTRLDSSEGMENT = 0x00000000;
- 	// Clear status
- 	// Чистим статус
- 	//hc->opRegs->usbSts = ~0;
-     EHCIx->USBSTS = ~ 0uL;
-     ASSERT(& EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
+	// копируем адрес асинхронной очереди в регистр
+	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
+	EHCIx->ASYNCLISTADDR = (uintptr_t) & asynclisthead;
+	// Устанавливаем сегмент в 0
+	//hc->opRegs->ctrlDsSegment = 0;
+	EHCIx->CTRLDSSEGMENT = 0x00000000;
+	// Clear status
+	// Чистим статус
+	//hc->opRegs->usbSts = ~0;
+	EHCIx->USBSTS = ~ 0uL;
+	ASSERT( & EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
 #endif
 
- 	// Configure all devices to be managed by the EHCI
- 	// Говорим, что завершили
- 	//hc->opRegs->configFlag = 1;
- 	//WOR(configFlagO, 1);
+	// Configure all devices to be managed by the EHCI
+	// Говорим, что завершили
+	//hc->opRegs->configFlag = 1;
+	//WOR(configFlagO, 1);
 	//
 	//PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) EHCIx->USBCMD);
 	//PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) EHCIx->USBSTS);
@@ -3128,38 +3122,38 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	////local_delay_ms(30);
 	//PRINTF("fl=%08lX %08lX\n", hehci->ehci.frameList, EHCIx->PERIODICLISTBASE);
 
- //	USBH_EHCI_IRQn
- 	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
- 	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
+	//	USBH_EHCI_IRQn
+	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
+	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
 
 #if 1
 
- 	unsigned porti = WITHEHCIHW_EHCIPORT;
+	unsigned porti = WITHEHCIHW_EHCIPORT;
 
 	/* Print state of all ports */
- 	for (porti = 0; porti < hehci->nports; ++ porti)
-  	{
- 		unsigned long portsc = ehci->opRegs->ports [porti];
- 		PRINTF("portsc[%u]=%08lX\n", porti, portsc);
- 	}
+	for (porti = 0; porti < hehci->nports; ++ porti)
+	{
+		unsigned long portsc = ehci->opRegs->ports [porti];
+		PRINTF("portsc[%u]=%08lX\n", porti, portsc);
+	}
 
-  	/* Route all ports to EHCI controller */
+	/* Route all ports to EHCI controller */
 	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
- 	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
- 	(void) ehci->opRegs->configFlag;
+	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
+	(void) ehci->opRegs->configFlag;
 
 	/* Enable power to all ports */
- 	for (porti = 0; porti < hehci->nports; ++ porti)
-  	{
- 		unsigned long portsc = ehci->opRegs->ports [porti];
+	for (porti = 0; porti < hehci->nports; ++ porti)
+	{
+		unsigned long portsc = ehci->opRegs->ports [porti];
 
-		portsc &= ~EHCI_PORTSC_CHANGE;
+		portsc &= ~ EHCI_PORTSC_CHANGE;
 		//portsc |= EHCI_PORTSC_OWNER;	// ???
 		portsc |= EHCI_PORTSC_PP;
 
- 		ehci->opRegs->ports [porti] = portsc;
- 		(void) ehci->opRegs->ports [porti];
- 	}
+		ehci->opRegs->ports [porti] = portsc;
+		(void) ehci->opRegs->ports [porti];
+	}
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
@@ -3167,16 +3161,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 #endif
 //
 // 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
- 	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
- 	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
- 				((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F,
-				((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
-				((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01,
-				((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
-				((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
+	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
+	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
+			((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F, ((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
+			((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01, ((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
+			((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
 // 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
 
- 	PRINTF("board_ehci_initialize done.\n");
+	PRINTF("board_ehci_initialize done.\n");
 }
 
 HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_t state) {
@@ -3474,7 +3466,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
  	//hc->opRegs->usbCmd = (8 << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
      EHCIx->USBCMD =
      		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
- 			((uint_fast32_t) FLS_code << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
+ 			((uint_fast32_t) EHCI_FLSIZE_DEFAULT << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
  			CMD_PSE |	 // Periodic Schedule Enable - PERIODICLISTBASE use
  			CMD_ASE |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
  			//CMD_RS |	// Run/Stop 1=Run, 0-stop
@@ -4253,19 +4245,20 @@ void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
 
 void MX_USB_HOST_Init(void)
 {
+	static ticker_t usbticker;
 	/* Init Host Library,Add Supported Class and Start the library*/
 	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
 
-	#if WITHUSEUSBFLASH
-		USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
-	#endif /* WITHUSEUSBFLASH */
-	#if 0
-		USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
-	#endif /* 1 */
-
-	//static ticker_t usbticker;
+#if WITHUSEUSBFLASH
+	USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
+#endif /* WITHUSEUSBFLASH */
+#if 1
+	USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
+	USBH_RegisterClass(& hUsbHostHS, & HID_Class);
+#endif /* WITHUSEUSBFLASH */
 	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	//ticker_add(& usbticker);
+
 }
 
 void MX_USB_HOST_DeInit(void)
