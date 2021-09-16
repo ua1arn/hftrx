@@ -222,7 +222,7 @@ SECTIONS
 		KEEP(*(.heap*))
 		. = ALIGN(4);
 		__HeapLimit = .;
-	} > RAM_D2
+	} > RAM_D3
 
 	.noinit (NOLOAD):
 	{
