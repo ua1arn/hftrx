@@ -78,6 +78,9 @@ static __attribute__((used, aligned(32))) struct ehci_queue_head asynclisthead [
 // Periodic Schedule list - PERIODICLISTBASE use
 static __attribute__((used, aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
 
+static __attribute__((used, aligned(4096))) uint8_t txbuff0 [4096];
+
+static __attribute__((used, aligned(32))) struct ehci_transfer_descriptor qtds [4];
 #endif
 
 
@@ -2933,9 +2936,9 @@ static void asynclist_item(struct ehci_queue_head * p)
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item2(struct ehci_queue_head * p, uint32_t link)
+static void asynclist_item1(struct ehci_queue_head * p, uint32_t link)
 {
-	memset (p, 0x00, sizeof * p);
+	memset (p, 0xFF, sizeof * p);
 	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
@@ -2956,15 +2959,80 @@ static void asynclist_item2(struct ehci_queue_head * p, uint32_t link)
 //	p->cache.low [4] = 0;
 //	p->cache.high [4] = 0;
 
-	p->cache.len = 0;
-	p->chr = cpu_to_le32(EHCI_CHR_HEAD);
+
+	//p->cache.len = 0;
+	p->chr = cpu_to_le32(EHCI_CHR_HEAD) ;
+	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
+	p->cache.status = EHCI_STATUS_HALTED;
+}
+/*
+ * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
+ * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
+ * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
+ * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
+ *
+ */
+static void asynclist_item2(struct ehci_queue_head * p, uint32_t link)
+{
+	memset (p, 0xFF, sizeof * p);
+	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
+//	p->chr = 0;
+//	p->cap = 0;
+//	p->current = 0;
+//	p->cache.next = 0;
+//	p->cache.alt = 0;
+//	p->cache.status = 0;
+//	p->cache.flags = 0;
+//	p->cache.len = 0;
+//	p->cache.low [0] = 0;
+//	p->cache.high [0] = 0;
+//	p->cache.low [1] = 0;
+//	p->cache.high [1] = 0;
+//	p->cache.low [2] = 0;
+//	p->cache.high [2] = 0;
+//	p->cache.low [3] = 0;
+//	p->cache.high [3] = 0;
+//	p->cache.low [4] = 0;
+//	p->cache.high [4] = 0;
+
+	uint32_t chr;
+	/* Determine basic characteristics */
+	chr = ( EHCI_CHR_ADDRESS ( 1 ) |
+			EHCI_CHR_ENDPOINT ( 0 ) |
+			EHCI_CHR_MAX_LEN ( 64 ) );
+
+	/* Control endpoints require manual control of the data toggle */
+	if ( 1/*attr == USB_ENDPOINT_ATTR_CONTROL */)
+		chr |= EHCI_CHR_TOGGLE;
+
+	/* Determine endpoint speed */
+	if ( 1/*usb->speed == USB_SPEED_HIGH */) {
+		chr |= EHCI_CHR_EPS_HIGH;
+	} else {
+//		if ( usb->speed == USB_SPEED_FULL ) {
+//			chr |= EHCI_CHR_EPS_FULL;
+//		} else {
+//			chr |= EHCI_CHR_EPS_LOW;
+//		}
+
+		//if ( attr == USB_ENDPOINT_ATTR_CONTROL )
+			chr |= EHCI_CHR_CONTROL;
+	}
+
+	//p->cache.len = 0;
+	p->chr = cpu_to_le32(chr) ;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->cache.status = EHCI_STATUS_HALTED;
 }
 
-void asynclist_item2_fstn(struct ehci_queue_head * p)
+// fill 3.5 Queue Element Transfer Descriptor (qTD)
+void asynclist_item2_qtd(struct ehci_transfer_descriptor * p)
 {
-
+	p->len = sizeof setupReqTemplate;
+	p->low [0] = cpu_to_le32(virt_to_phys(& txbuff0));
+	p->high [0] = 0;
+	p->flags = ( EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC);
+	p->status = EHCI_STATUS_ACTIVE;
 }
 
 // USB EHCI controller
@@ -2993,18 +3061,17 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
 	 *
 	 */
-	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]));
-	asynclist_item2(& asynclisthead [1], virt_to_phys(& asynclisthead [2]) | EHCI_LINK_TYPE(3));	// FSTN (Frame Span Traversal Node)
-	asynclist_item2(& asynclisthead [2], virt_to_phys(& asynclisthead [0]) | EHCI_LINK_TYPE(3));	// FSTN (Frame Span Traversal Node)
+	asynclist_item1(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]));
+	asynclist_item2(& asynclisthead [1], ehci_link_qh(& asynclisthead [0]));
 
+	memcpy(txbuff0, setupReqTemplate, sizeof setupReqTemplate);
 
+	//asynclisthead [0].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
+	//asynclisthead [1].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
+	//asynclisthead [2].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
 
-	asynclisthead [0].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
-	asynclisthead [1].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
-	asynclisthead [2].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
-
-	asynclist_item2_fstn(& asynclisthead [1]);
-	asynclist_item2_fstn(& asynclisthead [2]);
+	asynclist_item2_qtd(& asynclisthead [1].cache);
+	//asynclist_item2_qtd(& asynclisthead [2].cache);
 
 	unsigned i;
 	// Periodic frame list
@@ -3013,6 +3080,9 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 		periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
 	}
 
+
+	arm_hardware_flush((uintptr_t) txbuff0, sizeof txbuff0);
+	arm_hardware_flush((uintptr_t) qtds, sizeof qtds);
 	arm_hardware_flush((uintptr_t) periodiclist, sizeof periodiclist);
 	arm_hardware_flush((uintptr_t) & asynclisthead, sizeof asynclisthead);
 #endif
