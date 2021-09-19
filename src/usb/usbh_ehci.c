@@ -3975,9 +3975,9 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	printhex(0, pbuff, length);
 
 	//HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
-	EHCIx->USBCMD &= ~ CMD_RS;	// 1=Run, 0-stop
+	EHCIx->USBCMD &= ~ CMD_ASE;	// 1=Run, 0-stop
 	(void) EHCIx->USBCMD;
-  	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
+  	while ((EHCIx->USBCMD & CMD_ASE) != 0)
  		;
 	//HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
 
@@ -3987,7 +3987,6 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [0]));
 	asynclist_item2_qtd(& asynclisthead [0].cache, EHCI_FL_PID_SETUP, txbuff0, length);
 	asynclist_item2_qtd(& qtds [0], EHCI_FL_PID_SETUP, txbuff0, length);
-	asynclisthead [0].current = cpu_to_le32(virt_to_phys(& qtds [0]));
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
@@ -3997,22 +3996,28 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	asynclist_item2_qtd(& asynclisthead [0].cache, EHCI_FL_PID_SETUP, txbuff0, length);
 	asynclist_item2_qtd(& qtds [0], EHCI_FL_PID_SETUP, txbuff0, length);
 	PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
 
 	qtds [0].status = EHCI_STATUS_ACTIVE;
 	asynclisthead[0].cache.status = EHCI_STATUS_ACTIVE;
+
 	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	PRINTF("Status 3 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 
-	EHCIx->USBCMD |= CMD_RS;	// 1=Run, 0-stop
+	EHCIx->USBCMD |= CMD_ASE;	// 1=Run, 0-stop
 	(void) EHCIx->USBCMD;
+  	while ((EHCIx->USBCMD & CMD_ASE) == 0)
+ 		;
+  	EHCIx->USBCMD |= CMD_RS;
 
 // 	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
 //		;
 
 	local_delay_ms(250);
-	PRINTF("Status 3 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+	PRINTF("Status 4 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
