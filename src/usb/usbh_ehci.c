@@ -2979,8 +2979,9 @@ static void asynclist_item1(volatile struct ehci_queue_head * p, uint32_t link)
 
 
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
-void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length)
+void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, unsigned pid, volatile uint8_t * data, unsigned length)
 {
+	PRINTF("asynclist_item2_qtd: data=%p, length=%u\n", data, length);
 	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
@@ -2988,7 +2989,7 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
 	p->high [0] = cpu_to_le32(0);
 
 	p->len = cpu_to_le16(length | 0 * EHCI_FL_TOGGLE);
-	p->flags = cpu_to_le32(EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC);	// Current Page (C_Page) field = 0
+	p->flags = cpu_to_le32(pid | EHCI_FL_CERR_MAX | EHCI_FL_IOC);	// Current Page (C_Page) field = 0
 	p->status = EHCI_STATUS_ACTIVE;
 }
 
@@ -3067,7 +3068,7 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 	p->current = 0;
-	asynclist_item2_qtd(& p->cache, data, length);	// Change status to EHCI_STATUS_ACTIVE
+	asynclist_item2_qtd(& p->cache, EHCI_FL_PID_SETUP, data, length);	// Change status to EHCI_STATUS_ACTIVE
 }
 
 // USB EHCI controller
@@ -3422,7 +3423,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	 	//PRINTF("HAL_EHCI_IRQHandler: Reclamation, usbsts=%08lX\n", usbsts);
  	 	//EHCIx->USBCMD &= ~ (CMD_ASE);
  	}
- 	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT)
+ 	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT) - see EHCI_FL_IOC usage
  	{
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT)\n");
