@@ -39,7 +39,7 @@ static uint16_t cpu_to_le16(unsigned long v)
 	return v;
 }
 
-static uintptr_t virt_to_phys(void * v)
+static uintptr_t virt_to_phys(volatile void * v)
 {
 	return (uintptr_t) v;
 }
