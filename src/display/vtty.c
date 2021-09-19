@@ -51,7 +51,6 @@ static volatile int vtty_inited;
 
 static RAMFRAMEBUFF ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
 
-void display_vtty_initialize(void);
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);
 void display2_vtty(
@@ -65,7 +64,7 @@ void display_vtty_gotoxy(unsigned x, unsigned y);
 int display_vtty_maxx(void);
 int display_vtty_maxy(void);
 
-void display_vtty_initialize(void)
+static void display_vtty_initialize(void)
 {
 	vtty_t * const vt = & vtty0;
 	vt->scroll = 0;
@@ -259,5 +258,42 @@ int display_vtty_maxy(void)
 {
 	return VTTY_ROWS;
 }
+
+
+
+static int
+vtty_toprintc(int c)
+{
+	if (c < 0x20 || c >= 0x7f)
+		return '.';
+	return c;
+}
+
+void
+vtty_printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	enum { ROWSIZE = 12 };
+	unsigned row;
+	const unsigned rows = (length + (ROWSIZE - 1)) / ROWSIZE;
+
+	for (row = 0; row < rows; ++ row)
+	{
+		unsigned j;
+		const int remaining = length - row * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		display_vtty_printf(PSTR("%04lX "), voffs + row * ROWSIZE);
+		for (j = 0; j < trl; ++ j)
+			display_vtty_printf(PSTR(" %02X"), buff [row * ROWSIZE + j]);
+
+		display_vtty_printf(PSTR("%*s"), (ROWSIZE - trl) * 3, "");
+
+		display_vtty_printf(PSTR(" "));
+		for (j = 0; j < trl; ++ j)
+			display_vtty_printf(PSTR("%c"), vtty_toprintc(buff [row * ROWSIZE + j]));
+
+		display_vtty_printf(PSTR("\n"));
+	}
+}
+
 
 #endif /* ! LCDMODE_DUMMY */
