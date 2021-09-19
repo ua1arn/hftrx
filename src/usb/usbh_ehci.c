@@ -2938,7 +2938,7 @@ static void asynclist_item(struct ehci_queue_head * p)
  */
 static void asynclist_item1(struct ehci_queue_head * p, uint32_t link)
 {
-	memset (p, 0xFF, sizeof * p);
+	memset (p, 0x00, sizeof * p);
 	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
@@ -2965,6 +2965,18 @@ static void asynclist_item1(struct ehci_queue_head * p, uint32_t link)
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->cache.status = EHCI_STATUS_HALTED;
 }
+
+
+// fill 3.5 Queue Element Transfer Descriptor (qTD)
+void asynclist_item2_qtd(struct ehci_transfer_descriptor * p, uint8_t * data, unsigned length)
+{
+	p->len = length;
+	p->low [0] = cpu_to_le32(virt_to_phys(data));
+	p->high [0] = 0;
+	p->flags = ( EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC);
+	p->status = EHCI_STATUS_ACTIVE;
+}
+
 /*
  * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
  * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
@@ -2972,9 +2984,9 @@ static void asynclist_item1(struct ehci_queue_head * p, uint32_t link)
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item2(struct ehci_queue_head * p, uint32_t link)
+static void asynclist_item2(struct ehci_queue_head * p, uint32_t link, uint8_t * data, unsigned length)
 {
-	memset (p, 0xFF, sizeof * p);
+	memset (p, 0x00, sizeof * p);
 	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
@@ -3023,16 +3035,9 @@ static void asynclist_item2(struct ehci_queue_head * p, uint32_t link)
 	p->chr = cpu_to_le32(chr) ;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->cache.status = EHCI_STATUS_HALTED;
-}
-
-// fill 3.5 Queue Element Transfer Descriptor (qTD)
-void asynclist_item2_qtd(struct ehci_transfer_descriptor * p)
-{
-	p->len = sizeof setupReqTemplate;
-	p->low [0] = cpu_to_le32(virt_to_phys(& txbuff0));
-	p->high [0] = 0;
-	p->flags = ( EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC);
-	p->status = EHCI_STATUS_ACTIVE;
+	p->current = 0;
+	p->cap = EHCI_CAP_MULT(0);
+	asynclist_item2_qtd(& p->cache, data, length);
 }
 
 // USB EHCI controller
@@ -3062,16 +3067,11 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 *
 	 */
 	asynclist_item1(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]));
-	asynclist_item2(& asynclisthead [1], ehci_link_qh(& asynclisthead [0]));
-
-	memcpy(txbuff0, setupReqTemplate, sizeof setupReqTemplate);
-
-	//asynclisthead [0].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
-	//asynclisthead [1].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
-	//asynclisthead [2].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
-
-	asynclist_item2_qtd(& asynclisthead [1].cache);
-	//asynclist_item2_qtd(& asynclisthead [2].cache);
+//	memcpy(txbuff0, setupReqTemplate, sizeof setupReqTemplate);
+//	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]), txbuff0, sizeof setupReqTemplate);
+//	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+//	arm_hardware_flush_invalidate((uintptr_t) txbuff0, sizeof txbuff0);
+//	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
 
 	unsigned i;
 	// Periodic frame list
@@ -3403,10 +3403,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		EHCIx->USBSTS = (0x01uL << 1);	// Clear USB Error Interrupt (USBERRINT) interrupt
  		PRINTF("HAL_EHCI_IRQHandler: USB Error\n");
  		unsigned i;
- 		for (i = 0; i < hehci->nports; ++ i)
- 	 	{
- 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
- 	 	}
+// 		for (i = 0; i < hehci->nports; ++ i)
+// 	 	{
+// 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
+// 	 	}
  	}
 
 		if ((portsc & EHCI_PORTSC_PED) != 0)
@@ -3441,6 +3441,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  		if ((portsc & EHCI_PORTSC_CCS) != 0)
  		{
+			HAL_EHCI_PortEnabled_Callback(hehci);
  			HAL_EHCI_Connect_Callback(hehci);
  		}
  		else
@@ -3935,8 +3936,20 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t *pbuff,
 		uint16_t length, uint8_t do_ping)
 {
-	//PRINTF("USBH_LL_SubmitURB:\n");
-	//printhex(0, pbuff, length);
+	PRINTF("USBH_LL_SubmitURB:\n");
+	printhex(0, pbuff, length);
+
+	memcpy(txbuff0, pbuff, length);
+
+	PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]), txbuff0, length);
+	PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) txbuff0, sizeof txbuff0);
+	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
+
+	local_delay_ms(200);
+	PRINTF("Status 3 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
@@ -4112,7 +4125,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	}
 	else
 	{
- 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
  		/* Release Reset port */
  		portsc &= ~EHCI_PORTSC_PR;	 /** Port reset */
 
