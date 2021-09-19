@@ -1340,10 +1340,10 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 	{
 	case 0x00:
 	case 0xFF:
-		PRINTF("SFDP: %s not supported\n", title);
+		//PRINTF("SFDP: %s not supported\n", title);
 		break;
 	default:
-		PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
+		//PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
 		readxb [buswID] = (dw >> 8) & 0xFF;	// opcode
 		dmyb [buswID] = ndmy;	// dummy bytes
 		break;
@@ -1386,7 +1386,7 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [02];
 		mf_dlen = mfa [3];
 
-		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 #endif /* WITHDEBUG */
 
@@ -1431,14 +1431,14 @@ int testchipDATAFLASH(void)
 		{
 			const unsigned Kbi = (dword2 >> 10) + 1;
 			const unsigned MB = (dword2 >> 23) + 1;
-			PRINTF("SFDP: density=%08lX (%u Kbi, %u MB)\n", dword2, Kbi, MB);
+			//PRINTF("SFDP: density=%08lX (%u Kbi, %u MB)\n", dword2, Kbi, MB);
 			chipSize = (dword2 >> 3) + 1uL;
 		}
 		else
 		{
 			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
 			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
-			PRINTF("SFDP: density=%08lX (%u Mbi, %u MB)\n", dword2, Mbi, MB);
+			//PRINTF("SFDP: density=%08lX (%u Mbi, %u MB)\n", dword2, Mbi, MB);
 			chipSize = 1uL << ((dword2 & 0x7FFFFFFF) - 3);
 		}
 		///////////////////////////////////
@@ -1449,8 +1449,8 @@ int testchipDATAFLASH(void)
 		sct [1] = (dword8 >> 16) & 0xFFFF;
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
-		PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		//PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		//PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
@@ -1465,7 +1465,7 @@ int testchipDATAFLASH(void)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
 			sectorSize = 1uL << (sctRESULT & 0xFF);
-			PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (sctRESULT >> 8) & 0xFF, 1uL << (sctRESULT & 0xFF));
+			//PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (sctRESULT >> 8) & 0xFF, 1uL << (sctRESULT & 0xFF));
 		}
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
