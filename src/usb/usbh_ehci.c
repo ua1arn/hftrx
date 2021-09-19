@@ -3441,7 +3441,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 		if ((portsc & EHCI_PORTSC_PED) != 0)
 		{
-			portsc &= ~ EHCI_PORTSC_PED;
+			//portsc &= ~ EHCI_PORTSC_PED;
 			hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
 			(void) hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
 
@@ -4155,7 +4155,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	{
  		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
  		/* Reset port */
- 		portsc &= ~ (EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
+ 		portsc &= ~ (0 * EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
  		portsc |= EHCI_PORTSC_PR;
 
  		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
