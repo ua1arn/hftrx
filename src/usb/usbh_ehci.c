@@ -76,7 +76,7 @@ static __attribute__((used, aligned(32))) struct ehci_queue_head asynclisthead [
 
 // Periodic frame list
 // Periodic Schedule list - PERIODICLISTBASE use
-static __attribute__((used, aligned(4096))) uint32_t periodic [FLS];
+static __attribute__((used, aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
 
 #endif
 
@@ -2926,10 +2926,17 @@ static void asynclist_item(struct ehci_queue_head * p)
 	p->cache.status = EHCI_STATUS_HALTED;
 }
 
+/*
+ * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
+ * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
+ * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
+ * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
+ *
+ */
 static void asynclist_item2(struct ehci_queue_head * p, uint32_t link)
 {
-	memset (p, 0xFF, sizeof * p);
-	p->link = ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
+	memset (p, 0x00, sizeof * p);
+	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
 //	p->current = 0;
@@ -2955,6 +2962,11 @@ static void asynclist_item2(struct ehci_queue_head * p, uint32_t link)
 	p->cache.status = EHCI_STATUS_HALTED;
 }
 
+void asynclist_item2_fstn(struct ehci_queue_head * p)
+{
+
+}
+
 // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 {
@@ -2974,24 +2986,34 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 #if 1
 
-	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [1]));
-	asynclist_item2(& asynclisthead [1], ehci_link_qh(& asynclisthead [2]));
-	asynclist_item2(& asynclisthead [2], ehci_link_qh(& asynclisthead [0]));
+	/*
+	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
+	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
+	 * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
+	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
+	 *
+	 */
+	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]));
+	asynclist_item2(& asynclisthead [1], virt_to_phys(& asynclisthead [2]) | EHCI_LINK_TYPE(3));	// FSTN (Frame Span Traversal Node)
+	asynclist_item2(& asynclisthead [2], virt_to_phys(& asynclisthead [0]) | EHCI_LINK_TYPE(3));	// FSTN (Frame Span Traversal Node)
 
 
 
 	asynclisthead [0].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
-	asynclisthead [1].chr = cpu_to_le32(0 * EHCI_CHR_HEAD);
-	asynclisthead [2].chr = cpu_to_le32(0 * EHCI_CHR_HEAD);
+	asynclisthead [1].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
+	asynclisthead [2].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
+
+	asynclist_item2_fstn(& asynclisthead [1]);
+	asynclist_item2_fstn(& asynclisthead [2]);
 
 	unsigned i;
 	// Periodic frame list
-	for (i = 0; i < ARRAY_SIZE(periodic); ++ i)
+	for (i = 0; i < ARRAY_SIZE(periodiclist); ++ i)
 	{
-		periodic [i] = 0x01;	// 0 - valid, 1 - invalid
+		periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
 	}
 
-	arm_hardware_flush((uintptr_t) periodic, sizeof periodic);
+	arm_hardware_flush((uintptr_t) periodiclist, sizeof periodiclist);
 	arm_hardware_flush((uintptr_t) & asynclisthead, sizeof asynclisthead);
 #endif
 	// power cycle for USB dongle
@@ -3112,7 +3134,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	//hc->opRegs->frameIndex = 0;
 	EHCIx->FRINDEX = 0;
 	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-	EHCIx->PERIODICLISTBASE = virt_to_phys(& periodic);
+	EHCIx->PERIODICLISTBASE = virt_to_phys(& periodiclist);
 
 	// копируем адрес асинхронной очереди в регистр
 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
