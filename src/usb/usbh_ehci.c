@@ -2973,7 +2973,8 @@ static void asynclist_item1(volatile struct ehci_queue_head * p, uint32_t link)
 
 	//p->cache.len = 0;
 	p->chr = cpu_to_le32(EHCI_CHR_HEAD) ;
-	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
+	p->cache.next = cpu_to_le32(virt_to_phys(& qtds [0]));
+	p->cache.alt = cpu_to_le32(virt_to_phys(& qtds [0]));
 	p->cache.status = EHCI_STATUS_HALTED;
 }
 
@@ -2982,8 +2983,8 @@ static void asynclist_item1(volatile struct ehci_queue_head * p, uint32_t link)
 void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, unsigned pid, volatile uint8_t * data, unsigned length)
 {
 	memset((void *) p, 0, sizeof * p);
-	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);
-	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
+	p->next = cpu_to_le32(virt_to_phys(& qtds [0]));
+	p->alt = cpu_to_le32(virt_to_phys(& qtds [0]));
 
 	p->low [0] = cpu_to_le32(virt_to_phys(data));
 	p->high [0] = cpu_to_le32(0);
@@ -3975,14 +3976,16 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	printhex(0, pbuff, length);
 
 	//HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
-	EHCIx->USBCMD &= ~ CMD_ASE;	// 1=Run, 0-stop
-	(void) EHCIx->USBCMD;
-  	while ((EHCIx->USBCMD & CMD_ASE) != 0)
- 		;
+//	EHCIx->USBCMD &= ~ CMD_ASE;	// 1=Run, 0-stop
+//	(void) EHCIx->USBCMD;
+//  	while ((EHCIx->USBCMD & CMD_ASE) != 0)
+// 		;
 	//HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
 
 	memcpy((void *) txbuff0, pbuff, length);
 	arm_hardware_flush_invalidate((uintptr_t) txbuff0, sizeof txbuff0);
+
+	PRINTF("Status 0 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 
 	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [0]));
 	asynclist_item2_qtd(& asynclisthead [0].cache, EHCI_FL_PID_SETUP, txbuff0, length);
@@ -3992,9 +3995,11 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
 
 	PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+
 	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [0]));
 	asynclist_item2_qtd(& asynclisthead [0].cache, EHCI_FL_PID_SETUP, txbuff0, length);
 	asynclist_item2_qtd(& qtds [0], EHCI_FL_PID_SETUP, txbuff0, length);
+
 	PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
@@ -4005,18 +4010,19 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
 	PRINTF("Status 3 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 
-	EHCIx->USBCMD |= CMD_ASE;	// 1=Run, 0-stop
-	(void) EHCIx->USBCMD;
-  	while ((EHCIx->USBCMD & CMD_ASE) == 0)
- 		;
-  	EHCIx->USBCMD |= CMD_RS;
+//	EHCIx->USBCMD |= CMD_ASE;	// 1=Run, 0-stop
+//	(void) EHCIx->USBCMD;
+//  	while ((EHCIx->USBCMD & CMD_ASE) == 0)
+// 		;
+//  	EHCIx->USBCMD |= CMD_RS;
 
 // 	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
 //		;
 
-	local_delay_ms(250);
+	local_delay_ms(2250);
 	PRINTF("Status 4 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 
 	HAL_StatusTypeDef hal_status = HAL_OK;
