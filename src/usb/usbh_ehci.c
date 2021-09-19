@@ -1970,6 +1970,7 @@ static uint32_t ehci_endpoint_characteristics ( struct usb_endpoint *ep ) {
 		} else {
 			chr |= EHCI_CHR_EPS_LOW;
 		}
+		// FIXME: if control and not high speed?
 		if ( attr == USB_ENDPOINT_ATTR_CONTROL )
 			chr |= EHCI_CHR_CONTROL;
 	}
@@ -2983,10 +2984,12 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
 {
 	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
-	p->len = length;
+
 	p->low [0] = cpu_to_le32(virt_to_phys(data));
-	p->high [0] = 0;
-	p->flags = ( EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC);
+	p->high [0] = cpu_to_le32(0);
+
+	p->len = cpu_to_le16(length | 0 * EHCI_FL_TOGGLE);
+	p->flags = cpu_to_le32(EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC);	// Current Page (C_Page) field = 0
 	p->status = EHCI_STATUS_ACTIVE;
 }
 
@@ -3032,7 +3035,7 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 
 	/* Determine endpoint speed */
 	if ( 1/*usb->speed == USB_SPEED_HIGH */) {
-		chr |= EHCI_CHR_EPS_FULL; //EHCI_CHR_EPS_HIGH;
+		chr |= EHCI_CHR_EPS_HIGH;
 	} else {
 //		if ( usb->speed == USB_SPEED_FULL ) {
 //			chr |= EHCI_CHR_EPS_FULL;
@@ -3040,9 +3043,9 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 //			chr |= EHCI_CHR_EPS_LOW;
 //		}
 
-		//if ( attr == USB_ENDPOINT_ATTR_CONTROL )
-			chr |= EHCI_CHR_CONTROL;
 	}
+	//if ( attr == USB_ENDPOINT_ATTR_CONTROL )
+		chr |= EHCI_CHR_CONTROL;
 
 	uint32_t cap;
 	cap = EHCI_CAP_MULT(1) | EHCI_CAP_TT_HUB(0) | EHCI_CAP_TT_PORT(0);
@@ -3054,13 +3057,11 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 //			cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
 //	}
 
-	//p->cache.len = 0;
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr) ;
-	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
-	p->cache.status = EHCI_STATUS_HALTED;
-	p->current = 0;
+	p->chr = cpu_to_le32(chr);
+	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
+	p->current = 0;
 	asynclist_item2_qtd(& p->cache, data, length);	// Change status to EHCI_STATUS_ACTIVE
 }
 
