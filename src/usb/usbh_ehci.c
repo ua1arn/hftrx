@@ -1970,7 +1970,6 @@ static uint32_t ehci_endpoint_characteristics ( struct usb_endpoint *ep ) {
 		} else {
 			chr |= EHCI_CHR_EPS_LOW;
 		}
-		// FIXME: if control and not high speed?
 		if ( attr == USB_ENDPOINT_ATTR_CONTROL )
 			chr |= EHCI_CHR_CONTROL;
 	}
@@ -3033,6 +3032,7 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 	if ( 1/*attr == USB_ENDPOINT_ATTR_CONTROL */)
 		chr |= EHCI_CHR_TOGGLE;
 
+
 	/* Determine endpoint speed */
 	if ( 1/*usb->speed == USB_SPEED_HIGH */) {
 		chr |= EHCI_CHR_EPS_HIGH;
@@ -3042,14 +3042,15 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 //		} else {
 //			chr |= EHCI_CHR_EPS_LOW;
 //		}
+		// if not high speed and control
+		//if ( attr == USB_ENDPOINT_ATTR_CONTROL )
+			chr |= EHCI_CHR_CONTROL;
 
 	}
-	//if ( attr == USB_ENDPOINT_ATTR_CONTROL )
-		chr |= EHCI_CHR_CONTROL;
 
 	uint32_t cap;
 	cap =
-			EHCI_CAP_MULT(1) | 	// 01b One transaction to be issued for this endpoint per micro-frame
+			EHCI_CAP_MULT(1) | 	// 00b: reserved, 01b One transaction to be issued for this endpoint per micro-frame
 			EHCI_CAP_TT_HUB(0) |
 			EHCI_CAP_TT_PORT(0);
 //	if ( tt ) {
@@ -3060,6 +3061,7 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 //			cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
 //	}
 
+	chr |= EHCI_CHR_HEAD;
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
 	p->chr = cpu_to_le32(chr);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
