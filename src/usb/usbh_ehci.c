@@ -3094,7 +3094,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	asynclist_item1(& asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 //	memcpy(txbuff0, setupReqTemplate, sizeof setupReqTemplate);
 //	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]), txbuff0, sizeof setupReqTemplate);
-//	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 //	arm_hardware_flush_invalidate((uintptr_t) txbuff0, sizeof txbuff0);
 //	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
 
