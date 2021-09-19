@@ -2911,10 +2911,10 @@ static struct usb_host_operations ehci_operations = {
 
 #endif
 
-static void asynclist_item(struct ehci_queue_head * p)
+static void asynclist_item(volatile struct ehci_queue_head * p)
 {
-	memset (p, 0, sizeof * p);
-	p->link = ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
+	memset ((void *) p, 0x00, sizeof * p);
+	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
 //	p->current = 0;
