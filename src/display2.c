@@ -6105,6 +6105,8 @@ enum
 	#if WITHMENU
 		{	15, 25,	display2_popup,		REDRM_MODE, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
 	#endif /* WITHMENU */
+//		{	0,	0,	display2_vtty_init,	REDRM_INIS,	PGINI, },	// Подготовка видеобуфера окна протокола
+//		{	0,	0, display2_vtty,	REDRM_BARS, PG0, },		// Вывод текущего состояния протокола
 
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },

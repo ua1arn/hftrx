@@ -39,6 +39,19 @@ typedef struct dctx_tag
 	const void * pv;
 } dctx_t;
 
+// копирование растра в видеобуфер отображения
+void display2_vtty(
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	dctx_t * pctx
+	);
+void display2_vtty_init(
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	dctx_t * pctx
+	);
+
+
 // FUNC item label
 void display2_fnlabel9(
 	uint_fast8_t x,

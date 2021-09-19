@@ -30,7 +30,7 @@ enum { VTTY_ROWSPIX = SMALLCHARH + 2 };	// количество пикселей
 	enum { VTTY_ROWS = 41 /*(DIM_Y - 20) / VTTY_ROWSPIX */};
 #else
 	enum { VTTY_COLS = (DIM_X - 0) / VTTY_CHARPIX };
-	enum { VTTY_ROWS = (DIM_Y - 20) / VTTY_ROWSPIX};
+	enum { VTTY_ROWS = (DIM_Y - 0) / VTTY_ROWSPIX};
 #endif
 enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
@@ -47,15 +47,12 @@ typedef struct vtty_tag
 	unsigned col;		// 0..VTTY_COLS-1
 } vtty_t;
 
+static volatile int vtty_inited;
+
 static RAMFRAMEBUFF ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
 
 void display_vtty_initialize(void);
 int display_vtty_putchar(char ch);
-// копирование растра в видеобуфер отображения
-void display_vtty_show(
-	uint_fast16_t x,
-	uint_fast16_t y
-	);
 void display_vtty_printf(const char * format, ...);
 void display2_vtty(
 	uint_fast8_t x0,
@@ -76,6 +73,8 @@ void display_vtty_initialize(void)
 	vt->col = 0;
 	colmain_fillrect(vt->fb, VTTY_DX, VTTY_DY, 0, 0, VTTY_DX, VTTY_DY, VTTY_BG);	// очищаем видеобуфер
 	PRINTF("display_vtty_initialize: rows=%u, cols=%u\n", VTTY_ROWS, VTTY_COLS);
+	vtty_inited = 1;
+	display_vtty_printf("display_vtty_initialize: rows=%u, cols=%u\n", VTTY_ROWS, VTTY_COLS);
 }
 
 void display_vtty_clrscr(void)
@@ -103,7 +102,7 @@ void display_vtty_gotoxy(unsigned x, unsigned y)
 	ASSERT(vt->col < VTTY_COLS);
 }
 // копирование растра в видеобуфер отображения
-void display_vtty_show(
+static void display_vtty_show(
 	uint_fast16_t x,
 	uint_fast16_t y
 	)
@@ -149,10 +148,18 @@ void display2_vtty(
 	dctx_t * pctx
 	)
 {
-	uint_fast16_t x = GRID2X(x0);
-	uint_fast16_t y = GRID2Y(y0);
+	const uint_fast16_t x = GRID2X(x0);
+	const uint_fast16_t y = GRID2Y(y0);
 
 	display_vtty_show(x, y);
+}
+void display2_vtty_init(
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	dctx_t * pctx
+	)
+{
+	display_vtty_initialize();
 }
 
 static void display_vtty_scrollup(
@@ -222,6 +229,8 @@ static void display_vtty_cout(
 
 int display_vtty_putchar(char ch)
 {
+	if (! vtty_inited)
+		return (unsigned char) ch;
 	vtty_t * const vt = & vtty0;
 	if (ch == '\n')
 		display_vtty_putchar('\r');
