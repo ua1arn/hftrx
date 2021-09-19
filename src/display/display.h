@@ -1151,6 +1151,7 @@ COLORPIP_T getshadedcolor(
 
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);
+void vtty_printhex(unsigned long voffs, const unsigned char * buff, unsigned length);
 
 int display_vtty_maxx(void);
 int display_vtty_maxy(void);
