@@ -69,9 +69,10 @@ enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
 #if 1
 
 
+static uint8_t setupReqTemplate [] = { 0x80, 0x06, 0x00, 0x01, 0x00, 0x00, 0x08, 0x00, };
 // Asynchronous Schedule list - ASYNCLISTADDR use
 // list of queue headers
-static __attribute__((used, aligned(32))) struct ehci_queue_head asynclisthead;
+static __attribute__((used, aligned(32))) struct ehci_queue_head asynclisthead [3];
 
 // Periodic frame list
 // Periodic Schedule list - PERIODICLISTBASE use
@@ -2925,6 +2926,35 @@ static void asynclist_item(struct ehci_queue_head * p)
 	p->cache.status = EHCI_STATUS_HALTED;
 }
 
+static void asynclist_item2(struct ehci_queue_head * p, uint32_t link)
+{
+	memset (p, 0xFF, sizeof * p);
+	p->link = ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
+//	p->chr = 0;
+//	p->cap = 0;
+//	p->current = 0;
+//	p->cache.next = 0;
+//	p->cache.alt = 0;
+//	p->cache.status = 0;
+//	p->cache.flags = 0;
+//	p->cache.len = 0;
+//	p->cache.low [0] = 0;
+//	p->cache.high [0] = 0;
+//	p->cache.low [1] = 0;
+//	p->cache.high [1] = 0;
+//	p->cache.low [2] = 0;
+//	p->cache.high [2] = 0;
+//	p->cache.low [3] = 0;
+//	p->cache.high [3] = 0;
+//	p->cache.low [4] = 0;
+//	p->cache.high [4] = 0;
+
+	p->cache.len = 0;
+	p->chr = cpu_to_le32(EHCI_CHR_HEAD);
+	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
+	p->cache.status = EHCI_STATUS_HALTED;
+}
+
 // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 {
@@ -2944,7 +2974,16 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 #if 1
 
-	asynclist_item(& asynclisthead);
+	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [1]));
+	asynclist_item2(& asynclisthead [1], ehci_link_qh(& asynclisthead [2]));
+	asynclist_item2(& asynclisthead [2], ehci_link_qh(& asynclisthead [0]));
+
+
+
+	asynclisthead [0].chr = cpu_to_le32(1 * EHCI_CHR_HEAD);
+	asynclisthead [1].chr = cpu_to_le32(0 * EHCI_CHR_HEAD);
+	asynclisthead [2].chr = cpu_to_le32(0 * EHCI_CHR_HEAD);
+
 	unsigned i;
 	// Periodic frame list
 	for (i = 0; i < ARRAY_SIZE(periodic); ++ i)
@@ -3249,11 +3288,18 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
  	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
- 	//PRINTF("HAL_EHCI_IRQHandler: USBSTS=%08lX\n", EHCIx->USBSTS);
 
- 	//const uint_fast32_t usbsts = EHCIx->USBSTS & EHCIx->USBINTR;
  	const uint_fast32_t usbsts = EHCIx->USBSTS;
+ 	const uint_fast32_t usbstsMasked = usbsts & EHCIx->USBSTS & EHCIx->USBINTR;
+	unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 	//PRINTF("HAL_EHCI_IRQHandler: USBSTS=%08lX\n", usbsts);
 
+ 	if ((usbsts & (0x01uL << 13)) != 0)
+ 	{
+ 		// Reclamation
+ 	 	//PRINTF("HAL_EHCI_IRQHandler: Reclamation, usbsts=%08lX\n", usbsts);
+ 	 	//EHCIx->USBCMD &= ~ (CMD_ASE);
+ 	}
  	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT)
  	{
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
@@ -3271,6 +3317,14 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	 	}
  	}
 
+		if ((portsc & EHCI_PORTSC_PED) != 0)
+		{
+			portsc &= ~ EHCI_PORTSC_PED;
+			hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
+			(void) hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+
+			HAL_EHCI_PortEnabled_Callback(hehci);
+		}
  	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
  	{
  		EHCIx->USBSTS = (0x01uL << 2);	// Clear Port Change Detect interrupt
@@ -3283,14 +3337,15 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 // 	 	{
 // 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
 // 	 	}
- 		if ((portsc & EHCI_PORTSC_PED) != 0)
- 		{
- 			portsc &= ~ EHCI_PORTSC_PED;
- 			hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
- 			(void) hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
 
- 			HAL_EHCI_PortEnabled_Callback(hehci);
- 		}
+//		if ((portsc & EHCI_PORTSC_PED) != 0)
+// 		{
+// 			portsc &= ~ EHCI_PORTSC_PED;
+// 			hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
+// 			(void) hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+//
+// 			HAL_EHCI_PortEnabled_Callback(hehci);
+// 		}
 
  		if ((portsc & EHCI_PORTSC_CCS) != 0)
  		{
@@ -3480,6 +3535,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 	(void) EHCI_DriveVbus(hehci->Instance, 1U);
 	__HAL_UNLOCK(hehci);
 
+	PRINTF("%s: done\n", __func__);
 	return HAL_OK;
 }
 
@@ -3948,7 +4004,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
-	PRINTF("USBH_LL_ResetPort1: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	//PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 	if (resetIsActive)
 	{
@@ -3975,9 +4031,9 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 		//VERIFY(ehci_root_enable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 
 	}
-	local_delay_ms(1000);
-	//HAL_Delay(1);
-	PRINTF("USBH_LL_ResetPort1: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	//local_delay_ms(1000);
+	HAL_Delay(5);
+//	PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 
 	usb_status = USBH_Get_USB_Status(hal_status);
