@@ -3025,7 +3025,7 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 
 	uint32_t chr;
 	/* Determine basic characteristics */
-	chr = ( EHCI_CHR_ADDRESS ( 0 ) |
+	chr = ( EHCI_CHR_ADDRESS ( 0 ) |	// Default DCFG_DAD field = 0
 			EHCI_CHR_ENDPOINT ( 0 ) |
 			EHCI_CHR_MAX_LEN ( 64 ) );
 
@@ -3048,7 +3048,10 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link, 
 		chr |= EHCI_CHR_CONTROL;
 
 	uint32_t cap;
-	cap = EHCI_CAP_MULT(1) | EHCI_CAP_TT_HUB(0) | EHCI_CAP_TT_PORT(0);
+	cap =
+			EHCI_CAP_MULT(1) | 	// 01b One transaction to be issued for this endpoint per micro-frame
+			EHCI_CAP_TT_HUB(0) |
+			EHCI_CAP_TT_PORT(0);
 //	if ( tt ) {
 //		ASSERT( tt->hub->usb );
 //		cap |= ( EHCI_CAP_TT_HUB ( tt->hub->usb->address ) |
