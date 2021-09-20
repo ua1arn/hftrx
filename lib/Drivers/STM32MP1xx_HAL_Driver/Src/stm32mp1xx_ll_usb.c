@@ -1355,8 +1355,8 @@ HAL_StatusTypeDef  USB_SetDevAddress(USB_OTG_GlobalTypeDef *USBx, uint8_t addres
 {
   uint32_t USBx_BASE = (uint32_t)USBx;
 
-  USBx_DEVICE->DCFG &= ~(USB_OTG_DCFG_DAD);
-  USBx_DEVICE->DCFG |= ((uint32_t)address << 4) & USB_OTG_DCFG_DAD;
+  USBx_DEVICE->DCFG &= ~(USB_OTG_DCFG_DAD_Msk);
+  USBx_DEVICE->DCFG |= ((uint32_t)address << USB_OTG_DCFG_DAD_Pos) & USB_OTG_DCFG_DAD_Msk;
 
   return HAL_OK;
 }
