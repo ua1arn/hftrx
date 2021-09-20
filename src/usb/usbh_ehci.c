@@ -3067,8 +3067,17 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link)
 	p->current = cpu_to_le32(virt_to_phys(& qtds [0]));
 }
 
-void ehcihosttest(uint8_t *pbuff, uint16_t length, unsigned status)
+void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length, unsigned status)
 {
+	EHCI_HandleTypeDef * const hehci = phost->pData;
+	EhciController * const ehci = & hehci->ehci;
+	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
+
+	EHCIx->USBCMD &= ~ CMD_ASE;
+	(void) EHCIx->USBCMD;
+	while ((EHCIx->USBCMD & CMD_ASE) != 0)
+		;
+
 	memcpy((void *) txbuff0, pbuff, length);
 	arm_hardware_flush_invalidate((uintptr_t) & txbuff0, sizeof txbuff0);
 
@@ -3087,6 +3096,9 @@ void ehcihosttest(uint8_t *pbuff, uint16_t length, unsigned status)
 
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
+	EHCIx->USBCMD |= CMD_ASE;
+	(void) EHCIx->USBCMD;
 
 }
 // USB EHCI controller
@@ -3115,7 +3127,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
 	 *
 	 */
-	ehcihosttest(setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
+	ehcihosttest(& hUsbHostHS, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
 
 	unsigned i;
 	// Periodic frame list
@@ -3979,7 +3991,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	PRINTF("USBH_LL_SubmitURB:\n");
 	printhex(0, pbuff, length);
 
-	ehcihosttest(pbuff, length, EHCI_STATUS_ACTIVE);
+	ehcihosttest(phost, pbuff, length, EHCI_STATUS_ACTIVE);
 
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	EhciController * const ehci = & hehci->ehci;
@@ -4151,13 +4163,13 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
-	//PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 	if (resetIsActive)
 	{
  		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
  		/* Reset port */
- 		portsc &= ~ (EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
+ 		portsc &= ~ (0*EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
  		portsc |= EHCI_PORTSC_PR;
 
  		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
@@ -4178,9 +4190,13 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 		//VERIFY(ehci_root_enable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 
 	}
-	//local_delay_ms(1000);
+	local_delay_ms(1000);
 	HAL_Delay(5);
-//	PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	if (! resetIsActive)
+	{
+		ehcihosttest(phost, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
+	}
 
 
 	usb_status = USBH_Get_USB_Status(hal_status);
