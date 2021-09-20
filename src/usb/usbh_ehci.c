@@ -3025,9 +3025,9 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link)
 
 	uint32_t chr;
 	/* Determine basic characteristics */
-	chr = ( EHCI_CHR_ADDRESS ( 0 ) |	// Default DCFG_DAD field = 0
+	chr = EHCI_CHR_ADDRESS ( 0) |	// Default DCFG_DAD field = 0
 			EHCI_CHR_ENDPOINT ( 0 ) |
-			EHCI_CHR_MAX_LEN ( 64 ) );
+			EHCI_CHR_MAX_LEN ( 64 );
 
 	/* Control endpoints require manual control of the data toggle */
 	if ( 1/*attr == USB_ENDPOINT_ATTR_CONTROL */)
@@ -3299,7 +3299,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	unsigned porti = WITHEHCIHW_EHCIPORT;
 
 	/* Print state of all ports */
-	for (porti = 0; porti < hehci->nports; ++ porti)
+	//for (porti = 0; porti < hehci->nports; ++ porti)
 	{
 		unsigned long portsc = ehci->opRegs->ports [porti];
 		PRINTF("portsc[%u]=%08lX\n", porti, portsc);
@@ -3311,7 +3311,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	(void) ehci->opRegs->configFlag;
 
 	/* Enable power to all ports */
-	for (porti = 0; porti < hehci->nports; ++ porti)
+	//for (porti = 0; porti < hehci->nports; ++ porti)
 	{
 		unsigned long portsc = ehci->opRegs->ports [porti];
 
@@ -3992,6 +3992,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	printhex(0, pbuff, length);
 
 	ehcihosttest(phost, pbuff, length, EHCI_STATUS_ACTIVE);
+	//ehcihosttest(phost, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
 
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	EhciController * const ehci = & hehci->ehci;
@@ -4193,10 +4194,10 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	local_delay_ms(1000);
 	HAL_Delay(5);
 	PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
-	if (! resetIsActive)
-	{
-		ehcihosttest(phost, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
-	}
+//	if (! resetIsActive)
+//	{
+//		ehcihosttest(phost, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
+//	}
 
 
 	usb_status = USBH_Get_USB_Status(hal_status);
