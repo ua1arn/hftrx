@@ -3073,7 +3073,7 @@ void ehcihosttest(uint8_t *pbuff, uint16_t length, unsigned status)
 	arm_hardware_flush_invalidate((uintptr_t) & txbuff0, sizeof txbuff0);
 
 	//PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [0]));
+	asynclist_item2(& asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff0, length);	// Change status to EHCI_STATUS_ACTIVE
 	asynclist_item2_qtd(& qtds [0], txbuff0, length);	// Change status to EHCI_STATUS_ACTIVE
 
@@ -3115,7 +3115,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
 	 *
 	 */
-	ehcihosttest(setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_HALTED);
+	ehcihosttest(setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
 
 	unsigned i;
 	// Periodic frame list
