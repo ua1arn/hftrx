@@ -3074,19 +3074,19 @@ void ehcihosttest(uint8_t *pbuff, uint16_t length, unsigned status)
 
 	//PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 	asynclist_item2(& asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
-	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff0, length);	// Change status to EHCI_STATUS_ACTIVE
-	asynclist_item2_qtd(& qtds [0], txbuff0, length);	// Change status to EHCI_STATUS_ACTIVE
+	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff0, length);
+	asynclist_item2_qtd(& qtds [0], txbuff0, length);
 
 	//PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	asynclisthead [0].cache.status = status;
 	qtds [0].status = status;
 
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 }
 // USB EHCI controller
