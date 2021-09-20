@@ -24,6 +24,7 @@
 #include <string.h>
 
 void Error_Handler(void);
+void testusbhost(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length);
 
 #if defined (WITHUSBHW_EHCI)
 	/* USB Host Core handle declaration. */
@@ -3071,6 +3072,58 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link)
 	p->current = cpu_to_le32(virt_to_phys(& qtds [0]));	// If not set - "Host System Error"
 }
 
+void testusbhost(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length)
+{
+
+	memcpy((void *) txbuff0, pbuff, length);
+	arm_hardware_flush_invalidate((uintptr_t) txbuff0, sizeof txbuff0);
+
+	PRINTF("Status 0 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+
+	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [1]));
+	asynclist_item1(& asynclisthead [1], ehci_link_qhv((volatile void *) & asynclisthead [2]));
+	asynclist_item1(& asynclisthead [2], ehci_link_qhv((volatile void *) & asynclisthead [0]));
+	asynclist_item2_qtd(& asynclisthead [0].cache, EHCI_FL_PID_SETUP, txbuff0, length);
+	asynclist_item2_qtd(& qtds [0], EHCI_FL_PID_SETUP, txbuff0, length);
+
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
+
+	PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+
+	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [1]));
+	asynclist_item1(& asynclisthead [1], ehci_link_qhv((volatile void *) & asynclisthead [2]));
+	asynclist_item1(& asynclisthead [2], ehci_link_qhv((volatile void *) & asynclisthead [0]));
+	asynclist_item2_qtd(& asynclisthead [0].cache, EHCI_FL_PID_SETUP, txbuff0, length);
+	asynclist_item2_qtd(& qtds [0], EHCI_FL_PID_SETUP, txbuff0, length);
+
+	PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
+
+	qtds [0].status = EHCI_STATUS_ACTIVE;
+	asynclisthead[0].cache.status = EHCI_STATUS_ACTIVE;
+
+	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
+	PRINTF("Status 3 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+
+//	EHCIx->USBCMD |= CMD_ASE;	// 1=Run, 0-stop
+//	(void) EHCIx->USBCMD;
+//  	while ((EHCIx->USBCMD & CMD_ASE) == 0)
+// 		;
+//  	EHCIx->USBCMD |= CMD_RS;
+
+// 	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
+//		;
+
+	local_delay_ms(2250);
+	PRINTF("Status 4 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+
+}
+
 // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 {
@@ -3097,7 +3150,9 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
 	 *
 	 */
-	asynclist_item1(& asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+	asynclist_item1(& asynclisthead [0], ehci_link_qhv(& asynclisthead [1]));
+	asynclist_item1(& asynclisthead [1], ehci_link_qhv(& asynclisthead [2]));
+	asynclist_item1(& asynclisthead [2], ehci_link_qhv(& asynclisthead [0]));
 //	memcpy(txbuff0, setupReqTemplate, sizeof setupReqTemplate);
 //	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]), txbuff0, sizeof setupReqTemplate);
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
@@ -3982,55 +4037,14 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 // 		;
 	//HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
 
-	memcpy((void *) txbuff0, pbuff, length);
-	arm_hardware_flush_invalidate((uintptr_t) txbuff0, sizeof txbuff0);
-
-	PRINTF("Status 0 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-
-	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [0]));
-	asynclist_item2_qtd(& asynclisthead [0].cache, EHCI_FL_PID_SETUP, txbuff0, length);
-	asynclist_item2_qtd(& qtds [0], EHCI_FL_PID_SETUP, txbuff0, length);
-
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
-
-	PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-
-	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [0]));
-	asynclist_item2_qtd(& asynclisthead [0].cache, EHCI_FL_PID_SETUP, txbuff0, length);
-	asynclist_item2_qtd(& qtds [0], EHCI_FL_PID_SETUP, txbuff0, length);
-
-	PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
-
-	qtds [0].status = EHCI_STATUS_ACTIVE;
-	asynclisthead[0].cache.status = EHCI_STATUS_ACTIVE;
-
-	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
-	PRINTF("Status 3 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-
-//	EHCIx->USBCMD |= CMD_ASE;	// 1=Run, 0-stop
-//	(void) EHCIx->USBCMD;
-//  	while ((EHCIx->USBCMD & CMD_ASE) == 0)
-// 		;
-//  	EHCIx->USBCMD |= CMD_RS;
-
-// 	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
-//		;
-
-	local_delay_ms(2250);
-	PRINTF("Status 4 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
 //	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 //								 ep_type, token, pbuff, length,
 //								 do_ping);
+
+	testusbhost(phost, pbuff, length);
 
 //	hal_status = (0 == usb_control(usbdev0,
 //			  ((struct usb_setup_packet *)pbuff)->request,
