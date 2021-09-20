@@ -2982,13 +2982,14 @@ static void asynclist_item1(volatile struct ehci_queue_head * p, uint32_t link)
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
 void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length)
 {
+	//memset ((void *) p, 0x00, sizeof * p);
 	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
 	p->low [0] = cpu_to_le32(virt_to_phys(data));
 	p->high [0] = cpu_to_le32(0);
 
-	p->len = cpu_to_le16(length | 0 * EHCI_FL_TOGGLE);
+	p->len = cpu_to_le16(length | 0 * EHCI_LEN_TOGGLE);
 	p->flags = EHCI_FL_PID_SETUP | 1 * EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
 	p->status = EHCI_STATUS_HALTED;
 }
@@ -3002,7 +3003,7 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
  */
 static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link)
 {
-	memset ((void *) p, 0x00, sizeof * p);
+	//memset ((void *) p, 0x00, sizeof * p);
 	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
