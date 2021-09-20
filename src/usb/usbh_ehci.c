@@ -2989,7 +2989,7 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
 	p->high [0] = cpu_to_le32(0);
 
 	p->len = cpu_to_le16(length | 0 * EHCI_FL_TOGGLE);
-	p->flags = cpu_to_le32(EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC);	// Current Page (C_Page) field = 0
+	p->flags = EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
 	p->status = EHCI_STATUS_HALTED;
 }
 
@@ -3423,7 +3423,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT)\n");
- 		PRINTF("Status X = %02X\n", (unsigned) asynclisthead [0].cache.status);
+ 		PRINTF("Status X = %02X %02X cerr=%u %u\n", (unsigned) asynclisthead [0].cache.status, (unsigned) qtds [0].status,  (unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,  (unsigned) (qtds [0].flags >> 2) & 0x03);
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
