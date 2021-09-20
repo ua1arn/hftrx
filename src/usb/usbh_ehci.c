@@ -2989,7 +2989,7 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
 	p->high [0] = cpu_to_le32(0);
 
 	p->len = cpu_to_le16(length | 0 * EHCI_FL_TOGGLE);
-	p->flags = EHCI_FL_PID_SETUP | EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
+	p->flags = EHCI_FL_PID_SETUP | 1 * EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
 	p->status = EHCI_STATUS_HALTED;
 }
 
@@ -3067,6 +3067,28 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link)
 	p->current = cpu_to_le32(virt_to_phys(& qtds [0]));
 }
 
+void ehcihosttest(uint8_t *pbuff, uint16_t length, unsigned status)
+{
+	memcpy((void *) txbuff0, pbuff, length);
+	arm_hardware_flush_invalidate((uintptr_t) & txbuff0, sizeof txbuff0);
+
+	//PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [0]));
+	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff0, length);	// Change status to EHCI_STATUS_ACTIVE
+	asynclist_item2_qtd(& qtds [0], txbuff0, length);	// Change status to EHCI_STATUS_ACTIVE
+
+	//PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
+
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+
+	asynclisthead [0].cache.status = status;
+	qtds [0].status = status;
+
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+
+}
 // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 {
@@ -3093,12 +3115,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
 	 *
 	 */
-	asynclist_item1(& asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
-//	memcpy(txbuff0, setupReqTemplate, sizeof setupReqTemplate);
-//	asynclist_item2(& asynclisthead [0], ehci_link_qh(& asynclisthead [0]));
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-//	arm_hardware_flush_invalidate((uintptr_t) txbuff0, sizeof txbuff0);
-//	arm_hardware_flush_invalidate((uintptr_t) qtds, sizeof qtds);
+	ehcihosttest(setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_HALTED);
 
 	unsigned i;
 	// Periodic frame list
@@ -3107,11 +3124,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 		periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
 	}
 
-
-	arm_hardware_flush((uintptr_t) txbuff0, sizeof txbuff0);
-	arm_hardware_flush((uintptr_t) qtds, sizeof qtds);
-	arm_hardware_flush((uintptr_t) periodiclist, sizeof periodiclist);
-	arm_hardware_flush((uintptr_t) & asynclisthead, sizeof asynclisthead);
 #endif
 	// power cycle for USB dongle
 // 	board_set_usbhostvbuson(0);
@@ -3967,24 +3979,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	PRINTF("USBH_LL_SubmitURB:\n");
 	printhex(0, pbuff, length);
 
-	memcpy((void *) txbuff0, pbuff, length);
-	arm_hardware_flush_invalidate((uintptr_t) & txbuff0, sizeof txbuff0);
-
-	//PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-	asynclist_item2(& asynclisthead [0], ehci_link_qhv((volatile void *) & asynclisthead [0]));
-	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff0, length);	// Change status to EHCI_STATUS_ACTIVE
-	asynclist_item2_qtd(& qtds [0], txbuff0, length);	// Change status to EHCI_STATUS_ACTIVE
-
-	//PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-
-	asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
-	qtds [0].status = EHCI_STATUS_ACTIVE;
-
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+	ehcihosttest(pbuff, length, EHCI_STATUS_ACTIVE);
 
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	EhciController * const ehci = & hehci->ehci;
