@@ -2539,7 +2539,7 @@ static int ehci_root_enable ( struct usb_hub *hub, struct usb_port *port ) {
 	}
 
 	/* Reset port */
-	portsc &= ~( 0*EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
+	portsc &= ~( EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE );
 	portsc |= EHCI_PORTSC_PR;
 	writel ( portsc, ehci->op + EHCI_OP_PORTSC ( port->address ) );
 	local_delay_ms ( USB_RESET_DELAY_MS );
@@ -4171,7 +4171,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	{
  		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
  		/* Reset port */
- 		portsc &= ~ (0*EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
+ 		portsc &= ~ (EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
  		portsc |= EHCI_PORTSC_PR;
 
  		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
