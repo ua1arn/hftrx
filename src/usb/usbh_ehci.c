@@ -3074,10 +3074,10 @@ void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length, un
 	EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
-	EHCIx->USBCMD &= ~ CMD_ASE;
-	(void) EHCIx->USBCMD;
-	while ((EHCIx->USBCMD & CMD_ASE) != 0)
-		;
+//	EHCIx->USBCMD &= ~ CMD_ASE;
+//	(void) EHCIx->USBCMD;
+//	while ((EHCIx->USBCMD & CMD_ASE) != 0)
+//		;
 
 	memcpy((void *) txbuff0, pbuff, length);
 	arm_hardware_flush_invalidate((uintptr_t) & txbuff0, sizeof txbuff0);
@@ -3098,8 +3098,8 @@ void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length, un
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
-	EHCIx->USBCMD |= CMD_ASE;
-	(void) EHCIx->USBCMD;
+//	EHCIx->USBCMD |= CMD_ASE;
+//	(void) EHCIx->USBCMD;
 
 }
 // USB EHCI controller
@@ -3128,7 +3128,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
 	 *
 	 */
-	ehcihosttest(& hUsbHostHS, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
+	ehcihosttest(& hUsbHostHS, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_HALTED);
 
 	unsigned i;
 	// Periodic frame list
