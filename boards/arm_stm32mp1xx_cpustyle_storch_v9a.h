@@ -258,7 +258,7 @@
 	} while (0)
 #endif /* WITHI2SHW */
 
-	// для предотвращения треска от оставшегося инициализщированным кодека
+	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
 		arm_hardware_piob_inputs(1uL << 12); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_updown(0, 1uL << 12); \
