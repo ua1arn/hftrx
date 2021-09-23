@@ -756,6 +756,10 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 			0;
 	#elif CPUSTYLE_STM32H7XX
 		RCC->CFGR |= RCC_CFGR_I2SSRC;
+	#elif CPUSTYLE_STM32MP1
+		RCC->SPI2S23CKSELR = (RCC->SPI2S23CKSELR & ~ (RCC_SPI2S23CKSELR_SPI23SRC_Msk)) |
+			((0x02 << RCC_SPI2S23CKSELR_SPI23SRC_Pos) & RCC_SPI2S23CKSELR_SPI23SRC_Msk) | /* 0x2: I2S_CKIN clock selected as kernel peripheral clock */
+			0;
 	#else /* defined (STM32F446xx) */
 		RCC->CFGR |= RCC_CFGR_I2SSRC;
 	#endif /* defined (STM32F446xx) */
@@ -836,14 +840,6 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 
 	#if CPUSTYLE_STM32MP1
 
-		RCC->CFGR |= RCC_CFGR_I2SSRC;
-
-		const portholder_t i2spr =
-			((i2sdiv << SPI_I2SPR_I2SDIV_Pos) & SPI_I2SPR_I2SDIV) |
-			(SPI_I2SPR_ODD * i2soddv) |
-			SPI_I2SPR_MCKOE |
-			0;
-		SPI2->I2SPR = i2spr;
 
 	#else
 
@@ -960,7 +956,7 @@ hardware_i2s2_slave_fullduplex_initialize(void)
 static void
 hardware_i2s2_master_fullduplex_initialize(void)
 {
-	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize\n"));
+	PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize\n"));
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN; // Подать тактирование
@@ -984,6 +980,13 @@ hardware_i2s2_master_fullduplex_initialize(void)
  			(5uL << SPI_I2SCFGR_I2SCFG_Pos) |	// 101: master - full duplex
 			0;
 
+#if CPUSTYLE_STM32MP1
+	RCC->SPI2S23CKSELR = (RCC->SPI2S23CKSELR & ~ (RCC_SPI2S23CKSELR_SPI23SRC_Msk)) |
+		((0x02 << RCC_SPI2S23CKSELR_SPI23SRC_Pos) & RCC_SPI2S23CKSELR_SPI23SRC_Msk) | /* 0x2: I2S_CKIN clock selected as kernel peripheral clock */
+		0;
+	(void)RCC->SPI2S23CKSELR;
+#endif
+
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
 #endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
@@ -991,9 +994,9 @@ hardware_i2s2_master_fullduplex_initialize(void)
 	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_fullduplex_initialize
+	I2S2HW_INITIALIZE();	// hardware_i2s2_master_fullduplex_initialize
 
-	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize done\n"));
+	PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize done\n"));
 }
 
 
@@ -1009,9 +1012,9 @@ hardware_i2s2_fullduplex_enable(uint_fast8_t state)
 	I2S2ext->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (slave)
 	SPI2->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
 	I2S2ext->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable (slave enabled first)
-	__DSB();
+	(void) I2S2ext->I2SCFGR;
 	SPI2->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
-	__DSB();
+	(void) SPI2->I2SCFGR;
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
@@ -1019,9 +1022,9 @@ hardware_i2s2_fullduplex_enable(uint_fast8_t state)
 	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
 	SPI2->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приёму
 	SPI2->CR1 |= SPI_CR1_SPE;		// I2S enable
-	__DSB();
+	(void) SPI2->CR1;
 	SPI2->CR1 |= SPI_CR1_CSTART;	// I2S run
-	__DSB();
+	(void) SPI2->CR1;
 
 #else /* CPUSTYLE_STM32H7XX */
 
