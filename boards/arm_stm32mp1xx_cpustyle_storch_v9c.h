@@ -23,8 +23,8 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
-	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-	#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
+	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
@@ -273,11 +273,11 @@
 		arm_hardware_pioc_updown(0, 1uL << 6); \
 	} while (0)
 
-#if WITHSAI2HW
+#if WITHSAI1HW
 	/*
 	 *
 	 */
-	#define SAI2HW_INITIALIZE()	do { \
+	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(0 * 1uL << 2, AF_SAI); */	/* PExx - SAI2_MCK_A - 12.288 MHz	*/ \
 		arm_hardware_pioi_altfn2(1uL << 4,	AF_SAI2);			/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
 		arm_hardware_piod_altfn20(1uL << 13, AF_SAI2);			/* PD13 - SAI2_SCK_A	*/ \
