@@ -277,7 +277,7 @@
 	/*
 	 *
 	 */
-	#define SAI1HW_INITIALIZE()	do { \
+	#define SAI2HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(0 * 1uL << 2, AF_SAI); */	/* PExx - SAI2_MCK_A - 12.288 MHz	*/ \
 		arm_hardware_pioi_altfn2(1uL << 4,	AF_SAI2);			/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
 		arm_hardware_piod_altfn20(1uL << 13, AF_SAI2);			/* PD13 - SAI2_SCK_A	*/ \
@@ -286,7 +286,12 @@
 		arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
 		arm_hardware_pioe_updown(1uL << 11, 0); \
 	} while (0)
-#endif /* WITHSAI2HW */
+	/*
+	 *
+	 */
+	#define SAI1HW_INITIALIZE()	do { \
+	} while (0)
+#endif /* WITHSAI1HW */
 
 /* Распределение битов в ARM контроллерах */
 
