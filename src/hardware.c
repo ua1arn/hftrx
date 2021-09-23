@@ -1082,8 +1082,6 @@ const adcinmap_t * getadcmap(uint_fast8_t adci)
 #elif CPUSTYLE_STM32MP1
 		//	On ADC1, fast channels are PA6, PA7, PB0, PB1, PC4, PC5, PF11, PF12.
 		//	On ADC2, fast channels are PA6, PA7, PB0, PB1, PC4, PC5, PF13, PF14.
-		// FWD: PF12 - ADC1_INP6, ADC1_INN2
-		// REF: PF14 - ADC2_INP6, ADC2_INN2
 		{	16,	ADC1,	ADC12_COMMON,	15,	},	// @0:	PA0		ADC1_INP16
 		{	17,	ADC1,	ADC12_COMMON,	15,	},	// @1:	PA1		ADC1_INP17
 		{	14,	ADC1,	ADC12_COMMON,	15,	},	// @2:	PA2		ADC1_INP14
@@ -1106,10 +1104,6 @@ const adcinmap_t * getadcmap(uint_fast8_t adci)
 		{	6, 	ADC2, 	ADC12_COMMON, 	15,	},	// @19: PF14	ADC2_INP6, ADC2_INN2
 		//{	18,	ADC3,	ADC3_COMMON,	90,	},	// @20:	Temperature sensor (VSENSE) - 9.0 uS required
 		//{	19,	ADC3,	ADC3_COMMON,	43,	},	// @21:	Reference voltage (VREFINT) - 4.3 uS required
-		//	PF11	ADC1_INP2
-		//	PF12	ADC1_INP6, ADC1_INN2
-		//	PF13	ADC2_INP2
-		//	PF14	ADC2_INP6, ADC2_INN2
 #endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_STM32MP1 */
 	};
 
