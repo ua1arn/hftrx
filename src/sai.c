@@ -2129,6 +2129,7 @@ static void hardware_sai1_slave_fullduplex_initialize(void)		/* инициали
 	SAI1HW_INITIALIZE();
 }
 
+#if 0
 static void hardware_sai2_slave_fullduplex_initialize(void)		/* инициализация SAI1 на STM32MP1 */
 {
 	hardware_sai1_sai2_clock_selection();
@@ -2257,8 +2258,9 @@ static void hardware_sai2_slave_fullduplex_initialize(void)		/* инициали
 	//PRINTF(PSTR("SAI2_Block_B->SLOTR=0X%08lX;\n"), SAI2_Block_B->SLOTR);
 	//PRINTF(PSTR("SAI2_Block_B->FRCR=0X%08lX;\n"), SAI2_Block_B->FRCR);
 
-	SAI2HW_INITIALIZE();
+	SAI1HW_INITIALIZE();
 }
+#endif
 
 #endif /* WITHSAI1HWTXRXMASTER */
 
@@ -3087,6 +3089,7 @@ static const codechw_t fpgacodechw_sai1_slave =
 	hardware_dummy_enable,
 	"fpgacodechw_sai1_slave"
 };
+/*
 
 // Для обмена с FPGA выделен SAI2
 static const codechw_t fpgacodechw_sai2_slave =
@@ -3099,6 +3102,7 @@ static const codechw_t fpgacodechw_sai2_slave =
 	hardware_dummy_enable,
 	"fpgacodechw_sai1_slave"
 };
+*/
 
 #endif /* WITHSAI1HWTXRXMASTER */
 
