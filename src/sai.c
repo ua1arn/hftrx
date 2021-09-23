@@ -1012,9 +1012,9 @@ hardware_i2s2_fullduplex_enable(uint_fast8_t state)
 	I2S2ext->CR2 |= SPI_CR2_RXDMAEN; // DMA по приему (slave)
 	SPI2->CR2 |= SPI_CR2_TXDMAEN; // DMA по передаче
 	I2S2ext->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable (slave enabled first)
-	(void) I2S2ext->I2SCFGR;
+	__DSB();
 	SPI2->I2SCFGR |= SPI_I2SCFGR_I2SE;		// I2S enable
-	(void) SPI2->I2SCFGR;
+	__DSB();
 
 #elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
@@ -1022,9 +1022,9 @@ hardware_i2s2_fullduplex_enable(uint_fast8_t state)
 	SPI2->CFG1 |= SPI_CFG1_TXDMAEN; // DMA по передаче
 	SPI2->CFG1 |= SPI_CFG1_RXDMAEN; // DMA по приёму
 	SPI2->CR1 |= SPI_CR1_SPE;		// I2S enable
-	(void) SPI2->CR1;
+	__DSB();
 	SPI2->CR1 |= SPI_CR1_CSTART;	// I2S run
-	(void) SPI2->CR1;
+	__DSB();
 
 #else /* CPUSTYLE_STM32H7XX */
 
@@ -2716,7 +2716,7 @@ static void hardware_sai2_slave_fullduplex_initialize(void)
 	// Теперь настроим модуль SAI.
 	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
 	(void) RCC->MP_APB2ENSETR;
-	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SAI2LPEN; //подать тактирование
+	RCC->MP_APB2LPENSETR = RCC_MP_APB2LPENSETR_SA21LPEN; //подать тактирование
 	(void) RCC->MP_APB2LPENSETR;
 #else /* CPUSTYLE_STM32MP1 */
 	// Теперь настроим модуль SAI.
