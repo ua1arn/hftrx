@@ -9364,8 +9364,6 @@ void hardware_adc_initialize(void)
 
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
 
 #else
 	#warning Undefined CPUSTYLE_XXX

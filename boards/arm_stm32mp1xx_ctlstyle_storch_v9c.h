@@ -601,12 +601,12 @@
 	//#define WITHRTCLSI	1				/* тестирование без кварца 32.768 кГц */
 
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
-	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define TSC_TYPE_STMPE811_USE_SPI	1
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
 	//#define WITH_GT911_INTERRUPTS	1
-	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
+	#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
@@ -689,7 +689,9 @@
 
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
+			// FWD: PF12 - ADC1_INP6, ADC1_INN2
+			// REF: PF14 - ADC2_INP6, ADC2_INN2
+			FWD = 17, REF = 19,	// PF12, PF14	SWR-meter
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 
@@ -715,7 +717,7 @@
 
 		#if WITHCURRLEVEL
 			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
-			PASENSEIX = 12,		// PC2 PA current sense - ACS712-05 chip
+			PASENSEIX = 0,		// PA0 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
@@ -727,7 +729,9 @@
 
 		#if WITHSWRMTR
 			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
+			// FWD: PF12 - ADC1_INP6, ADC1_INN2
+			// REF: PF14 - ADC2_INP6, ADC2_INN2
+			FWD = 17, REF = 19,	// PF12, PF14	SWR-meter
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 	#endif
@@ -741,7 +745,9 @@
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 
-		KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 7, KI4 = 10	// клавиатура - PA0, PA1, PA2, PA7, PC0
+		// PC3: ADC1_INP13, ADC1_INN12
+		// PF13: ADC2_INP2
+		KI0 = 3, KI1 = 4, KI2 = 5, KI3 = 13, KI4 = 18	// клавиатура - PA3, PA4, PA5, PC3, PF13 (ADC2_INP2)
 	};
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
