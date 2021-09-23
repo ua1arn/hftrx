@@ -1116,46 +1116,51 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 
 #if CPUSTYLE_STM32MP1
 
-	// Испольщуется I2S2 в дуплексном режиме
-	static const codechw_t audiocodechw_i2s2_fullduplex_slave =
-	{
-		#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
-			hardware_i2s2_slave_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
-		#else /* WITHI2SHWRXSLAVE */
-			hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
-		#endif /* WITHI2SHWRXSLAVE */
-		#if WITHI2SHWTXSLAVE
-			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
-		#else /* WITHI2SHWTXSLAVE */
-			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
-		#endif /* WITHI2SHWTXSLAVE */
-		DMA_I2S2_RX_initialize,					// DMA по приёму SPI2_RX
-		DMA_I2S2_TX_initialize,					// DMA по передаче SPI2_TX
-		hardware_i2s2_fullduplex_enable,
-		hardware_dummy_enable,
-		"i2s2-duplex-audiocodechw-slave"
-	};
+	#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
 
-	// Испольщуется I2S2 в дуплексном режиме
-	static const codechw_t audiocodechw_i2s2_fullduplex_master =
-	{
-		#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
-			hardware_i2s2_master_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
-		#else /* WITHI2SHWRXSLAVE */
-			hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
-		#endif /* WITHI2SHWRXSLAVE */
-		#if WITHI2SHWTXSLAVE
-			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
-		#else /* WITHI2SHWTXSLAVE */
-			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
-		#endif /* WITHI2SHWTXSLAVE */
-		DMA_I2S2_RX_initialize,					// DMA по приёму SPI2_RX
-		DMA_I2S2_TX_initialize,					// DMA по передаче SPI2_TX
-		hardware_i2s2_fullduplex_enable,
-		hardware_dummy_enable,
-		"i2s2-duplex-audiocodechw-master"
-	};
+		// Испольщуется I2S2 в дуплексном режиме
+		static const codechw_t audiocodechw_i2s2_fullduplex_slave =
+		{
+			#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
+				hardware_i2s2_slave_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+			#else /* WITHI2SHWRXSLAVE */
+				hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
+			#endif /* WITHI2SHWRXSLAVE */
+			#if WITHI2SHWTXSLAVE
+				hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+			#else /* WITHI2SHWTXSLAVE */
+				hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+			#endif /* WITHI2SHWTXSLAVE */
+			DMA_I2S2_RX_initialize,					// DMA по приёму SPI2_RX
+			DMA_I2S2_TX_initialize,					// DMA по передаче SPI2_TX
+			hardware_i2s2_fullduplex_enable,
+			hardware_dummy_enable,
+			"i2s2-duplex-audiocodechw-slave"
+		};
 
+	#else /* WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE */
+
+		// Испольщуется I2S2 в дуплексном режиме
+		static const codechw_t audiocodechw_i2s2_fullduplex_master =
+		{
+			#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
+				hardware_i2s2_master_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+			#else /* WITHI2SHWRXSLAVE */
+				hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
+			#endif /* WITHI2SHWRXSLAVE */
+			#if WITHI2SHWTXSLAVE
+				hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+			#else /* WITHI2SHWTXSLAVE */
+				hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+			#endif /* WITHI2SHWTXSLAVE */
+			DMA_I2S2_RX_initialize,					// DMA по приёму SPI2_RX
+			DMA_I2S2_TX_initialize,					// DMA по передаче SPI2_TX
+			hardware_i2s2_fullduplex_enable,
+			hardware_dummy_enable,
+			"i2s2-duplex-audiocodechw-master"
+		};
+
+	#endif /* WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE */
 
 #else /* CPUSTYLE_STM32MP1 */
 
