@@ -754,6 +754,8 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 		RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_I2S1SRC)) |
 			1 * RCC_DCKCFGR_I2S1SRC_0 |	// 01: I2S APB1 clock frequency = I2S_CKIN Alternate function input frequency
 			0;
+	#elif CPUSTYLE_STM32H7XX
+		RCC->CFGR |= RCC_CFGR_I2SSRC;
 	#else /* defined (STM32F446xx) */
 		RCC->CFGR |= RCC_CFGR_I2SSRC;
 	#endif /* defined (STM32F446xx) */
@@ -803,6 +805,12 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 #if CPUSTYLE_STM32H7XX
 	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
 	__DSB();
+#elif CPUSTYLE_STM32MP1
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN; // Подать тактирование
+	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN; // Подать тактирование
+	(void) RCC->MP_APB1LPENSETR;
+
 #else /* CPUSTYLE_STM32H7XX */
 	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование
 	__DSB();
@@ -826,12 +834,29 @@ hardware_i2s2_master_tx_initialize(void)		/* инициализация I2S2, ST
 	PRINTF(PSTR("hardware_i2s2_master_tx_initialize: 2 I2S i2sdivider=%lu, ARMI2SMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) calcdivround_plli2s(ARMI2SMCLK), (unsigned long) ARMI2SMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #endif /* WITHI2SCLOCKFROMPIN */
 
-	const portholder_t i2spr = 
-		((i2sdiv << SPI_I2SPR_I2SDIV_Pos) & SPI_I2SPR_I2SDIV) | 
-		(SPI_I2SPR_ODD * i2soddv) | 
-		SPI_I2SPR_MCKOE |
-		0;
-	SPI2->I2SPR = i2spr;
+	#if CPUSTYLE_STM32MP1
+
+		RCC->CFGR |= RCC_CFGR_I2SSRC;
+
+		const portholder_t i2spr =
+			((i2sdiv << SPI_I2SPR_I2SDIV_Pos) & SPI_I2SPR_I2SDIV) |
+			(SPI_I2SPR_ODD * i2soddv) |
+			SPI_I2SPR_MCKOE |
+			0;
+		SPI2->I2SPR = i2spr;
+
+	#else
+
+		RCC->CFGR |= RCC_CFGR_I2SSRC;
+
+		const portholder_t i2spr =
+			((i2sdiv << SPI_I2SPR_I2SDIV_Pos) & SPI_I2SPR_I2SDIV) |
+			(SPI_I2SPR_ODD * i2soddv) |
+			SPI_I2SPR_MCKOE |
+			0;
+		SPI2->I2SPR = i2spr;
+
+	#endif
 
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
@@ -925,6 +950,52 @@ hardware_i2s2_slave_fullduplex_initialize(void)
 
 	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize done\n"));
 }
+
+#else
+
+
+
+// Интерфейс к НЧ кодеку
+/* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
+static void
+hardware_i2s2_master_fullduplex_initialize(void)
+{
+	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize\n"));
+
+#if CPUSTYLE_STM32MP1
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN; // Подать тактирование
+	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN; // Подать тактирование
+	(void) RCC->MP_APB1LPENSETR;
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN; // Подать тактирование
+	(void) RCC->APB1LENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN; // Подать тактирование
+	(void) RCC->APB1ENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
+
+ 	SPI2->I2SCFGR = i2scfgr |
+ 			(5uL << SPI_I2SCFGR_I2SCFG_Pos) |	// 101: master - full duplex
+			0;
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+
+	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
+
+	// Подключить I2S к выводам процессора
+	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_fullduplex_initialize
+
+	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize done\n"));
+}
+
 
 #endif /* WITHI2SHWRXSLAVE */
 
@@ -1042,7 +1113,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 
 #if CPUSTYLE_STM32MP1
 
-	// Испольщуется I2S2 в дуплексном редимк
+	// Испольщуется I2S2 в дуплексном режиме
 	static const codechw_t audiocodechw_i2s2_fullduplex_slave =
 	{
 		#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
@@ -1059,7 +1130,27 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 		DMA_I2S2_TX_initialize,					// DMA по передаче SPI2_TX
 		hardware_i2s2_fullduplex_enable,
 		hardware_dummy_enable,
-		"i2s2-duplex-audiocodechw"
+		"i2s2-duplex-audiocodechw-slave"
+	};
+
+	// Испольщуется I2S2 в дуплексном режиме
+	static const codechw_t audiocodechw_i2s2_fullduplex_master =
+	{
+		#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
+			hardware_i2s2_master_fullduplex_initialize,	/* Интерфейс к НЧ кодеку - микрофон */
+		#else /* WITHI2SHWRXSLAVE */
+			hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
+		#endif /* WITHI2SHWRXSLAVE */
+		#if WITHI2SHWTXSLAVE
+			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+		#else /* WITHI2SHWTXSLAVE */
+			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
+		#endif /* WITHI2SHWTXSLAVE */
+		DMA_I2S2_RX_initialize,					// DMA по приёму SPI2_RX
+		DMA_I2S2_TX_initialize,					// DMA по передаче SPI2_TX
+		hardware_i2s2_fullduplex_enable,
+		hardware_dummy_enable,
+		"i2s2-duplex-audiocodechw-master"
 	};
 
 
