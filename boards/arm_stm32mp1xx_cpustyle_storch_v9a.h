@@ -1095,9 +1095,9 @@
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
-			else \
 				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+			else \
+				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
 		} while (0)
 
 	/* запрос на вход в режим загрузчика */
