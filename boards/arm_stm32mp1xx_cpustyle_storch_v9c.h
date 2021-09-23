@@ -23,8 +23,8 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
-	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
+	#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
@@ -218,14 +218,14 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOG->IDR)
-	#define ENCODER_BITA		(1u << 13)		// PG13
-	#define ENCODER_BITB		(1u << 9)		// PG9
+	#define ENCODER_INPUT_PORT	(GPIOE->IDR)
+	#define ENCODER_BITA		(1uL << 13)		// PE1
+	#define ENCODER_BITB		(1uL << 9)		// PE0
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(GPIOG->IDR)
-	#define ENCODER2_BITA		(1u << 15)		// PG15
-	#define ENCODER2_BITB		(1u << 14)		// PG14
+	#define ENCODER2_INPUT_PORT	(GPIOE->IDR)
+	#define ENCODER2_BITA		(1uL << 15)		// PE4
+	#define ENCODER2_BITB		(1uL << 14)		// PE6
 
 
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
@@ -233,12 +233,12 @@
 
 	#define ENCODER_INITIALIZE() \
 		do { \
-			arm_hardware_piog_inputs(ENCODER_BITS); \
-			arm_hardware_piog_updown(ENCODER_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
-			arm_hardware_piog_inputs(ENCODER2_BITS); \
-			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_pioe_inputs(ENCODER_BITS); \
+			arm_hardware_pioe_updown(ENCODER_BITS, 0); \
+			arm_hardware_pioe_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
+			arm_hardware_pioe_inputs(ENCODER2_BITS); \
+			arm_hardware_pioe_updown(ENCODER2_BITS, 0); \
+			arm_hardware_pioe_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -246,67 +246,51 @@
 #if WITHI2SHW
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
-		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
+		arm_hardware_pioi_altfn2(1uL << 0,	AF_SPI2); /* PI0 I2S2_WS	*/ \
+		arm_hardware_pioi_updown(0, 1uL << 0); \
+		arm_hardware_pioi_altfn2(1uL << 1,	AF_SPI2); /* PI1 I2S2_CK	*/ \
+		arm_hardware_pioi_updown(0, 1uL << 1); \
+		arm_hardware_pioi_altfn2(1uL << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
+		arm_hardware_pioi_updown(0, 1uL << 3); \
+		arm_hardware_pioi_altfn2(1uL << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
+		arm_hardware_pioi_updown(0, 1uL << 2); \
+		arm_hardware_pioc_altfn2(1uL << 6,	AF_SPI2); /* PC6 I2S2_MCK */ \
+		arm_hardware_pioc_updown(0, 1uL << 6); \
 	} while (0)
 #endif /* WITHI2SHW */
 
 	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
-		arm_hardware_piob_inputs(1uL << 12); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_inputs(1uL << 13); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_inputs(1uL << 15); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_inputs(1uL << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
+		arm_hardware_pioi_inputs(1uL << 0); /* PI0 I2S2_WS	*/ \
+		arm_hardware_pioi_updown(0, 1uL << 0); \
+		arm_hardware_pioi_inputs(1uL << 1); /* PI1 I2S2_CK	*/ \
+		arm_hardware_pioi_updown(0, 1uL << 1); \
+		arm_hardware_pioi_inputs(1uL << 3); /* PI3 I2S2_SDO - передача */ \
+		arm_hardware_pioi_updown(0, 1uL << 3); \
+		arm_hardware_pioi_inputs(1uL << 2); /* PI2 I2S2_SDI, - приём от кодека */ \
+		arm_hardware_pioi_updown(0, 1uL << 2); \
+		arm_hardware_pioc_inputs(1uL << 6); /* PC6 I2S2_MCK */ \
+		arm_hardware_pioc_updown(0, 1uL << 6); \
 	} while (0)
 
-#if WITHSAI1HW
+#if WITHSAI2HW
 	/*
 	 *
 	 */
-	#define SAI1HW_INITIALIZE()	do { \
-		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioe_altfn20(1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
-		arm_hardware_pioe_updown(1uL << 3, 0); \
-	} while (0)
-#endif /* WITHSAI1HW */
-
-#if WITHSAI2HW
-	/* 
-	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A
-	*/
 	#define SAI2HW_INITIALIZE()	do { \
-		arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
+		/*arm_hardware_pioe_altfn20(0 * 1uL << 2, AF_SAI); */	/* PExx - SAI2_MCK_A - 12.288 MHz	*/ \
+		arm_hardware_pioi_altfn2(1uL << 4,	AF_SAI2);			/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_piod_altfn20(1uL << 13, AF_SAI2);			/* PD13 - SAI2_SCK_A	*/ \
+		arm_hardware_piod_altfn2(1uL << 6,	AF_SAI2);			/* PI6 - SAI2_SD_A	(i2s data to codec)	*/ \
+		arm_hardware_pioe_altfn2(1uL << 11,	AF_SAI2);			/* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
+		arm_hardware_pioe_updown(1uL << 11, 0); \
 	} while (0)
-#endif /* WITHSAI1HW */
-
-#if WITHSAI3HW
-	/*
-	*/
-	#define SAI3HW_INITIALIZE()	do { \
-		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- WS from FPGA	*/ \
-		arm_hardware_piod_altfn50(1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
-		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
-	} while (0)
-#endif /* WITHSAI1HW */
+#endif /* WITHSAI2HW */
 
 /* Распределение битов в ARM контроллерах */
 
-#if (WITHCAT && WITHCAT_USART2)
+#if (WITHCAT && WITHCAT_USART4)
 	// CAT data lites
 	// RXD at PA10, TXD at PA9
 
@@ -328,7 +312,7 @@
 		do { \
 		} while (0)
 
-#endif /* (WITHCAT && WITHCAT_USART2) */
+#endif /* (WITHCAT && WITHCAT_USART4) */
 
 #if (WITHCAT && WITHCAT_CDC)
 
