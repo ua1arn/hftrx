@@ -2524,7 +2524,7 @@ static void display_time8(
 	
 	const char * const labels [1] = { buf2, };
 	display2_text(x, y, labels, colors_1state, 0);
-#endif /* WITHNMEA */
+#endif /* defined (RTC1_TYPE) */
 }
 
 // Печать времени - только часы и минуты, без секунд
@@ -2549,7 +2549,28 @@ static void display_time5(
 	const char * const labels [1] = { buf2, };
 	display2_text(x, y, labels, colors_1stateBlue, 0);
 
-#endif /* WITHNMEA */
+#endif /* defined (RTC1_TYPE) */
+}
+
+// Печать частоты SOF пакетов USB device.
+static void display2_freqsof9(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHUSBHW && defined (WITHUSBHW_DEVICE)
+	char buf2 [13];
+	unsigned v = hamradio_get__getsoffreq();
+	v = ulmin(v, 99999);
+	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("Sof:%5u"),
+			v
+		);
+
+	const char * const labels [1] = { buf2, };
+	ASSERT(strlen(buf2) == 9);
+	display2_text(x, y, labels, colors_1stateBlue, 0);
+#endif /*  WITHUSBHW && defined (WITHUSBHW_DEVICE) */
 }
 
 // Печать времени - только часы и минуты, без секунд
@@ -2595,7 +2616,7 @@ static void display2_datetime12(
 	const char * const labels [1] = { buf2, };
 	ASSERT(strlen(buf2) == 12);
 	display2_text(x, y, labels, colors_1stateBlue, 0);
-#endif /* WITHNMEA */
+#endif /* defined (RTC1_TYPE) */
 }
 
 struct dzone
@@ -6105,8 +6126,12 @@ enum
 	#if WITHMENU
 		{	15, 25,	display2_popup,		REDRM_MODE, PG0, },	// Всплывающие меню. В конце массива для перекрытия всего что под ним
 	#endif /* WITHMENU */
-//		{	0,	0,	display2_vtty_init,	REDRM_INIS,	PGINI, },	// Подготовка видеобуфера окна протокола
-//		{	0,	0, display2_vtty,	REDRM_BARS, PG0, },		// Вывод текущего состояния протокола
+
+	#if 0
+		{	0,	0,	display2_vtty_init,	REDRM_INIS,	PGINI, },	// Подготовка видеобуфера окна протокола
+		{	0,	0, display2_vtty,	REDRM_BARS, PG0, },		// Вывод текущего состояния протокола
+		{	0,	(DIM_Y - GRID2Y(5)) / 5, display2_freqsof9,	REDRM_BARS, PG0, },		// Вывод текущего состояния протокола
+	#endif
 
 		/* общий для всех режимов элемент */
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },

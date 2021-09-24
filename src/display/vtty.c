@@ -30,7 +30,7 @@ enum { VTTY_ROWSPIX = SMALLCHARH + 2 };	// количество пикселей
 	enum { VTTY_ROWS = 41 /*(DIM_Y - 20) / VTTY_ROWSPIX */};
 #else
 	enum { VTTY_COLS = (DIM_X - 0) / VTTY_CHARPIX };
-	enum { VTTY_ROWS = (DIM_Y - 0) / VTTY_ROWSPIX};
+	enum { VTTY_ROWS = (DIM_Y - GRID2Y(5)) / VTTY_ROWSPIX};
 #endif
 enum { VTTY_DX = VTTY_COLS * VTTY_CHARPIX, VTTY_DY = VTTY_ROWS * VTTY_ROWSPIX };
 
@@ -100,6 +100,7 @@ void display_vtty_gotoxy(unsigned x, unsigned y)
 	ASSERT(vt->row < VTTY_ROWS);
 	ASSERT(vt->col < VTTY_COLS);
 }
+
 // копирование растра в видеобуфер отображения
 static void display_vtty_show(
 	uint_fast16_t x,
@@ -152,6 +153,7 @@ void display2_vtty(
 
 	display_vtty_show(x, y);
 }
+
 void display2_vtty_init(
 	uint_fast8_t x0,
 	uint_fast8_t y0,
@@ -258,7 +260,6 @@ int display_vtty_maxy(void)
 {
 	return VTTY_ROWS;
 }
-
 
 
 static int
