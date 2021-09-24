@@ -622,4 +622,7 @@ void display_1fmenu(
 
 #endif /* COLORSTYLE_RED */
 
+//#define AFSPECTRE_COLOR COLORMAIN_YELLOW
+#define AFSPECTRE_COLOR COLORMAIN_SPECTRUMBG2
+
 #endif /* BOARD_H_INCLUDED */
