@@ -1072,25 +1072,35 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 
 #if CPUSTYLE_STM32MP1
 
-	// Используется I2S2 в дуплексном редимк
+#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
+
+	// Используется I2S2 в дуплексном режиме
 	static const codechw_t audiocodechw_i2s2_fullduplex_slave =
 	{
-		#if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
-			hardware_i2s2_slave_fullduplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон */
-		#else /* WITHI2SHWRXSLAVE */
-			hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
-		#endif /* WITHI2SHWRXSLAVE */
-		#if WITHI2SHWTXSLAVE
-			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
-		#else /* WITHI2SHWTXSLAVE */
-			hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - наушники */
-		#endif /* WITHI2SHWTXSLAVE */
+		hardware_i2s2_slave_fullduplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон и наушники */
+		hardware_dummy_initialize,
 		DMA_I2S2_RX_initialize_audio,					// DMA по приёму SPI2_RX
 		DMA_I2S2_TX_initialize_audio,					// DMA по передаче SPI2_TX
 		hardware_i2s2_fullduplex_enable_audio,
 		hardware_dummy_enable,
-		"i2s2-duplex-audiocodechw"
+		"i2s2-duplex-audiocodechw-slave"
 	};
+
+#else /* WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE */
+
+	// Используется I2S2 в дуплексном режиме
+	static const codechw_t audiocodechw_i2s2_fullduplex_slave =
+	{
+		hardware_i2s2_ьфыеук_fullduplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон и наушники*/
+		hardware_dummy_initialize,
+		DMA_I2S2_RX_initialize_audio,					// DMA по приёму SPI2_RX
+		DMA_I2S2_TX_initialize_audio,					// DMA по передаче SPI2_TX
+		hardware_i2s2_fullduplex_enable_audio,
+		hardware_dummy_enable,
+		"i2s2-duplex-audiocodechw-master"
+	};
+
+#endif /* WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE */
 
 
 #else /* CPUSTYLE_STM32MP1 */
@@ -2843,40 +2853,40 @@ static const codechw_t fpgaspectrumhw_sai2 =
 
 #if WITHSAI1HWTXRXMASTER
 
-static const codechw_t fpgacodechw_sai1_master =
-{
-	hardware_sai1_master_fullduplex_initialize_fpga,
-	hardware_dummy_initialize,
-	DMA_SAI1_B_RX_initialize_fpga,
-	DMA_SAI1_A_TX_initialize_fpga,
-	hardware_sai1_enable_fpga,
-	hardware_dummy_enable,
-	"fpgacodechw_sai1_master"
-};
+	static const codechw_t fpgacodechw_sai1_master =
+	{
+		hardware_sai1_master_fullduplex_initialize_fpga,
+		hardware_dummy_initialize,
+		DMA_SAI1_B_RX_initialize_fpga,
+		DMA_SAI1_A_TX_initialize_fpga,
+		hardware_sai1_enable_fpga,
+		hardware_dummy_enable,
+		"fpgacodechw_sai1_master"
+	};
 
-static const codechw_t fpgacodechw_sai1_master_v3d =
-{
-	hardware_sai1_master_fullduplex_initialize_v3d_fpga,
-	hardware_dummy_initialize,
-	DMA_SAI1_B_RX_initialize_fpga,
-	hardware_dummy_initialize, //DMA_SAI1_A_TX_initialize_fpga,
-	hardware_sai1_enable_fpga,
-	hardware_dummy_enable,
-	"fpgacodechw_sai1_master_v3d"
-};
+	static const codechw_t fpgacodechw_sai1_master_v3d =
+	{
+		hardware_sai1_master_fullduplex_initialize_v3d_fpga,
+		hardware_dummy_initialize,
+		DMA_SAI1_B_RX_initialize_fpga,
+		hardware_dummy_initialize, //DMA_SAI1_A_TX_initialize_fpga,
+		hardware_sai1_enable_fpga,
+		hardware_dummy_enable,
+		"fpgacodechw_sai1_master_v3d"
+	};
 
 #else /* WITHSAI1HWTXRXMASTER */
 
-static const codechw_t fpgacodechw_sai1_slave =
-{
-	hardware_sai1_slave_fullduplex_initialize_fpga,
-	hardware_dummy_initialize,
-	DMA_SAI1_B_RX_initialize_fpga,
-	DMA_SAI1_A_TX_initialize_fpga,
-	hardware_sai1_enable_fpga,
-	hardware_dummy_enable,
-	"fpgacodechw_sai1_slave"
-};
+	static const codechw_t fpgacodechw_sai1_slave =
+	{
+		hardware_sai1_slave_fullduplex_initialize_fpga,
+		hardware_dummy_initialize,
+		DMA_SAI1_B_RX_initialize_fpga,
+		DMA_SAI1_A_TX_initialize_fpga,
+		hardware_sai1_enable_fpga,
+		hardware_dummy_enable,
+		"fpgacodechw_sai1_slave"
+	};
 
 #endif /* WITHSAI1HWTXRXMASTER */
 
