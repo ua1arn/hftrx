@@ -2988,7 +2988,7 @@ static void r7s721_ssif0_txdma_audio(void)
 // audio codec
 // DMA по приёму SSIF0
 
-static void r7s721_ssif0_dmarx_initialize(void)
+static void r7s721_ssif0_dmarx_initialize_audio_rx(void)
 {
 	enum { id = 0 };		// 0: DMAC0
 	// DMAC0
@@ -3054,7 +3054,7 @@ static void r7s721_ssif0_dmarx_initialize(void)
 // DMA по передаче SSIF0
 // Use arm_hardware_flush
 
-static void r7s721_ssif0_dmatx_initialize(void)
+static void r7s721_ssif0_dmatx_initialize_audio_tx(void)
 {
 	enum { id = 1 };	// 1: DMAC1
 	// DMAC1
@@ -3121,7 +3121,7 @@ static void r7s721_ssif0_dmatx_initialize(void)
 // Правда, и в SLAVE нельзя сказать что работает - около пяти секунд проходит до начала нормальной раболты.
 
 // AUDIO CODEC I2S INTERFACE
-static void r7s721_ssif0_fullduplex_initialize(void)
+static void r7s721_ssif0_fullduplex_initialize_audio(void)
 {
 	const uint_fast8_t master = R7S721_SSIF0_MASTER;
     /* ---- Supply clock to the SSIF(channel 0) ---- */
@@ -3166,7 +3166,7 @@ static void r7s721_ssif0_fullduplex_initialize(void)
 	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
-static void r7s721_ssif0_fullduplex_enable(uint_fast8_t state)
+static void r7s721_ssif0_fullduplex_enable_audio(uint_fast8_t state)
 {
 	SSIF0.SSICR |= 
 		1 * (1UL << 1) |		// TEN	
@@ -3178,11 +3178,11 @@ static void r7s721_ssif0_fullduplex_enable(uint_fast8_t state)
 
 static const codechw_t audiocodec_ssif0 =
 {
-	r7s721_ssif0_fullduplex_initialize,
+	r7s721_ssif0_fullduplex_initialize_audio,
 	hardware_dummy_initialize,
-	r7s721_ssif0_dmarx_initialize,
-	r7s721_ssif0_dmatx_initialize,
-	r7s721_ssif0_fullduplex_enable,
+	r7s721_ssif0_dmarx_initialize_audio_rx,
+	r7s721_ssif0_dmatx_initialize_audio_tx,
+	r7s721_ssif0_fullduplex_enable_audio,
 	hardware_dummy_enable,
 	"ssif0-audiocodechw"
 };
@@ -3253,7 +3253,7 @@ static RAMFUNC_NONILINE void r7s721_ssif1_rxdma_fpgarx(void)
 // DMA по приёму SSIF1
 // Use dma_invalidate32rx
 
-static void r7s721_ssif1_dmarx_initialize(void)
+static void r7s721_ssif1_dmarx_initialize_fpga_rx(void)
 {
 	enum { id = 2 };	// 2: DMAC2
 	// DMAC2
@@ -3319,7 +3319,7 @@ static void r7s721_ssif1_dmarx_initialize(void)
 // DMA по передаче SSIF1
 // Use arm_hardware_flush
 
-static void r7s721_ssif1_dmatx_initialize(void)
+static void r7s721_ssif1_dmatx_initialize_fpga_tx(void)
 {
 	enum { id = 3 };	// 3: DMAC3
 	// DMAC3
@@ -3382,7 +3382,7 @@ static void r7s721_ssif1_dmatx_initialize(void)
 }
 
 // FGA I2S INTERFACE #1
-static void r7s721_ssif1_fullduplex_initialize(void)
+static void r7s721_ssif1_fullduplex_initialize_fpga(void)
 {
 	const uint_fast8_t master = R7S721_SSIF1_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
@@ -3444,10 +3444,10 @@ static void r7s721_ssif1_fullduplex_enable(uint_fast8_t state)
 
 static const codechw_t fpgacodechw_ssif1 =
 {
-	r7s721_ssif1_fullduplex_initialize,
+	r7s721_ssif1_fullduplex_initialize_fpga,
 	hardware_dummy_initialize,
-	r7s721_ssif1_dmarx_initialize,
-	r7s721_ssif1_dmatx_initialize,
+	r7s721_ssif1_dmarx_initialize_fpga_rx,
+	r7s721_ssif1_dmatx_initialize_fpga_tx,
 	r7s721_ssif1_fullduplex_enable,
 	hardware_dummy_enable,
 	"ssif1-audiocodechw"
@@ -3621,40 +3621,41 @@ static const codechw_t fpgaspectrumhw_ssif2 =
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-static const codechw_t audiocodechw_xc7z =
-{
-	hardware_dummy_initialize,	// added...
-	hardware_dummy_initialize,
-	hardware_dummy_initialize,
-	xc7z_dma_init_af_tx,
-	hardware_dummy_enable,
-	hardware_dummy_enable,
-	"ZYNQ 7000 audio codec"
-};
+	static const codechw_t audiocodechw_xc7z =
+	{
+		hardware_dummy_initialize,	// added...
+		hardware_dummy_initialize,
+		hardware_dummy_initialize,
+		xc7z_dma_init_af_tx,
+		hardware_dummy_enable,
+		hardware_dummy_enable,
+		"ZYNQ 7000 audio codec"
+	};
 
-static const codechw_t ifcodechw_xc7z =
-{
-	hardware_dummy_initialize,	// added...
-	hardware_dummy_initialize,
-	hardware_dummy_initialize,
-	xc7z_if_fifo_init,
-	hardware_dummy_enable,
-	hardware_dummy_enable,
-	"ZYNQ 7000 IF codec"
-};
+	static const codechw_t ifcodechw_xc7z =
+	{
+		hardware_dummy_initialize,	// added...
+		hardware_dummy_initialize,
+		hardware_dummy_initialize,
+		xc7z_if_fifo_init,
+		hardware_dummy_enable,
+		hardware_dummy_enable,
+		"ZYNQ 7000 IF codec"
+	};
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 	// other CPUs
-static const codechw_t fpgaspectrumhw_sai2 =
-{
-	hardware_sai2_slave_fullduplex_initialize_WFM,	// added...
-	hardware_dummy_initialize,
-	DMA_SAI2_B_RX_initializeWFM,
-	hardware_dummy_initialize,
-	hardware_sai2_enable_WFM,
-	hardware_dummy_enable,
-	"sai2-fpga spectrum for WFM"
-};
+	static const codechw_t fpgaspectrumhw_sai2 =
+	{
+		hardware_sai2_slave_fullduplex_initialize_WFM,	// added...
+		hardware_dummy_initialize,
+		DMA_SAI2_B_RX_initializeWFM,
+		hardware_dummy_initialize,
+		hardware_sai2_enable_WFM,
+		hardware_dummy_enable,
+		"sai2-fpga spectrum for WFM"
+	};
+
 #else
 
 	#warning Codecs not defined for this CPUSTYLE_XXX
@@ -3744,12 +3745,13 @@ static const codechw_t fpgaspectrumhw_dummy =
 
 
 #if WITHISBOOTLOADER || ! WITHINTEGRATEDDSP
-static const codechw_t * const channels [] =
-{
-	& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
-	& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
-	& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
-};
+
+	static const codechw_t * const channels [] =
+	{
+		& audiocodechw_dummy,		// Интерфейс к НЧ кодеку
+		& fpgaiqhw_dummy,			// Интерфейс к IF кодеку/FPGA
+		& fpgaspectrumhw_dummy,		// Интерфейс к FPGA - широкополосный канал (WFM)
+	};
 
 #elif CPUSTYLE_R7S721
 	static const codechw_t * const channels [] =
