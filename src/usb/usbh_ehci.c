@@ -3462,14 +3462,15 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 // 	 	}
  	}
 
-		if ((portsc & EHCI_PORTSC_PED) != 0)
-		{
-			portsc &= ~ EHCI_PORTSC_PED;
-			hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
-			(void) hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+	if ((portsc & EHCI_PORTSC_PED) != 0)
+	{
+//		portsc &= ~ EHCI_PORTSC_PED;	// сброс этого бита останавливает SOF
+//		hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
+//		(void) hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
 
-			HAL_EHCI_PortEnabled_Callback(hehci);
-		}
+		HAL_EHCI_PortEnabled_Callback(hehci);
+	}
+
  	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
  	{
  		EHCIx->USBSTS = (0x01uL << 2);	// Clear Port Change Detect interrupt
@@ -4165,7 +4166,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
-	PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	//PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 	if (resetIsActive)
 	{
@@ -4192,9 +4193,9 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 		//VERIFY(ehci_root_enable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 
 	}
-	local_delay_ms(1000);
+	//local_delay_ms(1000);
 	HAL_Delay(5);
-	PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	//PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 //	if (! resetIsActive)
 //	{
 //		ehcihosttest(phost, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
