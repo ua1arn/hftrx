@@ -21366,7 +21366,7 @@ hamradio_main_step(void)
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 			}
-	#if WITHDEBUG
+	#if 0//WITHDEBUG
 			{
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
 				char c;
