@@ -3408,7 +3408,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 				(unsigned) qtds [1].len, rxlenresult);
  		//printhex((uintptr_t) (void *) qtds [2], (void *) & qtds [2], sizeof qtds [2]);
  		printhex((uintptr_t) (void *) rxbuff0, rxbuff0, rxlenresult);
- 		memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
+ 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
  		arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
  	}
 
@@ -3946,6 +3946,9 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
+	HAL_StatusTypeDef hal_status = HAL_OK;
+	USBH_StatusTypeDef usb_status = USBH_OK;
+
 
 	PRINTF("USBH_LL_SubmitURB: ep_type=%d, token=%d\n", ep_type, token);
 	//printhex(0, pbuff, length);
@@ -3984,18 +3987,22 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		asynclist_item2_qtd(& qtds [1], rxbuff0, 255, EHCI_FL_PID_IN, virt_to_phys(& qtds [2]));
 		asynclist_item2_qtd(& qtds [2], NULL, 0, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE);
 
- 		memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
+ 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
 		arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
 	}
 	else if (direction == 0)
 	{
 		// Data OUT
 		TP();
+		printhex(0, pbuff, length);
+		return USBH_OK;
 	}
 	else
 	{
 		// Data In
-		TP();
+		//TP();
+		memcpy(pbuff, rxbuff0, length);
+		return USBH_OK;
 	}
 
 		//PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
@@ -4038,9 +4045,6 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) == 0)
 		;
 
-	HAL_StatusTypeDef hal_status = HAL_OK;
-	USBH_StatusTypeDef usb_status = USBH_OK;
-
 //	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 //								 ep_type, token, pbuff, length,
 //								 do_ping);
@@ -4074,7 +4078,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
 	local_delay_ms(500);
-	return URB_ERROR;
+	return URB_DONE;
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
