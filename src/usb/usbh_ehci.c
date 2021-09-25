@@ -3430,6 +3430,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	}
  	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT) - see EHCI_FL_IOC usage
  	{
+ 		unsigned rxlenresult = 255 - (EHCI_LEN_MASK & (unsigned) qtds [1].len);
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
  		PRINTF("Status X = %02X %02X/%02X/%02X cerr=%u %u/%u/%u, len=%04X (%04X)\n",
@@ -3437,9 +3438,9 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 				(unsigned) qtds [0].status,  (unsigned) qtds [0].status,  (unsigned) qtds [0].status,
 				(unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,
 				(unsigned) (qtds [0].flags >> 2) & 0x03, (unsigned) (qtds [1].flags >> 2) & 0x03, (unsigned) (qtds [2].flags >> 2) & 0x03,
-				(unsigned) qtds [1].len, 255 - (unsigned) qtds [1].len);
+				(unsigned) qtds [1].len, rxlenresult);
  		//printhex((uintptr_t) (void *) qtds [2], (void *) & qtds [2], sizeof qtds [2]);
- 		printhex((uintptr_t) (void *) rxbuff0, rxbuff0, 32);
+ 		printhex((uintptr_t) (void *) rxbuff0, rxbuff0, rxlenresult);
  		memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
  		arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
  	}
