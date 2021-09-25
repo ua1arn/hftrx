@@ -507,8 +507,10 @@ static void PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 {
-//	static unsigned offs;
-//	vtty_printhex((offs += 256) & 0xFFFF, (uint8_t *)hpcd->Setup, 8);
+#if 0
+	static unsigned offs;
+	vtty_printhex_irqsystem((offs += 256) & 0xFFFF, (uint8_t *)hpcd->Setup, 8);
+#endif
   USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, (uint8_t *)hpcd->Setup);
 }
 

@@ -47,12 +47,19 @@ typedef struct vtty_tag
 	unsigned col;		// 0..VTTY_COLS-1
 } vtty_t;
 
+static uint_fast8_t debugvtty_qget(uint_fast8_t * pc);
+static void display_vtty_cout(
+	vtty_t * const vt,
+	char ch
+	);
+
 static volatile int vtty_inited;
 
 static RAMFRAMEBUFF ALIGNX_BEGIN vtty_t vtty0 ALIGNX_END;
 
 int display_vtty_putchar(char ch);
 void display_vtty_printf(const char * format, ...);
+void display_vtty_printf_irq(const char * format, ...);
 void display2_vtty(
 	uint_fast8_t x0,
 	uint_fast8_t y0,
@@ -151,6 +158,19 @@ void display2_vtty(
 	const uint_fast16_t x = GRID2X(x0);
 	const uint_fast16_t y = GRID2Y(y0);
 
+	for (;;)
+	{
+		vtty_t * const vt = & vtty0;
+		uint_fast8_t f;
+		uint_fast8_t c;
+		system_disableIRQ();
+		f = debugvtty_qget(& c);
+		system_enableIRQ();
+		if (f == 0)
+			break;
+		display_vtty_cout(vt, c);
+
+	}
 	display_vtty_show(x, y);
 }
 
@@ -251,6 +271,68 @@ void display_vtty_printf(const char * format, ...)
 		display_vtty_putchar(b [i]);
 }
 
+
+// Очереди символов для печати из прерываний
+enum { qSZdevice = 8192 };
+
+static uint8_t debugvtty_queue [qSZdevice];
+static unsigned debugvtty_qp, debugvtty_qg;
+
+// Передать символ в host
+static uint_fast8_t	debugvtty_qput(uint_fast8_t c)
+{
+	unsigned qpt = debugvtty_qp;
+	const unsigned next = (qpt + 1) % qSZdevice;
+	if (next != debugvtty_qg)
+	{
+		debugvtty_queue [qpt] = c;
+		debugvtty_qp = next;
+		return 1;
+	}
+	return 0;
+}
+
+// Получить символ в host
+static uint_fast8_t debugvtty_qget(uint_fast8_t * pc)
+{
+	if (debugvtty_qp != debugvtty_qg)
+	{
+		* pc = debugvtty_queue [debugvtty_qg];
+		debugvtty_qg = (debugvtty_qg + 1) % qSZdevice;
+		return 1;
+	}
+	return 0;
+}
+
+// получить состояние очереди передачи
+static uint_fast8_t debugvtty_qempty(void)
+{
+	return debugvtty_qp == debugvtty_qg;
+}
+
+int display_vtty_putchar_irq(char ch)
+{
+	if (! vtty_inited)
+		return (unsigned char) ch;
+	vtty_t * const vt = & vtty0;
+	if (ch == '\n')
+		display_vtty_putchar_irq('\r');
+
+	debugvtty_qput(ch);
+	return (unsigned char) ch;
+}
+
+void display_vtty_printf_irq(const char * format, ...)
+{
+	char b [128];	// see stack sizes for interrupt handlers
+	va_list	ap;
+	va_start(ap, format);
+	const int n = local_vsnprintf_P(b, sizeof b / sizeof b [0], format, ap);
+	va_end(ap);
+	for (int i = 0; i < n; ++ i)
+		display_vtty_putchar_irq(b [i]);
+}
+
 int display_vtty_maxx(void)
 {
 	return VTTY_COLS;
@@ -293,6 +375,32 @@ vtty_printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 			display_vtty_printf(PSTR("%c"), vtty_toprintc(buff [row * ROWSIZE + j]));
 
 		display_vtty_printf(PSTR("\n"));
+	}
+}
+
+void
+vtty_printhex_irqsystem(unsigned long voffs, const unsigned char * buff, unsigned length)
+{
+	enum { ROWSIZE = 12 };
+	unsigned row;
+	const unsigned rows = (length + (ROWSIZE - 1)) / ROWSIZE;
+
+	for (row = 0; row < rows; ++ row)
+	{
+		unsigned j;
+		const int remaining = length - row * ROWSIZE;
+		const int trl = (ROWSIZE < remaining) ? ROWSIZE : remaining;
+		display_vtty_printf_irq(PSTR("%04lX "), voffs + row * ROWSIZE);
+		for (j = 0; j < trl; ++ j)
+			display_vtty_printf_irq(PSTR(" %02X"), buff [row * ROWSIZE + j]);
+
+		display_vtty_printf_irq(PSTR("%*s"), (ROWSIZE - trl) * 3, "");
+
+		display_vtty_printf_irq(PSTR(" "));
+		for (j = 0; j < trl; ++ j)
+			display_vtty_printf_irq(PSTR("%c"), vtty_toprintc(buff [row * ROWSIZE + j]));
+
+		display_vtty_printf_irq(PSTR("\n"));
 	}
 }
 
