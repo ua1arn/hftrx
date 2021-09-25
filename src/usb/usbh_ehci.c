@@ -2913,6 +2913,14 @@ static struct usb_host_operations ehci_operations = {
 
 #endif
 
+
+/*
+ * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
+ * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
+ * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
+ * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
+ *
+ */
 static void asynclist_item(volatile struct ehci_queue_head * p)
 {
 	memset ((void *) p, 0x00, sizeof * p);
@@ -2943,50 +2951,11 @@ static void asynclist_item(volatile struct ehci_queue_head * p)
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 }
 
-/*
- * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
- * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
- * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
- * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
- *
- */
-static void asynclist_item1(volatile struct ehci_queue_head * p, uint32_t link)
-{
-	memset ((void *) p, 0x00, sizeof * p);
-	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
-//	p->chr = 0;
-//	p->cap = 0;
-//	p->current = 0;
-//	p->cache.next = 0;
-//	p->cache.alt = 0;
-//	p->cache.status = 0;
-//	p->cache.flags = 0;
-//	p->cache.len = 0;
-//	p->cache.low [0] = 0;
-//	p->cache.high [0] = 0;
-//	p->cache.low [1] = 0;
-//	p->cache.high [1] = 0;
-//	p->cache.low [2] = 0;
-//	p->cache.high [2] = 0;
-//	p->cache.low [3] = 0;
-//	p->cache.high [3] = 0;
-//	p->cache.low [4] = 0;
-//	p->cache.high [4] = 0;
-
-
-	//p->cache.len = 0;
-	p->chr = cpu_to_le32(EHCI_CHR_HEAD) ;
-	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
-	p->cache.status = EHCI_STATUS_HALTED;
-	p->current = cpu_to_le32(EHCI_LINK_TERMINATE);
-}
-
-
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
 void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length)
 {
 	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
-	//memset ((void *) p, 0x00, sizeof * p);
+	memset ((void *) p, 0x00, sizeof * p);
 	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
@@ -3008,7 +2977,7 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
  */
 static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queue_head * p, uint32_t link)
 {
-	//memset ((void *) p, 0x00, sizeof * p);
+	memset ((void *) p, 0x00, sizeof * p);
 	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
