@@ -73,7 +73,6 @@ enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
 // list of queue headers
 // выравнивание заменено с 32 на DATA CACHE PAGE
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
-static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclistheadStopped [16];
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
 
 // Periodic frame list
@@ -84,6 +83,8 @@ static volatile __attribute__((used, aligned(4096))) uint8_t txbuff1 [4096] = "4
 static volatile __attribute__((used, aligned(4096))) uint8_t txbuff2 [4096] = "789";
 static volatile __attribute__((used, aligned(4096))) uint8_t rxbuff0 [4096] = "deadbeef";
 
+static unsigned save_in_length;
+static uint8_t * save_in_buff;
 #endif
 
 
@@ -3004,8 +3005,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queu
 
 	uint32_t chr;
 	/* Determine basic characteristics */
-	ASSERT(phost->address == 0);
-	chr = EHCI_CHR_ADDRESS ( phost->address) |	// Default DCFG_DAD field = 0
+	chr = EHCI_CHR_ADDRESS (phost->device.address) |	// Default DCFG_DAD field = 0
 			EHCI_CHR_ENDPOINT ( 0 ) |
 			EHCI_CHR_MAX_LEN ( 64 );
 
@@ -3197,8 +3197,8 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 #endif
 
 
-	asynclist_item(& asynclistheadStopped [0], ehci_link_qhv(& asynclistheadStopped [0]));
-	arm_hardware_flush_invalidate((uintptr_t) & asynclistheadStopped, sizeof asynclistheadStopped);
+	asynclist_item(& asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	#if 1
 	// Setup frame list
@@ -3210,8 +3210,8 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 	// копируем адрес асинхронной очереди в регистр
 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclistheadStopped);
-	ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclistheadStopped));
+	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclisthead);
+	ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclisthead));
 	// Устанавливаем сегмент в 0
 	//hc->opRegs->ctrlDsSegment = 0;
 	EHCIx->CTRLDSSEGMENT = 0x00000000;
@@ -3397,19 +3397,22 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	}
  	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT) - see EHCI_FL_IOC usage
  	{
- 		unsigned rxlenresult = 255 - (EHCI_LEN_MASK & (unsigned) qtds [1].len);
+ 		unsigned rxlenresult = save_in_length ? save_in_length - (EHCI_LEN_MASK & (unsigned) asynclisthead [0].cache.len) : 0;
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
- 		PRINTF("Status X = %02X %02X/%02X/%02X cerr=%u %u/%u/%u, len=%04X (%04X)\n",
+ 		PRINTF("Status X = %02X %02X cerr=%u %u, len=%04X cache.len=%04X (%04X)\n",
  				(unsigned) asynclisthead [0].cache.status,
-				(unsigned) qtds [0].status,  (unsigned) qtds [0].status,  (unsigned) qtds [0].status,
+				(unsigned) qtds [0].status,
 				(unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,
-				(unsigned) (qtds [0].flags >> 2) & 0x03, (unsigned) (qtds [1].flags >> 2) & 0x03, (unsigned) (qtds [2].flags >> 2) & 0x03,
-				(unsigned) qtds [1].len, rxlenresult);
- 		//printhex((uintptr_t) (void *) qtds [2], (void *) & qtds [2], sizeof qtds [2]);
- 		printhex((uintptr_t) (void *) rxbuff0, rxbuff0, rxlenresult);
- 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
- 		arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
+				(unsigned) (qtds [0].flags >> 2) & 0x03,
+				(unsigned) asynclisthead [0].cache.len, (unsigned) qtds [0].len, rxlenresult);
+ 		if (save_in_length != 0 && rxlenresult != 0)
+ 		{
+ 	 		//printhex((uintptr_t) (void *) qtds [2], (void *) & qtds [2], sizeof qtds [2]);
+ 	 		printhex((uintptr_t) (void *) save_in_buff, save_in_buff, rxlenresult);
+ 	 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
+ 	 		//arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
+ 		}
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
@@ -3950,7 +3953,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
 
-	PRINTF("USBH_LL_SubmitURB: ep_type=%d, token=%d\n", ep_type, token);
+	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
 
 	// Change ASYNC base
@@ -3968,75 +3971,66 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 //	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) == 0)
 //		;
 
-	uint8_t * txbuff;
-	uint16_t txlength;
 	if (token == 0)
 	{
 		// Setup
+		//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+		//printhex(0, pbuff, length);
+		save_in_length = 0;
 
-
-		txbuff = pbuff;
-		txlength = length;
-		arm_hardware_flush((uintptr_t) txbuff, txlength);
-		//PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 
-		asynclist_item2_qtd(& asynclisthead [0].cache, txbuff, txlength, EHCI_FL_PID_SETUP, virt_to_phys(& qtds [1]));
-		//asynclist_item2_qtd(& asynclisthead [0].cache, txbuff, txlength, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE);
+		asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE);
+		asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE);
 
-		asynclist_item2_qtd(& qtds [1], rxbuff0, 255, EHCI_FL_PID_IN, virt_to_phys(& qtds [2]));
-		asynclist_item2_qtd(& qtds [2], NULL, 0, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE);
+		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
+		qtds [0].status = EHCI_STATUS_ACTIVE;
 
- 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
-		arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
+		arm_hardware_flush((uintptr_t) pbuff, length);
+		arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
 	}
 	else if (direction == 0)
 	{
 		// Data OUT
-		TP();
-		printhex(0, pbuff, length);
-		return USBH_OK;
+		//PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+		//printhex(0, pbuff, length);
+		save_in_length = 0;
+
+		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+
+		asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE);
+		asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE);
+
+		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
+		qtds [0].status = EHCI_STATUS_ACTIVE;
+
+		arm_hardware_flush((uintptr_t) pbuff, length);
+		arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
 	}
 	else
 	{
 		// Data In
-		//TP();
-		memcpy(pbuff, rxbuff0, length);
-		return USBH_OK;
-	}
+		PRINTF("USBH_LL_SubmitURB: IN, length=%u\n", (unsigned) length);
 
-		//PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-	//
-	//	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-	//	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+		save_in_length = length;
+		save_in_buff = pbuff;
+		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+		asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE);
+		asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE);
 
-		//asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
 		qtds [0].status = EHCI_STATUS_ACTIVE;
-		qtds [1].status = EHCI_STATUS_ACTIVE;
-		qtds [2].status = EHCI_STATUS_ACTIVE;
 
+		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
+		arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
 		arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
-//	if (0)
-//	{
-//		char c;
-//		if (dbg_getchar(& c) == 0 || c != ' ')
-//			return USBH_OK;
-//		PRINTF("asynclisthead [0] at %p:\n", & asynclisthead [0]);
-//		printhex((uintptr_t) & asynclisthead [0], & asynclisthead [0], sizeof asynclisthead [0]);
-//		PRINTF("qtds [0]] at %p:\n", & qtds [0]);
-//		printhex((uintptr_t) & qtds [0], & qtds [0], sizeof qtds [0]);
-//		//for (;;)
-//		//	;
-//	}
-
-	// Change ASYNC base
-//	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
-//	(void) EHCIx->USBCMD;
-//	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) != 0)
-//		;
+	}
 
 	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclisthead);
 	ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclisthead));
