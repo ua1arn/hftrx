@@ -3400,7 +3400,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		unsigned rxlenresult = save_in_length ? save_in_length - (EHCI_LEN_MASK & (unsigned) asynclisthead [0].cache.len) : 0;
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
- 		PRINTF("Status X = %02X %02X cerr=%u %u, len=%04X cache.len=%04X (%04X)\n",
+ 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
  				(unsigned) asynclisthead [0].cache.status,
 				(unsigned) qtds [0].status,
 				(unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,
@@ -3976,6 +3976,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		// Setup
 		//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
 		//printhex(0, pbuff, length);
+
 		save_in_length = 0;
 
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
@@ -4014,7 +4015,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	else
 	{
 		// Data In
-		PRINTF("USBH_LL_SubmitURB: IN, length=%u\n", (unsigned) length);
+		//PRINTF("USBH_LL_SubmitURB: IN, length=%u\n", (unsigned) length);
 
 		save_in_length = length;
 		save_in_buff = pbuff;
@@ -4071,7 +4072,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
-	local_delay_ms(500);
+	local_delay_ms(100);
 	return URB_DONE;
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
