@@ -9484,12 +9484,12 @@ void layout_second_vfo(uint_fast16_t x, uint_fast16_t y)
 
 	colmain_rounded_rect(fr, DIM_X, DIM_Y, x, y, x + 12 * 16, y + 57, 3, COLORPIP_GRAY, 1);
 
-	local_snprintf_P(s, 16, "VFO B  %s", hamradio_get_mode_b_value_P());
+	local_snprintf_P(s, ARRAY_SIZE(s), "VFO B  %s", hamradio_get_mode_b_value_P());
 	colpip_string_tbg(fr, DIM_X, DIM_Y, x + 6 , y + 6, s, COLORPIP_BLACK);
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
 
-	local_snprintf_P(s, 16, "%d", freq);
+	local_snprintf_P(s, ARRAY_SIZE(s), "%lu", (unsigned long) freq);
 	colpip_string_tbg(fr, DIM_X, DIM_Y, x + 6 , y + 12 + SMALLCHARH, s, COLORPIP_BLACK);
 
 
@@ -9499,7 +9499,7 @@ void layout_second_vfo(uint_fast16_t x, uint_fast16_t y)
 void show_alt_layout(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	char s[10];
+	char s [10];
 
 	pipparams_t p;
 	display2_getpipparams(& p);
@@ -9509,7 +9509,7 @@ void show_alt_layout(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 
 	display2_freqX_a(10, 8, NULL);
 
-	local_snprintf_P(s, 10, hamradio_get_mode_a_value_P());
+	local_snprintf_P(s, ARRAY_SIZE(s), "%s", hamradio_get_mode_a_value_P());
 	remove_end_line_spaces(s);
 
 	layout_label1_medium(10, 10, s, 6, COLORPIP_BLACK, COLORPIP_GRAY);
