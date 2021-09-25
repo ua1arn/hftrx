@@ -3399,20 +3399,21 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		unsigned rxlenresult = save_in_length ? save_in_length - (EHCI_LEN_MASK & (unsigned) asynclisthead [0].cache.len) : 0;
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
- 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
- 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
- 				(unsigned) asynclisthead [0].cache.status,
-				(unsigned) qtds [0].status,
-				(unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,
-				(unsigned) (qtds [0].flags >> 2) & 0x03,
-				(unsigned) asynclisthead [0].cache.len, (unsigned) qtds [0].len, rxlenresult);
- 		if (save_in_length != 0 && rxlenresult != 0)
- 		{
- 	 		//printhex((uintptr_t) (void *) qtds [2], (void *) & qtds [2], sizeof qtds [2]);
- 	 		printhex((uintptr_t) (void *) save_in_buff, save_in_buff, rxlenresult);
- 	 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
- 	 		//arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
- 		}
+
+// 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
+// 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
+// 				(unsigned) asynclisthead [0].cache.status,
+//				(unsigned) qtds [0].status,
+//				(unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,
+//				(unsigned) (qtds [0].flags >> 2) & 0x03,
+//				(unsigned) asynclisthead [0].cache.len, (unsigned) qtds [0].len, rxlenresult);
+// 		if (save_in_length != 0 && rxlenresult != 0)
+// 		{
+// 	 		//printhex((uintptr_t) (void *) qtds [2], (void *) & qtds [2], sizeof qtds [2]);
+// 	 		printhex((uintptr_t) (void *) save_in_buff, save_in_buff, rxlenresult);
+// 	 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
+// 	 		//arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
+// 		}
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
@@ -4015,7 +4016,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	else
 	{
 		// Data In
-		//PRINTF("USBH_LL_SubmitURB: IN, length=%u\n", (unsigned) length);
+		//PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
 
 		save_in_length = length;
 		save_in_buff = pbuff;
