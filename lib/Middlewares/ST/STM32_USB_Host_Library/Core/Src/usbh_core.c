@@ -944,7 +944,7 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
       ReqStatus = USBH_Get_DevDesc(phost, USB_DEVICE_DESC_SIZE);
       if (ReqStatus == USBH_OK)
       {
-        USBH_UsrLog("PID/VID: %04X/%04X", (unsigned) phost->device.DevDesc.idProduct, (unsigned) phost->device.DevDesc.idVendor);
+          USBH_UsrLog("VID/PID: %04X/%04X", (unsigned) phost->device.DevDesc.idVendor, (unsigned) phost->device.DevDesc.idProduct);
 
         phost->EnumState = ENUM_SET_ADDR;
         phost->device.address = ++ seqADDR;
