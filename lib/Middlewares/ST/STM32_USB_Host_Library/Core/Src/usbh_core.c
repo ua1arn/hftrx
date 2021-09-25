@@ -947,7 +947,6 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
           USBH_UsrLog("VID/PID: %04X/%04X", (unsigned) phost->device.DevDesc.idVendor, (unsigned) phost->device.DevDesc.idProduct);
 
         phost->EnumState = ENUM_SET_ADDR;
-        phost->device.address = ++ seqADDR;
       }
       else if (ReqStatus == USBH_NOT_SUPPORTED)
       {
@@ -978,11 +977,12 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
 
     case ENUM_SET_ADDR:
       /* set address */
-     ReqStatus = USBH_SetAddress(phost, phost->device.address);
+#define ASSIGNED_DEV_ADDR 7
+     ReqStatus = USBH_SetAddress(phost, ASSIGNED_DEV_ADDR);
       if (ReqStatus == USBH_OK)
       {
         USBH_Delay(2U);
-        //phost->device.address = USBH_DEVICE_ADDRESS;
+        phost->device.address = ASSIGNED_DEV_ADDR;
 
         /* user callback for device address assigned */
         USBH_UsrLog("Address (#%d) assigned.", phost->device.address);
