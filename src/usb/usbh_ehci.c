@@ -3004,7 +3004,7 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link)
+static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queue_head * p, uint32_t link)
 {
 	//memset ((void *) p, 0x00, sizeof * p);
 	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
@@ -3029,7 +3029,8 @@ static void asynclist_item2(volatile struct ehci_queue_head * p, uint32_t link)
 
 	uint32_t chr;
 	/* Determine basic characteristics */
-	chr = EHCI_CHR_ADDRESS ( 0) |	// Default DCFG_DAD field = 0
+	ASSERT(phost->address == 0);
+	chr = EHCI_CHR_ADDRESS ( phost->address) |	// Default DCFG_DAD field = 0
 			EHCI_CHR_ENDPOINT ( 0 ) |
 			EHCI_CHR_MAX_LEN ( 64 );
 
@@ -3082,24 +3083,20 @@ void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length, un
 	arm_hardware_flush_invalidate((uintptr_t) & txbuff0, sizeof txbuff0);
 
 	//PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-	asynclist_item2(& asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+	asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff0, length);
 	asynclist_item2_qtd(& qtds [0], txbuff0, length);
 
 	//PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
-
-	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+//
+//	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+//	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	asynclisthead [0].cache.status = status;
 	qtds [0].status = status;
 
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
-//	EHCIx->USBCMD |= CMD_ASE;
-//	(void) EHCIx->USBCMD;
-
 }
 // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
@@ -4194,11 +4191,6 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	//local_delay_ms(1000);
 	HAL_Delay(5);
 	//PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
-//	if (! resetIsActive)
-//	{
-//		ehcihosttest(phost, setupReqTemplate, sizeof setupReqTemplate, EHCI_STATUS_ACTIVE);
-//	}
-
 
 	usb_status = USBH_Get_USB_Status(hal_status);
 
