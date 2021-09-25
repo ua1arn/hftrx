@@ -80,7 +80,6 @@ static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transf
 // Periodic Schedule list - PERIODICLISTBASE use
 static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
 
-static volatile __attribute__((used, aligned(4096))) uint8_t txbuff0 [4096] = "123";
 static volatile __attribute__((used, aligned(4096))) uint8_t txbuff1 [4096] = "456";
 static volatile __attribute__((used, aligned(4096))) uint8_t txbuff2 [4096] = "789";
 static volatile __attribute__((used, aligned(4096))) uint8_t rxbuff0 [4096] = "deadbeef";
@@ -3045,27 +3044,29 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queu
 	p->chr = cpu_to_le32(chr | 1*EHCI_CHR_HEAD);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
-	p->current = cpu_to_le32(virt_to_phys(& qtds [0]));
+	//p->current = cpu_to_le32(virt_to_phys(& qtds [0]));
+	p->current = cpu_to_le32(virt_to_phys(& p->cache));
 	//p->cache.next = cpu_to_le32(virt_to_phys(& qtds [0]));
 }
 
-void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length)
+void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *txbuff, uint16_t txlength)
 {
 //	EHCI_HandleTypeDef * const hehci = phost->pData;
 //	EhciController * const ehci = & hehci->ehci;
 //	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 
-	memcpy((void *) txbuff0, pbuff, length);
-	arm_hardware_flush_invalidate((uintptr_t) & txbuff0, sizeof txbuff0);
+//	memcpy((void *) txbuff0, pbuff, length);
+//	arm_hardware_flush_invalidate((uintptr_t) & txbuff0, sizeof txbuff0);
 
+	arm_hardware_flush((uintptr_t) txbuff, txlength);
 	//PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 	asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 
-	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff0, length, EHCI_FL_PID_SETUP, virt_to_phys(& qtds [1]));
-	//asynclist_item2_qtd(& qtds [0], txbuff0, 0, EHCI_FL_PID_SETUP, virt_to_phys(& qtds [1]));
-	//asynclist_item2_qtd(& qtds [1], txbuff0, 0, EHCI_FL_PID_OUT, virt_to_phys(& qtds [2]));
-	asynclist_item2_qtd(& qtds [1], rxbuff0, 255, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE);
+	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff, txlength, EHCI_FL_PID_SETUP, virt_to_phys(& qtds [1]));
+	//asynclist_item2_qtd(& qtds [0], txbuff, txlength, EHCI_FL_PID_SETUP, virt_to_phys(& qtds [1]));
+	asynclist_item2_qtd(& qtds [1], rxbuff0, 255, EHCI_FL_PID_IN, virt_to_phys(& qtds [2]));
+	asynclist_item2_qtd(& qtds [2], NULL, 0, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE);
 
 	//PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 //
@@ -3433,6 +3434,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
  		PRINTF("Status X = %02X %02X cerr=%u %u\n", (unsigned) asynclisthead [0].cache.status, (unsigned) qtds [0].status,  (unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,  (unsigned) (qtds [0].flags >> 2) & 0x03);
  		printhex((uintptr_t) (void *) rxbuff0, rxbuff0, 32);
+ 		memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
  		arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
  	}
 
