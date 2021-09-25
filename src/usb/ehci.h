@@ -295,7 +295,7 @@
          uint32_t chr;
          /** Endpoint capabilities */
          uint32_t cap;
-         /** Current transfer descriptor */
+         /** Current transfer descriptor - current qTD */
          uint32_t current;
          /** Transfer descriptor cache */
          struct ehci_transfer_descriptor cache;

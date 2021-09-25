@@ -2936,11 +2936,11 @@ static void asynclist_item(volatile struct ehci_queue_head * p)
 //	p->cache.low [4] = 0;
 //	p->cache.high [4] = 0;
 
-	p->cache.len = 0;
 	p->chr = cpu_to_le32(EHCI_CHR_HEAD);
-	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
-	p->cache.status = EHCI_STATUS_HALTED;
 	p->current = cpu_to_le32(EHCI_LINK_TERMINATE);	// not needed
+	p->cache.status = EHCI_STATUS_HALTED;
+	p->cache.len = 0;
+	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 }
 
 /*
@@ -2985,6 +2985,7 @@ static void asynclist_item1(volatile struct ehci_queue_head * p, uint32_t link)
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
 void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length)
 {
+	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
 	//memset ((void *) p, 0x00, sizeof * p);
 	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
@@ -2992,10 +2993,11 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
 	p->low [0] = cpu_to_le32(virt_to_phys(data));
 	p->high [0] = cpu_to_le32(0);
 
-	p->len = cpu_to_le16(length | 0 * EHCI_LEN_TOGGLE);
+	p->len = cpu_to_le16(length | 1 * EHCI_LEN_TOGGLE);
 	p->flags = EHCI_FL_PID_SETUP | 1 * EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
 	p->status = EHCI_STATUS_HALTED;
 }
+
 
 /*
  * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
@@ -3074,9 +3076,9 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queu
 
 void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length, unsigned status)
 {
-	EHCI_HandleTypeDef * const hehci = phost->pData;
-	EhciController * const ehci = & hehci->ehci;
-	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
+//	EHCI_HandleTypeDef * const hehci = phost->pData;
+//	EhciController * const ehci = & hehci->ehci;
+//	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 
 	memcpy((void *) txbuff0, pbuff, length);
