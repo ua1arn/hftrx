@@ -72,9 +72,10 @@ enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
 static uint8_t setupReqTemplate [] = { 0x80, 0x06, 0x00, 0x01, 0x00, 0x00, 0x08, 0x00, };
 // Asynchronous Schedule list - ASYNCLISTADDR use
 // list of queue headers
-static volatile __attribute__((used, aligned(32))) struct ehci_queue_head asynclisthead [16];
-static volatile __attribute__((used, aligned(32))) struct ehci_queue_head asynclistheadStopped [16];
-static volatile __attribute__((used, aligned(32))) struct ehci_transfer_descriptor qtds [16];
+// выравнивание заменено с 32 на DATA CACHE PAGE
+static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
+static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclistheadStopped [16];
+static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
 
 // Periodic frame list
 // Periodic Schedule list - PERIODICLISTBASE use
