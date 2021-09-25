@@ -80,7 +80,10 @@ static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transf
 // Periodic Schedule list - PERIODICLISTBASE use
 static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
 
-static volatile __attribute__((used, aligned(4096))) uint8_t txbuff0 [4096];
+static volatile __attribute__((used, aligned(4096))) uint8_t txbuff0 [4096] = "123";
+static volatile __attribute__((used, aligned(4096))) uint8_t txbuff1 [4096] = "456";
+static volatile __attribute__((used, aligned(4096))) uint8_t txbuff2 [4096] = "789";
+static volatile __attribute__((used, aligned(4096))) uint8_t rxbuff0 [4096] = "deadbeef";
 
 #endif
 
@@ -2922,7 +2925,7 @@ static struct usb_host_operations ehci_operations = {
  */
 static void asynclist_item(volatile struct ehci_queue_head * p, uint32_t link)
 {
-	memset ((void *) p, 0x00, sizeof * p);
+	//memset ((void *) p, 0x00, sizeof * p);
 	p->link = link, //ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
@@ -2955,7 +2958,7 @@ static void asynclist_item(volatile struct ehci_queue_head * p, uint32_t link)
 void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid, uintptr_t next)
 {
 	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
-	memset ((void *) p, 0x00, sizeof * p);
+	//memset ((void *) p, 0x00, sizeof * p);
 	p->next = cpu_to_le32(next);
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
@@ -2979,7 +2982,7 @@ void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile 
  */
 static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queue_head * p, uint32_t link)
 {
-	memset ((void *) p, 0x00, sizeof * p);
+	//memset ((void *) p, 0x00, sizeof * p);
 	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
@@ -3043,7 +3046,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queu
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 	p->current = cpu_to_le32(virt_to_phys(& qtds [0]));
-	p->cache.next = cpu_to_le32(virt_to_phys(& qtds [0]));
+	//p->cache.next = cpu_to_le32(virt_to_phys(& qtds [0]));
 }
 
 void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length)
@@ -3058,10 +3061,11 @@ void ehcihosttest(USBH_HandleTypeDef *phost, uint8_t *pbuff, uint16_t length)
 
 	//PRINTF("Status 1 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 	asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+
 	asynclist_item2_qtd(& asynclisthead [0].cache, txbuff0, length, EHCI_FL_PID_SETUP, virt_to_phys(& qtds [1]));
-	asynclist_item2_qtd(& qtds [0], txbuff0, 0, EHCI_FL_PID_SETUP, virt_to_phys(& qtds [1]));
-	asynclist_item2_qtd(& qtds [1], txbuff0, length, EHCI_FL_PID_OUT, virt_to_phys(& qtds [2]));
-	asynclist_item2_qtd(& qtds [2], txbuff0, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE);
+	//asynclist_item2_qtd(& qtds [0], txbuff0, 0, EHCI_FL_PID_SETUP, virt_to_phys(& qtds [1]));
+	//asynclist_item2_qtd(& qtds [1], txbuff0, 0, EHCI_FL_PID_OUT, virt_to_phys(& qtds [2]));
+	asynclist_item2_qtd(& qtds [1], rxbuff0, 255, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE);
 
 	//PRINTF("Status 2 = %02X\n", (unsigned) asynclisthead [0].cache.status);
 //
@@ -3428,6 +3432,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
  		PRINTF("Status X = %02X %02X cerr=%u %u\n", (unsigned) asynclisthead [0].cache.status, (unsigned) qtds [0].status,  (unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,  (unsigned) (qtds [0].flags >> 2) & 0x03);
+ 		printhex((uintptr_t) (void *) rxbuff0, rxbuff0, 32);
+ 		arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
@@ -3975,6 +3981,9 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) != 0)
 		;
 	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclistheadStopped);
+	(void) EHCIx->ASYNCLISTADDR;
+	(void) EHCIx->ASYNCLISTADDR;
+	(void) EHCIx->ASYNCLISTADDR;
 	ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclistheadStopped));
 
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
