@@ -3008,15 +3008,15 @@ uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, v
 	*            EP_TYPE_BULK: Bulk type/
 	*            EP_TYPE_INTR: Interrupt type/
 	*/
-static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint8_t ep_type, unsigned ep_addr)
+static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint8_t ep_type)
 {
 	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 
 	uint32_t chr;
 	/* Determine basic characteristics */
 	chr = EHCI_CHR_ADDRESS (phost->device.address) |	// Default DCFG_DAD field = 0
-			EHCI_CHR_ENDPOINT ( ep_addr ) |	/* маскирование всего, кроме младших 4=х бит выполняется */
-			EHCI_CHR_MAX_LEN ( 64 );
+			EHCI_CHR_ENDPOINT ( hc->ep_num ) |	/* маскирование всего, кроме младших 4=х бит выполняется */
+			EHCI_CHR_MAX_LEN ( hc->max_packet );
 
 	/* Control endpoints require manual control of the data toggle */
 	if (ep_type == EP_TYPE_CTRL)
@@ -3352,8 +3352,94 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 
 
 /**
+  * @brief  Initialize a host channel.
+  * @param  hehci HCD handle
+  * @param  ch_num Channel number.
+  *         This parameter can be a value from 1 to 15
+  * @param  epnum Endpoint number.
+  *          This parameter can be a value from 1 to 15
+  * @param  dev_address Current device address
+  *          This parameter can be a value from 0 to 255
+  * @param  speed Current device speed.
+  *          This parameter can be one of these values:
+  *            HCD_DEVICE_SPEED_HIGH: High speed mode,
+  *            HCD_DEVICE_SPEED_FULL: Full speed mode,
+  *            HCD_DEVICE_SPEED_LOW: Low speed mode
+  * @param  ep_type Endpoint Type.
+  *          This parameter can be one of these values:
+  *            EP_TYPE_CTRL: Control type,
+  *            EP_TYPE_ISOC: Isochronous type,
+  *            EP_TYPE_BULK: Bulk type,
+  *            EP_TYPE_INTR: Interrupt type
+  * @param  mps Max Packet Size.
+  *          This parameter can be a value from 0 to32K
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
+                                  uint8_t ch_num,
+                                  uint8_t epnum,
+                                  uint8_t dev_address,
+                                  uint8_t speed,
+                                  uint8_t ep_type,
+                                  uint16_t mps)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  __HAL_LOCK(hehci);
+  hehci->hc[ch_num].do_ping = 0U;
+  hehci->hc[ch_num].dev_addr = dev_address;
+  hehci->hc[ch_num].max_packet = mps;
+  hehci->hc[ch_num].ch_num = ch_num;
+  hehci->hc[ch_num].ep_type = ep_type;
+  hehci->hc[ch_num].ep_num = epnum & 0x7FU;
+
+  if ((epnum & 0x80U) == 0x80U)
+  {
+    hehci->hc[ch_num].ep_is_in = 1U;
+  }
+  else
+  {
+    hehci->hc[ch_num].ep_is_in = 0U;
+  }
+
+  hehci->hc[ch_num].speed = speed;
+
+// TODO: use queue head
+//  status =  USB_HC_Init(hehci->Instance,
+//                        ch_num,
+//                        epnum,
+//                        dev_address,
+//                        speed,
+//                        ep_type,
+//                        mps);
+
+  __HAL_UNLOCK(hehci);
+
+  return status;
+}
+
+/**
+  * @brief  Halt a host channel.
+  * @param  hehci HCD handle
+  * @param  ch_num Channel number.
+  *         This parameter can be a value from 1 to 15
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  __HAL_LOCK(hehci);
+  // TODO: use queue head
+//  (void)USB_HC_Halt(hehci->Instance, (uint8_t)ch_num);
+  __HAL_UNLOCK(hehci);
+
+  return status;
+}
+
+/**
   * @brief  Connect callback.
-  * @param  hhcd: EHCI handle
+  * @param  hehci: EHCI handle
   * @retval None
   */
 void HAL_EHCI_Connect_Callback(EHCI_HandleTypeDef *hehci)
@@ -3363,7 +3449,7 @@ void HAL_EHCI_Connect_Callback(EHCI_HandleTypeDef *hehci)
 
 /**
   * @brief  Disconnect callback.
-  * @param  hhcd: EHCI handle
+  * @param  hehci: EHCI handle
   * @retval None
   */
 void HAL_EHCI_Disconnect_Callback(EHCI_HandleTypeDef *hehci)
@@ -3373,7 +3459,7 @@ void HAL_EHCI_Disconnect_Callback(EHCI_HandleTypeDef *hehci)
 
 /**
 * @brief  Port Port Enabled callback.
-  * @param  hhcd: EHCI handle
+  * @param  hehci: EHCI handle
   * @retval None
   */
 void HAL_EHCI_PortEnabled_Callback(EHCI_HandleTypeDef *hehci)
@@ -3678,7 +3764,7 @@ HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 
 /**
   * @brief  Submit a new URB for processing.
-  * @param  hhcd EHCI handle
+  * @param  hehci EHCI handle
   * @param  ch_num Channel number.
   *         This parameter can be a value from 1 to 15
   * @param  direction Channel number.
@@ -3819,6 +3905,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   hehci->hc[ch_num].ch_num = ch_num;
   hehci->hc[ch_num].state = HC_IDLE;
 
+  //PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
 //
 //  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) async;
@@ -3846,7 +3933,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 #endif
 
 	USBH_HandleTypeDef * const phost = & hUsbHostHS;
-	unsigned ep_addr = 0;
+	unsigned ep_addr = hehci->hc[ch_num].ep_num;
 	if (token == 0)
 	{
 		// Setup
@@ -3855,7 +3942,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 		save_in_length = 0;
 
-		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type, ep_addr);
+		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type);
 
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP));
 		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP));
@@ -3875,7 +3962,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		//printhex(0, pbuff, length);
 		save_in_length = 0;
 
-		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type, ep_addr);
+		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type);
 
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
 		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
@@ -3895,7 +3982,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 		save_in_length = length;
 		save_in_buff = pbuff;
-		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type, ep_addr);
+		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type);
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
 		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
 
@@ -3914,7 +4001,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 /**
   * @brief  Return  URB state for a channel.
-  * @param  hhcd EHCI handle
+  * @param  hehci EHCI handle
   * @param  chnum Channel number.
   *         This parameter can be a value from 1 to 15
   * @retval URB state.
@@ -3926,22 +4013,22 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   *            URB_ERROR/
   *            URB_STALL
   */
-EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hhcd, uint8_t chnum)
+EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hehci, uint8_t chnum)
 {
-  return hhcd->hc[chnum].urb_state;
+  return hehci->hc[chnum].urb_state;
 }
 
 
 /**
   * @brief  Return the last host transfer size.
-  * @param  hhcd EHCI handle
+  * @param  hehci EHCI handle
   * @param  chnum Channel number.
   *         This parameter can be a value from 1 to 15
   * @retval last transfer size in byte
   */
-uint32_t HAL_EHCI_HC_GetXferCount(EHCI_HandleTypeDef *hhcd, uint8_t chnum)
+uint32_t HAL_EHCI_HC_GetXferCount(EHCI_HandleTypeDef *hehci, uint8_t chnum)
 {
-  return hhcd->hc[chnum].xfer_count;
+  return hehci->hc[chnum].xfer_count;
 }
 
 
@@ -4248,10 +4335,10 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num,
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
-//
-//  hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
-//                               dev_address, speed, ep_type, mps);
-//
+
+  hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
+                               dev_address, speed, ep_type, mps);
+
   ////hal_status =  ehci_endpoint_open(& usbdev0->control) == 0 ? HAL_OK : HAL_ERROR;
   usb_status = USBH_Get_USB_Status(hal_status);
 
@@ -4268,9 +4355,9 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
-//
-//  hal_status = HAL_EHCI_HC_Halt(phost->pData, pipe);
-//
+
+  hal_status = HAL_EHCI_HC_Halt(phost->pData, pipe);
+
  ////ehci_endpoint_close(& usbdev0->control);
   usb_status = USBH_Get_USB_Status(hal_status);
 
