@@ -30,7 +30,7 @@ extern "C" {
 
 #if defined (USB1_EHCI)
 
-
+#include "usbh_def.h" // for USBH_URBStateTypeDef
 
 
 // ------------------------------------------------------------------------------------------------
@@ -355,6 +355,8 @@ typedef struct
 	unsigned long nports;
 	__IO uint32_t * portsc;
 	EhciController ehci;
+	volatile USBH_URBStateTypeDef urbState; /* = USBH_URB_IDLE */;
+
 #if (USE_HAL_EHCI_REGISTER_CALLBACKS == 1U)
   void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
   void (* ConnectCallback)(struct __EHCI_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Connect callback            */
