@@ -73,9 +73,6 @@ enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
 // Periodic Schedule list - PERIODICLISTBASE use
 static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
 
-static unsigned save_in_length;
-static uint8_t * save_in_buff;
-
 // Asynchronous Schedule list - ASYNCLISTADDR use
 // list of queue headers
 // выравнивание заменено с 32 на DATA CACHE PAGE
@@ -3008,7 +3005,7 @@ uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, v
 	*            EP_TYPE_BULK: Bulk type/
 	*            EP_TYPE_INTR: Interrupt type/
 	*/
-static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint8_t ep_type)
+static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint8_t ep_typeXXX)
 {
 	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 
@@ -3019,7 +3016,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 			EHCI_CHR_MAX_LEN ( hc->max_packet );
 
 	/* Control endpoints require manual control of the data toggle */
-	if (ep_type == EP_TYPE_CTRL)
+	if (hc->ep_type == EP_TYPE_CTRL)
 		chr |= EHCI_CHR_TOGGLE;
 
 	/* Determine endpoint speed */
@@ -3031,7 +3028,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 //		} else {
 //			chr |= EHCI_CHR_EPS_LOW;
 //		}
-		//if (ep_type == EP_TYPE_CTRL)
+		if (hc->ep_type == EP_TYPE_CTRL)
 			chr |= EHCI_CHR_CONTROL;
 
 	}
@@ -3490,7 +3487,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	}
  	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT) - see EHCI_FL_IOC usage
  	{
- 		unsigned rxlenresult = save_in_length ? save_in_length - (EHCI_LEN_MASK & (unsigned) asynclisthead [0].cache.len) : 0;
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		const uint_fast8_t status = asynclisthead [0].cache.status;
  		if (status == 0)
@@ -3933,68 +3929,110 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 #endif
 
 	USBH_HandleTypeDef * const phost = & hUsbHostHS;
-	unsigned ep_addr = hehci->hc[ch_num].ep_num;
-	if (token == 0)
+	EHCI_HCTypeDef * const hc = & hehci->hc[ch_num];
+	switch (ep_type)
 	{
-		// Setup
-		//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
-		//printhex(0, pbuff, length);
+	case EP_TYPE_CTRL:
+		if (token == 0)
+		{
+			// Setup
+			//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+			//printhex(0, pbuff, length);
 
-		save_in_length = 0;
+			asynclist_item2(phost, hc, & asynclisthead [0], ep_type);
 
-		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type);
+			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP));
+			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP));
 
-		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP));
-		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP));
+			asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
+			//qtds [0].status = EHCI_STATUS_ACTIVE;
 
-		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
-		//qtds [0].status = EHCI_STATUS_ACTIVE;
+			arm_hardware_flush((uintptr_t) pbuff, length);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
-		arm_hardware_flush((uintptr_t) pbuff, length);
-		//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+		}
+		else if (direction == 0)
+		{
+			// Data OUT
+			//PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+			//printhex(0, pbuff, length);
 
+			asynclist_item2(phost, hc, & asynclisthead [0], ep_type);
+
+			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
+			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
+
+			asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
+			//qtds [0].status = EHCI_STATUS_ACTIVE;
+
+			arm_hardware_flush((uintptr_t) pbuff, length);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
+		}
+		else
+		{
+			// Data In
+			//PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
+
+			asynclist_item2(phost, hc, & asynclisthead [0], ep_type);
+			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
+			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
+
+			asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
+			//qtds [0].status = EHCI_STATUS_ACTIVE;
+
+			//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
+			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
+		}
+		break;
+
+	case EP_TYPE_BULK:
+		if (direction == 0)
+		{
+			// BULK Data OUT
+			PRINTF("USBH_LL_SubmitURB: BULK OUT, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+
+			asynclist_item2(phost, hc, & asynclisthead [0], ep_type);
+
+			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
+			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
+
+			asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
+			//qtds [0].status = EHCI_STATUS_ACTIVE;
+
+			arm_hardware_flush((uintptr_t) pbuff, length);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+		}
+		else
+		{
+			// BULK Data IN
+			PRINTF("USBH_LL_SubmitURB: BULK IN, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+
+			asynclist_item2(phost, hc, & asynclisthead [0], ep_type);
+			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
+			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
+
+			asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
+			//qtds [0].status = EHCI_STATUS_ACTIVE;
+
+			//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
+			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+		}
+		break;
+
+	default:
+		ASSERT(0);
+		break;
 	}
-	else if (direction == 0)
-	{
-		// Data OUT
-		//PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
-		//printhex(0, pbuff, length);
-		save_in_length = 0;
 
-		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type);
-
-		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
-		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
-
-		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
-		//qtds [0].status = EHCI_STATUS_ACTIVE;
-
-		arm_hardware_flush((uintptr_t) pbuff, length);
-		//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
-	}
-	else
-	{
-		// Data In
-		//PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
-
-		save_in_length = length;
-		save_in_buff = pbuff;
-		asynclist_item2(phost, & hehci->hc[ch_num], & asynclisthead [0], ep_type);
-		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
-		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
-
-		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
-		//qtds [0].status = EHCI_STATUS_ACTIVE;
-
-		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
-		arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
-		//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
-	}
 
   return HAL_OK;
 }
@@ -4107,7 +4145,6 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
 
-	ASSERT(ep_type == EP_TYPE_CTRL);
 	// Stop ASYNC queue
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
