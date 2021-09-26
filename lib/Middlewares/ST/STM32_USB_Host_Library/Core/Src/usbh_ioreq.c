@@ -188,7 +188,7 @@ USBH_StatusTypeDef USBH_BulkSendData(USBH_HandleTypeDef *phost,
 
   (void)USBH_LL_SubmitURB(phost,                /* Driver handle    */
                           pipe_num,             /* Pipe index       */
-                          0U,                   /* Direction : IN   */
+                          0U,                   /* Direction : OUT   */
                           USBH_EP_BULK,         /* EP type          */
                           USBH_PID_DATA,        /* Type Data        */
                           buff,                 /* data buffer      */
