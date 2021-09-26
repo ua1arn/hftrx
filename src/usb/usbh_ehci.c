@@ -3012,7 +3012,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 
 	uint32_t chr;
 	/* Determine basic characteristics */
-	chr = EHCI_CHR_ADDRESS (phost->device.address) |	// Default DCFG_DAD field = 0
+	chr = EHCI_CHR_ADDRESS (hc->dev_addr) |	// Default DCFG_DAD field = 0
 			EHCI_CHR_ENDPOINT (hc->ep_num ) |	/* маскирование всего, кроме младших 4=х бит выполняется */
 			EHCI_CHR_MAX_LEN ( hc->max_packet );
 
@@ -3938,7 +3938,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (token == 0)
 		{
 			// Setup
-			//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+			//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
 			//printhex(0, pbuff, length);
 
 			asynclist_item2(phost, hc, qh);
@@ -3957,7 +3957,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else if (direction == 0)
 		{
 			// Data OUT
-			//PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+			//PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
 			//printhex(0, pbuff, length);
 
 			asynclist_item2(phost, hc, qh);
@@ -3997,7 +3997,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (direction == 0)
 		{
 			// BULK Data OUT
-			//PRINTF("USBH_LL_SubmitURB: BULK OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d\n", pbuff, (unsigned) length, phost->device.address, do_ping);
+			//PRINTF("USBH_LL_SubmitURB: BULK OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
@@ -4016,7 +4016,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// BULK Data IN
-			//PRINTF("USBH_LL_SubmitURB: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, phost->device.address, do_ping);
+			PRINTF("USBH_LL_SubmitURB: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
