@@ -2955,12 +2955,12 @@ static void asynclist_item(volatile struct ehci_queue_head * p, uint32_t link)
 }
 
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
-uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid, uintptr_t next)
+uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid)
 {
 	unsigned i;
 	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
 	//memset ((void *) p, 0x00, sizeof * p);
-	p->next = cpu_to_le32(next);
+	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
 
@@ -4007,8 +4007,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 
-		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE));
-		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE));
+		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP));
+		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
 		qtds [0].status = EHCI_STATUS_ACTIVE;
@@ -4027,8 +4027,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 
-		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE));
-		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE));
+		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
+		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
 		qtds [0].status = EHCI_STATUS_ACTIVE;
@@ -4046,8 +4046,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		save_in_length = length;
 		save_in_buff = pbuff;
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
-		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE));
-		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE));
+		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
+		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
 		qtds [0].status = EHCI_STATUS_ACTIVE;
