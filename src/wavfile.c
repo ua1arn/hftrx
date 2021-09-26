@@ -500,9 +500,9 @@ void sdcardtoggle(void)
 // записанных буферов на SD CARD
 void sdcardbgprocess(void)
 {
-#if WITHUSEUSBFLASH
-	board_usb_spool();
-#endif /* WITHUSEUSBFLASH */
+#if WITHUSBHW
+	board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 	switch (sdstate)
 	{
 	case SDSTATE_IDLE:

@@ -9201,7 +9201,7 @@ static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInpu
 
 #endif /* WITHLMSAUTONOTCH */
 
-#if ! WITHSKIPUSERMODE
+#if 1//! WITHSKIPUSERMODE
 
 #if WITHNOSPEEX
 
