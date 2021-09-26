@@ -544,7 +544,7 @@ static USBH_StatusTypeDef USBH_ParseCfgDescNew(USBH_HandleTypeDef *phost, uint8_
 				iadmode = 1;
 				USBH_IfAssocDescTypeDef *piad = (USBH_IfAssocDescTypeDef*) pdesc;
 				USBH_DbgLog(
-						PSTR("USBH_ParseCfgDesc: USB_DESC_TYPE_ASSOC: 0x%02X/x%02X, nif=%d, firstIf=%d\n"),
+						"USBH_ParseCfgDesc: USB_DESC_TYPE_ASSOC: 0x%02X/x%02X, nif=%d, firstIf=%d",
 						piad->bFunctionClass, piad->bFunctionSubClass,
 						piad->bInterfaceCount, piad->bFirstInterface);
 			} else if (/*iadmode == 0 && */pdesc->bDescriptorType
@@ -553,7 +553,7 @@ static USBH_StatusTypeDef USBH_ParseCfgDescNew(USBH_HandleTypeDef *phost, uint8_
 				USBH_ParseInterfaceDesc(pif, (uint8_t*) pdesc);
 
 				USBH_DbgLog(
-						PSTR("USBH_ParseCfgDesc: ifix=%d, 0x%02X/0x%02X/0x%02X, nEP=%d\n"),
+						"USBH_ParseCfgDesc: ifix=%d, 0x%02X/0x%02X/0x%02X, nEP=%d",
 						pif->bInterfaceNumber, pif->bInterfaceClass,
 						pif->bInterfaceSubClass, pif->bInterfaceProtocol,
 						pif->bNumEndpoints);

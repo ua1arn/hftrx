@@ -713,6 +713,10 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
     case HOST_CHECK_CLASS:
 
+        //USBH_UsrLog("HOST_CHECK_CLASS: Incoming class: %02X.", (unsigned) phost->device.CfgDesc.Itf_Desc[0].bInterfaceClass);
+      	//printhex(0x00, & phost->device.CfgDesc.Itf_Desc[0], sizeof phost->device.CfgDesc.Itf_Desc[0]);
+      	//printhex(0x00, & phost->device.CfgDesc_Raw, sizeof phost->device.CfgDesc_Raw);
+
       if (phost->ClassNumber == 0U)
       {
         USBH_UsrLog("No Class has been registered.");
@@ -720,7 +724,8 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
       }
       else
       {
-        phost->pActiveClass = NULL;
+          USBH_UsrLog("Total %d classes has been registered.", (int) phost->ClassNumber);
+       phost->pActiveClass = NULL;
 
         for (idx = 0U; idx < phost->ClassNumber; idx++)
         {
@@ -750,7 +755,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         else
         {
           phost->gState = HOST_ABORT_STATE;
-          USBH_UsrLog("No registered class code %02X for this device.", (unsigned) phost->device.CfgDesc.Itf_Desc[0].bInterfaceClass);
+          USBH_UsrLog("No registered class with code %02X for this device.", (unsigned) phost->device.CfgDesc.Itf_Desc[0].bInterfaceClass);
         }
       }
 
