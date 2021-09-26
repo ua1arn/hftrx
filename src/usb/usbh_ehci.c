@@ -69,18 +69,22 @@ enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
 #if 1
 
 
-// Asynchronous Schedule list - ASYNCLISTADDR use
-// list of queue headers
-// выравнивание заменено с 32 на DATA CACHE PAGE
-static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
-//static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
-
 // Periodic frame list
 // Periodic Schedule list - PERIODICLISTBASE use
 static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
 
 static unsigned save_in_length;
 static uint8_t * save_in_buff;
+
+static volatile USBH_URBStateTypeDef urbState = USBH_URB_IDLE;
+
+// Asynchronous Schedule list - ASYNCLISTADDR use
+// list of queue headers
+// выравнивание заменено с 32 на DATA CACHE PAGE
+static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
+//static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
+
+
 #endif
 
 
@@ -3405,20 +3409,22 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		unsigned rxlenresult = save_in_length ? save_in_length - (EHCI_LEN_MASK & (unsigned) asynclisthead [0].cache.len) : 0;
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		const uint_fast8_t status = asynclisthead [0].cache.status;
- 		if (status & EHCI_STATUS_XACT_ERR)
- 			hehci->urbState = USBH_URB_ERROR;
+ 		if (status == 0)
+ 			urbState = USBH_URB_DONE;
+ 		else if (status & EHCI_STATUS_XACT_ERR)
+ 			urbState = USBH_URB_ERROR;
  		else if (status & EHCI_STATUS_BABBLE)
- 			hehci->urbState = USBH_URB_ERROR;
+ 			urbState = USBH_URB_ERROR;
  		else if (status & EHCI_STATUS_BUFFER)
- 			hehci->urbState = USBH_URB_ERROR;
+ 			urbState = USBH_URB_ERROR;
  		else if (status & EHCI_STATUS_ACTIVE)
- 			hehci->urbState = USBH_URB_NOTREADY;
+ 			urbState = USBH_URB_NOTREADY;
  		else if (status & EHCI_STATUS_HALTED)
- 			hehci->urbState = USBH_URB_ERROR;
+ 			urbState = USBH_URB_ERROR;
  		else
- 			hehci->urbState = USBH_URB_DONE;
+ 			urbState = USBH_URB_DONE;
 
- 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status=%02X\n", (unsigned long) usbsts, (unsigned) status);
+ 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status=%02X, urbState=%d\n", (unsigned long) usbsts, (unsigned) status, urbState);
 // 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
 // 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
 // 				(unsigned) asynclisthead [0].cache.status,
@@ -3444,6 +3450,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 // 	 	{
 // 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
 // 	 	}
+ 		urbState = USBH_URB_ERROR;
  	}
 
  	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
@@ -3495,6 +3502,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		EHCIx->USBSTS = (0x01uL << 4);	// Clear Host System Error interrupt
  		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
 		PRINTF("HAL_EHCI_IRQHandler: Host System Error, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
+ 		urbState = USBH_URB_ERROR;
  	}
 
  	if ((usbsts & (0x01uL << 5)))	// Interrupt On Async Advance
@@ -3853,7 +3861,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	if (token == 0)
 	{
 		// Setup
-		//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+		PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
 		//printhex(0, pbuff, length);
 
 		save_in_length = 0;
@@ -3874,7 +3882,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	else if (direction == 0)
 	{
 		// Data OUT
-		//PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
+		PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
 		//printhex(0, pbuff, length);
 		save_in_length = 0;
 
@@ -3894,7 +3902,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	else
 	{
 		// Data In
-		//PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
+		PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
 
 		save_in_length = length;
 		save_in_buff = pbuff;
@@ -4019,7 +4027,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
-	hehci->urbState = USBH_URB_IDLE;
+	urbState = USBH_URB_IDLE;
 
 	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
@@ -4075,7 +4083,16 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
 	EHCI_HandleTypeDef *pHandle;
 	pHandle = phost->pData;
-	return pHandle->urbState;
+	local_delay_ms(300);
+	return USBH_URB_DONE;
+	int st = urbState;
+//	PRINTF("USBH_LL_GetURBState 1: pipe=%u, urbState=%d\n", pipe, st);
+//	local_delay_ms(300);
+	//PRINTF("USBH_LL_GetURBState 2: pipe=%u, urbState=%d\n", pipe, st);
+	return st;
+	if (st == USBH_URB_IDLE)
+		local_delay_ms(300);
+	return st;
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
