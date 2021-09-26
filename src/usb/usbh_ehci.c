@@ -3307,7 +3307,7 @@ HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_
 
 HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
 
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
  	//USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
 
  	EHCIx->USBINTR = 0;
@@ -3433,7 +3433,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
  	{
  		EHCIx->USBSTS = (0x01uL << 1);	// Clear USB Error Interrupt (USBERRINT) interrupt
- 		PRINTF("HAL_EHCI_IRQHandler: USB Error\n");
+ 		//PRINTF("HAL_EHCI_IRQHandler: USB Error\n");
  		unsigned i;
 // 		for (i = 0; i < hehci->nports; ++ i)
 // 	 	{
@@ -3666,7 +3666,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 
 HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
  	EhciController * const ehci = & hehci->ehci;
   __HAL_LOCK(hehci);
   (void)EHCI_StopHost(hehci->Instance);
