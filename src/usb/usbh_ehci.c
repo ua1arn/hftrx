@@ -3006,14 +3006,14 @@ uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, v
 	*            EP_TYPE_BULK: Bulk type/
 	*            EP_TYPE_INTR: Interrupt type/
 	*/
-static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint8_t ep_typeXXX)
+static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p)
 {
 	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 
 	uint32_t chr;
 	/* Determine basic characteristics */
 	chr = EHCI_CHR_ADDRESS (phost->device.address) |	// Default DCFG_DAD field = 0
-			EHCI_CHR_ENDPOINT ( hc->ep_num ) |	/* маскирование всего, кроме младших 4=х бит выполняется */
+			EHCI_CHR_ENDPOINT (hc->ep_num ) |	/* маскирование всего, кроме младших 4=х бит выполняется */
 			EHCI_CHR_MAX_LEN ( hc->max_packet );
 
 	/* Control endpoints require manual control of the data toggle */
@@ -3940,7 +3940,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
 			//printhex(0, pbuff, length);
 
-			asynclist_item2(phost, hc, & asynclisthead [0], EP_TYPE_CTRL);
+			asynclist_item2(phost, hc, & asynclisthead [0]);
 
 			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP));
 			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP));
@@ -3959,7 +3959,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, phost->device.address);
 			//printhex(0, pbuff, length);
 
-			asynclist_item2(phost, hc, & asynclisthead [0], EP_TYPE_CTRL);
+			asynclist_item2(phost, hc, & asynclisthead [0]);
 
 			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
 			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
@@ -3977,7 +3977,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			// Data In
 			//PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
 
-			asynclist_item2(phost, hc, & asynclisthead [0], EP_TYPE_CTRL);
+			asynclist_item2(phost, hc, & asynclisthead [0]);
 			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
 			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
 
@@ -3999,7 +3999,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			PRINTF("USBH_LL_SubmitURB: BULK OUT, pbuff=%p, length=%u, addr=%u\n", pbuff, (unsigned) length, phost->device.address);
 			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
 
-			asynclist_item2(phost, hc, & asynclisthead [0], EP_TYPE_BULK);
+			asynclist_item2(phost, hc, & asynclisthead [0]);
 
 			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
 			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
@@ -4017,7 +4017,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			PRINTF("USBH_LL_SubmitURB: BULK IN, pbuff=%p, length=%u, addr=%u\n", pbuff, (unsigned) length, phost->device.address);
 			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
 
-			asynclist_item2(phost, hc, & asynclisthead [0], EP_TYPE_BULK);
+			asynclist_item2(phost, hc, & asynclisthead [0]);
 			VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
 			//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
 
