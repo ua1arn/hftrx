@@ -399,7 +399,7 @@ static void  USBH_ParseDevDesc(USBH_DevDescTypeDef *dev_desc, uint8_t *buf,
   * @param  length: Length of the descriptor
   * @retval USBH statuse
   */
-static USBH_StatusTypeDef USBH_ParseCfgDesc(USBH_HandleTypeDef *phost, uint8_t *buf, uint16_t length)
+static USBH_StatusTypeDef USBH_ParseCfgDescOld(USBH_HandleTypeDef *phost, uint8_t *buf, uint16_t length)
  {
 	USBH_CfgDescTypeDef *cfg_desc = &phost->device.CfgDesc;
 	USBH_StatusTypeDef status = USBH_OK;
@@ -506,7 +506,7 @@ static USBH_StatusTypeDef USBH_ParseCfgDesc(USBH_HandleTypeDef *phost, uint8_t *
   * @param  length: Length of the descriptor
   * @retval USBH statuse
   */
-static USBH_StatusTypeDef USBH_ParseCfgDescNew(USBH_HandleTypeDef *phost, uint8_t *buf, uint16_t length)
+static USBH_StatusTypeDef USBH_ParseCfgDesc(USBH_HandleTypeDef *phost, uint8_t *buf, uint16_t length)
  {
 	USBH_CfgDescTypeDef *cfg_desc = &phost->device.CfgDesc;
 	USBH_StatusTypeDef status = USBH_OK;
