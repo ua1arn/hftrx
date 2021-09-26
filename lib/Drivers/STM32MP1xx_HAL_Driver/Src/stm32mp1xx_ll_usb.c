@@ -178,8 +178,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 //		FRACT /= pll4_r_ck;
 //		FRACT = FRACT - (d.quot << 16);
 
-	PRINTF("USB_HS_PHYCInit: usbphyref=%u, N=%u, FRACT=%u, ODF=%u\n", usbphyref, N, (unsigned) (FRACT & 0xFFFF), ODF);
-
+	//PRINTF("USB_HS_PHYCInit: usbphyref=%u, N=%u, FRACT=%u, ODF=%u\n", usbphyref, N, (unsigned) (FRACT & 0xFFFF), ODF);
 
 	// PLL
 	// биты для программирования
@@ -206,18 +205,18 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 
 	if ((newPLLvalue & validmask) != (USBPHYC->PLL & validmask) || (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
 	{
-		PRINTF("USB_HS_PHYCInit: stop PLL. newPLLvalue=%08lX, USBPHYC->PLL=%08lX\n", newPLLvalue, USBPHYC->PLL);
+		//PRINTF("USB_HS_PHYCInit: stop PLL. newPLLvalue=%08lX, USBPHYC->PLL=%08lX\n", newPLLvalue, USBPHYC->PLL);
 		USBPHYC->PLL &= ~ USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) != 0)
 			;
-		PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
+		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
 		USBPHYC->PLL = (USBPHYC->PLL & ~ (validmask)) | newPLLvalue;
 		(void) USBPHYC->PLL;
 
-		PRINTF("USB_HS_PHYCInit: start PLL.\n");
+		//PRINTF("USB_HS_PHYCInit: start PLL.\n");
 		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
@@ -226,7 +225,7 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
 			;
-		PRINTF("USB_HS_PHYCInit: start PLL done.\n");
+		//PRINTF("USB_HS_PHYCInit: start PLL done.\n");
 
 		// TUNE base: 5A00610C 5A00620C
 		//PRINTF("TUNE base: %p %p\n", & USBPHYC_PHY1->TUNE, & USBPHYC_PHY2->TUNE);

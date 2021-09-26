@@ -6293,7 +6293,7 @@ void hightests(void)
 		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
 	}
 #endif
-#if 1 && CPUSTYLE_STM32MP1 && WITHDEBUG
+#if 0 && CPUSTYLE_STM32MP1 && WITHDEBUG
 	{
 		PRINTF("stm32mp1_get_mpuss_freq()=%lu (MPU)\n", stm32mp1_get_mpuss_freq());
 		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
