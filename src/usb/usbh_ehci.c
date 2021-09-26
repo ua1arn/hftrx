@@ -2955,21 +2955,46 @@ static void asynclist_item(volatile struct ehci_queue_head * p, uint32_t link)
 }
 
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
-void asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid, uintptr_t next)
+uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid, uintptr_t next)
 {
+	unsigned i;
 	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
 	//memset ((void *) p, 0x00, sizeof * p);
 	p->next = cpu_to_le32(next);
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
-	p->low [0] = cpu_to_le32(virt_to_phys(data));
-	p->high [0] = cpu_to_le32(0);
 
 	p->len = cpu_to_le16(length | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 														// cleared for SETUP packets
 	p->flags = pid | EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
 	p->status = EHCI_STATUS_HALTED;
+
+	for (i = 0; i < ARRAY_SIZE(p->low) && length != 0; ++ i)
+	{
+		/* Calculate length of this fragment */
+		const uintptr_t phys = virt_to_phys ( data );
+		const unsigned offset = ( phys & ( EHCI_PAGE_ALIGN - 1 ) );
+		unsigned frag_len = ( EHCI_PAGE_ALIGN - offset );
+		if ( frag_len > length )
+			frag_len = length;
+
+		/* Sanity checks */
+		ASSERT( ( i == 0 ) || ( offset == 0 ) );
+
+		/* Populate buffer pointer */
+		p->low [i] = cpu_to_le32 ( phys );
+		if ( sizeof ( physaddr_t ) > sizeof ( uint32_t ) ) {
+			p->high [i] =
+					cpu_to_le32 ( ((uint64_t) phys) >> 32 );
+		}
+
+		/* Move to next fragment */
+		data += frag_len;
+		length -= frag_len;
+	}
+	ASSERT(length == 0);
+	return length == 0;		// 0 - без ошибок
 }
 
 
@@ -3982,8 +4007,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 
-		asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE);
-		asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE);
+		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE));
+		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP, EHCI_LINK_TERMINATE));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
 		qtds [0].status = EHCI_STATUS_ACTIVE;
@@ -4002,8 +4027,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 
-		asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE);
-		asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE);
+		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE));
+		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT, EHCI_LINK_TERMINATE));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
 		qtds [0].status = EHCI_STATUS_ACTIVE;
@@ -4021,8 +4046,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		save_in_length = length;
 		save_in_buff = pbuff;
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
-		asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE);
-		asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE);
+		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE));
+		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN, EHCI_LINK_TERMINATE));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
 		qtds [0].status = EHCI_STATUS_ACTIVE;
