@@ -209,7 +209,7 @@ extern "C" {
 #define USBH_DEVICE_ADDRESS_DEFAULT                        0x00U
 //#define USBH_DEVICE_ADDRESS                                0x01U
 
-#define USBH_MAX_ERROR_COUNT                               0x02U
+#define USBH_MAX_ERROR_COUNT                               16//0x02U
 
 #if (USBH_USE_OS == 1U)
 #define MSGQUEUE_OBJECTS                                   0x10U
