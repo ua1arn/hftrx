@@ -3409,18 +3409,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		const uint_fast8_t status = asynclisthead [0].cache.status;
  		if (status == 0)
  			hehci->urbState = USBH_URB_DONE;
-// 		else if (status & EHCI_STATUS_XACT_ERR)
-// 			hehci->urbState = USBH_URB_ERROR;
-// 		else if (status & EHCI_STATUS_BABBLE)
-// 			hehci->urbState = USBH_URB_ERROR;
-// 		else if (status & EHCI_STATUS_BUFFER)
-// 			hehci->urbState = USBH_URB_ERROR;
-// 		else if (status & EHCI_STATUS_ACTIVE)
-// 			hehci->urbState = USBH_URB_NOTREADY;
-// 		else if (status & EHCI_STATUS_HALTED)
-// 			hehci->urbState = USBH_URB_ERROR;
  		else
- 			hehci->urbState = USBH_URB_DONE;
+ 			hehci->urbState = USBH_URB_ERROR;
 
  		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status=%02X, urbState=%d\n", (unsigned long) usbsts, (unsigned) status, hehci->urbState);
 
