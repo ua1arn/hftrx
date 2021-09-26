@@ -85,6 +85,7 @@ static volatile __attribute__((used, aligned(4096))) uint8_t rxbuff0 [4096] = "d
 
 static unsigned save_in_length;
 static uint8_t * save_in_buff;
+static volatile int urb_done_flag;
 #endif
 
 
@@ -3068,7 +3069,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) hehci->Instance;
 	EhciController *const ehci = & hehci->ehci;
 
-	HAL_EHCI_MspInit(hehci);
+	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
 
 // 	ehci_init(& ehcidevice0, hehci->Instance);
 //    INIT_LIST_HEAD(& ehcidevice0.endpoints);
@@ -3425,6 +3426,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 // 	 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
 // 	 		//arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
 // 		}
+ 		urb_done_flag = 1;
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
@@ -3964,6 +3966,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
+	urb_done_flag = 0;
 
 	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
@@ -4066,7 +4069,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
 
-	return usb_status;
+	return usb_status;	// везде игнорируется.
 }
 
 /**
@@ -4085,8 +4088,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
-	local_delay_ms(100);
-	return URB_DONE;
+	//local_delay_ms(100);
+	return urb_done_flag ? USBH_URB_DONE : USBH_URB_IDLE;
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
