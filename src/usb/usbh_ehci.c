@@ -3059,7 +3059,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 // USB EHCI controller
 void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 {
-	PRINTF("board_ehci_initialize start.\n");
+//	PRINTF("board_ehci_initialize start.\n");
 
 	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) hehci->Instance;
 	EhciController *const ehci = & hehci->ehci;
@@ -3288,14 +3288,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 #endif
 //
 // 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
-	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
-	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
-			((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F, ((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
-			((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01, ((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
-			((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
+//	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
+//	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
+//			((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F, ((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
+//			((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01, ((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
+//			((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
 // 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
 
-	PRINTF("board_ehci_initialize done.\n");
+//	PRINTF("board_ehci_initialize done.\n");
 }
 
 HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_t state) {
@@ -3409,16 +3409,16 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		const uint_fast8_t status = asynclisthead [0].cache.status;
  		if (status == 0)
  			hehci->urbState = USBH_URB_DONE;
- 		else if (status & EHCI_STATUS_XACT_ERR)
- 			hehci->urbState = USBH_URB_ERROR;
- 		else if (status & EHCI_STATUS_BABBLE)
- 			hehci->urbState = USBH_URB_ERROR;
- 		else if (status & EHCI_STATUS_BUFFER)
- 			hehci->urbState = USBH_URB_ERROR;
- 		else if (status & EHCI_STATUS_ACTIVE)
- 			hehci->urbState = USBH_URB_NOTREADY;
- 		else if (status & EHCI_STATUS_HALTED)
- 			hehci->urbState = USBH_URB_ERROR;
+// 		else if (status & EHCI_STATUS_XACT_ERR)
+// 			hehci->urbState = USBH_URB_ERROR;
+// 		else if (status & EHCI_STATUS_BABBLE)
+// 			hehci->urbState = USBH_URB_ERROR;
+// 		else if (status & EHCI_STATUS_BUFFER)
+// 			hehci->urbState = USBH_URB_ERROR;
+// 		else if (status & EHCI_STATUS_ACTIVE)
+// 			hehci->urbState = USBH_URB_NOTREADY;
+// 		else if (status & EHCI_STATUS_HALTED)
+// 			hehci->urbState = USBH_URB_ERROR;
  		else
  			hehci->urbState = USBH_URB_DONE;
 
@@ -3627,7 +3627,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
   */
 HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
 	EhciController * const ehci = & hehci->ehci;
  	// Enable controller
@@ -3638,7 +3638,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
      		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
  			((uint_fast32_t) EHCI_FLSIZE_DEFAULT << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
  			//EHCI_USBCMD_PERIODIC |	 // Periodic Schedule Enable - PERIODICLISTBASE use
-			EHCI_USBCMD_ASYNC |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
+			//EHCI_USBCMD_ASYNC |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
  			//CMD_RS |	// Run/Stop 1=Run, 0-stop
  			0;
 
@@ -3664,7 +3664,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 	(void) EHCI_DriveVbus(hehci->Instance, 1U);
 	__HAL_UNLOCK(hehci);
 
-	PRINTF("%s: done\n", __func__);
+	//PRINTF("%s: done\n", __func__);
 	return HAL_OK;
 }
 
@@ -4031,33 +4031,20 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	//printhex(0, pbuff, length);
 
 	ASSERT(ep_type == EP_TYPE_CTRL);
-	// Change ASYNC base
+	// Stop ASYNC queue
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
 	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) != 0)
 		;
-	//local_delay_ms(100);
-
-	hehci->urbState = USBH_URB_IDLE;
-
-//	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclistheadStopped);
-//	(void) EHCIx->ASYNCLISTADDR;
-//	(void) EHCIx->ASYNCLISTADDR;
-//	(void) EHCIx->ASYNCLISTADDR;
-//	ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclistheadStopped));
-
-//	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
-//	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) == 0)
-//		;
-
 
 	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 								 ep_type, token, pbuff, length,
 								 do_ping);
 
-	//EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclisthead);
-	//ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclisthead));
 
+	hehci->urbState = USBH_URB_IDLE;
+
+	// Run ASYNC queue
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
 	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) == 0)
 		;
@@ -4085,24 +4072,7 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
 	EHCI_HandleTypeDef *hehci;
 	hehci = phost->pData;
-	int st2;
-	int st = hehci->urbState;
-	do
-	{
-		st2 = st;
-		st = hehci->urbState;
-
-	} while (st2 != st);
-	return st;
-	local_delay_ms(250);
-	return USBH_URB_DONE;
-//	PRINTF("USBH_LL_GetURBState 1: pipe=%u, urbState=%d\n", pipe, st);
-//	local_delay_ms(300);
-	//PRINTF("USBH_LL_GetURBState 2: pipe=%u, urbState=%d\n", pipe, st);
-	return st;
-	if (st == USBH_URB_IDLE)
-		local_delay_ms(300);
-	return st;
+	return hehci->urbState;
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
