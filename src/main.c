@@ -9424,7 +9424,7 @@ static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_
 //	static const float32_t ko = 1. / 32768;
 #if WITHNOSPEEX
 	// не делать даже коррекцию АЧХ
-	nrp->outsp = p;
+	return p;
 #else /* WITHNOSPEEX */
 	// не делать даже коррекцию АЧХ
 	#if ! WITHLEAKYLMSANR
