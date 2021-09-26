@@ -73,7 +73,7 @@ enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
 // list of queue headers
 // выравнивание заменено с 32 на DATA CACHE PAGE
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
-static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
+//static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
 
 // Periodic frame list
 // Periodic Schedule list - PERIODICLISTBASE use
@@ -2959,11 +2959,12 @@ uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, v
 {
 	unsigned i;
 	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
-	//memset ((void *) p, 0x00, sizeof * p);
-	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);
+
+	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);	// возможно потребуется адрес следующего буфера
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
-
+	if (length > EHCI_LEN_MASK)
+		return 1;
 	p->len = cpu_to_le16(length | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 														// cleared for SETUP packets
@@ -2993,7 +2994,6 @@ uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, v
 		data += frag_len;
 		length -= frag_len;
 	}
-	ASSERT(length == 0);
 	return length == 0;		// 0 - без ошибок
 }
 
@@ -4008,13 +4008,13 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP));
-		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP));
+		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
-		qtds [0].status = EHCI_STATUS_ACTIVE;
+		//qtds [0].status = EHCI_STATUS_ACTIVE;
 
 		arm_hardware_flush((uintptr_t) pbuff, length);
-		arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+		//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	}
@@ -4028,13 +4028,13 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
-		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
+		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
-		qtds [0].status = EHCI_STATUS_ACTIVE;
+		//qtds [0].status = EHCI_STATUS_ACTIVE;
 
 		arm_hardware_flush((uintptr_t) pbuff, length);
-		arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+		//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	}
@@ -4047,14 +4047,14 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		save_in_buff = pbuff;
 		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
-		VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
+		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
 
 		asynclisthead [0].cache.status = EHCI_STATUS_ACTIVE;
-		qtds [0].status = EHCI_STATUS_ACTIVE;
+		//qtds [0].status = EHCI_STATUS_ACTIVE;
 
 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
 		arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
-		arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+		//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	}
