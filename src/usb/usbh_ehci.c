@@ -2958,9 +2958,7 @@ uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, v
 	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);	// возможно потребуется адрес следующего буфера
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
-	if (length > EHCI_LEN_MASK)
-		return 1;
-	p->len = cpu_to_le16(length | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
+	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 														// cleared for SETUP packets
 	p->flags = pid | EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
@@ -2989,7 +2987,7 @@ uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, v
 		data += frag_len;
 		length -= frag_len;
 	}
-	return length == 0;		// 0 - без ошибок
+	return length != 0;		// 0 - без ошибок
 }
 
 
