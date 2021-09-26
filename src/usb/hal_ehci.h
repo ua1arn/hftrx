@@ -327,9 +327,65 @@ typedef enum
   HAL_EHCI_STATE_TIMEOUT  = 0x04
 } EHCI_StateTypeDef;
 
-typedef USB_EHCI_CapabilityTypeDef   EHCI_TypeDef;
+
+typedef struct
+{
+  uint8_t   dev_addr;           /*!< USB device address.
+                                     This parameter must be a number between Min_Data = 1 and Max_Data = 255    */
+
+  uint8_t   ch_num;             /*!< Host channel number.
+                                     This parameter must be a number between Min_Data = 1 and Max_Data = 15     */
+
+  uint8_t   ep_num;             /*!< Endpoint number.
+                                     This parameter must be a number between Min_Data = 1 and Max_Data = 15     */
+
+  uint8_t   ep_is_in;           /*!< Endpoint direction
+                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+
+  uint8_t   speed;              /*!< USB Host speed.
+                                     This parameter can be any value of @ref USB_Core_Speed_                    */
+
+  uint8_t   do_ping;            /*!< Enable or disable the use of the PING protocol for HS mode.                */
+
+  uint8_t   process_ping;       /*!< Execute the PING protocol for HS mode.                                     */
+
+  uint8_t   ep_type;            /*!< Endpoint Type.
+                                     This parameter can be any value of @ref USB_EP_Type_                       */
+
+  uint16_t  max_packet;         /*!< Endpoint Max packet size.
+                                     This parameter must be a number between Min_Data = 0 and Max_Data = 64KB   */
+
+  uint8_t   data_pid;           /*!< Initial data PID.
+                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+
+  uint8_t   *xfer_buff;         /*!< Pointer to transfer buffer.                                                */
+
+  uint32_t  XferSize;             /*!< OTG Channel transfer size.                                                   */
+
+  uint32_t  xfer_len;           /*!< Current transfer length.                                                   */
+
+  uint32_t  xfer_count;         /*!< Partial transfer length in case of multi packet transfer.                  */
+
+  uint8_t   toggle_in;          /*!< IN transfer current toggle flag.
+                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+
+  uint8_t   toggle_out;         /*!< OUT transfer current toggle flag
+                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+
+  uint32_t  dma_addr;           /*!< 32 bits aligned transfer buffer address.                                   */
+
+  uint32_t  ErrCnt;             /*!< Host channel error count.                                                  */
+
+  USB_OTG_URBStateTypeDef urb_state;  /*!< URB state.
+                                            This parameter can be any value of @ref USB_OTG_URBStateTypeDef */
+
+  USB_OTG_HCStateTypeDef state;       /*!< Host Channel state.
+                                            This parameter can be any value of @ref USB_OTG_HCStateTypeDef  */
+} EHCI_HCTypeDef;
+
+typedef USB_EHCI_CapabilityTypeDef   EHCI_TypeDef;	/* CPU I/O registers */
 typedef USB_OTG_CfgTypeDef      EHCI_InitTypeDef;
-typedef USB_OTG_HCTypeDef       EHCI_HCTypeDef;
+//typedef USB_OTG_HCTypeDef       EHCI_HCTypeDef;
 typedef USB_OTG_URBStateTypeDef EHCI_URBStateTypeDef;
 typedef USB_OTG_HCStateTypeDef  EHCI_HCStateTypeDef;
 /**
