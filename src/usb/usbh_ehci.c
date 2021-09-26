@@ -2923,10 +2923,9 @@ static struct usb_host_operations ehci_operations = {
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item(volatile struct ehci_queue_head * p, uint32_t link)
+static void asynclist_item(volatile struct ehci_queue_head * p)
 {
-	//memset ((void *) p, 0x00, sizeof * p);
-	p->link = link, //ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
+	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
 //	p->current = 0;
@@ -3005,37 +3004,26 @@ uint_fast8_t asynclist_item2_qtd(volatile struct ehci_transfer_descriptor * p, v
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queue_head * p, uint32_t link)
+/*
+	* @param  ep_type Endpoint Type.
+	*          This parameter can be one of these values:
+	*            EP_TYPE_CTRL: Control type/
+	*            EP_TYPE_ISOC: Isochronous type/
+	*            EP_TYPE_BULK: Bulk type/
+	*            EP_TYPE_INTR: Interrupt type/
+	*/
+static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queue_head * p, uint8_t ep_type, unsigned ep_addr)
 {
-	//memset ((void *) p, 0x00, sizeof * p);
-	p->link = link; //ehci_link_qh(p);	// Using of List Termination here raise Reclamation USBSTS bit
-//	p->chr = 0;
-//	p->cap = 0;
-//	p->current = 0;
-//	p->cache.next = 0;
-//	p->cache.alt = 0;
-//	p->cache.status = 0;
-//	p->cache.flags = 0;
-//	p->cache.len = 0;
-//	p->cache.low [0] = 0;
-//	p->cache.high [0] = 0;
-//	p->cache.low [1] = 0;
-//	p->cache.high [1] = 0;
-//	p->cache.low [2] = 0;
-//	p->cache.high [2] = 0;
-//	p->cache.low [3] = 0;
-//	p->cache.high [3] = 0;
-//	p->cache.low [4] = 0;
-//	p->cache.high [4] = 0;
+	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 
 	uint32_t chr;
 	/* Determine basic characteristics */
 	chr = EHCI_CHR_ADDRESS (phost->device.address) |	// Default DCFG_DAD field = 0
-			EHCI_CHR_ENDPOINT ( 0 ) |
+			EHCI_CHR_ENDPOINT ( ep_addr ) |	/* маскирование всего, кроме младших 4=х бит выполняется */
 			EHCI_CHR_MAX_LEN ( 64 );
 
 	/* Control endpoints require manual control of the data toggle */
-	if ( 1/*attr == USB_ENDPOINT_ATTR_CONTROL */)
+	if (ep_type == EP_TYPE_CTRL)
 		chr |= EHCI_CHR_TOGGLE;
 
 	/* Determine endpoint speed */
@@ -3047,7 +3035,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queu
 //		} else {
 //			chr |= EHCI_CHR_EPS_LOW;
 //		}
-		//if ( attr == USB_ENDPOINT_ATTR_CONTROL )
+		//if (ep_type == EP_TYPE_CTRL)
 			chr |= EHCI_CHR_CONTROL;
 
 	}
@@ -3066,12 +3054,10 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, volatile struct ehci_queu
 //	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr | 1*EHCI_CHR_HEAD);
+	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
-	//p->current = cpu_to_le32(virt_to_phys(& qtds [0]));
 	p->current = cpu_to_le32(virt_to_phys(& p->cache));
-	//p->cache.next = cpu_to_le32(virt_to_phys(& qtds [0]));
 }
 
 // USB EHCI controller
@@ -3222,7 +3208,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 #endif
 
 
-	asynclist_item(& asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+	asynclist_item(& asynclisthead [0]);
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	#if 1
@@ -3982,6 +3968,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
 
+	ASSERT(ep_type == EP_TYPE_CTRL);
 	// Change ASYNC base
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
@@ -3996,7 +3983,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 //	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
 //	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) == 0)
 //		;
-
+	unsigned ep_addr = 0;
 	if (token == 0)
 	{
 		// Setup
@@ -4005,7 +3992,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 		save_in_length = 0;
 
-		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+		asynclist_item2(phost, & asynclisthead [0], ep_type, ep_addr);
 
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_SETUP));
 		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_SETUP));
@@ -4025,7 +4012,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		//printhex(0, pbuff, length);
 		save_in_length = 0;
 
-		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+		asynclist_item2(phost, & asynclisthead [0], ep_type, ep_addr);
 
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_OUT));
 		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_OUT));
@@ -4045,7 +4032,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 		save_in_length = length;
 		save_in_buff = pbuff;
-		asynclist_item2(phost, & asynclisthead [0], ehci_link_qhv(& asynclisthead [0]));
+		asynclist_item2(phost, & asynclisthead [0], ep_type, ep_addr);
 		VERIFY(0 == asynclist_item2_qtd(& asynclisthead [0].cache, pbuff, length, EHCI_FL_PID_IN));
 		//VERIFY(0 == asynclist_item2_qtd(& qtds [0], pbuff, length, EHCI_FL_PID_IN));
 
