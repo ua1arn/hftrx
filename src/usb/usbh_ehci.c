@@ -79,13 +79,9 @@ static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_
 // Periodic Schedule list - PERIODICLISTBASE use
 static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
 
-static volatile __attribute__((used, aligned(4096))) uint8_t txbuff1 [4096] = "456";
-static volatile __attribute__((used, aligned(4096))) uint8_t txbuff2 [4096] = "789";
-static volatile __attribute__((used, aligned(4096))) uint8_t rxbuff0 [4096] = "deadbeef";
-
 static unsigned save_in_length;
 static uint8_t * save_in_buff;
-static volatile int urb_done_flag;
+static volatile USBH_URBStateTypeDef urbState = USBH_URB_IDLE;
 #endif
 
 
@@ -3411,7 +3407,20 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		unsigned rxlenresult = save_in_length ? save_in_length - (EHCI_LEN_MASK & (unsigned) asynclisthead [0].cache.len) : 0;
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
-
+ 		const uint_fast8_t status = asynclisthead [0].cache.status;
+ 		if (status & EHCI_STATUS_XACT_ERR)
+ 	 		urbState = USBH_URB_ERROR;
+ 		else if (status & EHCI_STATUS_BABBLE)
+ 	 		urbState = USBH_URB_ERROR;
+ 		else if (status & EHCI_STATUS_BUFFER)
+ 	 		urbState = USBH_URB_ERROR;
+ 		else if (status & EHCI_STATUS_ACTIVE)
+ 	 		urbState = USBH_URB_NOTREADY;
+ 		else if (status & EHCI_STATUS_HALTED)
+ 	 		urbState = USBH_URB_ERROR;
+ 		else
+ 	 		urbState = USBH_URB_DONE;
+ 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status=%02X\n", (unsigned long) usbsts, (unsigned) status);
 // 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
 // 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
 // 				(unsigned) asynclisthead [0].cache.status,
@@ -3426,7 +3435,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 // 	 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
 // 	 		//arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
 // 		}
- 		urb_done_flag = 1;
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
@@ -3966,7 +3974,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
-	urb_done_flag = 0;
+	urbState = USBH_URB_IDLE;
 
 	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
@@ -4088,8 +4096,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
-	//local_delay_ms(100);
-	return urb_done_flag ? USBH_URB_DONE : USBH_URB_IDLE;
+	return urbState;
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
