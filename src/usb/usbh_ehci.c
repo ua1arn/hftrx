@@ -4026,7 +4026,6 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
 
-	hehci->urbState = USBH_URB_IDLE;
 
 	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
@@ -4037,6 +4036,10 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	(void) EHCIx->USBCMD;
 	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) != 0)
 		;
+	//local_delay_ms(100);
+
+	hehci->urbState = USBH_URB_IDLE;
+
 //	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclistheadStopped);
 //	(void) EHCIx->ASYNCLISTADDR;
 //	(void) EHCIx->ASYNCLISTADDR;
@@ -4052,8 +4055,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 								 ep_type, token, pbuff, length,
 								 do_ping);
 
-	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclisthead);
-	ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclisthead));
+	//EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclisthead);
+	//ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclisthead));
 
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
 	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) == 0)
@@ -4082,7 +4085,6 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
 	EHCI_HandleTypeDef *hehci;
 	hehci = phost->pData;
-	local_delay_ms(50);
 	int st2;
 	int st = hehci->urbState;
 	do
@@ -4091,7 +4093,8 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		st = hehci->urbState;
 
 	} while (st2 != st);
-	//return st;
+	return st;
+	local_delay_ms(250);
 	return USBH_URB_DONE;
 //	PRINTF("USBH_LL_GetURBState 1: pipe=%u, urbState=%d\n", pipe, st);
 //	local_delay_ms(300);
