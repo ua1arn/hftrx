@@ -94,7 +94,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 //		memset(&hUSBHost[h], 0, sizeof(USBH_HandleTypeDef));
 //	}
 
-	interface = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, 0x00, 0x00);
+	interface = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, 0x00, 0xFF);
 
 	if(interface == 0xFF) /* No Valid Interface */
 	{
