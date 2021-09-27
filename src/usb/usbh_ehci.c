@@ -3507,6 +3507,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 						(unsigned) asynclisthead [0].cache.status, (unsigned) asynclisthead [1].cache.status,
 						hehci->urbState
 					);
+			printhex((uintptr_t) (void *) & asynclisthead [0], (void *) & asynclisthead [0], sizeof asynclisthead [0]);
  		}
 // 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
 // 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
