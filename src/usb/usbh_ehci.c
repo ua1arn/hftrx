@@ -3011,9 +3011,9 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 
 	uint32_t chr;
 	/* Determine basic characteristics */
-	chr = EHCI_CHR_ADDRESS (hc->dev_addr) |	// Default DCFG_DAD field = 0
-			EHCI_CHR_ENDPOINT (hc->ep_num ) |	/* маскирование всего, кроме младших 4=х бит выполняется */
-			EHCI_CHR_MAX_LEN ( hc->max_packet );
+	chr = EHCI_CHR_ADDRESS(hc->dev_addr) |	// Default DCFG_DAD field = 0
+			EHCI_CHR_ENDPOINT(hc->ep_num) |	/* маскирование всего, кроме младших 4=х бит выполняется */
+			EHCI_CHR_MAX_LEN(hc->max_packet );
 
 	/* Control endpoints require manual control of the data toggle */
 	if (hc->ep_type == EP_TYPE_CTRL)
