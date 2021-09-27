@@ -77,7 +77,7 @@ static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame 
 // list of queue headers
 // выравнивание заменено с 32 на DATA CACHE PAGE
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
-static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
+//static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
 
 
 #endif
@@ -3948,7 +3948,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_SETUP));
 			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
 
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 			arm_hardware_flush((uintptr_t) pbuff, length);
@@ -3963,7 +3963,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_OUT));
 			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
 
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 			arm_hardware_flush((uintptr_t) pbuff, length);
@@ -3977,7 +3977,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_IN));
 			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
 
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
@@ -3995,7 +3995,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_OUT));
 			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
 
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 			arm_hardware_flush((uintptr_t) pbuff, length);
@@ -4010,7 +4010,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_IN));
 			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
 
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
