@@ -4137,7 +4137,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	// Stop ASYNC queue
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
-	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) != 0)
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
 		;
 
 	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
@@ -4149,7 +4149,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 	// Run ASYNC queue
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
-	while ((EHCIx->USBCMD & EHCI_USBCMD_ASYNC) == 0)
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
 		;
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
