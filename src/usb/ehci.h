@@ -223,7 +223,7 @@
  struct ehci_periodic_frame {
          /** First queue head */
          uint32_t link;
- } __attribute__ (( packed ));
+ } ATTRPACKED;
  
  /** A transfer descriptor */
  struct ehci_transfer_descriptor {
@@ -243,7 +243,7 @@
          uint32_t high[5];
          /** Reserved */
          uint8_t reserved[12];
- } __attribute__ (( packed ));
+ } ATTRPACKED;
  
  /** Transaction error */
  #define EHCI_STATUS_XACT_ERR 0x08
@@ -299,7 +299,7 @@
          uint32_t current;
          /** Transfer descriptor cache */
          struct ehci_transfer_descriptor cache;
- } __attribute__ (( packed ));
+ } ATTRPACKED;
  
  /** Device address */
  #define EHCI_CHR_ADDRESS( address ) ( (address) << 0 )
