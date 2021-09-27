@@ -77,8 +77,6 @@ static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame 
 // list of queue headers
 // выравнивание заменено с 32 на DATA CACHE PAGE
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
-static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
-
 
 #endif
 
@@ -3494,14 +3492,22 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT) - see EHCI_FL_IOC usage
  	{
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
+
+
  		const uint_fast8_t status = asynclisthead [0].cache.status;
  		if (status == 0)
  			hehci->urbState = USBH_URB_DONE;
  		else
  			hehci->urbState = USBH_URB_ERROR;
 
- 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status=%02X, urbState=%d\n", (unsigned long) usbsts, (unsigned) status, hehci->urbState);
-
+ 		if (asynclisthead [0].cache.status != 0 || asynclisthead [1].cache.status != 0)
+ 		{
+			PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status[0]=%02X, status[1]=%02X, urbState=%d\n",
+						(unsigned long) usbsts,
+						(unsigned) asynclisthead [0].cache.status, (unsigned) asynclisthead [1].cache.status,
+						hehci->urbState
+					);
+ 		}
 // 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
 // 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
 // 				(unsigned) asynclisthead [0].cache.status,
@@ -3937,8 +3943,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	USBH_HandleTypeDef * const phost = & hUsbHostHS;
 	EHCI_HCTypeDef * const hc = & hehci->hc[ch_num];
 	volatile struct ehci_queue_head * const qh = & asynclisthead [0];
-	//volatile struct ehci_transfer_descriptor * qtd = & qtds [0];
 	volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [0].cache;
+	//volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [1].cache;
 
 	switch (ep_type)
 	{
@@ -3950,7 +3956,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex(0, pbuff, length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_SETUP));
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush((uintptr_t) pbuff, length);
 
 		}
@@ -3961,7 +3966,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex(0, pbuff, length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_OUT));
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush((uintptr_t) pbuff, length);
 
 		}
@@ -3971,7 +3975,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_IN));
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
 		}
 		break;
@@ -3985,7 +3988,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_OUT));
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush((uintptr_t) pbuff, length);
 		}
 		else
@@ -3996,7 +3998,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_IN));
-			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
 		}
 		break;
