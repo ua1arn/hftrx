@@ -77,7 +77,7 @@ static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame 
 // list of queue headers
 // выравнивание заменено с 32 на DATA CACHE PAGE
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
-//static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
+static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
 
 
 #endif
@@ -3052,7 +3052,11 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
+
+	ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
 	p->current = cpu_to_le32(current);
+//	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
+//	p->cache.status = EHCI_STATUS_HALTED;
 }
 
 // USB EHCI controller
@@ -3946,11 +3950,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex(0, pbuff, length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_SETUP));
-			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
-
-			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
+			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush((uintptr_t) pbuff, length);
 
 		}
@@ -3961,11 +3961,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex(0, pbuff, length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_OUT));
-			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
-
-			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
+			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush((uintptr_t) pbuff, length);
 
 		}
@@ -3975,11 +3971,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_IN));
-			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
-
-			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
+			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
 		}
 		break;
@@ -3993,11 +3985,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_OUT));
-			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
-
-			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
+			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush((uintptr_t) pbuff, length);
 		}
 		else
@@ -4008,11 +3996,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
 			VERIFY(0 == asynclist_item2_qtd(qtd, pbuff, length, EHCI_FL_PID_IN));
-			asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
-
-			//arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-			arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
+			arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
 		}
 		break;
@@ -4022,6 +4006,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
+	asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
   return HAL_OK;
 }
