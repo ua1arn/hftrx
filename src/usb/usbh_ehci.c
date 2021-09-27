@@ -78,6 +78,7 @@ static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame 
 // выравнивание заменено с 32 на DATA CACHE PAGE
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
 
+//static volatile struct ehci_queue_head dd;
 #endif
 
 
@@ -3493,7 +3494,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
 
-
+ 		ASSERT(hehci->urbState == USBH_URB_IDLE);
  		const uint_fast8_t status = asynclisthead [0].cache.status;
  		if (status == 0)
  			hehci->urbState = USBH_URB_DONE;
@@ -3507,7 +3508,9 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 						(unsigned) asynclisthead [0].cache.status, (unsigned) asynclisthead [1].cache.status,
 						hehci->urbState
 					);
-			printhex((uintptr_t) (void *) & asynclisthead [0], (void *) & asynclisthead [0], sizeof asynclisthead [0]);
+			//printhex((uintptr_t) (void *) & asynclisthead [0], (void *) & asynclisthead [0], sizeof asynclisthead [0]);
+			//PRINTF("Before request 2:\n");
+			//printhex((uintptr_t) (void *) & dd, (void *) & dd, sizeof dd);
  		}
 // 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
 // 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
@@ -3994,7 +3997,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// BULK Data IN
-			PRINTF("USBH_LL_SubmitURB: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
+			//PRINTF("USBH_LL_SubmitURB: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
@@ -4010,6 +4013,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
+	//memcpy(& dd, (void *) & asynclisthead [0], sizeof dd);
 
   return HAL_OK;
 }
