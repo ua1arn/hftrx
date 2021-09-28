@@ -4255,7 +4255,7 @@ uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe) {
   */
 USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 {
-  USBH_SpeedTypeDef speed = USBH_SPEED_FULL;
+  USBH_SpeedTypeDef speed = USBH_SPEED_HIGH;
 //
 //  switch (HAL_EHCI_GetCurrentSpeed(phost->pData))
 //  {
