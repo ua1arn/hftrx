@@ -3500,47 +3500,32 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
  		{
 			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
-			const uint_fast8_t status = qtds[0].status;
+			const uint_fast8_t status = qtds[ch_num].status;
 			if ((status & EHCI_STATUS_ACTIVE) != 0)
 				continue;	/* обмен еще не закончился */
+	 		//ASSERT(hc->ehci_urb_state == URB_IDLE);
+	 		if (status == 0)
+	 		{
+	 			hc->ehci_urb_state = URB_DONE;
+	 		}
+	// 		else if (status & 0x08)
+	// 			hc->ehci_urb_state = USBH_URB_NOTREADY;
+	// 		else if (status & 0x10)	// Bubble detect
+	// 			hc->ehci_urb_state = USBH_URB_STALL;
+	 		else
+	 			hc->ehci_urb_state = URB_ERROR;
 
+	 		if (status != 0)
+	 		{
+//				PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, qtds[%d]=%02X, urbState=%d\n",
+//							(unsigned long) usbsts,
+//							ch_num,
+//							(unsigned) qtds [ch_num].status,
+//							hc->ehci_urb_state
+//						);
+	 		}
  		}
- 		ASSERT(hehci->urbState == USBH_URB_IDLE);
- 		const uint_fast8_t status = qtds[0].status;
- 		if (status == 0)
- 			hehci->urbState = USBH_URB_DONE;
-// 		else if (status & 0x08)
-// 			hehci->urbState = USBH_URB_NOTREADY;
-// 		else if (status & 0x10)	// Bubble detect
-// 			hehci->urbState = USBH_URB_STALL;
- 		else
- 			hehci->urbState = USBH_URB_ERROR;
-
- 		if (qtds[0].status != 0)
- 		{
-			PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, qtds[0]=%02X, qtds[1]=%02X, urbState=%d\n",
-						(unsigned long) usbsts,
-						(unsigned) qtds [0].status, (unsigned) qtds [1].status,
-						hehci->urbState
-					);
-			//printhex((uintptr_t) (void *) & asynclisthead [0], (void *) & asynclisthead [0], sizeof asynclisthead [0]);
-			//PRINTF("Before request 2:\n");
-			//printhex((uintptr_t) (void *) & dd, (void *) & dd, sizeof dd);
- 		}
-// 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts-%08lX\n", usbsts);
-// 		PRINTF("Status X = %02X %02X cerr=%u %u, cache.len=%04X qtds[0].len=%04X (%04X)\n",
-// 				(unsigned) asynclisthead [0].cache.status,
-//				(unsigned) qtds [0].status,
-//				(unsigned) (asynclisthead [0].cache.flags >> 2) & 0x03,
-//				(unsigned) (qtds [0].flags >> 2) & 0x03,
-//				(unsigned) asynclisthead [0].cache.len, (unsigned) qtds [0].len, rxlenresult);
-// 		if (save_in_length != 0 && rxlenresult != 0)
-// 		{
-// 	 		//printhex((uintptr_t) (void *) qtds [2], (void *) & qtds [2], sizeof qtds [2]);
-// 	 		printhex((uintptr_t) (void *) save_in_buff, save_in_buff, rxlenresult);
-// 	 		//memset((void *) rxbuff0, 0xDE, sizeof rxbuff0);
-// 	 		//arm_hardware_flush_invalidate((uintptr_t) rxbuff0, sizeof rxbuff0);
-// 		}
+ 		arm_hardware_invalidate((uintptr_t) & qtds, sizeof qtds);	/* чтобы следубщая проверка могла работать */
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
@@ -3552,7 +3537,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 // 	 	{
 // 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
 // 	 	}
- 		hehci->urbState = USBH_URB_ERROR;
+ 		//hehci->urbState = USBH_URB_ERROR;
  	}
 
  	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
@@ -3604,7 +3589,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		EHCIx->USBSTS = (0x01uL << 4);	// Clear Host System Error interrupt
  		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
 		PRINTF("HAL_EHCI_IRQHandler: Host System Error, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
-		hehci->urbState = USBH_URB_ERROR;
+		//hehci->urbState = USBH_URB_ERROR;
  	}
 
  	if ((usbsts & (0x01uL << 5)))	// Interrupt On Async Advance
@@ -3932,12 +3917,12 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
   hc->xfer_buff = pbuff;
   hc->xfer_len  = length;
-  hc->urb_state = URB_IDLE;
+  hc->ehci_urb_state = URB_IDLE;
   hc->xfer_count = 0U;
   hc->ch_num = ch_num;
   hc->state = HC_IDLE;
 
-  PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
+  //PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
 //
 //  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) async;
@@ -3965,9 +3950,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 #endif
 
 	USBH_HandleTypeDef * const phost = & hUsbHostHS;
-	volatile struct ehci_queue_head * const qh = & asynclisthead [0];
-	volatile struct ehci_transfer_descriptor * qtdresult = & qtds [0];
-	volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [0].cache;
+	volatile struct ehci_queue_head * const qh = & asynclisthead [ch_num];
+	volatile struct ehci_transfer_descriptor * qtdresult = & qtds [ch_num];
+	volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [ch_num].cache;
 
 	switch (ep_type)
 	{
@@ -4036,7 +4021,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 
-	//memcpy(& dd, (void *) & asynclisthead [0], sizeof dd);
+	hc->ehci_urb_state = URB_IDLE;
+
 
   return HAL_OK;
 }
@@ -4057,7 +4043,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   */
 EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hehci, uint8_t chnum)
 {
-  return hehci->hc[chnum].urb_state;
+  return hehci->hc[chnum].ehci_urb_state;
 }
 
 
@@ -4159,9 +4145,6 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 								 ep_type, token, pbuff, length,
 								 do_ping);
 
-
-	hehci->urbState = USBH_URB_IDLE;
-
 	// Run ASYNC queue
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
@@ -4188,9 +4171,6 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
-	EHCI_HandleTypeDef *hehci;
-	hehci = phost->pData;
-	return hehci->urbState;
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 

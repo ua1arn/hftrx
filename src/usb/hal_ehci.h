@@ -376,7 +376,7 @@ typedef struct
 
   uint32_t  ErrCnt;             /*!< Host channel error count.                                                  */
 
-  USB_OTG_URBStateTypeDef urb_state;  /*!< URB state.
+  volatile USB_OTG_URBStateTypeDef ehci_urb_state;  /*!< URB state.
                                             This parameter can be any value of @ref USB_OTG_URBStateTypeDef */
 
   USB_OTG_HCStateTypeDef state;       /*!< Host Channel state.
@@ -411,7 +411,7 @@ typedef struct
 	unsigned long nports;
 	__IO uint32_t * portsc;
 	EhciController ehci;
-	volatile USBH_URBStateTypeDef urbState; /* = USBH_URB_IDLE */;
+	//volatile USBH_URBStateTypeDef urbState; /* = USBH_URB_IDLE */;
 
 #if (USE_HAL_EHCI_REGISTER_CALLBACKS == 1U)
   void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
