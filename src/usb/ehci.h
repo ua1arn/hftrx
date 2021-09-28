@@ -299,6 +299,8 @@
          uint32_t current;
          /** Transfer descriptor cache */
          struct ehci_transfer_descriptor cache;
+         /** for arrays align */
+         uint8_t pad [16];
  } ATTRPACKED;
  
  /** Device address */

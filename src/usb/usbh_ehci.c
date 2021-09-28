@@ -2920,6 +2920,8 @@ static struct usb_host_operations ehci_operations = {
  */
 static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link, uint32_t current)
 {
+	ASSERT((virt_to_phys(p) & 0x01F) == 0);
+	ASSERT((virt_to_phys(link) & 0x01F) == 0);
 	//memset((void *) p, 0x00, sizeof * p);
 	p->link = ehci_link_qhv(link);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
@@ -3013,6 +3015,7 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 	*/
 static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint32_t current)
 {
+	ASSERT((virt_to_phys(p) & 0x01F) == 0);
 	uint32_t chr;
 	/* Determine basic characteristics */
 	chr = EHCI_CHR_ADDRESS(hc->dev_addr) |	// Default DCFG_DAD field = 0
@@ -3206,7 +3209,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
         qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
         qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
     }
-    asynclist_item(& asynclisthead [0], & asynclisthead [0], virt_to_phys(& qtds [0]));
 
     //asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
 
