@@ -3529,11 +3529,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		else
  			hehci->urbState = USBH_URB_ERROR;
 
- 		if (qtds[0].status != 0 /*|| qtds [1].status != 0*/)
+ 		if (qtds[0].status != 0)
  		{
-			PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status[0]=%02X, status[1]=%02X, qtds[0]=%02X, qtds[1]=%02X, urbState=%d\n",
+			PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, qtds[0]=%02X, qtds[1]=%02X, urbState=%d\n",
 						(unsigned long) usbsts,
-						(unsigned) asynclisthead [0].cache.status, (unsigned) asynclisthead [1].cache.status,
 						(unsigned) qtds [0].status, (unsigned) qtds [1].status,
 						hehci->urbState
 					);
