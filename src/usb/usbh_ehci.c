@@ -2956,7 +2956,7 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 }
 
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
-uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid)
+uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid, unsigned ping)
 {
 	unsigned i;
 	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
@@ -2969,7 +2969,7 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 														// cleared for SETUP packets
 	p->flags = pid | EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
-	p->status = EHCI_STATUS_ACTIVE;
+	p->status = EHCI_STATUS_ACTIVE | (ping != 0);
 
 	for (i = 0; i < ARRAY_SIZE(p->low) && length != 0; ++ i)
 	{
@@ -3923,7 +3923,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   hc->ch_num = ch_num;
   hc->state = HC_IDLE;
 
-  //PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
+  //PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, do_ping=%d\n",  hc->ch_num, hc->ep_num, hc->max_packet, do_ping);
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
 //
 //  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) async;
@@ -3964,7 +3964,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: setup, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
 			//printhex(0, pbuff, length);
 
-			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_SETUP));
+			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_SETUP, do_ping));
 			arm_hardware_flush((uintptr_t) pbuff, length);
 
 		}
@@ -3974,7 +3974,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
 			//printhex(0, pbuff, length);
 
-			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT));
+			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) pbuff, length);
 
 		}
@@ -3983,22 +3983,24 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			// Data In
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
 
-			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN));
+			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN, do_ping));
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
 		}
 		break;
 
 	// See also USBH_EP_BULK - используется host library для
 	// see also USB_EP_TYPE_BULK
+	// https://www.usbmadesimple.co.uk/ums_7.htm#high_speed_bulk_trans
 	case EP_TYPE_BULK:
 		if (direction == 0)
 		{
 			// BULK Data OUT
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
-			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT));
+			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT, do_ping));
+			qtd->status = EHCI_STATUS_ACTIVE | 1;
 			arm_hardware_flush((uintptr_t) pbuff, length);
 		}
 		else
@@ -4008,7 +4010,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
-			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN));
+			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN, do_ping));
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
 		}
 		break;
