@@ -3207,7 +3207,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
         qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
         qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
     }
-    asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
