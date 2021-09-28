@@ -77,6 +77,7 @@ static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame 
 // list of queue headers
 // выравнивание заменено с 32 на DATA CACHE PAGE
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
+static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
 
 //static volatile struct ehci_queue_head dd;
 #endif
@@ -2917,9 +2918,9 @@ static struct usb_host_operations ehci_operations = {
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link)
+static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link, uint32_t current)
 {
-	memset((void *) p, 0x00, sizeof * p);
+	//memset((void *) p, 0x00, sizeof * p);
 	p->link = ehci_link_qhv(link);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
@@ -2940,13 +2941,16 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 //	p->cache.low [4] = 0;
 //	p->cache.high [4] = 0;
 
+	ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
+	ASSERT((current & 0x001F) == 0);
+
 	p->cap = EHCI_CAP_MULT(1);
 	//p->chr = cpu_to_le32(EHCI_CHR_HEAD);
 	p->cache.status = EHCI_STATUS_HALTED;
 	p->cache.len = 0;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->cache.alt = cpu_to_le32(EHCI_LINK_TERMINATE);
-	p->current = cpu_to_le32(virt_to_phys(& p->cache));
+	p->current = cpu_to_le32(current);
 }
 
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
@@ -3047,7 +3051,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 //	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD);
+	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * 1);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 
@@ -3055,7 +3059,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 	ASSERT((current & 0x001F) == 0);
 	p->current = cpu_to_le32(current);
 //	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
-//	p->cache.status = EHCI_STATUS_HALTED;
+	p->cache.status = EHCI_STATUS_ACTIVE;
 }
 
 // USB EHCI controller
@@ -3075,35 +3079,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 //
 // 	VERIFY(ehci_reset(& ehcidevice0) == 0);
 //	ehci_dump(& ehcidevice0);
-
-#if 1
-
-
-	/* подготовка кольцевого списка QH */
-    for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
-    {
-        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)]);
-    }
-    asynclist_item(& asynclisthead [0], & asynclisthead [0]);
-    //asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD);
-
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	/*
-	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
-	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
-	 * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
-	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
-	 *
-	 */
-
-	// Periodic frame list
-	for (i = 0; i < ARRAY_SIZE(periodiclist); ++ i)
-	{
-		periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
-	}
-	arm_hardware_flush_invalidate((uintptr_t) & periodiclist, sizeof periodiclist);
-
-#endif
 	// power cycle for USB dongle
 // 	board_set_usbhostvbuson(0);
 // 	board_update();
@@ -3214,6 +3189,41 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 //	VERIFY(ehci_root_enable(hub, usb_port (hub, WITHEHCIHW_EHCIPORT + 1 )) == 0);
 //	ehci_dump(& ehcidevice0);
+#endif
+
+
+#if 1
+
+
+	/* подготовка кольцевого списка QH */
+    for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
+    {
+        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)], virt_to_phys(& qtds [i]));
+        qtds [i].status = EHCI_STATUS_HALTED;
+        qtds [i].len = 0;
+        qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
+        qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
+    }
+    asynclist_item(& asynclisthead [0], & asynclisthead [0], virt_to_phys(& qtds [0]));
+    //asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
+
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+	/*
+	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
+	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
+	 * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
+	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
+	 *
+	 */
+
+	// Periodic frame list
+	for (i = 0; i < ARRAY_SIZE(periodiclist); ++ i)
+	{
+		periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
+	}
+	arm_hardware_flush_invalidate((uintptr_t) & periodiclist, sizeof periodiclist);
+
 #endif
 
 	#if 1
@@ -3521,9 +3531,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  		if (asynclisthead [0].cache.status != 0 /*|| asynclisthead [1].cache.status != 0*/)
  		{
-			PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status[0]=%02X, status[1]=%02X, urbState=%d\n",
+			PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status[0]=%02X, status[1]=%02X, qtds[0]=%02X, qtds[1]=%02X, urbState=%d\n",
 						(unsigned long) usbsts,
 						(unsigned) asynclisthead [0].cache.status, (unsigned) asynclisthead [1].cache.status,
+						(unsigned) qtds [0].status, (unsigned) qtds [1].status,
 						hehci->urbState
 					);
 			//printhex((uintptr_t) (void *) & asynclisthead [0], (void *) & asynclisthead [0], sizeof asynclisthead [0]);
@@ -3940,7 +3951,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   hc->ch_num = ch_num;
   hc->state = HC_IDLE;
 
-  //PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
+  PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
 //
 //  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) async;
@@ -3969,8 +3980,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	USBH_HandleTypeDef * const phost = & hUsbHostHS;
 	volatile struct ehci_queue_head * const qh = & asynclisthead [0];
+	//volatile struct ehci_transfer_descriptor * qtd = & qtds [0];
 	volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [0].cache;
-	//volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [1].cache;
 
 	switch (ep_type)
 	{
@@ -4033,8 +4044,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
-	asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
+	//asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
+	asynclist_item2(phost, hc, qh, virt_to_phys(& qtds [0]));
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 
 	//memcpy(& dd, (void *) & asynclisthead [0], sizeof dd);
 
