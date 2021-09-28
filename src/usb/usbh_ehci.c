@@ -2919,7 +2919,8 @@ static struct usb_host_operations ehci_operations = {
  */
 static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link)
 {
-	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
+	//memset((void *) p, 0, sizeof * p);
+	p->link = ehci_link_qhv(link);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
 //	p->current = 0;
@@ -2941,10 +2942,11 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 
 	p->cap = EHCI_CAP_MULT(1);
 	p->chr = cpu_to_le32(EHCI_CHR_HEAD);
-	//p->current = cpu_to_le32(EHCI_LINK_TERMINATE);	// not needed
 	p->cache.status = EHCI_STATUS_HALTED;
 	p->cache.len = 0;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
+	p->cache.alt = cpu_to_le32(EHCI_LINK_TERMINATE);
+	p->current = cpu_to_le32(virt_to_phys(& p->cache));
 }
 
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
@@ -3007,9 +3009,6 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 	*/
 static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint32_t current)
 {
-	//memset((void *) p, 0, sizeof * p);
-	//p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
-
 	uint32_t chr;
 	/* Determine basic characteristics */
 	chr = EHCI_CHR_ADDRESS(hc->dev_addr) |	// Default DCFG_DAD field = 0
@@ -3205,16 +3204,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 //	ehci_dump(& ehcidevice0);
 #endif
 
-
-    for (i = 0; i < (ARRAY_SIZE(asynclisthead) - 1); ++ i)
+	/* подготовка кольцевого списка QH */
+    for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
     {
-        asynclist_item(& asynclisthead [i], & asynclisthead [i + 1]);
+        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)]);
     }
-    asynclist_item(& asynclisthead [i], & asynclisthead [0]);
+    asynclist_item(& asynclisthead [0], & asynclisthead [0]);
 
-	asynclist_item(& asynclisthead [0], & asynclisthead [0]);
-
-    //asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD);	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	#if 1
 	// Setup frame list
