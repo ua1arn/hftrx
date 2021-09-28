@@ -3503,7 +3503,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			if ((status & EHCI_STATUS_ACTIVE) != 0)
 				continue;	/* обмен еще не закончился */
 	 		//ASSERT(hc->ehci_urb_state == URB_IDLE);
-	 		if (status == 0)
+	 		if ((status & ~ 0x01) == 0)	// For HS devices: mask PING bit
 	 		{
 	 			hc->ehci_urb_state = URB_DONE;
 	 		}
