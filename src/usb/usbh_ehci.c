@@ -3051,14 +3051,14 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 //	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * 1);
+	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * 0);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 
 	ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
 	ASSERT((current & 0x001F) == 0);
-	p->current = cpu_to_le32(current);
-//	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
+	p->current = cpu_to_le32(current);	/* Where to place result of transfer */
+	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->cache.status = EHCI_STATUS_ACTIVE;
 }
 
@@ -3980,7 +3980,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	USBH_HandleTypeDef * const phost = & hUsbHostHS;
 	volatile struct ehci_queue_head * const qh = & asynclisthead [0];
-	//volatile struct ehci_transfer_descriptor * qtd = & qtds [0];
+	volatile struct ehci_transfer_descriptor * qtdresult = & qtds [0];
 	volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [0].cache;
 
 	switch (ep_type)
@@ -4045,7 +4045,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	}
 
 	//asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
-	asynclist_item2(phost, hc, qh, virt_to_phys(& qtds [0]));
+	memset((void *) qtdresult, 0xFF, sizeof * qtdresult);
+
+	asynclist_item2(phost, hc, qh, virt_to_phys(qtdresult));
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 
