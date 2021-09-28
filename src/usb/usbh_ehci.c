@@ -3988,6 +3988,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		}
 		break;
 
+	// See also USBH_EP_BULK - используется host library для
+	// see also USB_EP_TYPE_BULK
 	case EP_TYPE_BULK:
 		if (direction == 0)
 		{
