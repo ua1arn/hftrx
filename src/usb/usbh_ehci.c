@@ -3516,6 +3516,9 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
  		{
 			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+			const uint_fast8_t status = qtds[0].status;
+			if ((status & EHCI_STATUS_ACTIVE) != 0)
+				continue;	/* обмен еще не закончился */
 
  		}
  		ASSERT(hehci->urbState == USBH_URB_IDLE);
