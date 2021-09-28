@@ -580,6 +580,11 @@ static USBH_StatusTypeDef USBH_ParseCfgDesc(USBH_HandleTypeDef *phost, uint8_t *
 					if (pdesc->bDescriptorType == USB_DESC_TYPE_ENDPOINT) {
 						pep = &cfg_desc->Itf_Desc[if_ix].Ep_Desc[ep_ix];
 						USBH_ParseEPDesc(phost, pep, (uint8_t*) pdesc);
+
+						USBH_DbgLog(
+								"USBH_ParseCfgDesc: EPix=%d, bEndpointAddress=%02X, wMaxPacketSize=%u",
+								(int) ep_ix, (unsigned) pep->bEndpointAddress, (unsigned) pep->wMaxPacketSize);
+
 						ep_ix++;
 					}
 				}

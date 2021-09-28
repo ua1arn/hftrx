@@ -21,10 +21,21 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+#include "formats.h"
+
+#if WITHUSBHW
+
+void Error_Handler(void)
+{
+	ASSERT(0);
+	for (;;)
+		;
+}
+
+#endif /* WITHUSBHW */
 
 #if WITHUSBHW && defined (WITHUSBHW_DEVICE)
 
-#include "formats.h"
 #include "gpio.h"
 #include "src/usb/usbch9.h"
 
@@ -122,13 +133,6 @@ static void device_USBI0_IRQHandler(void)
 static void device_USBI1_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
-}
-
-void Error_Handler(void)
-{
-	ASSERT(0);
-	for (;;)
-		;
 }
 
 /* External functions --------------------------------------------------------*/

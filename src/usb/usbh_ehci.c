@@ -3498,6 +3498,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		const uint_fast8_t status = asynclisthead [0].cache.status;
  		if (status == 0)
  			hehci->urbState = USBH_URB_DONE;
+// 		else if (status & 0x08)
+// 			hehci->urbState = USBH_URB_NOTREADY;
+// 		else if (status & 0x10)	// Bubble detect
+// 			hehci->urbState = USBH_URB_STALL;
  		else
  			hehci->urbState = USBH_URB_ERROR;
 

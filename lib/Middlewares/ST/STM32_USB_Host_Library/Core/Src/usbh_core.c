@@ -624,6 +624,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         }
         else
         {
+            USBH_UsrLog("This device has %u configuration. Need selection.", (unsigned) phost->device.DevDesc.bNumConfigurations);
           phost->gState = HOST_INPUT;
         }
 #if (USBH_USE_OS == 1U)
@@ -662,7 +663,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
       if (USBH_SetCfg(phost, (uint16_t)phost->device.CfgDesc.bConfigurationValue) == USBH_OK)
       {
         phost->gState = HOST_SET_WAKEUP_FEATURE;
-        USBH_UsrLog("Default configuration set.");
+        USBH_UsrLog("Default configuration %02X set.", (unsigned) phost->device.CfgDesc.bConfigurationValue);
       }
 
 #if (USBH_USE_OS == 1U)
