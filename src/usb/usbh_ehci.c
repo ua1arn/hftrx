@@ -4000,7 +4000,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT, do_ping));
-			qtd->status = EHCI_STATUS_ACTIVE | 1;
 			arm_hardware_flush((uintptr_t) pbuff, length);
 		}
 		else
@@ -4020,7 +4019,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
-	qtdresult->status = EHCI_STATUS_ACTIVE;
+	qtdresult->status = qtd->status;
 	asynclist_item2(phost, hc, qh, virt_to_phys(qtdresult));
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
