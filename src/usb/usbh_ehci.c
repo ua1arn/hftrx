@@ -2942,7 +2942,7 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 //	p->cache.high [4] = 0;
 
 	ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
-	ASSERT((current & 0x001F) == 0);
+	ASSERT((current & 0x001E) == 0);
 
 	p->cap = EHCI_CAP_MULT(1);
 	//p->chr = cpu_to_le32(EHCI_CHR_HEAD);
@@ -3056,7 +3056,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 	p->cap = cpu_to_le32(cap);
 
 	ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
-	ASSERT((current & 0x001F) == 0);
+	ASSERT((current & 0x001E) == 0);
 	p->current = cpu_to_le32(current);	/* Where to place result of transfer */
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->cache.status = EHCI_STATUS_ACTIVE;
