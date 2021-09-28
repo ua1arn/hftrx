@@ -3519,7 +3519,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  		}
  		ASSERT(hehci->urbState == USBH_URB_IDLE);
- 		const uint_fast8_t status = asynclisthead [0].cache.status;
+ 		const uint_fast8_t status = qtds[0].status;
  		if (status == 0)
  			hehci->urbState = USBH_URB_DONE;
 // 		else if (status & 0x08)
@@ -3529,7 +3529,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		else
  			hehci->urbState = USBH_URB_ERROR;
 
- 		if (asynclisthead [0].cache.status != 0 /*|| asynclisthead [1].cache.status != 0*/)
+ 		if (qtds[0].status != 0 /*|| qtds [1].status != 0*/)
  		{
 			PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status[0]=%02X, status[1]=%02X, qtds[0]=%02X, qtds[1]=%02X, urbState=%d\n",
 						(unsigned long) usbsts,
@@ -4044,10 +4044,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
-	//asynclist_item2(phost, hc, qh, virt_to_phys(qtd));
-	memset((void *) qtdresult, 0xFF, sizeof * qtdresult);
-
+	qtdresult->status = EHCI_STATUS_ACTIVE;
 	asynclist_item2(phost, hc, qh, virt_to_phys(qtdresult));
+
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 
