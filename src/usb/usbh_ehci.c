@@ -3393,7 +3393,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
                                   uint16_t mps)
 {
   HAL_StatusTypeDef status = HAL_OK;
-  EHCI_HCTypeDef * const hc = & hehci->hc[ch_num];
+  EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 
   __HAL_LOCK(hehci);
   hc->do_ping = 0U;
@@ -3502,6 +3502,12 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
 
+ 		unsigned ch_num;
+ 		for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
+ 		{
+			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+
+ 		}
  		ASSERT(hehci->urbState == USBH_URB_IDLE);
  		const uint_fast8_t status = asynclisthead [0].cache.status;
  		if (status == 0)
@@ -3513,7 +3519,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		else
  			hehci->urbState = USBH_URB_ERROR;
 
- 		if (asynclisthead [0].cache.status != 0 || asynclisthead [1].cache.status != 0)
+ 		if (asynclisthead [0].cache.status != 0 /*|| asynclisthead [1].cache.status != 0*/)
  		{
 			PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, status[0]=%02X, status[1]=%02X, urbState=%d\n",
 						(unsigned long) usbsts,
@@ -3737,8 +3743,8 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
      EHCIx->USBCMD =
      		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
  			((uint_fast32_t) EHCI_FLSIZE_DEFAULT << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
- 			//EHCI_USBCMD_PERIODIC |	 // Periodic Schedule Enable - PERIODICLISTBASE use
-			//EHCI_USBCMD_ASYNC |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
+ 			EHCI_USBCMD_PERIODIC |	 // Periodic Schedule Enable - PERIODICLISTBASE use
+			EHCI_USBCMD_ASYNC |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
  			//CMD_RS |	// Run/Stop 1=Run, 0-stop
  			0;
 
@@ -3819,7 +3825,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
                                            uint16_t length,
                                            uint8_t do_ping)
 {
-  EHCI_HCTypeDef * const hc = & hehci->hc[ch_num];
+  EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 
   hc->ep_is_in = direction;
   hc->ep_type  = ep_type;
