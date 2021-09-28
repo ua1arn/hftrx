@@ -2917,7 +2917,7 @@ static struct usb_host_operations ehci_operations = {
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item(volatile struct ehci_queue_head * p)
+static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link)
 {
 	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
@@ -3008,7 +3008,7 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint32_t current)
 {
 	//memset((void *) p, 0, sizeof * p);
-	p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
+	//p->link = ehci_link_qhv(p);	// Using of List Termination here raise Reclamation USBSTS bit
 
 	uint32_t chr;
 	/* Determine basic characteristics */
@@ -3206,8 +3206,15 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 #endif
 
 
-	asynclist_item(& asynclisthead [0]);
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+    for (i = 0; i < (ARRAY_SIZE(asynclisthead) - 1); ++ i)
+    {
+        asynclist_item(& asynclisthead [i], & asynclisthead [i + 1]);
+    }
+    asynclist_item(& asynclisthead [i], & asynclisthead [0]);
+
+	asynclist_item(& asynclisthead [0], & asynclisthead [0]);
+
+    //asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD);	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	#if 1
 	// Setup frame list
@@ -3386,25 +3393,26 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
                                   uint16_t mps)
 {
   HAL_StatusTypeDef status = HAL_OK;
+  EHCI_HCTypeDef * const hc = & hehci->hc[ch_num];
 
   __HAL_LOCK(hehci);
-  hehci->hc[ch_num].do_ping = 0U;
-  hehci->hc[ch_num].dev_addr = dev_address;
-  hehci->hc[ch_num].max_packet = mps;
-  hehci->hc[ch_num].ch_num = ch_num;
-  hehci->hc[ch_num].ep_type = ep_type;
-  hehci->hc[ch_num].ep_num = epnum & 0x7FU;
+  hc->do_ping = 0U;
+  hc->dev_addr = dev_address;
+  hc->max_packet = mps;
+  hc->ch_num = ch_num;
+  hc->ep_type = ep_type;
+  hc->ep_num = epnum & 0x7FU;
 
   if ((epnum & 0x80U) == 0x80U)
   {
-    hehci->hc[ch_num].ep_is_in = 1U;
+    hc->ep_is_in = 1U;
   }
   else
   {
-    hehci->hc[ch_num].ep_is_in = 0U;
+    hc->ep_is_in = 0U;
   }
 
-  hehci->hc[ch_num].speed = speed;
+  hc->speed = speed;
 
 // TODO: use queue head
 //  status =  USB_HC_Init(hehci->Instance,
@@ -3811,17 +3819,19 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
                                            uint16_t length,
                                            uint8_t do_ping)
 {
-  hehci->hc[ch_num].ep_is_in = direction;
-  hehci->hc[ch_num].ep_type  = ep_type;
+  EHCI_HCTypeDef * const hc = & hehci->hc[ch_num];
+
+  hc->ep_is_in = direction;
+  hc->ep_type  = ep_type;
 
   if (token == 0U)
   {
-    hehci->hc[ch_num].data_pid = HC_PID_SETUP;
-    hehci->hc[ch_num].do_ping = do_ping;
+    hc->data_pid = HC_PID_SETUP;
+    hc->do_ping = do_ping;
   }
   else
   {
-    hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+    hc->data_pid = HC_PID_DATA1;
   }
 
   /* Manage Data Toggle */
@@ -3833,19 +3843,19 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
         if (length == 0U)
         {
           /* For Status OUT stage, Length==0, Status Out PID = 1 */
-          hehci->hc[ch_num].toggle_out = 1U;
+          hc->toggle_out = 1U;
         }
 
         /* Set the Data Toggle bit as per the Flag */
-        if (hehci->hc[ch_num].toggle_out == 0U)
+        if (hc->toggle_out == 0U)
         {
           /* Put the PID 0 */
-          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+          hc->data_pid = HC_PID_DATA0;
         }
         else
         {
           /* Put the PID 1 */
-          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+          hc->data_pid = HC_PID_DATA1;
         }
       }
       break;
@@ -3854,26 +3864,26 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
       if (direction == 0U)
       {
         /* Set the Data Toggle bit as per the Flag */
-        if (hehci->hc[ch_num].toggle_out == 0U)
+        if (hc->toggle_out == 0U)
         {
           /* Put the PID 0 */
-          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+          hc->data_pid = HC_PID_DATA0;
         }
         else
         {
           /* Put the PID 1 */
-          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+          hc->data_pid = HC_PID_DATA1;
         }
       }
       else
       {
-        if (hehci->hc[ch_num].toggle_in == 0U)
+        if (hc->toggle_in == 0U)
         {
-          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+          hc->data_pid = HC_PID_DATA0;
         }
         else
         {
-          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+          hc->data_pid = HC_PID_DATA1;
         }
       }
 
@@ -3882,46 +3892,46 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
       if (direction == 0U)
       {
         /* Set the Data Toggle bit as per the Flag */
-        if (hehci->hc[ch_num].toggle_out == 0U)
+        if (hc->toggle_out == 0U)
         {
           /* Put the PID 0 */
-          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+          hc->data_pid = HC_PID_DATA0;
         }
         else
         {
           /* Put the PID 1 */
-          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+          hc->data_pid = HC_PID_DATA1;
         }
       }
       else
       {
-        if (hehci->hc[ch_num].toggle_in == 0U)
+        if (hc->toggle_in == 0U)
         {
-          hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+          hc->data_pid = HC_PID_DATA0;
         }
         else
         {
-          hehci->hc[ch_num].data_pid = HC_PID_DATA1;
+          hc->data_pid = HC_PID_DATA1;
         }
       }
       break;
 
     case EP_TYPE_ISOC:
-      hehci->hc[ch_num].data_pid = HC_PID_DATA0;
+      hc->data_pid = HC_PID_DATA0;
       break;
 
     default:
       break;
   }
 
-  hehci->hc[ch_num].xfer_buff = pbuff;
-  hehci->hc[ch_num].xfer_len  = length;
-  hehci->hc[ch_num].urb_state = URB_IDLE;
-  hehci->hc[ch_num].xfer_count = 0U;
-  hehci->hc[ch_num].ch_num = ch_num;
-  hehci->hc[ch_num].state = HC_IDLE;
+  hc->xfer_buff = pbuff;
+  hc->xfer_len  = length;
+  hc->urb_state = URB_IDLE;
+  hc->xfer_count = 0U;
+  hc->ch_num = ch_num;
+  hc->state = HC_IDLE;
 
-  //PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
+  //PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
   //return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
 //
 //  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) async;
@@ -3949,7 +3959,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 #endif
 
 	USBH_HandleTypeDef * const phost = & hUsbHostHS;
-	EHCI_HCTypeDef * const hc = & hehci->hc[ch_num];
 	volatile struct ehci_queue_head * const qh = & asynclisthead [0];
 	volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [0].cache;
 	//volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [1].cache;
@@ -3960,7 +3969,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (token == 0)
 		{
 			// Setup
-			//PRINTF("USBH_LL_SubmitURB: setup, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: setup, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
 			//printhex(0, pbuff, length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_SETUP));
@@ -3970,7 +3979,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else if (direction == 0)
 		{
 			// Data OUT
-			//PRINTF("USBH_LL_SubmitURB: OUT, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
 			//printhex(0, pbuff, length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT));
@@ -3980,7 +3989,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// Data In
-			//PRINTF("USBH_LL_SubmitURB: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN));
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
@@ -3991,8 +4000,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (direction == 0)
 		{
 			// BULK Data OUT
-			//PRINTF("USBH_LL_SubmitURB: BULK OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT));
@@ -4001,8 +4010,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// BULK Data IN
-			//PRINTF("USBH_LL_SubmitURB: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hehci->hc[ch_num].ch_num, hehci->hc[ch_num].ep_num, hehci->hc[ch_num].max_packet);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN));
