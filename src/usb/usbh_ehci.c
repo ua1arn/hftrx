@@ -2919,7 +2919,7 @@ static struct usb_host_operations ehci_operations = {
  */
 static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link)
 {
-	//memset((void *) p, 0, sizeof * p);
+	memset((void *) p, 0x00, sizeof * p);
 	p->link = ehci_link_qhv(link);	// Using of List Termination here raise Reclamation USBSTS bit
 //	p->chr = 0;
 //	p->cap = 0;
@@ -2941,7 +2941,7 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 //	p->cache.high [4] = 0;
 
 	p->cap = EHCI_CAP_MULT(1);
-	p->chr = cpu_to_le32(EHCI_CHR_HEAD);
+	//p->chr = cpu_to_le32(EHCI_CHR_HEAD);
 	p->cache.status = EHCI_STATUS_HALTED;
 	p->cache.len = 0;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
@@ -3047,7 +3047,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 //	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD);
+	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * 0);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 
@@ -3064,6 +3064,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) hehci->Instance;
 	EhciController *const ehci = & hehci->ehci;
+	unsigned i;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
 
@@ -3076,6 +3077,16 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 #if 1
 
+
+	/* подготовка кольцевого списка QH */
+    for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
+    {
+        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)]);
+    }
+    asynclist_item(& asynclisthead [0], & asynclisthead [0]);
+    //asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD);
+
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	/*
 	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
 	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
@@ -3084,12 +3095,12 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 *
 	 */
 
-	unsigned i;
 	// Periodic frame list
 	for (i = 0; i < ARRAY_SIZE(periodiclist); ++ i)
 	{
 		periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
 	}
+	arm_hardware_flush_invalidate((uintptr_t) & periodiclist, sizeof periodiclist);
 
 #endif
 	// power cycle for USB dongle
@@ -3204,15 +3215,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 //	ehci_dump(& ehcidevice0);
 #endif
 
-	/* подготовка кольцевого списка QH */
-    for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
-    {
-        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)]);
-    }
-    asynclist_item(& asynclisthead [0], & asynclisthead [0]);
-
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-
 	#if 1
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
@@ -3240,20 +3242,20 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	//hc->opRegs->configFlag = 1;
 	//WOR(configFlagO, 1);
 	//
-	//PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) EHCIx->USBCMD);
-	//PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) EHCIx->USBSTS);
-	//PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) EHCIx->USBINTR);
-	//PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) EHCIx->CTRLDSSEGMENT);
-	//PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) EHCIx->PERIODICLISTBASE);
-	//PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) EHCIx->ASYNCLISTADDR);
-	////PRINTF("board_ehci_initialize: async=%08lX\n", (unsigned long) & async);
-	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-	////local_delay_ms(10);
-	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-	////local_delay_ms(20);
-	//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-	////local_delay_ms(30);
-	//PRINTF("fl=%08lX %08lX\n", hehci->ehci.frameList, EHCIx->PERIODICLISTBASE);
+////PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) EHCIx->USBCMD);
+////PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) EHCIx->USBINTR);
+////PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) EHCIx->CTRLDSSEGMENT);
+////PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) EHCIx->PERIODICLISTBASE);
+//PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) EHCIx->ASYNCLISTADDR);
+//////PRINTF("board_ehci_initialize: async=%08lX\n", (unsigned long) & async);
+//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
+//local_delay_ms(100);
+//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
+//local_delay_ms(100);
+//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
+//local_delay_ms(100);
+////PRINTF("fl=%08lX %08lX\n", hehci->ehci.frameList, EHCIx->PERIODICLISTBASE);
+PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) EHCIx->USBSTS);
 
 	//	USBH_EHCI_IRQn
 	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
@@ -3267,7 +3269,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	//for (porti = 0; porti < hehci->nports; ++ porti)
 	{
 		unsigned long portsc = ehci->opRegs->ports [porti];
-		PRINTF("portsc[%u]=%08lX\n", porti, portsc);
+		//PRINTF("portsc[%u]=%08lX\n", porti, portsc);
 	}
 
 	/* Route all ports to EHCI controller */
@@ -3621,12 +3623,13 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
  	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
  	//PRINTF("HAL_EHCI_Init\n");
 
  	board_ehci_initialize(hehci);
+	//PRINTF("%s: done\n", __func__);
  	return HAL_OK;
 }
 
@@ -3652,7 +3655,7 @@ void USBH_EHCI_IRQHandler(void)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 
 #if CPUSTYLE_STM32MP1
 
@@ -3692,11 +3695,12 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
 
 #endif
+	//PRINTF("%s: done\n", __func__);
 }
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 
 #if CPUSTYLE_STM32MP1
 
@@ -3720,6 +3724,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 	#warning HAL_EHCI_MspDeInit Not implemented for CPUSTYLE_xxxxx
 
 #endif
+	//PRINTF("%s: done\n", __func__);
 }
 
 
