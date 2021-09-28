@@ -3047,11 +3047,12 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 //	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * 0);
+	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 
 	ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
+	ASSERT((current & 0x001F) == 0);
 	p->current = cpu_to_le32(current);
 //	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 //	p->cache.status = EHCI_STATUS_HALTED;
