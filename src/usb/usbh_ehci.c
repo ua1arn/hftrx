@@ -3961,7 +3961,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (token == 0)
 		{
 			// Setup
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: setup, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: SETUP, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_SETUP, do_ping));
@@ -3971,7 +3971,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else if (direction == 0)
 		{
 			// Data OUT
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, length=%u, addr=%u\n", (unsigned) length, hc->dev_addr);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT, do_ping));
@@ -3981,7 +3981,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// Data In
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: IN, pbuf=%p, length=%u\n", pbuff, (unsigned) length);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: IN, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping, hc->do_ping);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN, do_ping));
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
@@ -3995,9 +3995,17 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (direction == 0)
 		{
 			// BULK Data OUT
-			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping, hc->do_ping);
 			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
+
+//			static uint8_t tx0 [] = {
+//					0x55, 0x53, 0x42, 0x43, 0xC0, 0x57, 0x9A, 0xBF, 0x24, 0x00, 0x00, 0x00, 0x80, 0x00, 0x06, 0x12,
+//					0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+//			};
+//
+//			pbuff = tx0;
+//			length = sizeof tx0;
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) pbuff, length);
@@ -4005,7 +4013,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// BULK Data IN
-			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) length, hc->dev_addr, do_ping, hc->do_ping);
 			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
