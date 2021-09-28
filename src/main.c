@@ -5450,17 +5450,11 @@ nyquistadj2(uint_fast32_t f)
 #endif /* XVTR_NYQ1 */
 }
 
-// tuning frequency to external PA (ACC socket) frequency adjust
+// tuning frequency to external PA (ACC socket) frequency adjust - no correction
 static uint_fast32_t
 nyquistadj3(uint_fast32_t f)
 {
-#if 0//XVTR_R820T2
-	reuturn R820T_IFFREQ;
-#elif XVTR_NYQ1
-	return FQMODEL_TUNING_TO_NYQ1(f);
-#else /* XVTR_NYQ1 */
 	return f;
-#endif /* XVTR_NYQ1 */
 }
 
 /* получить номер диапазона, в который попадает отображающаяся частота
