@@ -2918,7 +2918,7 @@ static struct usb_host_operations ehci_operations = {
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link, uint32_t current)
+static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link)
 {
 	ASSERT((virt_to_phys(p) & 0x01F) == 0);
 	ASSERT((virt_to_phys(link) & 0x01F) == 0);
@@ -2943,8 +2943,8 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 //	p->cache.low [4] = 0;
 //	p->cache.high [4] = 0;
 
-	ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
-	ASSERT((current & 0x001E) == 0);
+	//ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
+	//ASSERT((current & 0x001E) == 0);
 
 	p->cap = EHCI_CAP_MULT(1);
 	p->chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
@@ -2952,7 +2952,7 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 	p->cache.len = 0;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
 	p->cache.alt = cpu_to_le32(EHCI_LINK_TERMINATE);
-	p->current = cpu_to_le32(current);
+	p->current = cpu_to_le32(0);
 }
 
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
@@ -3054,7 +3054,7 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 //	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * 0);
+	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * 1);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 
@@ -3201,16 +3201,13 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	/* подготовка кольцевого списка QH */
     for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
     {
-       	qtd_item2(& qtds [i], NULL, 0, EHCI_FL_PID_SETUP);
-       	qtd_item2(& asynclisthead [i].cache, NULL, 0, EHCI_FL_PID_SETUP);
-        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)], virt_to_phys(& qtds [i]));
+        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)]);
         qtds [i].status = EHCI_STATUS_HALTED;
         qtds [i].len = 0;
         qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
         qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
     }
-
-    //asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
+    asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
