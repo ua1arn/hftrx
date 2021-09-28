@@ -2945,7 +2945,7 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 	ASSERT((current & 0x001E) == 0);
 
 	p->cap = EHCI_CAP_MULT(1);
-	//p->chr = cpu_to_le32(EHCI_CHR_HEAD);
+	p->chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
 	p->cache.status = EHCI_STATUS_HALTED;
 	p->cache.len = 0;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
@@ -3198,6 +3198,8 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	/* подготовка кольцевого списка QH */
     for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
     {
+       	qtd_item2(& qtds [i], NULL, 0, EHCI_FL_PID_SETUP);
+       	qtd_item2(& asynclisthead [i].cache, NULL, 0, EHCI_FL_PID_SETUP);
         asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)], virt_to_phys(& qtds [i]));
         qtds [i].status = EHCI_STATUS_HALTED;
         qtds [i].len = 0;
@@ -3205,6 +3207,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
         qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
     }
     asynclist_item(& asynclisthead [0], & asynclisthead [0], virt_to_phys(& qtds [0]));
+
     //asynclisthead [0].chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
@@ -3253,24 +3256,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	//hc->opRegs->configFlag = 1;
 	//WOR(configFlagO, 1);
 	//
-////PRINTF("board_ehci_initialize: USBCMD=%08lX\n", (unsigned long) EHCIx->USBCMD);
-////PRINTF("board_ehci_initialize: USBINTR=%08lX\n", (unsigned long) EHCIx->USBINTR);
-////PRINTF("board_ehci_initialize: CTRLDSSEGMENT=%08lX\n", (unsigned long) EHCIx->CTRLDSSEGMENT);
-////PRINTF("board_ehci_initialize: PERIODICLISTBASE=%08lX\n", (unsigned long) EHCIx->PERIODICLISTBASE);
-//PRINTF("board_ehci_initialize: ASYNCLISTADDR=%08lX\n", (unsigned long) EHCIx->ASYNCLISTADDR);
-//////PRINTF("board_ehci_initialize: async=%08lX\n", (unsigned long) & async);
-//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-//local_delay_ms(100);
-//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-//local_delay_ms(100);
-//PRINTF("board_ehci_initialize: FRINDEX=%08lX\n", (unsigned long) EHCIx->FRINDEX);
-//local_delay_ms(100);
-////PRINTF("fl=%08lX %08lX\n", hehci->ehci.frameList, EHCIx->PERIODICLISTBASE);
-PRINTF("board_ehci_initialize: USBSTS=%08lX\n", (unsigned long) EHCIx->USBSTS);
-
-	//	USBH_EHCI_IRQn
-	//USBH_OHCI_IRQn                   = 106,    /*!< USB OHCI global interrupt                                            */
-	//USBH_EHCI_IRQn                   = 107,    /*!< USB EHCI global interrupt                                            */
 
 #if 1
 
