@@ -3525,6 +3525,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 //						);
 	 		}
  		}
+ 		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
  		arm_hardware_invalidate((uintptr_t) & qtds, sizeof qtds);	/* чтобы следубщая проверка могла работать */
  	}
 
@@ -4001,8 +4002,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// BULK Data IN
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, pbuff=%p, length=%u, addr=%u, do_ping=%u\n", pbuff, (unsigned) length, hc->dev_addr, do_ping);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 			//printhex((uintptr_t) pbuff, pbuff, length);
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN));
