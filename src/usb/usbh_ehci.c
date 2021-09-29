@@ -48,6 +48,7 @@ void Error_Handler(void);
 
 
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
+// https://github.com/LucasIankowski/T2LabSisop/blob/3fe926e01623ca007afc9d7a80c764418d92c2bd/drivers/usb/host/ehci-q.c
 
 // Taken from
 //	https://github.com/xushanpu123/xsp-daily-work/blob/ce4b31db29a560400ac948053b451a2122631490/rCore-Tutorial-v3/qemu-5.0.0/roms/ipxe/src/drivers/usb/ehci.c
