@@ -3500,32 +3500,31 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		{
 			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 			const uint_fast8_t status = qtds[ch_num].status;
-			if ((status & EHCI_STATUS_ACTIVE) != 0)
-				continue;	/* обмен еще не закончился */
-	 		//ASSERT(hc->ehci_urb_state == URB_IDLE);
-	 		if ((status & ~ 0x01) == 0)	// For HS devices: mask PING bit
-	 		{
-	 			hc->ehci_urb_state = URB_DONE;
-	 		}
-	// 		else if (status & 0x08)
-	// 			hc->ehci_urb_state = USBH_URB_NOTREADY;
-	// 		else if (status & 0x10)	// Bubble detect
-	// 			hc->ehci_urb_state = USBH_URB_STALL;
-	 		else
-	 			hc->ehci_urb_state = URB_ERROR;
-
-	 		if (status != 0)
-	 		{
+			if ((status & EHCI_STATUS_HALTED) != 0)
+			{
+				/* serious "can't proceed" faults reported by the hardware */
+				// Тут разбирать по особенностям ошибки
+				hc->ehci_urb_state = URB_ERROR;
 //				PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, qtds[%d]=%02X, urbState=%d\n",
 //							(unsigned long) usbsts,
 //							ch_num,
 //							(unsigned) qtds [ch_num].status,
 //							hc->ehci_urb_state
 //						);
-	 		}
+
+			}
+			else if ((status & EHCI_STATUS_ACTIVE) != 0)
+			{
+					continue;	/* обмен еще не закончился */
+			}
+			else
+			{
+	 			hc->ehci_urb_state = URB_DONE;
+
+			}
  		}
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
- 		arm_hardware_invalidate((uintptr_t) & qtds, sizeof qtds);	/* чтобы следубщая проверка могла работать */
+ 		arm_hardware_invalidate((uintptr_t) & qtds, sizeof qtds);	/* чтобы следующая проверка могла работать */
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
