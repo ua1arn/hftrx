@@ -36,7 +36,7 @@ void Error_Handler(void);
 
 	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
-	static RAMBIGDTCM __ALIGN_BEGIN EHCI_HandleTypeDef hhcd_USB_EHCI __ALIGN_END;
+	static RAMBIGDTCM __ALIGN_BEGIN EHCI_HandleTypeDef hehci_USB __ALIGN_END;
 
 #endif /* defined (WITHUSBHW_HOST) */
 
@@ -2697,7 +2697,7 @@ static void ehci_root_poll ( struct usb_hub *hub, struct usb_port *port ) {
 	//PRINTF("ehci_root_poll: port %d, disconnected=%d\n", port->address, port->disconnected);;
 	/* Report port status change */
 	usb_port_changed ( port );
-	EHCI_HandleTypeDef * const hehci = & hhcd_USB_EHCI;
+	EHCI_HandleTypeDef * const hehci = & hehci_USB;
 	if ((portsc & EHCI_PORTSC_CCS) == 0)
 	{
 		port->disconnected = 1;
@@ -3626,14 +3626,14 @@ void USBH_OHCI_IRQHandler(void)
 {
 	ASSERT(0);
 	//ehci_bus_poll(& usbbus0);
-	//HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
+	//HAL_EHCI_IRQHandler(& hehci_USB);
 }
 
 void USBH_EHCI_IRQHandler(void)
 {
 	//ASSERT(0);
 	//ehci_bus_poll(& usbbus0);
-	HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
+	HAL_EHCI_IRQHandler(& hehci_USB);
 }
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
@@ -4415,24 +4415,24 @@ void USBH_Delay(uint32_t Delay)
 USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 {
 
-	hhcd_USB_EHCI.pData = phost;
-	phost->pData = & hhcd_USB_EHCI;
+	hehci_USB.pData = phost;
+	phost->pData = & hehci_USB;
 
-	hhcd_USB_EHCI.Instance = WITHUSBHW_EHCI;
+	hehci_USB.Instance = WITHUSBHW_EHCI;
 
-	hhcd_USB_EHCI.Init.Host_channels = 16;
-	hhcd_USB_EHCI.Init.speed = PCD_SPEED_HIGH;
-	hhcd_USB_EHCI.Init.dma_enable = ENABLE;
-	hhcd_USB_EHCI.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
+	hehci_USB.Init.Host_channels = 16;
+	hehci_USB.Init.speed = PCD_SPEED_HIGH;
+	hehci_USB.Init.dma_enable = ENABLE;
+	hehci_USB.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
-	hhcd_USB_EHCI.Init.Sof_enable = DISABLE;
+	hehci_USB.Init.Sof_enable = DISABLE;
 
-	if (HAL_EHCI_Init(& hhcd_USB_EHCI) != HAL_OK)
+	if (HAL_EHCI_Init(& hehci_USB) != HAL_OK)
 	{
 		ASSERT(0);
 	}
 
-	USBH_LL_SetTimer(phost, HAL_EHCI_GetCurrentFrame(& hhcd_USB_EHCI));
+	USBH_LL_SetTimer(phost, HAL_EHCI_GetCurrentFrame(& hehci_USB));
 	return USBH_OK;
 }
 
@@ -4544,7 +4544,7 @@ void MX_USB_HOST_Process(void)
 {
 	USBH_Process(& hUsbHostHS);
 	//ehci_bus_poll(& usbbus0);
-	//HAL_EHCI_IRQHandler(& hhcd_USB_EHCI);
+	//HAL_EHCI_IRQHandler(& hehci_USB);
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */
