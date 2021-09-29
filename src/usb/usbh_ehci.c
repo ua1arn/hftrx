@@ -4420,47 +4420,10 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 	hhcd_USB_EHCI.Instance = WITHUSBHW_EHCI;
 
-#if 1//defined (WITHUSBHW_EHCI)
-	hhcd_USB_EHCI.Init.Host_channels = 16;
-	hhcd_USB_EHCI.Init.speed = PCD_SPEED_FULL; //PCD_SPEED_HIGH; При high не происходит SACK
-	hhcd_USB_EHCI.Init.dma_enable = DISABLE;
-	hhcd_USB_EHCI.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-
-#elif 0//CPUSTYLE_R7S721
-	hhcd_USB_EHCI.Init.Host_channels = 16;
-	hhcd_USB_EHCI.Init.speed = PCD_SPEED_FULL; //PCD_SPEED_HIGH; При high не происходит SACK
-	hhcd_USB_EHCI.Init.dma_enable = DISABLE;
-	hhcd_USB_EHCI.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-
-#elif 0//CPUSTYLE_STM32MP1
 	hhcd_USB_EHCI.Init.Host_channels = 16;
 	hhcd_USB_EHCI.Init.speed = PCD_SPEED_HIGH;
-	#if WITHUSBHOST_DMAENABLE
-		hhcd_USB_EHCI.Init.dma_enable = ENABLE;	 // xyz HOST
-	#else /* WITHUSBHOST_DMAENABLE */
-		hhcd_USB_EHCI.Init.dma_enable = DISABLE;	 // xyz HOST
-	#endif /* WITHUSBHOST_DMAENABLE */
-	hhcd_USB_EHCI.Init.phy_itface = EHCI_PHY_EMBEDDED;
-	hhcd_USB_EHCI.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-	#if WITHUSBHOST_HIGHSPEEDULPI
-		hhcd_USB_EHCI.Init.phy_itface = USB_OTG_ULPI_PHY;
-	#elif WITHUSBHOST_HIGHSPEEDPHYC
-		hhcd_USB_EHCI.Init.phy_itface = USB_OTG_HS_EMBEDDED_PHY;
-	#else /* WITHUSBHOST_HIGHSPEEDULPI */
-		hhcd_USB_EHCI.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-
-#else /* CPUSTYLE_R7S721 */
-//	hhcd_USB_EHCI.Init.Host_channels = 16;
-//	hhcd_USB_EHCI.Init.pcd_speed = PCD_SPEED_FULL;
-//	#if WITHUSBHOST_DMAENABLE
-//		hhcd_USB_EHCI.Init.dma_enable = USB_ENABLE;	 // xyz HOST
-//	#else /* WITHUSBHOST_DMAENABLE */
-//		hhcd_USB_EHCI.Init.dma_enable = USB_DISABLE;	 // xyz HOST
-//	#endif /* WITHUSBHOST_DMAENABLE */
-//	hhcd_USB_EHCI.Init.phy_itface = EHCI_PHY_EMBEDDED;
-
-#endif /* CPUSTYLE_R7S721 */
+	hhcd_USB_EHCI.Init.dma_enable = ENABLE;
+	hhcd_USB_EHCI.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
 	hhcd_USB_EHCI.Init.Sof_enable = DISABLE;
 
@@ -4471,35 +4434,6 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 	USBH_LL_SetTimer(phost, HAL_EHCI_GetCurrentFrame(& hhcd_USB_EHCI));
 	return USBH_OK;
-
-	/* Init USB_IP */
-
-  /* Link the driver to the stack. */
-  hhcd_USB_EHCI.pData = phost;
-  phost->pData = &hhcd_USB_EHCI;
-
-	hhcd_USB_EHCI.Instance = WITHUSBHW_EHCI;
-
-  hhcd_USB_EHCI.Init.Host_channels = 12;
-  hhcd_USB_EHCI.Init.speed = EHCI_SPEED_FULL;
-	#if WITHUSBHOST_DMAENABLE
-	hhcd_USB_EHCI.Init.dma_enable = ENABLE;	 // xyz HOST
-	#else /* WITHUSBHOST_DMAENABLE */
-	hhcd_USB_EHCI.Init.dma_enable = DISABLE;	 // xyz HOST
-	#endif /* WITHUSBHOST_DMAENABLE */
-  hhcd_USB_EHCI.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-  hhcd_USB_EHCI.Init.Sof_enable = DISABLE;
-  hhcd_USB_EHCI.Init.low_power_enable = DISABLE;
-  hhcd_USB_EHCI.Init.vbus_sensing_enable = DISABLE;
-  hhcd_USB_EHCI.Init.use_external_vbus = DISABLE;
-  if (HAL_EHCI_Init(&hhcd_USB_EHCI) != HAL_OK)
-  {
-    Error_Handler( );
-  }
-
-  USBH_LL_SetTimer(phost, HAL_EHCI_GetCurrentFrame(&hhcd_USB_EHCI));
-
-  return USBH_OK;
 }
 
 /**
