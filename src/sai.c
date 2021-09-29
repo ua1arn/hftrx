@@ -981,6 +981,74 @@ hardware_i2s2_master_fullduplex_initialize_audio(void)
 
 #endif /* CPUSTYLE_STM32H7XX */
 
+#if WITHI2SCLOCKFROMPIN
+	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
+	#if defined (STM32F446xx)
+		//RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_I2S2SRC)) |
+		//	1 * RCC_DCKCFGR_I2S2SRC_0 |	// 01: I2S APB2 clock frequency = I2S_CKIN Alternate function input frequency
+		//	0;
+		RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_I2S1SRC)) |
+			1 * RCC_DCKCFGR_I2S1SRC_0 |	// 01: I2S APB1 clock frequency = I2S_CKIN Alternate function input frequency
+			0;
+		(void) RCC->DCKCFGR;
+	#elif CPUSTYLE_STM32MP1
+		// RCC SPI/I2S2,3 kernel clock selection register
+		//	0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
+		//	0x1: pll3_q_ck clock selected as kernel peripheral clock
+		//	0x2: I2S_CKIN clock selected as kernel peripheral clock
+		//	0x3: per_ck clock selected as kernel peripheral clock
+		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
+		//	others: reserved, the kernel clock is disabled
+		RCC->SPI2S23CKSELR = (RCC->SPI2S23CKSELR & ~ (RCC_SPI2S23CKSELR_SPI23SRC_Msk)) |
+			((0x02uL << RCC_SPI2S23CKSELR_SPI23SRC_Pos) * RCC_SPI2S23CKSELR_SPI23SRC_Msk) |
+			0;
+		(void) RCC->SPI2S23CKSELR;
+	#else /* defined (STM32F446xx) */
+		RCC->CFGR |= RCC_CFGR_I2SSRC;
+		(void) RCC->CFGR;
+	#endif /* defined (STM32F446xx) */
+
+#else /* WITHI2SCLOCKFROMPIN */
+
+	// Возможно использовать только режим с MCLK=256*Fs
+	#if defined (STM32F446xx)
+		RCC->DCKCFGR = (RCC->DCKCFGR & ~ (RCC_DCKCFGR_I2S2SRC)) |
+			0 * RCC_DCKCFGR_I2S2SRC_0 |		 // 00: I2S2 clock frequency = f(PLLI2S_R)
+			//1 * RCC_DCKCFGR_I2S2SRC_0 |	 // 01: I2S2 clock frequency = I2S_CKIN Alternate function input frequency
+			//2 * RCC_DCKCFGR_I2S2SRC_0 |	 // 10: I2S2 clock frequency = HSI/HSE depends on PLLSRC bit (PLLCFGR[22])
+			0;
+		// Частота сравнения та же самая, что и в основной PLL
+		// PLLI2SR (at 28) = output divider of VCO frequency
+		RCC->PLLI2SCFGR = (RCC->PLLI2SCFGR & ~ (RCC_PLLI2SCFGR_PLLI2SN | RCC_PLLI2SCFGR_PLLI2SR)) |
+			((PLLI2SN_MUL << RCC_PLLI2SCFGR_PLLI2SN_Pos) & RCC_PLLI2SCFGR_PLLI2SN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
+			2 * RCC_PLLI2SCFGR_PLLI2SR_0 |		// PLLI2SR bits - output divider, 2..7 - константа в calcdivround_plli2s().
+			0;
+
+		RCC->CR |= RCC_CR_PLLI2SON;				// Включил PLL
+		while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0)	// пока заработает PLL
+			;
+	#else /* defined (STM32F446xx) */
+		//
+		// MCK: Master Clock (mapped separately) is used, when the I2S is configured in master
+		// mode (and when the MCKOE bit in the SPI_I2SPR register is set), to output this
+		// additional clock generated at a preconfigured frequency rate equal to 256 * FS, where
+		// FS is the audio sampling frequency.
+
+
+		// Частота сравнения та же самая, что и в основной PLL
+		// PLLI2SR (at 28) = output divider of VCO frequency
+		RCC->PLLI2SCFGR = (RCC->PLLI2SCFGR & ~ (RCC_PLLI2SCFGR_PLLI2SN | RCC_PLLI2SCFGR_PLLI2SR)) |
+			((PLLI2SN_MUL << RCC_PLLI2SCFGR_PLLI2SN_Pos) & RCC_PLLI2SCFGR_PLLI2SN) |	// PLLI2SN bits = multiplier, freq=192..432 MHz, vale = 2..432
+			2 * RCC_PLLI2SCFGR_PLLI2SR_0 |		// PLLI2SR bits - output divider, 2..7 - константа в calcdivround_plli2s().
+			0;
+
+		RCC->CR |= RCC_CR_PLLI2SON;				// Включил PLL
+		while ((RCC->CR & RCC_CR_PLLI2SRDY) == 0)	// пока заработает PLL
+			;
+	#endif /* defined (STM32F446xx) */
+
+#endif /* WITHI2SCLOCKFROMPIN */
+
 	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
 
  	SPI2->I2SCFGR = i2scfgr |
