@@ -957,6 +957,48 @@ hardware_i2s2_slave_fullduplex_initialize_audio(void)
 
 #endif /* WITHI2SHWRXSLAVE */
 
+
+// Интерфейс к НЧ кодеку
+/* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
+static void
+hardware_i2s2_master_fullduplex_initialize_audio(void)
+{
+	PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize_audio\n"));
+
+#if CPUSTYLE_STM32MP1
+	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->MP_APB1ENSETR;
+	RCC->MP_APB1LPENSETR = RCC_MP_APB1LPENSETR_SPI2LPEN_Msk; // Подать тактирование
+	(void) RCC->MP_APB1LPENSETR;
+
+#elif CPUSTYLE_STM32H7XX
+	RCC->APB1LENR |= RCC_APB1LENR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->APB1LENR;
+
+#else /* CPUSTYLE_STM32H7XX */
+	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN_Msk; // Подать тактирование
+	(void) RCC->APB1ENR;
+
+#endif /* CPUSTYLE_STM32H7XX */
+
+	const portholder_t i2scfgr = stm32xxx_i2scfgr_afcodec();
+
+ 	SPI2->I2SCFGR = i2scfgr |
+ 			(5uL << SPI_I2SCFGR_I2SCFG_Pos) |	// 101: master - full duplex
+			0;
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
+
+	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
+
+	// Подключить I2S к выводам процессора
+	I2S2HW_INITIALIZE();	// hardware_i2s2_master_fullduplex_initialize_audio
+
+	PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize_audio done\n"));
+}
+
 /* разрешение работы I2S  */
 // Интерфейс к НЧ кодеку
 static void
@@ -1091,7 +1133,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 	// Используется I2S2 в дуплексном режиме
 	static const codechw_t audiocodechw_i2s2_fullduplex_slave =
 	{
-		hardware_i2s2_ьфыеук_fullduplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон и наушники*/
+		hardware_i2s2_master_fullduplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон и наушники*/
 		hardware_dummy_initialize,
 		DMA_I2S2_RX_initialize_audio,					// DMA по приёму SPI2_RX
 		DMA_I2S2_TX_initialize_audio,					// DMA по передаче SPI2_TX
