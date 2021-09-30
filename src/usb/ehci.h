@@ -260,6 +260,11 @@
  /** Active */
  #define EHCI_STATUS_ACTIVE 0x80
  
+ /** Ping */
+ #define EHCI_STATUS_PING 0x01
+
+ #define EHCI_STATUS_MASK 0xFE
+
  /** PID code */
  #define EHCI_FL_PID(code) ( (code) << 0 )
  

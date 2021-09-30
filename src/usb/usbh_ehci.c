@@ -84,7 +84,7 @@ static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transf
 #endif
 
 /* установка указаных в mask битов в состояние data */
-static void le32_modbify(volatile uint32_t * variable, uint32_t mask, uint32_t data)
+static void le32_modbify(volatile uint32_t * variable, uint_fast32_t mask, uint_fast32_t data)
 {
 	const uint_fast32_t v = * variable;
 	const uint_fast32_t m = cpu_to_le32(mask);
@@ -92,10 +92,18 @@ static void le32_modbify(volatile uint32_t * variable, uint32_t mask, uint32_t d
 }
 
 /* установка указаных в mask битов в состояние data */
-static void le16_modbify(volatile uint16_t * variable, uint32_t mask, uint32_t data)
+static void le16_modbify(volatile uint16_t * variable, uint_fast16_t mask, uint_fast16_t data)
 {
 	const uint_fast16_t v = * variable;
 	const uint_fast16_t m = cpu_to_le16(mask);
+	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
+}
+
+/* установка указаных в mask битов в состояние data */
+static void le8_modbify(volatile uint8_t * variable, uint_fast8_t mask, uint_fast8_t data)
+{
+	const uint_fast8_t v = * variable;
+	const uint_fast8_t m = cpu_to_le16(mask);
 	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
 }
 
@@ -2985,7 +2993,7 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 														// cleared for SETUP packets
 	p->flags = pid | EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
-	p->status = EHCI_STATUS_ACTIVE | (ping != 0);
+	p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
 
 	for (i = 0; i < ARRAY_SIZE(p->low) && length != 0; ++ i)
 	{
@@ -3077,8 +3085,8 @@ static void asynclist_item2(USBH_HandleTypeDef *phost, EHCI_HCTypeDef * hc, vola
 	ASSERT((current & EHCI_LINK_TERMINATE) == 0);	/* "T" bit disallowed here */
 	ASSERT((current & 0x001E) == 0);
 	p->current = cpu_to_le32(current);	/* Where to place result of transfer */
-	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
-	p->cache.status = EHCI_STATUS_ACTIVE;
+	//p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
+	//p->cache.status = EHCI_STATUS_ACTIVE;
 }
 
 // USB EHCI controller
@@ -4041,7 +4049,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
-	qtdresult->status = qtd->status;
+	le8_modbify(& qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+	le8_modbify(& qtdresult->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+
 	asynclist_item2(phost, hc, qh, virt_to_phys(qtdresult));
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
