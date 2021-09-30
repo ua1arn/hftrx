@@ -4031,6 +4031,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) pbuff, length);
+
+			le16_modbify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
+			le16_modbify(& qtdresult->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
 		}
 		else
 		{
@@ -4041,6 +4044,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			VERIFY(0 == qtd_item2(qtd, pbuff, length, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) pbuff, length);
+
+			//le16_modbify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
+			//le16_modbify(& qtdresult->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
 		}
 		break;
 
@@ -4051,6 +4057,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	le8_modbify(& qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 	le8_modbify(& qtdresult->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+
+//	le8_modbify(& qtd->status, EHCI_STATUS_PING, do_ping * EHCI_STATUS_ACTIVE);
+//	le8_modbify(& qtdresult->status, EHCI_STATUS_PING, do_ping * EHCI_STATUS_ACTIVE);
 
 	asynclist_item2(phost, hc, qh, virt_to_phys(qtdresult));
 
