@@ -2990,7 +2990,7 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);	// возможно потребуется адрес следующего буфера
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
-	le16_modify(& p->len, EHCI_LEN_MASK, length);
+	le16_modify(& p->len, EHCI_LEN_MASK, length);	/* не модифицируем флаг EHCI_LEN_TOGGLE */
 
 //	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 //														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
@@ -4083,19 +4083,11 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (hc->ep_is_in == 0)
 		{
 			// BULK Data OUT
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_out=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_out);
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
-			//printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_out=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_out);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
+			printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
 
-//			static uint8_t tx0 [] = {
-//					0x55, 0x53, 0x42, 0x43, 0xC0, 0x57, 0x9A, 0xBF, 0x24, 0x00, 0x00, 0x00, 0x80, 0x00, 0x06, 0x12,
-//					0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//			};
-//
-//			hc->xfer_buff = tx0;
-//			hc->xfer_len = sizeof tx0;
-
-			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, 1/*do_ping*/));
+			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранися в памяти и модифицируется самим контроллером
@@ -4106,8 +4098,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// BULK Data IN
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_in=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_in);
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_in=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_in);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
@@ -4154,8 +4146,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hehci, uint8_t chnum)
 {
 	EHCI_URBStateTypeDef s = hehci->hc [chnum].ehci_urb_state;
-	local_delay_ms(100);
-	PRINTF("HAL_EHCI_HC_GetURBState: hehci->hc[%d].ehci_urb_state=%d\n", chnum, s);
+	//local_delay_ms(100);
+	//PRINTF("HAL_EHCI_HC_GetURBState: hehci->hc[%d].ehci_urb_state=%d\n", chnum, s);
 	return s;
 }
 
@@ -4545,14 +4537,14 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
   */
 USBH_StatusTypeDef USBH_LL_DeInit(USBH_HandleTypeDef *phost)
 {
-  HAL_StatusTypeDef hal_status = HAL_OK;
-  USBH_StatusTypeDef usb_status = USBH_OK;
+	HAL_StatusTypeDef hal_status = HAL_OK;
+	USBH_StatusTypeDef usb_status = USBH_OK;
 //
 //  hal_status = HAL_EHCI_DeInit(phost->pData);
 //
-  usb_status = USBH_Get_USB_Status(hal_status);
+	usb_status = USBH_Get_USB_Status(hal_status);
 
-  return usb_status;
+	return usb_status;
 }
 
 /**
