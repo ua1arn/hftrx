@@ -80,6 +80,7 @@ static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame 
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
 
+static EHCI_HCTypeDef * volatile ghc;
 //static volatile struct ehci_queue_head dd;
 #endif
 
@@ -3520,16 +3521,18 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX\n", usbsts);
 
- 		unsigned ch_num;
- 		for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
+ 		//unsigned ch_num;
+ 		//for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
+ 		if (ghc != NULL)
  		{
-			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
-			const uint_fast8_t status = qtds[ch_num].status;
+			EHCI_HCTypeDef * const hc = ghc;//& hehci->hc [ch_num];
+			const uint_fast8_t status = qtds[hc->ch_num].status;
+	 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X\n", hc->ch_num, usbsts, status);
 			if ((status & EHCI_STATUS_HALTED) != 0)
 			{
 				/* serious "can't proceed" faults reported by the hardware */
 				// Тут разбирать по особенностям ошибки
-				hc->ehci_urb_state = URB_ERROR;
+				hc->ehci_urb_state = USBH_URB_STALL;
 //				PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, qtds[%d]=%02X, urbState=%d\n",
 //							(unsigned long) usbsts,
 //							ch_num,
@@ -3540,13 +3543,31 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			}
 			else if ((status & EHCI_STATUS_ACTIVE) != 0)
 			{
-					continue;	/* обмен еще не закончился */
+				//continue;	/* обмен еще не закончился */
+				//TP();
+			}
+			else if ((status & EHCI_STATUS_XACT_ERR) != 0)
+			{
+				hc->ehci_urb_state = USBH_URB_STALL;
+			}
+			else if ((status & EHCI_STATUS_BABBLE) != 0)
+			{
+				hc->ehci_urb_state = USBH_URB_STALL;
+			}
+			else if ((status & EHCI_STATUS_BUFFER) != 0)
+			{
+				hc->ehci_urb_state = USBH_URB_STALL;
 			}
 			else
 			{
 	 			hc->ehci_urb_state = URB_DONE;
 
 			}
+			ghc = NULL;
+ 		}
+ 		else
+ 		{
+ 			PRINTF("HAL_EHCI_IRQHandler: ghc already NULL\n");
  		}
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
  		arm_hardware_invalidate((uintptr_t) & qtds, sizeof qtds);	/* чтобы следующая проверка могла работать */
@@ -3989,6 +4010,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_SETUP, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
+			//hc->xfer_count = hc->xfer_len;
 		}
 		else if (direction == 0)
 		{
@@ -3999,6 +4021,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
+			//hc->xfer_count = hc->xfer_len;
 		}
 		else
 		{
@@ -4007,6 +4030,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+
+			//hc->xfer_count = hc->xfer_len;
 		}
 		break;
 
@@ -4034,6 +4059,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
 			le16_modify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
+
+			hc->xfer_count = hc->xfer_len;
 		}
 		else
 		{
@@ -4042,12 +4069,13 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
 			//printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
 
-			memset(hc->xfer_buff, 0x00, hc->xfer_len);	// force 'not ready' if error at reading
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			//le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
-			//le16_modify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
+			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
+			le16_modify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
+
+			hc->xfer_count = hc->xfer_len;
 		}
 		break;
 
@@ -4066,7 +4094,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	hc->ehci_urb_state = URB_IDLE;
 
-
+	ghc = hc;
   return HAL_OK;
 }
 
@@ -4086,7 +4114,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   */
 EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hehci, uint8_t chnum)
 {
-  return hehci->hc[chnum].ehci_urb_state;
+	EHCI_URBStateTypeDef s = hehci->hc[chnum].ehci_urb_state;
+	//local_delay_ms(1000);
+	//PRINTF("HAL_EHCI_HC_GetURBState: hehci->hc[%d].ehci_urb_state=%d\n", chnum, s);
+  return s;
 }
 
 

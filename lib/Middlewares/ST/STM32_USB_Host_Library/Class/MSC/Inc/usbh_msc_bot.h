@@ -124,7 +124,7 @@ BOT_CSWTypeDef;
 
 typedef struct
 {
-  uint32_t                   data[16];
+  uint32_t                   data[512];	// was: 16
   BOT_StateTypeDef           state;
   BOT_StateTypeDef           prev_state;
   BOT_CMDStateTypeDef        cmd_state;
