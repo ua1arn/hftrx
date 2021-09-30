@@ -83,6 +83,21 @@ static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transf
 //static volatile struct ehci_queue_head dd;
 #endif
 
+/* установка указаных в mask битов в состояние data */
+static void le32_modbify(volatile uint32_t * variable, uint32_t mask, uint32_t data)
+{
+	const uint_fast32_t v = * variable;
+	const uint_fast32_t m = cpu_to_le32(mask);
+	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
+}
+
+/* установка указаных в mask битов в состояние data */
+static void le16_modbify(volatile uint16_t * variable, uint32_t mask, uint32_t data)
+{
+	const uint_fast16_t v = * variable;
+	const uint_fast16_t m = cpu_to_le16(mask);
+	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
+}
 
 /** List of USB buses */
 struct list_head usb_buses = LIST_HEAD_INIT ( usb_buses );
@@ -1142,7 +1157,7 @@ static __unused void ehci_dump ( struct ehci_device *ehci ) {
  */
 
 /** Prevent the release of ownership back to BIOS */
-static int ehci_legacy_prevent_release;
+//static int ehci_legacy_prevent_release;
 
 /**
  * Initialise USB legacy support
