@@ -124,7 +124,7 @@ BOT_CSWTypeDef;
 
 typedef struct
 {
-  uint32_t                   data[512];	// was: 16
+  uint32_t                   data[512 / 4];	// was: 16 - in this buffer readed maximal endpoint data size (512 for HS)
   BOT_StateTypeDef           state;
   BOT_StateTypeDef           prev_state;
   BOT_CMDStateTypeDef        cmd_state;

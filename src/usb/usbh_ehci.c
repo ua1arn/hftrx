@@ -3527,7 +3527,9 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		{
 			EHCI_HCTypeDef * const hc = ghc;//& hehci->hc [ch_num];
 			const uint_fast8_t status = qtds[hc->ch_num].status;
-	 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X\n", hc->ch_num, usbsts, status);
+			unsigned len = le16_to_cpu(qtds[hc->ch_num].len) & EHCI_LEN_MASK;
+			unsigned pktcnt = hc->xfer_len - len;
+	 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
 			{
 				/* serious "can't proceed" faults reported by the hardware */
@@ -3562,6 +3564,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			{
 	 			hc->ehci_urb_state = URB_DONE;
 
+				hc->xfer_buff += pktcnt;
+				hc->xfer_count += pktcnt;
 			}
 			ghc = NULL;
  		}
@@ -4010,7 +4014,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_SETUP, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			//hc->xfer_count = hc->xfer_len;
 		}
 		else if (direction == 0)
 		{
@@ -4021,7 +4024,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			//hc->xfer_count = hc->xfer_len;
 		}
 		else
 		{
@@ -4031,7 +4033,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			//hc->xfer_count = hc->xfer_len;
 		}
 		break;
 
@@ -4060,14 +4061,12 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
 			le16_modify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
 
-			hc->xfer_count = hc->xfer_len;
 		}
 		else
 		{
 			// BULK Data IN
 			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_in=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_in);
 			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n",  hc->ch_num, hc->ep_num, hc->max_packet);
-			//printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
@@ -4075,7 +4074,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
 			le16_modify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
 
-			hc->xfer_count = hc->xfer_len;
 		}
 		break;
 
