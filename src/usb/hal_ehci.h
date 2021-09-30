@@ -358,13 +358,13 @@ typedef struct
   uint8_t   data_pid;           /*!< Initial data PID.
                                      This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
-  uint8_t   *xfer_buff;         /*!< Pointer to transfer buffer.                                                */
+  uint8_t   * volatile xfer_buff;         /*!< Pointer to transfer buffer.                                                */
 
   uint32_t  XferSize;             /*!< OTG Channel transfer size.                                                   */
 
   uint32_t  xfer_len;           /*!< Current transfer length.                                                   */
 
-  uint32_t  xfer_count;         /*!< Partial transfer length in case of multi packet transfer.                  */
+  uint32_t  volatile xfer_count;         /*!< Partial transfer length in case of multi packet transfer.                  */
 
   uint8_t   toggle_in;          /*!< IN transfer current toggle flag.
                                      This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
