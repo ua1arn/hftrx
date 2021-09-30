@@ -3518,6 +3518,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT) - see EHCI_FL_IOC usage
  	{
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
+ 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX\n", usbsts);
 
  		unsigned ch_num;
  		for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
@@ -3973,8 +3974,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 #endif
 
 	volatile struct ehci_queue_head * const qh = & asynclisthead [hc->ch_num];
-	volatile struct ehci_transfer_descriptor * qtdresult = & qtds [hc->ch_num];
-	volatile struct ehci_transfer_descriptor * qtd = & asynclisthead [hc->ch_num].cache;
+	volatile struct ehci_transfer_descriptor * qtd = & qtds [hc->ch_num];
+	volatile struct ehci_transfer_descriptor * qtdoverl = & asynclisthead [hc->ch_num].cache;
 
 	switch (ep_type)
 	{
@@ -3985,7 +3986,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: SETUP, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, hc->xfer_len);
 
-			VERIFY(0 == qtd_item2(qtd, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_SETUP, do_ping));
+			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_SETUP, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 		}
@@ -3995,7 +3996,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, hc->xfer_len);
 
-			VERIFY(0 == qtd_item2(qtd, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
+			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 		}
@@ -4004,7 +4005,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			// Data In
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 
-			VERIFY(0 == qtd_item2(qtd, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
+			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 		}
 		break;
@@ -4028,11 +4029,11 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //			hc->xfer_buff = tx0;
 //			hc->xfer_len = sizeof tx0;
 
-			VERIFY(0 == qtd_item2(qtd, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, 1/*do_ping*/));
+			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, 1/*do_ping*/));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
+			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
 			le16_modify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
-			le16_modify(& qtdresult->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
 		}
 		else
 		{
@@ -4042,11 +4043,11 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
 
 			memset(hc->xfer_buff, 0x00, hc->xfer_len);	// force 'not ready' if error at reading
-			VERIFY(0 == qtd_item2(qtd, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
+			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
+			//le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
 			//le16_modify(& qtd->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
-			//le16_modify(& qtdresult->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
 		}
 		break;
 
@@ -4055,10 +4056,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
+	le8_modify(& qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 	le8_modify(& qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
-	le8_modify(& qtdresult->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
-	asynclist_item2(hc, qh, virt_to_phys(qtdresult));
+	asynclist_item2(hc, qh, virt_to_phys(qtd));
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
