@@ -296,10 +296,12 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 /**
   * @brief  Get status routine.
   * @param  Add: Address to be read from.
-  * @param  Cmd: Number of data to be read (in bytes).
+  * @param  Cmd: type of information required (DFU_MEDIA_ERASE/DFU_MEDIA_PROGRAM)
   * @param  buffer: used for returning the time necessary for a program or an erase operation
   * @retval 0 if operation is successful
   */
+//#define DFU_MEDIA_ERASE                0x00
+//#define DFU_MEDIA_PROGRAM              0x01
 static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_t *buffer)
 {
 	//PRINTF(PSTR("MEM_If_GetStatus_HS: Addr=%08lX\n"), Addr);

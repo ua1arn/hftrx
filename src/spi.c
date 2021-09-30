@@ -998,7 +998,7 @@ void spidf_initialize(void)
 
 	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk))) |
 		(0x00uL << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
-		(((unsigned long) qspipre - 1) << QUADSPI_CR_PRESCALER_Pos) | // 1: FCLK = Fquadspi_ker_ck/2
+		(((unsigned long) qspipre - 1) << QUADSPI_CR_PRESCALER_Pos) |
 		0;
 	(void) QUADSPI->CR;
 
@@ -1528,7 +1528,8 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	// start byte programm
 	spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
 	spidf_unselect();	/* done sending data to target chip */
-	//timed_dataflash_read_status(target);
+	if (timed_dataflash_read_status())
+		return 1;
 	return 0;
 }
 
@@ -1551,7 +1552,8 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 	spidf_unselect();	/* done sending data to target chip */
 
 	//PRINTF(PSTR( Prog to address %08lX %02X done\n"), flashoffset, len);
-	//timed_dataflash_read_status(target);
+	if (timed_dataflash_read_status())
+		return 1;
 	return 0;
 }
 

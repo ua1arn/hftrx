@@ -1533,7 +1533,26 @@ unsigned long stm32mp1_get_usbphy_freq(void)
 		return stm32mp1_get_pll4_r_freq();
 	case 0x02:
 		return stm32mp1_get_hse_freq();
-		break;
+	}
+}
+
+unsigned long stm32mp1_get_qspi_freq(void)
+{
+	//	0x0: aclk clock selected as kernel peripheral clock (default after reset)
+	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
+	//	0x2: pll4_p_ck clock selected as kernel peripheral clock
+	//	0x3: per_ck clock selected as kernel peripheral clock
+	switch ((RCC->QSPICKSELR & RCC_QSPICKSELR_QSPISRC_Msk) >> RCC_QSPICKSELR_QSPISRC_Pos)
+	{
+	default:
+	case 0x00:
+		return stm32mp1_get_aclk_freq();
+	case 0x01:
+		return stm32mp1_get_pll3_r_freq();
+	case 0x02:
+		return stm32mp1_get_pll4_p_freq();
+	case 0x03:
+		return stm32mp1_get_per_freq();
 	}
 }
 
