@@ -4153,10 +4153,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   */
 EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hehci, uint8_t chnum)
 {
-	EHCI_URBStateTypeDef s = hehci->hc[chnum].ehci_urb_state;
-	//local_delay_ms(100);
-	//PRINTF("HAL_EHCI_HC_GetURBState: hehci->hc[%d].ehci_urb_state=%d\n", chnum, s);
-  return s;
+	EHCI_URBStateTypeDef s = hehci->hc [chnum].ehci_urb_state;
+	local_delay_ms(100);
+	PRINTF("HAL_EHCI_HC_GetURBState: hehci->hc[%d].ehci_urb_state=%d\n", chnum, s);
+	return s;
 }
 
 
@@ -4169,7 +4169,7 @@ EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hehci, uint8_t 
   */
 uint32_t HAL_EHCI_HC_GetXferCount(EHCI_HandleTypeDef *hehci, uint8_t chnum)
 {
-  return hehci->hc[chnum].xfer_count;
+	return hehci->hc [chnum].xfer_count;
 }
 
 
@@ -4179,29 +4179,29 @@ uint32_t HAL_EHCI_HC_GetXferCount(EHCI_HandleTypeDef *hehci, uint8_t chnum)
   * @param  hal_status: HAL status
   * @retval USB status
   */
-USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status)
+static USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status)
 {
-  USBH_StatusTypeDef usb_status = USBH_OK;
+	USBH_StatusTypeDef usb_status = USBH_OK;
 
-  switch (hal_status)
-  {
-    case HAL_OK :
-      usb_status = USBH_OK;
-    break;
-    case HAL_ERROR :
-      usb_status = USBH_FAIL;
-    break;
-    case HAL_BUSY :
-      usb_status = USBH_BUSY;
-    break;
-    case HAL_TIMEOUT :
-      usb_status = USBH_FAIL;
-    break;
-    default :
-      usb_status = USBH_FAIL;
-    break;
-  }
-  return usb_status;
+	switch (hal_status)
+	{
+	case HAL_OK:
+		usb_status = USBH_OK;
+		break;
+	case HAL_ERROR:
+		usb_status = USBH_FAIL;
+		break;
+	case HAL_BUSY:
+		usb_status = USBH_BUSY;
+		break;
+	case HAL_TIMEOUT:
+		usb_status = USBH_FAIL;
+		break;
+	default:
+		usb_status = USBH_FAIL;
+		break;
+	}
+	return usb_status;
 }
 
 #if defined (WITHUSBHW_EHCI)

@@ -51,7 +51,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status);
+static USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status);
 
 /* USER CODE END PFP */
 
@@ -795,7 +795,7 @@ void USBH_Delay(uint32_t Delay)
   * @param  hal_status: HAL status
   * @retval USB status
   */
-USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status)
+static USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status)
 {
   USBH_StatusTypeDef usb_status = USBH_OK;
 
