@@ -979,10 +979,11 @@ void spidf_initialize(void)
 	// Connect I/O pins
 	//SPIDF_HARDINITIALIZE();
 
-	//PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
-	const unsigned long qspipre = ulmax32(1, ulmin32(BOARD_QSPI_FREQ / SPISPEEDUFAST, 256));
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
 	(void) QUADSPI->CR;
+
+	const unsigned long qspipre = ulmax32(1, ulmin32(BOARD_QSPI_FREQ / SPISPEEDUFAST, 256));
+	//PRINTF("spidf_initialize: qspipre=%u\n", (unsigned) qspipre);
 
 	QUADSPI->CCR = 0;
 	(void) QUADSPI->CCR;
