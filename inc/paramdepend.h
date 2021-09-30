@@ -727,6 +727,7 @@ extern "C" {
 	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 

@@ -980,7 +980,7 @@ void spidf_initialize(void)
 	//SPIDF_HARDINITIALIZE();
 
 	//PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
-	const unsigned qspipre = 0x04uL;
+	const unsigned long qspipre = ulmax32(1, ulmin32(BOARD_QSPI_FREQ / SPISPEEDUFAST, 256));
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
 	(void) QUADSPI->CR;
 
@@ -997,7 +997,7 @@ void spidf_initialize(void)
 
 	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk))) |
 		(0x00uL << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
-		((unsigned long) qspipre << QUADSPI_CR_PRESCALER_Pos) | // 1: FCLK = Fquadspi_ker_ck/2
+		(((unsigned long) qspipre - 1) << QUADSPI_CR_PRESCALER_Pos) | // 1: FCLK = Fquadspi_ker_ck/2
 		0;
 	(void) QUADSPI->CR;
 

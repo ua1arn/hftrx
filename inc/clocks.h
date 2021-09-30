@@ -124,6 +124,7 @@ unsigned long stm32mp1_get_timg1_freq(void);
 unsigned long stm32mp1_get_timg2_freq(void);
 unsigned long stm32mp1_get_spi1_freq(void);
 unsigned long stm32mp1_get_adc_freq(void);
+unsigned long stm32mp1_get_qspi_freq(void);
 
 //unsigned long xc7z1_get_pllsreference_freq(void);
 //uint_fast64_t xc7z1_get_arm_pll_freq(void);
