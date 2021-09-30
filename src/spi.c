@@ -1265,6 +1265,7 @@ void writeDisableDATAFLASH(void)
 	spidf_unselect();	/* done sending data to target chip */
 }
 
+/* read status register #1 (bit0==busy flag) */
 uint_fast8_t dataflash_read_status(void)
 {
 	uint8_t v;
