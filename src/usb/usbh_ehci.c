@@ -4104,14 +4104,13 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	le8_modify( & qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
-	/* для того, чобы не срабатывало преждевременно - убрать после перхода на списки работающиз пересылок */
+	/* для того, чобы не срабатывало преждевременно - убрать после перхода на списки работающих пересылок */
 	le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
 	asynclist_item2(hc, qh, virt_to_phys(qtd));
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-	arm_hardware_flush_invalidate((uintptr_t) & rx0, sizeof rx0);
 
 	/*  убрать после перхода на списки работающиз пересылок */
 	ghc = hc;
