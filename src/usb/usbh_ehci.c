@@ -18,7 +18,6 @@
 #include "usb200.h"
 #include "usbch9.h"
 #include "usbh_core.h"
-#include "ehci.h"
 
 #include <string.h>
 
@@ -349,7 +348,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
 	hehci->ehci.opRegs = (EhciOpRegs*) opregspacebase;
 	hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
-#if 1
+
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
 	// Читаем командный регистр
@@ -378,68 +377,10 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
 	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
 
-#endif
-#if 0
-     // Check extended capabilities
-     uint_fast32_t eecp = (EHCIx->HCCPARAMS & HCCPARAMS_EECP_MASK) >> HCCPARAMS_EECP_SHIFT;
-     if (eecp >= 0x40)
-     {
-     	//PRINTF("board_ehci_initialize: eecp=%08lX\n", (unsigned long) eecp);
-        // Disable BIOS legacy support
- //        uint legsup = PciRead32(id, eecp + USBLEGSUP);
- //
- //        if (legsup & USBLEGSUP_HC_BIOS)
- //        {
- //            PciWrite32(id, eecp + USBLEGSUP, legsup | USBLEGSUP_HC_OS);
- //            for (;;)
- //            {
- //                legsup = PciRead32(id, eecp + USBLEGSUP);
- //                if (~legsup & USBLEGSUP_HC_BIOS && legsup & USBLEGSUP_HC_OS)
- //                {
- //                    break;
- //                }
- //            }
- //        }
-     }
-#endif
-
 	// Disable interrupts
 	// Отключаем прерывания
 	//hc->opRegs->usbIntr = 0;
 	EHCIx->USBINTR = 0;
-
-#if 0
-    hub0 = alloc_usb_hub(& usbbus0, NULL, 2, & ehci_operations.root); // also Initialise port list
-    usb_hub_set_drvdata(hub0, & ehcidevice0);
-    usbbus0.hub = hub0;
-    usbbus0.host = & ehci_operations.bus;
-    struct usb_port * port = usb_port ( hub0, WITHEHCIHW_EHCIPORT + 1 );
-    ASSERT(port->address == (WITHEHCIHW_EHCIPORT + 1));
-
-    usbdev0 = alloc_usb(port);
-    usbdev0->control.host = & ehci_operations.endpoint;
-    INIT_LIST_HEAD(& usbdev0->complete);
-    INIT_LIST_HEAD(& usbdev0->list);
-    INIT_LIST_HEAD(& usbdev0->control.halted);
-    INIT_LIST_HEAD(& usbdev0->control.recycled);
-    usbdev0->control.attributes = USB_ENDPOINT_ATTR_CONTROL;
-    usbdev0->control.mtu = 64;
-	//ehci_root_disable(usbdev0);
-
-    //usb_endpoint_set_hostdata(& usbdev0->control);
-	VERIFY(ehci_bus_open(& usbbus0) == 0);	// also perforn ehci_run
-	//ehci_dump(& ehcidevice0);
-	VERIFY(ehci_device_open(usbdev0) == 0);
-
-	VERIFY(ehci_root_open(hub0) == 0);
-
-//	VERIFY(ehci_root_enable(hub, usb_port (hub, WITHEHCIHW_EHCIPORT + 1 )) == 0);
-//	ehci_dump(& ehcidevice0);
-#endif
-
-
-#if 1
-
 
 	/* подготовка кольцевого списка QH */
     for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
@@ -470,9 +411,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	}
 	arm_hardware_flush_invalidate((uintptr_t) & periodiclist, sizeof periodiclist);
 
-#endif
-
-	#if 1
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
 	//hc->opRegs->frameIndex = 0;
@@ -492,15 +430,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	//hc->opRegs->usbSts = ~0;
 	EHCIx->USBSTS = ~ 0uL;
 	ASSERT( & EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
-#endif
-
-	// Configure all devices to be managed by the EHCI
-	// Говорим, что завершили
-	//hc->opRegs->configFlag = 1;
-	//WOR(configFlagO, 1);
-	//
-
-#if 1
 
 	unsigned porti = WITHEHCIHW_EHCIPORT;
 
@@ -531,16 +460,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
-
-#endif
-//
-// 	PRINTF("board_ehci_initialize: HCCAPBASE=%08lX\n", (unsigned long) EHCIx->HCCAPBASE);
-//	PRINTF("board_ehci_initialize: HCSPARAMS=%08lX\n", (unsigned long) EHCIx->HCSPARAMS);
-//	PRINTF("board_ehci_initialize: N_CC=%lu, N_PCC=%lu, PortRoutingRules=%lu, PPC=%lu, NPorts=%lu\n",
-//			((unsigned long) EHCIx->HCSPARAMS >> 12) & 0x0F, ((unsigned long) EHCIx->HCSPARAMS >> 8) & 0x0F,
-//			((unsigned long) EHCIx->HCSPARAMS >> 7) & 0x01, ((unsigned long) EHCIx->HCSPARAMS >> 4) & 0x01,
-//			((unsigned long) EHCIx->HCSPARAMS >> 0) & 0x0F);
-// 	PRINTF("board_ehci_initialize: HCCPARAMS=%08lX\n", (unsigned long) EHCIx->HCCPARAMS);
 
 //	PRINTF("board_ehci_initialize done.\n");
 }
