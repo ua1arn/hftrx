@@ -364,28 +364,28 @@ typedef struct __EHCI_HandleTypeDef
 typedef struct
 #endif /* USE_HAL_EHCI_REGISTER_CALLBACKS */
 {
-  EHCI_TypeDef               *Instance;  /*!< Register base address    */
-  EHCI_InitTypeDef           Init;       /*!< HCD required parameters  */
-  EHCI_HCTypeDef             hc[16];     /*!< Host channels parameters */
-  HAL_LockTypeDef           Lock;       /*!< HCD peripheral status    */
-  __IO EHCI_StateTypeDef     State;      /*!< HCD communication state  */
-  __IO  uint32_t            ErrorCode;  /*!< HCD Error code           */
-  void                      *pData;     /*!< Pointer Stack Handler    */
+	EHCI_TypeDef *Instance; /*!< Register base address    */
+	EHCI_InitTypeDef Init; /*!< HCD required parameters  */
+	EHCI_HCTypeDef hc [16]; /*!< Host channels parameters */
+	HAL_LockTypeDef Lock; /*!< HCD peripheral status    */
+	__IO EHCI_StateTypeDef State; /*!< HCD communication state  */
+	__IO uint32_t ErrorCode; /*!< HCD Error code           */
+	void *pData; /*!< Pointer Stack Handler - for USBH_LL_xxx functions   */
 	unsigned long nports;
-	__IO uint32_t * portsc;
+	__IO uint32_t *portsc;
 	EhciOpRegs *opRegs;
 
 #if (USE_HAL_EHCI_REGISTER_CALLBACKS == 1U)
-  void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
-  void (* ConnectCallback)(struct __EHCI_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Connect callback            */
-  void (* DisconnectCallback)(struct __EHCI_HandleTypeDef *hhcd);                        /*!< USB OTG HCD Disconnect callback         */
-  void (* PortEnabledCallback)(struct __EHCI_HandleTypeDef *hhcd);                       /*!< USB OTG HCD Port Enable callback        */
-  void (* PortDisabledCallback)(struct __EHCI_HandleTypeDef *hhcd);                      /*!< USB OTG HCD Port Disable callback       */
-  void (* HC_NotifyURBChangeCallback)(struct __EHCI_HandleTypeDef *hhcd, uint8_t chnum,
-                                      EHCI_URBStateTypeDef urb_state);                   /*!< USB OTG HCD Host Channel Notify URB Change callback  */
+	void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
+	void (* ConnectCallback)(struct __EHCI_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Connect callback            */
+	void (* DisconnectCallback)(struct __EHCI_HandleTypeDef *hhcd);                        /*!< USB OTG HCD Disconnect callback         */
+	void (* PortEnabledCallback)(struct __EHCI_HandleTypeDef *hhcd);                       /*!< USB OTG HCD Port Enable callback        */
+	void (* PortDisabledCallback)(struct __EHCI_HandleTypeDef *hhcd);                      /*!< USB OTG HCD Port Disable callback       */
+	void (* HC_NotifyURBChangeCallback)(struct __EHCI_HandleTypeDef *hhcd, uint8_t chnum,
+									  EHCI_URBStateTypeDef urb_state);                   /*!< USB OTG HCD Host Channel Notify URB Change callback  */
 
-  void (* MspInitCallback)(struct __EHCI_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Msp Init callback           */
-  void (* MspDeInitCallback)(struct __EHCI_HandleTypeDef *hhcd);                         /*!< USB OTG HCD Msp DeInit callback         */
+	void (* MspInitCallback)(struct __EHCI_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Msp Init callback           */
+	void (* MspDeInitCallback)(struct __EHCI_HandleTypeDef *hhcd);                         /*!< USB OTG HCD Msp DeInit callback         */
 #endif /* USE_HAL_EHCI_REGISTER_CALLBACKS */
 } EHCI_HandleTypeDef;
 /**
@@ -407,10 +407,6 @@ typedef struct
 #define EHCI_SPEED_HIGH               USBH_HS_SPEED
 #define EHCI_SPEED_FULL               USBH_FSLS_SPEED
 #define EHCI_SPEED_LOW                USBH_FSLS_SPEED
-
-#define EHCI_DEVICE_SPEED_HIGH               0U
-#define EHCI_DEVICE_SPEED_FULL               1U
-#define EHCI_DEVICE_SPEED_LOW                2U
 
 /**
   * @}
