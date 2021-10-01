@@ -3668,7 +3668,7 @@ static void test_recodstart(void)
 	system_enableIRQ();
 }
 
-#if 0
+#if 1
 /* записать в буфер для ответа 32-бит значение */
 unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
 {
@@ -4210,7 +4210,8 @@ static void fatfs_filesystest(int speedtest)
 		}
 	}
 }
-#if 0
+
+#if 1
 static void fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
@@ -7263,8 +7264,11 @@ void hightests(void)
 			fatfs_filesyspeedstest();
 			for (t = 0; t < 7000; t += 5)
 			{
+		#if WITHUSBHW
+				board_usbh_polling();     // usb device polling
+		#endif /* WITHUSBHW */
 				sdcardbgprocess();
-				local_delay_ms(5);
+				//local_delay_ms(5);
 			}
 		}
 
