@@ -179,7 +179,7 @@ static inline uint32_t ehci_link_qhv ( volatile struct ehci_queue_head *queue ) 
  * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
  *
  */
-static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link)
+static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct ehci_queue_head * link, int Head)
 {
 	ASSERT((virt_to_phys(p) & 0x01F) == 0);
 	ASSERT((virt_to_phys(link) & 0x01F) == 0);
@@ -187,7 +187,7 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 	p->link = ehci_link_qhv(link);	// Using of List Termination here prohibited
 
 	p->cap = EHCI_CAP_MULT(1);
-	p->chr = cpu_to_le32(EHCI_CHR_HEAD * !1);
+	p->chr = cpu_to_le32(EHCI_CHR_HEAD * Head);
 	p->cache.status = EHCI_STATUS_HALTED;
 	p->cache.len = 0 * EHCI_LEN_TOGGLE;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
@@ -270,7 +270,7 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 	*            EP_TYPE_BULK: Bulk type/
 	*            EP_TYPE_INTR: Interrupt type/
 	*/
-static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint32_t current)
+static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head * p, uint32_t current, int Head)
 {
 	ASSERT((virt_to_phys(p) & 0x01F) == 0);
 	uint32_t chr;
@@ -311,7 +311,7 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 //	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * !1);
+	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * Head);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 
@@ -400,7 +400,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	/* подготовка кольцевого списка QH */
     for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
     {
-        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)]);
+        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)], i == 0);
     }
 	/* подготовка списка dts */
     for (i = 0; i < ARRAY_SIZE(qtds); ++ i)
@@ -1275,7 +1275,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
 	le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
-	asynclist_item2(hc, qh, virt_to_phys(qtd));
+	asynclist_item2(hc, qh, virt_to_phys(qtd), hc->ch_num == 0);
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
