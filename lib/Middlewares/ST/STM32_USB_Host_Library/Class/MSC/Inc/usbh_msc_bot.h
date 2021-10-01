@@ -93,7 +93,7 @@ typedef enum
 }
 BOT_StateTypeDef;
 
-typedef __ALIGN4k_BEGIN union
+typedef union
 {
   struct __CBW
   {
@@ -105,11 +105,11 @@ typedef __ALIGN4k_BEGIN union
     uint8_t  CBLength;
     uint8_t  CB[16];
   } field;
-  uint8_t data[31];
-} __ALIGN4k_END
+  __ALIGN4k_BEGIN uint8_t data[31] __ALIGN4k_END;
+}
 BOT_CBWTypeDef;
 
-typedef __ALIGN4k_BEGIN union
+typedef union
 {
   struct __CSW
   {
@@ -118,8 +118,8 @@ typedef __ALIGN4k_BEGIN union
     uint32_t DataResidue;
     uint8_t  Status;
   } field;
-  uint8_t data[13];
-} __ALIGN4k_END
+  __ALIGN4k_BEGIN uint8_t data[13] __ALIGN4k_END;
+}
 BOT_CSWTypeDef;
 
 typedef struct
