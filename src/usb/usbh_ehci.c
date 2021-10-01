@@ -9,6 +9,8 @@
 
 #if WITHUSBHW && WITHEHCIHW
 
+#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop фпхитектуры */
+
 #include "board.h"
 #include "formats.h"
 #include "gpio.h"
@@ -684,6 +686,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
+#if WITHEHCIHWSOFTSPOLL
+ 	if (EHCIx == NULL)
+ 		return;
+#endif /* WITHEHCIHWSOFTSPOLL */
+
  	const uint_fast32_t usbsts = EHCIx->USBSTS;
  	const uint_fast32_t usbstsMasked = usbsts & EHCIx->USBSTS & EHCIx->USBINTR;
 	unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
@@ -907,8 +914,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	volatile uint32_t * const HcCommandStatus = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x008); // HcCommandStatus Register
 	* HcCommandStatus |= 0x00000001uL;	// HCR HostControllerReset
 
+#if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
 	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 #else
 
@@ -1430,6 +1439,9 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
+#if WITHEHCIHWSOFTSPOLL
+	HAL_EHCI_IRQHandler(& hehci_USB);
+#endif /* WITHEHCIHWSOFTSPOLL */
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
@@ -1833,8 +1845,9 @@ void MX_USB_HOST_DeInit(void)
 void MX_USB_HOST_Process(void)
 {
 	USBH_Process(& hUsbHostHS);
-	//ehci_bus_poll(& usbbus0);
-	//HAL_EHCI_IRQHandler(& hehci_USB);
+#if WITHEHCIHWSOFTSPOLL
+	HAL_EHCI_IRQHandler(& hehci_USB);
+#endif /* WITHEHCIHWSOFTSPOLL */
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */
