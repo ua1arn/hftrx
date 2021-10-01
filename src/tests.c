@@ -3735,6 +3735,9 @@ static void dosaveblocks(const char * fname)
 
 	for (;;)
 	{
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 		char kbch;
 		char c;
 
