@@ -594,6 +594,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 //                        speed,
 //                        ep_type,
 //                        mps);
+	qtd_item2_set_toggle(& asynclisthead [hc->ch_num].cache, 0*hc->ep_is_in);
 
   __HAL_UNLOCK(hehci);
 
