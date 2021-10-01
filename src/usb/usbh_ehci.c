@@ -187,7 +187,7 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 	p->link = ehci_link_qhv(link);	// Using of List Termination here prohibited
 
 	p->cap = EHCI_CAP_MULT(1);
-	p->chr = cpu_to_le32(EHCI_CHR_HEAD * 1);
+	p->chr = cpu_to_le32(EHCI_CHR_HEAD * !1);
 	p->cache.status = EHCI_STATUS_HALTED;
 	p->cache.len = 0 * EHCI_LEN_TOGGLE;
 	p->cache.next = cpu_to_le32(EHCI_LINK_TERMINATE);
@@ -311,7 +311,7 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 //	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
-	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * 1);
+	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * !1);
 	// Mult, Port Number, Hub Addr, uFrame C-mask, uFrame S-mask
 	p->cap = cpu_to_le32(cap);
 
