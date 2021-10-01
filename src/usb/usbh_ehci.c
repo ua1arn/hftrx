@@ -907,7 +907,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	volatile uint32_t * const HcCommandStatus = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x008); // HcCommandStatus Register
 	* HcCommandStatus |= 0x00000001uL;	// HCR HostControllerReset
 
-//	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
+	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
 	arm_hardware_set_handler_system(USBH_EHCI_IRQn, USBH_EHCI_IRQHandler);
 
 #else
