@@ -4028,8 +4028,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_SETUP, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			// бит toggle хранися в памяти overlay и модифицируется самим контроллером
-			le16_modify( & qtdoverl->len, EHCI_LEN_TOGGLE, 0 * EHCI_LEN_TOGGLE);
+			// бит toggle хранися в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
+			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, 0 * EHCI_LEN_TOGGLE);
 
 		}
 		else if (direction == 0)
@@ -4041,8 +4041,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			// бит toggle хранися в памяти overlay и модифицируется самим контроллером
-			le16_modify( & qtdoverl->len, EHCI_LEN_TOGGLE, 1 * EHCI_LEN_TOGGLE);
+			// бит toggle хранися в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
+			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, 1 * EHCI_LEN_TOGGLE);
 
 		}
 		else
@@ -4053,8 +4053,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			// бит toggle хранися в памяти overlay и модифицируется самим контроллером
-			le16_modify( & qtdoverl->len, EHCI_LEN_TOGGLE, 1 * EHCI_LEN_TOGGLE);
+			// бит toggle хранися в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
+			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, 1 * EHCI_LEN_TOGGLE);
 
 		}
 		break;
