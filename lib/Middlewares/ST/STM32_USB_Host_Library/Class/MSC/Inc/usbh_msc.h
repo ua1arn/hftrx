@@ -91,21 +91,21 @@ MSC_ReqStateTypeDef;
 
 
 /* Structure for LUN */
-typedef struct
+typedef __ALIGN4k_BEGIN struct
 {
   MSC_StateTypeDef            state;
   MSC_ErrorTypeDef            error;
   USBH_StatusTypeDef          prev_ready_state;
   SCSI_CapacityTypeDef        capacity;
   SCSI_SenseTypeDef           sense;
-  SCSI_StdInquiryDataTypeDef  inquiry;
+  __ALIGN4k_BEGIN SCSI_StdInquiryDataTypeDef  inquiry __ALIGN4k_END;
   uint8_t                     state_changed;
 
-}
+} __ALIGN4k_END
 MSC_LUNTypeDef;
 
 /* Structure for MSC process */
-typedef struct _MSC_Process
+typedef __ALIGN4k_BEGIN struct _MSC_Process
 {
   uint8_t              max_lun;
   uint8_t              Reserved[3];
@@ -119,12 +119,12 @@ typedef struct _MSC_Process
   MSC_ErrorTypeDef     error;
   MSC_ReqStateTypeDef  req_state;
   MSC_ReqStateTypeDef  prev_req_state;
-  BOT_HandleTypeDef    hbot;
-  MSC_LUNTypeDef       unit[MAX_SUPPORTED_LUN];
+  __ALIGN4k_BEGIN BOT_HandleTypeDef    hbot __ALIGN4k_END;
+  __ALIGN4k_BEGIN MSC_LUNTypeDef       unit[MAX_SUPPORTED_LUN] __ALIGN4k_END;
   uint16_t             current_lun;
   uint16_t             rw_lun;
   uint32_t             timer;
-}
+} __ALIGN4k_END
 MSC_HandleTypeDef;
 
 

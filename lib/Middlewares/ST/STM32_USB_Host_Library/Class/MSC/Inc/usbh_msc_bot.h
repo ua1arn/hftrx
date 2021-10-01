@@ -93,7 +93,7 @@ typedef enum
 }
 BOT_StateTypeDef;
 
-typedef union
+typedef __ALIGN4k_BEGIN union
 {
   struct __CBW
   {
@@ -106,10 +106,10 @@ typedef union
     uint8_t  CB[16];
   } field;
   uint8_t data[31];
-}
+} __ALIGN4k_END
 BOT_CBWTypeDef;
 
-typedef union
+typedef __ALIGN4k_BEGIN union
 {
   struct __CSW
   {
@@ -119,12 +119,12 @@ typedef union
     uint8_t  Status;
   } field;
   uint8_t data[13];
-}
+} __ALIGN4k_END
 BOT_CSWTypeDef;
 
-typedef struct
+typedef __ALIGN4k_BEGIN struct
 {
-  uint32_t                   data[512 / 4];	// was: 16 - in this buffer readed maximal endpoint data size (512 for HS)
+	__ALIGN4k_BEGIN uint32_t                   data[512 / sizeof (uint32_t)] __ALIGN4k_END;	// was: 16 - in this buffer readed maximal endpoint data size (512 for HS)
   BOT_StateTypeDef           state;
   BOT_StateTypeDef           prev_state;
   BOT_CMDStateTypeDef        cmd_state;
@@ -133,7 +133,7 @@ typedef struct
   BOT_CSWTypeDef             csw;
   uint8_t                    Reserved2[3];
   uint8_t                    *pbuf;
-}
+} __ALIGN4k_END
 BOT_HandleTypeDef;
 
 /**

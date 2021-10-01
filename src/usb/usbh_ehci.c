@@ -79,8 +79,7 @@ static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_
 static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
 
 static EHCI_HCTypeDef * volatile ghc;
-//static volatile struct ehci_queue_head dd;
-static volatile __attribute__((used, aligned(4096))) uint8_t rx0 [4096];
+
 #endif
 
 typedef uintptr_t physaddr_t;
@@ -737,11 +736,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			{
 	 			hc->ehci_urb_state = URB_DONE;
 
-	 			if (hc->ep_is_in && hc->ep_type != EP_TYPE_CTRL)
-	 			{
-		 			memcpy(hc->xfer_buff, rx0, pktcnt);
-	 				//printhex((uintptr_t) rx0, rx0, pktcnt);
-	 			}
+//	 			if (hc->ep_is_in)
+//	 			{
+//	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
+//	 			}
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
 			}
@@ -1249,12 +1247,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_in);
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 
-			//memset(rx0, 0xEE, hc->xfer_len);
-			VERIFY(0 == qtd_item2(qtdoverl, rx0, ulmin(hc->xfer_len, sizeof rx0), EHCI_FL_PID_IN, 0));
-			arm_hardware_flush_invalidate((uintptr_t) rx0, hc->xfer_len);
+			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
+			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
-
 		}
 		break;
 

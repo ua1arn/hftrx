@@ -26,12 +26,6 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-//#include "stm32mp1xx_ll_usb.h"
-
-#if 1//defined (USB1_EHCI)
-
-#include "usbh_def.h" // for USBH_URBStateTypeDef
-
 
 // ------------------------------------------------------------------------------------------------
 // Limits
@@ -978,58 +972,11 @@ struct ehci_queue_head {
 /** High-bandwidth pipe multiplier */
 #define EHCI_CAP_MULT( mult ) ( (mult) << 30 )
 
-/** A transfer descriptor ring */
-struct ehci_ring {
-        /** Producer counter */
-        unsigned int prod;
-        /** Consumer counter */
-        unsigned int cons;
-
-        /** Residual untransferred data */
-        size_t residual;
-
-        /** I/O buffers */
-        struct io_buffer **iobuf;
-
-        /** Queue head */
-        struct ehci_queue_head *head;
-        /** Transfer descriptors */
-        struct ehci_transfer_descriptor *desc;
-};
-
 /** Number of transfer descriptors in a ring
  *
  * This is a policy decision.
  */
 #define EHCI_RING_COUNT 64
-
-/**
- * Calculate space used in transfer descriptor ring
- *
- * @v ring              Transfer descriptor ring
- * @ret fill            Number of entries used
- */
-static inline __attribute__ (( always_inline )) unsigned int
-ehci_ring_fill ( struct ehci_ring *ring ) {
-        unsigned int fill;
-
-        fill = ( ring->prod - ring->cons );
-        ASSERT( fill <= EHCI_RING_COUNT );
-        return fill;
-}
-
-/**
- * Calculate space remaining in transfer descriptor ring
- *
- * @v ring              Transfer descriptor ring
- * @ret remaining       Number of entries remaining
- */
-static inline __attribute__ (( always_inline )) unsigned int
-ehci_ring_remaining ( struct ehci_ring *ring ) {
-        unsigned int fill = ehci_ring_fill ( ring );
-
-        return ( EHCI_RING_COUNT - fill );
-}
 
 /** Time to delay after enabling power to a port
  *
@@ -1073,27 +1020,8 @@ ehci_ring_remaining ( struct ehci_ring *ring ) {
  */
 #define EHCI_PORT_RESET_MAX_WAIT_MS 500
 
-/** An EHCI transfer */
-struct ehci_transfer {
-        /** Data buffer */
-        void *data;
-        /** Length */
-        size_t len;
-        /** Flags
-         *
-         * This is the bitwise OR of zero or more EHCI_FL_XXX values.
-         * The low 8 bits are copied to the flags byte within the
-         * transfer descriptor; the remaining bits hold flags
-         * meaningful only to our driver code.
-         */
-        unsigned int flags;
-};
-
 /** Set initial data toggle */
 #define EHCI_FL_TOGGLE 0x8000
-
-
-#endif /* defined (USB1_EHCI) */
 
 #ifdef __cplusplus
 }

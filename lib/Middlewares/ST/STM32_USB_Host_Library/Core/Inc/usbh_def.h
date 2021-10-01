@@ -468,8 +468,8 @@ typedef struct
 /* Attached device structure */
 typedef struct
 {
-  __ALIGN_BEGIN uint8_t                           CfgDesc_Raw[USBH_MAX_SIZE_CONFIGURATION] __ALIGN_END;
-  __ALIGN_BEGIN uint8_t                           Data[USBH_MAX_DATA_BUFFER] __ALIGN_END;
+  __ALIGN4k_BEGIN uint8_t                           CfgDesc_Raw[USBH_MAX_SIZE_CONFIGURATION] __ALIGN4k_END;
+  __ALIGN4k_BEGIN uint8_t                           Data[USBH_MAX_DATA_BUFFER] __ALIGN4k_END;
   uint8_t                           address;
   uint8_t                           speed;
   uint8_t                           EnumCnt;
@@ -479,8 +479,8 @@ typedef struct
   __IO uint8_t                      is_ReEnumerated;
   uint8_t                           PortEnabled;
   uint8_t                           current_interface;
-  __ALIGN_BEGIN USBH_DevDescTypeDef               DevDesc __ALIGN_END;
-  __ALIGN_BEGIN USBH_CfgDescTypeDef               CfgDesc __ALIGN_END;
+  __ALIGN4k_BEGIN USBH_DevDescTypeDef               DevDesc __ALIGN4k_END;
+  __ALIGN4k_BEGIN USBH_CfgDescTypeDef               CfgDesc __ALIGN4k_END;
 } USBH_DeviceTypeDef;
 
 struct _USBH_HandleTypeDef;
@@ -508,8 +508,8 @@ typedef struct _USBH_HandleTypeDef
 	  uint32_t wait;
   ENUM_StateTypeDef     EnumState;    /* Enumeration state Machine */
   CMD_StateTypeDef      RequestState;
-  __ALIGN_BEGIN USBH_CtrlTypeDef      Control __ALIGN_END;
-  __ALIGN_BEGIN USBH_DeviceTypeDef    device __ALIGN_END;
+  __ALIGN4k_BEGIN USBH_CtrlTypeDef      Control __ALIGN4k_END;
+  __ALIGN4k_BEGIN USBH_DeviceTypeDef    device __ALIGN4k_END;
   USBH_ClassTypeDef    *pClass[USBH_MAX_NUM_SUPPORTED_CLASS];
   USBH_ClassTypeDef    *pActiveClass;
   uint32_t              ClassNumber;
