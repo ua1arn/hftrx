@@ -245,7 +245,7 @@ uint16_t_uint8_t;
 
 typedef union _USB_Setup
 {
-  uint32_t d8[2];
+	__ALIGN4k_BEGIN uint32_t d8 [8 / sizeof (uint32_t)] __ALIGN4k_END;
 
   struct _SetupPkt_Struc
   {
