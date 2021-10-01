@@ -3722,7 +3722,7 @@ static void dosaveblocks(const char * fname)
 	rc = f_lseek(& Fil, CREATE_LINKMAP);     /* Create CLMT */
 	if (rc)
 	{
-		PRINTF("can set clusters map recording, rc=0x%02X\n", (unsigned) rc);
+		PRINTF("can not set clusters map recording, rc=0x%02X\n", (unsigned) rc);
 		return;	//die(rc);
 	}
 	else
