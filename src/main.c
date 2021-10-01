@@ -14443,9 +14443,17 @@ processmessages(
 #if WITHUSEAUDIOREC
 		sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 #if WITHWAVPLAYER || WITHSENDWAV
 		spoolplayfile();
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+#if WITHLWIP
+		/* LWIP */
+		usb_polling();     // usb device polling
+		//stmr();            // call software timers
+#endif /* WITHLWIP */
 		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
 		directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
@@ -14482,16 +14490,6 @@ processmessages(
 			cat_answer_forming();
 		}
 #endif /* WITHCAT */
-
-#if WITHUSBHW
-		board_usbh_polling();     // usb device polling
-#endif /* WITHUSBHW */
-
-#if WITHLWIP
-		/* LWIP */
-		usb_polling();     // usb device polling
-		//stmr();            // call software timers
-#endif /* WITHLWIP */
 		return;
 
 	case MSGT_CAT:
