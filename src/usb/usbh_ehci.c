@@ -959,7 +959,8 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
  	// последовательную и асинхронную очередь
  	//hc->opRegs->usbCmd = (8 << CMD_ITC_SHIFT) | CMD_PSE | CMD_ASE | CMD_RS;
      EHCIx->USBCMD =
-     		(8uL << CMD_ITC_SHIFT) |	// одно прерывание в 8 микро-фреймов (1 мс)
+      		//(8uL << CMD_ITC_SHIFT) |	// прерывание на 8 микро-фреймов (1 мс) - медленно
+     		(1uL << CMD_ITC_SHIFT) |	// прерывание каждый микро-фреймо (125 мкс) - передача в 3 раза быстрее (0.4 -> 1.4 мегабайта в секунду)
  			((uint_fast32_t) EHCI_FLSIZE_DEFAULT << CMD_FLS_SHIFT)	| // Frame list size is 1024 elements
  			EHCI_USBCMD_PERIODIC |	 // Periodic Schedule Enable - PERIODICLISTBASE use
 			EHCI_USBCMD_ASYNC |	// Asynchronous Schedule Enable - ASYNCLISTADDR use
