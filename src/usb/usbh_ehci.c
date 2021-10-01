@@ -4088,7 +4088,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 
 			//memset(rx0, 0xEE, hc->xfer_len);
-			VERIFY(0 == qtd_item2(qtdoverl, rx0, hc->xfer_len, EHCI_FL_PID_IN, 0));
+			VERIFY(0 == qtd_item2(qtdoverl, rx0, ulmin(hc->xfer_len, sizeof rx0), EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) rx0, hc->xfer_len);
 
 			// бит toggle хранися в памяти overlay и модифицируется самим контроллером
