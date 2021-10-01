@@ -3269,7 +3269,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	/* Print state of all ports */
 	//for (porti = 0; porti < hehci->nports; ++ porti)
 	{
-		unsigned long portsc = ehci->opRegs->ports [porti];
+		//unsigned long portsc = hehci->portsc [porti];
 		//PRINTF("portsc[%u]=%08lX\n", porti, portsc);
 	}
 
@@ -3281,14 +3281,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	/* Enable power to all ports */
 	//for (porti = 0; porti < hehci->nports; ++ porti)
 	{
-		unsigned long portsc = ehci->opRegs->ports [porti];
+		unsigned long portsc = hehci->portsc [porti];
 
 		portsc &= ~ EHCI_PORTSC_CHANGE;
 		//portsc |= EHCI_PORTSC_OWNER;	// ???
 		portsc |= EHCI_PORTSC_PP;
 
-		ehci->opRegs->ports [porti] = portsc;
-		(void) ehci->opRegs->ports [porti];
+		hehci->portsc [porti] = portsc;
+		(void) hehci->portsc [porti];
 	}
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
@@ -3533,8 +3533,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		if (ghc != NULL)
  		{
 			EHCI_HCTypeDef * const hc = ghc;//& hehci->hc [ch_num];
-			const uint_fast8_t status = qtds[hc->ch_num].status;
-			unsigned len = le16_to_cpu(qtds[hc->ch_num].len) & EHCI_LEN_MASK;
+			const uint_fast8_t status = qtds [hc->ch_num].status;
+			unsigned len = le16_to_cpu(qtds [hc->ch_num].len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
@@ -3707,7 +3707,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	(void) RCC->MP_AHB6ENSETR;
 	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_USBHLPEN;
 	(void) RCC->MP_AHB6LPENSETR;
-	if (0) {
+
+	{
 		/* SYSCFG clock enable */
 		RCC->MP_APB3ENSETR = RCC_MP_APB3ENSETR_SYSCFGEN;
 		(void) RCC->MP_APB3ENSETR;
@@ -3717,11 +3718,12 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		 * Interconnect update : select master using the port 1.
 		 * MCU interconnect (USBH) = AXI_M1, AXI_M2.
 		 */
-		//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
-		//		(void) SYSCFG->ICNR;
-		//		SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
-		//		(void) SYSCFG->ICNR;
+		//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M1;
+		(void) SYSCFG->ICNR;
+		//SYSCFG->ICNR |= SYSCFG_ICNR_AXI_M2;
+		(void) SYSCFG->ICNR;
 	}
+
 	USB_HS_PHYCInit();
 
 	// OHCI at USB1HSFSP2_BASE
@@ -4305,6 +4307,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t toggle) {
 	EHCI_HandleTypeDef *pHandle;
 	pHandle = phost->pData;
+	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) pHandle->Instance;
 
 	if (pHandle->hc[pipe].ep_is_in) {
 		pHandle->hc[pipe].toggle_in = toggle;
@@ -4312,8 +4315,20 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe,
 		pHandle->hc[pipe].toggle_out = toggle;
 	}
 
+	// Stop ASYNC queue
+	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
+	(void) EHCIx->USBCMD;
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
+		;
+
 	volatile struct ehci_transfer_descriptor *qtdoverl = & asynclisthead [pipe].cache;
 	le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, !! toggle * EHCI_LEN_TOGGLE);
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
+	// Run ASYNC queue
+	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
+		;
 
 	return USBH_OK;
 }
@@ -4399,8 +4414,6 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 
  		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
  		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
-////		VERIFY(ehci_root_disable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
-		//ehci_root_close(hub0);	/* Route all ports back to companion controllers */
 	}
 	else
 	{
@@ -4410,10 +4423,6 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 
  		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
  		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
-
-////		VERIFY(ehci_root_open(hub0) == 0);	/* Enable power to all ports */
-		//VERIFY(ehci_root_enable(hub0, usb_port (hub0, WITHEHCIHW_EHCIPORT + 1 )) == 0);
-
 	}
 	//local_delay_ms(1000);
 	//HAL_Delay(5);
