@@ -145,12 +145,12 @@ static uint16_t cpu_to_le16(unsigned long v)
 //}
 
 /* установка указаных в mask битов в состояние data */
-static void le16_modify(volatile uint16_t * variable, uint_fast16_t mask, uint_fast16_t data)
-{
-	const uint_fast16_t v = * variable;
-	const uint_fast16_t m = cpu_to_le16(mask);
-	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
-}
+//static void le16_modify(volatile uint16_t * variable, uint_fast16_t mask, uint_fast16_t data)
+//{
+//	const uint_fast16_t v = * variable;
+//	const uint_fast16_t m = cpu_to_le16(mask);
+//	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
+//}
 
 /* установка указаных в mask битов в состояние data */
 static void le8_modify(volatile uint8_t * variable, uint_fast8_t mask, uint_fast8_t data)
@@ -196,12 +196,18 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 
 static void qtd_item2_set_toggle(volatile struct ehci_transfer_descriptor * p, int state)
 {
-	le16_modify(& p->len, EHCI_LEN_TOGGLE, ! ! state * EHCI_LEN_TOGGLE);
+	//le16_modify(& p->len, EHCI_LEN_TOGGLE, ! ! state * EHCI_LEN_TOGGLE);
+	const uint_fast16_t v = p->len;
+	const uint_fast16_t m = cpu_to_le16(EHCI_LEN_TOGGLE);
+	p->len = (v & ~ m) | (cpu_to_le16(! ! state * EHCI_LEN_TOGGLE) & m);
 }
 
 static void qtd_item2_set_length(volatile struct ehci_transfer_descriptor * p, unsigned length)
 {
-	le16_modify(& p->len, EHCI_LEN_MASK, length);	/* не модифицируем флаг EHCI_LEN_TOGGLE */
+	//le16_modify(& p->len, EHCI_LEN_MASK, length);	/* не модифицируем флаг EHCI_LEN_TOGGLE */
+	const uint_fast16_t v = p->len;
+	const uint_fast16_t m = cpu_to_le16(EHCI_LEN_MASK);
+	p->len = (v & ~ m) | (cpu_to_le16(length) & m);
 }
 
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
@@ -1187,7 +1193,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (token == 0)
 		{
 			// Setup
-			PRINTF("HAL_EHCI_HC_SubmitRequest: SETUP, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: SETUP, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, hc->xfer_len);
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_SETUP, do_ping));
@@ -1200,7 +1206,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else if (direction == 0)
 		{
 			// Data OUT
-			PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, hc->xfer_len);
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
@@ -1213,7 +1219,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// Data In
-			PRINTF("HAL_EHCI_HC_SubmitRequest: IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
@@ -1230,10 +1236,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (hc->ep_is_in == 0)
 		{
 			// BULK Data OUT
-			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%dd\n",
-					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
-			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
-			printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
+//			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%dd\n",
+//					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
+//			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
+//			printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
@@ -1243,9 +1249,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// BULK Data IN
-			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n",
-					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
-			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
+//			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n",
+//					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
+//			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
