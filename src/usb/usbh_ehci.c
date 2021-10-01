@@ -725,6 +725,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			{
 				//continue;	/* обмен еще не закончился */
 				//TP();
+				goto nextIteration;
 			}
 			else if ((status & EHCI_STATUS_XACT_ERR) != 0)
 			{
@@ -750,6 +751,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 				hc->xfer_count += pktcnt;
 			}
 			ghc = NULL;
+		nextIteration:
+			;
  		}
  		else
  		{
