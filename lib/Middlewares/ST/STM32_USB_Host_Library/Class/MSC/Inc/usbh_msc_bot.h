@@ -122,7 +122,7 @@ typedef __ALIGN4k_BEGIN union
 } __ALIGN4k_END
 BOT_CSWTypeDef;
 
-typedef __ALIGN4k_BEGIN struct
+typedef struct
 {
 	__ALIGN4k_BEGIN uint32_t                   data[512 / sizeof (uint32_t)] __ALIGN4k_END;	// was: 16 - in this buffer readed maximal endpoint data size (512 for HS)
   BOT_StateTypeDef           state;
@@ -133,7 +133,7 @@ typedef __ALIGN4k_BEGIN struct
   BOT_CSWTypeDef             csw;
   uint8_t                    Reserved2[3];
   uint8_t                    *pbuf;
-} __ALIGN4k_END
+}
 BOT_HandleTypeDef;
 
 /**
