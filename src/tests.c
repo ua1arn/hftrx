@@ -7233,11 +7233,20 @@ void hightests(void)
 
 		PRINTF("Wait for storage device ready\n");
 		while (hamradio_get_usbh_active() == 0)
+		{
+	#if WITHUSBHW
+			board_usbh_polling();     // usb device polling
+	#endif /* WITHUSBHW */
 			sdcardbgprocess();
+			local_delay_ms(5);
+		}
 		PRINTF("Storage device ready\n");
 		unsigned t;
 		for (t = 0; t < 7000; t += 5)
 		{
+	#if WITHUSBHW
+			board_usbh_polling();     // usb device polling
+	#endif /* WITHUSBHW */
 			sdcardbgprocess();
 			local_delay_ms(5);
 		}
