@@ -318,8 +318,8 @@ typedef struct
   uint16_t  max_packet;         /*!< Endpoint Max packet size.
                                      This parameter must be a number between Min_Data = 0 and Max_Data = 64KB   */
 
-  uint8_t   data_pid;           /*!< Initial data PID.
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+//  uint8_t   data_pid;           /*!< Initial data PID.
+//                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
   uint8_t   * volatile xfer_buff;         /*!< Pointer to transfer buffer.                                                */
 
@@ -329,11 +329,11 @@ typedef struct
 
   uint32_t  volatile xfer_count;         /*!< Partial transfer length in case of multi packet transfer.                  */
 
-  uint8_t   toggle_in;          /*!< IN transfer current toggle flag.
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
-
-  uint8_t   toggle_out;         /*!< OUT transfer current toggle flag
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+//  uint8_t   toggle_in;          /*!< IN transfer current toggle flag.
+//                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
+//
+//  uint8_t   toggle_out;         /*!< OUT transfer current toggle flag
+//                                     This parameter must be a number between Min_Data = 0 and Max_Data = 1      */
 
   uint32_t  dma_addr;           /*!< 32 bits aligned transfer buffer address.                                   */
 
