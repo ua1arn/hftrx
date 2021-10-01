@@ -26,9 +26,9 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32mp1xx_ll_usb.h"
+//#include "stm32mp1xx_ll_usb.h"
 
-#if defined (USB1_EHCI)
+#if 1//defined (USB1_EHCI)
 
 #include "usbh_def.h" // for USBH_URBStateTypeDef
 
@@ -44,12 +44,12 @@ extern "C" {
 
 typedef struct EhciCapRegs
 {
-    uint8_t capLength;
-    uint8_t reserved;
-    uint16_t hciVersion;
-    uint32_t hcsParams;
-    uint32_t hccParams;
-    uint64_t hcspPortRoute;
+	volatile uint8_t capLength;
+	volatile uint8_t reserved;
+	volatile uint16_t hciVersion;
+	volatile uint32_t hcsParams;
+	volatile uint32_t hccParams;
+	volatile uint64_t hcspPortRoute;
 } ATTRPACKED EhciCapRegs;
 // ------------------------------------------------------------------------------------------------
 // Host Controller Structural Parameters Register
@@ -221,70 +221,55 @@ typedef struct EhciTD
 
 // ------------------------------------------------------------------------------------------------
 // Queue Head
+//
+//typedef struct EhciQH
+//{
+//    uint32_t qhlp;       // Queue Head Horizontal Link Pointer
+//    uint32_t ch;         // Endpoint Characteristics
+//    uint32_t caps;       // Endpoint Capabilities
+//    volatile uint32_t curLink;
+//
+//    // matches a transfer descriptor
+//    volatile uint32_t nextLink;
+//    volatile uint32_t altLink;
+//    volatile uint32_t token;
+//    volatile uint32_t buffer[5];
+//    volatile uint32_t extBuffer[5];
+//
+//    // internal fields
+////    UsbTransfer *transfer;
+////    Link qhLink;
+//    uint32_t tdHead;
+//    uint32_t active;
+//    uint8_t pad[20];
+//} EhciQH;
 
-typedef struct EhciQH
-{
-    uint32_t qhlp;       // Queue Head Horizontal Link Pointer
-    uint32_t ch;         // Endpoint Characteristics
-    uint32_t caps;       // Endpoint Capabilities
-    volatile uint32_t curLink;
-
-    // matches a transfer descriptor
-    volatile uint32_t nextLink;
-    volatile uint32_t altLink;
-    volatile uint32_t token;
-    volatile uint32_t buffer[5];
-    volatile uint32_t extBuffer[5];
-
-    // internal fields
-//    UsbTransfer *transfer;
-//    Link qhLink;
-    uint32_t tdHead;
-    uint32_t active;
-    uint8_t pad[20];
-} EhciQH;
-
-// Endpoint Characteristics
-#define QH_CH_DEVADDR_MASK              0x0000007fuL  // Device Address
-#define QH_CH_INACTIVE                  0x00000080uL  // Inactive on Next Transaction
-#define QH_CH_ENDP_MASK                 0x00000f00uL  // Endpoint Number
-#define QH_CH_ENDP_SHIFT                8
-#define QH_CH_EPS_MASK                  0x00003000uL  // Endpoint Speed
-#define QH_CH_EPS_SHIFT                 12
-#define QH_CH_DTC                       0x00004000uL  // Data Toggle Control
-#define QH_CH_H                         0x00008000uL  // Head of Reclamation List Flag
-#define QH_CH_MPL_MASK                  0x07ff0000uL  // Maximum Packet Length
-#define QH_CH_MPL_SHIFT                 16
-#define QH_CH_CONTROL                   0x08000000uL  // Control Endpoint Flag
-#define QH_CH_NAK_RL_MASK               0xf0000000uL  // Nak Count Reload
-#define QH_CH_NAK_RL_SHIFT              28
-
-// Endpoint Capabilities
-#define QH_CAP_INT_SCHED_SHIFT          0
-#define QH_CAP_INT_SCHED_MASK           0x000000ffuL  // Interrupt Schedule Mask
-#define QH_CAP_SPLIT_C_SHIFT            8
-#define QH_CAP_SPLIT_C_MASK             0x0000ff00uL  // Split Completion Mask
-#define QH_CAP_HUB_ADDR_SHIFT           16
-#define QH_CAP_HUB_ADDR_MASK            0x007f0000uL  // Hub Address
-#define QH_CAP_PORT_MASK                0x3f800000uL  // Port Number
-#define QH_CAP_PORT_SHIFT               23
-#define QH_CAP_MULT_MASK                0xc0000000uL  // High-Bandwidth Pipe Multiplier
-#define QH_CAP_MULT_SHIFT               30
-
-// ------------------------------------------------------------------------------------------------
-// Device
-
-typedef struct EhciController
-{
-    EhciCapRegs *capRegs;
-    EhciOpRegs *opRegs;
-    uint32_t *frameList;
-    EhciQH *qhPool;
-    EhciTD *tdPool;
-    EhciQH *asyncQH;
-    EhciQH *periodicQH;
-} EhciController;
-
+//// Endpoint Characteristics
+//#define QH_CH_DEVADDR_MASK              0x0000007fuL  // Device Address
+//#define QH_CH_INACTIVE                  0x00000080uL  // Inactive on Next Transaction
+//#define QH_CH_ENDP_MASK                 0x00000f00uL  // Endpoint Number
+//#define QH_CH_ENDP_SHIFT                8
+//#define QH_CH_EPS_MASK                  0x00003000uL  // Endpoint Speed
+//#define QH_CH_EPS_SHIFT                 12
+//#define QH_CH_DTC                       0x00004000uL  // Data Toggle Control
+//#define QH_CH_H                         0x00008000uL  // Head of Reclamation List Flag
+//#define QH_CH_MPL_MASK                  0x07ff0000uL  // Maximum Packet Length
+//#define QH_CH_MPL_SHIFT                 16
+//#define QH_CH_CONTROL                   0x08000000uL  // Control Endpoint Flag
+//#define QH_CH_NAK_RL_MASK               0xf0000000uL  // Nak Count Reload
+//#define QH_CH_NAK_RL_SHIFT              28
+//
+//// Endpoint Capabilities
+//#define QH_CAP_INT_SCHED_SHIFT          0
+//#define QH_CAP_INT_SCHED_MASK           0x000000ffuL  // Interrupt Schedule Mask
+//#define QH_CAP_SPLIT_C_SHIFT            8
+//#define QH_CAP_SPLIT_C_MASK             0x0000ff00uL  // Split Completion Mask
+//#define QH_CAP_HUB_ADDR_SHIFT           16
+//#define QH_CAP_HUB_ADDR_MASK            0x007f0000uL  // Hub Address
+//#define QH_CAP_PORT_MASK                0x3f800000uL  // Port Number
+//#define QH_CAP_PORT_SHIFT               23
+//#define QH_CAP_MULT_MASK                0xc0000000uL  // High-Bandwidth Pipe Multiplier
+//#define QH_CAP_MULT_SHIFT               30
 
 /** @addtogroup xxxxxx_HAL_Driver
   * @{
@@ -394,8 +379,7 @@ typedef struct
   void                      *pData;     /*!< Pointer Stack Handler    */
 	unsigned long nports;
 	__IO uint32_t * portsc;
-	EhciController ehci;
-	//volatile USBH_URBStateTypeDef urbState; /* = USBH_URB_IDLE */;
+	EhciOpRegs *opRegs;
 
 #if (USE_HAL_EHCI_REGISTER_CALLBACKS == 1U)
   void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */

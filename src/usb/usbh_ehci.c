@@ -136,14 +136,14 @@ static uint16_t cpu_to_le16(unsigned long v)
 {
 	return v;
 }
-
-/* установка указаных в mask битов в состояние data */
-static void le32_modify(volatile uint32_t * variable, uint_fast32_t mask, uint_fast32_t data)
-{
-	const uint_fast32_t v = * variable;
-	const uint_fast32_t m = cpu_to_le32(mask);
-	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
-}
+//
+///* установка указаных в mask битов в состояние data */
+//static void le32_modify(volatile uint32_t * variable, uint_fast32_t mask, uint_fast32_t data)
+//{
+//	const uint_fast32_t v = * variable;
+//	const uint_fast32_t m = cpu_to_le32(mask);
+//	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
+//}
 
 /* установка указаных в mask битов в состояние data */
 static void le16_modify(volatile uint16_t * variable, uint_fast16_t mask, uint_fast16_t data)
@@ -195,6 +195,16 @@ static void asynclist_item(volatile struct ehci_queue_head * p, volatile struct 
 	p->cache.alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 }
 
+static void qtd_item2_set_toggle(volatile struct ehci_transfer_descriptor * p, int state)
+{
+	le16_modify(& p->len, EHCI_LEN_TOGGLE, ! ! state * EHCI_LEN_TOGGLE);
+}
+
+static void qtd_item2_set_length(volatile struct ehci_transfer_descriptor * p, unsigned length)
+{
+	le16_modify(& p->len, EHCI_LEN_MASK, length);	/* не модифицируем флаг EHCI_LEN_TOGGLE */
+}
+
 // fill 3.5 Queue Element Transfer Descriptor (qTD)
 uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid, unsigned ping)
 {
@@ -205,7 +215,7 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);	// возможно потребуется адрес следующего буфера
 	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 
-	le16_modify(& p->len, EHCI_LEN_MASK, length);	/* не модифицируем флаг EHCI_LEN_TOGGLE */
+	qtd_item2_set_length(p, length);	/* не модифицируем флаг EHCI_LEN_TOGGLE */
 
 //	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 //														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
@@ -313,7 +323,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 //	PRINTF("board_ehci_initialize start.\n");
 
 	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) hehci->Instance;
-	EhciController *const ehci = & hehci->ehci;
+	//EhciController *const ehci = & hehci->ehci;
 	unsigned i;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
@@ -346,8 +356,8 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	hehci->portsc = ((__IO unsigned long*) (opregspacebase + 0x0044));
 
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
-	hehci->ehci.opRegs = (EhciOpRegs*) opregspacebase;
-	hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
+	EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
+	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
 
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
@@ -429,7 +439,7 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	// Чистим статус
 	//hc->opRegs->usbSts = ~0;
 	EHCIx->USBSTS = ~ 0uL;
-	ASSERT( & EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
+	//ASSERT( & EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
 
 	unsigned porti = WITHEHCIHW_EHCIPORT;
 
@@ -442,8 +452,8 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 
 	/* Route all ports to EHCI controller */
 	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
-	ehci->opRegs->configFlag = EHCI_CONFIGFLAG_CF;
-	(void) ehci->opRegs->configFlag;
+	opRegs->configFlag = EHCI_CONFIGFLAG_CF;
+	(void) opRegs->configFlag;
 
 	/* Enable power to all ports */
 	//for (porti = 0; porti < hehci->nports; ++ porti)
@@ -666,12 +676,11 @@ void HAL_EHCI_PortEnabled_Callback(EHCI_HandleTypeDef *hehci)
   */
 void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
- 	EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
  	const uint_fast32_t usbsts = EHCIx->USBSTS;
  	const uint_fast32_t usbstsMasked = usbsts & EHCIx->USBSTS & EHCIx->USBINTR;
-	unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+	unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
  	//PRINTF("HAL_EHCI_IRQHandler: USBSTS=%08lX\n", usbsts);
 
  	if ((usbsts & (0x01uL << 13)) != 0)
@@ -761,7 +770,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (0x01uL << 2)))	// Port Change Detect
  	{
  		EHCIx->USBSTS = (0x01uL << 2);	// Clear Port Change Detect interrupt
- 		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
 		//PRINTF("HAL_EHCI_IRQHandler: Port Change Detect, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
  		// PORTSC[0]=00001002 - on disconnect
  		// PORTSC[0]=00001803 - on connect
@@ -774,8 +783,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 //		if ((portsc & EHCI_PORTSC_PED) != 0)
 // 		{
 // 			portsc &= ~ EHCI_PORTSC_PED;
-// 			hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
-// 			(void) hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+// 			hehci->ports [WITHEHCIHW_EHCIPORT] = portsc;
+// 			(void) hehci->ports [WITHEHCIHW_EHCIPORT];
 //
 // 			HAL_EHCI_PortEnabled_Callback(hehci);
 // 		}
@@ -805,7 +814,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	if ((usbsts & (0x01uL << 4)))	// Host System Error
  	{
  		EHCIx->USBSTS = (0x01uL << 4);	// Clear Host System Error interrupt
- 		unsigned long portsc = hehci->ehci.opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
 		PRINTF("HAL_EHCI_IRQHandler: Host System Error, usbsts=%08lX, portsc=%08lX, ls=%lu, pe=%lu, ccs=%d\n", usbsts, portsc, (portsc >> 10) & 0x03, (portsc >> 2) & 0x01, !! (portsc & EHCI_PORTSC_CCS));
 		//hehci->urbState = USBH_URB_ERROR;
  	}
@@ -825,7 +834,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
- 	EhciController * const ehci = & hehci->ehci;
+ 	//EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
  	//PRINTF("HAL_EHCI_Init\n");
 
@@ -940,7 +949,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
-	EhciController * const ehci = & hehci->ehci;
+	//EhciController * const ehci = & hehci->ehci;
  	// Enable controller
  	// Запускаем контроллер, 8 микро-фреймов, включаем
  	// последовательную и асинхронную очередь
@@ -988,7 +997,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
- 	EhciController * const ehci = & hehci->ehci;
+ 	//EhciController * const ehci = & hehci->ehci;
   __HAL_LOCK(hehci);
   (void)EHCI_StopHost(hehci->Instance);
   __HAL_UNLOCK(hehci);
@@ -1186,8 +1195,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_SETUP, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			// бит toggle хранися в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
-			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, 0 * EHCI_LEN_TOGGLE);
+			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
+			qtd_item2_set_toggle(qtdoverl, 0);
 
 		}
 		else if (direction == 0)
@@ -1199,8 +1208,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			// бит toggle хранися в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
-			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, 1 * EHCI_LEN_TOGGLE);
+			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
+			qtd_item2_set_toggle(qtdoverl, 1);
 
 		}
 		else
@@ -1211,9 +1220,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			// бит toggle хранися в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
-			le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, 1 * EHCI_LEN_TOGGLE);
-
+			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
+			qtd_item2_set_toggle(qtdoverl, 1);
 		}
 		break;
 
@@ -1232,9 +1240,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
-			// бит toggle хранися в памяти overlay и модифицируется самим контроллером
-			//le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_out * EHCI_LEN_TOGGLE);
-
+			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 		}
 		else
 		{
@@ -1247,8 +1253,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2(qtdoverl, rx0, ulmin(hc->xfer_len, sizeof rx0), EHCI_FL_PID_IN, 0));
 			arm_hardware_flush_invalidate((uintptr_t) rx0, hc->xfer_len);
 
-			// бит toggle хранися в памяти overlay и модифицируется самим контроллером
-			//le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
+			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 
 		}
 		break;
@@ -1372,7 +1377,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint16_t length, uint8_t do_ping)
 {
 	EHCI_HandleTypeDef * const hehci = phost->pData;
-	EhciController * const ehci = & hehci->ehci;
+	//EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	HAL_StatusTypeDef hal_status = HAL_OK;
@@ -1478,7 +1483,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe,
 		;
 
 	volatile struct ehci_transfer_descriptor *qtdoverl = & asynclisthead [pipe].cache;
-	le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, !! toggle * EHCI_LEN_TOGGLE);
+	qtd_item2_set_toggle(qtdoverl, toggle);
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 
 	// Run ASYNC queue
@@ -1586,28 +1591,27 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	//	  hal_status = HAL_EHCI_ResetPort2(phost->pData, resetIsActive);
 	//
 	EHCI_HandleTypeDef * const hehci = phost->pData;
-	EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 	//PRINTF("USBH_LL_ResetPort2: 1 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
 
 	if (resetIsActive)
 	{
- 		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
  		/* Reset port */
  		portsc &= ~ (EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
  		portsc |= EHCI_PORTSC_PR;
 
- 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
- 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
+ 		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 	}
 	else
 	{
-		unsigned long portsc = ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+		unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
  		/* Release Reset port */
  		portsc &= ~EHCI_PORTSC_PR;	 /** Port reset */
 
- 		ehci->opRegs->ports [WITHEHCIHW_EHCIPORT] = portsc;
- 		(void) ehci->opRegs->ports [WITHEHCIHW_EHCIPORT];
+ 		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
+ 		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
 	}
 	//local_delay_ms(1000);
 	//HAL_Delay(5);
