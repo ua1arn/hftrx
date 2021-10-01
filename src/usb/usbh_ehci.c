@@ -3033,14 +3033,14 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 		chr |= EHCI_CHR_TOGGLE;
 
 	/* Determine endpoint speed */
-	if ( 1/*usb->speed == USB_SPEED_HIGH */) {
+	if (hc->speed == USBH_SPEED_HIGH) {
 		chr |= EHCI_CHR_EPS_HIGH;
 	} else {
-//		if ( usb->speed == USB_SPEED_FULL ) {
-//			chr |= EHCI_CHR_EPS_FULL;
-//		} else {
-//			chr |= EHCI_CHR_EPS_LOW;
-//		}
+		if (hc->speed == USBH_SPEED_FULL ) {
+			chr |= EHCI_CHR_EPS_FULL;
+		} else {
+			chr |= EHCI_CHR_EPS_LOW;
+		}
 		if (hc->ep_type == EP_TYPE_CTRL)
 			chr |= EHCI_CHR_CONTROL;
 
@@ -4134,10 +4134,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
   */
 EHCI_URBStateTypeDef HAL_EHCI_HC_GetURBState(EHCI_HandleTypeDef *hehci, uint8_t chnum)
 {
-	EHCI_URBStateTypeDef s = hehci->hc [chnum].ehci_urb_state;
-	//local_delay_ms(100);
-	//PRINTF("HAL_EHCI_HC_GetURBState: hehci->hc[%d].ehci_urb_state=%d\n", chnum, s);
-	return s;
+	return hehci->hc [chnum].ehci_urb_state;
 }
 
 
