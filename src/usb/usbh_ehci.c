@@ -82,6 +82,7 @@ static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transf
 
 static EHCI_HCTypeDef * volatile ghc;
 //static volatile struct ehci_queue_head dd;
+static volatile __attribute__((used, aligned(4096))) uint8_t rx0 [4096];
 #endif
 
 /* установка указаных в mask битов в состояние data */
@@ -3571,9 +3572,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			{
 	 			hc->ehci_urb_state = URB_DONE;
 
-	 			if (hc->ep_is_in)
+	 			if (hc->ep_is_in && hc->ep_type != EP_TYPE_CTRL)
 	 			{
-	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
+		 			memcpy(hc->xfer_buff, rx0, pktcnt);
+	 				//printhex((uintptr_t) rx0, rx0, pktcnt);
 	 			}
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
@@ -4066,10 +4068,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		if (hc->ep_is_in == 0)
 		{
 			// BULK Data OUT
-			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_out=%d\n",
-					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_out);
-			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
-			printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
+//			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK OUT, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_out=%d\n",
+//					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_out);
+//			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
+//			printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
 
 			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
@@ -4081,13 +4083,13 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// BULK Data IN
-			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_in=%d\n",
-					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_in);
-			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
+//			PRINTF("HAL_EHCI_HC_SubmitRequest: BULK IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d, hc->toggle_in=%d\n",
+//					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping, hc->toggle_in);
+//			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 
-			memset(hc->xfer_buff, 0xEE, hc->xfer_len);
-			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
-			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+			//memset(rx0, 0xEE, hc->xfer_len);
+			VERIFY(0 == qtd_item2(qtdoverl, rx0, hc->xfer_len, EHCI_FL_PID_IN, 0));
+			arm_hardware_flush_invalidate((uintptr_t) rx0, hc->xfer_len);
 
 			// бит toggle хранися в памяти overlay и модифицируется самим контроллером
 			//le16_modify(& qtdoverl->len, EHCI_LEN_TOGGLE, hc->toggle_in * EHCI_LEN_TOGGLE);
@@ -4109,6 +4111,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+	arm_hardware_flush_invalidate((uintptr_t) & rx0, sizeof rx0);
 
 	/*  убрать после перхода на списки работающиз пересылок */
 	ghc = hc;
