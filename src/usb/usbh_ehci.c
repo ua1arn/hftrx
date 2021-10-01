@@ -9,8 +9,6 @@
 
 #if WITHUSBHW && WITHEHCIHW
 
-#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop фпхитектуры */
-
 #include "board.h"
 #include "formats.h"
 #include "gpio.h"
@@ -22,6 +20,8 @@
 #include "usbh_core.h"
 
 #include <string.h>
+
+#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop архитектуры */
 
 void Error_Handler(void);
 
