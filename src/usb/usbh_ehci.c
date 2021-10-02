@@ -213,23 +213,11 @@ static void qtd_item2_set_length(volatile struct ehci_transfer_descriptor * p, u
 	p->len = (v & ~ m) | (cpu_to_le16(length) & m);
 }
 
-// fill 3.5 Queue Element Transfer Descriptor (qTD)
-uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length, unsigned pid, unsigned ping)
+static uint_fast8_t qtd_item2_buff(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length)
 {
 	unsigned i;
 	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
-	//memset((void *) p, 0, sizeof * p);
-
-	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);	// возможно потребуется адрес следующего буфера
-	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
-
 	qtd_item2_set_length(p, length);	/* не модифицируем флаг EHCI_LEN_TOGGLE */
-
-//	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
-//														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
-//														// cleared for SETUP packets
-	p->flags = pid | 0*EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
-	p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
 
 	for (i = 0; i < ARRAY_SIZE(p->low) && length != 0; ++ i)
 	{
@@ -255,6 +243,22 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 		length -= frag_len;
 	}
 	return length != 0;		// 0 - без ошибок
+}
+// fill 3.5 Queue Element Transfer Descriptor (qTD)
+static void qtd_item2(volatile struct ehci_transfer_descriptor * p, unsigned pid, unsigned ping)
+{
+	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
+	//memset((void *) p, 0, sizeof * p);
+
+	p->next = cpu_to_le32(EHCI_LINK_TERMINATE);	// возможно потребуется адрес следующего буфера
+	p->alt = cpu_to_le32(EHCI_LINK_TERMINATE);
+
+
+//	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
+//														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
+//														// cleared for SETUP packets
+	p->flags = pid | 0*EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
+	p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
 }
 
 
@@ -707,10 +711,9 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
-#if WITHEHCIHWSOFTSPOLL
+ 	/* Защита от вызовов при неинициализированном объекте при опросе. */
  	if (EHCIx == NULL)
  		return;
-#endif /* WITHEHCIHWSOFTSPOLL */
 
  	const uint_fast32_t usbsts = EHCIx->USBSTS;
  	const uint_fast32_t usbstsMasked = usbsts & EHCIx->USBSTS & EHCIx->USBINTR;
@@ -733,8 +736,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		if (ghc != NULL)
  		{
 			EHCI_HCTypeDef * const hc = ghc;//& hehci->hc [ch_num];
-			const uint_fast8_t status = qtds [hc->ch_num].status;
-			unsigned len = le16_to_cpu(qtds [hc->ch_num].len) & EHCI_LEN_MASK;
+			volatile struct ehci_transfer_descriptor * const qtd = & qtds [hc->ch_num];
+			volatile struct ehci_transfer_descriptor * const qtdoverl = & asynclisthead [hc->ch_num].cache;
+			const uint_fast8_t status = qtd->status;
+			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
@@ -771,7 +776,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 //			}
 			else
 			{
-	 			hc->ehci_urb_state = URB_DONE;
 
 //	 			if (hc->ep_is_in)
 //	 			{
@@ -779,6 +783,19 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 //	 			}
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
+				// TODO: выяснить, не было ли превышение максимального размера буфера ENDPOINT
+				if (hc->xfer_len > hc->max_packet && hc->xfer_len > hc->xfer_count)
+				{
+					// Restart next transaction
+					qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len - hc->xfer_count);
+					le8_modify( & qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+
+					/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
+					le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+					goto nextIteration;
+				}
+				// Transaction done
+	 			hc->ehci_urb_state = URB_DONE;
 			}
 			ghc = NULL;
 		nextIteration:
@@ -791,6 +808,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		}
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
  		arm_hardware_invalidate((uintptr_t) & qtds, sizeof qtds);	/* чтобы следующая проверка могла работать */
+ 		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
@@ -829,11 +847,13 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  		if ((portsc & EHCI_PORTSC_CCS) != 0)
  		{
+ 			//PRINTF("DEv Connect handler\n");
 			HAL_EHCI_PortEnabled_Callback(hehci);
  			HAL_EHCI_Connect_Callback(hehci);
  		}
  		else
  		{
+ 			//PRINTF("DEv Disconnect handler\n");
 			HAL_EHCI_Disconnect_Callback(hehci);
  		}
 	}
@@ -1234,7 +1254,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: SETUP, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, hc->xfer_len);
 
-			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_SETUP, do_ping));
+			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdoverl, EHCI_FL_PID_SETUP, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
@@ -1247,7 +1268,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, hc->xfer_len);
 
-			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
+			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdoverl, EHCI_FL_PID_OUT, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
@@ -1259,7 +1281,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			// Data In
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 
-			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
+			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdoverl, EHCI_FL_PID_IN, 0);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
@@ -1279,7 +1302,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 //			printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
 
-			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_OUT, do_ping));
+			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdoverl, EHCI_FL_PID_OUT, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
@@ -1291,7 +1315,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 
-			VERIFY(0 == qtd_item2(qtdoverl, hc->xfer_buff, hc->xfer_len, EHCI_FL_PID_IN, 0));
+			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdoverl, EHCI_FL_PID_IN, 0);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
@@ -1900,6 +1925,8 @@ void MX_USB_HOST_Process(void)
 	SPIN_UNLOCK(& asynclock);
 	system_enableIRQ();
 #endif /* WITHEHCIHWSOFTSPOLL */
+	//local_delay_ms(100);
+	//PRINTF(".");
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */
