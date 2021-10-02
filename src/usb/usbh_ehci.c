@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-//#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop архитектуры */
+#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop архитектуры */
 
 void Error_Handler(void);
 
