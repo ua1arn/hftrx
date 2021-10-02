@@ -1761,7 +1761,7 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
 
-  hal_status = HAL_EHCI_HC_Halt(phost->pData, pipe);
+  //hal_status = HAL_EHCI_HC_Halt(phost->pData, pipe);	// TODO: разобраться с остановкой ASYNC опроса
 
  ////ehci_endpoint_close(& usbdev0->control);
   usb_status = USBH_Get_USB_Status(hal_status);
