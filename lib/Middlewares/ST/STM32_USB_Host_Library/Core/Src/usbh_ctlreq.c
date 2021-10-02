@@ -571,6 +571,23 @@ static USBH_StatusTypeDef USBH_ParseCfgDesc(USBH_HandleTypeDef *phost, uint8_t *
 				// 0x0A/0x00/0x00, nEP=2
 				// 0x02/0x02/0x01, nEP=1
 				// 0x0A/0x00/0x00, nEP=2
+				//
+				// Gigabit Ethernet
+				//	USB Device Reset Completed
+				//	VID/PID: 0BDA/8153
+				//	Address (#7) assigned.
+				//	DEBUG : USBH_ParseCfgDesc: ifix=0, 0xFF/0xFF/0x00, nEP=3
+				//	DEBUG : USBH_ParseCfgDesc: EPix=0, bEndpointAddress=81, wMaxPacketSize=512
+				//	DEBUG : USBH_ParseCfgDesc: EPix=1, bEndpointAddress=02, wMaxPacketSize=512
+				//	DEBUG : USBH_ParseCfgDesc: EPix=2, bEndpointAddress=83, wMaxPacketSize=2
+				//	EHCI_StopHost:
+				//	USB Device disconnected
+				//	USB Device Reset Completed
+				//	VID/PID: 0BDA/8151
+				//	Address (#7) assigned.
+				//	DEBUG : USBH_ParseCfgDesc: ifix=0, 0x08/0x06/0x50, nEP=2
+				//	DEBUG : USBH_ParseCfgDesc: EPix=0, bEndpointAddress=84, wMaxPacketSize=512
+				//	DEBUG : USBH_ParseCfgDesc: EPix=1, bEndpointAddress=05, wMaxPacketSize=512
 
 				ep_ix = 0;
 				pep = (USBH_EpDescTypeDef*) NULL;
