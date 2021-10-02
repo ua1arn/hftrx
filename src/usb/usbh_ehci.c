@@ -566,27 +566,35 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
                                   uint8_t ep_type,
                                   uint16_t mps)
 {
-  HAL_StatusTypeDef status = HAL_OK;
-  EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+	HAL_StatusTypeDef status = HAL_OK;
+	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
+	USB_EHCI_CapabilityTypeDef *const EHCIx = hehci->Instance;
 
-  __HAL_LOCK(hehci);
-  hc->do_ping = 0U;
-  hc->dev_addr = dev_address;
-  hc->max_packet = mps;
-  hc->ch_num = ch_num;
-  hc->ep_type = ep_type;
-  hc->ep_num = epnum & 0x7FU;
+	__HAL_LOCK(hehci);
+	// TODO: use queue head
+	// Stop ASYNC queue
+	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
+	(void) EHCIx->USBCMD;
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
+		;
 
-  if ((epnum & 0x80U) == 0x80U)
-  {
-    hc->ep_is_in = 1U;
-  }
-  else
-  {
-    hc->ep_is_in = 0U;
-  }
+	hc->do_ping = 0U;
+	hc->dev_addr = dev_address;
+	hc->max_packet = mps;
+	hc->ch_num = ch_num;
+	hc->ep_type = ep_type;
+	hc->ep_num = epnum & 0x7FU;
 
-  hc->speed = speed;
+	if ((epnum & 0x80U) == 0x80U)
+	{
+		hc->ep_is_in = 1U;
+	}
+	else
+	{
+		hc->ep_is_in = 0U;
+	}
+
+	hc->speed = speed;
 
 // TODO: use queue head
 //  status =  USB_HC_Init(hehci->Instance,
@@ -596,12 +604,20 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 //                        speed,
 //                        ep_type,
 //                        mps);
-	qtd_item2_set_toggle(& asynclisthead [hc->ch_num].cache, 0);
+	qtd_item2_set_toggle( & asynclisthead [hc->ch_num].cache, 0);
 	//PRINTF("HAL_EHCI_HC_Init: hc->ch_num=%d\n");
 
-  __HAL_UNLOCK(hehci);
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 
-  return status;
+	// Run ASYNC queue
+	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
+		;
+
+	__HAL_UNLOCK(hehci);
+
+	return status;
 }
 
 /**
