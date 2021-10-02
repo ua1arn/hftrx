@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop архитектуры */
+//#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop архитектуры */
 
 void Error_Handler(void);
 
@@ -69,6 +69,7 @@ enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
 
 #if 1
 
+static SPINLOCK_t asynclock = SPINLOCK_INIT;
 
 // Periodic frame list
 // Periodic Schedule list - PERIODICLISTBASE use
@@ -227,7 +228,7 @@ uint_fast8_t qtd_item2(volatile struct ehci_transfer_descriptor * p, volatile ui
 //	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 //														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 //														// cleared for SETUP packets
-	p->flags = pid | EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
+	p->flags = pid | 0*EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
 	p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
 
 	for (i = 0; i < ARRAY_SIZE(p->low) && length != 0; ++ i)
@@ -1218,6 +1219,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	}
 #endif
 
+	ASSERT(ghc == NULL);
 	volatile struct ehci_queue_head *const qh = & asynclisthead [hc->ch_num];
 	volatile struct ehci_transfer_descriptor *qtd = & qtds [hc->ch_num];
 	volatile struct ehci_transfer_descriptor *qtdoverl = & asynclisthead [hc->ch_num].cache;
@@ -1462,6 +1464,12 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 		uint8_t pipe) {
 #if WITHEHCIHWSOFTSPOLL
 	HAL_EHCI_IRQHandler(& hehci_USB);
+#else /* WITHEHCIHWSOFTSPOLL */
+	system_disableIRQ();
+	SPIN_LOCK(& asynclock);
+	HAL_EHCI_IRQHandler(& hehci_USB);
+	SPIN_UNLOCK(& asynclock);
+	system_enableIRQ();
 #endif /* WITHEHCIHWSOFTSPOLL */
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
@@ -1884,6 +1892,12 @@ void MX_USB_HOST_Process(void)
 	USBH_Process(& hUsbHostHS);
 #if WITHEHCIHWSOFTSPOLL
 	HAL_EHCI_IRQHandler(& hehci_USB);
+#else /* WITHEHCIHWSOFTSPOLL */
+	system_disableIRQ();
+	SPIN_LOCK(& asynclock);
+	HAL_EHCI_IRQHandler(& hehci_USB);
+	SPIN_UNLOCK(& asynclock);
+	system_enableIRQ();
 #endif /* WITHEHCIHWSOFTSPOLL */
 }
 
