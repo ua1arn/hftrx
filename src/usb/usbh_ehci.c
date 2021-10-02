@@ -785,8 +785,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 //	 			}
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
-				// TODO: выяснить, не было ли превышение максимального размера буфера ENDPOINT
-				if (hc->xfer_len > hc->max_packet && hc->xfer_len > hc->xfer_count)
+				// продолжаем, если многосегменый обмен
+				if (pktcnt == hc->max_packet && hc->xfer_len > hc->max_packet && hc->xfer_len > hc->xfer_count)
 				{
 					// Restart next transaction
 					qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len - hc->xfer_count);
