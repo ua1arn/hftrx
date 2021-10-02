@@ -435,7 +435,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read10(USBH_HandleTypeDef *phost,
 
 /**
   * @brief  USBH_MSC_SCSI_Write12
-  *         Issue write10 command.
+  *         Issue write12 command.
   * @param  phost: Host handle
   * @param  lun: Logical Unit Number
   * @param  address: sector address
@@ -460,16 +460,16 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write12(USBH_HandleTypeDef *phost,
       /*Prepare the CBW and relevant field*/
       MSC_Handle->hbot.cbw.field.DataTransferLength = length * MSC_Handle->unit[0].capacity.block_size;
       MSC_Handle->hbot.cbw.field.Flags = USB_EP_DIR_OUT;
-      MSC_Handle->hbot.cbw.field.CBLength = CBW_LENGTH_12;
+      MSC_Handle->hbot.cbw.field.CBLength = CBW_LENGTH;
 
-      (void)USBH_memset(MSC_Handle->hbot.cbw.field.CB, 0, CBW_LENGTH_12);
+      (void)USBH_memset(MSC_Handle->hbot.cbw.field.CB, 0, CBW_LENGTH);
       MSC_Handle->hbot.cbw.field.CB[0]  = OPCODE_WRITE12;
 
       /*logical block address*/
       USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[2], address);
 
       /*Transfer length */
-      USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[7], length);
+      USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[6], length);
 
       MSC_Handle->hbot.state = BOT_SEND_CBW;
       MSC_Handle->hbot.cmd_state = BOT_CMD_WAIT;
@@ -490,7 +490,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write12(USBH_HandleTypeDef *phost,
 
 /**
   * @brief  USBH_MSC_SCSI_Read12
-  *         Issue Read10 command.
+  *         Issue Read12 command.
   * @param  phost: Host handle
   * @param  lun: Logical Unit Number
   * @param  address: sector address
@@ -514,16 +514,16 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read12(USBH_HandleTypeDef *phost,
       /*Prepare the CBW and relevant field*/
       MSC_Handle->hbot.cbw.field.DataTransferLength = length * MSC_Handle->unit[0].capacity.block_size;
       MSC_Handle->hbot.cbw.field.Flags = USB_EP_DIR_IN;
-      MSC_Handle->hbot.cbw.field.CBLength = CBW_LENGTH_12;
+      MSC_Handle->hbot.cbw.field.CBLength = CBW_LENGTH;
 
-      (void)USBH_memset(MSC_Handle->hbot.cbw.field.CB, 0, CBW_LENGTH_12);
+      (void)USBH_memset(MSC_Handle->hbot.cbw.field.CB, 0, CBW_LENGTH);
       MSC_Handle->hbot.cbw.field.CB[0]  = OPCODE_READ12;
 
       /*logical block address*/
        USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[2], address);
 
        /*Transfer length */
-       USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[7], length);
+       USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[6], length);
 
       MSC_Handle->hbot.state = BOT_SEND_CBW;
       MSC_Handle->hbot.cmd_state = BOT_CMD_WAIT;

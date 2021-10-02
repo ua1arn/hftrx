@@ -93,7 +93,6 @@ typedef struct
 
 #define CBW_CB_LENGTH                       16U
 #define CBW_LENGTH                          10U
-#define CBW_LENGTH_12                       12U	// For Read12/Write12 commands
 
 /** @defgroup USBH_MSC_SCSI_Exported_Defines
   * @{
