@@ -756,10 +756,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 				//TP();
 				goto nextIteration;
 			}
-			else if ((status & EHCI_STATUS_XACT_ERR) != 0)
-			{
-				hc->ehci_urb_state = USBH_URB_STALL;
-			}
 			else if ((status & EHCI_STATUS_BABBLE) != 0)
 			{
 				hc->ehci_urb_state = USBH_URB_STALL;
@@ -768,6 +764,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			{
 				hc->ehci_urb_state = USBH_URB_STALL;
 			}
+//			else if ((status & EHCI_STATUS_XACT_ERR) != 0)
+//			{
+//				/* Наличие этого бита при отсутствующем EHCI_STATUS_HALTED = это не ошибка */
+//				hc->ehci_urb_state = USBH_URB_STALL;
+//			}
 			else
 			{
 	 			hc->ehci_urb_state = URB_DONE;
