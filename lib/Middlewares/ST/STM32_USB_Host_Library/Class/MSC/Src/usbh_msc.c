@@ -581,7 +581,7 @@ static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_
   {
 
     case MSC_READ:
-      scsi_status = USBH_MSC_SCSI_Read(phost, lun, 0U, NULL, 0U);
+      scsi_status = USBH_MSC_SCSI_Process(phost, lun);
 
       if (scsi_status == USBH_OK)
       {
@@ -612,7 +612,7 @@ static USBH_StatusTypeDef USBH_MSC_RdWrProcess(USBH_HandleTypeDef *phost, uint8_
       break;
 
     case MSC_WRITE:
-      scsi_status = USBH_MSC_SCSI_Write(phost, lun, 0U, NULL, 0U);
+       scsi_status = USBH_MSC_SCSI_Process(phost, lun);
 
       if (scsi_status == USBH_OK)
       {
@@ -851,7 +851,7 @@ USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
 	MSC_Handle->unit [lun].state = MSC_READ;
 	MSC_Handle->rw_lun = lun;
 
-	(void) USBH_MSC_SCSI_Read(phost, lun, address, pbuf, length);
+	(void) USBH_MSC_SCSI_Read10(phost, lun, address, pbuf, length);
 
 	timeout = phost->Timer;
 
@@ -884,6 +884,10 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
                                   uint8_t *pbuf,
                                   uint32_t length)
 {
+//	if (length != 1)
+//	{
+//	    PRINTF("USBH_MSC_Write: pbuf=%p, address=%lu, length=%u\n", pbuf, (unsigned long) address, (unsigned) length);
+//	}
 	uint32_t timeout;
 
 	if ((phost->device.is_connected == 0U) || (phost->gState != HOST_CLASS))
@@ -905,7 +909,7 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
 	MSC_Handle->unit [lun].state = MSC_WRITE;
 	MSC_Handle->rw_lun = lun;
 
-	(void) USBH_MSC_SCSI_Write(phost, lun, address, pbuf, length);
+	(void) USBH_MSC_SCSI_Write10(phost, lun, address, pbuf, length);
 
 	timeout = phost->Timer;
 	while (USBH_MSC_RdWrProcess(phost, lun) == USBH_BUSY)

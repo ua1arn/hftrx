@@ -325,7 +325,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_RequestSense(USBH_HandleTypeDef *phost,
 }
 
 /**
-  * @brief  USBH_MSC_SCSI_Write
+  * @brief  USBH_MSC_SCSI_Write10
   *         Issue write10 command.
   * @param  phost: Host handle
   * @param  lun: Logical Unit Number
@@ -334,7 +334,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_RequestSense(USBH_HandleTypeDef *phost,
   * @param  length: number of sector to write
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_MSC_SCSI_Write(USBH_HandleTypeDef *phost,
+USBH_StatusTypeDef USBH_MSC_SCSI_Write10(USBH_HandleTypeDef *phost,
                                        uint8_t lun,
                                        uint32_t address,
                                        uint8_t *pbuf,
@@ -380,7 +380,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write(USBH_HandleTypeDef *phost,
 }
 
 /**
-  * @brief  USBH_MSC_SCSI_Read
+  * @brief  USBH_MSC_SCSI_Read10
   *         Issue Read10 command.
   * @param  phost: Host handle
   * @param  lun: Logical Unit Number
@@ -389,7 +389,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write(USBH_HandleTypeDef *phost,
   * @param  length: number of sector to read
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_MSC_SCSI_Read(USBH_HandleTypeDef *phost,
+USBH_StatusTypeDef USBH_MSC_SCSI_Read10(USBH_HandleTypeDef *phost,
                                       uint8_t lun,
                                       uint32_t address,
                                       uint8_t *pbuf,
@@ -433,6 +433,142 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read(USBH_HandleTypeDef *phost,
   return error;
 }
 
+/**
+  * @brief  USBH_MSC_SCSI_Write12
+  *         Issue write10 command.
+  * @param  phost: Host handle
+  * @param  lun: Logical Unit Number
+  * @param  address: sector address
+  * @param  pbuf: pointer to data
+  * @param  length: number of sector to write
+  * @retval USBH Status
+  */
+USBH_StatusTypeDef USBH_MSC_SCSI_Write12(USBH_HandleTypeDef *phost,
+                                       uint8_t lun,
+                                       uint32_t address,
+                                       uint8_t *pbuf,
+                                       uint32_t length)
+{
+  USBH_StatusTypeDef    error = USBH_FAIL ;
+
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+
+  switch (MSC_Handle->hbot.cmd_state)
+  {
+    case BOT_CMD_SEND:
+
+      /*Prepare the CBW and relevant field*/
+      MSC_Handle->hbot.cbw.field.DataTransferLength = length * MSC_Handle->unit[0].capacity.block_size;
+      MSC_Handle->hbot.cbw.field.Flags = USB_EP_DIR_OUT;
+      MSC_Handle->hbot.cbw.field.CBLength = CBW_LENGTH;
+
+      (void)USBH_memset(MSC_Handle->hbot.cbw.field.CB, 0, CBW_CB_LENGTH);
+      MSC_Handle->hbot.cbw.field.CB[0]  = OPCODE_WRITE12;
+
+      /*logical block address*/
+      USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[2], address);
+
+      /*Transfer length */
+      USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[7], length);
+
+      MSC_Handle->hbot.state = BOT_SEND_CBW;
+      MSC_Handle->hbot.cmd_state = BOT_CMD_WAIT;
+      MSC_Handle->hbot.pbuf = pbuf;
+      error = USBH_BUSY;
+      break;
+
+    case BOT_CMD_WAIT:
+      error = USBH_MSC_BOT_Process(phost, lun);
+      break;
+
+    default:
+      break;
+  }
+
+  return error;
+}
+
+/**
+  * @brief  USBH_MSC_SCSI_Read12
+  *         Issue Read10 command.
+  * @param  phost: Host handle
+  * @param  lun: Logical Unit Number
+  * @param  address: sector address
+  * @param  pbuf: pointer to data
+  * @param  length: number of sector to read
+  * @retval USBH Status
+  */
+USBH_StatusTypeDef USBH_MSC_SCSI_Read12(USBH_HandleTypeDef *phost,
+                                      uint8_t lun,
+                                      uint32_t address,
+                                      uint8_t *pbuf,
+                                      uint32_t length)
+{
+  USBH_StatusTypeDef    error = USBH_FAIL ;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+
+  switch (MSC_Handle->hbot.cmd_state)
+  {
+    case BOT_CMD_SEND:
+
+      /*Prepare the CBW and relevant field*/
+      MSC_Handle->hbot.cbw.field.DataTransferLength = length * MSC_Handle->unit[0].capacity.block_size;
+      MSC_Handle->hbot.cbw.field.Flags = USB_EP_DIR_IN;
+      MSC_Handle->hbot.cbw.field.CBLength = CBW_LENGTH;
+
+      (void)USBH_memset(MSC_Handle->hbot.cbw.field.CB, 0, CBW_CB_LENGTH);
+      MSC_Handle->hbot.cbw.field.CB[0]  = OPCODE_READ12;
+
+      /*logical block address*/
+       USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[2], address);
+
+       /*Transfer length */
+       USBD_poke_u32_BE(& MSC_Handle->hbot.cbw.field.CB[7], length);
+
+      MSC_Handle->hbot.state = BOT_SEND_CBW;
+      MSC_Handle->hbot.cmd_state = BOT_CMD_WAIT;
+      MSC_Handle->hbot.pbuf = pbuf;
+      error = USBH_BUSY;
+      break;
+
+    case BOT_CMD_WAIT:
+      error = USBH_MSC_BOT_Process(phost, lun);
+      break;
+
+    default:
+      break;
+  }
+
+  return error;
+}
+
+
+/**
+  * @brief  USBH_MSC_SCSI_Process
+  *         Oricess execution command.
+  * @param  phost: Host handle
+  * @param  lun: Logical Unit Number
+  * @retval USBH Status
+  */
+USBH_StatusTypeDef USBH_MSC_SCSI_Process(USBH_HandleTypeDef *phost,
+                                      uint8_t lun)
+{
+  USBH_StatusTypeDef    error = USBH_FAIL ;
+  MSC_HandleTypeDef *MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+
+  switch (MSC_Handle->hbot.cmd_state)
+  {
+
+    case BOT_CMD_WAIT:
+      error = USBH_MSC_BOT_Process(phost, lun);
+      break;
+
+    default:
+      break;
+  }
+
+  return error;
+}
 
 /**
   * @}
