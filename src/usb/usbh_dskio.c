@@ -83,6 +83,7 @@ DRESULT USB_disk_write(
 	  DRESULT res = RES_ERROR;
 	  MSC_LUNTypeDef info;
 
+	  //PRINTF("USB_disk_write: lun=%d, buff=%p, sector=%lu, count=%u\n", (int) lun, buff, (unsigned long) sector, (unsigned) count);
 	  if(USBH_MSC_Write(&hUsbHostHS, lun, sector, (BYTE *)buff, count) == USBH_OK)
 	  {
 	    res = RES_OK;
@@ -126,6 +127,7 @@ DRESULT USB_disk_read(
 	  DRESULT res = RES_ERROR;
 	  MSC_LUNTypeDef info;
 
+	  //PRINTF("USB_disk_read: lun=%d, buff=%p, sector=%lu, count=%u\n", (int) lun, buff, (unsigned long) sector, (unsigned) count);
 	  if(USBH_MSC_Read(&hUsbHostHS, lun, sector, buff, count) == USBH_OK)
 	  {
 	    res = RES_OK;
