@@ -467,10 +467,13 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Write12(USBH_HandleTypeDef *phost,
       /*Prepare the CBW and relevant field*/
       hBot->cbw.field.DataTransferLength = length * MSC_Handle->unit[0].capacity.block_size;
       hBot->cbw.field.Flags = USB_EP_DIR_OUT;
-      hBot->cbw.field.CBLength = CBW_LENGTH;
+      hBot->cbw.field.CBLength = 12;//CBW_LENGTH;
 
       (void)USBH_memset(hBot->cbw.field.CB, 0, sizeof hBot->cbw.field.CB);
       hBot->cbw.field.CB[0]  = OPCODE_WRITE12;
+      hBot->cbw.field.CB[1]  =
+    		  (1uL << 3) |		// FUA bit
+			  0;
 
       /*logical block address*/
       USBD_poke_u32_BE(& hBot->cbw.field.CB[2], address);
@@ -522,10 +525,13 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Read12(USBH_HandleTypeDef *phost,
       /*Prepare the CBW and relevant field*/
       hBot->cbw.field.DataTransferLength = length * MSC_Handle->unit[0].capacity.block_size;
       hBot->cbw.field.Flags = USB_EP_DIR_IN;
-      hBot->cbw.field.CBLength = CBW_LENGTH;
+      hBot->cbw.field.CBLength = 12;//CBW_LENGTH;
 
       (void)USBH_memset(hBot->cbw.field.CB, 0, sizeof hBot->cbw.field.CB);
       hBot->cbw.field.CB[0]  = OPCODE_READ12;
+      hBot->cbw.field.CB[1]  =
+    		  (1uL << 3) |		// FUA bit
+			  0;
 
       /*logical block address*/
        USBD_poke_u32_BE(& hBot->cbw.field.CB[2], address);
