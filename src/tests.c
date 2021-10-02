@@ -7217,7 +7217,7 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEFATFS
-	// SD CARD file system level functions test
+	// SD CARD file system level functions speed test
 	// no interactive
 	{
 
