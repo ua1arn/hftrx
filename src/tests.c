@@ -3681,8 +3681,10 @@ unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
 }
 
 // сохранение потока данных большими блоками
-static void dosaveblocks(const char * fname)
+// 1 - конец циклпа проверок
+static int dosaveblocks(const char * fname)
 {
+	int manualstop = 0;
 	unsigned long long kbs = 0;
 	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
@@ -3690,14 +3692,22 @@ static void dosaveblocks(const char * fname)
 
 	PRINTF(PSTR("FAT FS test - write file '%s'.\n"), fname);
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
-	memset(rbuff, 0xE5, sizeof rbuff);
-	static int i;
-	USBD_poke_u32X(rbuff, ++ i);
+
+	/* формирование сигнатуры в данных = для конроля достоверности записи */
+	unsigned j;
+	static unsigned i;
+	static unsigned q;
+	memset(rbuff, 0x20, sizeof rbuff);
+	for (j = 0; j < ARRAY_SIZE(rbuff) - 16; j += 80)
+	{
+		USBD_poke_u32_BE(rbuff + j + 16 - 4, ++ q);
+	}
+	USBD_poke_u32_BE(rbuff, ++ i);
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
 		PRINTF("can not create file, rc=0x%02X\n", (unsigned) rc);
-		return;	//die(rc);
+		return 1;	//die(rc);
 	}
 
 #if 1
@@ -3706,7 +3716,7 @@ static void dosaveblocks(const char * fname)
 	if (rc)
 	{
 		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
-		return;	//die(rc);
+		return 1;	//die(rc);
 	}
 	else
 	{
@@ -3751,6 +3761,7 @@ static void dosaveblocks(const char * fname)
 			if (kbch == 0x1b)
 			{
 				PRINTF("break recording\n");
+				manualstop = 1;
 				break;
 			}
 		}
@@ -3774,12 +3785,13 @@ static void dosaveblocks(const char * fname)
 	{
 		TP();
 		PRINTF("f_close failed, rc=0x%02X\n", (unsigned) rc);
-		return;
+		return 1;
 	}
 	else
 	{
 		PRINTF("Write speed %ld kB/S\n", (long) (kbs / 1000 / 60));
 	}
+	return manualstop;
 }
 #endif
 
@@ -4215,7 +4227,7 @@ static void fatfs_filesystest(int speedtest)
 }
 
 #if 1
-static void fatfs_filesyspeedstest(void)
+static int fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
 	uint_fast8_t month, day;
@@ -4235,7 +4247,7 @@ static void fatfs_filesyspeedstest(void)
 		hardware_get_random(),
 		++ ser
 		);
-	dosaveblocks(testlog);
+	return dosaveblocks(testlog);
 }
 #endif
 
@@ -7273,7 +7285,8 @@ void hightests(void)
 		{
 			PRINTF(PSTR("Storage device test - %d bytes block.\n"), sizeof rbuff);
 			PRINTF("Storage device test\n");
-			fatfs_filesyspeedstest();
+			if (fatfs_filesyspeedstest())
+				break;
 			for (t = 0; t < 7000; t += 5)
 			{
 		#if WITHUSBHW
@@ -7283,6 +7296,7 @@ void hightests(void)
 				//local_delay_ms(5);
 			}
 		}
+		PRINTF("Storage device test done\n");
 
 	}
 #endif
