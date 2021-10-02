@@ -91,7 +91,6 @@ typedef struct
 #define DATA_LEN_INQUIRY                    36U
 #define DATA_LEN_REQUEST_SENSE              14U
 
-#define CBW_CB_LENGTH                       16U
 #define CBW_LENGTH                          10U
 
 /** @defgroup USBH_MSC_SCSI_Exported_Defines
