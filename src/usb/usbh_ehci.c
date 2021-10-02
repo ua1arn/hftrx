@@ -1724,8 +1724,8 @@ uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
   */
 uint32_t USBH_LL_GetAdjXferSize(USBH_HandleTypeDef *phost, uint8_t pipe, uint32_t size)
 {
-	  return ulmin32(size, HAL_EHCI_HC_GetMaxPacket(phost->pData, pipe));
-	  //return ulmin32(size, 4 * 4096uL);
+	  //return ulmin32(size, HAL_EHCI_HC_GetMaxPacket(phost->pData, pipe));	// Default implementation
+	  return ulmin32(size, 4 * 4096uL);		/* 16 кБ - предел того что можно описать сегментами в transfer descriptor */
 }
 
 /**

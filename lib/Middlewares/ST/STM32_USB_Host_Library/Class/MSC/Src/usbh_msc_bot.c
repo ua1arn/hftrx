@@ -266,7 +266,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
     case BOT_DATA_IN:
       /* Send first packet */
       (void)USBH_BulkReceiveData(phost, hBot->pbuf,
-    		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->InPipe, MSC_Handle->InEpSize), MSC_Handle->InPipe);
+    		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->InPipe, hBot->cbw.field.DataTransferLength), MSC_Handle->InPipe);
 
       hBot->state = BOT_DATA_IN_WAIT;
 
@@ -278,11 +278,12 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
 
       if (URB_Status == USBH_URB_DONE)
       {
+    	  const uint32_t xfs = USBH_LL_GetLastXferSize(phost, MSC_Handle->InPipe);
         /* Adjust Data pointer and data length */
-        if (hBot->cbw.field.DataTransferLength > MSC_Handle->InEpSize)
+        if (hBot->cbw.field.DataTransferLength > xfs)
         {
-          hBot->pbuf += MSC_Handle->InEpSize;
-          hBot->cbw.field.DataTransferLength -= MSC_Handle->InEpSize;
+          hBot->pbuf += xfs;
+          hBot->cbw.field.DataTransferLength -= xfs;
         }
         else
         {
@@ -294,7 +295,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
         {
           /* Send next packet */
           (void)USBH_BulkReceiveData(phost, hBot->pbuf,
-        		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->InPipe, MSC_Handle->InEpSize), MSC_Handle->InPipe);
+        		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->InPipe, hBot->cbw.field.DataTransferLength), MSC_Handle->InPipe);
         }
         else
         {
@@ -340,7 +341,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
     case BOT_DATA_OUT:
 
       (void)USBH_BulkSendData(phost, hBot->pbuf,
-    		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->OutPipe, MSC_Handle->OutEpSize), MSC_Handle->OutPipe, 1U);
+    		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->OutPipe, hBot->cbw.field.DataTransferLength), MSC_Handle->OutPipe, 1U);
 
       hBot->state  = BOT_DATA_OUT_WAIT;
       break;
@@ -350,11 +351,12 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
 
       if (URB_Status == USBH_URB_DONE)
       {
-        /* Adjust Data pointer and data length */
-        if (hBot->cbw.field.DataTransferLength > MSC_Handle->OutEpSize)
+    	  const uint32_t xfs = USBH_LL_GetLastXferSize(phost, MSC_Handle->OutPipe);
+       /* Adjust Data pointer and data length */
+        if (hBot->cbw.field.DataTransferLength > xfs)
         {
-          hBot->pbuf += MSC_Handle->OutEpSize;
-          hBot->cbw.field.DataTransferLength -= MSC_Handle->OutEpSize;
+          hBot->pbuf += xfs;
+          hBot->cbw.field.DataTransferLength -= xfs;
         }
         else
         {
@@ -365,7 +367,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
         if (hBot->cbw.field.DataTransferLength > 0U)
         {
           (void)USBH_BulkSendData(phost, hBot->pbuf,
-        		  	  USBH_LL_GetAdjXferSize(phost, MSC_Handle->OutPipe, MSC_Handle->OutEpSize), MSC_Handle->OutPipe, 1U);
+        		  	  USBH_LL_GetAdjXferSize(phost, MSC_Handle->OutPipe, hBot->cbw.field.DataTransferLength), MSC_Handle->OutPipe, 1U);
         }
         else
         {
