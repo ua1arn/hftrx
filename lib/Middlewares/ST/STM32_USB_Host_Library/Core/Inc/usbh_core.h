@@ -123,6 +123,8 @@ USBH_StatusTypeDef   USBH_LL_ResetPort(USBH_HandleTypeDef *phost);
 USBH_StatusTypeDef   USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetIsActive);	/* Without delays */
 uint32_t             USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost,
                                              uint8_t pipe);
+uint32_t             USBH_LL_GetAdjXferSize(USBH_HandleTypeDef *phost,
+                                             uint8_t pipe, uint32_t size);
 
 USBH_StatusTypeDef   USBH_LL_DriverVBUS(USBH_HandleTypeDef *phost,
                                         uint8_t state);

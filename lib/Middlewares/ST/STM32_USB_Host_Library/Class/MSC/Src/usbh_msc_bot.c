@@ -191,7 +191,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
       hBot->cbw.field.LUN = lun;
       hBot->state = BOT_SEND_CBW_WAIT;
       (void)USBH_BulkSendData(phost, hBot->cbw.data,
-                              BOT_CBW_LENGTH, MSC_Handle->OutPipe, 1U);
+    		  BOT_CBW_LENGTH, MSC_Handle->OutPipe, 1U);
 
       break;
 
@@ -266,7 +266,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
     case BOT_DATA_IN:
       /* Send first packet */
       (void)USBH_BulkReceiveData(phost, hBot->pbuf,
-                                 MSC_Handle->InEpSize, MSC_Handle->InPipe);
+    		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->InPipe, MSC_Handle->InEpSize), MSC_Handle->InPipe);
 
       hBot->state = BOT_DATA_IN_WAIT;
 
@@ -294,7 +294,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
         {
           /* Send next packet */
           (void)USBH_BulkReceiveData(phost, hBot->pbuf,
-                                     MSC_Handle->InEpSize, MSC_Handle->InPipe);
+        		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->InPipe, MSC_Handle->InEpSize), MSC_Handle->InPipe);
         }
         else
         {
@@ -340,7 +340,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
     case BOT_DATA_OUT:
 
       (void)USBH_BulkSendData(phost, hBot->pbuf,
-                              MSC_Handle->OutEpSize, MSC_Handle->OutPipe, 1U);
+    		  USBH_LL_GetAdjXferSize(phost, MSC_Handle->OutPipe, MSC_Handle->OutEpSize), MSC_Handle->OutPipe, 1U);
 
       hBot->state  = BOT_DATA_OUT_WAIT;
       break;
@@ -365,7 +365,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
         if (hBot->cbw.field.DataTransferLength > 0U)
         {
           (void)USBH_BulkSendData(phost, hBot->pbuf,
-                                  MSC_Handle->OutEpSize, MSC_Handle->OutPipe, 1U);
+        		  	  USBH_LL_GetAdjXferSize(phost, MSC_Handle->OutPipe, MSC_Handle->OutEpSize), MSC_Handle->OutPipe, 1U);
         }
         else
         {
@@ -426,7 +426,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
     case BOT_RECEIVE_CSW:
 
       (void)USBH_BulkReceiveData(phost, hBot->csw.data,
-                                 BOT_CSW_LENGTH, MSC_Handle->InPipe);
+    		  BOT_CSW_LENGTH, MSC_Handle->InPipe);
 
       hBot->state  = BOT_RECEIVE_CSW_WAIT;
       break;
