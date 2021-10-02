@@ -511,16 +511,18 @@ HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
 
 	unsigned i;
 	/* Wait for device to stop */
-	for ( i = 0 ; i < 100 ; i++ ) {
+	for ( i = 0 ; 1 || i < 100 ; i++ ) {
 		unsigned long usbsts;
 		/* Check if device is stopped */
 		usbsts = EHCIx->USBSTS;
 		if ( usbsts & EHCI_USBSTS_HCH )
-			return HAL_OK;
+			break; //return HAL_OK;
 
 		/* Delay */
-		local_delay_ms( 1 );
+		//local_delay_ms( 1 );
 	}
+
+	ghc = NULL;
 
 	return HAL_OK;
 }
