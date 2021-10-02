@@ -252,8 +252,11 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Inquiry(USBH_HandleTypeDef *phost, uint8_t lun,
         }
 
         (void)USBH_memcpy(inquiry->vendor_id, &MSC_Handle->hbot.pbuf[8], 8U);
+        inquiry->vendor_id [8U] = '\0';
         (void)USBH_memcpy(inquiry->product_id, &MSC_Handle->hbot.pbuf[16], 16U);
+        inquiry->product_id [16U] = '\0';
         (void)USBH_memcpy(inquiry->revision_id, &MSC_Handle->hbot.pbuf[32], 4U);
+        inquiry->revision_id [4U] = '\0';
       }
       break;
 
