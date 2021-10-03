@@ -95,6 +95,10 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost,
     return USBH_FAIL;
   }
 
+  /* MORI HUB */
+  phost->hubInterfaces = 0;
+  phost->hubValid = 0;
+
   /* Set DRiver ID */
   phost->id = id;
 
