@@ -64,70 +64,6 @@
 #define HUB_FEAT_SEL_C_PORT_RESET            0x14
 #define HUB_FEAT_SEL_PORT_INDICATOR          0x16
 
-typedef enum
-{
-	HUB_IDLE= 0,
-	HUB_SYNC,
-	HUB_BUSY,
-	HUB_GET_DATA,
-	HUB_POLL,
-	HUB_LOOP_PORT_CHANGED,
-	HUB_LOOP_PORT_WAIT,
-	HUB_PORT_CHANGED,
-	HUB_C_PORT_CONNECTION,
-	HUB_C_PORT_RESET,
-	HUB_RESET_DEVICE,
-	HUB_DEV_ATTACHED,
-	HUB_DEV_DETACHED,
-	HUB_C_PORT_OVER_CURRENT,
-	HUB_C_PORT_SUSPEND,
-	HUB_ERROR,
-
-} HUB_StateTypeDef;
-
-typedef enum
-{
-	HUB_REQ_IDLE = 0,
-	HUB_REQ_GET_DESCRIPTOR,
-	HUB_REQ_SET_POWER,
-	HUB_WAIT_PWRGOOD,
-	HUB_WAIT_PWRGOOD_DONE,
-	HUB_REQ_DONE
-}
-HUB_CtlStateTypeDef;
-
-typedef enum
-{
-	HUB_GET_DESC_IDLE,
-	HUB_GET_DESC_WAIT
-}
-HUB_GetDescriptorStateTypeDef;
-
-/* Structure for HUB process */
-typedef struct _HUB_Process
-{
-  USBH_DeviceTypeDef    devices [MAX_HUB_PORTS];
-  uint8_t              InPipe;
-  HUB_StateTypeDef     state;
-  uint8_t  hubClassRequestPort;
-  uint8_t              InEp;
-  HUB_CtlStateTypeDef  ctl_state;
-  __ALIGN4k_BEGIN uint8_t buffer [20] __ALIGN4k_END;
-  uint16_t             length;
-  uint8_t              ep_addr;
-  uint16_t             poll;
-  uint32_t             timer;
-  uint8_t              DataReady;
-
-  uint8_t address;	// USB bus addres of this hub
-  struct _HUB_Process * parrent;	/* parrent hub of this hub. NULL for root. */
-
-  HUB_GetDescriptorStateTypeDef hubDescState;
-} HUB_HandleTypeDef;
-
-
-extern USBH_ClassTypeDef  HUB_Class;
-#define USBH_HUB_CLASS    &HUB_Class
 
 typedef struct __attribute__ ((packed)) _USB_HUB_DESCRIPTOR
 {
@@ -208,5 +144,68 @@ typedef struct __attribute__ ((packed)) _USB_PORT_CHANGE
     };
 
 } USB_PORT_CHANGE;
+
+typedef enum
+{
+	HUB_IDLE= 0,
+	HUB_SYNC,
+	HUB_BUSY,
+	HUB_GET_DATA,
+	HUB_POLL,
+	HUB_LOOP_PORT_CHANGED,
+	HUB_LOOP_PORT_WAIT,
+	HUB_PORT_CHANGED,
+	HUB_C_PORT_CONNECTION,
+	HUB_C_PORT_RESET,
+	HUB_RESET_DEVICE,
+	HUB_DEV_ATTACHED,
+	HUB_DEV_DETACHED,
+	HUB_C_PORT_OVER_CURRENT,
+	HUB_C_PORT_SUSPEND,
+	HUB_ERROR,
+
+} HUB_StateTypeDef;
+
+typedef enum
+{
+	HUB_REQ_IDLE = 0,
+	HUB_REQ_SET_POWER,
+	HUB_WAIT_PWRGOOD,
+	HUB_WAIT_PWRGOOD_DONE,
+	HUB_REQ_DONE
+}
+HUB_CtlStateTypeDef;
+
+/* Structure for HUB process */
+typedef struct _HUB_Process
+{
+  USBH_DeviceTypeDef    devices [MAX_HUB_PORTS];
+  uint8_t              InPipe;
+  HUB_StateTypeDef     state;
+  uint8_t  hubClassRequestPort;
+  uint8_t              InEp;
+  HUB_CtlStateTypeDef  ctl_state;
+  __ALIGN4k_BEGIN uint8_t buffer [20] __ALIGN4k_END;
+  uint16_t             length;
+  uint8_t              ep_addr;
+  uint16_t             poll;
+  uint32_t             timer;
+  uint8_t              DataReady;
+
+  uint8_t address;	// USB bus addres of this hub
+  struct _HUB_Process * parrent;	/* parrent hub of this hub. NULL for root. */
+
+  uint8_t  HUB_NumPorts;	// See bNbrPorts specs
+  uint16_t HUB_PwrGoodDelay;
+
+
+  __IO USB_PORT_CHANGE HUB_Change;
+  __IO uint8_t HUB_CurPort;
+  __IO USB_HUB_PORT_STATUS *HUB_ChangeInfo;
+} HUB_HandleTypeDef;
+
+
+extern USBH_ClassTypeDef  HUB_Class;
+#define USBH_HUB_CLASS    &HUB_Class
 
 #endif	// __USBH_HUB_H

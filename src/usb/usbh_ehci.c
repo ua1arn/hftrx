@@ -705,6 +705,16 @@ void HAL_EHCI_PortEnabled_Callback(EHCI_HandleTypeDef *hehci)
 }
 
 /**
+  * @brief  SOF callback.
+  * @param  hhcd: HCD handle
+  * @retval None
+  */
+void HAL_EHCI_SOF_Callback(EHCI_HandleTypeDef *hhcd)
+{
+  USBH_LL_IncTimer(hhcd->pData);
+}
+
+/**
   * @brief  Handle USB_EHCI interrupt request.
   * @param  hehci USB_EHCI handle
   * @retval None
@@ -779,7 +789,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			else
 			{
 
-//	 			if (hc->ep_is_in)
+//	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
 //	 			{
 //	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
 //	 			}
@@ -811,6 +821,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
  		arm_hardware_invalidate((uintptr_t) & qtds, sizeof qtds);	/* чтобы следующая проверка могла работать */
  		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+
+ 		HAL_EHCI_SOF_Callback(hehci);
  	}
 
  	if ((usbsts & (0x01uL << 1)))	// USB Error Interrupt (USBERRINT)
@@ -864,11 +876,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 3);	// Clear Frame List Rollower interrupt
 // 		PRINTF("HAL_EHCI_IRQHandler: Frame List Rollower\n");
-// 		unsigned i;
-// 		for (i = 0; i < hehci->nports; ++ i)
-// 	 	{
-// 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
-// 	 	}
+
+ 		HAL_EHCI_SOF_Callback(hehci);
  	}
 
  	if ((usbsts & (0x01uL << 4)))	// Host System Error
@@ -1317,6 +1326,19 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 
+			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdoverl, EHCI_FL_PID_IN, 0);
+			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+
+			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
+		}
+		break;
+
+	case EP_TYPE_INTR:
+		{
+			// INTERRUPT Data IN
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: INTERRUPT IN, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
+			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdoverl, EHCI_FL_PID_IN, 0);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);

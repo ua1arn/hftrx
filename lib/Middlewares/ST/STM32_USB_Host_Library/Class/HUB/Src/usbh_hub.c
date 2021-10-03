@@ -37,16 +37,17 @@
 //#include "stm32f4xx_hal.h"
 //#include "stm32f4xx_hal_hcd.h"
 
-static USBH_StatusTypeDef get_hub_descriptor(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef set_hub_port_power(USBH_HandleTypeDef *phost, uint8_t hub_port);
 static USBH_StatusTypeDef hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t dataDirection, uint8_t porta, uint8_t *buffer, uint16_t size);
 static USBH_StatusTypeDef set_hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t port);
 static USBH_StatusTypeDef get_hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t porta, uint8_t *buffer, uint16_t size);
 static USBH_StatusTypeDef clear_port_feature(USBH_HandleTypeDef *phost, uint8_t feature, uint8_t port);
 static USBH_StatusTypeDef set_port_feature(USBH_HandleTypeDef *phost, uint8_t feature, uint8_t port);
-static void clear_port_changed(uint8_t port);
-static uint8_t get_port_changed(void);
-static uint8_t port_changed(uint8_t *b);
+
+static void clear_port_changed(HUB_HandleTypeDef *HUB_Handle, uint8_t port);
+static uint8_t get_port_changed(HUB_HandleTypeDef *HUB_Handle);
+static uint8_t port_changed(HUB_HandleTypeDef *HUB_Handle, const uint8_t *b, unsigned len);
+
 static void detach(USBH_HandleTypeDef *phost, uint16_t idx);
 static void attach(USBH_HandleTypeDef *phost, uint16_t idx, uint8_t lowspeed);
 static void debug_port(uint8_t *buff, __IO USB_HUB_PORT_STATUS *info);
@@ -69,24 +70,14 @@ USBH_ClassTypeDef  HUB_Class =
 	NULL,
 };
 
-static __IO USB_PORT_CHANGE HUB_Change;
-static __IO uint8_t HUB_CurPort = 0;
-static __IO USB_HUB_PORT_STATUS *HUB_ChangeInfo = 0;
-
-static uint8_t  HUB_NumPorts = 0;	// See bNbrPorts specs
-static uint16_t HUB_PwrGoodDelay  = 0;
 
 static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 {
+	USBH_DbgLog ("USBH_HUB_InterfaceInit.");
 	uint8_t interface;
 
 	USBH_StatusTypeDef status = USBH_FAIL ;
 	HUB_HandleTypeDef *HUB_Handle;
-
-	HUB_NumPorts = 0;
-	HUB_PwrGoodDelay = 0;
-	HUB_ChangeInfo = 0;
-	HUB_CurPort = 0;
 
 //	int h = 1;
 //	for(; h < ARRAY_SIZE(hUSBHost); ++h)
@@ -116,7 +107,12 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 
 		HUB_Handle->parrent = NULL;	/* todo: fix for chans */
 
-		HUB_Handle->hubDescState = HUB_GET_DESC_IDLE;
+		HUB_Handle->HUB_NumPorts = 0;
+		HUB_Handle->HUB_PwrGoodDelay = 0;
+
+		HUB_Handle->HUB_ChangeInfo = NULL;
+		HUB_Handle->HUB_CurPort = 0;
+		HUB_Handle->HUB_Change.val = 0;
 
 		USBH_SelectInterface (phost, interface);
 
@@ -176,62 +172,82 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;
-	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas[0];
+	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas [0];
 
-    switch (HUB_Handle->ctl_state)
-    {
-    	case HUB_REQ_IDLE:
-    	case HUB_REQ_GET_DESCRIPTOR:
-    		HUB_Handle->hubClassRequestPort = 1;
-      		if(get_hub_descriptor(phost) == USBH_OK)
-    			HUB_Handle->ctl_state = HUB_REQ_SET_POWER;
-    		break;
+	switch (HUB_Handle->ctl_state)
+	{
+	case HUB_REQ_IDLE:
+		phost->Control.setup.b.bmRequestType = USB_D2H | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_CLASS;
+		phost->Control.setup.b.bRequest = USB_REQ_GET_DESCRIPTOR;
+		phost->Control.setup.b.wValue.bw.msb = 0;
+		phost->Control.setup.b.wValue.bw.lsb = USB_DESCRIPTOR_HUB;
+		phost->Control.setup.b.wIndex.w = 0;
+		phost->Control.setup.b.wLength.w = sizeof(USB_HUB_DESCRIPTOR);
 
-    	case HUB_REQ_SET_POWER:
-    		// Turn on power for each hub port...
-    		if(set_hub_port_power(phost, HUB_Handle->hubClassRequestPort) == USBH_OK)
-    		{
-    			// Reach last port
-    			if(HUB_NumPorts == HUB_Handle->hubClassRequestPort)
-    				HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD;
-    			else
-    				HUB_Handle->hubClassRequestPort ++;
-    		}
-    		break;
+		status = USBH_CtlReq(phost, HUB_Handle->buffer, sizeof(USB_HUB_DESCRIPTOR));
+		if (status == USBH_OK)
+		{
+			USB_HUB_DESCRIPTOR *HUB_Desc = (USB_HUB_DESCRIPTOR*) HUB_Handle->buffer;
+			HUB_Handle->HUB_NumPorts = (HUB_Desc->bNbrPorts > MAX_HUB_PORTS) ? MAX_HUB_PORTS : HUB_Desc->bNbrPorts;
+			HUB_Handle->HUB_PwrGoodDelay = (HUB_Desc->bPwrOn2PwrGood * 2);
+			USBH_UsrLog("USBH_HUB_ClassRequest: HUB_NumPorts=%d, HUB_PwrGoodDelay=%d", HUB_Handle->HUB_NumPorts, HUB_Handle->HUB_PwrGoodDelay);
 
-    	case HUB_WAIT_PWRGOOD:
-    		// todo: переделать на неблокирующее выполненеие задержки
-    		USBH_UsrLog("HUB_WAIT_PWRGOOD %u ms", HUB_PwrGoodDelay);
-    		USBH_Delay(HUB_PwrGoodDelay);
-    		HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD_DONE;
-    		break;
+			HUB_Handle->hubClassRequestPort = 1;
+			HUB_Handle->ctl_state = HUB_REQ_SET_POWER;
+			status = USBH_BUSY;
+		}
+		break;
 
-    	case HUB_WAIT_PWRGOOD_DONE:
-    		HUB_Handle->ctl_state = HUB_REQ_DONE;
-    		break;
+	case HUB_REQ_SET_POWER:
+		// Turn on power for each hub port...
+		status = set_hub_port_power(phost, HUB_Handle->hubClassRequestPort);
+		if (status == USBH_OK)
+		{
+			// Reach last port
+			if (HUB_Handle->HUB_NumPorts <= HUB_Handle->hubClassRequestPort)
+				HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD;
+			else
+				HUB_Handle->hubClassRequestPort ++;
+			status = USBH_BUSY;
+		}
+		break;
 
-    	case HUB_REQ_DONE:
-    		//phost->hubBusy = 0;
-    		USBH_UsrLog("%d HUB PORTS ENABLED", HUB_NumPorts);
-    		USBH_UsrLog("=============================================");
-    		status = USBH_OK;
-    		HUB_Handle->ctl_state = HUB_REQ_IDLE;
-    		break;
-    }
+	case HUB_WAIT_PWRGOOD:
+		// todo: переделать на неблокирующее выполненеие задержки
+		//USBH_UsrLog("HUB_WAIT_PWRGOOD %u ms", HUB_Handle->HUB_PwrGoodDelay);
+		USBH_Delay(HUB_Handle->HUB_PwrGoodDelay);
+		HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD_DONE;
+		status = USBH_BUSY;
+		break;
 
-    return status;
+	case HUB_WAIT_PWRGOOD_DONE:
+		HUB_Handle->ctl_state = HUB_REQ_DONE;
+		status = USBH_BUSY;
+		break;
+
+	case HUB_REQ_DONE:
+		//phost->hubBusy = 0;
+		USBH_UsrLog("USBH_HUB_ClassRequest done: HUB_NumPorts=%d, HUB_PwrGoodDelay=%d", HUB_Handle->HUB_NumPorts, HUB_Handle->HUB_PwrGoodDelay);
+		USBH_UsrLog("=============================================");
+		HUB_Handle->ctl_state = HUB_REQ_IDLE;
+		status = USBH_OK;
+		break;
+	}
+
+	return status;
 }
 
 
 static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 {
-	USBH_StatusTypeDef status = USBH_OK;
+	USBH_StatusTypeDef status = USBH_BUSY;	/* не требуется, о по стилб = чтобы продолжались вызовы */
 	HUB_HandleTypeDef *HUB_Handle =  (HUB_HandleTypeDef *)phost->hubDatas[0];
+	ASSERT(HUB_Handle != NULL);
 
     switch (HUB_Handle->state)
     {
      	case HUB_IDLE:
-     		HUB_CurPort = 0;
+     		HUB_Handle->HUB_CurPort = 0;
      		HUB_Handle->state = HUB_SYNC;
      		break;
 
@@ -247,48 +263,52 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 //			if(hUSBHost[1].busy)
 //				break;
 
-    	    USBH_InterruptReceiveData(phost, HUB_Handle->buffer, HUB_Handle->length, HUB_Handle->InPipe);
+    	    (void) USBH_InterruptReceiveData(phost, HUB_Handle->buffer, HUB_Handle->length, HUB_Handle->InPipe);
     	    HUB_Handle->state = HUB_POLL;
     	    HUB_Handle->timer = phost->Timer;
     	    HUB_Handle->DataReady = 0;
     		break;
 
     	case HUB_POLL:
-    	    if(USBH_LL_GetURBState(phost, HUB_Handle->InPipe) == USBH_URB_DONE)
-    	    {
-//LOG1("^");
-    	    	if(HUB_Handle->DataReady == 0)
-    	    	{
-    	    		HUB_Handle->DataReady = 1;
-    	    		if(port_changed(HUB_Handle->buffer))
-    		        	HUB_Handle->state = HUB_LOOP_PORT_CHANGED;
-    		        else
-    		        	HUB_Handle->state = HUB_GET_DATA;
-    	    	}
-    	    }
-    		else if(USBH_LL_GetURBState(phost , HUB_Handle->InPipe) == USBH_URB_STALL) /* IN Endpoint Stalled */
-    		{
-    			// Issue Clear Feature on interrupt IN endpoint
-    			if( (USBH_ClrFeature(phost, HUB_Handle->ep_addr)) == USBH_OK)
-    			{
-    				// Change state to issue next IN token
-    				HUB_Handle->state = HUB_GET_DATA;
-    			}
-    		}
-    		else if(USBH_LL_GetURBState(phost , HUB_Handle->InPipe) == USBH_URB_ERROR)
-    		{
-//LOG1("=");
-    		}
+			{
+	    		const USBH_URBStateTypeDef urbState = USBH_LL_GetURBState(phost, HUB_Handle->InPipe);
+	    	    if (urbState == USBH_URB_DONE)
+	    	    {
+	    			USBH_UsrLog("USBH_HUB_Process: HUB_POLL, HUB_CurPort=%d, answer=%02X,%02X (len=%d)", (int) HUB_Handle->HUB_CurPort, HUB_Handle->buffer [0], HUB_Handle->buffer [1], HUB_Handle->length);
+	    	    	if(HUB_Handle->DataReady == 0)
+	    	    	{
+	    	    		HUB_Handle->DataReady = 1;
+	    	    		if (port_changed(HUB_Handle, HUB_Handle->buffer, HUB_Handle->length))
+	    		        	HUB_Handle->state = HUB_LOOP_PORT_CHANGED;
+	    		        else
+	    		        	HUB_Handle->state = HUB_GET_DATA;
+	    	    	}
+	    	    }
+	    		else if (urbState == USBH_URB_STALL) /* IN Endpoint Stalled */
+	    		{
+	    			// Issue Clear Feature on interrupt IN endpoint
+	    			if( (USBH_ClrFeature(phost, HUB_Handle->ep_addr)) == USBH_OK)
+	    			{
+	    				// Change state to issue next IN token
+	    				HUB_Handle->state = HUB_GET_DATA;
+	    			}
+	    		}
+	    		else if(urbState == USBH_URB_ERROR)
+	    		{
+	//LOG1("=");
+	    		}
+
+			}
     		break;
 
     	case HUB_LOOP_PORT_CHANGED:
-        	HUB_CurPort = get_port_changed();
-        	if(HUB_CurPort > 0)
+    		HUB_Handle->HUB_CurPort = get_port_changed(HUB_Handle);
+        	if (HUB_Handle->HUB_CurPort > 0)
         	{
 //USBH_UsrLog("HUB_CurPort %d", HUB_CurPort);
 
 //phost->hubBusy = 1;
-				clear_port_changed(HUB_CurPort);
+				clear_port_changed(HUB_Handle, HUB_Handle->HUB_CurPort);
         		HUB_Handle->state = HUB_PORT_CHANGED;
         	}
         	else
@@ -299,44 +319,44 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
     	case HUB_PORT_CHANGED:
 
     		// uses EP0
-    		if(get_hub_request(phost, USB_REQUEST_GET_STATUS, HUB_FEAT_SEL_PORT_CONN, HUB_CurPort, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS)) == USBH_OK)
+    		if (get_hub_request(phost, USB_REQUEST_GET_STATUS, HUB_FEAT_SEL_PORT_CONN, HUB_Handle->HUB_CurPort, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS)) == USBH_OK)
     		{
-    			HUB_ChangeInfo = (USB_HUB_PORT_STATUS *)HUB_Handle->buffer;
+    			HUB_Handle->HUB_ChangeInfo = (USB_HUB_PORT_STATUS *)HUB_Handle->buffer;
 
-debug_port(HUB_Handle->buffer, HUB_ChangeInfo);
+    			debug_port(HUB_Handle->buffer, HUB_Handle->HUB_ChangeInfo);
 
-                if(HUB_ChangeInfo->wPortStatus.PORT_POWER)
+                if (HUB_Handle->HUB_ChangeInfo->wPortStatus.PORT_POWER)
                 {
-					if(HUB_ChangeInfo->wPortChange.C_PORT_OVER_CURRENT)
+					if (HUB_Handle->HUB_ChangeInfo->wPortChange.C_PORT_OVER_CURRENT)
 					{
 						HUB_Handle->state = HUB_C_PORT_OVER_CURRENT;
 						break;
 					}
 
-					if(HUB_ChangeInfo->wPortChange.C_PORT_SUSPEND)
+					if (HUB_Handle->HUB_ChangeInfo->wPortChange.C_PORT_SUSPEND)
 					{
 						HUB_Handle->state = HUB_C_PORT_SUSPEND;
 						break;
 					}
 
 
-                    if(HUB_ChangeInfo->wPortChange.C_PORT_CONNECTION)
+                    if (HUB_Handle->HUB_ChangeInfo->wPortChange.C_PORT_CONNECTION)
                     {
                     	HUB_Handle->state = HUB_C_PORT_CONNECTION;
                     }
                     else
                     {
-                    	if(HUB_ChangeInfo->wPortStatus.PORT_CONNECTION)
+                    	if (HUB_Handle->HUB_ChangeInfo->wPortStatus.PORT_CONNECTION)
                     	{
-                    		if(HUB_ChangeInfo->wPortStatus.PORT_RESET)
+                    		if (HUB_Handle->HUB_ChangeInfo->wPortStatus.PORT_RESET)
                     		{
                     			HUB_Handle->state = HUB_PORT_CHANGED;
                     		}
-							else if(HUB_ChangeInfo->wPortChange.C_PORT_RESET)
+							else if (HUB_Handle->HUB_ChangeInfo->wPortChange.C_PORT_RESET)
 							{
 								HUB_Handle->state = HUB_C_PORT_RESET;
 							}
-							else if(HUB_ChangeInfo->wPortStatus.PORT_ENABLE)
+							else if (HUB_Handle->HUB_ChangeInfo->wPortStatus.PORT_ENABLE)
 							{
 								// Device Attached
 /*								if(HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED)
@@ -363,7 +383,7 @@ debug_port(HUB_Handle->buffer, HUB_ChangeInfo);
     		break;
 
     	case HUB_C_PORT_SUSPEND:
-    		if(clear_port_feature(phost, HUB_FEAT_SEL_C_PORT_SUSPEND, HUB_CurPort) == USBH_OK)
+    		if(clear_port_feature(phost, HUB_FEAT_SEL_C_PORT_SUSPEND, HUB_Handle->HUB_CurPort) == USBH_OK)
             {
             	HUB_Handle->state = HUB_PORT_CHANGED;
             }
@@ -371,28 +391,28 @@ debug_port(HUB_Handle->buffer, HUB_ChangeInfo);
     		break;
 
     	case HUB_C_PORT_OVER_CURRENT:
-            if(clear_port_feature(phost, HUB_FEAT_SEL_C_PORT_OVER_CURRENT, HUB_CurPort) == USBH_OK)
+            if(clear_port_feature(phost, HUB_FEAT_SEL_C_PORT_OVER_CURRENT, HUB_Handle->HUB_CurPort) == USBH_OK)
             {
             	HUB_Handle->state = HUB_PORT_CHANGED;
             }
             break;
 
     	case HUB_C_PORT_CONNECTION:
-            if(clear_port_feature(phost, HUB_FEAT_SEL_C_PORT_CONNECTION, HUB_CurPort) == USBH_OK)
+            if(clear_port_feature(phost, HUB_FEAT_SEL_C_PORT_CONNECTION, HUB_Handle->HUB_CurPort) == USBH_OK)
             {
             	HUB_Handle->state = HUB_PORT_CHANGED;
             }
     		break;
 
     	case HUB_C_PORT_RESET:
-            if(clear_port_feature(phost, HUB_FEAT_SEL_C_PORT_RESET, HUB_CurPort) == USBH_OK)
+            if(clear_port_feature(phost, HUB_FEAT_SEL_C_PORT_RESET, HUB_Handle->HUB_CurPort) == USBH_OK)
             {
             	HUB_Handle->state = HUB_PORT_CHANGED;
             }
     		break;
 
     	case HUB_RESET_DEVICE:
-            if(set_port_feature(phost, HUB_FEAT_SEL_PORT_RESET, HUB_CurPort) == USBH_OK)
+            if(set_port_feature(phost, HUB_FEAT_SEL_PORT_RESET, HUB_Handle->HUB_CurPort) == USBH_OK)
             {
             	USBH_Delay(150);
             	HUB_Handle->state = HUB_PORT_CHANGED;
@@ -400,18 +420,18 @@ debug_port(HUB_Handle->buffer, HUB_ChangeInfo);
     		break;
 
     	case HUB_DEV_ATTACHED:
-    		USBH_UsrLog("HUB_DEV_ATTACHED %d, lowspeed? %d", HUB_CurPort, HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED);
+    		USBH_UsrLog("HUB_DEV_ATTACHED %d, lowspeed? %d", HUB_Handle->HUB_CurPort, HUB_Handle->HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED);
 
 			HUB_Handle->state = HUB_LOOP_PORT_WAIT;
-			attach(phost, HUB_CurPort, HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED);
+			attach(phost, HUB_Handle->HUB_CurPort, HUB_Handle->HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED);
 			//phost->hubBusy = 0;
     		break;
 
     	case HUB_DEV_DETACHED:
-    		USBH_UsrLog("HUB_DEV_DETACHED %d", HUB_CurPort);
+    		USBH_UsrLog("HUB_DEV_DETACHED %d", HUB_Handle->HUB_CurPort);
 
 			HUB_Handle->state = HUB_LOOP_PORT_WAIT;
-			detach(phost, HUB_CurPort);
+			detach(phost, HUB_Handle->HUB_CurPort);
 			//phost->hubBusy = 0;
     		break;
 
@@ -450,41 +470,6 @@ return USBH_OK;
 	}
 
 	return USBH_OK;
-}
-
-static USBH_StatusTypeDef get_hub_descriptor(USBH_HandleTypeDef *phost)
-{
-	USBH_StatusTypeDef status = USBH_BUSY;
-	static  HUB_GetDescriptorStateTypeDef hubDescState = HUB_GET_DESC_IDLE;
-	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas [0];
-	ASSERT(HUB_Handle != NULL);
-
-	switch (/*HUB_Handle->*/hubDescState)
-	{
-	case HUB_GET_DESC_IDLE:
-		phost->Control.setup.b.bmRequestType = USB_D2H|USB_REQ_RECIPIENT_DEVICE|USB_REQ_TYPE_CLASS;
-		phost->Control.setup.b.bRequest  	 = USB_REQ_GET_DESCRIPTOR;
-		phost->Control.setup.b.wValue.bw.msb = 0;
-		phost->Control.setup.b.wValue.bw.lsb = USB_DESCRIPTOR_HUB;
-		phost->Control.setup.b.wIndex.w  	 = 0;
-		phost->Control.setup.b.wLength.w 	 = sizeof (USB_HUB_DESCRIPTOR);
-
-		if (USBH_CtlReq(phost, HUB_Handle->buffer, sizeof (USB_HUB_DESCRIPTOR)) == USBH_OK)
-			/*HUB_Handle->*/hubDescState = HUB_GET_DESC_WAIT;
-		break;
-
-	case HUB_GET_DESC_WAIT:
-		{
-			USB_HUB_DESCRIPTOR  *HUB_Desc = (USB_HUB_DESCRIPTOR *) HUB_Handle->buffer;
-			HUB_NumPorts = (HUB_Desc->bNbrPorts > MAX_HUB_PORTS) ? MAX_HUB_PORTS : HUB_Desc->bNbrPorts;
-			HUB_PwrGoodDelay  = (HUB_Desc->bPwrOn2PwrGood * 2);
-			/*HUB_Handle->*/hubDescState = HUB_GET_DESC_IDLE;
-			status = USBH_OK;
-		}
-		break;
-	}
-
-	return status;
 }
 
 static USBH_StatusTypeDef hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t dataDirection, uint8_t porta, uint8_t *buffer, uint16_t size)
@@ -531,44 +516,104 @@ static USBH_StatusTypeDef set_port_feature(USBH_HandleTypeDef *phost, uint8_t fe
     return set_hub_request(phost, USB_REQUEST_SET_FEATURE, feature, port);
 }
 
-static void clear_port_changed(uint8_t port)
+static void clear_port_changed(HUB_HandleTypeDef *HUB_Handle, uint8_t port)
 {
-	switch(port)
+	switch (port)
 	{
-		case 1:	HUB_Change.bPorts.PORT_1 = 0; break;
-		case 2: HUB_Change.bPorts.PORT_2 = 0; break;
-		case 3: HUB_Change.bPorts.PORT_3 = 0; break;
-		case 4: HUB_Change.bPorts.PORT_4 = 0; break;
+	case 1:
+		HUB_Handle->HUB_Change.bPorts.PORT_1 = 0;
+		break;
+	case 2:
+		HUB_Handle->HUB_Change.bPorts.PORT_2 = 0;
+		break;
+	case 3:
+		HUB_Handle->HUB_Change.bPorts.PORT_3 = 0;
+		break;
+	case 4:
+		HUB_Handle->HUB_Change.bPorts.PORT_4 = 0;
+		break;
+	case 5:
+		HUB_Handle->HUB_Change.bPorts.PORT_5 = 0;
+		break;
+	case 6:
+		HUB_Handle->HUB_Change.bPorts.PORT_6 = 0;
+		break;
+	case 7:
+		HUB_Handle->HUB_Change.bPorts.PORT_7 = 0;
+		break;
+	case 8:
+		HUB_Handle->HUB_Change.bPorts.PORT_8 = 0;
+		break;
 	}
 }
 
-static uint8_t get_port_changed()
+static uint8_t get_port_changed(HUB_HandleTypeDef *HUB_Handle)
 {
-	if(HUB_Change.bPorts.PORT_1)	return 1;
-	if(HUB_Change.bPorts.PORT_2)	return 2;
-	if(HUB_Change.bPorts.PORT_3)	return 3;
-	if(HUB_Change.bPorts.PORT_4)	return 4;
+	if (HUB_Handle->HUB_Change.bPorts.PORT_1)
+		return 1;
+	if (HUB_Handle->HUB_Change.bPorts.PORT_2)
+		return 2;
+	if (HUB_Handle->HUB_Change.bPorts.PORT_3)
+		return 3;
+	if (HUB_Handle->HUB_Change.bPorts.PORT_4)
+		return 4;
+	if (HUB_Handle->HUB_Change.bPorts.PORT_5)
+		return 5;
+	if (HUB_Handle->HUB_Change.bPorts.PORT_6)
+		return 6;
+	if (HUB_Handle->HUB_Change.bPorts.PORT_7)
+		return 7;
+	if (HUB_Handle->HUB_Change.bPorts.PORT_8)
+		return 8;
 
 	return 0;
 }
 
-static uint8_t port_changed(uint8_t *b)
+static uint8_t port_changed(HUB_HandleTypeDef *HUB_Handle, const uint8_t *b, unsigned len)
 {
-    if(b[0] != 0x00)
-    {
-    	HUB_Change.val = 0x00;
+	HUB_Handle->HUB_Change.val = 0x00;
+	if (b [0] != 0x00)
+	{
 
-        if(b[0] & (1<<1)) { HUB_Change.bPorts.PORT_1 = 1; }
-        if(b[0] & (1<<2)) { HUB_Change.bPorts.PORT_2 = 1; }
-        if(b[0] & (1<<3)) { HUB_Change.bPorts.PORT_3 = 1; }
-        if(b[0] & (1<<4)) { HUB_Change.bPorts.PORT_4 = 1; }
+		if (b [0] & (0x01 << 1))
+		{
+			HUB_Handle->HUB_Change.bPorts.PORT_1 = 1;
+		}
+		if (b [0] & (0x01 << 2))
+		{
+			HUB_Handle->HUB_Change.bPorts.PORT_2 = 1;
+		}
+		if (b [0] & (0x01 << 3))
+		{
+			HUB_Handle->HUB_Change.bPorts.PORT_3 = 1;
+		}
+		if (b [0] & (0x01 << 4))
+		{
+			HUB_Handle->HUB_Change.bPorts.PORT_4 = 1;
+		}
+		if (b [0] & (0x01 << 5))
+		{
+			HUB_Handle->HUB_Change.bPorts.PORT_5 = 1;
+		}
+		if (b [0] & (0x01 << 6))
+		{
+			HUB_Handle->HUB_Change.bPorts.PORT_6 = 1;
+		}
+		if (b [0] & (0x01 << 7))
+		{
+			HUB_Handle->HUB_Change.bPorts.PORT_7 = 1;
+		}
 
-//USBH_UsrLog("PORT STATUS CHANGE [0x%02X] [%d %d %d %d]", b[0], HUB_Change.bPorts.PORT_1, HUB_Change.bPorts.PORT_2, HUB_Change.bPorts.PORT_3, HUB_Change.bPorts.PORT_4);
+		USBH_UsrLog("PORT STATUS CHANGE [0x%02X] [%d %d %d %d]",
+				b [0],
+				HUB_Handle->HUB_Change.bPorts.PORT_1,
+				HUB_Handle->HUB_Change.bPorts.PORT_2,
+				HUB_Handle->HUB_Change.bPorts.PORT_3,
+				HUB_Handle->HUB_Change.bPorts.PORT_4
+				);
 
-        return HUB_Change.val > 0;
-    }
-
-    return 0;
+	}
+	return HUB_Handle->HUB_Change.val > 0;
 }
 
 void detach(USBH_HandleTypeDef *_phost, uint16_t idx)
