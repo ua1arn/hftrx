@@ -27,7 +27,7 @@ void Error_Handler(void);
 
 #if defined (WITHUSBHW_EHCI)
 	/* USB Host Core handle declaration. */
-	RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
+	RAMBIGDTCM USBH_HandleTypeDef hUsbHostHS;
 
 	// MORI
 //	USBH_HandleTypeDef hUSBHost[5];
@@ -36,7 +36,7 @@ void Error_Handler(void);
 
 	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
-	static RAMBIGDTCM __ALIGN_BEGIN EHCI_HandleTypeDef hehci_USB __ALIGN_END;
+	static RAMBIGDTCM EHCI_HandleTypeDef hehci_USB;
 
 #endif /* defined (WITHUSBHW_HOST) */
 
