@@ -21188,6 +21188,9 @@ static void hamradio_main_initialize(void)
 #if WITHUSEAUDIOREC
 	sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
+#if WITHUSBHW
+	board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */

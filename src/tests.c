@@ -7249,7 +7249,9 @@ void hightests(void)
 	#if WITHUSBHW
 			board_usbh_polling();     // usb device polling
 	#endif /* WITHUSBHW */
+	#if WITHUSEAUDIOREC
 			sdcardbgprocess();
+	#endif /* WITHUSEAUDIOREC */
 			local_delay_ms(5);
 		}
 		PRINTF("Storage device ready\n");
@@ -7259,7 +7261,9 @@ void hightests(void)
 	#if WITHUSBHW
 			board_usbh_polling();     // usb device polling
 	#endif /* WITHUSBHW */
+	#if WITHUSEAUDIOREC
 			sdcardbgprocess();
+	#endif /* WITHUSEAUDIOREC */
 			local_delay_ms(5);
 		}
 		static ticker_t test_recordticker;
@@ -7292,7 +7296,9 @@ void hightests(void)
 		#if WITHUSBHW
 				board_usbh_polling();     // usb device polling
 		#endif /* WITHUSBHW */
+		#if WITHUSEAUDIOREC
 				sdcardbgprocess();
+		#endif /* WITHUSEAUDIOREC */
 				//local_delay_ms(5);
 			}
 		}
