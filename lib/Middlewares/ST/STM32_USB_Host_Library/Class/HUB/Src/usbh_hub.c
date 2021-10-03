@@ -37,7 +37,6 @@
 //#include "stm32f4xx_hal.h"
 //#include "stm32f4xx_hal_hcd.h"
 
-static USBH_StatusTypeDef get_hub_descriptor(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef set_hub_port_power(USBH_HandleTypeDef *phost, uint8_t hub_port);
 static USBH_StatusTypeDef hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t dataDirection, uint8_t porta, uint8_t *buffer, uint16_t size);
 static USBH_StatusTypeDef set_hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t port);
@@ -73,20 +72,14 @@ static __IO USB_PORT_CHANGE HUB_Change;
 static __IO uint8_t HUB_CurPort = 0;
 static __IO USB_HUB_PORT_STATUS *HUB_ChangeInfo = 0;
 
-static uint8_t  HUB_NumPorts = 0;	// See bNbrPorts specs
-static uint16_t HUB_PwrGoodDelay  = 0;
 
 static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 {
+	USBH_DbgLog ("USBH_HUB_InterfaceInit.");
 	uint8_t interface;
 
 	USBH_StatusTypeDef status = USBH_FAIL ;
 	HUB_HandleTypeDef *HUB_Handle;
-
-	HUB_NumPorts = 0;
-	HUB_PwrGoodDelay = 0;
-	HUB_ChangeInfo = 0;
-	HUB_CurPort = 0;
 
 //	int h = 1;
 //	for(; h < ARRAY_SIZE(hUSBHost); ++h)
@@ -116,7 +109,10 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 
 		HUB_Handle->parrent = NULL;	/* todo: fix for chans */
 
-		HUB_Handle->hubDescState = HUB_GET_DESC_IDLE;
+		HUB_Handle->HUB_NumPorts = 0;
+		HUB_Handle->HUB_PwrGoodDelay = 0;
+		HUB_ChangeInfo = 0;
+		HUB_CurPort = 0;
 
 		USBH_SelectInterface (phost, interface);
 
@@ -176,50 +172,69 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;
-	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas[0];
+	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas [0];
 
-    switch (HUB_Handle->ctl_state)
-    {
-    	case HUB_REQ_IDLE:
-    	case HUB_REQ_GET_DESCRIPTOR:
-    		HUB_Handle->hubClassRequestPort = 1;
-      		if(get_hub_descriptor(phost) == USBH_OK)
-    			HUB_Handle->ctl_state = HUB_REQ_SET_POWER;
-    		break;
+	switch (HUB_Handle->ctl_state)
+	{
+	case HUB_REQ_IDLE:
+		phost->Control.setup.b.bmRequestType = USB_D2H | USB_REQ_RECIPIENT_DEVICE | USB_REQ_TYPE_CLASS;
+		phost->Control.setup.b.bRequest = USB_REQ_GET_DESCRIPTOR;
+		phost->Control.setup.b.wValue.bw.msb = 0;
+		phost->Control.setup.b.wValue.bw.lsb = USB_DESCRIPTOR_HUB;
+		phost->Control.setup.b.wIndex.w = 0;
+		phost->Control.setup.b.wLength.w = sizeof(USB_HUB_DESCRIPTOR);
 
-    	case HUB_REQ_SET_POWER:
-    		// Turn on power for each hub port...
-    		if(set_hub_port_power(phost, HUB_Handle->hubClassRequestPort) == USBH_OK)
-    		{
-    			// Reach last port
-    			if(HUB_NumPorts == HUB_Handle->hubClassRequestPort)
-    				HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD;
-    			else
-    				HUB_Handle->hubClassRequestPort ++;
-    		}
-    		break;
+		status = USBH_CtlReq(phost, HUB_Handle->buffer, sizeof(USB_HUB_DESCRIPTOR));
+		if (status == USBH_OK)
+		{
+			USB_HUB_DESCRIPTOR *HUB_Desc = (USB_HUB_DESCRIPTOR*) HUB_Handle->buffer;
+			HUB_Handle->HUB_NumPorts = (HUB_Desc->bNbrPorts > MAX_HUB_PORTS) ? MAX_HUB_PORTS : HUB_Desc->bNbrPorts;
+			HUB_Handle->HUB_PwrGoodDelay = (HUB_Desc->bPwrOn2PwrGood * 2);
+			USBH_UsrLog("USBH_HUB_ClassRequest: HUB_NumPorts=%d, HUB_PwrGoodDelay=%d", HUB_Handle->HUB_NumPorts, HUB_Handle->HUB_PwrGoodDelay);
 
-    	case HUB_WAIT_PWRGOOD:
-    		// todo: переделать на неблокирующее выполненеие задержки
-    		USBH_UsrLog("HUB_WAIT_PWRGOOD %u ms", HUB_PwrGoodDelay);
-    		USBH_Delay(HUB_PwrGoodDelay);
-    		HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD_DONE;
-    		break;
+			HUB_Handle->hubClassRequestPort = 1;
+			HUB_Handle->ctl_state = HUB_REQ_SET_POWER;
+			status = USBH_BUSY;
+		}
+		break;
 
-    	case HUB_WAIT_PWRGOOD_DONE:
-    		HUB_Handle->ctl_state = HUB_REQ_DONE;
-    		break;
+	case HUB_REQ_SET_POWER:
+		// Turn on power for each hub port...
+		status = set_hub_port_power(phost, HUB_Handle->hubClassRequestPort);
+		if (status == USBH_OK)
+		{
+			// Reach last port
+			if (HUB_Handle->HUB_NumPorts <= HUB_Handle->hubClassRequestPort)
+				HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD;
+			else
+				HUB_Handle->hubClassRequestPort ++;
+			status = USBH_BUSY;
+		}
+		break;
 
-    	case HUB_REQ_DONE:
-    		//phost->hubBusy = 0;
-    		USBH_UsrLog("%d HUB PORTS ENABLED", HUB_NumPorts);
-    		USBH_UsrLog("=============================================");
-    		status = USBH_OK;
-    		HUB_Handle->ctl_state = HUB_REQ_IDLE;
-    		break;
-    }
+	case HUB_WAIT_PWRGOOD:
+		// todo: переделать на неблокирующее выполненеие задержки
+		//USBH_UsrLog("HUB_WAIT_PWRGOOD %u ms", HUB_Handle->HUB_PwrGoodDelay);
+		USBH_Delay(HUB_Handle->HUB_PwrGoodDelay);
+		HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD_DONE;
+		status = USBH_BUSY;
+		break;
 
-    return status;
+	case HUB_WAIT_PWRGOOD_DONE:
+		HUB_Handle->ctl_state = HUB_REQ_DONE;
+		status = USBH_BUSY;
+		break;
+
+	case HUB_REQ_DONE:
+		//phost->hubBusy = 0;
+		USBH_UsrLog("USBH_HUB_ClassRequest done: HUB_NumPorts=%d, HUB_PwrGoodDelay=%d", HUB_Handle->HUB_NumPorts, HUB_Handle->HUB_PwrGoodDelay);
+		USBH_UsrLog("=============================================");
+		HUB_Handle->ctl_state = HUB_REQ_IDLE;
+		status = USBH_OK;
+		break;
+	}
+
+	return status;
 }
 
 
@@ -450,41 +465,6 @@ return USBH_OK;
 	}
 
 	return USBH_OK;
-}
-
-static USBH_StatusTypeDef get_hub_descriptor(USBH_HandleTypeDef *phost)
-{
-	USBH_StatusTypeDef status = USBH_BUSY;
-	static  HUB_GetDescriptorStateTypeDef hubDescState = HUB_GET_DESC_IDLE;
-	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas [0];
-	ASSERT(HUB_Handle != NULL);
-
-	switch (/*HUB_Handle->*/hubDescState)
-	{
-	case HUB_GET_DESC_IDLE:
-		phost->Control.setup.b.bmRequestType = USB_D2H|USB_REQ_RECIPIENT_DEVICE|USB_REQ_TYPE_CLASS;
-		phost->Control.setup.b.bRequest  	 = USB_REQ_GET_DESCRIPTOR;
-		phost->Control.setup.b.wValue.bw.msb = 0;
-		phost->Control.setup.b.wValue.bw.lsb = USB_DESCRIPTOR_HUB;
-		phost->Control.setup.b.wIndex.w  	 = 0;
-		phost->Control.setup.b.wLength.w 	 = sizeof (USB_HUB_DESCRIPTOR);
-
-		if (USBH_CtlReq(phost, HUB_Handle->buffer, sizeof (USB_HUB_DESCRIPTOR)) == USBH_OK)
-			/*HUB_Handle->*/hubDescState = HUB_GET_DESC_WAIT;
-		break;
-
-	case HUB_GET_DESC_WAIT:
-		{
-			USB_HUB_DESCRIPTOR  *HUB_Desc = (USB_HUB_DESCRIPTOR *) HUB_Handle->buffer;
-			HUB_NumPorts = (HUB_Desc->bNbrPorts > MAX_HUB_PORTS) ? MAX_HUB_PORTS : HUB_Desc->bNbrPorts;
-			HUB_PwrGoodDelay  = (HUB_Desc->bPwrOn2PwrGood * 2);
-			/*HUB_Handle->*/hubDescState = HUB_GET_DESC_IDLE;
-			status = USBH_OK;
-		}
-		break;
-	}
-
-	return status;
 }
 
 static USBH_StatusTypeDef hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t dataDirection, uint8_t porta, uint8_t *buffer, uint16_t size)
