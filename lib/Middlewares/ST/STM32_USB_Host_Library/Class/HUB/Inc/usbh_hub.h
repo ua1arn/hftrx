@@ -111,6 +111,9 @@ typedef struct _HUB_Process
   uint32_t             timer;
   uint8_t              DataReady;
 
+  uint8_t address;	// USB bus addres of this hub
+  struct _HUB_Process * parrent;	/* parrent hub of this hub. NULL for root. */
+
 } HUB_HandleTypeDef;
 
 

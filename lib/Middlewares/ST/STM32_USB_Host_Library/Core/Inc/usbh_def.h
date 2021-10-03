@@ -510,13 +510,14 @@ typedef struct _USBH_HandleTypeDef
   CMD_StateTypeDef      RequestState;
   USBH_CtrlTypeDef      Control;
   USBH_DeviceTypeDef    device;
-  USBH_ClassTypeDef    *pClass[USBH_MAX_NUM_SUPPORTED_CLASS];
+
   USBH_ClassTypeDef    *pActiveClass;
-  uint32_t              ClassNumber;
+  uint32_t              ClassNumber;	/* number of registered classes */
+  USBH_ClassTypeDef    *pClass[USBH_MAX_NUM_SUPPORTED_CLASS];
+
   uint32_t              Pipes[16];
   __IO uint32_t         Timer;
   uint32_t              Timeout;
-  uint8_t               id;
   void                 *pData;
   void (* pUser)(struct _USBH_HandleTypeDef *pHandle, uint8_t id);
 
@@ -531,10 +532,11 @@ typedef struct _USBH_HandleTypeDef
   uint32_t              os_msg;
 #endif
 
-    uint8_t hubInterfaces;
-    void*   hubUSBH_ClassTypeDef_pData [USBH_MAX_NUM_INTERFACES];
-    uint8_t hubAddress [USBH_MAX_NUM_INTERFACES];
+    uint8_t hubInstances;
+    void *   hubDatas [USBH_MAX_NUM_INTERFACES];
 
+    void * hubCurrentData;	/** Currently enumeratuion on this HUB */
+    uint8_t hubCurrentPort;	/** Currently enumeratuion on this HUB's port */
 } USBH_HandleTypeDef;
 
 

@@ -101,18 +101,20 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 		status = USBH_FAIL;
 		USBH_DbgLog ("Cannot Find the interface for %s class.", phost->pActiveClass->Name);
 	}
-	if (phost->hubInterfaces >= USBH_MAX_NUM_INTERFACES)
+	if (phost->hubInstances >= USBH_MAX_NUM_INTERFACES)
 	{
 		status = USBH_FAIL;
 		USBH_DbgLog ("Too many hubs in chain.");
 	}
 	else
 	{
-		phost->hubUSBH_ClassTypeDef_pData [phost->hubInterfaces] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
-		HUB_Handle = phost->hubUSBH_ClassTypeDef_pData [phost->hubInterfaces];
-		phost->hubInterfaces += 1;
+		phost->hubDatas [phost->hubInstances] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
+		HUB_Handle = phost->hubDatas [phost->hubInstances];
+		phost->hubInstances += 1;
 
 		USBH_memset(HUB_Handle, 0, sizeof (HUB_HandleTypeDef));
+
+		HUB_Handle->parrent = NULL;	/* todo: fix for chans */
 
 		USBH_SelectInterface (phost, interface);
 
@@ -153,7 +155,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 	USBH_UsrLog("USBH_HUB_InterfaceDeInit");
 	//USBH_UsrLog("USBH_HUB_InterfaceDeInit %d", (int) phost->hubAddress [0]);
 
-	HUB_HandleTypeDef *HUB_Handle = phost->hubUSBH_ClassTypeDef_pData [hubIX];
+	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas [hubIX];
 
 	if(HUB_Handle->InPipe != 0x00)
 	{
@@ -162,8 +164,8 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 		HUB_Handle->InPipe = 0;     // Reset the pipe as Free
 	}
 
-	if(phost->hubUSBH_ClassTypeDef_pData[hubIX])
-		USBH_free (phost->hubUSBH_ClassTypeDef_pData[hubIX]);
+	if(phost->hubDatas[hubIX])
+		USBH_free (phost->hubDatas[hubIX]);
 
 	return USBH_OK;
 }
@@ -172,7 +174,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;
-	HUB_HandleTypeDef *HUB_Handle = phost->hubUSBH_ClassTypeDef_pData[0];
+	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas[0];
 
     switch (HUB_Handle->ctl_state)
     {
@@ -222,7 +224,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_OK;
-	HUB_HandleTypeDef *HUB_Handle =  (HUB_HandleTypeDef *)phost->hubUSBH_ClassTypeDef_pData[0];
+	HUB_HandleTypeDef *HUB_Handle =  (HUB_HandleTypeDef *)phost->hubDatas[0];
 
     switch(HUB_Handle->state)
     {
@@ -432,7 +434,7 @@ USBH_UsrLog("EEEERRRRRRROOORRRRRRR");
 return USBH_OK;
 }*/
 
-	HUB_HandleTypeDef *HUB_Handle = (HUB_HandleTypeDef *)phost->hubUSBH_ClassTypeDef_pData[0];
+	HUB_HandleTypeDef *HUB_Handle = (HUB_HandleTypeDef *)phost->hubDatas[0];
 
 //if(HUB_Handle->poll != 255)
 //USBH_UsrLog("ERR %d %d", HUB_Handle->poll, HUB_Handle->length);
@@ -453,7 +455,7 @@ static USBH_StatusTypeDef get_hub_descriptor(USBH_HandleTypeDef *phost)
 	USBH_StatusTypeDef status = USBH_BUSY;
 	static uint8_t state = 0;
 
-	HUB_HandleTypeDef *HUB_Handle = phost->hubUSBH_ClassTypeDef_pData[0];
+	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas[0];
 
 	switch (state)
 	{
@@ -569,42 +571,43 @@ static uint8_t port_changed(uint8_t *b)
 
 void detach(USBH_HandleTypeDef *_phost, uint16_t idx)
 {
+	USBH_UsrLog("detach %d", (int) idx);
 	return;
 	//USBH_HandleTypeDef *pphost = &hUSBHost[idx];
 	USBH_HandleTypeDef *pphost = & hUsbHostHS;
 	//if (pphost->hubValid)
 	{
-			USBH_UsrLog("detach %d", pphost->hubAddress [idx]);
-
-		if(pphost->pUser != NULL)
-		{
-			pphost->pUser(pphost, HOST_USER_DISCONNECTION);
-		}
-
-	    if(pphost->pActiveClass != NULL)
-	    {
-	    	pphost->pActiveClass->DeInit(pphost);
-	    	pphost->pActiveClass = NULL;
-	    }
+			//USBH_UsrLog("detach %d", pphost->hubAddress [idx]);
+//
+//		if(pphost->pUser != NULL)
+//		{
+//			pphost->pUser(pphost, HOST_USER_DISCONNECTION);
+//		}
+//
+//	    if(pphost->pActiveClass != NULL)
+//	    {
+//	    	pphost->pActiveClass->DeInit(pphost);
+//	    	pphost->pActiveClass = NULL;
+//	    }
 
 		//pphost->hubAddress	    = 0;
 		//pphost->hubBusy  	    = 0;
 		//host->ClassNumber = 0;
 		//pphost->hubValid 	    = 0;
-
-		uint32_t i;
-		for(i = 0; i< USBH_MAX_DATA_BUFFER; i++)
-		{
-			pphost->device.Data[i] = 0;
-		}
-
-		for(i = 0; i < pphost->hubInterfaces; ++i)
-		{
-			USBH_free(pphost->hubUSBH_ClassTypeDef_pData[i]);
-			pphost->hubUSBH_ClassTypeDef_pData[i] = NULL;
-		}
-
-		pphost->hubInterfaces = 0;
+//
+//		uint32_t i;
+//		for(i = 0; i< USBH_MAX_DATA_BUFFER; i++)
+//		{
+//			pphost->device.Data[i] = 0;
+//		}
+//
+//		for(i = 0; i < pphost->hubInstances; ++i)
+//		{
+//			USBH_free(pphost->hubDatas[i]);
+//			pphost->hubDatas[i] = NULL;
+//		}
+//
+//		pphost->hubInstances = 0;
 		//pphost->device.is_connected = 0;
 	}
 }
@@ -624,8 +627,8 @@ static void attach(USBH_HandleTypeDef *phost,
 //		detach(pphost, idx);
 //	}
 
-	pphost->id 					= 0;//hUSBHost[0].id;
-	pphost->hubAddress [idx]			= idx;	// ????
+	//pphost->id 					= 0;//hUSBHost[0].id;
+	//pphost->hubAddress [idx]			= idx;	// ????
 	//pphost->hubHub				= 0;
 //	pphost->pActiveClass 		= NULL;
 //	pphost->ClassNumber 		= 0;
@@ -660,9 +663,9 @@ static void attach(USBH_HandleTypeDef *phost,
 
 	uint8_t i = 0;
 	for(;i < USBH_MAX_NUM_INTERFACES; ++i)
-		pphost->hubUSBH_ClassTypeDef_pData[i] = NULL;
+		pphost->hubDatas[i] = NULL;
 
-	pphost->hubInterfaces = 0;
+	pphost->hubInstances = 0;
 	//pphost->hubBusy  = 0;
 	//pphost->hubValid = 3;
 
