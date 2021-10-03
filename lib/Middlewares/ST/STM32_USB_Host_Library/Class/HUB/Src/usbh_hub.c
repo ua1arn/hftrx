@@ -166,31 +166,35 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 	USBH_StatusTypeDef status = USBH_BUSY;
 	HUB_HandleTypeDef *HUB_Handle = phost->hubUSBH_ClassTypeDef_pData[0];
 
-    static uint8_t  hubClassRequestPort = 1;
-
     switch (HUB_Handle->ctl_state)
     {
     	case HUB_REQ_IDLE:
     	case HUB_REQ_GET_DESCRIPTOR:
-    		hubClassRequestPort = 1;
+    		HUB_Handle->hubClassRequestPort = 1;
       		if(get_hub_descriptor(phost) == USBH_OK)
     			HUB_Handle->ctl_state = HUB_REQ_SET_POWER;
     		break;
 
     	case HUB_REQ_SET_POWER:
     		// Turn on power for each hub port...
-    		if(set_hub_port_power(phost, hubClassRequestPort) == USBH_OK)
+    		if(set_hub_port_power(phost, HUB_Handle->hubClassRequestPort) == USBH_OK)
     		{
     			// Reach last port
-    			if(HUB_NumPorts == hubClassRequestPort)
+    			if(HUB_NumPorts == HUB_Handle->hubClassRequestPort)
     				HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD;
     			else
-    				hubClassRequestPort ++;
+    				HUB_Handle->hubClassRequestPort ++;
     		}
     		break;
 
     	case HUB_WAIT_PWRGOOD:
+    		// todo: переделать на неблокирующее выполненеие задержки
+    		USBH_UsrLog("HUB_WAIT_PWRGOOD %u ms", HUB_PwrGoodDelay);
     		USBH_Delay(HUB_PwrGoodDelay);
+    		HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD_DONE;
+    		break;
+
+    	case HUB_WAIT_PWRGOOD_DONE:
     		HUB_Handle->ctl_state = HUB_REQ_DONE;
     		break;
 
