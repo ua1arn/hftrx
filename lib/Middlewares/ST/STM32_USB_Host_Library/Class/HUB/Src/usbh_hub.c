@@ -45,7 +45,7 @@ static USBH_StatusTypeDef clear_port_feature(USBH_HandleTypeDef *phost, uint8_t 
 static USBH_StatusTypeDef set_port_feature(USBH_HandleTypeDef *phost, uint8_t feature, uint8_t port);
 static void clear_port_changed(uint8_t port);
 static uint8_t get_port_changed(void);
-static uint8_t port_changed(uint8_t *b);
+static uint8_t port_changed(const uint8_t *b);
 static void detach(USBH_HandleTypeDef *phost, uint16_t idx);
 static void attach(USBH_HandleTypeDef *phost, uint16_t idx, uint8_t lowspeed);
 static void debug_port(uint8_t *buff, __IO USB_HUB_PORT_STATUS *info);
@@ -242,6 +242,7 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_OK;
 	HUB_HandleTypeDef *HUB_Handle =  (HUB_HandleTypeDef *)phost->hubDatas[0];
+	USBH_URBStateTypeDef urbState;
 
     switch (HUB_Handle->state)
     {
@@ -262,15 +263,18 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 //			if(hUSBHost[1].busy)
 //				break;
 
-    	    USBH_InterruptReceiveData(phost, HUB_Handle->buffer, HUB_Handle->length, HUB_Handle->InPipe);
+    	    (void) USBH_InterruptReceiveData(phost, HUB_Handle->buffer, HUB_Handle->length, HUB_Handle->InPipe);
     	    HUB_Handle->state = HUB_POLL;
     	    HUB_Handle->timer = phost->Timer;
     	    HUB_Handle->DataReady = 0;
     		break;
 
     	case HUB_POLL:
-    	    if(USBH_LL_GetURBState(phost, HUB_Handle->InPipe) == USBH_URB_DONE)
+    		urbState = USBH_LL_GetURBState(phost, HUB_Handle->InPipe);
+    	    if (urbState == USBH_URB_DONE)
     	    {
+    			USBH_UsrLog("USBH_HUB_Process: HUB_POLL, HUB_CurPort=%d, answer=%02X,%02X (len=%d)", (int) HUB_CurPort, HUB_Handle->buffer [0], HUB_Handle->buffer [1], HUB_Handle->length);
+
 //LOG1("^");
     	    	if(HUB_Handle->DataReady == 0)
     	    	{
@@ -281,7 +285,7 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
     		        	HUB_Handle->state = HUB_GET_DATA;
     	    	}
     	    }
-    		else if(USBH_LL_GetURBState(phost , HUB_Handle->InPipe) == USBH_URB_STALL) /* IN Endpoint Stalled */
+    		else if (urbState == USBH_URB_STALL) /* IN Endpoint Stalled */
     		{
     			// Issue Clear Feature on interrupt IN endpoint
     			if( (USBH_ClrFeature(phost, HUB_Handle->ep_addr)) == USBH_OK)
@@ -290,7 +294,7 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
     				HUB_Handle->state = HUB_GET_DATA;
     			}
     		}
-    		else if(USBH_LL_GetURBState(phost , HUB_Handle->InPipe) == USBH_URB_ERROR)
+    		else if(urbState == USBH_URB_ERROR)
     		{
 //LOG1("=");
     		}
@@ -513,12 +517,16 @@ static USBH_StatusTypeDef set_port_feature(USBH_HandleTypeDef *phost, uint8_t fe
 
 static void clear_port_changed(uint8_t port)
 {
-	switch(port)
+	switch (port)
 	{
 		case 1:	HUB_Change.bPorts.PORT_1 = 0; break;
 		case 2: HUB_Change.bPorts.PORT_2 = 0; break;
 		case 3: HUB_Change.bPorts.PORT_3 = 0; break;
 		case 4: HUB_Change.bPorts.PORT_4 = 0; break;
+		case 5: HUB_Change.bPorts.PORT_5 = 0; break;
+		case 6: HUB_Change.bPorts.PORT_6 = 0; break;
+		case 7: HUB_Change.bPorts.PORT_7 = 0; break;
+		case 8: HUB_Change.bPorts.PORT_8 = 0; break;
 	}
 }
 
@@ -528,13 +536,17 @@ static uint8_t get_port_changed()
 	if(HUB_Change.bPorts.PORT_2)	return 2;
 	if(HUB_Change.bPorts.PORT_3)	return 3;
 	if(HUB_Change.bPorts.PORT_4)	return 4;
+	if(HUB_Change.bPorts.PORT_5)	return 5;
+	if(HUB_Change.bPorts.PORT_6)	return 6;
+	if(HUB_Change.bPorts.PORT_7)	return 7;
+	if(HUB_Change.bPorts.PORT_8)	return 8;
 
 	return 0;
 }
 
-static uint8_t port_changed(uint8_t *b)
+static uint8_t port_changed(const uint8_t *b)
 {
-    if(b[0] != 0x00)
+    if (b[0] != 0x00)
     {
     	HUB_Change.val = 0x00;
 
@@ -542,8 +554,11 @@ static uint8_t port_changed(uint8_t *b)
         if(b[0] & (1<<2)) { HUB_Change.bPorts.PORT_2 = 1; }
         if(b[0] & (1<<3)) { HUB_Change.bPorts.PORT_3 = 1; }
         if(b[0] & (1<<4)) { HUB_Change.bPorts.PORT_4 = 1; }
+        if(b[0] & (1<<5)) { HUB_Change.bPorts.PORT_5 = 1; }
+        if(b[0] & (1<<6)) { HUB_Change.bPorts.PORT_6 = 1; }
+        if(b[0] & (1<<7)) { HUB_Change.bPorts.PORT_7 = 1; }
 
-//USBH_UsrLog("PORT STATUS CHANGE [0x%02X] [%d %d %d %d]", b[0], HUB_Change.bPorts.PORT_1, HUB_Change.bPorts.PORT_2, HUB_Change.bPorts.PORT_3, HUB_Change.bPorts.PORT_4);
+USBH_UsrLog("PORT STATUS CHANGE [0x%02X] [%d %d %d %d]", b[0], HUB_Change.bPorts.PORT_1, HUB_Change.bPorts.PORT_2, HUB_Change.bPorts.PORT_3, HUB_Change.bPorts.PORT_4);
 
         return HUB_Change.val > 0;
     }

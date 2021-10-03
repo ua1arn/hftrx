@@ -789,7 +789,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			else
 			{
 
-//	 			if (hc->ep_is_in)
+//	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
 //	 			{
 //	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
 //	 			}
@@ -1342,6 +1342,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdoverl, EHCI_FL_PID_IN, 0);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
+
+			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
 		}
 		break;
 
