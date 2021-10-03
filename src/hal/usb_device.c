@@ -314,7 +314,7 @@ void board_usb_deinitialize(void)
 /* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
-	PRINTF("board_usb_activate\n");
+	//PRINTF("board_usb_activate\n");
 #if defined (WITHUSBHW_DEVICE)
 	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
 	{
@@ -327,12 +327,12 @@ void board_usb_activate(void)
 		Error_Handler();
 	}
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-	PRINTF("board_usb_activate done\n");
+	//PRINTF("board_usb_activate done\n");
 }
 
 void board_usb_deactivate(void)
 {
-	//PRINTF(PSTR("board_usb_activate start.\n"));
+	//PRINTF(PSTR("board_usb_deactivate start.\n"));
 
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	USBH_Stop(& hUsbHostHS);
@@ -342,7 +342,7 @@ void board_usb_deactivate(void)
 	USBD_Stop(& hUsbDeviceHS);
 #endif /* defined (WITHUSBHW_DEVICE) */
 
-	//PRINTF(PSTR("board_usb_activate done.\n"));
+	//PRINTF(PSTR("board_usb_deactivate done.\n"));
 }
 
 void board_usbh_polling(void)
