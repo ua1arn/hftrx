@@ -102,7 +102,7 @@ typedef struct _HUB_Process
   HUB_StateTypeDef     state;
   uint8_t              InEp;
   HUB_CtlStateTypeDef  ctl_state;
-  uint8_t              buffer[20];
+  __ALIGN4k_BEGIN uint8_t buffer [20] __ALIGN4k_END;
   uint16_t             length;
   uint8_t              ep_addr;
   uint16_t             poll;

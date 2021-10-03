@@ -120,7 +120,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 	    if (HUB_Handle->poll  < HUB_MIN_POLL)
 	    	HUB_Handle->poll = HUB_MIN_POLL;
 
-USBH_UsrLog ("device POLL %d, LEN %d", HUB_Handle->poll, HUB_Handle->length);
+	    USBH_UsrLog ("USBH_HUB_InterfaceInit: device poll=%d, length=%d", HUB_Handle->poll, HUB_Handle->length);
 
 	    if(phost->device.CfgDesc.Itf_Desc[phost->device.current_interface].Ep_Desc[0].bEndpointAddress & 0x80)
 	    {
