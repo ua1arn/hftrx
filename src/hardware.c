@@ -3921,20 +3921,24 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	static RAMHEAP uint8_t heapplace [8 * 1024uL];
 
 #endif /* CPUSTYLE_STM32MP1 */
+
 extern int __HeapBase;
 extern int __HeapLimit;
 
 caddr_t __attribute__((used)) (_sbrk)(int incr)
 {
+	unsigned alignment = DCACHEROWSIZE;
 	static char * heap;
 	char * prev_heap;
+
+	incr = (incr + (alignment - 1u)) & ~ (alignment - 1u);
 
 	if (heap == NULL)
 	{
 		heap = (char *) &__HeapBase;
 	}
 
-	//PRINTF(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
+	PRINTF(PSTR("_sbrk: incr=%X, new heap=%X, & __HeapBase=%p, & __HeapLimit=%p\n"), incr, heap + incr, & __HeapBase, & __HeapLimit);
 
 	prev_heap = heap;
 
