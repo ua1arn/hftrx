@@ -96,18 +96,23 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 
 	interface = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, 0x00, 0xFF);
 
-	if(interface == 0xFF) /* No Valid Interface */
+	if (interface == 0xFF) /* No Valid Interface */
 	{
 		status = USBH_FAIL;
 		USBH_DbgLog ("Cannot Find the interface for %s class.", phost->pActiveClass->Name);
 	}
+	if (phost->hubInterfaces >= USBH_MAX_NUM_INTERFACES)
+	{
+		status = USBH_FAIL;
+		USBH_DbgLog ("Too many hubs in chain.");
+	}
 	else
 	{
-		phost->hubUSBH_ClassTypeDef_pData[0] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
-		HUB_Handle = phost->hubUSBH_ClassTypeDef_pData[0];
-		USBH_memset(HUB_Handle, 0, sizeof (HUB_HandleTypeDef));
+		phost->hubUSBH_ClassTypeDef_pData [phost->hubInterfaces] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
+		HUB_Handle = phost->hubUSBH_ClassTypeDef_pData [phost->hubInterfaces];
+		phost->hubInterfaces += 1;
 
-		phost->hubInterfaces = 1;
+		USBH_memset(HUB_Handle, 0, sizeof (HUB_HandleTypeDef));
 
 		USBH_SelectInterface (phost, interface);
 
@@ -122,7 +127,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 
 	    USBH_UsrLog ("USBH_HUB_InterfaceInit: device poll=%d, length=%d", HUB_Handle->poll, HUB_Handle->length);
 
-	    if(phost->device.CfgDesc.Itf_Desc[phost->device.current_interface].Ep_Desc[0].bEndpointAddress & 0x80)
+	    if (phost->device.CfgDesc.Itf_Desc[phost->device.current_interface].Ep_Desc[0].bEndpointAddress & 0x80)
 	    {
 	    	HUB_Handle->InEp = (phost->device.CfgDesc.Itf_Desc[phost->device.current_interface].Ep_Desc[0].bEndpointAddress);
 	    	HUB_Handle->InPipe  = USBH_AllocPipe(phost, HUB_Handle->InEp);
@@ -133,7 +138,8 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 	    	USBH_LL_SetToggle (phost, HUB_Handle->InPipe, 0);
 	    }
 
-	    phost->hubHub = 1;
+
+	    //phost->hubHub = 1;
 
 	    status = USBH_OK;
 	}
@@ -143,9 +149,11 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 
 static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 {
-	USBH_UsrLog("USBH_HUB_InterfaceDeInit %d", phost->hubAddress);
+	unsigned hubIX = 0;
+	USBH_UsrLog("USBH_HUB_InterfaceDeInit");
+	//USBH_UsrLog("USBH_HUB_InterfaceDeInit %d", (int) phost->hubAddress [0]);
 
-	HUB_HandleTypeDef *HUB_Handle = phost->hubUSBH_ClassTypeDef_pData[0];
+	HUB_HandleTypeDef *HUB_Handle = phost->hubUSBH_ClassTypeDef_pData [hubIX];
 
 	if(HUB_Handle->InPipe != 0x00)
 	{
@@ -154,8 +162,8 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 		HUB_Handle->InPipe = 0;     // Reset the pipe as Free
 	}
 
-	if(phost->hubUSBH_ClassTypeDef_pData[0])
-		USBH_free (phost->hubUSBH_ClassTypeDef_pData[0]);
+	if(phost->hubUSBH_ClassTypeDef_pData[hubIX])
+		USBH_free (phost->hubUSBH_ClassTypeDef_pData[hubIX]);
 
 	return USBH_OK;
 }
@@ -199,7 +207,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
     		break;
 
     	case HUB_REQ_DONE:
-    		phost->hubBusy = 0;
+    		//phost->hubBusy = 0;
     		USBH_UsrLog("%d HUB PORTS ENABLED", HUB_NumPorts);
     		USBH_UsrLog("=============================================");
     		status = USBH_OK;
@@ -275,7 +283,7 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
         	{
 //USBH_UsrLog("HUB_CurPort %d", HUB_CurPort);
 
-phost->hubBusy = 1;
+//phost->hubBusy = 1;
 				clear_port_changed(HUB_CurPort);
         		HUB_Handle->state = HUB_PORT_CHANGED;
         	}
@@ -329,7 +337,7 @@ debug_port(HUB_Handle->buffer, HUB_ChangeInfo);
 								// Device Attached
 /*								if(HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED)
 								{
-									phost->hubBusy = 0;
+									//phost->hubBusy = 0;
 									HUB_Handle->state = HUB_LOOP_PORT_CHANGED;
 								}
 								else*/
@@ -388,19 +396,19 @@ debug_port(HUB_Handle->buffer, HUB_ChangeInfo);
     		break;
 
     	case HUB_DEV_ATTACHED:
-USBH_UsrLog("HUB_DEV_ATTACHED %d, lowspeed? %d", HUB_CurPort, HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED);
+    		USBH_UsrLog("HUB_DEV_ATTACHED %d, lowspeed? %d", HUB_CurPort, HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED);
 
 			HUB_Handle->state = HUB_LOOP_PORT_WAIT;
 			attach(phost, HUB_CurPort, HUB_ChangeInfo->wPortStatus.PORT_LOW_SPEED);
-			phost->hubBusy = 0;
+			//phost->hubBusy = 0;
     		break;
 
     	case HUB_DEV_DETACHED:
-USBH_UsrLog("HUB_DEV_DETACHED %d", HUB_CurPort);
+    		USBH_UsrLog("HUB_DEV_DETACHED %d", HUB_CurPort);
 
 			HUB_Handle->state = HUB_LOOP_PORT_WAIT;
 			detach(phost, HUB_CurPort);
-			phost->hubBusy = 0;
+			//phost->hubBusy = 0;
     		break;
 
     	case HUB_LOOP_PORT_WAIT:
@@ -564,9 +572,9 @@ void detach(USBH_HandleTypeDef *_phost, uint16_t idx)
 	return;
 	//USBH_HandleTypeDef *pphost = &hUSBHost[idx];
 	USBH_HandleTypeDef *pphost = & hUsbHostHS;
-	if (pphost->hubValid)
+	//if (pphost->hubValid)
 	{
-USBH_UsrLog("detach %d", pphost->hubAddress);
+			USBH_UsrLog("detach %d", pphost->hubAddress [idx]);
 
 		if(pphost->pUser != NULL)
 		{
@@ -579,10 +587,10 @@ USBH_UsrLog("detach %d", pphost->hubAddress);
 	    	pphost->pActiveClass = NULL;
 	    }
 
-		pphost->hubAddress	    = 0;
-		pphost->hubBusy  	    = 0;
+		//pphost->hubAddress	    = 0;
+		//pphost->hubBusy  	    = 0;
 		//host->ClassNumber = 0;
-		pphost->hubValid 	    = 0;
+		//pphost->hubValid 	    = 0;
 
 		uint32_t i;
 		for(i = 0; i< USBH_MAX_DATA_BUFFER; i++)
@@ -597,33 +605,35 @@ USBH_UsrLog("detach %d", pphost->hubAddress);
 		}
 
 		pphost->hubInterfaces = 0;
-		pphost->device.is_connected = 0;
+		//pphost->device.is_connected = 0;
 	}
 }
 
-static void attach(USBH_HandleTypeDef *phost, uint16_t idx, uint8_t lowspeed)
+static void attach(USBH_HandleTypeDef *phost,
+		uint16_t idx, 	// Index of port on HUB
+		uint8_t lowspeed)
 {
+	USBH_UsrLog("attach %d", idx);
 	return;
 	//USBH_HandleTypeDef *pphost = &hUSBHost[idx];
 	USBH_HandleTypeDef *pphost = &hUsbHostHS;
-USBH_UsrLog("attach %d", idx);
 
-	if (pphost->hubValid)
-	{
-		USBH_UsrLog("ATTACH ERROR, ALREADY ATTACHED");
-		detach(pphost, idx);
-	}
+//	if (pphost->hubValid)
+//	{
+//		USBH_UsrLog("ATTACH ERROR, ALREADY ATTACHED");
+//		detach(pphost, idx);
+//	}
 
 	pphost->id 					= 0;//hUSBHost[0].id;
-	pphost->hubAddress 			= idx;
-	pphost->hubHub				= 0;
+	pphost->hubAddress [idx]			= idx;	// ????
+	//pphost->hubHub				= 0;
 //	pphost->pActiveClass 		= NULL;
 //	pphost->ClassNumber 		= 0;
 
 #warning Then use HUB class. investigane Pipes usage.
 // Taken from https://github.com/mori-br/STM32F4HUB
 	//pphost->Pipes 				= phost->Pipes;
-	memcpy(pphost->Pipes, phost->Pipes, sizeof pphost->Pipes);
+	USBH_memcpy(pphost->Pipes, phost->Pipes, sizeof pphost->Pipes);
 
     pphost->pUser 				= phost->pUser;
 	pphost->EnumState 			= ENUM_IDLE;
@@ -653,8 +663,8 @@ USBH_UsrLog("attach %d", idx);
 		pphost->hubUSBH_ClassTypeDef_pData[i] = NULL;
 
 	pphost->hubInterfaces = 0;
-	pphost->hubBusy  = 0;
-	pphost->hubValid = 3;
+	//pphost->hubBusy  = 0;
+	//pphost->hubValid = 3;
 
 //USBH_UsrLog("HUB stuff ok");
 }

@@ -531,19 +531,9 @@ typedef struct _USBH_HandleTypeDef
   uint32_t              os_msg;
 #endif
 
-
-  // MORI
-    __IO uint8_t hubValid;
-    __IO uint8_t hubBusy;
-
-  //  __IO uint8_t transfering;
-
-    uint8_t hubHub;
-    uint8_t hubAddress;
-
-    uint8_t hubPrescaler;
     uint8_t hubInterfaces;
-    void*   hubUSBH_ClassTypeDef_pData[USBH_MAX_NUM_INTERFACES];
+    void*   hubUSBH_ClassTypeDef_pData [USBH_MAX_NUM_INTERFACES];
+    uint8_t hubAddress [USBH_MAX_NUM_INTERFACES];
 
 } USBH_HandleTypeDef;
 
