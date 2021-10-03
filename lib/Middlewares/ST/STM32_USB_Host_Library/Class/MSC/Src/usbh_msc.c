@@ -176,9 +176,10 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
     return USBH_FAIL;
   }
 
-  //phost->pActiveClass->pData = (MSC_HandleTypeDef *)USBH_malloc(sizeof(MSC_HandleTypeDef));
-  static MSC_HandleTypeDef tt;
-  phost->pActiveClass->pData = & tt;
+  // Also see usage of USBH_free in USBH_MSC_InterfaceDeInit
+  phost->pActiveClass->pData = (MSC_HandleTypeDef *) USBH_malloc(sizeof (MSC_HandleTypeDef));
+  //static MSC_HandleTypeDef staticMSC_Handle;
+  //phost->pActiveClass->pData = & staticMSC_Handle;
   MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (MSC_Handle == NULL)
@@ -276,7 +277,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if ((phost->pActiveClass->pData) != NULL)
   {
-    //USBH_free(phost->pActiveClass->pData);
+    USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
 
