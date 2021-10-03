@@ -1123,6 +1123,18 @@ uint32_t HAL_HCD_HC_GetXferCount(HCD_HandleTypeDef *hhcd, uint8_t chnum)
 }
 
 /**
+  * @brief  Return the last host transfer size.
+  * @param  hhcd HCD handle
+  * @param  chnum Channel number.
+  *         This parameter can be a value from 1 to 15
+  * @retval last transfer size in byte
+  */
+uint32_t HAL_HCD_HC_GetMaxPacket(HCD_HandleTypeDef *hhcd, uint8_t chnum)
+{
+  return hhcd->hc[chnum].max_packet;
+}
+
+/**
   * @brief  Return the Host Channel state.
   * @param  hhcd HCD handle
   * @param  chnum Channel number.

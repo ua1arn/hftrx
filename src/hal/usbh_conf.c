@@ -593,6 +593,19 @@ uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
 }
 
 /**
+  * @brief  Return the maximum possible transferred packet size.
+  * @param  phost: Host handle
+  * @param  pipe: Pipe index
+  * @param  size: expectes transfer packet size
+  * @retval Packet size
+  */
+uint32_t USBH_LL_GetAdjXferSize(USBH_HandleTypeDef *phost, uint8_t pipe, uint32_t size)
+{
+	  return ulmin32(size, HAL_HCD_HC_GetMaxPacket(phost->pData, pipe));	// Default implementation
+	  //return ulmin32(size, 64);
+}
+
+/**
   * @brief  Open a pipe of the low level driver.
   * @param  phost: Host handle
   * @param  pipe_num: Pipe index
