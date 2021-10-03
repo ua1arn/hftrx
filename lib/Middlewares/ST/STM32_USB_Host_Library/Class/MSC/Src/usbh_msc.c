@@ -186,7 +186,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
     USBH_DbgLog("Cannot allocate memory for MSC Handle");
     return USBH_FAIL;
   }
-  USBH_UsrLog("USBH_MSC_InterfaceInit: MSC Handle at %p", & tt);
+  //USBH_UsrLog("USBH_MSC_InterfaceInit: MSC Handle at %p", MSC_Handle);
 
   /* Initialize msc handler */
   (void)USBH_memset(MSC_Handle, 0, sizeof(MSC_HandleTypeDef));
