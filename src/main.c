@@ -23241,7 +23241,7 @@ ddd:
 		/* если не установлен джампер - запускаем программу. */
 //		if (! BOARD_IS_USERBOOT())
 //			break;
-		//	при наличии перемычки входим в режим загрузчика по USB.
+		//	при наличии перемычки (нажатой кнопки) входим в режим загрузчика по USB.
 		//	Выйти или через команду DFU или по сбросу.
 		if (usbactivated == 0)
 			break;
@@ -23262,12 +23262,12 @@ ddd:
 			}
 		}
 
-#else /* WITHDEBUG */
-		/* вытаскиваем USB кабель - запускаем программу. */
-		if (hardware_usbd_get_vbusbefore() == 0)
-			break;
-		if (hardware_usbd_get_vbusnow() == 0)
-			break;
+//#else /* WITHDEBUG */
+//		/* вытаскиваем USB кабель - запускаем программу. */
+//		if (hardware_usbd_get_vbusbefore() == 0)
+//			break;
+//		if (hardware_usbd_get_vbusnow() == 0)
+//			break;
 
 #endif /* WITHDEBUG */
 	}
