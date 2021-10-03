@@ -99,6 +99,7 @@ HUB_CtlStateTypeDef;
 /* Structure for HUB process */
 typedef struct _HUB_Process
 {
+  USBH_DeviceTypeDef    devices [MAX_HUB_PORTS];
   uint8_t              InPipe;
   HUB_StateTypeDef     state;
   uint8_t  hubClassRequestPort;

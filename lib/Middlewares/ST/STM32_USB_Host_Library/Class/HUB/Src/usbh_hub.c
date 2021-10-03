@@ -226,7 +226,7 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 	USBH_StatusTypeDef status = USBH_OK;
 	HUB_HandleTypeDef *HUB_Handle =  (HUB_HandleTypeDef *)phost->hubDatas[0];
 
-    switch(HUB_Handle->state)
+    switch (HUB_Handle->state)
     {
      	case HUB_IDLE:
      		HUB_CurPort = 0;
@@ -453,11 +453,11 @@ return USBH_OK;
 static USBH_StatusTypeDef get_hub_descriptor(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;
-	static uint8_t state = 0;
+	static uint8_t hubDescState = 0;
 
 	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas[0];
 
-	switch (state)
+	switch (hubDescState)
 	{
 	case 0:
 		phost->Control.setup.b.bmRequestType = USB_D2H|USB_REQ_RECIPIENT_DEVICE|USB_REQ_TYPE_CLASS;
@@ -468,7 +468,7 @@ static USBH_StatusTypeDef get_hub_descriptor(USBH_HandleTypeDef *phost)
 		phost->Control.setup.b.wLength.w 	 = sizeof (USB_HUB_DESCRIPTOR);
 
 		if(USBH_CtlReq(phost, HUB_Handle->buffer, sizeof (USB_HUB_DESCRIPTOR)) == USBH_OK)
-			state = 1;
+			hubDescState = 1;
 		break;
 
 	case 1:
@@ -476,7 +476,7 @@ static USBH_StatusTypeDef get_hub_descriptor(USBH_HandleTypeDef *phost)
 			USB_HUB_DESCRIPTOR  *HUB_Desc = (USB_HUB_DESCRIPTOR *) HUB_Handle->buffer;
 			HUB_NumPorts = (HUB_Desc->bNbrPorts > MAX_HUB_PORTS) ? MAX_HUB_PORTS : HUB_Desc->bNbrPorts;
 			HUB_PwrGoodDelay  = (HUB_Desc->bPwrOn2PwrGood * 2);
-			state = 0;
+			hubDescState = 0;
 			status = USBH_OK;
 		}
 		break;
