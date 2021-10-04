@@ -367,10 +367,11 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	// Calculate Operational Register Space base address
 	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
 	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
-	hehci->portsc = ((__IO unsigned long*) (opregspacebase + 0x0044));
+	hehci->portsc = (__IO uint32_t *) (opregspacebase + 0x0044);
+	hehci->configFlag = (__IO uint32_t *) (opregspacebase + 0x0040);
 
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
-	EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
+	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
 
 	// https://habr.com/ru/post/426421/
@@ -453,29 +454,22 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	// Чистим статус
 	//hc->opRegs->usbSts = ~0;
 	EHCIx->USBSTS = ~ 0uL;
+
 	//ASSERT( & EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
+	//ASSERT(hehci->configFlag == & opRegs->configFlag);
 
-	unsigned porti = WITHEHCIHW_EHCIPORT;
-
-	/* Print state of all ports */
-	//for (porti = 0; porti < hehci->nports; ++ porti)
-	{
-		//unsigned long portsc = hehci->portsc [porti];
-		//PRINTF("portsc[%u]=%08lX\n", porti, portsc);
-	}
 
 	/* Route all ports to EHCI controller */
-	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
-	opRegs->configFlag = EHCI_CONFIGFLAG_CF;
-	(void) opRegs->configFlag;
+	* hehci->configFlag = EHCI_CONFIGFLAG_CF;
+	(void) * hehci->configFlag;
 
 	/* Enable power to all ports */
+	unsigned porti = WITHEHCIHW_EHCIPORT;
 	//for (porti = 0; porti < hehci->nports; ++ porti)
 	{
 		unsigned long portsc = hehci->portsc [porti];
 
 		portsc &= ~ EHCI_PORTSC_CHANGE;
-		//portsc |= EHCI_PORTSC_OWNER;	// ???
 		portsc |= EHCI_PORTSC_PP;
 
 		hehci->portsc [porti] = portsc;

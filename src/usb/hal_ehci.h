@@ -73,19 +73,19 @@ typedef struct EhciCapRegs
 // ------------------------------------------------------------------------------------------------
 // Host Controller Operational Registers
 
-typedef struct EhciOpRegs
-{
-    volatile uint32_t usbCmd;
-    volatile uint32_t usbSts;
-    volatile uint32_t usbIntr;
-    volatile uint32_t frameIndex;
-    volatile uint32_t ctrlDsSegment;
-    volatile uint32_t periodicListBase;
-    volatile uint32_t asyncListAddr;
-    volatile uint32_t reserved[9];
-    volatile uint32_t configFlag;
-    volatile uint32_t ports[];
-} EhciOpRegs;
+//typedef struct EhciOpRegs
+//{
+//    volatile uint32_t usbCmd;
+//    volatile uint32_t usbSts;
+//    volatile uint32_t usbIntr;
+//    volatile uint32_t frameIndex;
+//    volatile uint32_t ctrlDsSegment;
+//    volatile uint32_t periodicListBase;
+//    volatile uint32_t asyncListAddr;
+//    volatile uint32_t reserved[9];
+//    volatile uint32_t configFlag;
+//    volatile uint32_t ports[];
+//} EhciOpRegs;
 
 // ------------------------------------------------------------------------------------------------
 // USB Command Register
@@ -380,7 +380,8 @@ typedef struct
 	void *pData; /*!< Pointer Stack Handler - for USBH_LL_xxx functions   */
 	unsigned long nports;
 	__IO uint32_t *portsc;
-	EhciOpRegs *opRegs;
+	__IO uint32_t *configFlag;
+	//EhciOpRegs *opRegs;
 
 #if (USE_HAL_EHCI_REGISTER_CALLBACKS == 1U)
 	void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
@@ -394,6 +395,9 @@ typedef struct
 	void (* MspInitCallback)(struct __EHCI_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Msp Init callback           */
 	void (* MspDeInitCallback)(struct __EHCI_HandleTypeDef *hhcd);                         /*!< USB OTG HCD Msp DeInit callback         */
 #endif /* USE_HAL_EHCI_REGISTER_CALLBACKS */
+
+	  VLIST_ENTRY hcList;
+
 } EHCI_HandleTypeDef;
 /**
   * @}
