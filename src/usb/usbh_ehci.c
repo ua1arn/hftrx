@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop архитектуры */
+//#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания */
 
 void Error_Handler(void);
 
@@ -766,6 +766,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			const uint_fast8_t status = qtd->status;
 			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
+//			if (pktcnt > hc->max_packet)
+//			{
+//		 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
+//			}
+			//ASSERT(pktcnt <= hc->max_packet);
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
 			{
@@ -934,7 +939,7 @@ void USBH_OHCI_IRQHandler(void)
 {
 	ASSERT(0);
 	//ehci_bus_poll(& usbbus0);
-	//HAL_EHCI_IRQHandler(& hehci_USB);
+	//HAL_OHCI_IRQHandler(& hehci_USB);
 }
 
 void USBH_EHCI_IRQHandler(void)
@@ -1527,16 +1532,14 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  *            @arg URB_STALL
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
-		uint8_t pipe) {
-#if WITHEHCIHWSOFTSPOLL
-	HAL_EHCI_IRQHandler(& hehci_USB);
-#else /* WITHEHCIHWSOFTSPOLL */
+		uint8_t pipe)
+{
 	system_disableIRQ();
 	SPIN_LOCK(& asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
 	SPIN_UNLOCK(& asynclock);
 	system_enableIRQ();
-#endif /* WITHEHCIHWSOFTSPOLL */
+
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
@@ -1969,17 +1972,12 @@ void MX_USB_HOST_DeInit(void)
 void MX_USB_HOST_Process(void)
 {
 	USBH_Process(& hUsbHostHS);
-#if WITHEHCIHWSOFTSPOLL
-	HAL_EHCI_IRQHandler(& hehci_USB);
-#else /* WITHEHCIHWSOFTSPOLL */
+
 	system_disableIRQ();
 	SPIN_LOCK(& asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
 	SPIN_UNLOCK(& asynclock);
 	system_enableIRQ();
-#endif /* WITHEHCIHWSOFTSPOLL */
-	//local_delay_ms(100);
-	//PRINTF(".");
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */
