@@ -591,12 +591,12 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
       /* Open Control pipes */
       (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U,
                           phost->device.address, phost->device.speed,
-                          USBH_EP_CONTROL, (uint16_t)phost->Control.pipe_size);
+                          USBH_EP_CONTROL, (uint16_t)phost->Control.pipe_size, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
 
       /* Open Control pipes */
       (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U,
                           phost->device.address, phost->device.speed,
-                          USBH_EP_CONTROL, (uint16_t)phost->Control.pipe_size);
+                          USBH_EP_CONTROL, (uint16_t)phost->Control.pipe_size, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
 
 #if (USBH_USE_OS == 1U)
       phost->os_msg = (uint32_t)USBH_PORT_EVENT;
@@ -913,12 +913,12 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
         /* modify control channels configuration for MaxPacket size */
         (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, phost->device.address,
                             phost->device.speed, USBH_EP_CONTROL,
-                            (uint16_t)phost->Control.pipe_size);
+                            (uint16_t)phost->Control.pipe_size, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
 
         /* Open Control pipes */
         (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, phost->device.address,
                             phost->device.speed, USBH_EP_CONTROL,
-                            (uint16_t)phost->Control.pipe_size);
+                            (uint16_t)phost->Control.pipe_size, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
       }
       else if (ReqStatus == USBH_NOT_SUPPORTED)
       {
@@ -998,12 +998,12 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
         /* modify control channels to update device address */
         (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U,  phost->device.address,
                             phost->device.speed, USBH_EP_CONTROL,
-                            (uint16_t)phost->Control.pipe_size);
+                            (uint16_t)phost->Control.pipe_size, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
 
         /* Open Control pipes */
         (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, phost->device.address,
                             phost->device.speed, USBH_EP_CONTROL,
-                            (uint16_t)phost->Control.pipe_size);
+                            (uint16_t)phost->Control.pipe_size, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
       }
       else if (ReqStatus == USBH_NOT_SUPPORTED)
       {
