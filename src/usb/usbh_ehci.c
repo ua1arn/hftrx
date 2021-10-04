@@ -615,6 +615,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 
 	hc->speed = speed;
 
+	InitializeListHead(& hc->tdlist);
+
+
 // TODO: use queue head
 //  status =  USB_HC_Init(hehci->Instance,
 //                        ch_num,

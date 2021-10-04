@@ -26,6 +26,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
+#include "list.h"
 
 // ------------------------------------------------------------------------------------------------
 // Limits
@@ -347,6 +348,8 @@ typedef struct
 
   uint8_t tt_hubaddr;
   uint8_t tt_prtaddr;
+
+  VLIST_ENTRY tdlist;
 
 } EHCI_HCTypeDef;
 
