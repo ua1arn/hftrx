@@ -106,8 +106,7 @@ MSC_LUNTypeDef;
 /* Structure for MSC process */
 typedef struct _MSC_Process
 {
-	__ALIGN4k_BEGIN uint8_t              max_lun __ALIGN4k_END;
-  uint8_t              Reserved[3];
+  __ALIGN4k_BEGIN uint8_t              max_lunv [64] __ALIGN4k_END;
   uint8_t              InPipe;
   uint8_t              OutPipe;
   uint8_t              OutEp;

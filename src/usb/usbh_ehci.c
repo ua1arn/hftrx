@@ -509,7 +509,7 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 {
 //	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC_ADVANCE;
-//	(void) EHCIx->USBCMD
+//	(void) EHCIx->USBCMD;
 //	while ((EHCIx->USBSTS & EHCI_USBCMD_ASYNC_ADVANCE) != 0)
 //		;
 

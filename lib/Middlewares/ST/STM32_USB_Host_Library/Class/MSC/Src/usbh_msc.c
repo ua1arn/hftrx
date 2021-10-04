@@ -177,9 +177,9 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
   }
 
   // Also see usage of USBH_free in USBH_MSC_InterfaceDeInit
-  phost->pActiveClass->pData = (MSC_HandleTypeDef *) USBH_malloc(sizeof (MSC_HandleTypeDef));
-  //static MSC_HandleTypeDef staticMSC_Handle;
-  //phost->pActiveClass->pData = & staticMSC_Handle;
+  //phost->pActiveClass->pData = (MSC_HandleTypeDef *) USBH_malloc(sizeof (MSC_HandleTypeDef));
+  static MSC_HandleTypeDef staticMSC_Handle;
+  phost->pActiveClass->pData = & staticMSC_Handle;
   MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (MSC_Handle == NULL)
@@ -277,7 +277,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if ((phost->pActiveClass->pData) != NULL)
   {
-    USBH_free(phost->pActiveClass->pData);
+    //USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
 
@@ -303,22 +303,22 @@ static USBH_StatusTypeDef USBH_MSC_ClassRequest(USBH_HandleTypeDef *phost)
     case MSC_REQ_IDLE:
     case MSC_REQ_GET_MAX_LUN:
       /* Issue GetMaxLUN request */
-      status = USBH_MSC_BOT_REQ_GetMaxLUN(phost, &MSC_Handle->max_lun);
+      status = USBH_MSC_BOT_REQ_GetMaxLUN(phost, & MSC_Handle->max_lunv);
 
       /* When devices do not support the GetMaxLun request, this should
          be considered as only one logical unit is supported */
       if (status == USBH_NOT_SUPPORTED)
       {
-        MSC_Handle->max_lun = 0U;
+        MSC_Handle->max_lunv [0] = 0U;
         status = USBH_OK;
       }
 
       if (status == USBH_OK)
       {
-        MSC_Handle->max_lun = ((MSC_Handle->max_lun & 0xFFU) > MAX_SUPPORTED_LUN) ? MAX_SUPPORTED_LUN : ((MSC_Handle->max_lun & 0xFFU) + 1U);
-        USBH_UsrLog("Number of supported LUN: %d", (int) MSC_Handle->max_lun);
+        MSC_Handle->max_lunv [0] = ((MSC_Handle->max_lunv [0] & 0xFFU) > MAX_SUPPORTED_LUN) ? MAX_SUPPORTED_LUN : ((MSC_Handle->max_lunv [0] & 0xFFU) + 1U);
+        USBH_UsrLog("Number of supported LUN: %d", (int) MSC_Handle->max_lunv [0]);
 
-        for (i = 0U; i < MSC_Handle->max_lun; i++)
+        for (i = 0U; i < MSC_Handle->max_lunv [0]; i++)
         {
           MSC_Handle->unit[i].prev_ready_state = USBH_FAIL;
           MSC_Handle->unit[i].state_changed = 0U;
@@ -358,7 +358,7 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
   {
     case MSC_INIT:
 
-      if (MSC_Handle->current_lun < MSC_Handle->max_lun)
+      if (MSC_Handle->current_lun < MSC_Handle->max_lunv [0])
       {
 
         MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_NOT_READY;
@@ -446,9 +446,10 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
             {
               if (MSC_Handle->unit[MSC_Handle->current_lun].state_changed == 1U)
               {
-                USBH_UsrLog("MSC Device capacity : %lu KBytes", \
-                            (unsigned long)((int64_t)MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
-                USBH_UsrLog("Block number : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr));
+                USBH_UsrLog("MSC Device capacity (lun=%d): %lu KBytes",
+						(int) MSC_Handle->current_lun,
+						(unsigned long) ((int64_t)MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
+			USBH_UsrLog("Block number : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr));
                 USBH_UsrLog("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
               }
               MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
@@ -742,7 +743,7 @@ uint8_t  USBH_MSC_GetMaxLUN(USBH_HandleTypeDef *phost)
 
 	if ((phost->gState == HOST_CLASS) && (MSC_Handle->state == MSC_IDLE))
 	{
-		return (uint8_t) MSC_Handle->max_lun;
+		return (uint8_t) MSC_Handle->max_lunv [0];
 	}
 
 	return 0xFFU;
