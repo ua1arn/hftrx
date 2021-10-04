@@ -1510,6 +1510,10 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
 
+#if WITHINTEGRATEDDSP
+	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
+#endif /* WITHINTEGRATEDDSP */
+
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
 }
 
