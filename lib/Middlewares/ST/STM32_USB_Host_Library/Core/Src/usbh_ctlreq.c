@@ -553,8 +553,8 @@ static USBH_StatusTypeDef USBH_ParseCfgDesc(USBH_HandleTypeDef *phost, uint8_t *
 				USBH_ParseInterfaceDesc(pif, (uint8_t*) pdesc);
 
 				USBH_DbgLog(
-						"USBH_ParseCfgDesc: ifix=%d, 0x%02X/0x%02X/0x%02X, nEP=%d",
-						pif->bInterfaceNumber, pif->bInterfaceClass,
+						"USBH_ParseCfgDesc: ifix=%d, alt=%d, 0x%02X/0x%02X/0x%02X, nEP=%d",
+						pif->bInterfaceNumber, pif->bAlternateSetting, pif->bInterfaceClass,
 						pif->bInterfaceSubClass, pif->bInterfaceProtocol,
 						pif->bNumEndpoints);
 				// 0x08/0x06/0x50: USB flash
