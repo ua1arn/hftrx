@@ -338,7 +338,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 //	PRINTF("board_ehci_initialize start.\n");
 
 	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) hehci->Instance;
-	//EhciController *const ehci = & hehci->ehci;
 	unsigned i;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
@@ -537,7 +536,6 @@ HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
   */
 uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 {
- 	//EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	return EHCIx->FRINDEX;
@@ -918,7 +916,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
- 	//EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
  	//PRINTF("HAL_EHCI_Init\n");
 
@@ -1035,7 +1032,6 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
-	//EhciController * const ehci = & hehci->ehci;
  	// Enable controller
  	// Запускаем контроллер, 8 микро-фреймов, включаем
  	// последовательную и асинхронную очередь
@@ -1084,7 +1080,6 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
- 	//EhciController * const ehci = & hehci->ehci;
   __HAL_LOCK(hehci);
   (void)EHCI_StopHost(hehci->Instance);
   __HAL_UNLOCK(hehci);
@@ -1483,7 +1478,6 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint16_t length, uint8_t do_ping)
 {
 	EHCI_HandleTypeDef * const hehci = phost->pData;
-	//EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	HAL_StatusTypeDef hal_status = HAL_OK;
@@ -1492,6 +1486,8 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
+
+	// TODO: use EHCI_USBCMD_ASYNC_ADVANCE
 
 	// Stop ASYNC queue
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
