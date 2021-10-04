@@ -604,6 +604,39 @@ static uint8_t port_changed(HUB_HandleTypeDef *HUB_Handle, const uint8_t *b, uns
 			HUB_Handle->HUB_Change.bPorts.PORT_7 = 1;
 		}
 
+		// PanGu board:
+		//	USB-A lower: port 2
+		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=04,01 (len=1)
+		//		PORT STATUS CHANGE [0x04] [0 1 0 0]
+		//		HUB_DEV_ATTACHED 2, lowspeed? 0
+		//		attach 2
+		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=04,01 (len=1)
+		//		PORT STATUS CHANGE [0x04] [0 1 0 0]
+		//		HUB_DEV_DETACHED 2
+		//		detach 2
+		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=04,01 (len=1)
+		//		PORT STATUS CHANGE [0x04] [0 1 0 0]
+		//		HUB_DEV_ATTACHED 2, lowspeed? 0
+		//		attach 2
+
+		//	USB-A upper: port 1
+		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=02,29 (len=1)
+		//		PORT STATUS CHANGE [0x02] [1 0 0 0]
+		//		HUB_DEV_ATTACHED 1, lowspeed? 0
+		//		attach 1
+		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=02,05 (len=1)
+		//		PORT STATUS CHANGE [0x02] [1 0 0 0]
+		//		HUB_DEV_DETACHED 1
+		//		detach 1
+		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=02,01 (len=1)
+		//		PORT STATUS CHANGE [0x02] [1 0 0 0]
+		//		HUB_DEV_ATTACHED 1, lowspeed? 0
+		//		attach 1
+		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=02,01 (len=1)
+		//		PORT STATUS CHANGE [0x02] [1 0 0 0]
+		//		HUB_DEV_DETACHED 1
+		//		detach 1
+
 		USBH_UsrLog("PORT STATUS CHANGE [0x%02X] [%d %d %d %d]",
 				b [0],
 				HUB_Handle->HUB_Change.bPorts.PORT_1,
