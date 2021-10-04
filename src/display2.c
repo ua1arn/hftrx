@@ -5875,10 +5875,11 @@ enum
 		{	31,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 		{	38,	0,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-		{	47, 15,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	45, 0,	display2_notch5,	REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	43, 5,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-		{	47, 20,	display_XXXXX3,		REDRM_MODE, PGALL, },
+		{	47, 15,	display2_usbsts3,	REDRM_BARS, PGALL, },	// USB host status
+		{	47, 20,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 #if WITHBARS
 		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
 		{    0, 4,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
@@ -5903,9 +5904,8 @@ enum
 //		{	46, 25,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 //		{	46, 30,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 //		{	46, 35,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
-		{	47, 20,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	43, 15,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	43, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		//{	46, 50,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 		
 		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	38, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
