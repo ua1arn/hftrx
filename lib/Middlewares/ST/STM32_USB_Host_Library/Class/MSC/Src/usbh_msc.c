@@ -303,7 +303,7 @@ static USBH_StatusTypeDef USBH_MSC_ClassRequest(USBH_HandleTypeDef *phost)
     case MSC_REQ_IDLE:
     case MSC_REQ_GET_MAX_LUN:
       /* Issue GetMaxLUN request */
-      status = USBH_MSC_BOT_REQ_GetMaxLUN(phost, & MSC_Handle->max_lunv);
+      status = USBH_MSC_BOT_REQ_GetMaxLUN(phost, MSC_Handle->max_lunv);
 
       /* When devices do not support the GetMaxLun request, this should
          be considered as only one logical unit is supported */
