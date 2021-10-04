@@ -31,9 +31,7 @@ extern "C" {
 /** @addtogroup USBH_LIB
   * @{
   */
-/* Fixed connection tree parameters for devices: */
-#define HOSTDEV_HUBADDR 0
-#define HOSTDEV_PRTADDR 0
+
 
 /** @addtogroup USBH_LIB_CORE
   * @{

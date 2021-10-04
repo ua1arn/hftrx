@@ -216,7 +216,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost)
 
       /* Open pipe for IN endpoint */
       (void)USBH_OpenPipe(phost, HID_Handle->InPipe, HID_Handle->InEp, phost->device.address,
-                          phost->device.speed, USB_EP_TYPE_INTR, HID_Handle->length, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
+                          phost->device.speed, USB_EP_TYPE_INTR, HID_Handle->length, HOSTDEV_HID_HUBADDR, HOSTDEV_HID_PRTADDR);
 
       (void)USBH_LL_SetToggle(phost, HID_Handle->InPipe, 0U);
     }
@@ -227,7 +227,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost)
 
       /* Open pipe for OUT endpoint */
       (void)USBH_OpenPipe(phost, HID_Handle->OutPipe, HID_Handle->OutEp, phost->device.address,
-                          phost->device.speed, USB_EP_TYPE_INTR, HID_Handle->length, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
+                          phost->device.speed, USB_EP_TYPE_INTR, HID_Handle->length, HOSTDEV_HID_HUBADDR, HOSTDEV_HID_PRTADDR);
 
       (void)USBH_LL_SetToggle(phost, HID_Handle->OutPipe, 0U);
     }

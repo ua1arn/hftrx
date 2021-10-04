@@ -107,6 +107,9 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 
 		HUB_Handle->parrent = NULL;	/* todo: fix for chans */
 
+		assigned_hub_address = phost->device.address;
+		assigned_sequential_address = (assigned_sequential_address + 1);
+
 		HUB_Handle->HUB_NumPorts = 0;
 		HUB_Handle->HUB_PwrGoodDelay = 0;
 
@@ -133,7 +136,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 	    	HUB_Handle->InPipe  = USBH_AllocPipe(phost, HUB_Handle->InEp);
 
 	    	// Open pipe for IN endpoint
-	    	USBH_OpenPipe  (phost, HUB_Handle->InPipe, HUB_Handle->InEp, phost->device.address, phost->device.speed, USB_EP_TYPE_INTR, HUB_Handle->length, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
+	    	USBH_OpenPipe  (phost, HUB_Handle->InPipe, HUB_Handle->InEp, phost->device.address, phost->device.speed, USB_EP_TYPE_INTR, HUB_Handle->length, HOSTDEV_HUB_HUBADDR, HOSTDEV_HUB_PRTADDR);
 
 	    	USBH_LL_SetToggle (phost, HUB_Handle->InPipe, 0);
 	    }

@@ -185,7 +185,7 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost)
   /* Open pipe for Notification endpoint */
   (void)USBH_OpenPipe(phost, MTP_Handle->NotificationPipe, MTP_Handle->NotificationEp,
                       phost->device.address, phost->device.speed, USB_EP_TYPE_INTR,
-                      MTP_Handle->NotificationEpSize, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
+                      MTP_Handle->NotificationEpSize, HOSTDEV_MTP_HUBADDR, HOSTDEV_MTP_PRTADDR);
 
   (void)USBH_LL_SetToggle(phost, MTP_Handle->NotificationPipe, 0U);
 
@@ -204,7 +204,7 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost)
   /* Open pipe for DATA IN endpoint */
   (void)USBH_OpenPipe(phost, MTP_Handle->DataInPipe, MTP_Handle->DataInEp,
                       phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
-                      MTP_Handle->DataInEpSize, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
+                      MTP_Handle->DataInEpSize, HOSTDEV_MTP_HUBADDR, HOSTDEV_MTP_PRTADDR);
 
   (void)USBH_LL_SetToggle(phost, MTP_Handle->DataInPipe, 0U);
 
@@ -223,7 +223,7 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost)
   /* Open pipe for DATA OUT endpoint */
   (void)USBH_OpenPipe(phost, MTP_Handle->DataOutPipe, MTP_Handle->DataOutEp,
                       phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
-                      MTP_Handle->DataOutEpSize, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
+                      MTP_Handle->DataOutEpSize, HOSTDEV_MTP_HUBADDR, HOSTDEV_MTP_PRTADDR);
 
   (void)USBH_LL_SetToggle(phost, MTP_Handle->DataOutPipe, 0U);
 

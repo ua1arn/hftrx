@@ -109,11 +109,48 @@ extern "C" {
 //#define USBH_MPS_LOWSPEED                        8
 // -- from MORI
 
+
+//#define ASSIGNED_DEV_ADDR 6
+//#define ASSIGNED_HUB_ADDR 7
+
+extern uint8_t assigned_sequential_address;
+extern uint8_t assigned_hub_address;
+
+#define USBH_ADDRESS_ASSIGNED 5
+
+/* Fixed connection tree parameters for xxx class devices: */
+#define HOSTDEV_DEFAULT_HUBADDR 0
+#define HOSTDEV_DEFAULT_PRTADDR 0
+
+/* Fixed connection tree parameters for HID class devices: */
+#define HOSTDEV_HID_HUBADDR assigned_hub_address
+#define HOSTDEV_HID_PRTADDR 0
+
+/* Fixed connection tree parameters for AUDIO class devices: */
+#define HOSTDEV_AUDIO_HUBADDR assigned_hub_address
+#define HOSTDEV_AUDIO_PRTADDR 0
+
+/* Fixed connection tree parameters for MSC class devices: */
+#define HOSTDEV_MSC_HUBADDR assigned_hub_address
+#define HOSTDEV_MSC_PRTADDR 0
+
+/* Fixed connection tree parameters for CDC class devices: */
+#define HOSTDEV_CDC_HUBADDR assigned_hub_address
+#define HOSTDEV_CDC_PRTADDR 0
+
+/* Fixed connection tree parameters for MTP class devices: */
+#define HOSTDEV_MTP_HUBADDR assigned_hub_address
+#define HOSTDEV_MTP_PRTADDR 0
+
+/* Fixed connection tree parameters for xx class devices: */
+#define HOSTDEV_HUB_HUBADDR assigned_hub_address	/* HUB всегжа считается первым устройством */
+#define HOSTDEV_HUB_PRTADDR 0
+
 /** @defgroup USBH_CORE_Private_Defines
   * @{
   */
 #define USBH_ADDRESS_DEFAULT                     0x00U
-#define USBH_ADDRESS_ASSIGNED                    0x01U
+//#define USBH_ADDRESS_ASSIGNED                    0x01U // адреса разные в случае структуры с HUB
 #define USBH_MPS_DEFAULT                         0x40U
 #define USBH_MPS_LOWSPEED                        0x08U
 /**
@@ -471,6 +508,7 @@ typedef struct
   __ALIGN4k_BEGIN uint8_t           CfgDesc_Raw [USBH_MAX_SIZE_CONFIGURATION] __ALIGN4k_END;
   __ALIGN4k_BEGIN uint8_t           Data [USBH_MAX_DATA_BUFFER] __ALIGN4k_END;
   uint8_t                           address;
+  uint8_t                           assigned_address;	/* адрес, колторый будет назначен устройству при енумерации */
   uint8_t                           speed;
   uint8_t                           EnumCnt;
   uint8_t                           RstCnt;
