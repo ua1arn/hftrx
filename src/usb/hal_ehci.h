@@ -785,6 +785,23 @@ typedef struct __EHCI_HandleTypeDef
 typedef struct
 #endif /* USE_HAL_EHCI_REGISTER_CALLBACKS */
 {
+	// Periodic frame list
+	// Periodic Schedule list - PERIODICLISTBASE use
+	volatile __attribute__((aligned(4096)))  struct ehci_periodic_frame periodiclist [FLS];
+
+	// Asynchronous Schedule list - ASYNCLISTADDR use
+	// list of queue headers
+	// выравнивание заменено с 32 на DATA CACHE PAGE
+	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_queue_head asynclisthead [16];
+	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_transfer_descriptor qtds [16];
+
+	VLIST_ENTRY hcListAsync;
+	VLIST_ENTRY hcListPeriodic;
+
+	EHCI_HCTypeDef *volatile ghc;
+
+	SPINLOCK_t asynclock;
+
 	EHCI_TypeDef *Instance; /*!< Register base address    */
 	EHCI_InitTypeDef Init; /*!< HCD required parameters  */
 	EHCI_HCTypeDef hc [16]; /*!< Host channels parameters */
@@ -795,7 +812,6 @@ typedef struct
 	unsigned long nports;
 	__IO uint32_t *portsc;
 	__IO uint32_t *configFlag;
-	//EhciOpRegs *opRegs;
 
 #if (USE_HAL_EHCI_REGISTER_CALLBACKS == 1U)
 	void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
@@ -809,23 +825,6 @@ typedef struct
 	void (* MspInitCallback)(struct __EHCI_HandleTypeDef *hhcd);                           /*!< USB OTG HCD Msp Init callback           */
 	void (* MspDeInitCallback)(struct __EHCI_HandleTypeDef *hhcd);                         /*!< USB OTG HCD Msp DeInit callback         */
 #endif /* USE_HAL_EHCI_REGISTER_CALLBACKS */
-
-	  VLIST_ENTRY hcListAsync;
-	  VLIST_ENTRY hcListPeriodic;
-
-	  EHCI_HCTypeDef * volatile ghc;
-
-	  SPINLOCK_t asynclock;
-
-	  // Asynchronous Schedule list - ASYNCLISTADDR use
-	  // list of queue headers
-	  // выравнивание заменено с 32 на DATA CACHE PAGE
-	  volatile __attribute__((aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
-	  volatile __attribute__((aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
-
-	  // Periodic frame list
-	  // Periodic Schedule list - PERIODICLISTBASE use
-	  volatile __attribute__((aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
 
 } EHCI_HandleTypeDef;
 /**
