@@ -506,9 +506,13 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 	return EHCIx->FRINDEX;
 }
 
-
 static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 {
+//	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC_ADVANCE;
+//	(void) EHCIx->USBCMD
+//	while ((EHCIx->USBSTS & EHCI_USBCMD_ASYNC_ADVANCE) != 0)
+//		;
+
 	// Stop ASYNC queue
 	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
 	(void) EHCIx->USBCMD;
@@ -523,7 +527,6 @@ static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
 		;
-
 }
 
 /**
@@ -817,11 +820,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 1);	// Clear USB Error Interrupt (USBERRINT) interrupt
  		//PRINTF("HAL_EHCI_IRQHandler: USB Error\n");
- 		unsigned i;
-// 		for (i = 0; i < hehci->nports; ++ i)
-// 	 	{
-// 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
-// 	 	}
  		//hehci->urbState = USBH_URB_ERROR;
  	}
 
@@ -880,11 +878,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 5);	// Clear Interrupt On Async Advance
  		//PRINTF("HAL_EHCI_IRQHandler: Interrupt On Async Advance\n");
- 		unsigned i;
- 		for (i = 0; i < hehci->nports; ++ i)
- 	 	{
- 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
- 	 	}
  	}
 }
 
