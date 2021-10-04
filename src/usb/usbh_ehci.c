@@ -1359,9 +1359,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	asynclist_item2(hc, qh, virt_to_phys(qtd), hc->ch_num == 0);
 
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-
 	/*  убрать после перехода на списки работающих пересылок */
 	ghc = hc;
 
@@ -1490,6 +1487,9 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 								 ep_type, token, pbuff, length,
 								 do_ping);
+
+	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
 
 	// Run ASYNC queue
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
