@@ -31,6 +31,9 @@ extern "C" {
 /** @addtogroup USBH_LIB
   * @{
   */
+/* Fixed connection tree parameters for devices: */
+#define HOSTDEV_HUBADDR 0
+#define HOSTDEV_PRTADDR 0
 
 /** @addtogroup USBH_LIB_CORE
   * @{
@@ -80,7 +83,9 @@ USBH_StatusTypeDef USBH_OpenPipe(USBH_HandleTypeDef *phost,
                                  uint8_t dev_address,
                                  uint8_t speed,
                                  uint8_t ep_type,
-                                 uint16_t mps);
+                                 uint16_t mps,
+								 uint8_t tt_hubaddr,
+								 uint8_t tt_prtaddr);
 
 USBH_StatusTypeDef USBH_ClosePipe(USBH_HandleTypeDef *phost,
                                   uint8_t pipe_num);

@@ -135,7 +135,9 @@ USBH_StatusTypeDef   USBH_LL_OpenPipe(USBH_HandleTypeDef *phost,
                                       uint8_t dev_address,
                                       uint8_t speed,
                                       uint8_t ep_type,
-                                      uint16_t mps);
+									  uint16_t mps,
+									  uint8_t tt_hubaddr,
+									  uint8_t tt_prtaddr);
 
 USBH_StatusTypeDef   USBH_LL_ClosePipe(USBH_HandleTypeDef *phost,
                                        uint8_t pipe);

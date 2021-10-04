@@ -171,7 +171,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity(USBH_HandleTypeDef *phost,
       hBot->state = BOT_SEND_CBW;
 
       hBot->cmd_state = BOT_CMD_WAIT;
-      hBot->pbuf = hBot->data;
+      hBot->pbuf = (uint8_t *) hBot->data;
       error = USBH_BUSY;
       break;
 
@@ -230,7 +230,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_Inquiry(USBH_HandleTypeDef *phost, uint8_t lun,
       hBot->state = BOT_SEND_CBW;
 
       hBot->cmd_state = BOT_CMD_WAIT;
-      hBot->pbuf = hBot->data;
+      hBot->pbuf = (uint8_t *) hBot->data;
       error = USBH_BUSY;
       break;
 
@@ -305,7 +305,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_RequestSense(USBH_HandleTypeDef *phost,
 
       hBot->state = BOT_SEND_CBW;
       hBot->cmd_state = BOT_CMD_WAIT;
-      hBot->pbuf = hBot->data;
+      hBot->pbuf = (uint8_t *) hBot->data;
       error = USBH_BUSY;
       break;
 

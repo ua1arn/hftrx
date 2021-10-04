@@ -227,7 +227,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
   {
     (void)USBH_OpenPipe(phost, MSC_Handle->OutPipe, MSC_Handle->OutEp,
                         phost->device.address, phost->device.speed,
-                        USB_EP_TYPE_BULK, MSC_Handle->OutEpSize);
+                        USB_EP_TYPE_BULK, MSC_Handle->OutEpSize, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
   }
   else
   {
@@ -238,7 +238,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
   {
     (void)USBH_OpenPipe(phost, MSC_Handle->InPipe, MSC_Handle->InEp,
                         phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
-                        MSC_Handle->InEpSize);
+                        MSC_Handle->InEpSize, HOSTDEV_HUBADDR, HOSTDEV_PRTADDR);
   }
   else
   {

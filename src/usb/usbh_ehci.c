@@ -1738,7 +1738,10 @@ uint32_t USBH_LL_GetAdjXferSize(USBH_HandleTypeDef *phost, uint8_t pipe, uint32_
   * @retval USBH status
   */
 USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num, uint8_t epnum,
-                                    uint8_t dev_address, uint8_t speed, uint8_t ep_type, uint16_t mps)
+                                    uint8_t dev_address, uint8_t speed, uint8_t ep_type,
+	                                 uint16_t mps,
+									  uint8_t tt_hubaddr,
+									  uint8_t tt_prtaddr)
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
@@ -1748,7 +1751,7 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num,
 	EHCI_StopAsync(EHCIx);
 
   hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
-                               dev_address, speed, ep_type, mps, 0, 0);
+                               dev_address, speed, ep_type, mps, tt_hubaddr, tt_prtaddr);
 
 	EHCI_StartAsync(EHCIx);
 
