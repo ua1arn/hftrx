@@ -344,6 +344,10 @@ typedef struct
 
   USB_OTG_HCStateTypeDef state;       /*!< Host Channel state.
                                             This parameter can be any value of @ref USB_OTG_HCStateTypeDef  */
+
+  uint8_t tt_hubaddr;
+  uint8_t tt_prtaddr;
+
 } EHCI_HCTypeDef;
 
 typedef USB_EHCI_CapabilityTypeDef   EHCI_TypeDef;	/* CPU I/O registers */
@@ -470,7 +474,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hhcd);
 HAL_StatusTypeDef HAL_EHCI_DeInit(EHCI_HandleTypeDef *hhcd);
 HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hhcd, uint8_t ch_num,
                                   uint8_t epnum, uint8_t dev_address,
-                                  uint8_t speed, uint8_t ep_type, uint16_t mps);
+                                  uint8_t speed, uint8_t ep_type, uint16_t mps,
+								  uint8_t tt_hubaddr,
+								  uint8_t tt_prtaddr);
 
 HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hhcd, uint8_t ch_num);
 void              HAL_EHCI_MspInit(EHCI_HandleTypeDef *hhcd);

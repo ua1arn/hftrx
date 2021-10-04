@@ -307,8 +307,8 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 	uint32_t cap;
 	cap =
 			EHCI_CAP_MULT(1) | 	// 00b: reserved, 01b One transaction to be issued for this endpoint per micro-frame
-			EHCI_CAP_TT_HUB(0) |
-			EHCI_CAP_TT_PORT(0);
+			EHCI_CAP_TT_HUB(hc->tt_hubaddr) |
+			EHCI_CAP_TT_PORT(hc->tt_prtaddr);
 //	if ( tt ) {
 //		ASSERT( tt->hub->usb );
 //		cap |= ( EHCI_CAP_TT_HUB ( tt->hub->usb->address ) |
@@ -316,6 +316,9 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 //		if ( attr == USB_ENDPOINT_ATTR_INTERRUPT )
 //			cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
 //	}
+
+	if (hc->ep_type == EP_TYPE_INTR)
+		cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
 	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * Head);
@@ -563,6 +566,10 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
   *            EP_TYPE_INTR: Interrupt type
   * @param  mps Max Packet Size.
   *          This parameter can be a value from 0 to32K
+  * @param  tt_hubaddr HUB address.
+  *          device address of the transaction translator’s hub.
+  * @param  tt_prtaddr Port address
+  *          port number of the recipient transaction translator.
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
@@ -571,7 +578,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
                                   uint8_t dev_address,
                                   uint8_t speed,
                                   uint8_t ep_type,
-                                  uint16_t mps)
+                                  uint16_t mps,
+								  uint8_t tt_hubaddr,
+								  uint8_t tt_prtaddr)
 {
 	HAL_StatusTypeDef status = HAL_OK;
 	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
@@ -591,6 +600,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 	hc->ch_num = ch_num;
 	hc->ep_type = ep_type;
 	hc->ep_num = epnum & 0x7FU;
+
+	hc->tt_hubaddr = tt_hubaddr;
+	hc->tt_prtaddr = ep_type;
 
 	if ((epnum & 0x80U) == 0x80U)
 	{
@@ -1779,7 +1791,7 @@ USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num,
   	;
 
   hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
-                               dev_address, speed, ep_type, mps);
+                               dev_address, speed, ep_type, mps, 0, 0);
 
 
   // Run ASYNC queue
