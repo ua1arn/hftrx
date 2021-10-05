@@ -695,7 +695,6 @@ static void window_memory_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-
 		x = 0;
 		y = 0;
 		button_t * bh = NULL;
@@ -712,6 +711,7 @@ static void window_memory_process(void)
 			bh->parent = WINDOW_MEMORY;
 			bh->index = i;
 			bh->is_long_press = 1;
+      bh->is_repeating = 0;
 			bh->is_locked = BUTTON_NON_LOCKED;
 			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_memory_%02d"), i);
 
