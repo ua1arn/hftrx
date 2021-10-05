@@ -149,6 +149,10 @@ USBH_StatusTypeDef   USBH_LL_SubmitURB(USBH_HandleTypeDef *phost,
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
                                          uint8_t pipe);
 
+
+USBH_SpeedTypeDef USBH_LL_GetPipeSpeed(USBH_HandleTypeDef *phost,
+		uint8_t pipe_num);
+
 #if (USBH_USE_OS == 1U)
 USBH_StatusTypeDef  USBH_LL_NotifyURBChange(USBH_HandleTypeDef *phost);
 #endif

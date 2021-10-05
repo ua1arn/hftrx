@@ -105,7 +105,6 @@ USBH_StatusTypeDef USBH_CtlSendSetup(USBH_HandleTypeDef *phost,
   return USBH_OK;
 }
 
-
 /**
   * @brief  USBH_CtlSendData
   *         Sends a data Packet to the Device
@@ -121,8 +120,7 @@ USBH_StatusTypeDef USBH_CtlSendData(USBH_HandleTypeDef *phost,
                                     uint8_t pipe_num,
                                     uint8_t do_ping)
 {
-	/* todo: fix */
-  if (phost->Target.speed != USBH_SPEED_HIGH)
+  if (USBH_LL_GetPipeSpeed(phost, pipe_num) != USBH_SPEED_HIGH)
   {
     do_ping = 0U;
   }
@@ -182,8 +180,7 @@ USBH_StatusTypeDef USBH_BulkSendData(USBH_HandleTypeDef *phost,
                                      uint8_t pipe_num,
                                      uint8_t do_ping)
 {
-	/* todo: fix */
-  if (phost->Target.speed != USBH_SPEED_HIGH)
+  if (USBH_LL_GetPipeSpeed(phost, pipe_num) != USBH_SPEED_HIGH)
   {
     do_ping = 0U;
   }
