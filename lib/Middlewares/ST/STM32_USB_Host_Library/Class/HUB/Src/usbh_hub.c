@@ -231,27 +231,32 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		break;
 
 	case HUB_WAIT_PWRGOOD_DONE:
-		status = set_port_feature(phost, HUB_FEAT_SEL_PORT_RESET, 2);	// port #2 - появляется состояние PORT_ENABLE
-		if (status == USBH_OK)
-        {
-    		HUB_Handle->ctl_state = HUB_REQ_DONE;
-        }
-		status = USBH_BUSY;
-		break;
-
-	case HUB_REQ_DONE:
 		//phost->hubBusy = 0;
 		USBH_UsrLog("USBH_HUB_ClassRequest done: NumPorts=%d, pwrGoodDelay=%d", HUB_Handle->NumPorts, HUB_Handle->pwrGoodDelay);
 		USBH_UsrLog("=============================================");
+		HUB_Handle->hubClassRequestPort = 1;
+		HUB_Handle->ctl_state = HUB_REQ_RESETS;
+		break;
 
+	case HUB_REQ_RESETS:
+		// Выполняем сброс всех портов
+		status = set_port_feature(phost, HUB_FEAT_SEL_PORT_RESET, HUB_Handle->hubClassRequestPort);
+		if (status == USBH_OK)
+		{
+			// Reach last port
+			if (HUB_Handle->NumPorts <= HUB_Handle->hubClassRequestPort)
+				HUB_Handle->ctl_state = HUB_REQ_RESETS_DONE;
+			else
+				HUB_Handle->hubClassRequestPort ++;
+			status = USBH_BUSY;
+		}
+		break;
+
+	case HUB_REQ_RESETS_DONE:
 		// Строим карту подключенных портов
 		HUB_Handle->hubClassRequestPort = 1;
 		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES;
 		status = USBH_BUSY;
-		break;
-
-		HUB_Handle->ctl_state = HUB_REQ_IDLE;
-		status = USBH_OK;
 		break;
 
 	case HUB_REQ_SCAN_STATUSES:
@@ -323,11 +328,9 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 	case HUB_REQ_SCAN_STATUSES_WAIT_DEV_DESC:
 	      /* Get Device Desc for only 1st 8 bytes : To get EP0 MaxPacketSize */
 	      status = USBH_Get_DevDesc(phost, USBH_MPS_LOWSPEED);
-	      if (status == USBH_BUSY)
-	    	  break;
 	      if (status == USBH_OK)
 	      {
-	    	  TP();
+	    	  /* Печать device descriptor */
 	    	  printhex((uintptr_t) phost->device.Data, phost->device.Data, 48);
 	      }
 		break;
