@@ -268,11 +268,22 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			if (st->wPortStatus.PORT_LOW_SPEED)
 			{
 				memset(phost->device.Data, 0xDE, sizeof phost->device.Data);
+
+//				phost->Target.dev_address = 0;
+//				phost->Target.speed = USBH_SPEED_LOW;
+//				phost->Target.tt_hubaddr = 44;
+//				phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
+//				phost->Control.pipe_size = 8;
+
+				/* modify control channels configuration for MaxPacket size */
+		        (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target, USBH_EP_CONTROL,
+		                            (uint16_t)phost->Control.pipe_size);
+
+		        /* Open Control pipes */
+		        (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target, USBH_EP_CONTROL,
+		                            (uint16_t)phost->Control.pipe_size);
+
 				HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_WAIT_DEV_DESC;
-				phost->Target.dev_address = 0;
-				phost->Target.speed = 0;
-				phost->Target.tt_hubaddr = 44;
-				phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
 				status = USBH_BUSY;
 				break;
 			}
@@ -311,7 +322,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 	      if (status == USBH_OK)
 	      {
 	    	  TP();
-	    	  printhex(phost->device.Data, phost->device.Data, 18);
+	    	  printhex((uintptr_t) phost->device.Data, phost->device.Data, 48);
 	      }
 		break;
 
