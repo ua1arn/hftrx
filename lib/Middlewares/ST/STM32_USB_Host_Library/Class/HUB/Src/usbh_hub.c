@@ -105,13 +105,14 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 
 		USBH_memset(HUB_Handle, 0, sizeof (HUB_HandleTypeDef));
 
-		HUB_Handle->parrent = NULL;	/* todo: fix for chans */
+		HUB_Handle->parrent = phost->hubInstances == 1 ? NULL : phost->hubDatas [phost->hubInstances - 1];	/* todo: fix for chans */
 
+		/* устройствам за этим HUB присваиватся следующие адреса */
 		assigned_hub_address = phost->device.address;
 		assigned_sequential_address = (assigned_sequential_address + 1);
 
-		HUB_Handle->HUB_NumPorts = 0;
-		HUB_Handle->HUB_PwrGoodDelay = 0;
+		HUB_Handle->NumPorts = 0;
+		HUB_Handle->pwrGoodDelay = 0;
 
 		HUB_Handle->HUB_ChangeInfo = NULL;
 		HUB_Handle->HUB_CurPort = 0;
@@ -191,9 +192,9 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		if (status == USBH_OK)
 		{
 			USB_HUB_DESCRIPTOR *HUB_Desc = (USB_HUB_DESCRIPTOR*) HUB_Handle->buffer;
-			HUB_Handle->HUB_NumPorts = (HUB_Desc->bNbrPorts > MAX_HUB_PORTS) ? MAX_HUB_PORTS : HUB_Desc->bNbrPorts;
-			HUB_Handle->HUB_PwrGoodDelay = (HUB_Desc->bPwrOn2PwrGood * 2);
-			USBH_UsrLog("USBH_HUB_ClassRequest: HUB_NumPorts=%d, HUB_PwrGoodDelay=%d", HUB_Handle->HUB_NumPorts, HUB_Handle->HUB_PwrGoodDelay);
+			HUB_Handle->NumPorts = (HUB_Desc->bNbrPorts > MAX_HUB_PORTS) ? MAX_HUB_PORTS : HUB_Desc->bNbrPorts;
+			HUB_Handle->pwrGoodDelay = (HUB_Desc->bPwrOn2PwrGood * 2);
+			USBH_UsrLog("USBH_HUB_ClassRequest: NumPorts=%d, pwrGoodDelay=%d", HUB_Handle->NumPorts, HUB_Handle->pwrGoodDelay);
 
 			HUB_Handle->hubClassRequestPort = 1;
 			HUB_Handle->ctl_state = HUB_REQ_SET_POWER;
@@ -207,7 +208,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		if (status == USBH_OK)
 		{
 			// Reach last port
-			if (HUB_Handle->HUB_NumPorts <= HUB_Handle->hubClassRequestPort)
+			if (HUB_Handle->NumPorts <= HUB_Handle->hubClassRequestPort)
 				HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD;
 			else
 				HUB_Handle->hubClassRequestPort ++;
@@ -217,8 +218,8 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 	case HUB_WAIT_PWRGOOD:
 		// todo: переделать на неблокирующее выполненеие задержки
-		//USBH_UsrLog("HUB_WAIT_PWRGOOD %u ms", HUB_Handle->HUB_PwrGoodDelay);
-		USBH_Delay(HUB_Handle->HUB_PwrGoodDelay);
+		//USBH_UsrLog("HUB_WAIT_PWRGOOD %u ms", HUB_Handle->pwrGoodDelay);
+		USBH_Delay(HUB_Handle->pwrGoodDelay);
 		HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD_DONE;
 		status = USBH_BUSY;
 		break;
@@ -230,7 +231,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 	case HUB_REQ_DONE:
 		//phost->hubBusy = 0;
-		USBH_UsrLog("USBH_HUB_ClassRequest done: HUB_NumPorts=%d, HUB_PwrGoodDelay=%d", HUB_Handle->HUB_NumPorts, HUB_Handle->HUB_PwrGoodDelay);
+		USBH_UsrLog("USBH_HUB_ClassRequest done: NumPorts=%d, pwrGoodDelay=%d", HUB_Handle->NumPorts, HUB_Handle->pwrGoodDelay);
 		USBH_UsrLog("=============================================");
 		HUB_Handle->ctl_state = HUB_REQ_IDLE;
 		status = USBH_OK;

@@ -195,8 +195,8 @@ typedef struct _HUB_Process
   uint8_t address;	// USB bus addres of this hub
   struct _HUB_Process * parrent;	/* parrent hub of this hub. NULL for root. */
 
-  uint8_t  HUB_NumPorts;	// See bNbrPorts specs
-  uint16_t HUB_PwrGoodDelay;
+  uint8_t  NumPorts;	// See bNbrPorts specs
+  uint16_t pwrGoodDelay;
 
 
   __IO USB_PORT_CHANGE HUB_Change;
