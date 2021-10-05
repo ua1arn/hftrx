@@ -582,7 +582,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 	hc->ep_num = epnum & 0x7FU;
 
 	hc->tt_hubaddr = tt_hubaddr;
-	hc->tt_prtaddr = ep_type;
+	hc->tt_prtaddr = tt_prtaddr;
 
 	if ((epnum & 0x80U) == 0x80U)
 	{
