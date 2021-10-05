@@ -3714,6 +3714,69 @@ void gui_open_sys_menu(void)
 
 // ****** Common windows ***********************************************************************
 
+// Пример работы с элементом Text field
+// Декодирование FT8 в данном проекте еще не реализовано
+
+/*
+void hamradio_gui_parse_ft8buf(void)
+{
+	window_t * const win = get_win(WINDOW_FT8);
+	put_to_wm_queue(win, WM_MESSAGE_ACTION, DUMMY_ACTION, 1);
+}
+
+static void window_ft8_process(void)
+{
+	window_t * const win = get_win(WINDOW_FT8);
+	static uint16_t win_x = 0, win_y = 0;
+
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+
+		static const text_field_t text_field [] = {
+			{ 400, 245, CANCELLED, WINDOW_FT8, NON_VISIBLE, COLORMAIN_WHITE, "tf_ft8", 15, },
+		};
+		win->tf_count = ARRAY_SIZE(text_field);
+		uint_fast16_t tf_size = sizeof(text_field);
+		win->tf_ptr = malloc(tf_size);
+		GUI_MEM_ASSERT(win->tf_ptr);
+		memcpy(win->tf_ptr, text_field, tf_size);
+
+		text_field_t * tf_ft8 = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ft8");
+		tf_ft8->x1 = 0;
+		tf_ft8->y1 = 0;
+		tf_ft8->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+		{
+		case WM_MESSAGE_ACTION:
+
+			if (type == DUMMY_ACTION && action == 1)
+			{
+				text_field_t * tf_ft8 = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ft8");
+				const char delimeters [] = "|";
+				char * ft8buf = (char *) 0x205DC000;
+				char * text2 = strtok(ft8buf, delimeters);
+				while (text2 != NULL)
+				{
+					textfield_add_string(tf_ft8, text2);
+					text2 = strtok(NULL, delimeters);
+				}
+			}
+
+			break;
+
+		default:
+
+			break;
+		}
+}
+*/
+
 // *********************************************************************************************************************************************************************
 
 static void window_af_process(void)
