@@ -113,7 +113,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 		HUB_Handle->parrent = phost->hubInstances == 1 ? NULL : phost->hubDatas [phost->hubInstances - 1];	/* todo: fix for chans */
 
 		/* устройствам за этим HUB присваиватся следующие адреса */
-		assigned_hub_address = phost->device.address;
+		//assigned_hub_address = phost->device.address;
 		assigned_sequential_address = (assigned_sequential_address + 1);
 
 		HUB_Handle->NumPorts = 0;
@@ -726,7 +726,7 @@ static void attach(USBH_HandleTypeDef *phost,
 #warning Then use HUB class. investigane Pipes usage.
 // Taken from https://github.com/mori-br/STM32F4HUB
 	//pphost->Pipes 				= phost->Pipes;
-	(void)USBH_memcpy(pphost->Pipes, phost->Pipes, sizeof pphost->Pipes);
+	//(void)USBH_memcpy(pphost->Pipes, phost->Pipes, sizeof pphost->Pipes);
 
     pphost->pUser 				= phost->pUser;
 	pphost->EnumState 			= ENUM_IDLE;
@@ -735,8 +735,8 @@ static void attach(USBH_HandleTypeDef *phost,
 	pphost->Control.errorcount 	= 0;
 	pphost->Control.state 		= CTRL_SETUP;
 	pphost->Control.pipe_size 	= lowspeed ? USBH_MPS_LOWSPEED: USBH_MPS_DEFAULT;
-	pphost->device.address 		= USBH_ADDRESS_DEFAULT;
-	pphost->device.speed   		= lowspeed ? USBH_SPEED_LOW : USBH_SPEED_FULL;
+	pphost->Target.dev_address 		= USBH_ADDRESS_DEFAULT;
+	pphost->Target.speed   		= lowspeed ? USBH_SPEED_LOW : USBH_SPEED_FULL;
 	pphost->device.is_connected = 1;
 
 //	HCD_HandleTypeDef *phHCD =  &_hHCD[pphost->id];

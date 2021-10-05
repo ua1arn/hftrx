@@ -239,9 +239,11 @@ static USBH_StatusTypeDef DeInitStateMachine(USBH_HandleTypeDef *phost)
   phost->Control.pipe_size = USBH_MPS_DEFAULT;
   phost->Control.errorcount = 0U;
 
-  phost->device.assigned_address = USBH_ADDRESS_ASSIGNED;
-  phost->device.address = USBH_ADDRESS_DEFAULT;
-  phost->device.speed = (uint8_t)USBH_SPEED_FULL;
+  phost->Target.dev_address = USBH_ADDRESS_DEFAULT;
+  phost->Target.speed = (uint8_t)USBH_SPEED_FULL;
+  phost->Target.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
+  phost->Target.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
+
   phost->device.RstCnt = 0U;
   phost->device.EnumCnt = 0U;
 
@@ -515,8 +517,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 		USBH_LL_ResetPort2(phost, 0);
 
         /* Make sure to start with Default address */
-       phost->device.address = USBH_ADDRESS_DEFAULT;
-	   phost->device.assigned_address = USBH_ADDRESS_ASSIGNED;
+       phost->Target.dev_address = USBH_ADDRESS_DEFAULT;
        phost->Timeout = 0U;
 
        /* Wait for 200 ms after connection */
@@ -588,28 +589,25 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         phost->pUser(phost, HOST_USER_CONNECTION);
       }
 
-      phost->device.speed = (uint8_t)USBH_LL_GetSpeed(phost);
+      phost->Target.speed = (uint8_t)USBH_LL_GetSpeed(phost);
 
       phost->gState = HOST_ENUMERATION;
 
       phost->Control.pipe_out = USBH_AllocPipe(phost, 0x00U);
       phost->Control.pipe_in  = USBH_AllocPipe(phost, 0x80U);
 
-      USBH_TargetTypeDef target;
-      target.speed = phost->device.speed;
-      target.dev_address = phost->device.address;
-      target.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
-      target.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
+       phost->Target.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
+      phost->Target.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
 
 
       /* Open Control pipes */
       (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U,
-                          & target,
+                          & phost->Target,
                           USBH_EP_CONTROL, (uint16_t)phost->Control.pipe_size);
 
       /* Open Control pipes */
       (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U,
-              	  	  	  & target,
+              	  	  	  & phost->Target,
                           USBH_EP_CONTROL, (uint16_t)phost->Control.pipe_size);
 
 #if (USBH_USE_OS == 1U)
@@ -754,12 +752,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
         if (phost->pActiveClass != NULL)
         {
-            target.speed = phost->device.speed;
-            target.dev_address = phost->device.address;
-            target.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
-            target.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
-
-          if (phost->pActiveClass->Init(phost, & target) == USBH_OK)
+          if (phost->pActiveClass->Init(phost, & phost->Target) == USBH_OK)
           {
             phost->gState = HOST_CLASS_REQUEST;
             USBH_UsrLog("%s class code %02X started.", phost->pActiveClass->Name, (unsigned) phost->device.CfgDesc.Itf_Desc[0].bInterfaceClass);
@@ -925,20 +918,14 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
       if (ReqStatus == USBH_OK)
       {
         phost->Control.pipe_size = phost->device.DevDesc.bMaxPacketSize;
-        USBH_TargetTypeDef target;
-        target.speed = phost->device.speed;
-        target.dev_address = phost->device.address;
-        target.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
-        target.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
-
         phost->EnumState = ENUM_GET_FULL_DEV_DESC;
 
         /* modify control channels configuration for MaxPacket size */
-        (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & target, USBH_EP_CONTROL,
+        (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target, USBH_EP_CONTROL,
                             (uint16_t)phost->Control.pipe_size);
 
         /* Open Control pipes */
-        (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & target, USBH_EP_CONTROL,
+        (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target, USBH_EP_CONTROL,
                             (uint16_t)phost->Control.pipe_size);
       }
       else if (ReqStatus == USBH_NOT_SUPPORTED)
@@ -1005,29 +992,23 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
 
     case ENUM_SET_ADDR:
       /* set address */
-     ReqStatus = USBH_SetAddress(phost, phost->device.assigned_address);
+      ReqStatus = USBH_SetAddress(phost, 44);
       if (ReqStatus == USBH_OK)
       {
         USBH_Delay(2U);
-        phost->device.address = phost->device.assigned_address;
-
-        USBH_TargetTypeDef target;
-        target.speed = phost->device.speed;
-        target.dev_address = phost->device.address;
-        target.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
-        target.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
+        phost->Target.dev_address = 44;
 
         /* user callback for device address assigned */
-        USBH_UsrLog("Address (#%d,hub=%d,port=%d,speed=%d) assigned.", (int) target.dev_address, (int) target.tt_hubaddr, (int) target.tt_prtaddr, (int) target.speed);
+        USBH_UsrLog("Address (#%d,hub=%d,port=%d,speed=%d) assigned.", (int) phost->Target.dev_address, (int) phost->Target.tt_hubaddr, (int) phost->Target.tt_prtaddr, (int) phost->Target.speed);
         phost->EnumState = ENUM_GET_CFG_DESC;
 
         /* modify control channels to update device address */
-        (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & target,
+        (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target,
                             USBH_EP_CONTROL,
                             (uint16_t)phost->Control.pipe_size);
 
         /* Open Control pipes */
-        (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & target,
+        (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target,
                             USBH_EP_CONTROL,
                             (uint16_t)phost->Control.pipe_size);
       }

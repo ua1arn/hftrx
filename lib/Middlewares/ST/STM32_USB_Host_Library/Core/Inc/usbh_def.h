@@ -483,9 +483,6 @@ typedef struct
 {
   __ALIGN4k_BEGIN uint8_t           CfgDesc_Raw [USBH_MAX_SIZE_CONFIGURATION] __ALIGN4k_END;
   __ALIGN4k_BEGIN uint8_t           Data [USBH_MAX_DATA_BUFFER] __ALIGN4k_END;
-  uint8_t                           address;
-  uint8_t                           assigned_address;	/* адрес, колторый будет назначен устройству при енумерации */
-  uint8_t                           speed;
   uint8_t                           EnumCnt;
   uint8_t                           RstCnt;
   __IO uint8_t                      is_connected;
@@ -533,6 +530,7 @@ typedef struct _USBH_HandleTypeDef
   CMD_StateTypeDef      RequestState;
   USBH_CtrlTypeDef      Control;
   USBH_DeviceTypeDef    device;
+  USBH_TargetTypeDef	Target;	/* Enumeration target */
 
   USBH_ClassTypeDef    *pActiveClass;
   uint32_t              ClassNumber;	/* number of registered classes */

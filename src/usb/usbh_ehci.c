@@ -29,11 +29,6 @@ void Error_Handler(void);
 	/* USB Host Core handle declaration. */
 	RAMBIGDTCM USBH_HandleTypeDef hUsbHostHS;
 
-	// MORI
-//	USBH_HandleTypeDef hUSBHost[5];
-//	HCD_HandleTypeDef _hHCD[2];
-//	EHCI_HandleTypeDef _hEHCI[2];
-
 	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
 	static RAMBIGDTCM EHCI_HandleTypeDef hehci_USB;
@@ -1506,6 +1501,13 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 #endif /* WITHINTEGRATEDDSP */
 
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
+}
+
+USBH_SpeedTypeDef USBH_LL_GetPipeSpeed(USBH_HandleTypeDef *phost, uint8_t pipe_num)
+{
+	EHCI_HandleTypeDef *hehci = phost->pData;
+	return hehci->hc [pipe_num].speed;
+
 }
 
 uint_fast8_t USBH_LL_GetSpeedReady(USBH_HandleTypeDef *phost) {
