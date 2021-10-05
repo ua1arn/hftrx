@@ -239,9 +239,59 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		//phost->hubBusy = 0;
 		USBH_UsrLog("USBH_HUB_ClassRequest done: NumPorts=%d, pwrGoodDelay=%d", HUB_Handle->NumPorts, HUB_Handle->pwrGoodDelay);
 		USBH_UsrLog("=============================================");
+
+		// Строим карту подключенных портов
+		HUB_Handle->hubClassRequestPort = 1;
+		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES;
+		status = USBH_BUSY;
+		break;
+
 		HUB_Handle->ctl_state = HUB_REQ_IDLE;
 		status = USBH_OK;
 		break;
+
+	case HUB_REQ_SCAN_STATUSES:
+		status = get_hub_request(phost, USB_REQUEST_GET_STATUS, HUB_FEAT_SEL_PORT_CONN, HUB_Handle->hubClassRequestPort, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS));
+		if (status == USBH_OK)
+		{
+			//printhex(HUB_Handle->buffer, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS));
+			USB_HUB_PORT_STATUS * st = (USB_HUB_PORT_STATUS *) HUB_Handle->buffer;
+			// ИНтерпретируем результаты
+			PRINTF("port %d status: conn=%d, pwr=%d, hs=%d, ls=%d\n",
+					HUB_Handle->hubClassRequestPort,
+					st->wPortStatus.PORT_CONNECTION,
+					st->wPortStatus.PORT_POWER,
+					st->wPortStatus.PORT_HIGH_SPEED,
+					st->wPortStatus.PORT_LOW_SPEED
+					);
+
+			// Reach last port
+			if (HUB_Handle->NumPorts <= HUB_Handle->hubClassRequestPort)
+			{
+				// выходим из цикла
+				HUB_Handle->ctl_state = HUB_REQ_IDLE;
+				status = USBH_OK;
+
+			}
+			else
+			{
+				HUB_Handle->hubClassRequestPort ++;
+				status = USBH_BUSY;
+			}
+
+		}
+		else if (status == USBH_BUSY)
+		{
+
+		}
+		else
+		{
+			// выходим по ошибке
+			HUB_Handle->ctl_state = HUB_REQ_IDLE;
+			status = USBH_OK;
+		}
+		break;
+
 	}
 
 	return status;
@@ -257,6 +307,7 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
     switch (HUB_Handle->state)
     {
      	case HUB_IDLE:
+     		break;		// no starting processing
      		HUB_Handle->HUB_CurPort = 0;
      		HUB_Handle->state = HUB_SYNC;
      		break;
@@ -275,6 +326,7 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 
     	    (void) USBH_InterruptReceiveData(phost, HUB_Handle->buffer, HUB_Handle->length, HUB_Handle->InPipe);
     	    HUB_Handle->state = HUB_POLL;
+    	    //HUB_Handle->state = HUB_PORT_CHANGED;
     	    HUB_Handle->timer = phost->Timer;
     	    HUB_Handle->DataReady = 0;
     		break;
@@ -331,10 +383,14 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
         	break;
 
     	case HUB_PORT_CHANGED:
-
+    		HUB_Handle->HUB_CurPort = 3;
+    		PRINTF("HUB_Handle->HUB_CurPort=%d, tg=%d\n", HUB_Handle->HUB_CurPort,phost->Target.dev_address);
     		// uses EP0
     		if (get_hub_request(phost, USB_REQUEST_GET_STATUS, HUB_FEAT_SEL_PORT_CONN, HUB_Handle->HUB_CurPort, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS)) == USBH_OK)
     		{
+    			TP();
+    			printhex(HUB_Handle->buffer, HUB_Handle->buffer, sizeof HUB_Handle->HUB_ChangeInfo);
+
     			HUB_Handle->HUB_ChangeInfo = (USB_HUB_PORT_STATUS *)HUB_Handle->buffer;
 
     			debug_port(HUB_Handle->buffer, HUB_Handle->HUB_ChangeInfo);
