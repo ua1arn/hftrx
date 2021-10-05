@@ -747,7 +747,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
         if (phost->pActiveClass != NULL)
         {
-          if (phost->pActiveClass->Init(phost) == USBH_OK)
+          if (phost->pActiveClass->Init(phost, phost->device.address, 0, 0) == USBH_OK)
           {
             phost->gState = HOST_CLASS_REQUEST;
             USBH_UsrLog("%s class code %02X started.", phost->pActiveClass->Name, (unsigned) phost->device.CfgDesc.Itf_Desc[0].bInterfaceClass);

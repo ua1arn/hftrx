@@ -122,30 +122,6 @@ extern uint8_t assigned_hub_address;
 #define HOSTDEV_DEFAULT_HUBADDR 0
 #define HOSTDEV_DEFAULT_PRTADDR 0
 
-/* Fixed connection tree parameters for HID class devices: */
-#define HOSTDEV_HID_HUBADDR assigned_hub_address
-#define HOSTDEV_HID_PRTADDR 0
-
-/* Fixed connection tree parameters for AUDIO class devices: */
-#define HOSTDEV_AUDIO_HUBADDR assigned_hub_address
-#define HOSTDEV_AUDIO_PRTADDR 0
-
-/* Fixed connection tree parameters for MSC class devices: */
-#define HOSTDEV_MSC_HUBADDR assigned_hub_address
-#define HOSTDEV_MSC_PRTADDR 0
-
-/* Fixed connection tree parameters for CDC class devices: */
-#define HOSTDEV_CDC_HUBADDR assigned_hub_address
-#define HOSTDEV_CDC_PRTADDR 0
-
-/* Fixed connection tree parameters for MTP class devices: */
-#define HOSTDEV_MTP_HUBADDR assigned_hub_address
-#define HOSTDEV_MTP_PRTADDR 0
-
-/* Fixed connection tree parameters for xx class devices: */
-#define HOSTDEV_HUB_HUBADDR assigned_hub_address	/* HUB всегжа считается первым устройством */
-#define HOSTDEV_HUB_PRTADDR 0
-
 /** @defgroup USBH_CORE_Private_Defines
   * @{
   */
@@ -528,7 +504,7 @@ typedef struct
 {
   const char          *Name;
   uint8_t              ClassCode;
-  USBH_StatusTypeDef(*Init)(struct _USBH_HandleTypeDef *phost);
+  USBH_StatusTypeDef(*Init)(struct _USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
   USBH_StatusTypeDef(*DeInit)(struct _USBH_HandleTypeDef *phost);
   USBH_StatusTypeDef(*Requests)(struct _USBH_HandleTypeDef *phost);
   USBH_StatusTypeDef(*BgndProcess)(struct _USBH_HandleTypeDef *phost);

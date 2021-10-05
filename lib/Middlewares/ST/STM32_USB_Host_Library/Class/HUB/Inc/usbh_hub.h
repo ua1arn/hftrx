@@ -202,6 +202,11 @@ typedef struct _HUB_Process
   __IO USB_PORT_CHANGE HUB_Change;
   __IO uint8_t HUB_CurPort;
   __IO USB_HUB_PORT_STATUS *HUB_ChangeInfo;
+
+  uint8_t devaddr;
+  uint8_t tt_hubaddr;
+  uint8_t tt_prtaddr;
+
 } HUB_HandleTypeDef;
 
 

@@ -94,7 +94,7 @@ EndBSPDependencies */
   * @{
   */
 
-static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
 static USBH_StatusTypeDef USBH_AUDIO_InterfaceDeInit(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_AUDIO_Process(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_AUDIO_SOFProcess(USBH_HandleTypeDef *phost);
@@ -192,7 +192,7 @@ USBH_ClassTypeDef  AUDIO_Class =
   * @param  phost: Host handle
   * @retval USBH Status
   */
-static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
   USBH_StatusTypeDef out_status, in_status;
   AUDIO_HandleTypeDef *AUDIO_Handle;
@@ -219,6 +219,10 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Initialize audio handler */
   (void)USBH_memset(AUDIO_Handle, 0, sizeof(AUDIO_HandleTypeDef));
+
+  AUDIO_Handle->devaddr = devaddr;
+  AUDIO_Handle->tt_hubaddr = tt_hubaddr;
+  AUDIO_Handle->tt_prtaddr = tt_prtaddr;
 
   /* 1st Step:  Find Audio Interfaces */
   out_status = USBH_AUDIO_FindAudioStreamingIN(phost);
@@ -283,10 +287,10 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
     (void)USBH_OpenPipe(phost,
                         AUDIO_Handle->headphone.Pipe,
                         AUDIO_Handle->headphone.Ep,
-                        phost->device.address,
+						AUDIO_Handle->devaddr,
                         phost->device.speed,
                         USB_EP_TYPE_ISOC,
-                        AUDIO_Handle->headphone.EpSize, HOSTDEV_AUDIO_HUBADDR, HOSTDEV_AUDIO_PRTADDR);
+                        AUDIO_Handle->headphone.EpSize, AUDIO_Handle->tt_hubaddr, AUDIO_Handle->tt_prtaddr);
 
     (void)USBH_LL_SetToggle(phost,  AUDIO_Handle->headphone.Pipe, 0U);
   }
@@ -300,10 +304,10 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
     (void)USBH_OpenPipe(phost,
                         AUDIO_Handle->microphone.Pipe,
                         AUDIO_Handle->microphone.Ep,
-                        phost->device.address,
+						AUDIO_Handle->devaddr,
                         phost->device.speed,
                         USB_EP_TYPE_ISOC,
-                        AUDIO_Handle->microphone.EpSize, HOSTDEV_AUDIO_HUBADDR, HOSTDEV_AUDIO_PRTADDR);
+                        AUDIO_Handle->microphone.EpSize, AUDIO_Handle->tt_hubaddr, AUDIO_Handle->tt_prtaddr);
 
     (void)USBH_LL_SetToggle(phost,  AUDIO_Handle->microphone.Pipe, 0U);
   }
@@ -316,10 +320,10 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
     (void)USBH_OpenPipe(phost,
                         AUDIO_Handle->control.Pipe,
                         AUDIO_Handle->control.Ep,
-                        phost->device.address,
+						AUDIO_Handle->devaddr,
                         phost->device.speed,
                         USB_EP_TYPE_INTR,
-                        AUDIO_Handle->control.EpSize, HOSTDEV_AUDIO_HUBADDR, HOSTDEV_AUDIO_PRTADDR);
+                        AUDIO_Handle->control.EpSize, AUDIO_Handle->tt_hubaddr, AUDIO_Handle->tt_prtaddr);
 
     (void)USBH_LL_SetToggle(phost,  AUDIO_Handle->control.Pipe, 0U);
 

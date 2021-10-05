@@ -417,6 +417,10 @@ typedef struct _AUDIO_Process
   __ALIGN4k_BEGIN uint16_t                            mem [8] __ALIGN4k_END;
   uint8_t                            temp_feature;
   uint8_t                            temp_channels;
+
+  uint8_t devaddr;
+  uint8_t tt_hubaddr;
+  uint8_t tt_prtaddr;
 }
 AUDIO_HandleTypeDef;
 

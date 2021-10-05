@@ -102,7 +102,7 @@ EndBSPDependencies */
   * @{
   */
 
-static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
 
 static USBH_StatusTypeDef USBH_CDC_InterfaceDeInit(USBH_HandleTypeDef *phost);
 
@@ -148,7 +148,7 @@ USBH_ClassTypeDef  CDC_Class =
   * @param  phost: Host handle
   * @retval USBH Status
   */
-static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
 
   USBH_StatusTypeDef status;
@@ -183,6 +183,10 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
   /* Initialize cdc handler */
   (void)USBH_memset(CDC_Handle, 0, sizeof(CDC_HandleTypeDef));
 
+  CDC_Handle->devaddr = devaddr;
+  CDC_Handle->tt_hubaddr = tt_hubaddr;
+  CDC_Handle->tt_prtaddr = tt_prtaddr;
+
   /*Collect the notification endpoint address and length*/
   if ((phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress & 0x80U) != 0U)
   {
@@ -195,8 +199,8 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Open pipe for Notification endpoint */
   (void)USBH_OpenPipe(phost, CDC_Handle->CommItf.NotifPipe, CDC_Handle->CommItf.NotifEp,
-                      phost->device.address, phost->device.speed, USB_EP_TYPE_INTR,
-                      CDC_Handle->CommItf.NotifEpSize, HOSTDEV_CDC_HUBADDR, HOSTDEV_CDC_PRTADDR);
+		  CDC_Handle->devaddr, phost->device.speed, USB_EP_TYPE_INTR,
+                      CDC_Handle->CommItf.NotifEpSize, CDC_Handle->tt_hubaddr, CDC_Handle->tt_prtaddr);
 
   (void)USBH_LL_SetToggle(phost, CDC_Handle->CommItf.NotifPipe, 0U);
 
@@ -240,13 +244,13 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Open channel for OUT endpoint */
   (void)USBH_OpenPipe(phost, CDC_Handle->DataItf.OutPipe, CDC_Handle->DataItf.OutEp,
-                      phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
-                      CDC_Handle->DataItf.OutEpSize, HOSTDEV_CDC_HUBADDR, HOSTDEV_CDC_PRTADDR);
+		  CDC_Handle->devaddr, phost->device.speed, USB_EP_TYPE_BULK,
+                      CDC_Handle->DataItf.OutEpSize, CDC_Handle->tt_hubaddr, CDC_Handle->tt_prtaddr);
 
   /* Open channel for IN endpoint */
   (void)USBH_OpenPipe(phost, CDC_Handle->DataItf.InPipe, CDC_Handle->DataItf.InEp,
-                      phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
-                      CDC_Handle->DataItf.InEpSize, HOSTDEV_CDC_HUBADDR, HOSTDEV_CDC_PRTADDR);
+		  	  	  	  CDC_Handle->devaddr, phost->device.speed, USB_EP_TYPE_BULK,
+                      CDC_Handle->DataItf.InEpSize, CDC_Handle->tt_hubaddr, CDC_Handle->tt_prtaddr);
 
   CDC_Handle->state = CDC_IDLE_STATE;
 

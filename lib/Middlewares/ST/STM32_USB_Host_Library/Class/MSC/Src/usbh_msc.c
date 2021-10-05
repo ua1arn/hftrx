@@ -105,7 +105,7 @@ EndBSPDependencies */
   * @{
   */
 
-static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
 
 static USBH_StatusTypeDef USBH_MSC_InterfaceDeInit(USBH_HandleTypeDef *phost);
 
@@ -155,7 +155,7 @@ USBH_ClassTypeDef  USBH_msc =
   * @param  phost: Host handle
   * @retval USBH Status
   */
-static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
   USBH_StatusTypeDef status;
   uint8_t interface;
@@ -192,6 +192,10 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
   /* Initialize msc handler */
   (void)USBH_memset(MSC_Handle, 0, sizeof(MSC_HandleTypeDef));
 
+  MSC_Handle->devaddr = devaddr;
+  MSC_Handle->tt_hubaddr = tt_hubaddr;
+  MSC_Handle->tt_prtaddr = tt_prtaddr;
+
   if ((phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress & 0x80U) != 0U)
   {
     MSC_Handle->InEp = (phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress);
@@ -226,8 +230,8 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
   if ((MSC_Handle->OutEp != 0U) && (MSC_Handle->OutEpSize != 0U))
   {
     (void)USBH_OpenPipe(phost, MSC_Handle->OutPipe, MSC_Handle->OutEp,
-                        phost->device.address, phost->device.speed,
-                        USB_EP_TYPE_BULK, MSC_Handle->OutEpSize, HOSTDEV_MSC_HUBADDR, HOSTDEV_MSC_PRTADDR);
+    					MSC_Handle->devaddr, phost->device.speed,
+                        USB_EP_TYPE_BULK, MSC_Handle->OutEpSize, MSC_Handle->tt_hubaddr, MSC_Handle->tt_prtaddr);
   }
   else
   {
@@ -237,8 +241,8 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost)
   if ((MSC_Handle->InEp != 0U) && (MSC_Handle->InEpSize != 0U))
   {
     (void)USBH_OpenPipe(phost, MSC_Handle->InPipe, MSC_Handle->InEp,
-                        phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
-                        MSC_Handle->InEpSize, HOSTDEV_MSC_HUBADDR, HOSTDEV_MSC_PRTADDR);
+    					MSC_Handle->devaddr, phost->device.speed, USB_EP_TYPE_BULK,
+                        MSC_Handle->InEpSize, MSC_Handle->tt_hubaddr, MSC_Handle->tt_prtaddr);
   }
   else
   {

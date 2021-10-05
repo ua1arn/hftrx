@@ -52,7 +52,7 @@ static void detach(USBH_HandleTypeDef *phost, uint16_t idx);
 static void attach(USBH_HandleTypeDef *phost, uint16_t idx, uint8_t lowspeed);
 static void debug_port(uint8_t *buff, __IO USB_HUB_PORT_STATUS *info);
 
-static USBH_StatusTypeDef USBH_HUB_InterfaceInit  (USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_HUB_InterfaceInit  (USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
 static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit  (USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost);
@@ -71,7 +71,7 @@ USBH_ClassTypeDef  HUB_Class =
 };
 
 
-static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
 	USBH_DbgLog ("USBH_HUB_InterfaceInit.");
 	uint8_t interface;
@@ -105,6 +105,10 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 
 		USBH_memset(HUB_Handle, 0, sizeof (HUB_HandleTypeDef));
 
+		HUB_Handle->devaddr = devaddr;
+		HUB_Handle->tt_hubaddr = tt_hubaddr;
+		HUB_Handle->tt_prtaddr = tt_prtaddr;
+
 		HUB_Handle->parrent = phost->hubInstances == 1 ? NULL : phost->hubDatas [phost->hubInstances - 1];	/* todo: fix for chans */
 
 		/* устройствам за этим HUB присваиватся следующие адреса */
@@ -137,7 +141,8 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost)
 	    	HUB_Handle->InPipe  = USBH_AllocPipe(phost, HUB_Handle->InEp);
 
 	    	// Open pipe for IN endpoint
-	    	USBH_OpenPipe  (phost, HUB_Handle->InPipe, HUB_Handle->InEp, phost->device.address, phost->device.speed, USB_EP_TYPE_INTR, HUB_Handle->length, HOSTDEV_HUB_HUBADDR, HOSTDEV_HUB_PRTADDR);
+	    	USBH_OpenPipe  (phost, HUB_Handle->InPipe, HUB_Handle->InEp, HUB_Handle->devaddr, phost->device.speed, USB_EP_TYPE_INTR,
+	    			HUB_Handle->length, HUB_Handle->tt_hubaddr, HUB_Handle->tt_prtaddr);
 
 	    	USBH_LL_SetToggle (phost, HUB_Handle->InPipe, 0);
 	    }

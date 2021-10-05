@@ -122,6 +122,10 @@ typedef struct _MSC_Process
   uint16_t             current_lun;
   uint16_t             rw_lun;
   uint32_t             timer;
+
+  uint8_t devaddr;
+  uint8_t tt_hubaddr;
+  uint8_t tt_prtaddr;
 }
 MSC_HandleTypeDef;
 
