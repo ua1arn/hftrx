@@ -265,21 +265,17 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 					st->wPortStatus.PORT_LOW_SPEED
 					);
 
-//			if (st->wPortStatus.PORT_LOW_SPEED)
-//			{
-//				uint8_t bmRequestType = (dataDirection == USB_DEVICE_REQUEST_GET) ? USB_D2H : USB_H2D; // 0x23
-//
-//				phost->Control.setup.b.bmRequestType = bmRequestType | USB_REQ_RECIPIENT_OTHER | USB_REQ_TYPE_CLASS;
-//				phost->Control.setup.b.bRequest  	 = request;
-//				phost->Control.setup.b.wValue.bw.msb = feature;
-//				phost->Control.setup.b.wValue.bw.lsb = 0;
-//				phost->Control.setup.b.wIndex.bw.msb = porta;
-//				phost->Control.setup.b.wIndex.bw.lsb = 0;
-//				phost->Control.setup.b.wLength.w     = size;
-//
-//				return USBH_CtlReq(phost, buffer, size);
-//
-//			}
+			if (st->wPortStatus.PORT_LOW_SPEED)
+			{
+				memset(phost->device.Data, 0xDE, sizeof phost->device.Data);
+				HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_WAIT_DEV_DESC;
+				phost->Target.dev_address = 0;
+				phost->Target.speed = 0;
+				phost->Target.tt_hubaddr = 44;
+				phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
+				status = USBH_BUSY;
+				break;
+			}
 			// Reach last port
 			if (HUB_Handle->NumPorts <= HUB_Handle->hubClassRequestPort)
 			{
@@ -305,6 +301,18 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			HUB_Handle->ctl_state = HUB_REQ_IDLE;
 			status = USBH_OK;
 		}
+		break;
+
+	case HUB_REQ_SCAN_STATUSES_WAIT_DEV_DESC:
+	      /* Get Device Desc for only 1st 8 bytes : To get EP0 MaxPacketSize */
+	      status = USBH_Get_DevDesc(phost, 18U);
+	      if (status == USBH_BUSY)
+	    	  break;
+	      if (status == USBH_OK)
+	      {
+	    	  TP();
+	    	  printhex(phost->device.Data, phost->device.Data, 18);
+	      }
 		break;
 
 	}
