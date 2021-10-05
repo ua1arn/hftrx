@@ -286,6 +286,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
   */
 static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
+	//PRINTF(PSTR("MEM_If_Read_HS: src=%08lX, dest=%p, len=%08lX\n"), src, dest, Len);
 	/* Return a valid address to avoid HardFault */
 	if (readDATAFLASH(src, dest, Len))
 		return 0; //dest;	// todo: error handling need
