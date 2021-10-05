@@ -103,6 +103,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 		static HUB_HandleTypeDef staticHUB_Handle;
 		phost->pActiveClass->pData = & staticHUB_Handle;
 		//phost->hubDatas [phost->hubInstances] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
+
 		HUB_Handle = phost->pActiveClass->pData;
 		phost->hubDatas [phost->hubInstances] = HUB_Handle;
 		phost->hubInstances += 1;
@@ -143,9 +144,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 	    	HUB_Handle->InPipe  = USBH_AllocPipe(phost, HUB_Handle->InEp);
 
 	    	// Open pipe for IN endpoint
-	    	USBH_OpenPipe  (phost, HUB_Handle->InPipe, HUB_Handle->InEp, & HUB_Handle->target, USB_EP_TYPE_INTR,
-	    			HUB_Handle->length);
-
+	    	USBH_OpenPipe(phost, HUB_Handle->InPipe, HUB_Handle->InEp, & HUB_Handle->target, USB_EP_TYPE_INTR, HUB_Handle->length);
 	    	USBH_LL_SetToggle (phost, HUB_Handle->InPipe, 0);
 	    }
 
@@ -307,6 +306,10 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 	    		else if(urbState == USBH_URB_ERROR)
 	    		{
 	//LOG1("=");
+	    		}
+	    		else
+	    		{
+	    			// URB_IDLE
 	    		}
 
 			}
@@ -483,11 +486,12 @@ return USBH_OK;
 	return USBH_OK;
 }
 
-static USBH_StatusTypeDef hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t dataDirection, uint8_t porta, uint8_t *buffer, uint16_t size)
+static USBH_StatusTypeDef hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t dataDirection, uint8_t porta,
+		uint8_t *buffer, uint16_t size)
 {
 	uint8_t bmRequestType = (dataDirection == USB_DEVICE_REQUEST_GET) ? USB_D2H : USB_H2D; // 0x23
 
-	phost->Control.setup.b.bmRequestType = bmRequestType|USB_REQ_RECIPIENT_OTHER|USB_REQ_TYPE_CLASS;
+	phost->Control.setup.b.bmRequestType = bmRequestType | USB_REQ_RECIPIENT_OTHER | USB_REQ_TYPE_CLASS;
 	phost->Control.setup.b.bRequest  	 = request;
 	phost->Control.setup.b.wValue.bw.msb = feature;
 	phost->Control.setup.b.wValue.bw.lsb = 0;
@@ -502,34 +506,40 @@ static USBH_StatusTypeDef hub_request(USBH_HandleTypeDef *phost, uint8_t request
 //	return res;
 }
 
-static USBH_StatusTypeDef set_hub_port_power(USBH_HandleTypeDef *phost, uint8_t hub_port)
+// porta: 1..n
+static USBH_StatusTypeDef set_hub_port_power(USBH_HandleTypeDef *phost, uint8_t porta)
 {
-	return hub_request(phost, USB_REQ_SET_FEATURE, HUB_FEATURE_SEL_PORT_POWER, USB_DEVICE_REQUEST_SET, hub_port, 0, 0);
+	return hub_request(phost, USB_REQ_SET_FEATURE, HUB_FEATURE_SEL_PORT_POWER, USB_DEVICE_REQUEST_SET, porta, 0, 0);
 }
 
+// porta: 1..n
 static USBH_StatusTypeDef get_hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t porta, uint8_t *buffer, uint16_t size)
 {
     return hub_request(phost, request, feature, USB_DEVICE_REQUEST_GET, porta, buffer, size);
 }
 
-static USBH_StatusTypeDef set_hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t port)
+// porta: 1..n
+static USBH_StatusTypeDef set_hub_request(USBH_HandleTypeDef *phost, uint8_t request, uint8_t feature, uint8_t porta)
 {
-    return hub_request(phost, request, feature, USB_DEVICE_REQUEST_SET, port, 0, 0);
+    return hub_request(phost, request, feature, USB_DEVICE_REQUEST_SET, porta, 0, 0);
 }
 
-static USBH_StatusTypeDef clear_port_feature(USBH_HandleTypeDef *phost, uint8_t feature, uint8_t port)
+// porta: 1..n
+static USBH_StatusTypeDef clear_port_feature(USBH_HandleTypeDef *phost, uint8_t feature, uint8_t porta)
 {
-    return set_hub_request(phost, USB_REQUEST_CLEAR_FEATURE, feature, port);
+    return set_hub_request(phost, USB_REQUEST_CLEAR_FEATURE, feature, porta);
 }
 
-static USBH_StatusTypeDef set_port_feature(USBH_HandleTypeDef *phost, uint8_t feature, uint8_t port)
+// porta: 1..n
+static USBH_StatusTypeDef set_port_feature(USBH_HandleTypeDef *phost, uint8_t feature, uint8_t porta)
 {
-    return set_hub_request(phost, USB_REQUEST_SET_FEATURE, feature, port);
+    return set_hub_request(phost, USB_REQUEST_SET_FEATURE, feature, porta);
 }
 
-static void clear_port_changed(HUB_HandleTypeDef *HUB_Handle, uint8_t port)
+// porta: 1..n
+static void clear_port_changed(HUB_HandleTypeDef *HUB_Handle, uint8_t porta)
 {
-	switch (port)
+	switch (porta)
 	{
 	case 1:
 		HUB_Handle->HUB_Change.bPorts.PORT_1 = 0;
@@ -614,40 +624,6 @@ static uint8_t port_changed(HUB_HandleTypeDef *HUB_Handle, const uint8_t *b, uns
 		{
 			HUB_Handle->HUB_Change.bPorts.PORT_7 = 1;
 		}
-
-		// PanGu board:
-		//	USB-A lower: port 2
-		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=04,01 (len=1)
-		//		PORT STATUS CHANGE [0x04] [0 1 0 0]
-		//		HUB_DEV_ATTACHED 2, lowspeed? 0
-		//		attach 2
-		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=04,01 (len=1)
-		//		PORT STATUS CHANGE [0x04] [0 1 0 0]
-		//		HUB_DEV_DETACHED 2
-		//		detach 2
-		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=04,01 (len=1)
-		//		PORT STATUS CHANGE [0x04] [0 1 0 0]
-		//		HUB_DEV_ATTACHED 2, lowspeed? 0
-		//		attach 2
-
-		//	USB-A upper: port 1
-		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=02,29 (len=1)
-		//		PORT STATUS CHANGE [0x02] [1 0 0 0]
-		//		HUB_DEV_ATTACHED 1, lowspeed? 0
-		//		attach 1
-		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=02,05 (len=1)
-		//		PORT STATUS CHANGE [0x02] [1 0 0 0]
-		//		HUB_DEV_DETACHED 1
-		//		detach 1
-		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=02,01 (len=1)
-		//		PORT STATUS CHANGE [0x02] [1 0 0 0]
-		//		HUB_DEV_ATTACHED 1, lowspeed? 0
-		//		attach 1
-		//		USBH_HUB_Process: HUB_POLL, HUB_CurPort=0, answer=02,01 (len=1)
-		//		PORT STATUS CHANGE [0x02] [1 0 0 0]
-		//		HUB_DEV_DETACHED 1
-		//		detach 1
-
 		USBH_UsrLog("PORT STATUS CHANGE [0x%02X] [%d %d %d %d]",
 				b [0],
 				HUB_Handle->HUB_Change.bPorts.PORT_1,
