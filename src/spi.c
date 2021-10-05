@@ -982,8 +982,9 @@ void spidf_initialize(void)
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
 	(void) QUADSPI->CR;
 
-	const unsigned long qspipre = ulmax32(1, ulmin32(BOARD_QSPI_FREQ / SPISPEEDUFAST, 256));
-	//PRINTF("spidf_initialize: qspipre=%u\n", (unsigned) qspipre);
+	// qspipre in range 1..256
+	const unsigned long qspipre = ulmax32(1, ulmin32(calcdivround2(BOARD_QSPI_FREQ, SPISPEEDUFAST), 256));
+	//PRINTF("spidf_initialize: qspipre=%lu\n", qspipre);
 
 	QUADSPI->CCR = 0;
 	(void) QUADSPI->CCR;
