@@ -100,10 +100,11 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 	else
 	{
 		  // check USBH_free
-		  static HUB_HandleTypeDef staticHUB_Handle;
-		  phost->pActiveClass->pData = & staticHUB_Handle;
+		static HUB_HandleTypeDef staticHUB_Handle;
+		phost->pActiveClass->pData = & staticHUB_Handle;
 		//phost->hubDatas [phost->hubInstances] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
-		HUB_Handle = phost->hubDatas [phost->hubInstances];
+		HUB_Handle = phost->pActiveClass->pData;
+		phost->hubDatas [phost->hubInstances] = HUB_Handle;
 		phost->hubInstances += 1;
 
 		USBH_memset(HUB_Handle, 0, sizeof (HUB_HandleTypeDef));
