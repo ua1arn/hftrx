@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-//#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания */
+#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания */
 
 void Error_Handler(void);
 
@@ -781,17 +781,17 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 //	 			}
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
-				// продолжаем, если многосегменый обмен
-				if (pktcnt >= hc->max_packet && hc->xfer_len > hc->max_packet && hc->xfer_len > hc->xfer_count)
-				{
-					// Restart next transaction
-					qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len - hc->xfer_count);
-					le8_modify( & qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
-
-					/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
-					le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
-					goto nextIteration;
-				}
+//				// продолжаем, если многосегменый обмен
+//				if (pktcnt >= hc->max_packet && hc->xfer_len > hc->max_packet && hc->xfer_len > hc->xfer_count)
+//				{
+//					// Restart next transaction
+//					qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len - hc->xfer_count);
+//					le8_modify( & qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+//
+//					/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
+//					le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+//					goto nextIteration;
+//				}
 				// Transaction done
 	 			hc->ehci_urb_state = URB_DONE;
 			}
