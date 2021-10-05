@@ -159,7 +159,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 
 static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 {
-	//unsigned hubIX = 0;
+	HUB_HandleTypeDef * const HUB_Handle = (HUB_HandleTypeDef *) phost->hubDatas [0];
 	USBH_UsrLog("USBH_HUB_InterfaceDeInit");
 	//USBH_UsrLog("USBH_HUB_InterfaceDeInit %d", (int) phost->hubAddress [0]);
 //
@@ -251,7 +251,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 {
 	USBH_StatusTypeDef status = USBH_BUSY;	/* не требуется, о по стилб = чтобы продолжались вызовы */
-	HUB_HandleTypeDef *HUB_Handle =  (HUB_HandleTypeDef *)phost->hubDatas[0];
+	HUB_HandleTypeDef * const HUB_Handle = (HUB_HandleTypeDef *) phost->hubDatas [0];
 	ASSERT(HUB_Handle != NULL);
 
     switch (HUB_Handle->state)
@@ -464,13 +464,12 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 
 static USBH_StatusTypeDef USBH_HUB_SOFProcess(USBH_HandleTypeDef *phost)
 {
+	HUB_HandleTypeDef * const HUB_Handle = (HUB_HandleTypeDef *) phost->hubDatas [0];
 /*if(!phost->hub)
 {
 USBH_UsrLog("EEEERRRRRRROOORRRRRRR");
 return USBH_OK;
 }*/
-
-	HUB_HandleTypeDef *HUB_Handle = (HUB_HandleTypeDef *)phost->hubDatas[0];
 
 //if(HUB_Handle->poll != 255)
 //USBH_UsrLog("ERR %d %d", HUB_Handle->poll, HUB_Handle->length);
