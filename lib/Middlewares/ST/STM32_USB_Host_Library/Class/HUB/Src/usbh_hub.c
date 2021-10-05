@@ -273,7 +273,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 //				phost->Target.speed = USBH_SPEED_LOW;
 				phost->Target.tt_hubaddr = 44;
 				phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
-//				phost->Control.pipe_size = 8;
+				phost->Control.pipe_size = 8;
 
 				/* modify control channels configuration for MaxPacket size */
 		        (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target, USBH_EP_CONTROL,
@@ -316,7 +316,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 	case HUB_REQ_SCAN_STATUSES_WAIT_DEV_DESC:
 	      /* Get Device Desc for only 1st 8 bytes : To get EP0 MaxPacketSize */
-	      status = USBH_Get_DevDesc(phost, 18U);
+	      status = USBH_Get_DevDesc(phost, 8U);
 	      if (status == USBH_BUSY)
 	    	  break;
 	      if (status == USBH_OK)
