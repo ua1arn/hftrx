@@ -255,6 +255,7 @@ void clean_wm_queue (window_t * win)
 	win->queue.size = 0;
 	memset(win->queue.data, 0, sizeof win->queue.data);
 }
+
 /* Запрос на обновление состояния элементов GUI */
 void gui_update(void)
 {
@@ -347,7 +348,7 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		break;
 
 	default:
-		PRINTF("find_gui_element: undefined type/n");
+		PRINTF("find_gui_element: undefined type %d\n", type);
 		ASSERT(0);
 		return NULL;
 	}
@@ -1259,6 +1260,14 @@ static void slider_process(slider_t * sl)
 	if (v >= 0 && v <= sl->size / sl->step)
 		sl->value = v;
 	reset_tracking();
+}
+
+/* Добавить строку в текстовое поле */
+void textfield_add_string(text_field_t * tf, char * str)
+{
+	strcpy(tf->record [tf->index].text, str);
+	tf->index ++;
+	tf->index = tf->index >= tf->size ? 0 : tf->index;
 }
 
 /* Селектор запуска функций обработки событий */
