@@ -62,10 +62,6 @@ osThreadAttr_t USBH_Thread_Atrr;
   */
 
 
-uint8_t assigned_sequential_address = USBH_ADDRESS_ASSIGNED;
-uint8_t assigned_hub_address;
-
-
 /** @defgroup USBH_CORE_Private_Functions
   * @{
   */
@@ -99,6 +95,8 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost,
     USBH_ErrLog("Invalid Host handle");
     return USBH_FAIL;
   }
+
+  phost->allocaddress = 0;
 
   /* HUB related initialization */
   phost->hubCurrentData = NULL;
@@ -992,11 +990,11 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
 
     case ENUM_SET_ADDR:
       /* set address */
-      ReqStatus = USBH_SetAddress(phost, 44);
+      ReqStatus = USBH_SetAddress(phost, USBH_GetNextAddress(phost, 0));
       if (ReqStatus == USBH_OK)
       {
         USBH_Delay(2U);
-        phost->Target.dev_address = 44;
+        phost->Target.dev_address = USBH_GetNextAddress(phost, 1);
 
         /* user callback for device address assigned */
         USBH_UsrLog("Address (#%d,hub=%d,port=%d,speed=%d) assigned.", (int) phost->Target.dev_address, (int) phost->Target.tt_hubaddr, (int) phost->Target.tt_prtaddr, (int) phost->Target.speed);
@@ -1231,6 +1229,15 @@ static USBH_StatusTypeDef USBH_HandleEnum(USBH_HandleTypeDef *phost)
       break;
   }
   return Status;
+}
+
+/* return 1..126 as address */
+uint8_t USBH_GetNextAddress(USBH_HandleTypeDef *phost,
+                                   uint8_t modify)
+{
+	uint8_t v = phost->allocaddress;
+	phost->allocaddress = (phost->allocaddress + modify) % 125;
+	return v + 1;
 }
 
 

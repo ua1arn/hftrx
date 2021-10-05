@@ -114,10 +114,6 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 
 		HUB_Handle->parrent = phost->hubInstances == 1 ? NULL : phost->hubDatas [phost->hubInstances - 1];	/* todo: fix for chans */
 
-		/* устройствам за этим HUB присваиватся следующие адреса */
-		//assigned_hub_address = phost->device.address;
-		assigned_sequential_address = (assigned_sequential_address + 1);
-
 		HUB_Handle->NumPorts = 0;
 		HUB_Handle->pwrGoodDelay = 0;
 
@@ -194,7 +190,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		phost->Control.setup.b.wIndex.w = 0;
 		phost->Control.setup.b.wLength.w = sizeof(USB_HUB_DESCRIPTOR);
 
-		status = USBH_CtlReq(phost, HUB_Handle->buffer, sizeof (USB_HUB_DESCRIPTOR));
+		status = USBH_CtlReq(phost, HUB_Handle->buffer, sizeof(USB_HUB_DESCRIPTOR));
 		if (status == USBH_OK)
 		{
 			USB_HUB_DESCRIPTOR *HUB_Desc = (USB_HUB_DESCRIPTOR*) HUB_Handle->buffer;
@@ -260,41 +256,21 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		break;
 
 	case HUB_REQ_SCAN_STATUSES:
-		status = get_hub_request(phost, USB_REQUEST_GET_STATUS, HUB_FEAT_SEL_PORT_CONN, HUB_Handle->hubClassRequestPort, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS));
+		status = get_hub_request(phost, USB_REQUEST_GET_STATUS, HUB_FEAT_SEL_PORT_CONN, HUB_Handle->hubClassRequestPort,
+				HUB_Handle->buffer, sizeof(USB_HUB_PORT_STATUS));
 		if (status == USBH_OK)
 		{
 			//printhex(HUB_Handle->buffer, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS));
-			USB_HUB_PORT_STATUS * st = (USB_HUB_PORT_STATUS *) HUB_Handle->buffer;
+			USB_HUB_PORT_STATUS *st = (USB_HUB_PORT_STATUS*) HUB_Handle->buffer;
 			// ИНтерпретируем результаты
-			PRINTF("port %d status val=%04X: conn=%d, ena=%d, pwr=%d, hs=%d, ls=%d\n",
-					HUB_Handle->hubClassRequestPort,
-					st->wPortStatus.val,
-					st->wPortStatus.PORT_CONNECTION,
-					st->wPortStatus.PORT_ENABLE,
-					st->wPortStatus.PORT_POWER,
-					st->wPortStatus.PORT_HIGH_SPEED,
-					st->wPortStatus.PORT_LOW_SPEED
-					);
+			PRINTF("port %d status val=%04X: conn=%d, ena=%d, pwr=%d, hs=%d, ls=%d\n", HUB_Handle->hubClassRequestPort,
+					st->wPortStatus.val, st->wPortStatus.PORT_CONNECTION, st->wPortStatus.PORT_ENABLE,
+					st->wPortStatus.PORT_POWER, st->wPortStatus.PORT_HIGH_SPEED, st->wPortStatus.PORT_LOW_SPEED);
 			//debug_port(HUB_Handle->buffer, st);
 			if (st->wPortStatus.PORT_LOW_SPEED)
 			{
-				memset(phost->device.Data, 0xDE, sizeof phost->device.Data);
-
-				phost->Target.dev_address = USBH_ADDRESS_DEFAULT;
-				phost->Target.speed = USBH_SPEED_LOW;
-				phost->Target.tt_hubaddr = 44;
-				phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
-				phost->Control.pipe_size = USBH_MPS_LOWSPEED;
-
-				/* modify control channels configuration for MaxPacket size */
-		        (void)USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target, USBH_EP_CONTROL,
-		                            (uint16_t)phost->Control.pipe_size);
-
-		        /* Open Control pipes */
-		        (void)USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target, USBH_EP_CONTROL,
-		                            (uint16_t)phost->Control.pipe_size);
-
-				HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_WAIT_DEV_DESC;
+				// LOW SPEED, мышка - нашлась.
+				HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_GET_SHORT_DEV_DESC;
 				status = USBH_BUSY;
 				break;
 			}
@@ -325,16 +301,96 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		}
 		break;
 
-	case HUB_REQ_SCAN_STATUSES_WAIT_DEV_DESC:
-	      /* Get Device Desc for only 1st 8 bytes : To get EP0 MaxPacketSize */
-	      status = USBH_Get_DevDesc(phost, USBH_MPS_LOWSPEED);
-	      if (status == USBH_OK)
-	      {
-	    	  /* Печать device descriptor */
-	    	  printhex((uintptr_t) phost->device.Data, phost->device.Data, 48);
-	      }
+	case HUB_REQ_SCAN_STATUSES_GET_SHORT_DEV_DESC:
+
+		phost->Target.tt_hubaddr = phost->Target.dev_address;
+		phost->Target.dev_address = USBH_ADDRESS_DEFAULT;
+		phost->Target.speed = USBH_SPEED_LOW;
+		phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
+		phost->Control.pipe_size = USBH_MPS_LOWSPEED;
+
+		/* modify control channels configuration for MaxPacket size */
+		(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target, USBH_EP_CONTROL,
+				(uint16_t) phost->Control.pipe_size);
+
+		/* Open Control pipes */
+		(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target, USBH_EP_CONTROL,
+				(uint16_t) phost->Control.pipe_size);
+
+		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_WAIT_SHORT_DEV_DESC;
+		status = USBH_BUSY;
+		//memset(phost->device.Data, 0xEE, sizeof phost->device.Data);
 		break;
 
+	case HUB_REQ_SCAN_STATUSES_WAIT_SHORT_DEV_DESC:
+		/* Get Device Desc for only 1st 8 bytes : To get EP0 MaxPacketSize */
+		status = USBH_Get_DevDesc(phost, 8);
+		if (status == USBH_OK)
+		{
+			/* Печать device descriptor */
+			//printhex((uintptr_t) phost->device.Data, phost->device.Data, 48);
+			phost->Control.pipe_size = phost->device.DevDesc.bMaxPacketSize;
+
+			/* modify control channels configuration for MaxPacket size */
+			(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target, USBH_EP_CONTROL,
+					(uint16_t) phost->Control.pipe_size);
+
+			/* Open Control pipes */
+			(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target, USBH_EP_CONTROL,
+					(uint16_t) phost->Control.pipe_size);
+
+			HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_WAIT_FULL_DEV_DESC;
+			status = USBH_BUSY;
+			//memset(phost->device.Data, 0xEE, sizeof phost->device.Data);
+		}
+		break;
+
+	case HUB_REQ_SCAN_STATUSES_WAIT_FULL_DEV_DESC:
+		/* Get Device Desc for only 1st 8 bytes : To get EP0 MaxPacketSize */
+		status = USBH_Get_DevDesc(phost, USB_DEVICE_DESC_SIZE);
+		if (status == USBH_OK)
+		{
+			USBH_UsrLog("VID/PID: %04X/%04X", (unsigned ) phost->device.DevDesc.idVendor,
+					(unsigned ) phost->device.DevDesc.idProduct);
+			USBH_UsrLog("bcdDevice: %04X", (unsigned ) phost->device.DevDesc.bcdDevice);
+			/* Печать device descriptor */
+			//printhex((uintptr_t) phost->device.Data, phost->device.Data, 48);
+			// Ставим адрес устройству
+			HUB_Handle->ctl_state = HUB_REQ_SET_ADDRESS;
+			status = USBH_BUSY;
+		}
+		break;
+
+	case HUB_REQ_SET_ADDRESS:
+		/* set address */
+		status = USBH_SetAddress(phost, USBH_GetNextAddress(phost, 0));
+		if (status == USBH_OK)
+		{
+			USBH_Delay(2U);
+			phost->Target.dev_address = USBH_GetNextAddress(phost, 1);
+
+			/* user callback for device address assigned */
+			USBH_UsrLog("HID Address (#%d,hub=%d,port=%d,speed=%d) assigned.", (int ) phost->Target.dev_address,
+					(int ) phost->Target.tt_hubaddr, (int ) phost->Target.tt_prtaddr, (int ) phost->Target.speed);
+
+			/* modify control channels to update device address */
+			(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target,
+							USBH_EP_CONTROL, (uint16_t) phost->Control.pipe_size);
+
+			/* Open Control pipes */
+			(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target,
+							USBH_EP_CONTROL, (uint16_t) phost->Control.pipe_size);
+
+			// Заканчиваем работу
+			HUB_Handle->ctl_state = HUB_REQ_IDLE;
+			//HUB_Handle->ctl_state = ENUM_GET_CFG_DESC;
+			status = USBH_OK;
+		}
+		break;
+
+	default:
+		status = USBH_OK;
+		break;
 	}
 
 	return status;

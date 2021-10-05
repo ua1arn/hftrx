@@ -101,24 +101,6 @@ extern "C" {
 
 #define USBH_MAX_EP_PACKET_SIZE                            0x400U
 
-// ++ from MORI
-// https://github.com/mori-br/STM32F4HUB
-//#define USBH_ADDRESS_DEFAULT                     0
-//#define USBH_ADDRESS_ASSIGNED                    1
-//#define USBH_MPS_DEFAULT                         0x40
-//#define USBH_MPS_LOWSPEED                        8
-// -- from MORI
-
-
-//#define ASSIGNED_DEV_ADDR 6
-//#define ASSIGNED_HUB_ADDR 7
-
-extern uint8_t assigned_sequential_address;
-extern uint8_t assigned_hub_address;
-
-#define USBH_ADDRESS_ASSIGNED 5
-
-/* Fixed connection tree parameters for xxx class devices: */
 #define HOSTDEV_DEFAULT_HUBADDR 0
 #define HOSTDEV_DEFAULT_PRTADDR 0
 
@@ -558,6 +540,8 @@ typedef struct _USBH_HandleTypeDef
 
     void * hubCurrentData;	/** Currently enumeratuion on this HUB */
     uint8_t hubCurrentPort;	/** Currently enumeratuion on this HUB's port */
+
+    uint8_t allocaddress;
 } USBH_HandleTypeDef;
 
 
