@@ -269,10 +269,10 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			{
 				memset(phost->device.Data, 0xDE, sizeof phost->device.Data);
 
-//				phost->Target.dev_address = 0;
+//				phost->Target.dev_address = USBH_ADDRESS_DEFAULT;
 //				phost->Target.speed = USBH_SPEED_LOW;
-//				phost->Target.tt_hubaddr = 44;
-//				phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
+				phost->Target.tt_hubaddr = 44;
+				phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
 //				phost->Control.pipe_size = 8;
 
 				/* modify control channels configuration for MaxPacket size */
