@@ -225,9 +225,7 @@ typedef struct _HID_Process
   HID_DescTypeDef      HID_Desc;
   USBH_StatusTypeDef(* Init)(USBH_HandleTypeDef *phost);
 
-  uint8_t devaddr;
-  uint8_t tt_hubaddr;
-  uint8_t tt_prtaddr;
+  USBH_TargetTypeDef target;
 }
 HID_HandleTypeDef;
 

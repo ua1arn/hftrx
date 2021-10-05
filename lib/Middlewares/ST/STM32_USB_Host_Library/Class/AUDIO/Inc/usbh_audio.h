@@ -418,9 +418,7 @@ typedef struct _AUDIO_Process
   uint8_t                            temp_feature;
   uint8_t                            temp_channels;
 
-  uint8_t devaddr;
-  uint8_t tt_hubaddr;
-  uint8_t tt_prtaddr;
+  USBH_TargetTypeDef target;
 }
 AUDIO_HandleTypeDef;
 

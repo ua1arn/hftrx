@@ -359,9 +359,7 @@ typedef struct _CDC_Process
   CDC_DataStateTypeDef              data_rx_state;
   uint8_t                           Rx_Poll;
 
-  uint8_t devaddr;
-  uint8_t tt_hubaddr;
-  uint8_t tt_prtaddr;
+  USBH_TargetTypeDef target;
 }
 CDC_HandleTypeDef;
 

@@ -95,7 +95,7 @@ EndBSPDependencies */
   * @{
   */
 
-static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
+static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target);
 static USBH_StatusTypeDef USBH_MTP_InterfaceDeInit(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_MTP_Process(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_MTP_ClassRequest(USBH_HandleTypeDef *phost);
@@ -135,7 +135,7 @@ USBH_ClassTypeDef  MTP_Class =
   * @param  phost: Host handle
   * @retval USBH Status
   */
-static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
+static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target)
 {
   USBH_StatusTypeDef status;
   uint8_t interface, endpoint;
@@ -176,9 +176,7 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, uint
   /* Initialize mtp handler */
   (void)USBH_memset(MTP_Handle, 0, sizeof(MTP_HandleTypeDef));
 
-  MTP_Handle->devaddr = devaddr;
-  MTP_Handle->tt_hubaddr = tt_hubaddr;
-  MTP_Handle->tt_prtaddr = tt_prtaddr;
+  (void)USBH_memcpy(& MTP_Handle->target, target, sizeof MTP_Handle->target);
 
   /*Collect the control endpoint address and length*/
   MTP_Handle->NotificationEp = phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[endpoint].bEndpointAddress;
@@ -188,8 +186,8 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, uint
 
   /* Open pipe for Notification endpoint */
   (void)USBH_OpenPipe(phost, MTP_Handle->NotificationPipe, MTP_Handle->NotificationEp,
-		  	  	  	  MTP_Handle->devaddr, phost->device.speed, USB_EP_TYPE_INTR,
-                      MTP_Handle->NotificationEpSize, MTP_Handle->tt_hubaddr, MTP_Handle->tt_prtaddr);
+		  	  	  	  & MTP_Handle->target, USB_EP_TYPE_INTR,
+                      MTP_Handle->NotificationEpSize);
 
   (void)USBH_LL_SetToggle(phost, MTP_Handle->NotificationPipe, 0U);
 
@@ -207,8 +205,8 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, uint
 
   /* Open pipe for DATA IN endpoint */
   (void)USBH_OpenPipe(phost, MTP_Handle->DataInPipe, MTP_Handle->DataInEp,
-		  	  	  	  MTP_Handle->devaddr, phost->device.speed, USB_EP_TYPE_BULK,
-                      MTP_Handle->DataInEpSize, MTP_Handle->tt_hubaddr, MTP_Handle->tt_prtaddr);
+		  	  	  	  & MTP_Handle->target, USB_EP_TYPE_BULK,
+                      MTP_Handle->DataInEpSize);
 
   (void)USBH_LL_SetToggle(phost, MTP_Handle->DataInPipe, 0U);
 
@@ -226,8 +224,8 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, uint
 
   /* Open pipe for DATA OUT endpoint */
   (void)USBH_OpenPipe(phost, MTP_Handle->DataOutPipe, MTP_Handle->DataOutEp,
-		  	  	  	  MTP_Handle->devaddr, phost->device.speed, USB_EP_TYPE_BULK,
-                      MTP_Handle->DataOutEpSize, MTP_Handle->tt_hubaddr, MTP_Handle->tt_prtaddr);
+		  	  	  	  & MTP_Handle->target, USB_EP_TYPE_BULK,
+                      MTP_Handle->DataOutEpSize);
 
   (void)USBH_LL_SetToggle(phost, MTP_Handle->DataOutPipe, 0U);
 

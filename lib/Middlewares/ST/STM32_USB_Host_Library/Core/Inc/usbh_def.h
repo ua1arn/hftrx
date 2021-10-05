@@ -497,6 +497,15 @@ typedef struct
   USBH_CfgDescTypeDef               CfgDesc;
 } USBH_DeviceTypeDef;
 
+typedef struct
+{
+	uint8_t speed;
+	uint8_t dev_address;
+	uint8_t tt_hubaddr;
+	uint8_t tt_prtaddr;
+
+} USBH_TargetTypeDef;
+
 struct _USBH_HandleTypeDef;
 
 /* USB Host Class structure */
@@ -504,7 +513,7 @@ typedef struct
 {
   const char          *Name;
   uint8_t              ClassCode;
-  USBH_StatusTypeDef(*Init)(struct _USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
+  USBH_StatusTypeDef(*Init)(struct _USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * dev_target);
   USBH_StatusTypeDef(*DeInit)(struct _USBH_HandleTypeDef *phost);
   USBH_StatusTypeDef(*Requests)(struct _USBH_HandleTypeDef *phost);
   USBH_StatusTypeDef(*BgndProcess)(struct _USBH_HandleTypeDef *phost);

@@ -52,7 +52,7 @@ static void detach(USBH_HandleTypeDef *phost, uint16_t idx);
 static void attach(USBH_HandleTypeDef *phost, uint16_t idx, uint8_t lowspeed);
 static void debug_port(uint8_t *buff, __IO USB_HUB_PORT_STATUS *info);
 
-static USBH_StatusTypeDef USBH_HUB_InterfaceInit  (USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
+static USBH_StatusTypeDef USBH_HUB_InterfaceInit  (USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target);
 static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit  (USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost);
@@ -71,7 +71,7 @@ USBH_ClassTypeDef  HUB_Class =
 };
 
 
-static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, uint8_t devaddr, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
+static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target)
 {
 	USBH_DbgLog ("USBH_HUB_InterfaceInit.");
 	uint8_t interface;
@@ -105,9 +105,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, uin
 
 		USBH_memset(HUB_Handle, 0, sizeof (HUB_HandleTypeDef));
 
-		HUB_Handle->devaddr = devaddr;
-		HUB_Handle->tt_hubaddr = tt_hubaddr;
-		HUB_Handle->tt_prtaddr = tt_prtaddr;
+		(void)USBH_memcpy(& HUB_Handle->target, target, sizeof HUB_Handle->target);
 
 		HUB_Handle->parrent = phost->hubInstances == 1 ? NULL : phost->hubDatas [phost->hubInstances - 1];	/* todo: fix for chans */
 
@@ -141,8 +139,8 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, uin
 	    	HUB_Handle->InPipe  = USBH_AllocPipe(phost, HUB_Handle->InEp);
 
 	    	// Open pipe for IN endpoint
-	    	USBH_OpenPipe  (phost, HUB_Handle->InPipe, HUB_Handle->InEp, HUB_Handle->devaddr, phost->device.speed, USB_EP_TYPE_INTR,
-	    			HUB_Handle->length, HUB_Handle->tt_hubaddr, HUB_Handle->tt_prtaddr);
+	    	USBH_OpenPipe  (phost, HUB_Handle->InPipe, HUB_Handle->InEp, & HUB_Handle->target, USB_EP_TYPE_INTR,
+	    			HUB_Handle->length);
 
 	    	USBH_LL_SetToggle (phost, HUB_Handle->InPipe, 0);
 	    }
@@ -725,7 +723,7 @@ static void attach(USBH_HandleTypeDef *phost,
 #warning Then use HUB class. investigane Pipes usage.
 // Taken from https://github.com/mori-br/STM32F4HUB
 	//pphost->Pipes 				= phost->Pipes;
-	USBH_memcpy(pphost->Pipes, phost->Pipes, sizeof pphost->Pipes);
+	(void)USBH_memcpy(pphost->Pipes, phost->Pipes, sizeof pphost->Pipes);
 
     pphost->pUser 				= phost->pUser;
 	pphost->EnumState 			= ENUM_IDLE;

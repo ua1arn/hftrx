@@ -134,9 +134,7 @@ typedef struct _MTP_Process
   uint32_t              current_storage_unit;
   uint32_t              is_ready;
 
-  uint8_t devaddr;
-  uint8_t tt_hubaddr;
-  uint8_t tt_prtaddr;
+  USBH_TargetTypeDef target;
 }
 MTP_HandleTypeDef;
 
