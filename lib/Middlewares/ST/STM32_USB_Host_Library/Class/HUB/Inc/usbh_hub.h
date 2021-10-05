@@ -172,7 +172,9 @@ typedef enum
 	HUB_REQ_SET_POWER,
 	HUB_WAIT_PWRGOOD,
 	HUB_WAIT_PWRGOOD_DONE,
-	HUB_REQ_DONE
+	HUB_REQ_DONE,
+	HUB_REQ_SCAN_STATUSES,
+	HUB_REQ_SCAN_STATUSES_WAIT_DEV_DESC,
 }
 HUB_CtlStateTypeDef;
 
@@ -201,7 +203,7 @@ typedef struct _HUB_Process
 
   __IO USB_PORT_CHANGE HUB_Change;
   __IO uint8_t HUB_CurPort;
-  __IO USB_HUB_PORT_STATUS *HUB_ChangeInfo;
+  __IO USB_HUB_PORT_STATUS *pChangeInfo;
 
   USBH_TargetTypeDef target;
 

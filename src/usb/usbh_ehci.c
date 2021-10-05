@@ -642,7 +642,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 		hehci->qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 	}
 
-	hc->ehci_urb_state - URB_IDLE;
+	hc->ehci_urb_state = URB_IDLE;
 
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
