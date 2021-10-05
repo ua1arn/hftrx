@@ -202,7 +202,7 @@ typedef struct _HUB_Process
 
   __IO USB_PORT_CHANGE HUB_Change;
   __IO uint8_t HUB_CurPort;
-  __IO USB_HUB_PORT_STATUS *HUB_ChangeInfo;
+  __IO USB_HUB_PORT_STATUS *pChangeInfo;
 
   USBH_TargetTypeDef target;
 
