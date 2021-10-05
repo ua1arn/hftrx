@@ -463,7 +463,7 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
           addr = ((hdfu->wblock_num - 2U) * USBD_DFU_XFER_SIZE) + hdfu->data_ptr;
 
           /* Preform the write operation */
-          if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
+          if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, ulmin(sizeof hdfu->buffer.d8, hdfu->wlength)) != USBD_OK)
           {
 #if 1
 		    /* Reset the global length and block number */
@@ -727,7 +727,7 @@ static void DFU_Download(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *r
       /* Prepare the reception of the buffer over EP0 */
       USBD_CtlPrepareRx(pdev,
                          (uint8_t*)hdfu->buffer.d8,
-                         hdfu->wlength);
+						 ulmin(sizeof hdfu->buffer.d8, hdfu->wlength));
     }
     /* Unsupported state */
     else
@@ -816,7 +816,7 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
         addr = ((hdfu->wblock_num - 2) * usbd_dfu_get_xfer_size(altinterfaces [INTERFACE_DFU_CONTROL])) + hdfu->data_ptr;  /* Change is Accelerated*/
 
         /* Return the physical address where data are stored */
-        phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);
+        phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, ulmin(sizeof hdfu->buffer.d8, hdfu->wlength));
 
         if (phaddr == 0)
         {
