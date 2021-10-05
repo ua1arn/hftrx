@@ -157,7 +157,10 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
     return USBH_FAIL;
   }
 
-  phost->pActiveClass->pData = (HID_HandleTypeDef *)USBH_malloc(sizeof(HID_HandleTypeDef));
+  // check USBH_free
+  static HID_HandleTypeDef staticHID_Handle;
+  phost->pActiveClass->pData = & staticHID_Handle;
+  //phost->pActiveClass->pData = (HID_HandleTypeDef *)USBH_malloc(sizeof(HID_HandleTypeDef));
   HID_Handle = (HID_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (HID_Handle == NULL)
@@ -264,7 +267,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if ((phost->pActiveClass->pData) != NULL)
   {
-    USBH_free(phost->pActiveClass->pData);
+    //USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
 

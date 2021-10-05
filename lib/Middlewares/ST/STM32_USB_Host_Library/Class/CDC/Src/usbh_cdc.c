@@ -171,7 +171,10 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost, cons
     return USBH_FAIL;
   }
 
-  phost->pActiveClass->pData = (CDC_HandleTypeDef *)USBH_malloc(sizeof(CDC_HandleTypeDef));
+  // check USBH_free
+  static CDC_HandleTypeDef staticCDC_Handle;
+  phost->pActiveClass->pData = & staticCDC_Handle;
+  //phost->pActiveClass->pData = (CDC_HandleTypeDef *)USBH_malloc(sizeof(CDC_HandleTypeDef));
   CDC_Handle = (CDC_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (CDC_Handle == NULL)
@@ -293,7 +296,7 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if ((phost->pActiveClass->pData) != NULL)
   {
-    USBH_free(phost->pActiveClass->pData);
+    //USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
 

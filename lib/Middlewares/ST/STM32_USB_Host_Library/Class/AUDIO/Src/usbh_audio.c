@@ -208,7 +208,10 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost, co
     return USBH_FAIL;
   }
 
-  phost->pActiveClass->pData = (AUDIO_HandleTypeDef *)USBH_malloc(sizeof(AUDIO_HandleTypeDef));
+  // check USBH_free
+  static AUDIO_HandleTypeDef staticAUDIO_Handle;
+  phost->pActiveClass->pData = & staticAUDIO_Handle;
+  //phost->pActiveClass->pData = (AUDIO_HandleTypeDef *)USBH_malloc(sizeof(AUDIO_HandleTypeDef));
   AUDIO_Handle = (AUDIO_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (AUDIO_Handle == NULL)
@@ -364,7 +367,7 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if ((phost->pActiveClass->pData) != 0U)
   {
-    USBH_free(phost->pActiveClass->pData);
+    //USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
   return USBH_OK ;

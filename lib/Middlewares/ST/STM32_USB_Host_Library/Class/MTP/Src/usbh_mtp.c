@@ -164,7 +164,10 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceInit(USBH_HandleTypeDef *phost, cons
     return USBH_FAIL;
   }
 
-  phost->pActiveClass->pData = (MTP_HandleTypeDef *)USBH_malloc(sizeof(MTP_HandleTypeDef));
+  // check USBH_free
+  static MTP_HandleTypeDef staticMTP_Handle;
+  phost->pActiveClass->pData = & staticMTP_Handle;
+  //phost->pActiveClass->pData = (MTP_HandleTypeDef *)USBH_malloc(sizeof(MTP_HandleTypeDef));
   MTP_Handle = (MTP_HandleTypeDef *)phost->pActiveClass->pData;
 
   if (MTP_Handle == NULL)
@@ -357,7 +360,7 @@ static USBH_StatusTypeDef USBH_MTP_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if (phost->pActiveClass->pData != NULL)
   {
-    USBH_free(phost->pActiveClass->pData);
+    //USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
 

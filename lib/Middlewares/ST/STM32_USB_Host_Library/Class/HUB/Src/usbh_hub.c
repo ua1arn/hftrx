@@ -99,7 +99,10 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 	}
 	else
 	{
-		phost->hubDatas [phost->hubInstances] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
+		  // check USBH_free
+		  static HUB_HandleTypeDef staticHUB_Handle;
+		  phost->pActiveClass->pData = & staticHUB_Handle;
+		//phost->hubDatas [phost->hubInstances] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
 		HUB_Handle = phost->hubDatas [phost->hubInstances];
 		phost->hubInstances += 1;
 
@@ -156,22 +159,22 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 
 static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 {
-	unsigned hubIX = 0;
+	//unsigned hubIX = 0;
 	USBH_UsrLog("USBH_HUB_InterfaceDeInit");
 	//USBH_UsrLog("USBH_HUB_InterfaceDeInit %d", (int) phost->hubAddress [0]);
-
-	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas [hubIX];
-
-	if(HUB_Handle->InPipe != 0x00)
-	{
-		USBH_ClosePipe (phost, HUB_Handle->InPipe);
-		USBH_FreePipe  (phost, HUB_Handle->InPipe);
-		HUB_Handle->InPipe = 0;     // Reset the pipe as Free
-	}
-
-	if(phost->hubDatas[hubIX])
-		USBH_free (phost->hubDatas[hubIX]);
-
+//
+//	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas [hubIX];
+//
+//	if(HUB_Handle->InPipe != 0x00)
+//	{
+//		USBH_ClosePipe (phost, HUB_Handle->InPipe);
+//		USBH_FreePipe  (phost, HUB_Handle->InPipe);
+//		HUB_Handle->InPipe = 0;     // Reset the pipe as Free
+//	}
+//
+//	if(phost->hubDatas[hubIX])
+//		USBH_free (phost->hubDatas[hubIX]);
+//
 	return USBH_OK;
 }
 
