@@ -32,7 +32,8 @@ enum {
 	DISABLED,						// заблокировано для нажатия
 	LONG_PRESSED,
 	PRESS_REPEATING,
-	MOVING
+	MOVING,
+	DUMMY_ACTION
 };
 
 enum {
