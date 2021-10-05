@@ -21,7 +21,8 @@ typedef enum {
 	TYPE_LABEL,
 	TYPE_SLIDER,
 	TYPE_CLOSE_BUTTON,
-	TYPE_TOUCH_AREA
+	TYPE_TOUCH_AREA,
+	TYPE_TEXT_FIELD
 } element_type_t;
 
 enum {
@@ -67,7 +68,7 @@ enum {
 
 enum {
 	NAME_ARRAY_SIZE = 30,
-	TEXT_ARRAY_SIZE = 30,
+	TEXT_ARRAY_SIZE = 40,
 	MENU_ARRAY_SIZE = 50,
 	GUI_ELEMENTS_ARRAY_SIZE = 50
 };
@@ -81,6 +82,25 @@ typedef struct {
 	PACKEDCOLORMAIN_T * bg_locked_pressed;
 	PACKEDCOLORMAIN_T * bg_disabled;
 } btn_bg_t;
+
+typedef struct {
+   char text[TEXT_ARRAY_SIZE];
+} buf_t;
+
+typedef struct {
+	uint16_t w;
+	uint16_t h;
+	uint8_t state;
+	uint8_t parent;
+	uint8_t visible;
+	COLORMAIN_T color_text;
+	char name [NAME_ARRAY_SIZE];
+	uint8_t size;
+	uint8_t index;
+	buf_t * record;
+	uint16_t x1;
+	uint16_t y1;
+} text_field_t;
 
 typedef struct {
 	uint16_t w;
@@ -183,7 +203,7 @@ typedef struct {
 	wm_message_t message;			// тип сообщения
 	element_type_t type;			// тип элемента
 	uintptr_t ptr;
-	int action;						// для передачи информации опо повороте валкодера - знаковое значение
+	int action;
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI
@@ -208,6 +228,8 @@ typedef struct {
 	uint8_t sh_count;
 	touch_area_t * ta_ptr;
 	uint8_t ta_count;
+	text_field_t * tf_ptr;
+	uint8_t tf_count;
 	wm_queue_t queue;
 	uint8_t first_call;				// признак первого вызова для различных инициализаций
 	uint8_t state;

@@ -334,6 +334,18 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		return NULL;
 		break;
 
+	case TYPE_TEXT_FIELD:
+		for (uint_fast8_t i = 0; i < win->tf_count; i ++)
+		{
+			text_field_t * tf = & win->tf_ptr [i];
+			if (! strcmp(tf->name, name))
+				return (text_field_t *) tf;
+		}
+		PRINTF("find_gui_element: text_field '%s' not found\n", name);
+		ASSERT(0);
+		return NULL;
+		break;
+
 	default:
 		PRINTF("find_gui_element: undefined type/n");
 		ASSERT(0);
@@ -517,6 +529,36 @@ void elements_state (window_t * win)
 		}
 	}
 
+	text_field_t * tf = win->tf_ptr;
+	if(tf != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->tf_count; i ++)
+		{
+			text_field_t * tff = & tf [i];
+			if (win->state)
+			{
+				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
+				gui_elements [gui_element_count].link = (text_field_t *) tff;
+				gui_elements [gui_element_count].win = win;
+				gui_elements [gui_element_count].type = TYPE_TEXT_FIELD;
+				gui_element_count ++;
+				debug_num ++;
+				tff->record = calloc(tff->size, TEXT_ARRAY_SIZE);
+				GUI_MEM_ASSERT(tff->record);
+				tff->index = 0;
+			}
+			else
+			{
+				debug_num --;
+				gui_element_count --;
+				tff->visible = NON_VISIBLE;
+				free(tff->record);
+				tff->record = NULL;
+				ASSERT(gui_element_count >= gui.footer_buttons_count);
+			}
+		}
+	}
+
 	// инициализировать системную кнопку закрытия окна, если разрешено
 	if(win->is_close)
 	{
@@ -572,16 +614,19 @@ static void free_win_ptr (window_t * win)
 	free(win->lh_ptr);
 	free(win->sh_ptr);
 	free(win->ta_ptr);
+	free(win->tf_ptr);
 
 	win->bh_count = 0;
 	win->lh_count = 0;
 	win->sh_count = 0;
 	win->ta_count = 0;
+	win->tf_count = 0;
 
 	win->bh_ptr = NULL;
 	win->lh_ptr = NULL;
 	win->sh_ptr = NULL;
 	win->ta_ptr = NULL;
+	win->tf_ptr = NULL;
 //	PRINTF("free: %d %s\n", win->window_id, win->name);
 }
 
@@ -674,6 +719,18 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 				}
 			}
 
+			if (win->tf_ptr != NULL)
+			{
+				for (uint_fast8_t i = 0; i < win->tf_count; i++)
+				{
+					const text_field_t * tf = & win->tf_ptr [i];
+					xmax = (xmax > tf->x1 + tf->w) ? xmax : (tf->x1 + tf->w);
+					ymax = (ymax > tf->y1 + tf->h) ? ymax : (tf->y1+ tf->h);
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
+				}
+			}
+
 			if (win->sh_ptr != NULL)
 			{
 				for (uint_fast8_t i = 0; i < win->sh_count; i++)
@@ -735,6 +792,18 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			lh->y += shift_y;
 			ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
 			ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+		}
+	}
+
+	if (win->tf_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->tf_count; i++)
+		{
+			text_field_t * tf = & win->tf_ptr [i];
+			tf->x1 += shift_x;
+			tf->y1 += shift_y;
+			ASSERT(tf->x1 + tf->w < WITHGUIMAXX);
+			ASSERT(tf->y1 + tf->h < WITHGUIMAXY);
 		}
 	}
 
@@ -1096,6 +1165,10 @@ void gui_initialize (void)
 	uint_fast8_t i = 0;
 	window_t * win = get_win(WINDOW_MAIN);
 
+#if defined (TSC1_TYPE)
+//	board_tsc_initialize();   // tsc имеет смысл инициализировать только при наличии touch GUI в конфигурации
+#endif /* defined (TSC1_TYPE) */
+
 	open_window(win);
 	gui.win [1] = NO_PARENT_WINDOW;
 	gui.footer_buttons_count = win->bh_count;
@@ -1160,6 +1233,19 @@ static void update_gui_elements_list(void)
 			p->state = ta->state;
 			p->visible = ta->visible;
 			p->is_trackable = ta->is_trackable;
+			p->is_long_press = 0;
+			p->is_repeating = 0;
+		}
+		else if (p->type == TYPE_TOUCH_AREA)
+		{
+			text_field_t * tf = (text_field_t *) p->link;
+			p->x1 = (tf->x1) < 0 ? 0 : (tf->x1);
+			p->x2 = (tf->x1 + tf->w) > WITHGUIMAXX ? WITHGUIMAXX : (tf->x1 + tf->w);
+			p->y1 = (tf->y1) < 0 ? 0 : (tf->y1);
+			p->y2 = (tf->y1 + tf->h) > WITHGUIMAXY ? WITHGUIMAXY : (tf->y1 + tf->h);
+			p->state = tf->state;
+			p->visible = tf->visible;
+			p->is_trackable = 0;
 			p->is_long_press = 0;
 			p->is_repeating = 0;
 		}
@@ -1500,6 +1586,20 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 						slider_t * sh = (slider_t *) p->link;
 						if (sh->visible && sh->parent == win->window_id)
 							draw_slider(sh);
+					}
+					else if (p->type == TYPE_TEXT_FIELD)
+					{
+						text_field_t * tf = (text_field_t *) p->link;
+						if (tf->visible && tf->parent == win->window_id)
+						{
+							int8_t j = tf->index - 1;
+							for (uint8_t i = 0; i < tf->size; i ++)
+							{
+								j = j < 0 ? (tf->size - 1) : j;
+								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * i, tf->record[j].text, tf->color_text);
+								j --;
+							}
+						}
 					}
 				}
 			}
