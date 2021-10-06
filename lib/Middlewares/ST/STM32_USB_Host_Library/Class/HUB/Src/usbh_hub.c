@@ -121,9 +121,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 		HUB_Handle->HUB_CurPort = 0;
 		HUB_Handle->HUB_Change.val = 0;
 
-		HUB_Handle->lowSpeedPort = 0;
-		HUB_Handle->highSpeedPort = 0;
-		HUB_Handle->fullSpeedPort = 0;
+		HUB_Handle->detectedPorts = 0;
 
 		USBH_SelectInterface (phost, interface);
 
@@ -264,6 +262,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 				HUB_Handle->buffer, sizeof(USB_HUB_PORT_STATUS));
 		if (status == USBH_OK)
 		{
+			USBH_TargetTypeDef   * const tg = & HUB_Handle->Targets [HUB_Handle->hubClassRequestPort - 1];	/* Enumeration target */
 			//printhex(HUB_Handle->buffer, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS));
 			USB_HUB_PORT_STATUS * const st = (USB_HUB_PORT_STATUS*) HUB_Handle->buffer;
 			// ИНтерпретируем результаты
@@ -276,20 +275,48 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 				if (st->wPortStatus.PORT_LOW_SPEED)
 				{
 					// LOW SPEED, мышка - нашлась.
-					HUB_Handle->lowSpeedPort = HUB_Handle->hubClassRequestPort;
+					HUB_Handle->detectedPorts = 1;
+
+					tg->tt_hubaddr = phost->currentTarget->dev_address;
+					tg->dev_address = USBH_ADDRESS_DEFAULT;
+					tg->speed = USBH_SPEED_LOW;
+					tg->tt_prtaddr = HUB_Handle->hubClassRequestPort;
+
 					USBH_UsrLog("USB LS device at port %d", (int) HUB_Handle->hubClassRequestPort);
+
+					phost->currentTarget = tg;
 				}
 				else if (st->wPortStatus.PORT_HIGH_SPEED)
 				{
 					// HIGH SPEED, флешка - нашлась.
-					HUB_Handle->highSpeedPort = HUB_Handle->hubClassRequestPort;
+					HUB_Handle->detectedPorts = 1;
+
+					tg->tt_hubaddr = phost->currentTarget->dev_address;
+					tg->dev_address = USBH_ADDRESS_DEFAULT;
+					tg->speed = USBH_SPEED_HIGH;
+					tg->tt_prtaddr = HUB_Handle->hubClassRequestPort;
+
 					USBH_UsrLog("USB HS device at port %d", (int) HUB_Handle->hubClassRequestPort);
+
+					phost->currentTarget = tg;
 				}
 				else
 				{
-					HUB_Handle->fullSpeedPort = HUB_Handle->hubClassRequestPort;
+					// FULL SPEED
+					//HUB_Handle->detectedPorts = 1;
+
+					tg->tt_hubaddr = phost->currentTarget->dev_address;
+					tg->dev_address = USBH_ADDRESS_DEFAULT;
+					tg->speed = USBH_SPEED_FULL;
+					tg->tt_prtaddr = HUB_Handle->hubClassRequestPort;
+
 					USBH_UsrLog("USB FS device at port %d", (int) HUB_Handle->hubClassRequestPort);
+					//phost->currentTarget = tg;
 				}
+			}
+			else
+			{
+				USBH_memset(tg, 0, sizeof * tg);
 			}
 
 			// Reach last port
@@ -322,24 +349,18 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 	case HUB_REQ_SCAN_STATUSES_GET_SHORT_DEV_DESC:
 		USBH_UsrLog("=============================================");
 
-		if (HUB_Handle->lowSpeedPort == 0)
+		if (HUB_Handle->detectedPorts == 0)
 			return USBH_OK;
-
-		/*  Ранее опознаное усройство становится HUB. Control направляется на порт хаба. */
-		phost->Target.tt_hubaddr = phost->Target.dev_address;
-		phost->Target.dev_address = USBH_ADDRESS_DEFAULT;
-
-		phost->Target.speed = USBH_SPEED_LOW;
-		phost->Target.tt_prtaddr = HUB_Handle->lowSpeedPort;
+		//return USBH_HUB_REQ_REENUMERATE;
 
 		phost->Control.pipe_size = USBH_MPS_LOWSPEED;
 
 		/* modify control channels configuration for MaxPacket size */
-		(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target, USBH_EP_CONTROL,
+		(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, phost->currentTarget, USBH_EP_CONTROL,
 				(uint16_t) phost->Control.pipe_size);
 
 		/* Open Control pipes */
-		(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target, USBH_EP_CONTROL,
+		(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, phost->currentTarget, USBH_EP_CONTROL,
 				(uint16_t) phost->Control.pipe_size);
 
 		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_WAIT_SHORT_DEV_DESC;
@@ -357,11 +378,11 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			phost->Control.pipe_size = phost->device.DevDesc.bMaxPacketSize;
 
 			/* modify control channels configuration for MaxPacket size */
-			(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target, USBH_EP_CONTROL,
+			(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, phost->currentTarget, USBH_EP_CONTROL,
 					(uint16_t) phost->Control.pipe_size);
 
 			/* Open Control pipes */
-			(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target, USBH_EP_CONTROL,
+			(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, phost->currentTarget, USBH_EP_CONTROL,
 					(uint16_t) phost->Control.pipe_size);
 
 			HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_WAIT_FULL_DEV_DESC;
@@ -392,18 +413,18 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		if (status == USBH_OK)
 		{
 			USBH_Delay(2U);
-			phost->Target.dev_address = USBH_GetNextAddress(phost, 1);
+			phost->currentTarget->dev_address = USBH_GetNextAddress(phost, 1);
 
 			/* user callback for device address assigned */
-			USBH_UsrLog("HID Address (#%d,hub=%d,port=%d,speed=%d) assigned.", (int ) phost->Target.dev_address,
-					(int ) phost->Target.tt_hubaddr, (int ) phost->Target.tt_prtaddr, (int ) phost->Target.speed);
+			USBH_UsrLog("Over hub device: Address (#%d,hub=%d,port=%d,speed=%d) assigned.", (int ) phost->currentTarget->dev_address,
+					(int ) phost->currentTarget->tt_hubaddr, (int ) phost->currentTarget->tt_prtaddr, (int ) phost->currentTarget->speed);
 
 			/* modify control channels to update device address */
-			(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, & phost->Target,
+			(void) USBH_OpenPipe(phost, phost->Control.pipe_in, 0x80U, phost->currentTarget,
 							USBH_EP_CONTROL, (uint16_t) phost->Control.pipe_size);
 
 			/* Open Control pipes */
-			(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, & phost->Target,
+			(void) USBH_OpenPipe(phost, phost->Control.pipe_out, 0x00U, phost->currentTarget,
 							USBH_EP_CONTROL, (uint16_t) phost->Control.pipe_size);
 
 			// Заканчиваем работу
@@ -859,56 +880,56 @@ static void attach(USBH_HandleTypeDef *phost,
 {
 	USBH_UsrLog("attach %d", idx);
 	return;
-	//USBH_HandleTypeDef *pphost = &hUSBHost[idx];
-	USBH_HandleTypeDef *pphost = &hUsbHostHS;
-
-//	if (pphost->hubValid)
-//	{
-//		USBH_UsrLog("ATTACH ERROR, ALREADY ATTACHED");
-//		detach(pphost, idx);
-//	}
-
-	//pphost->id 					= 0;//hUSBHost[0].id;
-	//pphost->hubAddress [idx]			= idx;	// ????
-	//pphost->hubHub				= 0;
-//	pphost->pActiveClass 		= NULL;
-//	pphost->ClassNumber 		= 0;
-
-#warning Then use HUB class. investigane Pipes usage.
-// Taken from https://github.com/mori-br/STM32F4HUB
-	//pphost->Pipes 				= phost->Pipes;
-	//(void)USBH_memcpy(pphost->Pipes, phost->Pipes, sizeof pphost->Pipes);
-
-    pphost->pUser 				= phost->pUser;
-	pphost->EnumState 			= ENUM_IDLE;
-	pphost->RequestState 		= CMD_SEND;
-	pphost->Timer 				= 0;
-	pphost->Control.errorcount 	= 0;
-	pphost->Control.state 		= CTRL_SETUP;
-	pphost->Control.pipe_size 	= lowspeed ? USBH_MPS_LOWSPEED: USBH_MPS_DEFAULT;
-	pphost->Target.dev_address 		= USBH_ADDRESS_DEFAULT;
-	pphost->Target.speed   		= lowspeed ? USBH_SPEED_LOW : USBH_SPEED_FULL;
-	pphost->device.is_connected = 1;
-
-//	HCD_HandleTypeDef *phHCD =  &_hHCD[pphost->id];
-//	USBH_LL_SetTimer (pphost, HAL_HCD_GetCurrentFrame(phHCD));
-
-	/* link the class tgo the USB Host handle */
-//    pphost->pClass[pphost->ClassNumber++] = USBH_HID_CLASS;
-//    pphost->pClass[pphost->ClassNumber++] = USBH_MSC_CLASS;
-
-    pphost->gState = HOST_ENUMERATION;
-
-	pphost->Control.pipe_out = phost->Control.pipe_out;
-	pphost->Control.pipe_in  = phost->Control.pipe_in;
-
-	uint8_t i = 0;
-	for(;i < USBH_MAX_NUM_INTERFACES; ++i)
-		pphost->hubDatas[i] = NULL;
-
-	pphost->hubInstances = 0;
-	//pphost->hubBusy  = 0;
-	//pphost->hubValid = 3;
+//	//USBH_HandleTypeDef *pphost = &hUSBHost[idx];
+//	USBH_HandleTypeDef *pphost = &hUsbHostHS;
+//
+////	if (pphost->hubValid)
+////	{
+////		USBH_UsrLog("ATTACH ERROR, ALREADY ATTACHED");
+////		detach(pphost, idx);
+////	}
+//
+//	//pphost->id 					= 0;//hUSBHost[0].id;
+//	//pphost->hubAddress [idx]			= idx;	// ????
+//	//pphost->hubHub				= 0;
+////	pphost->pActiveClass 		= NULL;
+////	pphost->ClassNumber 		= 0;
+//
+//#warning Then use HUB class. investigane Pipes usage.
+//// Taken from https://github.com/mori-br/STM32F4HUB
+//	//pphost->Pipes 				= phost->Pipes;
+//	//(void)USBH_memcpy(pphost->Pipes, phost->Pipes, sizeof pphost->Pipes);
+//
+//    pphost->pUser 				= phost->pUser;
+//	pphost->EnumState 			= ENUM_IDLE;
+//	pphost->RequestState 		= CMD_SEND;
+//	pphost->Timer 				= 0;
+//	pphost->Control.errorcount 	= 0;
+//	pphost->Control.state 		= CTRL_SETUP;
+//	pphost->Control.pipe_size 	= lowspeed ? USBH_MPS_LOWSPEED: USBH_MPS_DEFAULT;
+//	pphost->Target.dev_address 		= USBH_ADDRESS_DEFAULT;
+//	pphost->Target.speed   		= lowspeed ? USBH_SPEED_LOW : USBH_SPEED_FULL;
+//	pphost->device.is_connected = 1;
+//
+////	HCD_HandleTypeDef *phHCD =  &_hHCD[pphost->id];
+////	USBH_LL_SetTimer (pphost, HAL_HCD_GetCurrentFrame(phHCD));
+//
+//	/* link the class tgo the USB Host handle */
+////    pphost->pClass[pphost->ClassNumber++] = USBH_HID_CLASS;
+////    pphost->pClass[pphost->ClassNumber++] = USBH_MSC_CLASS;
+//
+//    pphost->gState = HOST_ENUMERATION;
+//
+//	pphost->Control.pipe_out = phost->Control.pipe_out;
+//	pphost->Control.pipe_in  = phost->Control.pipe_in;
+//
+//	uint8_t i = 0;
+//	for(;i < USBH_MAX_NUM_INTERFACES; ++i)
+//		pphost->hubDatas[i] = NULL;
+//
+//	pphost->hubInstances = 0;
+//	//pphost->hubBusy  = 0;
+//	//pphost->hubValid = 3;
 
 //USBH_UsrLog("HUB stuff ok");
 }

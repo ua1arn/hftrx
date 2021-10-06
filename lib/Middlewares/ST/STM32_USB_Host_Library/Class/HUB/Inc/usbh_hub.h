@@ -186,13 +186,14 @@ HUB_CtlStateTypeDef;
 /* Structure for HUB process */
 typedef struct _HUB_Process
 {
-  USBH_DeviceTypeDef    devices [MAX_HUB_PORTS];
+	//USBH_DeviceTypeDef    devices [MAX_HUB_PORTS];
+	USBH_TargetTypeDef target;
+	USBH_TargetTypeDef	Targets [MAX_HUB_PORTS];	/* Enumeration targets */
+
   uint8_t              InPipe;
   HUB_StateTypeDef     state;
   uint8_t  hubClassRequestPort;
-  uint8_t lowSpeedPort;
-  uint8_t highSpeedPort;
-  uint8_t fullSpeedPort;
+  uint8_t detectedPorts;
   uint8_t              InEp;
   HUB_CtlStateTypeDef  ctl_state;
   __ALIGN4k_BEGIN uint8_t buffer [20] __ALIGN4k_END;
@@ -212,8 +213,6 @@ typedef struct _HUB_Process
   __IO USB_PORT_CHANGE HUB_Change;
   __IO uint8_t HUB_CurPort;
   __IO USB_HUB_PORT_STATUS *pChangeInfo;
-
-  USBH_TargetTypeDef target;
 
 } HUB_HandleTypeDef;
 

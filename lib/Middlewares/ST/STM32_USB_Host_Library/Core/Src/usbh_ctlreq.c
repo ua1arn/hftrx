@@ -682,7 +682,7 @@ static USBH_StatusTypeDef  USBH_ParseEPDesc(USBH_HandleTypeDef *phost, USBH_EpDe
   }
 
   /* For high-speed interrupt/isochronous endpoints, bInterval can vary from 1 to 16 */
-  if (phost->Target.speed == (uint8_t)USBH_SPEED_HIGH)
+  if (phost->currentTarget->speed == (uint8_t)USBH_SPEED_HIGH)
   {
     if (((ep_descriptor->bmAttributes & EP_TYPE_MSK) == EP_TYPE_ISOC) ||
         ((ep_descriptor->bmAttributes & EP_TYPE_MSK) == EP_TYPE_INTR))
