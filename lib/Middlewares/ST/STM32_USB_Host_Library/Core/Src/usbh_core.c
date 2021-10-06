@@ -251,6 +251,8 @@ static USBH_StatusTypeDef DeInitStateMachine(USBH_HandleTypeDef *phost)
   phost->allocaddress = 0;
   phost->currentTarget = & phost->rootTarget;
 
+  phost->hubInstances = 0;
+
   return USBH_OK;
 }
 
@@ -590,6 +592,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     	}
  		break;
 
+ 	// С этого состояния начинается повторная енуменация для устройств на HUB
    case HOST_DEV_ATTACHED :
 
       if (phost->pUser != NULL)
