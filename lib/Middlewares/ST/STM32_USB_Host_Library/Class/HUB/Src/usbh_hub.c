@@ -92,106 +92,106 @@ static USBH_StatusTypeDef set_port_feature(USBH_HandleTypeDef *phost, uint8_t fe
 {
     return set_hub_request(phost, USB_REQUEST_SET_FEATURE, feature, porta);
 }
-
-// porta: 1..n
-static void clear_port_changed(HUB_HandleTypeDef *HUB_Handle, uint8_t porta)
-{
-	switch (porta)
-	{
-	case 1:
-		HUB_Handle->HUB_Change.bPorts.PORT_1 = 0;
-		break;
-	case 2:
-		HUB_Handle->HUB_Change.bPorts.PORT_2 = 0;
-		break;
-	case 3:
-		HUB_Handle->HUB_Change.bPorts.PORT_3 = 0;
-		break;
-	case 4:
-		HUB_Handle->HUB_Change.bPorts.PORT_4 = 0;
-		break;
-	case 5:
-		HUB_Handle->HUB_Change.bPorts.PORT_5 = 0;
-		break;
-	case 6:
-		HUB_Handle->HUB_Change.bPorts.PORT_6 = 0;
-		break;
-	case 7:
-		HUB_Handle->HUB_Change.bPorts.PORT_7 = 0;
-		break;
-	case 8:
-		HUB_Handle->HUB_Change.bPorts.PORT_8 = 0;
-		break;
-	}
-}
-
-static uint8_t get_port_changed(HUB_HandleTypeDef *HUB_Handle)
-{
-	if (HUB_Handle->HUB_Change.bPorts.PORT_1)
-		return 1;
-	if (HUB_Handle->HUB_Change.bPorts.PORT_2)
-		return 2;
-	if (HUB_Handle->HUB_Change.bPorts.PORT_3)
-		return 3;
-	if (HUB_Handle->HUB_Change.bPorts.PORT_4)
-		return 4;
-	if (HUB_Handle->HUB_Change.bPorts.PORT_5)
-		return 5;
-	if (HUB_Handle->HUB_Change.bPorts.PORT_6)
-		return 6;
-	if (HUB_Handle->HUB_Change.bPorts.PORT_7)
-		return 7;
-	if (HUB_Handle->HUB_Change.bPorts.PORT_8)
-		return 8;
-
-	return 0;
-}
-
-static uint8_t port_changed(HUB_HandleTypeDef *HUB_Handle, const uint8_t *b, unsigned len)
-{
-	HUB_Handle->HUB_Change.val = 0x00;
-	if (b [0] != 0x00)
-	{
-
-		if (b [0] & (0x01 << 1))
-		{
-			HUB_Handle->HUB_Change.bPorts.PORT_1 = 1;
-		}
-		if (b [0] & (0x01 << 2))
-		{
-			HUB_Handle->HUB_Change.bPorts.PORT_2 = 1;
-		}
-		if (b [0] & (0x01 << 3))
-		{
-			HUB_Handle->HUB_Change.bPorts.PORT_3 = 1;
-		}
-		if (b [0] & (0x01 << 4))
-		{
-			HUB_Handle->HUB_Change.bPorts.PORT_4 = 1;
-		}
-		if (b [0] & (0x01 << 5))
-		{
-			HUB_Handle->HUB_Change.bPorts.PORT_5 = 1;
-		}
-		if (b [0] & (0x01 << 6))
-		{
-			HUB_Handle->HUB_Change.bPorts.PORT_6 = 1;
-		}
-		if (b [0] & (0x01 << 7))
-		{
-			HUB_Handle->HUB_Change.bPorts.PORT_7 = 1;
-		}
-		USBH_UsrLog("PORT STATUS CHANGE [0x%02X] [%d %d %d %d]",
-				b [0],
-				HUB_Handle->HUB_Change.bPorts.PORT_1,
-				HUB_Handle->HUB_Change.bPorts.PORT_2,
-				HUB_Handle->HUB_Change.bPorts.PORT_3,
-				HUB_Handle->HUB_Change.bPorts.PORT_4
-				);
-
-	}
-	return HUB_Handle->HUB_Change.val > 0;
-}
+//
+//// porta: 1..n
+//static void clear_port_changed(HUB_HandleTypeDef *HUB_Handle, uint8_t porta)
+//{
+//	switch (porta)
+//	{
+//	case 1:
+//		HUB_Handle->HUB_Change.bPorts.PORT_1 = 0;
+//		break;
+//	case 2:
+//		HUB_Handle->HUB_Change.bPorts.PORT_2 = 0;
+//		break;
+//	case 3:
+//		HUB_Handle->HUB_Change.bPorts.PORT_3 = 0;
+//		break;
+//	case 4:
+//		HUB_Handle->HUB_Change.bPorts.PORT_4 = 0;
+//		break;
+//	case 5:
+//		HUB_Handle->HUB_Change.bPorts.PORT_5 = 0;
+//		break;
+//	case 6:
+//		HUB_Handle->HUB_Change.bPorts.PORT_6 = 0;
+//		break;
+//	case 7:
+//		HUB_Handle->HUB_Change.bPorts.PORT_7 = 0;
+//		break;
+//	case 8:
+//		HUB_Handle->HUB_Change.bPorts.PORT_8 = 0;
+//		break;
+//	}
+//}
+//
+//static uint8_t get_port_changed(HUB_HandleTypeDef *HUB_Handle)
+//{
+//	if (HUB_Handle->HUB_Change.bPorts.PORT_1)
+//		return 1;
+//	if (HUB_Handle->HUB_Change.bPorts.PORT_2)
+//		return 2;
+//	if (HUB_Handle->HUB_Change.bPorts.PORT_3)
+//		return 3;
+//	if (HUB_Handle->HUB_Change.bPorts.PORT_4)
+//		return 4;
+//	if (HUB_Handle->HUB_Change.bPorts.PORT_5)
+//		return 5;
+//	if (HUB_Handle->HUB_Change.bPorts.PORT_6)
+//		return 6;
+//	if (HUB_Handle->HUB_Change.bPorts.PORT_7)
+//		return 7;
+//	if (HUB_Handle->HUB_Change.bPorts.PORT_8)
+//		return 8;
+//
+//	return 0;
+//}
+//
+//static uint8_t port_changed(HUB_HandleTypeDef *HUB_Handle, const uint8_t *b, unsigned len)
+//{
+//	HUB_Handle->HUB_Change.val = 0x00;
+//	if (b [0] != 0x00)
+//	{
+//
+//		if (b [0] & (0x01 << 1))
+//		{
+//			HUB_Handle->HUB_Change.bPorts.PORT_1 = 1;
+//		}
+//		if (b [0] & (0x01 << 2))
+//		{
+//			HUB_Handle->HUB_Change.bPorts.PORT_2 = 1;
+//		}
+//		if (b [0] & (0x01 << 3))
+//		{
+//			HUB_Handle->HUB_Change.bPorts.PORT_3 = 1;
+//		}
+//		if (b [0] & (0x01 << 4))
+//		{
+//			HUB_Handle->HUB_Change.bPorts.PORT_4 = 1;
+//		}
+//		if (b [0] & (0x01 << 5))
+//		{
+//			HUB_Handle->HUB_Change.bPorts.PORT_5 = 1;
+//		}
+//		if (b [0] & (0x01 << 6))
+//		{
+//			HUB_Handle->HUB_Change.bPorts.PORT_6 = 1;
+//		}
+//		if (b [0] & (0x01 << 7))
+//		{
+//			HUB_Handle->HUB_Change.bPorts.PORT_7 = 1;
+//		}
+//		USBH_UsrLog("PORT STATUS CHANGE [0x%02X] [%d %d %d %d]",
+//				b [0],
+//				HUB_Handle->HUB_Change.bPorts.PORT_1,
+//				HUB_Handle->HUB_Change.bPorts.PORT_2,
+//				HUB_Handle->HUB_Change.bPorts.PORT_3,
+//				HUB_Handle->HUB_Change.bPorts.PORT_4
+//				);
+//
+//	}
+//	return HUB_Handle->HUB_Change.val > 0;
+//}
 
 void detach(USBH_HandleTypeDef *_phost, uint16_t idx)
 {
@@ -331,12 +331,6 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 
 	USBH_StatusTypeDef status = USBH_FAIL ;
 
-//	int h = 1;
-//	for(; h < ARRAY_SIZE(hUSBHost); ++h)
-//	{
-//		USBH_memset(&hUSBHost[h], 0, sizeof (USBH_HandleTypeDef));
-//	}
-
 	interface = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, 0x00, 0xFF);
 
 	if (interface == 0xFF) /* No Valid Interface */
@@ -397,9 +391,6 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 	    	USBH_OpenPipe(phost, HUB_Handle->InPipe, HUB_Handle->InEp, & HUB_Handle->target, USB_EP_TYPE_INTR, HUB_Handle->length);
 	    	USBH_LL_SetToggle (phost, HUB_Handle->InPipe, 0);
 	    }
-
-
-	    //phost->hubHub = 1;
 
 	    status = USBH_OK;
 	}
