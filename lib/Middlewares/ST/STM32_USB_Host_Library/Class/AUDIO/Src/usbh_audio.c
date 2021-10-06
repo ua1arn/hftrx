@@ -94,7 +94,7 @@ EndBSPDependencies */
   * @{
   */
 
-static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target);
 static USBH_StatusTypeDef USBH_AUDIO_InterfaceDeInit(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_AUDIO_Process(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_AUDIO_SOFProcess(USBH_HandleTypeDef *phost);
@@ -192,7 +192,7 @@ USBH_ClassTypeDef  AUDIO_Class =
   * @param  phost: Host handle
   * @retval USBH Status
   */
-static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target)
 {
   USBH_StatusTypeDef out_status, in_status;
   AUDIO_HandleTypeDef *AUDIO_Handle;
@@ -208,7 +208,10 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
     return USBH_FAIL;
   }
 
-  phost->pActiveClass->pData = (AUDIO_HandleTypeDef *)USBH_malloc(sizeof(AUDIO_HandleTypeDef));
+  // check USBH_free
+  static AUDIO_HandleTypeDef staticAUDIO_Handle;
+  phost->pActiveClass->pData = & staticAUDIO_Handle;
+  //phost->pActiveClass->pData = (AUDIO_HandleTypeDef *)USBH_malloc(sizeof(AUDIO_HandleTypeDef));
   AUDIO_Handle = (AUDIO_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (AUDIO_Handle == NULL)
@@ -219,6 +222,8 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Initialize audio handler */
   (void)USBH_memset(AUDIO_Handle, 0, sizeof(AUDIO_HandleTypeDef));
+
+  (void)USBH_memcpy(& AUDIO_Handle->target, target, sizeof AUDIO_Handle->target);
 
   /* 1st Step:  Find Audio Interfaces */
   out_status = USBH_AUDIO_FindAudioStreamingIN(phost);
@@ -283,8 +288,7 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
     (void)USBH_OpenPipe(phost,
                         AUDIO_Handle->headphone.Pipe,
                         AUDIO_Handle->headphone.Ep,
-                        phost->device.address,
-                        phost->device.speed,
+						& AUDIO_Handle->target,
                         USB_EP_TYPE_ISOC,
                         AUDIO_Handle->headphone.EpSize);
 
@@ -300,8 +304,7 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
     (void)USBH_OpenPipe(phost,
                         AUDIO_Handle->microphone.Pipe,
                         AUDIO_Handle->microphone.Ep,
-                        phost->device.address,
-                        phost->device.speed,
+						& AUDIO_Handle->target,
                         USB_EP_TYPE_ISOC,
                         AUDIO_Handle->microphone.EpSize);
 
@@ -316,9 +319,8 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceInit(USBH_HandleTypeDef *phost)
     (void)USBH_OpenPipe(phost,
                         AUDIO_Handle->control.Pipe,
                         AUDIO_Handle->control.Ep,
-                        phost->device.address,
-                        phost->device.speed,
-                        USB_EP_TYPE_INTR,
+						& AUDIO_Handle->target,
+                         USB_EP_TYPE_INTR,
                         AUDIO_Handle->control.EpSize);
 
     (void)USBH_LL_SetToggle(phost,  AUDIO_Handle->control.Pipe, 0U);
@@ -365,7 +367,7 @@ static USBH_StatusTypeDef USBH_AUDIO_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if ((phost->pActiveClass->pData) != 0U)
   {
-    USBH_free(phost->pActiveClass->pData);
+    //USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
   return USBH_OK ;

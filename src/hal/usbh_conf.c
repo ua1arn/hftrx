@@ -617,13 +617,15 @@ uint32_t USBH_LL_GetAdjXferSize(USBH_HandleTypeDef *phost, uint8_t pipe, uint32_
   * @retval USBH status
   */
 USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num, uint8_t epnum,
-                                    uint8_t dev_address, uint8_t speed, uint8_t ep_type, uint16_t mps)
+								const USBH_TargetTypeDef * dev_target,
+								uint8_t ep_type,
+								uint16_t mps)
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
 
   hal_status = HAL_HCD_HC_Init(phost->pData, pipe_num, epnum,
-                               dev_address, speed, ep_type, mps);
+		  dev_target->dev_address, dev_target->speed, ep_type, mps);
 
   usb_status = USBH_Get_USB_Status(hal_status);
 
@@ -706,7 +708,19 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe, ui
   */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
-  return (USBH_URBStateTypeDef)HAL_HCD_HC_GetURBState (phost->pData, pipe);
+
+#if WITHINTEGRATEDDSP
+	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
+#endif /* WITHINTEGRATEDDSP */
+
+	return (USBH_URBStateTypeDef)HAL_HCD_HC_GetURBState (phost->pData, pipe);
+}
+
+USBH_SpeedTypeDef USBH_LL_GetPipeSpeed(USBH_HandleTypeDef *phost, uint8_t pipe_num)
+{
+	HCD_HandleTypeDef *hhcd = phost->pData;
+
+	return hhcd->hc [pipe_num].speed;
 }
 
 uint_fast8_t USBH_LL_GetSpeedReady(USBH_HandleTypeDef *phost)

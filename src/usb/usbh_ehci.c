@@ -21,18 +21,13 @@
 
 #include <string.h>
 
-#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания - ускоряет работу в случае super loop архитектуры */
+#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания */
 
 void Error_Handler(void);
 
 #if defined (WITHUSBHW_EHCI)
 	/* USB Host Core handle declaration. */
 	RAMBIGDTCM USBH_HandleTypeDef hUsbHostHS;
-
-	// MORI
-//	USBH_HandleTypeDef hUSBHost[5];
-//	HCD_HandleTypeDef _hHCD[2];
-//	EHCI_HandleTypeDef _hEHCI[2];
 
 	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
@@ -54,36 +49,6 @@ void Error_Handler(void);
 //	https://github.com/xushanpu123/xsp-daily-work/blob/ce4b31db29a560400ac948053b451a2122631490/rCore-Tutorial-v3/qemu-5.0.0/roms/ipxe/src/drivers/usb/ehci.c
 //	https://github.com/xushanpu123/xsp-daily-work/blob/ce4b31db29a560400ac948053b451a2122631490/rCore-Tutorial-v3/qemu-5.0.0/roms/ipxe/src/include/ipxe/usb.h
 
-
-#define DBG_LOG 1
-
-#define ENOTSUP 1
-#define ENOMEM 1
-#define ETIMEDOUT 1
-#define ENOBUFS 1
-#define ENODEV 1
-#define ECANCELED 1
-#define ENOENT 1
-
-enum { FLS = EHCI_PERIODIC_FRAMES(EHCI_FLSIZE_DEFAULT) };
-
-#if 1
-
-static SPINLOCK_t asynclock = SPINLOCK_INIT;
-
-// Periodic frame list
-// Periodic Schedule list - PERIODICLISTBASE use
-static volatile __attribute__((used, aligned(4096))) struct ehci_periodic_frame periodiclist [FLS];
-
-// Asynchronous Schedule list - ASYNCLISTADDR use
-// list of queue headers
-// выравнивание заменено с 32 на DATA CACHE PAGE
-static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_queue_head asynclisthead [16];
-static volatile __attribute__((used, aligned(DCACHEROWSIZE))) struct ehci_transfer_descriptor qtds [16];
-
-static EHCI_HCTypeDef * volatile ghc;
-
-#endif
 
 typedef uintptr_t physaddr_t;
 
@@ -307,8 +272,8 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 	uint32_t cap;
 	cap =
 			EHCI_CAP_MULT(1) | 	// 00b: reserved, 01b One transaction to be issued for this endpoint per micro-frame
-			EHCI_CAP_TT_HUB(0) |
-			EHCI_CAP_TT_PORT(0);
+			EHCI_CAP_TT_HUB(hc->tt_hubaddr) |
+			EHCI_CAP_TT_PORT(hc->tt_prtaddr);
 //	if ( tt ) {
 //		ASSERT( tt->hub->usb );
 //		cap |= ( EHCI_CAP_TT_HUB ( tt->hub->usb->address ) |
@@ -316,6 +281,9 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 //		if ( attr == USB_ENDPOINT_ATTR_INTERRUPT )
 //			cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
 //	}
+
+	if (hc->ep_type == EP_TYPE_INTR)
+		cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
 	p->chr = cpu_to_le32(chr | EHCI_CHR_HEAD * Head);
@@ -335,7 +303,6 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 //	PRINTF("board_ehci_initialize start.\n");
 
 	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) hehci->Instance;
-	//EhciController *const ehci = & hehci->ehci;
 	unsigned i;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
@@ -365,11 +332,18 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	// Calculate Operational Register Space base address
 	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
 	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
-	hehci->portsc = ((__IO unsigned long*) (opregspacebase + 0x0044));
+	hehci->portsc = (__IO uint32_t *) (opregspacebase + 0x0044);
+	hehci->configFlag = (__IO uint32_t *) (opregspacebase + 0x0040);
 
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
-	EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
+	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
+
+	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
+	InitializeListHead(& hehci->hcListAsync);		// Host channels, ожидающие обмена в ASYNCLISTADDR
+	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
+	hehci->ghc = NULL;
+	SPINLOCK_INITIALIZE(& hehci->asynclock);
 
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
@@ -404,20 +378,21 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	//hc->opRegs->usbIntr = 0;
 	EHCIx->USBINTR = 0;
 
+
 	/* подготовка кольцевого списка QH */
-    for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
+    for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++ i)
     {
-        asynclist_item(& asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)], i == 0);
+        asynclist_item(& hehci->asynclisthead [i], & hehci->asynclisthead [(i + 1) % ARRAY_SIZE(hehci->asynclisthead)], i == 0);
     }
 	/* подготовка списка dts */
-    for (i = 0; i < ARRAY_SIZE(qtds); ++ i)
+    for (i = 0; i < ARRAY_SIZE(hehci->qtds); ++ i)
     {
         //memset(& qtds [i], 0xFF, sizeof qtds [i]);
-        qtds [i].status = EHCI_STATUS_HALTED;
+    	hehci->qtds [i].status = EHCI_STATUS_HALTED;
     }
 
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 	/*
 	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
 	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
@@ -427,53 +402,42 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
 	 */
 
 	// Periodic frame list
-	for (i = 0; i < ARRAY_SIZE(periodiclist); ++ i)
+	for (i = 0; i < ARRAY_SIZE(hehci->periodiclist); ++ i)
 	{
-		periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
+		hehci->periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
 	}
-	arm_hardware_flush_invalidate((uintptr_t) & periodiclist, sizeof periodiclist);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
 
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
 	//hc->opRegs->frameIndex = 0;
 	EHCIx->FRINDEX = 0;
 	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-	EHCIx->PERIODICLISTBASE = virt_to_phys(& periodiclist);
+	EHCIx->PERIODICLISTBASE = cpu_to_le32(virt_to_phys(& hehci->periodiclist));
 
 	// копируем адрес асинхронной очереди в регистр
 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-	EHCIx->ASYNCLISTADDR = virt_to_phys(& asynclisthead);
-	ASSERT(EHCIx->ASYNCLISTADDR == virt_to_phys(& asynclisthead));
+	EHCIx->ASYNCLISTADDR = cpu_to_le32(virt_to_phys(& hehci->asynclisthead));
+	ASSERT(EHCIx->ASYNCLISTADDR == cpu_to_le32(virt_to_phys(& hehci->asynclisthead)));
 	// Устанавливаем сегмент в 0
 	//hc->opRegs->ctrlDsSegment = 0;
-	EHCIx->CTRLDSSEGMENT = 0x00000000;
+	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
 	// Clear status
 	// Чистим статус
 	//hc->opRegs->usbSts = ~0;
 	EHCIx->USBSTS = ~ 0uL;
-	//ASSERT( & EHCIx->USBSTS == & hehci->ehci.opRegs->usbSts);
-
-	unsigned porti = WITHEHCIHW_EHCIPORT;
-
-	/* Print state of all ports */
-	//for (porti = 0; porti < hehci->nports; ++ porti)
-	{
-		//unsigned long portsc = hehci->portsc [porti];
-		//PRINTF("portsc[%u]=%08lX\n", porti, portsc);
-	}
 
 	/* Route all ports to EHCI controller */
-	//writel ( EHCI_CONFIGFLAG_CF, ehci->op + EHCI_OP_CONFIGFLAG );
-	opRegs->configFlag = EHCI_CONFIGFLAG_CF;
-	(void) opRegs->configFlag;
+	* hehci->configFlag = EHCI_CONFIGFLAG_CF;
+	(void) * hehci->configFlag;
 
 	/* Enable power to all ports */
+	unsigned porti = WITHEHCIHW_EHCIPORT;
 	//for (porti = 0; porti < hehci->nports; ++ porti)
 	{
 		unsigned long portsc = hehci->portsc [porti];
 
 		portsc &= ~ EHCI_PORTSC_CHANGE;
-		//portsc |= EHCI_PORTSC_OWNER;	// ???
 		portsc |= EHCI_PORTSC_PP;
 
 		hehci->portsc [porti] = portsc;
@@ -522,8 +486,6 @@ HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
 		//local_delay_ms( 1 );
 	}
 
-	ghc = NULL;
-
 	return HAL_OK;
 }
 
@@ -534,12 +496,33 @@ HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
   */
 uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
 {
- 	//EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	return EHCIx->FRINDEX;
 }
 
+static void EHCI_StopAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
+{
+//	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC_ADVANCE;
+//	(void) EHCIx->USBCMD;
+//	while ((EHCIx->USBSTS & EHCI_USBCMD_ASYNC_ADVANCE) != 0)
+//		;
+
+	// Stop ASYNC queue
+	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
+	(void) EHCIx->USBCMD;
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
+		;
+
+}
+
+static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
+{
+	// Run ASYNC queue
+	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
+	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
+		;
+}
 
 /**
   * @brief  Initialize a host channel.
@@ -563,6 +546,10 @@ uint32_t HAL_EHCI_GetCurrentFrame(EHCI_HandleTypeDef * hehci)
   *            EP_TYPE_INTR: Interrupt type
   * @param  mps Max Packet Size.
   *          This parameter can be a value from 0 to32K
+  * @param  tt_hubaddr HUB address.
+  *          device address of the transaction translator’s hub.
+  * @param  tt_prtaddr Port address
+  *          port number of the recipient transaction translator.
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
@@ -571,19 +558,16 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
                                   uint8_t dev_address,
                                   uint8_t speed,
                                   uint8_t ep_type,
-                                  uint16_t mps)
+                                  uint16_t mps,
+								  uint8_t tt_hubaddr,
+								  uint8_t tt_prtaddr)
 {
 	HAL_StatusTypeDef status = HAL_OK;
 	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
 	USB_EHCI_CapabilityTypeDef *const EHCIx = hehci->Instance;
 
 	__HAL_LOCK(hehci);
-	// TODO: use queue head
-	// Stop ASYNC queue
-	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
-	(void) EHCIx->USBCMD;
-	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
-		;
+	EHCI_StopAsync(EHCIx);
 
 	hc->do_ping = 0U;
 	hc->dev_addr = dev_address;
@@ -591,6 +575,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 	hc->ch_num = ch_num;
 	hc->ep_type = ep_type;
 	hc->ep_num = epnum & 0x7FU;
+
+	hc->tt_hubaddr = tt_hubaddr;
+	hc->tt_prtaddr = tt_prtaddr;
 
 	if ((epnum & 0x80U) == 0x80U)
 	{
@@ -603,6 +590,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 
 	hc->speed = speed;
 
+	InitializeListHead(& hc->tdlist);
+
+
 // TODO: use queue head
 //  status =  USB_HC_Init(hehci->Instance,
 //                        ch_num,
@@ -611,16 +601,13 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 //                        speed,
 //                        ep_type,
 //                        mps);
-	qtd_item2_set_toggle( & asynclisthead [hc->ch_num].cache, 0);
+	qtd_item2_set_toggle( & hehci->asynclisthead [hc->ch_num].cache, 0);
 	//PRINTF("HAL_EHCI_HC_Init: hc->ch_num=%d\n");
 
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
-	// Run ASYNC queue
-	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
-	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
-		;
+	EHCI_StartAsync(EHCIx);
 
 	__HAL_UNLOCK(hehci);
 
@@ -642,31 +629,25 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 
 	__HAL_LOCK(hehci);
 	// TODO: use queue head
-	// Stop ASYNC queue
-	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
-	(void) EHCIx->USBCMD;
-	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
-		;
+	EHCI_StopAsync(EHCIx);
+
 	unsigned i = ch_num;
 	/* подготовка кольцевого списка QH */
 	//for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
 	{
-		asynclist_item( & asynclisthead [i], & asynclisthead [(i + 1) % ARRAY_SIZE(asynclisthead)], i == 0);
-		qtds [i].status = EHCI_STATUS_HALTED;
-		qtds [i].len = 0;	// toggle bit = 0
-		qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
-		qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
+		asynclist_item( & hehci->asynclisthead [i], & hehci->asynclisthead [(i + 1) % ARRAY_SIZE(hehci->asynclisthead)], i == 0);
+		hehci->qtds [i].status = EHCI_STATUS_HALTED;
+		hehci->qtds [i].len = 0;	// toggle bit = 0
+		hehci->qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
+		hehci->qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 	}
 
-	hc->ehci_urb_state - URB_IDLE;
+	hc->ehci_urb_state = URB_IDLE;
 
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
-	// Run ASYNC queue
-	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
-	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
-		;
+	EHCI_StartAsync(EHCIx);
 
 	//(void)USB_HC_Halt(hehci->Instance, (uint8_t)ch_num);
 	__HAL_UNLOCK(hehci);
@@ -745,14 +726,19 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  		//unsigned ch_num;
  		//for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
- 		if (ghc != NULL)
+ 		if (hehci->ghc != NULL)
  		{
-			EHCI_HCTypeDef * const hc = ghc;//& hehci->hc [ch_num];
-			volatile struct ehci_transfer_descriptor * const qtd = & qtds [hc->ch_num];
-			volatile struct ehci_transfer_descriptor * const qtdoverl = & asynclisthead [hc->ch_num].cache;
+			EHCI_HCTypeDef * const hc = hehci->ghc;//& hehci->hc [ch_num];
+			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
+			volatile struct ehci_transfer_descriptor * const qtdoverl = & hehci->asynclisthead [hc->ch_num].cache;
 			const uint_fast8_t status = qtd->status;
 			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
+//			if (pktcnt > hc->max_packet)
+//			{
+//		 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
+//			}
+			//ASSERT(pktcnt <= hc->max_packet);
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
 			{
@@ -795,21 +781,21 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 //	 			}
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
-				// продолжаем, если многосегменый обмен
-				if (pktcnt >= hc->max_packet && hc->xfer_len > hc->max_packet && hc->xfer_len > hc->xfer_count)
-				{
-					// Restart next transaction
-					qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len - hc->xfer_count);
-					le8_modify( & qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
-
-					/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
-					le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
-					goto nextIteration;
-				}
+//				// продолжаем, если многосегменый обмен
+//				if (pktcnt >= hc->max_packet && hc->xfer_len > hc->max_packet && hc->xfer_len > hc->xfer_count)
+//				{
+//					// Restart next transaction
+//					qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len - hc->xfer_count);
+//					le8_modify( & qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+//
+//					/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
+//					le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+//					goto nextIteration;
+//				}
 				// Transaction done
 	 			hc->ehci_urb_state = URB_DONE;
 			}
-			ghc = NULL;
+			hehci->ghc = NULL;
 		nextIteration:
 			;
  		}
@@ -819,8 +805,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	 		//ASSERT(0);
  		}
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
- 		arm_hardware_invalidate((uintptr_t) & qtds, sizeof qtds);	/* чтобы следующая проверка могла работать */
- 		arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+ 		arm_hardware_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);	/* чтобы следующая проверка могла работать */
+ 		arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 
  		HAL_EHCI_SOF_Callback(hehci);
  	}
@@ -829,11 +815,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 1);	// Clear USB Error Interrupt (USBERRINT) interrupt
  		//PRINTF("HAL_EHCI_IRQHandler: USB Error\n");
- 		unsigned i;
-// 		for (i = 0; i < hehci->nports; ++ i)
-// 	 	{
-// 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
-// 	 	}
  		//hehci->urbState = USBH_URB_ERROR;
  	}
 
@@ -892,18 +873,12 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 5);	// Clear Interrupt On Async Advance
  		//PRINTF("HAL_EHCI_IRQHandler: Interrupt On Async Advance\n");
- 		unsigned i;
- 		for (i = 0; i < hehci->nports; ++ i)
- 	 	{
- 	 		PRINTF("HAL_EHCI_IRQHandler: PORTSC[%u]=%08lX\n", i, hehci->portsc [i]);
- 	 	}
  	}
 }
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
- 	//EhciController * const ehci = & hehci->ehci;
  	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
  	//PRINTF("HAL_EHCI_Init\n");
 
@@ -922,7 +897,7 @@ void USBH_OHCI_IRQHandler(void)
 {
 	ASSERT(0);
 	//ehci_bus_poll(& usbbus0);
-	//HAL_EHCI_IRQHandler(& hehci_USB);
+	//HAL_OHCI_IRQHandler(& hehci_USB);
 }
 
 void USBH_EHCI_IRQHandler(void)
@@ -1020,7 +995,6 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
-	//EhciController * const ehci = & hehci->ehci;
  	// Enable controller
  	// Запускаем контроллер, 8 микро-фреймов, включаем
  	// последовательную и асинхронную очередь
@@ -1069,12 +1043,14 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 {
 	//PRINTF("%s:\n", __func__);
- 	//EhciController * const ehci = & hehci->ehci;
-  __HAL_LOCK(hehci);
-  (void)EHCI_StopHost(hehci->Instance);
-  __HAL_UNLOCK(hehci);
+	__HAL_LOCK(hehci);
+	(void) EHCI_StopHost(hehci->Instance);
 
-  return HAL_OK;
+	hehci->ghc = NULL;
+
+	__HAL_UNLOCK(hehci);
+
+	return HAL_OK;
 }
 
 
@@ -1251,10 +1227,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	}
 #endif
 
-	ASSERT(ghc == NULL);
-	volatile struct ehci_queue_head *const qh = & asynclisthead [hc->ch_num];
-	volatile struct ehci_transfer_descriptor *qtd = & qtds [hc->ch_num];
-	volatile struct ehci_transfer_descriptor *qtdoverl = & asynclisthead [hc->ch_num].cache;
+	ASSERT(hehci->ghc == NULL);
+	volatile struct ehci_queue_head *const qh = & hehci->asynclisthead [hc->ch_num];
+	volatile struct ehci_transfer_descriptor *qtd = & hehci->qtds [hc->ch_num];
+	volatile struct ehci_transfer_descriptor *qtdoverl = & hehci->asynclisthead [hc->ch_num].cache;
 
 	switch (ep_type)
 	{
@@ -1359,11 +1335,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	asynclist_item2(hc, qh, virt_to_phys(qtd), hc->ch_num == 0);
 
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & qtds, sizeof qtds);
-
 	/*  убрать после перехода на списки работающих пересылок */
-	ghc = hc;
+	hehci->ghc = hc;
 
 	return HAL_OK;
 }
@@ -1471,7 +1444,6 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint16_t length, uint8_t do_ping)
 {
 	EHCI_HandleTypeDef * const hehci = phost->pData;
-	//EhciController * const ehci = & hehci->ehci;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	HAL_StatusTypeDef hal_status = HAL_OK;
@@ -1481,20 +1453,18 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 	//PRINTF("USBH_LL_SubmitURB: direction=%d, ep_type=%d, token=%d\n", direction, ep_type, token);
 	//printhex(0, pbuff, length);
 
-	// Stop ASYNC queue
-	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
-	(void) EHCIx->USBCMD;
-	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
-		;
+	// TODO: use EHCI_USBCMD_ASYNC_ADVANCE
+
+	EHCI_StopAsync(EHCIx);
 
 	hal_status = HAL_EHCI_HC_SubmitRequest(phost->pData, pipe, direction ,
 								 ep_type, token, pbuff, length,
 								 do_ping);
 
-	// Run ASYNC queue
-	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
-	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
-		;
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
+
+	EHCI_StartAsync(EHCIx);
 
 	usb_status =  USBH_Get_USB_Status(hal_status);
 
@@ -1516,17 +1486,28 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  *            @arg URB_STALL
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
-		uint8_t pipe) {
-#if WITHEHCIHWSOFTSPOLL
-	HAL_EHCI_IRQHandler(& hehci_USB);
-#else /* WITHEHCIHWSOFTSPOLL */
+		uint8_t pipe)
+{
+	EHCI_HandleTypeDef * const hehci = phost->pData;
+
 	system_disableIRQ();
-	SPIN_LOCK(& asynclock);
+	SPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
-	SPIN_UNLOCK(& asynclock);
+	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
-#endif /* WITHEHCIHWSOFTSPOLL */
+
+#if WITHINTEGRATEDDSP
+	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
+#endif /* WITHINTEGRATEDDSP */
+
 	return (USBH_URBStateTypeDef)HAL_EHCI_HC_GetURBState (phost->pData, pipe);
+}
+
+USBH_SpeedTypeDef USBH_LL_GetPipeSpeed(USBH_HandleTypeDef *phost, uint8_t pipe_num)
+{
+	EHCI_HandleTypeDef *hehci = phost->pData;
+	return hehci->hc [pipe_num].speed;
+
 }
 
 uint_fast8_t USBH_LL_GetSpeedReady(USBH_HandleTypeDef *phost) {
@@ -1571,6 +1552,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t toggle) {
 	EHCI_HandleTypeDef *pHandle;
 	pHandle = phost->pData;
+	EHCI_HandleTypeDef * const hehci = phost->pData;
 	ASSERT(pHandle != NULL);
 	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) pHandle->Instance;
 
@@ -1580,20 +1562,13 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe,
 //		pHandle->hc[pipe].toggle_out = toggle;
 //	}
 
-	// Stop ASYNC queue
-	EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
-	(void) EHCIx->USBCMD;
-	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
-		;
+	EHCI_StopAsync(EHCIx);
 
-	volatile struct ehci_transfer_descriptor *qtdoverl = & asynclisthead [pipe].cache;
+	volatile struct ehci_transfer_descriptor *qtdoverl = & hehci->asynclisthead [pipe].cache;
 	qtd_item2_set_toggle(qtdoverl, toggle);
-	arm_hardware_flush_invalidate((uintptr_t) & asynclisthead, sizeof asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 
-	// Run ASYNC queue
-	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
-	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
-		;
+	EHCI_StartAsync(EHCIx);
 
 	return USBH_OK;
 }
@@ -1605,6 +1580,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe,
  * @retval toggle (0/1)
  */
 uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe) {
+	EHCI_HandleTypeDef * const hehci = phost->pData;
 	uint8_t toggle = 0;
 //	EHCI_HandleTypeDef *pHandle;
 //	pHandle = phost->pData;
@@ -1616,7 +1592,7 @@ uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe) {
 //		toggle = pHandle->hc[pipe].toggle_out;
 //	}
 
-	volatile struct ehci_transfer_descriptor *qtdoverl = & asynclisthead [pipe].cache;
+	volatile struct ehci_transfer_descriptor *qtdoverl = & hehci->asynclisthead [pipe].cache;
 	toggle = (le16_to_cpu(qtdoverl->len) & EHCI_LEN_TOGGLE) != 0;
 
 	return toggle;
@@ -1764,28 +1740,22 @@ uint32_t USBH_LL_GetAdjXferSize(USBH_HandleTypeDef *phost, uint8_t pipe, uint32_
   * @retval USBH status
   */
 USBH_StatusTypeDef USBH_LL_OpenPipe(USBH_HandleTypeDef *phost, uint8_t pipe_num, uint8_t epnum,
-                                    uint8_t dev_address, uint8_t speed, uint8_t ep_type, uint16_t mps)
+					const USBH_TargetTypeDef * dev_target,
+					uint8_t ep_type,
+					uint16_t mps)
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBH_StatusTypeDef usb_status = USBH_OK;
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
-  // TODO: use queue head
-  // Stop ASYNC queue
-  EHCIx->USBCMD &= ~ EHCI_USBCMD_ASYNC;
-  (void) EHCIx->USBCMD;
-  while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) != 0)
-  	;
+	EHCI_StopAsync(EHCIx);
 
   hal_status = HAL_EHCI_HC_Init(phost->pData, pipe_num, epnum,
-                               dev_address, speed, ep_type, mps);
+		  dev_target->dev_address, dev_target->speed, ep_type, mps, dev_target->tt_hubaddr, dev_target->tt_prtaddr);
 
+	EHCI_StartAsync(EHCIx);
 
-  // Run ASYNC queue
-  EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
-  while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
-  	;
   ////hal_status =  ehci_endpoint_open(& usbdev0->control) == 0 ? HAL_OK : HAL_ERROR;
   usb_status = USBH_Get_USB_Status(hal_status);
 
@@ -1957,18 +1927,14 @@ void MX_USB_HOST_DeInit(void)
 
 void MX_USB_HOST_Process(void)
 {
+	EHCI_HandleTypeDef * const hehci = hUsbHostHS.pData;
 	USBH_Process(& hUsbHostHS);
-#if WITHEHCIHWSOFTSPOLL
-	HAL_EHCI_IRQHandler(& hehci_USB);
-#else /* WITHEHCIHWSOFTSPOLL */
+
 	system_disableIRQ();
-	SPIN_LOCK(& asynclock);
+	SPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
-	SPIN_UNLOCK(& asynclock);
+	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
-#endif /* WITHEHCIHWSOFTSPOLL */
-	//local_delay_ms(100);
-	//PRINTF(".");
 }
 
 #endif /* defined (WITHUSBHW_EHCI) */

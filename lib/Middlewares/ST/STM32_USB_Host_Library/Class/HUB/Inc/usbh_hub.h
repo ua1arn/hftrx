@@ -172,7 +172,14 @@ typedef enum
 	HUB_REQ_SET_POWER,
 	HUB_WAIT_PWRGOOD,
 	HUB_WAIT_PWRGOOD_DONE,
-	HUB_REQ_DONE
+	HUB_REQ_DONE,
+	HUB_REQ_RESETS,
+	HUB_REQ_RESETS_DONE,
+	HUB_REQ_SCAN_STATUSES,
+	HUB_REQ_SCAN_STATUSES_GET_SHORT_DEV_DESC,
+	HUB_REQ_SCAN_STATUSES_WAIT_SHORT_DEV_DESC,
+	HUB_REQ_SCAN_STATUSES_WAIT_FULL_DEV_DESC,
+	HUB_REQ_SET_ADDRESS
 }
 HUB_CtlStateTypeDef;
 
@@ -183,6 +190,8 @@ typedef struct _HUB_Process
   uint8_t              InPipe;
   HUB_StateTypeDef     state;
   uint8_t  hubClassRequestPort;
+  uint8_t lowSpeedPort;
+  uint8_t highSpeedPort;
   uint8_t              InEp;
   HUB_CtlStateTypeDef  ctl_state;
   __ALIGN4k_BEGIN uint8_t buffer [20] __ALIGN4k_END;
@@ -195,13 +204,16 @@ typedef struct _HUB_Process
   uint8_t address;	// USB bus addres of this hub
   struct _HUB_Process * parrent;	/* parrent hub of this hub. NULL for root. */
 
-  uint8_t  HUB_NumPorts;	// See bNbrPorts specs
-  uint16_t HUB_PwrGoodDelay;
+  uint8_t  NumPorts;	// See bNbrPorts specs
+  uint16_t pwrGoodDelay;
 
 
   __IO USB_PORT_CHANGE HUB_Change;
   __IO uint8_t HUB_CurPort;
-  __IO USB_HUB_PORT_STATUS *HUB_ChangeInfo;
+  __IO USB_HUB_PORT_STATUS *pChangeInfo;
+
+  USBH_TargetTypeDef target;
+
 } HUB_HandleTypeDef;
 
 

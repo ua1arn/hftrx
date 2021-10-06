@@ -101,19 +101,14 @@ extern "C" {
 
 #define USBH_MAX_EP_PACKET_SIZE                            0x400U
 
-// ++ from MORI
-// https://github.com/mori-br/STM32F4HUB
-//#define USBH_ADDRESS_DEFAULT                     0
-//#define USBH_ADDRESS_ASSIGNED                    1
-//#define USBH_MPS_DEFAULT                         0x40
-//#define USBH_MPS_LOWSPEED                        8
-// -- from MORI
+#define HOSTDEV_DEFAULT_HUBADDR 0
+#define HOSTDEV_DEFAULT_PRTADDR 0
 
 /** @defgroup USBH_CORE_Private_Defines
   * @{
   */
 #define USBH_ADDRESS_DEFAULT                     0x00U
-#define USBH_ADDRESS_ASSIGNED                    0x01U
+//#define USBH_ADDRESS_ASSIGNED                    0x01U // адреса разные в случае структуры с HUB
 #define USBH_MPS_DEFAULT                         0x40U
 #define USBH_MPS_LOWSPEED                        0x08U
 /**
@@ -470,8 +465,6 @@ typedef struct
 {
   __ALIGN4k_BEGIN uint8_t           CfgDesc_Raw [USBH_MAX_SIZE_CONFIGURATION] __ALIGN4k_END;
   __ALIGN4k_BEGIN uint8_t           Data [USBH_MAX_DATA_BUFFER] __ALIGN4k_END;
-  uint8_t                           address;
-  uint8_t                           speed;
   uint8_t                           EnumCnt;
   uint8_t                           RstCnt;
   __IO uint8_t                      is_connected;
@@ -483,6 +476,15 @@ typedef struct
   USBH_CfgDescTypeDef               CfgDesc;
 } USBH_DeviceTypeDef;
 
+typedef struct
+{
+	uint8_t speed;
+	uint8_t dev_address;
+	uint8_t tt_hubaddr;
+	uint8_t tt_prtaddr;
+
+} USBH_TargetTypeDef;
+
 struct _USBH_HandleTypeDef;
 
 /* USB Host Class structure */
@@ -490,7 +492,7 @@ typedef struct
 {
   const char          *Name;
   uint8_t              ClassCode;
-  USBH_StatusTypeDef(*Init)(struct _USBH_HandleTypeDef *phost);
+  USBH_StatusTypeDef(*Init)(struct _USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * dev_target);
   USBH_StatusTypeDef(*DeInit)(struct _USBH_HandleTypeDef *phost);
   USBH_StatusTypeDef(*Requests)(struct _USBH_HandleTypeDef *phost);
   USBH_StatusTypeDef(*BgndProcess)(struct _USBH_HandleTypeDef *phost);
@@ -510,6 +512,7 @@ typedef struct _USBH_HandleTypeDef
   CMD_StateTypeDef      RequestState;
   USBH_CtrlTypeDef      Control;
   USBH_DeviceTypeDef    device;
+  USBH_TargetTypeDef	Target;	/* Enumeration target */
 
   USBH_ClassTypeDef    *pActiveClass;
   uint32_t              ClassNumber;	/* number of registered classes */
@@ -537,6 +540,8 @@ typedef struct _USBH_HandleTypeDef
 
     void * hubCurrentData;	/** Currently enumeratuion on this HUB */
     uint8_t hubCurrentPort;	/** Currently enumeratuion on this HUB's port */
+
+    uint8_t allocaddress;
 } USBH_HandleTypeDef;
 
 

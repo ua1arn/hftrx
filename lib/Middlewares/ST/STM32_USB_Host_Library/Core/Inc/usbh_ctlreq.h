@@ -105,6 +105,9 @@ USBH_StatusTypeDef USBH_Get_CfgDesc(USBH_HandleTypeDef *phost, uint16_t length);
 
 USBH_StatusTypeDef USBH_SetAddress(USBH_HandleTypeDef *phost,
                                    uint8_t DeviceAddress);
+/* return 1..126 as address */
+uint8_t USBH_GetNextAddress(USBH_HandleTypeDef *phost,
+                                   uint8_t modify);
 
 USBH_StatusTypeDef USBH_SetInterface(USBH_HandleTypeDef *phost, uint8_t ep_num,
                                      uint8_t altSetting);

@@ -982,11 +982,12 @@ void spidf_initialize(void)
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
 	(void) QUADSPI->CR;
 
-	const unsigned long qspipre = ulmax32(1, ulmin32(BOARD_QSPI_FREQ / SPISPEEDUFAST, 256));
-	//PRINTF("spidf_initialize: qspipre=%u\n", (unsigned) qspipre);
-
 	QUADSPI->CCR = 0;
 	(void) QUADSPI->CCR;
+
+	// qspipre in range 1..256
+	const unsigned long qspipre = ulmax32(1, ulmin32(calcdivround2(BOARD_QSPI_FREQ, SPISPEEDUFAST), 256));
+	//PRINTF("spidf_initialize: qspipre=%lu\n", qspipre);
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
@@ -996,7 +997,7 @@ void spidf_initialize(void)
 		0;
 	(void) QUADSPI->DCR;
 
-	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk))) |
+	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk | QUADSPI_CR_EN_Msk))) |
 		(0x00uL << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
 		(((unsigned long) qspipre - 1) << QUADSPI_CR_PRESCALER_Pos) |
 		0;

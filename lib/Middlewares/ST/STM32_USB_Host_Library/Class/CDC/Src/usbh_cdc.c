@@ -102,7 +102,7 @@ EndBSPDependencies */
   * @{
   */
 
-static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target);
 
 static USBH_StatusTypeDef USBH_CDC_InterfaceDeInit(USBH_HandleTypeDef *phost);
 
@@ -148,7 +148,7 @@ USBH_ClassTypeDef  CDC_Class =
   * @param  phost: Host handle
   * @retval USBH Status
   */
-static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target)
 {
 
   USBH_StatusTypeDef status;
@@ -171,7 +171,10 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
     return USBH_FAIL;
   }
 
-  phost->pActiveClass->pData = (CDC_HandleTypeDef *)USBH_malloc(sizeof(CDC_HandleTypeDef));
+  // check USBH_free
+  static CDC_HandleTypeDef staticCDC_Handle;
+  phost->pActiveClass->pData = & staticCDC_Handle;
+  //phost->pActiveClass->pData = (CDC_HandleTypeDef *)USBH_malloc(sizeof(CDC_HandleTypeDef));
   CDC_Handle = (CDC_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (CDC_Handle == NULL)
@@ -182,6 +185,8 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Initialize cdc handler */
   (void)USBH_memset(CDC_Handle, 0, sizeof(CDC_HandleTypeDef));
+
+  (void)USBH_memcpy(& CDC_Handle->target, target, sizeof CDC_Handle->target);
 
   /*Collect the notification endpoint address and length*/
   if ((phost->device.CfgDesc.Itf_Desc[interface].Ep_Desc[0].bEndpointAddress & 0x80U) != 0U)
@@ -195,7 +200,7 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Open pipe for Notification endpoint */
   (void)USBH_OpenPipe(phost, CDC_Handle->CommItf.NotifPipe, CDC_Handle->CommItf.NotifEp,
-                      phost->device.address, phost->device.speed, USB_EP_TYPE_INTR,
+		  	  	  	  & CDC_Handle->target, USB_EP_TYPE_INTR,
                       CDC_Handle->CommItf.NotifEpSize);
 
   (void)USBH_LL_SetToggle(phost, CDC_Handle->CommItf.NotifPipe, 0U);
@@ -240,12 +245,12 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Open channel for OUT endpoint */
   (void)USBH_OpenPipe(phost, CDC_Handle->DataItf.OutPipe, CDC_Handle->DataItf.OutEp,
-                      phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
+		  	  	  	  & CDC_Handle->target, USB_EP_TYPE_BULK,
                       CDC_Handle->DataItf.OutEpSize);
 
   /* Open channel for IN endpoint */
   (void)USBH_OpenPipe(phost, CDC_Handle->DataItf.InPipe, CDC_Handle->DataItf.InEp,
-                      phost->device.address, phost->device.speed, USB_EP_TYPE_BULK,
+		  	  	  	  & CDC_Handle->target, USB_EP_TYPE_BULK,
                       CDC_Handle->DataItf.InEpSize);
 
   CDC_Handle->state = CDC_IDLE_STATE;
@@ -291,7 +296,7 @@ static USBH_StatusTypeDef USBH_CDC_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if ((phost->pActiveClass->pData) != NULL)
   {
-    USBH_free(phost->pActiveClass->pData);
+    //USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
 

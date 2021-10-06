@@ -97,7 +97,7 @@ EndBSPDependencies */
   * @{
   */
 
-static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target);
 static USBH_StatusTypeDef USBH_HID_InterfaceDeInit(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_HID_ClassRequest(USBH_HandleTypeDef *phost);
 static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost);
@@ -134,7 +134,7 @@ USBH_ClassTypeDef  HID_Class =
   * @param  phost: Host handle
   * @retval USBH Status
   */
-static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target)
 {
   USBH_StatusTypeDef status;
   HID_HandleTypeDef *HID_Handle;
@@ -157,7 +157,10 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost)
     return USBH_FAIL;
   }
 
-  phost->pActiveClass->pData = (HID_HandleTypeDef *)USBH_malloc(sizeof(HID_HandleTypeDef));
+  // check USBH_free
+  static HID_HandleTypeDef staticHID_Handle;
+  phost->pActiveClass->pData = & staticHID_Handle;
+  //phost->pActiveClass->pData = (HID_HandleTypeDef *)USBH_malloc(sizeof(HID_HandleTypeDef));
   HID_Handle = (HID_HandleTypeDef *) phost->pActiveClass->pData;
 
   if (HID_Handle == NULL)
@@ -168,6 +171,8 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost)
 
   /* Initialize hid handler */
   (void)USBH_memset(HID_Handle, 0, sizeof(HID_HandleTypeDef));
+
+  (void)USBH_memcpy(& HID_Handle->target, target, sizeof HID_Handle->target);
 
   HID_Handle->state = HID_ERROR;
 
@@ -215,8 +220,8 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost)
       HID_Handle->InPipe = USBH_AllocPipe(phost, HID_Handle->InEp);
 
       /* Open pipe for IN endpoint */
-      (void)USBH_OpenPipe(phost, HID_Handle->InPipe, HID_Handle->InEp, phost->device.address,
-                          phost->device.speed, USB_EP_TYPE_INTR, HID_Handle->length);
+      (void)USBH_OpenPipe(phost, HID_Handle->InPipe, HID_Handle->InEp,
+    		  & HID_Handle->target, USB_EP_TYPE_INTR, HID_Handle->length);
 
       (void)USBH_LL_SetToggle(phost, HID_Handle->InPipe, 0U);
     }
@@ -226,8 +231,8 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost)
       HID_Handle->OutPipe  = USBH_AllocPipe(phost, HID_Handle->OutEp);
 
       /* Open pipe for OUT endpoint */
-      (void)USBH_OpenPipe(phost, HID_Handle->OutPipe, HID_Handle->OutEp, phost->device.address,
-                          phost->device.speed, USB_EP_TYPE_INTR, HID_Handle->length);
+      (void)USBH_OpenPipe(phost, HID_Handle->OutPipe, HID_Handle->OutEp,
+    		  & HID_Handle->target, USB_EP_TYPE_INTR, HID_Handle->length);
 
       (void)USBH_LL_SetToggle(phost, HID_Handle->OutPipe, 0U);
     }
@@ -262,7 +267,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceDeInit(USBH_HandleTypeDef *phost)
 
   if ((phost->pActiveClass->pData) != NULL)
   {
-    USBH_free(phost->pActiveClass->pData);
+    //USBH_free(phost->pActiveClass->pData);
     phost->pActiveClass->pData = 0U;
   }
 
