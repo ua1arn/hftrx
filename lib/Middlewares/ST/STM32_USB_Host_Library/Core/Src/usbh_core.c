@@ -23,6 +23,8 @@
 //#include "formats.h"
 #include "usbh_core.h"
 
+extern USBH_ClassTypeDef  HUB_Class;
+
 
 /** @addtogroup USBH_LIB
   * @{
@@ -230,8 +232,8 @@ static USBH_StatusTypeDef DeInitStateMachine(USBH_HandleTypeDef *phost)
   }
 
   phost->gState = HOST_IDLE;
-  phost->EnumState = ENUM_IDLE;
   phost->RequestState = CMD_SEND;
+  phost->EnumState = ENUM_IDLE;
   phost->Timer = 0U;
 
   phost->Control.state = CTRL_SETUP;
@@ -581,6 +583,10 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
     	{
             /* Wait for 100 ms after Reset */
     		USBH_ProcessDelay(phost, HOST_DEV_ATTACHED, 100);
+
+    	      phost->rootTarget.speed = (uint8_t)USBH_LL_GetSpeed(phost);
+    	      phost->rootTarget.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
+    	      phost->rootTarget.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
     	}
  		break;
 
@@ -591,15 +597,10 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         phost->pUser(phost, HOST_USER_CONNECTION);
       }
 
-      phost->rootTarget.speed = (uint8_t)USBH_LL_GetSpeed(phost);
-
       phost->gState = HOST_ENUMERATION;
 
       phost->Control.pipe_out = USBH_AllocPipe(phost, 0x00U);
       phost->Control.pipe_in  = USBH_AllocPipe(phost, 0x80U);
-
-      phost->rootTarget.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
-      phost->rootTarget.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
 
 
       /* Open Control pipes */
@@ -745,6 +746,12 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
         for (idx = 0U; idx < phost->ClassNumber; idx++)
         {
+        	/* выключаем из рассмотрения HUB CLASS, если он уже один раз сработал */
+          if (phost->hubInstances != 0 && phost->pClass[idx] == & HUB_Class)
+          {
+        	  continue;
+          }
+
           if (phost->pClass[idx]->ClassCode == phost->device.CfgDesc.Itf_Desc[0].bInterfaceClass)
           {
             phost->pActiveClass = phost->pClass[idx];
@@ -762,11 +769,6 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
             /* Inform user that a class has been activated */
             phost->pUser(phost, HOST_USER_CLASS_SELECTED);
-          }
-          else if (st == USBH_HUB_REQ_REENUMERATE)
-          {
-              phost->gState = HOST_DEV_ATTACHED;
-              USBH_UsrLog("Device %s class require re-enumeration.", phost->pActiveClass->Name);
           }
           else
           {
@@ -800,6 +802,13 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         if (status == USBH_OK)
         {
           phost->gState = HOST_CLASS;
+        }
+        else if (status == USBH_HUB_REQ_REENUMERATE)
+        {
+        	  phost->EnumState = ENUM_IDLE;
+            phost->gState = HOST_DEV_ATTACHED;
+            status = USBH_OK;
+            USBH_UsrLog("Device %s class require re-enumeration.", phost->pActiveClass->Name);
         }
         else if (status == USBH_FAIL)
         {

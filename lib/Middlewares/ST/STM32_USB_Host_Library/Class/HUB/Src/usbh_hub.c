@@ -73,7 +73,7 @@ USBH_ClassTypeDef  HUB_Class =
 
 static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, const USBH_TargetTypeDef * target)
 {
-	USBH_DbgLog ("USBH_HUB_InterfaceInit.");
+	//USBH_DbgLog ("USBH_HUB_InterfaceInit.");
 	uint8_t interface;
 
 	USBH_StatusTypeDef status = USBH_FAIL ;
@@ -351,7 +351,6 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 		if (HUB_Handle->detectedPorts == 0)
 			return USBH_OK;
-		//return USBH_HUB_REQ_REENUMERATE;
 
 		phost->Control.pipe_size = USBH_MPS_LOWSPEED;
 
@@ -365,7 +364,9 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_WAIT_SHORT_DEV_DESC;
 		status = USBH_BUSY;
-		//memset(phost->device.Data, 0xEE, sizeof phost->device.Data);
+
+		HUB_Handle->ctl_state = HUB_ALREADY_INITED;
+		status = USBH_HUB_REQ_REENUMERATE;
 		break;
 
 	case HUB_REQ_SCAN_STATUSES_WAIT_SHORT_DEV_DESC:
