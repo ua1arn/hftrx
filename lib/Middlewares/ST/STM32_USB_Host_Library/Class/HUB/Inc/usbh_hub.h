@@ -192,6 +192,7 @@ typedef struct _HUB_Process
   uint8_t  hubClassRequestPort;
   uint8_t lowSpeedPort;
   uint8_t highSpeedPort;
+  uint8_t fullSpeedPort;
   uint8_t              InEp;
   HUB_CtlStateTypeDef  ctl_state;
   __ALIGN4k_BEGIN uint8_t buffer [20] __ALIGN4k_END;
