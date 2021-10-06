@@ -274,7 +274,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 					st->wPortStatus.val, st->wPortStatus.PORT_CONNECTION, st->wPortStatus.PORT_ENABLE,
 					st->wPortStatus.PORT_POWER, st->wPortStatus.PORT_HIGH_SPEED, st->wPortStatus.PORT_LOW_SPEED);
 			//debug_port(HUB_Handle->buffer, st);
-			if (st->wPortStatus.PORT_ENABLE && HUB_Handle->hubClassRequestPort > 1)
+			if (st->wPortStatus.PORT_ENABLE /* && HUB_Handle->hubClassRequestPort > 1 */)
 			{
 				if (st->wPortStatus.PORT_LOW_SPEED)
 				{
