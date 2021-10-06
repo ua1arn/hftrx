@@ -192,6 +192,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
     USBH_UsrLog("Protocol not supported.");
     return USBH_FAIL;
   }
+  USBH_UsrLog("Target: tt_hub=%d tt_port=%d, speed=%d", HID_Handle->target.tt_hubaddr, HID_Handle->target.tt_prtaddr, HID_Handle->target.speed);
 
   HID_Handle->state     = HID_INIT;
   HID_Handle->ctl_state = HID_REQ_INIT;
