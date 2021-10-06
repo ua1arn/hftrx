@@ -279,7 +279,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 				if (st->wPortStatus.PORT_LOW_SPEED)
 				{
 					// LOW SPEED, мышка - нашлась.
-					HUB_Handle->detectedPorts = 1;
+					HUB_Handle->detectedPorts += 1;
 
 					tg->tt_hubaddr = phost->currentTarget->dev_address;
 					tg->dev_address = USBH_ADDRESS_DEFAULT;
@@ -293,7 +293,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 				else if (st->wPortStatus.PORT_HIGH_SPEED)
 				{
 					// HIGH SPEED, флешка - нашлась.
-					HUB_Handle->detectedPorts = 1;
+					HUB_Handle->detectedPorts += 1;
 
 					tg->tt_hubaddr = phost->currentTarget->dev_address;
 					tg->dev_address = USBH_ADDRESS_DEFAULT;
@@ -307,7 +307,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 				else
 				{
 					// FULL SPEED
-					//HUB_Handle->detectedPorts = 1;
+					HUB_Handle->detectedPorts += 1;
 
 					tg->tt_hubaddr = phost->currentTarget->dev_address;
 					tg->dev_address = USBH_ADDRESS_DEFAULT;
@@ -315,7 +315,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 					tg->tt_prtaddr = HUB_Handle->hubClassRequestPort;
 
 					USBH_UsrLog("USB FS device at port %d", (int) HUB_Handle->hubClassRequestPort);
-					//phost->currentTarget = tg;
+					phost->currentTarget = tg;
 				}
 			}
 			else
@@ -353,8 +353,11 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 	case HUB_REQ_SCAN_STATUSES_DONE:
 		USBH_UsrLog("=============================================");
 
-		if (HUB_Handle->detectedPorts == 0)
+		if (HUB_Handle->detectedPorts != 1)
+		{
+			USBH_UsrLog("Too many (%d) USB devices on HUB", (int) HUB_Handle->detectedPorts);
 			return USBH_OK;
+		}
 
         /* free control pipes */
         (void)USBH_FreePipe(phost, phost->Control.pipe_out);
