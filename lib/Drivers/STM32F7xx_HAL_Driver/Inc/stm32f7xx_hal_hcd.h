@@ -178,7 +178,7 @@ HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd);
 HAL_StatusTypeDef HAL_HCD_DeInit(HCD_HandleTypeDef *hhcd);
 HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd, uint8_t ch_num,
                                   uint8_t epnum, uint8_t dev_address,
-                                  uint8_t speed, uint8_t ep_type, uint16_t mps);
+                                  uint8_t speed, uint8_t ep_type, uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
 
 HAL_StatusTypeDef HAL_HCD_HC_Halt(HCD_HandleTypeDef *hhcd, uint8_t ch_num);
 void              HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd);

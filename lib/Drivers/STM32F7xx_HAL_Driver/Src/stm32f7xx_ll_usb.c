@@ -1694,7 +1694,7 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
                               uint8_t epnum, uint8_t dev_address, uint8_t speed,
-                              uint8_t ep_type, uint16_t mps)
+                              uint8_t ep_type, uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint32_t USBx_BASE = (uint32_t)USBx;
@@ -1703,6 +1703,11 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
 
   /* Clear old interrupt conditions for this host channel. */
   USBx_HC((uint32_t)ch_num)->HCINT = 0xFFFFFFFFU;
+
+  USBx_HC((uint32_t)ch_num)->HCSPLT = (USBx_HC((uint32_t)ch_num)->HCSPLT & ~ (USB_OTG_HCSPLT_HUBADDR_Msk | USB_OTG_HCSPLT_PRTADDR_Msk)) |
+		  ((uint32_t) tt_hubaddr < USB_OTG_HCSPLT_HUBADDR_Pos) |
+		  ((uint32_t) tt_prtaddr < USB_OTG_HCSPLT_PRTADDR_Pos) |
+		  0;
 
   /* Enable channel interrupts required for this transfer. */
   switch (ep_type)

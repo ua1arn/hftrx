@@ -475,7 +475,7 @@ uint32_t          USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 uint32_t          USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
                               uint8_t epnum, uint8_t dev_address, uint8_t speed,
-                              uint8_t ep_type, uint16_t mps);
+                              uint8_t ep_type, uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx,
                                    USB_OTG_HCTypeDef *hc, uint8_t dma);
 
