@@ -248,6 +248,10 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 				HUB_Handle->hubClassRequestPort ++;
 			status = USBH_BUSY;
 		}
+		else
+		{
+			USBH_Delay(25);	/* HS стройства не сразу становчтся подключенными */
+		}
 		break;
 
 	case HUB_REQ_RESETS_DONE:
@@ -266,11 +270,11 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			//printhex(HUB_Handle->buffer, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS));
 			USB_HUB_PORT_STATUS * const st = (USB_HUB_PORT_STATUS*) HUB_Handle->buffer;
 			// ИНтерпретируем результаты
-//			PRINTF("port %d status val=%04X: conn=%d, ena=%d, pwr=%d, hs=%d, ls=%d\n", HUB_Handle->hubClassRequestPort,
-//					st->wPortStatus.val, st->wPortStatus.PORT_CONNECTION, st->wPortStatus.PORT_ENABLE,
-//					st->wPortStatus.PORT_POWER, st->wPortStatus.PORT_HIGH_SPEED, st->wPortStatus.PORT_LOW_SPEED);
+			PRINTF("port %d status val=%04X: conn=%d, ena=%d, pwr=%d, hs=%d, ls=%d\n", HUB_Handle->hubClassRequestPort,
+					st->wPortStatus.val, st->wPortStatus.PORT_CONNECTION, st->wPortStatus.PORT_ENABLE,
+					st->wPortStatus.PORT_POWER, st->wPortStatus.PORT_HIGH_SPEED, st->wPortStatus.PORT_LOW_SPEED);
 			//debug_port(HUB_Handle->buffer, st);
-			if (st->wPortStatus.PORT_ENABLE)
+			if (st->wPortStatus.PORT_ENABLE && HUB_Handle->hubClassRequestPort > 1)
 			{
 				if (st->wPortStatus.PORT_LOW_SPEED)
 				{
