@@ -4603,7 +4603,7 @@ static
 DRESULT MMC_disk_read (
 	BYTE drv,		/* Physical drive nmuber (0..) */
 	BYTE *buff,		/* Data buffer to store read data */
-	DWORD sector,	/* Sector address (LBA) */
+	LBA_t sector,	/* Sector address (LBA) */
 	UINT count		/* Number of sectors to read */
 )
 {
@@ -4616,7 +4616,7 @@ static
 DRESULT MMC_disk_write (
 	BYTE drv,			/* Physical drive nmuber (0..) */
 	const BYTE *buff,	/* Data to be written */
-	DWORD sector,		/* Sector address (LBA) */
+	LBA_t sector,		/* Sector address (LBA) */
 	UINT count			/* Number of sectors to write */
 )
 {
