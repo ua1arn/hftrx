@@ -274,13 +274,6 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 			EHCI_CAP_MULT(1) | 	// 00b: reserved, 01b One transaction to be issued for this endpoint per micro-frame
 			EHCI_CAP_TT_HUB(hc->tt_hubaddr) |
 			EHCI_CAP_TT_PORT(hc->tt_prtaddr);
-//	if ( tt ) {
-//		ASSERT( tt->hub->usb );
-//		cap |= ( EHCI_CAP_TT_HUB ( tt->hub->usb->address ) |
-//				EHCI_CAP_TT_PORT ( tt->address ) );
-//		if ( attr == USB_ENDPOINT_ATTR_INTERRUPT )
-//			cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
-//	}
 
 	if (hc->ep_type == EP_TYPE_INTR)
 		cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
