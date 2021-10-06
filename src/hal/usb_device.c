@@ -362,4 +362,12 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
 
+
+void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
+{
+  /* Prevent unused argument(s) compilation warning */
+
+	TP();
+}
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
