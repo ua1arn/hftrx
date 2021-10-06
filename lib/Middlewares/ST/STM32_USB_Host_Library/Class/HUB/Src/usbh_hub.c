@@ -252,7 +252,6 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		break;
 
 	case HUB_REQ_RESETS_DONE:
-		USBH_Delay(HUB_Handle->pwrGoodDelay);
 		// Строим карту подключенных портов
 		HUB_Handle->hubClassRequestPort = 1;
 		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES;
