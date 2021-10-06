@@ -123,6 +123,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 
 		HUB_Handle->lowSpeedPort = 0;
 		HUB_Handle->highSpeedPort = 0;
+		HUB_Handle->fullSpeedPort = 0;
 
 		USBH_SelectInterface (phost, interface);
 
@@ -253,6 +254,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 	case HUB_REQ_RESETS_DONE:
 		// Строим карту подключенных портов
+		USBH_UsrLog("=============================================");
 		HUB_Handle->hubClassRequestPort = 1;
 		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES;
 		status = USBH_BUSY;
@@ -264,21 +266,31 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		if (status == USBH_OK)
 		{
 			//printhex(HUB_Handle->buffer, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS));
-			USB_HUB_PORT_STATUS *st = (USB_HUB_PORT_STATUS*) HUB_Handle->buffer;
+			USB_HUB_PORT_STATUS * const st = (USB_HUB_PORT_STATUS*) HUB_Handle->buffer;
 			// ИНтерпретируем результаты
-			PRINTF("port %d status val=%04X: conn=%d, ena=%d, pwr=%d, hs=%d, ls=%d\n", HUB_Handle->hubClassRequestPort,
-					st->wPortStatus.val, st->wPortStatus.PORT_CONNECTION, st->wPortStatus.PORT_ENABLE,
-					st->wPortStatus.PORT_POWER, st->wPortStatus.PORT_HIGH_SPEED, st->wPortStatus.PORT_LOW_SPEED);
+//			PRINTF("port %d status val=%04X: conn=%d, ena=%d, pwr=%d, hs=%d, ls=%d\n", HUB_Handle->hubClassRequestPort,
+//					st->wPortStatus.val, st->wPortStatus.PORT_CONNECTION, st->wPortStatus.PORT_ENABLE,
+//					st->wPortStatus.PORT_POWER, st->wPortStatus.PORT_HIGH_SPEED, st->wPortStatus.PORT_LOW_SPEED);
 			//debug_port(HUB_Handle->buffer, st);
-			if (st->wPortStatus.PORT_LOW_SPEED)
+			if (st->wPortStatus.PORT_ENABLE)
 			{
-				// LOW SPEED, мышка - нашлась.
-				HUB_Handle->lowSpeedPort = HUB_Handle->hubClassRequestPort;
-			}
-			if (st->wPortStatus.PORT_HIGH_SPEED)
-			{
-				// HIGH SPEED, флешка - нашлась.
-				HUB_Handle->highSpeedPort = HUB_Handle->hubClassRequestPort;
+				if (st->wPortStatus.PORT_LOW_SPEED)
+				{
+					// LOW SPEED, мышка - нашлась.
+					HUB_Handle->lowSpeedPort = HUB_Handle->hubClassRequestPort;
+					USBH_UsrLog("USB LS device at port %d", (int) HUB_Handle->hubClassRequestPort);
+				}
+				else if (st->wPortStatus.PORT_HIGH_SPEED)
+				{
+					// HIGH SPEED, флешка - нашлась.
+					HUB_Handle->highSpeedPort = HUB_Handle->hubClassRequestPort;
+					USBH_UsrLog("USB HS device at port %d", (int) HUB_Handle->hubClassRequestPort);
+				}
+				else
+				{
+					HUB_Handle->fullSpeedPort = HUB_Handle->hubClassRequestPort;
+					USBH_UsrLog("USB FS device at port %d", (int) HUB_Handle->hubClassRequestPort);
+				}
 			}
 
 			// Reach last port
