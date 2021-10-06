@@ -314,10 +314,13 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		if (HUB_Handle->lowSpeedPort == 0)
 			return USBH_OK;
 
+		/*  Ранее опознаное усройство становится HUB. Control направляется на порт хаба. */
 		phost->Target.tt_hubaddr = phost->Target.dev_address;
 		phost->Target.dev_address = USBH_ADDRESS_DEFAULT;
+
 		phost->Target.speed = USBH_SPEED_LOW;
 		phost->Target.tt_prtaddr = HUB_Handle->lowSpeedPort;
+
 		phost->Control.pipe_size = USBH_MPS_LOWSPEED;
 
 		/* modify control channels configuration for MaxPacket size */
