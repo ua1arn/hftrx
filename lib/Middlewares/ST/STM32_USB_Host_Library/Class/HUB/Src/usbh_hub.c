@@ -254,7 +254,6 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 	case HUB_REQ_RESETS_DONE:
 		// Строим карту подключенных портов
-		USBH_UsrLog("=============================================");
 		HUB_Handle->hubClassRequestPort = 1;
 		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES;
 		status = USBH_BUSY;
@@ -321,6 +320,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		break;
 
 	case HUB_REQ_SCAN_STATUSES_GET_SHORT_DEV_DESC:
+		USBH_UsrLog("=============================================");
 
 		if (HUB_Handle->lowSpeedPort == 0)
 			return USBH_OK;
