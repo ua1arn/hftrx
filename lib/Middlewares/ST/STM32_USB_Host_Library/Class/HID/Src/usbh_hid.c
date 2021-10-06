@@ -142,7 +142,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
   uint8_t num = 0U;
   uint8_t interface;
 
-  interface = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, HID_BOOT_CODE, 0xFFU);
+  interface = USBH_FindInterface(phost, phost->pActiveClass->ClassCode, 0xFFU/*HID_BOOT_CODE*/, 0xFFU);
 
   if ((interface == 0xFFU) || (interface >= USBH_MAX_NUM_INTERFACES)) /* No Valid Interface */
   {
@@ -185,6 +185,11 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
   else if (phost->device.CfgDesc.Itf_Desc[interface].bInterfaceProtocol  == HID_MOUSE_BOOT_CODE)
   {
     USBH_UsrLog("Mouse device found!");
+    HID_Handle->Init = USBH_HID_MouseInit;
+  }
+  else if (phost->device.CfgDesc.Itf_Desc[interface].bInterfaceProtocol  == 0x00)
+  {
+    USBH_UsrLog("Touch device found!");
     HID_Handle->Init = USBH_HID_MouseInit;
   }
   else
