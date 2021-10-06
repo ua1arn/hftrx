@@ -245,6 +245,8 @@ static USBH_StatusTypeDef DeInitStateMachine(USBH_HandleTypeDef *phost)
   phost->device.RstCnt = 0U;
   phost->device.EnumCnt = 0U;
 
+  phost->allocaddress = 0;
+
   return USBH_OK;
 }
 

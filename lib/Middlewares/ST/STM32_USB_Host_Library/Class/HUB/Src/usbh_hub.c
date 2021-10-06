@@ -121,6 +121,9 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 		HUB_Handle->HUB_CurPort = 0;
 		HUB_Handle->HUB_Change.val = 0;
 
+		HUB_Handle->lowSpeedPort = 0;
+		HUB_Handle->highSpeedPort = 0;
+
 		USBH_SelectInterface (phost, interface);
 
 	    HUB_Handle->state     = HUB_IDLE;
@@ -249,6 +252,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		break;
 
 	case HUB_REQ_RESETS_DONE:
+		USBH_Delay(HUB_Handle->pwrGoodDelay);
 		// Строим карту подключенных портов
 		HUB_Handle->hubClassRequestPort = 1;
 		HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES;
@@ -270,16 +274,20 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			if (st->wPortStatus.PORT_LOW_SPEED)
 			{
 				// LOW SPEED, мышка - нашлась.
-				HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_GET_SHORT_DEV_DESC;
-				status = USBH_BUSY;
-				break;
+				HUB_Handle->lowSpeedPort = HUB_Handle->hubClassRequestPort;
 			}
+			if (st->wPortStatus.PORT_HIGH_SPEED)
+			{
+				// HIGH SPEED, флешка - нашлась.
+				HUB_Handle->highSpeedPort = HUB_Handle->hubClassRequestPort;
+			}
+
 			// Reach last port
 			if (HUB_Handle->NumPorts <= HUB_Handle->hubClassRequestPort)
 			{
 				// выходим из цикла
-				HUB_Handle->ctl_state = HUB_REQ_IDLE;
-				status = USBH_OK;
+				HUB_Handle->ctl_state = HUB_REQ_SCAN_STATUSES_GET_SHORT_DEV_DESC;
+				status = USBH_BUSY;
 
 			}
 			else
@@ -303,10 +311,13 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 	case HUB_REQ_SCAN_STATUSES_GET_SHORT_DEV_DESC:
 
+		if (HUB_Handle->lowSpeedPort == 0)
+			return USBH_OK;
+
 		phost->Target.tt_hubaddr = phost->Target.dev_address;
 		phost->Target.dev_address = USBH_ADDRESS_DEFAULT;
 		phost->Target.speed = USBH_SPEED_LOW;
-		phost->Target.tt_prtaddr = HUB_Handle->hubClassRequestPort;
+		phost->Target.tt_prtaddr = HUB_Handle->lowSpeedPort;
 		phost->Control.pipe_size = USBH_MPS_LOWSPEED;
 
 		/* modify control channels configuration for MaxPacket size */
