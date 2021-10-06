@@ -7243,29 +7243,32 @@ void hightests(void)
 //		defopt.n_root = 128;	/* Number of root directory entries */
 //		defopt.au_size = 0;		/* Cluster size (byte) */
 
-		PRINTF("Wait for storage device ready\n");
-		while (hamradio_get_usbh_active() == 0)
+		PRINTF("Wait for storage device ready. Press any key\n");
+		for (;;)
 		{
+			char c;
+			if (dbg_getchar(& c))
+				break;
 	#if WITHUSBHW
 			board_usbh_polling();     // usb device polling
 	#endif /* WITHUSBHW */
 	#if WITHUSEAUDIOREC
 			sdcardbgprocess();
 	#endif /* WITHUSEAUDIOREC */
-			local_delay_ms(5);
+			//local_delay_ms(5);
 		}
 		PRINTF("Storage device ready\n");
 		unsigned t;
-		for (t = 0; t < 7000; t += 5)
-		{
-	#if WITHUSBHW
-			board_usbh_polling();     // usb device polling
-	#endif /* WITHUSBHW */
-	#if WITHUSEAUDIOREC
-			sdcardbgprocess();
-	#endif /* WITHUSEAUDIOREC */
-			local_delay_ms(5);
-		}
+//		for (t = 0; t < 7000; t += 5)
+//		{
+//	#if WITHUSBHW
+//			board_usbh_polling();     // usb device polling
+//	#endif /* WITHUSBHW */
+//	#if WITHUSEAUDIOREC
+//			sdcardbgprocess();
+//	#endif /* WITHUSEAUDIOREC */
+//			//local_delay_ms(5);
+//		}
 		static ticker_t test_recordticker;
 		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
