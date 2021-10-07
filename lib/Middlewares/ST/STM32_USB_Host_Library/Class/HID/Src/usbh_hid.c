@@ -31,6 +31,9 @@
   ******************************************************************************
   */
 
+#include "hardware.h"
+#include "formats.h"
+
 /* BSPDependencies
 - "stm32xxxxx_{eval}{discovery}{nucleo_144}.c"
 - "stm32xxxxx_{eval}{discovery}_io.c"
@@ -312,6 +315,7 @@ static USBH_StatusTypeDef USBH_HID_ClassRequest(USBH_HandleTypeDef *phost)
       if (classReqStatus == USBH_OK)
       {
         /* The descriptor is available in phost->device.Data */
+    	  USBH_UsrLog("Control: HID: Device Get Report Descriptor request success");
         HID_Handle->ctl_state = HID_REQ_SET_IDLE;
       }
       else if (classReqStatus == USBH_NOT_SUPPORTED)
@@ -333,13 +337,15 @@ static USBH_StatusTypeDef USBH_HID_ClassRequest(USBH_HandleTypeDef *phost)
       /* set Idle */
       if (classReqStatus == USBH_OK)
       {
+        USBH_UsrLog("Control: HID: Device Set Idle request success");
         HID_Handle->ctl_state = HID_REQ_SET_PROTOCOL;
       }
       else
       {
         if (classReqStatus == USBH_NOT_SUPPORTED)
         {
-          HID_Handle->ctl_state = HID_REQ_SET_PROTOCOL;
+         USBH_ErrLog("Control error: HID: Device Set Idle request not supported");
+         HID_Handle->ctl_state = HID_REQ_SET_PROTOCOL;
         }
       }
       break;
@@ -351,7 +357,8 @@ static USBH_StatusTypeDef USBH_HID_ClassRequest(USBH_HandleTypeDef *phost)
       {
         HID_Handle->ctl_state = HID_REQ_IDLE;
 
-        /* all requests performed*/
+        USBH_UsrLog("Control: HID: Device Set protocol request success");
+       /* all requests performed*/
         phost->pUser(phost, HOST_USER_CLASS_ACTIVE);
         status = USBH_OK;
       }
@@ -452,6 +459,7 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
       break;
 
     case HID_GET_DATA:
+  	  //TP();
       (void)USBH_InterruptReceiveData(phost, HID_Handle->pData,
                                       (uint8_t)HID_Handle->length,
                                       HID_Handle->InPipe);
@@ -464,11 +472,13 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
     case HID_POLL:
       if (USBH_LL_GetURBState(phost, HID_Handle->InPipe) == USBH_URB_DONE)
       {
+    	  //TP();
         XferSize = USBH_LL_GetLastXferSize(phost, HID_Handle->InPipe);
 
         if ((HID_Handle->DataReady == 0U) && (XferSize != 0U))
         {
-          (void)USBH_HID_FifoWrite(&HID_Handle->fifo, HID_Handle->pData, HID_Handle->length);
+      	  //TP();
+         (void)USBH_HID_FifoWrite(&HID_Handle->fifo, HID_Handle->pData, HID_Handle->length);
           HID_Handle->DataReady = 1U;
           USBH_HID_EventCallback(phost);
 
@@ -484,15 +494,28 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
       }
       else
       {
+    	  //TP();
         /* IN Endpoint Stalled */
         if (USBH_LL_GetURBState(phost, HID_Handle->InPipe) == USBH_URB_STALL)
         {
+      	  //TP();
           /* Issue Clear Feature on interrupt IN endpoint */
           if (USBH_ClrFeature(phost, HID_Handle->ep_addr) == USBH_OK)
           {
+        	  //TP();
             /* Change state to issue next IN token */
             HID_Handle->state = HID_GET_DATA;
           }
+          else
+          {
+        	  //TP();
+
+          }
+        }
+        else
+        {
+      	  //TP();
+
         }
       }
       break;
