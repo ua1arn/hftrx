@@ -83,8 +83,8 @@ static USBH_StatusTypeDef USBH_HID_MouseDecode(USBH_HandleTypeDef *phost);
   * @{
   */
 HID_MOUSE_Info_TypeDef    mouse_info;
-uint32_t                  mouse_report_data[2];
-uint32_t                  mouse_rx_report_buf[2];
+static __ALIGN4k_BEGIN uint32_t                   mouse_report_data[2] __ALIGN4k_END;
+static __ALIGN4k_BEGIN	uint32_t                   mouse_rx_report_buf[2] __ALIGN4k_END;
 
 /* Structures defining how to access items in a HID mouse report */
 /* Access button 1 state. */
@@ -199,7 +199,7 @@ USBH_StatusTypeDef USBH_HID_MouseInit(USBH_HandleTypeDef *phost)
   {
     HID_Handle->length = (uint16_t)sizeof(mouse_report_data);
   }
-  HID_Handle->pData = (uint8_t *)(void *)mouse_rx_report_buf;
+  HID_Handle->pHidReportData = (void *)mouse_rx_report_buf;
   USBH_HID_FifoInit(&HID_Handle->fifo, phost->device.Data, (uint16_t)(HID_QUEUE_SIZE * sizeof(mouse_report_data)));
 
   return USBH_OK;

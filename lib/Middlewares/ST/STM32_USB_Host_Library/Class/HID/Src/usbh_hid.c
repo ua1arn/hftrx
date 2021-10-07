@@ -390,7 +390,7 @@ static USBH_StatusTypeDef USBH_HID_ClassRequest(USBH_HandleTypeDef *phost)
 static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
  {
 	USBH_StatusTypeDef status = USBH_OK;
-	USBH_StatusTypeDef statusURB = USBH_OK;
+	USBH_URBStateTypeDef statusURB;
 	HID_HandleTypeDef *phhid =
 			(HID_HandleTypeDef*) phost->pActiveClass->pData;
 	uint32_t XferSize;
@@ -411,7 +411,7 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HID_IDLE:
-		status = USBH_HID_GetReport(phost, 0x01U, 0U, phhid->pData,
+		status = USBH_HID_GetReport(phost, 0x01U, 0U, phhid->pHidReportData,
 				(uint8_t) phhid->length);
 		if (status == USBH_OK) {
 			phhid->state = HID_SYNC;
@@ -453,7 +453,7 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HID_GET_DATA:
-		(void) USBH_InterruptReceiveData(phost, phhid->pData,
+		(void) USBH_InterruptReceiveData(phost, phhid->pHidReportData,
 				(uint8_t) phhid->length, phhid->InPipe);
 
 		phhid->state = HID_POLL;
@@ -469,7 +469,7 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 
 			if ((phhid->DataReady == 0U) && (XferSize != 0U)) {
 				//TP();
-				(void) USBH_HID_FifoWrite(&phhid->fifo, phhid->pData,
+				(void) USBH_HID_FifoWrite(&phhid->fifo, phhid->pHidReportData,
 						phhid->length);
 				phhid->DataReady = 1U;
 				USBH_HID_EventCallback(phost);

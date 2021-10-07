@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-//#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания */
+#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
 void Error_Handler(void);
 
