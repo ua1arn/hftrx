@@ -423,7 +423,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 
 static void USBH_HUB_ProcessDelay(
 		HUB_HandleTypeDef *HUB_Handle,
-	HOST_StateTypeDef state,
+		HUB_CtlStateTypeDef state,
 	unsigned delayMS
 	)
 {
@@ -478,10 +478,9 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		break;
 
 	case HUB_WAIT_PWRGOOD:
-		// todo: переделать на неблокирующее выполненеие задержки
-		//USBH_UsrLog("HUB_WAIT_PWRGOOD %u ms", HUB_Handle->pwrGoodDelay);
-		USBH_Delay(HUB_Handle->pwrGoodDelay);
-		HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD_DONE;
+		//HAL_Delay(HUB_Handle->pwrGoodDelay);
+		//HUB_Handle->ctl_state = HUB_WAIT_PWRGOOD_DONE;
+		USBH_HUB_ProcessDelay(HUB_Handle, HUB_WAIT_PWRGOOD_DONE, HUB_Handle->pwrGoodDelay);
 		status = USBH_BUSY;
 		break;
 
@@ -616,10 +615,18 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			return USBH_OK;
 		}
 
-        /* free control pipes */
-        (void)USBH_FreePipe(phost, phost->Control.pipe_out);
-        (void)USBH_FreePipe(phost, phost->Control.pipe_in);
+        /* free Interrupt pipe */
+		if(HUB_Handle->InPipe != 0x00)
+		{
+			USBH_ClosePipe (phost, HUB_Handle->InPipe);
+			USBH_FreePipe  (phost, HUB_Handle->InPipe);
+			HUB_Handle->InPipe = 0;     // Reset the pipe as Free
+		}
 
+        /* free control pipes */
+//        (void)USBH_FreePipe(phost, phost->Control.pipe_out);
+//        (void)USBH_FreePipe(phost, phost->Control.pipe_in);
+//
 		HUB_Handle->ctl_state = HUB_ALREADY_INITED;
 		status = USBH_HUB_REQ_REENUMERATE;
 		break;
