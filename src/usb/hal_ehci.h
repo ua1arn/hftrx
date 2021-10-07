@@ -794,8 +794,7 @@ typedef struct
 	// list of queue headers
 	// выравнивание заменено с 32 на DATA CACHE PAGE
 	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_queue_head asynclisthead [EHCI_COUNT_HC];
-	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_transfer_descriptor qtdsasync [EHCI_COUNT_HC];
-	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_transfer_descriptor qtdsperiodic [EHCI_COUNT_HC];
+	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_transfer_descriptor qtds [EHCI_COUNT_HC];
 
 	VLIST_ENTRY hcListAsync;
 	VLIST_ENTRY hcListPeriodic;

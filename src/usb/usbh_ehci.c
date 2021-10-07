@@ -388,14 +388,14 @@ void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
         asynclist_item(& hehci->asynclisthead [i], & hehci->asynclisthead [(i + 1) % ARRAY_SIZE(hehci->asynclisthead)], i == 0);
     }
 	/* подготовка списка dts */
-    for (i = 0; i < ARRAY_SIZE(hehci->qtdsasync); ++ i)
+    for (i = 0; i < ARRAY_SIZE(hehci->qtds); ++ i)
     {
-        //memset(& qtdsasync [i], 0xFF, sizeof qtdsasync [i]);
-    	hehci->qtdsasync [i].status = EHCI_STATUS_HALTED;
+        //memset(& qtds [i], 0xFF, sizeof qtds [i]);
+    	hehci->qtds [i].status = EHCI_STATUS_HALTED;
     }
 
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtdsasync, sizeof hehci->qtdsasync);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 	/*
 	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
 	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
@@ -608,7 +608,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 	//PRINTF("HAL_EHCI_HC_Init: hc->ch_num=%d\n");
 
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtdsasync, sizeof hehci->qtdsasync);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
 	EHCI_StartAsync(EHCIx);
 
@@ -639,16 +639,16 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 	//for (i = 0; i < ARRAY_SIZE(asynclisthead); ++ i)
 	{
 		asynclist_item( & hehci->asynclisthead [i], & hehci->asynclisthead [(i + 1) % ARRAY_SIZE(hehci->asynclisthead)], i == 0);
-		hehci->qtdsasync [i].status = EHCI_STATUS_HALTED;
-		hehci->qtdsasync [i].len = 0;	// toggle bit = 0
-		hehci->qtdsasync [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
-		hehci->qtdsasync [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
+		hehci->qtds [i].status = EHCI_STATUS_HALTED;
+		hehci->qtds [i].len = 0;	// toggle bit = 0
+		hehci->qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
+		hehci->qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
 	}
 
 	hc->ehci_urb_state = URB_IDLE;
 
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtdsasync, sizeof hehci->qtdsasync);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
 	EHCI_StartAsync(EHCIx);
 
@@ -734,7 +734,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			EHCI_HCTypeDef * const hc = hehci->ghc;
 			//EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 
-			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtdsasync [hc->ch_num];
+			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
 			const uint_fast8_t status = qtd->status;
 			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
@@ -794,7 +794,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	 		//ASSERT(0);
  		}
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
- 		arm_hardware_invalidate((uintptr_t) & hehci->qtdsasync, sizeof hehci->qtdsasync);	/* чтобы следующая проверка могла работать */
+ 		arm_hardware_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);	/* чтобы следующая проверка могла работать */
  		arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 
  		HAL_EHCI_SOF_Callback(hehci);
@@ -1198,7 +1198,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //	head0->cache.next = cpu_to_le32 ( EHCI_LINK_TERMINATE );
 //	head0->cache.status = EHCI_STATUS_HALTED;
 
-	const  int isintr = ep_type == EP_TYPE_INTR;
 
 #if 0
 	ehci_async_schedule ( ehci );
@@ -1219,9 +1218,10 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 #endif
 
 	ASSERT(hehci->ghc == NULL);
+	const  int isintr = 0;//ep_type == EP_TYPE_INTR;
 	volatile struct ehci_queue_head *const qh = & hehci->asynclisthead [ch_num];
-	volatile struct ehci_transfer_descriptor *qtdarray = isintr ? & hehci->qtdsperiodic [ch_num] : & hehci->qtdsasync [ch_num];
-	volatile struct ehci_transfer_descriptor *qtdrequest = & hehci->asynclisthead [ch_num].cache;
+	volatile struct ehci_transfer_descriptor *qtdarray = & hehci->qtds [ch_num];
+	volatile struct ehci_transfer_descriptor *qtdrequest = isintr ? & hehci->qtds [ch_num] : & hehci->asynclisthead [ch_num].cache;
 
 	switch (ep_type)
 	{
@@ -1345,7 +1345,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	}
 	else
 	{
-		//hehci->periodiclist [ch_num].link = cpu_to_le32(virt_to_phys(qtdarray));
+		hehci->periodiclist [ch_num].link = cpu_to_le32(virt_to_phys(qtdarray));
 	}
 
 	/*  убрать после перехода на списки работающих пересылок */
@@ -1476,7 +1476,7 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtdsasync, sizeof hehci->qtdsasync);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 
 	EHCI_StartAsync(EHCIx);
 
