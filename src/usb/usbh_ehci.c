@@ -278,7 +278,7 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 	if (hc->ep_type == EP_TYPE_INTR) {
 		unsigned i;
 		for (i = 0; i < 8; ++ i) {
-			cap |= EHCI_CAP_INTR_SCHED ( i );
+			cap |= EHCI_CAP_INTR_SCHED(i);
 		}
 
 	}
