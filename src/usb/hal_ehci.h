@@ -579,20 +579,20 @@ typedef struct EhciCapRegs
 
 // ------------------------------------------------------------------------------------------------
 // Transfer Descriptor
-
-typedef struct EhciTD
-{
-    volatile uint32_t link;
-    volatile uint32_t altLink;
-    volatile uint32_t token;
-    volatile uint32_t buffer[5];
-    volatile uint32_t extBuffer[5];
-
-    // internal fields
-    uint32_t tdNext;
-    uint32_t active;
-    uint8_t pad[4];
-} EhciTD;
+//
+//typedef struct EhciTD
+//{
+//    volatile uint32_t link;
+//    volatile uint32_t altLink;
+//    volatile uint32_t token;
+//    volatile uint32_t buffer[5];
+//    volatile uint32_t extBuffer[5];
+//
+//    // internal fields
+//    uint32_t tdNext;
+//    uint32_t active;
+//    uint8_t pad[4];
+//} EhciTD;
 
 // TD Link Pointer
 #define PTR_TERMINATE                   (1uL << 0)
@@ -795,6 +795,7 @@ typedef struct
 	// выравнивание заменено с 32 на DATA CACHE PAGE
 	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_queue_head asynclisthead [EHCI_COUNT_HC];
 	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_transfer_descriptor qtds [EHCI_COUNT_HC];
+	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_queue_head itdsarray [EHCI_COUNT_HC];
 
 	VLIST_ENTRY hcListAsync;
 	VLIST_ENTRY hcListPeriodic;
