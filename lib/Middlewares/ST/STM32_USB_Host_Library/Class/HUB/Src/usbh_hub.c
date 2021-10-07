@@ -419,6 +419,20 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 	return USBH_OK;
 }
 
+
+
+static void USBH_HUB_ProcessDelay(
+		HUB_HandleTypeDef *HUB_Handle,
+	HOST_StateTypeDef state,
+	unsigned delayMS
+	)
+{
+	HUB_Handle->tickstart = sys_now();
+	HUB_Handle->wait = ulmax32(delayMS, 1000 / TICKS_FREQUENCY);
+	HUB_Handle->ctl_state = HUB_DELAY;
+	HUB_Handle->ctl_state_push = state;
+}
+
 // state machine - for each hub port...
 static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 {
@@ -608,6 +622,12 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 		HUB_Handle->ctl_state = HUB_ALREADY_INITED;
 		status = USBH_HUB_REQ_REENUMERATE;
+		break;
+
+	case HUB_DELAY:
+		if  ((sys_now() - HUB_Handle->tickstart) >= HUB_Handle->wait)
+			HUB_Handle->ctl_state = HUB_Handle->ctl_state_push;
+		status = USBH_BUSY;
 		break;
 
 	default:
