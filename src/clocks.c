@@ -270,7 +270,7 @@ unsigned long stm32f4xx_get_tim3_freq(void)
 	return stm32f4xx_get_apb1timer_freq();
 }
 
-#define SYSTICK_FREQ (stm32f4xx_get_sysclk_freq() / 8)
+#define BOARD_SYSTICK_FREQ (stm32f4xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 #define BOARD_TIM3_FREQ (stm32f4xx_get_tim3_freq())
 #define BOARD_ADC_FREQ (stm32f4xx_get_apb2_freq())
 
@@ -281,7 +281,7 @@ unsigned long stm32f4xx_get_tim3_freq(void)
 //#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 //#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 //#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+#define BOARD_SYSTICK_FREQ (stm32f7xx_get_sys_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 #define BOARD_USART1_FREQ (stm32f7xx_get_usart1_freq())
 
@@ -634,7 +634,7 @@ unsigned long stm32f7xx_get_uart8_freq(void)
 }
 
 
-#define SYSTICK_FREQ (stm32f7xx_get_sysclk_freq() / 8)
+#define BOARD_SYSTICK_FREQ (stm32f7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 #define BOARD_TIM3_FREQ (stm32f7xx_get_apb1_tim_freq())	// TODO: verify
 #define BOARD_ADC_FREQ (stm32f7xx_get_apb2_freq())
 #define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())
@@ -651,7 +651,6 @@ const  uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7,
 //#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency
 //#define	PCLK2_FREQ (CPU_FREQ / 4)	// 84 MHz PCLK2 frequency
 //#define	PCLK2_TIMERS_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
-#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 #define BOARD_ADC_FREQ (stm32h7xx_get_adc_freq())
 
@@ -672,6 +671,13 @@ unsigned long stm32h7xx_get_hse_freq(void)
 	return 24000000uL;
 #endif
 }
+//
+//// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+//unsigned long stm32h7xx_get_systick_freq(void)
+//{
+//
+//
+//}
 
 unsigned long stm32h7xx_get_pll1_freq(void)
 {
@@ -1932,7 +1938,7 @@ unsigned long hardware_get_spi_freq(void)
 #else
 	// other CPUs
 
-	#define SYSTICK_FREQ CPU_FREQ
+	#define BOARD_SYSTICK_FREQ CPU_FREQ
 
 #endif
 
@@ -2354,7 +2360,7 @@ void hardware_spi_io_delay(void)
 			// Обработчик Periodic Interval Timer (PIT)
 			uint_fast32_t cnt = (AT91C_BASE_PITC->PITC_PIVR & AT91C_PITC_PICNT) >> 20;	// Reset interrupt request from Periodic interval timer.
 			while (cnt --)
-				spool_systimerbundle1();
+				spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 			spool_systimerbundle2();
 		}
 	}
@@ -2466,7 +2472,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
 	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
-	SysTick_Config(calcdivround2(SYSTICK_FREQ, ticksfreq));	// Call SysTick_Handler
+	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// Call SysTick_Handler
 
 #elif CPUSTYLE_ATMEGA328
 
