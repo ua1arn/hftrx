@@ -276,12 +276,12 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 			EHCI_CAP_TT_PORT(hc->tt_prtaddr);
 
 	if (hc->ep_type == EP_TYPE_INTR) {
-		if (hc->tt_hubaddr != 0 && hc->tt_hubaddr != 0) {
+		if (0 && hc->tt_hubaddr != 0 && hc->tt_hubaddr != 0) {
 			if (hc->ep_type == EP_TYPE_INTR)
 				cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
 		} else {
 			unsigned i;
-			for (i = 0; i < 8; ++ i) {
+			for (i = 7; i < 8; ++ i) {
 				cap |= EHCI_CAP_INTR_SCHED(i);
 			}
 		}
@@ -762,6 +762,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 		 		else if ((status & EHCI_STATUS_BABBLE) != 0)
 				{
 					hc->ehci_urb_state = URB_NOTREADY;
+					//hc->ehci_urb_state = USBH_URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_BUFFER) != 0)
 				{
@@ -770,6 +771,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 				else if ((status & EHCI_STATUS_XACT_ERR) != 0)
 				{
 					hc->ehci_urb_state = URB_NOTREADY;
+					//hc->ehci_urb_state = USBH_URB_STALL;
 				}
 				else
 				{
@@ -1313,8 +1315,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 
 	case EP_TYPE_INTR:
-		le8_modify( & qtdarray->status, 0x04, 0 * 0x04);
-		le8_modify( & qtdrequest->status, 0x04, 0 * 0x04);
+		//le8_modify( & qtdrequest->status, 0x04, 1 * 0x04);
 		if (hc->ep_is_in == 0)
 		{
 			// INTERRUPT Data OUT
@@ -1345,7 +1346,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	}
 
 	le8_modify( & qtdrequest->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
-	memcpy(& qtdarray->status, & qtdrequest->status, sizeof qtdarray->status);
 
 	if (isintr == 0)
 	{
