@@ -276,16 +276,15 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 			EHCI_CAP_TT_PORT(hc->tt_prtaddr);
 
 	if (hc->ep_type == EP_TYPE_INTR) {
-		unsigned i;
-		for (i = 0; i < 8; ++ i) {
-			cap |= EHCI_CAP_INTR_SCHED(i);
+		if (hc->tt_hubaddr != 0 && hc->tt_hubaddr != 0) {
+			if (hc->ep_type == EP_TYPE_INTR)
+				cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
+		} else {
+			unsigned i;
+			for (i = 0; i < 8; ++ i) {
+				cap |= EHCI_CAP_INTR_SCHED(i);
+			}
 		}
-
-	}
-
-	if (hc->tt_hubaddr != 0 && hc->tt_hubaddr != 0) {
-		if (hc->ep_type == EP_TYPE_INTR)
-			cap |= EHCI_CAP_SPLIT_SCHED_DEFAULT;
 	}
 
 	// RL, C, Maximum Packet Length, H, dtc, EPS, EndPt, I, Device Address
