@@ -31,9 +31,6 @@
   ******************************************************************************
   */
 
-#include "hardware.h"
-#include "formats.h"
-
 /* BSPDependencies
 - "stm32xxxxx_{eval}{discovery}{nucleo_144}.c"
 - "stm32xxxxx_{eval}{discovery}_io.c"
@@ -453,8 +450,8 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HID_GET_DATA:
-		(void) USBH_InterruptReceiveData(phost, phhid->pHidReportData,
-				(uint8_t) phhid->length, phhid->InPipe);
+		//memset(phhid->pHidReportData, 0xFF, phhid->length);
+		(void) USBH_InterruptReceiveData(phost, phhid->pHidReportData, phhid->length, phhid->InPipe);
 
 		phhid->state = HID_POLL;
 		phhid->timer = phost->Timer;

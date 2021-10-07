@@ -222,8 +222,9 @@ static void qtd_item2(volatile struct ehci_transfer_descriptor * p, unsigned pid
 //	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 //														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 //														// cleared for SETUP packets
-	p->flags = pid | 0*EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
-	p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
+	p->flags = pid | 1 * EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
+	//p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
+	le8_modify(& p->status, EHCI_STATUS_MASK | EHCI_STATUS_PING, EHCI_STATUS_PING * (ping != 0));
 }
 
 
@@ -790,6 +791,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
 	 			{
+	 				PRINTF("status=%02X ", status);
 	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
 	 			}
 				hc->xfer_buff += pktcnt;
@@ -1333,7 +1335,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			PRINTF("HAL_EHCI_HC_SubmitRequest: INTERRUPT IN, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->speed);
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
-			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
+			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 1);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером

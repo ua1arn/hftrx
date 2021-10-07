@@ -26,9 +26,6 @@
   ******************************************************************************
 */
 
-#include "hardware.h"
-#include "formats.h"
-
 #include "../Inc/usbh_hub.h"
 
 static USBH_StatusTypeDef set_hub_port_power(USBH_HandleTypeDef *phost, uint8_t hub_port);
