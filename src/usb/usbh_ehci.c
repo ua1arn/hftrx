@@ -731,10 +731,12 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		//for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
  		if (hehci->ghc != NULL)
  		{
-			EHCI_HCTypeDef * const hc = hehci->ghc;//& hehci->hc [ch_num];
-			volatile struct ehci_transfer_descriptor * const qtdarray = & hehci->qtds [hc->ch_num];
-			const uint_fast8_t status = qtdarray->status;
-			unsigned len = le16_to_cpu(qtdarray->len) & EHCI_LEN_MASK;
+			EHCI_HCTypeDef * const hc = hehci->ghc;
+			//EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+
+			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
+			const uint_fast8_t status = qtd->status;
+			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
