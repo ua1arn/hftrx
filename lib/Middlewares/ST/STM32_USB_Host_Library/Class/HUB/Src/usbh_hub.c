@@ -617,7 +617,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		}
 
         /* free Interrupt pipe */
-		if(HUB_Handle->InPipe != 0x00)
+		if (HUB_Handle->InPipe != 0x00)
 		{
 			USBH_ClosePipe (phost, HUB_Handle->InPipe);
 			USBH_FreePipe  (phost, HUB_Handle->InPipe);
@@ -625,8 +625,10 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		}
 
         /* free control pipes */
-        (void)USBH_FreePipe(phost, phost->Control.pipe_out);
-        (void)USBH_FreePipe(phost, phost->Control.pipe_in);
+		USBH_ClosePipe (phost, phost->Control.pipe_out);
+		(void)USBH_FreePipe(phost, phost->Control.pipe_out);
+		USBH_ClosePipe (phost, phost->Control.pipe_in);
+		(void)USBH_FreePipe(phost, phost->Control.pipe_in);
 
 		HUB_Handle->ctl_state = HUB_ALREADY_INITED;
 		status = USBH_HUB_REQ_REENUMERATE;
