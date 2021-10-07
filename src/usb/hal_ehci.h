@@ -280,7 +280,7 @@ struct ehci_transfer_descriptor {
 /** Ping */
 #define EHCI_STATUS_PING 0x01
 
-#define EHCI_STATUS_MASK 0xFE
+#define EHCI_STATUS_MASK 0xF8
 
 /** PID code */
 #define EHCI_FL_PID(code) ( (code) << 0 )

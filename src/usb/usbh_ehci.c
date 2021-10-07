@@ -21,7 +21,7 @@
 
 #include <string.h>
 
-#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания */
+//#define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания */
 
 void Error_Handler(void);
 
@@ -593,7 +593,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 //                        dev_address,
 //                        speed,
 //                        ep_type,
-//                        mps);
+//                        mps, tt_hubaddr, tt_prtadd);
 	qtd_item2_set_toggle( & hehci->asynclisthead [hc->ch_num].cache, 0);
 	//PRINTF("HAL_EHCI_HC_Init: hc->ch_num=%d\n");
 
@@ -727,23 +727,32 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			const uint_fast8_t status = qtd->status;
 			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
-//			if (pktcnt > hc->max_packet)
-//			{
-//		 		PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
-//			}
-			//ASSERT(pktcnt <= hc->max_packet);
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
 			{
+		 		PRINTF("HAL_EHCI_IRQHandler: status & EHCI_STATUS_HALTED: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 				/* serious "can't proceed" faults reported by the hardware */
 				// Тут разбирать по особенностям ошибки
-				hc->ehci_urb_state = USBH_URB_STALL;
-//				PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX, qtds[%d]=%02X, urbState=%d\n",
-//							(unsigned long) usbsts,
-//							ch_num,
-//							(unsigned) qtds [ch_num].status,
-//							hc->ehci_urb_state
-//						);
+		 		if (0)
+		 		{
+
+		 		}
+		 		else if ((status & EHCI_STATUS_BABBLE) != 0)
+				{
+					hc->ehci_urb_state = URB_NOTREADY;
+				}
+				else if ((status & EHCI_STATUS_BUFFER) != 0)
+				{
+					hc->ehci_urb_state = USBH_URB_STALL;
+				}
+				else if ((status & EHCI_STATUS_XACT_ERR) != 0)
+				{
+					hc->ehci_urb_state = URB_NOTREADY;
+				}
+				else
+				{
+					hc->ehci_urb_state = USBH_URB_STALL;
+				}
 
 			}
 			else if ((status & EHCI_STATUS_ACTIVE) != 0)
@@ -752,19 +761,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 				//TP();
 				goto nextIteration;
 			}
-			else if ((status & EHCI_STATUS_BABBLE) != 0)
-			{
-				hc->ehci_urb_state = USBH_URB_STALL;
-			}
-			else if ((status & EHCI_STATUS_BUFFER) != 0)
-			{
-				hc->ehci_urb_state = USBH_URB_STALL;
-			}
-//			else if ((status & EHCI_STATUS_XACT_ERR) != 0)
-//			{
-//				/* Наличие этого бита при отсутствующем EHCI_STATUS_HALTED = это не ошибка */
-//				hc->ehci_urb_state = USBH_URB_STALL;
-//			}
 			else
 			{
 
