@@ -625,9 +625,9 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		}
 
         /* free control pipes */
-//        (void)USBH_FreePipe(phost, phost->Control.pipe_out);
-//        (void)USBH_FreePipe(phost, phost->Control.pipe_in);
-//
+        (void)USBH_FreePipe(phost, phost->Control.pipe_out);
+        (void)USBH_FreePipe(phost, phost->Control.pipe_in);
+
 		HUB_Handle->ctl_state = HUB_ALREADY_INITED;
 		status = USBH_HUB_REQ_REENUMERATE;
 		break;
