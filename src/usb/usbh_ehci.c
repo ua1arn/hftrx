@@ -732,10 +732,9 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		if (hehci->ghc != NULL)
  		{
 			EHCI_HCTypeDef * const hc = hehci->ghc;//& hehci->hc [ch_num];
-			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
-			volatile struct ehci_transfer_descriptor * const qtdoverl = & hehci->asynclisthead [hc->ch_num].cache;
-			const uint_fast8_t status = qtd->status;
-			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
+			volatile struct ehci_transfer_descriptor * const qtdarray = & hehci->qtds [hc->ch_num];
+			const uint_fast8_t status = qtdarray->status;
+			unsigned len = le16_to_cpu(qtdarray->len) & EHCI_LEN_MASK;
 			unsigned pktcnt = hc->xfer_len - len;
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
@@ -784,11 +783,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 //				if (pktcnt >= hc->max_packet && hc->xfer_len > hc->max_packet && hc->xfer_len > hc->xfer_count)
 //				{
 //					// Restart next transaction
-//					qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len - hc->xfer_count);
-//					le8_modify( & qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+//					qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len - hc->xfer_count);
+//					le8_modify( & qtdrequest->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 //
 //					/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
-//					le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+//					le8_modify( & qtdarray->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 //					goto nextIteration;
 //				}
 				// Transaction done
@@ -1228,8 +1227,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	ASSERT(hehci->ghc == NULL);
 	volatile struct ehci_queue_head *const qh = & hehci->asynclisthead [hc->ch_num];
-	volatile struct ehci_transfer_descriptor *qtd = & hehci->qtds [hc->ch_num];
-	volatile struct ehci_transfer_descriptor *qtdoverl = & hehci->asynclisthead [hc->ch_num].cache;
+	volatile struct ehci_transfer_descriptor *qtdarray = & hehci->qtds [hc->ch_num];
+	volatile struct ehci_transfer_descriptor *qtdrequest = & hehci->asynclisthead [hc->ch_num].cache;
 
 	switch (ep_type)
 	{
@@ -1240,12 +1239,12 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: SETUP, pbuff=%p, length=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, hc->xfer_len);
 
-			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
-			qtd_item2(qtdoverl, EHCI_FL_PID_SETUP, do_ping);
+			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdrequest, EHCI_FL_PID_SETUP, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
-			qtd_item2_set_toggle(qtdoverl, 0);
+			qtd_item2_set_toggle(qtdrequest, 0);
 
 		}
 		else if (direction == 0)
@@ -1254,12 +1253,12 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//printhex(0, pbuff, hc->xfer_len);
 
-			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
-			qtd_item2(qtdoverl, EHCI_FL_PID_OUT, do_ping);
+			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
-			qtd_item2_set_toggle(qtdoverl, 1);
+			qtd_item2_set_toggle(qtdrequest, 1);
 
 		}
 		else
@@ -1267,12 +1266,12 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			// Data In
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 
-			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
-			qtd_item2(qtdoverl, EHCI_FL_PID_IN, 0);
+			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
-			qtd_item2_set_toggle(qtdoverl, 1);
+			qtd_item2_set_toggle(qtdrequest, 1);
 		}
 		break;
 
@@ -1288,8 +1287,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 //			printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, hc->xfer_len);
 
-			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
-			qtd_item2(qtdoverl, EHCI_FL_PID_OUT, do_ping);
+			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
@@ -1301,8 +1300,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 //			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u\n", hc->ch_num, hc->ep_num, hc->max_packet);
 
-			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
-			qtd_item2(qtdoverl, EHCI_FL_PID_IN, 0);
+			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
@@ -1315,8 +1314,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			// INTERRUPT Data OUT
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: INTERRUPT OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->speed);
-			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
-			qtd_item2(qtdoverl, EHCI_FL_PID_OUT, do_ping);
+			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
@@ -1326,8 +1325,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 			// INTERRUPT Data IN
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: INTERRUPT IN, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->speed);
-			VERIFY(0 == qtd_item2_buff(qtdoverl, hc->xfer_buff, hc->xfer_len));
-			qtd_item2(qtdoverl, EHCI_FL_PID_IN, 0);
+			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
+			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
@@ -1339,12 +1338,12 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
-	le8_modify( & qtdoverl->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+	le8_modify( & qtdrequest->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
 	/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
-	le8_modify( & qtd->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+	le8_modify( & qtdarray->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
-	asynclist_item2(hc, qh, virt_to_phys(qtd), hc->ch_num == 0);
+	asynclist_item2(hc, qh, virt_to_phys(qtdarray), hc->ch_num == 0);
 
 	/*  убрать после перехода на списки работающих пересылок */
 	hehci->ghc = hc;
@@ -1575,8 +1574,8 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t pipe,
 
 	EHCI_StopAsync(EHCIx);
 
-	volatile struct ehci_transfer_descriptor *qtdoverl = & hehci->asynclisthead [pipe].cache;
-	qtd_item2_set_toggle(qtdoverl, toggle);
+	volatile struct ehci_transfer_descriptor *qtdrequest = & hehci->asynclisthead [pipe].cache;
+	qtd_item2_set_toggle(qtdrequest, toggle);
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 
 	EHCI_StartAsync(EHCIx);
@@ -1603,8 +1602,8 @@ uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t pipe) {
 //		toggle = pHandle->hc[pipe].toggle_out;
 //	}
 
-	volatile struct ehci_transfer_descriptor *qtdoverl = & hehci->asynclisthead [pipe].cache;
-	toggle = (le16_to_cpu(qtdoverl->len) & EHCI_LEN_TOGGLE) != 0;
+	volatile struct ehci_transfer_descriptor *qtdrequest = & hehci->asynclisthead [pipe].cache;
+	toggle = (le16_to_cpu(qtdrequest->len) & EHCI_LEN_TOGGLE) != 0;
 
 	return toggle;
 }
