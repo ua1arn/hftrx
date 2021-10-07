@@ -26,6 +26,9 @@
   ******************************************************************************
 */
 
+#include "hardware.h"
+#include "formats.h"
+
 #include "../Inc/usbh_hub.h"
 
 static USBH_StatusTypeDef set_hub_port_power(USBH_HandleTypeDef *phost, uint8_t hub_port);
@@ -402,9 +405,6 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 {
 	HUB_HandleTypeDef * const HUB_Handle = phost->hubDatas [0];
 	USBH_UsrLog("USBH_HUB_InterfaceDeInit");
-	//USBH_UsrLog("USBH_HUB_InterfaceDeInit %d", (int) phost->hubAddress [0]);
-//
-//	HUB_HandleTypeDef *HUB_Handle = phost->hubDatas [hubIX];
 //
 //	if(HUB_Handle->InPipe != 0x00)
 //	{
@@ -412,9 +412,6 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceDeInit (USBH_HandleTypeDef *phost )
 //		USBH_FreePipe  (phost, HUB_Handle->InPipe);
 //		HUB_Handle->InPipe = 0;     // Reset the pipe as Free
 //	}
-//
-//	if(phost->hubDatas[hubIX])
-//		USBH_free (phost->hubDatas[hubIX]);
 //
 	return USBH_OK;
 }
@@ -501,7 +498,10 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			if (HUB_Handle->NumPorts <= HUB_Handle->hubClassRequestPort)
 				HUB_Handle->ctl_state = HUB_REQ_RESETS_DONE;
 			else
+			{
 				HUB_Handle->hubClassRequestPort ++;
+				//USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS, 25);	/* HS стройства не сразу становчтся подключенными */
+			}
 			status = USBH_BUSY;
 		}
 		else
@@ -518,11 +518,14 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		break;
 
 	case HUB_REQ_SCAN_STATUSES:
+		ASSERT(HUB_Handle->hubClassRequestPort >= 1 && HUB_Handle->hubClassRequestPort <= HUB_Handle->hubClassRequestPort);
 		status = get_hub_request(phost, USB_REQUEST_GET_STATUS, HUB_FEAT_SEL_PORT_CONN, HUB_Handle->hubClassRequestPort,
 				HUB_Handle->buffer, sizeof(USB_HUB_PORT_STATUS));
 		if (status == USBH_OK)
 		{
 			USBH_TargetTypeDef   * const tg = & HUB_Handle->Targets [HUB_Handle->hubClassRequestPort - 1];	/* Enumeration target */
+			ASSERT(HUB_Handle->hubClassRequestPort >= 1 && HUB_Handle->hubClassRequestPort <= HUB_Handle->hubClassRequestPort);
+
 			//printhex(HUB_Handle->buffer, HUB_Handle->buffer, sizeof (USB_HUB_PORT_STATUS));
 			USB_HUB_PORT_STATUS * const st = (USB_HUB_PORT_STATUS*) HUB_Handle->buffer;
 			// ИНтерпретируем результаты
@@ -530,9 +533,10 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 					st->wPortStatus.val, st->wPortStatus.PORT_CONNECTION, st->wPortStatus.PORT_ENABLE,
 					st->wPortStatus.PORT_POWER, st->wPortStatus.PORT_HIGH_SPEED, st->wPortStatus.PORT_LOW_SPEED);
 			//debug_port(HUB_Handle->buffer, st);
+			// TODO: если выбрана енумерация LOW SPEED устройста, при установленной HIGH SPEED flash не проходит енумерация.
 			if (st->wPortStatus.PORT_ENABLE /* && HUB_Handle->hubClassRequestPort > 1 */)
 			{
-				if (st->wPortStatus.PORT_LOW_SPEED)
+				if (st->wPortStatus.PORT_LOW_SPEED && 1)
 				{
 					// LOW SPEED, мышка - нашлась.
 					HUB_Handle->detectedPorts += 1;
@@ -546,7 +550,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 					phost->currentTarget = tg;
 				}
-				else if (st->wPortStatus.PORT_HIGH_SPEED)
+				else if (st->wPortStatus.PORT_HIGH_SPEED && 0)
 				{
 					// HIGH SPEED, флешка - нашлась.
 					HUB_Handle->detectedPorts += 1;
@@ -560,7 +564,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 					phost->currentTarget = tg;
 				}
-				else
+				else if (1 && 0)
 				{
 					// FULL SPEED
 					HUB_Handle->detectedPorts += 1;
@@ -651,11 +655,10 @@ static USBH_StatusTypeDef USBH_HUB_Process(USBH_HandleTypeDef *phost)
 	USBH_StatusTypeDef status = USBH_BUSY;	/* не требуется, но по стилю = чтобы продолжались вызовы */
 	HUB_HandleTypeDef * const HUB_Handle = phost->hubDatas [0];
 	//ASSERT(HUB_Handle != NULL);
-
+//
 //    switch (HUB_Handle->state)
 //    {
 //     	case HUB_IDLE:
-//     		break;		// no starting processing
 //     		HUB_Handle->HUB_CurPort = 0;
 //     		HUB_Handle->state = HUB_SYNC;
 //     		break;

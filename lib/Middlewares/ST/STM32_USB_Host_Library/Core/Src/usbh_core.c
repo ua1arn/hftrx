@@ -20,7 +20,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
-//#include "formats.h"
+#include "formats.h"
+
 #include "usbh_core.h"
 
 extern USBH_ClassTypeDef  HUB_Class;
