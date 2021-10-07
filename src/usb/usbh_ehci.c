@@ -752,7 +752,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
 			{
-		 		//PRINTF("HAL_EHCI_IRQHandler: status & EHCI_STATUS_HALTED: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
+		 		PRINTF("HAL_EHCI_IRQHandler: HALTED: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
+		 		local_delay_ms(50);
 				/* serious "can't proceed" faults reported by the hardware */
 				// Тут разбирать по особенностям ошибки
 		 		if (0)
@@ -786,10 +787,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			else
 			{
 
-//	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
-//	 			{
-//	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
-//	 			}
+	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
+	 			{
+	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
+	 			}
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
 				// Transaction done
@@ -1313,11 +1314,13 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 
 	case EP_TYPE_INTR:
+		le8_modify( & qtdarray->status, 0x04, 0 * 0x04);
+		le8_modify( & qtdrequest->status, 0x04, 0 * 0x04);
 		if (hc->ep_is_in == 0)
 		{
 			// INTERRUPT Data OUT
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: INTERRUPT OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->speed);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: INTERRUPT OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->speed);
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
@@ -1327,8 +1330,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		else
 		{
 			// INTERRUPT Data IN
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: INTERRUPT IN, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
-			//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->speed);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: INTERRUPT IN, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
+			PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->speed);
 			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 			qtd_item2(qtdrequest, EHCI_FL_PID_IN, 0);
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
@@ -1343,6 +1346,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	}
 
 	le8_modify( & qtdrequest->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+	memcpy(& qtdarray->status, & qtdrequest->status, sizeof qtdarray->status);
 
 	if (isintr == 0)
 	{
