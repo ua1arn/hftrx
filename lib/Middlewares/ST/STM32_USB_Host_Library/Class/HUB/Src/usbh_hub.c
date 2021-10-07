@@ -547,7 +547,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 					phost->currentTarget = tg;
 				}
-				else if (st->wPortStatus.PORT_HIGH_SPEED && 0)
+				else if (st->wPortStatus.PORT_HIGH_SPEED && 1)
 				{
 					// HIGH SPEED, флешка - нашлась.
 					HUB_Handle->detectedPorts += 1;
