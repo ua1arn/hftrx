@@ -730,7 +730,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 	 		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 			if ((status & EHCI_STATUS_HALTED) != 0)
 			{
-		 		PRINTF("HAL_EHCI_IRQHandler: status & EHCI_STATUS_HALTED: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
+		 		//PRINTF("HAL_EHCI_IRQHandler: status & EHCI_STATUS_HALTED: USB Interrupt (USBINT), hc=%d, usbsts=%08lX, status=%02X, pktcnt=%u\n", hc->ch_num, usbsts, status, pktcnt);
 				/* serious "can't proceed" faults reported by the hardware */
 				// Тут разбирать по особенностям ошибки
 		 		if (0)
