@@ -776,6 +776,7 @@ typedef USB_OTG_HCStateTypeDef  EHCI_HCStateTypeDef;
   * @}
   */
 
+#define EHCI_COUNT_HC 16
 /** @defgroup EHCI_Exported_Types_Group2 HCD Handle Structure definition
   * @{
   */
@@ -792,8 +793,9 @@ typedef struct
 	// Asynchronous Schedule list - ASYNCLISTADDR use
 	// list of queue headers
 	// выравнивание заменено с 32 на DATA CACHE PAGE
-	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_queue_head asynclisthead [16];
-	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_transfer_descriptor qtds [16];
+	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_queue_head asynclisthead [EHCI_COUNT_HC];
+	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_transfer_descriptor qtdsasync [EHCI_COUNT_HC];
+	volatile __attribute__((aligned(DCACHEROWSIZE)))  struct ehci_transfer_descriptor qtdsperiodic [EHCI_COUNT_HC];
 
 	VLIST_ENTRY hcListAsync;
 	VLIST_ENTRY hcListPeriodic;
@@ -804,7 +806,7 @@ typedef struct
 
 	EHCI_TypeDef *Instance; /*!< Register base address    */
 	EHCI_InitTypeDef Init; /*!< HCD required parameters  */
-	EHCI_HCTypeDef hc [16]; /*!< Host channels parameters */
+	EHCI_HCTypeDef hc [EHCI_COUNT_HC]; /*!< Host channels parameters */
 	HAL_LockTypeDef Lock; /*!< HCD peripheral status    */
 	__IO EHCI_StateTypeDef State; /*!< HCD communication state  */
 	__IO uint32_t ErrorCode; /*!< HCD Error code           */
