@@ -436,11 +436,13 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
 
             if (USBD_DFU_fops_HS.Erase(hdfu->data_ptr) != USBD_OK)
             {
+            	PRINTF("USBD_DFU_EP0_TxSent: Erase fault\n");
               return USBD_FAIL;
             }
           }
           else
           {
+          	PRINTF("USBD_DFU_EP0_TxSent: undefined hdfu->buffer.d8[0]=%02X\n", hdfu->buffer.d8 [0]);
             /* .. */
           }
         }

@@ -204,7 +204,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
                                   uint8_t dev_address,
                                   uint8_t speed,
                                   uint8_t ep_type,
-                                  uint16_t mps)
+                                  uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
   HAL_StatusTypeDef status;
 
@@ -233,7 +233,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
                         dev_address,
                         speed,
                         ep_type,
-                        mps);
+						mps, tt_hubaddr, tt_prtaddr);
   __HAL_UNLOCK(hhcd);
 
   return status;

@@ -69,6 +69,8 @@ extern "C" {
 #define MAX(a, b)  (((a) > (b)) ? (a) : (b))
 #endif
 
+#define LE8(addr)         ((uint16_t)(addr)[0])
+
 #define LE16(addr)        (((uint16_t)(addr)[0]) | \
                            ((uint16_t)(((uint32_t)(addr)[1]) << 8)))
 
@@ -345,6 +347,7 @@ typedef enum
   USBH_NOT_SUPPORTED,
   USBH_UNRECOVERED_ERROR,
   USBH_ERROR_SPEED_UNKNOWN,
+  USBH_HUB_REQ_REENUMERATE,
 } USBH_StatusTypeDef;
 
 
@@ -512,7 +515,8 @@ typedef struct _USBH_HandleTypeDef
   CMD_StateTypeDef      RequestState;
   USBH_CtrlTypeDef      Control;
   USBH_DeviceTypeDef    device;
-  USBH_TargetTypeDef	Target;	/* Enumeration target */
+  USBH_TargetTypeDef	rootTarget;		/* Enumeration target */
+  USBH_TargetTypeDef   *currentTarget;	/* Enumeration target */
 
   USBH_ClassTypeDef    *pActiveClass;
   uint32_t              ClassNumber;	/* number of registered classes */
@@ -537,9 +541,6 @@ typedef struct _USBH_HandleTypeDef
 
     uint8_t hubInstances;
     void *   hubDatas [USBH_MAX_NUM_INTERFACES];
-
-    void * hubCurrentData;	/** Currently enumeratuion on this HUB */
-    uint8_t hubCurrentPort;	/** Currently enumeratuion on this HUB's port */
 
     uint8_t allocaddress;
 } USBH_HandleTypeDef;

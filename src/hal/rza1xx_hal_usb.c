@@ -4156,7 +4156,7 @@ HAL_StatusTypeDef USB_HC_Init(
 	uint8_t dev_address,
 	uint8_t usb_otg_speed,
 	uint8_t ep_type,
-	uint16_t mps
+	uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr
 	)
 {
 	PRINTF("USB_HC_Init, ch_num=%d, epnum=%d, ep_type=%d, mps=%lu\n", (int) ch_num, (int) epnum, (int) ep_type, (unsigned long) mps);
@@ -4166,6 +4166,11 @@ HAL_StatusTypeDef USB_HC_Init(
 
 	/* Clear old interrupt conditions for this host channel. */
 	////USBx_HC(ch_num)->HCINT = 0xFFFFFFFF;
+//
+//	  USBx_HC((uint32_t)ch_num)->HCSPLT = (USBx_HC((uint32_t)ch_num)->HCSPLT & ~ (USB_OTG_HCSPLT_HUBADDR_Msk | USB_OTG_HCSPLT_PRTADDR_Msk)) |
+//			  ((uint32_t) tt_hubaddr < USB_OTG_HCSPLT_HUBADDR_Pos) |
+//			  ((uint32_t) tt_prtaddr < USB_OTG_HCSPLT_PRTADDR_Pos) |
+//			  0;
 
 ////+++sack: не влияет
 ////	USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_SIGN;
@@ -5068,7 +5073,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
                                   uint8_t dev_address,
                                   uint8_t speed,
                                   uint8_t ep_type,
-                                  uint16_t mps)
+								  uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
   HAL_StatusTypeDef status;
 
@@ -5097,7 +5102,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
                         dev_address,
                         speed,
                         ep_type,
-                        mps);
+						mps, tt_hubaddr, tt_prtaddr);
   __HAL_UNLOCK(hhcd);
 
   return status;

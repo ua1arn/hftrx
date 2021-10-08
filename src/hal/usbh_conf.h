@@ -25,6 +25,9 @@
 extern "C" {
 #endif
 
+#include "hardware.h"
+#include "formats.h"
+
 /* Includes ------------------------------------------------------------------*/
 
 #if CPUSTYLE_R7S721

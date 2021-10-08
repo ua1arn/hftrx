@@ -362,4 +362,20 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
 
+
+void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
+{
+	for (;;)
+	{
+		HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
+		if (p == NULL)
+		{
+			TP();
+			break;
+
+		}
+		PRINTF("USBH_HID_EventCallback: x/y=%d/%d, buttons=%d,%d,%d\n", (int) p->x, (int) p->y, (int) p->buttons [0], (int) p->buttons [1], (int) p->buttons [2]);
+	}
+}
+
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

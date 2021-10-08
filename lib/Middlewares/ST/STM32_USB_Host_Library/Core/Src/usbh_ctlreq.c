@@ -598,9 +598,17 @@ static USBH_StatusTypeDef USBH_ParseCfgDesc(USBH_HandleTypeDef *phost, uint8_t *
 						pep = &cfg_desc->Itf_Desc[if_ix].Ep_Desc[ep_ix];
 						USBH_ParseEPDesc(phost, pep, (uint8_t*) pdesc);
 
+						static const char * const eptyp [4] = {
+								"Control",
+								"Iso",
+								"Bulk",
+								"Int",
+						};
 						USBH_DbgLog(
-								"USBH_ParseCfgDesc: EPix=%d, bEndpointAddress=%02X, wMaxPacketSize=%u",
-								(int) ep_ix, (unsigned) pep->bEndpointAddress, (unsigned) pep->wMaxPacketSize);
+								"USBH_ParseCfgDesc: EPix=%d, bEndpointAddress=%02X, attr=%02X %4s wMaxPacketSize=%-4u",
+								(int) ep_ix, (unsigned) pep->bEndpointAddress,
+								(unsigned) pep->bmAttributes, eptyp [0x03 & pep->bmAttributes],
+								(unsigned) pep->wMaxPacketSize);
 
 						ep_ix++;
 					}
@@ -682,7 +690,7 @@ static USBH_StatusTypeDef  USBH_ParseEPDesc(USBH_HandleTypeDef *phost, USBH_EpDe
   }
 
   /* For high-speed interrupt/isochronous endpoints, bInterval can vary from 1 to 16 */
-  if (phost->Target.speed == (uint8_t)USBH_SPEED_HIGH)
+  if (phost->currentTarget->speed == (uint8_t)USBH_SPEED_HIGH)
   {
     if (((ep_descriptor->bmAttributes & EP_TYPE_MSK) == EP_TYPE_ISOC) ||
         ((ep_descriptor->bmAttributes & EP_TYPE_MSK) == EP_TYPE_INTR))
