@@ -10,16 +10,11 @@
 #if WITHUSBHW && WITHEHCIHW
 
 #include "board.h"
-#include "formats.h"
 #include "gpio.h"
 
-#include "hal_ehci.h"
 #include "usb_device.h"
-#include "usb200.h"
-#include "usbch9.h"
 #include "usbh_core.h"
-
-#include <string.h>
+#include "hal_ehci.h"
 
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
