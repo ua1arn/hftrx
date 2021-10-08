@@ -819,7 +819,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         else if (status == USBH_HUB_REQ_REENUMERATE)
         {
         	  phost->EnumState = ENUM_IDLE;
-    		USBH_ProcessDelay(phost, HOST_DEV_ATTACHED, 100);
+    		USBH_ProcessDelay(phost, HOST_DEV_ATTACHED, 5);
            status = USBH_OK;
            phost->Control.state = CTRL_SETUP;
            USBH_UsrLog("Device %s class require re-enumeration.", phost->pActiveClass->Name);

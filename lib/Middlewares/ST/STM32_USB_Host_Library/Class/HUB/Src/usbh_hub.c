@@ -493,11 +493,15 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		{
 			// Reach last port
 			if (HUB_Handle->NumPorts <= HUB_Handle->hubClassRequestPort)
-				USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS_DONE, 100);	/* HS стройства не сразу становчтся подключенными */
+			{
+				HUB_Handle->ctl_state = HUB_REQ_RESETS_DONE;
+				//USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS_DONE, 5);	/* HS стройства не сразу становчтся подключенными */
+			}
 			else
 			{
 				HUB_Handle->hubClassRequestPort ++;
-				USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS, 100);	/* HS стройства не сразу становчтся подключенными */
+				HUB_Handle->ctl_state = HUB_REQ_RESETS;
+				//USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS, 5);	/* HS стройства не сразу становчтся подключенными */
 			}
 			status = USBH_BUSY;
 		}
@@ -528,7 +532,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			// ИНтерпретируем результаты
 			//debug_port(HUB_Handle->buffer, st);
 			// TODO: если выбрана енумерация LOW SPEED устройста, при установленной HIGH SPEED flash не проходит енумерация.
-			if (st->wPortStatus.PORT_ENABLE /* && HUB_Handle->hubClassRequestPort > 1 */)
+			if (st->wPortStatus.PORT_ENABLE  && HUB_Handle->hubClassRequestPort > 1 )
 			{
 				if (st->wPortStatus.PORT_LOW_SPEED && 1)
 				{
