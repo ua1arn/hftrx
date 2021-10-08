@@ -250,7 +250,7 @@ static USBH_StatusTypeDef DeInitStateMachine(USBH_HandleTypeDef *phost)
 
   phost->allocaddress = 0;
   phost->currentTarget = & phost->rootTarget;
-  phost->rootTarget.dev_address = 0;
+  phost->rootTarget.dev_address = USBH_ADDRESS_DEFAULT;
 
   phost->hubInstances = 0;
 
