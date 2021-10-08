@@ -223,8 +223,8 @@ static void qtd_item2(volatile struct ehci_transfer_descriptor * p, unsigned pid
 //														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 //														// cleared for SETUP packets
 	p->flags = pid | 1 * EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
-	//p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
-	le8_modify(& p->status, EHCI_STATUS_MASK | EHCI_STATUS_PING, EHCI_STATUS_PING * (ping != 0));
+	p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
+	//le8_modify(& p->status, EHCI_STATUS_MASK | EHCI_STATUS_PING, EHCI_STATUS_PING * (ping != 0));
 }
 
 
