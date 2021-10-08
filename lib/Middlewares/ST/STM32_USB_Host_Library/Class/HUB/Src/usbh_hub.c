@@ -532,7 +532,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 			// ИНтерпретируем результаты
 			//debug_port(HUB_Handle->buffer, st);
 			// TODO: если выбрана енумерация LOW SPEED устройста, при установленной HIGH SPEED flash не проходит енумерация.
-			if (st->wPortStatus.PORT_ENABLE  && HUB_Handle->hubClassRequestPort > 1 )
+			if (st->wPortStatus.PORT_ENABLE /* && HUB_Handle->hubClassRequestPort > 1 */)
 			{
 				if (st->wPortStatus.PORT_LOW_SPEED && 1)
 				{
