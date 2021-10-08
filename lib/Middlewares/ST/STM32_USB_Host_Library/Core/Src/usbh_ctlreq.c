@@ -598,9 +598,17 @@ static USBH_StatusTypeDef USBH_ParseCfgDesc(USBH_HandleTypeDef *phost, uint8_t *
 						pep = &cfg_desc->Itf_Desc[if_ix].Ep_Desc[ep_ix];
 						USBH_ParseEPDesc(phost, pep, (uint8_t*) pdesc);
 
+						static const char * const eptyp [4] = {
+								"Control",
+								"Iso",
+								"Bulk",
+								"Int",
+						};
 						USBH_DbgLog(
-								"USBH_ParseCfgDesc: EPix=%d, bEndpointAddress=%02X, wMaxPacketSize=%u",
-								(int) ep_ix, (unsigned) pep->bEndpointAddress, (unsigned) pep->wMaxPacketSize);
+								"USBH_ParseCfgDesc: EPix=%d, bEndpointAddress=%02X, attr=%02X %4s wMaxPacketSize=%-4u",
+								(int) ep_ix, (unsigned) pep->bEndpointAddress,
+								(unsigned) pep->bmAttributes, eptyp [0x03 & pep->bmAttributes],
+								(unsigned) pep->wMaxPacketSize);
 
 						ep_ix++;
 					}
