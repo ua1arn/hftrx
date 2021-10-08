@@ -31,6 +31,7 @@ PROJECT = tc1_stm32f746ng
 
 # Define linker script file here
 LDSCRIPT_APP = ./STM32F746ZG_rom_sdram.ld
+ARCHDIR = $(PRJROOT)/arch/stm32f7xx
 
 # List all user C define here, like -D_DEBUG=1
 
@@ -63,7 +64,7 @@ DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
 MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
-HALDIR = $(PRJROOT)/lib/Drivers/STM32H7xx_HAL_Driver
+HALDIR = $(PRJROOT)/lib/Drivers/STM32F7xx_HAL_Driver
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -72,7 +73,7 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(PRJROOT)/armcpu \
+	$(ARCHDIR) \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
@@ -136,6 +137,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
+SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)

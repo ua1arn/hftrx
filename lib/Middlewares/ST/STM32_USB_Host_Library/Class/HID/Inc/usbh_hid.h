@@ -216,7 +216,7 @@ typedef struct _HID_Process
   uint8_t              InEp;
   HID_CtlStateTypeDef  ctl_state;
   FIFO_TypeDef         fifo;
-  uint8_t              *pData;
+  uint8_t              *pHidReportData;
   uint16_t             length;
   uint8_t              ep_addr;
   uint16_t             poll;
@@ -224,6 +224,8 @@ typedef struct _HID_Process
   uint8_t              DataReady;
   HID_DescTypeDef      HID_Desc;
   USBH_StatusTypeDef(* Init)(USBH_HandleTypeDef *phost);
+
+  USBH_TargetTypeDef target;
 }
 HID_HandleTypeDef;
 

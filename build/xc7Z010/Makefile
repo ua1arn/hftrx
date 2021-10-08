@@ -16,7 +16,8 @@
 ##############################################################################################
 # Start of default section
 #
-TRGT = arm-none-eabi-
+TRGT2 = arm-none-eabi
+TRGT = $(TRGT2)-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
 PRJROOT := ../..
@@ -28,7 +29,7 @@ ZINQ_BOOT_DIR := E:
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar
+AR   = $(TRGT)ar -rcs --plugin ../lib/gcc/$(TRGT2)/10.2.1/liblto_plugin-0.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
@@ -61,6 +62,7 @@ UADEFS += -D"WITHSMPSYSTEM"
 # List all default ASM defines here, like -D_DEBUG=1
 DADEFS = -D__ASSEMBLY__=1
 
+ARCHDIR = $(PRJROOT)/arch/zynq
 
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
 
@@ -84,7 +86,7 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(PRJROOT)/armcpu \
+	$(ARCHDIR) \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(USBXDIR) \
@@ -122,6 +124,7 @@ DLIBS = -lm
 
 #SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS = $(PRJROOT)/src
+SRCDIRS += $(ARCHDIR)
 
 # Define project name here
 PROJECT = tc1_xc7z010
@@ -243,20 +246,20 @@ bitstream_4205_10.h: bitstream_4205_10.bit
 	
 bootloader: BOOT2
   
-#app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
-#	xsct.bat app_run_4205.tcl 
-  
-app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
-	xsct.bat app_run_ant10.tcl  
+app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
+	xsct.bat app_run_4205.tcl 
   
 #app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
-#	xsct.bat app_run_ant10.tcl
+#	xsct.bat app_run_ant10.tcl  
+  
+#app_run: $(PROJECT)_app.elf bitstream_ant_20.bit app_run_ant20.tcl
+#	xsct.bat app_run_ant20.tcl
 
 lib: $(ZYNQLIB)
 
 $(ZYNQLIB): $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA) 
 	-$(RM) $@
-	$(AR) -rc $@ $(ZOBJS)
+	$(AR) $@ $(ZOBJS)
 	
 flash: $(PROJECT)_app.xyl32
 	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0xFC080000 --download $(PROJECT)_app.xyl32

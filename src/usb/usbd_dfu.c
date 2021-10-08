@@ -205,15 +205,15 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 
 	}
 #if BOOTLOADER_SELFSIZE
-	else if (Addr >= BOOTLOADER_SELFBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
+	else if (Addr >= BOOTLOADER_SELFBASE && (Addr + sectorsizeDATAFLASH()) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
 		// физическое выполненеие записи
 		if (sectoreraseDATAFLASH(Addr))
 			return USBD_FAIL;
 	}
 #endif /* BOOTLOADER_SELFSIZE */
-#if BOOTLOADER_APPSIZE
-	else if (Addr >= BOOTLOADER_APPBASE && (Addr + BOOTLOADER_PAGESIZE) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
+#if defined(BOOTLOADER_APPSIZE)
+	else if (Addr >= BOOTLOADER_APPBASE && (Addr + sectorsizeDATAFLASH()) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
 	{
 		// физическое выполненеие записи
 		if (sectoreraseDATAFLASH(Addr))
@@ -248,7 +248,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 			return USBD_FAIL;
 	}
 #endif /* BOOTLOADER_SELFSIZE */
-#if BOOTLOADER_APPSIZE
+#if defined(BOOTLOADER_APPSIZE)
 	else if (dest >= BOOTLOADER_APPBASE && (dest + Len) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
 	{
 		// физическое выполненеие записи
@@ -286,6 +286,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
   */
 static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
+	//PRINTF(PSTR("MEM_If_Read_HS: src=%08lX, dest=%p, len=%08lX\n"), src, dest, Len);
 	/* Return a valid address to avoid HardFault */
 	if (readDATAFLASH(src, dest, Len))
 		return 0; //dest;	// todo: error handling need
@@ -296,10 +297,12 @@ static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 /**
   * @brief  Get status routine.
   * @param  Add: Address to be read from.
-  * @param  Cmd: Number of data to be read (in bytes).
+  * @param  Cmd: type of information required (DFU_MEDIA_ERASE/DFU_MEDIA_PROGRAM)
   * @param  buffer: used for returning the time necessary for a program or an erase operation
   * @retval 0 if operation is successful
   */
+//#define DFU_MEDIA_ERASE                0x00
+//#define DFU_MEDIA_PROGRAM              0x01
 static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_t *buffer)
 {
 	//PRINTF(PSTR("MEM_If_GetStatus_HS: Addr=%08lX\n"), Addr);
@@ -316,7 +319,7 @@ static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_
 		//PRINTF("Cmd=%d,st1=%02X (Addr=%08lX) ", Cmd, st, (unsigned long) Addr);
 	}
 #endif /* BOOTLOADER_SELFSIZE */
-#if BOOTLOADER_APPSIZE
+#if defined(BOOTLOADER_APPSIZE)
 	else if (Addr >= BOOTLOADER_APPBASE && (Addr + 1) <= (BOOTLOADER_APPBASE + BOOTLOADER_APPSIZE))
 	{
 		st = dataflash_read_status();
@@ -433,11 +436,13 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
 
             if (USBD_DFU_fops_HS.Erase(hdfu->data_ptr) != USBD_OK)
             {
+            	PRINTF("USBD_DFU_EP0_TxSent: Erase fault\n");
               return USBD_FAIL;
             }
           }
           else
           {
+          	PRINTF("USBD_DFU_EP0_TxSent: undefined hdfu->buffer.d8[0]=%02X\n", hdfu->buffer.d8 [0]);
             /* .. */
           }
         }
@@ -461,7 +466,7 @@ static USBD_StatusTypeDef  USBD_DFU_EP0_TxSent(USBD_HandleTypeDef *pdev)
           addr = ((hdfu->wblock_num - 2U) * USBD_DFU_XFER_SIZE) + hdfu->data_ptr;
 
           /* Preform the write operation */
-          if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, hdfu->wlength) != USBD_OK)
+          if (USBD_DFU_fops_HS.Write(hdfu->buffer.d8, addr, ulmin(sizeof hdfu->buffer.d8, hdfu->wlength)) != USBD_OK)
           {
 #if 1
 		    /* Reset the global length and block number */
@@ -682,7 +687,7 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
   if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
 #if WITHISBOOTLOADER
-	  board_dpc(& dpc_deffereddetach, bootloader_deffereddetach, NULL);
+	  VERIFY(board_dpc(& dpc_deffereddetach, bootloader_deffereddetach, NULL));
 #endif /* WITHISBOOTLOADER */
   }
   else
@@ -725,7 +730,7 @@ static void DFU_Download(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *r
       /* Prepare the reception of the buffer over EP0 */
       USBD_CtlPrepareRx(pdev,
                          (uint8_t*)hdfu->buffer.d8,
-                         hdfu->wlength);
+						 ulmin(sizeof hdfu->buffer.d8, hdfu->wlength));
     }
     /* Unsupported state */
     else
@@ -814,7 +819,7 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
         addr = ((hdfu->wblock_num - 2) * usbd_dfu_get_xfer_size(altinterfaces [INTERFACE_DFU_CONTROL])) + hdfu->data_ptr;  /* Change is Accelerated*/
 
         /* Return the physical address where data are stored */
-        phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, hdfu->wlength);
+        phaddr = USBD_DFU_fops_HS.Read(addr, hdfu->buffer.d8, ulmin(sizeof hdfu->buffer.d8, hdfu->wlength));
 
         if (phaddr == 0)
         {
@@ -825,7 +830,7 @@ static void DFU_Upload(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
 			/* Send the status data over EP0 */
 			USBD_CtlSendData(pdev,
 							  phaddr,
-							  hdfu->wlength);
+							  ulmin(sizeof hdfu->buffer.d8, hdfu->wlength));
         }
       }
       else  /* unsupported hdfu->wblock_num */
@@ -938,8 +943,16 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
     break;
 
   default :
+	  PRINTF("DFU_GetStatus: hdfu->dev_state=%d\n", hdfu->dev_state);
 	  //TP();
-	USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
+	//USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
+	    //hdfu->dev_state = DFU_STATE_IDLE;
+//	    hdfu->dev_status [0] = DFU_ERROR_NONE;
+//	    hdfu->dev_status [1] = 0;
+//	    hdfu->dev_status [2] = 0;
+//	    hdfu->dev_status [3] = 0; /*bwPollTimeout=0ms*/
+//	    hdfu->dev_status [4] = hdfu->dev_state;
+//	    hdfu->dev_status [5] = 0; /*iString*/
     break;
   }
 

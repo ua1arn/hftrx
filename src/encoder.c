@@ -109,6 +109,7 @@ void spool_encinterrupt2(void)
 	SPIN_UNLOCK(& enc2lock);
 }
 
+// вызывается в контексте обработчика прерываний
 static int safegetposition1(void)
 {
 #if WITHHARDINTERLOCK
@@ -121,15 +122,14 @@ static int safegetposition1(void)
 	return (int32_t) r;
 
 #else /* WITHHARDINTERLOCK */
-	global_disableIRQ();
 	int r = position1;
 	position1 = 0;
-	global_enableIRQ();
 	return r;
 
 #endif /* WITHHARDINTERLOCK */
 }
 
+// вызывается в контексте обработчика прерываний
 static int safegetposition2(void)
 {
 #if WITHHARDINTERLOCK
@@ -142,10 +142,8 @@ static int safegetposition2(void)
 	return (int32_t) r;
 
 #else /* WITHHARDINTERLOCK */
-	global_disableIRQ();
 	int r = position2;
 	position2 = 0;
-	global_enableIRQ();
 	return r;
 
 #endif /* WITHHARDINTERLOCK */
@@ -215,7 +213,6 @@ void encoder_set_resolution(uint_fast8_t v, uint_fast8_t encdynamic)
 static void
 enc_spool(void * ctx)
 {
-	global_disableIRQ();
 	SPIN_LOCK(& enc1lock);
 
 	const int p1 = safegetposition1();	// Валкодер #1
@@ -225,7 +222,6 @@ enc_spool(void * ctx)
 	rotate_kbd += p1kbd;		/* учёт количества импульсов (для прямого отсчёта) */
 #endif
 	SPIN_UNLOCK(& enc1lock);
-	global_enableIRQ();
 
 	/* запоминание данных для расчёта скорости вращения валкодера */
 	/* при расчёте скорости игнорируется направление вращения - улучшается обработка синтуйии, когда при уже
@@ -241,12 +237,10 @@ enc_spool(void * ctx)
 	}
 
 	// Валкодер #2
-	global_disableIRQ();
 	SPIN_LOCK(& enc2lock);
 	const int p2 = safegetposition2();
 	rotate2 += p2;		/* учёт количества импульсов (для прямого отсчёта) */
 	SPIN_UNLOCK(& enc2lock);
-	global_enableIRQ();
 }
 
 
@@ -463,9 +457,11 @@ void encoder_initialize(void)
 	old_val2 = hardware_get_encoder2_bits();	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
 #if WITHENCODER
 	ticker_initialize(& encticker, 1, enc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& encticker);
 #endif /* WITHENCODER */
 #if WITHENCODER2
 	// второй енкодер всегда по опросу
 	ticker_initialize(& encticker2, 1, spool_encinterrupt2_local, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& encticker2);
 #endif /* WITHENCODER2 */
 }

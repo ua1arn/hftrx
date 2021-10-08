@@ -22,9 +22,9 @@
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
-#if WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK
+#if WITHUSEFATFS
 	#include "sdcard.h"
-#endif /* WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK */
+#endif /* WITHUSEFATFS */
 
 #include <string.h>
 #include <ctype.h>
@@ -165,20 +165,6 @@ static uint_fast32_t
 //NOINLINEAT
 prevfreq(uint_fast32_t oldfreq, uint_fast32_t freq, 
 							   uint_fast32_t step, uint_fast32_t bottom);
-
-static unsigned long ulmin(
-	unsigned long a,
-	unsigned long b)
-{
-	return a < b ? a : b;
-}
-
-static unsigned long ulmax(
-	unsigned long a,
-	unsigned long b)
-{
-	return a > b ? a : b;
-}
 
 
 extern volatile uint_fast8_t spool_lfm_enable;
@@ -3137,7 +3123,7 @@ filter_t fi_2p0_455 =
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
 	uint8_t voltcalibr100mV;	/* калибровочный параметр измерителя напряжения АКБ - Напряжение fullscale = VREF * 5.3 = 3.3 * 5.3 = 17.5 вольта */
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
-
+	uint16_t gipacali;
 #if WITHELKEY
 	uint8_t	ggrpelkey; // последний посещённый пункт группы
 	uint8_t elkeywpm;	/* скорость электронного ключа */
@@ -4087,7 +4073,17 @@ static uint_fast8_t dctxmodecw;	/* при передаче предполага�
 	uint_fast8_t voltcalibr100mV = (ADCVREF_CPU * (VOLTLEVEL_UPPER + VOLTLEVEL_LOWER) + VOLTLEVEL_LOWER / 2) / VOLTLEVEL_LOWER;		// Напряжение fullscale - что показать при ADCVREF_CPU вольт на входе АЦП
 
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
+#if (WITHCURRLEVEL || WITHCURRLEVEL2)
 
+	// Корректировка показаний измерителя тока оконечного каскада
+	#define IPACALI_RANGE 500
+	#define IPACALI_BASE (IPACALI_RANGE / 2)
+	static int_fast32_t getipacalibase(void)
+	{
+		return - IPACALI_BASE;
+	}
+	static uint_fast16_t gipacali = IPACALI_BASE;
+#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 #if WITHDIRECTFREQENER
 	static uint_fast8_t editfreqmode;		/* Режим прямого ввода частоты */
 	static uint_fast32_t editfreq;		/* значение частоты, которое редактируем */
@@ -5454,17 +5450,11 @@ nyquistadj2(uint_fast32_t f)
 #endif /* XVTR_NYQ1 */
 }
 
-// tuning frequency to external PA (ACC socket) frequency adjust
+// tuning frequency to external PA (ACC socket) frequency adjust - no correction
 static uint_fast32_t
 nyquistadj3(uint_fast32_t f)
 {
-#if 0//XVTR_R820T2
-	reuturn R820T_IFFREQ;
-#elif XVTR_NYQ1
-	return FQMODEL_TUNING_TO_NYQ1(f);
-#else /* XVTR_NYQ1 */
 	return f;
-#endif /* XVTR_NYQ1 */
 }
 
 /* получить номер диапазона, в который попадает отображающаяся частота
@@ -9205,7 +9195,7 @@ static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInpu
 
 #endif /* WITHLMSAUTONOTCH */
 
-#if ! WITHSKIPUSERMODE
+#if 1//! WITHSKIPUSERMODE
 
 #if WITHNOSPEEX
 
@@ -9329,11 +9319,11 @@ void speex_free (void *ptr)
 /* на слабых процессорах второй приемник без NR и автонотч */
 static uint_fast8_t ispathprocessing(uint_fast8_t pathi)
 {
-#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S
+#if CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S
 	return 1;
-#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S */
+#else /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S */
 	return pathi == 0;
-#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYPE_ALLWNV3S */
+#endif /* CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z || CPUSTYLE_XCZU || CPUSTYPE_ALLWNV3S */
 }
 
 static void speex_update_rx(void)
@@ -9428,7 +9418,7 @@ static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_
 //	static const float32_t ko = 1. / 32768;
 #if WITHNOSPEEX
 	// не делать даже коррекцию АЧХ
-	nrp->outsp = p;
+	return p;
 #else /* WITHNOSPEEX */
 	// не делать даже коррекцию АЧХ
 	#if ! WITHLEAKYLMSANR
@@ -11422,10 +11412,10 @@ int_fast16_t hamradio_get_pacurrent_value(void)
 
 #endif /* WITHCURRLEVEL2 */
 
-	return curr10;
+	return curr10 + (gipacali + getipacalibase());
 }
 
-#endif /* WITHCURRLEVEL */
+#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 
 uint_fast8_t hamradio_get_tx(void)
 {
@@ -14342,9 +14332,9 @@ static void dpc_1stimer(void * arg)
 	sys_check_timeouts();
 #endif /* WITHLWIP */
 
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	hamradio_set_freq(hamradio_get_freq_rx() + 1);
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #if WITHTOUCHGUI
 	gui_update();
@@ -14357,22 +14347,25 @@ static void dpc_1stimer(void * arg)
 }
 
 static void
-poke_u32(volatile uint8_t * p, uintptr_t v)
+poke_uintptr(volatile uint8_t * p, uintptr_t v)
 {
-	p [0] = (v >> 0) & 0xFF;
-	p [1] = (v >> 8) & 0xFF;
-	p [2] = (v >> 16) & 0xFF;
-	p [3] = (v >> 24) & 0xFF;
+	p [0] = (v >> 24) & 0xFF;
+	p [1] = (v >> 16) & 0xFF;
+	p [2] = (v >> 8) & 0xFF;
+	p [3] = (v >> 0) & 0xFF;
 }
 
 static uintptr_t
-peek_u32(volatile const uint8_t * p)
+peek_uintptr(volatile const uint8_t * p)
 {
-	return
-		((uint_fast32_t) p [0] << 0) +
-		((uint_fast32_t) p [1] << 8) +
-		((uint_fast32_t) p [2] << 16) +
-		((uint_fast32_t) p [3] << 24);
+	uintptr_t v = 0;
+
+	v = (v << 8) + * p ++;
+	v = (v << 8) + * p ++;
+	v = (v << 8) + * p ++;
+	v = (v << 8) + * p ++;
+
+	return v;
 }
 
 
@@ -14450,9 +14443,17 @@ processmessages(
 #if WITHUSEAUDIOREC
 		sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 #if WITHWAVPLAYER || WITHSENDWAV
 		spoolplayfile();
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
+#if WITHLWIP
+		/* LWIP */
+		usb_polling();     // usb device polling
+		//stmr();            // call software timers
+#endif /* WITHLWIP */
 		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
 		directctlupdate(inmenu, mp);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 #if WITHLCDBACKLIGHT || WITHKBDBACKLIGHT
@@ -14489,12 +14490,6 @@ processmessages(
 			cat_answer_forming();
 		}
 #endif /* WITHCAT */
-
-#if WITHLWIP
-		/* LWIP */
-		usb_polling();     // usb device polling
-		//stmr();            // call software timers
-#endif /* WITHLWIP */
 		return;
 
 	case MSGT_CAT:
@@ -14530,13 +14525,15 @@ processmessages(
 			void * arg3;
 			dpclock_t * lp;
 
-			func = (uintptr_t) peek_u32(buff + 1);
-			arg1 = (void *) peek_u32(buff + 5);
-			arg2 = (void *) peek_u32(buff + 9);
-			arg3 = (void *) peek_u32(buff + 13);
-			lp = (dpclock_t *) peek_u32(buff + 17);
+			ASSERT(MSGBUFFERSIZE8 >= 21);
 
-			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была вощмодность самого себя повторно запросить
+			func = (uintptr_t) peek_uintptr(buff + 1);
+			arg1 = (void *) peek_uintptr(buff + 5);
+			arg2 = (void *) peek_uintptr(buff + 9);
+			arg3 = (void *) peek_uintptr(buff + 13);
+			lp = (dpclock_t *) peek_uintptr(buff + 17);
+
+			dpclock_exit(lp);	// освобождаем перед вызовом - чтобы была возможность самого себя повторно запросить
 			switch (buff [0])
 			{
 			case 1:
@@ -14565,12 +14562,13 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg)
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
+	ASSERT(MSGBUFFERSIZE8 >= 21);
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 1;
-		poke_u32(buff + 1, (uintptr_t) func);
-		poke_u32(buff + 5, (uintptr_t) arg);
-		poke_u32(buff + 17, (uintptr_t) lp);
+		poke_uintptr(buff + 1, (uintptr_t) func);
+		poke_uintptr(buff + 5, (uintptr_t) arg);
+		poke_uintptr(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -14585,13 +14583,14 @@ uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
+	ASSERT(MSGBUFFERSIZE8 >= 21);
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 2;
-		poke_u32(buff + 1, (uintptr_t) func);
-		poke_u32(buff + 5, (uintptr_t) arg1);
-		poke_u32(buff + 9, (uintptr_t) arg2);
-		poke_u32(buff + 17, (uintptr_t) lp);
+		poke_uintptr(buff + 1, (uintptr_t) func);
+		poke_uintptr(buff + 5, (uintptr_t) arg1);
+		poke_uintptr(buff + 9, (uintptr_t) arg2);
+		poke_uintptr(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -14606,14 +14605,15 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 	if (dpclock_traylock(lp))
 		return 0;
 	uint8_t * buff;
+	ASSERT(MSGBUFFERSIZE8 >= 21);
 	if (takemsgbufferfree_low(& buff) != 0)
 	{
 		buff [0] = 3;
-		poke_u32(buff + 1, (uintptr_t) func);
-		poke_u32(buff + 5, (uintptr_t) arg1);
-		poke_u32(buff + 9, (uintptr_t) arg2);
-		poke_u32(buff + 13, (uintptr_t) arg3);
-		poke_u32(buff + 17, (uintptr_t) lp);
+		poke_uintptr(buff + 1, (uintptr_t) func);
+		poke_uintptr(buff + 5, (uintptr_t) arg1);
+		poke_uintptr(buff + 9, (uintptr_t) arg2);
+		poke_uintptr(buff + 13, (uintptr_t) arg3);
+		poke_uintptr(buff + 17, (uintptr_t) lp);
 		placesemsgbuffer_low(MSGT_DPC, buff);
 		return 1;
 	}
@@ -14623,11 +14623,12 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 
 static dpclock_t dpc_1slock;
 /* Вызывается из обработчика прерываний раз в секунду */
-void spool_secound(void * ctx)
+static void spool_secound(void * ctx)
 {
 	(void) ctx;	// приходит NULL
 
-	board_dpc(& dpc_1slock, dpc_1stimer, NULL);
+	board_dpc(& dpc_1slock, dpc_1stimer, NULL);	// при работе тестов никто не прокачивает очередь DPC
+	//VERIFY(board_dpc(& dpc_1slock, dpc_1stimer, NULL));
 }
 
 /* Установка сиквенсору запроса на передачу.	*/
@@ -16275,16 +16276,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		NULL,
 		getadcoffsbase,	/* складывается со смещением и отображается */
 	},
-	{
-		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, gdactest),
-		nvramoffs0,
-		NULL,
-		& gdactest,
-		getzerobase, 
-	},
 #endif /* WITHDSPEXTDDC */
 #if WITHTX
 #if WITHVOX
@@ -17720,6 +17711,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase, 
 	},
 #endif /* WITHPABIASTRIM && WITHTX */
+#if WITHDSPEXTDDC	/* QLABEL("ВоронёнокQLABEL(" с DSP и FPGA */
+	{
+		QLABEL("DAC TEST"), 8, 3, RJ_ON,	ISTEP1,	/*  */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gdactest),
+		nvramoffs0,
+		NULL,
+		& gdactest,
+		getzerobase,
+	},
+#endif /* WITHDSPEXTDDC */
 
 #endif /* WITHTX */
 
@@ -17911,9 +17914,21 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& voltcalibr100mV,
-		getzerobase, 
+		getzerobase,
 	},
 #endif /* WITHVOLTLEVEL && ! WITHREFSENSOR */
+#if (WITHCURRLEVEL || WITHCURRLEVEL2)
+	{
+		QLABEL("IPA CALI"), 5 + WSIGNFLAG, 2, 0,	ISTEP1,			/* калибровочный параметр делителя напряжения АКБ */
+		ITEM_VALUE,
+		0, IPACALI_RANGE,
+		offsetof(struct nvmap, gipacali),
+		nvramoffs0,
+		& gipacali,
+		NULL,
+		getipacalibase,
+	},
+#endif /* (WITHCURRLEVEL || WITHCURRLEVEL2) */
 #if WITHTX
 #if WITHSWRMTR && ! WITHSHOWSWRPWR
 	{
@@ -19057,6 +19072,8 @@ void display2_menu_valxx(
 			}
 #elif CPUSTYLE_XC7Z
 			msg = PSTR("ZYNQ 7000");
+#elif CPUSTYLE_XCZU
+			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
 			msg = PSTR("RENESAS");
 #else
@@ -20404,30 +20421,32 @@ lowinitialize(void)
 
 #endif /* WITHMODEM */
 
-	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
+	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
+	// Инициализация таймера и списка регистрирумых обработчиков
+	hardware_timer_initialize(TICKS_FREQUENCY);
+
+	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 	display_hardware_initialize();
 
 	static ticker_t displayticker;
+	static ticker_t ticker_1S;
 
-	//hardware_cw_diagnostics_noirq(1, 0, 0);	// 'D'
-	// Инициализация таймера и списка регистрирумых обработчиков
-	hardware_timer_initialize(TICKS_FREQUENCY);
 	ticker_initialize(& displayticker, 1, display_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& displayticker);
+	ticker_initialize(& ticker_1S, NTICKS(1000), spool_secound, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& ticker_1S);
 
 	buffers_initialize();	// инициализация системы буферов - в том числе очереди сообщений
 
 #if WITHUSBHW
 	board_usb_initialize();		// USB device and host support
 #endif /* WITHUSBHW */
-#if WITHEHCIHW
-	board_ehci_initialize();		// USB EHCI controller
-#endif /* WITHEHCIHW */
 #if WITHGPUHW
 	board_gpu_initialize();		// GPU controller
 #endif /* WITHGPUHW */
 #if WITHENCODER
-	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_init_io - иначе не собирается под Cortex-A9.
+	hardware_encoder_initialize();	//  todo: разобраться - вызов перенесен сюда из board_initialize - иначе не собирается под Cortex-A9.
 #endif /* WITHENCODER */
 
 #if WITHLFM
@@ -20810,11 +20829,6 @@ hamradio_initialize(void)
 #endif /* WITHRTTY */
 #endif /* WITHINTEGRATEDDSP */
 
-	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
-
-	board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
-	board_update();
-
 #if WITHUSBHW
 
 	#if WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT)
@@ -20831,6 +20845,11 @@ hamradio_initialize(void)
 	#endif /* WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT) */
 
 #endif /* WITHUSBHW */
+
+	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+
+	board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
+	board_update();
 
 #if WITHSPISLAVE
 	hardware_spi_slave_enable(SPIC_MODE3);
@@ -21169,6 +21188,9 @@ static void hamradio_main_initialize(void)
 #if WITHUSEAUDIOREC
 	sdcardbgprocess();
 #endif /* WITHUSEAUDIOREC */
+#if WITHUSBHW
+	board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 	directctlupdate(0, NULL);		/* управление скоростью передачи (и другими параметрами) через потенциометр */
 	updateboard(1, 1);	/* полная перенастройка (как после смены режима) - режим приема */
 	updateboard2();			/* настройки валкодера и цветовой схемы дисплея. */
@@ -21339,7 +21361,7 @@ hamradio_main_step(void)
 				display_redrawfreqmodesbarsnow(0, NULL);			/* Обновление дисплея - всё, включая частоту */
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 			}
-	#if WITHDEBUG
+	#if 0//WITHDEBUG
 			{
 				/* здесь можно добавить обработку каких-либо команд с debug порта */
 				char c;
@@ -21436,7 +21458,7 @@ hamradio_main_step(void)
 			gui_set_encoder2_rotate(nrotate2);
 #endif /* WITHTOUCHGUI && WITHENCODER2 */
 
-#if 0 && CPUSTYLE_XC7Z		// тестовая прокрутка частоты
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)		// тестовая прокрутка частоты
 			hamradio_set_freq(hamradio_get_freq_rx() + 1);
 #endif
 		}
@@ -22917,6 +22939,9 @@ static void
 bootloader_launch_app(uintptr_t ip)
 {
 	__disable_irq();
+#if WITHUSBHW
+		board_usb_deinitialize();
+#endif /* WITHUSBHW */
 	arm_hardware_flush_all();
 
 #if (__L2C_PRESENT == 1)
@@ -22965,7 +22990,6 @@ void bootloader_deffereddetach(void * arg)
 #if WITHUSBHW
 		if (usbactivated)
 			board_usb_deactivate();
-		board_usb_deinitialize();
 #endif /* WITHUSBHW */
 		bootloader_launch_app(ip);
 	}
@@ -22976,7 +23000,7 @@ void bootloader_deffereddetach(void * arg)
 #endif /* BOOTLOADER_RAMSIZE */
 }
 
-#if CPUSTYLE_XC7Z	// мигалка
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
 
 static unsigned volatile tmpressed;
 static unsigned volatile pressflag;
@@ -23056,7 +23080,7 @@ tsc_spool(void * ctx)
 //	}
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #if WITHISBOOTLOADERFATFS
 
@@ -23064,8 +23088,8 @@ static void bootloader_fatfs_mainloop(void)
 {
 	static const char IMAGENAME [] = WITHISBOOTLOADERIMAGE;
 	static FATFSALIGN_BEGIN BYTE header [sizeof (struct stm32_header)] FATFSALIGN_END;
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	FRESULT rc;
 	UINT br = 0;		//  количество считанных байтов
 	struct stm32_header * const hdr = (struct stm32_header *) & header;
@@ -23150,7 +23174,6 @@ static void bootloader_fatfs_mainloop(void)
 #endif /* BOOTLOADER_RAMSIZE */
 #if WITHUSBHW
 	board_usb_deactivate();
-	board_usb_deinitialize();
 #endif /* WITHUSBHW */
 #if BOOTLOADER_RAMSIZE
 	PRINTF("bootloader_fatfs_mainloop start: run '%s' at %08lX\n", IMAGENAME, ip);
@@ -23168,20 +23191,21 @@ static void bootloader_mainloop(void)
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
-#if CPUSTYLE_XC7Z	// мигалка
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
 	static ticker_t tscticker;
 	system_disableIRQ();
 	ticker_initialize(& tscticker, 1, tsc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& tscticker);
 	system_enableIRQ();
 	gpio_output(37, 0);		/* LED_R */
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
 	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
 ddd:
 	;
-#if CPUSTYLE_XC7Z	// мигалка
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
 
 	if (getrefresh())
 	{
@@ -23217,7 +23241,7 @@ ddd:
 		/* если не установлен джампер - запускаем программу. */
 //		if (! BOARD_IS_USERBOOT())
 //			break;
-		//	при наличии перемычки входим в режим загрузчика по USB.
+		//	при наличии перемычки (нажатой кнопки) входим в режим загрузчика по USB.
 		//	Выйти или через команду DFU или по сбросу.
 		if (usbactivated == 0)
 			break;
@@ -23238,12 +23262,12 @@ ddd:
 			}
 		}
 
-#else /* WITHDEBUG */
-		/* вытаскиваем USB кабель - запускаем программу. */
-		if (hardware_usbd_get_vbusbefore() == 0)
-			break;
-		if (hardware_usbd_get_vbusnow() == 0)
-			break;
+//#else /* WITHDEBUG */
+//		/* вытаскиваем USB кабель - запускаем программу. */
+//		if (hardware_usbd_get_vbusbefore() == 0)
+//			break;
+//		if (hardware_usbd_get_vbusnow() == 0)
+//			break;
 
 #endif /* WITHDEBUG */
 	}

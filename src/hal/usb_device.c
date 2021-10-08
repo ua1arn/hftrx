@@ -27,13 +27,12 @@
 #include "formats.h"
 
 #include "usb_device.h"
-#include "usbd_core.h"
-//#include "usbd_desc.h"
-//#include "usbd_cdc.h"
-//#include "usbd_cdc_if.h"
 
-/* USER CODE BEGIN Includes */
-/* USER CODE END Includes */
+#if WITHUSEUSBFLASH
+#include "../../Class/MSC/Inc/usbh_msc.h"
+#endif /* WITHUSEUSBFLASH */
+#include "../../Class/HID/Inc/usbh_hid.h"
+#include "../../Class/HUB/Inc/usbh_hub.h"
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
@@ -46,9 +45,22 @@ void Error_Handler(void);
 
 /* USER CODE END PFP */
 
-/* USB Device Core handle declaration. */
-USBD_HandleTypeDef hUsbDeviceHS;
+#if defined (WITHUSBHW_DEVICE)
+	/* USB Device Core handle declaration. */
+	RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
+#endif /* defined (WITHUSBHW_DEVICE) */
 
+#if defined (WITHUSBHW_HOST)
+	/* USB Host Core handle declaration. */
+	RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
+
+	// MORI
+//	USBH_HandleTypeDef hUSBHost[5];
+//	HCD_HandleTypeDef _hHCD[2];
+
+	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+
+#endif /* defined (WITHUSBHW_HOST) */
 /*
  * -- Insert your variables declaration here --
  */
@@ -61,7 +73,7 @@ USBD_HandleTypeDef hUsbDeviceHS;
  */
 /* USER CODE BEGIN 1 */
 
-
+#if defined (WITHUSBHW_DEVICE)
 // BOOTLOADER support
 static uint_fast8_t device_vbusbefore;
 
@@ -152,10 +164,6 @@ void MX_USB_DEVICE_Init(void)
 	USBD_AddClass(& hUsbDeviceHS, & USBD_CLASS_HID);
 #endif /* WITHUSBHID */
 
-	if (USBD_Start(&hUsbDeviceHS) != USBD_OK)
-	{
-		Error_Handler();
-	}
  /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
   
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
@@ -168,6 +176,81 @@ void MX_USB_DEVICE_DeInit(void)
 		Error_Handler();
 	}
 }
+
+#endif /* defined (WITHUSBHW_DEVICE) */
+
+#if defined (WITHUSBHW_HOST)
+
+
+/*
+ * user callback definition
+*/
+void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
+{
+
+	/* USER CODE BEGIN CALL_BACK_1 */
+	switch(id)
+	{
+	case HOST_USER_SELECT_CONFIGURATION:
+		break;
+
+	case HOST_USER_DISCONNECTION:
+		Appli_state = APPLICATION_DISCONNECT;
+		break;
+
+	case HOST_USER_CLASS_ACTIVE:
+		Appli_state = APPLICATION_READY;
+		break;
+
+	case HOST_USER_CONNECTION:
+		Appli_state = APPLICATION_START;
+		break;
+
+	default:
+		break;
+	}
+	/* USER CODE END CALL_BACK_1 */
+}
+// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+static void
+board_usb_tspool(void * ctx)
+{
+#if defined (WITHUSBHW_HOST)
+	USBH_Process(& hUsbHostHS);
+
+#endif /* defined (WITHUSBHW_HOST) */
+}
+
+void MX_USB_HOST_Init(void)
+{
+	static ticker_t usbticker;
+	/* Init Host Library,Add Supported Class and Start the library*/
+	USBH_Init(& hUsbHostHS, USBH_UserProcess, 0);
+
+#if WITHUSEUSBFLASH
+	USBH_RegisterClass(& hUsbHostHS, & USBH_msc);
+#endif /* WITHUSEUSBFLASH */
+#if 1
+	USBH_RegisterClass(& hUsbHostHS, & HUB_Class);
+	USBH_RegisterClass(& hUsbHostHS, & HID_Class);
+#endif /* WITHUSEUSBFLASH */
+	//ticker_initialize(& usbticker, 1, board_usb_tspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	//ticker_add(& usbticker);
+
+}
+
+void MX_USB_HOST_DeInit(void)
+{
+
+}
+
+void MX_USB_HOST_Process(void)
+{
+	USBH_Process(& hUsbHostHS);
+}
+
+#endif /* defined (WITHUSBHW_HOST) */
+
 /**
   * @}
   */
@@ -191,8 +274,13 @@ void MX_USB_DEVICE_DeInit(void)
 //	return SystemCoreClock;
 //}
 
+
+
+#endif /* WITHUSBHW */
+
 void board_usb_initialize(void)
 {
+	//PRINTF("board_usb_initialize\n");
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
 
@@ -201,24 +289,93 @@ void board_usb_initialize(void)
 
 #endif /* WITHUSBDEV_HSDESC */
 
-	  MX_USB_DEVICE_Init();
-
+#if defined (WITHUSBHW_DEVICE)
+	MX_USB_DEVICE_Init();
+#endif /* defined (WITHUSBHW_DEVICE) */
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+	MX_USB_HOST_Init();
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+	//PRINTF("board_usb_initialize done\n");
 }
 
 void board_usb_deinitialize(void)
 {
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+	MX_USB_HOST_DeInit();
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+#if defined (WITHUSBHW_DEVICE)
 	MX_USB_DEVICE_DeInit();
+#endif /* defined (WITHUSBHW_DEVICE) */
+#if (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC)
+	USB_HS_PHYCDeInit();
+#endif /* (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC) */
 }
 
+/* вызывается при разрешённых прерываниях. */
 void board_usb_activate(void)
 {
-
+	//PRINTF("board_usb_activate\n");
+#if defined (WITHUSBHW_DEVICE)
+	if (USBD_Start(& hUsbDeviceHS) != USBD_OK)
+	{
+		Error_Handler();
+	}
+#endif /* defined (WITHUSBHW_DEVICE) */
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+	if (USBH_Start(& hUsbHostHS) != USBH_OK)
+	{
+		Error_Handler();
+	}
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+	//PRINTF("board_usb_activate done\n");
 }
 
 void board_usb_deactivate(void)
 {
+	//PRINTF(PSTR("board_usb_deactivate start.\n"));
 
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+	USBH_Stop(& hUsbHostHS);
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+
+#if defined (WITHUSBHW_DEVICE)
+	USBD_Stop(& hUsbDeviceHS);
+#endif /* defined (WITHUSBHW_DEVICE) */
+
+	//PRINTF(PSTR("board_usb_deactivate done.\n"));
 }
-#endif /* WITHUSBHW */
+
+void board_usbh_polling(void)
+{
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+	MX_USB_HOST_Process();
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
+}
+
+uint_fast8_t hamradio_get_usbh_active(void)
+{
+#if WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI))
+	return hUsbHostHS.device.is_connected != 0 && hUsbHostHS.gState == HOST_CLASS;
+	return hUsbHostHS.device.is_connected != 0;
+#else
+	return  0;
+#endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
+}
+
+
+void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
+{
+	for (;;)
+	{
+		HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
+		if (p == NULL)
+		{
+			TP();
+			break;
+
+		}
+		PRINTF("USBH_HID_EventCallback: x/y=%d/%d, buttons=%d,%d,%d\n", (int) p->x, (int) p->y, (int) p->buttons [0], (int) p->buttons [1], (int) p->buttons [2]);
+	}
+}
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

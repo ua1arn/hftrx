@@ -54,7 +54,7 @@ enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 static gui_t gui = { 0, 0, TYPE_DUMMY, NULL, CANCELLED, 0, 0, 0, 0, 0, };
 static gui_element_t gui_elements [GUI_ELEMENTS_ARRAY_SIZE];
 static uint_fast8_t gui_element_count = 0;
-static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
+static button_t close_button = { 0, 0, CANCELLED, BUTTON_NON_LOCKED, 0, 0, NO_PARENT_WINDOW, NON_VISIBLE, UINTPTR_MAX, "btn_close", "", };
 
 void gui_set_encoder2_rotate (int_fast8_t rotate)
 {
@@ -125,9 +125,9 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	{
 		va_start(arg, message);
 
-		uint_fast8_t type = va_arg(arg, uint_fast8_t);
-		uintptr_t ptr = va_arg(arg, uintptr_t);
-		int_fast8_t action = va_arg(arg, int_fast8_t);
+		uint_fast8_t type = va_arg(arg, int);
+		uintptr_t ptr = (uintptr_t) va_arg(arg, void *);
+		int_fast8_t action = va_arg(arg, int);
 
 		va_end(arg);
 
@@ -150,7 +150,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	case WM_MESSAGE_ENC2_ROTATE:
 
 		va_start(arg, message);
-		int_fast8_t r = va_arg(arg, int_fast8_t);
+		int r = va_arg(arg, int);
 		va_end(arg);
 
 		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;				// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
@@ -177,7 +177,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		win->queue.data [win->queue.size].message = WM_MESSAGE_KEYB_CODE;
 		win->queue.data [win->queue.size].type = UINT8_MAX;
 		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
-		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
+		win->queue.data [win->queue.size].action = va_arg(arg, int);
 		win->queue.size ++;
 
 		va_end(arg);
@@ -226,7 +226,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	return 0;
 }
 
-wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action)
+wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int * action)
 {
 	if (! win->queue.size)
 		return WM_NO_MESSAGE;							// очередь сообщений пустая
@@ -255,6 +255,7 @@ void clean_wm_queue (window_t * win)
 	win->queue.size = 0;
 	memset(win->queue.data, 0, sizeof win->queue.data);
 }
+
 /* Запрос на обновление состояния элементов GUI */
 void gui_update(void)
 {
@@ -275,7 +276,7 @@ void reset_tracking(void)
 }
 
 /* Получить относительные координаты перемещения точки касания экрана */
-void get_gui_tracking(int_fast8_t * x, int_fast8_t * y)
+void get_gui_tracking(int_fast16_t * x, int_fast16_t * y)
 {
 	* x = gui.vector_move_x;
 	* y = gui.vector_move_y;
@@ -334,8 +335,20 @@ void * find_gui_element(element_type_t type, window_t * win, const char * name)
 		return NULL;
 		break;
 
+	case TYPE_TEXT_FIELD:
+		for (uint_fast8_t i = 0; i < win->tf_count; i ++)
+		{
+			text_field_t * tf = & win->tf_ptr [i];
+			if (! strcmp(tf->name, name))
+				return (text_field_t *) tf;
+		}
+		PRINTF("find_gui_element: text_field '%s' not found\n", name);
+		ASSERT(0);
+		return NULL;
+		break;
+
 	default:
-		PRINTF("find_gui_element: undefined type/n");
+		PRINTF("find_gui_element: undefined type %d\n", type);
 		ASSERT(0);
 		return NULL;
 	}
@@ -420,6 +433,11 @@ void elements_state (window_t * win)
 			button_t * bh = & b [i];
 			if (win->state)
 			{
+				if (bh->is_long_press && bh->is_repeating)
+				{
+					PRINTF("ERROR: invalid combination of properties 'is_long_press' and 'is_repeating' on button %s\n", bh->name);
+					ASSERT(0);
+				}
 				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
 				gui_elements [gui_element_count].link = bh;
 				gui_elements [gui_element_count].win = win;
@@ -512,6 +530,36 @@ void elements_state (window_t * win)
 		}
 	}
 
+	text_field_t * tf = win->tf_ptr;
+	if(tf != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->tf_count; i ++)
+		{
+			text_field_t * tff = & tf [i];
+			if (win->state)
+			{
+				ASSERT(gui_element_count < GUI_ELEMENTS_ARRAY_SIZE);
+				gui_elements [gui_element_count].link = (text_field_t *) tff;
+				gui_elements [gui_element_count].win = win;
+				gui_elements [gui_element_count].type = TYPE_TEXT_FIELD;
+				gui_element_count ++;
+				debug_num ++;
+				tff->record = calloc(tff->size, TEXT_ARRAY_SIZE);
+				GUI_MEM_ASSERT(tff->record);
+				tff->index = 0;
+			}
+			else
+			{
+				debug_num --;
+				gui_element_count --;
+				tff->visible = NON_VISIBLE;
+				free(tff->record);
+				tff->record = NULL;
+				ASSERT(gui_element_count >= gui.footer_buttons_count);
+			}
+		}
+	}
+
 	// инициализировать системную кнопку закрытия окна, если разрешено
 	if(win->is_close)
 	{
@@ -567,16 +615,19 @@ static void free_win_ptr (window_t * win)
 	free(win->lh_ptr);
 	free(win->sh_ptr);
 	free(win->ta_ptr);
+	free(win->tf_ptr);
 
 	win->bh_count = 0;
 	win->lh_count = 0;
 	win->sh_count = 0;
 	win->ta_count = 0;
+	win->tf_count = 0;
 
 	win->bh_ptr = NULL;
 	win->lh_ptr = NULL;
 	win->sh_ptr = NULL;
 	win->ta_ptr = NULL;
+	win->tf_ptr = NULL;
 //	PRINTF("free: %d %s\n", win->window_id, win->name);
 }
 
@@ -669,6 +720,18 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 				}
 			}
 
+			if (win->tf_ptr != NULL)
+			{
+				for (uint_fast8_t i = 0; i < win->tf_count; i++)
+				{
+					const text_field_t * tf = & win->tf_ptr [i];
+					xmax = (xmax > tf->x1 + tf->w) ? xmax : (tf->x1 + tf->w);
+					ymax = (ymax > tf->y1 + tf->h) ? ymax : (tf->y1+ tf->h);
+					ASSERT(xmax < WITHGUIMAXX);
+					ASSERT(ymax < WITHGUIMAXY);
+				}
+			}
+
 			if (win->sh_ptr != NULL)
 			{
 				for (uint_fast8_t i = 0; i < win->sh_count; i++)
@@ -730,6 +793,18 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			lh->y += shift_y;
 			ASSERT(lh->x + get_label_width(lh) < WITHGUIMAXX);
 			ASSERT(lh->y + get_label_height(lh) < WITHGUIMAXY);
+		}
+	}
+
+	if (win->tf_ptr != NULL)
+	{
+		for (uint_fast8_t i = 0; i < win->tf_count; i++)
+		{
+			text_field_t * tf = & win->tf_ptr [i];
+			tf->x1 += shift_x;
+			tf->y1 += shift_y;
+			ASSERT(tf->x1 + tf->w < WITHGUIMAXX);
+			ASSERT(tf->y1 + tf->h < WITHGUIMAXY);
 		}
 	}
 
@@ -1091,6 +1166,10 @@ void gui_initialize (void)
 	uint_fast8_t i = 0;
 	window_t * win = get_win(WINDOW_MAIN);
 
+#if defined (TSC1_TYPE)
+//	board_tsc_initialize();   // tsc имеет смысл инициализировать только при наличии touch GUI в конфигурации
+#endif /* defined (TSC1_TYPE) */
+
 	open_window(win);
 	gui.win [1] = NO_PARENT_WINDOW;
 	gui.footer_buttons_count = win->bh_count;
@@ -1117,6 +1196,7 @@ static void update_gui_elements_list(void)
 			p->visible = bh->visible;
 			p->is_trackable = 0;
 			p->is_long_press = bh->is_long_press;
+			p->is_repeating = bh->is_repeating;
 		}
 		else if (p->type == TYPE_LABEL)
 		{
@@ -1129,6 +1209,7 @@ static void update_gui_elements_list(void)
 			p->visible = lh->visible;
 			p->is_trackable = lh->is_trackable;
 			p->is_long_press = 0;
+			p->is_repeating = 0;
 		}
 		else if (p->type == TYPE_SLIDER)
 		{
@@ -1141,6 +1222,7 @@ static void update_gui_elements_list(void)
 			p->visible = sh->visible;
 			p->is_trackable = 1;
 			p->is_long_press = 0;
+			p->is_repeating = 0;
 		}
 		else if (p->type == TYPE_TOUCH_AREA)
 		{
@@ -1153,6 +1235,20 @@ static void update_gui_elements_list(void)
 			p->visible = ta->visible;
 			p->is_trackable = ta->is_trackable;
 			p->is_long_press = 0;
+			p->is_repeating = 0;
+		}
+		else if (p->type == TYPE_TOUCH_AREA)
+		{
+			text_field_t * tf = (text_field_t *) p->link;
+			p->x1 = (tf->x1) < 0 ? 0 : (tf->x1);
+			p->x2 = (tf->x1 + tf->w) > WITHGUIMAXX ? WITHGUIMAXX : (tf->x1 + tf->w);
+			p->y1 = (tf->y1) < 0 ? 0 : (tf->y1);
+			p->y2 = (tf->y1 + tf->h) > WITHGUIMAXY ? WITHGUIMAXY : (tf->y1 + tf->h);
+			p->state = tf->state;
+			p->visible = tf->visible;
+			p->is_trackable = 0;
+			p->is_long_press = 0;
+			p->is_repeating = 0;
 		}
 	}
 }
@@ -1164,6 +1260,14 @@ static void slider_process(slider_t * sl)
 	if (v >= 0 && v <= sl->size / sl->step)
 		sl->value = v;
 	reset_tracking();
+}
+
+/* Добавить строку в текстовое поле */
+void textfield_add_string(text_field_t * tf, char * str)
+{
+	strcpy(tf->record [tf->index].text, str);
+	tf->index ++;
+	tf->index = tf->index >= tf->size ? 0 : tf->index;
 }
 
 /* Селектор запуска функций обработки событий */
@@ -1182,7 +1286,7 @@ static void set_state_record(gui_element_t * val)
 			gui.selected_type = TYPE_BUTTON;
 			gui.selected_link = val;
 			bh->state = val->state;
-			if (bh->state == RELEASED || bh->state == LONG_PRESSED)
+			if (bh->state == RELEASED || bh->state == LONG_PRESSED || bh->state == PRESS_REPEATING)
 			{
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_BUTTON, bh, bh->state == LONG_PRESSED ? LONG_PRESSED : PRESSED))
 					dump_queue(val->win);
@@ -1255,6 +1359,7 @@ static void process_gui(void)
 	static window_t * w = NULL;
 	const uint_fast8_t long_press_limit = 20;
 	static uint_fast8_t is_long_press = 0;		// 1 - долгое нажатие уже обработано
+	static uint_fast8_t is_repeating = 0, repeating_cnt = 0;
 
 #if defined (TSC1_TYPE)
 	if (board_tsc_getxy(& tx, & ty))
@@ -1289,6 +1394,7 @@ static void process_gui(void)
 			{
 				gui.state = PRESSED;
 				is_long_press = 0;
+				is_repeating = 0;
 				long_press_counter = 0;
 				break;
 			}
@@ -1316,29 +1422,58 @@ static void process_gui(void)
 				gui.is_tracking = 1;
 //				PRINTF(PSTR("move x: %d, move y: %d\n"), gui.vector_move_x, gui.vector_move_y);
 			}
+
 			p->state = PRESSED;
 			set_state_record(p);
 
 			x_old = gui.last_pressed_x;
 			y_old = gui.last_pressed_y;
 		}
-		else if (w->x1 + p->x1 < gui.last_pressed_x && w->x1 + p->x2 > gui.last_pressed_x
-				&& w->y1 + p->y1 < gui.last_pressed_y && w->y1 + p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
+		else if (w->x1 + p->x1 < gui.last_pressed_x && w->x1 + p->x2 > gui.last_pressed_x &&
+				 w->y1 + p->y1 < gui.last_pressed_y && w->y1 + p->y2 > gui.last_pressed_y && ! gui.is_after_touch)
 		{
 			if (gui.is_touching_screen)
 			{
 				ASSERT(p != NULL);
 				p->state = PRESSED;
-				set_state_record(p);
 
-				if(gui.state != LONG_PRESSED && ! is_long_press && p->is_long_press)
-					long_press_counter ++;
-
-				if(long_press_counter > long_press_limit && p->is_long_press)
+				if (is_repeating)
 				{
-					long_press_counter = 0;
-					gui.state = LONG_PRESSED;
+					repeating_cnt ++;
+					if (repeating_cnt > autorepeat_delay)
+					{
+						repeating_cnt = 0;
+						p->state = PRESS_REPEATING;		// для запуска обработчика нажатия
+						set_state_record(p);
+					}
 				}
+				else
+					set_state_record(p);
+
+				if (p->is_long_press)
+				{
+					if(gui.state != LONG_PRESSED && ! is_long_press)
+						long_press_counter ++;
+
+					if(long_press_counter > long_press_limit)
+					{
+						long_press_counter = 0;
+						gui.state = LONG_PRESSED;
+					}
+				}
+				else if (p->is_repeating)
+				{
+					if (! is_repeating)
+						long_press_counter ++;
+
+					if(long_press_counter > long_press_limit)
+					{
+						long_press_counter = 0;
+						repeating_cnt = 0;
+						is_repeating = 1;
+					}
+				}
+
 			}
 			else
 				gui.state = RELEASED;
@@ -1352,6 +1487,7 @@ static void process_gui(void)
 			gui.is_after_touch = 1; 	// точка непрерывного касания вышла за пределы выбранного элемента, не поддерживающего tracking
 		}
 	}
+
 	if (gui.state == RELEASED)
 	{
 		ASSERT(p != NULL);
@@ -1364,7 +1500,7 @@ static void process_gui(void)
 		gui.state = CANCELLED;
 		gui.is_tracking = 0;
 	}
-	if (gui.state == LONG_PRESSED)
+	else if (gui.state == LONG_PRESSED)
 	{
 		p->state = LONG_PRESSED;		// для запуска обработчика нажатия
 		set_state_record(p);
@@ -1459,6 +1595,20 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 						slider_t * sh = (slider_t *) p->link;
 						if (sh->visible && sh->parent == win->window_id)
 							draw_slider(sh);
+					}
+					else if (p->type == TYPE_TEXT_FIELD)
+					{
+						text_field_t * tf = (text_field_t *) p->link;
+						if (tf->visible && tf->parent == win->window_id)
+						{
+							int8_t j = tf->index - 1;
+							for (uint8_t i = 0; i < tf->size; i ++)
+							{
+								j = j < 0 ? (tf->size - 1) : j;
+								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * i, tf->record[j].text, tf->color_text);
+								j --;
+							}
+						}
 					}
 				}
 			}

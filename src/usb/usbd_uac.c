@@ -34,10 +34,10 @@ static unsigned USBD_fill_range_lay1pb(uint8_t * b, uint_fast8_t v)
 	and the RES subattribute must be set to zero.
 */
 
-	n += USBD_poke_u16(b + 0, 1);	// number of subranges
-	n += USBD_poke_u8(b + 2, v);	// MIN
-	n += USBD_poke_u8(b + 3, v);	// MAX
-	n += USBD_poke_u8(b + 4, 0);	// RES
+	n += USBD_poke_u16(b + n, 1);	// number of subranges
+	n += USBD_poke_u8(b + n, v);	// MIN
+	n += USBD_poke_u8(b + n, v);	// MAX
+	n += USBD_poke_u8(b + n, 0);	// RES
 
 	return n;
 }
@@ -53,10 +53,10 @@ static unsigned USBD_fill_range_lay2pb(uint8_t * b, uint_fast16_t v)
 	and the RES subattribute must be set to zero.
 */
 
-	n += USBD_poke_u16(b + 0, 1);	// number of subranges
-	n += USBD_poke_u16(b + 2, v);	// MIN
-	n += USBD_poke_u16(b + 3, v);	// MAX
-	n += USBD_poke_u16(b + 4, 0);	// RES
+	n += USBD_poke_u16(b + n, 1);	// number of subranges
+	n += USBD_poke_u16(b + n, v);	// MIN
+	n += USBD_poke_u16(b + n, v);	// MAX
+	n += USBD_poke_u16(b + n, 0);	// RES
 
 	return n;
 }
@@ -72,10 +72,10 @@ static unsigned USBD_fill_range_lay3pb(uint8_t * b, uint_fast32_t v)
 	and the RES subattribute must be set to zero.
 */
 
-	n += USBD_poke_u16(b + 0, 1);	// number of subranges
-	n += USBD_poke_u32(b + 2, v);	// MIN
-	n += USBD_poke_u32(b + 6, v);	// MAX
-	n += USBD_poke_u32(b + 10, 0);	// RES
+	n += USBD_poke_u16(b + n, 1);	// number of subranges
+	n += USBD_poke_u32(b + n, v);	// MIN
+	n += USBD_poke_u32(b + n, v);	// MAX
+	n += USBD_poke_u32(b + n, 0);	// RES
 
 	return n;
 }
@@ -92,32 +92,29 @@ static unsigned USBD_fill_range_lay3pb2opt(uint8_t * b, uint_fast32_t v1, uint_f
 	and the RES subattribute must be set to zero.
 */
 
-	n += USBD_poke_u16(b + 0, 2);	// number of subranges
-	n += USBD_poke_u32(b + 2, v1);	// MIN
-	n += USBD_poke_u32(b + 6, v1);	// MAX
-	n += USBD_poke_u32(b + 10, 0);	// RES
-	n += USBD_poke_u32(b + 14, v2);	// MIN
-	n += USBD_poke_u32(b + 18, v2);	// MAX
-	n += USBD_poke_u32(b + 22, 0);	// RES
+	n += USBD_poke_u16(b + n, 2);	// number of subranges
+	n += USBD_poke_u32(b + n, v1);	// MIN
+	n += USBD_poke_u32(b + n, v1);	// MAX
+	n += USBD_poke_u32(b + n, 0);	// RES
+	n += USBD_poke_u32(b + n, v2);	// MIN
+	n += USBD_poke_u32(b + n, v2);	// MAX
+	n += USBD_poke_u32(b + n, 0);	// RES
 
 	return n;
 }
-
-
-
 
 uint_fast16_t usbd_getuacinmaxpacket(void)
 {
 	uint_fast16_t maxpacket = UACIN_AUDIO48_DATASIZE;
 
-#if ! WITHUSBUACIN2
+#if ! WITHUSBUACIN2 || WITHUSBUACINOUTRENESAS
 	#if WITHRTS96
 		maxpacket = ulmax16(maxpacket, UACIN_RTS96_DATASIZE);
 	#endif /* WITHRTS96 */
 	#if WITHRTS192
 		maxpacket = ulmax16(maxpacket, UACIN_RTS192_DATASIZE);
 	#endif /* WITHRTS192 */
-#endif /* ! WITHUSBUACIN2 */
+#endif /* ! WITHUSBUACIN2 || WITHUSBUACINOUTRENESAS */
 	return maxpacket;
 }
 

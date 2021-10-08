@@ -1481,7 +1481,7 @@ HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint8_t freq)
 }
 
 /**
-  * @brief  USB_OTG_ResetPort : Reset Host Port
+  * @brief  USB_ResetPort : Reset Host Port
   * @param  USBx  Selected device
   * @retval HAL status
   * @note (1)The application must wait at least 10 ms
@@ -1502,6 +1502,29 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
   HAL_Delay(100U);                                 /* See Note #1 */
   USBx_HPRT0 = ((~USB_OTG_HPRT_PRST) & hprt0);
   HAL_Delay(10U);
+
+  return HAL_OK;
+}
+
+/**
+  * @brief  USB_ResetPort2 : Reset Host Port without long delay
+  * @param  USBx  Selected device
+  * @retval HAL status
+  * @note (1)The application must wait at least 10 ms
+  *   before clearing the reset bit.
+  */
+HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t resetActiveState)
+{
+  uint32_t USBx_BASE = (uint32_t)USBx;
+
+  __IO uint32_t hprt0 = 0U;
+
+  hprt0 = USBx_HPRT0;
+
+  hprt0 &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |
+             USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG | USB_OTG_HPRT_PRST);
+
+  USBx_HPRT0 = (!! resetActiveState * USB_OTG_HPRT_PRST | hprt0);
 
   return HAL_OK;
 }
@@ -1591,7 +1614,7 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
                               uint8_t epnum, uint8_t dev_address, uint8_t speed,
-                              uint8_t ep_type, uint16_t mps)
+                              uint8_t ep_type, uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint32_t USBx_BASE = (uint32_t)USBx;
@@ -1600,6 +1623,11 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
 
   /* Clear old interrupt conditions for this host channel. */
   USBx_HC((uint32_t)ch_num)->HCINT = 0xFFFFFFFFU;
+
+  USBx_HC((uint32_t)ch_num)->HCSPLT = (USBx_HC((uint32_t)ch_num)->HCSPLT & ~ (USB_OTG_HCSPLT_HUBADDR_Msk | USB_OTG_HCSPLT_PRTADDR_Msk)) |
+		  ((uint32_t) tt_hubaddr < USB_OTG_HCSPLT_HUBADDR_Pos) |
+		  ((uint32_t) tt_prtaddr < USB_OTG_HCSPLT_PRTADDR_Pos) |
+		  0;
 
   /* Enable channel interrupts required for this transfer. */
   switch (ep_type)
@@ -2053,6 +2081,14 @@ HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx)
 /**
   * @}
   */
+
+
+uint_fast8_t
+USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
+{
+	return (USBx->CID & (0x1uL << 8)) != 0U;
+}
+
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 #endif /* defined (HAL_PCD_MODULE_ENABLED) || defined (HAL_HCD_MODULE_ENABLED) */
 

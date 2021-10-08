@@ -57,6 +57,7 @@ SECTIONS
 		__Vectors_Size = __Vectors_End - __Vectors;
 
 		*(.text*)
+		*(.initfunc*)
 
 		KEEP(*(.init))
 		KEEP(*(.fini))
@@ -76,6 +77,7 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.initdata*)
 
 		KEEP(*(.eh_frame*))
 		. = ALIGN(4);
@@ -222,7 +224,7 @@ SECTIONS
 		KEEP(*(.heap*))
 		. = ALIGN(4);
 		__HeapLimit = .;
-	} > RAM_D2
+	} > RAM_D3
 
 	.noinit (NOLOAD):
 	{

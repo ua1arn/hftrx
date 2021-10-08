@@ -159,7 +159,7 @@ CDC_StateTypeDef;
 /*Line coding structure*/
 typedef union _CDC_LineCodingStructure
 {
-  uint8_t Array[LINE_CODING_STRUCTURE_SIZE];
+	__ALIGN4k_BEGIN uint8_t Array[LINE_CODING_STRUCTURE_SIZE] __ALIGN4k_END;
 
   struct
   {
@@ -325,7 +325,7 @@ typedef struct
 {
   uint8_t              NotifPipe;
   uint8_t              NotifEp;
-  uint8_t              buff[8];
+  //uint8_t              buff[8];
   uint16_t             NotifEpSize;
 }
 CDC_CommItfTypedef ;
@@ -336,7 +336,7 @@ typedef struct
   uint8_t              OutPipe;
   uint8_t              OutEp;
   uint8_t              InEp;
-  uint8_t              buff[8];
+  //uint8_t              buff[8];
   uint16_t             OutEpSize;
   uint16_t             InEpSize;
 }
@@ -358,6 +358,8 @@ typedef struct _CDC_Process
   CDC_DataStateTypeDef              data_tx_state;
   CDC_DataStateTypeDef              data_rx_state;
   uint8_t                           Rx_Poll;
+
+  USBH_TargetTypeDef target;
 }
 CDC_HandleTypeDef;
 

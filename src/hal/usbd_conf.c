@@ -21,10 +21,21 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+#include "formats.h"
 
 #if WITHUSBHW
 
-#include "formats.h"
+void Error_Handler(void)
+{
+	ASSERT(0);
+	for (;;)
+		;
+}
+
+#endif /* WITHUSBHW */
+
+#if WITHUSBHW && defined (WITHUSBHW_DEVICE)
+
 #include "gpio.h"
 #include "src/usb/usbch9.h"
 
@@ -56,11 +67,6 @@ RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
 /* USB Device Core handle declaration */
 static RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
 
-/* HCD Handle Structure */
-static RAMBIGDTCM __ALIGN_BEGIN HCD_HandleTypeDef hhcd_USB_OTG __ALIGN_END;
-/* USB Host Core handle declaration */
-static RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
-
 //
 //typedef enum {
 //  APPLICATION_IDLE = 0,
@@ -74,9 +80,7 @@ static RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUSB_Host __ALIGN_END;
 
 
 /* USER CODE BEGIN 1 */
-/**
-  * @brief This function handles USB On The Go HS global interrupt.
-  */
+
 void OTG_HS_IRQHandler(void)
 {
   /* USER CODE BEGIN OTG_HS_IRQn 0 */
@@ -129,44 +133,6 @@ static void device_USBI0_IRQHandler(void)
 static void device_USBI1_IRQHandler(void)
 {
 	HAL_PCD_IRQHandler(& hpcd_USB_OTG);
-}
-
-static void host_USBI0_IRQHandler(void)
-{
-//	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
-}
-
-static void host_USBI1_IRQHandler(void)
-{
-//	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
-}
-
-void host_OTG_HS_EP1_IN_IRQHandler(void)
-{
-#if defined (WITHUSBHW_HOST)
-	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
-#endif /* defined (WITHUSBHW_HOST) */
-}
-
-void host_OTG_FS_IRQHandler(void)
-{
-#if defined (WITHUSBHW_HOST)
-	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
-#endif /* defined (WITHUSBHW_HOST) */
-}
-
-void host_OTG_HS_IRQHandler(void)
-{
-#if defined (WITHUSBHW_HOST)
-	HAL_HCD_IRQHandler(& hhcd_USB_OTG);
-#endif /* defined (WITHUSBHW_HOST) */
-}
-
-void Error_Handler(void)
-{
-	ASSERT(0);
-	for (;;)
-		;
 }
 
 /* External functions --------------------------------------------------------*/
@@ -285,7 +251,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 			//arm_hardware_set_handler_system(OTG_HS_EP1_OUT_IRQn, device_OTG_HS_EP1_OUT_IRQHandler);
 			//arm_hardware_set_handler_system(OTG_HS_EP1_IN_IRQn, device_OTG_HS_EP1_IN_IRQHandler);
 		}
-		arm_hardware_set_handler_system(OTG_IRQn, OTG_HS_IRQHandler);
+		arm_hardware_set_handler_system(OTG_IRQn, device_OTG_HS_IRQHandler);
 
 	}
 
@@ -398,7 +364,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		{
 			USBD_HS_ULPI_INITIALIZE();
 
-			PRINTF(PSTR("HAL_PCD_MspInit: HS and ULPI\n"));
+			PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS and ULPI\n"));
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;		/* USB/OTG HS  */
 			(void) RCC->AHB1ENR;
 			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN;		/* USB/OTG HS  */
@@ -412,7 +378,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		{
 			USBD_HS_FS_INITIALIZE();
 
-			PRINTF(PSTR("HAL_PCD_MspInit: HS without ULPI\n"));
+			PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS without ULPI\n"));
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;	/* USB/OTG HS  */
 			(void) RCC->AHB1ENR;
 			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN; /* USB/OTG HS  */
@@ -534,199 +500,6 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 #endif
 }
 
-
-void HAL_HCD_MspInit(HCD_HandleTypeDef* hpcd)
-{
-#if CPUSTYLE_R7S721
-	if (hpcd->Instance == & USB200)
-	{
-		arm_hardware_set_handler_system(USBI0_IRQn, host_USBI0_IRQHandler);
-
-		/* ---- Supply clock to the USB20(channel 0) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		HARDWARE_USB0_INITIALIZE();
-	}
-	else if (hpcd->Instance == & USB201)
-	{
-		arm_hardware_set_handler_system(USBI1_IRQn, host_USBI1_IRQHandler);
-
-		/* ---- Supply clock to the USB20(channel 1) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		HARDWARE_USB1_INITIALIZE();
-	}
-#else
-	//PRINTF(PSTR("HAL_HCD_MspInit()\n"));
-	if (hpcd->Instance == USB_OTG_FS)
-	{
-		#if CPUSTYLE_STM32MP1
-
-			// Set 3.3 volt DETECTOR enable
-			PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
-			(void) PWR->CR3;
-			while ((PWR->CR3 & PWR_CR3_USB33DEN_Msk) == 0)
-				;
-
-			// Wait 3.3 volt REGULATOR ready
-			while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
-				;
-
-			RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
-			(void) RCC->MP_AHB2ENSETR;
-			RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
-			(void) RCC->MP_AHB2LPENSETR;
-
-			arm_hardware_set_handler_system(OTG_IRQn, host_OTG_FS_IRQHandler);
-
-		#elif CPUSTYLE_STM32H7XX
-
-			//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-			//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
-			USBD_FS_INITIALIZE();
-
-			RCC->AHB1ENR |= RCC_AHB1ENR_USB2OTGFSEN_Msk;	/* USB/OTG FS  */
-			(void) RCC->AHB1ENR;
-			RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN_Msk;	/* USB/OTG FS companion - VBUS? */
-			(void) RCC->APB2ENR;
-
-			arm_hardware_set_handler_system(OTG_FS_IRQn, host_OTG_FS_IRQHandler);
-
-		#else
-			//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-			//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
-
-			USBD_FS_INITIALIZE();
-
-			RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN_Msk;	/* USB/OTG FS  */
-			(void) RCC->AHB2ENR;
-			RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN_Msk;	/* USB/OTG FS companion - VBUS? */
-			(void) RCC->APB2ENR;
-
-			arm_hardware_set_handler_system(OTG_FS_IRQn, host_OTG_FS_IRQHandler);
-
-		#endif
-	}
-	else if (hpcd->Instance == USB_OTG_HS)
-	{
-	#if CPUSTYLE_STM32MP1
-
-		// Set 3.3 volt DETECTOR enable
-		PWR->CR3 |= PWR_CR3_USB33DEN_Msk;
-		(void) PWR->CR3;
-		while ((PWR->CR3 & PWR_CR3_USB33DEN_Msk) == 0)
-			;
-
-		// Wait 3.3 volt REGULATOR ready
-		while ((PWR->CR3 & PWR_CR3_USB33RDY_Msk) == 0)
-			;
-
-		RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
-		(void) RCC->MP_AHB2ENSETR;
-		RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
-		(void) RCC->MP_AHB2LPENSETR;
-
-		arm_hardware_set_handler_system(OTG_IRQn, host_OTG_HS_IRQHandler);
-
-	#elif CPUSTYLE_STM32H7XX
-
-		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-		//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
-		USBD_FS_INITIALIZE();
-
-		RCC->AHB1ENR |= RCC_AHB1ENR_USB1OTGHSEN_Msk;	/* USB/OTG HS  */
-		(void) RCC->AHB1ENR;
-		RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN_Msk;	/* USB/OTG HS companion - VBUS? */
-		(void) RCC->APB2ENR;
-
-		arm_hardware_set_handler_system(OTG_HS_IRQn, host_OTG_HS_IRQHandler);
-
-	#else
-		//const uint_fast32_t stm32f4xx_pllq = arm_hardware_stm32f7xx_pllq_initialize();	// Настроить выход PLLQ на 48 МГц
-		//PRINTF(PSTR("HAL_HCD_MspInit: stm32f4xx_pllq=%lu, freq=%lu\n"), (unsigned long) stm32f4xx_pllq, PLL_FREQ / stm32f4xx_pllq);
-
-		USBD_FS_INITIALIZE();
-
-		RCC->AHB2ENR |= RCC_AHB2ENR_OTGFSEN_Msk;	/* USB/OTG HS  */
-		(void) RCC->AHB2ENR;
-		RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN_Msk;	/* USB/OTG HS companion - VBUS? */
-		(void) RCC->APB2ENR;
-
-		arm_hardware_set_handler_system(OTG_HS_IRQn, host_OTG_HS_IRQHandler);
-
-
-	#endif
-	}
-	else
-	{
-		ASSERT(0);
-	}
-#endif /*  */
-}
-
-void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
-{
-#if CPUSTYLE_R7S721
-	if (hpcd->Instance == & USB200)
-	{
-		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_Disable(int_id);
-
-		/* ---- Supply clock to the USB20(channel 0) ---- */
-		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		//(void) CPG.STBCR7;			/* Dummy read */
-
-		//HARDWARE_USB0_UNINITIALIZE();
-
-	}
-	else if (hpcd->Instance == & USB201)
-	{
-		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_Disable(int_id);
-
-		/* ---- Supply clock to the USB20(channel 1) ---- */
-		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
-		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
-		(void) CPG.STBCR7;			/* Dummy read */
-
-		//HARDWARE_USB1_UNINITIALIZE();
-	}
-	hpcd->Instance->SYSCFG0 &= ~ USB_SYSCFG_USBE;
-	hpcd->Instance->INTENB0 = 0;
-	hpcd->Instance->INTENB1 = 0;
-
-#elif CPUSTYLE_STM32MP1
-
-	if (hpcd->Instance == USB_OTG_HS)
-	{
-		/* Peripheral interrupt Deinit*/
-		IRQ_Disable(OTG_IRQn);
-	}
-
-#else
-
-	#if defined (USB_OTG_HS)
-		if (hpcd->Instance == USB_OTG_HS)
-		{
-			/* Peripheral interrupt Deinit*/
-			NVIC_DisableIRQ(OTG_HS_IRQn);
-		}
-	#endif /* defined (USB_OTG_HS) */
-
-	#if defined (USB_OTG_FS)
-		if (hpcd->Instance == USB_OTG_FS)
-		{
-			/* Peripheral interrupt Deinit*/
-			NVIC_DisableIRQ(OTG_FS_IRQn);
-		}
-	#endif /* defined (USB_OTG_FS) */
-
-#endif
-}
-
 /**
   * @brief  Setup stage callback
   * @param  hpcd: PCD handle
@@ -738,6 +511,10 @@ static void PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd)
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 {
+#if 0
+	static unsigned offs;
+	vtty_printhex_irqsystem((offs += 256) & 0xFFFF, (uint8_t *)hpcd->Setup, 8);
+#endif
   USBD_LL_SetupStage((USBD_HandleTypeDef*)hpcd->pData, (uint8_t *)hpcd->Setup);
 }
 
@@ -771,6 +548,28 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum)
   USBD_LL_DataInStage((USBD_HandleTypeDef*)hpcd->pData, epnum, hpcd->IN_ep[epnum].xfer_buff);
 }
 
+
+static volatile unsigned sofcount;
+static uint32_t softicks;
+unsigned hamradio_get__getsoffreq(void)
+{
+#if WITHUSBHW && defined (WITHUSBHW_DEVICE)
+
+	system_disableIRQ();
+	unsigned count = sofcount;
+	sofcount = 0;
+	system_enableIRQ();
+
+	uint32_t nowticks = sys_now();
+	uint32_t difftime = nowticks - softicks;
+	softicks = nowticks;
+	unsigned n = count * 1000 / difftime;
+	return n;
+#else
+	return  0;
+#endif /* WITHUSBHW && defined (WITHUSBHW_DEVICE) */
+}
+
 /**
   * @brief  SOF callback.
   * @param  hpcd: PCD handle
@@ -782,6 +581,7 @@ static void PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 void HAL_PCD_SOFCallback(PCD_HandleTypeDef *hpcd)
 #endif /* USE_HAL_PCD_REGISTER_CALLBACKS */
 {
+	++ sofcount;
   USBD_LL_SOF((USBD_HandleTypeDef*)hpcd->pData);
 }
 
@@ -1496,19 +1296,7 @@ static void usbd_fifo_initialize(PCD_HandleTypeDef * hpcd, uint_fast16_t fullsiz
 
 #endif /* (CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F) */
 
-uint_fast8_t
-USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
-{
-#if CPUSTYLE_R7S721
-	return 1;
-#elif CPUSTYLE_STM32MP1
-	return 1;
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32F7XX
-	return (USBx->CID & (0x1uL << 8)) != 0U;
-#else
-	return 0;
-#endif
-}
+#if defined (WITHUSBHW_DEVICE)
 
 static uint_fast8_t hardware_usbd_get_vbusnow0(void)
 {
@@ -1642,6 +1430,8 @@ USBD_StatusTypeDef USBD_LL_DeInit(USBD_HandleTypeDef *pdev)
 
   return usb_status;
 }
+
+#endif /* defined (WITHUSBHW_DEVICE) */
 
 /**
   * @brief  Starts the low level portion of the device driver.
@@ -1970,6 +1760,6 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status)
   return usb_status;
 }
 
-#endif /* WITHUSBHW */
+#endif /* WITHUSBHW && defined (WITHUSBHW_DEVICE) */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

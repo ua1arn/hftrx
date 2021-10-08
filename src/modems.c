@@ -544,7 +544,9 @@ void modem_initialze(void)
 #endif
 
 	ticker_initialize(& modemticker1S, NTICKS(1000), modem_spool_1S, NULL);	// вызывается с частотой 1 герц
+	ticker_add(& modemticker1S);
 	ticker_initialize(& modemticker, 1, modem_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+	ticker_add(& modemticker);
 }
 modem_spool_1S
 

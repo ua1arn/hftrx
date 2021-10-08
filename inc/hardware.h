@@ -160,7 +160,7 @@ extern "C" {
 
 	#define CORE_CM7 1	/* for STM32H745 dual-core config */
 
-	#include "armcpu/stm32h7xx.h"
+	#include "arch/stm32h7xx/stm32h7xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
@@ -184,7 +184,7 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM7	1		/* архитектура процессора CORTEX M7 */
 
-	#include "armcpu/stm32f7xx.h"
+	#include "arch/stm32f7xx/stm32f7xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
 	#define ALIGNX_END /* nothing */
@@ -207,7 +207,7 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M4 */
 
-	#include "armcpu/stm32f4xx.h"
+	#include "arch/stm32f4xx/stm32f4xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -231,7 +231,7 @@ extern "C" {
 	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
 
 	// STM32F303VC processors
-	#include "armcpu/stm32f30x.h"
+	#include "arch/stm32f30x/stm32f30x.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -249,7 +249,7 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM3	1		/* архитектура процессора CORTEX M3 */
 
-	#include "armcpu/stm32f1xx.h"
+	#include "arch/stm32f1xx/stm32f1xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -267,7 +267,7 @@ extern "C" {
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
 	
-	#include "armcpu/stm32f0xx.h"
+	#include "arch/stm32f0xx/stm32f0xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -284,7 +284,7 @@ extern "C" {
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
 	#define CPUSTYLE_STM32F		1		/* архитектура процессора STM32F */
 	#define CPUSTYLE_ARM_CM0	1		/* архитектура процессора CORTEX M0 */
-	#include "armcpu/stm32l0xx.h"
+	#include "arch/stm32l0xx/stm32l0xx.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(4)))
 	#define ALIGNX_END /* nothing */
@@ -337,7 +337,7 @@ extern "C" {
 	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
 	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
 
-	#include "armcpu/MK20D5.h"
+	#include "arch/mk20/MK20D5.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
@@ -353,13 +353,13 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM7TDMI	1
-	#include "armcpu/at91sam7s64.h"
+	#include "arch/at91sam/at91sam7s64.h"
 
 	#define __ASM            __asm           /*!< asm keyword for GNU Compiler          */
 	#define __INLINE         inline          /*!< inline keyword for GNU Compiler       */
 	#define __STATIC_INLINE  static inline
 
-	#include "tdmi7_gcc.h"
+	#include "arch/tdmi7_gcc.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
@@ -381,7 +381,7 @@ extern "C" {
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 	#define	CPUSTYLE_ARM9		1
 
-	#include "armcpu/at91sam9xe512.h"
+	#include "arch/at91sam/at91sam9xe512.h"
 
 	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
 	#define ALIGNX_END /* nothing */
@@ -390,7 +390,7 @@ extern "C" {
 	#define __INLINE         inline          /*!< inline keyword for GNU Compiler       */
 	#define __STATIC_INLINE  static inline
 
-	#include "tdmi7_gcc.h"
+	#include "arch/tdmi7_gcc.h"
 
 	#if __ARM_NEON
 		//#define ARM_MATH_NEON 1
@@ -413,9 +413,9 @@ extern "C" {
 
 	//#define TARGET_RZA1             (TARGET_RZA1L)	// перенесено в Makefile
 
-	#include "armcpu/Renesas_RZ_A1.h"	// IRQs, some bitss
-	#include "armcpu/iodefine.h"		// peripherial registers
-	#include "armcpu/rza_io_regrw.h"	// iobitmasks
+	#include "arch/renesasRZA1/Renesas_RZ_A1.h"	// IRQs, some bitss
+	#include "arch/renesasRZA1/iodefine.h"		// peripherial registers
+	#include "arch/renesasRZA1/rza_io_regrw.h"	// iobitmasks
 
 	#include "irq_ctrl.h"
 
@@ -445,7 +445,7 @@ extern "C" {
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "armcpu/stm32mp1xx.h"
+	#include "arch/stm32mp1xx/stm32mp1xx.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
@@ -472,7 +472,7 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "armcpu/zynq7000.h"
+	#include "arch/zynq/zynq7000.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 32
@@ -488,6 +488,30 @@ extern "C" {
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
+#elif CPUSTYLE_XCZU
+	// Zynq UltraScale+ Device
+	// r0p4-50rel0
+	// XCZU2..XCZU9, XCZU11
+
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "arch/zynqmp/zynquscale.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 32
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(32)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+
+
 #elif CPUSTYPE_ALLWNV3S
 	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
 	//
@@ -501,7 +525,7 @@ extern "C" {
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "armcpu/alwnrv3s.h"
+	#include "arch/alwnrv3s/alwnrv3s.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
@@ -653,8 +677,6 @@ void hardware_adc_initialize(void);
 // Sample usage:
 ///* все возможные в данной конфигурации фильтры */
 //#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_1P8 | IF3_FMASK_2P7 | IF3_FMASK_3P1)
-
-void spool_secound(void * ctx);		// вызывается раз в секунду из таймерного прерывания.
 
 void spool_nmeapps(void);	// Обработчик вызывается при приходе очередного импульса PPS
 
@@ -977,7 +999,7 @@ uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2
 
 typedef struct ticker_tag
 {
-	LIST_ENTRY item;
+	VLIST_ENTRY item;
 	unsigned period;
 	//unsigned fired;
 	unsigned ticks;		// текущее количество тиков
@@ -985,15 +1007,21 @@ typedef struct ticker_tag
 	void * ctx;
 } ticker_t;
 
+void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
+void ticker_add(ticker_t * p);
+void ticker_del(ticker_t * p);
+
 typedef struct adcdone_tag
 {
-	LIST_ENTRY item;
+	VLIST_ENTRY item;
 	void (* cb)(void *);
 	void * ctx;
 } adcdone_t;
 
-void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx);
 void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
+void adcdone_add(adcdone_t * p);
+void adcdone_del(adcdone_t * p);
+
 void bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_deffereddetach(void * arg);
@@ -1066,7 +1094,7 @@ extern uint8_t myIP [4];
 extern uint8_t myNETMASK [4];
 extern uint8_t myGATEWAY [4];
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #include "zynq_test.h"
 
@@ -1078,7 +1106,7 @@ void xc7z_gpio_input(uint8_t pin);
 void xc7z_gpio_output(uint8_t pin);
 void xc7z_dds_ftw(const uint_least64_t * val);
 void xc7z_dds_rts(const uint_least64_t * val);
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 /* получить 32-бит значение */
 uint_fast32_t
@@ -1138,6 +1166,8 @@ uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b);
 uint_fast32_t ulmax32(uint_fast32_t a, uint_fast32_t b);
 uint_fast16_t ulmin16(uint_fast16_t a, uint_fast16_t b);
 uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
+unsigned long ulmin(unsigned long a, unsigned long b);
+unsigned long ulmax(unsigned long a, unsigned long b);
 
 #define  HI_32BY(w)  (((w) >> 24) & 0xFF)   /* Extract 31..24 bits from unsigned word */
 #define  HI_24BY(w)  (((w) >> 16) & 0xFF)   /* Extract 23..16 bits from unsigned word */
@@ -1158,5 +1188,6 @@ uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b);
 
 #include "taildefs.h"
 #include "clocks.h"
+uint32_t sys_now(void);
 
 #endif // HARDWARE_H_INCLUDED

@@ -22,7 +22,7 @@
 	#error WITHDEBUG and WITHISBOOTLOADER can not be used in same time for CPUSTYLE_R7S721
 #endif /* WITHDEBUG && WITHISBOOTLOADER && CPUSTYLE_R7S721 */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #include "lib/zynq/src/xadcps.h"
 #include "lib/zynq/src/xgpiops.h"
@@ -206,8 +206,8 @@ RAMFUNC void spool_elkeyinputsbundle(void)
 }
 
 
-static LIST_ENTRY tickers;
-static LIST_ENTRY adcdones;
+static VLIST_ENTRY tickers;
+static VLIST_ENTRY adcdones;
 //static unsigned nowtick;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)
@@ -217,14 +217,18 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 	p->ticks = 0;
 	p->cb = cb;
 	p->ctx = ctx;
-	InsertHeadList(& tickers, & p->item);
+}
+
+void ticker_add(ticker_t * p)
+{
+	InsertHeadVList(& tickers, & p->item);
 }
 
 static void tickers_spool(void)
 {
 
 	//++ nowtick;
-	PLIST_ENTRY t;
+	PVLIST_ENTRY t;
 	for (t = tickers.Blink; t != & tickers; t = t->Blink)
 	{
 		ticker_t * const p = CONTAINING_RECORD(t, ticker_t, item);
@@ -246,25 +250,30 @@ void tickers_initialize(void)
 
 }
 
-// регистрируются обработчики конца преобразвания АЦП
+// инициализация списка обработчиков конца преобразования АЦП
 void adcdones_initialize(void)
 {
 	InitializeListHead(& adcdones);
 }
 
-// регистрируются обработчики конца преобразвания АЦП
+// регистрируются обработчики конца преобразования АЦП
 void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx)
 {
 	p->cb = cb;
 	p->ctx = ctx;
-	InsertHeadList(& adcdones, & p->item);
+}
+
+// регистрируется обработчик конца преобразования АЦП
+void adcdone_add(adcdone_t * p)
+{
+	InsertHeadVList(& adcdones, & p->item);
 }
 
 static void adcdones_spool(void)
 {
 
 	//++ nowtick;
-	PLIST_ENTRY t;
+	PVLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{
 		adcdone_t * const p = CONTAINING_RECORD(t, adcdone_t, item);
@@ -274,7 +283,7 @@ static void adcdones_spool(void)
 	}
 }
 
-#if WITHLWIP
+#if 1//WITHLWIP
 static volatile uint32_t sys_now_counter;
 uint32_t sys_now(void)
 {
@@ -292,7 +301,7 @@ RAMFUNC void spool_systimerbundle1(void)
 	HAL_IncTick();
 #endif /* USE_HAL_DRIVER */
 
-#if WITHLWIP
+#if 1//WITHLWIP
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
 #endif /* WITHLWIP */
 
@@ -305,24 +314,6 @@ RAMFUNC void spool_systimerbundle1(void)
 // Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 RAMFUNC void spool_systimerbundle2(void)
 {
-#if 1 && defined (BOARD_BLINK_SETSTATE)
-	{
-	#if WITHISBOOTLOADER
-		const unsigned thalf = 100;	// Toggle every 100 ms
-	#else /* WITHISBOOTLOADER */
-		const unsigned thalf = 500;	// Toggle every 500 ms
-	#endif /* WITHISBOOTLOADER */
-		// BLINK test
-		static unsigned count;
-		if (++ count >= NTICKS(thalf))
-		{
-			count = 0;
-			static uint_fast8_t state;
-			state = ! state;
-			BOARD_BLINK_SETSTATE(state);
-		}
-	}
-#endif /* defined (BOARD_BLINK_SETSTATE) */
 
 #if WITHCPUADCHW
 	hardware_adc_startonescan();	// хотя бы один вход (s-метр) есть.
@@ -1089,24 +1080,30 @@ const adcinmap_t * getadcmap(uint_fast8_t adci)
 		{	18,	ADC3,	ADC3_COMMON,	90,	},	// @16:	Temperature sensor (VSENSE) - 9.0 uS required
 		{	19,	ADC3,	ADC3_COMMON,	43,	},	// @17:	Reference voltage (VREFINT) - 4.3 uS required
 #elif CPUSTYLE_STM32MP1
-		{	16,	ADC1,	ADC12_COMMON,	15,	},	// @0:	PA0	ADC1_INP16
-		{	17,	ADC1,	ADC12_COMMON,	15,	},	// @1:	PA1	ADC1_INP17
-		{	14,	ADC1,	ADC12_COMMON,	15,	},	// @2:	PA2	ADC1_INP14
-		{	15,	ADC1,	ADC12_COMMON,	15,	},	// @3:	PA3	ADC1_INP15
-		{	18,	ADC1,	ADC12_COMMON,	15,	},	// @4:	PA4	ADC1_INP18, ADC2_INP18
-		{	19,	ADC1,	ADC12_COMMON,	15,	},	// @5:	PA5	ADC1_INP19, ADC2_INP19
-		{	3,	ADC1,	ADC12_COMMON,	15,	},	// @6:	PA6	ADC1_INP3
-		{	7,	ADC1,	ADC12_COMMON,	15,	},	// @7:	PA7	ADC1_INP7
-		{	9,	ADC1,	ADC12_COMMON,	15,	},	// @8:	PB0	ADC1_INP9, ADC2_INP9
-		{	5,	ADC1,	ADC12_COMMON,	15,	},	// @9:	PB1	ADC1_INP5, ADC2_INP5
-		{	10,	ADC1,	ADC12_COMMON,	15,	},	// @10:	PC0	ADC1_INP10, ADC2_INP10
-		{	11,	ADC1,	ADC12_COMMON,	15,	},	// @11:	PC1	ADC1_INP11, ADC2_INP11
-		{	12,	ADC1,	ADC12_COMMON,	15,	},	// @12:	PC2	ADC1_INP12
-		{	13,	ADC1,	ADC12_COMMON,	15,	},	// @13:	PC3	ADC1_INP13
-		{	4,	ADC1,	ADC12_COMMON,	15,	},	// @14:	PC4	ADC1_INP4, ADC2_INP4
-		{	8,	ADC1,	ADC12_COMMON,	15,	},	// @15:	PC5	ADC1_INP8, ADC2_INP8
-		//{	18,	ADC3,	ADC3_COMMON,	90,	},	// @16:	Temperature sensor (VSENSE) - 9.0 uS required
-		//{	19,	ADC3,	ADC3_COMMON,	43,	},	// @17:	Reference voltage (VREFINT) - 4.3 uS required
+		//	On ADC1, fast channels are PA6, PA7, PB0, PB1, PC4, PC5, PF11, PF12.
+		//	On ADC2, fast channels are PA6, PA7, PB0, PB1, PC4, PC5, PF13, PF14.
+		{	16,	ADC1,	ADC12_COMMON,	15,	},	// @0:	PA0		ADC1_INP16
+		{	17,	ADC1,	ADC12_COMMON,	15,	},	// @1:	PA1		ADC1_INP17
+		{	14,	ADC1,	ADC12_COMMON,	15,	},	// @2:	PA2		ADC1_INP14
+		{	15,	ADC1,	ADC12_COMMON,	15,	},	// @3:	PA3		ADC1_INP15
+		{	18,	ADC1,	ADC12_COMMON,	15,	},	// @4:	PA4		ADC1_INP18, ADC2_INP18
+		{	19,	ADC1,	ADC12_COMMON,	15,	},	// @5:	PA5		ADC1_INP19, ADC2_INP19
+		{	3,	ADC1,	ADC12_COMMON,	15,	},	// @6:	PA6		ADC1_INP3
+		{	7,	ADC1,	ADC12_COMMON,	15,	},	// @7:	PA7		ADC1_INP7
+		{	9,	ADC1,	ADC12_COMMON,	15,	},	// @8:	PB0		ADC1_INP9, ADC2_INP9
+		{	5,	ADC1,	ADC12_COMMON,	15,	},	// @9:	PB1		ADC1_INP5, ADC2_INP5
+		{	10,	ADC1,	ADC12_COMMON,	15,	},	// @10:	PC0		ADC1_INP10, ADC2_INP10
+		{	11,	ADC1,	ADC12_COMMON,	15,	},	// @11:	PC1		ADC1_INP11, ADC2_INP11
+		{	12,	ADC1,	ADC12_COMMON,	15,	},	// @12:	PC2		ADC1_INP12
+		{	13,	ADC1,	ADC12_COMMON,	15,	},	// @13:	PC3		ADC1_INP13
+		{	4,	ADC1,	ADC12_COMMON,	15,	},	// @14:	PC4		ADC1_INP4, ADC2_INP4
+		{	8,	ADC1,	ADC12_COMMON,	15,	},	// @15:	PC5		ADC1_INP8, ADC2_INP8
+		{	2, 	ADC1, 	ADC12_COMMON, 	15,	},	// @16: PF11	ADC1_INP2
+		{	6, 	ADC1, 	ADC12_COMMON, 	15,	},	// @17: PF12	ADC1_INP6, ADC1_INN2
+		{	2, 	ADC2, 	ADC12_COMMON, 	15,	},	// @18: PF13	ADC2_INP2
+		{	6, 	ADC2, 	ADC12_COMMON, 	15,	},	// @19: PF14	ADC2_INP6, ADC2_INN2
+		//{	18,	ADC3,	ADC3_COMMON,	90,	},	// @20:	Temperature sensor (VSENSE) - 9.0 uS required
+		//{	19,	ADC3,	ADC3_COMMON,	43,	},	// @21:	Reference voltage (VREFINT) - 4.3 uS required
 #endif /* CPUSTYLE_STM32H7XX, CPUSTYLE_STM32MP1 */
 	};
 
@@ -1623,6 +1620,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYLE_R7S721
 	const unsigned long top = 105uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYLE_XC7Z
+	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_XCZU
 	const unsigned long top = 125uL * cpufreq_MHz * timeUS / 1000;
 #elif CPUSTYPE_ALLWNV3S
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
@@ -2701,6 +2700,30 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	return addrbase | TTB_PARA_DEVICE;
 
+#elif CPUSTYLE_XCZU
+
+	// Все сравнения должны быть не точнее 1 MB
+
+	if (a >= 0x00000000uL && a < 0x00100000uL)			//  OCM (On Chip Memory), DDR3_SCU
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0x00100000uL && a < 0x40000000uL)			//  DDR3 - 255 MB
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0xE1000000uL && a < 0xE6000000uL)			//  SMC (Static Memory Controller)
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0x40000000uL && a < 0xFC000000uL)	// PL, peripherials
+		return addrbase | TTB_PARA_DEVICE;
+
+	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
+
+	if (a >= 0xFFF00000uL)			// OCM (On Chip Memory) is mapped high
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	return addrbase | TTB_PARA_DEVICE;
+
 #else
 
 	// Все сравнения должны быть не точнее 1 MB
@@ -3221,6 +3244,20 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	__SEV();
 }
 
+#elif CPUSTYLE_XCZU
+
+// See also:
+//	https://stackoverflow.com/questions/60873390/zynq-7000-minimum-asm-code-to-init-cpu1-from-cpu0
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+{
+	* (volatile uint32_t *) 0xFFFFFFF0 = startfunc;	// Invoke at SVC context
+	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
+	/* Generate an IT to core 1 */
+	__SEV();
+}
+
+
 #endif /* CPUSTYLE_STM32MP1 */
 
 static RAMDTCM SPINLOCK_t cpu1init;
@@ -3624,6 +3661,20 @@ uint8_t xxxxxpos(uint8_t num) // num = 0..8
 */
 
 
+unsigned long ulmin(
+	unsigned long a,
+	unsigned long b)
+{
+	return a < b ? a : b;
+}
+
+unsigned long ulmax(
+	unsigned long a,
+	unsigned long b)
+{
+	return a > b ? a : b;
+}
+
 uint_fast32_t ulmin32(uint_fast32_t a, uint_fast32_t b)
 {
 	return a < b ? a : b;
@@ -3870,13 +3921,17 @@ int __attribute__((used)) (_write)(int fd, char * ptr, int len)
 	static RAMHEAP uint8_t heapplace [8 * 1024uL];
 
 #endif /* CPUSTYLE_STM32MP1 */
+
 extern int __HeapBase;
 extern int __HeapLimit;
 
 caddr_t __attribute__((used)) (_sbrk)(int incr)
 {
+	unsigned alignment = DCACHEROWSIZE;
 	static char * heap;
 	char * prev_heap;
+
+	incr = (incr + (alignment - 1u)) & ~ (alignment - 1u);
 
 	if (heap == NULL)
 	{

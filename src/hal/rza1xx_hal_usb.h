@@ -476,7 +476,7 @@ uint32_t          USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 uint32_t          USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
                               uint8_t epnum, uint8_t dev_address, uint8_t speed,
-                              uint8_t ep_type, uint16_t mps);
+                              uint8_t ep_type, uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx,
                                    USB_OTG_HCTypeDef *hc, uint8_t dma);
 
@@ -676,18 +676,6 @@ uint16_t USBPhyHw_EP2PIPE(uint16_t ep_addr);
   */
 
 
-typedef struct _InterfaceAssocDescriptor
-{
-  uint8_t   bLength;
-  uint8_t   bDescriptorType;
-  uint8_t	bFirstInterface;
-  uint8_t   bInterfaceCount;       /* Number of Interfaces */
-  uint8_t   bFunctionClass;
-  uint8_t   bFunctionSubClass;
-  uint8_t   bFunctionProtocol;
-  uint8_t   iConfiguration;       /*Index of String Descriptor Describing this configuration */
-} USBH_IfAssocDescTypeDef;
-
 #define USBH_MAX_PIPES_NBR                             15
 
 #define USBHNPIPES 15
@@ -697,12 +685,77 @@ typedef struct _InterfaceAssocDescriptor
 /**
   * @}
   */
-
-/** @defgroup PCD_PHY_Module PCD PHY Module
+/* I/O operation functions  ***************************************************/
+/** @addtogroup HCD_Exported_Functions_Group2 Input and Output operation functions
   * @{
   */
-#define PCD_PHY_ULPI                 1U
+HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd, uint8_t ch_num,
+                                           uint8_t direction, uint8_t ep_type,
+                                           uint8_t token, uint8_t *pbuff,
+                                           uint16_t length, uint8_t do_ping);
+
+/* Non-Blocking mode: Interrupt */
+void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_SOF_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_PortEnabled_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
+                                         HCD_URBStateTypeDef urb_state);
+/**
+  * @}
+  */
+
+HAL_StatusTypeDef HAL_HCD_Init(HCD_HandleTypeDef *hhcd);
+HAL_StatusTypeDef HAL_HCD_DeInit(HCD_HandleTypeDef *hhcd);
+HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd, uint8_t ch_num,
+                                  uint8_t epnum, uint8_t dev_address,
+                                  uint8_t speed, uint8_t ep_type, uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
+
+HAL_StatusTypeDef HAL_HCD_HC_Halt(HCD_HandleTypeDef *hhcd, uint8_t ch_num);
+void              HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd);
+void              HAL_HCD_MspDeInit(HCD_HandleTypeDef *hhcd);
+void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd);
+HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd);
+HAL_StatusTypeDef HAL_HCD_ResetPort2(HCD_HandleTypeDef *hhcd, uint8_t resetActiveState);
+HAL_StatusTypeDef HAL_HCD_Start(HCD_HandleTypeDef *hhcd);
+HAL_StatusTypeDef HAL_HCD_Stop(HCD_HandleTypeDef *hhcd);
+
+/* Peripheral State functions  ************************************************/
+/** @addtogroup HCD_Exported_Functions_Group4 Peripheral State functions
+  * @{
+  */
+HCD_StateTypeDef        HAL_HCD_GetState(HCD_HandleTypeDef *hhcd);
+HCD_URBStateTypeDef     HAL_HCD_HC_GetURBState(HCD_HandleTypeDef *hhcd, uint8_t chnum);
+HCD_HCStateTypeDef      HAL_HCD_HC_GetState(HCD_HandleTypeDef *hhcd, uint8_t chnum);
+uint32_t                HAL_HCD_HC_GetXferCount(HCD_HandleTypeDef *hhcd, uint8_t chnum);
+uint32_t                HAL_HCD_HC_GetMaxPacket(HCD_HandleTypeDef *hhcd, uint8_t chnum);
+uint32_t                HAL_HCD_GetCurrentFrame(HCD_HandleTypeDef *hhcd);
+uint32_t                HAL_HCD_GetCurrentSpeed(HCD_HandleTypeDef *hhcd);
+uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
+
+/**
+  * @}
+  */
+
+/** @defgroup HCD_Speed PCD Speed
+  * @{
+  */
+#define HCD_SPEED_HIGH               0U
+#define HCD_SPEED_HIGH_IN_FULL       1U
+#define HCD_SPEED_FULL               2U
+/**
+  * @}
+  */
+
+//#define PCD_PHY_ULPI                 1U
 #define PCD_PHY_EMBEDDED             2U
+
+#define HC_PID_DATA0                           0U
+#define HC_PID_DATA2                           1U
+#define HC_PID_DATA1                           2U
+#define HC_PID_SETUP                           3U
 
 #ifdef __cplusplus
 }

@@ -1425,7 +1425,6 @@ void colpip_line(
            yDraw = y;
        }
        // plot
-       //LCD_PlotPoint(xDraw, yDraw, color);
 	   colpip_point(buffer, dx, dy, xDraw, yDraw, color);
        // next
        if (E > 0) {
@@ -1457,26 +1456,25 @@ void colpip_rect(
 	ASSERT(x2 < dx);
 	ASSERT(y2 < dy);
 
-	const uint_fast16_t w = x2 - x1 + 1;	// размер по горизонтали
-	const uint_fast16_t h = y2 - y1 + 1;	// размер по вертикали
-
-	ASSERT((x1 + w) <= dx);
-	ASSERT((y1 + h) <= dy);
-
-
-	if (w < 3 || h < 3)
-		return;
-
 	if (fill != 0)
 	{
+		const uint_fast16_t w = x2 - x1 + 1;	// размер по горизонтали
+		const uint_fast16_t h = y2 - y1 + 1;	// размер по вертикали
+
+		ASSERT((x1 + w) <= dx);
+		ASSERT((y1 + h) <= dy);
+
+		if (w < 3 || h < 3)
+			return;
+
 		colpip_fillrect(buffer, dx, dy, x1, y1, w, h, color);
 	}
 	else
 	{
-		colpip_fillrect(buffer, dx, dy, x1, y1, w, 1, color);	// верхняя горизонталь
-		colpip_fillrect(buffer, dx, dy, x1, y2, w, 1, color);	// нижняя горизонталь
-		colpip_fillrect(buffer, dx, dy, x1, y1 + 1, 1, h - 2, color);	// левая вертикаль
-		colpip_fillrect(buffer, dx, dy, x2, y1 + 1, 1, h - 2, color);	// правая вертикаль
+		colpip_line(buffer, dx, dy, x1, y1, x2, y1, color);		// верхняя горизонталь
+		colpip_line(buffer, dx, dy, x1, y2, x2, y2, color);		// нижняя горизонталь
+		colpip_line(buffer, dx, dy, x1, y1, x1, y2, color);		// левая вертикаль
+		colpip_line(buffer, dx, dy, x2, y1, x2, y2, color);		// правая вертикаль
 	}
 }
 
@@ -2232,7 +2230,7 @@ COLORPIP_T getshadedcolor(
 		return TFTRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, (c >> 0) & 0xFF);
 	}
 
-#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
+#elif LCDMODE_MAIN_ARGB888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
 
 	if (dot == COLORPIP_BLACK)
 	{
@@ -2376,6 +2374,7 @@ void display2_xltrgb24(COLOR24_T * xltable)
 	fillfour_xltrgb24(xltable, COLORPIP_BLUE      	, COLOR24(0x00, 0x00, 0xFF));
 	fillfour_xltrgb24(xltable, COLORPIP_GREEN     	, COLOR24(0x00, 0xFF, 0x00));
 	fillfour_xltrgb24(xltable, COLORPIP_RED       	, COLOR24(0xFF, 0x00, 0x00));
+	fillfour_xltrgb24(xltable, COLORPIP_DARKGRAY    , COLOR24(0x10, 0x10, 0x10));
 
 	fillfour_xltrgb24(xltable, COLORMAIN_LOCKED	  	, COLOR24(0x3C, 0x3C, 0x00));
 	// код (COLORPIP_BASE + 15) освободися. GUI_MENUSELECTCOLOR?

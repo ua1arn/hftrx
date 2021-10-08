@@ -27,8 +27,10 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .heap
 BIN  = $(CP) -O binary -R .noinit -R .bss -R .heap
 
+PRJROOT = ../..
 CMSISDIR = ../../../CMSIS_5/CMSIS
 OBJDIR = ./obj
+ARCHDIR = $(PRJROOT)/arch/at91sam
 
 # Define optimisation level here
 #OPT = -Ofast
@@ -75,6 +77,8 @@ UADEFS =
 
 # List C source files here
 SRC = 
+
+SRCDIRS += $(ARCHDIR)
 
 # List ASM source files here
 ASRC = \

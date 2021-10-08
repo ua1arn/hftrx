@@ -39,6 +39,19 @@ typedef struct dctx_tag
 	const void * pv;
 } dctx_t;
 
+// копирование растра в видеобуфер отображения
+void display2_vtty(
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	dctx_t * pctx
+	);
+void display2_vtty_init(
+	uint_fast8_t x0,
+	uint_fast8_t y0,
+	dctx_t * pctx
+	);
+
+
 // FUNC item label
 void display2_fnlabel9(
 	uint_fast8_t x,
@@ -354,8 +367,7 @@ void display_1fmenu(
 	#define COLORPIP_BLACK       (COLORPIP_BASE + 2) // TFTRGB(0x00, 0x00, 0x00)
 	#define COLORPIP_WHITE       (COLORPIP_BASE + 3) // TFTRGB(0xFF, 0xFF, 0xFF)
 	#define COLORPIP_GRAY        (COLORPIP_BASE + 4) // TFTRGB(0x80, 0x80, 0x80)
-	#define COLORPIP_DARKGRAY    (COLORPIP_BASE + 5) // TFTRGB(0x70, 0x70, 0x70) FIXME: use right value
-	#define COLORPIP_DARKGREEN   (COLORPIP_BASE + 5) // TFTRGB(0x00, 0x64, 0x00)
+	#define COLORPIP_DARKGREEN   (COLORPIP_BASE + 5) // TFTRGB(0x70, 0x70, 0x70) FIXME: use right value
 	#define COLORPIP_BLUE        (COLORPIP_BASE + 6) // TFTRGB(0x00, 0x00, 0xFF)
 	#define COLORPIP_GREEN       (COLORPIP_BASE + 7) // TFTRGB(0x00, 0xFF, 0x00)
 	#define COLORPIP_RED         (COLORPIP_BASE + 8) // TFTRGB(0xFF, 0x00, 0x00)
@@ -366,6 +378,8 @@ void display_1fmenu(
 	#define COLORPIP_SPECTRUMBG		(COLORPIP_BASE + 12) // TFTRGB565(0, 64, 24)			//
 	#define COLORMAIN_SPECTRUMBG2	(COLORPIP_BASE + 13) // TFTRGB565(0, 24, 8)		//COLOR_xxx - полоса пропускания приемника
 	#define COLORPIP_SPECTRUMFG		(COLORPIP_BASE + 14) // TFTRGB565(0, 255, 0)		//COLOR_GREEN
+
+	#define COLORPIP_DARKGRAY   (COLORPIP_BASE + 15) // TFTRGB(0x00, 0x64, 0x00)
 
 	#if COLORSTYLE_ATS52
 		// new (for ats52).
@@ -607,5 +621,8 @@ void display_1fmenu(
 	#define FMENUBACK			COLORMAIN_BLACK
 
 #endif /* COLORSTYLE_RED */
+
+//#define AFSPECTRE_COLOR COLORMAIN_YELLOW
+#define AFSPECTRE_COLOR COLORMAIN_SPECTRUMBG2
 
 #endif /* BOARD_H_INCLUDED */

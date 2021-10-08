@@ -188,11 +188,11 @@ static uint16_t ssi_handler(int index, char *insert, int ins_len)
   switch (index)
   {
   case 0: // systick
-    res = snprintf(insert, ins_len, "%s", "1234");
+    res = local_snprintf_P(insert, ins_len, "%s", "1234");
     break;
   case 1: // PORTC
     {
-      res = snprintf(insert, ins_len, "%u, %u, %u, %u, %u, %u, %u, %u", 10, 10, 10, 10, 10, 10, 10, 10);
+      res = local_snprintf_P(insert, ins_len, "%u, %u, %u, %u, %u, %u, %u, %u", 10, 10, 10, 10, 10, 10, 10, 10);
       break;
     }
   case 2: // PA0
@@ -241,10 +241,10 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
     switch (index)
     {
     case 0: /* systick */
-        res = snprintf(insert, ins_len, "%u", (unsigned)++ ttt);
+        res = local_snprintf_P(insert, ins_len, "%u", (unsigned)++ ttt);
         break;
     case 1: /* btn */
-        res = snprintf(insert, ins_len, "%i", 1);
+        res = local_snprintf_P(insert, ins_len, "%i", 1);
         break;
     case 2: /* acc */
     {
@@ -252,7 +252,7 @@ static u16_t ssi_handler(int index, char *insert, int ins_len)
         acc[0] = 1;
         acc[1] = 2;
         acc[2] = 4;
-        res = snprintf(insert, ins_len, "%i, %i, %i", acc[0], acc[1], acc[2]);
+        res = local_snprintf_P(insert, ins_len, "%i, %i, %i", acc[0], acc[1], acc[2]);
         break;
     }
     case 3: /* ledg */
@@ -345,7 +345,7 @@ err_t httpd_post_begin(void *connection, const char *uri, const char *http_reque
 
 	writeok = 1;
 	bufoffset = 0;
-	//snprintf(response_uri, response_uri_len, "/error.html");
+	//local_snprintf_P(response_uri, response_uri_len, "/error.html");
 	return ERR_OK;
 }
 
@@ -514,7 +514,7 @@ void httpd_post_finished(void *connection, char *response_uri, u16_t response_ur
 
 	}
 #endif
-	snprintf(response_uri, response_uri_len, writeok ? "/done.html" : "/error.html");
+	local_snprintf_P(response_uri, response_uri_len, writeok ? "/done.html" : "/error.html");
 }
 
 #ifndef LWIP_HTTPD_POST_MANUAL_WND

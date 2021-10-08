@@ -17,6 +17,21 @@
 	#define COLOR_BUTTON_PR_LOCKED		COLORMAIN_LOCKED // TFTRGB565(0x3C, 0x3C, 0x00)
 	#define COLOR_BUTTON_DISABLED		COLORMAIN_GRAY // TFTRGB565(0x50, 0x50, 0x50) FIXME: use right value
 
+#elif 0
+	// Can be used TFTRGB(r, g, b) macro
+	// Experemental
+
+	#define GUI_WINDOWTITLECOLOR		COLOR_SKYBLUE
+	#define GUI_WINDOWBGCOLOR			COLOR_DARKGRAY
+	#define GUI_SLIDERLAYOUTCOLOR		COLOR_GREEN
+	#define GUI_MENUSELECTCOLOR			COLOR_GREEN
+	#define GUI_DEFAULTCOLOR			COLOR_BLACK
+    #define COLOR_BUTTON_NON_LOCKED        COLOR_WHITE
+    #define COLOR_BUTTON_PR_NON_LOCKED    COLOR_WHITE
+	#define COLOR_BUTTON_LOCKED			COLOR_YELLOW
+	#define COLOR_BUTTON_PR_LOCKED		COLORMAIN_LOCKED
+	#define COLOR_BUTTON_DISABLED		COLOR_GRAY
+
 #else /* LCDMODE_MAIN_L8 */
 	// Can be used TFTRGB(r, g, b) macro
 	#define GUI_WINDOWTITLECOLOR		COLOR_SKYBLUE
@@ -38,6 +53,10 @@
 	#define GUI_SOFTWARE_RENDERING		0
 #endif
 
+#if ! WITHALTERNATIVELAYOUT
+	#define GUI_SHOW_INFOBAR				1
+#endif /* ! WITHALTERNATIVELAYOUT */
+
 enum {
 	sliders_width = 8,			// ширина шкалы слайдера
 	sliders_w = 12,				// размеры ползунка слайдера
@@ -48,6 +67,7 @@ enum {
 	window_close_button_size = window_title_height,
 	window_title_indent = 20,	// горизонтальный отступ заголовка
 	touch_area_enlarge = 5,		// увеличение области вокруг элементов для упрощения попадания по мелким элементам
+	autorepeat_delay = 4,		// задержка автоповтора действий
 };
 
 #endif /* GUI_STRUCTS_H_INCLUDED */

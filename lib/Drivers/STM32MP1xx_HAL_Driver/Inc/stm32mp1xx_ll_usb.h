@@ -138,32 +138,16 @@ typedef struct
 
   uint8_t   even_odd_frame;       /*!< IFrame parity
                                        This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
-	#if 0
-	  // нигде не используется
-	  uint8_t   even_odd_frame; /*!< IFrame parity
-	                                 This parameter must be a number between Min_Data = 0 and Max_Data = 1    */
-	#endif
 
-	#if CPUSTYLE_R7S721
-
-	  // RENESAS specific field
-	  //uint_fast8_t	pipe_num;
-
-	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
-
-	  // STM32 specific field
-	  uint_fast8_t  tx_fifo_num;    /*!< Transmission FIFO number
-	                                 This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
-
-	#endif /* CPUSTYLE_R7S721 */
-
+  uint16_t  tx_fifo_num;          /*!< Transmission FIFO number
+                                       This parameter must be a number between Min_Data = 1 and Max_Data = 15   */
 
   uint32_t  maxpacket;            /*!< Endpoint Max packet size
                                        This parameter must be a number between Min_Data = 0 and Max_Data = 64KB */
 
   uint8_t   *xfer_buff;           /*!< Pointer to transfer buffer                                               */
-	  uintptr_t  dma_addr;       /*!< 32 bits aligned transfer buffer address                                  */
 
+  uint32_t  dma_addr;             /*!< 32 bits aligned transfer buffer address                                  */
 
   uint32_t  xfer_len;             /*!< Current transfer length                                                  */
 
@@ -486,12 +470,13 @@ void              USB_ClearInterrupts(USB_OTG_GlobalTypeDef *USBx, uint32_t inte
 HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg);
 HAL_StatusTypeDef USB_InitFSLSPClkSel(USB_OTG_GlobalTypeDef *USBx, uint8_t freq);
 HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx);
+HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t resetActiveState);
 HAL_StatusTypeDef USB_DriveVbus(USB_OTG_GlobalTypeDef *USBx, uint8_t state);
 uint32_t          USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx);
 uint32_t          USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
                               uint8_t epnum, uint8_t dev_address, uint8_t speed,
-                              uint8_t ep_type, uint16_t mps);
+                              uint8_t ep_type, uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr);
 HAL_StatusTypeDef USB_HC_StartXfer(USB_OTG_GlobalTypeDef *USBx,
                                    USB_OTG_HCTypeDef *hc, uint8_t dma);
 
@@ -502,6 +487,8 @@ HAL_StatusTypeDef USB_StopHost(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_ActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
 HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx);
 uint_fast8_t USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx);
+HAL_StatusTypeDef USB_HS_PHYCInit(void);
+HAL_StatusTypeDef USB_HS_PHYCDeInit(void);
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 
 /**

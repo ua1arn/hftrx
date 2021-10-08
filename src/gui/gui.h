@@ -87,5 +87,8 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 void gui_open_sys_menu(void);
 void gui_update(void);
 
+void remove_end_line_spaces(char * str);
+const char * remove_start_line_spaces(const char * str);
+
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_H_INCLUDED */

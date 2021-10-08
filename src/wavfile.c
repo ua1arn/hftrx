@@ -500,9 +500,6 @@ void sdcardtoggle(void)
 // записанных буферов на SD CARD
 void sdcardbgprocess(void)
 {
-#if WITHUSEUSBFLASH
-	board_usb_spool();
-#endif /* WITHUSEUSBFLASH */
 	switch (sdstate)
 	{
 	case SDSTATE_IDLE:
@@ -631,8 +628,8 @@ void sdcardformat(void)
 
 #if WITHWAVPLAYER || WITHSENDWAV
 
-static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 16] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 static UINT ibr = 0;		//  количество считанных байтов
 static UINT ipos = 0;			// номер выводимого байта

@@ -8,7 +8,6 @@
 //
 
 #include "hardware.h"
-#include "src/gui/gui.h"
 #include "board.h"
 #include "display.h"
 #include "formats.h"
@@ -768,7 +767,7 @@ void display_flush(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();
 //	char s [32];
-//	snprintf(s, 32, "FLUSH=%08lX", (unsigned long) frame);
+//	local_snprintf_P(s, 32, "F=%08lX", (unsigned long) frame);
 //	display_at(0, 0, s);
 	arm_hardware_flush(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
 	arm_hardware_ltdc_main_set_no_vsync(frame);
@@ -779,7 +778,7 @@ void display_nextfb(void)
 {
 	const uintptr_t frame = (uintptr_t) colmain_fb_draw();	// Тот буфер, в котором рисовали, станет отображаемым
 //	char s [32];
-//	snprintf(s, 32, "BUFF=%08lX", (unsigned long) frame);
+//	local_snprintf_P(s, 32, "B=%08lX ", (unsigned long) frame);
 //	display_at(0, 0, s);
 	ASSERT((frame % DCACHEROWSIZE) == 0);
 	arm_hardware_flush_invalidate(frame, (uint_fast32_t) GXSIZE(DIM_X, DIM_Y) * sizeof (PACKEDCOLORMAIN_T));
@@ -1730,7 +1729,7 @@ void display_hardware_initialize(void)
 	}
 	// STM32xxx LCD-TFT Controller (LTDC)
 	// RENESAS Video Display Controller 5
-	PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
+	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
 	arm_hardware_ltdc_initialize(frames, vdmode);
 	colmain_setcolors(COLORMAIN_WHITE, COLORMAIN_BLACK);
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
@@ -1741,9 +1740,10 @@ void display_hardware_initialize(void)
 	tc358768_initialize(vdmode);
 	panel_initialize(vdmode);
 #endif /* LCDMODETX_TC358778XBG */
-#if LCDMODEX_SII9022
-	sii9022_initialize(vdmode);
-#endif /* LCDMODEX_SII9022 */
+#if LCDMODEX_SII9022A
+	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
+	sii9022x_initialize(vdmode);
+#endif /* LCDMODEX_SII9022A */
 
 #if LCDMODE_HARD_SPI
 #elif LCDMODE_HARD_I2C
@@ -1758,6 +1758,32 @@ void display_hardware_initialize(void)
 	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
+void display_wakeup(void)
+{
+#if WITHLTDCHW
+	const videomode_t * const vdmode = & vdmode0;
+	colmain_fb_initialize();
+	uintptr_t frames [LCDMODE_MAIN_PAGES];
+	unsigned i;
+	for (i = 0; i < LCDMODE_MAIN_PAGES; ++ i)
+	{
+		frames [i] = (uintptr_t) fbfX [i];
+	}
+	// STM32xxx LCD-TFT Controller (LTDC)
+	// RENESAS Video Display Controller 5
+	//PRINTF("display_getdotclock=%lu\n", (unsigned long) display_getdotclock(vdmode));
+    arm_hardware_ltdc_initialize(frames, vdmode);
+#endif /* WITHLTDCHW */
+#if LCDMODETX_TC358778XBG
+    tc358768_wakeup();
+    panel_wakeup();
+#endif /* LCDMODETX_TC358778XBG */
+#if LCDMODEX_SII9022A
+    // siiI9022A Lattice Semiconductor Corp HDMI Transmitter
+    sii9022x_wakeup(vdmode);
+#endif /* LCDMODEX_SII9022A */
+}
+
 // Palette reload
 void display_palette(void)
 {
@@ -1767,11 +1793,11 @@ void display_palette(void)
 }
 // https://habr.com/ru/post/166317/
 
-//	Hue — тон, цикличная угловая координата.
-//	Value, Brightness — яркость, воспринимается как альфа-канал, при v=0 пиксель не светится,
-//	при v=17 — светится максимально ярко, в зависимости от H и S.
+//	Hue - тон, цикличная угловая координата.
+//	Value, Brightness - яркость, воспринимается как альфа-канал, при v=0 пиксель не светится,
+//	при v=17 - светится максимально ярко, в зависимости от H и S.
 //	Saturation. С отсутствием фона, значения  дадут не серый цвет, а белый разной яркости,
-//	поэтому параметр W=Smax-S можно называть Whiteness — он отражает степень «белизны» цвета.
+//	поэтому параметр W=Smax-S можно называть Whiteness - он отражает степень "белизны" цвета.
 //	При W=0, S=Smax=15 цвет полностью определяется Hue, при S=0, W=Wmax=15 цвет пикселя
 //	будет белым.
 

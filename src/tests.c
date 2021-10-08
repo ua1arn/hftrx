@@ -21,9 +21,9 @@
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
-#if WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK
+#if WITHUSEFATFS
 	#include "sdcard.h"
-#endif /* WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK */
+#endif /* WITHUSEFATFS */
 
 #include <math.h>
 #include <stdio.h>
@@ -3495,7 +3495,7 @@ static void printtextfile(const char * filename)
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
@@ -3575,7 +3575,7 @@ static uint_fast8_t rxqpeek(char * ch)
 // сохранение потока данных с CNC на флэшке
 static void dosaveserialport(const char * fname)
 {
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	unsigned i;
 	FRESULT rc;				/* Result code */
 
@@ -3598,7 +3598,10 @@ static void dosaveserialport(const char * fname)
 		char kbch;
 		char c;
 
-		if (dbg_getchar(& kbch) != 0)
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
+	if (dbg_getchar(& kbch) != 0)
 		{
 			if (kbch == 0x1b)
 			{
@@ -3665,7 +3668,7 @@ static void test_recodstart(void)
 	system_enableIRQ();
 }
 
-#if 0
+#if 1
 /* записать в буфер для ответа 32-бит значение */
 unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
 {
@@ -3678,23 +3681,33 @@ unsigned USBD_poke_u32X(uint8_t * buff, uint_fast32_t v)
 }
 
 // сохранение потока данных большими блоками
-static void dosaveblocks(const char * fname)
+// 1 - конец циклпа проверок
+static int dosaveblocks(const char * fname)
 {
+	int manualstop = 0;
 	unsigned long long kbs = 0;
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	FRESULT rc;				/* Result code */
 
 	PRINTF(PSTR("FAT FS test - write file '%s'.\n"), fname);
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
-	memset(rbuff, 0xE5, sizeof rbuff);
-	static int i;
-	USBD_poke_u32X(rbuff, ++ i);
+
+	/* формирование сигнатуры в данных = для конроля достоверности записи */
+	unsigned j;
+	static unsigned i;
+	static unsigned q;
+	memset(rbuff, 0x20, sizeof rbuff);
+	for (j = 0; j < ARRAY_SIZE(rbuff) - 16; j += 80)
+	{
+		USBD_poke_u32_BE(rbuff + j + 16 - 4, ++ q);
+	}
+	USBD_poke_u32_BE(rbuff, ++ i);
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
 		PRINTF("can not create file, rc=0x%02X\n", (unsigned) rc);
-		return;	//die(rc);
+		return 1;	//die(rc);
 	}
 
 #if 1
@@ -3703,7 +3716,7 @@ static void dosaveblocks(const char * fname)
 	if (rc)
 	{
 		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
-		return;	//die(rc);
+		return 1;	//die(rc);
 	}
 	else
 	{
@@ -3719,7 +3732,7 @@ static void dosaveblocks(const char * fname)
 	rc = f_lseek(& Fil, CREATE_LINKMAP);     /* Create CLMT */
 	if (rc)
 	{
-		PRINTF("can set clusters map recording, rc=0x%02X\n", (unsigned) rc);
+		PRINTF("can not set clusters map recording, rc=0x%02X\n", (unsigned) rc);
 		return;	//die(rc);
 	}
 	else
@@ -3732,6 +3745,9 @@ static void dosaveblocks(const char * fname)
 
 	for (;;)
 	{
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 		char kbch;
 		char c;
 
@@ -3745,6 +3761,7 @@ static void dosaveblocks(const char * fname)
 			if (kbch == 0x1b)
 			{
 				PRINTF("break recording\n");
+				manualstop = 1;
 				break;
 			}
 		}
@@ -3768,12 +3785,13 @@ static void dosaveblocks(const char * fname)
 	{
 		TP();
 		PRINTF("f_close failed, rc=0x%02X\n", (unsigned) rc);
-		return;
+		return 1;
 	}
 	else
 	{
 		PRINTF("Write speed %ld kB/S\n", (long) (kbs / 1000 / 60));
 	}
+	return manualstop;
 }
 #endif
 
@@ -3926,6 +3944,9 @@ static void diskio_test(void)
 		static int testdataval;
 		int i;
 
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4071,6 +4092,7 @@ static void diskio_test(void)
 
 			case 'z':
 				mmcInitialize();
+				PRINTF(PSTR("mmcInitialize.\n"));
 				break;
 				
 			//case 't':
@@ -4085,7 +4107,7 @@ static void fatfs_filesystest(int speedtest)
 {
 	FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 	FRESULT rc;  
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	static const char testfile [] = "readme.txt";
 	char testlog [FF_MAX_LFN + 1];
 	//int nlog = 0;
@@ -4096,6 +4118,9 @@ static void fatfs_filesystest(int speedtest)
 
 	for (;;)
 	{
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 		char c;
 		if (dbg_getchar(& c))
 		{
@@ -4200,8 +4225,9 @@ static void fatfs_filesystest(int speedtest)
 		}
 	}
 }
-#if 0
-static void fatfs_filesyspeedstest(void)
+
+#if 1
+static int fatfs_filesyspeedstest(void)
 {
 	uint_fast16_t year;
 	uint_fast8_t month, day;
@@ -4221,7 +4247,7 @@ static void fatfs_filesyspeedstest(void)
 		hardware_get_random(),
 		++ ser
 		);
-	dosaveblocks(testlog);
+	return dosaveblocks(testlog);
 }
 #endif
 
@@ -4572,7 +4598,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 	UINT i = 0;			// номер выводимого байта
 	
 	FRESULT rc;				/* Result code */
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL Fil FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 	// чтение файла
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc) 
@@ -4803,7 +4829,7 @@ fatfs_proghexfile(const char * hexfile)
 static void
 fatfs_progspi(void)
 {
-	static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+	static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	fatfs_proghexfile("tc1_r7s721_rom.hex");
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
@@ -5471,7 +5497,7 @@ static void disableAllIRQs(void)
 #endif
 
 
-#if 0
+#if WITHOPENVG && 1
 
 #include "tiger.h"
 
@@ -5747,7 +5773,7 @@ static void rendertiger(PS* const tiger, int w, int h)
 
 }
 
-#endif /* tiger */
+#endif /* WITHOPENVG */
 /*--------------------------------------------------------------*/
 
 // See https://github.com/Ajou-Khronies/OpenVG_tutorital_examples/blob/14d30f9a26cb5ed70ccb136bef7b229c8a51c444/samples/Chapter13/Sample_13_03/Sample_13_03.c
@@ -6131,12 +6157,12 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 1 && CPUSTYLE_XC7Z
+#if 1 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	{
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	{
 		PRINTF("GEM0 test:\n");
 
@@ -6209,17 +6235,100 @@ void hightests(void)
 
 	}
 #endif
+#if 0 && WITHDEBUG
+	{
+		const time_t t = time(NULL);
+
+		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
+	}
+#endif
 #if 1 && defined (__GNUC__)
 	{
 
 		PRINTF(PSTR("__GNUC__=%d, __GNUC_MINOR__=%d\n"), (int) __GNUC__, (int) __GNUC_MINOR__);
 	}
 #endif
-#if 0 && WITHDEBUG
+#if 0 && (__CORTEX_A != 0)
 	{
-		const time_t t = time(NULL);
 
-		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
+		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+		__set_FPEXC(__get_FPEXC() | 0x80000000uL);
+		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
+	}
+#endif
+#if 1 && (__L2C_PRESENT == 1)
+	{
+		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
+		// ZYNQ: RTL release R3p2
+		// RTL release 0x8 denotes r3p2 code of the cache controller
+		// RTL release 0x9 denotes r3p3 code of the cache controller.
+		PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_GetID());	// L2C_GetID()
+		//PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_GetID() >> 24) & 0xFF);
+		//PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_GetID() >> 10) & 0x3F);
+		//PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_GetID() >> 6) & 0x0F);
+		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
+
+		PRINTF("L2C Data RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C)); // reg1_data_ram_control
+		PRINTF("L2C Tag RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
+	}
+#endif
+#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	{
+		// GIC version diagnostics
+		// Renesas: ARM GICv1
+		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
+		// STM32MP1: ARM GICv2
+		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
+		// ZINQ XC7Z010: ARM GICv1
+		//	GICInterface->IIDR=3901243B, GICDistributor->IIDR=0102043B
+
+		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
+
+//		switch (ICPIDR1 & 0x0F)
+//		{
+//		case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
+//		case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
+//		default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
+//		}
+	}
+#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
+#if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
+	{
+		// SCU registers dump
+		// ZYNQ7000:
+		//	SCU Control Register=00000002
+		//	SCU Configuration Register=00000501
+		//	SCU CPU Power Status Register=03030000
+		//	Filtering Start Address Register=00100000
+		//	Filtering End Address Register=FFE00000
+		//PRINTF("SCU_CONTROL_BASE=%08lX\n", SCU_CONTROL_BASE);
+		PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
+		PRINTF("SCU Configuration Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [1]);	// 0x04
+		PRINTF("SCU CPU Power Status Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);	// 0x08
+		PRINTF("Filtering Start Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x10]);	// 0x40
+		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
+	}
+#endif
+#if 0 && CPUSTYLE_STM32MP1 && WITHDEBUG
+	{
+		PRINTF("stm32mp1_get_mpuss_freq()=%lu (MPU)\n", stm32mp1_get_mpuss_freq());
+		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
+		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
+		PRINTF("stm32mp1_get_pll2_r_freq()=%lu (DDR3)\n", stm32mp1_get_pll2_r_freq());
+	}
+#endif
+#if 1 && defined (DDRPHYC) && WITHDEBUG
+	{
+		// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
+		PRINTF("stm32mp1_ddr_init results: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
+				DDRPHYC->DX0DQSTR, DDRPHYC->DX1DQSTR,
+				DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
+
+		// 16 bit single-chip DDR3:
+		// PanGu board: stm32mp1_ddr_init results: DX0DQSTR=3DB02001, DX1DQSTR=3DB02001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+		// board v2: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+		// voard v3: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
+
 	}
 #endif
 #if 0
@@ -6430,88 +6539,6 @@ void hightests(void)
 		}
 
 	#endif
-	}
-#endif
-#if 0 && (__CORTEX_A != 0)
-	{
-
-		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
-		__set_FPEXC(__get_FPEXC() | 0x80000000uL);
-		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
-	}
-#endif
-#if 1 && (__L2C_PRESENT == 1)
-	{
-		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
-		// ZYNQ: RTL release R3p2
-		// RTL release 0x8 denotes r3p2 code of the cache controller
-		// RTL release 0x9 denotes r3p3 code of the cache controller.
-		PRINTF("L2C_310->CACHE_ID=%08lX\n", L2C_GetID());	// L2C_GetID()
-		//PRINTF("L2C_310->CACHE_ID Implementer=%02lX\n", (L2C_GetID() >> 24) & 0xFF);
-		//PRINTF("L2C_310->CACHE_ID CACHE ID=%02lX\n", (L2C_GetID() >> 10) & 0x3F);
-		//PRINTF("L2C_310->CACHE_ID Part number=%02lX\n", (L2C_GetID() >> 6) & 0x0F);
-		PRINTF("L2C_310->CACHE_ID RTL release=%02lX\n", (L2C_GetID() >> 0) & 0x3F);
-
-		PRINTF("L2C Data RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x010C)); // reg1_data_ram_control
-		PRINTF("L2C Tag RAM latencies: %08lX\n", * (volatile uint32_t *) ((uintptr_t) L2C_310 + 0x0108)); // reg1_tag_ram_control
-	}
-#endif
-#if 0 && defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
-	{
-		// GIC version diagnostics
-		// Renesas: ARM GICv1
-		//	GICInterface->IIDR=3901043B, GICDistributor->IIDR=0000043B
-		// STM32MP1: ARM GICv2
-		//	GICInterface->IIDR=0102143B, GICDistributor->IIDR=0100143B
-		// ZINQ XC7Z010: ARM GICv1
-		//	GICInterface->IIDR=3901243B, GICDistributor->IIDR=0102043B
-
-		PRINTF("GICInterface->IIDR=%08lX, GICDistributor->IIDR=%08lX\n", (unsigned long) GIC_GetInterfaceId(), (unsigned long) GIC_DistributorImplementer());
-
-//		switch (ICPIDR1 & 0x0F)
-//		{
-//		case 0x03:	PRINTF("arm_gic_initialize: ARM GICv1\n"); break;
-//		case 0x04:	PRINTF("arm_gic_initialize: ARM GICv2\n"); break;
-//		default:	PRINTF("arm_gic_initialize: ARM GICv? (code=%08lX @%p)\n", (unsigned long) ICPIDR1, & ICPIDR1); break;
-//		}
-	}
-#endif /* defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U) */
-#if 0 && (__CORTEX_A == 9U) && defined (SCU_CONTROL_BASE)
-	{
-		// SCU registers dump
-		// ZYNQ7000:
-		//	SCU Control Register=00000002
-		//	SCU Configuration Register=00000501
-		//	SCU CPU Power Status Register=03030000
-		//	Filtering Start Address Register=00100000
-		//	Filtering End Address Register=FFE00000
-		//PRINTF("SCU_CONTROL_BASE=%08lX\n", SCU_CONTROL_BASE);
-		PRINTF("SCU Control Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0]);	// 0x00
-		PRINTF("SCU Configuration Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [1]);	// 0x04
-		PRINTF("SCU CPU Power Status Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [2]);	// 0x08
-		PRINTF("Filtering Start Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x10]);	// 0x40
-		PRINTF("Filtering End Address Register=%08lX\n", ((volatile uint32_t *) SCU_CONTROL_BASE) [0x11]);	// 0x44
-	}
-#endif
-#if 1 && CPUSTYLE_STM32MP1 && WITHDEBUG
-	{
-		PRINTF("stm32mp1_get_per_freq()=%lu\n", stm32mp1_get_per_freq());
-		PRINTF("stm32mp1_get_axiss_freq()=%lu\n", stm32mp1_get_axiss_freq());
-		PRINTF("stm32mp1_get_pll2_r_freq()=%lu (DDR3)\n", stm32mp1_get_pll2_r_freq());
-	}
-#endif
-#if 1 && defined (DDRPHYC) && WITHDEBUG
-	{
-		// Check DQS Gating System Latency (R0DGSL) and DQS Gating Phase Select (R0DGPS)
-		PRINTF("stm32mp1_ddr_init results: DX0DQSTR=%08lX, DX1DQSTR=%08lX, DX2DQSTR=%08lX, DX3DQSTR=%08lX\n",
-				DDRPHYC->DX0DQSTR, DDRPHYC->DX1DQSTR,
-				DDRPHYC->DX2DQSTR, DDRPHYC->DX3DQSTR);
-
-		// 16 bit single-chip DDR3:
-		// PanGu board: stm32mp1_ddr_init results: DX0DQSTR=3DB02001, DX1DQSTR=3DB02001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
-		// board v2: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
-		// voard v3: 	stm32mp1_ddr_init results: DX0DQSTR=3DB03001, DX1DQSTR=3DB03001, DX2DQSTR=3DB02000, DX3DQSTR=3DB02000
-
 	}
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
@@ -6727,9 +6754,9 @@ void hightests(void)
 
 		static RAMNOINIT_D1 FATFSALIGN_BEGIN float Etalon [2048] FATFSALIGN_END;
 		static RAMNOINIT_D1 FATFSALIGN_BEGIN float TM [2048] FATFSALIGN_END;
-		static RAMNOINIT_D1 FATFSALIGN_BEGIN FIL WPFile FATFSALIGN_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 FIL WPFile;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 		static const char fmname [] = "tstdata.dat";
-		static RAMNOINIT_D1 FATFSALIGN_BEGIN FATFS wave_Fatfs FATFSALIGN_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+		static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 	
 		int CountZap=0;
 		int LC=2048;
@@ -7202,11 +7229,11 @@ void hightests(void)
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEFATFS
-	// SD CARD file system level functions test
+	// SD CARD file system level functions speed test
 	// no interactive
 	{
 
-		FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
+		static FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 		FRESULT rc;
 //
 //		static const MKFS_PARM defopt = { FM_ANY, 0, 0, 0, 0};	/* Default parameter */
@@ -7216,19 +7243,36 @@ void hightests(void)
 //		defopt.n_root = 128;	/* Number of root directory entries */
 //		defopt.au_size = 0;		/* Cluster size (byte) */
 
-		PRINTF("Wait for storage device ready\n");
-		while (hamradio_get_usbh_active() == 0)
+		PRINTF("Wait for storage device ready. Press any key\n");
+		for (;;)
+		{
+			char c;
+			if (dbg_getchar(& c))
+				break;
+	#if WITHUSBHW
+			board_usbh_polling();     // usb device polling
+	#endif /* WITHUSBHW */
+	#if WITHUSEAUDIOREC
 			sdcardbgprocess();
+	#endif /* WITHUSEAUDIOREC */
+			//local_delay_ms(5);
+		}
 		PRINTF("Storage device ready\n");
 		unsigned t;
-		for (t = 0; t < 7000; t += 5)
-		{
-			sdcardbgprocess();
-			local_delay_ms(5);
-		}
+//		for (t = 0; t < 7000; t += 5)
+//		{
+//	#if WITHUSBHW
+//			board_usbh_polling();     // usb device polling
+//	#endif /* WITHUSBHW */
+//	#if WITHUSEAUDIOREC
+//			sdcardbgprocess();
+//	#endif /* WITHUSEAUDIOREC */
+//			//local_delay_ms(5);
+//		}
 		static ticker_t test_recordticker;
 		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_add(& test_recordticker);
 		system_enableIRQ();
 		{
  			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
@@ -7248,13 +7292,20 @@ void hightests(void)
 		{
 			PRINTF(PSTR("Storage device test - %d bytes block.\n"), sizeof rbuff);
 			PRINTF("Storage device test\n");
-			fatfs_filesyspeedstest();
+			if (fatfs_filesyspeedstest())
+				break;
 			for (t = 0; t < 7000; t += 5)
 			{
+		#if WITHUSBHW
+				board_usbh_polling();     // usb device polling
+		#endif /* WITHUSBHW */
+		#if WITHUSEAUDIOREC
 				sdcardbgprocess();
-				local_delay_ms(5);
+		#endif /* WITHUSEAUDIOREC */
+				//local_delay_ms(5);
 			}
 		}
+		PRINTF("Storage device test done\n");
 
 	}
 #endif
@@ -7264,6 +7315,7 @@ void hightests(void)
 		static ticker_t test_recordticker;
 		system_disableIRQ();
 		ticker_initialize(& test_recordticker, 1, test_recodspool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
+		ticker_add(& test_recordticker);
 		system_enableIRQ();
 		fatfs_filesystest(1);
 	}
@@ -9070,7 +9122,7 @@ nestedirqtest(void)
 			dbg_putchar(c);
 		}
 	}
-	board_init_io();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
+	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	hardware_timer_initialize(3);
 	arm_hardware_set_handler_system(OSTMI0TINT_IRQn, r7s721_ostm0_interrupt_test);
 	hardware_elkey_timer_initialize();
@@ -9123,7 +9175,7 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if 0 && CPUSTYLE_XC7Z
+#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	{
 		// калибровка программной задержки
 		for (;;)

@@ -47,7 +47,17 @@
 //
 // http://blog.metrotek.spb.ru/2011/07/07/usb-set-na-cortex-m3/
 
-#define USB_FUNCTION_BCD_USB	0x0200	// 0x0201 in ST samples
+// See https://community.osr.com/discussion/249588/where-is-the-usb-2-1-specification
+//	The value of the bcdUSB field in the standard USB 2.0 Device Descriptor is used to indicate that the device supports the request to read the BOS Descriptor (i.e. GetDescriptor(BOS)). Devices that support the BOS descriptor must have a bcdUSB value of 0201H or larger.
+// USB2_LinkPowerMangement_ECN[final].pdf
+// See Binary Device Object Store (BOS) Descriptor
+
+#if (USBD_LPM_ENABLED == 1)
+	#define USB_FUNCTION_BCD_USB	0x0201	// 0x0201 in ST samples
+#else /* (USBD_LPM_ENABLED == 1) */
+	#define USB_FUNCTION_BCD_USB	0x0200
+#endif /* (USBD_LPM_ENABLED == 1) */
+
 #define USB_FUNCTION_VENDOR_ID	0xFFFF	// Generic
 //#define USB_FUNCTION_VENDOR_ID	0x041C	// Altera Corp.
 //#define USB_FUNCTION_VENDOR_ID	0x04d9	// Holtek Semiconductor, Inc.
@@ -73,7 +83,9 @@
 #elif WITHUSBUAC && WITHUSBUACIN2
 	#define PRODUCTSTR "Storch"
 
-	#if WITHUSBUACINOUT
+	#if WITHUSBUACINOUTRENESAS
+		#define USB_FUNCTION_PRODUCT_ID	0x0731
+	#elif WITHUSBUACINOUT
 		#define USB_FUNCTION_PRODUCT_ID	0x0733
 	#elif WITHUSBDFU && WITHMOVEDFU
 		#define USB_FUNCTION_PRODUCT_ID	0x073B
@@ -94,7 +106,9 @@
 #else /* WITHUSBUAC && WITHUSBUACIN2 */
 	#define PRODUCTSTR "Storch"
 
-	#if WITHUSBUACINOUT
+	#if WITHUSBUACINOUTRENESAS
+		#define USB_FUNCTION_PRODUCT_ID	0x0732
+	#elif WITHUSBUACINOUT
 		#define USB_FUNCTION_PRODUCT_ID	0x0734
 	#elif WITHUSBDFU && WITHMOVEDFU
 		#define USB_FUNCTION_PRODUCT_ID	0x073C
@@ -182,7 +196,11 @@ static const struct stringtempl strtemplates [] =
 
 	{ STRING_ID_DFU, PRODUCTSTR " DFU", },
 
-#if WITHUSBUACINOUT
+#if WITHUSBUACINOUTRENESAS
+	{ STRING_ID_a0, PRODUCTSTR " Audio", },		// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_a1, PRODUCTSTR " Audio1", },	// tag for Interface Descriptor 0/0 Audio
+	{ STRING_ID_a2, PRODUCTSTR " Audio2", },		// tag for Interface Descriptor 0/0 Audio
+#elif WITHUSBUACINOUT
 	{ STRING_ID_a0, PRODUCTSTR " Voice", },		// tag for Interface Descriptor 0/0 Audio
 	{ STRING_ID_a1, PRODUCTSTR " Spectrum", },	// tag for Interface Descriptor 0/0 Audio
 #else /* WITHUSBUACINOUT */
@@ -238,6 +256,21 @@ static uint_fast16_t encodeMaxPacketSize(uint_fast32_t size)
 		return (0x01 << 11) | ((size + 1) / 2);	// 513..1024
 	else
 		return (0x02 << 11) | ((size + 2) / 3);	// 683..1024
+}
+
+// возврат степени 2 от числа (не являющиеся 1 2 4 8... округляются до ближайшего меньшего).
+static uint_fast8_t
+usb_ilog2(
+	unsigned long v		// число на анализ
+	)
+{
+	uint_fast8_t n;
+	ASSERT(v != 0);
+
+	for (n = 0; v != 1; ++ n)
+		v >>= 1;
+
+	return n;
 }
 
 // See audio10.pdf - 3.7.2.3 Audio Channel Cluster Format
@@ -2522,6 +2555,9 @@ typedef struct audiopath_tag
 static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, unsigned maxsize, int highspeed, uint_fast8_t offset)
 {
 	unsigned n = 0;
+	uint_fast8_t ialt = 0;
+	uint_fast8_t oalt = 0;
+
 	const uint_fast8_t controlifv = INTERFACE_AUDIO_CONTROL_MIKE;	/* AUDIO receiever out control interface */
 	const uint_fast8_t mikeifv = INTERFACE_AUDIO_MIKE;
 	const uint_fast8_t modulatorifv = INTERFACE_AUDIO_SPK;
@@ -2560,20 +2596,43 @@ static unsigned fill_UAC1_IN48_OUT48_function(uint_fast8_t fill, uint8_t * p, un
 
 	// IN data flow: USB Microphone
 	// INTERFACE_AUDIO_MIKE - audio streaming interface
-	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, 0, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 0, offset);	/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3) */ //zero-bandwidth interface
 
 	// IN data flow: radio RX audio data
-	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, 1, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalInID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
 	n += UAC1_FormatTypeDescroptor_IN48(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
 	n += UAC1_fill_27_IN48(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
 	n += UAC1_fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - ???????????? ?????????????*/
 
+#if WITHUSBUACINOUTRENESAS
+	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
+
+	#if WITHRTS96
+		// IN data flow: radio RX spectrum data
+		n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+		n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalInID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
+		n += UAC1_FormatTypeDescroptor_RTS96(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
+		n += UAC1_fill_27_RTS96(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
+		n += UAC1_fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
+	#endif /* WITHRTS96 */
+
+	#if WITHRTS192
+		// IN data flow: radio RX spectrum data
+		n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, mikeifv, ialt ++, 1, offset);	/* INTERFACE_AUDIO_MIKE Interface Descriptor 2/1 Audio, 1 Endpoint, bAlternateSetting=0x01 */
+		n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalInID);	/* USB Microphone Class-specific AS General Interface Descriptor (for output TERMINAL_UACIN48_UACINRTS) (CODE == 5) */
+		n += UAC1_FormatTypeDescroptor_RTS192(fill, p + n, maxsize - n);		/* USB Microphone Type I Format Type Descriptor (CODE == 6) 48000 */
+		n += UAC1_fill_27_RTS192(fill, p + n, maxsize - n, highspeed, epin, offset);	/* Endpoint Descriptor USBD_EP_AUDIO_IN In, Isochronous, 125 us */
+		n += UAC1_fill_28(fill, p + n, maxsize - n);	/* USB Microphone Class-specific Isoc. Audio Data Endpoint Descriptor (CODE == 7) OK - подтверждено документацией*/
+	#endif /* WITHRTS192 */
+
+#endif /* WITHUSBUACINOUTRENESAS */
+
 	// OUT data flow: modulator
 	// INTERFACE_AUDIO_SPK - audio streaming interface
-	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, 0, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, oalt ++, 0, offset);	/* INTERFACE_AUDIO_SPK - Interface 1, Alternate Setting 0 */
 
-	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, 1, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
+	n += UAC1_AS_InterfaceDesc(fill, p + n, maxsize - n, modulatorifv, oalt ++, 1, offset);	/* INTERFACE_AUDIO_SPK -  Interface 1, Alternate Setting 1 */
 	n += UAC1_AS_InterfaceDescriptor(fill, p + n, maxsize - n, terminalOutID);	/* USB Speaker Audio Streaming Interface Descriptor (for output TERMINAL_UACOUT48 + offset) */
 	n += UAC1_FormatTypeDescroptor_OUT48(fill, p + n, maxsize - n);	/* USB Speaker Audio Type I Format Interface Descriptor (one sample rate) 48000 */
 	n += UAC1_fill_14_OUT48(fill, p + n, maxsize - n, epout, highspeed);	/* Endpoint USBD_EP_AUDIO_OUT - Standard Descriptor */
@@ -2659,7 +2718,11 @@ static unsigned fill_UAC1_function(uint_fast8_t fill, uint8_t * p, unsigned maxs
 {
 	unsigned n = 0;
 
-#if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
+#if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUTRENESAS
+	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
+	n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
+
+#elif WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
 	/* отдельные функции для передачи в компьютер спектра и двунапаправленная звука */
 	n += fill_UAC1_IN48_OUT48_function(fill, p + n, maxsize - n, highspeed, 0);
 	#if WITHRTS96 || WITHRTS192
@@ -4166,7 +4229,7 @@ static unsigned fill_Device_descriptor(uint8_t * buff, unsigned maxsize, uint_fa
 		* buff ++ = USB_DEVICE_CLASS_MISCELLANEOUS;		/*  4:bDeviceClass */
 		* buff ++ = 2;		                            /*  5:bDeviceSubClass - Common Class Sub Class */
 		* buff ++ = 1;									/*  6:bDeviceProtocol - Interface Association Descriptor protocol */
-		* buff ++ = USB_OTG_MAX_EP0_SIZE;               /*  7:bMaxPacketSize0 (for DCP) */
+		* buff ++ = USB_OTG_MAX_EP0_SIZE;               /*  7:bMaxPacketSize0 (for DCP), For 3x: 09H is the only valid value in this field when operating at Gen X speed. */
 		* buff ++ = LO_BYTE(USB_FUNCTION_VENDOR_ID);    /*  8:idVendor_lo */
 		* buff ++ = HI_BYTE(USB_FUNCTION_VENDOR_ID);	/*  9:idVendor_hi */
 		* buff ++ = LO_BYTE(USB_FUNCTION_PRODUCT_ID);   /* 10:idProduct_lo */
@@ -4202,7 +4265,7 @@ static unsigned fill_DeviceQualifier_descriptor(
 		* buff ++ = USB_DEVICE_CLASS_MISCELLANEOUS;			/*  4:bDeviceClass - Miscellaneous */
 		* buff ++ = 2;										/*  5:bDeviceSubClass - Common Class Sub Class */
 		* buff ++ = 1;										/*  6:bDeviceProtocol - Interface Association Descriptor protocol */
-		* buff ++ = USB_OTG_MAX_EP0_SIZE;                   /*  7:bMaxPacketSize0 (for DCP) */
+		* buff ++ = USB_OTG_MAX_EP0_SIZE;                   /*  7:bMaxPacketSize0 (for DCP), For 3x: 09H is the only valid value in this field when operating at Gen X speed. */
 		* buff ++ = bNumConfigurations;                     /*  8:bNumConfigurations - number of other-speed configurations */
 		* buff ++ = 0;                                      /*  9:bReserved */
 	}
@@ -4219,7 +4282,9 @@ static unsigned fill_devcaps_usb20ext(uint_fast8_t fill, uint8_t * buff, unsigne
 	if (fill != 0 && buff != NULL)
 	{
 		const uint_fast32_t bmAttributes = 
+#if (USBD_LPM_ENABLED == 1)
 			(1uL << 1) |	/* Link Power Management capability bit set */
+#endif /* (USBD_LPM_ENABLED == 1) */
 			0;
 		// Вызов для заполнения, а не только для проверки занимаемого места в буфере
 		* buff ++ = length;						/* bLength */
@@ -4277,6 +4342,7 @@ static unsigned fill_DevCaps_group(uint_fast8_t fill, uint8_t * p, unsigned maxs
 	return n;
 }
 
+// Binary Device Object Store (BOS) Descriptor
 static unsigned fill_BinaryDeviceObjectStore_descriptor(uint8_t * buff, unsigned maxsize)
 {
 	const uint_fast8_t bNumDeviceCaps = 2;
@@ -4729,7 +4795,11 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 	}
 
 	// Binary Device Object Store (BOS) Descriptor
-	if (USB_FUNCTION_BCD_USB > 0x0201)
+	// The value of the bcdUSB field in the standard USB 2.0 Device Descriptor
+	// is used to indicate that the device supports the request to
+	// read the BOS Descriptor (i.e. GetDescriptor(BOS)).
+	// Devices that support the BOS descriptor must have a bcdUSB value of 0201H or larger.
+	if (USB_FUNCTION_BCD_USB >= 0x0201)
 	{
 		unsigned partlen;
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
@@ -4802,7 +4872,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHUSBHID */
 	
 #if WITHUSBDFU
-#if BOOTLOADER_APPSIZE
+#if defined (BOOTLOADER_APPSIZE)
 	{
 		extern unsigned char mf_id;	// Manufacturer ID
 		extern unsigned char mf_devid1;	// device ID (part 1)
@@ -4824,8 +4894,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			status ? USBD_DFU_FLASHNAME : flashname,
 			(unsigned long) BOOTLOADER_APPBASE,
-			(unsigned) (BOOTLOADER_APPSIZE / BOOTLOADER_PAGESIZE),
-			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			(unsigned) (BOOTLOADER_APPSIZE / sectorsizeDATAFLASH()),
+			(unsigned) (sectorsizeDATAFLASH() / 1024)
 			);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);
@@ -4833,7 +4903,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		StringDescrTbl [id].data = alldescbuffer + score;
 		score += partlen;
 	}
-#endif /* BOOTLOADER_APPSIZE */
+#endif /* defined (BOOTLOADER_APPSIZE) */
 #if BOOTLOADER_SELFSIZE
 	{
 		// Re-write bootloader parameters
@@ -4844,8 +4914,8 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
 			USBD_DFU_FLASHNAME,
 			(unsigned long) BOOTLOADER_SELFBASE,
-			(unsigned) (BOOTLOADER_SELFSIZE / BOOTLOADER_PAGESIZE),
-			(unsigned) (BOOTLOADER_PAGESIZE / 1024)
+			(unsigned) (BOOTLOADER_SELFSIZE / sectorsizeDATAFLASH()),
+			(unsigned) (sectorsizeDATAFLASH() / 1024)
 			);
 		score += fill_align4(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score);
 		partlen = fill_string_descriptor(alldescbuffer + score, ARRAY_SIZE(alldescbuffer) - score, b);

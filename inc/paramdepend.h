@@ -55,7 +55,7 @@ extern "C" {
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 400 Hz
 
@@ -97,7 +97,7 @@ extern "C" {
 	/* частоты, подающиеся на периферию */
 	#define	PCLK1_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK1 frequency
 	#define	PCLK2_FREQ (CPU_FREQ / 1)	// 48 MHz PCLK2 frequency
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
 
@@ -133,7 +133,7 @@ extern "C" {
 		#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)
 		#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 	#endif
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
@@ -239,7 +239,7 @@ extern "C" {
 			//#define	PCLK1_FREQ (CPU_FREQ / 2)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
 			//#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 1)	// 42 MHz PCLK1 frequency - timer clocks is 85 MHz
 			//#define	PCLK2_FREQ (CPU_FREQ / 1)	// 84 MHz PCLK2 frequency
-			//#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+			//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
  		#elif CPUSTYLE_STM32H7XX
 
@@ -280,6 +280,7 @@ extern "C" {
 			#define PLLSAI_FREQ_OUT (PLLSAI_FREQ / 2)	// Frequency after PLLSAI_DivQ
 
 			#define CPU_FREQ (stm32f7xx_get_sys_freq())	// 172032000uL
+			#define BOARD_SPI_FREQ (hardware_get_spi_freq())
 
 			#define HSIFREQ 16000000uL
 
@@ -317,7 +318,7 @@ extern "C" {
 			#define	PCLK1_FREQ (CPU_FREQ / 1)	// PCLK1 frequency
 			#define	PCLK2_FREQ (CPU_FREQ / 1)	// PCLK2 frequency
 		#endif
-		#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+		//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	#endif
 
@@ -369,7 +370,7 @@ extern "C" {
 	//#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 32000000uL
 	//#define CPU_FREQ 12000000uL
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
 	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
@@ -399,7 +400,7 @@ extern "C" {
 	//#define CPU_FREQ 48000000uL
 	//#define CPU_FREQ 32000000uL
 	//#define CPU_FREQ 12000000uL
-	#define SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+	//#define BOARD_SYSTICK_FREQ CPU_FREQ	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 	// ADC clock frequency: 1..20 MHz
 	#define ADC_FREQ	2000000uL	/* тактовая частота SAR преобразователя АЦП. */
@@ -726,6 +727,7 @@ extern "C" {
 	#define DDR_FREQ 	(REF2INFREQ / (PLL2DIVM) * (PLL2DIVN) / (PLL2DIVR))
 
 	#define BOARD_SPI_FREQ (hardware_get_spi_freq())
+	#define BOARD_QSPI_FREQ (stm32mp1_get_qspi_freq())
 
 	#define TICKS_FREQUENCY	 (200U)	// 200 Hz
 
@@ -733,7 +735,7 @@ extern "C" {
 	#define SCL_CLOCK	400000uL	/* 400 kHz I2C/TWI speed */
 
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 24000000uL	/* 2требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
@@ -761,6 +763,33 @@ extern "C" {
 	#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
 
 #elif CPUSTYLE_XC7Z
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define CPU_FREQ	(xc7z1_get_arm_freq())
+	#define BOARD_SPI_FREQ (xc7z1_get_spi_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
+#elif CPUSTYLE_XCZU
+	// Zynq UltraScale+ Device
+	// XCZU2..XCZU9, XCZU11
 
 	typedef uint_fast16_t adcvalholder_t;
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
@@ -2474,13 +2503,16 @@ extern "C" {
 
 #endif /* WITHTOUCHGUI */
 
-#if defined WITHVIEW_3DSS && (! defined CPUSTYLE_XC7Z && ! defined CPUSTYLE_STM32MP1 && ! defined CPUSTYLE_R7S721)
+#if defined WITHVIEW_3DSS && (! defined CPUSTYLE_XC7Z && ! defined CPUSTYLE_XCZU && ! defined CPUSTYLE_STM32MP1 && ! defined CPUSTYLE_R7S721)
 	#undef WITHVIEW_3DSS								// WITHVIEW_3DSS только для конфигураций с достаточным объемом памяти
 #endif
 
 #if WITHKEEPNVRAM && defined (NVRAM_TYPE) && (NVRAM_TYPE == NVRAM_TYPE_FM25XXXX)
 	#error WITHKEEPNVRAM and NVRAM_TYPE_FM25XXXX can not be used together
 #endif
+
+// Поддержка FatFS если запрошена поддержка однорго из носителей
+#define WITHUSEFATFS (WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK)
 
 #ifdef __cplusplus
 }

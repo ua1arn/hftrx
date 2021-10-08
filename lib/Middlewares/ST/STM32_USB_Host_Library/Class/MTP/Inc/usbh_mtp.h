@@ -133,6 +133,8 @@ typedef struct _MTP_Process
   PTP_HandleTypeDef     ptp;
   uint32_t              current_storage_unit;
   uint32_t              is_ready;
+
+  USBH_TargetTypeDef target;
 }
 MTP_HandleTypeDef;
 

@@ -204,7 +204,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
                                   uint8_t dev_address,
                                   uint8_t speed,
                                   uint8_t ep_type,
-                                  uint16_t mps)
+                                  uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
   HAL_StatusTypeDef status;
 
@@ -233,7 +233,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
                         dev_address,
                         speed,
                         ep_type,
-                        mps);
+                        mps, tt_hubaddr, tt_prtaddr);
   __HAL_UNLOCK(hhcd);
 
   return status;
@@ -1052,6 +1052,16 @@ HAL_StatusTypeDef HAL_HCD_ResetPort(HCD_HandleTypeDef *hhcd)
 }
 
 /**
+  * @brief  Reset the host port.
+  * @param  hhcd HCD handle
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_HCD_ResetPort2(HCD_HandleTypeDef *hhcd, uint8_t resetActiveState)
+{
+  return (USB_ResetPort2(hhcd->Instance, resetActiveState));
+}
+
+/**
   * @}
   */
 
@@ -1113,6 +1123,18 @@ uint32_t HAL_HCD_HC_GetXferCount(HCD_HandleTypeDef *hhcd, uint8_t chnum)
 }
 
 /**
+  * @brief  Return the last host transfer size.
+  * @param  hhcd HCD handle
+  * @param  chnum Channel number.
+  *         This parameter can be a value from 1 to 15
+  * @retval last transfer size in byte
+  */
+uint32_t HAL_HCD_HC_GetMaxPacket(HCD_HandleTypeDef *hhcd, uint8_t chnum)
+{
+  return hhcd->hc[chnum].max_packet;
+}
+
+/**
   * @brief  Return the Host Channel state.
   * @param  hhcd HCD handle
   * @param  chnum Channel number.
@@ -1152,6 +1174,11 @@ uint32_t HAL_HCD_GetCurrentFrame(HCD_HandleTypeDef *hhcd)
 uint32_t HAL_HCD_GetCurrentSpeed(HCD_HandleTypeDef *hhcd)
 {
   return (USB_GetHostSpeed(hhcd->Instance));
+}
+
+uint_fast8_t HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd)
+{
+  return 1;
 }
 
 /**

@@ -237,7 +237,7 @@ enum
 	#endif /* WITHUSBUACIN2 */
 #endif /* WITHUSBUAC */
 
-/* Последовательность в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
+/* Последовательность функций в данном enum должна соответствовать порядку использования в fill_Configuration_main_group */
 enum interfaces_tag
 {
 #if WITHUSBDFU && WITHMOVEDFU
@@ -245,6 +245,7 @@ enum interfaces_tag
 #endif /* WITHUSBDFU */
 
 #if WITHUSBCDCACM
+	// функция виртуального последовательного порта
 	INTERFACE_CDC_base,
 	INTERFACE_CDC_CONTROL_3a = INTERFACE_CDC_base,	/* CDC ACM control Interface */
 	INTERFACE_CDC_DATA_4a,		/* CDC ACM data Interface */
@@ -252,7 +253,15 @@ enum interfaces_tag
 #endif /* WITHUSBCDCACM */
 
 #if WITHUSBUAC
-	#if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
+	#if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUTRENESAS
+		// функция звукового устройства
+		/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
+		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+		#define INTERFACE_AUDIO_CONTROL_SPK 2222
+		//#define INTERFACE_AUDIO_CONTROL_RTS 2223
+		INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+	#elif WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
 		// версия с совмещённым устройством IN/OUT
 		INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out / transmitter input control interface */
 		INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
@@ -268,12 +277,6 @@ enum interfaces_tag
 			INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 			INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
 			INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-		#elif 0 /* WITHUSBUACIN2 */
-			// версия с совмещённым устройством IN/OUT
-			INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
-			INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-			#define INTERFACE_AUDIO_CONTROL_SPK 2222
-			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
 		#elif WITHUSBUACIN
 			INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 			INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
@@ -286,24 +289,29 @@ enum interfaces_tag
 #endif /* WITHUSBUAC */
 
 #if WITHUSBRNDIS
+	// функция сетевой платы
 	INTERFACE_RNDIS_CONTROL,	/* RNDIS control Interface */
 	INTERFACE_RNDIS_DATA,		/* RNDIS data Interface */
 #endif /* WITHUSBRNDIS */
 
 #if WITHUSBCDCEEM
+	// функция сетевой платы
 	INTERFACE_CDCEEM_DATA,	/* CDC ECM/CDC EEM data Interface */
 #endif /* WITHUSBCDCEEM */
 
 #if WITHUSBCDCECM
+	// функция сетевой платы
 	INTERFACE_CDCECM_CONTROL,	/* CDC ECM control Interface */
 	INTERFACE_CDCECM_DATA,	/* CDC ECM/CDC EEM data Interface */
 #endif /* WITHUSBCDCECM */
 
 #if WITHUSBHID
+	// функция HID
 	INTERFACE_HID_CONTROL,	/* HID control Interface */
 #endif /* WITHUSBHID */
 
 #if WITHUSBDFU && ! WITHMOVEDFU
+	// функция DFU
 	INTERFACE_DFU_CONTROL,		/* DFU control Interface */
 #endif /* WITHUSBDFU */
 	// 
@@ -355,20 +363,39 @@ enum interfaces_tag
 	#if WITHUSBUAC
 		enum
 		{
-
+		#if WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUTRENESAS
+			// функция звукового устройства
+			/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
+			INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
+			INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			#define INTERFACE_AUDIO_CONTROL_SPK 2222
+			//#define INTERFACE_AUDIO_CONTROL_RTS 2223
+			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+		#elif WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT
+			// версия с совмещённым устройством IN/OUT
+			INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out / transmitter input control interface */
+			INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+			#define INTERFACE_AUDIO_CONTROL_SPK 2222
+			#if WITHRTS96 || WITHRTS192
+				INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
+				INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
+			#endif /* WITHRTS96 || WITHRTS192 */
+		#else /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 			#if WITHUSBUACIN2
-				INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
-				INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+				INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 				INTERFACE_AUDIO_MIKE,		/* USB receiver output  Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
 				INTERFACE_AUDIO_CONTROL_RTS,		/* AUDIO spectrum control interface */
 				INTERFACE_AUDIO_RTS,		/* USB spectrum Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-				//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 3,
-			#else
-				INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO control interface */
-				INTERFACE_AUDIO_SPK,		/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+			#elif WITHUSBUACIN
+				INTERFACE_AUDIO_CONTROL_MIKE,		/* AUDIO receiever out control interface */
 				INTERFACE_AUDIO_MIKE,		/* USB Microphone Standard AS Interface Descriptor (Alt. Set. 0) (CODE == 3)*/ //zero-bandwidth interface
-				//INTERFACE_AUDIO_last = INTERFACE_AUDIO_CONTROL_SPK + 2,
 			#endif
+			#if WITHUSBUACOUT
+				INTERFACE_AUDIO_CONTROL_SPK,		/* AUDIO transmitter input control interface */
+				INTERFACE_AUDIO_SPK,			/* USB Speaker Standard AS Interface Descriptor - Audio Streaming Zero Bandwith */
+			#endif /* WITHUSBUACOUT */
+		#endif /* WITHUSBUACIN && WITHUSBUACOUT && WITHUSBUACINOUT */
 		};
 	#endif /* WITHUSBUAC */
 	#if WITHUSBCDCACM

@@ -30,6 +30,7 @@
 
 #define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 #define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #define WITHUARTFIFO	1	/* испольование FIFO */
 
@@ -54,12 +55,13 @@
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
-	#define WITHHWDDR3_4GBIT	1
 
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
+	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
@@ -70,8 +72,11 @@
 
 	//#define WITHUSBHW_HOST		USB_OTG_HS
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
+	#define WITHUSBHOST_DMAENABLE 1
 
+	//#define WITHEHCIHW	1	/* USB_EHCI controller */
+	//#define WITHUSBHW_EHCI		USB1_EHCI
+	//#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -115,11 +120,16 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBDEV_DMAENABLE 1
 
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_HOST		USB_OTG_HS
-	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
+//	#define WITHUSBHW_HOST		USB_OTG_HS
+//	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+//	#define WITHUSBHOST_DMAENABLE 1
 
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		USB1_EHCI
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller), 1 - 2nd PHY port (Micro USB). See USBPHYC_MISC_SWITHOST_VAL
+
+	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
+	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	//#define WITHCAT7_CDC	1	// сетевой интерфейс SLIP на CDC
@@ -141,12 +151,12 @@
 
 	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
-    //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
-	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
-	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
-	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
-	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
-
+//    //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
+//	//#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
+//	//#define WITHUSBCDCECM	1	/* ECM использовать Ethernet Control Model на USB соединении */
+//	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
+//	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
+//
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 	#define WITHUSBWCID	1
@@ -249,7 +259,7 @@
 	} while (0)
 #endif /* WITHI2SHW */
 
-	// для предотвращения треска от оставшегося инициализщированным кодека
+	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
 		arm_hardware_piob_inputs(0 * 1uL << 12); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_updown(0, 0 * 1uL << 12); \
@@ -703,8 +713,8 @@
 			arm_hardware_pioa_opendrain(TARGET_TWI2_TWD, TARGET_TWI2_TWD);  	/* PA12 I2C5_SDA */ \
 		} while (0) 
 	#define	TWISOFT2_DEINITIALIZE() do { \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWCK); 	/* PA11 I2C5_SCL */ \
-			arm_hardware_pioa_inputs(TARGET_TWI_TWD);	/* PA12 I2C5_SDA */ \
+			arm_hardware_pioa_inputs(TARGET_TWI2_TWCK); 	/* PA11 I2C5_SCL */ \
+			arm_hardware_pioa_inputs(TARGET_TWI2_TWD);	/* PA12 I2C5_SDA */ \
 		} while (0)
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
@@ -820,8 +830,26 @@
 	PA11     ------> USB_OTG_FS_DM
 	PA12     ------> USB_OTG_FS_DP 
 	*/
-	#define	USBD_FS_INITIALIZE() do { \
-		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PDxx */ \
+	#define USBPHYC_MISC_SWITHOST_Pos		0
+	#define USBPHYC_MISC_SWITHOST_Msk (0x01uL << USBPHYC_MISC_SWITHOST_Pos)
+	#define USBPHYC_MISC_PPCKDIS_Pos		1
+	#define USBPHYC_MISC_PPCKDIS_Msk (0x03uL << USBPHYC_MISC_PPCKDIS_Pos)
+
+	#define	USBD_EHCI_INITIALIZE() do { \
+		RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN; \
+		(void) RCC->MP_APB4ENSETR; \
+		RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN; \
+		(void) RCC->MP_APB4LPENSETR; \
+		/* STM32_USBPHYC_MISC bit fields */ \
+		/*	SWITHOST 0: Select OTG controller for 2nd PHY port */ \
+		/*	SWITHOST 1: Select Host controller for 2nd PHY port */ \
+		/*	EHCI controller hard wired to 1st PHY port */ \
+		USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk | USBPHYC_MISC_PPCKDIS_Msk)) | \
+			(USBPHYC_MISC_SWITHOST_VAL << USBPHYC_MISC_SWITHOST_Pos) |	/* 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port */ \
+			(USBPHYC_MISC_PPCKDIS_VAL << USBPHYC_MISC_PPCKDIS_Pos) | \
+			0; \
+		(void) USBPHYC->MISC; \
+		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
 		} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
@@ -919,22 +947,15 @@
 	};
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
-		const uint32_t MODEmask = 0 * (1U << 3); /* Pxx - MODEmask */ \
 		const uint32_t DEmask = (1U << 7); 		/* PK7 - DE */ \
 		const uint32_t HSmask = (1U << 12); 	/* PI12 - HSYNC */ \
 		const uint32_t VSmask = (1U << 13); 	/* PI13 - VSYNC */ \
 		/* Bit clock */ \
-		arm_hardware_pioi_altfn50((1U << 7), GPIO_AF_LTDC14);		/* CLK PI14 */ \
-		/* Control */ \
-		arm_hardware_piod_outputs(MODEmask, (demode != 0) * MODEmask);	/* PD3 MODEmask=state */ \
-		/* Synchronisation signals in SYNC mode */ \
-		arm_hardware_piok_outputs((demode == 0) * DEmask, 0);	/* DE=0 (DISP, pin 31) */ \
-		arm_hardware_pioi_altfn50((demode == 0) * VSmask, GPIO_AF_LTDC14);	/* PI13 VSYNC */ \
-		arm_hardware_pioi_altfn50((demode == 0) * HSmask, GPIO_AF_LTDC14);	/* PI12 HSYNC */ \
-		/* Synchronisation signals in DE mode*/ \
-		arm_hardware_piok_altfn50((demode != 0) * DEmask, GPIO_AF_LTDC14);	/* PK7 DE */ \
-		arm_hardware_pioi_outputs((demode != 0) * VSmask, VSmask);	/* VSYNC */ \
-		arm_hardware_pioi_outputs((demode != 0) * HSmask, HSmask);	/* HSYNC */ \
+		arm_hardware_pioi_altfn50((1U << 14), GPIO_AF_LTDC14);		/* CLK PI14 */ \
+		/* Synchronisation signals */ \
+		arm_hardware_pioi_altfn50(VSmask, GPIO_AF_LTDC14);	/* PI13 VSYNC */ \
+		arm_hardware_pioi_altfn50(HSmask, GPIO_AF_LTDC14);	/* PI12 HSYNC */ \
+		arm_hardware_piok_altfn50(DEmask, GPIO_AF_LTDC14);	/* PK7 DE */ \
 		/* RED */ \
 		arm_hardware_pioi_altfn50((1U << 15), GPIO_AF_LTDC14);		/* PI15 R0 */ \
 		arm_hardware_pioj_altfn50((1U << 0), GPIO_AF_LTDC14);		/* PJ0 R1 */ \
@@ -967,11 +988,6 @@
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
-		const uint32_t VSmask = (1U << 13); 	/* PI13 - VSYNC */ \
-		const uint32_t DEmask = (1U << 7); /* PK7 */ \
-		/* while ((GPIOA->IDR & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
-		/* while ((GPIOA->IDR & VSmask) == 0) ; */ /* дождаться 1 */ \
-		arm_hardware_piok_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 #endif /* WITHLTDCHW */
 
@@ -988,9 +1004,9 @@
 	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
+	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
-	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
+	//#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
 
 	#define USERFIRSTSBLOCK 0
 
@@ -1111,7 +1127,7 @@
 			TXDISABLE_INITIALIZE(); \
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
-			USBD_FS_INITIALIZE(); \
+			USBD_EHCI_INITIALIZE(); \
 			BOARD_SII902X_INITIALIZE(); \
 		} while (0)
 

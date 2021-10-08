@@ -458,7 +458,7 @@ void nmea_parsechar(uint_fast8_t c)
 				board_adc_store_data(VOLTSOURCE, strtol(nmeaparser_get_buff(NMF_12V_SENS), NULL, 10));
 
 				static dpclock_t dpc_ua1ceituner;
-				board_dpc(& dpc_ua1ceituner, ua1ceituner_send, NULL);
+				VERIFY(board_dpc(& dpc_ua1ceituner, ua1ceituner_send, NULL));
 
 			}
 		}
@@ -4152,9 +4152,9 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0106, 0);	// REZ3
 		RBBIT(0105, 0);	// REZ2_OC
 		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
-		RBBIT(0103, ! (glob_tx && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
-		RBBIT(0102, glob_tx);
-		RBBIT(0101, glob_fanflag);	// FAN
+		RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		RBBIT(0102, txgated && ! xvrtr);
+		RBBIT(0101, glob_fanflag && ! xvrtr);	// FAN
 		// 0100 is a bpf7
 		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
 		RBBIT(0071, glob_tuner_type);		// TY
@@ -7317,9 +7317,20 @@ uint_fast8_t boad_mike_adcoverflow(void)
 #endif /* WITHIF4DSP */
 }
 
+#if defined (BOARD_BLINK_SETSTATE)
+
+static void blinktest(void * ctx)
+{
+	static uint_fast8_t state;
+	state = ! state;
+	BOARD_BLINK_SETSTATE(state);
+}
+
+#endif /* defined (BOARD_BLINK_SETSTATE) */
+
 /* инициализация при запрещённых прерываниях.
 */
-void board_init_io(void)
+void board_initialize(void)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_hardware_initialize();
@@ -7371,6 +7382,19 @@ void board_init_io(void)
 #if WITHCPUADCHW
 	board_adc_initialize();
 #endif /* WITHCPUADCHW */
+
+#if defined (BOARD_BLINK_SETSTATE)
+	{
+#if WITHISBOOTLOADER
+	const unsigned thalf = 100;	// Toggle every 100 ms
+#else /* WITHISBOOTLOADER */
+	const unsigned thalf = 500;	// Toggle every 500 ms
+#endif /* WITHISBOOTLOADER */
+	static ticker_t ticker_blinks;
+	ticker_initialize(& ticker_blinks, NTICKS(thalf), blinktest, NULL);
+	ticker_add(& ticker_blinks);
+	}
+#endif /* defined (BOARD_BLINK_SETSTATE) */
 }
 
 #if defined (RTC1_TYPE)
@@ -8837,6 +8861,7 @@ adcfilters_initialize(void)
 
 	// вызов board_adc_filtering() по заверщению цикла АЦП
 	adcdone_initialize(& adcevent, board_adc_filtering, NULL);
+	adcdone_add(& adcevent);
 
 
 //#if ! WITHCPUADCHW

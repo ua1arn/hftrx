@@ -100,15 +100,13 @@ typedef struct
   SCSI_SenseTypeDef           sense;
   SCSI_StdInquiryDataTypeDef  inquiry;
   uint8_t                     state_changed;
-
 }
 MSC_LUNTypeDef;
 
 /* Structure for MSC process */
 typedef struct _MSC_Process
 {
-  uint8_t              max_lun;
-  uint8_t              Reserved[3];
+  __ALIGN4k_BEGIN uint8_t              max_lunv [64] __ALIGN4k_END;
   uint8_t              InPipe;
   uint8_t              OutPipe;
   uint8_t              OutEp;
@@ -124,6 +122,8 @@ typedef struct _MSC_Process
   uint16_t             current_lun;
   uint16_t             rw_lun;
   uint32_t             timer;
+
+  USBH_TargetTypeDef target;
 }
 MSC_HandleTypeDef;
 

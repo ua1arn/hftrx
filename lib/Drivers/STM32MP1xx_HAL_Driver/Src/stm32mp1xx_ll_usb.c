@@ -39,6 +39,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx_hal.h"
+#include "stm32mp1xx_ll_rcc.h"
+
+#include "formats.h"	// PRINTF
 
 /** @addtogroup STM32H7xx_LL_USB_DRIVER
   * @{
@@ -118,62 +121,91 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
 #define USBPHYC_PLL_PLLODF_Pos		7
 #define USBPHYC_PLL_PLLFRACIN_Msk	GENMASK(25, 10)
 #define USBPHYC_PLL_PLLFRACIN_Pos	10
-#define USBPHYC_PLL_PLLEN_Msk			BIT(26)
-#define USBPHYC_PLL_PLLSTRB_Msk			BIT(27)
-#define USBPHYC_PLL_PLLSTRBYP_Msk		BIT(28)
-#define USBPHYC_PLL_PLLFRACCTL_Msk		BIT(29)
-#define USBPHYC_PLL_PLLDITHEN0_Msk		BIT(30)	// PLL dither 2 (triangular)
-#define USBPHYC_PLL_PLLDITHEN1_Msk		BIT(31)	// PLL dither 1 (rectangular)
+#define USBPHYC_PLL_PLLEN_Msk			B(26)
+#define USBPHYC_PLL_PLLSTRB_Msk			B(27)
+#define USBPHYC_PLL_PLLSTRBYP_Msk		B(28)
+#define USBPHYC_PLL_PLLFRACCTL_Msk		B(29)
+#define USBPHYC_PLL_PLLDITHEN0_Msk		B(30)	// PLL dither 2 (triangular)
+#define USBPHYC_PLL_PLLDITHEN1_Msk		B(31)	// PLL dither 1 (rectangular)
 
-/* STM32_USBPHYC_MISC bit fields */
-#define USBPHYC_MISC_SWITHOST_Msk		BIT(0)
-#define USBPHYC_MISC_SWITHOST_Pos		0
+HAL_StatusTypeDef USB_HS_PHYCDeInit(void)
+{
+	/* reset */
+	RCC->APB4RSTSETR = RCC_APB4RSTSETR_USBPHYRST;
+	(void) RCC->APB4RSTSETR;
+	RCC->APB4RSTCLRR = RCC_APB4RSTCLRR_USBPHYRST;
+	(void) RCC->APB4RSTCLRR;
+	/* turn clock off */
+	RCC->MP_APB4ENCLRR = RCC_MP_APB4ENCLRR_USBPHYEN;
+	(void) RCC->MP_APB4ENCLRR;
+	RCC->MP_APB4LPENCLRR = RCC_MP_APB4LPENCLRR_USBPHYLPEN;
+	(void) RCC->MP_APB4LPENCLRR;
 
+	return HAL_OK;
+}
 
 // STM32MP1 UTMI interface
 HAL_StatusTypeDef USB_HS_PHYCInit(void)
 {
 	//PRINTF("USB_HS_PHYCInit start\n");
+	// USBPHYC already initialized
+	// Прроверку нельзя выполнять, так как встроенный загрузчик уже по своему запрограммировал
+	// И бит разрешения уже установлен
+//	if ((RCC->MP_APB4ENSETR & RCC_MP_APB4ENSETR_USBPHYEN) != 0)
+//		return HAL_OK;
+
 	// Clock source
 	RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN;
 	(void) RCC->MP_APB4ENSETR;
 	RCC->MP_APB4LPENSETR = RCC_MP_APB4LPENSETR_USBPHYLPEN;
 	(void) RCC->MP_APB4LPENSETR;
 
-	if (1)
-	{
-		//	In addition, if the USBO is used in full-speed mode only, the application can choose the
-		//	48 MHz clock source to be provided to the USBO:
-		// USBOSRC
-		//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
-		//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
-		// USBPHYSRC
-		//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
-		//  0x1: pll4_r_ck clock selected as kernel peripheral clock
-		//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
-		RCC->USBCKSELR = (RCC->USBCKSELR & ~ (RCC_USBCKSELR_USBOSRC_Msk | RCC_USBCKSELR_USBPHYSRC_Msk)) |
-			(0x01 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max rcc_ck_usbo_48m
-			//(0x00 << RCC_USBCKSELR_USBOSRC_Pos) |	// 50 MHz max pll4_r_ck (можно использовать только 48 МГц)
+	// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
 
-			//(0x01 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max pll4_r_ck	- входная частота для PHYC PLL
-			(0x00 << RCC_USBCKSELR_USBPHYSRC_Pos) |	// 38.4 MHz max hse_ker_ck	- входная частота для PHYC PLL
+	const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
+	const uint_fast32_t usbphyref = LL_RCC_GetUSBPHYClockFreq(LL_RCC_USBPHY_CLKSOURCE);
+	//uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
+	//ASSERT(usbphyref >= 19200000uL && usbphyref <= 38400000uL);
+	const uint_fast32_t ODF = 0;	// игнорируется
+	// 1440 MHz
+	const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY / 4, usbphyref / 4);
+	const uint_fast32_t N = d.quot;
+
+	const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
+	const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / usbphyref;
+
+//		uint_fast64_t FRACT = (uint_fast64_t) USBPHYCPLLFREQUENCY << 16;
+//		FRACT /= pll4_r_ck;
+//		FRACT = FRACT - (d.quot << 16);
+
+	//PRINTF("USB_HS_PHYCInit: usbphyref=%u, N=%u, FRACT=%u, ODF=%u\n", usbphyref, N, (unsigned) (FRACT & 0xFFFF), ODF);
+
+	// PLL
+	// биты для программирования
+	const uint32_t validmask =
+			USBPHYC_PLL_PLLDITHEN1_Msk |
+			USBPHYC_PLL_PLLDITHEN0_Msk |
+			USBPHYC_PLL_PLLFRACCTL_Msk |
+			USBPHYC_PLL_PLLFRACIN_Msk |
+			USBPHYC_PLL_PLLODF_Msk |
+			USBPHYC_PLL_PLLNDIV_Msk |
+			USBPHYC_PLL_PLLSTRBYP_Msk |
 			0;
-		(void) RCC->USBCKSELR;
-	}
 
-	//ASSERT(stm32mp1_get_usbotg_freq() == 48000000uL);
+	const uint32_t PLLFRACCTL_VAL = (d.rem != 0);
+	const uint32_t newPLLvalue =
+		(((N) << USBPHYC_PLL_PLLNDIV_Pos) & USBPHYC_PLL_PLLNDIV_Msk) |	// Целая часть делителя.
+		((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
+		((PLLFRACCTL_VAL * (FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
+		(PLLFRACCTL_VAL * USBPHYC_PLL_PLLFRACCTL_Msk) |
+		(1 * USBPHYC_PLL_PLLSTRBYP_Msk) |
+		USBPHYC_PLL_PLLDITHEN0_Msk |
+		USBPHYC_PLL_PLLDITHEN1_Msk |
+		0;
 
-	// не требуется... запущено в bootloader
-	//	// USBPHYC already initialized
-	//	if (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk)
-	//		return HAL_OK;
-
-	if (1)
+	if ((newPLLvalue & validmask) != (USBPHYC->PLL & validmask) || (USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
 	{
-		// https://github.com/Xilinx/u-boot-xlnx/blob/master/drivers/phy/phy-stm32-usbphyc.c
-
-		// PLL
-		//PRINTF("USB_HS_PHYCInit: stop PLL.\n");
+		//PRINTF("USB_HS_PHYCInit: stop PLL. newPLLvalue=%08lX, USBPHYC->PLL=%08lX\n", newPLLvalue, USBPHYC->PLL);
 		USBPHYC->PLL &= ~ USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
@@ -181,79 +213,47 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 			;
 		//PRINTF("USB_HS_PHYCInit: stop PLL done.\n");
 
-		const uint_fast32_t USBPHYCPLLFREQUENCY = 1440000000uL;	// 1.44 GHz
-		uint_fast32_t usbphyref = stm32mp1_get_usbphy_freq();
-		//ASSERT(usbphyref >= 19200000uL && usbphyref <= 38400000uL);
-		const uint_fast32_t ODF = 0;	// игнорируется
-		// 1440 MHz
-		const ldiv_t d = ldiv(USBPHYCPLLFREQUENCY, usbphyref);
-		const uint_fast32_t N = d.quot;
-
-		const uint_fast32_t FRACTMAX = (USBPHYC_PLL_PLLFRACIN_Msk >> USBPHYC_PLL_PLLFRACIN_Pos) + 1;
-		const uint_fast32_t FRACT = d.rem * (uint_fast64_t) FRACTMAX / usbphyref;
-
-//		uint_fast64_t FRACT = (uint_fast64_t) USBPHYCPLLFREQUENCY << 16;
-//		FRACT /= pll4_r_ck;
-//		FRACT = FRACT - (d.quot << 16);
-
-		//PRINTF("USB_HS_PHYCInit: usbphyref=%u, N=%u, FRACT=%u, ODF=%u\n", usbphyref, N, (unsigned) (FRACT & 0xFFFF), ODF);
-
-		USBPHYC->PLL =
-				(USBPHYC->PLL & ~ (USBPHYC_PLL_PLLDITHEN0_Msk | USBPHYC_PLL_PLLDITHEN1_Msk |
-					USBPHYC_PLL_PLLEN_Msk | USBPHYC_PLL_PLLNDIV_Msk | USBPHYC_PLL_PLLODF_Msk |
-					USBPHYC_PLL_PLLFRACIN_Msk | USBPHYC_PLL_PLLFRACCTL_Msk | USBPHYC_PLL_PLLSTRB_Msk | USBPHYC_PLL_PLLSTRBYP_Msk)) |
-			((N) << USBPHYC_PLL_PLLNDIV_Pos) |	// Целая часть делителя.
-			((ODF) << USBPHYC_PLL_PLLODF_Pos) |	// PLLODF - игнорируется
-			USBPHYC_PLL_PLLSTRBYP_Msk |
-			(((FRACT) << USBPHYC_PLL_PLLFRACIN_Pos) & USBPHYC_PLL_PLLFRACIN_Msk) |
-			((d.rem != 0) * USBPHYC_PLL_PLLFRACCTL_Msk) |
-			USBPHYC_PLL_PLLDITHEN0_Msk |
-			USBPHYC_PLL_PLLDITHEN1_Msk |
-			0;
+		USBPHYC->PLL = (USBPHYC->PLL & ~ (validmask)) | newPLLvalue;
 		(void) USBPHYC->PLL;
 
 		//PRINTF("USB_HS_PHYCInit: start PLL.\n");
 		USBPHYC->PLL |= USBPHYC_PLL_PLLEN_Msk;
 		(void) USBPHYC->PLL;
 
+		//HAL_Delay(10);
 		local_delay_ms(10);
 
 		while ((USBPHYC->PLL & USBPHYC_PLL_PLLEN_Msk) == 0)
 			;
 		//PRINTF("USB_HS_PHYCInit: start PLL done.\n");
-	}
 
-	// MISC
-	//	0: Select OTG controller for 2nd PHY port
-	//	1: Select Host controller for 2nd PHY port
-	USBPHYC->MISC = (USBPHYC->MISC & ~ (USBPHYC_MISC_SWITHOST_Msk)) |
-		(0x00 << USBPHYC_MISC_SWITHOST_Pos) |	// 0: Select OTG controller for 2nd PHY port
-		0;
-	(void) USBPHYC->MISC;
+		// TUNE base: 5A00610C 5A00620C
+		//PRINTF("TUNE base: %p %p\n", & USBPHYC_PHY1->TUNE, & USBPHYC_PHY2->TUNE);
 
-	if (1)
-	{
-		// USBH_HS_DP1, USBH_HS_DM1
-		//PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
-//		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
-//			(0x00 << ssss) |
-//			(0x00 << ssss) |
-//			(0x00 << ssss) |
-//			0;
-		USBPHYC_PHY1->TUNE = 0x04070004;
-		(void) USBPHYC_PHY1->TUNE;
-	}
-	if (1)
-	{
-		// USBH_HS_DP2, USBH_HS_DM2
-		//PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
-//		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
-//			(0x00 << ssss) |
-//			(0x00 << ssss) |
-//			(0x00 << ssss) |
-//			0;
-		USBPHYC_PHY2->TUNE = 0x04070004;
-		(void) USBPHYC_PHY2->TUNE;
+		if (0)
+		{
+			// USBH_HS_DP1, USBH_HS_DM1
+			//PRINTF("USBPHYC_PHY1->TUNE=%08lX\n", USBPHYC_PHY1->TUNE);
+	//		USBPHYC_PHY1->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
+	//			(0x00 << ssss) |
+	//			(0x00 << ssss) |
+	//			(0x00 << ssss) |
+	//			0;
+			USBPHYC_PHY1->TUNE = 0x04070004;
+			(void) USBPHYC_PHY1->TUNE;
+		}
+		if (0)
+		{
+			// USBH_HS_DP2, USBH_HS_DM2
+			//PRINTF("USBPHYC_PHY2->TUNE=%08lX\n", USBPHYC_PHY2->TUNE);
+	//		USBPHYC_PHY2->TUNE = (USBPHYC->TUNE & ~ (xxx | xxxx)) |
+	//			(0x00 << ssss) |
+	//			(0x00 << ssss) |
+	//			(0x00 << ssss) |
+	//			0;
+			USBPHYC_PHY2->TUNE = 0x04070004;
+			(void) USBPHYC_PHY2->TUNE;
+		}
 	}
 
 	//PRINTF("USB_HS_PHYCInit done\n");
@@ -1354,8 +1354,8 @@ HAL_StatusTypeDef  USB_SetDevAddress(USB_OTG_GlobalTypeDef *USBx, uint8_t addres
 {
   uint32_t USBx_BASE = (uint32_t)USBx;
 
-  USBx_DEVICE->DCFG &= ~(USB_OTG_DCFG_DAD);
-  USBx_DEVICE->DCFG |= ((uint32_t)address << 4) & USB_OTG_DCFG_DAD;
+  USBx_DEVICE->DCFG &= ~(USB_OTG_DCFG_DAD_Msk);
+  USBx_DEVICE->DCFG |= ((uint32_t)address << USB_OTG_DCFG_DAD_Pos) & USB_OTG_DCFG_DAD_Msk;
 
   return HAL_OK;
 }
@@ -1746,6 +1746,29 @@ HAL_StatusTypeDef USB_ResetPort(USB_OTG_GlobalTypeDef *USBx)
 }
 
 /**
+  * @brief  USB_ResetPort2 : Reset Host Port without long delay
+  * @param  USBx  Selected device
+  * @retval HAL status
+  * @note (1)The application must wait at least 10 ms
+  *   before clearing the reset bit.
+  */
+HAL_StatusTypeDef USB_ResetPort2(USB_OTG_GlobalTypeDef *USBx, uint8_t resetActiveState)
+{
+  uint32_t USBx_BASE = (uint32_t)USBx;
+
+  __IO uint32_t hprt0 = 0U;
+
+  hprt0 = USBx_HPRT0;
+
+  hprt0 &= ~(USB_OTG_HPRT_PENA | USB_OTG_HPRT_PCDET |
+             USB_OTG_HPRT_PENCHNG | USB_OTG_HPRT_POCCHNG | USB_OTG_HPRT_PRST);
+
+  USBx_HPRT0 = (!! resetActiveState * USB_OTG_HPRT_PRST | hprt0);
+
+  return HAL_OK;
+}
+
+/**
   * @brief  USB_DriveVbus : activate or de-activate vbus
   * @param  state  VBUS state
   *          This parameter can be one of these values:
@@ -1830,7 +1853,7 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
                               uint8_t epnum, uint8_t dev_address, uint8_t speed,
-                              uint8_t ep_type, uint16_t mps)
+                              uint8_t ep_type, uint16_t mps, uint8_t tt_hubaddr, uint8_t tt_prtaddr)
 {
   HAL_StatusTypeDef ret = HAL_OK;
   uint32_t USBx_BASE = (uint32_t)USBx;
@@ -1839,6 +1862,11 @@ HAL_StatusTypeDef USB_HC_Init(USB_OTG_GlobalTypeDef *USBx, uint8_t ch_num,
 
   /* Clear old interrupt conditions for this host channel. */
   USBx_HC((uint32_t)ch_num)->HCINT = 0xFFFFFFFFU;
+
+  USBx_HC((uint32_t)ch_num)->HCSPLT = (USBx_HC((uint32_t)ch_num)->HCSPLT & ~ (USB_OTG_HCSPLT_HUBADDR_Msk | USB_OTG_HCSPLT_PRTADDR_Msk)) |
+		  ((uint32_t) tt_hubaddr < USB_OTG_HCSPLT_HUBADDR_Pos) |
+		  ((uint32_t) tt_prtaddr < USB_OTG_HCSPLT_PRTADDR_Pos) |
+		  0;
 
   /* Enable channel interrupts required for this transfer. */
   switch (ep_type)
@@ -2285,12 +2313,20 @@ HAL_StatusTypeDef USB_DeActivateRemoteWakeup(USB_OTG_GlobalTypeDef *USBx)
 
   return HAL_OK;
 }
+
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 
 
 /**
   * @}
   */
+
+
+uint_fast8_t
+USB_Is_OTG_HS(USB_OTG_GlobalTypeDef *USBx)
+{
+	return 1;
+}
 
 /**
   * @}

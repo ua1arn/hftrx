@@ -33,6 +33,22 @@
 	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
+	#define LSEFREQ 32768uL
+	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
+	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+
+	//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+	//	48 MHz clock source to be provided to the USBO:
+	// USBOSRC
+	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+	// USBPHYSRC
+	//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+	//  0x1: pll4_r_ck clock selected as kernel peripheral clock
+	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+	#define RCC_USBCKSELR_USBOSRC_VAL 1
+	#define RCC_USBCKSELR_USBPHYSRC_VAL 0
+
 	#if WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
 		// ref1_ck, ref2_ck - 8..16 MHz
@@ -56,12 +72,16 @@
 			#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 			#define PLL2DIVR	1	// DDR clock divider = 528 MHz
+
+			#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
 	#elif 0
 			#define PLL2DIVM	2	// ref2_ck = 12 MHz
 			#define PLL2DIVN	66	// 528 MHz Valid division rations for DIVN: between 25 and 100
 			#define PLL2DIVP	3	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	2	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 			#define PLL2DIVR	2	// DDR clock divider = 528 MHz
+
+			#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
 	#else
 			/* bad boards DDR3 clock = 300 MHz */
 			#define PLL2DIVM	2	// ref2_ck = 12 MHz
@@ -69,6 +89,8 @@
 			#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 			#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
 			#define PLL2DIVR	2	// DDR clock divider = 300 MHz
+
+			#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
 	#endif
 
 			// PLL3_800
@@ -101,6 +123,8 @@
 			#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 			#define PLL2DIVQ	1	// GPU clock divider
 			#define PLL2DIVR	1	// DDR clock divider
+
+			#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
 	#else
 			// PLL2_1600
 			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz
@@ -108,6 +132,8 @@
 			#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
 			#define PLL2DIVQ	2//1	// GPU clock divider
 			#define PLL2DIVR	3//1	// DDR clock divider
+
+			#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
 	#endif
 
 			// PLL3_800
@@ -201,7 +227,7 @@
 #if WITHISBOOTLOADER
 	#define LCDMODE_DUMMY	1
 
-	//#define LCDMODEX_SII9022 1	/* 1280 * 720 siiI9022A HDMI Transmitter */
+	//#define LCDMODEX_SII9022A 1	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
 	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
 
@@ -226,12 +252,12 @@
 
 	//#define LCDMODE_H497TLB01P4 1	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
 	//#define LCDMODETX_TC358778XBG 1	/* Toshiba TC358778XBG chip */
-	#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
+	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
 	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
-	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
-	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+	#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
+	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
-	#define LCDMODEX_SII9022 1	/* 1280 * 720 siiI9022A HDMI Transmitter */
+	#define LCDMODEX_SII9022A 1	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
 
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
@@ -379,11 +405,10 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	#define WITHUSEFATFS		1	// FatFS
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
@@ -493,7 +518,7 @@
 	#endif /* WITHTX */
 	//#define WITHPWRMTR	1	/* Индикатор выходной мощности или */
 	//#define WITHPWRLIN	1	/* Индикатор выходной мощности показывает напряжение а не мощность */
-	//#define WITHBARS		1	/* отображение S-метра и SWR-метра */
+	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 	//#define WITHSWLMODE	1	/* поддержка запоминания множества частот в swl-mode */
 	#define WITHVIBROPLEX	1	/* возможность эмуляции передачи виброплексом */
 	#define WITHSPKMUTE		1	/* управление выключением динамика */
@@ -540,6 +565,7 @@
 	//#define LO1PHASES	1		/* Прямой синтез первого гетеродина двумя DDS с програмимруемым сдвигом фазы */
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	#define WITHSLEEPTIMER	1	/* выключить индикатор и вывод звука по истечениии указанного времени */
+	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
 	//#define WITHPOWERTRIM		1	// Имеется управление мощностью
 	//#define WITHPABIASTRIM		1	// имеется управление током оконечного каскада усидителя мощности передатчика

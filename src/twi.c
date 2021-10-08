@@ -32,7 +32,7 @@
 	#define GET2_TWCK() ((TARGET_TWI2_TWCK_PIN & TARGET_TWI2_TWCK) != 0)
 	#define GET2_TWD() ((TARGET_TWI2_TWD_PIN & TARGET_TWI2_TWD) != 0)
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #if WITHTWISW
 
@@ -1423,7 +1423,7 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 	}
 }
 
-#elif CPUSTYLE_XC7Z
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 #include "lib/zynq/src/xiicps.h"
 
@@ -1493,6 +1493,9 @@ uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
 static void i2c_dly(void)
 {
 	local_delay_us(5);
+#if LCDMODEX_SII9022A
+	local_delay_us(25);
+#endif /* LCDMODEX_SII9022A */
 #if PCF8576C
 	local_delay_us(15);
 #endif /* PCF8576C */

@@ -20,7 +20,7 @@ const uint_fast8_t rbvalues [8] =
 
 #if WITHSPIHW || WITHSPISW
 
-	#if ! defined (SPI_ALLCS_BITS) && ! CPUSTYLE_XC7Z
+	#if ! defined (SPI_ALLCS_BITS) && ! CPUSTYLE_XC7Z && ! CPUSTYLE_XCZU
 		#error SPI_ALLCS_BITS should be defined in any cases
 	#endif
 
@@ -72,7 +72,7 @@ spi_hwinit255(void)
 static void
 spi_cs_disable(void)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	SPI_ALLCS_DISABLE();
 
@@ -145,7 +145,7 @@ spi_cs_enable(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	SPI_CS_SET(target);
 
@@ -342,7 +342,7 @@ prog_spi_to_write_impl(void)
 	{
 		SCLK_NPULSE();	/* latch to chips */
 
-		#if CPUSTYLE_XC7Z
+		#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 			return SPI_TARGET_MISO_PIN != 0;
 		#elif SPI_BIDIRECTIONAL
 			return (SPI_TARGET_MOSI_PIN & SPI_MOSI_BIT) != 0;
@@ -979,13 +979,15 @@ void spidf_initialize(void)
 	// Connect I/O pins
 	//SPIDF_HARDINITIALIZE();
 
-	//PRINTF("QUADSPI->IPIDR=%08x\n", QUADSPI->IPIDR);
-
 	QUADSPI->CR &= ~ QUADSPI_CR_EN_Msk;
 	(void) QUADSPI->CR;
 
 	QUADSPI->CCR = 0;
 	(void) QUADSPI->CCR;
+
+	// qspipre in range 1..256
+	const unsigned long qspipre = ulmax32(1, ulmin32(calcdivround2(BOARD_QSPI_FREQ, SPISPEEDUFAST), 256));
+	//PRINTF("spidf_initialize: qspipre=%lu\n", qspipre);
 
 	QUADSPI->DCR = ((QUADSPI->DCR & ~ (QUADSPI_DCR_FSIZE_Msk | QUADSPI_DCR_CSHT_Msk | QUADSPI_DCR_CKMODE_Msk))) |
 		(23 << QUADSPI_DCR_FSIZE_Pos) |	// FSIZE+1 is effectively the number of address bits required to address the Flash memory.
@@ -995,9 +997,9 @@ void spidf_initialize(void)
 		0;
 	(void) QUADSPI->DCR;
 
-	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk))) |
+	QUADSPI->CR = ((QUADSPI->CR & ~ (QUADSPI_CR_PRESCALER_Msk | QUADSPI_CR_FTHRES_Msk | QUADSPI_CR_EN_Msk))) |
 		(0x00uL << QUADSPI_CR_FTHRES_Pos) | // FIFO threshold level - one byte
-		(0x00uL << QUADSPI_CR_PRESCALER_Pos) | // 1: FCLK = Fquadspi_ker_ck/2
+		(((unsigned long) qspipre - 1) << QUADSPI_CR_PRESCALER_Pos) |
 		0;
 	(void) QUADSPI->CR;
 
@@ -1240,7 +1242,7 @@ static void spidf_iostart(
 	// при передаче формируется только команла и адрес при необходимости
 }
 
-#elif WIHSPIDFHW && CPUSTYLE_XC7Z
+#elif WIHSPIDFHW && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 
 void spidf_initialize(void)
 {
@@ -1264,6 +1266,7 @@ void writeDisableDATAFLASH(void)
 	spidf_unselect();	/* done sending data to target chip */
 }
 
+/* read status register #1 (bit0==busy flag) */
 uint_fast8_t dataflash_read_status(void)
 {
 	uint8_t v;
@@ -1340,10 +1343,10 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 	{
 	case 0x00:
 	case 0xFF:
-		PRINTF("SFDP: %s not supported\n", title);
+		//PRINTF("SFDP: %s not supported\n", title);
 		break;
 	default:
-		PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
+		//PRINTF("SFDP: %s Opcode=%02X, mobbits=%u, ws=%u, ndmy=%u\n", title, (dw >> 8) & 0xFF, (dw >> 5) & 0x07, (dw >> 0) & 0x1F, ndmy);
 		readxb [buswID] = (dw >> 8) & 0xFF;	// opcode
 		dmyb [buswID] = ndmy;	// dummy bytes
 		break;
@@ -1354,6 +1357,11 @@ unsigned char mf_id;	// Manufacturer ID
 unsigned char mf_devid1;	// device ID (part 1)
 unsigned char mf_devid2;	// device ID (part 2)
 unsigned char mf_dlen;	// Extended Device Information String Length
+
+
+static uint_fast8_t sectorEraseCmd = 0xD8;			// 64KB SECTOR ERASE
+static uint_fast32_t sectorSize = (1uL << 16);		// default sectoir size 64kB
+static uint_fast32_t chipSize = BOOTLOADER_FLASHSIZE;	// default chip size
 
 int testchipDATAFLASH(void)
 {
@@ -1381,7 +1389,7 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [02];
 		mf_dlen = mfa [3];
 
-		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 #endif /* WITHDEBUG */
 
@@ -1389,7 +1397,7 @@ int testchipDATAFLASH(void)
 	uint8_t buff8 [8];
 	readSFDPDATAFLASH(0x000000, buff8, 8);
 
-	uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
+	const uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
 
 	//PRINTF(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
 	if (signature == 0x50444653)
@@ -1409,7 +1417,7 @@ int testchipDATAFLASH(void)
 			return 0;
 		uint8_t buff32 [len4 * 4];
 		readSFDPDATAFLASH(ptp, buff32, len4 * 4);
-		const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
+		//const uint_fast32_t dword1 = USBD_peek_u32(buff32 + 4 * 0);
 		const uint_fast32_t dword2 = USBD_peek_u32(buff32 + 4 * 1);
 		const uint_fast32_t dword3 = USBD_peek_u32(buff32 + 4 * 2);
 		const uint_fast32_t dword4 = USBD_peek_u32(buff32 + 4 * 3);
@@ -1419,11 +1427,50 @@ int testchipDATAFLASH(void)
 		const uint_fast32_t dword8 = USBD_peek_u32(buff32 + 4 * 7);
 		const uint_fast32_t dword9 = USBD_peek_u32(buff32 + 4 * 8);
 		//printhex(ptp, buff32, 256);
+
+		///////////////////////////////////
 		/* Print density information. */
 		if ((dword2 & 0x80000000uL) == 0)
-			PRINTF("SFDP: density=%08lX (%u Kbi)\n", dword2, (dword2 >> 10) + 1);
+		{
+			const unsigned Kbi = (dword2 >> 10) + 1;
+			const unsigned MB = (dword2 >> 23) + 1;
+			//PRINTF("SFDP: density=%08lX (%u Kbi, %u MB)\n", dword2, Kbi, MB);
+			chipSize = (dword2 >> 3) + 1uL;
+		}
 		else
-			PRINTF("SFDP: density=%08lX (%u Mbi)\n", dword2, 1uL << ((dword2 & 0x7FFFFFFF) - 10));
+		{
+			const unsigned Mbi = 1u << ((dword2 & 0x7FFFFFFF) - 10);
+			const unsigned MB = 1u << ((dword2 & 0x7FFFFFFF) - 10 - 3);
+			//PRINTF("SFDP: density=%08lX (%u Mbi, %u MB)\n", dword2, Mbi, MB);
+			chipSize = 1uL << ((dword2 & 0x7FFFFFFF) - 3);
+		}
+		///////////////////////////////////
+		// dword8, dword9 - 4KB Erase opcode, Sector size, Sector erase opcode
+		// Автоматическое определение наибольшего размера сектора
+		unsigned sct [4];
+		sct [0] = (dword8 >> 0) & 0xFFFF;
+		sct [1] = (dword8 >> 16) & 0xFFFF;
+		sct [2] = (dword9 >> 0) & 0xFFFF;
+		sct [3] = (dword9 >> 16) & 0xFFFF;
+		//PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		//PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		unsigned i;
+		unsigned sctRESULT = 0;
+		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
+		{
+			const unsigned newsct = sct [i];
+			if ((newsct & 0xFF) == 0)
+				continue;
+			if (sctRESULT == 0 || (sctRESULT & 0xFF) < (newsct & 0xFF))
+				sctRESULT = newsct;
+		}
+		if (sctRESULT != 0)
+		{
+			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
+			sectorSize = 1uL << (sctRESULT & 0xFF);
+			//PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (sctRESULT >> 8) & 0xFF, 1uL << (sctRESULT & 0xFF));
+		}
+		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
@@ -1457,6 +1504,17 @@ int prepareDATAFLASH(void)
 	return timed_dataflash_read_status();
 }
 
+unsigned long sectorsizeDATAFLASH(void)
+{
+	return sectorSize;
+}
+
+unsigned long chipsizeDATAFLASH(void)
+{
+
+	return chipSize;
+}
+
 int sectoreraseDATAFLASH(unsigned long flashoffset)
 {
 	//PRINTF(PSTR(" Erase sector at address %08lX\n"), flashoffset);
@@ -1470,9 +1528,10 @@ int sectoreraseDATAFLASH(unsigned long flashoffset)
 	writeEnableDATAFLASH();		/* write enable */
 
 	// start byte programm
-	spidf_iostart(SPDIFIO_WRITE, 0xD8, SPDFIO_1WIRE, 0, 0, 1, flashoffset);		/* 64KB SECTOR ERASE */
+	spidf_iostart(SPDIFIO_WRITE, sectorEraseCmd, SPDFIO_1WIRE, 0, 0, 1, flashoffset);
 	spidf_unselect();	/* done sending data to target chip */
-	//timed_dataflash_read_status(target);
+	if (timed_dataflash_read_status())
+		return 1;
 	return 0;
 }
 
@@ -1495,7 +1554,8 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 	spidf_unselect();	/* done sending data to target chip */
 
 	//PRINTF(PSTR( Prog to address %08lX %02X done\n"), flashoffset, len);
-	//timed_dataflash_read_status(target);
+	if (timed_dataflash_read_status())
+		return 1;
 	return 0;
 }
 

@@ -54,6 +54,7 @@ SECTIONS
 		__Vectors_End = .;
 		__Vectors_Size = __Vectors_End - __Vectors;
 		*(.text*)
+		*(.initfunc*)
 
 		KEEP(*(.init))
 		KEEP(*(.fini))
@@ -73,6 +74,7 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.initdata*)
 
 		KEEP(*(.eh_frame*))
 		. = ALIGN(4);

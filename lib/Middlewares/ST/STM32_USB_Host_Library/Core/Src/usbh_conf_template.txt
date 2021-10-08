@@ -92,13 +92,18 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
   return  speed;
 }
 
+uint_fast8_t USBH_LL_GetSpeedReady(USBH_HandleTypeDef *phost)
+{
+	return 1;
+}
+
 /**
-  * @brief  USBH_LL_ResetPort
+  * @brief  USBH_LL_ResetPort2
   *         Reset the Host Port of the Low Level Driver.
   * @param  phost: Host handle
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_LL_ResetPort(USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetIsActive)	/* Without delays */
 {
   /* Prevent unused argument(s) compilation warning */
   UNUSED(phost);

@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_hal_eth.h
+  * @file    stm32mp1xx_hal_eth.h
   * @author  MCD Application Team
   * @brief   Header file of ETH HAL module.
   ******************************************************************************
@@ -27,7 +27,7 @@
 
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32h7xx_hal_def.h"
+#include "stm32mp1xx_hal_def.h"
 
 #if defined(ETH)
 
@@ -1246,10 +1246,10 @@ typedef struct{
 /** @defgroup ETH_Back_Off_Limit ETH Back Off Limit
   * @{
   */ 
-#define ETH_BACKOFFLIMIT_10  ETH_MACCR_BL_10
-#define ETH_BACKOFFLIMIT_8   ETH_MACCR_BL_8 
-#define ETH_BACKOFFLIMIT_4   ETH_MACCR_BL_4 
-#define ETH_BACKOFFLIMIT_1   ETH_MACCR_BL_1 
+#define ETH_BACKOFFLIMIT_10  (0uL << ETH_MACCR_BL_Pos)
+#define ETH_BACKOFFLIMIT_8   (1uL << ETH_MACCR_BL_Pos)
+#define ETH_BACKOFFLIMIT_4   (2uL << ETH_MACCR_BL_Pos)
+#define ETH_BACKOFFLIMIT_1   (3uL << ETH_MACCR_BL_Pos)
 /**
   * @}
   */
@@ -1257,9 +1257,9 @@ typedef struct{
 /** @defgroup ETH_Preamble_Length ETH Preamble Length
   * @{
   */ 
-#define ETH_PREAMBLELENGTH_7      ETH_MACCR_PRELEN_7
-#define ETH_PREAMBLELENGTH_5      ETH_MACCR_PRELEN_5
-#define ETH_PREAMBLELENGTH_3      ETH_MACCR_PRELEN_3
+#define ETH_PREAMBLELENGTH_7      (0uL << ETH_MACCR_PRELEN_Pos)
+#define ETH_PREAMBLELENGTH_5      (1uL << ETH_MACCR_PRELEN_Pos)
+#define ETH_PREAMBLELENGTH_3      (2uL << ETH_MACCR_PRELEN_Pos)
 /**
   * @}
   */
@@ -1414,7 +1414,7 @@ typedef struct{
   * @param  __INTERRUPT__: specifies the interrupt source to get . @ref ETH_DMA_Interrupts
   * @retval The state of ETH DMA IT (SET or RESET)
   */
-#define __HAL_ETH_DMA_GET_IT(__HANDLE__, __INTERRUPT__)      (((__HANDLE__)->Instance->DMACSR &  (__INTERRUPT__)) == (__INTERRUPT__))
+#define __HAL_ETH_DMA_GET_IT(__HANDLE__, __INTERRUPT__)      (((__HANDLE__)->Instance->DMAC0SR &  (__INTERRUPT__)) == (__INTERRUPT__))
     
 /**
   * @brief  Clears the ETHERNET DMA IT pending bit.
@@ -1422,7 +1422,7 @@ typedef struct{
   * @param  __INTERRUPT__: specifies the interrupt pending bit to clear. @ref ETH_DMA_Interrupts
   * @retval None
   */
-#define __HAL_ETH_DMA_CLEAR_IT(__HANDLE__, __INTERRUPT__)      ((__HANDLE__)->Instance->DMACSR = (__INTERRUPT__))
+#define __HAL_ETH_DMA_CLEAR_IT(__HANDLE__, __INTERRUPT__)      ((__HANDLE__)->Instance->DMAC0SR = (__INTERRUPT__))
 
 /**
   * @brief  Checks whether the specified ETHERNET DMA flag is set or not.
@@ -1430,7 +1430,7 @@ typedef struct{
   * @param  __FLAG__: specifies the flag to check. @ref ETH_DMA_Status_Flags
   * @retval The state of ETH DMA FLAG (SET or RESET).
   */
-#define __HAL_ETH_DMA_GET_FLAG(__HANDLE__, __FLAG__)                   (((__HANDLE__)->Instance->DMACSR &( __FLAG__)) == ( __FLAG__))  
+#define __HAL_ETH_DMA_GET_FLAG(__HANDLE__, __FLAG__)                   (((__HANDLE__)->Instance->DMAC0SR &( __FLAG__)) == ( __FLAG__))
 
 /**
   * @brief  Clears the specified ETHERNET DMA flag.
@@ -1438,7 +1438,7 @@ typedef struct{
   * @param  __FLAG__: specifies the flag to check. @ref ETH_DMA_Status_Flags
   * @retval The state of ETH DMA FLAG (SET or RESET).
   */
-#define __HAL_ETH_DMA_CLEAR_FLAG(__HANDLE__, __FLAG__)                   ((__HANDLE__)->Instance->DMACSR = ( __FLAG__))
+#define __HAL_ETH_DMA_CLEAR_FLAG(__HANDLE__, __FLAG__)                   ((__HANDLE__)->Instance->DMAC0SR = ( __FLAG__))
     
 /** 
   * @brief  Enables the specified ETHERNET MAC interrupts.
@@ -1559,7 +1559,7 @@ typedef struct{
   */
 
 /* Include ETH HAL Extension module */
-#include "stm32h7xx_hal_eth_ex.h"
+#include "stm32mp1xx_hal_eth_ex.h"
 
 /* Exported functions --------------------------------------------------------*/
 

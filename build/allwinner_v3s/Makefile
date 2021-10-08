@@ -30,6 +30,7 @@ PROJECT = tc1_v3s
 # Define linker script file here
 LDSCRIPT_BOOT = ./v3s_boot.ld
 LDSCRIPT_APP = ./v3s_app.ld
+ARCHDIR = $(PRJROOT)/arch/alwnrv3s
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS += -D"NDEBUG"=1 -D"CPUSTYPE_ALLWNV3S"=1 -D"EGL_STATIC_LIBRARY"=1
@@ -74,7 +75,7 @@ DDEFS =
 DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
-	$(PRJROOT)/armcpu \
+	$(ARCHDIR) \
 	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
 	$(MDLWHOSTDIR)/Core/Inc \
@@ -137,6 +138,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 #SRCDIRS = $(PRJROOT)/src $(HALDIR) $(MDLWUSBDIR) $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS += $(PRJROOT)/src
+SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
 
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)

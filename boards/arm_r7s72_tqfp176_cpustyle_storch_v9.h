@@ -37,7 +37,7 @@
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBDEV_VBUSSENSE	1	/* используется предопределенный вывод VBUS_SENSE */
 	#define WITHUSBDEV_HSDESC	1	/* Требуется формировать дескрипторы как для HIGH SPEED */
-	#define WITHUSBHW_DEVICE	(& USB200)	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	(& USB201)	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	//#define WITHUSBHW_HOST	(& USB200)	/* на этом устройстве поддерживается функциональность HOST	*/
 
 	//#define WITHUART1HW	1	/* Используется периферийный контроллер последовательного порта #1 SCIF0 */
@@ -99,7 +99,7 @@
 		#if WITHINTEGRATEDDSP
 
 			//#define WITHUAC2		1	/* UAC2 support */
-			//#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */
+			#define WITHUSBUACINOUTRENESAS	1	/* совмещённое усройство ввода/вывода (и спектр измененем параметров устройства) */
 			#define WITHUSBUACOUT		1	/* использовать виртуальную звуковую плату на USB соединении */
 			#define WITHUSBUACIN	1
 			//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
@@ -110,7 +110,7 @@
     	//#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
 		//#define WITHUSBHID		1	/* HID использовать Human Interface Device на USB соединении */
 		#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-		//#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+		#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
 		#define WITHUSBWCID	1
 
 		//#define WITHLWIP 1
@@ -654,35 +654,23 @@
 				arm_hardware_pio3_inputs(TARGET_FPGA_OVF_BIT); \
 			} while (0)
 
-#if WITHKEYBOARD
 	/* P7_8: second encoder button with pull-up */
 	//#define KBD_MASK (1U << 8)	// P7_8
 	//#define KBD_TARGET_PIN (R7S721_INPUT_PORT(7))
-
-
 	#define TARGET_ENC2BTN_BIT (1U << 8)	// P7_8 - second encoder button with pull-up
-#if WITHENCODER2
-	// P7_8
-	#define TARGET_ENC2BTN_GET	((R7S721_INPUT_PORT(7) & TARGET_ENC2BTN_BIT) == 0)
-#endif /* WITHENCODER2 */
-
 	#define TARGET_POWERBTN_BIT (1U << 3)	// P5_3 - ~CPU_POWER_SW signal
-#if WITHPWBUTTON
-	// P5_3 - ~CPU_POWER_SW signal
-	#define TARGET_POWERBTN_GET	((R7S721_INPUT_PORT(5) & TARGET_POWERBTN_BIT) == 0)
-#endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_pio7_inputs(TARGET_ENC2BTN_BIT); \
 			arm_hardware_pio5_inputs(TARGET_POWERBTN_BIT); \
 		} while (0)
 
-#else /* WITHKEYBOARD */
+	#define TARGET_ENC2BTN_GET	((R7S721_INPUT_PORT(7) & TARGET_ENC2BTN_BIT) == 0)
 
-	#define HARDWARE_KBD_INITIALIZE() do { \
-		} while (0)
-
-#endif /* WITHKEYBOARD */
+#if WITHPWBUTTON
+	// P5_3 - ~CPU_POWER_SW signal
+	#define TARGET_POWERBTN_GET	((R7S721_INPUT_PORT(5) & TARGET_POWERBTN_BIT) == 0)
+#endif /* WITHPWBUTTON */
 
 	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
 			arm_hardware_pio1_alternative((ainmask) << 8, R7S721_PIOALT_1);	/* P1_8..P1_15 - AN0..AN7 inputs */ \
@@ -898,11 +886,13 @@
 	#define BOOTLOADER_SELFSIZE (1024uL * 128)	// 128k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)	// 2048 - 128
+	#define BOOTLOADER_APPSIZE (chipsizeDATAFLASH() - BOOTLOADER_SELFSIZE)	// 2048 - 128
 
-	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
+	//#define BOOTLOADER_PAGESIZE (1024uL * 64)	// M25Px with 64 KB pages
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "M25P16"
+
+	#define BOARD_IS_USERBOOT() TARGET_ENC2BTN_GET	// Всегда входим в загрузчик
 
 	#if WIHSPIDFSW
 		// P4_2: SPBIO20_0 WP#

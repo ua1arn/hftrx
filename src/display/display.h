@@ -308,7 +308,7 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 				) \
 			)
 
-	#elif LCDMODE_MAIN_ARGB888 && CPUSTYLE_XC7Z && ! WITHTFT_OVER_LVDS
+	#elif LCDMODE_MAIN_ARGB888 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHTFT_OVER_LVDS
 
 		// RBG named order
 		typedef uint_fast32_t COLORMAIN_T;
@@ -429,12 +429,17 @@ void display_set_contrast(uint_fast8_t v);
 void display_palette(void);				// Palette reload
 
 void tc358768_initialize(const videomode_t * vdmode);
+void tc358768_wakeup(const videomode_t * vdmode);
 void tc358768_deinitialize(void);
+
+// siiI9022A Lattice Semiconductor Corp HDMI Transmitter
+void sii9022x_initialize(const videomode_t * vdmode);
+void sii9022x_wakeup(const videomode_t * vdmode);
+void sii9022x_deinitialize(void);
+
 void panel_initialize(const videomode_t * vdmode);
+void panel_wakeup(void);
 void panel_deinitialize(void);
-
-void sii9022_initialize(const videomode_t * vdmode);
-
 
 /* индивидуальные функции драйвера дисплея - реализованы в соответствующем из файлов */
 void display_clear(void);
@@ -1144,14 +1149,9 @@ COLORPIP_T getshadedcolor(
 #define WMINUSFLAG 0x40	// отображается пробел или минус в зависимости от знака значения
 #define WWIDTHFLAG 0x3F	// оставшиеся биты под ширину поля
 
-void display_vtty_initialize(void);
 int display_vtty_putchar(char ch);
-// копирование растра в видеобуфер отображения
-void display_vtty_show(
-	uint_fast16_t x,
-	uint_fast16_t y
-	);
 void display_vtty_printf(const char * format, ...);
+void vtty_printhex(unsigned long voffs, const unsigned char * buff, unsigned length);
 
 int display_vtty_maxx(void);
 int display_vtty_maxy(void);
