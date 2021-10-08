@@ -493,17 +493,17 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 		{
 			// Reach last port
 			if (HUB_Handle->NumPorts <= HUB_Handle->hubClassRequestPort)
-				HUB_Handle->ctl_state = HUB_REQ_RESETS_DONE;
+				USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS_DONE, 100);	/* HS стройства не сразу становчтся подключенными */
 			else
 			{
 				HUB_Handle->hubClassRequestPort ++;
-				//USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS, 25);	/* HS стройства не сразу становчтся подключенными */
+				USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS, 100);	/* HS стройства не сразу становчтся подключенными */
 			}
 			status = USBH_BUSY;
 		}
 		else
 		{
-			USBH_Delay(25);	/* HS стройства не сразу становчтся подключенными */
+			USBH_HUB_ProcessDelay(HUB_Handle, HUB_REQ_RESETS, 100);	/* HS стройства не сразу становчтся подключенными */
 		}
 		break;
 
