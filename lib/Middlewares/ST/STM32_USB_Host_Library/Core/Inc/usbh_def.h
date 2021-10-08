@@ -542,9 +542,6 @@ typedef struct _USBH_HandleTypeDef
     uint8_t hubInstances;
     void *   hubDatas [USBH_MAX_NUM_INTERFACES];
 
-    void * hubCurrentData;	/** Currently enumeratuion on this HUB */
-    uint8_t hubCurrentPort;	/** Currently enumeratuion on this HUB's port */
-
     uint8_t allocaddress;
 } USBH_HandleTypeDef;
 

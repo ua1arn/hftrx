@@ -103,7 +103,6 @@ USBH_StatusTypeDef  USBH_Init(USBH_HandleTypeDef *phost,
   phost->currentTarget = & phost->rootTarget;
 
   /* HUB related initialization */
-  phost->hubCurrentData = NULL;
   phost->hubInstances = 0;
 
   /* Unlink class*/
@@ -251,6 +250,7 @@ static USBH_StatusTypeDef DeInitStateMachine(USBH_HandleTypeDef *phost)
 
   phost->allocaddress = 0;
   phost->currentTarget = & phost->rootTarget;
+  phost->rootTarget.dev_address = 0;
 
   phost->hubInstances = 0;
 
@@ -547,6 +547,15 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         USBH_UsrLog("USB Device Reset Completed");
         phost->device.RstCnt = 0U;
         phost->gState = HOST_DEV_ATTACHED_WAITSPEED;
+        phost->hubInstances = 0;
+        phost->allocaddress = 0;
+        phost->rootTarget.dev_address = USBH_ADDRESS_DEFAULT;
+        phost->rootTarget.speed = (uint8_t)USBH_SPEED_FULL;
+        phost->rootTarget.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
+        phost->rootTarget.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
+        phost->currentTarget = & phost->rootTarget;
+        PRINTF("phost->currentTarget: addr=%d,hub=%d,port=%d,speed=%d\n",
+        			phost->currentTarget->dev_address, phost->currentTarget->tt_hubaddr, phost->currentTarget->tt_prtaddr, phost->currentTarget->speed);
       }
       else
       {
@@ -812,7 +821,8 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         	  phost->EnumState = ENUM_IDLE;
     		USBH_ProcessDelay(phost, HOST_DEV_ATTACHED, 100);
            status = USBH_OK;
-            USBH_UsrLog("Device %s class require re-enumeration.", phost->pActiveClass->Name);
+           phost->Control.state = CTRL_SETUP;
+           USBH_UsrLog("Device %s class require re-enumeration.", phost->pActiveClass->Name);
         }
         else if (status == USBH_FAIL)
         {
