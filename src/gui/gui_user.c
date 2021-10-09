@@ -119,6 +119,7 @@ static void window_display_process(void);
 static void window_receive_process(void);
 static void window_notch_process(void);
 static void window_gui_settings_process(void);
+static void window_ft8_process(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -145,6 +146,9 @@ static window_t windows [] = {
 	{ WINDOW_RECEIVE, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, "Receive settings", 	 1, window_receive_process, },
 	{ WINDOW_NOTCH, 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, "Notch", 	 	 		 1, window_notch_process, },
 	{ WINDOW_GUI_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, "GUI settings",	 		 1, window_gui_settings_process, },
+#if WITHFT8
+	{ WINDOW_FT8, 	 		 NO_PARENT_WINDOW, 		ALIGN_CENTER_X, "FT8 terminal",	 		 1, window_ft8_process, },
+#endif /* #if WITHFT8 */
 };
 
 /* Возврат ссылки на окно */
@@ -191,7 +195,7 @@ static void gui_main_process(void)
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", 	},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_1",  	 	"", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ft8",  	 	"FT8", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
 		};
@@ -254,12 +258,31 @@ static void gui_main_process(void)
 			button_t * btn_Options = find_gui_element(TYPE_BUTTON, win, "btn_Options");
 			button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = find_gui_element(TYPE_BUTTON, win, "btn_Receive");
+			button_t * btn_ft8 = find_gui_element(TYPE_BUTTON, win, "btn_ft8");
 
 			if (bh == btn_notch)
 			{
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
 			}
+#if WITHFT8
+			else if (bh == btn_ft8)
+			{
+				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+					hamradio_ft8_toggle_state();
+				}
+				else
+				{
+					window_t * const win = get_win(WINDOW_FT8);
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_ft8);
+					hamradio_ft8_toggle_state();
+				}
+			}
+#endif /* WITHFT8 */
 #if WITHSPKMUTE
 			else if (bh == btn_speaker)
 			{
@@ -453,6 +476,11 @@ static void gui_main_process(void)
 		btn_txrx->state = DISABLED;
 		local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
 #endif /* WITHTX */
+
+#if ! WITHFT8
+		button_t * btn_ft8 = find_gui_element(TYPE_BUTTON, win, "btn_ft8");
+		btn_ft8->state = DISABLED;
+#endif /* ! WITHFT8 */
 	}
 
 #if GUI_SHOW_INFOBAR
@@ -3714,14 +3742,15 @@ void gui_open_sys_menu(void)
 
 // ****** Common windows ***********************************************************************
 
-// Пример работы с элементом Text field
-// Декодирование FT8 в данном проекте еще не реализовано
+#if WITHFT8
 
-/*
+#include "ft8.h"
+
+static uint8_t parse_ft8buf = 0;
+
 void hamradio_gui_parse_ft8buf(void)
 {
-	window_t * const win = get_win(WINDOW_FT8);
-	put_to_wm_queue(win, WM_MESSAGE_ACTION, DUMMY_ACTION, 1);
+	parse_ft8buf = 1;
 }
 
 static void window_ft8_process(void)
@@ -3749,33 +3778,21 @@ static void window_ft8_process(void)
 		tf_ft8->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		hamradio_ft8_start_fill();
 	}
 
-	GET_FROM_WM_QUEUE
+	if (parse_ft8buf)
+	{
+		parse_ft8buf = 0;
+		text_field_t * tf_ft8 = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ft8");
+		for (uint8_t i = 0; i < ft8.decoded_messages; i ++)
 		{
-		case WM_MESSAGE_ACTION:
-
-			if (type == DUMMY_ACTION && action == 1)
-			{
-				text_field_t * tf_ft8 = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ft8");
-				const char delimeters [] = "|";
-				char * ft8buf = (char *) 0x205DC000;
-				char * text2 = strtok(ft8buf, delimeters);
-				while (text2 != NULL)
-				{
-					textfield_add_string(tf_ft8, text2);
-					text2 = strtok(NULL, delimeters);
-				}
-			}
-
-			break;
-
-		default:
-
-			break;
+			char * msg = ft8.rx_text [i];
+			textfield_add_string(tf_ft8, msg);
 		}
+	}
 }
-*/
+#endif /* WITHFT8 */
 
 // *********************************************************************************************************************************************************************
 

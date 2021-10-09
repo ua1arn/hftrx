@@ -34,6 +34,7 @@ enum {
 	WINDOW_RECEIVE,					// настройки приема
 	WINDOW_NOTCH,					// ручной режекторый фильтр
 	WINDOW_GUI_SETTINGS,				// настройки интерфейса GUI
+	WINDOW_FT8,
 
 	WINDOWS_COUNT
 };

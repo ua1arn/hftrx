@@ -280,6 +280,7 @@ void MX_USB_HOST_Process(void)
 
 void board_usb_initialize(void)
 {
+#if WITHUSBHW
 	//PRINTF("board_usb_initialize\n");
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
@@ -296,6 +297,7 @@ void board_usb_initialize(void)
 	MX_USB_HOST_Init();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 	//PRINTF("board_usb_initialize done\n");
+#endif /* WITHUSBHW */
 }
 
 void board_usb_deinitialize(void)
@@ -362,7 +364,7 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
 
-
+#if WITHUSBHW
 void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 {
 	for (;;)
@@ -377,5 +379,6 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 		PRINTF("USBH_HID_EventCallback: x/y=%d/%d, buttons=%d,%d,%d\n", (int) p->x, (int) p->y, (int) p->buttons [0], (int) p->buttons [1], (int) p->buttons [2]);
 	}
 }
+#endif /* WITHUSBHW */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

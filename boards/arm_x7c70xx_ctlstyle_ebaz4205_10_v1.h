@@ -213,10 +213,10 @@
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
-	#define WITHUSERAMDISK			1			// создание FATFS диска в озу
+	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
@@ -234,7 +234,7 @@
 		#if 1
 			#define WITHTOUCHGUI		1
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-			#define WITHALPHA			64
+			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
 			#define WITHAFGAINDEFAULT	150
@@ -263,6 +263,7 @@
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
+	#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	////#define WITHCAT		1	/* используется CAT */
@@ -313,15 +314,15 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
-	#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
 	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
 
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
-	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */
