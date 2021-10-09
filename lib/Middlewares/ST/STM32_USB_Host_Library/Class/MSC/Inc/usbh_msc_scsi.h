@@ -89,7 +89,7 @@ typedef struct
 
 #define DATA_LEN_MODE_TEST_UNIT_READY        0U
 #define DATA_LEN_READ_CAPACITY10             8U
-#define DATA_LEN_READ_CAPACITY16            16U
+#define DATA_LEN_READ_CAPACITY16            12U
 #define DATA_LEN_INQUIRY                    36U
 #define DATA_LEN_REQUEST_SENSE              14U
 

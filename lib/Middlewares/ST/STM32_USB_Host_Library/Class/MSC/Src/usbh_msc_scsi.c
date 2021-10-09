@@ -218,10 +218,12 @@ USBH_StatusTypeDef USBH_MSC_SCSI_TestUnitReady(USBH_HandleTypeDef *phost,
         /*Prepare the CBW and relevant field*/
         hBot->cbw.field.DataTransferLength = DATA_LEN_READ_CAPACITY16;
         hBot->cbw.field.Flags = USB_EP_DIR_IN;
-        hBot->cbw.field.CBLength = CBW_LENGTH;
+        hBot->cbw.field.CBLength = 16;//CBW_LENGTH;
 
         (void)USBH_memset(hBot->cbw.field.CB, 0, sizeof hBot->cbw.field.CB);
-        hBot->cbw.field.CB[0]  = OPCODE_READ_CAPACITY16;
+        hBot->cbw.field.CB [ 0] = OPCODE_READ_CAPACITY16;
+        hBot->cbw.field.CB [ 1] = 0x10;	// SERVICE ACTION (10h)
+        USBD_poke_u32_BE(& hBot->cbw.field.CB [10], DATA_LEN_READ_CAPACITY16);	// ALLOCATION LENGTH
 
         hBot->state = BOT_SEND_CBW;
 
@@ -239,7 +241,7 @@ USBH_StatusTypeDef USBH_MSC_SCSI_TestUnitReady(USBH_HandleTypeDef *phost,
           /*assign the capacity*/
       	  capacity->block_nbr64 = USBD_peek_u64_BE(& hBot->pbuf[0]) + 1;	// last block LBA to number of blocks conversion
           /*assign the page length*/
-          capacity->block_size = USBD_peek_u64_BE(& hBot->pbuf[8]);
+          capacity->block_size = USBD_peek_u32_BE(& hBot->pbuf[8]);
          }
         break;
 

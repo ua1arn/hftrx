@@ -175,8 +175,15 @@ DRESULT USB_Get_Sector_Count (
 
     if (USBH_MSC_GetLUNInfo(&hUsbHostHS, lun, &info) == USBH_OK)
     {
-		* buff = info.capacity.block_nbr;
-		res = RES_OK;
+    	if ((sizeof (LBA_t) <= sizeof (uint32_t)) && (info.capacity.block_nbr64 >= (uint64_t) 1 << 32))
+    	{
+    		res = RES_ERROR;	// Too large device
+    	}
+    	else
+    	{
+    		* buff = info.capacity.block_nbr64;
+    		res = RES_OK;
+    	}
     }
     else
     {
