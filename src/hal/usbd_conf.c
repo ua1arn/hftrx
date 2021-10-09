@@ -364,7 +364,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		{
 			USBD_HS_ULPI_INITIALIZE();
 
-			PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS and ULPI\n"));
+			//PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS and ULPI\n"));
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;		/* USB/OTG HS  */
 			(void) RCC->AHB1ENR;
 			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN;		/* USB/OTG HS  */
@@ -378,7 +378,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		{
 			USBD_HS_FS_INITIALIZE();
 
-			PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS without ULPI\n"));
+			//PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS without ULPI\n"));
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;	/* USB/OTG HS  */
 			(void) RCC->AHB1ENR;
 			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN; /* USB/OTG HS  */
