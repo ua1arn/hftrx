@@ -3775,6 +3775,22 @@ unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
 	return 4;
 }
 
+/* записать в буфер для ответа 64-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v)
+{
+	buff [0] = (v >> 56) & 0xFF;
+	buff [1] = (v >> 48) & 0xFF;
+	buff [2] = (v >> 40) & 0xFF;
+	buff [3] = (v >> 32) & 0xFF;
+	buff [4] = (v >> 24) & 0xFF;
+	buff [5] = (v >> 16) & 0xFF;
+	buff [6] = (v >> 8) & 0xFF;
+	buff [7] = (v >> 0) & 0xFF;
+
+	return 8;
+}
+
 /* записать в буфер для ответа 24-бит значение */
 unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v)
 {

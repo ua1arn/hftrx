@@ -1166,6 +1166,7 @@ USBD_peek_u64_BE(
 /* записать в буфер для ответа n-бит значение */
 /* Big endian memory layout */
 unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v);
+unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v);
 unsigned USBD_poke_u24_BE(uint8_t * buff, uint_fast32_t v);
 unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v);
 
