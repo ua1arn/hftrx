@@ -3745,6 +3745,24 @@ USBD_peek_u32_BE(
 		((uint_fast32_t) buff [3] << 0);
 }
 
+/* получить 64-бит значение */
+/* Big endian memory layout */
+uint_fast64_t
+USBD_peek_u64_BE(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast64_t) buff [0] << 56) +
+		((uint_fast64_t) buff [1] << 48) +
+		((uint_fast64_t) buff [2] << 40) +
+		((uint_fast64_t) buff [3] << 32) +
+		((uint_fast64_t) buff [4] << 24) +
+		((uint_fast64_t) buff [5] << 16) +
+		((uint_fast64_t) buff [6] << 8) +
+		((uint_fast64_t) buff [7] << 0);
+}
+
 /* записать в буфер для ответа 32-бит значение */
 /* Big endian memory layout */
 unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)

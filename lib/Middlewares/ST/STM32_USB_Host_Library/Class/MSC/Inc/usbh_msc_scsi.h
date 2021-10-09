@@ -50,7 +50,7 @@ extern "C" {
 /* Capacity data */
 typedef struct
 {
-  uint32_t block_nbr;
+  uint64_t block_nbr64;
   uint16_t block_size;
 } SCSI_CapacityTypeDef;
 
@@ -79,6 +79,7 @@ typedef struct
   */
 #define OPCODE_TEST_UNIT_READY            0x00U
 #define OPCODE_READ_CAPACITY10            0x25U
+#define OPCODE_READ_CAPACITY16            0x9EU
 #define OPCODE_READ10                     0x28U
 #define OPCODE_WRITE10                    0x2AU
 #define OPCODE_REQUEST_SENSE              0x03U
@@ -88,6 +89,7 @@ typedef struct
 
 #define DATA_LEN_MODE_TEST_UNIT_READY        0U
 #define DATA_LEN_READ_CAPACITY10             8U
+#define DATA_LEN_READ_CAPACITY16            16U
 #define DATA_LEN_INQUIRY                    36U
 #define DATA_LEN_REQUEST_SENSE              14U
 
@@ -163,7 +165,11 @@ typedef struct
 USBH_StatusTypeDef USBH_MSC_SCSI_TestUnitReady(USBH_HandleTypeDef *phost,
                                                uint8_t lun);
 
-USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity(USBH_HandleTypeDef *phost,
+USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity10(USBH_HandleTypeDef *phost,
+                                              uint8_t lun,
+                                              SCSI_CapacityTypeDef *capacity);
+
+USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity16(USBH_HandleTypeDef *phost,
                                               uint8_t lun,
                                               SCSI_CapacityTypeDef *capacity);
 

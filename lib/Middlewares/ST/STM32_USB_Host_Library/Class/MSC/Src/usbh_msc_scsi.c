@@ -140,60 +140,115 @@ USBH_StatusTypeDef USBH_MSC_SCSI_TestUnitReady(USBH_HandleTypeDef *phost,
   return error;
 }
 
-/**
-  * @brief  USBH_MSC_SCSI_ReadCapacity
-  *         Issue Read Capacity command.
-  * @param  phost: Host handle
-  * @param  lun: Logical Unit Number
-  * @param  capacity: pointer to the capacity structure
-  * @retval USBH Status
-  */
-USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity(USBH_HandleTypeDef *phost,
-                                              uint8_t lun,
-                                              SCSI_CapacityTypeDef *capacity)
-{
-  USBH_StatusTypeDef    error = USBH_BUSY ;
-  MSC_HandleTypeDef * const MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
-  BOT_HandleTypeDef * const hBot = & MSC_Handle->hbot;
-
-  switch (hBot->cmd_state)
+  /**
+    * @brief  USBH_MSC_SCSI_ReadCapacity10
+    *         Issue Read Capacity 10 command.
+    * @param  phost: Host handle
+    * @param  lun: Logical Unit Number
+    * @param  capacity: pointer to the capacity structure
+    * @retval USBH Status
+    */
+  USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity10(USBH_HandleTypeDef *phost,
+                                                uint8_t lun,
+                                                SCSI_CapacityTypeDef *capacity)
   {
-    case BOT_CMD_SEND:
+    USBH_StatusTypeDef    error = USBH_BUSY ;
+    MSC_HandleTypeDef * const MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+    BOT_HandleTypeDef * const hBot = & MSC_Handle->hbot;
 
-      /*Prepare the CBW and relevant field*/
-      hBot->cbw.field.DataTransferLength = DATA_LEN_READ_CAPACITY10;
-      hBot->cbw.field.Flags = USB_EP_DIR_IN;
-      hBot->cbw.field.CBLength = CBW_LENGTH;
+    switch (hBot->cmd_state)
+    {
+      case BOT_CMD_SEND:
 
-      (void)USBH_memset(hBot->cbw.field.CB, 0, sizeof hBot->cbw.field.CB);
-      hBot->cbw.field.CB[0]  = OPCODE_READ_CAPACITY10;
+        /*Prepare the CBW and relevant field*/
+        hBot->cbw.field.DataTransferLength = DATA_LEN_READ_CAPACITY10;
+        hBot->cbw.field.Flags = USB_EP_DIR_IN;
+        hBot->cbw.field.CBLength = CBW_LENGTH;
 
-      hBot->state = BOT_SEND_CBW;
+        (void)USBH_memset(hBot->cbw.field.CB, 0, sizeof hBot->cbw.field.CB);
+        hBot->cbw.field.CB[0]  = OPCODE_READ_CAPACITY10;
 
-      hBot->cmd_state = BOT_CMD_WAIT;
-      hBot->pbuf = (uint8_t *) hBot->data;
-      error = USBH_BUSY;
-      break;
+        hBot->state = BOT_SEND_CBW;
 
-    case BOT_CMD_WAIT:
+        hBot->cmd_state = BOT_CMD_WAIT;
+        hBot->pbuf = (uint8_t *) hBot->data;
+        error = USBH_BUSY;
+        break;
 
-      error = USBH_MSC_BOT_Process(phost, lun);
+      case BOT_CMD_WAIT:
 
-      if (error == USBH_OK)
-      {
-        /*assign the capacity*/
-    	capacity->block_nbr = USBD_peek_u32_BE(& hBot->pbuf[0]) + 1;	// last block LBA to number of blocks conversion
-        /*assign the page length*/
-        capacity->block_size = USBD_peek_u32_BE(& hBot->pbuf[4]);
-       }
-      break;
+        error = USBH_MSC_BOT_Process(phost, lun);
 
-    default:
-      break;
+        if (error == USBH_OK)
+        {
+          /*assign the capacity*/
+      	  capacity->block_nbr64 = USBD_peek_u32_BE(& hBot->pbuf[0]) + 1;	// last block LBA to number of blocks conversion
+          /*assign the page length*/
+          capacity->block_size = USBD_peek_u32_BE(& hBot->pbuf[4]);
+         }
+        break;
+
+      default:
+        break;
+    }
+
+    return error;
   }
 
-  return error;
-}
+  /**
+    * @brief  USBH_MSC_SCSI_ReadCapacity16
+    *         Issue Read Capacity 16 command.
+    * @param  phost: Host handle
+    * @param  lun: Logical Unit Number
+    * @param  capacity: pointer to the capacity structure
+    * @retval USBH Status
+    */
+  USBH_StatusTypeDef USBH_MSC_SCSI_ReadCapacity16(USBH_HandleTypeDef *phost,
+                                                uint8_t lun,
+                                                SCSI_CapacityTypeDef *capacity)
+  {
+    USBH_StatusTypeDef    error = USBH_BUSY ;
+    MSC_HandleTypeDef * const MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
+    BOT_HandleTypeDef * const hBot = & MSC_Handle->hbot;
+
+    switch (hBot->cmd_state)
+    {
+      case BOT_CMD_SEND:
+
+        /*Prepare the CBW and relevant field*/
+        hBot->cbw.field.DataTransferLength = DATA_LEN_READ_CAPACITY16;
+        hBot->cbw.field.Flags = USB_EP_DIR_IN;
+        hBot->cbw.field.CBLength = CBW_LENGTH;
+
+        (void)USBH_memset(hBot->cbw.field.CB, 0, sizeof hBot->cbw.field.CB);
+        hBot->cbw.field.CB[0]  = OPCODE_READ_CAPACITY16;
+
+        hBot->state = BOT_SEND_CBW;
+
+        hBot->cmd_state = BOT_CMD_WAIT;
+        hBot->pbuf = (uint8_t *) hBot->data;
+        error = USBH_BUSY;
+        break;
+
+      case BOT_CMD_WAIT:
+
+        error = USBH_MSC_BOT_Process(phost, lun);
+
+        if (error == USBH_OK)
+        {
+          /*assign the capacity*/
+      	  capacity->block_nbr64 = USBD_peek_u64_BE(& hBot->pbuf[0]) + 1;	// last block LBA to number of blocks conversion
+          /*assign the page length*/
+          capacity->block_size = USBD_peek_u64_BE(& hBot->pbuf[8]);
+         }
+        break;
+
+      default:
+        break;
+    }
+
+    return error;
+  }
 
 /**
   * @brief  USBH_MSC_SCSI_Inquiry

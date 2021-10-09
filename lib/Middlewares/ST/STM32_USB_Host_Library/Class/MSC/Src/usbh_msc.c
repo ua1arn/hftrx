@@ -442,7 +442,48 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
             break;
 
           case MSC_READ_CAPACITY10:
-            scsi_status = USBH_MSC_SCSI_ReadCapacity(phost, (uint8_t)MSC_Handle->current_lun, &MSC_Handle->unit[MSC_Handle->current_lun].capacity) ;
+            scsi_status = USBH_MSC_SCSI_ReadCapacity10(phost, (uint8_t)MSC_Handle->current_lun, &MSC_Handle->unit[MSC_Handle->current_lun].capacity) ;
+
+            if (scsi_status == USBH_OK)
+            {
+            	if (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 == 0)
+            	{
+                    USBH_UsrLog("MSC Device capacity too large, use (lun=%d): MSC_READ_CAPACITY16", (int) MSC_Handle->current_lun);
+                    MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_READ_CAPACITY16;
+                    MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;
+                    MSC_Handle->unit[MSC_Handle->current_lun].prev_ready_state = USBH_OK;
+            	}
+            	else
+            	{
+                    if (MSC_Handle->unit[MSC_Handle->current_lun].state_changed == 1U)
+                    {
+                      USBH_UsrLog("MSC Device capacity (lun=%d): %lu KBytes",
+      						(int) MSC_Handle->current_lun,
+      						(unsigned long) (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
+      			      USBH_UsrLog("Block number : %llu", (unsigned long long)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64));
+                      USBH_UsrLog("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
+                    }
+                    MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
+                    MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;
+                    MSC_Handle->current_lun++;
+            	}
+              }
+            else if (scsi_status == USBH_FAIL)
+            {
+              MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_REQUEST_SENSE;
+            }
+            else
+            {
+              if (scsi_status == USBH_UNRECOVERED_ERROR)
+              {
+                MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
+                MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_ERROR;
+              }
+            }
+            break;
+
+          case MSC_READ_CAPACITY16:
+            scsi_status = USBH_MSC_SCSI_ReadCapacity16(phost, (uint8_t)MSC_Handle->current_lun, &MSC_Handle->unit[MSC_Handle->current_lun].capacity) ;
 
             if (scsi_status == USBH_OK)
             {
@@ -450,8 +491,8 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
               {
                 USBH_UsrLog("MSC Device capacity (lun=%d): %lu KBytes",
 						(int) MSC_Handle->current_lun,
-						(unsigned long) ((int64_t)MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
-			USBH_UsrLog("Block number : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr));
+						(unsigned long) (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
+			    USBH_UsrLog("Block number : %llu", (unsigned long long)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64));
                 USBH_UsrLog("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
               }
               MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
