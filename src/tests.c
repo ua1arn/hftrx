@@ -3477,7 +3477,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 256] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbwruff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3520,7 +3520,7 @@ static void printtextfile(const char * filename)
 		if (i >= br)
 		{
 			// если буфер не заполнен - читаем
-			rc = f_read(& Fil, rbuff, sizeof rbuff, &br);	/* Read a chunk of file */
+			rc = f_read(& Fil, rbwruff, sizeof rbwruff, &br);	/* Read a chunk of file */
 			if (rc != FR_OK || !br)
 				break;			/* Error or end of file */
 			i = 0;		// начальное положение указателя в буфере для вывода данных
@@ -3531,7 +3531,7 @@ static void printtextfile(const char * filename)
 			++ i;
 			showprogress(++ filepos, fulllength);
 		}
-		else if (dbg_putchar(rbuff[i]))
+		else if (dbg_putchar(rbwruff[i]))
 		{
 			++ i;
 			showprogress(++ filepos, fulllength);
@@ -3612,12 +3612,12 @@ static void dosaveserialport(const char * fname)
 		if (rxqpeek(& c) != 0)
 		{
 			// получен очередной символ из порта - сохраняем в буфер
-			rbuff [i ++] = c;
+			rbwruff [i ++] = c;
 			showprogress(++ filepos, 0);
-			if (i >= (sizeof rbuff / sizeof rbuff [0]))
+			if (i >= (sizeof rbwruff / sizeof rbwruff [0]))
 			{
 				UINT bw;
-				rc = f_write(& Fil, rbuff, i, & bw);
+				rc = f_write(& Fil, rbwruff, i, & bw);
 				if (rc != 0 || bw == 0)
 					break;
 				i = 0;
@@ -3628,7 +3628,7 @@ static void dosaveserialport(const char * fname)
 	if (i != 0)
 	{
 		UINT bw;
-		rc = f_write(& Fil, rbuff, i, & bw);
+		rc = f_write(& Fil, rbwruff, i, & bw);
 		if (rc != 0 || bw != i)
 		{
 			TP();
@@ -3697,12 +3697,12 @@ static int dosaveblocks(const char * fname)
 	unsigned j;
 	static unsigned i;
 	static unsigned q;
-	memset(rbuff, 0x20, sizeof rbuff);
-	for (j = 0; j < ARRAY_SIZE(rbuff) - 16; j += 80)
+	memset(rbwruff, 0x20, sizeof rbwruff);
+	for (j = 0; j < ARRAY_SIZE(rbwruff) - 16; j += 80)
 	{
-		USBD_poke_u32_BE(rbuff + j + 16 - 4, ++ q);
+		USBD_poke_u32_BE(rbwruff + j + 16 - 4, ++ q);
 	}
-	USBD_poke_u32_BE(rbuff, ++ i);
+	USBD_poke_u32_BE(rbwruff, ++ i);
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
@@ -3766,8 +3766,8 @@ static int dosaveblocks(const char * fname)
 			}
 		}
 		UINT bw;
-		rc = f_write(& Fil, rbuff, sizeof rbuff, & bw);
-		if (rc != 0 || bw != sizeof rbuff)
+		rc = f_write(& Fil, rbwruff, sizeof rbwruff, & bw);
+		if (rc != 0 || bw != sizeof rbwruff)
 		{
 			PRINTF("write fail, rc=0x%02X\n", (unsigned) rc);
 			break;
@@ -4612,7 +4612,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 		if (i >= br)
 		{
 			// если буфер не заполнен - читаем
-			rc = f_read(& Fil, rbuff, sizeof rbuff, &br);	/* Read a chunk of file */
+			rc = f_read(& Fil, rbwruff, sizeof rbwruff, &br);	/* Read a chunk of file */
 			if (rc || !br) 
 				break;			/* Error or end of file */
 			i = 0;		// начальное положение указателя в буфере для вывода данных
@@ -4620,7 +4620,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 		}
 		else 
 		{
-			int c = rbuff [i ++];
+			int c = rbwruff [i ++];
 			if (c == EOF)
 			{
 				if (hexstate != HSINIT)
@@ -7233,7 +7233,6 @@ void hightests(void)
 	// no interactive
 	{
 
-		static FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 		FRESULT rc;
 //
 //		static const MKFS_PARM defopt = { FM_ANY, 0, 0, 0, 0};	/* Default parameter */
@@ -7276,7 +7275,7 @@ void hightests(void)
 		system_enableIRQ();
 		{
  			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-			rc = f_mkfs("0:", NULL, work, sizeof (work));
+			rc = f_mkfs("0:", NULL, rbwruff, sizeof (rbwruff));
 			if (rc != FR_OK)
 			{
 				PRINTF(PSTR("sdcardformat: f_mkfs failure, rc=0x%02X\n"), (int) rc);
@@ -7290,7 +7289,7 @@ void hightests(void)
 		}
 		for (;;)
 		{
-			PRINTF(PSTR("Storage device test - %d bytes block.\n"), sizeof rbuff);
+			PRINTF(PSTR("Storage device test - %d bytes block.\n"), sizeof rbwruff);
 			PRINTF("Storage device test\n");
 			if (fatfs_filesyspeedstest())
 				break;
