@@ -602,7 +602,6 @@ uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
 uint32_t USBH_LL_GetAdjXferSize(USBH_HandleTypeDef *phost, uint8_t pipe, uint32_t size)
 {
 	  return ulmin32(size, HAL_HCD_HC_GetMaxPacket(phost->pData, pipe));	// Default implementation
-	  //return ulmin32(size, 64);
 }
 
 /**
