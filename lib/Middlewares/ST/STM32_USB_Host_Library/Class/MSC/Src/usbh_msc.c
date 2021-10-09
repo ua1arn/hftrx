@@ -446,9 +446,9 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
 
             if (scsi_status == USBH_OK)
             {
-            	if (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 == 0)
+            	if (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 == 0)	// OPCODE_READ_CAPACITY10 command reurn 0xFFFFFFFF
             	{
-                    USBH_UsrLog("MSC Device (lun=%d) capacity too large, use MSC_READ_CAPACITY16", (int) MSC_Handle->current_lun);
+                    //USBH_UsrLog("MSC Device (lun=%d) capacity too large, use MSC_READ_CAPACITY16", (int) MSC_Handle->current_lun);
                     MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_READ_CAPACITY16;
                     MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;
                     MSC_Handle->unit[MSC_Handle->current_lun].prev_ready_state = USBH_OK;
