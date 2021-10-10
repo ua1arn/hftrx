@@ -552,8 +552,6 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         phost->rootTarget.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
         phost->rootTarget.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
         phost->currentTarget = & phost->rootTarget;
-        PRINTF("phost->currentTarget: addr=%d,hub=%d,port=%d,speed=%d\n",
-        			phost->currentTarget->dev_address, phost->currentTarget->tt_hubaddr, phost->currentTarget->tt_prtaddr, phost->currentTarget->speed);
       }
       else
       {
