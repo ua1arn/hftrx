@@ -432,7 +432,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	if (pcdHandle->Instance == & USB200)
 	{
 		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_Disable(int_id);
+		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -444,7 +444,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	else if (pcdHandle->Instance == & USB201)
 	{
 		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_Disable(int_id);
+		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
@@ -462,12 +462,12 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	  if (pcdHandle->Instance == USB1_OTG_HS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_HS_IRQn);
+	    arm_hardware_disable_handler(OTG_HS_IRQn);
 	  }
 	  else if (pcdHandle->Instance == USB2_OTG_FS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_FS_IRQn);
+	    arm_hardware_disable_handler(OTG_FS_IRQn);
 	  }
 
 #elif CPUSTYLE_STM32MP1
@@ -475,7 +475,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	  if (pcdHandle->Instance == USB_OTG_HS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    IRQ_Disable(OTG_IRQn);
+	    arm_hardware_disable_handler(OTG_IRQn);
 	  }
 
 #elif CPUSTYLE_STM32F
@@ -484,14 +484,14 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	  if (pcdHandle->Instance == USB_OTG_HS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_HS_IRQn);
+	    arm_hardware_disable_handler(OTG_HS_IRQn);
 	  }
 #endif /* defined (USB_OTG_HS) */
 #if defined (USB_OTG_FS)
 	  if (pcdHandle->Instance == USB_OTG_FS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_FS_IRQn);
+	    arm_hardware_disable_handler(OTG_FS_IRQn);
 	  }
 #endif /* defined (USB_OTG_FS) */
 

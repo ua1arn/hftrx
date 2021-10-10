@@ -1003,8 +1003,8 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 
 #if CPUSTYLE_STM32MP1
 
-	IRQ_Disable(USBH_OHCI_IRQn);
-	IRQ_Disable(USBH_EHCI_IRQn);
+	arm_hardware_disable_handler(USBH_OHCI_IRQn);
+	arm_hardware_disable_handler(USBH_EHCI_IRQn);
 
 	/* Perform USBH reset */
 	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_USBHRST;
@@ -1023,7 +1023,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 		{
 			enum { usbIX = 0; };
 
-			IRQ_Disable(USB0_IRQn);
+			arm_hardware_disable_handler(USB0_IRQn);
 
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
@@ -1033,7 +1033,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 		{
 			enum { usbIX = 1; };
 
-			IRQ_Disable(USB1_IRQn);
+			arm_hardware_disable_handler(USB1_IRQn);
 
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;

@@ -1060,6 +1060,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));
+void arm_hardware_disable_handler(uint_fast16_t int_id);
 
 void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
 

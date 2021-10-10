@@ -1495,6 +1495,28 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
+// Disable interrupt vector
+void arm_hardware_disable_handler(uint_fast16_t int_id)
+{
+#if CPUSTYLE_AT91SAM7S
+
+	const uint_fast32_t mask32 = (1UL << int_id);
+
+	AT91C_BASE_AIC->AIC_IDCR = mask32;		// disable interrupt
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
+
+	VERIFY(IRQ_Disable(int_id) == 0);
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	NVIC_DisableIRQ(int_id);
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
 {

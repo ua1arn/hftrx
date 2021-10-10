@@ -248,7 +248,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 	if (hpcd->Instance == & USB200)
 	{
 		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_Disable(int_id);
+		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -260,7 +260,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 	else if (hpcd->Instance == & USB201)
 	{
 		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_Disable(int_id);
+		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
@@ -278,7 +278,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 	if (hpcd->Instance == USB_OTG_HS)
 	{
 		/* Peripheral interrupt Deinit*/
-		IRQ_Disable(OTG_IRQn);
+		arm_hardware_disable_handler(OTG_IRQn);
 	}
 
 #else
@@ -287,7 +287,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 		if (hpcd->Instance == USB_OTG_HS)
 		{
 			/* Peripheral interrupt Deinit*/
-			NVIC_DisableIRQ(OTG_HS_IRQn);
+			arm_hardware_disable_handler(OTG_HS_IRQn);
 		}
 	#endif /* defined (USB_OTG_HS) */
 
@@ -295,7 +295,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 		if (hpcd->Instance == USB_OTG_FS)
 		{
 			/* Peripheral interrupt Deinit*/
-			NVIC_DisableIRQ(OTG_FS_IRQn);
+			arm_hardware_disable_handler(OTG_FS_IRQn);
 		}
 	#endif /* defined (USB_OTG_FS) */
 
