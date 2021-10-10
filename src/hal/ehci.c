@@ -14,7 +14,7 @@
 
 #include "usb_device.h"
 #include "usbh_core.h"
-#include "hal_ehci.h"
+#include "ehci.h"
 
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
