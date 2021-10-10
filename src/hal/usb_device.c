@@ -362,7 +362,7 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
 
-
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 {
 	for (;;)
@@ -377,5 +377,6 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 		PRINTF("USBH_HID_EventCallback: x/y=%d/%d, buttons=%d,%d,%d\n", (int) p->x, (int) p->y, (int) p->buttons [0], (int) p->buttons [1], (int) p->buttons [2]);
 	}
 }
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

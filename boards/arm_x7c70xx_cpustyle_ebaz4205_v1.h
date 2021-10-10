@@ -121,14 +121,14 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
 
-	/* For H7 exist: Legacy defines */
-	//#define USB_OTG_HS                   USB1_OTG_HS
-	//#define USB_OTG_FS                   USB2_OTG_FS
-
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_HOST		USB_OTG_HS
+#if 0
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_HOST		EHCI0
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port. See also USBPHYC_MISC_SWITHOST_VAL
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
+	//#define WITHUSBHOST_DMAENABLE 1	// not need for EHCI
+#endif
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */

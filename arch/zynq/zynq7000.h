@@ -61,6 +61,7 @@ typedef enum IRQn
 	TTC1_A_IRQn 		= 69,
 	TTC2_B_IRQn 		= 70,
 	TTC3_C_IRQn 		= 71,
+	USB1_IRQn 			= 76,
 	ETH1_IRQn 			= 77,
 	ETH1_WAKE_IRQn		 = 78,
 
@@ -569,6 +570,27 @@ typedef struct xemacps_regs {
 //STATIC_ASSERT(offsetof(XEMACPS_Registers, TIMER_STROBE_S) == 0x01C8);
 //STATIC_ASSERT(offsetof(XEMACPS_Registers, DESIGN_CFG5) == 0x0290);
 
+/**
+  * @brief USB_EHCI Capability Registers
+  */
+typedef struct
+{
+  __IO uint32_t HCCAPBASE;        /*!< Capability Register register,              Address offset: 0x00 */
+  __IO uint32_t HCSPARAMS;        /*!< Structural Parameter register              Address offset: 0x04 */
+  __IO uint32_t HCCPARAMS;        /*!< Capability Parameter register,             Address offset: 0x08 */
+       uint32_t RESERVED;         /*!< USB Command register,                      Address offset: 0x0C */
+  __IO uint32_t USBCMD;           /*!< USB Command register,                      Address offset: 0x10 */
+  __IO uint32_t USBSTS;           /*!< USB Status register,                       Address offset: 0x14 */
+  __IO uint32_t USBINTR;          /*!< USB Interrupt Enable register,             Address offset: 0x18 */
+  __IO uint32_t FRINDEX;          /*!< USB Frame Index register ,                 Address offset: 0x1C */
+  __IO uint32_t CTRLDSSEGMENT;    /*!< 4G Segment Selector register,              Address offset: 0x20 */
+  __IO uint32_t PERIODICLISTBASE; /*!< Periodic Frame List Base Address register, Address offset: 0x24 */
+  __IO uint32_t ASYNCLISTADDR;    /*!< Asynchronous List Address register,        Address offset: 0x28 */
+} USB_EHCI_CapabilityTypeDef;
+/**
+  * @}
+  */
+
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
 #define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
@@ -658,6 +680,12 @@ typedef struct xemacps_regs {
 #define XQSPIPS			((XQSPIPS_Registers *) QSPI_BASE)
 #define GEM0			((XEMACPS_Registers *) GEM0_BASE)
 #define GEM1			((XEMACPS_Registers *) GEM1_BASE)
+
+#define USB0	((void *) USB0_BASE)
+#define USB1	((void *) USB1_BASE)
+
+#define EHCI0	((USB_EHCI_CapabilityTypeDef *) (USB0_BASE + 0x0100))
+#define EHCI1	((USB_EHCI_CapabilityTypeDef *) (USB1_BASE + 0x0100))
 
 
 /** @addtogroup Exported_types
