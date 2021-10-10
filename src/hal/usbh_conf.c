@@ -589,7 +589,14 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
   */
 uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
-  return HAL_HCD_HC_GetXferCount(phost->pData, pipe);
+	uint32_t size2 = HAL_HCD_HC_GetXferCount(phost->pData, pipe);
+	uint32_t size;
+	do
+	{
+		size = size2;
+		size2 = HAL_HCD_HC_GetXferCount(phost->pData, pipe);
+	} while (size != size2);
+	return size2;
 }
 
 /**
@@ -712,7 +719,14 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pipe
 	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
 #endif /* WITHINTEGRATEDDSP */
 
-	return (USBH_URBStateTypeDef)HAL_HCD_HC_GetURBState (phost->pData, pipe);
+	HCD_URBStateTypeDef state2 = HAL_HCD_HC_GetURBState(phost->pData, pipe);
+	HCD_URBStateTypeDef state;
+	do
+	{
+		state = state2;
+		state2 = HAL_HCD_HC_GetURBState(phost->pData, pipe);
+	} while (state != state2);
+	return (USBH_URBStateTypeDef) state2;
 }
 
 USBH_SpeedTypeDef USBH_LL_GetPipeSpeed(USBH_HandleTypeDef *phost, uint8_t pipe_num)
