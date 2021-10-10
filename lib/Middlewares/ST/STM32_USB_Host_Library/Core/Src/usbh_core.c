@@ -19,8 +19,6 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "hardware.h"
-#include "formats.h"
 
 #include "usbh_core.h"
 
