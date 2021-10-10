@@ -644,7 +644,7 @@ void seq_txrequest(uint_fast8_t tune, uint_fast8_t aptt)
 }
 
 // запрос из system-mode части программы на переход на передачу для tune.
-void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t ptt)
+void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t aptt)
 {
 	exttunereq_irq = tune;
 	ptt_irq = aptt;
