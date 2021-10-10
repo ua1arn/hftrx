@@ -677,7 +677,7 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
   * @retval Status
   */
 USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe, uint8_t direction,
-                                     uint8_t ep_type, uint8_t token, uint8_t *pbuff, uint16_t length,
+                                     uint8_t ep_type, uint8_t token, uint8_t *pbuff, uint32_t length,
                                      uint8_t do_ping)
 {
   HAL_StatusTypeDef hal_status = HAL_OK;

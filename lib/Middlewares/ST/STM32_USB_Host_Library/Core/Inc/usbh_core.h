@@ -143,7 +143,7 @@ USBH_StatusTypeDef   USBH_LL_SubmitURB(USBH_HandleTypeDef *phost,
                                        uint8_t ep_type,
                                        uint8_t token,
                                        uint8_t *pbuff,
-                                       uint16_t length,
+                                       uint32_t length,
                                        uint8_t do_ping);
 
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,

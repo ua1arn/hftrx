@@ -173,7 +173,7 @@ static void qtd_item2_set_length(volatile struct ehci_transfer_descriptor * p, u
 	p->len = (v & ~ m) | (cpu_to_le16(length) & m);
 }
 
-static uint_fast8_t qtd_item2_buff(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, unsigned length)
+static uint_fast8_t qtd_item2_buff(volatile struct ehci_transfer_descriptor * p, volatile uint8_t * data, uint32_t length)
 {
 	unsigned i;
 	ASSERT(offsetof(struct ehci_transfer_descriptor, high) == 32);
@@ -183,8 +183,8 @@ static uint_fast8_t qtd_item2_buff(volatile struct ehci_transfer_descriptor * p,
 	{
 		/* Calculate length of this fragment */
 		const uintptr_t phys = virt_to_phys ( data );
-		const unsigned offset = ( phys & ( EHCI_PAGE_ALIGN - 1 ) );
-		unsigned frag_len = ( EHCI_PAGE_ALIGN - offset );
+		const uintptr_t offset = ( phys & ( EHCI_PAGE_ALIGN - 1 ) );
+		uint32_t frag_len = ( EHCI_PAGE_ALIGN - offset );
 		if ( frag_len > length )
 			frag_len = length;
 
@@ -1082,7 +1082,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
                                            uint8_t ep_type,
                                            uint8_t token,
                                            uint8_t *pbuff,
-                                           uint16_t length,
+										   uint32_t length,
                                            uint8_t do_ping)
 {
 	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
@@ -1470,7 +1470,7 @@ static USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status)
  */
 USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
 		uint8_t direction, uint8_t ep_type, uint8_t token, uint8_t *pbuff,
-		uint16_t length, uint8_t do_ping)
+		uint32_t length, uint8_t do_ping)
 {
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
