@@ -1449,9 +1449,49 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
 #if CPUSTYLE_ARM
+
+
+// This processor index (0..n-1)
+unsigned arm_hardware_cpuid(void)
+{
+#if CPUSTYLE_AT91SAM7S
+
+	return 0;
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
+
+	return __get_MPIDR() & 0x03;
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	return 0;
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+#if WITHSMPSYSTEM
+
+static void arm_hardware_gicsynchro(void)
+{
+	// Get ITLinesNumber
+	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	unsigned i;
+	// 32 - skip SGI handlers (keep enabled for CPU1 start).
+	for (i = 32; i < n; ++ i)
+	{
+
+	}
+
+}
+
+#endif /* WITHSMPSYSTEM */
+
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
+	ASSERT(arm_hardware_cpuid() == 0);
+
 #if CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
@@ -1475,13 +1515,18 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
 	GIC_SetTarget(int_id, targetcpu);
 
-#if CPUSTYLE_STM32MP1
-	// peripheral (hardware) interrupts using the GIC 1-N model.
-	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
-	cfg &= ~ 0x02;	/* Set level sensitive configuration */
-	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
-	GIC_SetConfiguration(int_id, cfg);
-#endif /* CPUSTYLE_STM32MP1 */
+	#if CPUSTYLE_STM32MP1
+		// peripheral (hardware) interrupts using the GIC 1-N model.
+		uint_fast32_t cfg = GIC_GetConfiguration(int_id);
+		cfg &= ~ 0x02;	/* Set level sensitive configuration */
+		cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
+		GIC_SetConfiguration(int_id, cfg);
+	#endif /* CPUSTYLE_STM32MP1 */
+
+
+	#if WITHSMPSYSTEM
+		arm_hardware_gicsynchro();
+	#endif /* WITHSMPSYSTEM */
 
 	VERIFY(IRQ_Enable(int_id) == 0);
 
@@ -1498,6 +1543,8 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 // Disable interrupt vector
 void arm_hardware_disable_handler(uint_fast16_t int_id)
 {
+	ASSERT(arm_hardware_cpuid() == 0);
+
 #if CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
@@ -1509,13 +1556,16 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 
 	VERIFY(IRQ_Disable(int_id) == 0);
 
+	#if WITHSMPSYSTEM
+		arm_hardware_gicsynchro();
+	#endif /* WITHSMPSYSTEM */
+
 #else /* CPUSTYLE_STM32MP1 */
 
 	NVIC_DisableIRQ(int_id);
 
 #endif /* CPUSTYLE_STM32MP1 */
 }
-
 
 // Set interrupt vector wrapper
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void))
