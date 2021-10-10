@@ -108,6 +108,8 @@ static uint_fast16_t rgbeepticks;	// время формирование roger b
 
 static /* volatile */ uint_fast8_t exttunereq;	// запрос на tune от пользовательской программы
 static /* volatile */ uint_fast8_t ptt;	// запрос на передачу от пользовательской программы
+static /* volatile */ uint_fast8_t exttunereq_irq;	// запрос на tune от system программы
+static /* volatile */ uint_fast8_t ptt_irq;	// запрос на передачу от system программы
 static /* volatile */ uint_fast8_t usertxstate;	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
 
 static volatile uint_fast8_t seqstate;
@@ -325,12 +327,12 @@ static uint_fast8_t
 seqhastxrequest(void)
 {
 	
-	if (exttunereq)	
+	if (exttunereq || exttunereq_irq)
 	{
 		// режим "настройка - включить несущую - или включить режим AM
 		return 1;
 	}
-	if (ptt)	
+	if (ptt || ptt_irq)
 	{
 		// педаль или через CAT
 		return 1;
@@ -641,6 +643,13 @@ void seq_txrequest(uint_fast8_t tune, uint_fast8_t aptt)
 	system_enableIRQ();
 }
 
+// запрос из system-mode части программы на переход на передачу для tune.
+void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t ptt)
+{
+	exttunereq_irq = tune;
+	ptt_irq = aptt;
+}
+
 /* подтверждение от user-mode программы о том, что смена режима приём-передача осуществлена */
 void seq_ask_txstate(
 	uint_fast8_t tx)	/* 0 - периферия находимся в состоянии приёма, иначе - в состоянии передачи */
@@ -673,6 +682,11 @@ seq_spool_ticks(void * ctc)
 
 /* заглушки функций для работы в случае только приёмника. */
 void seq_txrequest(uint_fast8_t tune, uint_fast8_t ptt)
+{
+}
+
+/* заглушки функций для работы в случае только приёмника. */
+void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t ptt)
 {
 }
 
