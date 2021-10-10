@@ -370,7 +370,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
                                            uint8_t ep_type,
                                            uint8_t token,
                                            uint8_t *pbuff,
-                                           uint16_t length,
+										   uint32_t length,
                                            uint8_t do_ping)
 {
   hhcd->hc[ch_num].ep_is_in = direction;
