@@ -36,7 +36,7 @@ DSTATUS USB_Initialize (
 	)
 {
 	  /* CAUTION : USB Host library has to be initialized in the application */
-	PRINTF(PSTR("USB_Initialize: drv=%d\n"), (int) drv);
+	//PRINTF(PSTR("USB_Initialize: drv=%d\n"), (int) drv);
 	return 0;
 	if (1)
 	{

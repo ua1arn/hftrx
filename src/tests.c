@@ -3477,7 +3477,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbwruff [FF_MAX_SS * 4] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbwruff [FF_MAX_SS * 32] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3720,7 +3720,7 @@ static int dosaveblocks(const char * fname)
 	}
 	else
 	{
-		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
+		//PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
 	}
 #endif
 
