@@ -514,8 +514,10 @@ void seq_set_rxtxdelay(
 	uint_fast8_t txrxdelay,
 	uint_fast8_t pretxdelay
 	);
-// запрос из user-mode части программы на переход на передачу для tune.
+// запрос из user-mode части программы на переход на передачу и для для tune.
 void seq_txrequest(uint_fast8_t tune, uint_fast8_t ptt);
+// запрос из system-mode части программы на переход на передачу и для tune.
+void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t ptt);
 
 /* процедура возвращает из сиквенсора запрос на переключение на передачу в основную программу */
 uint_fast8_t seq_get_txstate(void);
