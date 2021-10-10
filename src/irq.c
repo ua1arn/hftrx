@@ -1452,7 +1452,7 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 
 
 // This processor index (0..n-1)
-unsigned arm_hardware_cpuid(void)
+uint_fast8_t arm_hardware_cpuid(void)
 {
 #if CPUSTYLE_AT91SAM7S
 
@@ -1472,7 +1472,36 @@ unsigned arm_hardware_cpuid(void)
 
 #if WITHSMPSYSTEM
 
-static void arm_hardware_gicsynchro(void)
+static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t gicshadow_prio [1024] USBALIGN_END;
+
+static void arm_hardware_gicsfetch(void)
+{
+	// Get ITLinesNumber
+	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	unsigned i;
+	// 32 - skip SGI handlers (keep enabled for CPU1 start).
+	for (i = 32; i < n; ++ i)
+	{
+
+	}
+	arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+
+}
+
+static void arm_hardware_populate(void)
+{
+	arm_hardware_flush((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	arm_hardware_flush((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	arm_hardware_flush((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+
+
+}
+
+void arm_hardware_populate_initialize(void)
 {
 	// Get ITLinesNumber
 	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
@@ -1483,6 +1512,9 @@ static void arm_hardware_gicsynchro(void)
 
 	}
 
+	arm_hardware_flush_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	arm_hardware_flush_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	arm_hardware_flush_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 }
 
 #endif /* WITHSMPSYSTEM */
@@ -1515,6 +1547,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
 	GIC_SetTarget(int_id, targetcpu);
 
+
 	#if CPUSTYLE_STM32MP1
 		// peripheral (hardware) interrupts using the GIC 1-N model.
 		uint_fast32_t cfg = GIC_GetConfiguration(int_id);
@@ -1525,7 +1558,11 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 
 	#if WITHSMPSYSTEM
-		arm_hardware_gicsynchro();
+		gicshadow_target [int_id] = targetcpu;
+		gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
+		gicshadow_prio [int_id] = priority;
+
+		arm_hardware_populate();	// populate for other CPUs
 	#endif /* WITHSMPSYSTEM */
 
 	VERIFY(IRQ_Enable(int_id) == 0);
@@ -1557,7 +1594,7 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 	VERIFY(IRQ_Disable(int_id) == 0);
 
 	#if WITHSMPSYSTEM
-		arm_hardware_gicsynchro();
+		arm_hardware_populate();
 	#endif /* WITHSMPSYSTEM */
 
 #else /* CPUSTYLE_STM32MP1 */

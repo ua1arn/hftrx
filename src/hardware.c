@@ -1772,11 +1772,6 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 
 #if (__CORTEX_A != 0)
 
-uint_fast8_t arm_hardware_cpuid(void)
-{
-	return __get_MPIDR() & 0x03;
-}
-
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
 
@@ -3328,6 +3323,8 @@ void cpump_initialize(void)
 	SystemCoreClock = CPU_FREQ;
 
 #if WITHSMPSYSTEM
+
+	arm_hardware_populate_initialize();
 
 #if (__CORTEX_A == 9U)
 	// set the ACTLR.SMP
