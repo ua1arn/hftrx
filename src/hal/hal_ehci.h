@@ -976,7 +976,7 @@ HAL_StatusTypeDef HAL_EHCI_UnRegisterHC_NotifyURBChangeCallback(EHCI_HandleTypeD
 HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hhcd, uint8_t ch_num,
                                            uint8_t direction, uint8_t ep_type,
                                            uint8_t token, uint8_t *pbuff,
-                                           uint16_t length, uint8_t do_ping);
+										   uint32_t length, uint8_t do_ping);
 
 /* Non-Blocking mode: Interrupt */
 void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef *hhcd);
