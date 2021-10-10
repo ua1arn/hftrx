@@ -956,6 +956,9 @@ extern "C" {
 			__disable_irq(); \
 		} while (0)
 
+	#define BOARD_SGI_IRQ SGI12_IRQn
+	#define BOARD_SGI_PRIO	ARM_CA9_ENCODE_PRIORITY(PRI_SYS)
+
 	#else /* WITHNESTEDINTERRUPTS */
 
 		#define ARM_OVERREALTIME_PRIORITY	0

@@ -6152,11 +6152,50 @@ void calcnormaltriangle(const float * model)
 //	v1.нормаль = нормализовать( tr1.нормаль + tr2.нормаль + tr3.нормаль)
 #endif
 
+#if 0 && WITHDEBUG && WITHSMPSYSTEM
+
+static void SecondCPUTaskSGI12(void)
+{
+	const int cpu = __get_MPIDR() & 0x03;
+	PRINTF("mSGI12 Run debug thread test: I am CPU=%d\n", cpu);
+}
+
+#endif
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && WITHDEBUG && WITHSMPSYSTEM
+	{
+		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, ARM_CA9_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
+		enum { TGCPUMASK1 = 1u << 1 };
+		enum { TGCPUMASK0 = 1u << 0 };
+		const int cpu = __get_MPIDR() & 0x03;
+
+		PRINTF("Main thread test: I am CPU=%d\n", cpu);
+		local_delay_ms(100);
+
+		arm_hardware_set_handler(BOARD_SGI_IRQ, SecondCPUTaskSGI12, BOARD_SGI_PRIO, 0x01u << 1);
+
+		for (;;)
+		{
+			// 0: to cpu1 or CPU0 (в зависимости от указанной маски в GIC_SendSGI)
+			// 1: to cpu1
+			// 2: to cpu0
+			//PRINTF("fltr = %d\n", i);
+			GIC_SendSGI(SGI12_IRQn, TGCPUMASK1, 0x00);	// CPU1, filer=0
+			GIC_SendSGI(SGI13_IRQn, TGCPUMASK1, 0x00);	// CPU1, filer=0
+			local_delay_ms(300);
+		}
+//
+//		PRINTF("Main thread test: I am CPU=%d. halt\n", cpu);
+//		for (;;)
+//			;
+
+	}
+#endif
 #if 1 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	{
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
