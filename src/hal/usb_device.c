@@ -370,7 +370,7 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 		HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
 		if (p == NULL)
 		{
-			TP();
+			//TP();
 			break;
 
 		}
