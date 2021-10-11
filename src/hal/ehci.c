@@ -44,29 +44,6 @@ void Error_Handler(void);
 //	https://github.com/xushanpu123/xsp-daily-work/blob/ce4b31db29a560400ac948053b451a2122631490/rCore-Tutorial-v3/qemu-5.0.0/roms/ipxe/src/drivers/usb/ehci.c
 //	https://github.com/xushanpu123/xsp-daily-work/blob/ce4b31db29a560400ac948053b451a2122631490/rCore-Tutorial-v3/qemu-5.0.0/roms/ipxe/src/include/ipxe/usb.h
 
-
-typedef uintptr_t physaddr_t;
-
-static uint8_t readb(physaddr_t a)
-{
-	return * (volatile uint8_t *) a;
-}
-
-static uint16_t readw(physaddr_t a)
-{
-	return * (volatile uint16_t *) a;
-}
-
-static uint32_t readl(physaddr_t a)
-{
-	return * (volatile uint32_t *) a;
-}
-
-static void writel(uint32_t v, physaddr_t a)
-{
-	* (volatile uint32_t *) a = v;
-}
-
 static uintptr_t virt_to_phys(volatile void * v)
 {
 	return (uintptr_t) v;
@@ -193,7 +170,7 @@ static uint_fast8_t qtd_item2_buff(volatile struct ehci_transfer_descriptor * p,
 
 		/* Populate buffer pointer */
 		p->low [i] = cpu_to_le32 ( phys );
-		if ( sizeof ( physaddr_t ) > sizeof ( uint32_t ) ) {
+		if ( sizeof ( uintptr_t ) > sizeof ( uint32_t ) ) {
 			p->high [i] =
 					cpu_to_le32 ( ((uint64_t) phys) >> 32 );
 		}
