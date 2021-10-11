@@ -190,14 +190,14 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
   else if (phost->device.CfgDesc.Itf_Desc[interface].bInterfaceProtocol  == 0x00)
   {
     USBH_UsrLog("Touch device found!");
-    phhid->Init = USBH_HID_MouseInit;
+    phhid->Init = USBH_HID_TouchInit;
   }
   else
   {
     USBH_UsrLog("Protocol not supported.");
     return USBH_FAIL;
   }
-  USBH_UsrLog("Target: tt_hub=%d tt_port=%d, speed=%d", phhid->target.tt_hubaddr, phhid->target.tt_prtaddr, phhid->target.speed);
+  //USBH_UsrLog("Target: tt_hub=%d tt_port=%d, speed=%d", phhid->target.tt_hubaddr, phhid->target.tt_prtaddr, phhid->target.speed);
 
   phhid->state     = HID_INIT;
   phhid->ctl_state = HID_REQ_INIT;

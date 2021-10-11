@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    usbh_hid_mouse.c
+  * @file    usbh_hid_touch.c
   * @author  MCD Application Team
-  * @brief   This file is the application layer for USB Host HID Mouse Handling.
+  * @brief   This file is the application layer for USB Host HID Touch Handling.
   ******************************************************************************
   * @attention
   *
@@ -25,7 +25,7 @@
 EndBSPDependencies */
 
 /* Includes ------------------------------------------------------------------*/
-#include "../Inc/usbh_hid_mouse.h"
+#include "../Inc/usbh_hid_touch.h"
 #include "../Inc/usbh_hid_parser.h"
 
 
@@ -41,12 +41,12 @@ EndBSPDependencies */
   * @{
   */
 
-/** @defgroup USBH_HID_MOUSE
+/** @defgroup USBH_HID_TOUCH
   * @brief    This file includes HID Layer Handlers for USB Host HID class.
   * @{
   */
 
-/** @defgroup USBH_HID_MOUSE_Private_TypesDefinitions
+/** @defgroup USBH_HID_TOUCH_Private_TypesDefinitions
   * @{
   */
 /**
@@ -54,7 +54,7 @@ EndBSPDependencies */
   */
 
 
-/** @defgroup USBH_HID_MOUSE_Private_Defines
+/** @defgroup USBH_HID_TOUCH_Private_Defines
   * @{
   */
 /**
@@ -62,35 +62,35 @@ EndBSPDependencies */
   */
 
 
-/** @defgroup USBH_HID_MOUSE_Private_Macros
+/** @defgroup USBH_HID_TOUCH_Private_Macros
   * @{
   */
 /**
   * @}
   */
 
-/** @defgroup USBH_HID_MOUSE_Private_FunctionPrototypes
+/** @defgroup USBH_HID_TOUCH_Private_FunctionPrototypes
   * @{
   */
-static USBH_StatusTypeDef USBH_HID_MouseDecode(USBH_HandleTypeDef *phost);
+static USBH_StatusTypeDef USBH_HID_TouchDecode(USBH_HandleTypeDef *phost);
 
 /**
   * @}
   */
 
 
-/** @defgroup USBH_HID_MOUSE_Private_Variables
+/** @defgroup USBH_HID_TOUCH_Private_Variables
   * @{
   */
-HID_MOUSE_Info_TypeDef    mouse_info;
-static __ALIGN4k_BEGIN uint32_t                   mouse_report_data[2] __ALIGN4k_END;
-static __ALIGN4k_BEGIN uint32_t                   mouse_rx_report_buf[2] __ALIGN4k_END;
+HID_TOUCH_Info_TypeDef    touch_info;
+static __ALIGN4k_BEGIN uint32_t                   touch_report_data[2] __ALIGN4k_END;
+static __ALIGN4k_BEGIN uint32_t                   touch_rx_report_buf[2] __ALIGN4k_END;
 
-/* Structures defining how to access items in a HID mouse report */
+/* Structures defining how to access items in a HID touch report */
 /* Access button 1 state. */
 static const HID_Report_ItemTypedef prop_b1 =
 {
-  (uint8_t *)(void *)mouse_report_data + 0, /*data*/
+  (uint8_t *)(void *)touch_report_data + 0, /*data*/
   1,     /*size*/
   0,     /*shift*/
   0,     /*count (only for array items)*/
@@ -105,7 +105,7 @@ static const HID_Report_ItemTypedef prop_b1 =
 /* Access button 2 state. */
 static const HID_Report_ItemTypedef prop_b2 =
 {
-  (uint8_t *)(void *)mouse_report_data + 0, /*data*/
+  (uint8_t *)(void *)touch_report_data + 0, /*data*/
   1,     /*size*/
   1,     /*shift*/
   0,     /*count (only for array items)*/
@@ -120,7 +120,7 @@ static const HID_Report_ItemTypedef prop_b2 =
 /* Access button 3 state. */
 static const HID_Report_ItemTypedef prop_b3 =
 {
-  (uint8_t *)(void *)mouse_report_data + 0, /*data*/
+  (uint8_t *)(void *)touch_report_data + 0, /*data*/
   1,     /*size*/
   2,     /*shift*/
   0,     /*count (only for array items)*/
@@ -135,7 +135,7 @@ static const HID_Report_ItemTypedef prop_b3 =
 /* Access x coordinate change. */
 static const HID_Report_ItemTypedef prop_x =
 {
-  (uint8_t *)(void *)mouse_report_data + 1, /*data*/
+  (uint8_t *)(void *)touch_report_data + 1, /*data*/
   8,     /*size*/
   0,     /*shift*/
   0,     /*count (only for array items)*/
@@ -150,7 +150,7 @@ static const HID_Report_ItemTypedef prop_x =
 /* Access y coordinate change. */
 static const HID_Report_ItemTypedef prop_y =
 {
-  (uint8_t *)(void *)mouse_report_data + 2, /*data*/
+  (uint8_t *)(void *)touch_report_data + 2, /*data*/
   8,     /*size*/
   0,     /*shift*/
   0,     /*count (only for array items)*/
@@ -168,57 +168,57 @@ static const HID_Report_ItemTypedef prop_y =
   */
 
 
-/** @defgroup USBH_HID_MOUSE_Private_Functions
+/** @defgroup USBH_HID_TOUCH_Private_Functions
   * @{
   */
 
 /**
-  * @brief  USBH_HID_MouseInit
-  *         The function init the HID mouse.
+  * @brief  USBH_HID_TouchInit
+  *         The function init the HID touch.
   * @param  phost: Host handle
   * @retval USBH Status
   */
-USBH_StatusTypeDef USBH_HID_MouseInit(USBH_HandleTypeDef *phost)
+USBH_StatusTypeDef USBH_HID_TouchInit(USBH_HandleTypeDef *phost)
 {
   uint32_t i;
   HID_HandleTypeDef *HID_Handle = (HID_HandleTypeDef *) phost->pActiveClass->pData;
 
-  mouse_info.x = 0U;
-  mouse_info.y = 0U;
-  mouse_info.buttons[0] = 0U;
-  mouse_info.buttons[1] = 0U;
-  mouse_info.buttons[2] = 0U;
+  touch_info.x = 0U;
+  touch_info.y = 0U;
+  touch_info.buttons[0] = 0U;
+  touch_info.buttons[1] = 0U;
+  touch_info.buttons[2] = 0U;
 
-  for (i = 0; i < (sizeof mouse_report_data / sizeof mouse_report_data [0]); i++)
+  for (i = 0; i < (sizeof touch_report_data / sizeof touch_report_data [0]); i++)
   {
-    mouse_report_data[i] = 0U;
+    touch_report_data[i] = 0U;
   }
-  for (i = 0; i < (sizeof mouse_rx_report_buf / sizeof mouse_rx_report_buf [0]); i++)
+  for (i = 0; i < (sizeof touch_rx_report_buf / sizeof touch_rx_report_buf [0]); i++)
   {
-    mouse_rx_report_buf[i] = 0U;
+    touch_rx_report_buf[i] = 0U;
   }
 
-  if (HID_Handle->length > sizeof(mouse_report_data))
+  if (HID_Handle->length > sizeof(touch_report_data))
   {
-    HID_Handle->length = (uint16_t)sizeof(mouse_report_data);
+    HID_Handle->length = (uint16_t)sizeof(touch_report_data);
   }
-  HID_Handle->pHidReportData = (void *)mouse_rx_report_buf;
-  USBH_HID_FifoInit(&HID_Handle->fifo, phost->device.Data, (uint16_t)(HID_QUEUE_SIZE * sizeof(mouse_report_data)));
+  HID_Handle->pHidReportData = (void *)touch_rx_report_buf;
+  USBH_HID_FifoInit(&HID_Handle->fifo, phost->device.Data, (uint16_t)(HID_QUEUE_SIZE * sizeof(touch_report_data)));
 
   return USBH_OK;
 }
 
 /**
-  * @brief  USBH_HID_GetMouseInfo
-  *         The function return mouse information.
+  * @brief  USBH_HID_GetTouchInfo
+  *         The function return touch information.
   * @param  phost: Host handle
-  * @retval mouse information
+  * @retval touch information
   */
-HID_MOUSE_Info_TypeDef *USBH_HID_GetMouseInfo(USBH_HandleTypeDef *phost)
+HID_TOUCH_Info_TypeDef *USBH_HID_GetTouchInfo(USBH_HandleTypeDef *phost)
 {
-  if (USBH_HID_MouseDecode(phost) == USBH_OK)
+  if (USBH_HID_TouchDecode(phost) == USBH_OK)
   {
-    return &mouse_info;
+    return &touch_info;
   }
   else
   {
@@ -227,12 +227,12 @@ HID_MOUSE_Info_TypeDef *USBH_HID_GetMouseInfo(USBH_HandleTypeDef *phost)
 }
 
 /**
-  * @brief  USBH_HID_MouseDecode
-  *         The function decode mouse data.
+  * @brief  USBH_HID_TouchDecode
+  *         The function decode touch data.
   * @param  phost: Host handle
   * @retval USBH Status
   */
-static USBH_StatusTypeDef USBH_HID_MouseDecode(USBH_HandleTypeDef *phost)
+static USBH_StatusTypeDef USBH_HID_TouchDecode(USBH_HandleTypeDef *phost)
 {
   HID_HandleTypeDef *HID_Handle = (HID_HandleTypeDef *) phost->pActiveClass->pData;
 
@@ -241,15 +241,15 @@ static USBH_StatusTypeDef USBH_HID_MouseDecode(USBH_HandleTypeDef *phost)
     return USBH_FAIL;
   }
   /*Fill report */
-  if (USBH_HID_FifoRead(&HID_Handle->fifo, &mouse_report_data, HID_Handle->length) ==  HID_Handle->length)
+  if (USBH_HID_FifoRead(&HID_Handle->fifo, &touch_report_data, HID_Handle->length) ==  HID_Handle->length)
   {
     /*Decode report */
-    mouse_info.x = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_x, 0U);
-    mouse_info.y = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_y, 0U);
+    touch_info.x = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_x, 0U);
+    touch_info.y = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_y, 0U);
 
-    mouse_info.buttons[0] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b1, 0U);
-    mouse_info.buttons[1] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b2, 0U);
-    mouse_info.buttons[2] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b3, 0U);
+    touch_info.buttons[0] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b1, 0U);
+    touch_info.buttons[1] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b2, 0U);
+    touch_info.buttons[2] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b3, 0U);
 
     return USBH_OK;
   }
