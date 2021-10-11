@@ -255,6 +255,10 @@ static USBH_StatusTypeDef USBH_HID_TouchDecode(USBH_HandleTypeDef *phost)
     touch_info.x = USBD_peek_u16(touch_report_data + 4);
 
 	touch_info.y = USBD_peek_u16(touch_report_data + 6);
+
+	touch_info.buttons[0] = touch_report_data [0] & 0x01;
+	touch_info.buttons[1] = touch_report_data [1] & 0x01;
+
     return USBH_OK;
   }
   return   USBH_FAIL;

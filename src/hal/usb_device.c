@@ -376,7 +376,10 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 			break;
 
 		}
-		PRINTF("USBH_HID_EventCallback: x/y=%4d/%3d, buttons=%d,%d,%d\n", (int) p->x, (int) p->y, (int) p->buttons [0], (int) p->buttons [1], (int) p->buttons [2]);
+		if (p->buttons [0])
+		{
+			PRINTF("USBH_HID_EventCallback: x/y=%4d/%3d, buttons=%d\n", (int) p->x, (int) p->y, (int) p->buttons [0]);
+		}
 	}
 }
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
