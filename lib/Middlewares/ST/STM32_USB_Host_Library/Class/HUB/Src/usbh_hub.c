@@ -566,7 +566,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 					phost->currentTarget = tg;
 				}
-				else if (1 && 0)
+				else if (1 && 1)
 				{
 					// FULL SPEED
 					HUB_Handle->detectedPorts += 1;
