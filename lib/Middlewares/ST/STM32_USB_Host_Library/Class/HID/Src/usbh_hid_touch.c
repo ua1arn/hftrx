@@ -83,8 +83,8 @@ static USBH_StatusTypeDef USBH_HID_TouchDecode(USBH_HandleTypeDef *phost);
   * @{
   */
 HID_TOUCH_Info_TypeDef    touch_info;
-static __ALIGN4k_BEGIN uint32_t                   touch_report_data[2] __ALIGN4k_END;
-static __ALIGN4k_BEGIN uint32_t                   touch_rx_report_buf[2] __ALIGN4k_END;
+static __ALIGN4k_BEGIN uint8_t touch_report_data[11] __ALIGN4k_END;
+static __ALIGN4k_BEGIN uint8_t touch_rx_report_buf[11] __ALIGN4k_END;
 
 /* Structures defining how to access items in a HID touch report */
 /* Access button 1 state. */
@@ -243,14 +243,18 @@ static USBH_StatusTypeDef USBH_HID_TouchDecode(USBH_HandleTypeDef *phost)
   /*Fill report */
   if (USBH_HID_FifoRead(&HID_Handle->fifo, &touch_report_data, HID_Handle->length) ==  HID_Handle->length)
   {
+	  //printhex(0, touch_report_data, HID_Handle->length);
     /*Decode report */
-    touch_info.x = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_x, 0U);
-    touch_info.y = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_y, 0U);
+//    touch_info.x = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_x, 0U);
+//    touch_info.y = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_y, 0U);
+//
+//    touch_info.buttons[0] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b1, 0U);
+//    touch_info.buttons[1] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b2, 0U);
+//    touch_info.buttons[2] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b3, 0U);
 
-    touch_info.buttons[0] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b1, 0U);
-    touch_info.buttons[1] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b2, 0U);
-    touch_info.buttons[2] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b3, 0U);
+    touch_info.x = USBD_peek_u16(touch_report_data + 4);
 
+	touch_info.y = USBD_peek_u16(touch_report_data + 6);
     return USBH_OK;
   }
   return   USBH_FAIL;

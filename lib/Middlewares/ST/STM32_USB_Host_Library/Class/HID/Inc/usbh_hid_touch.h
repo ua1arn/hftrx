@@ -52,8 +52,8 @@ extern "C" {
 
 typedef struct _HID_TOUCH_Info
 {
-  uint8_t              x;
-  uint8_t              y;
+  uint32_t              x;
+  uint32_t              y;
   uint8_t              buttons[3];
 }
 HID_TOUCH_Info_TypeDef;

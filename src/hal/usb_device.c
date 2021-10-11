@@ -367,14 +367,16 @@ void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 {
 	for (;;)
 	{
-		HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
+		//HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
+		HID_TOUCH_Info_TypeDef * const p = USBH_HID_GetTouchInfo(phost);
+
 		if (p == NULL)
 		{
 			//TP();
 			break;
 
 		}
-		PRINTF("USBH_HID_EventCallback: x/y=%d/%d, buttons=%d,%d,%d\n", (int) p->x, (int) p->y, (int) p->buttons [0], (int) p->buttons [1], (int) p->buttons [2]);
+		PRINTF("USBH_HID_EventCallback: x/y=%4d/%3d, buttons=%d,%d,%d\n", (int) p->x, (int) p->y, (int) p->buttons [0], (int) p->buttons [1], (int) p->buttons [2]);
 	}
 }
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
