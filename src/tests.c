@@ -6235,6 +6235,7 @@ static uint_fast32_t module_read32(unsigned page, unsigned addr)
 	spi_read_byte(cs, page);	// page value
 	spi_unselect(cs);
 
+	// LOW part of pair
 	spi_select2(cs, spimode, spispeedindex);
 	spi_read_byte(cs, (addr & 0x7F) + 0);
 	spi_read_byte(cs, 0);
@@ -6245,6 +6246,7 @@ static uint_fast32_t module_read32(unsigned page, unsigned addr)
 	v2 = spi_read_byte(cs, 0);
 	spi_unselect(cs);
 
+	// OUT part of pair
 	spi_select2(cs, spimode, spispeedindex);
 	spi_read_byte(cs, (addr & 0x7F) + 2);
 	spi_read_byte(cs, 0);
@@ -6333,10 +6335,11 @@ void hightests(void)
 		        float Z = atan2f(t3, t4);
 
 		        //PRINTF("X=%f, Y=%f, Z=%f\n", X * (180 / M_PI), Y * (180 / M_PI), Z * (180 / M_PI));
-		        PRINTF("ROLL=%f, PITCH=%f, YAW=%f\n",
+		        PRINTF("ROLL=%f, PITCH=%f, YAW=%f, BAROM=%08lX\n",
 		        		ROLL_C23_OUT / 32768.0f * 180.0f,
 						PITCH_C31_OUT / 32768.0f * 180.0f,
-						YAW_C32_OUT / 32768.0f * 180.0f
+						YAW_C32_OUT / 32768.0f * 180.0f,
+						module_read32(0x00, 0x2E)
 						);
 
 			}
