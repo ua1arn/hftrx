@@ -1,0 +1,5 @@
+*.png binary
+*.jpg binary
+# Script files
+*.py text eol=lf
+*.sh text eol=lf
