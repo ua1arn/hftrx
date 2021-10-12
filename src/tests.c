@@ -6162,11 +6162,181 @@ static void SecondCPUTaskSGI12(void)
 
 #endif
 
+#if 0
+// See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
+static void module_write(unsigned page, unsigned addr, unsigned value)
+{
+	enum { WRITEFLAG = 0x80 };
+	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
+	const spi_modes_t spimode = SPIC_MODE3;
+	const unsigned wrriteflag = 1;
+	const spitarget_t cs = targetext2;
+	unsigned v1, v2;
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | 0x00);	// 0x80: write, addr=0x00: page_id register
+	spi_read_byte(cs, page);	// page value
+	spi_unselect(cs);
+
+	local_delay_ms(10);
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | (addr & 0x7F));
+	spi_read_byte(cs, value >> 0);
+	spi_read_byte(cs, value >> 8);
+	spi_unselect(cs);
+
+	local_delay_ms(10);
+
+}
+
+// See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
+static unsigned module_read(unsigned page, unsigned addr)
+{
+	enum { WRITEFLAG = 0x80 };
+	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
+	const spi_modes_t spimode = SPIC_MODE3;
+	const unsigned wrriteflag = 0;
+	const spitarget_t cs = targetext2;
+	unsigned v1, v2;
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | 0x00);	// 0x80: write, addr=0x00: page_id register
+	spi_read_byte(cs, page);	// page value
+	spi_unselect(cs);
+
+	local_delay_ms(10);
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, addr & 0x7F);
+	spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	local_delay_ms(10);
+
+	spi_select2(cs, spimode, spispeedindex);
+	v1 = spi_read_byte(cs, 0);
+	v2 = spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	local_delay_ms(10);
+
+	return v1 * 256 + v2;
+}
+
+// See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
+static uint_fast32_t module_read4(unsigned page, unsigned addr)
+{
+	enum { WRITEFLAG = 0x80 };
+	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
+	const spi_modes_t spimode = SPIC_MODE3;
+	const unsigned wrriteflag = 0;
+	const spitarget_t cs = targetext2;
+	unsigned v1, v2, v3, v4;
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | 0x00);	// 0x80: write, addr=0x00: page_id register
+	spi_read_byte(cs, page);	// page value
+	spi_unselect(cs);
+
+	local_delay_ms(10);
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, addr & 0x7F);
+	spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	local_delay_ms(10);
+
+	spi_select2(cs, spimode, spispeedindex);
+	v1 = spi_read_byte(cs, 0);
+	v2 = spi_read_byte(cs, 0);
+	v3 = spi_read_byte(cs, 0);
+	v4 = spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	local_delay_ms(10);
+
+	return
+			((uint_fast32_t) v4) << 24 |
+			((uint_fast32_t) v3) << 16 |
+			((uint_fast32_t) v2) << 8 |
+			((uint_fast32_t) v1) << 0 |
+			0;
+}
+
+#endif
+// SYS_MODE_CURR (Страница 1, адрес 0x36)
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		// Test for ADIS16IMU1/PCB
+
+		// WAit for module ready
+		for (;;)
+		{
+			const unsigned SYS_E_FLAG = module_read(0x00, 0x08);
+			const unsigned PROD_ID = module_read(0x00, 0x7E);
+			if (PROD_ID == 0x4060 && SYS_E_FLAG == 0)
+				break;
+			PRINTF("SYS_E_FLAG=%04X, Waiting for PROD_ID=0x4060 (%04X)\n", SYS_E_FLAG, PROD_ID);
+
+		}
+		for (;;)
+		{
+			enum { TEMP_BP = 5 };	// binary point of temperature
+			const unsigned TEMP_OUT = 0x297B;//module_read(0x00, 0x0E);
+			const unsigned SYS_E_FLAG = module_read(0x00, 0x08);
+			const unsigned FIRM_Y = module_read(0x03, 0x7C);
+			const unsigned FIRM_DM = module_read(0x03, 0x7A);
+			const unsigned FIRM_REV = module_read(0x03, 0x78);
+			const unsigned SERIAL_NUM = module_read(0x04, 0x20);
+
+			PRINTF("SYS_E_FLAG=%04X, FIRM_Y=%04X, FIRM_DM=%04X, FIRM_REV=%04X, SERIAL_NUM=%04X, TEMP_OUT=%d / 10\n", SYS_E_FLAG, FIRM_Y, FIRM_DM, FIRM_REV, SERIAL_NUM, TEMP_OUT, ((int16_t) TEMP_OUT + (0*250 << TEMP_BP)) >> TEMP_BP);
+
+			char c;
+			while (dbg_getchar(& c) == 0)
+				;
+
+			PRINTF("Write EXT_DATA_SRC\n");
+			unsigned EXT_DATA_SRC;
+
+			EXT_DATA_SRC = module_read(0x01, 0x2C);
+			PRINTF("EXT_DATA_SRC1=%04X\n", EXT_DATA_SRC);
+			module_write(0x01, 0x2C, 0x01);
+			EXT_DATA_SRC = module_read(0x01, 0x2C);
+			PRINTF("EXT_DATA_SRC2=%04X\n", EXT_DATA_SRC);
+
+			for (;;)
+				;
+			module_write(0x01, 0x2C, 0x02);
+			EXT_DATA_SRC = module_read(0x01, 0x2C);
+			PRINTF("EXT_DATA_SRC3=%04X\n", EXT_DATA_SRC);
+			module_write(0x01, 0x2C, 0x03);
+			EXT_DATA_SRC = module_read(0x01, 0x2C);
+			PRINTF("EXT_DATA_SRC4=%04X\n", EXT_DATA_SRC);
+
+			for (;;)
+				;
+//			module_write(0x01, 0x12, 0xDEAD);
+//			module_write(0x01, 0x14, 0xBEEF);
+//			const unsigned LATITUDE_LOW = module_read(0x01, 0x12);
+//			const unsigned LATITUDE_OUT = module_read(0x01, 0x14);
+//			const unsigned LATITUDE4 = module_read4(0x01, 0x12);
+//
+//
+//
+//			PRINTF("LATITUDE_LOW=%04X, LATITUDE_OUT=%04X, LATITUDE4=%08X\n", LATITUDE_LOW, LATITUDE_OUT, LATITUDE4);
+			local_delay_ms(500);
+		}
+
+	}
+#endif
 #if 0 && WITHDEBUG && WITHSMPSYSTEM
 	{
 		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, ARM_CA9_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
