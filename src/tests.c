@@ -6235,29 +6235,32 @@ static uint_fast32_t module_read32(unsigned page, unsigned addr)
 	spi_read_byte(cs, page);	// page value
 	spi_unselect(cs);
 
-	//local_delay_ms(10);
-
 	spi_select2(cs, spimode, spispeedindex);
-	spi_read_byte(cs, addr & 0x7F);
+	spi_read_byte(cs, (addr & 0x7F) + 0);
 	spi_read_byte(cs, 0);
 	spi_unselect(cs);
-
-	//local_delay_ms(10);
 
 	spi_select2(cs, spimode, spispeedindex);
 	v1 = spi_read_byte(cs, 0);
 	v2 = spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, (addr & 0x7F) + 2);
+	spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+
+	spi_select2(cs, spimode, spispeedindex);
 	v3 = spi_read_byte(cs, 0);
 	v4 = spi_read_byte(cs, 0);
 	spi_unselect(cs);
 
-	//local_delay_ms(10);
-
 	return
-			((uint_fast32_t) v4) << 24 |
-			((uint_fast32_t) v3) << 16 |
-			((uint_fast32_t) v2) << 8 |
-			((uint_fast32_t) v1) << 0 |
+			((uint_fast32_t) v1) << 8 |
+			((uint_fast32_t) v2) << 0 |
+			((uint_fast32_t) v3) << 24 |
+			((uint_fast32_t) v4) << 16 |
 			0;
 }
 
@@ -6295,39 +6298,91 @@ void hightests(void)
 
 			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X, FIRM_Y=%04X, FIRM_DM=%04X, FIRM_REV=%04X, SERIAL_NUM=%04X, TEMP_OUT=%d / 10\n", module_read16(0x03, 0x54), module_read16(0x00, 0x08), FIRM_Y, FIRM_DM, FIRM_REV, SERIAL_NUM, TEMP_OUT, ((int16_t) TEMP_OUT + (0*250 << TEMP_BP)) >> TEMP_BP);
 
+			for (;;)
+			{
+				// Получение компонент кватерниона ориентации
+				int16_t Q0_C11_OUT =  module_read16(0x00, 0x60);	// Компонент λ0 кватерниона ориентации
+				int16_t Q1_C12_OUT =  module_read16(0x00, 0x62);	// Компонент λ1 кватерниона ориентации
+				int16_t Q2_C13_OUT =  module_read16(0x00, 0x64);	// Компонент λ2 кватерниона ориентации
+				int16_t Q3_C21_OUT =  module_read16(0x00, 0x66);	// Компонент λ3 кватерниона ориентации
+
+				//PRINTF("Q0=%f, Q1=%f, Q2=%f, Q3=%f\n", Q0_C11_OUT / 32768.0f, Q1_C12_OUT / 32768.0f, Q2_C13_OUT / 32768.0f, Q3_C21_OUT / 32768.0f);
+
+				float x = Q0_C11_OUT / 32768.0f;
+				float y = Q1_C12_OUT / 32768.0f;
+				float z = Q2_C13_OUT / 32768.0f;
+				float w = Q3_C21_OUT / 32768.0f;
+
+				// https://coderoad.ru/53033620/%D0%9A%D0%B0%D0%BA-%D0%BF%D1%80%D0%B5%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-%D1%83%D0%B3%D0%BB%D1%8B-%D0%AD%D0%B9%D0%BB%D0%B5%D1%80%D0%B0-%D0%B2-%D0%BA%D0%B2%D0%B0%D1%82%D0%B5%D1%80%D0%BD%D0%B8%D0%BE%D0%BD%D1%8B-%D0%B8-%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B8%D1%82%D1%8C-%D1%82%D0%B5-%D0%B6%D0%B5-%D1%83%D0%B3%D0%BB%D1%8B-%D0%AD%D0%B9%D0%BB%D0%B5%D1%80%D0%B0
+		        float t0 = +2.0f * (w * x + y * z);
+				float t1 = +1.0f - 2.0f * (x * x + y * y);
+		        float X = atan2f(t0, t1);
+
+		        float t2;
+		        t2 = +2.0f * (w * y - z * x);
+		        t2 = t2 > +1.0f ? +1.0f : t2;
+		        t2 = t2 < -1.0f ? -1.0f : t2;
+		        float Y = asinf(t2);
+
+		        float t3 = +2.0f * (w * z + x * y);
+		        float t4 = +1.0f - 2.0f * (y * y + z * z);
+		        float Z = atan2f(t3, t4);
+
+		        PRINTF("X=%f, Y=%f, Z=%f\n", X * (180 / M_PI), Y * (180 / M_PI), Z * (180 / M_PI));
+
+			}
+			{
+				unsigned PG = 0x01;
+				//unsigned AE = 0x10;	// LATITUDE_LOW, LATITUDE_OUT
+				unsigned AE = 0x24;	// HABS_LOW, HABS_OUT
+//				module_write16(PG, AE, 0xDEAD);
+//				module_write16(PG, AE + 2, 0xBEEF);
+				const unsigned LATITUDE_LOW = module_read16(PG, AE);
+				const unsigned LATITUDE_OUT = module_read16(PG, AE + 2);
+				const unsigned LATITUDE4 = module_read32(PG, AE);
+				PRINTF("LOW=%04X, OUT=%04X, 32W=%08X\n", LATITUDE_LOW, LATITUDE_OUT, LATITUDE4);
+			}
+			unsigned PG = 0x02;
+			for (PG = 0; PG < 4; PG += 1)
+			{
+				unsigned AE;
+				for (AE = 0; AE < 128; AE += 4)
+				{
+					//unsigned AE = 0x10;	// LATITUDE_LOW, LATITUDE_OUT
+	//				module_write16(PG, AE, 0xDEAD);
+	//				module_write16(PG, AE + 2, 0xBEEF);
+					const unsigned LATITUDE_LOW = module_read16(PG, AE);
+					const unsigned LATITUDE_OUT = module_read16(PG, AE + 2);
+					const unsigned LATITUDE4 = module_read32(PG, AE);
+					PRINTF("pg=%02X, ae=%02X: LOW=%04X, OUT=%04X, 32W=%08X\n", PG, AE, LATITUDE_LOW, LATITUDE_OUT, LATITUDE4);
+				}
+			}
+
+//			PRINTF("Write DECLN_ANGL\n");
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
+//			module_write16(0x03, 0x54, 0x0777);
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
+//			module_write16(0x03, 0x54, 0x0888);
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
+
 			char c;
 			while (dbg_getchar(& c) == 0)
 				;
 
-			unsigned EXT_DATA_SRC;
-			PRINTF("Write DECLN_ANGL\n");
-
-			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
-			module_write16(0x03, 0x54, 0x0777);
-			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
-			module_write16(0x03, 0x54, 0x0888);
-			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
-
-			for (;;)
-				;
-//			module_write8(0x01, 0x2C, 0x02);
-//			EXT_DATA_SRC = module_read16(0x01, 0x2C);
-//			PRINTF("EXT_DATA_SRC3=%04X\n", EXT_DATA_SRC);
-//			module_write8(0x01, 0x2C, 0x03);
-//			EXT_DATA_SRC = module_read16(0x01, 0x2C);
-//			PRINTF("EXT_DATA_SRC4=%04X\n", EXT_DATA_SRC);
+//			PRINTF("EXT_DATA_SRC #1=%04X\n", module_read16(0x01, 0x2C));
+//			module_write16(0x01, 0x2C, 0x01);
+//			local_delay_ms(10);
+//			PRINTF("EXT_DATA_SRC #2=%04X\n", module_read16(0x01, 0x2C));
+//			module_write16(0x01, 0x2C, 0x03);
+//			local_delay_ms(10);
+//			PRINTF("EXT_DATA_SRC #3=%04X\n", module_read16(0x01, 0x2C));
 
 			for (;;)
 				;
-//			module_write(0x01, 0x12, 0xDEAD);
-//			module_write(0x01, 0x14, 0xBEEF);
-//			const unsigned LATITUDE_LOW = module_read16(0x01, 0x12);
-//			const unsigned LATITUDE_OUT = module_read16(0x01, 0x14);
-//			const unsigned LATITUDE4 = module_read32(0x01, 0x12);
+
 //
 //
 //
-//			PRINTF("LATITUDE_LOW=%04X, LATITUDE_OUT=%04X, LATITUDE4=%08X\n", LATITUDE_LOW, LATITUDE_OUT, LATITUDE4);
 			local_delay_ms(500);
 		}
 
