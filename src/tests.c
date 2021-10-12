@@ -6306,6 +6306,10 @@ void hightests(void)
 				int16_t Q2_C13_OUT =  module_read16(0x00, 0x64);	// Компонент λ2 кватерниона ориентации
 				int16_t Q3_C21_OUT =  module_read16(0x00, 0x66);	// Компонент λ3 кватерниона ориентации
 
+				int16_t ROLL_C23_OUT = module_read16(0x00, 0x6A);
+				int16_t PITCH_C31_OUT = module_read16(0x00, 0x6C);
+				int16_t YAW_C32_OUT = module_read16(0x00, 0x6E);
+
 				//PRINTF("Q0=%f, Q1=%f, Q2=%f, Q3=%f\n", Q0_C11_OUT / 32768.0f, Q1_C12_OUT / 32768.0f, Q2_C13_OUT / 32768.0f, Q3_C21_OUT / 32768.0f);
 
 				float x = Q0_C11_OUT / 32768.0f;
@@ -6328,7 +6332,12 @@ void hightests(void)
 		        float t4 = +1.0f - 2.0f * (y * y + z * z);
 		        float Z = atan2f(t3, t4);
 
-		        PRINTF("X=%f, Y=%f, Z=%f\n", X * (180 / M_PI), Y * (180 / M_PI), Z * (180 / M_PI));
+		        //PRINTF("X=%f, Y=%f, Z=%f\n", X * (180 / M_PI), Y * (180 / M_PI), Z * (180 / M_PI));
+		        PRINTF("ROLL=%f, PITCH=%f, YAW=%f\n",
+		        		ROLL_C23_OUT / 32768.0f * 180.0f,
+						PITCH_C31_OUT / 32768.0f * 180.0f,
+						YAW_C32_OUT / 32768.0f * 180.0f
+						);
 
 			}
 			{
