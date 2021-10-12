@@ -6164,7 +6164,7 @@ static void SecondCPUTaskSGI12(void)
 
 #if 0
 // See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
-static void module_write(unsigned page, unsigned addr, unsigned value)
+static void module_write16(unsigned page, unsigned addr, unsigned value)
 {
 	enum { WRITEFLAG = 0x80 };
 	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
@@ -6178,20 +6178,22 @@ static void module_write(unsigned page, unsigned addr, unsigned value)
 	spi_read_byte(cs, page);	// page value
 	spi_unselect(cs);
 
-	local_delay_ms(10);
-
 	spi_select2(cs, spimode, spispeedindex);
 	spi_read_byte(cs, WRITEFLAG | (addr & 0x7F));
 	spi_read_byte(cs, value >> 0);
+	spi_unselect(cs);
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | ((addr & 0x7F) + 1));
 	spi_read_byte(cs, value >> 8);
 	spi_unselect(cs);
 
-	local_delay_ms(10);
+	//local_delay_ms(10);
 
 }
 
 // See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
-static unsigned module_read(unsigned page, unsigned addr)
+static unsigned module_read16(unsigned page, unsigned addr)
 {
 	enum { WRITEFLAG = 0x80 };
 	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
@@ -6205,27 +6207,21 @@ static unsigned module_read(unsigned page, unsigned addr)
 	spi_read_byte(cs, page);	// page value
 	spi_unselect(cs);
 
-	local_delay_ms(10);
-
 	spi_select2(cs, spimode, spispeedindex);
 	spi_read_byte(cs, addr & 0x7F);
 	spi_read_byte(cs, 0);
 	spi_unselect(cs);
-
-	local_delay_ms(10);
 
 	spi_select2(cs, spimode, spispeedindex);
 	v1 = spi_read_byte(cs, 0);
 	v2 = spi_read_byte(cs, 0);
 	spi_unselect(cs);
 
-	local_delay_ms(10);
-
 	return v1 * 256 + v2;
 }
 
 // See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
-static uint_fast32_t module_read4(unsigned page, unsigned addr)
+static uint_fast32_t module_read32(unsigned page, unsigned addr)
 {
 	enum { WRITEFLAG = 0x80 };
 	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
@@ -6239,14 +6235,14 @@ static uint_fast32_t module_read4(unsigned page, unsigned addr)
 	spi_read_byte(cs, page);	// page value
 	spi_unselect(cs);
 
-	local_delay_ms(10);
+	//local_delay_ms(10);
 
 	spi_select2(cs, spimode, spispeedindex);
 	spi_read_byte(cs, addr & 0x7F);
 	spi_read_byte(cs, 0);
 	spi_unselect(cs);
 
-	local_delay_ms(10);
+	//local_delay_ms(10);
 
 	spi_select2(cs, spimode, spispeedindex);
 	v1 = spi_read_byte(cs, 0);
@@ -6255,7 +6251,7 @@ static uint_fast32_t module_read4(unsigned page, unsigned addr)
 	v4 = spi_read_byte(cs, 0);
 	spi_unselect(cs);
 
-	local_delay_ms(10);
+	//local_delay_ms(10);
 
 	return
 			((uint_fast32_t) v4) << 24 |
@@ -6280,8 +6276,8 @@ void hightests(void)
 		// WAit for module ready
 		for (;;)
 		{
-			const unsigned SYS_E_FLAG = module_read(0x00, 0x08);
-			const unsigned PROD_ID = module_read(0x00, 0x7E);
+			const unsigned SYS_E_FLAG = module_read16(0x00, 0x08);
+			const unsigned PROD_ID = module_read16(0x00, 0x7E);
 			if (PROD_ID == 0x4060 && SYS_E_FLAG == 0)
 				break;
 			PRINTF("SYS_E_FLAG=%04X, Waiting for PROD_ID=0x4060 (%04X)\n", SYS_E_FLAG, PROD_ID);
@@ -6290,44 +6286,44 @@ void hightests(void)
 		for (;;)
 		{
 			enum { TEMP_BP = 5 };	// binary point of temperature
-			const unsigned TEMP_OUT = 0x297B;//module_read(0x00, 0x0E);
-			const unsigned SYS_E_FLAG = module_read(0x00, 0x08);
-			const unsigned FIRM_Y = module_read(0x03, 0x7C);
-			const unsigned FIRM_DM = module_read(0x03, 0x7A);
-			const unsigned FIRM_REV = module_read(0x03, 0x78);
-			const unsigned SERIAL_NUM = module_read(0x04, 0x20);
+			const unsigned TEMP_OUT = 0x297B;//module_read16(0x00, 0x0E);
+			const unsigned SYS_E_FLAG = module_read16(0x00, 0x08);
+			const unsigned FIRM_Y = module_read16(0x03, 0x7C);
+			const unsigned FIRM_DM = module_read16(0x03, 0x7A);
+			const unsigned FIRM_REV = module_read16(0x03, 0x78);
+			const unsigned SERIAL_NUM = module_read16(0x04, 0x20);
 
-			PRINTF("SYS_E_FLAG=%04X, FIRM_Y=%04X, FIRM_DM=%04X, FIRM_REV=%04X, SERIAL_NUM=%04X, TEMP_OUT=%d / 10\n", SYS_E_FLAG, FIRM_Y, FIRM_DM, FIRM_REV, SERIAL_NUM, TEMP_OUT, ((int16_t) TEMP_OUT + (0*250 << TEMP_BP)) >> TEMP_BP);
+			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X, FIRM_Y=%04X, FIRM_DM=%04X, FIRM_REV=%04X, SERIAL_NUM=%04X, TEMP_OUT=%d / 10\n", module_read16(0x03, 0x54), module_read16(0x00, 0x08), FIRM_Y, FIRM_DM, FIRM_REV, SERIAL_NUM, TEMP_OUT, ((int16_t) TEMP_OUT + (0*250 << TEMP_BP)) >> TEMP_BP);
 
 			char c;
 			while (dbg_getchar(& c) == 0)
 				;
 
-			PRINTF("Write EXT_DATA_SRC\n");
 			unsigned EXT_DATA_SRC;
+			PRINTF("Write DECLN_ANGL\n");
 
-			EXT_DATA_SRC = module_read(0x01, 0x2C);
-			PRINTF("EXT_DATA_SRC1=%04X\n", EXT_DATA_SRC);
-			module_write(0x01, 0x2C, 0x01);
-			EXT_DATA_SRC = module_read(0x01, 0x2C);
-			PRINTF("EXT_DATA_SRC2=%04X\n", EXT_DATA_SRC);
+			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
+			module_write16(0x03, 0x54, 0x0777);
+			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
+			module_write16(0x03, 0x54, 0x0888);
+			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
 
 			for (;;)
 				;
-			module_write(0x01, 0x2C, 0x02);
-			EXT_DATA_SRC = module_read(0x01, 0x2C);
-			PRINTF("EXT_DATA_SRC3=%04X\n", EXT_DATA_SRC);
-			module_write(0x01, 0x2C, 0x03);
-			EXT_DATA_SRC = module_read(0x01, 0x2C);
-			PRINTF("EXT_DATA_SRC4=%04X\n", EXT_DATA_SRC);
+//			module_write8(0x01, 0x2C, 0x02);
+//			EXT_DATA_SRC = module_read16(0x01, 0x2C);
+//			PRINTF("EXT_DATA_SRC3=%04X\n", EXT_DATA_SRC);
+//			module_write8(0x01, 0x2C, 0x03);
+//			EXT_DATA_SRC = module_read16(0x01, 0x2C);
+//			PRINTF("EXT_DATA_SRC4=%04X\n", EXT_DATA_SRC);
 
 			for (;;)
 				;
 //			module_write(0x01, 0x12, 0xDEAD);
 //			module_write(0x01, 0x14, 0xBEEF);
-//			const unsigned LATITUDE_LOW = module_read(0x01, 0x12);
-//			const unsigned LATITUDE_OUT = module_read(0x01, 0x14);
-//			const unsigned LATITUDE4 = module_read4(0x01, 0x12);
+//			const unsigned LATITUDE_LOW = module_read16(0x01, 0x12);
+//			const unsigned LATITUDE_OUT = module_read16(0x01, 0x14);
+//			const unsigned LATITUDE4 = module_read32(0x01, 0x12);
 //
 //
 //
