@@ -6335,7 +6335,8 @@ void hightests(void)
 		        float Z = atan2f(t3, t4);
 
 		        //PRINTF("X=%f, Y=%f, Z=%f\n", X * (180 / M_PI), Y * (180 / M_PI), Z * (180 / M_PI));
-		        PRINTF("ROLL=%f, PITCH=%f, YAW=%f, BAROM=%08lX\n",
+		        PRINTF("HABS=%f, ROLL=%f, PITCH=%f, YAW=%f, BAROM=%08lX\n",
+						(int32_t) module_read32(0x01, 0x14) / 65536.0f,
 		        		ROLL_C23_OUT / 32768.0f * 180.0f,
 						PITCH_C31_OUT / 32768.0f * 180.0f,
 						YAW_C32_OUT / 32768.0f * 180.0f,
