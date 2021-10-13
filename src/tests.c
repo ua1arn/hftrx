@@ -6164,7 +6164,7 @@ static void SecondCPUTaskSGI12(void)
 
 #if 0
 // See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
-static void module_write16(unsigned page, unsigned addr, unsigned value)
+static void adis161xx_write16(unsigned page, unsigned addr, unsigned value)
 {
 	enum { WRITEFLAG = 0x80 };
 	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
@@ -6193,7 +6193,7 @@ static void module_write16(unsigned page, unsigned addr, unsigned value)
 }
 
 // See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
-static unsigned module_read16(unsigned page, unsigned addr)
+static unsigned adis161xx_read16(unsigned page, unsigned addr)
 {
 	enum { WRITEFLAG = 0x80 };
 	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
@@ -6221,7 +6221,7 @@ static unsigned module_read16(unsigned page, unsigned addr)
 }
 
 // See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
-static uint_fast32_t module_read32(unsigned page, unsigned addr)
+static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 {
 	enum { WRITEFLAG = 0x80 };
 	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
@@ -6278,11 +6278,11 @@ void hightests(void)
 	{
 		// Test for ADIS16IMU1/PCB
 
-		// WAit for module ready
+		// Wait for module ready
 		for (;;)
 		{
-			const unsigned SYS_E_FLAG = module_read16(0x00, 0x08);
-			const unsigned PROD_ID = module_read16(0x00, 0x7E);
+			const unsigned SYS_E_FLAG = adis161xx_read16(0x00, 0x08);
+			const unsigned PROD_ID = adis161xx_read16(0x00, 0x7E);
 			if (PROD_ID == 0x4060 && SYS_E_FLAG == 0)
 				break;
 			PRINTF("SYS_E_FLAG=%04X, Waiting for PROD_ID=0x4060 (%04X)\n", SYS_E_FLAG, PROD_ID);
@@ -6291,26 +6291,26 @@ void hightests(void)
 		for (;;)
 		{
 			enum { TEMP_BP = 5 };	// binary point of temperature
-			const unsigned TEMP_OUT = 0x297B;//module_read16(0x00, 0x0E);
-			const unsigned SYS_E_FLAG = module_read16(0x00, 0x08);
-			const unsigned FIRM_Y = module_read16(0x03, 0x7C);
-			const unsigned FIRM_DM = module_read16(0x03, 0x7A);
-			const unsigned FIRM_REV = module_read16(0x03, 0x78);
-			const unsigned SERIAL_NUM = module_read16(0x04, 0x20);
+			const unsigned TEMP_OUT = 0x297B;//adis161xx_read16(0x00, 0x0E);
+			const unsigned SYS_E_FLAG = adis161xx_read16(0x00, 0x08);
+			const unsigned FIRM_Y = adis161xx_read16(0x03, 0x7C);
+			const unsigned FIRM_DM = adis161xx_read16(0x03, 0x7A);
+			const unsigned FIRM_REV = adis161xx_read16(0x03, 0x78);
+			const unsigned SERIAL_NUM = adis161xx_read16(0x04, 0x20);
 
-			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X, FIRM_Y=%04X, FIRM_DM=%04X, FIRM_REV=%04X, SERIAL_NUM=%04X, TEMP_OUT=%d / 10\n", module_read16(0x03, 0x54), module_read16(0x00, 0x08), FIRM_Y, FIRM_DM, FIRM_REV, SERIAL_NUM, TEMP_OUT, ((int16_t) TEMP_OUT + (0*250 << TEMP_BP)) >> TEMP_BP);
+			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X, FIRM_Y=%04X, FIRM_DM=%04X, FIRM_REV=%04X, SERIAL_NUM=%04X, TEMP_OUT=%d / 10\n", adis161xx_read16(0x03, 0x54), adis161xx_read16(0x00, 0x08), FIRM_Y, FIRM_DM, FIRM_REV, SERIAL_NUM, TEMP_OUT, ((int16_t) TEMP_OUT + (0*250 << TEMP_BP)) >> TEMP_BP);
 
 			for (;;)
 			{
 				// Получение компонент кватерниона ориентации
-				int16_t Q0_C11_OUT =  module_read16(0x00, 0x60);	// Компонент λ0 кватерниона ориентации
-				int16_t Q1_C12_OUT =  module_read16(0x00, 0x62);	// Компонент λ1 кватерниона ориентации
-				int16_t Q2_C13_OUT =  module_read16(0x00, 0x64);	// Компонент λ2 кватерниона ориентации
-				int16_t Q3_C21_OUT =  module_read16(0x00, 0x66);	// Компонент λ3 кватерниона ориентации
+				int16_t Q0_C11_OUT =  adis161xx_read16(0x00, 0x60);	// Компонент λ0 кватерниона ориентации
+				int16_t Q1_C12_OUT =  adis161xx_read16(0x00, 0x62);	// Компонент λ1 кватерниона ориентации
+				int16_t Q2_C13_OUT =  adis161xx_read16(0x00, 0x64);	// Компонент λ2 кватерниона ориентации
+				int16_t Q3_C21_OUT =  adis161xx_read16(0x00, 0x66);	// Компонент λ3 кватерниона ориентации
 
-				int16_t ROLL_C23_OUT = module_read16(0x00, 0x6A);
-				int16_t PITCH_C31_OUT = module_read16(0x00, 0x6C);
-				int16_t YAW_C32_OUT = module_read16(0x00, 0x6E);
+				int16_t ROLL_C23_OUT = adis161xx_read16(0x00, 0x6A);
+				int16_t PITCH_C31_OUT = adis161xx_read16(0x00, 0x6C);
+				int16_t YAW_C32_OUT = adis161xx_read16(0x00, 0x6E);
 
 				//PRINTF("Q0=%f, Q1=%f, Q2=%f, Q3=%f\n", Q0_C11_OUT / 32768.0f, Q1_C12_OUT / 32768.0f, Q2_C13_OUT / 32768.0f, Q3_C21_OUT / 32768.0f);
 
@@ -6336,11 +6336,11 @@ void hightests(void)
 
 		        //PRINTF("X=%f, Y=%f, Z=%f\n", X * (180 / M_PI), Y * (180 / M_PI), Z * (180 / M_PI));
 		        PRINTF("HABS=%f, ROLL=%f, PITCH=%f, YAW=%f, BAROM=%f\n",
-						(int32_t) module_read32(0x01, 0x14) / 65536.0f,
+						(int32_t) adis161xx_read32(0x01, 0x14) / 65536.0f,
 		        		ROLL_C23_OUT / 32768.0f * 180.0f,
 						PITCH_C31_OUT / 32768.0f * 180.0f,
 						YAW_C32_OUT / 32768.0f * 180.0f,
-						(int32_t) module_read32(0x00, 0x2E) / 65536.0f / 25000
+						(int32_t) adis161xx_read32(0x00, 0x2E) / 65536.0f / 25000
 						);
 
 			}
@@ -6348,11 +6348,11 @@ void hightests(void)
 				unsigned PG = 0x01;
 				//unsigned AE = 0x10;	// LATITUDE_LOW, LATITUDE_OUT
 				unsigned AE = 0x24;	// HABS_LOW, HABS_OUT
-//				module_write16(PG, AE, 0xDEAD);
-//				module_write16(PG, AE + 2, 0xBEEF);
-				const unsigned LATITUDE_LOW = module_read16(PG, AE);
-				const unsigned LATITUDE_OUT = module_read16(PG, AE + 2);
-				const unsigned LATITUDE4 = module_read32(PG, AE);
+//				adis161xx_write16(PG, AE, 0xDEAD);
+//				adis161xx_write16(PG, AE + 2, 0xBEEF);
+				const unsigned LATITUDE_LOW = adis161xx_read16(PG, AE);
+				const unsigned LATITUDE_OUT = adis161xx_read16(PG, AE + 2);
+				const unsigned LATITUDE4 = adis161xx_read32(PG, AE);
 				PRINTF("LOW=%04X, OUT=%04X, 32W=%08X\n", LATITUDE_LOW, LATITUDE_OUT, LATITUDE4);
 			}
 			unsigned PG = 0x02;
@@ -6362,33 +6362,33 @@ void hightests(void)
 				for (AE = 0; AE < 128; AE += 4)
 				{
 					//unsigned AE = 0x10;	// LATITUDE_LOW, LATITUDE_OUT
-	//				module_write16(PG, AE, 0xDEAD);
-	//				module_write16(PG, AE + 2, 0xBEEF);
-					const unsigned LATITUDE_LOW = module_read16(PG, AE);
-					const unsigned LATITUDE_OUT = module_read16(PG, AE + 2);
-					const unsigned LATITUDE4 = module_read32(PG, AE);
+	//				adis161xx_write16(PG, AE, 0xDEAD);
+	//				adis161xx_write16(PG, AE + 2, 0xBEEF);
+					const unsigned LATITUDE_LOW = adis161xx_read16(PG, AE);
+					const unsigned LATITUDE_OUT = adis161xx_read16(PG, AE + 2);
+					const unsigned LATITUDE4 = adis161xx_read32(PG, AE);
 					PRINTF("pg=%02X, ae=%02X: LOW=%04X, OUT=%04X, 32W=%08X\n", PG, AE, LATITUDE_LOW, LATITUDE_OUT, LATITUDE4);
 				}
 			}
 
 //			PRINTF("Write DECLN_ANGL\n");
-//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
-//			module_write16(0x03, 0x54, 0x0777);
-//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
-//			module_write16(0x03, 0x54, 0x0888);
-//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  module_read16(0x03, 0x54), module_read16(0x00, 0x08));
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  adis161xx_read16(0x03, 0x54), adis161xx_read16(0x00, 0x08));
+//			adis161xx_write16(0x03, 0x54, 0x0777);
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  adis161xx_read16(0x03, 0x54), adis161xx_read16(0x00, 0x08));
+//			adis161xx_write16(0x03, 0x54, 0x0888);
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  adis161xx_read16(0x03, 0x54), adis161xx_read16(0x00, 0x08));
 
 			char c;
 			while (dbg_getchar(& c) == 0)
 				;
 
-//			PRINTF("EXT_DATA_SRC #1=%04X\n", module_read16(0x01, 0x2C));
-//			module_write16(0x01, 0x2C, 0x01);
+//			PRINTF("EXT_DATA_SRC #1=%04X\n", adis161xx_read16(0x01, 0x2C));
+//			adis161xx_write16(0x01, 0x2C, 0x01);
 //			local_delay_ms(10);
-//			PRINTF("EXT_DATA_SRC #2=%04X\n", module_read16(0x01, 0x2C));
-//			module_write16(0x01, 0x2C, 0x03);
+//			PRINTF("EXT_DATA_SRC #2=%04X\n", adis161xx_read16(0x01, 0x2C));
+//			adis161xx_write16(0x01, 0x2C, 0x03);
 //			local_delay_ms(10);
-//			PRINTF("EXT_DATA_SRC #3=%04X\n", module_read16(0x01, 0x2C));
+//			PRINTF("EXT_DATA_SRC #3=%04X\n", adis161xx_read16(0x01, 0x2C));
 
 			for (;;)
 				;

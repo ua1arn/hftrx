@@ -461,7 +461,6 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 	case HID_POLL:
 		statusURB = USBH_LL_GetURBState(phost, phhid->InPipe);
 		if (statusURB == USBH_URB_DONE) {
-			//TP();
 			XferSize = USBH_LL_GetLastXferSize(phost, phhid->InPipe);
 
 			if ((phhid->DataReady == 0U) && (XferSize != 0U)) {
