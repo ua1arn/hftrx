@@ -60,6 +60,11 @@ static inline uint32_t ehci_link_qh ( struct ehci_queue_head *queue ) {
 	return ( virt_to_phys ( queue ) | EHCI_LINK_TYPE_QH );
 }
 
+#if ! defined (__BYTE_ORDER__)
+	#error No __BYTE_ORDER__ defined
+#endif
+
+#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
 
 static uint32_t cpu_to_le32(unsigned long v)
 {
@@ -75,6 +80,26 @@ static uint16_t cpu_to_le16(unsigned long v)
 {
 	return v;
 }
+
+#else
+
+static uint32_t cpu_to_le32(unsigned long v)
+{
+	return __REV(v);
+}
+
+static unsigned short le16_to_cpu(uint16_t v)
+{
+	return __REV16(v);
+}
+
+static uint16_t cpu_to_le16(unsigned long v)
+{
+	return __REV16(v);
+}
+
+#endif
+
 //
 ///* установка указаных в mask битов в состояние data */
 //static void le32_modify(volatile uint32_t * variable, uint_fast32_t mask, uint_fast32_t data)
