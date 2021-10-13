@@ -785,11 +785,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			else
 			{
 
-	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
-	 			{
-	 				PRINTF("status=%02X ", status);
-	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
-	 			}
+//	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
+//	 			{
+//	 				PRINTF("status=%02X ", status);
+//	 				printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, pktcnt);
+//	 			}
 				hc->xfer_buff += pktcnt;
 				hc->xfer_count += pktcnt;
 				// Transaction done
