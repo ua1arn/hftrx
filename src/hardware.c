@@ -3303,6 +3303,7 @@ void Reset_CPUn_Handler(void)
 	cortexa_cpuinfo();
 	IRQ_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);
 
+	arm_hardware_populte_second_initialize();
 	__enable_irq();
 	SPIN_UNLOCK(& cpu1init);
 
@@ -3323,8 +3324,6 @@ void cpump_initialize(void)
 	SystemCoreClock = CPU_FREQ;
 
 #if WITHSMPSYSTEM
-
-	arm_hardware_populate_initialize();
 
 #if (__CORTEX_A == 9U)
 	// set the ACTLR.SMP

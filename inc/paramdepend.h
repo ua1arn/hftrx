@@ -910,7 +910,8 @@ extern "C" {
 		*/
 		enum
 		{
-			PRI_OVRT = 0,	// RPR value
+			PRI_IPC,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+			PRI_OVRT,
 			PRI_RT = 1,
 			PRI_SYS = 2,
 			PRI_USER = 3,
@@ -922,6 +923,9 @@ extern "C" {
 //			gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS),	// value for GIC_SetInterfacePriorityMask
 //			gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER)	// value for GIC_SetInterfacePriorityMask
 		};
+
+		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерываниедля синхронизации приоритетов GIC на остальных процессорах  */
+		#define BOARD_SGI_PRIO	ARM_CA9_ENCODE_PRIORITY(PRI_IPC)
 
 		#define RUNNING_PRI	((GICInterface->RPR & 0xFF) >> ARM_CA9_PRIORITYSHIFT) // The current running priority on the CPU interface.
 
@@ -955,9 +959,6 @@ extern "C" {
 		#define global_disableIRQ() do { \
 			__disable_irq(); \
 		} while (0)
-
-	#define BOARD_SGI_IRQ SGI12_IRQn
-	#define BOARD_SGI_PRIO	ARM_CA9_ENCODE_PRIORITY(PRI_SYS)
 
 	#else /* WITHNESTEDINTERRUPTS */
 

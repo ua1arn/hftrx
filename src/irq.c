@@ -1472,49 +1472,71 @@ uint_fast8_t arm_hardware_cpuid(void)
 
 #if WITHSMPSYSTEM
 
-static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
-static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
+//static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
+//static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t gicshadow_prio [1024] USBALIGN_END;
 
-static void arm_hardware_gicsfetch(void)
+/* Обработчик SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+void arm_hardware_gicsfetch(void)
 {
 	// Get ITLinesNumber
 	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned i;
 	// 32 - skip SGI handlers (keep enabled for CPU1 start).
-	for (i = 32; i < n; ++ i)
+	for (i = 0; i < n; ++ i)
 	{
-
+		GIC_SetPriority(i, gicshadow_prio [i]);
 	}
-	arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
 }
 
-static void arm_hardware_populate(void)
+static void arm_hardware_populate(int int_id)
 {
-	arm_hardware_flush((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	arm_hardware_flush((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	//PRINTF("arm_hardware_populate: int_id=%d\n", int_id);
+	//gicshadow_target [int_id] = targetcpu;
+	//gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
+	gicshadow_prio [int_id] = GIC_GetPriority(int_id);
+	//arm_hardware_flush((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//arm_hardware_flush((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	arm_hardware_flush((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 
+	GIC_SendSGI(BOARD_SGI_IRQ, 0x01uL << 1, 0x00);	// CPU1, filer=0
 
 }
 
+/* вызывается на основном процессоре */
 void arm_hardware_populate_initialize(void)
 {
+	ASSERT(arm_hardware_cpuid() == 0);
+	//PRINTF("arm_hardware_populate_initialize\n");
 	// Get ITLinesNumber
 	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned i;
 	// 32 - skip SGI handlers (keep enabled for CPU1 start).
-	for (i = 32; i < n; ++ i)
+	for (i = 0; i < n; ++ i)
 	{
-
+		gicshadow_prio [i] = GIC_GetPriority(i);
 	}
 
-	arm_hardware_flush_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
-	arm_hardware_flush_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	arm_hardware_flush_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+
+	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x01u << 1);
+}
+
+/* вызывается на дополнительном процессоре */
+void arm_hardware_populte_second_initialize(void)
+{
+	ASSERT(arm_hardware_cpuid() != 0);
+	//PRINTF("arm_hardware_populte_second_initialize\n");
+
+	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
 }
 
 #endif /* WITHSMPSYSTEM */
@@ -1558,11 +1580,8 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 
 
 	#if WITHSMPSYSTEM
-		gicshadow_target [int_id] = targetcpu;
-		gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
-		gicshadow_prio [int_id] = priority;
 
-		arm_hardware_populate();	// populate for other CPUs
+		arm_hardware_populate(int_id);	// populate for other CPUs
 	#endif /* WITHSMPSYSTEM */
 
 	VERIFY(IRQ_Enable(int_id) == 0);
@@ -1594,7 +1613,7 @@ void arm_hardware_disable_handler(uint_fast16_t int_id)
 	VERIFY(IRQ_Disable(int_id) == 0);
 
 	#if WITHSMPSYSTEM
-		arm_hardware_populate();
+		arm_hardware_populate(int_id);
 	#endif /* WITHSMPSYSTEM */
 
 #else /* CPUSTYLE_STM32MP1 */
@@ -1777,6 +1796,10 @@ void cpu_initialize(void)
 		GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
+
+#if WITHSMPSYSTEM
+	arm_hardware_populate_initialize();
+#endif /* WITHSMPSYSTEM */
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 	//PRINTF("cpu_initialize done\n");

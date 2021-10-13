@@ -6160,10 +6160,16 @@ void calcnormaltriangle(const float * model)
 
 #if 0 && WITHDEBUG && WITHSMPSYSTEM
 
-static void SecondCPUTaskSGI12(void)
+static void SecondCPUTaskSGI13(void)
 {
 	const int cpu = __get_MPIDR() & 0x03;
-	PRINTF("mSGI12 Run debug thread test: I am CPU=%d\n", cpu);
+	PRINTF("mSGI13 Run debug thread test: I am CPU=%d\n", cpu);
+}
+
+static void SecondCPUTaskSGI15(void)
+{
+	const int cpu = __get_MPIDR() & 0x03;
+	PRINTF("mSGI15 Run debug thread test: I am CPU=%d\n", cpu);
 }
 
 #endif
@@ -6409,6 +6415,8 @@ void hightests(void)
 #endif
 #if 0 && WITHDEBUG && WITHSMPSYSTEM
 	{
+		void arm_hardware_gicsfetch(void);
+
 		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, ARM_CA9_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
 		enum { TGCPUMASK1 = 1u << 1 };
 		enum { TGCPUMASK0 = 1u << 0 };
@@ -6417,7 +6425,8 @@ void hightests(void)
 		PRINTF("Main thread test: I am CPU=%d\n", cpu);
 		local_delay_ms(100);
 
-		arm_hardware_set_handler(BOARD_SGI_IRQ, SecondCPUTaskSGI12, BOARD_SGI_PRIO, 0x01u << 1);
+		arm_hardware_set_handler(SGI13_IRQn, SecondCPUTaskSGI13, BOARD_SGI_PRIO, 0x01u << 1);
+		arm_hardware_set_handler(SGI15_IRQn, SecondCPUTaskSGI15, BOARD_SGI_PRIO, 0x01u << 1);
 
 		for (;;)
 		{
@@ -6425,7 +6434,7 @@ void hightests(void)
 			// 1: to cpu1
 			// 2: to cpu0
 			//PRINTF("fltr = %d\n", i);
-			GIC_SendSGI(SGI12_IRQn, TGCPUMASK1, 0x00);	// CPU1, filer=0
+			GIC_SendSGI(SGI15_IRQn, TGCPUMASK1, 0x00);	// CPU1, filer=0
 			GIC_SendSGI(SGI13_IRQn, TGCPUMASK1, 0x00);	// CPU1, filer=0
 			local_delay_ms(300);
 		}
