@@ -6413,7 +6413,6 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && WITHDEBUG && WITHSMPSYSTEM
 	{
 		void arm_hardware_gicsfetch(void);
 
