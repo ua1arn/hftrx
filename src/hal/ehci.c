@@ -81,7 +81,7 @@ static uint16_t cpu_to_le16(unsigned long v)
 //{
 //	const uint_fast32_t v = * variable;
 //	const uint_fast32_t m = cpu_to_le32(mask);
-//	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
+//	* variable = (v & ~ m) | (cpu_to_le32(data) & m);
 //}
 
 /* установка указаных в mask битов в состояние data */
@@ -96,8 +96,8 @@ static uint16_t cpu_to_le16(unsigned long v)
 static void le8_modify(volatile uint8_t * variable, uint_fast8_t mask, uint_fast8_t data)
 {
 	const uint_fast8_t v = * variable;
-	const uint_fast8_t m = cpu_to_le16(mask);
-	* variable = (v & ~ m) | (cpu_to_le16(data) & m);
+	const uint_fast8_t m = mask;
+	* variable = (v & ~ m) | (data & m);
 }
 
 /**
