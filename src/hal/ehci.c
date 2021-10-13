@@ -726,8 +726,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  	if ((usbsts & (0x01uL << 13)) != 0)
  	{
- 		// Reclamation
- 	 	EHCIx->USBCMD &= ~ (CMD_ASE);
+ 		// Reclamation - R/O status bit
  	 	//PRINTF("HAL_EHCI_IRQHandler: Reclamation, usbsts=%08lX\n", usbsts);
  	}
  	if ((usbsts & (0x01uL << 0)))	// USB Interrupt (USBINT) - see EHCI_FL_IOC usage
