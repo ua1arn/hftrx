@@ -3510,6 +3510,9 @@ static void printtextfile(const char * filename)
 	for (;;)
 	{
 		char kbch;
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 
 		if (dbg_getchar(& kbch) != 0)
 		{
@@ -4066,6 +4069,9 @@ static void diskio_test(void)
 
 					for (pos = 0; pos < v; )
 					{
+						#if WITHUSBHW
+								board_usbh_polling();     // usb device polling
+						#endif /* WITHUSBHW */
 						// проверка прерывания работы с клавиатуры
 						char c;
 						if (dbg_getchar(& c))
