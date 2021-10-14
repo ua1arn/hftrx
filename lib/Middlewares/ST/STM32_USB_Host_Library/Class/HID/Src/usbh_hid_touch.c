@@ -83,14 +83,14 @@ static USBH_StatusTypeDef USBH_HID_TouchDecode(USBH_HandleTypeDef *phost);
   * @{
   */
 HID_TOUCH_Info_TypeDef    touch_info;
-static __ALIGN4k_BEGIN uint8_t touch_report_data[11] __ALIGN4k_END;
-static __ALIGN4k_BEGIN uint8_t touch_rx_report_buf[11] __ALIGN4k_END;
+static __ALIGN4k_BEGIN uint8_t touch_report_data [64] __ALIGN4k_END;
+static __ALIGN4k_BEGIN uint8_t touch_rx_report_buf [64] __ALIGN4k_END;
 
 /* Structures defining how to access items in a HID touch report */
 /* Access button 1 state. */
 static const HID_Report_ItemTypedef prop_b1 =
 {
-  (uint8_t *)(void *)touch_report_data + 0, /*data*/
+  touch_report_data + 0, /*data*/
   1,     /*size*/
   0,     /*shift*/
   0,     /*count (only for array items)*/
@@ -105,7 +105,7 @@ static const HID_Report_ItemTypedef prop_b1 =
 /* Access button 2 state. */
 static const HID_Report_ItemTypedef prop_b2 =
 {
-  (uint8_t *)(void *)touch_report_data + 0, /*data*/
+  touch_report_data + 0, /*data*/
   1,     /*size*/
   1,     /*shift*/
   0,     /*count (only for array items)*/
@@ -120,7 +120,7 @@ static const HID_Report_ItemTypedef prop_b2 =
 /* Access button 3 state. */
 static const HID_Report_ItemTypedef prop_b3 =
 {
-  (uint8_t *)(void *)touch_report_data + 0, /*data*/
+  touch_report_data + 0, /*data*/
   1,     /*size*/
   2,     /*shift*/
   0,     /*count (only for array items)*/
@@ -135,11 +135,11 @@ static const HID_Report_ItemTypedef prop_b3 =
 /* Access x coordinate change. */
 static const HID_Report_ItemTypedef prop_x =
 {
-  (uint8_t *)(void *)touch_report_data + 1, /*data*/
-  8,     /*size*/
+  touch_report_data + 4, /*data*/
+  16,     /*size*/
   0,     /*shift*/
   0,     /*count (only for array items)*/
-  1,     /*signed?*/
+  0,     /*signed?*/
   0,     /*min value read can return*/
   0xFFFF,/*max value read can return*/
   0,     /*min vale device can report*/
@@ -150,11 +150,11 @@ static const HID_Report_ItemTypedef prop_x =
 /* Access y coordinate change. */
 static const HID_Report_ItemTypedef prop_y =
 {
-  (uint8_t *)(void *)touch_report_data + 2, /*data*/
-  8,     /*size*/
+  touch_report_data + 6, /*data*/
+  16,     /*size*/
   0,     /*shift*/
   0,     /*count (only for array items)*/
-  1,     /*signed?*/
+  0,     /*signed?*/
   0,     /*min value read can return*/
   0xFFFF,/*max value read can return*/
   0,     /*min vale device can report*/
@@ -245,19 +245,9 @@ static USBH_StatusTypeDef USBH_HID_TouchDecode(USBH_HandleTypeDef *phost)
   {
 	  //printhex(0, touch_report_data, HID_Handle->length);
     /*Decode report */
-//    touch_info.x = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_x, 0U);
-//    touch_info.y = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_y, 0U);
-//
-//    touch_info.buttons[0] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b1, 0U);
-//    touch_info.buttons[1] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b2, 0U);
-//    touch_info.buttons[2] = (uint8_t)HID_ReadItem((HID_Report_ItemTypedef *) &prop_b3, 0U);
-
-    touch_info.x = USBD_peek_u16(touch_report_data + 4);
-
-	touch_info.y = USBD_peek_u16(touch_report_data + 6);
-
-	touch_info.buttons[0] = touch_report_data [0] & 0x01;
-	touch_info.buttons[1] = touch_report_data [1] & 0x01;
+    touch_info.x = HID_ReadItem(& prop_x, 0U);
+    touch_info.y = HID_ReadItem(& prop_y, 0U);
+    touch_info.buttons[0] = HID_ReadItem(& prop_b1, 0U);
 
     return USBH_OK;
   }
