@@ -1470,12 +1470,13 @@ uint_fast8_t arm_hardware_cpuid(void)
 #endif /* CPUSTYLE_STM32MP1 */
 }
 
+static RAMDTCM SPINLOCK_t gicpriority = SPINLOCK_INIT;
+
 #if WITHSMPSYSTEM
 
 //static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
 //static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t gicshadow_prio [1024] USBALIGN_END;
-static RAMDTCM SPINLOCK_t gicpriority = SPINLOCK_INIT;
 
 /* Обработчик SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 static void arm_hardware_gicsfetch(void)
