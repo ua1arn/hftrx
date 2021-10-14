@@ -830,7 +830,7 @@ void r7s721_intc_initialize(void)
 	{
 		VERIFY(0 == IRQ_Disable(irqn));
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
-		VERIFY(0 == IRQ_SetPriority(irqn, 31));
+		VERIFY(0 == IRQ_SetPriority(irqn, 31));	// non-atomic operation
 		//VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
 		GIC_SetGroup(irqn, 0);
 	}
@@ -1475,6 +1475,7 @@ uint_fast8_t arm_hardware_cpuid(void)
 //static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
 //static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
 static USBALIGN_BEGIN uint8_t gicshadow_prio [1024] USBALIGN_END;
+static RAMDTCM SPINLOCK_t gicpriority = SPINLOCK_INIT;
 
 /* Обработчик SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
 static void arm_hardware_gicsfetch(void)
@@ -1482,10 +1483,13 @@ static void arm_hardware_gicsfetch(void)
 	// Get ITLinesNumber
 	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
 	unsigned int_id;
+
+	SPIN_LOCK(& gicpriority);
 	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
-		GIC_SetPriority(int_id, gicshadow_prio [int_id]);
+		GIC_SetPriority(int_id, gicshadow_prio [int_id]);	// non-atomic operation
 	}
+	SPIN_UNLOCK(& gicpriority);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
@@ -1533,7 +1537,9 @@ void arm_hardware_populte_second_initialize(void)
 	ASSERT(arm_hardware_cpuid() != 0);
 	//PRINTF("arm_hardware_populte_second_initialize\n");
 
-	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);
+	SPIN_LOCK(& gicpriority);
+	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
+	SPIN_UNLOCK(& gicpriority);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
@@ -1565,8 +1571,11 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	// Cortex-A computers
 
 	VERIFY(IRQ_Disable(int_id) == 0);
+
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
-	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
+	SPIN_LOCK(& gicpriority);
+	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
+	SPIN_UNLOCK(& gicpriority);
 	GIC_SetTarget(int_id, targetcpu);
 
 
