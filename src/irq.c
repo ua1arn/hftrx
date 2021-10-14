@@ -1584,7 +1584,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 		uint_fast32_t cfg = GIC_GetConfiguration(int_id);
 		cfg &= ~ 0x02;	/* Set level sensitive configuration */
 		cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
-		GIC_SetConfiguration(int_id, cfg);
+		GIC_SetConfiguration(int_id, cfg);// non-atomic operation
 	#endif /* CPUSTYLE_STM32MP1 */
 
 
