@@ -3160,6 +3160,8 @@ static void cortexa_cpuinfo(void)
 	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%08lX\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(),(unsigned long) & vvv);
 }
 
+#if WITHSMPSYSTEM
+
 #if CPUSTYLE_STM32MP1
 
 
@@ -3313,9 +3315,7 @@ void Reset_CPUn_Handler(void)
 	}
 }
 
-#endif /*  (__CORTEX_A != 0) */
-
-
+// Вызывается из main
 void cpump_initialize(void)
 {
 #if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
@@ -3352,6 +3352,25 @@ void cpump_initialize(void)
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
 }
+
+#else /* WITHSMPSYSTEM */
+
+void Reset_CPUn_Handler(void)
+{
+
+}
+
+// Вызывается из main
+void cpump_initialize(void)
+{
+	SystemCoreClock = CPU_FREQ;
+	cortexa_cpuinfo();
+
+}
+
+#endif /* WITHSMPSYSTEM */
+
+#endif /*  (__CORTEX_A != 0) */
 
 #if CPUSTYLE_ATSAM3S
 
