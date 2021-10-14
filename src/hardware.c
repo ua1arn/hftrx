@@ -3301,7 +3301,6 @@ void Reset_CPUn_Handler(void)
 	#endif
 
 	cortexa_cpuinfo();
-	IRQ_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);
 
 	arm_hardware_populte_second_initialize();
 	__enable_irq();

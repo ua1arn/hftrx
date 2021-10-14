@@ -1477,15 +1477,14 @@ uint_fast8_t arm_hardware_cpuid(void)
 static USBALIGN_BEGIN uint8_t gicshadow_prio [1024] USBALIGN_END;
 
 /* Обработчик SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
-void arm_hardware_gicsfetch(void)
+static void arm_hardware_gicsfetch(void)
 {
 	// Get ITLinesNumber
-	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
-	unsigned i;
-	// 32 - skip SGI handlers (keep enabled for CPU1 start).
-	for (i = 0; i < n; ++ i)
+	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	unsigned int_id;
+	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
-		GIC_SetPriority(i, gicshadow_prio [i]);
+		GIC_SetPriority(int_id, gicshadow_prio [int_id]);
 	}
 	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
@@ -1493,6 +1492,7 @@ void arm_hardware_gicsfetch(void)
 
 }
 
+/* вызывается на основном процессоре */
 static void arm_hardware_populate(int int_id)
 {
 	//PRINTF("arm_hardware_populate: int_id=%d\n", int_id);
@@ -1508,17 +1508,16 @@ static void arm_hardware_populate(int int_id)
 }
 
 /* вызывается на основном процессоре */
-void arm_hardware_populate_initialize(void)
+static void arm_hardware_populate_initialize(void)
 {
 	ASSERT(arm_hardware_cpuid() == 0);
 	//PRINTF("arm_hardware_populate_initialize\n");
 	// Get ITLinesNumber
-	const unsigned n = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
-	unsigned i;
-	// 32 - skip SGI handlers (keep enabled for CPU1 start).
-	for (i = 0; i < n; ++ i)
+	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	unsigned int_id;
+	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
 	{
-		gicshadow_prio [i] = GIC_GetPriority(i);
+		gicshadow_prio [int_id] = GIC_GetPriority(int_id);
 	}
 
 	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
@@ -1534,6 +1533,7 @@ void arm_hardware_populte_second_initialize(void)
 	ASSERT(arm_hardware_cpuid() != 0);
 	//PRINTF("arm_hardware_populte_second_initialize\n");
 
+	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
 	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
 	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
