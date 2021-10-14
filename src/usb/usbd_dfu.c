@@ -943,16 +943,16 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
     break;
 
   default :
-	  PRINTF("DFU_GetStatus: hdfu->dev_state=%d\n", hdfu->dev_state);
+	  //PRINTF("DFU_GetStatus: hdfu->dev_state=%d\n", hdfu->dev_state);
 	  //TP();
 	//USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
-	    //hdfu->dev_state = DFU_STATE_IDLE;
-//	    hdfu->dev_status [0] = DFU_ERROR_NONE;
-//	    hdfu->dev_status [1] = 0;
-//	    hdfu->dev_status [2] = 0;
-//	    hdfu->dev_status [3] = 0; /*bwPollTimeout=0ms*/
-//	    hdfu->dev_status [4] = hdfu->dev_state;
-//	    hdfu->dev_status [5] = 0; /*iString*/
+	    hdfu->dev_state = DFU_STATE_IDLE;
+	    hdfu->dev_status [0] = DFU_ERROR_NONE;
+	    hdfu->dev_status [1] = 0;
+	    hdfu->dev_status [2] = 0;
+	    hdfu->dev_status [3] = 0; /*bwPollTimeout=0ms*/
+	    hdfu->dev_status [4] = hdfu->dev_state;
+	    hdfu->dev_status [5] = 0; /*iString*/
     break;
   }
 
