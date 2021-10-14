@@ -1461,7 +1461,7 @@ int testchipDATAFLASH(void)
 			const unsigned newsct = sct [i];
 			if ((newsct & 0xFF) == 0)
 				continue;
-			if (sctRESULT == 0 || (sctRESULT & 0xFF) < (newsct & 0xFF))
+			if (sctRESULT == 0 || (sctRESULT & 0xFF) > (newsct & 0xFF))
 				sctRESULT = newsct;
 		}
 		if (sctRESULT != 0)
