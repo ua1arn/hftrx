@@ -191,7 +191,7 @@ static void r7s721_pio_onchangeinterrupt(
 			continue;
 		const IRQn_ID_t int_id = irqbase + bitpos;
 		arm_hardware_disable_handler(int_id);
-		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);
+		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);// non-atomic operation
 		arm_hardware_set_handler(int_id, vector, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
@@ -606,7 +606,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 	{
 		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
 		arm_hardware_disable_handler(int_id);
-		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);
+		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);// non-atomic operation
 		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
