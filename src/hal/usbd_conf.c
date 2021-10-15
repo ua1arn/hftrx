@@ -1371,7 +1371,11 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	hpcd_USB_OTG.Init.Sof_enable = DISABLE;
 	hpcd_USB_OTG.Init.low_power_enable = DISABLE;
 	hpcd_USB_OTG.Init.lpm_enable = DISABLE;
+#if WITHUSBDEV_VBUSSENSE
 	hpcd_USB_OTG.Init.vbus_sensing_enable = ENABLE;
+#else /* WITHUSBDEV_VBUSSENSE */
+	hpcd_USB_OTG.Init.vbus_sensing_enable = DISABLE;
+#endif /* WITHUSBDEV_VBUSSENSE */
 	hpcd_USB_OTG.Init.use_dedicated_ep1 = DISABLE;
 	hpcd_USB_OTG.Init.use_external_vbus = DISABLE;
 
