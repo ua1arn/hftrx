@@ -86,8 +86,9 @@
 #define WITHUSBHW_EHCI		USB1_EHCI
 #define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller, shared with USB_OTG_HS), 1 - 2nd PHY port. See USBPHYC_MISC_SWITHOST_VAL
 
-#if 1//WITHISBOOTLOADER
+#if WITHISBOOTLOADER
 
+	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
 	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
