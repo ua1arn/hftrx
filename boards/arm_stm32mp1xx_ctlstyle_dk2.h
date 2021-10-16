@@ -160,6 +160,16 @@
 		#endif
 	#endif /* WITHISBOOTLOADER */
 
+#if WITHISBOOTLOADER
+	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+
+#else /* WITHISBOOTLOADER */
+	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
+
+#endif /* WITHISBOOTLOADER */
+
 	#define CTLREGMODE_NOCTLREG	1
 
 	//#define DSTYLE_UR3LMZMOD	1	// Расположение элементов экрана в трансиверах UR3LMZ
