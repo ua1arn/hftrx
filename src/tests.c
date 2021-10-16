@@ -6847,6 +6847,8 @@ void hightests(void)
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
 	{
+		// i2c bus test i2c test twi bus test twi test
+
 		unsigned i;
 		for (i = 1; i < 127; ++ i)
 		{
@@ -6860,6 +6862,26 @@ void hightests(void)
 			i2c2_read(& v, I2C_READ_ACK_NACK);
 			////%%TP();
 			PRINTF("I2C2 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
+		}
+	}
+#endif
+#if 0 && (WITHTWIHW || WITHTWISW)
+	{
+		// i2c bus test i2c test twi bus test twi test
+
+		unsigned i;
+		for (i = 1; i < 127; ++ i)
+		{
+			uint8_t v;
+			unsigned addrw = i * 2;
+			unsigned addrr = addrw + 1;
+			////%%TP();
+			i2c_start(addrw);
+			i2c_write_withrestart(0x1B);
+			i2c_start(addrr);
+			i2c_read(& v, I2C_READ_ACK_NACK);
+			////%%TP();
+			PRINTF("I2C1 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
 		}
 	}
 #endif
