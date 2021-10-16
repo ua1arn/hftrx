@@ -301,6 +301,7 @@ void board_usb_initialize(void)
 
 void board_usb_deinitialize(void)
 {
+	//PRINTF("board_usb_deinitialize\n");
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_DeInit();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
@@ -310,6 +311,7 @@ void board_usb_deinitialize(void)
 #if (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC)
 	USB_HS_PHYCDeInit();
 #endif /* (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC) */
+	//PRINTF("board_usb_deinitialize done\n");
 }
 
 /* вызывается при разрешённых прерываниях. */

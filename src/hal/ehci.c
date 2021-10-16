@@ -883,8 +883,10 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 HAL_StatusTypeDef HAL_EHCI_DeInit(EHCI_HandleTypeDef *hehci)
 {
+	//PRINTF("%s:\n", __func__);
 
 	HAL_EHCI_MspDeInit(hehci);
+	//PRINTF("%s: done\n", __func__);
 	return HAL_OK;
 }
 
@@ -904,7 +906,7 @@ void USBH_EHCI_IRQHandler(void)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 
 #if CPUSTYLE_STM32MP1
 
@@ -996,22 +998,14 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 
 #if CPUSTYLE_STM32MP1
 
-	hehci->Instance->USBINTR = 0;
-	hehci->Instance->USBSTS =  ~ 0uL;	// Clear status
-	hehci->Instance->USBCMD = CMD_HCRESET;
-	(void) hehci->Instance->USBCMD;
-	while ((hehci->Instance->USBCMD & CMD_HCRESET) == 0)
-		;
-
-	hehci->Instance->USBCMD = 0;
-	(void) hehci->Instance->USBCMD;
-
+#if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_disable_handler(USBH_OHCI_IRQn);
 	arm_hardware_disable_handler(USBH_EHCI_IRQn);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	/* Perform USBH reset */
 	RCC->AHB6RSTSETR = RCC_AHB6RSTSETR_USBHRST;
@@ -1958,6 +1952,7 @@ USBH_StatusTypeDef USBH_LL_DeInit(USBH_HandleTypeDef *phost)
 	hal_status = HAL_EHCI_DeInit(phost->pData);
 
 	usb_status = USBH_Get_USB_Status(hal_status);
+	phost->pData = NULL;
 
 	return usb_status;
 }
@@ -2046,9 +2041,7 @@ void MX_USB_HOST_Init(void)
 
 void MX_USB_HOST_DeInit(void)
 {
-	TP();
 	USBH_DeInit(& hUsbHostHS);
-	TP();
 }
 
 void MX_USB_HOST_Process(void)

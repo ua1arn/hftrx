@@ -204,6 +204,8 @@ USBH_StatusTypeDef USBH_DeInit(USBH_HandleTypeDef *phost)
 #endif /* (osCMSIS < 0x20000U) */
 #endif /* (USBH_USE_OS == 1U) */
 
+  (void)USBH_LL_DeInit(phost);	/* Added by MGS */
+
   return USBH_OK;
 }
 

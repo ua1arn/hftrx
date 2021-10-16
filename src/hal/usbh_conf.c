@@ -480,6 +480,8 @@ USBH_StatusTypeDef USBH_LL_DeInit(USBH_HandleTypeDef *phost)
 
   usb_status = USBH_Get_USB_Status(hal_status);
 
+  phost->pData = NULL;
+
   return usb_status;
 }
 
