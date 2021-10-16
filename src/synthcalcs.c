@@ -177,7 +177,7 @@ testlfm(void)
 	//lfm_stop =  9000000;	// конечная частота
 
 	long int nsteps = (uint_fast64_t) (lfm_stop - lfm_start) * LFMTICKSFREQ / lfm_speed;
-	//printf("nsteps = %d\n", nsteps);
+	//PRINTF(PSTR("nsteps = %d\n"), nsteps);
 	scanfreq(freq2ftw(synth_freq2lo1(lfm_start, fi), dds1refdiv * lfm_lo1div, dds1ref), freq2ftw(synth_freq2lo1(lfm_stop, fi), dds1refdiv * lfm_lo1div, dds1ref), nsteps);
 }
 

@@ -287,7 +287,7 @@ modem_frames_decode(
 	uint_fast8_t v
 	)
 {
-	//printf("modem_frames_decode: %d (st=%d, acc=%08lX)\n", v, modem_rx_state, modem_rx_acc);
+	//PRINTF(PSTR("modem_frames_decode: %d (st=%d, acc=%08lX)\n"), v, modem_rx_state, modem_rx_acc);
 	switch (modem_rx_state)
 	{
 	case MODEM_RX_STOPPED:
