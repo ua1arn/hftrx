@@ -1688,4 +1688,9 @@ void spidf_initialize(void)
 
 }
 
+void spidf_uninitialize(void)
+{
+
+}
+
 #endif /* WIHSPIDFHW || WIHSPIDFSW */

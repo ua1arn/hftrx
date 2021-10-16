@@ -172,8 +172,10 @@ enum
 	STRING_ID_IQSPECTRUM,
 
 	STRING_ID_DFU,
+#if WIHSPIDFHW || WIHSPIDFSW
 	STRING_ID_DFU_0,
 	STRING_ID_DFU_1,
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
 	STRING_ID_DFU_2,	/* RAM target for debug */
 	// 
 	STRING_ID_count
@@ -4108,6 +4110,7 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	//
 	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
 
+#if WIHSPIDFHW || WIHSPIDFSW
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
@@ -4117,6 +4120,9 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
 #endif /* BOOTLOADER_SELFSIZE */
+
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
+
 #if WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
@@ -4872,6 +4878,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHUSBHID */
 	
 #if WITHUSBDFU
+#if WIHSPIDFHW || WIHSPIDFSW
 #if defined (BOOTLOADER_APPSIZE)
 	{
 		extern unsigned char mf_id;	// Manufacturer ID
@@ -4922,6 +4929,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		score += partlen;
 	}
 #endif /* BOOTLOADER_SELFSIZE */
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
 #if WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE
 	{
 		// RAM target for debug
