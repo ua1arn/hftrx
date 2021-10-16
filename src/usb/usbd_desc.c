@@ -4881,18 +4881,13 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 
 		spidf_initialize();
 		int status = testchipDATAFLASH();
-		char flashname [32];
-		local_snprintf_P(flashname, ARRAY_SIZE(flashname),
-				PSTR("SPIDF:%02X:%02X%02X:%02X"),
-				mf_id, mf_devid1, mf_devid2, mf_dlen
-				);
 
 		static const char strFlashDesc_4 [] = "@SPI Flash APPLICATION: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_0;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
-			status ? USBD_DFU_FLASHNAME : flashname,
+			status ? USBD_DFU_FLASHNAME : nameDATAFLASH,
 			(unsigned long) BOOTLOADER_APPBASE,
 			(unsigned) (BOOTLOADER_APPSIZE / sectorsizeDATAFLASH()),
 			(unsigned) (sectorsizeDATAFLASH() / 1024)
@@ -4906,13 +4901,16 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* defined (BOOTLOADER_APPSIZE) */
 #if BOOTLOADER_SELFSIZE
 	{
+
+		spidf_initialize();
+		int status = testchipDATAFLASH();
 		// Re-write bootloader parameters
 		static const char strFlashDesc_4 [] = "@SPI Flash BOOTLOADER: %s/0x%08lx/%02u*%03uKg";
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_1;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
-			USBD_DFU_FLASHNAME,
+			status ? USBD_DFU_FLASHNAME : nameDATAFLASH,
 			(unsigned long) BOOTLOADER_SELFBASE,
 			(unsigned) (BOOTLOADER_SELFSIZE / sectorsizeDATAFLASH()),
 			(unsigned) (sectorsizeDATAFLASH() / 1024)

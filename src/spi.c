@@ -1353,18 +1353,19 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 	}
 }
 
-unsigned char mf_id;	// Manufacturer ID
-unsigned char mf_devid1;	// device ID (part 1)
-unsigned char mf_devid2;	// device ID (part 2)
-unsigned char mf_dlen;	// Extended Device Information String Length
-
-
 static uint_fast8_t sectorEraseCmd = 0xD8;			// 64KB SECTOR ERASE
 static uint_fast32_t sectorSize = (1uL << 16);		// default sectoir size 64kB
 static uint_fast32_t chipSize = BOOTLOADER_FLASHSIZE;	// default chip size
 
+char nameDATAFLASH [64];
+
 int testchipDATAFLASH(void)
 {
+	unsigned char mf_id;	// Manufacturer ID
+	unsigned char mf_devid1;	// device ID (part 1)
+	unsigned char mf_devid2;	// device ID (part 2)
+	unsigned char mf_dlen;	// Extended Device Information String Length
+
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
@@ -1392,6 +1393,15 @@ int testchipDATAFLASH(void)
 		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 #endif /* WITHDEBUG */
+
+
+	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
+			PSTR("%s, SPIDF:%02X:%02X%02X:%02X"),
+			USBD_DFU_FLASHNAME,
+			(unsigned) (chipSize / 1024 / (1024 / 8)),
+			mf_id, mf_devid1, mf_devid2, mf_dlen
+			);
+
 
 	// Read root SFDP
 	uint8_t buff8 [8];
@@ -1476,6 +1486,18 @@ int testchipDATAFLASH(void)
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
 	}
+
+	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
+			PSTR("x25%c%u, SPIDF:%02X:%02X%02X:%02X"),
+#if WIHSPIDFHW4BIT
+			'Q',
+#else /* WIHSPIDFHW4BIT */
+			'F',
+#endif /* WIHSPIDFHW4BIT */
+			(unsigned) (chipSize / 1024 / (1024 / 8)),
+			mf_id, mf_devid1, mf_devid2, mf_dlen
+			);
+
 	return 0;
 }
 
@@ -1648,5 +1670,22 @@ void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Le
 {
 }
 
+
+unsigned long sectorsizeDATAFLASH(void)
+{
+	return 4096;
+}
+
+char nameDATAFLASH [] = "NoChip";
+
+int testchipDATAFLASH(void)
+{
+	return 1;
+}
+
+void spidf_initialize(void)
+{
+
+}
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
