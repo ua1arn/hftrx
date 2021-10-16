@@ -1758,6 +1758,19 @@ void display_hardware_initialize(void)
 	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
+void display_hdmi_initialize(void)
+{
+	const videomode_t * const vdmode = & vdmode0;
+//#if LCDMODETX_TC358778XBG
+//	tc358768_initialize(vdmode);
+//	panel_initialize(vdmode);
+//#endif /* LCDMODETX_TC358778XBG */
+#if LCDMODEX_SII9022A
+	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
+	sii9022x_initialize(vdmode);
+#endif /* LCDMODEX_SII9022A */
+}
+
 void display_wakeup(void)
 {
 #if WITHLTDCHW

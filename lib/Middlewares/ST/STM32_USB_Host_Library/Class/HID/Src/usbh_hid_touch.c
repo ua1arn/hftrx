@@ -205,6 +205,8 @@ USBH_StatusTypeDef USBH_HID_TouchInit(USBH_HandleTypeDef *phost)
   HID_Handle->pHidReportData = (void *)touch_rx_report_buf;
   USBH_HID_FifoInit(&HID_Handle->fifo, phost->device.Data, (uint16_t)(HID_QUEUE_SIZE * sizeof(touch_report_data)));
 
+  display_hdmi_initialize();
+
   return USBH_OK;
 }
 
