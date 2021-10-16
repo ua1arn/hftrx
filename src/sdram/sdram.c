@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "formats.h"	// for debug prints
+#include "clocks.h"
 #include "gpio.h"
 
 ////////////////////////
