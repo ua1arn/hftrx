@@ -16,25 +16,26 @@
 #include "usbh_core.h"
 #include "ehci.h"
 
+
+#if defined (WITHUSBHW_EHCI)
+
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
 void Error_Handler(void);
 
-#if defined (WITHUSBHW_EHCI)
-	/* USB Host Core handle declaration. */
-	RAMNOINIT_D1 USBH_HandleTypeDef hUsbHostHS;
+/* USB Host Core handle declaration. */
+RAMNOINIT_D1 USBH_HandleTypeDef hUsbHostHS;
 
-	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
-	static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
-
-#endif /* defined (WITHUSBHW_HOST) */
+static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 
 #if WITHUSEUSBFLASH
 #include "../../Class/MSC/Inc/usbh_msc.h"
 #endif /* WITHUSEUSBFLASH */
 #include "../../Class/HID/Inc/usbh_hid.h"
 #include "../../Class/HUB/Inc/usbh_hub.h"
+
 
 
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
@@ -297,165 +298,6 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 	//p->cache.status = EHCI_STATUS_ACTIVE;
 }
 
-// USB EHCI controller
-void board_ehci_initialize(EHCI_HandleTypeDef * hehci)
-{
-//	PRINTF("board_ehci_initialize start.\n");
-
-	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) hehci->Instance;
-	unsigned i;
-
-	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
-
-// 	ehci_init(& ehcidevice0, hehci->Instance);
-//    INIT_LIST_HEAD(& ehcidevice0.endpoints);
-//    INIT_LIST_HEAD(& ehcidevice0.async);
-//
-// 	VERIFY(ehci_reset(& ehcidevice0) == 0);
-//	ehci_dump(& ehcidevice0);
-	// power cycle for USB dongle
-// 	board_set_usbhostvbuson(0);
-// 	board_update();
-// 	HARDWARE_DELAY_MS(200);
-//	board_set_usbhostvbuson(1);
-//	board_update();
-//	HARDWARE_DELAY_MS(200);
-
-	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
-
-	// USBH_EHCI_HCICAPLENGTH == EHCIx->HCCAPBASE
-	// USBH_EHCI_HCSPARAMS == EHCIx->HCSPARAMS
-	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
-	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
-	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
-
-	// Calculate Operational Register Space base address
-	const uintptr_t opregspacebase = (uintptr_t) & EHCIx->HCCAPBASE + (EHCIx->HCCAPBASE & 0x00FF);
-	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
-	hehci->portsc = (__IO uint32_t *) (opregspacebase + 0x0044);
-	hehci->configFlag = (__IO uint32_t *) (opregspacebase + 0x0040);
-
-	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
-	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
-	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
-
-	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
-	InitializeListHead(& hehci->hcListAsync);		// Host channels, ожидающие обмена в ASYNCLISTADDR
-	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
-	hehci->ghc = NULL;
-	SPINLOCK_INITIALIZE(& hehci->asynclock);
-
-	// https://habr.com/ru/post/426421/
-	// Read the Command register
-	// Читаем командный регистр
-	// Write it back, setting bit 2 (the Reset bit)
-	// Записываем его обратно, выставляя бит 2(Reset)
-	// and making sure the two schedule Enable bits are clear.
-	// и проверяем, что 2 очереди выключены
-	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
-	// A small delay here would be good. You don't want to read
-	// Небольшая задержка здесь будет неплоха, Вы не должны читать
-	// the register before it has a chance to actually set the bit
-	// регистр перед тем, как у него не появится шанса выставить бит
-	(void) EHCIx->USBCMD;
-	// Now wait for the controller to clear the reset bit.
-	// Ждем пока контроллер сбросит бит Reset
-	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
-		;
-	// Again, a small delay here would be good to allow the
-	// reset to actually become complete.
-	// Опять задержка
-	(void) EHCIx->USBCMD;
-	// wait for the halted bit to become set
-	// Ждем пока бит Halted не будет выставлен
-	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
-		;
-	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
-	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
-
-	// Disable interrupts
-	// Отключаем прерывания
-	//hc->opRegs->usbIntr = 0;
-	EHCIx->USBINTR = 0;
-
-
-	/* подготовка кольцевого списка QH */
-    for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++ i)
-    {
-        asynclist_item(& hehci->asynclisthead [i], ehci_link_qhv(& hehci->asynclisthead [(i + 1) % ARRAY_SIZE(hehci->asynclisthead)]), i == 0);
-    }
-	/* подготовка списка dts */
-    for (i = 0; i < ARRAY_SIZE(hehci->qtds); ++ i)
-    {
-        //memset(& qtds [i], 0xFF, sizeof qtds [i]);
-    	hehci->qtds [i].status = EHCI_STATUS_HALTED;
-    }
-	/* подготовка списка QH для periodic frame list */
-    for (i = 0; i < ARRAY_SIZE(hehci->itdsarray); ++ i)
-    {
-        asynclist_item(& hehci->itdsarray [i], EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
-    }
-
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
-	/*
-	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
-	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
-	 * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
-	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
-	 *
-	 */
-
-	// Periodic frame list
-	for (i = 0; i < ARRAY_SIZE(hehci->periodiclist); ++ i)
-	{
-		hehci->periodiclist [i].link = EHCI_LINK_TERMINATE;	// 0 - valid, 1 - invalid
-	}
-	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
-
-	// Setup frame list
-	// Устанавливаем ссылку на фреймлист
-	//hc->opRegs->frameIndex = 0;
-	EHCIx->FRINDEX = 0;
-	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-	EHCIx->PERIODICLISTBASE = cpu_to_le32(virt_to_phys(& hehci->periodiclist));
-
-	// копируем адрес асинхронной очереди в регистр
-	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-	EHCIx->ASYNCLISTADDR = cpu_to_le32(virt_to_phys(& hehci->asynclisthead));
-	ASSERT(EHCIx->ASYNCLISTADDR == cpu_to_le32(virt_to_phys(& hehci->asynclisthead)));
-	// Устанавливаем сегмент в 0
-	//hc->opRegs->ctrlDsSegment = 0;
-	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
-	// Clear status
-	// Чистим статус
-	//hc->opRegs->usbSts = ~0;
-	EHCIx->USBSTS = ~ 0uL;
-
-	/* Route all ports to EHCI controller */
-	* hehci->configFlag = EHCI_CONFIGFLAG_CF;
-	(void) * hehci->configFlag;
-
-	/* Enable power to all ports */
-	unsigned porti = WITHEHCIHW_EHCIPORT;
-	//for (porti = 0; porti < hehci->nports; ++ porti)
-	{
-		unsigned long portsc = hehci->portsc [porti];
-
-		portsc &= ~ EHCI_PORTSC_CHANGE;
-		portsc |= EHCI_PORTSC_PP;
-
-		hehci->portsc [porti] = portsc;
-		(void) hehci->portsc [porti];
-	}
-	/* Wait 20ms after potentially enabling power to a port */
-	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
-	local_delay_ms(50);
-
-//	PRINTF("board_ehci_initialize done.\n");
-}
-
 HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_t state) {
 	//PRINTF("EHCI_DriveVbus: state=%d\n", (int) state);
 	board_set_usbhostvbuson(state);
@@ -465,7 +307,7 @@ HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_
 
 HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
 
-	//PRINTF("%s:\n", __func__);
+	PRINTF("%s:\n", __func__);
  	//USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
 
  	EHCIx->USBINTR = 0;
@@ -877,18 +719,172 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
-	//PRINTF("%s:\n", __func__);
- 	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
- 	//PRINTF("HAL_EHCI_Init\n");
+	unsigned i;
+	PRINTF("%s:\n", __func__);
+	USB_EHCI_CapabilityTypeDef *const EHCIx = hehci->Instance;
 
- 	board_ehci_initialize(hehci);
-	//PRINTF("%s: done\n", __func__);
- 	return HAL_OK;
+	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
+
+	// 	ehci_init(& ehcidevice0, hehci->Instance);
+	//    INIT_LIST_HEAD(& ehcidevice0.endpoints);
+	//    INIT_LIST_HEAD(& ehcidevice0.async);
+	//
+	// 	VERIFY(ehci_reset(& ehcidevice0) == 0);
+	//	ehci_dump(& ehcidevice0);
+	// power cycle for USB dongle
+	// 	board_set_usbhostvbuson(0);
+	// 	board_update();
+	// 	HARDWARE_DELAY_MS(200);
+	//	board_set_usbhostvbuson(1);
+	//	board_update();
+	//	HARDWARE_DELAY_MS(200);
+
+	// https://github.com/pdoane/osdev/blob/master/usb/ehci.c
+
+	// USBH_EHCI_HCICAPLENGTH == EHCIx->HCCAPBASE
+	// USBH_EHCI_HCSPARAMS == EHCIx->HCSPARAMS
+	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
+	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
+	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
+
+	// Calculate Operational Register Space base address
+	const uintptr_t opregspacebase = (uintptr_t) &EHCIx->HCCAPBASE
+			+ (EHCIx->HCCAPBASE & 0x00FF);
+	hehci->nports = (EHCIx->HCSPARAMS >> 0) & 0x0F;
+	hehci->portsc = (__IO uint32_t*) (opregspacebase + 0x0044);
+	hehci->configFlag = (__IO uint32_t*) (opregspacebase + 0x0040);
+
+	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
+	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
+	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
+
+	ASSERT((virt_to_phys(&hehci->periodiclist) & 0xFFF) == 0);
+	InitializeListHead(&hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
+	InitializeListHead(&hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
+	hehci->ghc = NULL;
+	SPINLOCK_INITIALIZE(&hehci->asynclock);
+
+	// https://habr.com/ru/post/426421/
+	// Read the Command register
+	// Читаем командный регистр
+	// Write it back, setting bit 2 (the Reset bit)
+	// Записываем его обратно, выставляя бит 2(Reset)
+	// and making sure the two schedule Enable bits are clear.
+	// и проверяем, что 2 очереди выключены
+	EHCIx->USBCMD = (EHCIx->USBCMD & ~(CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+	// A small delay here would be good. You don't want to read
+	// Небольшая задержка здесь будет неплоха, Вы не должны читать
+	// the register before it has a chance to actually set the bit
+	// регистр перед тем, как у него не появится шанса выставить бит
+	(void) EHCIx->USBCMD;
+	// Now wait for the controller to clear the reset bit.
+	// Ждем пока контроллер сбросит бит Reset
+	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
+		;
+	// Again, a small delay here would be good to allow the
+	// reset to actually become complete.
+	// Опять задержка
+	(void) EHCIx->USBCMD;
+	// wait for the halted bit to become set
+	// Ждем пока бит Halted не будет выставлен
+	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
+		;
+	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
+	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
+
+	// Disable interrupts
+	// Отключаем прерывания
+	//hc->opRegs->usbIntr = 0;
+	EHCIx->USBINTR = 0;
+
+	/* подготовка кольцевого списка QH */
+	for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++i)
+	{
+		asynclist_item(&hehci->asynclisthead[i],
+				ehci_link_qhv(
+						&hehci->asynclisthead[(i + 1)
+								% ARRAY_SIZE(hehci->asynclisthead)]), i == 0);
+	}
+	/* подготовка списка dts */
+	for (i = 0; i < ARRAY_SIZE(hehci->qtds); ++i)
+	{
+		//memset(& qtds [i], 0xFF, sizeof qtds [i]);
+		hehci->qtds[i].status = EHCI_STATUS_HALTED;
+	}
+	/* подготовка списка QH для periodic frame list */
+	for (i = 0; i < ARRAY_SIZE(hehci->itdsarray); ++i)
+	{
+		asynclist_item(&hehci->itdsarray[i],
+				EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
+	}
+
+	arm_hardware_flush_invalidate((uintptr_t) &hehci->asynclisthead,
+			sizeof hehci->asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) &hehci->itdsarray,
+			sizeof hehci->itdsarray);
+	arm_hardware_flush_invalidate((uintptr_t) &hehci->qtds, sizeof hehci->qtds);
+	/*
+	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
+	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
+	 * this is the end of the periodic list. This bit is ignored by the host controller when the queue head is in the Asynchronous schedule.
+	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
+	 *
+	 */
+
+	// Periodic frame list
+	for (i = 0; i < ARRAY_SIZE(hehci->periodiclist); ++i) {
+		hehci->periodiclist[i].link = EHCI_LINK_TERMINATE;// 0 - valid, 1 - invalid
+	}
+	arm_hardware_flush_invalidate((uintptr_t) &hehci->periodiclist,
+			sizeof hehci->periodiclist);
+
+	// Setup frame list
+	// Устанавливаем ссылку на фреймлист
+	//hc->opRegs->frameIndex = 0;
+	EHCIx->FRINDEX = 0;
+	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
+	EHCIx->PERIODICLISTBASE = cpu_to_le32(virt_to_phys(&hehci->periodiclist));
+
+	// копируем адрес асинхронной очереди в регистр
+	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
+	EHCIx->ASYNCLISTADDR = cpu_to_le32(virt_to_phys(&hehci->asynclisthead));
+	ASSERT(
+			EHCIx->ASYNCLISTADDR
+					== cpu_to_le32(virt_to_phys(&hehci->asynclisthead)));
+	// Устанавливаем сегмент в 0
+	//hc->opRegs->ctrlDsSegment = 0;
+	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
+	EHCIx->USBSTS = ~0uL;	// Clear status
+
+	/* Route all ports to EHCI controller */
+	*hehci->configFlag = EHCI_CONFIGFLAG_CF;
+	(void) *hehci->configFlag;
+
+	/* Enable power to all ports */
+	unsigned porti = WITHEHCIHW_EHCIPORT;
+	//for (porti = 0; porti < hehci->nports; ++ porti)
+	{
+		unsigned long portsc = hehci->portsc[porti];
+
+		portsc &= ~ EHCI_PORTSC_CHANGE;
+		portsc |= EHCI_PORTSC_PP;
+
+		hehci->portsc[porti] = portsc;
+		(void) hehci->portsc[porti];
+	}
+	/* Wait 20ms after potentially enabling power to a port */
+	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
+	local_delay_ms(50);
+
+	//	PRINTF("HAL_EHCI_Init done.\n");
+	PRINTF("%s: done\n", __func__);
+	return HAL_OK;
 }
 
 HAL_StatusTypeDef HAL_EHCI_DeInit(EHCI_HandleTypeDef *hehci)
 {
 
+	HAL_EHCI_MspDeInit(hehci);
 	return HAL_OK;
 }
 
@@ -908,7 +904,7 @@ void USBH_EHCI_IRQHandler(void)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-	//PRINTF("%s:\n", __func__);
+	PRINTF("%s:\n", __func__);
 
 #if CPUSTYLE_STM32MP1
 
@@ -1000,9 +996,19 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-	//PRINTF("%s:\n", __func__);
+	PRINTF("%s:\n", __func__);
 
 #if CPUSTYLE_STM32MP1
+
+	hehci->Instance->USBINTR = 0;
+	hehci->Instance->USBSTS =  ~ 0uL;	// Clear status
+	hehci->Instance->USBCMD = CMD_HCRESET;
+	(void) hehci->Instance->USBCMD;
+	while ((hehci->Instance->USBCMD & CMD_HCRESET) == 0)
+		;
+
+	hehci->Instance->USBCMD = 0;
+	(void) hehci->Instance->USBCMD;
 
 	arm_hardware_disable_handler(USBH_OHCI_IRQn);
 	arm_hardware_disable_handler(USBH_EHCI_IRQn);
@@ -1018,6 +1024,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 	(void) RCC->MP_AHB6ENCLRR;
 	RCC->MP_AHB6ENCLRR = RCC_MP_AHB6ENCLRR_USBHEN;
 	(void) RCC->MP_AHB6ENCLRR;
+
 #elif CPUSTYLE_XC7Z
 
 		if (WITHUSBHW_HOST == EHCI0)
@@ -1110,7 +1117,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 
 HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 {
-	//PRINTF("%s:\n", __func__);
+	PRINTF("%s:\n", __func__);
 	__HAL_LOCK(hehci);
 	(void) EHCI_StopHost(hehci->Instance);
 
@@ -1508,8 +1515,6 @@ static USBH_StatusTypeDef USBH_Get_USB_Status(HAL_StatusTypeDef hal_status)
 	}
 	return usb_status;
 }
-
-#if defined (WITHUSBHW_EHCI)
 
 /**
  * @brief  Submit a new URB to the low level driver.
@@ -1949,9 +1954,9 @@ USBH_StatusTypeDef USBH_LL_DeInit(USBH_HandleTypeDef *phost)
 {
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBH_StatusTypeDef usb_status = USBH_OK;
-//
-//  hal_status = HAL_EHCI_DeInit(phost->pData);
-//
+
+	hal_status = HAL_EHCI_DeInit(phost->pData);
+
 	usb_status = USBH_Get_USB_Status(hal_status);
 
 	return usb_status;
@@ -2041,7 +2046,9 @@ void MX_USB_HOST_Init(void)
 
 void MX_USB_HOST_DeInit(void)
 {
-
+	TP();
+	USBH_DeInit(& hUsbHostHS);
+	TP();
 }
 
 void MX_USB_HOST_Process(void)

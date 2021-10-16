@@ -241,6 +241,7 @@ void MX_USB_HOST_Init(void)
 
 void MX_USB_HOST_DeInit(void)
 {
+	USBH_DeInit(& hUsbHostHS);
 
 }
 
