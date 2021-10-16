@@ -476,6 +476,11 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	  {
 	    /* Peripheral interrupt Deinit*/
 	    arm_hardware_disable_handler(OTG_IRQn);
+
+		__HAL_RCC_USBO_FORCE_RESET();
+		__HAL_RCC_USBO_RELEASE_RESET();
+		__HAL_RCC_USBO_CLK_DISABLE();
+		__HAL_RCC_USBO_CLK_SLEEP_DISABLE();
 	  }
 
 #elif CPUSTYLE_STM32F

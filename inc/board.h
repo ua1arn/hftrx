@@ -355,6 +355,7 @@ void board_fpga_reset(void);
 int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts);
 int stpmic1_regulator_enable(const char *name);
 int stpmic1_regulator_disable(const char *name);
+void stpmic1_dump_regulators(void);
 
 #ifdef __cplusplus
 }
