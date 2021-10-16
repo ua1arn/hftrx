@@ -86,11 +86,18 @@
 #define WITHUSBHW_EHCI		USB1_EHCI
 #define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller, shared with USB_OTG_HS), 1 - 2nd PHY port. See USBPHYC_MISC_SWITHOST_VAL
 
-#if 0
+#if WITHISBOOTLOADER
+
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHUSBWCID	1
+
+#elif 0
+
 	#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
 	#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5
 
-#elif 9
+#elif 1
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHUSBCDCEEM	1	/* EEM использовать Ethernet Emulation Model на USB соединении */
@@ -927,7 +934,7 @@
 	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
-	//#define WITHBOOTSD 1	/* загрузка с SD CARD (если нет - с QSPI FLASH). */
+	#define WITHBOOTSD 1	/* загрузка с SD CARD (если нет - с QSPI FLASH). */
 	#define APPFIRSTOFFSET	(4400uL + BOOTLOADER_SELFSIZE)		// начальное смещение расположения образа applicaton
 	#define USERFIRSTOFFSET	(APPFIRSTOFFSET + BOOTLOADER_FLASHSIZE)	// начальное смещение области для создания хранилища данных
 	//#define APPFIRSTSECTOR (APPFIRSTOFFSET / 512)
