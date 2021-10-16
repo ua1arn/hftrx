@@ -154,7 +154,7 @@
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOA->BSRR = BSRR_C(v); __DSB(); } while (0)
-	#define LS020_RESET			(1u << 10)			// PA10 Video_RST - System reset input, active low
+	#define LS020_RESET			(0 * 1u << 10)			// PA10 Video_RST - System reset input, active low
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
@@ -887,7 +887,7 @@
 	enum
 	{
 		GPIO_AF_LTDC14 = 14,  /* LCD-TFT Alternate Function mapping */
-		//GPIO_AF_LTDCx9 = 9,  /* LCD-TFT Alternate Function mapping */
+		//GPIO_AF_LTDC9 = 9,  /* LCD-TFT Alternate Function mapping */
 		//GPIO_AF_LTDC3 = 3  /* LCD-TFT Alternate Function mapping */
 	};
 	/* demode values: 0: static signal, 1: DE controlled */
