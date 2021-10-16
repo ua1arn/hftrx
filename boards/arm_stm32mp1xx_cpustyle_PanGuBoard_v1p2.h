@@ -1103,7 +1103,16 @@
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
-#if 1
+#if 1//LCDMODEX_SII9022A
+
+	// PMIC interface:
+	// LDO6=1.2V, LDO2=3.3V
+	#define HARDWARE_SII9022_POWERON(state) do { \
+			if ((state) != 0) { \
+			} else { \
+			} \
+		} while (0)
+
 	#define BOARD_SII902X_RESET_BIT	(1uL << 13)	// PanGu board: HDMI_RST PA13
 
 	#define BOARD_SII902X_RESET_SET(state) do { \
@@ -1116,7 +1125,7 @@
 	#define BOARD_SII902X_INITIALIZE() do { \
 			arm_hardware_pioa_outputs(BOARD_SII902X_RESET_BIT, 1 * BOARD_SII902X_RESET_BIT); \
 		} while (0)
-#endif
+#endif /* LCDMODEX_SII9022A */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \

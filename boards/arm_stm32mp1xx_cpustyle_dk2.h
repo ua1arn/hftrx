@@ -1044,21 +1044,21 @@
 	// PMIC interface:
 	// LDO6=1.2V, LDO2=3.3V
 	#define HARDWARE_SII9022_POWERON(state) do { \
-		if ((state) != 0) { \
-			stpmic1_regulator_voltage_set("ldo1", 1800); /* 1V8_AUDIO */ \
-			stpmic1_regulator_enable("ldo1"); \
-			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
-			stpmic1_regulator_voltage_set("ldo6", 1200); /* 1V2_HDMI */ \
-			stpmic1_regulator_enable("ldo6"); \
-			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
-			stpmic1_regulator_voltage_set("ldo2", 3300); /* 3V3_HDMI */ \
-			stpmic1_regulator_enable("ldo2"); \
-			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
-		} else { \
-			/* stpmic1_regulator_disable("ldo2"); */ \
-			/* stpmic1_regulator_disable("ldo6"); */ \
-			/* stpmic1_regulator_disable("ldo1"); */ \
-		} \
+			if ((state) != 0) { \
+				stpmic1_regulator_voltage_set("ldo1", 1800); /* 1V8_AUDIO */ \
+				stpmic1_regulator_enable("ldo1"); \
+				local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+				stpmic1_regulator_voltage_set("ldo6", 1200); /* 1V2_HDMI */ \
+				stpmic1_regulator_enable("ldo6"); \
+				local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+				stpmic1_regulator_voltage_set("ldo2", 3300); /* 3V3_HDMI */ \
+				stpmic1_regulator_enable("ldo2"); \
+				local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+			} else { \
+				/* stpmic1_regulator_disable("ldo2"); */ \
+				/* stpmic1_regulator_disable("ldo6"); */ \
+				/* stpmic1_regulator_disable("ldo1"); */ \
+			} \
 		} while (0)
 
 		// HDMI_CEC - PB6
