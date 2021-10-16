@@ -22,11 +22,11 @@ void Error_Handler(void);
 
 #if defined (WITHUSBHW_EHCI)
 	/* USB Host Core handle declaration. */
-	RAMBIGDTCM USBH_HandleTypeDef hUsbHostHS;
+	RAMNOINIT_D1 USBH_HandleTypeDef hUsbHostHS;
 
 	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
 
-	static RAMBIGDTCM EHCI_HandleTypeDef hehci_USB;
+	static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 
 #endif /* defined (WITHUSBHW_HOST) */
 

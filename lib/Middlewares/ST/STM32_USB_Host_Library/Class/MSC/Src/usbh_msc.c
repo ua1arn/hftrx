@@ -172,7 +172,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
 
   // Also see usage of USBH_free in USBH_MSC_InterfaceDeInit
-  static MSC_HandleTypeDef staticMSC_Handle;
+  static RAMNOINIT_D1 MSC_HandleTypeDef staticMSC_Handle;
   phost->pActiveClass->pData = & staticMSC_Handle;
   //phost->pActiveClass->pData = (MSC_HandleTypeDef *) USBH_malloc(sizeof (MSC_HandleTypeDef));
   MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;

@@ -47,12 +47,12 @@ void Error_Handler(void);
 
 #if defined (WITHUSBHW_DEVICE)
 	/* USB Device Core handle declaration. */
-	RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
+	RAMNOINIT_D1 __ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST)
 	/* USB Host Core handle declaration. */
-	RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
+	RAMNOINIT_D1 __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
 
 	// MORI
 //	USBH_HandleTypeDef hUSBHost[5];
