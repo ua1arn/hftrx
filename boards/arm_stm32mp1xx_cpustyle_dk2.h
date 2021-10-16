@@ -602,7 +602,7 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 1 // WITHTWISW
+#if 1 // WITHTWISW || WITHTWIHW
 	// list: 0x50, 0x66
 	// PMIC, ...
 	// PZ4 I2C2_SCL
@@ -664,7 +664,7 @@
 		} while (0) 
 
 
-#endif // WITHTWISW
+#endif // WITHTWISW || WITHTWIHW
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 
