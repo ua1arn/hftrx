@@ -1044,27 +1044,28 @@
 	// PMIC interface:
 	// LDO6=1.2V, LDO2=3.3V
 	#define HARDWARE_SII9022_POWERON(state) do { \
-			if ((state) != 0) { \
-				stpmic1_regulator_voltage_set("ldo1", 1800); /* 1V8_AUDIO */ \
-				stpmic1_regulator_enable("ldo1"); \
-				local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
-				stpmic1_regulator_voltage_set("ldo6", 1200); /* 1V2_HDMI */ \
-				stpmic1_regulator_enable("ldo6"); \
-				local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
-				stpmic1_regulator_voltage_set("ldo2", 3300); /* 3V3_HDMI */ \
-				stpmic1_regulator_enable("ldo2"); \
-				local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
-			} else { \
-				/* stpmic1_regulator_disable("ldo2"); */ \
-				/* stpmic1_regulator_disable("ldo6"); */ \
-				/* stpmic1_regulator_disable("ldo1"); */ \
-			} \
-		} while (0)
+		if ((state) != 0) { \
+			stpmic1_regulator_voltage_set("ldo1", 1800); /* 1V8_AUDIO */ \
+			stpmic1_regulator_enable("ldo1"); \
+			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+			stpmic1_regulator_voltage_set("ldo6", 1200); /* 1V2_HDMI */ \
+			stpmic1_regulator_enable("ldo6"); \
+			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+			stpmic1_regulator_voltage_set("ldo2", 3300); /* 3V3_HDMI */ \
+			stpmic1_regulator_enable("ldo2"); \
+			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+		} else { \
+			/* stpmic1_regulator_disable("ldo2"); */ \
+			/* stpmic1_regulator_disable("ldo6"); */ \
+			/* stpmic1_regulator_disable("ldo1"); */ \
+		} \
+	} while (0)
 
-		// HDMI_CEC - PB6
-		// HDMI_NRST - PA10
-		// HDMI_INT - not connected?
+	// HDMI_CEC - PB6
+	// HDMI_NRST - PA10
+	// HDMI_INT - not connected?
 	#define BOARD_SII902X_RESET_BIT	(1uL << 10)	// DK2 board: HDMI_NRST PA10
+	#define BOARD_SII902X_CEC_BIT	(1uL << 6)	// DK2 board: HDMI_CEC PB6
 
 	#define BOARD_SII902X_RESET_SET(state) do { \
 			if (state) \
@@ -1074,7 +1075,8 @@
 		} while (0)
 
 	#define BOARD_SII902X_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(BOARD_SII902X_RESET_BIT, 1 * BOARD_SII902X_RESET_BIT); \
+		arm_hardware_pioa_outputs(BOARD_SII902X_RESET_BIT, 1 * BOARD_SII902X_RESET_BIT); \
+		arm_hardware_piob_inputs(BOARD_SII902X_CEC_BIT); \
 		} while (0)
 #endif /* LCDMODEX_SII9022A */
 
