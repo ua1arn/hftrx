@@ -720,7 +720,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
 	unsigned i;
-	PRINTF("%s:\n", __func__);
+	//PRINTF("%s:\n", __func__);
 	USB_EHCI_CapabilityTypeDef *const EHCIx = hehci->Instance;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
@@ -876,8 +876,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
 
-	//	PRINTF("HAL_EHCI_Init done.\n");
-	PRINTF("%s: done\n", __func__);
+	//PRINTF("%s: done\n", __func__);
 	return HAL_OK;
 }
 
