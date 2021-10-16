@@ -107,6 +107,7 @@ enum
 enum
 {
 	ep0outxxx = 0x00,
+	epoutbase = (epincount - 1) & 0x7F,
 
 #if WITHUSBRNDIS
 	USBD_EP_RNDIS_OUT,
