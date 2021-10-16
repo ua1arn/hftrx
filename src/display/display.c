@@ -1788,7 +1788,7 @@ void display_wakeup(void)
     arm_hardware_ltdc_initialize(frames, vdmode);
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
-    tc358768_wakeup();
+    tc358768_wakeup(vdmode);
     panel_wakeup();
 #endif /* LCDMODETX_TC358778XBG */
 #if LCDMODEX_SII9022A
