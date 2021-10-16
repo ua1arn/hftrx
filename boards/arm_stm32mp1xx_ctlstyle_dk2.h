@@ -208,7 +208,65 @@
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	//#define FORMATFROMLIBRARY 	1
 
+	// +++ вариации прошивки, специфические для разных частот опорного генератора
+	//#define DIRECT_125M0_X1		1	/* Тактовый генератор на плате 125.0 МГц */
+	#define DIRECT_122M88_X1	1	/* Тактовый генератор 122.880 МГц */
+	#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
+	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
+	#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
+
+	// --- вариации прошивки, специфические для разных частот
+
+	#define WITHPREAMPATT2_6DB 1	// LTC2208 Управление УВЧ и двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB */
+	//#define WITHATT2_6DB	1		// LTC2217 Управление двухкаскадным аттенюатором с затуханиями 0 - 6 - 12 - 18 dB без УВЧ
+	#define DEFPREAMPSTATE 	0	/* УВЧ по умолчанию включён (1) или выключен (0) */
+
+	#define WITHAGCMODEONOFF	1	// АРУ вкл/выкл
+	#define WITHMIC1LEVEL		1	// установка усиления микрофона
+
+	#define CTLREGMODE_NOCTLREG	1
+	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
+	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+
+	#define WITHPABIASMIN		0
+	#define WITHPABIASMAX		255
+
 	#define WITHNOATTNOPREAMP 1
 	#define WITHAGCMODEONOFF 1
+	#define WITHMODESETFULLNFM 1
+	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
+
+	/* коды фильтров второй ПЧ, выдаваемые на дешифраторы */
+	#define BOARD_FILTER_0P5		1	/* 0.5 or 0.3 kHz filter */
+	#define BOARD_FILTER_3P1		0	/* 3.1 or 2.75 kHz filter */
+	#define BOARD_FILTER_6P0		0	/* 6.0 kHz filter */
+	#define BOARD_FILTER_8P0		0	/* 6.0 kHz filter */
+
+	/* все возможные в данной конфигурации фильтры */
+	#define IF3_FMASK	(IF3_FMASK_0P5 | IF3_FMASK_3P1 /* | IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+	/* все возможные в данной конфигурации фильтры для передачи */
+	#define IF3_FMASKTX	(IF3_FMASK_3P1 /*| IF3_FMASK_6P0 */)
+	/* фильтры, для которых стоит признак HAVE */
+	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
+
+	// +++ заглушки для плат с DSP обработкой
+	#define	BOARD_AGCCODE_ON	0x00
+	#define	BOARD_AGCCODE_OFF	0x01
+
+	#define BOARD_DETECTOR_AM 	0		// Заглушка
+	#define BOARD_DETECTOR_FM 	0		// Заглушка
+	#define BOARD_DETECTOR_MUTE 	0		// Заглушка
+	#define BOARD_DETECTOR_TUNE 	0		// Заглушка
+
+	// +++ заглушки для плат с DSP обработкой
+	#define BOARD_NOTCH_OFF		0
+	#define BOARD_NOTCH_MANUAL	0
+	#define BOARD_NOTCH_AUTO	0
+
+//	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+//	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+
+	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
 #endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_DK2_H_INCLUDED */
