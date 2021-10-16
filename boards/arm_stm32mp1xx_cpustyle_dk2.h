@@ -58,9 +58,9 @@
 #endif
 
 
+#define WITHSDRAM_PMC1	1	/* power management chip - need for HDMI and AUDIO */
 
 #if WITHISBOOTLOADER
-	#define WITHSDRAM_PMC1	1	/* power management chip */
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 #endif /* WITHISBOOTLOADER */
 
@@ -603,6 +603,8 @@
 #endif /* WITHKEYBOARD */
 
 #if 1 // WITHTWISW
+	// list: 0x50, 0x66
+	// PMIC, ...
 	// PZ4 I2C2_SCL
 	// PZ5 I2C2_SDA
 	#define TARGET_TWI_TWCK		(1u << 4)		// PZ4 I2C2_SCL
@@ -627,11 +629,12 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWCK, xxAF_I2C2);	/* I2C1_SCL AF=? */ \
-			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWD, xxAF_I2C2);	/* I2C1_SDA AF=? */ \
+			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWCK, xxAF_I2C2);	/* I2C2_SCL AF=? */ \
+			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI_TWD, xxAF_I2C2);	/* I2C2_SDA AF=? */ \
 		} while (0)
 
-	// LSM6DS3
+	// list: 0x72, 0x7A, 0xC0
+	// CN4, U14 SiI9022ACNU, U7 USB2514B-AEZC, U20 CS42L51-CNZ
 	// PD12 I2C1_SCL
 	// PF15 I2C1_SDA
 	#define TARGET_TWI2_TWCK		(1u << 12)		// PD12 I2C1_SCL
@@ -657,7 +660,7 @@
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD2_INITIALIZE() do { \
 			arm_hardware_piod_periphopendrain_altfn2(TARGET_TWI2_TWCK, xxAF_I2C2);	/* PD12 I2C1_SCL AF=? */ \
-			arm_hardware_pioz_periphopendrain_altfn2(TARGET_TWI2_TWD, xxAF_I2C2);	/* PF15 I2C1_SDA AF=4 */ \
+			arm_hardware_piof_periphopendrain_altfn2(TARGET_TWI2_TWD, xxAF_I2C2);	/* PF15 I2C1_SDA AF=4 */ \
 		} while (0) 
 
 
@@ -1037,6 +1040,30 @@
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 #if 1//LCDMODEX_SII9022A
+
+	// PMIC interface:
+	// LDO6=1.2V, LDO2=3.3V
+	#define HARDWARE_SII9022_POWERON(state) do { \
+		if ((state) != 0) { \
+			stpmic1_regulator_voltage_set("ldo1", 1800); /* 1V8_AUDIO */ \
+			stpmic1_regulator_enable("ldo1"); \
+			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+			stpmic1_regulator_voltage_set("ldo6", 1200); /* 1V2_HDMI */ \
+			stpmic1_regulator_enable("ldo6"); \
+			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+			stpmic1_regulator_voltage_set("ldo2", 3300); /* 3V3_HDMI */ \
+			stpmic1_regulator_enable("ldo2"); \
+			local_delay_ms(1); /* STPMIC1_DEFAULT_START_UP_DELAY_MS */ \
+		} else { \
+			/* stpmic1_regulator_disable("ldo2"); */ \
+			/* stpmic1_regulator_disable("ldo6"); */ \
+			/* stpmic1_regulator_disable("ldo1"); */ \
+		} \
+		} while (0)
+
+		// HDMI_CEC - PB6
+		// HDMI_NRST - PA10
+		// HDMI_INT - not connected?
 	#define BOARD_SII902X_RESET_BIT	(1uL << 10)	// DK2 board: HDMI_NRST PA10
 
 	#define BOARD_SII902X_RESET_SET(state) do { \

@@ -1271,6 +1271,7 @@ static int sii902x_probe(struct i2c_client *client)
 //		}
 //	}
 //
+	HARDWARE_SII9022_POWERON(1);	// May be PMIC used here
 	/*
 	 * The following is the Initialization process
 	 * Take reference on SiI9022A PR page 8
