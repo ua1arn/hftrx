@@ -3883,7 +3883,7 @@ void displfiles_buff(const char* path)
             } 
 			else                                        /* It is a file. */
 			{
-                //printf("%s/%s\n", path, fn);
+                //PRINTF("%s/%s\n", path, fn);
  				PRINTF(PSTR("displfiles_buff: %9lu '%s'\n"), (unsigned long) pfno->fsize,  fn);
 			}
         }
