@@ -1003,6 +1003,8 @@ hardware_i2s2_master_fullduplex_initialize_audio(void)
 			((0x02uL << RCC_SPI2S23CKSELR_SPI23SRC_Pos) * RCC_SPI2S23CKSELR_SPI23SRC_Msk) |
 			0;
 		(void) RCC->SPI2S23CKSELR;
+	#elif CPUSTYLE_STM32H7XX
+#warning ss
 	#else /* defined (STM32F446xx) */
 		RCC->CFGR |= RCC_CFGR_I2SSRC;
 		(void) RCC->CFGR;
