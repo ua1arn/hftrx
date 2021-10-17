@@ -658,6 +658,8 @@ const  uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7,
 #define BOARD_USART2_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
 #define BOARD_USART3_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
 #define BOARD_TIM3_FREQ 	(stm32h7xx_get_timx_freq())	// TIM2..TIM7, TIM12..TIM14, LPTIM1, : APB1 D2 bus
+#define BOARD_SYSTICK_FREQ 	(stm32h7xx_get_sys_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+//#define BOARD_SYSTICK_FREQ (stm32h7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 unsigned long stm32h7xx_get_hse_freq(void)
 {
