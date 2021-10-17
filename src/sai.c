@@ -696,7 +696,7 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_audio(void)		/* инициали�
 
 #endif /* defined (I2S2ext) */
 
-#if WITHI2SHWTXSLAVE
+//#if WITHI2SHWTXSLAVE
 
 // Интерфейс к НЧ кодеку
 static void 
@@ -738,7 +738,7 @@ hardware_i2s2_slave_tx_initialize_audio(void)		/* инициализация I2S
 	PRINTF(PSTR("hardware_i2s2_slave_tx_initialize_audio done\n"));
 }
 
-#else /* WITHI2SHWTXSLAVE */
+//#else /* WITHI2SHWTXSLAVE */
 
 // Интерфейс к НЧ кодеку
 static void 
@@ -872,9 +872,9 @@ hardware_i2s2_master_tx_initialize_audio(void)		/* инициализация I2
 	PRINTF(PSTR("hardware_i2s2_master_tx_initialize_audio done\n"));
 }
 
-#endif /* WITHI2SHWTXSLAVE */
+//#endif /* WITHI2SHWTXSLAVE */
 
-#if WITHI2SHWRXSLAVE
+//#if WITHI2SHWRXSLAVE
 
 // Интерфейс к НЧ кодеку
 static void 
@@ -955,7 +955,7 @@ hardware_i2s2_slave_fullduplex_initialize_audio(void)
 	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize_audio done\n"));
 }
 
-#endif /* WITHI2SHWRXSLAVE */
+//#endif /* WITHI2SHWRXSLAVE */
 
 
 // Интерфейс к НЧ кодеку
@@ -1182,7 +1182,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 
 #else /* WITHI2SI2S2EXTFULLDUPLEXHW */
 
-#if CPUSTYLE_STM32MP1
+//#if CPUSTYLE_STM32MP1
 
 #if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
 
@@ -1215,7 +1215,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 #endif /* WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE */
 
 
-#else /* CPUSTYLE_STM32MP1 */
+//#else /* CPUSTYLE_STM32MP1 */
 
 	static const codechw_t audiocodechw_i2s2_i2s3 =
 	{
@@ -1236,7 +1236,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 		"i2s2-i2s3-audiocodechw"
 	};
 
-#endif /* CPUSTYLE_STM32MP1 */
+//#endif /* CPUSTYLE_STM32MP1 */
 
 #endif /* WITHI2SI2S2EXTFULLDUPLEXHW */
 
