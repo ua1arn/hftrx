@@ -779,7 +779,7 @@ void buffers_initialize(void)
 	#endif /* WITHRTS192 */
 	SPINLOCK_INITIALIZE(& locklistrts);
 
-	static ALIGNX_BEGIN RAM_D2 voice32tx_t voicesarray32tx [6] ALIGNX_END;
+	static ALIGNX_BEGIN RAM_D3 voice32tx_t voicesarray32tx [6] ALIGNX_END;
 
 	InitializeListHead2(& voicesready32tx);	// список для выдачи на ЦАП
 	InitializeListHead2(& voicesfree32tx);	// Незаполненные
@@ -792,7 +792,7 @@ void buffers_initialize(void)
 	}
 	SPINLOCK_INITIALIZE(& locklist32tx);
 
-    static ALIGNX_BEGIN RAM_D2 voice32rx_t voicesarray32rx [6] ALIGNX_END;	// без WFM надо 2
+    static ALIGNX_BEGIN RAM_D3 voice32rx_t voicesarray32rx [6] ALIGNX_END;	// без WFM надо 2
 
 	InitializeListHead2(& voicesfree32rx);	// Незаполненные
 	for (i = 0; i < (sizeof voicesarray32rx / sizeof voicesarray32rx [0]); ++ i)
@@ -805,17 +805,17 @@ void buffers_initialize(void)
 #if WITHUSEAUDIOREC
 
 	#if CPUSTYLE_R7S721
-		RAMNOINIT_D1 static records16_t recordsarray16 [8];
+		RAM_D3 static records16_t recordsarray16 [8];
 	#elif defined (STM32F767xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [8];
+		RAM_D3 static records16_t recordsarray16 [8];
 	#elif defined (STM32F746xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [8];
+		RAM_D3 static records16_t recordsarray16 [8];
 	#elif defined (STM32F429xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [8];
+		RAM_D3 static records16_t recordsarray16 [8];
 	#elif defined (STM32H743xx)
-		RAMNOINIT_D1 static records16_t recordsarray16 [5];
+		RAM_D3 static records16_t recordsarray16 [5];
 	#else
-		RAMNOINIT_D1 static records16_t recordsarray16 [8];
+		RAM_D3 static records16_t recordsarray16 [8];
 	#endif
 
 	/* Подготовка буферов для записи на SD CARD */

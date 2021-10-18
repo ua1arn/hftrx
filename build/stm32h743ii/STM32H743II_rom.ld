@@ -275,11 +275,11 @@ SECTIONS
 	{
 		KEEP(*(.stack*))
 		. = ALIGN(4);
-	} > RAM_D3
+	} > RAM_D1
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM_D3) + LENGTH(RAM_D3);
+	__StackTop = ORIGIN(RAM_D1) + LENGTH(RAM_D1);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 
