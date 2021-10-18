@@ -513,7 +513,7 @@ void buffers_diagnostics(void)
 	#endif /* WITHUSBUACIN */
 	#if WITHUSBUACOUT
 		LIST3PRINT(resample16);
-		PRINTF(PSTR(" NORMAL=%d, add=%u, del=%u, zero=%u, "), RESAMPLE16NORMAL, nbadd, nbdel, nbzero);
+		PRINTF(PSTR(" (NORMAL=%d), uacoutalt=%d, add=%u, del=%u, zero=%u, "), RESAMPLE16NORMAL, uacoutalt, nbadd, nbdel, nbzero);
 	#endif /* WITHUSBUACOUT */
 
 		
@@ -1102,8 +1102,24 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
 	SPIN_LOCK(& locklist16);
-	// Помеестить в очередь принятых с USB UAC
-	InsertHeadList3(& resample16, & p->item, 0);
+
+	if (uacoutalt == 0)
+	{
+		// Поместить в свободные
+		InsertHeadList2(& voicesfree16, & p->item);
+
+		// Очистить очередь принятых от USB UAC
+		while (GetCountList3(& resample16) != 0)
+		{
+			const PLIST_ENTRY t = RemoveTailList3(& resample16);
+			InsertHeadList2(& voicesfree16, t);
+		}
+	}
+	else
+	{
+		// Поместить в очередь принятых от USB UAC
+		InsertHeadList3(& resample16, & p->item, 0);
+	}
 
 	if (GetCountList3(& resample16) > (RESAMPLE16NORMAL + SKIPPED))
 	{
