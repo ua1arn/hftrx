@@ -1274,7 +1274,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 		DMA_I2S2_TX_initialize_audio,					// DMA по передаче канал 0
 		hardware_i2s3_rx_enable_audio,
 		hardware_i2s2_tx_enable_audio,
-		"i2s2-i2s3-audiocodechw"
+		"i2s2-i2s3-audiocodechw-slave"
 	};
 
 	static const codechw_t audiocodechw_i2s2_i2s3_master =
@@ -1285,7 +1285,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 		DMA_I2S2_TX_initialize_audio,					// DMA по передаче канал 0
 		hardware_i2s3_rx_enable_audio,
 		hardware_i2s2_tx_enable_audio,
-		"i2s2-i2s3-audiocodechw"
+		"i2s2-i2s3-audiocodechw-master"
 	};
 
 //#endif /* CPUSTYLE_STM32MP1 */
@@ -2995,7 +2995,7 @@ static const codechw_t audiocodechw_sai2_master_v3d =
 	DMA_SAI2_A_TX_initialize_audio,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
 	hardware_sai2_enable_audio,
 	hardware_dummy_enable,
-	"audiocodechw_sai2_master_v3d"
+	"audiocodechw-sai2-master-v3d"
 };
 
 // other CPUs
@@ -3025,7 +3025,7 @@ static const codechw_t fpgaspectrumhw_sai2 =
 		DMA_SAI1_A_TX_initialize_fpga,
 		hardware_sai1_enable_fpga,
 		hardware_dummy_enable,
-		"fpgacodechw_sai1_master"
+		"fpgacodechw-sai1-master"
 	};
 
 	static const codechw_t fpgacodechw_sai1_master_v3d =
@@ -3036,7 +3036,7 @@ static const codechw_t fpgaspectrumhw_sai2 =
 		hardware_dummy_initialize, //DMA_SAI1_A_TX_initialize_fpga,
 		hardware_sai1_enable_fpga,
 		hardware_dummy_enable,
-		"fpgacodechw_sai1_master_v3d"
+		"fpgacodechw-sai1-master-v3d"
 	};
 
 #else /* WITHSAI1HWTXRXMASTER */
@@ -3049,7 +3049,7 @@ static const codechw_t fpgaspectrumhw_sai2 =
 		DMA_SAI1_A_TX_initialize_fpga,
 		hardware_sai1_enable_fpga,
 		hardware_dummy_enable,
-		"fpgacodechw_sai1_slave"
+		"fpgacodechw-sai1-slave"
 	};
 
 #endif /* WITHSAI1HWTXRXMASTER */
@@ -3348,7 +3348,7 @@ static const codechw_t audiocodec_ssif0 =
 	r7s721_ssif0_dmatx_initialize_audio_tx,
 	r7s721_ssif0_fullduplex_enable_audio,
 	hardware_dummy_enable,
-	"ssif0-audiocodechw"
+	"audiocodechw-ssif0"
 };
 #endif /* WITHI2SHW */
 
@@ -3614,7 +3614,7 @@ static const codechw_t fpgacodechw_ssif1 =
 	r7s721_ssif1_dmatx_initialize_fpga_tx,
 	r7s721_ssif1_fullduplex_enable,
 	hardware_dummy_enable,
-	"ssif1-audiocodechw"
+	"audiocodechw-ssif1"
 };
 
 #endif /* WITHSAI1HW */
@@ -3778,7 +3778,7 @@ static const codechw_t fpgaspectrumhw_ssif2 =
 	hardware_dummy_initialize,
 	r7s721_ssif2_rx_enable_WFM,
 	hardware_dummy_enable,
-	"spectrumhw"
+	"spectrumhw-ssif2"
 };
 
 #endif /* WITHSAI2HW */
