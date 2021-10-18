@@ -1094,8 +1094,6 @@ buffers_savefromresampling(voice16_t * p)
 		buffers_tonull16(p);
 }
 
-#endif /* WITHUSBUAC */
-
 // Сохранить звук от несинхронного источника - USB - для последующего ресэмплинга
 RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 {
@@ -1119,20 +1117,24 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 	{
 		// Поместить в очередь принятых от USB UAC
 		InsertHeadList3(& resample16, & p->item, 0);
-	}
 
-	if (GetCountList3(& resample16) > (RESAMPLE16NORMAL + SKIPPED))
-	{
-		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
-		const PLIST_ENTRY t = RemoveTailList3(& resample16);
-		InsertHeadList2(& voicesfree16, t);
+		while (GetCountList3(& resample16) > (RESAMPLE16NORMAL + SKIPPED))
+		{
+			// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
+			const PLIST_ENTRY t = RemoveTailList3(& resample16);
+			InsertHeadList2(& voicesfree16, t);
 
-	#if WITHBUFFERSDEBUG
-		++ e6;
-	#endif /* WITHBUFFERSDEBUG */
+		#if WITHBUFFERSDEBUG
+			++ e6;
+		#endif /* WITHBUFFERSDEBUG */
+		}
 	}
 	SPIN_UNLOCK(& locklist16);
 }
+
+
+#endif /* WITHUSBUAC */
+
 
 // приняли данные от USB AUDIO
 static RAMFUNC void
