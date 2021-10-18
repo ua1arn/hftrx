@@ -750,8 +750,6 @@ hwacc_fillrect_u32(
 
 #endif /* LCDMODE_PIXELSIZE == 4 */
 
-extern const char * savestring;
-
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
 colmain_mem_at_debug(
@@ -766,7 +764,7 @@ colmain_mem_at_debug(
 {
 	if (x >= dx || y >= dy)
 	{
-		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%u, y=%u, savestring='%s'\n", file, line, dx, dy, x, y, savestring);
+		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%u, y=%u, savestring='%s', savewhere='%s'\n", file, line, dx, dy, x, y, savestring, savewhere);
 	}
 	ASSERT(x < dx);
 	ASSERT(y < dy);

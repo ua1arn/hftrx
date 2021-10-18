@@ -1182,6 +1182,9 @@ void openvg_deinit(void);
 void openvg_next(unsigned page);		// текущий буфер отрисовки становится отображаемым, OpenVG переключается на следующий буфер
 
 
+extern const char * savestring;
+extern const char * savewhere;
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

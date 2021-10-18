@@ -15,6 +15,10 @@
 #include "display2.h"
 #include <string.h>
 
+
+const char * savestring = "no data";
+const char * savewhere = "no func";
+
 #if LCDMODE_LTDC
 
 #define FONTSHERE 1
@@ -689,6 +693,7 @@ uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast1
 
 uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
+	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_horizontal_put_char_big(x, y, c);
@@ -699,6 +704,7 @@ uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_
 
 uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
+	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_horizontal_put_char_half(x, y, c);
@@ -868,13 +874,12 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 	display_wrdata2_end();
 }
 #endif
-
-const char * savestring = "no data";
 // Используется при выводе на графический индикатор,
 static void
 display_string(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
 	savestring = s;
+	savewhere = __func__;
 	char c;
 
 	uint_fast16_t ypix;
