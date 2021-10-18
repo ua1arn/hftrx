@@ -12392,11 +12392,11 @@ void cat2_disconnect(void)
 /* вызывается из обработчика прерываний */
 void cat2_parsechar(uint_fast8_t c)
 {
-	static RAMDTCM uint_fast8_t catcommand1;
-	static RAMDTCM uint_fast8_t catcommand2;
-	static RAMDTCM uint_fast8_t cathasparam;
-	static RAMDTCM uint_fast8_t catp [CATPCOUNTSIZE];
-	static RAMDTCM uint_fast8_t catpcount;
+	static uint_fast8_t catcommand1;
+	static uint_fast8_t catcommand2;
+	static uint_fast8_t cathasparam;
+	static uint_fast8_t catp [CATPCOUNTSIZE];
+	static uint_fast8_t catpcount;
 
    // PRINTF(PSTR("c=%02x, catstatein=%d, c1=%02X, c2=%02X\n"), c, catstatein, catcommand1, catcommand2);
 	switch (catstatein)
