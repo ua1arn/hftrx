@@ -271,12 +271,12 @@ int_fast32_t buffers_dmabuffer32rxcachesize(void)
 	enum { SKIPPED = 1000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 #endif
 
-enum { VOICESMIKE16NORMAL = 5 };	// Нормальное количество буферов в очереди
+enum { VOICESMIKE16NORMAL = 3 };	// Нормальное количество буферов в очереди
 enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
 enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
 //enum { PHONESLEVELx = CNT16 / CNT32RX };
-enum { PHONESLEVEL = 8 };
+enum { PHONESLEVEL = 3 };
 
 static RAMBIGDTCM LIST_HEAD3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
 static RAMBIGDTCM LIST_HEAD3 resample16;		// буферы от USB для синхронизации
@@ -690,11 +690,14 @@ void buffers_initialize(void)
 
 #endif /* WITHSKIPUSERMODE */
 
+	// Могут быть преобразованы до двух буферов шумоподавителя при нормальной работе
+	enum { NVCOICESFREE16 = 8 * PHONESLEVEL + 2 * (FIRBUFSIZE + CNT16 - 1) / CNT16 + 1 * RESAMPLE16NORMAL};
+
 	#if WITHUSBUAC
 		/* буферы требуются для ресэмплера */
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16_t voicesarray16 [128] ALIGNX_END;
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16_t voicesarray16 [NVCOICESFREE16] ALIGNX_END;
 	#else /* WITHUSBUAC */
-		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16_t voicesarray16 [96] ALIGNX_END;
+		static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16_t voicesarray16 [NVCOICESFREE16] ALIGNX_END;
 	#endif /* WITHUSBUAC */
 
 	#if WITHUSBUACOUT
@@ -844,7 +847,7 @@ void buffers_initialize(void)
 	}
 #endif /* WITHMODEM */
 
-	static RAMBIGDTCM denoise16_t speexarray16 [8];
+	static RAMBIGDTCM denoise16_t speexarray16 [4];	// буеры: один заполняется, один воспроизводлится и два своюбодных (с одинм бывают пропуски).
 
 	InitializeListHead2(& speexfree16);	// Незаполненные
 	InitializeListHead2(& speexready16);	// Для обработки
@@ -1102,7 +1105,7 @@ RAMFUNC static void buffers_savetoresampling16(voice16_t * p)
 	// Помеестить в очередь принятых с USB UAC
 	InsertHeadList3(& resample16, & p->item, 0);
 
-	if (GetCountList3(& resample16) > (RESAMPLE16NORMAL * 2))
+	if (GetCountList3(& resample16) > (RESAMPLE16NORMAL + SKIPPED))
 	{
 		// Из-за ошибок с асинхронным аудио пришлось добавить ограничение на размер этой очереди
 		const PLIST_ENTRY t = RemoveTailList3(& resample16);
