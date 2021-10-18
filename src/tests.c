@@ -5089,7 +5089,7 @@ void looptests(void)
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
 	}
 #endif
-#if 0 && WITHINTEGRATEDDSP && WITHDEBUG
+#if 1 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		// See buffers.c - WITHBUFFERSDEBUG
 		buffers_diagnostics();
