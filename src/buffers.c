@@ -7,7 +7,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
 
-//#define WITHBUFFERSDEBUG WITHDEBUG
+#define WITHBUFFERSDEBUG WITHDEBUG
 //#undef SPIN_LOCK
 //#undef SPIN_UNLOCK
 //#define SPIN_LOCK(p) do { (void) p; } while (0)
@@ -513,7 +513,7 @@ void buffers_diagnostics(void)
 	#endif /* WITHUSBUACIN */
 	#if WITHUSBUACOUT
 		LIST3PRINT(resample16);
-		PRINTF(PSTR(" add=%u, del=%u, zero=%u, "), nbadd, nbdel, nbzero);
+		PRINTF(PSTR(" NORMAL=%d, add=%u, del=%u, zero=%u, "), RESAMPLE16NORMAL, nbadd, nbdel, nbzero);
 	#endif /* WITHUSBUACOUT */
 
 		
