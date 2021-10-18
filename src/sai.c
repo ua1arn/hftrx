@@ -724,7 +724,7 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_audio(void)		/* инициали�
 static void 
 hardware_i2s2_slave_tx_initialize_audio(void)		/* инициализация I2S2 */
 {
-	PRINTF(PSTR("hardware_i2s2_slave_tx_initialize_audio\n"));
+	//PRINTF(PSTR("hardware_i2s2_slave_tx_initialize_audio\n"));
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN; // Подать тактирование
@@ -757,7 +757,7 @@ hardware_i2s2_slave_tx_initialize_audio(void)		/* инициализация I2S
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_tx_initialize_audio
 
-	PRINTF(PSTR("hardware_i2s2_slave_tx_initialize_audio done\n"));
+	//PRINTF(PSTR("hardware_i2s2_slave_tx_initialize_audio done\n"));
 }
 
 //#else /* WITHI2SHWTXSLAVE */
@@ -914,7 +914,7 @@ hardware_i2s2_master_tx_initialize_audio(void)		/* инициализация I2
 static void 
 hardware_i2s3_slave_rx_initialize_audio(void)		/* инициализация I2S3 STM32F4xx */
 {
-	PRINTF(PSTR("hardware_i2s3_slave_rx_initialize_audio\n"));
+	//PRINTF(PSTR("hardware_i2s3_slave_rx_initialize_audio\n"));
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI3EN_Msk; // Подать тактирование
@@ -944,7 +944,7 @@ hardware_i2s3_slave_rx_initialize_audio(void)		/* инициализация I2S
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();	// hardware_i2s3_slave_rx_initialize_audio
 
-	PRINTF(PSTR("hardware_i2s3_slave_rx_initialize_audio done\n"));
+	//PRINTF(PSTR("hardware_i2s3_slave_rx_initialize_audio done\n"));
 }
 
 
@@ -953,7 +953,7 @@ hardware_i2s3_slave_rx_initialize_audio(void)		/* инициализация I2S
 static void
 hardware_i2s2_slave_fullduplex_initialize_audio(void)
 {
-	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize_audio\n"));
+	//PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize_audio\n"));
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
@@ -986,7 +986,7 @@ hardware_i2s2_slave_fullduplex_initialize_audio(void)
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_fullduplex_initialize_audio
 
-	PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize_audio done\n"));
+	//PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize_audio done\n"));
 }
 
 //#endif /* WITHI2SHWRXSLAVE */
@@ -997,7 +997,7 @@ hardware_i2s2_slave_fullduplex_initialize_audio(void)
 static void
 hardware_i2s2_master_fullduplex_initialize_audio(void)
 {
-	PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize_audio\n"));
+	//PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize_audio\n"));
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
@@ -1111,7 +1111,7 @@ hardware_i2s2_master_fullduplex_initialize_audio(void)
 	// Подключить I2S к выводам процессора
 	I2S2HW_INITIALIZE();	// hardware_i2s2_master_fullduplex_initialize_audio
 
-	PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize_audio done\n"));
+	//PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize_audio done\n"));
 }
 
 /* разрешение работы I2S  */
@@ -1337,7 +1337,7 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 
 static void hardware_sai1_sai2_clock_selection(void)
 {
-	PRINTF(PSTR("hardware_sai1_sai2_clock_selection\n"));
+	//PRINTF(PSTR("hardware_sai1_sai2_clock_selection\n"));
 
 #if WITHSAICLOCKFROMPIN
 	
@@ -1634,7 +1634,7 @@ static void hardware_sai1_sai2_clock_selection(void)
 			;
 	#endif /* defined (STM32F446xx) */
 #endif /* WITHSAICLOCKFROMI2S */
-	PRINTF(PSTR("hardware_sai1_sai2_clock_selection done\n"));
+	//PRINTF(PSTR("hardware_sai1_sai2_clock_selection done\n"));
 }
 
 #endif /* WITHSAI1HW || WITHSAI2HW */
