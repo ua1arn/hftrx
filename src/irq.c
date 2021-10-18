@@ -1025,7 +1025,11 @@ HardFault_Handler(void)
 //	dbg_putchar('S');	// "SK"
 //	dbg_putchar('K');
 	PRINTF(PSTR("HardFault_Handler trapped.\n"));
-	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
+	PRINTF(PSTR(" HFSR=%08lx\n"), SCB->HFSR);
+	// 0x02000000 - DIVZERO
+	// 0x01000000 - unaligned
+	PRINTF(PSTR(" CFSR=%08lx %c %c\n"), SCB->CFSR, (SCB->CFSR & 0x02000000) != 0 ? 'Z' : ' ', (SCB->CFSR & 0x01000000) != 0 ? 'U' : ' ');
+	PRINTF(PSTR(" BFAR=%08lx\n"), SCB->BFAR);
 
 #endif
 	//PRINTF(PSTR("HardFault_Handler trapped. HFSR=%08lx\n"), SCB->HFSR);
