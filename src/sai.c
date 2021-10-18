@@ -240,6 +240,14 @@ enum
 /* получение битов режима I2S для каналов обммена с кодеком */
 static portholder_t stm32xxx_i2scfgr_afcodec(void)
 {
+#if WITHI2SCLOCKFROMPIN
+	const uint_fast32_t i2sdivider = calcdivround_exti2s(ARMI2SMCLK);
+#else /* WITHI2SCLOCKFROMPIN */
+	const uint_fast32_t i2sdivider = calcdivround_plli2s(ARMI2SMCLK);
+#endif /* WITHI2SCLOCKFROMPIN */
+	const portholder_t i2soddv = (i2sdivider % 2) != 0;
+	const portholder_t i2sdiv = i2sdivider / 2;
+
 	const portholder_t i2scfgr =
 		SPI_I2SCFGR_I2SMOD |	// 1: I2S/PCM mode is selected
 
@@ -273,6 +281,12 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 		(1uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 01: MSB justified standard (left justified)
 
 #endif /* WITHI2S_FORMATI2S_PHILIPS */
+
+#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
+		((i2sdiv << SPI_I2SCFGR_I2SDIV_Pos) & SPI_I2SCFGR_I2SDIV) |
+		(SPI_I2SCFGR_ODD * i2soddv) |
+		SPI_I2SCFGR_MCKOE_Msk |
+#endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
 		0;
 
 	return i2scfgr;
@@ -679,6 +693,13 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_audio(void)		/* инициали�
 	PRINTF(PSTR("hardware_i2s2_i2s2ext_master_duplex_initialize_audio: 2 I2S i2sdivider=%lu, ARMI2SMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) calcdivround_plli2s(ARMI2SMCLK), (unsigned long) ARMI2SMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #endif /* WITHI2SCLOCKFROMPIN */
 
+#if CPUSTYLE_STM32MP1
+	// Done in stm32xxx_i2scfgr_afcodec
+
+#elif CPUSTYLE_STM32H7XX
+	// Done in stm32xxx_i2scfgr_afcodec
+
+#else
 	const portholder_t i2spr = 
 		((i2sdiv << SPI_I2SPR_I2SDIV_Pos) & SPI_I2SPR_I2SDIV) | 
 		(SPI_I2SPR_ODD * i2soddv) | 
@@ -686,6 +707,7 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_audio(void)		/* инициали�
 		0;
 	I2S2ext->I2SPR = i2spr;
 	SPI2->I2SPR = i2spr;
+#endif
 
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
@@ -745,6 +767,7 @@ static void
 hardware_i2s2_master_tx_initialize_audio(void)		/* инициализация I2S2, STM32F4xx */
 {
 	PRINTF(PSTR("hardware_i2s2_master_tx_initialize_audio\n"));
+
 #if WITHI2SCLOCKFROMPIN
 	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	#if defined (STM32F446xx)
@@ -764,9 +787,22 @@ hardware_i2s2_master_tx_initialize_audio(void)		/* инициализация I2
 		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
 		//	others: reserved, the kernel clock is disabled
 		RCC->SPI2S23CKSELR = (RCC->SPI2S23CKSELR & ~ (RCC_SPI2S23CKSELR_SPI23SRC_Msk)) |
-			((0x02uL << RCC_SPI2S23CKSELR_SPI23SRC_Pos) * RCC_SPI2S23CKSELR_SPI23SRC_Msk) |
+			((0x02uL << RCC_SPI2S23CKSELR_SPI23SRC_Pos) & RCC_SPI2S23CKSELR_SPI23SRC_Msk) |
 			0;
 		(void) RCC->SPI2S23CKSELR;
+	#elif CPUSTYLE_STM32H7XX
+		// SPI123SEL[2:0]: SPI/I2S1,2 and 3 kernel clock source selection
+		//	000: pll1_q_ck clock selected as SPI/I2S1,2 and 3 kernel clock (default after reset)
+		//	001: pll2_p_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+		//	010: pll3_p_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+		//	011: I2S_CKIN clock selected as SPI/I2S1,2 and 3 kernel clock
+		//	100: per_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+		//	others: reserved, the kernel clock is disabled
+		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SPI123SEL_Msk)) |
+			((0x03uL << RCC_D2CCIP1R_SPI123SEL_Pos) & RCC_D2CCIP1R_SPI123SEL_Msk) |
+			0;
+		(void) RCC->D2CCIP1R;
+
 	#else /* defined (STM32F446xx) */
 		RCC->CFGR |= RCC_CFGR_I2SSRC;
 		(void) RCC->CFGR;
@@ -831,12 +867,12 @@ hardware_i2s2_master_tx_initialize_audio(void)		/* инициализация I2
 
  	SPI2->I2SCFGR = i2scfgr | 2 * SPI_I2SCFGR_I2SCFG_0; // 10: Master - transmit, 11: Master - receive
 #if WITHI2SCLOCKFROMPIN
-	const portholder_t i2sdivider = calcdivround_exti2s(ARMI2SMCLK);
+	const uint_fast32_t i2sdivider = calcdivround_exti2s(ARMI2SMCLK);
 #else /* WITHI2SCLOCKFROMPIN */
-	const portholder_t i2sdivider = calcdivround_plli2s(ARMI2SMCLK);
+	const uint_fast32_t i2sdivider = calcdivround_plli2s(ARMI2SMCLK);
 #endif /* WITHI2SCLOCKFROMPIN */
-	const portholder_t i2soddv = (i2sdivider % 2) != 0;
-	const portholder_t i2sdiv = i2sdivider / 2;
+	const uint_fast32_t i2soddv = (i2sdivider % 2) != 0;
+	const uint_fast32_t i2sdiv = i2sdivider / 2;
 
 	// note: SPI_I2SPR_I2SDIV should be >= 2
 #if WITHI2SCLOCKFROMPIN
@@ -846,13 +882,11 @@ hardware_i2s2_master_tx_initialize_audio(void)		/* инициализация I2
 #endif /* WITHI2SCLOCKFROMPIN */
 
 #if CPUSTYLE_STM32MP1
-	#warning to be implemented
-//	const portholder_t i2scfgr =
-//		((i2sdiv << SPI_I2SCFGR_I2SDIV_Pos) & SPI_I2SCFGR_I2SDIV_Msk) |
-//		(SPI_I2SCFGR_ODD_Msk * i2soddv) |
-//		SPI_I2SCFGR_MCKOE_Msk |
-//		0;
-//	SPI2->I2SCFGR = i2scfgr;
+	// Done in stm32xxx_i2scfgr_afcodec
+
+#elif CPUSTYLE_STM32H7XX
+	// Done in stm32xxx_i2scfgr_afcodec
+
 #else
 	const portholder_t i2spr = 
 		((i2sdiv << SPI_I2SPR_I2SDIV_Pos) & SPI_I2SPR_I2SDIV_Msk) |
@@ -1000,11 +1034,22 @@ hardware_i2s2_master_fullduplex_initialize_audio(void)
 		//	0x4: pll3_r_ck clock selected as kernel peripheral clock
 		//	others: reserved, the kernel clock is disabled
 		RCC->SPI2S23CKSELR = (RCC->SPI2S23CKSELR & ~ (RCC_SPI2S23CKSELR_SPI23SRC_Msk)) |
-			((0x02uL << RCC_SPI2S23CKSELR_SPI23SRC_Pos) * RCC_SPI2S23CKSELR_SPI23SRC_Msk) |
+			((0x02uL << RCC_SPI2S23CKSELR_SPI23SRC_Pos) & RCC_SPI2S23CKSELR_SPI23SRC_Msk) |
 			0;
 		(void) RCC->SPI2S23CKSELR;
 	#elif CPUSTYLE_STM32H7XX
-#warning ss
+		// SPI123SEL[2:0]: SPI/I2S1,2 and 3 kernel clock source selection
+		//	000: pll1_q_ck clock selected as SPI/I2S1,2 and 3 kernel clock (default after reset)
+		//	001: pll2_p_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+		//	010: pll3_p_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+		//	011: I2S_CKIN clock selected as SPI/I2S1,2 and 3 kernel clock
+		//	100: per_ck clock selected as SPI/I2S1,2 and 3 kernel clock
+		//	others: reserved, the kernel clock is disabled
+		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SPI123SEL_Msk)) |
+			((0x03uL << RCC_D2CCIP1R_SPI123SEL_Pos) & RCC_D2CCIP1R_SPI123SEL_Msk) |
+			0;
+		(void) RCC->D2CCIP1R;
+
 	#else /* defined (STM32F446xx) */
 		RCC->CFGR |= RCC_CFGR_I2SSRC;
 		(void) RCC->CFGR;
@@ -1198,6 +1243,9 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 		"i2s2-duplex-audiocodechw-slave"
 	};
 
+#elif WITHI2SHWRXSLAVE !=WITHI2SHWTXSLAVE
+	#error Please investigate configuration parametrers
+
 #else /* WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE */
 
 	// Используется I2S2 в дуплексном режиме
@@ -1217,18 +1265,22 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 
 //#else /* CPUSTYLE_STM32MP1 */
 
-	static const codechw_t audiocodechw_i2s2_i2s3 =
+	// WITHI2SHWRXSLAVE and WITHI2SHWTXSLAVE are true
+	static const codechw_t audiocodechw_i2s2_i2s3_slave =
 	{
-		#if WITHI2SHWRXSLAVE
-			hardware_i2s3_slave_rx_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон */
-		#else /* WITHI2SHWRXSLAVE */
-			hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
-		#endif /* WITHI2SHWRXSLAVE */
-		#if WITHI2SHWTXSLAVE
-			hardware_i2s2_slave_tx_initialize_audio,	/* Интерфейс к НЧ кодеку - наушники */
-		#else /* WITHI2SHWTXSLAVE */
-			hardware_i2s2_master_tx_initialize_audio,	/* Интерфейс к НЧ кодеку - наушники */
-		#endif /* WITHI2SHWTXSLAVE */
+		hardware_i2s3_slave_rx_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон */
+		hardware_i2s2_slave_tx_initialize_audio,	/* Интерфейс к НЧ кодеку - наушники */
+		DMA_I2S3_RX_initialize_audio,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
+		DMA_I2S2_TX_initialize_audio,					// DMA по передаче канал 0
+		hardware_i2s3_rx_enable_audio,
+		hardware_i2s2_tx_enable_audio,
+		"i2s2-i2s3-audiocodechw"
+	};
+
+	static const codechw_t audiocodechw_i2s2_i2s3_master =
+	{
+		hardware_dummy_initialize,			/* Интерфейс к НЧ кодеку - микрофон */
+		hardware_i2s2_master_tx_initialize_audio,	/* Интерфейс к НЧ кодеку - наушники */
 		DMA_I2S3_RX_initialize_audio,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
 		DMA_I2S2_TX_initialize_audio,					// DMA по передаче канал 0
 		hardware_i2s3_rx_enable_audio,
@@ -3898,7 +3950,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 #elif CPUSTYLE_STM32H7XX
 	static const codechw_t * const channels [] =
 	{
-		& audiocodechw_i2s2_i2s3,				// Интерфейс к НЧ кодеку
+		& audiocodechw_i2s2_i2s3_slave,				// Интерфейс к НЧ кодеку
 		& fpgacodechw_sai1_slave,				// Интерфейс к IF кодеку/FPGA
 #if WITHSAI2HW
 		//& fpgaspectrumhw_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
@@ -3932,9 +3984,9 @@ static const codechw_t fpgaspectrumhw_dummy =
 #elif WITHINTEGRATEDDSP
 	static const codechw_t * const channels [] =
 	{
-		& audiocodechw,					// Интерфейс к НЧ кодеку
+		& audiocodechw_i2s2_i2s3_slave,					// Интерфейс к НЧ кодеку
 		& fpgacodechw_sai1_slave,		// Интерфейс к IF кодеку/FPGA
-		& fpgaspectrumhw_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
+		//& fpgaspectrumhw_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
 #else
