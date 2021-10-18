@@ -2312,6 +2312,11 @@ void hardware_spi_io_delay(void)
 	void
 	SysTick_Handler(void)
 	{
+	}
+
+	void
+	SysTick_Handler_Active(void)
+	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
@@ -2368,8 +2373,13 @@ void hardware_spi_io_delay(void)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	void RAMFUNC_NONILINE
+	void
 	SysTick_Handler(void)
+	{
+	}
+
+	void RAMFUNC_NONILINE
+	SysTick_Handler_Active(void)
 	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
@@ -2470,9 +2480,8 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
-	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
-	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler);		// разрешение прерывания игнорируется для системныз векторов
-	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// Call SysTick_Handler
+	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
+	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
 
 #elif CPUSTYLE_ATMEGA328
 
