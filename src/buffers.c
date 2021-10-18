@@ -1127,11 +1127,7 @@ buffers_savefromuacout(voice16_t * p)
 #endif /* WITHBUFFERSDEBUG */
 
 #if WITHUSBUAC
-
-	if (uacoutplayer || uacoutmike)
-		buffers_savetoresampling16(p);
-	else
-		buffers_tonull16(p);
+	buffers_savetoresampling16(p);
 #else /* WITHUSBUAC */
 	buffers_tonull16(p);
 #endif /* WITHUSBUAC */
@@ -1502,7 +1498,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 	datas [part] += chunk;
 	if ((sizes [part] -= chunk) == 0 && ++ part >= NPARTS)
 	{
-		buffers_tonull16(p);
+		buffers_tonull16(p);	// освободили ранее полученый от UAC буфер
 		p = NULL;
 	}
 	return chunk;
@@ -1901,33 +1897,6 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->buff;
 	}
-#if WITHUSBUAC
-	else if (! IsListEmpty3(& resample16))
-	{
-		// Ошибочная ситуация - если буферы не освобождены вовремя -
-		// берём из очереди готовых к ресэмплингу
-		uint_fast8_t n = 3;
-		do
-		{
-			const PLIST_ENTRY t = RemoveTailList3(& resample16);
-			voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
-			ASSERT(p->tag2 == p);
-			ASSERT(p->tag3 == p);
-			InsertHeadList2(& voicesfree16, t);
-		}
-		while (-- n && ! IsListEmpty3(& resample16));
-
-		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16);
-		SPIN_UNLOCK(& locklist16);
-		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
-	#if WITHBUFFERSDEBUG
-		++ e3;
-	#endif /* WITHBUFFERSDEBUG */
-		ASSERT(p->tag2 == p);
-		ASSERT(p->tag3 == p);
-		return (uintptr_t) & p->buff;
-	}
-#endif /* WITHUSBUAC */
 	else if (! IsListEmpty2(& voicesphones16))
 	{
 		// Ошибочная ситуация - если буферы не освобождены вовремя -
@@ -1948,10 +1917,39 @@ RAMFUNC uintptr_t allocate_dmabuffer16(void)
 		SPIN_UNLOCK(& locklist16);
 		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
 	#if WITHBUFFERSDEBUG
-		++ e4;
+		++ e3;
 	#endif /* WITHBUFFERSDEBUG */
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
 		return (uintptr_t) & p->buff;
 	}
+#if WITHUSBUAC
+	else if (! IsListEmpty3(& resample16))
+	{
+		// Ошибочная ситуация - если буферы не освобождены вовремя -
+		// берём из очереди готовых к ресэмплингу
+		uint_fast8_t n = 3;
+		do
+		{
+			const PLIST_ENTRY t = RemoveTailList3(& resample16);
+			voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
+			ASSERT(p->tag2 == p);
+			ASSERT(p->tag3 == p);
+			InsertHeadList2(& voicesfree16, t);
+		}
+		while (-- n && ! IsListEmpty3(& resample16));
+
+		const PLIST_ENTRY t = RemoveTailList2(& voicesfree16);
+		SPIN_UNLOCK(& locklist16);
+		voice16_t * const p = CONTAINING_RECORD(t, voice16_t, item);
+	#if WITHBUFFERSDEBUG
+		++ e4;
+	#endif /* WITHBUFFERSDEBUG */
+		ASSERT(p->tag2 == p);
+		ASSERT(p->tag3 == p);
+		return (uintptr_t) & p->buff;
+	}
+#endif /* WITHUSBUAC */
 	else
 	{
 		SPIN_UNLOCK(& locklist16);
