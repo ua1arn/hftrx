@@ -1452,8 +1452,8 @@ static RAMFUNC unsigned getsamplemsuacout(
 			const uint_fast8_t valid = GetReadyList3(& resample16) && skipsense == 0;
 			skipsense = (skipsense == 0) ? SKIPPED : skipsense - 1;
 
-			const unsigned LOW = RESAMPLE16NORMAL - (SKIPPED * 1);
-			const unsigned HIGH = RESAMPLE16NORMAL + (SKIPPED * 1);
+			const unsigned LOW = RESAMPLE16NORMAL - (SKIPPED / 2);
+			const unsigned HIGH = RESAMPLE16NORMAL + (SKIPPED / 2);
 
 			if (valid && GetCountList3(& resample16) <= LOW)
 			{
