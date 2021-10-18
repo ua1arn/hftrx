@@ -6587,6 +6587,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
+#if BOARD_FFTZOOM_POW2MAX > 0
 	{
 		"ZOOM PAN ", 
 		RJ_POW2,		// rj
@@ -6599,6 +6600,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
+#endif /* BOARD_FFTZOOM_POW2MAX > 0 */
 	{
 		"VIEW STLE",
 		RJ_VIEW,
@@ -15086,6 +15088,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& glvlgridstep,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if BOARD_FFTZOOM_POW2MAX > 0
 	{
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
@@ -15096,6 +15099,7 @@ static const FLASHMEM struct menudef menutable [] =
 		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#endif /* BOARD_FFTZOOM_POW2MAX > 0 */
 	{
 		QLABEL2("SPEC TX ", "TX Spectrum"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,
