@@ -19095,9 +19095,10 @@ void display2_menu_valxx(
 					__DATE__
 					//" " __TIME__
 					;
+			const FLASHMEM char * const p = msg + strlen_P(msg) - ulmin(VALUEW, strlen_P(msg));	// сколько может поместиться в поле отображения
 			width = VALUEW;
-			comma = strlen_P(msg);
-			display_menu_string_P(x, y, msg, width, comma);
+			comma = strlen_P(p);
+			display_menu_string_P(x, y, p, width, comma);
 		}
 		break;
 
