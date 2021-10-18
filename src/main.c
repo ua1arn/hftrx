@@ -356,8 +356,8 @@ enum
 	CAT_MAX_INDEX
 };
 
-static RAMDTCM uint8_t cat_answer_map [CAT_MAX_INDEX];
-static RAMDTCM uint8_t cat_answerparam_map [CAT_MAX_INDEX];
+static uint8_t cat_answer_map [CAT_MAX_INDEX];
+static uint8_t cat_answerparam_map [CAT_MAX_INDEX];
 
 
 static uint_fast32_t savedbaudrate;	// Скорость, на которую в последний раз был запрограммирован порт.
@@ -997,7 +997,7 @@ typedef struct micprof_cell	micprof_t;
 static micprof_t micprof_cells[NMICPROFCELLS];
 #endif /* WITHAFCODEC1HAVEPROC */
 
-static RAMDTCM mikproc_t micprofiles [] =
+static mikproc_t micprofiles [] =
 {
 	{
 		0,
@@ -1026,7 +1026,7 @@ enum
 };
 
 
-static RAMDTCM uint8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы режимов передачи - значения 0..NMICPROFILES-1
+static uint8_t gtxaprofiles [TXAPROFIG_count];	// индекс профиля для группы режимов передачи - значения 0..NMICPROFILES-1
 
 
 // параметры фильтра на приеме
@@ -1142,18 +1142,18 @@ enum
 
 // Частоты границ полосы пропускания
 // эти значения могут модифицироваться через меню
-static RAMDTCM bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_SINGLE, 200 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static RAMDTCM bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_SINGLE, 500 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
-static RAMDTCM bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_nfmwide = { & bwlimits_am, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
-static RAMDTCM bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_cwnarrow = { & bwlimits_cw, BWPROPI_CWNARROW, BWSET_SINGLE, 200 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static bwprop_t bwprop_cwwide = { & bwlimits_cw, BWPROPI_CWWIDE, BWSET_SINGLE, 500 / BWGRANLOW, 0, - 0 + AFRESPONCESHIFT, };
+static bwprop_t bwprop_ssbwide = { & bwlimits_ssb, BWPROPI_SSBWIDE, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_ssbmedium = { & bwlimits_ssb, BWPROPI_SSBMEDIUM, BWSET_PAIR, 300 / BWGRANLOW, 2700 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_ssbnarrow = { & bwlimits_ssb, BWPROPI_SSBNARROW, BWSET_PAIR, 300 / BWGRANLOW, 2200 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_ssbtx = { & bwlimits_ssb, BWPROPI_SSBTX, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_amwide = { & bwlimits_am, BWPROPI_AMWIDE, BWSET_PAIR, 100 / BWGRANLOW, 4500 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_amnarrow = { & bwlimits_am, BWPROPI_AMNARROW, BWSET_PAIR, 100 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_digiwide = { & bwlimits_ssb, BWPROPI_DIGIWIDE, BWSET_PAIR, 50 / BWGRANLOW, 5500 / BWGRANHIGH, - 0 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_nfmnarrow = { & bwlimits_am, BWPROPI_NFMNARROW, BWSET_PAIR, 300 / BWGRANLOW, 3400 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_nfmwide = { & bwlimits_am, BWPROPI_NFMWIDE, BWSET_PAIR, 300 / BWGRANLOW, 4000 / BWGRANHIGH, - 36 + AFRESPONCESHIFT,	};
+static bwprop_t bwprop_wfm = { & bwlimits_wfm, BWPROPI_WFM, BWSET_PAIR, 100 / BWGRANLOW, 12000 / BWGRANHIGH, + 18 + AFRESPONCESHIFT,	};
 
 // Способ представления частот и количество профилей полосы пропускания,
 // а так же названия полос пропускания для отображения
@@ -1170,7 +1170,7 @@ static const FLASHMEM bwsetsc_t bwsetsc [BWSETI_count] =
 };
 
 // выбранная полоса пропускания в каждом режиме
-static RAMDTCM uint8_t bwsetpos [BWSETI_count];
+static uint8_t bwsetpos [BWSETI_count];
 
 // Используется для обмена с NVRAN параметрами фильтров
 static bwprop_t * const FLASHMEM bwprops [BWPROPI_count] =
@@ -9238,7 +9238,7 @@ typedef struct rxaproc_tag
 #endif /* WITHLMSAUTONOTCH */
 } rxaproc_t;
 
-static RAMBIGDTCM rxaproc_t rxaprocs [NTRX];
+static RAM_D1 rxaproc_t rxaprocs [NTRX];
 
 #endif /* ! WITHSKIPUSERMODE */
 
@@ -9295,7 +9295,7 @@ void speex_free (void *ptr)
 
 	static int speexallocated = 0;
 
-	static uint8_t speexheapbuff [SPEEXALLOCSIZE];
+	static RAM_D2 uint8_t speexheapbuff [SPEEXALLOCSIZE];
 
 	void *speex_alloc (int size)
 	{
@@ -12196,22 +12196,22 @@ directctlupdate(
 
 #if WITHCAT
 
-static RAMDTCM uint_fast8_t morsefill;	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
+static uint_fast8_t morsefill;	/* индекс буфера, заполняемого в данный момент. Противоположгый передаётся. */
 
-static RAMDTCM uint_fast8_t inpmorselength [2];
-static RAMDTCM uint_fast8_t sendmorsepos [2];
+static uint_fast8_t inpmorselength [2];
+static uint_fast8_t sendmorsepos [2];
 
 #if WITHCATEXT && WITHELKEY
 	static void cat_set_kyanswer(uint_fast8_t force);
-	static RAMDTCM uint_fast8_t cathasparamerror;
-	static RAMDTCM unsigned char morsestring [2][25];
+	static uint_fast8_t cathasparamerror;
+	static unsigned char morsestring [2][25];
 #endif /* WITHCATEXT && WITHELKEY */
 
-static RAMDTCM uint_fast8_t catstatein = CATSTATE_HALTED;
+static uint_fast8_t catstatein = CATSTATE_HALTED;
 
-static RAMDTCM volatile uint_fast8_t catstateout = CATSTATEO_HALTED;
-static volatile const char * RAMDTCM catsendptr;
-static volatile RAMDTCM uint_fast8_t catsendcount;
+static volatile uint_fast8_t catstateout = CATSTATEO_HALTED;
+static volatile const char * catsendptr;
+static volatile uint_fast8_t catsendcount;
 
 //A communication error occurred, such as an overrun or framing error during a serial data transmission.
 //static const char processingcmd [2] = "E;";	// ответ на команду которая ещё выполняется
@@ -12288,7 +12288,7 @@ static cat_answervariable(const char * p, uint_fast8_t len)
 //#define CAT_ASKBUFF_SIZE (43 + 28)
 #define CAT_ASKBUFF_SIZE (43)
 
-static RAMDTCM char cat_ask_buffer [CAT_ASKBUFF_SIZE];
+static char cat_ask_buffer [CAT_ASKBUFF_SIZE];
 
 static void 
 //NOINLINEAT

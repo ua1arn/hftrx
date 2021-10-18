@@ -249,7 +249,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM_D2
+	} > RAM_D1
 
 	.heap (NOLOAD):
 	{
@@ -275,11 +275,11 @@ SECTIONS
 	{
 		KEEP(*(.stack*))
 		. = ALIGN(4);
-	} > RAM_D1
+	} > DTCMRAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM_D1) + LENGTH(RAM_D1);
+	__StackTop = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 

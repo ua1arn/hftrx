@@ -4578,9 +4578,9 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 }
 
 #if CTLSTYLE_V3D && WITHSDRAMHW
-	static RAMLOW uint8_t alldescbuffer [256 * 13];
+	static RAMLOW ALIGNX_BEGIN uint8_t alldescbuffer [256 * 13] ALIGNX_END;
 #else
-	static ALIGNX_BEGIN uint8_t alldescbuffer [256 * 13] ALIGNX_END;
+	static RAM_D1 ALIGNX_BEGIN uint8_t alldescbuffer [256 * 13] ALIGNX_END;
 #endif /* CTLSTYLE_V3D && WITHSDRAMHW */
 
 struct descholder MsftStringDescr [1];

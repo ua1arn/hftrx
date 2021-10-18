@@ -329,9 +329,9 @@ void endstamp3(void)
 	// Фильтр для квадратурных каналов приёмника и передатчика в FPGA (целочисленный).
 	// Параметры для передачи в FPGA
 	#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
-		static RAMDTCM double FIRCwndL_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
+		static double FIRCwndL_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
 	#else
-		static RAMDTCM FLOAT_t FIRCwnd_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
+		static FLOAT_t FIRCwnd_trxi_IQ [NtapCoeffs(Ntap_trxi_IQ)];			// подготовленные значения функции окна
 	#endif
 
 #endif /* WITHDSPEXTFIR || WITHDSPEXTDDC */
@@ -350,11 +350,11 @@ void endstamp3(void)
 
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
-static RAMDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
-static RAMDTCM FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
+static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
+static FLOAT_t FIRCwnd_tx_MIKE [NtapCoeffs(Ntap_tx_MIKE)];			// подготовленные значения функции окна
 
-static RAMDTCM FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];
-static RAMBIGDTCM FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
+static RAMBIGDTCM FLOAT_t FIRCoef_rx_AUDIO [NPROF] [2 /* эта размерность номер тракта */] [Ntap_rx_AUDIO];
+static FLOAT_t FIRCwnd_rx_AUDIO [NtapCoeffs(Ntap_rx_AUDIO)];			// подготовленные значения функции окна
 
 //static void * fft_lookup;
 
@@ -368,7 +368,8 @@ struct ComplexHFTRX
 	FLOAT_t imag;
 };
 
-static RAMDTCM struct ComplexHFTRX Sig [FFTSizeFilters];
+/* этот массив используется при перерасчете АЧЪ фильтров НЧ - не real time задача */
+static RAM_D2 struct ComplexHFTRX Sig [FFTSizeFilters];
 
 #define fftixreal(i) ((i * 2) + 0)
 #define fftiximag(i) ((i * 2) + 1)
