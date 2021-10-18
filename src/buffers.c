@@ -271,12 +271,12 @@ int_fast32_t buffers_dmabuffer32rxcachesize(void)
 	enum { SKIPPED = 1000 / (DMABUFFSIZE16 / DMABUFSTEP16) };
 #endif
 
-enum { VOICESMIKE16NORMAL = 3 };	// Нормальное количество буферов в очереди
+enum { VOICESMIKE16NORMAL = 6 };	// Нормальное количество буферов в очереди
 enum { RESAMPLE16NORMAL = SKIPPED * 2 };	// Нормальное количество буферов в очереди
 enum { CNT16 = DMABUFFSIZE16 / DMABUFSTEP16 };
 enum { CNT32RX = DMABUFFSIZE32RX / DMABUFSTEP32RX };
 //enum { PHONESLEVELx = CNT16 / CNT32RX };
-enum { PHONESLEVEL = 3 };
+enum { PHONESLEVEL = 6 };
 
 static RAMBIGDTCM LIST_HEAD3 voicesmike16;	// буферы с оцифрованными звуками с микрофона/Line in
 static RAMBIGDTCM LIST_HEAD3 resample16;		// буферы от USB для синхронизации
@@ -2738,6 +2738,22 @@ buffers_set_uacoutalt(uint_fast8_t v)	/* выбор альтернативной
 {
 	//PRINTF(PSTR("buffers_set_uacoutalt: v=%d\n"), (int) v);
 	uacoutalt = v;
+
+	if (v == 0)
+	{
+		global_disableIRQ();
+		SPIN_LOCK(& locklist16);
+
+		// Очистить очередь принятых от USB UAC
+		while (GetCountList3(& resample16) != 0)
+		{
+			const PLIST_ENTRY t = RemoveTailList3(& resample16);
+			InsertHeadList2(& voicesfree16, t);
+		}
+
+		SPIN_UNLOCK(& locklist16);
+		global_enableIRQ();
+	}
 }
 
 static uintptr_t uacoutaddr;	// address of DMABUFFSIZE16 * sizeof (int16_t) bytes
