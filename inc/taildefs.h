@@ -214,7 +214,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* память доступная лоя DMA обмена */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -227,7 +229,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -240,7 +244,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
 	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -253,7 +259,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -267,11 +275,13 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 - память доступная лоя DMA обмена */
-	#define RAM_D2			__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D1			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D2			__attribute__((section(".ram_d2"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D3			__attribute__((section(".ram_d3"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
-	#define RAMBIGDTCM_MDMA		__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
+	#define RAMBIGDTCM_MDMA		__attribute__((section(".ram_d1"))) /* размещение в памяти DTCM на процессорах где её много */
 	#define RAMBIG			__attribute__((section(".ram_d1"))) /* размещение в памяти SRAM_D1 */
 	#define RAMHEAP __attribute__((used, section(".heap"), aligned(16))) // memory used as heap zone
 #elif (CPUSTYPE_ALLWNV3S)
@@ -280,7 +290,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE ////__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 ////__attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	__attribute__((section(".framebuff")))	/* память доступная лоя DMA обмена */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM		////__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -296,7 +308,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	//__attribute__((section(".sdrambss"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -311,7 +325,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	//__attribute__((section(".sdram"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -325,7 +341,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE  //__attribute__((__section__(".itcm"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM			__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -339,7 +357,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
@@ -353,7 +373,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 	#define RAMFUNC_NONILINE __attribute__((noinline,__section__(".itcm")))  // удаление управления noinline добавило 2-3 процента быстродействия __attribute__((__section__(".ramfunc"), noinline))
 	#define RAMFUNC			 __attribute__((__section__(".itcm")))
 	#define RAMNOINIT_D1	//__attribute__((section(".noinit"))) /* размещение в памяти SRAM_D1 */
-	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
+	#define RAM_D1			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D2			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D1 */
+	#define RAM_D3			//__attribute__((section(".bss"))) /* размещение в памяти SRAM_D2 */
 	#define RAMFRAMEBUFF	//__attribute__((section(".framebuff"))) /* размещение в памяти SRAM_D1 */
 	#define RAMDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM */
 	#define RAMBIGDTCM	//__attribute__((section(".dtcm"))) /* размещение в памяти DTCM на процессорах где её много */
