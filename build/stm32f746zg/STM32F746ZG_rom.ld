@@ -78,6 +78,7 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.initfunc*)
 		*(.initdata*)
 
 		KEEP(*(.eh_frame*))

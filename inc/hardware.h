@@ -641,8 +641,13 @@ void hardware_adc_initialize(void);
 	#endif
 
 	#define RAMDTCM
+	#define RAMBIGDTCM
+	#define RAMBIGDTCM_MDMA
 	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
 	#define RAMNOINIT_D1
+	#define RAM_D1
+	#define RAM_D2
+	#define RAM_D3
 	#define RAMHEAP 		//__attribute__((used, section(".heap"))) // memory used as heap zone
 	#define ATTRWEAK __attribute__ ((weak))
 
