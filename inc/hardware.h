@@ -627,10 +627,6 @@ void hardware_adc_initialize(void);
 	#define local_delay_us(t) do { _delay_us(t); } while (0)
 	#define local_delay_ms(t) do { _delay_ms(t); } while (0)
  
-	#define FLASHMEM __flash
-	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-
 	#if (FLASHEND > 0x7FFF)	
 		// нет нужды экономить память FLASH
 		#define NOINLINEAT // __attribute__((noinline))
@@ -640,15 +636,6 @@ void hardware_adc_initialize(void);
 		#define RAMFUNC_NONILINE __attribute__((noinline))	// On small FLASH ATMega CPUs
 	#endif
 
-	#define RAMDTCM
-	#define RAMBIGDTCM
-	#define RAMBIGDTCM_MDMA
-	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
-	#define RAMNOINIT_D1
-	#define RAM_D1
-	#define RAM_D2
-	#define RAM_D3
-	#define RAMHEAP 		//__attribute__((used, section(".heap"))) // memory used as heap zone
 	#define ATTRWEAK __attribute__ ((weak))
 
 #elif CPUSTYPE_TMS320F2833X
@@ -664,15 +651,6 @@ void hardware_adc_initialize(void);
 	#define global_enableIRQ() do { asm(" NOP"); } while (0)
 	#define global_disableIRQ() do { asm(" NOP"); } while (0)
 
-	#define FLASHMEM //__flash
-	#define FLASHMEMINIT	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-
-	// нет нужды экономить память FLASH
-	#define NOINLINEAT // __attribute__((noinline))
-	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
-	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
-	#define RAMNOINIT_D1
 	#define ATTRWEAK __attribute__ ((weak))
 
 #else
