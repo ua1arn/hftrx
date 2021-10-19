@@ -15,7 +15,7 @@
 
 #if WITHINTEGRATEDDSP
 
-#include "list.h"
+#include "mslist.h"
 #include "audio.h"
 
 #if WITHUSBHW

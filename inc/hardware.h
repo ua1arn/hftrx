@@ -978,7 +978,7 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg); // Запро
 uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2); // Запрос отложенного вызова user-mode функций
 uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3); // Запрос отложенного вызова user-mode функций
 
-#include "list.h"
+#include "mslist.h"
 
 typedef struct ticker_tag
 {

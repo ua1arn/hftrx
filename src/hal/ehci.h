@@ -26,7 +26,7 @@ extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "list.h"
+#include "mslist.h"
 
 
 /** Minimum alignment required for data structures
