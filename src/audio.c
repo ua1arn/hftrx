@@ -3338,7 +3338,7 @@ static FLOAT_t txmikereverb(FLOAT_t isample)
 	 * даже при выключенном ревербераторе результат вычисления результирующего сэмпла так же NaN и он пришется в буфер...
 	 * А я управляю включением/выключением через значения в reverbRatioDirect и reverbRatioDelayed.
 	 */
-	static RAMBIG FLOAT_t delaybuf [MAXDELAYSAMPLES];
+	static RAM_D3 FLOAT_t delaybuf [MAXDELAYSAMPLES];
 	static unsigned pos;
 
 	pos = pos == 0 ? MAXDELAYSAMPLES - 1 : pos - 1;
