@@ -1626,7 +1626,7 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, c
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBD_StatusTypeDef usb_status = USBD_OK;
 
-  if (hpcd_USB_OTG.Init.dma_enable == 1U)
+  //if (hpcd_USB_OTG.Init.dma_enable == 1U)
   {
 		if (pbuf != NULL && size != 0)
 		{
@@ -1654,7 +1654,7 @@ USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev, uint8_t ep_a
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBD_StatusTypeDef usb_status = USBD_OK;
 
-	if (hpcd_USB_OTG.Init.dma_enable == 1U)
+	//if (hpcd_USB_OTG.Init.dma_enable == 1U)
 	{
 		if (pbuf != NULL && size != 0)
 			arm_hardware_flush_invalidate((uintptr_t) pbuf, size);
