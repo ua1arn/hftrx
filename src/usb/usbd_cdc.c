@@ -139,7 +139,7 @@ typedef struct _SerialStatePacket_t
   SerialState_t    SerialState;
 } SerialStatePacket_t, *pSerialStatePacket_t;
 
-static __ALIGN_BEGIN uint8_t sendState [WITHUSBCDCACM_N] [10] __ALIGN_END;
+static __ALIGN4k_BEGIN uint8_t sendState [WITHUSBCDCACM_N] [10] __ALIGN4k_END;
 
 static void notify(uint_fast8_t offset, uint_fast16_t state)
 {
@@ -463,7 +463,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				{
 					case USB_REQ_GET_INTERFACE:
 					{
-						static __ALIGN_BEGIN uint8_t buff [64] __ALIGN_END;
+						static __ALIGN4k_BEGIN uint8_t buff [64] __ALIGN4k_END;
 						//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
 						buff [0] = 0;
 						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));

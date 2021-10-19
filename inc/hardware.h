@@ -1083,8 +1083,8 @@ void init_netif(void);
 void usb_polling(void);	/* LWIP support */
 void sys_check_timeouts(void);	/* LWIP support */
 
-#define USBALIGN_BEGIN __attribute__ ((aligned (64)))
-#define USBALIGN_END /* nothing */
+#define USBALIGN_BEGIN
+#define USBALIGN_END __attribute__ ((aligned (64))) /* nothing */
 
 //#define UNUSED(x) ((void)(x))
 
