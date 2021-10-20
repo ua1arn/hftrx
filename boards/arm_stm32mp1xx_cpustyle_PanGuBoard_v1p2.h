@@ -874,7 +874,7 @@
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
 		} while (0)
 #else /* WITHUSBHW */
-	#define	USBD_FS_INITIALIZE() do { \
+	#define	USBD_EHCI_INITIALIZE() do { \
 		} while (0)
 #endif /* WITHUSBHW */
 
