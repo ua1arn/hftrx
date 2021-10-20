@@ -6,10 +6,7 @@ MEMORY
 	ITCM (rwx) :		ORIGIN = 0x00000000, LENGTH = 16k	/* ITCM = RAMITCM_BASE */
 	FLASH (rx) :		ORIGIN = 0x08000000, LENGTH = 1024k	/* FLASH on AXIM interface = FLASHAXI_BASE */
 	FLASHitcm (rx) :	ORIGIN = 0x00200000, LENGTH = 1024k	/* FLASH on AXIM interface = FLASHITCM_BASE */
-	DTCM (rwx) :		ORIGIN = 0x20000000, LENGTH = 64k	/* DTCM = RAMDTCM_BASE */
-	RAM (rwx)  :		ORIGIN = 0x20010000, LENGTH = 256k	/* was: 240k SRAM = SRAM1_BASE (240k) */
-	/* RAM2 (rwx)  :		ORIGIN = 0x2004C000, LENGTH = 64k */ /* SRAM = SRAM2_BASE (64k) */
-  	/* SDRAM  (rwx)  :		ORIGIN = 0xC0000000, LENGTH = 8192k	*/ /* MT48LC4M32B2 */
+	RAM (rwx) :		ORIGIN = 0x20000000, LENGTH = 320k	/* DTCM = RAMDTCM_BASE */
 }
 
 /* Library configurations */
@@ -209,7 +206,7 @@ SECTIONS
 		*(vtable*)
 		. = ALIGN(4);
 		__data3_end__ = .;
-	} > DTCM  AT > FLASH
+	} > RAM  AT > FLASH
 
     . = __etext3 + __data3_end__ - __data3_start__;
     
