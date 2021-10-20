@@ -7,7 +7,7 @@
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
 #include "formats.h"	// for debug prints
 
-#define WITHBUFFERSDEBUG WITHDEBUG
+//#define WITHBUFFERSDEBUG WITHDEBUG
 //#undef SPIN_LOCK
 //#undef SPIN_UNLOCK
 //#define SPIN_LOCK(p) do { (void) p; } while (0)
