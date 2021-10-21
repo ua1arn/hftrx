@@ -45,7 +45,7 @@
 	#define RCC_USBCKSELR_USBOSRC_VAL 0x01
 	#define RCC_USBCKSELR_USBPHYSRC_VAL 0x00
 
-	#if WITHISBOOTLOADER
+	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
 		// ref1_ck, ref2_ck - 8..16 MHz
 		// PLL1, PLL2 VCOs
