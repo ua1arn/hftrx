@@ -694,12 +694,13 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
     hdfu->wlength = 0;
   }
 
-  static dpclock_t dpc_deffereddetach;
 
   /* Check the detach capability in the DFU functional descriptor */
   if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
 #if WITHISBOOTLOADER
+	  static dpclock_t dpc_deffereddetach;
+
 	  VERIFY(board_dpc(& dpc_deffereddetach, bootloader_deffereddetach, NULL));
 #endif /* WITHISBOOTLOADER */
   }

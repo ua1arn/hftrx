@@ -2711,9 +2711,9 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 }
 
 
-#if WITHISBOOTLOADER
+#if 1//WITHISBOOTLOADER
 
-static void stm32mp1_pll_initialize(void)
+void stm32mp1_pll_initialize(void)
 {
 
 	//return;
