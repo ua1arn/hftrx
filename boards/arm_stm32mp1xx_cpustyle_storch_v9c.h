@@ -43,7 +43,6 @@
 #define WITHDEBUG_USART4	1
 #define WITHNMEA_USART4		1	/* порт подключения GPS/GLONASS */
 
-
 #if WITHISBOOTLOADER
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
@@ -98,6 +97,10 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
+
+	#define WITHFPGAIF_SAI2	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
+	//#define WITHFPGARTS_SAI2	1	/* Получение RTS192 от FPGA через SAI2 */
+	#define WITHCODEC1_I2S2_DUPLEX	1		/* Обмен с аудиокодеком через I2S2 */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */

@@ -99,6 +99,10 @@
 
 #else /* WITHISBOOTLOADER */
 
+	#define WITHFPGAIF_SAI1	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+	//#define WITHFPGARTS_SAI2	1	/* Получение RTS192 от FPGA через SAI2 */
+	#define WITHCODEC1_I2S2_DUPLEX	1		/* Обмен с аудиокодеком через I2S2 */
+
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
