@@ -494,10 +494,15 @@
 
 	#define ELKEY_TARGET_PIN			(GPIOF->IDR)
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 	#define ELKEY_INITIALIZE() \
 		do { \
-			arm_hardware_piof_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piof_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_piof_inputs(ELKEY_BIT_LEFT); \
+			arm_hardware_piof_updown(ELKEY_BIT_LEFT, 0); \
+			arm_hardware_piof_inputs(ELKEY_BIT_RIGHT); \
+			arm_hardware_piof_updown(ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */

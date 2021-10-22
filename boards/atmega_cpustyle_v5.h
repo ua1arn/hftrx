@@ -89,6 +89,9 @@
 	#define ELKEY_TARGET_DDR DDRD		// переключение на ввод - сигналы электронного ключа
 	#define ELKEY_TARGET_PIN PIND		// ввод - сигналы электронного ключа
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 	#define ELKEY_BIT_LEFT (1U << PD4)
 	#define ELKEY_BIT_RIGHT (1U << PD5)
 	// разрешение прерываний по нажатиям на контакты ключа

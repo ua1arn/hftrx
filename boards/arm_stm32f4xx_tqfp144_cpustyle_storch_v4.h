@@ -384,6 +384,10 @@
 	#define ELKEY_BIT_LEFT				0//(1U << 10)		// PD10
 	#define ELKEY_BIT_RIGHT				0//(1U << 11)		// PD11
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 		} while (0)

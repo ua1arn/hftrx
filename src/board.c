@@ -7668,6 +7668,7 @@ void board_init_chips2(void)
 	ifc2->initialize();	
 #endif /* defined(CODEC2_TYPE) */
 }
+
 /*
 	функция вызывается из обработчиков прерывания или при запрещённых прерываниях.
 	получить состояние пинов элкетронного ключа
@@ -7675,29 +7676,18 @@ void board_init_chips2(void)
 uint_fast8_t 
 hardware_elkey_getpaddle(uint_fast8_t reverse)
 {
-	uint_fast8_t r = ELKEY_PADDLE_NONE;
+#if defined (HARDWARE_GET_ELKEY_LEFT) && defined (HARDWARE_GET_ELKEY_RIGHT)
 
-#if (ELKEY_BIT_RIGHT != 0) || (ELKEY_BIT_LEFT != 0)
+	const uint_fast8_t stsdash = reverse ? HARDWARE_GET_ELKEY_LEFT() : HARDWARE_GET_ELKEY_RIGHT();
+	const uint_fast8_t stsdit = reverse ? HARDWARE_GET_ELKEY_RIGHT() : HARDWARE_GET_ELKEY_LEFT();
 
-	#if defined (ELKEY_TARGET_LEFT_PIN) && defined (ELKEY_TARGET_RIGHT_PIN)
-		// Сигналы от ключа находятся на разных портах ввода-вывода процессора
-		const portholder_t stsleft = ELKEY_TARGET_LEFT_PIN;
-		const portholder_t stsright = ELKEY_TARGET_RIGHT_PIN;
-	#elif defined (ELKEY_TARGET_PIN)
-		// Оба сигнала от ключа находятся на одном порту ввода-вывода процессора.
-		const portholder_t stsleft = ELKEY_TARGET_PIN;
-		const portholder_t stsright = stsleft;
-	#else
-		#error ELKEY_TARGET_PIN or both ELKEY_TARGET_LEFT_PIN and ELKEY_TARGET_RIGHT_PIN should be defined
-	#endif
+	return ELKEY_PADDLE_DASH * stsdash | ELKEY_PADDLE_DIT * stsdit;
 
-	if ((stsleft & ELKEY_BIT_LEFT) == 0)
-		r |= (reverse ? ELKEY_PADDLE_DASH : ELKEY_PADDLE_DIT);
-	if ((stsright & ELKEY_BIT_RIGHT) == 0)
-		r |= (reverse ? ELKEY_PADDLE_DIT : ELKEY_PADDLE_DASH);
+#else
+
+	return ELKEY_PADDLE_NONE;
 
 #endif /*  (ELKEY_BIT_RIGHT != 0) || (ELKEY_BIT_LEFT != 0) */
-	return r;
 }
 
 #if WITHELKEY
