@@ -5,6 +5,8 @@
 
 #if WITHFT8
 
+#include "audio.h"
+
 enum {
 	FT8_MSG_TIME_UPDATED = 1,
 	FT8_MSG_TOGGLE,
@@ -16,7 +18,7 @@ enum {
 };
 
 enum {
-	ft8_sample_rate = 48000,
+	ft8_sample_rate = ARMI2SRATE,
 	ft8_length = 15,
 	ft8_text_length = 40,
 	ft8_text_records = 50,
