@@ -212,8 +212,8 @@
 		#define WITHI2SI2S2EXTFULLDUPLEXHW 1
 	#endif /* defined (STM32F446xx) */
 
-	//#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define WITHSAI1_FRAMEBITS	64	// Полный размер фрейма
+	//#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define WITHFPGAIF_FRAMEBITS	64	// Полный размер фрейма
 	#define WITHSAICLOCKFROMI2S	1	/* Блок SAI1 тактируется от PLL I2S */
 	//#define WITHI2SCLOCKFROMPIN 1	// тактовая частота на SPI2 (I2S) подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	//#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса

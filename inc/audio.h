@@ -67,7 +67,7 @@ extern "C" {
 
 	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-		#if WITHSAI1_FRAMEBITS == 64
+		#if WITHFPGAIF_FRAMEBITS == 64
 
 			#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
@@ -76,7 +76,7 @@ extern "C" {
 			#define DMABUF32TXI		0		// TX, I
 			#define DMABUF32TXQ		1		// TX, Q
 
-		#elif WITHSAI1_FRAMEBITS == 256
+		#elif WITHFPGAIF_FRAMEBITS == 256
 				// buff data layout: I main/I sub/Q main/Q sub
 				#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
@@ -109,13 +109,13 @@ extern "C" {
 			#define DMABUF32TXI	0		// TX, I
 			#define DMABUF32TXQ	1		// TX, Q
 
-		#endif /* WITHSAI1_FRAMEBITS */
+		#endif /* WITHFPGAIF_FRAMEBITS */
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
-		#if WITHSAI1_FRAMEBITS == 64
+		#if WITHFPGAIF_FRAMEBITS == 64
 
 			#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
@@ -124,7 +124,7 @@ extern "C" {
 			#define DMABUF32TXI		0		// TX, I
 			#define DMABUF32TXQ		1		// TX, Q
 
-		#elif WITHSAI1_FRAMEBITS == 256
+		#elif WITHFPGAIF_FRAMEBITS == 256
 				// buff data layout: I main/I sub/Q main/Q sub
 				#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
@@ -200,7 +200,7 @@ extern "C" {
 #else /* WITHDSPEXTDDC */
 	// buff data layout: ADC data/unused channel
 	#define DMABUF32RX		0		// ADC data index
-	#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+	#define DMABUFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
 	#define DMABUF32RXI	0		// RX0, I
 	#define DMABUF32RXQ	1		// RX0, Q
 

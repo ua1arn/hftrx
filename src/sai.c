@@ -113,59 +113,62 @@ static uintptr_t dma_flush32tx(uintptr_t addr)
 
 enum
 {
-#if WITHSAI1HW
+#if defined (WITHFPGAIF_FRAMEBITS)
 
-	NBSLOT_SAI1 = WITHSAI1_FRAMEBITS / 32,	
+	NBSLOT_SAIFPGA = WITHFPGAIF_FRAMEBITS / 32,
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
 	// значениям DMABUFSTEP32RX и DMABUFSTEP32TX соответственно.
-	#if WITHSAI1_FRAMEBITS == 256
+	#if WITHFPGAIF_FRAMEBITS == 256
 		// FPGA версия
-		//#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //8
-		SLOTEN_RX_SAI1 = 0x00FF,
+		//#define DMABUFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //8
+		SLOTEN_RX_SAIFPGA = 0x00FF,
 
 		// На передачу во всех версиях FPGA используется один и тот же блок
 		// В каждой половине фрейма используется первый слот (первые 32 бита после переключения WS)
 		#define DMABUFSTEP32TX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
-		SLOTEN_TX_SAI1 = 0x0011,	
+		SLOTEN_TX_SAIFPGA = 0x0011,
 
-	#elif WITHSAI1_FRAMEBITS == 64
+	#elif WITHFPGAIF_FRAMEBITS == 64
 		//#if WITHRTS96 || WITHUSEDUALWATCH
 		//	#error WITHRTS96 or WITHUSEDUALWATCH unsupported with 64-bit frame length
 		//#endif /* WITHRTS96 || WITHUSEDUALWATCH */
-		//#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2	// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
+		//#define DMABUFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2	// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 		// Аппаратный кодек
-		SLOTEN_RX_SAI1 = 0x0003,
-		SLOTEN_TX_SAI1 = 0x0003,
+		SLOTEN_RX_SAIFPGA = 0x0003,
+		SLOTEN_TX_SAIFPGA = 0x0003,
 	#else
-		#error Unexpected WITHSAI1_FRAMEBITS value
+		#error Unexpected WITHFPGAIF_FRAMEBITS value
 	#endif
-#endif /* WITHSAI1HW */
 
-#if WITHSAI2HW
+#endif /* defined (WITHFPGAIF_FRAMEBITS) */
 
-	NBSLOT_SAI2 = WITHSAI2_FRAMEBITS / 32,
+#if defined (WITHFPGARTS_FRAMEBITS)
+
+	NBSLOT_SAIRTS = WITHFPGARTS_FRAMEBITS / 32,
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
 	// значениям DMABUFSTEP32RX и DMABUFSTEP32TX соответственно.
-	#if WITHSAI2_FRAMEBITS == 256
+	#if WITHFPGARTS_FRAMEBITS == 256
 		// FPGA версия
 		#if WITHUSEDUALWATCH
-			SLOTEN_RX_SAI2 = 0x00FF,
+			SLOTEN_RX_SAIRTS = 0x00FF,
 		#else /* WITHUSEDUALWATCH */
-			SLOTEN_RX_SAI2 = 0x00FF,
+			SLOTEN_RX_SAIRTS = 0x00FF,
 		#endif /* WITHUSEDUALWATCH */
 
 		// На передачу во всех версиях FPGA используется один и тот же блок
 		// В каждой половине фрейма используется первый слот (первые 32 бита после переключения WS)
-		SLOTEN_TX_SAI2 = 0x0011,
+		SLOTEN_TX_SAIRTS = 0x0011,
 
-	#elif WITHSAI2_FRAMEBITS == 64
-		// Аппаратный кодек
-		SLOTEN_RX_SAI2 = 0x0003,
-		SLOTEN_TX_SAI2 = 0x0003,
+	#elif WITHFPGARTS_FRAMEBITS == 64
+		// Аудио кодек
+		SLOTEN_RX_SAIRTS = 0x0003,
+		SLOTEN_TX_SAIRTS = 0x0003,
 	#else
-		#error Unexpected WITHSAI2_FRAMEBITS value
+		#error Unexpected WITHFPGARTS_FRAMEBITS value
 	#endif
-#endif /* WITHSAI2HW */
+
+#endif /* defined (WITHFPGARTS_FRAMEBITS) */
+
 		enum_finish
 };
 
@@ -274,13 +277,13 @@ static portholder_t stm32xxx_i2scfgr_afcodec(void)
 
 		(0uL << SPI_I2SCFGR_CKPOL_Pos) |
 
-#if WITHI2S_FORMATI2S_PHILIPS
+#if CODEC1_FORMATI2S_PHILIPS
 		(0uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 00: I2S Philips standard
 
-#else /* WITHI2S_FORMATI2S_PHILIPS */
+#else /* CODEC1_FORMATI2S_PHILIPS */
 		(1uL << SPI_I2SCFGR_I2SSTD_Pos) |	// 01: MSB justified standard (left justified)
 
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
+#endif /* CODEC1_FORMATI2S_PHILIPS */
 
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 		((i2sdiv << SPI_I2SCFGR_I2SDIV_Pos) & SPI_I2SCFGR_I2SDIV) |
@@ -1929,29 +1932,29 @@ static void hardware_sai1_master_fullduplex_initialize_v3d_fpga(void)		/* ини
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAI1 - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
+		((NBSLOT_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI1_Block_A->SLOTR =
-		((SLOTEN_TX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((SLOTEN_TX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI1_Block_B->SLOTR =
-		((SLOTEN_RX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((SLOTEN_RX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
 	// FRCR value
 	const portholder_t comm_frcr =
-		((WITHSAI1_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
+		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
-		((WITHSAI1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHSAI1_FORMATI2S_PHILIPS
+		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
+#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHSAI1_FORMATI2S_PHILIPS */
+#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2053,29 +2056,29 @@ static void hardware_sai1_master_fullduplex_initialize_fpga(void)		/* иници
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAI1 - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
+		((NBSLOT_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI1_Block_A->SLOTR = 
-		((SLOTEN_TX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((SLOTEN_TX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI1_Block_B->SLOTR = 
-		((SLOTEN_RX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((SLOTEN_RX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
 	// FRCR value
 	const portholder_t comm_frcr =
-		((WITHSAI1_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
+		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
-		((WITHSAI1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHSAI1_FORMATI2S_PHILIPS
+		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
+#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHSAI1_FORMATI2S_PHILIPS */
+#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2176,29 +2179,29 @@ static void hardware_sai1_slave_fullduplex_initialize_fpga(void)		/* иници�
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAI1 - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
+		((NBSLOT_SAIFPGA - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI1_Block_A->SLOTR = 
-		((SLOTEN_TX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((SLOTEN_TX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI1_Block_B->SLOTR = 
-		((SLOTEN_RX_SAI1 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((SLOTEN_RX_SAIFPGA << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
 	// FRCR value
 	const portholder_t comm_frcr =
-		((WITHSAI1_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
+		((WITHFPGAIF_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
-		((WITHSAI1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHSAI1_FORMATI2S_PHILIPS
+		((WITHFPGAIF_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
+#if WITHFPGAIF_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHSAI1_FORMATI2S_PHILIPS */
+#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI1_Block_A->FRCR =
@@ -2233,11 +2236,11 @@ static void hardware_sai1_enable_fpga(uint_fast8_t state)		/* разрешени
 
 #if WITHSAI2HW
 
-#if WITHSAI2_FRAMEBITS == 32
+#if WITHFPGARTS_FRAMEBITS == 32
 
 	#define SAI2_DMA_SxCR_xSIZE		0x01uL	// 01: half-word (16-bit)
 
-#else /*  WITHSAI2_FRAMEBITS == 64 */
+#else /*  WITHFPGARTS_FRAMEBITS == 64 */
 
 	// 2*32, 2*24
 	#define SAI2_DMA_SxCR_xSIZE		0x02uL	// 10: word (32-bit)
@@ -2730,29 +2733,29 @@ static void hardware_sai2_slave_fullduplex_initialize_WFM(void)
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAI2 - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
+		((NBSLOT_SAIRTS - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI2_Block_A->SLOTR = 
-		((SLOTEN_TX_SAI2 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((SLOTEN_TX_SAIRTS << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI2_Block_B->SLOTR = 
-		((SLOTEN_RX_SAI2 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((SLOTEN_RX_SAIRTS << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
 	// FRCR value
 	const portholder_t comm_frcr =
-		((WITHSAI2_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
+		((WITHFPGARTS_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
-		((WITHSAI2_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHSAI2_FORMATI2S_PHILIPS
+		((WITHFPGARTS_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
+#if WITHFPGARTS_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHSAI2_FORMATI2S_PHILIPS */
+#endif /* WITHFPGARTS_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI2_Block_A->FRCR =
@@ -2865,29 +2868,29 @@ static void hardware_sai2_master_fullduplex_initialize_audio(void)		/* иниц�
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAI2 - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
+		((NBSLOT_SAIRTS - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI2_Block_A->SLOTR = 
-		((SLOTEN_TX_SAI2 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((SLOTEN_TX_SAIRTS << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI2_Block_B->SLOTR = 
-		((SLOTEN_RX_SAI2 << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((SLOTEN_RX_SAIRTS << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
 	// FRCR value
 	const portholder_t comm_frcr =
-		((WITHSAI2_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
+		((WITHFPGARTS_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
-		((WITHSAI2_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHSAI2_FORMATI2S_PHILIPS
+		((WITHFPGARTS_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
+#if WITHFPGARTS_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHSAI2_FORMATI2S_PHILIPS */
+#endif /* WITHFPGARTS_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI2_Block_A->FRCR =
@@ -3309,11 +3312,11 @@ static void r7s721_ssif0_fullduplex_initialize_audio(void)
 		0 * (1UL << 11) |		// SPDP		0: Padding bits are low.	
 		0 * (1UL << 10) |		// SDTA	
 		0 * (1UL << 9) |		// PDTA		1: 16 бит правого канала - биты 31..16 при чтении/записи регистра данных
-#if WITHI2S_FORMATI2S_PHILIPS
+#if CODEC1_FORMATI2S_PHILIPS
 		0 * (1UL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHI2S_FORMATI2S_PHILIPS */
+#else /* CODEC1_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
+#endif /* CODEC1_FORMATI2S_PHILIPS */
 		master * R7S721_SSIF0_CKDIV_val |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
 
@@ -3560,11 +3563,11 @@ static void r7s721_ssif1_fullduplex_initialize_fpga(void)
 	// Control Register (SSICR)
 	SSIF1.SSICR = 
 		R7S721_USE_AUDIO_CLK * (1UL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHSAI1_FRAMEBITS / 64) - 1) * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (1UL << 19) |		// DWL 6: 32 bit	
-#if WITHSAI1_FRAMEBITS == 64
+#if WITHFPGAIF_FRAMEBITS == 64
 		3 * (1UL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
-#elif WITHSAI1_FRAMEBITS == 256
+#elif WITHFPGAIF_FRAMEBITS == 256
 		6 * (1UL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #endif /*  */
 		master * (1UL << 15) |		// SCKD	1: Serial bit clock is output, master mode.
@@ -3574,11 +3577,11 @@ static void r7s721_ssif1_fullduplex_initialize_fpga(void)
 		0 * (1UL << 11) |		// SPDP 0: Padding bits are low.	
 		0 * (1UL << 10) |		// SDTA	
 		0 * (1UL << 9) |		// PDTA	
-#if WITHSAI1_FORMATI2S_PHILIPS
+#if WITHFPGAIF_FORMATI2S_PHILIPS
 		0 * (1UL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHSAI1_FORMATI2S_PHILIPS */
+#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHSAI1_FORMATI2S_PHILIPS */
+#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		master * R7S721_SSIF_CKDIV1 * (1UL << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
@@ -3726,11 +3729,11 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 	// Control Register (SSICR)
 	SSIF2.SSICR = 
 		R7S721_USE_AUDIO_CLK * (1UL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHSAI2_FRAMEBITS / 64) - 1) * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		6 * (1UL << 19) |		// DWL 6: 32 bit	
-#if WITHSAI2_FRAMEBITS == 64
+#if WITHFPGARTS_FRAMEBITS == 64
 		3 * (1UL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
-#elif WITHSAI2_FRAMEBITS == 256
+#elif WITHFPGARTS_FRAMEBITS == 256
 		6 * (1UL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #endif /*  */
 		master * (1UL << 15) |		// SCKD	1: Serial bit clock is output, master mode.
@@ -3740,11 +3743,11 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 		0 * (1UL << 11) |		// SPDP 0: Padding bits are low.	
 		0 * (1UL << 10) |		// SDTA	
 		0 * (1UL << 9) |		// PDTA	
-#if WITHSAI2_FORMATI2S_PHILIPS
+#if WITHFPGARTS_FORMATI2S_PHILIPS
 		0 * (1UL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
-#else /* WITHSAI1_FORMATI2S_PHILIPS */
+#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
-#endif /* WITHSAI1_FORMATI2S_PHILIPS */
+#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 		master * R7S721_SSIF_CKDIV1 * (1UL << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
