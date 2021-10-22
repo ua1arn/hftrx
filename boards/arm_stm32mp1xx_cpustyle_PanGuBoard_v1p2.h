@@ -21,12 +21,6 @@
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-#if WITHINTEGRATEDDSP
-	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
-	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
-	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
-#endif /* WITHINTEGRATEDDSP */
 
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
@@ -99,6 +93,17 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
+
+	#if WITHINTEGRATEDDSP
+		//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
+		//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
+		//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+		//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
+	#endif /* WITHINTEGRATEDDSP */
+
+	//#define WITHFPGAIF_SAI2_DUPLEX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
+	//#define WITHFPGARTS_SAI2_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+	//#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 
 //	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */

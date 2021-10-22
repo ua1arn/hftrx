@@ -23,8 +23,7 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
 	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
-	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+	#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
@@ -247,6 +246,7 @@
 #endif
 
 #if WITHI2SHW
+
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		arm_hardware_pioi_altfn2(1uL << 0,	AF_SPI2); /* PI0 I2S2_WS	*/ \
@@ -260,7 +260,6 @@
 		arm_hardware_pioc_altfn2(1uL << 6,	AF_SPI2); /* PC6 I2S2_MCK */ \
 		arm_hardware_pioc_updown(0, 1uL << 6); \
 	} while (0)
-#endif /* WITHI2SHW */
 
 	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
@@ -276,7 +275,10 @@
 		arm_hardware_pioc_updown(0, 1uL << 6); \
 	} while (0)
 
-#if WITHSAI1HW
+#endif /* WITHI2SHW */
+
+
+#if WITHSAI2HW
 	/*
 	 *
 	 */
@@ -289,12 +291,7 @@
 		arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
 		arm_hardware_pioe_updown(1uL << 11, 0); \
 	} while (0)
-	/*
-	 *
-	 */
-	#define SAI1HW_INITIALIZE()	do { \
-	} while (0)
-#endif /* WITHSAI1HW */
+#endif /* WITHSAI2HW */
 
 /* Распределение битов в ARM контроллерах */
 
