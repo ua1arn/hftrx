@@ -34,7 +34,7 @@
 
 #include "ft8.h"
 
-const uint32_t bufsize = ft8_sample_rate * ft8_length;
+static const uint32_t ft8bufsize = ft8_sample_rate * ft8_length;
 static uint8_t fill_ft8_buf1 = 0, fill_ft8_buf2 = 0, ft8_enable = 0;
 static uint32_t bufind1 = 0, bufind2 = 0;
 
@@ -43,10 +43,10 @@ void ft8_fill1(float sample)
 	system_disableIRQ();
 	if (fill_ft8_buf1 && ft8_enable)
 	{
-		ASSERT(bufind1 < bufsize);
+		ASSERT(bufind1 < ft8bufsize);
 		ft8.rx_buf1 [bufind1] = sample;
 		bufind1 ++;
-		if (bufind1 >= bufsize)
+		if (bufind1 >= ft8bufsize)
 		{
 			fill_ft8_buf1 = 0;
 			bufind1 = 0;
@@ -61,10 +61,10 @@ void ft8_fill2(float sample)
 	system_disableIRQ();
 	if (fill_ft8_buf2 && ft8_enable)
 	{
-		ASSERT(bufind2 < bufsize);
+		ASSERT(bufind2 < ft8bufsize);
 		ft8.rx_buf2 [bufind2] = sample;
 		bufind2 ++;
-		if (bufind2 >= bufsize)
+		if (bufind2 >= ft8bufsize)
 		{
 			fill_ft8_buf2 = 0;
 			bufind2 = 0;
