@@ -521,6 +521,7 @@ void writeEnableDATAFLASH(void);
 void writeDisableDATAFLASH(void);
 unsigned long sectorsizeDATAFLASH(void);
 unsigned long chipsizeDATAFLASH(void);
+extern char nameDATAFLASH [];
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len);
 

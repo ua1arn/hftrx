@@ -426,6 +426,10 @@
 	#define ELKEY_BIT_LEFT				(1U << 1)		// P4_1
 	#define ELKEY_BIT_RIGHT				(1U << 0)		// P4_0
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_pio4_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \

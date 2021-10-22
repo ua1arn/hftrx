@@ -28,8 +28,6 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 #define WITHUARTFIFO	1	/* испольование FIFO */
@@ -48,6 +46,8 @@
 
 #if WITHISBOOTLOADER
 
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
@@ -74,9 +74,9 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_EHCI		USB1_EHCI
-	//#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		USB1_EHCI
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller), 1 - 2nd PHY port (Micro USB, shared with USB_OTG_HS). See USBPHYC_MISC_SWITHOST_VAL
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -100,6 +100,8 @@
 
 #else /* WITHISBOOTLOADER */
 
+//	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
@@ -126,7 +128,7 @@
 
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller), 1 - 2nd PHY port (Micro USB). See USBPHYC_MISC_SWITHOST_VAL
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port (Microchip USB2514 USB 2.0 hub controller, shared with USB_OTG_HS), 1 - 2nd PHY port (Micro USB). See USBPHYC_MISC_SWITHOST_VAL
 
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
@@ -506,6 +508,10 @@
 
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
@@ -872,7 +878,7 @@
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
 		} while (0)
 #else /* WITHUSBHW */
-	#define	USBD_FS_INITIALIZE() do { \
+	#define	USBD_EHCI_INITIALIZE() do { \
 		} while (0)
 #endif /* WITHUSBHW */
 
@@ -1101,7 +1107,16 @@
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 		} while (0)
 
-#if 1
+#if 1//LCDMODEX_SII9022A
+
+	// PMIC interface:
+	// LDO6=1.2V, LDO2=3.3V
+	#define HARDWARE_SII9022_POWERON(state) do { \
+			if ((state) != 0) { \
+			} else { \
+			} \
+		} while (0)
+
 	#define BOARD_SII902X_RESET_BIT	(1uL << 13)	// PanGu board: HDMI_RST PA13
 
 	#define BOARD_SII902X_RESET_SET(state) do { \
@@ -1114,7 +1129,7 @@
 	#define BOARD_SII902X_INITIALIZE() do { \
 			arm_hardware_pioa_outputs(BOARD_SII902X_RESET_BIT, 1 * BOARD_SII902X_RESET_BIT); \
 		} while (0)
-#endif
+#endif /* LCDMODEX_SII9022A */
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \

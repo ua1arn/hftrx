@@ -23,6 +23,7 @@
 //#define FETCH(c, fmt) ((c) = pgm_read_byte((fmt) ++))
 //#else
 #define FETCH(c, fmt) ((c) = * (fmt) ++)
+#define LOOK(fmt) (* (fmt))
 //#endif
 
 static	char *
@@ -150,8 +151,18 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 		switch (c)
 		{
 		case 'l':
-			FETCH(c, pfmt);
-			u.lval = va_arg(args, long);
+			if (LOOK(pfmt) == 'l')
+			{
+				// "ll" specifier
+				FETCH(c, pfmt);
+				FETCH(c, pfmt);
+				u.lval = va_arg(args, long long);
+			}
+			else
+			{
+				FETCH(c, pfmt);
+				u.lval = va_arg(args, long);
+			}
 			break;
 		case 'h':
 			FETCH(c, pfmt);
@@ -161,12 +172,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 		case 'e':
 		case 'f':
 		case 'g':
-#if 0
-			u.dval = va_arg(args, double);
-			dflag = 1;
-#else
-			(void) va_arg(args, double);
-#endif
+			u.lval = va_arg(args, double); /* floating point specs. */
 			break;
 		case 's':
 			if ((cp = va_arg(args, char *)) == NULL)
@@ -202,6 +208,7 @@ local_format(void * param, int (* putsub)(void *, int), const FLASHMEM char * pf
 				* -- cp = '-';
 				break;
 			}
+			/* pass trough intentionally */
 		case 'u':
 			cp = uconvert(u.lval, 10, s + TMP_S_SIZE, lcase);
 			if (signc != '\0')

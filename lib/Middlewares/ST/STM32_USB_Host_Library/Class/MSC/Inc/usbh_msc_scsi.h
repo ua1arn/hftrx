@@ -82,10 +82,12 @@ typedef struct
 #define OPCODE_READ_CAPACITY16            0x9EU
 #define OPCODE_READ10                     0x28U
 #define OPCODE_WRITE10                    0x2AU
+//#define OPCODE_READ12                     0xA8U
+//#define OPCODE_WRITE12                    0xAAU
+#define OPCODE_READ16                     0x88U
+#define OPCODE_WRITE16                    0x8AU
 #define OPCODE_REQUEST_SENSE              0x03U
 #define OPCODE_INQUIRY                    0x12U
-#define OPCODE_READ12                     0xA8U
-#define OPCODE_WRITE12                    0xAAU
 
 #define DATA_LEN_MODE_TEST_UNIT_READY        0U
 #define DATA_LEN_READ_CAPACITY10             8U
@@ -183,25 +185,25 @@ USBH_StatusTypeDef USBH_MSC_SCSI_RequestSense(USBH_HandleTypeDef *phost,
 
 USBH_StatusTypeDef USBH_MSC_SCSI_Write10(USBH_HandleTypeDef *phost,
                                        uint8_t lun,
-                                       uint32_t address,
+									   uint64_t address,
                                        uint8_t *pbuf,
                                        uint32_t length);
 
 USBH_StatusTypeDef USBH_MSC_SCSI_Read10(USBH_HandleTypeDef *phost,
                                       uint8_t lun,
-                                      uint32_t address,
+									  uint64_t address,
                                       uint8_t *pbuf,
                                       uint32_t length);
 
-USBH_StatusTypeDef USBH_MSC_SCSI_Write12(USBH_HandleTypeDef *phost,
+USBH_StatusTypeDef USBH_MSC_SCSI_Write16(USBH_HandleTypeDef *phost,
                                        uint8_t lun,
-                                       uint32_t address,
+                                       uint64_t address,
                                        uint8_t *pbuf,
                                        uint32_t length);
 
-USBH_StatusTypeDef USBH_MSC_SCSI_Read12(USBH_HandleTypeDef *phost,
+USBH_StatusTypeDef USBH_MSC_SCSI_Read16(USBH_HandleTypeDef *phost,
                                       uint8_t lun,
-                                      uint32_t address,
+									  uint64_t address,
                                       uint8_t *pbuf,
                                       uint32_t length);
 

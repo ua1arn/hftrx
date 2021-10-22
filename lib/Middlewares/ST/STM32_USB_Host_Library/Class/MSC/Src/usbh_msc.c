@@ -36,11 +36,6 @@
 - "stm32xxxxx_{eval}{discovery}_sdram.c"
 EndBSPDependencies */
 
-#include "hardware.h"
-#include "formats.h"
-
-#if WITHUSBHW
-
 /* Includes ------------------------------------------------------------------*/
 #include "../Inc/usbh_msc.h"
 #include "../Inc/usbh_msc_bot.h"
@@ -177,7 +172,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
 
   // Also see usage of USBH_free in USBH_MSC_InterfaceDeInit
-  static MSC_HandleTypeDef staticMSC_Handle;
+  static RAMNOINIT_D1 MSC_HandleTypeDef staticMSC_Handle;
   phost->pActiveClass->pData = & staticMSC_Handle;
   //phost->pActiveClass->pData = (MSC_HandleTypeDef *) USBH_malloc(sizeof (MSC_HandleTypeDef));
   MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
@@ -871,7 +866,7 @@ USBH_StatusTypeDef USBH_MSC_GetLUNInfo(USBH_HandleTypeDef *phost, uint8_t lun, M
   */
 USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
                                  uint8_t lun,
-                                 uint32_t address,
+								 uint64_t address,
                                  uint8_t *pbuf,
                                  uint32_t length)
 {
@@ -896,7 +891,10 @@ USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
 	MSC_Handle->unit [lun].state = MSC_READ;
 	MSC_Handle->rw_lun = lun;
 
-	(void) USBH_MSC_SCSI_Read10(phost, lun, address, pbuf, length);
+	if ((address + length) > 0xFFFFFFFF)
+		(void) USBH_MSC_SCSI_Read16(phost, lun, address, pbuf, length);
+	else
+		(void) USBH_MSC_SCSI_Read10(phost, lun, address, pbuf, length);
 
 	timeout = phost->Timer;
 
@@ -925,7 +923,7 @@ USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
   */
 USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
                                   uint8_t lun,
-                                  uint32_t address,
+								  uint64_t address,
                                   uint8_t *pbuf,
                                   uint32_t length)
 {
@@ -954,7 +952,10 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
 	MSC_Handle->unit [lun].state = MSC_WRITE;
 	MSC_Handle->rw_lun = lun;
 
-	(void) USBH_MSC_SCSI_Write10(phost, lun, address, pbuf, length);
+	if ((address + length) > 0xFFFFFFFF)
+		(void) USBH_MSC_SCSI_Write16(phost, lun, address, pbuf, length);
+	else
+		(void) USBH_MSC_SCSI_Write10(phost, lun, address, pbuf, length);
 
 	timeout = phost->Timer;
 	while (USBH_MSC_RdWrProcess(phost, lun) == USBH_BUSY)
@@ -990,4 +991,3 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
   */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-#endif /* WITHUSBHW */

@@ -213,10 +213,10 @@ void R820T2_i2c_write(uint8_t reg, uint8_t *data, uint8_t sz)
 	
 #if 0
     uint16_t i;
-    printf("R820T2_i2c_write(%d, %d, %d)\n\r", reg, data, sz);
+    PRINTF(PSTR("R820T2_i2c_write(%d, %d, %d)\n"), reg, data, sz);
 	for(i=0;i<sz;i++)
     {
-        printf("%2d : 0x%02X\n\r", i, data[i]&0xff);
+		PRINTF(PSTR("%2d : 0x%02X\n"), i, data[i]&0xff);
 		systick_delayms(10);
     }
 #endif

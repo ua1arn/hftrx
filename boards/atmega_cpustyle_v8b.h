@@ -183,6 +183,10 @@
 
 	#define ELKEY_BIT_LEFT (1U << PC2)
 	#define ELKEY_BIT_RIGHT (1U << PC3)
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 	// разрешение прерываний по нажатиям на контакты ключа
 	// Микропроцессорах наподобии ATMega644
 	#define PCMSK_PORT	PCMSK2			// PCMSK0 - PA, PCMSK1 - PB, PCMSK2 - PC, PCMSK3 - PD

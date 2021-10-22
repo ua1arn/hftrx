@@ -195,11 +195,11 @@ HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cf
     /* Disable IRQ */
 
     if (USBx == & USB200) {
-		GIC_DisableIRQ(USBI0_IRQn);
+		arm_hardware_disable_handler(USBI0_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71);
 		(void) CPG.STBCR7;
 	} else if (USBx == & USB201) {
-		GIC_DisableIRQ(USBI1_IRQn);
+		arm_hardware_disable_handler(USBI1_IRQn);
 		CPG.STBCR7 &= ~ (CPG_STBCR7_MSTP71 | CPG_STBCR7_MSTP70);
 		(void) CPG.STBCR7;
 	}
@@ -306,15 +306,15 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
     /* Disable USB */
-//    GIC_DisableIRQ(USBIX_IRQn);
+//    arm_hardware_disable_handler(USBIX_IRQn);
 //    InterruptHandlerRegister(USBIX_IRQn, NULL);
     if (USBx == & USB200)
 	{
-    	GIC_DisableIRQ(USBI0_IRQn);
+    	arm_hardware_disable_handler(USBI0_IRQn);
 	}
 	else if (USBx == & USB201)
 	{
-		GIC_DisableIRQ(USBI1_IRQn);
+		arm_hardware_disable_handler(USBI1_IRQn);
 	}
 
     /* Disable pullup on D+ */
@@ -991,7 +991,7 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
-    //GIC_DisableIRQ(USBIX_IRQn);
+    //arm_hardware_disable_handler(USBIX_IRQn);
 
 	hpcd->run_later_ctrl_comp = 0;
 
@@ -5192,7 +5192,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
                                            uint8_t ep_type,
                                            uint8_t token,
                                            uint8_t *pbuff,
-                                           uint16_t length,
+										   uint32_t length,
                                            uint8_t do_ping)
 {
   hhcd->hc[ch_num].ep_is_in = direction;

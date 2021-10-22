@@ -125,12 +125,12 @@ extern "C" {
 
 	void __cxa_begin_catch()
 	{
-	    //printf("begin FTW\n");
+	    //PRINTF("begin FTW\n");
 	}
 
 	void __cxa_end_catch()
 	{
-	    //printf("end FTW\n");
+	    //PRINTF("end FTW\n");
 	}
 
 	void __cxa_end_cleanup()

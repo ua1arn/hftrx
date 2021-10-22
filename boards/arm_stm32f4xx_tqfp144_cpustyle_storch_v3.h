@@ -22,7 +22,7 @@
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
@@ -444,6 +444,10 @@
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
 	#define ELKEY_BIT_LEFT				(1U << 10)		// PD10
 	#define ELKEY_BIT_RIGHT				(1U << 11)		// PD11
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 
 	#define ELKEY_INITIALIZE() \
 		do { \

@@ -248,7 +248,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 	if (hpcd->Instance == & USB200)
 	{
 		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_Disable(int_id);
+		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -260,7 +260,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 	else if (hpcd->Instance == & USB201)
 	{
 		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_Disable(int_id);
+		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
@@ -278,7 +278,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 	if (hpcd->Instance == USB_OTG_HS)
 	{
 		/* Peripheral interrupt Deinit*/
-		IRQ_Disable(OTG_IRQn);
+		arm_hardware_disable_handler(OTG_IRQn);
 	}
 
 #else
@@ -287,7 +287,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 		if (hpcd->Instance == USB_OTG_HS)
 		{
 			/* Peripheral interrupt Deinit*/
-			NVIC_DisableIRQ(OTG_HS_IRQn);
+			arm_hardware_disable_handler(OTG_HS_IRQn);
 		}
 	#endif /* defined (USB_OTG_HS) */
 
@@ -295,7 +295,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hpcd)
 		if (hpcd->Instance == USB_OTG_FS)
 		{
 			/* Peripheral interrupt Deinit*/
-			NVIC_DisableIRQ(OTG_FS_IRQn);
+			arm_hardware_disable_handler(OTG_FS_IRQn);
 		}
 	#endif /* defined (USB_OTG_FS) */
 
@@ -480,6 +480,8 @@ USBH_StatusTypeDef USBH_LL_DeInit(USBH_HandleTypeDef *phost)
 
   usb_status = USBH_Get_USB_Status(hal_status);
 
+  phost->pData = NULL;
+
   return usb_status;
 }
 
@@ -589,7 +591,14 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
   */
 uint32_t USBH_LL_GetLastXferSize(USBH_HandleTypeDef *phost, uint8_t pipe)
 {
-  return HAL_HCD_HC_GetXferCount(phost->pData, pipe);
+	uint32_t size2 = HAL_HCD_HC_GetXferCount(phost->pData, pipe);
+	uint32_t size;
+	do
+	{
+		size = size2;
+		size2 = HAL_HCD_HC_GetXferCount(phost->pData, pipe);
+	} while (size != size2);
+	return size2;
 }
 
 /**
@@ -677,7 +686,7 @@ USBH_StatusTypeDef USBH_LL_ClosePipe(USBH_HandleTypeDef *phost, uint8_t pipe)
   * @retval Status
   */
 USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe, uint8_t direction,
-                                     uint8_t ep_type, uint8_t token, uint8_t *pbuff, uint16_t length,
+                                     uint8_t ep_type, uint8_t token, uint8_t *pbuff, uint32_t length,
                                      uint8_t do_ping)
 {
   HAL_StatusTypeDef hal_status = HAL_OK;
@@ -712,7 +721,14 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost, uint8_t pipe
 	audioproc_spool_user();		// решение проблем с прерыванием звука при записи файлов
 #endif /* WITHINTEGRATEDDSP */
 
-	return (USBH_URBStateTypeDef)HAL_HCD_HC_GetURBState (phost->pData, pipe);
+	HCD_URBStateTypeDef state2 = HAL_HCD_HC_GetURBState(phost->pData, pipe);
+	HCD_URBStateTypeDef state;
+	do
+	{
+		state = state2;
+		state2 = HAL_HCD_HC_GetURBState(phost->pData, pipe);
+	} while (state != state2);
+	return (USBH_URBStateTypeDef) state2;
 }
 
 USBH_SpeedTypeDef USBH_LL_GetPipeSpeed(USBH_HandleTypeDef *phost, uint8_t pipe_num)

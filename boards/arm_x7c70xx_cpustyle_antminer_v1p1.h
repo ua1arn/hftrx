@@ -124,15 +124,15 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
 
-	/* For H7 exist: Legacy defines */
-	//#define USB_OTG_HS                   USB1_OTG_HS
-	//#define USB_OTG_FS                   USB2_OTG_FS
-
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_HOST		USB_OTG_HS
+#if 0
+#define WITHUSBHW 1
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_HOST		EHCI0
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port.
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
-
+	//#define WITHUSBHOST_DMAENABLE 1	// not need for EHCI
+#endif
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -558,6 +558,10 @@
 	#define ELKEY_BIT_RIGHT				(1uL << 15)		// PD15
 
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 
 	#define ELKEY_INITIALIZE() \
 		do { \

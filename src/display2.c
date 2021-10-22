@@ -7042,7 +7042,7 @@ typedef struct {
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };
-	static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
+	static RAMBIGDTCM PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
 #endif
 
@@ -7659,7 +7659,7 @@ dsp_getspectrumrow(
 	return 1;
 }
 
-static PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
+static RAMBIGDTCM PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
 
 enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
 //enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };

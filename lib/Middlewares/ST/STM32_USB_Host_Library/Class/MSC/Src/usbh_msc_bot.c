@@ -24,11 +24,6 @@
 - "stm32xxxxx_{eval}{discovery}_sdram.c"
 EndBSPDependencies */
 
-#include "hardware.h"
-#include "formats.h"
-
-#if WITHUSBHW
-
 /* Includes ------------------------------------------------------------------*/
 #include "../Inc/usbh_msc_bot.h"
 #include "../Inc/usbh_msc.h"
@@ -278,7 +273,7 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
 
       if (URB_Status == USBH_URB_DONE)
       {
-    	  const uint32_t lastXferSize = USBH_LL_GetLastXferSize(phost, MSC_Handle->InPipe);
+    	const uint32_t lastXferSize = USBH_LL_GetLastXferSize(phost, MSC_Handle->InPipe);
         /* Adjust Data pointer and data length */
         if (hBot->cbw.field.DataTransferLength > lastXferSize)
         {
@@ -351,8 +346,11 @@ USBH_StatusTypeDef USBH_MSC_BOT_Process(USBH_HandleTypeDef *phost, uint8_t lun)
 
       if (URB_Status == USBH_URB_DONE)
       {
-    	  const uint32_t lastXferSize = USBH_LL_GetLastXferSize(phost, MSC_Handle->OutPipe);
-       /* Adjust Data pointer and data length */
+    	  // FIXME: на STM32F7 без DMA USBH_LL_GetLastXferSize возвращает ноль даже при удачной записи.
+       	const uint32_t lastXferSize = USBH_LL_GetAdjXferSize(phost, MSC_Handle->OutPipe, hBot->cbw.field.DataTransferLength);
+       	const uint32_t lastXferSizeX = USBH_LL_GetLastXferSize(phost, MSC_Handle->OutPipe);
+     	//PRINTF("out: lastXferSizeX=%04X, lastXferSize=%04X\n", lastXferSizeX, lastXferSize);
+        /* Adjust Data pointer and data length */
         if (hBot->cbw.field.DataTransferLength > lastXferSize)
         {
           hBot->pbuf += lastXferSize;
@@ -705,7 +703,3 @@ static BOT_CSWStatusTypeDef USBH_MSC_DecodeCSW(USBH_HandleTypeDef *phost)
 */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
-
-
-#endif /* WITHUSBHW */

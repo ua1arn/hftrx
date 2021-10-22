@@ -83,8 +83,8 @@ static USBH_StatusTypeDef USBH_HID_MouseDecode(USBH_HandleTypeDef *phost);
   * @{
   */
 HID_MOUSE_Info_TypeDef    mouse_info;
-static __ALIGN4k_BEGIN uint32_t                   mouse_report_data[2] __ALIGN4k_END  = { 0xDEADBEEF, 0xABBA1980 };
-static __ALIGN4k_BEGIN uint32_t                   mouse_rx_report_buf[2] __ALIGN4k_END  = { 0xDEADBEEF, 0xABBA1980 };
+static RAMNOINIT_D1 __ALIGN4k_BEGIN uint32_t                   mouse_report_data[2] __ALIGN4k_END;
+static RAMNOINIT_D1 __ALIGN4k_BEGIN uint32_t                   mouse_rx_report_buf[2] __ALIGN4k_END;
 
 /* Structures defining how to access items in a HID mouse report */
 /* Access button 1 state. */
@@ -183,7 +183,6 @@ USBH_StatusTypeDef USBH_HID_MouseInit(USBH_HandleTypeDef *phost)
   uint32_t i;
   HID_HandleTypeDef *HID_Handle = (HID_HandleTypeDef *) phost->pActiveClass->pData;
 
-  TP();
   mouse_info.x = 0U;
   mouse_info.y = 0U;
   mouse_info.buttons[0] = 0U;
@@ -192,17 +191,12 @@ USBH_StatusTypeDef USBH_HID_MouseInit(USBH_HandleTypeDef *phost)
 
   for (i = 0; i < (sizeof mouse_report_data / sizeof mouse_report_data [0]); i++)
   {
-    //mouse_report_data[i] = 0U;
+    mouse_report_data[i] = 0U;
   }
   for (i = 0; i < (sizeof mouse_rx_report_buf / sizeof mouse_rx_report_buf [0]); i++)
   {
-    //mouse_rx_report_buf[i] = 0U;
+    mouse_rx_report_buf[i] = 0U;
   }
-
-  PRINTF("mouse_report_data=%p, mouse_rx_report_buf=%p\n", mouse_report_data, mouse_rx_report_buf);
-
-  memset(mouse_report_data, 1, sizeof mouse_report_data);
-  memset(mouse_rx_report_buf, 2, sizeof mouse_rx_report_buf);
 
   if (HID_Handle->length > sizeof(mouse_report_data))
   {

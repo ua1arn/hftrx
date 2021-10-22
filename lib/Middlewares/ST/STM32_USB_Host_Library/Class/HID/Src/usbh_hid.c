@@ -158,7 +158,7 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
 
   // check USBH_free
-  static HID_HandleTypeDef staticHID_Handle;
+  static RAMNOINIT_D1 HID_HandleTypeDef staticHID_Handle;
   phost->pActiveClass->pData = & staticHID_Handle;
   //phost->pActiveClass->pData = (HID_HandleTypeDef *)USBH_malloc(sizeof(HID_HandleTypeDef));
   phhid = (HID_HandleTypeDef *) phost->pActiveClass->pData;
@@ -190,14 +190,14 @@ static USBH_StatusTypeDef USBH_HID_InterfaceInit(USBH_HandleTypeDef *phost, cons
   else if (phost->device.CfgDesc.Itf_Desc[interface].bInterfaceProtocol  == 0x00)
   {
     USBH_UsrLog("Touch device found!");
-    phhid->Init = USBH_HID_MouseInit;
+    phhid->Init = USBH_HID_TouchInit;
   }
   else
   {
     USBH_UsrLog("Protocol not supported.");
     return USBH_FAIL;
   }
-  USBH_UsrLog("Target: tt_hub=%d tt_port=%d, speed=%d", phhid->target.tt_hubaddr, phhid->target.tt_prtaddr, phhid->target.speed);
+  //USBH_UsrLog("Target: tt_hub=%d tt_port=%d, speed=%d", phhid->target.tt_hubaddr, phhid->target.tt_prtaddr, phhid->target.speed);
 
   phhid->state     = HID_INIT;
   phhid->ctl_state = HID_REQ_INIT;
@@ -450,7 +450,6 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 		break;
 
 	case HID_GET_DATA:
-		//memset(phhid->pHidReportData, 0xFF, phhid->length);
 		(void) USBH_InterruptReceiveData(phost, phhid->pHidReportData, phhid->length, phhid->InPipe);
 
 		phhid->state = HID_POLL;
@@ -461,15 +460,16 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 	case HID_POLL:
 		statusURB = USBH_LL_GetURBState(phost, phhid->InPipe);
 		if (statusURB == USBH_URB_DONE) {
-			//TP();
 			XferSize = USBH_LL_GetLastXferSize(phost, phhid->InPipe);
 
 			if ((phhid->DataReady == 0U) && (XferSize != 0U)) {
-				//TP();
 				(void) USBH_HID_FifoWrite(&phhid->fifo, phhid->pHidReportData,
 						phhid->length);
 				phhid->DataReady = 1U;
 				USBH_HID_EventCallback(phost);
+#if defined (WITHUSBHW_EHCI)
+				phhid->state = HID_GET_DATA;		// EHCI specific
+#endif /* defined (WITHUSBHW_EHCI) */
 
 #if (USBH_USE_OS == 1U)
           phost->os_msg = (uint32_t)USBH_URB_EVENT;
@@ -482,18 +482,14 @@ static USBH_StatusTypeDef USBH_HID_Process(USBH_HandleTypeDef *phost)
 			}
 		} else if (statusURB == USBH_URB_STALL) {
 			/* IN Endpoint Stalled */
-			//TP();
 			/* Issue Clear Feature on interrupt IN endpoint */
 			if (USBH_ClrFeature(phost, phhid->ep_addr) == USBH_OK) {
-				//TP();
 				/* Change state to issue next IN token */
 				phhid->state = HID_GET_DATA;
 			} else {
-				//TP();
 
 			}
 		} else {
-			//TP();
 
 		}
 

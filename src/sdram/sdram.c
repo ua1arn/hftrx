@@ -12,7 +12,1126 @@
 #include <string.h>
 
 #include "formats.h"	// for debug prints
+#include "clocks.h"
 #include "gpio.h"
+
+////////////////////////
+
+#define VERBOSE PRINTF
+//#define VERBOSE(...) // PRINTF
+#define ERROR PRINTF
+#define INFO PRINTF
+
+static void panic(void)
+{
+	PRINTF("sdram: panic.\n");
+	return;
+	for (;;)
+		;
+}
+
+
+// Taken from https://github.com/ARM-software/arm-trusted-firmware
+
+/*
+#define INT8_C(x)  x
+#define INT16_C(x) x
+#define INT32_C(x) x
+#define INT64_C(x) x ## LL
+
+#define UINT8_C(x)  x
+#define UINT16_C(x) x
+#define UINT32_C(x) x ## U
+#define UINT64_C(x) x ## ULL
+
+#define INTMAX_C(x)  x ## LL
+#define UINTMAX_C(x) x ## ULL
+*/
+
+#define IS_POWER_OF_TWO(x)			\
+	(((x) & ((x) - 1)) == 0)
+
+#define SIZE_FROM_LOG2_WORDS(n)		(4 << (n))
+
+#define ULL(v) ((unsigned long long) (v))
+#define UL(v) ((unsigned long) (v))
+#define U(v) ((unsigned) (v))
+
+#define BIT_32(nr)			(U(1) << (nr))
+#define BIT_64(nr)			(ULL(1) << (nr))
+
+#ifdef __aarch64__
+#define BIT				BIT_64
+#else
+#define BIT				BIT_32
+#endif
+
+#if WITHSDRAM_PMC1
+
+#define I2C_TIMEOUT_MS		25
+
+struct regul_struct {
+	const char *dt_node_name;
+	const uint16_t *voltage_table;
+	uint8_t voltage_table_size;
+	uint8_t control_reg;
+	uint8_t low_power_reg;
+	uint8_t pull_down_reg;
+	uint8_t pull_down;
+	uint8_t mask_reset_reg;
+	uint8_t mask_reset;
+};
+
+//static struct i2c_handle_s *pmic_i2c_handle;
+static const uint16_t pmic_i2c_addr = (0x33 << 1);
+
+
+#define TURN_ON_REG			0x1U
+#define TURN_OFF_REG			0x2U
+#define ICC_LDO_TURN_OFF_REG		0x3U
+#define ICC_BUCK_TURN_OFF_REG		0x4U
+#define RESET_STATUS_REG		0x5U
+#define VERSION_STATUS_REG		0x6U
+#define MAIN_CONTROL_REG		0x10U
+#define PADS_PULL_REG			0x11U
+#define BUCK_PULL_DOWN_REG		0x12U
+#define LDO14_PULL_DOWN_REG		0x13U
+#define LDO56_PULL_DOWN_REG		0x14U
+#define VIN_CONTROL_REG			0x15U
+#define PONKEY_TIMER_REG		0x16U
+#define MASK_RANK_BUCK_REG		0x17U
+#define MASK_RESET_BUCK_REG		0x18U
+#define MASK_RANK_LDO_REG		0x19U
+#define MASK_RESET_LDO_REG		0x1AU
+#define WATCHDOG_CONTROL_REG		0x1BU
+#define WATCHDOG_TIMER_REG		0x1CU
+#define BUCK_ICC_TURNOFF_REG		0x1DU
+#define LDO_ICC_TURNOFF_REG		0x1EU
+#define BUCK_APM_CONTROL_REG		0x1FU
+#define BUCK1_CONTROL_REG		0x20U
+#define BUCK2_CONTROL_REG		0x21U
+#define BUCK3_CONTROL_REG		0x22U
+#define BUCK4_CONTROL_REG		0x23U
+#define VREF_DDR_CONTROL_REG		0x24U
+#define LDO1_CONTROL_REG		0x25U
+#define LDO2_CONTROL_REG		0x26U
+#define LDO3_CONTROL_REG		0x27U
+#define LDO4_CONTROL_REG		0x28U
+#define LDO5_CONTROL_REG		0x29U
+#define LDO6_CONTROL_REG		0x2AU
+#define BUCK1_PWRCTRL_REG		0x30U
+#define BUCK2_PWRCTRL_REG		0x31U
+#define BUCK3_PWRCTRL_REG		0x32U
+#define BUCK4_PWRCTRL_REG		0x33U
+#define VREF_DDR_PWRCTRL_REG		0x34U
+#define LDO1_PWRCTRL_REG		0x35U
+#define LDO2_PWRCTRL_REG		0x36U
+#define LDO3_PWRCTRL_REG		0x37U
+#define LDO4_PWRCTRL_REG		0x38U
+#define LDO5_PWRCTRL_REG		0x39U
+#define LDO6_PWRCTRL_REG		0x3AU
+#define FREQUENCY_SPREADING_REG		0x3BU
+#define USB_CONTROL_REG			0x40U
+#define ITLATCH1_REG			0x50U
+#define ITLATCH2_REG			0x51U
+#define ITLATCH3_REG			0x52U
+#define ITLATCH4_REG			0x53U
+#define ITSETLATCH1_REG			0x60U
+#define ITSETLATCH2_REG			0x61U
+#define ITSETLATCH3_REG			0x62U
+#define ITSETLATCH4_REG			0x63U
+#define ITCLEARLATCH1_REG		0x70U
+#define ITCLEARLATCH2_REG		0x71U
+#define ITCLEARLATCH3_REG		0x72U
+#define ITCLEARLATCH4_REG		0x73U
+#define ITMASK1_REG			0x80U
+#define ITMASK2_REG			0x81U
+#define ITMASK3_REG			0x82U
+#define ITMASK4_REG			0x83U
+#define ITSETMASK1_REG			0x90U
+#define ITSETMASK2_REG			0x91U
+#define ITSETMASK3_REG			0x92U
+#define ITSETMASK4_REG			0x93U
+#define ITCLEARMASK1_REG		0xA0U
+#define ITCLEARMASK2_REG		0xA1U
+#define ITCLEARMASK3_REG		0xA2U
+#define ITCLEARMASK4_REG		0xA3U
+#define ITSOURCE1_REG			0xB0U
+#define ITSOURCE2_REG			0xB1U
+#define ITSOURCE3_REG			0xB2U
+#define ITSOURCE4_REG			0xB3U
+
+/* Registers masks */
+#define LDO_VOLTAGE_MASK		0x7CU
+#define BUCK_VOLTAGE_MASK		0xFCU
+#define LDO_BUCK_VOLTAGE_SHIFT		2
+#define LDO_BUCK_ENABLE_MASK		0x01U
+#define LDO_BUCK_HPLP_ENABLE_MASK	0x02U
+#define LDO_BUCK_HPLP_SHIFT		1
+#define LDO_BUCK_RANK_MASK		0x01U
+#define LDO_BUCK_RESET_MASK		0x01U
+#define LDO_BUCK_PULL_DOWN_MASK		0x03U
+
+/* Pull down register */
+#define BUCK1_PULL_DOWN_SHIFT		0
+#define BUCK2_PULL_DOWN_SHIFT		2
+#define BUCK3_PULL_DOWN_SHIFT		4
+#define BUCK4_PULL_DOWN_SHIFT		6
+#define VREF_DDR_PULL_DOWN_SHIFT	4
+
+/* Buck Mask reset register */
+#define BUCK1_MASK_RESET		0
+#define BUCK2_MASK_RESET		1
+#define BUCK3_MASK_RESET		2
+#define BUCK4_MASK_RESET		3
+
+/* LDO Mask reset register */
+#define LDO1_MASK_RESET			0
+#define LDO2_MASK_RESET			1
+#define LDO3_MASK_RESET			2
+#define LDO4_MASK_RESET			3
+#define LDO5_MASK_RESET			4
+#define LDO6_MASK_RESET			5
+#define VREF_DDR_MASK_RESET		6
+
+/* Main PMIC Control Register (MAIN_CONTROL_REG) */
+#define ICC_EVENT_ENABLED		BIT(4)
+#define PWRCTRL_POLARITY_HIGH		BIT(3)
+#define PWRCTRL_PIN_VALID		BIT(2)
+#define RESTART_REQUEST_ENABLED		BIT(1)
+#define SOFTWARE_SWITCH_OFF_ENABLED	BIT(0)
+
+/* Main PMIC PADS Control Register (PADS_PULL_REG) */
+#define WAKEUP_DETECTOR_DISABLED	BIT(4)
+#define PWRCTRL_PD_ACTIVE		BIT(3)
+#define PWRCTRL_PU_ACTIVE		BIT(2)
+#define WAKEUP_PD_ACTIVE		BIT(1)
+#define PONKEY_PU_ACTIVE		BIT(0)
+
+/* Main PMIC VINLOW Control Register (VIN_CONTROL_REGC DMSC) */
+#define SWIN_DETECTOR_ENABLED		BIT(7)
+#define SWOUT_DETECTOR_ENABLED          BIT(6)
+#define VINLOW_HYST_MASK		0x3
+#define VINLOW_HYST_SHIFT		4
+#define VINLOW_THRESHOLD_MASK		0x7
+#define VINLOW_THRESHOLD_SHIFT		1
+#define VINLOW_ENABLED			0x01
+#define VINLOW_CTRL_REG_MASK		0xFF
+
+/* USB Control Register */
+#define BOOST_OVP_DISABLED		BIT(7)
+#define VBUS_OTG_DETECTION_DISABLED	BIT(6)
+#define OCP_LIMIT_HIGH			BIT(3)
+#define SWIN_SWOUT_ENABLED		BIT(2)
+#define USBSW_OTG_SWITCH_ENABLED	BIT(1)
+
+
+#define STPMIC1_LDO12356_OUTPUT_MASK	(uint8_t)(GENMASK(6, 2))
+#define STPMIC1_LDO12356_OUTPUT_SHIFT	2
+#define STPMIC1_LDO3_MODE		(uint8_t)(BIT(7))
+#define STPMIC1_LDO3_DDR_SEL		31U
+#define STPMIC1_LDO3_1800000		(9U << STPMIC1_LDO12356_OUTPUT_SHIFT)
+
+#define STPMIC1_BUCK_OUTPUT_SHIFT	2
+#define STPMIC1_BUCK3_1V8		(39U << STPMIC1_BUCK_OUTPUT_SHIFT)
+
+#define STPMIC1_DEFAULT_START_UP_DELAY_MS	1
+
+/* Voltage tables in mV */
+static const uint16_t buck1_voltage_table[] = {
+	725,
+	725,
+	725,
+	725,
+	725,
+	725,
+	750,
+	775,
+	800,
+	825,
+	850,
+	875,
+	900,
+	925,
+	950,
+	975,
+	1000,
+	1025,
+	1050,
+	1075,
+	1100,
+	1125,
+	1150,
+	1175,
+	1200,
+	1225,
+	1250,
+	1275,
+	1300,
+	1325,
+	1350,
+	1375,
+	1400,
+	1425,
+	1450,
+	1475,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+	1500,
+};
+
+static const uint16_t buck2_voltage_table[] = {
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1050,
+	1050,
+	1100,
+	1100,
+	1150,
+	1150,
+	1200,
+	1200,
+	1250,
+	1250,
+	1300,
+	1300,
+	1350,
+	1350,
+	1400,
+	1400,
+	1450,
+	1450,
+	1500,
+};
+
+static const uint16_t buck3_voltage_table[] = {
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1000,
+	1100,
+	1100,
+	1100,
+	1100,
+	1200,
+	1200,
+	1200,
+	1200,
+	1300,
+	1300,
+	1300,
+	1300,
+	1400,
+	1400,
+	1400,
+	1400,
+	1500,
+	1600,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+	3400,
+};
+
+static const uint16_t buck4_voltage_table[] = {
+	600,
+	625,
+	650,
+	675,
+	700,
+	725,
+	750,
+	775,
+	800,
+	825,
+	850,
+	875,
+	900,
+	925,
+	950,
+	975,
+	1000,
+	1025,
+	1050,
+	1075,
+	1100,
+	1125,
+	1150,
+	1175,
+	1200,
+	1225,
+	1250,
+	1275,
+	1300,
+	1300,
+	1350,
+	1350,
+	1400,
+	1400,
+	1450,
+	1450,
+	1500,
+	1600,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+	3400,
+	3500,
+	3600,
+	3700,
+	3800,
+	3900,
+};
+
+static const uint16_t ldo1_voltage_table[] = {
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+};
+
+static const uint16_t ldo2_voltage_table[] = {
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+};
+
+static const uint16_t ldo3_voltage_table[] = {
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+	3300,
+	3300,
+	3300,
+	3300,
+	3300,
+	3300,
+	500,
+	0xFFFF, /* VREFDDR */
+};
+
+static const uint16_t ldo5_voltage_table[] = {
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+	3400,
+	3500,
+	3600,
+	3700,
+	3800,
+	3900,
+};
+
+static const uint16_t ldo6_voltage_table[] = {
+	900,
+	1000,
+	1100,
+	1200,
+	1300,
+	1400,
+	1500,
+	1600,
+	1700,
+	1800,
+	1900,
+	2000,
+	2100,
+	2200,
+	2300,
+	2400,
+	2500,
+	2600,
+	2700,
+	2800,
+	2900,
+	3000,
+	3100,
+	3200,
+	3300,
+};
+
+static const uint16_t ldo4_voltage_table[] = {
+	3300,
+};
+
+static const uint16_t vref_ddr_voltage_table[] = {
+	3300,
+};
+
+/* Table of Regulators in PMIC SoC */
+static const struct regul_struct regulators_table[] = {
+	{
+		.dt_node_name	= "buck1",
+		.voltage_table	= buck1_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(buck1_voltage_table),
+		.control_reg	= BUCK1_CONTROL_REG,
+		.low_power_reg	= BUCK1_PWRCTRL_REG,
+		.pull_down_reg	= BUCK_PULL_DOWN_REG,
+		.pull_down	= BUCK1_PULL_DOWN_SHIFT,
+		.mask_reset_reg	= MASK_RESET_BUCK_REG,
+		.mask_reset	= BUCK1_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "buck2",
+		.voltage_table	= buck2_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(buck2_voltage_table),
+		.control_reg	= BUCK2_CONTROL_REG,
+		.low_power_reg	= BUCK2_PWRCTRL_REG,
+		.pull_down_reg	= BUCK_PULL_DOWN_REG,
+		.pull_down	= BUCK2_PULL_DOWN_SHIFT,
+		.mask_reset_reg	= MASK_RESET_BUCK_REG,
+		.mask_reset	= BUCK2_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "buck3",
+		.voltage_table	= buck3_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(buck3_voltage_table),
+		.control_reg	= BUCK3_CONTROL_REG,
+		.low_power_reg	= BUCK3_PWRCTRL_REG,
+		.pull_down_reg	= BUCK_PULL_DOWN_REG,
+		.pull_down	= BUCK3_PULL_DOWN_SHIFT,
+		.mask_reset_reg	= MASK_RESET_BUCK_REG,
+		.mask_reset	= BUCK3_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "buck4",
+		.voltage_table	= buck4_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(buck4_voltage_table),
+		.control_reg	= BUCK4_CONTROL_REG,
+		.low_power_reg	= BUCK4_PWRCTRL_REG,
+		.pull_down_reg	= BUCK_PULL_DOWN_REG,
+		.pull_down	= BUCK4_PULL_DOWN_SHIFT,
+		.mask_reset_reg	= MASK_RESET_BUCK_REG,
+		.mask_reset	= BUCK4_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo1",
+		.voltage_table	= ldo1_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo1_voltage_table),
+		.control_reg	= LDO1_CONTROL_REG,
+		.low_power_reg	= LDO1_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO1_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo2",
+		.voltage_table	= ldo2_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo2_voltage_table),
+		.control_reg	= LDO2_CONTROL_REG,
+		.low_power_reg	= LDO2_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO2_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo3",
+		.voltage_table	= ldo3_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo3_voltage_table),
+		.control_reg	= LDO3_CONTROL_REG,
+		.low_power_reg	= LDO3_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO3_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo4",
+		.voltage_table	= ldo4_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo4_voltage_table),
+		.control_reg	= LDO4_CONTROL_REG,
+		.low_power_reg	= LDO4_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO4_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo5",
+		.voltage_table	= ldo5_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo5_voltage_table),
+		.control_reg	= LDO5_CONTROL_REG,
+		.low_power_reg	= LDO5_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO5_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "ldo6",
+		.voltage_table	= ldo6_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(ldo6_voltage_table),
+		.control_reg	= LDO6_CONTROL_REG,
+		.low_power_reg	= LDO6_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= LDO6_MASK_RESET,
+	},
+	{
+		.dt_node_name	= "vref_ddr",
+		.voltage_table	= vref_ddr_voltage_table,
+		.voltage_table_size = ARRAY_SIZE(vref_ddr_voltage_table),
+		.control_reg	= VREF_DDR_CONTROL_REG,
+		.low_power_reg	= VREF_DDR_PWRCTRL_REG,
+		.mask_reset_reg	= MASK_RESET_LDO_REG,
+		.mask_reset	= VREF_DDR_MASK_RESET,
+	},
+};
+
+#define MAX_REGUL	ARRAY_SIZE(regulators_table)
+
+static const struct regul_struct *get_regulator_data(const char *name)
+{
+	uint8_t i;
+
+	for (i = 0 ; i < MAX_REGUL ; i++) {
+		if (strncmp(name, regulators_table[i].dt_node_name,
+			    strlen(regulators_table[i].dt_node_name)) == 0) {
+			return &regulators_table[i];
+		}
+	}
+
+	/* Regulator not found */
+	panic();
+	return NULL;
+}
+
+static uint8_t voltage_to_index(const char *name, uint16_t millivolts)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+	uint8_t i;
+
+	for (i = 0 ; i < regul->voltage_table_size ; i++) {
+		if (regul->voltage_table[i] == millivolts) {
+			return i;
+		}
+	}
+
+	/* Voltage not found */
+	panic();
+
+	return 0;
+}
+
+
+static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask);
+static int stpmic1_register_read(uint8_t register_id,  uint8_t *value);
+
+static int stpmic1_powerctrl_on(void)
+{
+	return stpmic1_register_update(MAIN_CONTROL_REG, PWRCTRL_PIN_VALID,
+				       PWRCTRL_PIN_VALID);
+}
+
+static int stpmic1_switch_off(void)
+{
+	return stpmic1_register_update(MAIN_CONTROL_REG, 1,
+				       SOFTWARE_SWITCH_OFF_ENABLED);
+}
+
+int stpmic1_regulator_enable(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	return stpmic1_register_update(regul->control_reg, BIT(0), BIT(0));
+}
+
+int stpmic1_regulator_disable(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	return stpmic1_register_update(regul->control_reg, 0, BIT(0));
+}
+
+static uint8_t stpmic1_is_regulator_enabled(const char *name)
+{
+	uint8_t val;
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	if (stpmic1_register_read(regul->control_reg, &val) != 0) {
+		panic();
+	}
+
+	return (val & 0x1U);
+}
+
+int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts)
+{
+	uint8_t voltage_index = voltage_to_index(name, millivolts);
+	const struct regul_struct *regul = get_regulator_data(name);
+	uint8_t mask;
+
+	/* Voltage can be set for buck<N> or ldo<N> (except ldo4) regulators */
+	if (strncmp(name, "buck", 4) == 0) {
+		mask = BUCK_VOLTAGE_MASK;
+	} else if ((strncmp(name, "ldo", 3) == 0) &&
+		   (strncmp(name, "ldo4", 4) != 0)) {
+		mask = LDO_VOLTAGE_MASK;
+	} else {
+		return 0;
+	}
+
+	return stpmic1_register_update(regul->control_reg,
+				       voltage_index << LDO_BUCK_VOLTAGE_SHIFT,
+				       mask);
+}
+
+static int stpmic1_regulator_pull_down_set(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	if (regul->pull_down_reg != 0) {
+		return stpmic1_register_update(regul->pull_down_reg,
+					       BIT(regul->pull_down),
+					       LDO_BUCK_PULL_DOWN_MASK <<
+					       regul->pull_down);
+	}
+
+	return 0;
+}
+
+static int stpmic1_regulator_mask_reset_set(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+
+	return stpmic1_register_update(regul->mask_reset_reg,
+				       BIT(regul->mask_reset),
+				       LDO_BUCK_RESET_MASK <<
+				       regul->mask_reset);
+}
+
+static int stpmic1_regulator_voltage_get(const char *name)
+{
+	const struct regul_struct *regul = get_regulator_data(name);
+	uint8_t value;
+	uint8_t mask;
+
+	/* Voltage can be set for buck<N> or ldo<N> (except ldo4) regulators */
+	if (strncmp(name, "buck", 4) == 0) {
+		mask = BUCK_VOLTAGE_MASK;
+	} else if ((strncmp(name, "ldo", 3) == 0) &&
+		   (strncmp(name, "ldo4", 4) != 0)) {
+		mask = LDO_VOLTAGE_MASK;
+	} else {
+		return 0;
+	}
+
+	if (stpmic1_register_read(regul->control_reg, &value))
+		return -1;
+
+	value = (value & mask) >> LDO_BUCK_VOLTAGE_SHIFT;
+
+	if (value > regul->voltage_table_size)
+		return -1;
+
+	return (int)regul->voltage_table[value];
+}
+
+static int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
+{
+	uint8_t v;
+
+	i2c_start(pmic_i2c_addr | 0x00);
+	i2c_write_withrestart(register_id);
+	i2c_start(pmic_i2c_addr | 0x01);
+	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
+
+	* value = v;
+	return 0;
+/*
+	return stm32_i2c_mem_read(pmic_i2c_handle, pmic_i2c_addr,
+				  (uint16_t)register_id,
+				  I2C_MEMADD_SIZE_8BIT, value,
+				  1, I2C_TIMEOUT_MS);
+*/
+}
+
+static int stpmic1_register_write(uint8_t register_id, uint8_t value)
+{
+	int status = 0;
+
+	i2c_start(pmic_i2c_addr | 0x00);
+	i2c_write(register_id);
+	i2c_write(value);
+	i2c_waitsend();
+	i2c_stop();
+
+/*
+
+	status = stm32_i2c_mem_write(pmic_i2c_handle, pmic_i2c_addr,
+				     (uint16_t)register_id,
+				     I2C_MEMADD_SIZE_8BIT, &value,
+				     1, I2C_TIMEOUT_MS);
+*/
+
+#if ENABLE_ASSERTIONS
+	if (status != 0) {
+		return status;
+	}
+
+	if ((register_id != WATCHDOG_CONTROL_REG) && (register_id <= 0x40U)) {
+		uint8_t readval;
+
+		status = stpmic1_register_read(register_id, &readval);
+		if (status != 0) {
+			return status;
+		}
+
+		if (readval != value) {
+			return -1;
+		}
+	}
+#endif
+
+	return status;
+}
+
+static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask)
+{
+	int status;
+	uint8_t val;
+
+	status = stpmic1_register_read(register_id, &val);
+	if (status != 0) {
+		return status;
+	}
+
+	val = (val & ~mask) | (value & mask);
+
+	return stpmic1_register_write(register_id, val);
+}
+
+void stpmic1_dump_regulators(void)
+{
+	uint32_t i;
+
+	for (i = 0U; i < MAX_REGUL; i++) {
+		const char *name __unused = regulators_table[i].dt_node_name;
+
+		PRINTF("PMIC regul %s: %sable, %d mV\n",
+			name,
+			stpmic1_is_regulator_enabled(name) ? "en" : "dis",
+			stpmic1_regulator_voltage_get(name));
+	}
+}
+
+static int stpmic1_get_version(unsigned long *version)
+{
+	int rc;
+	uint8_t read_val = 0xDD;
+
+	rc = stpmic1_register_read(VERSION_STATUS_REG, &read_val);
+	if (rc) {
+		return -1;
+	}
+
+	*version = (unsigned long)read_val;
+
+	return 0;
+}
+
+
+static int initialize_pmic_i2c(void)
+{
+
+	i2c_initialize();
+
+	return 1;
+}
+
+static void initialize_pmic(void)
+{
+	unsigned long pmic_version;
+
+	if (!initialize_pmic_i2c()) {
+		VERBOSE("No PMIC\n");
+		return;
+	}
+
+	if (stpmic1_get_version(&pmic_version) != 0) {
+		ERROR("Failed to access PMIC\n");
+		panic();
+	}
+
+	PRINTF("PMIC version = 0x%02lx\n", pmic_version);
+	//stpmic1_dump_regulators();
+
+#if defined(IMAGE_BL2)
+	if (dt_pmic_configure_boot_on_regulators() != 0) {
+		panic();
+	};
+#endif
+}
+
+
+// LDO1 = 1.8 Volt
+// LDO6 = 1.2 Volt
+// LDO2 = 3.3 Volt
+
+int toshiba_ddr_power_init(void)
+{
+	{
+		uint8_t read_val;
+		int status;
+		// LDO1 = 1.8 Volt
+		status = stpmic1_register_read(LDO1_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO1_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo1", 1800);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo1");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+
+	{
+		uint8_t read_val;
+		int status;
+		// LDO6 = 1.2 Volt (toshiba supplay)
+		status = stpmic1_register_read(LDO6_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO6_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo6", 1200);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo6");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+
+	{
+		uint8_t read_val;
+		int status;
+		// LDO2 = 3.3 Volt
+		status = stpmic1_register_read(LDO2_CONTROL_REG, &read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		read_val &= ~ 0x01;	// enable
+
+		status = stpmic1_register_write(LDO2_CONTROL_REG, read_val);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_voltage_set("ldo2", 3300);
+		if (status != 0) {
+			return status;
+		}
+
+		status = stpmic1_regulator_enable("ldo2");
+		if (status != 0) {
+			return status;
+		}
+
+		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
+	}
+	{
+		uint8_t read_val;
+		int status;
+		status = stpmic1_regulator_disable("ldo5");
+		if (status != 0) {
+			return status;
+		}
+	}
+
+	return 0;
+}
+
+#endif /* WITHSDRAM_PMC1 */
 
 #if WITHSDRAMHW
 
@@ -71,33 +1190,33 @@ void sdram_test_random(uint_fast32_t addr, uint_fast16_t buffer_size)
 #if CPUSTYLE_STM32F
 
 void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
-{ 
+{
   /* temporary registers */
   uint32_t tmpr1 = 0, tmpr2 = 0, tmpr3 = 0, tmpr4 = 0;
-  
+
   /* Check the parameters */
-  
+
   /* Control parameters */
   assert_param(IS_FMC_SDRAM_BANK(FMC_SDRAMInitStruct->FMC_Bank));
-  assert_param(IS_FMC_COLUMNBITS_NUMBER(FMC_SDRAMInitStruct->FMC_ColumnBitsNumber)); 
+  assert_param(IS_FMC_COLUMNBITS_NUMBER(FMC_SDRAMInitStruct->FMC_ColumnBitsNumber));
   assert_param(IS_FMC_ROWBITS_NUMBER(FMC_SDRAMInitStruct->FMC_RowBitsNumber));
   assert_param(IS_FMC_SDMEMORY_WIDTH(FMC_SDRAMInitStruct->FMC_SDMemoryDataWidth));
-  assert_param(IS_FMC_INTERNALBANK_NUMBER(FMC_SDRAMInitStruct->FMC_InternalBankNumber)); 
+  assert_param(IS_FMC_INTERNALBANK_NUMBER(FMC_SDRAMInitStruct->FMC_InternalBankNumber));
   assert_param(IS_FMC_CAS_LATENCY(FMC_SDRAMInitStruct->FMC_CASLatency));
   assert_param(IS_FMC_WRITE_PROTECTION(FMC_SDRAMInitStruct->FMC_WriteProtection));
   assert_param(IS_FMC_SDCLOCK_PERIOD(FMC_SDRAMInitStruct->FMC_SDClockPeriod));
   assert_param(IS_FMC_READ_BURST(FMC_SDRAMInitStruct->FMC_ReadBurst));
-  assert_param(IS_FMC_READPIPE_DELAY(FMC_SDRAMInitStruct->FMC_ReadPipeDelay));   
-  
+  assert_param(IS_FMC_READPIPE_DELAY(FMC_SDRAMInitStruct->FMC_ReadPipeDelay));
+
   /* Timing parameters */
-  assert_param(IS_FMC_LOADTOACTIVE_DELAY(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_LoadToActiveDelay)); 
+  assert_param(IS_FMC_LOADTOACTIVE_DELAY(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_LoadToActiveDelay));
   assert_param(IS_FMC_EXITSELFREFRESH_DELAY(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_ExitSelfRefreshDelay));
   assert_param(IS_FMC_SELFREFRESH_TIME(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_SelfRefreshTime));
   assert_param(IS_FMC_ROWCYCLE_DELAY(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RowCycleDelay));
-  assert_param(IS_FMC_WRITE_RECOVERY_TIME(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_WriteRecoveryTime)); 
-  assert_param(IS_FMC_RP_DELAY(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RPDelay)); 
-  assert_param(IS_FMC_RCD_DELAY(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RCDDelay));    
-  
+  assert_param(IS_FMC_WRITE_RECOVERY_TIME(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_WriteRecoveryTime));
+  assert_param(IS_FMC_RP_DELAY(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RPDelay));
+  assert_param(IS_FMC_RCD_DELAY(FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RCDDelay));
+
   /* Get SDRAM register value */
   tmpr1 = FMC_Bank5_6->SDCR[FMC_SDRAMInitStruct->FMC_Bank];
 
@@ -106,17 +1225,17 @@ void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
                         FMC_SDCR1_NB | FMC_SDCR1_CAS | FMC_SDCR1_WP | \
                         FMC_SDCR1_SDCLK | FMC_SDCR1_RBURST | FMC_SDCR1_RPIPE));
 
-  /* SDRAM bank control register configuration */ 
+  /* SDRAM bank control register configuration */
   tmpr1 |=   (uint32_t)FMC_SDRAMInitStruct->FMC_ColumnBitsNumber |
                        FMC_SDRAMInitStruct->FMC_RowBitsNumber |
                        FMC_SDRAMInitStruct->FMC_SDMemoryDataWidth |
-                       FMC_SDRAMInitStruct->FMC_InternalBankNumber |           
+                       FMC_SDRAMInitStruct->FMC_InternalBankNumber |
                        FMC_SDRAMInitStruct->FMC_CASLatency |
                        FMC_SDRAMInitStruct->FMC_WriteProtection |
                        FMC_SDRAMInitStruct->FMC_SDClockPeriod |
-                       FMC_SDRAMInitStruct->FMC_ReadBurst | 
+                       FMC_SDRAMInitStruct->FMC_ReadBurst |
                        FMC_SDRAMInitStruct->FMC_ReadPipeDelay;
-            
+
   if(FMC_SDRAMInitStruct->FMC_Bank == FMC_Bank1_SDRAM )
   {
     FMC_Bank5_6->SDCR[FMC_SDRAMInitStruct->FMC_Bank] = tmpr1;
@@ -132,9 +1251,9 @@ void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
                           FMC_SDCR1_SDCLK | FMC_SDCR1_RBURST | FMC_SDCR1_RPIPE));
 
     tmpr3 |= (uint32_t)FMC_SDRAMInitStruct->FMC_SDClockPeriod |
-                       FMC_SDRAMInitStruct->FMC_ReadBurst | 
+                       FMC_SDRAMInitStruct->FMC_ReadBurst |
                        FMC_SDRAMInitStruct->FMC_ReadPipeDelay;
-    
+
     FMC_Bank5_6->SDCR[FMC_Bank1_SDRAM] = tmpr3;
     FMC_Bank5_6->SDCR[FMC_SDRAMInitStruct->FMC_Bank] = tmpr1;
   }
@@ -156,7 +1275,7 @@ void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
                           (((FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_WriteRecoveryTime)-1) << 16) |
                           (((FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RPDelay)-1) << 20) |
                           (((FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RCDDelay)-1) << 24);
-            
+
             FMC_Bank5_6->SDTR[FMC_SDRAMInitStruct->FMC_Bank] = tmpr2;
   }
   else   /* SDTR "don't care bits configuration */
@@ -173,7 +1292,7 @@ void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
                           (((FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_ExitSelfRefreshDelay)-1) << 4) |
                           (((FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_SelfRefreshTime)-1) << 8) |
                           (((FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_WriteRecoveryTime)-1) << 16);
-    
+
     /* Get SDTR register value */
     tmpr4 = FMC_Bank5_6->SDTR[FMC_Bank1_SDRAM];
 
@@ -184,41 +1303,41 @@ void FMC_SDRAMInit(FMC_SDRAMInitTypeDef* FMC_SDRAMInitStruct)
 
     tmpr4 |=   (uint32_t)(((FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RowCycleDelay)-1) << 12) |
                           (((FMC_SDRAMInitStruct->FMC_SDRAMTimingStruct->FMC_RPDelay)-1) << 20);
-            
+
             FMC_Bank5_6->SDTR[FMC_Bank1_SDRAM] = tmpr4;
             FMC_Bank5_6->SDTR[FMC_SDRAMInitStruct->FMC_Bank] = tmpr2;
   }
-  
+
 }
 
 void FMC_SDRAMCmdConfig(FMC_SDRAMCommandTypeDef* FMC_SDRAMCommandStruct)
 {
   uint32_t tmpr = 0x0;
-    
+
   /* check parameters */
   assert_param(IS_FMC_COMMAND_MODE(FMC_SDRAMCommandStruct->FMC_CommandMode));
   assert_param(IS_FMC_COMMAND_TARGET(FMC_SDRAMCommandStruct->FMC_CommandTarget));
   assert_param(IS_FMC_AUTOREFRESH_NUMBER(FMC_SDRAMCommandStruct->FMC_AutoRefreshNumber));
   assert_param(IS_FMC_MODE_REGISTER(FMC_SDRAMCommandStruct->FMC_ModeRegisterDefinition));
-  
+
   tmpr =   (uint32_t)(FMC_SDRAMCommandStruct->FMC_CommandMode |
                       FMC_SDRAMCommandStruct->FMC_CommandTarget |
                      (((FMC_SDRAMCommandStruct->FMC_AutoRefreshNumber)-1)<<5) |
                      ((FMC_SDRAMCommandStruct->FMC_ModeRegisterDefinition)<<9));
-  
+
   FMC_Bank5_6->SDCMR = tmpr;
 
 }
 
 /**
-  * @brief  Configures all SDRAM memory I/Os pins. 
-  * @param  None. 
+  * @brief  Configures all SDRAM memory I/Os pins.
+  * @param  None.
   * @retval None.
   */
 void SDRAM_GPIOConfig(void)
 {
 #if defined CTLSTYLE_V1D	/* Плата STM32F429I-DISCO с процессором STM32F429ZIT6	*/
-                            
+
 /*-- GPIOs Configuration -----------------------------------------------------*/
 /*
  +-------------------+--------------------+--------------------+--------------------+
@@ -228,19 +1347,19 @@ void SDRAM_GPIOConfig(void)
  | PD1  <-> FMC_D3   | PE1  <-> FMC_NBL1  | PF1  <-> FMC_A1    | PG1  <-> FMC_A11   |
  | PD8  <-> FMC_D13  | PE7  <-> FMC_D4    | PF2  <-> FMC_A2    | PG8  <-> FMC_SDCLK |
  | PD9  <-> FMC_D14  | PE8  <-> FMC_D5    | PF3  <-> FMC_A3    | PG15 <-> FMC_NCAS  |
- | PD10 <-> FMC_D15  | PE9  <-> FMC_D6    | PF4  <-> FMC_A4    |--------------------+ 
- | PD14 <-> FMC_D0   | PE10 <-> FMC_D7    | PF5  <-> FMC_A5    |   
- | PD15 <-> FMC_D1   | PE11 <-> FMC_D8    | PF11 <-> FMC_NRAS  | 
- +-------------------| PE12 <-> FMC_D9    | PF12 <-> FMC_A6    | 
-                     | PE13 <-> FMC_D10   | PF13 <-> FMC_A7    |    
+ | PD10 <-> FMC_D15  | PE9  <-> FMC_D6    | PF4  <-> FMC_A4    |--------------------+
+ | PD14 <-> FMC_D0   | PE10 <-> FMC_D7    | PF5  <-> FMC_A5    |
+ | PD15 <-> FMC_D1   | PE11 <-> FMC_D8    | PF11 <-> FMC_NRAS  |
+ +-------------------| PE12 <-> FMC_D9    | PF12 <-> FMC_A6    |
+                     | PE13 <-> FMC_D10   | PF13 <-> FMC_A7    |
                      | PE14 <-> FMC_D11   | PF14 <-> FMC_A8    |
                      | PE15 <-> FMC_D12   | PF15 <-> FMC_A9    |
  +-------------------+--------------------+--------------------+
- | PB5 <-> FMC_SDCKE1| 
- | PB6 <-> FMC_SDNE1 | 
+ | PB5 <-> FMC_SDCKE1|
+ | PB6 <-> FMC_SDNE1 |
  | PC0 <-> FMC_SDNWE |
- +-------------------+  
-  
+ +-------------------+
+
 */
   enum { GPIO_AF_FMC = 12 };
 
@@ -359,16 +1478,16 @@ FlagStatus FMC_GetFlagStatus(uint32_t FMC_Bank, uint32_t FMC_FLAG)
 {
   FlagStatus bitstatus = RESET;
   uint32_t tmpsr = 0x00000000;
-  
+
   /* Check the parameters */
   assert_param(IS_FMC_GETFLAG_BANK(FMC_Bank));
   assert_param(IS_FMC_GET_FLAG(FMC_FLAG));
-  
+
 #if defined CTLSTYLE_V1D	/* Плата STM32F429I-DISCO с процессором STM32F429ZIT6	*/
   if(FMC_Bank == FMC_Bank2_NAND)
   {
     tmpsr = FMC_Bank2_3->SR2;
-  }  
+  }
   else if(FMC_Bank == FMC_Bank3_NAND)
   {
     tmpsr = FMC_Bank2_3->SR3;
@@ -377,7 +1496,7 @@ FlagStatus FMC_GetFlagStatus(uint32_t FMC_Bank, uint32_t FMC_FLAG)
   {
     tmpsr = FMC_Bank4->SR4;
   }
-  else 
+  else
 #endif
   {
     tmpsr = FMC_Bank5_6->SDSR;
@@ -397,15 +1516,15 @@ FlagStatus FMC_GetFlagStatus(uint32_t FMC_Bank, uint32_t FMC_FLAG)
 }
 
 /**
-  * @brief  Executes the SDRAM memory initialization sequence. 
-  * @param  None. 
+  * @brief  Executes the SDRAM memory initialization sequence.
+  * @param  None.
   * @retval None.
   */
 void SDRAM_InitSequence(void)
 {
   FMC_SDRAMCommandTypeDef FMC_SDRAMCommandStructure;
   uint32_t tmpr = 0;
-  
+
 #if defined CTLSTYLE_V1D	/* Плата STM32F429I-DISCO с процессором STM32F429ZIT6	*/
 /* Step 3 --------------------------------------------------------------------*/
   /* Configure a clock configuration enable command */
@@ -413,50 +1532,50 @@ void SDRAM_InitSequence(void)
   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
-  /* Wait until the SDRAM controller is ready */ 
-  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
-  {
-  }
-  /* Send the command */
-  FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);  
-  
-/* Step 4 --------------------------------------------------------------------*/
-  /* Insert 100 ms delay */
-  __Delay(10);
-    
-/* Step 5 --------------------------------------------------------------------*/
-  /* Configure a PALL (precharge all) command */ 
-  FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_PALL;
-  FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
-  FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
-  FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
-  /* Wait until the SDRAM controller is ready */ 
+  /* Wait until the SDRAM controller is ready */
   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the command */
   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
-  
+
+/* Step 4 --------------------------------------------------------------------*/
+  /* Insert 100 ms delay */
+  __Delay(10);
+
+/* Step 5 --------------------------------------------------------------------*/
+  /* Configure a PALL (precharge all) command */
+  FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_PALL;
+  FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
+  FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
+  FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
+  /* Wait until the SDRAM controller is ready */
+  while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
+  {
+  }
+  /* Send the command */
+  FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
+
 /* Step 6 --------------------------------------------------------------------*/
-  /* Configure a Auto-Refresh command */ 
+  /* Configure a Auto-Refresh command */
   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_AutoRefresh;
   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 4;
   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = 0;
-  /* Wait until the SDRAM controller is ready */ 
+  /* Wait until the SDRAM controller is ready */
   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the  first command */
   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
-  
-  /* Wait until the SDRAM controller is ready */ 
+
+  /* Wait until the SDRAM controller is ready */
   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the second command */
   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
-  
+
 /* Step 7 --------------------------------------------------------------------*/
   /* Program the external memory mode register */
   tmpr = (uint32_t)SDRAM_MODEREG_BURST_LENGTH_2          |
@@ -464,26 +1583,26 @@ void SDRAM_InitSequence(void)
                    SDRAM_MODEREG_CAS_LATENCY_3           |
                    SDRAM_MODEREG_OPERATING_MODE_STANDARD |
                    SDRAM_MODEREG_WRITEBURST_MODE_SINGLE;
-  
-  /* Configure a load Mode register command*/ 
+
+  /* Configure a load Mode register command*/
   FMC_SDRAMCommandStructure.FMC_CommandMode = FMC_Command_Mode_LoadMode;
   FMC_SDRAMCommandStructure.FMC_CommandTarget = FMC_Command_Target_bank2;
   FMC_SDRAMCommandStructure.FMC_AutoRefreshNumber = 1;
   FMC_SDRAMCommandStructure.FMC_ModeRegisterDefinition = tmpr;
-  /* Wait until the SDRAM controller is ready */ 
+  /* Wait until the SDRAM controller is ready */
   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
   /* Send the command */
   FMC_SDRAMCmdConfig(&FMC_SDRAMCommandStructure);
-  
+
 /* Step 8 --------------------------------------------------------------------*/
 
   /* Set the refresh rate counter */
   /* (7.81 us x Freq) - 20 */
   /* Set the device refresh counter */
   FMC_SetRefreshCount(683);
-  /* Wait until the SDRAM controller is ready */ 
+  /* Wait until the SDRAM controller is ready */
   while(FMC_GetFlagStatus(FMC_Bank2_SDRAM, FMC_FLAG_Busy) != RESET)
   {
   }
@@ -561,33 +1680,33 @@ void SDRAM_InitSequence(void)
 void arm_hardware_sdram_initialize(void)
 {
   FMC_SDRAMInitTypeDef  FMC_SDRAMInitStructure;
-  FMC_SDRAMTimingInitTypeDef  FMC_SDRAMTimingInitStructure; 
-  
+  FMC_SDRAMTimingInitTypeDef  FMC_SDRAMTimingInitStructure;
+
   /* GPIO configuration for FMC SDRAM bank */
   SDRAM_GPIOConfig();
-  
+
 #if defined CTLSTYLE_V1D	/* Плата STM32F429I-DISCO с процессором STM32F429ZIT6	*/
   /* Enable FMC clock */
   //RCC_AHB3PeriphClockCmd(RCC_AHB3Periph_FMC, ENABLE);
-  
+
 	RCC->AHB3ENR |= RCC_AHB3ENR_FMCEN;	/* FMC clock enable */
 	__DSB();
- 
+
 /* FMC Configuration ---------------------------------------------------------*/
-/* FMC SDRAM Bank configuration */   
+/* FMC SDRAM Bank configuration */
   /* Timing configuration for 84 Mhz of SD clock frequency (168Mhz/2) */
   /* TMRD: 2 Clock cycles */
-  FMC_SDRAMTimingInitStructure.FMC_LoadToActiveDelay = 2;      
+  FMC_SDRAMTimingInitStructure.FMC_LoadToActiveDelay = 2;
   /* TXSR: min=70ns (6x11.90ns) */
   FMC_SDRAMTimingInitStructure.FMC_ExitSelfRefreshDelay = 7;
   /* TRAS: min=42ns (4x11.90ns) max=120k (ns) */
   FMC_SDRAMTimingInitStructure.FMC_SelfRefreshTime = 4;
-  /* TRC:  min=63 (6x11.90ns) */        
-  FMC_SDRAMTimingInitStructure.FMC_RowCycleDelay = 7;         
+  /* TRC:  min=63 (6x11.90ns) */
+  FMC_SDRAMTimingInitStructure.FMC_RowCycleDelay = 7;
   /* TWR:  2 Clock cycles */
-  FMC_SDRAMTimingInitStructure.FMC_WriteRecoveryTime = 2;      
+  FMC_SDRAMTimingInitStructure.FMC_WriteRecoveryTime = 2;
   /* TRP:  15ns => 2x11.90ns */
-  FMC_SDRAMTimingInitStructure.FMC_RPDelay = 2;                
+  FMC_SDRAMTimingInitStructure.FMC_RPDelay = 2;
   /* TRCD: 15ns => 2x11.90ns */
   FMC_SDRAMTimingInitStructure.FMC_RCDDelay = 2;
 
@@ -599,13 +1718,13 @@ void arm_hardware_sdram_initialize(void)
   FMC_SDRAMInitStructure.FMC_RowBitsNumber = FMC_RowBits_Number_12b;
   FMC_SDRAMInitStructure.FMC_SDMemoryDataWidth = SDRAM_MEMORY_WIDTH;
   FMC_SDRAMInitStructure.FMC_InternalBankNumber = FMC_InternalBank_Number_4;
-  FMC_SDRAMInitStructure.FMC_CASLatency = SDRAM_CAS_LATENCY; 
+  FMC_SDRAMInitStructure.FMC_CASLatency = SDRAM_CAS_LATENCY;
   FMC_SDRAMInitStructure.FMC_WriteProtection = FMC_Write_Protection_Disable;
-  FMC_SDRAMInitStructure.FMC_SDClockPeriod = SDCLOCK_PERIOD;  
+  FMC_SDRAMInitStructure.FMC_SDClockPeriod = SDCLOCK_PERIOD;
   FMC_SDRAMInitStructure.FMC_ReadBurst = SDRAM_READBURST;
   FMC_SDRAMInitStructure.FMC_ReadPipeDelay = FMC_ReadPipe_Delay_1;
   FMC_SDRAMInitStructure.FMC_SDRAMTimingStruct = &FMC_SDRAMTimingInitStructure;
-  
+
 #elif defined CTLSTYLE_V3D	/* Плата STM32F746G-DISCO с процессором STM32F746NGH6	*/
 
 	RCC->AHB3ENR |= RCC_AHB3ENR_FMCEN;	/* FMC clock enable */
@@ -634,10 +1753,10 @@ void arm_hardware_sdram_initialize(void)
 #endif
 
   /* FMC SDRAM bank initialization */
-  FMC_SDRAMInit(&FMC_SDRAMInitStructure); 
+  FMC_SDRAMInit(&FMC_SDRAMInitStructure);
 
   /* FMC SDRAM device initialization sequence */
-  SDRAM_InitSequence(); 
+  SDRAM_InitSequence();
 
 #if 0		// Тест памяти
 	#if defined (SDRAM_BANK_ADDR)
@@ -669,41 +1788,6 @@ void arm_hardware_sdram_initialize(void)
 }
 
 #elif CPUSTYLE_STM32MP1
-
-// Taken from https://github.com/ARM-software/arm-trusted-firmware
-
-/*
-#define INT8_C(x)  x
-#define INT16_C(x) x
-#define INT32_C(x) x
-#define INT64_C(x) x ## LL
-
-#define UINT8_C(x)  x
-#define UINT16_C(x) x
-#define UINT32_C(x) x ## U
-#define UINT64_C(x) x ## ULL
-
-#define INTMAX_C(x)  x ## LL
-#define UINTMAX_C(x) x ## ULL
-*/
-
-#define IS_POWER_OF_TWO(x)			\
-	(((x) & ((x) - 1)) == 0)
-
-#define SIZE_FROM_LOG2_WORDS(n)		(4 << (n))
-
-#define ULL(v) ((unsigned long long) (v))
-#define UL(v) ((unsigned long) (v))
-#define U(v) ((unsigned) (v))
-
-#define BIT_32(nr)			(U(1) << (nr))
-#define BIT_64(nr)			(ULL(1) << (nr))
-
-#ifdef __aarch64__
-#define BIT				BIT_64
-#else
-#define BIT				BIT_32
-#endif
 
 /*
  * Create a contiguous bitmask starting at bit position @l and ending at
@@ -979,20 +2063,6 @@ mmio_clrsetbits_32(uintptr_t addr, uint32_t cmask, uint32_t smask)
 	(void) * reg;
 }
 
-////////////////////////
-
-#define VERBOSE PRINTF
-//#define VERBOSE(...) // PRINTF
-#define ERROR PRINTF
-#define INFO PRINTF
-
-static void panic(void)
-{
-	PRINTF("sdram: panic.\n");
-	return;
-	for (;;)
-		;
-}
 
 // DDR clock in Hz
 unsigned long stm32mp_ddr_clk_get_rate(unsigned long id)
@@ -2153,965 +3223,6 @@ static void stm32mp1_refresh_restore(struct stm32mp1_ddrctl *ctl,
 	stm32mp1_wait_sw_done_ack(ctl);
 }
 
-#if WITHSDRAM_PMC1
-
-#define I2C_TIMEOUT_MS		25
-
-struct regul_struct {
-	const char *dt_node_name;
-	const uint16_t *voltage_table;
-	uint8_t voltage_table_size;
-	uint8_t control_reg;
-	uint8_t low_power_reg;
-	uint8_t pull_down_reg;
-	uint8_t pull_down;
-	uint8_t mask_reset_reg;
-	uint8_t mask_reset;
-};
-
-//static struct i2c_handle_s *pmic_i2c_handle;
-static const uint16_t pmic_i2c_addr = (0x33 << 1);
-
-
-#define TURN_ON_REG			0x1U
-#define TURN_OFF_REG			0x2U
-#define ICC_LDO_TURN_OFF_REG		0x3U
-#define ICC_BUCK_TURN_OFF_REG		0x4U
-#define RESET_STATUS_REG		0x5U
-#define VERSION_STATUS_REG		0x6U
-#define MAIN_CONTROL_REG		0x10U
-#define PADS_PULL_REG			0x11U
-#define BUCK_PULL_DOWN_REG		0x12U
-#define LDO14_PULL_DOWN_REG		0x13U
-#define LDO56_PULL_DOWN_REG		0x14U
-#define VIN_CONTROL_REG			0x15U
-#define PONKEY_TIMER_REG		0x16U
-#define MASK_RANK_BUCK_REG		0x17U
-#define MASK_RESET_BUCK_REG		0x18U
-#define MASK_RANK_LDO_REG		0x19U
-#define MASK_RESET_LDO_REG		0x1AU
-#define WATCHDOG_CONTROL_REG		0x1BU
-#define WATCHDOG_TIMER_REG		0x1CU
-#define BUCK_ICC_TURNOFF_REG		0x1DU
-#define LDO_ICC_TURNOFF_REG		0x1EU
-#define BUCK_APM_CONTROL_REG		0x1FU
-#define BUCK1_CONTROL_REG		0x20U
-#define BUCK2_CONTROL_REG		0x21U
-#define BUCK3_CONTROL_REG		0x22U
-#define BUCK4_CONTROL_REG		0x23U
-#define VREF_DDR_CONTROL_REG		0x24U
-#define LDO1_CONTROL_REG		0x25U
-#define LDO2_CONTROL_REG		0x26U
-#define LDO3_CONTROL_REG		0x27U
-#define LDO4_CONTROL_REG		0x28U
-#define LDO5_CONTROL_REG		0x29U
-#define LDO6_CONTROL_REG		0x2AU
-#define BUCK1_PWRCTRL_REG		0x30U
-#define BUCK2_PWRCTRL_REG		0x31U
-#define BUCK3_PWRCTRL_REG		0x32U
-#define BUCK4_PWRCTRL_REG		0x33U
-#define VREF_DDR_PWRCTRL_REG		0x34U
-#define LDO1_PWRCTRL_REG		0x35U
-#define LDO2_PWRCTRL_REG		0x36U
-#define LDO3_PWRCTRL_REG		0x37U
-#define LDO4_PWRCTRL_REG		0x38U
-#define LDO5_PWRCTRL_REG		0x39U
-#define LDO6_PWRCTRL_REG		0x3AU
-#define FREQUENCY_SPREADING_REG		0x3BU
-#define USB_CONTROL_REG			0x40U
-#define ITLATCH1_REG			0x50U
-#define ITLATCH2_REG			0x51U
-#define ITLATCH3_REG			0x52U
-#define ITLATCH4_REG			0x53U
-#define ITSETLATCH1_REG			0x60U
-#define ITSETLATCH2_REG			0x61U
-#define ITSETLATCH3_REG			0x62U
-#define ITSETLATCH4_REG			0x63U
-#define ITCLEARLATCH1_REG		0x70U
-#define ITCLEARLATCH2_REG		0x71U
-#define ITCLEARLATCH3_REG		0x72U
-#define ITCLEARLATCH4_REG		0x73U
-#define ITMASK1_REG			0x80U
-#define ITMASK2_REG			0x81U
-#define ITMASK3_REG			0x82U
-#define ITMASK4_REG			0x83U
-#define ITSETMASK1_REG			0x90U
-#define ITSETMASK2_REG			0x91U
-#define ITSETMASK3_REG			0x92U
-#define ITSETMASK4_REG			0x93U
-#define ITCLEARMASK1_REG		0xA0U
-#define ITCLEARMASK2_REG		0xA1U
-#define ITCLEARMASK3_REG		0xA2U
-#define ITCLEARMASK4_REG		0xA3U
-#define ITSOURCE1_REG			0xB0U
-#define ITSOURCE2_REG			0xB1U
-#define ITSOURCE3_REG			0xB2U
-#define ITSOURCE4_REG			0xB3U
-
-/* Registers masks */
-#define LDO_VOLTAGE_MASK		0x7CU
-#define BUCK_VOLTAGE_MASK		0xFCU
-#define LDO_BUCK_VOLTAGE_SHIFT		2
-#define LDO_BUCK_ENABLE_MASK		0x01U
-#define LDO_BUCK_HPLP_ENABLE_MASK	0x02U
-#define LDO_BUCK_HPLP_SHIFT		1
-#define LDO_BUCK_RANK_MASK		0x01U
-#define LDO_BUCK_RESET_MASK		0x01U
-#define LDO_BUCK_PULL_DOWN_MASK		0x03U
-
-/* Pull down register */
-#define BUCK1_PULL_DOWN_SHIFT		0
-#define BUCK2_PULL_DOWN_SHIFT		2
-#define BUCK3_PULL_DOWN_SHIFT		4
-#define BUCK4_PULL_DOWN_SHIFT		6
-#define VREF_DDR_PULL_DOWN_SHIFT	4
-
-/* Buck Mask reset register */
-#define BUCK1_MASK_RESET		0
-#define BUCK2_MASK_RESET		1
-#define BUCK3_MASK_RESET		2
-#define BUCK4_MASK_RESET		3
-
-/* LDO Mask reset register */
-#define LDO1_MASK_RESET			0
-#define LDO2_MASK_RESET			1
-#define LDO3_MASK_RESET			2
-#define LDO4_MASK_RESET			3
-#define LDO5_MASK_RESET			4
-#define LDO6_MASK_RESET			5
-#define VREF_DDR_MASK_RESET		6
-
-/* Main PMIC Control Register (MAIN_CONTROL_REG) */
-#define ICC_EVENT_ENABLED		BIT(4)
-#define PWRCTRL_POLARITY_HIGH		BIT(3)
-#define PWRCTRL_PIN_VALID		BIT(2)
-#define RESTART_REQUEST_ENABLED		BIT(1)
-#define SOFTWARE_SWITCH_OFF_ENABLED	BIT(0)
-
-/* Main PMIC PADS Control Register (PADS_PULL_REG) */
-#define WAKEUP_DETECTOR_DISABLED	BIT(4)
-#define PWRCTRL_PD_ACTIVE		BIT(3)
-#define PWRCTRL_PU_ACTIVE		BIT(2)
-#define WAKEUP_PD_ACTIVE		BIT(1)
-#define PONKEY_PU_ACTIVE		BIT(0)
-
-/* Main PMIC VINLOW Control Register (VIN_CONTROL_REGC DMSC) */
-#define SWIN_DETECTOR_ENABLED		BIT(7)
-#define SWOUT_DETECTOR_ENABLED          BIT(6)
-#define VINLOW_HYST_MASK		0x3
-#define VINLOW_HYST_SHIFT		4
-#define VINLOW_THRESHOLD_MASK		0x7
-#define VINLOW_THRESHOLD_SHIFT		1
-#define VINLOW_ENABLED			0x01
-#define VINLOW_CTRL_REG_MASK		0xFF
-
-/* USB Control Register */
-#define BOOST_OVP_DISABLED		BIT(7)
-#define VBUS_OTG_DETECTION_DISABLED	BIT(6)
-#define OCP_LIMIT_HIGH			BIT(3)
-#define SWIN_SWOUT_ENABLED		BIT(2)
-#define USBSW_OTG_SWITCH_ENABLED	BIT(1)
-
-
-#define STPMIC1_LDO12356_OUTPUT_MASK	(uint8_t)(GENMASK(6, 2))
-#define STPMIC1_LDO12356_OUTPUT_SHIFT	2
-#define STPMIC1_LDO3_MODE		(uint8_t)(BIT(7))
-#define STPMIC1_LDO3_DDR_SEL		31U
-#define STPMIC1_LDO3_1800000		(9U << STPMIC1_LDO12356_OUTPUT_SHIFT)
-
-#define STPMIC1_BUCK_OUTPUT_SHIFT	2
-#define STPMIC1_BUCK3_1V8		(39U << STPMIC1_BUCK_OUTPUT_SHIFT)
-
-#define STPMIC1_DEFAULT_START_UP_DELAY_MS	1
-
-/* Voltage tables in mV */
-static const uint16_t buck1_voltage_table[] = {
-	725,
-	725,
-	725,
-	725,
-	725,
-	725,
-	750,
-	775,
-	800,
-	825,
-	850,
-	875,
-	900,
-	925,
-	950,
-	975,
-	1000,
-	1025,
-	1050,
-	1075,
-	1100,
-	1125,
-	1150,
-	1175,
-	1200,
-	1225,
-	1250,
-	1275,
-	1300,
-	1325,
-	1350,
-	1375,
-	1400,
-	1425,
-	1450,
-	1475,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-	1500,
-};
-
-static const uint16_t buck2_voltage_table[] = {
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1050,
-	1050,
-	1100,
-	1100,
-	1150,
-	1150,
-	1200,
-	1200,
-	1250,
-	1250,
-	1300,
-	1300,
-	1350,
-	1350,
-	1400,
-	1400,
-	1450,
-	1450,
-	1500,
-};
-
-static const uint16_t buck3_voltage_table[] = {
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1000,
-	1100,
-	1100,
-	1100,
-	1100,
-	1200,
-	1200,
-	1200,
-	1200,
-	1300,
-	1300,
-	1300,
-	1300,
-	1400,
-	1400,
-	1400,
-	1400,
-	1500,
-	1600,
-	1700,
-	1800,
-	1900,
-	2000,
-	2100,
-	2200,
-	2300,
-	2400,
-	2500,
-	2600,
-	2700,
-	2800,
-	2900,
-	3000,
-	3100,
-	3200,
-	3300,
-	3400,
-};
-
-static const uint16_t buck4_voltage_table[] = {
-	600,
-	625,
-	650,
-	675,
-	700,
-	725,
-	750,
-	775,
-	800,
-	825,
-	850,
-	875,
-	900,
-	925,
-	950,
-	975,
-	1000,
-	1025,
-	1050,
-	1075,
-	1100,
-	1125,
-	1150,
-	1175,
-	1200,
-	1225,
-	1250,
-	1275,
-	1300,
-	1300,
-	1350,
-	1350,
-	1400,
-	1400,
-	1450,
-	1450,
-	1500,
-	1600,
-	1700,
-	1800,
-	1900,
-	2000,
-	2100,
-	2200,
-	2300,
-	2400,
-	2500,
-	2600,
-	2700,
-	2800,
-	2900,
-	3000,
-	3100,
-	3200,
-	3300,
-	3400,
-	3500,
-	3600,
-	3700,
-	3800,
-	3900,
-};
-
-static const uint16_t ldo1_voltage_table[] = {
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1800,
-	1900,
-	2000,
-	2100,
-	2200,
-	2300,
-	2400,
-	2500,
-	2600,
-	2700,
-	2800,
-	2900,
-	3000,
-	3100,
-	3200,
-	3300,
-};
-
-static const uint16_t ldo2_voltage_table[] = {
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1800,
-	1900,
-	2000,
-	2100,
-	2200,
-	2300,
-	2400,
-	2500,
-	2600,
-	2700,
-	2800,
-	2900,
-	3000,
-	3100,
-	3200,
-	3300,
-};
-
-static const uint16_t ldo3_voltage_table[] = {
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1800,
-	1900,
-	2000,
-	2100,
-	2200,
-	2300,
-	2400,
-	2500,
-	2600,
-	2700,
-	2800,
-	2900,
-	3000,
-	3100,
-	3200,
-	3300,
-	3300,
-	3300,
-	3300,
-	3300,
-	3300,
-	3300,
-	500,
-	0xFFFF, /* VREFDDR */
-};
-
-static const uint16_t ldo5_voltage_table[] = {
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1700,
-	1800,
-	1900,
-	2000,
-	2100,
-	2200,
-	2300,
-	2400,
-	2500,
-	2600,
-	2700,
-	2800,
-	2900,
-	3000,
-	3100,
-	3200,
-	3300,
-	3400,
-	3500,
-	3600,
-	3700,
-	3800,
-	3900,
-};
-
-static const uint16_t ldo6_voltage_table[] = {
-	900,
-	1000,
-	1100,
-	1200,
-	1300,
-	1400,
-	1500,
-	1600,
-	1700,
-	1800,
-	1900,
-	2000,
-	2100,
-	2200,
-	2300,
-	2400,
-	2500,
-	2600,
-	2700,
-	2800,
-	2900,
-	3000,
-	3100,
-	3200,
-	3300,
-};
-
-static const uint16_t ldo4_voltage_table[] = {
-	3300,
-};
-
-static const uint16_t vref_ddr_voltage_table[] = {
-	3300,
-};
-
-/* Table of Regulators in PMIC SoC */
-static const struct regul_struct regulators_table[] = {
-	{
-		.dt_node_name	= "buck1",
-		.voltage_table	= buck1_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(buck1_voltage_table),
-		.control_reg	= BUCK1_CONTROL_REG,
-		.low_power_reg	= BUCK1_PWRCTRL_REG,
-		.pull_down_reg	= BUCK_PULL_DOWN_REG,
-		.pull_down	= BUCK1_PULL_DOWN_SHIFT,
-		.mask_reset_reg	= MASK_RESET_BUCK_REG,
-		.mask_reset	= BUCK1_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "buck2",
-		.voltage_table	= buck2_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(buck2_voltage_table),
-		.control_reg	= BUCK2_CONTROL_REG,
-		.low_power_reg	= BUCK2_PWRCTRL_REG,
-		.pull_down_reg	= BUCK_PULL_DOWN_REG,
-		.pull_down	= BUCK2_PULL_DOWN_SHIFT,
-		.mask_reset_reg	= MASK_RESET_BUCK_REG,
-		.mask_reset	= BUCK2_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "buck3",
-		.voltage_table	= buck3_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(buck3_voltage_table),
-		.control_reg	= BUCK3_CONTROL_REG,
-		.low_power_reg	= BUCK3_PWRCTRL_REG,
-		.pull_down_reg	= BUCK_PULL_DOWN_REG,
-		.pull_down	= BUCK3_PULL_DOWN_SHIFT,
-		.mask_reset_reg	= MASK_RESET_BUCK_REG,
-		.mask_reset	= BUCK3_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "buck4",
-		.voltage_table	= buck4_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(buck4_voltage_table),
-		.control_reg	= BUCK4_CONTROL_REG,
-		.low_power_reg	= BUCK4_PWRCTRL_REG,
-		.pull_down_reg	= BUCK_PULL_DOWN_REG,
-		.pull_down	= BUCK4_PULL_DOWN_SHIFT,
-		.mask_reset_reg	= MASK_RESET_BUCK_REG,
-		.mask_reset	= BUCK4_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "ldo1",
-		.voltage_table	= ldo1_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(ldo1_voltage_table),
-		.control_reg	= LDO1_CONTROL_REG,
-		.low_power_reg	= LDO1_PWRCTRL_REG,
-		.mask_reset_reg	= MASK_RESET_LDO_REG,
-		.mask_reset	= LDO1_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "ldo2",
-		.voltage_table	= ldo2_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(ldo2_voltage_table),
-		.control_reg	= LDO2_CONTROL_REG,
-		.low_power_reg	= LDO2_PWRCTRL_REG,
-		.mask_reset_reg	= MASK_RESET_LDO_REG,
-		.mask_reset	= LDO2_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "ldo3",
-		.voltage_table	= ldo3_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(ldo3_voltage_table),
-		.control_reg	= LDO3_CONTROL_REG,
-		.low_power_reg	= LDO3_PWRCTRL_REG,
-		.mask_reset_reg	= MASK_RESET_LDO_REG,
-		.mask_reset	= LDO3_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "ldo4",
-		.voltage_table	= ldo4_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(ldo4_voltage_table),
-		.control_reg	= LDO4_CONTROL_REG,
-		.low_power_reg	= LDO4_PWRCTRL_REG,
-		.mask_reset_reg	= MASK_RESET_LDO_REG,
-		.mask_reset	= LDO4_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "ldo5",
-		.voltage_table	= ldo5_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(ldo5_voltage_table),
-		.control_reg	= LDO5_CONTROL_REG,
-		.low_power_reg	= LDO5_PWRCTRL_REG,
-		.mask_reset_reg	= MASK_RESET_LDO_REG,
-		.mask_reset	= LDO5_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "ldo6",
-		.voltage_table	= ldo6_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(ldo6_voltage_table),
-		.control_reg	= LDO6_CONTROL_REG,
-		.low_power_reg	= LDO6_PWRCTRL_REG,
-		.mask_reset_reg	= MASK_RESET_LDO_REG,
-		.mask_reset	= LDO6_MASK_RESET,
-	},
-	{
-		.dt_node_name	= "vref_ddr",
-		.voltage_table	= vref_ddr_voltage_table,
-		.voltage_table_size = ARRAY_SIZE(vref_ddr_voltage_table),
-		.control_reg	= VREF_DDR_CONTROL_REG,
-		.low_power_reg	= VREF_DDR_PWRCTRL_REG,
-		.mask_reset_reg	= MASK_RESET_LDO_REG,
-		.mask_reset	= VREF_DDR_MASK_RESET,
-	},
-};
-
-#define MAX_REGUL	ARRAY_SIZE(regulators_table)
-
-static const struct regul_struct *get_regulator_data(const char *name)
-{
-	uint8_t i;
-
-	for (i = 0 ; i < MAX_REGUL ; i++) {
-		if (strncmp(name, regulators_table[i].dt_node_name,
-			    strlen(regulators_table[i].dt_node_name)) == 0) {
-			return &regulators_table[i];
-		}
-	}
-
-	/* Regulator not found */
-	panic();
-	return NULL;
-}
-
-static uint8_t voltage_to_index(const char *name, uint16_t millivolts)
-{
-	const struct regul_struct *regul = get_regulator_data(name);
-	uint8_t i;
-
-	for (i = 0 ; i < regul->voltage_table_size ; i++) {
-		if (regul->voltage_table[i] == millivolts) {
-			return i;
-		}
-	}
-
-	/* Voltage not found */
-	panic();
-
-	return 0;
-}
-
-
-static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask);
-static int stpmic1_register_read(uint8_t register_id,  uint8_t *value);
-
-static int stpmic1_powerctrl_on(void)
-{
-	return stpmic1_register_update(MAIN_CONTROL_REG, PWRCTRL_PIN_VALID,
-				       PWRCTRL_PIN_VALID);
-}
-
-static int stpmic1_switch_off(void)
-{
-	return stpmic1_register_update(MAIN_CONTROL_REG, 1,
-				       SOFTWARE_SWITCH_OFF_ENABLED);
-}
-
-static int stpmic1_regulator_enable(const char *name)
-{
-	const struct regul_struct *regul = get_regulator_data(name);
-
-	return stpmic1_register_update(regul->control_reg, BIT(0), BIT(0));
-}
-
-static int stpmic1_regulator_disable(const char *name)
-{
-	const struct regul_struct *regul = get_regulator_data(name);
-
-	return stpmic1_register_update(regul->control_reg, 0, BIT(0));
-}
-
-static uint8_t stpmic1_is_regulator_enabled(const char *name)
-{
-	uint8_t val;
-	const struct regul_struct *regul = get_regulator_data(name);
-
-	if (stpmic1_register_read(regul->control_reg, &val) != 0) {
-		panic();
-	}
-
-	return (val & 0x1U);
-}
-
-static int stpmic1_regulator_voltage_set(const char *name, uint16_t millivolts)
-{
-	uint8_t voltage_index = voltage_to_index(name, millivolts);
-	const struct regul_struct *regul = get_regulator_data(name);
-	uint8_t mask;
-
-	/* Voltage can be set for buck<N> or ldo<N> (except ldo4) regulators */
-	if (strncmp(name, "buck", 4) == 0) {
-		mask = BUCK_VOLTAGE_MASK;
-	} else if ((strncmp(name, "ldo", 3) == 0) &&
-		   (strncmp(name, "ldo4", 4) != 0)) {
-		mask = LDO_VOLTAGE_MASK;
-	} else {
-		return 0;
-	}
-
-	return stpmic1_register_update(regul->control_reg,
-				       voltage_index << LDO_BUCK_VOLTAGE_SHIFT,
-				       mask);
-}
-
-static int stpmic1_regulator_pull_down_set(const char *name)
-{
-	const struct regul_struct *regul = get_regulator_data(name);
-
-	if (regul->pull_down_reg != 0) {
-		return stpmic1_register_update(regul->pull_down_reg,
-					       BIT(regul->pull_down),
-					       LDO_BUCK_PULL_DOWN_MASK <<
-					       regul->pull_down);
-	}
-
-	return 0;
-}
-
-static int stpmic1_regulator_mask_reset_set(const char *name)
-{
-	const struct regul_struct *regul = get_regulator_data(name);
-
-	return stpmic1_register_update(regul->mask_reset_reg,
-				       BIT(regul->mask_reset),
-				       LDO_BUCK_RESET_MASK <<
-				       regul->mask_reset);
-}
-
-static int stpmic1_regulator_voltage_get(const char *name)
-{
-	const struct regul_struct *regul = get_regulator_data(name);
-	uint8_t value;
-	uint8_t mask;
-
-	/* Voltage can be set for buck<N> or ldo<N> (except ldo4) regulators */
-	if (strncmp(name, "buck", 4) == 0) {
-		mask = BUCK_VOLTAGE_MASK;
-	} else if ((strncmp(name, "ldo", 3) == 0) &&
-		   (strncmp(name, "ldo4", 4) != 0)) {
-		mask = LDO_VOLTAGE_MASK;
-	} else {
-		return 0;
-	}
-
-	if (stpmic1_register_read(regul->control_reg, &value))
-		return -1;
-
-	value = (value & mask) >> LDO_BUCK_VOLTAGE_SHIFT;
-
-	if (value > regul->voltage_table_size)
-		return -1;
-
-	return (int)regul->voltage_table[value];
-}
-
-static int stpmic1_register_read(uint8_t register_id,  uint8_t *value)
-{
-	uint8_t v;
-
-	i2c_start(pmic_i2c_addr | 0x00);
-	i2c_write_withrestart(register_id);
-	i2c_start(pmic_i2c_addr | 0x01);
-	i2c_read(& v, I2C_READ_ACK_NACK);	/* чтение первого и единственного байта ответа */
-
-	* value = v;
-	return 0;
-/*
-	return stm32_i2c_mem_read(pmic_i2c_handle, pmic_i2c_addr,
-				  (uint16_t)register_id,
-				  I2C_MEMADD_SIZE_8BIT, value,
-				  1, I2C_TIMEOUT_MS);
-*/
-}
-
-static int stpmic1_register_write(uint8_t register_id, uint8_t value)
-{
-	int status = 0;
-
-	i2c_start(pmic_i2c_addr | 0x00);
-	i2c_write(register_id);
-	i2c_write(value);
-	i2c_waitsend();
-	i2c_stop();
-
-/*
-
-	status = stm32_i2c_mem_write(pmic_i2c_handle, pmic_i2c_addr,
-				     (uint16_t)register_id,
-				     I2C_MEMADD_SIZE_8BIT, &value,
-				     1, I2C_TIMEOUT_MS);
-*/
-
-#if ENABLE_ASSERTIONS
-	if (status != 0) {
-		return status;
-	}
-
-	if ((register_id != WATCHDOG_CONTROL_REG) && (register_id <= 0x40U)) {
-		uint8_t readval;
-
-		status = stpmic1_register_read(register_id, &readval);
-		if (status != 0) {
-			return status;
-		}
-
-		if (readval != value) {
-			return -1;
-		}
-	}
-#endif
-
-	return status;
-}
-
-static int stpmic1_register_update(uint8_t register_id, uint8_t value, uint8_t mask)
-{
-	int status;
-	uint8_t val;
-
-	status = stpmic1_register_read(register_id, &val);
-	if (status != 0) {
-		return status;
-	}
-
-	val = (val & ~mask) | (value & mask);
-
-	return stpmic1_register_write(register_id, val);
-}
-
-void stpmic1_dump_regulators(void)
-{
-	uint32_t i;
-
-	for (i = 0U; i < MAX_REGUL; i++) {
-		const char *name __unused = regulators_table[i].dt_node_name;
-
-		PRINTF("PMIC regul %s: %sable, %d mV\n",
-			name,
-			stpmic1_is_regulator_enabled(name) ? "en" : "dis",
-			stpmic1_regulator_voltage_get(name));
-	}
-}
-
-static int stpmic1_get_version(unsigned long *version)
-{
-	int rc;
-	uint8_t read_val = 0xDD;
-
-	rc = stpmic1_register_read(VERSION_STATUS_REG, &read_val);
-	if (rc) {
-		return -1;
-	}
-
-	*version = (unsigned long)read_val;
-
-	return 0;
-}
-
-
-static int initialize_pmic_i2c(void)
-{
-
-	i2c_initialize();
-
-	return 1;
-}
-
-static void initialize_pmic(void)
-{
-	unsigned long pmic_version;
-
-	if (!initialize_pmic_i2c()) {
-		VERBOSE("No PMIC\n");
-		return;
-	}
-
-	if (stpmic1_get_version(&pmic_version) != 0) {
-		ERROR("Failed to access PMIC\n");
-		panic();
-	}
-
-	PRINTF("PMIC version = 0x%02lx\n", pmic_version);
-	//stpmic1_dump_regulators();
-
-#if defined(IMAGE_BL2)
-	if (dt_pmic_configure_boot_on_regulators() != 0) {
-		panic();
-	};
-#endif
-}
 
 
 static int pmic_ddr_power_init(enum ddr_type ddr_type)
@@ -3231,113 +3342,6 @@ static int pmic_ddr_power_init(enum ddr_type ddr_type)
 
 	return 0;
 }
-
-
-// LDO1 = 1.8 Volt
-// LDO6 = 1.2 Volt
-// LDO2 = 3.3 Volt
-
-int toshiba_ddr_power_init(void)
-{
-	{
-		uint8_t read_val;
-		int status;
-		// LDO1 = 1.8 Volt
-		status = stpmic1_register_read(LDO1_CONTROL_REG, &read_val);
-		if (status != 0) {
-			return status;
-		}
-
-		read_val &= ~ 0x01;	// enable
-
-		status = stpmic1_register_write(LDO1_CONTROL_REG, read_val);
-		if (status != 0) {
-			return status;
-		}
-
-		status = stpmic1_regulator_voltage_set("ldo1", 1800);
-		if (status != 0) {
-			return status;
-		}
-
-		status = stpmic1_regulator_enable("ldo1");
-		if (status != 0) {
-			return status;
-		}
-
-		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
-	}
-
-	{
-		uint8_t read_val;
-		int status;
-		// LDO6 = 1.2 Volt (toshiba supplay)
-		status = stpmic1_register_read(LDO6_CONTROL_REG, &read_val);
-		if (status != 0) {
-			return status;
-		}
-
-		read_val &= ~ 0x01;	// enable
-
-		status = stpmic1_register_write(LDO6_CONTROL_REG, read_val);
-		if (status != 0) {
-			return status;
-		}
-
-		status = stpmic1_regulator_voltage_set("ldo6", 1200);
-		if (status != 0) {
-			return status;
-		}
-
-		status = stpmic1_regulator_enable("ldo6");
-		if (status != 0) {
-			return status;
-		}
-
-		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
-	}
-
-	{
-		uint8_t read_val;
-		int status;
-		// LDO2 = 3.3 Volt
-		status = stpmic1_register_read(LDO2_CONTROL_REG, &read_val);
-		if (status != 0) {
-			return status;
-		}
-
-		read_val &= ~ 0x01;	// enable
-
-		status = stpmic1_register_write(LDO2_CONTROL_REG, read_val);
-		if (status != 0) {
-			return status;
-		}
-
-		status = stpmic1_regulator_voltage_set("ldo2", 3300);
-		if (status != 0) {
-			return status;
-		}
-
-		status = stpmic1_regulator_enable("ldo2");
-		if (status != 0) {
-			return status;
-		}
-
-		local_delay_ms(STPMIC1_DEFAULT_START_UP_DELAY_MS);
-	}
-	{
-		uint8_t read_val;
-		int status;
-		status = stpmic1_regulator_disable("ldo5");
-		if (status != 0) {
-			return status;
-		}
-	}
-
-	return 0;
-}
-
-#endif /* WITHSDRAM_PMC1 */
 
 static int board_ddr_power_init(enum ddr_type ddr_type)
 {

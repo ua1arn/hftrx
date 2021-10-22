@@ -49,7 +49,7 @@
 	#define RCC_USBCKSELR_USBOSRC_VAL 1
 	#define RCC_USBCKSELR_USBPHYSRC_VAL 0
 
-	#if WITHISBOOTLOADER
+	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
 		// ref1_ck, ref2_ck - 8..16 MHz
 		// PLL1, PLL2 VCOs
@@ -321,7 +321,9 @@
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 
 #else /* WITHISBOOTLOADER */
 
@@ -404,7 +406,7 @@
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
-	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу

@@ -18,7 +18,7 @@
 
 #include "keyboard.h"
 #include "src/display/fontmaps.h"
-#include "list.h"
+#include "mslist.h"
 #include "codecs.h"
 
 #include "src/gui/gui.h"

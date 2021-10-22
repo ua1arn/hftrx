@@ -830,7 +830,7 @@ void r7s721_intc_initialize(void)
 	{
 		VERIFY(0 == IRQ_Disable(irqn));
 		VERIFY(0 == IRQ_SetMode(irqn, modes [irqn]));
-		VERIFY(0 == IRQ_SetPriority(irqn, 31));
+		VERIFY(0 == IRQ_SetPriority(irqn, 31));	// non-atomic operation
 		//VERIFY(0 == IRQ_SetHandler(irqn, Userdef_INTC_Dummy_Interrupt));
 		GIC_SetGroup(irqn, 0);
 	}
@@ -1025,7 +1025,11 @@ HardFault_Handler(void)
 //	dbg_putchar('S');	// "SK"
 //	dbg_putchar('K');
 	PRINTF(PSTR("HardFault_Handler trapped.\n"));
-	PRINTF(PSTR(" CPUID=%08lx\n"), SCB->CPUID);
+	PRINTF(PSTR(" HFSR=%08lx\n"), SCB->HFSR);
+	// 0x02000000 - DIVZERO
+	// 0x01000000 - unaligned
+	PRINTF(PSTR(" CFSR=%08lx %c %c\n"), SCB->CFSR, (SCB->CFSR & 0x02000000) != 0 ? 'Z' : ' ', (SCB->CFSR & 0x01000000) != 0 ? 'U' : ' ');
+	PRINTF(PSTR(" BFAR=%08lx\n"), SCB->BFAR);
 
 #endif
 	//PRINTF(PSTR("HardFault_Handler trapped. HFSR=%08lx\n"), SCB->HFSR);
@@ -1449,9 +1453,110 @@ static void unlock_impl(volatile LOCK_T * p, int line, const char * file, const 
 #endif /* CPUSTYLE_ARM && WITHSMPSYSTEM */
 
 #if CPUSTYLE_ARM
+
+
+// This processor index (0..n-1)
+uint_fast8_t arm_hardware_cpuid(void)
+{
+#if CPUSTYLE_AT91SAM7S
+
+	return 0;
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
+
+	return __get_MPIDR() & 0x03;
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	return 0;
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+static RAMDTCM SPINLOCK_t gicpriority = SPINLOCK_INIT;
+
+#if WITHSMPSYSTEM
+
+//static USBALIGN_BEGIN uint8_t gicshadow_target [1024] USBALIGN_END;
+//static USBALIGN_BEGIN uint8_t gicshadow_config [1024] USBALIGN_END;
+static USBALIGN_BEGIN uint8_t gicshadow_prio [1024] USBALIGN_END;
+
+/* Обработчик SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+static void arm_hardware_gicsfetch(void)
+{
+	// Get ITLinesNumber
+	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	unsigned int_id;
+
+	SPIN_LOCK(& gicpriority);
+	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
+	{
+		GIC_SetPriority(int_id, gicshadow_prio [int_id]);	// non-atomic operation
+	}
+	SPIN_UNLOCK(& gicpriority);
+	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+
+}
+
+/* вызывается на основном процессоре */
+static void arm_hardware_populate(int int_id)
+{
+	//PRINTF("arm_hardware_populate: int_id=%d\n", int_id);
+	//gicshadow_target [int_id] = targetcpu;
+	//gicshadow_config [int_id] = GIC_GetConfiguration(int_id);
+	gicshadow_prio [int_id] = GIC_GetPriority(int_id);
+	//arm_hardware_flush((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//arm_hardware_flush((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	arm_hardware_flush((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+
+	GIC_SendSGI(BOARD_SGI_IRQ, 0x01uL << 1, 0x00);	// CPU1, filer=0
+
+}
+
+/* вызывается на основном процессоре */
+static void arm_hardware_populate_initialize(void)
+{
+	ASSERT(arm_hardware_cpuid() == 0);
+	//PRINTF("arm_hardware_populate_initialize\n");
+	// Get ITLinesNumber
+	const unsigned ITLinesNumber = ((GIC_DistributorInfo() & 0x1f) + 1) * 32;
+	unsigned int_id;
+	for (int_id = 0; int_id < ITLinesNumber; ++ int_id)
+	{
+		gicshadow_prio [int_id] = GIC_GetPriority(int_id);
+	}
+
+	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//arm_hardware_flush_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	arm_hardware_flush_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+
+	arm_hardware_set_handler(BOARD_SGI_IRQ, arm_hardware_gicsfetch, BOARD_SGI_PRIO, 0x01u << 1);
+}
+
+/* вызывается на дополнительном процессоре */
+void arm_hardware_populte_second_initialize(void)
+{
+	ASSERT(arm_hardware_cpuid() != 0);
+	//PRINTF("arm_hardware_populte_second_initialize\n");
+
+	SPIN_LOCK(& gicpriority);
+	GIC_SetPriority(BOARD_SGI_IRQ, BOARD_SGI_PRIO);	// non-atomic operation
+	SPIN_UNLOCK(& gicpriority);
+	//arm_hardware_invalidate((uintptr_t) gicshadow_target, sizeof gicshadow_target);
+	//arm_hardware_invalidate((uintptr_t) gicshadow_config, sizeof gicshadow_config);
+	arm_hardware_invalidate((uintptr_t) gicshadow_prio, sizeof gicshadow_prio);
+}
+
+#endif /* WITHSMPSYSTEM */
+
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
+	ASSERT(arm_hardware_cpuid() == 0);
+
 #if CPUSTYLE_AT91SAM7S
 
 	const uint_fast32_t mask32 = (1UL << int_id);
@@ -1471,17 +1576,27 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	// Cortex-A computers
 
 	VERIFY(IRQ_Disable(int_id) == 0);
+
 	VERIFY(IRQ_SetHandler(int_id, handler) == 0);
-	VERIFY(IRQ_SetPriority(int_id, priority) == 0);
+	SPIN_LOCK(& gicpriority);
+	VERIFY(IRQ_SetPriority(int_id, priority) == 0);	// non-atomic operation
+	SPIN_UNLOCK(& gicpriority);
 	GIC_SetTarget(int_id, targetcpu);
 
-#if CPUSTYLE_STM32MP1
-	// peripheral (hardware) interrupts using the GIC 1-N model.
-	uint_fast32_t cfg = GIC_GetConfiguration(int_id);
-	cfg &= ~ 0x02;	/* Set level sensitive configuration */
-	cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
-	GIC_SetConfiguration(int_id, cfg);
-#endif /* CPUSTYLE_STM32MP1 */
+
+	#if CPUSTYLE_STM32MP1
+		// peripheral (hardware) interrupts using the GIC 1-N model.
+		uint_fast32_t cfg = GIC_GetConfiguration(int_id);
+		cfg &= ~ 0x02;	/* Set level sensitive configuration */
+		cfg |= 0x01;	/* Set 1-N model - Only one processor handles this interrupt. */
+		GIC_SetConfiguration(int_id, cfg);// non-atomic operation
+	#endif /* CPUSTYLE_STM32MP1 */
+
+
+	#if WITHSMPSYSTEM
+
+		arm_hardware_populate(int_id);	// populate for other CPUs
+	#endif /* WITHSMPSYSTEM */
 
 	VERIFY(IRQ_Enable(int_id) == 0);
 
@@ -1491,6 +1606,33 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	NVIC_SetVector(int_id, (uintptr_t) handler);
 	NVIC_SetPriority(int_id, priority);
 	NVIC_EnableIRQ(int_id);
+
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+// Disable interrupt vector
+void arm_hardware_disable_handler(uint_fast16_t int_id)
+{
+	ASSERT(arm_hardware_cpuid() == 0);
+
+#if CPUSTYLE_AT91SAM7S
+
+	const uint_fast32_t mask32 = (1UL << int_id);
+
+	AT91C_BASE_AIC->AIC_IDCR = mask32;		// disable interrupt
+
+#elif defined(__GIC_PRESENT) && (__GIC_PRESENT == 1U)
+	// Cortex-A computers
+
+	VERIFY(IRQ_Disable(int_id) == 0);
+
+	#if WITHSMPSYSTEM
+		arm_hardware_populate(int_id);
+	#endif /* WITHSMPSYSTEM */
+
+#else /* CPUSTYLE_STM32MP1 */
+
+	NVIC_DisableIRQ(int_id);
 
 #endif /* CPUSTYLE_STM32MP1 */
 }
@@ -1668,6 +1810,10 @@ void cpu_initialize(void)
 		GIC_SetInterfacePriorityMask(gARM_BASEPRI_ALL_ENABLED);
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
+
+#if WITHSMPSYSTEM
+	arm_hardware_populate_initialize();
+#endif /* WITHSMPSYSTEM */
 
 #endif /* CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7 */
 	//PRINTF("cpu_initialize done\n");

@@ -4,6 +4,9 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
+#ifndef FORMATS_H_INCLUDED
+#define FORMATS_H_INCLUDED
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -857,3 +860,5 @@ int dbg_getchar(char * r);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+#endif /* FORMATS_H_INCLUDED */

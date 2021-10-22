@@ -421,6 +421,7 @@ void display_setbgcolor(COLORMAIN_T c);
 
 // Интерфейсные функции, специфические для драйвера дисплея - зависящие от типа микросхемы контроллера.
 void display_hardware_initialize(void);	/* вызывается при запрещённых прерываниях. */
+void display_hdmi_initialize(void);
 void display_reset(void);				/* вызывается при разрешённых прерываниях. */
 void display_initialize(void);			/* вызывается при разрешённых прерываниях. */
 void display_uninitialize(void);			/* вызывается при разрешённых прерываниях. */
@@ -1180,6 +1181,9 @@ void openvg_init(PACKEDCOLORMAIN_T * const * frames);
 void openvg_deinit(void);
 void openvg_next(unsigned page);		// текущий буфер отрисовки становится отображаемым, OpenVG переключается на следующий буфер
 
+
+extern const char * savestring;
+extern const char * savewhere;
 
 #ifdef __cplusplus
 }

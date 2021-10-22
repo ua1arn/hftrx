@@ -25,7 +25,8 @@
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 
 #define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -206,7 +207,7 @@
 			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piog_inputs(ENCODER2_BITS); \
 			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
@@ -426,6 +427,10 @@
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
 	#define ELKEY_BIT_LEFT				(1U << 10)		// PD10
 	#define ELKEY_BIT_RIGHT				(1U << 11)		// PD11
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 
 	#define ELKEY_INITIALIZE() \
 		do { \

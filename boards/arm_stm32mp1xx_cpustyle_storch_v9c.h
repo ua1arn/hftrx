@@ -72,9 +72,9 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_EHCI		USB1_EHCI
-	//#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		USB1_EHCI
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -127,7 +127,7 @@
 
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -435,33 +435,38 @@
 
 
 	// +++
-	// TXDISABLE input - PD10
-	#define TXDISABLE_TARGET_PIN				(GPIOD->IDR)
-	#define TXDISABLE_BIT_TXDISABLE				0//(1U << 10)		// PD10 - TX INHIBIT
+	// TXDISABLE input - PZ3
+	#define TXDISABLE_TARGET_PIN				(GPIOZ->IDR)
+	#define TXDISABLE_BIT_TXDISABLE				(1U << 3)		// PZ3 - TX INHIBIT
 	// получить бит запрета передачи (от усилителя мощности)
-	#define HARDWARE_GET_TXDISABLE() (0) //((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
+	#define HARDWARE_GET_TXDISABLE() ((TXDISABLE_TARGET_PIN & TXDISABLE_BIT_TXDISABLE) != 0)
 	#define TXDISABLE_INITIALIZE() \
 		do { \
-			arm_hardware_piod_inputs(TXDISABLE_BIT_TXDISABLE); \
-			arm_hardware_piod_updown(0, TXDISABLE_BIT_TXDISABLE); \
+			arm_hardware_pioz_inputs(TXDISABLE_BIT_TXDISABLE); \
+			arm_hardware_pioz_updown(0, TXDISABLE_BIT_TXDISABLE); \
 		} while (0)
 	// ---
 
 	// +++
 	// PTT input - PF2
 	// PTT2 input - PF3
+	// PTT3 input - PF15
 	#define PTT_TARGET_PIN				(GPIOF->IDR)
 	#define PTT_BIT_PTT					(1uL << 2)		// PF2 - PTT
 	#define PTT2_TARGET_PIN				(GPIOF->IDR)
 	#define PTT2_BIT_PTT				(1uL << 3)		// PF3 - PTT2
+	#define PTT3_TARGET_PIN				(GPIOF->IDR)
+	#define PTT3_BIT_PTT				(1uL << 15)		// PF15 - PTT3
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0 || (PTT3_TARGET_PIN & PTT3_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piof_inputs(PTT_BIT_PTT); \
 			arm_hardware_piof_updown(PTT_BIT_PTT, 0); \
 			arm_hardware_piof_inputs(PTT2_BIT_PTT); \
 			arm_hardware_piof_updown(PTT2_BIT_PTT, 0); \
+			arm_hardware_piof_inputs(PTT3_BIT_PTT); \
+			arm_hardware_piof_updown(PTT3_BIT_PTT, 0); \
 		} while (0)
 	// ---
 	// TUNE input - PF4
@@ -494,10 +499,15 @@
 
 	#define ELKEY_TARGET_PIN			(GPIOF->IDR)
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 	#define ELKEY_INITIALIZE() \
 		do { \
-			arm_hardware_piof_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piof_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_piof_inputs(ELKEY_BIT_LEFT); \
+			arm_hardware_piof_updown(ELKEY_BIT_LEFT, 0); \
+			arm_hardware_piof_inputs(ELKEY_BIT_RIGHT); \
+			arm_hardware_piof_updown(ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */

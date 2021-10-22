@@ -658,6 +658,8 @@ const  uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7,
 #define BOARD_USART2_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
 #define BOARD_USART3_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
 #define BOARD_TIM3_FREQ 	(stm32h7xx_get_timx_freq())	// TIM2..TIM7, TIM12..TIM14, LPTIM1, : APB1 D2 bus
+#define BOARD_SYSTICK_FREQ 	(stm32h7xx_get_sys_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+//#define BOARD_SYSTICK_FREQ (stm32h7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 unsigned long stm32h7xx_get_hse_freq(void)
 {
@@ -2310,6 +2312,11 @@ void hardware_spi_io_delay(void)
 	void
 	SysTick_Handler(void)
 	{
+	}
+
+	void
+	SysTick_Handler_Active(void)
+	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
@@ -2366,8 +2373,13 @@ void hardware_spi_io_delay(void)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	void RAMFUNC_NONILINE
+	void
 	SysTick_Handler(void)
+	{
+	}
+
+	void RAMFUNC_NONILINE
+	SysTick_Handler_Active(void)
 	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
@@ -2464,14 +2476,12 @@ void hardware_spi_io_delay(void)
 void
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
-
 	tickers_initialize();
-
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
-	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
-	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// Call SysTick_Handler
+	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
+	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
 
 #elif CPUSTYLE_ATMEGA328
 
@@ -2701,9 +2711,9 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 }
 
 
-#if WITHISBOOTLOADER
+#if 1//WITHISBOOTLOADER
 
-static void stm32mp1_pll_initialize(void)
+void stm32mp1_pll_initialize(void)
 {
 
 	//return;

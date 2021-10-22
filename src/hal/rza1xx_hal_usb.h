@@ -692,7 +692,7 @@ uint16_t USBPhyHw_EP2PIPE(uint16_t ep_addr);
 HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd, uint8_t ch_num,
                                            uint8_t direction, uint8_t ep_type,
                                            uint8_t token, uint8_t *pbuff,
-                                           uint16_t length, uint8_t do_ping);
+										   uint32_t length, uint8_t do_ping);
 
 /* Non-Blocking mode: Interrupt */
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd);

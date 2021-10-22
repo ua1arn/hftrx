@@ -190,8 +190,8 @@ static void r7s721_pio_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		const IRQn_ID_t int_id = irqbase + bitpos;
-		IRQ_Disable(int_id);
-		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);
+		arm_hardware_disable_handler(int_id);
+		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);// non-atomic operation
 		arm_hardware_set_handler(int_id, vector, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
@@ -605,8 +605,8 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		0;
 	{
 		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
-		IRQ_Disable(int_id);
-		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);
+		arm_hardware_disable_handler(int_id);
+		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);// non-atomic operation
 		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
@@ -7381,6 +7381,28 @@ arm_hardware_piok_updown(unsigned long up, unsigned long down)
 
 #endif /* defined (GPIOK) */
 
+#if defined (GPIOZ)
+
+/* включение подтягивающих резисторов к питанию (up) или к земле (down). */
+void
+arm_hardware_pioz_updown(unsigned long up, unsigned long down)
+{
+#if CPUSTYLE_STM32F1XX
+	stm32f10x_pioX_pupdr(GPIOZ, up, down);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	tm32f30x_pioX_pupdr(GPIOZ, up, down);
+
+#elif CPUSTYLE_STM32MP1
+
+	tm32mp1_pioX_pupdr(GPIOZ, up, down);
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+}
+
+#endif /* defined (GPIOZ) */
+
 /* отключение подтягивающих резисторов. */
 void 
 arm_hardware_pioa_updownoff(unsigned long ipins)
@@ -7618,6 +7640,28 @@ arm_hardware_piok_updownoff(unsigned long ipins)
 }
 
 #endif /* defined (GPIOK) */
+
+#if defined (GPIOZ)
+
+/* отключение подтягивающих резисторов. */
+void
+arm_hardware_pioz_updownoff(unsigned long ipins)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupoff(GPIOZ, ipins);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupoff(GPIOZ, ipins);
+
+#elif CPUSTYLE_STM32MP1
+
+	arm_stm32mp1_hardware_pio_pupoff(GPIOZ, ipins);
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+}
+
+#endif /* defined (GPIOZ) */
 
 
 /* разрешить прерывание по изменению состояния указанных битов порта */

@@ -346,7 +346,7 @@ static USBH_StatusTypeDef USBH_HUB_InterfaceInit (USBH_HandleTypeDef *phost, con
 	else
 	{
 		  // check USBH_free
-		static HUB_HandleTypeDef staticHUB_Handle;
+		static RAMNOINIT_D1 HUB_HandleTypeDef staticHUB_Handle;
 		phost->pActiveClass->pData = & staticHUB_Handle;
 		//phost->hubDatas [phost->hubInstances] = (HUB_HandleTypeDef *) USBH_malloc(sizeof (HUB_HandleTypeDef));
 
@@ -566,7 +566,7 @@ static USBH_StatusTypeDef USBH_HUB_ClassRequest(USBH_HandleTypeDef *phost)
 
 					phost->currentTarget = tg;
 				}
-				else if (1 && 0)
+				else if (1 && 1)
 				{
 					// FULL SPEED
 					HUB_Handle->detectedPorts += 1;

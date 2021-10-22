@@ -306,6 +306,10 @@
 	#define ELKEY_BIT_LEFT				(1u << 10)	//GPIO_ODR_ODR14
 	#define ELKEY_BIT_RIGHT				(1u << 11)	//GPIO_ODR_ODR15
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_piob_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \

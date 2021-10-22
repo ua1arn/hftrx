@@ -1772,11 +1772,6 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 
 #if (__CORTEX_A != 0)
 
-uint_fast8_t arm_hardware_cpuid(void)
-{
-	return __get_MPIDR() & 0x03;
-}
-
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
 
@@ -3165,6 +3160,8 @@ static void cortexa_cpuinfo(void)
 	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%08lX\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(),(unsigned long) & vvv);
 }
 
+#if WITHSMPSYSTEM
+
 #if CPUSTYLE_STM32MP1
 
 
@@ -3306,6 +3303,8 @@ void Reset_CPUn_Handler(void)
 	#endif
 
 	cortexa_cpuinfo();
+
+	arm_hardware_populte_second_initialize();
 	__enable_irq();
 	SPIN_UNLOCK(& cpu1init);
 
@@ -3316,9 +3315,7 @@ void Reset_CPUn_Handler(void)
 	}
 }
 
-#endif /*  (__CORTEX_A != 0) */
-
-
+// Вызывается из main
 void cpump_initialize(void)
 {
 #if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
@@ -3355,6 +3352,25 @@ void cpump_initialize(void)
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
 }
+
+#else /* WITHSMPSYSTEM */
+
+void Reset_CPUn_Handler(void)
+{
+
+}
+
+// Вызывается из main
+void cpump_initialize(void)
+{
+	SystemCoreClock = CPU_FREQ;
+	cortexa_cpuinfo();
+
+}
+
+#endif /* WITHSMPSYSTEM */
+
+#endif /*  (__CORTEX_A != 0) */
 
 #if CPUSTYLE_ATSAM3S
 
@@ -3695,6 +3711,17 @@ uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
+/* получить 16-бит значение */
+uint_fast16_t
+USBD_peek_u16(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast16_t) buff [1] << 8) +
+		((uint_fast16_t) buff [0] << 0);
+}
+
 /* получить 24-бит значение */
 uint_fast32_t
 USBD_peek_u24(
@@ -3773,6 +3800,22 @@ unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
 	buff [0] = HI_32BY(v);
 
 	return 4;
+}
+
+/* записать в буфер для ответа 64-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v)
+{
+	buff [0] = (v >> 56) & 0xFF;
+	buff [1] = (v >> 48) & 0xFF;
+	buff [2] = (v >> 40) & 0xFF;
+	buff [3] = (v >> 32) & 0xFF;
+	buff [4] = (v >> 24) & 0xFF;
+	buff [5] = (v >> 16) & 0xFF;
+	buff [6] = (v >> 8) & 0xFF;
+	buff [7] = (v >> 0) & 0xFF;
+
+	return 8;
 }
 
 /* записать в буфер для ответа 24-бит значение */

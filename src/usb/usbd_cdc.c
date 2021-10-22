@@ -139,7 +139,7 @@ typedef struct _SerialStatePacket_t
   SerialState_t    SerialState;
 } SerialStatePacket_t, *pSerialStatePacket_t;
 
-static __ALIGN_BEGIN uint8_t sendState [WITHUSBCDCACM_N] [10] __ALIGN_END;
+static __ALIGN4k_BEGIN uint8_t sendState [WITHUSBCDCACM_N] [10] __ALIGN4k_END;
 
 static void notify(uint_fast8_t offset, uint_fast16_t state)
 {
@@ -168,19 +168,19 @@ static void notify(uint_fast8_t offset, uint_fast16_t state)
 }
 
 // Состояние - выбранные альтернативные конфигурации по каждому интерфейсу USB configuration descriptor
-//static RAMBIGDTCM uint8_t altinterfaces [INTERFACE_count];
+//static uint8_t altinterfaces [INTERFACE_count];
 
-static RAMBIGDTCM volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
+static volatile uint_fast16_t usb_cdc_control_state [INTERFACE_count];
 
 
-static RAMBIGDTCM volatile uint_fast8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
-static RAMBIGDTCM __ALIGN_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN_END;
-static RAMBIGDTCM __ALIGN_BEGIN uint8_t cdcXbuffin [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_IN_DATA_SIZE] __ALIGN_END;
-static RAMBIGDTCM uint_fast16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
+static volatile uint_fast8_t usbd_cdcX_rxenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по приёму символа - HARDWARE_CDC_ONRXCHAR */
+static __ALIGN4k_BEGIN uint8_t cdcXbuffout [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_OUT_DATA_SIZE] __ALIGN4k_END;
+static __ALIGN4k_BEGIN uint8_t cdcXbuffin [WITHUSBCDCACM_N] [VIRTUAL_COM_PORT_IN_DATA_SIZE] __ALIGN4k_END;
+static uint_fast16_t cdcXbuffinlevel [WITHUSBCDCACM_N];
 
-static RAMBIGDTCM __ALIGN_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN_END;
+static __ALIGN4k_BEGIN uint8_t cdc_epXdatabuffout [USB_OTG_MAX_EP0_SIZE] __ALIGN4k_END;
 
-static RAMBIGDTCM uint_fast32_t dwDTERate [INTERFACE_count];
+static uint_fast32_t dwDTERate [INTERFACE_count];
 
 #define MAIN_CDC_OFFSET 0
 #if WITHUSBCDCACM_N > 1
@@ -253,7 +253,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 #endif /* WITHUSBCDCACM_N > 1 */
 }
 
-static RAMBIGDTCM volatile uint_fast8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static volatile uint_fast8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
 
 /* Разрешение/запрещение прерывания по передаче символа */
 void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
@@ -425,7 +425,7 @@ static USBD_StatusTypeDef USBD_CDC_DataOut(USBD_HandleTypeDef *pdev, uint_fast8_
 
 static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req)
 {
-	static __ALIGN_BEGIN uint8_t buff [32] __ALIGN_END;	// was: 7
+	static __ALIGN4k_BEGIN uint8_t buff [32] __ALIGN4k_END;	// was: 7
 	const uint_fast8_t interfacev = LO_BYTE(req->wIndex);
 
 	if ((req->bmRequest & USB_REQ_TYPE_DIR) != 0)
@@ -463,7 +463,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				{
 					case USB_REQ_GET_INTERFACE:
 					{
-						static __ALIGN_BEGIN uint8_t buff [64] __ALIGN_END;
+						static __ALIGN4k_BEGIN uint8_t buff [64] __ALIGN4k_END;
 						//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
 						buff [0] = 0;
 						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));

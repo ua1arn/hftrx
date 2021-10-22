@@ -47,12 +47,12 @@ void Error_Handler(void);
 
 #if defined (WITHUSBHW_DEVICE)
 	/* USB Device Core handle declaration. */
-	RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN_END;
+	__ALIGN4k_BEGIN USBD_HandleTypeDef hUsbDeviceHS __ALIGN4k_END;
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST)
 	/* USB Host Core handle declaration. */
-	RAMBIGDTCM __ALIGN_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN_END;
+	__ALIGN4k_BEGIN USBH_HandleTypeDef hUsbHostHS __ALIGN4k_END;
 
 	// MORI
 //	USBH_HandleTypeDef hUSBHost[5];
@@ -241,6 +241,7 @@ void MX_USB_HOST_Init(void)
 
 void MX_USB_HOST_DeInit(void)
 {
+	USBH_DeInit(& hUsbHostHS);
 
 }
 
@@ -282,6 +283,7 @@ void board_usb_initialize(void)
 {
 #if WITHUSBHW
 	//PRINTF("board_usb_initialize\n");
+
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
 
@@ -302,6 +304,7 @@ void board_usb_initialize(void)
 
 void board_usb_deinitialize(void)
 {
+	//PRINTF("board_usb_deinitialize\n");
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_DeInit();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
@@ -311,6 +314,7 @@ void board_usb_deinitialize(void)
 #if (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC)
 	USB_HS_PHYCDeInit();
 #endif /* (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) || defined (WITHUSBHW_DEVICE)) && defined (USBPHYC) */
+	//PRINTF("board_usb_deinitialize done\n");
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -364,21 +368,26 @@ uint_fast8_t hamradio_get_usbh_active(void)
 #endif /* WITHUSBHW && (defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)) */
 }
 
-#if WITHUSBHW
+#if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 {
 	for (;;)
 	{
-		HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
+		//HID_MOUSE_Info_TypeDef * const p = USBH_HID_GetMouseInfo(phost);
+		HID_TOUCH_Info_TypeDef * const p = USBH_HID_GetTouchInfo(phost);
+
 		if (p == NULL)
 		{
-			TP();
+			//TP();
 			break;
 
 		}
-		PRINTF("USBH_HID_EventCallback: x/y=%d/%d, buttons=%d,%d,%d\n", (int) p->x, (int) p->y, (int) p->buttons [0], (int) p->buttons [1], (int) p->buttons [2]);
+		if (p->buttons [0])
+		{
+			PRINTF("USBH_HID_EventCallback: x/y=%4d/%3d, buttons=%d\n", (int) p->x, (int) p->y, (int) p->buttons [0]);
+		}
 	}
 }
-#endif /* WITHUSBHW */
+#endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

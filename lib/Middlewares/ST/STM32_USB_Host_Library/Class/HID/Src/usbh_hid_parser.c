@@ -97,12 +97,12 @@ EndBSPDependencies */
   * @param  ndx: report index
   * @retval status (0 : fail / otherwise: item value)
   */
-uint32_t HID_ReadItem(HID_Report_ItemTypedef *ri, uint8_t ndx)
+uint32_t HID_ReadItem(const HID_Report_ItemTypedef *ri, uint8_t ndx)
 {
   uint32_t val = 0U;
   uint32_t x = 0U;
   uint32_t bofs;
-  uint8_t *data = ri->data;
+  const uint8_t *data = ri->data;
   uint8_t shift = ri->shift;
 
   /* get the logical value of the item */
@@ -126,7 +126,7 @@ uint32_t HID_ReadItem(HID_Report_ItemTypedef *ri, uint8_t ndx)
   /* read data bytes in little endian order */
   for (x = 0U; x < (((ri->size & 0x7U) != 0U) ? ((ri->size / 8U) + 1U) : (ri->size / 8U)); x++)
   {
-    val = (uint32_t)((uint32_t)(*data) << (x * 8U));
+    val |= (uint32_t)((uint32_t)(*data++) << (x * 8U));
   }
   val = (val >> shift) & (((uint32_t)1U << ri->size) - 1U);
 
@@ -165,7 +165,7 @@ uint32_t HID_ReadItem(HID_Report_ItemTypedef *ri, uint8_t ndx)
   * @param  ndx: report index
   * @retval status (1: fail/ 0 : Ok)
   */
-uint32_t HID_WriteItem(HID_Report_ItemTypedef *ri, uint32_t value, uint8_t ndx)
+uint32_t HID_WriteItem(const HID_Report_ItemTypedef *ri, uint32_t value, uint8_t ndx)
 {
   uint32_t x;
   uint32_t mask;

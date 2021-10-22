@@ -19,8 +19,6 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "hardware.h"
-#include "formats.h"
 
 #include "usbh_core.h"
 
@@ -205,6 +203,8 @@ USBH_StatusTypeDef USBH_DeInit(USBH_HandleTypeDef *phost)
 
 #endif /* (osCMSIS < 0x20000U) */
 #endif /* (USBH_USE_OS == 1U) */
+
+  (void)USBH_LL_DeInit(phost);	/* Added by MGS */
 
   return USBH_OK;
 }
@@ -554,8 +554,6 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
         phost->rootTarget.tt_hubaddr = HOSTDEV_DEFAULT_HUBADDR;
         phost->rootTarget.tt_prtaddr = HOSTDEV_DEFAULT_PRTADDR;
         phost->currentTarget = & phost->rootTarget;
-        PRINTF("phost->currentTarget: addr=%d,hub=%d,port=%d,speed=%d\n",
-        			phost->currentTarget->dev_address, phost->currentTarget->tt_hubaddr, phost->currentTarget->tt_prtaddr, phost->currentTarget->speed);
       }
       else
       {
