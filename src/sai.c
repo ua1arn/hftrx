@@ -2776,11 +2776,10 @@ static void DMA_SAI2_B_RX_initialize_fpga(void)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-#warning use FPGA parameters
-//	DMA2_Stream7->M0AR = dma_invalidate16rx(allocate_dmabuffer16());
-//	DMA2_Stream7->M1AR = dma_invalidate16rx(allocate_dmabuffer16());
-//	DMA2_Stream7->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
-//		(DMABUFFSIZE16 * DMA_SxNDT_0);
+	DMA2_Stream7->M0AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream7->M1AR = dma_invalidate32rx(allocate_dmabuffer32rx());
+	DMA2_Stream7->NDTR = (DMA2_Stream4->NDTR & ~ DMA_SxNDT) |
+		(DMABUFFSIZE32RX * DMA_SxNDT_0);
 
 	DMA2_Stream7->FCR &= ~ (DMA_SxFCR_FEIE_Msk | DMA_SxFCR_DMDIS_Msk);	// use direct mode
 	DRD(DMA2_Stream7->FCR);
