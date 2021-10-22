@@ -7381,6 +7381,28 @@ arm_hardware_piok_updown(unsigned long up, unsigned long down)
 
 #endif /* defined (GPIOK) */
 
+#if defined (GPIOZ)
+
+/* включение подтягивающих резисторов к питанию (up) или к земле (down). */
+void
+arm_hardware_pioz_updown(unsigned long up, unsigned long down)
+{
+#if CPUSTYLE_STM32F1XX
+	stm32f10x_pioX_pupdr(GPIOZ, up, down);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	tm32f30x_pioX_pupdr(GPIOZ, up, down);
+
+#elif CPUSTYLE_STM32MP1
+
+	tm32mp1_pioX_pupdr(GPIOZ, up, down);
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+}
+
+#endif /* defined (GPIOZ) */
+
 /* отключение подтягивающих резисторов. */
 void 
 arm_hardware_pioa_updownoff(unsigned long ipins)
@@ -7618,6 +7640,28 @@ arm_hardware_piok_updownoff(unsigned long ipins)
 }
 
 #endif /* defined (GPIOK) */
+
+#if defined (GPIOZ)
+
+/* отключение подтягивающих резисторов. */
+void
+arm_hardware_pioz_updownoff(unsigned long ipins)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupoff(GPIOZ, ipins);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupoff(GPIOZ, ipins);
+
+#elif CPUSTYLE_STM32MP1
+
+	arm_stm32mp1_hardware_pio_pupoff(GPIOZ, ipins);
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+}
+
+#endif /* defined (GPIOZ) */
 
 
 /* разрешить прерывание по изменению состояния указанных битов порта */
