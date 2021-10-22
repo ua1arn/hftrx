@@ -281,7 +281,9 @@ void MX_USB_HOST_Process(void)
 
 void board_usb_initialize(void)
 {
-	PRINTF("board_usb_initialize\n");
+#if WITHUSBHW
+	//PRINTF("board_usb_initialize\n");
+
 #if WITHUSBDEV_HSDESC
 	usbd_descriptors_initialize(1);
 
@@ -296,7 +298,8 @@ void board_usb_initialize(void)
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
 	MX_USB_HOST_Init();
 #endif /* defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI) */
-	PRINTF("board_usb_initialize done\n");
+	//PRINTF("board_usb_initialize done\n");
+#endif /* WITHUSBHW */
 }
 
 void board_usb_deinitialize(void)
