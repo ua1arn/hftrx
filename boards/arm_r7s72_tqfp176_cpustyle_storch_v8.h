@@ -75,9 +75,9 @@
 		#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
 	#endif /* WITHRTS192 */
 
-	#define WITHFPGAIF_SSIF1	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
-	//#define WITHFPGARTS_SSIF21	1	/* Получение RTS192 от FPGA через SAI2 */
-	#define WITHCODEC1_SSIF0_DUPLEX	1		/* обмен с аудиокодеком через SSIF0 */
+	#define WITHFPGAIF_SSIF1_DUPLEX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+	//#define WITHFPGARTS_SSIF2_RX_MASTER	1	/* Получение RTS192 от FPGA через SAI2 */
+	#define WITHCODEC1_SSIF0_DUPLEX_MASTER	1		/* обмен с аудиокодеком через SSIF0 */
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 

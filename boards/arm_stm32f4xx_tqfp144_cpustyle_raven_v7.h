@@ -33,10 +33,10 @@
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-#define WITHFPGAIF_SAI1	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
-//#define WITHFPGARTS_SAI2	1	/* Получение RTS192 от FPGA через SAI2 */
-#define WITHCODEC1_I2S2_TX	1		/* Передача в аудиокодек через I2S2 */
-#define WITHCODEC1_I2S3_RX	1		/* Прием от аудиокодекоа через I2S3 */
+#define WITHFPGAIF_SAI1_DUPLEX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+//#define WITHFPGARTS_SAI2_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+#define WITHCODEC1_I2S2_TX_SLAVE	1		/* Передача в аудиокодек через I2S2 */
+#define WITHCODEC1_I2S3_RX_SLAVE	1		/* Прием от аудиокодекоа через I2S3 */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
