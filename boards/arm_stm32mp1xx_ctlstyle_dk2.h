@@ -188,6 +188,7 @@
 	#define TSC1_TYPE TSC_TYPE_USBTOUCH
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEFATFS		1	// Запись звука на SD CARD
+	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
