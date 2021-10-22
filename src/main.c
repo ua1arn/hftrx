@@ -8398,10 +8398,9 @@ typedef struct iir_filter {
     double d[(IIR_BIQUAD_MAX_SECTIONS + 1) * IIR_BIQUAD_SECTION_ORDER];
 } iir_filter_t;
 
-iir_filter_t *biquad_create(int sections);
-void biquad_delete(iir_filter_t *filter);
+void biquad_create(iir_filter_t *filter, int sections);
 double biquad_update(iir_filter_t *filter, double x);
-void iir_freq_resp(iir_filter_t *filter, double *h, double fs, double f);
+void iir_freq_resp(const iir_filter_t *filter, double *h, double fs, double f);
 void biquad_zero(struct iir_filter *filter);
 void biquad_init_lowpass(iir_filter_t *filter, double fs, double f);
 void biquad_init_highpass(iir_filter_t *filter, double fs, double f);
@@ -8425,26 +8424,22 @@ static void complex_div(complex_d *p, complex_d *q);
 static void biquad_init_band(iir_filter_t *filter, double fs, double f1, double f2, int stop);
 
 
-iir_filter_t *biquad_create(int sections)
+void biquad_create(iir_filter_t *filter, int sections)
 {
-	static iir_filter_t filter_designer;
+	memset(filter, 0x00, sizeof * filter);
 
-	memset(&filter_designer, 0x00, sizeof(iir_filter_t));
+	filter->sections = sections;
+	filter->sect_ord = IIR_BIQUAD_SECTION_ORDER;
 
-    filter_designer.sections = sections;
-    filter_designer.sect_ord = IIR_BIQUAD_SECTION_ORDER;
-
-	memset(filter_designer.a, 0x00, sizeof(filter_designer.a));
-	memset(filter_designer.b, 0x00, sizeof(filter_designer.b));
-	memset(filter_designer.d, 0x00, sizeof(filter_designer.d));
-
-    return & filter_designer;
+	memset(filter->a, 0x00, sizeof filter->a);
+	memset(filter->b, 0x00, sizeof filter->b);
+	memset(filter->d, 0x00, sizeof filter->d);
 }
 
-void iir_freq_resp(iir_filter_t *filter, double *h, double fs, double f)
+void iir_freq_resp(const iir_filter_t *filter, double *h, double fs, double f)
 {
-    double *a = filter->a;
-    double *b = filter->b;
+    const double *a = filter->a;
+    const double *b = filter->b;
     double w = 2.0 * M_PI * f / fs;
     complex_d _z, m, p, q;
     int i, k;
@@ -8938,25 +8933,26 @@ static int RTTY_StopBits = RTTY_STOP_1;
 
 void RTTYDecoder_Init(void)
 {
+	iir_filter_t f0;
 	//speed
 	RTTY_oneBitSampleCount = (uint16_t)roundf((float32_t)TRX_SAMPLERATE / RTTY_Speed);
 
 	//RTTY LPF Filter
-	iir_filter_t *filter = biquad_create(RTTY_LPF_STAGES);
-	biquad_init_lowpass(filter, TRX_SAMPLERATE, RTTY_Speed * 2);
-	fill_biquad_coeffs(filter, RTTY_LPF_Filter_Coeffs, RTTY_LPF_STAGES);
+	biquad_create(& f0, RTTY_LPF_STAGES);
+	biquad_init_lowpass(& f0, TRX_SAMPLERATE, RTTY_Speed * 2);
+	fill_biquad_coeffs(& f0, RTTY_LPF_Filter_Coeffs, RTTY_LPF_STAGES);
 	arm_biquad_cascade_df2T_init_f32(&RTTY_LPF_Filter, RTTY_LPF_STAGES, RTTY_LPF_Filter_Coeffs, RTTY_LPF_Filter_State);
 
 	//RTTY mark filter
-	filter = biquad_create(RTTY_BPF_STAGES);
-	biquad_init_bandpass(filter, TRX_SAMPLERATE, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
-	fill_biquad_coeffs(filter, RTTY_Mark_Filter_Coeffs, RTTY_BPF_STAGES);
+	biquad_create(& f0, RTTY_BPF_STAGES);
+	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqMark - RTTY_BPF_WIDTH / 2, RTTY_FreqMark + RTTY_BPF_WIDTH / 2);
+	fill_biquad_coeffs(& f0, RTTY_Mark_Filter_Coeffs, RTTY_BPF_STAGES);
 	arm_biquad_cascade_df2T_init_f32(&RTTY_Mark_Filter, RTTY_BPF_STAGES, RTTY_Mark_Filter_Coeffs, RTTY_Mark_Filter_State);
 
 	//RTTY space filter
-	filter = biquad_create(RTTY_BPF_STAGES);
-	biquad_init_bandpass(filter, TRX_SAMPLERATE, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
-	fill_biquad_coeffs(filter, RTTY_Space_Filter_Coeffs, RTTY_BPF_STAGES);
+	biquad_create(& f0, RTTY_BPF_STAGES);
+	biquad_init_bandpass(& f0, TRX_SAMPLERATE, RTTY_FreqSpace - RTTY_BPF_WIDTH / 2, RTTY_FreqSpace + RTTY_BPF_WIDTH / 2);
+	fill_biquad_coeffs(& f0, RTTY_Space_Filter_Coeffs, RTTY_BPF_STAGES);
 	arm_biquad_cascade_df2T_init_f32(&RTTY_Space_Filter, RTTY_BPF_STAGES, RTTY_Space_Filter_Coeffs, RTTY_Space_Filter_State);
 
 	//text
