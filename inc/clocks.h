@@ -80,6 +80,7 @@ unsigned long stm32h7xx_get_spi1_2_3_freq(void);
 unsigned long stm32h7xx_get_spi4_5_freq(void);
 unsigned long stm32h7xx_get_adc_freq(void);
 
+void stm32mp1_pll_initialize(void);
 unsigned long stm32mp1_get_hse_freq(void);
 unsigned long stm32mp1_get_hsi_freq(void);
 unsigned long stm32mp1_get_pll1_2_ref_freq(void);
