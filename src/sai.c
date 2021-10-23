@@ -2284,8 +2284,6 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
 		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
 		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
-		//__DMB();	//ensure the ordering of data cache maintenance operations and their effects
-
 		if (b != 0)
 		{
 			const uintptr_t addr = DMA2_Stream7->M0AR;
@@ -2301,6 +2299,34 @@ void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rx(void)
 			release_dmabuffer32rx(addr);
 		}
 		buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
+	}
+
+	//DMAERR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
+	HANDLEERRORS(2, 7, H);
+}
+
+// DMA по приему SAI2 - обработчик прерывания
+// RX	SAI2_B	DMA2	Stream7	Channel 3
+void RAMFUNC_NONILINE DMA2_Stream7_IRQHandler_fpga_rts192_rx(void)
+{
+	// проверка условия может потребоваться при добавлении обработчика ошибки
+	if ((DMA2->HISR & DMA_HISR_TCIF7) != 0)
+	{
+		DMA2->HIFCR = DMA_HIFCR_CTCIF7;	// Clear TC interrupt flag соответствующий stream
+		ASSERT((SAI2_Block_B->SR & SAI_xSR_OVRUDR_Msk) == 0);
+		const uint_fast8_t b = (DMA2_Stream7->CR & DMA_SxCR_CT) != 0;
+		if (b != 0)
+		{
+			const uintptr_t addr = DMA2_Stream7->M0AR;
+			DMA2_Stream7->M0AR = dma_invalidate192rts(allocate_dmabuffer192rts());
+			processing_dmabuffer32rts(addr);
+		}
+		else
+		{
+			const uintptr_t addr = DMA2_Stream7->M1AR;
+			DMA2_Stream7->M1AR = dma_invalidate192rts(allocate_dmabuffer192rts());
+			processing_dmabuffer32rts(addr);
+		}
 	}
 
 	//DMAERR(DMA2, DMA2_Stream7, HISR, HIFCR, DMA_HISR_TEIF7, DMA_HIFCR_CTEIF7);
@@ -2680,7 +2706,7 @@ static void DMA_SAI2_B_RX_initialize_RTS192(void)
 	DMA2->HIFCR = (DMA_HIFCR_CTCIF7 /*| DMA_HIFCR_CTEIF7 */);	// Clear TC interrupt flag соответствующий stream
 	DMA2_Stream7->CR |= DMA_SxCR_TCIE;	// Разрешаем прерывания от DMA
 
-	arm_hardware_set_handler_realtime(DMA2_Stream7_IRQn, DMA2_Stream7_IRQHandler_fpga_rx);
+	arm_hardware_set_handler_realtime(DMA2_Stream7_IRQn, DMA2_Stream7_IRQHandler_fpga_rts192_rx);
 
 	DMA2_Stream7->CR |= DMA_SxCR_EN;
 }
