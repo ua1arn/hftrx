@@ -280,16 +280,15 @@
 
 #if WITHSAI2HW
 	/*
-	 *
+	 * SAI2_A - TX, SAI2_B - RX
 	 */
 	#define SAI2HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(0 * 1uL << 2, AF_SAI); */	/* PExx - SAI2_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioi_altfn2(1uL << 4,	AF_SAI2);			/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
-		arm_hardware_piod_altfn20(1uL << 13, AF_SAI2);			/* PD13 - SAI2_SCK_A	*/ \
-		arm_hardware_piod_altfn2(1uL << 6,	AF_SAI2);			/* PI6 - SAI2_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(1uL << 11,	AF_SAI2);			/* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		arm_hardware_pioi_altfn2(1uL << 7,	AF_SAI2);			/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_pioi_altfn20(1uL << 1, AF_SAI2);			/* P - SAI2_SCK_A	*/ \
+		arm_hardware_pioi_altfn2(1uL << 6,	AF_SAI2);			/* PI6 - SAI2_SD_A	(i2s data to fpga)	*/ \
+		arm_hardware_pioe_altfn2(1uL << 11,	AF_SAI2);			/* PE11 - SAI2_SD_B	(i2s data from fpga)	*/ \
 		arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
-		arm_hardware_pioe_updown(1uL << 11, 0); \
 	} while (0)
 #endif /* WITHSAI2HW */
 

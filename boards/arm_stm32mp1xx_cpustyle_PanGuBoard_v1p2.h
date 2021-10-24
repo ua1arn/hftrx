@@ -95,10 +95,8 @@
 #else /* WITHISBOOTLOADER */
 
 	#if WITHINTEGRATEDDSP
-		//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
-		//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-		//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
-		//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
+		#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+		#define WITHCODEC1_SAI2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
 	#endif /* WITHINTEGRATEDDSP */
 
 	//#define WITHFPGAIF_SAI2_DUPLEX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
@@ -293,14 +291,19 @@
 #endif /* WITHSAI1HW */
 
 #if WITHSAI2HW
-	/* 
-	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A
-	*/
+	/*
+	 * SAI2_A - TX, SAI2_B - RX
+	 */
 	#define SAI2HW_INITIALIZE()	do { \
-		arm_hardware_pioe_altfn2(0 * 1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
+		arm_hardware_pioe_altfn20(1uL << 0, AF_SAI); 		/* PE0 - SAI2_MCK_A - 12.288 MHz	*/ \
+		arm_hardware_pioi_altfn2(1uL << 7,	AF_SAI2);		/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
+		arm_hardware_pioi_altfn20(1uL << 5, AF_SAI2);		/* PI5 - SAI2_SCK_A	*/ \
+		arm_hardware_pioi_altfn2(1uL << 6,	AF_SAI2);		/* PI6 - SAI2_SD_A	(i2s data to codec)	*/ \
+		arm_hardware_piof_altfn2(1uL << 11,	AF_SAI2);		/* PF11 - SAI2_SD_B	(i2s data from codec)	*/ \
+		/*arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);	*/	/* PI11 I2S_CKIN AF_5 */ \
+		/*arm_hardware_pioe_updown(1uL << 11, 0); */ \
 	} while (0)
-#endif /* WITHSAI1HW */
+#endif /* WITHSAI2HW */
 
 #if WITHSAI3HW
 	/*
