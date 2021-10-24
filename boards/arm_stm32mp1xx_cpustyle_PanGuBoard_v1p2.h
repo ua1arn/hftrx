@@ -96,7 +96,7 @@
 
 	#if WITHINTEGRATEDDSP
 		#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
-		#define WITHCODEC1_SAI2_A_TX_B_RX_SLAVE	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
+		#define WITHCODEC1_SAI2_A_TX_B_RX_MASTER	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
 	#endif /* WITHINTEGRATEDDSP */
 
 //	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */

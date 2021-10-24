@@ -183,6 +183,23 @@ enum
 
 #endif /* defined (WITHFPGARTS_FRAMEBITS) */
 
+#if defined (CODEC1_FRAMEBITS)
+
+	#if CODEC1_FRAMEBITS == 64
+		CODEC1_SAI_CR1_DS = 0x07, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
+	#elif CODEC1_FRAMEBITS == 32
+		CODEC1_SAI_CR1_DS = 0x04, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
+	#else
+		#error Unexpected CODEC1_FRAMEBITS value
+	#endif
+	NBSLOT_SAIAUDIO = 2,	/* всегда стерео */
+	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
+	// значению DMABUFSTEP16 соответственно.
+	SLOTEN_RX_SAIAUDIO = 0x0003,
+	SLOTEN_TX_SAIAUDIO = 0x0003,
+
+#endif /* defined (WITHFPGARTS_FRAMEBITS) */
+
 		enum_finish
 };
 
@@ -2973,7 +2990,7 @@ static void hardware_sai2_enable_WFM(uint_fast8_t state)		/* разрешени�
 
 #endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
 
-#if WITHCODEC1_SAI2_A_TX_B_RX_SLAVE
+#if WITHCODEC1_SAI2_A_TX_B_RX_MASTER
 
 static void hardware_sai2_a_tx_b_rx_master_initialize_audio(void)		/* инициализация SAI2 на STM32F4xx */
 {
@@ -3015,14 +3032,13 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_audio(void)		/* иници
 		// from own PLL
 	const uint_fast8_t mckdiv = mckdivform(calcdivround_pllsai(ARMSAIMCLK));
 #endif
-
 	// CR1 value
 	const portholder_t commoncr1 =
 		(1 * SAI_xCR1_OUTDRIV) |	//
 		//(0 * SAI_xCR1_MONO) |	// stereo MODE - with IQ pairs - see DMABUFFSIZE32
 		(1 * SAI_xCR1_DMAEN) |	// 1: DMA enable 
 		(1 * SAI_xCR1_CKSTR) |	// 0: данные на выходе меняются по нарастающему фронту, 1: по спадающему
-		(7 * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
+		(CODEC1_SAI_CR1_DS * SAI_xCR1_DS_0) |	// 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 		(0 * SAI_xCR1_PRTCFG_0) |	// 0: free protocol
 		(nodiv * SAI_xCR1_NODIV) |	// 1: no MCKDIV value
 		((mckdiv * SAI_xCR1_MCKDIV_0) & SAI_xCR1_MCKDIV) |	// MCKDIV vale = 4 bits
@@ -3060,29 +3076,29 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_audio(void)		/* иници
 	// SLOTR value
 	const portholder_t commonslotr =
 		(0 * SAI_xSLOTR_SLOTSZ_0) |	// 00: The slot size is equivalent to the data size (specified in DS[3:0] in the SAI_xCR1 register).
-		((NBSLOT_SAIRTS - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
+		((NBSLOT_SAIAUDIO - 1) * SAI_xSLOTR_NBSLOT_0) | // Number of slots in audio Frame
 		//SAI_xSLOTR_SLOTEN |			// all slots enabled
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
 	SAI2_Block_A->SLOTR = 
-		((SLOTEN_TX_SAIRTS << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
+		((SLOTEN_TX_SAIAUDIO << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
 	SAI2_Block_B->SLOTR = 
-		((SLOTEN_RX_SAIRTS << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
+		((SLOTEN_RX_SAIAUDIO << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
 
 	// FRCR value
 	const portholder_t comm_frcr =
-		((WITHFPGARTS_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
+		((CODEC1_FRAMEBITS - 1) * SAI_xFRCR_FRL_0) |
 		(1 * SAI_xFRCR_FSDEF) |		/* FS signal is a start of frame signal + channel side identification - must be set for I2S */
-		((WITHFPGARTS_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
-#if WITHFPGARTS_FORMATI2S_PHILIPS
+		((CODEC1_FRAMEBITS / 2 - 1) * SAI_xFRCR_FSALL_0) |
+#if CODEC1_FORMATI2S_PHILIPS
 		(1 * SAI_xFRCR_FSOFF) |		/* 1: FS is asserted one bit before the first bit of the slot 0. Classic I2S form Philips Semiconductors. "0" value for Sony I2S specs. */
 		(0 * SAI_xFRCR_FSPO) |	/* 0: канал с индексом 0 передается при "0" на WS - перывм. */
-#endif /* WITHFPGARTS_FORMATI2S_PHILIPS */
+#endif /* CODEC1_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
 	SAI2_Block_A->FRCR =
@@ -3106,7 +3122,7 @@ static void hardware_sai2_enable_audio(uint_fast8_t state)		/* разрешен�
 }
 
 
-#endif /* WITHCODEC1_SAI2_A_TX_B_RX_SLAVE */
+#endif /* WITHCODEC1_SAI2_A_TX_B_RX_MASTER */
 
 #if WITHCODEC1_SAI2_DUPLEX_MASTER
 
@@ -3122,6 +3138,19 @@ static const codechw_t audiocodechw_sai2_a_tx_master_v3d =
 };
 
 #endif /* WITHCODEC1_SAI2_DUPLEX_MASTER */
+
+#if WITHCODEC1_SAI2_A_TX_B_RX_MASTER
+static const codechw_t audiocodechw_sai2_a_tx_b_rx_master =
+{
+	hardware_sai2_a_tx_b_rx_master_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон */
+	hardware_dummy_initialize,
+	hardware_dummy_initialize, //DMA_SAI2_B_RX_initializeAUDIO48,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
+	DMA_SAI2_A_TX_initialize_audio,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
+	hardware_sai2_enable_audio,
+	hardware_dummy_enable,
+	"audiocodechw-sai2-a-tx-b-rx-master"
+};
+#endif /* WITHCODEC1_SAI2_A_TX_B_RX_MASTER */
 
 /* DMA для прёма по SAI_2_B  - инициализация */
 //	RX	SAI2_B	DMA2	Stream7	Channel 0	
@@ -4285,14 +4314,17 @@ static const codechw_t fpgaspectrumhw_dummy =
 	static const codechw_t * const channels [] =
 	{
 #if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE
-			& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
 #endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
 #if WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE
-			& fpgacodechw_sai2_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai2_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
 #endif /* WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE */
 #if WITHCODEC1_I2S2_DUPLEX_SLAVE
-			& audiocodechw_i2s2_duplex_slave,	// Интерфейс к НЧ кодеку
+		& audiocodechw_i2s2_duplex_slave,	// Интерфейс к НЧ кодеку
 #endif /* WITHCODEC1_I2S2_DUPLEX_SLAVE */
+#if WITHCODEC1_SAI2_A_TX_B_RX_MASTER
+		& audiocodechw_sai2_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
+#endif /* WITHCODEC1_SAI2_A_TX_B_RX_MASTER */
 #if WITHFPGARTS_SAI2_B_RX_SLAVE
 		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
 #endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
