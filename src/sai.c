@@ -957,9 +957,9 @@ hardware_i2s3_slave_rx_initialize_audio(void)		/* инициализация I2S
 // Интерфейс к НЧ кодеку
 /* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
 static void
-hardware_i2s2_slave_fullduplex_initialize_audio(void)
+hardware_i2s2_slave_duplex_initialize_audio(void)
 {
-	//PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize_audio\n"));
+	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_audio\n"));
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
@@ -990,9 +990,9 @@ hardware_i2s2_slave_fullduplex_initialize_audio(void)
 	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_fullduplex_initialize_audio
+	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_duplex_initialize_audio
 
-	//PRINTF(PSTR("hardware_i2s2_slave_fullduplex_initialize_audio done\n"));
+	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_audio done\n"));
 }
 
 //#endif /* WITHI2SHWRXSLAVE */
@@ -1001,9 +1001,9 @@ hardware_i2s2_slave_fullduplex_initialize_audio(void)
 // Интерфейс к НЧ кодеку
 /* инициализация I2S2 STM32MP1 (и возможно STM32H7xx) */
 static void
-hardware_i2s2_master_fullduplex_initialize_audio(void)
+hardware_i2s2_master_duplex_initialize_audio(void)
 {
-	//PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize_audio\n"));
+	//PRINTF(PSTR("hardware_i2s2_master_duplex_initialize_audio\n"));
 
 #if CPUSTYLE_STM32MP1
 	RCC->MP_APB1ENSETR = RCC_MP_APB1ENSETR_SPI2EN_Msk; // Подать тактирование
@@ -1115,15 +1115,15 @@ hardware_i2s2_master_fullduplex_initialize_audio(void)
 	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();	// hardware_i2s2_master_fullduplex_initialize_audio
+	I2S2HW_INITIALIZE();	// hardware_i2s2_master_duplex_initialize_audio
 
-	//PRINTF(PSTR("hardware_i2s2_master_fullduplex_initialize_audio done\n"));
+	//PRINTF(PSTR("hardware_i2s2_master_duplex_initialize_audio done\n"));
 }
 
 /* разрешение работы I2S  */
 // Интерфейс к НЧ кодеку
 static void
-hardware_i2s2_fullduplex_enable_audio(uint_fast8_t state)
+hardware_i2s2_duplex_enable_audio(uint_fast8_t state)
 {
 #if defined (I2S2ext)
 
@@ -1220,13 +1220,13 @@ hardware_i2s2_rx_enable(uint_fast8_t state)
 #if WITHI2SI2S2EXTFULLDUPLEXHW
 
 // платы, где используются DMA_I2S2 и DMA_I2S2ext
-static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
+static const codechw_t audiocodechw_i2s2_i2s2ext_duplex =
 {
 	hardware_i2s2_i2s2ext_master_duplex_initialize_audio,
 	hardware_dummy_initialize,
 	DMA_I2S2ext_rx_init_audio,			// DMA по приёму канал 3
 	DMA_I2S2_TX_initialize_audio,				// DMA по передаче канал 0
-	hardware_i2s2_fullduplex_enable_audio,
+	hardware_i2s2_duplex_enable_audio,
 	hardware_dummy_enable,
 	"i2s2-i2s2ext-audiocodechw"
 };
@@ -1238,13 +1238,13 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 #if WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE
 
 	// Используется I2S2 в дуплексном режиме
-	static const codechw_t audiocodechw_i2s2_fullduplex_slave =
+	static const codechw_t audiocodechw_i2s2_duplex_slave =
 	{
-		hardware_i2s2_slave_fullduplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон и наушники */
+		hardware_i2s2_slave_duplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон и наушники */
 		hardware_dummy_initialize,
 		DMA_I2S2_RX_initialize_audio,					// DMA по приёму SPI2_RX
 		DMA_I2S2_TX_initialize_audio,					// DMA по передаче SPI2_TX
-		hardware_i2s2_fullduplex_enable_audio,
+		hardware_i2s2_duplex_enable_audio,
 		hardware_dummy_enable,
 		"i2s2-duplex-audiocodechw-slave"
 	};
@@ -1255,13 +1255,13 @@ static const codechw_t audiocodechw_i2s2_i2s2ext_fullduplex =
 #else /* WITHI2SHWRXSLAVE && WITHI2SHWTXSLAVE */
 
 	// Используется I2S2 в дуплексном режиме
-	static const codechw_t audiocodechw_i2s2_fullduplex_slave =
+	static const codechw_t audiocodechw_i2s2_duplex_slave =
 	{
-		hardware_i2s2_master_fullduplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон и наушники*/
+		hardware_i2s2_master_duplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон и наушники*/
 		hardware_dummy_initialize,
 		DMA_I2S2_RX_initialize_audio,					// DMA по приёму SPI2_RX
 		DMA_I2S2_TX_initialize_audio,					// DMA по передаче SPI2_TX
-		hardware_i2s2_fullduplex_enable_audio,
+		hardware_i2s2_duplex_enable_audio,
 		hardware_dummy_enable,
 		"i2s2-duplex-audiocodechw-master"
 	};
@@ -1843,7 +1843,7 @@ static void DMA_SAI1_B_RX_initialize_fpga(void)
 	DRD(DMA2_Stream5->CR);
 }
 
-static void hardware_sai1_master_fullduplex_initialize_v3d_fpga(void)		/* инициализация SAI1 на STM32F4xx */
+static void hardware_sai1_master_duplex_initialize_v3d_fpga(void)		/* инициализация SAI1 на STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
@@ -1901,11 +1901,11 @@ static void hardware_sai1_master_fullduplex_initialize_v3d_fpga(void)		/* ини
 		0;
 
 #if WITHSAICLOCKFROMPIN
-	PRINTF(PSTR("hardware_sai1_master_fullduplex_initialize_fpga: 1 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
+	PRINTF(PSTR("hardware_sai1_master_duplex_initialize_fpga: 1 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
 #elif WITHSAICLOCKFROMI2S
-	PRINTF(PSTR("hardware_sai1_master_fullduplex_initialize_fpga: 2 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	PRINTF(PSTR("hardware_sai1_master_duplex_initialize_fpga: 2 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #else
-	PRINTF(PSTR("hardware_sai1_master_fullduplex_initialize_fpga: 3 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
+	PRINTF(PSTR("hardware_sai1_master_duplex_initialize_fpga: 3 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
 	// v3d specific
@@ -1968,7 +1968,7 @@ static void hardware_sai1_master_fullduplex_initialize_v3d_fpga(void)		/* ини
 	SAI1HW_INITIALIZE();
 }
 
-static void hardware_sai1_master_fullduplex_initialize_fpga(void)		/* инициализация SAI1 на STM32F4xx */
+static void hardware_sai1_master_duplex_initialize_fpga(void)		/* инициализация SAI1 на STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
@@ -2026,11 +2026,11 @@ static void hardware_sai1_master_fullduplex_initialize_fpga(void)		/* иници
 		0;
 
 #if WITHSAICLOCKFROMPIN
-	PRINTF(PSTR("hardware_sai1_master_fullduplex_initialize_fpga: 1 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
+	PRINTF(PSTR("hardware_sai1_master_duplex_initialize_fpga: 1 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
 #elif WITHSAICLOCKFROMI2S
-	PRINTF(PSTR("hardware_sai1_master_fullduplex_initialize_fpga: 2 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	PRINTF(PSTR("hardware_sai1_master_duplex_initialize_fpga: 2 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #else
-	PRINTF(PSTR("hardware_sai1_master_fullduplex_initialize_fpga: 3 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
+	PRINTF(PSTR("hardware_sai1_master_duplex_initialize_fpga: 3 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
 	SAI1_Block_A->CR1 =
@@ -2092,7 +2092,7 @@ static void hardware_sai1_master_fullduplex_initialize_fpga(void)		/* иници
 	SAI1HW_INITIALIZE();
 }
 
-static void hardware_sai1_slave_fullduplex_initialize_fpga(void)		/* инициализация SAI1 на STM32F4xx */
+static void hardware_sai1_slave_duplex_initialize_fpga(void)		/* инициализация SAI1 на STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
@@ -2147,11 +2147,11 @@ static void hardware_sai1_slave_fullduplex_initialize_fpga(void)		/* иници�
 		0;
 
 #if WITHSAICLOCKFROMPIN
-	//PRINTF(PSTR("hardware_sai1_slave_fullduplex_initialize_fpga: 1 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
+	//PRINTF(PSTR("hardware_sai1_slave_duplex_initialize_fpga: 1 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
 #elif WITHSAICLOCKFROMI2S
-	//PRINTF(PSTR("hardware_sai1_slave_fullduplex_initialize_fpga: 2 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	//PRINTF(PSTR("hardware_sai1_slave_duplex_initialize_fpga: 2 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #else
-	//PRINTF(PSTR("hardware_sai1_slave_fullduplex_initialize_fpga: 3 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
+	//PRINTF(PSTR("hardware_sai1_slave_duplex_initialize_fpga: 3 SAI1 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
 	SAI1_Block_A->CR1 = 
@@ -2839,13 +2839,13 @@ static void DMA_SAI2_B_RX_initialize_fpga(void)
 	DMA2_Stream7->CR |= DMA_SxCR_EN;
 }
 
-#if WITHFPGARTS_SAI2_RX_SLAVE
+#if WITHFPGARTS_SAI2_B_RX_SLAVE
 /* инициализация SAI2 на STM32F4xx */
 // Обмен 24-битами в 32-х битном слове (три первых слота в каждой половине фрейма) =
 // аудиоданные начиная с младшего байта - для прямой передачи в USB AUDIO
-static void hardware_sai2_slave_fullduplex_initialize_WFM(void)
+static void hardware_sai2_slave_duplex_initialize_WFM(void)
 {
-	PRINTF(PSTR("hardware_sai2_slave_fullduplex_initialize_WFM start\n"));
+	PRINTF(PSTR("hardware_sai2_slave_duplex_initialize_WFM start\n"));
 	hardware_sai1_sai2_clock_selection();
 
 #if CPUSTYLE_STM32MP1
@@ -2958,7 +2958,7 @@ static void hardware_sai2_slave_fullduplex_initialize_WFM(void)
 		0;
 
 	SAI2HW_INITIALIZE();
-	PRINTF(PSTR("hardware_sai2_slave_fullduplex_initialize_WFM done\n"));
+	PRINTF(PSTR("hardware_sai2_slave_duplex_initialize_WFM done\n"));
 }
 
 static void hardware_sai2_enable_WFM(uint_fast8_t state)		/* разрешение работы SAI2 на STM32F4xx */
@@ -2971,11 +2971,11 @@ static void hardware_sai2_enable_WFM(uint_fast8_t state)		/* разрешени�
 	SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
 }
 
-#endif /* WITHFPGARTS_SAI2_RX_SLAVE */
+#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
 
-#if WITHCODEC1_SAI2_DUPLEX_SLAVE
+#if WITHCODEC1_SAI2_A_TX_B_RX_SLAVE
 
-static void hardware_sai2_master_fullduplex_initialize_audio(void)		/* инициализация SAI2 на STM32F4xx */
+static void hardware_sai2_a_tx_b_rx_master_initialize_audio(void)		/* инициализация SAI2 на STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
@@ -3029,11 +3029,11 @@ static void hardware_sai2_master_fullduplex_initialize_audio(void)		/* иниц�
 		0;
 
 #if WITHSAICLOCKFROMPIN
-	PRINTF(PSTR("hardware_sai2_master_fullduplex_initialize_audio: 1 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
+	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_audio: 1 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
 #elif WITHSAICLOCKFROMI2S
-	PRINTF(PSTR("hardware_sai2_master_fullduplex_initialize_audio: 2 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_audio: 2 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #else
-	PRINTF(PSTR("hardware_sai2_master_fullduplex_initialize_audio: 3 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
+	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_audio: 3 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
 	SAI2_Block_A->CR1 = 
@@ -3106,13 +3106,13 @@ static void hardware_sai2_enable_audio(uint_fast8_t state)		/* разрешен�
 }
 
 
-#endif /* WITHCODEC1_SAI2_DUPLEX_SLAVE */
+#endif /* WITHCODEC1_SAI2_A_TX_B_RX_SLAVE */
 
 #if WITHCODEC1_SAI2_DUPLEX_MASTER
 
-static const codechw_t audiocodechw_sai2_master_v3d =
+static const codechw_t audiocodechw_sai2_a_tx_master_v3d =
 {
-	hardware_sai2_master_fullduplex_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон */
+	hardware_sai2_a_tx_b_rx_master_initialize_audio,	/* Интерфейс к НЧ кодеку - микрофон */
 	hardware_dummy_initialize,
 	hardware_dummy_initialize, //DMA_SAI2_B_RX_initializeAUDIO48,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
 	DMA_SAI2_A_TX_initialize_audio,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
@@ -3190,7 +3190,7 @@ static void DMA_SAI2_B_RX_initializeWFM(void)
 	PRINTF(PSTR("DMA_SAI2_B_RX_initializeWFM done.\n"));
 }
 
-static void hardware_sai2_slave_fullduplex_initialize_fpga(void)		/* инициализация SAI1 на STM32F4xx */
+static void hardware_sai2_slave_duplex_initialize_fpga(void)		/* инициализация SAI1 на STM32F4xx */
 {
 	hardware_sai1_sai2_clock_selection();
 
@@ -3245,11 +3245,11 @@ static void hardware_sai2_slave_fullduplex_initialize_fpga(void)		/* иници�
 		0;
 
 #if WITHSAICLOCKFROMPIN
-	//PRINTF(PSTR("hardware_sai1_slave_fullduplex_initialize_fpga: 1 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
+	//PRINTF(PSTR("hardware_sai1_slave_duplex_initialize_fpga: 1 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
 #elif WITHSAICLOCKFROMI2S
-	//PRINTF(PSTR("hardware_sai1_slave_fullduplex_initialize_fpga: 2 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	//PRINTF(PSTR("hardware_sai1_slave_duplex_initialize_fpga: 2 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #else
-	//PRINTF(PSTR("hardware_sai1_slave_fullduplex_initialize_fpga: 3 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
+	//PRINTF(PSTR("hardware_sai1_slave_duplex_initialize_fpga: 3 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
 	SAI2_Block_A->CR1 =
@@ -3327,11 +3327,11 @@ static void hardware_sai2_enable_fpga(uint_fast8_t state)		/* разрешени
 	SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
 }
 
-#if WITHFPGAIF_SAI2_DUPLEX_SLAVE
+#if WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE
 
-	static const codechw_t fpgacodechw_sai2_slave =
+	static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
 	{
-		hardware_sai2_slave_fullduplex_initialize_fpga,
+		hardware_sai2_slave_duplex_initialize_fpga,
 		hardware_dummy_initialize,
 		DMA_SAI2_B_RX_initialize_fpga,
 		DMA_SAI2_A_TX_initialize_fpga,
@@ -3340,13 +3340,13 @@ static void hardware_sai2_enable_fpga(uint_fast8_t state)		/* разрешени
 		"fpgacodechw-sai2-slave"
 	};
 
-#endif /* WITHFPGAIF_SAI2_DUPLEX_SLAVE */
+#endif /* WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE */
 
-#if WITHFPGARTS_SAI2_RX_SLAVE
+#if WITHFPGARTS_SAI2_B_RX_SLAVE
 	// other CPUs
 	static const codechw_t fpgaspectrumhw_rx_sai2 =
 	{
-		hardware_sai2_slave_fullduplex_initialize_WFM,
+		hardware_sai2_slave_duplex_initialize_WFM,
 		hardware_dummy_initialize,
 		DMA_SAI2_B_RX_initializeWFM,
 		hardware_dummy_initialize,
@@ -3355,7 +3355,7 @@ static void hardware_sai2_enable_fpga(uint_fast8_t state)		/* разрешени
 		"sai2-fpga spectrum or WFM"
 	};
 
-#endif /* WITHFPGARTS_SAI2_RX_SLAVE */
+#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
 
 #endif /* WITHSAI2HW */
 
@@ -3365,7 +3365,7 @@ static void hardware_sai2_enable_fpga(uint_fast8_t state)		/* разрешени
 
 	static const codechw_t fpgacodechw_sai1_master =
 	{
-		hardware_sai1_master_fullduplex_initialize_fpga,
+		hardware_sai1_master_duplex_initialize_fpga,
 		hardware_dummy_initialize,
 		DMA_SAI1_B_RX_initialize_fpga,
 		DMA_SAI1_A_TX_initialize_fpga,
@@ -3374,9 +3374,9 @@ static void hardware_sai2_enable_fpga(uint_fast8_t state)		/* разрешени
 		"fpgacodechw-sai1-master"
 	};
 
-	static const codechw_t fpgacodechw_sai1_master_v3d =
+	static const codechw_t fpgacodechw_sai1_b_rx_master_v3d =
 	{
-		hardware_sai1_master_fullduplex_initialize_v3d_fpga,
+		hardware_sai1_master_duplex_initialize_v3d_fpga,
 		hardware_dummy_initialize,
 		DMA_SAI1_B_RX_initialize_fpga,
 		hardware_dummy_initialize, //DMA_SAI1_A_TX_initialize_fpga,
@@ -3389,9 +3389,9 @@ static void hardware_sai2_enable_fpga(uint_fast8_t state)		/* разрешени
 
 #if WITHSAI1HW
 
-	static const codechw_t fpgacodechw_sai1_slave =
+	static const codechw_t fpgacodechw_sai1_a_tx_b_rx_slave =
 	{
-		hardware_sai1_slave_fullduplex_initialize_fpga,
+		hardware_sai1_slave_duplex_initialize_fpga,
 		hardware_dummy_initialize,
 		DMA_SAI1_B_RX_initialize_fpga,
 		DMA_SAI1_A_TX_initialize_fpga,
@@ -3635,7 +3635,7 @@ static void r7s721_ssif0_dmatx_initialize_audio_tx(void)
 // Правда, и в SLAVE нельзя сказать что работает - около пяти секунд проходит до начала нормальной раболты.
 
 // AUDIO CODEC I2S INTERFACE
-static void r7s721_ssif0_fullduplex_initialize_audio(void)
+static void r7s721_ssif0_duplex_initialize_audio(void)
 {
 	const uint_fast8_t master = R7S721_SSIF0_MASTER;
     /* ---- Supply clock to the SSIF(channel 0) ---- */
@@ -3680,7 +3680,7 @@ static void r7s721_ssif0_fullduplex_initialize_audio(void)
 	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
-static void r7s721_ssif0_fullduplex_enable_audio(uint_fast8_t state)
+static void r7s721_ssif0_duplex_enable_audio(uint_fast8_t state)
 {
 	SSIF0.SSICR |= 
 		1 * (1UL << 1) |		// TEN	
@@ -3692,11 +3692,11 @@ static void r7s721_ssif0_fullduplex_enable_audio(uint_fast8_t state)
 
 static const codechw_t audiocodec_ssif0_duplex_master =
 {
-	r7s721_ssif0_fullduplex_initialize_audio,
+	r7s721_ssif0_duplex_initialize_audio,
 	hardware_dummy_initialize,
 	r7s721_ssif0_dmarx_initialize_audio_rx,
 	r7s721_ssif0_dmatx_initialize_audio_tx,
-	r7s721_ssif0_fullduplex_enable_audio,
+	r7s721_ssif0_duplex_enable_audio,
 	hardware_dummy_enable,
 	"audiocodechw-ssif0-duplex-master"
 };
@@ -3896,7 +3896,7 @@ static void r7s721_ssif1_dmatx_initialize_fpga_tx(void)
 }
 
 // FGA I2S INTERFACE #1
-static void r7s721_ssif1_fullduplex_initialize_fpga(void)
+static void r7s721_ssif1_duplex_initialize_fpga(void)
 {
 	const uint_fast8_t master = R7S721_SSIF1_MASTER;
     /* ---- Supply clock to the SSIF(channel 1) ---- */
@@ -3946,7 +3946,7 @@ static void r7s721_ssif1_fullduplex_initialize_fpga(void)
 	HARDWARE_SSIF1_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
-static void r7s721_ssif1_fullduplex_enable(uint_fast8_t state)
+static void r7s721_ssif1_duplex_enable(uint_fast8_t state)
 {
 	SSIF1.SSICR |= 
 		1 * (1UL << 1) |		// TEN	
@@ -3958,11 +3958,11 @@ static void r7s721_ssif1_fullduplex_enable(uint_fast8_t state)
 
 static const codechw_t fpgacodechw_ssif1_duplex_master =
 {
-	r7s721_ssif1_fullduplex_initialize_fpga,
+	r7s721_ssif1_duplex_initialize_fpga,
 	hardware_dummy_initialize,
 	r7s721_ssif1_dmarx_initialize_fpga_rx,
 	r7s721_ssif1_dmatx_initialize_fpga_tx,
-	r7s721_ssif1_fullduplex_enable,
+	r7s721_ssif1_duplex_enable,
 	hardware_dummy_enable,
 	"audiocodechw-ssif1--duplex-master"
 };
@@ -4161,7 +4161,7 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 	// other CPUs
 	static const codechw_t fpgaspectrumhw_rx_sai2 =
 	{
-		hardware_sai2_slave_fullduplex_initialize_WFM,	// added...
+		hardware_sai2_slave_duplex_initialize_WFM,	// added...
 		hardware_dummy_initialize,
 		DMA_SAI2_B_RX_initializeWFM,
 		hardware_dummy_initialize,
@@ -4284,25 +4284,25 @@ static const codechw_t fpgaspectrumhw_dummy =
 #elif CPUSTYLE_STM32MP1
 	static const codechw_t * const channels [] =
 	{
-#if WITHFPGAIF_SAI1_DUPLEX_SLAVE
-			& fpgacodechw_sai1_slave,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI1_DUPLEX_SLAVE */
-#if WITHFPGAIF_SAI2_DUPLEX_SLAVE
-			& fpgacodechw_sai2_slave,				// Интерфейс к IF кодеку/FPGA
-#endif /* WITHFPGAIF_SAI2_DUPLEX_SLAVE */
+#if WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE
+			& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
+#endif /* WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE */
+#if WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE
+			& fpgacodechw_sai2_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
+#endif /* WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE */
 #if WITHCODEC1_I2S2_DUPLEX_SLAVE
-			& audiocodechw_i2s2_fullduplex_slave,	// Интерфейс к НЧ кодеку
+			& audiocodechw_i2s2_duplex_slave,	// Интерфейс к НЧ кодеку
 #endif /* WITHCODEC1_I2S2_DUPLEX_SLAVE */
-#if WITHFPGARTS_SAI2_RX_SLAVE
+#if WITHFPGARTS_SAI2_B_RX_SLAVE
 		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
-#endif /* WITHFPGARTS_SAI2_RX_SLAVE */
+#endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
 	};
 
 #elif CPUSTYLE_STM32F4XX
 	static const codechw_t * const channels [] =
 	{
-		& audiocodechw_i2s2_i2s2ext_fullduplex,		// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_slave,					// Интерфейс к IF кодеку/FPGA
+		& audiocodechw_i2s2_i2s2ext_duplex,		// Интерфейс к НЧ кодеку
+		& fpgacodechw_sai1_a_tx_b_rx_slave,					// Интерфейс к IF кодеку/FPGA
 #if WITHSAI2HW
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 #endif
@@ -4312,7 +4312,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_i2s2_i2s3_slave,				// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_slave,				// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai1_a_tx_b_rx_slave,				// Интерфейс к IF кодеку/FPGA
 #if WITHSAI2HW
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 #endif
@@ -4322,15 +4322,15 @@ static const codechw_t fpgaspectrumhw_dummy =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_sai2_master_spkonly,	// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_slave,			// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai1_a_tx_b_rx_slave,			// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_rx_sai2,		// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
 #elif CTLSTYLE_V3D
 	static const codechw_t * const channels [] =
 	{
-		& audiocodechw_sai2_master_v3d,		// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_master_v3d,		// Интерфейс к IF кодеку/FPGA
+		& audiocodechw_sai2_a_tx_master_v3d,		// Интерфейс к НЧ кодеку
+		& fpgacodechw_sai1_b_rx_master_v3d,		// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
@@ -4346,7 +4346,7 @@ static const codechw_t fpgaspectrumhw_dummy =
 	static const codechw_t * const channels [] =
 	{
 		& audiocodechw_i2s2_i2s3_slave,					// Интерфейс к НЧ кодеку
-		& fpgacodechw_sai1_slave,		// Интерфейс к IF кодеку/FPGA
+		& fpgacodechw_sai1_a_tx_b_rx_slave,		// Интерфейс к IF кодеку/FPGA
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 

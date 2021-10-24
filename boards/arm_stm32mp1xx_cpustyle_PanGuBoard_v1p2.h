@@ -96,12 +96,8 @@
 
 	#if WITHINTEGRATEDDSP
 		#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
-		#define WITHCODEC1_SAI2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
+		#define WITHCODEC1_SAI2_A_TX_B_RX_SLAVE	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
 	#endif /* WITHINTEGRATEDDSP */
-
-	//#define WITHFPGAIF_SAI2_DUPLEX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
-	//#define WITHFPGARTS_SAI2_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
-	//#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 
 //	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */

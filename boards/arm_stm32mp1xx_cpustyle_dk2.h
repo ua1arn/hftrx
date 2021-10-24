@@ -26,8 +26,8 @@
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 
-	//#define WITHFPGAIF_SAI2_DUPLEX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
-	//#define WITHFPGARTS_SAI2_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+	//#define WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
+	//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
 	//#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 #endif /* WITHINTEGRATEDDSP */
 

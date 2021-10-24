@@ -99,8 +99,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHFPGAIF_SAI1_DUPLEX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
-	//#define WITHFPGARTS_SAI2_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+	#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1, SAI1_A - TX, SAI1_B - RX */
+	//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
 	#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
@@ -276,7 +276,7 @@
 
 #if WITHSAI1HW
 	/*
-	 *
+	 * SAI1_A - TX, SAI1_B - RX
 	 */
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
@@ -298,16 +298,6 @@
 	} while (0)
 #else
 	#define SAI2HW_INITIALIZE()	do { \
-	} while (0)
-#endif /* WITHSAI1HW */
-
-#if WITHSAI3HW
-	/*
-	*/
-	#define SAI3HW_INITIALIZE()	do { \
-		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- WS from FPGA	*/ \
-		arm_hardware_piod_altfn50(1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
-		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 

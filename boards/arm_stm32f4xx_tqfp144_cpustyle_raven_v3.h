@@ -27,7 +27,7 @@
 #define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 
-#define WITHFPGAIF_SAI1_DUPLEX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+#define WITHFPGAIF_SAI1_A_TX_B_RX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
 //#define WITHFPGARTS_SAI2_RX_MASTER	1	/* Получение RTS192 от FPGA через SAI2 */
 #define WITHCODEC1_I2S2_TX_MASTER	1		/* Передача в аудиокодек через I2S2 */
 #define WITHCODEC1_I2S2ext_RX_MASTER	1		/* Прием от аудиокодекоа через I2S2ext */

@@ -97,8 +97,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHFPGAIF_SAI2_DUPLEX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
-	//#define WITHFPGARTS_SAI2_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+	#define WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
+	//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
 	#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
