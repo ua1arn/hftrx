@@ -23,9 +23,12 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* Использование I2S2 & I2S3 - аудиокодек	*/
+#define WITHI2S2HW	1	/* Использование I2S2 & I2S3 - аудиокодек	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 //#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+
+//#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1, SAI1_A - TX, SAI1_B - RX */
+//#define WITHCODEC1_SAI2_A_TX_B_RX_MASTER	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
 
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
@@ -195,7 +198,7 @@
 
 #endif /* WITHENCODER */
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_INITIALIZE() do { \
 		enum { \
@@ -216,7 +219,7 @@
 		arm_hardware_piob_altfn20(I2S3_CK, AF_SPI3); \
 		arm_hardware_piob_altfn20(I2S3_SD, AF_SPI3); \
 	} while (0)
-#endif /* WITHI2SHW */
+#endif /* WITHI2S2HW */
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \

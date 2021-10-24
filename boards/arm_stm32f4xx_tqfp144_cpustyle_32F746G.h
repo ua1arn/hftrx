@@ -27,10 +27,13 @@
 //#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 //#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
-//#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
+//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек	*/
 
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 #define WITHSAI2HW	1	/* Использование SAI2 - аудиокодек	*/
+
+#define WITHFPGAIF_SAI1_A_TX_B_RX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI1, SAI1_A - TX, SAI1_B - RX */
+#define WITHCODEC1_SAI2_A_TX_B_RX_MASTER	1		/* Обмен с аудиокодеком через SAI2: SAI2_A - TX, SAI2_B - RX */
 
 //#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 //#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
@@ -223,7 +226,7 @@
 
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	#define I2S2HW_INITIALIZE()	do { \
 		arm_hardware_pioi_altfn20(1U << 4, AF_SAI2);	/* PI4 - SAI2_MCLK_A - 12.288 MHz	*/ \
 		arm_hardware_pioi_altfn20(1U << 5, AF_SAI2);	/* PI5 - SAI2_SCK_A	*/ \

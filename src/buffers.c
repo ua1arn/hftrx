@@ -1553,9 +1553,9 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 	while (n >= CNT16)
 	{
 		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
-#if ! WITHI2SHW
+#if ! WITHI2S2HW
 		release_dmabuffer16(getfilled_dmabuffer16phones());
-#endif /* WITHI2SHW */
+#endif /* WITHI2S2HW */
 		n -= CNT16;
 	}
 }

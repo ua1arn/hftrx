@@ -22,7 +22,7 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
-	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
+	#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 */
 	#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
@@ -245,7 +245,7 @@
 
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
@@ -275,7 +275,7 @@
 		arm_hardware_pioc_updown(0, 1uL << 6); \
 	} while (0)
 
-#endif /* WITHI2SHW */
+#endif /* WITHI2S2HW */
 
 
 #if WITHSAI2HW

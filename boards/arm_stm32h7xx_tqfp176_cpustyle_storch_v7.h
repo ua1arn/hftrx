@@ -24,8 +24,9 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
-	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
-	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
+	#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 */
+	#define WITHI2S3HW	1	/* Использование I2S - аудиокодек на I2S3 */
+	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec */
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 #endif /* WITHINTEGRATEDDSP */
 
@@ -169,7 +170,7 @@
 
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
@@ -184,7 +185,7 @@
 		arm_hardware_piob_updown(0, 1uL << 3); \
 		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
-#endif /* WITHSAI1HW */
+#endif /* WITHI2S2HW */
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \

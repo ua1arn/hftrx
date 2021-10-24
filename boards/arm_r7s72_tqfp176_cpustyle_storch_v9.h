@@ -78,7 +78,7 @@
 	#define WITHMODEM_USART2	1
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-	#define WITHI2SHW		1	/* Использование SSIF0 I2S 2*32 (2*16) bit - аудио кодек */
+	#define WITHI2S2HW		1	/* Использование SSIF0 I2S 2*32 (2*16) bit - аудио кодек */
 	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
 	#if WITHRTS192
 		#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
@@ -222,14 +222,14 @@
 
 #define R7S721_USE_AUDIO_CLK 0	// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	#define HARDWARE_SSIF0_INITIALIZE() do { \
 		arm_hardware_pio6_alternative(1U << 8, R7S721_PIOALT_3); /* P6_8 SSISCK0 */ \
 		arm_hardware_pio6_alternative(1U << 9, R7S721_PIOALT_3); /* P6_9 SSIWS0 */ \
 		arm_hardware_pio6_alternative(1U << 10, R7S721_PIOALT_3); /* P6_10 SSITxD0 */ \
 		arm_hardware_pio6_alternative(1U << 11, R7S721_PIOALT_3); /* P6_11 SSIRxD0 */ \
 	} while (0)
-#endif /* WITHI2SHW */
+#endif /* WITHI2S2HW */
 
 #if WITHSAI1HW
 	#define HARDWARE_SSIF1_INITIALIZE() do { \

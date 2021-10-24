@@ -24,7 +24,7 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
+#define WITHI2S2HW	1	/* Использование I2S - аудиокодек	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 
 #define WITHFPGAIF_SAI1_A_TX_B_RX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
@@ -202,7 +202,7 @@
 
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	#define I2S2HW_INITIALIZE() \
 		do { \
 			enum { \
