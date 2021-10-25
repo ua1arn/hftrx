@@ -2073,10 +2073,28 @@ static void hardware_sai1_slave_duplex_initialize_fpga(void)		/* инициал�
 	SAI1HW_INITIALIZE();
 }
 
-static void hardware_sai1_enable_fpga(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
+static void hardware_sai1_a_enable_fpga(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
 {
-	SAI1_Block_B->CR1 |= SAI_xCR1_SAIEN;
-	SAI1_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	if (state != 0)
+	{
+		SAI1_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI1_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
+}
+
+static void hardware_sai1_b_enable_fpga(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
+{
+	if (state != 0)
+	{
+		SAI1_Block_B->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI1_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
 }
 
 #endif /* WITHSAI1HW */
@@ -2811,14 +2829,36 @@ static void hardware_sai2_slave_duplex_initialize_WFM(void)
 	PRINTF(PSTR("hardware_sai2_slave_duplex_initialize_WFM done\n"));
 }
 
-static void hardware_sai2_enable_WFM(uint_fast8_t state)		/* разрешение работы SAI2 на STM32F4xx */
+static void hardware_sai2_a_enable_WFM(uint_fast8_t state)		/* разрешение работы SAI2 на STM32F4xx */
 {
 	// при dual watch используется SAI2, но
 	// через него не передаются данные.
 	// Для работы синхронизации запукаются обе части - и приём и передача - в SAI2
 
-	SAI2_Block_B->CR1 |= SAI_xCR1_SAIEN;
-	SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	if (state != 0)
+	{
+		SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI2_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
+}
+
+static void hardware_sai2_b_enable_WFM(uint_fast8_t state)		/* разрешение работы SAI2 на STM32F4xx */
+{
+	// при dual watch используется SAI2, но
+	// через него не передаются данные.
+	// Для работы синхронизации запукаются обе части - и приём и передача - в SAI2
+
+	if (state != 0)
+	{
+		SAI2_Block_B->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI2_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
 }
 
 #endif /* WITHFPGARTS_FRAMEBITS */
@@ -2942,14 +2982,36 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 	SAI2HW_INITIALIZE();
 }
 
-static void hardware_sai2_enable_codec1(uint_fast8_t state)		/* разрешение работы SAI2 на STM32F4xx */
+static void hardware_sai2_a_enable_codec1(uint_fast8_t state)		/* разрешение работы SAI2 на STM32F4xx */
 {
 	// при dual watch используется SAI2, но
 	// через него не передаются данные.
 	// Для работы синхронизации запукаются обе части - и приём и передача - в SAI2
 
-	SAI2_Block_B->CR1 |= SAI_xCR1_SAIEN;
-	SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	if (state != 0)
+	{
+		SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI2_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
+}
+
+static void hardware_sai2_b_enable_codec1(uint_fast8_t state)		/* разрешение работы SAI2 на STM32F4xx */
+{
+	// при dual watch используется SAI2, но
+	// через него не передаются данные.
+	// Для работы синхронизации запукаются обе части - и приём и передача - в SAI2
+
+	if (state != 0)
+	{
+		SAI2_Block_B->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI2_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
 }
 
 
@@ -3151,10 +3213,28 @@ static void hardware_sai2_slave_duplex_initialize_fpga(void)		/* инициал�
 	SAI2HW_INITIALIZE();
 }
 
-static void hardware_sai2_enable_fpga(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
+static void hardware_sai2_a_enable_fpga(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
 {
-	SAI2_Block_B->CR1 |= SAI_xCR1_SAIEN;
-	SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	if (state != 0)
+	{
+		SAI2_Block_A->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI2_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
+}
+
+static void hardware_sai2_b_enable_fpga(uint_fast8_t state)		/* разрешение работы SAI1 на STM32F4xx */
+{
+	if (state != 0)
+	{
+		SAI2_Block_B->CR1 |= SAI_xCR1_SAIEN;
+	}
+	else
+	{
+		SAI2_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
+	}
 }
 
 static const codechw_t audiocodechw_sai2_a_tx_b_rx_master =
@@ -3163,8 +3243,8 @@ static const codechw_t audiocodechw_sai2_a_tx_b_rx_master =
 	hardware_dummy_initialize,
 	DMA_SAI2_B_RX_initialize_codec1,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
 	DMA_SAI2_A_TX_initialize_codec1,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
-	hardware_sai2_enable_codec1,
-	hardware_dummy_enable,
+	hardware_sai2_b_enable_codec1,
+	hardware_sai2_a_enable_codec1,
 	"audiocodechw-sai2-a-tx-b-rx-master"
 };
 
@@ -3174,8 +3254,8 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
 	hardware_dummy_initialize,
 	DMA_SAI2_B_RX_initialize_fpga,
 	DMA_SAI2_A_TX_initialize_fpga,
-	hardware_sai2_enable_fpga,
-	hardware_dummy_enable,
+	hardware_sai2_b_enable_fpga,
+	hardware_sai2_a_enable_fpga,
 	"fpgacodechw-sai2-slave"
 };
 
@@ -3187,8 +3267,8 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
 		hardware_dummy_initialize,
 		DMA_SAI2_B_RX_initializeWFM,
 		hardware_dummy_initialize,
-		hardware_sai2_enable_WFM,
-		hardware_dummy_enable,
+		hardware_sai2_b_enable_wfm,
+		hardware_sai2_a_enable_wfm,
 		"sai2-fpga spectrum or WFM"
 	};
 #endif /* WITHFPGARTS_FRAMEBITS */
@@ -3203,8 +3283,8 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
 		hardware_dummy_initialize,
 		DMA_SAI1_B_RX_initialize_fpga,
 		DMA_SAI1_A_TX_initialize_fpga,
-		hardware_sai1_enable_fpga,
-		hardware_dummy_enable,
+		hardware_sai1_b_enable_fpga,
+		hardware_sai1_a_enable_fpga,
 		"fpgacodechw-sai1-master"
 	};
 
@@ -3214,8 +3294,8 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
 		hardware_dummy_initialize,
 		DMA_SAI1_B_RX_initialize_fpga,
 		DMA_SAI1_A_TX_initialize_fpga,
-		hardware_sai1_enable_fpga,
-		hardware_dummy_enable,
+		hardware_sai1_b_enable_fpga,
+		hardware_sai1_a_enable_fpga,
 		"fpgacodechw-sai1-slave"
 	};
 
@@ -3495,14 +3575,28 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
-static void r7s721_ssif0_duplex_enable_codec1(uint_fast8_t state)
+static void r7s721_ssif0_rx_enable_codec1(uint_fast8_t state)
 {
-	SSIF0.SSICR |= 
-		1 * (1UL << 1) |		// TEN	
-		1 * (1UL << 0) |		// REN	
-		0;
-	//local_delay_ms(20);
-	//SSIF0.SSISR = ~ (1U << 28);	// TOIRQ
+	if (state != 0)
+	{
+		SSIF0.SSICR |= (1UL << 0); // REN
+	}
+	else
+	{
+		SSIF0.SSICR &= ~ (1UL << 0); // REN
+	}
+}
+
+static void r7s721_ssif0_tx_enable_codec1(uint_fast8_t state)
+{
+	if (state != 0)
+	{
+		SSIF0.SSICR |= (1UL << 1); // TEN
+	}
+	else
+	{
+		SSIF0.SSICR &= ~ (1UL << 1); // TEN
+	}
 }
 
 static const codechw_t audiocodec_ssif0_duplex_master =
@@ -3511,8 +3605,8 @@ static const codechw_t audiocodec_ssif0_duplex_master =
 	hardware_dummy_initialize,
 	r7s721_ssif0_dmarx_initialize_codec1_rx,
 	r7s721_ssif0_dmatx_initialize_codec1_tx,
-	r7s721_ssif0_duplex_enable_codec1,
-	hardware_dummy_enable,
+	r7s721_ssif0_rx_enable_codec1,
+	r7s721_ssif0_tx_enable_codec1,
 	"audiocodechw-ssif0-duplex-master"
 };
 #endif /* WITHI2S2HW */
@@ -3761,14 +3855,29 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 	HARDWARE_SSIF1_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
 }
 
-static void r7s721_ssif1_duplex_enable(uint_fast8_t state)
+
+static void r7s721_ssif1_rx_enable_codec1(uint_fast8_t state)
 {
-	SSIF1.SSICR |= 
-		1 * (1UL << 1) |		// TEN	
-		1 * (1UL << 0) |		// REN	
-		0;
-	//local_delay_ms(20);
-	//SSIF1.SSISR = ~ (1U << 28);	// TOIRQ
+	if (state != 0)
+	{
+		SSIF1.SSICR |= (1UL << 0); // REN
+	}
+	else
+	{
+		SSIF1.SSICR &= ~ (1UL << 0); // REN
+	}
+}
+
+static void r7s721_ssif1_tx_enable_codec1(uint_fast8_t state)
+{
+	if (state != 0)
+	{
+		SSIF1.SSICR |= (1UL << 1); // TEN
+	}
+	else
+	{
+		SSIF1.SSICR &= ~ (1UL << 1); // TEN
+	}
 }
 
 static const codechw_t fpgacodechw_ssif1_duplex_master =
@@ -3777,8 +3886,8 @@ static const codechw_t fpgacodechw_ssif1_duplex_master =
 	hardware_dummy_initialize,
 	r7s721_ssif1_dmarx_initialize_fpga_rx,
 	r7s721_ssif1_dmatx_initialize_fpga_tx,
-	r7s721_ssif1_duplex_enable,
-	hardware_dummy_enable,
+	r7s721_ssif1_rx_enable_codec1,
+	r7s721_ssif1_tx_enable_codec1,
 	"audiocodechw-ssif1--duplex-master"
 };
 
@@ -3930,9 +4039,14 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 // FPGA/spectrum channel
 static void r7s721_ssif2_rx_enable_WFM(uint_fast8_t state)
 {
-	SSIF2.SSICR |= 
-		1 * (1UL << 0) |		// REN	
-		0;
+	if (state != 0)
+	{
+		SSIF2.SSICR |= (1UL << 0); // REN
+	}
+	else
+	{
+		SSIF2.SSICR &= ~ (1UL << 0); // REN
+	}
 }
 
 static const codechw_t fpgaspectrumhw_ssif2_rx_master =
@@ -3980,7 +4094,7 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 		hardware_dummy_initialize,
 		DMA_SAI2_B_RX_initializeWFM,
 		hardware_dummy_initialize,
-		hardware_sai2_enable_WFM,
+		hardware_sai2_b_enable_WFM,
 		hardware_dummy_enable,
 		"sai2-fpga spectrum for WFM"
 	};
