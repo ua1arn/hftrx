@@ -583,9 +583,8 @@ static unsigned long st7735_get_id(void)
 	//local_delay_ms(100);
 	ST7735_DATA();	/* RS: High: select a control register */
 	//local_delay_ms(100);
-	spi_progval8_p1(targetlcd, 0xFF);
-	(void) spi_complete(targetlcd);
-	spi_progval8_p1(targetlcd, 0xFF);
+	spi_progval8_p1(targetlcd, 0xFF);	// dummy data
+	spi_progval8_p2(targetlcd, 0xFF);
 	v1 = spi_complete(targetlcd);
 	spi_progval8_p1(targetlcd, 0xFF);
 	v2 = spi_complete(targetlcd);
