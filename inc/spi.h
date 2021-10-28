@@ -7,10 +7,11 @@
 #ifndef SPIFUNCS_H_INCLUDED
 #define SPIFUNCS_H_INCLUDED
 
+#include "hardware.h"
+
 #include <stdint.h>
 
 #include "gpio.h"
-#include "hardware.h"
 
 #ifdef __cplusplus
 extern "C" {
