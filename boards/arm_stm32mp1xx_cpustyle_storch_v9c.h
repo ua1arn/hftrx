@@ -624,7 +624,7 @@
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); \
-			arm_hardware_pioe_updown(TARGET_ENC2BTN_BIT, 0); /* PE15: pull-up second encoder button */ \
+			arm_hardware_pioe_updown(TARGET_ENC2BTN_BIT, 0); /* PE12: pull-up second encoder button */ \
 			arm_hardware_piof_inputs(TARGET_POWERBTN_BIT); \
 			arm_hardware_piof_updown(TARGET_POWERBTN_BIT, 0);	/* PF5: pull-up second encoder button */ \
 		} while (0)
