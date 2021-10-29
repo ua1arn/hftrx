@@ -3224,6 +3224,7 @@ static void stm32mp1_refresh_restore(struct stm32mp1_ddrctl *ctl,
 }
 
 
+#if WITHSDRAM_PMC1
 
 static int pmic_ddr_power_init(enum ddr_type ddr_type)
 {
@@ -3342,6 +3343,7 @@ static int pmic_ddr_power_init(enum ddr_type ddr_type)
 
 	return 0;
 }
+#endif /* WITHSDRAM_PMC1 */
 
 static int board_ddr_power_init(enum ddr_type ddr_type)
 {

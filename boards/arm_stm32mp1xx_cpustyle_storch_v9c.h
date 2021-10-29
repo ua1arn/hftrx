@@ -261,20 +261,6 @@
 		arm_hardware_pioc_updown(0, 1uL << 6); \
 	} while (0)
 
-	// для предотвращения треска от оставшегося инициализированным кодека
-	#define I2S2HW_POOLDOWN() do { \
-		arm_hardware_pioi_inputs(1uL << 0); /* PI0 I2S2_WS	*/ \
-		arm_hardware_pioi_updown(0, 1uL << 0); \
-		arm_hardware_pioi_inputs(1uL << 1); /* PI1 I2S2_CK	*/ \
-		arm_hardware_pioi_updown(0, 1uL << 1); \
-		arm_hardware_pioi_inputs(1uL << 3); /* PI3 I2S2_SDO - передача */ \
-		arm_hardware_pioi_updown(0, 1uL << 3); \
-		arm_hardware_pioi_inputs(1uL << 2); /* PI2 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_pioi_updown(0, 1uL << 2); \
-		arm_hardware_pioc_inputs(1uL << 6); /* PC6 I2S2_MCK */ \
-		arm_hardware_pioc_updown(0, 1uL << 6); \
-	} while (0)
-
 #endif /* WITHI2S2HW */
 
 
@@ -1119,7 +1105,6 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			I2S2HW_POOLDOWN(); \
 			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			HARDWARE_DAC_INITIALIZE(); \
