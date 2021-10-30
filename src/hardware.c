@@ -2664,12 +2664,20 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
 		return addrbase | TTB_PARA_DEVICE;
+#if 1
+	// 1 GB DDR RAM memory size allowed
+	if (a >= 0xC0000000uL)								// DDR memory
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+#else
 
 	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
 	if (a >= 0xE0000000uL)								//  DEBUG
 		return addrbase | TTB_PARA_DEVICE;
+
+#endif
 
 	return addrbase | TTB_PARA_NO_ACCESS;
 
