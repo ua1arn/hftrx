@@ -9,8 +9,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
 // rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9C_H_INCLUDED
-#define ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9C_H_INCLUDED 1
+#ifndef ARM_STM32MP1_TFBGA361_CPUSTYLE_STORCH_V9C_H_INCLUDED
+#define ARM_STM32MP1_TFBGA361_CPUSTYLE_STORCH_V9C_H_INCLUDED 1
 
 #define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 #define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
@@ -1117,4 +1117,4 @@
 			USBD_EHCI_INITIALIZE(); \
 		} while (0)
 
-#endif /* ARM_STM32MP1_LFBGA354_CPUSTYLE_STORCH_V9C_H_INCLUDED */
+#endif /* ARM_STM32MP1_TFBGA361_CPUSTYLE_STORCH_V9C_H_INCLUDED */
