@@ -7550,12 +7550,20 @@ void hightests(void)
 //		defopt.n_root = 128;	/* Number of root directory entries */
 //		defopt.au_size = 0;		/* Cluster size (byte) */
 
-		PRINTF("Wait for storage device ready. Press any key\n");
+		PRINTF("Wait for storage device ready. Press space key\n");
 		for (;;)
 		{
 			char c;
 			if (dbg_getchar(& c))
-				break;
+			{
+				if (c == 0x1B)
+				{
+					PRINTF("Skip storage device test\n");
+					return;
+				}
+				if (c == ' ')
+					break;
+			}
 	#if WITHUSBHW
 			board_usbh_polling();     // usb device polling
 	#endif /* WITHUSBHW */
