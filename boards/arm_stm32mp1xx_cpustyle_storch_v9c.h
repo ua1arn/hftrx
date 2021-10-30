@@ -556,7 +556,7 @@
 	#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOZ->BSRR = BSRR_S(v); (void) GPIOZ->BSRR; } while (0)
 	#define	SPI_MOSI_BIT			(1uL << 2)	// PZ2 бит, через который идет вывод
 
-	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
+	#define SPI_TARGET_MISO_PIN		(GPIOZ->IDR)
 	#define	SPI_MISO_BIT			(1uL << 1)	// PZ1 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
