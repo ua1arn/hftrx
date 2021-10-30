@@ -856,7 +856,7 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-	/* BL0: PA14. BL1: PA15 */
+	/* BL0: PZ6. BL1: PZ7 */
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t ENmask = (1uL << 9); /* PD9 */ \
 		const portholder_t BLpins = (1uL << 7) | (1uL << 6); /* PZ7:PZ6 */ \
