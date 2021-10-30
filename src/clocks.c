@@ -7075,7 +7075,7 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	#if WITHTWIHW
@@ -7099,7 +7099,7 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	#if WITHTWIHW
@@ -8238,7 +8238,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	SPI1->CR1 = spi_cr1_val16w [spispeedindex][spimode];
@@ -8253,7 +8253,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	SPI1->CR1 = spi_cr1_val16w [spispeedindex] [spimode];

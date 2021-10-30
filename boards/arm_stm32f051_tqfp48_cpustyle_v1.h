@@ -441,7 +441,7 @@
 #endif
 
 #define HARDWARE_SPI_CONNECT() do { \
-		arm_hardware_pioa_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, 0 /* AF_0 */); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_pioa_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, 0 /* AF_0 */); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 	} while (0)
 #define HARDWARE_SPI_DISCONNECT() do { \
 		arm_hardware_pioa_outputs(SPI_SCLK_BIT | SPI_MOSI_BIT, SPI_SCLK_BIT | SPI_MOSI_BIT); /* connect back to GPIO */ \

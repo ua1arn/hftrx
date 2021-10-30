@@ -522,8 +522,8 @@
 
 
 #define HARDWARE_SPI_CONNECT() do { \
-		arm_hardware_piob_altfn50(SPI_MISO_BIT, AF_SPI2); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-		arm_hardware_piob_altfn50(SPI_MOSI_BIT, AF_SPI2); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+		arm_hardware_piob_altfn50(SPI_MISO_BIT, AF_SPI2); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+		arm_hardware_piob_altfn50(SPI_MOSI_BIT, AF_SPI2); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		arm_hardware_pioi_altfn50(SPI_SCLK_BIT, AF_SPI2);	\
 } while (0)
 #define HARDWARE_SPI_DISCONNECT() do { \
