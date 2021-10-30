@@ -86,9 +86,9 @@ xpt2046_read(
 	hardware_spi_connect_b16(tscspeed, tscmode);
 	prog_select(target);
 
-	hardware_spi_b16_p1((uint_fast32_t) cmd1 << CMDPOS >> 16);
+	hardware_spi_b16_p1((uint_fast32_t) cmd << CMDPOS >> 16);
 	v0 = hardware_spi_complete_b16();
-	hardware_spi_b16_p1(0);
+	hardware_spi_b16_p1((uint_fast32_t) cmd << CMDPOS >> 0);
 	v1 = hardware_spi_complete_b16();
 
 	prog_unselect(target);
@@ -100,9 +100,9 @@ xpt2046_read(
 
 	spi_select2(target, tscmode, tscspeed);	// for 50 kS/S and 24 bit words
 
-	v0 = spi_read_byte(target, (uint_fast32_t) cmd1 << CMDPOS >> 24);
-	v1 = spi_read_byte(target, (uint_fast32_t) cmd1 << CMDPOS >> 16);
-	v2 = spi_read_byte(target, (uint_fast32_t) cmd1 << CMDPOS >> 8);
+	v0 = spi_read_byte(target, (uint_fast32_t) cmd << CMDPOS >> 24);
+	v1 = spi_read_byte(target, (uint_fast32_t) cmd << CMDPOS >> 16);
+	v2 = spi_read_byte(target, (uint_fast32_t) cmd << CMDPOS >> 8);
 	v3 = spi_read_byte(target, 0x00);
 
 	spi_unselect(target);
