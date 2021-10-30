@@ -221,13 +221,13 @@
 
 	// Выводы подключения енкодера #1
 	#define ENCODER_INPUT_PORT	(GPIOE->IDR)
-	#define ENCODER_BITA		(1uL << 13)		// PE1
-	#define ENCODER_BITB		(1uL << 9)		// PE0
+	#define ENCODER_BITA		(1uL << 1)		// PE1
+	#define ENCODER_BITB		(1uL << 0)		// PE0
 
 	// Выводы подключения енкодера #2
 	#define ENCODER2_INPUT_PORT	(GPIOE->IDR)
-	#define ENCODER2_BITA		(1uL << 15)		// PE4
-	#define ENCODER2_BITB		(1uL << 14)		// PE6
+	#define ENCODER2_BITA		(1uL << 4)		// PE4
+	#define ENCODER2_BITB		(1uL << 6)		// PE6
 
 
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
@@ -595,7 +595,7 @@
 #define TARGET_ENC2BTN_BIT (1U << 12)	// PE12 - second encoder button with pull-up
 
 #if WITHKEYBOARD
-	/* PE15: pull-up second encoder button */
+	/* PE12: pull-up second encoder button */
 
 	#define TARGET_POWERBTN_BIT (1U << 5)	// PF5 - ~CPU_POWER_SW signal
 
@@ -1038,7 +1038,7 @@
 
 		void stmpe811_interrupt_handler(void);
 
-		#define BOARD_STMPE811_INT_PIN (1uL << 12)		/* PE14 : tsc interrupt XS26, pin 08 */
+		#define BOARD_STMPE811_INT_PIN (1uL << 14)		/* PE14 : tsc interrupt XS26, pin 08 */
 		//#define BOARD_STMPE811_RESET_PIN (1uL << 13)	/* PB13 : tsc/LCD reset, XS26, pin 22 */
 
 		#define BOARD_STMPE811_INT_CONNECT() do { \
