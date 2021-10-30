@@ -922,7 +922,7 @@
 		arm_hardware_pioh_altfn50((1U << 13), GPIO_AF_LTDC14);		/* PH13 G2 */ \
 		arm_hardware_piog_altfn50((1U << 10), GPIO_AF_LTDC9);		/* PG10 G3 */ \
 		arm_hardware_pioh_altfn50((1U << 15), GPIO_AF_LTDC14);		/* PH15 G4 */ \
-		arm_hardware_pioh_altfn50((1U << 11), GPIO_AF_LTDC9);		/* PH4 G5 */ \
+		arm_hardware_pioh_altfn50((1U << 4), GPIO_AF_LTDC9);		/* PH4 G5 */ \
 		arm_hardware_pioc_altfn50((1U << 7), GPIO_AF_LTDC14);		/* PC7 G6 */ \
 		arm_hardware_piob_altfn50((1U << 5), GPIO_AF_LTDC14);		/* PB5 G7 */ \
 		/* BLUE */ \
