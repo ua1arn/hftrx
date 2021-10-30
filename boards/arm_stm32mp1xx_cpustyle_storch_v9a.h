@@ -588,10 +588,10 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
+			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit */ \
 		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
