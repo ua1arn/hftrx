@@ -535,7 +535,7 @@
 	//#define SPI_NAEN_PORT_S(v)	do { GPIOx->BSRR = BSRR_S(v); (void) GPIOx->BSRR; } while (0)
 	//#define SPI_NAEN_PORT_C(v)	do { GPIOx->BSRR = BSRR_C(v); (void) GPIOx->BSRR; } while (0)
 
-	//#define SPI_NAEN_BIT (1uL << 7)		// * PE7 used
+	//#define SPI_NAEN_BIT (1uL << xx7)		// Pxx used
 
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
