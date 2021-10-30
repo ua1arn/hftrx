@@ -3740,6 +3740,8 @@ arm_hardware_pioz_inputs(unsigned long ipins)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	GPIOZ->SECCFGR &= ~ (ipins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOZ, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -3796,6 +3798,8 @@ arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
@@ -3854,6 +3858,8 @@ arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
@@ -3911,6 +3917,8 @@ arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
@@ -3967,6 +3975,8 @@ arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
@@ -4020,6 +4030,8 @@ arm_hardware_pioz_altfn20(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
