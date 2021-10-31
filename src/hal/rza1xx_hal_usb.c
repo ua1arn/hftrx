@@ -3275,7 +3275,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	if ((intsts0msk & USB_INTSTS0_NRDY) != 0)	// NRDY
 	{
 		uint_fast8_t pipe;
-		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
+		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - NRDY, NRDYSTS=0x%04X\n"), USBx->NRDYSTS);
 
 /*
 	  	unsigned bcnt;
@@ -3316,7 +3316,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	{
 		// host
 		uint_fast8_t i;
-		//PRINTF(PSTR("1 HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
+		PRINTF(PSTR("1 HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
 		USBx->BRDYSTS = ~ brdysts;	// 2. When BRDYM is 0, clearing this bit should be done before accessing the FIFO.
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
@@ -3325,19 +3325,21 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 			USBH_HandleTypeDef * const phost = hhcd->pData;
 			RZ_HCD_HCTypeDef * const hc = & hhcd->hc [phost->Control.pipe_in];
 			//RZ_HCD_HCTypeDef * const hc = & hhcd->hc [0];
+			PRINTF("Fetch data: hc=%u, hc->xfer_len=%u, hc->xfer_count=%u\n", phost->Control.pipe_in, hc->xfer_len, hc->xfer_count);
 		  	unsigned bcnt;
 		  	if (USB_ReadPacketNec(USBx, pipe, hc->xfer_buff, hc->xfer_len - hc->xfer_count, & bcnt) == 0)
 		  	{
 		  		if (bcnt == 0)
 		  		{
-		  			//PRINTF("NO DATA\n");
+		  			PRINTF("NO DATA\n");
 		  		}
 		  		else
 		  		{
 			  		printhex((uintptr_t) hc->xfer_buff, hc->xfer_buff, bcnt);	// DEBUG
-			  		//hc->xfer_buff += bcnt;
-			  		//hc->xfer_count += bcnt;
-			  		//USBx->BRDYENB &= ~ 0x01;		// test
+			  		hc->xfer_buff += bcnt;
+			  		hc->xfer_count += bcnt;
+			  		if (hc->xfer_len <= hc->xfer_count)
+			  			USBx->BRDYENB &= ~ (0x01uL << pipe);
 		  		}
 				//HAL_PCD_DataOutStageCallback(hpcd, ep->num);	// start next transfer
 		  		hc->toggle_in ^= 1;
@@ -3429,7 +3431,8 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	    hc->state = HC_XFRC;
 	    hc->ErrCnt = 1;
 	    hc->toggle_in ^= 1;
-	    hc->urb_state  = URB_STALL;
+	    hc->urb_state  = URB_STALL;		// setup stage fail
+
 #if (USE_HAL_HCD_REGISTER_CALLBACKS == 1U)
       hhcd->HC_NotifyURBChangeCallback(hhcd, (uint8_t)ch_num, hhcd->hc[ch_num].urb_state);
 #else
@@ -3446,25 +3449,13 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		//ASSERT(err == 0);
 		//HAL_HCD_Connect_Callback(hhcd);
 
-		unsigned bcnt;
-	  	static uint8_t tmpb [256];
-	  	if (USB_ReadPacketNec(USBx, 0, tmpb, 256, & bcnt) == 0)
-	  	{
-	  		PRINTF("SACK with data:\n");
-	  		printhex(0, tmpb, bcnt);
-	  	}
-	  	else
-	  	{
-	  		PRINTF("SACK without data.\n");
-	  	}
-
 		USBH_HandleTypeDef * const phost = hhcd->pData;
 		RZ_HCD_HCTypeDef * const hc = & hhcd->hc [phost->Control.pipe_out];
 
 	    hc->state = HC_XFRC;
 	    hc->ErrCnt = 0;
 	    hc->toggle_in ^= 1;
-	    hc->urb_state  = URB_DONE;
+	    hc->urb_state  = URB_DONE;	// SETUP stage complete
 
 #if (USE_HAL_HCD_REGISTER_CALLBACKS == 1U)
       hhcd->HC_NotifyURBChangeCallback(hhcd, (uint8_t)ch_num, hhcd->hc[ch_num].urb_state);
@@ -3771,7 +3762,7 @@ HAL_StatusTypeDef USB_ActivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EPTy
 
 	if (pipe == 0)
 	{
-		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего буфера
 	}
 	return HAL_OK;
 }
@@ -3806,7 +3797,7 @@ HAL_StatusTypeDef USB_DeactivateEndpoint(USB_OTG_GlobalTypeDef *USBx, USB_OTG_EP
 
 	USBx->NRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 	USBx->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-	USBx->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+	USBx->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего буфера
 	if (usbd_is_dmapipe(USBx, pipe))
 	{
 		usbd_detachdma(USBx, pipe);
@@ -4132,7 +4123,7 @@ HAL_StatusTypeDef USB_HC_Halt(USB_OTG_GlobalTypeDef *USBx, uint8_t hc_num)
 
 	USBx->NRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 	USBx->BRDYENB &= ~ (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-	USBx->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+	USBx->BEMPENB &= ~ (1uL << pipe);	// Прерывание окончания передачи передающего буфера
 	return HAL_OK;
 }
 
@@ -4210,7 +4201,7 @@ HAL_StatusTypeDef USB_HC_Init(
 		if (ep_type != USBD_EP_TYPE_CTRL)
 			USBx->NRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
 		USBx->BRDYENB |= (1uL << pipe);	// Прерывание по заполненности приёмного (OUT) буфера
-		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего (IN) буфера
+		USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего буфера
 
 	    if (epnum & 0x80)
 	    {
@@ -5303,6 +5294,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 	case EP_TYPE_CTRL:
 		if (token == 0)
 		{
+			const uint_fast8_t pipe = 0;
 			const unsigned devsel = 0x00;
 			USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) hc->xfer_buff;
 			// Setup
@@ -5313,6 +5305,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_SETUP, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
+	  		USBx->BRDYENB &= ~ 0x01;		// пока не запросили - принимать не разрешаем
 //
 //			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
 //			qtd_item2_set_toggle(qtdrequest, 0);
@@ -5346,13 +5339,16 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			//USB_WritePacketNec(USBx, pipe, NULL, 0);	// ?
 
 			USBx->DCPCTR |= USB_DCPCTR_SUREQ;	// Writing setup packet data to the registers and writing 1 to the SUREQ bit in DCPCTR transmits the specified data for setup transactions.
+
 		}
 		else if (direction == 0)
 		{
+			const uint_fast8_t pipe = 0;
 			// Data OUT
 			PRINTF("HAL_HCD_HC_SubmitRequest: OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			PRINTF("HAL_HCD_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
 			printhex(0, pbuff, hc->xfer_len);
+	  		USBx->BRDYENB &= ~ 0x01;		// пока не запросили - принимать не разрешаем
 
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
@@ -5362,11 +5358,15 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 //			qtd_item2_set_toggle(qtdrequest, 1);
 			USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
 			USBx->DCPCFG = USB_DCPCFG_DIR;
-			USB_WritePacketNec(USBx, 0, hc->xfer_buff, hc->xfer_len);
+			USB_WritePacketNec(USBx, pipe, hc->xfer_buff, hc->xfer_len);
+			USBx->DCPCTR |= USB_DCPCTR_SUREQ;	// Writing setup packet data to the registers and writing 1 to the SUREQ bit in DCPCTR transmits the specified data for setup transactions.
+			USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего буфера
+			USBx->NRDYENB |= (1uL << pipe);
 
 		}
 		else
 		{
+			const uint_fast8_t pipe = 0;
 			// Data In
 			PRINTF("HAL_HCD_HC_SubmitRequest: IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			PRINTF("HAL_HCD_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
@@ -5380,16 +5380,22 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 
 			//USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
 			//USBx->DCPCFG = 0 * USB_DCPCFG_DIR;
-//			unsigned bcnt;
-//		  	if (USB_ReadPacketNec(USBx, 0, hc->xfer_buff, hc->xfer_len, & bcnt) == 0)
-//		  	{
-//		  		PRINTF("IN SACK with data:\n");
-//		  		printhex(0, hc->xfer_buff, bcnt);
-//		  	}
-//		  	else
-//		  	{
-//		  		PRINTF("IN SACK without data.\n");
-//		  	}
+
+//			if (sack_bcnt != 0)
+//			{
+//				unsigned pktcnt = ulmin(sack_bcnt, hc->xfer_len);
+//				memcpy(hc->xfer_buff, sack_tmpb, pktcnt);
+//				hc->xfer_buff += pktcnt;
+//				hc->xfer_count += pktcnt;
+//				// Transaction done
+//	 			hc->urb_state = URB_DONE;
+//			}
+//			else
+//			{
+//				// Transaction done
+//	 			//hc->urb_state = URB_DONE;
+//			}
+	  		USBx->BRDYENB |= (0x01uL << pipe);		// запросили - принимать разрешаем
 		}
 		break;
 
@@ -5399,6 +5405,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 	case EP_TYPE_BULK:
 		if (hc->ep_is_in == 0)
 		{
+			const uint_fast8_t pipe = hc->ch_num;
 			// BULK Data OUT
 			PRINTF("HAL_HCD_HC_SubmitRequest: BULK OUT, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%dd\n",
 					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
@@ -5410,9 +5417,11 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
+			USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего буфера
 		}
 		else
 		{
+			const uint_fast8_t pipe = hc->ch_num;
 			// BULK Data IN
 			PRINTF("HAL_HCD_HC_SubmitRequest: BULK IN, hc->xfer_buff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n",
 					hc->xfer_buff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
@@ -5423,6 +5432,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
+	  		USBx->BRDYENB |= (0x01uL << pipe);		// запросили - принимать разрешаем
 		}
 		break;
 
@@ -5430,6 +5440,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 		//le8_modify( & qtdrequest->status, 0x04, 1 * 0x04);
 		if (hc->ep_is_in == 0)
 		{
+			const uint_fast8_t pipe = hc->ch_num;
 			// INTERRUPT Data OUT
 			PRINTF("HAL_HCD_HC_SubmitRequest: INTERRUPT OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			PRINTF("HAL_HCD_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
@@ -5438,9 +5449,11 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
+			USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего буфера
 		}
 		else
 		{
+			const uint_fast8_t pipe = hc->ch_num;
 			// INTERRUPT Data IN
 			PRINTF("HAL_HCD_HC_SubmitRequest: INTERRUPT IN, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			PRINTF("HAL_HCD_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
@@ -5449,6 +5462,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			arm_hardware_flush_invalidate((uintptr_t) hc->xfer_buff, hc->xfer_len);
 
 			// бит toggle хранится в памяти overlay и модифицируется самим контроллером
+	  		USBx->BRDYENB |= (0x01uL << pipe);		// запросили - принимать разрешаем
 		}
 		break;
 
@@ -5477,7 +5491,11 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
   */
 HCD_URBStateTypeDef HAL_HCD_HC_GetURBState(HCD_HandleTypeDef *hhcd, uint8_t chnum)
 {
-  return hhcd->hc[chnum].urb_state;
+	local_delay_ms(300);
+	return URB_DONE;
+
+	PRINTF("HAL_HCD_HC_GetURBState: hc=%u, urb_state=%u\n", chnum, hhcd->hc[chnum].urb_state);
+	return hhcd->hc [chnum].urb_state;
 }
 
 
