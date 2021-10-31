@@ -3888,7 +3888,7 @@ static const codechw_t fpgacodechw_ssif1_duplex_master =
 	r7s721_ssif1_dmatx_initialize_fpga_tx,
 	r7s721_ssif1_rx_enable_codec1,
 	r7s721_ssif1_tx_enable_codec1,
-	"audiocodechw-ssif1--duplex-master"
+	"audiocodechw-ssif1-duplex-master"
 };
 
 #endif /* WITHSAI1HW */
