@@ -307,7 +307,6 @@ HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_
 
 HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
 
-	PRINTF("%s:\n", __func__);
  	//USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
 
  	EHCIx->USBINTR = 0;
@@ -683,13 +682,13 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
  		if ((portsc & EHCI_PORTSC_CCS) != 0)
  		{
- 			//PRINTF("DEv Connect handler\n");
+ 			//PRINTF("Device Connect handler\n");
 			HAL_EHCI_PortEnabled_Callback(hehci);
  			HAL_EHCI_Connect_Callback(hehci);
  		}
  		else
  		{
- 			//PRINTF("DEv Disconnect handler\n");
+ 			//PRINTF("Device Disconnect handler\n");
 			HAL_EHCI_Disconnect_Callback(hehci);
  		}
 	}
@@ -720,7 +719,6 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
 	unsigned i;
-	//PRINTF("%s:\n", __func__);
 	USB_EHCI_CapabilityTypeDef *const EHCIx = hehci->Instance;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
@@ -876,16 +874,12 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
 
-	//PRINTF("%s: done\n", __func__);
 	return HAL_OK;
 }
 
 HAL_StatusTypeDef HAL_EHCI_DeInit(EHCI_HandleTypeDef *hehci)
 {
-	//PRINTF("%s:\n", __func__);
-
 	HAL_EHCI_MspDeInit(hehci);
-	//PRINTF("%s: done\n", __func__);
 	return HAL_OK;
 }
 
@@ -905,8 +899,6 @@ void USBH_EHCI_IRQHandler(void)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-	//PRINTF("%s:\n", __func__);
-
 #if CPUSTYLE_STM32MP1
 
 	USBD_EHCI_INITIALIZE();
@@ -992,13 +984,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
 
 #endif
-	//PRINTF("%s: done\n", __func__);
 }
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-	//PRINTF("%s:\n", __func__);
-
 #if CPUSTYLE_STM32MP1
 
 #if WITHEHCIHWSOFTSPOLL == 0
@@ -1050,7 +1039,6 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 	#warning HAL_EHCI_MspDeInit Not implemented for CPUSTYLE_xxxxx
 
 #endif
-	//PRINTF("%s: done\n", __func__);
 }
 
 
@@ -1061,7 +1049,6 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
   */
 HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 {
-	//PRINTF("%s:\n", __func__);
  	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
  	// Enable controller
  	// Запускаем контроллер, 8 микро-фреймов, включаем
@@ -1098,7 +1085,6 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 	(void) EHCI_DriveVbus(hehci->Instance, 1U);
 	__HAL_UNLOCK(hehci);
 
-	//PRINTF("%s: done\n", __func__);
 	return HAL_OK;
 }
 
@@ -1110,7 +1096,6 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 
 HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 {
-	PRINTF("%s:\n", __func__);
 	__HAL_LOCK(hehci);
 	(void) EHCI_StopHost(hehci->Instance);
 
@@ -1277,24 +1262,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //	head0->cache.next = cpu_to_le32 ( EHCI_LINK_TERMINATE );
 //	head0->cache.status = EHCI_STATUS_HALTED;
 
-
-#if 0
-	ehci_async_schedule ( ehci );
-	writel ( virt_to_phys ( head0 ),
-			ehci->op + EHCI_OP_ASYNCLISTADDR );
-
-	/* Use async queue head to determine control data structure segment */
-	ehci->ctrldssegment =
-			( ( ( uint64_t ) virt_to_phys ( head0 ) ) >> 32 );
-	if ( ehci->addr64 ) {
-		writel ( ehci->ctrldssegment, ehci->op + EHCI_OP_CTRLDSSEGMENT);
-	} else if ( ehci->ctrldssegment ) {
-		PRINTF("EHCI %s CTRLDSSEGMENT not supported\n",
-				ehci->name );
-		rc = -ENOTSUP;
-		goto err_ctrldssegment;
-	}
-#endif
 
 	ASSERT(hehci->ghc == NULL);
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
