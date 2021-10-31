@@ -39,7 +39,9 @@ enum XPTCoordinate
 	XPT2046_Y  = 5 * XPT2046_A0 | XPT2046_DFR_MODE,	// Короткая сторона на 320x240
 	XPT2046_Z1 = 3 * XPT2046_A0 | XPT2046_DFR_MODE,
 	XPT2046_Z2 = 4 * XPT2046_A0 | XPT2046_DFR_MODE,
-	XPT2046_TEMP = 7 * XPT2046_A0 | XPT2046_SER_MODE		// Термодачик
+	XPT2046_TEMP = 0 * XPT2046_A0 | XPT2046_SER_MODE,		// Термодачик
+	XPT2046_TEMP_1 = 6 * XPT2046_A0 | XPT2046_SER_MODE,		// Термодачик (The second mode)
+	XPT2046_TEMP_2 = 7 * XPT2046_A0 | XPT2046_SER_MODE		// Термодачик (The second mode)
 };
 
 #define XPT2046_Z1_THRESHOLD 10
@@ -180,16 +182,17 @@ void xpt2046_initialize(void)
 {
 	const spitarget_t target = targettsc1;
 	const unsigned t = xpt2046_read(target, XPT2046_TEMP);
-	PRINTF("xpt2046_initialize. t=%u\n", t);
+	PRINTF("xpt2046_initialize: t=%u\n", t);
 #if 0
 	for (;;)
 	{
+		const unsigned t = xpt2046_read(target, XPT2046_TEMP);
 		const unsigned x = xpt2046_read(target, XPT2046_X);
 		const unsigned y = xpt2046_read(target, XPT2046_Y);
 		const unsigned z1 = xpt2046_read(target, XPT2046_Z1);
 		//unsigned z2 = xpt2046_read(target, XPT2046_Z2);
 		const int st = z1 > XPT2046_Z1_THRESHOLD;
-		PRINTF("xpt2046: x=%u, y=%u z1=%u, st=%d\n", x, y, z1, st);
+		PRINTF("xpt2046_initialize: t=%u, x=%u, y=%u z1=%u, st=%d\n", t, x, y, z1, st);
 	}
 #endif
 	//PRINTF("xpt2046_initialize done.\n");
