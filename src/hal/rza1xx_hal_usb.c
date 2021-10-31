@@ -5305,7 +5305,10 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_SETUP, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
-	  		USBx->BRDYENB &= ~ 0x01;		// пока не запросили - принимать не разрешаем
+
+			USBx->BEMPENB &= ~ (0x01uL << pipe);	// пока не запросили - принимать не разрешаем
+			USBx->NRDYENB &= ~ (0x01uL << pipe);	// пока не запросили - принимать не разрешаем
+	  		USBx->BRDYENB &= ~ (0x01uL << pipe);	// пока не запросили - принимать не разрешаем
 //
 //			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
 //			qtd_item2_set_toggle(qtdrequest, 0);
@@ -5348,20 +5351,20 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			PRINTF("HAL_HCD_HC_SubmitRequest: OUT, pbuff=%p, hc->xfer_len=%u, addr=%u, do_ping=%d, hc->do_ping=%d\n", pbuff, (unsigned) hc->xfer_len, hc->dev_addr, do_ping, hc->do_ping);
 			PRINTF("HAL_HCD_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, tt_hub=%d, tt_prt=%d, speed=%d\n", hc->ch_num, hc->ep_num, hc->max_packet, hc->tt_hubaddr, hc->tt_prtaddr, hc->speed);
 			printhex(0, pbuff, hc->xfer_len);
-	  		USBx->BRDYENB &= ~ 0x01;		// пока не запросили - принимать не разрешаем
 
 //			VERIFY(0 == qtd_item2_buff(qtdrequest, hc->xfer_buff, hc->xfer_len));
 //			qtd_item2(qtdrequest, EHCI_FL_PID_OUT, do_ping);
 			arm_hardware_flush((uintptr_t) hc->xfer_buff, hc->xfer_len);
 //
+      		USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 //			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
 //			qtd_item2_set_toggle(qtdrequest, 1);
 			USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
 			USBx->DCPCFG = USB_DCPCFG_DIR;
 			USB_WritePacketNec(USBx, pipe, hc->xfer_buff, hc->xfer_len);
-			USBx->DCPCTR |= USB_DCPCTR_SUREQ;	// Writing setup packet data to the registers and writing 1 to the SUREQ bit in DCPCTR transmits the specified data for setup transactions.
-			USBx->BEMPENB |= (1uL << pipe);	// Прерывание окончания передачи передающего буфера
-			USBx->NRDYENB |= (1uL << pipe);
+			//USBx->DCPCTR |= USB_DCPCTR_SUREQ;	// Writing setup packet data to the registers and writing 1 to the SUREQ bit in DCPCTR transmits the specified data for setup transactions.
+			USBx->BEMPENB |= (0x01uL << pipe);	// Прерывание окончания передачи передающего буфера
+			USBx->NRDYENB |= (0x01uL << pipe);
 
 		}
 		else
@@ -5378,23 +5381,11 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 //			// бит toggle хранится в памяти overlay и модифицируется сейчас в соответствии с требовании для SETUP запросов
 //			qtd_item2_set_toggle(qtdrequest, 1);
 
+      		USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 			//USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
 			//USBx->DCPCFG = 0 * USB_DCPCFG_DIR;
 
-//			if (sack_bcnt != 0)
-//			{
-//				unsigned pktcnt = ulmin(sack_bcnt, hc->xfer_len);
-//				memcpy(hc->xfer_buff, sack_tmpb, pktcnt);
-//				hc->xfer_buff += pktcnt;
-//				hc->xfer_count += pktcnt;
-//				// Transaction done
-//	 			hc->urb_state = URB_DONE;
-//			}
-//			else
-//			{
-//				// Transaction done
-//	 			//hc->urb_state = URB_DONE;
-//			}
+			USBx->BEMPENB |= (0x01uL << pipe);	// Прерывание окончания передачи передающего буфера
 	  		USBx->BRDYENB |= (0x01uL << pipe);		// запросили - принимать разрешаем
 		}
 		break;
