@@ -3326,7 +3326,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	{
 		// host
 		uint_fast8_t i;
-		PRINTF(PSTR("1 HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
+		//PRINTF(PSTR("1 HAL_HCD_IRQHandler trapped - BRDY, BRDYSTS=0x%04X\n"), USBx->BRDYSTS);
 		const uint_fast16_t brdysts = USBx->BRDYSTS & USBx->BRDYENB;	// BRDY Interrupt Status Register
 		USBx->BRDYSTS = ~ brdysts;	// 2. When BRDYM is 0, clearing this bit should be done before accessing the FIFO.
 		if ((brdysts & (1U << 0)) != 0)		// PIPE0 - DCP
@@ -3341,7 +3341,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 		  	{
 		  		if (bcnt == 0)
 		  		{
-		  			PRINTF("NO DATA\n");
+		  			//PRINTF("NO DATA\n");
 		  		}
 		  		else
 		  		{
@@ -3411,7 +3411,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	if ((intsts1msk & USB_INTSTS1_DTCH) != 0)	// DTCH
 	{
 		USBx->INTSTS1 = (uint16_t) ~ USB_INTSTS1_DTCH;
-		PRINTF(PSTR("HAL_HCD_IRQHandler trapped - DTCH\n"));
+		//PRINTF(PSTR("HAL_HCD_IRQHandler trapped - DTCH\n"));
 		HAL_HCD_Disconnect_Callback(hhcd);
 	}
 	if ((intsts1msk & USB_INTSTS1_ATTCH) != 0)	// ATTCH
@@ -3496,7 +3496,27 @@ uint32_t USB_GetCurrentFrame(USB_OTG_GlobalTypeDef *USBx)
 uint_fast8_t USB_GetHostSpeedReady(USB_OTG_GlobalTypeDef *USBx)
 {
 	// 1xx: Reset handshake in progress
-	return (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) & 0x04) == 0;
+	if (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) & 0x04)
+	{
+		//PRINTF("USB_GetHostSpeedReady: Reset handshake in progress\n");
+		return 0;
+	}
+	return 1;
+	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
+	{
+	case 0x01:
+		//PRINTF("USB_GetHostSpeedReady: detected low speed\n");
+		return 1;
+	case 0x02:
+		//PRINTF("USB_GetHostSpeedReady: detected full speed\n");
+		return 1;
+	case 0x03:
+		//PRINTF("USB_GetHostSpeedReady: detected high speed\n");
+		return 1;
+	default:
+		//PRINTF("USB_GetHostSpeedReady: unknown speed (code=%02X)\n", (USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT);
+		return 0;
+	}
 }
 
 
@@ -3512,19 +3532,23 @@ uint_fast8_t USB_GetHostSpeedReady(USB_OTG_GlobalTypeDef *USBx)
   */
 uint32_t USB_GetHostSpeed(USB_OTG_GlobalTypeDef *USBx)
 {
+	//return USB_OTG_SPEED_HIGH;
 	// 1xx: Reset handshake in progress
 	while (((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT) & 0x04)
 		dbg_putchar('^');
-
 	switch ((USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT)
 	{
 	case 0x01:
+		PRINTF("USB_GetHostSpeed: detected low speed\n");
 		return USB_OTG_SPEED_LOW;
 	case 0x02:
+		PRINTF("USB_GetHostSpeed: detected full speed\n");
 		return USB_OTG_SPEED_FULL;
 	case 0x03:
+		PRINTF("USB_GetHostSpeed: detected high speed\n");
 		return USB_OTG_SPEED_HIGH;
 	default:
+		PRINTF("USB_GetHostSpeed: unknown speed (code=%02X)\n", (USBx->DVSTCTR0 & USB_DVSTCTR0_RHST) >> USB_DVSTCTR0_RHST_SHIFT);
 		return USB_OTG_SPEED_LOW;
 	}
 }
