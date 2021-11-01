@@ -3464,7 +3464,7 @@ void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd)
 	    hc->state = HC_XFRC;
 	    hc->ErrCnt = 0;
 	    hc->toggle_in ^= 1;
-	    hc->urb_state  = URB_DONE;	// SETUP stage complete
+	    hc->urb_state = URB_DONE;	// SETUP stage complete
 
 #if (USE_HAL_HCD_REGISTER_CALLBACKS == 1U)
       hhcd->HC_NotifyURBChangeCallback(hhcd, (uint8_t)ch_num, hhcd->hc[ch_num].urb_state);
@@ -4454,7 +4454,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 
 	USBx->SYSCFG0 = (USBx->SYSCFG0 & ~ (USB_SYSCFG_DPRPU | USB_SYSCFG_DRPD)) |
 			0 * USB_SYSCFG_DPRPU |	// DPRPU 0: Pulling up the D+ line is disabled.
-			1 * USB_SYSCFG_DRPD |	// DRPD 1: Pulling down the lines is enabled.
+			1 * USB_SYSCFG_DRPD |	// DRPD 1: Pulling down the D+ and D- lines is enabled.
 			0;
 	(void) USBx->SYSCFG0;
 
