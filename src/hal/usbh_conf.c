@@ -389,7 +389,7 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 #if CPUSTYLE_R7S721
 	hhcd_USB_OTG.Init.Host_channels = 16;
-	hhcd_USB_OTG.Init.speed = PCD_SPEED_FULL; //PCD_SPEED_HIGH; При high не происходит SACK
+	hhcd_USB_OTG.Init.speed = HCD_SPEED_FULL; //PCD_SPEED_HIGH; При high не происходит SACK
 	hhcd_USB_OTG.Init.dma_enable = DISABLE;
 	hhcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
 
@@ -431,39 +431,6 @@ USBH_StatusTypeDef USBH_LL_Init(USBH_HandleTypeDef *phost)
 
 	USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(& hhcd_USB_OTG));
 	return USBH_OK;
-
-	/* Init USB_IP */
-  if (1) {
-  /* Link the driver to the stack. */
-  hhcd_USB_OTG.pData = phost;
-  phost->pData = &hhcd_USB_OTG;
-
-#if defined (WITHUSBHW_EHCI)
-	hhcd_USB_OTG.Instance = WITHUSBHW_EHCI;
-#else
-	hhcd_USB_OTG.Instance = WITHUSBHW_HOST;
-#endif
-
-  hhcd_USB_OTG.Init.Host_channels = 12;
-  hhcd_USB_OTG.Init.speed = HCD_SPEED_FULL;
-	#if WITHUSBHOST_DMAENABLE
-	hhcd_USB_OTG.Init.dma_enable = ENABLE;	 // xyz HOST
-	#else /* WITHUSBHOST_DMAENABLE */
-	hhcd_USB_OTG.Init.dma_enable = DISABLE;	 // xyz HOST
-	#endif /* WITHUSBHOST_DMAENABLE */
-  hhcd_USB_OTG.Init.phy_itface = USB_OTG_EMBEDDED_PHY;
-  hhcd_USB_OTG.Init.Sof_enable = DISABLE;
-  hhcd_USB_OTG.Init.low_power_enable = DISABLE;
-  hhcd_USB_OTG.Init.vbus_sensing_enable = DISABLE;
-  hhcd_USB_OTG.Init.use_external_vbus = DISABLE;
-  if (HAL_HCD_Init(&hhcd_USB_OTG) != HAL_OK)
-  {
-    Error_Handler( );
-  }
-
-  USBH_LL_SetTimer(phost, HAL_HCD_GetCurrentFrame(&hhcd_USB_OTG));
-  }
-  return USBH_OK;
 }
 
 /**
