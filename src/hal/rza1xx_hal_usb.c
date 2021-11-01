@@ -4531,7 +4531,7 @@ HAL_StatusTypeDef USB_HostInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef c
 
 		// Reserved bits: The write value should always be 0.
 		* DEVADDn =
-			((1 ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
+			((0 ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
 			(0x00 << USB_DEVADDn_HUBPORT_SHIFT) |
 			(0x00 << USB_DEVADDn_UPPHUB_SHIFT) |
 			0;
@@ -5312,6 +5312,17 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 	hhcd->hc[ch_num].ch_num = ch_num;
 	hhcd->hc[ch_num].state = HC_IDLE;
 
+	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
+
+	const unsigned devsel = 0x00;
+	volatile uint16_t * const DEVADDn = (& USBx->DEVADD0) + devsel;
+	* DEVADDn =
+		((hc->speed == PCD_SPEED_FULL ? 0x03 : 0x02) << USB_DEVADDn_USBSPD_SHIFT) |
+		(hc->tt_prtaddr << USB_DEVADDn_HUBPORT_SHIFT) |
+		(hc->tt_hubaddr << USB_DEVADDn_UPPHUB_SHIFT) |
+		0;
+	(void) * DEVADDn;
+
 //  if (direction == 0)
 //  {
 //	  // OUT
@@ -5320,7 +5331,6 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 //
 //  return USB_HC_StartXfer(hhcd->Instance, &hhcd->hc[ch_num], (uint8_t)hhcd->Init.dma_enable);
 
-	USB_OTG_GlobalTypeDef * const USBx = hhcd->Instance;
 
 	switch (ep_type)
 	{
@@ -5328,7 +5338,6 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 		if (token == 0)
 		{
 			const uint_fast8_t pipe = 0;
-			const unsigned devsel = 0x00;
 			USB_Setup_TypeDef * const pSetup = (USB_Setup_TypeDef *) hc->xfer_buff;
 			// Setup
 
@@ -5353,6 +5362,8 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 			//USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
 			USBx->DCPCTR |= USB_DCPCTR_SQSET;	// DATA1 as answer
 
+
+			// Reserved bits: The write value should always be 0.
 
 			USBx->USBREQ =
 					((pSetup->b.bRequest << USB_USBREQ_BREQUEST_SHIFT) & USB_USBREQ_BREQUEST) |
