@@ -5425,7 +5425,7 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
 
 
 			USBx->BEMPENB |= (0x01uL << pipe);	// Прерывание окончания передачи передающего буфера
-			USBx->NRDYENB |= (0x01uL << pipe);
+			USBx->NRDYENB &= ~ (0x01uL << pipe);
 	  		USBx->BRDYENB &= ~ (0x01uL << pipe);		// запросили - принимать разрешаем
 	  		USBx->DCPCTR |= USB_DCPCTR_PINGE * (do_ping != 0);
 	  		USBx->DCPCTR |= USB_DCPCTR_PINGE * (1 != 0);
@@ -5451,14 +5451,15 @@ HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd,
      		//USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
     		//ASSERT((USBx->DCPCTR & USB_DCPCTR_SUREQ) == 0);
 			//USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
-			USBx->DCPCTR |= USB_DCPCTR_SQSET;	// DATA1 as answer
+			//USBx->DCPCTR |= USB_DCPCTR_SQSET;	// DATA1 as answer
       		//USBx->DCPCTR |= USB_DCPCTR_SUREQCLR;
 			//USBx->DCPCTR |= USB_DCPCTR_SQCLR;	// DATA0 as answer
 			//USBx->DCPCFG = 0 * USB_DCPCFG_DIR;
 
 			USBx->BEMPENB &= ~ (0x01uL << pipe);	// Прерывание окончания передачи передающего буфера
+			USBx->NRDYENB &= ~ (0x01uL << pipe);
 	  		USBx->BRDYENB |= (0x01uL << pipe);		// запросили - принимать разрешаем
-			USBx->DCPCTR |= USB_DCPCTR_SUREQ;	// Writing setup packet data to the registers and writing 1 to the SUREQ bit in DCPCTR transmits the specified data for setup transactions.
+			//USBx->DCPCTR |= USB_DCPCTR_SUREQ;	// Writing setup packet data to the registers and writing 1 to the SUREQ bit in DCPCTR transmits the specified data for setup transactions.
 		}
 		break;
 
