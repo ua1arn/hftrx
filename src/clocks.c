@@ -2712,8 +2712,6 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 }
 
 
-#if 1//WITHISBOOTLOADER
-
 void stm32mp1_pll_initialize(void)
 {
 
@@ -2950,7 +2948,7 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CR;
 
 #if 1//WITHSDRAMHW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	RCC->PLL2CR |= RCC_PLL2CR_DIVREN_Msk;	// DDR clock
 	(void) RCC->PLL2CR;
 #endif /* WITHSDRAMHW */
@@ -2988,11 +2986,10 @@ void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->PLL4CFGR1;
 
-	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock(& vdmode0));
-	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
+	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk /* | RCC_PLL4CFGR2_DIVQ_Msk | RCC_PLL4CFGR2_DIVR_Msk*/ )) |
 		((uint_fast32_t) (PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
 		//((uint_fast32_t) (pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
-		((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
+		//((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
 	(void) RCC->PLL4CFGR2;
 
@@ -3005,16 +3002,6 @@ void stm32mp1_pll_initialize(void)
 
 	RCC->PLL4CR |= RCC_PLL4CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
 	(void) RCC->PLL4CR;
-
-#if 0//WITHLTDCHW
-	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
-	(void) RCC->PLL4CR;
-#endif /* WITHLTDCHW */
-
-#if 1//WITHUSBHW
-	RCC->PLL4CR |= RCC_PLL4CR_DIVREN_Msk;	// USBPHY clock
-	(void) RCC->PLL4CR;
-#endif /* WITHUSBHW */
 
 #endif /* PLL4 */
 
@@ -3140,7 +3127,7 @@ void stm32mp1_pll_initialize(void)
 
 
 #if 1//WITHUART1HW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// usart1
 	//	0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
@@ -3155,7 +3142,7 @@ void stm32mp1_pll_initialize(void)
 #endif /* WITHUART1HW */
 
 #if 1//WITHUART2HW || WITHUART4HW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// UART2, UART4
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3170,7 +3157,7 @@ void stm32mp1_pll_initialize(void)
 #endif /* WITHUART2HW || WITHUART4HW */
 
 #if 1//WITHUART3HW || WITHUART5HW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// UART3, UART5
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3186,7 +3173,7 @@ void stm32mp1_pll_initialize(void)
 #endif /* WITHUART3HW || WITHUART5HW */
 
 #if 1//WITHUART7HW || WITHUART8HW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// UART7, UART8
 	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3201,7 +3188,7 @@ void stm32mp1_pll_initialize(void)
 #endif /* WITHUART7HW || WITHUART8HW */
 
 #if 1//WITHSDHCHW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// SDMMC1
 	//	0x0: hclk6 clock selected as kernel peripheral clock
 	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
@@ -3215,7 +3202,7 @@ void stm32mp1_pll_initialize(void)
 #endif /* WITHSDHCHW */
 
 #if 1//WITHSPIHW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll3_q_ck clock selected as kernel peripheral clock
 	//0x2: I2S_CKIN clock selected as kernel peripheral clock
@@ -3228,7 +3215,7 @@ void stm32mp1_pll_initialize(void)
 #endif /* WITHSPIHW */
 
 #if 1//WIHSPIDFHW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	//0x0: aclk clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll3_r_ck clock selected as kernel peripheral clock
 	//0x2: pll4_p_ck clock selected as kernel peripheral clock
@@ -3263,9 +3250,32 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->TIMG2PRER;
 	while ((RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRERDY_Msk) == 0)
 		;
+}
 
-#if 1//WITHUSBHW || WITHEHCIHW
-	// В загркзчике еще может и не быть этой периферии
+void stm32mp1_usb_clocks_initialize(void)
+{
+	if (RCC_USBCKSELR_USBOSRC_VAL == 0x00 || RCC_USBCKSELR_USBPHYSRC_VAL == 0x01)
+	{
+		// Stop PLL4
+		RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
+		(void) RCC->PLL4CR;
+		while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
+			;
+		//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock(& vdmode0));
+		RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVR_Msk)) |
+			((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
+			0;
+		(void) RCC->PLL4CFGR2;
+
+		// Start PLL4
+		RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
+		while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
+			;
+
+		RCC->PLL4CR |= RCC_PLL4CR_DIVREN_Msk;	// USBPHY clock
+		(void) RCC->PLL4CR;
+	}
+
 	//	In addition, if the USBO is used in full-speed mode only, the application can choose the
 	//	48 MHz clock source to be provided to the USBO:
 	// USBOSRC
@@ -3281,14 +3291,13 @@ void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->USBCKSELR;
 
-#endif /* WITHUSBHW || WITHEHCIHW */
-
-#if WITHELKEY
-	// TIM3 used
-
-#endif /* WITHELKEY */
 }
-#endif /* WITHISBOOTLOADER */
+
+void stm32mp1_audio_clocks_initialize(void)
+{
+
+}
+
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
@@ -5988,6 +5997,9 @@ sysinit_pll_initialize(void)
 
 	// Hang-off QSPI memory
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+
+	stm32mp1_usb_clocks_initialize();
+	stm32mp1_audio_clocks_initialize();
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	#if WITHISBOOTLOADER
