@@ -3250,6 +3250,17 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->TIMG2PRER;
 	while ((RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRERDY_Msk) == 0)
 		;
+
+	//	ADC1 and 2 kernel clock source selection
+	//	Set and reset by software.
+	//	0x0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+	//	0x1: per_ck clock selected as kernel peripheral clock
+	//	0x2: pll3_q_ck clock selected as kernel peripheral
+	RCC->ADCCKSELR = (RCC->ADCCKSELR & ~ (RCC_ADCCKSELR_ADCSRC_Msk)) |
+		(0x01 << RCC_ADCCKSELR_ADCSRC_Pos) |
+		0;
+	(void) RCC->ADCCKSELR;
+
 }
 
 void stm32mp1_usb_clocks_initialize(void)
