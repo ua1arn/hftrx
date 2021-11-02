@@ -2826,18 +2826,24 @@ void stm32mp1_pll_initialize(void)
 	// Stop PLL4
 	RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
 	(void) RCC->PLL4CR;
+	while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
+		;
 
 	// Stop PLL3
 	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
 	(void) RCC->PLL3CR;
+	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) != 0)
+		;
 
 	// Stop PLL2
 	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
 	(void) RCC->PLL2CR;
+	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) != 0)
+		;
 
 	// Stop PLL1
-	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
-	(void) RCC->PLL1CR;
+	//RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
+	//(void) RCC->PLL1CR;
 	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
 	(void) RCC->PLL1CR;
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
@@ -3310,7 +3316,7 @@ void stm32mp1_pll_initialize(void)
 
 void stm32mp1_usb_clocks_initialize(void)
 {
-	if (RCC_USBCKSELR_USBOSRC_VAL == 0x00 || RCC_USBCKSELR_USBPHYSRC_VAL == 0x01)
+	//if (RCC_USBCKSELR_USBOSRC_VAL == 0x00 || RCC_USBCKSELR_USBPHYSRC_VAL == 0x01)
 	{
 		// Stop PLL4
 		RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
@@ -3357,7 +3363,7 @@ void stm32mp1_audio_clocks_initialize(void)
 	// Stop PLL3
 	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
 	(void) RCC->PLL3CR;
-	while ((RCC->PLL3CR & RCC_PLL3CR_PLLON_Msk) != 0)
+	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) != 0)
 		;
 	// PLL3
 	// PLL3 source mux
