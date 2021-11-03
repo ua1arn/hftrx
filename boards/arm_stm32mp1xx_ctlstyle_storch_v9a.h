@@ -33,18 +33,6 @@
 	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
-	//	In addition, if the USBO is used in full-speed mode only, the application can choose the
-	//	48 MHz clock source to be provided to the USBO:
-	// USBOSRC
-	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
-	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
-	// USBPHYSRC
-	//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
-	//  0x1: pll4_r_ck clock selected as kernel peripheral clock
-	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
-	#define RCC_USBCKSELR_USBOSRC_VAL 0x01
-	#define RCC_USBCKSELR_USBPHYSRC_VAL 0x00
-
 	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
 		// ref1_ck, ref2_ck - 8..16 MHz
@@ -100,6 +88,9 @@
 			#endif
 
 			// PLL3_800
+			#define PLL3DIVM	2	// ref3_ck = 12 MHz (4..16 MHz valid)
+			#define PLL3DIVN	64	// 768 MHz
+			#define PLL3DIVQ	125	// I2S, SAI clock divider: 12/2*64 = 768 MHz. 768/125 = 6.144 MHz. 48 kHz * 64 = 3.072 MHz
 
 			// PLL4_800
 			#define PLL4DIVM	2	// ref2_ck = 12 MHz (4..16 MHz valid)
@@ -110,6 +101,19 @@
 			//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 			//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
 			#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
+
+			//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+			//	48 MHz clock source to be provided to the USBO:
+			// USBOSRC
+			//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+			//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+			// USBPHYSRC
+			//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+			//  0x1: pll4_r_ck clock selected as kernel peripheral clock
+			//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+			#define RCC_USBCKSELR_USBOSRC_VAL 0x01
+			#define RCC_USBCKSELR_USBPHYSRC_VAL 0x00
+
 
 		#else
 			// HSI version (HSI=64 MHz)
@@ -151,6 +155,8 @@
 			// PLL3_800
 			// pll3_p_ck -> mcuss_ck - 209 MHz Max
 			#define PLL3DIVM	5	// ref3_ck = 12.8 MHz (4..16 MHz valid)
+			#define PLL3DIVN	60	// 768 MHz
+			#define PLL3DIVQ	125	// I2S, SAI clock divider: 12/2*64 = 768 MHz. 768/125 = 6.144 MHz. 48 kHz * 64 = 3.072 MHz
 
 			// PLL4_800
 			#define PLL4DIVM	5	// ref2_ck = 12.8 MHz  (4..16 MHz valid)
@@ -160,6 +166,18 @@
 			//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 			//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
 			#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
+
+			//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+			//	48 MHz clock source to be provided to the USBO:
+			// USBOSRC
+			//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+			//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+			// USBPHYSRC
+			//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+			//  0x1: pll4_r_ck clock selected as kernel peripheral clock
+			//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+			#define RCC_USBCKSELR_USBOSRC_VAL 0x01
+			#define RCC_USBCKSELR_USBPHYSRC_VAL 0x01
 
 		#endif
 	#endif /* WITHISBOOTLOADER */

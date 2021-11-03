@@ -62,7 +62,7 @@
 			// PLL3_800
 			#define PLL3DIVM	2	// ref3_ck = 12 MHz (4..16 MHz valid)
 			#define PLL3DIVN	64	// 768 MHz
-			#define PLL3DIVQ	4	// I2S, SAI clock divider
+			#define PLL3DIVQ	125	// I2S, SAI clock divider: 12/2*64 = 768 MHz. 768/125 = 6.144 MHz. 48 kHz * 64 = 3.072 MHz
 
 			// PLL4_800
 			#define PLL4DIVM	2	// ref2_ck = 12 MHz (4..16 MHz valid)
@@ -110,6 +110,8 @@
 			// PLL3_800
 			// pll3_p_ck -> mcuss_ck - 209 MHz Max
 			#define PLL3DIVM	5	// ref3_ck = 12.8 MHz (4..16 MHz valid)
+			#define PLL3DIVN	60	// 768 MHz
+			#define PLL3DIVQ	125	// I2S, SAI clock divider: 12/2*64 = 768 MHz. 768/125 = 6.144 MHz. 48 kHz * 64 = 3.072 MHz
 
 			// PLL4_800
 			#define PLL4DIVM	5	// ref2_ck = 12.8 MHz  (4..16 MHz valid)
