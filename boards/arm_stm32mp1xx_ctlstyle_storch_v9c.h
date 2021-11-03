@@ -61,8 +61,8 @@
 
 			// PLL3_800
 			#define PLL3DIVM	2	// ref3_ck = 12 MHz (4..16 MHz valid)
-			#define PLL3DIVN	2	// 528 MHz
-			#define PLL3DIVQ	1	// I2S, SAI clock divider
+			#define PLL3DIVN	64	// 768 MHz
+			#define PLL3DIVQ	4	// I2S, SAI clock divider
 
 			// PLL4_800
 			#define PLL4DIVM	2	// ref2_ck = 12 MHz (4..16 MHz valid)

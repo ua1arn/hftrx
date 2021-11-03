@@ -3264,9 +3264,6 @@ void stm32mp1_usb_clocks_initialize(void)
 
 void stm32mp1_audio_clocks_initialize(void)
 {
-	return;
-#if 1// PLL3
-
 	// Stop PLL3
 	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
 	(void) RCC->PLL3CR;
@@ -3312,26 +3309,6 @@ void stm32mp1_audio_clocks_initialize(void)
 	(void) RCC->PLL3CR;
 
 	RCC->PLL3CR &= ~ RCC_PLL3CR_SSCG_CTRL_Msk;
-	(void) RCC->PLL3CR;
-
-#endif /* PLL3 */
-
-	// Stop PLL3
-	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
-	(void) RCC->PLL3CR;
-	while ((RCC->PLL3CR & RCC_PLL3CR_PLLON_Msk) != 0)
-		;
-	RCC->PLL3CFGR2 = (RCC->PLL3CFGR2 & ~ (RCC_PLL3CFGR2_DIVQ_Msk)) |
-		((uint_fast32_t) (PLL3DIVQ - 1) << RCC_PLL3CFGR2_DIVQ_Pos) |	// I2S, SAI clock divider
-		0;
-	(void) RCC->PLL3CFGR2;
-
-	// Start PLL3
-	RCC->PLL3CR |= RCC_PLL3CR_PLLON_Msk;
-	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) == 0)
-		;
-
-	RCC->PLL3CR |= RCC_PLL3CR_DIVQEN_Msk;
 	(void) RCC->PLL3CR;
 }
 
