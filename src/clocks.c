@@ -3291,7 +3291,7 @@ void stm32mp1_audio_clocks_initialize(void)
 	// Stop PLL3
 	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
 	(void) RCC->PLL3CR;
-	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) != 0)
+	while ((RCC->PLL3CR & RCC_PLL3CR_PLLON_Msk) != 0)
 		;
 	// PLL3
 	// PLL3 source mux
