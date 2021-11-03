@@ -250,15 +250,11 @@
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		arm_hardware_pioi_altfn2(1uL << 0,	AF_SPI2); /* PI0 I2S2_WS	*/ \
-		arm_hardware_pioi_updown(0, 1uL << 0); \
 		arm_hardware_pioi_altfn2(1uL << 1,	AF_SPI2); /* PI1 I2S2_CK	*/ \
-		arm_hardware_pioi_updown(0, 1uL << 1); \
 		arm_hardware_pioi_altfn2(1uL << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
-		arm_hardware_pioi_updown(0, 1uL << 3); \
 		arm_hardware_pioi_altfn2(1uL << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
-		arm_hardware_pioi_updown(0, 1uL << 2); \
-		arm_hardware_pioc_altfn2(1uL << 6,	AF_SPI2); /* PC6 I2S2_MCK */ \
-		arm_hardware_pioc_updown(0, 1uL << 6); \
+		arm_hardware_pioc_altfn2(1uL << 6,	AF_SPI2); /* PC6 I2S2_MCK - WS * 256 */ \
+		arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
 	} while (0)
 
 #endif /* WITHI2S2HW */
@@ -269,12 +265,10 @@
 	 * SAI2_A - TX, SAI2_B - RX
 	 */
 	#define SAI2HW_INITIALIZE()	do { \
-		/*arm_hardware_pioe_altfn20(0 * 1uL << 2, AF_SAI); */	/* PExx - SAI2_MCK_A - 12.288 MHz	*/ \
 		arm_hardware_pioi_altfn2(1uL << 7,	AF_SAI2);			/* PI7 - SAI2_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioi_altfn20(1uL << 1, AF_SAI2);			/* P - SAI2_SCK_A	*/ \
+		arm_hardware_piod_altfn20(1uL << 13, AF_SAI2);			/* PD13 - SAI2_SCK_A	*/ \
 		arm_hardware_pioi_altfn2(1uL << 6,	AF_SAI2);			/* PI6 - SAI2_SD_A	(i2s data to fpga)	*/ \
 		arm_hardware_pioe_altfn2(1uL << 11,	AF_SAI2);			/* PE11 - SAI2_SD_B	(i2s data from fpga)	*/ \
-		arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
 	} while (0)
 #endif /* WITHSAI2HW */
 
