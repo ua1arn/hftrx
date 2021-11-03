@@ -3231,18 +3231,42 @@ void stm32mp1_usb_clocks_initialize(void)
 		(void) RCC->PLL4CR;
 		while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
 			;
-		RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVR_Msk)) |
+		// PLL4 source mux
+		//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+		//	0x1: HSE selected as PLL clock (hse_ck)
+		//	0x2: CSI selected as PLL clock (csi_ck)
+		//	0x3: Signal I2S_CKIN used as reference clock
+		RCC->RCK4SELR = (RCC->RCK4SELR & ~ (RCC_RCK4SELR_PLL4SRC_Msk)) |
+		#if WITHCPUXOSC || WITHCPUXTAL
+			// с внешним генератором
+			// с внешним кварцем
+			((uint_fast32_t) 0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
+		#else
+			// На внутреннем генераторе
+			((uint_fast32_t) 0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
+		#endif
+			0;
+		while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
+			;
+
+		RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVN_Msk | RCC_PLL4CFGR1_DIVM4_Msk)) |
+	        ((uint_fast32_t) (PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
+	        ((uint_fast32_t) (PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
+	        0;
+	    (void) RCC->PLL4CFGR1;
+
+	    RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVR_Msk)) |
 			((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 			0;
 		(void) RCC->PLL4CFGR2;
+
+		RCC->PLL4CR |= RCC_PLL4CR_DIVREN_Msk;	// USBPHY clock
+		(void) RCC->PLL4CR;
 
 		// Start PLL4
 		RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
 		while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
 			;
-
-		RCC->PLL4CR |= RCC_PLL4CR_DIVREN_Msk;	// USBPHY clock
-		(void) RCC->PLL4CR;
 	}
 
 	//	In addition, if the USBO is used in full-speed mode only, the application can choose the
@@ -3288,10 +3312,11 @@ void stm32mp1_audio_clocks_initialize(void)
 	while ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY_Msk) == 0)
 		;
 
-	RCC->PLL3CR = (RCC->PLL3CR & ~ (RCC_PLL3CR_DIVPEN_Msk | RCC_PLL3CR_DIVQEN_Msk | RCC_PLL3CR_DIVREN_Msk));
-	(void) RCC->PLL3CR;
+//	RCC->PLL3CR = (RCC->PLL3CR & ~ (RCC_PLL3CR_DIVPEN_Msk | RCC_PLL3CR_DIVQEN_Msk | RCC_PLL3CR_DIVREN_Msk));
+//	(void) RCC->PLL3CR;
 
-	RCC->PLL3CFGR1 = (RCC->PLL3CFGR1 & ~ (RCC_PLL3CFGR1_DIVN_Msk)) |
+	RCC->PLL3CFGR1 = (RCC->PLL3CFGR1 & ~ (RCC_PLL3CFGR1_DIVM3_Msk | RCC_PLL3CFGR1_DIVN_Msk)) |
+		((uint_fast32_t) (PLL3DIVM - 1) << RCC_PLL3CFGR1_DIVM3_Pos) |
 		((uint_fast32_t) (PLL3DIVN - 1) << RCC_PLL3CFGR1_DIVN_Pos) |
 		0;
 	(void) RCC->PLL3CFGR1;
@@ -3301,27 +3326,51 @@ void stm32mp1_audio_clocks_initialize(void)
 		0;
 	(void) RCC->PLL3CFGR2;
 
-	RCC->PLL3CR |= RCC_PLL3CR_PLLON_Msk;
-	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) == 0)
-		;
-
 	RCC->PLL3CR |= RCC_PLL2CR_DIVQEN_Msk;
 	(void) RCC->PLL3CR;
 
 	RCC->PLL3CR &= ~ RCC_PLL3CR_SSCG_CTRL_Msk;
 	(void) RCC->PLL3CR;
-}
 
+	RCC->PLL3CR |= RCC_PLL3CR_PLLON_Msk;
+	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) == 0)
+		;
+}
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	ASSERT(pll4divq >= 1);
+
 	// Stop PLL4
 	RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
 	(void) RCC->PLL4CR;
 	while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
 		;
+
+	// PLL4 source mux
+	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as PLL clock (hse_ck)
+	//	0x2: CSI selected as PLL clock (csi_ck)
+	//	0x3: Signal I2S_CKIN used as reference clock
+	RCC->RCK4SELR = (RCC->RCK4SELR & ~ (RCC_RCK4SELR_PLL4SRC_Msk)) |
+	#if WITHCPUXOSC || WITHCPUXTAL
+		// с внешним генератором
+		// с внешним кварцем
+		((uint_fast32_t) 0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
+	#else
+		// На внутреннем генераторе
+		((uint_fast32_t) 0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
+	#endif
+		0;
+	while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
+		;
+
+	RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVM4_Msk | RCC_PLL4CFGR1_DIVN_Msk)) |
+		((uint_fast32_t) (PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
+		((uint_fast32_t) (PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
+		0;
+	(void) RCC->PLL4CFGR1;
 
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVQ_Msk)) |
 		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
@@ -3329,6 +3378,9 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	(void) RCC->PLL4CFGR2;
 
 	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
+	(void) RCC->PLL4CR;
+
+	RCC->PLL4CR &= ~ RCC_PLL4CR_SSCG_CTRL_Msk;
 	(void) RCC->PLL4CR;
 
 	// Start PLL4
