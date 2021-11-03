@@ -3180,7 +3180,7 @@ void stm32mp1_pll_initialize(void)
 	//0x2: pll4_p_ck clock selected as kernel peripheral clock
 	//0x3: per_ck clock selected as kernel peripheral clock
 	RCC->QSPICKSELR = (RCC->QSPICKSELR & ~ (RCC_QSPICKSELR_QSPISRC_Msk)) |
-	((uint_fast32_t) 0x03 << RCC_QSPICKSELR_QSPISRC_Pos) |	// per_ck
+	((uint_fast32_t) 0x00 << RCC_QSPICKSELR_QSPISRC_Pos) |	// aclk (AXI CLOCK)
 		0;
 	(void) RCC->QSPICKSELR;
 #endif /* WIHSPIDFHW */
