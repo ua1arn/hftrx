@@ -2832,13 +2832,13 @@ void stm32mp1_pll_initialize(void)
 	// Stop PLL3
 	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
 	(void) RCC->PLL3CR;
-	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) != 0)
+	while ((RCC->PLL3CR & RCC_PLL3CR_PLLON_Msk) != 0)
 		;
 
 	// Stop PLL2
 	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
 	(void) RCC->PLL2CR;
-	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) != 0)
+	while ((RCC->PLL2CR & RCC_PLL2CR_PLLON_Msk) != 0)
 		;
 
 	// Stop PLL1
@@ -2846,7 +2846,7 @@ void stm32mp1_pll_initialize(void)
 	//(void) RCC->PLL1CR;
 	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
 	(void) RCC->PLL1CR;
-	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
+	while ((RCC->PLL1CR & RCC_PLL1CR_PLLON_Msk) != 0)
 		;
 
 	#if WITHCPUXOSC
@@ -2915,6 +2915,7 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL1CFGR2;
 
 	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
+	(void) RCC->PLL1CR;
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
 		;
 
@@ -2944,6 +2945,7 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CFGR2;
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
+	(void) RCC->PLL2CR;
 	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
 		;
 
@@ -3037,10 +3039,8 @@ void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->PLL4CFGR1;
 
-	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk /* | RCC_PLL4CFGR2_DIVQ_Msk | RCC_PLL4CFGR2_DIVR_Msk*/ )) |
+	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk)) |
 		((uint_fast32_t) (PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
-		//((uint_fast32_t) (pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
-		//((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 		0;
 	(void) RCC->PLL4CFGR2;
 
@@ -3316,14 +3316,13 @@ void stm32mp1_pll_initialize(void)
 
 void stm32mp1_usb_clocks_initialize(void)
 {
-	//if (RCC_USBCKSELR_USBOSRC_VAL == 0x00 || RCC_USBCKSELR_USBPHYSRC_VAL == 0x01)
+	if (RCC_USBCKSELR_USBOSRC_VAL == 0x00 || RCC_USBCKSELR_USBPHYSRC_VAL == 0x01)
 	{
 		// Stop PLL4
 		RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
 		(void) RCC->PLL4CR;
 		while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
 			;
-		//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock(& vdmode0));
 		RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVR_Msk)) |
 			((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
 			0;
