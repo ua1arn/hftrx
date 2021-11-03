@@ -2965,97 +2965,6 @@ void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CR;
 #endif // pll2
 
-#if 0// PLL3
-	// PLL3
-	// PLL3 source mux
-	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
-	//	0x1: HSE selected as PLL clock (hse_ck)
-	//	0x2: CSI selected as PLL clock (csi_ck)
-	//	0x3: No clock send to DIVMx divider and PLLs
-	RCC->RCK3SELR = (RCC->RCK3SELR & ~ (RCC_RCK3SELR_PLL3SRC_Msk)) |
-	#if WITHCPUXOSC || WITHCPUXTAL
-		// с внешним генератором
-		// с внешним кварцем
-		((uint_fast32_t) 0x01 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSE
-	#else
-		// На внутреннем генераторе
-		((uint_fast32_t) 0x00 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSI
-	#endif
-		0;
-	while ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY_Msk) == 0)
-		;
-
-	RCC->PLL3CR = (RCC->PLL3CR & ~ (RCC_PLL3CR_DIVPEN_Msk | RCC_PLL3CR_DIVQEN_Msk | RCC_PLL3CR_DIVREN_Msk));
-	(void) RCC->PLL3CR;
-
-	RCC->PLL3CFGR1 = (RCC->PLL3CFGR1 & ~ (RCC_PLL3CFGR1_DIVN_Msk)) |
-		((uint_fast32_t) (PLL3DIVN - 1) << RCC_PLL3CFGR1_DIVN_Pos) |
-		0;
-	(void) RCC->PLL3CFGR1;
-
-	RCC->PLL3CFGR2 = (RCC->PLL3CFGR2 & ~ (RCC_PLL3CFGR2_DIVQ_Msk)) |
-		((uint_fast32_t) (PLL3DIVQ - 1) << RCC_PLL3CFGR2_DIVQ_Pos) |	// pll3_p_ck - xxxxx (1..128 -> 0x00..0x7f)
-		0;
-	(void) RCC->PLL3CFGR2;
-
-	RCC->PLL3CR |= RCC_PLL3CR_PLLON_Msk;
-	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) == 0)
-		;
-
-	RCC->PLL3CR |= RCC_PLL3CR_DIVQEN_Msk;
-	(void) RCC->PLL3CR;
-
-	RCC->PLL3CR &= ~ RCC_PLL3CR_SSCG_CTRL_Msk;
-	(void) RCC->PLL3CR;
-
-#endif /* PLL3 */
-
-#if 1// PLL4
-	// PLL4
-	// PLL4 source mux
-	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
-	//	0x1: HSE selected as PLL clock (hse_ck)
-	//	0x2: CSI selected as PLL clock (csi_ck)
-	//	0x3: Signal I2S_CKIN used as reference clock
-	RCC->RCK4SELR = (RCC->RCK4SELR & ~ (RCC_RCK4SELR_PLL4SRC_Msk)) |
-	#if WITHCPUXOSC || WITHCPUXTAL
-		// с внешним генератором
-		// с внешним кварцем
-		((uint_fast32_t) 0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
-	#else
-		// На внутреннем генераторе
-		((uint_fast32_t) 0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
-	#endif
-		0;
-	while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
-		;
-
-	RCC->PLL4CR = (RCC->PLL4CR & ~ (RCC_PLL4CR_DIVPEN_Msk | RCC_PLL4CR_DIVQEN_Msk | RCC_PLL4CR_DIVREN_Msk));
-	(void) RCC->PLL4CR;
-
-	RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVN_Msk | RCC_PLL4CFGR1_DIVM4_Msk)) |
-		((uint_fast32_t) (PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
-		((uint_fast32_t) (PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
-		0;
-	(void) RCC->PLL4CFGR1;
-
-	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk)) |
-		((uint_fast32_t) (PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
-		0;
-	(void) RCC->PLL4CFGR2;
-
-	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
-	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
-		;
-
-	RCC->PLL4CR &= ~ RCC_PLL4CR_SSCG_CTRL_Msk;
-	(void) RCC->PLL4CR;
-
-	RCC->PLL4CR |= RCC_PLL4CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
-	(void) RCC->PLL4CR;
-
-#endif /* PLL4 */
-
 	// AXI, AHB5 and AHB6 clock divisor
 	//	0x0: axiss_ck (default after reset)
 	//	0x1: axiss_ck / 2
@@ -3175,7 +3084,6 @@ void stm32mp1_pll_initialize(void)
 		0;
 	while ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY_Msk) == 0)
 		;
-
 
 #if 1//WITHUART1HW
 	// В загрузчике еще может и не быть этой периферии
