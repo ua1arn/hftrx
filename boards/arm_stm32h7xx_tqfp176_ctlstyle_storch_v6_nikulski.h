@@ -165,8 +165,8 @@
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
 	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении с новым расположением */
 	//#define KEYB_FPANEL20_V0A_AVB	1	/* перевернутый */
-	#define KEYB_FPANEL20_V0A_AVB_NIKULSKI	1	/*  20 кнопок на 5 линий - перевернутые - в ряду с диапазонами кнопка меню  */
 	//#define KEYB_FPANEL20_V0A_PLAYFILE 1
+	#define KEYB_FPANEL20_V0A_AVB_NIKULSKI 1
 	//#define WITHAMHIGHKBDADJ	1	/* Параметры НЧ фильтра настраиваются клавиатурой */
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
@@ -275,11 +275,10 @@
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	//#define BOARD_FFTZOOM_POW2MAX 0	// Возможные масштабы FFT x1
-	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
-	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
-	//#define BOARD_FFTZOOM_POW2MAX 34	// Возможные масштабы FFT x1, x2, x4, x8, x16
+	#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
@@ -294,7 +293,7 @@
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	//#define WITHVIEW_3DSS		1
+	#define WITHVIEW_3DSS		1
 	//#define WITHDEFAULTVIEW		VIEW_3DSS
 	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
@@ -349,12 +348,7 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 
-	#if WITHDEBUG
-		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
-		#define WITHANTSELECT	1	// Управление переключением антенн
-		#define WITHENCODER2	1		/* есть второй валкодер */
-		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
-	#elif 1
+	#if 1
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER_UA1CEI	1	/* Плата управления LPF и тюнером от UA1CEI - по компорту */
 		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
@@ -368,7 +362,7 @@
 		//#define FULLSET8	1
 		#define SHORTSET8	1
 
-		#define WITHENCODER2	1		/* есть второй валкодер */
+		//#define WITHENCODER2	1		/* есть второй валкодер */
 		#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 		//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	#elif 0
@@ -406,7 +400,7 @@
 	// Есть ли регулировка параметров потенциометрами
 	//#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	//#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	//#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
 
