@@ -1171,9 +1171,9 @@ display_value_big(
 	)
 {
 	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
-	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
+	const uint_fast8_t j = (sizeof vals10 / sizeof vals10 [0]) - rj;
 	uint_fast8_t i = (j - width);
-	uint_fast8_t z = 1;	// only zeroes
+	uint_fast8_t z = blinkpos == 255 ? 1 : 0;	// only zeroes
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
 	uint_fast16_t ypix;

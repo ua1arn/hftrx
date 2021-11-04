@@ -1004,7 +1004,7 @@ static void display_freqXbig_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1041,7 +1041,7 @@ static void display2_freqX_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1095,7 +1095,7 @@ static void display_freqchr_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1136,7 +1136,7 @@ static void display_freqchr_b(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
