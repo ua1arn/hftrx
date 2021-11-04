@@ -8855,7 +8855,7 @@ display_walktroughsteps(
 		key = 0;
 	#endif /* LCDMODE_MAIN_PAGES > 1 */
 
-	display_walktrough(key, subset, NULL);
+	display_walktrough(key, subset, display2_getcontext());
 
 #endif /* STMD */
 }
@@ -8886,7 +8886,7 @@ void display2_bgprocess(void)
 
 		if (validforredraw(p, keyi, subsets [keyi]) == 0)
 			continue;
-		(* p->redraw)(p->x, p->y, NULL);
+		(* p->redraw)(p->x, p->y, display2_getcontext());
 		walkis [keyi] += 1;
 		break;
 	}

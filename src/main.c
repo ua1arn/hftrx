@@ -12039,10 +12039,29 @@ display_refreshperformed_modes(void)
 }
 
 
+dctx_t * display2_getcontext(void)
+{
+#if WITHDIRECTFREQENER
+	static editfreq2_t ef;
+	static dctx_t ctx;
+
+	ef.freq = editfreq;
+	ef.blinkpos = blinkpos;
+	ef.blinkstate = blinkstate;
+
+	ctx.type = DCTX_FREQ;
+	ctx.pv = & ef;
+	return editfreqmode ? & ctx : NULL;
+#else /*  WITHDIRECTFREQENER */
+	return NULL;
+#endif /* WITHDIRECTFREQENER */
+}
+
 /* отображение частоты (частот) настройки */
 static void
 display_freqpair(void)
 {
+#if LCDMODE_LTDC == 0
 #if WITHDIRECTFREQENER
 
 	if (editfreqmode)
@@ -12059,6 +12078,7 @@ display_freqpair(void)
 	display2_dispfreq_ab(amenuset());		/* отображение всех индикаторов частоты */
 
 #endif /* WITHDIRECTFREQENER */
+#endif /* LCDMODE_LTDC == 0 */
 }
 
 // Проверка разрешения обновления дисплея (индикация SWR/S-метр).
