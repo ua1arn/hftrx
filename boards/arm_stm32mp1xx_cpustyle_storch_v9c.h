@@ -659,8 +659,8 @@
 	//	FPGA ADC OVF	PI8	не мощные
 
 	/* outputs */
-	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
-	#define FPGA_NCONFIG_PORT_C(v)	do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
+	#define FPGA_NCONFIG_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); (void) GPIOA->BSRR; } while (0)
+	#define FPGA_NCONFIG_PORT_C(v)	do { GPIOA->BSRR = BSRR_C(v); (void) GPIOA->BSRR; } while (0)
 	#define FPGA_NCONFIG_BIT		(1UL << 10)	/* PA10 bit conneced to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
@@ -675,7 +675,7 @@
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
-			arm_hardware_pioc_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
+			arm_hardware_pioa_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
 			arm_hardware_pioa_inputs(FPGA_NSTATUS_BIT); \
 			arm_hardware_pioa_inputs(FPGA_CONF_DONE_BIT); \
 			arm_hardware_piof_inputs(FPGA_INIT_DONE_BIT); \
@@ -698,17 +698,14 @@
 	//	FPGA_FIR2_WE	PG3	не мощные
 	//	FPGA_FIR_CLK	PG8
 
-	// FPGA PIN_23
 	#define TARGET_FPGA_FIR_CS_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); (void) GPIOG->BSRR; } while (0)
 	#define TARGET_FPGA_FIR_CS_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); (void) GPIOG->BSRR; } while (0)
 	#define TARGET_FPGA_FIR_CS_BIT (1uL << 8)	/* PG8 - fir CS ~FPGA_FIR_CLK */
 
-	// FPGA PIN_8
-	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); (void) GPIOG->BSRR; } while (0)
-	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); (void) GPIOG->BSRR; } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); (void) GPIOG->BSRR; } while (0)
+	#define TARGET_FPGA_FIR1_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); (void) GPIOG->BSRR; } while (0)
 	#define TARGET_FPGA_FIR1_WE_BIT (1uL << 2)	/* PG2 - fir1 WE */
 
-	// FPGA PIN_7
 	#define TARGET_FPGA_FIR2_WE_PORT_C(v)	do { GPIOG->BSRR = BSRR_C(v); (void) GPIOG->BSRR; } while (0)
 	#define TARGET_FPGA_FIR2_WE_PORT_S(v)	do { GPIOG->BSRR = BSRR_S(v); (void) GPIOG->BSRR; } while (0)
 	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 3)	/* PG3 - fir2 WE */
