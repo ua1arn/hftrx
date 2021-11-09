@@ -763,7 +763,7 @@ hardware_i2s2_slave_tx_initialize_codec1(void)		/* инициализация I2
 #endif /* CPUSTYLE_STM32H7XX */
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_tx_initialize_codec1
+	I2S2HW_SLAVE_INITIALIZE();
 
 	//PRINTF(PSTR("hardware_i2s2_slave_tx_initialize_codec1 done\n"));
 }
@@ -807,7 +807,7 @@ hardware_i2s3_slave_rx_initialize_codec1(void)		/* инициализация I2
 #endif /* CPUSTYLE_STM32H7XX */
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();	// hardware_i2s3_slave_rx_initialize_codec1
+	I2S3HW_SLAVE_INITIALIZE();	// hardware_i2s3_slave_rx_initialize_codec1
 
 	//PRINTF(PSTR("hardware_i2s3_slave_rx_initialize_codec1 done\n"));
 }
@@ -849,7 +849,7 @@ hardware_i2s2_slave_duplex_initialize_codec1(void)
 	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();	// hardware_i2s2_slave_duplex_initialize_codec1
+	I2S2HW_SLAVE_INITIALIZE();	// hardware_i2s2_slave_duplex_initialize_codec1
 
 	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_codec1 done\n"));
 }
@@ -974,7 +974,7 @@ hardware_i2s2_master_duplex_initialize_codec1(void)
 	//SPI2->CFG2 |= SPI_CFG2_IOSWP;	// перенесено в I2S2HW_INITIALIZE
 
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();	// hardware_i2s2_master_duplex_initialize_codec1
+	I2S2HW_MASTER_INITIALIZE();	// hardware_i2s2_master_duplex_initialize_codec1
 
 	//PRINTF(PSTR("hardware_i2s2_master_duplex_initialize_codec1 done\n"));
 }

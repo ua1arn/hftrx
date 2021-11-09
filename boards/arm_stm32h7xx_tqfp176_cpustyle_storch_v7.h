@@ -172,7 +172,7 @@
 
 #if WITHI2S2HW
 	// Инициализируются I2S2 и I2S3
-	#define I2S2HW_INITIALIZE() do { \
+	#define I2S2HW_SLAVE_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
 		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_updown(0, 1uL << 12); \
@@ -185,7 +185,12 @@
 		arm_hardware_piob_updown(0, 1uL << 3); \
 		arm_hardware_piob_altfn2(1uL << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
 	} while (0)
+	#define I2S3HW_SLAVE_INITIALIZE() do { \
+	} while (0)
 #endif /* WITHI2S2HW */
+
+#if WITHI2S3HW
+#endif /* WITHI2S3HW */
 
 #if WITHSAI1HW
 	#define SAI1HW_INITIALIZE()	do { \

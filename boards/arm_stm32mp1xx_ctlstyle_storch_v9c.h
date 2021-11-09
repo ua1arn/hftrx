@@ -363,9 +363,9 @@
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
-	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
-	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
-	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
+	//#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
+	//#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
+	#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
@@ -384,7 +384,7 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9a_2ch.h"
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9c_2ch.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX

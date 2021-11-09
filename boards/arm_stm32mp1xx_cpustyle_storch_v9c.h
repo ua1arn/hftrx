@@ -97,9 +97,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define WITHFPGAIF_SAI2_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
-	//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
-	#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
+	#define WITHFPGAIF_SAI2_A_TX_B_RX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI2 */
+	#define WITHCODEC1_I2S2_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S2 */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
@@ -118,7 +117,7 @@
 
 	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
-	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
+	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBDEV_DMAENABLE 1
@@ -248,13 +247,27 @@
 #if WITHI2S2HW
 
 	// Инициализируются I2S2 в дуплексном режиме.
-	#define I2S2HW_INITIALIZE() do { \
+	#define I2S2HW_MASTER_INITIALIZE() do { \
+		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
 		arm_hardware_pioi_altfn2(1uL << 0,	AF_SPI2); /* PI0 I2S2_WS	*/ \
 		arm_hardware_pioi_altfn2(1uL << 1,	AF_SPI2); /* PI1 I2S2_CK	*/ \
 		arm_hardware_pioi_altfn2(1uL << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
 		arm_hardware_pioi_altfn2(1uL << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
 		arm_hardware_pioc_altfn2(1uL << 6,	AF_SPI2); /* PC6 I2S2_MCK - WS * 256 */ \
 		arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
+	} while (0)
+
+		// Инициализируются I2S2 в дуплексном режиме.
+	#define I2S2HW_SLAVE_INITIALIZE() do { \
+		arm_hardware_pioi_altfn2(1uL << 0,	AF_SPI2); /* PI0 I2S2_WS	*/ \
+		arm_hardware_pioi_altfn2(1uL << 1,	AF_SPI2); /* PI1 I2S2_CK	*/ \
+		arm_hardware_pioi_altfn2(1uL << 3,	AF_SPI2); /* PI3 I2S2_SDO - приём от кодека */ \
+		arm_hardware_pioi_altfn2(1uL << 2,	AF_SPI2); /* PI2 I2S2_SDI, - передача */ \
+		arm_hardware_pioc_altfn2(1uL << 6,	AF_SPI2); /* PC6 I2S2_MCK - WS * 256 */ \
+		arm_hardware_pioi_altfn20(1uL << 11, AF_SPI1);		 /* PI11 I2S_CKIN AF_5 */ \
+	} while (0)
+
+	#define I2S3HW_SLAVE_INITIALIZE() do { \
 	} while (0)
 
 #endif /* WITHI2S2HW */
