@@ -3389,7 +3389,7 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 	DMA_SAI2_A_TX_initialize_fpga,
 	hardware_sai2_b_enable_fpga,
 	hardware_sai2_a_enable_fpga,
-	"fpgacodechw-sai2-slave"
+	"fpgacodechw-sai2-master"
 };
 
 #if WITHFPGARTS_FRAMEBITS
