@@ -144,7 +144,7 @@
 #define USBD_ErrLog(...)    do { \
 							PRINTF("ERROR: ") ;\
 							PRINTF(__VA_ARGS__);\
-							PRINTF("\n");
+							PRINTF("\n"); \
  	 	 	 	 	 	 	 } while (0)
 #else
 #define USBD_ErrLog(...) do {} while (0)
@@ -154,7 +154,7 @@
 #define USBD_DbgLog(...)    do { \
 								PRINTF("DEBUG : ") ;\
 								PRINTF(__VA_ARGS__);\
-								PRINTF("\n");
+								PRINTF("\n"); \
 							} while (0)
 #else
 #define USBD_DbgLog(...) do {} while (0)
