@@ -3270,8 +3270,6 @@ static void hardware_sai2_master_duplex_initialize_fpga(void)		/* инициал
 	//PRINTF(PSTR("hardware_sai1_slave_duplex_initialize_fpga: 3 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
-	TP();
-
 	SAI2_Block_A->CR1 =
 		commoncr1 |
 		(0x00uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: 0: audio sub-block in asynchronous mode.
