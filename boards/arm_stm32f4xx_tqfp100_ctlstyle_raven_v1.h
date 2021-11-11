@@ -197,7 +197,6 @@
 	/* Board hardware configuration */
 	#define	CODEC1_TYPE	CODEC_TYPE_TLV320AIC23B
 	#define CODEC2_TYPE CODEC_TYPE_CS4272
-	#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0

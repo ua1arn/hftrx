@@ -237,7 +237,6 @@
 #endif /* WITHSAI1HW */
 
 #if WITHSAI1HW
-	#define WITHSAI1HWTXRXMASTER	1
 	#define SAI1HW_INITIALIZE()	do { \
 		arm_hardware_piof_altfn2(1U << 9, AF_SAI);		/* PF9 - SAI1_FS_B	- 48 kHz	*/ \
 		arm_hardware_piof_altfn20(1U << 8, AF_SAI);		/* PF8 - SAI1_SCK_B	*/ \
