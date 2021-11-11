@@ -175,7 +175,7 @@ USBD_StatusTypeDef  USBD_AddClass(USBD_HandleTypeDef *pdev, const USBD_ClassType
 	}
 	else
 	{
-		//USBD_ErrLog("Can not register device class %p", pclass);
+		USBD_ErrLog("Can not register device class %p", pclass);
 		status = USBD_FAIL;
 	}
 
