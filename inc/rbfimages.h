@@ -36,12 +36,6 @@
 	#include "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
 #elif CTLSTYLE_STORCH_V4 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)	// modem v2
 	#include "rbf/rbfimage_v7_1ch.h"	//
-//#elif CTLSTYLE_STORCH_V4 && (DDS1_CLK_MUL == 1)	// modem v2
-//	#include "rbf/rbfimage_v7_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
-#elif CTLSTYLE_STORCH_V6 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// mini STM32H7 with TFT plug on board
-	#include "rbf/rbfimage_v7h_2ch.h"	// - 32BIT audio
-#elif CTLSTYLE_STORCH_V6 && (DDS1_CLK_MUL == 1)		// mini STM32H7 with TFT plug on board
-	#include "rbf/rbfimage_v7h_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7 - 32BIT audio
 #elif CTLSTYLE_STORCH_V7 && ! WITHUSEDUALWATCH && (DDS1_CLK_MUL == 1)		// normal size STM32H7, TFT plug on board
 	#include "rbf/rbfimage_v7h_2ch.h"	// - 32BIT audio
 #elif CTLSTYLE_STORCH_V7 && (DDS1_CLK_MUL == 1)		// normal size STM32H7, TFT plug on board
