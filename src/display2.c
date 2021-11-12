@@ -7105,7 +7105,7 @@ union states
 
 static uint16_t rbfimage0 [] =
 {
-#include "rbfimages.h"
+#include BOARD_BITIMAGE_NAME
 };
 
 /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */

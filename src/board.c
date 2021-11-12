@@ -6678,7 +6678,7 @@ static void board_fpga_loader_XDCFG(void)
 #if WITHFPGALOAD_DCFG
 static ALIGNX_BEGIN const FLASHMEMINIT uint32_t bitimage0 [] ALIGNX_END =
 {
-#include "rbfimages.h"
+#include BOARD_BITIMAGE_NAME
 };
 /* получить расположение в памяти и количество элементов в массиве для загрузки PS ZYNQ */
 const uint32_t * getbitimage(size_t * count)
@@ -6714,7 +6714,7 @@ static void board_fpga_loader_initialize(void)
 /* на процессоре renesas образ располагается в памяти, используемой для хранений буферов DSP части */
 static ALIGNX_BEGIN const FLASHMEMINIT uint16_t rbfimage0 [] ALIGNX_END =
 {
-#include "rbfimages.h"
+#include BOARD_BITIMAGE_NAME
 };
 
 /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
