@@ -713,4 +713,10 @@
 		HARDWARE_DAC_INITIALIZE(); \
 		} while (0)
 
+	#if WITHUSEDUALWATCH
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"
+	#else /* WITHUSEDUALWATCH */
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7_1ch.h"
+	#endif /* WITHUSEDUALWATCH */
+
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V1_H_INCLUDED */
