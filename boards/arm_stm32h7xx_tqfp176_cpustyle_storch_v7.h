@@ -827,4 +827,6 @@
 		TUNE_INITIALIZE(); \
 		} while (0)
 
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7h_2ch.h"
+
 #endif /* ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */

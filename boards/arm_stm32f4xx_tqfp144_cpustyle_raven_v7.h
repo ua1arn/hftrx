@@ -709,4 +709,10 @@
 		HARDWARE_DAC_INITIALIZE(); \
 		} while (0)
 
+	#if WITHUSEDUALWATCH
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7_2ch.h"
+	#elif /* WITHUSEDUALWATCH */
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_1ch.h"
+	#endif /* WITHUSEDUALWATCH */
+
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_RAVEN_V7_H_INCLUDED */
