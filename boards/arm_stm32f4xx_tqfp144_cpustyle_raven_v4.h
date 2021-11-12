@@ -638,4 +638,6 @@
 		HARDWARE_DAC_INITIALIZE(); \
 		} while (0)
 
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v4.h"
+
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_RAVEN_V4_H_INCLUDED */
