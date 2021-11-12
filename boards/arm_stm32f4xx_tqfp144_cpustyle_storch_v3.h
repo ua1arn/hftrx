@@ -718,4 +718,6 @@
 		TXDISABLE_INITIALIZE(); \
 		} while (0)
 
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"
+
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED */
