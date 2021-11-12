@@ -568,4 +568,11 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
+
+	#if WITHUSEDUALWATCH
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+	#lse /* WITHUSEDUALWATCH */
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7_1ch.h"
+	#endif /* WITHUSEDUALWATCH */
+
 #endif /* ARM_STM32F4XX_TQFP144_CTLSTYLE_STORCH_V5_H_INCLUDED */
