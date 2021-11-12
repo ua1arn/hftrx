@@ -725,4 +725,11 @@
 		TXDISABLE_INITIALIZE(); \
 		} while (0)
 
+
+	#if WITHUSEDUALWATCH
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+	#else /* WITHUSEDUALWATCH */
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7_1ch.h"
+	#endif /* WITHUSEDUALWATCH */
+
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V5_H_INCLUDED */
