@@ -28,7 +28,8 @@
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 //#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 
-#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
+#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 */
+#define WITHI2S3HW	1	/* Использование I2S - аудиокодек на I2S3 */
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 //#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 
@@ -217,29 +218,33 @@
 
 #endif
 
-#if WITHI2S2HW
 	// Инициализируются I2S2 и I2S3
-	#define I2S2HW_INITIALIZE() do { \
+	#define I2S2HW_SLAVE_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(1U << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_altfn2(1U << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
 		arm_hardware_pioc_altfn2(1U << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
+		} while (0)
+
+	#define I2S2HW_MASTER_INITIALIZE() do { \
+		} while (0)
+
+	#define I2S3HW_SLAVE_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2(1U << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
 		arm_hardware_piob_altfn2(1U << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
 		arm_hardware_piob_altfn2(1U << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
-	} while (0)
-#endif /* WITHSAI1HW */
+		} while (0)
 
-#if WITHSAI1HW
+	#define I2S32HW_MASTER_INITIALIZE() do { \
+		} while (0)
+
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(1U << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
 		arm_hardware_pioe_altfn2(1U << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
 		arm_hardware_pioe_altfn20(1U << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
 		arm_hardware_pioe_altfn2(1U << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 		arm_hardware_pioe_altfn2(1U << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
-	} while (0)
-#endif /* WITHSAI1HW */
+		} while (0)
 
-#if WITHSAI2HW
 	/* 
 	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
 	из внешних сигналов требуется только SAI2_SD_A
@@ -251,7 +256,6 @@
 		/* arm_hardware_piod_altfn2(1U << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
 		/* arm_hardware_pioe_altfn2(1U << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
-#endif /* WITHSAI1HW */
 
 /* Распределение битов в ARM контроллерах */
 
