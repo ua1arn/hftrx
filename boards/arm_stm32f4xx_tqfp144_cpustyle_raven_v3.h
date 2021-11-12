@@ -583,11 +583,7 @@
 		} while (0)
 
 
-	#if (DDS1_CLK_MUL == 10)
-		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v3_pll.h"
-	#elif (DDS1_CLK_MUL == 1)
-		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v3.h"
-	#endif
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v3.h"
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_RAVEN_V3_H_INCLUDED */
 

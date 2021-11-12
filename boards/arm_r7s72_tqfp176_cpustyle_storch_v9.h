@@ -959,4 +959,10 @@
 
 	#endif /* WIHSPIDFSW */
 
+	#if WITHRTS192
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_192k.h"
+	#else
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_96k.h"
+	#endif
+
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V9_H_INCLUDED */

@@ -890,6 +890,6 @@
 		TARGET_BANDF3_DATA_INITIALIZE(); \
 		} while (0)
 
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"
 
 #endif /* ARM_STM32H7XX_TQFP176_CPUSTYLE_STORCH_V6_H_INCLUDED */

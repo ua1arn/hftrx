@@ -549,10 +549,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-	#if WITHRTS192
-		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_192k.h"
-	#else
-		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_96k.h"
-	#endif
-
 #endif /* ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_R4DZ_H_INCLUDED */

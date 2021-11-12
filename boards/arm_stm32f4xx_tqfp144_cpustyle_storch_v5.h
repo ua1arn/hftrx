@@ -727,7 +727,7 @@
 
 
 	#if WITHUSEDUALWATCH
-		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"	// same as CTLSTYLE_RAVENDSP_V7
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"
 	#else /* WITHUSEDUALWATCH */
 		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7_1ch.h"
 	#endif /* WITHUSEDUALWATCH */
