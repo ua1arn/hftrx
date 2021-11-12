@@ -623,5 +623,6 @@
 		} while (0)
 #endif /* WITHUSBHW */
 
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_oleg4z.h"
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED */
