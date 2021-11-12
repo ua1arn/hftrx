@@ -7,10 +7,6 @@
 
 #if defined (BOARD_BITIMAGE_NAME)
 	#include BOARD_BITIMAGE_NAME
-#elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
-	#include "rbf/rbfimage_v3_pll.h"
-#elif (CTLSTYLE_RAVENDSP_V3 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)
-	#include "rbf/rbfimage_v3.h"
 #elif (CTLSTYLE_RAVENDSP_V4 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 10)
 	#include "rbf/rbfimage_v4_pll.h"
 #elif (CTLSTYLE_RAVENDSP_V4 && ! WITHUSEDUALWATCH) && (DDS1_CLK_MUL == 1)

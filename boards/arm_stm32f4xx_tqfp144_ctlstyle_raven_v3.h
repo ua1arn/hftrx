@@ -416,5 +416,4 @@ enum
 #endif
 };
 
-
 #endif /* ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V3_H_INCLUDED */
