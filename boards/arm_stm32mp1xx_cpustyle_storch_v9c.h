@@ -1123,4 +1123,6 @@
 
 	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9c_2ch.h"
 
+	#define USERFIRSTSBLOCK 0	/* виртуальный раздел на SD CARD начинается с этого блока. */
+
 #endif /* ARM_STM32MP1_TFBGA361_CPUSTYLE_STORCH_V9C_H_INCLUDED */
