@@ -1121,6 +1121,6 @@
 			USBD_EHCI_INITIALIZE(); \
 		} while (0)
 
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9a_2ch.h"
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9c_2ch.h"
 
 #endif /* ARM_STM32MP1_TFBGA361_CPUSTYLE_STORCH_V9C_H_INCLUDED */
