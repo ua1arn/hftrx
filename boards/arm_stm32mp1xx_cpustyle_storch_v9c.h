@@ -345,21 +345,27 @@
 			arm_hardware_pioc_altfn50(1uL << 9, AF_SDIO);	/* PC9 - SDIO_D1	*/ \
 			arm_hardware_pioc_altfn50(1uL << 10, AF_SDIO);	/* PC10 - SDIO_D2	*/ \
 			arm_hardware_pioc_altfn50(1uL << 11, AF_SDIO);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_updown(1uL << 2, 0);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_updown(1uL << 12, 0);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_updown(1uL << 8, 0);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_updown(1uL << 9, 0);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_updown(1uL << 10, 0);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_updown(1uL << 11, 0);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 		/* отключить процессор от SD карты - чтобы при выполнении power cycle не возникало фантомное питание через сигналы управления. */
 		#define HARDWARE_SDIO_HANGOFF()	do { \
-			arm_hardware_piod_inputs(1uL << 2);	/* PD2 - SDIO_CMD	*/ \
-			arm_hardware_pioc_inputs(1uL << 12);	/* PC12 - SDIO_CK	*/ \
-			arm_hardware_pioc_inputs(1uL << 8);	/* PC8 - SDIO_D0	*/ \
-			arm_hardware_pioc_inputs(1uL << 9);	/* PC9 - SDIO_D1	*/ \
-			arm_hardware_pioc_inputs(1uL << 10);	/* PC10 - SDIO_D2	*/ \
-			arm_hardware_pioc_inputs(1uL << 11);	/* PC11 - SDIO_D3	*/ \
 			arm_hardware_piod_updown(0, 1uL << 2);	/* PD2 - SDIO_CMD	*/ \
 			arm_hardware_pioc_updown(0, 1uL << 12);	/* PC12 - SDIO_CK	*/ \
 			arm_hardware_pioc_updown(0, 1uL << 8);	/* PC8 - SDIO_D0	*/ \
 			arm_hardware_pioc_updown(0, 1uL << 9);	/* PC9 - SDIO_D1	*/ \
 			arm_hardware_pioc_updown(0, 1uL << 10);	/* PC10 - SDIO_D2	*/ \
 			arm_hardware_pioc_updown(0, 1uL << 11);	/* PC11 - SDIO_D3	*/ \
+			arm_hardware_piod_inputs(1uL << 2);	/* PD2 - SDIO_CMD	*/ \
+			arm_hardware_pioc_inputs(1uL << 12);	/* PC12 - SDIO_CK	*/ \
+			arm_hardware_pioc_inputs(1uL << 8);	/* PC8 - SDIO_D0	*/ \
+			arm_hardware_pioc_inputs(1uL << 9);	/* PC9 - SDIO_D1	*/ \
+			arm_hardware_pioc_inputs(1uL << 10);	/* PC10 - SDIO_D2	*/ \
+			arm_hardware_pioc_inputs(1uL << 11);	/* PC11 - SDIO_D3	*/ \
 		} while (0)
 	#else /* WITHSDHCHW4BIT */
 		#define HARDWARE_SDIO_INITIALIZE()	do { \
