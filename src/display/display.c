@@ -1616,13 +1616,7 @@ const videomode_t vdmode0 =
 {
 	.width = 1024,			/* LCD PIXEL WIDTH            */
 	.height = 768,			/* LCD PIXEL HEIGHT           */
-	/**
-	  * @brief  AT070TN90 Timing
-	  * MODE=0 (DE)
-	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
-	  * MODE=1 (SYNC)
-	  * When selected sync mode, de must be grounded.
-	  */
+
 	.hsync = 120,			/* Horizontal synchronization 1..140 */
 	.hbp = 100,				/* Horizontal back porch  xxx   */
 	.hfp = 100,				/* Horizontal front porch  16..216   */
@@ -1635,9 +1629,9 @@ const videomode_t vdmode0 =
 	//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
 	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
 
+	// Synchronization method should be DE mode
 	// MODE: DE/SYNC mode select.
 	// DE MODE: MODE="1", VS and HS must pull high.
-	// SYNC MODE: MODE="0". DE must be grounded
 	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
 	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
 	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
