@@ -1087,7 +1087,7 @@
 		#define BOARD_GT911_INT_CONNECT() do { \
 			arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
 			arm_hardware_pioa_updown(BOARD_GT911_INT_PIN, 0); \
-			arm_hardware_pioa_onchangeinterrupt(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+			/*arm_hardware_pioa_onchangeinterrupt(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); */ \
 		} while (0)
 		//gt911_interrupt_handler
 
