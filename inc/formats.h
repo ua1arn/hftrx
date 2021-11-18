@@ -104,6 +104,13 @@ int dbg_getchar(char * r);
 	// вызывается из обработчика прерываний UART1
 	// по готовности передатчика
 	#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
+			(void) ctx; \
+			hardware_uart1_enabletx(0); \
+		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART1_ONTXDONE(ctx) do { \
+			(void) ctx; \
 			hardware_uart1_enabletx(0); \
 		} while (0)
 
@@ -153,6 +160,11 @@ int dbg_getchar(char * r);
 	#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
 			cat3_sendchar(ctx); \
 		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART1_ONTXDONE(ctx) do { \
+			cat3_txdone(ctx); \
+		} while (0)
 
 #endif /* WITHDEBUG && WITHUART1HW && WITHDEBUG_USART1 */
 
@@ -182,6 +194,13 @@ int dbg_getchar(char * r);
 	// вызывается из обработчика прерываний USART2
 	// по готовности передатчика
 	#define HARDWARE_UART2_ONTXCHAR(ctx) do { \
+			(void) ctx; \
+			hardware_uart2_enabletx(0); \
+		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART2_ONTXDONE(ctx) do { \
+			(void) ctx; \
 			hardware_uart2_enabletx(0); \
 		} while (0)
 
@@ -213,6 +232,13 @@ int dbg_getchar(char * r);
 	// вызывается из обработчика прерываний USART2
 	// по готовности передатчика
 	#define HARDWARE_UART4_ONTXCHAR(ctx) do { \
+			(void) ctx; \
+			hardware_uart4_enabletx(0); \
+		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART4_ONTXDONE(ctx) do { \
+			(void) ctx; \
 			hardware_uart4_enabletx(0); \
 		} while (0)
 
@@ -258,6 +284,11 @@ int dbg_getchar(char * r);
 	#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
 			modem_sendchar(ctx); \
 		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART1_ONTXDONE(ctx) do { \
+			modem_txdone(ctx); \
+		} while (0)
 
 #endif /* WITHMODEM && WITHUART1HW && WITHMODEM_USART1 */
 
@@ -300,6 +331,11 @@ int dbg_getchar(char * r);
 	// по готовности передатчика
 	#define HARDWARE_UART2_ONTXCHAR(ctx) do { \
 			modem_sendchar(ctx); \
+		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART2_ONTXDONE(ctx) do { \
+			modem_txdone(ctx); \
 		} while (0)
 
 #endif /* WITHMODEM && WITHUART2HW && WITHMODEM_USART2 */
@@ -360,6 +396,11 @@ int dbg_getchar(char * r);
 	#define HARDWARE_UART1_ONTXCHAR(ctx) do { \
 			cat2_sendchar(ctx); \
 		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART1_ONTXDONE(ctx) do { \
+			cat2_txdone(ctx); \
+		} while (0)
 
 #endif /* WITHCAT && WITHUART1HW && WITHCAT_USART1 */
 
@@ -415,6 +456,11 @@ int dbg_getchar(char * r);
 	#define HARDWARE_UART2_ONTXCHAR(ctx) do { \
 			cat2_sendchar(ctx); \
 		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART2_ONTXDONE(ctx) do { \
+			cat2_txdone(ctx); \
+		} while (0)
 
 #endif /* WITHCAT && WITHUART2HW && WITHCAT_USART2 */
 
@@ -457,6 +503,11 @@ int dbg_getchar(char * r);
 	#define HARDWARE_UART7_ONTXCHAR(ctx) do { \
 			cat7_sendchar(ctx); \
 		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART7_ONTXDONE(ctx) do { \
+			cat7_txdone(ctx); \
+		} while (0)
 
 #endif /* WITHLWIP && WITHUART7HW && WITHCAT7_UART7 */
 
@@ -498,6 +549,11 @@ int dbg_getchar(char * r);
 	// по готовности передатчика
 	#define HARDWARE_UART5_ONTXCHAR(ctx) do { \
 			cat7_sendchar(ctx); \
+		} while (0)
+	// вызывается из обработчика прерываний UART1
+	// по окончании передачи (сдвиговый регистр передатчика пуст)
+	#define HARDWARE_UART5_ONTXDONE(ctx) do { \
+			cat7_txdone(ctx); \
 		} while (0)
 
 #endif /* WITHLWIP && WITHUART5HW && WITHCAT7_UART5 */
