@@ -1605,6 +1605,46 @@ const videomode_t vdmode0 =
 	.fps = 60	/* frames per secound */
 };
 
+#elif 0 && LCDMODE_AT070TNA2
+
+/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display */
+// TCG104XGLPAPNN-AN30-1384899.pdf
+// horizontal period 1114 / 1344 / 1400
+// vertical period 778 / 806 / 845
+const videomode_t vdmode0 =
+{
+	.width = 1024,			/* LCD PIXEL WIDTH            */
+	.height = 768,			/* LCD PIXEL HEIGHT           */
+	/**
+	  * @brief  AT070TN90 Timing
+	  * MODE=0 (DE)
+	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	  * MODE=1 (SYNC)
+	  * When selected sync mode, de must be grounded.
+	  */
+	.hsync = 120,			/* Horizontal synchronization 1..140 */
+	.hbp = 100,				/* Horizontal back porch  xxx   */
+	.hfp = 100,				/* Horizontal front porch  16..216   */
+
+	.vsync = 20,				/* Vertical synchronization 1..20  */
+	.vbp = 9,				/* Vertical back porch  xxx   */
+	.vfp = 9,				/* Vertical front porch  1..127     */
+
+	/* Accumulated parameters for this display */
+	//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
+	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
+	.fps = 60	/* frames per secound 50 60 70 */
+};
+
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
 const videomode_t vdmode0 =
