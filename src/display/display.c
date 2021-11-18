@@ -1605,12 +1605,13 @@ const videomode_t vdmode0 =
 	.fps = 60	/* frames per secound */
 };
 
-#elif 0 && LCDMODE_AT070TNA2
+#elif LCDMODE_TCG104XGLPAPNN
 
 /* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display */
 // TCG104XGLPAPNN-AN30-1384899.pdf
 // horizontal period 1114 / 1344 / 1400
 // vertical period 778 / 806 / 845
+// Synchronization method should be DE mode
 const videomode_t vdmode0 =
 {
 	.width = 1024,			/* LCD PIXEL WIDTH            */
