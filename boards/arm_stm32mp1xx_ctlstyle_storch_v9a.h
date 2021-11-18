@@ -278,6 +278,7 @@
 #elif 1
 
 	#define LCDMODE_TCG104XGLPAPNN 1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
+	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
@@ -445,7 +446,7 @@
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 || LCDMODE_TCG104XGLPAPNN
 		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 		//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
