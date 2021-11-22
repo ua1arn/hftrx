@@ -557,6 +557,4 @@
 	#error No any suitable CPUSTYLE_xxx and CTLSTYLE_xxx combination found
 #endif
 
-#include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
-
 #endif /* PRODUCT_H_INCLUDED */

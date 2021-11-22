@@ -1116,7 +1116,7 @@ unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v);
 
 /* получить 16-бит значение */
 /* Low endian memory layout */
-uint_fast32_t
+uint_fast16_t
 USBD_peek_u16(
 	const uint8_t * buff
 	);
@@ -1179,6 +1179,7 @@ unsigned long ulmax(unsigned long a, unsigned long b);
 #endif
 
 #include "taildefs.h"
+#include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 #include "clocks.h"
 uint32_t sys_now(void);
 
