@@ -3825,12 +3825,7 @@ enum
 			EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE, EQUALIZERBASE
 		};
 	#endif /* WITHAFCODEC1HAVEPROC */
-	#if WITHAFEQUALIZER
-		int_fast32_t getafequalizerbase(void)
-		{
-			return - AF_EQUALIZER_BASE;
-		}
-
+#if WITHAFEQUALIZER
 		static uint_fast8_t geqtx;
 		static uint_fast8_t geqrx;
 		static uint_fast8_t geqtxparams [AF_EQUALIZER_BANDS] =
@@ -3841,6 +3836,39 @@ enum
 		{
 			AF_EQUALIZER_BASE, AF_EQUALIZER_BASE, AF_EQUALIZER_BASE
 		};
+
+		int_fast32_t hamradio_get_af_equalizer_base(void)
+		{
+			return - AF_EQUALIZER_BASE;
+		}
+
+		int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v)
+		{
+			ASSERT(v < AF_EQUALIZER_BANDS);
+			return geqrxparams [v];
+		}
+
+		void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain)
+		{
+			ASSERT(index < AF_EQUALIZER_BANDS);
+			ASSERT(gain <= AF_EQUALIZER_BASE * 2);
+			geqrxparams [index] = gain;
+			save_i8(offsetof(struct nvmap, geqrxparams [index]), geqrxparams [index]);
+			updateboard(1, 0);
+		}
+
+		uint_fast8_t hamradio_get_geqrx(void)
+		{
+			return geqrx;
+		}
+
+		void hamradio_set_geqrx(uint_fast8_t v)
+		{
+			geqrx = v != 0;
+			save_i8(offsetof(struct nvmap, geqrx), geqrx);
+			updateboard(1, 0);
+		}
+
 	#endif /* WITHAFEQUALIZER */
 	static uint_fast8_t gagcoff;
 #else /* WITHIF4DSP */
@@ -9613,6 +9641,9 @@ audioproc_spool_user(void)
 			// nrp->outsp указывает на результат обработки
 			outsp [pathi] = mdt [amode].afproc [gtx] (pathi, nrp, p + pathi * FIRBUFSIZE);
 		}
+#if WITHAFEQUALIZER
+		audio_rx_equalizer(outsp [0], FIRBUFSIZE);
+#endif /* WITHAFEQUALIZER */
 		//////////////////////////////////////////////
 		// Save results
 		unsigned i;
@@ -16946,7 +16977,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& geqrxparams [0],
-		getafequalizerbase,
+		hamradio_get_af_equalizer_base,
 	},
 	{
 		QLABEL2("RX 1.5k ", "RX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
@@ -16956,7 +16987,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& geqrxparams [1],
-		getafequalizerbase,
+		hamradio_get_af_equalizer_base,
 	},
 	{
 		QLABEL2("RX 2.7k ", "RX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
@@ -16966,7 +16997,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& geqrxparams [2],
-		getafequalizerbase,
+		hamradio_get_af_equalizer_base,
 	},
 	{
 		QLABEL2("TX EQ   ", "TX Equalizer"), 8, 3, RJ_ON,	ISTEP1,
@@ -16986,7 +17017,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& geqtxparams [0],
-		getafequalizerbase,
+		hamradio_get_af_equalizer_base,
 	},
 	{
 		QLABEL2("TX 1.5k ", "TX EQ 1500 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
@@ -16996,7 +17027,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& geqtxparams [1],
-		getafequalizerbase,
+		hamradio_get_af_equalizer_base,
 	},
 	{
 		QLABEL2("TX 2.7k ", "TX EQ 2700 Hz"), 2 + WSIGNFLAG, 0, 0,	ISTEP1,
@@ -17006,7 +17037,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		nvramoffs0,
 		NULL,
 		& geqtxparams [2],
-		getafequalizerbase,
+		hamradio_get_af_equalizer_base,
 	},
 #endif /* WITHAFEQUALIZER */
 #endif /* WITHTX && WITHIF4DSP */
@@ -21605,6 +21636,24 @@ void hamradio_set_gmutespkr(uint_fast8_t v)
 }
 #endif /* WITHSPKMUTE */
 
+
+uint_fast16_t hamradio_get_afgain(void)
+{
+	return afgain1.value;
+}
+
+#if ! WITHPOTAFGAIN
+void hamradio_set_afgain(uint_fast16_t v)
+{
+	ASSERT(v >= BOARD_AFGAIN_MIN);
+	ASSERT(v <= BOARD_AFGAIN_MAX);
+
+	afgain1.value = v;
+	save_i16(offsetof(struct nvmap, afgain1), afgain1.value);
+	updateboard(1, 0);
+}
+#endif /* #! WITHPOTAFGAIN */
+
 #if WITHTX
 
 void hamradio_set_tune(uint_fast8_t v)
@@ -22727,6 +22776,38 @@ uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
 
 #endif /* WITHSPECTRUMWF && WITHMENU */
 
+uint_fast8_t hamradio_get_att_db(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	return attmodes [gatts [bi]].atten10 / 10;
+}
+
+uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);
+	for (uint_fast8_t i = 0; i < ATTMODE_COUNT; i ++)
+	{
+		if ( i > limit)
+			break;
+
+		values [i] = attmodes [i].atten10;
+	}
+
+	return ATTMODE_COUNT;
+}
+
+void hamradio_set_att_db(uint_fast8_t db)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+
+	verifyband(vi);
+
+	gatts [bi] = db;
+	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
+	updateboard(1, 0);
+}
+
 const char * hamradio_get_att_value(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);
@@ -22773,6 +22854,31 @@ uint_fast8_t hamradio_tunemode(uint_fast8_t v)
 }
 
 #endif /* WITHTX */
+
+uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit)
+{
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	const uint_fast8_t count = bwsetsc [bwseti].last + 1;
+
+	for (uint_fast8_t i = 0; i < count; i ++)
+	{
+		if (i > limit)
+			break;
+
+		strcpy(bws->label[i], bwsetsc [bwseti].labels [i]);
+	}
+
+	return count;
+}
+
+void hamradio_set_bw(uint_fast8_t v)
+{
+	const uint_fast8_t bwseti = mdt [gmode].bwsetis [gtx];	// индекс банка полос пропускания для данного режима
+	ASSERT(v <= bwsetsc [bwseti].last);
+	bwsetpos [bwseti] = v;
+	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
+	updateboard(1, 1);
+}
 
 #if WITHTOUCHGUI
 void hamradio_load_gui_settings(void * ptr)

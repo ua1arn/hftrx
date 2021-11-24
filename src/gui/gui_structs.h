@@ -32,8 +32,7 @@ enum {
 	DISABLED,						// заблокировано для нажатия
 	LONG_PRESSED,
 	PRESS_REPEATING,
-	MOVING,
-	DUMMY_ACTION
+	MOVING
 };
 
 enum {
@@ -63,13 +62,14 @@ enum {
 
 enum {
 	WINDOW_POSITION_AUTO,
-	WINDOW_POSITION_MANUAL,
+	WINDOW_POSITION_MANUAL_SIZE,
+	WINDOW_POSITION_MANUAL_POSITION,
 	WINDOW_POSITION_FULLSCREEN
 };
 
 enum {
 	NAME_ARRAY_SIZE = 30,
-	TEXT_ARRAY_SIZE = 40,
+	TEXT_ARRAY_SIZE = 50,
 	MENU_ARRAY_SIZE = 50,
 	GUI_ELEMENTS_ARRAY_SIZE = 50
 };
@@ -86,26 +86,26 @@ typedef struct {
 
 typedef struct {
    char text[TEXT_ARRAY_SIZE];
-} buf_t;
+   COLORMAIN_T color_line;
+} record_t;
 
 typedef struct {
-	uint16_t w;
-	uint16_t h;
+	uint16_t w_sim;		// ширина строки в символах
+	uint16_t h_str;		// число строк
 	uint8_t state;
 	uint8_t parent;
 	uint8_t visible;
-	COLORMAIN_T color_text;
+//	UB_Font * font;
 	char name [NAME_ARRAY_SIZE];
-	uint8_t size;
 	uint8_t index;
-	buf_t * record;
+	record_t * record;
 	uint16_t x1;
 	uint16_t y1;
+	uint16_t w;
+	uint16_t h;
 } text_field_t;
 
 typedef struct {
-	uint16_t w;
-	uint16_t h;
 	uint8_t state;
 	uint8_t parent;
 	uint8_t visible;
@@ -115,6 +115,8 @@ typedef struct {
 	uint8_t index;
 	uint16_t x1;
 	uint16_t y1;
+	uint16_t w;
+	uint16_t h;
 } touch_area_t;
 
 typedef struct {
@@ -183,6 +185,7 @@ typedef enum {
 	ALIGN_LEFT_X 	= WITHGUIMAXX / 4,					// вертикальное выравнивание по центру левой половины экрана
 	ALIGN_CENTER_X 	= WITHGUIMAXX / 2,					// вертикальное выравнивание по центру экрана
 	ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
+	ALIGN_MANUAL 	= 0,								// ручное указание координат
 	ALIGN_Y 		= WITHGUIMAXY / 2					// горизонтальное выравнивание всегда по центру экрана
 } window_align_t;
 
@@ -204,7 +207,7 @@ typedef struct {
 	wm_message_t message;			// тип сообщения
 	element_type_t type;			// тип элемента
 	uintptr_t ptr;
-	int action;
+	int_fast8_t action;
 } wm_data_t;
 
 typedef struct {					// очередь сообщений окнам от WM о взаимодействии с элементами GUI

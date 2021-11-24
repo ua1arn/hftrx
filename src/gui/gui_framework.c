@@ -4,6 +4,7 @@
 // автор Гена Завидовский mgs2001@mail.ru
 // UA1ARN
 //
+// Touch GUI от RA4ASN
 
 #include "hardware.h"
 #include "board.h"
@@ -105,7 +106,7 @@ void dump_queue(window_t * win)
 	}
 }
 
-// WM_MESSAGE_ACTION: 		element_type type, uintptr_t element_ptr, uint_fast8_t action
+// WM_MESSAGE_ACTION: 		element_type type, uintptr_t element_ptr, int action
 // WM_MESSAGE_ENC2_ROTATE:  int_fast8_t rotate
 // WM_MESSAGE_KEYB_CODE:	int_fast8_t keyb_code
 // WM_MESSAGE_UPDATE: 		nothing
@@ -125,9 +126,9 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	{
 		va_start(arg, message);
 
-		uint_fast8_t type = va_arg(arg, int);
-		uintptr_t ptr = (uintptr_t) va_arg(arg, void *);
-		int_fast8_t action = va_arg(arg, int);
+		uint_fast8_t type = va_arg(arg, uint_fast8_t);
+		uintptr_t ptr = va_arg(arg, uintptr_t);
+		int_fast8_t action = va_arg(arg, int_fast8_t);
 
 		va_end(arg);
 
@@ -150,7 +151,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	case WM_MESSAGE_ENC2_ROTATE:
 
 		va_start(arg, message);
-		int r = va_arg(arg, int);
+		int_fast8_t r = va_arg(arg, int_fast8_t);
 		va_end(arg);
 
 		uint_fast8_t ind = win->queue.size ? (win->queue.size - 1) : 0;				// если первое в очереди сообщение - WM_MESSAGE_ENC2_ROTATE,
@@ -177,7 +178,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 		win->queue.data [win->queue.size].message = WM_MESSAGE_KEYB_CODE;
 		win->queue.data [win->queue.size].type = UINT8_MAX;
 		win->queue.data [win->queue.size].ptr = UINTPTR_MAX;
-		win->queue.data [win->queue.size].action = va_arg(arg, int);
+		win->queue.data [win->queue.size].action = va_arg(arg, int_fast8_t);
 		win->queue.size ++;
 
 		va_end(arg);
@@ -226,7 +227,7 @@ uint_fast8_t put_to_wm_queue(window_t * win, wm_message_t message, ...)
 	return 0;
 }
 
-wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int * action)
+wm_message_t get_from_wm_queue(window_t * win, uint_fast8_t * type, uintptr_t * ptr, int_fast8_t * action)
 {
 	if (! win->queue.size)
 		return WM_NO_MESSAGE;							// очередь сообщений пустая
@@ -544,7 +545,7 @@ void elements_state (window_t * win)
 				gui_elements [gui_element_count].type = TYPE_TEXT_FIELD;
 				gui_element_count ++;
 				debug_num ++;
-				tff->record = calloc(tff->size, TEXT_ARRAY_SIZE);
+				tff->record = calloc(tff->h_str, sizeof(record_t));
 				GUI_MEM_ASSERT(tff->record);
 				tff->index = 0;
 			}
@@ -670,11 +671,11 @@ void open_window(window_t * win)
 }
 
 /* Расчет экранных координат окна */
-/* при mode = WINDOW_POSITION_MANUAL в качестве необязательных параметров передать xmax и ymax */
+/* при mode = WINDOW_POSITION_MANUAL_SIZE в качестве необязательных параметров передать xmax и ymax */
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
 	uint_fast8_t title_length = strlen(win->name) * SMALLCHARW;
-	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y;
+	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
 
 #if WITHGUISTYLE_MINI
 	// Для разрешения 480х272 окна всегда полноэкранные
@@ -683,7 +684,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 
 	switch (mode)
 	{
-	case WINDOW_POSITION_MANUAL:
+	case WINDOW_POSITION_MANUAL_SIZE:
 		{
 			va_list arg;
 			va_start(arg, mode);
@@ -692,6 +693,15 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			va_end(arg);
 		}
 		break;
+
+	case WINDOW_POSITION_MANUAL_POSITION:
+		{
+			va_list arg;
+			va_start(arg, mode);
+			x_start = va_arg(arg, uint_fast16_t);
+			y_start = va_arg(arg, uint_fast16_t);
+			va_end(arg);
+		}
 
 	case WINDOW_POSITION_FULLSCREEN:
 	case WINDOW_POSITION_AUTO:
@@ -769,7 +779,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	else
 	{
 		shift_x = edge_step;
-		shift_y = window_title_height + edge_step;
+		shift_y = (strcmp(win->name, "") ? window_title_height : 0) + edge_step;
 	}
 
 	if (win->bh_ptr != NULL)
@@ -829,6 +839,18 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		win->y1 = 0;
 		win->w = WITHGUIMAXX;
 		win->h = WITHGUIMAXY - h - (strcmp(win->name, "") ? window_title_height : 0);
+	}
+	else if (mode == WINDOW_POSITION_MANUAL_POSITION)
+	{
+		win->x1 = x_start;
+		win->y1 = y_start;
+		win->w = xmax > title_length ? (xmax + edge_step * 2) : (title_length + edge_step * 2);
+		win->h = ymax + shift_y + edge_step;
+		if (win->x1 + win->w >= WITHGUIMAXX)
+			win->x1 = WITHGUIMAXX - win->w - 1;
+
+		ASSERT(win->x1 + win->w < WITHGUIMAXX);
+		ASSERT(win->y1 + win->h < WITHGUIMAXY);
 	}
 	else
 	{
@@ -1262,12 +1284,23 @@ static void slider_process(slider_t * sl)
 	reset_tracking();
 }
 
-/* Добавить строку в текстовое поле */
-void textfield_add_string(text_field_t * tf, char * str)
+/* Рассчитать размеры текстового поля */
+void textfield_update_size(text_field_t * tf)
 {
+	tf->w = SMALLCHARW2 * tf->w_sim;
+	tf->h = SMALLCHARH2 * tf->h_str;
+	ASSERT(tf->w < WITHGUIMAXX);
+	ASSERT(tf->h < WITHGUIMAXY - window_title_height);
+}
+
+/* Добавить строку в текстовое поле */
+void textfield_add_string(text_field_t * tf, char * str, COLORMAIN_T color)
+{
+	ASSERT(strlen(str) < TEXT_ARRAY_SIZE);
 	strcpy(tf->record [tf->index].text, str);
+	tf->record [tf->index].color_line = color;
 	tf->index ++;
-	tf->index = tf->index >= tf->size ? 0 : tf->index;
+	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
 }
 
 /* Селектор запуска функций обработки событий */
@@ -1602,10 +1635,13 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 						if (tf->visible && tf->parent == win->window_id)
 						{
 							int8_t j = tf->index - 1;
-							for (uint8_t i = 0; i < tf->size; i ++)
+							for (uint8_t i = 0; i < tf->h_str; i ++)
 							{
-								j = j < 0 ? (tf->size - 1) : j;
-								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * i, tf->record[j].text, tf->color_text);
+								j = j < 0 ? (tf->h_str - 1) : j;
+								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * i,
+										tf->record[j].text, tf->record[j].color_line);
+//								UB_Font_DrawString(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * i,
+//										tf->record[j].text, tf->font, tf->record[j].color_line);
 								j --;
 							}
 						}

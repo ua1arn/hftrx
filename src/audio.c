@@ -6479,7 +6479,7 @@ void calcBiquad(uint32_t Fc, uint32_t Fs, float32_t Q, float32_t peakGain, float
 
 void audio_rx_equalizer_init(void)
 {
-	float32_t base = getafequalizerbase();
+	float32_t base = hamradio_get_af_equalizer_base();
     calcBiquad(AF_EQUALIZER_LOW,  ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [0] + base, EQ_RX_LOW_FILTER_Coeffs);
     calcBiquad(AF_EQUALIZER_MID,  ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [1] + base, EQ_RX_MID_FILTER_Coeffs);
     calcBiquad(AF_EQUALIZER_HIGH, ARMI2SRATE, 1.0f, glob_equalizer_rx_gains [2] + base, EQ_RX_HIGH_FILTER_Coeffs);

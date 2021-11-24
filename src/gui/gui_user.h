@@ -33,8 +33,12 @@ enum {
 	WINDOW_DISPLAY,					// настройки отображения
 	WINDOW_RECEIVE,					// настройки приема
 	WINDOW_NOTCH,					// ручной режекторый фильтр
-	WINDOW_GUI_SETTINGS,				// настройки интерфейса GUI
+	WINDOW_GUI_SETTINGS,			// настройки интерфейса GUI
+#if WITHFT8
 	WINDOW_FT8,
+#endif /* #if WITHFT8 */
+	WINDOW_INFOBAR_MENU,
+	WINDOW_AF_EQ,
 
 	WINDOWS_COUNT
 };
@@ -121,6 +125,40 @@ typedef struct {
 							int_fast8_t action;	\
 							uintptr_t ptr;		\
 							switch (get_from_wm_queue(win, & type, & ptr, & action))
+
+enum {
+	enc2step_default = 1,
+	freq_swipe_step_default = 3,
+	freq_swipe_enable_default = 0,
+	micprofile_default = UINT8_MAX,
+	tune_powerdown_enable_default = 1,
+	tune_powerdown_value_default = WITHPOWERTRIMATU
+};
+
+#if GUI_SHOW_INFOBAR
+
+enum {
+	infobar_1st_str_y = 125,
+	infobar_2nd_str_y = 145,
+	infobar_num_places = 8,
+	infobar_label_width = 100
+};
+
+#define INFOBAR_EMPTY 255
+
+enum {
+	INFOBAR_AF,
+	INFOBAR_ATT,
+	INFOBAR_IF_SHIFT,
+	INFOBAR_SPAN,
+	INFOBAR_VOLTAGE,
+	INFOBAR_CPU_TEMP,
+	INFOBAR_2ND_ENC_MENU,
+	INFOBAR_TX_POWER,
+	INFOBAR_AF_VOLUME,
+};
+
+#endif /* GUI_SHOW_INFOBAR */
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_USER_H_INCLUDED */
