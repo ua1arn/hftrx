@@ -162,9 +162,9 @@ uint_fast8_t gt911_calcChecksum(uint8_t * buf, uint_fast8_t len)
 
 uint_fast8_t gt911_readChecksum(void)
 {
-	uint_fast16_t aStart = GT_REG_CFG;
-	uint_fast16_t aStop = 0x80FE;
-	uint_fast8_t len = aStop - aStart + 1;
+	const uint_fast16_t aStart = GT_REG_CFG;
+	const uint_fast16_t aStop = 0x80FE;
+	const uint_fast8_t len = aStop - aStart + 1;
 	uint8_t buf [len];
 
 	gt911_read(aStart, buf, len);
@@ -192,7 +192,7 @@ void gt911_fwResolution(uint_fast16_t maxX, uint_fast16_t maxY)
 	}
 }
 
-uint_fast16_t gt911_productID(void) {
+uint_fast32_t gt911_productID(void) {
 	uint_fast8_t res;
 	uint8_t buf [4];
 
@@ -232,7 +232,7 @@ uint_fast8_t gt911_initialize(void)
 
 	gt911_addr = GOODIX_I2C_ADDR_BA;
 	tscpresetnt = 0;
-	uint_fast16_t id = gt911_productID();
+	uint_fast32_t id = gt911_productID();
 	if (id != GT911_ID)
 		return 0;
 
