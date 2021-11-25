@@ -625,6 +625,8 @@
 	//#define WITH_GT911_INTERRUPTS	1
 	//#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
+	#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
+	#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
