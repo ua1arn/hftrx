@@ -5,6 +5,11 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
+
+// При необходимости разместить в файле конфигурации платы.
+//#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
+//#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
+
 #include "gt911.h"
 
 static uint_fast8_t gt911_addr = 0;
@@ -208,8 +213,16 @@ uint_fast8_t gt911_getXY(uint_fast16_t * xt, uint_fast16_t * yt)
 	if (contacts == 0)
 		return 0;
 
+#if BOARD_TSC1_XMIRROR
+	* xt = DIM_X - 1 - points [0].x;
+#else /* BOARD_TSC1_XMIRROR */
 	* xt = points [0].x;
+#endif /* BOARD_TSC1_XMIRROR */
+#if BOARD_TSC1_YMIRROR
+	* yt = DIM_Y - 1 - points [0].y;
+#else /* BOARD_TSC1_XMIRROR */
 	* yt = points [0].y;
+#endif /* BOARD_TSC1_XMIRROR */
 	return 1;
 }
 
