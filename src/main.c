@@ -22825,6 +22825,9 @@ const char * hamradio_get_preamp_value(void)
 #endif
 }
 
+
+#if WITHTOUCHGUI
+
 void hamradio_change_att(void)
 {
 	uif_key_click_attenuator();
@@ -22879,8 +22882,6 @@ void hamradio_set_bw(uint_fast8_t v)
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
 	updateboard(1, 1);
 }
-
-#if WITHTOUCHGUI
 void hamradio_load_gui_settings(void * ptr)
 {
 	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
