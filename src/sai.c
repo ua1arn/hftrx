@@ -3993,27 +3993,15 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 }
 
 
-static void r7s721_ssif1_rx_enable_codec1(uint_fast8_t state)
+static void r7s721_ssif1_duplex_enable_fpga(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF1.SSICR |= (1UL << 0); // REN
+		SSIF1.SSICR |= ((1UL << 0) | (1UL << 1)); // REN
 	}
 	else
 	{
-		SSIF1.SSICR &= ~ (1UL << 0); // REN
-	}
-}
-
-static void r7s721_ssif1_tx_enable_codec1(uint_fast8_t state)
-{
-	if (state != 0)
-	{
-		SSIF1.SSICR |= (1UL << 1); // TEN
-	}
-	else
-	{
-		SSIF1.SSICR &= ~ (1UL << 1); // TEN
+		SSIF1.SSICR &= ~ ((1UL << 0) | (1UL << 1)); // REN
 	}
 }
 
@@ -4023,9 +4011,9 @@ static const codechw_t fpgacodechw_ssif1_duplex_master =
 	hardware_dummy_initialize,
 	r7s721_ssif1_dmarx_initialize_fpga_rx,
 	r7s721_ssif1_dmatx_initialize_fpga_tx,
-	r7s721_ssif1_rx_enable_codec1,
-	r7s721_ssif1_tx_enable_codec1,
-	"audiocodechw-ssif1-duplex-master"
+	r7s721_ssif1_duplex_enable_fpga,
+	hardware_dummy_enable,
+	"fpgacodechw-ssif1-duplex-master"
 };
 
 #endif /* WITHSAI1HW */
