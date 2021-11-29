@@ -30,8 +30,6 @@ static void gt911_io_initialize(void)
 	BOARD_GT911_RESET_INITIO_2();	// 2-nd stage init io (int pin pull up)
 }
 
-#if WITH_GT911_INTERRUPTS
-
 static volatile uint_fast8_t tsc_int = 0;
 
 void
@@ -39,6 +37,8 @@ gt911_interrupt_handler(void)
 {
 	tsc_int = 1;
 }
+
+#if WITH_GT911_INTERRUPTS
 
 /* считать признак произошедьшего прерывания */
 static uint_fast8_t
