@@ -22882,32 +22882,30 @@ void hamradio_set_bw(uint_fast8_t v)
 	save_i8(RMT_BWSETPOS_BASE(bwseti), bwsetpos [bwseti]);	/* только здесь сохраняем новый фильтр для режима */
 	updateboard(1, 1);
 }
-void hamradio_load_gui_settings(void * ptr)
-{
-	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
-	size_t gui_nvram_size = sizeof (struct gui_nvram_t);
 
-	for (uint_fast8_t i = 0; i < gui_nvram_size; i ++)
+void hamradio_load_gui_settings(void * ptrv)
+{
+	uint8_t * ptr = ptrv;
+	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
+	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
+	size_t i;
+
+	for (i = 0; i < gui_nvram_size; i ++)
 	{
-		uint_fast8_t v = restore_i8(offset);
-		memcpy(ptr, & v, 1);
-		ptr ++;
-		offset ++;
+		* ptr ++ = restore_i8(offset ++);
 	}
 }
 
-void hamradio_save_gui_settings(const void * ptr)
+void hamradio_save_gui_settings(const void * ptrv)
 {
+	const uint8_t * ptr = ptrv;
 	nvramaddress_t offset = offsetof(struct nvmap, gui_nvram);
-	size_t gui_nvram_size = sizeof (struct gui_nvram_t);
-	uint_fast8_t buf;
+	const size_t gui_nvram_size = sizeof (struct gui_nvram_t);
+	size_t i;
 
-	for (uint_fast8_t i = 0; i < gui_nvram_size; i ++)
+	for (i = 0; i < gui_nvram_size; i ++)
 	{
-		memcpy(& buf, ptr, 1);
-		save_i8(offset, buf);
-		ptr ++;
-		offset ++;
+		save_i8(offset ++, * ptr ++);
 	}
 }
 
