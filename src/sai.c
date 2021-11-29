@@ -646,7 +646,7 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_codec1(void)		/* инициали
 		RCC->CFGR |= RCC_CFGR_I2SSRC;	// На STM32F446xx этого бита нет
 	#endif /* defined (STM32F446xx) */
 
-	//arm_hardware_pioc_altfn50(1UL << 9, AF_SPI2);	// PC9 - MCLK source - I2S_CKIN signal - перенесено в процессорно-зависимый header.
+	//arm_hardware_pioc_altfn50(1uL << 9, AF_SPI2);	// PC9 - MCLK source - I2S_CKIN signal - перенесено в процессорно-зависимый header.
 #else /* WITHI2SCLOCKFROMPIN */
 
 	// Возможно использовать только режим с MCLK=256*Fs
@@ -3681,20 +3681,20 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 	// Control Register (SSICR)
 	SSIF0.SSICR = 
 		R7S721_USE_AUDIO_CLK * (1uL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		0 * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		0 * (1uL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
 		R7S721_SSIF0_DWL_val |		// DWL
 		R7S721_SSIF0_SWL_val |		// SWL
 		master * (1uL << 15) |		// SCKD		1: Serial bit clock is output, master mode.
 		master * (1uL << 14) |		// SWSD		1: Serial word select is output, master mode.
-		0 * (1UL << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
-		0 * (1UL << 12) |		// SWSP		0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
-		0 * (1UL << 11) |		// SPDP		0: Padding bits are low.	
-		0 * (1UL << 10) |		// SDTA	
-		0 * (1UL << 9) |		// PDTA		1: 16 бит правого канала - биты 31..16 при чтении/записи регистра данных
+		0 * (1uL << 13) |		// SCKP		0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (1uL << 12) |		// SWSP		0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
+		0 * (1uL << 11) |		// SPDP		0: Padding bits are low.
+		0 * (1uL << 10) |		// SDTA
+		0 * (1uL << 9) |		// PDTA		1: 16 бит правого канала - биты 31..16 при чтении/записи регистра данных
 #if CODEC1_FORMATI2S_PHILIPS
-		0 * (1UL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
+		0 * (1uL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
 #else /* CODEC1_FORMATI2S_PHILIPS */
-		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
+		1 * (1uL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* CODEC1_FORMATI2S_PHILIPS */
 		master * R7S721_SSIF0_CKDIV_val |		// CKDV	0011: AUDIOц/8: 12,288 -> 1.536 (48 kS, 16 bit, stereo)
 		0;
@@ -3703,10 +3703,10 @@ static void r7s721_ssif0_duplex_initialize_codec1(void)
 	SSIF0.SSIFCR = 
 		2 * (1uL << 6) |	// TTRG Transmit Data Trigger Number
 		2 * (1uL << 4) |	// RTRG Receive Data Trigger Number
-		1 * (1UL << 3) |		// TIE	Transmit Interrupt Enable
-		1 * (1UL << 2) |		// RIE	Receive Interrupt Enable	
-		//1 * (1UL << 1) |		// TFRST Transmit FIFO Data Register Reset
-		//1 * (1UL << 0) |		// RFRST Receive FIFO Data Register Reset	
+		1 * (1uL << 3) |		// TIE	Transmit Interrupt Enable
+		1 * (1uL << 2) |		// RIE	Receive Interrupt Enable
+		//1 * (1uL << 1) |		// TFRST Transmit FIFO Data Register Reset
+		//1 * (1uL << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
 
 	HARDWARE_SSIF0_INITIALIZE();	// Подключение синалалов периферийного блока к выводам процессора
@@ -3716,11 +3716,11 @@ static void r7s721_ssif0_rx_enable_codec1(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF0.SSICR |= (1UL << 0); // REN
+		SSIF0.SSICR |= (1uL << 0); // REN
 	}
 	else
 	{
-		SSIF0.SSICR &= ~ (1UL << 0); // REN
+		SSIF0.SSICR &= ~ (1uL << 0); // REN
 	}
 }
 
@@ -3728,11 +3728,11 @@ static void r7s721_ssif0_tx_enable_codec1(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF0.SSICR |= (1UL << 1); // TEN
+		SSIF0.SSICR |= (1uL << 1); // TEN
 	}
 	else
 	{
-		SSIF0.SSICR &= ~ (1UL << 1); // TEN
+		SSIF0.SSICR &= ~ (1uL << 1); // TEN
 	}
 }
 
@@ -3955,37 +3955,37 @@ static void r7s721_ssif1_duplex_initialize_fpga(void)
 
 	// Control Register (SSICR)
 	SSIF1.SSICR = 
-		R7S721_USE_AUDIO_CLK * (1UL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
-		6 * (1UL << 19) |		// DWL 6: 32 bit	
+		R7S721_USE_AUDIO_CLK * (1uL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
+		((WITHFPGAIF_FRAMEBITS / 64) - 1) * (1uL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		6 * (1uL << 19) |		// DWL 6: 32 bit
 #if WITHFPGAIF_FRAMEBITS == 64
-		3 * (1UL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		3 * (1uL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #elif WITHFPGAIF_FRAMEBITS == 256
-		6 * (1UL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		6 * (1uL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #endif /*  */
-		master * (1UL << 15) |		// SCKD	1: Serial bit clock is output, master mode.
-		master * (1UL << 14) |		// SWSD	1: Serial word select is output, master mode.
-		0 * (1UL << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
-		0 * (1UL << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
-		0 * (1UL << 11) |		// SPDP 0: Padding bits are low.	
-		0 * (1UL << 10) |		// SDTA	
-		0 * (1UL << 9) |		// PDTA	
+		master * (1uL << 15) |		// SCKD	1: Serial bit clock is output, master mode.
+		master * (1uL << 14) |		// SWSD	1: Serial word select is output, master mode.
+		0 * (1uL << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (1uL << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
+		0 * (1uL << 11) |		// SPDP 0: Padding bits are low.
+		0 * (1uL << 10) |		// SDTA
+		0 * (1uL << 9) |		// PDTA
 #if WITHFPGAIF_FORMATI2S_PHILIPS
-		0 * (1UL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
+		0 * (1uL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
 #else /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
+		1 * (1uL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV1 * (1UL << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
+		master * R7S721_SSIF_CKDIV1 * (1uL << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
 	SSIF1.SSIFCR = 
 		2 * (1uL << 6) |	// TTRG Transmit Data Trigger Number
 		2 * (1uL << 4) |	// RTRG Receive Data Trigger Number
-		1 * (1UL << 3) |		// TIE	Transmit Interrupt Enable
-		1 * (1UL << 2) |		// RIE	Receive Interrupt Enable	
-		//1 * (1UL << 1) |		// TFRST Transmit FIFO Data Register Reset
-		//1 * (1UL << 0) |		// RFRST Receive FIFO Data Register Reset	
+		1 * (1uL << 3) |		// TIE	Transmit Interrupt Enable
+		1 * (1uL << 2) |		// RIE	Receive Interrupt Enable
+		//1 * (1uL << 1) |		// TFRST Transmit FIFO Data Register Reset
+		//1 * (1uL << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
 
 
@@ -3997,11 +3997,11 @@ static void r7s721_ssif1_duplex_enable_fpga(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF1.SSICR |= ((1UL << 0) | (1UL << 1)); // REN
+		SSIF1.SSICR |= ((1uL << 0) | (1uL << 1)); // REN TEN
 	}
 	else
 	{
-		SSIF1.SSICR &= ~ ((1UL << 0) | (1UL << 1)); // REN
+		SSIF1.SSICR &= ~ ((1uL << 0) | (1uL << 1)); // REN TEN
 	}
 }
 
@@ -4124,37 +4124,37 @@ static void r7s721_ssif2_rx_initialize_WFM(void)
 
 	// Control Register (SSICR)
 	SSIF2.SSICR = 
-		R7S721_USE_AUDIO_CLK * (1UL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
-		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (1UL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
-		6 * (1UL << 19) |		// DWL 6: 32 bit	
+		R7S721_USE_AUDIO_CLK * (1uL << 30) |		// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
+		((WITHFPGARTS_FRAMEBITS / 64) - 1) * (1uL << 22) |		// CHNL		00: Having one channel per system word (I2S complaint)
+		6 * (1uL << 19) |		// DWL 6: 32 bit
 #if WITHFPGARTS_FRAMEBITS == 64
-		3 * (1UL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		3 * (1uL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #elif WITHFPGARTS_FRAMEBITS == 256
-		6 * (1UL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
+		6 * (1uL << 16) |		// SWL 3: 32 bit, 6: 128 bit, 7: 256 bit
 #endif /*  */
-		master * (1UL << 15) |		// SCKD	1: Serial bit clock is output, master mode.
-		master * (1UL << 14) |		// SWSD	1: Serial word select is output, master mode.
-		0 * (1UL << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
-		0 * (1UL << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
-		0 * (1UL << 11) |		// SPDP 0: Padding bits are low.	
-		0 * (1UL << 10) |		// SDTA	
-		0 * (1UL << 9) |		// PDTA	
+		master * (1uL << 15) |		// SCKD	1: Serial bit clock is output, master mode.
+		master * (1uL << 14) |		// SWSD	1: Serial word select is output, master mode.
+		0 * (1uL << 13) |		// SCKP	0: Данные на выходе меняются по спадающему фронту (I2S complaint)
+		0 * (1uL << 12) |		// SWSP	0: SSIWS is low for the 1st channel, high for the 2nd channel.  (I2S complaint)
+		0 * (1uL << 11) |		// SPDP 0: Padding bits are low.
+		0 * (1uL << 10) |		// SDTA
+		0 * (1uL << 9) |		// PDTA
 #if WITHFPGARTS_FORMATI2S_PHILIPS
-		0 * (1UL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
+		0 * (1uL << 8) |		// DEL	0: 1 clock cycle delay between SSIWS and SSIDATA
 #else /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		1 * (1UL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
+		1 * (1uL << 8) |		// DEL	1: No delay between SSIWS and SSIDATA
 #endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
-		master * R7S721_SSIF_CKDIV1 * (1UL << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
+		master * R7S721_SSIF_CKDIV1 * (1uL << 4) |		// CKDV	0000: AUDIOц/4: 12,288 -> 12,288 (48 kS, 128 bit, stereo)
 		0;
 
 	// FIFO Control Register (SSIFCR)
 	SSIF2.SSIFCR = 
 		//2 * (1uL << 6) |	// TTRG Transmit Data Trigger Number
 		2 * (1uL << 4) |	// RTRG Receive Data Trigger Number
-		//1 * (1UL << 3) |		// TIE	Transmit Interrupt Enable
-		1 * (1UL << 2) |		// RIE	Receive Interrupt Enable	
-		//1 * (1UL << 1) |		// TFRST Transmit FIFO Data Register Reset
-		//1 * (1UL << 0) |		// RFRST Receive FIFO Data Register Reset	
+		//1 * (1uL << 3) |		// TIE	Transmit Interrupt Enable
+		1 * (1uL << 2) |		// RIE	Receive Interrupt Enable
+		//1 * (1uL << 1) |		// TFRST Transmit FIFO Data Register Reset
+		//1 * (1uL << 0) |		// RFRST Receive FIFO Data Register Reset
 		0;
 
 
@@ -4166,11 +4166,11 @@ static void r7s721_ssif2_rx_enable_WFM(uint_fast8_t state)
 {
 	if (state != 0)
 	{
-		SSIF2.SSICR |= (1UL << 0); // REN
+		SSIF2.SSICR |= (1uL << 0); // REN
 	}
 	else
 	{
-		SSIF2.SSICR &= ~ (1UL << 0); // REN
+		SSIF2.SSICR &= ~ (1uL << 0); // REN
 	}
 }
 
