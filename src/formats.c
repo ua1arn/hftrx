@@ -448,6 +448,34 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 }
 #endif /* WITHDEBUG */
 
+void strtrim(char * s)
+{
+	// удаляем пробелы и табы с начала строки:
+	int i = 0, j;
+	while((s [i] == ' ') || (s [i] == '\t'))
+	{
+		i ++;
+	}
+	if(i > 0)
+	{
+		for(j = 0; j < strlen(s); j ++)
+		{
+			s [j] = s [j + i];
+		}
+		s [j] = '\0';
+	}
+
+	// удаляем пробелы и табы с конца строки:
+	i = strlen(s) - 1;
+	while((s [i] == ' ') || (s [i] == '\t'))
+	{
+		i --;
+	}
+	if(i < (strlen(s) - 1))
+	{
+		s [i + 1] = '\0';
+	}
+}
 
 #if WITHDEBUG
 

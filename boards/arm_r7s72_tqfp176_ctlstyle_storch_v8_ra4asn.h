@@ -366,6 +366,7 @@
 	#define DEFAULTDIALFREQ		3708000L
 
 	#define WITHALTERNATIVEFONTS	1
+//	#define WITHALTERNATIVELAYOUT	1
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения

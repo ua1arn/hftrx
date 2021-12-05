@@ -24,6 +24,7 @@ uint_fast8_t local_vsnprintf_P( char * __restrict buffer, uint_fast8_t count, co
 void debug_printf_P(const FLASHMEM char * __restrict format, ... );
 
 char * safestrcpy(char * dst, size_t blen, const char * src);
+void strtrim(char * s);
 
 void printhex(unsigned long voffs, const unsigned char * buff, unsigned length);
 

@@ -1690,6 +1690,12 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_x2_put_char_small_tbg(
 	}
 	return x + width * 2;
 }
+
+uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, COLOR565_T fg)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	return ltdcpip_horizontal_put_char_small_tbg(fr, DIM_X, DIM_Y, x, y, c, fg);
+}
 #endif /* defined (SMALLCHARW) */
 
 #if SMALLCHARW2

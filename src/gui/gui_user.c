@@ -44,11 +44,13 @@ val_step_t freq_swipe_step [] = {
 struct gui_nvram_t gui_nvram;
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
 static menu_by_name_t menu_uif;
-static uint8_t infobar_selected = 0;
 
 enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
 
+#if GUI_SHOW_INFOBAR
+
+static uint8_t infobar_selected = 0;
 const uint8_t infobar_places [infobar_num_places] = {
 		INFOBAR_AF,
 		INFOBAR_AF_VOLUME,
@@ -59,6 +61,8 @@ const uint8_t infobar_places [infobar_num_places] = {
 		INFOBAR_CPU_TEMP,
 		INFOBAR_2ND_ENC_MENU
 };
+
+#endif /* GUI_SHOW_INFOBAR */
 
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
@@ -169,12 +173,14 @@ window_t * get_win(uint8_t window_id)
 void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
+	gui_update();
 }
 
 // *********************************************************************************************************************************************************************
 
 static void window_infobar_menu_process(void)
 {
+#if GUI_SHOW_INFOBAR
 	window_t * const win = get_win(WINDOW_INFOBAR_MENU);
 	uint8_t interval = 5, yy = 0, need_close = 0, need_open = 255;
 
@@ -390,6 +396,7 @@ static void window_infobar_menu_process(void)
 
 	if (need_close)
 		close_all_windows();
+#endif /* GUI_SHOW_INFOBAR */
 }
 
 // *********************************************************************************************************************************************************************
@@ -421,7 +428,7 @@ static void gui_main_process(void)
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Receive", 	"Receive|options", 	},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_notch",   	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_speaker", 	"Speaker|on air", 	},
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ft8",  	 	"FT8", 				},
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_ft8",  	 	"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_2", 		"", 				},
 			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_MAIN, NON_VISIBLE, INT32_MAX, "btn_Options", 	"Options", 			},
 		};
@@ -430,6 +437,13 @@ static void gui_main_process(void)
 		win->bh_ptr = malloc(buttons_size);
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
+
+#if WITHFT8
+		button_t * btn_ft8 = find_gui_element(TYPE_BUTTON, win, "btn_ft8");
+		local_snprintf_P(btn_ft8->text, ARRAY_SIZE(btn_ft8->text), PSTR("FT8"));
+#endif /* WITHFT8 */
+
+#if GUI_SHOW_INFOBAR
 
 		static const touch_area_t tas [] = {
 			{ CANCELLED, WINDOW_MAIN, NON_VISIBLE, 0, INT32_MAX, "ta_infobar_1", },
@@ -466,6 +480,8 @@ static void gui_main_process(void)
 		ta_freq->index = 255;
 		ta_freq->visible = VISIBLE;
 
+#endif /* GUI_SHOW_INFOBAR */
+
 		for (uint_fast8_t id = 0; id < win->bh_count; id ++)
 		{
 			button_t * bh = & win->bh_ptr [id];
@@ -500,6 +516,7 @@ static void gui_main_process(void)
 			}
 		}
 
+#if GUI_SHOW_INFOBAR
 		if (IS_AREA_TOUCHED)
 		{
 			touch_area_t * th = (touch_area_t *) ptr;
@@ -520,6 +537,7 @@ static void gui_main_process(void)
 			}
 
 		}
+#endif /* GUI_SHOW_INFOBAR */
 
 		if (IS_BUTTON_PRESS)	// обработка короткого нажатия кнопок
 		{
@@ -749,11 +767,6 @@ static void gui_main_process(void)
 		btn_txrx->state = DISABLED;
 		local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
 #endif /* WITHTX */
-
-#if ! WITHFT8
-		button_t * btn_ft8 = find_gui_element(TYPE_BUTTON, win, "btn_ft8");
-		btn_ft8->state = DISABLED;
-#endif /* ! WITHFT8 */
 	}
 
 #if GUI_SHOW_INFOBAR

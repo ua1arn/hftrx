@@ -5727,7 +5727,7 @@ enum
 //		{	43, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 		//{	46, 50,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
 
-//		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	10,	8,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 //		{	38, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 //		{	43, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
 //		{	47, 10,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
@@ -9468,7 +9468,9 @@ void display2_set_smetertype(uint_fast8_t v)
 
 #if WITHALTERNATIVELAYOUT
 
-void layout_label1_medium(uint_fast16_t x, uint_fast16_t y, char * str, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
+static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
+
+void layout_label1_medium(uint_fast16_t x, uint_fast16_t y, const char * str, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	uint_fast16_t len_str = strwidth2(str);
@@ -9483,18 +9485,13 @@ void layout_second_vfo(uint_fast16_t x, uint_fast16_t y)
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	char s[16];
 
-	colmain_rounded_rect(fr, DIM_X, DIM_Y, x, y, x + 12 * 16, y + 57, 3, COLORPIP_GRAY, 1);
+	colmain_rounded_rect(fr, DIM_X, DIM_Y, x, y, x + GRID2X(12), y + GRID2Y(10), 3, COLORPIP_GRAY, 1);
 
-	local_snprintf_P(s, ARRAY_SIZE(s), "VFO B  %s", hamradio_get_mode_b_value_P());
+	local_snprintf_P(s, ARRAY_SIZE(s), "VFO B %s", hamradio_get_mode_b_value_P());
 	colpip_string_tbg(fr, DIM_X, DIM_Y, x + 6 , y + 6, s, COLORPIP_BLACK);
 
 	const uint_fast32_t freq = hamradio_get_freq_b();
-
-	local_snprintf_P(s, ARRAY_SIZE(s), "%lu", (unsigned long) freq);
-	colpip_string_tbg(fr, DIM_X, DIM_Y, x + 6 , y + 12 + SMALLCHARH, s, COLORPIP_BLACK);
-
-
-
+	display_value_small_xy(x + 6 , y + 12 + SMALLCHARH, freq, COLORPIP_BLACK);
 }
 
 void show_alt_layout(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
@@ -9505,19 +9502,25 @@ void show_alt_layout(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 	pipparams_t p;
 	display2_getpipparams(& p);
 
-	//colpip_rect(fr, DIM_X, DIM_Y, 0, 0, DIM_X - 1, p.y - 1, COLORPIP_WHITE, 0);
-	colpip_line(fr, DIM_X, DIM_Y, 0, p.y, DIM_X - 1, p.y, COLORPIP_WHITE);
+//	colpip_line(fr, DIM_X, DIM_Y, 0, p.y, DIM_X - 1, p.y, COLORPIP_WHITE);
 
-	display2_freqX_a(10, 8, NULL);
+//	local_snprintf_P(s, ARRAY_SIZE(s), "%s", hamradio_get_mode_a_value_P());
+//	remove_end_line_spaces(s);
 
-	local_snprintf_P(s, ARRAY_SIZE(s), "%s", hamradio_get_mode_a_value_P());
-	remove_end_line_spaces(s);
+	local_snprintf_P(s, ARRAY_SIZE(s), "%s", hamradio_get_rxbw_value_P());
+	strtrim(s);
+	layout_label1_medium(GRID2X(x + 13), GRID2Y(y + 23), s, 5, COLORPIP_BLACK, COLORPIP_WHITE);
 
-	layout_label1_medium(10, 10, s, 6, COLORPIP_BLACK, COLORPIP_GRAY);
+	int_fast32_t grade;
+	const uint_fast8_t state = hamradio_get_nrvalue(& grade);
+	layout_label1_medium(GRID2X(x + 17), GRID2Y(y + 23), "NR", 5, COLORPIP_BLACK, colors_2state_alt [state]);
 
-	layout_second_vfo(0, p.y - 58);
+	layout_label1_medium(GRID2X(x + 21), GRID2Y(y + 23), "3333", 5, COLORPIP_BLACK, COLORPIP_GRAY);
+	layout_label1_medium(GRID2X(x + 13), GRID2Y(y + 29), "4444", 5, COLORPIP_BLACK, COLORPIP_GRAY);
+	layout_label1_medium(GRID2X(x + 17), GRID2Y(y + 29), "5555", 5, COLORPIP_BLACK, COLORPIP_GRAY);
+	layout_label1_medium(GRID2X(x + 21), GRID2Y(y + 29), "6666", 5, COLORPIP_BLACK, COLORPIP_GRAY);
 
-
+	layout_second_vfo(GRID2X(x), GRID2Y(y + 23));
 }
 
 #endif /* WITHALTERNATIVELAYOUT */

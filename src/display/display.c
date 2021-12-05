@@ -1325,6 +1325,64 @@ display_value_small(
 	display_wrdata_end();
 }
 
+void display_value_small_xy(
+	uint_fast16_t xpix,	// x координата начала вывода значения
+	uint_fast16_t ypix,	// y координата начала вывода значения
+	int_fast32_t freq,
+	COLOR565_T fg
+	)
+{
+	uint_fast8_t width = 9;
+	uint_fast8_t comma = 3;
+	uint_fast8_t comma2 = 6;
+	uint_fast8_t rj = 0;
+	uint_fast8_t lowhalf = 0;
+	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
+	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
+	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
+	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
+	uint_fast8_t z = 1;	// only zeroes
+
+	if (wsign || wminus)
+	{
+		// отображение со знаком.
+		z = 0;
+		if (freq < 0)
+		{
+			xpix = display_put_char_small_xy(xpix, ypix, '-', fg);
+			freq = - freq;
+		}
+		else if (wsign)
+			xpix = display_put_char_small_xy(xpix, ypix, '+', fg);
+		else
+			xpix = display_put_char_small_xy(xpix, ypix, ' ', fg);
+	}
+	for (; i < j; ++ i)
+	{
+		const ldiv_t res = ldiv(freq, vals10 [i]);
+		const uint_fast8_t g = (j - i);
+		// разделитель десятков мегагерц
+		if (comma2 == g)
+		{
+			xpix = display_put_char_small_xy(xpix, ypix, (z == 0) ? '.' : ' ', fg);
+		}
+		else if (comma == g)
+		{
+			z = 0;
+			xpix = display_put_char_small_xy(xpix, ypix, '.', fg);
+		}
+
+		if (z == 1 && (i + 1) < j && res.quot == 0)
+			xpix = display_put_char_small_xy(xpix, ypix, ' ', fg);	// supress zero
+		else
+		{
+			z = 0;
+			xpix = display_put_char_small_xy(xpix, ypix, '0' + res.quot, fg);
+		}
+		freq = res.rem;
+	}
+}
+
 #if LCDMODE_COLORED
 static COLORMAIN_T bgcolor = COLORMAIN_BLACK;
 #endif /* LCDMODE_COLORED */
