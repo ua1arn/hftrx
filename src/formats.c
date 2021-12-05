@@ -470,12 +470,13 @@ void strtrim(char * s)
 	}
 
 	// удаляем пробелы и табы с конца строки:
+	// todo: check empy sring case (strlen(s) == 0)
 	i = strlen(s) - 1;
-	while((s [i] == ' ') || (s [i] == '\t'))
+	while ((s [i] == ' ') || (s [i] == '\t'))
 	{
 		i --;
 	}
-	if(i < (strlen(s) - 1))
+	if (i < (strlen(s) - 1))
 	{
 		s [i + 1] = '\0';
 	}
