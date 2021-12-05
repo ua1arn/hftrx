@@ -451,14 +451,18 @@ printhex(unsigned long voffs, const unsigned char * buff, unsigned length)
 void strtrim(char * s)
 {
 	// удаляем пробелы и табы с начала строки:
-	int i = 0, j;
-	while((s [i] == ' ') || (s [i] == '\t'))
+	int i = 0;
+	// Пoиск первого не-пробела
+	while ((s [i] == ' ') || (s [i] == '\t'))
 	{
 		i ++;
 	}
-	if(i > 0)
+	if (i > 0)
 	{
-		for(j = 0; j < strlen(s); j ++)
+		size_t slen = strlen(s);
+		// todo: memmove use
+		int j;
+		for (j = 0; j < slen; j ++)
 		{
 			s [j] = s [j + i];
 		}
