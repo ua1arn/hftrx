@@ -70,6 +70,7 @@ enum {
 	autorepeat_delay = 4		// задержка автоповтора действий
 };
 #if WITHALTERNATIVEFONTS
+	#include "../display/fonts/ub_fonts.h"
 	#define FONT_BUTTONS	gothic_12x16
 #endif /* WITHALTERNATIVEFONTS */
 
