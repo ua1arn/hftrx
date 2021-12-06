@@ -32,9 +32,9 @@ typedef struct UB_pFont32_t {
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
 void UB_Font_DrawPString(PACKEDCOLORMAIN_T * __restrict buffer,
-		uint16_t dx, uint16_t dy,
-		uint16_t x, uint16_t y,
-		const char * ptr, UB_pFont * font,
+		uint_fast16_t dx, uint_fast16_t dy,
+		uint_fast16_t x, uint_fast16_t y,
+		const char * ptr, const UB_pFont * font,
 		COLORMAIN_T vg);
 
 //--------------------------------------------------------------
@@ -43,16 +43,16 @@ void UB_Font_DrawPString(PACKEDCOLORMAIN_T * __restrict buffer,
 // Шрифт должен быть передан с оператором &
 //--------------------------------------------------------------
 void UB_Font_DrawPString32(PACKEDCOLORMAIN_T * __restrict buffer,
-		uint16_t dx, uint16_t dy,
-		uint16_t x, uint16_t y,
-		const char * ptr, UB_pFont32 * font,
+		uint_fast16_t dx, uint_fast16_t dy,
+		uint_fast16_t x, uint_fast16_t y,
+		const char * ptr, const UB_pFont32 * font,
 		COLORMAIN_T vg);
 
 // Возврат ширины строки в пикселях, пропорциональный шрифт 32 бит
-uint16_t getwidth_Pstring32(const char * str, UB_pFont32 * font);
+uint_fast16_t getwidth_Pstring32(const char * str, const UB_pFont32 * font);
 
 // Возврат ширины строки в пикселях, пропорциональный шрифт меньше 32 бит
-uint16_t getwidth_Pstring(const char * str, UB_pFont * font);
+uint_fast16_t getwidth_Pstring(const char * str, const UB_pFont * font);
 
 extern UB_pFont gothic_12x16;
 
