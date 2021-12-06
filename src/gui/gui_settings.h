@@ -53,7 +53,7 @@
 	#define GUI_SOFTWARE_RENDERING		0
 #endif
 
-#if ! WITHALTERNATIVELAYOUT
+#if 1 //! WITHALTERNATIVELAYOUT
 	#define GUI_SHOW_INFOBAR				1
 #endif /* ! WITHALTERNATIVELAYOUT */
 
@@ -69,6 +69,7 @@ enum {
 	touch_area_enlarge = 5,		// увеличение области вокруг элементов для упрощения попадания по мелким элементам
 	autorepeat_delay = 4		// задержка автоповтора действий
 };
+
 #if WITHALTERNATIVEFONTS
 	#include "../display/fonts/ub_fonts.h"
 	#define FONT_BUTTONS	gothic_12x16

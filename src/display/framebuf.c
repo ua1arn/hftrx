@@ -764,7 +764,7 @@ colmain_mem_at_debug(
 {
 	if (x >= dx || y >= dy)
 	{
-		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%u, y=%u, savestring='%s', savewhere='%s'\n", file, line, dx, dy, x, y, savestring, savewhere);
+		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, dx, dy, x, y, savestring, savewhere);
 	}
 	ASSERT(x < dx);
 	ASSERT(y < dy);
