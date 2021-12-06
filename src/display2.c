@@ -8173,6 +8173,7 @@ static void display2_spectrum(
 
 	if (1 || hamradio_get_tx() == 0)
 	{
+		const GTG_t gtg = { spectmonoscr, ALLDX, SPDY, };
 		uint_fast16_t x;
 		uint_fast16_t y;
 		const uint_fast8_t pathi = 0;	// RX A
@@ -8633,6 +8634,7 @@ static void display2_colorbuff(
 	)
 {
 #if HHWMG
+	const GTG_t gtg = { spectmonoscr, ALLDX, SPDY, };
 	// Спектр на монохромных дисплеях
 	// или на цветных, где есть возможность раскраски растровой картинки.
 	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
