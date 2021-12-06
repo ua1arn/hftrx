@@ -211,34 +211,50 @@ static void window_infobar_menu_process(void)
 				char btn_name [6] = { 0 };
 				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
 				button_t * bh = find_gui_element(TYPE_BUTTON, win, btn_name);
-				bh->x1 = 0;
-				bh->y1 = yy;
-				bh->visible = VISIBLE;
 
-
+#if ! WITHPOTAFGAIN
 				if (i == 0)
 				{
 					bh->payload = 1;
 					bh->is_repeating = 1;
+					bh->x1 = 0;
+					bh->y1 = yy;
+					bh->visible = VISIBLE;
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "+");
+					yy = yy + interval + bh->h;
 				}
 				else if (i == 1)
 				{
 					bh->payload = -1;
 					bh->is_repeating = 1;
+					bh->x1 = 0;
+					bh->y1 = yy;
+					bh->visible = VISIBLE;
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "-");
+					yy = yy + interval + bh->h;
 				}
-				else if (i == 2)
+				else
+#endif /* WITHPOTAFGAIN */
+				if (i == 2)
 				{
 					bh->payload = 10;
+					bh->x1 = 0;
+					bh->y1 = yy;
+					bh->visible = VISIBLE;
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "mute");
+					yy = yy + interval + bh->h;
 				}
+#if WITHAFEQUALIZER
 				else if (i == 3)
 				{
 					bh->payload = 20;
+					bh->x1 = 0;
+					bh->y1 = yy;
+					bh->visible = VISIBLE;
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "EQ");
+					yy = yy + interval + bh->h;
 				}
-				yy = yy + interval + bh->h;
+#endif /* #if WITHAFEQUALIZER */
 			}
 		}
 			break;
