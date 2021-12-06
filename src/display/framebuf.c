@@ -1110,7 +1110,7 @@ void display_floodfill(
 	}
 }
 
-// начальная инициализация буфера
+// Заполнение буфера сполшным цветом
 // Эта функция используется только в тесте
 void colpip_fill(
 	PACKEDCOLORPIP_T * buffer,
@@ -1172,6 +1172,14 @@ void colpip_fill(
 #endif /* LCDMODE_HORFILL */
 }
 
+// Заполнение буфера сполшным цветом
+// Эта функция используется только в тесте
+void gtg_fill(const GTG_t * gtg, COLORPIP_T color)
+{
+	colpip_fill(gtg->buffer, gtg->dx, gtg->dy, color);
+}
+
+
 // поставить цветную точку.
 void colpip_point(
 	PACKEDCOLORPIP_T * __restrict buffer,
@@ -1183,6 +1191,17 @@ void colpip_point(
 	)
 {
 	* colmain_mem_at(buffer, dx, dy, col, row) = color;
+}
+
+// поставить цветную точку.
+void gtg_point(
+	const GTG_t * gtg,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T color
+	)
+{
+	* colmain_mem_at(gtg->buffer, gtg->dx, gtg->dy, col, row) = color;
 }
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).

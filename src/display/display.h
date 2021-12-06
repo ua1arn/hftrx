@@ -416,6 +416,14 @@ COLOR24_T colorgradient(unsigned pos, unsigned maxpos);
 #define MGSIZE(dx, dy)	((unsigned long) MGADJ(dx) * (dy))	// размер буфера для монохромного растра
 #define GXSIZE(dx, dy)	((unsigned long) GXADJ(dx) * (dy))	// размер буфера для цветного растра
 
+// Хранение описания буфера для функций построения изображений
+typedef struct gtg_tag
+{
+	PACKEDCOLORMAIN_T * buffer;	// Буфер в памяти
+	uint16_t dx;	// ширина буфера
+	uint16_t dy;	// высота буфера
+} GTG_t;
+
 COLORMAIN_T display_getbgcolor(void);
 void display_setbgcolor(COLORMAIN_T c);
 
@@ -448,13 +456,11 @@ void display_flush(void);	// для framebufer дисплеев - вытолкн
 void colmain_setcolors(COLORMAIN_T fg, COLORMAIN_T bg);
 void colmain_setcolors3(COLORMAIN_T fg, COLORMAIN_T bg, COLORMAIN_T bgfg);	// bgfg - цвет для отрисовки антиалиасинга
 
-#if 1
 /* работа с цветным буфером */
 void display_plotfrom(uint_fast16_t x, uint_fast16_t y);	// Координаты в пикселях
 void display_plotstart(uint_fast16_t dy);	// Высота окна источника в пикселях
 void display_plot(const PACKEDCOLORMAIN_T * buffer, uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t xpix, uint_fast16_t ypix);	// Размеры окна в пикселях и начальная точка рисования
 void display_plotstop(void);
-#endif
 
 // самый маленький шрифт
 uint_fast16_t display_wrdata2_begin(uint_fast8_t xcell, uint_fast8_t ycell, uint_fast16_t * yp);
@@ -532,13 +538,27 @@ void display_pixelbuffer_clear(
 	uint_fast16_t dy
 	);
 
-// начальная инициализация буфера
+// Заполнение буфера сполшным цветом
 // Формат RGB565
 // Эта функция используется только в тесте
 void colpip_fill(
 	PACKEDCOLORPIP_T * buffer,
 	uint_fast16_t dx,	// ширина буфера
 	uint_fast16_t dy,	// высота буфера
+	COLORPIP_T color
+	);
+
+// Заполнение буфера сполшным цветом
+void gtg_fill(
+		const GTG_t * gtg,
+		COLORPIP_T color
+		);
+
+// поставить цветную точку.
+void gtg_point(
+	const GTG_t * gtg,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
 	COLORPIP_T color
 	);
 
