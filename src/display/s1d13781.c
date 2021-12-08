@@ -264,12 +264,20 @@ static uint_fast8_t set_addr_p1p2_registers_getval8(
 		// 19 bit address
 		// 16 bit data read
 		//const uint_fast32_t v = ((S1D_PHYSICAL_REG_ADDR + addr) & 0x0007FFFF) | 0xC8000000;
-		const uint_fast32_t v = (S1D_PHYSICAL_REG_ADDR + addr) | 0xC0000000uL;
+		const uint_fast32_t v = (S1D_PHYSICAL_REG_ADDR + addr) | 0xC8000000UL;
 
+		addr -= 2;
 		hardware_spi_b16_p1(v >> 16);
 		hardware_spi_b16_p2(v >> 0);
-		hardware_spi_b16_p2(0xffff);	// dummy read & read status (8-but value read)
-		return hardware_spi_complete_b16() & 0xFF;	// read status
+		hardware_spi_b16_p2(0xffff);	// dummy read
+		hardware_spi_b16_p2(0xffff);	// read status
+
+		uint_fast32_t v1, v2;
+		v1 = hardware_spi_complete_b16();
+		hardware_spi_b16_p1(0xffff);
+		v2 = hardware_spi_complete_b16();	// read status;
+		return ((v1 << 16) | v2) >> 15;
+
 
 	#else /* WITHSPIEXT16 */
 		// 19 bit address
@@ -299,23 +307,33 @@ static uint_fast16_t set_addr_p1p2_registers_getval16(
 		//const uint_fast32_t v = ((S1D_PHYSICAL_REG_ADDR + addr) & 0x0007FFFF) | 0xC8000000;
 		const uint_fast32_t v = (S1D_PHYSICAL_REG_ADDR + addr) | 0xC8000000UL;
 
+		addr -= 2;
 		hardware_spi_b16_p1(v >> 16);
 		hardware_spi_b16_p2(v >> 0);
 		hardware_spi_b16_p2(0xffff);	// dummy read
 		hardware_spi_b16_p2(0xffff);	// read status
-		return hardware_spi_complete_b16();	// read status
+
+		uint_fast32_t v1, v2;
+		v1 = hardware_spi_complete_b16();
+		hardware_spi_b16_p1(0xffff);
+		v2 = hardware_spi_complete_b16();	// read status;
+		return ((v1 << 16) | v2) >> 15;
 
 	#else /* WITHSPIEXT16 */
 		// 19 bit address
 		// 8 bit data read
+		addr -= 2;
 		spi_progval8_p1(targetlcd, 0xc0);		// 8 bit read
 		spi_progval8_p2(targetlcd, 0xff & (S1D_PHYSICAL_REG_ADDR >> 16));
 		spi_progval8_p2(targetlcd, 0xff & (S1D_PHYSICAL_REG_ADDR >> 8));
 		spi_progval8_p2(targetlcd, addr);
 		spi_progval8_p2(targetlcd, 0xff);		// dummy read
-
-		const uint_fast8_t v = spi_progval8_p3(targetlcd, 0xff);	// low byte
-		return spi_read_byte(targetlcd, 0xff) * 256 + v;		// high byte
+		spi_complete(targetlcd);
+		const uint_fast32_t v1 = spi_read_byte(targetlcd, 0xff);
+		const uint_fast32_t v2 = spi_read_byte(targetlcd, 0xff);
+		const uint_fast32_t v3 = spi_read_byte(targetlcd, 0xff);
+		const uint_fast32_t v4 = spi_read_byte(targetlcd, 0xff);
+		return ((v1 << 24) | (v2 << 16) | (v3 << 8) | (v4 << 0)) >> 15;
 	#endif /* WITHSPIEXT16 */
 }
 
@@ -539,7 +557,7 @@ static uint_fast8_t bitblt_getbusyflag(void)
 	s1d13781_selectslow();
 	v = set_addr_p1p2_registers_getval8(REG84_BLT_STATUS);
 	s1d13781_unselect();
-
+	//PRINTF("bitblt_getbusyflag: v=%08lX\n", v);
 	return (v & 0x01) != 0;
 }
 
