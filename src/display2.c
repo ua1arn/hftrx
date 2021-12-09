@@ -5770,8 +5770,8 @@ enum
 //		{	46, 25,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 //		{	46, 30,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 //		{	46, 35,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
-		{	43, 15,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	43, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	42, 15,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	42, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 
 		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	38, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
