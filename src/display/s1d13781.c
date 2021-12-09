@@ -91,7 +91,7 @@
 #define S1D13781_SPIC_SPEED		SPIC_SPEED25M
 
 // Условие использования оптимизированных функций обращения к SPI
-//#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
+#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 #if LCDMODE_S1D13781_TOPDOWN
 	#define S1D13781_SETFLAGS (0x02 << 3)	// для перевёрнутого изображения
