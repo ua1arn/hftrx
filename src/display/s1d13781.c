@@ -91,7 +91,7 @@
 #define S1D13781_SPIC_SPEED		SPIC_SPEED25M
 
 // Условие использования оптимизированных функций обращения к SPI
-#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
+//#define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
 
 #if LCDMODE_S1D13781_TOPDOWN
 	#define S1D13781_SETFLAGS (0x02 << 3)	// для перевёрнутого изображения
@@ -264,32 +264,30 @@ static uint_fast16_t set_addr_p1p2_registers_getval16(
 		//const uint_fast32_t v = ((S1D_PHYSICAL_REG_ADDR + addr) & 0x0007FFFF) | 0xC8000000;
 		const uint_fast32_t v = (S1D_PHYSICAL_REG_ADDR + addr) | 0xC8000000UL;
 
-		addr -= 2;
+		uint_fast32_t v1, v2;
 		hardware_spi_b16_p1(v >> 16);
 		hardware_spi_b16_p2(v >> 0);
 		hardware_spi_b16_p2(0xffff);	// dummy read
 		hardware_spi_b16_p2(0xffff);	// read status
 
-		uint_fast32_t v1, v2;
-		v1 = hardware_spi_complete_b16();
-		hardware_spi_b16_p1(0xffff);
+		v1 = hardware_spi_b16_p2(0xffff);
 		v2 = hardware_spi_complete_b16();	// read status;
 		return ((v1 << 16) | v2) >> 15;
 
 	#else /* WITHSPIEXT16 */
 		// 19 bit address
 		// 8 bit data read
-		addr -= 2;
-		spi_progval8_p1(targetlcd, 0xc0);		// 8 bit read
+		spi_progval8_p1(targetlcd, 0xc8);		// 16 bit data read
 		spi_progval8_p2(targetlcd, 0xff & (S1D_PHYSICAL_REG_ADDR >> 16));
 		spi_progval8_p2(targetlcd, 0xff & (S1D_PHYSICAL_REG_ADDR >> 8));
 		spi_progval8_p2(targetlcd, addr);
 		spi_progval8_p2(targetlcd, 0xff);		// dummy read
-		spi_complete(targetlcd);
-		const uint_fast32_t v1 = spi_read_byte(targetlcd, 0xff);
-		const uint_fast32_t v2 = spi_read_byte(targetlcd, 0xff);
-		const uint_fast32_t v3 = spi_read_byte(targetlcd, 0xff);
-		const uint_fast32_t v4 = spi_read_byte(targetlcd, 0xff);
+		spi_progval8_p2(targetlcd, 0xff);		// dummy read
+		spi_progval8_p2(targetlcd, 0xff);		// v1 read initiate
+		const uint_fast32_t v1 = spi_progval8_p2(targetlcd, 0xff);
+		const uint_fast32_t v2 = spi_progval8_p2(targetlcd, 0xff);
+		const uint_fast32_t v3 = spi_progval8_p2(targetlcd, 0xff);
+		const uint_fast32_t v4 = spi_complete(targetlcd);
 		return ((v1 << 24) | (v2 << 16) | (v3 << 8) | (v4 << 0)) >> 15;
 	#endif /* WITHSPIEXT16 */
 }

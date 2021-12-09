@@ -7371,7 +7371,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	/* дождаться завершения приёма/передачи */
 	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
 		;
-	return (SPI->SPI_RDR & SPI_TDR_TD_Msk);
+	return (SPI->SPI_RDR & SPI_TDR_TD_Msk) & 0xFF;
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -8502,12 +8502,14 @@ void RAMFUNC hardware_spi_b16_p1(
 
 /* передача одного из средних байтов/слов в последовательности */
 /* дождаться готовности, передача байта */
-void RAMFUNC hardware_spi_b16_p2(
+portholder_t RAMFUNC hardware_spi_b16_p2(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
-	hardware_spi_ready_b16_void();	/* дождаться завершения передачи */
+	portholder_t r;
+	r = hardware_spi_complete_b16();	/* дождаться завершения передачи */
 	hardware_spi_b16_p1(v);	/* передать символ */
+	return r;
 }
 
 /* передача байта/слова, возврат считанного */
@@ -8635,8 +8637,10 @@ void hardware_spi_b32_p2(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
-	hardware_spi_ready_b32_void();	/* дождаться завершения передачи */
+	portholder_t r;
+	r = hardware_spi_ready_b32_void();	/* дождаться завершения передачи */
 	hardware_spi_b32_p1(v);	/* передать символ */
+	rerturn r;
 }
 
 /* передача байта/слова, возврат считанного */
@@ -8697,12 +8701,14 @@ void hardware_spi_b8_p1(
 
 /* передача одного из средних байтов/слов в последовательности */
 /* дождаться готовности, передача байта */
-void hardware_spi_b8_p2(
+portholder_t hardware_spi_b8_p2(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
-	hardware_spi_ready_b8_void();	/* дождаться завершения передачи (на atmega оптимизированно по скорости - без чиения регистра данных). */
+	portholder_t r;
+	r = hardware_spi_complete_b8();	/* дождаться завершения передачи (на atmega оптимизированно по скорости - без чиения регистра данных). */
 	hardware_spi_b8_p1(v);	/* передать символ */
+	return r;
 }
 /* передача байта/слова, возврат считанного */
 portholder_t hardware_spi_b8(

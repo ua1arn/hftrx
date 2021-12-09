@@ -311,7 +311,7 @@ void prog_spi_read_frame(
 	#define spi_progval8_p1(target, v) \
 		do { (void) (target); hardware_spi_b8_p1(v); } while (0)	// выдача первого байта в последовательности
 	#define spi_progval8_p2(target, v) \
-		do { (void) (target); hardware_spi_b8_p2(v); } while (0)	// выдача средних байтов в последовательности
+		(hardware_spi_b8_p2(v))	// выдача средних байтов в последовательности
 	#define spi_progval8_p3(target, v) \
 		((void) (target), hardware_spi_b8_p2(v), hardware_spi_complete_b8())	// выдача средних байтов в последовательности
 	#define spi_read_byte(target, v) \
@@ -488,11 +488,12 @@ portholder_t hardware_spi_b8(portholder_t v);	/* передача 8-ти бит,
 
 /* группа функций для использования в групповых передачах по SPI. Количество бит определяется типом spi_connect */
 void hardware_spi_b32_p1(portholder_t v);	/* передача первого слова в последовательности */
-void hardware_spi_b32_p2(portholder_t v);	/* дождаться готовности, передача слова */
 void hardware_spi_b16_p1(portholder_t v);	/* передача первого слова в последовательности */
-void hardware_spi_b16_p2(portholder_t v);	/* дождаться готовности, передача слова */
 void hardware_spi_b8_p1(portholder_t v);	/* передача первого байта в последовательности */
-void hardware_spi_b8_p2(portholder_t v);	/* дождаться готовности, передача байта */
+
+portholder_t hardware_spi_b32_p2(portholder_t v);	/* дождаться готовности, передача слова */
+portholder_t hardware_spi_b16_p2(portholder_t v);	/* дождаться готовности, передача слова */
+portholder_t hardware_spi_b8_p2(portholder_t v);	/* дождаться готовности, передача байта */
 
 portholder_t hardware_spi_complete_b8(void);	/* дождаться готовности передача 8-ти бит */
 portholder_t hardware_spi_complete_b16(void);	/* дождаться готовности передача 16-ти бит*/
