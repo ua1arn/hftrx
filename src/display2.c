@@ -2002,8 +2002,12 @@ static void display2_ant5(
 {
 #if WITHANTSELECT
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+#if WITHALTERNATIVELAYOUT
+	layout_label1_medium(x, y, labels [0], 7, COLORMAIN_BLACK, colors_2state_alt [1]);
+#else
 	ASSERT(strlen(labels [0]) == 5);
 	display2_text_P(x, y, labels, colors_1state, 0);
+#endif /* WITHALTERNATIVELAYOUT */
 #endif /* WITHANTSELECT */
 }
 
@@ -5745,7 +5749,7 @@ enum
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
 		{	17,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	20,	0,	display2_ant5,		REDRM_MODE, PGALL, },
+		{	21,	0,	display2_ant5,		REDRM_MODE, PGALL, },
 		{	26,	0,	display2_att4,		REDRM_MODE, PGALL, },
 		{	31,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
