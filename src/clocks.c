@@ -8633,14 +8633,14 @@ void hardware_spi_b32_p1(
 
 /* передача одного из средних байтов/слов в последовательности */
 /* дождаться готовности, передача байта */
-void hardware_spi_b32_p2(
+portholder_t hardware_spi_b32_p2(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
 	portholder_t r;
-	r = hardware_spi_ready_b32_void();	/* дождаться завершения передачи */
+	r = hardware_spi_complete_b32();	/* дождаться завершения передачи */
 	hardware_spi_b32_p1(v);	/* передать символ */
-	rerturn r;
+	return r;
 }
 
 /* передача байта/слова, возврат считанного */
