@@ -21636,6 +21636,7 @@ void hamradio_set_gmutespkr(uint_fast8_t v)
 }
 #endif /* WITHSPKMUTE */
 
+#if WITHIF4DSP
 
 uint_fast16_t hamradio_get_afgain(void)
 {
@@ -21652,7 +21653,10 @@ void hamradio_set_afgain(uint_fast16_t v)
 	save_i16(offsetof(struct nvmap, afgain1), afgain1.value);
 	updateboard(1, 0);
 }
-#endif /* #! WITHPOTAFGAIN */
+
+#endif /* ! WITHPOTAFGAIN */
+
+#endif /* WITHIF4DSP */
 
 #if WITHTX
 
