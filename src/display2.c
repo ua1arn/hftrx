@@ -57,11 +57,11 @@ static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE
 
 #if SMALLCHARW2
 
-void layout_label1_medium(uint_fast16_t x, uint_fast16_t y, const char * str, size_t slen, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
+void layout_label1_medium(uint_fast16_t xgrid, uint_fast16_t ygrid, const char * str, size_t slen, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	uint_fast16_t xx = GRID2X(x);
-	uint_fast16_t yy = GRID2Y(y);
+	uint_fast16_t xx = GRID2X(xgrid);
+	uint_fast16_t yy = GRID2Y(ygrid);
 	char buf [slen + 1];
 	strcpy(buf, str);
 	strtrim(buf);
