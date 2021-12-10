@@ -55,6 +55,8 @@
 
 static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
 
+#if SMALLCHARW2
+
 void layout_label1_medium(uint_fast16_t x, uint_fast16_t y, const char * str, size_t slen, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
@@ -82,6 +84,7 @@ void layout_label1_medium(uint_fast16_t x, uint_fast16_t y, const char * str, si
 #endif /* WITHALTERNATIVEFONTS */
 
 }
+#endif /* SMALLCHARW2 */
 
 static void display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);		// вызывать после display2_smeter15_init
 static void display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);
@@ -310,7 +313,7 @@ static const COLORPAIR_T colors_1stateBlue [1] =
 static const COLORPAIR_T colors_2freqB [2] =
 {
 	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
-	{	DESIGNBIGCOLORB,	LABELBACK,	},
+	{	COLORMAIN_YELLOW,	LABELBACK,	},
 };
 // Параметры отображения режима дополнительного приемника
 // синий
@@ -7420,7 +7423,7 @@ display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 					{
 						display_colorbuf_set_vline(fr, DIM_X, DIM_Y,
 								gvars.afsp.x + x, gvars.afsp.y - y_norm, y_norm,
-								COLORMAIN_YELLOW);
+								AFSPECTRE_COLOR);
 					}
 				}
 			}
