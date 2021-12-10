@@ -53,37 +53,35 @@
 
 #endif /* LCDMODE_LTDC */
 
-#if WITHALTERNATIVELAYOUT
-	static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
+static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
 
-	void layout_label1_medium(uint_fast16_t x, uint_fast16_t y, const char * str, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
-	{
-		PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-		uint_fast16_t xx = GRID2X(x);
-		uint_fast16_t yy = GRID2Y(y);
-		char buf[20];
-		strcpy(buf, str);
-		strtrim(buf);
+void layout_label1_medium(uint_fast16_t x, uint_fast16_t y, const char * str, size_t slen, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	uint_fast16_t xx = GRID2X(x);
+	uint_fast16_t yy = GRID2Y(y);
+	char buf [slen + 1];
+	strcpy(buf, str);
+	strtrim(buf);
 #if WITHALTERNATIVEFONTS
-		uint_fast16_t len_str = getwidth_Pstring(buf, & gothic_12x16);
+	uint_fast16_t len_str = getwidth_Pstring(buf, & gothic_12x16);
 #else
-		uint_fast16_t len_str = strwidth2(buf);
+	uint_fast16_t len_str = strwidth2(buf);
 #endif /* WITHALTERNATIVEFONTS */
 
-		uint_fast16_t size_p = size_W2 * SMALLCHARW2;
+	uint_fast16_t size_p = size_W2 * SMALLCHARW2;
 
-		if (! len_str)
-			return;
+	if (! len_str)
+		return;
 
-		colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + size_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+	colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + size_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
 #if WITHALTERNATIVEFONTS
-		UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (size_p - len_str) / 2 , yy + 2, buf, & gothic_12x16, color_fg);
+	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (size_p - len_str) / 2 , yy + 2, buf, & gothic_12x16, color_fg);
 #else
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (size_p - len_str) / 2 , yy + 4, buf, color_fg);
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (size_p - len_str) / 2 , yy + 4, buf, color_fg);
 #endif /* WITHALTERNATIVEFONTS */
 
-	}
-#endif /* WITHALTERNATIVELAYOUT */
+}
 
 static void display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);		// вызывать после display2_smeter15_init
 static void display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);
@@ -1244,11 +1242,25 @@ display2_text_P(
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
 #if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, labels [state], 5, COLORMAIN_BLACK, colors_2state_alt [state]);
+	layout_label1_medium(x, y, labels [state], strlen_P(labels [state]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
 #else
 	colmain_setcolors(colors [state].fg, colors [state].bg);
 	display_at_P(x, y, labels [state]);
 #endif /* WITHALTERNATIVELAYOUT */
+}
+
+// отображение текста (из FLASH) с атрибутами по состоянию
+static void
+NOINLINEAT
+display2_text_alt_P(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	const FLASHMEM char * const * labels,	// массив указателей на текст
+	const COLORPAIR_T * colors,			// массив цветов
+	uint_fast8_t state
+	)
+{
+	layout_label1_medium(x, y, labels [state], strlen_P(labels [state]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
 }
 
 // отображение текста с атрибутами по состоянию
@@ -1297,11 +1309,24 @@ static void display_txrxstate2(
 	static const FLASHMEM char text0 [] = "RX";
 	static const FLASHMEM char text1 [] = "TX";
 	const FLASHMEM char * const labels [2] = { text0, text1 };
-#if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, labels [state], 5, state ? COLORMAIN_WHITE : COLORMAIN_BLACK, state ? COLORMAIN_RED : COLORMAIN_GRAY);
-#else
 	display2_text_P(x, y, labels, colors_2rxtx, state);
-#endif /* WITHALTERNATIVELAYOUT */
+#endif /* WITHTX */
+}
+
+// Отображение режимов TX / RX
+static void display_txrxstate5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHTX
+	const uint_fast8_t state = hamradio_get_tx();
+
+	static const FLASHMEM char text0 [] = "RX";
+	static const FLASHMEM char text1 [] = "TX";
+	const FLASHMEM char * const labels [2] = { text0, text1 };
+	layout_label1_medium(x, y, labels [state], 2, 5, state ? COLORMAIN_WHITE : COLORMAIN_BLACK, state ? COLORMAIN_RED : COLORMAIN_GRAY);
 #endif /* WITHTX */
 }
 
@@ -1543,11 +1568,23 @@ static void display2_notch5(
 	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
 	const char FLASHMEM * const label = hamradio_get_notchtype5_P();
 	const char FLASHMEM * const labels [2] = { label, label, };
-#if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, label, 7, COLORMAIN_BLACK, colors_2state_alt [state]);
-#else
 	display2_text_P(x, y, labels, colors_2state, state);
-#endif /* WITHALTERNATIVELAYOUT */
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
+}
+
+// Отображение типа режима NOCH и ON/OFF
+static void display2_notch7alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+	int_fast32_t freq;
+	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
+	const char FLASHMEM * const label = hamradio_get_notchtype5_P();
+	const char FLASHMEM * const labels [2] = { label, label, };
+	layout_label1_medium(x, y, label, strlen_P(label), 7, COLORMAIN_BLACK, colors_2state_alt [state]);
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
@@ -1592,15 +1629,22 @@ static void display2_vfomode3(
 {
 	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
 	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
-#if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, labels [0], 5, COLORMAIN_BLACK, colors_2state_alt [state]);
-#else
 	display2_text(x, y, labels, colors_1state, 0);
-#endif /* WITHALTERNATIVELAYOUT */
 }
 
-
 // VFO mode
+static void display2_vfomode5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
+	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
+}
+
+// VFO mode with memory ch info
 static void display_vfomode5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1681,6 +1725,21 @@ static void display2_atu3(
 #endif /* WITHTX */
 }
 
+// Отображение режима автонастройки
+static void display2_atu4alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHTX
+	#if WITHAUTOTUNER
+		const uint_fast8_t state = hamradio_get_atuvalue();
+		display_2states_P(x, y, state, PSTR("ATU"), text_nul3_P);
+	#endif /* WITHAUTOTUNER */
+#endif /* WITHTX */
+}
+
 
 // Отображение режима General Coverage / HAM bands
 static void display2_genham1(
@@ -1702,6 +1761,21 @@ static void display2_genham1(
 static void display2_byp3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
+	dctx_t * pctx
+	)
+{
+#if WITHTX
+	#if WITHAUTOTUNER
+		const uint_fast8_t state = hamradio_get_bypvalue();
+		display_2states_P(x, y, state, PSTR("BYP"), text_nul3_P);
+	#endif /* WITHAUTOTUNER */
+#endif /* WITHTX */
+}
+
+// Отображение режима обхода тюнера
+static void display2_byp4alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -1856,7 +1930,7 @@ static void display2_lockstate4(
 	static const FLASHMEM char text1 [] = "LOCK";
 	static const FLASHMEM char text2 [] = "FAST";
 #if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, fastv ? text2 : text1, 5, COLORMAIN_BLACK, colors_2state_alt [lockv || fastv]);
+	layout_label1_medium(x, y, fastv ? text2 : text1, 4, 5, COLORMAIN_BLACK, colors_2state_alt [lockv || fastv]);
 #else
 #if LCDMODE_COLORED
 	const FLASHMEM char * const labels [4] = { text1, text2, text1, text1, };
@@ -1865,6 +1939,22 @@ static void display2_lockstate4(
 #endif
 	display2_text_P(x, y, labels, colors_4state, lockv * 2 + fastv);
 #endif /* WITHALTERNATIVELAYOUT */
+}
+
+static void display2_lockstate5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const uint_fast8_t lockv = hamradio_get_lockvalue();
+	const uint_fast8_t fastv = hamradio_get_usefastvalue();
+
+	static const FLASHMEM char text0 [] = "    ";
+	static const FLASHMEM char text1 [] = "LOCK";
+	static const FLASHMEM char text2 [] = "FAST";
+
+	layout_label1_medium(x, y, fastv ? text2 : text1, 4, 5, COLORMAIN_BLACK, colors_2state_alt [lockv || fastv]);
 }
 
 
@@ -2002,12 +2092,21 @@ static void display2_ant5(
 {
 #if WITHANTSELECT
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
-#if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, labels [0], 7, COLORMAIN_BLACK, colors_2state_alt [1]);
-#else
 	ASSERT(strlen(labels [0]) == 5);
 	display2_text_P(x, y, labels, colors_1state, 0);
-#endif /* WITHALTERNATIVELAYOUT */
+#endif /* WITHANTSELECT */
+}
+
+// display antenna
+static void display2_ant7alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHANTSELECT
+	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORMAIN_BLACK, colors_2state_alt [1]);
 #endif /* WITHANTSELECT */
 }
 
@@ -2019,12 +2118,19 @@ static void display2_att4(
 	)
 {
 	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
-#if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, labels [0], 5, COLORMAIN_BLACK, colors_2state_alt [1]);
-#else
 	ASSERT(strlen(labels [0]) == 4);
 	display2_text_P(x, y, labels, colors_1state, 0);
-#endif /* WITHALTERNATIVELAYOUT */
+}
+
+// RX att (or att/pre)
+static void display2_att5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORMAIN_BLACK, colors_2state_alt [1]);
 }
 
 // HP/LP
@@ -5748,13 +5854,13 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-		{	17,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-		{	21,	0,	display2_ant5,		REDRM_MODE, PGALL, },
-		{	26,	0,	display2_att4,		REDRM_MODE, PGALL, },
+		{	17,	0,	display_txrxstate5alt, REDRM_MODE, PGALL, },
+		{	21,	0,	display2_ant7alt,		REDRM_MODE, PGALL, },
+		{	26,	0,	display2_att5alt,		REDRM_MODE, PGALL, },
 		{	31,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
-		{	38,	0,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	42, 0,	display2_notch5,	REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	38,	0,	display2_lockstate5alt, REDRM_MODE, PGALL, },	// LOCK
+		{	42, 0,	display2_notch7alt,	REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	42, 5,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	46, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{	46, 15,	display2_usbsts3,	REDRM_BARS, PGALL, },	// USB host status
@@ -5774,8 +5880,8 @@ enum
 //		{	46, 25,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 //		{	46, 30,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 //		{	46, 35,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
-		{	42, 15,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-		{	42, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
+		{	42, 15,	display2_atu4alt,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	42, 20,	display2_byp4alt,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 
 		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	38, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
@@ -5783,7 +5889,7 @@ enum
 		{	46, 10,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
 		{	38, 15,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
 
-		{	42,	15,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
+		{	42,	15,	display2_vfomode5alt,	REDRM_MODE, PGALL, },	// SPLIT
 		{	26,	20,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
 		{	38, 20,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
