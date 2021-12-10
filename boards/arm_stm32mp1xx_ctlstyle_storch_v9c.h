@@ -423,6 +423,8 @@
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+//			#define WITHALTERNATIVEFONTS    1
+//			#define WITHALTERNATIVELAYOUT    1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
