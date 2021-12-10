@@ -1424,6 +1424,9 @@ static void process_gui(void)
 		gui.is_after_touch = 0;
 	}
 
+	if (gui_element_count == 0)
+		return;
+
 	if (gui.state == CANCELLED && gui.is_touching_screen && ! gui.is_after_touch)
 	{
 		ASSERT(gui_element_count != 0);
