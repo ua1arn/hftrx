@@ -55,24 +55,26 @@
 
 #if WITHALTERNATIVELAYOUT
 
+#if SMALLCHARW2
+
 static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
 
 typedef struct {
 	uint_fast8_t size_W2;
-	COLORMAIN_T color;
-	PACKEDCOLORMAIN_T * label_bg;
-	size_t size;
+	const COLORMAIN_T * pcolor;
+	PACKEDCOLORMAIN_T * label_bg;	/* буфер */
+	size_t size;					/* размер для cache flush */
 	uint_fast16_t w;
 	uint_fast16_t h;
 } label_bg_t;
 
 static label_bg_t label_bg [] = {
-		{ 3, colors_2state_alt [0], },
-		{ 3, colors_2state_alt [1], },
-		{ 4, colors_2state_alt [0], },
-		{ 4, colors_2state_alt [1], },
-		{ 5, colors_2state_alt [0], },
-		{ 5, colors_2state_alt [1], },
+		{ 3, & colors_2state_alt [0], },
+		{ 3, & colors_2state_alt [1], },
+		{ 4, & colors_2state_alt [0], },
+		{ 4, & colors_2state_alt [1], },
+		{ 5, & colors_2state_alt [0], },
+		{ 5, & colors_2state_alt [1], },
 };
 
 static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
@@ -83,14 +85,12 @@ static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		label_bg_t * lbl = & label_bg [i];
 		lbl->w = lbl->size_W2 * SMALLCHARW2;
 		lbl->h = SMALLCHARH2 + 6;
-		lbl->size = GXSIZE(lbl->w, lbl->h) ;
+		lbl->size = GXSIZE(lbl->w, lbl->h) * sizeof (PACKEDCOLORMAIN_T);
 		lbl->label_bg = (PACKEDCOLORMAIN_T *) malloc(lbl->size);
 		ASSERT(lbl->label_bg);
-		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, lbl->color, 1);
+		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, * lbl->pcolor, 1);
 	} while (++ i < ARRAY_SIZE(label_bg));
 }
-
-#if SMALLCHARW2
 
 void layout_label1_medium(uint_fast16_t xgrid, uint_fast16_t ygrid, const char * str, size_t slen, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
 {
@@ -108,14 +108,14 @@ void layout_label1_medium(uint_fast16_t xgrid, uint_fast16_t ygrid, const char *
 	uint_fast16_t len_str = strwidth2(buf);
 #endif /* WITHALTERNATIVEFONTS */
 
-	uint_fast16_t size_p = size_W2 * SMALLCHARW2;
+	const uint_fast16_t size_p = size_W2 * SMALLCHARW2;
 
 	if (! len_str)
 		return;
 
 	do {
-		label_bg_t * lbl = & label_bg [i];
-		if (lbl->size_W2 == size_W2 && lbl->color == color_bg)
+		label_bg_t * const lbl = & label_bg [i];
+		if (lbl->size_W2 == size_W2 && * lbl->pcolor == color_bg)
 		{
 			lbl_bg = lbl;
 			break;
