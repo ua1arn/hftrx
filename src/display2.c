@@ -60,7 +60,7 @@
 static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
 
 typedef struct {
-	uint_fast8_t size_W2;
+	uint_fast8_t chars_W2;
 	const COLORMAIN_T * pcolor;
 	PACKEDCOLORMAIN_T * label_bg;	/* буфер */
 	size_t size;					/* размер для cache flush */
@@ -82,17 +82,17 @@ static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 	uint_fast8_t i = 0;
 
 	do {
-		label_bg_t * lbl = & label_bg [i];
-		lbl->w = lbl->size_W2 * SMALLCHARW2;
+		label_bg_t * const lbl = & label_bg [i];
+		lbl->w = lbl->chars_W2 * SMALLCHARW2;
 		lbl->h = SMALLCHARH2 + 6;
 		lbl->size = GXSIZE(lbl->w, lbl->h) * sizeof (PACKEDCOLORMAIN_T);
 		lbl->label_bg = (PACKEDCOLORMAIN_T *) malloc(lbl->size);
-		ASSERT(lbl->label_bg);
+		ASSERT(lbl->label_bg != NULL);
 		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, * lbl->pcolor, 1);
 	} while (++ i < ARRAY_SIZE(label_bg));
 }
 
-void layout_label1_medium(uint_fast16_t xgrid, uint_fast16_t ygrid, const char * str, size_t slen, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
+void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	uint_fast16_t xx = GRID2X(xgrid);
@@ -103,35 +103,35 @@ void layout_label1_medium(uint_fast16_t xgrid, uint_fast16_t ygrid, const char *
 	strcpy(buf, str);
 	strtrim(buf);
 #if WITHALTERNATIVEFONTS
-	uint_fast16_t len_str = getwidth_Pstring(buf, & gothic_12x16);
+	const uint_fast16_t width_str = getwidth_Pstring(buf, & gothic_12x16);
 #else
-	uint_fast16_t len_str = strwidth2(buf);
+	const uint_fast16_t width_str = strwidth2(buf);
 #endif /* WITHALTERNATIVEFONTS */
 
-	const uint_fast16_t size_p = size_W2 * SMALLCHARW2;
+	const uint_fast16_t width_p = chars_W2 * SMALLCHARW2;
 
-	if (! len_str)
+	if (! width_str)
 		return;
 
 	do {
 		label_bg_t * const lbl = & label_bg [i];
-		if (lbl->size_W2 == size_W2 && * lbl->pcolor == color_bg)
+		if (lbl->chars_W2 == chars_W2 && * lbl->pcolor == color_bg)
 		{
 			lbl_bg = lbl;
 			break;
 		}
 	} while (++ i < ARRAY_SIZE(label_bg));
 
-	if (lbl_bg)
+	if (lbl_bg != NULL)
 		colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, xx, yy,
 				(uintptr_t) lbl_bg->label_bg, lbl_bg->size, lbl_bg->label_bg, lbl_bg->w, lbl_bg->h);
 	else
-		colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + size_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+		colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + width_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
 
 #if WITHALTERNATIVEFONTS
-	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (size_p - len_str) / 2 , yy + 2, buf, & gothic_12x16, color_fg);
+	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16, color_fg);
 #else
-	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (size_p - len_str) / 2 , yy + 4, buf, color_fg);
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 4, buf, color_fg);
 #endif /* WITHALTERNATIVEFONTS */
 
 }
