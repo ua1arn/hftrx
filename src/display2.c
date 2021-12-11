@@ -58,6 +58,7 @@
 #if SMALLCHARW2
 
 static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
+static const COLORMAIN_T color_alt_red = COLORMAIN_RED;
 
 typedef struct {
 	uint_fast8_t chars_W2;
@@ -69,12 +70,11 @@ typedef struct {
 } label_bg_t;
 
 static label_bg_t label_bg [] = {
-		{ 3, & colors_2state_alt [0], },
-		{ 3, & colors_2state_alt [1], },
-		{ 4, & colors_2state_alt [0], },
-		{ 4, & colors_2state_alt [1], },
 		{ 5, & colors_2state_alt [0], },
 		{ 5, & colors_2state_alt [1], },
+		{ 5, & color_alt_red, 		  },
+		{ 7, & colors_2state_alt [0], },
+		{ 7, & colors_2state_alt [1], },
 };
 
 static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
@@ -88,6 +88,7 @@ static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 		lbl->size = GXSIZE(lbl->w, lbl->h) * sizeof (PACKEDCOLORMAIN_T);
 		lbl->label_bg = (PACKEDCOLORMAIN_T *) malloc(lbl->size);
 		ASSERT(lbl->label_bg != NULL);
+		colmain_fillrect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w, lbl->h, COLORMAIN_BLACK);
 		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, * lbl->pcolor, 1);
 	} while (++ i < ARRAY_SIZE(label_bg));
 }
@@ -1984,16 +1985,12 @@ static void display2_lockstate4(
 	static const FLASHMEM char text0 [] = "    ";
 	static const FLASHMEM char text1 [] = "LOCK";
 	static const FLASHMEM char text2 [] = "FAST";
-#if WITHALTERNATIVELAYOUT
-	layout_label1_medium(x, y, fastv ? text2 : text1, 4, 5, COLORMAIN_BLACK, colors_2state_alt [lockv || fastv]);
-#else
 #if LCDMODE_COLORED
 	const FLASHMEM char * const labels [4] = { text1, text2, text1, text1, };
 #else /* LCDMODE_COLORED */
 	const FLASHMEM char * const labels [4] = { text0, text2, text1, text1, };
 #endif
 	display2_text_P(x, y, labels, colors_4state, lockv * 2 + fastv);
-#endif /* WITHALTERNATIVELAYOUT */
 }
 
 static void display2_lockstate5alt(
@@ -2135,6 +2132,29 @@ static void display2_preovf3(
 	{
 		colmain_setcolors(LABELTEXT, LABELBACK);
 		display_at_P(x, y, hamradio_get_pre_value_P());
+	}
+}
+
+static void display2_preovf3alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	if (boad_fpga_adcoverflow() != 0)
+	{
+		const char str [] = "OVF";
+		layout_label1_medium(x, y, str, strlen_P(str), 5, COLORMAIN_WHITE, OVFCOLOR);
+	}
+	else if (boad_mike_adcoverflow() != 0)
+	{
+		const char str [] = "MIC";
+		layout_label1_medium(x, y, str, strlen_P(str), 5, COLORMAIN_WHITE, OVFCOLOR);
+	}
+	else
+	{
+		const char * str = hamradio_get_pre_value_P();
+		layout_label1_medium(x, y, str, strlen_P(str), 5, COLORMAIN_BLACK, colors_2state_alt [1]);
 	}
 }
 
@@ -5912,7 +5932,7 @@ enum
 		{	17,	0,	display_txrxstate5alt, REDRM_MODE, PGALL, },
 		{	21,	0,	display2_ant7alt,		REDRM_MODE, PGALL, },
 		{	26,	0,	display2_att5alt,		REDRM_MODE, PGALL, },
-		{	31,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
+		{	31,	0,	display2_preovf3alt,	REDRM_BARS, PGALL, },
 		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 		{	38,	0,	display2_lockstate5alt, REDRM_MODE, PGALL, },	// LOCK
 		{	42, 0,	display2_notch7alt,	REDRM_MODE, PGALL, },	// NOTCH on/off
