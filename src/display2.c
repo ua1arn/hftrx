@@ -53,7 +53,42 @@
 
 #endif /* LCDMODE_LTDC */
 
+#if WITHALTERNATIVELAYOUT
+
 static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
+
+typedef struct {
+	uint_fast8_t size_W2;
+	COLORMAIN_T color;
+	PACKEDCOLORMAIN_T * label_bg;
+	size_t size;
+	uint_fast16_t w;
+	uint_fast16_t h;
+} label_bg_t;
+
+static label_bg_t label_bg [] = {
+		{ 3, colors_2state_alt [0], },
+		{ 3, colors_2state_alt [1], },
+		{ 4, colors_2state_alt [0], },
+		{ 4, colors_2state_alt [1], },
+		{ 5, colors_2state_alt [0], },
+		{ 5, colors_2state_alt [1], },
+};
+
+static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
+{
+	uint_fast8_t i = 0;
+
+	do {
+		label_bg_t * lbl = & label_bg [i];
+		lbl->w = lbl->size_W2 * SMALLCHARW2;
+		lbl->h = SMALLCHARH2 + 6;
+		lbl->size = GXSIZE(lbl->w, lbl->h) ;
+		lbl->label_bg = (PACKEDCOLORMAIN_T *) malloc(lbl->size);
+		ASSERT(lbl->label_bg);
+		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, lbl->color, 1);
+	} while (++ i < ARRAY_SIZE(label_bg));
+}
 
 #if SMALLCHARW2
 
@@ -62,6 +97,8 @@ void layout_label1_medium(uint_fast16_t xgrid, uint_fast16_t ygrid, const char *
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	uint_fast16_t xx = GRID2X(xgrid);
 	uint_fast16_t yy = GRID2Y(ygrid);
+	label_bg_t * lbl_bg = NULL;
+	uint_fast8_t i = 0;
 	char buf [slen + 1];
 	strcpy(buf, str);
 	strtrim(buf);
@@ -76,7 +113,21 @@ void layout_label1_medium(uint_fast16_t xgrid, uint_fast16_t ygrid, const char *
 	if (! len_str)
 		return;
 
-	colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + size_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+	do {
+		label_bg_t * lbl = & label_bg [i];
+		if (lbl->size_W2 == size_W2 && lbl->color == color_bg)
+		{
+			lbl_bg = lbl;
+			break;
+		}
+	} while (++ i < ARRAY_SIZE(label_bg));
+
+	if (lbl_bg)
+		colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, xx, yy,
+				(uintptr_t) lbl_bg->label_bg, lbl_bg->size, lbl_bg->label_bg, lbl_bg->w, lbl_bg->h);
+	else
+		colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + size_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+
 #if WITHALTERNATIVEFONTS
 	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (size_p - len_str) / 2 , yy + 2, buf, & gothic_12x16, color_fg);
 #else
@@ -85,6 +136,7 @@ void layout_label1_medium(uint_fast16_t xgrid, uint_fast16_t ygrid, const char *
 
 }
 #endif /* SMALLCHARW2 */
+#endif /* WITHALTERNATIVELAYOUT */
 
 static void display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);		// вызывать после display2_smeter15_init
 static void display2_af_spectre15_latch(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);
@@ -5877,7 +5929,7 @@ enum
 		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
 		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
 #endif /* WITHAFSPECTRE */
-
+		{   0,  0,  layout_init,		REDRM_INIS, PGINI, },
 //		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
 //		{	46, 20,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 //		{	46, 25,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
