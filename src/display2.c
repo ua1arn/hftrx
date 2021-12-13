@@ -53,12 +53,12 @@
 
 #endif /* LCDMODE_LTDC */
 
+static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
+static const COLORMAIN_T color_alt_red = COLORMAIN_RED;
+
 #if WITHALTERNATIVELAYOUT
 
 #if SMALLCHARW2
-
-static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
-static const COLORMAIN_T color_alt_red = COLORMAIN_RED;
 
 typedef struct {
 	uint_fast8_t chars_W2;
