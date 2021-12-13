@@ -1999,6 +1999,7 @@ static void display2_lockstate5alt(
 	dctx_t * pctx
 	)
 {
+	enum { chars_W2 = 5 };
 	const uint_fast8_t lockv = hamradio_get_lockvalue();
 	const uint_fast8_t fastv = hamradio_get_usefastvalue();
 
@@ -2006,7 +2007,7 @@ static void display2_lockstate5alt(
 	static const FLASHMEM char text1 [] = "LOCK";
 	static const FLASHMEM char text2 [] = "FAST";
 
-	layout_label1_medium(x, y, fastv ? text2 : text1, 4, 5, COLORMAIN_BLACK, colors_2state_alt [lockv || fastv]);
+	layout_label1_medium(x, y, fastv ? text2 : text1, 4, chars_W2, COLORMAIN_BLACK, colors_2state_alt [lockv || fastv]);
 }
 
 
@@ -2135,26 +2136,28 @@ static void display2_preovf3(
 	}
 }
 
-static void display2_preovf3alt(
+static void display2_preovf5alt(
 	uint_fast8_t x,
 	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
+	enum { chars_W2 = 5 };
+
 	if (boad_fpga_adcoverflow() != 0)
 	{
 		const char str [] = "OVF";
-		layout_label1_medium(x, y, str, strlen_P(str), 5, COLORMAIN_WHITE, OVFCOLOR);
+		layout_label1_medium(x, y, str, 3, chars_W2, COLORMAIN_WHITE, OVFCOLOR);
 	}
 	else if (boad_mike_adcoverflow() != 0)
 	{
 		const char str [] = "MIC";
-		layout_label1_medium(x, y, str, strlen_P(str), 5, COLORMAIN_WHITE, OVFCOLOR);
+		layout_label1_medium(x, y, str, 3, chars_W2, COLORMAIN_WHITE, OVFCOLOR);
 	}
 	else
 	{
 		const char * str = hamradio_get_pre_value_P();
-		layout_label1_medium(x, y, str, strlen_P(str), 5, COLORMAIN_BLACK, colors_2state_alt [1]);
+		layout_label1_medium(x, y, str, strlen_P(str), chars_W2, COLORMAIN_BLACK, colors_2state_alt [1]);
 	}
 }
 
@@ -5932,7 +5935,7 @@ enum
 		{	17,	0,	display_txrxstate5alt, REDRM_MODE, PGALL, },
 		{	21,	0,	display2_ant7alt,		REDRM_MODE, PGALL, },
 		{	26,	0,	display2_att5alt,		REDRM_MODE, PGALL, },
-		{	31,	0,	display2_preovf3alt,	REDRM_BARS, PGALL, },
+		{	31,	0,	display2_preovf5alt,	REDRM_BARS, PGALL, },
 		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 		{	38,	0,	display2_lockstate5alt, REDRM_MODE, PGALL, },	// LOCK
 		{	42, 0,	display2_notch7alt,	REDRM_MODE, PGALL, },	// NOTCH on/off
