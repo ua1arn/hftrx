@@ -6284,6 +6284,7 @@ static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 #if WITHNANDHW
 
 	#define HARDWARE_NAND_INITIALIZE() do { \
+			xc7z_gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
 			xc7z_gpio_input(HARDWARE_NAND_D7_MIO); \
 			xc7z_gpio_input(HARDWARE_NAND_D6_MIO); \
 			xc7z_gpio_input(HARDWARE_NAND_D5_MIO); \
@@ -6293,7 +6294,6 @@ static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 			xc7z_gpio_input(HARDWARE_NAND_D1_MIO); \
 			xc7z_gpio_input(HARDWARE_NAND_D0_MIO); \
 			xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
-			xc7z_gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
 			xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
 			xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
 			xc7z_writepin(HARDWARE_NAND_ALE_MIO, 1); \
@@ -6317,61 +6317,67 @@ uint_fast8_t nand_rbc_get(void)
 void nand_cs_set(uint_fast8_t state)
 {
 	xc7z_writepin(HARDWARE_NAND_CSB_MIO, state != 0);
+	local_delay_us(10);
 }
 
 // Address latch enable
 void nand_ale_set(uint_fast8_t state)
 {
 	xc7z_writepin(HARDWARE_NAND_ALE_MIO, state != 0);
+	local_delay_us(10);
 }
 
 // Command latch enable
 void nand_cle_set(uint_fast8_t state)
 {
 	xc7z_writepin(HARDWARE_NAND_CLE_MIO, state != 0);
+	local_delay_us(10);
 }
 
 // Read enable: Gates transfers from the NAND Flash device to the host system.
 void nand_re_set(uint_fast8_t state)
 {
 	xc7z_writepin(HARDWARE_NAND_REB_MIO, state != 0);
+	local_delay_us(10);
 }
 
 // Write enable: Gates transfers from the host system to the NAND Flash device
 void nand_we_set(uint_fast8_t state)
 {
 	xc7z_writepin(HARDWARE_NAND_WEB_MIO, state != 0);
+	local_delay_us(10);
 }
 
 void nand_wp_set(uint_fast8_t state)
 {
 	xc7z_writepin(HARDWARE_NAND_WPB_MIO, state != 0);
+	local_delay_us(10);
 }
 
 // bus programming: write data to chip
 void nand_data_bus_write(void)
 {
-	xc7z_gpio_output(HARDWARE_NAND_D7_MIO); \
-	xc7z_gpio_output(HARDWARE_NAND_D6_MIO); \
-	xc7z_gpio_output(HARDWARE_NAND_D5_MIO); \
-	xc7z_gpio_output(HARDWARE_NAND_D4_MIO); \
-	xc7z_gpio_output(HARDWARE_NAND_D3_MIO); \
-	xc7z_gpio_output(HARDWARE_NAND_D2_MIO); \
-	xc7z_gpio_output(HARDWARE_NAND_D1_MIO); \
-	xc7z_gpio_output(HARDWARE_NAND_D0_MIO); \
+	xc7z_gpio_output(HARDWARE_NAND_D7_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D6_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D5_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D4_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D3_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D2_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D1_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D0_MIO);
 }
 
 // bus programming: write data to chip
 void nand_data_bus_read(void)
 {
-	xc7z_gpio_input(HARDWARE_NAND_D7_MIO); \
-	xc7z_gpio_input(HARDWARE_NAND_D6_MIO); \
-	xc7z_gpio_input(HARDWARE_NAND_D5_MIO); \
-	xc7z_gpio_input(HARDWARE_NAND_D4_MIO); \
-	xc7z_gpio_input(HARDWARE_NAND_D3_MIO); \
-	xc7z_gpio_input(HARDWARE_NAND_D2_MIO); \
-	xc7z_gpio_input(HARDWARE_NAND_D1_MIO); \
-	xc7z_gpio_input(HARDWARE_NAND_D0_MIO); \
+	xc7z_gpio_input(HARDWARE_NAND_D7_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D6_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D5_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D4_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D3_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D2_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D1_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D0_MIO);
 }
 
 void nand_data_out(uint_fast8_t v)
@@ -6384,6 +6390,7 @@ void nand_data_out(uint_fast8_t v)
 	xc7z_writepin(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0);
 	xc7z_writepin(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0);
 	xc7z_writepin(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0);
+	local_delay_us(10);
 }
 
 //
@@ -6391,6 +6398,7 @@ uint_fast8_t nand_data_in(void)
 {
 	uint_fast8_t v = 0;
 
+	local_delay_us(10);
 	v |= (xc7z_readpin(HARDWARE_NAND_D7_MIO) != 0) << 7;
 	v |= (xc7z_readpin(HARDWARE_NAND_D6_MIO) != 0) << 6;
 	v |= (xc7z_readpin(HARDWARE_NAND_D5_MIO) != 0) << 5;
@@ -6403,20 +6411,22 @@ uint_fast8_t nand_data_in(void)
 	return v;
 }
 
-void namd_write(uint_fast8_t v)
+void nand_write(uint_fast8_t v)
 {
 	nand_data_bus_write();
+	nand_we_set(0);
 	nand_data_out(v);
+	nand_we_set(1);
 	nand_data_bus_read();
 }
 
-uint_fast8_t namd_read(void)
+uint_fast8_t nand_read(void)
 {
 	uint_fast8_t v;
 	nand_data_bus_read();
-	nand_cs_set(0);
+	nand_re_set(0);
 	v = nand_data_in();
-	nand_cs_set(1);
+	nand_re_set(1);
 
 	return v;
 }
@@ -6427,11 +6437,41 @@ void nand_initialize(void)
 
 	nand_wp_set(0);
 
+	nand_re_set(1);
+	nand_we_set(1);
+}
+
+void nand_read_id(void)
+{
+
+	uint_fast8_t v1, v2, v3, v4;
+
+	// Read ID
+	nand_cs_set(0);
+
+	nand_cle_set(1);
+	nand_write(0x90);
+	nand_cle_set(0);
+
+	nand_ale_set(1);
+	nand_write(0x00);
+	nand_ale_set(0);
+
+	v1 = nand_read();
+	v2 = nand_read();
+	v3 = nand_read();
+	v4 = nand_read();
+
+	nand_cs_set(1);
+
+	PRINTF("NAMD IDs = %02X %02X %02X %02X\n", v1, v2, v3, v4);
+
 }
 
 void nand_tests(void)
 {
 	nand_initialize();
+	nand_read_id();
 }
 
 #endif /* WITHNANDHW */
