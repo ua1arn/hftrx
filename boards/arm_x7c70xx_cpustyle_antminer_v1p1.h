@@ -1002,7 +1002,7 @@
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 #if WITHNANDHW
-	// NAND data bus
+	// NAND flash data bus
 	#define HARDWARE_NAND_D7_MIO 12		// D7: PS_MIO12
 	#define HARDWARE_NAND_D6_MIO 11		// D6: PS_MIO11
 	#define HARDWARE_NAND_D5_MIO 10		// D5: PS_MIO10
@@ -1012,7 +1012,7 @@
 	#define HARDWARE_NAND_D1_MIO 6		// D1: PS_MIO6
 	#define HARDWARE_NAND_D0_MIO 5		// D0: PS_MIO5
 
-	// Control:
+	// NAND flash Control bits:
 	#define HARDWARE_NAND_RBC_MIO 14	// R/B#: PS_MIO14 Ready/Busy#
 	#define HARDWARE_NAND_ALE_MIO 2		// ALE: PS_MIO2
 	#define HARDWARE_NAND_CLE_MIO 7		// CLE: PS_MIO7
