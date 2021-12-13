@@ -3654,9 +3654,9 @@ void cpu_initdone(void)
 
 #endif /* CPUSTYLE_R7S721 */
 
-	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
-
 #endif /* WITHISBOOTLOADER */
+
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
 void arm_hardware_reset(void)

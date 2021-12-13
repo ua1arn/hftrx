@@ -6057,9 +6057,6 @@ sysinit_pll_initialize(void)
 		stm32mp1_pll_initialize();
 	#endif /* WITHISBOOTLOADER */
 
-	// Hang-off QSPI memory
-	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
-
 	stm32mp1_usb_clocks_initialize();
 	stm32mp1_audio_clocks_initialize();
 
@@ -6121,10 +6118,6 @@ sysinit_pll_initialize(void)
 		SCLR->APER_CLK_CTRL |= (0x01uL << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 
 	#endif /* WITHISBOOTLOADER */
-
-	// Hang-off QSPI memory
-	// todo: разобраться с доступом к GPIO тут
-	//SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
 	SystemCoreClock = CPU_FREQ;
