@@ -1003,26 +1003,47 @@
 
 #if WITHNANDHW
 	// NAND data bus
-	#define HARDWARE_NAND_D7_MIO 12	// D7: PS_MIO12
-	#define HARDWARE_NAND_D6_MIO 11	// D6: PS_MIO11
-	#define HARDWARE_NAND_D5_MIO 10	// D5: PS_MIO10
-	#define HARDWARE_NAND_D4_MIO 9	// D4: PS_MIO9
-	#define HARDWARE_NAND_D3_MIO 13	// D3: PS_MIO13
-	#define HARDWARE_NAND_D2_MIO 4	// D2: PS_MIO4
-	#define HARDWARE_NAND_D1_MIO 6	// D1: PS_MIO6
-	#define HARDWARE_NAND_D0_MIO 5	// D0: PS_MIO5
+	#define HARDWARE_NAND_D7_MIO 12		// D7: PS_MIO12
+	#define HARDWARE_NAND_D6_MIO 11		// D6: PS_MIO11
+	#define HARDWARE_NAND_D5_MIO 10		// D5: PS_MIO10
+	#define HARDWARE_NAND_D4_MIO 9		// D4: PS_MIO9
+	#define HARDWARE_NAND_D3_MIO 13		// D3: PS_MIO13
+	#define HARDWARE_NAND_D2_MIO 4		// D2: PS_MIO4
+	#define HARDWARE_NAND_D1_MIO 6		// D1: PS_MIO6
+	#define HARDWARE_NAND_D0_MIO 5		// D0: PS_MIO5
 
 	// Control:
-	#define HARDWARE_NAND_RBC_MIO 14	// R/B#: PS_MIO14
-	#define HARDWARE_NAND_ALE_MIO 2	// ALE: PS_MIO2
-	#define HARDWARE_NAND_CLE_MIO 7	// CLE: PS_MIO7
-	#define HARDWARE_NAND_WEB_MIO 3	// WE#: PS_MIO3
-	#define HARDWARE_NAND_WPB_MIO 1	// WP#: PS_MIO1
-	#define HARDWARE_NAND_REB_MIO 8	// RE#: PS_MIO8
-	#define HARDWARE_NAND_CSB_MIO 0	// CS#: PS_MIO0
+	#define HARDWARE_NAND_RBC_MIO 14	// R/B#: PS_MIO14 Ready/Busy#
+	#define HARDWARE_NAND_ALE_MIO 2		// ALE: PS_MIO2
+	#define HARDWARE_NAND_CLE_MIO 7		// CLE: PS_MIO7
+	#define HARDWARE_NAND_WEB_MIO 3		// WE#: PS_MIO3
+	#define HARDWARE_NAND_WPB_MIO 1		// WP#: PS_MIO1
+	#define HARDWARE_NAND_REB_MIO 8		// RE#: PS_MIO8
+	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
 
-	#define xHARDWARE_NAND_INITIALIZE() do { \
-		} while (0)
+	#define HARDWARE_NAND_INITIALIZE() do { \
+		xc7z_gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
+		xc7z_gpio_input(HARDWARE_NAND_D7_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D6_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D5_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D4_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D3_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D2_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D1_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D0_MIO); \
+		xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
+		xc7z_writepin(HARDWARE_NAND_ALE_MIO, 0); \
+		xc7z_gpio_output(HARDWARE_NAND_CLE_MIO); \
+		xc7z_writepin(HARDWARE_NAND_CLE_MIO, 0); \
+		xc7z_gpio_output(HARDWARE_NAND_WEB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_WEB_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); /* Write protect */ \
+		xc7z_writepin(HARDWARE_NAND_WPB_MIO, 0); \
+		xc7z_gpio_output(HARDWARE_NAND_REB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_REB_MIO, 1); \
+	} while (0)
 
 #endif /* WITHNANDHW */
 

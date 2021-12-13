@@ -6283,30 +6283,6 @@ static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 
 #if WITHNANDHW
 
-	#define HARDWARE_NAND_INITIALIZE() do { \
-			xc7z_gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
-			xc7z_gpio_input(HARDWARE_NAND_D7_MIO); \
-			xc7z_gpio_input(HARDWARE_NAND_D6_MIO); \
-			xc7z_gpio_input(HARDWARE_NAND_D5_MIO); \
-			xc7z_gpio_input(HARDWARE_NAND_D4_MIO); \
-			xc7z_gpio_input(HARDWARE_NAND_D3_MIO); \
-			xc7z_gpio_input(HARDWARE_NAND_D2_MIO); \
-			xc7z_gpio_input(HARDWARE_NAND_D1_MIO); \
-			xc7z_gpio_input(HARDWARE_NAND_D0_MIO); \
-			xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
-			xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
-			xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
-			xc7z_writepin(HARDWARE_NAND_ALE_MIO, 0); \
-			xc7z_gpio_output(HARDWARE_NAND_CLE_MIO); \
-			xc7z_writepin(HARDWARE_NAND_CLE_MIO, 0); \
-			xc7z_gpio_output(HARDWARE_NAND_WEB_MIO); \
-			xc7z_writepin(HARDWARE_NAND_WEB_MIO, 1); \
-			xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); /* Write protect */ \
-			xc7z_writepin(HARDWARE_NAND_WPB_MIO, 0); \
-			xc7z_gpio_output(HARDWARE_NAND_REB_MIO); \
-			xc7z_writepin(HARDWARE_NAND_REB_MIO, 1); \
-		} while (0)
-
 // Get Ready/Busy# pin state
 uint_fast8_t nand_rbc_get(void)
 {
