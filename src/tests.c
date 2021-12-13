@@ -6281,6 +6281,41 @@ static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 #endif
 // SYS_MODE_CURR (Страница 1, адрес 0x36)
 
+
+#if WITHNANDHW
+
+	#define HARDWARE_NAND_INITIALIZE() do { \
+		xc7z_gpio_input(HARDWARE_NAND_D7_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D6_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D5_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D4_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D3_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D2_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D1_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D0_MIO); \
+		xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
+		xc7z_writepin(HARDWARE_NAND_ALE_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_CLE_MIO); \
+		xc7z_writepin(HARDWARE_NAND_CLE_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_WEB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_WEB_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_WPB_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_REB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_REB_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_RBC_MIO); \
+		xc7z_writepin(HARDWARE_NAND_RBC_MIO, 1); \
+		} while (0)
+
+void nand_tests(void)
+{
+	HARDWARE_NAND_INITIALIZE();
+}
+
+#endif /* WITHNANDHW */
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
@@ -7624,11 +7659,11 @@ void hightests(void)
 
 	}
 #endif
-#if 0 && WITHNANDHW
+#if 1 && WITHNANDHW
 	// NAND memory test
 	// PrimeCell Static Memory Controller (PL353) ARM r2p1
 	{
-
+		nand_tests();
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
