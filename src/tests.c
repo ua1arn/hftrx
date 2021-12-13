@@ -6298,7 +6298,7 @@ static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 			xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
 			xc7z_writepin(HARDWARE_NAND_ALE_MIO, 0); \
 			xc7z_gpio_output(HARDWARE_NAND_CLE_MIO); \
-			xc7z_writepin(HARDWARE_NAND_CLE_MIO, 1); \
+			xc7z_writepin(HARDWARE_NAND_CLE_MIO, 0); \
 			xc7z_gpio_output(HARDWARE_NAND_WEB_MIO); \
 			xc7z_writepin(HARDWARE_NAND_WEB_MIO, 1); \
 			xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); /* Write protect */ \
@@ -6453,6 +6453,7 @@ void nand_initialize(void)
 	nand_wp_set(0);
 
 	nand_cs_set(1);
+	nand_cle_set(0);
 	nand_ale_set(0);
 	nand_re_set(1);
 	nand_we_set(1);
