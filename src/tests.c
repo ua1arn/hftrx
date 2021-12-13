@@ -6279,7 +6279,6 @@ static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
 }
 
 #endif
-// SYS_MODE_CURR (Страница 1, адрес 0x36)
 
 
 #if WITHNANDHW
@@ -6324,6 +6323,7 @@ void hightests(void)
 #if 0
 	{
 		// Test for ADIS16IMU1/PCB
+		// SYS_MODE_CURR (Страница 1, адрес 0x36)
 
 		// Wait for module ready
 		for (;;)
