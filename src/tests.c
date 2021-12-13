@@ -7624,6 +7624,12 @@ void hightests(void)
 
 	}
 #endif
+#if 0 && WITHNANDHW
+	// NAND memory test
+	{
+
+	}
+#endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC
 	// SD CARD file system level functions test
 	{
