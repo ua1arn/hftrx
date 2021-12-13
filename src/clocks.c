@@ -2641,10 +2641,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-	#ifdef BOARD_BLINK_INITIALIZE
-		BOARD_BLINK_INITIALIZE();
-	#endif
-
 	#if 1
 		const uint_fast32_t period = calcdivround2(CPU_FREQ, ticksfreq * 2);	// Global Timer runs with the system frequency / 2
 		// Global timer use
@@ -6126,10 +6122,9 @@ sysinit_pll_initialize(void)
 
 	#endif /* WITHISBOOTLOADER */
 
-	xc7z_hardware_initialize();
-
 	// Hang-off QSPI memory
-	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+	// todo: разобраться с доступом к GPIO тут
+	//SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
 	SystemCoreClock = CPU_FREQ;
