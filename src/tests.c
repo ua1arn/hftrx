@@ -7626,6 +7626,7 @@ void hightests(void)
 #endif
 #if 0 && WITHNANDHW
 	// NAND memory test
+	// PrimeCell Static Memory Controller (PL353) ARM r2p1
 	{
 
 	}

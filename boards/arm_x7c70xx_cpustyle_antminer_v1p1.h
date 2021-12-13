@@ -32,7 +32,7 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-#define WITHNANDHW	1		/* Hardware NAND CONTROLLER */
+#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
 
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ANTMINER 1
