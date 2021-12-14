@@ -6435,6 +6435,13 @@ void nand_initialize(void)
 	nand_we_set(1);
 }
 
+void nand_waitbusy(void)
+{
+	local_delay_us(10);
+	while (nand_rbc_get() == 0)
+		;
+}
+
 void nand_reset(void)
 {
 	// Reset
@@ -6444,9 +6451,7 @@ void nand_reset(void)
 	nand_write_command(0xFF);	// RESET command
 	nand_cs_deactivate();
 
-	local_delay_us(10);
-	while (nand_rbc_get() == 0)
-		;
+	nand_waitbusy();
 
 	PRINTF("nand_reset done\n");
 }
@@ -6471,11 +6476,50 @@ void nand_read_id(void)
 
 }
 
+
+void nand_readfull(void)
+{
+	unsigned long columnaddr = 0;
+	unsigned long blockaddr = 0;	// 0..2047
+	unsigned long pageaddr = 0;		// 0..31
+	// Memory x8
+	// of blocks 0..2047
+	// of pages 0..31
+	// of bytes 0..2047 and 2048..2111 spare area
+	static uint8_t buff [512];
+	unsigned i;
+	nand_cs_activate();
+	nand_write_command(0x00);	// PAGE READ command
+	nand_write_address((columnaddr >> 0) & 0xFF);	// Col Addr 1: ca7..ca0
+	nand_write_address((columnaddr >> 8) & 0x0F);	// Col Addr 2: 0,0,0,0, ca11..ca8
+	nand_write_address((((blockaddr >> 6) & 0x03) << 6) | ((pageaddr >> 0) & 0x3F));	// Row Addr 1: ba7..ba6, pa5..pa0
+	nand_write_address((blockaddr >> 8) & 0xFF);	// Row Addr 2: ba15..ba8
+	nand_write_address((blockaddr >> 16) & 0x01);	// Row Addr 3, 0,0,0,0,0,0,0, ba16
+	nand_write_command(0x30);	// 0x30 command
+
+	nand_waitbusy();
+
+	unsigned long pagesize = 2 * 1024uL;
+	unsigned long offset = 0;
+
+	for (;offset < pagesize;)
+	{
+		for (i = 0; i < ARRAY_SIZE(buff); ++ i)
+			buff [i] = nand_read();
+		printhex(offset, buff, 512);
+		offset += 512;
+	}
+
+	nand_cs_deactivate();
+
+}
+
 void nand_tests(void)
 {
 	nand_initialize();
 	nand_reset();
 	nand_read_id();
+	nand_readfull();
 }
 
 #endif /* WITHNANDHW */
