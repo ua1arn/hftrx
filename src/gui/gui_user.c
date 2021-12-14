@@ -3756,7 +3756,7 @@ static void window_uif_process(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", 	 "", FONT_LARGE, COLORMAIN_WHITE, },
+			{	WINDOW_UIF,  DISABLED,  0, NON_VISIBLE, "lbl_uif_val", "**", FONT_LARGE, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -3764,8 +3764,31 @@ static void window_uif_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		label_t * lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
-		calculate_window_position(win, WINDOW_POSITION_MANUAL_SIZE, win_width, window_title_height + get_label_height(lbl_uif_val) * 4);
+		button_down = find_gui_element(TYPE_BUTTON, win, "btn_UIF-");
+		button_up = find_gui_element(TYPE_BUTTON, win, "btn_UIF+");
+		lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
+
+		const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
+		strcpy(lbl_uif_val->text, v);
+
+		button_down->x1 = 0;
+		button_down->y1 = 0;
+		button_down->visible = VISIBLE;
+
+		button_up->x1 = button_down->x1 + button_down->w + 30 + get_label_width(lbl_uif_val);
+		button_up->y1 = button_down->y1;
+		button_up->visible = VISIBLE;
+
+		window_center_x = (button_up->x1 + button_up->w) / 2;
+
+		lbl_uif_val->x = window_center_x - get_label_width(lbl_uif_val) / 2;
+		lbl_uif_val->y = button_up->h / 2 - get_label_height(lbl_uif_val) / 2;
+		lbl_uif_val->visible = VISIBLE;
+
+		strcpy(win->name, menu_uif.name);
+
+		hamradio_enable_keyboard_redirect();
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
 	GET_FROM_WM_QUEUE
@@ -3775,13 +3798,8 @@ static void window_uif_process(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-			put_to_wm_queue(win, WM_MESSAGE_ENC2_ROTATE, bh->payload);
+			rotate = bh->payload;
 		}
-		break;
-
-	case WM_MESSAGE_ENC2_ROTATE:
-
-		rotate = action;
 		break;
 
 	case WM_MESSAGE_KEYB_CODE:
@@ -3806,28 +3824,9 @@ static void window_uif_process(void)
 		reinit = 0;
 		strcpy(win->name, menu_uif.name);
 
-		button_down = find_gui_element(TYPE_BUTTON, win, "btn_UIF-");
-		button_up = find_gui_element(TYPE_BUTTON, win, "btn_UIF+");
-		lbl_uif_val = find_gui_element(TYPE_LABEL, win, "lbl_uif_val");
-
 		const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
 		strcpy(lbl_uif_val->text, v);
 
-		button_down->x1 = 0;
-		button_down->y1 = 0;
-		button_down->visible = VISIBLE;
-
-		button_up->x1 = button_down->x1 + button_down->w + 30 + get_label_width(lbl_uif_val);
-		button_up->y1 = button_down->y1;
-		button_up->visible = VISIBLE;
-
-		window_center_x = (button_up->x1 + button_up->w) / 2;
-
-		lbl_uif_val->x = window_center_x - get_label_width(lbl_uif_val) / 2;
-		lbl_uif_val->y = button_up->h / 2 - get_label_height(lbl_uif_val) / 2;
-		lbl_uif_val->visible = VISIBLE;
-
-		hamradio_enable_keyboard_redirect();
 		return;
 	}
 
