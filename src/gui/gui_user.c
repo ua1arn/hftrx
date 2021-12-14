@@ -3842,22 +3842,16 @@ static void window_uif_process(void)
 
 void gui_open_sys_menu(void)
 {
-	window_t * const win = get_win(WINDOW_MENU);
-	static uint_fast8_t backup_parent = NO_PARENT_WINDOW;
-
-	if (check_for_parent_window() == NO_PARENT_WINDOW && win->parent_id != NO_PARENT_WINDOW)
+	if (check_for_parent_window() != NO_PARENT_WINDOW)
 	{
-		backup_parent = win->parent_id;		// для возможности открытия окна напрямую временно "обнулить" parent_id
-		win->parent_id = NO_PARENT_WINDOW;
-		open_window(win);
-		footer_buttons_state(DISABLED, NULL);
-	}
-	else if (check_for_parent_window() == WINDOW_MENU && win->parent_id == NO_PARENT_WINDOW)
-	{
-		close_window(DONT_OPEN_PARENT_WINDOW);
+		close_window(OPEN_PARENT_WINDOW);
 		footer_buttons_state(CANCELLED);
-		win->parent_id = backup_parent;
-		backup_parent = NO_PARENT_WINDOW;
+	}
+	else
+	{
+		window_t * const win = get_win(WINDOW_MENU);
+		open_window(win);
+		footer_buttons_state(DISABLED);
 	}
 }
 
