@@ -7353,6 +7353,10 @@ void board_initialize(void)
 	spi_initialize();
 #endif /* WITHSPIHW || WITHSPISW */
 
+#if WITHNANDHW
+	nand_initialize();
+#endif /* WITHNANDHW */
+
 #if WITHFPGALOAD_DCFG
 	board_fpga_loader_XDCFG();	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
 #endif /* WITHFPGALOAD_DCFG */

@@ -527,6 +527,9 @@ extern char nameDATAFLASH [];
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len);
 
+void nand_initialize(void);
+void nand_tests(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
