@@ -5059,6 +5059,11 @@ static void window_menu_process(void)
 		enc2_code = action;
 		break;
 
+	case WM_MESSAGE_CLOSE:
+
+		return;
+		break;
+
 	default:
 
 		break;
@@ -5203,12 +5208,8 @@ static void window_menu_process(void)
 
 	if (menu_level == MENU_OFF)
 	{
-		if (win->parent_id != NO_PARENT_WINDOW)
-		{
-			close_all_windows();
-			return;
-		} else
-			menu_level = MENU_GROUPS;
+		close_all_windows();
+		return;
 	}
 
 	if (rotate != 0 && menu_level == MENU_VALS)
