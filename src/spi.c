@@ -623,52 +623,81 @@ void spi_initialize(void)
 #endif /* WITHSPIHW || WITHSPISW */
 
 
-#if WITHNANDHW
+#if (WITHNANDHW || WITHNANDSW)
 
 // Get Ready/Busy# pin state
 uint_fast8_t nand_rbc_get(void)
 {
+#if CPUSTYLE_XC7Z
 	return xc7z_readpin(HARDWARE_NAND_RBC_MIO) != 0;
+#else
+	#warning nand_rbc_get should be implemented
+#endif
 }
 
 // Chip enable
 void nand_cs_set(uint_fast8_t state)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_CSB_MIO, state != 0);
+#else
+	#warning nand_cs_set should be implemented
+#endif
 }
 
 // Address latch enable
 void nand_ale_set(uint_fast8_t state)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_ALE_MIO, state != 0);
+#else
+	#warning nand_ale_set should be implemented
+#endif
 }
 
 // Command latch enable
 void nand_cle_set(uint_fast8_t state)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_CLE_MIO, state != 0);
+#else
+	#warning nand_cle_set should be implemented
+#endif
 }
 
 // Read enable: Gates transfers from the NAND Flash device to the host system.
 void nand_re_set(uint_fast8_t state)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_REB_MIO, state != 0);
+#else
+	#warning nand_re_set should be implemented
+#endif
 }
 
 // Write enable: Gates transfers from the host system to the NAND Flash device
 void nand_we_set(uint_fast8_t state)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_WEB_MIO, state != 0);
+#else
+	#warning nand_we_set should be implemented
+#endif
 }
 
 void nand_wp_set(uint_fast8_t state)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_WPB_MIO, state != 0);
+#else
+	#warning nand_wp_set should be implemented
+#endif
 }
 
 // bus programming: write data to chip
 void nand_data_bus_write(void)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_gpio_output(HARDWARE_NAND_D7_MIO);
 	xc7z_gpio_output(HARDWARE_NAND_D6_MIO);
 	xc7z_gpio_output(HARDWARE_NAND_D5_MIO);
@@ -677,11 +706,15 @@ void nand_data_bus_write(void)
 	xc7z_gpio_output(HARDWARE_NAND_D2_MIO);
 	xc7z_gpio_output(HARDWARE_NAND_D1_MIO);
 	xc7z_gpio_output(HARDWARE_NAND_D0_MIO);
+#else
+	#warning nand_data_bus_write should be implemented
+#endif
 }
 
 // bus programming: write data to chip
 void nand_data_bus_read(void)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_gpio_input(HARDWARE_NAND_D7_MIO);
 	xc7z_gpio_input(HARDWARE_NAND_D6_MIO);
 	xc7z_gpio_input(HARDWARE_NAND_D5_MIO);
@@ -690,10 +723,14 @@ void nand_data_bus_read(void)
 	xc7z_gpio_input(HARDWARE_NAND_D2_MIO);
 	xc7z_gpio_input(HARDWARE_NAND_D1_MIO);
 	xc7z_gpio_input(HARDWARE_NAND_D0_MIO);
+#else
+	#warning nand_data_bus_read should be implemented
+#endif
 }
 
 void nand_data_out(uint_fast8_t v)
 {
+#if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0);
 	xc7z_writepin(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0);
 	xc7z_writepin(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0);
@@ -702,21 +739,16 @@ void nand_data_out(uint_fast8_t v)
 	xc7z_writepin(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0);
 	xc7z_writepin(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0);
 	xc7z_writepin(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0);
-}
-
-void nand_cs_activate(void)
-{
-	nand_cs_set(0);
-}
-
-void nand_cs_deactivate(void)
-{
-	nand_cs_set(1);
+#else
+	#warning nand_data_out should be implemented
+#endif
 }
 
 //
 uint_fast8_t nand_data_in(void)
 {
+
+#if CPUSTYLE_XC7Z
 	uint_fast8_t v = 0;
 
 	v |= (xc7z_readpin(HARDWARE_NAND_D7_MIO) != 0) << 7;
@@ -729,6 +761,21 @@ uint_fast8_t nand_data_in(void)
 	v |= (xc7z_readpin(HARDWARE_NAND_D0_MIO) != 0) << 0;
 
 	return v;
+#else
+	#warning nand_data_in should be implemented
+#endif
+}
+
+/////////////////////
+///
+void nand_cs_activate(void)
+{
+	nand_cs_set(0);
+}
+
+void nand_cs_deactivate(void)
+{
+	nand_cs_set(1);
 }
 
 void nand_write(uint_fast8_t v)
@@ -753,6 +800,7 @@ void nand_write_address(uint_fast8_t v)
 	nand_ale_set(0);
 }
 
+// Sequential data read
 void nand_read(uint8_t * buff, unsigned count)
 {
 	nand_data_bus_read();	// IN direction
@@ -770,6 +818,9 @@ void nand_waitbusy(void)
 	while (nand_rbc_get() == 0)
 		;
 }
+
+///////////////////////////
+///
 
 void nand_reset(void)
 {
@@ -861,7 +912,7 @@ void nand_tests(void)
 	nand_readfull();
 }
 
-#endif /* WITHNANDHW */
+#endif /* (WITHNANDHW || WITHNANDSW) */
 
 //#define WIHSPIDFOVERSPI 1	/* В SPI программаторе для работы используется один из обычных каналов SPI */
 //#define targetdataflash targetext1

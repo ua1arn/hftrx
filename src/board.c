@@ -7347,15 +7347,15 @@ void board_initialize(void)
 
 #if (WITHTWIHW || WITHTWISW)
 	i2c_initialize();
-#endif /* WITHTWIHW || WITHTWISW */
+#endif /* (WITHTWIHW || WITHTWISW) */
 
-#if WITHSPIHW || WITHSPISW
+#if (WITHSPIHW || WITHSPISW)
 	spi_initialize();
-#endif /* WITHSPIHW || WITHSPISW */
+#endif /* (WITHSPIHW || WITHSPISW) */
 
-#if WITHNANDHW
+#if (WITHNANDHW || WITHNANDSW)
 	nand_initialize();
-#endif /* WITHNANDHW */
+#endif /* (WITHNANDHW || WITHNANDSW) */
 
 #if WITHFPGALOAD_DCFG
 	board_fpga_loader_XDCFG();	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */

@@ -32,7 +32,8 @@
 #define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
+//#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
+#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ANTMINER 1
@@ -1001,7 +1002,7 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-#if WITHNANDHW
+#if (WITHNANDHW || WITHNANDSW)
 	// NAND flash data bus
 	#define HARDWARE_NAND_D7_MIO 12		// D7: PS_MIO12
 	#define HARDWARE_NAND_D6_MIO 11		// D6: PS_MIO11
@@ -1045,7 +1046,7 @@
 		xc7z_writepin(HARDWARE_NAND_REB_MIO, 1); \
 	} while (0)
 
-#endif /* WITHNANDHW */
+#endif /* (WITHNANDHW || WITHNANDSW) */
 
 #if 1
 	#define ZYNQBOARD_LED_RED 37 /* PS_MIO37_LED_R */
