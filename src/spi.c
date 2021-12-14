@@ -755,10 +755,9 @@ void nand_write_address(uint_fast8_t v)
 
 void nand_read(uint8_t * buff, unsigned count)
 {
+	nand_data_bus_read();	// IN direction
 	while (count --)
 	{
-		uint_fast8_t v;
-		nand_data_bus_read();	// IN direction
 		nand_re_set(0);
 		* buff ++ = nand_data_in();
 		nand_re_set(1);
