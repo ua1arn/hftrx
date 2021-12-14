@@ -625,8 +625,12 @@ void spi_initialize(void)
 
 #if (WITHNANDHW || WITHNANDSW)
 
+#if WITHNANDSW
+
+// поддержка работы с NAND по bit-bang
+
 // Get Ready/Busy# pin state
-uint_fast8_t nand_rbc_get(void)
+static uint_fast8_t nand_rbc_get(void)
 {
 #if CPUSTYLE_XC7Z
 	return xc7z_readpin(HARDWARE_NAND_RBC_MIO) != 0;
@@ -636,7 +640,7 @@ uint_fast8_t nand_rbc_get(void)
 }
 
 // Chip enable
-void nand_cs_set(uint_fast8_t state)
+static void nand_cs_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_CSB_MIO, state != 0);
@@ -646,7 +650,7 @@ void nand_cs_set(uint_fast8_t state)
 }
 
 // Address latch enable
-void nand_ale_set(uint_fast8_t state)
+static void nand_ale_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_ALE_MIO, state != 0);
@@ -656,7 +660,7 @@ void nand_ale_set(uint_fast8_t state)
 }
 
 // Command latch enable
-void nand_cle_set(uint_fast8_t state)
+static void nand_cle_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_CLE_MIO, state != 0);
@@ -666,7 +670,7 @@ void nand_cle_set(uint_fast8_t state)
 }
 
 // Read enable: Gates transfers from the NAND Flash device to the host system.
-void nand_re_set(uint_fast8_t state)
+static void nand_re_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_REB_MIO, state != 0);
@@ -676,7 +680,7 @@ void nand_re_set(uint_fast8_t state)
 }
 
 // Write enable: Gates transfers from the host system to the NAND Flash device
-void nand_we_set(uint_fast8_t state)
+static void nand_we_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_WEB_MIO, state != 0);
@@ -685,7 +689,7 @@ void nand_we_set(uint_fast8_t state)
 #endif
 }
 
-void nand_wp_set(uint_fast8_t state)
+static void nand_wp_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_WPB_MIO, state != 0);
@@ -695,7 +699,7 @@ void nand_wp_set(uint_fast8_t state)
 }
 
 // bus programming: write data to chip
-void nand_data_bus_write(void)
+static void nand_data_bus_write(void)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_gpio_output(HARDWARE_NAND_D7_MIO);
@@ -712,7 +716,7 @@ void nand_data_bus_write(void)
 }
 
 // bus programming: write data to chip
-void nand_data_bus_read(void)
+static void nand_data_bus_read(void)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_gpio_input(HARDWARE_NAND_D7_MIO);
@@ -728,7 +732,7 @@ void nand_data_bus_read(void)
 #endif
 }
 
-void nand_data_out(uint_fast8_t v)
+static void nand_data_out(uint_fast8_t v)
 {
 #if CPUSTYLE_XC7Z
 	xc7z_writepin(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0);
@@ -745,7 +749,7 @@ void nand_data_out(uint_fast8_t v)
 }
 
 //
-uint_fast8_t nand_data_in(void)
+static uint_fast8_t nand_data_in(void)
 {
 
 #if CPUSTYLE_XC7Z
@@ -766,19 +770,25 @@ uint_fast8_t nand_data_in(void)
 #endif
 }
 
+#elif WITHNANDHW
+//	Аппаратная поддержка работы с NAND
+
+#endif
+
+
 /////////////////////
 ///
-void nand_cs_activate(void)
+static void nand_cs_activate(void)
 {
 	nand_cs_set(0);
 }
 
-void nand_cs_deactivate(void)
+static void nand_cs_deactivate(void)
 {
 	nand_cs_set(1);
 }
 
-void nand_write(uint_fast8_t v)
+static void nand_write(uint_fast8_t v)
 {
 	nand_data_bus_write(); // OUT direction
 	nand_we_set(0);
@@ -786,14 +796,14 @@ void nand_write(uint_fast8_t v)
 	nand_we_set(1);
 }
 
-void nand_write_command(uint_fast8_t v)
+static void nand_write_command(uint_fast8_t v)
 {
 	nand_cle_set(1);
 	nand_write(v);
 	nand_cle_set(0);
 }
 
-void nand_write_address(uint_fast8_t v)
+static void nand_write_address(uint_fast8_t v)
 {
 	nand_ale_set(1);
 	nand_write(v);
@@ -801,7 +811,7 @@ void nand_write_address(uint_fast8_t v)
 }
 
 // Sequential data read
-void nand_read(uint8_t * buff, unsigned count)
+static void nand_read(uint8_t * buff, unsigned count)
 {
 	nand_data_bus_read();	// IN direction
 	while (count --)
@@ -812,7 +822,7 @@ void nand_read(uint8_t * buff, unsigned count)
 	}
 }
 
-void nand_waitbusy(void)
+static void nand_waitbusy(void)
 {
 	local_delay_us(10);
 	while (nand_rbc_get() == 0)
