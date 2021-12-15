@@ -2940,7 +2940,6 @@ static void window_ap_mic_eq_process(void)
 static void windows_af_eq_proccess(void)
 {
 #if WITHAFEQUALIZER
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
 	window_t * const win = get_win(WINDOW_AF_EQ);
 
 	label_t * lbl = NULL;
@@ -3044,9 +3043,9 @@ static void windows_af_eq_proccess(void)
 		local_snprintf_P(btn_EQ_enable->text, ARRAY_SIZE(btn_EQ_enable->text), PSTR("%s"), btn_EQ_enable->is_locked ? "En" : "Dis");
 
 		eq_w = btn_EQ_ok->w << 1;
+		mid_y = sl->y + sl->size / 2;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		mid_y = win->y1 + sl->y + sl->size / 2;						//todo: абсолютные координаты! переделать
 	}
 
 	GET_FROM_WM_QUEUE
@@ -3093,15 +3092,16 @@ static void windows_af_eq_proccess(void)
 	for (uint_fast16_t i = 0; i <= abs(eq_base); i += 3)
 	{
 		uint_fast16_t yy = normalize(i, 0, abs(eq_base), 100);
-		colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y + yy, win->x1 + win->w - eq_w, mid_y + yy, GUI_SLIDERLAYOUTCOLOR, 0);
+		gui_drawline(win, 30, mid_y + yy, win->w - eq_w, mid_y + yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), i == 0 ? PSTR("%d") : PSTR("-%d"), i);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
+		gui_drawstring(win, 30 - strwidth2(buf) - 5, mid_y + yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORMAIN_WHITE);
 
 		if (i == 0)
 			continue;
-		colmain_line(fr, DIM_X, DIM_Y, win->x1 + 50, mid_y - yy, win->x1 + win->w - eq_w, mid_y - yy, GUI_SLIDERLAYOUTCOLOR, 0);
+
+		gui_drawline(win, 30, mid_y - yy, win->w - eq_w, mid_y - yy, GUI_SLIDERLAYOUTCOLOR);
 		local_snprintf_P(buf, ARRAY_SIZE(buf), PSTR("%d"), i);
-		colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + 50 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, COLORMAIN_WHITE);
+		gui_drawstring(win, 30 - strwidth2(buf) - 5, mid_y - yy - SMALLCHARH2 / 2, buf, FONT_MEDIUM, COLORMAIN_WHITE);
 	}
 #endif /* WITHAFEQUALIZER */
 }

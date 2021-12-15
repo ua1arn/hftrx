@@ -887,8 +887,8 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 
 	win->draw_x1 = win->x1 + edge_step;
 	win->draw_y1 = win->y1 + edge_step + (strcmp(win->name, "") ? window_title_height : 0);
-	win->draw_x2 = win->w - edge_step;
-	win->draw_y2 = win->h - edge_step;
+	win->draw_x2 = win->x1 + win->w - edge_step;
+	win->draw_y2 = win->y1 + win->h - edge_step;
 
 	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	elements_state(win);
@@ -1668,4 +1668,53 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 		}
 	}
 }
+
+// *************************************
+
+void gui_drawstring(window_t * win, uint_fast16_t x, uint_fast16_t y, const char * str, font_size_t font, COLORMAIN_T color)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	const uint_fast16_t x1 = x + win->draw_x1;
+	const uint_fast16_t y1 = y + win->draw_y1;
+
+	ASSERT(x1 < win->draw_x2);
+	ASSERT(y1 < win->draw_y2);
+
+	if (font == FONT_LARGE)
+		colpip_string_tbg(fr, DIM_X, DIM_Y,  x1, y1, str, color);
+	else if (font == FONT_MEDIUM)
+		colpip_string2_tbg(fr, DIM_X, DIM_Y, x1, y1, str, color);
+	else if (font == FONT_SMALL)
+		colpip_string3_tbg(fr, DIM_X, DIM_Y, x1, y1, str, color);
+}
+
+uint_fast16_t gui_get_window_draw_width(window_t * win)
+{
+	return win->draw_x2 - win->draw_x1;
+}
+
+uint_fast16_t gui_get_window_draw_height(window_t * win)
+{
+	return win->draw_y2 - win->draw_y1;
+}
+
+void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	const uint_fast16_t xn = x1 + win->draw_x1;
+	const uint_fast16_t yn = y1 + win->draw_y1;
+	const uint_fast16_t xk = x2 + win->draw_x1;
+	const uint_fast16_t yk = y2 + win->draw_y1;
+
+	ASSERT(xn < win->draw_x2);
+	ASSERT(xk < win->draw_x2);
+	ASSERT(yn < win->draw_y2);
+	ASSERT(yk < win->draw_y2);
+
+	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 0);
+}
+
+
 #endif /* WITHTOUCHGUI */
