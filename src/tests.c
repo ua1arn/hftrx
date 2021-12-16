@@ -6525,7 +6525,7 @@ void hightests(void)
 	{
 		const time_t t = time(NULL);
 
-		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
+		PRINTF("sizeof (time_t) == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
 #if 1 && defined (__GNUC__)
