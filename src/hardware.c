@@ -2019,8 +2019,7 @@ __STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t ds
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
-		//  __ASM volatile ("dmb 0xF":::"memory");
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2037,8 +2036,7 @@ __STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, 
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
-		//  __ASM volatile ("dmb 0xF":::"memory");
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2055,6 +2053,7 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		// Cache Invalidate operation is not follow by memory-writes
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 

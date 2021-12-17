@@ -574,6 +574,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	{
  		EHCIx->USBSTS = (0x01uL << 0);	// Clear USB Interrupt (USBINT)
  		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX\n", usbsts);
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 
  		//unsigned ch_num;
  		//for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
