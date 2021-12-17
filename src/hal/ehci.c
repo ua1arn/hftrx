@@ -816,10 +816,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 				EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
 	}
 
-	arm_hardware_flush_invalidate((uintptr_t) &hehci->asynclisthead,
-			sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) &hehci->itdsarray,
-			sizeof hehci->itdsarray);
+	arm_hardware_flush_invalidate((uintptr_t) &hehci->asynclisthead, sizeof hehci->asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) &hehci->itdsarray, sizeof hehci->itdsarray);
 	arm_hardware_flush_invalidate((uintptr_t) &hehci->qtds, sizeof hehci->qtds);
 	/*
 	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
@@ -833,8 +831,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	for (i = 0; i < ARRAY_SIZE(hehci->periodiclist); ++i) {
 		hehci->periodiclist[i].link = EHCI_LINK_TERMINATE;// 0 - valid, 1 - invalid
 	}
-	arm_hardware_flush_invalidate((uintptr_t) &hehci->periodiclist,
-			sizeof hehci->periodiclist);
+	arm_hardware_flush_invalidate((uintptr_t) &hehci->periodiclist, sizeof hehci->periodiclist);
 
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
