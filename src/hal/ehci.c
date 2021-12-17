@@ -756,11 +756,11 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
 
-	ASSERT((virt_to_phys(&hehci->periodiclist) & 0xFFF) == 0);
-	InitializeListHead(&hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
-	InitializeListHead(&hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
+	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
+	InitializeListHead(& hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
+	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
 	hehci->ghc = NULL;
-	SPINLOCK_INITIALIZE(&hehci->asynclock);
+	SPINLOCK_INITIALIZE(& hehci->asynclock);
 
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
@@ -798,9 +798,9 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	/* подготовка кольцевого списка QH */
 	for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++i)
 	{
-		asynclist_item(&hehci->asynclisthead[i],
+		asynclist_item(& hehci->asynclisthead[i],
 				ehci_link_qhv(
-						&hehci->asynclisthead[(i + 1)
+						& hehci->asynclisthead[(i + 1)
 								% ARRAY_SIZE(hehci->asynclisthead)]), i == 0);
 	}
 	/* подготовка списка dts */
@@ -812,13 +812,13 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	/* подготовка списка QH для periodic frame list */
 	for (i = 0; i < ARRAY_SIZE(hehci->itdsarray); ++i)
 	{
-		asynclist_item(&hehci->itdsarray[i],
+		asynclist_item(& hehci->itdsarray[i],
 				EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
 	}
 
-	arm_hardware_flush_invalidate((uintptr_t) &hehci->asynclisthead, sizeof hehci->asynclisthead);
-	arm_hardware_flush_invalidate((uintptr_t) &hehci->itdsarray, sizeof hehci->itdsarray);
-	arm_hardware_flush_invalidate((uintptr_t) &hehci->qtds, sizeof hehci->qtds);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
 	/*
 	 * Terminate (T). 1=Last QH (pointer is invalid). 0=Pointer is valid.
 	 * If the queue head is in the context of the periodic list, a one bit in this field indicates to the host controller that
@@ -831,21 +831,21 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	for (i = 0; i < ARRAY_SIZE(hehci->periodiclist); ++i) {
 		hehci->periodiclist[i].link = EHCI_LINK_TERMINATE;// 0 - valid, 1 - invalid
 	}
-	arm_hardware_flush_invalidate((uintptr_t) &hehci->periodiclist, sizeof hehci->periodiclist);
+	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
 
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
 	//hc->opRegs->frameIndex = 0;
 	EHCIx->FRINDEX = 0;
 	//hc->opRegs->periodicListBase = (u32)(uintptr_t)hc->frameList;
-	EHCIx->PERIODICLISTBASE = cpu_to_le32(virt_to_phys(&hehci->periodiclist));
+	EHCIx->PERIODICLISTBASE = cpu_to_le32(virt_to_phys(& hehci->periodiclist));
 
 	// копируем адрес асинхронной очереди в регистр
 	//hc->opRegs->asyncListAddr = (u32)(uintptr_t)hc->asyncQH;
-	EHCIx->ASYNCLISTADDR = cpu_to_le32(virt_to_phys(&hehci->asynclisthead));
+	EHCIx->ASYNCLISTADDR = cpu_to_le32(virt_to_phys(& hehci->asynclisthead));
 	ASSERT(
 			EHCIx->ASYNCLISTADDR
-					== cpu_to_le32(virt_to_phys(&hehci->asynclisthead)));
+					== cpu_to_le32(virt_to_phys(& hehci->asynclisthead)));
 	// Устанавливаем сегмент в 0
 	//hc->opRegs->ctrlDsSegment = 0;
 	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
@@ -1251,7 +1251,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	hc->state = HC_IDLE;
 
 	//PRINTF("HAL_EHCI_HC_SubmitRequest: ch_num=%u, ep_num=%u, max_packet=%u, do_ping=%d\n",  hc->ch_num, hc->ep_num, hc->max_packet, do_ping);
-	//return USB_HC_StartXfer(hehci->Instance, &hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
+	//return USB_HC_StartXfer(hehci->Instance, & hehci->hc[ch_num], (uint8_t)hehci->Init.dma_enable);
 //
 //  	  struct ehci_queue_head * head0 = ( struct ehci_queue_head *) async;
 //	memset ( head0, 0, sizeof ( *head0 ) );
@@ -1262,9 +1262,9 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 	ASSERT(hehci->ghc == NULL);
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
-	volatile struct ehci_queue_head *const qh = & hehci->asynclisthead [ch_num];
-	volatile struct ehci_transfer_descriptor *qtdarray = & hehci->qtds [ch_num];
-	volatile struct ehci_transfer_descriptor *qtdrequest = isintr ? & hehci->itdsarray [ch_num].cache : & hehci->asynclisthead [ch_num].cache;
+	volatile struct ehci_queue_head * const qh = & hehci->asynclisthead [ch_num];
+	volatile struct ehci_transfer_descriptor * qtdarray = & hehci->qtds [ch_num];
+	volatile struct ehci_transfer_descriptor * qtdrequest = isintr ? & hehci->itdsarray [ch_num].cache : & hehci->asynclisthead [ch_num].cache;
 
 	switch (ep_type)
 	{
