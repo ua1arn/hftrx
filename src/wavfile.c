@@ -185,11 +185,7 @@ static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 	do
 	{
 		memset(& wav_file, 0, sizeof wav_file);
-		rc = f_open(& wav_file, filename, FA_WRITE | FA_CREATE_ALWAYS);
-		if (rc != FR_OK)
-			break;
-
- 		rc = f_lseek(& wav_file, 0);
+		rc = f_open(& wav_file, filename, FA_WRITE | FA_READ | FA_CREATE_ALWAYS);
 		if (rc != FR_OK)
 			break;
 		/* write RIFF header */
@@ -231,9 +227,6 @@ static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 		/* offs 0x0022 */ rc = write_little_endian(8 * bytes_per_sample, 2);  /* PCM format specific data: wBitsPerSample - bits/sample */
 		if (rc != FR_OK)
 			break;
-		rc = f_sync(& wav_file);
-		if (rc != FR_OK)
-			break;
 
 		/* write data subchunk */
  		/* offs 0x0024 */  rc = f_lseek(& wav_file, DATACHUNKSTARTOFFSET);
@@ -258,9 +251,6 @@ static FRESULT write_wav_resync(void)
 
 	do
 	{
-		rc = f_sync(& wav_file);
-		if (rc != FR_OK)
-			break;
 		FSIZE_t wav_pos = f_tell(& wav_file);
 		/* update data subchunk */
 		rc = f_lseek(& wav_file, wav_lengthpos_data);
