@@ -298,14 +298,14 @@ static void asynclist_item2(EHCI_HCTypeDef * hc, volatile struct ehci_queue_head
 	//p->cache.status = EHCI_STATUS_ACTIVE;
 }
 
-HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef *const EHCIx, uint8_t state) {
+HAL_StatusTypeDef EHCI_DriveVbus(USB_EHCI_CapabilityTypeDef * const EHCIx, uint8_t state) {
 	//PRINTF("EHCI_DriveVbus: state=%d\n", (int) state);
 	board_set_usbhostvbuson(state);
 	board_update();
 	return HAL_OK;
 }
 
-HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef *const EHCIx) {
+HAL_StatusTypeDef EHCI_StopHost(USB_EHCI_CapabilityTypeDef * const EHCIx) {
 
  	//USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef *) hehci->Instance;
 
@@ -411,8 +411,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 								  uint8_t tt_prtaddr)
 {
 	HAL_StatusTypeDef status = HAL_OK;
-	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
-	USB_EHCI_CapabilityTypeDef *const EHCIx = hehci->Instance;
+	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	__HAL_LOCK(hehci);
 	EHCI_StopAsync(EHCIx);
@@ -449,8 +449,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 //                        speed,
 //                        ep_type,
 //                        mps, tt_hubaddr, tt_prtadd);
-	qtd_item2_set_toggle( & hehci->asynclisthead [hc->ch_num].cache, 0);
-	qtd_item2_set_toggle( & hehci->itdsarray [hc->ch_num].cache, 0);
+	qtd_item2_set_toggle(& hehci->asynclisthead [hc->ch_num].cache, 0);
+	qtd_item2_set_toggle(& hehci->itdsarray [hc->ch_num].cache, 0);
 	//PRINTF("HAL_EHCI_HC_Init: hc->ch_num=%d\n");
 
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
@@ -474,8 +474,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_Init(EHCI_HandleTypeDef *hehci,
 HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 {
 	HAL_StatusTypeDef status = HAL_OK;
-	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
-	USB_EHCI_CapabilityTypeDef *const EHCIx = hehci->Instance;
+	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	__HAL_LOCK(hehci);
 	// TODO: use queue head
@@ -721,7 +721,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
 	unsigned i;
-	USB_EHCI_CapabilityTypeDef *const EHCIx = hehci->Instance;
+	USB_EHCI_CapabilityTypeDef * const EHCIx = hehci->Instance;
 
 	HAL_EHCI_MspInit(hehci);	// включить тактирование, настроить PHYC PLL
 
@@ -1139,7 +1139,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 										   uint32_t length,
                                            uint8_t do_ping)
 {
-	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
+	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 
 	hc->ep_is_in = direction;
 	hc->ep_type = ep_type;
@@ -1625,7 +1625,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num,
 	pHandle = phost->pData;
 	EHCI_HandleTypeDef * const hehci = phost->pData;
 	ASSERT(pHandle != NULL);
-	USB_EHCI_CapabilityTypeDef *const EHCIx = (USB_EHCI_CapabilityTypeDef*) pHandle->Instance;
+	USB_EHCI_CapabilityTypeDef * const EHCIx = (USB_EHCI_CapabilityTypeDef*) pHandle->Instance;
 
 //	if (pHandle->hc[ch_num].ep_is_in) {
 //		pHandle->hc[ch_num].toggle_in = toggle;
@@ -1635,7 +1635,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num,
 
 	EHCI_StopAsync(EHCIx);
 
-	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
+	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
 	volatile struct ehci_transfer_descriptor *qtdrequest = isintr ? & hehci->qtds [ch_num] : & hehci->asynclisthead [ch_num].cache;
 	qtd_item2_set_toggle(qtdrequest, toggle);
@@ -1666,7 +1666,7 @@ uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num) {
 //		toggle = pHandle->hc[pipe].toggle_out;
 //	}
 
-	EHCI_HCTypeDef *const hc = & hehci->hc [ch_num];
+	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
 	volatile struct ehci_transfer_descriptor *qtdrequest = isintr ? & hehci->qtds [ch_num] : & hehci->asynclisthead [ch_num].cache;
 	toggle = (le16_to_cpu(qtdrequest->len) & EHCI_LEN_TOGGLE) != 0;
