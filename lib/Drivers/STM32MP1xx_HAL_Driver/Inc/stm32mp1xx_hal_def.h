@@ -7,13 +7,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -122,22 +121,18 @@ typedef enum
 /* Macro to get variable aligned on 4-bytes, for __ICCARM__ the directive "#pragma data_alignment=4" must be used instead */
 #if defined   (__GNUC__)        /* GNU Compiler */
   #ifndef __ALIGN_END
-	#define __ALIGN_END    __attribute__ ((aligned (64U)))
-	#define __ALIGN4k_END    __attribute__ ((aligned (64U)))
+#define __ALIGN_END    __attribute__ ((aligned (4U)))
   #endif /* __ALIGN_END */
   #ifndef __ALIGN_BEGIN  
-	#define __ALIGN_BEGIN
-	#define __ALIGN4k_BEGIN
+    #define __ALIGN_BEGIN
   #endif /* __ALIGN_BEGIN */
 #else
   #ifndef __ALIGN_END
-	#define __ALIGN_END
-	#define __ALIGN4k_END
+    #define __ALIGN_END
   #endif /* __ALIGN_END */
   #ifndef __ALIGN_BEGIN      
     #if defined   (__CC_ARM)      /* ARM Compiler */
-		#define __ALIGN_BEGIN    __align(64U)
-		#define __ALIGN4k_BEGIN    __align(64U)
+#define __ALIGN_BEGIN    __align(4U)
     #elif defined (__ICCARM__)    /* IAR Compiler */
       #define __ALIGN_BEGIN 
     #endif /* __CC_ARM */
@@ -199,5 +194,3 @@ typedef enum
 #endif
 
 #endif /* STM32MP1xx_HAL_DEF */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

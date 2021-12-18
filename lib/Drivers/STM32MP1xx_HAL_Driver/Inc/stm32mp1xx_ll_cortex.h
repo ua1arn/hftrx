@@ -3,6 +3,17 @@
   * @file    stm32mp1xx_ll_cortex.h
   * @author  MCD Application Team
   * @brief   Header file of CORTEX LL module.
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
   @verbatim
   ==============================================================================
                      ##### How to use this driver #####
@@ -17,8 +28,6 @@
 
   @endverbatim
   ******************************************************************************
-$LICENSE$
-  ******************************************************************************
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
@@ -31,8 +40,6 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx.h"
-
-#if CORE_CM4
 
 /** @addtogroup STM32MP1xx_LL_Driver
   * @{
@@ -78,6 +85,7 @@ extern "C" {
 /** @defgroup CORTEX_LL_EF_SYSTICK SYSTICK
   * @{
   */
+
 /**
   * @brief  This function checks if the Systick counter flag is active or not.
   * @note   It can be used in timeout function on application side.
@@ -258,7 +266,7 @@ __STATIC_INLINE uint32_t LL_CPUID_GetVariant(void)
 }
 
 /**
-  * @brief  Get Architecture number 
+  * @brief  Get Architecture number
   * @rmtoll SCB_CPUID    ARCHITECTURE  LL_CPUID_GetArchitecture
   * @retval Value should be equal to 0xC for Cortex-M0 devices
   */
@@ -302,12 +310,9 @@ __STATIC_INLINE uint32_t LL_CPUID_GetRevision(void)
 /**
   * @}
   */
-#endif
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* __STM32MP1xx_LL_CORTEX_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
