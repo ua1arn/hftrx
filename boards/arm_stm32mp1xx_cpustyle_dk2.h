@@ -783,10 +783,6 @@
 	PA11     ------> USB_OTG_FS_DM
 	PA12     ------> USB_OTG_FS_DP 
 	*/
-	#define USBPHYC_MISC_SWITHOST_Pos		0	/* 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port */
-	#define USBPHYC_MISC_SWITHOST_Msk (0x01uL << USBPHYC_MISC_SWITHOST_Pos)
-	#define USBPHYC_MISC_PPCKDIS_Pos		1
-	#define USBPHYC_MISC_PPCKDIS_Msk (0x03uL << USBPHYC_MISC_PPCKDIS_Pos)
 
 	#define	USBD_EHCI_INITIALIZE() do { \
 		RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN; \

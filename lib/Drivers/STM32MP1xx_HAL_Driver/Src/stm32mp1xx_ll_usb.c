@@ -76,58 +76,6 @@ static HAL_StatusTypeDef USB_CoreReset(USB_OTG_GlobalTypeDef *USBx);
   * @{
   */
 
-#define ULL(v) ((unsigned long long) (v))
-#define UL(v) ((unsigned long) (v))
-#define U(v) ((unsigned) (v))
-
-#define BIT_32(nr)			(U(1) << (nr))
-#define BIT_64(nr)			(ULL(1) << (nr))
-
-/*
- * Create a contiguous bitmask starting at bit position @l and ending at
- * position @h. For example
- * GENMASK_64(39, 21) gives us the 64bit vector 0x000000ffffe00000.
- */
-#if defined(__LINKER__) || defined(__ASSEMBLER__)
-#define GENMASK_32(h, l) \
-	(((0xFFFFFFFF) << (l)) & (0xFFFFFFFF >> (32 - 1 - (h))))
-
-#define GENMASK_64(h, l) \
-	((~0 << (l)) & (~0 >> (64 - 1 - (h))))
-#else
-#define GENMASK_32(h, l) \
-	(((~UINT32_C(0)) << (l)) & (~UINT32_C(0) >> (32 - 1 - (h))))
-
-#define GENMASK_64(h, l) \
-	(((~UINT64_C(0)) << (l)) & (~UINT64_C(0) >> (64 - 1 - (h))))
-#endif
-
-#ifdef __aarch64__
-#define GENMASK				GENMASK_64
-#else
-#define GENMASK				GENMASK_32
-#endif
-
-#ifdef __aarch64__
-#define BIT				BIT_64
-#else
-#define BIT				BIT_32
-#endif
-
-/* STM32_USBPHYC_PLL bit fields */
-#define USBPHYC_PLL_PLLNDIV_Msk		GENMASK(6, 0)
-#define USBPHYC_PLL_PLLNDIV_Pos		0
-#define USBPHYC_PLL_PLLODF_Msk		GENMASK(9, 7)
-#define USBPHYC_PLL_PLLODF_Pos		7
-#define USBPHYC_PLL_PLLFRACIN_Msk	GENMASK(25, 10)
-#define USBPHYC_PLL_PLLFRACIN_Pos	10
-#define USBPHYC_PLL_PLLEN_Msk			B(26)
-#define USBPHYC_PLL_PLLSTRB_Msk			B(27)
-#define USBPHYC_PLL_PLLSTRBYP_Msk		B(28)
-#define USBPHYC_PLL_PLLFRACCTL_Msk		B(29)
-#define USBPHYC_PLL_PLLDITHEN0_Msk		B(30)	// PLL dither 2 (triangular)
-#define USBPHYC_PLL_PLLDITHEN1_Msk		B(31)	// PLL dither 1 (rectangular)
-
 HAL_StatusTypeDef USB_HS_PHYCDeInit(void)
 {
 	/* reset */
@@ -239,8 +187,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	//			(0x00 << ssss) |
 	//			(0x00 << ssss) |
 	//			0;
-			USBPHYC_PHY1->TUNE = 0x04070004;
-			(void) USBPHYC_PHY1->TUNE;
+			USBPHYC->TUNE1 = 0x04070004;
+			(void) USBPHYC->TUNE1;
 		}
 		if (0)
 		{
@@ -251,8 +199,8 @@ HAL_StatusTypeDef USB_HS_PHYCInit(void)
 	//			(0x00 << ssss) |
 	//			(0x00 << ssss) |
 	//			0;
-			USBPHYC_PHY2->TUNE = 0x04070004;
-			(void) USBPHYC_PHY2->TUNE;
+			USBPHYC->TUNE2 = 0x04070004;
+			(void) USBPHYC->TUNE2;
 		}
 	}
 
