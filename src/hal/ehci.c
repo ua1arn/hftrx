@@ -1265,8 +1265,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	ASSERT(hehci->ghc == NULL);
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
 	volatile struct ehci_queue_head * const qh = & hehci->asynclisthead [ch_num];
-	volatile struct ehci_transfer_descriptor * qtdarray = & hehci->qtds [ch_num];
-	volatile struct ehci_transfer_descriptor * qtdrequest = isintr ? & hehci->itdsarray [ch_num].cache : & hehci->asynclisthead [ch_num].cache;
+	volatile struct ehci_transfer_descriptor * const qtdarray = & hehci->qtds [ch_num];
+	volatile struct ehci_transfer_descriptor * const qtdrequest = isintr ? & hehci->itdsarray [ch_num].cache : & hehci->asynclisthead [ch_num].cache;
 
 	switch (ep_type)
 	{
@@ -1637,7 +1637,7 @@ USBH_StatusTypeDef USBH_LL_SetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num,
 
 	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
-	volatile struct ehci_transfer_descriptor *qtdrequest = isintr ? & hehci->qtds [ch_num] : & hehci->asynclisthead [ch_num].cache;
+	volatile struct ehci_transfer_descriptor * const qtdrequest = isintr ? & hehci->qtds [ch_num] : & hehci->asynclisthead [ch_num].cache;
 	qtd_item2_set_toggle(qtdrequest, toggle);
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
@@ -1668,7 +1668,7 @@ uint8_t USBH_LL_GetToggle(USBH_HandleTypeDef *phost, uint8_t ch_num) {
 
 	EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
-	volatile struct ehci_transfer_descriptor *qtdrequest = isintr ? & hehci->qtds [ch_num] : & hehci->asynclisthead [ch_num].cache;
+	volatile struct ehci_transfer_descriptor * const qtdrequest = isintr ? & hehci->qtds [ch_num] : & hehci->asynclisthead [ch_num].cache;
 	toggle = (le16_to_cpu(qtdrequest->len) & EHCI_LEN_TOGGLE) != 0;
 
 	return toggle;
