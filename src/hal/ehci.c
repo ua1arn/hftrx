@@ -367,6 +367,7 @@ static void EHCI_StartAsync(USB_EHCI_CapabilityTypeDef * EHCIx)
 {
 	// Run ASYNC queue
 	EHCIx->USBCMD |= EHCI_USBCMD_ASYNC;
+	(void) EHCIx->USBCMD;
 	while ((EHCIx->USBSTS & EHCI_USBSTS_ASYNC) == 0)
 		;
 }
