@@ -510,6 +510,7 @@ void hardware_spi_master_send_frame_16b(const uint16_t * pBuffer, uint_fast32_t 
 // Serial flash (boot memory) interface
 void spidf_initialize(void);
 void spidf_uninitialize(void);
+void spidf_hangoff(void);
 
 uint_fast8_t dataflash_read_status(void);
 int timed_dataflash_read_status(void);

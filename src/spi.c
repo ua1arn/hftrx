@@ -1007,6 +1007,10 @@ void spidf_uninitialize(void)
 {
 }
 
+void spidf_hangoff(void)
+{
+}
+
 
 #define SPIMODE_AT26DF081A	SPIC_MODE3
 
@@ -1317,6 +1321,11 @@ void spidf_uninitialize(void)
 	SPIDF_HANGOFF();
 }
 
+void spidf_hangoff(void)
+{
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+}
+
 #elif WIHSPIDFHW && CPUSTYLE_R7S721
 
 // передаем все заказанное количество
@@ -1483,6 +1492,11 @@ void spidf_uninitialize(void)
 		;
 	// Disconnect I/O pins
 	SPIDF_HANGOFF();
+}
+
+void spidf_hangoff(void)
+{
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
 static void spidf_iostart(
@@ -1993,6 +2007,10 @@ void spidf_initialize(void)
 void spidf_uninitialize(void)
 {
 
+}
+
+void spidf_hangoff(void)
+{
 }
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
