@@ -32,6 +32,7 @@
 /** @addtogroup STM32MP1xx_LL_Driver
   * @{
   */
+#if defined(CORE_CM4)
 
 #if defined (LPTIM1) || defined (LPTIM2) || defined (LPTIM3) || defined (LPTIM4) || defined (LPTIM5)
 
@@ -332,6 +333,7 @@ void LL_LPTIM_Disable(LPTIM_TypeDef *LPTIMx)
   */
 
 #endif /* LPTIM1 || LPTIM2 ||  LPTIM3 || LPTIM4 || LPTIM5 */
+#endif /* defined(CORE_CM4) */
 
 /**
   * @}

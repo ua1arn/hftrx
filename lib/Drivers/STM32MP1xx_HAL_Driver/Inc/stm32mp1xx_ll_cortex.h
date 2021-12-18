@@ -41,6 +41,8 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx.h"
 
+#if defined(CORE_CM4)
+
 /** @addtogroup STM32MP1xx_LL_Driver
   * @{
   */
@@ -306,6 +308,7 @@ __STATIC_INLINE uint32_t LL_CPUID_GetRevision(void)
 /**
   * @}
   */
+#endif /* defined(CORE_CM4) */
 
 /**
   * @}
