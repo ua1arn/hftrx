@@ -648,7 +648,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		}
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
  		arm_hardware_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);	/* чтобы следующая проверка могла работать */
- 		arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
+ 		arm_hardware_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 
  		HAL_EHCI_SOF_Callback(hehci);
  	}
