@@ -300,6 +300,9 @@ static RAMBIGDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 #if WITHUSBUAC
 static RAMBIGDTCM volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 static RAMBIGDTCM volatile uint_fast8_t uacoutmike;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+	#if WITHTX
+	static RAMBIGDTCM volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+	#endif /* WITHTX */
 #endif /* WITHUSBUAC */
 
 #if WITHUSBHW
@@ -2714,6 +2717,13 @@ void board_set_uacmike(uint_fast8_t v)
 #endif /* WITHUSBUAC */
 }
 
+/* автоматический переход на передачу при появлении звука со стороны компьютера */
+void board_set_datavox(uint_fast8_t v)
+{
+#if WITHUSBUAC && WITHTX
+	datavox = v;
+#endif /* WITHUSBUAC && WITHTX */
+}
 
 #if WITHUSBUAC && WITHUSBHW
 

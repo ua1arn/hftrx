@@ -2952,7 +2952,9 @@ struct nvmap
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+#if WITHWAVPLAYER || WITHSENDWAV
 	uint8_t gloopmsg, gloopsec;
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
 	uint8_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
@@ -2975,6 +2977,7 @@ struct nvmap
 		uint8_t greverbloss;		/* ревербератор - ослабление на возврате */
 	#endif /* WITHREVERB */
 	#if WITHUSBUAC
+		uint8_t gdatavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 		uint8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint8_t guacplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
@@ -3800,6 +3803,9 @@ enum
 		static uint_fast8_t gdatamode;	/* передача звука с USB вместо обычного источника */
 		uint_fast8_t hamradio_get_datamode(void) { return gdatamode; }
 
+		#if WITHTX
+		static uint_fast8_t gdatavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		#endif /* WITHTX */
 		#if WITHUSBHEADSET
 			static uint_fast8_t guacplayer = 1;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 		#else /* WITHUSBHEADSET */
@@ -4358,6 +4364,8 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	{
 		return - FSADCPOWEROFFSET10;
 	}
+
+#if WITHWAVPLAYER || WITHSENDWAV
 	static uint_fast8_t gloopmsg, gloopsec = 15;
 	static uint_fast8_t loopticks;
 	static const char * const loopnames [] =
@@ -4370,6 +4378,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 			"5.wav",
 	};
 	void playhandler(uint8_t code);
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 
 	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
@@ -10324,10 +10333,13 @@ updateboardZZZ(
 		#endif /* WITHUSEDUALWATCH */
 		#if WITHUSBUAC
 			board_set_uacmike(gdatamode || getcattxdata() || txaudio == BOARD_TXAUDIO_USB);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-			board_set_uacplayer((gtx && gdatamode) || guacplayer);/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+			board_set_uacplayer((gtx && gdatamode) || guacplayer);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 			#if WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ
 				board_set_swapiq(gswapiq);	/* Поменять местами I и Q сэмплы в потоке RTS96 */
 			#endif /* WITHRTS96 || WITHRTS192 || WITHTRANSPARENTIQ */
+			#if WITHTX
+				board_set_datavox(gdatavox);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+			#endif /* WITHTX */
 		#endif /* WITHUSBUAC */
 		board_set_mikebust20db(gmikebust20db);	// Включение предусилителя за микрофоном
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
@@ -17112,6 +17124,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHUSEAUDIOREC */
 #if WITHIF4DSP
 #if WITHUSBUAC
+#if WITHTX
+	{
+		QLABEL("DATA VOX"), 8, 3, RJ_ON,	ISTEP1,		/* автоматический переход на передачу при появлении звука со стороны компьютера */
+		ITEM_VALUE,
+		0, 1,
+		offsetof(struct nvmap, gdatavox),
+		nvramoffs0,
+		NULL,
+		& gdatavox,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHTX */
 	{
 		QLABEL("PLAY USB"), 7, 3, RJ_YES,	ISTEP1,
 		ITEM_VALUE,

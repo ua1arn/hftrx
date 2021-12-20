@@ -56,6 +56,8 @@
 static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
 static const COLORMAIN_T color_alt_red = COLORMAIN_RED;
 
+void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg);
+
 #if WITHALTERNATIVELAYOUT
 
 #if SMALLCHARW2
