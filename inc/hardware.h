@@ -631,9 +631,11 @@ void hardware_adc_initialize(void);
 		// нет нужды экономить память FLASH
 		#define NOINLINEAT // __attribute__((noinline))
 		#define RAMFUNC_NONILINE // __attribute__((noinline))
+		#define RAMFUNC // __attribute__((__section__(".ramfunc"), noinline))
 	#else
 		#define NOINLINEAT __attribute__((noinline))	// On small FLASH ATMega CPUs
 		#define RAMFUNC_NONILINE __attribute__((noinline))	// On small FLASH ATMega CPUs
+		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 	#endif
 
 	#define ATTRWEAK __attribute__ ((weak))
