@@ -2952,7 +2952,9 @@ struct nvmap
 	uint8_t	gsidetonelevel;	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 	uint8_t gmoniflag;		/* разрешение самопрослушивания */
 	uint8_t	gsubtonelevel;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
+#if WITHWAVPLAYER || WITHSENDWAV
 	uint8_t gloopmsg, gloopsec;
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 	uint8_t gdigigainmax;	/* диапазон ручной регулировки цифрового усиления - максимальное значение */
 	uint8_t gsquelch;		/* уровень открытия шумоподавителя */
 	uint8_t gsquelchNFM;	/* sуровень открытия шумоподавителя для NFM */
@@ -4358,6 +4360,8 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	{
 		return - FSADCPOWEROFFSET10;
 	}
+
+#if WITHWAVPLAYER || WITHSENDWAV
 	static uint_fast8_t gloopmsg, gloopsec = 15;
 	static uint_fast8_t loopticks;
 	static const char * const loopnames [] =
@@ -4370,6 +4374,7 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 			"5.wav",
 	};
 	void playhandler(uint8_t code);
+#endif /* WITHWAVPLAYER || WITHSENDWAV */
 
 	static uint_fast8_t gcwedgetime = 5;			/* Время нарастания/спада огибающей телеграфа при передаче - в 1 мс */
 	static uint_fast8_t gsubtonelevel = 10;	/* Уровень сигнала CTCSS в процентах - 0%..100% */
