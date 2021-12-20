@@ -18,6 +18,7 @@
 #endif
 
 #define CMSIS_device_header "hardware.h"
+
 #ifndef NIGHTBUILD
 
 //#define WITHDEBUG		1	/* Отладочная печать через COM-порт. */
