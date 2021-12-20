@@ -18,7 +18,7 @@ COMMON = -mmcu=$(MCU)
 ## Compile options common for all C compilation units.
 CFLAGS = $(COMMON)
 CFLAGS += -Wall -gdwarf-2 -std=gnu99 -Os -flto -DF_CPU=10000000UL -fsigned-char $(MAKE_DEFINES)
-CFLAGS += -MD -MP -MT $(*F).o -MF ./$(@D)/$(@F).d
+CFLAGS += -MD -MP -MT ./$(@D)/$(*F).o -MF ./$(@D)/$(@F).d
 
 ## Assembly specific flags
 ASMFLAGS = $(COMMON)
@@ -45,6 +45,10 @@ ASRC +=
 UINCDIR += ../.. ../../inc
 ULIBDIR +=
 ULIBS += 
+
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
 
 #SRC_EXCLUDES += ../../tools/rbf2c.c
 SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
@@ -99,9 +103,8 @@ clean:
 	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
 	
-## Other dependencies
--include $(wildcard $(OBJDIR)/*.d)
--include $(wildcard $(OBJDIR)/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*.d)
+# 
+# Include the dependency files, should be the last of the makefile
+#
+-include $(call rwildcard, $(OBJDIR), *.d)
 
