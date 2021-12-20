@@ -483,8 +483,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 
 	unsigned i = ch_num;
 
-	asynclist_item( & hehci->asynclisthead [i], ehci_link_qhv(& hehci->asynclisthead [(i + 1) % ARRAY_SIZE(hehci->asynclisthead)]), i == 0);
-	asynclist_item( & hehci->itdsarray [i], EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
+	asynclist_item(& hehci->asynclisthead [i], ehci_link_qhv(& hehci->asynclisthead [(i + 1) % ARRAY_SIZE(hehci->asynclisthead)]), i == 0);
+	asynclist_item(& hehci->itdsarray [i], EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
 
 	{
 
@@ -851,7 +851,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// Устанавливаем сегмент в 0
 	//hc->opRegs->ctrlDsSegment = 0;
 	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
-	EHCIx->USBSTS = ~0uL;	// Clear status
+	EHCIx->USBSTS = ~ 0uL;	// Clear status
 
 	/* Route all ports to EHCI controller */
 	*hehci->configFlag = EHCI_CONFIGFLAG_CF;
@@ -1350,7 +1350,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 
 	case EP_TYPE_INTR:
-		//le8_modify( & qtdrequest->status, 0x04, 1 * 0x04);
+		//le8_modify(& qtdrequest->status, 0x04, 1 * 0x04);
 		if (hc->ep_is_in == 0)
 		{
 			// INTERRUPT Data OUT
@@ -1380,12 +1380,12 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
-	le8_modify( & qtdrequest->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+	le8_modify(& qtdrequest->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
 	if (isintr == 0)
 	{
 		/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
-		le8_modify( & qtdarray->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+		le8_modify(& qtdarray->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
 		asynclist_item2(hc, qh, virt_to_phys(qtdarray), hc->ch_num == 0);
 
@@ -1393,7 +1393,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 	else
 	{
 		/* для того, чобы не срабатывало преждевременно - убрать после перехода на списки работающих пересылок */
-		le8_modify( & qtdarray->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
+		le8_modify(& qtdarray->status, EHCI_STATUS_MASK, EHCI_STATUS_ACTIVE);
 
 		asynclist_item2(hc, qh, virt_to_phys(qtdarray), 1);
 
