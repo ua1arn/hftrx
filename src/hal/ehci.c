@@ -643,7 +643,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		}
  		else
  		{
- 			//PRINTF("HAL_EHCI_IRQHandler: ghc already NULL\n");
+ 			PRINTF("HAL_EHCI_IRQHandler: ghc already NULL\n");
  	 		//ASSERT(0);
  		}
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
