@@ -58,6 +58,7 @@ typedef enum
   MSC_IDLE,
   MSC_TEST_UNIT_READY,
   MSC_READ_CAPACITY10,
+  MSC_READ_CAPACITY16,	// fallback if MSC_READ_CAPACITY10 RETURNED LOGICAL BLOCK ADDRESS as 0xFFFFFFFF
   MSC_READ_INQUIRY,
   MSC_REQUEST_SENSE,
   MSC_READ,
@@ -180,10 +181,10 @@ USBH_StatusTypeDef USBH_MSC_GetLUNInfo(USBH_HandleTypeDef *phost, uint8_t lun,
                                        MSC_LUNTypeDef *info);
 
 USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost, uint8_t lun,
-                                 uint32_t address, uint8_t *pbuf, uint32_t length);
+                                 uint64_t address, uint8_t *pbuf, uint32_t length);
 
 USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost, uint8_t lun,
-                                  uint32_t address, uint8_t *pbuf, uint32_t length);
+                                  uint64_t address, uint8_t *pbuf, uint32_t length);
 /**
   * @}
   */

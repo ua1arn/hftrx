@@ -235,8 +235,8 @@ uint8_t  USBD_CDC_EEM_TransmitPacket     (USBD_HandleTypeDef *pdev,
 /* Create buffer for reception and transmission           */
 /* It's up to user to redefine and/or remove those define */
 /* Received Data over USB are stored in this buffer       */
-__ALIGN_BEGIN static uint8_t eem_rx_buffer_pool_fs[EEM_RX_DATA_SIZE * EEM_RX_BUF_CNT]; __ALIGN_END;
-__ALIGN_BEGIN static uint8_t eem_tx_buffer_pool_fs[EEM_TX_DATA_SIZE * EEM_TX_BUF_CNT]; __ALIGN_END;
+static __ALIGN_BEGIN uint8_t eem_rx_buffer_pool_fs[EEM_RX_DATA_SIZE * EEM_RX_BUF_CNT] __ALIGN_END;
+static __ALIGN_BEGIN uint8_t eem_tx_buffer_pool_fs[EEM_TX_DATA_SIZE * EEM_TX_BUF_CNT] __ALIGN_END;
 
 static uint8_t* get_bpool(t_eem_bpool_idx_enum bidx, uint32_t *bpool_size){
   if (bidx == EEM_RX_BUFFER){

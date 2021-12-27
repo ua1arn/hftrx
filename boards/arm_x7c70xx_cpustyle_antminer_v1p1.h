@@ -22,15 +22,18 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
-	//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
+	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
+
+//#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
+#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ANTMINER 1
@@ -124,15 +127,15 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
 
-	/* For H7 exist: Legacy defines */
-	//#define USB_OTG_HS                   USB1_OTG_HS
-	//#define USB_OTG_FS                   USB2_OTG_FS
-
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_HOST		USB_OTG_HS
+#if 0
+#define WITHUSBHW 1
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_HOST		EHCI0
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port.
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
-
+	//#define WITHUSBHOST_DMAENABLE 1	// not need for EHCI
+#endif
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -253,7 +256,7 @@
 		} while (0)
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
@@ -266,7 +269,7 @@
 		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
 		arm_hardware_piob_updown(0, 1uL << 14); \
 	} while (0)
-#endif /* WITHI2SHW */
+#endif /* WITHI2S2HW */
 
 	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
@@ -558,6 +561,10 @@
 	#define ELKEY_BIT_RIGHT				(1uL << 15)		// PD15
 
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 
 	#define ELKEY_INITIALIZE() \
 		do { \
@@ -994,6 +1001,52 @@
 		#endif /* WIHSPIDFHW */
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
+
+#if (WITHNANDHW || WITHNANDSW)
+	// NAND flash data bus
+	#define HARDWARE_NAND_D7_MIO 12		// D7: PS_MIO12
+	#define HARDWARE_NAND_D6_MIO 11		// D6: PS_MIO11
+	#define HARDWARE_NAND_D5_MIO 10		// D5: PS_MIO10
+	#define HARDWARE_NAND_D4_MIO 9		// D4: PS_MIO9
+	#define HARDWARE_NAND_D3_MIO 13		// D3: PS_MIO13
+	#define HARDWARE_NAND_D2_MIO 4		// D2: PS_MIO4
+	#define HARDWARE_NAND_D1_MIO 6		// D1: PS_MIO6
+	#define HARDWARE_NAND_D0_MIO 5		// D0: PS_MIO5
+
+	// NAND flash Control bits:
+	#define HARDWARE_NAND_RBC_MIO 14	// R/B#: PS_MIO14 Ready/Busy#
+	#define HARDWARE_NAND_ALE_MIO 2		// ALE: PS_MIO2
+	#define HARDWARE_NAND_CLE_MIO 7		// CLE: PS_MIO7
+	#define HARDWARE_NAND_WEB_MIO 3		// WE#: PS_MIO3
+	#define HARDWARE_NAND_WPB_MIO 1		// WP#: PS_MIO1
+	#define HARDWARE_NAND_REB_MIO 8		// RE#: PS_MIO8
+	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
+
+	#define HARDWARE_NAND_INITIALIZE() do { \
+		xc7z_gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
+		xc7z_gpio_input(HARDWARE_NAND_D7_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D6_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D5_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D4_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D3_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D2_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D1_MIO); \
+		xc7z_gpio_input(HARDWARE_NAND_D0_MIO); \
+		xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
+		xc7z_writepin(HARDWARE_NAND_ALE_MIO, 0); \
+		xc7z_gpio_output(HARDWARE_NAND_CLE_MIO); \
+		xc7z_writepin(HARDWARE_NAND_CLE_MIO, 0); \
+		xc7z_gpio_output(HARDWARE_NAND_WEB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_WEB_MIO, 1); \
+		xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); /* Write protect */ \
+		xc7z_writepin(HARDWARE_NAND_WPB_MIO, 0); \
+		xc7z_gpio_output(HARDWARE_NAND_REB_MIO); \
+		xc7z_writepin(HARDWARE_NAND_REB_MIO, 1); \
+	} while (0)
+
+#endif /* (WITHNANDHW || WITHNANDSW) */
 
 #if 1
 	#define ZYNQBOARD_LED_RED 37 /* PS_MIO37_LED_R */

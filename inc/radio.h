@@ -398,6 +398,18 @@ enum
 
 enum
 {
+	BOARD_CATSIG_NONE,
+	BOARD_CATSIG_SER1_DTR,
+	BOARD_CATSIG_SER1_RTS,
+#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
+	BOARD_CATSIG_SER2_DTR,
+	BOARD_CATSIG_SER2_RTS,
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
+	BOARD_CATSIG_count
+};
+
+enum
+{
 	BOARD_RXMAINSUB_A_A,	// в оба уха приемник A
 	BOARD_RXMAINSUB_A_B,	// Левый - A, правый - B
 	BOARD_RXMAINSUB_B_A,
@@ -514,8 +526,10 @@ void seq_set_rxtxdelay(
 	uint_fast8_t txrxdelay,
 	uint_fast8_t pretxdelay
 	);
-// запрос из user-mode части программы на переход на передачу для tune.
+// запрос из user-mode части программы на переход на передачу и для для tune.
 void seq_txrequest(uint_fast8_t tune, uint_fast8_t ptt);
+// запрос из system-mode части программы на переход на передачу и для tune.
+void seq_txrequest_irq(uint_fast8_t tune, uint_fast8_t ptt);
 
 /* процедура возвращает из сиквенсора запрос на переключение на передачу в основную программу */
 uint_fast8_t seq_get_txstate(void);

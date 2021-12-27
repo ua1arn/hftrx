@@ -750,8 +750,6 @@ hwacc_fillrect_u32(
 
 #endif /* LCDMODE_PIXELSIZE == 4 */
 
-extern const char * savestring;
-
 // получить адрес требуемой позиции в буфере
 PACKEDCOLORMAIN_T *
 colmain_mem_at_debug(
@@ -766,7 +764,7 @@ colmain_mem_at_debug(
 {
 	if (x >= dx || y >= dy)
 	{
-		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%u, y=%u, savestring='%s'\n", file, line, dx, dy, x, y, savestring);
+		PRINTF("colmain_mem_at(%s/%d): dx=%u, dy=%u, x=%d, y=%d, savestring='%s', savewhere='%s'\n", file, line, dx, dy, x, y, savestring, savewhere);
 	}
 	ASSERT(x < dx);
 	ASSERT(y < dy);
@@ -1112,7 +1110,7 @@ void display_floodfill(
 	}
 }
 
-// начальная инициализация буфера
+// Заполнение буфера сполшным цветом
 // Эта функция используется только в тесте
 void colpip_fill(
 	PACKEDCOLORPIP_T * buffer,
@@ -1174,6 +1172,14 @@ void colpip_fill(
 #endif /* LCDMODE_HORFILL */
 }
 
+// Заполнение буфера сполшным цветом
+// Эта функция используется только в тесте
+void gtg_fill(const GTG_t * gtg, COLORPIP_T color)
+{
+	colpip_fill(gtg->buffer, gtg->dx, gtg->dy, color);
+}
+
+
 // поставить цветную точку.
 void colpip_point(
 	PACKEDCOLORPIP_T * __restrict buffer,
@@ -1185,6 +1191,17 @@ void colpip_point(
 	)
 {
 	* colmain_mem_at(buffer, dx, dy, col, row) = color;
+}
+
+// поставить цветную точку.
+void gtg_point(
+	const GTG_t * gtg,
+	uint_fast16_t col,	// горизонтальная координата пикселя (0..dx-1) слева направо
+	uint_fast16_t row,	// вертикальная координата пикселя (0..dy-1) сверху вниз
+	COLORPIP_T color
+	)
+{
+	* colmain_mem_at(gtg->buffer, gtg->dx, gtg->dy, col, row) = color;
 }
 
 // поставить цветную точку (модификация с сохранением старого изоьражения).
@@ -1691,6 +1708,12 @@ static uint_fast16_t RAMFUNC_NONILINE ltdcpip_horizontal_x2_put_char_small_tbg(
 		ltdcmain_horizontal_x2_pixels_tbg(tgr1, S1D13781_smallfont_LTDC [c] [cgrow], width, fg);
 	}
 	return x + width * 2;
+}
+
+uint_fast16_t display_put_char_small_xy(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, COLOR565_T fg)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	return ltdcpip_horizontal_put_char_small_tbg(fr, DIM_X, DIM_Y, x, y, c, fg);
 }
 #endif /* defined (SMALLCHARW) */
 

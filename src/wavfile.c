@@ -21,7 +21,7 @@
 
 ///////////////////////////////////////////////////
 
-static RAMNOINIT_D1 FIL wav_file;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN RAMNOINIT_D1 FIL wav_file ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
 static FSIZE_t wav_lengthpos_riff;	/* position for write length at RIFF header */
 static FSIZE_t wav_lengthpos_data;	/* position for write length at data subchunk*/
 static unsigned long wave_num_bytes;
@@ -65,7 +65,7 @@ static FRESULT write_little_endian(unsigned int word, int num_bytes)
 	return f_write(& wav_file, & word, num_bytes, & bw) != FR_OK || bw != num_bytes;
 #else
 	// machine-independent version
-    while (num_bytes>0)
+    while (num_bytes > 0)
     {   unsigned char buf = word & 0xff;
         fwrite(& buf, 1, 1, wav_file);
         num_bytes --;
@@ -184,10 +184,13 @@ static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 
 	do
 	{
-		rc = f_open(& wav_file, filename, FA_WRITE | FA_CREATE_ALWAYS);
+		memset(& wav_file, 0, sizeof wav_file);
+		rc = f_open(& wav_file, filename, FA_WRITE | FA_READ | FA_CREATE_ALWAYS);
 		if (rc != FR_OK)
 			break;
-
+ 		rc = f_lseek(& wav_file, 0);
+		if (rc != FR_OK)
+			break;
 		/* write RIFF header */
 		UINT bw;
 		/* offs 0x0000 */ rc = f_write(& wav_file, "RIFF", 4, & bw);
@@ -227,6 +230,9 @@ static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 		/* offs 0x0022 */ rc = write_little_endian(8 * bytes_per_sample, 2);  /* PCM format specific data: wBitsPerSample - bits/sample */
 		if (rc != FR_OK)
 			break;
+		rc = f_sync(& wav_file);
+		if (rc != FR_OK)
+			break;
 
 		/* write data subchunk */
  		/* offs 0x0024 */  rc = f_lseek(& wav_file, DATACHUNKSTARTOFFSET);
@@ -240,6 +246,9 @@ static FRESULT write_wav_header(const char * filename, unsigned int sample_rate)
 		rc = write_little_endian(0, 4);	// write palceholder - remaining length after this header
 		if (rc != FR_OK)
 			break;
+		rc = f_sync(& wav_file);
+		if (rc != FR_OK)
+			break;
 
 	} while (0);
 	return rc;
@@ -251,6 +260,9 @@ static FRESULT write_wav_resync(void)
 
 	do
 	{
+		rc = f_sync(& wav_file);
+		if (rc != FR_OK)
+			break;
 		FSIZE_t wav_pos = f_tell(& wav_file);
 		/* update data subchunk */
 		rc = f_lseek(& wav_file, wav_lengthpos_data);
@@ -259,6 +271,20 @@ static FRESULT write_wav_resync(void)
 		rc = write_little_endian(wave_num_bytes, 4);
 		if (rc != FR_OK)
 			break;
+		{
+			UINT rb4;
+			uint8_t rb [4];
+			rc = f_lseek(& wav_file, 0);
+			if (rc != FR_OK)
+				break;
+			rc = f_read(& wav_file, rb, 4, & rb4);
+			if (rc != FR_OK)
+				break;
+			if (rb4 != 4)
+				break;
+			if (memcmp(rb, "RIFF", 4) != 0)
+				break;
+		}
 		/* update RIFF header */
 		rc = f_lseek(& wav_file, wav_lengthpos_riff);
 		if (rc != FR_OK)
@@ -297,7 +323,7 @@ static FRESULT write_wav_tail(void)
 // See also: http://en.wikipedia.org/wiki/RF64
 
 static uint_fast32_t wave_irecorded;
-static RAMNOINIT_D1 FATFS wave_Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN RAMNOINIT_D1 FATFS wave_Fatfs ALIGNX_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
 
 static uint_fast8_t waveUnmount(void)
 {
@@ -312,6 +338,7 @@ static uint_fast8_t waveMount(void)
 {
 	FRESULT rc;				/* Result code */
 
+	memset(& wave_Fatfs, 0, sizeof wave_Fatfs);
 	rc = f_mount(& wave_Fatfs, "", 0);
 	return rc != FR_OK;
 }
@@ -603,7 +630,7 @@ void sdcardbgprocess(void)
 
 void sdcardformat(void)
 {
-	ALIGNX_BEGIN BYTE work [FF_MAX_SS] ALIGNX_END;
+	static ALIGNX_BEGIN RAMNOINIT_D1 BYTE work [FF_MAX_SS] ALIGNX_END;
 	FRESULT rc;
 
 	switch (sdstate)
@@ -628,12 +655,11 @@ void sdcardformat(void)
 
 #if WITHWAVPLAYER || WITHSENDWAV
 
-static RAMNOINIT_D1 FATFS Fatfs;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
-static RAMNOINIT_D1 FIL Fil;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
-static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 16] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static ALIGNX_BEGIN RAMNOINIT_D1 FATFS Fatfs ALIGNX_END;		/* File system object  - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN RAMNOINIT_D1 FIL Fil ALIGNX_END;			/* Описатель открытого файла - нельзя располагать в Cortex-M4 CCM */
+static ALIGNX_BEGIN RAMNOINIT_D1 uint8_t rbuff [FF_MAX_SS * 16] ALIGNX_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 static UINT ibr = 0;		//  количество считанных байтов
 static UINT ipos = 0;			// номер выводимого байта
-
 
 // Complete WAV file header
 struct WavHdr0
@@ -686,8 +712,10 @@ void playwavfile(const char * filename)
 		playfile = 0;
 	}
 	f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
+	memset(& Fatfs, 0, sizeof Fatfs);
 	f_mount(& Fatfs, "", 0);		/* Register volume work area (never fails) */
 	// открываем файл
+	memset(& Fil, 0, sizeof Fil);
 	rc = f_open(& Fil, filename, FA_READ);
 	if (rc)
 	{

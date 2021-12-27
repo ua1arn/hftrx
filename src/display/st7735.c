@@ -548,6 +548,56 @@ st7735_put_char_half(xholder_t xpix, char cc)
 	return xpix;
 }
 
+
+static unsigned long st7735_get_id(void)
+{
+#if WITHSPIEXT16
+
+	uint_fast16_t v1, v2, v3;
+
+	hardware_spi_connect_b16(ST7735_SPISPEED, ST7735_SPIMODE);	/* Enable SPI */
+	prog_select(targetlcd);	/* start sending data to target chip */
+	ST7735_CMND();	/* RS: Low: select an index or status register */
+	hardware_spi_b16_p1(ILI9341_CHIPID);	// старшая половина - 0 - 'NOP' command
+	hardware_spi_complete_b16();
+	ST7735_DATA();	/* RS: High: select a control register */
+	v1 = hardware_spi_b16_p1(0x0000);
+	hardware_spi_complete_b16();
+	v2 = hardware_spi_b16_p1(0x0000);
+	hardware_spi_complete_b16();
+	prog_unselect(targetlcd);
+	hardware_spi_disconnect();
+
+	PRINTF("st7735_get_id: %04X:%04X\n", v1, v2);
+	return (v1 * 65536u | v2);
+
+#else /* WITHSPIEXT16 */
+	uint_fast8_t v1, v2, v3;
+
+	spi_select2(targetlcd, ST7735_SPIMODE, ST7735_SPISPEED);	/* Enable SPI */
+	//local_delay_ms(100);
+	ST7735_CMND();	/* RS: Low: select an index or status register */
+	//local_delay_ms(100);
+	spi_progval8_p1(targetlcd, ILI9341_CHIPID); // command
+	spi_complete(targetlcd);
+	//local_delay_ms(100);
+	ST7735_DATA();	/* RS: High: select a control register */
+	//local_delay_ms(100);
+	spi_progval8_p1(targetlcd, 0xFF);	// dummy data
+	spi_progval8_p2(targetlcd, 0xFF);
+	v1 = spi_complete(targetlcd);
+	spi_progval8_p1(targetlcd, 0xFF);
+	v2 = spi_complete(targetlcd);
+	spi_progval8_p1(targetlcd, 0xFF);
+	v3 = spi_complete(targetlcd);
+
+	spi_unselect(targetlcd);	/* Disable SPI */
+
+	PRINTF("st7735_get_id: %02X:%02X:%02X\n", v1, v2, v3);
+	return (v1 * 256 | v2) * 256 | v3;
+#endif /* WITHSPIEXT16 */
+}
+
 static uint_fast16_t st7735_y;	/* в пикселях */
 
 // открыть для записи полосу высотой с символ и шириной до правого края
@@ -1368,6 +1418,8 @@ void display_initialize(void)
 	#if LCDMODE_LTDC
 		st7735_switchtorgb();	/* Переключение дисплея в режим обновления видеопамяти по параллельному интерфейсу. */
 	#endif
+
+	PRINTF("display_initialize: chipid=%06lX\n", st7735_get_id());
 }
 
 void display_set_contrast(uint_fast8_t v)

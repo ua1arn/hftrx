@@ -170,18 +170,17 @@
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	//#define WITHSAI1_FRAMEBITS 64	// Полный размер фрейма - только один приемник без спектра.
-	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
-	//#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
-	//#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	//#define WITHFPGAIF_FRAMEBITS 64	// Полный размер фрейма - только один приемник без спектра.
+	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
+	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
+	//#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32		// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
-	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
@@ -213,10 +212,10 @@
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
-	#define WITHUSERAMDISK			1			// создание FATFS диска в озу
+	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
@@ -234,12 +233,13 @@
 		#if 1
 			#define WITHTOUCHGUI		1
 			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-			#define WITHALPHA			64
+			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
 			#define WITHAFGAINDEFAULT	150
 			#define WITHCPUTEMPERATURE	1
 			#define WITHALTERNATIVEFONTS	1
+			#define WITHAFEQUALIZER		1
 //			#define WITHALTERNATIVELAYOUT	1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
@@ -263,6 +263,7 @@
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
+	#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 
 	#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	////#define WITHCAT		1	/* используется CAT */
@@ -313,15 +314,15 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
-	#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
 	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
 
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25040A
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
-	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
+	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	// End of NVRAM definitions section
 	#define FTW_RESOLUTION 32	/* разрядность FTW выбранного DDS */

@@ -627,23 +627,17 @@ void hardware_adc_initialize(void);
 	#define local_delay_us(t) do { _delay_us(t); } while (0)
 	#define local_delay_ms(t) do { _delay_ms(t); } while (0)
  
-	#define FLASHMEM __flash
-	#define FLASHMEMINIT	__flash	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-
 	#if (FLASHEND > 0x7FFF)	
 		// нет нужды экономить память FLASH
 		#define NOINLINEAT // __attribute__((noinline))
 		#define RAMFUNC_NONILINE // __attribute__((noinline))
+		#define RAMFUNC // __attribute__((__section__(".ramfunc"), noinline))
 	#else
 		#define NOINLINEAT __attribute__((noinline))	// On small FLASH ATMega CPUs
 		#define RAMFUNC_NONILINE __attribute__((noinline))	// On small FLASH ATMega CPUs
+		#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))
 	#endif
 
-	#define RAMDTCM
-	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
-	#define RAMNOINIT_D1
-	#define RAMHEAP 		//__attribute__((used, section(".heap"))) // memory used as heap zone
 	#define ATTRWEAK __attribute__ ((weak))
 
 #elif CPUSTYPE_TMS320F2833X
@@ -659,15 +653,6 @@ void hardware_adc_initialize(void);
 	#define global_enableIRQ() do { asm(" NOP"); } while (0)
 	#define global_disableIRQ() do { asm(" NOP"); } while (0)
 
-	#define FLASHMEM //__flash
-	#define FLASHMEMINIT	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-	#define FLASHMEMINITFUNC	/* не требуется быстрый доступ - например образ загружаемый в FPGA */
-
-	// нет нужды экономить память FLASH
-	#define NOINLINEAT // __attribute__((noinline))
-	#define RAMFUNC_NONILINE // __attribute__((__section__(".ramfunc"), noinline))  
-	#define RAMFUNC			 // __attribute__((__section__(".ramfunc")))  
-	#define RAMNOINIT_D1
 	#define ATTRWEAK __attribute__ ((weak))
 
 #else
@@ -995,7 +980,7 @@ uint_fast8_t board_dpc(dpclock_t * lp, udpcfn_t func, void * arg); // Запро
 uint_fast8_t board_dpc2(dpclock_t * lp, udpcfn2_t func, void * arg1, void * arg2); // Запрос отложенного вызова user-mode функций
 uint_fast8_t board_dpc3(dpclock_t * lp, udpcfn3_t func, void * arg1, void * arg2, void * arg3); // Запрос отложенного вызова user-mode функций
 
-#include "list.h"
+#include "mslist.h"
 
 typedef struct ticker_tag
 {
@@ -1053,13 +1038,14 @@ void IRQ_Handler(void);			// No GIC
 void Reset_CPU1_Handler(void);	// startup located function
 void Reset_CPUn_Handler(void);
 
-uint_fast8_t arm_hardware_cpuid(void);
-
 // Set interrupt vector wrappers
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu);
 void arm_hardware_set_handler_overrealtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_realtime(uint_fast16_t int_id, void (* handler)(void));
 void arm_hardware_set_handler_system(uint_fast16_t int_id, void (* handler)(void));
+void arm_hardware_disable_handler(uint_fast16_t int_id);
+uint_fast8_t arm_hardware_cpuid(void);	// This processor index (0..n-1)
+void arm_hardware_populte_second_initialize(void);
 
 void audioproc_spool_user(void);	// вызывать при выполнении длительных операций
 
@@ -1077,8 +1063,8 @@ void init_netif(void);
 void usb_polling(void);	/* LWIP support */
 void sys_check_timeouts(void);	/* LWIP support */
 
-#define USBALIGN_BEGIN __attribute__ ((aligned (64)))
-#define USBALIGN_END /* nothing */
+#define USBALIGN_BEGIN
+#define USBALIGN_END __attribute__ ((aligned (64))) /* nothing */
 
 //#define UNUSED(x) ((void)(x))
 
@@ -1132,7 +1118,7 @@ unsigned USBD_poke_u24(uint8_t * buff, uint_fast32_t v);
 
 /* получить 16-бит значение */
 /* Low endian memory layout */
-uint_fast32_t
+uint_fast16_t
 USBD_peek_u16(
 	const uint8_t * buff
 	);
@@ -1156,9 +1142,17 @@ USBD_peek_u32_BE(
 	const uint8_t * buff
 	);
 
+/* получить 64-бит значение */
+/* Big endian memory layout */
+uint_fast64_t
+USBD_peek_u64_BE(
+	const uint8_t * buff
+	);
+
 /* записать в буфер для ответа n-бит значение */
 /* Big endian memory layout */
 unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v);
+unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v);
 unsigned USBD_poke_u24_BE(uint8_t * buff, uint_fast32_t v);
 unsigned USBD_poke_u16_BE(uint8_t * buff, uint_fast16_t v);
 
@@ -1187,6 +1181,7 @@ unsigned long ulmax(unsigned long a, unsigned long b);
 #endif
 
 #include "taildefs.h"
+#include "radio.h"	/* Определения, специфические для устройств, относящихся к радиосвязи. */
 #include "clocks.h"
 uint32_t sys_now(void);
 

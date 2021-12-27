@@ -25,11 +25,18 @@
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 
-#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
+#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 */
+#define WITHI2S3HW	1	/* Использование I2S - аудиокодек на I2S3 */
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 //#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+
+#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+#define WITHCODEC1_I2S2_TX_SLAVE	1		/* Передача в аудиокодек через I2S2 */
+#define WITHCODEC1_I2S3_RX_SLAVE	1		/* Прием от аудиокодекоа через I2S3 */
 
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
@@ -206,34 +213,38 @@
 			arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 			arm_hardware_piog_inputs(ENCODER2_BITS); \
 			arm_hardware_piog_updown(ENCODER2_BITS, 0); \
-			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY); \
+			arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT); \
 		} while (0)
 
 #endif
 
-#if WITHI2SHW
 	// Инициализируются I2S2 и I2S3
-	#define I2S2HW_INITIALIZE() do { \
+	#define I2S2HW_SLAVE_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(1U << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
 		arm_hardware_piob_altfn2(1U << 10,	AF_SPI2); /* PB10 I2S2_CK	*/ \
 		arm_hardware_pioc_altfn2(1U << 3,	AF_SPI2); /* PC3 I2S2_SD - передача */ \
+		} while (0)
+
+	#define I2S2HW_MASTER_INITIALIZE() do { \
+		} while (0)
+
+	#define I2S3HW_SLAVE_INITIALIZE() do { \
 		arm_hardware_pioa_altfn2(1U << 15,	AF_SPI3); /* PA15 I2S3_WS	*/ \
 		arm_hardware_piob_altfn2(1U << 3,	AF_SPI3); /* PB3 I2S3_CK	*/ \
 		arm_hardware_piob_altfn2(1U << 2,	7 /* AF_7 */); /* PB2 I2S3_SD, - приём от кодека */ \
-	} while (0)
-#endif /* WITHSAI1HW */
+		} while (0)
 
-#if WITHSAI1HW
+	#define I2S32HW_MASTER_INITIALIZE() do { \
+		} while (0)
+
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(1U << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
 		arm_hardware_pioe_altfn2(1U << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
 		arm_hardware_pioe_altfn20(1U << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
 		arm_hardware_pioe_altfn2(1U << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 		arm_hardware_pioe_altfn2(1U << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
-	} while (0)
-#endif /* WITHSAI1HW */
+		} while (0)
 
-#if WITHSAI2HW
 	/* 
 	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
 	из внешних сигналов требуется только SAI2_SD_A
@@ -245,7 +256,6 @@
 		/* arm_hardware_piod_altfn2(1U << 11, AF_SAI2); */	/* PD11 - SAI2_SD_A	(i2s data to codec)	*/ \
 		/* arm_hardware_pioe_altfn2(1U << 11, AF_SAI2);	*/ /* PE11 - SAI2_SD_B	(i2s data from codec)	*/ \
 	} while (0)
-#endif /* WITHSAI1HW */
 
 /* Распределение битов в ARM контроллерах */
 
@@ -427,6 +437,10 @@
 	#define ELKEY_BIT_LEFT				(1U << 10)		// PD10
 	#define ELKEY_BIT_RIGHT				(1U << 11)		// PD11
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
@@ -493,8 +507,8 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
@@ -710,5 +724,12 @@
 		HARDWARE_DAC_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
 		} while (0)
+
+
+	#if WITHUSEDUALWATCH
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"
+	#else /* WITHUSEDUALWATCH */
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7_1ch.h"
+	#endif /* WITHUSEDUALWATCH */
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V5_H_INCLUDED */

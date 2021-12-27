@@ -327,17 +327,17 @@ static void nau8822_initialize_fullduplex(void)
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_2, 0x1bf); // was: 0x1bf - right pga off - 0x1b7
 	nau8822_setreg(NAU8822_POWER_MANAGEMENT_3, 0x1ef); // was: 0x1ff - reserved=0
 
-#if WITHI2S_FORMATI2S_PHILIPS
+#if CODEC1_FORMATI2S_PHILIPS
 	// I2S mode
 	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
 	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x010 | NAU8822_AUDIO_INTERFACE_WLEN_val);	// reg 0x04, I2S
 
-#else /* WITHI2S_FORMATI2S_PHILIPS */
+#else /* CODEC1_FORMATI2S_PHILIPS */
 	// LJ mode
 	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
 	nau8822_setreg(NAU8822_AUDIO_INTERFACE, 0x008 | NAU8822_AUDIO_INTERFACE_WLEN_val);	// reg 0x04, LJ
 
-#endif /* WITHI2S_FORMATI2S_PHILIPS */
+#endif /* CODEC1_FORMATI2S_PHILIPS */
 
 	//nau8822_setreg(NAU8822_COMPANDING_CONTROL, 0x000);	// reg 0x05 = 0 reset state
 	nau8822_setreg(NAU8822_MISC, 	// reg 0x3C,

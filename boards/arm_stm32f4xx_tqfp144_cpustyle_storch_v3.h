@@ -22,14 +22,19 @@
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 #define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
+#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 //#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+
+#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+#define WITHCODEC1_I2S2_TX_SLAVE	1		/* Передача в аудиокодек через I2S2 */
+#define WITHCODEC1_I2S3_RX_SLAVE	1		/* Прием от аудиокодекоа через I2S3 */
 
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
@@ -206,7 +211,7 @@
 
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(1U << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
@@ -445,6 +450,10 @@
 	#define ELKEY_BIT_LEFT				(1U << 10)		// PD10
 	#define ELKEY_BIT_RIGHT				(1U << 11)		// PD11
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
@@ -511,8 +520,8 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
@@ -708,5 +717,7 @@
 		TUNE_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
 		} while (0)
+
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7a_2ch.h"
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V3_H_INCLUDED */

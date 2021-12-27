@@ -242,6 +242,9 @@ typedef struct
 
   USB_OTG_HCStateTypeDef state;       /*!< Host Channel state.
                                             This parameter can be any value of @ref USB_OTG_HCStateTypeDef  */
+
+  uint8_t tt_hubaddr;
+  uint8_t tt_prtaddr;
 } USB_OTG_HCTypeDef;
 
 
@@ -383,7 +386,7 @@ typedef enum
 
 typedef USB_OTG_GlobalTypeDef   HCD_TypeDef;
 typedef USB_OTG_CfgTypeDef      HCD_InitTypeDef;
-typedef USB_OTG_HCTypeDef       HCD_HCTypeDef;
+typedef USB_OTG_HCTypeDef       RZ_HCD_HCTypeDef;
 typedef USB_OTG_URBStateTypeDef HCD_URBStateTypeDef;
 typedef USB_OTG_HCStateTypeDef  HCD_HCStateTypeDef;
 /**
@@ -401,7 +404,7 @@ typedef struct
 {
   HCD_TypeDef               *Instance;  /*!< Register base address    */
   HCD_InitTypeDef           Init;       /*!< HCD required parameters  */
-  HCD_HCTypeDef             hc[16];     /*!< Host channels parameters */
+  RZ_HCD_HCTypeDef          hc[16];     /*!< Host channels parameters */
   HAL_LockTypeDef           Lock;       /*!< HCD peripheral status    */
   __IO HCD_StateTypeDef     State;      /*!< HCD communication state  */
   __IO  uint32_t            ErrorCode;  /*!< HCD Error code           */
@@ -692,7 +695,7 @@ uint16_t USBPhyHw_EP2PIPE(uint16_t ep_addr);
 HAL_StatusTypeDef HAL_HCD_HC_SubmitRequest(HCD_HandleTypeDef *hhcd, uint8_t ch_num,
                                            uint8_t direction, uint8_t ep_type,
                                            uint8_t token, uint8_t *pbuff,
-                                           uint16_t length, uint8_t do_ping);
+										   uint32_t length, uint8_t do_ping);
 
 /* Non-Blocking mode: Interrupt */
 void HAL_HCD_IRQHandler(HCD_HandleTypeDef *hhcd);

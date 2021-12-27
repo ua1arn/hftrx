@@ -63,9 +63,9 @@ USBD_StatusTypeDef USBD_Get_USB_Status(HAL_StatusTypeDef hal_status);
 
 
 /* PCD Handle Structure */
-RAMBIGDTCM __ALIGN_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN_END;
+__ALIGN4k_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN4k_END;
 /* USB Device Core handle declaration */
-static RAMBIGDTCM __ALIGN_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN_END;
+static __ALIGN4k_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN4k_END;
 
 //
 //typedef enum {
@@ -207,6 +207,13 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	__HAL_RCC_USBO_CLK_ENABLE();
 	__HAL_RCC_USBO_CLK_SLEEP_ENABLE();
 
+	//RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
+	(void) RCC->MP_AHB2ENSETR;
+	//RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
+	(void) RCC->MP_AHB2LPENSETR;
+
+	__HAL_RCC_USBO_FORCE_RESET();
+	__HAL_RCC_USBO_RELEASE_RESET();
 	//RCC->MP_AHB2ENSETR = RCC_MP_AHB2ENSETR_USBOEN;
 	(void) RCC->MP_AHB2ENSETR;
 	//RCC->MP_AHB2LPENSETR = RCC_MP_AHB2LPENSETR_USBOLPEN;
@@ -364,7 +371,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		{
 			USBD_HS_ULPI_INITIALIZE();
 
-			PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS and ULPI\n"));
+			//PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS and ULPI\n"));
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;		/* USB/OTG HS  */
 			(void) RCC->AHB1ENR;
 			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN;		/* USB/OTG HS  */
@@ -378,7 +385,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		{
 			USBD_HS_FS_INITIALIZE();
 
-			PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS without ULPI\n"));
+			//PRINTF(PSTR("HAL_PCD_MspInit: USB_OTG_HS without ULPI\n"));
 			RCC->AHB1ENR |= RCC_AHB1ENR_OTGHSEN;	/* USB/OTG HS  */
 			(void) RCC->AHB1ENR;
 			RCC->AHB1LPENR |= RCC_AHB1LPENR_OTGHSLPEN; /* USB/OTG HS  */
@@ -432,7 +439,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	if (pcdHandle->Instance == & USB200)
 	{
 		const IRQn_ID_t int_id = USBI0_IRQn;
-		IRQ_Disable(int_id);
+		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 0) ---- */
 		//CPG.STBCR7 &= ~ CPG_STBCR7_MSTP71;	// Module Stop 71 0: Channel 0 of the USB 2.0 host/function module runs.
@@ -444,7 +451,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	else if (pcdHandle->Instance == & USB201)
 	{
 		const IRQn_ID_t int_id = USBI1_IRQn;
-		IRQ_Disable(int_id);
+		arm_hardware_disable_handler(int_id);
 
 		/* ---- Supply clock to the USB20(channel 1) ---- */
 		CPG.STBCR7 &= ~ CPG_STBCR7_MSTP70;	// Module Stop 70 0: Channel 1 of the USB 2.0 host/function module runs.
@@ -462,12 +469,12 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	  if (pcdHandle->Instance == USB1_OTG_HS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_HS_IRQn);
+	    arm_hardware_disable_handler(OTG_HS_IRQn);
 	  }
 	  else if (pcdHandle->Instance == USB2_OTG_FS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_FS_IRQn);
+	    arm_hardware_disable_handler(OTG_FS_IRQn);
 	  }
 
 #elif CPUSTYLE_STM32MP1
@@ -475,7 +482,12 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	  if (pcdHandle->Instance == USB_OTG_HS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    IRQ_Disable(OTG_IRQn);
+	    arm_hardware_disable_handler(OTG_IRQn);
+
+		__HAL_RCC_USBO_FORCE_RESET();
+		__HAL_RCC_USBO_RELEASE_RESET();
+		__HAL_RCC_USBO_CLK_DISABLE();
+		__HAL_RCC_USBO_CLK_SLEEP_DISABLE();
 	  }
 
 #elif CPUSTYLE_STM32F
@@ -484,14 +496,14 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 	  if (pcdHandle->Instance == USB_OTG_HS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_HS_IRQn);
+	    arm_hardware_disable_handler(OTG_HS_IRQn);
 	  }
 #endif /* defined (USB_OTG_HS) */
 #if defined (USB_OTG_FS)
 	  if (pcdHandle->Instance == USB_OTG_FS)
 	  {
 	    /* Peripheral interrupt Deinit*/
-	    NVIC_DisableIRQ(OTG_FS_IRQn);
+	    arm_hardware_disable_handler(OTG_FS_IRQn);
 	  }
 #endif /* defined (USB_OTG_FS) */
 
@@ -1371,7 +1383,11 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
 	hpcd_USB_OTG.Init.Sof_enable = DISABLE;
 	hpcd_USB_OTG.Init.low_power_enable = DISABLE;
 	hpcd_USB_OTG.Init.lpm_enable = DISABLE;
+#if WITHUSBDEV_VBUSSENSE
 	hpcd_USB_OTG.Init.vbus_sensing_enable = ENABLE;
+#else /* WITHUSBDEV_VBUSSENSE */
+	hpcd_USB_OTG.Init.vbus_sensing_enable = DISABLE;
+#endif /* WITHUSBDEV_VBUSSENSE */
 	hpcd_USB_OTG.Init.use_dedicated_ep1 = DISABLE;
 	hpcd_USB_OTG.Init.use_external_vbus = DISABLE;
 
@@ -1610,7 +1626,7 @@ USBD_StatusTypeDef USBD_LL_Transmit(USBD_HandleTypeDef *pdev, uint8_t ep_addr, c
   HAL_StatusTypeDef hal_status = HAL_OK;
   USBD_StatusTypeDef usb_status = USBD_OK;
 
-  if (hpcd_USB_OTG.Init.dma_enable == 1U)
+  //if (hpcd_USB_OTG.Init.dma_enable == 1U)
   {
 		if (pbuf != NULL && size != 0)
 		{
@@ -1638,7 +1654,7 @@ USBD_StatusTypeDef USBD_LL_PrepareReceive(USBD_HandleTypeDef *pdev, uint8_t ep_a
 	HAL_StatusTypeDef hal_status = HAL_OK;
 	USBD_StatusTypeDef usb_status = USBD_OK;
 
-	if (hpcd_USB_OTG.Init.dma_enable == 1U)
+	//if (hpcd_USB_OTG.Init.dma_enable == 1U)
 	{
 		if (pbuf != NULL && size != 0)
 			arm_hardware_flush_invalidate((uintptr_t) pbuf, size);

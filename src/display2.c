@@ -16,6 +16,10 @@
 #include <math.h>
 #include "src/gui/gui.h"
 
+#if WITHALTERNATIVEFONTS
+	#include "../display/fonts/ub_fonts.h"
+#endif /* WITHALTERNATIVEFONTS */
+
 #define WITHPLACEHOLDERS 1	//  отображение макета с еще незанятыми полями
 
 #if 0
@@ -49,8 +53,92 @@
 
 #endif /* LCDMODE_LTDC */
 
+static const COLORMAIN_T colors_2state_alt [2] = { COLORPIP_GRAY, COLORPIP_WHITE, };
+static const COLORMAIN_T color_alt_red = COLORMAIN_RED;
+
+void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg);
+
 #if WITHALTERNATIVELAYOUT
-	void show_alt_layout(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
+
+#if SMALLCHARW2
+
+typedef struct {
+	uint_fast8_t chars_W2;
+	const COLORMAIN_T * pcolor;
+	PACKEDCOLORMAIN_T * label_bg;	/* буфер */
+	size_t size;					/* размер для cache flush */
+	uint_fast16_t w;
+	uint_fast16_t h;
+} label_bg_t;
+
+static label_bg_t label_bg [] = {
+		{ 5, & colors_2state_alt [0], },
+		{ 5, & colors_2state_alt [1], },
+		{ 5, & color_alt_red, 		  },
+		{ 7, & colors_2state_alt [0], },
+		{ 7, & colors_2state_alt [1], },
+};
+
+static void layout_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
+{
+	uint_fast8_t i = 0;
+
+	do {
+		label_bg_t * const lbl = & label_bg [i];
+		lbl->w = lbl->chars_W2 * SMALLCHARW2;
+		lbl->h = SMALLCHARH2 + 6;
+		lbl->size = GXSIZE(lbl->w, lbl->h) * sizeof (PACKEDCOLORMAIN_T);
+		lbl->label_bg = (PACKEDCOLORMAIN_T *) malloc(lbl->size);
+		ASSERT(lbl->label_bg != NULL);
+		colmain_fillrect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w, lbl->h, COLORMAIN_BLACK);
+		colmain_rounded_rect(lbl->label_bg, lbl->w, lbl->h, 0, 0, lbl->w - 1, lbl->h - 1, 5, * lbl->pcolor, 1);
+	} while (++ i < ARRAY_SIZE(label_bg));
+}
+
+void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * str, size_t slen, uint_fast8_t chars_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+	uint_fast16_t xx = GRID2X(xgrid);
+	uint_fast16_t yy = GRID2Y(ygrid);
+	label_bg_t * lbl_bg = NULL;
+	uint_fast8_t i = 0;
+	char buf [slen + 1];
+	strcpy(buf, str);
+	strtrim(buf);
+#if WITHALTERNATIVEFONTS
+	const uint_fast16_t width_str = getwidth_Pstring(buf, & gothic_12x16);
+#else
+	const uint_fast16_t width_str = strwidth2(buf);
+#endif /* WITHALTERNATIVEFONTS */
+
+	const uint_fast16_t width_p = chars_W2 * SMALLCHARW2;
+
+	if (! width_str)
+		return;
+
+	do {
+		label_bg_t * const lbl = & label_bg [i];
+		if (lbl->chars_W2 == chars_W2 && * lbl->pcolor == color_bg)
+		{
+			lbl_bg = lbl;
+			break;
+		}
+	} while (++ i < ARRAY_SIZE(label_bg));
+
+	if (lbl_bg != NULL)
+		colpip_plot((uintptr_t) fr, GXSIZE(DIM_X, DIM_Y), fr, DIM_X, DIM_Y, xx, yy,
+				(uintptr_t) lbl_bg->label_bg, lbl_bg->size, lbl_bg->label_bg, lbl_bg->w, lbl_bg->h);
+	else
+		colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + width_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
+
+#if WITHALTERNATIVEFONTS
+	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16, color_fg);
+#else
+	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 4, buf, color_fg);
+#endif /* WITHALTERNATIVEFONTS */
+
+}
+#endif /* SMALLCHARW2 */
 #endif /* WITHALTERNATIVELAYOUT */
 
 static void display2_af_spectre15_init(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx);		// вызывать после display2_smeter15_init
@@ -280,7 +368,7 @@ static const COLORPAIR_T colors_1stateBlue [1] =
 static const COLORPAIR_T colors_2freqB [2] =
 {
 	{	DESIGNBIGCOLORBINACTIVE,	LABELBACK,	},
-	{	DESIGNBIGCOLORB,	LABELBACK,	},
+	{	COLORMAIN_YELLOW,	LABELBACK,	},
 };
 // Параметры отображения режима дополнительного приемника
 // синий
@@ -1004,7 +1092,7 @@ static void display_freqXbig_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 0, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1041,7 +1129,7 @@ static void display2_freqX_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, comma + 3, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1095,7 +1183,7 @@ static void display_freqchr_a(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1136,7 +1224,7 @@ static void display_freqchr_b(
 		uint_fast8_t lowhalf = HALFCOUNT_FREQA - 1;
 		do
 		{
-			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
+			display_value_big(x, y + lowhalf, efp->freq, fullwidth, comma, 255, rj, efp->blinkpos + 1, efp->blinkstate, 1, lowhalf);	// отрисовываем верхнюю часть строки
 		} while (lowhalf --);
 #endif /* WITHDIRECTFREQENER */
 	}
@@ -1211,9 +1299,26 @@ display2_text_P(
 	#if LCDMODE_COLORED
 	#else /* LCDMODE_COLORED */
 	#endif /* LCDMODE_COLORED */
-
+#if WITHALTERNATIVELAYOUT
+	layout_label1_medium(x, y, labels [state], strlen_P(labels [state]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
+#else
 	colmain_setcolors(colors [state].fg, colors [state].bg);
 	display_at_P(x, y, labels [state]);
+#endif /* WITHALTERNATIVELAYOUT */
+}
+
+// отображение текста (из FLASH) с атрибутами по состоянию
+static void
+NOINLINEAT
+display2_text_alt_P(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	const FLASHMEM char * const * labels,	// массив указателей на текст
+	const COLORPAIR_T * colors,			// массив цветов
+	uint_fast8_t state
+	)
+{
+	layout_label1_medium(x, y, labels [state], strlen_P(labels [state]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
 }
 
 // отображение текста с атрибутами по состоянию
@@ -1263,6 +1368,23 @@ static void display_txrxstate2(
 	static const FLASHMEM char text1 [] = "TX";
 	const FLASHMEM char * const labels [2] = { text0, text1 };
 	display2_text_P(x, y, labels, colors_2rxtx, state);
+#endif /* WITHTX */
+}
+
+// Отображение режимов TX / RX
+static void display_txrxstate5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHTX
+	const uint_fast8_t state = hamradio_get_tx();
+
+	static const FLASHMEM char text0 [] = "RX";
+	static const FLASHMEM char text1 [] = "TX";
+	const FLASHMEM char * const labels [2] = { text0, text1 };
+	layout_label1_medium(x, y, labels [state], 2, 5, state ? COLORMAIN_WHITE : COLORMAIN_BLACK, state ? COLORMAIN_RED : COLORMAIN_GRAY);
 #endif /* WITHTX */
 }
 
@@ -1508,6 +1630,22 @@ static void display2_notch5(
 #endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
 }
 
+// Отображение типа режима NOCH и ON/OFF
+static void display2_notch7alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHNOTCHONOFF || WITHNOTCHFREQ
+	int_fast32_t freq;
+	const uint_fast8_t state = hamradio_get_notchvalue(& freq);
+	const char FLASHMEM * const label = hamradio_get_notchtype5_P();
+	const char FLASHMEM * const labels [2] = { label, label, };
+	layout_label1_medium(x, y, label, strlen_P(label), 7, COLORMAIN_BLACK, colors_2state_alt [state]);
+#endif /* WITHNOTCHONOFF || WITHNOTCHFREQ */
+}
+
 // Отображение частоты NOCH
 static void display2_notchfreq5(
 	uint_fast8_t x, 
@@ -1552,8 +1690,19 @@ static void display2_vfomode3(
 	display2_text(x, y, labels, colors_1state, 0);
 }
 
-
 // VFO mode
+static void display2_vfomode5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	uint_fast8_t state;	// state - признак активного SPLIT (0/1)
+	const char * const labels [1] = { hamradio_get_vfomode3_value(& state), };
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORMAIN_BLACK, colors_2state_alt [state]);
+}
+
+// VFO mode with memory ch info
 static void display_vfomode5(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
@@ -1634,6 +1783,21 @@ static void display2_atu3(
 #endif /* WITHTX */
 }
 
+// Отображение режима автонастройки
+static void display2_atu4alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHTX
+	#if WITHAUTOTUNER
+		const uint_fast8_t state = hamradio_get_atuvalue();
+		display_2states_P(x, y, state, PSTR("ATU"), text_nul3_P);
+	#endif /* WITHAUTOTUNER */
+#endif /* WITHTX */
+}
+
 
 // Отображение режима General Coverage / HAM bands
 static void display2_genham1(
@@ -1655,6 +1819,21 @@ static void display2_genham1(
 static void display2_byp3(
 	uint_fast8_t x, 
 	uint_fast8_t y, 
+	dctx_t * pctx
+	)
+{
+#if WITHTX
+	#if WITHAUTOTUNER
+		const uint_fast8_t state = hamradio_get_bypvalue();
+		display_2states_P(x, y, state, PSTR("BYP"), text_nul3_P);
+	#endif /* WITHAUTOTUNER */
+#endif /* WITHTX */
+}
+
+// Отображение режима обхода тюнера
+static void display2_byp4alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -1816,6 +1995,23 @@ static void display2_lockstate4(
 	display2_text_P(x, y, labels, colors_4state, lockv * 2 + fastv);
 }
 
+static void display2_lockstate5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	enum { chars_W2 = 5 };
+	const uint_fast8_t lockv = hamradio_get_lockvalue();
+	const uint_fast8_t fastv = hamradio_get_usefastvalue();
+
+	static const FLASHMEM char text0 [] = "    ";
+	static const FLASHMEM char text1 [] = "LOCK";
+	static const FLASHMEM char text2 [] = "FAST";
+
+	layout_label1_medium(x, y, fastv ? text2 : text1, 4, chars_W2, COLORMAIN_BLACK, colors_2state_alt [lockv || fastv]);
+}
+
 
 static void display_lockstate1(
 	uint_fast8_t x, 
@@ -1942,6 +2138,31 @@ static void display2_preovf3(
 	}
 }
 
+static void display2_preovf5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	enum { chars_W2 = 5 };
+
+	if (boad_fpga_adcoverflow() != 0)
+	{
+		const char str [] = "OVF";
+		layout_label1_medium(x, y, str, 3, chars_W2, COLORMAIN_WHITE, OVFCOLOR);
+	}
+	else if (boad_mike_adcoverflow() != 0)
+	{
+		const char str [] = "MIC";
+		layout_label1_medium(x, y, str, 3, chars_W2, COLORMAIN_WHITE, OVFCOLOR);
+	}
+	else
+	{
+		const char * str = hamradio_get_pre_value_P();
+		layout_label1_medium(x, y, str, strlen_P(str), chars_W2, COLORMAIN_BLACK, colors_2state_alt [1]);
+	}
+}
+
 // display antenna
 static void display2_ant5(
 	uint_fast8_t x, 
@@ -1956,6 +2177,19 @@ static void display2_ant5(
 #endif /* WITHANTSELECT */
 }
 
+// display antenna
+static void display2_ant7alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHANTSELECT
+	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORMAIN_BLACK, colors_2state_alt [1]);
+#endif /* WITHANTSELECT */
+}
+
 // RX att (or att/pre)
 static void display2_att4(
 	uint_fast8_t x, 
@@ -1966,6 +2200,17 @@ static void display2_att4(
 	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
 	ASSERT(strlen(labels [0]) == 4);
 	display2_text_P(x, y, labels, colors_1state, 0);
+}
+
+// RX att (or att/pre)
+static void display2_att5alt(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	const char FLASHMEM * const labels [1] = { hamradio_get_att_value_P(), };
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 5, COLORMAIN_BLACK, colors_2state_alt [1]);
 }
 
 // HP/LP
@@ -5689,59 +5934,50 @@ enum
 	static const FLASHMEM struct dzone dzones [] =
 	{
 		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
-		{	0,	0,	show_alt_layout, 	REDRM_BARS, PGALL, },
-//		{	17,	0,	display_txrxstate2, REDRM_MODE, PGALL, },
-//		{	20,	0,	display2_ant5,		REDRM_MODE, PGALL, },
-//		{	26,	0,	display2_att4,		REDRM_MODE, PGALL, },
-//		{	31,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
-//		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
-//		{	38,	0,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-//		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-//		{	47, 15,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
-//		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
-//#if WITHBARS
-		{    35, 1,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
-		{    35, 1,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
-//#endif /* WITHBARS */
-//#if WITHAFSPECTRE
-		{	35,	1,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
-		{	35,	1,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
-		{	35,	1,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
-//#endif /* WITHAFSPECTRE */
-
+		{	17,	0,	display_txrxstate5alt, REDRM_MODE, PGALL, },
+		{	21,	0,	display2_ant7alt,		REDRM_MODE, PGALL, },
+		{	26,	0,	display2_att5alt,		REDRM_MODE, PGALL, },
+		{	31,	0,	display2_preovf5alt,	REDRM_BARS, PGALL, },
+		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
+		{	38,	0,	display2_lockstate5alt, REDRM_MODE, PGALL, },	// LOCK
+		{	42, 0,	display2_notch7alt,	REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	42, 5,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
+		{	46, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
+		{	46, 15,	display2_usbsts3,	REDRM_BARS, PGALL, },	// USB host status
+		{	46, 20,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+#if WITHBARS
+		{    0, 4,  display2_smeter15_init,REDRM_INIS, PGINI, },	//  Инициализация стрелочного прибора
+		{    0, 4,  display2_smeter15, 	REDRM_BARS, PGALL, },	// Изображение стрелочного прибора
+#endif /* WITHBARS */
+#if WITHAFSPECTRE
+		{	0,	4,	display2_af_spectre15_init,	REDRM_INIS, PGINI, },
+		{	0,	4,	display2_af_spectre15_latch,	REDRM_BARS,	PGLATCH, },
+		{	0,	4,	display2_af_spectre15,		REDRM_BARS, PGSPE, },
+#endif /* WITHAFSPECTRE */
+		{   0,  0,  layout_init,		REDRM_INIS, PGINI, },
 //		{   47, 20, display2_bkin3,		REDRM_MODE, PGALL, },
-	#if WITHENCODER2
-//		{	41, 0,	display2_fnlabel9,	REDRM_MODE, PGALL, },	// FUNC item label
-//		{	41,	4,	display2_fnvalue9,	REDRM_MODE, PGALL, },	// FUNC item value
-//		{	45, 15,	display2_notch5,		REDRM_MODE, PGALL, },	// NOTCH on/off
-	#else /* WITHENCODER2 */
-		{	45, 0,	display2_notch5,		REDRM_MODE, PGALL, },	// FUNC item label
-		{	45,	4,	display2_notchfreq5,	REDRM_BARS, PGALL, },	// FUNC item value
-	#endif /* WITHENCODER2 */
-
 //		{	46, 20,	display2_agc3,		REDRM_MODE, PGALL, },	// AGC mode
 //		{	46, 25,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 //		{	46, 30,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 //		{	46, 35,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
-//		{	47, 20,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
-//		{	43, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		//{	46, 50,	display2_rec3,		REDRM_BARS, PGALL, },	// Отображение режима записи аудио фрагмента
+		{	42, 15,	display2_atu4alt,		REDRM_MODE, PGALL, },	// TUNER state (optional)
+		{	42, 20,	display2_byp4alt,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
 
-//		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
-//		{	38, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
-//		{	43, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
-//		{	47, 10,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
-//		{	38, 15,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
-//
-//		{	43,	15,	display2_vfomode3,	REDRM_MODE, PGALL, },	// SPLIT
-//		{	26,	20,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
-//		{	38, 20,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
+		{	38, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
+		{	42, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
+		{	46, 10,	display2_nr3,		REDRM_MODE, PGALL, },	// NR : was: AGC
+		{	38, 15,	display2_mainsub3,	REDRM_MODE, PGALL, },	// main/sub RX: A/A, A/B, B/A, etc
+
+		{	42,	15,	display2_vfomode5alt,	REDRM_MODE, PGALL, },	// SPLIT
+		{	26,	20,	display2_freqX_b,	REDRM_FRQB, PGALL, },	// SUB FREQ
+		{	38, 20,	display2_mode3_b,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 
 #if 1
 		// на освободившеемя место добавить статусную строку с различной информацией
 //		{	0,	25,	display2_legend,	REDRM_MODE, PGSWR, },	// Отображение оцифровки шкалы S-метра
 //		{	0,	30,	display2_bars,		REDRM_BARS, PGSWR, },	// S-METER, SWR-METER, POWER-METER
-//		{	0,	0, display2_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
+		{	0,	0, display2_siglevel4, 	REDRM_BARS, PGSWR, },	// signal level dBm
 //		{	36, 30,	display2_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF || WITHAFSPECTRE
 		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
@@ -5758,8 +5994,8 @@ enum
 	#endif /* WITHAMHIGHKBDADJ */
 		//{	XX,	DLE1,	display_samfreqdelta8, REDRM_BARS, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		// sleep mode display
-//		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
-//		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
+		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
+		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
 		{	0,	DLES,	gui_WM_walktrough,	REDRM_BARS, PGWFL | PGSPE, },
 
 		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
@@ -5875,7 +6111,7 @@ enum
 		{	31,	0,	display2_preovf3,	REDRM_BARS, PGALL, },
 		{	35,	0,	display2_genham1,	REDRM_BARS, PGALL, },	// Отображение режима General Coverage / HAM bands
 		{	38,	0,	display2_lockstate4, REDRM_MODE, PGALL, },	// LOCK
-		{	45, 0,	display2_notch5,	REDRM_MODE, PGALL, },	// NOTCH on/off
+		{	43, 0,	display2_notch5,	REDRM_MODE, PGALL, },	// NOTCH on/off
 		{	43, 5,	display2_voxtune3,	REDRM_MODE, PGALL, },	// VOX
 		{	47, 5,	display2_datamode3,	REDRM_MODE, PGALL, },	// DATA mode indicator
 		{	47, 15,	display2_usbsts3,	REDRM_BARS, PGALL, },	// USB host status
@@ -7042,7 +7278,7 @@ typedef struct {
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 	enum { PALETTESIZE = 256 };
-	static PACKEDCOLOR565_T wfpalette [PALETTESIZE];
+	static RAMBIGDTCM PACKEDCOLOR565_T wfpalette [PALETTESIZE];
 
 #endif
 
@@ -7105,7 +7341,7 @@ union states
 
 static uint16_t rbfimage0 [] =
 {
-#include "rbfimages.h"
+#include BOARD_BITIMAGE_NAME
 };
 
 /* получить расположение в памяти и количество элементов в массиве для загрузки FPGA */
@@ -7264,7 +7500,7 @@ display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t * pctx)
 					{
 						display_colorbuf_set_vline(fr, DIM_X, DIM_Y,
 								gvars.afsp.x + x, gvars.afsp.y - y_norm, y_norm,
-								COLORMAIN_YELLOW);
+								AFSPECTRE_COLOR);
 					}
 				}
 			}
@@ -7659,7 +7895,7 @@ dsp_getspectrumrow(
 	return 1;
 }
 
-static PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
+static RAMBIGDTCM PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
 
 enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
 //enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
@@ -8173,6 +8409,7 @@ static void display2_spectrum(
 
 	if (1 || hamradio_get_tx() == 0)
 	{
+		const GTG_t gtg = { spectmonoscr, ALLDX, SPDY, };
 		uint_fast16_t x;
 		uint_fast16_t y;
 		const uint_fast8_t pathi = 0;	// RX A
@@ -8633,6 +8870,7 @@ static void display2_colorbuff(
 	)
 {
 #if HHWMG
+	const GTG_t gtg = { spectmonoscr, ALLDX, SPDY, };
 	// Спектр на монохромных дисплеях
 	// или на цветных, где есть возможность раскраски растровой картинки.
 	display_showbuffer(spectmonoscr, ALLDX, SPDY, x0, y0);
@@ -8855,7 +9093,7 @@ display_walktroughsteps(
 		key = 0;
 	#endif /* LCDMODE_MAIN_PAGES > 1 */
 
-	display_walktrough(key, subset, NULL);
+	display_walktrough(key, subset, display2_getcontext());
 
 #endif /* STMD */
 }
@@ -8886,7 +9124,7 @@ void display2_bgprocess(void)
 
 		if (validforredraw(p, keyi, subsets [keyi]) == 0)
 			continue;
-		(* p->redraw)(p->x, p->y, NULL);
+		(* p->redraw)(p->x, p->y, display2_getcontext());
 		walkis [keyi] += 1;
 		break;
 	}
@@ -9465,59 +9703,3 @@ void display2_set_smetertype(uint_fast8_t v)
 	ASSERT(v < SMETER_TYPE_COUNT);
 	glob_smetertype = v;
 }
-
-#if WITHALTERNATIVELAYOUT
-
-void layout_label1_medium(uint_fast16_t x, uint_fast16_t y, char * str, uint_fast8_t size_W2, COLORMAIN_T color_fg, COLORMAIN_T color_bg)
-{
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	uint_fast16_t len_str = strwidth2(str);
-	uint_fast16_t size_p = size_W2 * SMALLCHARW2;
-
-	colmain_rounded_rect(fr, DIM_X, DIM_Y, x, y, x + size_p, y + SMALLCHARH2 + 5, 3, color_bg, 1);
-	colpip_string2_tbg(fr, DIM_X, DIM_Y, x + (size_p - len_str) / 2 , y + 4, str, color_fg);
-}
-
-void layout_second_vfo(uint_fast16_t x, uint_fast16_t y)
-{
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	char s[16];
-
-	colmain_rounded_rect(fr, DIM_X, DIM_Y, x, y, x + 12 * 16, y + 57, 3, COLORPIP_GRAY, 1);
-
-	local_snprintf_P(s, ARRAY_SIZE(s), "VFO B  %s", hamradio_get_mode_b_value_P());
-	colpip_string_tbg(fr, DIM_X, DIM_Y, x + 6 , y + 6, s, COLORPIP_BLACK);
-
-	const uint_fast32_t freq = hamradio_get_freq_b();
-
-	local_snprintf_P(s, ARRAY_SIZE(s), "%lu", (unsigned long) freq);
-	colpip_string_tbg(fr, DIM_X, DIM_Y, x + 6 , y + 12 + SMALLCHARH, s, COLORPIP_BLACK);
-
-
-
-}
-
-void show_alt_layout(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
-{
-	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
-	char s [10];
-
-	pipparams_t p;
-	display2_getpipparams(& p);
-
-	//colpip_rect(fr, DIM_X, DIM_Y, 0, 0, DIM_X - 1, p.y - 1, COLORPIP_WHITE, 0);
-	colpip_line(fr, DIM_X, DIM_Y, 0, p.y, DIM_X - 1, p.y, COLORPIP_WHITE);
-
-	display2_freqX_a(10, 8, NULL);
-
-	local_snprintf_P(s, ARRAY_SIZE(s), "%s", hamradio_get_mode_a_value_P());
-	remove_end_line_spaces(s);
-
-	layout_label1_medium(10, 10, s, 6, COLORPIP_BLACK, COLORPIP_GRAY);
-
-	layout_second_vfo(0, p.y - 58);
-
-
-}
-
-#endif /* WITHALTERNATIVELAYOUT */

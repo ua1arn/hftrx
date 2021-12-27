@@ -213,6 +213,8 @@ display2_bars_amv0(
 	dctx_t * pctx
 	);
 
+dctx_t * display2_getcontext(void);
+
 // Параметры отображения многострочного меню для больших экранов
 typedef struct multimenuwnd_tag
 {

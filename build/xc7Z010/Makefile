@@ -29,7 +29,7 @@ ZINQ_BOOT_DIR := E:
 CC   = $(TRGT)gcc
 GPP   = $(TRGT)g++
 CP   = $(TRGT)objcopy
-AR   = $(TRGT)ar -rcs --plugin ../lib/gcc/$(TRGT2)/10.2.1/liblto_plugin-0.dll
+AR   = $(TRGT)ar rcs --plugin ../lib/gcc/$(TRGT2)/10.3.1/liblto_plugin-0.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
 SIZE = $(TRGT)size --format=sysv --radix=16
 HEX  = $(CP) -O ihex -R .noinit -R .bss -R .vram -R .heap
@@ -76,8 +76,9 @@ LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
 USBXDIR = $(PRJROOT)/src/hal
+USBXDIR = $(PRJROOT)/src/hal
 MDLWUSBDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Device_Library
-HALDIR = $(PRJROOT)/lib/Drivers/STM32MP1xx_HAL_Driver
+MDLWHOSTDIR = $(PRJROOT)/lib/Middlewares/ST/STM32_USB_Host_Library
 
 # List all default C defines here, like -D_DEBUG=1
 DDEFS = 
@@ -87,8 +88,8 @@ DADEFS = -D__ASSEMBLY__=1
 # List all default directories to look for include files here
 DINCDIR = \
 	$(ARCHDIR) \
-	$(HALDIR)/Inc \
 	$(MDLWUSBDIR)/Core/Inc \
+	$(MDLWHOSTDIR)/Core/Inc \
 	$(USBXDIR) \
 	$(DSP3DDIR) \
 	$(CMSISDIR)/Core_A/Include \

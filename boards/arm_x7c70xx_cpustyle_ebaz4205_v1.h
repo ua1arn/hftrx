@@ -22,7 +22,7 @@
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
-	//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
+	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
@@ -115,20 +115,20 @@
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
 	//#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
-	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
+	//#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	//#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
-	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
+	//#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
 
-	/* For H7 exist: Legacy defines */
-	//#define USB_OTG_HS                   USB1_OTG_HS
-	//#define USB_OTG_FS                   USB2_OTG_FS
-
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_HOST		USB_OTG_HS
+#if 0
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_HOST		EHCI0
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port.
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
-	//#define WITHUSBHOST_DMAENABLE 1
+	//#define WITHUSBHOST_DMAENABLE 1	// not need for EHCI
+#endif
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -292,7 +292,7 @@
 		} while (0)
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
@@ -305,7 +305,7 @@
 		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
 		arm_hardware_piob_updown(0, 1uL << 14); \
 	} while (0)
-#endif /* WITHI2SHW */
+#endif /* WITHI2S2HW */
 
 	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
@@ -598,6 +598,10 @@
 	#define ELKEY_BIT_RIGHT				(1uL << 15)		// PD15
 
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 
 	#define ELKEY_INITIALIZE() \
 		do { \

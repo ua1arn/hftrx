@@ -77,6 +77,7 @@ SECTIONS
  		*(.dtors)
 
 		*(.rodata*)
+		*(.initfunc*)
 		*(.initdata*)
 
 		KEEP(*(.eh_frame*))
@@ -116,6 +117,14 @@ SECTIONS
 		LONG (__etext3)
 		LONG (__data3_start__)
 		LONG ((__data3_end__ - __data3_start__) / 4)
+		
+		LONG (__etext4)
+		LONG (__data4_start__)
+		LONG ((__data4_end__ - __data4_start__) / 4)
+		
+		LONG (__etext5)
+		LONG (__data5_start__)
+		LONG ((__data5_end__ - __data5_start__) / 4)
 		
 		__copy_table_end__ = .;
 	} > FLASH
@@ -205,6 +214,32 @@ SECTIONS
 	} > RAM_D1 AT > FLASH
 
 	. = __etext3 + __data3_end__ - __data3_start__;
+	
+	__etext4 = .;
+
+	.ram_d2 :
+	{
+		__data4_start__ = .;
+		*(.ram_d2)
+		*(.ram_d2.*)
+		. = ALIGN(4);
+		__data4_end__ = .;
+	} > RAM_D2 AT > FLASH
+
+	. = __etext4 + __data4_end__ - __data4_start__;
+	
+	__etext5 = .;
+
+	.ram_d3 :
+	{
+		__data5_start__ = .;
+		*(.ram_d3)
+		*(.ram_d3.*)
+		. = ALIGN(4);
+		__data5_end__ = .;
+	} > RAM_D3 AT > FLASH
+
+	. = __etext5 + __data5_end__ - __data5_start__;
 
 	.bss (NOLOAD):
 	{
@@ -214,7 +249,7 @@ SECTIONS
 		*(COMMON)
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM_D2
+	} > RAM_D1
 
 	.heap (NOLOAD):
 	{
@@ -240,11 +275,11 @@ SECTIONS
 	{
 		KEEP(*(.stack*))
 		. = ALIGN(4);
-	} > RAM_D3
+	} > DTCMRAM
 
 	/* Set stack top to end of RAM, and stack limit move down by
 	 * size of stack_dummy section */
-	__StackTop = ORIGIN(RAM_D3) + LENGTH(RAM_D3);
+	__StackTop = ORIGIN(DTCMRAM) + LENGTH(DTCMRAM);
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 

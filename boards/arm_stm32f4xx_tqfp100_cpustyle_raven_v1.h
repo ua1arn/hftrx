@@ -23,8 +23,12 @@
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
+#define WITHI2S2HW	1	/* Использование I2S - аудиокодек	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
+
+#define WITHFPGAIF_SAI1_A_TX_B_RX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+#define WITHCODEC1_I2S2_TX_MASTER	1		/* Передача в аудиокодек через I2S2 */
+#define WITHCODEC1_I2S2ext_RX_MASTER	1		/* Прием от аудиокодекоа через I2S2ext */
 
 #define WITHCPUDACHW	1	/* использование DAC */
 #define WITHCPUADCHW 	1	/* использование ADC */
@@ -182,7 +186,7 @@
 
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	#define I2S2HW_INITIALIZE() \
 		do { \
 			enum { \
@@ -286,6 +290,10 @@
 	#define ELKEY_TARGET_PIN			(GPIOC->IDR)
 	#define ELKEY_BIT_LEFT				(1U << 7)		// * PC7
 	#define ELKEY_BIT_RIGHT				(1U << 8)		// * PC8
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 
 	#define ELKEY_INITIALIZE() \
 		do { \
@@ -420,7 +428,7 @@
 
 
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_piob_outputs(SPI_SCLK_BIT | SPI_MOSI_BIT, SPI_SCLK_BIT | SPI_MOSI_BIT); /* connect back to GPIO */ \

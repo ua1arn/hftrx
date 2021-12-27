@@ -175,7 +175,9 @@ static USBD_StatusTypeDef MEM_If_Init_HS(void)
 	//PRINTF(PSTR("MEM_If_Init_HS\n"));
 	spidf_initialize();
 	testchipDATAFLASH();
+#if WIHSPIDFHW || WIHSPIDFSW
 	prepareDATAFLASH();	// снятие защиты со страниц при первом програмимровании через SPI интерфейс
+#endif
 	return USBD_OK;
 }
 
@@ -204,6 +206,7 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 	{
 
 	}
+#if WIHSPIDFHW || WIHSPIDFSW
 #if BOOTLOADER_SELFSIZE
 	else if (Addr >= BOOTLOADER_SELFBASE && (Addr + sectorsizeDATAFLASH()) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
@@ -220,6 +223,8 @@ static USBD_StatusTypeDef MEM_If_Erase_HS(uint32_t Addr)
 			return USBD_FAIL;
 	}
 #endif /* BOOTLOADER_APPSIZE */
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
+
 	return USBD_OK;
 }
 
@@ -237,6 +242,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 	{
 
 	}
+#if WIHSPIDFHW || WIHSPIDFSW
 #if BOOTLOADER_SELFSIZE
 	else if (dest >= BOOTLOADER_SELFBASE && (dest + Len) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
@@ -259,6 +265,7 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
 			return USBD_FAIL;
 	}
 #endif /* BOOTLOADER_APPSIZE */
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
 
 #if WITHISBOOTLOADER
 
@@ -286,12 +293,16 @@ static USBD_StatusTypeDef MEM_If_Write_HS(uint8_t *src, uint32_t dest, uint32_t 
   */
 static uint8_t *MEM_If_Read_HS(uint32_t src, uint8_t *dest, uint32_t Len)
 {
+#if WIHSPIDFHW || WIHSPIDFSW
 	//PRINTF(PSTR("MEM_If_Read_HS: src=%08lX, dest=%p, len=%08lX\n"), src, dest, Len);
 	/* Return a valid address to avoid HardFault */
 	if (readDATAFLASH(src, dest, Len))
 		return 0; //dest;	// todo: error handling need
 
 	return dest;
+#else /* WIHSPIDFHW || WIHSPIDFSW */
+	return 0;
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
 }
 
 /**
@@ -312,6 +323,7 @@ static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_
 	{
 
 	}
+#if WIHSPIDFHW || WIHSPIDFSW
 #if BOOTLOADER_SELFSIZE
 	else if (Addr >= BOOTLOADER_SELFBASE && (Addr + 1) <= (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE))
 	{
@@ -326,6 +338,7 @@ static USBD_StatusTypeDef MEM_If_GetStatus_HS(uint32_t Addr, uint8_t Cmd, uint8_
 		//PRINTF("Cmd=%d,st=%02X (Addr=%08lX) ", Cmd, st, (unsigned long) Addr);
 	}
 #endif /* BOOTLOADER_APPSIZE */
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
 	else
 	{
 		st = 0;	// зона вне FLASH ROM всегда готова. Почему-то приходит запрос с 0-м адресом...
@@ -681,12 +694,13 @@ static void DFU_Detach(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req
     hdfu->wlength = 0;
   }
 
-  static dpclock_t dpc_deffereddetach;
 
   /* Check the detach capability in the DFU functional descriptor */
   if (1) //((USBD_DFU_CfgDesc[12 + (9 * USBD_DFU_MAX_ITF_NUM)]) & DFU_DETACH_MASK)
   {
 #if WITHISBOOTLOADER
+	  static dpclock_t dpc_deffereddetach;
+
 	  VERIFY(board_dpc(& dpc_deffereddetach, bootloader_deffereddetach, NULL));
 #endif /* WITHISBOOTLOADER */
   }
@@ -943,16 +957,16 @@ static void DFU_GetStatus(USBD_HandleTypeDef *pdev)
     break;
 
   default :
-	  PRINTF("DFU_GetStatus: hdfu->dev_state=%d\n", hdfu->dev_state);
+	  //PRINTF("DFU_GetStatus: hdfu->dev_state=%d\n", hdfu->dev_state);
 	  //TP();
 	//USBD_DFU_fops_HS.GetStatus(hdfu->data_ptr, DFU_MEDIA_ERASE, hdfu->dev_status);
-	    //hdfu->dev_state = DFU_STATE_IDLE;
-//	    hdfu->dev_status [0] = DFU_ERROR_NONE;
-//	    hdfu->dev_status [1] = 0;
-//	    hdfu->dev_status [2] = 0;
-//	    hdfu->dev_status [3] = 0; /*bwPollTimeout=0ms*/
-//	    hdfu->dev_status [4] = hdfu->dev_state;
-//	    hdfu->dev_status [5] = 0; /*iString*/
+	    hdfu->dev_state = DFU_STATE_IDLE;
+	    hdfu->dev_status [0] = DFU_ERROR_NONE;
+	    hdfu->dev_status [1] = 0;
+	    hdfu->dev_status [2] = 0;
+	    hdfu->dev_status [3] = 0; /*bwPollTimeout=0ms*/
+	    hdfu->dev_status [4] = hdfu->dev_state;
+	    hdfu->dev_status [5] = 0; /*iString*/
     break;
   }
 

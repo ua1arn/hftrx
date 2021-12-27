@@ -67,7 +67,7 @@ extern "C" {
 
 	#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-		#if WITHSAI1_FRAMEBITS == 64
+		#if WITHFPGAIF_FRAMEBITS == 64
 
 			#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
@@ -76,7 +76,7 @@ extern "C" {
 			#define DMABUF32TXI		0		// TX, I
 			#define DMABUF32TXQ		1		// TX, Q
 
-		#elif WITHSAI1_FRAMEBITS == 256
+		#elif WITHFPGAIF_FRAMEBITS == 256
 				// buff data layout: I main/I sub/Q main/Q sub
 				#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
@@ -109,13 +109,13 @@ extern "C" {
 			#define DMABUF32TXI	0		// TX, I
 			#define DMABUF32TXQ	1		// TX, Q
 
-		#endif /* WITHSAI1_FRAMEBITS */
+		#endif /* WITHFPGAIF_FRAMEBITS */
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
 	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
-		#if WITHSAI1_FRAMEBITS == 64
+		#if WITHFPGAIF_FRAMEBITS == 64
 
 			#define DMABUFSTEP32RX	2		// 2 - каждому сэмплу соответствует два числа в DMA буфере	- I/Q
 			#define DMABUF32RX0I	0		// RX0, I
@@ -124,7 +124,7 @@ extern "C" {
 			#define DMABUF32TXI		0		// TX, I
 			#define DMABUF32TXQ		1		// TX, Q
 
-		#elif WITHSAI1_FRAMEBITS == 256
+		#elif WITHFPGAIF_FRAMEBITS == 256
 				// buff data layout: I main/I sub/Q main/Q sub
 				#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
 
@@ -200,7 +200,7 @@ extern "C" {
 #else /* WITHDSPEXTDDC */
 	// buff data layout: ADC data/unused channel
 	#define DMABUF32RX		0		// ADC data index
-	#define DMABUFSTEP32RX	(WITHSAI1_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
+	#define DMABUFSTEP32RX	(WITHFPGAIF_FRAMEBITS / 32) //2		// 2 - каждому сэмплу соответствует два числа в DMA буфере
 	#define DMABUF32RXI	0		// RX0, I
 	#define DMABUF32RXQ	1		// RX0, Q
 
@@ -892,6 +892,7 @@ void board_set_reverb(uint_fast8_t greverb, uint_fast8_t greverbdelay, uint_fast
 
 void board_set_uacplayer(uint_fast8_t v);	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 void board_set_uacmike(uint_fast8_t v);	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+void board_set_datavox(uint_fast8_t v);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 
 void dsp_initialize(void);
 
@@ -1021,11 +1022,15 @@ enum {
 	AF_EQUALIZER_HIGH = 2700	// частота верхней полосы
 };
 
-int_fast32_t getafequalizerbase(void);
+int_fast32_t hamradio_get_af_equalizer_base(void);
+int_fast32_t hamradio_get_af_equalizer_gain_rx(uint_fast8_t v);
+void hamradio_set_af_equalizer_gain_rx(uint_fast8_t index, uint_fast8_t gain);
 void board_set_equalizer_rx(uint_fast8_t n);
 void board_set_equalizer_tx(uint_fast8_t n);
 void board_set_equalizer_rx_gains(const uint_fast8_t * p);
 void board_set_equalizer_tx_gains(const uint_fast8_t * p);
+uint_fast8_t hamradio_get_geqrx(void);
+void hamradio_set_geqrx(uint_fast8_t v);
 
 void audio_rx_equalizer(float32_t *buffer, uint_fast16_t size);
 

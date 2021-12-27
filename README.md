@@ -1,4 +1,4 @@
-10 2020-q4-major# Проект HF Dream Receiver (КВ приёмник мечты)
+# Проект HF Dream Receiver (КВ приёмник мечты)
 ## автор Гена Завидовский mgs2001@mail.ru UA1ARN
 
 Инструкция по подготовке среды и компиляции:
@@ -6,13 +6,13 @@
 ## Микроконтроллер:
 
 1. Настраиваем окружение (компилятор и утилиты для сборки проекта) <br>
-1.1 **ARM:** GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 10 2020-q4-major) <br>
-1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
+1.1 **ARM:** GNU ARM Toolchain https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads (последняя проверенная сборка 10 2021.10) <br>
+1.2 **ATMEGA/ATXMEGA:** AVR 8-bit Toolchain https://www.microchip.com/mplab/avr-support/avr-and-arm-toolchains-c-compilers или https://blog.zakkemble.net/wp-content/uploads/downloads/2021/04/avr-gcc-11.1.0-x64-windows.zip (распаковываем, прописываем путь к папке BIN в переменную окружения PATH)<br>
 1.3 Утилиты для сборки отсюда: tools/gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64.zip (разархивировать, обновляем переменную PATH в системе, указав путь к подпапке bin, например C:\user\hftrx\tools\gnu-mcu-eclipse-build-tools-2.11-20180428-1604-win64\GNU MCU Eclipse\Build Tools\2.11-20180428-1604\bin) <br>
-1.4 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads
+1.4 Утилиты для работы с GIT репозиториями https://git-scm.com/downloads <br>
 
-2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта.
-2.1 **ATMEL ARM:** В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) <https://www.microchip.com/mplab/avr-support/advanced-software-framework
+2. Скачиваем дополнительные библиотеки, распаковываем их на уровень выше, чем папка проекта. <br>
+2.1 **ATMEL ARM:** В случае использования Atmel ARM (SAM) процессоров, скачать и распаковать в папку "xdk-asf" пакет Advanced Software Framework (ASF) <https://www.microchip.com/mplab/avr-support/advanced-software-framework <br>
 
 3. Устанавливаем IDE для разработки <br>
 3.1 Скачиваем и устанавливаем Eclipse https://www.eclipse.org/downloads/ <br>

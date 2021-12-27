@@ -309,6 +309,10 @@
 	#define ELKEY_BIT_LEFT				(1u << 6)	//GPIO_ODR_ODR14
 	#define ELKEY_BIT_RIGHT				(1u << 7)	//GPIO_ODR_ODR15
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_pioc_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
@@ -457,7 +461,7 @@
 
 
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_piob_outputs(SPI_SCLK_BIT | SPI_MOSI_BIT, SPI_SCLK_BIT | SPI_MOSI_BIT); /* connect back to GPIO */ \

@@ -910,7 +910,8 @@ extern "C" {
 		*/
 		enum
 		{
-			PRI_OVRT = 0,	// RPR value
+			PRI_IPC,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+			PRI_OVRT,
 			PRI_RT = 1,
 			PRI_SYS = 2,
 			PRI_USER = 3,
@@ -922,6 +923,9 @@ extern "C" {
 //			gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS),	// value for GIC_SetInterfacePriorityMask
 //			gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER)	// value for GIC_SetInterfacePriorityMask
 		};
+
+		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерываниедля синхронизации приоритетов GIC на остальных процессорах  */
+		#define BOARD_SGI_PRIO	ARM_CA9_ENCODE_PRIORITY(PRI_IPC)
 
 		#define RUNNING_PRI	((GICInterface->RPR & 0xFF) >> ARM_CA9_PRIORITYSHIFT) // The current running priority on the CPU interface.
 
@@ -1200,6 +1204,14 @@ extern "C" {
 	#define LCDMODE_HORFILL	1
 #endif /* LCDMODE_AT070TNA2 */
 
+#if LCDMODE_TCG104XGLPAPNN	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
+	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
+	#define DIM_X 1024
+	#define DIM_Y 768
+	#define LCDMODE_COLORED	1
+	#define LCDMODE_HORFILL	1
+#endif /* LCDMODE_TCG104XGLPAPNN */
+
 #if 0 && LCDMODE_AT070TNA2	/* xxxx panel (1280*720) - 10" display */
 	#define LCDMODE_SPI_RN 1 // эти дисплеи требуют только RESET
 	#define DIM_X 1280
@@ -1388,6 +1400,14 @@ extern "C" {
 #elif DIM_X == 1024 && DIM_Y == 600
 	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define DSTYLE_G_X1024_Y600	1	/* AT070TNA2 panel (1024*600) - 7" display */
+	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
+	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */
+	#define GRID2Y(cellsy) ((cellsy) * 5)	/* перевод ячеек сетки разметки в номер пикселя по вертикали */
+
+#elif DIM_X == 1024 && DIM_Y == 768
+	#define DSTYLE_G_X800_Y480	1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define DSTYLE_G_X1024_Y768	1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
 	#define CHARS2GRID(columns) ((columns) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
 	#define ROWS2GRID(rows) ((rows) * 1)		/* перевести количество символов в ячейкт сетки разметки отображния */
 	#define GRID2X(cellsx) ((cellsx) * 16)	/* перевод ячеек сетки разметки в номер пикселя по горизонталм */

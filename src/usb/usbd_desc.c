@@ -172,8 +172,10 @@ enum
 	STRING_ID_IQSPECTRUM,
 
 	STRING_ID_DFU,
+#if WIHSPIDFHW || WIHSPIDFSW
 	STRING_ID_DFU_0,
 	STRING_ID_DFU_1,
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
 	STRING_ID_DFU_2,	/* RAM target for debug */
 	// 
 	STRING_ID_count
@@ -4108,6 +4110,7 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	//
 	n += DFU_InterfaceAssociationDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, INTERFACE_DFU_count);
 
+#if WIHSPIDFHW || WIHSPIDFSW
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_0);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
@@ -4117,6 +4120,9 @@ static unsigned fill_DFU_function(uint_fast8_t fill, uint8_t * p, unsigned maxsi
 	n += DFU_FunctionalDescriptorReadWrite(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
 	ialt += 1;
 #endif /* BOOTLOADER_SELFSIZE */
+
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
+
 #if WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE
 	n += DFU_InterfaceDescriptor(fill, p + n, maxsize - n, INTERFACE_DFU_CONTROL, ialt, STRING_ID_DFU_2);	/* DFU Interface Descriptor */
 	n += DFU_FunctionalDescriptorWriteOnly(fill, p + n, maxsize - n, usbd_dfu_get_xfer_size(ialt));	/* DFU Functional Descriptor */
@@ -4572,9 +4578,9 @@ static unsigned fill_wstring_descriptor(uint8_t * buff, unsigned maxsize, const 
 }
 
 #if CTLSTYLE_V3D && WITHSDRAMHW
-	static RAMLOW uint8_t alldescbuffer [512 * 6];
+	static RAMLOW __ALIGN4k_BEGIN uint8_t alldescbuffer [256 * 13] __ALIGN4k_END;
 #else
-	static ALIGNX_BEGIN uint8_t alldescbuffer [512 * 6] ALIGNX_END;
+	static __ALIGN4k_BEGIN uint8_t alldescbuffer [256 * 13] __ALIGN4k_END;
 #endif /* CTLSTYLE_V3D && WITHSDRAMHW */
 
 struct descholder MsftStringDescr [1];
@@ -4872,6 +4878,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* WITHUSBHID */
 	
 #if WITHUSBDFU
+#if WIHSPIDFHW || WIHSPIDFSW
 #if defined (BOOTLOADER_APPSIZE)
 	{
 		extern unsigned char mf_id;	// Manufacturer ID
@@ -4881,18 +4888,13 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 
 		spidf_initialize();
 		int status = testchipDATAFLASH();
-		char flashname [32];
-		local_snprintf_P(flashname, ARRAY_SIZE(flashname),
-				PSTR("SPIDF:%02X:%02X%02X:%02X"),
-				mf_id, mf_devid1, mf_devid2, mf_dlen
-				);
 
 		static const char strFlashDesc_4 [] = "@SPI Flash APPLICATION: %s/0x%08lx/%02u*%03uKg";	// 128 k for bootloader
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_0;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
-			status ? USBD_DFU_FLASHNAME : flashname,
+			status ? USBD_DFU_FLASHNAME : nameDATAFLASH,
 			(unsigned long) BOOTLOADER_APPBASE,
 			(unsigned) (BOOTLOADER_APPSIZE / sectorsizeDATAFLASH()),
 			(unsigned) (sectorsizeDATAFLASH() / 1024)
@@ -4906,13 +4908,16 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 #endif /* defined (BOOTLOADER_APPSIZE) */
 #if BOOTLOADER_SELFSIZE
 	{
+
+		spidf_initialize();
+		int status = testchipDATAFLASH();
 		// Re-write bootloader parameters
 		static const char strFlashDesc_4 [] = "@SPI Flash BOOTLOADER: %s/0x%08lx/%02u*%03uKg";
 		unsigned partlen;
 		const uint_fast8_t id = STRING_ID_DFU_1;
 		char b [128];
 		local_snprintf_P(b, ARRAY_SIZE(b), strFlashDesc_4,
-			USBD_DFU_FLASHNAME,
+			status ? USBD_DFU_FLASHNAME : nameDATAFLASH,
 			(unsigned long) BOOTLOADER_SELFBASE,
 			(unsigned) (BOOTLOADER_SELFSIZE / sectorsizeDATAFLASH()),
 			(unsigned) (sectorsizeDATAFLASH() / 1024)
@@ -4924,6 +4929,7 @@ void usbd_descriptors_initialize(uint_fast8_t HSdesc)
 		score += partlen;
 	}
 #endif /* BOOTLOADER_SELFSIZE */
+#endif /* WIHSPIDFHW || WIHSPIDFSW */
 #if WITHISBOOTLOADER && defined (BOOTLOADER_RAMAREA) && BOOTLOADER_RAMSIZE
 	{
 		// RAM target for debug

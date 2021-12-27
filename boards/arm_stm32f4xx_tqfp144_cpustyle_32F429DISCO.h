@@ -75,7 +75,7 @@ Free:
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #define WITHCPUADCHW 	1	/* использование ADC */
 
-//#define WITHI2SHW	1	/* Использование I2S - аудиокодек	*/
+//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 
 #define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
@@ -300,6 +300,10 @@ Free:
 	#define ELKEY_BIT_LEFT				(1u << 9)	// PA9
 	#define ELKEY_BIT_RIGHT				(1u << 10)	// PA10
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() do { \
 			arm_hardware_pioa_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
 		} while (0)
@@ -516,7 +520,7 @@ Free:
 
 
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn50(SPI_MOSI_BIT | SPI_SCLK_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_piob_outputs(SPI_SCLK_BIT | SPI_MOSI_BIT, SPI_SCLK_BIT | SPI_MOSI_BIT); /* connect back to GPIO */ \

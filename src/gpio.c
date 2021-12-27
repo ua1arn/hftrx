@@ -190,8 +190,8 @@ static void r7s721_pio_onchangeinterrupt(
 		if ((ipins & mask) == 0)
 			continue;
 		const IRQn_ID_t int_id = irqbase + bitpos;
-		IRQ_Disable(int_id);
-		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);
+		arm_hardware_disable_handler(int_id);
+		GIC_SetConfiguration(int_id, edge ? GIC_CONFIG_EDGE : GIC_CONFIG_LEVEL);// non-atomic operation
 		arm_hardware_set_handler(int_id, vector, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
@@ -605,8 +605,8 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		0;
 	{
 		const IRQn_ID_t int_id = IRQ0_IRQn + irq;
-		IRQ_Disable(int_id);
-		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);
+		arm_hardware_disable_handler(int_id);
+		GIC_SetConfiguration(int_id, GIC_CONFIG_LEVEL);// non-atomic operation
 		arm_hardware_set_handler(int_id, r7s721_IRQn_IRQHandler, priority, 0x01uL << 0);	// CPU#0 is only one
 	}
 }
@@ -3740,6 +3740,8 @@ arm_hardware_pioz_inputs(unsigned long ipins)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	//GPIOZ->SECCFGR &= ~ (ipins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOZ, ipins, 0, 1, 1, 0);	/* mode, speed, pupdr, typer */
 
@@ -3796,6 +3798,8 @@ arm_hardware_pioz_outputs(unsigned long opins, unsigned long initialstate)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
@@ -3854,6 +3858,8 @@ arm_hardware_pioz_outputs2m(unsigned long opins, unsigned long initialstate)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
@@ -3911,6 +3917,8 @@ arm_hardware_pioz_outputs50m(unsigned long opins, unsigned long initialstate)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
@@ -3967,6 +3975,8 @@ arm_hardware_pioz_opendrain(unsigned long opins, unsigned long initialstate)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
 	// Установка начального состояния битов
 	arm_stm32f4xx_hardware_pio_setstate(GPIOZ, opins, initialstate);
 	// Установка режима выводов
@@ -4020,6 +4030,10 @@ arm_hardware_pioz_altfn20(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB5ENSETR;
 	RCC->MP_AHB5LPENSETR = RCC_MP_AHB5LPENSETR_GPIOZLPEN;	/* I/O port Z clock enable */
 	(void) RCC->MP_AHB5LPENSETR;
+
+	//GPIOZ->SECCFGR &= ~ (opins); // GPIO_SECCFGR_SEC0_Msk .. GPIO_SECCFGR_SEC7_Msk
+
+	stm32mp1_pioX_altfn(GPIOZ, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOZ, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -4764,6 +4778,7 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOALPEN;	/* I/O port A clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOA, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4825,6 +4840,7 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOBLPEN;	/* I/O port B clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOB, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4878,6 +4894,7 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOCLPEN;	/* I/O port C clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOC, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4932,6 +4949,7 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIODLPEN;	/* I/O port D clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOD, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -4986,6 +5004,7 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIODLPEN;	/* I/O port D clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOD, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -5048,6 +5067,7 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOALPEN;	/* I/O port A clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOA, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -5110,6 +5130,7 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOALPEN;	/* I/O port A clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOA, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOA, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -5172,6 +5193,7 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOBLPEN;	/* I/O port B clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOB, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -5234,6 +5256,7 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOBLPEN;	/* I/O port B clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOB, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOB, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -5296,6 +5319,7 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOCLPEN;	/* I/O port C clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOC, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -5358,6 +5382,7 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOCLPEN;	/* I/O port C clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOC, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOC, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -5412,6 +5437,7 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIODLPEN;	/* I/O port D clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
 	stm32mp1_pioX_altfn(GPIOD, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOD, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
@@ -6004,6 +6030,8 @@ arm_hardware_pioh_altfn2(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOHLPEN;	/* I/O port H clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
+	stm32mp1_pioX_altfn(GPIOH, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_2M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -6055,6 +6083,8 @@ arm_hardware_pioh_altfn20(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOHLPEN;	/* I/O port H clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
+	stm32mp1_pioX_altfn(GPIOH, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_20M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -6106,6 +6136,8 @@ arm_hardware_pioh_altfn50(unsigned long opins, unsigned af)
 	(void) RCC->MP_AHB4ENSETR;
 	RCC->MP_AHB4LPENSETR = RCC_MP_AHB4LPENSETR_GPIOHLPEN;	/* I/O port H clock enable */
 	(void) RCC->MP_AHB4LPENSETR;
+
+	stm32mp1_pioX_altfn(GPIOH, opins, af);
 	// Установка режима выводов
 	stm32mp1_pioX_prog(GPIOH, opins, STM32MP1_GPIO_MODE_ALT, STM32MP1_GPIO_SPEED_50M, 0, 0);	/* mode, speed, pupdr, typer */
 
@@ -7381,6 +7413,28 @@ arm_hardware_piok_updown(unsigned long up, unsigned long down)
 
 #endif /* defined (GPIOK) */
 
+#if defined (GPIOZ)
+
+/* включение подтягивающих резисторов к питанию (up) или к земле (down). */
+void
+arm_hardware_pioz_updown(unsigned long up, unsigned long down)
+{
+#if CPUSTYLE_STM32F1XX
+	stm32f10x_pioX_pupdr(GPIOZ, up, down);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	tm32f30x_pioX_pupdr(GPIOZ, up, down);
+
+#elif CPUSTYLE_STM32MP1
+
+	tm32mp1_pioX_pupdr(GPIOZ, up, down);
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+}
+
+#endif /* defined (GPIOZ) */
+
 /* отключение подтягивающих резисторов. */
 void 
 arm_hardware_pioa_updownoff(unsigned long ipins)
@@ -7618,6 +7672,28 @@ arm_hardware_piok_updownoff(unsigned long ipins)
 }
 
 #endif /* defined (GPIOK) */
+
+#if defined (GPIOZ)
+
+/* отключение подтягивающих резисторов. */
+void
+arm_hardware_pioz_updownoff(unsigned long ipins)
+{
+#if CPUSTYLE_STM32F1XX
+	arm_stm32f10x_hardware_pio_pupoff(GPIOZ, ipins);
+#elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F4XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX || CPUSTYLE_STM32H7XX
+	arm_stm32f30x_hardware_pio_pupoff(GPIOZ, ipins);
+
+#elif CPUSTYLE_STM32MP1
+
+	arm_stm32mp1_hardware_pio_pupoff(GPIOZ, ipins);
+
+#else
+	#error Undefined CPUSTYLE_XXX
+#endif
+}
+
+#endif /* defined (GPIOZ) */
 
 
 /* разрешить прерывание по изменению состояния указанных битов порта */

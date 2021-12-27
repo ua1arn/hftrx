@@ -208,6 +208,9 @@
 	#define ELKEY_BIT_RIGHT (PIN7_bm)		// PD7
 	#define ELKEY_BIT_LEFT (PIN6_bm)		// PD6
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 	#define ELKEY_INITIALIZE() do { \
 		PORTD.DIRCLR = ELKEY_BIT_LEFT;	/* бит входа левого контакта манипулятора */ \
 		PORTD.DIRCLR = ELKEY_BIT_RIGHT;	/* бит входа правого контакта манипулятора */ \

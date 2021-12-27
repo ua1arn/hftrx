@@ -7,9 +7,10 @@
 //
 // Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
 // rmainunit_sv9.pcb STM32MP157AAC - модуль MYC-YA157-V2, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
+// 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
 
-#ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9C_H_INCLUDED
-#define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9C_H_INCLUDED 1
+#ifndef ARM_STM32MP1_TFBGA361_CTLSTYLE_STORCH_V9C_H_INCLUDED
+#define ARM_STM32MP1_TFBGA361_CTLSTYLE_STORCH_V9C_H_INCLUDED 1
 
 	#if ! defined(STM32MP153Dxx)
 		#error Wrong CPU selected. STM32MP153Dxx expected
@@ -33,19 +34,7 @@
 	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
-	//	In addition, if the USBO is used in full-speed mode only, the application can choose the
-	//	48 MHz clock source to be provided to the USBO:
-	// USBOSRC
-	//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
-	//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
-	// USBPHYSRC
-	//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
-	//  0x1: pll4_r_ck clock selected as kernel peripheral clock
-	//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
-	#define RCC_USBCKSELR_USBOSRC_VAL 0x01
-	#define RCC_USBCKSELR_USBPHYSRC_VAL 0x00
-
-	#if WITHISBOOTLOADER
+	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
 		// ref1_ck, ref2_ck - 8..16 MHz
 		// PLL1, PLL2 VCOs
@@ -62,44 +51,18 @@
 			#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
 			// PLL2_1600
-			#if 1
-				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
-				#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
-				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-				#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-				#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
-			#elif 0
-				// PLL2_1600
-				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
-				#define PLL2DIVN	66	// 528 MHz Valid division rations for DIVN: between 25 and 100
-				#define PLL2DIVP	3	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-				#define PLL2DIVQ	2	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-				#define PLL2DIVR	2	// DDR clock divider = 528 MHz
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
-			#else
-				// PLL2_1600
-				/* bad boards DDR3 clock = 300 MHz */
-				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
-				#define PLL2DIVN	50	// 600 MHz Valid division rations for DIVN: between 25 and 100
-				#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-				#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
-				#define PLL2DIVR	2	// DDR clock divider = 300 MHz
-				// less or equal 300 MHz
-				// DDR3 timings only 6-6-6 (in  according AN5168
-				//#include "src/sdram/stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
-			#endif
+			#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
+			#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
+			#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
+			#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
+			#define PLL2DIVR	1	// DDR clock divider = 528 MHz
+			#include "src/sdram/stm32mp15-mx_2G_x2.dtsi"	// 2x128k*16
+			//#include "src/sdram/stm32mp15-mx_4G_x2.dtsi"	// 2x256k*16 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
 
 			// PLL3_800
+			#define PLL3DIVM	2	// ref3_ck = 12 MHz (4..16 MHz valid)
+			#define PLL3DIVN	64	// 768 MHz
+			#define PLL3DIVQ	125	// I2S, SAI clock divider: 12/2*64 = 768 MHz. 768/125 = 6.144 MHz. 48 kHz * 64 = 3.072 MHz
 
 			// PLL4_800
 			#define PLL4DIVM	2	// ref2_ck = 12 MHz (4..16 MHz valid)
@@ -110,6 +73,19 @@
 			//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 			//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
 			#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
+
+			//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+			//	48 MHz clock source to be provided to the USBO:
+			// USBOSRC
+			//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+			//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+			// USBPHYSRC
+			//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+			//  0x1: pll4_r_ck clock selected as kernel peripheral clock
+			//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+			#define RCC_USBCKSELR_USBOSRC_VAL 0x01
+			#define RCC_USBCKSELR_USBPHYSRC_VAL 0x00
+
 
 		#else
 			// HSI version (HSI=64 MHz)
@@ -122,35 +98,20 @@
 			//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
 			#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
 
-			#if 1
-				// PLL2_1600
-				#define PLL2DIVM	5	// ref2_ck = 12.8 MHz (8..16 MHz valid)
-				#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
-				#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
-				#define PLL2DIVQ	1	// GPU clock divider
-				#define PLL2DIVR	1	// DDR clock divider
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
-			#else
-				// PLL2_1600
-				#define PLL2DIVM	5	// ref2_ck = 12.8 MHz (8..16 MHz valid)
-				#define PLL2DIVN	61//41	// 12.8 * 41 = 524.8 MHz
-				#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
-				#define PLL2DIVQ	2//1	// GPU clock divider
-				#define PLL2DIVR	3//1	// DDR clock divider
-				// less or equal 300 MHz
-				// DDR3 timings only 6-6-6 (in  according AN5168
-				//#include "src/sdram/stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
-			#endif
+			// PLL2_1600
+			#define PLL2DIVM	5	// ref2_ck = 12.8 MHz (8..16 MHz valid)
+			#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
+			#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
+			#define PLL2DIVQ	1	// GPU clock divider
+			#define PLL2DIVR	1	// DDR clock divider
+			#include "src/sdram/stm32mp15-mx_2G_x2.dtsi"	// 2x128k*16
+			//#include "src/sdram/stm32mp15-mx_4G_x2.dtsi"	// 2x256k*16 2 x MT41K256M16TW-107 IT:P (FBGA Code D9SHG)
 
 			// PLL3_800
 			// pll3_p_ck -> mcuss_ck - 209 MHz Max
 			#define PLL3DIVM	5	// ref3_ck = 12.8 MHz (4..16 MHz valid)
+			#define PLL3DIVN	60	// 768 MHz
+			#define PLL3DIVQ	125	// I2S, SAI clock divider: 12/2*64 = 768 MHz. 768/125 = 6.144 MHz. 48 kHz * 64 = 3.072 MHz
 
 			// PLL4_800
 			#define PLL4DIVM	5	// ref2_ck = 12.8 MHz  (4..16 MHz valid)
@@ -160,6 +121,18 @@
 			//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
 			//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
 			#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
+
+			//	In addition, if the USBO is used in full-speed mode only, the application can choose the
+			//	48 MHz clock source to be provided to the USBO:
+			// USBOSRC
+			//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+			//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
+			// USBPHYSRC
+			//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
+			//  0x1: pll4_r_ck clock selected as kernel peripheral clock
+			//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
+			#define RCC_USBCKSELR_USBOSRC_VAL 0x01
+			#define RCC_USBCKSELR_USBPHYSRC_VAL 0x01
 
 		#endif
 	#endif /* WITHISBOOTLOADER */
@@ -267,6 +240,13 @@
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
+
+#elif 1
+
+	#define LCDMODE_TCG104XGLPAPNN 1	/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display - DE mode required */
+	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	//#define WITHFLATLINK 1	/* Работа с TFT панелью через SN75LVDS83B	*/
+	#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 
 #elif 0
 
@@ -382,16 +362,16 @@
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
-	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-
-	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
+	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
+	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	//#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	//#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
-	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 
 	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
@@ -410,7 +390,6 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v9a_2ch.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
@@ -427,9 +406,10 @@
 	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
+	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 || LCDMODE_TCG104XGLPAPNN
 		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
 		//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -443,6 +423,8 @@
 			#define WITHALPHA			64
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+			#define WITHALTERNATIVEFONTS    1
+			#define WITHALTERNATIVELAYOUT    1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
@@ -460,7 +442,7 @@
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
-	#define WITHKEEPNVRAM 1		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+	//#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
@@ -540,8 +522,8 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+//	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+//	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
@@ -608,6 +590,9 @@
 	//#define WITH_GT911_INTERRUPTS	1
 	#define TSC1_TYPE TSC_TYPE_XPT2046	/* touch screen controller XPTEK XPT2046 */
 	//#define DAC1_TYPE	99999		/* наличие ЦАП для подстройки тактовой частоты */
+
+	//#define BOARD_TSC1_XMIRROR 1	// Зеркалируем тачскрин по горизонтали.
+	//#define BOARD_TSC1_YMIRROR 1	// Зеркалируем тачскрин по вертикали.
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
@@ -753,4 +738,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9C_H_INCLUDED */
+#endif /* ARM_STM32MP1_TFBGA361_CTLSTYLE_STORCH_V9C_H_INCLUDED */

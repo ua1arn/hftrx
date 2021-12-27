@@ -96,7 +96,7 @@
 /*---------- -----------*/
 #define USBD_LPM_ENABLED     0U
 /*---------- -----------*/
-#define USBD_SELF_POWERED     1U
+#define USBD_SELF_POWERED     0U
 
 /****************************************/
 /* #define for FS and HS identification */
@@ -131,27 +131,33 @@
 /* DEBUG macros */
 
 #if (USBD_DEBUG_LEVEL > 0)
-#define USBD_UsrLog(...)    printf(__VA_ARGS__);\
-                            printf("\n");
+#define USBD_UsrLog(...)    do { \
+							PRINTF(__VA_ARGS__);\
+							PRINTF("\n"); \
+							} while (0)
 #else
-#define USBD_UsrLog(...)
+#define USBD_UsrLog(...) do {} while (0)
 #endif
 
 #if (USBD_DEBUG_LEVEL > 1)
 
-#define USBD_ErrLog(...)    printf("ERROR: ") ;\
-                            printf(__VA_ARGS__);\
-                            printf("\n");
+#define USBD_ErrLog(...)    do { \
+							PRINTF("ERROR: ") ;\
+							PRINTF(__VA_ARGS__);\
+							PRINTF("\n"); \
+ 	 	 	 	 	 	 	 } while (0)
 #else
-#define USBD_ErrLog(...)
+#define USBD_ErrLog(...) do {} while (0)
 #endif
 
 #if (USBD_DEBUG_LEVEL > 2)
-#define USBD_DbgLog(...)    printf("DEBUG : ") ;\
-                            printf(__VA_ARGS__);\
-                            printf("\n");
+#define USBD_DbgLog(...)    do { \
+								PRINTF("DEBUG : ") ;\
+								PRINTF(__VA_ARGS__);\
+								PRINTF("\n"); \
+							} while (0)
 #else
-#define USBD_DbgLog(...)
+#define USBD_DbgLog(...) do {} while (0)
 #endif
 
 /**

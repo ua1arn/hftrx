@@ -22,7 +22,7 @@
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
-	//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
+	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
@@ -253,7 +253,7 @@
 		} while (0)
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	// Инициализируются I2S2 в дуплексном режиме.
 	#define I2S2HW_INITIALIZE() do { \
 		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
@@ -266,7 +266,7 @@
 		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
 		arm_hardware_piob_updown(0, 1uL << 14); \
 	} while (0)
-#endif /* WITHI2SHW */
+#endif /* WITHI2S2HW */
 
 	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
@@ -557,6 +557,10 @@
 	#define ELKEY_BIT_RIGHT				(1uL << 15)		// PD15
 
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 
 	#define ELKEY_INITIALIZE() \
 		do { \

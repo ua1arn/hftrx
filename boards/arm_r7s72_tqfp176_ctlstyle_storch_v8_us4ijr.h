@@ -252,15 +252,37 @@
 	//#define BOARD_ENCODER2_DIVIDE 2	//
 	//#define WITHPWBUTTON	1	/* Наличие схемы электронного включения питания */
 	//#define WITHBANDF2_FT757	1	/* Управление LPF от трансивра FT-757 */
+	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
+		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+		//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHDISPLAYSWR_FPS 15
+		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+		#if 0
+			#define WITHTOUCHGUI		1
+			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
+			#define WITHALPHA			64
+			#define FORMATFROMLIBRARY 	1
+			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
+		#endif
+	#elif LCDMODE_LQ043T3DX02K
+		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
+		#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
+		//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
+		//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
+		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHDISPLAYSWR_FPS 15
+		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		//#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
+	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
-	//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
-	//#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
-	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
-	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHUSEDUALWATCH	1	// Второй приемник
-	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	// FPGA section
@@ -305,16 +327,16 @@
 
 	#define CODEC2_TYPE	CODEC_TYPE_FPGAV1	/* квадратуры получаем от FPGA */
 
-	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
-	#define CODEC1_FRAMEBITS 64	// Полный размер фрейма для двух каналов - канал кодека
+	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
-	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма для двух квадратур - канал трансивера
+	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма для двух квадратур - канал трансивера
 
 
-	#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
+	#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
@@ -366,7 +388,7 @@
 	#define WITHFANTIMER	1	/* выключающийся по таймеру вентилятор в усилителе мощности */
 	//#define WITHRTS192	1		// Есть канал спектроанализатора - не забыть включить WITHSAI2HW
 	#define WITHRTS96		1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHVIEW_3DSS		1
+	//#define WITHVIEW_3DSS		1
 	//#define WITHDEFAULTVIEW		VIEW_3DSS
 	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
@@ -589,11 +611,5 @@
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
-
-	#if WITHRTS192
-		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_192k.h"
-	#else
-		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_96k.h"
-	#endif
 
 #endif /* ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_H_INCLUDED */

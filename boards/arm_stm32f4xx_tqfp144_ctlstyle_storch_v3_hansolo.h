@@ -163,6 +163,7 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
+	#define LCDMODE_DUMMY	1		/* заглушка - без отображения */
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
@@ -186,10 +187,10 @@
 	//#define LCDMODE_L2F50	1	/* Индикатор 176*132 с контроллером Epson L2F50126 */
 	//#define LCDMODE_L2F50_TOPDOWN	1	/* Переворот изображени я в случае LCDMODE_L2F50 */
 	//#define LCDMODE_S1D13781_NHWACCEL 1	/* Неиспользоване аппаратных особенностей EPSON S1D13781 при выводе графики */
-	#define LCDMODE_S1D13781	1	/* Инндикатор 480*272 с контроллером Epson S1D13781 */
-	//#define LCDMODE_S1D13781_TOPDOWN	1	/* LCDMODE_S1D13781 - перевернуть изображение */
-	#define LCDMODE_S1D13781_REFOSC_MHZ	50	/* Частота генератора, установленного на контроллере дисплея */
-	//#define LCDMODE_ILI9225	1	/* Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С */
+//	#define LCDMODE_S1D13781	1	/* Инндикатор 480*272 с контроллером Epson S1D13781 */
+//	//#define LCDMODE_S1D13781_TOPDOWN	1	/* LCDMODE_S1D13781 - перевернуть изображение */
+//	#define LCDMODE_S1D13781_REFOSC_MHZ	50	/* Частота генератора, установленного на контроллере дисплея */
+//	//#define LCDMODE_ILI9225	1	/* Индикатор 220*176 SF-TC220H-9223A-N_IC_ILI9225C_2011-01-15 с контроллером ILI9225С */
 	//#define LCDMODE_ILI9225_TOPDOWN	1	/* LCDMODE_ILI9225 - перевернуть изображение (для выводов слева от экрана) */
 	//#define LCDMODE_UC1608	1		/* Индикатор 240*128 с контроллером UC1608.- монохромный */
 	//#define LCDMODE_UC1608_TOPDOWN	1	/* LCDMODE_UC1608 - перевернуть изображение (для выводов сверху) */
@@ -227,15 +228,14 @@
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
-	//#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
-	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
+	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
+	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
-	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
@@ -255,18 +255,20 @@
 	#define BOARD_FFTZOOM_POW2MAX 2	// Возможные масштабы FFT x1, x2, x4
 	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
-	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
+	#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
-	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	#define FORMATFROMLIBRARY 1
+	#define WITHUSEMALLOC 1
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
@@ -350,7 +352,8 @@
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 
 	/* Назначение адресов на SPI шине */
-	#define targetext1	SPI_CSEL_PG15 	/* external devices control */
+	#define targetext1	SPI_CSEL_PG15 	/* external devices control (XS43) */
+	#define targetext2	SPI_CSEL_PG14 	/* external devices2 control (XS48) */
 	#define targetctl1	SPI_CSEL_PG7 	/* control register as a chain of registers */
 	#define targetfpga1	SPI_CSEL_PG1 	/* control register in FPGA */
 

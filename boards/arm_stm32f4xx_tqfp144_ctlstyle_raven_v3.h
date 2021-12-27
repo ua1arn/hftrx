@@ -233,12 +233,12 @@
 		#define WITHI2SI2S2EXTFULLDUPLEXHW 1
 	#endif /* defined (STM32F446xx) */
 
-	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
-	#define WITHSAI1_FRAMEBITS	256	// Полный размер фрейма
-	//#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
+	#define WITHFPGAIF_FRAMEBITS	256	// Полный размер фрейма
+	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
 
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
@@ -415,6 +415,5 @@ enum
 	KI0 = 0, KI1 = 1, KI2 = 2, KI3 = 3, KI4 = 6	// клавиатура
 #endif
 };
-
 
 #endif /* ARM_STM32F4XX_TQFP144_CTLSTYLE_RAVEN_V3_H_INCLUDED */

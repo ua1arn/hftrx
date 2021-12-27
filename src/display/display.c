@@ -15,6 +15,10 @@
 #include "display2.h"
 #include <string.h>
 
+
+const char * savestring = "no data";
+const char * savewhere = "no func";
+
 #if LCDMODE_LTDC
 
 #define FONTSHERE 1
@@ -689,6 +693,7 @@ uint_fast16_t display_wrdatabig_begin(uint_fast8_t x, uint_fast8_t y, uint_fast1
 
 uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
+	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_horizontal_put_char_big(x, y, c);
@@ -699,6 +704,7 @@ uint_fast16_t display_put_char_big(uint_fast16_t x, uint_fast16_t y, uint_fast8_
 
 uint_fast16_t display_put_char_half(uint_fast16_t x, uint_fast16_t y, uint_fast8_t c, uint_fast8_t lowhalf)
 {
+	savewhere = __func__;
 #if LCDMODE_HORFILL
 	// для случая когда горизонтальные пиксели в видеопямяти располагаются подряд
 	return ltdc_horizontal_put_char_half(x, y, c);
@@ -736,7 +742,7 @@ void display_wrdata_end(void)
 }
 
 
-#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2 || LCDMODE_H497TLB01P4
+#if LCDMODE_LQ043T3DX02K || LCDMODE_AT070TN90 || LCDMODE_AT070TNA2 || LCDMODE_TCG104XGLPAPNN || LCDMODE_H497TLB01P4
 
 // заглушки
 
@@ -868,13 +874,12 @@ display_string2_P(uint_fast8_t xcell, uint_fast8_t ycell, const FLASHMEM  char *
 	display_wrdata2_end();
 }
 #endif
-
-const char * savestring = "no data";
 // Используется при выводе на графический индикатор,
 static void
 display_string(uint_fast8_t xcell, uint_fast8_t ycell, const char * s, uint_fast8_t lowhalf)
 {
 	savestring = s;
+	savewhere = __func__;
 	char c;
 
 	uint_fast16_t ypix;
@@ -1166,9 +1171,9 @@ display_value_big(
 	)
 {
 	//const uint_fast8_t comma2 = comma + 3;		// comma position (from right, inside width)
-	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
+	const uint_fast8_t j = (sizeof vals10 / sizeof vals10 [0]) - rj;
 	uint_fast8_t i = (j - width);
-	uint_fast8_t z = 1;	// only zeroes
+	uint_fast8_t z = blinkpos == 255 ? 1 : 0;	// only zeroes
 	uint_fast8_t half = 0;	// отображаем после второй запатой - маленьким шрифтом
 
 	uint_fast16_t ypix;
@@ -1318,6 +1323,64 @@ display_value_small(
 		freq = res.rem;
 	}
 	display_wrdata_end();
+}
+
+void display_value_small_xy(
+	uint_fast16_t xpix,	// x координата начала вывода значения
+	uint_fast16_t ypix,	// y координата начала вывода значения
+	int_fast32_t freq,
+	COLOR565_T fg
+	)
+{
+	uint_fast8_t width = 9;
+	uint_fast8_t comma = 3;
+	uint_fast8_t comma2 = 6;
+	uint_fast8_t rj = 0;
+	uint_fast8_t lowhalf = 0;
+	const uint_fast8_t wsign = (width & WSIGNFLAG) != 0;
+	const uint_fast8_t wminus = (width & WMINUSFLAG) != 0;
+	const uint_fast8_t j = (sizeof vals10 /sizeof vals10 [0]) - rj;
+	uint_fast8_t i = j - (width & WWIDTHFLAG);	// Номер цифры по порядку
+	uint_fast8_t z = 1;	// only zeroes
+
+	if (wsign || wminus)
+	{
+		// отображение со знаком.
+		z = 0;
+		if (freq < 0)
+		{
+			xpix = display_put_char_small_xy(xpix, ypix, '-', fg);
+			freq = - freq;
+		}
+		else if (wsign)
+			xpix = display_put_char_small_xy(xpix, ypix, '+', fg);
+		else
+			xpix = display_put_char_small_xy(xpix, ypix, ' ', fg);
+	}
+	for (; i < j; ++ i)
+	{
+		const ldiv_t res = ldiv(freq, vals10 [i]);
+		const uint_fast8_t g = (j - i);
+		// разделитель десятков мегагерц
+		if (comma2 == g)
+		{
+			xpix = display_put_char_small_xy(xpix, ypix, (z == 0) ? '.' : ' ', fg);
+		}
+		else if (comma == g)
+		{
+			z = 0;
+			xpix = display_put_char_small_xy(xpix, ypix, '.', fg);
+		}
+
+		if (z == 1 && (i + 1) < j && res.quot == 0)
+			xpix = display_put_char_small_xy(xpix, ypix, ' ', fg);	// supress zero
+		else
+		{
+			z = 0;
+			xpix = display_put_char_small_xy(xpix, ypix, '0' + res.quot, fg);
+		}
+		freq = res.rem;
+	}
 }
 
 #if LCDMODE_COLORED
@@ -1600,6 +1663,41 @@ const videomode_t vdmode0 =
 	.fps = 60	/* frames per secound */
 };
 
+#elif LCDMODE_TCG104XGLPAPNN
+
+/* TCG104XGLPAPNN-AN30 panel (1024*768) - 10.4" display */
+// TCG104XGLPAPNN-AN30-1384899.pdf
+// horizontal period 1114 / 1344 / 1400
+// vertical period 778 / 806 / 845
+// Synchronization method should be DE mode
+const videomode_t vdmode0 =
+{
+	.width = 1024,			/* LCD PIXEL WIDTH            */
+	.height = 768,			/* LCD PIXEL HEIGHT           */
+
+	.hsync = 120,			/* Horizontal synchronization 1..140 */
+	.hbp = 100,				/* Horizontal back porch  xxx   */
+	.hfp = 100,				/* Horizontal front porch  16..216   */
+
+	.vsync = 20,				/* Vertical synchronization 1..20  */
+	.vbp = 9,				/* Vertical back porch  xxx   */
+	.vfp = 9,				/* Vertical front porch  1..127     */
+
+	/* Accumulated parameters for this display */
+	//LEFTMARGIN = 160,		/* horizontal blanking EXACTLY */
+	//TOPMARGIN = 23,			/* vertical blanking EXACTLY */
+
+	// Synchronization method should be DE mode
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	//.ltdc_dotclk = 51200000uL,	// частота пикселей при работе с интерфейсом RGB 40.8..67.2
+	.fps = 60	/* frames per secound 50 60 70 */
+};
+
 #elif LCDMODE_ILI8961
 	// HHT270C-8961-6A6 (320*240)
 const videomode_t vdmode0 =
@@ -1758,6 +1856,19 @@ void display_hardware_initialize(void)
 	PRINTF(PSTR("display_hardware_initialize done\n"));
 }
 
+void display_hdmi_initialize(void)
+{
+	const videomode_t * const vdmode = & vdmode0;
+//#if LCDMODETX_TC358778XBG
+//	tc358768_initialize(vdmode);
+//	panel_initialize(vdmode);
+//#endif /* LCDMODETX_TC358778XBG */
+#if LCDMODEX_SII9022A
+	/* siiI9022A Lattice Semiconductor Corp HDMI Transmitter */
+	sii9022x_initialize(vdmode);
+#endif /* LCDMODEX_SII9022A */
+}
+
 void display_wakeup(void)
 {
 #if WITHLTDCHW
@@ -1775,7 +1886,7 @@ void display_wakeup(void)
     arm_hardware_ltdc_initialize(frames, vdmode);
 #endif /* WITHLTDCHW */
 #if LCDMODETX_TC358778XBG
-    tc358768_wakeup();
+    tc358768_wakeup(vdmode);
     panel_wakeup();
 #endif /* LCDMODETX_TC358778XBG */
 #if LCDMODEX_SII9022A

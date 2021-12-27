@@ -22,7 +22,8 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
-	#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
+	#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 */
+	#define WITHI2S3HW	1	/* Использование I2S - аудиокодек на I2S3 */
 	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
@@ -72,9 +73,9 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	//#define WITHUSBHW_EHCI		USB1_EHCI
-	//#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		USB1_EHCI
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
@@ -98,6 +99,10 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
+
+	#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1, SAI1_A - TX, SAI1_B - RX */
+	//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+	#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
@@ -127,7 +132,7 @@
 
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		USB1_EHCI
-	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port. See also USBPHYC_MISC_SWITHOST_VAL
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -243,20 +248,27 @@
 
 #endif
 
-#if WITHI2SHW
 	// Инициализируются I2S2 в дуплексном режиме.
-	#define I2S2HW_INITIALIZE() do { \
-		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
-	} while (0)
-#endif /* WITHI2SHW */
+	#define I2S2HW_SLAVE_INITIALIZE() do { \
+			SPI2->CFG2 |= SPI_CFG2_IOSWP; \
+			arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
+			arm_hardware_piob_updown(0, 1uL << 12); \
+			arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
+			arm_hardware_piob_updown(0, 1uL << 13); \
+			arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
+			arm_hardware_piob_updown(0, 1uL << 15); \
+			arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
+			arm_hardware_piob_updown(0, 1uL << 14); \
+		} while (0)
+
+	#define I2S2HW_MASTER_INITIALIZE() do { \
+		} while (0)
+
+	#define I2S3HW_SLAVE_INITIALIZE() do { \
+		} while (0)
+
+	#define I2S3HW_MASTER_INITIALIZE() do { \
+		} while (0)
 
 	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
@@ -272,7 +284,7 @@
 
 #if WITHSAI1HW
 	/*
-	 *
+	 * SAI1_A - TX, SAI1_B - RX
 	 */
 	#define SAI1HW_INITIALIZE()	do { \
 		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
@@ -294,16 +306,6 @@
 	} while (0)
 #else
 	#define SAI2HW_INITIALIZE()	do { \
-	} while (0)
-#endif /* WITHSAI1HW */
-
-#if WITHSAI3HW
-	/*
-	*/
-	#define SAI3HW_INITIALIZE()	do { \
-		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- WS from FPGA	*/ \
-		arm_hardware_piod_altfn50(1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
-		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
 
@@ -508,6 +510,10 @@
 
 	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
@@ -580,8 +586,9 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_piob_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
@@ -589,10 +596,10 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit (SD CARD read support) */ \
+			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit (SD CARD read support)  */ \
+			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit */ \
 		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -783,10 +790,6 @@
 	PA11     ------> USB_OTG_FS_DM
 	PA12     ------> USB_OTG_FS_DP 
 	*/
-	#define USBPHYC_MISC_SWITHOST_Pos		0
-	#define USBPHYC_MISC_SWITHOST_Msk (0x01uL << USBPHYC_MISC_SWITHOST_Pos)
-	#define USBPHYC_MISC_PPCKDIS_Pos		1
-	#define USBPHYC_MISC_PPCKDIS_Msk (0x03uL << USBPHYC_MISC_PPCKDIS_Pos)
 
 	#define	USBD_EHCI_INITIALIZE() do { \
 		RCC->MP_APB4ENSETR = RCC_MP_APB4ENSETR_USBPHYEN; \
@@ -1080,7 +1083,7 @@
 		#define BOARD_GT911_INT_CONNECT() do { \
 			arm_hardware_pioa_inputs(BOARD_GT911_INT_PIN); \
 			arm_hardware_pioa_updown(BOARD_GT911_INT_PIN, 0); \
-			arm_hardware_pioa_onchangeinterrupt(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
+			/*arm_hardware_pioa_onchangeinterrupt(BOARD_GT911_INT_PIN, 1 * BOARD_GT911_INT_PIN, 0 * BOARD_GT911_INT_PIN, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); */ \
 		} while (0)
 		//gt911_interrupt_handler
 

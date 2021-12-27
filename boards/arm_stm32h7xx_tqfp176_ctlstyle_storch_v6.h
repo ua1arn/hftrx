@@ -246,16 +246,15 @@
 	//#define CODEC_TYPE_CS4272_USE_SPI	1		// codecboard v2.0
 	//#define CODEC_TYPE_CS4272_STANDALONE	1		// codecboard v3.0
 
-	#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
-	//#define WITHSAI2_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
-	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	//#define WITHSAI2_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
+	//#define WITHFPGARTS_FRAMEBITS 64	// Полный размер фрейма для двух квадратур по 24 бита - канал спектроанализатора
+	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
-	//#define WITHSAI1HWTXRXMASTER	1		// SAI1 work in MASTER mode
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
@@ -299,7 +298,7 @@
 	#define WITHFFTSIZEAF 	512		/* Отображение спектра НЧ сигнвлв */
 	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	#define WITHKEEPNVRAM 1		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
+	#define WITHKEEPNVRAM (1 && ! WITHDEBUG)		/* ослабить проверку совпадения версий прошивок для стирания NVRAM */
 	#if 0
 		#define WITHWAVPLAYER 1	/* трансивер работает проигрывателем файлов с USB/SD накопителя */
 		//#define WITHBBOX	1	// Black Box mode - устройство без органов управления

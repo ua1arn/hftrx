@@ -96,8 +96,8 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_FT5336) */
 
-
 #if defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046
+
 #include "xpt2046.h"
 
 uint_fast8_t
@@ -108,47 +108,18 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 #endif /* defined (TSC1_TYPE) && TSC1_TYPE == TSC_TYPE_XPT2046 */
 
-#if defined (TSC1_TYPE)
-
-void board_tsc_initialize(void)
-{
-#if TSC1_TYPE == TSC_TYPE_GT911
-	if (gt911_initialize())
-		PRINTF("gt911 initialization successful\n");
-	else
-		PRINTF("gt911 initialization error\n");
-#endif /* TSC1_TYPE == TSC_TYPE_GT911 */
-
-#if TSC1_TYPE == TSC_TYPE_STMPE811
-	stmpe811_initialize();
-#endif /* TSC1_TYPE == TSC_TYPE_STMPE811 */
-
-#if TSC1_TYPE == TSC_TYPE_FT5336
-	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
-		PRINTF("ft5336 initialization successful\n");
-	else
-	{
-		PRINTF("ft5336 initialization error\n");
-	}
-#endif /* TSC1_TYPE == TSC_TYPE_FT5336 */
-
-#if TSC1_TYPE == TSC_TYPE_XPT2046
-	xpt2046_initialize();
-#endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
-}
-
-#if TSC1_TYPE == TSC_TYPE_S3402
+#if defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_S3402)
 
 #define TSC_I2C_ADDR (0x20 * 2)
 
-void s3402_init(void)
+static void s3402_initialize(void)
 {
-	// TP_RESX - active low
+	// BOARD_TP_RESX - active low
 	//	x-gpios = <&gpiog 0 GPIO_ACTIVE_HIGH>; /* TP_RESX_18 */
-	const portholder_t TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
-	arm_hardware_piog_outputs(TP_RESX, 0 * TP_RESX);
+	const portholder_t BOARD_TP_RESX = (1uL << 0);	// PG0 - TP_RESX_18 - pin 03
+	arm_hardware_piog_outputs(BOARD_TP_RESX, 0 * BOARD_TP_RESX);
 	local_delay_ms(5);
-	arm_hardware_piog_outputs(TP_RESX, 1 * TP_RESX);
+	arm_hardware_piog_outputs(BOARD_TP_RESX, 1 * BOARD_TP_RESX);
 	local_delay_ms(50);
 
 	const unsigned i2caddr = TSC_I2C_ADDR;
@@ -177,7 +148,8 @@ int s3402_get_id(void)
 	return v0;
 }
 
-int s3402_get_coord(unsigned * px, unsigned * py)
+uint_fast8_t
+board_tsc_getxy(uint_fast16_t * px, uint_fast16_t * py)
 {
 	const unsigned i2caddr = TSC_I2C_ADDR;
 
@@ -204,6 +176,40 @@ int s3402_get_coord(unsigned * px, unsigned * py)
 	}
 	return 0;
 }
-#endif /* TSC1_TYPE == TSC_TYPE_S3402 */
+#endif /* defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_S3402) */
+
+#if defined (TSC1_TYPE)
+
+void board_tsc_initialize(void)
+{
+#if TSC1_TYPE == TSC_TYPE_GT911
+	if (gt911_initialize())
+		PRINTF("gt911 initialization successful\n");
+	else
+		PRINTF("gt911 initialization error\n");
+#endif /* TSC1_TYPE == TSC_TYPE_GT911 */
+
+#if TSC1_TYPE == TSC_TYPE_STMPE811
+	stmpe811_initialize();
+#endif /* TSC1_TYPE == TSC_TYPE_STMPE811 */
+
+#if TSC1_TYPE == TSC_TYPE_FT5336
+	if (ft5336_Initialize(DIM_X, DIM_Y) == FT5336_I2C_INITIALIZED)
+		PRINTF("ft5336 initialization successful\n");
+	else
+	{
+		PRINTF("ft5336 initialization error\n");
+	}
+#endif /* TSC1_TYPE == TSC_TYPE_FT5336 */
+
+#if TSC1_TYPE == TSC_TYPE_XPT2046
+	xpt2046_initialize();
+#endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
+
+#if TSC1_TYPE == TSC_TYPE_S3402
+	s3402_initialize();
+	s3402_get_id();	// test
+#endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
+}
 
 #endif /* defined (TSC1_TYPE) */

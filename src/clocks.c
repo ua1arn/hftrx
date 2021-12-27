@@ -281,9 +281,14 @@ unsigned long stm32f4xx_get_tim3_freq(void)
 //#define	PCLK1_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 //#define	PCLK1_TIMERS_FREQ (CPU_FREQ / 4)	// 42 MHz PCLK1 frequency
 //#define	PCLK2_FREQ (CPU_FREQ / 2)	// 84 MHz PCLK2 frequency
+/* проверить функцию stm32f7xx_get_sysclk_freq */
 #define BOARD_SYSTICK_FREQ (stm32f7xx_get_sys_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+//#define BOARD_SYSTICK_FREQ (stm32f7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 #define BOARD_USART1_FREQ (stm32f7xx_get_usart1_freq())
+#define BOARD_TIM3_FREQ (stm32f7xx_get_apb1_tim_freq())	// TODO: verify
+#define BOARD_ADC_FREQ (stm32f7xx_get_apb2_freq())
+#define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())
 
 unsigned long stm32f7xx_get_hse_freq(void)
 {
@@ -352,10 +357,10 @@ unsigned long stm32f7xx_get_sys_freq(void)
 }
 
 // TODO: check
-unsigned long stm32f7xx_get_sysclk_freq(void)
-{
-	return stm32f7xx_get_sys_freq();
-}
+//unsigned long stm32f7xx_get_sysclk_freq(void)
+//{
+//	return stm32f7xx_get_sys_freq();
+//}
 
 // AHB prescaler
 // HPRE output
@@ -633,12 +638,6 @@ unsigned long stm32f7xx_get_uart8_freq(void)
 	}
 }
 
-
-#define BOARD_SYSTICK_FREQ (stm32f7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
-#define BOARD_TIM3_FREQ (stm32f7xx_get_apb1_tim_freq())	// TODO: verify
-#define BOARD_ADC_FREQ (stm32f7xx_get_apb2_freq())
-#define BOARD_USART2_FREQ 	(stm32f7xx_get_apb1_freq())
-
 #elif CPUSTYLE_STM32H7XX
 
 // HAL data
@@ -659,6 +658,8 @@ const  uint8_t D1CorePrescTable[16] = {0, 0, 0, 0, 1, 2, 3, 4, 1, 2, 3, 4, 6, 7,
 #define BOARD_USART2_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
 #define BOARD_USART3_FREQ 	(stm32h7xx_get_usart2_to_8_freq())
 #define BOARD_TIM3_FREQ 	(stm32h7xx_get_timx_freq())	// TIM2..TIM7, TIM12..TIM14, LPTIM1, : APB1 D2 bus
+#define BOARD_SYSTICK_FREQ 	(stm32h7xx_get_sys_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
+//#define BOARD_SYSTICK_FREQ (stm32h7xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 
 unsigned long stm32h7xx_get_hse_freq(void)
 {
@@ -2211,6 +2212,7 @@ void hardware_spi_io_delay(void)
 	__NOP();
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	local_delay_us(5);
+#elif _WIN32
 #else
 	// Cortex A9
 	__NOP();
@@ -2311,6 +2313,11 @@ void hardware_spi_io_delay(void)
 	void
 	SysTick_Handler(void)
 	{
+	}
+
+	void
+	SysTick_Handler_Active(void)
+	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
@@ -2367,8 +2374,13 @@ void hardware_spi_io_delay(void)
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
-	void RAMFUNC_NONILINE
+	void
 	SysTick_Handler(void)
+	{
+	}
+
+	void RAMFUNC_NONILINE
+	SysTick_Handler_Active(void)
 	{
 		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
@@ -2465,14 +2477,12 @@ void hardware_spi_io_delay(void)
 void
 hardware_timer_initialize(uint_fast32_t ticksfreq)
 {
-
 	tickers_initialize();
-
 
 #if CPUSTYLE_ARM_CM3 || CPUSTYLE_ARM_CM4 || CPUSTYLE_ARM_CM7
 
-	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
-	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// Call SysTick_Handler
+	arm_hardware_set_handler_system(SysTick_IRQn, SysTick_Handler_Active);		// разрешение прерывания игнорируется для системныз векторов
+	SysTick_Config(calcdivround2(BOARD_SYSTICK_FREQ, ticksfreq));	// CMSIS устанавливает SysTick_CTRL_CLKSOURCE_Msk
 
 #elif CPUSTYLE_ATMEGA328
 
@@ -2631,10 +2641,6 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-	#ifdef BOARD_BLINK_INITIALIZE
-		BOARD_BLINK_INITIALIZE();
-	#endif
-
 	#if 1
 		const uint_fast32_t period = calcdivround2(CPU_FREQ, ticksfreq * 2);	// Global Timer runs with the system frequency / 2
 		// Global timer use
@@ -2702,9 +2708,7 @@ void stm32mp1_pll1_slow(uint_fast8_t slow)
 }
 
 
-#if WITHISBOOTLOADER
-
-static void stm32mp1_pll_initialize(void)
+void stm32mp1_pll_initialize(void)
 {
 
 	//return;
@@ -2818,21 +2822,27 @@ static void stm32mp1_pll_initialize(void)
 	// Stop PLL4
 	RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
 	(void) RCC->PLL4CR;
+	while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
+		;
 
 	// Stop PLL3
 	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
 	(void) RCC->PLL3CR;
+	while ((RCC->PLL3CR & RCC_PLL3CR_PLLON_Msk) != 0)
+		;
 
 	// Stop PLL2
 	RCC->PLL2CR &= ~ RCC_PLL2CR_PLLON_Msk;
 	(void) RCC->PLL2CR;
+	while ((RCC->PLL2CR & RCC_PLL2CR_PLLON_Msk) != 0)
+		;
 
 	// Stop PLL1
-	RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
-	(void) RCC->PLL1CR;
+	//RCC->PLL1CR &= ~ RCC_PLL1CR_DIVPEN_Msk;
+	//(void) RCC->PLL1CR;
 	RCC->PLL1CR &= ~ RCC_PLL1CR_PLLON_Msk;
 	(void) RCC->PLL1CR;
-	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) != 0)
+	while ((RCC->PLL1CR & RCC_PLL1CR_PLLON_Msk) != 0)
 		;
 
 	#if WITHCPUXOSC
@@ -2901,6 +2911,7 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL1CFGR2;
 
 	RCC->PLL1CR |= RCC_PLL1CR_PLLON_Msk;
+	(void) RCC->PLL1CR;
 	while ((RCC->PLL1CR & RCC_PLL1CR_PLL1RDY_Msk) == 0)
 		;
 
@@ -2930,6 +2941,7 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CFGR2;
 
 	RCC->PLL2CR |= RCC_PLL2CR_PLLON_Msk;
+	(void) RCC->PLL2CR;
 	while ((RCC->PLL2CR & RCC_PLL2CR_PLL2RDY_Msk) == 0)
 		;
 
@@ -2940,7 +2952,7 @@ static void stm32mp1_pll_initialize(void)
 	(void) RCC->PLL2CR;
 
 #if 1//WITHSDRAMHW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	RCC->PLL2CR |= RCC_PLL2CR_DIVREN_Msk;	// DDR clock
 	(void) RCC->PLL2CR;
 #endif /* WITHSDRAMHW */
@@ -2948,65 +2960,6 @@ static void stm32mp1_pll_initialize(void)
 	RCC->PLL2CR &= ~ RCC_PLL2CR_SSCG_CTRL_Msk;
 	(void) RCC->PLL2CR;
 #endif // pll2
-
-#if 1// PLL4
-	// PLL4
-	// PLL4 source mux
-	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
-	//	0x1: HSE selected as PLL clock (hse_ck)
-	//	0x2: CSI selected as PLL clock (csi_ck)
-	//	0x3: Signal I2S_CKIN used as reference clock
-	RCC->RCK4SELR = (RCC->RCK4SELR & ~ (RCC_RCK4SELR_PLL4SRC_Msk)) |
-	#if WITHCPUXOSC || WITHCPUXTAL
-		// с внешним генератором
-		// с внешним кварцем
-		((uint_fast32_t) 0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
-	#else
-		// На внутреннем генераторе
-		((uint_fast32_t) 0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
-	#endif
-		0;
-	while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
-		;
-
-	RCC->PLL4CR = (RCC->PLL4CR & ~ (RCC_PLL4CR_DIVPEN_Msk | RCC_PLL4CR_DIVQEN_Msk | RCC_PLL4CR_DIVREN_Msk));
-	(void) RCC->PLL4CR;
-
-	RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVN_Msk | RCC_PLL4CFGR1_DIVM4_Msk)) |
-		((uint_fast32_t) (PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
-		((uint_fast32_t) (PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
-		0;
-	(void) RCC->PLL4CFGR1;
-
-	//const uint32_t pll4divq = calcdivround2(PLL4_FREQ, display_getdotclock(& vdmode0));
-	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVP_Msk | /* RCC_PLL4CFGR2_DIVQ_Msk | */ RCC_PLL4CFGR2_DIVR_Msk)) |
-		((uint_fast32_t) (PLL4DIVP - 1) << RCC_PLL4CFGR2_DIVP_Pos) |	// pll4_p_ck - xxxxx (1..128 -> 0x00..0x7f)
-		//((uint_fast32_t) (pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
-		((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
-		0;
-	(void) RCC->PLL4CFGR2;
-
-	RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
-	while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
-		;
-
-	RCC->PLL4CR &= ~ RCC_PLL4CR_SSCG_CTRL_Msk;
-	(void) RCC->PLL4CR;
-
-	RCC->PLL4CR |= RCC_PLL4CR_DIVPEN_Msk;	// pll2_p_ck - AXI clock
-	(void) RCC->PLL4CR;
-
-#if 0//WITHLTDCHW
-	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
-	(void) RCC->PLL4CR;
-#endif /* WITHLTDCHW */
-
-#if 1//WITHUSBHW
-	RCC->PLL4CR |= RCC_PLL4CR_DIVREN_Msk;	// USBPHY clock
-	(void) RCC->PLL4CR;
-#endif /* WITHUSBHW */
-
-#endif /* PLL4 */
 
 	// AXI, AHB5 and AHB6 clock divisor
 	//	0x0: axiss_ck (default after reset)
@@ -3128,9 +3081,8 @@ static void stm32mp1_pll_initialize(void)
 	while ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY_Msk) == 0)
 		;
 
-
 #if 1//WITHUART1HW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// usart1
 	//	0x0: pclk5 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll3_q_ck clock selected as kernel peripheral clock
@@ -3145,7 +3097,7 @@ static void stm32mp1_pll_initialize(void)
 #endif /* WITHUART1HW */
 
 #if 1//WITHUART2HW || WITHUART4HW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// UART2, UART4
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3160,7 +3112,7 @@ static void stm32mp1_pll_initialize(void)
 #endif /* WITHUART2HW || WITHUART4HW */
 
 #if 1//WITHUART3HW || WITHUART5HW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// UART3, UART5
 	//	0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//	0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3176,7 +3128,7 @@ static void stm32mp1_pll_initialize(void)
 #endif /* WITHUART3HW || WITHUART5HW */
 
 #if 1//WITHUART7HW || WITHUART8HW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// UART7, UART8
 	//0x0: pclk1 clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll4_q_ck clock selected as kernel peripheral clock
@@ -3191,7 +3143,7 @@ static void stm32mp1_pll_initialize(void)
 #endif /* WITHUART7HW || WITHUART8HW */
 
 #if 1//WITHSDHCHW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	// SDMMC1
 	//	0x0: hclk6 clock selected as kernel peripheral clock
 	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
@@ -3205,7 +3157,7 @@ static void stm32mp1_pll_initialize(void)
 #endif /* WITHSDHCHW */
 
 #if 1//WITHSPIHW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	//0x0: pll4_p_ck clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll3_q_ck clock selected as kernel peripheral clock
 	//0x2: I2S_CKIN clock selected as kernel peripheral clock
@@ -3218,13 +3170,13 @@ static void stm32mp1_pll_initialize(void)
 #endif /* WITHSPIHW */
 
 #if 1//WIHSPIDFHW
-	// В загркзчике еще может и не быть этой периферии
+	// В загрузчике еще может и не быть этой периферии
 	//0x0: aclk clock selected as kernel peripheral clock (default after reset)
 	//0x1: pll3_r_ck clock selected as kernel peripheral clock
 	//0x2: pll4_p_ck clock selected as kernel peripheral clock
 	//0x3: per_ck clock selected as kernel peripheral clock
 	RCC->QSPICKSELR = (RCC->QSPICKSELR & ~ (RCC_QSPICKSELR_QSPISRC_Msk)) |
-	((uint_fast32_t) 0x03 << RCC_QSPICKSELR_QSPISRC_Pos) |	// per_ck
+	((uint_fast32_t) 0x00 << RCC_QSPICKSELR_QSPISRC_Pos) |	// aclk (AXI CLOCK)
 		0;
 	(void) RCC->QSPICKSELR;
 #endif /* WIHSPIDFHW */
@@ -3254,8 +3206,65 @@ static void stm32mp1_pll_initialize(void)
 	while ((RCC->TIMG2PRER & RCC_TIMG2PRER_TIMG2PRERDY_Msk) == 0)
 		;
 
-#if 1//WITHUSBHW || WITHEHCIHW
-	// В загркзчике еще может и не быть этой периферии
+	//	ADC1 and 2 kernel clock source selection
+	//	Set and reset by software.
+	//	0x0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
+	//	0x1: per_ck clock selected as kernel peripheral clock
+	//	0x2: pll3_q_ck clock selected as kernel peripheral
+	RCC->ADCCKSELR = (RCC->ADCCKSELR & ~ (RCC_ADCCKSELR_ADCSRC_Msk)) |
+		(0x01 << RCC_ADCCKSELR_ADCSRC_Pos) |
+		0;
+	(void) RCC->ADCCKSELR;
+
+}
+
+void stm32mp1_usb_clocks_initialize(void)
+{
+	if (RCC_USBCKSELR_USBOSRC_VAL == 0x00 || RCC_USBCKSELR_USBPHYSRC_VAL == 0x01)
+	{
+		// Stop PLL4
+		RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
+		(void) RCC->PLL4CR;
+		while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
+			;
+		// PLL4 source mux
+		//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+		//	0x1: HSE selected as PLL clock (hse_ck)
+		//	0x2: CSI selected as PLL clock (csi_ck)
+		//	0x3: Signal I2S_CKIN used as reference clock
+		RCC->RCK4SELR = (RCC->RCK4SELR & ~ (RCC_RCK4SELR_PLL4SRC_Msk)) |
+		#if WITHCPUXOSC || WITHCPUXTAL
+			// с внешним генератором
+			// с внешним кварцем
+			((uint_fast32_t) 0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
+		#else
+			// На внутреннем генераторе
+			((uint_fast32_t) 0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
+		#endif
+			0;
+		while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
+			;
+
+		RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVN_Msk | RCC_PLL4CFGR1_DIVM4_Msk)) |
+	        ((uint_fast32_t) (PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
+	        ((uint_fast32_t) (PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
+	        0;
+	    (void) RCC->PLL4CFGR1;
+
+	    RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVR_Msk)) |
+			((uint_fast32_t) (PLL4DIVR - 1) << RCC_PLL4CFGR2_DIVR_Pos) |	// USBPHY clock (1..128 -> 0x00..0x7f)
+			0;
+		(void) RCC->PLL4CFGR2;
+
+		RCC->PLL4CR |= RCC_PLL4CR_DIVREN_Msk;	// USBPHY clock
+		(void) RCC->PLL4CR;
+
+		// Start PLL4
+		RCC->PLL4CR |= RCC_PLL4CR_PLLON_Msk;
+		while ((RCC->PLL4CR & RCC_PLL4CR_PLL4RDY_Msk) == 0)
+			;
+	}
+
 	//	In addition, if the USBO is used in full-speed mode only, the application can choose the
 	//	48 MHz clock source to be provided to the USBO:
 	// USBOSRC
@@ -3271,24 +3280,93 @@ static void stm32mp1_pll_initialize(void)
 		0;
 	(void) RCC->USBCKSELR;
 
-#endif /* WITHUSBHW || WITHEHCIHW */
-
-#if WITHELKEY
-	// TIM3 used
-
-#endif /* WITHELKEY */
 }
-#endif /* WITHISBOOTLOADER */
+
+void stm32mp1_audio_clocks_initialize(void)
+{
+	// Stop PLL3
+	RCC->PLL3CR &= ~ RCC_PLL3CR_PLLON_Msk;
+	(void) RCC->PLL3CR;
+	while ((RCC->PLL3CR & RCC_PLL3CR_PLLON_Msk) != 0)
+		;
+	// PLL3
+	// PLL3 source mux
+	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as PLL clock (hse_ck)
+	//	0x2: CSI selected as PLL clock (csi_ck)
+	//	0x3: No clock send to DIVMx divider and PLLs
+	RCC->RCK3SELR = (RCC->RCK3SELR & ~ (RCC_RCK3SELR_PLL3SRC_Msk)) |
+	#if WITHCPUXOSC || WITHCPUXTAL
+		// с внешним генератором
+		// с внешним кварцем
+		((uint_fast32_t) 0x01 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSE
+	#else
+		// На внутреннем генераторе
+		((uint_fast32_t) 0x00 << RCC_RCK3SELR_PLL3SRC_Pos) |	// HSI
+	#endif
+		0;
+	while ((RCC->RCK3SELR & RCC_RCK3SELR_PLL3SRCRDY_Msk) == 0)
+		;
+
+//	RCC->PLL3CR = (RCC->PLL3CR & ~ (RCC_PLL3CR_DIVPEN_Msk | RCC_PLL3CR_DIVQEN_Msk | RCC_PLL3CR_DIVREN_Msk));
+//	(void) RCC->PLL3CR;
+
+	RCC->PLL3CFGR1 = (RCC->PLL3CFGR1 & ~ (RCC_PLL3CFGR1_DIVM3_Msk | RCC_PLL3CFGR1_DIVN_Msk)) |
+		((uint_fast32_t) (PLL3DIVM - 1) << RCC_PLL3CFGR1_DIVM3_Pos) |
+		((uint_fast32_t) (PLL3DIVN - 1) << RCC_PLL3CFGR1_DIVN_Pos) |
+		0;
+	(void) RCC->PLL3CFGR1;
+
+	RCC->PLL3CFGR2 = (RCC->PLL3CFGR2 & ~ (RCC_PLL3CFGR2_DIVQ_Msk)) |
+		((uint_fast32_t) (PLL3DIVQ - 1) << RCC_PLL3CFGR2_DIVQ_Pos) |	// pll3_p_ck - xxxxx (1..128 -> 0x00..0x7f)
+		0;
+	(void) RCC->PLL3CFGR2;
+
+	RCC->PLL3CR |= RCC_PLL2CR_DIVQEN_Msk;
+	(void) RCC->PLL3CR;
+
+	RCC->PLL3CR &= ~ RCC_PLL3CR_SSCG_CTRL_Msk;
+	(void) RCC->PLL3CR;
+
+	RCC->PLL3CR |= RCC_PLL3CR_PLLON_Msk;
+	while ((RCC->PLL3CR & RCC_PLL3CR_PLL3RDY_Msk) == 0)
+		;
+}
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
 	const uint_fast32_t pll4divq = calcdivround2(stm32mp1_get_pll4_freq(), dotfreq);
 	ASSERT(pll4divq >= 1);
+
 	// Stop PLL4
 	RCC->PLL4CR &= ~ RCC_PLL4CR_PLLON_Msk;
 	(void) RCC->PLL4CR;
 	while ((RCC->PLL4CR & RCC_PLL4CR_PLLON_Msk) != 0)
 		;
+
+	// PLL4 source mux
+	//	0x0: HSI selected as PLL clock (hsi_ck) (default after reset)
+	//	0x1: HSE selected as PLL clock (hse_ck)
+	//	0x2: CSI selected as PLL clock (csi_ck)
+	//	0x3: Signal I2S_CKIN used as reference clock
+	RCC->RCK4SELR = (RCC->RCK4SELR & ~ (RCC_RCK4SELR_PLL4SRC_Msk)) |
+	#if WITHCPUXOSC || WITHCPUXTAL
+		// с внешним генератором
+		// с внешним кварцем
+		((uint_fast32_t) 0x01 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSE
+	#else
+		// На внутреннем генераторе
+		((uint_fast32_t) 0x00 << RCC_RCK4SELR_PLL4SRC_Pos) |	// HSI
+	#endif
+		0;
+	while ((RCC->RCK4SELR & RCC_RCK4SELR_PLL4SRCRDY_Msk) == 0)
+		;
+
+	RCC->PLL4CFGR1 = (RCC->PLL4CFGR1 & ~ (RCC_PLL4CFGR1_DIVM4_Msk | RCC_PLL4CFGR1_DIVN_Msk)) |
+		((uint_fast32_t) (PLL4DIVM - 1) << RCC_PLL4CFGR1_DIVM4_Pos) |
+		((uint_fast32_t) (PLL4DIVN - 1) << RCC_PLL4CFGR1_DIVN_Pos) |
+		0;
+	(void) RCC->PLL4CFGR1;
 
 	RCC->PLL4CFGR2 = (RCC->PLL4CFGR2 & ~ (RCC_PLL4CFGR2_DIVQ_Msk)) |
 		((pll4divq - 1) << RCC_PLL4CFGR2_DIVQ_Pos) |	// LTDC clock (1..128 -> 0x00..0x7f)
@@ -3296,6 +3374,9 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	(void) RCC->PLL4CFGR2;
 
 	RCC->PLL4CR |= RCC_PLL4CR_DIVQEN_Msk;	// LTDC clock
+	(void) RCC->PLL4CR;
+
+	RCC->PLL4CR &= ~ RCC_PLL4CR_SSCG_CTRL_Msk;
 	(void) RCC->PLL4CR;
 
 	// Start PLL4
@@ -5976,8 +6057,8 @@ sysinit_pll_initialize(void)
 		stm32mp1_pll_initialize();
 	#endif /* WITHISBOOTLOADER */
 
-	// Hang-off QSPI memory
-	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+	stm32mp1_usb_clocks_initialize();
+	stm32mp1_audio_clocks_initialize();
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	#if WITHISBOOTLOADER
@@ -6037,11 +6118,6 @@ sysinit_pll_initialize(void)
 		SCLR->APER_CLK_CTRL |= (0x01uL << 22);	/* APER_CLK_CTRL.GPIO_CPU_1XCLKACT */
 
 	#endif /* WITHISBOOTLOADER */
-
-	xc7z_hardware_initialize();
-
-	// Hang-off QSPI memory
-	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 
 #endif
 	SystemCoreClock = CPU_FREQ;
@@ -7065,7 +7141,7 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	#if WITHTWIHW
@@ -7089,7 +7165,7 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	#if WITHTWIHW
@@ -7283,7 +7359,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	/* дождаться завершения приёма/передачи */
 	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
 		;
-	return (SPI->SPI_RDR & SPI_TDR_TD_Msk);
+	return (SPI->SPI_RDR & SPI_TDR_TD_Msk) & 0xFF;
 
 #elif CPUSTYLE_AT91SAM7S
 
@@ -8228,7 +8304,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_STM32F4XX || CPUSTYLE_STM32L0XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	SPI1->CR1 = spi_cr1_val16w [spispeedindex][spimode];
@@ -8243,7 +8319,7 @@ void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F7XX
 
-	// В этих процессорах и входы и выходы перекдючаются на ALT FN
+	// В этих процессорах и входы и выходы переключаются на ALT FN
 	HARDWARE_SPI_CONNECT();
 
 	SPI1->CR1 = spi_cr1_val16w [spispeedindex] [spimode];
@@ -8414,12 +8490,14 @@ void RAMFUNC hardware_spi_b16_p1(
 
 /* передача одного из средних байтов/слов в последовательности */
 /* дождаться готовности, передача байта */
-void RAMFUNC hardware_spi_b16_p2(
+portholder_t RAMFUNC hardware_spi_b16_p2(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
-	hardware_spi_ready_b16_void();	/* дождаться завершения передачи */
+	portholder_t r;
+	r = hardware_spi_complete_b16();	/* дождаться завершения передачи */
 	hardware_spi_b16_p1(v);	/* передать символ */
+	return r;
 }
 
 /* передача байта/слова, возврат считанного */
@@ -8543,12 +8621,14 @@ void hardware_spi_b32_p1(
 
 /* передача одного из средних байтов/слов в последовательности */
 /* дождаться готовности, передача байта */
-void hardware_spi_b32_p2(
+portholder_t hardware_spi_b32_p2(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
-	hardware_spi_ready_b32_void();	/* дождаться завершения передачи */
+	portholder_t r;
+	r = hardware_spi_complete_b32();	/* дождаться завершения передачи */
 	hardware_spi_b32_p1(v);	/* передать символ */
+	return r;
 }
 
 /* передача байта/слова, возврат считанного */
@@ -8609,12 +8689,14 @@ void hardware_spi_b8_p1(
 
 /* передача одного из средних байтов/слов в последовательности */
 /* дождаться готовности, передача байта */
-void hardware_spi_b8_p2(
+portholder_t hardware_spi_b8_p2(
 	portholder_t v		/* значение байта для передачи */
 	)
 {
-	hardware_spi_ready_b8_void();	/* дождаться завершения передачи (на atmega оптимизированно по скорости - без чиения регистра данных). */
+	portholder_t r;
+	r = hardware_spi_complete_b8();	/* дождаться завершения передачи (на atmega оптимизированно по скорости - без чиения регистра данных). */
 	hardware_spi_b8_p1(v);	/* передать символ */
+	return r;
 }
 /* передача байта/слова, возврат считанного */
 portholder_t hardware_spi_b8(
@@ -10502,6 +10584,16 @@ void hardware_sdhost_initialize(void)
 	SDMMC1->POWER = 3 * SDMMC_POWER_PWRCTRL_0;
 
 #elif CPUSTYLE_STM32MP1
+
+	//	0x0: hclk6 clock selected as kernel peripheral clock
+	//	0x1: pll3_r_ck clock selected as kernel peripheral clock
+	//	0x2: pll4_p_ck clock selected as kernel peripheral clock
+	//	0x3: hsi_ker_ck clock selected as kernel peripheral clock (default after reset)
+
+	RCC->SDMMC12CKSELR = (RCC->SDMMC12CKSELR & ~ (RCC_SDMMC12CKSELR_SDMMC12SRC_Msk)) |
+			(0x03uL << RCC_SDMMC12CKSELR_SDMMC12SRC_Pos) |	// hsi_ker_ck
+			0;
+	(void) RCC->SDMMC12CKSELR;
 
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_SDMMC1EN;   // подаем тактирование на SDMMC1
 	(void) RCC->MP_AHB6ENSETR;

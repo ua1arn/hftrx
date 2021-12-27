@@ -2460,8 +2460,8 @@ void panel_initialize(const videomode_t * vdmode)
 
 	PRINTF("display on\n");
 
-	s3402_init();
-	s3402_get_id();
+//	s3402_init();
+//	s3402_get_id();
 }
 
 void panel_wakeup(void)

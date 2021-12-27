@@ -92,6 +92,10 @@ ULIBDIR =
 # List all user libraries here
 ULIBS = 
 
+# taken from
+# https://stackoverflow.com/questions/2483182/recursive-wildcards-in-gnu-make/18258352#18258352
+rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(filter $(subst *, %, $(2)), $(d)))
+
 #SRC_EXCLUDES += ../../tools/rbf2c.c
 SRC += $(filter-out $(SRC_EXCLUDES), $(wildcard $(SRCDIR)/*.c $(SRCDIR)/*/*.c $(SRCDIR)/*/*/*.c $(SRCDIR)/*/*/*/*.c))
 VPATH = $(SRCDIR)
@@ -179,9 +183,6 @@ clean:
 # 
 # Include the dependency files, should be the last of the makefile
 #
--include $(wildcard $(OBJDIR)/*.d)
--include $(wildcard $(OBJDIR)/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*.d)
--include $(wildcard $(OBJDIR)/*/*/*/*.d)
+-include $(call rwildcard, $(OBJDIR), *.d)
 
 # *** EOF ***

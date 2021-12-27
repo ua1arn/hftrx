@@ -36,11 +36,6 @@
 - "stm32xxxxx_{eval}{discovery}_sdram.c"
 EndBSPDependencies */
 
-#include "hardware.h"
-#include "formats.h"
-
-#if WITHUSBHW
-
 /* Includes ------------------------------------------------------------------*/
 #include "../Inc/usbh_msc.h"
 #include "../Inc/usbh_msc_bot.h"
@@ -177,7 +172,7 @@ static USBH_StatusTypeDef USBH_MSC_InterfaceInit(USBH_HandleTypeDef *phost, cons
   }
 
   // Also see usage of USBH_free in USBH_MSC_InterfaceDeInit
-  static MSC_HandleTypeDef staticMSC_Handle;
+  static RAMNOINIT_D1 MSC_HandleTypeDef staticMSC_Handle;
   phost->pActiveClass->pData = & staticMSC_Handle;
   //phost->pActiveClass->pData = (MSC_HandleTypeDef *) USBH_malloc(sizeof (MSC_HandleTypeDef));
   MSC_Handle = (MSC_HandleTypeDef *) phost->pActiveClass->pData;
@@ -442,7 +437,48 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
             break;
 
           case MSC_READ_CAPACITY10:
-            scsi_status = USBH_MSC_SCSI_ReadCapacity(phost, (uint8_t)MSC_Handle->current_lun, &MSC_Handle->unit[MSC_Handle->current_lun].capacity) ;
+            scsi_status = USBH_MSC_SCSI_ReadCapacity10(phost, (uint8_t)MSC_Handle->current_lun, &MSC_Handle->unit[MSC_Handle->current_lun].capacity) ;
+
+            if (scsi_status == USBH_OK)
+            {
+            	if (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 == 0)	// OPCODE_READ_CAPACITY10 command reurn 0xFFFFFFFF
+            	{
+                    //USBH_UsrLog("MSC Device (lun=%d) capacity too large, use MSC_READ_CAPACITY16", (int) MSC_Handle->current_lun);
+                    MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_READ_CAPACITY16;
+                    MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;
+                    MSC_Handle->unit[MSC_Handle->current_lun].prev_ready_state = USBH_OK;
+            	}
+            	else
+            	{
+                    if (MSC_Handle->unit[MSC_Handle->current_lun].state_changed == 1U)
+                    {
+                      USBH_UsrLog("MSC Device capacity (lun=%d): %lu KBytes",
+      						(int) MSC_Handle->current_lun,
+      						(unsigned long) (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
+      			      USBH_UsrLog("Block number : %llu", (unsigned long long)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64));
+                      USBH_UsrLog("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
+                    }
+                    MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
+                    MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_OK;
+                    MSC_Handle->current_lun++;
+            	}
+              }
+            else if (scsi_status == USBH_FAIL)
+            {
+              MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_REQUEST_SENSE;
+            }
+            else
+            {
+              if (scsi_status == USBH_UNRECOVERED_ERROR)
+              {
+                MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
+                MSC_Handle->unit[MSC_Handle->current_lun].error = MSC_ERROR;
+              }
+            }
+            break;
+
+          case MSC_READ_CAPACITY16:
+            scsi_status = USBH_MSC_SCSI_ReadCapacity16(phost, (uint8_t)MSC_Handle->current_lun, &MSC_Handle->unit[MSC_Handle->current_lun].capacity) ;
 
             if (scsi_status == USBH_OK)
             {
@@ -450,8 +486,8 @@ static USBH_StatusTypeDef USBH_MSC_Process(USBH_HandleTypeDef *phost)
               {
                 USBH_UsrLog("MSC Device capacity (lun=%d): %lu KBytes",
 						(int) MSC_Handle->current_lun,
-						(unsigned long) ((int64_t)MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
-			USBH_UsrLog("Block number : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr));
+						(unsigned long) (MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64 * MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size / 1024));
+			    USBH_UsrLog("Block number : %llu", (unsigned long long)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_nbr64));
                 USBH_UsrLog("Block Size   : %lu", (int32_t)(MSC_Handle->unit[MSC_Handle->current_lun].capacity.block_size));
               }
               MSC_Handle->unit[MSC_Handle->current_lun].state = MSC_IDLE;
@@ -830,7 +866,7 @@ USBH_StatusTypeDef USBH_MSC_GetLUNInfo(USBH_HandleTypeDef *phost, uint8_t lun, M
   */
 USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
                                  uint8_t lun,
-                                 uint32_t address,
+								 uint64_t address,
                                  uint8_t *pbuf,
                                  uint32_t length)
 {
@@ -855,7 +891,10 @@ USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
 	MSC_Handle->unit [lun].state = MSC_READ;
 	MSC_Handle->rw_lun = lun;
 
-	(void) USBH_MSC_SCSI_Read10(phost, lun, address, pbuf, length);
+	if ((address + length) > 0xFFFFFFFF)
+		(void) USBH_MSC_SCSI_Read16(phost, lun, address, pbuf, length);
+	else
+		(void) USBH_MSC_SCSI_Read10(phost, lun, address, pbuf, length);
 
 	timeout = phost->Timer;
 
@@ -884,7 +923,7 @@ USBH_StatusTypeDef USBH_MSC_Read(USBH_HandleTypeDef *phost,
   */
 USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
                                   uint8_t lun,
-                                  uint32_t address,
+								  uint64_t address,
                                   uint8_t *pbuf,
                                   uint32_t length)
 {
@@ -913,7 +952,10 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
 	MSC_Handle->unit [lun].state = MSC_WRITE;
 	MSC_Handle->rw_lun = lun;
 
-	(void) USBH_MSC_SCSI_Write10(phost, lun, address, pbuf, length);
+	if ((address + length) > 0xFFFFFFFF)
+		(void) USBH_MSC_SCSI_Write16(phost, lun, address, pbuf, length);
+	else
+		(void) USBH_MSC_SCSI_Write10(phost, lun, address, pbuf, length);
 
 	timeout = phost->Timer;
 	while (USBH_MSC_RdWrProcess(phost, lun) == USBH_BUSY)
@@ -949,4 +991,3 @@ USBH_StatusTypeDef USBH_MSC_Write(USBH_HandleTypeDef *phost,
   */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-#endif /* WITHUSBHW */

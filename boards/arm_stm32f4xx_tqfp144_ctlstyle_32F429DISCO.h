@@ -273,14 +273,14 @@
 	#endif
 
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
-	//#define WITHSAI1_FRAMEBITS 256	// Полный размер фрейма
-	#define WITHSAI1_FRAMEBITS 64	// Полный размер фрейма
-	#define WITHSAI1_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
+	//#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
+	#define WITHFPGAIF_FRAMEBITS 64	// Полный размер фрейма
+	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define FPGADIVIDERATIO 5
 	#define EXTSAI_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
 
 	#define EXTI2S_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
-	#define WITHI2S_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
+	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE

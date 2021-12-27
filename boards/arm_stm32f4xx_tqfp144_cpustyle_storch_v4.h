@@ -22,9 +22,14 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
-//#define WITHI2SHW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
+//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 //#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
+
+#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
+//#define WITHCODEC1_I2S2_TX_SLAVE	1		/* Передача в аудиокодек через I2S2 */
+//#define WITHCODEC1_I2S3_RX_SLAVE	1		/* Прием от аудиокодекоа через I2S3 */
 
 #define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 #define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
@@ -218,7 +223,7 @@
 
 #endif
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	// Инициализируются I2S2 и I2S3
 	#define I2S2HW_INITIALIZE() do { \
 		arm_hardware_piob_altfn2(1U << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
@@ -384,6 +389,10 @@
 	#define ELKEY_BIT_LEFT				0//(1U << 10)		// PD10
 	#define ELKEY_BIT_RIGHT				0//(1U << 11)		// PD11
 
+	#define HARDWARE_GET_ELKEY_LEFT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
+
 	#define ELKEY_INITIALIZE() \
 		do { \
 		} while (0)
@@ -448,8 +457,8 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
-			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы перекдючаются на ALT FN */ \
+			arm_hardware_piob_altfn20(SPI_MOSI_BIT | SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_pioa_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_pioa_outputs(SPI_SCLK_BIT, SPI_SCLK_BIT); \
@@ -639,5 +648,7 @@
 		HARDWARE_KBD_INITIALIZE(); \
 		HARDWARE_DAC_INITIALIZE(); \
 		} while (0)
+
+	#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v7_1ch.h"
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_STORCH_V4_H_INCLUDED */

@@ -6,13 +6,12 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2019 STMicroelectronics.
-  * All rights reserved.</center></h2>
+  * Copyright (c) 2019 STMicroelectronics.
+  * All rights reserved.
   *
-  * This software component is licensed by ST under BSD 3-Clause license,
-  * the "License"; You may not use this file except in compliance with the
-  * License. You may obtain a copy of the License at:
-  *                        opensource.org/licenses/BSD-3-Clause
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -755,10 +754,10 @@ ErrorStatus LL_RTC_EnterInitMode(RTC_TypeDef *RTCx)
     tmp = LL_RTC_IsActiveFlag_INIT(RTCx);
     while ((timeout != 0U) && (tmp != 1U))
     {
-//      if (LL_SYSTICK_IsActiveCounterFlag() == 1U)
-//      {
-//        timeout --;
-//      }
+      if (LL_SYSTICK_IsActiveCounterFlag() == 1U)
+      {
+        timeout --;
+      }
       tmp = LL_RTC_IsActiveFlag_INIT(RTCx);
       if (timeout == 0U)
       {
@@ -823,10 +822,10 @@ ErrorStatus LL_RTC_WaitForSynchro(RTC_TypeDef *RTCx)
   tmp = LL_RTC_IsActiveFlag_RS(RTCx);
   while ((timeout != 0U) && (tmp != 0U))
   {
-//    if (LL_SYSTICK_IsActiveCounterFlag() == 1U)
-//    {
-//      timeout--;
-//    }
+    if (LL_SYSTICK_IsActiveCounterFlag() == 1U)
+    {
+      timeout--;
+    }
     tmp = LL_RTC_IsActiveFlag_RS(RTCx);
     if (timeout == 0U)
     {
@@ -840,10 +839,10 @@ ErrorStatus LL_RTC_WaitForSynchro(RTC_TypeDef *RTCx)
     tmp = LL_RTC_IsActiveFlag_RS(RTCx);
     while ((timeout != 0U) && (tmp != 1U))
     {
-//      if (LL_SYSTICK_IsActiveCounterFlag() == 1U)
-//      {
-//        timeout--;
-//      }
+      if (LL_SYSTICK_IsActiveCounterFlag() == 1U)
+      {
+        timeout--;
+      }
       tmp = LL_RTC_IsActiveFlag_RS(RTCx);
       if (timeout == 0U)
       {
@@ -874,5 +873,3 @@ ErrorStatus LL_RTC_WaitForSynchro(RTC_TypeDef *RTCx)
   */
 
 #endif /* USE_FULL_LL_DRIVER */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

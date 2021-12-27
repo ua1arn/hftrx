@@ -3477,7 +3477,7 @@ void fb_initialize(struct fb * p)
 #endif
 }
 
-static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbuff [FF_MAX_SS * 256] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
+static RAMNOINIT_D1 FATFSALIGN_BEGIN uint8_t rbwruff [FF_MAX_SS * 32] FATFSALIGN_END;		// буфер записи - при совпадении с _MAX_SS нельзя располагать в Cortex-M4 CCM
 
 
 static void showprogress(
@@ -3510,6 +3510,9 @@ static void printtextfile(const char * filename)
 	for (;;)
 	{
 		char kbch;
+#if WITHUSBHW
+		board_usbh_polling();     // usb device polling
+#endif /* WITHUSBHW */
 
 		if (dbg_getchar(& kbch) != 0)
 		{
@@ -3520,7 +3523,7 @@ static void printtextfile(const char * filename)
 		if (i >= br)
 		{
 			// если буфер не заполнен - читаем
-			rc = f_read(& Fil, rbuff, sizeof rbuff, &br);	/* Read a chunk of file */
+			rc = f_read(& Fil, rbwruff, sizeof rbwruff, &br);	/* Read a chunk of file */
 			if (rc != FR_OK || !br)
 				break;			/* Error or end of file */
 			i = 0;		// начальное положение указателя в буфере для вывода данных
@@ -3531,7 +3534,7 @@ static void printtextfile(const char * filename)
 			++ i;
 			showprogress(++ filepos, fulllength);
 		}
-		else if (dbg_putchar(rbuff[i]))
+		else if (dbg_putchar(rbwruff[i]))
 		{
 			++ i;
 			showprogress(++ filepos, fulllength);
@@ -3612,12 +3615,12 @@ static void dosaveserialport(const char * fname)
 		if (rxqpeek(& c) != 0)
 		{
 			// получен очередной символ из порта - сохраняем в буфер
-			rbuff [i ++] = c;
+			rbwruff [i ++] = c;
 			showprogress(++ filepos, 0);
-			if (i >= (sizeof rbuff / sizeof rbuff [0]))
+			if (i >= (sizeof rbwruff / sizeof rbwruff [0]))
 			{
 				UINT bw;
-				rc = f_write(& Fil, rbuff, i, & bw);
+				rc = f_write(& Fil, rbwruff, i, & bw);
 				if (rc != 0 || bw == 0)
 					break;
 				i = 0;
@@ -3628,7 +3631,7 @@ static void dosaveserialport(const char * fname)
 	if (i != 0)
 	{
 		UINT bw;
-		rc = f_write(& Fil, rbuff, i, & bw);
+		rc = f_write(& Fil, rbwruff, i, & bw);
 		if (rc != 0 || bw != i)
 		{
 			TP();
@@ -3697,12 +3700,12 @@ static int dosaveblocks(const char * fname)
 	unsigned j;
 	static unsigned i;
 	static unsigned q;
-	memset(rbuff, 0x20, sizeof rbuff);
-	for (j = 0; j < ARRAY_SIZE(rbuff) - 16; j += 80)
+	memset(rbwruff, 0x20, sizeof rbwruff);
+	for (j = 0; j < ARRAY_SIZE(rbwruff) - 16; j += 80)
 	{
-		USBD_poke_u32_BE(rbuff + j + 16 - 4, ++ q);
+		USBD_poke_u32_BE(rbwruff + j + 16 - 4, ++ q);
 	}
-	USBD_poke_u32_BE(rbuff, ++ i);
+	USBD_poke_u32_BE(rbwruff, ++ i);
 	rc = f_open(& Fil, fname, FA_WRITE | FA_CREATE_ALWAYS);
 	if (rc)
 	{
@@ -3720,7 +3723,7 @@ static int dosaveblocks(const char * fname)
 	}
 	else
 	{
-		PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
+		//PRINTF("f_expand: rc=0x%02X\n", (unsigned) rc);
 	}
 #endif
 
@@ -3766,8 +3769,8 @@ static int dosaveblocks(const char * fname)
 			}
 		}
 		UINT bw;
-		rc = f_write(& Fil, rbuff, sizeof rbuff, & bw);
-		if (rc != 0 || bw != sizeof rbuff)
+		rc = f_write(& Fil, rbwruff, sizeof rbwruff, & bw);
+		if (rc != 0 || bw != sizeof rbwruff)
 		{
 			PRINTF("write fail, rc=0x%02X\n", (unsigned) rc);
 			break;
@@ -3880,7 +3883,7 @@ void displfiles_buff(const char* path)
             } 
 			else                                        /* It is a file. */
 			{
-                //printf("%s/%s\n", path, fn);
+                //PRINTF("%s/%s\n", path, fn);
  				PRINTF(PSTR("displfiles_buff: %9lu '%s'\n"), (unsigned long) pfno->fsize,  fn);
 			}
         }
@@ -4066,6 +4069,9 @@ static void diskio_test(void)
 
 					for (pos = 0; pos < v; )
 					{
+						#if WITHUSBHW
+								board_usbh_polling();     // usb device polling
+						#endif /* WITHUSBHW */
 						// проверка прерывания работы с клавиатуры
 						char c;
 						if (dbg_getchar(& c))
@@ -4612,7 +4618,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 		if (i >= br)
 		{
 			// если буфер не заполнен - читаем
-			rc = f_read(& Fil, rbuff, sizeof rbuff, &br);	/* Read a chunk of file */
+			rc = f_read(& Fil, rbwruff, sizeof rbwruff, &br);	/* Read a chunk of file */
 			if (rc || !br) 
 				break;			/* Error or end of file */
 			i = 0;		// начальное положение указателя в буфере для вывода данных
@@ -4620,7 +4626,7 @@ static int parsehex(const TCHAR * filename, int (* usedata)(unsigned long addr, 
 		}
 		else 
 		{
-			int c = rbuff [i ++];
+			int c = rbwruff [i ++];
 			if (c == EOF)
 			{
 				if (hexstate != HSINIT)
@@ -5083,7 +5089,7 @@ void looptests(void)
 		dsp_speed_diagnostics();	// печать в последовательный порт результатов диагностики
 	}
 #endif
-#if 0 && WITHINTEGRATEDDSP && WITHDEBUG
+#if 1 && WITHINTEGRATEDDSP && WITHDEBUG
 	{
 		// See buffers.c - WITHBUFFERSDEBUG
 		buffers_diagnostics();
@@ -6152,11 +6158,291 @@ void calcnormaltriangle(const float * model)
 //	v1.нормаль = нормализовать( tr1.нормаль + tr2.нормаль + tr3.нормаль)
 #endif
 
+#if 0 && WITHDEBUG && WITHSMPSYSTEM
+
+static void SecondCPUTaskSGI13(void)
+{
+	const int cpu = __get_MPIDR() & 0x03;
+	PRINTF("mSGI13 Run debug thread test: I am CPU=%d\n", cpu);
+}
+
+static void SecondCPUTaskSGI15(void)
+{
+	const int cpu = __get_MPIDR() & 0x03;
+	PRINTF("mSGI15 Run debug thread test: I am CPU=%d\n", cpu);
+}
+
+#endif
+
+#if 0
+// See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
+static void adis161xx_write16(unsigned page, unsigned addr, unsigned value)
+{
+	enum { WRITEFLAG = 0x80 };
+	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
+	const spi_modes_t spimode = SPIC_MODE3;
+	const unsigned wrriteflag = 1;
+	const spitarget_t cs = targetext2;
+	unsigned v1, v2;
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | 0x00);	// 0x80: write, addr=0x00: page_id register
+	spi_read_byte(cs, page);	// page value
+	spi_unselect(cs);
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | (addr & 0x7F));
+	spi_read_byte(cs, value >> 0);
+	spi_unselect(cs);
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | ((addr & 0x7F) + 1));
+	spi_read_byte(cs, value >> 8);
+	spi_unselect(cs);
+
+	//local_delay_ms(10);
+
+}
+
+// See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
+static unsigned adis161xx_read16(unsigned page, unsigned addr)
+{
+	enum { WRITEFLAG = 0x80 };
+	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
+	const spi_modes_t spimode = SPIC_MODE3;
+	const unsigned wrriteflag = 0;
+	const spitarget_t cs = targetext2;
+	unsigned v1, v2;
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | 0x00);	// 0x80: write, addr=0x00: page_id register
+	spi_read_byte(cs, page);	// page value
+	spi_unselect(cs);
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, addr & 0x7F);
+	spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	spi_select2(cs, spimode, spispeedindex);
+	v1 = spi_read_byte(cs, 0);
+	v2 = spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	return v1 * 256 + v2;
+}
+
+// See also https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16137.pdf
+static uint_fast32_t adis161xx_read32(unsigned page, unsigned addr)
+{
+	enum { WRITEFLAG = 0x80 };
+	const uint_fast8_t spispeedindex = SPIC_SPEED1M;
+	const spi_modes_t spimode = SPIC_MODE3;
+	const unsigned wrriteflag = 0;
+	const spitarget_t cs = targetext2;
+	unsigned v1, v2, v3, v4;
+
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, WRITEFLAG | 0x00);	// 0x80: write, addr=0x00: page_id register
+	spi_read_byte(cs, page);	// page value
+	spi_unselect(cs);
+
+	// LOW part of pair
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, (addr & 0x7F) + 0);
+	spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	spi_select2(cs, spimode, spispeedindex);
+	v1 = spi_read_byte(cs, 0);
+	v2 = spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	// OUT part of pair
+	spi_select2(cs, spimode, spispeedindex);
+	spi_read_byte(cs, (addr & 0x7F) + 2);
+	spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+
+	spi_select2(cs, spimode, spispeedindex);
+	v3 = spi_read_byte(cs, 0);
+	v4 = spi_read_byte(cs, 0);
+	spi_unselect(cs);
+
+	return
+			((uint_fast32_t) v1) << 8 |
+			((uint_fast32_t) v2) << 0 |
+			((uint_fast32_t) v3) << 24 |
+			((uint_fast32_t) v4) << 16 |
+			0;
+}
+
+#endif
+
 void hightests(void)
 {
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0
+	{
+		// Test for ADIS16IMU1/PCB
+		// SYS_MODE_CURR (Страница 1, адрес 0x36)
+
+		// Wait for module ready
+		for (;;)
+		{
+			const unsigned SYS_E_FLAG = adis161xx_read16(0x00, 0x08);
+			const unsigned PROD_ID = adis161xx_read16(0x00, 0x7E);
+			if (PROD_ID == 0x4060 && SYS_E_FLAG == 0)
+				break;
+			PRINTF("SYS_E_FLAG=%04X, Waiting for PROD_ID=0x4060 (%04X)\n", SYS_E_FLAG, PROD_ID);
+
+		}
+		for (;;)
+		{
+			enum { TEMP_BP = 5 };	// binary point of temperature
+			const unsigned TEMP_OUT = 0x297B;//adis161xx_read16(0x00, 0x0E);
+			const unsigned SYS_E_FLAG = adis161xx_read16(0x00, 0x08);
+			const unsigned FIRM_Y = adis161xx_read16(0x03, 0x7C);
+			const unsigned FIRM_DM = adis161xx_read16(0x03, 0x7A);
+			const unsigned FIRM_REV = adis161xx_read16(0x03, 0x78);
+			const unsigned SERIAL_NUM = adis161xx_read16(0x04, 0x20);
+
+			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X, FIRM_Y=%04X, FIRM_DM=%04X, FIRM_REV=%04X, SERIAL_NUM=%04X, TEMP_OUT=%d / 10\n", adis161xx_read16(0x03, 0x54), adis161xx_read16(0x00, 0x08), FIRM_Y, FIRM_DM, FIRM_REV, SERIAL_NUM, TEMP_OUT, ((int16_t) TEMP_OUT + (0*250 << TEMP_BP)) >> TEMP_BP);
+
+			for (;;)
+			{
+				// Получение компонент кватерниона ориентации
+				int16_t Q0_C11_OUT =  adis161xx_read16(0x00, 0x60);	// Компонент λ0 кватерниона ориентации
+				int16_t Q1_C12_OUT =  adis161xx_read16(0x00, 0x62);	// Компонент λ1 кватерниона ориентации
+				int16_t Q2_C13_OUT =  adis161xx_read16(0x00, 0x64);	// Компонент λ2 кватерниона ориентации
+				int16_t Q3_C21_OUT =  adis161xx_read16(0x00, 0x66);	// Компонент λ3 кватерниона ориентации
+
+				int16_t ROLL_C23_OUT = adis161xx_read16(0x00, 0x6A);
+				int16_t PITCH_C31_OUT = adis161xx_read16(0x00, 0x6C);
+				int16_t YAW_C32_OUT = adis161xx_read16(0x00, 0x6E);
+
+				//PRINTF("Q0=%f, Q1=%f, Q2=%f, Q3=%f\n", Q0_C11_OUT / 32768.0f, Q1_C12_OUT / 32768.0f, Q2_C13_OUT / 32768.0f, Q3_C21_OUT / 32768.0f);
+
+				float x = Q0_C11_OUT / 32768.0f;
+				float y = Q1_C12_OUT / 32768.0f;
+				float z = Q2_C13_OUT / 32768.0f;
+				float w = Q3_C21_OUT / 32768.0f;
+
+				// https://coderoad.ru/53033620/%D0%9A%D0%B0%D0%BA-%D0%BF%D1%80%D0%B5%D0%BE%D0%B1%D1%80%D0%B0%D0%B7%D0%BE%D0%B2%D0%B0%D1%82%D1%8C-%D1%83%D0%B3%D0%BB%D1%8B-%D0%AD%D0%B9%D0%BB%D0%B5%D1%80%D0%B0-%D0%B2-%D0%BA%D0%B2%D0%B0%D1%82%D0%B5%D1%80%D0%BD%D0%B8%D0%BE%D0%BD%D1%8B-%D0%B8-%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B8%D1%82%D1%8C-%D1%82%D0%B5-%D0%B6%D0%B5-%D1%83%D0%B3%D0%BB%D1%8B-%D0%AD%D0%B9%D0%BB%D0%B5%D1%80%D0%B0
+		        float t0 = +2.0f * (w * x + y * z);
+				float t1 = +1.0f - 2.0f * (x * x + y * y);
+		        float X = atan2f(t0, t1);
+
+		        float t2;
+		        t2 = +2.0f * (w * y - z * x);
+		        t2 = t2 > +1.0f ? +1.0f : t2;
+		        t2 = t2 < -1.0f ? -1.0f : t2;
+		        float Y = asinf(t2);
+
+		        float t3 = +2.0f * (w * z + x * y);
+		        float t4 = +1.0f - 2.0f * (y * y + z * z);
+		        float Z = atan2f(t3, t4);
+
+		        //PRINTF("X=%f, Y=%f, Z=%f\n", X * (180 / M_PI), Y * (180 / M_PI), Z * (180 / M_PI));
+		        PRINTF("HABS=%f, ROLL=%f, PITCH=%f, YAW=%f, BAROM=%f\n",
+						(int32_t) adis161xx_read32(0x01, 0x14) / 65536.0f,
+		        		ROLL_C23_OUT / 32768.0f * 180.0f,
+						PITCH_C31_OUT / 32768.0f * 180.0f,
+						YAW_C32_OUT / 32768.0f * 180.0f,
+						(int32_t) adis161xx_read32(0x00, 0x2E) / 65536.0f / 25000
+						);
+
+			}
+			{
+				unsigned PG = 0x01;
+				//unsigned AE = 0x10;	// LATITUDE_LOW, LATITUDE_OUT
+				unsigned AE = 0x24;	// HABS_LOW, HABS_OUT
+//				adis161xx_write16(PG, AE, 0xDEAD);
+//				adis161xx_write16(PG, AE + 2, 0xBEEF);
+				const unsigned LATITUDE_LOW = adis161xx_read16(PG, AE);
+				const unsigned LATITUDE_OUT = adis161xx_read16(PG, AE + 2);
+				const unsigned LATITUDE4 = adis161xx_read32(PG, AE);
+				PRINTF("LOW=%04X, OUT=%04X, 32W=%08X\n", LATITUDE_LOW, LATITUDE_OUT, LATITUDE4);
+			}
+			unsigned PG = 0x02;
+			for (PG = 0; PG < 4; PG += 1)
+			{
+				unsigned AE;
+				for (AE = 0; AE < 128; AE += 4)
+				{
+					//unsigned AE = 0x10;	// LATITUDE_LOW, LATITUDE_OUT
+	//				adis161xx_write16(PG, AE, 0xDEAD);
+	//				adis161xx_write16(PG, AE + 2, 0xBEEF);
+					const unsigned LATITUDE_LOW = adis161xx_read16(PG, AE);
+					const unsigned LATITUDE_OUT = adis161xx_read16(PG, AE + 2);
+					const unsigned LATITUDE4 = adis161xx_read32(PG, AE);
+					PRINTF("pg=%02X, ae=%02X: LOW=%04X, OUT=%04X, 32W=%08X\n", PG, AE, LATITUDE_LOW, LATITUDE_OUT, LATITUDE4);
+				}
+			}
+
+//			PRINTF("Write DECLN_ANGL\n");
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  adis161xx_read16(0x03, 0x54), adis161xx_read16(0x00, 0x08));
+//			adis161xx_write16(0x03, 0x54, 0x0777);
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  adis161xx_read16(0x03, 0x54), adis161xx_read16(0x00, 0x08));
+//			adis161xx_write16(0x03, 0x54, 0x0888);
+//			PRINTF("DECLN_ANGL=%04X, SYS_E_FLAG=%04X\n",  adis161xx_read16(0x03, 0x54), adis161xx_read16(0x00, 0x08));
+
+			char c;
+			while (dbg_getchar(& c) == 0)
+				;
+
+//			PRINTF("EXT_DATA_SRC #1=%04X\n", adis161xx_read16(0x01, 0x2C));
+//			adis161xx_write16(0x01, 0x2C, 0x01);
+//			local_delay_ms(10);
+//			PRINTF("EXT_DATA_SRC #2=%04X\n", adis161xx_read16(0x01, 0x2C));
+//			adis161xx_write16(0x01, 0x2C, 0x03);
+//			local_delay_ms(10);
+//			PRINTF("EXT_DATA_SRC #3=%04X\n", adis161xx_read16(0x01, 0x2C));
+
+			for (;;)
+				;
+
+//
+//
+//
+			local_delay_ms(500);
+		}
+
+	}
+#endif
+#if 0 && WITHDEBUG && WITHSMPSYSTEM
+	{
+		PRINTF("main: gARM_BASEPRI_ALL_ENABLED=%02X, %02X, %02X, bpr=%02X\n", gARM_BASEPRI_ALL_ENABLED, ARM_CA9_ENCODE_PRIORITY(PRI_USER), GIC_GetInterfacePriorityMask(), GIC_GetBinaryPoint());
+		enum { TGCPUMASK1 = 1u << 1 };
+		enum { TGCPUMASK0 = 1u << 0 };
+		const int cpu = __get_MPIDR() & 0x03;
+
+		PRINTF("Main thread test: I am CPU=%d\n", cpu);
+		local_delay_ms(100);
+
+		arm_hardware_set_handler(SGI13_IRQn, SecondCPUTaskSGI13, BOARD_SGI_PRIO, 0x01u << 1);
+		arm_hardware_set_handler(SGI15_IRQn, SecondCPUTaskSGI15, BOARD_SGI_PRIO, 0x01u << 1);
+
+		for (;;)
+		{
+			// 0: to cpu1 or CPU0 (в зависимости от указанной маски в GIC_SendSGI)
+			// 1: to cpu1
+			// 2: to cpu0
+			//PRINTF("fltr = %d\n", i);
+			GIC_SendSGI(SGI15_IRQn, TGCPUMASK1, 0x00);	// CPU1, filer=0
+			GIC_SendSGI(SGI13_IRQn, TGCPUMASK1, 0x00);	// CPU1, filer=0
+			local_delay_ms(300);
+		}
+//
+//		PRINTF("Main thread test: I am CPU=%d. halt\n", cpu);
+//		for (;;)
+//			;
+
+	}
+#endif
 #if 1 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 	{
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
@@ -6239,7 +6525,7 @@ void hightests(void)
 	{
 		const time_t t = time(NULL);
 
-		PRINTF("sizeof time_t == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
+		PRINTF("sizeof (time_t) == %u, t = %lu\n", sizeof (time_t), (unsigned long) t);
 	}
 #endif
 #if 1 && defined (__GNUC__)
@@ -6256,7 +6542,7 @@ void hightests(void)
 		PRINTF(PSTR("FPEXC=%08lX\n"), (unsigned long) __get_FPEXC());
 	}
 #endif
-#if 1 && (__L2C_PRESENT == 1)
+#if 0 && (__L2C_PRESENT == 1)
 	{
 		// Renesas: PL310 as a secondary cache. The IP version is r3p2.
 		// ZYNQ: RTL release R3p2
@@ -6561,6 +6847,8 @@ void hightests(void)
 #endif
 #if 0 && (WITHTWIHW || WITHTWISW)
 	{
+		// i2c bus test i2c test twi bus test twi test
+
 		unsigned i;
 		for (i = 1; i < 127; ++ i)
 		{
@@ -6574,6 +6862,26 @@ void hightests(void)
 			i2c2_read(& v, I2C_READ_ACK_NACK);
 			////%%TP();
 			PRINTF("I2C2 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
+		}
+	}
+#endif
+#if 0 && (WITHTWIHW || WITHTWISW)
+	{
+		// i2c bus test i2c test twi bus test twi test
+
+		unsigned i;
+		for (i = 1; i < 127; ++ i)
+		{
+			uint8_t v;
+			unsigned addrw = i * 2;
+			unsigned addrr = addrw + 1;
+			////%%TP();
+			i2c_start(addrw);
+			i2c_write_withrestart(0x1B);
+			i2c_start(addrr);
+			i2c_read(& v, I2C_READ_ACK_NACK);
+			////%%TP();
+			PRINTF("I2C1 addr=%d (0x%02X): test=0x%02X\n", i, addrw, v);
 		}
 	}
 #endif
@@ -7233,7 +7541,6 @@ void hightests(void)
 	// no interactive
 	{
 
-		static FATFSALIGN_BEGIN BYTE work [FF_MAX_SS] FATFSALIGN_END;
 		FRESULT rc;
 //
 //		static const MKFS_PARM defopt = { FM_ANY, 0, 0, 0, 0};	/* Default parameter */
@@ -7243,12 +7550,20 @@ void hightests(void)
 //		defopt.n_root = 128;	/* Number of root directory entries */
 //		defopt.au_size = 0;		/* Cluster size (byte) */
 
-		PRINTF("Wait for storage device ready. Press any key\n");
+		PRINTF("Wait for storage device ready. Press space key\n");
 		for (;;)
 		{
 			char c;
 			if (dbg_getchar(& c))
-				break;
+			{
+				if (c == 0x1B)
+				{
+					PRINTF("Skip storage device test\n");
+					return;
+				}
+				if (c == ' ')
+					break;
+			}
 	#if WITHUSBHW
 			board_usbh_polling();     // usb device polling
 	#endif /* WITHUSBHW */
@@ -7276,7 +7591,7 @@ void hightests(void)
 		system_enableIRQ();
 		{
  			f_mount(NULL, "", 0);		/* Unregister volume work area (never fails) */
-			rc = f_mkfs("0:", NULL, work, sizeof (work));
+			rc = f_mkfs("0:", NULL, rbwruff, sizeof (rbwruff));
 			if (rc != FR_OK)
 			{
 				PRINTF(PSTR("sdcardformat: f_mkfs failure, rc=0x%02X\n"), (int) rc);
@@ -7290,7 +7605,7 @@ void hightests(void)
 		}
 		for (;;)
 		{
-			PRINTF(PSTR("Storage device test - %d bytes block.\n"), sizeof rbuff);
+			PRINTF(PSTR("Storage device test - %d bytes block.\n"), sizeof rbwruff);
 			PRINTF("Storage device test\n");
 			if (fatfs_filesyspeedstest())
 				break;
@@ -7307,6 +7622,13 @@ void hightests(void)
 		}
 		PRINTF("Storage device test done\n");
 
+	}
+#endif
+#if 1 && (WITHNANDHW || WITHNANDSW)
+	// NAND memory test
+	// PrimeCell Static Memory Controller (PL353) ARM r2p1
+	{
+		nand_tests();
 	}
 #endif
 #if 0 && WITHDEBUG && WITHUSEAUDIOREC

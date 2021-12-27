@@ -78,11 +78,15 @@
 	#define WITHMODEM_USART2	1
 	#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-	#define WITHI2SHW		1	/* Использование SSIF0 I2S 2*32 (2*16) bit - аудио кодек */
+	#define WITHI2S2HW		1	/* Использование SSIF0 I2S 2*32 (2*16) bit - аудио кодек */
 	#define WITHSAI1HW	1	/* Использование SSIF1 I2S 8*32 bit - FPGA IF codec */
 	#if WITHRTS192
 		#define WITHSAI2HW	1	/* Использование SSIF2 I2S 2*32 (2*32) bit - FPGA панорама	*/
 	#endif /* WITHRTS192 */
+
+	#define WITHFPGAIF_SSIF1_DUPLEX_MASTER	1		/* Получение квадратур и RTS96 от FPGA через SAI1 */
+	//#define WITHFPGARTS_SSIF2_RX_MASTER	1	/* Получение RTS192 от FPGA через SAI2 */
+	#define WITHCODEC1_SSIF0_DUPLEX_MASTER	1		/* обмен с аудиокодеком через SSIF0 */
 
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -218,14 +222,14 @@
 
 #define R7S721_USE_AUDIO_CLK 0	// CKS 1: AUDIO_CLK input 0: AUDIO_X1 input
 
-#if WITHI2SHW
+#if WITHI2S2HW
 	#define HARDWARE_SSIF0_INITIALIZE() do { \
 		arm_hardware_pio6_alternative(1U << 8, R7S721_PIOALT_3); /* P6_8 SSISCK0 */ \
 		arm_hardware_pio6_alternative(1U << 9, R7S721_PIOALT_3); /* P6_9 SSIWS0 */ \
 		arm_hardware_pio6_alternative(1U << 10, R7S721_PIOALT_3); /* P6_10 SSITxD0 */ \
 		arm_hardware_pio6_alternative(1U << 11, R7S721_PIOALT_3); /* P6_11 SSIRxD0 */ \
 	} while (0)
-#endif /* WITHI2SHW */
+#endif /* WITHI2S2HW */
 
 #if WITHSAI1HW
 	#define HARDWARE_SSIF1_INITIALIZE() do { \
@@ -448,6 +452,10 @@
 	#define ELKEY_TARGET_PIN			(R7S721_INPUT_PORT(4))
 	#define ELKEY_BIT_LEFT				(1U << 1)		// P4_1
 	#define ELKEY_BIT_RIGHT				(1U << 0)		// P4_0
+
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+
 
 	#define ELKEY_INITIALIZE() \
 		do { \
@@ -950,5 +958,11 @@
 			} while (0)
 
 	#endif /* WIHSPIDFSW */
+
+	#if WITHRTS192
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_192k.h"
+	#else
+		#define BOARD_BITIMAGE_NAME "rbf/rbfimage_v8t_96k.h"
+	#endif
 
 #endif /* ARM_R7S72_TQFP176_CPUSTYLE_STORCH_V9_H_INCLUDED */

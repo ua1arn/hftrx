@@ -1271,6 +1271,7 @@ static int sii902x_probe(struct i2c_client *client)
 //		}
 //	}
 //
+	HARDWARE_SII9022_POWERON(1);	// May be PMIC used here
 	/*
 	 * The following is the Initialization process
 	 * Take reference on SiI9022A PR page 8
@@ -1400,7 +1401,11 @@ void sii9022x_initialize(const videomode_t * vdmode)
 	if (sii902x_read_edid(sii9022x) < 0) {
 		PRINTF(
 			"Sii902x: read edid fail\n");
+		sii902x_setup(sii9022x, vdmode);
+		sii902x_poweron(sii9022x);
 	} else {
+		PRINTF(
+			"Sii902x: read edid okay\n");
 		sii902x_setup(sii9022x, vdmode);
 		sii902x_poweron(sii9022x);
 	}

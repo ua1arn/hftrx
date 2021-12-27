@@ -566,7 +566,7 @@ static void USBD_GetDescriptor(USBD_HandleTypeDef *pdev, const USBD_SetupReqType
 
 	if ((len != 0) && (req->wLength != 0))
 	{
-		//PRINTF(PSTR("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u, datalen=%u\n"), HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue), len);
+		//USBD_DbgLog("USBD_GetDescriptor: %02X, wLength=%04X (%d dec), ix=%u, datalen=%u", HI_BYTE(req->wValue), req->wLength, req->wLength, LO_BYTE(req->wValue), len);
 		USBD_CtlSendData(pdev, pbuf, MIN(len, req->wLength));
 	}
 
@@ -864,9 +864,10 @@ void USBD_ParseSetupRequest(USBD_SetupReqTypedef *req, uint8_t *pdata)
   */
 void (USBD_CtlError)(USBD_HandleTypeDef *pdev, const USBD_SetupReqTypedef *req, const char * file, int line)
 {
-//	PRINTF("USBD_CtlError: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X\n", req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
-//	PRINTF("USBD_CtlError: %s(%d)\n", file, line);
   UNUSED(req);
+
+  USBD_ErrLog("USBD_CtlError: bmRequest=%04X, bRequest=%02X, wValue=%04X, wIndex=%04X, wLength=%04X", req->bmRequest, req->bRequest, req->wValue, req->wIndex, req->wLength);
+  USBD_ErrLog("USBD_CtlError: %s(%d)", file, line);
 
   (void)USBD_LL_StallEP(pdev, 0x80U);
   (void)USBD_LL_StallEP(pdev, 0U);

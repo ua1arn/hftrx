@@ -49,6 +49,10 @@ typedef struct {
 	char name[10];
 } band_array_t;
 
+typedef struct {
+	char label [10][10];
+} bws_t;
+
 /* структура для размещения в конфигурационном ОЗУ */
 struct gui_nvram_t {
 	uint8_t enc2step_pos;
@@ -77,6 +81,16 @@ uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
 void hamradio_load_gui_settings(void * ptr);
 void hamradio_save_gui_settings(const void * ptr);
 void hamradio_gui_enc2_update(void);
+void hamradio_gui_parse_ft8buf(void);
+void hamradio_ft8_toggle_state(void);
+void hamradio_ft8_start_fill(void);
+uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);
+uint_fast8_t hamradio_get_att_db(void);
+void hamradio_set_att_db(uint_fast8_t db);
+uint_fast8_t hamradio_get_bws(bws_t * bws, uint_fast8_t limit);
+void hamradio_set_bw(uint_fast8_t v);
+uint_fast16_t hamradio_get_afgain(void);
+void hamradio_set_afgain(uint_fast16_t v);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);
@@ -87,8 +101,6 @@ void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exi
 void gui_open_sys_menu(void);
 void gui_update(void);
 
-void remove_end_line_spaces(char * str);
-const char * remove_start_line_spaces(const char * str);
 
 #endif /* WITHTOUCHGUI */
 #endif /* GUI_H_INCLUDED */

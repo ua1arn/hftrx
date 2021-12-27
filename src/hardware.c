@@ -1596,6 +1596,8 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 190uL / cpufreq_MHz;
 	//const unsigned long top = 55 * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYLE_RP20XX
+	const unsigned long top = timeUS * 1480uL / cpufreq_MHz;
 #elif CPUSTYLE_STM32L0XX
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = timeUS * 20uL / cpufreq_MHz;
@@ -1771,11 +1773,6 @@ static void lowlevel_stm32h7xx_mpu_initialize(void)
 #endif /* CPUSTYLE_STM32H7XX */
 
 #if (__CORTEX_A != 0)
-
-uint_fast8_t arm_hardware_cpuid(void)
-{
-	return __get_MPIDR() & 0x03;
-}
 
 //	MRC p15, 0, <Rt>, c6, c0, 2 ; Read IFAR into Rt
 //	MCR p15, 0, <Rt>, c6, c0, 2 ; Write Rt to IFAR
@@ -2022,8 +2019,7 @@ __STATIC_FORCEINLINE void L1_CleanDCache_by_Addr(volatile void *addr, int32_t ds
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
-		//  __ASM volatile ("dmb 0xF":::"memory");
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2040,8 +2036,7 @@ __STATIC_FORCEINLINE void L1_CleanInvalidateDCache_by_Addr(volatile void *addr, 
 			op_mva += DCACHEROWSIZE;
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
-		//__DMB();     // ensure the ordering of data cache maintenance operations and their effects
-		//  __ASM volatile ("dmb 0xF":::"memory");
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2058,6 +2053,7 @@ __STATIC_FORCEINLINE void L1_InvalidateDCache_by_Addr(volatile void *addr, int32
 			op_size -= DCACHEROWSIZE;
 		} while (op_size > 0);
 		// Cache Invalidate operation is not follow by memory-writes
+		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 	}
 }
 
@@ -2667,12 +2663,20 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 	if (a >= 0xA0000000uL && a < 0xC0000000uL)			//  GIC
 		return addrbase | TTB_PARA_DEVICE;
+#if 1
+	// 1 GB DDR RAM memory size allowed
+	if (a >= 0xC0000000uL)								// DDR memory
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+#else
 
 	if (a >= 0xC0000000uL && a < 0xE0000000uL)			// DDR memory
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
 	if (a >= 0xE0000000uL)								//  DEBUG
 		return addrbase | TTB_PARA_DEVICE;
+
+#endif
 
 	return addrbase | TTB_PARA_NO_ACCESS;
 
@@ -3165,6 +3169,8 @@ static void cortexa_cpuinfo(void)
 	PRINTF(PSTR("CPU%u: VBAR=%p, TTBR0=%p, cpsr=%08lX, SCTLR=%08lX, ACTLR=%08lX, sp=%08lX\n"), (unsigned) (__get_MPIDR() & 0x03),  (unsigned long) __get_VBAR(), (unsigned long) __get_TTBR0(), (unsigned long) __get_CPSR(), (unsigned long) __get_SCTLR(), (unsigned long) __get_ACTLR(),(unsigned long) & vvv);
 }
 
+#if WITHSMPSYSTEM
+
 #if CPUSTYLE_STM32MP1
 
 
@@ -3306,6 +3312,8 @@ void Reset_CPUn_Handler(void)
 	#endif
 
 	cortexa_cpuinfo();
+
+	arm_hardware_populte_second_initialize();
 	__enable_irq();
 	SPIN_UNLOCK(& cpu1init);
 
@@ -3316,9 +3324,7 @@ void Reset_CPUn_Handler(void)
 	}
 }
 
-#endif /*  (__CORTEX_A != 0) */
-
-
+// Вызывается из main
 void cpump_initialize(void)
 {
 #if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
@@ -3355,6 +3361,25 @@ void cpump_initialize(void)
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
 }
+
+#else /* WITHSMPSYSTEM */
+
+void Reset_CPUn_Handler(void)
+{
+
+}
+
+// Вызывается из main
+void cpump_initialize(void)
+{
+	SystemCoreClock = CPU_FREQ;
+	cortexa_cpuinfo();
+
+}
+
+#endif /* WITHSMPSYSTEM */
+
+#endif /*  (__CORTEX_A != 0) */
 
 #if CPUSTYLE_ATSAM3S
 
@@ -3628,9 +3653,9 @@ void cpu_initdone(void)
 
 #endif /* CPUSTYLE_R7S721 */
 
-	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
-
 #endif /* WITHISBOOTLOADER */
+
+	spidf_hangoff();	// Отключить процессор от SERIAL FLASH
 }
 
 void arm_hardware_reset(void)
@@ -3695,6 +3720,17 @@ uint_fast16_t ulmax16(uint_fast16_t a, uint_fast16_t b)
 	return a > b ? a : b;
 }
 
+/* получить 16-бит значение */
+uint_fast16_t
+USBD_peek_u16(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast16_t) buff [1] << 8) +
+		((uint_fast16_t) buff [0] << 0);
+}
+
 /* получить 24-бит значение */
 uint_fast32_t
 USBD_peek_u24(
@@ -3745,6 +3781,24 @@ USBD_peek_u32_BE(
 		((uint_fast32_t) buff [3] << 0);
 }
 
+/* получить 64-бит значение */
+/* Big endian memory layout */
+uint_fast64_t
+USBD_peek_u64_BE(
+	const uint8_t * buff
+	)
+{
+	return
+		((uint_fast64_t) buff [0] << 56) +
+		((uint_fast64_t) buff [1] << 48) +
+		((uint_fast64_t) buff [2] << 40) +
+		((uint_fast64_t) buff [3] << 32) +
+		((uint_fast64_t) buff [4] << 24) +
+		((uint_fast64_t) buff [5] << 16) +
+		((uint_fast64_t) buff [6] << 8) +
+		((uint_fast64_t) buff [7] << 0);
+}
+
 /* записать в буфер для ответа 32-бит значение */
 /* Big endian memory layout */
 unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
@@ -3755,6 +3809,22 @@ unsigned USBD_poke_u32_BE(uint8_t * buff, uint_fast32_t v)
 	buff [0] = HI_32BY(v);
 
 	return 4;
+}
+
+/* записать в буфер для ответа 64-бит значение */
+/* Big endian memory layout */
+unsigned USBD_poke_u64_BE(uint8_t * buff, uint_fast64_t v)
+{
+	buff [0] = (v >> 56) & 0xFF;
+	buff [1] = (v >> 48) & 0xFF;
+	buff [2] = (v >> 40) & 0xFF;
+	buff [3] = (v >> 32) & 0xFF;
+	buff [4] = (v >> 24) & 0xFF;
+	buff [5] = (v >> 16) & 0xFF;
+	buff [6] = (v >> 8) & 0xFF;
+	buff [7] = (v >> 0) & 0xFF;
+
+	return 8;
 }
 
 /* записать в буфер для ответа 24-бит значение */

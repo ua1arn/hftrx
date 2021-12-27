@@ -75,7 +75,7 @@ extern "C" {
 #define USBH_MAX_NUM_SUPPORTED_CLASS          16U
 #define USBH_MAX_SIZE_CONFIGURATION           0x200U
 #define USBH_MAX_DATA_BUFFER                  0x200U
-#define USBH_DEBUG_LEVEL                      3U
+#define USBH_DEBUG_LEVEL                      0U
 #define USBH_USE_OS                           0U
 
 /** @defgroup USBH_Exported_Macros
@@ -91,8 +91,8 @@ extern "C" {
 /* DEBUG macros */
 #if (USBH_DEBUG_LEVEL > 0U)
 #define  USBH_UsrLog(...)   do { \
-                                 printf(__VA_ARGS__); \
-                                 printf("\n"); \
+                                 PRINTF(__VA_ARGS__); \
+                                 PRINTF("\n"); \
                                } while (0)
 #else
 #define USBH_UsrLog(...) do {} while (0)
@@ -101,9 +101,9 @@ extern "C" {
 #if (USBH_DEBUG_LEVEL > 1U)
 
 #define  USBH_ErrLog(...) do { \
-                               printf("ERROR: ") ; \
-                               printf(__VA_ARGS__); \
-                               printf("\n"); \
+                               PRINTF("ERROR: ") ; \
+                               PRINTF(__VA_ARGS__); \
+                               PRINTF("\n"); \
                              } while (0)
 #else
 #define USBH_ErrLog(...) do {} while (0)
@@ -111,9 +111,9 @@ extern "C" {
 
 #if (USBH_DEBUG_LEVEL > 2U)
 #define  USBH_DbgLog(...)   do { \
-                                 printf("DEBUG : ") ; \
-                                 printf(__VA_ARGS__); \
-                                 printf("\n"); \
+                                 PRINTF("DEBUG : ") ; \
+                                 PRINTF(__VA_ARGS__); \
+                                 PRINTF("\n"); \
                                } while (0)
 #else
 #define USBH_DbgLog(...) do {} while (0)

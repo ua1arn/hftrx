@@ -143,7 +143,7 @@ USBH_StatusTypeDef   USBH_LL_SubmitURB(USBH_HandleTypeDef *phost,
                                        uint8_t ep_type,
                                        uint8_t token,
                                        uint8_t *pbuff,
-                                       uint16_t length,
+                                       uint32_t length,
                                        uint8_t do_ping);
 
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
@@ -170,10 +170,6 @@ void USBH_LL_SetTimer(USBH_HandleTypeDef *phost, uint32_t time);
 void USBH_LL_IncTimer(USBH_HandleTypeDef *phost);
 
 void USBH_Delay(uint32_t Delay);
-
-// MORI
-extern USBH_HandleTypeDef hUSBHost[5];
-extern HCD_HandleTypeDef _hHCD[2];
 
 extern USBH_HandleTypeDef hUsbHostHS;
 

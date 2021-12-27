@@ -622,6 +622,308 @@ void spi_initialize(void)
 
 #endif /* WITHSPIHW || WITHSPISW */
 
+
+#if (WITHNANDHW || WITHNANDSW)
+
+#if WITHNANDSW
+
+// поддержка работы с NAND по bit-bang
+
+// Get Ready/Busy# pin state
+static uint_fast8_t nand_rbc_get(void)
+{
+#if CPUSTYLE_XC7Z
+	return xc7z_readpin(HARDWARE_NAND_RBC_MIO) != 0;
+#else
+	#warning nand_rbc_get should be implemented
+#endif
+}
+
+// Chip enable
+static void nand_cs_set(uint_fast8_t state)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_writepin(HARDWARE_NAND_CSB_MIO, state != 0);
+#else
+	#warning nand_cs_set should be implemented
+#endif
+}
+
+// Address latch enable
+static void nand_ale_set(uint_fast8_t state)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_writepin(HARDWARE_NAND_ALE_MIO, state != 0);
+#else
+	#warning nand_ale_set should be implemented
+#endif
+}
+
+// Command latch enable
+static void nand_cle_set(uint_fast8_t state)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_writepin(HARDWARE_NAND_CLE_MIO, state != 0);
+#else
+	#warning nand_cle_set should be implemented
+#endif
+}
+
+// Read enable: Gates transfers from the NAND Flash device to the host system.
+static void nand_re_set(uint_fast8_t state)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_writepin(HARDWARE_NAND_REB_MIO, state != 0);
+#else
+	#warning nand_re_set should be implemented
+#endif
+}
+
+// Write enable: Gates transfers from the host system to the NAND Flash device
+static void nand_we_set(uint_fast8_t state)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_writepin(HARDWARE_NAND_WEB_MIO, state != 0);
+#else
+	#warning nand_we_set should be implemented
+#endif
+}
+
+static void nand_wp_set(uint_fast8_t state)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_writepin(HARDWARE_NAND_WPB_MIO, state != 0);
+#else
+	#warning nand_wp_set should be implemented
+#endif
+}
+
+// bus programming: write data to chip
+static void nand_data_bus_write(void)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_gpio_output(HARDWARE_NAND_D7_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D6_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D5_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D4_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D3_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D2_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D1_MIO);
+	xc7z_gpio_output(HARDWARE_NAND_D0_MIO);
+#else
+	#warning nand_data_bus_write should be implemented
+#endif
+}
+
+// bus programming: write data to chip
+static void nand_data_bus_read(void)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_gpio_input(HARDWARE_NAND_D7_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D6_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D5_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D4_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D3_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D2_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D1_MIO);
+	xc7z_gpio_input(HARDWARE_NAND_D0_MIO);
+#else
+	#warning nand_data_bus_read should be implemented
+#endif
+}
+
+static void nand_data_out(uint_fast8_t v)
+{
+#if CPUSTYLE_XC7Z
+	xc7z_writepin(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0);
+	xc7z_writepin(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0);
+	xc7z_writepin(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0);
+	xc7z_writepin(HARDWARE_NAND_D4_MIO, (v & (0x01 << 4)) != 0);
+	xc7z_writepin(HARDWARE_NAND_D3_MIO, (v & (0x01 << 3)) != 0);
+	xc7z_writepin(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0);
+	xc7z_writepin(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0);
+	xc7z_writepin(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0);
+#else
+	#warning nand_data_out should be implemented
+#endif
+}
+
+//
+static uint_fast8_t nand_data_in(void)
+{
+
+#if CPUSTYLE_XC7Z
+	uint_fast8_t v = 0;
+
+	v |= (xc7z_readpin(HARDWARE_NAND_D7_MIO) != 0) << 7;
+	v |= (xc7z_readpin(HARDWARE_NAND_D6_MIO) != 0) << 6;
+	v |= (xc7z_readpin(HARDWARE_NAND_D5_MIO) != 0) << 5;
+	v |= (xc7z_readpin(HARDWARE_NAND_D4_MIO) != 0) << 4;
+	v |= (xc7z_readpin(HARDWARE_NAND_D3_MIO) != 0) << 3;
+	v |= (xc7z_readpin(HARDWARE_NAND_D2_MIO) != 0) << 2;
+	v |= (xc7z_readpin(HARDWARE_NAND_D1_MIO) != 0) << 1;
+	v |= (xc7z_readpin(HARDWARE_NAND_D0_MIO) != 0) << 0;
+
+	return v;
+#else
+	#warning nand_data_in should be implemented
+#endif
+}
+
+#elif WITHNANDHW
+//	Аппаратная поддержка работы с NAND
+
+#endif
+
+
+/////////////////////
+///
+static void nand_cs_activate(void)
+{
+	nand_cs_set(0);
+}
+
+static void nand_cs_deactivate(void)
+{
+	nand_cs_set(1);
+}
+
+static void nand_write(uint_fast8_t v)
+{
+	nand_data_bus_write(); // OUT direction
+	nand_we_set(0);
+	nand_data_out(v);
+	nand_we_set(1);
+}
+
+static void nand_write_command(uint_fast8_t v)
+{
+	nand_cle_set(1);
+	nand_write(v);
+	nand_cle_set(0);
+}
+
+static void nand_write_address(uint_fast8_t v)
+{
+	nand_ale_set(1);
+	nand_write(v);
+	nand_ale_set(0);
+}
+
+// Sequential data read
+static void nand_read(uint8_t * buff, unsigned count)
+{
+	nand_data_bus_read();	// IN direction
+	while (count --)
+	{
+		nand_re_set(0);
+		* buff ++ = nand_data_in();
+		nand_re_set(1);
+	}
+}
+
+static void nand_waitbusy(void)
+{
+	local_delay_us(10);
+	while (nand_rbc_get() == 0)
+		;
+}
+
+///////////////////////////
+///
+
+void nand_reset(void)
+{
+	// Reset
+	PRINTF("nand_reset\n");
+
+	nand_cs_activate();
+	nand_write_command(0xFF);	// RESET command
+	nand_cs_deactivate();
+
+	nand_waitbusy();
+
+	PRINTF("nand_reset done\n");
+}
+
+void nand_read_id(void)
+{
+#if WITHDEBUG
+	uint8_t v [4];
+
+	// Read ID
+	nand_cs_activate();
+	nand_write_command(0x90);
+	nand_write_address(0x00);
+	nand_read(v, ARRAY_SIZE(v));
+	nand_cs_deactivate();
+
+	// NAMD IDs = 2C DA 90 95
+	// DA == MT29F2G08AAC
+	PRINTF("NAMD IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
+#endif /* WITHDEBUG */
+}
+
+
+void nand_readfull(void)
+{
+	unsigned long columnaddr = 0;
+	unsigned long blockaddr = 0;	// 0..2047
+	unsigned long pageaddr = 0;		// 0..31
+	// Memory x8
+	// of blocks 0..2047
+	// of pages 0..31
+	// of bytes 0..2047 and 2048..2111 spare area
+	static uint8_t buff [512];
+	unsigned i;
+	nand_cs_activate();
+	nand_write_command(0x00);	// PAGE READ command
+	nand_write_address((columnaddr >> 0) & 0xFF);	// Col Addr 1: ca7..ca0
+	nand_write_address((columnaddr >> 8) & 0x0F);	// Col Addr 2: 0,0,0,0, ca11..ca8
+	nand_write_address((((blockaddr >> 6) & 0x03) << 6) | ((pageaddr >> 0) & 0x3F));	// Row Addr 1: ba7..ba6, pa5..pa0
+	nand_write_address((blockaddr >> 8) & 0xFF);	// Row Addr 2: ba15..ba8
+	nand_write_address((blockaddr >> 16) & 0x01);	// Row Addr 3, 0,0,0,0,0,0,0, ba16
+	nand_write_command(0x30);	// 0x30 command
+
+	nand_waitbusy();
+
+	unsigned long pagesize = 2 * 1024uL;
+	unsigned long offset = 0;
+
+	for (;offset < pagesize;)
+	{
+		nand_read(buff, ARRAY_SIZE(buff));
+		printhex(offset, buff, 512);
+		offset += 512;
+	}
+
+	nand_cs_deactivate();
+
+}
+
+void nand_initialize(void)
+{
+	HARDWARE_NAND_INITIALIZE();
+
+	nand_wp_set(0);
+
+	nand_cs_set(1);
+	nand_cle_set(0);
+	nand_ale_set(0);
+	nand_re_set(1);
+	nand_we_set(1);
+
+	nand_reset();
+}
+
+void nand_tests(void)
+{
+	nand_read_id();
+	nand_readfull();
+}
+
+#endif /* (WITHNANDHW || WITHNANDSW) */
+
 //#define WIHSPIDFOVERSPI 1	/* В SPI программаторе для работы используется один из обычных каналов SPI */
 //#define targetdataflash targetext1
 
@@ -702,6 +1004,10 @@ static void spidf_write_byte(uint_fast8_t v)
 #endif
 
 void spidf_uninitialize(void)
+{
+}
+
+void spidf_hangoff(void)
 {
 }
 
@@ -1015,6 +1321,11 @@ void spidf_uninitialize(void)
 	SPIDF_HANGOFF();
 }
 
+void spidf_hangoff(void)
+{
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+}
+
 #elif WIHSPIDFHW && CPUSTYLE_R7S721
 
 // передаем все заказанное количество
@@ -1181,6 +1492,11 @@ void spidf_uninitialize(void)
 		;
 	// Disconnect I/O pins
 	SPIDF_HANGOFF();
+}
+
+void spidf_hangoff(void)
+{
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
 static void spidf_iostart(
@@ -1353,18 +1669,19 @@ static void modeDATAFLASH(uint_fast16_t dw, const char * title, int buswID)
 	}
 }
 
-unsigned char mf_id;	// Manufacturer ID
-unsigned char mf_devid1;	// device ID (part 1)
-unsigned char mf_devid2;	// device ID (part 2)
-unsigned char mf_dlen;	// Extended Device Information String Length
-
-
 static uint_fast8_t sectorEraseCmd = 0xD8;			// 64KB SECTOR ERASE
 static uint_fast32_t sectorSize = (1uL << 16);		// default sectoir size 64kB
 static uint_fast32_t chipSize = BOOTLOADER_FLASHSIZE;	// default chip size
 
+char nameDATAFLASH [64];
+
 int testchipDATAFLASH(void)
 {
+	unsigned char mf_id;	// Manufacturer ID
+	unsigned char mf_devid1;	// device ID (part 1)
+	unsigned char mf_devid2;	// device ID (part 2)
+	unsigned char mf_dlen;	// Extended Device Information String Length
+
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
 
@@ -1392,6 +1709,15 @@ int testchipDATAFLASH(void)
 		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 #endif /* WITHDEBUG */
+
+
+	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
+			PSTR("%s, SPIDF:%02X:%02X%02X:%02X"),
+			USBD_DFU_FLASHNAME,
+			(unsigned) (chipSize / 1024 / (1024 / 8)),
+			mf_id, mf_devid1, mf_devid2, mf_dlen
+			);
+
 
 	// Read root SFDP
 	uint8_t buff8 [8];
@@ -1461,7 +1787,7 @@ int testchipDATAFLASH(void)
 			const unsigned newsct = sct [i];
 			if ((newsct & 0xFF) == 0)
 				continue;
-			if (sctRESULT == 0 || (sctRESULT & 0xFF) < (newsct & 0xFF))
+			if (sctRESULT == 0 || (sctRESULT & 0xFF) > (newsct & 0xFF))
 				sctRESULT = newsct;
 		}
 		if (sctRESULT != 0)
@@ -1476,6 +1802,18 @@ int testchipDATAFLASH(void)
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
 	}
+
+	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
+			PSTR("x25%c%u, SPIDF:%02X:%02X%02X:%02X"),
+#if WIHSPIDFHW4BIT
+			'Q',
+#else /* WIHSPIDFHW4BIT */
+			'F',
+#endif /* WIHSPIDFHW4BIT */
+			(unsigned) (chipSize / 1024 / (1024 / 8)),
+			mf_id, mf_devid1, mf_devid2, mf_dlen
+			);
+
 	return 0;
 }
 
@@ -1648,5 +1986,31 @@ void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Le
 {
 }
 
+
+unsigned long sectorsizeDATAFLASH(void)
+{
+	return 4096;
+}
+
+char nameDATAFLASH [] = "NoChip";
+
+int testchipDATAFLASH(void)
+{
+	return 1;
+}
+
+void spidf_initialize(void)
+{
+
+}
+
+void spidf_uninitialize(void)
+{
+
+}
+
+void spidf_hangoff(void)
+{
+}
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
