@@ -3156,16 +3156,10 @@ filter_t fi_2p0_455 =
 	uint8_t	ggrpcat; // последний посещённый пункт группы
 	uint8_t catenable;	/* удаленное управление разрешено */
 	uint8_t catbaudrate;	/* номер скорости работы по CAT */
-	uint8_t cat1txdtr;	/* передача управляется по DTR, а не по RTS */
-	uint8_t cat1rtsenable;	/* разрешение включения передачи по линии RTS CAT */
-	uint8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
-
-	#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
-		uint8_t cat2txdtr;	/* передача управляется по DTR, а не по RTS */
-		uint8_t cat2rtsenable;	/* разрешение включения передачи по линии RTS CAT */
-		uint8_t cat2dtrenable;	/* разрешение манипуляции по DTR CAT */
-
-	#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
+	#if WITHTX
+		uint8_t catsigptt;	/* Выбраный сигнал для перехода на передачу по CAT */
+	#endif /* WITHTX */
+	uint8_t catsigkey;	/* Выбраный сигнал для манипуляции по CAT */
 #endif /* WITHCAT */
 
 #if WITHAUTOTUNER
@@ -3740,38 +3734,18 @@ enum
 
 	#if WITHCAT_CDC
 		#if LCDMODE_DUMMY || ! WITHKEYBOARD
-			enum { noctl = 1 };		// устройство без органов управления и индикации
+			enum { nopttsig = 1 };		// устройство без органов управления и индикации
+			enum { nokeysig = 3 };		// устройство без органов управления и индикации
 		#else /* LCDMODE_DUMMY || ! WITHKEYBOARD */
-			enum { noctl = 0 };
+			enum { nopttsig = BOARD_CATSIG_NONE };
+			enum { nokeysig = BOARD_CATSIG_NONE };
 		#endif /* LCDMODE_DUMMY || ! WITHKEYBOARD */
-
-		/* управление по DTR происходит сразу, RTS только вместе со следующим DTR */
-
-		// Основной порт предназначен для управление PTT через DTR
-		// При запуске ARCP-590 отрабатывает "нажатие" - установлено RTS
-		static uint_fast8_t cat1dtrenable = noctl;	/* разрешение DTR */
-		static uint_fast8_t cat1rtsenable = 0;	/* разрешение RTS */
-		/* 1: передача управляется по DTR, манипуляция по RTS */
-		/* 0: передача управляется по RTS, манипуляция по DTR */
-		static uint_fast8_t cat1txdtr = 1;
-
-		#if WITHUSBCDCACM_N > 1
-		// Основной порт предназначен для управление манипуляцией через DTR
-			static uint_fast8_t cat2dtrenable = noctl;	/* разрешение DTR */
-			static uint_fast8_t cat2rtsenable = 0;	/* разрешение RTS */
-			/* 1: передача управляется по DTR, манипуляция по RTS */
-			/* 0: передача управляется по RTS, манипуляция по DTR */
-			static uint_fast8_t cat2txdtr = 1;
-		#else
-			enum { cat2dtrenable = 0, cat2rtsenable = 0, cat2txdtr = 0 };
-		#endif
-
-	#else /* WITHCAT_CDC */
-		static uint_fast8_t cat1dtrenable;	/* разрешение манипуляции по DTR CAT */
-		static uint_fast8_t cat1txdtr;	/* 1: передача управляется по DTR, а не по RTS */
-		static uint_fast8_t cat1rtsenable;	/* разрешение включения передачи по линии RTS CAT */
-
 	#endif /* WITHCAT_CDC */
+
+#if WITHTX
+	static uint_fast8_t catsigptt = nopttsig;	/* Выбраный сигнал для перехода на передачу по CAT */
+#endif /* WITHTX */
+	static uint_fast8_t catsigkey = nokeysig;	/* Выбраный сигнал для манипуляции по CAT */
 
 
 #else /* WITHCAT */
@@ -6412,7 +6386,7 @@ enum
 	RJ_YES = 128,	/* значение в поле rj, при котором отображаем как Yes/No */
 	RJ_ON,			/* значение в поле rj, при котором отображаем как On/Off */
 	RJ_CATSPEED,	/* отображение скорости CAT */
-	RJ_CATTXDTR,	/* переход на передачу по DTR */
+	RJ_CATSIG,		/* параметр - управляющие параметры PTT/KEY чкпкз CAT */
 	RJ_ELKEYMODE,	/* режим электронного ключа - 0 - ACS, 1 - electronic key, 2 - straight key, 3 - BUG key */
 	RJ_POW2,		/* параметр - степень двойки. Отображается результат */
 	RJ_ENCRES,		/* параметр - индекс в таблице разрешений валкодера */
@@ -6447,6 +6421,17 @@ struct enc2menu
 	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 	void (* adjust)(const FLASHMEM struct enc2menu * mp, int_least16_t nrotate);
+};
+
+static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
+{
+	"NONE    ",
+	"SER1 DTR",
+	"SER1 RTS",
+#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
+	"SER2 DTR",
+	"SER2 RTS",
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 };
 
 static nvramaddress_t nvramoffs0(nvramaddress_t base)
@@ -6810,8 +6795,8 @@ enc2menu_value(
 	case RJ_YES:
 		local_snprintf_P(buff, sz, PSTR("%s"), value ? "YES" : "NO");
 		break;
-	case RJ_CATTXDTR:
-		local_snprintf_P(buff, sz, PSTR("%s"), value ? "DTR" : "RTS");
+	case RJ_CATSIG:
+		local_snprintf_P(buff, sz, PSTR("%s"), catsiglabels [value]);
 		break;
 	case RJ_ON:
 		local_snprintf_P(buff, sz, PSTR("%s"), value ? "ON" : "OFF");
@@ -6841,8 +6826,8 @@ enc2menu_value(
 		case RJ_YES:
 			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "YES" : "NO");
 			break;
-		case RJ_CATTXDTR:
-			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "DTR" : "RTS");
+		case RJ_CATSIG:
+			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, catsiglabels [value]);
 			break;
 		case RJ_ON:
 			local_snprintf_P(buff, sz, PSTR("%*s"), WDTH, value ? "ON" : "OFF");
@@ -13353,6 +13338,20 @@ cat_reset_ptt(void)
 	system_enableIRQ();
 }
 
+static uint_fast8_t
+cat_get_signal(uint_fast8_t selector)
+{
+	switch (selector)
+	{
+	case BOARD_CATSIG_SER1_RTS: return HARDWARE_CAT_GET_RTS();
+	case BOARD_CATSIG_SER1_DTR: return HARDWARE_CAT_GET_DTR();
+#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
+	case BOARD_CATSIG_SER2_RTS: return HARDWARE_CAT2_GET_RTS();
+	case BOARD_CATSIG_SER2_DTR: return HARDWARE_CAT2_GET_DTR();
+#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
+	default: return 0;
+	}
+}
 
 // Вызывается из пользовательской программы
 // Получить запрос перехода на передачу от команд CAT или порта управления.
@@ -13362,20 +13361,10 @@ cat_get_ptt(void)
 	if (catprocenable != 0)
 	{
 		system_disableIRQ();
-
-		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
-		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
-		const uint_fast8_t r1 = (cat1txdtr ? dtr1 : rts1);
-#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
-		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
-		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
-		const uint_fast8_t r2 = (cat2txdtr ? dtr2 : rts2);
-#else
-		enum { r2 = 0 };
-#endif
+		const uint_fast8_t r = cat_get_signal(catsigptt);
 		system_enableIRQ();
 
-		return (catstatetx != 0) || r1 || r2;	// catstatetx - это по текстовым командам
+		return (catstatetx != 0) || r;	// catstatetx - это по текстовым командам
 	}
 	return 0;
 }
@@ -13391,21 +13380,10 @@ uint_fast8_t cat_get_keydown(void)
 	if (catprocenable != 0)
 	{
 		system_disableIRQ();
-
-		const uint_fast8_t dtr1 = HARDWARE_CAT_GET_DTR() && cat1dtrenable;
-		const uint_fast8_t rts1 = HARDWARE_CAT_GET_RTS() && cat1rtsenable;
-		const uint_fast8_t r1 = ! cat1txdtr ? dtr1 : rts1;
-#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
-		const uint_fast8_t dtr2 = HARDWARE_CAT2_GET_DTR() && cat2dtrenable;
-		const uint_fast8_t rts2 = HARDWARE_CAT2_GET_RTS() && cat2rtsenable;
-		const uint_fast8_t r2 = ! cat2txdtr ? dtr2 : rts2;
-#else
-		enum { r2 = 0 };
-#endif
-
+		const uint_fast8_t r = cat_get_signal(catsigkey);
 		system_enableIRQ();
 
-		return r1 || r2;
+		return r;
 	}
 #endif /* WITHELKEY */
 	return 0;
@@ -16528,72 +16506,28 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 	#endif /* WITHUSBCDCACM == 0 */
+#if WITHTX
 	{
-		QLABEL("CAT DTR "), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("CAT PTT "), 8, 8, RJ_CATSIG,	ISTEP1,
 		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, cat1dtrenable),
+		0, BOARD_CATSIG_count - 1,
+		offsetof(struct nvmap, catsigptt),
 		nvramoffs0,
 		NULL,
-		& cat1dtrenable,
+		& catsigptt,
 		getzerobase,
 	},
-	#if WITHTX
+#endif /* WITHTX */
 	{
-		QLABEL("CAT RTS "), 7, 3, RJ_ON,	ISTEP1,
+		QLABEL("CAT KEY "), 8, 8, RJ_CATSIG,	ISTEP1,
 		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, cat1rtsenable),
+		0, BOARD_CATSIG_count - 1,
+		offsetof(struct nvmap, catsigkey),
 		nvramoffs0,
 		NULL,
-		& cat1rtsenable,
+		& catsigkey,
 		getzerobase, 
 	},
-	{
-		QLABEL("CAT TX  "), 7, 3, RJ_CATTXDTR,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
-		ITEM_VALUE,
-		0, 1,
-		offsetof(struct nvmap, cat1txdtr),
-		nvramoffs0,
-		NULL,
-		& cat1txdtr,
-		getzerobase, 
-	},
-	#endif /* WITHTX */
-#if WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1
-	{
-		QLABEL("CAT2 DTR"), 7, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, cat2dtrenable),
-		nvramoffs0,
-		NULL,
-		& cat2dtrenable,
-		getzerobase, 
-	},
-	#if WITHTX
-	{
-		QLABEL("CAT2 RTS"), 7, 3, RJ_ON,	ISTEP1,
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, cat2rtsenable),
-		nvramoffs0,
-		NULL,
-		& cat2rtsenable,
-		getzerobase, 
-	},
-	{
-		QLABEL("CAT2 TX "), 7, 3, RJ_CATTXDTR,	ISTEP1,	/* Передача управляется по DTR, а не по RTS */
-		ITEM_VALUE,
-		0, 1, 
-		offsetof(struct nvmap, cat2txdtr),
-		nvramoffs0,
-		NULL,
-		& cat2txdtr,
-		getzerobase, 
-	},
-	#endif /* WITHTX */
-#endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX
@@ -19169,16 +19103,13 @@ void display2_menu_valxx(
 		display_menu_digit(x, y, catbr2int [value] * BRSCALE, width, comma, 0);
 		break;
 
-	case RJ_CATTXDTR:
-		{
-			static const FLASHMEM char msg_dtr [] = "DTR";
-			static const FLASHMEM char msg_rts [] = "RTS";
-
-			width = VALUEW;
-			comma = 3;
-			display_menu_string_P(x, y, value ? msg_dtr : msg_rts, width, comma);
-		}
-		break;
+	case RJ_CATSIG:
+	{
+		comma = 8;
+		width = VALUEW;
+		display_menu_string_P(x, y, catsiglabels [value], width, comma);
+	}
+	break;
 #endif /* WITHCAT */
 
 #if WITHSUBTONES && WITHTX
