@@ -4313,13 +4313,13 @@ static uint_fast8_t gkeybeep10 = 880 / 10;	/* озвучка нажатий кл
 	static uint_fast16_t gdesignscale = 100;		/* используется при калибровке параметров интерполятора */
 	#if WITHTXCPATHCALIBRATE
 		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#elif WITHTXCWREDUCE
 		static uint_fast16_t ggaincwtx = 60;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#else /* WITHTXCWREDUCE */
 		static uint_fast16_t ggaincwtx = 100;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
-		static uint_fast16_t ggaindigitx = 250;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
+		static uint_fast16_t ggaindigitx = 150;		/* Увеличение усиления при передаче в цифровых режимах 100..300% */
 	#endif /* WITHTXCWREDUCE */
 	static uint_fast8_t gamdepth = 30;		/* Глубина модуляции в АМ - 0..100% */
 	static uint_fast8_t gnfmdeviation = 55;	/* Девиация при передаче в NFM - в сотнях герц */

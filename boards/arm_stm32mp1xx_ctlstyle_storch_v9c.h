@@ -167,7 +167,7 @@
 		#define BANDSELSTYLERE_UPCONV56M	1	/* Up-conversion with working band .030..56 MHz */
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
-	#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
+	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
 
 	// --- вариации прошивки, специфические для разных частот
 
@@ -486,7 +486,7 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 1
+	#if 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -522,8 +522,8 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-//	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-//	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
