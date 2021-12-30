@@ -8784,14 +8784,14 @@ display2_wfl_init(
 	}
 	else
 	{
-#if 1
+#if WITHFASTWATERFLOW && 1
 		int i;
 		for (i = 0; i < PALETTESIZE; ++ i)
 		{
 			const COLOR24_T c = pancolor [PALETTESIZE - 1 - i];
 			wfpalette [i] = TFTRGB565(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
 		}
-#endif
+#endif /* WITHFASTWATERFLOW */
 	}
 
 	/* массив значений для раскраски спектра */
