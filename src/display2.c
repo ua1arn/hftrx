@@ -7253,7 +7253,7 @@ typedef struct {
 	enum { WFROWS = WFDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif WITHFASTWATERFLOW && 0
+#elif WITHFASTWATERFLOW && 1
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { WFROWS = WFDY };
@@ -8784,7 +8784,7 @@ display2_wfl_init(
 	}
 	else
 	{
-#if 0
+#if 1
 		int i;
 		for (i = 0; i < PALETTESIZE; ++ i)
 		{
