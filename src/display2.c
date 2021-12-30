@@ -8772,14 +8772,6 @@ display2_wfl_init(
 	if (PALETTESIZE == 256)
 	{
 #if ! defined (COLORPIP_SHADED)
-#if 0
-		int i;
-		for (i = 0; i < PALETTESIZE; ++ i)
-		{
-			const COLOR24_T c = pancolor [PALETTESIZE - 1 - i];
-			wfpalette [i] = TFTRGB565(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
-		}
-#else
 		int i;
 		// Init 256 colors palette
 		ASSERT(PALETTESIZE == 256);
@@ -8788,8 +8780,18 @@ display2_wfl_init(
 			const COLOR24_T c = colorgradient(i, PALETTESIZE - 1);
 			wfpalette [i] = TFTRGB565(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
 		}
-#endif
 #endif /* !  defined (COLORPIP_SHADED) */
+	}
+	else
+	{
+#if 0
+		int i;
+		for (i = 0; i < PALETTESIZE; ++ i)
+		{
+			const COLOR24_T c = pancolor [PALETTESIZE - 1 - i];
+			wfpalette [i] = TFTRGB565(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
+		}
+#endif
 	}
 
 	/* массив значений для раскраски спектра */
