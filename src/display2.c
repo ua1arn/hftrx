@@ -8621,9 +8621,9 @@ static void wflclear0(void)
 {
 	uint_fast16_t y;
 #if WITHVIEW_3DSS
-	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 #else
-	uint_fast8_t rows = WFROWS;
+	uint_fast16_t rows = WFROWS;
 #endif /* WITHVIEW_3DSS */
 
 	for (y = 0; y < rows; ++ y)
@@ -8656,9 +8656,9 @@ static void wflshiftleft(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
 #if WITHVIEW_3DSS
-	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 #else
-	uint_fast8_t rows = WFROWS;
+	uint_fast16_t rows = WFROWS;
 #endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
@@ -8698,9 +8698,9 @@ static void wflshiftright(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
 #if WITHVIEW_3DSS
-	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 #else
-	uint_fast8_t rows = WFROWS;
+	uint_fast16_t rows = WFROWS;
 #endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
