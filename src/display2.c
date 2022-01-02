@@ -8017,7 +8017,6 @@ union states
 	uint16_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
 };
 
-
 #if (CPUSTYLE_R7S721 || 0)
 
 static uint16_t rbfimage0 [] =
@@ -8041,6 +8040,12 @@ const uint16_t * getrbfimage(size_t * count)
 static RAMBIGDTCM struct ustates gvars;
 
 #endif /* (CPUSTYLE_R7S721 || 0) */
+
+// Получить цвет запослнен6ия водопада при перестройке
+static COLORMAIN_T display2_bgcolorwfl(void)
+{
+	return gvars.color_scale [0];
+}
 
 
 #if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
@@ -8603,13 +8608,12 @@ static void wflclear(void)
 			continue;
 		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
-				0x00,
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
+				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
 				ALLDX * sizeof gvars.wfjarray [0]
 		);
 	}
 }
-
 
 // стираем целиком старое изображение водопада
 // Очистка водопада (без учета последней записаной строки)
@@ -8626,8 +8630,8 @@ static void wflclear0(void)
 	{
 		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
-				0x00,
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
+				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
 				ALLDX * sizeof gvars.wfjarray [0]
 		);
 	}
@@ -8674,14 +8678,14 @@ static void wflshiftleft(uint_fast16_t pixels)
 //			continue;
 //		}
 		memmove(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, pixels, y),
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),
 				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
 		);
 		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, ALLDX - pixels, y),
-				0x00,
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, ALLDX - pixels, y),
+				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
 				pixels * sizeof gvars.wfjarray [0]
 		);
 	}
@@ -8713,14 +8717,14 @@ static void wflshiftright(uint_fast16_t pixels)
 	for (y = 0; y < rows; ++ y)
 	{
 		memmove(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, pixels, y),
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
 				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
 		);
 		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
-				0x00,
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
+				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
 				pixels * sizeof gvars.wfjarray [0]
 		);
 	}
@@ -8816,7 +8820,7 @@ display2_wfl_init(
 	{
 		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
-			colmain_putpixel(gvars.wfjarray, ALLDX, WFROWS, x, y, gvars.color_scale [0]);	// wfpalette [0]
+			colmain_putpixel(gvars.wfjarray, ALLDX, WFROWS, x, y, display2_bgcolorwfl());
 	}
 }
 
@@ -9218,7 +9222,7 @@ static void display2_spectrum(
 						const int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
 						uint_fast16_t dy, j;
-						* colmain_mem_at(gvars.wfjarray, ALLDX, MAX_3DSS_STEP, x, current_3dss_step) = val;
+						* colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, current_3dss_step) = val;
 
 						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
@@ -9246,7 +9250,7 @@ static void display2_spectrum(
 
 						if (x_old != x_d)
 						{
-							uint_fast16_t y1 = y0 - * colmain_mem_at(gvars.wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
+							uint_fast16_t y1 = y0 - * colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, draw_step);
 							int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
 							h = h < 0 ? 0 : h;
 
@@ -9547,7 +9551,7 @@ static void display2_waterfall(
 		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(gvars.wfjarray, ALLDX, WFDY, x, (wfrow + y) % WFDY)]);
+			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, (wfrow + y) % WFDY)]);
 		}
 	}
 
