@@ -7998,6 +7998,7 @@ struct ustates
 	FLOAT_t Yold_wtf [ALLDX];
 	FLOAT_t Yold_spe [ALLDX];
 	PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
+	PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
 
 #if WITHAFSPECTRE
 	float32_t afspec_wndfn [WITHFFTSIZEAF];
@@ -8575,8 +8576,6 @@ dsp_getspectrumrow(
 	return 1;
 }
 
-static RAMBIGDTCM PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
-
 enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
 //enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
 
@@ -8602,6 +8601,7 @@ static void wflclear(void)
 	{
 		if (y == wfrow)
 			continue;
+		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
 				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
 				0x00,
@@ -8624,6 +8624,7 @@ static void wflclear0(void)
 
 	for (y = 0; y < rows; ++ y)
 	{
+		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
 				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
 				0x00,
@@ -8677,6 +8678,7 @@ static void wflshiftleft(uint_fast16_t pixels)
 				colmain_mem_at(gvars.wfjarray, ALLDX, rows, pixels, y),
 				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
 		);
+		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
 				colmain_mem_at(gvars.wfjarray, ALLDX, rows, ALLDX - pixels, y),
 				0x00,
@@ -8715,6 +8717,7 @@ static void wflshiftright(uint_fast16_t pixels)
 				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
 				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
 		);
+		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
 				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
 				0x00,
@@ -8798,9 +8801,9 @@ display2_wfl_init(
 	for (i = 0; i < SPDY; ++ i)
 	{
 #if LCDMODE_MAIN_L8
-		color_scale [i] = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
+		gvars.color_scale [i] = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
 #else /* LCDMODE_MAIN_L8 */
-		color_scale [i] = wfpalette [normalize(i, 0, SPDY - 1, PALETTESIZE - 1)];
+		gvars.color_scale [i] = wfpalette [normalize(i, 0, SPDY - 1, PALETTESIZE - 1)];
 #endif /* LCDMODE_MAIN_L8 */
 	}
 
@@ -8813,7 +8816,7 @@ display2_wfl_init(
 	{
 		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
-			colmain_putpixel(gvars.wfjarray, ALLDX, WFROWS, x, y, color_scale [0]);	// wfpalette [0]
+			colmain_putpixel(gvars.wfjarray, ALLDX, WFROWS, x, y, gvars.color_scale [0]);	// wfpalette [0]
 	}
 }
 
@@ -9222,7 +9225,7 @@ static void display2_spectrum(
 							if (x > xleft && x < xrightv && gview3dss_mark)
 								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, COLORPIP_SPECTRUMFG);
 							else
-								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [j]);
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, gvars.color_scale [j]);
 						}
 
 						if (x)
@@ -9253,7 +9256,7 @@ static void display2_spectrum(
 								if (* colmain_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != COLORMAIN_BLACK)
 									break;
 
-								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, color_scale [h]);
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, gvars.color_scale [h]);
 							}
 							x_old = x_d;
 						}
@@ -9322,7 +9325,7 @@ static void display2_spectrum(
 				{
 					for (uint_fast16_t dy = SPY0 + SPDY - 1, i = 0; dy > ynew; dy --, i ++)
 					{
-						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [i]);
+						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, gvars.color_scale [i]);
 					}
 				}
 				else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
