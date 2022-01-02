@@ -8626,15 +8626,7 @@ static void wflclear0(void)
 	uint_fast16_t rows = WFROWS;
 #endif /* WITHVIEW_3DSS */
 
-	for (y = 0; y < rows; ++ y)
-	{
-		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
-		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
-				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
-				ALLDX * sizeof gvars.wfjarray [0]
-		);
-	}
+	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, rows, display2_bgcolorwfl());
 }
 
 // стираем буфер усреднения FFT
@@ -8682,13 +8674,8 @@ static void wflshiftleft(uint_fast16_t pixels)
 				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),
 				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
 		);
-		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
-		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, ALLDX - pixels, y),
-				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
-				pixels * sizeof gvars.wfjarray [0]
-		);
 	}
+	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, rows, display2_bgcolorwfl());
 }
 
 // частота уменьшилась - надо сдвигать картинку вправо
@@ -8721,13 +8708,8 @@ static void wflshiftright(uint_fast16_t pixels)
 				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
 				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
 		);
-		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
-		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
-				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
-				pixels * sizeof gvars.wfjarray [0]
-		);
 	}
+	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, pixels, rows, display2_bgcolorwfl());
 }
 
 // стираем целиком старое изображение водопада
@@ -8815,13 +8797,7 @@ display2_wfl_init(
 	wfl_avg_clear();	// Сброс фильтра
 
 	wflclear0();	// Очистка водопада (без учета последней записаной строки)
-	uint_fast16_t y;
-	for (y = 0; y < WFROWS; ++ y)
-	{
-		uint_fast16_t x;
-		for (x = 0; x < ALLDX; ++ x)
-			colmain_putpixel(gvars.wfjarray, ALLDX, WFROWS, x, y, display2_bgcolorwfl());
-	}
+	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
