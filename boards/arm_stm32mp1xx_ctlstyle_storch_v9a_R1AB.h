@@ -49,23 +49,12 @@
 			#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
 			// PLL2_1600
-			#if 1
+			#if 0
 				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
 				#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
 				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 				#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 				#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
-			#elif 0
-				// PLL2_1600
-				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
-				#define PLL2DIVN	66	// 528 MHz Valid division rations for DIVN: between 25 and 100
-				#define PLL2DIVP	3	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-				#define PLL2DIVQ	2	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-				#define PLL2DIVR	2	// DDR clock divider = 528 MHz
 				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
 				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
 				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
