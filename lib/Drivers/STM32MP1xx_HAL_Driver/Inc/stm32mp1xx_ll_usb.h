@@ -394,13 +394,13 @@ typedef struct
 #define GRXSTS_PKTSTS_DATA_TOGGLE_ERR          5U
 #define GRXSTS_PKTSTS_CH_HALTED                7U
 
-#define USBx_PCGCCTL    *(__IO uint32_t *)((uint32_t)USBx_BASE + USB_OTG_PCGCCTL_BASE)
-#define USBx_HPRT0      *(__IO uint32_t *)((uint32_t)USBx_BASE + USB_OTG_HOST_PORT_BASE)
+#define USBx_PCGCCTL    (*(__IO uint32_t *)((uint32_t)USBx_BASE + USB_OTG_PCGCCTL_BASE))
+#define USBx_HPRT0      (*(__IO uint32_t *)((uint32_t)USBx_BASE + USB_OTG_HOST_PORT_BASE))
 
 #define USBx_DEVICE     ((USB_OTG_DeviceTypeDef *)(USBx_BASE + USB_OTG_DEVICE_BASE))
 #define USBx_INEP(i)    ((USB_OTG_INEndpointTypeDef *)(USBx_BASE + USB_OTG_IN_ENDPOINT_BASE + ((i) * USB_OTG_EP_REG_SIZE)))
 #define USBx_OUTEP(i)   ((USB_OTG_OUTEndpointTypeDef *)(USBx_BASE + USB_OTG_OUT_ENDPOINT_BASE + ((i) * USB_OTG_EP_REG_SIZE)))
-#define USBx_DFIFO(i)   *(__IO uint32_t *)(USBx_BASE + USB_OTG_FIFO_BASE + ((i) * USB_OTG_FIFO_SIZE))
+#define USBx_DFIFO(i)   (*(__IO uint32_t *)(USBx_BASE + USB_OTG_FIFO_BASE + ((i) * USB_OTG_FIFO_SIZE)))
 
 #define USBx_HOST       ((USB_OTG_HostTypeDef *)(USBx_BASE + USB_OTG_HOST_BASE))
 #define USBx_HC(i)      ((USB_OTG_HostChannelTypeDef *)(USBx_BASE + USB_OTG_HOST_CHANNEL_BASE + ((i) * USB_OTG_HOST_CHANNEL_SIZE)))
@@ -416,11 +416,11 @@ typedef struct
   * @{
   */
 #if defined (USB_OTG_FS) || defined (USB_OTG_HS)
-#define USB_MASK_INTERRUPT(__INSTANCE__, __INTERRUPT__)     ((__INSTANCE__)->GINTMSK &= ~(__INTERRUPT__))
-#define USB_UNMASK_INTERRUPT(__INSTANCE__, __INTERRUPT__)   ((__INSTANCE__)->GINTMSK |= (__INTERRUPT__))
+#define USB_MASK_INTERRUPT(__INSTANCE__, __INTERRUPT__)     do { (__INSTANCE__)->GINTMSK &= ~(__INTERRUPT__); (void) (__INSTANCE__)->GINTMSK; } while (0)
+#define USB_UNMASK_INTERRUPT(__INSTANCE__, __INTERRUPT__)   do { (__INSTANCE__)->GINTMSK |= (__INTERRUPT__); (void) (__INSTANCE__)->GINTMSK; } while (0)
 
-#define CLEAR_IN_EP_INTR(__EPNUM__, __INTERRUPT__)          (USBx_INEP(__EPNUM__)->DIEPINT = (__INTERRUPT__))
-#define CLEAR_OUT_EP_INTR(__EPNUM__, __INTERRUPT__)         (USBx_OUTEP(__EPNUM__)->DOEPINT = (__INTERRUPT__))
+#define CLEAR_IN_EP_INTR(__EPNUM__, __INTERRUPT__)          do { USBx_INEP(__EPNUM__)->DIEPINT = (__INTERRUPT__); (void) USBx_INEP(__EPNUM__)->DIEPINT; } while (0)
+#define CLEAR_OUT_EP_INTR(__EPNUM__, __INTERRUPT__)         do { USBx_OUTEP(__EPNUM__)->DOEPINT = (__INTERRUPT__); (void) USBx_OUTEP(__EPNUM__)->DOEPINT;} while (0)
 #endif /* defined (USB_OTG_FS) || defined (USB_OTG_HS) */
 /**
   * @}
