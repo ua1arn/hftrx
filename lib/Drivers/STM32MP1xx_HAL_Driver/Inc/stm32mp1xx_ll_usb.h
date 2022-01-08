@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_ll_usb.h
+  * @file    stm32mp1xx_ll_usb.h
   * @author  MCD Application Team
   * @brief   Header file of USB Low Layer HAL module.
   ******************************************************************************
@@ -18,8 +18,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_LL_USB_H
-#define STM32H7xx_LL_USB_H
+#ifndef STM32MP1xx_LL_USB_H
+#define STM32MP1xx_LL_USB_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +29,7 @@ extern "C" {
 #include "stm32mp1xx_hal_def.h"
 
 #if defined (USB_OTG_FS) || defined (USB_OTG_HS)
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 
@@ -513,6 +513,6 @@ HAL_StatusTypeDef USB_HS_PHYCDeInit(void);
 #endif
 
 
-#endif /* STM32H7xx_LL_USB_H */
+#endif /* STM32MP1xx_LL_USB_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
