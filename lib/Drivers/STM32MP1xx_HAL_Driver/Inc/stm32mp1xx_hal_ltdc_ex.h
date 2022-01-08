@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_hal_ltdc_ex.h
+  * @file    stm32mp1xx_hal_ltdc_ex.h
   * @author  MCD Application Team
   * @brief   Header file of LTDC HAL Extension module.
   ******************************************************************************
@@ -18,8 +18,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_HAL_LTDC_EX_H
-#define STM32H7xx_HAL_LTDC_EX_H
+#ifndef STM32MP1xx_HAL_LTDC_EX_H
+#define STM32MP1xx_HAL_LTDC_EX_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,7 +32,7 @@ extern "C" {
 
 #include "stm32mp1xx_hal_dsi.h"
 
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 
@@ -81,6 +81,6 @@ HAL_StatusTypeDef HAL_LTDCEx_StructInitFromAdaptedCommandConfig(LTDC_HandleTypeD
 }
 #endif
 
-#endif /* STM32H7xx_HAL_LTDC_EX_H */
+#endif /* STM32MP1xx_HAL_LTDC_EX_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_hal_pcd.h
+  * @file    stm32mp1xx_hal_pcd.h
   * @author  MCD Application Team
   * @brief   Header file of PCD HAL module.
   ******************************************************************************
@@ -18,8 +18,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_HAL_PCD_H
-#define STM32H7xx_HAL_PCD_H
+#ifndef STM32MP1xx_HAL_PCD_H
+#define STM32MP1xx_HAL_PCD_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +30,7 @@ extern "C" {
 
 #if defined (USB_OTG_FS) || defined (USB_OTG_HS)
 
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 
@@ -448,6 +448,6 @@ PCD_StateTypeDef HAL_PCD_GetState(PCD_HandleTypeDef *hpcd);
 }
 #endif
 
-#endif /* STM32H7xx_HAL_PCD_H */
+#endif /* STM32MP1xx_HAL_PCD_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
