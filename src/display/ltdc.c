@@ -1772,27 +1772,11 @@ unsigned long display_getdotclock(const videomode_t * vdmode)
 
 #if WITHGPUHW
 
-// Graphic processor unit
-void board_gpu_initialize(void)
+void GPU_IRQHandler(void)
 {
-	PRINTF("board_gpu_initialize start.\n");
 
-	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_GPUEN;
-	(void) RCC->MP_AHB6ENSETR;
-	RCC->MP_AHB6LPENSETR = RCC_MP_AHB6LPENSETR_GPULPEN;
-	(void) RCC->MP_AHB6LPENSETR;
-
-	PRINTF("board_gpu_initialize: PRODUCTID=%08lX\n", (unsigned long) GPU->PRODUCTID);
-
-//	GPU_IRQn
-
-	PRINTF("board_gpu_initialize done.\n");
 }
 
-#endif /* WITHGPUHW */
-
-#if WITHGPUHW
-
 // Graphic processor unit
 void board_gpu_initialize(void)
 {
@@ -1805,7 +1789,8 @@ void board_gpu_initialize(void)
 
 	PRINTF("board_gpu_initialize: PRODUCTID=%08lX\n", (unsigned long) GPU->PRODUCTID);
 
-//	GPU_IRQn
+//
+	arm_hardware_set_handler_system(GPU_IRQn, GPU_IRQHandler);
 
 	PRINTF("board_gpu_initialize done.\n");
 }

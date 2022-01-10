@@ -12,9 +12,9 @@
 #ifndef ARM_STM32MP1_TFBGA361_CTLSTYLE_STORCH_V9C_H_INCLUDED
 #define ARM_STM32MP1_TFBGA361_CTLSTYLE_STORCH_V9C_H_INCLUDED 1
 
-	#if ! defined(STM32MP153Dxx)
-		#error Wrong CPU selected. STM32MP153Dxx expected
-	#endif /* ! defined(STM32MP153Dxx) */
+	#if ! defined(STM32MP157Axx) && ! defined(STM32MP153Dxx)
+		#error Wrong CPU selected. STM32MP157Axx expected
+	#endif /* ! defined(STM32MP157Axx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
