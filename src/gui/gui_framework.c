@@ -1273,7 +1273,7 @@ static void update_gui_elements_list(void)
 			p->is_long_press = 0;
 			p->is_repeating = 0;
 		}
-		else if (p->type == TYPE_TOUCH_AREA)
+		else if (p->type == TYPE_TEXT_FIELD)
 		{
 			text_field_t * tf = (text_field_t *) p->link;
 			p->x1 = (tf->x1) < 0 ? 0 : (tf->x1);

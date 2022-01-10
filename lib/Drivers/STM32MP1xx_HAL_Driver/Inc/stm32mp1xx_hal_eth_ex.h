@@ -18,8 +18,8 @@
   */ 
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_HAL_ETH_EX_H
-#define STM32H7xx_HAL_ETH_EX_H
+#ifndef STM32MP1xx_HAL_ETH_EX_H
+#define STM32MP1xx_HAL_ETH_EX_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -30,7 +30,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx_hal_def.h"
 
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 
@@ -352,6 +352,6 @@ uint32_t          HAL_ETHEx_GetMACLPIEvent(ETH_HandleTypeDef *heth);
 }
 #endif
 
-#endif /* STM32H7xx_HAL_ETH_EX_H */
+#endif /* STM32MP1xx_HAL_ETH_EX_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

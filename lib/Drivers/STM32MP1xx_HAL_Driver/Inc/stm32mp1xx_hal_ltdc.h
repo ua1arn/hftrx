@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_hal_ltdc.h
+  * @file    stm32mp1xx_hal_ltdc.h
   * @author  MCD Application Team
   * @brief   Header file of LTDC HAL module.
   ******************************************************************************
@@ -18,8 +18,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_HAL_LTDC_H
-#define STM32H7xx_HAL_LTDC_H
+#ifndef STM32MP1xx_HAL_LTDC_H
+#define STM32MP1xx_HAL_LTDC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +30,7 @@ extern "C" {
 
 #if defined (LTDC)
 
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 
@@ -683,6 +683,6 @@ uint32_t              HAL_LTDC_GetError(LTDC_HandleTypeDef *hltdc);
 }
 #endif
 
-#endif /* STM32H7xx_HAL_LTDC_H */
+#endif /* STM32MP1xx_HAL_LTDC_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
