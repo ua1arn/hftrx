@@ -388,6 +388,17 @@ static void window_infobar_menu_process(void)
 		}
 		break;
 
+	case WM_MESSAGE_ENC2_ROTATE:
+	{
+		if (infobar_places [infobar_selected] == INFOBAR_AF_VOLUME)
+		{
+#if ! WITHPOTAFGAIN
+			hamradio_set_afgain(hamradio_get_afgain() + action);
+#endif /* ! WITHPOTAFGAIN */
+		}
+	}
+	break;
+
 	default:
 		break;
 	}
