@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_hal_hcd.c
+  * @file    stm32mp1xx_hal_hcd.c
   * @author  MCD Application Team
   * @brief   HCD HAL module driver.
   *          This file provides firmware functions to manage the following
@@ -56,7 +56,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx_hal.h"
 
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 

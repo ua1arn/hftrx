@@ -11,9 +11,9 @@
 #ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
 
-	#if ! defined(STM32MP153Dxx)
-		#error Wrong CPU selected. STM32MP153Dxx expected
-	#endif /* ! defined(STM32MP153Dxx) */
+	#if ! defined(STM32MP157Axx) && ! defined(STM32MP153Dxx)
+		#error Wrong CPU selected. STM32MP157Axx expected
+	#endif /* ! defined(STM32MP157Axx) */
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -49,23 +49,12 @@
 			#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
 
 			// PLL2_1600
-			#if 1
+			#if 0
 				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
 				#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
 				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
 				#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
 				#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
-			#elif 0
-				// PLL2_1600
-				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
-				#define PLL2DIVN	66	// 528 MHz Valid division rations for DIVN: between 25 and 100
-				#define PLL2DIVP	3	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-				#define PLL2DIVQ	2	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-				#define PLL2DIVR	2	// DDR clock divider = 528 MHz
 				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
 				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
 				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
@@ -461,8 +450,8 @@
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
-			#define WITHALTERNATIVEFONTS    1
-			#define WITHALTERNATIVELAYOUT    1
+//			#define WITHALTERNATIVEFONTS    1
+//			#define WITHALTERNATIVELAYOUT    1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		//#define BOARD_FFTZOOM_POW2MAX 1	// Возможные масштабы FFT x1, x2
@@ -475,8 +464,8 @@
 		//#define WITHFFTSIZEAF 		256		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
-	#define WITHVIEW_3DSS		1
-	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+//	#define WITHVIEW_3DSS		1
+//	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */

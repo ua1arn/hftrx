@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    stm32h7xx_hal_pcd_ex.c
+  * @file    stm32mp1xx_hal_pcd_ex.c
   * @author  MCD Application Team
   * @brief   PCD Extended HAL module driver.
   *          This file provides firmware functions to manage the following
@@ -24,7 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32mp1xx_hal.h"
 
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 

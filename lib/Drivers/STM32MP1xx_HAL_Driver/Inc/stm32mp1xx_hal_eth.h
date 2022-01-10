@@ -18,8 +18,8 @@
   */ 
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_HAL_ETH_H
-#define STM32H7xx_HAL_ETH_H
+#ifndef STM32MP1xx_HAL_ETH_H
+#define STM32MP1xx_HAL_ETH_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -31,7 +31,7 @@
 
 #if defined(ETH)
 
-/** @addtogroup STM32H7xx_HAL_Driver
+/** @addtogroup STM32MP1xx_HAL_Driver
   * @{
   */
 
@@ -1680,7 +1680,7 @@ uint32_t             HAL_ETH_GetMACWakeUpSource(ETH_HandleTypeDef *heth);
 }
 #endif
 
-#endif /* STM32H7xx_HAL_ETH_H */
+#endif /* STM32MP1xx_HAL_ETH_H */
 
 
 

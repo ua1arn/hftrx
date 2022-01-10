@@ -152,11 +152,689 @@ static void display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t
 #endif /* COLORSTYLE_RED */
 
 #if WITHSPECTRUMWF
-// построение цветных градиентов от UA3REO
+
+// https://www.mischianti.org/images-to-byte-array-online-converter-cpp-arduino/
+static const unsigned long pancolor [] FLASHMEM = {
+	0x00891127uL,
+	0x008a1127uL,
+	0x008c1227uL,
+	0x008c1226uL,
+	0x008d1226uL,
+	0x008e1326uL,
+	0x008f1326uL,
+	0x00911325uL,
+	0x00921425uL,
+	0x00921425uL,
+	0x00931426uL,
+	0x00951426uL,
+	0x00961425uL,
+	0x00971525uL,
+	0x00981525uL,
+	0x00991524uL,
+	0x009a1524uL,
+	0x009c1624uL,
+	0x009d1624uL,
+	0x009e1724uL,
+	0x009f1723uL,
+	0x00a01723uL,
+	0x00a11722uL,
+	0x00a31822uL,
+	0x00a41823uL,
+	0x00a51823uL,
+	0x00a71924uL,
+	0x00a81924uL,
+	0x00a91923uL,
+	0x00a91922uL,
+	0x00ab1a22uL,
+	0x00ac1a23uL,
+	0x00ae1a23uL,
+	0x00af1b23uL,
+	0x00af1b23uL,
+	0x00b11b23uL,
+	0x00b21b23uL,
+	0x00b31c22uL,
+	0x00b51c23uL,
+	0x00b61c23uL,
+	0x00b71d23uL,
+	0x00b81d22uL,
+	0x00b91d23uL,
+	0x00bb1d23uL,
+	0x00bb1e23uL,
+	0x00bd1e23uL,
+	0x00be1e24uL,
+	0x00bf1e23uL,
+	0x00c01f23uL,
+	0x00c11f23uL,
+	0x00c21f23uL,
+	0x00c42023uL,
+	0x00c52023uL,
+	0x00c62023uL,
+	0x00c72023uL,
+	0x00c72024uL,
+	0x00c82024uL,
+	0x00ca2124uL,
+	0x00cb2124uL,
+	0x00cd2124uL,
+	0x00cd2124uL,
+	0x00cd2224uL,
+	0x00ce2224uL,
+	0x00cf2224uL,
+	0x00d02224uL,
+	0x00d22324uL,
+	0x00d32325uL,
+	0x00d42325uL,
+	0x00d52326uL,
+	0x00d62425uL,
+	0x00d72426uL,
+	0x00d82426uL,
+	0x00d82426uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92425uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92525uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d82424uL,
+	0x00d92524uL,
+	0x00d82524uL,
+	0x00d82524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92524uL,
+	0x00d92624uL,
+	0x00d92624uL,
+	0x00d92624uL,
+	0x00d82724uL,
+	0x00d72724uL,
+	0x00d82824uL,
+	0x00d92825uL,
+	0x00d92925uL,
+	0x00d92925uL,
+	0x00d92b25uL,
+	0x00d92b25uL,
+	0x00d92c24uL,
+	0x00d92e25uL,
+	0x00d92f25uL,
+	0x00d93025uL,
+	0x00d93225uL,
+	0x00d93225uL,
+	0x00d93425uL,
+	0x00d93525uL,
+	0x00d93825uL,
+	0x00d93925uL,
+	0x00d93b25uL,
+	0x00da3d26uL,
+	0x00da3f26uL,
+	0x00d94126uL,
+	0x00d94126uL,
+	0x00da4426uL,
+	0x00da4627uL,
+	0x00da4727uL,
+	0x00da4927uL,
+	0x00da4b27uL,
+	0x00db4d27uL,
+	0x00db5027uL,
+	0x00db5228uL,
+	0x00db5428uL,
+	0x00db5728uL,
+	0x00dc5928uL,
+	0x00db5b29uL,
+	0x00db5e29uL,
+	0x00db6029uL,
+	0x00dc6329uL,
+	0x00dc662auL,
+	0x00dc672auL,
+	0x00dc6a2auL,
+	0x00dd6c2auL,
+	0x00dd6e2buL,
+	0x00de702buL,
+	0x00de742cuL,
+	0x00df772cuL,
+	0x00df782cuL,
+	0x00de7a2duL,
+	0x00de7c2duL,
+	0x00df7f2duL,
+	0x00df812duL,
+	0x00df842euL,
+	0x00e0862euL,
+	0x00e0892fuL,
+	0x00df8a2fuL,
+	0x00e18d2fuL,
+	0x00e29030uL,
+	0x00e29230uL,
+	0x00e29431uL,
+	0x00e39731uL,
+	0x00e39931uL,
+	0x00e49c32uL,
+	0x00e49f32uL,
+	0x00e4a033uL,
+	0x00e5a334uL,
+	0x00e5a534uL,
+	0x00e6a835uL,
+	0x00e6aa35uL,
+	0x00e7ac35uL,
+	0x00e7af36uL,
+	0x00e7b136uL,
+	0x00e8b437uL,
+	0x00e8b637uL,
+	0x00e9b837uL,
+	0x00e9bb38uL,
+	0x00e9bd38uL,
+	0x00e9bf39uL,
+	0x00ebc139uL,
+	0x00ebc43auL,
+	0x00ecc63buL,
+	0x00ecc83buL,
+	0x00edca3buL,
+	0x00edcc3cuL,
+	0x00eecf3cuL,
+	0x00edd03cuL,
+	0x00eed33duL,
+	0x00eed53duL,
+	0x00efd73euL,
+	0x00f0da3fuL,
+	0x00f0db3fuL,
+	0x00f1dd3fuL,
+	0x00f1df40uL,
+	0x00f2e140uL,
+	0x00f2e340uL,
+	0x00f3e541uL,
+	0x00f3e641uL,
+	0x00f3e841uL,
+	0x00f4ea42uL,
+	0x00f5ec42uL,
+	0x00f5ed43uL,
+	0x00f5ee43uL,
+	0x00f6f043uL,
+	0x00f6f244uL,
+	0x00f7f444uL,
+	0x00f6f544uL,
+	0x00f7f745uL,
+	0x00f7f845uL,
+	0x00f6f945uL,
+	0x00f8fb46uL,
+	0x00f8fd46uL,
+	0x00f8fd46uL,
+	0x00f9fe46uL,
+	0x00f9ff47uL,
+	0x00faff47uL,
+	0x00fbff48uL,
+	0x00faff48uL,
+	0x00faff48uL,
+	0x00faff48uL,
+	0x00f9ff48uL,
+	0x00f9ff48uL,
+	0x00f8ff48uL,
+	0x00f7ff47uL,
+	0x00f7ff48uL,
+	0x00f6ff48uL,
+	0x00f4ff47uL,
+	0x00f3ff47uL,
+	0x00f1ff47uL,
+	0x00f0ff47uL,
+	0x00efff47uL,
+	0x00efff47uL,
+	0x00eeff47uL,
+	0x00ecff46uL,
+	0x00eaff46uL,
+	0x00e9ff46uL,
+	0x00e7ff46uL,
+	0x00e6ff45uL,
+	0x00e5ff45uL,
+	0x00e2ff45uL,
+	0x00e0ff45uL,
+	0x00deff45uL,
+	0x00ddff44uL,
+	0x00dcff44uL,
+	0x00dbff44uL,
+	0x00d9ff44uL,
+	0x00d6ff44uL,
+	0x00d4ff43uL,
+	0x00d2ff43uL,
+	0x00d0ff43uL,
+	0x00cfff43uL,
+	0x00cdff43uL,
+	0x00cbff43uL,
+	0x00c9ff42uL,
+	0x00c7ff42uL,
+	0x00c5ff42uL,
+	0x00c3ff42uL,
+	0x00c1ff42uL,
+	0x00bfff41uL,
+	0x00beff41uL,
+	0x00bcff41uL,
+	0x00b9ff41uL,
+	0x00b6ff41uL,
+	0x00b4ff40uL,
+	0x00b2ff40uL,
+	0x00b0ff40uL,
+	0x00aeff40uL,
+	0x00acff40uL,
+	0x00aaff3fuL,
+	0x00a8ff3fuL,
+	0x00a6ff3fuL,
+	0x00a4ff3fuL,
+	0x00a1ff3fuL,
+	0x009fff3euL,
+	0x009dff3euL,
+	0x009aff3euL,
+	0x0098ff3euL,
+	0x0096ff3euL,
+	0x0094ff3euL,
+	0x0092ff3euL,
+	0x0090ff3duL,
+	0x0090ff3euL,
+	0x008eff3duL,
+	0x008eff3duL,
+	0x008eff3duL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3euL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3duL,
+	0x008fff3fuL,
+	0x008fff41uL,
+	0x008fff43uL,
+	0x008fff45uL,
+	0x008fff47uL,
+	0x008fff49uL,
+	0x008eff4buL,
+	0x008eff4euL,
+	0x008fff4fuL,
+	0x0090ff51uL,
+	0x0090ff52uL,
+	0x0090ff55uL,
+	0x0090ff58uL,
+	0x008fff59uL,
+	0x0090ff5buL,
+	0x0090ff5duL,
+	0x0090ff5fuL,
+	0x0090ff62uL,
+	0x008fff64uL,
+	0x0090ff66uL,
+	0x0090ff69uL,
+	0x0090ff6buL,
+	0x0090ff6duL,
+	0x0090ff6fuL,
+	0x0090ff71uL,
+	0x0090ff73uL,
+	0x0090ff75uL,
+	0x0091ff78uL,
+	0x0091ff7auL,
+	0x0091ff7duL,
+	0x0091ff7fuL,
+	0x0091ff80uL,
+	0x0091ff83uL,
+	0x0091ff86uL,
+	0x0091ff89uL,
+	0x0091ff8buL,
+	0x0091ff8cuL,
+	0x0091ff8duL,
+	0x0091ff90uL,
+	0x0091ff92uL,
+	0x0091ff95uL,
+	0x0092ff97uL,
+	0x0092ff98uL,
+	0x0092ff9buL,
+	0x0092ff9duL,
+	0x0092ff9fuL,
+	0x0092ffa1uL,
+	0x0092ffa4uL,
+	0x0092ffa6uL,
+	0x0092ffa8uL,
+	0x0092ffaauL,
+	0x0092ffacuL,
+	0x0093ffaeuL,
+	0x0093ffb0uL,
+	0x0093ffb2uL,
+	0x0093ffb4uL,
+	0x0093ffb6uL,
+	0x0093ffb7uL,
+	0x0093ffb8uL,
+	0x0093ffbbuL,
+	0x0093ffbeuL,
+	0x0093ffc1uL,
+	0x0094ffc3uL,
+	0x0094ffc4uL,
+	0x0094ffc5uL,
+	0x0094ffc8uL,
+	0x0093ffcauL,
+	0x0093ffcduL,
+	0x0094ffceuL,
+	0x0094ffceuL,
+	0x0094ffcfuL,
+	0x0094ffd2uL,
+	0x0094ffd5uL,
+	0x0095ffd6uL,
+	0x0095ffd7uL,
+	0x0095ffd7uL,
+	0x0094fed9uL,
+	0x0094fedcuL,
+	0x0095fedfuL,
+	0x0095fee0uL,
+	0x0095fee2uL,
+	0x0095fde3uL,
+	0x0095fde4uL,
+	0x0096fee5uL,
+	0x0096fee7uL,
+	0x0096fee8uL,
+	0x0096fee9uL,
+	0x0096feeauL,
+	0x0096feecuL,
+	0x0096feeduL,
+	0x0096feeeuL,
+	0x0096feefuL,
+	0x0096fdf0uL,
+	0x0096fef2uL,
+	0x0096fef4uL,
+	0x0096fef5uL,
+	0x0096fcf6uL,
+	0x0096fcf7uL,
+	0x0096fcf8uL,
+	0x0096fcfauL,
+	0x0096fcfbuL,
+	0x0096fcfbuL,
+	0x0096fcfcuL,
+	0x0097fdfduL,
+	0x0097fcfduL,
+	0x0096fbfduL,
+	0x0095fafduL,
+	0x0095f9fduL,
+	0x0094f8fduL,
+	0x0094f7fcuL,
+	0x0093f5fcuL,
+	0x0092f4fcuL,
+	0x0092f4fcuL,
+	0x0091f2fcuL,
+	0x0090f0fcuL,
+	0x0090effcuL,
+	0x008fedfcuL,
+	0x008eebfbuL,
+	0x008deafbuL,
+	0x008de9fbuL,
+	0x008ce7fcuL,
+	0x008be5fcuL,
+	0x008ae3fcuL,
+	0x0088e0fbuL,
+	0x0087defbuL,
+	0x0087ddfbuL,
+	0x0086dbfcuL,
+	0x0085dafcuL,
+	0x0084d8fcuL,
+	0x0083d6fbuL,
+	0x0081d3fbuL,
+	0x0081d1fbuL,
+	0x0080cffauL,
+	0x007fcdfauL,
+	0x007ecbfauL,
+	0x007dc9fauL,
+	0x007cc7fbuL,
+	0x007ac4fbuL,
+	0x0079c1fbuL,
+	0x0079c0fbuL,
+	0x0077bdfbuL,
+	0x0076bbfbuL,
+	0x0075b9fauL,
+	0x0073b5fauL,
+	0x0072b3fauL,
+	0x0071b0fauL,
+	0x0070aefauL,
+	0x006facfauL,
+	0x006ea9fauL,
+	0x006da7fauL,
+	0x006ba4fauL,
+	0x006aa2fauL,
+	0x00699efauL,
+	0x00689cfauL,
+	0x006699fauL,
+	0x006597fauL,
+	0x006493f9uL,
+	0x006391f9uL,
+	0x00618df9uL,
+	0x00608af9uL,
+	0x005f88f9uL,
+	0x005d84f9uL,
+	0x005c82f9uL,
+	0x005b80f9uL,
+	0x005a7bf9uL,
+	0x005979f8uL,
+	0x005876f9uL,
+	0x005774f9uL,
+	0x005671f9uL,
+	0x00556ff9uL,
+	0x00546bf8uL,
+	0x005369f8uL,
+	0x005165f9uL,
+	0x005061f9uL,
+	0x005060f9uL,
+	0x004f5cf8uL,
+	0x004d58f8uL,
+	0x004c54f8uL,
+	0x004b51f8uL,
+	0x004a4df8uL,
+	0x004949f8uL,
+	0x004844f8uL,
+	0x004741f8uL,
+	0x00463cf8uL,
+	0x004539f7uL,
+	0x004535f8uL,
+	0x004430f8uL,
+	0x00432af8uL,
+	0x004225f8uL,
+	0x004120f8uL,
+	0x004019f7uL,
+	0x003f12f7uL,
+	0x003e02f7uL,
+	0x003e00f7uL,
+	0x003d00f8uL,
+	0x003d00f8uL,
+	0x003c00f8uL,
+	0x003b00f7uL,
+	0x003a00f6uL,
+	0x003a00f7uL,
+	0x003900f7uL,
+	0x003900f7uL,
+	0x003800f8uL,
+	0x003800f8uL,
+	0x003800f8uL,
+	0x003700f8uL,
+	0x003700f8uL,
+	0x003600f8uL,
+	0x003600f8uL,
+	0x003600f8uL,
+	0x003500f8uL,
+	0x003500f8uL,
+	0x003500f8uL,
+	0x003500f8uL,
+	0x003500f8uL,
+	0x003500f8uL,
+	0x003400f8uL,
+	0x003400f8uL,
+	0x003400f8uL,
+	0x003300f7uL,
+	0x003400f8uL,
+	0x003400f8uL,
+	0x003400f8uL,
+	0x003400f8uL,
+	0x003300f8uL,
+	0x003300f7uL,
+	0x003300f7uL,
+	0x003300f6uL,
+	0x003300f6uL,
+	0x003300f7uL,
+	0x003300f7uL,
+	0x003300f7uL,
+	0x003300f6uL,
+	0x003300f6uL,
+	0x003300f5uL,
+	0x003300f5uL,
+};
+
 // get color from signal strength
 // Get FFT color warmth (blue to red)
 COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
 {
+#if 1
+	// построение цветных градиентов по готовой таблице.
+	const COLOR24_T c = pancolor [ARRAY_SIZE(pancolor) - 1 - normalize(pos, 0, maxpos, ARRAY_SIZE(pancolor) - 1)];
+	return COLOR24(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
+#endif
+	// построение цветных градиентов от UA3REO
 	uint_fast8_t red = 0;
 	uint_fast8_t green = 0;
 	uint_fast8_t blue = 0;
@@ -416,8 +1094,8 @@ display2_testvidget(
 // формирование данных спектра для последующего отображения
 // спектра или водопада
 static void display2_latchwaterfall(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	);
 static void display2_wfl_init(
@@ -426,13 +1104,13 @@ static void display2_wfl_init(
 	dctx_t * pctx
 	);
 static void display2_spectrum(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	);
 static void display2_waterfall(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	);
 static void display2_colorbuff(
@@ -442,20 +1120,20 @@ static void display2_colorbuff(
 	);
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	);
 // Отображение шкалы S-метра
 static void display2_legend_rx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	);
 // Отображение шкалы SWR-метра и других измерителе
 static void display2_legend_tx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	);
 
@@ -1112,8 +1790,8 @@ static void display_freqXbig_a(
 
 // Отображение частоты. Герцы маленьким шрифтом.
 static void display2_freqX_a(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -1165,8 +1843,8 @@ static void display2_freqx_a(
 // Верстия отображения без точки между мегагерцами и сотнями килогерц (для текстовых дисплееев)
 // FREQ B
 static void display_freqchr_a(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -1286,7 +1964,7 @@ static void display_freqmeter10(
 }
 
 // отображение текста (из FLASH) с атрибутами по состоянию
-static void 
+static void
 NOINLINEAT
 display2_text_P(
 	uint_fast8_t x, 
@@ -1322,7 +2000,7 @@ display2_text_alt_P(
 }
 
 // отображение текста с атрибутами по состоянию
-static void 
+static void
 NOINLINEAT
 display2_text(
 	uint_fast8_t x, 
@@ -1402,11 +2080,11 @@ static void display_recstatus(
 	local_snprintf_P(
 		buf2,
 		ARRAY_SIZE(buf2),
-		PSTR("%08lx %2d"), 
+		PSTR("%08lx %2d"),
 		(unsigned long) hamradio_get_recdropped(),
 		(int) hamradio_get_recdbuffered()
 		);
-		
+
 	colmain_setcolors(LABELTEXT, LABELBACK);
 	display_at(x, y, buf2);
 
@@ -1434,8 +2112,8 @@ static void display2_rec3(
 
 // отображение состояния USB HOST
 static void display2_usbsts3(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -1727,8 +2405,8 @@ static void display_XXXXX3(
 }
 
 static void display_XXXXX5(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -1755,8 +2433,8 @@ static void display_datamode4(
 
 // Отображение режима передачи аудио с USB
 static void display2_datamode3(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -1817,8 +2495,8 @@ static void display2_genham1(
 
 // Отображение режима обхода тюнера
 static void display2_byp3(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2025,8 +2703,8 @@ static void display_lockstate1(
 
 // Отображение PBT
 static void display_pbt(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2087,8 +2765,8 @@ static void display_pre3(
 
 // переполнение АЦП (надо показывать как REDRM_BARS - с таймерным обновлением)
 static void display_ovf3(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2165,8 +2843,8 @@ static void display2_preovf5alt(
 
 // display antenna
 static void display2_ant5(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2244,8 +2922,8 @@ static void display_att_tx3(
 
 // RX agc
 static void display2_agc3(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2255,8 +2933,8 @@ static void display2_agc3(
 
 // RX agc
 static void display_agc4(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2315,8 +2993,8 @@ static void display2_mode_lower_a(
 
 // SSB/CW/AM/FM/...
 static void display2_mode3_b(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2350,8 +3028,8 @@ static void display2_voltlevelV5(
 
 // dd.d - 4 places
 static void display_voltlevel4(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2370,8 +3048,8 @@ static void display_voltlevel4(
 
 // отображение градусов с десятыми долями
 static void display2_thermo4(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2438,8 +3116,8 @@ static void display2_thermo5(
 // +d.ddA - 5 places (with "A")
 // +dd.dA - 5 places (with "A")
 static void display2_currlevelA6(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2475,8 +3153,8 @@ static void display2_currlevelA6(
 // +d.dd - 5 places (without "A")
 // +dd.d - 5 places (without "A")
 static void display2_currlevel5(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2511,8 +3189,8 @@ static void display2_currlevel5(
 
 // Отображение уровня сигнала в dBm
 static void display_siglevel7(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2559,8 +3237,8 @@ int_fast32_t display_zoomedbw(void)
 #endif /* WITHIF4DSP */
 
 static void display2_span9(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2578,8 +3256,8 @@ static void display2_span9(
 // Отображение уровня сигнала в баллах шкалы S
 // S9+60
 static void display_smeter5(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2657,8 +3335,8 @@ static void display2_smeors5(
 }
 
 static void display2_freqdelta8(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2684,8 +3362,8 @@ static void display2_freqdelta8(
 
 /* Получить информацию об ошибке настройки в режиме SAM */
 static void display_samfreqdelta8(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2712,8 +3390,8 @@ static void display_samfreqdelta8(
 // d.d - 3 places
 // текущее значение верхней частоты среза НЧ фильтра АМ/ЧМ
 static void display_amfmhighcut4(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2753,8 +3431,8 @@ static void display_amfmhighcut5(
 
 // Печать времени - часы, минуты и секунды
 static void display_time8(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2766,7 +3444,7 @@ static void display_time8(
 	local_snprintf_P(buf2, ARRAY_SIZE(buf2), PSTR("%02d:%02d:%02d"),
 			(int) hour, (int) minute, (int) secounds
 		);
-	
+
 	const char * const labels [1] = { buf2, };
 	display2_text(x, y, labels, colors_1state, 0);
 #endif /* defined (RTC1_TYPE) */
@@ -2774,8 +3452,8 @@ static void display_time8(
 
 // Печать времени - только часы и минуты, без секунд
 static void display_time5(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -2821,8 +3499,8 @@ static void display2_freqsof9(
 // Печать времени - только часы и минуты, без секунд
 // Jan-01 13:40
 static void display2_datetime12(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -3206,7 +3884,7 @@ enum
 		{	8, 0,	display2_att4,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	13, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	1, 1,	display2_bars_amv0,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// S-METER, SWR-METER, POWER-METER
-	#if WITHMENU 
+	#if WITHMENU
 		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 1,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	4, 1,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
@@ -3250,7 +3928,7 @@ enum
 	#if WITHMODEM
 		DPAGE_BPSK,
 	#endif /* WITHMODEM */
-	#if WITHVOLTLEVEL && WITHCURRLEVEL 
+	#if WITHVOLTLEVEL && WITHCURRLEVEL
 		DPAGE_VOLTS,
 	#endif /* WITHVOLTLEVEL && WITHCURRLEVEL */
 		//
@@ -3450,7 +4128,7 @@ enum
 		{	6, 3,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	9, 3,	display_lockstate1, REDRM_MODE, REDRSUBSET(DPAGE0), },
 		{	0, 3,	display2_voxtune3,	REDRM_MODE, REDRSUBSET(DPAGE0), },
-	#if WITHMENU 
+	#if WITHMENU
 		{	0, 0,	display2_menu_valxx,	REDRM_MVAL, REDRSUBSET_MENU, },	// значение параметра
 		{	0, 3,	display2_menu_lblc3,	REDRM_MFXX, REDRSUBSET_MENU, },	// код редактируемого параметра
 		{	0, 2,	display2_menu_lblst,	REDRM_MLBL, REDRSUBSET_MENU, },	// название редактируемого параметра
@@ -3496,11 +4174,11 @@ enum
 		//					  "012345678901234567890"
 		#define SMETERMAP 	  " 1 3 5 7 9 + 20 40 60"	//
 		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			#define SWRPWRMAP "1 | 2 | 3 0%   | 100%" 
+			#define SWRPWRMAP "1 | 2 | 3 0%   | 100%"
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#else
 			#define POWERMAP  " 0 10 20 40 60 80 100"
-			#define SWRMAP    "1    |    2    |   3 "	// 
+			#define SWRMAP    "1    |    2    |   3 "	//
 			#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
 		#endif
 		enum
@@ -3646,7 +4324,7 @@ enum
 	#define SMALLCHARH 8 /* Font height */
 
 	#if DSTYLE_UR3LMZMOD && WITHONEATTONEAMP
-		// SW20XXX 
+		// SW20XXX
 		enum
 		{
 			BDTH_ALLRX = 21,	// ширина зоны для отображение полосы на индикаторе
@@ -3668,11 +4346,11 @@ enum
 		//					  "0123456789012345678901"
 		#define SMETERMAP 	  " 1 3 5 7 9 + 20 40 60 "	//
 		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			#define SWRPWRMAP "1 | 2 | 3 0%   | 100% " 
+			#define SWRPWRMAP "1 | 2 | 3 0%   | 100% "
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#else
 			#define POWERMAP  " 0 10 20 40 60 80 100 "
-			#define SWRMAP    "1    |    2    |   3  "	// 
+			#define SWRMAP    "1    |    2    |   3  "	//
 			#define SWRMAX	(SWRMIN * 32 / 10)	// 3.2 - значение на полной шкале
 		#endif
 		enum
@@ -3867,7 +4545,7 @@ enum
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#else /* WITHSHOWSWRPWR */
 			#define POWERMAP  "0 10 20 40 60 80 100"
-			#define SWRMAP    "1    |    2    |   3"	// 
+			#define SWRMAP    "1    |    2    |   3"	//
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#endif /* WITHSHOWSWRPWR */
 		enum
@@ -4050,7 +4728,7 @@ enum
 			#define SWRPWRMAP "1 | 2 | 3 0%  | 100%"
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#else /* WITHSHOWSWRPWR */
-			#define SWRMAP    "1    |    2    |   3"	// 
+			#define SWRMAP    "1    |    2    |   3"	//
 			#define POWERMAP  "0 10 20 40 60 80 100"
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#endif /* WITHSHOWSWRPWR */
@@ -4137,7 +4815,7 @@ enum
 			#define SWRPWRMAP "1 | 2 | 3 0%  | 100%"
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#else /* WITHSHOWSWRPWR */
-			#define SWRMAP    "1    |    2    |   3"	// 
+			#define SWRMAP    "1    |    2    |   3"	//
 			#define POWERMAP  "0 10 20 40 60 80 100"
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#endif /* WITHSHOWSWRPWR */
@@ -4311,7 +4989,7 @@ enum
 			#define SWRPWRMAP "1 | 2 | 3 0%     |    100% "
 		#else
 			#define POWERMAP  "0  10  20  40  60  80  100"
-			#define SWRMAP    "1    -    2    -    3    -"	// 
+			#define SWRMAP    "1    -    2    -    3    -"	//
 			#define SWRMAX	(SWRMIN * 36 / 10)	// 3.6 - значение на полной шкале
 		#endif
 		enum
@@ -4338,7 +5016,7 @@ enum
 			//{	0, 0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	20, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	24, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			
+
 			{	0, 5,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
 			{	0, 11,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
@@ -4399,7 +5077,7 @@ enum
 			#define SWRPWRMAP "1 | 2 | 3 0%     |    100% "
 		#else
 			#define POWERMAP  "0  10  20  40  60  80  100"
-			#define SWRMAP    "1    -    2    -    3    -"	// 
+			#define SWRMAP    "1    -    2    -    3    -"	//
 			#define SWRMAX	(SWRMIN * 36 / 10)	// 3.6 - значение на полной шкале
 		#endif
 		enum
@@ -4426,7 +5104,7 @@ enum
 			//{	0, 0,	display2_agc3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	20, 0,	display2_rxbw3,		REDRM_MODE, REDRSUBSET(DPAGE0), },
 			{	24, 0,	display2_mode3_a,	REDRM_MODE,	REDRSUBSET(DPAGE0), },	// SSB/CW/AM/FM/...
-			
+
 			{	0, 5,	display_freqXbig_a, REDRM_FREQ, REDRSUBSET(DPAGE0), },
 
 			{	0, 11,	display2_vfomode3,	REDRM_MODE, REDRSUBSET(DPAGE0), },	// SPLIT
@@ -4568,12 +5246,12 @@ enum
 		//					  "012345678901234567890123456789"
 		#define SMETERMAP 	  "S 1  3  5  7  9  +20  +40  +60"	//
 		#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%" 
+			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%"
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		#else
 			#error Not designed for work DSTYLE_UR3LMZMOD without WITHSHOWSWRPWR
 			//#define POWERMAP  " 0 10 20 40 60 80 100"
-			//#define SWRMAP    "1    |    2    |   3 "	// 
+			//#define SWRMAP    "1    |    2    |   3 "	//
 			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
 		#endif
 		enum
@@ -4683,12 +5361,12 @@ enum
 		//					  "012345678901234567890123456789"
 		#define SMETERMAP 	  "S 1  3  5  7  9  +20  +40  +60"	//
 		//#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%" 
+			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%"
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		//#else
 		//	#error Not designed for work DSTYLE_UR3LMZMOD without WITHSHOWSWRPWR
 			//#define POWERMAP  " 0 10 20 40 60 80 100"
-			//#define SWRMAP    "1    |    2    |   3 "	// 
+			//#define SWRMAP    "1    |    2    |   3 "	//
 			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
 		//#endif
 		enum
@@ -4817,12 +5495,12 @@ enum
 		//					  "012345678901234567890123456789"
 		#define SMETERMAP 	  "S 1  3  5  7  9  +20  +40  +60"	//
 		//#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
-			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%" 
+			#define SWRPWRMAP "1 | 2 | 3 0%      50%     100%"
 			#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		//#else
 		//	#error Not designed for work DSTYLE_UR3LMZMOD without WITHSHOWSWRPWR
 			//#define POWERMAP  " 0 10 20 40 60 80 100"
-			//#define SWRMAP    "1    |    2    |   3 "	// 
+			//#define SWRMAP    "1    |    2    |   3 "	//
 			//#define SWRMAX	(SWRMIN * 31 / 10)	// 3.1 - значение на полной шкале
 		//#endif
 		enum
@@ -5122,7 +5800,7 @@ enum
 		#endif /* WITHSHOWSWRPWR */
 		};
 		#define SMETERMAP "1 3 5 7 9 + 20 40 60"
-		#define SWRPWRMAP "1 2 3  0%   |   100%" 
+		#define SWRPWRMAP "1 2 3  0%   |   100%"
 		#define POWERMAP  "0 10 20 40 60 80 100"
 		#define SWRMAX	(SWRMIN * 30 / 10)	// 3.0 - значение на полной шкале
 		enum
@@ -5514,12 +6192,12 @@ enum
 
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		//					"012345678901234567890123"
-		#define SWRPWRMAP	"1   2   3   4  0% | 100%" 
+		#define SWRPWRMAP	"1   2   3   4  0% | 100%"
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 	#else
 		//					"012345678901234567890123"
 		#define POWERMAP	"0    25    50   75   100"
-		#define SWRMAP		"1   |   2  |   3   |   4"	// 
+		#define SWRMAP		"1   |   2  |   3   |   4"	//
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 	#endif
 	//						"012345678901234567890123"
@@ -5692,12 +6370,12 @@ enum
 
 	#if WITHSHOWSWRPWR	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
 		//					"012345678901234567890123"
-		#define SWRPWRMAP	"1   2   3   4  0% | 100%" 
+		#define SWRPWRMAP	"1   2   3   4  0% | 100%"
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 	#else
 		//					"012345678901234567890123"
 		#define POWERMAP	"0    25    50   75   100"
-		#define SWRMAP		"1   |   2  |   3   |   4"	// 
+		#define SWRMAP		"1   |   2  |   3   |   4"	//
 		#define SWRMAX	(SWRMIN * 40 / 10)	// 4.0 - значение на полной шкале
 	#endif
 	//						"012345678901234567890123"
@@ -5733,7 +6411,7 @@ enum
 	};
 
 		/* совмещение на одном экрание водопада и панорамы */
-		enum 
+		enum
 		{
 			DPAGE0,					// Страница, в которой отображаются основные (или все)
 			DISPLC_MODCOUNT
@@ -6142,7 +6820,7 @@ enum
 //		{	46, 35,	display2_nr3,		REDRM_MODE, PGALL, },	// NR
 		{	43, 15,	display2_atu3,		REDRM_MODE, PGALL, },	// TUNER state (optional)
 		{	43, 20,	display2_byp3,		REDRM_MODE, PGALL, },	// TUNER BYPASS state (optional)
-		
+
 		{	17,	7,	display2_freqX_a,	REDRM_FREQ, PGALL, },	// MAIN FREQ Частота (большие цифры)
 		{	38, 10,	display2_mode3_a,	REDRM_MODE,	PGALL, },	// SSB/CW/AM/FM/...
 		{	43, 10,	display2_rxbw3,		REDRM_MODE, PGALL, },	// 3.1 / 0,5 / WID / NAR
@@ -6708,12 +7386,12 @@ display2_menu_value(
 }
 
 //+++ bars
-		
+
 static uint_fast8_t display_mapbar(
-	uint_fast8_t val, 
-	uint_fast8_t bottom, uint_fast8_t top, 
-	uint_fast8_t mapleft, 
-	uint_fast8_t mapinside, 
+	uint_fast8_t val,
+	uint_fast8_t bottom, uint_fast8_t top,
+	uint_fast8_t mapleft,
+	uint_fast8_t mapinside,
 	uint_fast8_t mapright
 	)
 {
@@ -6746,7 +7424,7 @@ static uint_fast16_t display_getpwrfullwidth(void)
 // Вызовы этой функции (или группу вызовов) требуется "обрамить" парой вызовов
 // display_wrdatabar_begin() и display_wrdatabar_end().
 //
-void 
+void
 //NOINLINEAT
 display_bar(
 	uint_fast16_t xpix,
@@ -6807,7 +7485,7 @@ display_bar(
 // Адресация для s-meter
 static uint_fast8_t
 display_bars_x_rx(
-	uint_fast8_t x, 
+	uint_fast8_t x,
 	uint_fast8_t xoffs	// grid
 	)
 {
@@ -6817,7 +7495,7 @@ display_bars_x_rx(
 // Адресация для swr-meter
 static uint_fast8_t
 display_bars_x_swr(
-	uint_fast8_t x, 
+	uint_fast8_t x,
 	uint_fast8_t xoffs	// grid
 	)
 {
@@ -6827,7 +7505,7 @@ display_bars_x_swr(
 // Адресация для pwr-meter
 static uint_fast8_t
 display_bars_x_pwr(
-	uint_fast8_t x, 
+	uint_fast8_t x,
 	uint_fast8_t xoffs	// grid
 	)
 {
@@ -6839,10 +7517,10 @@ display_bars_x_pwr(
 }
 
 // координаьы для общего блока PWR & SWR
-void display_swrmeter(  
-	uint_fast8_t x, 
-	uint_fast8_t y, 
-	adcvalholder_t f,	// forward, 
+void display_swrmeter(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	adcvalholder_t f,	// forward,
 	adcvalholder_t r,	// reflected (скорректированное)
 	uint_fast16_t minforward
 	)
@@ -6890,9 +7568,9 @@ void display_swrmeter(
 // Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
 // координаьы для общего блока PWR & SWR
 // используется место для SWR
-void display_modulationmeter_amv0(  
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+void display_modulationmeter_amv0(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	uint_fast8_t value,
 	uint_fast8_t fullscale
 	)
@@ -6926,9 +7604,9 @@ void display_modulationmeter_amv0(
 }
 // координаьы для общего блока PWR & SWR
 // Вызывается из display2_bars_amv0 (версия для CTLSTYLE_RA4YBO_AM0)
-void display_pwrmeter_amv0(  
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+void display_pwrmeter_amv0(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	uint_fast8_t value,			// текущее значение
 	uint_fast8_t tracemax,		// max hold значение
 	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
@@ -6973,8 +7651,8 @@ void display_pwrmeter_amv0(
 }
 
 void display_smeter_amv0(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	uint_fast8_t value,		// текущее значение
 	uint_fast8_t tracemax,	// метка запомненного максимума
 	uint_fast8_t level9,	// s9 level
@@ -6984,7 +7662,7 @@ void display_smeter_amv0(
 #if WITHBARS
 	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 	//delta1 = delta1 > level9 ? level9 : delta1;
-	
+
 	const uint_fast8_t leftmin = level9 - delta1;
 	const uint_fast8_t mapleftval = display_mapbar(value, leftmin, level9, 0, value - leftmin, delta1);
 	const uint_fast8_t mapleftmax = display_mapbar(tracemax, leftmin, level9, delta1, tracemax - leftmin, delta1); // delta1 - invisible
@@ -7023,9 +7701,9 @@ void display_smeter_amv0(
 #endif /* CTLSTYLE_RA4YBO_AM0 */
 
 // координаьы для общего блока PWR & SWR
-void display_pwrmeter(  
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+void display_pwrmeter(
+	uint_fast8_t x,
+	uint_fast8_t y,
 	uint_fast8_t value,			// текущее значение
 	uint_fast8_t tracemax,		// max hold значение
 	uint_fast8_t maxpwrcali		// значение для отклонения на всю шкалу
@@ -7063,8 +7741,8 @@ void display_pwrmeter(
 }
 
 void display_smeter(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	uint_fast8_t value,		// текущее значение
 	uint_fast8_t tracemax,	// метка запомненного максимума
 	uint_fast8_t level9,	// s9 level
@@ -7074,7 +7752,7 @@ void display_smeter(
 #if WITHBARS
 	tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
 	//delta1 = delta1 > level9 ? level9 : delta1;
-	
+
 	const uint_fast8_t leftmin = level9 - delta1;
 	const uint_fast8_t mapleftval = display_mapbar(value, leftmin, level9, 0, value - leftmin, delta1);
 	const uint_fast8_t mapleftmax = display_mapbar(tracemax, leftmin, level9, delta1, tracemax - leftmin, delta1); // delta1 - invisible
@@ -7107,8 +7785,8 @@ void display_smeter(
 
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend_rx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -7120,8 +7798,8 @@ static void display2_legend_rx(
 
 // Отображение шкалы SWR-метра и других измерителей
 static void display2_legend_tx(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -7148,8 +7826,8 @@ static void display2_legend_tx(
 
 // Отображение шкалы S-метра и других измерителей
 static void display2_legend(
-	uint_fast8_t x, 
-	uint_fast8_t y, 
+	uint_fast8_t x,
+	uint_fast8_t y,
 	dctx_t * pctx
 	)
 {
@@ -7162,7 +7840,7 @@ static void display2_legend(
 
 #if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
 
-enum 
+enum
 {
 	ALLDX = GRID2X(CHARS2GRID(BDTH_ALLRX)),	// размер по горизонтали в пикселях
 	ALLDY = GRID2Y(BDCV_ALLRX),				// размер по вертикали в пикселях части отведенной водопаду
@@ -7236,7 +7914,6 @@ typedef struct {
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { WFROWS = WFDY };
 	enum { PALETTESIZE = COLORPIP_BASE };
-	static PACKEDCOLORMAIN_T wfpalette [1];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW && LCDMODE_PIP_RGB565
@@ -7251,6 +7928,14 @@ typedef struct {
 
 	enum { PALETTESIZE = COLORPIP_BASE };
 	enum { WFROWS = WFDY };
+	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
+
+#elif WITHFASTWATERFLOW && 1
+
+	/* быстрое отображение водопада (но требует больше памяти) */
+	enum { WFROWS = WFDY };
+	enum { PALETTESIZE = ARRAY_SIZE(pancolor) };
+	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
 #elif WITHFASTWATERFLOW
@@ -7318,6 +8003,7 @@ struct ustates
 	FLOAT_t Yold_wtf [ALLDX];
 	FLOAT_t Yold_spe [ALLDX];
 	PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
+	PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
 
 #if WITHAFSPECTRE
 	float32_t afspec_wndfn [WITHFFTSIZEAF];
@@ -7335,7 +8021,6 @@ union states
 	struct ustates data;
 	uint16_t rbfimage_dummy [1];	// для предотвращения ругани компилятора на приведение типов
 };
-
 
 #if (CPUSTYLE_R7S721 || 0)
 
@@ -7360,6 +8045,12 @@ const uint16_t * getrbfimage(size_t * count)
 static RAMBIGDTCM struct ustates gvars;
 
 #endif /* (CPUSTYLE_R7S721 || 0) */
+
+// Получить цвет запослнен6ия водопада при перестройке
+static COLORMAIN_T display2_bgcolorwfl(void)
+{
+	return gvars.color_scale [0];
+}
 
 
 #if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
@@ -7895,8 +8586,6 @@ dsp_getspectrumrow(
 	return 1;
 }
 
-static RAMBIGDTCM PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
-
 enum { BUFDIM_X = DIM_X, BUFDIM_Y = DIM_Y };
 //enum { BUFDIM_X = ALLDX, BUFDIM_Y = ALLDY };
 
@@ -7922,14 +8611,14 @@ static void wflclear(void)
 	{
 		if (y == wfrow)
 			continue;
+		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
 		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
-				0x00,
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
+				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
 				ALLDX * sizeof gvars.wfjarray [0]
 		);
 	}
 }
-
 
 // стираем целиком старое изображение водопада
 // Очистка водопада (без учета последней записаной строки)
@@ -7937,19 +8626,12 @@ static void wflclear0(void)
 {
 	uint_fast16_t y;
 #if WITHVIEW_3DSS
-	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 #else
-	uint_fast8_t rows = WFROWS;
+	uint_fast16_t rows = WFROWS;
 #endif /* WITHVIEW_3DSS */
 
-	for (y = 0; y < rows; ++ y)
-	{
-		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
-				0x00,
-				ALLDX * sizeof gvars.wfjarray [0]
-		);
-	}
+	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, rows, display2_bgcolorwfl());
 }
 
 // стираем буфер усреднения FFT
@@ -7971,9 +8653,9 @@ static void wflshiftleft(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
 #if WITHVIEW_3DSS
-	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 #else
-	uint_fast8_t rows = WFROWS;
+	uint_fast16_t rows = WFROWS;
 #endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
@@ -7993,16 +8675,12 @@ static void wflshiftleft(uint_fast16_t pixels)
 //			continue;
 //		}
 		memmove(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, pixels, y),
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),
 				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
 		);
-		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, ALLDX - pixels, y),
-				0x00,
-				pixels * sizeof gvars.wfjarray [0]
-		);
 	}
+	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, rows, display2_bgcolorwfl());
 }
 
 // частота уменьшилась - надо сдвигать картинку вправо
@@ -8012,9 +8690,9 @@ static void wflshiftright(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
 #if WITHVIEW_3DSS
-	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
+	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
 #else
-	uint_fast8_t rows = WFROWS;
+	uint_fast16_t rows = WFROWS;
 #endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
@@ -8031,16 +8709,12 @@ static void wflshiftright(uint_fast16_t pixels)
 	for (y = 0; y < rows; ++ y)
 	{
 		memmove(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, pixels, y),
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),
+				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
 				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
 		);
-		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, rows, 0, y),
-				0x00,
-				pixels * sizeof gvars.wfjarray [0]
-		);
 	}
+	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, pixels, rows, display2_bgcolorwfl());
 }
 
 // стираем целиком старое изображение водопада
@@ -8087,29 +8761,25 @@ display2_wfl_init(
 
 	subscribeint_user(& rtstargetsint, & rtsregister, NULL, saveIQRTSxx);
 
-	// Код взят из проекта Malamute (R3DI)
-	//PRINTF("wfpalette_initialize: main=%d, pip=%d, PALETTESIZE=%d, LCDMODE_MAIN_PAGES=%d\n", sizeof (PACKEDCOLORMAIN_T), sizeof (PACKEDCOLORMAIN_T), PALETTESIZE, LCDMODE_MAIN_PAGES);
-	if (PALETTESIZE == 256)
-	{
 #if ! defined (COLORPIP_SHADED)
+	{
 		int i;
 		// Init 256 colors palette
-		ASSERT(PALETTESIZE == 256);
 		for (i = 0; i < PALETTESIZE; ++ i)
 		{
 			const COLOR24_T c = colorgradient(i, PALETTESIZE - 1);
 			wfpalette [i] = TFTRGB565(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
 		}
-#endif /* !  defined (COLORPIP_SHADED) */
 	}
+#endif /* !  defined (COLORPIP_SHADED) */
 
 	/* массив значений для раскраски спектра */
 	for (i = 0; i < SPDY; ++ i)
 	{
 #if LCDMODE_MAIN_L8
-		color_scale [i] = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
+		gvars.color_scale [i] = normalize(i, 0, SPDY - 1, PALETTESIZE - 1);
 #else /* LCDMODE_MAIN_L8 */
-		color_scale [i] = wfpalette [normalize(i, 0, SPDY - 1, PALETTESIZE - 1)];
+		gvars.color_scale [i] = wfpalette [normalize(i, 0, SPDY - 1, PALETTESIZE - 1)];
 #endif /* LCDMODE_MAIN_L8 */
 	}
 
@@ -8117,13 +8787,7 @@ display2_wfl_init(
 	wfl_avg_clear();	// Сброс фильтра
 
 	wflclear0();	// Очистка водопада (без учета последней записаной строки)
-	uint_fast16_t y;
-	for (y = 0; y < WFROWS; ++ y)
-	{
-		uint_fast16_t x;
-		for (x = 0; x < ALLDX; ++ x)
-			colmain_putpixel(gvars.wfjarray, ALLDX, WFROWS, x, y, color_scale [0]);	// wfpalette [0]
-	}
+	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
@@ -8524,14 +9188,14 @@ static void display2_spectrum(
 						const int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
 						uint_fast16_t dy, j;
-						* colmain_mem_at(gvars.wfjarray, ALLDX, MAX_3DSS_STEP, x, current_3dss_step) = val;
+						* colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, current_3dss_step) = val;
 
 						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
 							if (x > xleft && x < xrightv && gview3dss_mark)
 								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, COLORPIP_SPECTRUMFG);
 							else
-								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [j]);
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, gvars.color_scale [j]);
 						}
 
 						if (x)
@@ -8552,7 +9216,7 @@ static void display2_spectrum(
 
 						if (x_old != x_d)
 						{
-							uint_fast16_t y1 = y0 - * colmain_mem_at(gvars.wfjarray, ALLDX, MAX_3DSS_STEP, x, draw_step);
+							uint_fast16_t y1 = y0 - * colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, draw_step);
 							int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
 							h = h < 0 ? 0 : h;
 
@@ -8562,7 +9226,7 @@ static void display2_spectrum(
 								if (* colmain_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != COLORMAIN_BLACK)
 									break;
 
-								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, color_scale [h]);
+								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, gvars.color_scale [h]);
 							}
 							x_old = x_d;
 						}
@@ -8631,7 +9295,7 @@ static void display2_spectrum(
 				{
 					for (uint_fast16_t dy = SPY0 + SPDY - 1, i = 0; dy > ynew; dy --, i ++)
 					{
-						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, color_scale [i]);
+						colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, dy, gvars.color_scale [i]);
 					}
 				}
 				else if (glob_view_style == VIEW_FILL) // залитый зеленым спектр
@@ -8853,7 +9517,7 @@ static void display2_waterfall(
 		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(gvars.wfjarray, ALLDX, WFDY, x, (wfrow + y) % WFDY)]);
+			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, (wfrow + y) % WFDY)]);
 		}
 	}
 
