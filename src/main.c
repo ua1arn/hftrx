@@ -10902,7 +10902,7 @@ uif_key_click_bandup(void)
 // обработчики кнопок клавиатуры
 //////////////////////////
 // короткое нажатие кнопки BAND DOWN
-/* переход на предидущий (с меньшей частотой) диапазон */
+/* переход на предыдущий (с меньшей частотой) диапазон */
 static void 
 uif_key_click_banddown(void)
 {
@@ -19254,7 +19254,7 @@ modifysettings(
 	/* функция для сохранения работы варианта без групп */
 	while (! ismenukind(mp, itemmask))
 	{
-		/* проход по определённомк типу элементов (itemmask) */
+		/* проход по определённому типу элементов (itemmask) */
 		menupos = calc_next(menupos, firstitem, lastitem);
 		mp = & menutable [menupos];
 	}
@@ -19274,6 +19274,8 @@ modifysettings(
 		processtxrequest();	/* Установка сиквенсору запроса на передачу.	*/
 
 #if WITHKEYBOARD
+
+#if WITHENCODER2
 		if (kbready == 0)
 		{
 			uint_fast8_t js;
@@ -19281,15 +19283,16 @@ modifysettings(
 
 			if (nr2 > 0)
 			{
-				kbch = KBD_CODE_BAND_DOWN;
+				kbch = KBD_CODE_MENU_DOWN;
 				kbready = 1;
 			}
 			else if (nr2 < 0)
 			{
-				kbch = KBD_CODE_BAND_UP;
+				kbch = KBD_CODE_MENU_UP;
 				kbready = 1;
 			}
 		}
+#endif /* WITHENCODER2 */
 
 		if (kbready != 0)
 		{
@@ -19367,11 +19370,12 @@ modifysettings(
 #endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
-				/* переход на предидущий пункт меню */
+			case KBD_CODE_MENU_DOWN:
+				/* переход на предыдущий пункт меню */
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				do
 				{
-					/* проход по определённомк типу элементов (itemmask) */
+					/* проход по определённому типу элементов (itemmask) */
 					menupos = calc_dir(! window.reverse, menupos, firstitem, lastitem);
 					mp = & menutable [menupos];
 				}
@@ -19379,6 +19383,7 @@ modifysettings(
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
+			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
 				do
@@ -19678,11 +19683,13 @@ static void vfoallignment(void)
 
 
 			case KBD_CODE_BAND_DOWN:
-				/* переход на предидущий пункт меню */
+			case KBD_CODE_MENU_DOWN:
+				/* переход на предыдущий пункт меню */
 				vfo = calc_prev(vfo, 0, HYBRID_NVFOS - 1);
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
+			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
 				vfo = calc_next(vfo, 0, HYBRID_NVFOS - 1);
 
@@ -19758,7 +19765,7 @@ process_key_menuset0(uint_fast8_t kbch)
 		return 1;	// требуется обновление индикатора
 
 	case KBD_CODE_BAND_DOWN:
-		/* переход на предидущий (с меньшей частотой) диапазон или на шаг general coverage */
+		/* переход на предыдущий (с меньшей частотой) диапазон или на шаг general coverage */
 		uif_key_click_banddown();
 		return 1;	// требуется обновление индикатора
 

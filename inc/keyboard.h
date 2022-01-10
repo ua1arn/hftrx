@@ -21,13 +21,13 @@ enum
 	KBD_CODE_SPLIT = 0, 
 	KBD_CODE_SPLIT_HOLDED,
 	KBD_CODE_A_EX_B,		// A/B symbol on key
-	KBD_CODE_A_EQ_B,		// A=B sy,bol on key
+	KBD_CODE_A_EQ_B,		// A=B symbol on key
 	KBD_CODE_ATT,
 	KBD_CODE_BW,	// IF Bandwidth
 	KBD_CODE_NR,	// AF Noise Reduction
 	KBD_CODE_IFSHIFT,
-	KBD_CODE_BAND_UP,
-	KBD_CODE_BAND_DOWN,
+	KBD_CODE_BAND_UP, KBD_CODE_BAND_DOWN,
+	KBD_CODE_MENU_UP, KBD_CODE_MENU_DOWN,	// навигация по меню
 	KBD_CODE_BKIN,
 	KBD_CODE_BKIN_HOLDED,
 
