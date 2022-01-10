@@ -893,6 +893,8 @@ void r7s721_adi_irq_handler(void);
 void TIM3_IRQHandler(void);
 void TIM5_IRQHandler(void);
 
+void GPU_IRQHandler(void);	// STM32MP1 specific
+
 void r7s721_intc_initialize(void);
 
 /* Отображение номеров каналов АЦП процессоров STM32Fxxx в каналы процессора STM32H7 */

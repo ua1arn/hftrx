@@ -1774,7 +1774,7 @@ unsigned long display_getdotclock(const videomode_t * vdmode)
 
 void GPU_IRQHandler(void)
 {
-
+	PRINTF("GPU_IRQHandler\n");
 }
 
 // Graphic processor unit
