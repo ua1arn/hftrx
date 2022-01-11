@@ -19370,6 +19370,14 @@ modifysettings(
 #endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
+#if WITHENCODER2
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
+				uif_key_click_banddown();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+#endif /* WITHENCODER2 */
+
 			case KBD_CODE_MENU_DOWN:
 				/* переход на предыдущий пункт меню */
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
@@ -19383,6 +19391,14 @@ modifysettings(
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
+#if WITHENCODER2
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
+				uif_key_click_bandup();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+#endif /* WITHENCODER2 */
+
 			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
