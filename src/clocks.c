@@ -2284,7 +2284,7 @@ void hardware_spi_io_delay(void)
 		spool_elkeybundle();
 	}
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
 	// Используется только один из обработчиков
 
@@ -2639,7 +2639,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 	//arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
 	#if 1
 		const uint_fast32_t period = calcdivround2(CPU_FREQ, ticksfreq * 2);	// Global Timer runs with the system frequency / 2
@@ -5590,7 +5590,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #endif /* CPUSTYLE_STM32L0XX */
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
 static void xc7z1_arm_pll_initialize(void)
 {
