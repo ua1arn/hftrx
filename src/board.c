@@ -276,6 +276,68 @@ static void prog_rfadc_update(void);
 	#endif /* (RTC1_TYPE == RTC_TYPE_M41T81) */
 #endif /* defined(RTC1_TYPE) */
 
+#if defined (RTC1_TYPE) && RTC1_TYPE == RTC_TYPE_ZYNQ_MP
+
+#include "xrtcpsu.h"
+
+static XRtcPsu xczu_rtc;
+
+/* возврат не-0 если требуется начальная загрузка значений */
+static uint_fast8_t board_rtc_chip_initialize(void)
+{
+	XRtcPsu_Config * rtccfg = XRtcPsu_LookupConfig(XPAR_XRTCPSU_0_DEVICE_ID);
+	XRtcPsu_CfgInitialize(& xczu_rtc, rtccfg, rtccfg->BaseAddr);
+	u32 Status = XRtcPsu_SelfTest(& xczu_rtc);
+	if (Status != XST_SUCCESS) {
+		PRINTF("rtcpsu init fail %ld\n", Status);
+		ASSERT(0);
+	}
+	return 0;
+}
+
+void board_rtc_getdatetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * day,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	)
+{
+	XRtcPsu_DT dt;
+	uint32_t time = XRtcPsu_GetCurrentTime(& xczu_rtc);
+	XRtcPsu_SecToDateTime(time, & dt);
+
+	* year = dt.Year;
+	* month = dt.Month;
+	* day = dt.Day;
+	* hour = dt.Hour;
+	* minute = dt.Min;
+	* secounds = dt.Sec;
+}
+
+void board_rtc_setdatetime(
+	uint_fast16_t year,
+	uint_fast8_t month,
+	uint_fast8_t dayofmonth,
+	uint_fast8_t hours,
+	uint_fast8_t minutes,
+	uint_fast8_t secounds
+	)
+{
+	XRtcPsu_DT dt;
+	dt.Year = year;
+	dt.Month = month;
+	dt.Day = dayofmonth;
+	dt.Hour = hours;
+	dt.Min = minutes;
+	dt.Sec = secounds;
+	XRtcPsu_SetTime(& xczu_rtc, XRtcPsu_DateTimeToSec(& dt));
+	board_rtc_chip_initialize();
+}
+
+#endif /* defined (RTC1_TYPE) && RTC1_TYPE == RTC_TYPE_ZYNQ_MP */
+
 #if XVTR_R820T2
 	#include "chip/r820t.h"
 #endif /* XVTR_R820T2 */
@@ -7403,66 +7465,6 @@ void board_initialize(void)
 
 #if defined (RTC1_TYPE)
 
-#if RTC1_TYPE == RTC_TYPE_ZYNQ_MP
-
-#include "xrtcpsu.h"
-
-XRtcPsu xczu_rtc;
-
-static void board_rtc_initialize(void)
-{
-	XRtcPsu_Config * rtccfg = XRtcPsu_LookupConfig(XPAR_XRTCPSU_0_DEVICE_ID);
-	XRtcPsu_CfgInitialize(& xczu_rtc, rtccfg, rtccfg->BaseAddr);
-	u32 Status = XRtcPsu_SelfTest(& xczu_rtc);
-	if (Status != XST_SUCCESS) {
-		PRINTF("rtcpsu init fail %ld\n", Status);
-		ASSERT(0);
-	}
-}
-
-void board_rtc_getdatetime(
-	uint_fast16_t * year,
-	uint_fast8_t * month,	// 01-12
-	uint_fast8_t * day,
-	uint_fast8_t * hour,
-	uint_fast8_t * minute,
-	uint_fast8_t * secounds
-	)
-{
-	XRtcPsu_DT dt;
-	uint32_t time = XRtcPsu_GetCurrentTime(& xczu_rtc);
-	XRtcPsu_SecToDateTime(time, & dt);
-
-	* year = (uint_fast16_t) dt.Year;
-	* month = (uint_fast8_t) dt.Month;
-	* day = (uint_fast8_t) dt.Day;
-	* hour = (uint_fast8_t) dt.Hour;
-	* minute = (uint_fast8_t) dt.Min;
-	* secounds = (uint_fast8_t) dt.Sec;
-}
-
-void board_rtc_setdatetime(
-	uint_fast16_t year,
-	uint_fast8_t month,
-	uint_fast8_t dayofmonth,
-	uint_fast8_t hours,
-	uint_fast8_t minutes,
-	uint_fast8_t secounds
-	)
-{
-	XRtcPsu_DT dt;
-	dt.Year = year;
-	dt.Month = month;
-	dt.Day = dayofmonth;
-	dt.Hour = hours;
-	dt.Min = minutes;
-	dt.Sec = secounds;
-	XRtcPsu_SetTime(& xczu_rtc, XRtcPsu_DateTimeToSec(& dt));
-	board_rtc_initialize();
-}
-
-#else
-
 /* вызывается при разрешённых прерываниях. */
 static void board_rtc_initialize(void)
 {
@@ -7515,8 +7517,6 @@ static void board_rtc_initialize(void)
 		//board_rtc_setdate(2016, 3, 1);
 	}
 }
-
-#endif /* RTC1_TYPE */
 
 #else /* defined (RTC1_TYPE) */
 
