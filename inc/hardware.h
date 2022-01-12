@@ -594,6 +594,10 @@ uint_fast8_t hardware_get_encoder2_bits(void);/* Состояние фазы A -
 
 void hardware_adc_initialize(void);
 
+void watchdog_initialize(void);	/* разрешение сторожевого таймера в устройстве */
+void watchdog_ping(void);	/* перезапуск сторожевого таймера */
+
+
 #if CPUSTYLE_ARM
 
 	/* тип для передачи параметра "адрес устройства на SPI шине" */

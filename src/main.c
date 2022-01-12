@@ -20555,7 +20555,9 @@ lowinitialize(void)
 	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 	display_hardware_initialize();
-
+#if WITHWATCHDOG
+	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
+#endif /* WITHWATCHDOG */
 	static ticker_t displayticker;
 	static ticker_t ticker_1S;
 
