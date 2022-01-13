@@ -6960,6 +6960,57 @@ restart:
 
 #if WITHDSPEXTFIR
 
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
+#include "xaxidma.h"
+XAxiDma xcz_dma_fir_coeffs;
+
+void board_fpga_fir_initialize(void)
+{
+	XAxiDma_Config * config = XAxiDma_LookupConfig(AXIDMA_FIR_COEFFS_ID);
+	int Status = XAxiDma_CfgInitialize(& xcz_dma_fir_coeffs, config);
+
+	if (Status != XST_SUCCESS) {
+		PRINTF("xcz_dma_fir_coeffs Initialization failed %d\r\n", Status);
+		ASSERT(0);
+	}
+
+	if(XAxiDma_HasSg(& xcz_dma_fir_coeffs))
+	{
+		PRINTF("xcz_dma_fir_coeffs Device configured as SG mode \r\n");
+		ASSERT(0);
+	}
+}
+
+void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
+{
+	int_fast32_t firbuf[Ntap_trxi_IQ];
+
+	const int iHalfLen = (Ntap - 1) / 2;
+	int i, j = 0;
+
+	if (xcz_dma_fir_coeffs.Initialized)
+	{
+		for (i = 0; i <= iHalfLen; ++ i)
+			firbuf[j ++] = k [i];
+
+		i -= 1;
+		for (; -- i >= 0;)
+			firbuf[j ++] = k [i];
+
+		size_t len = Ntap * sizeof(int_fast32_t);
+		arm_hardware_flush((uintptr_t) firbuf, len);
+		int Status = XAxiDma_SimpleTransfer(& xcz_dma_fir_coeffs, (uintptr_t) firbuf, len, XAXIDMA_DMA_TO_DEVICE);
+		if (Status != XST_SUCCESS)
+		{
+			PRINTF("board_reload_fir transmit error %d\n", Status);
+			ASSERT(0);
+		}
+		while(XAxiDma_Busy(& xcz_dma_fir_coeffs, XAXIDMA_DMA_TO_DEVICE));
+	}
+}
+#else
+
 void board_fpga_fir_initialize(void)
 {
 	//PRINTF(PSTR("board_fpga_fir_initialize start\n"));
@@ -7355,6 +7406,8 @@ void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned 
 	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
+
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #endif /* WITHDSPEXTFIR */
 
