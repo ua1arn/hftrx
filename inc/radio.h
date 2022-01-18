@@ -114,7 +114,7 @@ typedef uint_least64_t phase_t;
 	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
 	#define WITHSUBTONES		1	/* выполняется формирование субтона при передаче NFM */
 	#define WITHSAM				1	/* synchronous AM demodulation */
-	#define WITHIFSHIFT			1	/* используется IF SHIFT */
+	//#define WITHIFSHIFT			1	/* используется IF SHIFT */
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
