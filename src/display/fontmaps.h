@@ -77,8 +77,8 @@ extern const FLASHMEM uint8_t ltdc_CenturyGothic_half [12][56][4];
 		#define    ls020_bigfont    ILI9341_bigfont
 
 
-		#define BIGCHARH xx40	// st7735
-		#define SMALLCHARH xx40	// st7735
+		//#define BIGCHARH xx40	// st7735
+		//#define SMALLCHARH xx40	// st7735
 
 
 	#else /* DSTYLE_G_X320_Y240 */
