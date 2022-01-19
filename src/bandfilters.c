@@ -549,7 +549,6 @@ uint_fast8_t bandf_calc(
 	 )
 {
 #ifdef BANDCALCS
-	ASSERT(BANDF_COUNT > BANDCALCS);
   	const fseltype_t freqloc = (fseltype_t) (freq >> BANDDIVPOWER);	// приведённая к нужной размерности частота приёма
 
 	uint_fast8_t bottom = 0;
@@ -581,7 +580,6 @@ uint_fast8_t bandf_calc(
 void bandf2_calc_initialize(void)
 {
 #ifdef BAND2CALCS
-	ASSERT(BANDF2_COUNT > BAND2CALCS);
 	if (0)
 	{
 		/* отладочная печать границ диапазонов */
@@ -634,7 +632,6 @@ uint_fast8_t bandf2_calc(
 void bandf3_calc_initialize(void)
 {
 #ifdef BAND3CALCS
-	ASSERT(BANDF3_COUNT > BAND3CALCS);
 	if (0)
 	{
 		/* отладочная печать границ диапазонов */
