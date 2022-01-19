@@ -3740,6 +3740,9 @@ enum
 			enum { nopttsig = BOARD_CATSIG_NONE };
 			enum { nokeysig = BOARD_CATSIG_NONE };
 		#endif /* LCDMODE_DUMMY || ! WITHKEYBOARD */
+	#else /* WITHCAT_CDC */
+		enum { nopttsig = BOARD_CATSIG_NONE };
+		enum { nokeysig = BOARD_CATSIG_NONE };
 	#endif /* WITHCAT_CDC */
 
 #if WITHTX
