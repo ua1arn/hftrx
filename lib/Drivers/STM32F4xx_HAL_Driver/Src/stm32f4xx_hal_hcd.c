@@ -233,7 +233,7 @@ HAL_StatusTypeDef HAL_HCD_HC_Init(HCD_HandleTypeDef *hhcd,
                         dev_address,
                         speed,
                         ep_type,
-						mps, tt_hubaddr, tt_prtadd);
+						mps, tt_hubaddr, tt_prtaddr);
   __HAL_UNLOCK(hhcd);
 
   return status;
