@@ -233,22 +233,23 @@ filter_t fi_2p7 =
 	& lo2param,				/* lo2 parameters set index for this filter */
 	strFlash2p7,		/* название фильтра для отображения */
 };
-	#if WITHTX && WITHSAMEBFO == 0
-	filter_t fi_2p7_tx =
-	{
-		0,
-		(1U << MODE_CW) | (1U << MODE_TUNE) | (1U << MODE_SSB) | (1U << MODE_AM) | (1U << MODE_RTTY) | (1U << MODE_DIGI),
-		0,
-		(uint16_t) ((200000 + 0) - IF3FREQBASE),          /* частота нижнего среза полосы пропускания */
-		(uint16_t) ((200000 + 2700) - IF3FREQBASE),		/* частота верхнего среза полосы пропускания */
-		{ BOARD_FILTER_2P7, BOARD_FILTER_2P7, },					/* код выбора данного фильтра на плате приемника */
-		0x01,		/* этот фильтр установлен */
-		0,	/* 0 - считается "узким", 1 - "широким" */
-		IF3CEOFFS,        /*  смещённый на IF3CEOFFS сдвиг центральной частоты: IF3CEOFFS - 0 герц */
-		& lo2param,				/* lo2 parameters set index for this filter */
-		strFlash2p7,		/* название фильтра для отображения */
-	};
-	#endif
+#endif
+
+#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7)
+filter_t fi_2p7_tx =
+{
+	0,
+	(1U << MODE_CW) | (1U << MODE_TUNE) | (1U << MODE_SSB) | (1U << MODE_AM) | (1U << MODE_RTTY) | (1U << MODE_DIGI),
+	0,
+	(uint16_t) ((200000 + 0) - IF3FREQBASE),          /* частота нижнего среза полосы пропускания */
+	(uint16_t) ((200000 + 2700) - IF3FREQBASE),		/* частота верхнего среза полосы пропускания */
+	{ BOARD_FILTER_2P7, BOARD_FILTER_2P7, },					/* код выбора данного фильтра на плате приемника */
+	0x01,		/* этот фильтр установлен */
+	0,	/* 0 - считается "узким", 1 - "широким" */
+	IF3CEOFFS,        /*  смещённый на IF3CEOFFS сдвиг центральной частоты: IF3CEOFFS - 0 герц */
+	& lo2param,				/* lo2 parameters set index for this filter */
+	strFlash2p7,		/* название фильтра для отображения */
+};
 #endif
 
 #if (IF3_FMASK & IF3_FMASK_0P5)
@@ -920,25 +921,25 @@ filter_t fi_2p7 =
 	& lo2param,			/* lo2 parameters set index for this filter */
 	strFlash2p7,		/* название фильтра для отображения */
 };
+#endif
 
 // 500-2.7-n
 
-	#if WITHTX && WITHSAMEBFO == 0
-	filter_t fi_2p7_tx =
-	{
-		0,
-		(1U << MODE_CW) | (1U << MODE_TUNE) | (1U << MODE_SSB) | (1U << MODE_AM) | (1U << MODE_RTTY) | (1U << MODE_DIGI),
-		0,
-		(uint16_t) (496800UL - IF3FREQBASE),          /* частота нижнего среза полосы пропускания */
-		(uint16_t) (500300UL - IF3FREQBASE),		/* частота верхнего среза полосы пропускания */
-		{ BOARD_FILTER_2P7, BOARD_FILTER_2P7, },					/* код выбора данного фильтра на плате приемника */
-		0x01,	/* этот фильтр установлен */
-		0,	/* 0 - считается "узким", 1 - "широким" */
-		IF3CEOFFS,        /*  смещённый на IF3CEOFFS сдвиг центральной частоты: IF3CEOFFS - 0 герц */
-		& lo2param,			/* lo2 parameters set index for this filter */
-		strFlash2p7,		/* название фильтра для отображения */
-	};
-	#endif
+#if WITHTX && (IF3_FMASKTX & IF3_FMASK_2P7)
+filter_t fi_2p7_tx =
+{
+	0,
+	(1U << MODE_CW) | (1U << MODE_TUNE) | (1U << MODE_SSB) | (1U << MODE_AM) | (1U << MODE_RTTY) | (1U << MODE_DIGI),
+	0,
+	(uint16_t) (496800UL - IF3FREQBASE),          /* частота нижнего среза полосы пропускания */
+	(uint16_t) (500300UL - IF3FREQBASE),		/* частота верхнего среза полосы пропускания */
+	{ BOARD_FILTER_2P7, BOARD_FILTER_2P7, },					/* код выбора данного фильтра на плате приемника */
+	0x01,	/* этот фильтр установлен */
+	0,	/* 0 - считается "узким", 1 - "широким" */
+	IF3CEOFFS,        /*  смещённый на IF3CEOFFS сдвиг центральной частоты: IF3CEOFFS - 0 герц */
+	& lo2param,			/* lo2 parameters set index for this filter */
+	strFlash2p7,		/* название фильтра для отображения */
+};
 #endif
 
 
@@ -1877,9 +1878,9 @@ static const filter_t * const FLASHMEM gfa [] =
 #endif /*  */
 #if (IF3_FMASK & IF3_FMASK_2P7)
 		& fi_2p7,
-	#if WITHTX && WITHSAMEBFO == 0
+#endif /*  */
+#if WITHTX && WITHSAMEBFO == 0 && (IF3_FMASKTX & IF3_FMASK_2P7)
 		& fi_2p7_tx,
-	#endif /*  */
 #endif /*  */
 #if (IF3_FMASK & IF3_FMASK_3P1)
 		& fi_3p1,

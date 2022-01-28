@@ -273,6 +273,7 @@ unsigned long stm32f4xx_get_tim3_freq(void)
 #define BOARD_SYSTICK_FREQ (stm32f4xx_get_sysclk_freq() / 1)	// SysTick_Config устанавливает SysTick_CTRL_CLKSOURCE_Msk - используется частота процессора
 #define BOARD_TIM3_FREQ (stm32f4xx_get_tim3_freq())
 #define BOARD_ADC_FREQ (stm32f4xx_get_apb2_freq())
+#define BOARD_USART1_FREQ (stm32f4xx_get_apb1_freq())	// TODO: verify
 
 #elif CPUSTYLE_STM32F7XX
 
@@ -4176,7 +4177,7 @@ stm32f4xx_pllsai_initialize(void)
 		)
 	{
 		//#error TODO: check freq at outputs vsync/hsync
-		return (PLLSAI_FREQ + freq / 2) / freq;
+		return (stm32f4xx_get_pllsai_freq() + freq / 2) / freq;
 	}
 
 	unsigned value;
@@ -4210,7 +4211,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 		)
 	{
 		//#error TODO: check freq at outputs vsync/hsync
-		return (PLLSAI_FREQ + freq / 2) / freq;
+		return (stm32f4xx_get_pllsai_freq() + freq / 2) / freq;
 	}
 
 	unsigned value;

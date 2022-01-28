@@ -721,7 +721,7 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_codec1(void)		/* инициали
 	SPI2->CFG2 |= SPI_CFG2_AFCNTR_Msk; // 1: the peripheral keeps always control of all associated GPIOs
 #endif /* CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1 */
 	// Подключить I2S к выводам процессора
-	I2S2HW_INITIALIZE();	// hardware_i2s2_i2s2ext_master_duplex_initialize_codec1
+	I2S2HW_I2S2EXTHW_MASTER_INITIALIZE();	// hardware_i2s2_i2s2ext_master_duplex_initialize_codec1
 }
 
 #endif /* defined (I2S2ext) */
