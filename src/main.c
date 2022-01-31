@@ -21987,9 +21987,10 @@ int_fast32_t hamradio_getequalizerbase(void)
 }
 #endif /* WITHAFCODEC1HAVEPROC */
 
-#if WITHIFSHIFT
 int_fast16_t hamradio_if_shift(int_fast8_t step)
 {
+#if WITHIFSHIFT
+
 	if (step != 0)
 	{
 		int_fast16_t val = ifshifoffset.value + step * ISTEP50;
@@ -22004,8 +22005,13 @@ int_fast16_t hamradio_if_shift(int_fast8_t step)
 		updateboard(1, 0);
 	}
 	return ifshifoffset.value + getifshiftbase();	// Добавить учет признака наличия сдвига
-}
+
+#else /* WITHIFSHIFT */
+
+	return 0;
+
 #endif /* WITHIFSHIFT */
+}
 
 #if WITHELKEY
 
