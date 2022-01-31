@@ -603,6 +603,10 @@
 //	ADC2_CS	A39	W18	IO_B34_LP22
 //	NVRAM_CS	B35	G15	IO_L19N_T3_VREF_35
 
+#define TARGET_CODEC1_MIO 62
+
+#define targetcodec1		TARGET_CODEC1_MIO	// nvram NAU88C22
+
 #if WITHSPIHW || WITHSPISW
 
 	#define TARGET_NVRAM_MIO	62	// nvram FM25L256
@@ -622,10 +626,13 @@
 			xc7z_gpio_output(TARGET_NVRAM_MIO); \
 		} while (0)
 
+//	SPI_MOSI	C38	B15	PS_MIO45_501
+//	SPI_MISO	C36	C17	PS_MIO41_501
+//	SPI_SCLK	C39	D14	PS_MIO40_501
 	// MOSI & SCK port
-	#define	SPI_SCLK_MIO 	59
-	#define	SPI_MOSI_MIO 	60
-	#define	SPI_MISO_MIO 	61
+	#define	SPI_SCLK_MIO 	40
+	#define	SPI_MOSI_MIO 	45
+	#define	SPI_MISO_MIO 	41
 
 	#define SPI_SCLK_C()	do { xc7z_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
 	#define SPI_SCLK_S()	do { xc7z_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
@@ -656,7 +663,8 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if WITHUART2HW
-	// antminer
+	//	USART_TX	C44	B12	PS_MIO48_501	UART1
+	//	USART_RX	C45	C12	PS_MIO49_501
 	// WITHUART2HW
 	#define HARDWARE_UART2_INITIALIZE() do { \
 		MIO_SET_MODE(48, 0x000016E0uL);	/*  MIO_PIN_48 UART1_TXD */ \
@@ -667,6 +675,7 @@
 
 #if WITHKEYBOARD
 
+	//	ENC2_BUTTON	A5	M15	IO_B35_LN23
 	#define TARGET_ENC2BTN_BIT_MIO 		56
 
 #if WITHENCODER2
@@ -691,8 +700,10 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-	#define TARGET_TWI_TWCK_MIO			58		// EMIO 58
-	#define TARGET_TWI_TWD_MIO			57		// EMIO 57
+//	I2S_SCL	C42	E12	PS_MIO42_501	Open Drain
+//	I2s_SDA	C43	A9	PS_MIO43_501	Open Drain
+	#define TARGET_TWI_TWCK_MIO			42		// EMIO 58
+	#define TARGET_TWI_TWD_MIO			43		// EMIO 57
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
