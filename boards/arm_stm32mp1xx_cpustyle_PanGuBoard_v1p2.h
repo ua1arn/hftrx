@@ -311,6 +311,20 @@
 	} while (0)
 #endif /* WITHSAI1HW */
 
+
+// Stub
+#define I2S2HW_SLAVE_INITIALIZE() do { \
+		} while (0)
+
+// Stub
+#define I2S3HW_SLAVE_INITIALIZE() do { \
+		} while (0)
+
+// Stub
+#define I2S2HW_MASTER_INITIALIZE() do { \
+		} while (0)
+
+
 /* Распределение битов в ARM контроллерах */
 
 #if (WITHCAT && WITHCAT_USART2)
