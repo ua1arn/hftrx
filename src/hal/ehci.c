@@ -21,8 +21,6 @@
 
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
-void Error_Handler(void);
-
 /* USB Host Core handle declaration. */
 RAMNOINIT_D1 USBH_HandleTypeDef hUsbHostHS;
 
@@ -707,6 +705,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  	}
 }
 
+void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
+{
+	ASSERT(0);
+}
+
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 {
 	unsigned i;
@@ -872,9 +875,8 @@ HAL_StatusTypeDef HAL_EHCI_DeInit(EHCI_HandleTypeDef *hehci)
 
 void USBH_OHCI_IRQHandler(void)
 {
-	ASSERT(0);
 	//ehci_bus_poll(& usbbus0);
-	//HAL_OHCI_IRQHandler(& hehci_USB);
+	HAL_OHCI_IRQHandler(& hehci_USB);
 }
 
 void USBH_EHCI_IRQHandler(void)
@@ -1539,6 +1541,7 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 	system_disableIRQ();
 	SPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
+	//HAL_OHCI_IRQHandler(& hehci_USB);
 	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
 
@@ -1999,6 +2002,7 @@ void MX_USB_HOST_Process(void)
 	system_disableIRQ();
 	SPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
+	//HAL_OHCI_IRQHandler(& hehci_USB);
 	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
 }
