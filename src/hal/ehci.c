@@ -942,7 +942,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 
 #if WITHEHCIHWSOFTSPOLL == 0
-			arm_hardware_set_handler_system(USB0_IRQn, USBH_OHCI_IRQHandler);
+			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 		}
 		else if (WITHUSBHW_HOST == EHCI1)
@@ -960,7 +960,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 
 #if WITHEHCIHWSOFTSPOLL == 0
-			arm_hardware_set_handler_system(USB1_IRQn, USBH_OHCI_IRQHandler);
+			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 		}
 		else
