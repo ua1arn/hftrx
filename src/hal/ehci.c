@@ -707,7 +707,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 
 void HAL_OHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 {
-	ASSERT(0);
+	//ASSERT(0);
 }
 
 HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
@@ -918,7 +918,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	// EHCI at USB1HSFSP1_BASE
 	//printhex(USB1HSFSP2_BASE, (void *) USB1HSFSP2_BASE, 0x0058);
 	volatile uint32_t * const HcCommandStatus = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x008); // HcCommandStatus Register
-	* HcCommandStatus |= 0x00000001uL;	// HCR HostControllerReset
+	* HcCommandStatus |= 0x00000001uL;	// HCR HostControllerReset - issue a software reset
+	local_delay_us(10);
+	* HcCommandStatus &= ~ 0x00000001uL;	// HCR HostControllerReset
 
 #if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -1541,7 +1543,7 @@ USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
 	system_disableIRQ();
 	SPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
-	//HAL_OHCI_IRQHandler(& hehci_USB);
+	HAL_OHCI_IRQHandler(& hehci_USB);
 	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
 
@@ -2002,7 +2004,7 @@ void MX_USB_HOST_Process(void)
 	system_disableIRQ();
 	SPIN_LOCK(& hehci->asynclock);
 	HAL_EHCI_IRQHandler(& hehci_USB);
-	//HAL_OHCI_IRQHandler(& hehci_USB);
+	HAL_OHCI_IRQHandler(& hehci_USB);
 	SPIN_UNLOCK(& hehci->asynclock);
 	system_enableIRQ();
 }
