@@ -577,12 +577,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX\n", usbsts);
 		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 
- 		//unsigned ch_num;
- 		//for (ch_num = 0; ch_num < ARRAY_SIZE(asynclisthead); ++ ch_num)
- 		if (hehci->ghc != NULL)
+ 		unsigned ch_num;
+ 		for (ch_num = 0; ch_num < ARRAY_SIZE(hehci->hc); ++ ch_num)
  		{
-			EHCI_HCTypeDef * const hc = hehci->ghc;
-			//EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 
 			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
 			const uint_fast8_t status = qtd->status;
@@ -620,9 +618,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			}
 			else if ((status & EHCI_STATUS_ACTIVE) != 0)
 			{
-				//continue;	/* обмен еще не закончился */
-				//TP();
-				goto nextIteration;
+				continue;	/* обмен еще не закончился */
 			}
 			else
 			{
@@ -637,15 +633,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 				// Transaction done
 	 			hc->ehci_urb_state = URB_DONE;
 			}
-			hehci->ghc = NULL;
-		nextIteration:
-			;
  		}
- 		else
- 		{
- 			PRINTF("HAL_EHCI_IRQHandler: ghc already NULL\n");
- 	 		//ASSERT(0);
- 		}
+
  		ASSERT((sizeof (struct ehci_transfer_descriptor) % DCACHEROWSIZE) == 0);	/* чтобы invalidate не затронул соседние данные */
  		arm_hardware_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);	/* чтобы следующая проверка могла работать */
  		arm_hardware_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
@@ -761,7 +750,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
 	InitializeListHead(& hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
 	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
-	hehci->ghc = NULL;
 	SPINLOCK_INITIALIZE(& hehci->asynclock);
 
 	// https://habr.com/ru/post/426421/
@@ -771,7 +759,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// Записываем его обратно, выставляя бит 2(Reset)
 	// and making sure the two schedule Enable bits are clear.
 	// и проверяем, что 2 очереди выключены
-	EHCIx->USBCMD = (EHCIx->USBCMD & ~(CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
 	// A small delay here would be good. You don't want to read
 	// Небольшая задержка здесь будет неплоха, Вы не должны читать
 	// the register before it has a chance to actually set the bit
@@ -1098,8 +1086,6 @@ HAL_StatusTypeDef HAL_EHCI_Stop(EHCI_HandleTypeDef *hehci)
 	__HAL_LOCK(hehci);
 	(void) EHCI_StopHost(hehci->Instance);
 
-	hehci->ghc = NULL;
-
 	__HAL_UNLOCK(hehci);
 
 	return HAL_OK;
@@ -1262,7 +1248,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 //	head0->cache.status = EHCI_STATUS_HALTED;
 
 
-	ASSERT(hehci->ghc == NULL);
 	const  int isintr = 0;//hc->ep_type == EP_TYPE_INTR;
 	volatile struct ehci_queue_head * const qh = & hehci->asynclisthead [ch_num];
 	volatile struct ehci_transfer_descriptor * const qtdarray = & hehci->qtds [ch_num];
@@ -1399,9 +1384,6 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 
 		hehci->periodiclist [ch_num].link = cpu_to_le32(virt_to_phys(qtdarray));
 	}
-
-	/*  убрать после перехода на списки работающих пересылок */
-	hehci->ghc = hc;
 
 	return HAL_OK;
 }
@@ -1765,7 +1747,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	{
 		unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
  		/* Release Reset port */
- 		portsc &= ~EHCI_PORTSC_PR;	 /** Port reset */
+ 		portsc &= ~ EHCI_PORTSC_PR;	 /** Port reset */
 
  		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
  		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];

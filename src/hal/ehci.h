@@ -800,8 +800,6 @@ typedef struct
 	VLIST_ENTRY hcListAsync;
 	VLIST_ENTRY hcListPeriodic;
 
-	EHCI_HCTypeDef *volatile ghc;
-
 	SPINLOCK_t asynclock;
 
 	EHCI_TypeDef *Instance; /*!< Register base address    */
