@@ -1689,33 +1689,38 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 //    break;
 //  }
 //
-//	/* Determine port speed */
-//	if ( ! ccs)
-//	{
-//		/* Port not connected */
-//		speed = USB_SPEED_NONE;
-//		PRINTF("speed = USB_SPEED_NONE\n");
-//	}
-//	else if (line == EHCI_PORTSC_LINE_STATUS_LOW)
-//	{
-//		/* Detected as low-speed */
-//		speed = USB_SPEED_LOW;
-//		PRINTF("speed = USB_SPEED_LOW\n");
-//	}
-//	else if (ped)
-//	{
-//		/* Port already enabled: must be high-speed */
-//		speed = USB_SPEED_HIGH;
-//		PRINTF("speed = USB_SPEED_HIGH\n");
-//	}
-//	else
-//	{
-//		/* Not low-speed and not yet enabled.  Could be either
-//		 * full-speed or high-speed; we can't yet tell.
-//		 */
-//		speed = USB_SPEED_FULL;
-//		PRINTF("speed = USB_SPEED_FULL\n");
-//	}
+	/* Determine port speed */
+	EHCI_HandleTypeDef * const hehci = phost->pData;
+	const unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
+	const unsigned long ccs = (portsc & EHCI_PORTSC_CCS);
+	const unsigned long line = EHCI_PORTSC_LINE_STATUS(portsc);
+	const unsigned long ped = (portsc & EHCI_PORTSC_PED) != 0;
+	if ( ! ccs)
+	{
+		/* Port not connected */
+		//speed = USB_SPEED_NONE;
+		PRINTF("speed = USB_SPEED_NONE\n");
+	}
+	else if (line == EHCI_PORTSC_LINE_STATUS_LOW)
+	{
+		/* Detected as low-speed */
+		speed = USBH_SPEED_LOW;
+		PRINTF("speed = USB_SPEED_LOW\n");
+	}
+	else if (ped)
+	{
+		/* Port already enabled: must be high-speed */
+		speed = USBH_SPEED_HIGH;
+		PRINTF("speed = USB_SPEED_HIGH\n");
+	}
+	else
+	{
+		/* Not low-speed and not yet enabled.  Could be either
+		 * full-speed or high-speed; we can't yet tell.
+		 */
+		speed = USBH_SPEED_FULL;
+		PRINTF("speed = USB_SPEED_FULL\n");
+	}
 
 	return speed;
 }
