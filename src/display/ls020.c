@@ -24,6 +24,7 @@
 
 #include "ls020.h"
 /* растровые шрифты */
+#define FONTSHERE 1
 #include "fontmaps.h"
 
 #define LS020_SPIMODE SPIC_MODE3

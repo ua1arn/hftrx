@@ -18,6 +18,7 @@
 
 #include "lph88.h"
 * растровые шрифты */
+#define FONTSHERE 1
 #include "fontmaps.h"
 
 #define LPH88_SPIMODE SPIC_MODE3	// MODE3 only supported. The input level (SDI) is read on the rising edge of the SCL signal.
