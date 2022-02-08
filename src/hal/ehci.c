@@ -886,10 +886,12 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 	if (hehci->ohci != NULL)
 	{
-		hehci->ohci->HcCommandStatus |= cpu_to_le32(0x00000001uL);	// HCR HostControllerReset - issue a software reset
+		hehci->ohci->HcCommandStatus |= cpu_to_le32(0x01uL << 0);	// HCR HostControllerReset - issue a software reset
 		(void) hehci->ohci->HcCommandStatus;
-		while ((le32_to_cpu(hehci->ohci->HcCommandStatus) & 0x01) != 0)
+		while ((le32_to_cpu(hehci->ohci->HcCommandStatus) & (0x01uL << 0)) != 0)
 			;
+
+		hehci->ohci->HcCommandStatus = cpu_to_le32(0x01uL << 3);	// OwnershipChangeRequest
 
 		unsigned long PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
 
@@ -1773,10 +1775,12 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		portsc |= EHCI_PORTSC_OWNER;
 		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
 		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+
+		hehci->ohci->HcCommandStatus = cpu_to_le32(0x01uL << 3);	// OwnershipChangeRequest
+
 		local_delay_ms(1000);
 		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
 		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
-		PRINTF("OHCI: HcRhPortStatus[2]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[2]));
 	}
 	//PRINTF("USBH_LL_GetSpeed: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
 	return speed;
