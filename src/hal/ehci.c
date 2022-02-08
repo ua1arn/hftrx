@@ -897,6 +897,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 		PRINTF("OHCI: HcCommandStatus=%08lX\n", le32_to_cpu(hehci->ohci->HcCommandStatus));
 		PRINTF("OHCI: HcRevision=%08lX\n", le32_to_cpu(hehci->ohci->HcRevision));
+		PRINTF("OHCI: HcControl=%08lX\n", le32_to_cpu(hehci->ohci->HcControl));
 		PRINTF("OHCI: HcFmInterval=%08lX\n", le32_to_cpu(hehci->ohci->HcFmInterval));
 		PRINTF("OHCI: HcRhDescriptorA=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
 		PRINTF("OHCI: HcRhDescriptorB=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
