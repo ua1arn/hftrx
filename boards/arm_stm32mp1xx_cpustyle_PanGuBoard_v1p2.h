@@ -38,6 +38,9 @@
 //#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
 //#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5
 
+// OHCI at USB1HSFSP2_BASE
+#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+
 #if WITHISBOOTLOADER
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */

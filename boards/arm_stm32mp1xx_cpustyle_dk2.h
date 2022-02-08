@@ -63,6 +63,9 @@
 #endif
 
 
+// OHCI at USB1HSFSP2_BASE
+#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+
 #define WITHSDRAM_PMC1	1	/* power management chip - need for HDMI and AUDIO */
 
 #if WITHISBOOTLOADER

@@ -577,6 +577,33 @@ typedef struct EhciCapRegs
 #define PORTSC_WKOC_E                     (1uL << 22)   // Wake on Over-current Enable
 #define PORTSC_RWC                        (PORTSC_CONNECTION_CHANGE | PORTSC_ENABLE_CHANGE | PORTSC_OVER_CURRENT_CHANGE)
 
+
+struct ohci_registers
+{
+	volatile uint32_t HcRevision;			/* 0x000 */
+	volatile uint32_t HcControl;			/* 0x004 */
+	volatile uint32_t HcCommandStatus;		/* 0x008 */
+	volatile uint32_t HcInterruptStatus;	/* 0x00C */
+	volatile uint32_t HcInterruptEnable;	/* 0x010 */
+	volatile uint32_t HcInterruptDisable;	/* 0x014 */
+	volatile uint32_t HcHCCA;				/* 0x018 */
+	volatile uint32_t HcPeriodCurrentED;	/* 0x01C */
+	volatile uint32_t HcControlHeadED;		/* 0x020 */
+	volatile uint32_t HcControlCurrentED;	/* 0x024 */
+	volatile uint32_t HcBulkHeadED;			/* 0x028 */
+	volatile uint32_t HcBulkCurrentED;		/* 0x02C */
+	volatile uint32_t HcDoneHead;			/* 0x030 */
+	volatile uint32_t HcFmInterval;			/* 0x034 */
+	volatile uint32_t HcFmRemaining;		/* 0x038 */
+	volatile uint32_t HcFmNumber;			/* 0x03C */
+	volatile uint32_t HcPeriodicStart;		/* 0x040 */
+	volatile uint32_t HcLSThreshold;		/* 0x044 */
+	volatile uint32_t HcRhDescriptorA;		/* 0x048 */
+	volatile uint32_t HcRhDescriptorB;		/* 0x04C */
+	volatile uint32_t HcRhStatus;			/* 0x050 */
+	volatile uint32_t HcRhPortStatus [1];	/* 0x054 */
+} ATTRPACKED;
+
 // ------------------------------------------------------------------------------------------------
 // Transfer Descriptor
 //
@@ -812,6 +839,8 @@ typedef struct
 	unsigned long nports;
 	__IO uint32_t *portsc;
 	__IO uint32_t *configFlag;
+
+	struct ohci_registers * ohci;
 
 #if (USE_HAL_EHCI_REGISTER_CALLBACKS == 1U)
 	void (* SOFCallback)(struct __EHCI_HandleTypeDef *hhcd);                               /*!< USB OTG HCD SOF callback                */
