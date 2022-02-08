@@ -865,6 +865,24 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
 
+#if defined (USB1HSFSP2_BASE)
+	// OHCI init
+	// OHCI at USB1HSFSP2_BASE
+	// EHCI at USB1HSFSP1_BASE
+	//printhex(USB1HSFSP2_BASE, (void *) USB1HSFSP2_BASE, 0x0058);
+	volatile uint32_t * const HcRevision = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x000); // HcRevision Register
+	volatile uint32_t * const HcControl = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x004); // HcControl Register
+	volatile uint32_t * const HcCommandStatus = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x008); // HcCommandStatus Register
+	volatile uint32_t * const HcInterruptStatus = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x00C); // HcInterruptStatus Register
+
+	* HcCommandStatus |= 0x00000001uL;	// HCR HostControllerReset - issue a software reset
+	local_delay_us(10);
+	* HcCommandStatus &= ~ 0x00000001uL;	// HCR HostControllerReset
+
+	PRINTF("OHCI: HcRevision=%08lX\n", * HcRevision);
+
+#endif /* defined (USB1HSFSP2_BASE) */
+
 	return HAL_OK;
 }
 
@@ -914,14 +932,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	}
 
 	USB_HS_PHYCInit();
-
-	// OHCI at USB1HSFSP2_BASE
-	// EHCI at USB1HSFSP1_BASE
-	//printhex(USB1HSFSP2_BASE, (void *) USB1HSFSP2_BASE, 0x0058);
-	volatile uint32_t * const HcCommandStatus = (volatile uint32_t *) (USB1HSFSP2_BASE + 0x008); // HcCommandStatus Register
-	* HcCommandStatus |= 0x00000001uL;	// HCR HostControllerReset - issue a software reset
-	local_delay_us(10);
-	* HcCommandStatus &= ~ 0x00000001uL;	// HCR HostControllerReset
 
 #if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_set_handler_system(USBH_OHCI_IRQn, USBH_OHCI_IRQHandler);
