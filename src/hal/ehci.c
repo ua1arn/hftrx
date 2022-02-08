@@ -854,6 +854,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	{
 		unsigned long portsc = hehci->portsc[porti];
 
+ 		portsc &= ~ EHCI_PORTSC_OWNER;	// take ownership to EHCI - already zero after set EHCI_CONFIGFLAG_CF
 		portsc &= ~ EHCI_PORTSC_CHANGE;
 		portsc |= EHCI_PORTSC_PP;
 
@@ -1722,6 +1723,15 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		PRINTF("speed = USB_SPEED_FULL\n");
 	}
 
+	if (0 && speed != USBH_SPEED_HIGH)
+	{
+		// передать управление портом к companion controller (OHCI)
+		unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
+		portsc |= EHCI_PORTSC_OWNER;
+		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
+		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
+	}
+	//PRINTF("USBH_LL_GetSpeed: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
 	return speed;
 }
 
@@ -1746,7 +1756,8 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	if (resetIsActive)
 	{
  		unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
- 		/* Reset port */
+ 		portsc &= ~ EHCI_PORTSC_OWNER;	// take ownership to EHCI
+		/* Reset port */
  		portsc &= ~ (EHCI_PORTSC_PED | EHCI_PORTSC_CHANGE);
  		portsc |= EHCI_PORTSC_PR;
 
@@ -1756,6 +1767,7 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	else
 	{
 		unsigned long portsc = hehci->portsc [WITHEHCIHW_EHCIPORT];
+ 		portsc &= ~ EHCI_PORTSC_OWNER;	// take ownership to EHCI
  		/* Release Reset port */
  		portsc &= ~ EHCI_PORTSC_PR;	 /** Port reset */
 
@@ -1764,7 +1776,8 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 	}
 	//local_delay_ms(1000);
 	//HAL_Delay(5);
-	//PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, ehci->opRegs->ports [WITHEHCIHW_EHCIPORT]);
+	//PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, hehci->portsc [WITHEHCIHW_EHCIPORT]);
+	//PRINTF("USBH_LL_ResetPort2: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
 
 	usb_status = USBH_Get_USB_Status(hal_status);
 
