@@ -7398,10 +7398,24 @@ boart_tgl_firprofile(
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 }
 
+#if WITHDEBUG
+static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
+{
+	int_fast64_t mask = ((int_fast64_t) 1 << CWidth) - 1;
+	int_fast64_t sign = ((int_fast64_t) (((v >> (CWidth - 1)) & 1) ? -1 : 0)) << (CWidth - 1);
+	return (v & mask) | sign;
+}
+#endif /* WITHDEBUG */
 
 void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
 {
-	//PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u\n"), ifir, Ntap);
+#if WITHDEBUG
+	int_fast64_t sum = 0;
+	unsigned i;
+	for (i = 0; i < Ntap; ++ i)
+		sum += expandsign(k [i], CWidth);
+	PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u, sum=%08lX%08lX, CWidth=%u\n"), ifir, Ntap, (unsigned long) (sum >> 32), (unsigned long) (sum >> 0), CWidth);
+#endif /* WITHDEBUG */
 	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
