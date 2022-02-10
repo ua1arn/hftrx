@@ -7330,7 +7330,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 
 }
 
-/* Выдача расчитанных параметров фильтра в FPGA (симметричные) */
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
 static void 
 board_fpga_fir_send(
 	const uint_fast8_t ifir,	// номер FIR фильтра в FPGA
@@ -7405,6 +7405,7 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 }
 #endif /* WITHDEBUG */
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
 void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
 {
 #if WITHDEBUG
