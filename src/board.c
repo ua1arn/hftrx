@@ -7401,9 +7401,7 @@ boart_tgl_firprofile(
 #if WITHDEBUG
 static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 {
-	int_fast64_t mask = ((int_fast64_t) 1 << CWidth) - 1;
-	int_fast64_t sign = ((int_fast64_t) (((v >> (CWidth - 1)) & 1) ? -1 : 0)) << (CWidth - 1);
-	return (v & mask) | sign;
+	return (int64_t) v << (64 - CWidth) >> (64 - CWidth);
 }
 #endif /* WITHDEBUG */
 
