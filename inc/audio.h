@@ -377,12 +377,12 @@ extern "C" {
 
 		#define FLOORF	floor
 		#define LOG10F	local_log10 //log10
-		//#define LOGF	log
-		//#define POWF	pow
-		//#define LOG2F	log2
-		#define LOGF	local_log
-		#define POWF	local_pow
-		#define LOG2F	local_log2
+		#define LOGF	log
+		#define POWF	pow
+		#define LOG2F	log2
+//		#define LOGF	local_log
+//		#define POWF	local_pow
+//		#define LOG2F	local_log2
 		#define SINF	sin
 		#define COSF	cos
 		#define ATAN2F	atan2
@@ -407,12 +407,12 @@ extern "C" {
 
 		#define FLOORF	floorf
 		#define LOG10F	local_log10 //log10f
-		//#define LOGF	logf
-		//#define POWF	powf
-		//#define LOG2F	log2f
-		#define LOGF	local_log
-		#define POWF	local_pow
-		#define LOG2F	local_log2
+		#define LOGF	logf
+		#define POWF	powf
+		#define LOG2F	log2f
+//		#define LOGF	local_log
+//		#define POWF	local_pow
+//		#define LOG2F	local_log2
 		#define SINF	sinf
 		#define COSF	cosf
 		#define ATAN2F	atan2f
@@ -615,7 +615,9 @@ typedef struct transform_tag
 
 FLOAT_t adpt_input(const adapter_t * adp, int32_t v);
 int32_t adpt_output(const adapter_t * adp, FLOAT_t v);
+int32_t adpt_outputL(const adapter_t * adp, double v);
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v);	// точное преобразование между внешними целочисленными представлениями.
+int32_t adpt_outputexactL(const adapter_t * adp, double v);	// точное преобразование между внешними целочисленными представлениями.
 void adpt_initialize(adapter_t * adp, int leftbit, int rightspace);
 int32_t transform_do32(const transform_t * tfm, int32_t v); // точное преобразование между внешними целочисленными представлениями.
 int64_t transform_do64(const transform_t * tfm, int64_t v); // точное преобразование между внешними целочисленными представлениями.
