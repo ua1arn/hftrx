@@ -2212,7 +2212,7 @@ static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoe
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
 		//lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
-		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);;
+		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);
 	}
 }
 
@@ -2243,7 +2243,7 @@ static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoe
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
 		//lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
-		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);;
+		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);
 	}
 }
 
