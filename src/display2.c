@@ -9222,6 +9222,7 @@ static void display2_spectrum(
 
 							for (; h > 0; h --)
 							{
+								ASSERT(y0 >= h);
 								/* предотвращение отрисовки по ранее закрашенной области*/
 								if (* colmain_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != COLORMAIN_BLACK)
 									break;
