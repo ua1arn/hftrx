@@ -7408,7 +7408,7 @@ static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
 /* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
 void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
 {
-#if WITHDEBUG
+#if 0 && WITHDEBUG
 	int_fast64_t sum = 0;
 	unsigned i;
 	for (i = 0; i < Ntap; ++ i)
