@@ -8663,7 +8663,7 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
-	return padcs->adc_data_filtered;
+	return padcs->adc_filter == BOARD_ADCFILTER_DIRECT ? padcs->adc_data_raw : padcs->adc_data_filtered;
 }
 
 /* получить значение от АЦП */
@@ -8878,9 +8878,6 @@ void board_adc_store_data(uint_fast8_t adci, adcvalholder_t v)
 	boardadc_t * const padcs = & badcst [adci];
 	ASSERT(v <= board_getadc_fsval(adci));
 	padcs->adc_data_raw = v;
-	if (padcs->adc_filter == BOARD_ADCFILTER_DIRECT)
-		padcs->adc_data_filtered = v;
-
 }
 
 #if 0
