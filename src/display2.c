@@ -8611,6 +8611,7 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 
 static WFL3DSS_T * atwfj3dss(uint_fast16_t x, uint_fast16_t y)
 {
+	ASSERT(glob_view_style == VIEW_3DSS);
 	ASSERT(x < ALLDX);
 	ASSERT(y < MAX_3DSS_STEP);
 	return & gvars.u.wfj3dss [y][x];
@@ -8631,6 +8632,7 @@ static
 PACKEDCOLORMAIN_T *
 atwflj(uint_fast16_t x, uint_fast16_t y)
 {
+	ASSERT(glob_view_style != VIEW_3DSS);
 	return colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, x, y);
 }
 
@@ -8678,7 +8680,6 @@ static void wflshiftleft(uint_fast16_t pixels)
 
 	memmove(& gvars.Yold_wtf [0], & gvars.Yold_wtf [pixels], (ALLDX - pixels) * sizeof gvars.Yold_wtf [0]);
 	memset(& gvars.Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof gvars.Yold_wtf[0]);
-
 
     switch (glob_view_style)
     {
