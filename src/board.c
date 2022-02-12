@@ -8871,13 +8871,16 @@ hardware_set_adc_filterLPF(uint_fast8_t adci, lpfdata_t * lpfdata)
 }
 
 // Функция вызывается из обработчика прерывания завершения преобразования
-// канала АЦП для запиоминания преобразованного занчения.
+// канала АЦП для запоминания преобразованного занчения.
 void board_adc_store_data(uint_fast8_t adci, adcvalholder_t v)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	ASSERT(v <= board_getadc_fsval(adci));
 	padcs->adc_data_raw = v;
+	if (padcs->adc_filter == BOARD_ADCFILTER_DIRECT)
+		padcs->adc_data_filtered = v;
+
 }
 
 #if 0
@@ -8981,11 +8984,6 @@ adcfilters_initialize(void)
 	// вызов board_adc_filtering() по заверщению цикла АЦП
 	adcdone_initialize(& adcevent, board_adc_filtering, NULL);
 	adcdone_add(& adcevent);
-
-
-//#if ! WITHCPUADCHW
-//	board_adc_filtering();
-//#endif /* ! WITHCPUADCHW */
 
 	#if WITHBARS && ! WITHINTEGRATEDDSP
 		hardware_set_adc_filter(SMETERIX, BOARD_ADCFILTER_TRACETOP3S);
