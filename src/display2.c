@@ -8720,7 +8720,7 @@ static void wflshiftright(uint_fast16_t pixels)
 // стираем целиком старое изображение водопада
 static void wfsetupnew0(void)
 {
-	wflclear0();
+	wflclear0();	// Очистка водопада (без учета последней записаной строки)
 	fft_avg_clear(); // очищаем буфер усреднения FFT
 	wfl_avg_clear(); // очищаем буфер усреднения водопада
 }
@@ -8783,11 +8783,9 @@ display2_wfl_init(
 #endif /* LCDMODE_MAIN_L8 */
 	}
 
+	wflclear0();	// Очистка водопада (без учета последней записаной строки)
 	fft_avg_clear();	// Сброс фильтра
 	wfl_avg_clear();	// Сброс фильтра
-
-	wflclear0();	// Очистка водопада (без учета последней записаной строки)
-	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
 }
 
 // получить горизонтальную позицию для заданного отклонения в герцах
