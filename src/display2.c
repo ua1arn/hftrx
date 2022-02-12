@@ -8602,10 +8602,9 @@ typedef int16_t WFL3DSS_T;
 #define WFL3DSS ((WFL3DSS_T *) & gvars.wfjarray)
 #define SIZEOF_WFL3DSS (ALLDX * MAX_3DSS_STEP * sizeof (WFL3DSS_T))
 
-static WFL3DSS_T * atwfj3dss(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y)
+static WFL3DSS_T * atwfj3dss(uint_fast16_t x, uint_fast16_t y)
 {
-	ASSERT(dx == ALLDX);
-	ASSERT(dy == MAX_3DSS_STEP);
+	ASSERT(SIZEOF_WFL3DSS <= sizeof gvars.wfjarray);
 	ASSERT(x < ALLDX);
 	ASSERT(y < MAX_3DSS_STEP);
 	return & WFL3DSS [y * ALLDX + x];
@@ -8613,12 +8612,12 @@ static WFL3DSS_T * atwfj3dss(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x
 
 static uint_fast16_t wfj3dss_peek(uint_fast16_t x, uint_fast16_t y)
 {
-	return * atwfj3dss(ALLDX, MAX_3DSS_STEP, x, y);
+	return * atwfj3dss(x, y);
 }
 
 static void wfj3dss_poke(uint_fast16_t x, uint_fast16_t y, WFL3DSS_T val)
 {
-	* atwfj3dss(ALLDX, MAX_3DSS_STEP, x, y) = val;
+	* atwfj3dss(x, y) = val;
 }
 #endif /* WITHVIEW_3DSS */
 
@@ -8677,11 +8676,11 @@ static void wflshiftleft(uint_fast16_t pixels)
         for (y = 0; y < MAX_3DSS_STEP; ++ y)
      	{
      		memmove(
-     				atwfj3dss(ALLDX, MAX_3DSS_STEP, 0, y),			// to
-					atwfj3dss(ALLDX, MAX_3DSS_STEP, pixels, y),		// from
+     				atwfj3dss(0, y),			// to
+					atwfj3dss(pixels, y),		// from
      				(ALLDX - pixels) * sizeof (WFL3DSS_T)
      		);
-     		memset(atwfj3dss(ALLDX, MAX_3DSS_STEP, ALLDX - pixels, y), 0, pixels * sizeof (WFL3DSS_T));
+     		memset(atwfj3dss(ALLDX - pixels, y), 0, pixels * sizeof (WFL3DSS_T));
     	}
  		break;
 #endif /* WITHVIEW_3DSS */
@@ -8726,11 +8725,11 @@ static void wflshiftright(uint_fast16_t pixels)
        	for (y = 0; y < MAX_3DSS_STEP; ++ y)
         	{
        		memmove(
-       				atwfj3dss(ALLDX, MAX_3DSS_STEP, pixels, y),	// to
-					atwfj3dss(ALLDX, MAX_3DSS_STEP, 0, y),		// from
+       				atwfj3dss(pixels, y),	// to
+					atwfj3dss(0, y),		// from
 					(ALLDX - pixels) * sizeof (WFL3DSS_T)
         		);
-     		memset(atwfj3dss(ALLDX, MAX_3DSS_STEP, 0, y), 0, pixels * sizeof (WFL3DSS_T));
+     		memset(atwfj3dss(0, y), 0, pixels * sizeof (WFL3DSS_T));
        	}
         break;
 #endif /* WITHVIEW_3DSS */
