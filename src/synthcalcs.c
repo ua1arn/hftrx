@@ -567,9 +567,9 @@ void synth_lo0_setfreq(
 {
 	if (f < 0)
 		f = - f;
-#if CTLSTYLE_OLEG4Z_V1
+#if XVTR_R820T2
 	prog_xvtr_freq(f, enable);
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+#endif /* XVTR_R820T2 */
 }
 
 // Установка опорной частоты длд синтезатороа LO1.
