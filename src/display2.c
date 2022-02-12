@@ -8596,43 +8596,31 @@ static uint_fast16_t wfvscroll;			// сдвиг по вертикали (в ра
 static uint_fast8_t wfclear;			// стирание всей областии отображение водопада.
 
 
-// стираем целиком старое изображение водопада
-// в строке wfrow - новое
-static void wflclear(void)
-{
-	uint_fast16_t y;
 #if WITHVIEW_3DSS
-	uint_fast8_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
-#else
-	uint_fast8_t rows = WFROWS;
-#endif /* WITHVIEW_3DSS */
 
-	for (y = 0; y < rows; ++ y)
-	{
-		if (y == wfrow)
-			continue;
-		// TODO: use minimal level color gvars.color_scale [0] instead of binary zeroes
-		memset(
-				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
-				display2_bgcolorwfl(),	// не работает на отлдичаюзизся от 8 бит цветов
-				ALLDX * sizeof gvars.wfjarray [0]
-		);
-	}
+typedef int16_t WFL3DSS_T;
+#define WFL3DSS ((WFL3DSS_T *) & gvars.wfjarray)
+#define SIZEOF_WFL3DSS (ALLDX * MAX_3DSS_STEP * sizeof (WFL3DSS_T))
+
+static WFL3DSS_T * atwfj3dss(uint_fast16_t dx, uint_fast16_t dy, uint_fast16_t x, uint_fast16_t y)
+{
+	ASSERT(dx == ALLDX);
+	ASSERT(dy == MAX_3DSS_STEP);
+	ASSERT(x < ALLDX);
+	ASSERT(y < MAX_3DSS_STEP);
+	return & WFL3DSS [y * ALLDX + x];
 }
 
-// стираем целиком старое изображение водопада
-// Очистка водопада (без учета последней записаной строки)
-static void wflclear0(void)
+static uint_fast16_t wfj3dss_peek(uint_fast16_t x, uint_fast16_t y)
 {
-	uint_fast16_t y;
-#if WITHVIEW_3DSS
-	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
-#else
-	uint_fast16_t rows = WFROWS;
-#endif /* WITHVIEW_3DSS */
-
-	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, rows, display2_bgcolorwfl());
+	return * atwfj3dss(ALLDX, MAX_3DSS_STEP, x, y);
 }
+
+static void wfj3dss_poke(uint_fast16_t x, uint_fast16_t y, WFL3DSS_T val)
+{
+	* atwfj3dss(ALLDX, MAX_3DSS_STEP, x, y) = val;
+}
+#endif /* WITHVIEW_3DSS */
 
 // стираем буфер усреднения FFT
 static void fft_avg_clear(void)
@@ -8646,17 +8634,29 @@ static void wfl_avg_clear(void)
 	memset(gvars.Yold_wtf, 0x00, sizeof gvars.Yold_wtf);
 }
 
+// стираем целиком старое изображение водопада
+static void wflclear(void)
+{
+    switch (glob_view_style)
+    {
+#if WITHVIEW_3DSS
+    case VIEW_3DSS:
+    	// Работа с wfl3dss
+    	memset(WFL3DSS, 0, SIZEOF_WFL3DSS);
+    	break;
+#endif /* WITHVIEW_3DSS */
+
+    default:
+    	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
+    	break;
+    }
+}
+
 // частота увеличилась - надо сдвигать картинку влево
 // нужно сохрянять часть старого изображения
-// в строке wfrow - новое
 static void wflshiftleft(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
-#if WITHVIEW_3DSS
-	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
-#else
-	uint_fast16_t rows = WFROWS;
-#endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
 		return;
@@ -8668,19 +8668,37 @@ static void wflshiftleft(uint_fast16_t pixels)
 	memmove(& gvars.Yold_wtf [0], & gvars.Yold_wtf [pixels], (ALLDX - pixels) * sizeof gvars.Yold_wtf [0]);
 	memset(& gvars.Yold_wtf [ALLDX - pixels], 0x00, pixels * sizeof gvars.Yold_wtf[0]);
 
-	for (y = 0; y < rows; ++ y)
-	{
-//		if (y == wfrow)
-//		{
-//			continue;
-//		}
-		memmove(
-				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
-				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),
-				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
-		);
-	}
-	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, rows, display2_bgcolorwfl());
+
+    switch (glob_view_style)
+    {
+#if WITHVIEW_3DSS
+    case VIEW_3DSS:
+    	// Работа с wfl3dss
+        for (y = 0; y < MAX_3DSS_STEP; ++ y)
+     	{
+     		memmove(
+     				atwfj3dss(ALLDX, MAX_3DSS_STEP, 0, y),			// to
+					atwfj3dss(ALLDX, MAX_3DSS_STEP, pixels, y),		// from
+     				(ALLDX - pixels) * sizeof (WFL3DSS_T)
+     		);
+     		memset(atwfj3dss(ALLDX, MAX_3DSS_STEP, ALLDX - pixels, y), 0, pixels * sizeof (WFL3DSS_T));
+    	}
+ 		break;
+#endif /* WITHVIEW_3DSS */
+
+    default:
+        for (y = 0; y < WFROWS; ++ y)
+    	{
+    		memmove(
+    				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),		// to
+    				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),	// from
+    				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
+    		);
+    	}
+        // заполнение вновь появившегося прямоугольника
+    	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, WFROWS, display2_bgcolorwfl());
+     	break;
+    }
 }
 
 // частота уменьшилась - надо сдвигать картинку вправо
@@ -8689,15 +8707,9 @@ static void wflshiftleft(uint_fast16_t pixels)
 static void wflshiftright(uint_fast16_t pixels)
 {
 	uint_fast16_t y;
-#if WITHVIEW_3DSS
-	uint_fast16_t rows = glob_view_style == VIEW_3DSS ? MAX_3DSS_STEP : WFROWS;
-#else
-	uint_fast16_t rows = WFROWS;
-#endif /* WITHVIEW_3DSS */
 
 	if (pixels == 0)
 		return;
-
 	// двигаем буфер усреднения значений WTF и FFT
 	memmove(& gvars.Yold_spe [pixels], & gvars.Yold_spe [0], (ALLDX - pixels) * sizeof gvars.Yold_spe [0]);
 	memset(& gvars.Yold_spe [0], 0x00, pixels * sizeof gvars.Yold_spe [0]);
@@ -8706,30 +8718,44 @@ static void wflshiftright(uint_fast16_t pixels)
 	memset(& gvars.Yold_wtf [0], 0x00, pixels * sizeof gvars.Yold_wtf [0]);
 
 
-	for (y = 0; y < rows; ++ y)
-	{
-		memmove(
-				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),
-				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),
-				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
-		);
-	}
-	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, pixels, rows, display2_bgcolorwfl());
+    switch (glob_view_style)
+    {
+#if WITHVIEW_3DSS
+    case VIEW_3DSS:
+    	// Работа с wfl3dss
+       	for (y = 0; y < MAX_3DSS_STEP; ++ y)
+        	{
+       		memmove(
+       				atwfj3dss(ALLDX, MAX_3DSS_STEP, pixels, y),	// to
+					atwfj3dss(ALLDX, MAX_3DSS_STEP, 0, y),		// from
+					(ALLDX - pixels) * sizeof (WFL3DSS_T)
+        		);
+     		memset(atwfj3dss(ALLDX, MAX_3DSS_STEP, 0, y), 0, pixels * sizeof (WFL3DSS_T));
+       	}
+        break;
+#endif /* WITHVIEW_3DSS */
+
+    default:
+    	for (y = 0; y < WFROWS; ++ y)
+    	{
+			memmove(
+					colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),	// to
+					colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),		// from
+					(ALLDX - pixels) * sizeof gvars.wfjarray [0]
+				);
+    	}
+        // заполнение вновь появившегося прямоугольника
+    	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, pixels, WFROWS, display2_bgcolorwfl());
+     	break;
+    }
 }
 
-// стираем целиком старое изображение водопада
-static void wfsetupnew0(void)
-{
-	wflclear0();	// Очистка водопада (без учета последней записаной строки)
-	fft_avg_clear(); // очищаем буфер усреднения FFT
-	wfl_avg_clear(); // очищаем буфер усреднения водопада
-}
-
+// при смене диапазона или частот  при отсутствии необзодимости сохранять часть старого изображения водопада
 // стираем целиком старое изображение водопада
 // в строке 0 - новое
 static void wfsetupnew(void)
 {
-	wflclear();
+	wflclear();	// Очистка водопада
 	fft_avg_clear(); // очищаем буфер усреднения FFT
 	wfl_avg_clear(); // очищаем буфер усреднения водопада
 }
@@ -8783,7 +8809,7 @@ display2_wfl_init(
 #endif /* LCDMODE_MAIN_L8 */
 	}
 
-	wflclear0();	// Очистка водопада (без учета последней записаной строки)
+	wflclear();	// Очистка водопада
 	fft_avg_clear();	// Сброс фильтра
 	wfl_avg_clear();	// Сброс фильтра
 }
@@ -9173,7 +9199,7 @@ static void display2_spectrum(
 			uint_fast8_t draw_step = calcprev(current_3dss_step, MAX_3DSS_STEP);
 			uint_fast16_t ylast_sp = 0;
 			int i;
-
+			const COLORMAIN_T bgcolor = display_getbgcolor();
 			for (int_fast8_t i = 0; i < MAX_3DSS_STEP - 1; i ++)
 			{
 				uint_fast16_t y0 = spy - 5 - i * Y_STEP;
@@ -9186,9 +9212,7 @@ static void display2_spectrum(
 						const int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
 						uint_fast16_t dy, j;
-						ASSERT(x < ALLDX);
-						ASSERT(current_3dss_step < WFROWS);
-						* colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, current_3dss_step) = val;
+						wfj3dss_poke(x, current_3dss_step, val);
 
 						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
 						{
@@ -9216,7 +9240,8 @@ static void display2_spectrum(
 
 						if (x_old != x_d)
 						{
-							uint_fast16_t y1 = y0 - * colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, draw_step);
+							const uint_fast16_t t0 = wfj3dss_peek(x, draw_step);
+							uint_fast16_t y1 = y0 - t0;
 							int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
 							h = h < 0 ? 0 : h;
 
@@ -9224,7 +9249,7 @@ static void display2_spectrum(
 							{
 								ASSERT(y0 >= h);
 								/* предотвращение отрисовки по ранее закрашенной области*/
-								if (* colmain_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != COLORMAIN_BLACK)
+								if (* colmain_mem_at(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h) != bgcolor)
 									break;
 
 								colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x_d, y0 - h, gvars.color_scale [h]);
@@ -9235,8 +9260,9 @@ static void display2_spectrum(
 				}
 				draw_step = calcprev(draw_step, MAX_3DSS_STEP);
 			}
-			delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
 
+			// прожвижение по истории (должно быть в latch)
+			delay_3dss = calcnext(delay_3dss, MAX_DELAY_3DSS);
 			if (! delay_3dss)
 				current_3dss_step = calcnext(current_3dss_step, MAX_3DSS_STEP);
 
@@ -9354,7 +9380,6 @@ static void display2_latchwaterfall(
 		{
 			hscroll = (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
-			// в строке wfrow - новое
 			wflshiftright(hscroll);
 		}
 		else
@@ -9371,7 +9396,6 @@ static void display2_latchwaterfall(
 		{
 			hscroll = - (int_fast16_t) deltapix;
 			// нужно сохрянять часть старого изображения
-			// в строке wfrow - новое
 			wflshiftleft(- hscroll);
 		}
 		else
@@ -10276,7 +10300,7 @@ board_set_view_style(uint_fast8_t v)
 	{
 		glob_view_style = n;
 #if WITHVIEW_3DSS
-		wfsetupnew0();	// при переключении стилей отображения очищать общий буфер
+		wfsetupnew();	// при переключении стилей отображения очищать общий буфер
 
 		if (glob_view_style == VIEW_3DSS)
 			init_depth_map_3dss();
