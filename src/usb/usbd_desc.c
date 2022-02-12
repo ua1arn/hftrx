@@ -138,7 +138,7 @@ enum
 
 #if WITHUSBCDCACM
 	// USB CDC strings
-	STRING_ID_4a, /*  */
+	STRING_ID_4a, /* Serial Port #%d */
 	STRING_ID_4x = (STRING_ID_4a + WITHUSBCDCACM_N - 1),
 #endif /* WITHUSBCDCACM */
 	STRING_ID_5,
@@ -2816,7 +2816,7 @@ static unsigned CDCACM_InterfaceAssociationDescriptor_a(uint_fast8_t fill, uint8
 		* buff ++ = USB_DEVICE_CLASS_COMMUNICATIONS;	// bFunctionClass: CDC
 		* buff ++ = CDC_ABSTRACT_CONTROL_MODEL;			// bFunctionSubClass
 		* buff ++ = 0x00; //CDC_PROTOCOL_COMMON_AT_COMMANDS;	// bFunctionProtocol
-		* buff ++ = STRING_ID_4a + offset;				// iFunction - Storch HF TRX CAT - появляется, если сделать не тот bFunctionSubClass
+		* buff ++ = STRING_ID_4a + offset;				// iFunction - Serial Port #%d - появляется, если сделать не тот bFunctionSubClass
 	}
 	return length;
 }
