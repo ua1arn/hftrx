@@ -7740,11 +7740,11 @@ update_lo0(
 	const uint_fast8_t enable = lo0side != LOCODE_INVALID;
 	board_set_xvrtr(enable);
 	synth_lo0_setfreq(getlo0(lo0hint), enable);
-#if CTLSTYLE_OLEG4Z_V1
+#if XVTR_R820T2
 	board_set_swaprts(enable);	/* При преобразовании на этом гетеродине происходит инверсия спектра */
-#else /* CTLSTYLE_OLEG4Z_V1 */
+#else /* XVTR_R820T2 */
 	board_set_swaprts(lo0side == LOCODE_LOWER);	/* При преобразовании на этом гетеродине происходит инверсия спектра */
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+#endif /* XVTR_R820T2 */
 }
 
 /* перенастройка формирования гетеродина для указанного режима. */
