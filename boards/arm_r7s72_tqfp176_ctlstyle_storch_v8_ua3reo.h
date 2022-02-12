@@ -271,6 +271,9 @@
 	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4
 
+	#define WITHVIEW_3DSS		1
+	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHUSEDUALWATCH	1	// Второй приемник
