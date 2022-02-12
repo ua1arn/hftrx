@@ -78,9 +78,9 @@ Free:
 //#define WITHI2S2HW	1	/* Использование I2S - аудиокодек	*/
 #define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
 
-#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
-#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
-#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
+//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	*/
+//#define WITHSDRAMHW	1	/* В процессоре есть внешняя память */
 
 #if 1
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
@@ -497,6 +497,21 @@ Free:
 		arm_hardware_pioe_altfn2(1U << 6, AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
+
+#define I2S2HW_SLAVE_INITIALIZE() do { \
+	} while (0)
+
+#define I2S2HW_MASTER_INITIALIZE() do { \
+	} while (0)
+
+#define I2S3HW_SLAVE_INITIALIZE() do { \
+	} while (0)
+
+#define I2S3HW_MASTER_INITIALIZE() do { \
+	} while (0)
+
+#define I2S2HW_I2S2EXTHW_MASTER_INITIALIZE() do { \
+	} while (0)
 
 #if WITHUSBHW
 	/**USB_OTG_HS GPIO Configuration    

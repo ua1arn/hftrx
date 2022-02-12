@@ -23,6 +23,7 @@
 #include "l2f50.h"
 
 /* растровые шрифты */
+#define FONTSHERE 1
 #include "fontmaps.h"
 
 

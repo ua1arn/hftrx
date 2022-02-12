@@ -376,7 +376,7 @@
 		#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 		#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	#endif
-	#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	#define WITHCAT		1	/* используется CAT */

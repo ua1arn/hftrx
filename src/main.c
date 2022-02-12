@@ -3740,6 +3740,9 @@ enum
 			enum { nopttsig = BOARD_CATSIG_NONE };
 			enum { nokeysig = BOARD_CATSIG_NONE };
 		#endif /* LCDMODE_DUMMY || ! WITHKEYBOARD */
+	#else /* WITHCAT_CDC */
+		enum { nopttsig = BOARD_CATSIG_NONE };
+		enum { nokeysig = BOARD_CATSIG_NONE };
 	#endif /* WITHCAT_CDC */
 
 #if WITHTX
@@ -19370,6 +19373,14 @@ modifysettings(
 #endif /* WITHTX */
 
 			case KBD_CODE_BAND_DOWN:
+#if WITHENCODER2
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
+				uif_key_click_banddown();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+#endif /* WITHENCODER2 */
+
 			case KBD_CODE_MENU_DOWN:
 				/* переход на предыдущий пункт меню */
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
@@ -19383,6 +19394,14 @@ modifysettings(
 				goto menuswitch;
 
 			case KBD_CODE_BAND_UP:
+#if WITHENCODER2
+				savemenuvalue(mp);		/* сохраняем отредактированное значение */
+				/* переход на следующий (с большей частотой) диапазон или на шаг general coverage */
+				uif_key_click_bandup();
+				display2_redrawbarstimed(1, 1, mp);		/* обновление динамической части отображения - обновление S-метра или SWR-метра и volt-метра. */
+				continue;	// требуется обновление индикатора
+#endif /* WITHENCODER2 */
+
 			case KBD_CODE_MENU_UP:
 				/* переход на следующий пункт меню */
 				savemenuvalue(mp);		/* сохраняем отредактированное значение */
@@ -20539,7 +20558,9 @@ lowinitialize(void)
 	board_initialize();		/* инициализация чипселектов и SPI, I2C, загрузка FPGA */
 	cpu_initdone();			/* секция init (в которой лежит образ для загрузки в FPGA) больше не нужна */
 	display_hardware_initialize();
-
+#if WITHWATCHDOG
+	watchdog_initialize();	/* разрешение сторожевого таймера в устройстве */
+#endif /* WITHWATCHDOG */
 	static ticker_t displayticker;
 	static ticker_t ticker_1S;
 
@@ -21966,9 +21987,10 @@ int_fast32_t hamradio_getequalizerbase(void)
 }
 #endif /* WITHAFCODEC1HAVEPROC */
 
-#if WITHIFSHIFT
 int_fast16_t hamradio_if_shift(int_fast8_t step)
 {
+#if WITHIFSHIFT
+
 	if (step != 0)
 	{
 		int_fast16_t val = ifshifoffset.value + step * ISTEP50;
@@ -21983,8 +22005,13 @@ int_fast16_t hamradio_if_shift(int_fast8_t step)
 		updateboard(1, 0);
 	}
 	return ifshifoffset.value + getifshiftbase();	// Добавить учет признака наличия сдвига
-}
+
+#else /* WITHIFSHIFT */
+
+	return 0;
+
 #endif /* WITHIFSHIFT */
+}
 
 #if WITHELKEY
 

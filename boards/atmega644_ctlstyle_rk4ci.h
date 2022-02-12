@@ -83,7 +83,7 @@
 #elif 1
 	/* Версии частотных схем - с преобразованием "вниз" */
 	#define FQMODEL_TRX8M		1	// Первая низкая ПЧ 8 МГц, 6 МГц, 5.5 МГц и другие
-	#define WITHCLASSICSIDE	1	/* сторона первого гетеродина зависит от рабочей частоты */
+	//#define WITHCLASSICSIDE	1	/* сторона первого гетеродина зависит от рабочей частоты */
 	// Выбор ПЧ
 	//#define IF3_MODEL IF3_TYPE_9000
 	//#define IF3_MODEL IF3_TYPE_8000
@@ -336,6 +336,17 @@ enum
 	PWRI = 4,
 	FWD = 4, REF = 3,	// SWR-meter
 #endif
+
+
+	XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
+	REFMRRIX = BOARD_ADCMRRIN(2),
+	FWDMRRIX = BOARD_ADCMRRIN(3),
+	PWRMRRIX = FWDMRRIX,
+	VOLTMRRIX = BOARD_ADCMRRIN(4),	// кеш - индекc не должен повторяться в конфигурации
+	PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
+	PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
+
 	KI0 = 5, KI1 = 6, KI2 = 7	// клавиатура
 };
 
@@ -345,5 +356,6 @@ enum
 #define VOLTLEVEL_UPPER		43	// 4.3 kOhm - верхний резистор делителя датчика напряжения
 #define VOLTLEVEL_LOWER		10	// 1.0 kOhm - нижний резистор
 
+#define WITHPOWERTRIMMAX 1	// stub
 
 #endif /* ATMEGA644_CTLSTYLE_RK4CI_H_INCLUDED */

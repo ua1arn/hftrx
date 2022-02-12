@@ -38,6 +38,9 @@
 //#define WITHUART5HW	1	/* net PanGu Board UART5_RX PB5, UART5_TX PB13 Используется периферийный контроллер последовательного порта #5 */
 //#define WITHCAT7_UART5	1	// сетевой интерфейс SLIP на UART5
 
+// OHCI at USB1HSFSP2_BASE
+#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+
 #if WITHISBOOTLOADER
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
@@ -310,6 +313,20 @@
 		arm_hardware_pioe_altfn50(0 * 1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
 	} while (0)
 #endif /* WITHSAI1HW */
+
+
+// Stub
+#define I2S2HW_SLAVE_INITIALIZE() do { \
+		} while (0)
+
+// Stub
+#define I2S3HW_SLAVE_INITIALIZE() do { \
+		} while (0)
+
+// Stub
+#define I2S2HW_MASTER_INITIALIZE() do { \
+		} while (0)
+
 
 /* Распределение битов в ARM контроллерах */
 

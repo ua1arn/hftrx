@@ -114,7 +114,7 @@ typedef uint_least64_t phase_t;
 	#define WITHNOTCHFREQ		1	/* NOTCH фильтр с устанавливаемой через меню или потенциометром частотой */
 	#define WITHSUBTONES		1	/* выполняется формирование субтона при передаче NFM */
 	#define WITHSAM				1	/* synchronous AM demodulation */
-	#define WITHIFSHIFT			1	/* используется IF SHIFT */
+	//#define WITHIFSHIFT			1	/* используется IF SHIFT */
 	#define WITHMIC1LEVEL		1	/* установка усиления микрофона */
 
 	#define	SQUELCHMAX	255	/* Kenwood's value */
@@ -3443,14 +3443,40 @@ void display2_set_filter_wtf(uint_fast8_t v);	/* парамеры видеофи
 
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */
 
-enum
-{
-	BANDF_COUNT = 20,
-	BANDF2_COUNT = 17,
-	BANDF3_COUNT = 17
-};
-
 #define NMICPROFCELLS	3
+
+
+#if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_DCRX)
+	#if WITHIFSHIFT
+		#error Can not be defined WITHIFSHIFT together with FQMODEL_DCTRX
+	#endif
+	#if WITHPBT
+		#error Can not be defined WITHPBT together with FQMODEL_DCTRX
+	#endif
+	#if WITHDUALBFO
+		#error Can not be defined WITHDUALBFO together with FQMODEL_DCTRX
+	#endif
+	#if WITHFIXEDBFO
+		#error Can not be defined WITHFIXEDBFO together with FQMODEL_DCTRX
+	#endif
+	#if WITHDUALFLTR
+		#error Can not be defined WITHDUALFLTR together with FQMODEL_DCTRX
+	#endif
+#endif
+
+#if WITHPOTGAIN	// Для совместимости с теми конфигурациями, где разрешются регулировки только парой
+	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+#endif /* WITHPOTGAIN */
+
+#if ELKEY328
+	#define CWWPMMIN	12 //328 10
+	#define CWWPMMAX	30 //328 60
+#else
+	#define CWWPMMIN	4	// В ts-590s от 4-х, а не от 10 как в остальных kenwood
+	#define CWWPMMAX	60
+#endif
+
 
 #ifdef __cplusplus
 }

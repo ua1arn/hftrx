@@ -334,7 +334,7 @@ synth_maxlabloop1_setfreq(
 #else
 	const uint_fast16_t dacvalue = daci2dacval(dacindex < MAXLAB_LINEARDACRANGE ? dacindex : (MAXLAB_LINEARDACRANGE - 1));	// работа на частотах ниже заявленной приводит к обращению за пределы таблицы
 #endif
-	// установка расчитанных значений
+	// установка рассчитанных значений
 	board_pll1_set_vco(hint);
 	const uint_fast8_t fchange = board_pll1_set_n(& n1, hint, 1);
 	board_set_maxlabdac(dacvalue);
@@ -567,9 +567,9 @@ void synth_lo0_setfreq(
 {
 	if (f < 0)
 		f = - f;
-#if CTLSTYLE_OLEG4Z_V1
+#if XVTR_R820T2
 	prog_xvtr_freq(f, enable);
-#endif /* CTLSTYLE_OLEG4Z_V1 */
+#endif /* XVTR_R820T2 */
 }
 
 // Установка опорной частоты длд синтезатороа LO1.

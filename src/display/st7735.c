@@ -549,6 +549,8 @@ st7735_put_char_half(xholder_t xpix, char cc)
 }
 
 
+#if WITHSPIHW
+
 static unsigned long st7735_get_id(void)
 {
 #if WITHSPIEXT16
@@ -597,6 +599,12 @@ static unsigned long st7735_get_id(void)
 	return (v1 * 256 | v2) * 256 | v3;
 #endif /* WITHSPIEXT16 */
 }
+#else /* WITHSPIHW */
+static unsigned long st7735_get_id(void)
+{
+	return 0;
+}
+#endif /* WITHSPIHW */
 
 static uint_fast16_t st7735_y;	/* в пикселях */
 

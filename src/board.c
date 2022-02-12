@@ -276,6 +276,68 @@ static void prog_rfadc_update(void);
 	#endif /* (RTC1_TYPE == RTC_TYPE_M41T81) */
 #endif /* defined(RTC1_TYPE) */
 
+#if defined (RTC1_TYPE) && RTC1_TYPE == RTC_TYPE_ZYNQ_MP
+
+#include "xrtcpsu.h"
+
+static XRtcPsu xczu_rtc;
+
+/* возврат не-0 если требуется начальная загрузка значений */
+static uint_fast8_t board_rtc_chip_initialize(void)
+{
+	XRtcPsu_Config * rtccfg = XRtcPsu_LookupConfig(XPAR_XRTCPSU_0_DEVICE_ID);
+	XRtcPsu_CfgInitialize(& xczu_rtc, rtccfg, rtccfg->BaseAddr);
+	u32 Status = XRtcPsu_SelfTest(& xczu_rtc);
+	if (Status != XST_SUCCESS) {
+		PRINTF("rtcpsu init fail %ld\n", Status);
+		ASSERT(0);
+	}
+	return 0;
+}
+
+void board_rtc_getdatetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * day,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	)
+{
+	XRtcPsu_DT dt;
+	uint32_t time = XRtcPsu_GetCurrentTime(& xczu_rtc);
+	XRtcPsu_SecToDateTime(time, & dt);
+
+	* year = dt.Year;
+	* month = dt.Month;
+	* day = dt.Day;
+	* hour = dt.Hour;
+	* minute = dt.Min;
+	* secounds = dt.Sec;
+}
+
+void board_rtc_setdatetime(
+	uint_fast16_t year,
+	uint_fast8_t month,
+	uint_fast8_t dayofmonth,
+	uint_fast8_t hours,
+	uint_fast8_t minutes,
+	uint_fast8_t secounds
+	)
+{
+	XRtcPsu_DT dt;
+	dt.Year = year;
+	dt.Month = month;
+	dt.Day = dayofmonth;
+	dt.Hour = hours;
+	dt.Min = minutes;
+	dt.Sec = secounds;
+	XRtcPsu_SetTime(& xczu_rtc, XRtcPsu_DateTimeToSec(& dt));
+	board_rtc_chip_initialize();
+}
+
+#endif /* defined (RTC1_TYPE) && RTC1_TYPE == RTC_TYPE_ZYNQ_MP */
+
 #if XVTR_R820T2
 	#include "chip/r820t.h"
 #endif /* XVTR_R820T2 */
@@ -6898,6 +6960,56 @@ restart:
 
 #if WITHDSPEXTFIR
 
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+
+#include "xaxidma.h"
+XAxiDma xcz_dma_fir_coeffs;
+
+void board_fpga_fir_initialize(void)
+{
+	XAxiDma_Config * config = XAxiDma_LookupConfig(AXIDMA_FIR_COEFFS_ID);
+	int Status = XAxiDma_CfgInitialize(& xcz_dma_fir_coeffs, config);
+
+	if (Status != XST_SUCCESS) {
+		PRINTF("xcz_dma_fir_coeffs Initialization failed %d\r\n", Status);
+		ASSERT(0);
+	}
+
+	if(XAxiDma_HasSg(& xcz_dma_fir_coeffs))
+	{
+		PRINTF("xcz_dma_fir_coeffs Device configured as SG mode \r\n");
+		ASSERT(0);
+	}
+}
+
+void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
+{
+	int_fast32_t firbuf[Ntap_trxi_IQ];
+
+	const int iHalfLen = (Ntap - 1) / 2;
+	int i, j = 0;
+
+	if (xcz_dma_fir_coeffs.Initialized)
+	{
+		for (i = 0; i <= iHalfLen; ++ i)
+			firbuf[j ++] = k [i];
+
+		i -= 1;
+		for (; -- i >= 0;)
+			firbuf[j ++] = k [i];
+
+		size_t len = Ntap * sizeof(int_fast32_t);
+		arm_hardware_flush((uintptr_t) firbuf, len);
+		int Status = XAxiDma_SimpleTransfer(& xcz_dma_fir_coeffs, (uintptr_t) firbuf, len, XAXIDMA_DMA_TO_DEVICE);
+		if (Status != XST_SUCCESS)
+		{
+			PRINTF("board_reload_fir transmit error %d\n", Status);
+			ASSERT(0);
+		}
+	}
+}
+#else
+
 void board_fpga_fir_initialize(void)
 {
 	//PRINTF(PSTR("board_fpga_fir_initialize start\n"));
@@ -7218,7 +7330,7 @@ static void single_rate_out_write_mcv(const int_fast32_t * coef, int coef_length
 
 }
 
-/* Выдача расчитанных параметров фильтра в FPGA (симметричные) */
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
 static void 
 board_fpga_fir_send(
 	const uint_fast8_t ifir,	// номер FIR фильтра в FPGA
@@ -7286,13 +7398,28 @@ boart_tgl_firprofile(
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
 }
 
+#if WITHDEBUG
+static int_fast64_t expandsign(int_fast32_t v, unsigned CWidth)
+{
+	return (int64_t) v << (64 - CWidth) >> (64 - CWidth);
+}
+#endif /* WITHDEBUG */
 
+/* Выдача рассчитанных параметров фильтра в FPGA (симметричные) */
 void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned Ntap, unsigned CWidth)
 {
-	//PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u\n"), ifir, Ntap);
+#if 0 && WITHDEBUG
+	int_fast64_t sum = 0;
+	unsigned i;
+	for (i = 0; i < Ntap; ++ i)
+		sum += expandsign(k [i], CWidth);
+	PRINTF(PSTR("board_reload_fir: ifir=%u, Ntap=%u, sum=%08lX%08lX, CWidth=%u\n"), ifir, Ntap, (unsigned long) (sum >> 32), (unsigned long) (sum >> 0), CWidth);
+#endif /* WITHDEBUG */
 	board_fpga_fir_send(ifir, k, Ntap, CWidth);		/* загрузить массив коэффициентов в FPGA */
 	boart_tgl_firprofile(ifir);
 }
+
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #endif /* WITHDSPEXTFIR */
 
@@ -7403,66 +7530,6 @@ void board_initialize(void)
 
 #if defined (RTC1_TYPE)
 
-#if RTC1_TYPE == RTC_TYPE_ZYNQ_MP
-
-#include "xrtcpsu.h"
-
-XRtcPsu xczu_rtc;
-
-static void board_rtc_initialize(void)
-{
-	XRtcPsu_Config * rtccfg = XRtcPsu_LookupConfig(XPAR_XRTCPSU_0_DEVICE_ID);
-	XRtcPsu_CfgInitialize(& xczu_rtc, rtccfg, rtccfg->BaseAddr);
-	u32 Status = XRtcPsu_SelfTest(& xczu_rtc);
-	if (Status != XST_SUCCESS) {
-		PRINTF("rtcpsu init fail %ld\n", Status);
-		ASSERT(0);
-	}
-}
-
-void board_rtc_getdatetime(
-	uint_fast16_t * year,
-	uint_fast8_t * month,	// 01-12
-	uint_fast8_t * day,
-	uint_fast8_t * hour,
-	uint_fast8_t * minute,
-	uint_fast8_t * secounds
-	)
-{
-	XRtcPsu_DT dt;
-	uint32_t time = XRtcPsu_GetCurrentTime(& xczu_rtc);
-	XRtcPsu_SecToDateTime(time, & dt);
-
-	* year = (uint_fast16_t) dt.Year;
-	* month = (uint_fast8_t) dt.Month;
-	* day = (uint_fast8_t) dt.Day;
-	* hour = (uint_fast8_t) dt.Hour;
-	* minute = (uint_fast8_t) dt.Min;
-	* secounds = (uint_fast8_t) dt.Sec;
-}
-
-void board_rtc_setdatetime(
-	uint_fast16_t year,
-	uint_fast8_t month,
-	uint_fast8_t dayofmonth,
-	uint_fast8_t hours,
-	uint_fast8_t minutes,
-	uint_fast8_t secounds
-	)
-{
-	XRtcPsu_DT dt;
-	dt.Year = year;
-	dt.Month = month;
-	dt.Day = dayofmonth;
-	dt.Hour = hours;
-	dt.Min = minutes;
-	dt.Sec = secounds;
-	XRtcPsu_SetTime(& xczu_rtc, XRtcPsu_DateTimeToSec(& dt));
-	board_rtc_initialize();
-}
-
-#else
-
 /* вызывается при разрешённых прерываниях. */
 static void board_rtc_initialize(void)
 {
@@ -7515,8 +7582,6 @@ static void board_rtc_initialize(void)
 		//board_rtc_setdate(2016, 3, 1);
 	}
 }
-
-#endif /* RTC1_TYPE */
 
 #else /* defined (RTC1_TYPE) */
 

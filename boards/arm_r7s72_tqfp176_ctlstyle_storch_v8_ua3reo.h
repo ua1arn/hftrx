@@ -271,6 +271,9 @@
 	#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4
 
+	#define WITHVIEW_3DSS		1
+	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHUSEDUALWATCH	1	// Второй приемник
@@ -288,7 +291,7 @@
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	//#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-	#define WITHIFSHIFT	1	/* используется IF SHIFT */
+	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
 	#define WITHCAT			1	/* используется CAT (через USB CDC) */

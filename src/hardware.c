@@ -3670,6 +3670,20 @@ void arm_hardware_reset(void)
 		;
 }
 
+/* разрешение сторожевого таймера в устройстве */
+void watchdog_initialize(void)
+{
+#if CPUSTYLE_STM32MP1
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
+/* перезапуск сторожевого таймера */
+void watchdog_ping(void)
+{
+#if CPUSTYLE_STM32MP1
+#endif /* CPUSTYLE_STM32MP1 */
+}
+
 // optimizer test: from electronix.ru - should be one divmod call
 /*
 uint8_t xxxxxpos(uint8_t num) // num = 0..8

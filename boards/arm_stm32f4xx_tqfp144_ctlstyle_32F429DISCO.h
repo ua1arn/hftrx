@@ -63,12 +63,12 @@
 	#endif
 
 	#if WITHI2SCLOCKFROMPIN
-		#define FPGADECIMATION 2560
-		#define FPGADIVIDERATIO 5
-		#define I2SCLOCKINFREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
-
-		#define ARMI2SMCLK	(REFERENCE_FREQ / FPGADIVIDERATIO / 2)
-		#define ARMSAIMCLK	(REFERENCE_FREQ / FPGADIVIDERATIO / 2)
+//		#define FPGADECIMATION 2560
+//		#define FPGADIVIDERATIO 5
+//		#define I2SCLOCKINFREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
+//
+//		#define ARMI2SMCLK	(REFERENCE_FREQ / FPGADIVIDERATIO / 2)
+//		#define ARMSAIMCLK	(REFERENCE_FREQ / FPGADIVIDERATIO / 2)
 	#else /* WITHI2SCLOCKFROMPIN */
 		// Частота формируется процессором
 		#define ARMI2SMCLK	(12288000UL)
@@ -202,9 +202,9 @@
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
-	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
-	#define LCDMODE_LTDCSDRAMBUFF	1	/* используется область внешнего SDRAM для хранения framebuffer */
-	#define SDRAM_BANK_ADDR     0xD0000000uL
+//	#define LCDMODE_V0	1	/* Обычная конфигурация без PIP с L8 на основном экране */
+//	#define LCDMODE_LTDCSDRAMBUFF	1	/* используется область внешнего SDRAM для хранения framebuffer */
+//	#define SDRAM_BANK_ADDR     0xD0000000uL
 	//#define LCDMODE_WH2002	1	/* тип применяемого индикатора 20*2, возможно вместе с LCDMODE_HARD_SPI */
 	//#define LCDMODE_WH1602	1	/* тип применяемого индикатора 16*2 */
 	//#define LCDMODE_WH1604	1	/* тип применяемого индикатора 16*4 */
@@ -272,14 +272,17 @@
 		#define WITHBBOXMIKESRC	BOARD_TXAUDIO_USB
 	#endif
 
+
+	#define WITHI2SI2S2EXTFULLDUPLEXHW 1
+
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 	//#define WITHFPGAIF_FRAMEBITS 256	// Полный размер фрейма
 	#define WITHFPGAIF_FRAMEBITS 64	// Полный размер фрейма
 	#define WITHFPGAIF_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
-	#define FPGADIVIDERATIO 5
-	#define EXTSAI_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
+	//#define FPGADIVIDERATIO 5
+	//#define EXTSAI_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
 
-	#define EXTI2S_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
+	//#define EXTI2S_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
@@ -478,5 +481,8 @@
 	#define	BOARD_FILTERCODE_1	0
 	#define	BOARD_FILTERCODE_2	0
 	#define	BOARD_FILTERCODE_3	0
+
+
+	#define WITHLCDBACKLIGHTMAX 0	// stub
 
 #endif /* ARM_STM32F4XX_TQFP144_CPUSTYLE_32F429DISCO_H_INCLUDED */

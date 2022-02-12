@@ -716,12 +716,32 @@ FLOAT_t adpt_input(const adapter_t * adp, int32_t v)
 // Преобразование во внешнее представление.
 int32_t adpt_output(const adapter_t * adp, FLOAT_t v)
 {
+	ASSERT(v <= 1);
+	ASSERT(v >= - 1);
+	return (int32_t) (adp->outputK * v) << adp->rightspace;
+}
+
+// Преобразование во внешнее представление.
+int32_t adpt_outputL(const adapter_t * adp, double v)
+{
+	ASSERT(v <= 1);
+	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputK * v) << adp->rightspace;
 }
 
 // точное преобразование во внешнее представление.
 int32_t adpt_outputexact(const adapter_t * adp, FLOAT_t v)
 {
+	ASSERT(v <= 1);
+	ASSERT(v >= - 1);
+	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
+}
+
+// точное преобразование во внешнее представление.
+int32_t adpt_outputexactL(const adapter_t * adp, double v)
+{
+	ASSERT(v <= 1);
+	ASSERT(v >= - 1);
 	return (int32_t) (adp->outputKexact * v) << adp->rightspace;
 }
 
@@ -779,6 +799,10 @@ static void adapterst_initialize(void)
 {
 #if WITHDSPEXTFIR
 	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
+//	PRINTF("fpga coef test: %08lX, %g\n", adpt_outputexact(& fpgafircoefsout, 1.0), 1.0);
+//	PRINTF("fpga coef test: %08lX, %g\n", adpt_outputexact(& fpgafircoefsout, -1.0), -1.0);
+//	PRINTF("fpga coef test: %08lX, %g\n", adpt_outputexact(& fpgafircoefsout, 1.0/2), 1.0/2);
+//	PRINTF("fpga coef test: %08lX, %g\n", adpt_outputexact(& fpgafircoefsout, -1.0/2), -1.0/2);
 #endif /* #if WITHDSPEXTFIR */
 	/* Аудиокодек */
 	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
@@ -1622,7 +1646,10 @@ static FLOAT_t testgain_float_DC(const FLOAT_t * dCoeff, int iCoefNum)
 		dSum += dCoeff [iCnt] * 2;	// Умножение на 2 - так как расчитана половина коэффициентов (симметричный фильтр)
 	}
 	dSum += dCoeff [iHalfLen];		// прогнозируемое усиление для фильтра с float операциями
-	return FABSF(dSum);		// Получаем модуль усиления на постоянной составляющей.
+	//PRINTF("testgain_float_DC: dSum=%f\n", dSum);
+	if (dSum == 0)
+		return 1;
+	return dSum; //FABSF(dSum);		// Получаем модуль усиления на постоянной составляющей.
 }
 
 // Получить усиление фильтра на частоте 0
@@ -2179,12 +2206,27 @@ static void fir_design_lowpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutHigh
 	fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(iCutHigh));
 }
 
+static void printdcoefs(const FLOAT_t * dCoeff, int iCoefNum, int line, const char * file)
+{
+	const int j = NtapCoeffs(iCoefNum);
+	int iCnt;
+	PRINTF("printdcoefs at %s/%d:\n", file, line);
+	for (iCnt = 0; iCnt < j; iCnt ++)
+	{
+		PRINTF("%g,", dCoeff [iCnt]);
+	}
+	PRINTF("(iCnt=%d)\n", iCnt);
+}
 // с управлением крутизной скатов и нормированием усиления, с наложением окна
 static void fir_design_lowpass_freq_scaled(FLOAT_t * dCoeff, const FLOAT_t * dWindow, int iCoefNum, int iCutHigh, FLOAT_t dGain)
 {
 	fir_design_lowpass(dCoeff, iCoefNum, fir_design_normfreq(iCutHigh));
+	//printdcoefs(dCoeff, iCoefNum, __LINE__, __FILE__);
 	fir_design_applaywindow(dCoeff, dWindow, iCoefNum);
+	//printdcoefs(dCoeff, iCoefNum, __LINE__, __FILE__);
 	fir_design_scale(dCoeff, iCoefNum, dGain / testgain_float_DC(dCoeff, iCoefNum));
+	//testgain_float_DC(dCoeff, iCoefNum);
+	//printdcoefs(dCoeff, iCoefNum, __LINE__, __FILE__);
 }
 
 // с управлением крутизной скатов и нормированием усиления, с наложением окна
@@ -2212,7 +2254,7 @@ static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoe
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
 		//lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
-		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);;
+		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);
 	}
 }
 
@@ -2243,7 +2285,7 @@ static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoe
 	for (iCnt = 0; iCnt < j; iCnt ++)
 	{
 		//lCoeff [iCnt] = dCoeff [iCnt] * scaleout;
-		lCoeff [iCnt] = adpt_output(& fpgafircoefsout, dCoeff [iCnt]);;
+		lCoeff [iCnt] = adpt_outputL(& fpgafircoefsout, dCoeff [iCnt]);
 	}
 }
 

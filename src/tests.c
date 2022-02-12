@@ -6448,7 +6448,7 @@ void hightests(void)
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	{
 		PRINTF("GEM0 test:\n");
 
@@ -9497,7 +9497,7 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-#if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	{
 		// калибровка программной задержки
 		for (;;)

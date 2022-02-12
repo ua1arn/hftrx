@@ -21,9 +21,11 @@
 3.4 В верхнем меню Help -> Eclipse Marketplace, используя поиск, устанавливаем расширение GNU MCU Eclipse
 
 4. Собираем проект <br>
-4.1 Скачаваем последнюю версию проекта командой "git clone https://github.com/ua1arn/hftrx" <br>
-4.2 Открываем проект через File -> Open projects from File System
-4.3 Копируем файл product.h.prototype в product.h <br>
+4.1 Скачаваем последнюю версию проекта командой "git clone https://github.com/ua1arn/hftrx hftrx" <br>
+4.2 Перходим в каталог hftrx "cd hftrx"<br>
+4.3 Скачиваем субмодули "git submodule update --init --recursive" <br>
+4.4 Открываем проект через File -> Open projects from File System
+4.5 Копируем файл product.h.prototype в product.h <br>
 
 4.4 Раскомментируем нужные нам константы с выбранной конфигурацией <br>
 4.5 В меню Eclipse, Project -> Build configurations -> Set active выбираем необходимый процессор (или через выпадающее меню с молотком в ToolBox). Build target выбираем default.

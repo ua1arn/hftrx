@@ -43,9 +43,9 @@ EndBSPDependencies */
 
 // В случае USB HS в таймаутах используется x8
 #if WITHUSBHOST_HIGHSPEEDPHYC || WITHUSBHOST_HIGHSPEEDULPI
-	#define TIMERFRAMES(v) ((unsigned long) (v) * 8)
+	#define TIMERFRAMES(v) ((uint32_t) (v) * 8)
 #else
-	#define TIMERFRAMES(v) ((unsigned long) (v) * 1)
+	#define TIMERFRAMES(v) ((uint32_t) (v) * 1)
 #endif
 
 /** @addtogroup USBH_LIB

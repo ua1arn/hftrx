@@ -62,41 +62,6 @@ extern const FLASHMEM uint8_t ltdc_CenturyGothic_half [12][56][4];
 
 #endif /* LCDMODE_LTDC */
 
-#if  LCDMODE_ST7735 || LCDMODE_ILI9163 || LCDMODE_ILI9341
-
-	#if DSTYLE_G_X320_Y240
-		// LCDMODE_ILI9341
-
-		// Для дисплеев 320 * 240
-		#include "./fonts/ILI9341_font_small.h"
-		#include "./fonts/ILI9341_font_half.h"
-		#include "./fonts/ILI9341_font_big.h"
-
-		#define    ls020_smallfont    ILI9341_smallfont
-		#define    ls020_halffont    ILI9341_halffont
-		#define    ls020_bigfont    ILI9341_bigfont
-
-
-		#define BIGCHARH xx40	// st7735
-		#define SMALLCHARH xx40	// st7735
-
-
-	#else /* DSTYLE_G_X320_Y240 */
-		// LCDMODE_ST7735 - 160 * 128
-		// LCDMODE_ILI9163 - 176 * 132
-
-		//#include "./fonts/ls020_font_small.h"
-		//#include "./fonts/ls020_font_half.h"
-		//#include "./fonts/ls020_font_big.h"
-		#define BIGCHARH 32 /* Font height */
-		#define SMALLCHARH 16 /* Font height */
-
-	#endif /* DSTYLE_G_X320_Y240 */
-
-#else
-
-#endif
-
 #if FONTSHERE
 
 #if LCDMODE_DUMMY || LCDMODE_HD44780
