@@ -8627,6 +8627,13 @@ static void wfj3dss_poke(uint_fast16_t x, uint_fast16_t y, WFL3DSS_T val)
 }
 #endif /* WITHVIEW_3DSS */
 
+static
+PACKEDCOLORMAIN_T *
+atwflj(uint_fast16_t x, uint_fast16_t y)
+{
+	return colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, x, y);
+}
+
 // стираем буфер усреднения FFT
 static void fft_avg_clear(void)
 {
@@ -8693,9 +8700,9 @@ static void wflshiftleft(uint_fast16_t pixels)
         for (y = 0; y < WFROWS; ++ y)
     	{
     		memmove(
-    				colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, 0, y),		// to
-    				colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, pixels, y),	// from
-    				(ALLDX - pixels) * sizeof gvars.u.wfjarray [0]
+    				atwflj(0, y),		// to
+    				atwflj(pixels, y),	// from
+    				(ALLDX - pixels) * sizeof (PACKEDCOLORMAIN_T)
     		);
     	}
         // заполнение вновь появившегося прямоугольника
@@ -8741,9 +8748,9 @@ static void wflshiftright(uint_fast16_t pixels)
     	for (y = 0; y < WFROWS; ++ y)
     	{
 			memmove(
-					colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, pixels, y),	// to
-					colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, 0, y),		// from
-					(ALLDX - pixels) * sizeof gvars.u.wfjarray [0]
+					atwflj(pixels, y),	// to
+					atwflj(0, y),		// from
+					(ALLDX - pixels) * sizeof (PACKEDCOLORMAIN_T)
 				);
     	}
         // заполнение вновь появившегося прямоугольника
@@ -9516,7 +9523,7 @@ static void display2_waterfall(
 					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
 					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
-					colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
+					atwflj(0, wfrow),	// начальный адрес источника
 					ALLDX, p1h);	// размеры источника
 		}
 		if (p2h != 0)
@@ -9526,7 +9533,7 @@ static void display2_waterfall(
 					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
 					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
-					colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
+					atwflj(0, 0),	// начальный адрес источника
 					ALLDX, p2h);	// размеры источника
 		}
 	}
@@ -9544,7 +9551,7 @@ static void display2_waterfall(
 		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, x, (wfrow + y) % WFDY)]);
+			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* atwflj(x, (wfrow + y) % WFDY)]);
 		}
 	}
 
