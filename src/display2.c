@@ -9186,6 +9186,8 @@ static void display2_spectrum(
 						const int val = dsp_mag2y(filter_spectrum(x), SPY_3DSS - 1, glob_topdb, glob_bottomdb);
 						uint_fast16_t ynew = spy - 1 - val;
 						uint_fast16_t dy, j;
+						ASSERT(x < ALLDX);
+						ASSERT(current_3dss_step < WFROWS);
 						* colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, current_3dss_step) = val;
 
 						for (dy = spy - 1, j = 0; dy > ynew; dy --, j ++)
