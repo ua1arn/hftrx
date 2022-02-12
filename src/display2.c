@@ -8646,8 +8646,7 @@ static void wflclear(void)
     {
 #if WITHVIEW_3DSS
     case VIEW_3DSS:
-    	// Работа с wfl3dss
-    	memset(ADDR_WFL3DSS, 0, SIZEOF_WFL3DSS);
+     	memset(ADDR_WFL3DSS, 0, SIZEOF_WFL3DSS);
     	break;
 #endif /* WITHVIEW_3DSS */
 
@@ -8678,8 +8677,7 @@ static void wflshiftleft(uint_fast16_t pixels)
     {
 #if WITHVIEW_3DSS
     case VIEW_3DSS:
-    	// Работа с wfl3dss
-        for (y = 0; y < MAX_3DSS_STEP; ++ y)
+         for (y = 0; y < MAX_3DSS_STEP; ++ y)
      	{
      		memmove(
      				atwfj3dss(0, y),			// to
@@ -8727,9 +8725,8 @@ static void wflshiftright(uint_fast16_t pixels)
     {
 #if WITHVIEW_3DSS
     case VIEW_3DSS:
-    	// Работа с wfl3dss
        	for (y = 0; y < MAX_3DSS_STEP; ++ y)
-        	{
+		{
        		memmove(
        				atwfj3dss(pixels, y),	// to
 					atwfj3dss(0, y),		// from
