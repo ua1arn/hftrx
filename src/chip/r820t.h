@@ -76,8 +76,6 @@ int r820t_standby(void);
 
 static int r820t_read_cache_reg(r820t_priv_t *priv, int reg);
 
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-
 /* Tuner frequency ranges */
 struct r820t_freq_range
 {
@@ -1038,7 +1036,7 @@ r820t_setfreq(
 			gcalibrated = 1;
 
 			//r820t0.xtal_freq = 16000000uL;
-			r820t0.xtal_freq = 28800000uL;
+			//r820t0.xtal_freq = 28800000uL;
 			///r820t0.xtal_freq = 28808844uL;
 			r820t0.xtal_freq = R820T_REFERENCE;
 			r820t0.if_freq = R820T_IFFREQ;
