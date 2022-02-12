@@ -7987,6 +7987,8 @@ enum {
 
 #endif /* WITHVIEW_3DSS */
 
+typedef int16_t WFL3DSS_T;
+
 struct ustates
 {
 #if defined(ARM_MATH_NEON)
@@ -8002,7 +8004,13 @@ struct ustates
 	FLOAT_t spavgarray [ALLDX];	// массив входных данных для отображения (через фильтры).
 	FLOAT_t Yold_wtf [ALLDX];
 	FLOAT_t Yold_spe [ALLDX];
-	PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
+	union
+	{
+		PACKEDCOLORMAIN_T wfjarray [GXSIZE(ALLDX, WFROWS)];	// массив "водопада"
+#if WITHVIEW_3DSS
+		WFL3DSS_T wfj3dss [MAX_3DSS_STEP] [ALLDX];
+#endif /* WITHVIEW_3DSS */
+	} u;
 	PACKEDCOLORMAIN_T color_scale [SPDY];	/* массив значений для раскраски спектра */
 
 #if WITHAFSPECTRE
@@ -8598,16 +8606,14 @@ static uint_fast8_t wfclear;			// стирание всей областии о�
 
 #if WITHVIEW_3DSS
 
-typedef int16_t WFL3DSS_T;
-#define WFL3DSS ((WFL3DSS_T *) & gvars.wfjarray)
-#define SIZEOF_WFL3DSS (ALLDX * MAX_3DSS_STEP * sizeof (WFL3DSS_T))
+#define SIZEOF_WFL3DSS (sizeof gvars.u.wfj3dss)
+#define ADDR_WFL3DSS (gvars.u.wfj3dss)
 
 static WFL3DSS_T * atwfj3dss(uint_fast16_t x, uint_fast16_t y)
 {
-	ASSERT(SIZEOF_WFL3DSS <= sizeof gvars.wfjarray);
 	ASSERT(x < ALLDX);
 	ASSERT(y < MAX_3DSS_STEP);
-	return & WFL3DSS [y * ALLDX + x];
+	return & gvars.u.wfj3dss [y][x];
 }
 
 static uint_fast16_t wfj3dss_peek(uint_fast16_t x, uint_fast16_t y)
@@ -8641,12 +8647,12 @@ static void wflclear(void)
 #if WITHVIEW_3DSS
     case VIEW_3DSS:
     	// Работа с wfl3dss
-    	memset(WFL3DSS, 0, SIZEOF_WFL3DSS);
+    	memset(ADDR_WFL3DSS, 0, SIZEOF_WFL3DSS);
     	break;
 #endif /* WITHVIEW_3DSS */
 
     default:
-    	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
+    	colmain_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0, ALLDX, WFROWS, display2_bgcolorwfl());
     	break;
     }
 }
@@ -8689,13 +8695,13 @@ static void wflshiftleft(uint_fast16_t pixels)
         for (y = 0; y < WFROWS; ++ y)
     	{
     		memmove(
-    				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),		// to
-    				colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),	// from
-    				(ALLDX - pixels) * sizeof gvars.wfjarray [0]
+    				colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, 0, y),		// to
+    				colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, pixels, y),	// from
+    				(ALLDX - pixels) * sizeof gvars.u.wfjarray [0]
     		);
     	}
         // заполнение вновь появившегося прямоугольника
-    	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, WFROWS, display2_bgcolorwfl());
+    	colmain_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, ALLDX - pixels, 0, pixels, WFROWS, display2_bgcolorwfl());
      	break;
     }
 }
@@ -8738,13 +8744,13 @@ static void wflshiftright(uint_fast16_t pixels)
     	for (y = 0; y < WFROWS; ++ y)
     	{
 			memmove(
-					colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, pixels, y),	// to
-					colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, y),		// from
-					(ALLDX - pixels) * sizeof gvars.wfjarray [0]
+					colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, pixels, y),	// to
+					colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, 0, y),		// from
+					(ALLDX - pixels) * sizeof gvars.u.wfjarray [0]
 				);
     	}
         // заполнение вновь появившегося прямоугольника
-    	colmain_fillrect(gvars.wfjarray, ALLDX, WFROWS, 0, 0, pixels, WFROWS, display2_bgcolorwfl());
+    	colmain_fillrect(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0, pixels, WFROWS, display2_bgcolorwfl());
      	break;
     }
 }
@@ -9423,11 +9429,11 @@ static void display2_latchwaterfall(
 			// для водопада
 			const int val = dsp_mag2y(filter_waterfall(x), PALETTESIZE - 1, glob_wflevelsep ? glob_topdbwf : glob_topdb, glob_wflevelsep ? glob_bottomdbwf : glob_bottomdb); // возвращает значения от 0 до dy включительно
 		#if LCDMODE_MAIN_L8
-			colmain_putpixel(gvars.wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
+			colmain_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, val);	// запись в буфер водопада индекса палитры
 		#else /* LCDMODE_MAIN_L8 */
 			ASSERT(val >= 0);
 			ASSERT(val < ARRAY_SIZE(wfpalette));
-			colmain_putpixel(gvars.wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
+			colmain_putpixel(gvars.u.wfjarray, ALLDX, WFROWS, x, wfrow, wfpalette [val]);	// запись в буфер водопада цветовой точки
 		#endif /* LCDMODE_MAIN_L8 */
 		}
 	}
@@ -9512,8 +9518,8 @@ static void display2_waterfall(
 			colpip_plot(
 					(uintptr_t) colorpip, GXSIZE(BUFDIM_X, BUFDIM_Y) * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p1y,
-					(uintptr_t) gvars.wfjarray, sizeof (* gvars.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
-					colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
+					(uintptr_t) gvars.u.wfjarray, sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// папаметры для clean
+					colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, 0, wfrow),	// начальный адрес источника
 					ALLDX, p1h);	// размеры источника
 		}
 		if (p2h != 0)
@@ -9522,8 +9528,8 @@ static void display2_waterfall(
 			colpip_plot(
 					(uintptr_t) colorpip, 0 * sizeof (PACKEDCOLORMAIN_T),
 					colorpip, BUFDIM_X, BUFDIM_Y, 0, p2y,
-					(uintptr_t) gvars.wfjarray, 0 * sizeof (* gvars.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
-					colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
+					(uintptr_t) gvars.u.wfjarray, 0 * sizeof (* gvars.u.wfjarray) * GXSIZE(ALLDX, WFROWS),	// размер области 0 - ранее уже вызывали clean
+					colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, 0, 0),	// начальный адрес источника
 					ALLDX, p2h);	// размеры источника
 		}
 	}
@@ -9541,7 +9547,7 @@ static void display2_waterfall(
 		uint_fast16_t x;
 		for (x = 0; x < ALLDX; ++ x)
 		{
-			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(gvars.wfjarray, ALLDX, WFROWS, x, (wfrow + y) % WFDY)]);
+			colpip_point(colorpip, BUFDIM_X, BUFDIM_Y, x, y + WFY0, wfpalette [* colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, x, (wfrow + y) % WFDY)]);
 		}
 	}
 
