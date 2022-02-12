@@ -7510,9 +7510,7 @@ void board_initialize(void)
 	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
 #endif /* WITHDSPEXTFIR */
 
-#if WITHCPUADCHW
-	board_adc_initialize();
-#endif /* WITHCPUADCHW */
+	board_adc_initialize();		// кроме аппартных ADC инициализируются и фильтры , которые испольщубтся даже если нет встроенного АЦП
 
 #if defined (BOARD_BLINK_SETSTATE)
 	{
