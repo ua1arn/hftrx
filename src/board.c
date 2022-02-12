@@ -8639,7 +8639,7 @@ typedef struct boardadc_tag
 
 	volatile adcvalholder_t adc_data_raw;	// входные данные для фильтра
 	adcvalholder_t adc_data_filtered;		// выход фильтра
-	uint8_t adc_data_smoothed_u8;		// выход фильтра
+	//uint8_t adc_data_smoothed_u8;		// выход фильтра
 	uint8_t adc_filter;			/* методы фильтрации данных */
 	void * lpf;
 } boardadc_t;
@@ -8777,24 +8777,6 @@ uint_fast16_t board_getpot_filtered_u16(uint_fast8_t adci, uint_fast16_t lower, 
 	const uint_fast16_t v = lower + ((uint_fast32_t) filter_hyst(data, t) * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
 	return v;
-}
-
-/* при изменении отфильтрованного значения этого АЦП в диапазоне lower..upper (включая границы)
-    возвращаемое значение на каждом вызове приближается к нему на единицу
-*/
-uint_fast8_t board_getadc_smoothed_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)
-{
-	ASSERT(adci < HARDWARE_ADCINPUTS);
-	boardadc_t * const padcs = & badcst [adci];
-	const uint_fast8_t r = padcs->adc_data_smoothed_u8; // ранее возвращённое значение для данного АЦП
-	const adcvalholder_t t = board_getadc_filtered_truevalue(adci);	// текущее отфильтрованное значение данного АЦП
-	const uint_fast8_t v = lower + ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
-	if (r > v)
-		padcs->adc_data_smoothed_u8 -= 1;
-	else if (r < v)
-		padcs->adc_data_smoothed_u8 += 1;
-	ASSERT(v >= lower && v <= upper);
-	return r;
 }
 
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
