@@ -174,7 +174,7 @@ static uint_fast8_t GetReadyList3(const LIST_HEAD3 * ListHead)
 }
 
 #define LIST3PRINT(name) do { \
-		PRINTF(PSTR(# name "[%3d] "), (int) GetCountList3(& (name))); \
+		PRINTF(PSTR(# name "[%3d,rdy=%d(%u)] "), (int) GetCountList3(& (name)), (int) GetReadyList3(& (name)), (unsigned) (name).RdyLevel); \
 	} while (0)
 
 #if 0
@@ -1163,12 +1163,12 @@ buffers_savefromuacout(voice16_t * p)
 // 16 bit, signed
 // в паре значений, возвращаемых данной функцией, vi получает значение от микрофона. vq зарезервированно для работы ISB (две независимых боковых)
 // При отсутствии данных в очереди - возвращаем 0
-// TODO: переделаь на denoise16_t
+// TODO: переделать на denoise16_t
 RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 {
 	enum { L, R };
-	static voice16_t * RAMBIGDTCM_MDMA p = NULL;
-	static RAMBIGDTCM_MDMA unsigned pos = 0;	// позиция по выходному количеству
+	static voice16_t * p = NULL;
+	static unsigned pos = 0;	// позиция по выходному количеству
 
 	if (p == NULL)
 	{
@@ -1208,8 +1208,8 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 RAMFUNC uint_fast8_t getsampmlemoni(FLOAT32P_t * v)
 {
 	enum { L, R };
-	static voice16_t * RAMBIGDTCM_MDMA p = NULL;
-	static RAMBIGDTCM_MDMA unsigned pos = 0;	// позиция по выходному количеству
+	static voice16_t * p = NULL;
+	static unsigned pos = 0;	// позиция по выходному количеству
 
 	if (p == NULL)
 	{
@@ -1251,8 +1251,8 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
-	static voice16_t * RAMBIGDTCM_MDMA p = NULL;
-	static RAMBIGDTCM_MDMA unsigned n;
+	static voice16_t * p = NULL;
+	static unsigned n;
 
 	if (p == NULL)
 	{
@@ -1425,11 +1425,11 @@ static RAMFUNC unsigned getsamplemsuacout(
 	unsigned size		// количество оставшихся одиночных сэмплов
 	)
 {
-	static voice16_t * RAMBIGDTCM_MDMA p = NULL;
+	static voice16_t * p = NULL;
 	enum { NPARTS = 3 };
-	static RAMBIGDTCM_MDMA uint_fast8_t part = 0;
-	static aubufv_t * RAMBIGDTCM_MDMA datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
-	static RAMBIGDTCM_MDMA unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
+	static uint_fast8_t part = 0;
+	static aubufv_t * datas [NPARTS] = { NULL, NULL };		// начальный адрес пары сэмплов во входном буфере
+	static unsigned sizes [NPARTS] = { 0, 0 };			// количество сэмплов во входном буфере
 
 	static unsigned skipsense = SKIPPED;
 
@@ -1551,7 +1551,7 @@ static RAMFUNC void buffers_resample(void)
 // Параметр - количество сэмплов (стерео пар или квадратур) в обмене этого обработчика.
 void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 {
-	static RAMBIGDTCM_MDMA unsigned n = 0;
+	static unsigned n = 0;
 	n += nsamples;
 	while (n >= CNT16)
 	{
@@ -2163,8 +2163,8 @@ uintptr_t getfilled_dmabuffer16phones(void)
 // 32 bit, signed
 void savesampleout32stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
-	static voice32tx_t * RAMBIGDTCM_MDMA prepareout32tx = NULL;
-	static RAMBIGDTCM_MDMA unsigned level32tx;
+	static voice32tx_t * prepareout32tx = NULL;
+	static unsigned level32tx;
 
 	if (prepareout32tx == NULL)
 	{
@@ -2192,8 +2192,8 @@ static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
-	static voice16_t * RAMBIGDTCM_MDMA p = NULL;
-	static RAMBIGDTCM_MDMA unsigned n;
+	static voice16_t * p = NULL;
+	static unsigned n;
 
 	if (p == NULL)
 	{
@@ -2226,8 +2226,8 @@ static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 {
 	enum { L, R };
 	// если есть инициализированный канал для выдачи звука
-	static voice16_t * RAMBIGDTCM_MDMA p = NULL;
-	static RAMBIGDTCM_MDMA unsigned n;
+	static voice16_t * p = NULL;
+	static unsigned n;
 
 	if (p == NULL)
 	{
@@ -2386,8 +2386,8 @@ static void savesampleout16stereo_float(void * ctx, FLOAT_t ch0, FLOAT_t ch1)
 		void savesampleout96stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1)
 		{
 			// если есть инициализированный канал для выдачи звука
-			static voice96rts_t * RAMBIGDTCM_MDMA p = NULL;
-			static RAMBIGDTCM_MDMA unsigned n;
+			static voice96rts_t * p = NULL;
+			static unsigned n;
 
 			if (p == NULL)
 			{
