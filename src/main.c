@@ -6418,7 +6418,7 @@ struct enc2menu
 	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* nvramoffs)(nvramaddress_t base, uint_fast8_t save);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	nvramaddress_t (* nvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 	unsigned (* valoffset)(void);
 	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит. Массив, индексируется по значению от valoffset. */
 	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит. Массив, индексируется по значению от valoffset. */
@@ -6448,12 +6448,12 @@ static unsigned valoffset_bi_a(void)
 }
 
 
-static nvramaddress_t nvramoffs0(nvramaddress_t base, uint_fast8_t save)
+static nvramaddress_t nvramoffs0(nvramaddress_t base)
 {
 	return base;
 }
 
-static nvramaddress_t nvramoffs_band_a(nvramaddress_t base, uint_fast8_t save)
+static nvramaddress_t nvramoffs_band_a(nvramaddress_t base)
 {
 	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const vindex_t b = getvfoindex(bi);
@@ -6474,7 +6474,7 @@ enc2savemenuvalue(
 	const FLASHMEM struct enc2menu * mp
 	)
 {
-	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase, 1);
+	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase);
 	const uint_fast16_t * const pv16 = mp->pval16;
 	const uint_fast8_t * const pv8 = mp->pval8;
 	const unsigned valoffset = mp->valoffset(); //ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
@@ -14974,7 +14974,7 @@ struct menudef
 	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, uint_fast8_t save);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 
 	uint_fast16_t * qpval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * qpval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
@@ -18522,6 +18522,7 @@ ismenufilterlsb(
 /* Загрузка значений из NVRAM в переменные программы.
    Значением по умолчанию является то, на которое
    переменная инициализированна при запуске программы.
+   Не восстанавливаем "массивы"
    see also loadsavedstate().
    */
 static void 
@@ -18533,24 +18534,23 @@ loadsettings(void)
 	for (i = 0; i < MENUROW_COUNT; ++ i)
 	{
 		const FLASHMEM struct menudef * const mp = & menutable [i];
-		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM))
+		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM) && ! ismenukind(mp, ITEM_ARRAY_BI))
 		{
-			const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram, 0);
+			const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram);
 			const uint_fast16_t bottom = mp->qbottom;
 			const uint_fast16_t upper = mp->qupper;
 			uint_fast16_t * const pv16 =  mp->qpval16;
 			uint_fast8_t * const pv8 = mp->qpval8;
+			const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 
 			if (nvram == MENUNONVRAM)
 				continue;
 			if (pv16 != NULL)
 			{
-				const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 				pv16 [valoffset] = loadvfy16up(nvram, bottom, upper, pv16 [valoffset]);
 			}
 			else if (pv8 != NULL)
 			{
-				const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 				pv8 [valoffset] = loadvfy8up(nvram, bottom, upper, pv8 [valoffset]);
 			}
 		}
@@ -18566,7 +18566,7 @@ savemenuvalue(
 {
 	if (ismenukind(mp, ITEM_VALUE))
 	{
-		const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram, 1);
+		const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram);
 		const uint_fast16_t * const pv16 = mp->qpval16;
 		const uint_fast8_t * const pv8 = mp->qpval8;
 		const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
@@ -20951,7 +20951,7 @@ hamradio_initialize(void)
 {
 	/* NVRAM уже можно пользоваться */
 #if WITHMENU && ! HARDWARE_IGNORENONVRAM
-	loadsettings();		/* загрузка всех установок из nvram */
+	loadsettings();		/* загрузка всех установок из nvram. Не восстанавливаем "массивы" */
 #endif /* WITHMENU && ! HARDWARE_IGNORENONVRAM */
 	//extmenu = extmenu || alignmode;
 	loadsavedstate();	// split, lock, s-meter display, see also loadsettings().
@@ -22737,7 +22737,7 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
 	gzoomxpow2 [bi] = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gzoomxpow2), 1), gzoomxpow2 [bi]);
+	save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gzoomxpow2)), gzoomxpow2 [bi]);
 	updateboard(1, 0);
 }
 
@@ -22763,7 +22763,7 @@ uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gtopdbspe), 1), gtopdbspe [bi]);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gtopdbspe)), gtopdbspe [bi]);
 		updateboard(1, 0);
 	}
 
@@ -22780,7 +22780,7 @@ uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gbottomdbspe), 1), gbottomdbspe [bi]);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gbottomdbspe)), gbottomdbspe [bi]);
 		updateboard(1, 0);
 	}
 
@@ -22797,7 +22797,7 @@ uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gtopdbwfl), 1), gtopdbwfl [bi]);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gtopdbwfl)), gtopdbwfl [bi]);
 		updateboard(1, 0);
 	}
 
@@ -22814,7 +22814,7 @@ uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gbottomdbwfl), 1), gbottomdbwfl [bi]);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gbottomdbwfl)), gbottomdbwfl [bi]);
 		updateboard(1, 0);
 	}
 
