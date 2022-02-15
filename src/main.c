@@ -2768,10 +2768,10 @@ struct bandinfo
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
 	uint8_t gzoomxpow2;	/* уменьшение отображаемого участка спектра */
-	uint8_t gtopdb;		/* нижний предел FFT */
-	uint8_t gbottomdb;	/* верхний предел FFT */
-	uint8_t gtopdbwf;		/* нижний предел FFT waterflow */
-	uint8_t gbottomdbwf;	/* верхний предел FFT waterflow */
+	uint8_t gtopdbspe;		/* нижний предел FFT */
+	uint8_t gbottomdbspe;	/* верхний предел FFT */
+	uint8_t gtopdbwfl;		/* нижний предел FFT waterflow */
+	uint8_t gbottomdbwfl;	/* верхний предел FFT waterflow */
 #endif /* WITHSPECTRUMWF */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
@@ -3594,12 +3594,12 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #else
 	static uint_fast8_t gview3dss_mark = 0;
 #endif
-	static uint_fast8_t gtopdb = WITHTOPDBDEFAULT;	/* верхний предел FFT */
-	static uint_fast8_t gbottomdb = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT */
-	static uint_fast8_t gtopdbwf = WITHTOPDBDEFAULT;	/* верхний предел FFT waterflow*/
-	static uint_fast8_t gbottomdbwf = WITHBOTTOMDBDEFAULT;	/* нижний предел FFT waterflow */
+	static uint_fast8_t gtopdbspe [VFOS_COUNT] = { WITHTOPDBDEFAULT, WITHTOPDBDEFAULT, };	/* верхний предел FFT */
+	static uint_fast8_t gbottomdbspe [VFOS_COUNT] = { WITHBOTTOMDBDEFAULT, WITHBOTTOMDBDEFAULT, };	/* нижний предел FFT */
+	static uint_fast8_t gtopdbwfl [VFOS_COUNT] = { WITHTOPDBDEFAULT, WITHTOPDBDEFAULT, };	/* верхний предел FFT waterflow*/
+	static uint_fast8_t gbottomdbwfl [VFOS_COUNT] = { WITHBOTTOMDBDEFAULT, WITHBOTTOMDBDEFAULT, };	/* нижний предел FFT waterflow */
 	static uint_fast8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
-	static uint_fast8_t gzoomxpow2;		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
+	static uint_fast8_t gzoomxpow2 [VFOS_COUNT];		/* степень двойки - состояние растягиваия спектра (уменьшение наблюдаемой полосы частот) */
 	static uint_fast8_t gtxloopback = 1;	/* включение спектроанализатора сигнала передачи */
 	static int_fast16_t gafspeclow = 100;	// нижняя частота отображения спектроанализатора
 	static int_fast16_t gafspechigh = 4000;	// верхняя частота отображения спектроанализатора
@@ -6068,7 +6068,7 @@ uint_fast32_t hamradio_get_freq_rx(void)
 // Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_a(void)
 {
-	return gfreqs [getbankindex_ab_fordisplay(0)];
+	return gfreqs [getbankindex_ab_fordisplay(0)];		/* VFO A modifications */
 }
 // Частота VFO A для отображения на дисплее
 uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
@@ -6078,19 +6078,19 @@ uint_fast32_t hamradio_get_freq_pathi(uint_fast8_t pathi)
 // SSB/CW/AM/FM/..
 const FLASHMEM char * hamradio_get_mode_a_value_P(void)
 {
-	return submodes [getsubmode(getbankindex_ab_fordisplay(0))].qlabel;
+	return submodes [getsubmode(getbankindex_ab_fordisplay(0))].qlabel;	/* VFO A modifications */
 }
 
 // SSB/CW/AM/FM/..	
 const FLASHMEM char * hamradio_get_mode_b_value_P(void)
 {
-	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;
+	return submodes [getsubmode(getbankindex_ab_fordisplay(1))].qlabel;	/* VFO B modifications */
 }
 
 // Частота VFO B для отображения на дисплее
 uint_fast32_t hamradio_get_freq_b(void)
 {
-	return gfreqs [getbankindex_ab_fordisplay(1)];
+	return gfreqs [getbankindex_ab_fordisplay(1)];	/* VFO B modifications */
 }
 
 	enum { withonlybands = 0 };
@@ -6181,11 +6181,11 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
-	save_i8(offsetof(struct nvmap, bands[b].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
-	save_i8(offsetof(struct nvmap, bands[b].gtopdb), gtopdb);	/* нижний предел FFT */
-	save_i8(offsetof(struct nvmap, bands[b].gbottomdb), gbottomdb);	/* верхний предел FFT */
-	save_i8(offsetof(struct nvmap, bands[b].gtopdbwf), gtopdbwf);	/* нижний предел FFT waterflow */
-	save_i8(offsetof(struct nvmap, bands[b].gbottomdbwf), gbottomdbwf);	/* верхний предел FFT waterflow */
+	save_i8(offsetof(struct nvmap, bands[b].gzoomxpow2), gzoomxpow2 [bi]);	/* уменьшение отображаемого участка спектра */
+	save_i8(offsetof(struct nvmap, bands[b].gtopdbspe), gtopdbspe [bi]);	/* нижний предел FFT */
+	save_i8(offsetof(struct nvmap, bands[b].gbottomdbspe), gbottomdbspe [bi]);	/* верхний предел FFT */
+	save_i8(offsetof(struct nvmap, bands[b].gtopdbwfl), gtopdbwfl [bi]);	/* нижний предел FFT waterflow */
+	save_i8(offsetof(struct nvmap, bands[b].gbottomdbwfl), gbottomdbwfl [bi]);	/* верхний предел FFT waterflow */
 #endif /* WITHSPECTRUMWF */
 }
 
@@ -6419,9 +6419,9 @@ struct enc2menu
 
 	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
 	nvramaddress_t (* nvramoffs)(nvramaddress_t base, uint_fast8_t save);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
-
-	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит */
-	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
+	unsigned (* valoffset)(void);
+	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит. Массив, индексируется по значению от valoffset. */
+	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит. Массив, индексируется по значению от valoffset. */
 	int_fast32_t (* funcoffs)(void);	/* при отображении и использовании добавляется число отсюда */
 	void (* adjust)(const FLASHMEM struct enc2menu * mp, int_least16_t nrotate);
 };
@@ -6437,20 +6437,32 @@ static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 };
 
+static unsigned valoffset0(void)
+{
+	return 0;
+}
+
+static unsigned valoffset_bi_a(void)
+{
+	return getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+}
+
+
 static nvramaddress_t nvramoffs0(nvramaddress_t base, uint_fast8_t save)
 {
 	return base;
 }
 
-static nvramaddress_t nvramoffs_band(nvramaddress_t base, uint_fast8_t save)
+static nvramaddress_t nvramoffs_band_a(nvramaddress_t base, uint_fast8_t save)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const vindex_t b = getvfoindex(bi);
 
 	ASSERT(base != MENUNONVRAM);
 
 	if (base == MENUNONVRAM)
 		return MENUNONVRAM;
+
 	//
 	// для диапазонов - вычисляем шаг увеличения индекса по массиву хранения в диапазонах
 	return base + RMT_BFREQ_BASE(b) - RMT_BFREQ_BASE(0);
@@ -6471,11 +6483,13 @@ enc2savemenuvalue(
 
 	if (pv16 != NULL)
 	{
-		save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
+		const unsigned valoffset = mp->valoffset(); //ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+		save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
 	}
 	else if (pv8 != NULL)
 	{
-		save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
+		const unsigned valoffset = mp->valoffset(); //ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+		save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 	}
 	else
 	{
@@ -6502,13 +6516,15 @@ enc2menu_adjust(
 		const uint_fast32_t bottom = mp->bottom;
 		if (pv16 != NULL)
 		{
-			* pv16 =
-				prevfreq(* pv16, * pv16 - (- nrotate * step), step, bottom);
+			const unsigned valoffset = mp->valoffset();
+			pv16 [valoffset] =
+				prevfreq(pv16 [valoffset], pv16 [valoffset] - (- nrotate * step), step, bottom);
 		}
 		else if (pv8 != NULL)
 		{
-			* pv8 =
-				prevfreq(* pv8, * pv8 - (- nrotate * step), step, bottom);
+			const unsigned valoffset = mp->valoffset();
+			pv8 [valoffset] =
+				prevfreq(pv8 [valoffset], pv8 [valoffset] - (- nrotate * step), step, bottom);
 		}
 		enc2savemenuvalue(mp);
 	}
@@ -6518,13 +6534,15 @@ enc2menu_adjust(
 		const uint_fast32_t upper = mp->upper;
 		if (pv16 != NULL)
 		{
-			* pv16 =
-				nextfreq(* pv16, * pv16 + (nrotate * step), step, upper + (uint_fast32_t) step);
+			const unsigned valoffset = mp->valoffset();
+			pv16 [valoffset] =
+				nextfreq(pv16 [valoffset], pv16 [valoffset] + (nrotate * step), step, upper + (uint_fast32_t) step);
 		}
 		else
 		{
-			* pv8 =
-				nextfreq(* pv8, * pv8 + (nrotate * step), step, upper + (uint_fast32_t) step);
+			const unsigned valoffset = mp->valoffset();
+			pv8 [valoffset] =
+				nextfreq(pv8 [valoffset], pv8 [valoffset] + (nrotate * step), step, upper + (uint_fast32_t) step);
 		}
 		enc2savemenuvalue(mp);
 	}
@@ -6543,6 +6561,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		BOARD_AFGAIN_MIN, BOARD_AFGAIN_MAX, 					// Громкость в процентах
 		offsetof(struct nvmap, afgain1),
 		nvramoffs0,
+		valoffset0,
 		& afgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6557,6 +6576,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		BOARD_IFGAIN_MIN, BOARD_IFGAIN_MAX, 					// Усиление ПЧ/ВЧ в процентах
 		offsetof(struct nvmap, rfgain1),
 		nvramoffs0,
+		valoffset0,
 		& rfgain1.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6572,6 +6592,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		CWWPMMIN, CWWPMMAX,		// minimal WPM = 10, maximal = 60 (also changed by command KS).
 		offsetof(struct nvmap, elkeywpm),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& elkeywpm.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6587,6 +6608,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, 150,		/* используется при калибровке параметров интерполятора */
 		offsetof(struct nvmap, gdesignscale),
 		nvramoffs0,
+		valoffset0,
 		& gdesignscale,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6601,6 +6623,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHPOWERTRIMMIN, WITHPOWERTRIMMAX,
 		offsetof(struct nvmap, gnormalpower),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gnormalpower.value,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6615,6 +6638,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, sizeof gsubtones / sizeof gsubtones [0] - 1, 
 		offsetof(struct nvmap, gsubtonei),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gsubtonei,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6629,6 +6653,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, 
 		offsetof(struct nvmap, gmik1level),	/* усиление микрофонного усилителя */
 		nvramoffs0,
+		valoffset0,
 		& gmik1level,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6643,6 +6668,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHMIKECLIPMIN, WITHMIKECLIPMAX, 		/* Ограничение */
 		offsetof(struct nvmap, gmikehclip),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gmikehclip,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6658,6 +6684,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		WITHNOTCHFREQMIN, WITHNOTCHFREQMAX,
 		offsetof(struct nvmap, gnotchfreq),	/* центральная частота NOTCH */
 		nvramoffs0,
+		valoffset0,
 		& gnotchfreq.value,
 		NULL,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6672,6 +6699,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, NRLEVELMAX, 
 		offsetof(struct nvmap, gnoisereductvl),	/* уровень сигнала болше которого открывается шумодав */
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gnoisereductvl,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6685,6 +6713,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, SQUELCHMAX, 
 		offsetof(struct nvmap, gsquelchNFM),	/* уровень сигнала болше которого открывается шумодав */
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
@@ -6697,10 +6726,11 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
 		80, 160,	/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdb),
-		nvramoffs_band,
+		offsetof(struct nvmap, bands [0].gbottomdbspe),
+		nvramoffs_band_a,
+		valoffset_bi_a,
 		NULL,
-		& gbottomdb,
+		& gbottomdbspe [0],
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -6711,9 +6741,10 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		ISTEP1,		/* spectrum range */
 		0, BOARD_FFTZOOM_POW2MAX,	/* масштаб панорамы */
 		offsetof(struct nvmap, bands [0].gzoomxpow2),
-		nvramoffs_band,
+		nvramoffs_band_a,
+		valoffset_bi_a,
 		NULL,
-		& gzoomxpow2,
+		& gzoomxpow2 [0],
 		getzerobase, /* складывается со смещением и отображается */
 		enc2menu_adjust,	/* функция для изменения значения параметра */
 	},
@@ -6725,6 +6756,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		0, VIEW_COUNT - 1,
 		offsetof(struct nvmap, gviewstyle),
 		nvramoffs0,
+		valoffset0,
 		NULL,
 		& gviewstyle,
 		getzerobase,
@@ -6741,6 +6773,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		IFSHIFTTMIN, IFSHIFTMAX,			/* -3 kHz..+3 kHz in 50 Hz steps */
 		offsetof(struct nvmap, ifshifoffset),
 		nvramoffs0,
+		valoffset0,
 		& ifshifoffset.value,
 		NULL,
 		getifshiftbase, /* складывается со смещением и отображается */
@@ -7130,9 +7163,9 @@ loadnewband(
 	)
 {
 	ASSERT(bi < 2);
-
-	gfreqs [bi] = loadvfy32freq(b);
 	//PRINTF(PSTR("loadnewband: b=%d, bi=%d, freq=%ld\n"), b, bi, (unsigned long) gfreqs [bi]);
+
+	gfreqs [bi] = loadvfy32freq(b);		/* восстанавливаем частоту */
 #if WITHONLYBANDS
 	const vindex_t hb = getfreqband(gfreqs [bi]);
 	tune_bottom_active [bi] = get_band_bottom(hb);
@@ -7167,12 +7200,11 @@ loadnewband(
 	tunerwork = loadvfy8up(offsetof(struct nvmap, bands[b].tunerwork), 0, 1, tunerwork);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
-	PRINTF("loadnewband: b=%u\n", (unsigned) b);
-	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
-	gtopdb = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdb), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
-	gbottomdb = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdb), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
-	gtopdbwf = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbwf), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
-	gbottomdbwf = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbwf), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
+	gzoomxpow2 [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
+	gtopdbspe [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbspe), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
+	gbottomdbspe [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbspe), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
+	gtopdbwfl [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdbwfl), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT waterflow */
+	gbottomdbwfl [bi] = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdbwfl), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT waterflow */
 #endif /* WITHSPECTRUMWF */
 }
 
@@ -10343,11 +10375,12 @@ updateboardZZZ(
 		board_set_sidetonelevel(gsidetonelevel);	/* Уровень сигнала самоконтроля в процентах - 0%..100% */
 		board_set_moniflag(gmoniflag);	/* glob_moniflag */
 		#if WITHSPECTRUMWF
-			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdb);		/* верхний предел FFT */
-			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdb);		/* нижний предел FFT */
-			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwf);		/* верхний предел FFT для водопада */
-			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwf);		/* нижний предел FFT для водопада */
-			board_set_zoomxpow2(gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+			const uint8_t bi_main = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
+			board_set_topdb(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbspe [bi_main]);		/* верхний предел FFT */
+			board_set_bottomdb(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbspe [bi_main]);		/* нижний предел FFT */
+			board_set_topdbwf(gtxloopback && gtx ? WITHTOPDBMIN : gtopdbwfl [bi_main]);		/* верхний предел FFT для водопада */
+			board_set_bottomdbwf(gtxloopback && gtx ? WITHBOTTOMDBTX : gbottomdbwfl [bi_main]);		/* нижний предел FFT для водопада */
+			board_set_zoomxpow2(gzoomxpow2 [bi_main]);	/* уменьшение отображаемого участка спектра */
 			board_set_wflevelsep(gwflevelsep);	/* чувствительность водопада регулируется отдельной парой параметров */
 			board_set_lvlgridstep(glvlgridstep);	/* Шаг сетки уровней в децибелах */
 			board_set_view_style(gviewstyle);			/* стиль отображения спектра и панорамы */
@@ -14913,13 +14946,15 @@ display_menu_string_P(
 
 // WSIGNFLAG
 
-#define ITEM_VALUE	0x01	/* пункт меню для редактирования параметра */
-#define ITEM_GROUP	0x02	/* пункт меню без изменяемого значения - связан с подменю */
+#define ITEM_VALUE	(0x01u << 0)	/* пункт меню для редактирования параметра */
+#define ITEM_GROUP	(0x01u << 1)	/* пункт меню без изменяемого значения - связан с подменю */
 
-#define ITEM_FILTERU	0x04	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
-#define ITEM_FILTERL	0x08	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
+#define ITEM_FILTERU	(0x01u << 2)	/* пункт меню для подстройки частот фильтра ПЧ (высокочастотный скат) */
+#define ITEM_FILTERL	(0x01u << 3)	/* пункт меню для подстройки частот фильтра ПЧ (низкочастотный скат) */
 
-#define ITEM_NOINITNVRAM	0x10	/* значение этого пункта не используется при начальной инициализации NVRAM */
+#define ITEM_NOINITNVRAM	(0x01u << 4)	/* значение этого пункта не используется при начальной инициализации NVRAM */
+
+#define ITEM_ARRAY_BI	(0x01u << 5)	/* указатель на переменную ссылается на массив. Индекс по bank index от getbankindex_ab_fordisplay(0) */
 
 #if CPUSTYLE_ATMEGA
 	#define QLABEL(s) (s)
@@ -15168,22 +15203,22 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bands [0].gtopdb),
-		nvramoffs_band,
+		offsetof(struct nvmap, bands [0].gtopdbspe),
+		nvramoffs_band_a,
 		NULL,
-		& gtopdb,
+		& gtopdbspe [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdb),
-		nvramoffs_band,
+		offsetof(struct nvmap, bands [0].gbottomdbspe),
+		nvramoffs_band_a,
 		NULL,
-		& gbottomdb,
+		& gbottomdbspe [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -15198,22 +15233,22 @@ static const FLASHMEM struct menudef menutable [] =
 	},
 	{
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		offsetof(struct nvmap, bands [0].gtopdbwf),
-		nvramoffs_band,
+		offsetof(struct nvmap, bands [0].gtopdbwfl),
+		nvramoffs_band_a,
 		NULL,
-		& gtopdbwf,
+		& gtopdbwfl [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
 		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		offsetof(struct nvmap, bands [0].gbottomdbwf),
-		nvramoffs_band,
+		offsetof(struct nvmap, bands [0].gbottomdbwfl),
+		nvramoffs_band_a,
 		NULL,
-		& gbottomdbwf,
+		& gbottomdbwfl [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
@@ -15221,7 +15256,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
 		offsetof(struct nvmap, glvlgridstep),
-		nvramoffs_band,
+		nvramoffs0,
 		NULL,
 		& glvlgridstep,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15229,12 +15264,12 @@ static const FLASHMEM struct menudef menutable [] =
 #if BOARD_FFTZOOM_POW2MAX > 0
 	{
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
-		ITEM_VALUE,
+		ITEM_VALUE | ITEM_ARRAY_BI,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
 		offsetof(struct nvmap, bands [0].gzoomxpow2),
-		nvramoffs_band,
+		nvramoffs_band_a,
 		NULL,
-		& gzoomxpow2,
+		& gzoomxpow2 [0],
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #endif /* BOARD_FFTZOOM_POW2MAX > 0 */
@@ -18504,7 +18539,7 @@ loadsettings(void)
 		const FLASHMEM struct menudef * const mp = & menutable [i];
 		if (ismenukind(mp, ITEM_VALUE) && ! ismenukind(mp, ITEM_NOINITNVRAM))
 		{
-			const nvramaddress_t nvram = mp->qnvram;
+			const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram, 0);
 			const uint_fast16_t bottom = mp->qbottom;
 			const uint_fast16_t upper = mp->qupper;
 			uint_fast16_t * const pv16 =  mp->qpval16;
@@ -18514,11 +18549,13 @@ loadsettings(void)
 				continue;
 			if (pv16 != NULL)
 			{
-				* pv16 = loadvfy16up(nvram, bottom, upper, * pv16);
+				const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+				pv16 [valoffset] = loadvfy16up(nvram, bottom, upper, pv16 [valoffset]);
 			}
 			else if (pv8 != NULL)
 			{
-				* pv8 = loadvfy8up(nvram, bottom, upper, * pv8);
+				const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+				pv8 [valoffset] = loadvfy8up(nvram, bottom, upper, pv8 [valoffset]);
 			}
 		}
 	}
@@ -18541,11 +18578,13 @@ savemenuvalue(
 			return;
 		if (pv16 != NULL)
 		{
-			save_i16(nvram, * pv16);		/* сохраняем отредактированное значение */
+			const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+			save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
-			save_i8(nvram, * pv8);		/* сохраняем отредактированное значение */
+			const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
+			save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 	}
 }
@@ -18571,13 +18610,14 @@ defaultsettings(void)
 	}
 
 #if WITHSPECTRUMWF
+	const uint_fast8_t bi = 0;
 	for (i = 0; i < HBANDS_COUNT; ++ i)
 	{
-			save_i8(offsetof(struct nvmap, bands[i].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
-			save_i8(offsetof(struct nvmap, bands[i].gtopdb), gtopdb);	/* нижний предел FFT */
-			save_i8(offsetof(struct nvmap, bands[i].gbottomdb), gbottomdb);	/* верхний предел FFT */
-			save_i8(offsetof(struct nvmap, bands[i].gtopdbwf), gtopdbwf);	/* нижний предел FFT waterflow */
-			save_i8(offsetof(struct nvmap, bands[i].gbottomdbwf), gbottomdbwf);	/* верхний предел FFT waterflow */
+			save_i8(offsetof(struct nvmap, bands[i].gzoomxpow2), gzoomxpow2 [bi]);	/* уменьшение отображаемого участка спектра */
+			save_i8(offsetof(struct nvmap, bands[i].gtopdbspe), gtopdbspe [bi]);	/* нижний предел FFT */
+			save_i8(offsetof(struct nvmap, bands[i].gbottomdbspe), gbottomdbspe [bi]);	/* верхний предел FFT */
+			save_i8(offsetof(struct nvmap, bands[i].gtopdbwfl), gtopdbwfl [bi]);	/* нижний предел FFT waterflow */
+			save_i8(offsetof(struct nvmap, bands[i].gbottomdbwfl), gbottomdbwfl [bi]);	/* верхний предел FFT waterflow */
 	}
 #endif /* WITHSPECTRUMWF */
 }
@@ -18936,6 +18976,8 @@ void display2_menu_valxx(
 	if (pctx == NULL || pctx->type != DCTX_MENU)
 		return;
 	const FLASHMEM struct menudef * const mp = pctx->pv;
+	if (ismenukind(mp, ITEM_VALUE) == 0)
+		return;
 	multimenuwnd_t window;
 
 	display2_getmultimenu(& window);
@@ -18949,29 +18991,28 @@ void display2_menu_valxx(
 	uint_fast8_t comma = mp->qcomma;
 	const uint_fast16_t * const pv16 = mp->qpval16;
 	const uint_fast8_t * const pv8 = mp->qpval8;
+	const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 
-	if (ismenukind(mp, ITEM_VALUE) == 0)
-		return;
 	// получение значения для отображения
 	if (ismenufilterlsb(mp))
 	{
 		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, low_or_center);
-		value = getlo4baseflt(filter) + * pv16;
+		value = getlo4baseflt(filter) + pv16 [valoffset];
 	}
 	else if (ismenufilterusb(mp))
 	{
 		const filter_t * const filter = CONTAINING_RECORD(pv16, filter_t, high);
-		value = getlo4baseflt(filter) + * pv16;
+		value = getlo4baseflt(filter) + pv16 [valoffset];
 	}
 	else if (pv16 != NULL)
 	{
 		const int_fast32_t offs = mp->funcoffs();
-		value = offs + * pv16;
+		value = offs + pv16 [valoffset];
 	}
 	else if (pv8 != NULL)
 	{
 		const int_fast32_t offs = mp->funcoffs();
-		value = offs + * pv8;
+		value = offs + pv8 [valoffset];
 	}
 	else
 	{
@@ -22691,15 +22732,17 @@ const char * hamradio_change_view_style(uint_fast8_t v)
 
 uint_fast8_t hamradio_get_gzoomxpow2(void)
 {
-	return gzoomxpow2;
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);		/* VFO A modifications */
+	return gzoomxpow2 [bi];
 }
 
 void hamradio_set_gzoomxpow2(uint_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
-	gzoomxpow2 = v;
+	gzoomxpow2 [bi] = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gzoomxpow2), 1), gzoomxpow2);
+	save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gzoomxpow2), 1), gzoomxpow2 [bi]);
 	updateboard(1, 0);
 }
 
@@ -22717,79 +22760,83 @@ void hamradio_set_gwflevelsep(uint_fast8_t v)
 
 uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	if (v > 0)
-		gtopdb = calc_next(gtopdb, WITHTOPDBMIN, WITHTOPDBMAX);
+		gtopdbspe [bi] = calc_next(gtopdbspe [bi], WITHTOPDBMIN, WITHTOPDBMAX);
 	else if (v < 0)
-		gtopdb = calc_prev(gtopdb, WITHTOPDBMIN, WITHTOPDBMAX);
+		gtopdbspe [bi] = calc_prev(gtopdbspe [bi], WITHTOPDBMIN, WITHTOPDBMAX);
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb), 1), gtopdb);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gtopdbspe), 1), gtopdbspe [bi]);
 		updateboard(1, 0);
 	}
 
-	return gtopdb;
+	return gtopdbspe [bi];
 }
 
 uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	if (v > 0)
-		gbottomdb = calc_next(gbottomdb, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		gbottomdbspe [bi] = calc_next(gbottomdbspe [bi], WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 	else if (v < 0)
-		gbottomdb = calc_prev(gbottomdb, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		gbottomdbspe [bi] = calc_prev(gbottomdbspe [bi], WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb), 1), gbottomdb);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gbottomdbspe), 1), gbottomdbspe [bi]);
 		updateboard(1, 0);
 	}
 
-	return gbottomdb;
+	return gbottomdbspe [bi];
 }
 
 uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	if (v > 0)
-		gtopdbwf = calc_next(gtopdbwf, WITHTOPDBMIN, WITHTOPDBMAX);
+		gtopdbwfl [bi] = calc_next(gtopdbwfl [bi], WITHTOPDBMIN, WITHTOPDBMAX);
 	else if (v < 0)
-		gtopdbwf = calc_prev(gtopdbwf, WITHTOPDBMIN, WITHTOPDBMAX);
+		gtopdbwfl [bi] = calc_prev(gtopdbwfl [bi], WITHTOPDBMIN, WITHTOPDBMAX);
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf), 1), gtopdbwf);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gtopdbwfl), 1), gtopdbwfl [bi]);
 		updateboard(1, 0);
 	}
 
-	return gtopdbwf;
+	return gtopdbwfl [bi];
 }
 
 uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	if (v > 0)
-		gbottomdbwf = calc_next(gbottomdbwf, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		gbottomdbwfl [bi] = calc_next(gbottomdbwfl [bi], WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 	else if (v < 0)
-		gbottomdbwf = calc_prev(gbottomdbwf, WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
+		gbottomdbwfl [bi] = calc_prev(gbottomdbwfl [bi], WITHBOTTOMDBMIN, WITHBOTTOMDBMAX);
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf), 1), gbottomdbwf);
+		save_i8(nvramoffs_band_a(offsetof(struct nvmap, bands [0].gbottomdbwfl), 1), gbottomdbwfl [bi]);
 		updateboard(1, 0);
 	}
 
-	return gbottomdbwf;
+	return gbottomdbwfl [bi];
 }
 
 #endif /* WITHSPECTRUMWF && WITHMENU */
 
 uint_fast8_t hamradio_get_att_db(void)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	return attmodes [gatts [bi]].atten10 / 10;
 }
 
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* vfo A bank index */
 	for (uint_fast8_t i = 0; i < ATTMODE_COUNT; i ++)
 	{
 		if ( i > limit)
@@ -22803,7 +22850,7 @@ uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit)
 
 void hamradio_set_att_db(uint_fast8_t db)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	const vindex_t vi = getvfoindex(bi);
 
 	verifyband(vi);
@@ -22815,17 +22862,16 @@ void hamradio_set_att_db(uint_fast8_t db)
 
 const char * hamradio_get_att_value(void)
 {
-	const uint_fast8_t bi = getbankindex_tx(gtx);
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 	return attmodes [gatts [bi]].label;
 }
 
 const char * hamradio_get_preamp_value(void)
 {
+	const uint_fast8_t bi = getbankindex_ab_fordisplay(0);	/* VFO A modifications */
 #if ! WITHONEATTONEAMP
-	const uint_fast8_t bi = getbankindex_tx(gtx);
 	return pampmodes [gpamps [bi]].label;
 #else
-	const uint_fast8_t bi = getbankindex_tx(gtx);
 	return attmodes [gatts [bi]].label;
 #endif
 }
