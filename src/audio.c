@@ -799,15 +799,10 @@ static void adapterst_initialize(void)
 {
 #if WITHDSPEXTFIR
 	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
-//	PRINTF("fpga coef test: %08lX, %g\n", adpt_outputexact(& fpgafircoefsout, 1.0), 1.0);
-//	PRINTF("fpga coef test: %08lX, %g\n", adpt_outputexact(& fpgafircoefsout, -1.0), -1.0);
-//	PRINTF("fpga coef test: %08lX, %g\n", adpt_outputexact(& fpgafircoefsout, 1.0/2), 1.0/2);
-//	PRINTF("fpga coef test: %08lX, %g\n", adpt_outputexact(& fpgafircoefsout, -1.0/2), -1.0/2);
-#endif /* #if WITHDSPEXTFIR */
+#endif /* WITHDSPEXTFIR */
 	/* Аудиокодек */
 	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
 	adpt_initialize(& afcodecio, WITHADAPTERAFADCWIDTH, WITHADAPTERAFADCSHIFT);
-
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
