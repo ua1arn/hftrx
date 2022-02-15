@@ -798,6 +798,7 @@ transform_t if2rts192out;	// преобразование из выхода па
 static void adapterst_initialize(void)
 {
 #if WITHDSPEXTFIR
+	/* FPGA FIR коэффициенты */
 	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
 #endif /* WITHDSPEXTFIR */
 	/* Аудиокодек */
