@@ -3888,7 +3888,7 @@ static RAMFUNC FLOAT32P_t baseband_modulator(
 #if WITHDSPEXTDDC
 
 
-// Передатчик - формирование одного сэмпда (пары I/Q).
+// Передатчик - формирование одного сэмпла (пары I/Q).
 // обрабатывается 16 битное (WITHAFADCWIDTH) число
 // используется в случае внешнего DUC
 static RAMFUNC void processafadcsampleiq(
@@ -5320,7 +5320,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 	#endif /* WITHUSEDUALWATCH */
 
 #if WITHUSBAUDIOSAI1
-		//processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		//processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savesampleout32stereo(adpt_output(& ifcodecout, vi.IV), adpt_output(& ifcodecout, vi.QV));	// Запись в поток к передатчику I/Q значений.
 		//const INT32P_t dual = vi;
 		//const INT32P_t dual = { { get_lout(), get_rout() } }; // vi;
@@ -5381,7 +5381,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		//dual.IV = vi.IV; //get_lout();
 		dual.IV = get_lout();
 		dual.QV = 0;
-		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		// Тестирование распознавания DTMF
 		if (dtmfbi < DTMF_STEPS)
 		{
@@ -5405,13 +5405,13 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 	#if WITHLOOPBACKTEST
 
 		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
-		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		//
 		// Тестирование источников и потребителей звука
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
 
 		save16demod(vi.IV, vi.QV);		// данные игнорируются
@@ -5421,7 +5421,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#elif WITHUSEDUALWATCH
 
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		//
 		// Двухканальный приёмник
 
@@ -5462,7 +5462,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#else /* WITHUSEDUALWATCH */
 
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпда (пары I/Q).
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		// Одноканальный приёмник
 
 		if (dspmodeA == DSPCTL_MODE_RX_WFM)
