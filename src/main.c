@@ -6418,7 +6418,7 @@ struct enc2menu
 	uint16_t bottom, upper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t nvrambase;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* nvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	nvramaddress_t (* nvramoffs)(nvramaddress_t base, uint_fast8_t save);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 
 	uint_fast16_t * pval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * pval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
@@ -6437,12 +6437,12 @@ static const FLASHMEM char catsiglabels [BOARD_CATSIG_count] [9] =
 #endif /* WITHUSBHW && WITHUSBCDCACM && WITHUSBCDCACM_N > 1 */
 };
 
-static nvramaddress_t nvramoffs0(nvramaddress_t base)
+static nvramaddress_t nvramoffs0(nvramaddress_t base, uint_fast8_t save)
 {
 	return base;
 }
 
-static nvramaddress_t nvramoffs_band(nvramaddress_t base)
+static nvramaddress_t nvramoffs_band(nvramaddress_t base, uint_fast8_t save)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);
 	const vindex_t b = getvfoindex(bi);
@@ -6462,7 +6462,7 @@ enc2savemenuvalue(
 	const FLASHMEM struct enc2menu * mp
 	)
 {
-	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase);
+	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase, 1);
 	const uint_fast16_t * const pv16 = mp->pval16;
 	const uint_fast8_t * const pv8 = mp->pval8;
 
@@ -7167,6 +7167,7 @@ loadnewband(
 	tunerwork = loadvfy8up(offsetof(struct nvmap, bands[b].tunerwork), 0, 1, tunerwork);
 #endif /* WITHAUTOTUNER */
 #if WITHSPECTRUMWF
+	PRINTF("loadnewband: b=%u\n", (unsigned) b);
 	gzoomxpow2 = loadvfy8up(offsetof(struct nvmap, bands[b].gzoomxpow2), 0, BOARD_FFTZOOM_POW2MAX, 0);	/* масштаб панорамы */
 	gtopdb = loadvfy8up(offsetof(struct nvmap, bands[b].gtopdb), WITHTOPDBMIN, WITHTOPDBMAX, WITHTOPDBDEFAULT);		/* нижний предел FFT */
 	gbottomdb = loadvfy8up(offsetof(struct nvmap, bands[b].gbottomdb), WITHBOTTOMDBMIN, WITHBOTTOMDBMAX, WITHBOTTOMDBDEFAULT);	/* верхний предел FFT */
@@ -14942,7 +14943,7 @@ struct menudef
 	uint16_t qbottom, qupper;	/* ограничения на редактируемое значение (upper - включая) */
 
 	nvramaddress_t qnvram;				/* Если MENUNONVRAM - только меняем в памяти */
-	nvramaddress_t (* qnvramoffs)(nvramaddress_t base);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
+	nvramaddress_t (* qnvramoffs)(nvramaddress_t base, uint_fast8_t save);	/* Смещение при доступе к NVRAM. Нужно при работе с настройками специфическрми для диапазона например */
 
 	uint_fast16_t * qpval16;			/* переменная, которую подстраиваем - если она 16 бит */
 	uint_fast8_t * qpval8;			/* переменная, которую подстраиваем  - если она 8 бит*/
@@ -15169,8 +15170,8 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TOP DB  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gtopdb),
+		nvramoffs_band,
 		NULL,
 		& gtopdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15179,8 +15180,8 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BOTTM DB"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gbottomdb),
+		nvramoffs_band,
 		NULL,
 		& gbottomdb,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15199,8 +15200,8 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("TOP WF  "), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHTOPDBMIN, WITHTOPDBMAX,							/* сколько не показывать сверху */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gtopdbwf),
+		nvramoffs_band,
 		NULL,
 		& gtopdbwf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15209,8 +15210,8 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("BOTTM WF"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,							/* диапазон отображаемых значений */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gbottomdbwf),
+		nvramoffs_band,
 		NULL,
 		& gbottomdbwf,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15220,7 +15221,7 @@ static const FLASHMEM struct menudef menutable [] =
 		ITEM_VALUE,
 		0, 40,							/* диапазон отображаемых значений (0-отключаем отображение сетки уровней) */
 		offsetof(struct nvmap, glvlgridstep),
-		nvramoffs0,
+		nvramoffs_band,
 		NULL,
 		& glvlgridstep,
 		getzerobase, /* складывается со смещением и отображается */
@@ -15230,8 +15231,8 @@ static const FLASHMEM struct menudef menutable [] =
 		QLABEL("ZOOM PAN"), 7, 0, RJ_POW2,	ISTEP1,
 		ITEM_VALUE,
 		0, BOARD_FFTZOOM_POW2MAX,							/* уменьшение отображаемого участка спектра */
-		MENUNONVRAM,
-		nvramoffs0,
+		offsetof(struct nvmap, bands [0].gzoomxpow2),
+		nvramoffs_band,
 		NULL,
 		& gzoomxpow2,
 		getzerobase, /* складывается со смещением и отображается */
@@ -18568,6 +18569,17 @@ defaultsettings(void)
 			savemenuvalue(mp);
 		}
 	}
+
+#if WITHSPECTRUMWF
+	for (i = 0; i < HBANDS_COUNT; ++ i)
+	{
+			save_i8(offsetof(struct nvmap, bands[i].gzoomxpow2), gzoomxpow2);	/* уменьшение отображаемого участка спектра */
+			save_i8(offsetof(struct nvmap, bands[i].gtopdb), gtopdb);	/* нижний предел FFT */
+			save_i8(offsetof(struct nvmap, bands[i].gbottomdb), gbottomdb);	/* верхний предел FFT */
+			save_i8(offsetof(struct nvmap, bands[i].gtopdbwf), gtopdbwf);	/* нижний предел FFT waterflow */
+			save_i8(offsetof(struct nvmap, bands[i].gbottomdbwf), gbottomdbwf);	/* верхний предел FFT waterflow */
+	}
+#endif /* WITHSPECTRUMWF */
 }
 
 //+++ menu support
@@ -22687,7 +22699,7 @@ void hamradio_set_gzoomxpow2(uint_fast8_t v)
 	ASSERT(v <= BOARD_FFTZOOM_POW2MAX);
 	gzoomxpow2 = v;
 	// сохранение зависит от текущего диапазона
-	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gzoomxpow2)), gzoomxpow2);
+	save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gzoomxpow2), 1), gzoomxpow2);
 	updateboard(1, 0);
 }
 
@@ -22712,7 +22724,7 @@ uint_fast8_t hamradio_gtopdbsp(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb)), gtopdb);
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdb), 1), gtopdb);
 		updateboard(1, 0);
 	}
 
@@ -22728,7 +22740,7 @@ uint_fast8_t hamradio_gbottomdbsp(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb)), gbottomdb);
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdb), 1), gbottomdb);
 		updateboard(1, 0);
 	}
 
@@ -22744,7 +22756,7 @@ uint_fast8_t hamradio_gtopdbwf(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf)), gtopdbwf);
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gtopdbwf), 1), gtopdbwf);
 		updateboard(1, 0);
 	}
 
@@ -22760,7 +22772,7 @@ uint_fast8_t hamradio_gbottomdbwf(int_fast8_t v)
 
 	if (v != 0)
 	{
-		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf)), gbottomdbwf);
+		save_i8(nvramoffs_band(offsetof(struct nvmap, bands [0].gbottomdbwf), 1), gbottomdbwf);
 		updateboard(1, 0);
 	}
 
