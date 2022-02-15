@@ -3438,7 +3438,7 @@ void display2_set_smetertype(uint_fast8_t v);
 
 
 void display2_set_filter_spe(uint_fast8_t v);	/* парамеры видеофильтра спектра */
-void display2_set_filter_wtf(uint_fast8_t v);	/* парамеры видеофильтра водопада */
+void display2_set_filter_wfl(uint_fast8_t v);	/* парамеры видеофильтра водопада */
 
 
 const char * get_band_label3(unsigned b); /* получение человекопонятного названия диапазона */

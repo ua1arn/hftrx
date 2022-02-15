@@ -8247,7 +8247,7 @@ void display2_set_filter_spe(uint_fast8_t v)
 }
 
 /* парамеры видеофильтра водопада */
-void display2_set_filter_wtf(uint_fast8_t v)
+void display2_set_filter_wfl(uint_fast8_t v)
 {
 	ASSERT(v <= 100);
 	const FLOAT_t val = (int) v / (FLOAT_t) 100;

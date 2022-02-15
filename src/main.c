@@ -2892,7 +2892,7 @@ struct nvmap
 	uint8_t gwflevelsep;	/* чувствительность водопада регулируется отдельной парой параметров */
 	uint8_t gtxloopback;		 /* включение спектроанализатора сигнала передачи */
 	uint8_t gspecbeta100;	/* beta - парамеры видеофильтра спектра */
-	uint8_t gwtfbeta100;	/* beta - парамеры видеофильтра водопада */
+	uint8_t gwflbeta100;	/* beta - парамеры видеофильтра водопада */
 	uint8_t glvlgridstep;	/* Шаг сетки уровней в децибелах */
 
 #endif /* WITHSPECTRUMWF */
@@ -3609,11 +3609,11 @@ static const uint_fast8_t displaymodesfps = DISPLAYMODES_FPS;
 #else
 	static uint_fast8_t gspecbeta100 = 50;	/* beta = 0.1 .. 1.0 */
 #endif /* WITHSPECBETA_DEFAULT */
-#if defined (WITHWTFBETA_DEFAULT)
-	static uint_fast8_t gwtfbeta100 = WITHWTFBETA_DEFAULT;
+#if defined (WITHWFLBETA_DEFAULT)
+	static uint_fast8_t gwflbeta100 = WITHWFLBETA_DEFAULT;
 #else
-	static uint_fast8_t gwtfbeta100 = 50;	/* beta = 0.1 .. 1.0 */
-#endif /* WITHWTFBETA_DEFAULT */
+	static uint_fast8_t gwflbeta100 = 50;	/* beta = 0.1 .. 1.0 */
+#endif /* WITHWFLBETA_DEFAULT */
 #endif /* WITHSPECTRUMWF */
 #if WITHLCDBACKLIGHT
 	#if WITHISBOOTLOADER 
@@ -10355,7 +10355,7 @@ updateboardZZZ(
 			board_set_afspeclow(gafspeclow);	// нижняя частота отображения спектроанализатора
 			board_set_afspechigh(gafspechigh);	// верхняя частота отображения спектроанализатора
 			display2_set_filter_spe(gspecbeta100);	/* beta - парамеры видеофильтра спектра */
-			display2_set_filter_wtf(gwtfbeta100);	/* beta - парамеры видеофильтра водопада */
+			display2_set_filter_wfl(gwflbeta100);	/* beta - парамеры видеофильтра водопада */
 		#endif /* WITHSPECTRUMWF */
 		board_set_showdbm(gshowdbm);		// Отображение уровня сигнала в dBm или S-memter (в зависимости от настроек)
 	#endif /* WITHIF4DSP */
@@ -15258,13 +15258,13 @@ static const FLASHMEM struct menudef menutable [] =
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	{
-		QLABEL("BETA WTF"), 7, 2, 0,	ISTEP1,
+		QLABEL("BETA WFL"), 7, 2, 0,	ISTEP1,
 		ITEM_VALUE,
 		10, 100,							/* beta - парамеры видеофильтра водопада */
-		offsetof(struct nvmap, gwtfbeta100),
+		offsetof(struct nvmap, gwflbeta100),
 		nvramoffs0,
 		NULL,
-		& gwtfbeta100,
+		& gwflbeta100,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
