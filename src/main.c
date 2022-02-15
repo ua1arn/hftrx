@@ -3381,15 +3381,15 @@ filter_t fi_2p0_455 =
    */
 
 /* параметры диапазона, переключаемые при смене VFO */
-static uint_fast32_t gfreqs [2];		/* отображаемая на дисплее частота работы */
+static uint_fast32_t gfreqs [VFOS_COUNT];		/* отображаемая на дисплее частота работы */
 #if ! WITHONEATTONEAMP
-static uint_fast8_t gpamps [2];
+static uint_fast8_t gpamps [VFOS_COUNT];
 #endif /* ! WITHONEATTONEAMP */
-static uint_fast8_t gatts [2];
+static uint_fast8_t gatts [VFOS_COUNT];
 #if WITHANTSELECT
-static uint_fast8_t gantennas [2];
+static uint_fast8_t gantennas [VFOS_COUNT];
 #endif /* WITHANTSELECT */
-static uint_fast8_t gvfosplit [2];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
+static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
 // Параметры, выставляемые в update board
 // кэш установленных параметров.
 // На эти параметры ориентируемся при работе кнопками управления, переклбчения фильттров и так далее.
@@ -6477,18 +6477,17 @@ enc2savemenuvalue(
 	const nvramaddress_t nvram = mp->nvramoffs(mp->nvrambase, 1);
 	const uint_fast16_t * const pv16 = mp->pval16;
 	const uint_fast8_t * const pv8 = mp->pval8;
+	const unsigned valoffset = mp->valoffset(); //ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 
 	if (nvram == MENUNONVRAM)
 		return;
 
 	if (pv16 != NULL)
 	{
-		const unsigned valoffset = mp->valoffset(); //ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 		save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
 	}
 	else if (pv8 != NULL)
 	{
-		const unsigned valoffset = mp->valoffset(); //ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 		save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 	}
 	else
@@ -6508,6 +6507,7 @@ enc2menu_adjust(
 	const uint_fast16_t step = mp->istep;
 	uint_fast16_t * const pv16 = mp->pval16;
 	uint_fast8_t * const pv8 = mp->pval8;
+	const unsigned valoffset = mp->valoffset();
 
 	/* измиенение параметра */
 	if (nrotate < 0)
@@ -6516,13 +6516,11 @@ enc2menu_adjust(
 		const uint_fast32_t bottom = mp->bottom;
 		if (pv16 != NULL)
 		{
-			const unsigned valoffset = mp->valoffset();
 			pv16 [valoffset] =
 				prevfreq(pv16 [valoffset], pv16 [valoffset] - (- nrotate * step), step, bottom);
 		}
 		else if (pv8 != NULL)
 		{
-			const unsigned valoffset = mp->valoffset();
 			pv8 [valoffset] =
 				prevfreq(pv8 [valoffset], pv8 [valoffset] - (- nrotate * step), step, bottom);
 		}
@@ -6534,13 +6532,11 @@ enc2menu_adjust(
 		const uint_fast32_t upper = mp->upper;
 		if (pv16 != NULL)
 		{
-			const unsigned valoffset = mp->valoffset();
 			pv16 [valoffset] =
 				nextfreq(pv16 [valoffset], pv16 [valoffset] + (nrotate * step), step, upper + (uint_fast32_t) step);
 		}
 		else
 		{
-			const unsigned valoffset = mp->valoffset();
 			pv8 [valoffset] =
 				nextfreq(pv8 [valoffset], pv8 [valoffset] + (nrotate * step), step, upper + (uint_fast32_t) step);
 		}
@@ -18570,20 +18566,19 @@ savemenuvalue(
 {
 	if (ismenukind(mp, ITEM_VALUE))
 	{
-		const nvramaddress_t nvram = mp->qnvram;
+		const nvramaddress_t nvram = mp->qnvramoffs(mp->qnvram, 1);
 		const uint_fast16_t * const pv16 = mp->qpval16;
 		const uint_fast8_t * const pv8 = mp->qpval8;
+		const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 
 		if (nvram == MENUNONVRAM)
 			return;
 		if (pv16 != NULL)
 		{
-			const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 			save_i16(nvram, pv16 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 		else if (pv8 != NULL)
 		{
-			const unsigned valoffset = ismenukind(mp, ITEM_ARRAY_BI) ? getbankindex_ab_fordisplay(0) : 0;
 			save_i8(nvram, pv8 [valoffset]);		/* сохраняем отредактированное значение */
 		}
 	}
