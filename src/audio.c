@@ -5400,7 +5400,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 #endif /* WITHRTS96 */
 
 	#if 0
-		// Тестирование (самопрослушивание) тогг что идет с микрофона
+		// Тестирование (самопрослушивание) того, что идет с микрофона
 		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		save16demod(vi.IV, vi.QV);
 
