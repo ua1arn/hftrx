@@ -5398,7 +5398,13 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 #if WITHRTS96
 	saverts96(buff + i);	// использование данных о спектре, передаваемых в общем фрейме
 #endif /* WITHRTS96 */
-	#if WITHLOOPBACKTEST
+
+	#if 0
+		// Тестирование (самопрослушивание) тогг что идет с микрофона
+		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		save16demod(vi.IV, vi.QV);
+
+	#elif WITHLOOPBACKTEST
 
 		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
 		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
