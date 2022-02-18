@@ -184,6 +184,7 @@
 	#endif
 	#define FQMODEL_FPGA		1	// FPGA + IQ over I2S
 	//#define XVTR_NYQ1			1	// Support Nyquist-style frequency conversion
+	//#define XVTR_R820T2 	1	/* R820T chip */
 
 	// --- вариации прошивки, специфические для разных частот
 
