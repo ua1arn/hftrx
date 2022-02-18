@@ -2746,7 +2746,7 @@ struct modeprops
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
 	 переменных в конфигурационном ОЗУ.
- Информация, сохраняемая для каждого диапазона */
+	Информация, сохраняемая для каждого диапазона */
 struct bandinfo
 {	
 	uint32_t freq;		/* рабочая частота */
@@ -2774,6 +2774,14 @@ struct bandinfo
 	uint8_t gbottomdbwfl;	/* верхний предел FFT waterflow */
 #endif /* WITHSPECTRUMWF */
 } ATTRPACKED;// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
+
+/* структура - расположение байтов в конфигурационном ОЗУ.
+   bitfields нельзя использовать, так как всё это - только обозначения смещений
+	 переменных в конфигурационном ОЗУ.
+ 	 Информация, сохраняемая для группы диапазонов */
+struct bandgroup_tag {
+	uint8_t	band;		/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+} ATTRPACKED;	// аттрибут GCC, исключает "дыры" в структуре. Так как в ОЗУ нет копии этой структуры, see also NVRAM_TYPE_BKPSRAM
 
 /* структура - расположение байтов в конфигурационном ОЗУ.
    bitfields нельзя использовать, так как всё это - только обозначения смещений
@@ -3299,7 +3307,7 @@ filter_t fi_2p0_455 =
 
 	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
 #if	WITHDIRECTBANDS
-	uint8_t	bandgroup [BANDGROUP_COUNT];	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+	struct bandgroup_tag bandgroup [BANDGROUP_COUNT];
 #endif	/* WITHDIRECTBANDS */
 
 #if WITHTOUCHGUI
@@ -3340,7 +3348,7 @@ filter_t fi_2p0_455 =
 #define RMT_TXAUDIO_BASE(i) offsetof(struct nvmap, modes[(i)].txaudio)
 #define RMT_TXAPROFIGLE_BASE(i) offsetof(struct nvmap, txaprofile[(i)])
 
-#define RMT_BANDGROUP(i) offsetof(struct nvmap, bandgroup[(i)])	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+#define RMT_BANDGROUP(i) offsetof(struct nvmap, bandgroup[(i)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
 #define RMT_BFREQ_BASE(i) offsetof(struct nvmap, bands[(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
 #define RMT_PAMP_BASE(i) offsetof(struct nvmap, bands[(i)].pamp)			/* признак включения аттенюатора (1 байт) */
 #define RMT_ATT_BASE(i) offsetof(struct nvmap, bands[(i)].att)			/* признак включения аттенюатора (1 байт) */
