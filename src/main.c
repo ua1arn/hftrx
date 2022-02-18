@@ -2234,11 +2234,18 @@ enum
 
 enum
 {
-	BANDGROUP_14MHZ,
-	BANDGROUP_28MHZ,
-	BANDGROUP_70MHZ,
-	BANDGROUP_144MHZ,
-	BANDGROUP_430MHZ,
+	BANDGROUP_1p8MHz,
+	BANDGROUP_3p5MHz,
+	BANDGROUP_7MHz,
+	BANDGROUP_10p1MHz,
+	BANDGROUP_14MHz,
+	BANDGROUP_18MHz,
+	BANDGROUP_21MHz,
+	BANDGROUP_24p8MHz,
+	BANDGROUP_28MHz,
+	BANDGROUP_70MHz,
+	BANDGROUP_144MHz,
+	BANDGROUP_430MHz,
 	//
 	BANDGROUP_COUNT			// Значение, используемое как признак отсутствия группировки диапазонов
 };
@@ -2246,7 +2253,14 @@ enum
 
 static const char * const bandlabels [BANDGROUP_COUNT] =
 {
+	"1.8",
+	"3.5",
+	"7  ",
+	"10 ",
 	"14 ",
+	"18 ",
+	"21 ",
+	"24 ",
 	"28 ",
 	"70 ",
 	"144",
@@ -2328,15 +2342,15 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	{ BMF(153000L - BANDPAD), 	BMF(279000L + BANDPAD), 	BMF(225000L), 		BANDMAPSUBMODE_AM | BANDSETF_ALL, BANDGROUP_COUNT, "LW", },				/*  */
 	{ BMF(530000L - BANDPAD), 	BMF(1611000L + BANDPAD), 	BMF(1440000L), 		BANDMAPSUBMODE_AM | BANDSETF_ALL, BANDGROUP_COUNT, "MW", },				/*  */
 	#endif
-	{ BMF(1810000L - BANDPAD), 	BMF(2000000L + BANDPAD), 	BMF(1810000L), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_COUNT, "1.8M"},			/* Ukrainian band from freq 1715 kHz */
-	{ BMF(3500000L - BANDPAD), 	BMF(3800000L + BANDPAD), 	BMF(3500000L),		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_COUNT, "3.5M", },			/*  */
+	{ BMF(1810000L - BANDPAD), 	BMF(2000000L + BANDPAD), 	BMF(1810000L), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_1p8MHz, "1.8M"},			/* Ukrainian band from freq 1715 kHz */
+	{ BMF(3500000L - BANDPAD), 	BMF(3800000L + BANDPAD), 	BMF(3500000L),		BANDMAPSUBMODE_LSB | BANDSETF_HAM, BANDGROUP_3p5MHz, "3.5M", },			/*  */
 #if 0
 	{ BMF(2535000L - BANDPAD), 	BMF(2900000L + BANDPAD), 	BMF(2535000L), 		BANDMAPSUBMODE_USB | BANDSETF_HAM, BANDGROUP_COUNT, "", },				/* Old NEDRA stations band */
 #endif
 	{ BMF(3900000L), 			BMF(4000000L), 				BMF(3900000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, "75m", },			/*  */
 	{ BMF(4750000L), 			BMF(5060000L), 				BMF(4750000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, BANDGROUP_COUNT, "", },				/*  */
 	/*
-		Частотный план диапазона 5 MHZ ( 60m )
+		Частотный план диапазона 5 MHz ( 60m )
 		Диапазон: 5351.5-5.366.5 khz
 		1. 5.351.5- CW -полоса 200 hz .
 		2. 5.354.0, 5.357.0, 5.360.0, 5.363.0 - ALL MODE полоса 2700 hz.
@@ -2345,39 +2359,39 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	*/
 	{ BMF(5298000L), 			BMF(5408000L), 				BMF(5351500L), 		BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_COUNT, "", },			/* 60-meters band */
 	{ BMF(5730000L), 			BMF(6295000L), 				BMF(5730000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, 	BANDGROUP_COUNT, "49m", },		/*  */
-	{ BMF(6890000L), 			BMF(6990000L), 				BMF(6890000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "", },			/*  */
-	{ BMF(7000000L - BANDPAD), 	BMF(7200000L + BANDPAD), 	BMF(7000000L), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, 		BANDGROUP_COUNT, "7M", },		/* top freq - 7300 in region-2 */
+	{ BMF(6890000L), 			BMF(6990000L), 				BMF(6890000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_3p5MHz, "3.5M", },			/*  */
+	{ BMF(7000000L - BANDPAD), 	BMF(7200000L + BANDPAD), 	BMF(7000000L), 		BANDMAPSUBMODE_LSB | BANDSETF_HAM, 		BANDGROUP_7MHz, "7M", },		/* top freq - 7300 in region-2 */
 	{ BMF(7200000L), 			BMF(7600000L), 				BMF(7200000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST,		BANDGROUP_COUNT, "41m", },		/*  */
 	{ BMF(9250000L), 			BMF(9900000L), 				BMF(9250000L), 		BANDMAPSUBMODE_AM | BANDSETF_BCAST, 	BANDGROUP_COUNT, "31m", },		/*  */
-	{ BMF(10100000L - BANDPAD), BMF(10150000L + BANDPAD), 	BMF(10100000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_COUNT, "", },			/*  */
+	{ BMF(10100000L - BANDPAD), BMF(10150000L + BANDPAD), 	BMF(10100000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAMWARC, 	BANDGROUP_10p1MHz, "10.1M", },			/*  */
 #if (TUNE_TOP) >= (19020000)
 	{ BMF(11500000L), 			BMF(12160000), 				BMF(11500000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "25m", },		/*  */
 	{ BMF(13570000L), 			BMF(13870000), 				BMF(13570000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "22m", },		/*  */
 
-	{ BMF(14000000L - BANDPAD), BMF(14105000L), 			BMF(14000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_14MHZ, "14M CW", },	/*  */
-	{ BMF(14105000L),			BMF(14350000L + BANDPAD),	BMF(14130000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHZ, "14M SSB", },	/*  */
+	{ BMF(14000000L - BANDPAD), BMF(14105000L), 			BMF(14000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_14MHz, "14M CW", },	/*  */
+	{ BMF(14105000L),			BMF(14350000L + BANDPAD),	BMF(14130000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_14MHz, "14M SSB", },	/*  */
 
 	{ BMF(15030000L), 			BMF(15800000), 				BMF(15030000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "19m", },		/*  */
 	{ BMF(17480000L), 			BMF(17900000), 				BMF(17480000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "16m", },		/*  */
-	{ BMF(18068000L - BANDPAD), BMF(18168000L + BANDPAD), 	BMF(18068000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_COUNT, "", },			/*  */
+	{ BMF(18068000L - BANDPAD), BMF(18168000L + BANDPAD), 	BMF(18068000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_18MHz, "18M", },			/*  */
 	{ BMF(18900000L), 			BMF(19020000), 				BMF(18900000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "15m", },		/*  */
 #endif
 #if (TUNE_TOP) >= (21450000L + BANDPAD)
-	{ BMF(21000000L - BANDPAD), BMF(21450000L + BANDPAD), 	BMF(21000000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_COUNT, "21M", },		/*  */
+	{ BMF(21000000L - BANDPAD), BMF(21450000L + BANDPAD), 	BMF(21000000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_21MHz, "21M", },		/*  */
 #endif
 #if (TUNE_TOP) >= (21850000L)
 	{ BMF(21450000L), 			BMF(21850000), 				BMF(21450000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "13m", },		/*  */
 #endif /* (TUNE_TOP) >= (21850000) */
 
 #if (TUNE_TOP) >= (29700000L + BANDPAD)
-	{ BMF(24890000L - BANDPAD), BMF(24990000L + BANDPAD), 	BMF(24890000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_COUNT, "", },			/*  */
+	{ BMF(24890000L - BANDPAD), BMF(24990000L + BANDPAD), 	BMF(24890000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAMWARC, 	BANDGROUP_24p8MHz, "24M", },			/*  */
 	{ BMF(25670000L), 			BMF(26100000), 				BMF(25670000L), 	BANDMAPSUBMODE_AM | BANDSETF_BCAST,  	BANDGROUP_COUNT, "11m", },		/*  */
 	{ BMF(26965000L - BANDPAD), BMF(27405000L + BANDPAD), 	BMF(27120000L), 	BANDMAPSUBMODE_USB | BANDSETF_CB, 		BANDGROUP_COUNT, "CB", },		/* Citizens Band 26.9650 MHz to 27.4050 MHz (40 channels) */
 
 	/* next three sections - one band - "ten". */
-	{ BMF(28000000L - BANDPAD), BMF(28320000L), 			BMF(28000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M CW", },	/* CW */
-	{ BMF(28320000L), 			BMF(29200000L), 			BMF(28500000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M SSB", },	/* SSB */
-	{ BMF(29200000L), 			BMF(29700000L + BANDPAD),	BMF(29600000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHZ, "28M FM", },	/* FM */
+	{ BMF(28000000L - BANDPAD), BMF(28320000L), 			BMF(28000000L), 	BANDMAPSUBMODE_CW | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M CW", },	/* CW */
+	{ BMF(28320000L), 			BMF(29200000L), 			BMF(28500000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M SSB", },	/* SSB */
+	{ BMF(29200000L), 			BMF(29700000L + BANDPAD),	BMF(29600000L), 	BANDMAPSUBMODE_USB | BANDSETF_HAM, 		BANDGROUP_28MHz, "28M FM", },	/* FM */
 #endif
 
 #if TUNE_6MBAND
@@ -2385,22 +2399,22 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 #endif /* TUNE_6MBAND */
 
 #if TUNE_4MBAND
-	{ BMF(70000000L - BANDPAD),	BMF(70050000L), 			BMF(70000000L), 	BANDMAPSUBMODE_CW | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M CW", },			/* CW */
-	{ BMF(70050000L), 			BMF(70300000L), 			BMF(70050000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M SSB", },			/* SSB */
-	{ BMF(70300000L), 			BMF(70500000L + BANDPAD),	BMF(70300000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHZ, "70M FM", },			/* FM */
+	{ BMF(70000000L - BANDPAD),	BMF(70050000L), 			BMF(70000000L), 	BANDMAPSUBMODE_CW | BANDSETF_4M, 		BANDGROUP_70MHz, "70M CW", },			/* CW */
+	{ BMF(70050000L), 			BMF(70300000L), 			BMF(70050000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHz, "70M SSB", },			/* SSB */
+	{ BMF(70300000L), 			BMF(70500000L + BANDPAD),	BMF(70300000L), 	BANDMAPSUBMODE_USB | BANDSETF_4M, 		BANDGROUP_70MHz, "70M FM", },			/* FM */
 #endif /* TUNE_4MBAND */
 
 #if TUNE_2MBAND
 	/* next three sections - one band - "2 meter". */
-	{ BMF(144000000L - BANDPAD),BMF(144200000), 			BMF(144050000L), 	BANDMAPSUBMODE_CW | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M CW", },		/* CW */
-	{ BMF(144200000L), 			BMF(145000000L), 			BMF(144300000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M SSB", },		/* SSB */
-	{ BMF(144500000L), 			BMF(146000000L + BANDPAD),	BMF(145500000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHZ, "144M FM", },		/* FM */
+	{ BMF(144000000L - BANDPAD),BMF(144200000), 			BMF(144050000L), 	BANDMAPSUBMODE_CW | BANDSETF_2M, 		BANDGROUP_144MHz, "144M CW", },		/* CW */
+	{ BMF(144200000L), 			BMF(145000000L), 			BMF(144300000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHz, "144M SSB", },		/* SSB */
+	{ BMF(144500000L), 			BMF(146000000L + BANDPAD),	BMF(145500000L), 	BANDMAPSUBMODE_USB | BANDSETF_2M, 		BANDGROUP_144MHz, "144M FM", },		/* FM */
 #endif /* TUNE_2MBAND */
 
 #if TUNE_07MBAND
 	/* next three sections - one band - "0.7 meter". */
-	{ BMF(430000000L - BANDPAD),BMF(432100000L), 			BMF(430050000L), 	BANDMAPSUBMODE_CW | BANDSETF_07M, 		BANDGROUP_430MHZ, "", },		/* CW */
-	{ BMF(432100000L),			BMF(440000000L + BANDPAD), 	BMF(432500000L), 	BANDMAPSUBMODE_USB | BANDSETF_07M, 		BANDGROUP_430MHZ, "", },		/* CW */
+	{ BMF(430000000L - BANDPAD),BMF(432100000L), 			BMF(430050000L), 	BANDMAPSUBMODE_CW | BANDSETF_07M, 		BANDGROUP_430MHz, "", },		/* CW */
+	{ BMF(432100000L),			BMF(440000000L + BANDPAD), 	BMF(432500000L), 	BANDMAPSUBMODE_USB | BANDSETF_07M, 		BANDGROUP_430MHz, "", },		/* CW */
 #endif /* TUNE_2MBAND */
 	/* далее никаких диапазонов добавлять нельзя - это служебные элементы и их порядок зависит от других частей пронграммы (band_up и band_down). */
 	{ BMF(TUNE_BOTTOM), 		BMF(BANDMIDDLE), 			BMF(4997000L), 		BANDMAPSUBMODE_USB | BANDSETF_ALL, 		BANDGROUP_COUNT, "", },			/* обзорный диапазон - HBANDS_COUNT should equal to this index */
@@ -3307,7 +3321,7 @@ filter_t fi_2p0_455 =
 
 	struct bandinfo bands [HBANDS_COUNT + XBANDS_COUNT + VFOS_COUNT + MBANDS_COUNT];
 #if	WITHDIRECTBANDS
-	struct bandgroup_tag bandgroup [BANDGROUP_COUNT];
+	struct bandgroup_tag bandgroups [BANDGROUP_COUNT];
 #endif	/* WITHDIRECTBANDS */
 
 #if WITHTOUCHGUI
@@ -3338,23 +3352,23 @@ filter_t fi_2p0_455 =
 #define RMT_DATAMODE_BASE	offsetof(struct nvmap, gdatamode)
 
 
-#define RMT_NR_BASE(i)	offsetof(struct nvmap, modes[(i)].noisereduct)
-#define RMT_AGC_BASE(i)	offsetof(struct nvmap, modes[(i)].agc)
-#define RMT_FILTER_BASE(i)	offsetof(struct nvmap, modes[(i)].filter)
-#define RMT_STEP_BASE(i)	offsetof(struct nvmap, modes[(i)].step)
+#define RMT_NR_BASE(i)	offsetof(struct nvmap, modes [(i)].noisereduct)
+#define RMT_AGC_BASE(i)	offsetof(struct nvmap, modes [(i)].agc)
+#define RMT_FILTER_BASE(i)	offsetof(struct nvmap, modes [(i)].filter)
+#define RMT_STEP_BASE(i)	offsetof(struct nvmap, modes [(i)].step)
 
-#define RMT_TXPOWER_BASE(i)	offsetof(struct nvmap, modes[(i)].txpower)
-#define RMT_TXCOMPR_BASE(i)	offsetof(struct nvmap, modes[(i)].txcompr)
-#define RMT_TXAUDIO_BASE(i) offsetof(struct nvmap, modes[(i)].txaudio)
+#define RMT_TXPOWER_BASE(i)	offsetof(struct nvmap, modes [(i)].txpower)
+#define RMT_TXCOMPR_BASE(i)	offsetof(struct nvmap, modes [(i)].txcompr)
+#define RMT_TXAUDIO_BASE(i) offsetof(struct nvmap, modes [(i)].txaudio)
 #define RMT_TXAPROFIGLE_BASE(i) offsetof(struct nvmap, txaprofile[(i)])
 
-#define RMT_BANDGROUP(i) offsetof(struct nvmap, bandgroup[(i)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
-#define RMT_BFREQ_BASE(i) offsetof(struct nvmap, bands[(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
-#define RMT_PAMP_BASE(i) offsetof(struct nvmap, bands[(i)].pamp)			/* признак включения аттенюатора (1 байт) */
-#define RMT_ATT_BASE(i) offsetof(struct nvmap, bands[(i)].att)			/* признак включения аттенюатора (1 байт) */
-#define RMT_ANTENNA_BASE(i) offsetof(struct nvmap, bands[(i)].ant)			/* код включённой антенны (1 байт) */
-#define RMT_MODEROW_BASE(i)	offsetof(struct nvmap, bands[(i)].moderow)			/* номер строки в массиве режимов. */
-#define RMT_MODECOLS_BASE(i, j)	offsetof(struct nvmap, bands[(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
+#define RMT_BANDGROUP(i) offsetof(struct nvmap, bandgroups [(i)].band)	/* последний диапазон в группе, куда был переход по кнопке диапазона (индекс в bands). */
+#define RMT_BFREQ_BASE(i) offsetof(struct nvmap, bands [(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
+#define RMT_PAMP_BASE(i) offsetof(struct nvmap, bands [(i)].pamp)			/* признак включения аттенюатора (1 байт) */
+#define RMT_ATT_BASE(i) offsetof(struct nvmap, bands [(i)].att)			/* признак включения аттенюатора (1 байт) */
+#define RMT_ANTENNA_BASE(i) offsetof(struct nvmap, bands [(i)].ant)			/* код включённой антенны (1 байт) */
+#define RMT_MODEROW_BASE(i)	offsetof(struct nvmap, bands [(i)].moderow)			/* номер строки в массиве режимов. */
+#define RMT_MODECOLS_BASE(i, j)	offsetof(struct nvmap, bands [(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
 #define RMT_PWR_BASE offsetof(struct nvmap, gpwri)								/* большая мощность sw2012sf */
 #define RMT_NOTCH_BASE offsetof(struct nvmap, gnotch)							/* NOTCH on/off */
 #define RMT_NOTCHTYPE_BASE offsetof(struct nvmap, gnotchtype)					/* NOTCH filter type */
@@ -3373,14 +3387,14 @@ filter_t fi_2p0_455 =
 //#define RMT_BWPROPSFLTSOFTER_BASE(i) offsetof(struct nvmap, bwpropsfltsofter [(i)])
 #define RMT_BWPROPSAFRESPONCE_BASE(i) offsetof(struct nvmap, bwpropsafresponce [(i)])
 
-#define RMT_MICLEVEL_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].level)
-#define RMT_MICCLIP_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].clip)
-#define RMT_MICAGC_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].agc)
-#define RMT_MICAGCGAIN_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].agcgain)
-#define RMT_MICBOOST_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].mikebust20db)
-#define RMT_MICEQ_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].eq_enable)
-#define RMT_MICEQPARAMS_BASE(i, j) offsetof(struct nvmap, micprof_cells[(i)].eq_params[(j)])
-#define RMT_MICPSAVE_BASE(i) offsetof(struct nvmap, micprof_cells[(i)].cell_saved)
+#define RMT_MICLEVEL_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].level)
+#define RMT_MICCLIP_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].clip)
+#define RMT_MICAGC_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].agc)
+#define RMT_MICAGCGAIN_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].agcgain)
+#define RMT_MICBOOST_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].mikebust20db)
+#define RMT_MICEQ_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].eq_enable)
+#define RMT_MICEQPARAMS_BASE(i, j) offsetof(struct nvmap, micprof_cells [(i)].eq_params[(j)])
+#define RMT_MICPSAVE_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].cell_saved)
 
 
 
