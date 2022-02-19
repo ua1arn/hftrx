@@ -7455,6 +7455,8 @@ static void blinktest(void * ctx)
 
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 
+static void adcfilters_initialize(void);
+
 /* инициализация при запрещённых прерываниях.
 */
 void board_initialize(void)
@@ -7510,7 +7512,10 @@ void board_initialize(void)
 	board_fpga_fir_initialize();	// порт формирования стробов перезагрузки коэффициентов FIR фильтра в FPGA
 #endif /* WITHDSPEXTFIR */
 
-	board_adc_initialize();		// кроме аппартных ADC инициализируются и фильтры , которые испольщубтся даже если нет встроенного АЦП
+	adcdones_initialize(); // регистрируются обработчики конца преобразвания АЦП
+	adcfilters_initialize();	// раотают даже если нет аппаратного АЦП в процссоре
+
+	board_adc_initialize();
 
 #if defined (BOARD_BLINK_SETSTATE)
 	{
@@ -9030,12 +9035,13 @@ void board_adc_initialize(void)
 	}
 #endif /* WITHDEBUG */
 
+	//PRINTF(PSTR("hardware_adc_initialize\n"));
+
 #if WITHCPUADCHW
 
 	hardware_adc_initialize();
 
 #endif /* WITHCPUADCHW */
-	adcfilters_initialize();
 }
 
 
