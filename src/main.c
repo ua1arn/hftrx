@@ -6272,7 +6272,7 @@ getdefaultbandsubmode(
 	uint_fast32_t freq	/* частота (изображение на дисплее) */
 	)
 {
-	const uint_fast8_t b = getfreqband(freq);
+	const vindex_t b = getfreqband(freq);
 	if (b < HBANDS_COUNT)
 		return get_band_defsubmode(b);
 	return getdefaultsubmode(freq);
@@ -7345,7 +7345,7 @@ catchangefreq(
 	)
 {
 	const uint_fast8_t bi = getbankindex_ab(ab);
-	//const uint_fast8_t b = getfreqband(f);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(f);	/* определяем по частоте, в каком диапазоне находимся */
 
 	gfreqs [bi] = f;
 #if WITHONLYBANDS
@@ -10942,7 +10942,7 @@ uif_key_click_bandup(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
-	const uint_fast8_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
 	verifyband(b);
 	savebandstate(b, bi); // записать все параметры настройки (кроме частоты) в область данных диапазона */
 	savebandfreq(b, bi);
@@ -22695,7 +22695,7 @@ void hamradio_goto_band_by_freq(uint_fast32_t f)
 uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band)
 {
 	band_no_check = 1;
-	uint_fast8_t v = getfreqband(hamradio_get_freq_rx()) == band;
+	vindex_t v = getfreqband(hamradio_get_freq_rx()) == band;
 	band_no_check = 0;
 	return v;
 }
