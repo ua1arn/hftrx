@@ -6151,6 +6151,7 @@ copybankstate(
 	const int_fast32_t deltaf	// рассторйка передатчика для включения способом "auto split"
 	)
 {
+	ASSERT(tbi != sbi);
 	gfreqs [tbi] = vfy32up(gfreqs [sbi] + deltaf, tune_bottom(sbi), tune_top(sbi) - 1, gfreqs [sbi]);
 	gmoderows [tbi] = gmoderows [sbi];
 #if ! WITHONEATTONEAMP
@@ -6162,6 +6163,14 @@ copybankstate(
 #endif /* WITHANTSELECT */
 
 	memcpy(gmodecolmaps [tbi], gmodecolmaps [sbi], sizeof gmodecolmaps [tbi]);
+
+#if WITHSPECTRUMWF
+	gzoomxpow2 [tbi] = gzoomxpow2 [sbi];		/* уменьшение отображаемого участка спектра */
+	gtopdbspe [tbi] = gtopdbspe [sbi];			/* нижний предел FFT */
+	gbottomdbspe [tbi] = gbottomdbspe [sbi];	/* верхний предел FFT */
+	gtopdbwfl [tbi] = gtopdbwfl [sbi];			/* нижний предел FFT waterflow */
+	gbottomdbwfl [tbi] = gbottomdbwfl [sbi];	/* верхний предел FFT waterflow */
+#endif /* WITHSPECTRUMWF */
 }
 
 /* сохранить все частоту настройки в соответствующий диапазон, ячейку памяти или VFO. */
