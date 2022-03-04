@@ -117,7 +117,7 @@ static uint_fast8_t 	glob_swapiq = 0;	// поменять местами I и Q 
 static uint_fast16_t 	glob_afgain;
 static uint_fast8_t 	glob_afmute;	/* отключить звук в наушниках и динамиках */
 static uint_fast8_t		glob_lineinput;	/* используется line input вместо микрофона */
-static uint_fast8_t 	glob_mikebust20db;	/* Включение усилителя 20 дБ за микрофоном */
+static uint_fast8_t 	glob_mikeboost20db;	/* Включение усилителя 20 дБ за микрофоном */
 static uint_fast8_t		glob_mikeagc = 1;	/* Включение программной АРУ перед модулятором */
 static uint_fast8_t		glob_mikeagcgain = 40;	/* предел усиления в АРУ */
 static uint_fast8_t		glob_mikehclip;			/* параметр ограничителя микрофона	*/
@@ -5976,7 +5976,7 @@ prog_codec1reg(void)
 
 	// also use glob_mik1level
 	ifc1->setvolume(glob_afgain, glob_afmute, glob_dsploudspeaker_off);
-	ifc1->setlineinput(glob_lineinput, glob_mikebust20db, glob_mik1level, glob_lineamp);
+	ifc1->setlineinput(glob_lineinput, glob_mikeboost20db, glob_mik1level, glob_lineamp);
 #if defined (HARDWARE_CODEC1_NPROCPARAMS)
 	ifc1->setprocparams(glob_mikeequal, glob_codec1_gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 #endif /* defined (HARDWARE_CODEC1_NPROCPARAMS) */
@@ -6392,12 +6392,12 @@ board_set_lineinput(uint_fast8_t n)
 
 // Включение предусилителя за микрофоном
 void
-board_set_mikebust20db(uint_fast8_t n)
+board_set_mikeboost20db(uint_fast8_t n)
 {
 	const uint_fast8_t v = n != 0;
-	if (glob_mikebust20db != v)
+	if (glob_mikeboost20db != v)
 	{
-		glob_mikebust20db = v;
+		glob_mikeboost20db = v;
 		board_codec1regchanged();
 	}
 }

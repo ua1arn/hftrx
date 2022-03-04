@@ -178,7 +178,7 @@ static void tlv320aic23_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fa
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
-static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 	//debug_printf_P(PSTR("tlv320aic23_lineinput: glob_mik1level=%d\n"), mikegain);
 	(void) mikegain;	// управления усилением микрофона в этом кодеке нет
@@ -207,7 +207,7 @@ static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikebust20db, uin
 		tlv320aic23_setreg(TLV320AIC23_ANLG, 
 			TLV320AIC23_DAC_SELECTED |
 			//TLV320AIC23_MICM_MUTED |
-			(mikebust20db != 0) * TLV320AIC23_MICB_20DB |			// 1 - включение предусилителя микрофона
+			(mikeboost20db != 0) * TLV320AIC23_MICB_20DB |			// 1 - включение предусилителя микрофона
 			TLV320AIC23_INSEL_MIC |			// Оцифровка с микрофона а не с line in
 			0
 			);

@@ -73,7 +73,7 @@ static void cs42l51_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
-static void cs42l51_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+static void cs42l51_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 }
 

@@ -880,7 +880,7 @@ void board_set_dspmode(uint_fast8_t v);	// Параметр для устано�
 void board_set_lineinput(uint_fast8_t n);	// Включение line input вместо микрофона
 void board_set_lineamp(uint_fast16_t v);	// Параметр для регулировки уровня на входе аудио-ЦАП при работе с LINE IN
 void board_set_txaudio(uint_fast8_t v);	// Альтернативные источники сигнала при передаче
-void board_set_mikebust20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
+void board_set_mikeboost20db(uint_fast8_t n);	// Включение предусилителя за микрофоном
 void board_set_afmute(uint_fast8_t n);	// Отключение звука
 void board_set_mikeequal(uint_fast8_t n);	// включение обработки сигнала с микрофона (эффекты, эквалайзер, ...)
 void board_set_mikeequalparams(const uint_fast8_t * p);	// Эквалайзер 80Hz 230Hz 650Hz 	1.8kHz 5.3kHz
@@ -947,7 +947,7 @@ typedef struct codec1if_tag
 	void (* stop) (void);
 	void (* initialize) (void);
 	void (* setvolume) (uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
-	void (* setlineinput) (uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
+	void (* setlineinput) (uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain);	/* Выбор LINE IN как источника для АЦП вместо микрофона */
 	void (* setprocparams) (uint_fast8_t procenable, const uint_fast8_t * gains);	/* параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
 	const char * label;									/* Название кодека (всегда последний элемент в структуре) */
 } codec1if_t;

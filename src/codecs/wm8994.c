@@ -116,7 +116,7 @@ static void wm8994_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
-static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
 	// PGA codes:
 	// 0x3F: +6 dB
@@ -175,7 +175,7 @@ static void wm8994_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uin
 		wm8994_setreg(WM8994_LEFT_INP_PGA_GAIN, mikepgaval | 0);	// PGA volume control setting = 0.0dB
 		wm8994_setreg(WM8994_RIGHT_INP_PGA_GAIN, 0x40 | mikepgaval | 0x100);	// 0x40 = PGA in muted condition not connected to RADC Mix/Boost stage
 		// 
-		wm8994_setreg(WM8994_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikebust20db != 0));	// 0x100 - 20 dB boost ON
+		wm8994_setreg(WM8994_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikeboost20db != 0));	// 0x100 - 20 dB boost ON
 		wm8994_setreg(WM8994_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
 		//
 	}

@@ -3231,7 +3231,7 @@ static void window_ap_mic_process(void)
 		button_t * bh2 = find_gui_element(TYPE_BUTTON, win, "btn_mic_boost");
 		bh2->x1 = (sl_micLevel->x + sl_micLevel->size) / 2 - (bh2->w / 2);
 		bh2->y1 = lbl_micAGC->y + interval;
-		bh2->is_locked = hamradio_get_gmikebust20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		bh2->is_locked = hamradio_get_gmikeboost20db() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 		local_snprintf_P(bh2->text, ARRAY_SIZE(bh2->text), PSTR("Boost|%s"), bh2->is_locked ? "ON" : "OFF");
 		bh2->visible = VISIBLE;
 
@@ -3299,9 +3299,9 @@ static void window_ap_mic_process(void)
 
 			if (bh == btn_mic_boost)
 			{
-				btn_mic_boost->is_locked = hamradio_get_gmikebust20db() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
+				btn_mic_boost->is_locked = hamradio_get_gmikeboost20db() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 				local_snprintf_P(btn_mic_boost->text, ARRAY_SIZE(btn_mic_boost->text), PSTR("Boost|%s"), btn_mic_boost->is_locked ? "ON" : "OFF");
-				hamradio_set_gmikebust20db(btn_mic_boost->is_locked);
+				hamradio_set_gmikeboost20db(btn_mic_boost->is_locked);
 			}
 			else if (bh == btn_mic_agc)
 			{

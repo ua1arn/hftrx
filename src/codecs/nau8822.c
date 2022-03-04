@@ -116,9 +116,9 @@ static void nau8822_setvolume(uint_fast16_t gain, uint_fast8_t mute, uint_fast8_
 }
 
 /* Выбор LINE IN как источника для АЦП вместо микрофона */
-static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, uint_fast16_t mikegain, uint_fast16_t linegain)
+static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikeboost20db, uint_fast16_t mikegain, uint_fast16_t linegain)
 {
-	//PRINTF("nau8822_lineinput: linein=%d, mikebust20db=%d, mikegain=%d, linegain=%d\n", (int) linein, (int) mikebust20db, (int) mikegain, (int) linegain);
+	//PRINTF("nau8822_lineinput: linein=%d, mikeboost20db=%d, mikegain=%d, linegain=%d\n", (int) linein, (int) mikeboost20db, (int) mikegain, (int) linegain);
 	// Микрофон подключен к LMICP, LMICN=common
 	// Входы RMICN, RMICP никуда не подключены
 	// Line input подключены к LAUXIN, RAUXIN
@@ -149,7 +149,7 @@ static void nau8822_lineinput(uint_fast8_t linein, uint_fast8_t mikebust20db, ui
 		nau8822_setreg(NAU8822_LEFT_INP_PGA_GAIN, inppgagain | 0);
 		nau8822_setreg(NAU8822_RIGHT_INP_PGA_GAIN, inppgagain | 0x100);	// Write both valuse simultaneously
 		// 
-		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikebust20db != 0));	// 0x100 - 20 dB boost ON
+		nau8822_setreg(NAU8822_LEFT_ADC_BOOST_CONTROL, 0x000 | 0x100 * (mikeboost20db != 0));	// 0x100 - 20 dB boost ON
 		nau8822_setreg(NAU8822_RIGHT_ADC_BOOST_CONTROL, 0x000);	// RLINEIN disconnected, RAUXIN disconnected
 		// Микрофон подключен к LMICN, LMICP=common
 		// LLIN отключен от PGA

@@ -1078,7 +1078,7 @@ struct micprof_cell
 	uint_fast8_t clip;
 	uint_fast8_t agc;
 	uint_fast8_t agcgain;
-	uint_fast8_t mikebust20db;
+	uint_fast8_t mikeboost20db;
 	uint_fast8_t eq_enable;
 	uint8_t eq_params [HARDWARE_CODEC1_NPROCPARAMS];
 	uint_fast8_t cell_saved;
@@ -1086,7 +1086,7 @@ struct micprof_cell
 
 typedef struct micprof_cell	micprof_t;
 
-static micprof_t micprof_cells[NMICPROFCELLS];
+static micprof_t micprof_cells [NMICPROFCELLS];
 #endif /* WITHAFCODEC1HAVEPROC */
 
 static mikproc_t micprofiles [] =
@@ -2989,7 +2989,7 @@ struct nvmap
 		uint16_t rfgain1;	// Параметр для регулировки усиления по ПЧ
 	#endif /* ! WITHPOTIFGAIN */
 	uint16_t glineamp;	// усиление с LINE IN
-	uint8_t gmikebust20db;	// предусилитель микрофона
+	uint8_t gmikeboost20db;	// предусилитель микрофона
 	uint8_t gmikeagc;	/* Включение программной АРУ перед модулятором */
 	uint8_t gmikeagcgain;	/* Максимальное усидение АРУ микрофона */
 	uint8_t gmikehclip;		/* Ограничитель */
@@ -3391,7 +3391,7 @@ filter_t fi_2p0_455 =
 #define RMT_MICCLIP_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].clip)
 #define RMT_MICAGC_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].agc)
 #define RMT_MICAGCGAIN_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].agcgain)
-#define RMT_MICBOOST_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].mikebust20db)
+#define RMT_MICBOOST_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].mikeboost20db)
 #define RMT_MICEQ_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].eq_enable)
 #define RMT_MICEQPARAMS_BASE(i, j) offsetof(struct nvmap, micprof_cells [(i)].eq_params[(j)])
 #define RMT_MICPSAVE_BASE(i) offsetof(struct nvmap, micprof_cells [(i)].cell_saved)
@@ -3787,7 +3787,7 @@ enum
 #endif /* defined WITHAFGAINDEFAULT */
 	static dualctl16_t rfgain1 = { BOARD_IFGAIN_MAX, BOARD_IFGAIN_MAX };	// Усиление ПЧ на максимуме
 	static uint_fast16_t glineamp = WITHLINEINGAINMAX;	// усиление с LINE IN
-	static uint_fast8_t gmikebust20db;	// предусилитель микрофона
+	static uint_fast8_t gmikeboost20db;	// предусилитель микрофона
 	static uint_fast8_t gmikeagc = 1;	/* Включение программной АРУ перед модулятором */
 	static uint_fast8_t gmikeagcgain = 30;	/* Максимальное усидение АРУ микрофона */
 	static uint_fast8_t gmikehclip = 20;		/* Ограничитель */
@@ -6386,7 +6386,7 @@ static void micproc_load(void)
 		mp->agcgain = loadvfy8up(RMT_MICAGCGAIN_BASE(i), WITHMIKEAGCMIN, WITHMIKEAGCMAX, 30);
 		mp->clip = loadvfy8up(RMT_MICCLIP_BASE(i), WITHMIKECLIPMIN, WITHMIKECLIPMAX, 0);
 		mp->level = loadvfy8up(RMT_MICLEVEL_BASE(i), WITHMIKEINGAINMIN, WITHMIKEINGAINMAX, WITHMIKEINGAINMAX);
-		mp->mikebust20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
+		mp->mikeboost20db = loadvfy8up(RMT_MICBOOST_BASE(i), 0, 1, 0);
 		mp->eq_enable = loadvfy8up(RMT_MICEQ_BASE(i), 0, 1, 0);
 		for(uint_fast8_t j = 0; j < HARDWARE_CODEC1_NPROCPARAMS; j ++)
 			mp->eq_params[j] = loadvfy8up(RMT_MICEQPARAMS_BASE(i, j), 0, EQUALIZERBASE * 2, EQUALIZERBASE);
@@ -10418,7 +10418,7 @@ updateboardZZZ(
 				board_set_datavox(gdatavox);	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 			#endif /* WITHTX */
 		#endif /* WITHUSBUAC */
-		board_set_mikebust20db(gmikebust20db);	// Включение предусилителя за микрофоном
+		board_set_mikeboost20db(gmikeboost20db);	// Включение предусилителя за микрофоном
 		board_set_lineamp(glineamp);	/* усиление с линейного входа */
 		board_set_txaudio(txaudio);	// Альтернативные источники сигнала при передаче
 		board_set_mikeagc(gmikeagc);	/* Включение программной АРУ перед модулятором */
@@ -16720,7 +16720,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gkeybeep10,
 		getzerobase, 
 	},
-#endif
+#endif /* (SIDETONE_TARGET_BIT != 0) || WITHINTEGRATEDDSP */
 #if WITHMUTEALL && WITHTX
 	{
 		QLABEL("MUTE ALL"), 7, 3, RJ_YES,	ISTEP1,
@@ -16755,7 +16755,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& gsquelchNFM,
 		getzerobase, /* складывается со смещением и отображается */
 	},
-#endif /* WITHPOTNFMSQL */
+#endif /* ! WITHPOTNFMSQL */
 	{
 		QLABEL("SDTN LVL"), 7, 0, 0,	ISTEP1,		/* Select the CW sidetone or keypad sound output level.. */
 		ITEM_VALUE,
@@ -16927,13 +16927,13 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif /* WITHREVERB */
 	{
-		QLABEL("MIK BUST"), 8, 3, RJ_ON,	ISTEP1,
+		QLABEL2("MIKBOOST", "Mike boost"), 8, 3, RJ_ON,	ISTEP1,
 		ITEM_VALUE,	
 		0, 1, 					// предусилитель сигнала с микрофона
-		offsetof(struct nvmap, gmikebust20db),
+		offsetof(struct nvmap, gmikeboost20db),
 		nvramoffs0,
 		NULL,
-		& gmikebust20db,
+		& gmikeboost20db,
 		getzerobase, /* складывается со смещением и отображается */
 	},
 	#if WITHAFCODEC1HAVEPROC	/* кодек имеет управление обработкой микрофонного сигнала (эффекты, эквалайзер, ...) */
@@ -22050,15 +22050,15 @@ void hamradio_set_gmikeagcgain(uint_fast8_t v)
 	updateboard(1, 0);
 }
 
-uint_fast8_t hamradio_get_gmikebust20db(void)
+uint_fast8_t hamradio_get_gmikeboost20db(void)
 {
-	return gmikebust20db;
+	return gmikeboost20db;
 }
 
-void hamradio_set_gmikebust20db(uint_fast8_t v)
+void hamradio_set_gmikeboost20db(uint_fast8_t v)
 {
-	gmikebust20db = v != 0;
-	save_i8(offsetof(struct nvmap, gmikebust20db), gmikebust20db);
+	gmikeboost20db = v != 0;
+	save_i8(offsetof(struct nvmap, gmikeboost20db), gmikeboost20db);
 	updateboard(1, 0);
 }
 
@@ -22596,7 +22596,7 @@ void hamradio_clean_mic_profile(uint_fast8_t cell)
 
 	micprof_t * mp = & micprof_cells [cell];
 
-	mp->mikebust20db = 0;
+	mp->mikeboost20db = 0;
 	mp->level = 0;
 	mp->agc = 0;
 	mp->agcgain = 0;
@@ -22614,7 +22614,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	micprof_t * mp = & micprof_cells [cell];
 
 	mp->cell_saved = 1;
-	mp->mikebust20db = gmikebust20db;
+	mp->mikeboost20db = gmikeboost20db;
 	mp->level = gmik1level;
 	mp->agc = gmikeagc;
 	mp->agcgain = gmikeagcgain;
@@ -22628,7 +22628,7 @@ void hamradio_save_mic_profile(uint_fast8_t cell)
 	}
 
 	save_i8(RMT_MICEQ_BASE(cell), mp->eq_enable);
-	save_i8(RMT_MICBOOST_BASE(cell), mp->mikebust20db);
+	save_i8(RMT_MICBOOST_BASE(cell), mp->mikeboost20db);
 	save_i8(RMT_MICLEVEL_BASE(cell), mp->level);
 	save_i8(RMT_MICAGC_BASE(cell), mp->agc);
 	save_i8(RMT_MICAGCGAIN_BASE(cell), mp->agcgain);
@@ -22644,7 +22644,7 @@ uint_fast8_t hamradio_load_mic_profile(uint_fast8_t cell, uint_fast8_t set)
 
 	if (mp->cell_saved && set)
 	{
-		gmikebust20db = mp->mikebust20db;
+		gmikeboost20db = mp->mikeboost20db;
 		gmik1level = mp->level;
 		gmikeagc = mp->agc;
 		gmikeagcgain = mp->agcgain;
