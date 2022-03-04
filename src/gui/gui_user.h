@@ -115,6 +115,7 @@ typedef struct {
 
 typedef bp_var_t notch_var_t;
 typedef bp_var_t display_var_t;
+typedef bp_var_t power_var_t;
 
 typedef struct {
 	uint_fast16_t step;

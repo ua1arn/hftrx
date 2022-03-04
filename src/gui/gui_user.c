@@ -314,7 +314,9 @@ static void window_infobar_menu_process(void)
 
 		case INFOBAR_TX_POWER:
 
+#if WITHPOWERTRIM
 			need_open = infobar_places [infobar_selected];
+#endif /*  WITHPOWERTRIM */
 			break;
 
 		default:
@@ -2326,20 +2328,21 @@ static void window_tx_power_process(void)
 #if WITHPOWERTRIM
 	window_t * const win = get_win(WINDOW_TX_POWER);
 
-	static slider_t * sl_pwr_level = NULL, * sl_pwr_tuner_level = NULL;
 	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
-	static uint_fast16_t power_min, power_max;
-	static uint_fast8_t update = 0;
+	static power_var_t pw;
+	static uint_fast16_t power_min, power_max, power_full, power_tune;
 	slider_t * sl;
 
 	if (win->first_call)
 	{
 		uint_fast8_t interval = 50;
 		win->first_call = 0;
+		pw.change = 0;
+		pw.updated = 1;
 
 		static const button_t buttons [] = {
 			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", 	   "OK", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_lowtune_enable", "",   },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_LP_tune", "",   },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2347,19 +2350,9 @@ static void window_tx_power_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		static const slider_t sliders [] = {
-			{ ORIENTATION_HORIZONTAL, WINDOW_TX_POWER, "sl_pwr_level",   	 CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-			{ ORIENTATION_HORIZONTAL, WINDOW_TX_POWER, "sl_pwr_tuner_level", CANCELLED, NON_VISIBLE, 0, 50, 255, 0, 0, },
-		};
-		win->sh_count = ARRAY_SIZE(sliders);
-		uint_fast16_t sliders_size = sizeof(sliders);
-		win->sh_ptr = malloc(sliders_size);
-		GUI_MEM_ASSERT(win->sh_ptr);
-		memcpy(win->sh_ptr, sliders, sliders_size);
-
 		static const label_t labels [] = {
-			{	WINDOW_TX_POWER, DISABLED,  0, NON_VISIBLE, "lbl_tx_power",   "", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{	WINDOW_TX_POWER, DISABLED,  0, NON_VISIBLE, "lbl_tune_power", "", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_TX_POWER, CANCELLED, 0, NON_VISIBLE, "lbl_tx_power",   "", FONT_MEDIUM, COLORMAIN_WHITE, 0, },
+			{	WINDOW_TX_POWER, CANCELLED, 0, NON_VISIBLE, "lbl_tune_power", "", FONT_MEDIUM, COLORMAIN_WHITE, 1, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -2367,51 +2360,33 @@ static void window_tx_power_process(void)
 		GUI_MEM_ASSERT(win->lh_ptr);
 		memcpy(win->lh_ptr, labels, labels_size);
 
-		sl_pwr_level = find_gui_element(TYPE_SLIDER, win, "sl_pwr_level");
-		sl_pwr_tuner_level = find_gui_element(TYPE_SLIDER, win, "sl_pwr_tuner_level");
-
 		lbl_tx_power = find_gui_element(TYPE_LABEL, win, "lbl_tx_power");
 		lbl_tune_power = find_gui_element(TYPE_LABEL, win, "lbl_tune_power");
 
 		hamradio_get_tx_power_limits(& power_min, & power_max);
-		uint_fast8_t power = hamradio_get_tx_power();
-		uint_fast8_t tune_power = hamradio_get_tx_tune_power();
+		power_full = hamradio_get_tx_power();
+		power_tune = hamradio_get_tx_tune_power();
 
 		lbl_tx_power->x = 0;
 		lbl_tx_power->y = 10;
 		lbl_tx_power->visible = VISIBLE;
-		local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power);
+		local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power_full);
 
 		lbl_tune_power->x = lbl_tx_power->x;
 		lbl_tune_power->y = lbl_tx_power->y + interval;
 		lbl_tune_power->visible = VISIBLE;
-		local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), tune_power);
+		local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), power_tune);
 
-		sl_pwr_level->x = lbl_tx_power->x + interval * 3 + interval / 2;
-		sl_pwr_level->y = lbl_tx_power->y;
-		sl_pwr_level->visible = VISIBLE;
-		sl_pwr_level->size = 300;
-		sl_pwr_level->step = 3;
-		sl_pwr_level->value = normalize(power, power_min, power_max, 100);
-
-		sl_pwr_tuner_level->x = sl_pwr_level->x;
-		sl_pwr_tuner_level->y = lbl_tune_power->y;
-		sl_pwr_tuner_level->visible = VISIBLE;
-		sl_pwr_tuner_level->size = 300;
-		sl_pwr_tuner_level->step = 3;
-		sl_pwr_tuner_level->value = normalize(tune_power, power_min, power_max, 100);
+		button_t * btn_LP_tune = find_gui_element(TYPE_BUTTON, win, "btn_LP_tune");
+		btn_LP_tune->x1 = 0;
+		btn_LP_tune->y1 = lbl_tune_power->y + interval;
+		btn_LP_tune->visible = VISIBLE;
 
 		button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-		btn_tx_pwr_OK->x1 = (sl_pwr_level->x + sl_pwr_level->size) / 2 - (btn_tx_pwr_OK->w / 2);
-		btn_tx_pwr_OK->y1 = lbl_tune_power->y + interval;
+		btn_tx_pwr_OK->x1 = btn_LP_tune->x1 + btn_LP_tune->w + btn_tx_pwr_OK->w;
+		btn_tx_pwr_OK->y1 = btn_LP_tune->y1;
 		btn_tx_pwr_OK->visible = VISIBLE;
 
-		button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
-		btn_lowtune_enable->x1 = btn_tx_pwr_OK->x1 + btn_tx_pwr_OK->w + 20;
-		btn_lowtune_enable->y1 = btn_tx_pwr_OK->y1;
-		btn_lowtune_enable->visible = VISIBLE;
-
-		update = 1;
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
@@ -2423,52 +2398,86 @@ static void window_tx_power_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-			button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
+			button_t * btn_LP_tune = find_gui_element(TYPE_BUTTON, win, "btn_LP_tune");
 
 			if (bh == btn_tx_pwr_OK)
 			{
 				close_all_windows();
 			}
-			else if (bh == btn_lowtune_enable)
+			else if (bh == btn_LP_tune)
 			{
 				gui_nvram.tune_powerdown_enable = gui_nvram.tune_powerdown_enable ? 0 : 1;
 				save_settings();
-				update = 1;
+				pw.updated = 1;
 			}
 		}
-		else if (IS_SLIDER_MOVE)
+		else if (IS_LABEL_PRESS)
 		{
-			slider_t * sl = (slider_t *) ptr;
-
-			if (sl == sl_pwr_level)
-			{
-				uint_fast8_t power = power_min + normalize(sl->value, 0, 100, power_max - power_min);
-				local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"),power);
-				hamradio_set_tx_power(power);
-			}
-			else if (sl == sl_pwr_tuner_level)
-			{
-				uint_fast8_t power = power_min + normalize(sl->value, 0, 100, power_max - power_min);
-				local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"),power);
-				hamradio_set_tx_tune_power(power);
-				gui_nvram.tune_powerdown_value = power;
-				save_settings();
-			}
+			label_t * lh = (label_t *) ptr;
+			pw.select = lh->index;
+			pw.change = 0;
+			pw.updated = 1;
 		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		pw.change = action;
+		pw.updated = 1;
+		break;
+
+	case WM_MESSAGE_UPDATE:
+
+		pw.change = 0;
+		pw.updated = 1;
 		break;
 
 	default:
-
 		break;
 	}
 
-	if (update)
+	if (pw.updated)
 	{
-		update = 0;
+		pw.updated = 0;
 
-		button_t * btn_lowtune_enable = find_gui_element(TYPE_BUTTON, win, "btn_lowtune_enable");
-		local_snprintf_P(btn_lowtune_enable->text, ARRAY_SIZE(btn_lowtune_enable->text), "Low power|tune %s", gui_nvram.tune_powerdown_enable ? "en" : "dis");
-		btn_lowtune_enable->is_locked = gui_nvram.tune_powerdown_enable ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		if (pw.change != 0)
+		{
+			switch (pw.select)
+			{
+			case 0:
+				if (power_full + pw.change <= power_max && power_full + pw.change >= power_min)
+					power_full += pw.change;
+
+				local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power_full);
+				hamradio_set_tx_power(power_full);
+
+				break;
+
+			case 1:
+				if (power_tune + pw.change <= power_max && power_tune + pw.change >= power_min)
+					power_tune += pw.change;
+
+				local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), power_tune);
+				hamradio_set_tx_tune_power(power_tune);
+				gui_nvram.tune_powerdown_value = power_tune;
+				save_settings();
+
+				break;
+
+			default:
+				break;
+			}
+		}
+
+		for(uint_fast8_t i = 0; i < win->lh_count; i ++)
+			win->lh_ptr [i].color = COLORMAIN_WHITE;
+
+		ASSERT(pw.select < win->lh_count);
+		win->lh_ptr [pw.select].color = COLORMAIN_YELLOW;
+
+		button_t * btn_LP_tune = find_gui_element(TYPE_BUTTON, win, "btn_LP_tune");
+		local_snprintf_P(btn_LP_tune->text, ARRAY_SIZE(btn_LP_tune->text), "LP tune");
+		btn_LP_tune->is_locked = gui_nvram.tune_powerdown_enable ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 	}
 
 #endif /* WITHPOWERTRIM */
