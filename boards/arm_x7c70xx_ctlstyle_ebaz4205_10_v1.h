@@ -241,6 +241,7 @@
 			#define WITHALTERNATIVEFONTS	1
 			#define WITHAFEQUALIZER		1
 //			#define WITHALTERNATIVELAYOUT	1
+			#define GUI_NEW_STYLE_SYSTEM_MENU	1
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

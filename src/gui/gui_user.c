@@ -130,6 +130,7 @@ static void window_gui_settings_process(void);
 static void window_ft8_process(void);
 static void window_infobar_menu_process(void);
 static void windows_af_eq_proccess(void);
+static void window_menu_params_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -138,6 +139,9 @@ static window_t windows [] = {
 	{ WINDOW_AF,    		 WINDOW_RECEIVE,		ALIGN_CENTER_X, "AF settings",    		 1, window_af_process, },
 	{ WINDOW_FREQ,  		 WINDOW_BANDS,			ALIGN_CENTER_X, "Freq:", 	   			 1, window_freq_process, },
 	{ WINDOW_MENU,  		 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_process, },
+#if GUI_NEW_STYLE_SYSTEM_MENU
+	{ WINDOW_MENU_PARAMS,    WINDOW_MENU,		    ALIGN_CENTER_X, "Settings",	   		 	 1, window_menu_params_proccess, },
+#endif /* GUI_NEW_STYLE_SYSTEM_MENU */
 	{ WINDOW_UIF, 			 NO_PARENT_WINDOW, 		ALIGN_LEFT_X, 	"",   		   	 		 0, window_uif_process, },
 	{ WINDOW_SWR_SCANNER,	 WINDOW_UTILS, 			ALIGN_CENTER_X, "SWR band scanner",		 0, window_swrscan_process, },
 	{ WINDOW_AUDIOSETTINGS,  WINDOW_OPTIONS,		ALIGN_CENTER_X, "Audio settings", 		 1, window_audiosettings_process, },
@@ -3301,7 +3305,7 @@ static void window_ap_mic_process(void)
 			{
 				btn_mic_boost->is_locked = hamradio_get_gmikeboost20db() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 				local_snprintf_P(btn_mic_boost->text, ARRAY_SIZE(btn_mic_boost->text), PSTR("Boost|%s"), btn_mic_boost->is_locked ? "ON" : "OFF");
-				hamradio_set_gmikeboost20db(btn_mic_boost->is_locked);
+				hamradio_set_gmikebust20db(btn_mic_boost->is_locked);
 			}
 			else if (bh == btn_mic_agc)
 			{
@@ -4849,6 +4853,170 @@ static void window_freq_process (void)
 	}
 }
 
+#if GUI_NEW_STYLE_SYSTEM_MENU
+
+#define MENU_GROUPS_MAX	20
+#define MENU_PARAMS_MAX	30
+static uint8_t index_param = 0, index_val = 0;
+
+static void window_menu_params_proccess(void)
+{
+	window_t * const win = get_win(WINDOW_MENU_PARAMS);
+	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
+	static button_t * bh_sel = NULL;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+
+		const uint8_t interval = 6;
+		uint_fast16_t x = 0, y = 0, xmax = 0;
+		button_t * bh = NULL;
+
+		const uint8_t count = hamradio_get_multilinemenu_block_params(menup, index_param, MENU_PARAMS_MAX);
+		uint8_t cols = count <= 16 ? 4 : 5;
+
+		win->bh_count = count;
+		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+
+		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
+		{
+			bh = & win->bh_ptr [i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->w = 130;
+			bh->h = 35;
+			bh->state = CANCELLED;
+			bh->visible = VISIBLE;
+			bh->parent = WINDOW_MENU_PARAMS;
+			bh->index = i;
+			bh->is_long_press = 0;
+			bh->is_repeating = 0;
+			bh->is_locked = BUTTON_NON_LOCKED;
+			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_params_%02d"), i);
+			remove_end_line_spaces(menup[i].name);
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), menup[i].name);
+			bh->payload = menup[i].index;
+
+			xmax = x > xmax ? x : xmax;
+
+			x = x + interval + bh->w;
+			if ((i + 1) % cols == 0)
+			{
+				x = 0;
+				y = y + bh->h + interval;
+			}
+		}
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		local_snprintf_P(win->name, ARRAY_SIZE(win->name), "Edit param: choose...");
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+
+			if (bh_sel)
+				bh_sel->is_locked = BUTTON_NON_LOCKED;
+
+			bh->is_locked = BUTTON_LOCKED;
+			bh_sel = bh;
+
+			hamradio_get_multilinemenu_block_vals(& menuv, bh->payload, 1);
+			remove_end_line_spaces(menuv.name);
+			local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s: %s", bh_sel->text, menuv.name);
+		}
+		break;
+
+	case WM_MESSAGE_ENC2_ROTATE:
+	{
+		char edit_val [20];
+		strcpy(edit_val, hamradio_gui_edit_menu_item(menuv.index, action));
+		remove_end_line_spaces(edit_val);
+		local_snprintf_P(win->name, ARRAY_SIZE(win->name), "%s: %s", bh_sel->text, edit_val);
+	}
+		break;
+
+	default:
+	break;
+	}
+}
+
+static void window_menu_process(void)
+{
+	window_t * const win = get_win(WINDOW_MENU);
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		uint_fast16_t x = 0, y = 0;
+		button_t * bh = NULL;
+		menu_names_t menu [MENU_GROUPS_MAX];
+		const uint_fast8_t cols = 4, interval = 6;
+
+		const uint8_t count = hamradio_get_multilinemenu_block_groups(menu);
+		ASSERT(count < MENU_GROUPS_MAX);
+
+		win->bh_count = count;
+		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+
+		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
+		{
+			bh = & win->bh_ptr [i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->w = 130;
+			bh->h = 35;
+			bh->state = CANCELLED;
+			bh->visible = VISIBLE;
+			bh->parent = WINDOW_MENU;
+			bh->index = i;
+			bh->is_long_press = 0;
+			bh->is_repeating = 0;
+			bh->is_locked = BUTTON_NON_LOCKED;
+			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), PSTR("btn_groups_%02d"), i);
+			remove_end_line_spaces(menu[i].name);
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), menu[i].name);
+			bh->payload = menu[i].index;
+
+			x = x + interval + bh->w;
+			if ((i + 1) % cols == 0)
+			{
+				x = 0;
+				y = y + bh->h + interval;
+			}
+		}
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			index_param = bh->payload;
+			window_t * const win = get_win(WINDOW_MENU_PARAMS);
+			open_window(win);
+		}
+		break;
+
+	default:
+	break;
+	}
+}
+
+#else
+
 static void window_menu_process(void)
 {
 	static uint_fast8_t menu_is_scrolling = 0;
@@ -5316,6 +5484,6 @@ static void window_menu_process(void)
 				win->y1 + lh->y + get_label_height(lh) + 5, GUI_MENUSELECTCOLOR, 1);
 	}
 }
-
+#endif /* GUI_NEW_STYLE_SYSTEM_MENU */
 
 #endif /* WITHTOUCHGUI && WITHGUISTYLE_COMMON */

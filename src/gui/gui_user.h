@@ -16,6 +16,9 @@ enum {
 	WINDOW_AF,						// регулировка полосы пропускания фильтров выбранного режима
 	WINDOW_FREQ,					// прямой ввод частоты
 	WINDOW_MENU,					// системное меню
+#if GUI_NEW_STYLE_SYSTEM_MENU
+	WINDOW_MENU_PARAMS,
+#endif /* GUI_NEW_STYLE_SYSTEM_MENU */
 	WINDOW_UIF,						// быстрое меню по нажатию заранее определенных кнопок
 	WINDOW_SWR_SCANNER,				// сканер КСВ по диапазону
 	WINDOW_AUDIOSETTINGS,			// настройки аудиопараметров

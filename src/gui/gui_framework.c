@@ -39,6 +39,7 @@ uint_fast8_t check_for_parent_window(void);
 
 static btn_bg_t btn_bg [] = {
 #if WITHGUISTYLE_COMMON
+	{ 130, 35, },
 	{ 100, 44, },
 	{ 86, 44, },
 	{ 50, 50, },
@@ -702,6 +703,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 			y_start = va_arg(arg, uint_fast16_t);
 			va_end(arg);
 		}
+		// no break
 
 	case WINDOW_POSITION_FULLSCREEN:
 	case WINDOW_POSITION_AUTO:
