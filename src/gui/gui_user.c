@@ -3305,7 +3305,7 @@ static void window_ap_mic_process(void)
 			{
 				btn_mic_boost->is_locked = hamradio_get_gmikeboost20db() ? BUTTON_NON_LOCKED : BUTTON_LOCKED;
 				local_snprintf_P(btn_mic_boost->text, ARRAY_SIZE(btn_mic_boost->text), PSTR("Boost|%s"), btn_mic_boost->is_locked ? "ON" : "OFF");
-				hamradio_set_gmikebust20db(btn_mic_boost->is_locked);
+				hamradio_set_gmikeboost20db(btn_mic_boost->is_locked);
 			}
 			else if (bh == btn_mic_agc)
 			{
