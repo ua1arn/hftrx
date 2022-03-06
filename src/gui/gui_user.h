@@ -8,8 +8,6 @@
 #include "src/gui/gui.h"
 #include "src/gui/gui_structs.h"
 
-#if WITHGUISTYLE_COMMON				// версия GUI для разрешения 800х480
-
 enum {
 	WINDOW_MAIN,					// постоянно отображаемые кнопки внизу экрана
 	WINDOW_MODES,					// переключение режимов работы, видов модуляции
@@ -45,23 +43,6 @@ enum {
 
 	WINDOWS_COUNT
 };
-
-#elif WITHGUISTYLE_MINI 				// версия GUI для разрешения 480x272
-
-enum {
-	WINDOW_MAIN,
-	WINDOW_MAIN_MENU,
-	WINDOW_MENU,
-	WINDOW_BANDS,
-	WINDOW_FREQ,
-	WINDOW_RECEIVE,
-	WINDOW_MODES,
-	WINDOW_AF,
-
-	WINDOWS_COUNT
-};
-
-#endif /* WITHGUISTYLE_COMMON */
 
 void gui_user_actions_after_close_window(void);
 

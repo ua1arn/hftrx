@@ -38,18 +38,11 @@ void close_all_windows(void);
 uint_fast8_t check_for_parent_window(void);
 
 static btn_bg_t btn_bg [] = {
-#if WITHGUISTYLE_COMMON
 	{ 130, 35, },
 	{ 100, 44, },
 	{ 86, 44, },
 	{ 50, 50, },
 	{ 40, 40, },
-#elif WITHGUISTYLE_MINI
-	{ 94, 30, },
-	{ 86, 44, },
-	{ 50, 50, },
-	{ 30, 30, },
-#endif
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
@@ -675,7 +668,7 @@ void open_window(window_t * win)
 /* при mode = WINDOW_POSITION_MANUAL_SIZE в качестве необязательных параметров передать xmax и ymax */
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
-	uint_fast8_t title_length = strlen(win->name) * SMALLCHARW;
+	uint_fast8_t title_length = strlen(win->title) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
 
 #if WITHGUISTYLE_MINI
@@ -776,12 +769,12 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	if (mode == WINDOW_POSITION_FULLSCREEN)
 	{
 		shift_x = (win->w - xmax) / 2;
-		shift_y = (win->h - ymax) / 2 + (strcmp(win->name, "") ? window_title_height : 0);
+		shift_y = (win->h - ymax) / 2 + (strcmp(win->title, "") ? window_title_height : 0);
 	}
 	else
 	{
 		shift_x = edge_step;
-		shift_y = (strcmp(win->name, "") ? window_title_height : 0) + edge_step;
+		shift_y = (strcmp(win->title, "") ? window_title_height : 0) + edge_step;
 	}
 
 	if (win->bh_ptr != NULL)
@@ -840,7 +833,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		win->x1 = 0;
 		win->y1 = 0;
 		win->w = WITHGUIMAXX;
-		win->h = WITHGUIMAXY - h - (strcmp(win->name, "") ? window_title_height : 0);
+		win->h = WITHGUIMAXY - h - (strcmp(win->title, "") ? window_title_height : 0);
 	}
 	else if (mode == WINDOW_POSITION_MANUAL_POSITION)
 	{
@@ -888,7 +881,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	}
 
 	win->draw_x1 = win->x1 + edge_step;
-	win->draw_y1 = win->y1 + edge_step + (strcmp(win->name, "") ? window_title_height : 0);
+	win->draw_y1 = win->y1 + edge_step + (strcmp(win->title, "") ? window_title_height : 0);
 	win->draw_x2 = win->x1 + win->w - edge_step;
 	win->draw_y2 = win->y1 + win->h - edge_step;
 
@@ -1589,9 +1582,9 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 				{
 					ASSERT(win->w > 0 || win->h > 0);
 #if GUI_TRANSPARENT_WINDOWS
-					display_transparency(win->x1, strcmp(win->name, "") ? (win->y1 + window_title_height) : win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
+					display_transparency(win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) : win->y1, win->x1 + win->w - 1, win->y1 + win->h - 1, alpha);
 #else
-					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, strcmp(win->name, "") ? (win->y1 + window_title_height) : win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
+					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, strcmp(win->title, "") ? (win->y1 + window_title_height) : win->y1, win->w, win->h, GUI_WINDOWBGCOLOR);
 #endif /* GUI_TRANSPARENT_WINDOWS */
 				}
 			}
@@ -1602,10 +1595,10 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 			if (! f)
 			{
 				// вывод заголовка окна
-				if (strcmp(win->name, ""))
+				if (strcmp(win->title, ""))
 				{
 					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR);
-					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + window_title_indent, win->y1 + 5, win->name, COLORMAIN_BLACK);
+					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + window_title_indent, win->y1 + 5, win->title, COLORMAIN_BLACK);
 				}
 
 				// отрисовка принадлежащих окну элементов
@@ -1701,6 +1694,7 @@ uint_fast16_t gui_get_window_draw_height(window_t * win)
 	return win->draw_y2 - win->draw_y1;
 }
 
+// Нарисовать линию в границах окна
 void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color)
 {
 	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
@@ -1717,6 +1711,5 @@ void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast1
 
 	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 0);
 }
-
 
 #endif /* WITHTOUCHGUI */

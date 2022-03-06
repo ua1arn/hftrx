@@ -2499,7 +2499,7 @@ extern "C" {
 #define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
 
-#if (DIM_X < 480 || DIM_Y < 272) && WITHTOUCHGUI		// не соблюдены минимальные требования к разрешению экрана
+#if (DIM_X != 800 || DIM_Y != 480) && WITHTOUCHGUI		// не соблюдены требования к разрешению экрана
 	#undef WITHTOUCHGUI									// для функционирования touch GUI
 #endif
 

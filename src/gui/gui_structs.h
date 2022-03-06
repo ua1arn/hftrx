@@ -220,9 +220,10 @@ typedef struct {
 	const uint8_t window_id;		// в окне будут отображаться элементы с соответствующим полем for_window
 	uint8_t parent_id;				// UINT8_MAX - нет parent window
 	window_align_t align_mode;		// вертикаль выравнивания окна
-	char name[NAME_ARRAY_SIZE];		// текст, выводимый в заголовке окна
+	char title [NAME_ARRAY_SIZE];	// текст, выводимый в заголовке окна
 	uint8_t is_close;				// разрешение или запрет вывода кнопки закрытия окна
 	void (*onVisibleProcess) (void);
+	char name [NAME_ARRAY_SIZE];	// имя окна
 //	*** служебные и автоматически заполняемые элементы структуры ***
 	button_t * bh_ptr;				// указатели на массивы оконных элементов
 	uint8_t bh_count;
