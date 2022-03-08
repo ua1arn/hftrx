@@ -67,6 +67,13 @@ enum {
 	WINDOW_POSITION_FULLSCREEN
 };
 
+// выравнивание заголовка окна, по умолчанию - слева
+typedef enum {
+	TITLE_ALIGNMENT_LEFT,
+	TITLE_ALIGNMENT_RIGHT,
+	TITLE_ALIGNMENT_CENTER
+} title_align_t;
+
 enum {
 	NAME_ARRAY_SIZE = 30,
 	TEXT_ARRAY_SIZE = 50,
@@ -246,6 +253,7 @@ typedef struct {
 	uint16_t draw_y1;				// доступной для вывода графики
 	uint16_t draw_x2;
 	uint16_t draw_y2;
+	title_align_t title_align;
 } window_t;
 
 typedef struct {

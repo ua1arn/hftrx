@@ -4462,10 +4462,12 @@ static void window_menu_params_proccess(void)
 	window_t * const win = get_win(WINDOW_MENU_PARAMS);
 	static menu_names_t menup [MENU_PARAMS_MAX], menuv;
 	static button_t * bh_sel = NULL;
+	static uint8_t sel = 0;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
+		sel = 0;
 
 		const uint8_t interval = 6;
 		uint_fast16_t x = 0, y = 0, xmax = 0;
@@ -4510,6 +4512,7 @@ static void window_menu_params_proccess(void)
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Edit param: choose...");
+		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
 	}
 
 	GET_FROM_WM_QUEUE
@@ -4525,6 +4528,7 @@ static void window_menu_params_proccess(void)
 
 			bh->is_locked = BUTTON_LOCKED;
 			bh_sel = bh;
+			sel = 1;
 
 			hamradio_get_multilinemenu_block_vals(& menuv, bh->payload, 1);
 			remove_end_line_spaces(menuv.name);
@@ -4535,9 +4539,12 @@ static void window_menu_params_proccess(void)
 	case WM_MESSAGE_ENC2_ROTATE:
 	{
 		char edit_val [20];
-		strcpy(edit_val, hamradio_gui_edit_menu_item(menuv.index, action));
-		remove_end_line_spaces(edit_val);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s", bh_sel->text, edit_val);
+		if (sel)
+		{
+			strcpy(edit_val, hamradio_gui_edit_menu_item(menuv.index, action));
+			remove_end_line_spaces(edit_val);
+			local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s: %s", bh_sel->text, edit_val);
+		}
 	}
 		break;
 

@@ -668,7 +668,7 @@ void open_window(window_t * win)
 /* при mode = WINDOW_POSITION_MANUAL_SIZE в качестве необязательных параметров передать xmax и ymax */
 void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
-	uint_fast8_t title_length = strlen(win->title) * SMALLCHARW;
+	uint_fast16_t title_length = strlen(win->title) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
 
 #if WITHGUISTYLE_MINI
@@ -885,8 +885,16 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	win->draw_x2 = win->x1 + win->w - edge_step;
 	win->draw_y2 = win->y1 + win->h - edge_step;
 
+	win->title_align = TITLE_ALIGNMENT_LEFT;
+
 	//PRINTF("%d %d %d %d\n", win->x1, win->y1, win->h, win->w);
 	elements_state(win);
+}
+
+void window_set_title_align(window_t * win, title_align_t align)
+{
+	ASSERT(win != NULL);
+	win->title_align = align;
 }
 
 /* Передать менеджеру GUI код нажатой кнопки на клавиатуре */
@@ -1597,8 +1605,39 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 				// вывод заголовка окна
 				if (strcmp(win->title, ""))
 				{
+					uint16_t title_lenght = strlen(win->title) * SMALLCHARW;
+					uint16_t xt = 0;
+
+					switch(win->title_align)
+					{
+					case TITLE_ALIGNMENT_LEFT:
+
+						xt = win->x1 + window_title_indent;
+
+						break;
+
+					case TITLE_ALIGNMENT_RIGHT:
+
+						xt = win->x1 + win->w - title_lenght - window_title_indent - (win->is_close ? window_close_button_size : 0);
+
+						break;
+
+					case TITLE_ALIGNMENT_CENTER:
+
+						xt = win->x1 + win->w / 2 - title_lenght / 2;
+
+						break;
+
+					default:
+
+						PRINTF("alignment value %d incorrect for window %s\n", win->title_align, win->title);
+						ASSERT(0);
+
+						break;
+					}
+
 					colpip_fillrect(fr, DIM_X, DIM_Y, win->x1, win->y1, win->w, window_title_height, GUI_WINDOWTITLECOLOR);
-					colpip_string_tbg(fr, DIM_X, DIM_Y, win->x1 + window_title_indent, win->y1 + 5, win->title, COLORMAIN_BLACK);
+					colpip_string_tbg(fr, DIM_X, DIM_Y, xt, win->y1 + 5, win->title, COLORMAIN_BLACK);
 				}
 
 				// отрисовка принадлежащих окну элементов
