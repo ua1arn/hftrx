@@ -435,7 +435,7 @@ void bandf_calc_initialize(void)
 	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
 
 #elif \
-	(CTLSTYLE_STORCH_V8 && ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_R4DZ_H_INCLUDED) || \
+	WITH_R1YQ_2XRD70_POWERAMP || \
 	0
 	/* плата усилителя 2*RD100 UA1CEI */
 	// R4DZ version: 1.8-2.0  3.5-4.0,   7-7.2,   10-10.2.  14-18.2    21-30
