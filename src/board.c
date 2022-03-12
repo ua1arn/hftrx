@@ -8704,8 +8704,9 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 #if defined (targetxad2)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
-		//PRINTF("targetxad2: ch = %u\n", ch);
-		return mcp3208_read(targetxad2, xad2xlt [ch].diff, xad2xlt [ch].ch, & valid);
+		adcvalholder_t rv = mcp3208_read(targetxad2, xad2xlt [ch].diff, xad2xlt [ch].ch, & valid);
+		//PRINTF("targetxad2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
+		return rv;
 #else /* defined (targetxad2) */
 		return 0;
 #endif /* defined (targetxad2) */
