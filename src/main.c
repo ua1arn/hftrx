@@ -2279,7 +2279,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint32_t init;
 		uint8_t defsubmode_bandset;
 		uint8_t	bandgroup;
-		char label [8];
+		char label [9];
 	};
 
 	#define BMF(a) (a)		/* получение инициализационного элемента */
@@ -2292,7 +2292,7 @@ static const char * const bandlabels [BANDGROUP_COUNT] =
 		uint16_t init;
 		uint8_t 	defsubmode_bandset;
 		uint8_t	bandgroup;
-		char label[8];
+		char label[9];
 	};
 
 	#define BMF_SCALE	1000UL
