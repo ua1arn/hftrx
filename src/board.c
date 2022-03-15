@@ -4172,9 +4172,9 @@ static void
 prog_ctrlreg(uint_fast8_t plane)
 {
 
-#if defined(DDS1_TYPE)
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
-#endif
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
 	//prog_rfadc_update();			// AD9246 vref divider update
 
 	// registers chain control register
