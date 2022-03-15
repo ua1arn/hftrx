@@ -23258,6 +23258,16 @@ void bootloader_copyapp(
 
 #elif (BOOTLOADER_SELFSIZE != 0)
 
+#if 0
+	static uint8_t b [64];
+	bootloader_readimage(0x00000000, b, ARRAY_SIZE(b));
+	PRINTF("boot image:\n");
+	printhex(0x00000000, b, ARRAY_SIZE(b));
+	bootloader_readimage(BOOTLOADER_SELFSIZE, b, ARRAY_SIZE(b));
+	PRINTF("app image:\n");
+	printhex(BOOTLOADER_SELFSIZE, b, ARRAY_SIZE(b));
+#endif
+
 	bootloader_readimage(BOOTLOADER_SELFSIZE, (void *) apparea, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
 		return;
