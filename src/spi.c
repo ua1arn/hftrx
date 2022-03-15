@@ -858,9 +858,9 @@ void nand_read_id(void)
 	nand_read(v, ARRAY_SIZE(v));
 	nand_cs_deactivate();
 
-	// NAMD IDs = 2C DA 90 95
+	// NAND IDs = 2C DA 90 95
 	// DA == MT29F2G08AAC
-	PRINTF("NAMD IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
+	PRINTF("NAND IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
 #endif /* WITHDEBUG */
 }
 

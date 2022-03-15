@@ -28,7 +28,9 @@
 #include "lib/zynq/src/xgpiops.h"
 
 static XGpioPs xc7z_gpio;
+#if ! WITHISBOOTLOADER
 static XAdcPs xc7z_xadc;
+#endif /* ! WITHISBOOTLOADER */
 
 void xc7z_hardware_initialize(void)
 {
@@ -45,6 +47,7 @@ void xc7z_hardware_initialize(void)
 		ASSERT(0);
 	}
 
+#if ! WITHISBOOTLOADER
 	XAdcPs_Config * xadccfg = XAdcPs_LookupConfig(XPAR_XADCPS_0_DEVICE_ID);
 	XAdcPs_CfgInitialize(& xc7z_xadc, xadccfg, xadccfg->BaseAddress);
 
@@ -56,12 +59,17 @@ void xc7z_hardware_initialize(void)
 	}
 
 	XAdcPs_SetSequencerMode(& xc7z_xadc, XADCPS_SEQ_MODE_SAFE);
+#endif /* ! WITHISBOOTLOADER */
 }
 
 float xc7z_get_cpu_temperature(void)
 {
+#if ! WITHISBOOTLOADER
 	u32 TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
 	return XAdcPs_RawToTemperature(TempRawData);
+#else
+	return 0;
+#endif /* ! WITHISBOOTLOADER */
 }
 
 
