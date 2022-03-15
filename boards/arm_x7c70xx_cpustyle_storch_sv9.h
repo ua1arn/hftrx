@@ -33,7 +33,7 @@
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 //#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
-#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
+//#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ANTMINER 1
@@ -983,28 +983,29 @@
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
 
-	// Table 6-9: Quad-SPI Boot MIO Register Settings
-	// QSPI_CS0 	MIO1
-	// QSPI_IO[0:3] MIO2..MIO5
-	// QSPI_SCLK0 	MIO6
-	#define SPDIF_NCS_MIO 	1	// MIO1	QSPI_CS0
-	#define SPDIF_MOSI_MIO 	2	// MIO2	QSPI_IO0
-	#define SPDIF_MISO_MIO 	3	// MIO3	QSPI_IO1
-	#define SPDIF_D2_MIO 	4	// MIO4	QSPI_IO2
-	#define SPDIF_D3_MIO 	5	// MIO5	QSPI_IO3
-	#define SPDIF_SCLK_MIO 	6	// MIO6	QSPI_SCLK0
-
-	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
-	#define SPIDF_HANGOFF() do { \
-		xc7z_gpio_input(SPDIF_NCS_MIO);	/*  */ \
-		xc7z_gpio_input(SPDIF_SCLK_MIO);	/*  */ \
-		xc7z_gpio_input(SPDIF_MOSI_MIO);	/*  */ \
-		xc7z_gpio_input(SPDIF_MISO_MIO);	/*  */ \
-		xc7z_gpio_input(SPDIF_D2_MIO);	/*  */ \
-		xc7z_gpio_input(SPDIF_D3_MIO);	/*  */ \
-		} while (0)
-
 	#if WIHSPIDFSW || WIHSPIDFHW
+
+		// Table 6-9: Quad-SPI Boot MIO Register Settings
+		// QSPI_CS0 	MIO1
+		// QSPI_IO[0:3] MIO2..MIO5
+		// QSPI_SCLK0 	MIO6
+		#define SPDIF_NCS_MIO 	1	// MIO1	QSPI_CS0
+		#define SPDIF_MOSI_MIO 	2	// MIO2	QSPI_IO0
+		#define SPDIF_MISO_MIO 	3	// MIO3	QSPI_IO1
+		#define SPDIF_D2_MIO 	4	// MIO4	QSPI_IO2
+		#define SPDIF_D3_MIO 	5	// MIO5	QSPI_IO3
+		#define SPDIF_SCLK_MIO 	6	// MIO6	QSPI_SCLK0
+
+
+		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
+		#define SPIDF_HANGOFF() do { \
+			xc7z_gpio_input(SPDIF_NCS_MIO);	/*  */ \
+			xc7z_gpio_input(SPDIF_SCLK_MIO);	/*  */ \
+			xc7z_gpio_input(SPDIF_MOSI_MIO);	/*  */ \
+			xc7z_gpio_input(SPDIF_MISO_MIO);	/*  */ \
+			xc7z_gpio_input(SPDIF_D2_MIO);	/*  */ \
+			xc7z_gpio_input(SPDIF_D3_MIO);	/*  */ \
+			} while (0)
 
 		#if WIHSPIDFHW
 			#define SPIDF_HARDINITIALIZE() do { \
@@ -1064,7 +1065,7 @@
 	#define HARDWARE_NAND_ALE_MIO 2		// ALE: PS_MIO2
 	#define HARDWARE_NAND_CLE_MIO 7		// CLE: PS_MIO7
 	#define HARDWARE_NAND_WEB_MIO 3		// WE#: PS_MIO3
-	#define HARDWARE_NAND_WPB_MIO 1		// WP#: PS_MIO1
+	//#define HARDWARE_NAND_WPB_MIO 1		// WP#: PS_MIO1 ???
 	#define HARDWARE_NAND_REB_MIO 8		// RE#: PS_MIO8
 	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
 
@@ -1086,15 +1087,15 @@
 		xc7z_writepin(HARDWARE_NAND_CLE_MIO, 0); \
 		xc7z_gpio_output(HARDWARE_NAND_WEB_MIO); \
 		xc7z_writepin(HARDWARE_NAND_WEB_MIO, 1); \
-		xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); /* Write protect */ \
-		xc7z_writepin(HARDWARE_NAND_WPB_MIO, 0); \
+		/*xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); *//* Write protect */ \
+		/*xc7z_writepin(HARDWARE_NAND_WPB_MIO, 0); */\
 		xc7z_gpio_output(HARDWARE_NAND_REB_MIO); \
 		xc7z_writepin(HARDWARE_NAND_REB_MIO, 1); \
 	} while (0)
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
-#if 1
+#if 0
 	#define ZYNQBOARD_LED_RED 37 /* PS_MIO37_LED_R */
 	#define ZYNQBOARD_LED_GREEN 38 /* PS_MIO38_LED_G */
 
@@ -1121,15 +1122,15 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			I2S2HW_POOLDOWN(); \
-			BOARD_BLINK_INITIALIZE(); \
-			HARDWARE_KBD_INITIALIZE(); \
-			HARDWARE_DAC_INITIALIZE(); \
+			/*I2S2HW_POOLDOWN(); */\
+			/*BOARD_BLINK_INITIALIZE(); */\
+			/*HARDWARE_KBD_INITIALIZE(); */\
+			/*HARDWARE_DAC_INITIALIZE(); */\
 			/*HARDWARE_BL_INITIALIZE(); */ \
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
+			/*HARDWARE_DCDC_INITIALIZE(); */\
+			/*TXDISABLE_INITIALIZE(); */\
+			/*TUNE_INITIALIZE(); */\
+			/*BOARD_USERBOOT_INITIALIZE(); */ \
 			/*USBD_FS_INITIALIZE(); */\
 		} while (0)
 
