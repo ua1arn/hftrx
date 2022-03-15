@@ -233,8 +233,10 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-all: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h bitstream_blink_20.h $(PROJECT)_app.xyl32
+all: bitstreams $(PROJECT)_app.xyl32
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
+
+bitstreams: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h bitstream_boot_20.h 
 
 bitstream_ant_10.h: bitstream_ant_10.bit
 	./bit2c bitstream_ant_10.bit bitstream_ant_10.h
@@ -242,13 +244,13 @@ bitstream_ant_10.h: bitstream_ant_10.bit
 bitstream_ant_20.h: bitstream_ant_20.bit
 	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
 
-bitstream_blink_20.h: blink.bit
-	./bit2c  blink.bit bitstream_ant_20.h
+bitstream_boot_20.h: blink.bit
+	./bit2c  blink.bit bitstream_boot_20.h
 
 bitstream_4205_10.h: bitstream_4205_10.bit
 	./bit2c bitstream_4205_10.bit bitstream_4205_10.h
 	
-bootloader: BOOT2
+bootloader: bitstreams BOOT2
   
 app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
 	xsct.bat app_run_4205.tcl 
@@ -311,6 +313,7 @@ clean: version
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) bitstream_ant_10.h bitstream_ant_20.h
 	-$(RM) bitstream_4205_10.h
+	-$(RM) bitstream_boot_20.h
 
 version:
 	$(CC) --version
