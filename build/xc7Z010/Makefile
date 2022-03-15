@@ -233,7 +233,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-all: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h $(PROJECT)_app.xyl32
+all: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h bitstream_blink_20.h $(PROJECT)_app.xyl32
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
 bitstream_ant_10.h: bitstream_ant_10.bit
@@ -241,6 +241,9 @@ bitstream_ant_10.h: bitstream_ant_10.bit
 
 bitstream_ant_20.h: bitstream_ant_20.bit
 	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
+
+bitstream_blink_20.h: blink.bit
+	./bit2c  blink.bit bitstream_ant_20.h
 
 bitstream_4205_10.h: bitstream_4205_10.bit
 	./bit2c bitstream_4205_10.bit bitstream_4205_10.h
