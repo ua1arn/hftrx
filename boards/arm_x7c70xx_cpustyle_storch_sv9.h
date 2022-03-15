@@ -53,7 +53,7 @@
 	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
@@ -104,7 +104,7 @@
 
 #else /* WITHISBOOTLOADER */
 
-	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -982,19 +982,26 @@
 	#define USBD_DFU_FLASHNAME "W25Q128JV"
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
-	#define SPDIF_MISO_BIT (1u << 9)	// PF9	QUADSPI_BK1_IO1
-	#define SPDIF_MOSI_BIT (1u << 8)	// PF8	QUADSPI_BK1_IO0
-	#define SPDIF_SCLK_BIT (1u << 10)	// PF10	QUADSPI_CLK
-	#define SPDIF_NCS_BIT (1u << 6)		// PB6	QUADSPI_BK1_NCS
 
-	#define SPDIF_D2_BIT (1u << 7)		// PF7	QUADSPI_BK1_IO2
-	#define SPDIF_D3_BIT (1u << 6)		// PF6	QUADSPI_BK1_IO3
+	// Table 6-9: Quad-SPI Boot MIO Register Settings
+	// QSPI_CS0 	MIO1
+	// QSPI_IO[0:3] MIO2..MIO5
+	// QSPI_SCLK0 	MIO6
+	#define SPDIF_NCS_MIO 	1	// MIO1	QSPI_CS0
+	#define SPDIF_MOSI_MIO 	2	// MIO2	QSPI_IO0
+	#define SPDIF_MISO_MIO 	3	// MIO3	QSPI_IO1
+	#define SPDIF_D2_MIO 	4	// MIO4	QSPI_IO2
+	#define SPDIF_D3_MIO 	5	// MIO5	QSPI_IO3
+	#define SPDIF_SCLK_MIO 	6	// MIO6	QSPI_SCLK0
+
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
-			/* arm_hardware_piob_inputs(SPDIF_NCS_BIT);  */ \
-			/* arm_hardware_piof_inputs(SPDIF_SCLK_BIT);  */ \
-			/* arm_hardware_piof_inputs(SPDIF_MOSI_BIT);  */ \
-			/* arm_hardware_piof_inputs(SPDIF_MISO_BIT);  */ \
+		xc7z_gpio_input(SPDIF_NCS_MIO);	/*  */ \
+		xc7z_gpio_input(SPDIF_SCLK_MIO);	/*  */ \
+		xc7z_gpio_input(SPDIF_MOSI_MIO);	/*  */ \
+		xc7z_gpio_input(SPDIF_MISO_MIO);	/*  */ \
+		xc7z_gpio_input(SPDIF_D2_MIO);	/*  */ \
+		xc7z_gpio_input(SPDIF_D3_MIO);	/*  */ \
 		} while (0)
 
 	#if WIHSPIDFSW || WIHSPIDFHW
@@ -1013,32 +1020,28 @@
 
 		#else /* WIHSPIDFHW */
 
-			#define SPIDF_MISO() 1//((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
-			#define SPIDF_MOSI(v) //do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
-			#define SPIDF_SCLK(v) //do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
+			#define SPIDF_MISO() (xc7z_readpin(SPDIF_MISO_MIO) != 0)
+			#define SPIDF_MOSI(v) do { if (v) xc7z_writepin(SPDIF_MOSI_MIO, 1); else xc7z_writepin(SPDIF_MOSI_MIO, 0); } while (0)
+			#define SPIDF_SCLK(v) do { if (v) xc7z_writepin(SPDIF_SCLK_MIO, 1); else xc7z_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-					/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* D2 tie-up */ \
-					/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* D3 tie-up */ \
-					/* arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); */  \
-					/* arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); */  \
-					/* arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); */  \
-					/* arm_hardware_piof_inputs(SPDIF_MISO_BIT); */  \
+					xc7z_gpio_output(SPDIF_NCS_MIO);	\
+					xc7z_writepin(SPDIF_NCS_MIO, 1);  \
+					xc7z_gpio_output(SPDIF_SCLK_MIO);	\
+					xc7z_writepin(SPDIF_SCLK_MIO, 1);  \
+					xc7z_gpio_output(SPDIF_MOSI_MIO);	\
+					xc7z_gpio_input(SPDIF_MISO_MIO);	\
+					xc7z_gpio_output(SPDIF_D2_MIO);	 \
+					xc7z_writepin(SPDIF_D2_MIO, 1);  \
+					xc7z_gpio_output(SPDIF_D3_MIO);	 \
+					xc7z_writepin(SPDIF_D3_MIO, 1);  \
 				} while (0)
 			#define SPIDF_SELECT() do { \
-					/* arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); */  \
-					/* arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); */  \
-					/* arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); */  \
-					/* arm_hardware_piof_inputs(SPDIF_MISO_BIT); */  \
-					/*GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT);*/ \
+					xc7z_writepin(SPDIF_NCS_MIO, 0);  \
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					/*GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); */ \
-					/* arm_hardware_piob_inputs(SPDIF_NCS_BIT); */  \
-					/* arm_hardware_piof_inputs(SPDIF_SCLK_BIT); */  \
-					/* arm_hardware_piof_inputs(SPDIF_MOSI_BIT); */  \
-					/* arm_hardware_piof_inputs(SPDIF_MISO_BIT); */  \
-					__DSB(); \
+				xc7z_writepin(SPDIF_NCS_MIO, 1);  \
+				__DSB(); \
 				} while (0)
 
 		#endif /* WIHSPIDFHW */
