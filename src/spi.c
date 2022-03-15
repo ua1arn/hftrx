@@ -1975,7 +1975,7 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len)
 {
 	spidf_initialize();
-	testchipDATAFLASH();	// устанока кодов опрерации для скоростныз режимов
+	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 	readDATAFLASH(flashoffset, dest, Len);
 	spidf_uninitialize();
 }
