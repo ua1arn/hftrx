@@ -7,7 +7,7 @@
 //
 
 // Трансивер с DSP обработкой "Аист" на процессоре
-// rmainunit_sv9b.pcb ZYNQ 7020, TFT 7", USB, NAU8822L
+// rmainunit_sv9b.pcb myir7020-766, TFT 7", USB, NAU88C22, LTC2208
 
 #ifndef ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED
 #define ARM_X7C7XX_BGAXXX_CTLSTYLE_STORCH_SV9_H_INCLUDED 1
