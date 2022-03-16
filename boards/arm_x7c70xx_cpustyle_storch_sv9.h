@@ -646,13 +646,13 @@
 	#define	SPI_MOSI_MIO 	45
 	#define	SPI_MISO_MIO 	41
 
-	#define SPI_SCLK_C()	do { xc7z_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
-	#define SPI_SCLK_S()	do { xc7z_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
+	#define SPI_SCLK_C()	do { gpio_pin_output_state(SPI_SCLK_MIO, 0); __DSB(); } while (0)
+	#define SPI_SCLK_S()	do { gpio_pin_output_state(SPI_SCLK_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_MOSI_C()	do { xc7z_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
-	#define SPI_MOSI_S()	do { xc7z_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
+	#define SPI_MOSI_C()	do { gpio_pin_output_state(SPI_MOSI_MIO, 0); __DSB(); } while (0)
+	#define SPI_MOSI_S()	do { gpio_pin_output_state(SPI_MOSI_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO) != 0)
+	#define SPI_TARGET_MISO_PIN		(gpio_get_input(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
 			xc7z_gpio_output(SPI_SCLK_MIO); \
@@ -1059,8 +1059,8 @@
 		#else /* WIHSPIDFHW */
 
 			#define SPIDF_MISO() (xc7z_readpin(SPDIF_MISO_MIO))
-			#define SPIDF_MOSI(v) do { if (v) xc7z_writepin(SPDIF_MOSI_MIO, 1); else xc7z_writepin(SPDIF_MOSI_MIO, 0); } while (0)
-			#define SPIDF_SCLK(v) do { if (v) xc7z_writepin(SPDIF_SCLK_MIO, 1); else xc7z_writepin(SPDIF_SCLK_MIO, 0); } while (0)
+			#define SPIDF_MOSI(v) do { if (v) gpio_pin_output_state(SPDIF_MOSI_MIO, 1); else gpio_pin_output_state(SPDIF_MOSI_MIO, 0); } while (0)
+			#define SPIDF_SCLK(v) do { if (v) gpio_pin_output_state(SPDIF_SCLK_MIO, 1); else gpio_pin_output_state(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
 					xc7z_gpio_output(SPDIF_NCS_MIO);	\
 					xc7z_writepin(SPDIF_NCS_MIO, 1);  \
@@ -1074,11 +1074,11 @@
 					xc7z_writepin(SPDIF_D3_MIO, 1);  \
 				} while (0)
 			#define SPIDF_SELECT() do { \
-					xc7z_writepin(SPDIF_NCS_MIO, 0);  \
+					gpio_pin_output_state(SPDIF_NCS_MIO, 0);  \
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					xc7z_writepin(SPDIF_NCS_MIO, 1);  \
+					gpio_pin_output_state(SPDIF_NCS_MIO, 1);  \
 					__DSB(); \
 				} while (0)
 

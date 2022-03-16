@@ -231,6 +231,7 @@ extern "C" {
 		ZYNQ_IORW32(GPIO_OEN(bank)) &= ~ mask; /* When OEN[x]==0, the output driver is disabled */ \
 		} while (0)
 
+	#define gpio_get_input(pin) ((GPIO_DATA_RO(GPIO_PIN2BANK(pin)) & GPIO_PIN2MASK(pin)) != 0)
 
 #endif /* CPUSTYLE_STM32F */
 
