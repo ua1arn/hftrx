@@ -1092,7 +1092,7 @@ extern uint8_t myGATEWAY [4];
 
 void xc7z_hardware_initialize(void);
 float xc7z_get_cpu_temperature(void);
-uint8_t xc7z_readpin(uint8_t pin);
+uint_fast8_t xc7z_readpin(uint8_t pin);
 void xc7z_writepin(uint8_t pin, uint8_t val);
 void xc7z_gpio_input(uint8_t pin);
 void xc7z_gpio_output(uint8_t pin);

@@ -73,7 +73,7 @@ float xc7z_get_cpu_temperature(void)
 }
 
 
-uint8_t xc7z_readpin(uint8_t pin)
+uint_fast8_t xc7z_readpin(uint8_t pin)
 {
 	ASSERT(xc7z_gpio.IsReady == XIL_COMPONENT_IS_READY);
 	ASSERT(pin < xc7z_gpio.MaxPinNum);

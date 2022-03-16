@@ -145,7 +145,12 @@ spi_cs_enable(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if WITHSPICSEMIO
+	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
+
+	SPI_CS_SET(target);
+
+#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
 	SPI_CS_SET(target);
 
@@ -243,7 +248,10 @@ spi_setaddress(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
+#if WITHSPICSEMIO
+	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
+
+#elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
 	#if defined (SPI_NAEN_BIT)
 		if ((target & SPI_ALLCS_BITS) == 0)

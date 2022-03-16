@@ -597,6 +597,7 @@
 //#define SPI_IOUPDATE_PORT_S(v)	do { GPIOA->BSRR = BSRR_S(v); __DSB(); } while (0)
 //#define SPI_IOUPDATE_BIT		(1uL << 15)	// * PA15
 
+// All trough EMIO
 //	CTL1_CS		D10	E19	IO_L5N_T0_AD9N_3
 //	RTC_CS		A20	R17	IO_B34_LN19
 //	CODEC_CS	B14	J18	IO_L14P_T2_AD4P_SRCC_35
@@ -606,37 +607,49 @@
 //	EXT1_CS		D9	E18	IO_L5P_T0_AD9P_35
 //	EXT2_CS		D8	F17	IO_L6N_T0_VREF_35
 
-#define TARGET_CTL1_CS_MIO 62
+#define TARGET_CTL1_CS_EMIO 	62
+#define TARGET_RTC_CS_EMIO 		62
+#define TARGET_CODEC1_CS_EMIO 	62
+#define TARGET_ADC1_CS_EMIO 	62
+#define TARGET_ADC2_CS_EMIO 	62
+#define TARGET_NVRAM_CS_EMIO 	62
+#define TARGET_EXT1_CS_EMIO 	62
+#define TARGET_EXT2_CS_EMIO 	62
 
-#define targetctl1		TARGET_CTL1_CS_MIO	// control registers
-#define targetfpga1		TARGET_CTL1_CS_MIO	// FPGA control registers (STUB)
-
-#define TARGET_CODEC1_MIO 62
-
-#define targetcodec1		TARGET_CODEC1_MIO	// nvram NAU88C22
+#define targetctl1		TARGET_CTL1_CS_EMIO	// control registers
+#define targetfpga1		TARGET_CTL1_CS_EMIO	// FPGA control registers (STUB)
+#define targetnvram		TARGET_NVRAM_EMIO	// nvram FM25L256
+#define targetcodec1	TARGET_CODEC1_EMIO	// nvram NAU88C22
 
 #if WITHSPIHW || WITHSPISW
 
-	#define TARGET_NVRAM_MIO	62	// nvram FM25L256
+	#define WITHSPICSEMIO	1	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
-	#define targetnvram		TARGET_NVRAM_MIO	// nvram FM25L256
+	#define TARGET_NVRAM_EMIO	62	// nvram FM25L256
 
-	#define SPI_CS_SET(v)	xc7z_writepin(v, 0);
+
+	#define SPI_CS_SET(target)	do { xc7z_writepin((target), 0); } while (0)
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
-			xc7z_writepin(TARGET_NVRAM_MIO, 1);		\
+			xc7z_writepin(TARGET_CTL1_CS_EMIO, 1);		\
+			xc7z_writepin(TARGET_RTC_CS_EMIO, 1);		\
+			xc7z_writepin(TARGET_CODEC1_CS_EMIO, 1);		\
+			xc7z_writepin(TARGET_ADC1_CS_EMIO, 1);		\
+			xc7z_writepin(TARGET_ADC2_CS_EMIO, 1);		\
+			xc7z_writepin(TARGET_NVRAM_CS_EMIO, 1);		\
+			xc7z_writepin(TARGET_EXT1_CS_EMIO, 1);		\
+			xc7z_writepin(TARGET_EXT2_CS_EMIO, 1);		\
 		} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			xc7z_gpio_output(TARGET_NVRAM_MIO); \
 		} while (0)
 
-//	SPI_MOSI	C38	B15	PS_MIO45_501
-//	SPI_MISO	C36	C17	PS_MIO41_501
-//	SPI_SCLK	C39	D14	PS_MIO40_501
+	//	SPI_MOSI	C38	B15	PS_MIO45_501
+	//	SPI_MISO	C36	C17	PS_MIO41_501
+	//	SPI_SCLK	C39	D14	PS_MIO40_501
 	// MOSI & SCK port
 	#define	SPI_SCLK_MIO 	40
 	#define	SPI_MOSI_MIO 	45
@@ -648,24 +661,30 @@
 	#define SPI_MOSI_C()	do { xc7z_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
 	#define SPI_MOSI_S()	do { xc7z_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO) != 0)
 
 	#define SPIIO_INITIALIZE() do { \
-		xc7z_gpio_output(SPI_SCLK_MIO); \
-		xc7z_gpio_output(SPI_MOSI_MIO); \
-		xc7z_gpio_input(SPI_MISO_MIO); \
+			xc7z_gpio_output(SPI_SCLK_MIO); \
+			xc7z_writepin(SPI_SCLK_MIO, 1); \
+			xc7z_gpio_output(SPI_MOSI_MIO); \
+			xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
 		} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
+			xc7z_gpio_output(SPI_SCLK_MIO); \
+			xc7z_writepin(SPI_SCLK_MIO, 1); \
+			xc7z_gpio_output(SPI_MOSI_MIO); \
+			xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
 		} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
+		xc7z_gpio_input(SPI_MOSI_MIO); \
 		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -708,10 +727,10 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
-//	I2S_SCL	C42	E12	PS_MIO42_501	Open Drain
-//	I2s_SDA	C43	A9	PS_MIO43_501	Open Drain
-	#define TARGET_TWI_TWCK_MIO			42		// EMIO 58
-	#define TARGET_TWI_TWD_MIO			43		// EMIO 57
+	//	I2S_SCL	C42	E12	PS_MIO42_501	Open Drain
+	//	I2s_SDA	C43	A9	PS_MIO43_501	Open Drain
+	#define TARGET_TWI_TWCK_MIO			42
+	#define TARGET_TWI_TWD_MIO			43
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
@@ -1021,7 +1040,7 @@
 
 		#else /* WIHSPIDFHW */
 
-			#define SPIDF_MISO() (xc7z_readpin(SPDIF_MISO_MIO) != 0)
+			#define SPIDF_MISO() (xc7z_readpin(SPDIF_MISO_MIO))
 			#define SPIDF_MOSI(v) do { if (v) xc7z_writepin(SPDIF_MOSI_MIO, 1); else xc7z_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) xc7z_writepin(SPDIF_SCLK_MIO, 1); else xc7z_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
@@ -1041,8 +1060,8 @@
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-				xc7z_writepin(SPDIF_NCS_MIO, 1);  \
-				__DSB(); \
+					xc7z_writepin(SPDIF_NCS_MIO, 1);  \
+					__DSB(); \
 				} while (0)
 
 		#endif /* WIHSPIDFHW */
