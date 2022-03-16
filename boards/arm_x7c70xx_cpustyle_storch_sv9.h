@@ -995,7 +995,7 @@
 	//	2. In cases of Quad-SPI boot, if the image is authenticated, then the boot image should be placed
 	//	at a 32K offset other than 0x0 (the image should not be placed starting at 0x0 offset in
 	//	Quad-SPI).
-	#define BOOTLOADER_FSBL_OFFSET	0x8000
+	#define BOOTLOADER_FSBL_OFFSET	0//0x8000
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
 

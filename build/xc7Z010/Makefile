@@ -267,8 +267,11 @@ $(ZYNQLIB): $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA)
 	-$(RM) $@
 	$(AR) $@ $(ZOBJS)
 	
-flash: $(PROJECT)_app.xyl32
+flash_dfu: $(PROJECT)_app.xyl32
 	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0xFC080000 --download $(PROJECT)_app.xyl32
+
+flash: $(PROJECT)_app.xyl32
+	D:/Xilinx/Vitis/2021.2/bin/program_flash -f $(PROJECT)_app.xyl32 -verify  -offset 0x80000 -flash_type qspi-x4-single -fsbl executable.elf
 
 $(PROJECT)_app.xyl32: $(PROJECT)_app.bin
 	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
