@@ -221,7 +221,7 @@
 	//#define WITHISBOOTLOADERFATFS 1
 	//#define WITHISBOOTLOADERIMAGE "tc1_xc7z010_app.xyl32"
 	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
-	//#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_boot_20.h"
+	//#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_myir7020.р"
 
 #else /* WITHISBOOTLOADER */
 
@@ -283,7 +283,7 @@
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 	#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
-	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_boot_20.h"
+	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_myir7020.р"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
