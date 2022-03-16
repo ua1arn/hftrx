@@ -1702,6 +1702,8 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 	{
 		PRINTF("Couldn't start display: %d\r\n", Status);
 	}
+
+	ltdc_tfcon_cfg(vdmode);
 }
 
 /* Palette reload (dummy fuction) */
