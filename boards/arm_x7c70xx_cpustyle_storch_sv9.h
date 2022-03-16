@@ -824,16 +824,31 @@
 		} while (0)
 #endif /* WITHCPUADCHW */
 
+	// direct connection:
+	//	USB_RESET	C37	D16		PS_MIO46_501
+	//
+	// ULPI:
+	//	USB_DATA0	C27	A14		PS_MIO32_501
+	//	USB_DATA1	C28	D15		PS_MIO33_501
+	//	USB_DATA2	C30	A12		PS_MIO34_501
+	//	USB_DATA3	C34	F12		PS_MIO35_501
+	//	USB_DATA4	C25	C16		PS_MIO28_501
+	//	USB_DATA5	C35	A10		PS_MIO37_501
+	//	USB_DATA6	C31	E13		PS_MIO38_501
+	//	USB_DATA7	C23	C18		PS_MIO39_501
+	//	USB_DIR		C29	C13		PS_MIO29_501
+	//	USB_STP		C26	C15		PS_MIO30_501
+	//	USB_NXT		C24	E16		PS_MIO31_501
+	//	USB_CLK		C32	A11		PS_MIO36_501
+
+	#define USB_RESET_MIO	46
+
 #if WITHUSBHW
+
+
 	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { GPIOD->BSRR = BSRR_C(v); __DSB(); } while (0)
 	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { GPIOD->BSRR = BSRR_S(v); __DSB(); } while (0)
 	#define TARGET_USBFS_VBUSON_BIT (1uL << 2)	// PD2 - нулём включение питания для device
-	/**USB_OTG_FS GPIO Configuration    
-	PA9     ------> USB_OTG_FS_VBUS
-	PA10     ------> USB_OTG_FS_ID
-	PA11     ------> USB_OTG_FS_DM
-	PA12     ------> USB_OTG_FS_DP 
-	*/
 	#define	USBD_FS_INITIALIZE() do { \
 		arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); /* PD2 */ \
 		} while (0)
@@ -858,6 +873,12 @@
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
 		} while (0)
 #endif /* WITHUSBHW */
+
+
+#define USB_ULPI_INITIALIZE() do { \
+		xc7z_gpio_output(USB_RESET_MIO); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
+		xc7z_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
+	} while (0)
 
 #if WITHDCDCFREQCTL
 	// ST ST1S10 Synchronizable switching frequency from 400 kHz up to 1.2 MHz
@@ -1148,6 +1169,7 @@
 			/*TUNE_INITIALIZE(); */\
 			/*BOARD_USERBOOT_INITIALIZE(); */ \
 			/*USBD_FS_INITIALIZE(); */\
+			USB_ULPI_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_X7C7XX_BGAXXX_CPUSTYLE_STORCH_SV9_H_INCLUDED */
