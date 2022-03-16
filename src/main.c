@@ -23260,9 +23260,9 @@ void bootloader_copyapp(
 
 #if 0
 	static uint8_t b [64];
-	bootloader_readimage(0x00000000, b, ARRAY_SIZE(b));
+	bootloader_readimage(BOOTLOADER_FSBL_OFFSET, b, ARRAY_SIZE(b));
 	PRINTF("boot image:\n");
-	printhex(0x00000000, b, ARRAY_SIZE(b));
+	printhex(BOOTLOADER_FSBL_OFFSET, b, ARRAY_SIZE(b));
 	bootloader_readimage(BOOTLOADER_SELFSIZE, b, ARRAY_SIZE(b));
 	PRINTF("app image:\n");
 	printhex(BOOTLOADER_SELFSIZE, b, ARRAY_SIZE(b));
