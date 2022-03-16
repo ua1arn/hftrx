@@ -236,7 +236,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: bitstreams $(PROJECT)_app.xyl32
 	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
 
-bitstreams: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h bitstream_myir7020.р 
+bitstreams: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h bitstream_myir7020.h 
 
 bitstream_ant_10.h: bitstream_ant_10.bit
 	./bit2c bitstream_ant_10.bit bitstream_ant_10.h
@@ -244,8 +244,8 @@ bitstream_ant_10.h: bitstream_ant_10.bit
 bitstream_ant_20.h: bitstream_ant_20.bit
 	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
 
-bitstream_myir7020.р: bitstream_myir7020.bit
-	./bit2c  bitstream_myir7020.bit bitstream_myir7020.р
+bitstream_myir7020.h: bitstream_myir7020.bit
+	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h
 
 bitstream_4205_10.h: bitstream_4205_10.bit
 	./bit2c bitstream_4205_10.bit bitstream_4205_10.h
@@ -316,7 +316,7 @@ clean: version
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) bitstream_ant_10.h bitstream_ant_20.h
 	-$(RM) bitstream_4205_10.h
-	-$(RM) bitstream_myir7020.р
+	-$(RM) bitstream_myir7020.h
 
 version:
 	$(CC) --version
