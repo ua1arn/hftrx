@@ -316,7 +316,7 @@ clean: version
 	-$(RM) $(PROJECT)_app.elf $(PROJECT)_app.map
 	-$(RM) bitstream_ant_10.h bitstream_ant_20.h
 	-$(RM) bitstream_4205_10.h
-	-$(RM) bitstream_boot_20.h
+	-$(RM) bitstream_myir7020.р
 
 version:
 	$(CC) --version
