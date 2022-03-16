@@ -23,7 +23,7 @@
 
 	// Варианты конфигурации тактирования
 	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
-	#define ARM_PLL_MUL	40
+	#define ARM_PLL_MUL	46	// 766.666 MHz CPU clock
 	#define ARM_PLL_DIV	2
 	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
 
