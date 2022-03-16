@@ -1590,6 +1590,24 @@ void writeDisableDATAFLASH(void)
 	spidf_unselect();	/* done sending data to target chip */
 }
 
+int fullEraseDATAFLASH(void)
+{
+	if (timed_dataflash_read_status())
+	{
+		PRINTF(PSTR("fullEraseDATAFLASH: timeout\n"));
+		return 1;
+	}
+
+	writeEnableDATAFLASH();		/* write enable */
+
+	spidf_iostart(SPDIFIO_WRITE, 0x60, SPDFIO_1WIRE, 0, 0, 0, 0);	/*.2.18 Chip Erase (C7h / 60h) */
+	spidf_unselect();	/* done sending data to target chip */
+
+	if (largetimed_dataflash_read_status())
+		return 1;
+	return 0;
+}
+
 /* read status register #1 (bit0==busy flag) */
 uint_fast8_t dataflash_read_status(void)
 {
@@ -1615,10 +1633,11 @@ int timed_dataflash_read_status(void)
 	return 1;
 }
 
-static int largetimed_dataflash_read_status(void)
+// infinity waiting
+int largetimed_dataflash_read_status(void)
 {
 	unsigned long w = 4000000;
-	while (w --)
+	while (w)
 	{
 		if ((dataflash_read_status() & 0x01) == 0)
 			return 0;
@@ -1986,6 +2005,15 @@ void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Le
 	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 	readDATAFLASH(flashoffset, dest, Len);
 	spidf_uninitialize();
+}
+
+void bootloader_chiperase(void)
+{
+	spidf_initialize();
+	testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+	fullEraseDATAFLASH();
+	spidf_uninitialize();
+
 }
 
 #else /* WIHSPIDFHW || WIHSPIDFSW */

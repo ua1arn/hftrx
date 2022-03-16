@@ -514,6 +514,7 @@ void spidf_hangoff(void);
 
 uint_fast8_t dataflash_read_status(void);
 int timed_dataflash_read_status(void);
+int largetimed_dataflash_read_status(void);	// infinity waiting
 int testchipDATAFLASH(void);
 int prepareDATAFLASH(void);
 int sectoreraseDATAFLASH(unsigned long flashoffset);
@@ -522,11 +523,13 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len);
 void writeEnableDATAFLASH(void);
 void writeDisableDATAFLASH(void);
+int fullEraseDATAFLASH(void);
 unsigned long sectorsizeDATAFLASH(void);
 unsigned long chipsizeDATAFLASH(void);
 extern char nameDATAFLASH [];
 
 void bootloader_readimage(unsigned long flashoffset, uint8_t * dest, unsigned Len);
+void bootloader_chiperase(void);
 
 void nand_initialize(void);
 void nand_tests(void);

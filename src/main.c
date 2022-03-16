@@ -23259,7 +23259,9 @@ void bootloader_copyapp(
 #elif (BOOTLOADER_SELFSIZE != 0)
 
 #if 0
-	static uint8_t b [64];
+	//PRINTF("erase chip:\n");
+	//bootloader_chiperase();
+	static uint8_t b [256];
 	bootloader_readimage(BOOTLOADER_FSBL_OFFSET, b, ARRAY_SIZE(b));
 	PRINTF("boot image:\n");
 	printhex(BOOTLOADER_FSBL_OFFSET, b, ARRAY_SIZE(b));
