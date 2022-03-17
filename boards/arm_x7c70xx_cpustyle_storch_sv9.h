@@ -18,7 +18,7 @@
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 #define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
@@ -645,17 +645,17 @@
 	#define	SPI_MOSI_MIO 	45
 	#define	SPI_MISO_MIO 	41
 
-	#define SPI_SCLK_C()	do { gpio_pin_output_state(SPI_SCLK_MIO, 0); __DSB(); } while (0)
-	#define SPI_SCLK_S()	do { gpio_pin_output_state(SPI_SCLK_MIO, 1); __DSB(); } while (0)
+	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
+	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_MOSI_C()	do { gpio_pin_output_state(SPI_MOSI_MIO, 0); __DSB(); } while (0)
-	#define SPI_MOSI_S()	do { gpio_pin_output_state(SPI_MOSI_MIO, 1); __DSB(); } while (0)
+	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
+	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(gpio_get_input(SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
 			xc7z_gpio_output(SPI_SCLK_MIO); \
-			xc7z_writepin(SPI_SCLK_MIO, 1); \
+			gpio_writepin(SPI_SCLK_MIO, 1); \
 			xc7z_gpio_output(SPI_MOSI_MIO); \
 			xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
@@ -665,7 +665,7 @@
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			xc7z_gpio_output(SPI_SCLK_MIO); \
-			xc7z_writepin(SPI_SCLK_MIO, 1); \
+			gpio_writepin(SPI_SCLK_MIO, 1); \
 			xc7z_gpio_output(SPI_MOSI_MIO); \
 			xc7z_gpio_input(SPI_MISO_MIO); \
 		} while (0)
@@ -717,6 +717,7 @@
 #endif /* WITHKEYBOARD */
 
 #if WITHTWISW
+
 	//	I2S_SCL	C42	E12	PS_MIO42_501	Open Drain
 	//	I2s_SDA	C43	A9	PS_MIO43_501	Open Drain
 	#define TARGET_TWI_TWCK_MIO			42
@@ -726,6 +727,16 @@
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { i2chw_initialize(); } while (0)
 
+	#define TWISOFT_INITIALIZE() do { } while(0)
+
+	#define SET_TWCK() do { gpio_input(TARGET_TWI_TWCK_MIO); hardware_spi_io_delay(); } while(0)
+	#define CLR_TWCK() do { gpio_output(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
+
+	#define SET_TWD() do { gpio_input(TARGET_TWI_TWD_MIO); hardware_spi_io_delay(); } while(0)
+	#define CLR_TWD() do { gpio_output(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
+
+	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
+	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))
 
 #endif // WITHTWISW
 
@@ -875,8 +886,8 @@
 
 
 #define USB_ULPI_INITIALIZE() do { \
-		xc7z_gpio_output(USB_RESET_MIO); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
-		xc7z_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
+		gpio_output(USB_RESET_MIO, 1 * USB_RESET_MIO); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
+		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 	} while (0)
 
 #if WITHDCDCFREQCTL
@@ -1058,26 +1069,26 @@
 		#else /* WIHSPIDFHW */
 
 			#define SPIDF_MISO() (xc7z_readpin(SPDIF_MISO_MIO))
-			#define SPIDF_MOSI(v) do { if (v) gpio_pin_output_state(SPDIF_MOSI_MIO, 1); else gpio_pin_output_state(SPDIF_MOSI_MIO, 0); } while (0)
-			#define SPIDF_SCLK(v) do { if (v) gpio_pin_output_state(SPDIF_SCLK_MIO, 1); else gpio_pin_output_state(SPDIF_SCLK_MIO, 0); } while (0)
+			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
+			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
 					xc7z_gpio_output(SPDIF_NCS_MIO);	\
-					xc7z_writepin(SPDIF_NCS_MIO, 1);  \
+					gpio_writepin(SPDIF_NCS_MIO, 1);  \
 					xc7z_gpio_output(SPDIF_SCLK_MIO);	\
-					xc7z_writepin(SPDIF_SCLK_MIO, 1);  \
+					gpio_writepin(SPDIF_SCLK_MIO, 1);  \
 					xc7z_gpio_output(SPDIF_MOSI_MIO);	\
 					xc7z_gpio_input(SPDIF_MISO_MIO);	\
 					xc7z_gpio_output(SPDIF_D2_MIO);	 \
-					xc7z_writepin(SPDIF_D2_MIO, 1);  \
+					gpio_writepin(SPDIF_D2_MIO, 1);  \
 					xc7z_gpio_output(SPDIF_D3_MIO);	 \
-					xc7z_writepin(SPDIF_D3_MIO, 1);  \
+					gpio_writepin(SPDIF_D3_MIO, 1);  \
 				} while (0)
 			#define SPIDF_SELECT() do { \
-					gpio_pin_output_state(SPDIF_NCS_MIO, 0);  \
+					gpio_writepin(SPDIF_NCS_MIO, 0);  \
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					gpio_pin_output_state(SPDIF_NCS_MIO, 1);  \
+					gpio_writepin(SPDIF_NCS_MIO, 1);  \
 					__DSB(); \
 				} while (0)
 

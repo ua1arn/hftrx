@@ -23558,7 +23558,7 @@ ddd:
 
 		state = ! state;
 		// установка состояния выходов
-		gpio_pin_output_state(37, state);	/* LED_R */
+		gpio_writepin(37, state);	/* LED_R */
 
 	}
 	//PRINTF(".");

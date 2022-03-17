@@ -194,44 +194,44 @@ extern "C" {
 
 	// set pin state (thread-safe)
 	#define GPIO_BANK_OUTPUT_STATE(bank, mask, outstate) do { \
-		const portholder_t maskmsw = ((~ (mask)) >> 16) & 0xFFFF; \
-		const portholder_t masklsw = ((~ (mask)) >> 0) & 0xFFFF; \
-		const portholder_t datamsw = ((outstate) >> 16) & 0xFFFF; \
-		const portholder_t datalsw = ((outstate) >> 0) & 0xFFFF; \
-		ZYNQ_IORW32(GPIO_MASK_DATA_LSW(bank)) = (masklsw << 16) | datalsw; \
-		ZYNQ_IORW32(GPIO_MASK_DATA_MSW(bank)) = (maskmsw << 16) | datamsw; \
+			const portholder_t maskmsw = ((~ (mask)) >> 16) & 0xFFFF; \
+			const portholder_t masklsw = ((~ (mask)) >> 0) & 0xFFFF; \
+			const portholder_t datamsw = ((outstate) >> 16) & 0xFFFF; \
+			const portholder_t datalsw = ((outstate) >> 0) & 0xFFFF; \
+			ZYNQ_IORW32(GPIO_MASK_DATA_LSW(bank)) = (masklsw << 16) | datalsw; \
+			ZYNQ_IORW32(GPIO_MASK_DATA_MSW(bank)) = (maskmsw << 16) | datamsw; \
 		} while (0)
 
 	// set pin state (thread-safe)
-	#define gpio_pin_output_state(pin, state) do { \
-		const portholder_t bank = GPIO_PIN2BANK(pin); \
-		const portholder_t mask = GPIO_PIN2MASK(pin); \
-		GPIO_BANK_OUTPUT_STATE(bank, mask, mask * !! (state)); \
+	#define gpio_writepin(pin, state) do { \
+			const portholder_t bank = GPIO_PIN2BANK(pin); \
+			const portholder_t mask = GPIO_PIN2MASK(pin); \
+			GPIO_BANK_OUTPUT_STATE(bank, mask, mask * !! (state)); \
 		} while (0)
 
 	// set pin mode (no thread-safe)
 	#define gpio_output(pin, state) do { \
-		const portholder_t bank = GPIO_PIN2BANK(pin); \
-		const portholder_t mask = GPIO_PIN2MASK(pin); \
-		GPIO_BANK_OUTPUT_STATE(bank, mask, mask * !! (state)); \
-		if (pin < ZYNQ_MIO_CNT) { \
-			MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
-		} \
-		ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
-		ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; /* When OEN[x]==0, the output driver is disabled */ \
+			const portholder_t bank = GPIO_PIN2BANK(pin); \
+			const portholder_t mask = GPIO_PIN2MASK(pin); \
+			GPIO_BANK_OUTPUT_STATE(bank, mask, mask * !! (state)); \
+			if (pin < ZYNQ_MIO_CNT) { \
+				MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			} \
+			ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
+			ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; /* When OEN[x]==0, the output driver is disabled */ \
 		} while (0)
 
 	#define gpio_input(pin) do { \
-		const portholder_t bank = GPIO_PIN2BANK(pin); \
-		const portholder_t mask = GPIO_PIN2MASK(pin); \
-		if (pin < ZYNQ_MIO_CNT) { \
-			MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
-		} \
-		ZYNQ_IORW32(GPIO_DIRM(bank)) &= ~ mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
-		ZYNQ_IORW32(GPIO_OEN(bank)) &= ~ mask; /* When OEN[x]==0, the output driver is disabled */ \
+			const portholder_t bank = GPIO_PIN2BANK(pin); \
+			const portholder_t mask = GPIO_PIN2MASK(pin); \
+			if (pin < ZYNQ_MIO_CNT) { \
+				MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			} \
+			ZYNQ_IORW32(GPIO_DIRM(bank)) &= ~ mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
+			ZYNQ_IORW32(GPIO_OEN(bank)) &= ~ mask; /* When OEN[x]==0, the output driver is disabled */ \
 		} while (0)
 
-	#define gpio_get_input(pin) ((GPIO_DATA_RO(GPIO_PIN2BANK(pin)) & GPIO_PIN2MASK(pin)) != 0)
+	#define gpio_readpin(pin) ((GPIO_DATA_RO(GPIO_PIN2BANK(pin)) & GPIO_PIN2MASK(pin)) != 0)
 
 #endif /* CPUSTYLE_STM32F */
 
