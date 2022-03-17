@@ -5726,7 +5726,7 @@ static uint_fast64_t xc7z1_get_ddr_pll_freq(void)
 	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * ddr_pll_mul;
 }
 
- uint_fast64_t xc7z1_get_io_pll_freq(void)
+uint_fast64_t xc7z1_get_io_pll_freq(void)
 {
 	const uint_fast32_t io_pll_mul = (SCLR->IO_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
@@ -5815,9 +5815,9 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(f1, dotfreq), XC7Z_FPGAx_CLK_WIDTH, XC7Z_FPGAx_CLK_TAPS, & value, 0);
 
-	PRINTF("xc7z1_setltdcfreq: FPGA0_CLK_CTRL.DIVISOR0=%u, DIVISOR1=%u\n", 1u << prei, value);
+	PRINTF("xc7z1_setltdcfreq: FPGA0_CLK_CTRL.DIVISOR0=%u, DIVISOR1=%u, iopll=%lu, dotclk=%lu\n", 1u << prei, value, (unsigned long) xc7z1_get_io_pll_freq(), ((unsigned long) xc7z1_get_io_pll_freq() >> prei) / value);
 
-#if 0
+#if 1
 	// PL Clock 0 Output control
 	SCLR->FPGA0_CLK_CTRL = (SCLR->FPGA0_CLK_CTRL & ~ (0x03F03F30U)) |
 			(((uint_fast32_t) 1 << prei) << 8) | // 13:8 DIVISOR0 - First cascade divider.
