@@ -5815,7 +5815,7 @@ void hardware_set_dotclock(unsigned long dotfreq)
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(f1, dotfreq), XC7Z_FPGAx_CLK_WIDTH, XC7Z_FPGAx_CLK_TAPS, & value, 0);
 
-	PRINTF("xc7z1_setltdcfreq: FPGA0_CLK_CTRL.DIVISOR0=%u, DIVISOR1=%u, iopll=%lu, dotclk=%lu\n", 1u << prei, value, (unsigned long) xc7z1_get_io_pll_freq(), ((unsigned long) xc7z1_get_io_pll_freq() >> prei) / value);
+	//PRINTF("xc7z1_setltdcfreq: FPGA0_CLK_CTRL.DIVISOR0=%u, DIVISOR1=%u, iopll=%lu, dotclk=%lu\n", 1u << prei, value, (unsigned long) xc7z1_get_io_pll_freq(), ((unsigned long) xc7z1_get_io_pll_freq() >> prei) / value);
 
 #if 1
 	// PL Clock 0 Output control
