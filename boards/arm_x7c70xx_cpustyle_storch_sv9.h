@@ -651,7 +651,7 @@
 	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
 	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
 			xc7z_gpio_output(SPI_SCLK_MIO); \
@@ -735,8 +735,8 @@
 	#define SET_TWD() do { gpio_input(TARGET_TWI_TWD_MIO); hardware_spi_io_delay(); } while(0)
 	#define CLR_TWD() do { gpio_output(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
 
-	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
-	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))
+	#define GET_TWCK() (xc7z_readpin(TARGET_TWI_TWCK_MIO))
+	#define GET_TWD() (xc7z_readpin(TARGET_TWI_TWD_MIO))
 
 #endif // WITHTWISW
 
@@ -1026,7 +1026,7 @@
 	//	2. In cases of Quad-SPI boot, if the image is authenticated, then the boot image should be placed
 	//	at a 32K offset other than 0x0 (the image should not be placed starting at 0x0 offset in
 	//	Quad-SPI).
-	#define BOOTLOADER_FSBL_OFFSET	0//0x8000
+	#define BOOTLOADER_FSBL_OFFSET	0x000000
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
 
@@ -1042,7 +1042,6 @@
 		#define SPDIF_D2_MIO 	4	// MIO4	QSPI_IO2
 		#define SPDIF_D3_MIO 	5	// MIO5	QSPI_IO3
 		#define SPDIF_SCLK_MIO 	6	// MIO6	QSPI_SCLK0
-
 
 		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 		#define SPIDF_HANGOFF() do { \
@@ -1072,15 +1071,11 @@
 			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-					xc7z_gpio_output(SPDIF_NCS_MIO);	\
-					gpio_writepin(SPDIF_NCS_MIO, 1);  \
-					xc7z_gpio_output(SPDIF_SCLK_MIO);	\
-					gpio_writepin(SPDIF_SCLK_MIO, 1);  \
-					xc7z_gpio_output(SPDIF_MOSI_MIO);	\
+					gpio_output(SPDIF_NCS_MIO, 1);  \
+					gpio_output(SPDIF_SCLK_MIO, 1);  \
+					gpio_output(SPDIF_MOSI_MIO, 1);	\
 					xc7z_gpio_input(SPDIF_MISO_MIO);	\
-					xc7z_gpio_output(SPDIF_D2_MIO);	 \
-					gpio_writepin(SPDIF_D2_MIO, 1);  \
-					xc7z_gpio_output(SPDIF_D3_MIO);	 \
+					gpio_output(SPDIF_D2_MIO, 1);  \
 					gpio_writepin(SPDIF_D3_MIO, 1);  \
 				} while (0)
 			#define SPIDF_SELECT() do { \
