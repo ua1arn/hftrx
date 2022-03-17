@@ -654,27 +654,25 @@
 	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-			xc7z_gpio_output(SPI_SCLK_MIO); \
-			gpio_writepin(SPI_SCLK_MIO, 1); \
-			xc7z_gpio_output(SPI_MOSI_MIO); \
-			xc7z_gpio_input(SPI_MISO_MIO); \
+			gpio_output(SPI_SCLK_MIO, 1); \
+			gpio_output(SPI_MOSI_MIO, 1); \
+			gpio_input(SPI_MISO_MIO); \
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
 		} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			xc7z_gpio_output(SPI_SCLK_MIO); \
-			gpio_writepin(SPI_SCLK_MIO, 1); \
-			xc7z_gpio_output(SPI_MOSI_MIO); \
-			xc7z_gpio_input(SPI_MISO_MIO); \
+			gpio_output(SPI_SCLK_MIO, 1); \
+			gpio_output(SPI_MOSI_MIO, 1); \
+			gpio_input(SPI_MISO_MIO); \
 		} while (0)
 
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
 		} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		xc7z_gpio_input(SPI_MOSI_MIO); \
+		gpio_input(SPI_MOSI_MIO); \
 		} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -1045,12 +1043,12 @@
 
 		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 		#define SPIDF_HANGOFF() do { \
-			xc7z_gpio_input(SPDIF_NCS_MIO);	/*  */ \
-			xc7z_gpio_input(SPDIF_SCLK_MIO);	/*  */ \
-			xc7z_gpio_input(SPDIF_MOSI_MIO);	/*  */ \
-			xc7z_gpio_input(SPDIF_MISO_MIO);	/*  */ \
-			xc7z_gpio_input(SPDIF_D2_MIO);	/*  */ \
-			xc7z_gpio_input(SPDIF_D3_MIO);	/*  */ \
+				gpio_input(SPDIF_NCS_MIO);	/*  */ \
+				gpio_input(SPDIF_SCLK_MIO);	/*  */ \
+				gpio_input(SPDIF_MOSI_MIO);	/*  */ \
+				gpio_input(SPDIF_MISO_MIO);	/*  */ \
+				gpio_input(SPDIF_D2_MIO);	/*  */ \
+				gpio_input(SPDIF_D3_MIO);	/*  */ \
 			} while (0)
 
 		#if WIHSPIDFHW
@@ -1074,9 +1072,9 @@
 					gpio_output(SPDIF_NCS_MIO, 1);  \
 					gpio_output(SPDIF_SCLK_MIO, 1);  \
 					gpio_output(SPDIF_MOSI_MIO, 1);	\
-					xc7z_gpio_input(SPDIF_MISO_MIO);	\
+					gpio_input(SPDIF_MISO_MIO);	\
 					gpio_output(SPDIF_D2_MIO, 1);  \
-					gpio_writepin(SPDIF_D3_MIO, 1);  \
+					gpio_output(SPDIF_D3_MIO, 1);  \
 				} while (0)
 			#define SPIDF_SELECT() do { \
 					gpio_writepin(SPDIF_NCS_MIO, 0);  \
@@ -1112,15 +1110,15 @@
 	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
 
 	#define HARDWARE_NAND_INITIALIZE() do { \
-		xc7z_gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
-		xc7z_gpio_input(HARDWARE_NAND_D7_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D6_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D5_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D4_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D3_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D2_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D1_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D0_MIO); \
+		gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
+		gpio_input(HARDWARE_NAND_D7_MIO); \
+		gpio_input(HARDWARE_NAND_D6_MIO); \
+		gpio_input(HARDWARE_NAND_D5_MIO); \
+		gpio_input(HARDWARE_NAND_D4_MIO); \
+		gpio_input(HARDWARE_NAND_D3_MIO); \
+		gpio_input(HARDWARE_NAND_D2_MIO); \
+		gpio_input(HARDWARE_NAND_D1_MIO); \
+		gpio_input(HARDWARE_NAND_D0_MIO); \
 		xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
 		xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
 		xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
