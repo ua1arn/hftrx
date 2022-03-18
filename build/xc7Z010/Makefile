@@ -122,10 +122,12 @@ DLIBS = -lm
 # Start of user section
 #
 
-#SRCDIRS = $(PRJROOT)/src $(OPENVGDIR)/src $(LWIPDIR)/src $(DSP3DDIR)/src
 SRCDIRS = $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 #SRCDIRS += $(MDLWUSBDIR) $(MDLWHOSTDIR)
+#SRCDIRS += $(LWIPDIR)/src
+#SRCDIRS += $(DSP3DDIR)/src
+#SRCDIRS += $(OPENVGDIR)/src
 
 # Define project name here
 PROJECT = tc1_xc7z010
