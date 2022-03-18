@@ -23242,7 +23242,7 @@ uint_fast8_t bootloader_get_start(
 	return checksum != 0;	// возврат 0 если контрольная сумма совпала
 }
 
-void bootloader_copyapp(
+uint_fast8_t bootloader_copyapp(
 		uintptr_t apparea	/* целевой адрес для загрузки образа */
 		)
 {
@@ -23253,7 +23253,7 @@ void bootloader_copyapp(
 
 	memcpy((void *) apparea, (const void *) BOOTLOADER_APPBASE, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
-		return;
+		return 1;
 	memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + HEADERSIZE), hdr->image_length);
 
 #elif (BOOTLOADER_SELFSIZE != 0)
@@ -23272,10 +23272,12 @@ void bootloader_copyapp(
 
 	bootloader_readimage(BOOTLOADER_SELFSIZE, (void *) apparea, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
-		return;
+		return 1;
 	bootloader_readimage(BOOTLOADER_SELFSIZE + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
 
 #endif /* CPUSTYLE_R7S721 */
+
+	return 0;
 }
 
 // Сюда попадаем из USB DFU клвсса при приходе команды

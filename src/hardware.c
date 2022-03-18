@@ -3632,7 +3632,8 @@ void cpu_initdone(void)
 {
 #if WITHISBOOTLOADER
 	#if BOOTLOADER_RAMSIZE
-		bootloader_copyapp(BOOTLOADER_RAMAREA);	/* копирование исполняемого образа (если есть) в требуемое место */
+		if (bootloader_copyapp(BOOTLOADER_RAMAREA))	/* копирование исполняемого образа (если есть) в требуемое место */
+			PRINTF("cpu_initdone: No application image\n");
 	#endif /* BOOTLOADER_RAMSIZE */
 #if CPUSTYLE_R7S721
 
