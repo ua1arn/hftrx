@@ -652,7 +652,7 @@
 	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
 	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
+	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
 		gpio_output(SPI_SCLK_MIO, 1); \
@@ -890,7 +890,7 @@
 
 
 #define USB_ULPI_INITIALIZE() do { \
-		gpio_output(USB_RESET_MIO, 1 * USB_RESET_MIO); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
+		gpio_output(USB_RESET_MIO, 1); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 	} while (0)
 
@@ -1071,7 +1071,7 @@
 
 		#else /* WIHSPIDFHW */
 
-			#define SPIDF_MISO() (xc7z_readpin(SPDIF_MISO_MIO))
+			#define SPIDF_MISO() (gpio_readpin(SPDIF_MISO_MIO))
 			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
