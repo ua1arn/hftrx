@@ -189,7 +189,7 @@ extern "C" {
 	// initial value = 0x00001601
 	#define MIO_SET_MODE(pin, value) do { \
 			SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
-			SCLR->MIO_PIN [pin] = (value); /*  */ \
+			SCLR->MIO_PIN [(pin)] = (value); /*  */ \
 		} while (0)
 
 	// set pin state (thread-safe)
@@ -214,8 +214,8 @@ extern "C" {
 			const portholder_t bank = GPIO_PIN2BANK(pin); \
 			const portholder_t mask = GPIO_PIN2MASK(pin); \
 			GPIO_BANK_OUTPUT_STATE(bank, mask, mask * !! (state)); \
-			if (pin < ZYNQ_MIO_CNT) { \
-				MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			if ((pin) < ZYNQ_MIO_CNT) { \
+				MIO_SET_MODE((pin), 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 			} \
 			ZYNQ_IORW32(GPIO_DIRM(bank)) |= mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
 			ZYNQ_IORW32(GPIO_OEN(bank)) |= mask; /* When OEN[x]==0, the output driver is disabled */ \
@@ -224,8 +224,8 @@ extern "C" {
 	#define gpio_input(pin) do { \
 			const portholder_t bank = GPIO_PIN2BANK(pin); \
 			const portholder_t mask = GPIO_PIN2MASK(pin); \
-			if (pin < ZYNQ_MIO_CNT) { \
-				MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			if ((pin) < ZYNQ_MIO_CNT) { \
+				MIO_SET_MODE((pin), 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 			} \
 			ZYNQ_IORW32(GPIO_DIRM(bank)) &= ~ mask; /* Then DIRM[x]==0, the output driver is disabled. */ \
 			ZYNQ_IORW32(GPIO_OEN(bank)) &= ~ mask; /* When OEN[x]==0, the output driver is disabled */ \
