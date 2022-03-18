@@ -6285,7 +6285,7 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
-#if 0 && WITHTWISW
+#if 0 && WITHTWISW && WITHDEBUG
 	{
 		PRINTF("I2C wires test\n");
 		TWISOFT_INITIALIZE();
