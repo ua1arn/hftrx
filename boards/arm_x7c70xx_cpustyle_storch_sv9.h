@@ -729,8 +729,8 @@
 	} while (0)
 
 	#define TWISOFT_INITIALIZE() do { \
+		gpio_input(TARGET_TWI_TWD_MIO);		/*  PS_MIO43_501 SDA */ \
 		gpio_input(TARGET_TWI_TWCK_MIO);	/*  PS_MIO42_501 SCL */ \
-		gpio_input(TARGET_TWI_TWD_MIO);	/*  PS_MIO43_501 SDA */ \
 	} while(0)
 
 	#define SET_TWCK() do { gpio_input(TARGET_TWI_TWCK_MIO); hardware_spi_io_delay(); } while(0)
