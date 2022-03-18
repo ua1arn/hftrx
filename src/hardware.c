@@ -103,26 +103,8 @@ void xc7z_writepin(uint8_t pin, uint8_t val)
 
 	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
 
-	GPIO_BANK_OUTPUT_STATE(Bank, 1uL << PinNumber, !! val << PinNumber);
+	GPIO_BANK_SET_OUTPUTS(Bank, 1uL << PinNumber, !! val << PinNumber);
 	return;
-
-	if (PinNumber > 15U) {
-		/* There are only 16 data bits in bit maskable register. */
-		PinNumber -= 16;
-		RegOffset = XGPIOPS_DATA_MSW_OFFSET;
-	} else {
-		RegOffset = XGPIOPS_DATA_LSW_OFFSET;
-	}
-
-	/*
-	 * Get the 32 bit value to be written to the Mask/Data register where
-	 * the upper 16 bits is the mask and lower 16 bits is the data.
-	 */
-	DataVar &= (uint32_t)0x01;
-	Value = ~((uint32_t)1 << (PinNumber + 16)) & ((DataVar << PinNumber) | 0xFFFF0000U);
-	XGpioPs_WriteReg(xc7z_gpio.GpioConfig.BaseAddr,
-			((uint32_t)(Bank) * XGPIOPS_DATA_MASK_OFFSET) +
-			RegOffset, Value);
 }
 
 void xc7z_gpio_input(uint8_t pin)

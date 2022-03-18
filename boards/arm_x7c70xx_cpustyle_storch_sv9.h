@@ -739,8 +739,8 @@
 	#define SET_TWD() do { gpio_input(TARGET_TWI_TWD_MIO); hardware_spi_io_delay(); } while(0)
 	#define CLR_TWD() do { gpio_output(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
 
-	#define GET_TWCK() (xc7z_readpin(TARGET_TWI_TWCK_MIO))
-	#define GET_TWD() (xc7z_readpin(TARGET_TWI_TWD_MIO))
+	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
+	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))
 
 #endif // WITHTWISW
 
