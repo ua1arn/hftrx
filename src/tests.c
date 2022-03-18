@@ -6285,6 +6285,27 @@ void hightests(void)
 #if WITHLTDCHW && LCDMODE_LTDC
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
+#if 0 && WITHTWISW
+	{
+		PRINTF("I2C wires test\n");
+		TWISOFT_INITIALIZE();
+		for (;;)
+		{
+			SET_TWCK();
+			SET_TWD();
+			local_delay_ms(1000);
+			CLR_TWCK();
+			SET_TWD();
+			local_delay_ms(1000);
+			SET_TWCK();
+			CLR_TWD();
+			local_delay_ms(1000);
+			CLR_TWCK();
+			CLR_TWD();
+			local_delay_ms(1000);
+		}
+	}
+#endif
 #if 0
 	{
 		// Test for ADIS16IMU1/PCB
