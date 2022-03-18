@@ -36,7 +36,8 @@
 //#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
 #define USERFIRSTSBLOCK 0
-#define WITHPS7BOARD_ANTMINER 1
+//#define WITHPS7BOARD_ANTMINER 1
+#define WITHPS7BOARD_MYC_Y7Z020 1
 
 #if WITHDEBUG
 	#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
