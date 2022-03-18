@@ -619,24 +619,24 @@
 	#define TARGET_NVRAM_EMIO	62	// nvram FM25L256
 
 
-	#define SPI_CS_SET(target)	do { xc7z_writepin((target), 0); } while (0)
+	#define SPI_CS_SET(target)	do { \
+		xc7z_writepin((target), 0); \
+	} while (0)
 
-	#define SPI_ALLCS_DISABLE() \
-		do { \
-			xc7z_writepin(TARGET_CTL1_CS_EMIO, 1);		\
-			xc7z_writepin(TARGET_RTC_CS_EMIO, 1);		\
-			xc7z_writepin(TARGET_CODEC1_CS_EMIO, 1);		\
-			xc7z_writepin(TARGET_ADC1_CS_EMIO, 1);		\
-			xc7z_writepin(TARGET_ADC2_CS_EMIO, 1);		\
-			xc7z_writepin(TARGET_NVRAM_CS_EMIO, 1);		\
-			xc7z_writepin(TARGET_EXT1_CS_EMIO, 1);		\
-			xc7z_writepin(TARGET_EXT2_CS_EMIO, 1);		\
-		} while(0)
+	#define SPI_ALLCS_DISABLE() do { \
+		xc7z_writepin(TARGET_CTL1_CS_EMIO, 1);		\
+		xc7z_writepin(TARGET_RTC_CS_EMIO, 1);		\
+		xc7z_writepin(TARGET_CODEC1_CS_EMIO, 1);		\
+		xc7z_writepin(TARGET_ADC1_CS_EMIO, 1);		\
+		xc7z_writepin(TARGET_ADC2_CS_EMIO, 1);		\
+		xc7z_writepin(TARGET_NVRAM_CS_EMIO, 1);		\
+		xc7z_writepin(TARGET_EXT1_CS_EMIO, 1);		\
+		xc7z_writepin(TARGET_EXT2_CS_EMIO, 1);		\
+	} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
-	#define SPI_ALLCS_INITIALIZE() \
-		do { \
-		} while (0)
+	#define SPI_ALLCS_INITIALIZE() do { \
+	} while (0)
 
 	//	SPI_MOSI	C38	B15	PS_MIO45_501
 	//	SPI_MISO	C36	C17	PS_MIO41_501
@@ -655,26 +655,26 @@
 	#define SPI_TARGET_MISO_PIN		(xc7z_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-			gpio_output(SPI_SCLK_MIO, 1); \
-			gpio_output(SPI_MOSI_MIO, 1); \
-			gpio_input(SPI_MISO_MIO); \
-		} while (0)
+		gpio_output(SPI_SCLK_MIO, 1); \
+		gpio_output(SPI_MOSI_MIO, 1); \
+		gpio_input(SPI_MISO_MIO); \
+	} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
-		} while (0)
+	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			gpio_output(SPI_SCLK_MIO, 1); \
-			gpio_output(SPI_MOSI_MIO, 1); \
-			gpio_input(SPI_MISO_MIO); \
-		} while (0)
+		gpio_output(SPI_SCLK_MIO, 1); \
+		gpio_output(SPI_MOSI_MIO, 1); \
+		gpio_input(SPI_MISO_MIO); \
+	} while (0)
 
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-		} while (0)
+	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
 		gpio_input(SPI_MOSI_MIO); \
-		} while (0)
+	} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
 
@@ -685,7 +685,7 @@
 	#define HARDWARE_UART2_INITIALIZE() do { \
 		MIO_SET_MODE(48, 0x000016E0uL);	/*  MIO_PIN_48 UART1_TXD */ \
 		MIO_SET_MODE(49, 0x000016E1uL);	/*  MIO_PIN_49 UART1_RXD */ \
-		} while (0)
+	} while (0)
 
 #endif /* WITHUART2HW */
 
@@ -706,12 +706,12 @@
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
 		xc7z_gpio_input(TARGET_ENC2BTN_BIT_MIO); \
-		} while (0)
+	} while (0)
 
 #else /* WITHKEYBOARD */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-		} while (0)
+	} while (0)
 
 #endif /* WITHKEYBOARD */
 
@@ -723,12 +723,15 @@
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
-			MIO_SET_MODE(TARGET_TWI_TWD_MIO, z0x000016E0uL);	/*  PS_MIO43_501 SDA */ \
-			MIO_SET_MODE(TARGET_TWI_TWCK_MIO, z0x000016E0uL);	/*  PS_MIO43_501 SCL */ \
-			i2chw_initialize(); \
-		} while (0)
+		MIO_SET_MODE(TARGET_TWI_TWD_MIO, z0x000016E0uL);	/*  PS_MIO43_501 SDA */ \
+		MIO_SET_MODE(TARGET_TWI_TWCK_MIO, z0x000016E0uL);	/*  PS_MIO43_501 SCL */ \
+		i2chw_initialize(); \
+	} while (0)
 
-	#define TWISOFT_INITIALIZE() do { xc7z_gpio_input(TARGET_TWI_TWCK_MIO); xc7z_gpio_input(TARGET_TWI_TWD_MIO); } while(0)
+	#define TWISOFT_INITIALIZE() do { \
+		xc7z_gpio_input(TARGET_TWI_TWCK_MIO); \
+		xc7z_gpio_input(TARGET_TWI_TWD_MIO); \
+	} while(0)
 
 	#define SET_TWCK() do { xc7z_gpio_input(TARGET_TWI_TWCK_MIO); hardware_spi_io_delay(); } while(0)
 	#define CLR_TWCK() do { gpio_output(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
