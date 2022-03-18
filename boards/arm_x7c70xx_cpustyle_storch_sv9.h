@@ -724,19 +724,19 @@
 	// присоединение выводов к периферийному устройству
 	#define	TWIHARD_INITIALIZE() do { \
 		MIO_SET_MODE(TARGET_TWI_TWD_MIO, z0x000016E0uL);	/*  PS_MIO43_501 SDA */ \
-		MIO_SET_MODE(TARGET_TWI_TWCK_MIO, z0x000016E0uL);	/*  PS_MIO43_501 SCL */ \
+		MIO_SET_MODE(TARGET_TWI_TWCK_MIO, z0x000016E0uL);	/*  PS_MIO42_501 SCL */ \
 		i2chw_initialize(); \
 	} while (0)
 
 	#define TWISOFT_INITIALIZE() do { \
-		xc7z_gpio_input(TARGET_TWI_TWCK_MIO); \
-		xc7z_gpio_input(TARGET_TWI_TWD_MIO); \
+		gpio_input(TARGET_TWI_TWCK_MIO);	/*  PS_MIO42_501 SCL */ \
+		gpio_input(TARGET_TWI_TWD_MIO);	/*  PS_MIO43_501 SDA */ \
 	} while(0)
 
-	#define SET_TWCK() do { xc7z_gpio_input(TARGET_TWI_TWCK_MIO); hardware_spi_io_delay(); } while(0)
+	#define SET_TWCK() do { gpio_input(TARGET_TWI_TWCK_MIO); hardware_spi_io_delay(); } while(0)
 	#define CLR_TWCK() do { gpio_output(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
 
-	#define SET_TWD() do { xc7z_gpio_input(TARGET_TWI_TWD_MIO); hardware_spi_io_delay(); } while(0)
+	#define SET_TWD() do { gpio_input(TARGET_TWI_TWD_MIO); hardware_spi_io_delay(); } while(0)
 	#define CLR_TWD() do { gpio_output(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
 
 	#define GET_TWCK() (xc7z_readpin(TARGET_TWI_TWCK_MIO))
