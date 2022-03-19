@@ -178,6 +178,76 @@ board_tsc_getxy(uint_fast16_t * px, uint_fast16_t * py)
 }
 #endif /* defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_S3402) */
 
+#if defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102)
+
+#define TSC_ILI2102_ADDR		0x82
+
+#define REG_TOUCHDATA         	0x10
+#define REG_PANEL_INFO        	0x20
+#define REG_FIRMWARE_VERSION  	0x40
+#define REG_CALIBRATE         	0xCC
+
+#define MAX_TOUCHES    			2
+
+static uint8_t tsc_ili2102_present = 0;
+
+uint_fast8_t
+board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
+{
+	static uint_fast16_t x = 0, y = 0;
+	uint8_t command = REG_TOUCHDATA;
+	uint8_t read_buf[9];
+
+	if (! tsc_ili2102_present)
+	{
+		* xr = 0;
+		* yr = 0;
+		return 0;
+	}
+
+	i2chw_write(TSC_ILI2102_ADDR, & command, 1);
+	i2chw_read(TSC_ILI2102_ADDR, read_buf, sizeof(read_buf));
+
+	if (read_buf[0])
+	{
+		* xr = read_buf[1] | read_buf[2] << 8;
+		* yr = read_buf[3] | read_buf[4] << 8;
+		return 1;
+	}
+
+	* xr = x;
+	* yr = y;
+	return 0;
+}
+
+void ili2102_initialize(void)
+{
+	BOARD_ILI2102_RESET_SET(1);
+	local_delay_us(100);
+	BOARD_ILI2102_RESET_SET(0);
+	local_delay_us(100);
+	BOARD_ILI2102_RESET_SET(1);
+	local_delay_us(500);
+
+	uint8_t command = REG_FIRMWARE_VERSION;
+	uint8_t read_buf[3], status;
+
+	status = i2chw_write(TSC_ILI2102_ADDR, & command, 1);
+	i2chw_read(TSC_ILI2102_ADDR, read_buf, sizeof(read_buf));
+
+	if (status)
+	{
+		tsc_ili2102_present = 0;
+		PRINTF("ili2102 initialize error\n");
+		return;
+	}
+
+	tsc_ili2102_present = 1;
+	PRINTF("ili2102 initialize successful\n");
+}
+
+#endif /*defined(TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102) */
+
 #if defined (TSC1_TYPE)
 
 void board_tsc_initialize(void)
@@ -210,6 +280,10 @@ void board_tsc_initialize(void)
 	s3402_initialize();
 	s3402_get_id();	// test
 #endif /* TSC1_TYPE == TSC_TYPE_XPT2046 */
+
+#if TSC1_TYPE == TSC_TYPE_ILI2102
+	ili2102_initialize();
+#endif /* TSC1_TYPE == TSC_TYPE_ILI2102 */
 }
 
 #endif /* defined (TSC1_TYPE) */

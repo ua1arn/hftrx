@@ -1751,4 +1751,21 @@ void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast1
 	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 0);
 }
 
+void gui_drawrect(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color, uint_fast8_t fill)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	const uint_fast16_t xn = x1 + win->draw_x1;
+	const uint_fast16_t yn = y1 + win->draw_y1;
+	const uint_fast16_t xk = x2 + win->draw_x1;
+	const uint_fast16_t yk = y2 + win->draw_y1;
+
+	ASSERT(xn < win->draw_x2);
+	ASSERT(xk < win->draw_x2);
+	ASSERT(yn < win->draw_y2);
+	ASSERT(yk < win->draw_y2);
+
+	colpip_rect(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, fill);
+}
+
 #endif /* WITHTOUCHGUI */

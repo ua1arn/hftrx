@@ -221,6 +221,16 @@
 
 #endif
 
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102)
+
+	#define BOARD_ILI2102_INT_PIN 	64
+	#define BOARD_ILI2102_RESET_PIN 65
+
+	#define BOARD_ILI2102_RESET_SET(v) do { if (v) xc7z_writepin(BOARD_ILI2102_RESET_PIN, 1); else xc7z_writepin(BOARD_ILI2102_RESET_PIN, 0);  } while (0)
+	#define BOARD_ILI2102_INT_SET(v) do { if (v) xc7z_writepin(BOARD_ILI2102_INT_PIN, 1); else xc7z_writepin(BOARD_ILI2102_INT_PIN, 0); } while (0)
+
+#endif /* defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_ILI2102) */
+
 #if WITHCPUTEMPERATURE
 	#define GET_CPU_TEMPERATURE() (xc7z_get_cpu_temperature())
 #endif /* WITHCPUTEMPERATURE */
