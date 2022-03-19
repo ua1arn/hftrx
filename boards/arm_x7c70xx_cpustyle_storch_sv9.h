@@ -684,8 +684,9 @@
 	// WITHUART2HW
 	//MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define HARDWARE_UART2_INITIALIZE() do { \
-        MIO_SET_MODE(48, MIO_PIN_VALUE(1, 1, 3, 0, 0x07, 0, 0, 0, 0));    /*  MIO_PIN_48 UART1_TXD */ \
-        MIO_SET_MODE(49, MIO_PIN_VALUE(1, 1, 3, 0, 0x07, 0, 0, 0, 1));    /*  MIO_PIN_49 UART1_RXD */ \
+		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+        MIO_SET_MODE(48, MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 0));    /*  MIO_PIN_48 UART1_TXD */ \
+        MIO_SET_MODE(49, MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 1));    /*  MIO_PIN_49 UART1_RXD */ \
 	} while (0)
 #endif /* WITHUART2HW */
 
@@ -725,14 +726,16 @@
 	// todo: check tri_enable field
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define	TWIHARD_INITIALIZE() do { \
-		MIO_SET_MODE(TARGET_TWI_TWD_MIO, MIO_PIN_VALUE(1, 1, 0x03, 0, 0x02, 0, 0, 0, 1));	/*  PS_MIO43_501 SDA */ \
-		MIO_SET_MODE(TARGET_TWI_TWCK_MIO, MIO_PIN_VALUE(1, 1, 0x03, 0, 0x02, 0, 0, 0, 1));	/*  PS_MIO42_501 SCL */ \
+		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+		MIO_SET_MODE(TARGET_TWI_TWD_MIO, MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x02, 0, 0, 0, 1));	/*  PS_MIO43_501 SDA */ \
+		MIO_SET_MODE(TARGET_TWI_TWCK_MIO, MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x02, 0, 0, 0, 1));	/*  PS_MIO42_501 SCL */ \
 		i2chw_initialize(); \
 	} while (0)
 
 	#define TWISOFT_INITIALIZE() do { \
-		gpio_opendrain(TARGET_TWI_TWD_MIO, 0);		/*  PS_MIO43_501 SDA */ \
-		gpio_opendrain(TARGET_TWI_TWCK_MIO, 0);		/*  PS_MIO42_501 SCL */ \
+		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+		gpio_opendrain(TARGET_TWI_TWD_MIO, 0, IOTYPE);		/*  PS_MIO43_501 SDA */ \
+		gpio_opendrain(TARGET_TWI_TWCK_MIO, 0, IOTYPE);		/*  PS_MIO42_501 SCL */ \
 	} while(0)
 
 	#define SET_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while (0)

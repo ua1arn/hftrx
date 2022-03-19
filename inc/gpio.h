@@ -186,6 +186,13 @@ extern "C" {
 			}                                    \
 		} while(0)
 
+	enum
+	{
+		GPIO_IOTYPE_LVCMOS18 = 0x01,
+		GPIO_IOTYPE_LVCMOS25 = 0x02,
+		GPIO_IOTYPE_LVCMOS33 = 0x03,
+		GPIO_IOTYPE_HSTL = 0x04
+	};
 	// initial value = 0x00001601
 	#define MIO_SET_MODE(pin, value) do { \
 		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
@@ -244,11 +251,12 @@ extern "C" {
 	} while (0)
 
 	// set pin mode (no thread-safe)
-	#define gpio_opendrain(pin, drive) do { \
+	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
+	#define gpio_opendrain(pin, drive, iotype) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
-			MIO_SET_MODE((pin), 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			MIO_SET_MODE((pin), MIO_PIN_VALUE(1, 1, (iotype), 0, 0, 0, 0, 0, 0)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 		GPIO_BAND_SET_DIRM(bank, mask, mask * !! (1)); \
