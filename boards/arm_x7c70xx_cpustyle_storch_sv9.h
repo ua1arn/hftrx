@@ -730,13 +730,13 @@
 
 	#define TWISOFT_INITIALIZE() do { \
 		gpio_opendrain(TARGET_TWI_TWD_MIO, 0);		/*  PS_MIO43_501 SDA */ \
-		gpio_opendrain(TARGET_TWI_TWCK_MIO, 0);	/*  PS_MIO42_501 SCL */ \
+		gpio_opendrain(TARGET_TWI_TWCK_MIO, 0);		/*  PS_MIO42_501 SCL */ \
 	} while(0)
 
-	#define SET_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while(0)
-	#define CLR_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while(0)
+	#define SET_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while (0)
+	#define CLR_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 1); hardware_spi_io_delay(); } while (0)
 
-	#define SET_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while(0)
+	#define SET_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 0); hardware_spi_io_delay(); } while (0)
 	#define CLR_TWD() do { gpio_drive(TARGET_TWI_TWD_MIO, 1); hardware_spi_io_delay(); } while (0)
 
 	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
