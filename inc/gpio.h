@@ -251,9 +251,9 @@ extern "C" {
 			MIO_SET_MODE((pin), 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
-		GPIO_BAND_SET_OEN(bank, mask, mask * !! (drive)); \
+		GPIO_BAND_SET_DIRM(bank, mask, mask * !! (1)); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
-		GPIO_BAND_SET_DIRM(bank, mask, mask * !! (drive)); \
+		GPIO_BAND_SET_OEN(bank, mask, mask * !! (drive)); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 	} while (0)
 
@@ -262,8 +262,6 @@ extern "C" {
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		GPIO_BAND_SET_OEN(bank, mask, mask * !! (drive)); \
-		GPIO_BAND_SET_DIRM(bank, mask, mask * !! (drive)); \
-		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 	} while (0)
 
 	#define gpio_readpin(pin) ((ZYNQ_IORW32(GPIO_DATA_RO(GPIO_PIN2BANK(pin))) & GPIO_PIN2MASK(pin)) != 0)

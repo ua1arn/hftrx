@@ -682,11 +682,11 @@
 	//	USART_TX	C44	B12	PS_MIO48_501	UART1
 	//	USART_RX	C45	C12	PS_MIO49_501
 	// WITHUART2HW
+	//MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		MIO_SET_MODE(48, 0x000016E0uL);	/*  MIO_PIN_48 UART1_TXD */ \
-		MIO_SET_MODE(49, 0x000016E1uL);	/*  MIO_PIN_49 UART1_RXD */ \
+        MIO_SET_MODE(48, MIO_PIN_VALUE(1, 1, 3, 0, 0x07, 0, 0, 0, 0));    /*  MIO_PIN_48 UART1_TXD */ \
+        MIO_SET_MODE(49, MIO_PIN_VALUE(1, 1, 3, 0, 0x07, 0, 0, 0, 1));    /*  MIO_PIN_49 UART1_RXD */ \
 	} while (0)
-
 #endif /* WITHUART2HW */
 
 #if WITHKEYBOARD
@@ -722,9 +722,11 @@
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
+	// todo: check tri_enable field
+	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define	TWIHARD_INITIALIZE() do { \
-		MIO_SET_MODE(TARGET_TWI_TWD_MIO, z0x000016E0uL);	/*  PS_MIO43_501 SDA */ \
-		MIO_SET_MODE(TARGET_TWI_TWCK_MIO, z0x000016E0uL);	/*  PS_MIO42_501 SCL */ \
+		MIO_SET_MODE(TARGET_TWI_TWD_MIO, MIO_PIN_VALUE(1, 1, 0x03, 0, 0x02, 0, 0, 0, 1));	/*  PS_MIO43_501 SDA */ \
+		MIO_SET_MODE(TARGET_TWI_TWCK_MIO, MIO_PIN_VALUE(1, 1, 0x03, 0, 0x02, 0, 0, 0, 1));	/*  PS_MIO42_501 SCL */ \
 		i2chw_initialize(); \
 	} while (0)
 
