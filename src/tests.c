@@ -9523,12 +9523,12 @@ void lowtests(void)
 		// калибровка программной задержки
 		for (;;)
 		{
-			gpio_output(37, 0);		// LED_R
-			gpio_output(38, 1);		// LED_G
+			gpio_output(ZYNQBOARD_LED_RED, 0);		// LED_R
+			gpio_output(ZYNQBOARD_LED_GREEN, 1);		// LED_G
 			local_delay_ms(50);
 
-			gpio_output(37, 1);		// LED_R
-			gpio_output(38, 0);		// LED_G
+			gpio_output(ZYNQBOARD_LED_RED, 1);		// LED_R
+			gpio_output(ZYNQBOARD_LED_GREEN, 0);		// LED_G
 			local_delay_ms(50);
 
 		}

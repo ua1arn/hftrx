@@ -23538,13 +23538,13 @@ static void bootloader_mainloop(void)
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
+#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)	// мигалка
 	static ticker_t tscticker;
 	system_disableIRQ();
 	ticker_initialize(& tscticker, 1, tsc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& tscticker);
 	system_enableIRQ();
-	gpio_output(37, 0);		/* LED_R */
+	gpio_output(ZYNQBOARD_LED_RED, 0);		/* LED_R */
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
