@@ -681,17 +681,16 @@
 #if WITHUART2HW
 
 	// WITHUART2HW
-	#define TARGET_USART1_TX_MIO	48	//	USART_TX	C44	B12	PS_MIO48_501	UART1
-	#define TARGET_USART1_RX_MIO	49	//	USART_RX	C45	C12	PS_MIO49_501
+	#define TARGET_UART1_TX_MIO	48	//	USART_TX	C44	B12	PS_MIO48_501	UART1
+	#define TARGET_UART1_RX_MIO	49	//	USART_RX	C45	C12	PS_MIO49_501
 
 	//MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define HARDWARE_UART2_INITIALIZE() do { \
 		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
-		const portholder_t pinmode = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 1); \
-		/*gpio_peripherial(TARGET_USART1_TX_MIO, MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 0));   */ /*  MIO_PIN_48 UART1_TXD */ \
-		/*gpio_peripherial(TARGET_USART1_RX_MIO, MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 1));  */  /*  MIO_PIN_49 UART1_RXD */ \
-		MIO_SET_MODE(TARGET_USART1_TX_MIO, 0x000016E0uL);	/*  MIO_PIN_48 UART1_TXD */ \
-		MIO_SET_MODE(TARGET_USART1_RX_MIO, 0x000016E1uL);	/*  MIO_PIN_49 UART1_RXD */ \
+		const portholder_t pinmode_uart_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 0); \
+		const portholder_t pinmode_uart_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 1); \
+		gpio_peripherial(TARGET_UART1_TX_MIO, pinmode_uart_tx);  /*  MIO_PIN_48 UART1_TXD */ \
+		gpio_peripherial(TARGET_UART1_RX_MIO, pinmode_uart_rx);  /*  MIO_PIN_49 UART1_RXD */ \
 	} while (0)
 
 #endif /* WITHUART2HW */
