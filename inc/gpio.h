@@ -145,9 +145,9 @@ extern "C" {
 	#define MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable) \
 		( \
 				((uint_fast32_t) (disablercvr) << 13) | \
-				((uint_fast32_t) (pullup) << 13) | \
-				((uint_fast32_t) (io_type) << 12) | \
-				((uint_fast32_t) (speed) << 9) | \
+				((uint_fast32_t) (pullup) << 12) | \
+				((uint_fast32_t) (io_type) << 9) | \
+				((uint_fast32_t) (speed) << 8) | \
 				((uint_fast32_t) (l3_sel) << 5) | \
 				((uint_fast32_t) (l2_sel) << 3) | \
 				((uint_fast32_t) (l1_sel) << 2) | \
@@ -208,6 +208,9 @@ extern "C" {
 		ZYNQ_IORW32(GPIO_MASK_DATA_LSW(bank)) = (masklsw << 16) | datalsw; \
 		ZYNQ_IORW32(GPIO_MASK_DATA_MSW(bank)) = (maskmsw << 16) | datamsw; \
 	} while (0)
+
+	//	Note: If TRI_ENABLE=1, then the output is 3-stated regardless of any GPIO settings. If
+	//	TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register.
 
 	#define GPIO_BAND_SET_DIRM(bank, mask, odstate) do { \
 		const uintptr_t dirm = GPIO_DIRM(bank); \
