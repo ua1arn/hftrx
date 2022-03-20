@@ -230,12 +230,11 @@ extern "C" {
 	} while (0)
 
 	// set pin mode (no thread-safe)
-	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
-	#define gpio_output2(pin, state, iotype) do { \
+	#define gpio_output2(pin, state, pinmode) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
-			MIO_SET_MODE((pin), MIO_PIN_VALUE(1, 0, (iotype), 1, 0, 0, 0, 0, 0)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			MIO_SET_MODE((pin), pinmode); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
 		GPIO_BAND_SET_OEN(bank, mask, mask); \
@@ -245,31 +244,32 @@ extern "C" {
 	} while (0)
 
 	// set pin mode (no thread-safe)
+	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define gpio_output(pin, state) do { \
-		gpio_output2(pin, state, GPIO_IOTYPE_LVCMOS18); \
+		gpio_output2(pin, state, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
 	} while (0)
 
-	#define gpio_input2(pin, iotype) do { \
+	#define gpio_input2(pin, pinmode) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
-			MIO_SET_MODE((pin), MIO_PIN_VALUE(1, 0, (iotype), 1, 0, 0, 0, 0, 0)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			MIO_SET_MODE((pin), pinmode); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BAND_SET_OEN(bank, mask, 0); \
 		GPIO_BAND_SET_DIRM(bank, mask, 0); \
 	} while (0)
 
 	#define gpio_input(pin) do { \
-		gpio_input2(pin, GPIO_IOTYPE_LVCMOS18); \
+		gpio_input2(pin, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
 	} while (0)
 
 	// set pin mode (no thread-safe)
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
-	#define gpio_opendrain(pin, drive, iotype) do { \
+	#define gpio_opendrain2(pin, drive, pinmode) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
-			MIO_SET_MODE((pin), MIO_PIN_VALUE(1, 1, (iotype), 0, 0, 0, 0, 0, 0)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			MIO_SET_MODE((pin), pinmode); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 		GPIO_BAND_SET_DIRM(bank, mask, mask * !! (1)); \
@@ -283,6 +283,16 @@ extern "C" {
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		GPIO_BAND_SET_OEN(bank, mask, mask * !! (drive)); \
+	} while (0)
+
+	#define gpio_peripherial(pin, pinmode) do { \
+		const portholder_t bank = GPIO_PIN2BANK(pin); \
+		const portholder_t mask = GPIO_PIN2MASK(pin); \
+		if ((pin) < ZYNQ_MIO_CNT) { \
+			MIO_SET_MODE((pin), pinmode); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+		/*GPIO_BAND_SET_DIRM(bank, mask, mask); */\
+		/*GPIO_BAND_SET_OEN(bank, mask, mask); */\
+		} \
 	} while (0)
 
 	#define gpio_readpin(pin) ((ZYNQ_IORW32(GPIO_DATA_RO(GPIO_PIN2BANK(pin))) & GPIO_PIN2MASK(pin)) != 0)
