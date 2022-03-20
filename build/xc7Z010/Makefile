@@ -281,7 +281,10 @@ $(PROJECT)_app.xyl32: $(PROJECT)_app.bin
 		
 BOOT2: version boot.bin
 	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
-
+	
+BOOT3: version boot.bin
+	program_flash -f BOOT.bin -verify -offset 0x00000 -flash_type qspi-x4-single -fsbl fsbl_debug.elf
+	
 boot.bin: boot_ant.bif $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot_ant.bif -w on -o $@
 
