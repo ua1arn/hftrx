@@ -23552,7 +23552,7 @@ static void bootloader_mainloop(void)
 	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
 ddd:
 	;
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
+#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)	// мигалка
 
 	if (getrefresh())
 	{
@@ -23560,7 +23560,7 @@ ddd:
 
 		state = ! state;
 		// установка состояния выходов
-		gpio_writepin(37, state);	/* LED_R */
+		gpio_writepin(ZYNQBOARD_LED_RED, state);	/* LED_R */
 
 	}
 	//PRINTF(".");
