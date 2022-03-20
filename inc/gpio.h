@@ -140,7 +140,7 @@ extern "C" {
 
 	#define ZYNQ_IORW32(addr) (* (volatile uint32_t *) (addr))
 
-	// ug585-Zynq-7000-TRM.pdf v1.12.2, page 1630
+	// ug585-Zynq-7000-TRM.pdf v1.12.2, page 1631
 
 	#define MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable) \
 		( \

@@ -872,6 +872,7 @@
 		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 0); \
 		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 1); \
 		const portholder_t pinmode_ulpi_output = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 0); \
+		/* ULPI chip */ \
 		gpio_peripherial(USB_DATA0_MIO, pinmode_ulpi_data); \
 		gpio_peripherial(USB_DATA1_MIO, pinmode_ulpi_data); \
 		gpio_peripherial(USB_DATA2_MIO, pinmode_ulpi_data); \
@@ -884,6 +885,7 @@
 		gpio_peripherial(USB_NXT_MIO, pinmode_ulpi_input); \
 		gpio_peripherial(USB_CLK_MIO, pinmode_ulpi_input); \
 		gpio_peripherial(USB_STP_MIO, pinmode_ulpi_output); \
+		/* RESET */ \
 		gpio_output2(USB_RESET_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 		local_delay_ms(10); \
