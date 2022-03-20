@@ -869,19 +869,21 @@
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define USB_ULPI_INITIALIZE() do { \
 		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
-		const portholder_t pinmode = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 1, 0, 1); \
-		gpio_peripherial(USB_DATA0_MIO, pinmode); \
-		gpio_peripherial(USB_DATA1_MIO, pinmode); \
-		gpio_peripherial(USB_DATA2_MIO, pinmode); \
-		gpio_peripherial(USB_DATA3_MIO, pinmode); \
-		gpio_peripherial(USB_DATA4_MIO, pinmode); \
-		gpio_peripherial(USB_DATA5_MIO, pinmode); \
-		gpio_peripherial(USB_DATA6_MIO, pinmode); \
-		gpio_peripherial(USB_DATA7_MIO, pinmode); \
-		gpio_peripherial(USB_DIR_MIO, pinmode); \
-		gpio_peripherial(USB_STP_MIO, pinmode); \
-		gpio_peripherial(USB_NXT_MIO, pinmode); \
-		gpio_peripherial(USB_CLK_MIO, pinmode); \
+		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 0); \
+		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 1); \
+		const portholder_t pinmode_ulpi_output = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 0); \
+		gpio_peripherial(USB_DATA0_MIO, pinmode_ulpi_data); \
+		gpio_peripherial(USB_DATA1_MIO, pinmode_ulpi_data); \
+		gpio_peripherial(USB_DATA2_MIO, pinmode_ulpi_data); \
+		gpio_peripherial(USB_DATA3_MIO, pinmode_ulpi_data); \
+		gpio_peripherial(USB_DATA4_MIO, pinmode_ulpi_data); \
+		gpio_peripherial(USB_DATA5_MIO, pinmode_ulpi_data); \
+		gpio_peripherial(USB_DATA6_MIO, pinmode_ulpi_data); \
+		gpio_peripherial(USB_DATA7_MIO, pinmode_ulpi_data); \
+		gpio_peripherial(USB_DIR_MIO, pinmode_ulpi_input); \
+		gpio_peripherial(USB_NXT_MIO, pinmode_ulpi_input); \
+		gpio_peripherial(USB_CLK_MIO, pinmode_ulpi_input); \
+		gpio_peripherial(USB_STP_MIO, pinmode_ulpi_output); \
 		gpio_output2(USB_RESET_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 		local_delay_ms(10); \
