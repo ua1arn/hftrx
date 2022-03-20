@@ -655,25 +655,25 @@
 	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-		gpio_output(SPI_SCLK_MIO, 1); \
-		gpio_output(SPI_MOSI_MIO, 1); \
-		gpio_input(SPI_MISO_MIO); \
+		gpio_output2(SPI_SCLK_MIO, 1, GPIO_IOTYPE_LVCMOS18); \
+		gpio_output2(SPI_MOSI_MIO, 1, GPIO_IOTYPE_LVCMOS18); \
+		gpio_input2(SPI_MISO_MIO, GPIO_IOTYPE_LVCMOS18); \
 	} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
-		gpio_output(SPI_SCLK_MIO, 1); \
-		gpio_output(SPI_MOSI_MIO, 1); \
-		gpio_input(SPI_MISO_MIO); \
+		gpio_output2(SPI_SCLK_MIO, 1, GPIO_IOTYPE_LVCMOS18); \
+		gpio_output2(SPI_MOSI_MIO, 1, GPIO_IOTYPE_LVCMOS18); \
+		gpio_input2(SPI_MISO_MIO, GPIO_IOTYPE_LVCMOS18); \
 	} while (0)
 
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		gpio_input(SPI_MOSI_MIO); \
+		gpio_input2(SPI_MOSI_MIO, GPIO_IOTYPE_LVCMOS18); \
 	} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -893,7 +893,7 @@
 
 
 #define USB_ULPI_INITIALIZE() do { \
-		gpio_output(USB_RESET_MIO, 1); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
+		gpio_output2(USB_RESET_MIO, 1, GPIO_IOTYPE_LVCMOS18); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 	} while (0)
 
@@ -1052,12 +1052,12 @@
 
 		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 		#define SPIDF_HANGOFF() do { \
-				gpio_input(SPDIF_NCS_MIO);	/*  */ \
-				gpio_input(SPDIF_SCLK_MIO);	/*  */ \
-				gpio_input(SPDIF_MOSI_MIO);	/*  */ \
-				gpio_input(SPDIF_MISO_MIO);	/*  */ \
-				gpio_input(SPDIF_D2_MIO);	/*  */ \
-				gpio_input(SPDIF_D3_MIO);	/*  */ \
+				gpio_input2(SPDIF_NCS_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+				gpio_input2(SPDIF_SCLK_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+				gpio_input2(SPDIF_MOSI_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+				gpio_input2(SPDIF_MISO_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+				gpio_input2(SPDIF_D2_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+				gpio_input2(SPDIF_D3_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
 			} while (0)
 
 		#if WIHSPIDFHW
@@ -1078,12 +1078,12 @@
 			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-					gpio_output(SPDIF_NCS_MIO, 1);  \
-					gpio_output(SPDIF_SCLK_MIO, 1);  \
-					gpio_output(SPDIF_MOSI_MIO, 1);	\
-					gpio_input(SPDIF_MISO_MIO);	\
-					gpio_output(SPDIF_D2_MIO, 1);  \
-					gpio_output(SPDIF_D3_MIO, 1);  \
+					gpio_output2(SPDIF_NCS_MIO, 1, GPIO_IOTYPE_LVCMOS18);  \
+					gpio_output2(SPDIF_SCLK_MIO, 1, GPIO_IOTYPE_LVCMOS18);  \
+					gpio_output2(SPDIF_MOSI_MIO, 1, GPIO_IOTYPE_LVCMOS18);	\
+					gpio_input2(SPDIF_MISO_MIO, GPIO_IOTYPE_LVCMOS18);	\
+					gpio_output2(SPDIF_D2_MIO, 1, GPIO_IOTYPE_LVCMOS18);  \
+					gpio_output2(SPDIF_D3_MIO, 1, GPIO_IOTYPE_LVCMOS18);  \
 				} while (0)
 			#define SPIDF_SELECT() do { \
 					gpio_writepin(SPDIF_NCS_MIO, 0);  \
