@@ -886,7 +886,7 @@
 		gpio_peripherial(USB_CLK_MIO, pinmode_ulpi_input); \
 		gpio_peripherial(USB_STP_MIO, pinmode_ulpi_output); \
 		/* RESET */ \
-		gpio_output2(USB_RESET_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
+		gpio_output2(USB_RESET_MIO, 1, MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 		local_delay_ms(10); \
 		gpio_writepin(USB_RESET_MIO, 0); /* USB_RESET = 0 */ \
