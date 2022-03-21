@@ -58,5 +58,4 @@ HAL_StatusTypeDef HAL_Init(void)
 	  return HAL_OK;
 }
 
-
 #endif /* CPUSTYLE_XC7Z */

@@ -8,7 +8,6 @@
 #ifndef SRC_HAL_ZYNQ7000_HAL_H_
 #define SRC_HAL_ZYNQ7000_HAL_H_
 
-
 #if  defined ( __GNUC__ )
   #ifndef __weak
     #define __weak   __attribute__((weak))
@@ -17,7 +16,6 @@
     #define __packed __attribute__((__packed__))
   #endif /* __packed */
 #endif /* __GNUC__ */
-
 
 /* Macro to get variable aligned on 4-bytes, for __ICCARM__ the directive "#pragma data_alignment=4" must be used instead */
 #if defined   (__GNUC__)        /* GNU Compiler */
@@ -520,5 +518,96 @@ uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
  * @}
  */
 
+/** @defgroup USB_Core_Mode_ USB Core Mode
+  * @{
+  */
+#define USB_OTG_MODE_DEVICE                    0U
+#define USB_OTG_MODE_HOST                      1U
+#define USB_OTG_MODE_DRD                       2U
+/**
+  * @}
+  */
+
+/** @defgroup USB_LL Device Speed
+  * @{
+  */
+#define USBD_HS_SPEED                          0U
+#define USBD_HSINFS_SPEED                      1U
+#define USBH_HS_SPEED                          0U
+#define USBD_FS_SPEED                          2U
+#define USBH_FSLS_SPEED                        1U
+/**
+  * @}
+  */
+
+/** @defgroup USB_LL_Core_Speed USB Low Layer Core Speed
+  * @{
+  */
+#define USB_OTG_SPEED_HIGH                     0U
+#define USB_OTG_SPEED_HIGH_IN_FULL             1U
+#define USB_OTG_SPEED_FULL                     3U
+/**
+  * @}
+  */
+
+/** @defgroup USB_LL_Core_PHY USB Low Layer Core PHY
+  * @{
+  */
+#define USB_OTG_ULPI_PHY                       1U
+#define USB_OTG_EMBEDDED_PHY                   2U
+#define USB_OTG_HS_EMBEDDED_PHY                3U
+/**
+  * @}
+  */
+/** @defgroup USB_LL_Core_MPS USB Low Layer Core MPS
+  * @{
+  */
+#define USB_OTG_HS_MAX_PACKET_SIZE           512U
+#define USB_OTG_FS_MAX_PACKET_SIZE            64U
+#define USB_OTG_MAX_EP0_SIZE                  64U
+/**
+  * @}
+  */
+
+#define PCD_SPEED_HIGH               USBD_HS_SPEED
+#define PCD_SPEED_HIGH_IN_FULL       USBD_HSINFS_SPEED
+#define PCD_SPEED_FULL               USBD_FS_SPEED
+
+#define EP_ADDR_MSK                            0xFU
+
+
+/** @defgroup USB_LL_EP_Type USB Low Layer EP Type
+  * @{
+  */
+#define EP_TYPE_CTRL                           0U
+#define EP_TYPE_ISOC                           1U
+#define EP_TYPE_BULK                           2U
+#define EP_TYPE_INTR                           3U
+#define EP_TYPE_MSK                            3U
+/**
+  * @}
+  */
+
+#if (USE_RTOS == 1U)
+/* Reserved for future use */
+  #error " USE_RTOS should be 0 in the current HAL release "
+#else
+  #define __HAL_LOCK(__HANDLE__)                                           \
+                                do{                                        \
+                                    if((__HANDLE__)->Lock == HAL_LOCKED)   \
+                                    {                                      \
+                                       return HAL_BUSY;                    \
+                                    }                                      \
+                                    else                                   \
+                                    {                                      \
+                                       (__HANDLE__)->Lock = HAL_LOCKED;    \
+                                    }                                      \
+                                  }while (0U)
+
+  #define __HAL_UNLOCK(__HANDLE__)                                          \
+                                  do{                                       \
+                                      (__HANDLE__)->Lock = HAL_UNLOCKED;    \
+                                    }while (0U)
+#endif /* USE_RTOS */
 
 #endif /* SRC_HAL_ZYNQ7000_HAL_H_ */

@@ -976,9 +976,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #elif CPUSTYLE_XC7Z
 
-		if (WITHUSBHW_HOST == EHCI0)
+		if (WITHUSBHW_EHCI == EHCI0)
 		{
-			enum { usbIX = 0; };
+			enum { usbIX = 0 };
 
 			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ (0x07uL << 4)) |
 				(0x04uL << 4) |	// SRCSEL
@@ -994,9 +994,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 		}
-		else if (WITHUSBHW_HOST == EHCI1)
+		else if (WITHUSBHW_EHCI == EHCI1)
 		{
-			enum { usbIX = 1; };
+			enum { usbIX = 1 };
 
 			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ (0x07uL << 4)) |
 				(0x04uL << 4) |	// SRCSEL
@@ -1047,9 +1047,9 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 
 #elif CPUSTYLE_XC7Z
 
-		if (WITHUSBHW_HOST == EHCI0)
+		if (WITHUSBHW_EHCI == EHCI0)
 		{
-			enum { usbIX = 0; };
+			enum { usbIX = 0 };
 
 			arm_hardware_disable_handler(USB0_IRQn);
 
@@ -1057,9 +1057,9 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 
 		}
-		else if (WITHUSBHW_HOST == EHCI1)
+		else if (WITHUSBHW_EHCI == EHCI1)
 		{
-			enum { usbIX = 1; };
+			enum { usbIX = 1 };
 
 			arm_hardware_disable_handler(USB1_IRQn);
 
