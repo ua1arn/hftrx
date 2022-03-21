@@ -1788,6 +1788,43 @@ const videomode_t vdmode0 =
 	.fps = 60	/* frames per secound */
 };
 
+#elif LCDMODE_TV101WXM
+	/* 720xRGBx1280 - 5" AMOELD Panel H497TLB01.4 */
+	// See also:
+	// https://github.com/bbelos/rk3188-kernel/blob/master/drivers/video/rockchip/transmitter/tc358768.c
+	// https://github.com/tanish2k09/venom_kernel_aio_otfp/blob/master/drivers/input/touchscreen/mediatek/S3202/synaptics_dsx_i2c.c
+	// https://stash.phytec.com/projects/TIRTOS/repos/vps-phytec/raw/src/boards/src/bsp_boardPriv.h?at=e8b92520f41e6523301d120dae15db975ad6d0da
+	//https://code.ihub.org.cn/projects/825/repositories/874/file_edit_page?file_name=am57xx-idk-common.dtsi&path=arch%2Farm%2Fboot%2Fdts%2Fam57xx-idk-common.dtsi&rev=master
+const videomode_t vdmode0 =
+{
+	.width = 768,			/* LCD PIXEL WIDTH            */
+	.height = 1280,			/* LCD PIXEL HEIGHT           */
+	/**
+	  * @brief  AT070TN90 Timing
+	  * MODE=0 (DE)
+	  * When selected DE mode, VSYNC & HSYNC must pulled HIGH
+	  * MODE=1 (SYNC)
+	  * When selected sync mode, de must be grounded.
+	  */
+	.hsync = 5,				/* Horizontal synchronization 1..40 */
+	.hbp = 11,				/* Horizontal back porch      */
+	.hfp = 16,				/* Horizontal front porch  16..354   */
+
+	.vsync = 5,				/* Vertical synchronization 1..20  */
+	.vbp = 11,					/* Vertical back porch        */
+	.vfp = 16,				/* Vertical front porch  7..147     */
+
+	// MODE: DE/SYNC mode select.
+	// DE MODE: MODE="1", VS and HS must pull high.
+	// SYNC MODE: MODE="0". DE must be grounded
+	.vsyncneg = 1,			/* Negative polarity required for VSYNC signal */
+	.hsyncneg = 1,			/* Negative polarity required for HSYNC signal */
+	.deneg = 0,				/* Negative DE polarity: (normal: DE is 0 while sync) */
+	.lq43reset = 0,	// LQ043T3DX02K require DE reset
+	//.ltdc_dotclk = 3000000uL	// частота пикселей при работе с интерфейсом RGB
+	.fps = 60	/* frames per secound */
+};
+
 #else
 	#error Unsupported LCDMODE_xxx
 
