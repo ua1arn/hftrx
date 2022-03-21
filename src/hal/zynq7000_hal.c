@@ -74,31 +74,59 @@ HAL_StatusTypeDef HAL_Init(void)
 #define XUSBPS_ULPIVIEW_WU_MASK   		0x80000000	// 	ULPI Wakeup. More...
 
 #define XUSBPS_ULPIVIEW			0xE0002170	// USB0
-#define XUSBPS_ULPIVIEW2		((uintptr_t) WITHUSBHW_EHCI + 0x00000170)
+#define XUSBPS_ULPIVIEW2		((uintptr_t) WITHUSBHW_EHCI + 0x00000170)	// USB0
+
+#define ULPIVIEW (* ((volatile uint32_t *) XUSBPS_ULPIVIEW))
 
 static void ulpi_reg_set(uint_fast8_t addr, uint_fast8_t data)
 {
-	volatile uint32_t * const ulpivew = (volatile uint32_t *) XUSBPS_ULPIVIEW;	// USB0
-
-	* ulpivew = (* ulpivew & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
+	ULPIVIEW = (ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
 			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK ) |
 			(((uint_fast32_t) data << XUSBPS_ULPIVIEW_DATWR_SHIFT) & XUSBPS_ULPIVIEW_DATWR_MASK ) |
 			0;
+	ULPIVIEW |= XUSBPS_ULPIVIEW_RW_MASK;	// Select write direction
+	ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
+	while ((ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+		;
 }
 
 static uint_fast8_t ulpi_reg_get(uint_fast8_t addr)
 {
-	volatile uint32_t * const ulpivew = (volatile uint32_t *) XUSBPS_ULPIVIEW;	// USB0
-
-	* ulpivew = (* ulpivew & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
+	ULPIVIEW = (ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
 			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK ) |
 			0;
 
-	return 0;
+	ULPIVIEW &= ~ XUSBPS_ULPIVIEW_RW_MASK;	// Select read direction
+	ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
+	while ((ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+		;
+	return (ULPIVIEW & XUSBPS_ULPIVIEW_DATRD_MASK) >> XUSBPS_ULPIVIEW_DATRD_SHIFT;
 }
 
 void ulpi_chip_initialize(void)
 {
-	PRINTF("ulpi_chip_initialize: XUSBPS_ULPIVIEW=%08lX, calc=%08lX\n", XUSBPS_ULPIVIEW, XUSBPS_ULPIVIEW2);
+	PRINTF("ulpi_chip_initialize: XUSBPS_ULPIVIEW=%08lX, calc=%08lX, ULPIVIEW=%08lX\n", XUSBPS_ULPIVIEW, XUSBPS_ULPIVIEW2, ULPIVIEW);
+	// USB3340
+	// Address = 00h (read only) Vendor ID Low = 0x24
+	// Address = 01h (read only) Vendor ID High = 0x04
+	// Address = 02h (read only) Product ID Low = 0x09
+	// Address = 03h (read only)  Product ID High = 0x00
+	const uint_fast8_t v0 = ulpi_reg_get(0x00);
+	const uint_fast8_t v1 = ulpi_reg_get(0x01);
+	const uint_fast8_t v2 = ulpi_reg_get(0x02);
+	const uint_fast8_t v3 = ulpi_reg_get(0x03);
+	const uint_fast16_t vid = v1 * 256 + v0;
+	const uint_fast16_t pid = v3 * 256 + v2;
+	PRINTF("ULPI chip: VendorID=%04X, productID=%04X\n", vid, pid);
+
+	if (vid != 0X0424 || pid != 0x0009)
+		return;
+
+	// Address = 19-1Bh (read), 19h (write), 1Ah (set), 1Bh (clear)
+	// Bit 0x01 - IdGndDrv set to 1
+	PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
+	ulpi_reg_set(0x19, 0x02);	// Set IdGndDrv bit
+	PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
+
 }
 #endif /* CPUSTYLE_XC7Z */
