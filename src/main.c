@@ -23545,7 +23545,7 @@ static void bootloader_mainloop(void)
 	ticker_initialize(& tscticker, 1, tsc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 	ticker_add(& tscticker);
 	system_enableIRQ();
-	gpio_output(ZYNQBOARD_LED_RED, 0);		/* LED_R */
+	gpio_output2(ZYNQBOARD_LED_RED, 0, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 0));		/* LED_R */
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);

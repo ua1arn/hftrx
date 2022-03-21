@@ -740,7 +740,7 @@
 
 	#define TWISOFT_INITIALIZE() do { \
 		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
-		const porholder_t pinmode =  MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0); \
+		const portholder_t pinmode =  MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0); \
 		gpio_opendrain2(TARGET_TWI_TWD_MIO, 0, pinmode);		/*  PS_MIO43_501 SDA */ \
 		gpio_opendrain2(TARGET_TWI_TWCK_MIO, 0, pinmode);		/*  PS_MIO42_501 SCL */ \
 	} while(0)

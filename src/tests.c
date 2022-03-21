@@ -9518,17 +9518,27 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
+//	PRINTF("TARGET_UART1_RX_MIO test\n");
+//	for (;;)
+//	{
+//		const portholder_t pinmode = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 0);
+//		gpio_output2(TARGET_UART1_RX_MIO, 1, pinmode);
+//		local_delay_ms(200);
+//		gpio_output2(TARGET_UART1_RX_MIO, 0);
+//		local_delay_ms(200);
+//	}
 #if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 	{
 		// калибровка программной задержки
 		for (;;)
 		{
-			gpio_output(ZYNQBOARD_LED_RED, 0);		// LED_R
-			gpio_output(ZYNQBOARD_LED_GREEN, 1);		// LED_G
+			const portholder_t pinmode = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 0);
+			gpio_output2(ZYNQBOARD_LED_RED, 0, pinmode);		// LED_R
+			gpio_output2(ZYNQBOARD_LED_GREEN, 1, pinmode);		// LED_G
 			local_delay_ms(50);
 
-			gpio_output(ZYNQBOARD_LED_RED, 1);		// LED_R
-			gpio_output(ZYNQBOARD_LED_GREEN, 0);		// LED_G
+			gpio_output2(ZYNQBOARD_LED_RED, 1, pinmode);		// LED_R
+			gpio_output2(ZYNQBOARD_LED_GREEN, 0, pinmode);		// LED_G
 			local_delay_ms(50);
 
 		}

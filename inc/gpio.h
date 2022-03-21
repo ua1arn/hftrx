@@ -150,8 +150,8 @@ extern "C" {
 				((uint_fast32_t) !! (speed) << 8) | /* 0 - slow */ \
 				((uint_fast32_t) (l3_sel) << 5) | \
 				((uint_fast32_t) (l2_sel) << 3) | \
-				((uint_fast32_t) (l1_sel) << 2) | \
-				((uint_fast32_t) (l0_sel) << 1) | \
+				((uint_fast32_t) !! (l1_sel) << 2) | \
+				((uint_fast32_t) !! (l0_sel) << 1) | \
 				((uint_fast32_t) !! (tri_enable) << 0) | \
 				0 \
 		)
@@ -241,12 +241,6 @@ extern "C" {
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
 		GPIO_BAND_SET_DIRM(bank, mask, mask); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
-	} while (0)
-
-	// set pin mode (no thread-safe)
-	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
-	#define gpio_output(pin, state) do { \
-		gpio_output2(pin, state, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
 	} while (0)
 
 	#define gpio_input2(pin, pinmode) do { \
