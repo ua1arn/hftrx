@@ -58,6 +58,10 @@ HAL_StatusTypeDef HAL_Init(void)
 	  return HAL_OK;
 }
 
+#endif /* CPUSTYLE_XC7Z */
+
+
+#if CPUSTYLE_XC7Z
 // https://xilinx.github.io/embeddedsw.github.io/usbps/doc/html/api/xusbps__hw_8h.html
 
 //	USB ULPI Viewport Register (ULPIVIEW) bit positions.
@@ -125,7 +129,7 @@ void ulpi_chip_initialize(void)
 	// Address = 19-1Bh (read), 19h (write), 1Ah (set), 1Bh (clear)
 	// Bit 0x01 - IdGndDrv set to 1
 	PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
-	ulpi_reg_set(0x19, 0x02);	// Set IdGndDrv bit
+	ulpi_reg_set(0x1A, 0x02);	// Set IdGndDrv bit
 	PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
 
 }
