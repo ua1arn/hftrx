@@ -128,7 +128,7 @@
 	#define WITHUSBDEV_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	//#define WITHUSBDEV_DMAENABLE 1
 
-#if 0
+#if 1
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		EHCI0
@@ -866,6 +866,35 @@
 	#define USB_NXT_MIO		31	//	USB_NXT		C24	E16		PS_MIO31_501
 	#define USB_CLK_MIO		36	//	USB_CLK		C32	A11		PS_MIO36_501
 
+#if WITHUSBHW
+
+	//#define TARGET_USBFS_VBUSON_BIT (1uL << 2)	// PD2 - нулём включение питания для device
+	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { /*GPIOD->BSRR = BSRR_C(v); __DSB(); */} while (0)
+	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { /*GPIOD->BSRR = BSRR_S(v); __DSB(); */} while (0)
+	#define	USBD_FS_INITIALIZE() do { \
+		/*arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); */ /* PD2 */ \
+		} while (0)
+
+	#define TARGET_USBFS_VBUSON_SET(on)	do { \
+		if ((on) != 0) \
+			TARGET_USBFS_VBUSON_PORT_C(TARGET_USBFS_VBUSON_BIT); \
+		else \
+			TARGET_USBFS_VBUSON_PORT_S(TARGET_USBFS_VBUSON_BIT); \
+	} while (0)
+
+	/**USB_OTG_HS GPIO Configuration
+	PB13     ------> USB_OTG_HS_VBUS
+	PB14     ------> USB_OTG_HS_DM
+	PB15     ------> USB_OTG_HS_DP
+	*/
+	#define	USBD_HS_FS_INITIALIZE() do { \
+		/*arm_hardware_pioa_altfn50((1uL << 11) | (1uL << 12), AF_OTGFS);	*/		/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
+		/* arm_hardware_pioa_inputs(1uL << 9);	*/	/* PA9 - USB_OTG_FS_VBUS */ \
+		} while (0)
+
+	#define	USBD_HS_ULPI_INITIALIZE() do { \
+		} while (0)
+
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define USB_ULPI_INITIALIZE() do { \
 		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
@@ -887,7 +916,6 @@
 		gpio_peripherial(USB_STP_MIO, pinmode_ulpi_output); \
 		/* RESET */ \
 		gpio_output2(USB_RESET_MIO, 1, MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
-		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 		local_delay_ms(10); \
 		gpio_writepin(USB_RESET_MIO, 0); /* USB_RESET = 0 */ \
 		local_delay_ms(10); \
@@ -895,34 +923,18 @@
 		local_delay_ms(10); \
 	} while (0)
 
-#if WITHUSBHW
+#else /* WITHUSBHW */
 
-	//#define TARGET_USBFS_VBUSON_BIT (1uL << 2)	// PD2 - нулём включение питания для device
-	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { /*GPIOD->BSRR = BSRR_C(v); __DSB(); */} while (0)
-	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { /*GPIOD->BSRR = BSRR_S(v); __DSB(); */} while (0)
-	#define	USBD_FS_INITIALIZE() do { \
-		/*arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); */ /* PD2 */ \
-		} while (0)
 
-	#define TARGET_USBFS_VBUSON_SET(on)	do { \
-		if ((on) != 0) \
-			TARGET_USBFS_VBUSON_PORT_C(TARGET_USBFS_VBUSON_BIT); \
-		else \
-			TARGET_USBFS_VBUSON_PORT_S(TARGET_USBFS_VBUSON_BIT); \
+	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
+	#define USB_ULPI_INITIALIZE() do { \
+		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+		/* RESET */ \
+		gpio_output2(USB_RESET_MIO, 0, MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
+		local_delay_ms(10); \
 	} while (0)
 
-	/**USB_OTG_HS GPIO Configuration    
-	PB13     ------> USB_OTG_HS_VBUS
-	PB14     ------> USB_OTG_HS_DM
-	PB15     ------> USB_OTG_HS_DP 
-	*/
-	#define	USBD_HS_FS_INITIALIZE() do { \
-		/*arm_hardware_pioa_altfn50((1uL << 11) | (1uL << 12), AF_OTGFS);	*/		/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
-		/* arm_hardware_pioa_inputs(1uL << 9);	*/	/* PA9 - USB_OTG_FS_VBUS */ \
-		} while (0)
 
-	#define	USBD_HS_ULPI_INITIALIZE() do { \
-		} while (0)
 #endif /* WITHUSBHW */
 
 #if WITHDCDCFREQCTL
