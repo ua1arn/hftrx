@@ -922,6 +922,7 @@
 		local_delay_ms(10); \
 		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 		local_delay_ms(10); \
+		ulpi_chip_initialize(); \
 	} while (0)
 
 #else /* WITHUSBHW */

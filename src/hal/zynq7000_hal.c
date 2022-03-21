@@ -58,4 +58,47 @@ HAL_StatusTypeDef HAL_Init(void)
 	  return HAL_OK;
 }
 
+// https://xilinx.github.io/embeddedsw.github.io/usbps/doc/html/api/xusbps__hw_8h.html
+
+//	USB ULPI Viewport Register (ULPIVIEW) bit positions.
+#define XUSBPS_ULPIVIEW_DATWR_MASK   	0x000000FF	// 	ULPI Data Write. More...
+#define	XUSBPS_ULPIVIEW_DATWR_SHIFT		0
+#define XUSBPS_ULPIVIEW_DATRD_MASK   	0x0000FF00	// 	ULPI Data Read. More...
+#define XUSBPS_ULPIVIEW_DATRD_SHIFT	   	8			// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_ADDR_MASK   	0x00FF0000	// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_ADDR_SHIFT	   	16			// 	ULPI Data Address. More...
+#define XUSBPS_ULPIVIEW_PORT_MASK   	0x07000000	// 	ULPI Port Number. More...
+#define XUSBPS_ULPIVIEW_SS_MASK   		0x08000000	// 	ULPI Synchronous State. More...
+#define XUSBPS_ULPIVIEW_RW_MASK   		0x20000000	// 	ULPI Read/Write Control. More...
+#define XUSBPS_ULPIVIEW_RUN_MASK   		0x40000000	// 	ULPI Run. More...
+#define XUSBPS_ULPIVIEW_WU_MASK   		0x80000000	// 	ULPI Wakeup. More...
+
+#define XUSBPS_ULPIVIEW			0xE0002170	// USB0
+#define XUSBPS_ULPIVIEW2		((uintptr_t) WITHUSBHW_EHCI + 0x00000170)
+
+static void ulpi_reg_set(uint_fast8_t addr, uint_fast8_t data)
+{
+	volatile uint32_t * const ulpivew = (volatile uint32_t *) XUSBPS_ULPIVIEW;	// USB0
+
+	* ulpivew = (* ulpivew & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
+			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK ) |
+			(((uint_fast32_t) data << XUSBPS_ULPIVIEW_DATWR_SHIFT) & XUSBPS_ULPIVIEW_DATWR_MASK ) |
+			0;
+}
+
+static uint_fast8_t ulpi_reg_get(uint_fast8_t addr)
+{
+	volatile uint32_t * const ulpivew = (volatile uint32_t *) XUSBPS_ULPIVIEW;	// USB0
+
+	* ulpivew = (* ulpivew & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
+			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK ) |
+			0;
+
+	return 0;
+}
+
+void ulpi_chip_initialize(void)
+{
+	PRINTF("ulpi_chip_initialize: XUSBPS_ULPIVIEW=%08lX, calc=%08lX\n", XUSBPS_ULPIVIEW, XUSBPS_ULPIVIEW2);
+}
 #endif /* CPUSTYLE_XC7Z */
