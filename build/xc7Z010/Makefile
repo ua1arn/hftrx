@@ -17,13 +17,14 @@
 # Start of default section
 #
 TRGT2 = arm-none-eabi
+#TRGT2 = C:\user\klen\bin\arm-kgp-eabi
 TRGT = $(TRGT2)-
-#TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
 PRJROOT := ../..
 OBJDIR = obj
 
 ZINQ_BOOT_DIR := E:
+XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_3.elf -frequency 750000
 
 #
 CC   = $(TRGT)gcc
@@ -274,7 +275,10 @@ flash_dfu: $(PROJECT)_app.xyl32
 	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0xFC080000 --download $(PROJECT)_app.xyl32
 
 flash: $(PROJECT)_app.xyl32
-	program_flash -f $(PROJECT)_app.xyl32 -offset 0x80000 -flash_type qspi-x4-single -fsbl fsbl_debug.elf
+	program_flash -f $(PROJECT)_app.xyl32 -offset 0x80000 $(XILINX_JTAGOPTS)
+
+flash2: $(PROJECT)_app.xyl32
+	program_flash -f $(PROJECT)_app.xyl32 -offset 0x80000 $(XILINX_JTAGOPTS)
 
 $(PROJECT)_app.xyl32: $(PROJECT)_app.bin
 	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
@@ -283,7 +287,7 @@ BOOT2: version boot.bin
 	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
 	
 BOOT3: version boot.bin
-	program_flash -f BOOT.bin -verify -offset 0x00000 -flash_type qspi-x4-single -fsbl fsbl_debug.elf
+	program_flash -f BOOT.bin -verify -offset 0x00000 -flash_type qspi-x4-single -fsbl fsbl_debug.elf -frequency 750000
 	
 boot.bin: boot_ant.bif $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot_ant.bif -w on -o $@
