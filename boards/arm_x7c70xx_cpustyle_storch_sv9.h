@@ -740,8 +740,9 @@
 
 	#define TWISOFT_INITIALIZE() do { \
 		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
-		gpio_opendrain2(TARGET_TWI_TWD_MIO, 0, MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0));		/*  PS_MIO43_501 SDA */ \
-		gpio_opendrain2(TARGET_TWI_TWCK_MIO, 0, MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0));		/*  PS_MIO42_501 SCL */ \
+		const porholder_t pinmode =  MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0); \
+		gpio_opendrain2(TARGET_TWI_TWD_MIO, 0, pinmode);		/*  PS_MIO43_501 SDA */ \
+		gpio_opendrain2(TARGET_TWI_TWCK_MIO, 0, pinmode);		/*  PS_MIO42_501 SCL */ \
 	} while(0)
 
 	#define SET_TWCK() do { gpio_drive(TARGET_TWI_TWCK_MIO, 0); hardware_spi_io_delay(); } while (0)
@@ -774,11 +775,11 @@
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
-			arm_hardware_pioc_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
-			arm_hardware_pioc_inputs(FPGA_NSTATUS_BIT); \
-			arm_hardware_pioc_inputs(FPGA_CONF_DONE_BIT); \
-			arm_hardware_pioc_inputs(FPGA_INIT_DONE_BIT); \
-		} while (0)
+		arm_hardware_pioc_outputs(FPGA_NCONFIG_BIT, FPGA_NCONFIG_BIT); \
+		arm_hardware_pioc_inputs(FPGA_NSTATUS_BIT); \
+		arm_hardware_pioc_inputs(FPGA_CONF_DONE_BIT); \
+		arm_hardware_pioc_inputs(FPGA_INIT_DONE_BIT); \
+	} while (0)
 
 	/* Проверяем, проинициализировалась ли FPGA (вошла в user mode). */
 	/*
@@ -810,10 +811,10 @@
 	#define TARGET_FPGA_FIR2_WE_BIT (1uL << 0)	/* PD0 - fir2 WE */
 
 	#define TARGET_FPGA_FIR_INITIALIZE() do { \
-			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
-			arm_hardware_piod_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
-			arm_hardware_pioc_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
-		} while (0)
+		arm_hardware_piod_outputs2m(TARGET_FPGA_FIR1_WE_BIT, TARGET_FPGA_FIR1_WE_BIT); \
+		arm_hardware_piod_outputs2m(TARGET_FPGA_FIR2_WE_BIT, TARGET_FPGA_FIR2_WE_BIT); \
+		arm_hardware_pioc_outputs2m(TARGET_FPGA_FIR_CS_BIT, TARGET_FPGA_FIR_CS_BIT); \
+	} while (0)
 #endif /* WITHDSPEXTFIR */
 
 #if 0
@@ -822,31 +823,31 @@
 	#define TARGET_FPGA_OVF_BIT			(1u << 8)	// PC8
 	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
 	#define TARGET_FPGA_OVF_INITIALIZE() do { \
-				arm_hardware_pioc_inputs(TARGET_FPGA_OVF_BIT); \
-			} while (0)
+		arm_hardware_pioc_inputs(TARGET_FPGA_OVF_BIT); \
+	} while (0)
 #endif
 
 #if WITHCPUDACHW
 	/* включить нужные каналы */
 	#define HARDWARE_DAC_INITIALIZE() do { \
-			DAC1->CR = DAC_CR_EN1; /* DAC1 enable */ \
-		} while (0)
+		DAC1->CR = DAC_CR_EN1; /* DAC1 enable */ \
+	} while (0)
 	#define HARDWARE_DAC_ALC(v) do { /* вывод 12-битного значения на ЦАП - канал 1 */ \
-			DAC1->DHR12R1 = (v); /* DAC1 set value */ \
-		} while (0)
+		DAC1->DHR12R1 = (v); /* DAC1 set value */ \
+	} while (0)
 
 #else /* WITHCPUDACHW */
 	#define HARDWARE_DAC_INITIALIZE() do { \
-		} while (0)
+	} while (0)
 
 #endif /* WITHCPUDACHW */
 
 #if WITHCPUADCHW
 	#define HARDWARE_ADC_INITIALIZE(ainmask) do { \
-			arm_hardware_pioa_analoginput(((ainmask) >> 0) & 0xff);	/* ADC12_IN0..ADC12_IN7 */ \
-			arm_hardware_piob_analoginput(((ainmask) >> 8) & 0x03);	/* ADC12_IN8..ADC12_IN0 */ \
-			arm_hardware_pioc_analoginput(((ainmask) >> 10) & 0x3f);	/* ADC12_IN10..ADC12_IN15 */ \
-		} while (0)
+		arm_hardware_pioa_analoginput(((ainmask) >> 0) & 0xff);	/* ADC12_IN0..ADC12_IN7 */ \
+		arm_hardware_piob_analoginput(((ainmask) >> 8) & 0x03);	/* ADC12_IN8..ADC12_IN0 */ \
+		arm_hardware_pioc_analoginput(((ainmask) >> 10) & 0x3f);	/* ADC12_IN10..ADC12_IN15 */ \
+	} while (0)
 #endif /* WITHCPUADCHW */
 
 	// direct connection:
@@ -873,7 +874,7 @@
 	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { /*GPIOD->BSRR = BSRR_S(v); __DSB(); */} while (0)
 	#define	USBD_FS_INITIALIZE() do { \
 		/*arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); */ /* PD2 */ \
-		} while (0)
+	} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
 		if ((on) != 0) \
@@ -890,10 +891,10 @@
 	#define	USBD_HS_FS_INITIALIZE() do { \
 		/*arm_hardware_pioa_altfn50((1uL << 11) | (1uL << 12), AF_OTGFS);	*/		/* PA10, PA11, PA12 - USB_OTG_FS	*/ \
 		/* arm_hardware_pioa_inputs(1uL << 9);	*/	/* PA9 - USB_OTG_FS_VBUS */ \
-		} while (0)
+	} while (0)
 
 	#define	USBD_HS_ULPI_INITIALIZE() do { \
-		} while (0)
+	} while (0)
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define USB_ULPI_INITIALIZE() do { \
@@ -1094,25 +1095,25 @@
 
 		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 		#define SPIDF_HANGOFF() do { \
-				gpio_input2(SPDIF_NCS_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-				gpio_input2(SPDIF_SCLK_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-				gpio_input2(SPDIF_MOSI_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-				gpio_input2(SPDIF_MISO_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-				gpio_input2(SPDIF_D2_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-				gpio_input2(SPDIF_D3_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-			} while (0)
+			gpio_input2(SPDIF_NCS_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+			gpio_input2(SPDIF_SCLK_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+			gpio_input2(SPDIF_MOSI_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+			gpio_input2(SPDIF_MISO_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+			gpio_input2(SPDIF_D2_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+			gpio_input2(SPDIF_D3_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+		} while (0)
 
 		#if WIHSPIDFHW
 			#define SPIDF_HARDINITIALIZE() do { \
-					arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PF7 D2 QUADSPI_BK1_IO2 */ \
-					arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PF6 D3 QUADSPI_BK1_IO3 */ \
-					/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PF7 D2 tie-up */ \
-					/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* PF6 D3 tie-up */ \
-					arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PF10 SCLK */ \
-					arm_hardware_piof_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF10); /* PF8 MOSI */ \
-					arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); /* PF9 MISO */ \
-					arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 CS */ \
-				} while (0)
+				arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PF7 D2 QUADSPI_BK1_IO2 */ \
+				arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PF6 D3 QUADSPI_BK1_IO3 */ \
+				/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PF7 D2 tie-up */ \
+				/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* PF6 D3 tie-up */ \
+				arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PF10 SCLK */ \
+				arm_hardware_piof_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF10); /* PF8 MOSI */ \
+				arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); /* PF9 MISO */ \
+				arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 CS */ \
+			} while (0)
 
 		#else /* WIHSPIDFHW */
 
@@ -1120,21 +1121,21 @@
 			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-					gpio_output2(SPDIF_NCS_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
-					gpio_output2(SPDIF_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
-					gpio_output2(SPDIF_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));	\
-					gpio_input2(SPDIF_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));	\
-					gpio_output2(SPDIF_D2_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
-					gpio_output2(SPDIF_D3_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
-				} while (0)
+				gpio_output2(SPDIF_NCS_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
+				gpio_output2(SPDIF_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
+				gpio_output2(SPDIF_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));	\
+				gpio_input2(SPDIF_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));	\
+				gpio_output2(SPDIF_D2_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
+				gpio_output2(SPDIF_D3_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
+			} while (0)
 			#define SPIDF_SELECT() do { \
-					gpio_writepin(SPDIF_NCS_MIO, 0);  \
-					__DSB(); \
-				} while (0)
+				gpio_writepin(SPDIF_NCS_MIO, 0);  \
+				__DSB(); \
+			} while (0)
 			#define SPIDF_UNSELECT() do { \
-					gpio_writepin(SPDIF_NCS_MIO, 1);  \
-					__DSB(); \
-				} while (0)
+				gpio_writepin(SPDIF_NCS_MIO, 1);  \
+				__DSB(); \
+			} while (0)
 
 		#endif /* WIHSPIDFHW */
 
@@ -1161,15 +1162,16 @@
 	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
 
 	#define HARDWARE_NAND_INITIALIZE() do { \
-		gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
-		gpio_input(HARDWARE_NAND_D7_MIO); \
-		gpio_input(HARDWARE_NAND_D6_MIO); \
-		gpio_input(HARDWARE_NAND_D5_MIO); \
-		gpio_input(HARDWARE_NAND_D4_MIO); \
-		gpio_input(HARDWARE_NAND_D3_MIO); \
-		gpio_input(HARDWARE_NAND_D2_MIO); \
-		gpio_input(HARDWARE_NAND_D1_MIO); \
-		gpio_input(HARDWARE_NAND_D0_MIO); \
+		count portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0); \
+		gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
+		gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D4_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D3_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
 		xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
 		xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
 		xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
@@ -1210,7 +1212,7 @@
 	#define BOARD_IS_USERBOOT() 0//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
-		} while (0)
+	} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
