@@ -898,9 +898,10 @@
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define USB_ULPI_INITIALIZE() do { \
 		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
-		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 0); \
-		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 1); \
-		const portholder_t pinmode_ulpi_output = MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 1, 0, 0); \
+		enum { L3_SEL = 0x00, L2_SEL = 0x00, L1_SEL = 0x01, L0_SEL = 0x00 }; \
+		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
+		const portholder_t pinmode_ulpi_output = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		/* ULPI chip */ \
 		gpio_peripherial(USB_DATA0_MIO, pinmode_ulpi_data); \
 		gpio_peripherial(USB_DATA1_MIO, pinmode_ulpi_data); \
