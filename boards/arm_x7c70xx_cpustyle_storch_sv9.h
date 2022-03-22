@@ -1191,22 +1191,21 @@
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
-#if 0
-	//ACTIVITY_LED	D7	F16	IO_L6P_T0_35	LED anode
-	#define ZYNQBOARD_LED_RED 37 /* PS_MIO37_LED_R */
-	#define ZYNQBOARD_LED_GREEN 38 /* PS_MIO38_LED_G */
+#if 1
+
+	#define ZYNQBOARD_LED_RED 8 /* Running indicator - PS_MIO8_500  */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			xc7z_gpio_output(ZYNQBOARD_LED_RED); \
+			gpio_output2(ZYNQBOARD_LED_RED, 1, GPIO_IOTYPE_500); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-			if (state) \
-			{ \
-				xc7z_writepin(ZYNQBOARD_LED_RED, 1); \
-			} else { \
-				xc7z_writepin(ZYNQBOARD_LED_RED, 0); \
-			} \
-		} while (0)
+		if (state) \
+		{ \
+			gpio_writepin(ZYNQBOARD_LED_RED, 1); \
+		} else { \
+			gpio_writepin(ZYNQBOARD_LED_RED, 0); \
+		} \
+	} while (0)
 
 #endif
 

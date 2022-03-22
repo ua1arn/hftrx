@@ -23539,38 +23539,18 @@ static void bootloader_mainloop(void)
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
-#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)	// мигалка
-	static ticker_t tscticker;
-	system_disableIRQ();
-	ticker_initialize(& tscticker, 1, tsc_spool, NULL);	// вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
-	ticker_add(& tscticker);
-	system_enableIRQ();
-	gpio_output2(ZYNQBOARD_LED_RED, 0, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 0));		/* LED_R */
-#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
 	//local_delay_ms(1000);
 	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
 	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
 ddd:
 	;
-#if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)	// мигалка
 
-	if (getrefresh())
-	{
-		static int state;
-
-		state = ! state;
-		// установка состояния выходов
-		gpio_writepin(ZYNQBOARD_LED_RED, state);	/* LED_R */
-
-	}
-	//PRINTF(".");
 	char c;
 	if (dbg_getchar(& c))
 	{
 		dbg_putchar(c);
 	}
-#endif
 
 #if WITHUSBHW
 	for (;;)

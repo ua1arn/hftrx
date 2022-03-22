@@ -9527,18 +9527,18 @@ void lowtests(void)
 //		gpio_output2(TARGET_UART1_RX_MIO, 0);
 //		local_delay_ms(200);
 //	}
-#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)
 	{
 		// калибровка программной задержки
 		for (;;)
 		{
 			const portholder_t pinmode = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 0);
 			gpio_output2(ZYNQBOARD_LED_RED, 0, pinmode);		// LED_R
-			gpio_output2(ZYNQBOARD_LED_GREEN, 1, pinmode);		// LED_G
+			//gpio_output2(ZYNQBOARD_LED_GREEN, 1, pinmode);		// LED_G
 			local_delay_ms(50);
 
 			gpio_output2(ZYNQBOARD_LED_RED, 1, pinmode);		// LED_R
-			gpio_output2(ZYNQBOARD_LED_GREEN, 0, pinmode);		// LED_G
+			//gpio_output2(ZYNQBOARD_LED_GREEN, 0, pinmode);		// LED_G
 			local_delay_ms(50);
 
 		}
