@@ -67,10 +67,10 @@ DADEFS = -D__ASSEMBLY__=1
 
 ARCHDIR = $(PRJROOT)/arch/zynq
 
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010
 
 # full qualified name
-ZYNQLIB = zynq7000.a
+ZYNQLIB = zynq7010.a
 
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS

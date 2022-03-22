@@ -6,11 +6,11 @@
 
 #if (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && ! WITHISBOOTLOADER
 #if WITHRTS96
-#include "lib/zynq/src/xaxidma.h"
-#include "lib/zynq/src/xparameters.h"
-#include "lib/zynq/src/xil_types.h"
-#include "lib/zynq/src/xstatus.h"
-#include "lib/zynq/src/xllfifo.h"
+#include "xaxidma.h"
+#include "xparameters.h"
+#include "xil_types.h"
+#include "xstatus.h"
+#include "xllfifo.h"
 
 XAxiDma xc7z_axidma_phones;
 XLlFifo adc_iq_fifo;
