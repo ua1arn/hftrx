@@ -61,7 +61,7 @@ HAL_StatusTypeDef HAL_Init(void)
 #endif /* CPUSTYLE_XC7Z */
 
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && WITHUSBHW_EHCI
 // https://xilinx.github.io/embeddedsw.github.io/usbps/doc/html/api/xusbps__hw_8h.html
 
 //	USB ULPI Viewport Register (ULPIVIEW) bit positions.
