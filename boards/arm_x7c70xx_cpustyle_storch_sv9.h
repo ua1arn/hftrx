@@ -385,37 +385,39 @@
 	//	PS_MIO50_CD_WP
 
 	// return: 0 - no disk
-	#define HARDWARE_SDIOSENSE_CD() ((SD0->PRESENT_STATE & (1uL << 18)) != 0) /* получить состояние датчика CARD PRESENT */
+	#define HARDWARE_SDIOSENSE_CD() 1//((SD0->PRESENT_STATE & (1uL << 18)) != 0) /* получить состояние датчика CARD PRESENT */
 	// return: ! 0 - write protect
 	#define HARDWARE_SDIOSENSE_WP() 0//((SD0->PRESENT_STATE & (1uL << 19)) == 0) /* получить состояние датчика CARD WRITE PROTECT */
 
 	#define HARDWARE_SDIO_HANGOFF() do { \
 		} while (0)
 	// SD0 signals
-	//	eMMC_D0		E9	PS_MIO10_500
-	//	eMMC_CMD	C6	PS_MIO11_500
-	//	eMMC_CLK	D9	PS_MIO12_500
-	//	eMMC_D1		E8	PS_MIO13_500
-	//	eMMC_D2		C5	PS_MIO14_500
-	//	eMMC_D3		C8	PS_MIO15_500
+	#define HARDWARE_SDIO_D0_MIO	10	//	eMMC_D0		E9	PS_MIO10_500
+	#define HARDWARE_SDIO_CMD_MIO	11	//	eMMC_CMD	C6	PS_MIO11_500
+	#define HARDWARE_SDIO_CLK_MIO	12	//	eMMC_CLK	D9	PS_MIO12_500
+	#define HARDWARE_SDIO_D1_MIO	13	//	eMMC_D1		E8	PS_MIO13_500
+	#define HARDWARE_SDIO_D2_MIO	14	//	eMMC_D2		C5	PS_MIO14_500
+	#define HARDWARE_SDIO_D3_MIO	15	//	eMMC_D3		C8	PS_MIO15_500
 
 	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
 	#define HARDWARE_SDIO_INITIALIZE() do { \
-			SCLR->SD0_WP_CD_SEL = \
-					(46uL << 16) |	/* 46 SDIO 0 CD Select */ \
-					(50uL << 0) |	/* 50 SDIO 0 WP Select */ \
-					0; \
-			MIO_SET_MODE(40, 0x00001680uL);	/*  PS_MIO40_CD_CLK */ \
-			MIO_SET_MODE(41, 0x00001680uL);	/*  PS_MIO41_CD_CMD */ \
-			MIO_SET_MODE(42, 0x00001680uL);	/*  PS_MIO42_CD_D0 */ \
-			MIO_SET_MODE(43, 0x00001680uL);	/*  PS_MIO43_CD_D1 */ \
-			MIO_SET_MODE(44, 0x00001680uL);	/*  PS_MIO44_CD_D2 */ \
-			MIO_SET_MODE(45, 0x00001680uL);	/*  PS_MIO45_CD_D3 */ \
-		} while (0)
+		const portholder_t miopin_ctl = 0x00000680uL; \
+		const portholder_t miopin_dat = 0x00001680uL; \
+		SCLR->SD0_WP_CD_SEL = \
+				0 * (46uL << 16) |	/* 46 SDIO 0 CD Select */ \
+				0 * (50uL << 0) |	/* 50 SDIO 0 WP Select */ \
+				0; \
+		MIO_SET_MODE(HARDWARE_SDIO_D0_MIO, miopin_dat);		/*  eMMC_D0	 */ \
+		MIO_SET_MODE(HARDWARE_SDIO_D1_MIO, miopin_dat);		/*  eMMC_D1	 */ \
+		MIO_SET_MODE(HARDWARE_SDIO_D2_MIO, miopin_dat);		/*  eMMC_D2	 */ \
+		MIO_SET_MODE(HARDWARE_SDIO_D3_MIO, miopin_dat);		/*  eMMC_D3	 */ \
+		MIO_SET_MODE(HARDWARE_SDIO_CMD_MIO, miopin_ctl);	/*  eMMC_CMD */ \
+		MIO_SET_MODE(HARDWARE_SDIO_CLK_MIO, miopin_ctl);	/*  eMMC_CLK */ \
+	} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
-		} while (0)
+	} while (0)
 	#define HARDWARE_SDIOPOWER_INITIALIZE() do { \
-		} while (0)
+	} while (0)
 
 #endif /* WITHSDHCHW */
 
