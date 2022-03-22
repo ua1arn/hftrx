@@ -39,6 +39,9 @@
 #define WITHPS7BOARD_ANTMINER 1
 //#define WITHPS7BOARD_MYC_Y7Z020 1
 
+#define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS18
+#define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
+
 #if WITHDEBUG
 	#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
@@ -655,25 +658,25 @@
 	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-		gpio_output2(SPI_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
-		gpio_output2(SPI_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
-		gpio_input2(SPI_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
+		gpio_output2(SPI_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
+		gpio_output2(SPI_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
+		gpio_input2(SPI_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
 	} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
-		gpio_output2(SPI_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
-		gpio_output2(SPI_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
-		gpio_input2(SPI_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0)); \
+		gpio_output2(SPI_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
+		gpio_output2(SPI_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
+		gpio_input2(SPI_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
 	} while (0)
 
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		gpio_input2(SPI_MOSI_MIO, GPIO_IOTYPE_LVCMOS18); \
+		gpio_input2(SPI_MOSI_MIO, GPIO_IOTYPE_501); \
 	} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -686,7 +689,7 @@
 
 	//MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
 		const portholder_t pinmode_uart_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 0); \
 		const portholder_t pinmode_uart_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x07, 0, 0, 0, 1); \
 		gpio_peripherial(TARGET_UART1_TX_MIO, pinmode_uart_tx);  /*  MIO_PIN_48 UART1_TXD */ \
@@ -731,7 +734,7 @@
 	// todo: check tri_enable field
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define	TWIHARD_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
 		const portholder_t pinmode = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x02, 0, 0, 0, 1); \
 		gpio_peripherial(TARGET_TWI_TWD_MIO, pinmode);	/*  PS_MIO43_501 SDA */ \
 		gpio_peripherial(TARGET_TWI_TWCK_MIO, pinmode);	/*  PS_MIO42_501 SCL */ \
@@ -739,7 +742,7 @@
 	} while (0)
 
 	#define TWISOFT_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
 		const portholder_t pinmode =  MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0); \
 		gpio_opendrain2(TARGET_TWI_TWD_MIO, 0, pinmode);		/*  PS_MIO43_501 SDA */ \
 		gpio_opendrain2(TARGET_TWI_TWCK_MIO, 0, pinmode);		/*  PS_MIO42_501 SCL */ \
@@ -898,7 +901,7 @@
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define USB_ULPI_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
 		enum { L3_SEL = 0x00, L2_SEL = 0x00, L1_SEL = 0x01, L0_SEL = 0x00 }; \
 		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
@@ -931,7 +934,7 @@
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define USB_ULPI_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_LVCMOS18 }; /* LVCMOS18 */ \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
 		/* RESET */ \
 		gpio_output2(USB_RESET_MIO, 0, MIO_PIN_VALUE(1, 0, IOTYPE, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		local_delay_ms(10); \
@@ -1095,12 +1098,12 @@
 
 		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 		#define SPIDF_HANGOFF() do { \
-			gpio_input2(SPDIF_NCS_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-			gpio_input2(SPDIF_SCLK_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-			gpio_input2(SPDIF_MOSI_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-			gpio_input2(SPDIF_MISO_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-			gpio_input2(SPDIF_D2_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
-			gpio_input2(SPDIF_D3_MIO, GPIO_IOTYPE_LVCMOS18);	/*  */ \
+			gpio_input2(SPDIF_NCS_MIO, GPIO_IOTYPE_500);	/*  */ \
+			gpio_input2(SPDIF_SCLK_MIO, GPIO_IOTYPE_500);	/*  */ \
+			gpio_input2(SPDIF_MOSI_MIO, GPIO_IOTYPE_500);	/*  */ \
+			gpio_input2(SPDIF_MISO_MIO, GPIO_IOTYPE_500);	/*  */ \
+			gpio_input2(SPDIF_D2_MIO, GPIO_IOTYPE_500);	/*  */ \
+			gpio_input2(SPDIF_D3_MIO, GPIO_IOTYPE_500);	/*  */ \
 		} while (0)
 
 		#if WIHSPIDFHW
@@ -1121,12 +1124,12 @@
 			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-				gpio_output2(SPDIF_NCS_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
-				gpio_output2(SPDIF_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
-				gpio_output2(SPDIF_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));	\
-				gpio_input2(SPDIF_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));	\
-				gpio_output2(SPDIF_D2_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
-				gpio_output2(SPDIF_D3_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0));  \
+				gpio_output2(SPDIF_NCS_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));  \
+				gpio_output2(SPDIF_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));  \
+				gpio_output2(SPDIF_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));	\
+				gpio_input2(SPDIF_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));	\
+				gpio_output2(SPDIF_D2_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));  \
+				gpio_output2(SPDIF_D3_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));  \
 			} while (0)
 			#define SPIDF_SELECT() do { \
 				gpio_writepin(SPDIF_NCS_MIO, 0);  \
@@ -1162,7 +1165,7 @@
 	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
 
 	#define HARDWARE_NAND_INITIALIZE() do { \
-		count portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS18, 1, 0, 0, 0, 0, 0); \
+		count portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
 		gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
 		gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
