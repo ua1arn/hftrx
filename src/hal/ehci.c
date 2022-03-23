@@ -1050,13 +1050,15 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 #elif CPUSTYLE_XC7Z
-
+		enum {  SRCSEL_SHIFT = 4 };
+		const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
 		if (WITHUSBHW_EHCI == EHCI0)
 		{
 			enum { usbIX = 0 };
+			PRINTF("HAL_EHCI_MspInit: EHCI0\n");
 
-			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ (0x07uL << 4)) |
-				(0x04uL << 4) |	// SRCSEL
+			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
+				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
 				0;
 			(void) SCLR->USB0_CLK_CTRL;
 
@@ -1072,9 +1074,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		else if (WITHUSBHW_EHCI == EHCI1)
 		{
 			enum { usbIX = 1 };
+			PRINTF("HAL_EHCI_MspInit: EHCI1\n");
 
-			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ (0x07uL << 4)) |
-				(0x04uL << 4) |	// SRCSEL
+			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
+				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
 				0;
 			(void) SCLR->USB1_CLK_CTRL;
 
