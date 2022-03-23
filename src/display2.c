@@ -8632,7 +8632,9 @@ static
 PACKEDCOLORMAIN_T *
 atwflj(uint_fast16_t x, uint_fast16_t y)
 {
+#if WITHVIEW_3DSS
 	ASSERT(glob_view_style != VIEW_3DSS);
+#endif /* WITHVIEW_3DSS */
 	return colmain_mem_at(gvars.u.wfjarray, ALLDX, WFROWS, x, y);
 }
 
