@@ -642,6 +642,8 @@
 	#define SPI_ALLCS_INITIALIZE() do { \
 	} while (0)
 
+	#define	SPI_IOTYPE 	GPIO_IOTYPE_501
+
 	//	SPI_MOSI	C38	B15	PS_MIO45_501
 	//	SPI_MISO	C36	C17	PS_MIO41_501
 	//	SPI_SCLK	C39	D14	PS_MIO40_501
@@ -659,25 +661,32 @@
 	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-		gpio_output2(SPI_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
-		gpio_output2(SPI_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
-		gpio_input2(SPI_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
+		enum { IOTYPE = SPI_IOTYPE }; \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
+		gpio_output2(SPI_SCLK_MIO, 1, pinmode_output); \
+		gpio_output2(SPI_MOSI_MIO, 1, pinmode_output); \
+		gpio_input2(SPI_MISO_MIO, pinmode_input); \
 	} while (0)
 
 	#define HARDWARE_SPI_CONNECT() do { \
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
-		gpio_output2(SPI_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
-		gpio_output2(SPI_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
-		gpio_input2(SPI_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0)); \
+		enum { IOTYPE = SPI_IOTYPE }; \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
+		gpio_output2(SPI_SCLK_MIO, 1, pinmode_output); \
+		gpio_output2(SPI_MOSI_MIO, 1, pinmode_output); \
+		gpio_input2(SPI_MISO_MIO, pinmode_input); \
 	} while (0)
 
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		gpio_input2(SPI_MOSI_MIO, GPIO_IOTYPE_501); \
+		enum { IOTYPE = SPI_IOTYPE }; \
+		gpio_input2(SPI_MOSI_MIO, MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1)); \
 	} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -1098,12 +1107,13 @@
 
 		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 		#define SPIDF_HANGOFF() do { \
-			gpio_input2(SPDIF_NCS_MIO, GPIO_IOTYPE_500);	/*  */ \
-			gpio_input2(SPDIF_SCLK_MIO, GPIO_IOTYPE_500);	/*  */ \
-			gpio_input2(SPDIF_MOSI_MIO, GPIO_IOTYPE_500);	/*  */ \
-			gpio_input2(SPDIF_MISO_MIO, GPIO_IOTYPE_500);	/*  */ \
-			gpio_input2(SPDIF_D2_MIO, GPIO_IOTYPE_500);	/*  */ \
-			gpio_input2(SPDIF_D3_MIO, GPIO_IOTYPE_500);	/*  */ \
+			const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 1); \
+			gpio_input2(SPDIF_NCS_MIO, pinmode_input);	/*  */ \
+			gpio_input2(SPDIF_SCLK_MIO, pinmode_input);	/*  */ \
+			gpio_input2(SPDIF_MOSI_MIO, pinmode_input);	/*  */ \
+			gpio_input2(SPDIF_MISO_MIO, pinmode_input);	/*  */ \
+			gpio_input2(SPDIF_D2_MIO, pinmode_input);	/*  */ \
+			gpio_input2(SPDIF_D3_MIO, pinmode_input);	/*  */ \
 		} while (0)
 
 		#if WIHSPIDFHW
@@ -1124,12 +1134,14 @@
 			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-				gpio_output2(SPDIF_NCS_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));  \
-				gpio_output2(SPDIF_SCLK_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));  \
-				gpio_output2(SPDIF_MOSI_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));	\
-				gpio_input2(SPDIF_MISO_MIO, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));	\
-				gpio_output2(SPDIF_D2_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));  \
-				gpio_output2(SPDIF_D3_MIO, 1, MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0));  \
+				const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 1); \
+				const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
+				gpio_output2(SPDIF_NCS_MIO, 1, pinmode_output);  \
+				gpio_output2(SPDIF_SCLK_MIO, 1, pinmode_output);  \
+				gpio_output2(SPDIF_MOSI_MIO, 1, pinmode_output);	\
+				gpio_input2(SPDIF_MISO_MIO, pinmode_input);	\
+				gpio_output2(SPDIF_D2_MIO, 1, pinmode_output);  \
+				gpio_output2(SPDIF_D3_MIO, 1, pinmode_output);  \
 			} while (0)
 			#define SPIDF_SELECT() do { \
 				gpio_writepin(SPDIF_NCS_MIO, 0);  \
@@ -1165,7 +1177,7 @@
 	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
 
 	#define HARDWARE_NAND_INITIALIZE() do { \
-		count portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
 		gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
 		gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
@@ -1196,7 +1208,8 @@
 	#define ZYNQBOARD_LED_RED 8 /* Running indicator - PS_MIO8_500  */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			gpio_output2(ZYNQBOARD_LED_RED, 1, GPIO_IOTYPE_500); \
+			const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
+			gpio_output2(ZYNQBOARD_LED_RED, 1, pinmode_output); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		if (state) \
