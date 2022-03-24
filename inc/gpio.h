@@ -209,13 +209,20 @@ extern "C" {
 		ZYNQ_IORW32(GPIO_MASK_DATA_MSW(bank)) = (maskmsw << 16) | datamsw; \
 	} while (0)
 
-	//	Note: If TRI_ENABLE=1, then the output is 3-stated regardless of any GPIO settings. If
-	//	TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register.
+	//	DIRM: Direction Mode. This controls whether the I/O pin is acting as an input or an output.
+	//	Since the input logic is always enabled, this effectively enables/disables the output driver. When
+	//	DIRM[x]==0, the output driver is disabled.
 
 	#define GPIO_BAND_SET_DIRM(bank, mask, odstate) do { \
 		const uintptr_t dirm = GPIO_DIRM(bank); \
 		ZYNQ_IORW32(dirm) = (ZYNQ_IORW32(dirm) & ~ (mask)) | ((mask) & (odstate)); /* Then DIRM[x]==0, the output driver is disabled. */ \
 	} while (0)
+
+	//	OEN: Output Enable. When the I/O is configured as an output, this controls whether the output
+	//	is enabled or not. When the output is disabled, the pin is 3-stated. When OEN[x]==0, the output
+	//	driver is disabled.
+	//	Note: If MIO TRI_ENABLE is set to 1, enabling 3-state and disabling the driver, then OEN is
+	//	ignored and the output is 3-stated.
 
 	#define GPIO_BAND_SET_OEN(bank, mask, odstate) do { \
 		const uintptr_t oen = GPIO_OEN(bank); \
