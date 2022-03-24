@@ -24,9 +24,7 @@ PRJROOT := ../..
 OBJDIR = obj
 
 ZINQ_BOOT_DIR := E:
-#XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_3.elf -frequency 750000
-#XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_3.elf -frequency 12000000
-XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z020.elf -frequency 750000
+XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z020.elf
 
 #
 CC   = $(TRGT)gcc
