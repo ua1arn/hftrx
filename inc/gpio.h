@@ -213,7 +213,7 @@ extern "C" {
 	//	Since the input logic is always enabled, this effectively enables/disables the output driver. When
 	//	DIRM[x]==0, the output driver is disabled.
 
-	#define GPIO_BAND_SET_DIRM(bank, mask, odstate) do { \
+	#define GPIO_BANK_SET_DIRM(bank, mask, odstate) do { \
 		const uintptr_t dirm = GPIO_DIRM(bank); \
 		ZYNQ_IORW32(dirm) = (ZYNQ_IORW32(dirm) & ~ (mask)) | ((mask) & (odstate)); /* Then DIRM[x]==0, the output driver is disabled. */ \
 	} while (0)
@@ -224,7 +224,7 @@ extern "C" {
 	//	Note: If MIO TRI_ENABLE is set to 1, enabling 3-state and disabling the driver, then OEN is
 	//	ignored and the output is 3-stated.
 
-	#define GPIO_BAND_SET_OEN(bank, mask, odstate) do { \
+	#define GPIO_BANK_SET_OEN(bank, mask, odstate) do { \
 		const uintptr_t oen = GPIO_OEN(bank); \
 		ZYNQ_IORW32(oen) = (ZYNQ_IORW32(oen) & ~ (mask)) | ((mask) & (odstate)); /* When OEN[x]==0, the output driver is disabled */ \
 	} while (0)
@@ -244,9 +244,9 @@ extern "C" {
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
-		GPIO_BAND_SET_OEN(bank, mask, mask); \
+		GPIO_BANK_SET_OEN(bank, mask, mask); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
-		GPIO_BAND_SET_DIRM(bank, mask, mask); \
+		GPIO_BANK_SET_DIRM(bank, mask, mask); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
 	} while (0)
 
@@ -256,8 +256,8 @@ extern "C" {
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
-		GPIO_BAND_SET_OEN(bank, mask, 0); \
-		GPIO_BAND_SET_DIRM(bank, mask, 0); \
+		GPIO_BANK_SET_OEN(bank, mask, 0); \
+		GPIO_BANK_SET_DIRM(bank, mask, 0); \
 	} while (0)
 
 	// set pin mode (no thread-safe)
@@ -269,9 +269,9 @@ extern "C" {
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
-		GPIO_BAND_SET_DIRM(bank, mask, mask * !! (1)); \
+		GPIO_BANK_SET_DIRM(bank, mask, mask * !! (1)); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
-		GPIO_BAND_SET_OEN(bank, mask, mask * !! (drive)); \
+		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 	} while (0)
 
@@ -279,7 +279,7 @@ extern "C" {
 	#define gpio_drive(pin, drive) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
-		GPIO_BAND_SET_OEN(bank, mask, mask * !! (drive)); \
+		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
 	} while (0)
 
 	#define gpio_peripherial(pin, pinmode) do { \
@@ -287,8 +287,8 @@ extern "C" {
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
-		/*GPIO_BAND_SET_DIRM(bank, mask, mask); */\
-		/*GPIO_BAND_SET_OEN(bank, mask, mask); */\
+		/*GPIO_BANK_SET_DIRM(bank, mask, mask); */\
+		/*GPIO_BANK_SET_OEN(bank, mask, mask); */\
 		} \
 	} while (0)
 
