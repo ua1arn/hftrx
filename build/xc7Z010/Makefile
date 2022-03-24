@@ -238,8 +238,8 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean lib
 
-all: bitstreams $(PROJECT)_app.xyl32
-	-cp $(PROJECT)_app.xyl32 $(ZINQ_BOOT_DIR)/$(PROJECT)_app.xyl32
+all: bitstreams $(PROJECT)_app_xyl32.bin
+	-cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin
 
 bitstreams: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h bitstream_myir7020.h 
 
@@ -272,16 +272,16 @@ $(ZYNQLIB): $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA)
 	-$(RM) $@
 	$(AR) $@ $(ZOBJS)
 	
-flash_dfu: $(PROJECT)_app.xyl32
-	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0xFC080000 --download $(PROJECT)_app.xyl32
+flash_dfu: $(PROJECT)_app_xyl32.bin
+	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0xFC080000 --download $(PROJECT)_app_xyl32.bin
 
-flash: $(PROJECT)_app.xyl32
-	program_flash -f $(PROJECT)_app.xyl32 -offset 0x80000 $(XILINX_JTAGOPTS)
+flash: $(PROJECT)_app_xyl32.bin
+	program_flash -f $(PROJECT)_app_xyl32.bin -offset 0x80000 $(XILINX_JTAGOPTS)
 
-flash2: $(PROJECT)_app.xyl32
-	program_flash -f $(PROJECT)_app.xyl32 -offset 0x80000 $(XILINX_JTAGOPTS)
+flash2: $(PROJECT)_app_xyl32.bin
+	program_flash -f $(PROJECT)_app_xyl32.bin -offset 0x80000 $(XILINX_JTAGOPTS)
 
-$(PROJECT)_app.xyl32: $(PROJECT)_app.bin
+$(PROJECT)_app_xyl32.bin: $(PROJECT)_app.bin
 	./stm32image -l 0x00200100 -e 0x00200100 -s $(PROJECT)_app.bin -d $@
 		
 BOOT2: version boot.bin
