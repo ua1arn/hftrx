@@ -260,6 +260,11 @@ extern "C" {
 		GPIO_BANK_SET_DIRM(bank, mask, 0); \
 	} while (0)
 
+	// Enable output drive for pin
+	#define MIO_SET_TRI_ENABLE(pin, drive) do { \
+		if (!(drive)) { SCLR->MIO_PIN [(pin)] &= ~ 0x01; } else { SCLR->MIO_PIN [(pin)] |= 0x01; } \
+	} while (0)
+
 	// set pin mode (no thread-safe)
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define gpio_opendrain2(pin, drive, pinmode) do { \
