@@ -1052,6 +1052,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 #elif CPUSTYLE_XC7Z
+
 		enum {  SRCSEL_SHIFT = 4 };
 		const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
 		if (WITHUSBHW_EHCI == EHCI0)
@@ -1059,6 +1060,19 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			enum { usbIX = 0 };
 			PRINTF("HAL_EHCI_MspInit: EHCI0\n");
 
+			TP();
+			PRINTF("CAPLENGTH_HCIVERSION=%08lX\n", * (volatile uint32_t *) 0xE0002100);
+			PRINTF("HCSPARAMS=%08lX\n", * (volatile uint32_t *) 0xE0002104);
+			PRINTF("HCCPARAMS=%08lX\n", * (volatile uint32_t *) 0xE0002108);
+			TP();
+
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_ID=%08lX\n", (* (volatile uint32_t *) 0xE0002000));
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_HWGENERAL=%08lX\n", (* (volatile uint32_t *) 0xE0002004));
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_HWHOST=%08lX\n", (* (volatile uint32_t *) 0xE0002008));
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) 0xE00021A8));
+			// XUSBPS_MODE
+			(* (volatile uint32_t *) 0xE00021A8) |= 0x03;
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) 0xE00021A8));
 			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
 				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
 				0;
@@ -1066,8 +1080,14 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
+			// XUSBPS_MODE
+			(* (volatile uint32_t *) 0xE00021A8) |= 0x03;
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
+
+			// XUSBPS_MODE
+			(* (volatile uint32_t *) 0xE00021A8) |= 0x03;
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) 0xE00021A8));
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
@@ -1087,6 +1107,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
+
+			// XUSBPS_MODE
+			(* (volatile uint32_t *) 0xE00031A8) |= 0x03;
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
