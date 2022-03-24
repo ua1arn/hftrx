@@ -942,6 +942,7 @@ void USBH_EHCI_IRQHandler(void)
 }
 
 
+#if WITHUSBHOST_HIGHSPEEDULPI
 #if CPUSTYLE_XC7Z && defined (WITHUSBHW_EHCI)
 // https://xilinx.github.io/embeddedsw.github.io/usbps/doc/html/api/xusbps__hw_8h.html
 
@@ -987,6 +988,7 @@ static uint_fast8_t ulpi_reg_get(uint_fast8_t addr)
 		;
 	return (ULPIVIEW & XUSBPS_ULPIVIEW_DATRD_MASK) >> XUSBPS_ULPIVIEW_DATRD_SHIFT;
 }
+#endif /* CPUSTYLE_XC7Z */
 
 void ulpi_chip_initialize(void)
 {
@@ -1014,7 +1016,7 @@ void ulpi_chip_initialize(void)
 	PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
 
 }
-#endif /* CPUSTYLE_XC7Z */
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
@@ -1094,12 +1096,14 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		{
 			ASSERT(0);
 		}
-		ulpi_chip_initialize();
 #else
 
 	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
 
 #endif
+#if WITHUSBHOST_HIGHSPEEDULPI
+		ulpi_chip_initialize();
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 }
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
