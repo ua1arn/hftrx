@@ -269,10 +269,8 @@ extern "C" {
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
-		GPIO_BANK_SET_DIRM(bank, mask, mask * !! (1)); \
-		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
+		GPIO_BANK_SET_DIRM(bank, mask, mask); \
 		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
-		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 	} while (0)
 
 	// Enable output drive for pin
