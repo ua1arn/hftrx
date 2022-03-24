@@ -1219,7 +1219,7 @@
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
 			/*I2S2HW_POOLDOWN(); */\
-			/*BOARD_BLINK_INITIALIZE(); */\
+			BOARD_BLINK_INITIALIZE(); \
 			/*HARDWARE_KBD_INITIALIZE(); */\
 			/*HARDWARE_DAC_INITIALIZE(); */\
 			/*HARDWARE_BL_INITIALIZE(); */ \
