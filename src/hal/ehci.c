@@ -1059,35 +1059,50 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		{
 			enum { usbIX = 0 };
 			PRINTF("HAL_EHCI_MspInit: EHCI0\n");
+			PRINTF("HAL_EHCI_MspInit: EHCI0, SCLR->APER_CLK_CTRL=%08lX (%p)\n", SCLR->APER_CLK_CTRL, & SCLR->APER_CLK_CTRL);
+
+			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
+			PRINTF("HAL_EHCI_MspInit: EHCI0, SCLR->APER_CLK_CTRL=%08lX (%p)\n", SCLR->APER_CLK_CTRL, & SCLR->APER_CLK_CTRL);
 
 			TP();
-			PRINTF("CAPLENGTH_HCIVERSION=%08lX\n", * (volatile uint32_t *) 0xE0002100);
-			PRINTF("HCSPARAMS=%08lX\n", * (volatile uint32_t *) 0xE0002104);
-			PRINTF("HCCPARAMS=%08lX\n", * (volatile uint32_t *) 0xE0002108);
-			TP();
-
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_ID=%08lX\n", (* (volatile uint32_t *) 0xE0002000));
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_HWGENERAL=%08lX\n", (* (volatile uint32_t *) 0xE0002004));
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_HWHOST=%08lX\n", (* (volatile uint32_t *) 0xE0002008));
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) 0xE00021A8));
-			// XUSBPS_MODE
-			(* (volatile uint32_t *) 0xE00021A8) |= 0x03;
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) 0xE00021A8));
 			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
 				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
 				0;
+			TP();
 			(void) SCLR->USB0_CLK_CTRL;
+			TP();
 
+			TP();
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+			TP();
 			(void) SCLR->USB_RST_CTRL;
 			// XUSBPS_MODE
+			TP();
 			(* (volatile uint32_t *) 0xE00021A8) |= 0x03;
+			TP();
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
+			TP();
 			(void) SCLR->USB_RST_CTRL;
+			TP();
 
 			// XUSBPS_MODE
 			(* (volatile uint32_t *) 0xE00021A8) |= 0x03;
+			TP();
 			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) 0xE00021A8));
+
+			TP();
+			PRINTF("HAL_EHCI_MspInit: CAPLENGTH_HCIVERSION=%08lX\n", * (volatile uint32_t *) 0xE0002100);
+			PRINTF("HAL_EHCI_MspInit: HCSPARAMS=%08lX\n", * (volatile uint32_t *) 0xE0002104);
+			PRINTF("HAL_EHCI_MspInit: HCCPARAMS=%08lX\n", * (volatile uint32_t *) 0xE0002108);
+			TP();
+
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_ID=%08lX\n", USB0->ID);
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_HWGENERAL=%08lX\n", USB0->HWGENERAL);
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_HWHOST=%08lX\n", USB0->HWHOST);
+
+			// XUSBPS_MODE
+			(* (volatile uint32_t *) 0xE00021A8) |= 0x03;
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
@@ -1097,6 +1112,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		{
 			enum { usbIX = 1 };
 			PRINTF("HAL_EHCI_MspInit: EHCI1\n");
+
+
+			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
 
 			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
 				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
@@ -1119,6 +1138,27 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		{
 			ASSERT(0);
 		}
+
+#if 1 && CPUSTYLE_XC7Z
+	{
+		PRINTF("GEM0 test:\n");
+
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		SCLR->APER_CLK_CTRL |= (0x01uL << 6);	// APER_CLK_CTRL.GEM0_CPU_1XCLKACT
+		SCLR->GEM0_CLK_CTRL = //(SCLR->GEM0_CLK_CTRL & ~ (0x00uL)) |
+				((uint_fast32_t) 0x08 << 20) |	// DIVISOR1
+				((uint_fast32_t) 0x05 << 8) |	// DIVISOR
+				((uint_fast32_t) 0x00 << 4) |	// SRCSEL: 00x: IO PLL
+				((uint_fast32_t) 0x01 << 0) |	// CLKACT
+				0;
+		SCLR->GEM0_RCLK_CTRL = 0x0000001uL;
+
+
+		ASSERT(GEM0->MODULE_ID == 0x00020118uL);
+		PRINTF("GEM0 test done\n");
+	}
+#endif
+
 #else
 
 	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
