@@ -34,7 +34,7 @@ static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 #include "../../Class/HID/Inc/usbh_hid.h"
 #include "../../Class/HUB/Inc/usbh_hub.h"
 
-
+/* Вызываем после выполнения reset контроллера */
 void USBH_POETRESET_INIT(void)
 {
 #if CPUSTYLE_XC7Z
