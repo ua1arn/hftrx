@@ -1055,7 +1055,7 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 	const uint_fast8_t v3 = ulpi_reg_read(0x03);
 	const uint_fast16_t vid = v1 * 256 + v0;
 	const uint_fast16_t pid = v3 * 256 + v2;
-	PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+	//PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
 
 	if (vid != 0x0424 || pid != 0x0009)
 		return;
