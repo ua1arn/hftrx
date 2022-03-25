@@ -34,14 +34,14 @@ typedef enum IRQn
   SGI14_IRQn          = 14,                                       //!< SGI14_IRQn
   SGI15_IRQn          = 15,                                       //!< SGI15_IRQn
 
-  /* Private Peripheral Interrupts                                                                                     */
-  //VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt                                        */
- // HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt                                           */
-  GlobalTimer_IRQn                 = 27,     /*!< Global Timer Interrupt                                              */
-  Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt                                                */
-  PrivTimer_IRQn        	   	   = 29,     /*!< Private Timer Interrupt                                      */
-  AwdtTimer_IRQn      			   = 30,     /*!< Private watchdog timer for each CPU Interrupt                                  */
-  Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt                                                */
+  /* Private Peripheral Interrupts */
+  //VirtualMaintenanceInterrupt_IRQn = 25,     /*!< Virtual Maintenance Interrupt */
+ // HypervisorTimer_IRQn             = 26,     /*!< Hypervisor Timer Interrupt */
+  GlobalTimer_IRQn                 = 27,     /*!< Global Timer Interrupt */
+  Legacy_nFIQ_IRQn                 = 28,     /*!< Legacy nFIQ Interrupt */
+  PrivTimer_IRQn        	   	   = 29,     /*!< Private Timer Interrupt */
+  AwdtTimer_IRQn      			   = 30,     /*!< Private watchdog timer for each CPU Interrupt */
+  Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt */
 
   /******  ZYNQ  specific Interrupt Numbers ****************************************************************************/
 
@@ -97,7 +97,7 @@ typedef enum IRQn
 //Info: D-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
 
 /******************************************************************************/
-/*                Device Specific Peripheral Section                          */
+/*                Device Specific Peripheral Section */
 /******************************************************************************/
 
 #define CPUPRIV_BASE      (0xF8F00000uL)
@@ -108,11 +108,11 @@ typedef enum IRQn
 #define GIC_DISTRIB_BASE  (CPUPRIV_BASE + 0x1000uL)
 #define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
 
-#define __CORTEX_A                    9U      /*!< Cortex-A# Core                              */
-#define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present                  */
-#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present                  */
-#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present                  */
-#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present                  */
+#define __CORTEX_A                    9U      /*!< Cortex-A# Core */
+#define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present */
+#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present */
+#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present */
+#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present */
 
 #define GIC_DISTRIBUTOR_BASE         GIC_DISTRIB_BASE                        /*!< (GIC DIST  ) Base Address */
 #define GIC_INTERFACE_BASE           GIC_PROC_BASE                        /*!< (GIC CPU IF) Base Address */
@@ -120,7 +120,7 @@ typedef enum IRQn
 #define TIMER_BASE				PRIV_TIMER_BASE
 
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
-#define __CA_REV         		    0x0000    /*!< Core revision r0p0       */
+#define __CA_REV         		    0x0000    /*!< Core revision r0p0 */
 
 #include "core_ca.h"
 #include "system_zynq7000.h"
@@ -450,11 +450,26 @@ typedef struct devcfg_regs {
 
 // Quad-SPI Flash Controller (qspi)
 typedef struct qspi_regs {
-	__IO uint32_t CR;				/* 0x0000 QSPI configuration register */
-	__IO uint32_t SR;				/* 0x0004 QSPI interrupt status register */
-	__IO uint32_t IER;				/* 0x0008 Interrupt Enable register */
-	__IO uint32_t IDR;				/* 0x000C Interrupt disable register */
-	__IO uint32_t IMR;				/* 0x0010 Interrupt mask register */
+__IO uint32_t CR;		/**< 0x00000000 32 mixed 0x80020000 QSPI configuration register */
+__IO uint32_t SR;		/**< 0x00000004 32 mixed 0x00000004 QSPI interrupt status register */
+__IO uint32_t IER;		/**< 0x00000008 32 mixed 0x00000000 Interrupt Enable register. */
+__IO uint32_t IDR;		/**< 0x0000000C 32 mixed 0x00000000 Interrupt disable register. */
+__IO uint32_t IMR;		/**< 0x00000010 32 ro 0x00000000 Interrupt mask register */
+__IO uint32_t ER;		/**< 0x00000014 32 mixed 0x00000000 SPI_Enable Register */
+__IO uint32_t DR;		/**< 0x00000018 32 rw 0x00000000 Delay Register */
+__IO uint32_t TXD_00;		/**< 0x0000001C 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. See also TXD1-3. */
+__IO uint32_t RXD;		/**< 0x00000020 32 ro 0x00000000 Receive Data Register */
+__IO uint32_t SICR;		/**< 0x00000024 32 mixed 0x000000FF Slave Idle Count Register */
+__IO uint32_t TXWR;		/**< 0x00000028 32 rw 0x00000001 TX_FIFO Threshold Register */
+__IO uint32_t RX_thres_REG;		/**< 0x0000002C 32 rw 0x00000001 RX FIFO Threshold Register */
+__IO uint32_t GPIO;		/**< 0x00000030 32 rw 0x00000001 General Purpose Inputs and Outputs Register for the Quad-SPI Controller core */
+__IO uint32_t LPBK_DLY_ADJ;		/**< 0x00000038 32 rw 0x0000002D Loopback Master Clock Delay Adjustment Register */
+__IO uint32_t TXD_01;		/**< 0x00000080 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+__IO uint32_t TXD_10;		/**< 0x00000084 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+__IO uint32_t TXD_11;		/**< 0x00000088 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+__IO uint32_t LQSPI_CR;		/**< 0x000000A0 32 rw x Configuration Register specifically for the Linear Quad-SPI Controller */
+__IO uint32_t LQSPI_SR;		/**< 0x000000A4 9 rw 0x00000000 Status Register specifically for the Linear Quad-SPI Controller */
+__IO uint32_t MOD_ID;		/**< 0x000000FC 32 rw 0x01090101 Module Identification register */
 } XQSPIPS_Registers;
 
 // See https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/include/platform/gem.h
@@ -572,7 +587,7 @@ typedef struct xemacps_regs {
 
 /**
   * @brief USB_EHCI Capability Registers
-  */
+ */
 typedef struct
 {
 	__IO uint32_t HCCAPBASE;        /*!< Capability Register register,              Address offset: 0x00 */
@@ -591,12 +606,12 @@ typedef struct
 } USB_EHCI_CapabilityTypeDef;
 /**
   * @}
-  */
+ */
 
 
 /**
   * @brief USB controller registers
-  */
+ */
 typedef struct
 {
 	__I  uint32_t ID;					/*!< 0x00000000 32 ro 0xE441FA05 IP version and revision, read-only */
@@ -620,47 +635,47 @@ typedef struct
 	__IO uint32_t DCCPARAMS;			/*!< 0x00000124 9 ro 0x0000018C EHCI, Device, and Endpoint Capabilities. */
 	uint8_t ___RESERVED4 [0x00000140 - 0x00000124 - 0x004];
 	__IO uint32_t XUSBPS_CMD;			/*!< 0x00000140 24 mixed 0x00080000 USB Commands (EHCI extended) */
-	__IO uint32_t ISR;					/*!< 0x00000144 26 mixed	0x00000000 Interrupt/Raw Status (EHCI extended) (Host/Device)  */
-	__IO uint32_t IER;					/*!< 0x00000148 26 mixed	0x00000000 Interrrupts and Enables  */
-	__IO uint32_t FRAME;				/*!< 0x0000014C 14 rw	0x00000000 Frame List Index  */
+	__IO uint32_t ISR;					/*!< 0x00000144 26 mixed	0x00000000 Interrupt/Raw Status (EHCI extended) (Host/Device) */
+	__IO uint32_t IER;					/*!< 0x00000148 26 mixed	0x00000000 Interrrupts and Enables */
+	__IO uint32_t FRAME;				/*!< 0x0000014C 14 rw	0x00000000 Frame List Index */
 	uint8_t ___RESERVED5 [0x00000154 - 0x0000014C - 0x004];
-	__IO uint32_t LISTBASE;				/*!< 0x00000154 32 mixed	0x00000000 Host/Device Address dual-use  */
-	__IO uint32_t ASYNCLISTADDR;		/*!< 0x00000158 32 mixed	0x00000000 Host/Device dual-use  */
-	__IO uint32_t TTCTRL;				/*!< 0x0000015C 32 mixed	0x00000000 TT Control  */
-	__IO uint32_t BURSTSIZE;			/*!< 0x00000160 17 rw	0x00001010 Burst Size  */
-	__IO uint32_t TXFILL;				/*!< 0x00000164 22 mixed	0x00000000 TxFIFO Fill Tuning  */
-	__IO uint32_t TXTTFILLTUNING;		/*!< 0x00000168 13 mixed	0x00000000 TT TX latency FIFO  */
+	__IO uint32_t LISTBASE;				/*!< 0x00000154 32 mixed	0x00000000 Host/Device Address dual-use */
+	__IO uint32_t ASYNCLISTADDR;		/*!< 0x00000158 32 mixed	0x00000000 Host/Device dual-use */
+	__IO uint32_t TTCTRL;				/*!< 0x0000015C 32 mixed	0x00000000 TT Control */
+	__IO uint32_t BURSTSIZE;			/*!< 0x00000160 17 rw	0x00001010 Burst Size */
+	__IO uint32_t TXFILL;				/*!< 0x00000164 22 mixed	0x00000000 TxFIFO Fill Tuning */
+	__IO uint32_t TXTTFILLTUNING;		/*!< 0x00000168 13 mixed	0x00000000 TT TX latency FIFO */
 	__IO uint32_t IC_USB;				/*!< 0x0000016C 32 mixed	0x00000000 Low and Fast Speed Control constants */
-	__IO uint32_t ULPIVIEW;				/*!< 0x00000170 32 mixed	0x08000000 ULPI Viewport  */
+	__IO uint32_t ULPIVIEW;				/*!< 0x00000170 32 mixed	0x08000000 ULPI Viewport */
 	uint8_t ___RESERVED6 [0x00000178 - 0x00000170 - 0x004];
-	__IO uint32_t EPNAKISR;				/*!< 0x00000178 32 wtc	0x00000000 Endpoint NAK (Device mode)  */
-	__IO uint32_t EPNAKIER;				/*!< 0x0000017C 32 rw	0x00000000 Endpoint NAK (Device mode)  */
-	__IO uint32_t CONFIGFLAG;			/*!< 0x00000180 32 ro	0x00000001 reserved  */
-	__IO uint32_t PORTSCR1;				/*!< 0x00000184 32 mixed	0x8C000004 Port Status & Control  */
+	__IO uint32_t EPNAKISR;				/*!< 0x00000178 32 wtc	0x00000000 Endpoint NAK (Device mode) */
+	__IO uint32_t EPNAKIER;				/*!< 0x0000017C 32 rw	0x00000000 Endpoint NAK (Device mode) */
+	__IO uint32_t CONFIGFLAG;			/*!< 0x00000180 32 ro	0x00000001 reserved */
+	__IO uint32_t PORTSCR1;				/*!< 0x00000184 32 mixed	0x8C000004 Port Status & Control */
 	uint8_t ___RESERVED7 [0x000001A4 - 0x00000184 - 0x004];
-	__IO uint32_t OTGCSR;				/*!< 0x000001A4 32 mixed	0x00001020 OTG Status and Control  */
-	__IO uint32_t MODE;					/*!< 0x000001A8 32 mixed	0x00000000 USB Mode Selection  */
-	__IO uint32_t EPSTAT;				/*!< 0x000001AC 16 wtc	0x00000000 Endpoint Status Setup (Device mode)  */
-	__IO uint32_t EPPRIME;				/*!< 0x000001B0 32 wtc	0x00000000 Endpoint Primer (Device mode)  */
-	__IO uint32_t EPFLUSH;				/*!< 0x000001B4 32 wtc	0x00000000 Endpoint Flush (Device mode)  */
-	__I  uint32_t EPRDY;				/*!< 0x000001B8 32 ro	0x00000000 Endpoint Buffer Ready Status (Device mode), RO  */
-	__IO uint32_t EPCOMPL;				/*!< 0x000001BC 32 rw	0x00000000 Endpoint Tx Complete (Device mode)  */
-	__IO uint32_t EPCR0;				/*!< 0x000001C0 24 mixed	0x00800080 Endpoint 0 (Device mode)  */
-	__IO uint32_t ENDPTCTRL1;			/*!< 0x000001C4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL2;			/*!< 0x000001C8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL3;			/*!< 0x000001CC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL4;			/*!< 0x000001D0 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL5;			/*!< 0x000001D4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL6;			/*!< 0x000001D8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL7;			/*!< 0x000001DC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL8;			/*!< 0x000001E0 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL9;			/*!< 0x000001E4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL10;			/*!< 0x000001E8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
-	__IO uint32_t ENDPTCTRL11;			/*!< 0x000001EC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t OTGCSR;				/*!< 0x000001A4 32 mixed	0x00001020 OTG Status and Control */
+	__IO uint32_t MODE;					/*!< 0x000001A8 32 mixed	0x00000000 USB Mode Selection */
+	__IO uint32_t EPSTAT;				/*!< 0x000001AC 16 wtc	0x00000000 Endpoint Status Setup (Device mode) */
+	__IO uint32_t EPPRIME;				/*!< 0x000001B0 32 wtc	0x00000000 Endpoint Primer (Device mode) */
+	__IO uint32_t EPFLUSH;				/*!< 0x000001B4 32 wtc	0x00000000 Endpoint Flush (Device mode) */
+	__I  uint32_t EPRDY;				/*!< 0x000001B8 32 ro	0x00000000 Endpoint Buffer Ready Status (Device mode), RO */
+	__IO uint32_t EPCOMPL;				/*!< 0x000001BC 32 rw	0x00000000 Endpoint Tx Complete (Device mode) */
+	__IO uint32_t EPCR0;				/*!< 0x000001C0 24 mixed	0x00800080 Endpoint 0 (Device mode) */
+	__IO uint32_t ENDPTCTRL1;			/*!< 0x000001C4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL2;			/*!< 0x000001C8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL3;			/*!< 0x000001CC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL4;			/*!< 0x000001D0 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL5;			/*!< 0x000001D4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL6;			/*!< 0x000001D8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL7;			/*!< 0x000001DC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL8;			/*!< 0x000001E0 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL9;			/*!< 0x000001E4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL10;			/*!< 0x000001E8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
+	__IO uint32_t ENDPTCTRL11;			/*!< 0x000001EC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode) */
 } XUSBPS_Registers;
 /**
   * @}
-  */
+ */
 
 
 
@@ -763,7 +778,7 @@ typedef struct
 
 /** @addtogroup Exported_types
   * @{
-  */
+ */
 typedef enum
 {
   RESET = 0,
@@ -785,12 +800,12 @@ typedef enum
 
 /**
   * @}
-  */
+ */
 
 
 /** @addtogroup Exported_macros
   * @{
-  */
+ */
 #define SET_BIT(REG, BIT)     ((REG) |= (BIT))
 
 #define CLEAR_BIT(REG, BIT)   ((REG) &= ~(BIT))
@@ -810,7 +825,7 @@ typedef enum
 
 /**
   * @}
-  */
+ */
 
 #if defined (USE_HAL_DRIVER)
  #include "zynq7000_hal.h"
