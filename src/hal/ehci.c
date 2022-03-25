@@ -1011,9 +1011,9 @@ void ulpi_chip_initialize(void)
 	// 7.1.2.1 Carkit Control
 	// Address = 19-1Bh (read), 19h (write), 1Ah (set), 1Bh (clear)
 	// Bit 0x01 - IdGndDrv set to 1
-	PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
+	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
 	ulpi_reg_set(0x1A, 0x02);	// Set IdGndDrv bit
-	PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
+	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
 
 }
 
@@ -1030,16 +1030,16 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 	const uint_fast8_t v3 = ulpi_reg_get(0x03);
 	const uint_fast16_t vid = v1 * 256 + v0;
 	const uint_fast16_t pid = v3 * 256 + v2;
-	PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", vid, pid);
+	//PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", vid, pid);
 
 	if (vid != 0X0424 || pid != 0x0009)
 		return;
 
 	//	7.1.1.7 OTG Control
 	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)
-	PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_get(0x0A));
+	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_get(0x0A));
 	ulpi_reg_set(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
-	PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_get(0x0A));
+	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_get(0x0A));
 
 }
 
@@ -1165,6 +1165,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 #endif
 #if WITHUSBHOST_HIGHSPEEDULPI
 		ulpi_chip_initialize();
+		TARGET_USBFS_VBUSON_SET(1);
 #endif /* WITHUSBHOST_HIGHSPEEDULPI */
 }
 
