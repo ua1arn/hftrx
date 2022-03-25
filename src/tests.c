@@ -6464,12 +6464,12 @@ void hightests(void)
 
 	}
 #endif
-#if 1 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if 0 && CPUSTYLE_XC7Z
 	{
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+#if 0 && CPUSTYLE_XC7Z
 	{
 		PRINTF("GEM0 test:\n");
 
