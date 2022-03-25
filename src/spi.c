@@ -2150,7 +2150,7 @@ int testchipDATAFLASH(void)
 	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
 			PSTR("%s, SPIDF:%02X:%02X%02X:%02X"),
 			USBD_DFU_FLASHNAME,
-			(unsigned) (chipSize / 1024 / (1024 / 8)),
+			//(unsigned) (chipSize / 1024 / (1024 / 8)),
 			mf_id, mf_devid1, mf_devid2, mf_dlen
 			);
 
