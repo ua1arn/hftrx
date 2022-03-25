@@ -883,18 +883,12 @@
 
 #if WITHUSBHW
 
-	//#define TARGET_USBFS_VBUSON_BIT (1uL << 2)	// PD2 - нулём включение питания для device
-	#define TARGET_USBFS_VBUSON_PORT_C(v)	do { /*GPIOD->BSRR = BSRR_C(v); __DSB(); */} while (0)
-	#define TARGET_USBFS_VBUSON_PORT_S(v)	do { /*GPIOD->BSRR = BSRR_S(v); __DSB(); */} while (0)
 	#define	USBD_FS_INITIALIZE() do { \
 		/*arm_hardware_piod_outputs(TARGET_USBFS_VBUSON_BIT, TARGET_USBFS_VBUSON_BIT); */ /* PD2 */ \
 	} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
-		if ((on) != 0) \
-			TARGET_USBFS_VBUSON_PORT_C(TARGET_USBFS_VBUSON_BIT); \
-		else \
-			TARGET_USBFS_VBUSON_PORT_S(TARGET_USBFS_VBUSON_BIT); \
+		ulpi_chip_vbuson(!! on); \
 	} while (0)
 
 	/**USB_OTG_HS GPIO Configuration
