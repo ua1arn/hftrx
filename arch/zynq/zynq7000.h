@@ -463,9 +463,9 @@ typedef struct qspi_regs {
 	__IO uint32_t TXWR;			/**< 0x00000028 32 rw 0x00000001 TX_FIFO Threshold Register */
 	__IO uint32_t RX_thres_REG;	/**< 0x0000002C 32 rw 0x00000001 RX FIFO Threshold Register */
 	__IO uint32_t GPIO;			/**< 0x00000030 32 rw 0x00000001 General Purpose Inputs and Outputs Register for the Quad-SPI Controller core */
-		 uint32_t ___RESERVED1;
+	 uint32_t ___RESERVED1;
 	__IO uint32_t LPBK_DLY_ADJ;	/**< 0x00000038 32 rw 0x0000002D Loopback Master Clock Delay Adjustment Register */
-	uint8_t ___RESERVED2 [0x00000080 - 0x00000038 - 0x004];
+	 uint8_t ___RESERVED2 [0x00000080 - 0x00000038 - 0x004];
 	__IO uint32_t TXD_01;		/**< 0x00000080 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
 	__IO uint32_t TXD_10;		/**< 0x00000084 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
 	__IO uint32_t TXD_11;		/**< 0x00000088 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
