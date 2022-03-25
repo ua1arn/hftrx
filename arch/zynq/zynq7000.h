@@ -575,32 +575,88 @@ typedef struct xemacps_regs {
   */
 typedef struct
 {
-  __IO uint32_t HCCAPBASE;        /*!< Capability Register register,              Address offset: 0x00 */
-  __IO uint32_t HCSPARAMS;        /*!< Structural Parameter register              Address offset: 0x04 */
-  __IO uint32_t HCCPARAMS;        /*!< Capability Parameter register,             Address offset: 0x08 */
-       uint32_t RESERVED;         /*!< USB Command register,                      Address offset: 0x0C */
-  __IO uint32_t USBCMD;           /*!< USB Command register,                      Address offset: 0x10 */
-  __IO uint32_t USBSTS;           /*!< USB Status register,                       Address offset: 0x14 */
-  __IO uint32_t USBINTR;          /*!< USB Interrupt Enable register,             Address offset: 0x18 */
-  __IO uint32_t FRINDEX;          /*!< USB Frame Index register ,                 Address offset: 0x1C */
-  __IO uint32_t CTRLDSSEGMENT;    /*!< 4G Segment Selector register,              Address offset: 0x20 */
-  __IO uint32_t PERIODICLISTBASE; /*!< Periodic Frame List Base Address register, Address offset: 0x24 */
-  __IO uint32_t ASYNCLISTADDR;    /*!< Asynchronous List Address register,        Address offset: 0x28 */
+	__IO uint32_t HCCAPBASE;        /*!< Capability Register register,              Address offset: 0x00 */
+	__IO uint32_t HCSPARAMS;        /*!< Structural Parameter register              Address offset: 0x04 */
+	__IO uint32_t HCCPARAMS;        /*!< Capability Parameter register,             Address offset: 0x08 */
+	uint32_t RESERVED;         /*!<                     					 Address offset: 0x0C */
+	__IO uint32_t old_USBCMD;           /*!< USB Command register,                      Address offset: 0x10 */
+	__IO uint32_t USBSTS;           /*!< USB Status register,                       Address offset: 0x14 */
+	__IO uint32_t USBINTR;          /*!< USB Interrupt Enable register,             Address offset: 0x18 */
+	__IO uint32_t FRINDEX;          /*!< USB Frame Index register ,                 Address offset: 0x1C */
+	__IO uint32_t CTRLDSSEGMENT;    /*!< 4G Segment Selector register,              Address offset: 0x20 */
+	__IO uint32_t PERIODICLISTBASE; /*!< Periodic Frame List Base Address register, Address offset: 0x24 */
+	__IO uint32_t ASYNCLISTADDR;    /*!< Asynchronous List Address register,        Address offset: 0x28 */
+	uint8_t ___RESERVED1 [0x00000040 - 0x28 - 0x004];
+	__IO uint32_t USBCMD;			/*!< 0x00000140 24 mixed 0x00080000 USB Commands (EHCI extended) */
 } USB_EHCI_CapabilityTypeDef;
 /**
   * @}
   */
+
+
 /**
   * @brief USB controller registers
   */
 typedef struct
 {
-  __IO uint32_t ID;    			/*!< IP version and revision,            Address offset: 0x00 */
-  __IO uint32_t HWGENERAL;      /*!< Misc IP config constants,              Address offset: 0x04 */
-  __IO uint32_t HWHOST;        	/*!< Host Mode IP config constants,,             Address offset: 0x08 */
-  __IO uint32_t HWDEVICE;       /*!< USB Command register,                      Address offset: 0x0C */
-  __IO uint32_t HWTXBUF;        /*!< USB Command register,                      Address offset: 0x10 */
-  __IO uint32_t HWRXBUF;        /*!< USB Status register,                       Address offset: 0x14 */
+	__I  uint32_t ID;					/*!< 0x00000000 32 ro 0xE441FA05 IP version and revision, read-only */
+	__I  uint32_t HWGENERAL;			/*!< 0x00000004 12 ro 0x00000083 Misc IP config constants, read-only */
+	__IO uint32_t HWHOST;				/*!< 0x00000008 32 ro 0x10020001 Host Mode IP config constants, read-only */
+	__I  uint32_t HWDEVICE;				/*!< 0x0000000C 6 ro 0x00000019 Device Mode IP config constants, read-only */
+	__I  uint32_t HWTXBUF;				/*!< 0x00000010 32 ro 0x80060A10 TxBuffer IP config constants, read-only */
+	__I  uint32_t HWRXBUF;				/*!< 0x00000014 32 ro 0x00000A10 IP constants, RX buffer constants, read-only */
+	uint8_t ___RESERVED1 [0x00000080 - 0x00000014 - 0x004];
+	__IO uint32_t GPTIMER0LD;			/*!< 0x00000080 24 rw 0x00000000 GP Timer 0 Load Value. */
+	__IO uint32_t GPTIMER0CTRL;			/*!< 0x00000084 32 mixed 0x00000000 GP Timer 1 Control. */
+	__IO uint32_t GPTIMER1LD;			/*!< 0x00000088 24 rw 0x00000000 GP Timer 1 Load Value */
+	__IO uint32_t GPTIMER1CTRL;			/*!< 0x0000008C 32 mixed 0x00000000 GP Timer 1 Control */
+	__IO uint32_t SBUSCFG;				/*!< 0x00000090 3 rw 0x00000003 DMA Master AHB Burst Mode */
+	uint8_t ___RESERVED2 [0x00000100 - 0x00000090 - 0x004];
+	__I  uint32_t CAPLENGTH_HCIVERSION;	/*!< 0x00000100 32 ro 0x01000040 EHCI Addr Space and HCI constants, read-only */
+	__I  uint32_t HCSPARAMS;			/*!< 0x00000104 28 ro 0x00010011 TT counts and EHCI HCS constants, read-only */
+	__IO uint32_t HCCPARAMS;			/*!< 0x00000108 16 ro 0x00000006 EHCI Host Configuration Constants. */
+	uint8_t ___RESERVED3 [0x00000080 - 0x00000014 - 0x004];
+	__IO uint32_t DCIVERSION;			/*!< 0x00000120 16 ro 0x00000001 Device Controller Interface Version. */
+	__IO uint32_t DCCPARAMS;			/*!< 0x00000124 9 ro 0x0000018C EHCI, Device, and Endpoint Capabilities. */
+	uint8_t ___RESERVED4 [0x00000140 - 0x00000124 - 0x004];
+	__IO uint32_t XUSBPS_CMD;			/*!< 0x00000140 24 mixed 0x00080000 USB Commands (EHCI extended) */
+	__IO uint32_t ISR;					/*!< 0x00000144 26 mixed	0x00000000 Interrupt/Raw Status (EHCI extended) (Host/Device)  */
+	__IO uint32_t IER;					/*!< 0x00000148 26 mixed	0x00000000 Interrrupts and Enables  */
+	__IO uint32_t FRAME;				/*!< 0x0000014C 14 rw	0x00000000 Frame List Index  */
+	uint8_t ___RESERVED5 [0x00000154 - 0x0000014C - 0x004];
+	__IO uint32_t LISTBASE;				/*!< 0x00000154 32 mixed	0x00000000 Host/Device Address dual-use  */
+	__IO uint32_t ASYNCLISTADDR;		/*!< 0x00000158 32 mixed	0x00000000 Host/Device dual-use  */
+	__IO uint32_t TTCTRL;				/*!< 0x0000015C 32 mixed	0x00000000 TT Control  */
+	__IO uint32_t BURSTSIZE;			/*!< 0x00000160 17 rw	0x00001010 Burst Size  */
+	__IO uint32_t TXFILL;				/*!< 0x00000164 22 mixed	0x00000000 TxFIFO Fill Tuning  */
+	__IO uint32_t TXTTFILLTUNING;		/*!< 0x00000168 13 mixed	0x00000000 TT TX latency FIFO  */
+	__IO uint32_t IC_USB;				/*!< 0x0000016C 32 mixed	0x00000000 Low and Fast Speed Control constants */
+	__IO uint32_t ULPIVIEW;				/*!< 0x00000170 32 mixed	0x08000000 ULPI Viewport  */
+	uint8_t ___RESERVED6 [0x00000178 - 0x00000170 - 0x004];
+	__IO uint32_t EPNAKISR;				/*!< 0x00000178 32 wtc	0x00000000 Endpoint NAK (Device mode)  */
+	__IO uint32_t EPNAKIER;				/*!< 0x0000017C 32 rw	0x00000000 Endpoint NAK (Device mode)  */
+	__IO uint32_t CONFIGFLAG;			/*!< 0x00000180 32 ro	0x00000001 reserved  */
+	__IO uint32_t PORTSCR1;				/*!< 0x00000184 32 mixed	0x8C000004 Port Status & Control  */
+	uint8_t ___RESERVED7 [0x000001A4 - 0x00000184 - 0x004];
+	__IO uint32_t OTGCSR;				/*!< 0x000001A4 32 mixed	0x00001020 OTG Status and Control  */
+	__IO uint32_t MODE;					/*!< 0x000001A8 32 mixed	0x00000000 USB Mode Selection  */
+	__IO uint32_t EPSTAT;				/*!< 0x000001AC 16 wtc	0x00000000 Endpoint Status Setup (Device mode)  */
+	__IO uint32_t EPPRIME;				/*!< 0x000001B0 32 wtc	0x00000000 Endpoint Primer (Device mode)  */
+	__IO uint32_t EPFLUSH;				/*!< 0x000001B4 32 wtc	0x00000000 Endpoint Flush (Device mode)  */
+	__I  uint32_t EPRDY;				/*!< 0x000001B8 32 ro	0x00000000 Endpoint Buffer Ready Status (Device mode), RO  */
+	__IO uint32_t EPCOMPL;				/*!< 0x000001BC 32 rw	0x00000000 Endpoint Tx Complete (Device mode)  */
+	__IO uint32_t EPCR0;				/*!< 0x000001C0 24 mixed	0x00800080 Endpoint 0 (Device mode)  */
+	__IO uint32_t ENDPTCTRL1;			/*!< 0x000001C4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL2;			/*!< 0x000001C8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL3;			/*!< 0x000001CC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL4;			/*!< 0x000001D0 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL5;			/*!< 0x000001D4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL6;			/*!< 0x000001D8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL7;			/*!< 0x000001DC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL8;			/*!< 0x000001E0 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL9;			/*!< 0x000001E4 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL10;			/*!< 0x000001E8 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
+	__IO uint32_t ENDPTCTRL11;			/*!< 0x000001EC 24 mixed	0x00000000 Endpoints 1 to 11 (Device mode)  */
 } XUSBPS_Registers;
 /**
   * @}
