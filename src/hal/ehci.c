@@ -19,10 +19,6 @@
 
 #if defined (WITHUSBHW_EHCI)
 
-#if CPUSTYLE_XC7Z
-static const uintptr_t xusbps_mode = 0xE00021A8;
-#endif /* CPUSTYLE_XC7Z */
-
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
 /* USB Host Core handle declaration. */
@@ -775,7 +771,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
 	SPINLOCK_INITIALIZE(& hehci->asynclock);
 
-	PRINTF("EHCIx->USBCMD=%08lX (%p)\n", EHCIx->USBCMD, & EHCIx->USBCMD);
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
 	// Читаем командный регистр
@@ -799,19 +794,18 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	(void) EHCIx->USBCMD;
 
 #if CPUSTYLE_XC7Z
-	PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
-	(* (volatile uint32_t *) xusbps_mode) |= 0x03;
-	PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
+	if (WITHUSBHW_EHCI == EHCI0)
+		USB0->MODE |= 0x03;
+	else if (WITHUSBHW_EHCI == EHCI1)
+		USB1->MODE |= 0x03;
 #endif /* CPUSTYLE_XC7Z */
 
 	// wait for the halted bit to become set
 	// Ждем пока бит Halted не будет выставлен
-	TP();
 	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
 		;
-	TP();
 	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
-	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
+	// Замечу, что все мои дескрипторы и элементы очереди выровнены на границу 128 байт
 
 	// Disable interrupts
 	// Отключаем прерывания
@@ -850,14 +844,12 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
 	 *
 	 */
-	TP();
 
 	// Periodic frame list
 	for (i = 0; i < ARRAY_SIZE(hehci->periodiclist); ++i) {
 		hehci->periodiclist[i].link = EHCI_LINK_TERMINATE;// 0 - valid, 1 - invalid
 	}
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
-	TP();
 
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
@@ -897,7 +889,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
-	TP();
 
 #if defined (USB1HSFSP2_BASE)
 	// OHCI init
@@ -937,7 +928,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 #endif /* defined (USB1HSFSP2_BASE) */
 
-	TP();
 	return HAL_OK;
 }
 
@@ -1104,8 +1094,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		if (WITHUSBHW_EHCI == EHCI0)
 		{
 			enum { usbIX = 0 };
-			PRINTF("HAL_EHCI_MspInit: EHCI0\n");
-			const uintptr_t xusbps_mode = 0xE00021A8;
+			//PRINTF("HAL_EHCI_MspInit: EHCI0\n");
 
 			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
@@ -1121,9 +1110,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 
 			// XUSBPS_MODE
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
-			(* (volatile uint32_t *) xusbps_mode) |= 0x03;
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
+			USB0->MODE |= 0x03;
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
@@ -1132,8 +1119,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		else if (WITHUSBHW_EHCI == EHCI1)
 		{
 			enum { usbIX = 1 };
-			PRINTF("HAL_EHCI_MspInit: EHCI1\n");
-			const uintptr_t xusbps_mode = 0xE00031A8;
+			//PRINTF("HAL_EHCI_MspInit: EHCI1\n");
 
 			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
@@ -1149,9 +1135,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 
 			// XUSBPS_MODE
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
-			(* (volatile uint32_t *) xusbps_mode) |= 0x03;
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
+			USB1->MODE |= 0x03;
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);

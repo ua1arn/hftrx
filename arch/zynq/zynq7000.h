@@ -594,19 +594,17 @@ typedef struct xemacps_regs {
  */
 typedef struct
 {
-	__IO uint32_t HCCAPBASE;        /*!< Capability Register register,              Address offset: 0x00 */
-	__IO uint32_t HCSPARAMS;        /*!< Structural Parameter register              Address offset: 0x04 */
-	__IO uint32_t HCCPARAMS;        /*!< Capability Parameter register,             Address offset: 0x08 */
-	uint32_t RESERVED;         /*!<                     					 Address offset: 0x0C */
-	__IO uint32_t old_USBCMD;           /*!< USB Command register,                      Address offset: 0x10 */
-	__IO uint32_t USBSTS;           /*!< USB Status register,                       Address offset: 0x14 */
-	__IO uint32_t USBINTR;          /*!< USB Interrupt Enable register,             Address offset: 0x18 */
-	__IO uint32_t FRINDEX;          /*!< USB Frame Index register ,                 Address offset: 0x1C */
+	__IO uint32_t HCCAPBASE;        /*!< 0x00000100 Capability Register register,              Address offset: 0x00 */
+	__IO uint32_t HCSPARAMS;        /*!< 0x00000104 Structural Parameter register              Address offset: 0x04 */
+	__IO uint32_t HCCPARAMS;        /*!< 0x00000108 Capability Parameter register,             Address offset: 0x08 */
+	uint8_t ___RESERVED1 [0x00000140 - 0x00000108 - 0x004];
+	__IO uint32_t USBCMD;           /*!< 0x00000140 USB Command register,                      Address offset: 0x10 */
+	__IO uint32_t USBSTS;           /*!< 0x00000144 ISR USB Status register,                       Address offset: 0x14 */
+	__IO uint32_t USBINTR;          /*!< 0x00000148 IER USB Interrupt Enable register,             Address offset: 0x18 */
+	__IO uint32_t FRINDEX;          /*!< 0x0000014C USB Frame Index register ,                 Address offset: 0x1C */
 	__IO uint32_t CTRLDSSEGMENT;    /*!< 4G Segment Selector register,              Address offset: 0x20 */
-	__IO uint32_t PERIODICLISTBASE; /*!< Periodic Frame List Base Address register, Address offset: 0x24 */
-	__IO uint32_t ASYNCLISTADDR;    /*!< Asynchronous List Address register,        Address offset: 0x28 */
-	uint8_t ___RESERVED1 [0x00000040 - 0x28 - 0x004];
-	__IO uint32_t USBCMD;			/*!< 0x00000140 24 mixed 0x00080000 USB Commands (EHCI extended) */
+	__IO uint32_t PERIODICLISTBASE; /*!< 0x00000154 Periodic Frame List Base Address register, Address offset: 0x24 */
+	__IO uint32_t ASYNCLISTADDR;    /*!< 0x00000158 Asynchronous List Address register,        Address offset: 0x28 */
 } USB_EHCI_CapabilityTypeDef;
 /**
   * @}
@@ -634,7 +632,7 @@ typedef struct
 	__I  uint32_t CAPLENGTH_HCIVERSION;	/*!< 0x00000100 32 ro 0x01000040 EHCI Addr Space and HCI constants, read-only */
 	__I  uint32_t HCSPARAMS;			/*!< 0x00000104 28 ro 0x00010011 TT counts and EHCI HCS constants, read-only */
 	__IO uint32_t HCCPARAMS;			/*!< 0x00000108 16 ro 0x00000006 EHCI Host Configuration Constants. */
-	uint8_t ___RESERVED3 [0x00000080 - 0x00000014 - 0x004];
+	uint8_t ___RESERVED3 [0x00000120 - 0x00000108 - 0x004];
 	__IO uint32_t DCIVERSION;			/*!< 0x00000120 16 ro 0x00000001 Device Controller Interface Version. */
 	__IO uint32_t DCCPARAMS;			/*!< 0x00000124 9 ro 0x0000018C EHCI, Device, and Endpoint Capabilities. */
 	uint8_t ___RESERVED4 [0x00000140 - 0x00000124 - 0x004];
