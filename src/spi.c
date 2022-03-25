@@ -1170,8 +1170,71 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 }
 
 #elif WIHSPIDFHW && CPUSTYLE_XC7Z
+
 // https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/qspi.c
 
+void spidf_initialize(void)
+{
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
+	(void) SCLR->APER_CLK_CTRL;
+
+	SCLR->LQSPI_RST_CTRL |= 0x01;
+	(void) SCLR->LQSPI_RST_CTRL;
+	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
+	(void) SCLR->LQSPI_RST_CTRL;
+
+	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
+
+	ASSERT(XQSPIPS->MOD_ID == 0x01090101);
+	//PRINTF("spidf_initialize: MOD_ID=%08lX (expected 0x01090101)\n", XQSPIPS->MOD_ID);
+}
+
+void spidf_hangoff(void)
+{
+	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
+}
+
+void spidf_uninitialize(void)
+{
+//	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
+//		;
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+static void spidf_unselect(void)
+{
+////	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
+////		;
+//	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
+//		;
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+static void spidf_iostart(
+	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
+	uint_fast8_t ndummy,	// number of dummy bytes
+	uint_fast32_t size,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
+{
+}
+
+static void spidf_read(uint8_t * buff, uint_fast32_t size)
+{
+}
+
+
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+{
+	uint_fast8_t err = 0;
+	return err;
+}
 
 #elif WIHSPIDFHW && (CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F)
 
@@ -1585,15 +1648,6 @@ static void spidf_iostart(
 	// при передаче формируется только команла и адрес при необходимости
 }
 
-#elif WIHSPIDFHW && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
-
-void spidf_initialize(void)
-{
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
-	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
-}
-
 #endif /* WIHSPIDFHW */
 
 /* снять защиту записи для следующей команды */
@@ -1752,7 +1806,7 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [02];
 		mf_dlen = mfa [3];
 
-		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 #endif /* WITHDEBUG */
 
@@ -1824,8 +1878,8 @@ int testchipDATAFLASH(void)
 		sct [1] = (dword8 >> 16) & 0xFFFF;
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
-		//PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		//PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
@@ -1840,7 +1894,7 @@ int testchipDATAFLASH(void)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
 			sectorSize = 1uL << (sctRESULT & 0xFF);
-			//PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (sctRESULT >> 8) & 0xFF, 1uL << (sctRESULT & 0xFF));
+			PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
 		}
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
