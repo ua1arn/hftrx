@@ -263,7 +263,7 @@ $(ZYNQLIB): $(ZOBJSC) $(ZOBJSCPP) $(ZOBJSA)
 flash_dfu: $(PROJECT)_app_xyl32.bin
 	./dfu-util --device ffff:0738 --alt 0 --dfuse-address 0xFC080000 --download $(PROJECT)_app_xyl32.bin
 
-flash: $(PROJECT)_app_xyl32.bin
+flash: bitstreams $(PROJECT)_app_xyl32.bin
 	program_flash -f $(PROJECT)_app_xyl32.bin -offset 0x80000 $(XILINX_JTAGOPTS)
 
 $(PROJECT)_app_xyl32.bin: $(PROJECT)_app.bin
