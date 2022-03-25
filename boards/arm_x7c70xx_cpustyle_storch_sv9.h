@@ -373,17 +373,6 @@
 
 #if WITHSDHCHW
 
-	// J11
-	// SD0 signals
-	//	PS_MIO40_CD_CLK
-	//	PS_MIO41_CD_CMD
-	//	PS_MIO42_CD_D0
-	//	PS_MIO43_CD_D1
-	//	PS_MIO44_CD_D2
-	//	PS_MIO45_CD_D3
-	//	PS_MIO46_CD_SW
-	//	PS_MIO50_CD_WP
-
 	// return: 0 - no disk
 	#define HARDWARE_SDIOSENSE_CD() 1//((SD0->PRESENT_STATE & (1uL << 18)) != 0) /* получить состояние датчика CARD PRESENT */
 	// return: ! 0 - write protect
@@ -401,6 +390,10 @@
 
 	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
 	#define HARDWARE_SDIO_INITIALIZE() do { \
+		enum { IOTYPE = GPIO_IOTYPE_500 }; \
+		enum { L3_SEL = 0x00, L2_SEL = 0x04, L1_SEL = 0x00, L0_SEL = 0x00 }; /* SDIO 1 */ \
+		const portholder_t pinmode_sdio_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		const portholder_t pinmode_sdio_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
 		const portholder_t miopin_ctl = 0x00000680uL; \
 		const portholder_t miopin_dat = 0x00001680uL; \
 		SCLR->SD0_WP_CD_SEL = \
@@ -649,13 +642,10 @@
 
 	#define	SPI_IOTYPE 	GPIO_IOTYPE_501
 
-	//	SPI_MOSI	C38	B15	PS_MIO45_501
-	//	SPI_MISO	C36	C17	PS_MIO41_501
-	//	SPI_SCLK	C39	D14	PS_MIO40_501
 	// MOSI & SCK port
-	#define	SPI_SCLK_MIO 	40
-	#define	SPI_MOSI_MIO 	45
-	#define	SPI_MISO_MIO 	41
+	#define	SPI_MOSI_MIO 	45	//	SPI_MOSI	C38	B15	PS_MIO45_501
+	#define	SPI_MISO_MIO 	41	//	SPI_MISO	C36	C17	PS_MIO41_501
+	#define	SPI_SCLK_MIO 	40	//	SPI_SCLK	C39	D14	PS_MIO40_501
 
 	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
 	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
@@ -704,7 +694,7 @@
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; \
 		enum { L3_SEL = 0x07, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; \
 		const portholder_t pinmode_uart_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t pinmode_uart_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
@@ -912,12 +902,12 @@
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define USB_ULPI_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
-		enum { IOTYPE_RST = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; \
+		enum { IOTYPE_RST = GPIO_IOTYPE_501 }; \
 		enum { L3_SEL = 0x00, L2_SEL = 0x00, L1_SEL = 0x01, L0_SEL = 0x00 }; \
-		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
-		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
-		const portholder_t pinmode_ulpi_output = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
+		const portholder_t pinmode_ulpi_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		/* ULPI chip */ \
 		gpio_peripherial(USB_DATA0_MIO, pinmode_ulpi_data); \
 		gpio_peripherial(USB_DATA1_MIO, pinmode_ulpi_data); \
@@ -945,8 +935,8 @@
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define USB_ULPI_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
-		enum { IOTYPE_RST = GPIO_IOTYPE_501 }; /* LVCMOS18 */ \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; \
+		enum { IOTYPE_RST = GPIO_IOTYPE_501 }; \
 		/* RESET */ \
 		gpio_output2(USB_RESET_MIO, 0, MIO_PIN_VALUE(1, 0, IOTYPE_RST, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		local_delay_ms(10); \
