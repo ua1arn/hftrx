@@ -450,26 +450,30 @@ typedef struct devcfg_regs {
 
 // Quad-SPI Flash Controller (qspi)
 typedef struct qspi_regs {
-__IO uint32_t CR;		/**< 0x00000000 32 mixed 0x80020000 QSPI configuration register */
-__IO uint32_t SR;		/**< 0x00000004 32 mixed 0x00000004 QSPI interrupt status register */
-__IO uint32_t IER;		/**< 0x00000008 32 mixed 0x00000000 Interrupt Enable register. */
-__IO uint32_t IDR;		/**< 0x0000000C 32 mixed 0x00000000 Interrupt disable register. */
-__IO uint32_t IMR;		/**< 0x00000010 32 ro 0x00000000 Interrupt mask register */
-__IO uint32_t ER;		/**< 0x00000014 32 mixed 0x00000000 SPI_Enable Register */
-__IO uint32_t DR;		/**< 0x00000018 32 rw 0x00000000 Delay Register */
-__IO uint32_t TXD_00;		/**< 0x0000001C 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. See also TXD1-3. */
-__IO uint32_t RXD;		/**< 0x00000020 32 ro 0x00000000 Receive Data Register */
-__IO uint32_t SICR;		/**< 0x00000024 32 mixed 0x000000FF Slave Idle Count Register */
-__IO uint32_t TXWR;		/**< 0x00000028 32 rw 0x00000001 TX_FIFO Threshold Register */
-__IO uint32_t RX_thres_REG;		/**< 0x0000002C 32 rw 0x00000001 RX FIFO Threshold Register */
-__IO uint32_t GPIO;		/**< 0x00000030 32 rw 0x00000001 General Purpose Inputs and Outputs Register for the Quad-SPI Controller core */
-__IO uint32_t LPBK_DLY_ADJ;		/**< 0x00000038 32 rw 0x0000002D Loopback Master Clock Delay Adjustment Register */
-__IO uint32_t TXD_01;		/**< 0x00000080 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
-__IO uint32_t TXD_10;		/**< 0x00000084 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
-__IO uint32_t TXD_11;		/**< 0x00000088 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
-__IO uint32_t LQSPI_CR;		/**< 0x000000A0 32 rw x Configuration Register specifically for the Linear Quad-SPI Controller */
-__IO uint32_t LQSPI_SR;		/**< 0x000000A4 9 rw 0x00000000 Status Register specifically for the Linear Quad-SPI Controller */
-__IO uint32_t MOD_ID;		/**< 0x000000FC 32 rw 0x01090101 Module Identification register */
+	__IO uint32_t CR;			/**< 0x00000000 32 mixed 0x80020000 QSPI configuration register */
+	__IO uint32_t SR;			/**< 0x00000004 32 mixed 0x00000004 QSPI interrupt status register */
+	__IO uint32_t IER;			/**< 0x00000008 32 mixed 0x00000000 Interrupt Enable register. */
+	__IO uint32_t IDR;			/**< 0x0000000C 32 mixed 0x00000000 Interrupt disable register. */
+	__IO uint32_t IMR;			/**< 0x00000010 32 ro 0x00000000 Interrupt mask register */
+	__IO uint32_t ER;			/**< 0x00000014 32 mixed 0x00000000 SPI_Enable Register */
+	__IO uint32_t DR;			/**< 0x00000018 32 rw 0x00000000 Delay Register */
+	__IO uint32_t TXD_00;		/**< 0x0000001C 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. See also TXD1-3. */
+	__IO uint32_t RXD;			/**< 0x00000020 32 ro 0x00000000 Receive Data Register */
+	__IO uint32_t SICR;			/**< 0x00000024 32 mixed 0x000000FF Slave Idle Count Register */
+	__IO uint32_t TXWR;			/**< 0x00000028 32 rw 0x00000001 TX_FIFO Threshold Register */
+	__IO uint32_t RX_thres_REG;	/**< 0x0000002C 32 rw 0x00000001 RX FIFO Threshold Register */
+	__IO uint32_t GPIO;			/**< 0x00000030 32 rw 0x00000001 General Purpose Inputs and Outputs Register for the Quad-SPI Controller core */
+		 uint32_t ___RESERVED1;
+	__IO uint32_t LPBK_DLY_ADJ;	/**< 0x00000038 32 rw 0x0000002D Loopback Master Clock Delay Adjustment Register */
+	uint8_t ___RESERVED2 [0x00000080 - 0x00000038 - 0x004];
+	__IO uint32_t TXD_01;		/**< 0x00000080 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+	__IO uint32_t TXD_10;		/**< 0x00000084 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+	__IO uint32_t TXD_11;		/**< 0x00000088 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. */
+	uint8_t ___RESERVED3 [0x000000A0 - 0x00000088 - 0x004];
+	__IO uint32_t LQSPI_CR;		/**< 0x000000A0 32 rw x Configuration Register specifically for the Linear Quad-SPI Controller */
+	__IO uint32_t LQSPI_SR;		/**< 0x000000A4 9 rw 0x00000000 Status Register specifically for the Linear Quad-SPI Controller */
+	uint8_t ___RESERVED4 [0x000000FC - 0x000000A4 - 0x004];
+	__I  uint32_t MOD_ID;		/**< 0x000000FC 32 rw 0x01090101 Module Identification register */
 } XQSPIPS_Registers;
 
 // See https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/include/platform/gem.h
