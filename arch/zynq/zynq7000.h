@@ -590,6 +590,23 @@ typedef struct
 /**
   * @}
   */
+/**
+  * @brief USB controller registers
+  */
+typedef struct
+{
+  __IO uint32_t ID;    			/*!< IP version and revision,            Address offset: 0x00 */
+  __IO uint32_t HWGENERAL;      /*!< Misc IP config constants,              Address offset: 0x04 */
+  __IO uint32_t HWHOST;        	/*!< Host Mode IP config constants,,             Address offset: 0x08 */
+  __IO uint32_t HWDEVICE;       /*!< USB Command register,                      Address offset: 0x0C */
+  __IO uint32_t HWTXBUF;        /*!< USB Command register,                      Address offset: 0x10 */
+  __IO uint32_t HWRXBUF;        /*!< USB Status register,                       Address offset: 0x14 */
+} XUSBPS_Registers;
+/**
+  * @}
+  */
+
+
 
 /* configuration for the PL310 L2 cache controller */
 #define PL310_BASE L2CACHE_BASE
@@ -681,8 +698,8 @@ typedef struct
 #define GEM0			((XEMACPS_Registers *) GEM0_BASE)
 #define GEM1			((XEMACPS_Registers *) GEM1_BASE)
 
-#define USB0	((void *) USB0_BASE)
-#define USB1	((void *) USB1_BASE)
+#define USB0	((XUSBPS_Registers *) USB0_BASE)
+#define USB1	((XUSBPS_Registers *) USB1_BASE)
 
 #define EHCI0	((USB_EHCI_CapabilityTypeDef *) (USB0_BASE + 0x0100))
 #define EHCI1	((USB_EHCI_CapabilityTypeDef *) (USB1_BASE + 0x0100))

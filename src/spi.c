@@ -1154,6 +1154,10 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 		spidf_progval8(* buff ++);
 }
 
+#elif WIHSPIDFHW && CPUSTYLE_XC7Z
+// https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/qspi.c
+
+
 #elif WIHSPIDFHW && (CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F)
 
 
