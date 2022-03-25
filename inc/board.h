@@ -356,6 +356,9 @@ int stpmic1_regulator_enable(const char *name);
 int stpmic1_regulator_disable(const char *name);
 void stpmic1_dump_regulators(void);
 
+void ulpi_chip_initialize(void);
+void ulpi_chip_vbuson(uint_fast8_t state);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
