@@ -247,7 +247,7 @@ void spi_initialize(void);	// отдельно инициализация SPI
 
 // Эти три функции должны использоваться везде, где надо работать с SPI.
 #define prog_select(target) do { prog_select_impl(target); } while (0)
-#define prog_unselect(target) do { (void) (target); prog_unselect_impl(); } while (0)
+#define prog_unselect(target) do { prog_unselect_impl(target); } while (0)
 #define prog_read_byte(target, v)  ((void) (target), prog_spi_read_byte_impl(v))
 
 
@@ -256,7 +256,9 @@ void prog_pulse_ioupdate(void);
 void prog_select_impl(
 	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
 	);
-void prog_unselect_impl(void);
+void prog_unselect_impl(
+	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
+	);
 
 uint_fast8_t prog_spi_read_byte_impl(uint_fast8_t bytetosend);
 

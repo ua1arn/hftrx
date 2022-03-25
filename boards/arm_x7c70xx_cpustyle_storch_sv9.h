@@ -622,14 +622,19 @@
 
 	#define TARGET_NVRAM_EMIO	TARGET_NVRAM_CS_EMIO	// nvram FM25L256
 
+	/* Select specified chip. */
+	#define SPI_CS_ASSERT(target)	do { \
+		xc7z_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 1 : 0); \
+	} while (0)
 
-	#define SPI_CS_SET(target)	do { \
-		xc7z_writepin((target), 0); \
+	/* Unelect specified chip. */
+	#define SPI_CS_DEASSERT(target)	do { \
+		xc7z_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 0 : 1); \
 	} while (0)
 
 	#define SPI_ALLCS_DISABLE() do { \
 		xc7z_writepin(TARGET_CTL1_CS_EMIO, 1);		\
-		xc7z_writepin(TARGET_RTC_CS_EMIO, 1);		\
+		xc7z_writepin(TARGET_RTC_CS_EMIO, 0);	/* high = activate */	\
 		xc7z_writepin(TARGET_CODEC1_CS_EMIO, 1);		\
 		xc7z_writepin(TARGET_ADC1_CS_EMIO, 1);		\
 		xc7z_writepin(TARGET_ADC2_CS_EMIO, 1);		\

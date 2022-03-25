@@ -70,7 +70,7 @@ spi_hwinit255(void)
 
 // SPI chip select inactive
 static void
-spi_cs_disable(void)
+spi_allcs_disable(void)
 {
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
@@ -139,6 +139,19 @@ spi_cs_disable(void)
 
 #endif
 }
+
+static void
+spi_cs_disable(
+	spitarget_t target	/* addressing to chip */
+	)
+{
+#if defined (SPI_CS_DEASSERT)
+	SPI_CS_DEASSERT(target);
+#else /* defined (SPI_CS_DEASSERT) */
+	spi_allcs_disable();
+#endif /* defined (SPI_CS_DEASSERT) */
+}
+
 // SPI chip select active
 static void
 spi_cs_enable(
@@ -148,11 +161,11 @@ spi_cs_enable(
 #if WITHSPICSEMIO
 	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
-	SPI_CS_SET(target);
+	SPI_CS_ASSERT(target);
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-	SPI_CS_SET(target);
+	SPI_CS_ASSERT(target);
 
 #elif CPUSTYLE_ARM || CPUSTYLE_ATXMEGA
 
@@ -488,12 +501,14 @@ void prog_select_impl(
 	spi_cs_enable(target);	// chip select active
 }
 
-void prog_unselect_impl(void)
+void prog_unselect_impl(
+	spitarget_t target	/* SHIFTED addressing to chip (on ATMEGA - may be bit mask) */
+	)
 {
 #if UC1608_CSP
 	spi_unselect255();
 #endif /* UC1608_CSP */
-	spi_cs_disable();	// chip select inactive - and latch in 74HC595
+	spi_cs_disable(target);	// chip select inactive - and latch in 74HC595
 }
 
 /* switch off all chip selects and data enable */
@@ -526,7 +541,7 @@ prog_select_init(void)
 #endif /* defined (SPI_IORESET_INITIALIZE) */
 
 	//spi_to_write(target);
-	spi_cs_disable();	// chip select inactive
+	spi_allcs_disable();	// chip select inactive
 	//SCLK_SET();	// initial state of SCLK - logical "1" - обеспечивается в hardwate_spi_select_init()
 }
 

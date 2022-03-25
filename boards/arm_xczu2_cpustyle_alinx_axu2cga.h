@@ -580,7 +580,7 @@
 
 	#define targetnvram		TARGET_NVRAM_MIO	// nvram FM25L256
 
-	#define SPI_CS_SET(target)	do { xc7z_writepin((target), 0); } while (0)
+	#define SPI_CS_ASSERT(target)	do { xc7z_writepin((target), 0); } while (0)
 
 	#define SPI_ALLCS_DISABLE() \
 		do { \
