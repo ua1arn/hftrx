@@ -758,7 +758,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
 	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
 	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
-	TP();
 
 	// Calculate Operational Register Space base address
 	const uintptr_t opregspacebase = (uintptr_t) &EHCIx->HCCAPBASE
@@ -770,13 +769,11 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
 	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
-	TP();
 
 	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
 	InitializeListHead(& hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
 	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
 	SPINLOCK_INITIALIZE(& hehci->asynclock);
-	TP();
 
 	PRINTF("EHCIx->USBCMD=%08lX (%p)\n", EHCIx->USBCMD, & EHCIx->USBCMD);
 	// https://habr.com/ru/post/426421/
@@ -794,19 +791,19 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	(void) EHCIx->USBCMD;
 	// Now wait for the controller to clear the reset bit.
 	// Ждем пока контроллер сбросит бит Reset
-	TP();
 	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
 		;
-	TP();
+	// Again, a small delay here would be good to allow the
+	// reset to actually become complete.
+	// Опять задержка
+	(void) EHCIx->USBCMD;
+
 #if CPUSTYLE_XC7Z
 	PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
 	(* (volatile uint32_t *) xusbps_mode) |= 0x03;
 	PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
 #endif /* CPUSTYLE_XC7Z */
-	// Again, a small delay here would be good to allow the
-	// reset to actually become complete.
-	// Опять задержка
-	(void) EHCIx->USBCMD;
+
 	// wait for the halted bit to become set
 	// Ждем пока бит Halted не будет выставлен
 	TP();
