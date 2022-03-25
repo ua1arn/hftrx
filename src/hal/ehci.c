@@ -772,12 +772,17 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
 	TP();
 
+#if CPUSTYLE_XC7Z
+	const uintptr_t usbcmd = USB0_BASE + 0x00000140;
+	#define USBCMDX (* (volatile uint32_t *) usbcmd)
+#endif /* CPUSTYLE_XC7Z */
 	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
 	InitializeListHead(& hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
 	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
 	SPINLOCK_INITIALIZE(& hehci->asynclock);
 	TP();
 
+	PRINTF("EHCIx->USBCMD=%08lX (%p)\n", EHCIx->USBCMD, & EHCIx->USBCMD);
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
 	// Читаем командный регистр
@@ -785,16 +790,16 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// Записываем его обратно, выставляя бит 2(Reset)
 	// and making sure the two schedule Enable bits are clear.
 	// и проверяем, что 2 очереди выключены
-	EHCIx->USBCMD = (EHCIx->USBCMD & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
+	USBCMDX = (USBCMDX & ~ (CMD_ASE | CMD_PSE)) | CMD_HCRESET;
 	// A small delay here would be good. You don't want to read
 	// Небольшая задержка здесь будет неплоха, Вы не должны читать
 	// the register before it has a chance to actually set the bit
 	// регистр перед тем, как у него не появится шанса выставить бит
-	(void) EHCIx->USBCMD;
+	(void) USBCMDX;
 	// Now wait for the controller to clear the reset bit.
 	// Ждем пока контроллер сбросит бит Reset
 	TP();
-	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
+	while ((USBCMDX & CMD_HCRESET) != 0)
 		;
 	TP();
 #if CPUSTYLE_XC7Z
@@ -805,7 +810,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// Again, a small delay here would be good to allow the
 	// reset to actually become complete.
 	// Опять задержка
-	(void) EHCIx->USBCMD;
+	(void) USBCMDX;
 	// wait for the halted bit to become set
 	// Ждем пока бит Halted не будет выставлен
 	TP();
