@@ -38,16 +38,10 @@ static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 void USBH_POETRESET_INIT(void)
 {
 #if CPUSTYLE_XC7Z
-	if (WITHUSBHW_EHCI == EHCI0)
-	{
-		USB0->MODE |= 0x03;
-		USB0->MODE |= (1uL << 5);	// VBPS
-	}
-	else if (WITHUSBHW_EHCI == EHCI1)
-	{
-		USB1->MODE |= 0x03;
-		USB1->MODE |= (1uL << 5);	// VBPS
-	}
+	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+
+	USBx->MODE |= 0x03;
+	USBx->MODE |= (1uL << 5);	// VBPS
 #endif /* CPUSTYLE_XC7Z */
 }
 
@@ -978,61 +972,73 @@ void USBH_EHCI_IRQHandler(void)
 #define XUSBPS_ULPIVIEW_RUN_MASK   		0x40000000	// 	ULPI Run. More...
 #define XUSBPS_ULPIVIEW_WU_MASK   		0x80000000	// 	ULPI Wakeup. More...
 
-#define XUSBPS_ULPIVIEW			0xE0002170	// USB0
-//#define XUSBPS_ULPIVIEW2		((uintptr_t) WITHUSBHW_EHCI + 0x00000170)	// USB0
-
-#define ULPIVIEW (* ((volatile uint32_t *) XUSBPS_ULPIVIEW))
-
-static void ulpi_reg_set(uint_fast8_t addr, uint_fast8_t data)
+static void ulpi_reg_write(uint_fast8_t addr, uint_fast8_t data)
 {
-	ULPIVIEW = (ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
-			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK ) |
-			(((uint_fast32_t) data << XUSBPS_ULPIVIEW_DATWR_SHIFT) & XUSBPS_ULPIVIEW_DATWR_MASK ) |
+	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+
+	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
+			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
+			(((uint_fast32_t) data << XUSBPS_ULPIVIEW_DATWR_SHIFT) & XUSBPS_ULPIVIEW_DATWR_MASK) |
 			0;
-	ULPIVIEW |= XUSBPS_ULPIVIEW_RW_MASK;	// Select write direction
-	ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
-	while ((ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+
+	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RW_MASK;	// Select write direction
+	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
+
+	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
 		;
 }
 
-static uint_fast8_t ulpi_reg_get(uint_fast8_t addr)
+static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 {
-	ULPIVIEW = (ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
-			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK ) |
+	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+
+	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
+			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
 			0;
 
-	ULPIVIEW &= ~ XUSBPS_ULPIVIEW_RW_MASK;	// Select read direction
-	ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
-	while ((ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+	USBx->ULPIVIEW &= ~ XUSBPS_ULPIVIEW_RW_MASK;	// Select read direction
+	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
+
+	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
 		;
-	return (ULPIVIEW & XUSBPS_ULPIVIEW_DATRD_MASK) >> XUSBPS_ULPIVIEW_DATRD_SHIFT;
+
+	return (USBx->ULPIVIEW & XUSBPS_ULPIVIEW_DATRD_MASK) >> XUSBPS_ULPIVIEW_DATRD_SHIFT;
 }
 #endif /* CPUSTYLE_XC7Z */
 
 void ulpi_chip_initialize(void)
 {
+
 	// USB3340
+	ulpi_reg_read(0x00);	/* dummy read */
+
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
 	// Address = 02h (read only) Product ID Low = 0x09
 	// Address = 03h (read only)  Product ID High = 0x00
-	const uint_fast8_t v0 = ulpi_reg_get(0x00);
-	const uint_fast8_t v1 = ulpi_reg_get(0x01);
-	const uint_fast8_t v2 = ulpi_reg_get(0x02);
-	const uint_fast8_t v3 = ulpi_reg_get(0x03);
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
 	const uint_fast16_t vid = v1 * 256 + v0;
 	const uint_fast16_t pid = v3 * 256 + v2;
-	PRINTF("ulpi_chip_initialize: ULPI chip: VendorID=%04X, productID=%04X\n", vid, pid);
+	PRINTF("ulpi_chip_initialize: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
 
-	if (vid != 0X0424 || pid != 0x0009)
+	if (vid != 0x0424 || pid != 0x0009)
 		return;
 
 	// 7.1.2.1 Carkit Control
 	// Address = 19-1Bh (read), 19h (write), 1Ah (set), 1Bh (clear)
 	// Bit 0x01 - IdGndDrv set to 1
-	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
-	ulpi_reg_set(0x1A, 0x02);	// Set IdGndDrv bit
-	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_get(0x19));
+	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
+	ulpi_reg_write(0x1A, (0x01 << 1));	// Set IdGndDrv bit
+	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
+
+	//	7.1.1.7 OTG Control
+	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)
+	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
+	ulpi_reg_write(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
+	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
 
 }
 
@@ -1043,22 +1049,22 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 	// Address = 01h (read only) Vendor ID High = 0x04
 	// Address = 02h (read only) Product ID Low = 0x09
 	// Address = 03h (read only)  Product ID High = 0x00
-	const uint_fast8_t v0 = ulpi_reg_get(0x00);
-	const uint_fast8_t v1 = ulpi_reg_get(0x01);
-	const uint_fast8_t v2 = ulpi_reg_get(0x02);
-	const uint_fast8_t v3 = ulpi_reg_get(0x03);
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
 	const uint_fast16_t vid = v1 * 256 + v0;
 	const uint_fast16_t pid = v3 * 256 + v2;
-	//PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", vid, pid);
+	PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
 
-	if (vid != 0X0424 || pid != 0x0009)
+	if (vid != 0x0424 || pid != 0x0009)
 		return;
 
 	//	7.1.1.7 OTG Control
 	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)
-	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_get(0x0A));
-	ulpi_reg_set(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
-	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_get(0x0A));
+	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
+	ulpi_reg_write(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
+	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
 
 }
 
