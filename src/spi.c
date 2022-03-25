@@ -72,7 +72,7 @@ spi_hwinit255(void)
 static void
 spi_allcs_disable(void)
 {
-#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if defined (SPI_ALLCS_DISABLE)
 
 	SPI_ALLCS_DISABLE();
 
