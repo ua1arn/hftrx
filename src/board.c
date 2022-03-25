@@ -7464,6 +7464,10 @@ void board_initialize(void)
 #if CPUSTYLE_XC7Z
 	xc7z_hardware_initialize();
 #endif /* CPUSTYLE_XC7Z */
+#if WITHFPGALOAD_DCFG
+	/* перенесено сюда - сигналы управления могут формироваться через PL */
+	board_fpga_loader_XDCFG();	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+#endif /* WITHFPGALOAD_DCFG */
 
 	board_gpio_init();			/* инициализация на вывод битов PIO процессора, если некоторые биты управляются напрямую без SPI */
 
@@ -7472,7 +7476,6 @@ void board_initialize(void)
 	board_fpga_loader_initialize();
 	board_fpga_loader_wait_AS();
 #endif /* WITHFPGAWAIT_AS */
-
 
 #if (WITHTWIHW || WITHTWISW)
 	i2c_initialize();
@@ -7486,9 +7489,6 @@ void board_initialize(void)
 	nand_initialize();
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
-#if WITHFPGALOAD_DCFG
-	board_fpga_loader_XDCFG();	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
-#endif /* WITHFPGALOAD_DCFG */
 #if WITHFPGALOAD_PS
 	/* FPGA загружается процессором с помощью SPI */
 	board_fpga_loader_initialize();

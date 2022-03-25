@@ -9125,6 +9125,18 @@ void hightests(void)
 		}
 	}
 #endif
+#if 0
+	TP();
+	for (;;)
+	{
+		SPI_CS_ASSERT(targetnvram);
+		local_delay_ms(700);
+		SPI_CS_DEASSERT(targetnvram);
+		local_delay_ms(700);
+		TP();
+	}
+#endif
+
 	display_nextfb();	// Скрыть резулбтаты теста, разнести рисуемый и ообрадаемый буферы
 }
 
