@@ -1033,18 +1033,13 @@ void ulpi_chip_initialize(void)
 	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
 	ulpi_reg_write(0x1A, (0x01 << 1));	// Set IdGndDrv bit
 	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
-
-	//	7.1.1.7 OTG Control
-	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)
-	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
-	ulpi_reg_write(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
-	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
-
 }
 
 void ulpi_chip_vbuson(uint_fast8_t state)
 {
 	// USB3340
+	ulpi_reg_read(0x00);	/* dummy read */
+
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
 	// Address = 02h (read only) Product ID Low = 0x09
@@ -1063,7 +1058,10 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 	//	7.1.1.7 OTG Control
 	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)
 	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
-	ulpi_reg_write(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
+	if (state)
+		ulpi_reg_write(0x0B, (0x01 << 6));	// Set DrvVbusExternal bit
+	else
+		ulpi_reg_write(0x0C, (0x01 << 6));	// Clear DrvVbusExternal bit
 	//PRINTF("ULPI chip: reg0A=%02X\n", ulpi_reg_read(0x0A));
 
 }
