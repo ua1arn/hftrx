@@ -35,6 +35,22 @@ static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 #include "../../Class/HUB/Inc/usbh_hub.h"
 
 
+void USBH_POETRESET_INIT(void)
+{
+#if CPUSTYLE_XC7Z
+	if (WITHUSBHW_EHCI == EHCI0)
+	{
+		USB0->MODE |= 0x03;
+		USB0->MODE |= (1uL << 5);	// VBPS
+	}
+	else if (WITHUSBHW_EHCI == EHCI1)
+	{
+		USB1->MODE |= 0x03;
+		USB1->MODE |= (1uL << 5);	// VBPS
+	}
+#endif /* CPUSTYLE_XC7Z */
+}
+
 
 // See https://github.com/hulei123/git123/blob/b82c4abbe7c1bf336b956a613ceb31436938e063/src/usb_stack/usb_core/hal/fsl_usb_ehci_hal.h
 // https://github.com/LucasIankowski/T2LabSisop/blob/3fe926e01623ca007afc9d7a80c764418d92c2bd/drivers/usb/host/ehci-q.c
@@ -793,12 +809,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// Опять задержка
 	(void) EHCIx->USBCMD;
 
-#if CPUSTYLE_XC7Z
-	if (WITHUSBHW_EHCI == EHCI0)
-		USB0->MODE |= 0x03;
-	else if (WITHUSBHW_EHCI == EHCI1)
-		USB1->MODE |= 0x03;
-#endif /* CPUSTYLE_XC7Z */
+	USBH_POETRESET_INIT();
 
 	// wait for the halted bit to become set
 	// Ждем пока бит Halted не будет выставлен
@@ -1108,8 +1119,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
 
-			// XUSBPS_MODE
-			USB0->MODE |= 0x03;
+			USBH_POETRESET_INIT();
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
@@ -1133,8 +1143,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
 
-			// XUSBPS_MODE
-			USB1->MODE |= 0x03;
+			USBH_POETRESET_INIT();
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
