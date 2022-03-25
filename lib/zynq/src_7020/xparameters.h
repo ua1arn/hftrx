@@ -5,13 +5,13 @@
 #define XPAR_CPU_ID 0U
 
 /* Definitions for peripheral PS7_CORTEXA9_0 */
-#define XPAR_PS7_CORTEXA9_0_CPU_CLK_FREQ_HZ 666666687
+#define XPAR_PS7_CORTEXA9_0_CPU_CLK_FREQ_HZ 766666687
 
 
 /******************************************************************/
 
 /* Canonical definitions for peripheral PS7_CORTEXA9_0 */
-#define XPAR_CPU_CORTEXA9_0_CPU_CLK_FREQ_HZ 666666687
+#define XPAR_CPU_CORTEXA9_0_CPU_CLK_FREQ_HZ 766666687
 
 
 /******************************************************************/
@@ -32,57 +32,35 @@
  
 /******************************************************************/
 /* Definitions for driver AXIDMA */
-#define XPAR_XAXIDMA_NUM_INSTANCES 2
+#define XPAR_XAXIDMA_NUM_INSTANCES 1
 
-/* Definitions for peripheral AXI_DMA_FIR_RELOAD */
-#define XPAR_AXI_DMA_FIR_RELOAD_DEVICE_ID 0
-#define XPAR_AXI_DMA_FIR_RELOAD_BASEADDR 0x40410000
-#define XPAR_AXI_DMA_FIR_RELOAD_HIGHADDR 0x4041FFFF
-#define XPAR_AXI_DMA_FIR_RELOAD_SG_INCLUDE_STSCNTRL_STRM 0
-#define XPAR_AXI_DMA_FIR_RELOAD_INCLUDE_MM2S_DRE 1
-#define XPAR_AXI_DMA_FIR_RELOAD_INCLUDE_S2MM_DRE 0
-#define XPAR_AXI_DMA_FIR_RELOAD_INCLUDE_MM2S 1
-#define XPAR_AXI_DMA_FIR_RELOAD_INCLUDE_S2MM 0
-#define XPAR_AXI_DMA_FIR_RELOAD_M_AXI_MM2S_DATA_WIDTH 32
-#define XPAR_AXI_DMA_FIR_RELOAD_M_AXI_S2MM_DATA_WIDTH 32
-#define XPAR_AXI_DMA_FIR_RELOAD_INCLUDE_SG 0
-#define XPAR_AXI_DMA_FIR_RELOAD_ENABLE_MULTI_CHANNEL 0
-#define XPAR_AXI_DMA_FIR_RELOAD_NUM_MM2S_CHANNELS 1
-#define XPAR_AXI_DMA_FIR_RELOAD_NUM_S2MM_CHANNELS 1
-#define XPAR_AXI_DMA_FIR_RELOAD_MM2S_BURST_SIZE 16
-#define XPAR_AXI_DMA_FIR_RELOAD_S2MM_BURST_SIZE 16
-#define XPAR_AXI_DMA_FIR_RELOAD_MICRO_DMA 0
-#define XPAR_AXI_DMA_FIR_RELOAD_ADDR_WIDTH 32
-#define XPAR_AXI_DMA_FIR_RELOAD_SG_LENGTH_WIDTH 14
-
-
-/* Definitions for peripheral AXI_DMA_PHONES */
-#define XPAR_AXI_DMA_PHONES_DEVICE_ID 1
-#define XPAR_AXI_DMA_PHONES_BASEADDR 0x40400000
-#define XPAR_AXI_DMA_PHONES_HIGHADDR 0x4040FFFF
-#define XPAR_AXI_DMA_PHONES_SG_INCLUDE_STSCNTRL_STRM 0
-#define XPAR_AXI_DMA_PHONES_INCLUDE_MM2S_DRE 1
-#define XPAR_AXI_DMA_PHONES_INCLUDE_S2MM_DRE 0
-#define XPAR_AXI_DMA_PHONES_INCLUDE_MM2S 1
-#define XPAR_AXI_DMA_PHONES_INCLUDE_S2MM 0
-#define XPAR_AXI_DMA_PHONES_M_AXI_MM2S_DATA_WIDTH 32
-#define XPAR_AXI_DMA_PHONES_M_AXI_S2MM_DATA_WIDTH 32
-#define XPAR_AXI_DMA_PHONES_INCLUDE_SG 0
-#define XPAR_AXI_DMA_PHONES_ENABLE_MULTI_CHANNEL 0
-#define XPAR_AXI_DMA_PHONES_NUM_MM2S_CHANNELS 1
-#define XPAR_AXI_DMA_PHONES_NUM_S2MM_CHANNELS 1
-#define XPAR_AXI_DMA_PHONES_MM2S_BURST_SIZE 16
-#define XPAR_AXI_DMA_PHONES_S2MM_BURST_SIZE 16
-#define XPAR_AXI_DMA_PHONES_MICRO_DMA 0
-#define XPAR_AXI_DMA_PHONES_ADDR_WIDTH 32
-#define XPAR_AXI_DMA_PHONES_SG_LENGTH_WIDTH 23
+/* Definitions for peripheral AXI_DMA_0 */
+#define XPAR_AXI_DMA_0_DEVICE_ID 0
+#define XPAR_AXI_DMA_0_BASEADDR 0x40400000
+#define XPAR_AXI_DMA_0_HIGHADDR 0x4040FFFF
+#define XPAR_AXI_DMA_0_SG_INCLUDE_STSCNTRL_STRM 0
+#define XPAR_AXI_DMA_0_INCLUDE_MM2S_DRE 1
+#define XPAR_AXI_DMA_0_INCLUDE_S2MM_DRE 0
+#define XPAR_AXI_DMA_0_INCLUDE_MM2S 1
+#define XPAR_AXI_DMA_0_INCLUDE_S2MM 0
+#define XPAR_AXI_DMA_0_M_AXI_MM2S_DATA_WIDTH 32
+#define XPAR_AXI_DMA_0_M_AXI_S2MM_DATA_WIDTH 32
+#define XPAR_AXI_DMA_0_INCLUDE_SG 0
+#define XPAR_AXI_DMA_0_ENABLE_MULTI_CHANNEL 0
+#define XPAR_AXI_DMA_0_NUM_MM2S_CHANNELS 1
+#define XPAR_AXI_DMA_0_NUM_S2MM_CHANNELS 1
+#define XPAR_AXI_DMA_0_MM2S_BURST_SIZE 16
+#define XPAR_AXI_DMA_0_S2MM_BURST_SIZE 16
+#define XPAR_AXI_DMA_0_MICRO_DMA 0
+#define XPAR_AXI_DMA_0_ADDR_WIDTH 32
+#define XPAR_AXI_DMA_0_SG_LENGTH_WIDTH 23
 
 
 /******************************************************************/
 
-/* Canonical definitions for peripheral AXI_DMA_FIR_RELOAD */
-#define XPAR_AXIDMA_0_DEVICE_ID XPAR_AXI_DMA_FIR_RELOAD_DEVICE_ID
-#define XPAR_AXIDMA_0_BASEADDR 0x40410000
+/* Canonical definitions for peripheral AXI_DMA_0 */
+#define XPAR_AXIDMA_0_DEVICE_ID XPAR_AXI_DMA_0_DEVICE_ID
+#define XPAR_AXIDMA_0_BASEADDR 0x40400000
 #define XPAR_AXIDMA_0_SG_INCLUDE_STSCNTRL_STRM 0
 #define XPAR_AXIDMA_0_INCLUDE_MM2S 1
 #define XPAR_AXIDMA_0_INCLUDE_MM2S_DRE 1
@@ -98,27 +76,7 @@
 #define XPAR_AXIDMA_0_S2MM_BURST_SIZE 16
 #define XPAR_AXIDMA_0_MICRO_DMA 0
 #define XPAR_AXIDMA_0_c_addr_width 32
-#define XPAR_AXIDMA_0_c_sg_length_width 14
-
-/* Canonical definitions for peripheral AXI_DMA_PHONES */
-#define XPAR_AXIDMA_1_DEVICE_ID XPAR_AXI_DMA_PHONES_DEVICE_ID
-#define XPAR_AXIDMA_1_BASEADDR 0x40400000
-#define XPAR_AXIDMA_1_SG_INCLUDE_STSCNTRL_STRM 0
-#define XPAR_AXIDMA_1_INCLUDE_MM2S 1
-#define XPAR_AXIDMA_1_INCLUDE_MM2S_DRE 1
-#define XPAR_AXIDMA_1_M_AXI_MM2S_DATA_WIDTH 32
-#define XPAR_AXIDMA_1_INCLUDE_S2MM 0
-#define XPAR_AXIDMA_1_INCLUDE_S2MM_DRE 0
-#define XPAR_AXIDMA_1_M_AXI_S2MM_DATA_WIDTH 32
-#define XPAR_AXIDMA_1_INCLUDE_SG 0
-#define XPAR_AXIDMA_1_ENABLE_MULTI_CHANNEL 0
-#define XPAR_AXIDMA_1_NUM_MM2S_CHANNELS 1
-#define XPAR_AXIDMA_1_NUM_S2MM_CHANNELS 1
-#define XPAR_AXIDMA_1_MM2S_BURST_SIZE 16
-#define XPAR_AXIDMA_1_S2MM_BURST_SIZE 16
-#define XPAR_AXIDMA_1_MICRO_DMA 0
-#define XPAR_AXIDMA_1_c_addr_width 32
-#define XPAR_AXIDMA_1_c_sg_length_width 23
+#define XPAR_AXIDMA_0_c_sg_length_width 23
 
 
 /******************************************************************/
@@ -213,7 +171,7 @@
 
 /* Definitions for peripheral PS7_DDR_0 */
 #define XPAR_PS7_DDR_0_S_AXI_BASEADDR 0x00100000
-#define XPAR_PS7_DDR_0_S_AXI_HIGHADDR 0x0FFFFFFF
+#define XPAR_PS7_DDR_0_S_AXI_HIGHADDR 0x1FFFFFFF
 
 
 /******************************************************************/
@@ -268,96 +226,158 @@
 /******************************************************************/
 
 
-/* Definitions for peripheral PS7_AFI_0 */
+/* Peripheral Definitions for peripheral PS7_AFI_0 */
 #define XPAR_PS7_AFI_0_S_AXI_BASEADDR 0xF8008000
 #define XPAR_PS7_AFI_0_S_AXI_HIGHADDR 0xF8008FFF
 
 
-/* Definitions for peripheral PS7_AFI_1 */
+/* Peripheral Definitions for peripheral PS7_AFI_1 */
 #define XPAR_PS7_AFI_1_S_AXI_BASEADDR 0xF8009000
 #define XPAR_PS7_AFI_1_S_AXI_HIGHADDR 0xF8009FFF
 
 
-/* Definitions for peripheral PS7_AFI_2 */
+/* Peripheral Definitions for peripheral PS7_AFI_2 */
 #define XPAR_PS7_AFI_2_S_AXI_BASEADDR 0xF800A000
 #define XPAR_PS7_AFI_2_S_AXI_HIGHADDR 0xF800AFFF
 
 
-/* Definitions for peripheral PS7_AFI_3 */
+/* Peripheral Definitions for peripheral PS7_AFI_3 */
 #define XPAR_PS7_AFI_3_S_AXI_BASEADDR 0xF800B000
 #define XPAR_PS7_AFI_3_S_AXI_HIGHADDR 0xF800BFFF
 
 
-/* Definitions for peripheral PS7_DDRC_0 */
+/* Peripheral Definitions for peripheral PS7_DDRC_0 */
 #define XPAR_PS7_DDRC_0_S_AXI_BASEADDR 0xF8006000
 #define XPAR_PS7_DDRC_0_S_AXI_HIGHADDR 0xF8006FFF
 
 
-/* Definitions for peripheral PS7_GLOBALTIMER_0 */
+/* Peripheral Definitions for peripheral PS7_GLOBALTIMER_0 */
 #define XPAR_PS7_GLOBALTIMER_0_S_AXI_BASEADDR 0xF8F00200
 #define XPAR_PS7_GLOBALTIMER_0_S_AXI_HIGHADDR 0xF8F002FF
 
 
-/* Definitions for peripheral PS7_GPV_0 */
+/* Peripheral Definitions for peripheral PS7_GPV_0 */
 #define XPAR_PS7_GPV_0_S_AXI_BASEADDR 0xF8900000
 #define XPAR_PS7_GPV_0_S_AXI_HIGHADDR 0xF89FFFFF
 
 
-/* Definitions for peripheral PS7_INTC_DIST_0 */
+/* Peripheral Definitions for peripheral PS7_INTC_DIST_0 */
 #define XPAR_PS7_INTC_DIST_0_S_AXI_BASEADDR 0xF8F01000
 #define XPAR_PS7_INTC_DIST_0_S_AXI_HIGHADDR 0xF8F01FFF
 
 
-/* Definitions for peripheral PS7_IOP_BUS_CONFIG_0 */
+/* Peripheral Definitions for peripheral PS7_IOP_BUS_CONFIG_0 */
 #define XPAR_PS7_IOP_BUS_CONFIG_0_S_AXI_BASEADDR 0xE0200000
 #define XPAR_PS7_IOP_BUS_CONFIG_0_S_AXI_HIGHADDR 0xE0200FFF
 
 
-/* Definitions for peripheral PS7_L2CACHEC_0 */
+/* Peripheral Definitions for peripheral PS7_L2CACHEC_0 */
 #define XPAR_PS7_L2CACHEC_0_S_AXI_BASEADDR 0xF8F02000
 #define XPAR_PS7_L2CACHEC_0_S_AXI_HIGHADDR 0xF8F02FFF
 
 
-/* Definitions for peripheral PS7_OCMC_0 */
+/* Peripheral Definitions for peripheral PS7_OCMC_0 */
 #define XPAR_PS7_OCMC_0_S_AXI_BASEADDR 0xF800C000
 #define XPAR_PS7_OCMC_0_S_AXI_HIGHADDR 0xF800CFFF
 
 
-/* Definitions for peripheral PS7_PL310_0 */
+/* Peripheral Definitions for peripheral PS7_PL310_0 */
 #define XPAR_PS7_PL310_0_S_AXI_BASEADDR 0xF8F02000
 #define XPAR_PS7_PL310_0_S_AXI_HIGHADDR 0xF8F02FFF
 
 
-/* Definitions for peripheral PS7_PMU_0 */
+/* Peripheral Definitions for peripheral PS7_PMU_0 */
 #define XPAR_PS7_PMU_0_S_AXI_BASEADDR 0xF8891000
 #define XPAR_PS7_PMU_0_S_AXI_HIGHADDR 0xF8891FFF
 #define XPAR_PS7_PMU_0_PMU1_S_AXI_BASEADDR 0xF8893000
 #define XPAR_PS7_PMU_0_PMU1_S_AXI_HIGHADDR 0xF8893FFF
 
 
-/* Definitions for peripheral PS7_RAM_0 */
+/* Peripheral Definitions for peripheral PS7_QSPI_LINEAR_0 */
+#define XPAR_PS7_QSPI_LINEAR_0_S_AXI_BASEADDR 0xFC000000
+#define XPAR_PS7_QSPI_LINEAR_0_S_AXI_HIGHADDR 0xFDFFFFFF
+
+
+/* Peripheral Definitions for peripheral PS7_RAM_0 */
 #define XPAR_PS7_RAM_0_S_AXI_BASEADDR 0x00000000
 #define XPAR_PS7_RAM_0_S_AXI_HIGHADDR 0x0003FFFF
 
 
-/* Definitions for peripheral PS7_RAM_1 */
+/* Peripheral Definitions for peripheral PS7_RAM_1 */
 #define XPAR_PS7_RAM_1_S_AXI_BASEADDR 0xFFFC0000
 #define XPAR_PS7_RAM_1_S_AXI_HIGHADDR 0xFFFFFFFF
 
 
-/* Definitions for peripheral PS7_SCUC_0 */
+/* Peripheral Definitions for peripheral PS7_SCUC_0 */
 #define XPAR_PS7_SCUC_0_S_AXI_BASEADDR 0xF8F00000
 #define XPAR_PS7_SCUC_0_S_AXI_HIGHADDR 0xF8F000FC
 
 
-/* Definitions for peripheral PS7_SLCR_0 */
+/* Peripheral Definitions for peripheral PS7_SLCR_0 */
 #define XPAR_PS7_SLCR_0_S_AXI_BASEADDR 0xF8000000
 #define XPAR_PS7_SLCR_0_S_AXI_HIGHADDR 0xF8000FFF
 
 
-/* Definitions for peripheral TRX_CONTROL2_0 */
-#define XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR 0x43C20000
-#define XPAR_TRX_CONTROL2_0_S00_AXI_HIGHADDR 0x43C2FFFF
+/******************************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/******************************************************************/
+
+/* Definitions for driver GPIO */
+#define XPAR_XGPIO_NUM_INSTANCES 1
+
+/* Definitions for peripheral AXI_GPIO_0 */
+#define XPAR_AXI_GPIO_0_BASEADDR 0x41200000
+#define XPAR_AXI_GPIO_0_HIGHADDR 0x4120FFFF
+#define XPAR_AXI_GPIO_0_DEVICE_ID 0
+#define XPAR_AXI_GPIO_0_INTERRUPT_PRESENT 0
+#define XPAR_AXI_GPIO_0_IS_DUAL 1
+
+
+/******************************************************************/
+
+/* Canonical definitions for peripheral AXI_GPIO_0 */
+#define XPAR_GPIO_0_BASEADDR 0x41200000
+#define XPAR_GPIO_0_HIGHADDR 0x4120FFFF
+#define XPAR_GPIO_0_DEVICE_ID XPAR_AXI_GPIO_0_DEVICE_ID
+#define XPAR_GPIO_0_INTERRUPT_PRESENT 0
+#define XPAR_GPIO_0_IS_DUAL 1
 
 
 /******************************************************************/
@@ -381,40 +401,18 @@
 
 /******************************************************************/
 
-/* Definitions for driver IICPS */
-#define XPAR_XIICPS_NUM_INSTANCES 1
-
-/* Definitions for peripheral PS7_I2C_0 */
-#define XPAR_PS7_I2C_0_DEVICE_ID 0
-#define XPAR_PS7_I2C_0_BASEADDR 0xE0004000
-#define XPAR_PS7_I2C_0_HIGHADDR 0xE0004FFF
-#define XPAR_PS7_I2C_0_I2C_CLK_FREQ_HZ 111111115
-
-
-/******************************************************************/
-
-/* Canonical definitions for peripheral PS7_I2C_0 */
-#define XPAR_XIICPS_0_DEVICE_ID XPAR_PS7_I2C_0_DEVICE_ID
-#define XPAR_XIICPS_0_BASEADDR 0xE0004000
-#define XPAR_XIICPS_0_HIGHADDR 0xE0004FFF
-#define XPAR_XIICPS_0_I2C_CLK_FREQ_HZ 111111115
-
-
-/******************************************************************/
-
-/* Definition for input Clock */
 /* Definitions for driver LLFIFO */
 #define XPAR_XLLFIFO_NUM_INSTANCES 1U
 
-/* Definitions for peripheral AXI_FIFO_IQ_ADC */
-#define XPAR_AXI_FIFO_IQ_ADC_DEVICE_ID 0U
-#define XPAR_AXI_FIFO_IQ_ADC_BASEADDR 0x43C10000U
-#define XPAR_AXI_FIFO_IQ_ADC_HIGHADDR 0x43C1FFFFU
-#define XPAR_AXI_FIFO_IQ_ADC_AXI4_BASEADDR 0U
-#define XPAR_AXI_FIFO_IQ_ADC_AXI4_HIGHADDR 0U
-#define XPAR_AXI_FIFO_IQ_ADC_DATA_INTERFACE_TYPE 0U
+/* Definitions for peripheral AXI_FIFO_MM_S_0 */
+#define XPAR_AXI_FIFO_MM_S_0_DEVICE_ID 0U
+#define XPAR_AXI_FIFO_MM_S_0_BASEADDR 0x43C10000U
+#define XPAR_AXI_FIFO_MM_S_0_HIGHADDR 0x43C1FFFFU
+#define XPAR_AXI_FIFO_MM_S_0_AXI4_BASEADDR 0U
+#define XPAR_AXI_FIFO_MM_S_0_AXI4_HIGHADDR 0U
+#define XPAR_AXI_FIFO_MM_S_0_DATA_INTERFACE_TYPE 0U
 
-/* Canonical definitions for peripheral AXI_FIFO_IQ_ADC */
+/* Canonical definitions for peripheral AXI_FIFO_MM_S_0 */
 #define XPAR_AXI_FIFO_0_DEVICE_ID 0U
 #define XPAR_AXI_FIFO_0_BASEADDR 0x43C10000U
 #define XPAR_AXI_FIFO_0_HIGHADDR 0x43C1FFFFU
@@ -426,14 +424,39 @@
 
 /******************************************************************/
 
+/* Definitions for driver QSPIPS */
+#define XPAR_XQSPIPS_NUM_INSTANCES 1
+
+/* Definitions for peripheral PS7_QSPI_0 */
+#define XPAR_PS7_QSPI_0_DEVICE_ID 0
+#define XPAR_PS7_QSPI_0_BASEADDR 0xE000D000
+#define XPAR_PS7_QSPI_0_HIGHADDR 0xE000DFFF
+#define XPAR_PS7_QSPI_0_QSPI_CLK_FREQ_HZ 200000000
+#define XPAR_PS7_QSPI_0_QSPI_MODE 1
+#define XPAR_PS7_QSPI_0_QSPI_BUS_WIDTH 2
+
+
+/******************************************************************/
+
+/* Canonical definitions for peripheral PS7_QSPI_0 */
+#define XPAR_XQSPIPS_0_DEVICE_ID XPAR_PS7_QSPI_0_DEVICE_ID
+#define XPAR_XQSPIPS_0_BASEADDR 0xE000D000
+#define XPAR_XQSPIPS_0_HIGHADDR 0xE000DFFF
+#define XPAR_XQSPIPS_0_QSPI_CLK_FREQ_HZ 200000000
+#define XPAR_XQSPIPS_0_QSPI_MODE 1
+#define XPAR_XQSPIPS_0_QSPI_BUS_WIDTH 2
+
+
+/******************************************************************/
+
 /* Definitions for Fabric interrupts connected to ps7_scugic_0 */
-#define XPAR_FABRIC_AXI_FIFO_IQ_ADC_INTERRUPT_INTR 61U
+#define XPAR_FABRIC_AXI_FIFO_MM_S_0_INTERRUPT_INTR 61U
 #define XPAR_FABRIC_V_TC_0_IRQ_INTR 62U
 
 /******************************************************************/
 
 /* Canonical definitions for Fabric interrupts connected to ps7_scugic_0 */
-#define XPAR_FABRIC_LLFIFO_0_VEC_ID XPAR_FABRIC_AXI_FIFO_IQ_ADC_INTERRUPT_INTR
+#define XPAR_FABRIC_LLFIFO_0_VEC_ID XPAR_FABRIC_AXI_FIFO_MM_S_0_INTERRUPT_INTR
 #define XPAR_FABRIC_VTC_0_VEC_ID XPAR_FABRIC_V_TC_0_IRQ_INTR
 
 /******************************************************************/
@@ -521,6 +544,25 @@
 /******************************************************************/
 
 /* Definition for input Clock */
+/* Definitions for driver USBPS */
+#define XPAR_XUSBPS_NUM_INSTANCES 1
+
+/* Definitions for peripheral PS7_USB_0 */
+#define XPAR_PS7_USB_0_DEVICE_ID 0
+#define XPAR_PS7_USB_0_BASEADDR 0xE0002000
+#define XPAR_PS7_USB_0_HIGHADDR 0xE0002FFF
+
+
+/******************************************************************/
+
+/* Canonical definitions for peripheral PS7_USB_0 */
+#define XPAR_XUSBPS_0_DEVICE_ID XPAR_PS7_USB_0_DEVICE_ID
+#define XPAR_XUSBPS_0_BASEADDR 0xE0002000
+#define XPAR_XUSBPS_0_HIGHADDR 0xE0002FFF
+
+
+/******************************************************************/
+
 /* Definitions for driver VTC */
 #define XPAR_XVTC_NUM_INSTANCES 1
 

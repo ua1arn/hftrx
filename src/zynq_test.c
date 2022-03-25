@@ -21,23 +21,7 @@ int XLlFifo_iRead_Aligned(XLlFifo *InstancePtr, void *BufPtr, unsigned WordCount
 
 void xc7z_rxtx_state(uint8_t tx)
 {
-	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 0, (tx != 0));
-}
 
-void xc7z_dds_ftw(const uint_least64_t * val)
-{
-	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 4, * val);
-}
-
-void xc7z_dds_rts(const uint_least64_t * val)
-{
-	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 8, * val);
-}
-
-void xc7z_rx_iq_shift(uint32_t val) // 72
-{
-	val = val > 72 ? 72 : val;
-	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 12, val);
 }
 
 // Сейчас эта память будет записываться по DMA куда-то
@@ -65,7 +49,7 @@ void xc7z_dma_transmit(UINTPTR buffer, size_t buffer_len)
 
 void xc7z_if_fifo_init(void)
 {
-	XLlFifo_Config * pConfig_rx = XLlFfio_LookupConfig(XPAR_AXI_FIFO_IQ_ADC_DEVICE_ID);
+	XLlFifo_Config * pConfig_rx = XLlFfio_LookupConfig(XPAR_AXI_FIFO_0_DEVICE_ID);
 	int xStatus = XLlFifo_CfgInitialize(& adc_iq_fifo, pConfig_rx, pConfig_rx->BaseAddress);
 	if(XST_SUCCESS != xStatus) {
 		xil_printf("adc_iq_fifo CfgInitialize fail %d \n", xStatus);
@@ -83,14 +67,12 @@ void xc7z_if_fifo_init(void)
 
 	XLlFifo_IntDisable(& adc_iq_fifo, XLLF_INT_ALL_MASK);
 	XLlFifo_IntEnable(& adc_iq_fifo, XLLF_INT_RFPF_MASK);
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_IQ_ADC_INTERRUPT_INTR, xc7z_if_fifo_inthandler);
-
-	xc7z_rx_iq_shift(66);
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_MM_S_0_INTERRUPT_INTR, xc7z_if_fifo_inthandler);
 }
 
 void xc7z_dma_init_af_tx(void)
 {
-	XAxiDma_Config * txConfig = XAxiDma_LookupConfig(XPAR_AXI_DMA_PHONES_DEVICE_ID);
+	XAxiDma_Config * txConfig = XAxiDma_LookupConfig(XPAR_AXI_DMA_0_DEVICE_ID);
 	int Status = XAxiDma_CfgInitialize(& xc7z_axidma_phones, txConfig);
 
 	if (Status != XST_SUCCESS) {
