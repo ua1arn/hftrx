@@ -19,6 +19,10 @@
 
 #if defined (WITHUSBHW_EHCI)
 
+#if CPUSTYLE_XC7Z
+static const uintptr_t xusbps_mode = 0xE00021A8;
+#endif /* CPUSTYLE_XC7Z */
+
 #define WITHEHCIHWSOFTSPOLL 1	/* не использовать аппаратные прерывания, HID_MOUSE написана не-thread safe */
 
 /* USB Host Core handle declaration. */
@@ -754,6 +758,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// USBH_EHCI_HCCPARAMS == EHCIx->HCCPARAMS
 	// OHCI BASE = USB1HSFSP2_BASE	(MPU_AHB6_PERIPH_BASE + 0xC000)
 	// EHCI BASE = USB1HSFSP1_BASE	(MPU_AHB6_PERIPH_BASE + 0xD000)
+	TP();
 
 	// Calculate Operational Register Space base address
 	const uintptr_t opregspacebase = (uintptr_t) &EHCIx->HCCAPBASE
@@ -765,11 +770,13 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
 	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
+	TP();
 
 	ASSERT((virt_to_phys(& hehci->periodiclist) & 0xFFF) == 0);
 	InitializeListHead(& hehci->hcListAsync);// Host channels, ожидающие обмена в ASYNCLISTADDR
 	InitializeListHead(& hehci->hcListPeriodic);	// Host channels, ожидающие обмена в PERIODICLISTBASE
 	SPINLOCK_INITIALIZE(& hehci->asynclock);
+	TP();
 
 	// https://habr.com/ru/post/426421/
 	// Read the Command register
@@ -786,16 +793,25 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	(void) EHCIx->USBCMD;
 	// Now wait for the controller to clear the reset bit.
 	// Ждем пока контроллер сбросит бит Reset
+	TP();
 	while ((EHCIx->USBCMD & CMD_HCRESET) != 0)
 		;
+	TP();
+#if CPUSTYLE_XC7Z
+	PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
+	(* (volatile uint32_t *) xusbps_mode) |= 0x03;
+	PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
+#endif /* CPUSTYLE_XC7Z */
 	// Again, a small delay here would be good to allow the
 	// reset to actually become complete.
 	// Опять задержка
 	(void) EHCIx->USBCMD;
 	// wait for the halted bit to become set
 	// Ждем пока бит Halted не будет выставлен
+	TP();
 	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
 		;
+	TP();
 	// Выделяем и выравниваем фрейм лист, пул для очередей и пул для дескрипторов
 	// Замечу, что все мои дескрипторы и элементы очереди выравнены на границу 128 байт
 
@@ -825,6 +841,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 				EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
 	}
 
+	TP();
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->itdsarray, sizeof hehci->itdsarray);
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->qtds, sizeof hehci->qtds);
@@ -835,12 +852,14 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	 * Software must ensure that queue heads reachable by the host controller always have valid horizontal link pointers. See Section 4.8.2
 	 *
 	 */
+	TP();
 
 	// Periodic frame list
 	for (i = 0; i < ARRAY_SIZE(hehci->periodiclist); ++i) {
 		hehci->periodiclist[i].link = EHCI_LINK_TERMINATE;// 0 - valid, 1 - invalid
 	}
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->periodiclist, sizeof hehci->periodiclist);
+	TP();
 
 	// Setup frame list
 	// Устанавливаем ссылку на фреймлист
@@ -880,6 +899,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
+	TP();
 
 #if defined (USB1HSFSP2_BASE)
 	// OHCI init
@@ -919,6 +939,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 #endif /* defined (USB1HSFSP2_BASE) */
 
+	TP();
 	return HAL_OK;
 }
 
@@ -1090,10 +1111,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
-			PRINTF("HAL_EHCI_MspInit: EHCI0, SCLR->APER_CLK_CTRL=%08lX (%p)\n", SCLR->APER_CLK_CTRL, & SCLR->APER_CLK_CTRL);
-			// XUSBPS_MODE
-			(* (volatile uint32_t *) xusbps_mode) |= 0x03;
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
 
 			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
 				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
@@ -1106,6 +1123,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 
 			// XUSBPS_MODE
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
 			(* (volatile uint32_t *) xusbps_mode) |= 0x03;
 			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
 
@@ -1121,15 +1139,11 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
-			PRINTF("HAL_EHCI_MspInit: EHCI1, SCLR->APER_CLK_CTRL=%08lX (%p)\n", SCLR->APER_CLK_CTRL, & SCLR->APER_CLK_CTRL);
-			// XUSBPS_MODE
-			(* (volatile uint32_t *) xusbps_mode) |= 0x03;
-			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
 
-			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
+			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
 				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
 				0;
-			(void) SCLR->USB1_CLK_CTRL;
+			(void) SCLR->USB0_CLK_CTRL;
 
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
@@ -1137,6 +1151,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			(void) SCLR->USB_RST_CTRL;
 
 			// XUSBPS_MODE
+			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
 			(* (volatile uint32_t *) xusbps_mode) |= 0x03;
 			PRINTF("HAL_EHCI_MspInit: XUSBPS_MODE=%08lX\n", (* (volatile uint32_t *) xusbps_mode));
 
@@ -1149,15 +1164,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			ASSERT(0);
 		}
 
-        TP();
-        PRINTF("HAL_EHCI_MspInit: CAPLENGTH_HCIVERSION=%08lX\n", * (volatile uint32_t *) 0xE0002100);
-        PRINTF("HAL_EHCI_MspInit: HCSPARAMS=%08lX\n", * (volatile uint32_t *) 0xE0002104);
-        PRINTF("HAL_EHCI_MspInit: HCCPARAMS=%08lX\n", * (volatile uint32_t *) 0xE0002108);
-        TP();
-
-        PRINTF("HAL_EHCI_MspInit: XUSBPS_ID=%08lX\n", USB0->ID);
-        PRINTF("HAL_EHCI_MspInit: XUSBPS_HWGENERAL=%08lX\n", USB0->HWGENERAL);
-        PRINTF("HAL_EHCI_MspInit: XUSBPS_HWHOST=%08lX\n", USB0->HWHOST);
 #else
 
 	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
