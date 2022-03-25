@@ -1,6 +1,6 @@
 all: {         
 
-[bootloader] tc1_xc7z010_boot.elf
+[bootloader] tc1_xc7z020_boot.elf
 
 }
 

@@ -249,7 +249,7 @@ bitstream_ant_20.h: bitstream_ant_20.bit
 bitstream_myir7020.h: bitstream_myir7020.bit
 	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h
 	
-bootloader: bitstreams BOOT2
+bootloader: BOOT2
   
 app_run: $(PROJECT)_app.elf bitstream_ant_20.bit app_run_ant_20.tcl
 	xsct.bat app_run_4205.tcl 
