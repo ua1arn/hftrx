@@ -598,19 +598,16 @@
 
 #if WITHELKEY
 	// Electronic key inputs
-	#define ELKEY_BIT_LEFT				(1uL << 14)		// PD14
-	#define ELKEY_BIT_RIGHT				(1uL << 15)		// PD15
 
-	#define ELKEY_TARGET_PIN			(GPIOD->IDR)
-
-	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
-	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+	#define HARDWARE_GET_ELKEY_LEFT() 	(gpio_readpin(TARGET_ELKEY_LEFT_EMIO) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	(gpio_readpin(TARGET_ELKEY_RIGHT_EMIO) == 0)
 
 
 	#define ELKEY_INITIALIZE() \
 		do { \
-			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+			gpio_input(TARGET_ELKEY_LEFT_EMIO, pinmode_emio); \
+			gpio_input(TARGET_ELKEY_RIGHT_EMIO, pinmode_emio); \
 		} while (0)
 
 #endif /* WITHELKEY */
