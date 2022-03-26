@@ -454,11 +454,11 @@ typedef struct qspi_regs {
 	__IO uint32_t SR;			/**< 0x00000004 32 mixed 0x00000004 QSPI interrupt status register */
 	__IO uint32_t IER;			/**< 0x00000008 32 mixed 0x00000000 Interrupt Enable register. */
 	__IO uint32_t IDR;			/**< 0x0000000C 32 mixed 0x00000000 Interrupt disable register. */
-	__IO uint32_t IMR;			/**< 0x00000010 32 ro 0x00000000 Interrupt mask register */
+	__I  uint32_t IMR;			/**< 0x00000010 32 ro 0x00000000 Interrupt mask register */
 	__IO uint32_t ER;			/**< 0x00000014 32 mixed 0x00000000 SPI_Enable Register */
 	__IO uint32_t DR;			/**< 0x00000018 32 rw 0x00000000 Delay Register */
 	__IO uint32_t TXD_00;		/**< 0x0000001C 32 wo 0x00000000 Transmit Data Register. Keyhole addresses for the Transmit data FIFO. See also TXD1-3. */
-	__IO uint32_t RXD;			/**< 0x00000020 32 ro 0x00000000 Receive Data Register */
+	__I  uint32_t RXD;			/**< 0x00000020 32 ro 0x00000000 Receive Data Register */
 	__IO uint32_t SICR;			/**< 0x00000024 32 mixed 0x000000FF Slave Idle Count Register */
 	__IO uint32_t TXWR;			/**< 0x00000028 32 rw 0x00000001 TX_FIFO Threshold Register */
 	__IO uint32_t RX_thres_REG;	/**< 0x0000002C 32 rw 0x00000001 RX FIFO Threshold Register */

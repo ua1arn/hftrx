@@ -1251,61 +1251,6 @@ struct qspi_ctxt
 
 static struct qspi_ctxt qspi0;
 
-void spidf_initialize(void)
-{
-	PRINTF("%s:\n", __func__);
-	struct qspi_ctxt *qspi = & qspi0;
-
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
-	(void) SCLR->APER_CLK_CTRL;
-
-	SCLR->LQSPI_RST_CTRL |= 0x01;
-	(void) SCLR->LQSPI_RST_CTRL;
-	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
-	(void) SCLR->LQSPI_RST_CTRL;
-
-	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
-
-	ASSERT(XQSPIPS->MOD_ID == 0x01090101);
-	//PRINTF("spidf_initialize: MOD_ID=%08lX (expected 0x01090101)\n", XQSPIPS->MOD_ID);
-
-	XQSPIPS->ER = 0;
-	XQSPIPS->LQSPI_CR = 0;
-
-	TP();
-	// flush rx fifo
-	while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY)
-		readl(QSPI_RXDATA);
-
-	TP();
-	qspi->cfg = (XQSPIPS->CR & CFG_NO_MODIFY_MASK) |
-	            CFG_IFMODE |
-	            CFG_HOLDB_DR |
-	            CFG_FIFO_WIDTH_32 |
-	            CFG_CPHA | CFG_CPOL |
-	            CFG_MASTER_MODE |
-	            CFG_BAUD_DIV_2 |
-	            CFG_MANUAL_START_EN | CFG_MANUAL_CS_EN | CFG_MANUAL_CS;
-
-	//XQSPIPS->CR = qspi->cfg;
-	XQSPIPS->CR = qspi->cfg;
-
-	//qspi->khz = 100000;
-	qspi->linear_mode = 0 /* fasle */;
-
-	//writel(1, QSPI_ENABLE);
-	XQSPIPS->ER = 1;
-
-	// clear sticky irqs
-	//writel(TX_UNDERFLOW | RX_OVERFLOW, QSPI_IRQ_STATUS);
-	XQSPIPS->SR = TX_UNDERFLOW | RX_OVERFLOW;
-
-	TP();
-	SPIDF_HARDINITIALIZE();
-	TP();
-}
-
 ////
 
 
@@ -1408,9 +1353,10 @@ static void qspi_flush_rx(void)
 	PRINTF("%s:\n", __func__);
 	TP();
 	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
-		;
-	TP();
-	readl(QSPI_RXDATA);
+	{
+		TP();
+		readl(QSPI_RXDATA);
+	}
 	TP();
 }
 
@@ -1589,6 +1535,62 @@ static uint32_t qspi_rd_status(struct qspi_ctxt *qspi)
 }
 
 ////
+
+void spidf_initialize(void)
+{
+	PRINTF("%s:\n", __func__);
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
+	(void) SCLR->APER_CLK_CTRL;
+
+	SCLR->LQSPI_RST_CTRL |= 0x01;
+	(void) SCLR->LQSPI_RST_CTRL;
+	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
+	(void) SCLR->LQSPI_RST_CTRL;
+
+	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
+
+	ASSERT(XQSPIPS->MOD_ID == 0x01090101);
+	//PRINTF("spidf_initialize: MOD_ID=%08lX (expected 0x01090101)\n", XQSPIPS->MOD_ID);
+
+	XQSPIPS->ER = 0;
+	XQSPIPS->LQSPI_CR = 0;
+
+	TP();
+	// flush rx fifo
+	while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY)
+		readl(QSPI_RXDATA);
+
+	TP();
+	XQSPIPS->CR = (XQSPIPS->CR & CFG_NO_MODIFY_MASK) |
+	            CFG_IFMODE |	// 1: Flash memory interface mode
+				CFG_LITTLE_ENDIAN | // zero value
+	            CFG_HOLDB_DR |	// D2 & D3 in 1 mit mode behaviour
+	            CFG_FIFO_WIDTH_32 |	// Must be set to 2'b11 (32bits).
+	            CFG_CPHA | 	// 1: the QSPI clock is inactive outside the word
+				CFG_CPOL |	// 1: The QSPI clock is quiescent high
+	            CFG_MASTER_MODE |	// 1: The QSPI is in master mode
+				CFG_BAUD_DIV_16 | // CFG_BAUD_DIV_2 |
+	            CFG_MANUAL_START_EN | // 1: enables manual start
+				CFG_MANUAL_CS_EN |	// 1: manual CS mode
+				CFG_MANUAL_CS |	// Peripheral chip select line, directly drive n_ss_out if Manual_C is set
+				0;
+
+	//qspi->khz = 100000;
+	//qspi->linear_mode = 0 /* fasle */;
+
+	//writel(1, QSPI_ENABLE);
+	XQSPIPS->ER = 1;
+
+	// clear sticky irqs
+	//writel(TX_UNDERFLOW | RX_OVERFLOW, QSPI_IRQ_STATUS);
+	XQSPIPS->SR = TX_UNDERFLOW | RX_OVERFLOW;
+
+	TP();
+	SPIDF_HARDINITIALIZE();
+	TP();
+}
 void spidf_hangoff(void)
 {
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
@@ -1609,7 +1611,8 @@ static void spidf_unselect(void)
 //	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_SSLF) != 0)
 //		;
 	// Disconnect I/O pins
-	qspi_cs(& qspi0, 1);
+	//qspi_cs(& qspi0, 1);
+	XQSPIPS->CR |= CFG_MANUAL_CS;	 // De-assert
 	SPIDF_HANGOFF();
 }
 
@@ -1623,10 +1626,44 @@ static void spidf_iostart(
 	uint_fast32_t address
 	)
 {
+	PRINTF("spidf_iostart: dir=%d, cmd=%02X, readnb=%d, ndummy=%d, size=%lu, ha=%d, addr=%08lX\n", direction, cmd, readnb, ndummy, size, hasaddress, address);
+	unsigned cmdlen = 1 + (hasaddress ? 3 : 0) + ndummy;
+	PRINTF("spidf_iostart: cmdlen=%u\n", cmdlen);
+	if (hasaddress)
+	{
+		// Read data: cmd A23_A16 A15_A8 A7_A0
+		const uint_fast32_t v =
+				(uint_fast32_t) ((address >> 0) & 0xFF) << 24 |
+				(uint_fast32_t) ((address >> 8) & 0xFF) << 16 |
+				(uint_fast32_t) ((address >> 16) & 0xFF) << 8 |
+				(uint_fast32_t) (cmd & 0xFF) << 0 |
+				0;
+		XQSPIPS->TXD_00 = v;	// Data to TX FIFO, for 4-byte instruction for normal read/write data transfer.
+	}
+	else
+	{
+		XQSPIPS->TXD_01 = cmd; // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+	}
+
+	XQSPIPS->CR &= ~ CFG_MANUAL_CS;
+	XQSPIPS->CR |= CFG_MANUAL_START;
+
+//	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+//		;
 }
 
 static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
+	PRINTF("spidf_read: size=%lu\n", size);
+	while (size --)
+	{
+		while ((XQSPIPS->SR & 0x10) == 0)
+			;
+		unsigned v = XQSPIPS->RXD;
+		PRINTF("v = %02x\n", v);
+		* buff = v;
+	}
+	PRINTF("spidf_read: done\n");
 }
 
 

@@ -1154,8 +1154,9 @@
 		#define	TARGET_QSPI_IOTYPE 	GPIO_IOTYPE_500
 
 		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
+		// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 		#define SPIDF_HANGOFF() do { \
-			const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, TARGET_QSPI_IOTYPE, 1, 0, 0, 0, 0, 1); \
+			const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, TARGET_QSPI_IOTYPE, 1, 0, 0, 0, 0, 1); \
 			gpio_input2(SPDIF_NCS_MIO, pinmode_input);	/*  */ \
 			gpio_input2(SPDIF_SCLK_MIO, pinmode_input);	/*  */ \
 			gpio_input2(SPDIF_MOSI_MIO, pinmode_input);	/*  */ \
