@@ -517,60 +517,45 @@
 		} while (0)
 	// ---
 
-#define TARGET_ELKEY_LEFT_EMIO		62	// G17
-#define TARGET_ELKEY_RIGHT_EMIO		63	// G18
-#define TARGET_PTT_EMIO				64	// K19
-#define TARGET_PTT2_EMIO			65	// J19
-#define TARGET_TUNE_REQ_EMIO		66	// G19
-#define TARGET_TX_INH_EMIO			67	// G20
-#define TARGET_ENCODER_A_EMIO		68	// F20
-#define TARGET_ENCODER_B_EMIO		69	// F19
-#define TARGET_ENC2_A_EMIO			70	// H17
-#define TARGET_ENC2_B_EMIO			71	// H16
-#define TARGET_ENC2_BUTTON_EMIO		72	// M15
-#define TARGET_TS_INT_EMIO			73	// V15
-#define TARGET_USER_BOOT_EMIO		74	// U15 pull-up
-#define TARGET_ACTIVITY_LED_EMIO	75	// F16
+#define TARGET_ELKEY_LEFT_EMIO		62	// G17	B32	G17	IO_L16P_T2_35
+#define TARGET_ELKEY_RIGHT_EMIO		63	// G18	B33	G18	IO_L16N_T2_35
+#define TARGET_PTT_EMIO				64	// K19	B22	K19	IO_L10P_T1_AD11P_35
+#define TARGET_PTT2_EMIO			65	// J19	B23	J19	IO_L10N_T1_AD11N_35
+#define TARGET_TUNE_REQ_EMIO		66	// G19	B24	G19	IO_L18P_T2_AD13P_35
+#define TARGET_TX_INH_EMIO			67	// G20	B25	G20	IO_L18N_T2_AD13N_35
+#define TARGET_ENCODER_A_EMIO		68	// F20	B28	F20	IO_L15N_T2_DQS_AD12N_35
+#define TARGET_ENCODER_B_EMIO		69	// F19	B27	F19	IO_L15P_T2_DQS_AD12P_35
+#define TARGET_ENC2_A_EMIO			70	// H17	B30	H17	IO_L13N_T2_MRCC_35
+#define TARGET_ENC2_B_EMIO			71	// H16	B29	H16	IO_L13P_T2_MRCC_35
+#define TARGET_ENC2_BUTTON_EMIO		72	// M15	A5	M15	IO_B35_LN23
+#define TARGET_TS_INT_EMIO			73	// V15	A2	V15	IO_L10P_T1_34
+#define TARGET_USER_BOOT_EMIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
+#define TARGET_ACTIVITY_LED_EMIO	75	// F16	D7	F16	IO_L6P_T0_35	LED anode
 
-//	ELKEY_LEFT	B32	G17	IO_L16P_T2_35
-//	ELKEY_RIGHT	B33	G18	IO_L16N_T2_35
-//	PTT	B22	K19	IO_L10P_T1_AD11P_35
-//	PTT2	B23	J19	IO_L10N_T1_AD11N_35
-//	TUNE_REQ	B24	G19	IO_L18P_T2_AD13P_35
-//	TX_INH	B25	G20	IO_L18N_T2_AD13N_35
-//	ENCODER_A	B28	F20	IO_L15N_T2_DQS_AD12N_35
-//	ENCODER_B	B27	F19	IO_L15P_T2_DQS_AD12P_35
-//	ENC2_A	B30	H17	IO_L13N_T2_MRCC_35
-//	ENC2_B	B29	H16	IO_L13P_T2_MRCC_35
-//	ENC2_BUTTON	A5	M15	IO_B35_LN23
-//	TS_INT	A2	V15	IO_L10P_T1_34
-//	USER_BOOT	A13	U15	IO_B34_LN11	Input, pull-up need
-//	ACTIVITY_LED	D7	F16	IO_L6P_T0_35	LED anode
-//
-//	NMEA_RESET	A10	T15	IO_B34_LN5
-//	PPS_IN	A12	U15	IO_B34_LP11
+#define TARGET_NMEA_RESET_EMIO		117	// T15	A10	T15	IO_B34_LN5
+#define TARGET_PPS_IN_EMIO			117	// U15	A12	U15	IO_B34_LP11
 
-	// +++
-	// PTT input - PD10
-	// PTT2 input - PD9
-	#define PTT_TARGET_PIN				1//(GPIOD->IDR)
-	#define PTT_BIT_PTT					1//(1uL << 10)		// PD10 - PTT
-	#define PTT2_TARGET_PIN				1//(GPIOD->IDR)
-	#define PTT2_BIT_PTT				1//(1uL << 9)		// PD9 - PTT2
+#define TARGET_FPLCD_CDT_EMIO		117	// W15	A3	W15	IO_L10N_T1_34
+#define TARGET_FPLCD_CD_EMIO		117	// M14	A4	M14	IO_L23P_T3_35
+#define TARGET_LCD_BL_ADJ0_EMIO		117	// P14	A7	P14	IO_L6P_T0_34	Open Drain
+#define TARGET_LCD_BL_ADJ1_EMIO		117	// R14	A8	R14	IO_L6N_T0_VREF_34	Open Drain
+#define TARGET_LCD_BL_ENABLE_EMIO	117	// A9	A9	T14	IO_L5P_T0_34
+
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
-	#define PTT_INITIALIZE() \
-		do { \
-			arm_hardware_piod_inputs(PTT_BIT_PTT); \
-			arm_hardware_piod_updown(PTT_BIT_PTT, 0); \
-			arm_hardware_piod_inputs(PTT2_BIT_PTT); \
-			arm_hardware_piod_updown(PTT2_BIT_PTT, 0); \
+	#define HARDWARE_GET_PTT() (gpio_readpin(TARGET_PTT_EMIO) == 0 || gpio_readpin(TARGET_PTT2_EMIO) == 0)
+
+	#define PTT_INITIALIZE() do { \
+			const portholder_t pinmode_dummy = 0; \
+			gpio_input2(TARGET_PTT_EMIO, pinmode_dummy); \
+			gpio_input2(TARGET_PTT2_EMIO, pinmode_dummy); \
 		} while (0)
 	// ---
 
-	#define HARDWARE_GET_TUNE() (0)
-	#define TUNE_INITIALIZE() \
-		do { } while (0)
+	#define HARDWARE_GET_TUNE() (gpio_readpin(TARGET_TUNE_REQ_EMIO) == 0)
+	#define TUNE_INITIALIZE() do { \
+		const portholder_t pinmode_dummy = 0; \
+		gpio_input2(TARGET_TUNE_REQ_EMIO, pinmode_dummy); \
+	} while (0)
 
 #else /* WITHTX */
 
