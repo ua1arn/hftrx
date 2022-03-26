@@ -155,36 +155,16 @@ extern "C" {
 				((uint_fast32_t) !! (tri_enable) << 0) | \
 				0 \
 		)
-
-	//#define GPIO_PIN2BANK(pin) ((pin) / 32)
-	//#define GPIO_PIN2MASK(pin) ((portholder_t) 1 << ((pin) % 32))
-	#define GPIO_PIN2BANK(pin) ((pin) < 32 ? 0 : (pin) < 54 ? 1 : (pin) < 86 ? 2 : 3)
-	#define GPIO_PIN2BITPOS(pin) ((pin) < 32 ? (pin) : (pin) < 54 ? ((pin) - 32) : (pin) < 86 ? ((pin) - 54) : ((pin) - 86))
+	/* EMIO сигналы нумеруются начиная с 54 - ZYNQ_MIO_CNT */
+	#define GPIO_PINGAP(pin) (((pin) < ZYNQ_MIO_CNT) ? (pin) : ((pin) + (64 - ZYNQ_MIO_CNT)))
+	#define GPIO_PIN2BANK(pin) (GPIO_PINGAP(pin) / 32)
+	#define GPIO_PIN2BITPOS(pin) (GPIO_PINGAP(pin) % 32)
 	#define GPIO_PIN2MASK(pin) ((portholder_t) 1 << GPIO_PIN2BITPOS(pin))
 
-	#define GPIO_BANK_DEFINE(pin, Bank, PinNumber)   \
-	do { \
-			if (pin <= 31)                        \
-			{                                    \
-				Bank = 0;                        \
-				PinNumber = pin;                \
-			}                                    \
-			else if (pin >= 32 && pin <= 53)    \
-			{                                    \
-				Bank = 1;                        \
-				PinNumber = pin - 32;            \
-			}                                    \
-			else if (pin >= 54 && pin <= 85)    \
-			{                                    \
-				Bank = 2;                        \
-				PinNumber = pin - 54;            \
-			}                                    \
-			else /*if (pin >= 86 && pin <= 117)  */  \
-			{                                    \
-				Bank = 3;                        \
-				PinNumber = pin - 86;            \
-			}                                    \
-		} while(0)
+	#define GPIO_BANK_DEFINE(pin, Bank, PinNumber) do { \
+		Bank = GPIO_PIN2BANK(pin);    \
+		PinNumber = GPIO_PIN2BITPOS(pin); \
+	} while(0)
 
 	enum
 	{
