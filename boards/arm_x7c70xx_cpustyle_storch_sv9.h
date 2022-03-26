@@ -1136,6 +1136,8 @@
 
 	#if WIHSPIDFSW || WIHSPIDFHW
 
+		// Single SS 4-bit I/O flash interface mode
+
 		// Table 6-9: Quad-SPI Boot MIO Register Settings
 		// QSPI_CS0 	MIO1
 		// QSPI_IO[0:3] MIO2..MIO5
@@ -1147,9 +1149,13 @@
 		#define SPDIF_D3_MIO 	5	// MIO5	QSPI_IO3
 		#define SPDIF_SCLK_MIO 	6	// MIO6	QSPI_SCLK0
 
+		#define TARGET_QSPI_INDEX	0	// Use QSPI0_XXX signals
+
+		#define	TARGET_QSPI_IOTYPE 	GPIO_IOTYPE_500
+
 		/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 		#define SPIDF_HANGOFF() do { \
-			const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 1); \
+			const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, TARGET_QSPI_IOTYPE, 1, 0, 0, 0, 0, 1); \
 			gpio_input2(SPDIF_NCS_MIO, pinmode_input);	/*  */ \
 			gpio_input2(SPDIF_SCLK_MIO, pinmode_input);	/*  */ \
 			gpio_input2(SPDIF_MOSI_MIO, pinmode_input);	/*  */ \
@@ -1159,15 +1165,17 @@
 		} while (0)
 
 		#if WIHSPIDFHW
+			//  MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 			#define SPIDF_HARDINITIALIZE() do { \
-				arm_hardware_piof_altfn50(SPDIF_D2_BIT, AF_QUADSPI_AF9);  	/* PF7 D2 QUADSPI_BK1_IO2 */ \
-				arm_hardware_piof_altfn50(SPDIF_D3_BIT, AF_QUADSPI_AF9);  	/* PF6 D3 QUADSPI_BK1_IO3 */ \
-				/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* PF7 D2 tie-up */ \
-				/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* PF6 D3 tie-up */ \
-				arm_hardware_piof_altfn50(SPDIF_SCLK_BIT, AF_QUADSPI_AF9); /* PF10 SCLK */ \
-				arm_hardware_piof_altfn50(SPDIF_MOSI_BIT, AF_QUADSPI_AF10); /* PF8 MOSI */ \
-				arm_hardware_piof_altfn50(SPDIF_MISO_BIT, AF_QUADSPI_AF10); /* PF9 MISO */ \
-				arm_hardware_piob_altfn50(SPDIF_NCS_BIT, AF_QUADSPI_AF10); /* PB6 CS */ \
+				enum { IOTYPE = TARGET_QSPI_IOTYPE }; \
+				enum { L3_SEL = 0x00, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x01 }; /* QSPI */ \
+				const portholder_t qspi_pinmode = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+				gpio_peripherial(SPDIF_NCS_MIO, qspi_pinmode);	/*  */ \
+				gpio_peripherial(SPDIF_SCLK_MIO, qspi_pinmode);	/*  */ \
+				gpio_peripherial(SPDIF_MOSI_MIO, qspi_pinmode);	/*  */ \
+				gpio_peripherial(SPDIF_MISO_MIO, qspi_pinmode);	/*  */ \
+				gpio_peripherial(SPDIF_D2_MIO, qspi_pinmode);	/*  */ \
+				gpio_peripherial(SPDIF_D3_MIO, qspi_pinmode);	/*  */ \
 			} while (0)
 
 		#else /* WIHSPIDFHW */

@@ -1249,7 +1249,7 @@ struct qspi_ctxt
 	int linear_mode;
 };
 
-struct qspi_ctxt qspi0;
+static struct qspi_ctxt qspi0;
 
 void spidf_initialize(void)
 {
@@ -1295,12 +1295,13 @@ void spidf_initialize(void)
 	// clear sticky irqs
 	writel(TX_UNDERFLOW | RX_OVERFLOW, QSPI_IRQ_STATUS);
 
+	SPIDF_HARDINITIALIZE();
 }
 
 ////
 
 
-int qspi_enable_linear(struct qspi_ctxt *qspi)
+static int qspi_enable_linear(struct qspi_ctxt *qspi)
 {
 	if (qspi->linear_mode)
 		return 0;
@@ -1342,7 +1343,7 @@ int qspi_enable_linear(struct qspi_ctxt *qspi)
 	return 0;
 }
 
-int qspi_disable_linear(struct qspi_ctxt *qspi)
+static int qspi_disable_linear(struct qspi_ctxt *qspi)
 {
 	if (!qspi->linear_mode)
 		return 0;
@@ -1365,7 +1366,7 @@ int qspi_disable_linear(struct qspi_ctxt *qspi)
 	return 0;
 }
 
-void qspi_cs(struct qspi_ctxt *qspi, unsigned int cs)
+static void qspi_cs(struct qspi_ctxt *qspi, unsigned int cs)
 {
 	ASSERT(cs <= 1);
 
@@ -1393,7 +1394,7 @@ static inline void qspi_flush_rx(void)
 
 static const uint32_t TXFIFO[] = { QSPI_TXD1, QSPI_TXD2, QSPI_TXD3, QSPI_TXD0, QSPI_TXD0, QSPI_TXD0 };
 
-void qspi_rd(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *data, uint32_t count)
+static void qspi_rd(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *data, uint32_t count)
 {
 	uint32_t sent = 0;
 	uint32_t rcvd = 0;
@@ -1428,7 +1429,7 @@ void qspi_rd(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *dat
 	qspi_cs(qspi, 1);
 }
 
-void qspi_wr(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *data, uint32_t count)
+static void qspi_wr(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *data, uint32_t count)
 {
 	uint32_t sent = 0;
 	uint32_t rcvd = 0;
@@ -1464,7 +1465,7 @@ void qspi_wr(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *dat
 	qspi_cs(qspi, 1);
 }
 
-void qspi_wr1(struct qspi_ctxt *qspi, uint32_t cmd)
+static void qspi_wr1(struct qspi_ctxt *qspi, uint32_t cmd)
 {
 	ASSERT(qspi);
 
@@ -1478,7 +1479,7 @@ void qspi_wr1(struct qspi_ctxt *qspi, uint32_t cmd)
 	qspi_cs(qspi, 1);
 }
 
-void qspi_wr2(struct qspi_ctxt *qspi, uint32_t cmd)
+static void qspi_wr2(struct qspi_ctxt *qspi, uint32_t cmd)
 {
 	ASSERT(qspi);
 
@@ -1492,7 +1493,7 @@ void qspi_wr2(struct qspi_ctxt *qspi, uint32_t cmd)
 	qspi_cs(qspi, 1);
 }
 
-void qspi_wr3(struct qspi_ctxt *qspi, uint32_t cmd)
+static void qspi_wr3(struct qspi_ctxt *qspi, uint32_t cmd)
 {
 	ASSERT(qspi);
 
@@ -1506,7 +1507,7 @@ void qspi_wr3(struct qspi_ctxt *qspi, uint32_t cmd)
 	qspi_cs(qspi, 1);
 }
 
-uint32_t qspi_rd1(struct qspi_ctxt *qspi, uint32_t cmd)
+static uint32_t qspi_rd1(struct qspi_ctxt *qspi, uint32_t cmd)
 {
 	qspi_cs(qspi, 0);
 	writel(cmd, QSPI_TXD2);
