@@ -248,15 +248,33 @@
 
 #if WITHENCODER
 
-	// Выводы подключения енкодера #1
+	/* Чтение состояния выходов валкодера #1 - в два младших бита */
+	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	#define ENCODER_BITS_GET() (gpio_readpin(TARGET_ENCODER_A_EMIO) * 2 + gpio_readpin(TARGET_ENCODER_B_EMIO))
 
-	// Выводы подключения енкодера #2
-	#define ENCODER2_BITA		55
-	#define ENCODER2_BITB		54
+	/* Чтение состояния выходов валкодера #2 - в два младших бита */
+	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
+	#define ENCODER2_BITS_GET() (gpio_readpin(TARGET_ENC2_A_EMIO) * 2 + gpio_readpin(TARGET_ENC2_B_EMIO))
 
-	#define ENCODER_INITIALIZE() \
-		do { \
-		} while (0)
+	#define ENCODER_INITIALIZE() do { \
+		const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+		gpio_input2(TARGET_ENCODER_A_EMIO, pinmode_emio); \
+		gpio_input2(TARGET_ENCODER_B_EMIO, pinmode_emio); \
+		gpio_input2(TARGET_ENC2_B_EMIO, pinmode_emio); \
+		gpio_input2(TARGET_ENC2_BUTTON_EMIO, pinmode_emio); \
+	} while (0)
+
+	#define ENCODER_INITIALIZE() do { \
+		const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+		gpio_input2(TARGET_ENCODER_A_EMIO, pinmode_emio); \
+		gpio_input2(TARGET_ENCODER_B_EMIO, pinmode_emio); \
+		gpio_input2(TARGET_ENC2_B_EMIO, pinmode_emio); \
+		gpio_input2(TARGET_ENC2_BUTTON_EMIO, pinmode_emio); \
+	} while (0)
+
+//arm_hardware_piog_onchangeinterrupt(ENCODER_BITS, ENCODER_BITS, ENCODER_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);
+//arm_hardware_piog_onchangeinterrupt(0 * ENCODER2_BITS, ENCODER2_BITS, ENCODER2_BITS, ARM_OVERREALTIME_PRIORITY, TARGETCPU_OVRT);
+
 #endif
 
 #if WITHI2S2HW
@@ -730,10 +748,14 @@
 #if WITHKEYBOARD
 
 	//	ENC2_BUTTON	A5	M15	IO_B35_LN23
-	#define TARGET_ENC2BTN_BIT_MIO 		56
+	//	#define TARGET_ENCODER_A_EMIO		68	// F20	B28	F20	IO_L15N_T2_DQS_AD12N_35
+	//	#define TARGET_ENCODER_B_EMIO		69	// F19	B27	F19	IO_L15P_T2_DQS_AD12P_35
+	//	#define TARGET_ENC2_A_EMIO			70	// H17	B30	H17	IO_L13N_T2_MRCC_35
+	//	#define TARGET_ENC2_B_EMIO			71	// H16	B29	H16	IO_L13P_T2_MRCC_35
+	//	#define TARGET_ENC2_BUTTON_EMIO		72	// M15	A5	M15	IO_B35_LN23
 
 #if WITHENCODER2
-	#define TARGET_ENC2BTN_GET (xc7z_readpin(TARGET_ENC2BTN_BIT_MIO) == 0)
+	#define TARGET_ENC2BTN_GET (gpio_readpin(TARGET_ENC2_BUTTON_EMIO) == 0)
 #endif /* WITHENCODER2 */
 
 #if WITHPWBUTTON
@@ -743,7 +765,8 @@
 #endif /* WITHPWBUTTON */
 
 	#define HARDWARE_KBD_INITIALIZE() do { \
-		xc7z_gpio_input(TARGET_ENC2BTN_BIT_MIO); \
+		const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+		gpio_input2(TARGET_ENC2_BUTTON_EMIO, pinmode_emio); \
 	} while (0)
 
 #else /* WITHKEYBOARD */
@@ -1257,7 +1280,7 @@
 	#define	HARDWARE_INITIALIZE() do { \
 			/*I2S2HW_POOLDOWN(); */\
 			BOARD_BLINK_INITIALIZE(); \
-			/*HARDWARE_KBD_INITIALIZE(); */\
+			HARDWARE_KBD_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
 			HARDWARE_BL_INITIALIZE();  \
 			/*HARDWARE_DCDC_INITIALIZE(); */\

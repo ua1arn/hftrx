@@ -867,7 +867,9 @@ hardware_encoder_initialize(void)
 uint_fast8_t 
 hardware_get_encoder_bits(void)
 {
-#if WITHENCODER && defined (ENCODER_BITS) && defined (ENCODER_SHIFT)
+#if WITHENCODER && defined (ENCODER_BITS_GET)
+	return ENCODER_BITS_GET();
+#elif WITHENCODER && defined (ENCODER_BITS) && defined (ENCODER_SHIFT)
 	return (ENCODER_INPUT_PORT & ENCODER_BITS) >> ENCODER_SHIFT;	// Биты валкодера #1
 #elif WITHENCODER && defined (ENCODER_BITS)
 	const portholder_t v = ENCODER_INPUT_PORT;
@@ -883,16 +885,18 @@ hardware_get_encoder_bits(void)
 uint_fast8_t 
 hardware_get_encoder2_bits(void)
 {
-#if WITHENCODER && ENCODER2_BITS && defined (ENCODER2_SHIFT)
+#if WITHENCODER2 && defined (ENCODER2_BITS_GET)
+	return ENCODER2_BITS_GET();
+#elif WITHENCODER2 && ENCODER2_BITS && defined (ENCODER2_SHIFT)
 	return (ENCODER2_INPUT_PORT & ENCODER2_BITS) >> ENCODER2_SHIFT;	// Биты валкодера #2
-#elif WITHENCODER && ENCODER2_BITS
+#elif WITHENCODER2 && ENCODER2_BITS
 	const portholder_t v = ENCODER2_INPUT_PORT;
 	return ((v & ENCODER2_BITA) != 0) * 2 + ((v & ENCODER2_BITB) != 0);	// Биты идут не подряд
-#elif WITHENCODER && CPUSTYLE_XC7Z
-	return ((xc7z_readpin(ENCODER2_BITA) != 0) * 2 + (xc7z_readpin(ENCODER2_BITB) != 0));
-#else /* WITHENCODER */
+#elif WITHENCODER2 && CPUSTYLE_XC7Z
+	return ((gpio_readpin(ENCODER2_BITA) != 0) * 2 + (gpio_readpin(ENCODER2_BITB) != 0));
+#else /* WITHENCODER2 */
 	return 0;
-#endif /* WITHENCODER */
+#endif /* WITHENCODER2 */
 }
 
 // ADC intgerface functions
