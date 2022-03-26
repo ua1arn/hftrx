@@ -602,12 +602,11 @@
 	#define HARDWARE_GET_ELKEY_LEFT() 	(gpio_readpin(TARGET_ELKEY_LEFT_EMIO) == 0)
 	#define HARDWARE_GET_ELKEY_RIGHT() 	(gpio_readpin(TARGET_ELKEY_RIGHT_EMIO) == 0)
 
-
 	#define ELKEY_INITIALIZE() \
 		do { \
 			const portholder_t pinmode_emio = 0; /* dummy parameter */ \
-			gpio_input(TARGET_ELKEY_LEFT_EMIO, pinmode_emio); \
-			gpio_input(TARGET_ELKEY_RIGHT_EMIO, pinmode_emio); \
+			gpio_input2(TARGET_ELKEY_LEFT_EMIO, pinmode_emio); \
+			gpio_input2(TARGET_ELKEY_RIGHT_EMIO, pinmode_emio); \
 		} while (0)
 
 #endif /* WITHELKEY */
