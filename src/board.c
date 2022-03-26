@@ -8657,9 +8657,9 @@ adcvalholder_t board_getadc_fsval(uint_fast8_t adci)
 {
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
-	if (adci >= BOARD_ADCX0BASE || adci >= BOARD_ADCX1BASE)
+	if (adci >= BOARD_ADCX0BASE)
 	{
-		return 4095;	// MCP3208
+		return 4095;	// MCP3208s
 	}
 	return (1uL << HARDWARE_ADCBITS) - 1;
 }
@@ -8693,13 +8693,28 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
-
-	if (adci >= BOARD_ADCMRRBASE)
+	// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
+	// targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+	// targetxad2 - external SPI device (PA BOARD ADC)
+	//BOARD_ADCX0BASE - индексы менше этого относятся ко встроенным АЦП процесосра
+	if (adci < BOARD_ADCX0BASE || adci >= BOARD_ADCMRRBASE)
 	{
 		// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
 		return padcs->adc_data_raw;
 	}
-	if (adci >= BOARD_ADCX1BASE)
+	if (adci >= BOARD_ADCXKBASE && adci < BOARD_ADCXKBASE + 8)
+	{
+		/* on-board ADC MCP3208-BI/SL chip select (keyboard) */
+#if defined (targetadck)
+		uint_fast8_t valid;
+		uint_fast8_t ch = adci - BOARD_ADCXKBASE;
+		//PRINTF("targetadc2: ch = %u\n", ch);
+		return mcp3208_read(targetadck, 0, ch, & valid);
+#else /* defined (targetadc2) */
+		return 0;
+#endif /* defined (targetadc2) */
+	}
+	if (adci >= BOARD_ADCX1BASE && adci < BOARD_ADCX1BASE + 8)
 	{
 		// external SPI device (PA BOARD ADC)
 #if defined (targetxad2)
@@ -8712,7 +8727,7 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		return 0;
 #endif /* defined (targetxad2) */
 	}
-	if (adci >= BOARD_ADCX0BASE)
+	if (adci >= BOARD_ADCX0BASE && adci < BOARD_ADCX0BASE + 8)
 	{
 		/* on-board ADC MCP3208-BI/SL chip select (potentiometers) */
 #if defined (targetadc2)

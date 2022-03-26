@@ -1017,15 +1017,20 @@ uint_fast8_t bootloader_copyapp(uintptr_t apparea);
 uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_deffereddetach(void * arg);
 
+// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
+// targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+// targetxad2 - external SPI device (PA BOARD ADC)
 
-#define BOARD_ADCX0BASE 24	// on-board ADC base index
-#define BOARD_ADCX1BASE 32	// PA board ADC base index
-#define BOARD_ADCMRRBASE 40	// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
+#define BOARD_ADCX0BASE 24	// on-board ADC base index - targetadc2
+#define BOARD_ADCXKBASE 32	// on-board ADC base index (kbd, for example) - targetadck
+#define BOARD_ADCX1BASE 40	// PA board ADC base index = targetxad2
+#define BOARD_ADCMRRBASE 48	// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
 
-#define HARDWARE_ADCINPUTS	56	/* до 16-ти входов АЦП на каждый тип источников */
+#define HARDWARE_ADCINPUTS	72	/* до 16-ти входов АЦП на каждый тип источников */
 
-#define BOARD_ADCXIN(ch) (BOARD_ADCX0BASE + (ch))
+#define BOARD_ADCXIN(ch)  (BOARD_ADCX0BASE + (ch))
 #define BOARD_ADCX1IN(ch) (BOARD_ADCX0BASE + (ch))
+#define BOARD_ADCXKIN(ch) (BOARD_ADCXKBASE + (ch))
 #define BOARD_ADCX2IN(ch) (BOARD_ADCX1BASE + (ch))
 #define BOARD_ADCMRRIN(ch) (BOARD_ADCMRRBASE + (ch))
 
