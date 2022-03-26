@@ -608,6 +608,7 @@
 #define targetfpga1		TARGET_CTL1_CS_EMIO	// FPGA control registers (STUB)
 #define targetnvram		TARGET_NVRAM_CS_EMIO	// nvram FM25L256
 #define targetcodec1	TARGET_CODEC1_CS_EMIO	// nvram NAU88C22
+#define targetrtc1		TARGET_RTC_CS_EMIO	// RTC DS1305
 
 #if WITHSPIHW || WITHSPISW
 
