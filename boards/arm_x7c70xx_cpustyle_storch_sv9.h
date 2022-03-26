@@ -656,7 +656,7 @@
 	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
 	#define SPIIO_INITIALIZE() do { \
-		enum { IOTYPE = SPI_IOTYPE }; \
+		enum { IOTYPE = TARGET_SPI_IOTYPE }; \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
 		gpio_output2(SPI_SCLK_MIO, 1, pinmode_output); \
@@ -668,7 +668,7 @@
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \
-		enum { IOTYPE = SPI_IOTYPE }; \
+		enum { IOTYPE = TARGET_SPI_IOTYPE }; \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
 		gpio_output2(SPI_SCLK_MIO, 1, pinmode_output); \
@@ -680,8 +680,10 @@
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-		enum { IOTYPE = SPI_IOTYPE }; \
-		gpio_input2(SPI_MOSI_MIO, MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1)); \
+		enum { IOTYPE = TARGET_SPI_IOTYPE }; \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
+		gpio_input2(SPI_MOSI_MIO, pinmode_input); \
 	} while (0)
 
 #endif /* WITHSPIHW || WITHSPISW */
@@ -691,10 +693,11 @@
 	// WITHUART2HW
 	#define TARGET_UART1_TX_MIO	48	//	USART_TX	C44	B12	PS_MIO48_501	UART1
 	#define TARGET_UART1_RX_MIO	49	//	USART_RX	C45	C12	PS_MIO49_501
+	#define	TARGET_UART1_IOTYPE	GPIO_IOTYPE_501
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define HARDWARE_UART2_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_501 }; \
+		enum { IOTYPE = TARGET_UART1_IOTYPE }; \
 		enum { L3_SEL = 0x07, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; \
 		const portholder_t pinmode_uart_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t pinmode_uart_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
