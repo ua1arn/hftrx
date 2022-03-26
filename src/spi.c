@@ -1253,6 +1253,7 @@ static struct qspi_ctxt qspi0;
 
 void spidf_initialize(void)
 {
+	PRINTF("%s:\n", __func__);
 	struct qspi_ctxt *qspi = & qspi0;
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
@@ -1269,14 +1270,16 @@ void spidf_initialize(void)
 	ASSERT(XQSPIPS->MOD_ID == 0x01090101);
 	//PRINTF("spidf_initialize: MOD_ID=%08lX (expected 0x01090101)\n", XQSPIPS->MOD_ID);
 
-	writel(0, QSPI_ENABLE);
-	writel(0, QSPI_LINEAR_CONFIG);
+	XQSPIPS->ER = 0;
+	XQSPIPS->LQSPI_CR = 0;
 
+	TP();
 	// flush rx fifo
-	while (readl(QSPI_IRQ_STATUS) & RX_FIFO_NOT_EMPTY)
+	while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY)
 		readl(QSPI_RXDATA);
 
-	qspi->cfg = (readl(QSPI_CONFIG) & CFG_NO_MODIFY_MASK) |
+	TP();
+	qspi->cfg = (XQSPIPS->CR & CFG_NO_MODIFY_MASK) |
 	            CFG_IFMODE |
 	            CFG_HOLDB_DR |
 	            CFG_FIFO_WIDTH_32 |
@@ -1285,17 +1288,22 @@ void spidf_initialize(void)
 	            CFG_BAUD_DIV_2 |
 	            CFG_MANUAL_START_EN | CFG_MANUAL_CS_EN | CFG_MANUAL_CS;
 
-	writel(qspi->cfg, QSPI_CONFIG);
+	//writel(qspi->cfg, QSPI_CONFIG);
+	XQSPIPS->CR = qspi->cfg;
 
 	//qspi->khz = 100000;
 	qspi->linear_mode = 0 /* fasle */;
 
-	writel(1, QSPI_ENABLE);
+	//writel(1, QSPI_ENABLE);
+	XQSPIPS->ER = 1;
 
 	// clear sticky irqs
-	writel(TX_UNDERFLOW | RX_OVERFLOW, QSPI_IRQ_STATUS);
+	//writel(TX_UNDERFLOW | RX_OVERFLOW, QSPI_IRQ_STATUS);
+	XQSPIPS->SR = TX_UNDERFLOW | RX_OVERFLOW;
 
+	TP();
 	SPIDF_HARDINITIALIZE();
+	TP();
 }
 
 ////
@@ -1303,6 +1311,7 @@ void spidf_initialize(void)
 
 static int qspi_enable_linear(struct qspi_ctxt *qspi)
 {
+	PRINTF("%s:\n", __func__);
 	if (qspi->linear_mode)
 		return 0;
 
@@ -1345,7 +1354,8 @@ static int qspi_enable_linear(struct qspi_ctxt *qspi)
 
 static int qspi_disable_linear(struct qspi_ctxt *qspi)
 {
-	if (!qspi->linear_mode)
+	PRINTF("%s:\n", __func__);
+	if (! qspi->linear_mode)
 		return 0;
 
 	/* disable the controller */
@@ -1368,6 +1378,8 @@ static int qspi_disable_linear(struct qspi_ctxt *qspi)
 
 static void qspi_cs(struct qspi_ctxt *qspi, unsigned int cs)
 {
+	PRINTF("%s:\n", __func__);
+	PRINTF("qspi_cs(%d)\n", cs);
 	ASSERT(cs <= 1);
 
 	if (cs == 0)
@@ -1377,25 +1389,35 @@ static void qspi_cs(struct qspi_ctxt *qspi, unsigned int cs)
 	writel(qspi->cfg, QSPI_CONFIG);
 }
 
-static inline void qspi_xmit(struct qspi_ctxt *qspi)
+static void qspi_xmit(struct qspi_ctxt *qspi)
 {
+	PRINTF("%s:\n", __func__);
 	// start txn
 	writel(qspi->cfg | CFG_MANUAL_START, QSPI_CONFIG);
 
+	TP();
 	// wait for command to transmit and TX fifo to be empty
-	while ((readl(QSPI_IRQ_STATUS) & TX_FIFO_NOT_FULL) == 0) ;
+	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+		;
+	TP();
 }
 
-static inline void qspi_flush_rx(void)
+static void qspi_flush_rx(void)
 {
-	while (!(readl(QSPI_IRQ_STATUS) & RX_FIFO_NOT_EMPTY)) ;
+	PRINTF("%s:\n", __func__);
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
 	readl(QSPI_RXDATA);
+	TP();
 }
 
 static const uint32_t TXFIFO[] = { QSPI_TXD1, QSPI_TXD2, QSPI_TXD3, QSPI_TXD0, QSPI_TXD0, QSPI_TXD0 };
 
 static void qspi_rd(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *data, uint32_t count)
 {
+	PRINTF("%s:\n", __func__);
 	uint32_t sent = 0;
 	uint32_t rcvd = 0;
 
@@ -1405,10 +1427,12 @@ static void qspi_rd(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32
 	qspi_cs(qspi, 0);
 
 	writel(cmd, TXFIFO[asize]);
+	TP();
 	qspi_xmit(qspi);
 
 	if (asize == 4) { // dummy byte
 		writel(0, QSPI_TXD1);
+		TP();
 		qspi_xmit(qspi);
 		qspi_flush_rx();
 	}
@@ -1416,14 +1440,16 @@ static void qspi_rd(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32
 	qspi_flush_rx();
 
 	while (rcvd < count) {
-		while (readl(QSPI_IRQ_STATUS) & RX_FIFO_NOT_EMPTY) {
+		while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY) {
 			*data++ = readl(QSPI_RXDATA);
 			rcvd++;
 		}
-		while ((readl(QSPI_IRQ_STATUS) & TX_FIFO_NOT_FULL) && (sent < count)) {
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) && (sent < count)) {
 			writel(0, QSPI_TXD0);
 			sent++;
 		}
+		TP();
 		qspi_xmit(qspi);
 	}
 	qspi_cs(qspi, 1);
@@ -1431,6 +1457,7 @@ static void qspi_rd(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32
 
 static void qspi_wr(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32_t *data, uint32_t count)
 {
+	PRINTF("%s:\n", __func__);
 	uint32_t sent = 0;
 	uint32_t rcvd = 0;
 
@@ -1440,10 +1467,12 @@ static void qspi_wr(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32
 	qspi_cs(qspi, 0);
 
 	writel(cmd, TXFIFO[asize]);
+	TP();
 	qspi_xmit(qspi);
 
 	if (asize == 4) { // dummy byte
 		writel(0, QSPI_TXD1);
+		TP();
 		qspi_xmit(qspi);
 		qspi_flush_rx();
 	}
@@ -1451,14 +1480,17 @@ static void qspi_wr(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32
 	qspi_flush_rx();
 
 	while (rcvd < count) {
-		while (readl(QSPI_IRQ_STATUS) & RX_FIFO_NOT_EMPTY) {
+		TP();
+		while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY) {
 			readl(QSPI_RXDATA); // discard
 			rcvd++;
 		}
-		while ((readl(QSPI_IRQ_STATUS) & TX_FIFO_NOT_FULL) && (sent < count)) {
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) && (sent < count)) {
 			writel(*data++, QSPI_TXD0);
 			sent++;
 		}
+		TP();
 		qspi_xmit(qspi);
 	}
 
@@ -1467,13 +1499,18 @@ static void qspi_wr(struct qspi_ctxt *qspi, uint32_t cmd, uint32_t asize, uint32
 
 static void qspi_wr1(struct qspi_ctxt *qspi, uint32_t cmd)
 {
+	PRINTF("%s:\n", __func__);
 	ASSERT(qspi);
 
 	qspi_cs(qspi, 0);
 	writel(cmd, QSPI_TXD1);
+	TP();
 	qspi_xmit(qspi);
 
-	while (!(readl(QSPI_IRQ_STATUS) & RX_FIFO_NOT_EMPTY)) ;
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
 
 	readl(QSPI_RXDATA);
 	qspi_cs(qspi, 1);
@@ -1481,13 +1518,18 @@ static void qspi_wr1(struct qspi_ctxt *qspi, uint32_t cmd)
 
 static void qspi_wr2(struct qspi_ctxt *qspi, uint32_t cmd)
 {
+	PRINTF("%s:\n", __func__);
 	ASSERT(qspi);
 
 	qspi_cs(qspi, 0);
 	writel(cmd, QSPI_TXD2);
+	TP();
 	qspi_xmit(qspi);
 
-	while (!(readl(QSPI_IRQ_STATUS) & RX_FIFO_NOT_EMPTY)) ;
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
 
 	readl(QSPI_RXDATA);
 	qspi_cs(qspi, 1);
@@ -1495,13 +1537,18 @@ static void qspi_wr2(struct qspi_ctxt *qspi, uint32_t cmd)
 
 static void qspi_wr3(struct qspi_ctxt *qspi, uint32_t cmd)
 {
+	PRINTF("%s:\n", __func__);
 	ASSERT(qspi);
 
 	qspi_cs(qspi, 0);
 	writel(cmd, QSPI_TXD3);
+	TP();
 	qspi_xmit(qspi);
 
-	while (!(readl(QSPI_IRQ_STATUS) & RX_FIFO_NOT_EMPTY)) ;
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
 
 	readl(QSPI_RXDATA);
 	qspi_cs(qspi, 1);
@@ -1509,14 +1556,35 @@ static void qspi_wr3(struct qspi_ctxt *qspi, uint32_t cmd)
 
 static uint32_t qspi_rd1(struct qspi_ctxt *qspi, uint32_t cmd)
 {
+	PRINTF("%s:\n", __func__);
 	qspi_cs(qspi, 0);
 	writel(cmd, QSPI_TXD2);
+	TP();
 	qspi_xmit(qspi);
 
-	while (!(readl(QSPI_IRQ_STATUS) & RX_FIFO_NOT_EMPTY)) ;
+	TP();
+	while (!(XQSPIPS->SR & RX_FIFO_NOT_EMPTY))
+		;
+	TP();
 
 	qspi_cs(qspi, 1);
 	return readl(QSPI_RXDATA);
+}
+
+/////
+
+// https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/spiflash.c
+
+static uint32_t qspi_rd_cr1(struct qspi_ctxt *qspi)
+{
+	PRINTF("%s:\n", __func__);
+	return qspi_rd1(qspi, 0x35) >> 24;
+}
+
+static uint32_t qspi_rd_status(struct qspi_ctxt *qspi)
+{
+	PRINTF("%s:\n", __func__);
+	return qspi_rd1(qspi, 0x05) >> 24;
 }
 
 ////
