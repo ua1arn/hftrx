@@ -144,15 +144,15 @@ extern "C" {
 
 	#define MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable) \
 		( \
-				((uint_fast32_t) !! (disablercvr) << 13) | \
-				((uint_fast32_t) !! (pullup) << 12) | \
+				((uint_fast32_t) !! (disablercvr) << 13) | /* 1: disable HSTL Input Buffer */ \
+				((uint_fast32_t) !! (pullup) << 12) | /* 1: enable Pullup on IO Buffer pin */ \
 				((uint_fast32_t) (io_type) << 9) | \
-				((uint_fast32_t) !! (speed) << 8) | /* 0 - slow */ \
+				((uint_fast32_t) !! (speed) << 8) | /* 0: slow CMOS edge */ \
 				((uint_fast32_t) (l3_sel) << 5) | \
 				((uint_fast32_t) (l2_sel) << 3) | \
 				((uint_fast32_t) !! (l1_sel) << 2) | \
 				((uint_fast32_t) !! (l0_sel) << 1) | \
-				((uint_fast32_t) !! (tri_enable) << 0) | \
+				((uint_fast32_t) !! (tri_enable) << 0) | /* Tri-state enable, active high. */ \
 				0 \
 		)
 	/* EMIO сигналы нумеруются начиная с 54 - ZYNQ_MIO_CNT */
