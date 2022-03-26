@@ -241,8 +241,8 @@ extern "C" {
 	} while (0)
 
 	// Enable output drive for pin
-	#define MIO_SET_TRI_ENABLE(pin, drive) do { \
-		if (!(drive)) { SCLR->MIO_PIN [(pin)] &= ~ 0x01; } else { SCLR->MIO_PIN [(pin)] |= 0x01; } \
+	#define MIO_SET_TRI_ENABLE(pin, tri_enable) do { \
+		if (!(tri_enable)) { SCLR->MIO_PIN [(pin)] &= ~ 0x01; } else { SCLR->MIO_PIN [(pin)] |= 0x01; } \
 	} while (0)
 
 	// set pin mode (no thread-safe)
@@ -250,16 +250,34 @@ extern "C" {
 	#define gpio_opendrain2(pin, drive, pinmode) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
+		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
+			MIO_SET_TRI_ENABLE((pin), ! (drive)); \
 		} \
+		GPIO_BANK_SET_DIRM(bank, mask, mask); \
+		GPIO_BANK_SET_OEN(bank, mask, mask); \
+	} while (0)
+
+	// Enable output drive for pin (thread-safe, for different pins)
+	#define gpio_drive(pin, drive) do { \
+		if ((pin) < ZYNQ_MIO_CNT) { \
+			MIO_SET_TRI_ENABLE((pin), ! (drive)); \
+		} \
+	} while (0)
+
+	// set pin mode (no thread-safe)
+	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
+	#define emio_opendrain2(pin, drive) do { \
+		const portholder_t bank = GPIO_PIN2BANK(pin); \
+		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 		GPIO_BANK_SET_DIRM(bank, mask, mask); \
 		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
 	} while (0)
 
-	// Enable output drive for pin
-	#define gpio_drive(pin, drive) do { \
+	// Enable output drive for pin (no thread-safe)
+	#define emio_drive(pin, drive) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
 		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
