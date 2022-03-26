@@ -1288,7 +1288,7 @@ void spidf_initialize(void)
 	            CFG_BAUD_DIV_2 |
 	            CFG_MANUAL_START_EN | CFG_MANUAL_CS_EN | CFG_MANUAL_CS;
 
-	//writel(qspi->cfg, QSPI_CONFIG);
+	//XQSPIPS->CR = qspi->cfg;
 	XQSPIPS->CR = qspi->cfg;
 
 	//qspi->khz = 100000;
@@ -1321,7 +1321,7 @@ static int qspi_enable_linear(struct qspi_ctxt *qspi)
 
 	/* put the controller in auto chip select mode and assert chip select */
 	qspi->cfg &= ~(CFG_MANUAL_START_EN | CFG_MANUAL_CS_EN | CFG_MANUAL_CS);
-	writel(qspi->cfg, QSPI_CONFIG);
+	XQSPIPS->CR = qspi->cfg;
 
 #if 1
 	// uses Quad I/O mode
@@ -1364,7 +1364,7 @@ static int qspi_disable_linear(struct qspi_ctxt *qspi)
 
 	/* put the controller back into manual chip select mode */
 	qspi->cfg |= (CFG_MANUAL_START_EN | CFG_MANUAL_CS_EN | CFG_MANUAL_CS);
-	writel(qspi->cfg, QSPI_CONFIG);
+	XQSPIPS->CR = qspi->cfg;
 
 	/* enable the controller */
 	writel(1, QSPI_ENABLE);
@@ -1383,10 +1383,11 @@ static void qspi_cs(struct qspi_ctxt *qspi, unsigned int cs)
 	ASSERT(cs <= 1);
 
 	if (cs == 0)
-		qspi->cfg &= ~(CFG_MANUAL_CS);
+		qspi->cfg &= ~ (CFG_MANUAL_CS);
 	else
 		qspi->cfg |= CFG_MANUAL_CS;
-	writel(qspi->cfg, QSPI_CONFIG);
+
+	XQSPIPS->CR = qspi->cfg;
 }
 
 static void qspi_xmit(struct qspi_ctxt *qspi)
