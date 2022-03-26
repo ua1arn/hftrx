@@ -6694,6 +6694,7 @@ static void devcfg_write(void)
 	const uint32_t * const p = getbitimage(& nwords);
 
 	ASSERT((((uintptr_t) p) % 4) == 0);
+	PRINTF("devcfg_write: nwords=%lu\n", (unsigned long) nwords);
 
 	XDCFG->DMA_SRC_ADDR = (uintptr_t) p | dma_flags;
 	XDCFG->DMA_DST_ADDR = 0xFFFFFFFF;
