@@ -617,30 +617,39 @@
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
-		xc7z_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 1 : 0); \
+		gpio_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 1 : 0); \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
-		xc7z_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 0 : 1); \
+		gpio_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 0 : 1); \
 	} while (0)
 
 	#define SPI_ALLCS_DISABLE() do { \
-		xc7z_writepin(TARGET_CTL1_CS_EMIO, 1);		\
-		xc7z_writepin(TARGET_RTC_CS_EMIO, 0);	/* high = activate */	\
-		xc7z_writepin(TARGET_CODEC1_CS_EMIO, 1);		\
-		xc7z_writepin(TARGET_ADC1_CS_EMIO, 1);		\
-		xc7z_writepin(TARGET_ADC2_CS_EMIO, 1);		\
-		xc7z_writepin(TARGET_NVRAM_CS_EMIO, 1);		\
-		xc7z_writepin(TARGET_EXT1_CS_EMIO, 1);		\
-		xc7z_writepin(TARGET_EXT2_CS_EMIO, 1);		\
+		gpio_writepin(TARGET_CTL1_CS_EMIO, 1);		\
+		gpio_writepin(TARGET_RTC_CS_EMIO, 0);	/* high = activate */	\
+		gpio_writepin(TARGET_CODEC1_CS_EMIO, 1);		\
+		gpio_writepin(TARGET_ADC1_CS_EMIO, 1);		\
+		gpio_writepin(TARGET_ADC2_CS_EMIO, 1);		\
+		gpio_writepin(TARGET_NVRAM_CS_EMIO, 1);		\
+		gpio_writepin(TARGET_EXT1_CS_EMIO, 1);		\
+		gpio_writepin(TARGET_EXT2_CS_EMIO, 1);		\
 	} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
+		const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+		gpio_output2(TARGET_CTL1_CS_EMIO, 1, pinmode_emio);		\
+		gpio_output2(TARGET_RTC_CS_EMIO, 0, pinmode_emio);	/* high = activate */	\
+		gpio_output2(TARGET_CODEC1_CS_EMIO, 1, pinmode_emio);	\
+		gpio_output2(TARGET_ADC1_CS_EMIO, 1, pinmode_emio);		\
+		gpio_output2(TARGET_ADC2_CS_EMIO, 1, pinmode_emio);		\
+		gpio_output2(TARGET_NVRAM_CS_EMIO, 1, pinmode_emio);	\
+		gpio_output2(TARGET_EXT1_CS_EMIO, 1, pinmode_emio);		\
+		gpio_output2(TARGET_EXT2_CS_EMIO, 1, pinmode_emio);		\
 	} while (0)
 
-	#define	SPI_IOTYPE 	GPIO_IOTYPE_501
+	#define	TARGET_SPI_IOTYPE 	GPIO_IOTYPE_501
 
 	// MOSI & SCK port
 	#define	SPI_MOSI_MIO 	45	//	SPI_MOSI	C38	B15	PS_MIO45_501
