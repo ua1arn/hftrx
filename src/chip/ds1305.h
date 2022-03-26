@@ -301,7 +301,7 @@ uint_fast8_t board_rtc_chip_initialize(void)
 	// write protect
 	//ds1305_writebuff(b_WP, sizeof b_WP / sizeof b_WP [0], DS1305REG_CONTROL);
 
-	PRINTF(PSTR("board_rtc_chip_initialize: eosc=%d\n"), (int) eosc);
+	PRINTF(PSTR("board_rtc_chip_initialize: eosc=%d (one - just inited)\n"), (int) eosc);
 	return eosc;
 }
 
