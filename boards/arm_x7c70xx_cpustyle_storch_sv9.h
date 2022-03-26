@@ -539,7 +539,7 @@
 #define TARGET_FPLCD_RESET_EMIO		117	// M14	A4	M14	IO_L23P_T3_35
 #define TARGET_LCD_BL_ADJ0_EMIO		117	// P14	A7	P14	IO_L6P_T0_34	Open Drain
 #define TARGET_LCD_BL_ADJ1_EMIO		117	// R14	A8	R14	IO_L6N_T0_VREF_34	Open Drain
-#define TARGET_LCD_BL_ENABLE_EMIO	117	// A9	A9	T14	IO_L5P_T0_34
+#define TARGET_LCD_BL_ENABLE_EMIO	117	// T14	A9	T14	IO_L5P_T0_34
 
 	// получить бит запроса оператором перехода на пердачу
 	#define HARDWARE_GET_PTT() (gpio_readpin(TARGET_PTT_EMIO) == 0 || gpio_readpin(TARGET_PTT2_EMIO) == 0)
