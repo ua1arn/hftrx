@@ -276,6 +276,8 @@ extern "C" {
 	} while (0)
 
 	#define gpio_readpin(pin) ((ZYNQ_IORW32(GPIO_DATA_RO(GPIO_PIN2BANK(pin))) & GPIO_PIN2MASK(pin)) != 0)
+	/* чтение группы PIO/MIO, находящихся в одном банке. Указывается нмер самого праволг из них. Значение возвращается в младших битах. */
+	#define gpio_readbus(pin, lowmask) ((ZYNQ_IORW32(GPIO_DATA_RO(GPIO_PIN2BANK(pin))) >> GPIO_PIN2BITPOS(pin)) & (lowmask))
 
 #endif /* CPUSTYLE_STM32F */
 
