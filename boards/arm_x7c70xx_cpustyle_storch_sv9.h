@@ -551,16 +551,16 @@
 	#define HARDWARE_GET_PTT() (gpio_readpin(TARGET_PTT_EMIO) == 0 || gpio_readpin(TARGET_PTT2_EMIO) == 0)
 
 	#define PTT_INITIALIZE() do { \
-			const portholder_t pinmode_dummy = 0; \
-			gpio_input2(TARGET_PTT_EMIO, pinmode_dummy); \
-			gpio_input2(TARGET_PTT2_EMIO, pinmode_dummy); \
+			const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+			gpio_input2(TARGET_PTT_EMIO, pinmode_emio); \
+			gpio_input2(TARGET_PTT2_EMIO, pinmode_emio); \
 		} while (0)
 	// ---
 
 	#define HARDWARE_GET_TUNE() (gpio_readpin(TARGET_TUNE_REQ_EMIO) == 0)
 	#define TUNE_INITIALIZE() do { \
-		const portholder_t pinmode_dummy = 0; \
-		gpio_input2(TARGET_TUNE_REQ_EMIO, pinmode_dummy); \
+		const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+		gpio_input2(TARGET_TUNE_REQ_EMIO, pinmode_emio); \
 	} while (0)
 
 #else /* WITHTX */
@@ -610,11 +610,15 @@
 #define TARGET_EXT1_CS_EMIO 	60	//	EXT1_CS		D9	E18	IO_L5P_T0_AD9P_35
 #define TARGET_EXT2_CS_EMIO 	61	//	EXT2_CS		D8	F17	IO_L6N_T0_VREF_35
 
+
 #define targetctl1		TARGET_CTL1_CS_EMIO	// control registers
-#define targetfpga1		TARGET_CTL1_CS_EMIO	// FPGA control registers (STUB)
 #define targetnvram		TARGET_NVRAM_CS_EMIO	// nvram FM25L256
 #define targetcodec1	TARGET_CODEC1_CS_EMIO	// nvram NAU88C22
 #define targetrtc1		TARGET_RTC_CS_EMIO	// RTC DS1305
+
+#define targetadc2		TARGET_ADC1_CS_EMIO	// on-board ADC MCP3208-BI/SL chip select (potentiometers)
+#define targetadck		TARGET_ADC2_CS_EMIO	// on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+#define targetxad2		TARGET_EXT2_CS_EMIO	// external SPI device (PA BOARD ADC)
 
 #if WITHSPIHW || WITHSPISW
 
@@ -1005,17 +1009,21 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-#if 0
-	#define TARGET_BL_ENABLE_MIO	28
+#if 1
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
-		xc7z_gpio_output(TARGET_BL_ENABLE_MIO); \
+		const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+		gpio_output2(TARGET_LCD_BL_ENABLE_EMIO, 1, pinmode_emio); \
+		gpio_opendrain2(TARGET_LCD_BL_ADJ0_EMIO, 1, pinmode_emio); \
+		gpio_opendrain2(TARGET_LCD_BL_ADJ1_EMIO, 1, pinmode_emio); \
 		} while (0)
 
 	/* установка яркости и включение/выключение преобразователя подсветки */
 
 	#define HARDWARE_BL_SET(en, level) do { \
-		xc7z_writepin(TARGET_BL_ENABLE_MIO, en); \
+		gpio_writepin(TARGET_LCD_BL_ENABLE_EMIO, en); \
+		gpio_drive(TARGET_LCD_BL_ADJ0_EMIO, (level & 0x01) != 0); \
+		gpio_drive(TARGET_LCD_BL_ADJ0_EMIO, (level & 0x02) != 0); \
 	} while (0)
 #endif
 
@@ -1221,14 +1229,18 @@
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 			const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
-			gpio_output2(ZYNQBOARD_LED_RED, 1, pinmode_output); \
+			const portholder_t pinmode_emio = 0; /* dummy parameter */ \
+			gpio_output2(ZYNQBOARD_LED_RED, 0, pinmode_output); \
+			gpio_output2(TARGET_ACTIVITY_LED_EMIO, 1, pinmode_emio); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		if (state) \
 		{ \
-			gpio_writepin(ZYNQBOARD_LED_RED, 1); \
-		} else { \
 			gpio_writepin(ZYNQBOARD_LED_RED, 0); \
+			gpio_writepin(TARGET_ACTIVITY_LED_EMIO, 1); \
+		} else { \
+			gpio_writepin(ZYNQBOARD_LED_RED, 1); \
+			gpio_writepin(TARGET_ACTIVITY_LED_EMIO, 0); \
 		} \
 	} while (0)
 
@@ -1247,10 +1259,10 @@
 			BOARD_BLINK_INITIALIZE(); \
 			/*HARDWARE_KBD_INITIALIZE(); */\
 			/*HARDWARE_DAC_INITIALIZE(); */\
-			/*HARDWARE_BL_INITIALIZE(); */ \
+			HARDWARE_BL_INITIALIZE();  \
 			/*HARDWARE_DCDC_INITIALIZE(); */\
 			/*TXDISABLE_INITIALIZE(); */\
-			/*TUNE_INITIALIZE(); */\
+			TUNE_INITIALIZE(); \
 			/*BOARD_USERBOOT_INITIALIZE(); */ \
 			/*USBD_FS_INITIALIZE(); */\
 			USB_ULPI_INITIALIZE(); \
