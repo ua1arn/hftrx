@@ -1171,17 +1171,14 @@
 				enum { IOTYPE = TARGET_QSPI_IOTYPE }; \
 				enum { L3_SEL = 0x00, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x01 }; /* QSPI */ \
 				const portholder_t qspi_pinmode_cs = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
-				const portholder_t qspi_pinmode_io = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+				const portholder_t qspi_pinmode_io = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 				const portholder_t qspi_pinmode_ck = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
-				const portholder_t qspi_pinmode_1 = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0); \
-				const portholder_t qspi_pinmode_mosi = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
-				const portholder_t qspi_pinmode_miso = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
 				gpio_peripherial(SPDIF_NCS_MIO, qspi_pinmode_cs);	/*  */ \
 				gpio_peripherial(SPDIF_SCLK_MIO, qspi_pinmode_ck);	/*  */ \
-				gpio_peripherial(SPDIF_MOSI_MIO, qspi_pinmode_mosi);	/*  */ \
-				gpio_peripherial(SPDIF_MISO_MIO, qspi_pinmode_miso);	/*  */ \
-				gpio_output2(SPDIF_D2_MIO, 1, qspi_pinmode_1);	/*  */ \
-				gpio_output2(SPDIF_D3_MIO, 1, qspi_pinmode_1);	/*  */ \
+				gpio_peripherial(SPDIF_MOSI_MIO, qspi_pinmode_io);	/*  */ \
+				gpio_peripherial(SPDIF_MISO_MIO, qspi_pinmode_io);	/*  */ \
+				gpio_peripherial(SPDIF_D2_MIO, qspi_pinmode_io);	/*  */ \
+				gpio_peripherial(SPDIF_D3_MIO, qspi_pinmode_io);	/*  */ \
 			} while (0)
 
 		#else /* WIHSPIDFHW */

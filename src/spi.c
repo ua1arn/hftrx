@@ -1544,10 +1544,13 @@ void spidf_initialize(void)
 	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
 	(void) SCLR->APER_CLK_CTRL;
 
-	SCLR->LQSPI_RST_CTRL |= 0x01;
-	(void) SCLR->LQSPI_RST_CTRL;
-	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
-	(void) SCLR->LQSPI_RST_CTRL;
+	PRINTF("XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+	// после reset не работает
+//	SCLR->LQSPI_RST_CTRL |= 0x01;
+//	(void) SCLR->LQSPI_RST_CTRL;
+//	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
+//	(void) SCLR->LQSPI_RST_CTRL;
+	PRINTF("XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
 
 	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
 
@@ -1558,8 +1561,8 @@ void spidf_initialize(void)
 	XQSPIPS->LQSPI_CR = 0;
 
 	// flush rx fifo
-	while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY)
-		readl(QSPI_RXDATA);
+	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) != 0)
+		(void) XQSPIPS->RXD;
 
 	XQSPIPS->CR = (XQSPIPS->CR & CFG_NO_MODIFY_MASK) |
 	            //CFG_IFMODE |	// 1: Flash memory interface mode
@@ -1622,13 +1625,13 @@ static void spidf_progval8_p1(uint_fast8_t v)
 {
 	XQSPIPS->TXD_01 = // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
 			(v << 0) |
-			(v << 8) |
-			(v << 16) |
-			(v << 24) |
+//			(v << 8) |
+//			(v << 16) |
+//			(v << 24) |
 			0;
 }
 
-static void spidf_progval8_p2(uint_fast8_t v)
+static unsigned spidf_progval8_p2(uint_fast8_t v)
 {
 	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
 		;
@@ -1639,10 +1642,11 @@ static void spidf_progval8_p2(uint_fast8_t v)
 
 	XQSPIPS->TXD_01 = // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
 			(v << 0) |
-			(v << 8) |
-			(v << 16) |
-			(v << 24) |
+//			(v << 8) |
+//			(v << 16) |
+//			(v << 24) |
 			0;
+	return vx;
 }
 
 static uint_fast8_t spidf_complete(void)
@@ -1678,10 +1682,12 @@ static void spidf_iostart(
 			((uint_fast32_t) (cmd & 0xFF) << 0) |
 			0;
 
+	XQSPIPS->ER = 1;
+
 	// Assert CS
 	XQSPIPS->CR &= ~ CFG_MANUAL_CS;
 	(void) XQSPIPS->CR;
-	XQSPIPS->ER = 1;
+
 
 	spidf_progval8_p1(cmd);		/* The Read SFDP instruction code is 0x5A */
 
@@ -1694,7 +1700,7 @@ static void spidf_iostart(
 	while (ndummy --)
 		spidf_progval8_p2(0x00);	// dummy byte
 
-	spidf_complete();
+	//spidf_complete();
 	return;
 
 
@@ -1755,22 +1761,10 @@ static void spidf_iostart(
 
 static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
-	PRINTF("spidf_read: size=%lu\n", size);
-	size = 20;
 	while (size --)
 	{
-//		spidf_progval8_p1(0);
-//		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
-//			;
-		while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
-			;
-		unsigned v = XQSPIPS->RXD;
-		PRINTF("v = %02X, XQSPIPS->SR=%08lX\n", v, XQSPIPS->SR);
-		//* buff ++ = v;
+		* buff ++ = spidf_progval8_p2(0);
 	}
-	for (;;)
-		;
-	PRINTF("spidf_read: done\n");
 }
 
 
