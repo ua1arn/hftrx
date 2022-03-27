@@ -1126,12 +1126,15 @@
 				const portholder_t qspi_pinmode_cs = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 				const portholder_t qspi_pinmode_io = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 				const portholder_t qspi_pinmode_ck = MIO_PIN_VALUE(1, 0, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+				const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
 				gpio_peripherial(SPDIF_NCS_MIO, qspi_pinmode_cs);	/*  */ \
 				gpio_peripherial(SPDIF_SCLK_MIO, qspi_pinmode_ck);	/*  */ \
 				gpio_peripherial(SPDIF_MOSI_MIO, qspi_pinmode_io);	/*  */ \
 				gpio_peripherial(SPDIF_MISO_MIO, qspi_pinmode_io);	/*  */ \
 				gpio_peripherial(SPDIF_D2_MIO, qspi_pinmode_io);	/*  */ \
 				gpio_peripherial(SPDIF_D3_MIO, qspi_pinmode_io);	/*  */ \
+				gpio_output2(SPDIF_D2_MIO, 1, pinmode_output);  \
+				gpio_output2(SPDIF_D3_MIO, 1, pinmode_output);  \
 			} while (0)
 
 		#else /* WIHSPIDFHW */
