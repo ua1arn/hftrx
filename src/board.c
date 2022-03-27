@@ -6694,7 +6694,7 @@ static void devcfg_write(void)
 	const uint32_t * const p = getbitimage(& nwords);
 
 	ASSERT((((uintptr_t) p) % 4) == 0);
-	PRINTF("devcfg_write: nwords=%lu\n", (unsigned long) nwords);
+	//PRINTF("devcfg_write: nwords=%lu\n", (unsigned long) nwords);
 
 	XDCFG->DMA_SRC_ADDR = (uintptr_t) p | dma_flags;
 	XDCFG->DMA_DST_ADDR = 0xFFFFFFFF;
@@ -6711,7 +6711,7 @@ static void devcfg_write(void)
 /* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
 static void board_fpga_loader_XDCFG(void)
 {
-	PRINTF("board_fpga_loader_XDCFG start: boot_mode=%08lX\n", SCLR->BOOT_MODE);
+	//PRINTF("board_fpga_loader_XDCFG start: boot_mode=%08lX\n", SCLR->BOOT_MODE);
 
 	zynq_slcr_unlock();
 	zynq_slcr_preload_fpga();
@@ -6733,7 +6733,7 @@ static void board_fpga_loader_XDCFG(void)
 	zynq_slcr_postload_fpga();
 	zynq_slcr_lock();
 
-	PRINTF("board_fpga_loader_XDCFG done.\n");
+	//PRINTF("board_fpga_loader_XDCFG done.\n");
 }
 
 #endif /* WITHFPGALOAD_DCFG */
