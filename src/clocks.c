@@ -6077,9 +6077,9 @@ sysinit_pll_initialize(void)
 		// PLL только в bootloader.
 		// посеольку программа выполняется из DDR RAM, перерпрограммировать PLL нельзя.
 
-		xc7z1_arm_pll_initialize();
-		xc7z1_ddr_pll_initialize();
-		xc7z1_io_pll_initialize();
+		xc7z_arm_pll_initialize();
+		xc7z_ddr_pll_initialize();
+		xc7z_io_pll_initialize();
 
 
 		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
