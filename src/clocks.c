@@ -6330,6 +6330,8 @@ sysinit_pll_initialize(void)
 		static portholder_t spi_spcmd0_val8w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_spcmd0_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+	#elif CPUSTYLE_XC7Z
+
 	#endif /* CPUSTYLE_STM32F1XX */
 
 #if WITHSPIHWDMA
@@ -6795,8 +6797,12 @@ void hardware_spi_master_initialize(void)
 	/* настраиваем в режиме disconnect */
 	SPIIO_INITIALIZE();
 
+#elif CPUSTYLE_XC7Z
+	#warning Must be implemented for CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE macro
+
 #endif
 }
 
@@ -7070,11 +7076,12 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE2] = spcmd32w | SPCMD_MODE2;
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE3] = spcmd32w | SPCMD_MODE3;
 
-#elif CPUSTYLE_STM32MP1
-	#warning Insert code for CPUSTYLE_STM32MP1
+#elif CPUSTYLE_XC7Z
+	#warning Must be implemented for CPUSTYLE_XC7Z
 
 #else
 	#error Wrong CPUSTYLE macro
+
 #endif
 }
 
@@ -7215,8 +7222,14 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
+#elif CPUSTYLE_XC7Z
+	#warning Must be implemented for CPUSTYLE_XC7Z
+
+	HARDWARE_SPI_CONNECT();
+
 #else
 	#error Wrong CPUSTYLE macro
+
 #endif
 
 }
@@ -7284,6 +7297,11 @@ void hardware_spi_disconnect(void)
 	// connect back to GPIO
 	HARDWARE_SPI_DISCONNECT();
 
+#elif CPUSTYLE_XC7Z
+	#warning Must be implemented for CPUSTYLE_XC7Z
+
+	HARDWARE_SPI_DISCONNECT();
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -7348,8 +7366,12 @@ hardware_spi_ready_b8_void(void)
 		;
 	(void) HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
+#elif CPUSTYLE_XC7Z
+	#warning Must be implemented for CPUSTYLE_XC7Z
+
 #else
 	#error Wrong CPUSTYLE macro
+
 #endif
 }
 
@@ -7416,6 +7438,10 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 		;
 	return HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
+#elif CPUSTYLE_XC7Z
+	#warning Must be implemented for CPUSTYLE_XC7Z
+
+	return 0xFF;
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -8682,6 +8708,9 @@ void hardware_spi_b8_p1(
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT8 [R_IO_LL] = v; // LL=0
+
+#elif CPUSTYLE_XC7Z
+	#warning Must be implemented for CPUSTYLE_XC7Z
 
 #else
 	#error Wrong CPUSTYLE macro
