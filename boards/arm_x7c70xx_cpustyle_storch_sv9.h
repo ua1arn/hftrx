@@ -326,67 +326,6 @@
 
 #endif
 
-#if WITHI2S2HW
-	// Инициализируются I2S2 в дуплексном режиме.
-	#define I2S2HW_INITIALIZE() do { \
-		SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-		arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
-	} while (0)
-#endif /* WITHI2S2HW */
-
-	// для предотвращения треска от оставшегося инициализированным кодека
-	#define I2S2HW_POOLDOWN() do { \
-		arm_hardware_piob_inputs(1uL << 12); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_inputs(1uL << 13); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_inputs(1uL << 15); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_inputs(1uL << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
-	} while (0)
-
-#if WITHSAI1HW
-	/*
-	 *
-	 */
-	#define SAI1HW_INITIALIZE()	do { \
-		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioe_altfn20(1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
-		arm_hardware_pioe_updown(1uL << 3, 0); \
-	} while (0)
-#endif /* WITHSAI1HW */
-
-#if WITHSAI2HW
-	/* 
-	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A
-	*/
-	#define SAI2HW_INITIALIZE()	do { \
-		arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
-	} while (0)
-#endif /* WITHSAI1HW */
-
-#if WITHSAI3HW
-	/*
-	*/
-	#define SAI3HW_INITIALIZE()	do { \
-		arm_hardware_piod_altfn50(1uL << 12, AF_SAI2); 		/* PD12 - SAI2_FS_A	- WS from FPGA	*/ \
-		arm_hardware_piod_altfn50(1uL << 13, AF_SAI2); 		/* PD13 - SAI2_SCK_A	*/ \
-		arm_hardware_pioe_altfn50(1uL << 11, AF_SAI2);		/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
-	} while (0)
-#endif /* WITHSAI1HW */
-
 /* Распределение битов в ARM контроллерах */
 
 #if (WITHCAT && WITHCAT_USART2)
@@ -1305,7 +1244,6 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			/*I2S2HW_POOLDOWN(); */\
 			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			/*HARDWARE_DAC_INITIALIZE(); */\
