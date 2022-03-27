@@ -1544,13 +1544,14 @@ void spidf_initialize(void)
 	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
 	(void) SCLR->APER_CLK_CTRL;
 
-	PRINTF("XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+	PRINTF("1 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
 	// после reset не работает
 //	SCLR->LQSPI_RST_CTRL |= 0x01;
 //	(void) SCLR->LQSPI_RST_CTRL;
 //	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
 //	(void) SCLR->LQSPI_RST_CTRL;
-	PRINTF("XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+
+	PRINTF("2 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
 
 	XQSPIPS->CR |= (1uL << 19);		// Holdb_dr
 
@@ -1572,7 +1573,7 @@ void spidf_initialize(void)
 	            CFG_CPHA | 	// 1: the QSPI clock is inactive outside the word
 				CFG_CPOL |	// 1: The QSPI clock is quiescent high
 	            CFG_MASTER_MODE |	// 1: The QSPI is in master mode
-				CFG_BAUD_DIV_16 | // CFG_BAUD_DIV_2 |
+				CFG_BAUD_DIV_4 |
 	            //CFG_MANUAL_START_EN | // 1: enables manual start
 				CFG_MANUAL_CS_EN |	// 1: manual CS mode
 				CFG_MANUAL_CS |	// Peripheral chip select line, directly drive n_ss_out if Manual_C is set
@@ -1581,6 +1582,7 @@ void spidf_initialize(void)
 	(void) XQSPIPS->CR;
 	//qspi->khz = 100000;
 	//qspi->linear_mode = 0 /* fasle */;
+	PRINTF("3 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
 
 	//writel(1, QSPI_ENABLE);
 	//XQSPIPS->ER = 1;
@@ -1701,6 +1703,7 @@ static void spidf_iostart(
 		spidf_progval8_p2(0x00);	// dummy byte
 
 	//spidf_complete();
+	spidf_progval8_p2(0);
 	return;
 
 
@@ -2234,7 +2237,7 @@ uint_fast8_t dataflash_read_status(void)
 	spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
 	spidf_read(& v, SPDIF_IOSIZE);
 	spidf_unselect();	/* done sending data to target chip */
-
+	PRINTF("dataflash_read_status: v=%02X\n", v);
 	return v;
 }
 
