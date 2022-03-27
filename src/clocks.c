@@ -2185,7 +2185,8 @@ static uint_fast32_t stm32f7xx_pllq_initialize(void);	// Настроить вы
 
 	enum
 	{
-		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1)	// FPGA0_CLK_CTRL
+		XC7Z_FPGAx_CLK_WIDTH = 6,	XC7Z_FPGAx_CLK_TAPS = (32 | 16 | 8 | 4 | 2 | 1),	// FPGA0_CLK_CTRL
+		XC7Z_SPI_BR_WIDTH = 0, XC7Z_SPI_BR_TAPS = (256 | 128 | 64 | 32 | 16 | 8 | 4)
 	};
 
 #elif CPUSTYLE_XCZU
@@ -6331,7 +6332,7 @@ sysinit_pll_initialize(void)
 		static portholder_t spi_spcmd0_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
-		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t xc7z_spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#endif /* CPUSTYLE_STM32F1XX */
 
 #if WITHSPIHWDMA
@@ -7112,18 +7113,26 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 		SPICR_MODE3 = SPICR_CPOL | SPICR_CPHA
 	};
 
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(xc7z1_get_spi_freq(), spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
+
+	unsigned brdiv = ulmin(prei + 1, 7);
+	PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u\n", prei, value, spispeed, brdiv);
+
 	const portholder_t cr_val =
 			(1uL << 17) |	// ModeFail Generation Enable
-			(1uL << 16) |	// Manual Start Command
-			(1uL << 15) |	// Manual Start Enable
-			(1uL << 14) |	// Manual CS
-			(0x05uL << 3) |	// BAUD_RATE_DIV: 001: divide by 4, ... 111: divide by 256
+			//(1uL << 16) |	// Manual Start Command
+			//(1uL << 15) |	// Manual Start Enable
+			//(1uL << 14) |	// Manual CS
+			(0x0FuL << 10) |	// 1111 - No slave selected
+			(brdiv << 3) |	// BAUD_RATE_DIV: 001: divide by 4, ... 111: divide by 256
+			(1uL << 0) |	// 1: the SPI is in master mode
 			0;
 
-	spi_cr_val [spispeedindex][SPIC_MODE0] = cr_val | SPICR_MODE0;
-	spi_cr_val [spispeedindex][SPIC_MODE1] = cr_val | SPICR_MODE1;
-	spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
-	spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
+	xc7z_spi_cr_val [spispeedindex][SPIC_MODE0] = cr_val | SPICR_MODE0;
+	xc7z_spi_cr_val [spispeedindex][SPIC_MODE1] = cr_val | SPICR_MODE1;
+	xc7z_spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
+	xc7z_spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -7271,7 +7280,8 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 #elif CPUSTYLE_XC7Z
 	#warning Must be implemented for CPUSTYLE_XC7Z
 
-	SPI0->CR = spi_cr_val [spispeedindex][spimode];
+	SPI0->CR = xc7z_spi_cr_val [spispeedindex][spimode];
+	SPI0->ER = 0x0001;	// 1: enable the SPI
 
 	HARDWARE_SPI_CONNECT();
 
@@ -7346,8 +7356,9 @@ void hardware_spi_disconnect(void)
 	HARDWARE_SPI_DISCONNECT();
 
 #elif CPUSTYLE_XC7Z
-	#warning Must be implemented for CPUSTYLE_XC7Z
+	//#warning Must be implemented for CPUSTYLE_XC7Z
 
+	SPI0->ER = 0x0000;	// 0: disable the SPI
 	HARDWARE_SPI_DISCONNECT();
 
 #else
