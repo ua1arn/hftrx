@@ -1625,12 +1625,7 @@ static void spidf_unselect(void)
 
 static void spidf_progval8_p1(uint_fast8_t v)
 {
-	XQSPIPS->TXD_01 = // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
-			(v << 0) |
-//			(v << 8) |
-//			(v << 16) |
-//			(v << 24) |
-			0;
+	XQSPIPS->TXD_01 = v; 	// Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
 }
 
 static unsigned spidf_progval8_p2(uint_fast8_t v)
@@ -1642,12 +1637,8 @@ static unsigned spidf_progval8_p2(uint_fast8_t v)
 	unsigned vx = XQSPIPS->RXD;
 	PRINTF("vx=%08lX\n", vx);
 
-	XQSPIPS->TXD_01 = // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
-			(v << 0) |
-//			(v << 8) |
-//			(v << 16) |
-//			(v << 24) |
-			0;
+	XQSPIPS->TXD_01 = v; 	// Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+
 	return vx;
 }
 
@@ -1659,6 +1650,18 @@ static uint_fast8_t spidf_complete(void)
 		;
 	unsigned v0 = XQSPIPS->RXD;
 	PRINTF("v0=%08lX\n", v0);
+	return v0;
+}
+
+static uint_fast8_t spidf_progval8(uint_fast8_t v)
+{
+	XQSPIPS->TXD_01 = v; 	// Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+		;
+	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
+		;
+	unsigned v0 = XQSPIPS->RXD;
+	PRINTF("v8=%08lX\n", v0);
 	return v0;
 }
 
@@ -1702,8 +1705,7 @@ static void spidf_iostart(
 	while (ndummy --)
 		spidf_progval8_p2(0x00);	// dummy byte
 
-	//spidf_complete();
-	spidf_progval8_p2(0);
+	spidf_complete();	/* done sending data to target chip */
 	return;
 
 
@@ -1765,22 +1767,23 @@ static void spidf_iostart(
 static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
 	while (size --)
-	{
-		* buff ++ = spidf_progval8_p2(0);
-	}
+		* buff ++ = spidf_progval8(0xff);
 }
 
 
 static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 {
 	uint_fast8_t err = 0;
+	while (size --)
+		err |= * buff ++ != spidf_progval8(0xff);
 	return err;
 }
 
+
 static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
-//	while (size --)
-//		spidf_progval8(* buff ++);
+	while (size --)
+		spidf_progval8(* buff ++);
 }
 
 #elif WIHSPIDFHW && (CPUSTYLE_STM32MP1 || CPUSTYLE_STM32F)
@@ -2350,7 +2353,7 @@ int testchipDATAFLASH(void)
 
 		mf_id = mfa [0];
 		mf_devid1 = mfa [1];
-		mf_devid2 = mfa [02];
+		mf_devid2 = mfa [2];
 		mf_dlen = mfa [3];
 
 		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
