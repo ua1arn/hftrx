@@ -129,16 +129,16 @@ unsigned long stm32mp1_get_spi1_freq(void);
 unsigned long stm32mp1_get_adc_freq(void);
 unsigned long stm32mp1_get_qspi_freq(void);
 
-//unsigned long xc7z1_get_pllsreference_freq(void);
-//uint_fast64_t xc7z1_get_arm_pll_freq(void);
-//uint_fast64_t xc7z1_get_ddr_pll_freq(void);
-uint_fast64_t xc7z1_get_io_pll_freq(void);
-unsigned long xc7z1_get_arm_freq(void);
-unsigned long xc7z1_get_ddr_x2clk_freq(void);
-unsigned long xc7z1_get_ddr_x3clk_freq(void);
-unsigned long xc7z1_get_uart_freq(void);
-unsigned long xc7z1_get_sdio_freq(void);
-unsigned long xc7z1_get_spi_freq(void);
+//unsigned long xc7z_get_pllsreference_freq(void);
+//uint_fast64_t xc7z_get_arm_pll_freq(void);
+//uint_fast64_t xc7z_get_ddr_pll_freq(void);
+uint_fast64_t xc7z_get_io_pll_freq(void);
+unsigned long xc7z_get_arm_freq(void);
+unsigned long xc7z_get_ddr_x2clk_freq(void);
+unsigned long xc7z_get_ddr_x3clk_freq(void);
+unsigned long xc7z_get_uart_freq(void);
+unsigned long xc7z_get_sdio_freq(void);
+unsigned long xc7z_get_spi_freq(void);
 
 // platform-independed functions.
 unsigned long hardware_get_spi_freq(void);	// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации

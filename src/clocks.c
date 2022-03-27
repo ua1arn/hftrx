@@ -5597,7 +5597,7 @@ lowlevel_stm32l0xx_pll_clock(void)
 
 #if CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
-static void xc7z1_arm_pll_initialize(void)
+static void xc7z_arm_pll_initialize(void)
 {
 	const uint_fast32_t arm_pll_mul = ARM_PLL_MUL;	// ARM_PLL_CFG.PLL_FDIV
 	const uint_fast32_t arm_pll_div = ARM_PLL_DIV;	// ARM_CLK_CTRL.DIVISOR
@@ -5638,7 +5638,7 @@ static void xc7z1_arm_pll_initialize(void)
 			0;
 }
 
-static void xc7z1_ddr_pll_initialize(void)
+static void xc7z_ddr_pll_initialize(void)
 {
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	//	EMIT_MASKWRITE(0XF8000114, 0x003FFFF0U ,0x0012C220U),	// DDR_PLL_CFG
@@ -5678,7 +5678,7 @@ static void xc7z1_ddr_pll_initialize(void)
 			0;
 }
 
-static void xc7z1_io_pll_initialize(void)
+static void xc7z_io_pll_initialize(void)
 {
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	//	EMIT_MASKWRITE(0XF8000118, 0x003FFFF0U ,0x000FA240U),	// IO_PLL_CFG
@@ -5711,54 +5711,54 @@ static void xc7z1_io_pll_initialize(void)
 			0;
 }
 
-static unsigned long xc7z1_get_pllsreference_freq(void)
+static unsigned long xc7z_get_pllsreference_freq(void)
 {
 	return WITHCPUXOSC;
 }
 
-static uint_fast64_t xc7z1_get_arm_pll_freq(void)
+static uint_fast64_t xc7z_get_arm_pll_freq(void)
 {
 	const uint_fast32_t arm_pll_mul = (SCLR->ARM_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
-	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * arm_pll_mul;
+	return (uint_fast64_t) xc7z_get_pllsreference_freq() * arm_pll_mul;
 }
 
-static uint_fast64_t xc7z1_get_ddr_pll_freq(void)
+static uint_fast64_t xc7z_get_ddr_pll_freq(void)
 {
 	const uint_fast32_t ddr_pll_mul = (SCLR->DDR_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
-	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * ddr_pll_mul;
+	return (uint_fast64_t) xc7z_get_pllsreference_freq() * ddr_pll_mul;
 }
 
-uint_fast64_t xc7z1_get_io_pll_freq(void)
+uint_fast64_t xc7z_get_io_pll_freq(void)
 {
 	const uint_fast32_t io_pll_mul = (SCLR->IO_PLL_CTRL >> 12) & 0x07FF;	// PLL_FDIV
 
-	return (uint_fast64_t) xc7z1_get_pllsreference_freq() * io_pll_mul;
+	return (uint_fast64_t) xc7z_get_pllsreference_freq() * io_pll_mul;
 }
 
-unsigned long  xc7z1_get_arm_freq(void)
+unsigned long  xc7z_get_arm_freq(void)
 {
 	const uint_fast32_t divisor = (SCLR->ARM_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
 
-	return xc7z1_get_arm_pll_freq() / divisor;
+	return xc7z_get_arm_pll_freq() / divisor;
 }
 
-unsigned long  xc7z1_get_ddr_x2clk_freq(void)
+unsigned long  xc7z_get_ddr_x2clk_freq(void)
 {
 	const uint_fast32_t divisor = (SCLR->DDR_CLK_CTRL >> 26) & 0x003F;	// [31:26] DDR_2XCLK_DIVISOR
 
-	return xc7z1_get_ddr_pll_freq() / divisor;
+	return xc7z_get_ddr_pll_freq() / divisor;
 }
 
-unsigned long  xc7z1_get_ddr_x3clk_freq(void)
+unsigned long  xc7z_get_ddr_x3clk_freq(void)
 {
 	const uint_fast32_t divisor = (SCLR->DDR_CLK_CTRL >> 20) & 0x003F;	// [25:20] DDR_2XCLK_DIVISOR
 
-	return xc7z1_get_ddr_pll_freq() / divisor;
+	return xc7z_get_ddr_pll_freq() / divisor;
 }
 
-unsigned long  xc7z1_get_uart_freq(void)
+unsigned long  xc7z_get_uart_freq(void)
 {
 	const uint_fast32_t divisor = (SCLR->UART_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
 	switch ((SCLR->UART_CLK_CTRL & 0x30) >> 4)	// SRCSEL
@@ -5766,17 +5766,17 @@ unsigned long  xc7z1_get_uart_freq(void)
 	default:
 	case 0x00:
 		// 0x: Source for generated clock is IO PLL.
-		return xc7z1_get_io_pll_freq() / divisor;
+		return xc7z_get_io_pll_freq() / divisor;
 	case 0x01:
 		// 10: Source for generated clock is ARM PLL.
-		return xc7z1_get_arm_pll_freq() / divisor;
+		return xc7z_get_arm_pll_freq() / divisor;
 	case 0x03:
 		// 11: Source for generated clock is DDR PLL
-		return xc7z1_get_ddr_pll_freq() / divisor;
+		return xc7z_get_ddr_pll_freq() / divisor;
 	}
 }
 
-unsigned long xc7z1_get_sdio_freq(void)
+unsigned long xc7z_get_sdio_freq(void)
 {
 	const uint_fast32_t divisor = (SCLR->SDIO_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
 	switch ((SCLR->SDIO_CLK_CTRL & 0x30) >> 4)	// SRCSEL
@@ -5784,17 +5784,17 @@ unsigned long xc7z1_get_sdio_freq(void)
 	default:
 	case 0x00:
 		// 0x: Source for generated clock is IO PLL.
-		return xc7z1_get_io_pll_freq() / divisor;
+		return xc7z_get_io_pll_freq() / divisor;
 	case 0x01:
 		// 10: Source for generated clock is ARM PLL.
-		return xc7z1_get_arm_pll_freq() / divisor;
+		return xc7z_get_arm_pll_freq() / divisor;
 	case 0x03:
 		// 11: Source for generated clock is DDR PLL
-		return xc7z1_get_ddr_pll_freq() / divisor;
+		return xc7z_get_ddr_pll_freq() / divisor;
 	}
 }
 
-unsigned long  xc7z1_get_spi_freq(void)
+unsigned long  xc7z_get_spi_freq(void)
 {
 	const uint_fast32_t divisor = (SCLR->SPI_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
 	switch ((SCLR->SPI_CLK_CTRL & 0x30) >> 4)	// SRCSEL
@@ -5802,24 +5802,24 @@ unsigned long  xc7z1_get_spi_freq(void)
 	default:
 	case 0x00:
 		// 0x: Source for generated clock is IO PLL.
-		return xc7z1_get_io_pll_freq() / divisor;
+		return xc7z_get_io_pll_freq() / divisor;
 	case 0x01:
 		// 10: Source for generated clock is ARM PLL.
-		return xc7z1_get_arm_pll_freq() / divisor;
+		return xc7z_get_arm_pll_freq() / divisor;
 	case 0x03:
 		// 11: Source for generated clock is DDR PLL
-		return xc7z1_get_ddr_pll_freq() / divisor;
+		return xc7z_get_ddr_pll_freq() / divisor;
 	}
 }
 
 void hardware_set_dotclock(unsigned long dotfreq)
 {
-	unsigned long f1 = (unsigned long) ( xc7z1_get_io_pll_freq() / 1000);
+	unsigned long f1 = (unsigned long) ( xc7z_get_io_pll_freq() / 1000);
 	dotfreq /= 1000;
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(f1, dotfreq), XC7Z_FPGAx_CLK_WIDTH, XC7Z_FPGAx_CLK_TAPS, & value, 0);
 
-	//PRINTF("xc7z1_setltdcfreq: FPGA0_CLK_CTRL.DIVISOR0=%u, DIVISOR1=%u, iopll=%lu, dotclk=%lu\n", 1u << prei, value, (unsigned long) xc7z1_get_io_pll_freq(), ((unsigned long) xc7z1_get_io_pll_freq() >> prei) / value);
+	//PRINTF("xc7z_setltdcfreq: FPGA0_CLK_CTRL.DIVISOR0=%u, DIVISOR1=%u, iopll=%lu, dotclk=%lu\n", 1u << prei, value, (unsigned long) xc7z_get_io_pll_freq(), ((unsigned long) xc7z_get_io_pll_freq() >> prei) / value);
 
 #if 1
 	// PL Clock 0 Output control
@@ -6802,7 +6802,7 @@ void hardware_spi_master_initialize(void)
 	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_XC7Z
-	#warning Must be implemented for CPUSTYLE_XC7Z
+	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (0x01uL << 14);	// APER_CLK_CTRL.SPI0_CPU_1XCLKACT
@@ -7104,7 +7104,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE3] = spcmd32w | SPCMD_MODE3;
 
 #elif CPUSTYLE_XC7Z
-	#warning Must be implemented for CPUSTYLE_XC7Z
+	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	enum
 	{
@@ -7118,16 +7118,16 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	};
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(xc7z1_get_spi_freq(), spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(xc7z_get_spi_freq(), spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
 
 	unsigned brdiv = ulmin(prei + 1, 7);
-	PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z1_get_spi_freq());
+	PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z_get_spi_freq());
 
 	const portholder_t cr_val =
 			(1uL << 17) |	// ModeFail Generation Enable
-			//(1uL << 16) |	// Manual Start Command
-			//(1uL << 15) |	// Manual Start Enable
-			//(1uL << 14) |	// Manual CS
+			(1uL << 16) |	// Manual Start Command
+			(1uL << 15) |	// Manual Start Enable
+			(1uL << 14) |	// Manual CS
 			(0x0FuL << 10) |	// 1111 - No slave selected
 			(brdiv << 3) |	// BAUD_RATE_DIV: 001: divide by 4, ... 111: divide by 256
 			(1uL << 0) |	// 1: the SPI is in master mode
@@ -7282,7 +7282,7 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
 #elif CPUSTYLE_XC7Z
-	#warning Must be implemented for CPUSTYLE_XC7Z
+	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	SPI0->CR = xc7z_spi_cr_val [spispeedindex][spimode];
 	SPI0->ER = 0x0001;	// 1: enable the SPI
@@ -10554,7 +10554,7 @@ void hardware_sdhost_setspeed(unsigned long ticksfreq)
 
 #elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-	const unsigned long ref = xc7z1_get_sdio_freq();
+	const unsigned long ref = xc7z_get_sdio_freq();
 	unsigned divider = calcdivround2(ref / 2, ticksfreq);
 	divider = ulmin(divider, 255);
 	divider = ulmax(divider, 1);
@@ -11007,7 +11007,7 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
 	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
 	  UART0->CR = r;
-	  const unsigned long sel_clk = xc7z1_get_uart_freq();
+	  const unsigned long sel_clk = xc7z_get_uart_freq();
 	  const unsigned long bdiv = 8;
 	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
 	  UART0->BAUDDIV = bdiv - 1; // ("BDIV")
@@ -11193,7 +11193,7 @@ hardware_uart2_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_TX_EN | XUARTPS_CR_RX_EN); // Clear Tx & Rx Enable
 	  r |= XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS; // Tx & Rx Disable
 	  UART1->CR = r;
-	  const unsigned long sel_clk = xc7z1_get_uart_freq();
+	  const unsigned long sel_clk = xc7z_get_uart_freq();
 	  const unsigned long bdiv = 8;
 	  // baud_rate = sel_clk / (CD * (BDIV + 1) (ref: UG585 - TRM - Ch. 19 UART)
 	  UART1->BAUDDIV = bdiv - 1; // ("BDIV")
