@@ -289,8 +289,7 @@
 
 	/* Чтение состояния выходов валкодера #1 - в два младших бита */
 	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	#if GPIO_PIN2BANK(TARGET_ENCODER_A_EMIO) == GPIO_PIN2BANK(TARGET_ENCODER_B_EMIO) && \
-			TARGET_ENCODER_A_EMIO == TARGET_ENCODER_B_EMIO + 1
+	#if TARGET_ENCODER_A_EMIO == TARGET_ENCODER_B_EMIO + 1
 		#define ENCODER_BITS_GET() (gpio_readbus(TARGET_ENCODER_B_EMIO, 0x03))
 	#else
 		#define ENCODER_BITS_GET() (gpio_readpin(TARGET_ENCODER_A_EMIO) * 2 + gpio_readpin(TARGET_ENCODER_B_EMIO))
@@ -298,8 +297,7 @@
 
 	/* Чтение состояния выходов валкодера #2 - в два младших бита */
 	/* Состояние фазы A - в бите с весом 2, фазы B - в бите с весом 1 */
-	#if GPIO_PIN2BANK(TARGET_ENCODER_A_EMIO) == GPIO_PIN2BANK(TARGET_ENC2_B_EMIO) && \
-			TARGET_ENCODER_A_EMIO == TARGET_ENCODER_B_EMIO + 1
+	#if TARGET_ENCODER_A_EMIO == TARGET_ENCODER_B_EMIO + 1
 		#define ENCODER2_BITS_GET() (gpio_readbus(TARGET_ENC2_B_EMIO, 0x03))
 	#else
 		#define ENCODER2_BITS_GET() (gpio_readpin(TARGET_ENC2_A_EMIO) * 2 + gpio_readpin(TARGET_ENC2_B_EMIO))
