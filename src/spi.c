@@ -2241,7 +2241,7 @@ uint_fast8_t dataflash_read_status(void)
 	spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
 	spidf_read(& v, SPDIF_IOSIZE);
 	spidf_unselect();	/* done sending data to target chip */
-	PRINTF("dataflash_read_status: v=%02X\n", v);
+	//PRINTF("dataflash_read_status: v=%02X\n", v);
 	return v;
 }
 
