@@ -1201,8 +1201,9 @@
 			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-				const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 1); \
-				const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
+				enum { IOTYPE = TARGET_QSPI_IOTYPE }; \
+				const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
+				const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
 				gpio_output2(SPDIF_NCS_MIO, 1, pinmode_output);  \
 				gpio_output2(SPDIF_SCLK_MIO, 1, pinmode_output);  \
 				gpio_output2(SPDIF_MOSI_MIO, 1, pinmode_output);	\
