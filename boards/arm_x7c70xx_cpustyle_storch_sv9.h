@@ -700,7 +700,15 @@
 		gpio_input2(SPI_MISO_MIO, pinmode_input); \
 	} while (0)
 
+	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define HARDWARE_SPI_CONNECT() do { \
+		enum { IOTYPE = TARGET_SPI_IOTYPE }; \
+		enum { L3_SEL = 0x05, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; /* SPI0 */ \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 1); \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0); \
+		gpio_peripherial(SPI_SCLK_MIO, pinmode_output); \
+		gpio_peripherial(SPI_MOSI_MIO, pinmode_output); \
+		gpio_peripherial(SPI_MISO_MIO, pinmode_input); \
 	} while (0)
 
 	#define HARDWARE_SPI_DISCONNECT() do { \

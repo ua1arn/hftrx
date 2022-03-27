@@ -6331,7 +6331,7 @@ sysinit_pll_initialize(void)
 		static portholder_t spi_spcmd0_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
-
+		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#endif /* CPUSTYLE_STM32F1XX */
 
 #if WITHSPIHWDMA
@@ -6800,6 +6800,28 @@ void hardware_spi_master_initialize(void)
 #elif CPUSTYLE_XC7Z
 	#warning Must be implemented for CPUSTYLE_XC7Z
 
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << 14);	// APER_CLK_CTRL.SPI0_CPU_1XCLKACT
+	(void) SCLR->APER_CLK_CTRL;
+
+	SCLR->SPI_CLK_CTRL = (SCLR->SPI_CLK_CTRL & ~ (0)) |
+			//(1uL << 0) |
+			0;
+
+//	PRINTF("1 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+	// после reset не работает
+//	SCLR->LQSPI_RST_CTRL |= 0x01;
+//	(void) SCLR->LQSPI_RST_CTRL;
+//	SCLR->LQSPI_RST_CTRL &= ~ 0x01;
+//	(void) SCLR->LQSPI_RST_CTRL;
+
+//	PRINTF("2 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
+
+	//PRINTF("SPI0->Mod_id_reg0=%08lX (expected 0x00090106)\n", SPI0->Mod_id_reg0);
+	ASSERT(SPI0->Mod_id_reg0 == 0x00090106uL);
+
+	SPIIO_INITIALIZE();
+
 #else
 	#error Wrong CPUSTYLE macro
 
@@ -7079,6 +7101,30 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 #elif CPUSTYLE_XC7Z
 	#warning Must be implemented for CPUSTYLE_XC7Z
 
+	enum
+	{
+		SPICR_CPHA = 1u << 2,
+		SPICR_CPOL = 1u << 1,
+
+		SPICR_MODE0 = 0,
+		SPICR_MODE1 = SPICR_CPHA,
+		SPICR_MODE2 = SPICR_CPOL,
+		SPICR_MODE3 = SPICR_CPOL | SPICR_CPHA
+	};
+
+	const portholder_t cr_val =
+			(1uL << 17) |	// ModeFail Generation Enable
+			(1uL << 16) |	// Manual Start Command
+			(1uL << 15) |	// Manual Start Enable
+			(1uL << 14) |	// Manual CS
+			(0x05uL << 3) |	// BAUD_RATE_DIV: 001: divide by 4, ... 111: divide by 256
+			0;
+
+	spi_cr_val [spispeedindex][SPIC_MODE0] = cr_val | SPICR_MODE0;
+	spi_cr_val [spispeedindex][SPIC_MODE1] = cr_val | SPICR_MODE1;
+	spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
+	spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
+
 #else
 	#error Wrong CPUSTYLE macro
 
@@ -7225,6 +7271,8 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 #elif CPUSTYLE_XC7Z
 	#warning Must be implemented for CPUSTYLE_XC7Z
 
+	SPI0->CR = spi_cr_val [spispeedindex][spimode];
+
 	HARDWARE_SPI_CONNECT();
 
 #else
@@ -7367,7 +7415,11 @@ hardware_spi_ready_b8_void(void)
 	(void) HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
 #elif CPUSTYLE_XC7Z
-	#warning Must be implemented for CPUSTYLE_XC7Z
+	//#warning Must be implemented for CPUSTYLE_XC7Z
+
+	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
+		;
+	(void) SPI0->RXD;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -7439,9 +7491,12 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	return HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
 #elif CPUSTYLE_XC7Z
-	#warning Must be implemented for CPUSTYLE_XC7Z
+	//#warning Must be implemented for CPUSTYLE_XC7Z
 
-	return 0xFF;
+	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
+		;
+	return SPI0->RXD & 0xFF;
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -8710,7 +8765,9 @@ void hardware_spi_b8_p1(
 	HW_SPIUSED->SPDR.UINT8 [R_IO_LL] = v; // LL=0
 
 #elif CPUSTYLE_XC7Z
-	#warning Must be implemented for CPUSTYLE_XC7Z
+	//#warning Must be implemented for CPUSTYLE_XC7Z
+
+	SPI0->TXD = v;
 
 #else
 	#error Wrong CPUSTYLE macro
