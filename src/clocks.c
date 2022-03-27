@@ -1992,6 +1992,9 @@ calcdivider(
 			++ rbi;		// переходим к следующему предделителю в списке.
 		}
 	}
+
+	//PRINTF("calcdivider: no parameters for divisor=%u, width=%u, taps=%08X\n", (unsigned long) divisor, (unsigned) width, (unsigned) taps);
+
 	// Не подобрать комбинацию прескалера и делителя для ожидаемого коэффициента деления.
 	* dvalue = (1U << width) - 1;	// просто пустышка - максимальный делитель
 	return (rbi - 1);	// если надо обраьатывать невозможность подбора - возврат rbmax
@@ -6805,8 +6808,9 @@ void hardware_spi_master_initialize(void)
 	SCLR->APER_CLK_CTRL |= (0x01uL << 14);	// APER_CLK_CTRL.SPI0_CPU_1XCLKACT
 	(void) SCLR->APER_CLK_CTRL;
 
-	SCLR->SPI_CLK_CTRL = (SCLR->SPI_CLK_CTRL & ~ (0)) |
-			//(1uL << 0) |
+	// Set DIVISOR
+	SCLR->SPI_CLK_CTRL = (SCLR->SPI_CLK_CTRL & ~ (0x3FuL << 8)) |
+			(16uL << 8) |
 			0;
 
 //	PRINTF("1 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
@@ -7117,7 +7121,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	const uint_fast8_t prei = calcdivider(calcdivround2(xc7z1_get_spi_freq(), spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
 
 	unsigned brdiv = ulmin(prei + 1, 7);
-	PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u\n", prei, value, spispeed, brdiv);
+	PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z1_get_spi_freq());
 
 	const portholder_t cr_val =
 			(1uL << 17) |	// ModeFail Generation Enable
