@@ -7124,11 +7124,11 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z_get_spi_freq());
 
 	const portholder_t cr_val =
-			(1uL << 17) |	// ModeFail Generation Enable
-			(1uL << 16) |	// Manual Start Command
-			(1uL << 15) |	// Manual Start Enable
-			(1uL << 14) |	// Manual CS
-			(0x0FuL << 10) |	// 1111 - No slave selected
+			//(1uL << 17) |	// ModeFail Generation Enable
+			//(1uL << 16) |	// Manual Start Command
+			//(1uL << 15) |	// Manual Start Enable
+//			(1uL << 14) |	// Manual CS
+//			(0x0FuL << 10) |	// 1111 - No slave selected
 			(brdiv << 3) |	// BAUD_RATE_DIV: 001: divide by 4, ... 111: divide by 256
 			(1uL << 0) |	// 1: the SPI is in master mode
 			0;
@@ -7431,9 +7431,12 @@ hardware_spi_ready_b8_void(void)
 
 #elif CPUSTYLE_XC7Z
 	//#warning Must be implemented for CPUSTYLE_XC7Z
-
 	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
+	{
+		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
+		//local_delay_ms(100);
 		;
+	}
 	(void) SPI0->RXD;
 
 #else
@@ -7509,7 +7512,11 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
+	{
+		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
+		//local_delay_ms(100);
 		;
+	}
 	return SPI0->RXD & 0xFF;
 
 #else
