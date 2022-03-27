@@ -6802,7 +6802,6 @@ void hardware_spi_master_initialize(void)
 	SPIIO_INITIALIZE();
 
 #elif CPUSTYLE_XC7Z
-	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (0x01uL << 14);	// APER_CLK_CTRL.SPI0_CPU_1XCLKACT
@@ -7104,7 +7103,6 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	spi_spcmd0_val32w [spispeedindex][SPIC_MODE3] = spcmd32w | SPCMD_MODE3;
 
 #elif CPUSTYLE_XC7Z
-	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	enum
 	{
@@ -7121,7 +7119,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 	const uint_fast8_t prei = calcdivider(calcdivround2(xc7z_get_spi_freq(), spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
 
 	unsigned brdiv = ulmin(prei + 1, 7);
-	PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z_get_spi_freq());
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z_get_spi_freq());
 
 	const portholder_t cr_val =
 			//(1uL << 17) |	// ModeFail Generation Enable
@@ -7282,7 +7280,6 @@ void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
 #elif CPUSTYLE_XC7Z
-	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	SPI0->CR = xc7z_spi_cr_val [spispeedindex][spimode];
 	SPI0->ER = 0x0001;	// 1: enable the SPI
@@ -7360,7 +7357,6 @@ void hardware_spi_disconnect(void)
 	HARDWARE_SPI_DISCONNECT();
 
 #elif CPUSTYLE_XC7Z
-	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	SPI0->ER = 0x0000;	// 0: disable the SPI
 	HARDWARE_SPI_DISCONNECT();
@@ -7430,7 +7426,7 @@ hardware_spi_ready_b8_void(void)
 	(void) HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
 #elif CPUSTYLE_XC7Z
-	//#warning Must be implemented for CPUSTYLE_XC7Z
+
 	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
 	{
 		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
@@ -7509,7 +7505,6 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	return HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
 
 #elif CPUSTYLE_XC7Z
-	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
 	{
@@ -8787,9 +8782,14 @@ void hardware_spi_b8_p1(
 	HW_SPIUSED->SPDR.UINT8 [R_IO_LL] = v; // LL=0
 
 #elif CPUSTYLE_XC7Z
-	//#warning Must be implemented for CPUSTYLE_XC7Z
 
 	SPI0->TXD = v;
+	while ((SPI0->SR & (1uL << 2)) == 0)	// TX FIFO not full
+	{
+		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
+		//local_delay_ms(100);
+		;
+	}
 
 #else
 	#error Wrong CPUSTYLE macro
