@@ -1557,14 +1557,12 @@ void spidf_initialize(void)
 	XQSPIPS->ER = 0;
 	XQSPIPS->LQSPI_CR = 0;
 
-	TP();
 	// flush rx fifo
 	while (XQSPIPS->SR & RX_FIFO_NOT_EMPTY)
 		readl(QSPI_RXDATA);
 
-	TP();
 	XQSPIPS->CR = (XQSPIPS->CR & CFG_NO_MODIFY_MASK) |
-	            CFG_IFMODE |	// 1: Flash memory interface mode
+	            //CFG_IFMODE |	// 1: Flash memory interface mode
 				CFG_LITTLE_ENDIAN | // zero value
 	            CFG_HOLDB_DR |	// D2 & D3 in 1 mit mode behaviour
 	            CFG_FIFO_WIDTH_32 |	// Must be set to 2'b11 (32bits).
@@ -1572,25 +1570,25 @@ void spidf_initialize(void)
 				CFG_CPOL |	// 1: The QSPI clock is quiescent high
 	            CFG_MASTER_MODE |	// 1: The QSPI is in master mode
 				CFG_BAUD_DIV_16 | // CFG_BAUD_DIV_2 |
-	            CFG_MANUAL_START_EN | // 1: enables manual start
+	            //CFG_MANUAL_START_EN | // 1: enables manual start
 				CFG_MANUAL_CS_EN |	// 1: manual CS mode
 				CFG_MANUAL_CS |	// Peripheral chip select line, directly drive n_ss_out if Manual_C is set
 				0;
 
+	(void) XQSPIPS->CR;
 	//qspi->khz = 100000;
 	//qspi->linear_mode = 0 /* fasle */;
 
 	//writel(1, QSPI_ENABLE);
-	XQSPIPS->ER = 1;
+	//XQSPIPS->ER = 1;
 
 	// clear sticky irqs
 	//writel(TX_UNDERFLOW | RX_OVERFLOW, QSPI_IRQ_STATUS);
 	XQSPIPS->SR = TX_UNDERFLOW | RX_OVERFLOW;
 
-	TP();
 	SPIDF_HARDINITIALIZE();
-	TP();
 }
+
 void spidf_hangoff(void)
 {
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
@@ -1601,6 +1599,7 @@ void spidf_uninitialize(void)
 //	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 //		;
 	// Disconnect I/O pins
+	XQSPIPS->ER = 0;
 	SPIDF_HANGOFF();
 }
 
@@ -1613,7 +1612,48 @@ static void spidf_unselect(void)
 	// Disconnect I/O pins
 	//qspi_cs(& qspi0, 1);
 	XQSPIPS->CR |= CFG_MANUAL_CS;	 // De-assert
+	(void) XQSPIPS->CR;
+
+	XQSPIPS->ER = 0;
 	SPIDF_HANGOFF();
+}
+
+static void spidf_progval8_p1(uint_fast8_t v)
+{
+	XQSPIPS->TXD_01 = // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+			(v << 0) |
+			(v << 8) |
+			(v << 16) |
+			(v << 24) |
+			0;
+}
+
+static void spidf_progval8_p2(uint_fast8_t v)
+{
+	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+		;
+	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
+		;
+	unsigned vx = XQSPIPS->RXD;
+	PRINTF("vx=%08lX\n", vx);
+
+	XQSPIPS->TXD_01 = // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+			(v << 0) |
+			(v << 8) |
+			(v << 16) |
+			(v << 24) |
+			0;
+}
+
+static uint_fast8_t spidf_complete(void)
+{
+	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+		;
+	while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
+		;
+	unsigned v0 = XQSPIPS->RXD;
+	PRINTF("v0=%08lX\n", v0);
+	return v0;
 }
 
 static void spidf_iostart(
@@ -1627,26 +1667,87 @@ static void spidf_iostart(
 	)
 {
 	PRINTF("spidf_iostart: dir=%d, cmd=%02X, readnb=%d, ndummy=%d, size=%lu, ha=%d, addr=%08lX\n", direction, cmd, readnb, ndummy, size, hasaddress, address);
-	unsigned cmdlen = 1 + (hasaddress ? 3 : 0) + ndummy;
+	const unsigned cmdlen = 1 + (hasaddress ? 3 : 0) + ndummy;
 	PRINTF("spidf_iostart: cmdlen=%u\n", cmdlen);
+
+	// Read data: cmd A23_A16 A15_A8 A7_A0
+	const uint_fast32_t v =
+			((uint_fast32_t) ((address >> 0) & 0xFF) << 24) |
+			((uint_fast32_t) ((address >> 8) & 0xFF) << 16) |
+			((uint_fast32_t) ((address >> 16) & 0xFF) << 8) |
+			((uint_fast32_t) (cmd & 0xFF) << 0) |
+			0;
+
+	// Assert CS
+	XQSPIPS->CR &= ~ CFG_MANUAL_CS;
+	(void) XQSPIPS->CR;
+	XQSPIPS->ER = 1;
+
+	spidf_progval8_p1(cmd);		/* The Read SFDP instruction code is 0x5A */
+
 	if (hasaddress)
 	{
-		// Read data: cmd A23_A16 A15_A8 A7_A0
-		const uint_fast32_t v =
-				(uint_fast32_t) ((address >> 0) & 0xFF) << 24 |
-				(uint_fast32_t) ((address >> 8) & 0xFF) << 16 |
-				(uint_fast32_t) ((address >> 16) & 0xFF) << 8 |
-				(uint_fast32_t) (cmd & 0xFF) << 0 |
-				0;
-		XQSPIPS->TXD_00 = v;	// Data to TX FIFO, for 4-byte instruction for normal read/write data transfer.
+		spidf_progval8_p2(address >> 16);
+		spidf_progval8_p2(address >> 8);
+		spidf_progval8_p2(address >> 0);
 	}
-	else
+	while (ndummy --)
+		spidf_progval8_p2(0x00);	// dummy byte
+
+	spidf_complete();
+	return;
+
+
+	switch (cmdlen)
 	{
+	case 1:
+		TP();
 		XQSPIPS->TXD_01 = cmd; // Data to TX FIFO, for 1-byte instruction, not for normal data transfer.
+		//XQSPIPS->CR |= CFG_MANUAL_START_EN;
+		//(void) XQSPIPS->CR;
+		//XQSPIPS->CR |= CFG_MANUAL_START;
+		//(void) XQSPIPS->CR;
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+			;
+		TP();
+		break;
+	case 2:
+		break;
+	case 3:
+		break;
+	case 4:
+		XQSPIPS->TXD_00 = v;	// Data to TX FIFO, for 4-byte instruction for normal read/write data transfer.
+		//XQSPIPS->CR |= CFG_MANUAL_START_EN;
+		//(void) XQSPIPS->CR;
+		//XQSPIPS->CR |= CFG_MANUAL_START;
+		//(void) XQSPIPS->CR;
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+			;
+		break;
+	case 5:
+		TP();
+		XQSPIPS->TXD_00 = v;	// Data to TX FIFO, for 4-byte instruction for normal read/write data transfer.
+		//XQSPIPS->CR |= CFG_MANUAL_START_EN;
+		//(void) XQSPIPS->CR;
+		//XQSPIPS->CR |= CFG_MANUAL_START;
+		//(void) XQSPIPS->CR;
+		TP();
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+			;
+		TP();
+		XQSPIPS->TXD_01 = 0x00;	// dummy data
+		//XQSPIPS->CR |= CFG_MANUAL_START_EN;
+		//(void) XQSPIPS->CR;
+		//XQSPIPS->CR |= CFG_MANUAL_START;
+		//(void) XQSPIPS->CR;
+		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+			;
+		TP();
+		break;
 	}
 
-	XQSPIPS->CR &= ~ CFG_MANUAL_CS;
-	XQSPIPS->CR |= CFG_MANUAL_START;
 
 //	while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
 //		;
@@ -1655,14 +1756,20 @@ static void spidf_iostart(
 static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
 	PRINTF("spidf_read: size=%lu\n", size);
+	size = 20;
 	while (size --)
 	{
-		while ((XQSPIPS->SR & 0x10) == 0)
+//		spidf_progval8_p1(0);
+//		while ((XQSPIPS->SR & TX_FIFO_NOT_FULL) == 0)
+//			;
+		while ((XQSPIPS->SR & RX_FIFO_NOT_EMPTY) == 0)
 			;
 		unsigned v = XQSPIPS->RXD;
-		PRINTF("v = %02x\n", v);
-		* buff = v;
+		PRINTF("v = %02X, XQSPIPS->SR=%08lX\n", v, XQSPIPS->SR);
+		//* buff ++ = v;
 	}
+	for (;;)
+		;
 	PRINTF("spidf_read: done\n");
 }
 
