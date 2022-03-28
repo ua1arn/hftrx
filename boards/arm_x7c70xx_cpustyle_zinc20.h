@@ -28,8 +28,8 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 //#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
@@ -43,13 +43,12 @@
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
 
 #if WITHDEBUG
-	#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
+	#define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
 	#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
-//#define WITHCAT_USART1		1
-#define WITHDEBUG_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+#define WITHDEBUG_USART1	1
+#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
 
 #define TARGET_CTL1_CS_EMIO 	54	//	CTL1_CS		D10	E19	IO_L5N_T0_AD9N_3
@@ -93,7 +92,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -159,7 +158,7 @@
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
 	//#define WITHCPUADCHW 	1	/* использование встроенного в процессор ADC */
 
-	#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
+	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	//#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
@@ -677,15 +676,15 @@
 
 #endif /* WITHSPIHW || WITHSPISW */
 
-#if WITHUART2HW
+#if WITHUART1HW
 
 	// WITHUART2HW
-	#define TARGET_UART1_TX_MIO	48	//	USART_TX	C44	B12	PS_MIO48_501	UART1
+	#define TARGET_UART1_TX_MIO	48	//	USART_TX	C44	B12	PS_MIO48_501	UART0
 	#define TARGET_UART1_RX_MIO	49	//	USART_RX	C45	C12	PS_MIO49_501
 	#define	TARGET_UART1_IOTYPE	GPIO_IOTYPE_501
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
-	#define HARDWARE_UART2_INITIALIZE() do { \
+	#define HARDWARE_UART1_INITIALIZE() do { \
 		enum { IOTYPE = TARGET_UART1_IOTYPE }; \
 		enum { L3_SEL = 0x07, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; \
 		const portholder_t pinmode_uart_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
@@ -694,7 +693,7 @@
 		gpio_peripherial(TARGET_UART1_RX_MIO, pinmode_uart_rx);  /*  MIO_PIN_49 UART1_RXD */ \
 	} while (0)
 
-#endif /* WITHUART2HW */
+#endif /* WITHUART1HW */
 
 #if WITHKEYBOARD
 

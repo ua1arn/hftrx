@@ -7924,7 +7924,7 @@ typedef struct {
 	static PACKEDCOLORMAIN_T wfpalette [PALETTESIZE];
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)
+#elif (LCDMODE_PIP_L8 || (! LCDMODE_PIP_L8 && LCDMODE_MAIN_L8)) && LCDMODE_LTDC
 
 	enum { PALETTESIZE = COLORPIP_BASE };
 	enum { WFROWS = WFDY };

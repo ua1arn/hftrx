@@ -123,13 +123,14 @@ void xc7z_if_fifo_init(void)
 void xc7z_dma_init_af_tx(void)
 {
 }
+//
+//void xc7z_dds_ftw(const uint_least64_t * val)
+//{
+//}
+//
+//void xc7z_dds_rts(const uint_least64_t * val)
+//{
+//}
 
-void xc7z_dds_ftw(const uint_least64_t * val)
-{
-}
-
-void xc7z_dds_rts(const uint_least64_t * val)
-{
-}
 #endif /* WITHRTS96 */
 #endif /* CPUSTYLE_XC7Z */

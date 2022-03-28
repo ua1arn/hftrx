@@ -133,7 +133,7 @@
 
 #else /* WITHISBOOTLOADER */
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-	//#define LCDMODE_DUMMY	1
+	#define LCDMODE_DUMMY	1
 	//#define LCDMODE_HARD_SPI	1	/* LCD over SPI line */
 
 	//#define LCDMODE_V0	1	//* Обычная конфигурация одна страница без PIP с L8 на основном экране */
@@ -144,13 +144,13 @@
 	//#define LCDMODE_V2A	1	/* только главный экран 16 бит (три страницы), без PIP */
 	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
 
-	#define LCDMODE_V5B	1	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
+	//#define LCDMODE_V5B	1	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
 
 	//#define LCDMODE_V2B 1	/* только главный экран 16 бит RGB565 (одна страница), без PIP */
 	//#define LCDMODE_V1A	1	/* Обычная конфигурация с PIP на часть экрана, MAIN=RGB565, PIP=RGB565 */
 
 	//#define LCDMODE_LQ043T3DX02K 1	/* LQ043T3DX02K panel (272*480) - SONY PSP-1000 4.3" display */
-	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
+	//#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 	//#define LCDMODE_AT070TNA2 1	/* AT070TNA2 panel (1024*600) - 7" display */
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
 	//#define WITHTFT_OVER_LVDS	1	// LVDS receiver THC63LVDF84B
@@ -217,9 +217,9 @@
 	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
-	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	//#define WITHISBOOTLOADERFATFS 1
-	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	#define WITHISBOOTLOADERFATFS 1
 	#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
 
 #else /* WITHISBOOTLOADER */
@@ -281,7 +281,7 @@
 	// FPGA section
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
-	#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
+	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
@@ -300,43 +300,10 @@
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
-	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHFFTSIZEWIDE 		1024	/* Отображение спектра и волопада */
-		#define WITHVIEW_3DSS		1
-		#define WITHDEFAULTVIEW		VIEW_3DSS
-		#define WITHVIEW_3DSS_MARK	1
-		#define WITHDISPLAY_FPS			30
-		#define WITHDISPLAYSWR_FPS		30
-		#define WITHSPECBETA_DEFAULT	30
-		#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
-		#if 1
-			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
-			#define WITHALPHA			24
-			#define FORMATFROMLIBRARY 	1
-			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT	150
-			#define WITHCPUTEMPERATURE	1
-			#define WITHALTERNATIVEFONTS	1
-			#define WITHAFEQUALIZER		1
-			#define WITHALTERNATIVELAYOUT	1
-		#endif
-	#elif LCDMODE_LQ043T3DX02K
-		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
-		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-	#else
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
-		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
-	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
+	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
-	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
+	//#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 
 	#if 0
 		#define WITHUSBHEADSET 1	/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
