@@ -642,8 +642,8 @@
 		enum { L3_SEL = 0x07, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; \
 		const portholder_t pinmode_uart_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t pinmode_uart_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
-		gpio_peripherial(TARGET_UART0_TX_MIO, pinmode_uart_tx);  /*  MIO_PIN_48 UART1_TXD */ \
-		gpio_peripherial(TARGET_UART0_RX_MIO, pinmode_uart_rx);  /*  MIO_PIN_49 UART1_RXD */ \
+		gpio_peripherial(TARGET_UART0_TX_MIO, pinmode_uart_tx);  /*  MIO_PIN_51 UART0_TXD */ \
+		gpio_peripherial(TARGET_UART0_RX_MIO, pinmode_uart_rx);  /*  MIO_PIN_50 UART0_RXD */ \
 	} while (0)
 
 #endif /* WITHUART1HW */
