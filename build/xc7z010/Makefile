@@ -65,7 +65,7 @@ DADEFS = -D__ASSEMBLY__=1
 
 ARCHDIR = $(PRJROOT)/arch/zynq
 
-ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7020
+ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010
 
 # full qualified name
 ZYNQLIB = zynq7020.a
