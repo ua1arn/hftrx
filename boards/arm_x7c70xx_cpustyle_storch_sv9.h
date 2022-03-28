@@ -1140,6 +1140,26 @@
 		#else /* WIHSPIDFHW */
 
 			#define SPIDF_MISO() (gpio_readpin(SPDIF_MISO_MIO))
+			#if WIHSPIDFHW2BIT
+				#define SPIDF_IN2() do { \
+					gpio_fasinput2(SPDIF_MOSI_MIO, 0x03);	/* IO0, IO1 */ \
+				} while (0)
+				#define SPIDF_OUT2() do { \
+					gpio_fastoutput2(SPDIF_MOSI_MIO, 0x03);	/* IO0, IO1 */ \
+				} while (0)
+				#define SPIDF_RD2() (gpio_readbus(SPDIF_MOSI_MIO, 0x03))
+				#define SPIDF_WR2(v) (gpio_writebus(SPDIF_MOSI_MIO, 0x03, (v)); } while (0)
+			#endif /* WIHSPIDFHW2BIT */
+			#if WIHSPIDFHW4BIT
+				#define SPIDF_IN4() do { \
+					gpio_fasinput2(SPDIF_MOSI_MIO, 0x0F);	/* IO0, IO1, IO2, IO3 */ \
+				} while (0)
+				#define SPIDF_OUT4() do { \
+					gpio_fastoutput2(SPDIF_MOSI_MIO, 0x0F);	/* IO0, IO1, IO2, IO3 */ \
+				} while (0)
+				#define SPIDF_RD4() (gpio_readbus(SPDIF_MOSI_MIO, 0x0F))
+				#define SPIDF_WR4(v) do { gpio_writebus(SPDIF_MOSI_MIO, 0x0F, (v)); } while (0)
+			#endif /* WIHSPIDFHW4BIT */
 			#define SPIDF_MOSI(v) do { if (v) gpio_writepin(SPDIF_MOSI_MIO, 1); else gpio_writepin(SPDIF_MOSI_MIO, 0); } while (0)
 			#define SPIDF_SCLK(v) do { if (v) gpio_writepin(SPDIF_SCLK_MIO, 1); else gpio_writepin(SPDIF_SCLK_MIO, 0); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \

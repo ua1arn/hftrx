@@ -294,8 +294,33 @@ extern "C" {
 	} while (0)
 
 	#define gpio_readpin(pin) ((ZYNQ_IORW32(GPIO_DATA_RO(GPIO_PIN2BANK(pin))) & GPIO_PIN2MASK(pin)) != 0)
-	/* чтение группы PIO/MIO, находящихся в одном банке. Указывается нмер самого праволг из них. Значение возвращается в младших битах. */
+	/* чтение группы PIO/MIO, находящихся в одном банке.
+	 * Указывается нмер самого правого из них.
+	 * Значение возвращается в младших битах.
+	 * */
 	#define gpio_readbus(pin, lowmask) ((ZYNQ_IORW32(GPIO_DATA_RO(GPIO_PIN2BANK(pin))) >> GPIO_PIN2BITPOS(pin)) & (lowmask))
+	/* запись группы PIO/MIO, находящихся в одном банке.
+	 * Указывается номер самого правого из них.
+	 * Значение передается в младших битах.
+	 * */
+	#define gpio_writebus(pin, lowmask, state) do { \
+		const portholder_t bank = GPIO_PIN2BANK(pin); \
+		const portholder_t mask = (lowmask) << GPIO_PIN2BITPOS(pin); \
+		const portholder_t value = (state) << GPIO_PIN2BITPOS(pin); \
+		GPIO_BANK_SET_OUTPUTS(bank, mask, value); \
+	} while (0)
+	#define gpio_fastinput2(pin, lowmask) do { \
+		const portholder_t bank = GPIO_PIN2BANK(pin); \
+		const portholder_t mask = (lowmask) << GPIO_PIN2BITPOS(pin); \
+		/*GPIO_BANK_SET_OEN(bank, mask, 0); */\
+		GPIO_BANK_SET_DIRM(bank, mask, 0); \
+	} while (0)
+	#define gpio_fastoutput2(pin, lowmask) do { \
+		const portholder_t bank = GPIO_PIN2BANK(pin); \
+		const portholder_t mask = (lowmask) << GPIO_PIN2BITPOS(pin); \
+		/*GPIO_BANK_SET_OEN(bank, mask, mask); */\
+		GPIO_BANK_SET_DIRM(bank, mask, mask); \
+	} while (0)
 
 #endif /* CPUSTYLE_STM32F */
 
