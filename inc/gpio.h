@@ -185,8 +185,8 @@ extern "C" {
 		const portholder_t masklsw = ((~ (uint32_t) (mask)) >> 0) & 0xFFFF; \
 		const portholder_t datamsw = ((uint32_t) (outstate) >> 16) & 0xFFFF; \
 		const portholder_t datalsw = ((uint32_t) (outstate) >> 0) & 0xFFFF; \
-		ZYNQ_IORW32(GPIO_MASK_DATA_LSW(bank)) = (masklsw << 16) | datalsw; \
-		ZYNQ_IORW32(GPIO_MASK_DATA_MSW(bank)) = (maskmsw << 16) | datamsw; \
+		if (masklsw != 0xFFFF) ZYNQ_IORW32(GPIO_MASK_DATA_LSW(bank)) = (masklsw << 16) | datalsw; \
+		if (maskmsw != 0xFFFF) ZYNQ_IORW32(GPIO_MASK_DATA_MSW(bank)) = (maskmsw << 16) | datamsw; \
 	} while (0)
 
 	//	DIRM: Direction Mode. This controls whether the I/O pin is acting as an input or an output.

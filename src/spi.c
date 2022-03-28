@@ -989,6 +989,15 @@ static uint_fast8_t spidf_rbit(uint_fast8_t v)
 	return r;
 }
 
+static uint_fast8_t spidf_rbitfast(void)
+{
+	uint_fast8_t r;
+	SPIDF_SCLK(0);
+	r = SPIDF_MISO();
+	SPIDF_SCLK(1);
+	return r;
+}
+
 static void spidf_wbit(uint_fast8_t v)
 {
 	SPIDF_MOSI(v);
@@ -1009,6 +1018,22 @@ uint_fast8_t spidf_read_byte(uint_fast8_t v)
 	r = r * 2 + spidf_rbit(v & 0x04);
 	r = r * 2 + spidf_rbit(v & 0x02);
 	r = r * 2 + spidf_rbit(v & 0x01);
+
+	return r;
+}
+
+uint_fast8_t spidf_read_bytefast(void)
+{
+	uint_fast8_t r = 0;
+
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
+	r = r * 2 + spidf_rbitfast();
 
 	return r;
 }
@@ -1116,6 +1141,16 @@ static uint_fast8_t spidf_progval8(uint_fast8_t sendval)
 #endif /* WIHSPIDFOVERSPI */
 }
 
+static uint_fast8_t spidf_readval8(void)
+{
+#if WIHSPIDFOVERSPI
+	spitarget_t target = targetdataflash;	/* addressing to chip */
+	return spi_progval8(target, sendval);
+#else /* WIHSPIDFOVERSPI */
+	return spidf_read_bytefast();
+#endif /* WIHSPIDFOVERSPI */
+}
+
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-memory, 1: Memory-to-dataflash
 	uint_fast8_t cmd,
@@ -1147,7 +1182,7 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
 	spidf_to_read();
 	while (size --)
-		* buff ++ = spidf_progval8(0xff);
+		* buff ++ = spidf_readval8();
 	spidf_to_write();
 }
 
@@ -1157,7 +1192,7 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 	uint_fast8_t err = 0;
 	spidf_to_read();
 	while (size --)
-		err |= * buff ++ != spidf_progval8(0xff);
+		err |= * buff ++ != spidf_readval8();
 	spidf_to_write();
 	return err;
 }
@@ -2357,7 +2392,7 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [2];
 		mf_dlen = mfa [3];
 
-		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 #endif /* WITHDEBUG */
 
@@ -2448,7 +2483,7 @@ int testchipDATAFLASH(void)
 			//PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
 		}
 		///////////////////////////////////
-		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
+		PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
