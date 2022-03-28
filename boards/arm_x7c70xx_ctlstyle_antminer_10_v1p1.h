@@ -218,7 +218,7 @@
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
 	#define WITHISBOOTLOADERFATFS 1
-	#define WITHISBOOTLOADERIMAGE "tc1_xc7z010_app.xyl32"
+	#define WITHISBOOTLOADERIMAGE "tc1_xc7z010_app_xyl32.bin"
 
 #else /* WITHISBOOTLOADER */
 
