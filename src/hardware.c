@@ -3382,7 +3382,8 @@ void cpump_initialize(void)
 
 void Reset_CPUn_Handler(void)
 {
-
+	for (;;)
+		;
 }
 
 // Вызывается из main
