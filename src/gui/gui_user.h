@@ -38,6 +38,9 @@ enum {
 #endif /* #if WITHFT8 */
 	WINDOW_INFOBAR_MENU,
 	WINDOW_AF_EQ,
+#if defined (RTC1_TYPE)
+	WINDOW_TIME,
+#endif /* defined (RTC1_TYPE) */
 
 	WINDOWS_COUNT
 };

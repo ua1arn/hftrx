@@ -129,6 +129,7 @@ static void window_ft8_process(void);
 static void window_infobar_menu_process(void);
 static void windows_af_eq_proccess(void);
 static void window_menu_params_proccess(void);
+static void window_time_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -161,6 +162,9 @@ static window_t windows [] = {
 #endif /* #if WITHFT8 */
 	{ WINDOW_INFOBAR_MENU, 	 NO_PARENT_WINDOW,		ALIGN_MANUAL,   "",		 				 0, window_infobar_menu_process, },
 	{ WINDOW_AF_EQ, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "AF equalizer",			 1, windows_af_eq_proccess, },
+#if defined (RTC1_TYPE)
+	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
+#endif /* defined (RTC1_TYPE) */
 };
 
 /* Возврат ссылки на окно */
@@ -1368,7 +1372,9 @@ static void window_options_process(void)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Display", "Display|settings", 	},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_gui",     "GUI|settings", 		},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Utils",   "Utils", 			    },
+#if defined (RTC1_TYPE)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_time",    "Set time|& date", 	},
+#endif /* defined (RTC1_TYPE) */
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1417,6 +1423,9 @@ static void window_options_process(void)
 			button_t * btn_AUDsett = find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
 			button_t * btn_SysMenu = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
 			button_t * btn_Display = find_gui_element(TYPE_BUTTON, win, "btn_Display");
+#if defined (RTC1_TYPE)
+			button_t * btn_time = find_gui_element(TYPE_BUTTON, win, "btn_time");
+#endif /* defined (RTC1_TYPE) */
 
 			if (bh == btn_Utils)
 			{
@@ -1451,6 +1460,14 @@ static void window_options_process(void)
 				open_window(win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
+#if defined (RTC1_TYPE)
+			else if (bh == btn_time)
+			{
+				window_t * const win = get_win(WINDOW_TIME);
+				open_window(win);
+			}
+#endif /* defined (RTC1_TYPE) */
+
 		}
 		break;
 
@@ -4448,6 +4465,174 @@ static void window_freq_process (void)
 		}
 	}
 }
+
+// *********************************************************************************************************************************************************************
+
+#if defined (RTC1_TYPE)
+static void window_time_proccess(void)
+{
+	window_t * const win = get_win(WINDOW_TIME);
+	static uint_fast16_t year;
+	static uint_fast8_t month, day, hour, minute, secound, update;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		update = 1;
+		uint8_t interval = 60;
+
+		static const label_t labels [] = {
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_year",   "****", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_month", 	"**", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_day",  	"**", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_hour",   	"**", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_minute",   "**", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{	WINDOW_TIME, DISABLED,  0, NON_VISIBLE, "lbl_second", 	"**", FONT_MEDIUM, COLORMAIN_WHITE, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		static const button_t buttons [] = {
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_year+",  "Y+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_year-",  "Y-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_month+",  "M+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_month-",  "M-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_day+",  "D+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_day-",  "D-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_hour+",  "h+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_hour-",  "h-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_minute+",  "m+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_minute-",  "m-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 1, 	"btn_second+",  "s+", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, -1,	"btn_second-",  "s-", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 0,		"btn_sec0",  "s00", },
+			{  40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TIME, NON_VISIBLE, 0,		"btn_set",  "Set", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		button_t * bh = NULL;
+		label_t * lh = NULL;
+		uint16_t x = 0, y = 0;
+
+		for (uint8_t i = 0; i < win->bh_count; i ++)
+		{
+			bh = & win->bh_ptr[i];
+
+			if (i % 2 == 0)
+			{
+				if (bh->payload != 0)
+				{
+					lh = & win->lh_ptr[i / 2];
+					lh->x = x + bh->w / 2 - get_label_width(lh) / 2;
+					lh->y = 0;
+					lh->visible = VISIBLE;
+				}
+				y += lh->y + get_label_height(lh) * 2;
+			}
+
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->visible = VISIBLE;
+
+			y += interval;
+
+			if ((i + 1) % 2 == 0)
+			{
+				y = 0;
+				x += interval;
+			}
+		}
+
+		button_t * btn_set =  find_gui_element(TYPE_BUTTON, win, "btn_set");
+		btn_set->is_locked = BUTTON_LOCKED;
+
+		board_rtc_getdatetime(& year, & month, & day, & hour, & minute,	& secound);
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_yearp =  find_gui_element(TYPE_BUTTON, win, "btn_year+");
+			button_t * btn_yearn =  find_gui_element(TYPE_BUTTON, win, "btn_year-");
+			button_t * btn_monthp =  find_gui_element(TYPE_BUTTON, win, "btn_month+");
+			button_t * btn_monthn =  find_gui_element(TYPE_BUTTON, win, "btn_month-");
+			button_t * btn_dayp =  find_gui_element(TYPE_BUTTON, win, "btn_day+");
+			button_t * btn_dayn =  find_gui_element(TYPE_BUTTON, win, "btn_day-");
+			button_t * btn_hourp =  find_gui_element(TYPE_BUTTON, win, "btn_hour+");
+			button_t * btn_hourn =  find_gui_element(TYPE_BUTTON, win, "btn_hour-");
+			button_t * btn_minutep =  find_gui_element(TYPE_BUTTON, win, "btn_minute+");
+			button_t * btn_minuten =  find_gui_element(TYPE_BUTTON, win, "btn_minute-");
+			button_t * btn_secondp =  find_gui_element(TYPE_BUTTON, win, "btn_second+");
+			button_t * btn_secondn =  find_gui_element(TYPE_BUTTON, win, "btn_second-");
+			button_t * btn_sec0 =  find_gui_element(TYPE_BUTTON, win, "btn_sec0");
+			button_t * btn_set =  find_gui_element(TYPE_BUTTON, win, "btn_set");
+
+			if (bh == btn_yearp || bh == btn_yearn)
+				year += bh->payload;
+			else if (bh == btn_monthp || bh == btn_monthn)
+				month += bh->payload;
+			else if (bh == btn_dayp || bh == btn_dayn)
+				day += bh->payload;
+			else if (bh == btn_hourp || bh == btn_hourn)
+				hour += bh->payload;
+			else if (bh == btn_minutep || bh == btn_minuten)
+				minute += bh->payload;
+			else if (bh == btn_secondp || bh == btn_secondn)
+				secound += bh->payload;
+			else if (bh == btn_sec0)
+				secound = 0;
+			else if (bh == btn_set)
+			{
+				board_rtc_setdatetime(year, month, day, hour, minute, secound);
+				close_all_windows();
+				return;
+			}
+
+			update = 1;
+		}
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		label_t * lh =  find_gui_element(TYPE_LABEL, win, "lbl_year");
+		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%d", year);
+
+		lh =  find_gui_element(TYPE_LABEL, win, "lbl_month");
+		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", month);
+
+		lh =  find_gui_element(TYPE_LABEL, win, "lbl_day");
+		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", day);
+
+		lh =  find_gui_element(TYPE_LABEL, win, "lbl_hour");
+		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", hour);
+
+		lh =  find_gui_element(TYPE_LABEL, win, "lbl_minute");
+		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", minute);
+
+		lh =  find_gui_element(TYPE_LABEL, win, "lbl_second");
+		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", secound);
+	}
+}
+#endif /* defined (RTC1_TYPE) */
 
 // *********************************************************************************************************************************************************************
 
