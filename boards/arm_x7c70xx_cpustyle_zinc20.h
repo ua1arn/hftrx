@@ -14,12 +14,12 @@
 
 //#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+//#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
+//#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 #if WITHINTEGRATEDDSP
 	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
@@ -49,46 +49,6 @@
 
 #define WITHDEBUG_USART1	1
 #define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
-
-
-#define TARGET_CTL1_CS_EMIO 	54	//	CTL1_CS		D10	E19	IO_L5N_T0_AD9N_3
-#define TARGET_RTC_CS_EMIO 		55	//	RTC_CS		A20	R17	IO_B34_LN19
-#define TARGET_CODEC1_CS_EMIO 	56	//	CODEC_CS	B14	J18	IO_L14P_T2_AD4P_SRCC_35
-#define TARGET_ADC1_CS_EMIO 	57	//	ADC1_CS		A40	W19	IO_B34_LN22
-#define TARGET_ADC2_CS_EMIO 	58	//	ADC2_CS		A39	W18	IO_B34_LP22
-#define TARGET_NVRAM_CS_EMIO 	59	//	NVRAM_CS	B35	G15	IO_L19N_T3_VREF_35
-#define TARGET_EXT1_CS_EMIO 	60	//	EXT1_CS		D9	E18	IO_L5P_T0_AD9P_35
-#define TARGET_EXT2_CS_EMIO 	61	//	EXT2_CS		D8	F17	IO_L6N_T0_VREF_35
-
-#define TARGET_ELKEY_LEFT_EMIO		62	// G17	B32	G17	IO_L16P_T2_35
-#define TARGET_ELKEY_RIGHT_EMIO		63	// G18	B33	G18	IO_L16N_T2_35
-#define TARGET_PTT_EMIO				64	// K19	B22	K19	IO_L10P_T1_AD11P_35
-#define TARGET_PTT2_EMIO			65	// J19	B23	J19	IO_L10N_T1_AD11N_35
-#define TARGET_TUNE_REQ_EMIO		66	// G19	B24	G19	IO_L18P_T2_AD13P_35
-#define TARGET_TX_INH_EMIO			67	// G20	B25	G20	IO_L18N_T2_AD13N_35
-#define TARGET_ENCODER_A_EMIO		68	// F20	B28	F20	IO_L15N_T2_DQS_AD12N_35
-#define TARGET_ENCODER_B_EMIO		69	// F19	B27	F19	IO_L15P_T2_DQS_AD12P_35
-#define TARGET_ENC2_A_EMIO			70	// H17	B30	H17	IO_L13N_T2_MRCC_35
-#define TARGET_ENC2_B_EMIO			71	// H16	B29	H16	IO_L13P_T2_MRCC_35
-#define TARGET_ENC2_BUTTON_EMIO		72	// M15	A5	M15	IO_B35_LN23
-#define TARGET_TS_INT_EMIO			73	// V15	A2	V15	IO_L10P_T1_34
-#define TARGET_USER_BOOT_EMIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
-#define TARGET_ACTIVITY_LED_EMIO	75	// F16	D7	F16	IO_L6P_T0_35	LED anode
-
-#define TARGET_NMEA_RESET_EMIO		76	// T15	A10	T15	IO_B34_LN5
-#define TARGET_PPS_IN_EMIO			77	// U14	A12	U15	IO_B34_LP11
-
-#define TARGET_FPLCD_CD_EMIO		78	// W15	A3	W15	IO_L10N_T1_34
-#define TARGET_FPLCD_RESET_EMIO		79	// M14	A4	M14	IO_L23P_T3_35
-#define TARGET_LCD_BL_ADJ0_EMIO		80	// P14	A7	P14	IO_L6P_T0_34	Open Drain
-#define TARGET_LCD_BL_ADJ1_EMIO		81	// R14	A8	R14	IO_L6N_T0_VREF_34	Open Drain
-#define TARGET_LCD_BL_ENABLE_EMIO	82	// T14	A9	T14	IO_L5P_T0_34
-
-#define TARGET_RFADC_DITH_EMIO		83	//	J20	B12	J20	IO_L17P_T2_AD5P_35
-#define TARGET_RFADC_PGA_EMIO		84	//	H20	B13	H20	IO_L17N_T2_AD5N_35
-
-//#define TARGET_RFADC_SHDN_EMIO		85	//	L20	B10	L20	IO_L9N_T1_DQS_AD3N_35
-//#define TARGET_DAC_SLEEP_EMIO		86	//	V18	A18	V18	IO_L21N_T3_DQS_34
 
 #if WITHISBOOTLOADER
 
@@ -384,17 +344,20 @@
 	#define HARDWARE_SDIO_HANGOFF() do { \
 		} while (0)
 	// SD0 signals
-	#define HARDWARE_SDIO_D0_MIO	10	//	eMMC_D0		E9	PS_MIO10_500
-	#define HARDWARE_SDIO_CMD_MIO	11	//	eMMC_CMD	C6	PS_MIO11_500
-	#define HARDWARE_SDIO_CLK_MIO	12	//	eMMC_CLK	D9	PS_MIO12_500
-	#define HARDWARE_SDIO_D1_MIO	13	//	eMMC_D1		E8	PS_MIO13_500
-	#define HARDWARE_SDIO_D2_MIO	14	//	eMMC_D2		C5	PS_MIO14_500
-	#define HARDWARE_SDIO_D3_MIO	15	//	eMMC_D3		C8	PS_MIO15_500
+	#define HARDWARE_SDIO_CLK_MIO	40	//	SD_CLK
+	#define HARDWARE_SDIO_CMD_MIO	41	//	SD_CMD
+	#define HARDWARE_SDIO_D0_MIO	42	//	SD_D0
+	#define HARDWARE_SDIO_D1_MIO	43	//	SD_D1
+	#define HARDWARE_SDIO_D2_MIO	44	//	SD_D2
+	#define HARDWARE_SDIO_D3_MIO	45	//	SD_D3
+
+	#define HARDWARE_SDIO_WP	46	//	SD_WP
+	#define HARDWARE_SDIO_CDN	47	//	SD_CDN
 
 	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
 	#define HARDWARE_SDIO_INITIALIZE() do { \
 		enum { IOTYPE = GPIO_IOTYPE_500 }; \
-		enum { L3_SEL = 0x00, L2_SEL = 0x04, L1_SEL = 0x00, L0_SEL = 0x00 }; /* SDIO 1 */ \
+		enum { L3_SEL = 0x00, L2_SEL = 0x04, L1_SEL = 0x00, L0_SEL = 0x00 }; /* SDIO 0 */ \
 		const portholder_t pinmode_sdio_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t pinmode_sdio_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
 		const portholder_t miopin_ctl = 0x00000680uL; \
@@ -403,12 +366,12 @@
 				0 * (46uL << 16) |	/* 46 SDIO 0 CD Select */ \
 				0 * (50uL << 0) |	/* 50 SDIO 0 WP Select */ \
 				0; \
-		MIO_SET_MODE(HARDWARE_SDIO_D0_MIO, miopin_dat);		/*  eMMC_D0	 */ \
-		MIO_SET_MODE(HARDWARE_SDIO_D1_MIO, miopin_dat);		/*  eMMC_D1	 */ \
-		MIO_SET_MODE(HARDWARE_SDIO_D2_MIO, miopin_dat);		/*  eMMC_D2	 */ \
-		MIO_SET_MODE(HARDWARE_SDIO_D3_MIO, miopin_dat);		/*  eMMC_D3	 */ \
-		MIO_SET_MODE(HARDWARE_SDIO_CMD_MIO, miopin_ctl);	/*  eMMC_CMD */ \
-		MIO_SET_MODE(HARDWARE_SDIO_CLK_MIO, miopin_ctl);	/*  eMMC_CLK */ \
+		MIO_SET_MODE(HARDWARE_SDIO_D0_MIO, miopin_dat);		/*  SD_D0	 */ \
+		MIO_SET_MODE(HARDWARE_SDIO_D1_MIO, miopin_dat);		/*  SD_D1	 */ \
+		MIO_SET_MODE(HARDWARE_SDIO_D2_MIO, miopin_dat);		/*  SD_D2	 */ \
+		MIO_SET_MODE(HARDWARE_SDIO_D3_MIO, miopin_dat);		/*  SD_D3	 */ \
+		MIO_SET_MODE(HARDWARE_SDIO_CMD_MIO, miopin_ctl);	/*  SD_CMD */ \
+		MIO_SET_MODE(HARDWARE_SDIO_CLK_MIO, miopin_ctl);	/*  SD_CLK */ \
 	} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
 	} while (0)
@@ -570,16 +533,6 @@
 
 // All CS trough EMIO
 
-
-#define targetctl1		TARGET_CTL1_CS_EMIO	// control registers
-#define targetnvram		TARGET_NVRAM_CS_EMIO	// nvram FM25L256
-#define targetcodec1	TARGET_CODEC1_CS_EMIO	// nvram NAU88C22
-#define targetrtc1		TARGET_RTC_CS_EMIO	// RTC DS1305
-
-#define targetadc2		TARGET_ADC1_CS_EMIO	// on-board ADC MCP3208-BI/SL chip select (potentiometers)
-#define targetadck		TARGET_ADC2_CS_EMIO	// on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
-#define targetxad2		TARGET_EXT2_CS_EMIO	// external SPI device (PA BOARD ADC)
-
 #if WITHSPIHW || WITHSPISW
 
 	#define WITHSPICSEMIO	1	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
@@ -679,18 +632,18 @@
 #if WITHUART1HW
 
 	// WITHUART2HW
-	#define TARGET_UART1_TX_MIO	48	//	USART_TX	C44	B12	PS_MIO48_501	UART0
-	#define TARGET_UART1_RX_MIO	49	//	USART_RX	C45	C12	PS_MIO49_501
-	#define	TARGET_UART1_IOTYPE	GPIO_IOTYPE_501
+	#define TARGET_UART0_TX_MIO	51	//	USART_TX	C44	B12	PS_MIO48_501	UART0
+	#define TARGET_UART0_RX_MIO	50	//	USART_RX	C45	C12	PS_MIO49_501
+	#define	TARGET_UART0_IOTYPE	GPIO_IOTYPE_501
 
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define HARDWARE_UART1_INITIALIZE() do { \
-		enum { IOTYPE = TARGET_UART1_IOTYPE }; \
+		enum { IOTYPE = TARGET_UART0_IOTYPE }; \
 		enum { L3_SEL = 0x07, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; \
 		const portholder_t pinmode_uart_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t pinmode_uart_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
-		gpio_peripherial(TARGET_UART1_TX_MIO, pinmode_uart_tx);  /*  MIO_PIN_48 UART1_TXD */ \
-		gpio_peripherial(TARGET_UART1_RX_MIO, pinmode_uart_rx);  /*  MIO_PIN_49 UART1_RXD */ \
+		gpio_peripherial(TARGET_UART0_TX_MIO, pinmode_uart_tx);  /*  MIO_PIN_48 UART1_TXD */ \
+		gpio_peripherial(TARGET_UART0_RX_MIO, pinmode_uart_rx);  /*  MIO_PIN_49 UART1_RXD */ \
 	} while (0)
 
 #endif /* WITHUART1HW */
@@ -857,7 +810,7 @@
 #endif /* WITHCPUADCHW */
 
 	// direct connection:
-	#define USB_RESET_MIO	46	//	USB_RESET	C37	D16		PS_MIO46_501
+	#define USB_RESET_MIO	1	//	USB_RESET	C37	D16		PS_MIO1_500
 
 	// ULPI:
 	#define USB_DATA0_MIO	32	//	USB_DATA0	C27	A14		PS_MIO32_501
@@ -982,7 +935,7 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-#if 1
+#if 0
 
 	#define	HARDWARE_BL_INITIALIZE() do { \
 		const portholder_t pinmode_emio = 0; /* dummy parameter */ \
@@ -1232,7 +1185,7 @@
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
-#if 1
+#if 0
 
 	#define ZYNQBOARD_LED_RED 8 /* Running indicator - PS_MIO8_500  */
 
@@ -1264,13 +1217,13 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			BOARD_BLINK_INITIALIZE(); \
-			HARDWARE_KBD_INITIALIZE(); \
+			/*BOARD_BLINK_INITIALIZE();  */ \
+			/* HARDWARE_KBD_INITIALIZE(); */ \
 			/*HARDWARE_DAC_INITIALIZE(); */\
-			HARDWARE_BL_INITIALIZE();  \
+			/* HARDWARE_BL_INITIALIZE(); */ \
 			/*HARDWARE_DCDC_INITIALIZE(); */\
 			/*TXDISABLE_INITIALIZE(); */\
-			TUNE_INITIALIZE(); \
+			/* TUNE_INITIALIZE(); */ \
 			/*BOARD_USERBOOT_INITIALIZE(); */ \
 			/*USBD_FS_INITIALIZE(); */\
 			USB_ULPI_INITIALIZE(); \
