@@ -241,30 +241,21 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 all: bitstreams $(PROJECT)_app_xyl32.bin
 	-cp $(PROJECT)_app_xyl32.bin $(ZINQ_BOOT_DIR)/$(PROJECT)_app_xyl32.bin
 
-bitstreams: bitstream_4205_10.h bitstream_ant_10.h bitstream_ant_20.h bitstream_myir7020.h 
+bitstreams: bitstream_4205_10.h bitstream_ant_10.h
 
 bitstream_ant_10.h: bitstream_ant_10.bit
 	./bit2c bitstream_ant_10.bit bitstream_ant_10.h
 
-bitstream_ant_20.h: bitstream_ant_20.bit
-	./bit2c bitstream_ant_20.bit bitstream_ant_20.h
-
-bitstream_myir7020.h: bitstream_myir7020.bit
-	./bit2c  bitstream_myir7020.bit bitstream_myir7020.h
-
 bitstream_4205_10.h: bitstream_4205_10.bit
 	./bit2c bitstream_4205_10.bit bitstream_4205_10.h
 	
-bootloader: bitstreams BOOT3
+bootloader: bitstreams BOOT2
   
 app_run: $(PROJECT)_app.elf bitstream_4205_10.bit app_run_4205.tcl
 	xsct.bat app_run_4205.tcl 
   
 #app_run: $(PROJECT)_app.elf bitstream_ant_10.bit app_run_ant10.tcl
 #	xsct.bat app_run_ant10.tcl  
-  
-#app_run: $(PROJECT)_app.elf bitstream_ant_20.bit app_run_ant20.tcl
-#	xsct.bat app_run_ant20.tcl
 
 lib: $(ZYNQLIB)
 
