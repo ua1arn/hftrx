@@ -21,6 +21,9 @@
 #define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 #define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
+#define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS25
+#define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS25
+
 #if WITHINTEGRATEDDSP
 	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -1044,28 +1047,27 @@
 	#define HARDWARE_NAND_REB_MIO 8		// RE#: PS_MIO8
 	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
 
+	#define TARGET_NAND_IOTYPE GPIO_IOTYPE_500
+
 	#define HARDWARE_NAND_INITIALIZE() do { \
-		xc7z_gpio_input(HARDWARE_NAND_RBC_MIO); /* Ready/Busy# */ \
-		xc7z_gpio_input(HARDWARE_NAND_D7_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D6_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D5_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D4_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D3_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D2_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D1_MIO); \
-		xc7z_gpio_input(HARDWARE_NAND_D0_MIO); \
-		xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
-		xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
-		xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
-		xc7z_writepin(HARDWARE_NAND_ALE_MIO, 0); \
-		xc7z_gpio_output(HARDWARE_NAND_CLE_MIO); \
-		xc7z_writepin(HARDWARE_NAND_CLE_MIO, 0); \
-		xc7z_gpio_output(HARDWARE_NAND_WEB_MIO); \
-		xc7z_writepin(HARDWARE_NAND_WEB_MIO, 1); \
-		xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); /* Write protect */ \
-		xc7z_writepin(HARDWARE_NAND_WPB_MIO, 0); \
-		xc7z_gpio_output(HARDWARE_NAND_REB_MIO); \
-		xc7z_writepin(HARDWARE_NAND_REB_MIO, 1); \
+		enum { IOTYPE = TARGET_NAND_IOTYPE }; \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 1); \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, 0, 0, 0, 0, 0); \
+		gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
+		gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D4_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D3_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
+		gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
+		gpio_output2(HARDWARE_NAND_CSB_MIO, 1, pinmode_output); \
+		gpio_output2(HARDWARE_NAND_ALE_MIO, 0, pinmode_output); \
+		gpio_output2(HARDWARE_NAND_CLE_MIO, 0, pinmode_output); \
+		gpio_output2(HARDWARE_NAND_WEB_MIO, 1, pinmode_output);  /* Write protect */ \
+		gpio_output2(HARDWARE_NAND_WPB_MIO, 0, pinmode_output); \
+		gpio_output2(HARDWARE_NAND_REB_MIO, 1, pinmode_output); \
 	} while (0)
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
@@ -1075,16 +1077,17 @@
 	#define ZYNQBOARD_LED_GREEN 38 /* PS_MIO38_LED_G */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
-			xc7z_gpio_output(ZYNQBOARD_LED_RED); \
-		} while (0)
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0, 0, 0, 0, 0); \
+		gpio_output2(ZYNQBOARD_LED_RED, 1, pinmode_output); \
+	} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
-			if (state) \
-			{ \
-				xc7z_writepin(ZYNQBOARD_LED_RED, 1); \
-			} else { \
-				xc7z_writepin(ZYNQBOARD_LED_RED, 0); \
-			} \
-		} while (0)
+		if (state) \
+		{ \
+			gpio_writepin(ZYNQBOARD_LED_RED, 1); \
+		} else { \
+			gpio_writepin(ZYNQBOARD_LED_RED, 0); \
+		} \
+	} while (0)
 
 #endif
 
