@@ -2377,7 +2377,6 @@ int testchipDATAFLASH(void)
 		return 1;
 	}
 
-#if 1//WITHDEBUG
 	{
 
 		uint8_t mfa [4];
@@ -2392,9 +2391,8 @@ int testchipDATAFLASH(void)
 		mf_devid2 = mfa [2];
 		mf_dlen = mfa [3];
 
-		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
-#endif /* WITHDEBUG */
 
 
 	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
@@ -2483,7 +2481,7 @@ int testchipDATAFLASH(void)
 			//PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
 		}
 		///////////////////////////////////
-		PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
+		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
