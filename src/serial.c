@@ -1237,7 +1237,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	UART0->CR = r;
 
-	HARDWARE_UART1_INITIALIZE();
+	HARDWARE_UART1_INITIALIZE();	/* Присоединить периферию к выводам */
 
 #else
 
