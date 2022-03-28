@@ -358,6 +358,8 @@ void stpmic1_dump_regulators(void);
 
 void ulpi_chip_initialize(void);
 void ulpi_chip_vbuson(uint_fast8_t state);
+void ulpi_chip_sethost(uint_fast8_t state);
+void ulpi_chip_debug(void);
 
 #ifdef __cplusplus
 }

@@ -805,6 +805,12 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 	USBH_POETRESET_INIT();
 
+#if WITHUSBHOST_HIGHSPEEDULPI
+	PRINTF("host HAL_EHCI_Init:\n");
+	ulpi_chip_debug();
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
+
 	// wait for the halted bit to become set
 	// Ждем пока бит Halted не будет выставлен
 	while ((EHCIx->USBSTS & STS_HCHALTED) == 0)
@@ -976,12 +982,15 @@ static void ulpi_reg_write(uint_fast8_t addr, uint_fast8_t data)
 {
 	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
 
-	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
+	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+		;
+
+	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
+			XUSBPS_ULPIVIEW_RW_MASK | 	// Select write direction
 			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
 			(((uint_fast32_t) data << XUSBPS_ULPIVIEW_DATWR_SHIFT) & XUSBPS_ULPIVIEW_DATWR_MASK) |
 			0;
 
-	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RW_MASK;	// Select write direction
 	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
 
 	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
@@ -992,11 +1001,13 @@ static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 {
 	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
 
-	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK)) |
+	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
+		;
+
+	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
 			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
 			0;
 
-	USBx->ULPIVIEW &= ~ XUSBPS_ULPIVIEW_RW_MASK;	// Select read direction
 	USBx->ULPIVIEW |= XUSBPS_ULPIVIEW_RUN_MASK;
 
 	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
@@ -1027,16 +1038,71 @@ void ulpi_chip_initialize(void)
 	if (vid != 0x0424 || pid != 0x0009)
 		return;
 
+}
+
+void ulpi_chip_sethost(uint_fast8_t state)
+{
+	// USB3340
+	ulpi_reg_read(0x00);	/* dummy read */
+
+	// Address = 00h (read only) Vendor ID Low = 0x24
+	// Address = 01h (read only) Vendor ID High = 0x04
+	// Address = 02h (read only) Product ID Low = 0x09
+	// Address = 03h (read only)  Product ID High = 0x00
+	const uint_fast8_t v0 = ulpi_reg_read(0x00);
+	const uint_fast8_t v1 = ulpi_reg_read(0x01);
+	const uint_fast8_t v2 = ulpi_reg_read(0x02);
+	const uint_fast8_t v3 = ulpi_reg_read(0x03);
+	const uint_fast16_t vid = v1 * 256 + v0;
+	const uint_fast16_t pid = v3 * 256 + v2;
+	//PRINTF("ulpi_chip_sethost: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+
+	if (vid != 0x0424 || pid != 0x0009)
+		return;
+
+	//	7.1.1.7 OTG Control
+	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear
 	// 7.1.2.1 Carkit Control
 	// Address = 19-1Bh (read), 19h (write), 1Ah (set), 1Bh (clear)
-	// Bit 0x01 - IdGndDrv set to 1
+
+	if (state)
+	{
+		// Tie ID down
+		ulpi_reg_write(0x0C, (0x01 << 0));	// Clear IdPullup bit
+		ulpi_reg_write(0x1A, (0x01 << 1));	// Set IdGndDrv bit
+	}
+	else
+	{
+		// Tie ID up
+		ulpi_reg_write(0x1B, (0x01 << 1));	// Clear IdGndDrv bit
+		ulpi_reg_write(0x0B, (0x01 << 0));	// Set IdPullup bit
+	}
 	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
-	ulpi_reg_write(0x1A, (0x01 << 1));	// Set IdGndDrv bit
-	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
+}
+
+void ulpi_chip_debug(void)
+{
+	PRINTF("Function Control (0x04): %02X\n", 	ulpi_reg_read(0x04));
+	PRINTF("Interface Control (0x07): %02X\n", 	ulpi_reg_read(0x07));
+	PRINTF("OTG Control (0x0A): %02X\n", 		ulpi_reg_read(0x0A));
+	PRINTF("USB Interrupt Enable Rising  (0x0D): %02X\n", ulpi_reg_read(0x0D));
+	PRINTF("USB Interrupt Enable Falling  (0x10): %02X\n", ulpi_reg_read(0x10));
+	PRINTF("USB Interrupt Status  (0x13): %02X\n", ulpi_reg_read(0x13));
+	PRINTF("USB Interrupt Latch  (0x14): %02X\n", ulpi_reg_read(0x14));
+	PRINTF("Debug  (0x15): %02X\n", ulpi_reg_read(0x15));
+	PRINTF("Scratch Register  (0x16): %02X\n", ulpi_reg_read(0x16));
+	PRINTF("Carkit Control  (0x19): %02X\n", ulpi_reg_read(0x19));
+	PRINTF("Carkit Interrupt Enable  (0x1D): %02X\n", ulpi_reg_read(0x1D));
+	PRINTF("Carkit Interrupt Status  (0x20): %02X\n", ulpi_reg_read(0x20));
+	PRINTF("Carkit Interrupt Latch  (0x21): %02X\n", ulpi_reg_read(0x21));
+	PRINTF("HS Compensation Register  (0x31): %02X\n", ulpi_reg_read(0x31));
+	PRINTF("USB-IF Charger Detection  (0x32): %02X\n", ulpi_reg_read(0x32));
+	PRINTF("Headset Audio Mode  (0x32): %02X\n", ulpi_reg_read(0x33));
 }
 
 void ulpi_chip_vbuson(uint_fast8_t state)
 {
+	return;
 	// USB3340
 	ulpi_reg_read(0x00);	/* dummy read */
 
@@ -1165,7 +1231,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 #endif
 #if WITHUSBHOST_HIGHSPEEDULPI
 		ulpi_chip_initialize();
+		ulpi_chip_sethost(1);
 		TARGET_USBFS_VBUSON_SET(1);
+		PRINTF("host init:\n");
+		ulpi_chip_debug();
 #endif /* WITHUSBHOST_HIGHSPEEDULPI */
 }
 

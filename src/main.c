@@ -21616,6 +21616,12 @@ hamradio_main_step(void)
 					default:
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;
+					case 'u':
+		#if WITHUSBHOST_HIGHSPEEDULPI
+						PRINTF("hkey:\n");
+						ulpi_chip_debug();
+		#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+						break;
 		#if WITHWAVPLAYER || WITHSENDWAV
 					case 'p':
 						PRINTF(PSTR("Play test file\n"));
