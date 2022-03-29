@@ -1242,27 +1242,30 @@
 	#define TARGET_RGMII0_RX_D3 	26	// PS_MIO26_501
 	#define TARGET_RGMII0_RX_EN 	27	// PS_MIO27_501
 
+	// See Table 16‐10: Ethernet RGMII Interface Signals via MIO Pins
+	// GigE 0
 	#define ETHERNET_INITIALIZE() do { \
-		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0x00, 0x00, 0x00, 0x00, 1); \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0x00, 0x00, 0x00, 0x00, 0); \
 		const portholder_t pinmode_mdio = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x04, 0x00, 0x00, 0x00, 0); \
-		const portholder_t pinmode_rgmii = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x00, 0x00, 0x00, 0x01, 0); \
+		const portholder_t pinmode_rgmii_tx = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x00, 0x00, 0x00, 0x01, 0); \
+		const portholder_t pinmode_rgmii_rx = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x00, 0x00, 0x00, 0x01, 1); \
 		/* RESET */ \
 		gpio_output2(TARGET_RGMII_RESET, 0, pinmode_output); /* RESET = 0 */ \
 		/* RGMII */ \
-		gpio_peripherial(TARGET_MDIO_CK, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_MDIO_DATA, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_TX_CLK, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_TX_D0, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_TX_D1, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_TX_D2, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_TX_D3, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_TX_EN, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_RX_CLK, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_RX_D0, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_RX_D1, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_RX_D2, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_RX_D3, pinmode_rgmii	);	/*  */ \
-		gpio_peripherial(TARGET_RGMII0_RX_EN, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_MDIO_CK, pinmode_mdio);	/*  */ \
+		gpio_peripherial(TARGET_MDIO_DATA, pinmode_mdio);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_CLK, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D0, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D1, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D2, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D3, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_EN, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_CLK, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D0, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D1, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D2, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D3, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_EN, pinmode_rgmii_rx);/*  */ \
 		/* RESET */ \
 		local_delay_ms(10); \
 		gpio_writepin(TARGET_RGMII_RESET, 1); /* RESET = 1 */ \
