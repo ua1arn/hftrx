@@ -14,19 +14,20 @@
 *******************************************************************/
 
 #include "xparameters.h"
-#include "xllfifo.h"
+#include "xgpio.h"
 
 /*
 * The configuration table for devices
 */
 
-XLlFifo_Config XLlFifo_ConfigTable[] =
+XGpio_Config XGpio_ConfigTable[XPAR_XGPIO_NUM_INSTANCES] =
 {
 	{
-		XPAR_AXI_FIFO_0_DEVICE_ID,
-		XPAR_AXI_FIFO_0_BASEADDR,
-		XPAR_AXI_FIFO_0_AXI4_BASEADDR,
-		XPAR_AXI_FIFO_0_DATA_INTERFACE_TYPE
+		XPAR_AXI_GPIO_0_DEVICE_ID,
+		XPAR_AXI_GPIO_0_BASEADDR,
+		XPAR_AXI_GPIO_0_INTERRUPT_PRESENT,
+		XPAR_AXI_GPIO_0_IS_DUAL
 	}
 };
+
 

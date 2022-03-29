@@ -68,7 +68,7 @@ ARCHDIR = $(PRJROOT)/arch/zynq
 ZYNQLIBSRC = $(PRJROOT)/lib/zynq/src_7010
 
 # full qualified name
-ZYNQLIB = zynq7020.a
+ZYNQLIB = zynq7010.a
 
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
