@@ -28,8 +28,8 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 //#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
@@ -82,6 +82,14 @@
 	#define WITHUSBHOST_HIGHSPEEDULPI	1
 	//#define WITHUSBHOST_DMAENABLE 1
 
+#if 1
+	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	#define WITHEHCIHW	1	/* USB_EHCI controller */
+	#define WITHUSBHW_EHCI		EHCI0
+	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port.
+	#define WITHUSBHOST_HIGHSPEEDULPI	1
+	//#define WITHUSBHOST_DMAENABLE 1	// not need for EHCI
+#endif
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
@@ -360,8 +368,8 @@
 		const portholder_t miopin_dat = MIO_PIN_VALUE(1, 1, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t miopin_ctl = MIO_PIN_VALUE(1, 1, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		SCLR->SD0_WP_CD_SEL = \
-			((unsigned long) HARDWARE_SDIO_CDN << 16) |	/* 46 SDIO 0 CD Select */ \
-			((unsigned long) HARDWARE_SDIO_WP << 0) |	/* 47 SDIO 0 WP Select */ \
+			0*((unsigned long) HARDWARE_SDIO_CDN << 16) |	/* 46 SDIO 0 CD Select */ \
+			0*((unsigned long) HARDWARE_SDIO_WP << 0) |	/* 47 SDIO 0 WP Select */ \
 			0; \
 		gpio_peripherial(HARDWARE_SDIO_D0_MIO, miopin_ctl);		/*  SD_D0	 */ \
 		gpio_peripherial(HARDWARE_SDIO_D1_MIO, miopin_ctl);		/*  SD_D1	 */ \
