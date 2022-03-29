@@ -35,6 +35,9 @@
 //#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
 //#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
 #define USERFIRSTSBLOCK 0
 #define WITHPS7BOARD_ANTMINER 1
 //#define WITHPS7BOARD_MYC_Y7Z020 1
@@ -42,15 +45,19 @@
 #define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS33
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
 
-#if WITHDEBUG
-	#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
-#endif /* WITHDEBUG */
+#define WITHUART2HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
+#define WITHUARTFIFO	1	/* испольование FIFO */
 
-//#define WITHCAT_USART1		1
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
+#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+
+//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 #define TARGET_CTL1_CS_EMIO 	54	//	CTL1_CS		D10	E19	IO_L5N_T0_AD9N_3
 #define TARGET_RTC_CS_EMIO 		55	//	RTC_CS		A20	R17	IO_B34_LN19
@@ -92,14 +99,6 @@
 //#define TARGET_DAC_SLEEP_EMIO		86	//	V18	A18	V18	IO_L21N_T3_DQS_34
 
 #if WITHISBOOTLOADER
-
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
-
-	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
@@ -146,14 +145,6 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
-
-	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
-
-	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
