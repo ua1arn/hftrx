@@ -44,7 +44,7 @@
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
 
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
-//#define WITHUARTFIFO	1	/* испольование FIFO */
+#define WITHUARTFIFO	1	/* испольование FIFO */
 
 #define WITHDEBUG_USART1	1
 #define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
