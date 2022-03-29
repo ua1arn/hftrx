@@ -23490,7 +23490,7 @@ static void bootloader_fatfs_mainloop(void)
 	rc = f_read(& Fil, (BYTE *) hdr->load_address, hdr->image_length, & br);	/* Read a chunk of file */
 	if (rc != FR_OK || br != hdr->image_length)
 	{
-		PRINTF("Can not read body of file '%s'\n", IMAGENAME);
+		PRINTF("Can not read body of file '%s', rc=%d, hdr->image_length=%08lX, br=%08lX\n", IMAGENAME, (int) rc, (unsigned long) hdr->image_length, (unsigned long) br);
 		PRINTF("Failed with rc=%u.\n", rc);
 		for (;;)
 			;
