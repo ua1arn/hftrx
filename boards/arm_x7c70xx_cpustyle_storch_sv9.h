@@ -30,7 +30,7 @@
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-//#define WITHETHHW 1	/* Hardware Ethernet controller */
+#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 //#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
 //#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
@@ -74,7 +74,7 @@
 #define TARGET_ENC2_BUTTON_EMIO		72	// M15	A5	M15	IO_B35_LN23
 #define TARGET_TS_INT_EMIO			73	// V15	A2	V15	IO_L10P_T1_34
 #define TARGET_USER_BOOT_EMIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
-#define TARGET_ACTIVITY_LED_EMIO	75	// F16	D7	F16	IO_L6P_T0_35	LED anode
+#define TARGET_ACTIVITY_EMIO	75	// F16	D7	F16	IO_L6P_T0_35	LED anode
 
 #define TARGET_NMEA_RESET_EMIO		76	// T15	A10	T15	IO_B34_LN5
 #define TARGET_PPS_IN_EMIO			77	// U14	A12	U15	IO_B34_LP11
@@ -905,6 +905,8 @@
 		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
 		const portholder_t pinmode_ulpi_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		/* RESET */ \
+		gpio_output2(USB_RESET_MIO, 0, MIO_PIN_VALUE(1, 0, IOTYPE_RST, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		/* ULPI chip */ \
 		gpio_peripherial(USB_DATA0_MIO, pinmode_ulpi_data); \
 		gpio_peripherial(USB_DATA1_MIO, pinmode_ulpi_data); \
@@ -919,9 +921,6 @@
 		gpio_peripherial(USB_CLK_MIO, pinmode_ulpi_input); \
 		gpio_peripherial(USB_STP_MIO, pinmode_ulpi_output); \
 		/* RESET */ \
-		gpio_output2(USB_RESET_MIO, 1, MIO_PIN_VALUE(1, 0, IOTYPE_RST, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
-		local_delay_ms(10); \
-		gpio_writepin(USB_RESET_MIO, 0); /* USB_RESET = 0 */ \
 		local_delay_ms(10); \
 		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 		local_delay_ms(10); \
@@ -1233,24 +1232,72 @@
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
+#if WITHETHHW
+
+	#define TARGET_RGMII_RESET		9	// PS_MIO9_500
+
+	#define TARGET_MDIO_CK		52	// PS_MIO52_501
+	#define TARGET_MDIO_DATA		53	// PS_MIO53_501
+	#define TARGET_RGMII0_TX_CLK 	16	// PS_MIO16_501
+	#define TARGET_RGMII0_TX_D0 	17	// PS_MIO17_501
+	#define TARGET_RGMII0_TX_D1 	18	// PS_MIO18_501
+	#define TARGET_RGMII0_TX_D2 	19	// PS_MIO19_501
+	#define TARGET_RGMII0_TX_D3 	20	// PS_MIO20_501
+	#define TARGET_RGMII0_TX_EN 	21	// PS_MIO21_501
+	#define TARGET_RGMII0_RX_CLK 	22	// PS_MIO22_501
+	#define TARGET_RGMII0_RX_D0 	23	// PS_MIO23_501
+	#define TARGET_RGMII0_RX_D1 	24	// PS_MIO24_501
+	#define TARGET_RGMII0_RX_D2 	25	// PS_MIO25_501
+	#define TARGET_RGMII0_RX_D3 	26	// PS_MIO26_501
+	#define TARGET_RGMII0_RX_EN 	27	// PS_MIO27_501
+
+	#define ETHERNET_INITIALIZE() do { \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0x00, 0x00, 0x00, 0x00, 1); \
+		const portholder_t pinmode_mdio = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x04, 0x00, 0x00, 0x00, 0); \
+		const portholder_t pinmode_rgmii = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x00, 0x00, 0x00, 0x01, 0); \
+		/* RESET */ \
+		gpio_output2(TARGET_RGMII_RESET, 0, pinmode_output); /* RESET = 0 */ \
+		/* RGMII */ \
+		gpio_peripherial(TARGET_MDIO_CK, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_MDIO_DATA, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_CLK, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D0, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D1, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D2, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D3, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_EN, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_CLK, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D0, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D1, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D2, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D3, pinmode_rgmii	);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_EN, pinmode_rgmii	);	/*  */ \
+		/* RESET */ \
+		local_delay_ms(10); \
+		gpio_writepin(TARGET_RGMII_RESET, 1); /* RESET = 1 */ \
+		local_delay_ms(10); \
+	} while (0)
+
+#endif /* WITHETHHW */
+
 #if 1
 
-	#define ZYNQBOARD_LED_RED 8 /* Running indicator - PS_MIO8_500  */
+	#define TARGET_ACTIVITY_MIO 8 /* Running indicator - PS_MIO8_500  */
 
 	#define BOARD_BLINK_INITIALIZE() do { \
 			const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
 			const portholder_t pinmode_emio = 0; /* dummy parameter */ \
-			gpio_output2(ZYNQBOARD_LED_RED, 0, pinmode_output); \
-			gpio_output2(TARGET_ACTIVITY_LED_EMIO, 1, pinmode_emio); \
+			gpio_output2(TARGET_ACTIVITY_MIO, 0, pinmode_output); \
+			gpio_output2(TARGET_ACTIVITY_EMIO, 1, pinmode_emio); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		if (state) \
 		{ \
-			gpio_writepin(ZYNQBOARD_LED_RED, 0); \
-			gpio_writepin(TARGET_ACTIVITY_LED_EMIO, 1); \
+			gpio_writepin(TARGET_ACTIVITY_MIO, 0); \
+			gpio_writepin(TARGET_ACTIVITY_EMIO, 1); \
 		} else { \
-			gpio_writepin(ZYNQBOARD_LED_RED, 1); \
-			gpio_writepin(TARGET_ACTIVITY_LED_EMIO, 0); \
+			gpio_writepin(TARGET_ACTIVITY_MIO, 1); \
+			gpio_writepin(TARGET_ACTIVITY_EMIO, 0); \
 		} \
 	} while (0)
 
@@ -1274,6 +1321,7 @@
 			TUNE_INITIALIZE(); \
 			/*BOARD_USERBOOT_INITIALIZE(); */ \
 			/*USBD_FS_INITIALIZE(); */\
+			ETHERNET_INITIALIZE(); \
 			USB_ULPI_INITIALIZE(); \
 		} while (0)
 
