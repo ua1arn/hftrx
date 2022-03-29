@@ -130,6 +130,7 @@ static void window_infobar_menu_process(void);
 static void windows_af_eq_proccess(void);
 static void window_menu_params_proccess(void);
 static void window_time_proccess(void);
+static void window_kbd_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -165,6 +166,7 @@ static window_t windows [] = {
 #if defined (RTC1_TYPE)
 	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
 #endif /* defined (RTC1_TYPE) */
+	{ WINDOWS_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "_",		 		 	 1, window_kbd_proccess, },
 };
 
 /* Возврат ссылки на окно */
@@ -583,11 +585,26 @@ static void gui_main_process(void)
 			button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = find_gui_element(TYPE_BUTTON, win, "btn_Receive");
 			button_t * btn_ft8 = find_gui_element(TYPE_BUTTON, win, "btn_ft8");
+			button_t * btn_2 = find_gui_element(TYPE_BUTTON, win, "btn_2");
 
 			if (bh == btn_notch)
 			{
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
+			}
+			else if (bh == btn_2 && 1)
+			{
+				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
+				else
+				{
+					window_t * const win = get_win(WINDOWS_KBD);
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_2);
+				}
 			}
 #if WITHFT8
 			else if (bh == btn_ft8)
@@ -4636,6 +4653,170 @@ static void window_time_proccess(void)
 
 // *********************************************************************************************************************************************************************
 
+static void window_kbd_proccess(void)
+{
+	window_t * const win = get_win(WINDOWS_KBD);
+	static uint_fast8_t update = 0, is_shift = 0;
+	const char kbd_cap[] = "1234567890QWERTYUIOPASDFGHJKLZXCVBNM";
+	const char kbd_low[] = "1234567890qwertyuiopasdfghjklzxcvbnm";
+	const uint_fast8_t len1 = 10, len2 = 10, len3 = 9, len4 = 7, kbd_len = len1 + len2 + len3 + len4, btn_size = 40;
+	const char kbd_func [][20] = { "btn_kbd_caps", "btn_kbd_backspace", "btn_kbd_space", "btn_kbd_enter", "btn_kbd_esc", };
+	static char edit_str[50];
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		update = 1;
+		button_t * bh = NULL;
+		uint_fast16_t x = 0, y = 0, interval = 5, i = 0;
+
+		memset(edit_str, 0, strlen(edit_str));
+
+		win->bh_count = kbd_len + 5;
+		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+
+		for (; i < win->bh_count; i ++)
+		{
+			if (i == len1)
+			{
+				x = bh->w / 2;
+				y += bh->h + interval;
+			}
+			else if (i == len1 + len2)
+			{
+				x = bh->w + interval;
+				y += bh->h + interval;
+			}
+			else if (i == len1 + len2 + len3)
+			{
+				x = bh->w * 2;
+				y += bh->h + interval;
+			}
+
+			bh = & win->bh_ptr[i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->w = btn_size;
+			bh->h = btn_size;
+			bh->state = CANCELLED;
+			bh->visible = VISIBLE;
+			bh->parent = WINDOWS_KBD;
+			bh->index = i;
+			bh->is_long_press = 0;
+			bh->is_repeating = 0;
+			bh->is_locked = BUTTON_NON_LOCKED;
+			if (i < kbd_len)
+				local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), "btn_kbd_%02d", i);
+			else
+				local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), "%s", kbd_func [i - kbd_len]);
+
+			x += bh->w + interval;
+		}
+
+		button_t * btn_kbd_caps = find_gui_element(TYPE_BUTTON, win, "btn_kbd_caps");
+		btn_kbd_caps->x1 = 0;
+		btn_kbd_caps->y1 = btn_size * 3 + interval * 3;
+		btn_kbd_caps->w = 75;
+		local_snprintf_P(btn_kbd_caps->text, ARRAY_SIZE(btn_kbd_caps->text), "CAPS");
+		btn_kbd_caps->is_locked = is_shift ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+
+		button_t * btn_kbd_backspace = find_gui_element(TYPE_BUTTON, win, "btn_kbd_backspace");
+		btn_kbd_backspace->x1 = btn_size * len1 + interval * len1;
+		btn_kbd_backspace->y1 = 0;
+		local_snprintf_P(btn_kbd_backspace->text, ARRAY_SIZE(btn_kbd_backspace->text), "<-");
+
+		button_t * btn_kbd_space = find_gui_element(TYPE_BUTTON, win, "btn_kbd_space");
+		btn_kbd_space->x1 = btn_kbd_caps->x1 + btn_kbd_caps->w + interval * 8 + btn_size * len4;
+		btn_kbd_space->y1 = btn_kbd_caps->y1;
+		btn_kbd_space->w = 95;
+		local_snprintf_P(btn_kbd_space->text, ARRAY_SIZE(btn_kbd_space->text), "Space");
+		btn_kbd_space->payload = (char) ' ';
+
+		button_t * btn_kbd_esc = find_gui_element(TYPE_BUTTON, win, "btn_kbd_esc");
+		btn_kbd_esc->x1 = btn_kbd_backspace->x1 + btn_kbd_backspace->w + interval * 3;
+		btn_kbd_esc->y1 = btn_kbd_backspace->y1 + btn_kbd_backspace->h / 2;
+		btn_kbd_esc->w = 50;
+		btn_kbd_esc->h = 50;
+		local_snprintf_P(btn_kbd_esc->text, ARRAY_SIZE(btn_kbd_esc->text), "Esc");
+
+		button_t * btn_kbd_enter = find_gui_element(TYPE_BUTTON, win, "btn_kbd_enter");
+		btn_kbd_enter->x1 = btn_kbd_esc->x1;
+		btn_kbd_enter->y1 = btn_kbd_esc->y1 + btn_kbd_esc->h + interval * 3;
+		btn_kbd_enter->w = 50;
+		btn_kbd_enter->h = 50;
+		local_snprintf_P(btn_kbd_enter->text, ARRAY_SIZE(btn_kbd_enter->text), "OK");
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "_");
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_kbd_esc = find_gui_element(TYPE_BUTTON, win, "btn_kbd_esc");
+			button_t * btn_kbd_caps = find_gui_element(TYPE_BUTTON, win, "btn_kbd_caps");
+			button_t * btn_kbd_enter = find_gui_element(TYPE_BUTTON, win, "btn_kbd_enter");
+			button_t * btn_kbd_space = find_gui_element(TYPE_BUTTON, win, "btn_kbd_space");
+			button_t * btn_kbd_backspace = find_gui_element(TYPE_BUTTON, win, "btn_kbd_backspace");
+
+			if (bh->index < kbd_len || bh == btn_kbd_space)
+			{
+				char text [2];
+				text [0] = (char) bh->payload;
+				text [1] = '\0';
+				strcat(edit_str, text);
+			}
+			else if (bh == btn_kbd_caps)
+			{
+				is_shift = ! is_shift;
+				btn_kbd_caps->is_locked = is_shift ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+				update = 1;
+			}
+			else if (bh == btn_kbd_backspace)
+			{
+				uint_fast8_t l = strlen(edit_str);
+				if (l)
+					edit_str [l - 1] = '\0';
+			}
+			else if (bh == btn_kbd_enter || bh == btn_kbd_esc)
+			{
+				PRINTF("edit str: %s\n", edit_str);
+				close_all_windows();
+				return;
+			}
+
+			local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s_", edit_str);
+		}
+		break;
+
+	default:
+	break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		for(uint_fast8_t i = 0; i < kbd_len; i ++)
+		{
+			button_t * bh = & win->bh_ptr[i];
+			char text [2];
+			text [0] = is_shift ? kbd_cap [i] : kbd_low [i];
+			text [1] = '\0';
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "%s", text);
+			bh->payload = (char) text [0];
+		}
+	}
+}
+
+// *********************************************************************************************************************************************************************
 #define MENU_GROUPS_MAX	20
 #define MENU_PARAMS_MAX	30
 static uint8_t index_param = 0;

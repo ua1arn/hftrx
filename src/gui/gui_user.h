@@ -34,13 +34,14 @@ enum {
 	WINDOW_NOTCH,					// ручной режекторый фильтр
 	WINDOW_GUI_SETTINGS,			// настройки интерфейса GUI
 #if WITHFT8
-	WINDOW_FT8,
+	WINDOW_FT8,						// FT8 декодер
 #endif /* #if WITHFT8 */
-	WINDOW_INFOBAR_MENU,
-	WINDOW_AF_EQ,
+	WINDOW_INFOBAR_MENU,			// инфобар
+	WINDOW_AF_EQ,					// НЧ эквалайзер (тест)
 #if defined (RTC1_TYPE)
-	WINDOW_TIME,
+	WINDOW_TIME,					// настройка времени и даты
 #endif /* defined (RTC1_TYPE) */
+	WINDOWS_KBD,					// экранная клавиатура
 
 	WINDOWS_COUNT
 };
