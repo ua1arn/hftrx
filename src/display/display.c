@@ -1797,7 +1797,7 @@ const videomode_t vdmode0 =
 	//https://code.ihub.org.cn/projects/825/repositories/874/file_edit_page?file_name=am57xx-idk-common.dtsi&path=arch%2Farm%2Fboot%2Fdts%2Fam57xx-idk-common.dtsi&rev=master
 const videomode_t vdmode0 =
 {
-	.width = 768,			/* LCD PIXEL WIDTH            */
+	.width = 800,			/* LCD PIXEL WIDTH            */
 	.height = 1280,			/* LCD PIXEL HEIGHT           */
 	/**
 	  * @brief  AT070TN90 Timing
