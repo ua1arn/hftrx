@@ -807,7 +807,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 #if WITHUSBHOST_HIGHSPEEDULPI
 	PRINTF("host HAL_EHCI_Init:\n");
-	ulpi_chip_debug();
+	//ulpi_chip_debug();
 #endif /* WITHUSBHOST_HIGHSPEEDULPI */
 
 
@@ -1044,6 +1044,7 @@ void ulpi_chip_sethost(uint_fast8_t state)
 {
 	// USB3340
 	ulpi_reg_read(0x00);	/* dummy read */
+	return;
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
@@ -1234,7 +1235,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		ulpi_chip_sethost(1);
 		TARGET_USBFS_VBUSON_SET(1);
 		PRINTF("host init:\n");
-		ulpi_chip_debug();
+		//ulpi_chip_debug();
 #endif /* WITHUSBHOST_HIGHSPEEDULPI */
 }
 
