@@ -357,18 +357,18 @@
 	#define HARDWARE_SDIO_INITIALIZE() do { \
 		enum { IOTYPE = GPIO_IOTYPE_501 }; \
 		enum { L3_SEL = 0x04, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; /* SDIO 0 */ \
-		const portholder_t miopin_dat = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
-		const portholder_t miopin_ctl = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		const portholder_t miopin_dat = MIO_PIN_VALUE(1, 1, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		const portholder_t miopin_ctl = MIO_PIN_VALUE(1, 1, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		SCLR->SD0_WP_CD_SEL = \
-				(46uL << 16) |	/* 46 SDIO 0 CD Select */ \
-				(50uL << 0) |	/* 50 SDIO 0 WP Select */ \
-				0; \
-		MIO_SET_MODE(HARDWARE_SDIO_D0_MIO, miopin_dat);		/*  SD_D0	 */ \
-		MIO_SET_MODE(HARDWARE_SDIO_D1_MIO, miopin_dat);		/*  SD_D1	 */ \
-		MIO_SET_MODE(HARDWARE_SDIO_D2_MIO, miopin_dat);		/*  SD_D2	 */ \
-		MIO_SET_MODE(HARDWARE_SDIO_D3_MIO, miopin_dat);		/*  SD_D3	 */ \
-		MIO_SET_MODE(HARDWARE_SDIO_CMD_MIO, miopin_ctl);	/*  SD_CMD */ \
-		MIO_SET_MODE(HARDWARE_SDIO_CLK_MIO, miopin_ctl);	/*  SD_CLK */ \
+			((unsigned long) HARDWARE_SDIO_CDN << 16) |	/* 46 SDIO 0 CD Select */ \
+			((unsigned long) HARDWARE_SDIO_WP << 0) |	/* 47 SDIO 0 WP Select */ \
+			0; \
+		gpio_peripherial(HARDWARE_SDIO_D0_MIO, miopin_ctl);		/*  SD_D0	 */ \
+		gpio_peripherial(HARDWARE_SDIO_D1_MIO, miopin_ctl);		/*  SD_D1	 */ \
+		gpio_peripherial(HARDWARE_SDIO_D2_MIO, miopin_ctl);		/*  SD_D2	 */ \
+		gpio_peripherial(HARDWARE_SDIO_D3_MIO, miopin_ctl);		/*  SD_D3	 */ \
+		gpio_peripherial(HARDWARE_SDIO_CMD_MIO, miopin_ctl);	/*  SD_CMD */ \
+		gpio_peripherial(HARDWARE_SDIO_CLK_MIO, miopin_ctl);	/*  SD_CLK */ \
 	} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
 	} while (0)
