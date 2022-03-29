@@ -22,10 +22,10 @@
 	#define WITHSAICLOCKFROMPIN 1	// тактовая частота на SAI1 подается с внешнего генератора, в процессор вводится через MCK сигнал интерфейса
 
 	// Варианты конфигурации тактирования
-	#define WITHCPUXOSC 12000000uL	/* На процессоре установлен генератор 12 МГц */
-	#define ARM_PLL_MUL	111	// xxxxx MHz CPU clock
+	#define WITHCPUXOSC 33333000uL	/* На процессоре установлен генератор 33.333 МГц */
+	#define ARM_PLL_MUL	40
 	#define ARM_PLL_DIV	2
-	#define IO_PLL_MUL 133	// IO_PLL_CTRL.PLL_FDIV value
+	#define IO_PLL_MUL 48	// IO_PLL_CTRL.PLL_FDIV value
 
 	// PL Clock 0 Output control
 	// ~50 MHz
@@ -47,7 +47,7 @@
 	#define SCLR_FPGA3_CLK_CTRL_DIVISOR0 8
 	#define SCLR_FPGA3_CLK_CTRL_DIVISOR1 4
 
-	#define DDR_PLL_MUL 88	// DDR_PLL_CTRL.PLL_FDIV value - 1066.656 MHz
+	#define DDR_PLL_MUL 32	// DDR_PLL_CTRL.PLL_FDIV value - 1066.656 MHz
 	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
 	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz
 
