@@ -6492,9 +6492,13 @@ void hightests(void)
 				0;
 		SCLR->GEM0_RCLK_CTRL = 0x0000001uL;
 
-
 		ASSERT(GEM0->MODULE_ID == 0x00020118uL);
 		PRINTF("GEM0 test done\n");
+
+		//	Net:   ZYNQ GEM: e000b000, phyaddr 7, interface rgmii-id
+		//	eth0: ethernet@e000b000
+		//	U-BOOT for myd_y7z020_10_07
+
 	}
 #endif
 #if 0
