@@ -9543,13 +9543,13 @@ static unsigned RAMFUNC_NONILINE testramfunc2(void)
 
 void lowtests(void)
 {
-//	PRINTF("TARGET_UART1_RX_MIO test\n");
+//	PRINTF("TARGET_UART1_TX_MIO test\n");
 //	for (;;)
 //	{
 //		const portholder_t pinmode = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_LVCMOS33, 1, 0, 0, 0, 0, 0);
-//		gpio_output2(TARGET_UART1_RX_MIO, 1, pinmode);
+//		gpio_output2(TARGET_UART1_TX_MIO, 1, pinmode);
 //		local_delay_ms(200);
-//		gpio_output2(TARGET_UART1_RX_MIO, 0);
+//		gpio_output2(TARGET_UART1_TX_MIO, 0, pinmode);
 //		local_delay_ms(200);
 //	}
 #if 0 && (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) && defined (ZYNQBOARD_LED_RED)
