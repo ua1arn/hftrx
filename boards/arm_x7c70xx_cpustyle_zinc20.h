@@ -36,14 +36,15 @@
 //#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
 #define USERFIRSTSBLOCK 0
-#define WITHPS7BOARD_ANTMINER 1
+//#define WITHPS7BOARD_ANTMINER 1
+#define WITHPS7BOARD_EBAZ4205 1
 //#define WITHPS7BOARD_MYC_Y7Z020 1
 
 #define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS33
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
 
 #define WITHUART1HW	1	/*	Используется периферийный контроллер последовательного порта UART1 */
-#define WITHUARTFIFO	1	/* испольование FIFO */
+//#define WITHUARTFIFO	1	/* испольование FIFO */
 
 #define WITHDEBUG_USART1	1
 #define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
@@ -354,15 +355,13 @@
 
 	//EMIT_MASKWRITE(0XF8000830, 0x003F003FU ,0x00380037U),	// SD0_WP_CD_SEL
 	#define HARDWARE_SDIO_INITIALIZE() do { \
-		enum { IOTYPE = GPIO_IOTYPE_500 }; \
-		enum { L3_SEL = 0x00, L2_SEL = 0x04, L1_SEL = 0x00, L0_SEL = 0x00 }; /* SDIO 0 */ \
-		const portholder_t pinmode_sdio_tx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
-		const portholder_t pinmode_sdio_rx = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
-		const portholder_t miopin_ctl = 0x00000680uL; \
-		const portholder_t miopin_dat = 0x00001680uL; \
+		enum { IOTYPE = GPIO_IOTYPE_501 }; \
+		enum { L3_SEL = 0x04, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; /* SDIO 0 */ \
+		const portholder_t miopin_dat = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		const portholder_t miopin_ctl = MIO_PIN_VALUE(1, 1, IOTYPE, 0, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		SCLR->SD0_WP_CD_SEL = \
-				0 * (46uL << 16) |	/* 46 SDIO 0 CD Select */ \
-				0 * (50uL << 0) |	/* 50 SDIO 0 WP Select */ \
+				(46uL << 16) |	/* 46 SDIO 0 CD Select */ \
+				(50uL << 0) |	/* 50 SDIO 0 WP Select */ \
 				0; \
 		MIO_SET_MODE(HARDWARE_SDIO_D0_MIO, miopin_dat);		/*  SD_D0	 */ \
 		MIO_SET_MODE(HARDWARE_SDIO_D1_MIO, miopin_dat);		/*  SD_D1	 */ \
