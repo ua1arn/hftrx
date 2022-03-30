@@ -704,6 +704,7 @@ static void nand_data_bus_write(void)
 #else
 	#warning nand_data_bus_write should be implemented
 #endif
+	//HARDWARE_NAND_BUS_WRITE();
 }
 
 // bus programming: write data to chip
@@ -723,6 +724,7 @@ static void nand_data_bus_read(void)
 #else
 	#warning nand_data_bus_read should be implemented
 #endif
+	//HARDWARE_NAND_BUS_READ();
 }
 
 static void nand_data_out(uint_fast8_t v)
@@ -742,6 +744,7 @@ static void nand_data_out(uint_fast8_t v)
 #else
 	#warning nand_data_out should be implemented
 #endif
+	//HARDWARE_NAND_DATA_SET(v);
 }
 
 //
@@ -766,6 +769,7 @@ static uint_fast8_t nand_data_in(void)
 	return 0;
 
 #endif
+	//return HARDWARE_NAND_DATA_GET();
 }
 
 #elif WITHNANDHW
