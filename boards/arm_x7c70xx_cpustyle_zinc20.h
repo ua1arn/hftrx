@@ -28,8 +28,8 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 //#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
@@ -39,9 +39,9 @@
 
 // XC7Z020-1CLG484C
 //#define WITHPS7BOARD_ANTMINER 1	// XC7Z010-1CLG400C, dual bank MT41K256M16HA-125IT
-#define WITHPS7BOARD_EBAZ4205 1		// XC7Z010-1CLG400C, single bank MT41K256M16HA-125IT
+//#define WITHPS7BOARD_EBAZ4205 1		// XC7Z010-1CLG400C, single bank MT41K256M16HA-125IT
 //#define WITHPS7BOARD_MYC_Y7Z020 1
-//#define WITHPS7BOARD_ZINC20 1		// XC7Z020-1CLG484C, dual bank MT41K256M16HA-125IT
+#define WITHPS7BOARD_ZINC20 1		// XC7Z020-1CLG484C, dual bank MT41K256M16HA-125IT
 
 #define GPIO_IOTYPE_500	GPIO_IOTYPE_LVCMOS33
 #define GPIO_IOTYPE_501	GPIO_IOTYPE_LVCMOS18
@@ -85,7 +85,7 @@
 	#define WITHUSBHOST_HIGHSPEEDULPI	1
 	//#define WITHUSBHOST_DMAENABLE 1
 
-#if 1
+#if 0
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		EHCI0
@@ -347,9 +347,9 @@
 #if WITHSDHCHW
 
 	// return: 0 - no disk
-	#define HARDWARE_SDIOSENSE_CD() 1//((SD0->PRESENT_STATE & (1uL << 18)) != 0) /* получить состояние датчика CARD PRESENT */
+	#define HARDWARE_SDIOSENSE_CD() ((SD0->PRESENT_STATE & (1uL << 18)) != 0) /* получить состояние датчика CARD PRESENT */
 	// return: ! 0 - write protect
-	#define HARDWARE_SDIOSENSE_WP() 0//((SD0->PRESENT_STATE & (1uL << 19)) == 0) /* получить состояние датчика CARD WRITE PROTECT */
+	#define HARDWARE_SDIOSENSE_WP() ((SD0->PRESENT_STATE & (1uL << 19)) == 0) /* получить состояние датчика CARD WRITE PROTECT */
 
 	#define HARDWARE_SDIO_HANGOFF() do { \
 		} while (0)
@@ -370,9 +370,11 @@
 		enum { L3_SEL = 0x04, L2_SEL = 0x00, L1_SEL = 0x00, L0_SEL = 0x00 }; /* SDIO 0 */ \
 		const portholder_t miopin_dat = MIO_PIN_VALUE(1, 1, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t miopin_ctl = MIO_PIN_VALUE(1, 1, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		const portholder_t miopin_sense = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 1); \
+		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 		SCLR->SD0_WP_CD_SEL = \
-			0*((unsigned long) HARDWARE_SDIO_CDN << 16) |	/* 46 SDIO 0 CD Select */ \
-			0*((unsigned long) HARDWARE_SDIO_WP << 0) |	/* 47 SDIO 0 WP Select */ \
+			((unsigned long) HARDWARE_SDIO_CDN << 16) |	/* 46 SDIO 0 CD Select */ \
+			((unsigned long) HARDWARE_SDIO_WP << 0) |	/* 47 SDIO 0 WP Select */ \
 			0; \
 		gpio_peripherial(HARDWARE_SDIO_D0_MIO, miopin_ctl);		/*  SD_D0	 */ \
 		gpio_peripherial(HARDWARE_SDIO_D1_MIO, miopin_ctl);		/*  SD_D1	 */ \
@@ -380,6 +382,10 @@
 		gpio_peripherial(HARDWARE_SDIO_D3_MIO, miopin_ctl);		/*  SD_D3	 */ \
 		gpio_peripherial(HARDWARE_SDIO_CMD_MIO, miopin_ctl);	/*  SD_CMD */ \
 		gpio_peripherial(HARDWARE_SDIO_CLK_MIO, miopin_ctl);	/*  SD_CLK */ \
+		gpio_input2(HARDWARE_SDIO_CDN, miopin_sense);	/*  SD_CDN */ \
+		gpio_input2(HARDWARE_SDIO_WP, miopin_sense);	/*  SD_WP */ \
+		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_ctl=%08lX\n", miopin_ctl); \
+		PRINTF("HARDWARE_SDIO_INITIALIZE: miopin_sense=%08lX\n", miopin_sense); \
 	} while (0)
 	#define HARDWARE_SDIOSENSE_INITIALIZE() do { \
 	} while (0)
