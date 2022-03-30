@@ -698,18 +698,14 @@ static void nand_wp_set(uint_fast8_t state)
 // bus programming: write data to chip
 static void nand_data_bus_write(void)
 {
-#if CPUSTYLE_XC7Z
-	// Done in nand_data_out() function.
-
-#else
-	#warning nand_data_bus_write should be implemented
-#endif
-	//HARDWARE_NAND_BUS_WRITE();
+	HARDWARE_NAND_BUS_WRITE();
 }
 
 // bus programming: write data to chip
 static void nand_data_bus_read(void)
 {
+	HARDWARE_NAND_BUS_READ();
+	return;
 #if CPUSTYLE_XC7Z
 	const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1);
 
@@ -729,6 +725,8 @@ static void nand_data_bus_read(void)
 
 static void nand_data_out(uint_fast8_t v)
 {
+//	HARDWARE_NAND_DATA_SET(v);
+//	return;
 #if CPUSTYLE_XC7Z
 	const portholder_t pinmode_output = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0);
 
@@ -744,13 +742,12 @@ static void nand_data_out(uint_fast8_t v)
 #else
 	#warning nand_data_out should be implemented
 #endif
-	//HARDWARE_NAND_DATA_SET(v);
 }
 
 //
 static uint_fast8_t nand_data_in(void)
 {
-
+	return HARDWARE_NAND_DATA_GET();
 #if CPUSTYLE_XC7Z
 	uint_fast8_t v = 0;
 
@@ -769,7 +766,6 @@ static uint_fast8_t nand_data_in(void)
 	return 0;
 
 #endif
-	//return HARDWARE_NAND_DATA_GET();
 }
 
 #elif WITHNANDHW
