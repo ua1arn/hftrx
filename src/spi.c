@@ -659,7 +659,7 @@ static uint_fast8_t nand_rbc_get(void)
 }
 
 // Chip enable
-static void nand_cs_set(uint_fast8_t state)
+static void nand_csb_set(uint_fast8_t state)
 {
 	HARDWARE_NAND_CSB_SET(state);
 }
@@ -677,13 +677,13 @@ static void nand_cle_set(uint_fast8_t state)
 }
 
 // Read enable: Gates transfers from the NAND Flash device to the host system.
-static void nand_re_set(uint_fast8_t state)
+static void nand_reb_set(uint_fast8_t state)
 {
 	HARDWARE_NAND_REB_SET(state);
 }
 
 // Write enable: Gates transfers from the host system to the NAND Flash device
-static void nand_we_set(uint_fast8_t state)
+static void nand_web_set(uint_fast8_t state)
 {
 	HARDWARE_NAND_WEB_SET(state);
 }
@@ -707,25 +707,25 @@ static void nand_data_bus_read(void)
 	HARDWARE_NAND_BUS_READ();
 }
 
+#define HARDWARE_NAND_DATA_SET2(v) do { \
+	const portholder_t pinmode_output = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0); \
+	const uint_fast8_t v2 = (v); \
+	gpio_output2(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0, pinmode_output); \
+	gpio_output2(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0, pinmode_output); \
+	gpio_output2(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0, pinmode_output); \
+	gpio_output2(HARDWARE_NAND_D4_MIO, (v & (0x01 << 4)) != 0, pinmode_output); \
+	gpio_output2(HARDWARE_NAND_D3_MIO, (v & (0x01 << 3)) != 0, pinmode_output); \
+	gpio_output2(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0, pinmode_output); \
+	gpio_output2(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0, pinmode_output); \
+	gpio_output2(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0, pinmode_output); \
+} while (0)
+
 static void nand_data_out(uint_fast8_t v)
 {
-//	HARDWARE_NAND_DATA_SET(v);
-//	return;
-#if CPUSTYLE_XC7Z
-	const portholder_t pinmode_output = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0);
-
-	gpio_output2(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0, pinmode_output);
-	gpio_output2(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0, pinmode_output);
-	gpio_output2(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0, pinmode_output);
-	gpio_output2(HARDWARE_NAND_D4_MIO, (v & (0x01 << 4)) != 0, pinmode_output);
-	gpio_output2(HARDWARE_NAND_D3_MIO, (v & (0x01 << 3)) != 0, pinmode_output);
-	gpio_output2(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0, pinmode_output);
-	gpio_output2(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0, pinmode_output);
-	gpio_output2(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0, pinmode_output);
-
-#else
-	#warning nand_data_out should be implemented
-#endif
+	HARDWARE_NAND_DATA_SET2(v);
+	PRINTF("1 v=%02X, get=%02x\n", v, HARDWARE_NAND_DATA_GET());
+	PRINTF("2 v=%02X, get=%02x\n", v, HARDWARE_NAND_DATA_GET());
+	//ASSERT(v == HARDWARE_NAND_DATA_GET());
 }
 
 //
@@ -744,24 +744,26 @@ static uint_fast8_t nand_data_in(void)
 ///
 static void nand_cs_activate(void)
 {
-	nand_cs_set(0);
+	nand_csb_set(0);
 }
 
 static void nand_cs_deactivate(void)
 {
-	nand_cs_set(1);
+	nand_csb_set(1);
 }
 
 static void nand_write(uint_fast8_t v)
 {
+	PRINTF("nand_write: %02X\n", v);
 	nand_data_bus_write(); // OUT direction
-	nand_we_set(0);
+	nand_web_set(0);
 	nand_data_out(v);
-	nand_we_set(1);
+	nand_web_set(1);
 }
 
 static void nand_write_command(uint_fast8_t v)
 {
+	PRINTF("nand_write_command: %02X\n", v);
 	nand_cle_set(1);
 	nand_write(v);
 	nand_cle_set(0);
@@ -769,6 +771,7 @@ static void nand_write_command(uint_fast8_t v)
 
 static void nand_write_address(uint_fast8_t v)
 {
+	PRINTF("nand_write_address: %02X\n", v);
 	nand_ale_set(1);
 	nand_write(v);
 	nand_ale_set(0);
@@ -780,9 +783,9 @@ static void nand_read(uint8_t * buff, unsigned count)
 	nand_data_bus_read();	// IN direction
 	while (count --)
 	{
-		nand_re_set(0);
+		nand_reb_set(0);
 		* buff ++ = nand_data_in();
-		nand_re_set(1);
+		nand_reb_set(1);
 	}
 }
 
@@ -870,17 +873,20 @@ void nand_readfull(void)
 
 void nand_initialize(void)
 {
+	PRINTF("nand_initialize:\n");
 	HARDWARE_NAND_INITIALIZE();
 
 	nand_wp_set(0);		// CHip write protected
 
-	nand_cs_set(1);
+	nand_csb_set(1);
 	nand_cle_set(0);
 	nand_ale_set(0);
-	nand_re_set(1);
-	nand_we_set(1);
+	nand_reb_set(1);
+	nand_web_set(1);
 
 	nand_reset();
+
+	PRINTF("nand_initialize: done\n");
 }
 
 void nand_tests(void)

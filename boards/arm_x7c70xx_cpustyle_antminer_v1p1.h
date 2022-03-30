@@ -1078,13 +1078,14 @@
 		gpio_output2(HARDWARE_NAND_WEB_MIO, 1, pinmode_output); \
 		gpio_output2(HARDWARE_NAND_REB_MIO, 1, pinmode_output); \
 		gpio_output2(HARDWARE_NAND_WPB_MIO, 0, pinmode_output);  /* 0: write protect active */ \
+		__DSB(); \
 	} while (0)
 
 	#define HARDWARE_NAND_RBC_GET() (gpio_readpin(HARDWARE_NAND_RBC_MIO))
 
-	#define HARDWARE_NAND_DATA_SET(value) do { \
+	#define HARDWARE_NAND_DATA_SET(v) do { \
 		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0); \
-		const uint_fast8_t v = (value); \
+		/*const uint_fast8_t v = (value); */\
 		gpio_output2(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0, pinmode_output); \
 		gpio_output2(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0, pinmode_output); \
 		gpio_output2(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0, pinmode_output); \
@@ -1093,6 +1094,7 @@
 		gpio_output2(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0, pinmode_output); \
 		gpio_output2(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0, pinmode_output); \
 		gpio_output2(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0, pinmode_output); \
+		__DSB(); \
 	} while (0)
 
 	#define HARDWARE_NAND_DATA_GET() ( \
@@ -1117,17 +1119,22 @@
 		gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
+		__DSB(); \
 	} while (0)
 
 	#define HARDWARE_NAND_BUS_WRITE() do { \
-		} while (0)
+	} while (0)
 
-	#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); } while (0) /* optional */
+	#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); __DSB(); } while (0)
+	#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); __DSB(); } while (0)
+	#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); __DSB(); } while (0)
+	#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); __DSB(); } while (0)
+	#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); __DSB(); } while (0)
+	#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); __DSB(); } while (0) /* optional */
+#else
+
+	#define HARDWARE_NAND_INITIALIZE() do { \
+		} while (0)
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 
@@ -1159,16 +1166,17 @@
 
 	/* макроопределение, которое должно включить в себя все инициализации */
 	#define	HARDWARE_INITIALIZE() do { \
-			I2S2HW_POOLDOWN(); \
-			BOARD_BLINK_INITIALIZE(); \
-			HARDWARE_KBD_INITIALIZE(); \
-			HARDWARE_DAC_INITIALIZE(); \
-			/*HARDWARE_BL_INITIALIZE(); */ \
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
-			/*USBD_FS_INITIALIZE(); */\
-		} while (0)
+		HARDWARE_NAND_INITIALIZE(); \
+		I2S2HW_POOLDOWN(); \
+		BOARD_BLINK_INITIALIZE(); \
+		HARDWARE_KBD_INITIALIZE(); \
+		HARDWARE_DAC_INITIALIZE(); \
+		/*HARDWARE_BL_INITIALIZE(); */ \
+		HARDWARE_DCDC_INITIALIZE(); \
+		TXDISABLE_INITIALIZE(); \
+		TUNE_INITIALIZE(); \
+		BOARD_USERBOOT_INITIALIZE(); \
+		/*USBD_FS_INITIALIZE(); */\
+	} while (0)
 
 #endif /* ARM_X7C7XX_BGAXXX_CPUSTYLE_ANTMINER_V1P1_H_INCLUDED */
