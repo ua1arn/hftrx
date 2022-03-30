@@ -168,7 +168,7 @@ static window_t windows [] = {
 #if defined (RTC1_TYPE)
 	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
 #endif /* defined (RTC1_TYPE) */
-	{ WINDOWS_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "",		 		 	 	 1, window_kbd_proccess, },
+	{ WINDOWS_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "",		 		 	 	 0, window_kbd_proccess, },
 	{ WINDOWS_KBD_TEST, 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
 };
 
@@ -559,21 +559,20 @@ static void gui_main_process(void)
 		{
 			touch_area_t * th = (touch_area_t *) ptr;
 			infobar_selected = th->index;
-			if (infobar_selected < infobar_num_places)
+			if (infobar_selected < infobar_num_places && infobar_places [infobar_selected] != INFOBAR_EMPTY)
 			{
-				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				if (check_for_parent_window() == WINDOW_INFOBAR_MENU)
 				{
-					close_window(OPEN_PARENT_WINDOW);
+					close_window(DONT_OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
 				}
-				else
+				else if (check_for_parent_window() == NO_PARENT_WINDOW)
 				{
 					window_t * const win = get_win(WINDOW_INFOBAR_MENU);
 					open_window(win);
 					footer_buttons_state(DISABLED);
 				}
 			}
-
 		}
 #endif /* GUI_SHOW_INFOBAR */
 
