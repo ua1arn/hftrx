@@ -1068,7 +1068,7 @@ static const COLORPAIR_T colors_1mode [1] =
 	{	DESIGNBIGCOLOR,	LABELBACK,	},
 };
 
-#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || WITHAFSPECTRE
+#if (WITHSPECTRUMWF && ! LCDMODE_HD44780 && ! LCDMODE_DUMMY) || (WITHAFSPECTRE && ! LCDMODE_DUMMY)
 
 // Тестовая функция - прототип для элементов отображения
 static void
@@ -1178,7 +1178,7 @@ static uint_fast8_t glob_lvlgridstep = 12;	// Шаг сетки уровней �
 
 //#define WIDEFREQ (TUNE_TOP > 100000000L)
 
-#if WITHSPECTRUMWF || WITHAFSPECTRE
+#if WITHSPECTRUMWF || (WITHAFSPECTRE && ! LCDMODE_DUMMY)
 static void fftzoom_af(float32_t * buffer, unsigned zoompow2, unsigned normalFFT);
 #endif /* WITHSPECTRUMWF */
 
