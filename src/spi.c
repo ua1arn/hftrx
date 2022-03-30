@@ -739,7 +739,7 @@ static void nand_cs_deactivate(void)
 
 static void nand_write(uint_fast8_t v)
 {
-	PRINTF("nand_write: %02X\n", v);
+	//PRINTF("nand_write: %02X\n", v);
 	nand_data_bus_write(); // OUT direction
 	nand_web_set(0);
 	nand_data_out(v);
@@ -748,7 +748,7 @@ static void nand_write(uint_fast8_t v)
 
 static void nand_write_command(uint_fast8_t v)
 {
-	PRINTF("nand_write_command: %02X\n", v);
+	//PRINTF("nand_write_command: %02X\n", v);
 	nand_cle_set(1);
 	nand_write(v);
 	nand_cle_set(0);
@@ -756,7 +756,7 @@ static void nand_write_command(uint_fast8_t v)
 
 static void nand_write_address(uint_fast8_t v)
 {
-	PRINTF("nand_write_address: %02X\n", v);
+	//PRINTF("nand_write_address: %02X\n", v);
 	nand_ale_set(1);
 	nand_write(v);
 	nand_ale_set(0);

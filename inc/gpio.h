@@ -174,9 +174,9 @@ extern "C" {
 		GPIO_IOTYPE_HSTL = 0x04
 	};
 	// initial value = 0x00001601
-	#define MIO_SET_MODE(pin, value) do { \
+	#define MIO_SET_MODE(pin, pinmode) do { \
 		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
-		SCLR->MIO_PIN [(pin)] = (value); /*  */ \
+		SCLR->MIO_PIN [(pin)] = (pinmode); /*  */ \
 	} while (0)
 
 	// set pin state (thread-safe)
