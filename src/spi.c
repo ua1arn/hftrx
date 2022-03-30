@@ -707,25 +707,10 @@ static void nand_data_bus_read(void)
 	HARDWARE_NAND_BUS_READ();
 }
 
-#define HARDWARE_NAND_DATA_SET2(v) do { \
-	const portholder_t pinmode_output = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0); \
-	const uint_fast8_t v2 = (v); \
-	gpio_output2(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0, pinmode_output); \
-	gpio_output2(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0, pinmode_output); \
-	gpio_output2(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0, pinmode_output); \
-	gpio_output2(HARDWARE_NAND_D4_MIO, (v & (0x01 << 4)) != 0, pinmode_output); \
-	gpio_output2(HARDWARE_NAND_D3_MIO, (v & (0x01 << 3)) != 0, pinmode_output); \
-	gpio_output2(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0, pinmode_output); \
-	gpio_output2(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0, pinmode_output); \
-	gpio_output2(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0, pinmode_output); \
-} while (0)
 
 static void nand_data_out(uint_fast8_t v)
 {
-	HARDWARE_NAND_DATA_SET2(v);
-	PRINTF("1 v=%02X, get=%02x\n", v, HARDWARE_NAND_DATA_GET());
-	PRINTF("2 v=%02X, get=%02x\n", v, HARDWARE_NAND_DATA_GET());
-	//ASSERT(v == HARDWARE_NAND_DATA_GET());
+	HARDWARE_NAND_DATA_SET(v);
 }
 
 //
@@ -815,7 +800,7 @@ void nand_reset(void)
 
 void nand_read_id(void)
 {
-	PRINTF("nand_read_id:\n");
+	//PRINTF("nand_read_id:\n");
 #if WITHDEBUG
 	uint8_t v [4];
 
@@ -830,13 +815,13 @@ void nand_read_id(void)
 	// DA == MT29F2G08AAC
 	PRINTF("NAND IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
 #endif /* WITHDEBUG */
-	PRINTF("nand_read_id: done\n");
+	//PRINTF("nand_read_id: done\n");
 }
 
 
 void nand_readfull(void)
 {
-	PRINTF("nand_readfull:\n");
+	//PRINTF("nand_readfull:\n");
 	unsigned long columnaddr = 0;
 	unsigned long blockaddr = 0;	// 0..2047
 	unsigned long pageaddr = 0;		// 0..31
@@ -868,12 +853,12 @@ void nand_readfull(void)
 	}
 
 	nand_cs_deactivate();
-	PRINTF("nand_readfull: done\n");
+	//PRINTF("nand_readfull: done\n");
 }
 
 void nand_initialize(void)
 {
-	PRINTF("nand_initialize:\n");
+	//PRINTF("nand_initialize:\n");
 	HARDWARE_NAND_INITIALIZE();
 
 	nand_wp_set(0);		// CHip write protected
@@ -886,15 +871,15 @@ void nand_initialize(void)
 
 	nand_reset();
 
-	PRINTF("nand_initialize: done\n");
+	//PRINTF("nand_initialize: done\n");
 }
 
 void nand_tests(void)
 {
-	PRINTF("nand_tests:\n");
+	//PRINTF("nand_tests:\n");
 	nand_read_id();
 	//nand_readfull();
-	PRINTF("nand_tests: done\n");
+	//PRINTF("nand_tests: done\n");
 }
 
 #endif /* (WITHNANDHW || WITHNANDSW) */

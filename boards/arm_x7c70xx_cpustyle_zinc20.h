@@ -1155,65 +1155,116 @@
 
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
-#if (WITHNANDHW || WITHNANDSW)
+	#if (WITHNANDHW || WITHNANDSW)
 
-	// Chip: MT29F4GABBDAGC-IT
+		// Chip: MT29F4GABBDAGC-IT
 
-	// NAND flash data bus
-	#define HARDWARE_NAND_D0_MIO 5		// D0: PS_MIO5
-	#define HARDWARE_NAND_D1_MIO 6		// D1: PS_MIO6
-	#define HARDWARE_NAND_D2_MIO 4		// D2: PS_MIO4
-	#define HARDWARE_NAND_D3_MIO 13		// D3: PS_MIO13
-	#define HARDWARE_NAND_D4_MIO 9		// D4: PS_MIO9
-	#define HARDWARE_NAND_D5_MIO 10		// D5: PS_MIO10
-	#define HARDWARE_NAND_D6_MIO 11		// D6: PS_MIO11
-	#define HARDWARE_NAND_D7_MIO 12		// D7: PS_MIO12
+		// NAND flash data bus
+		#define HARDWARE_NAND_D0_MIO 5		// D0: PS_MIO5
+		#define HARDWARE_NAND_D1_MIO 6		// D1: PS_MIO6
+		#define HARDWARE_NAND_D2_MIO 4		// D2: PS_MIO4
+		#define HARDWARE_NAND_D3_MIO 13		// D3: PS_MIO13
+		#define HARDWARE_NAND_D4_MIO 9		// D4: PS_MIO9
+		#define HARDWARE_NAND_D5_MIO 10		// D5: PS_MIO10
+		#define HARDWARE_NAND_D6_MIO 11		// D6: PS_MIO11
+		#define HARDWARE_NAND_D7_MIO 12		// D7: PS_MIO12
 
-	// NAND flash Control bits:
-	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
-	#define HARDWARE_NAND_ALE_MIO 2		// ALE: PS_MIO2
-	#define HARDWARE_NAND_WEB_MIO 3		// WE#: PS_MIO3
-	#define HARDWARE_NAND_CLE_MIO 7		// CLE: PS_MIO7
-	#define HARDWARE_NAND_REB_MIO 8		// RE#: PS_MIO8
-	#define HARDWARE_NAND_RBC_MIO 14	// R/B#: PS_MIO14 Ready/Busy#
+		// NAND flash Control bits:
+		#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
+		#define HARDWARE_NAND_ALE_MIO 2		// ALE: PS_MIO2
+		#define HARDWARE_NAND_WEB_MIO 3		// WE#: PS_MIO3
+		#define HARDWARE_NAND_CLE_MIO 7		// CLE: PS_MIO7
+		#define HARDWARE_NAND_REB_MIO 8		// RE#: PS_MIO8
+		#define HARDWARE_NAND_RBC_MIO 14	// R/B#: PS_MIO14 Ready/Busy#
 
-	//#define HARDWARE_NAND_WPB_MIO 1		// WP#: PS_MIO1 ???
+		//#define HARDWARE_NAND_WPB_MIO 1		// WP#: PS_MIO1 - optional
 
-	#define GPIO_IOTYPE_NAND GPIO_IOTYPE_500
+		#define GPIO_IOTYPE_NAND GPIO_IOTYPE_500
 
-	#define HARDWARE_NAND_INITIALIZE() do { \
-		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1); \
-		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0); \
-		/* address/data bus */ \
-		gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
-		gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
-		gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input); \
-		gpio_input2(HARDWARE_NAND_D4_MIO, pinmode_input); \
-		gpio_input2(HARDWARE_NAND_D3_MIO, pinmode_input); \
-		gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
-		gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
-		gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
-		/* ready signal */ \
-		gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
-		/* control signals */ \
-		gpio_output2(HARDWARE_NAND_CSB_MIO, 1, pinmode_output); \
-		gpio_output2(HARDWARE_NAND_ALE_MIO, 0, pinmode_output); \
-		gpio_output2(HARDWARE_NAND_CLE_MIO, 0, pinmode_output); \
-		gpio_output2(HARDWARE_NAND_WEB_MIO, 1, pinmode_output); \
-		gpio_output2(HARDWARE_NAND_REB_MIO, 1, pinmode_output); \
-		/* gpio_output2(HARDWARE_NAND_WPB_MIO, 0, pinmode_output); */  /* 0: write protect active */ \
-	} while (0)
+		#if WITHNANDSW
 
-	#define HARDWARE_NAND_RBC_GET() (gpio_readpin(HARDWARE_NAND_RBC_MIO))
+			#define HARDWARE_NAND_INITIALIZE() do { \
+				const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1); \
+				const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0); \
+				/* address/data bus */ \
+				gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D4_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D3_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
+				/* ready signal */ \
+				gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
+				/* control signals */ \
+				gpio_output2(HARDWARE_NAND_CSB_MIO, 1, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_ALE_MIO, 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_CLE_MIO, 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_WEB_MIO, 1, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_REB_MIO, 1, pinmode_output); \
+				/*gpio_output2(HARDWARE_NAND_WPB_MIO, 0, pinmode_output);  */ /* 0: write protect active */ \
+			} while (0)
 
-	#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); } while (0)
-	#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); } while (0)
-	//#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); } while (0) /* optional */
+			#define HARDWARE_NAND_RBC_GET() (gpio_readpin(HARDWARE_NAND_RBC_MIO))
 
-#endif /* (WITHNANDHW || WITHNANDSW) */
+			#define HARDWARE_NAND_DATA_SET(vin) do { \
+				const portholder_t pinmode_output = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0); \
+				const uint_fast8_t v2 = (vin); \
+				gpio_output2(HARDWARE_NAND_D7_MIO, (v2 & (0x01 << 7)) != 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_D6_MIO, (v2 & (0x01 << 6)) != 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_D5_MIO, (v2 & (0x01 << 5)) != 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_D4_MIO, (v2 & (0x01 << 4)) != 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_D3_MIO, (v2 & (0x01 << 3)) != 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_D2_MIO, (v2 & (0x01 << 2)) != 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_D1_MIO, (v2 & (0x01 << 1)) != 0, pinmode_output); \
+				gpio_output2(HARDWARE_NAND_D0_MIO, (v2 & (0x01 << 0)) != 0, pinmode_output); \
+			} while (0)
+
+			#define HARDWARE_NAND_DATA_GET() ( \
+				gpio_readpin(HARDWARE_NAND_D7_MIO) * (1u << 7) + \
+				gpio_readpin(HARDWARE_NAND_D6_MIO) * (1u << 6) + \
+				gpio_readpin(HARDWARE_NAND_D5_MIO) * (1u << 5) + \
+				gpio_readpin(HARDWARE_NAND_D4_MIO) * (1u << 4) + \
+				gpio_readpin(HARDWARE_NAND_D3_MIO) * (1u << 3) + \
+				gpio_readpin(HARDWARE_NAND_D2_MIO) * (1u << 2) + \
+				gpio_readpin(HARDWARE_NAND_D1_MIO) * (1u << 1) + \
+				gpio_readpin(HARDWARE_NAND_D0_MIO) * (1u << 0) + \
+				0 \
+			)
+
+			#define HARDWARE_NAND_BUS_READ() do { \
+				const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1); \
+				gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D4_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D3_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
+				gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
+			} while (0)
+
+			#define HARDWARE_NAND_BUS_WRITE() do { \
+			} while (0)
+
+			#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); __DSB(); } while (0)
+			#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); __DSB(); } while (0) /* optional */
+
+		#elif WITHNANDHW
+
+			#define HARDWARE_NAND_INITIALIZE() do { \
+				const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1); \
+				const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0); \
+			} while (0)
+
+		#endif
+
+	#endif /* (WITHNANDHW || WITHNANDSW) */
 
 #if 0
 
