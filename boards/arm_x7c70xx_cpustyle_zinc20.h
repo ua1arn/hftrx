@@ -28,9 +28,6 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-//#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
-//#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
-
 #define USERFIRSTSBLOCK 0
 
 // XC7Z020-1CLG484C
@@ -57,6 +54,9 @@
 
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
+	//#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
+	//#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
@@ -123,6 +123,9 @@
 	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
 	//#define WITHETHHW 1	/* Hardware Ethernet controller */
+
+	//#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
+	#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
@@ -1154,27 +1157,31 @@
 
 #if (WITHNANDHW || WITHNANDSW)
 	// NAND flash data bus
-	#define HARDWARE_NAND_D7_MIO 12		// D7: PS_MIO12
-	#define HARDWARE_NAND_D6_MIO 11		// D6: PS_MIO11
-	#define HARDWARE_NAND_D5_MIO 10		// D5: PS_MIO10
-	#define HARDWARE_NAND_D4_MIO 9		// D4: PS_MIO9
-	#define HARDWARE_NAND_D3_MIO 13		// D3: PS_MIO13
-	#define HARDWARE_NAND_D2_MIO 4		// D2: PS_MIO4
-	#define HARDWARE_NAND_D1_MIO 6		// D1: PS_MIO6
 	#define HARDWARE_NAND_D0_MIO 5		// D0: PS_MIO5
+	#define HARDWARE_NAND_D1_MIO 6		// D1: PS_MIO6
+	#define HARDWARE_NAND_D2_MIO 4		// D2: PS_MIO4
+	#define HARDWARE_NAND_D3_MIO 13		// D3: PS_MIO13
+	#define HARDWARE_NAND_D4_MIO 9		// D4: PS_MIO9
+	#define HARDWARE_NAND_D5_MIO 10		// D5: PS_MIO10
+	#define HARDWARE_NAND_D6_MIO 11		// D6: PS_MIO11
+	#define HARDWARE_NAND_D7_MIO 12		// D7: PS_MIO12
 
 	// NAND flash Control bits:
-	#define HARDWARE_NAND_RBC_MIO 14	// R/B#: PS_MIO14 Ready/Busy#
-	#define HARDWARE_NAND_ALE_MIO 2		// ALE: PS_MIO2
-	#define HARDWARE_NAND_CLE_MIO 7		// CLE: PS_MIO7
-	#define HARDWARE_NAND_WEB_MIO 3		// WE#: PS_MIO3
-	//#define HARDWARE_NAND_WPB_MIO 1		// WP#: PS_MIO1 ???
-	#define HARDWARE_NAND_REB_MIO 8		// RE#: PS_MIO8
 	#define HARDWARE_NAND_CSB_MIO 0		// CS#: PS_MIO0
+	#define HARDWARE_NAND_ALE_MIO 2		// ALE: PS_MIO2
+	#define HARDWARE_NAND_WEB_MIO 3		// WE#: PS_MIO3
+	#define HARDWARE_NAND_CLE_MIO 7		// CLE: PS_MIO7
+	#define HARDWARE_NAND_REB_MIO 8		// RE#: PS_MIO8
+	#define HARDWARE_NAND_RBC_MIO 14	// R/B#: PS_MIO14 Ready/Busy#
+
+	//#define HARDWARE_NAND_WPB_MIO 1		// WP#: PS_MIO1 ???
+
+	#define GPIO_IOTYPE_NAND GPIO_IOTYPE_500
 
 	#define HARDWARE_NAND_INITIALIZE() do { \
-		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
-		gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1); \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0); \
+		/* address/data bus */ \
 		gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input); \
@@ -1183,18 +1190,15 @@
 		gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
-		xc7z_gpio_output(HARDWARE_NAND_CSB_MIO); \
-		xc7z_writepin(HARDWARE_NAND_CSB_MIO, 1); \
-		xc7z_gpio_output(HARDWARE_NAND_ALE_MIO); \
-		xc7z_writepin(HARDWARE_NAND_ALE_MIO, 0); \
-		xc7z_gpio_output(HARDWARE_NAND_CLE_MIO); \
-		xc7z_writepin(HARDWARE_NAND_CLE_MIO, 0); \
-		xc7z_gpio_output(HARDWARE_NAND_WEB_MIO); \
-		xc7z_writepin(HARDWARE_NAND_WEB_MIO, 1); \
-		/*xc7z_gpio_output(HARDWARE_NAND_WPB_MIO); *//* Write protect */ \
-		/*xc7z_writepin(HARDWARE_NAND_WPB_MIO, 0); */\
-		xc7z_gpio_output(HARDWARE_NAND_REB_MIO); \
-		xc7z_writepin(HARDWARE_NAND_REB_MIO, 1); \
+		gpio_input2(HARDWARE_NAND_REB_MIO, pinmode_input); \
+		/* ready signal */ \
+		gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
+		/* control signals */ \
+		gpio_output2(HARDWARE_NAND_CSB_MIO, 1, pinmode_output); \
+		gpio_output2(HARDWARE_NAND_ALE_MIO, 0, pinmode_output); \
+		gpio_output2(HARDWARE_NAND_CLE_MIO, 0, pinmode_output); \
+		gpio_output2(HARDWARE_NAND_WEB_MIO, 1, pinmode_output); \
+		/* gpio_output2(HARDWARE_NAND_WPB_MIO, 0, pinmode_output); */ \
 	} while (0)
 
 #endif /* (WITHNANDHW || WITHNANDSW) */

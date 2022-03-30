@@ -656,7 +656,7 @@ void spi_initialize(void)
 static uint_fast8_t nand_rbc_get(void)
 {
 #if CPUSTYLE_XC7Z
-	return xc7z_readpin(HARDWARE_NAND_RBC_MIO) != 0;
+	return gpio_readpin(HARDWARE_NAND_RBC_MIO);
 #else
 	#warning nand_rbc_get should be implemented
 #endif
@@ -666,7 +666,7 @@ static uint_fast8_t nand_rbc_get(void)
 static void nand_cs_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_CSB_MIO, state != 0);
+	gpio_writepin(HARDWARE_NAND_CSB_MIO, state != 0);
 #else
 	#warning nand_cs_set should be implemented
 #endif
@@ -676,7 +676,7 @@ static void nand_cs_set(uint_fast8_t state)
 static void nand_ale_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_ALE_MIO, state != 0);
+	gpio_writepin(HARDWARE_NAND_ALE_MIO, state != 0);
 #else
 	#warning nand_ale_set should be implemented
 #endif
@@ -686,7 +686,7 @@ static void nand_ale_set(uint_fast8_t state)
 static void nand_cle_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_CLE_MIO, state != 0);
+	gpio_writepin(HARDWARE_NAND_CLE_MIO, state != 0);
 #else
 	#warning nand_cle_set should be implemented
 #endif
@@ -696,7 +696,7 @@ static void nand_cle_set(uint_fast8_t state)
 static void nand_re_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_REB_MIO, state != 0);
+	gpio_writepin(HARDWARE_NAND_REB_MIO, state != 0);
 #else
 	#warning nand_re_set should be implemented
 #endif
@@ -706,7 +706,7 @@ static void nand_re_set(uint_fast8_t state)
 static void nand_we_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_WEB_MIO, state != 0);
+	gpio_writepin(HARDWARE_NAND_WEB_MIO, state != 0);
 #else
 	#warning nand_we_set should be implemented
 #endif
@@ -715,7 +715,7 @@ static void nand_we_set(uint_fast8_t state)
 static void nand_wp_set(uint_fast8_t state)
 {
 #if CPUSTYLE_XC7Z && defined (HARDWARE_NAND_WPB_MIO)
-	xc7z_writepin(HARDWARE_NAND_WPB_MIO, state != 0);
+	gpio_writepin(HARDWARE_NAND_WPB_MIO, state != 0);
 #else
 	#warning nand_wp_set should be implemented
 #endif
@@ -725,14 +725,8 @@ static void nand_wp_set(uint_fast8_t state)
 static void nand_data_bus_write(void)
 {
 #if CPUSTYLE_XC7Z
-	xc7z_gpio_output(HARDWARE_NAND_D7_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D6_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D5_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D4_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D3_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D2_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D1_MIO);
-	xc7z_gpio_output(HARDWARE_NAND_D0_MIO);
+	// Done in nand_data_out() function.
+
 #else
 	#warning nand_data_bus_write should be implemented
 #endif
@@ -742,14 +736,16 @@ static void nand_data_bus_write(void)
 static void nand_data_bus_read(void)
 {
 #if CPUSTYLE_XC7Z
-	xc7z_gpio_input(HARDWARE_NAND_D7_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D6_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D5_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D4_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D3_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D2_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D1_MIO);
-	xc7z_gpio_input(HARDWARE_NAND_D0_MIO);
+	const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1);
+
+	gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input);
+	gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input);
+	gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input);
+	gpio_input2(HARDWARE_NAND_D4_MIO, pinmode_input);
+	gpio_input2(HARDWARE_NAND_D3_MIO, pinmode_input);
+	gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input);
+	gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input);
+	gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input);
 #else
 	#warning nand_data_bus_read should be implemented
 #endif
@@ -758,14 +754,17 @@ static void nand_data_bus_read(void)
 static void nand_data_out(uint_fast8_t v)
 {
 #if CPUSTYLE_XC7Z
-	xc7z_writepin(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D4_MIO, (v & (0x01 << 4)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D3_MIO, (v & (0x01 << 3)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0);
-	xc7z_writepin(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0);
+	const portholder_t pinmode_output = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 0);
+
+	gpio_output2(HARDWARE_NAND_D7_MIO, (v & (0x01 << 7)) != 0, pinmode_output);
+	gpio_output2(HARDWARE_NAND_D6_MIO, (v & (0x01 << 6)) != 0, pinmode_output);
+	gpio_output2(HARDWARE_NAND_D5_MIO, (v & (0x01 << 5)) != 0, pinmode_output);
+	gpio_output2(HARDWARE_NAND_D4_MIO, (v & (0x01 << 4)) != 0, pinmode_output);
+	gpio_output2(HARDWARE_NAND_D3_MIO, (v & (0x01 << 3)) != 0, pinmode_output);
+	gpio_output2(HARDWARE_NAND_D2_MIO, (v & (0x01 << 2)) != 0, pinmode_output);
+	gpio_output2(HARDWARE_NAND_D1_MIO, (v & (0x01 << 1)) != 0, pinmode_output);
+	gpio_output2(HARDWARE_NAND_D0_MIO, (v & (0x01 << 0)) != 0, pinmode_output);
+
 #else
 	#warning nand_data_out should be implemented
 #endif
@@ -778,14 +777,14 @@ static uint_fast8_t nand_data_in(void)
 #if CPUSTYLE_XC7Z
 	uint_fast8_t v = 0;
 
-	v |= (xc7z_readpin(HARDWARE_NAND_D7_MIO) != 0) << 7;
-	v |= (xc7z_readpin(HARDWARE_NAND_D6_MIO) != 0) << 6;
-	v |= (xc7z_readpin(HARDWARE_NAND_D5_MIO) != 0) << 5;
-	v |= (xc7z_readpin(HARDWARE_NAND_D4_MIO) != 0) << 4;
-	v |= (xc7z_readpin(HARDWARE_NAND_D3_MIO) != 0) << 3;
-	v |= (xc7z_readpin(HARDWARE_NAND_D2_MIO) != 0) << 2;
-	v |= (xc7z_readpin(HARDWARE_NAND_D1_MIO) != 0) << 1;
-	v |= (xc7z_readpin(HARDWARE_NAND_D0_MIO) != 0) << 0;
+	v |= gpio_readpin(HARDWARE_NAND_D7_MIO) << 7;
+	v |= gpio_readpin(HARDWARE_NAND_D6_MIO) << 6;
+	v |= gpio_readpin(HARDWARE_NAND_D5_MIO) << 5;
+	v |= gpio_readpin(HARDWARE_NAND_D4_MIO) << 4;
+	v |= gpio_readpin(HARDWARE_NAND_D3_MIO) << 3;
+	v |= gpio_readpin(HARDWARE_NAND_D2_MIO) << 2;
+	v |= gpio_readpin(HARDWARE_NAND_D1_MIO) << 1;
+	v |= gpio_readpin(HARDWARE_NAND_D0_MIO) << 0;
 
 	return v;
 #else
@@ -871,6 +870,7 @@ void nand_reset(void)
 
 void nand_read_id(void)
 {
+	PRINTF("nand_read_id:\n");
 #if WITHDEBUG
 	uint8_t v [4];
 
@@ -885,11 +885,13 @@ void nand_read_id(void)
 	// DA == MT29F2G08AAC
 	PRINTF("NAND IDs = %02X %02X %02X %02X\n", v [0], v [1], v [2], v [3]);
 #endif /* WITHDEBUG */
+	PRINTF("nand_read_id: done\n");
 }
 
 
 void nand_readfull(void)
 {
+	PRINTF("nand_readfull:\n");
 	unsigned long columnaddr = 0;
 	unsigned long blockaddr = 0;	// 0..2047
 	unsigned long pageaddr = 0;		// 0..31
@@ -921,7 +923,7 @@ void nand_readfull(void)
 	}
 
 	nand_cs_deactivate();
-
+	PRINTF("nand_readfull: done\n");
 }
 
 void nand_initialize(void)
@@ -941,8 +943,10 @@ void nand_initialize(void)
 
 void nand_tests(void)
 {
+	PRINTF("nand_tests:\n");
 	nand_read_id();
-	nand_readfull();
+	//nand_readfull();
+	PRINTF("nand_tests: done\n");
 }
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
