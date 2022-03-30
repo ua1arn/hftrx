@@ -44,6 +44,7 @@ val_step_t freq_swipe_step [] = {
 struct gui_nvram_t gui_nvram;
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
 static menu_by_name_t menu_uif;
+static char * kbd_editstr;
 
 enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
@@ -131,6 +132,7 @@ static void windows_af_eq_proccess(void);
 static void window_menu_params_proccess(void);
 static void window_time_proccess(void);
 static void window_kbd_proccess(void);
+static void window_kbd_test_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -166,7 +168,8 @@ static window_t windows [] = {
 #if defined (RTC1_TYPE)
 	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
 #endif /* defined (RTC1_TYPE) */
-	{ WINDOWS_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "_",		 		 	 1, window_kbd_proccess, },
+	{ WINDOWS_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "",		 		 	 	 1, window_kbd_proccess, },
+	{ WINDOWS_KBD_TEST, 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
 };
 
 /* Возврат ссылки на окно */
@@ -585,26 +588,11 @@ static void gui_main_process(void)
 			button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = find_gui_element(TYPE_BUTTON, win, "btn_Receive");
 			button_t * btn_ft8 = find_gui_element(TYPE_BUTTON, win, "btn_ft8");
-			button_t * btn_2 = find_gui_element(TYPE_BUTTON, win, "btn_2");
 
 			if (bh == btn_notch)
 			{
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
-			}
-			else if (bh == btn_2 && 1)
-			{
-				if (check_for_parent_window() != NO_PARENT_WINDOW)
-				{
-					close_window(OPEN_PARENT_WINDOW);
-					footer_buttons_state(CANCELLED);
-				}
-				else
-				{
-					window_t * const win = get_win(WINDOWS_KBD);
-					open_window(win);
-					footer_buttons_state(DISABLED, btn_2);
-				}
 			}
 #if WITHFT8
 			else if (bh == btn_ft8)
@@ -1764,6 +1752,7 @@ static void window_utilites_process(void)
 
 		static const button_t buttons [] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_kbdtest", "Keyboard|test", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1801,8 +1790,15 @@ static void window_utilites_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
+			button_t * btn_kbdtest = find_gui_element(TYPE_BUTTON, win, "btn_kbdtest");
+
+			if (bh == btn_kbdtest)
+			{
+				window_t * const winSWR = get_win(WINDOWS_KBD_TEST);
+				open_window(winSWR);
+			}
 #if WITHTX
-			if (bh == btn_SWRscan)
+			else if (bh == btn_SWRscan)
 			{
 				window_t * const winSWR = get_win(WINDOW_SWR_SCANNER);
 				open_window(winSWR);
@@ -4657,20 +4653,21 @@ static void window_kbd_proccess(void)
 {
 	window_t * const win = get_win(WINDOWS_KBD);
 	static uint_fast8_t update = 0, is_shift = 0;
-	const char kbd_cap[] = "1234567890QWERTYUIOPASDFGHJKLZXCVBNM";
+	const char kbd_cap[] = ",.!@#*()?;QWERTYUIOPASDFGHJKLZXCVBNM";
 	const char kbd_low[] = "1234567890qwertyuiopasdfghjklzxcvbnm";
 	const uint_fast8_t len1 = 10, len2 = 10, len3 = 9, len4 = 7, kbd_len = len1 + len2 + len3 + len4, btn_size = 40;
 	const char kbd_func [][20] = { "btn_kbd_caps", "btn_kbd_backspace", "btn_kbd_space", "btn_kbd_enter", "btn_kbd_esc", };
-	static char edit_str[50];
+	static char edit_str[TEXT_ARRAY_SIZE];
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
 		update = 1;
+		is_shift = 0;
 		button_t * bh = NULL;
 		uint_fast16_t x = 0, y = 0, interval = 5, i = 0;
 
-		memset(edit_str, 0, strlen(edit_str));
+		strcpy(edit_str, kbd_editstr);
 
 		win->bh_count = kbd_len + 5;
 		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
@@ -4725,6 +4722,7 @@ static void window_kbd_proccess(void)
 		button_t * btn_kbd_backspace = find_gui_element(TYPE_BUTTON, win, "btn_kbd_backspace");
 		btn_kbd_backspace->x1 = btn_size * len1 + interval * len1;
 		btn_kbd_backspace->y1 = 0;
+		btn_kbd_backspace->is_repeating = 1;
 		local_snprintf_P(btn_kbd_backspace->text, ARRAY_SIZE(btn_kbd_backspace->text), "<-");
 
 		button_t * btn_kbd_space = find_gui_element(TYPE_BUTTON, win, "btn_kbd_space");
@@ -4747,10 +4745,11 @@ static void window_kbd_proccess(void)
 		btn_kbd_enter->w = 50;
 		btn_kbd_enter->h = 50;
 		local_snprintf_P(btn_kbd_enter->text, ARRAY_SIZE(btn_kbd_enter->text), "OK");
+		btn_kbd_enter->is_locked = BUTTON_LOCKED;
 
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s_", edit_str);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "_");
 	}
 
 	GET_FROM_WM_QUEUE
@@ -4788,7 +4787,11 @@ static void window_kbd_proccess(void)
 			else if (bh == btn_kbd_enter || bh == btn_kbd_esc)
 			{
 				PRINTF("edit str: %s\n", edit_str);
-				close_all_windows();
+
+				if (bh == btn_kbd_enter)
+					strcpy(kbd_editstr, edit_str);
+
+				close_window(OPEN_PARENT_WINDOW);
 				return;
 			}
 
@@ -4817,6 +4820,85 @@ static void window_kbd_proccess(void)
 }
 
 // *********************************************************************************************************************************************************************
+
+static void window_kbd_test_proccess(void)
+{
+	window_t * const win = get_win(WINDOWS_KBD_TEST);
+	static char str_lbl1 [TEXT_ARRAY_SIZE] = "12345", str_lbl2 [TEXT_ARRAY_SIZE] = "qwerty";
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		const uint_fast16_t interval = 50;
+
+		static const button_t buttons [] = {
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOWS_KBD_TEST, VISIBLE, INT32_MAX, "btn_text1", "Edit...", },
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOWS_KBD_TEST, VISIBLE, INT32_MAX, "btn_text2", "Edit...", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		static const label_t labels [] = {
+			{ WINDOWS_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text1", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOWS_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text2", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		button_t * btn_text1 = find_gui_element(TYPE_BUTTON, win, "btn_text1");
+		button_t * btn_text2 = find_gui_element(TYPE_BUTTON, win, "btn_text2");
+		label_t * lbl_text1 = find_gui_element(TYPE_LABEL, win, "lbl_text1");
+		label_t * lbl_text2 = find_gui_element(TYPE_LABEL, win, "lbl_text2");
+
+		lbl_text1->x = 0;
+		lbl_text1->y = 0;
+
+		lbl_text2->x = 0;
+		lbl_text2->y = get_label_height(lbl_text1) + interval;
+
+		btn_text1->x1 = get_label_width(lbl_text1) + interval;
+		btn_text1->y1 = 0;
+
+		btn_text2->x1 = btn_text1->x1;
+		btn_text2->y1 = lbl_text2->y;
+
+		strcpy(lbl_text1->text, str_lbl1);
+		strcpy(lbl_text2->text, str_lbl2);
+
+		btn_text1->payload = (uintptr_t) str_lbl1;
+		btn_text2->payload = (uintptr_t) str_lbl2;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+
+			kbd_editstr = (char *) bh->payload;
+			window_t * win_kbd = get_win(WINDOWS_KBD);
+			win_kbd->parent_id = WINDOWS_KBD_TEST;
+			open_window(win_kbd);
+		}
+		break;
+
+	default:
+	break;
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
 #define MENU_GROUPS_MAX	20
 #define MENU_PARAMS_MAX	30
 static uint8_t index_param = 0;
