@@ -4186,6 +4186,19 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #define __raw_readl(a)		__arch_getl(a)
 #define __raw_readq(a)		__arch_getq(a)
 
+#if WITHPS7BOARD_MYC_Y7Z020
+#warning ps7_init for WITHPS7BOARD_MYC_Y7Z020
+#include "./myc_y7z020/ps7_init.h"
+
+#elif WITHPS7BOARD_ZINC20
+#warning ps7_init for WITHPS7BOARD_ZINC20
+#include "./zinc20/ps7_init.h"
+
+#elif WITHPS7BOARD_EBAZ4205
+#warning ps7_init for WITHPS7BOARD_EBAZ4205
+#include "./ebaz4205/ps7_init.h"
+
+
 /* IO accessors. No memory barriers desired. */
 static inline void iowrite(unsigned long val, uintptr_t addr)
 {
@@ -4307,15 +4320,6 @@ int ps7_config(const unsigned long * ps7_config_init)
     }
     return finish;
 }
-
-#if WITHPS7BOARD_MYC_Y7Z020
-#warning ps7_init for WITHPS7BOARD_MYC_Y7Z020
-
-#elif WITHPS7BOARD_ZINC20
-#warning ps7_init for WITHPS7BOARD_ZINC20
-
-#elif WITHPS7BOARD_EBAZ4205
-#warning ps7_init for WITHPS7BOARD_EBAZ4205
 
 // EBAZ
 static const unsigned long ps7_clock_init_data_3_0[] = {
@@ -4441,8 +4445,170 @@ static const unsigned long ps7_peripherals_init_data_3_0[] = {
 		EMIT_EXIT(),
 	};
 
+
+static int ps7_init(void)
+{
+	int ret;
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+
+	ret = ps7_config(ps7_mio_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_clock_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+	ret = ps7_config(ps7_ddr_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+
+//	char c;
+//	while (dbg_getchar(&c) == 0)
+//		;
+//	TP();
+	ret = ps7_config(ps7_peripherals_init_data_3_0);
+	if (ret != PS7_INIT_SUCCESS)
+		return ret;
+	//TP();
+
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	return PS7_INIT_SUCCESS;
+}
+
+// NT5CC128M16IP-DI BGA DDR3 NT5CC128M16IP DI
+void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+{
+	PRINTF("arm_hardware_sdram_initialize start\n");
+	VERIFY(PS7_INIT_SUCCESS == ps7_init());
+	PRINTF("arm_hardware_sdram_initialize done\n");
+}
+
 #elif WITHPS7BOARD_ANTMINER
 #warning ps7_init for WITHPS7BOARD_ANTMINER
+#include "./antminer/ps7_init.h"
+/* IO accessors. No memory barriers desired. */
+static inline void iowrite(unsigned long val, uintptr_t addr)
+{
+	__raw_writel(val, addr);
+}
+
+static inline unsigned long ioread(uintptr_t addr)
+{
+	return __raw_readl(addr);
+}
+
+/* start timer */
+static void perf_start_clock(void)
+{
+	iowrite((1 << 0) | /* Timer Enable */
+		(1 << 3) | /* Auto-increment */
+		(0 << 8), /* Pre-scale */
+		SCU_GLOBAL_TIMER_CONTROL);
+}
+
+/* Compute mask for given delay in miliseconds*/
+static unsigned long get_number_of_cycles_for_delay(unsigned long delay)
+{
+	return (APU_FREQ / (2 * 1000)) * delay;
+}
+
+/* stop timer */
+static void perf_disable_clock(void)
+{
+	iowrite(0, SCU_GLOBAL_TIMER_CONTROL);
+}
+
+/* stop timer and reset timer count regs */
+static void perf_reset_clock(void)
+{
+	perf_disable_clock();
+	iowrite(0, SCU_GLOBAL_TIMER_COUNT_L32);
+	iowrite(0, SCU_GLOBAL_TIMER_COUNT_U32);
+}
+
+static void perf_reset_and_start_timer(void)
+{
+	perf_reset_clock();
+	perf_start_clock();
+}
+
+int ps7_config(const unsigned long * ps7_config_init)
+{
+	const unsigned long *ptr = ps7_config_init;
+
+    unsigned long  opcode;            // current instruction ..
+    unsigned long  args[16];           // no opcode has so many args ...
+    int  numargs;           // number of arguments of this instruction
+    int  j;                 // general purpose index
+
+    volatile uint32_t *addr;         // some variable to make code readable
+    unsigned long  val,mask;              // some variable to make code readable
+
+    int finish = -1 ;           // loop while this is negative !
+    int i = 0;                  // Timeout variable
+
+    while( finish < 0 ) {
+        numargs = ptr[0] & 0xF;
+        opcode = ptr[0] >> 4;
+
+        for( j = 0 ; j < numargs ; j ++ )
+            args[j] = ptr[j+1];
+        ptr += numargs + 1;
+
+
+        switch ( opcode ) {
+
+        case OPCODE_EXIT:
+            finish = PS7_INIT_SUCCESS;
+            break;
+
+        case OPCODE_CLEAR:
+            addr = (volatile uint32_t*) args[0];
+            *addr = 0;
+            break;
+
+        case OPCODE_WRITE:
+            addr = (volatile uint32_t*) args[0];
+            val = args[1];
+            *addr = val;
+            break;
+
+        case OPCODE_MASKWRITE:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            val = args[2];
+            *addr = ( val & mask ) | ( *addr & ~mask);
+            break;
+
+        case OPCODE_MASKPOLL:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            i = 0;
+            while (!(*addr & mask)) {
+                if (i == PS7_MASK_POLL_TIME) {
+                    finish = PS7_INIT_TIMEOUT;
+                    break;
+                }
+                i++;
+            }
+            break;
+        case OPCODE_MASKDELAY:
+            addr = (volatile uint32_t*) args[0];
+            mask = args[1];
+            int delay = get_number_of_cycles_for_delay(mask);
+            perf_reset_and_start_timer();
+            while ((*addr < delay)) {
+            }
+            break;
+        default:
+            finish = PS7_INIT_CORRUPT;
+            break;
+        }
+    }
+    return finish;
+}
 
 // ANTMINER
 unsigned long ps7_pll_init_data_3_0[] = {
@@ -8155,13 +8321,6 @@ unsigned long ps7_peripherals_init_data_3_0[] = {
 };
 
 
-
-#else
-
-	#warning WITHPS7BOARD_xxx not defined
-
-#endif
-
 static int ps7_init(void)
 {
 	int ret;
@@ -8200,6 +8359,13 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 	VERIFY(PS7_INIT_SUCCESS == ps7_init());
 	PRINTF("arm_hardware_sdram_initialize done\n");
 }
+
+
+#else
+#warning WITHPS7BOARD_xxx not defined
+
 #endif
+
+#endif	// Z7
 
 #endif /* WITHSDRAMHW */
