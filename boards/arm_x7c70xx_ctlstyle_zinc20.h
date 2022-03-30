@@ -51,8 +51,8 @@
 	#define DDR_2XCLK_DIVISOR 3	// DDR_CLK_CTRL.DDR_2XCLK_DIVISOR value 355 MHz
 	#define DDR_3XCLK_DIVISOR 2	// DDR_CLK_CTRL.DDR_3XCLK_DIVISOR value (only even) 533 MHz
 
-	#define SCLR_UART_CLK_CTRL_DIVISOR 16
-	#define SCLR_SDIO_CLK_CTRL_DIVISOR 16
+	#define SCLR_UART_CLK_CTRL_DIVISOR 16	// 0..31
+	#define SCLR_SDIO_CLK_CTRL_DIVISOR 31	// 0..31
 
 	/* модели синтезаторов - схемы частотообразования */
 
@@ -218,8 +218,8 @@
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
-	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 
 	#define WITHISBOOTLOADERFATFS 1
 	#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
