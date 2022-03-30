@@ -23457,6 +23457,9 @@ static void bootloader_fatfs_mainloop(void)
 	if (st != RES_OK)
 	{
 		PRINTF("disk_initialize code=%02X\n", st);
+		PRINTF(" STA_NOINIT = %d\n", STA_NOINIT);
+		PRINTF(" STA_NODISK = %d\n", STA_NODISK);
+		PRINTF(" STA_PROTECT = %d\n", STA_PROTECT);
 		for (;;)
 			;
 	}
