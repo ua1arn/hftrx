@@ -28,10 +28,6 @@
 	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
 #endif /* WITHINTEGRATEDDSP */
 
-#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-//#define WITHETHHW 1	/* Hardware Ethernet controller */
-
 //#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
 //#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
@@ -59,8 +55,10 @@
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
-	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
-	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
+	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
+	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
@@ -123,6 +121,8 @@
 
 	//#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	//#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
+
+	//#define WITHETHHW 1	/* Hardware Ethernet controller */
 
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
