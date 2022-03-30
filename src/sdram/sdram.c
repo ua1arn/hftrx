@@ -4187,20 +4187,31 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 #define __raw_readq(a)		__arch_getq(a)
 
 #if WITHPS7BOARD_MYC_Y7Z020
-#include "./myc_y7z020/ps7_init_c.h"
+
+	// XC7Z020-2CLG400C, dual bank MT41K256M16HA-125IT
+
+	#include "./myc_y7z020/ps7_init_c.h"
 
 #elif WITHPS7BOARD_ZINC20
-#include "./zinc20/ps7_init_c.h"
+
+	// XC7Z020-1CLG484C, dual bank MT41K256M16HA-125IT
+
+	#include "./zinc20/ps7_init_c.h"
 
 #elif WITHPS7BOARD_EBAZ4205
-#include "./ebaz4205/ps7_init_c.h"
+
+	// XC7Z010-1CLG400C, single bank MT41K256M16HA-125IT
+	#include "./ebaz4205/ps7_init_c.h"
 
 
 #elif WITHPS7BOARD_ANTMINER
-#include "./antminer/ps7_init_c.h"
+
+	#include "./antminer/ps7_init_c.h"
+	// XC7Z010-1CLG400C, dual bank MT41K256M16HA-125IT
 
 #else
-#warning WITHPS7BOARD_xxx not defined
+
+	#warning WITHPS7BOARD_xxx not defined
 
 #endif
 
