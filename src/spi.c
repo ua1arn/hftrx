@@ -705,22 +705,6 @@ static void nand_data_bus_write(void)
 static void nand_data_bus_read(void)
 {
 	HARDWARE_NAND_BUS_READ();
-	return;
-#if CPUSTYLE_XC7Z
-	const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_NAND, 1, 0, 0, 0, 0, 1);
-
-	gpio_input2(HARDWARE_NAND_D7_MIO, pinmode_input);
-	gpio_input2(HARDWARE_NAND_D6_MIO, pinmode_input);
-	gpio_input2(HARDWARE_NAND_D5_MIO, pinmode_input);
-	gpio_input2(HARDWARE_NAND_D4_MIO, pinmode_input);
-	gpio_input2(HARDWARE_NAND_D3_MIO, pinmode_input);
-	gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input);
-	gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input);
-	gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input);
-#else
-	#warning nand_data_bus_read should be implemented
-#endif
-	//HARDWARE_NAND_BUS_READ();
 }
 
 static void nand_data_out(uint_fast8_t v)
@@ -748,24 +732,6 @@ static void nand_data_out(uint_fast8_t v)
 static uint_fast8_t nand_data_in(void)
 {
 	return HARDWARE_NAND_DATA_GET();
-#if CPUSTYLE_XC7Z
-	uint_fast8_t v = 0;
-
-	v |= gpio_readpin(HARDWARE_NAND_D7_MIO) << 7;
-	v |= gpio_readpin(HARDWARE_NAND_D6_MIO) << 6;
-	v |= gpio_readpin(HARDWARE_NAND_D5_MIO) << 5;
-	v |= gpio_readpin(HARDWARE_NAND_D4_MIO) << 4;
-	v |= gpio_readpin(HARDWARE_NAND_D3_MIO) << 3;
-	v |= gpio_readpin(HARDWARE_NAND_D2_MIO) << 2;
-	v |= gpio_readpin(HARDWARE_NAND_D1_MIO) << 1;
-	v |= gpio_readpin(HARDWARE_NAND_D0_MIO) << 0;
-
-	return v;
-#else
-	#warning nand_data_in should be implemented
-	return 0;
-
-#endif
 }
 
 #elif WITHNANDHW
