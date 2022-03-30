@@ -4308,7 +4308,15 @@ int ps7_config(const unsigned long * ps7_config_init)
     return finish;
 }
 
-#if WITHPS7BOARD_EBAZ4205
+#if WITHPS7BOARD_MYC_Y7Z020
+#warning ps7_init for WITHPS7BOARD_MYC_Y7Z020
+
+#elif WITHPS7BOARD_ZINC20
+#warning ps7_init for WITHPS7BOARD_ZINC20
+
+#elif WITHPS7BOARD_EBAZ4205
+#warning ps7_init for WITHPS7BOARD_EBAZ4205
+
 // EBAZ
 static const unsigned long ps7_clock_init_data_3_0[] = {
 		EMIT_MASKWRITE(0XF8000128, 0x03F03F01U ,0x00700F01U),	// DCI_CLK_CTRL
@@ -4434,6 +4442,7 @@ static const unsigned long ps7_peripherals_init_data_3_0[] = {
 	};
 
 #elif WITHPS7BOARD_ANTMINER
+#warning ps7_init for WITHPS7BOARD_ANTMINER
 
 // ANTMINER
 unsigned long ps7_pll_init_data_3_0[] = {
@@ -28417,6 +28426,11 @@ ps7_init_z()
 
 
 #endif
+
+
+#else
+
+	#warning WITHPS7BOARD_xxx not defined
 
 #endif
 
