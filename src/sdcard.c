@@ -3249,7 +3249,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	sdhost_use_cmd23 = 0;	// set block count command uasage
 	sdhost_use_cmd20 = 0;
 //#if 1 && WITHSDHCHW
-	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
+	static ALIGNX_BEGIN uint8_t sdhost_sdcard_SCR [32] ALIGNX_END;	// надо только 8 байт, но какая-то проюлема с кэш - работает при 32 и более
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_SEND_SCR, sdhost_sdcard_SCR, 8, 3, sizeof sdhost_sdcard_SCR) == 0)		// ACMD51
 	{
@@ -3338,7 +3338,7 @@ static uint_fast8_t sdhost_sdcard_identification(void)
 	// Get SD status
 #if 1 && WITHSDHCHW
 	// STM32MP1 work
-	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
+	static ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{
 
@@ -3447,7 +3447,7 @@ DRESULT SD_Get_Block_Size (
 		32 * MB,
 		64 * MB,
 	};
-	static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
+	static ALIGNX_BEGIN uint8_t sdhost_sdcard_SDSTATUS [64] ALIGNX_END;
 
 	if (sdhost_read_registers_acmd(SD_CMD_SD_APP_STATUS, sdhost_sdcard_SDSTATUS, 64, 6, sizeof sdhost_sdcard_SDSTATUS) == 0)		// ACMD13
 	{
@@ -4097,7 +4097,7 @@ uint_fast64_t MMC_ReadCardSize(void)
 		// the data
 		if (mmcGetXXResponse(MMC_START_DATA_BLOCK_TOKEN) == MMC_START_DATA_BLOCK_TOKEN)
 		{
-			static RAMNOINIT_D1 ALIGNX_BEGIN uint8_t bv [16] ALIGNX_END;
+			static ALIGNX_BEGIN uint8_t bv [16] ALIGNX_END;
 			// Могут быть ограничения работы DMA с некоторыми видами памяти
 			// Например в STM32F4x нет доступа к CCM памяти по DMA
 
