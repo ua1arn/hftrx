@@ -1156,6 +1156,9 @@
 	#endif /* WIHSPIDFSW || WIHSPIDFHW */
 
 #if (WITHNANDHW || WITHNANDSW)
+
+	// Chip: MT29F4GABBDAGC-IT
+
 	// NAND flash data bus
 	#define HARDWARE_NAND_D0_MIO 5		// D0: PS_MIO5
 	#define HARDWARE_NAND_D1_MIO 6		// D1: PS_MIO6
@@ -1190,7 +1193,6 @@
 		gpio_input2(HARDWARE_NAND_D2_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D1_MIO, pinmode_input); \
 		gpio_input2(HARDWARE_NAND_D0_MIO, pinmode_input); \
-		gpio_input2(HARDWARE_NAND_REB_MIO, pinmode_input); \
 		/* ready signal */ \
 		gpio_input2(HARDWARE_NAND_RBC_MIO, pinmode_input); /* Ready/Busy# */ \
 		/* control signals */ \
@@ -1198,8 +1200,18 @@
 		gpio_output2(HARDWARE_NAND_ALE_MIO, 0, pinmode_output); \
 		gpio_output2(HARDWARE_NAND_CLE_MIO, 0, pinmode_output); \
 		gpio_output2(HARDWARE_NAND_WEB_MIO, 1, pinmode_output); \
-		/* gpio_output2(HARDWARE_NAND_WPB_MIO, 0, pinmode_output); */ \
+		gpio_output2(HARDWARE_NAND_REB_MIO, 1, pinmode_output); \
+		/* gpio_output2(HARDWARE_NAND_WPB_MIO, 0, pinmode_output); */  /* 0: write protect active */ \
 	} while (0)
+
+	#define HARDWARE_NAND_RBC_GET() (gpio_readpin(HARDWARE_NAND_RBC_MIO))
+
+	#define HARDWARE_NAND_CSB_SET(state) do { gpio_writepin(HARDWARE_NAND_CSB_MIO, !! (state)); } while (0)
+	#define HARDWARE_NAND_ALE_SET(state) do { gpio_writepin(HARDWARE_NAND_ALE_MIO, !! (state)); } while (0)
+	#define HARDWARE_NAND_CLE_SET(state) do { gpio_writepin(HARDWARE_NAND_CLE_MIO, !! (state)); } while (0)
+	#define HARDWARE_NAND_WEB_SET(state) do { gpio_writepin(HARDWARE_NAND_WEB_MIO, !! (state)); } while (0)
+	#define HARDWARE_NAND_REB_SET(state) do { gpio_writepin(HARDWARE_NAND_REB_MIO, !! (state)); } while (0)
+	//#define HARDWARE_NAND_WPB_SET(state) do { gpio_writepin(HARDWARE_NAND_WPB_MIO, !! (state)); } while (0) /* optional */
 
 #endif /* (WITHNANDHW || WITHNANDSW) */
 

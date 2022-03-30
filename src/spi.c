@@ -655,69 +655,43 @@ void spi_initialize(void)
 // Get Ready/Busy# pin state
 static uint_fast8_t nand_rbc_get(void)
 {
-#if CPUSTYLE_XC7Z
-	return gpio_readpin(HARDWARE_NAND_RBC_MIO);
-#else
-	#warning nand_rbc_get should be implemented
-#endif
+	return HARDWARE_NAND_RBC_GET();
 }
 
 // Chip enable
 static void nand_cs_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	gpio_writepin(HARDWARE_NAND_CSB_MIO, state != 0);
-#else
-	#warning nand_cs_set should be implemented
-#endif
+	HARDWARE_NAND_CSB_SET(state);
 }
 
 // Address latch enable
 static void nand_ale_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	gpio_writepin(HARDWARE_NAND_ALE_MIO, state != 0);
-#else
-	#warning nand_ale_set should be implemented
-#endif
+	HARDWARE_NAND_ALE_SET(state);
 }
 
 // Command latch enable
 static void nand_cle_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	gpio_writepin(HARDWARE_NAND_CLE_MIO, state != 0);
-#else
-	#warning nand_cle_set should be implemented
-#endif
+	HARDWARE_NAND_CLE_SET(state);
 }
 
 // Read enable: Gates transfers from the NAND Flash device to the host system.
 static void nand_re_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	gpio_writepin(HARDWARE_NAND_REB_MIO, state != 0);
-#else
-	#warning nand_re_set should be implemented
-#endif
+	HARDWARE_NAND_REB_SET(state);
 }
 
 // Write enable: Gates transfers from the host system to the NAND Flash device
 static void nand_we_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z
-	gpio_writepin(HARDWARE_NAND_WEB_MIO, state != 0);
-#else
-	#warning nand_we_set should be implemented
-#endif
+	HARDWARE_NAND_WEB_SET(state);
 }
 
 static void nand_wp_set(uint_fast8_t state)
 {
-#if CPUSTYLE_XC7Z && defined (HARDWARE_NAND_WPB_MIO)
-	gpio_writepin(HARDWARE_NAND_WPB_MIO, state != 0);
-#else
-	#warning nand_wp_set should be implemented
+#if defined (HARDWARE_NAND_WPB)
+	HARDWARE_NAND_WPB_SET(state);
 #endif
 }
 
@@ -789,6 +763,8 @@ static uint_fast8_t nand_data_in(void)
 	return v;
 #else
 	#warning nand_data_in should be implemented
+	return 0;
+
 #endif
 }
 
@@ -930,7 +906,7 @@ void nand_initialize(void)
 {
 	HARDWARE_NAND_INITIALIZE();
 
-	nand_wp_set(0);
+	nand_wp_set(0);		// CHip write protected
 
 	nand_cs_set(1);
 	nand_cle_set(0);
