@@ -35,7 +35,7 @@ static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 #include "../../Class/HUB/Inc/usbh_hub.h"
 
 /* Вызываем после выполнения reset контроллера */
-void USBH_POETRESET_INIT(void)
+void USBH_POSTRESET_INIT(void)
 {
 #if CPUSTYLE_XC7Z
 	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
@@ -803,7 +803,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	// Опять задержка
 	(void) EHCIx->USBCMD;
 
-	USBH_POETRESET_INIT();
+	USBH_POSTRESET_INIT();
 
 #if WITHUSBHOST_HIGHSPEEDULPI
 	PRINTF("host HAL_EHCI_Init:\n");
@@ -1190,7 +1190,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
 
-			USBH_POETRESET_INIT();
+			USBH_POSTRESET_INIT();
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
@@ -1214,7 +1214,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
 
-			USBH_POETRESET_INIT();
+			USBH_POSTRESET_INIT();
 
 #if WITHEHCIHWSOFTSPOLL == 0
 			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
