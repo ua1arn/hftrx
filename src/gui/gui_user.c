@@ -58,7 +58,7 @@ const uint8_t infobar_places [infobar_num_places] = {
 		INFOBAR_ATT,
 		INFOBAR_TX_POWER,
 		INFOBAR_EMPTY,
-		INFOBAR_EMPTY,
+		INFOBAR_VOLTAGE,
 		INFOBAR_CPU_TEMP,
 		INFOBAR_2ND_ENC_MENU
 };
@@ -557,9 +557,13 @@ static void gui_main_process(void)
 #if GUI_SHOW_INFOBAR
 		if (IS_AREA_TOUCHED)
 		{
-			touch_area_t * th = (touch_area_t *) ptr;
-			infobar_selected = th->index;
-			if (infobar_selected < infobar_num_places && infobar_places [infobar_selected] != INFOBAR_EMPTY)
+			touch_area_t * ta = (touch_area_t *) ptr;
+			if (ta->index == 255)
+				break;
+
+			infobar_selected = ta->index;
+			ASSERT(infobar_selected < infobar_num_places);
+			if (infobar_places [infobar_selected] != INFOBAR_EMPTY)
 			{
 				if (check_for_parent_window() == WINDOW_INFOBAR_MENU)
 				{
@@ -968,10 +972,10 @@ static void gui_main_process(void)
 				if (update)
 				{
 					drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
-	//				if (drain < 0)
-	//				{
-	//					drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
-	//				}
+					if (drain < 0)
+					{
+						drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
+					}
 				}
 
 #if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
