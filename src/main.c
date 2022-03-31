@@ -21616,8 +21616,8 @@ hamradio_main_step(void)
 					default:
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;
-					case 'u':
 		#if WITHUSBHOST_HIGHSPEEDULPI
+					case 'u':
 						PRINTF("hkey:\n");
 						ulpi_chip_debug();
 		#endif /* WITHUSBHOST_HIGHSPEEDULPI */
