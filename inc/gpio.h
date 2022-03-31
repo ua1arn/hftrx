@@ -231,9 +231,7 @@ extern "C" {
 		} \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
 		GPIO_BANK_SET_OEN(bank, mask, mask); \
-		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
 		GPIO_BANK_SET_DIRM(bank, mask, mask); \
-		GPIO_BANK_SET_OUTPUTS(bank, mask, mask * !! (state)); \
 	} while (0)
 
 	#define gpio_input2(pin, pinmode) do { \
