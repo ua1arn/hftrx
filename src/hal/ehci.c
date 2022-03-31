@@ -42,6 +42,7 @@ void USBH_POSTRESET_INIT(void)
 
 	USBx->MODE |= 0x03;
 	USBx->MODE |= (1uL << 5);	// VBPS
+	USBx->MODE &= ~ (1uL << 4);	// SDIS
 #endif /* CPUSTYLE_XC7Z */
 }
 
@@ -600,6 +601,8 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		{
 			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 
+			if (/*hc->ch_num >= ARRAY_SIZE(hehci->hc) || */ hc->ch_num != ch_num)
+				continue;
 			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
 			const uint_fast8_t status = qtd->status;
 			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
