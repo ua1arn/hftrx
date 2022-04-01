@@ -40,22 +40,27 @@ void USBH_POSTRESET_INIT(void)
 #if CPUSTYLE_XC7Z
 	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
 
-	USBx->MODE |= 0x03;
+	USBx->MODE |= 0x03;			// Host
 	USBx->MODE |= (1uL << 5);	// VBPS
 	USBx->MODE &= ~ (1uL << 4);	// SDIS
 
 	USBx->TTCTRL = (USBx->TTCTRL & ~ (0xFF000000)) |
 		(0x17 << 24) |
 		0;
-
-	enum { PORTSC1_PSPD_Pos = 26, PORTSC1_PSPD_Msk = 0x03 << PORTSC1_PSPD_Pos };
+//
+//	enum { PORTSC1_PSPD_Pos = 26, PORTSC1_PSPD_Msk = 0x03 << PORTSC1_PSPD_Pos };
 //	USBx->PORTSCR1 = (USBx->PORTSCR1 & ~ (PORTSC1_PSPD_Msk)) |
 //		(0x02 << PORTSC1_PSPD_Pos) |
 //		0;
+//
+//	enum { PORTSC1_PTC_Pos = 16, PORTSC1_PTC_Msk = 0x0F << PORTSC1_PTC_Pos };
+//	USBx->PORTSCR1 = (USBx->PORTSCR1 & ~ (PORTSC1_PTC_Msk)) |
+//		(0x05 << PORTSC1_PTC_Pos) |	// HS
+//		0;
 
-	unsigned pts = (USBx->PORTSCR1 >> 30) & 0x03;
-	unsigned pts2 = (USBx->PORTSCR1 >> 25) & 0x01;
-	PRINTF("PORTSCR1(%p)=%08lX, pts=%02X, pspd=%02X\n", & USBx->PORTSCR1, USBx->PORTSCR1, pts2 * 4 + pts, (USBx->PORTSCR1 >> PORTSC1_PSPD_Pos) & 0x03);
+//	unsigned pts = (USBx->PORTSCR1 >> 30) & 0x03;
+//	unsigned pts2 = (USBx->PORTSCR1 >> 25) & 0x01;
+//	PRINTF("PORTSCR1(%p)=%08lX, pts=%02X, pspd=%02X\n", & USBx->PORTSCR1, USBx->PORTSCR1, pts2 * 4 + pts, (USBx->PORTSCR1 >> PORTSC1_PSPD_Pos) & 0x03);
 
 
 #endif /* CPUSTYLE_XC7Z */
