@@ -52,9 +52,10 @@
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
+#if 0
 	#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 	#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
-
+#endif
 	//#define WITHNANDHW	1		/* Hardware NAND CONTROLLER - PrimeCell Static Memory Controller (PL353) ARM r2p1 */
 	//#define WITHNANDSW	1		/* Software (bit-bang) NAND flash control */
 
@@ -83,7 +84,7 @@
 	#define WITHUSBHOST_HIGHSPEEDULPI	1
 	//#define WITHUSBHOST_DMAENABLE 1
 
-#if 0
+#if 1
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		EHCI0
@@ -874,6 +875,8 @@
 		const portholder_t pinmode_ulpi_data = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
 		const portholder_t pinmode_ulpi_input = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 1); \
 		const portholder_t pinmode_ulpi_output = MIO_PIN_VALUE(1, 0, IOTYPE, 1, L3_SEL, L2_SEL, L1_SEL, L0_SEL, 0); \
+		/* RESET */ \
+		gpio_output2(USB_RESET_MIO, 0, MIO_PIN_VALUE(1, 0, IOTYPE_RST, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
 		/* ULPI chip */ \
 		gpio_peripherial(USB_DATA0_MIO, pinmode_ulpi_data); \
 		gpio_peripherial(USB_DATA1_MIO, pinmode_ulpi_data); \
@@ -888,9 +891,6 @@
 		gpio_peripherial(USB_CLK_MIO, pinmode_ulpi_input); \
 		gpio_peripherial(USB_STP_MIO, pinmode_ulpi_output); \
 		/* RESET */ \
-		gpio_output2(USB_RESET_MIO, 1, MIO_PIN_VALUE(1, 0, IOTYPE_RST, 0, 0, 0, 0, 0, 0)); /* USB_RESET	C37	D16		PS_MIO46_501 */ \
-		local_delay_ms(10); \
-		gpio_writepin(USB_RESET_MIO, 0); /* USB_RESET = 0 */ \
 		local_delay_ms(10); \
 		gpio_writepin(USB_RESET_MIO, 1); /* USB_RESET = 1 */ \
 		local_delay_ms(10); \
@@ -1290,8 +1290,7 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_USERBOOT_BIT	0//(1uL << 1)	/* PB1: ~USER_BOOT */
-	#define BOARD_IS_USERBOOT() 0//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
+	#define BOARD_IS_USERBOOT() 1//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 	} while (0)

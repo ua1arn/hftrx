@@ -218,11 +218,11 @@
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
-	#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
+	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 
-	#define WITHISBOOTLOADERFATFS 1
-	#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
+//	#define WITHISBOOTLOADERFATFS 1
+//	#define WITHISBOOTLOADERIMAGE "tc1_xc7z020_app_xyl32.bin"
 
 #else /* WITHISBOOTLOADER */
 
