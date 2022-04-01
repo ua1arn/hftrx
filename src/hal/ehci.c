@@ -43,6 +43,21 @@ void USBH_POSTRESET_INIT(void)
 	USBx->MODE |= 0x03;
 	USBx->MODE |= (1uL << 5);	// VBPS
 	USBx->MODE &= ~ (1uL << 4);	// SDIS
+
+	USBx->TTCTRL = (USBx->TTCTRL & ~ (0xFF000000)) |
+		(0x17 << 24) |
+		0;
+
+	enum { PORTSC1_PSPD_Pos = 26, PORTSC1_PSPD_Msk = 0x03 << PORTSC1_PSPD_Pos };
+//	USBx->PORTSCR1 = (USBx->PORTSCR1 & ~ (PORTSC1_PSPD_Msk)) |
+//		(0x02 << PORTSC1_PSPD_Pos) |
+//		0;
+
+	unsigned pts = (USBx->PORTSCR1 >> 30) & 0x03;
+	unsigned pts2 = (USBx->PORTSCR1 >> 25) & 0x01;
+	PRINTF("PORTSCR1(%p)=%08lX, pts=%02X, pspd=%02X\n", & USBx->PORTSCR1, USBx->PORTSCR1, pts2 * 4 + pts, (USBx->PORTSCR1 >> PORTSC1_PSPD_Pos) & 0x03);
+
+
 #endif /* CPUSTYLE_XC7Z */
 }
 
