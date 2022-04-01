@@ -21620,8 +21620,8 @@ hamradio_main_step(void)
 					case 'u':
 						PRINTF("hkey:\n");
 						ulpi_chip_debug();
-		#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 						break;
+		#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 		#if WITHWAVPLAYER || WITHSENDWAV
 					case 'p':
 						PRINTF(PSTR("Play test file\n"));
@@ -23550,6 +23550,7 @@ static void bootloader_fatfs_mainloop(void)
 
 static void bootloader_mainloop(void)
 {
+	PRINTF("bootloader_mainloop:\n");
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
@@ -23579,6 +23580,14 @@ ddd:
 		if (dbg_getchar(& c))
 		{
 			dbg_putchar(c);
+#if WITHUSBHOST_HIGHSPEEDULPI
+			if (c == 'u')
+			{
+				PRINTF("hkey:\n");
+				ulpi_chip_debug();
+				continue;
+			}
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 		}
 		/* если не установлен джампер - запускаем программу. */
 //		if (! BOARD_IS_USERBOOT())
@@ -23595,13 +23604,21 @@ ddd:
 			dbg_putchar(c);
 			if (c == 'r')
 				break;
+#if BOOTLOADER_RAMSIZE
 			if (c == 'd')
 			{
-#if BOOTLOADER_RAMSIZE
 				printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
-#endif /* BOOTLOADER_RAMSIZE */
 				continue;
 			}
+#endif /* BOOTLOADER_RAMSIZE */
+#if WITHUSBHOST_HIGHSPEEDULPI
+			if (c == 'u')
+			{
+				PRINTF("hkey:\n");
+				ulpi_chip_debug();
+				continue;
+			}
+#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 		}
 
 //#else /* WITHDEBUG */
