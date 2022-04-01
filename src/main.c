@@ -22997,6 +22997,11 @@ void hamradio_set_bw(uint_fast8_t v)
 	updateboard(1, 1);
 }
 
+void hamradio_change_nr(void)
+{
+	uif_key_changenr();
+}
+
 void hamradio_load_gui_settings(void * ptrv)
 {
 	uint8_t * ptr = ptrv;

@@ -132,7 +132,10 @@ enum {
 	infobar_label_width = 100
 };
 
-#define INFOBAR_EMPTY 255
+#define INFOBAR_EMPTY 			0x80
+#define INFOBAR_NOACTION		0x40
+#define INFOBAR_NOACTION_POS	6
+#define INFOBAR_VALID_MASK		0x3F
 
 enum {
 	INFOBAR_AF,
@@ -144,6 +147,7 @@ enum {
 	INFOBAR_2ND_ENC_MENU,
 	INFOBAR_TX_POWER,
 	INFOBAR_AF_VOLUME,
+	INFOBAR_DNR,
 };
 
 #endif /* GUI_SHOW_INFOBAR */

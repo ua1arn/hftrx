@@ -56,10 +56,10 @@ const uint8_t infobar_places [infobar_num_places] = {
 		INFOBAR_AF,
 		INFOBAR_AF_VOLUME,
 		INFOBAR_ATT,
+		INFOBAR_DNR,
 		INFOBAR_TX_POWER,
-		INFOBAR_EMPTY,
-		INFOBAR_VOLTAGE,
-		INFOBAR_CPU_TEMP,
+		INFOBAR_VOLTAGE | INFOBAR_NOACTION,
+		INFOBAR_CPU_TEMP | INFOBAR_NOACTION,
 		INFOBAR_2ND_ENC_MENU
 };
 
@@ -192,6 +192,7 @@ static void window_infobar_menu_process(void)
 #if GUI_SHOW_INFOBAR
 	window_t * const win = get_win(WINDOW_INFOBAR_MENU);
 	uint8_t interval = 5, yy = 0, need_close = 0, need_open = 255;
+	uint_fast8_t infobar = infobar_places [infobar_selected] & INFOBAR_VALID_MASK;
 
 	if (win->first_call)
 	{
@@ -211,7 +212,7 @@ static void window_infobar_menu_process(void)
 		GUI_MEM_ASSERT(win->bh_ptr);
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
-		switch (infobar_places [infobar_selected])
+		switch (infobar)
 		{
 		case INFOBAR_AF_VOLUME:
 		{
@@ -324,8 +325,14 @@ static void window_infobar_menu_process(void)
 		case INFOBAR_TX_POWER:
 
 #if WITHPOWERTRIM
-			need_open = infobar_places [infobar_selected];
+			need_open = infobar;
 #endif /*  WITHPOWERTRIM */
+			break;
+
+		case INFOBAR_DNR:
+
+			hamradio_change_nr();
+			need_close = 1;
 			break;
 
 		default:
@@ -345,7 +352,7 @@ static void window_infobar_menu_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 
-			switch (infobar_places [infobar_selected])
+			switch (infobar)
 			{
 			case INFOBAR_AF_VOLUME:
 			{
@@ -401,7 +408,7 @@ static void window_infobar_menu_process(void)
 
 	case WM_MESSAGE_ENC2_ROTATE:
 	{
-		if (infobar_places [infobar_selected] == INFOBAR_AF_VOLUME)
+		if (infobar == INFOBAR_AF_VOLUME)
 		{
 #if ! WITHPOTAFGAIN
 			hamradio_set_afgain(hamradio_get_afgain() + action);
@@ -563,7 +570,9 @@ static void gui_main_process(void)
 
 			infobar_selected = ta->index;
 			ASSERT(infobar_selected < infobar_num_places);
-			if (infobar_places [infobar_selected] != INFOBAR_EMPTY)
+			uint_fast8_t infobar = infobar_places [infobar_selected];
+
+			if (infobar != INFOBAR_EMPTY && ! ((infobar & INFOBAR_NOACTION) >> INFOBAR_NOACTION_POS))
 			{
 				if (check_for_parent_window() == WINDOW_INFOBAR_MENU)
 				{
@@ -820,7 +829,8 @@ static void gui_main_process(void)
 
 	for (uint8_t current_place = 0; current_place < infobar_num_places; current_place ++)
 	{
-		switch (infobar_places [current_place])
+		uint_fast8_t infobar = infobar_places [current_place] & INFOBAR_VALID_MASK;
+		switch (infobar)
 		{
 		case INFOBAR_AF_VOLUME:
 		{
@@ -856,6 +866,25 @@ static void gui_main_process(void)
 			local_snprintf_P(buf, buflen, PSTR("Tune %d\%"), tune_pwr);
 			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
 		}
+			break;
+
+		case INFOBAR_DNR:
+		{
+			static int_fast32_t grade = 0;
+			static uint_fast8_t state = 0;
+			uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+			if (update)
+			{
+				state = hamradio_get_nrvalue(& grade);
+			}
+
+			local_snprintf_P(buf, buflen, PSTR("DNR"));
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? COLORMAIN_WHITE : COLORMAIN_GRAY);
+			local_snprintf_P(buf, buflen, state ? "on" : "off");
+			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? COLORMAIN_WHITE : COLORMAIN_GRAY);
+		}
+
 			break;
 
 		case INFOBAR_AF:
