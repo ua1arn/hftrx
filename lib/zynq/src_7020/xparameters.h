@@ -444,7 +444,7 @@
 #define XPAR_XQSPIPS_0_HIGHADDR 0xE000DFFF
 #define XPAR_XQSPIPS_0_QSPI_CLK_FREQ_HZ 200000000
 #define XPAR_XQSPIPS_0_QSPI_MODE 0
-#define XPAR_XQSPIPS_0_QSPI_BUS_WIDTH 2
+#define XPAR_XQSPIPS_0_QSPI_BUS_WIDTH 0
 
 
 /******************************************************************/
