@@ -273,7 +273,8 @@ BOOT2: version boot.bin
 	-cp boot.bin $(ZINQ_BOOT_DIR)/boot.bin
 	
 BOOT3: version boot.bin
-	program_flash -f BOOT.bin -verify -offset 0x00000 $(XILINX_JTAGOPTS)
+	program_flash -f boot.bin -verify -offset 0x00000 $(XILINX_JTAGOPTS)
+	program_flash -f boot.bin -verify -offset 0x40000 $(XILINX_JTAGOPTS)
 	
 boot.bin: boot_ant.bif $(PROJECT)_boot.elf
 	bootgen -arch zynq -image boot_ant.bif -w on -o $@
