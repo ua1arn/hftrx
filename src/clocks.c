@@ -5812,6 +5812,24 @@ unsigned long  xc7z_get_spi_freq(void)
 	}
 }
 
+unsigned long  xc7z_get_qspi_freq(void)
+{
+	const uint_fast32_t divisor = (SCLR->LQSPI_CLK_CTRL >> 8) & 0x003F;	// DIVISOR
+	switch ((SCLR->LQSPI_CLK_CTRL & 0x30) >> 4)	// SRCSEL
+	{
+	default:
+	case 0x00:
+		// 0x: Source for generated clock is IO PLL.
+		return xc7z_get_io_pll_freq() / divisor;
+	case 0x01:
+		// 10: Source for generated clock is ARM PLL.
+		return xc7z_get_arm_pll_freq() / divisor;
+	case 0x03:
+		// 11: Source for generated clock is DDR PLL
+		return xc7z_get_ddr_pll_freq() / divisor;
+	}
+}
+
 void hardware_set_dotclock(unsigned long dotfreq)
 {
 	unsigned long f1 = (unsigned long) ( xc7z_get_io_pll_freq() / 1000);

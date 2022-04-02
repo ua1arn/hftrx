@@ -139,6 +139,7 @@ unsigned long xc7z_get_ddr_x3clk_freq(void);
 unsigned long xc7z_get_uart_freq(void);
 unsigned long xc7z_get_sdio_freq(void);
 unsigned long xc7z_get_spi_freq(void);
+unsigned long xc7z_get_qspi_freq(void);
 
 // platform-independed functions.
 unsigned long hardware_get_spi_freq(void);	// получение тактовой частоты тактирования блока SPI, использующенося в данной конфигурации
