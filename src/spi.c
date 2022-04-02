@@ -3371,7 +3371,7 @@ u32 InitQspi(void)
 		/*
 		 * For Flash size <128Mbit controller configured in linear mode
 		 */
-		if (1 && QspiFlashSize <= FLASH_SIZE_16MB) {
+		if (0 && QspiFlashSize <= FLASH_SIZE_16MB) {
 			LinearBootDeviceFlag = 1;
 
 			/*
@@ -3458,7 +3458,7 @@ u32 InitQspi(void)
 		/*
 		 * For Single Flash size <128Mbit controller configured in linear mode
 		 */
-		if (QspiFlashSize <= FLASH_SIZE_16MB) {
+		if (0 && QspiFlashSize <= FLASH_SIZE_16MB) {
 			/*
 			 * Setting linear access flag
 			 */
