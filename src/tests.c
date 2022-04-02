@@ -6291,6 +6291,11 @@ void hightests(void)
 		// QSPI test
 		spidf_initialize();
 		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+
+		unsigned char b [64]  = { 1,2,3,4,5 } ;
+		readDATAFLASH(0x00000, b, 64);
+		printhex(0, b, 64);
+
 		spidf_uninitialize();
 	}
 #endif
