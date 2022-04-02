@@ -2905,9 +2905,9 @@ u32 FlashReadID(void)
 		return XST_FAILURE;
 	}
 
-	PRINTF("Single Flash Information\r\n");
+	PRINTF("Single Flash Information\n");
 
-	PRINTF("FlashID=0x%x 0x%x 0x%x\r\n", ReadBuffer[1],
+	PRINTF("FlashID=0x%x 0x%x 0x%x\n", ReadBuffer[1],
 			ReadBuffer[2],
 			ReadBuffer[3]);
 
@@ -2936,30 +2936,30 @@ u32 FlashReadID(void)
 	 */
 //	if (ReadBuffer[2] == FLASH_SIZE_ID_8M) {
 //		QspiFlashSize = FLASH_SIZE_8M;
-//		PRINTF( "8M Bits\r\n");
+//		PRINTF( "8M Bits\n");
 //	} else if (ReadBuffer[2] == FLASH_SIZE_ID_16M) {
 //		QspiFlashSize = FLASH_SIZE_16M;
-//		PRINTF( "16M Bits\r\n");
+//		PRINTF( "16M Bits\n");
 //	} else if (ReadBuffer[2] == FLASH_SIZE_ID_32M) {
 //		QspiFlashSize = FLASH_SIZE_32M;
-//		PRINTF( "32M Bits\r\n");
+//		PRINTF( "32M Bits\n");
 //	} else if (ReadBuffer[2] == FLASH_SIZE_ID_64M) {
 //		QspiFlashSize = FLASH_SIZE_64M;
-//		PRINTF( "64M Bits\r\n");
+//		PRINTF( "64M Bits\n");
 //	} else if (ReadBuffer[3] == FLASH_SIZE_ID_128M) {
 //		QspiFlashSize = FLASH_SIZE_128M;
-//		PRINTF( "128M Bits\r\n");
+//		PRINTF( "128M Bits\n");
 //	} else if (ReadBuffer[3] == FLASH_SIZE_ID_256M) {
 //		QspiFlashSize = FLASH_SIZE_256M;
-//		PRINTF( "256M Bits\r\n");
+//		PRINTF( "256M Bits\n");
 //	} else if ((ReadBuffer[3] == FLASH_SIZE_ID_512M)
 //			|| (ReadBuffer[3] == MACRONIX_FLASH_SIZE_ID_512M)) {
 //		QspiFlashSize = FLASH_SIZE_512M;
-//		PRINTF( "512M Bits\r\n");
+//		PRINTF( "512M Bits\n");
 //	} else if ((ReadBuffer[3] == FLASH_SIZE_ID_1G)
 //			|| (ReadBuffer[3] == MACRONIX_FLASH_SIZE_ID_1G)) {
 //		QspiFlashSize = FLASH_SIZE_1G;
-//		PRINTF( "1G Bits\r\n");
+//		PRINTF( "1G Bits\n");
 //	}
 
 	return XST_SUCCESS;
@@ -3375,7 +3375,7 @@ u32 InitQspi(void)
 
 	if (XPAR_XQSPIPS_0_QSPI_MODE == SINGLE_FLASH_CONNECTION) {
 
-		PRINTF("QSPI is in single flash connection\r\n");
+		PRINTF("QSPI is in single flash connection\n");
 		/*
 		 * For Flash size <128Mbit controller configured in linear mode
 		 */
@@ -3392,21 +3392,21 @@ u32 InitQspi(void)
 
 				case QSPI_BUSWIDTH_ONE:
 				{
-					PRINTF("QSPI is in 1-bit mode\r\n");
+					PRINTF("Linear QSPI is in 1-bit mode\n");
 					ConfigCmd = SINGLE_QSPI_CONFIG_FAST_READ;
 				}
 				break;
 
 				case QSPI_BUSWIDTH_TWO:
 				{
-					PRINTF("QSPI is in 2-bit mode\r\n");
+					PRINTF("Linear QSPI is in 2-bit mode\n");
 					ConfigCmd = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
 				}
 				break;
 
 				case QSPI_BUSWIDTH_FOUR:
 				{
-					PRINTF("QSPI is in 4-bit mode\r\n");
+					PRINTF("Linear QSPI is in 4-bit mode\n");
 					ConfigCmd = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
 				}
 				break;
@@ -3428,21 +3428,21 @@ u32 InitQspi(void)
 
 				case QSPI_BUSWIDTH_ONE:
 				{
-					PRINTF("QSPI is in 1-bit mode\r\n");
+					PRINTF("QSPI is in 1-bit mode\n");
 					ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_READ;
 				}
 				break;
 
 				case QSPI_BUSWIDTH_TWO:
 				{
-					PRINTF("QSPI is in 2-bit mode\r\n");
+					PRINTF("QSPI is in 2-bit mode\n");
 					ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
 				}
 				break;
 
 				case QSPI_BUSWIDTH_FOUR:
 				{
-					PRINTF("QSPI is in 4-bit mode\r\n");
+					PRINTF("QSPI is in 4-bit mode\n");
 					ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
 				}
 				break;
@@ -3462,7 +3462,7 @@ u32 InitQspi(void)
 
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
 
-		PRINTF("QSPI is in Dual Parallel connection\r\n");
+		PRINTF("QSPI is in Dual Parallel connection\n");
 		/*
 		 * For Single Flash size <128Mbit controller configured in linear mode
 		 */
@@ -3511,7 +3511,7 @@ u32 InitQspi(void)
 	 */
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
 
-		PRINTF("QSPI is in Dual Stack connection\r\n");
+		PRINTF("QSPI is in Dual Stack connection\n");
 
 		QspiFlashSize = 2 * QspiFlashSize;
 
@@ -3522,21 +3522,21 @@ u32 InitQspi(void)
 
 			case QSPI_BUSWIDTH_ONE:
 			{
-				PRINTF("QSPI is in 1-bit mode\r\n");
+				PRINTF("QSPI is in 1-bit mode\n");
 				ConfigCmd =  DUAL_STACK_CONFIG_FAST_READ;
 			}
 			break;
 
 			case QSPI_BUSWIDTH_TWO:
 			{
-				PRINTF("QSPI is in 2-bit mode\r\n");
+				PRINTF("QSPI is in 2-bit mode\n");
 				ConfigCmd =  DUAL_STACK_CONFIG_FAST_DUAL_READ;
 			}
 			break;
 
 			case QSPI_BUSWIDTH_FOUR:
 			{
-				PRINTF("QSPI is in 4-bit mode\r\n");
+				PRINTF("QSPI is in 4-bit mode\n");
 				ConfigCmd =  DUAL_STACK_CONFIG_FAST_QUAD_READ;
 			}
 			break;
