@@ -1508,6 +1508,9 @@ static uint32_t qspi_rd_status(struct qspi_ctxt *qspi)
 
 ////
 uint32_t InitQspi(void);
+uint32_t QspiAccess( uint32_t SourceAddress,
+		uint32_t DestinationAddress,
+		uint32_t LengthBytes);
 
 void spidf_initialize(void)
 {
@@ -1582,6 +1585,9 @@ void spidf_uninitialize(void)
 //	while ((QUADSPI->SR & QUADSPI_SR_BUSY_Msk) != 0)
 //		;
 	// Disconnect I/O pins
+#if CPUSTYLE_XC7Z
+	return;
+#endif /* CPUSTYLE_XC7Z */
 	XQSPIPS->ER = 0;
 	SPIDF_HANGOFF();
 }
@@ -2306,6 +2312,9 @@ char nameDATAFLASH [64];
 
 int testchipDATAFLASH(void)
 {
+#if CPUSTYLE_XC7Z
+	return 0;
+#endif /* CPUSTYLE_XC7Z */
 	unsigned char mf_id;	// Manufacturer ID
 	unsigned char mf_devid1;	// device ID (part 1)
 	unsigned char mf_devid2;	// device ID (part 2)
@@ -2584,6 +2593,10 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 
 int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 {
+#if CPUSTYLE_XC7Z
+	QspiAccess(flashoffset, (uintptr_t) data, len);
+	return 0;
+#endif /* CPUSTYLE_XC7Z */
 	//PRINTF("readDATAFLASH start, data=%p, len=%lu\n", data, len);
 	if (timed_dataflash_read_status())
 	{
@@ -3358,7 +3371,7 @@ u32 InitQspi(void)
 		/*
 		 * For Flash size <128Mbit controller configured in linear mode
 		 */
-		if (QspiFlashSize <= FLASH_SIZE_16MB) {
+		if (1 && QspiFlashSize <= FLASH_SIZE_16MB) {
 			LinearBootDeviceFlag = 1;
 
 			/*

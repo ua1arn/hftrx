@@ -438,6 +438,15 @@
 
 /******************************************************************/
 
+#define QSPI_BUSWIDTH_ONE	0U
+#define QSPI_BUSWIDTH_TWO	1U
+#define QSPI_BUSWIDTH_FOUR	2U
+
+#define SINGLE_FLASH_CONNECTION			0
+#define DUAL_STACK_CONNECTION			1
+#define DUAL_PARALLEL_CONNECTION		2
+#define FLASH_SIZE_16MB					0x1000000
+
 /* Canonical definitions for peripheral PS7_QSPI_0 */
 #define XPAR_XQSPIPS_0_DEVICE_ID XPAR_PS7_QSPI_0_DEVICE_ID
 #define XPAR_XQSPIPS_0_BASEADDR 0xE000D000
