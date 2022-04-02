@@ -52,11 +52,6 @@
 #define WITHDEBUG_USART2	1
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
-#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
-//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
-
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 
@@ -106,6 +101,11 @@
 
 #if WITHISBOOTLOADER
 
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
 
@@ -151,6 +151,11 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
+
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
+	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 	//#define WITHMDMAHW		1	/* Использование MDMA для формирования изображений */
 	//#define WITHCPUDACHW	1	/* использование встроенного в процессор DAC */
