@@ -1585,6 +1585,9 @@ void spidf_initialize(void)
 
 void spidf_hangoff(void)
 {
+#if CPUSTYLE_XC7Z
+	return;
+#endif /* CPUSTYLE_XC7Z */
 	SPIDF_HANGOFF();	// Отключить процессор от SERIAL FLASH
 }
 
@@ -3388,30 +3391,16 @@ u32 InitQspi(void)
 			XQspiPs_SetOptions(QspiInstancePtr,  XQSPIPS_LQSPI_MODE_OPTION |
 					XQSPIPS_HOLD_B_DRIVE_OPTION);
 
-			switch (XPAR_XQSPIPS_0_QSPI_BUS_WIDTH) {
-
-				case QSPI_BUSWIDTH_ONE:
-				{
-					PRINTF("Linear QSPI is in 1-bit mode\n");
-					ConfigCmd = SINGLE_QSPI_CONFIG_FAST_READ;
-				}
-				break;
-
-				case QSPI_BUSWIDTH_TWO:
-				{
-					PRINTF("Linear QSPI is in 2-bit mode\n");
-					ConfigCmd = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
-				}
-				break;
-
-				case QSPI_BUSWIDTH_FOUR:
-				{
-					PRINTF("Linear QSPI is in 4-bit mode\n");
-					ConfigCmd = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
-				}
-				break;
-
-			}
+#if WIHSPIDFHW4BIT
+			//PRINTF("Linear QSPI is in 4-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
+#elif WIHSPIDFHW2BIT
+			//PRINTF("Linear QSPI is in 2-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
+#else
+			//PRINTF("Linear QSPI is in 1-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_READ;
+#endif
 
 			/*
 			 * Single linear read
@@ -3424,30 +3413,16 @@ u32 InitQspi(void)
 			XQspiPs_Enable(QspiInstancePtr);
 		} else {
 
-			switch (XPAR_XQSPIPS_0_QSPI_BUS_WIDTH) {
-
-				case QSPI_BUSWIDTH_ONE:
-				{
-					PRINTF("QSPI is in 1-bit mode\n");
-					ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_READ;
-				}
-				break;
-
-				case QSPI_BUSWIDTH_TWO:
-				{
-					PRINTF("QSPI is in 2-bit mode\n");
-					ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
-				}
-				break;
-
-				case QSPI_BUSWIDTH_FOUR:
-				{
-					PRINTF("QSPI is in 4-bit mode\n");
-					ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
-				}
-				break;
-
-			}
+#if WIHSPIDFHW4BIT
+			//PRINTF("QSPI is in 4-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
+#elif WIHSPIDFHW2BIT
+			//PRINTF("QSPI is in 2-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
+#else
+			//PRINTF("QSPI is in 1-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_READ;
+#endif
 			/*
 			 * Single flash IO read
 			 */
