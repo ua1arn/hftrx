@@ -1980,23 +1980,45 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 	const unsigned long ccs = (portsc & EHCI_PORTSC_CCS);
 	const unsigned long line = EHCI_PORTSC_LINE_STATUS(portsc);
 	const unsigned long ped = (portsc & EHCI_PORTSC_PED) != 0;
+#if CPUSTYLE_XC7Z
+	// Use XUSBPS_PORTSCR1
+	switch ((portsc >> 26) & 0x03)	// PORTSCR_PSPD
+	{
+	case 0x00:
+		speed = USBH_SPEED_FULL;
+		PRINTF("speed=USBH_SPEED_FULL\n");
+		break;
+	case 0x01:
+		speed = USBH_SPEED_LOW;
+		PRINTF("speed=USBH_SPEED_LOW\n");
+		break;
+	case 0x02:
+		speed = USBH_SPEED_HIGH;
+		PRINTF("speed=USBH_SPEED_HIGH\n");
+		break;
+	case 0x03:
+		speed = USBH_SPEED_HIGH;
+		PRINTF("speed=not connected\n");
+		break;
+	}
+#else /* CPUSTYLE_XC7Z */
 	if ( ! ccs)
 	{
 		/* Port not connected */
 		//speed = USB_SPEED_NONE;
-		PRINTF("speed = USB_SPEED_NONE\n");
+		PRINTF("speed=USB_SPEED_NONE\n");
 	}
 	else if (line == EHCI_PORTSC_LINE_STATUS_LOW)
 	{
 		/* Detected as low-speed */
 		speed = USBH_SPEED_LOW;
-		PRINTF("speed = USB_SPEED_LOW\n");
+		PRINTF("speed=USB_SPEED_LOW\n");
 	}
 	else if (ped)
 	{
 		/* Port already enabled: must be high-speed */
 		speed = USBH_SPEED_HIGH;
-		PRINTF("speed = USB_SPEED_HIGH\n");
+		PRINTF("speed=USB_SPEED_HIGH\n");
 	}
 	else
 	{
@@ -2004,7 +2026,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		 * full-speed or high-speed; we can't yet tell.
 		 */
 		speed = USBH_SPEED_FULL;
-		PRINTF("speed = USB_SPEED_FULL\n");
+		PRINTF("speed=USB_SPEED_FULL\n");
 	}
 
 	if (0 && speed != USBH_SPEED_HIGH)
@@ -2021,6 +2043,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
 		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 	}
+#endif /* CPUSTYLE_XC7Z */
 	//PRINTF("USBH_LL_GetSpeed: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
 	return speed;
 }
