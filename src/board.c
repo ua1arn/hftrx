@@ -66,6 +66,7 @@ static uint_fast8_t		glob_nfm;			// режим NFM
 static uint_fast8_t		glob_nfmnbon;		// режим NFM с шумоподавителем - SW2014FM
 static uint_fast8_t 	glob_att;			// код аттенюатора
 static uint_fast8_t 	glob_antenna;		// выбор антенны (0 - ANT1, 1 - ANT2)
+static uint_fast8_t 	glob_rxantenna;		//
 static uint_fast8_t 	glob_preamp;		// включение предусилителя (УВЧ) приёмника
 static uint_fast8_t 	glob_mikemute;		// отключить аудиовход балансного модулятора
 static uint_fast8_t 	glob_vox;
@@ -4204,7 +4205,24 @@ prog_ctrlreg(uint_fast8_t plane)
 		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
 
 #if WITHAUTOTUNER
-	#if WITHAUTOTUNER_AVBELNN
+	#if WITHAUTOTUNER_UA1CEI_V2
+
+		RBVAL8(0100, glob_tuner_C);
+		RBVAL8(0070, glob_tuner_L);
+
+		//RBBIT(0067, 0);	// UNUSED
+		RBBIT(0066, 0);	// undefined
+		RBBIT(0065, 0);	// class A
+		RBBIT(0064, glob_rxantenna);	// RX ANT
+		RBBIT(0063, glob_antenna);	//
+		RBBIT(0062, 1);	// hi power out
+		RBBIT(0061, txgated);	//
+		RBBIT(0060, glob_fanflag);	// fan
+
+		RBBIT(0057, 0 && glob_autotune);	//
+		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
+
+	#elif WITHAUTOTUNER_AVBELNN
 		// Плата управления LPF и тюнером от avbelnn
 
 		// Схему брал на краснодарском форуме Аист сообщение 545 от avbelnn.

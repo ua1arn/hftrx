@@ -454,6 +454,7 @@ void bandf_calc_initialize(void)
 
 #elif \
 	WITHAUTOTUNER_AVBELNN || \
+	WITHAUTOTUNER_AVBELNN || \
 	CTLREGMODE_STORCH_V6 ||		/* mimni RX + TFT 4.3" */ \
 	0
 	/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
@@ -466,6 +467,21 @@ void bandf_calc_initialize(void)
 		(fseltype_t) ( 7400000uL >> BANDDIVPOWER),
 		(fseltype_t) (14800000uL >> BANDDIVPOWER),
 		(fseltype_t) (22000000uL >> BANDDIVPOWER),
+		(fseltype_t) (30000000uL >> BANDDIVPOWER),
+	};
+	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
+
+#elif \
+	WITHAUTOTUNER_UA1CEI_V2 || \
+	0
+
+	static const fseltype_t board_band2fs [] =
+	{
+		(fseltype_t) ( 2000000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 3850000uL >> BANDDIVPOWER),
+		(fseltype_t) ( 7200000uL >> BANDDIVPOWER),
+		(fseltype_t) (14500000uL >> BANDDIVPOWER),
+		(fseltype_t) (21500000uL >> BANDDIVPOWER),
 		(fseltype_t) (30000000uL >> BANDDIVPOWER),
 	};
 	#define BAND2CALCS	(sizeof board_band2fs / sizeof board_band2fs [0])	/* Размерность массива границ диапазонов и необходимость функции поиска по нему. */
