@@ -1521,6 +1521,10 @@ void spidf_initialize(void)
 	SCLR->APER_CLK_CTRL |= (0x01uL << 23);	// APER_CLK_CTRL.LQSPI_CPU_1XCLKACT
 	(void) SCLR->APER_CLK_CTRL;
 
+	SCLR->LQSPI_CLK_CTRL = (SCLR->LQSPI_CLK_CTRL & ~ 0x1F00) |
+			(0x02 << 8) |
+			0;
+
 	SPIDF_HARDINITIALIZE();
 	InitQspi();
 	return;
@@ -3350,7 +3354,7 @@ u32 InitQspi(void)
 	/*
 	 * Set the prescaler for QSPI clock
 	 */
-	XQspiPs_SetClkPrescaler(QspiInstancePtr, XQSPIPS_CLK_PRESCALE_8);
+	XQspiPs_SetClkPrescaler(QspiInstancePtr, XQSPIPS_CLK_PRESCALE_4);
 
 	/*
 	 * Assert the FLASH chip select.
