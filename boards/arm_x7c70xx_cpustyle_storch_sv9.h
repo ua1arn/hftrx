@@ -81,8 +81,9 @@
 #define TARGET_ENC2_B_EMIO			71	// H16	B29	H16	IO_L13P_T2_MRCC_35
 #define TARGET_ENC2_BUTTON_EMIO		72	// M15	A5	M15	IO_B35_LN23
 #define TARGET_TS_INT_EMIO			73	// V15	A2	V15	IO_L10P_T1_34
-#define TARGET_USER_BOOT_EMIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
-#define TARGET_ACTIVITY_EMIO	75	// F16	D7	F16	IO_L6P_T0_35	LED anode
+
+//#define TARGET_USER_BOOT_EMIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
+#define TARGET_ACTIVITY_EMIO		75		// F16	D7	F16	IO_L6P_T0_35	LED anode
 
 #define TARGET_NMEA_RESET_EMIO		76	// T15	A10	T15	IO_B34_LN5
 #define TARGET_PPS_IN_EMIO			77	// U14	A12	U15	IO_B34_LP11
@@ -98,6 +99,10 @@
 
 //#define TARGET_RFADC_SHDN_EMIO		85	//	L20	B10	L20	IO_L9N_T1_DQS_AD3N_35
 //#define TARGET_DAC_SLEEP_EMIO		86	//	V18	A18	V18	IO_L21N_T3_DQS_34
+
+
+#define TARGET_ACTIVITY2_MIO		7	// LED anode
+#define TARGET_USER_BOOT2_MIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
 
 #if WITHISBOOTLOADER
 
@@ -1283,15 +1288,18 @@
 			const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
 			const portholder_t pinmode_emio = 0; /* dummy parameter */ \
 			gpio_output2(TARGET_ACTIVITY_MIO, 0, pinmode_output); \
+			gpio_output2(TARGET_ACTIVITY2_MIO, 1, pinmode_output); \
 			gpio_output2(TARGET_ACTIVITY_EMIO, 1, pinmode_emio); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		if (state) \
 		{ \
 			gpio_writepin(TARGET_ACTIVITY_MIO, 0); \
+			gpio_writepin(TARGET_ACTIVITY2_MIO, 1); \
 			gpio_writepin(TARGET_ACTIVITY_EMIO, 1); \
 		} else { \
 			gpio_writepin(TARGET_ACTIVITY_MIO, 1); \
+			gpio_writepin(TARGET_ACTIVITY2_MIO, 0); \
 			gpio_writepin(TARGET_ACTIVITY_EMIO, 0); \
 		} \
 	} while (0)
@@ -1299,10 +1307,10 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_USERBOOT_BIT	0//(1uL << 1)	/* PB1: ~USER_BOOT */
-	#define BOARD_IS_USERBOOT() 0//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0)
+	#define BOARD_IS_USERBOOT() (gpio_input_readpin(TARGET_USER_BOOT2_MIO) == 0)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
-		arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
+		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_500, 0, 0, 0, 0, 0, 1); /* with pull-up */ \
+		gpio_input(TARGET_USER_BOOT2_MIO, pinmode_input); /* set as input with pull-up */ \
 	} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
