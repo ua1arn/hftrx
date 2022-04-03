@@ -2848,7 +2848,11 @@ static void display2_ant5(
 	dctx_t * pctx
 	)
 {
-#if WITHANTSELECT
+#if WITHANTSELECTRX
+	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	ASSERT(strlen(labels [0]) == 5);
+	display2_text_P(x, y, labels, colors_1state, 0);
+#elif WITHANTSELECT
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
 	ASSERT(strlen(labels [0]) == 5);
 	display2_text_P(x, y, labels, colors_1state, 0);
@@ -2862,7 +2866,10 @@ static void display2_ant7alt(
 	dctx_t * pctx
 	)
 {
-#if WITHANTSELECT
+#if WITHANTSELECTRX
+	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
+	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORMAIN_BLACK, colors_2state_alt [1]);
+#elif WITHANTSELECT
 	const char FLASHMEM * const labels [1] = { hamradio_get_ant5_value_P(), };
 	layout_label1_medium(x, y, labels [0], strlen_P(labels [0]), 7, COLORMAIN_BLACK, colors_2state_alt [1]);
 #endif /* WITHANTSELECT */
@@ -4393,7 +4400,9 @@ enum
 
 			{	0,	5,	display_hplp2,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// HP/LP
 			{	3,	5,	display2_voltlevelV5,REDRM_VOLT, REDRSUBSET(DPAGE0), },	// voltmeter with "V"
-		#if WITHANTSELECT
+		#if WITHANTSELECTRX
+			{	9,	5,	display2_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA
+		#elif WITHANTSELECT
 			{	9,	5,	display2_ant5,		REDRM_MODE, REDRSUBSET(DPAGE0), },	// ANTENNA
 		#endif /* WITHANTSELECT */
 			{	9,	5,	display_time5,		REDRM_BARS, REDRSUBSET(DPAGE0), },	// TIME
