@@ -2747,12 +2747,11 @@ void spidf_hangoff(void)
 #define LQSPI_CR_FAST_READ			0x0000000B
 #define LQSPI_CR_FAST_DUAL_READ		0x0000003B
 #define LQSPI_CR_FAST_QUAD_READ		0x0000006B /* Fast Quad Read output */
-#define LQSPI_CR_1_DUMMY_BYTE		0x00000100 /* 1 Dummy Byte between
-						     address and return data */
 
 #define SINGLE_QSPI_CONFIG_FAST_SFDPREAD	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
 					 LQSPI_CR_1_DUMMY_BYTE | \
 					 LQSPI_CR_FAST_SFDPREAD)
+#define LQSPI_CR_1_DUMMY_BYTE		0x00000100 /* 1 Dummy Byte between address and return data */
 
 #define SINGLE_QSPI_CONFIG_FAST_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
 					 LQSPI_CR_1_DUMMY_BYTE | \
