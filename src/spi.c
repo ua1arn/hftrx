@@ -3381,7 +3381,7 @@ static uint32_t InitQspi(void)
 		 * For Flash size <128Mbit controller configured in linear mode
 		 */
 		if (0 && QspiFlashSize <= FLASH_SIZE_16MB) {
-			uint32_t ConfigCmd;
+			//uint32_t ConfigCmd;
 			LinearBootDeviceFlag = 1;
 
 			/*
@@ -3395,19 +3395,19 @@ static uint32_t InitQspi(void)
 			 */
 #if WIHSPIDFHW4BIT
 			//PRINTF("Linear QSPI is in 4-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
+			//ConfigCmd = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
 			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-			XQSPIPS->LQSPI_CR = ConfigCmd;
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
 #elif WIHSPIDFHW2BIT
 			//PRINTF("Linear QSPI is in 2-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
+			//ConfigCmd = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
 			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-			XQSPIPS->LQSPI_CR = ConfigCmd;
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
 #else
 			//PRINTF("Linear QSPI is in 1-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_READ;
+			//ConfigCmd = SINGLE_QSPI_CONFIG_FAST_READ;
 			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-			XQSPIPS->LQSPI_CR = ConfigCmd;
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_CONFIG_FAST_READ;
 #endif
 
 
@@ -3421,23 +3421,23 @@ static uint32_t InitQspi(void)
 			/*
 			 * Single flash IO read
 			 */
-			uint32_t ConfigCmd;
+			//uint32_t ConfigCmd;
 
 #if WIHSPIDFHW4BIT
 			//PRINTF("QSPI is in 4-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
+			//ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
 //			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-			XQSPIPS->LQSPI_CR = ConfigCmd;
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
 #elif WIHSPIDFHW2BIT
 			//PRINTF("QSPI is in 2-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
+			//ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
 //			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-			XQSPIPS->LQSPI_CR = ConfigCmd;
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
 #else
 			//PRINTF("QSPI is in 1-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_READ;
+			//ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_READ;
 	//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-			XQSPIPS->LQSPI_CR = ConfigCmd;
+			XQSPIPS->LQSPI_CR = SINGLE_QSPI_IO_CONFIG_FAST_READ;
 #endif
 
 			/*
@@ -3449,7 +3449,7 @@ static uint32_t InitQspi(void)
 	}
 
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
-		uint32_t ConfigCmd;
+		//uint32_t ConfigCmd;
 
 		PRINTF("QSPI is in Dual Parallel connection\n");
 		/*
@@ -3503,7 +3503,7 @@ static uint32_t InitQspi(void)
 	 * It is expected to same flash size for both chip selection
 	 */
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
-		uint32_t ConfigCmd;
+		//uint32_t ConfigCmd;
 
 		//PRINTF("QSPI is in Dual Stack connection\n");
 
@@ -3514,19 +3514,19 @@ static uint32_t InitQspi(void)
 		 */
 #if WIHSPIDFHW4BIT
 		//PRINTF("QSPI is in 4-bit mode\n");
-		ConfigCmd =  DUAL_STACK_CONFIG_FAST_QUAD_READ;
+		//ConfigCmd =  DUAL_STACK_CONFIG_FAST_QUAD_READ;
 		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-		XQSPIPS->LQSPI_CR = ConfigCmd;
+		XQSPIPS->LQSPI_CR = DUAL_STACK_CONFIG_FAST_QUAD_READ;
 #elif WIHSPIDFHW2BIT
 		//PRINTF("QSPI is in 2-bit mode\n");
-		ConfigCmd =  DUAL_STACK_CONFIG_FAST_DUAL_READ;
+		//ConfigCmd =  DUAL_STACK_CONFIG_FAST_DUAL_READ;
 		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-		XQSPIPS->LQSPI_CR = ConfigCmd;
+		XQSPIPS->LQSPI_CR = DUAL_STACK_CONFIG_FAST_DUAL_READ;
 #else
 		//PRINTF("QSPI is in 1-bit mode\n");
-		ConfigCmd =  DUAL_STACK_CONFIG_FAST_READ;
+		//ConfigCmd =  DUAL_STACK_CONFIG_FAST_READ;
 		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
-		XQSPIPS->LQSPI_CR = ConfigCmd;
+		XQSPIPS->LQSPI_CR = DUAL_STACK_CONFIG_FAST_READ;
 #endif
 	}
 
