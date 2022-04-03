@@ -2478,7 +2478,7 @@ static void readFlashID(uint8_t * buff, unsigned size)
 	 */
 	XQSPIPS->CR &= ~ XQSPIPS_CR_SSCTRL_MASK;
 
-	XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer, RD_ID_SIZE);
+	XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer, 1 + size);
 
 	XQSPIPS->ER = 0;
 	/*
@@ -2489,7 +2489,7 @@ static void readFlashID(uint8_t * buff, unsigned size)
 	//printhex(0, ReadBuffer, 32);
 
 	QspiFlashMake = ReadBuffer [1];
-	memcpy(buff, & ReadBuffer [1], 3);
+	memcpy(buff, & ReadBuffer [1], size);
 
 #else
 	spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
