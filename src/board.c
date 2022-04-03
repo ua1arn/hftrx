@@ -4213,13 +4213,13 @@ prog_ctrlreg(uint_fast8_t plane)
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
 		RBBIT(0065, glob_classamode);	// class A
-		RBBIT(0064, glob_rxantenna);	// RX ANT
-		RBBIT(0063, glob_antenna);	//
+		RBBIT(0064, glob_antenna);	// RX ANT
+		RBBIT(0063, glob_tuner_bypass);	//
 		RBBIT(0062, 1);	// hi power out
 		RBBIT(0061, txgated);	//
 		RBBIT(0060, glob_fanflag);	// fan
 
-		RBBIT(0057, 0 && glob_autotune);	//
+		RBBIT(0057, glob_antenna);	// Ant A/B
 		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
 
 	#elif WITHAUTOTUNER_AVBELNN
