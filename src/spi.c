@@ -2859,20 +2859,15 @@ u32 SendBankSelect(u8 BankSel);
 
 /************************** Variable Definitions *****************************/
 
-XQspiPs QspiInstance;
-XQspiPs *QspiInstancePtr;
-u32 QspiFlashSize;
-u32 QspiFlashMake;
-/*extern */u32 FlashReadBaseAddress;
-/*extern */u8 LinearBootDeviceFlag;
+static XQspiPs QspiInstance;
+static XQspiPs * QspiInstancePtr = & QspiInstance;
+static u32 QspiFlashSize = FLASH_SIZE_16M;
+static u32 QspiFlashMake;
+static u32 FlashReadBaseAddress;
+static u8 LinearBootDeviceFlag;
+static u8 ReadBuffer [DATA_OFFSET + DUMMY_SIZE + DATA_SIZE];
+static u8 WriteBuffer [DATA_OFFSET + DUMMY_SIZE];
 
-
-/*
- * The following variables are used to read and write to the eeprom and they
- * are global to avoid having large buffers on the stack
- */
-u8 ReadBuffer[DATA_SIZE + DATA_OFFSET + DUMMY_SIZE];
-u8 WriteBuffer[DATA_OFFSET + DUMMY_SIZE];
 
 /******************************************************************************
 *
@@ -2993,6 +2988,7 @@ void FlashRead(u32 Address, u32 ByteCount)
 
 	LqspiCrReg = XQspiPs_GetLqspiConfigReg(QspiInstancePtr);
 	ReadCommand = (u8) (LqspiCrReg & XQSPIPS_LQSPI_CR_INST_MASK);
+
 	WriteBuffer[COMMAND_OFFSET]   = ReadCommand;
 	WriteBuffer[ADDRESS_1_OFFSET] = (u8)((Address & 0xFF0000) >> 16);
 	WriteBuffer[ADDRESS_2_OFFSET] = (u8)((Address & 0xFF00) >> 8);
@@ -3088,15 +3084,16 @@ u32 QspiAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 					/*
 					 * Set selection to U_PAGE
 					 */
-					XQspiPs_SetLqspiConfigReg(QspiInstancePtr,
-							LqspiCrReg | XQSPIPS_LQSPI_CR_U_PAGE_MASK);
+//					XQspiPs_SetLqspiConfigReg(QspiInstancePtr,
+//							LqspiCrReg | XQSPIPS_LQSPI_CR_U_PAGE_MASK);
+					XQSPIPS->LQSPI_CR = LqspiCrReg | XQSPIPS_LQSPI_CR_U_PAGE_MASK;
 
 					/*
 					 * Subtract first flash size when accessing second flash
 					 */
 					SourceAddress = SourceAddress - (QspiFlashSize/2);
 
-					PRINTF( "stacked - upper CS \n\r");
+					//PRINTF( "stacked - upper CS \n\r");
 
 					/*
 					 * Assert the FLASH chip select.
@@ -3195,10 +3192,11 @@ u32 QspiAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 			/*
 			 * Reset selection to L_PAGE
 			 */
-			XQspiPs_SetLqspiConfigReg(QspiInstancePtr,
-					LqspiCrReg & (~XQSPIPS_LQSPI_CR_U_PAGE_MASK));
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr,
+//					LqspiCrReg & (~XQSPIPS_LQSPI_CR_U_PAGE_MASK));
+			XQSPIPS->LQSPI_CR = LqspiCrReg & (~XQSPIPS_LQSPI_CR_U_PAGE_MASK);
 
-			PRINTF( "stacked - lower CS \n\r");
+			//PRINTF( "stacked - lower CS \n\r");
 
 			/*
 			 * Assert the FLASH chip select.
@@ -3329,9 +3327,7 @@ u32 InitQspi(void)
 {
 	XQspiPs_Config *QspiConfig;
 	int Status;
-	u32 ConfigCmd;
 
-	QspiInstancePtr = &QspiInstance;
 
 	/*
 	 * Set up the base address for access
@@ -3363,6 +3359,7 @@ u32 InitQspi(void)
 	 */
 	XQspiPs_SetClkPrescaler(QspiInstancePtr, XQSPIPS_CLK_PRESCALE_8);
 
+#if 0
 	/*
 	 * Assert the FLASH chip select.
 	 */
@@ -3375,14 +3372,16 @@ u32 InitQspi(void)
 	if (Status != XST_SUCCESS) {
 		return XST_FAILURE;
 	}
+#endif
 
 	if (XPAR_XQSPIPS_0_QSPI_MODE == SINGLE_FLASH_CONNECTION) {
 
-		PRINTF("QSPI is in single flash connection\n");
+		//PRINTF("QSPI is in single flash connection\n");
 		/*
 		 * For Flash size <128Mbit controller configured in linear mode
 		 */
 		if (0 && QspiFlashSize <= FLASH_SIZE_16MB) {
+			u32 ConfigCmd;
 			LinearBootDeviceFlag = 1;
 
 			/*
@@ -3405,13 +3404,17 @@ u32 InitQspi(void)
 			/*
 			 * Single linear read
 			 */
-			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = ConfigCmd;
+
 
 			/*
 			 * Enable the controller
 			 */
-			XQspiPs_Enable(QspiInstancePtr);
+			//XQspiPs_Enable(QspiInstancePtr);
+			XQSPIPS->ER = 0x00000001;
 		} else {
+			u32 ConfigCmd;
 
 #if WIHSPIDFHW4BIT
 			//PRINTF("QSPI is in 4-bit mode\n");
@@ -3426,16 +3429,19 @@ u32 InitQspi(void)
 			/*
 			 * Single flash IO read
 			 */
-			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = ConfigCmd;
 
 			/*
 			 * Enable the controller
 			 */
-			XQspiPs_Enable(QspiInstancePtr);
+			//XQspiPs_Enable(QspiInstancePtr);
+			XQSPIPS->ER = 0x00000001;
 		}
 	}
 
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
+		u32 ConfigCmd;
 
 		PRINTF("QSPI is in Dual Parallel connection\n");
 		/*
@@ -3456,22 +3462,26 @@ u32 InitQspi(void)
 			/*
 			 * Dual linear read
 			 */
-			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, DUAL_QSPI_CONFIG_FAST_QUAD_READ);
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, DUAL_QSPI_CONFIG_FAST_QUAD_READ);
+			XQSPIPS->LQSPI_CR = DUAL_QSPI_CONFIG_FAST_QUAD_READ;
 
 			/*
 			 * Enable the controller
 			 */
-			XQspiPs_Enable(QspiInstancePtr);
+			//XQspiPs_Enable(QspiInstancePtr);
+			XQSPIPS->ER = 0x00000001;
 		} else {
 			/*
 			 * Dual flash IO read
 			 */
-			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, DUAL_QSPI_IO_CONFIG_FAST_QUAD_READ);
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, DUAL_QSPI_IO_CONFIG_FAST_QUAD_READ);
+			XQSPIPS->LQSPI_CR = DUAL_QSPI_IO_CONFIG_FAST_QUAD_READ;
 
 			/*
 			 * Enable the controller
 			 */
-			XQspiPs_Enable(QspiInstancePtr);
+			//XQspiPs_Enable(QspiInstancePtr);
+			XQSPIPS->ER = 0x00000001;
 
 		}
 
@@ -3485,39 +3495,27 @@ u32 InitQspi(void)
 	 * It is expected to same flash size for both chip selection
 	 */
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
+		u32 ConfigCmd;
 
-		PRINTF("QSPI is in Dual Stack connection\n");
+		//PRINTF("QSPI is in Dual Stack connection\n");
 
 		QspiFlashSize = 2 * QspiFlashSize;
 
 		/*
 		 * Enable two flash memories on separate buses
 		 */
-		switch (XPAR_XQSPIPS_0_QSPI_BUS_WIDTH) {
-
-			case QSPI_BUSWIDTH_ONE:
-			{
-				PRINTF("QSPI is in 1-bit mode\n");
-				ConfigCmd =  DUAL_STACK_CONFIG_FAST_READ;
-			}
-			break;
-
-			case QSPI_BUSWIDTH_TWO:
-			{
-				PRINTF("QSPI is in 2-bit mode\n");
-				ConfigCmd =  DUAL_STACK_CONFIG_FAST_DUAL_READ;
-			}
-			break;
-
-			case QSPI_BUSWIDTH_FOUR:
-			{
-				PRINTF("QSPI is in 4-bit mode\n");
-				ConfigCmd =  DUAL_STACK_CONFIG_FAST_QUAD_READ;
-			}
-			break;
-
-		}
-		XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+#if WIHSPIDFHW4BIT
+		//PRINTF("QSPI is in 4-bit mode\n");
+		ConfigCmd =  DUAL_STACK_CONFIG_FAST_QUAD_READ;
+#elif WIHSPIDFHW2BIT
+		//PRINTF("QSPI is in 2-bit mode\n");
+		ConfigCmd =  DUAL_STACK_CONFIG_FAST_DUAL_READ;
+#else
+		//PRINTF("QSPI is in 1-bit mode\n");
+		ConfigCmd =  DUAL_STACK_CONFIG_FAST_READ;
+#endif
+		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+		XQSPIPS->LQSPI_CR = ConfigCmd;
 	}
 
 	return XST_SUCCESS;
