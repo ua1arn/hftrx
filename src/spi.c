@@ -1509,14 +1509,10 @@ static uint32_t qspi_rd_status(struct qspi_ctxt *qspi)
 ////
 static uint32_t InitQspi(void);
 static uint32_t QspiAccess( uint32_t SourceAddress,
-		void * DestinationAddress,
-		uint32_t LengthBytes);
+		void * DestinationAddress, uint32_t LengthBytes, unsigned skipAnswer);
 static uint32_t InitQspi(void);
 static void flashPrepareLqspiCR(uint_fast8_t enableMmap);
-
-static uint32_t QspiAccess( uint32_t SourceAddress,
-		void * DestinationAddress,
-		uint32_t LengthBytes);
+static void flashPrepareLqspiCR_SFDP(void);
 
 static uint32_t FlashReadID(void);
 static uint32_t SendBankSelect(uint8_t BankSel);
@@ -2239,6 +2235,9 @@ int fullEraseDATAFLASH(void)
 /* read status register #1 (bit0==busy flag) */
 uint_fast8_t dataflash_read_status(void)
 {
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+	return 0;
+#endif /* CPUSTYLE_XC7Z */
 	uint8_t v;
 	enum { SPDIF_IOSIZE = sizeof v };
 
@@ -2251,6 +2250,9 @@ uint_fast8_t dataflash_read_status(void)
 
 int timed_dataflash_read_status(void)
 {
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+	return 0;
+#endif /* CPUSTYLE_XC7Z */
 	unsigned long w = 400000;
 	while (w --)
 	{
@@ -2279,10 +2281,35 @@ int largetimed_dataflash_read_status(void)
  */
 static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
 {
+	ASSERT(flashoffset < 256 && (flashoffset + size) <= 256);
 	// Read SFDP
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+	uint8_t b [size + 4];
+	flashPrepareLqspiCR_SFDP();
+	QspiAccess(flashoffset, b, size + 4, 3);
+	//printhex(0, b, size + 4);
+	memcpy(buff, b + 3, size);
+
+
+#else
 	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
 	spidf_read(buff, size);
 	spidf_unselect();	/* done sending data to target chip */
+#endif /* CPUSTYLE_XC7Z */
+}
+
+static void readFlashID(uint8_t * buff, unsigned size)
+{
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+	memset(buff, 0xE5, size);
+
+#else
+	spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
+	spidf_read(buff, size);
+	spidf_unselect();	/* done sending data to target chip */
+#endif /* CPUSTYLE_XC7Z */
 }
 
 static int seekparamSFDPDATAFLASH(unsigned long * paramoffset, uint_fast8_t * paramlength, uint_fast8_t id, uint_fast8_t lastnum)
@@ -2332,9 +2359,6 @@ char nameDATAFLASH [64];
 
 int testchipDATAFLASH(void)
 {
-#if CPUSTYLE_XC7Z
-	return 0;
-#endif /* CPUSTYLE_XC7Z */
 	unsigned char mf_id;	// Manufacturer ID
 	unsigned char mf_devid1;	// device ID (part 1)
 	unsigned char mf_devid2;	// device ID (part 2)
@@ -2354,16 +2378,14 @@ int testchipDATAFLASH(void)
 		uint8_t mfa [4];
 
 		enum { SPDIF_IOSIZE = sizeof mfa };
-		spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read id register */
-		spidf_read(mfa, SPDIF_IOSIZE);
-		spidf_unselect();	/* done sending data to target chip */
+		readFlashID(mfa, SPDIF_IOSIZE);
 
 		mf_id = mfa [0];
 		mf_devid1 = mfa [1];
 		mf_devid2 = mfa [2];
 		mf_dlen = mfa [3];
 
-		//PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
 	}
 
 
@@ -2379,10 +2401,10 @@ int testchipDATAFLASH(void)
 	uint8_t buff8 [8];
 	readSFDPDATAFLASH(0x000000, buff8, 8);
 
-	const uint_fast32_t signature = USBD_peek_u32(& buff8 [0]);
+	static const uint8_t signature [] = { 0x53, 0x46, 0x44, 0x50, };	// SFDP
 
 	//PRINTF(PSTR("SFDP: signature=%08lX, lastparam=0x%02X\n"), signature, buff8 [6]);
-	if (signature == 0x50444653)
+	if (memcmp(& buff8 [0], signature, 4) == 0)
 	{
 		// Serial Flash Discoverable Parameters (SFDP), for Serial NOR Flash
 		const uint_fast8_t lastparam = buff8 [6];
@@ -2394,7 +2416,7 @@ int testchipDATAFLASH(void)
 			return 0;
 		}
 
-		//PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
+		PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
 		if (len4 < 9 || len4 > 16)
 			return 0;
 		uint8_t buff32 [len4 * 4];
@@ -2434,8 +2456,8 @@ int testchipDATAFLASH(void)
 		sct [1] = (dword8 >> 16) & 0xFFFF;
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
-		//PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		//PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
@@ -2450,13 +2472,17 @@ int testchipDATAFLASH(void)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
 			sectorSize = 1uL << (sctRESULT & 0xFF);
-			//PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
+			PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
 		}
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
 		// установка кодов операции
 		modeDATAFLASH(dword3 >> 0, "(1-4-4) Fast Read", SPDFIO_4WIRE);
 		modeDATAFLASH(dword4 >> 16, "(1-2-2) Fast Read", SPDFIO_2WIRE);
+	}
+	else
+	{
+		PRINTF("SFDP signature not found\n");
 	}
 
 	local_snprintf_P(nameDATAFLASH, ARRAY_SIZE(nameDATAFLASH),
@@ -2615,7 +2641,7 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 {
 #if CPUSTYLE_XC7Z
 	flashPrepareLqspiCR(0);
-	QspiAccess(flashoffset, data, len);
+	QspiAccess(flashoffset, data, len, 0);
 	return 0;
 #endif /* CPUSTYLE_XC7Z */
 	//PRINTF("readDATAFLASH start, data=%p, len=%lu\n", data, len);
@@ -2739,7 +2765,7 @@ void spidf_hangoff(void)
  */
 #define DATA_SIZE		4096
 
-#define LQSPI_CR_FAST_SFDPREAD			0x0000005A	/* Read SFDP Register */
+#define LQSPI_CR_FAST_READ_SFDP			0x0000005A	/* Read SFDP Register */
 
 /*
  * The following defines are for dual flash interface.
@@ -2747,10 +2773,6 @@ void spidf_hangoff(void)
 #define LQSPI_CR_FAST_READ			0x0000000B
 #define LQSPI_CR_FAST_DUAL_READ		0x0000003B
 #define LQSPI_CR_FAST_QUAD_READ		0x0000006B /* Fast Quad Read output */
-
-#define SINGLE_QSPI_CONFIG_FAST_SFDPREAD	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_SFDPREAD)
 #define LQSPI_CR_1_DUMMY_BYTE		0x00000100 /* 1 Dummy Byte between address and return data */
 
 #define SINGLE_QSPI_CONFIG_FAST_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
@@ -2785,6 +2807,9 @@ void spidf_hangoff(void)
 
 #define SINGLE_QSPI_IO_CONFIG_FAST_READ	(LQSPI_CR_1_DUMMY_BYTE | \
 					 LQSPI_CR_FAST_READ)
+
+#define SINGLE_QSPI_IO_CONFIG_FAST_READ_SFDP	(LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_READ_SFDP)
 
 #define SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ	(LQSPI_CR_1_DUMMY_BYTE | \
 					 LQSPI_CR_FAST_DUAL_READ)
@@ -3029,7 +3054,7 @@ static void FlashRead(uint32_t Address, uint32_t ByteCount)
 * @note	none.
 *
 ****************************************************************************/
-static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, uint32_t LengthBytes)
+static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, uint32_t LengthBytes, unsigned skipAnswer)
 {
 	uint8_t	*BufferPtr;
 	uint32_t Length = 0;
@@ -3317,6 +3342,13 @@ static uint32_t SendBankSelect(uint8_t BankSel)
 	}
 
 	return XST_SUCCESS;
+}
+
+static void flashPrepareLqspiCR_SFDP(void)
+{
+	LinearBootDeviceFlag = 0;
+	XQSPIPS->LQSPI_CR = SINGLE_QSPI_IO_CONFIG_FAST_READ_SFDP;
+	XQSPIPS->ER = 0x00000001;
 }
 
 static void flashPrepareLqspiCR(uint_fast8_t enableMmap)
