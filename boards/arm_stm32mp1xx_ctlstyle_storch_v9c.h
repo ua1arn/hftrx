@@ -508,7 +508,7 @@
 	#if 1
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_UA1CEI_V2 1
-		#define WITHANTSELECT	1	/* Управление переключением антенн */
+		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 		#define SHORTSET7	1
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
