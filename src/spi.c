@@ -1507,8 +1507,8 @@ static uint32_t qspi_rd_status(struct qspi_ctxt *qspi)
 }
 
 ////
-uint32_t InitQspi(void);
-uint32_t QspiAccess( uint32_t SourceAddress,
+static uint32_t InitQspi(void);
+static uint32_t QspiAccess( uint32_t SourceAddress,
 		uint32_t DestinationAddress,
 		uint32_t LengthBytes);
 
@@ -2841,14 +2841,14 @@ void spidf_hangoff(void)
 #define FLASH_SIZE_1G			0x8000000
 
 /************************** Function Prototypes ******************************/
-u32 InitQspi(void);
+static uint32_t InitQspi(void);
 
-u32 QspiAccess( u32 SourceAddress,
-		u32 DestinationAddress,
-		u32 LengthBytes);
+static uint32_t QspiAccess( uint32_t SourceAddress,
+		uint32_t DestinationAddress,
+		uint32_t LengthBytes);
 
-u32 FlashReadID(void);
-u32 SendBankSelect(u8 BankSel);
+static uint32_t FlashReadID(void);
+static uint32_t SendBankSelect(uint8_t BankSel);
 /************************** Variable Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
@@ -2861,12 +2861,12 @@ u32 SendBankSelect(u8 BankSel);
 
 static XQspiPs QspiInstance;
 static XQspiPs * QspiInstancePtr = & QspiInstance;
-static u32 QspiFlashSize = FLASH_SIZE_16M;
-static u32 QspiFlashMake;
-static u32 FlashReadBaseAddress;
-static u8 LinearBootDeviceFlag;
-static u8 ReadBuffer [DATA_OFFSET + DUMMY_SIZE + DATA_SIZE];
-static u8 WriteBuffer [DATA_OFFSET + DUMMY_SIZE];
+static uint32_t QspiFlashSize = FLASH_SIZE_16M;
+static uint32_t QspiFlashMake;
+static uint32_t FlashReadBaseAddress;
+static uint8_t LinearBootDeviceFlag;
+static uint8_t ReadBuffer [DATA_OFFSET + DUMMY_SIZE + DATA_SIZE];
+static uint8_t WriteBuffer [DATA_OFFSET + DUMMY_SIZE];
 
 
 /******************************************************************************
@@ -2885,9 +2885,9 @@ static u8 WriteBuffer [DATA_OFFSET + DUMMY_SIZE];
 * @note		None.
 *
 ******************************************************************************/
-u32 FlashReadID(void)
+static uint32_t FlashReadID(void)
 {
-	u32 Status;
+	uint32_t Status;
 
 	/*
 	 * Read ID in Auto mode.
@@ -2977,22 +2977,22 @@ u32 FlashReadID(void)
 * @note		None.
 *
 ******************************************************************************/
-void FlashRead(u32 Address, u32 ByteCount)
+static void FlashRead(uint32_t Address, uint32_t ByteCount)
 {
 	/*
 	 * Setup the write command with the specified address and data for the
 	 * FLASH
 	 */
-	u32 LqspiCrReg;
-	u8  ReadCommand;
+	uint32_t LqspiCrReg;
+	uint8_t  ReadCommand;
 
 	LqspiCrReg = XQspiPs_GetLqspiConfigReg(QspiInstancePtr);
-	ReadCommand = (u8) (LqspiCrReg & XQSPIPS_LQSPI_CR_INST_MASK);
+	ReadCommand = (uint8_t) (LqspiCrReg & XQSPIPS_LQSPI_CR_INST_MASK);
 
 	WriteBuffer[COMMAND_OFFSET]   = ReadCommand;
-	WriteBuffer[ADDRESS_1_OFFSET] = (u8)((Address & 0xFF0000) >> 16);
-	WriteBuffer[ADDRESS_2_OFFSET] = (u8)((Address & 0xFF00) >> 8);
-	WriteBuffer[ADDRESS_3_OFFSET] = (u8)(Address & 0xFF);
+	WriteBuffer[ADDRESS_1_OFFSET] = (uint8_t)((Address & 0xFF0000) >> 16);
+	WriteBuffer[ADDRESS_2_OFFSET] = (uint8_t)((Address & 0xFF00) >> 8);
+	WriteBuffer[ADDRESS_3_OFFSET] = (uint8_t)(Address & 0xFF);
 
 	ByteCount += DUMMY_SIZE;
 
@@ -3022,13 +3022,13 @@ void FlashRead(u32 Address, u32 ByteCount)
 * @note	none.
 *
 ****************************************************************************/
-u32 QspiAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
+static uint32_t QspiAccess( uint32_t SourceAddress, uint32_t DestinationAddress, uint32_t LengthBytes)
 {
-	u8	*BufferPtr;
-	u32 Length = 0;
-	u32 BankSel = 0;
-	u32 Status;
-	u8 BankSwitchFlag = 1;
+	uint8_t	*BufferPtr;
+	uint32_t Length = 0;
+	uint32_t BankSel = 0;
+	uint32_t Status;
+	uint8_t BankSwitchFlag = 1;
 
 	/*
 	 * Linear access check
@@ -3048,7 +3048,7 @@ u32 QspiAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 		/*
 		 * Non Linear access
 		 */
-		BufferPtr = (u8*)DestinationAddress;
+		BufferPtr = (uint8_t*)DestinationAddress;
 
 		/*
 		 * Dual parallel connection actual flash is half
@@ -3071,7 +3071,7 @@ u32 QspiAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 			 * Dual stack connection
 			 */
 			if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
-				u32 LqspiCrReg;
+				uint32_t LqspiCrReg;
 				/*
 				 * Get the current LQSPI configuration value
 				 */
@@ -3170,7 +3170,7 @@ u32 QspiAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 				SourceAddress += Length;
 			}
 
-			BufferPtr = (u8*)((u32)BufferPtr + Length);
+			BufferPtr = (uint8_t*)((uint32_t)BufferPtr + Length);
 		}
 
 		/*
@@ -3183,7 +3183,7 @@ u32 QspiAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 		}
 
 		if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
-			u32 LqspiCrReg;
+			uint32_t LqspiCrReg;
 			/*
 			 * Get the current LQSPI configuration value
 			 */
@@ -3221,9 +3221,9 @@ u32 QspiAccess( u32 SourceAddress, u32 DestinationAddress, u32 LengthBytes)
 * @note		None.
 *
 ******************************************************************************/
-u32 SendBankSelect(u8 BankSel)
+static uint32_t SendBankSelect(uint8_t BankSel)
 {
-	u32 Status;
+	uint32_t Status;
 
 	/*
 	 * bank select commands for Micron and Spansion are different
@@ -3323,7 +3323,7 @@ u32 SendBankSelect(u8 BankSel)
 * @note		None
 *
 ****************************************************************************/
-u32 InitQspi(void)
+static uint32_t InitQspi(void)
 {
 	XQspiPs_Config *QspiConfig;
 	int Status;
@@ -3381,7 +3381,7 @@ u32 InitQspi(void)
 		 * For Flash size <128Mbit controller configured in linear mode
 		 */
 		if (0 && QspiFlashSize <= FLASH_SIZE_16MB) {
-			u32 ConfigCmd;
+			uint32_t ConfigCmd;
 			LinearBootDeviceFlag = 1;
 
 			/*
@@ -3390,22 +3390,26 @@ u32 InitQspi(void)
 			XQspiPs_SetOptions(QspiInstancePtr,  XQSPIPS_LQSPI_MODE_OPTION |
 					XQSPIPS_HOLD_B_DRIVE_OPTION);
 
-#if WIHSPIDFHW4BIT
-			//PRINTF("Linear QSPI is in 4-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
-#elif WIHSPIDFHW2BIT
-			//PRINTF("Linear QSPI is in 2-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
-#else
-			//PRINTF("Linear QSPI is in 1-bit mode\n");
-			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_READ;
-#endif
-
 			/*
 			 * Single linear read
 			 */
+#if WIHSPIDFHW4BIT
+			//PRINTF("Linear QSPI is in 4-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_QUAD_READ;
 			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
 			XQSPIPS->LQSPI_CR = ConfigCmd;
+#elif WIHSPIDFHW2BIT
+			//PRINTF("Linear QSPI is in 2-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_DUAL_READ;
+			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = ConfigCmd;
+#else
+			//PRINTF("Linear QSPI is in 1-bit mode\n");
+			ConfigCmd = SINGLE_QSPI_CONFIG_FAST_READ;
+			//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = ConfigCmd;
+#endif
+
 
 
 			/*
@@ -3414,23 +3418,27 @@ u32 InitQspi(void)
 			//XQspiPs_Enable(QspiInstancePtr);
 			XQSPIPS->ER = 0x00000001;
 		} else {
-			u32 ConfigCmd;
+			/*
+			 * Single flash IO read
+			 */
+			uint32_t ConfigCmd;
 
 #if WIHSPIDFHW4BIT
 			//PRINTF("QSPI is in 4-bit mode\n");
 			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ;
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = ConfigCmd;
 #elif WIHSPIDFHW2BIT
 			//PRINTF("QSPI is in 2-bit mode\n");
 			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ;
+//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+			XQSPIPS->LQSPI_CR = ConfigCmd;
 #else
 			//PRINTF("QSPI is in 1-bit mode\n");
 			ConfigCmd = SINGLE_QSPI_IO_CONFIG_FAST_READ;
-#endif
-			/*
-			 * Single flash IO read
-			 */
-//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+	//			XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
 			XQSPIPS->LQSPI_CR = ConfigCmd;
+#endif
 
 			/*
 			 * Enable the controller
@@ -3441,7 +3449,7 @@ u32 InitQspi(void)
 	}
 
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
-		u32 ConfigCmd;
+		uint32_t ConfigCmd;
 
 		PRINTF("QSPI is in Dual Parallel connection\n");
 		/*
@@ -3495,7 +3503,7 @@ u32 InitQspi(void)
 	 * It is expected to same flash size for both chip selection
 	 */
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_STACK_CONNECTION) {
-		u32 ConfigCmd;
+		uint32_t ConfigCmd;
 
 		//PRINTF("QSPI is in Dual Stack connection\n");
 
@@ -3507,15 +3515,19 @@ u32 InitQspi(void)
 #if WIHSPIDFHW4BIT
 		//PRINTF("QSPI is in 4-bit mode\n");
 		ConfigCmd =  DUAL_STACK_CONFIG_FAST_QUAD_READ;
+		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+		XQSPIPS->LQSPI_CR = ConfigCmd;
 #elif WIHSPIDFHW2BIT
 		//PRINTF("QSPI is in 2-bit mode\n");
 		ConfigCmd =  DUAL_STACK_CONFIG_FAST_DUAL_READ;
+		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
+		XQSPIPS->LQSPI_CR = ConfigCmd;
 #else
 		//PRINTF("QSPI is in 1-bit mode\n");
 		ConfigCmd =  DUAL_STACK_CONFIG_FAST_READ;
-#endif
 		//XQspiPs_SetLqspiConfigReg(QspiInstancePtr, ConfigCmd);
 		XQSPIPS->LQSPI_CR = ConfigCmd;
+#endif
 	}
 
 	return XST_SUCCESS;
