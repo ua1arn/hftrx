@@ -860,10 +860,30 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	enum { NANTENNAS = 1 };		// eдинственная антенна
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
 
 static const FLASHMEM struct {
-	uint_fast8_t code [2];	// RX/TX antenna
+	uint8_t code;
+	char label2 [3];
+}  antmodes [] =
+{
+	{	0,	"A1" },
+	{	1,	"A2" },
+};
+
+static const FLASHMEM struct {
+	uint8_t code;
+	char label2 [3];
+}  rxantmodes [] =
+{
+	{	0,	"  " },
+	{	1,	"RA" },
+};
+
+#elif WITHANTSELECT
+
+static const FLASHMEM struct {
+	uint8_t code [2];	// RX/TX antenna
 	char label5 [6];
 }  antmodes [] =
 {
@@ -883,7 +903,7 @@ static const FLASHMEM struct {
 #if WITHPOWERLPHP
 
 static const FLASHMEM struct {
-	uint_fast8_t code;
+	uint8_t code;
 	char label [5];
 }  pwrmodes [] =
 {
@@ -896,7 +916,7 @@ static const FLASHMEM struct {
 #if WITHNOTCHONOFF || WITHNOTCHFREQ
 
 static const FLASHMEM struct {
-	uint_fast8_t code;
+	uint8_t code;
 	char label [6];
 }  notchmodes [] =
 {
@@ -911,7 +931,7 @@ static const FLASHMEM struct {
 #if WITHUSEDUALWATCH
 
 static const FLASHMEM struct {
-	uint_fast8_t code;
+	uint8_t code;
 	char label [5];
 }  mainsubrxmodes [] =
 {
@@ -950,6 +970,7 @@ static const FLASHMEM struct {
 #define NOTCHMODE_COUNT (sizeof notchmodes / sizeof notchmodes [0])
 #define PAMPMODE_COUNT (sizeof pampmodes / sizeof pampmodes [0])
 #define ATTMODE_COUNT (sizeof attmodes / sizeof attmodes [0])
+#define RXANTMODE_COUNT (sizeof rxantmodes / sizeof rxantmodes [0])
 #define ANTMODE_COUNT (sizeof antmodes / sizeof antmodes [0])
 #define AGCMODE_COUNT (sizeof agcmodes / sizeof agcmodes [0])
 #define MAINSUBRXMODE_COUNT (sizeof mainsubrxmodes / sizeof mainsubrxmodes [0])
@@ -2771,7 +2792,10 @@ struct bandinfo
 	uint8_t pamp;		/* режим УВЧ */
 #endif /* ! WITHONEATTONEAMP */
 	uint8_t att;		/* режим аттенюатора */
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
+	uint8_t rxant;		/* код выбора антенны (0/1) */
+	uint8_t ant;		/* признак включения приемной антенны */
+#elif WITHANTSELECT
 	uint8_t ant;		/* код выбора антенны (1T+1R, 2T+1R и так далее, не код антенны (0/1) */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 #if WITHAUTOTUNER
@@ -3367,6 +3391,7 @@ filter_t fi_2p0_455 =
 #define RMT_BFREQ_BASE(i) offsetof(struct nvmap, bands [(i)].freq)			/* последняя частота, на которую настроились (4 байта) */
 #define RMT_PAMP_BASE(i) offsetof(struct nvmap, bands [(i)].pamp)			/* признак включения аттенюатора (1 байт) */
 #define RMT_ATT_BASE(i) offsetof(struct nvmap, bands [(i)].att)			/* признак включения аттенюатора (1 байт) */
+#define RMT_RXANTENNA_BASE(i) offsetof(struct nvmap, bands [(i)].rxant)			/* код включённой антенны (1 байт) */
 #define RMT_ANTENNA_BASE(i) offsetof(struct nvmap, bands [(i)].ant)			/* код включённой антенны (1 байт) */
 #define RMT_MODEROW_BASE(i)	offsetof(struct nvmap, bands [(i)].moderow)			/* номер строки в массиве режимов. */
 #define RMT_MODECOLS_BASE(i, j)	offsetof(struct nvmap, bands [(i)].modecols [(j)])	/* выбранный столбец в каждой строке режимов. */
@@ -3409,7 +3434,10 @@ static uint_fast32_t gfreqs [VFOS_COUNT];		/* отображаемая на ди
 static uint_fast8_t gpamps [VFOS_COUNT];
 #endif /* ! WITHONEATTONEAMP */
 static uint_fast8_t gatts [VFOS_COUNT];
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
+static uint_fast8_t grxantennas [VFOS_COUNT];
+static uint_fast8_t gantennas [VFOS_COUNT];
+#elif WITHANTSELECT
 static uint_fast8_t gantennas [VFOS_COUNT];
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 static uint_fast8_t gvfosplit [VFOS_COUNT];	// At index 0: RX VFO A or B, at index 1: TX VFO A or B
@@ -6159,7 +6187,10 @@ copybankstate(
 	gpamps [tbi] = gpamps [sbi];
 #endif /* ! WITHONEATTONEAMP */
 	gatts [tbi] = gatts [sbi];
-#if WITHANTSELECT || WITHANTSELECTRX
+#if  WITHANTSELECTRX
+	grxantennas [tbi] = grxantennas [sbi];
+	gantennas [tbi] = gantennas [sbi];
+#elif WITHANTSELECT
 	gantennas [tbi] = gantennas [sbi];
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 
@@ -6203,7 +6234,10 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(RMT_PAMP_BASE(b), gpamps [bi]);
 #endif /* ! WITHONEATTONEAMP */
 	save_i8(RMT_ATT_BASE(b), gatts [bi]);
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
+	save_i8(RMT_RXANTENNA_BASE(b), grxantennas [bi]);
+	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
+#elif WITHANTSELECT
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 #if WITHAUTOTUNER
@@ -7203,7 +7237,10 @@ loadnewband(
 	gpamps [bi] = loadvfy8up(RMT_PAMP_BASE(b), 0, PAMPMODE_COUNT - 1, DEFPREAMPSTATE);	/* вытаскиваем признак включения предусилителя */
 #endif /* ! WITHONEATTONEAMP */
 	gatts [bi] = loadvfy8up(RMT_ATT_BASE(b), 0, ATTMODE_COUNT - 1, 0);	/* вытаскиваем признак включения аттенюатора */
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
+	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+#elif WITHANTSELECT
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 	const uint_fast8_t defsubmode = getdefaultbandsubmode(gfreqs [bi]);		/* режим по-умолчанию для частоты - USB или LSB */
@@ -7374,7 +7411,14 @@ catchangefreq(
 	{
 		cat_answer_request(CAT_RA_INDEX);
 	}
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
+	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_AN_INDEX);
+	}
+#elif WITHANTSELECT
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	if (aistate != 0)
 	{
@@ -10365,7 +10409,10 @@ updateboardZZZ(
 	#if defined (RTC1_TYPE)
 		board_setrtcstrobe(grtcstrobe);
 	#endif /* defined (RTC1_TYPE) */
-	#if WITHANTSELECT || WITHANTSELECTRX
+	#if WITHANTSELECTRX
+		board_set_rxantenna(antmodes [grxantennas [rxbi]].code);
+		board_set_antenna(antmodes [gantennas [rxbi]].code);
+	#elif WITHANTSELECT
 		board_set_antenna(antmodes [gantennas [rxbi]].code [gtx]);
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
 	#if WITHELKEY
@@ -10722,7 +10769,22 @@ uint_fast8_t hamradio_get_voxvalue(void)
 #endif /* WITHVOX && WITHTX */
 
 
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
+
+// antenna
+const FLASHMEM char * hamradio_get_ant5_value_P(void)
+{
+	static char b [6];
+	local_snprintf_P(b, ARRAY_SIZE(b),
+			PSTR("%s %s"),
+			antmodes [gantennas [getbankindex_tx(gtx)]].label2,
+			rxantmodes[grxantennas [getbankindex_tx(gtx)]].label2
+	);
+	return b;
+}
+
+
+#elif WITHANTSELECT
 
 // antenna
 const FLASHMEM char * hamradio_get_ant5_value_P(void)
@@ -11061,12 +11123,44 @@ uif_key_click_agcmode(void)
 	updateboard(1, 0);
 }
 
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
+
+/* Antenna switch
+	  */
+static void
+uif_key_next_antenna(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+
+	verifyband(vi);
+
+	gantennas [bi] = calc_next(gantennas [bi], 0, ANTMODE_COUNT - 1);
+	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
+	updateboard(1, 0);
+}
+
+/* Antenna switch
+	  */
+static void
+uif_key_next_rxantenna(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+
+	verifyband(vi);
+
+	grxantennas [bi] = calc_next(grxantennas [bi], 0, RXANTMODE_COUNT - 1);
+	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
+	updateboard(1, 0);
+}
+
+#elif WITHANTSELECT
 
 /* Antenna switch
 	  */
 static void 
-uif_key_click_antenna(void)
+uif_key_next_antenna(void)
 {
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
@@ -20010,11 +20104,22 @@ process_key_menuset_common(uint_fast8_t kbch)
 		return 1;	/* клавиша уже обработана */
 #endif /* ! WITHAGCMODENONE */
 
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECTRX
+	case KBD_CODE_ANTENNA_HOLDED:
+		/* Antenna switch */
+		uif_key_next_antenna();
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_ANTENNA:
+		/* RX Antenna switch */
+		uif_key_next_rxantenna();
+		return 1;	/* клавиша уже обработана */
+
+#elif WITHANTSELECT
 	case KBD_CODE_ANTENNA:
 		/* Antenna switch
 			 - не вызывает сохранение состояния диапазона */
-		uif_key_click_antenna();
+		uif_key_next_antenna();
 		return 1;	/* клавиша уже обработана */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 
