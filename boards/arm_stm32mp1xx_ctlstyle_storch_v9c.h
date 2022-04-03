@@ -505,7 +505,12 @@
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
 	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
-	#if 0
+	#if 1
+		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
+		#define WITHAUTOTUNER_UA1CEI_V2 1
+		#define WITHANTSELECT	1	/* Управление переключением антенн */
+		#define SHORTSET7	1
+	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -679,7 +684,31 @@
 
 	//#define WITHALTERNATIVEFONTS    1
 
-	#if WITHAUTOTUNER_AVBELNN
+	#if WITHAUTOTUNER_UA1CEI_V2
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
+		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
+		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+
+		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
+
+		FWD = BOARD_ADCX2IN(0),
+		REF = BOARD_ADCX2IN(1),
+		PWRI = FWD,
+
+		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
+		PASENSEIX2 = BOARD_ADCX2IN(2),	// DRAIN
+		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
+
+		#if WITHTHERMOLEVEL
+			XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		#endif /* WITHTHERMOLEVEL */
+		#if WITHVOLTLEVEL
+			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
+		#endif /* WITHVOLTLEVEL */
+
+	#elif WITHAUTOTUNER_AVBELNN
 
 		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
