@@ -2639,7 +2639,7 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 
 int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 {
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
 	flashPrepareLqspiCR(0);
 	QspiAccess(flashoffset, data, len, 0);
 	return 0;
@@ -2711,7 +2711,7 @@ void spidf_hangoff(void)
 
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
 
 #include "xqspips_hw.h"
 #include "xqspips.h"
@@ -3577,5 +3577,5 @@ static uint32_t InitQspi(void)
 	return XST_SUCCESS;
 }
 
-#endif /* CPUSTYLE_XC7Z */
+#endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
 
