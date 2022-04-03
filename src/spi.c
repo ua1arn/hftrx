@@ -1512,7 +1512,6 @@ static uint32_t QspiAccess( uint32_t SourceAddress,
 		void * DestinationAddress, uint32_t LengthBytes, unsigned skipAnswer);
 static uint32_t InitQspi(void);
 static void flashPrepareLqspiCR(uint_fast8_t enableMmap);
-static void flashPrepareLqspiCR_SFDP(void);
 
 static uint32_t SendBankSelect(uint8_t BankSel);
 
@@ -2329,8 +2328,6 @@ int largetimed_dataflash_read_status(void)
  */
 #define DATA_SIZE		4096
 
-#define LQSPI_CR_FAST_READ_SFDP			0x0000005A	/* Read SFDP Register */
-
 /*
  * The following defines are for dual flash interface.
  */
@@ -2371,9 +2368,6 @@ int largetimed_dataflash_read_status(void)
 
 #define SINGLE_QSPI_IO_CONFIG_FAST_READ	(LQSPI_CR_1_DUMMY_BYTE | \
 					 LQSPI_CR_FAST_READ)
-
-#define SINGLE_QSPI_IO_CONFIG_FAST_READ_SFDP	(LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_READ_SFDP)
 
 #define SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ	(LQSPI_CR_1_DUMMY_BYTE | \
 					 LQSPI_CR_FAST_DUAL_READ)
@@ -2509,8 +2503,8 @@ static void readFlashID(uint8_t * buff, unsigned size)
  */
 static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
 {
-	//ASSERT(flashoffset < 256 && (flashoffset + size) <= 256);
-	PRINTF("readSFDPDATAFLASH: flashoffset=%08lX\n", flashoffset);
+	ASSERT(flashoffset < 256 && (flashoffset + size) <= 256);
+	//PRINTF("readSFDPDATAFLASH: flashoffset=%08lX\n", flashoffset);
 	// Read SFDP
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
 
@@ -2880,11 +2874,6 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 
 int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 {
-#if CPUSTYLE_XC7Z && WIHSPIDFHW
-	flashPrepareLqspiCR(0);
-	QspiAccess(flashoffset, data, len, 0);
-	return 0;
-#endif /* CPUSTYLE_XC7Z */
 	//PRINTF("readDATAFLASH start, data=%p, len=%lu\n", data, len);
 	if (timed_dataflash_read_status())
 	{
@@ -2892,9 +2881,19 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 		return 1;
 	}
 
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+	flashPrepareLqspiCR(0);
+	QspiAccess(flashoffset, data, len, 0);
+
+#else /* CPUSTYLE_XC7Z */
+
 	spdif_iostartread(len, flashoffset);
 	spidf_read(data, len);
 	spidf_unselect();	/* done sending data to target chip */
+
+#endif /* CPUSTYLE_XC7Z */
+
 	//PRINTF("readDATAFLASH done\n");
 	return 0;
 }
@@ -3300,13 +3299,6 @@ static uint32_t SendBankSelect(uint8_t BankSel)
 	}
 
 	return XST_SUCCESS;
-}
-
-static void flashPrepareLqspiCR_SFDP(void)
-{
-	LinearBootDeviceFlag = 0;
-	XQSPIPS->LQSPI_CR = SINGLE_QSPI_IO_CONFIG_FAST_READ_SFDP;
-	XQSPIPS->ER = 0x00000001;
 }
 
 static void flashPrepareLqspiCR(uint_fast8_t enableMmap)
