@@ -659,20 +659,20 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 		 		else if ((status & EHCI_STATUS_BABBLE) != 0)
 				{
 					hc->ehci_urb_state = URB_NOTREADY;
-					hc->ehci_urb_state = USBH_URB_STALL;
+					hc->ehci_urb_state = URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_BUFFER) != 0)
 				{
-					hc->ehci_urb_state = USBH_URB_STALL;
+					hc->ehci_urb_state = URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_XACT_ERR) != 0)
 				{
 					hc->ehci_urb_state = URB_NOTREADY;
-					hc->ehci_urb_state = USBH_URB_STALL;
+					hc->ehci_urb_state = URB_STALL;
 				}
 				else
 				{
-					hc->ehci_urb_state = USBH_URB_STALL;
+					hc->ehci_urb_state = URB_STALL;
 				}
 
 			}
