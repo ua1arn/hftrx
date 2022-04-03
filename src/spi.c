@@ -1514,7 +1514,6 @@ static uint32_t InitQspi(void);
 static void flashPrepareLqspiCR(uint_fast8_t enableMmap);
 static void flashPrepareLqspiCR_SFDP(void);
 
-static uint32_t FlashReadID(void);
 static uint32_t SendBankSelect(uint8_t BankSel);
 
 #define LQSPI_CLK_CTRL_DIVISOR_VALUE 8
@@ -2472,11 +2471,6 @@ static void readFlashID(uint8_t * buff, unsigned size)
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
 
 	/*
-	 * Assert the FLASH chip select.
-	 */
-	XQspiPs_SetSlaveSelect(QspiInstancePtr);
-
-	/*
 	 * Read ID in Auto mode.
 	 */
 	WriteBuffer[COMMAND_OFFSET]   = READ_ID_CMD;
@@ -2484,8 +2478,23 @@ static void readFlashID(uint8_t * buff, unsigned size)
 	WriteBuffer[ADDRESS_2_OFFSET] = 0x00;
 	WriteBuffer[ADDRESS_3_OFFSET] = 0x00;
 
+	memset(ReadBuffer, 0xD5, sizeof ReadBuffer);
+/*
+	 * Assert the FLASH chip select.
+	 */
+	XQSPIPS->CR &= ~ XQSPIPS_CR_SSCTRL_MASK;
+
 	XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer, RD_ID_SIZE);
 
+	XQSPIPS->ER = 0;
+	/*
+	 * Unelect the slave
+	 */
+	XQSPIPS->CR |= XQSPIPS_CR_SSCTRL_MASK;
+
+	//printhex(0, ReadBuffer, 32);
+
+	QspiFlashMake = ReadBuffer [1];
 	memcpy(buff, & ReadBuffer [1], 3);
 
 #else
@@ -2500,16 +2509,38 @@ static void readFlashID(uint8_t * buff, unsigned size)
  */
 static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
 {
-	ASSERT(flashoffset < 256 && (flashoffset + size) <= 256);
+	//ASSERT(flashoffset < 256 && (flashoffset + size) <= 256);
+	PRINTF("readSFDPDATAFLASH: flashoffset=%08lX\n", flashoffset);
 	// Read SFDP
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
 
-	uint8_t b [size + 4];
-	flashPrepareLqspiCR_SFDP();
-	QspiAccess(flashoffset, b, size + 4, 3);	// поскольку контроллеру QSPI этот код команды неизвестен, пропускаем эхо самомтоятельно
-	//printhex(0, b, size + 4);
-	memcpy(buff, b + 3, size);
+	/*
+	 * Read SFDP in Auto mode.
+	 */
+	WriteBuffer[COMMAND_OFFSET]   = 0x5A;		// Read SFDP data */
+	WriteBuffer[ADDRESS_1_OFFSET] = (uint8_t) (flashoffset >> 16);	/* Unused */
+	WriteBuffer[ADDRESS_2_OFFSET] = (uint8_t) (flashoffset >> 8);	/* Unused */
+	WriteBuffer[ADDRESS_3_OFFSET] = (uint8_t) (flashoffset >> 0);
+	WriteBuffer[DUMMY_OFFSET] = 0x00;				/* 1 dummy byte */
 
+	memset(ReadBuffer, 0xE5, sizeof ReadBuffer);
+
+	/*
+	 * Assert the FLASH chip select.
+	 */
+	XQSPIPS->CR &= ~ XQSPIPS_CR_SSCTRL_MASK;
+
+	XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer, 8 + size);	// 5 is not enougs...
+
+	XQSPIPS->ER = 0;
+	/*
+	 * Unelect the slave
+	 */
+	XQSPIPS->CR |= XQSPIPS_CR_SSCTRL_MASK;
+
+	//printhex(0, ReadBuffer, 32);
+
+	memcpy(buff, & ReadBuffer [5], size);
 
 #else
 	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
@@ -2590,6 +2621,12 @@ int testchipDATAFLASH(void)
 		mf_dlen = mfa [3];
 
 		PRINTF(PSTR("spidf: ID=0x%02X devId=0x%02X%02X, mf_dlen=0x%02X\n"), mf_id, mf_devid1, mf_devid2, mf_dlen);
+		readFlashID(mfa, sizeof mfa);
+		uint8_t buff8 [8];
+		readSFDPDATAFLASH(0x000000, buff8, 8);
+		readFlashID(mfa, sizeof mfa);
+		//uint8_t buff8 [8];
+		readSFDPDATAFLASH(0x000000, buff8, 8);
 	}
 
 
@@ -2919,101 +2956,6 @@ void spidf_hangoff(void)
 
 /******************************************************************************
 *
-* This function reads serial FLASH ID connected to the SPI interface.
-* It then deduces the make and size of the flash and obtains the
-* connection mode to point to corresponding parameters in the flash
-* configuration table. The flash driver will function based on this and
-* it presently supports Micron and Spansion - 128, 256 and 512Mbit and
-* Winbond 128Mbit
-*
-* @param	none
-*
-* @return	XST_SUCCESS if read id, otherwise XST_FAILURE.
-*
-* @note		None.
-*
-******************************************************************************/
-static uint32_t FlashReadID(void)
-{
-	uint32_t Status;
-
-	/*
-	 * Read ID in Auto mode.
-	 */
-	WriteBuffer[COMMAND_OFFSET]   = READ_ID_CMD;
-	WriteBuffer[ADDRESS_1_OFFSET] = 0x00;		/* 3 dummy bytes */
-	WriteBuffer[ADDRESS_2_OFFSET] = 0x00;
-	WriteBuffer[ADDRESS_3_OFFSET] = 0x00;
-
-	Status = XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer,
-				RD_ID_SIZE);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
-	}
-
-	PRINTF("Single Flash Information\n");
-
-	PRINTF("FlashID=0x%x 0x%x 0x%x\n", ReadBuffer[1],
-			ReadBuffer[2],
-			ReadBuffer[3]);
-
-	/*
-	 * Deduce flash make
-	 */
-//	if (ReadBuffer[1] == MICRON_ID) {
-//		QspiFlashMake = MICRON_ID;
-//		PRINTF( "MICRON ");
-//	} else if(ReadBuffer[1] == SPANSION_ID) {
-//		QspiFlashMake = SPANSION_ID;
-//		PRINTF( "SPANSION ");
-//	} else if(ReadBuffer[1] == WINBOND_ID) {
-//		QspiFlashMake = WINBOND_ID;
-//		PRINTF( "WINBOND ");
-//	} else if(ReadBuffer[1] == MACRONIX_ID) {
-//		QspiFlashMake = MACRONIX_ID;
-//		PRINTF( "MACRONIX ");
-//	} else if(ReadBuffer[0] == ISSI_ID) {
-//		QspiFlashMake = ISSI_ID;
-//		PRINTF( "ISSI ");
-//	}
-
-	/*
-	 * Deduce flash Size
-	 */
-//	if (ReadBuffer[2] == FLASH_SIZE_ID_8M) {
-//		QspiFlashSize = FLASH_SIZE_8M;
-//		PRINTF( "8M Bits\n");
-//	} else if (ReadBuffer[2] == FLASH_SIZE_ID_16M) {
-//		QspiFlashSize = FLASH_SIZE_16M;
-//		PRINTF( "16M Bits\n");
-//	} else if (ReadBuffer[2] == FLASH_SIZE_ID_32M) {
-//		QspiFlashSize = FLASH_SIZE_32M;
-//		PRINTF( "32M Bits\n");
-//	} else if (ReadBuffer[2] == FLASH_SIZE_ID_64M) {
-//		QspiFlashSize = FLASH_SIZE_64M;
-//		PRINTF( "64M Bits\n");
-//	} else if (ReadBuffer[3] == FLASH_SIZE_ID_128M) {
-//		QspiFlashSize = FLASH_SIZE_128M;
-//		PRINTF( "128M Bits\n");
-//	} else if (ReadBuffer[3] == FLASH_SIZE_ID_256M) {
-//		QspiFlashSize = FLASH_SIZE_256M;
-//		PRINTF( "256M Bits\n");
-//	} else if ((ReadBuffer[3] == FLASH_SIZE_ID_512M)
-//			|| (ReadBuffer[3] == MACRONIX_FLASH_SIZE_ID_512M)) {
-//		QspiFlashSize = FLASH_SIZE_512M;
-//		PRINTF( "512M Bits\n");
-//	} else if ((ReadBuffer[3] == FLASH_SIZE_ID_1G)
-//			|| (ReadBuffer[3] == MACRONIX_FLASH_SIZE_ID_1G)) {
-//		QspiFlashSize = FLASH_SIZE_1G;
-//		PRINTF( "1G Bits\n");
-//	}
-
-	return XST_SUCCESS;
-}
-
-
-/******************************************************************************
-*
 * This function reads from the  serial FLASH connected to the
 * QSPI interface.
 *
@@ -3198,7 +3140,7 @@ static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, u
 			/*
 			 * Copying the image to local buffer
 			 */
-			FlashRead(SourceAddress, Length);
+			FlashRead(SourceAddress, Length);	// XQspiPs_PolledTransfer inside
 
 			/*
 			 * Moving the data from local buffer to DDR destination address
@@ -3573,23 +3515,9 @@ static uint32_t InitQspi(void)
 	 */
 	XQspiPs_SetClkPrescaler(QspiInstancePtr, XQSPIPS_CLK_PRESCALE_8);
 
-#if 0
-	/*
-	 * Assert the FLASH chip select.
-	 */
-	XQspiPs_SetSlaveSelect(QspiInstancePtr);
 
-	/*
-	 * Read Flash ID and extract Manufacture and Size information
-	 */
-	Status = FlashReadID();
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
-	}
-#endif
-
-
-
+	XQSPIPS->ER = 0;
+	ASSERT(XQSPIPS->CR & XQSPIPS_CR_SSCTRL_MASK);
 	return XST_SUCCESS;
 }
 
