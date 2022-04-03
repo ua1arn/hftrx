@@ -2287,7 +2287,7 @@ static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigne
 
 	uint8_t b [size + 4];
 	flashPrepareLqspiCR_SFDP();
-	QspiAccess(flashoffset, b, size + 4, 3);
+	QspiAccess(flashoffset, b, size + 4, 3);	// поскольку контроллеру QSPI этот код команды неизвестен, пропускаем эхо самомтоятельно
 	//printhex(0, b, size + 4);
 	memcpy(buff, b + 3, size);
 
@@ -2359,10 +2359,10 @@ char nameDATAFLASH [64];
 
 int testchipDATAFLASH(void)
 {
-	unsigned char mf_id;	// Manufacturer ID
-	unsigned char mf_devid1;	// device ID (part 1)
-	unsigned char mf_devid2;	// device ID (part 2)
-	unsigned char mf_dlen;	// Extended Device Information String Length
+	unsigned mf_id;	// Manufacturer ID
+	unsigned mf_devid1;	// device ID (part 1)
+	unsigned mf_devid2;	// device ID (part 2)
+	unsigned mf_dlen;	// Extended Device Information String Length
 
 	/* Ожидание бита ~RDY в слове состояния. Для FRAM не имеет смысла.
 	Вставлено для возможности использования DATAFLASH */
@@ -2374,11 +2374,9 @@ int testchipDATAFLASH(void)
 	}
 
 	{
-
 		uint8_t mfa [4];
 
-		enum { SPDIF_IOSIZE = sizeof mfa };
-		readFlashID(mfa, SPDIF_IOSIZE);
+		readFlashID(mfa, sizeof mfa);
 
 		mf_id = mfa [0];
 		mf_devid1 = mfa [1];
@@ -2416,7 +2414,7 @@ int testchipDATAFLASH(void)
 			return 0;
 		}
 
-		PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
+		//PRINTF("SFDP: ptp=%08lX, len4=%02X\n", ptp, len4);
 		if (len4 < 9 || len4 > 16)
 			return 0;
 		uint8_t buff32 [len4 * 4];
@@ -2456,8 +2454,8 @@ int testchipDATAFLASH(void)
 		sct [1] = (dword8 >> 16) & 0xFFFF;
 		sct [2] = (dword9 >> 0) & 0xFFFF;
 		sct [3] = (dword9 >> 16) & 0xFFFF;
-		PRINTF("SFDP: opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
-		PRINTF("SFDP: size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
+		//PRINTF("SFDP: Sector Erase opcd1..4: 0x%02X, 0x%02X, 0x%02X, 0x%02X\n", (sct [0] >> 8) & 0xFF, (sct [1] >> 8) & 0xFF, (sct [2] >> 8) & 0xFF, (sct [3] >> 8) & 0xFF);
+		//PRINTF("SFDP: Sector Erase size1..4: %lu, %lu, %lu, %lu\n", 1uL << (sct [0] & 0xFF), 1uL << (sct [1] & 0xFF), 1uL << (sct [2] & 0xFF), 1uL << (sct [3] & 0xFF));
 		unsigned i;
 		unsigned sctRESULT = 0;
 		for (i = 0; i < ARRAY_SIZE(sct); ++ i)
@@ -2472,7 +2470,7 @@ int testchipDATAFLASH(void)
 		{
 			sectorEraseCmd = (sctRESULT >> 8) & 0xFF;
 			sectorSize = 1uL << (sctRESULT & 0xFF);
-			PRINTF("SFDP: Selected opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
+			PRINTF("SFDP: Selected Sector Erase opcode=0x%02X, size=%lu\n", (unsigned) sectorEraseCmd, (unsigned long) sectorSize);
 		}
 		///////////////////////////////////
 		//PRINTF("SFDP: Sector Type 1 Size=%08lX, Sector Type 1 Opcode=%02lX\n", 1uL << ((dword8 >> 0) & 0xFF), (dword8 >> 8) & 0xFF);
