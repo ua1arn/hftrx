@@ -6292,7 +6292,14 @@ void hightests(void)
 		spidf_initialize();
 		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 
-		unsigned char b [64]  = { 1,2,3,4,5 } ;
+		unsigned char b [64];
+		memset(b, 0xE5, sizeof b);
+		readDATAFLASH(0x00000, b, 64);
+		printhex(0, b, 64);
+
+		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+
+		memset(b, 0xE5, sizeof b);
 		readDATAFLASH(0x00000, b, 64);
 		printhex(0, b, 64);
 
