@@ -40,13 +40,25 @@ void USBH_POSTRESET_INIT(void)
 #if CPUSTYLE_XC7Z
 	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
 
-	USBx->MODE |= 0x03;			// Host
-	USBx->MODE |= (1uL << 5);	// VBPS
-	USBx->MODE &= ~ (1uL << 4);	// SDIS
-
-	USBx->TTCTRL = (USBx->TTCTRL & ~ (0xFF000000)) |
-		(0x17 << 24) |
+	//USBx->MODE |= 0x03;			// Host
+//	USBx->MODE = (USBx->MODE & ~ (0x0003)) |
+//		0x02 |		// IDLE
+//		//0x03 |		// HOST
+//		0;
+//	(void) USBx->MODE;
+	USBx->MODE = (USBx->MODE & ~ (0x0003)) |
+		//0x02 |		// IDLE
+		0x03 |		// HOST
 		0;
+	(void) USBx->MODE;
+	//USBx->MODE |= (1uL << 5);	// VBPS
+	//USBx->MODE &= ~ (1uL << 4);	// SDIS
+	PRINTF("USBx->MODE_CM=%02lX\n", USBx->MODE & 0x03);
+
+//	USBx->TTCTRL = (USBx->TTCTRL & ~ (0xFF000000)) |
+//		(0x17 << 24) |
+//		0;
+
 //
 //	enum { PORTSC1_PSPD_Pos = 26, PORTSC1_PSPD_Msk = 0x03 << PORTSC1_PSPD_Pos };
 //	USBx->PORTSCR1 = (USBx->PORTSCR1 & ~ (PORTSC1_PSPD_Msk)) |
@@ -62,6 +74,11 @@ void USBH_POSTRESET_INIT(void)
 //	unsigned pts2 = (USBx->PORTSCR1 >> 25) & 0x01;
 //	PRINTF("PORTSCR1(%p)=%08lX, pts=%02X, pspd=%02X\n", & USBx->PORTSCR1, USBx->PORTSCR1, pts2 * 4 + pts, (USBx->PORTSCR1 >> PORTSC1_PSPD_Pos) & 0x03);
 
+//	USBx->IC_USB = (USBx->IC_USB & ~ (0x07 | 0x08)) |
+//		0x08 |	// IC1
+//		0x04 |	// IC_VDD1
+//		0;
+//	PRINTF("USBx->IC_USB=%08lX\n", USBx->IC_USB);
 
 #endif /* CPUSTYLE_XC7Z */
 }
@@ -527,7 +544,7 @@ HAL_StatusTypeDef HAL_EHCI_HC_Halt(EHCI_HandleTypeDef *hehci, uint8_t ch_num)
 
 	{
 
-		hehci->qtds [i].status = EHCI_STATUS_HALTED;
+		hehci->qtds [i].status = 0;//EHCI_STATUS_HALTED;
 		hehci->qtds [i].len = 0;	// toggle bit = 0
 		hehci->qtds [i].next = cpu_to_le32(EHCI_LINK_TERMINATE);
 		hehci->qtds [i].alt = cpu_to_le32(EHCI_LINK_TERMINATE);
@@ -621,8 +638,10 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		{
 			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
 
-			if (/*hc->ch_num >= ARRAY_SIZE(hehci->hc) || */ hc->ch_num != ch_num)
+			if (hc->ehci_urb_state != URB_IDLE)
 				continue;
+//			if (/*hc->ch_num >= ARRAY_SIZE(hehci->hc) || */ hc->ch_num != ch_num)
+//				continue;
 			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
 			const uint_fast8_t status = qtd->status;
 			unsigned len = le16_to_cpu(qtd->len) & EHCI_LEN_MASK;
