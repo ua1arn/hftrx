@@ -2276,29 +2276,6 @@ int largetimed_dataflash_read_status(void)
 	return 1;
 }
 
-/* чтение параметра с требуемым индексом
- *
- */
-static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
-{
-	ASSERT(flashoffset < 256 && (flashoffset + size) <= 256);
-	// Read SFDP
-#if CPUSTYLE_XC7Z && WIHSPIDFHW
-
-	uint8_t b [size + 4];
-	flashPrepareLqspiCR_SFDP();
-	QspiAccess(flashoffset, b, size + 4, 3);	// поскольку контроллеру QSPI этот код команды неизвестен, пропускаем эхо самомтоятельно
-	//printhex(0, b, size + 4);
-	memcpy(buff, b + 3, size);
-
-
-#else
-	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
-	spidf_read(buff, size);
-	spidf_unselect();	/* done sending data to target chip */
-#endif /* CPUSTYLE_XC7Z */
-}
-
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
 
 #include "xqspips_hw.h"
@@ -2494,8 +2471,6 @@ static void readFlashID(uint8_t * buff, unsigned size)
 {
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
 
-	uint32_t Status;
-
 	/*
 	 * Assert the FLASH chip select.
 	 */
@@ -2515,6 +2490,29 @@ static void readFlashID(uint8_t * buff, unsigned size)
 
 #else
 	spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
+	spidf_read(buff, size);
+	spidf_unselect();	/* done sending data to target chip */
+#endif /* CPUSTYLE_XC7Z */
+}
+
+/* чтение параметра с требуемым индексом
+ *
+ */
+static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigned size)
+{
+	ASSERT(flashoffset < 256 && (flashoffset + size) <= 256);
+	// Read SFDP
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+	uint8_t b [size + 4];
+	flashPrepareLqspiCR_SFDP();
+	QspiAccess(flashoffset, b, size + 4, 3);	// поскольку контроллеру QSPI этот код команды неизвестен, пропускаем эхо самомтоятельно
+	//printhex(0, b, size + 4);
+	memcpy(buff, b + 3, size);
+
+
+#else
+	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
 	spidf_read(buff, size);
 	spidf_unselect();	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
