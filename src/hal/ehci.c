@@ -260,7 +260,7 @@ static void qtd_item2(volatile struct ehci_transfer_descriptor * p, unsigned pid
 //														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 //														// cleared for SETUP packets
 	p->flags = pid | 1 * EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
-	p->status = 0*EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
+	p->status = 0 * EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
 	//le8_modify(& p->status, EHCI_STATUS_MASK | EHCI_STATUS_PING, EHCI_STATUS_PING * (ping != 0));
 }
 
@@ -847,7 +847,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	EHCIx->USBINTR = 0;
 
 	/* подготовка кольцевого списка QH */
-	for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++i)
+	for (i = 0; i < ARRAY_SIZE(hehci->asynclisthead); ++ i)
 	{
 		asynclist_item(& hehci->asynclisthead[i],
 				ehci_link_qhv(
@@ -855,16 +855,15 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 								% ARRAY_SIZE(hehci->asynclisthead)]), i == 0);
 	}
 	/* подготовка списка dts */
-	for (i = 0; i < ARRAY_SIZE(hehci->qtds); ++i)
+	for (i = 0; i < ARRAY_SIZE(hehci->qtds); ++ i)
 	{
-		//memset(& qtds [i], 0xFF, sizeof qtds [i]);
+		//memset(& hehci->qtds [i], 0xFF, sizeof hehci->qtds [i]);
 		hehci->qtds[i].status = EHCI_STATUS_HALTED;
 	}
 	/* подготовка списка QH для periodic frame list */
-	for (i = 0; i < ARRAY_SIZE(hehci->itdsarray); ++i)
+	for (i = 0; i < ARRAY_SIZE(hehci->itdsarray); ++ i)
 	{
-		asynclist_item(& hehci->itdsarray[i],
-				EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
+		asynclist_item(& hehci->itdsarray[i], EHCI_LINK_TERMINATE | EHCI_LINK_TYPE(1), 1);
 	}
 
 	arm_hardware_flush_invalidate((uintptr_t) & hehci->asynclisthead, sizeof hehci->asynclisthead);
