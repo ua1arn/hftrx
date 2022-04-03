@@ -2713,7 +2713,7 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 		return addrbase | TTB_PARA_DEVICE;
 
 	if (a >= 0xFC000000uL && a < 0xFE000000uL)			//  Quad-SPI linear address for linear mode
-		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 1, 0);
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro || 0, 0);
 
 	if (a >= 0xFFF00000uL)			// OCM (On Chip Memory) is mapped high
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);

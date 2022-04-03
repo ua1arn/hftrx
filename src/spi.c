@@ -3041,14 +3041,12 @@ static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, u
 //			LengthBytes += (4 - (LengthBytes & 0x00000003));
 //		}
 
-		memcpy(DestinationAddress,
-		      (const void*) (SourceAddress + FlashReadBaseAddress),
-		      LengthBytes);
+		memcpy(DestinationAddress, (const void *) (SourceAddress + FlashReadBaseAddress), LengthBytes);
 	} else {
 		/*
 		 * Non Linear access
 		 */
-		BufferPtr = (uint8_t*)DestinationAddress;
+		BufferPtr = DestinationAddress;
 
 		/*
 		 * Dual parallel connection actual flash is half
@@ -3057,7 +3055,7 @@ static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, u
 			SourceAddress = SourceAddress/2;
 		}
 
-		while(LengthBytes > 0) {
+		while (LengthBytes > 0) {
 			/*
 			 * Local of DATA_SIZE size used for read/write buffer
 			 */
@@ -3080,7 +3078,7 @@ static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, u
 				/*
 				 * Select lower or upper Flash based on sector address
 				 */
-				if (SourceAddress >= (QspiFlashSize/2)) {
+				if (SourceAddress >= (QspiFlashSize / 2)) {
 					/*
 					 * Set selection to U_PAGE
 					 */
@@ -3091,7 +3089,7 @@ static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, u
 					/*
 					 * Subtract first flash size when accessing second flash
 					 */
-					SourceAddress = SourceAddress - (QspiFlashSize/2);
+					SourceAddress = SourceAddress - (QspiFlashSize / 2);
 
 					//PRINTF( "stacked - upper CS \n\r");
 
