@@ -1509,7 +1509,7 @@ static uint32_t qspi_rd_status(struct qspi_ctxt *qspi)
 ////
 static uint32_t InitQspi(void);
 static uint32_t QspiAccess( uint32_t SourceAddress,
-		uint32_t DestinationAddress,
+		void * DestinationAddress,
 		uint32_t LengthBytes);
 
 #define LQSPI_CLK_CTRL_DIVISOR_VALUE 8
@@ -2605,7 +2605,7 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 {
 #if CPUSTYLE_XC7Z
-	QspiAccess(flashoffset, (uintptr_t) data, len);
+	QspiAccess(flashoffset, data, len);
 	return 0;
 #endif /* CPUSTYLE_XC7Z */
 	//PRINTF("readDATAFLASH start, data=%p, len=%lu\n", data, len);
@@ -2844,7 +2844,7 @@ void spidf_hangoff(void)
 static uint32_t InitQspi(void);
 
 static uint32_t QspiAccess( uint32_t SourceAddress,
-		uint32_t DestinationAddress,
+		void * DestinationAddress,
 		uint32_t LengthBytes);
 
 static uint32_t FlashReadID(void);
@@ -3022,7 +3022,7 @@ static void FlashRead(uint32_t Address, uint32_t ByteCount)
 * @note	none.
 *
 ****************************************************************************/
-static uint32_t QspiAccess( uint32_t SourceAddress, uint32_t DestinationAddress, uint32_t LengthBytes)
+static uint32_t QspiAccess( uint32_t SourceAddress, void * DestinationAddress, uint32_t LengthBytes)
 {
 	uint8_t	*BufferPtr;
 	uint32_t Length = 0;
@@ -3037,13 +3037,13 @@ static uint32_t QspiAccess( uint32_t SourceAddress, uint32_t DestinationAddress,
 		/*
 		 * Check for non-word tail, add bytes to cover the end
 		 */
-		if ((LengthBytes%4) != 0){
-			LengthBytes += (4 - (LengthBytes & 0x00000003));
-		}
+//		if ((LengthBytes%4) != 0){
+//			LengthBytes += (4 - (LengthBytes & 0x00000003));
+//		}
 
-		memcpy((void*)DestinationAddress,
-		      (const void*)(SourceAddress + FlashReadBaseAddress),
-		      (size_t)LengthBytes);
+		memcpy(DestinationAddress,
+		      (const void*) (SourceAddress + FlashReadBaseAddress),
+		      LengthBytes);
 	} else {
 		/*
 		 * Non Linear access
@@ -3451,7 +3451,7 @@ static uint32_t InitQspi(void)
 	if (XPAR_XQSPIPS_0_QSPI_MODE == DUAL_PARALLEL_CONNECTION) {
 		//uint32_t ConfigCmd;
 
-		PRINTF("QSPI is in Dual Parallel connection\n");
+		//PRINTF("QSPI is in Dual Parallel connection\n");
 		/*
 		 * For Single Flash size <128Mbit controller configured in linear mode
 		 */
