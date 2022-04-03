@@ -10410,7 +10410,7 @@ updateboardZZZ(
 		board_setrtcstrobe(grtcstrobe);
 	#endif /* defined (RTC1_TYPE) */
 	#if WITHANTSELECTRX
-		board_set_rxantenna(antmodes [grxantennas [rxbi]].code);
+		board_set_rxantenna(rxantmodes [grxantennas [rxbi]].code);
 		board_set_antenna(antmodes [gantennas [rxbi]].code);
 	#elif WITHANTSELECT
 		board_set_antenna(antmodes [gantennas [rxbi]].code [gtx]);

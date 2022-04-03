@@ -4213,7 +4213,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
 		RBBIT(0065, glob_classamode);	// class A
-		RBBIT(0064, glob_antenna);	// RX ANT
+		RBBIT(0064, glob_rxantenna);	// RX ANT
 		RBBIT(0063, ! glob_tuner_bypass);	// Energized - tuner on
 		RBBIT(0062, 1);	// hi power out
 		RBBIT(0061, txgated);	//
