@@ -2299,11 +2299,219 @@ static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigne
 #endif /* CPUSTYLE_XC7Z */
 }
 
+#if CPUSTYLE_XC7Z && WIHSPIDFHW
+
+#include "xqspips_hw.h"
+#include "xqspips.h"
+
+/************************** Constant Definitions *****************************/
+
+/*
+ * The following constants map to the XPAR parameters created in the
+ * xparameters.h file. They are defined here such that a user can easily
+ * change all the needed parameters in one place.
+ */
+#define QSPI_DEVICE_ID		XPAR_XQSPIPS_0_DEVICE_ID
+
+/*
+ * The following constants define the commands which may be sent to the FLASH
+ * device.
+ */
+#define QUAD_READ_CMD		0x6B
+#define READ_ID_CMD			0x9F
+
+#define WRITE_ENABLE_CMD	0x06
+#define BANK_REG_RD			0x16
+#define BANK_REG_WR			0x17
+/* Bank register is called Extended Address Reg in Micron */
+#define EXTADD_REG_RD		0xC8
+#define EXTADD_REG_WR		0xC5
+
+#define COMMAND_OFFSET		0 /* FLASH instruction */
+#define ADDRESS_1_OFFSET	1 /* MSB byte of address to read or write */
+#define ADDRESS_2_OFFSET	2 /* Middle byte of address to read or write */
+#define ADDRESS_3_OFFSET	3 /* LSB byte of address to read or write */
+#define DATA_OFFSET			4 /* Start of Data for Read/Write */
+#define DUMMY_OFFSET		4 /* Dummy byte offset for fast, dual and quad
+				     reads */
+#define DUMMY_SIZE			1 /* Number of dummy bytes for fast, dual and
+				     quad reads */
+#define RD_ID_SIZE			4 /* Read ID command + 3 bytes ID response */
+#define BANK_SEL_SIZE		2 /* BRWR or EARWR command + 1 byte bank value */
+#define WRITE_ENABLE_CMD_SIZE	1 /* WE command */
+/*
+ * The following constants specify the extra bytes which are sent to the
+ * FLASH on the QSPI interface, that are not data, but control information
+ * which includes the command and address
+ */
+#define OVERHEAD_SIZE		4
+
+/*
+ * The following constants specify the max amount of data and the size of the
+ * the buffer required to hold the data and overhead to transfer the data to
+ * and from the FLASH.
+ */
+#define DATA_SIZE		4096
+
+#define LQSPI_CR_FAST_READ_SFDP			0x0000005A	/* Read SFDP Register */
+
+/*
+ * The following defines are for dual flash interface.
+ */
+#define LQSPI_CR_FAST_READ			0x0000000B
+#define LQSPI_CR_FAST_DUAL_READ		0x0000003B
+#define LQSPI_CR_FAST_QUAD_READ		0x0000006B /* Fast Quad Read output */
+#define LQSPI_CR_1_DUMMY_BYTE		0x00000100 /* 1 Dummy Byte between address and return data */
+
+#define SINGLE_QSPI_CONFIG_FAST_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_READ)
+
+#define SINGLE_QSPI_CONFIG_FAST_DUAL_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_DUAL_READ)
+
+#define SINGLE_QSPI_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define DUAL_QSPI_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
+					 XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 XQSPIPS_LQSPI_CR_SEP_BUS_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define DUAL_STACK_CONFIG_FAST_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_READ)
+
+#define DUAL_STACK_CONFIG_FAST_DUAL_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_DUAL_READ)
+
+#define DUAL_STACK_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define SINGLE_QSPI_IO_CONFIG_FAST_READ	(LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_READ)
+
+#define SINGLE_QSPI_IO_CONFIG_FAST_READ_SFDP	(LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_READ_SFDP)
+
+#define SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ	(LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_DUAL_READ)
+
+#define SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ	(LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define DUAL_QSPI_IO_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
+					 XQSPIPS_LQSPI_CR_SEP_BUS_MASK | \
+					 LQSPI_CR_1_DUMMY_BYTE | \
+					 LQSPI_CR_FAST_QUAD_READ)
+
+#define QSPI_BUSWIDTH_ONE	0U
+#define QSPI_BUSWIDTH_TWO	1U
+#define QSPI_BUSWIDTH_FOUR	2U
+
+#define SINGLE_FLASH_CONNECTION			0
+#define DUAL_STACK_CONNECTION			1
+#define DUAL_PARALLEL_CONNECTION		2
+#define FLASH_SIZE_16MB					0x1000000
+
+/*
+ * Bank mask
+ */
+#define BANKMASK 0xF000000
+
+/*
+ * Identification of Flash
+ * Micron:
+ * Byte 0 is Manufacturer ID;
+ * Byte 1 is first byte of Device ID - 0xBB or 0xBA
+ * Byte 2 is second byte of Device ID describes flash size:
+ * 128Mbit : 0x18; 256Mbit : 0x19; 512Mbit : 0x20
+ * Spansion:
+ * Byte 0 is Manufacturer ID;
+ * Byte 1 is Device ID - Memory Interface type - 0x20 or 0x02
+ * Byte 2 is second byte of Device ID describes flash size:
+ * 128Mbit : 0x18; 256Mbit : 0x19; 512Mbit : 0x20
+ */
+
+#define MICRON_ID		0x20
+#define SPANSION_ID		0x01
+#define WINBOND_ID		0xEF
+#define MACRONIX_ID		0xC2
+#define ISSI_ID			0x9D
+
+#define FLASH_SIZE_ID_8M		0x14
+#define FLASH_SIZE_ID_16M		0x15
+#define FLASH_SIZE_ID_32M		0x16
+#define FLASH_SIZE_ID_64M		0x17
+#define FLASH_SIZE_ID_128M		0x18
+#define FLASH_SIZE_ID_256M		0x19
+#define FLASH_SIZE_ID_512M		0x20
+#define FLASH_SIZE_ID_1G		0x21
+/* Macronix size constants are different for 512M and 1G */
+#define MACRONIX_FLASH_SIZE_ID_512M		0x1A
+#define MACRONIX_FLASH_SIZE_ID_1G		0x1B
+
+/*
+ * Size in bytes
+ */
+#define FLASH_SIZE_8M			0x0100000
+#define FLASH_SIZE_16M			0x0200000
+#define FLASH_SIZE_32M			0x0400000
+#define FLASH_SIZE_64M			0x0800000
+#define FLASH_SIZE_128M			0x1000000
+#define FLASH_SIZE_256M			0x2000000
+#define FLASH_SIZE_512M			0x4000000
+#define FLASH_SIZE_1G			0x8000000
+
+/************************** Function Prototypes ******************************/
+/************************** Variable Definitions *****************************/
+
+/**************************** Type Definitions *******************************/
+
+/***************** Macros (Inline Functions) Definitions *********************/
+
+/************************** Function Prototypes ******************************/
+
+/************************** Variable Definitions *****************************/
+
+static XQspiPs QspiInstance;
+static XQspiPs * const QspiInstancePtr = & QspiInstance;
+static uint32_t QspiFlashSize = FLASH_SIZE_16M;
+static uint32_t QspiFlashMake = WINBOND_ID;
+static uint32_t FlashReadBaseAddress;
+static uint8_t LinearBootDeviceFlag;
+static uint8_t ReadBuffer [DATA_OFFSET + DUMMY_SIZE + DATA_SIZE];
+static uint8_t WriteBuffer [DATA_OFFSET + DUMMY_SIZE];
+
+#endif /* CPUSTYLE_XC7Z && WIHSPIDFHW */
+
 static void readFlashID(uint8_t * buff, unsigned size)
 {
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
 
-	memset(buff, 0xE5, size);
+	uint32_t Status;
+
+	/*
+	 * Assert the FLASH chip select.
+	 */
+	XQspiPs_SetSlaveSelect(QspiInstancePtr);
+
+	/*
+	 * Read ID in Auto mode.
+	 */
+	WriteBuffer[COMMAND_OFFSET]   = READ_ID_CMD;
+	WriteBuffer[ADDRESS_1_OFFSET] = 0x00;		/* 3 dummy bytes */
+	WriteBuffer[ADDRESS_2_OFFSET] = 0x00;
+	WriteBuffer[ADDRESS_3_OFFSET] = 0x00;
+
+	XQspiPs_PolledTransfer(QspiInstancePtr, WriteBuffer, ReadBuffer, RD_ID_SIZE);
+
+	memcpy(buff, & ReadBuffer [1], 3);
 
 #else
 	spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
@@ -2710,194 +2918,6 @@ void spidf_hangoff(void)
 #endif /* WIHSPIDFHW || WIHSPIDFSW */
 
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
-
-#include "xqspips_hw.h"
-#include "xqspips.h"
-
-/************************** Constant Definitions *****************************/
-
-/*
- * The following constants map to the XPAR parameters created in the
- * xparameters.h file. They are defined here such that a user can easily
- * change all the needed parameters in one place.
- */
-#define QSPI_DEVICE_ID		XPAR_XQSPIPS_0_DEVICE_ID
-
-/*
- * The following constants define the commands which may be sent to the FLASH
- * device.
- */
-#define QUAD_READ_CMD		0x6B
-#define READ_ID_CMD			0x9F
-
-#define WRITE_ENABLE_CMD	0x06
-#define BANK_REG_RD			0x16
-#define BANK_REG_WR			0x17
-/* Bank register is called Extended Address Reg in Micron */
-#define EXTADD_REG_RD		0xC8
-#define EXTADD_REG_WR		0xC5
-
-#define COMMAND_OFFSET		0 /* FLASH instruction */
-#define ADDRESS_1_OFFSET	1 /* MSB byte of address to read or write */
-#define ADDRESS_2_OFFSET	2 /* Middle byte of address to read or write */
-#define ADDRESS_3_OFFSET	3 /* LSB byte of address to read or write */
-#define DATA_OFFSET			4 /* Start of Data for Read/Write */
-#define DUMMY_OFFSET		4 /* Dummy byte offset for fast, dual and quad
-				     reads */
-#define DUMMY_SIZE			1 /* Number of dummy bytes for fast, dual and
-				     quad reads */
-#define RD_ID_SIZE			4 /* Read ID command + 3 bytes ID response */
-#define BANK_SEL_SIZE		2 /* BRWR or EARWR command + 1 byte bank value */
-#define WRITE_ENABLE_CMD_SIZE	1 /* WE command */
-/*
- * The following constants specify the extra bytes which are sent to the
- * FLASH on the QSPI interface, that are not data, but control information
- * which includes the command and address
- */
-#define OVERHEAD_SIZE		4
-
-/*
- * The following constants specify the max amount of data and the size of the
- * the buffer required to hold the data and overhead to transfer the data to
- * and from the FLASH.
- */
-#define DATA_SIZE		4096
-
-#define LQSPI_CR_FAST_READ_SFDP			0x0000005A	/* Read SFDP Register */
-
-/*
- * The following defines are for dual flash interface.
- */
-#define LQSPI_CR_FAST_READ			0x0000000B
-#define LQSPI_CR_FAST_DUAL_READ		0x0000003B
-#define LQSPI_CR_FAST_QUAD_READ		0x0000006B /* Fast Quad Read output */
-#define LQSPI_CR_1_DUMMY_BYTE		0x00000100 /* 1 Dummy Byte between address and return data */
-
-#define SINGLE_QSPI_CONFIG_FAST_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_READ)
-
-#define SINGLE_QSPI_CONFIG_FAST_DUAL_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_DUAL_READ)
-
-#define SINGLE_QSPI_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_QUAD_READ)
-
-#define DUAL_QSPI_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_LINEAR_MASK | \
-					 XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
-					 XQSPIPS_LQSPI_CR_SEP_BUS_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_QUAD_READ)
-
-#define DUAL_STACK_CONFIG_FAST_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_READ)
-
-#define DUAL_STACK_CONFIG_FAST_DUAL_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_DUAL_READ)
-
-#define DUAL_STACK_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_QUAD_READ)
-
-#define SINGLE_QSPI_IO_CONFIG_FAST_READ	(LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_READ)
-
-#define SINGLE_QSPI_IO_CONFIG_FAST_READ_SFDP	(LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_READ_SFDP)
-
-#define SINGLE_QSPI_IO_CONFIG_FAST_DUAL_READ	(LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_DUAL_READ)
-
-#define SINGLE_QSPI_IO_CONFIG_FAST_QUAD_READ	(LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_QUAD_READ)
-
-#define DUAL_QSPI_IO_CONFIG_FAST_QUAD_READ	(XQSPIPS_LQSPI_CR_TWO_MEM_MASK | \
-					 XQSPIPS_LQSPI_CR_SEP_BUS_MASK | \
-					 LQSPI_CR_1_DUMMY_BYTE | \
-					 LQSPI_CR_FAST_QUAD_READ)
-
-#define QSPI_BUSWIDTH_ONE	0U
-#define QSPI_BUSWIDTH_TWO	1U
-#define QSPI_BUSWIDTH_FOUR	2U
-
-#define SINGLE_FLASH_CONNECTION			0
-#define DUAL_STACK_CONNECTION			1
-#define DUAL_PARALLEL_CONNECTION		2
-#define FLASH_SIZE_16MB					0x1000000
-
-/*
- * Bank mask
- */
-#define BANKMASK 0xF000000
-
-/*
- * Identification of Flash
- * Micron:
- * Byte 0 is Manufacturer ID;
- * Byte 1 is first byte of Device ID - 0xBB or 0xBA
- * Byte 2 is second byte of Device ID describes flash size:
- * 128Mbit : 0x18; 256Mbit : 0x19; 512Mbit : 0x20
- * Spansion:
- * Byte 0 is Manufacturer ID;
- * Byte 1 is Device ID - Memory Interface type - 0x20 or 0x02
- * Byte 2 is second byte of Device ID describes flash size:
- * 128Mbit : 0x18; 256Mbit : 0x19; 512Mbit : 0x20
- */
-
-#define MICRON_ID		0x20
-#define SPANSION_ID		0x01
-#define WINBOND_ID		0xEF
-#define MACRONIX_ID		0xC2
-#define ISSI_ID			0x9D
-
-#define FLASH_SIZE_ID_8M		0x14
-#define FLASH_SIZE_ID_16M		0x15
-#define FLASH_SIZE_ID_32M		0x16
-#define FLASH_SIZE_ID_64M		0x17
-#define FLASH_SIZE_ID_128M		0x18
-#define FLASH_SIZE_ID_256M		0x19
-#define FLASH_SIZE_ID_512M		0x20
-#define FLASH_SIZE_ID_1G		0x21
-/* Macronix size constants are different for 512M and 1G */
-#define MACRONIX_FLASH_SIZE_ID_512M		0x1A
-#define MACRONIX_FLASH_SIZE_ID_1G		0x1B
-
-/*
- * Size in bytes
- */
-#define FLASH_SIZE_8M			0x0100000
-#define FLASH_SIZE_16M			0x0200000
-#define FLASH_SIZE_32M			0x0400000
-#define FLASH_SIZE_64M			0x0800000
-#define FLASH_SIZE_128M			0x1000000
-#define FLASH_SIZE_256M			0x2000000
-#define FLASH_SIZE_512M			0x4000000
-#define FLASH_SIZE_1G			0x8000000
-
-/************************** Function Prototypes ******************************/
-/************************** Variable Definitions *****************************/
-
-/**************************** Type Definitions *******************************/
-
-/***************** Macros (Inline Functions) Definitions *********************/
-
-/************************** Function Prototypes ******************************/
-
-/************************** Variable Definitions *****************************/
-
-static XQspiPs QspiInstance;
-static XQspiPs * const QspiInstancePtr = & QspiInstance;
-static uint32_t QspiFlashSize = FLASH_SIZE_16M;
-static uint32_t QspiFlashMake = WINBOND_ID;
-static uint32_t FlashReadBaseAddress;
-static uint8_t LinearBootDeviceFlag;
-static uint8_t ReadBuffer [DATA_OFFSET + DUMMY_SIZE + DATA_SIZE];
-static uint8_t WriteBuffer [DATA_OFFSET + DUMMY_SIZE];
-
 
 /******************************************************************************
 *
