@@ -4212,7 +4212,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
-		RBBIT(0065, 0);	// class A
+		RBBIT(0065, glob_classamode);	// class A
 		RBBIT(0064, glob_rxantenna);	// RX ANT
 		RBBIT(0063, glob_antenna);	//
 		RBBIT(0062, 1);	// hi power out
@@ -5378,6 +5378,18 @@ board_set_antenna(
 	if (glob_antenna != n)
 	{
 		glob_antenna = n;
+		board_ctlreg1changed();
+	}
+}
+
+void
+board_set_rxantenna(
+	uint_fast8_t n		// номер антенны
+	)
+{
+	if (glob_rxantenna != n)
+	{
+		glob_rxantenna = n;
 		board_ctlreg1changed();
 	}
 }

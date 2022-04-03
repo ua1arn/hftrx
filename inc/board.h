@@ -75,6 +75,7 @@ void board_set_opowerlevel(uint_fast8_t n);	/* установить выходн
 
 void board_set_att(uint_fast8_t v);
 void board_set_antenna(uint_fast8_t v);
+void board_set_rxantenna(uint_fast8_t v);
 void board_set_boardagc(uint_fast8_t n);
 void board_set_dspagc(uint_fast8_t n);
 void board_set_sleep(uint_fast8_t v);	/* перевести в режим минимального потребления */
