@@ -3546,11 +3546,18 @@ static FLOAT_t agc_forvard_getstreigthlog10(
 	return agc_calcstrengthlog10(agcp, fltstrengthfast);
 }
 
-static int computeslevel(
+static int computeslevel_1(
 	FLOAT_t dbFS	// десятичный логарифм уровня сигнала от FS
 	)
 {
 	return (dbFS * 200 + (glob_fsadcpower10 + 5)) / 10;
+}
+
+static int computeslevel_10(
+	FLOAT_t dbFS	// десятичный логарифм уровня сигнала от FS
+	)
+{
+	return (dbFS * 200 + (glob_fsadcpower10 + 5));
 }
 
 /* получить значение уровня сигнала в децибелах, отступая от upper */
@@ -3563,8 +3570,34 @@ dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, u
 	//if (clean != 0)
 	//	agc_reset(pathi);
 	FLOAT_t tmaxf;
-	int level = upper + computeslevel(agc_forvard_getstreigthlog10(& tmaxf, pathi));
-	int tmax = upper + computeslevel(tmaxf);
+	int level = upper + computeslevel_1(agc_forvard_getstreigthlog10(& tmaxf, pathi));
+	int tmax = upper + computeslevel_1(tmaxf);
+
+	if (tmax > (int) upper)
+		tmax = upper;
+	else if (tmax < (int) lower)
+		tmax = lower;
+
+	if (level > (int) upper)
+		level = upper;
+	else if (level < (int) lower)
+		level = lower;
+
+	* tracemax = tmax;
+	return level;
+}
+/* получить значение уровня сигнала в децибелах, отступая от upper */
+/* -73.01dBm == 50 uV rms == S9 */
+/* Вызывается из user-mode программы */
+uint_fast16_t
+dsp_getsmeter10(uint_fast8_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean)
+{
+	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
+	//if (clean != 0)
+	//	agc_reset(pathi);
+	FLOAT_t tmaxf;
+	int level = upper + computeslevel_10(agc_forvard_getstreigthlog10(& tmaxf, pathi));
+	int tmax = upper + computeslevel_10(tmaxf);
 
 	if (tmax > (int) upper)
 		tmax = upper;
