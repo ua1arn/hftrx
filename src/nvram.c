@@ -83,24 +83,10 @@ eeprom_read_status(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-	static const uint8_t cmd [] = { RDSR }; /* read status register */
+	static const uint8_t cmd_rdsr [] = { RDSR }; /* read status register */
 	uint8_t v;
-	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, & v, 1);
+	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd_rdsr, ARRAY_SIZE(cmd_rdsr), NULL, 0, & v, 1);
 	return v;
-
-//
-//	uint_fast8_t v;
-//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-//
-//	spi_progval8_p1(target, RDSR);		/* read status register */
-//	spi_complete(target);
-//
-//	spi_to_read(target);
-//	v = spi_read_byte(target, 0xff);
-//	spi_to_write(target);
-//
-//	spi_unselect(target);	/* done sending data to target chip */
-//	return v;
 }
 
 static void 
@@ -110,14 +96,9 @@ eeprom_writeenable(
 	)
 {
 	// +++ РАЗРЕШЕНИЕ ЗАПИСИ
-	static const uint8_t cmd [] = { WREN }; /* set write-enable latch */
-	uint8_t v;
-	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, NULL, 0);
+	static const uint8_t cmd_wren [] = { WREN }; /* set write-enable latch */
 
-//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-//	spi_progval8_p1(target, WREN);		/* set write-enable latch */
-//	spi_complete(target);
-//	spi_unselect(target);	/* done sending data to target chip */
+	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
 	// --- РАЗРЕШЕНИЕ ЗАПИСИ
 }
 
@@ -136,21 +117,13 @@ eeprom_a1_write(
 
 	eeprom_writeenable(target);
 
+	// +++ Запись данных
 	const uint8_t cmd [] =
 	{
 		(addr > 0xff) * 0x08 | WRITE,	/* write, a8=0 or a8=1 */
 		(addr & 0xFF),
 	};
 	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
-
-	// +++ Запись данных
-//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-//	spi_progval8_p1(target, (addr > 0xff) * 0x08 | WRITE);		/* write, a8=0 or a8=1 */
-//	spi_progval8_p2(target, addr);
-//	for (i = 0; i < len; ++ i)
-//		spi_progval8_p2(target, ((const unsigned char *) data) [i]);
-//	spi_complete(target);
-//	spi_unselect(target);	/* done sending data to target chip */
 	// --- Запись данных
 }
 
@@ -169,16 +142,6 @@ eeprom_a1_read(
 		(addr & 0xFF),
 	};
 	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
-
-//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-//	spi_progval8_p1(target, (addr > 0xff) * 0x08 | READ);		/* read, a8=0 or a8=1 */
-//	spi_progval8_p2(target, (uint_fast8_t) addr);	/* a7..a0 */
-//	spi_complete(target);
-//
-//	spi_to_read(target);
-//	prog_spi_read_frame(target, data, len);
-//	spi_to_write(target);
-//	spi_unselect(target);	/* done sending data to target chip */
 }
 
 /* two bytes address 2K-byte chips */
@@ -199,18 +162,6 @@ eeprom_a2_write(
 		(uint_fast8_t) (addr >> 0),
 	};
 	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
-//	uint_fast8_t i;
-//
-//	eeprom_writeenable(target);
-//
-//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-//	spi_progval8_p1(target, WRITE);		/* write */
-//	spi_progval8_p2(target, (uint_fast8_t) (addr >> 8));
-//	spi_progval8_p2(target, (uint_fast8_t) addr);
-//	for (i = 0; i < len; ++ i)
-//		spi_progval8_p2(target, ((const uint8_t *) data) [i]);
-//	spi_complete(target);
-//	spi_unselect(target);	/* done sending data to target chip */
 }
 
 /* two bytes address 2K-byte chips */
@@ -229,18 +180,6 @@ eeprom_a2_read(
 		(uint_fast8_t) (addr >> 0),
 	};
 	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
-
-//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-//
-//	spi_progval8_p1(target, READ);		/* read */
-//	spi_progval8_p2(target, (uint_fast8_t) (addr >> 8));	/* a15..a8 */
-//	spi_progval8_p2(target, (uint_fast8_t) addr);               /* a7..a0 */
-//	spi_complete(target);
-//
-//	spi_to_read(target);
-//	prog_spi_read_frame(target, data, len);
-//	spi_to_write(target);
-//	spi_unselect(target);	/* done sending data to target chip */
 }
 
 #if 0
@@ -262,19 +201,8 @@ eeprom_a3_write(
 		(uint_fast8_t) (addr >> 8),
 		(uint_fast8_t) (addr >> 0),
 	};
-	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
 
-//	eeprom_writeenable(target);
-//	uint_fast8_t i;
-//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-//	spi_progval8_p1(target, WRITE);		/* write */
-//	spi_progval8_p2(target, (uint_fast8_t) (addr >> 16));
-//	spi_progval8_p2(target, (uint_fast8_t) (addr >> 8));
-//	spi_progval8_p2(target, (uint_fast8_t) addr);
-//	for (i = 0; i < len; ++ i)
-//		spi_progval8_p2(target, ((const uint8_t *) data) [i]);
-//	spi_complete(target);
-//	spi_unselect(target);	/* done sending data to target chip */
+	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), data, len, NULL, 0);
 }
 
 /* three bytes address 512K-byte chips */
@@ -292,19 +220,8 @@ eeprom_a3_read(
 		(uint_fast8_t) (addr >> 8),
 		(uint_fast8_t) (addr >> 0),
 	};
-	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
 
-//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-//	spi_progval8_p1(target, READ);		/* read */
-//	spi_progval8_p2(target, (uint_fast8_t) (addr >> 16));
-//	spi_progval8_p2(target, (uint_fast8_t) (addr >> 8));
-//	spi_progval8_p2(target, (uint_fast8_t) addr);
-//	spi_complete(target);
-//
-//	spi_to_read(target);
-//	prog_spi_read_frame(target, data, len);
-//	spi_to_write(target);
-//	spi_unselect(target);	/* done sending data to target chip */
+	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd, ARRAY_SIZE(cmd), NULL, 0, data, len);
 }
 
 #endif
@@ -337,16 +254,15 @@ eeprom_initialize(
 	//spi_unselect(targetnvram);	/* done sending data to target chip */
 
 
-	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-	spi_progval8_p1(target, WREN);		/* set write-enable latch */
-	spi_complete(target);
-	spi_unselect(target);	/* done sending data to target chip */
+	// +++ РАЗРЕШЕНИЕ ЗАПИСИ
+	static const uint8_t cmd_wren [] = { WREN }; /* set write-enable latch */
+	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, cmd_wren, ARRAY_SIZE(cmd_wren), NULL, 0, NULL, 0);
+	// --- РАЗРЕШЕНИЕ ЗАПИСИ
 
-	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-	spi_progval8_p1(target, WRSR);		/* set status register data */
-	spi_progval8_p2(target, 0x00);		/* status register data */
-	spi_complete(target);
-	spi_unselect(target);	/* done sending data to target chip */
+	// +++ WSR 0
+	static const uint8_t wrsr_0 [] = { WRSR, 0x00 }; /* set status register data */
+	prog_spi_io(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, wrsr_0, ARRAY_SIZE(wrsr_0), NULL, 0, NULL, 0);
+	// --- WSR 0
 }
 
 
