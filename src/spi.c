@@ -563,7 +563,10 @@ void prog_spi_io(
 	io.count = i;
 
 #if WITHSPILOWSUPPORTT
-	spi_perform(& io);
+
+	system_disableIRQ();
+	spi_operate_low(& io);
+	system_enableIRQ();
 
 #else /* WITHSPILOWSUPPORTT */
 	spi_operate_low(& io);
@@ -585,6 +588,7 @@ void prog_spi_exchange(
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	lowspiio_t io;
+
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
@@ -592,21 +596,26 @@ void prog_spi_exchange(
 	io.spiiosize = SPIIOSIZE_U8;
 
 	unsigned i = 0;
-	io.chunks [i].spiiotype = SPIIO_EXCHANGE;
-	io.chunks [i].bytecount = size;
-	io.chunks [i].txbuff = txbuff;
-	io.chunks [i].rxbuff = rxbuff;
-	++ i;
+	{
+		io.chunks [i].spiiotype = SPIIO_EXCHANGE;
+		io.chunks [i].bytecount = size;
+		io.chunks [i].txbuff = txbuff;
+		io.chunks [i].rxbuff = rxbuff;
+		++ i;
+	}
 
 	io.count = i;
 
 #if WITHSPILOWSUPPORTT
+
 	system_disableIRQ();
 	spi_operate_low(& io);
 	system_enableIRQ();
 
 #else /* WITHSPILOWSUPPORTT */
+
 	spi_operate_low(& io);
+
 #endif /* WITHSPILOWSUPPORTT */
 }
 
@@ -624,6 +633,7 @@ void prog_spi_exchange_low(
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	lowspiio_t io;
+
 	io.target = target;
 	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
@@ -631,34 +641,31 @@ void prog_spi_exchange_low(
 	io.spiiosize = SPIIOSIZE_U8;
 
 	unsigned i = 0;
-	io.chunks [i].spiiotype = SPIIO_EXCHANGE;
-	io.chunks [i].bytecount = size;
-	io.chunks [i].txbuff = txbuff;
-	io.chunks [i].rxbuff = rxbuff;
-	++ i;
+	{
+		io.chunks [i].spiiotype = SPIIO_EXCHANGE;
+		io.chunks [i].bytecount = size;
+		io.chunks [i].txbuff = txbuff;
+		io.chunks [i].rxbuff = rxbuff;
+		++ i;
+	}
 
 	io.count = i;
 
-#if WITHSPILOWSUPPORTT
-	spi_perform(& io);
-
-#else /* WITHSPILOWSUPPORTT */
 	spi_operate_low(& io);
-#endif /* WITHSPILOWSUPPORTT */
 }
 
 
 #if WITHSPILOWSUPPORTT
-
-void spi_perform(lowspiio_t * iospi)
-{
-	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
-}
-
-void spi_perform_low(lowspiio_t * iospi)
-{
-	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
-}
+//
+//void spi_perform(lowspiio_t * iospi)
+//{
+//	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+//}
+//
+//void spi_perform_low(lowspiio_t * iospi)
+//{
+//	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+//}
 
 
 
