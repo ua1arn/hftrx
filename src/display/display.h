@@ -1213,6 +1213,21 @@ void openvg_next(unsigned page);		// текущий буфер отрисовк�
 extern const char * savestring;
 extern const char * savewhere;
 
+#if WITHRLEDECOMPRESS
+
+typedef struct
+{
+	const uint16_t width;
+	const uint16_t height;
+	const uint16_t * data;
+} picRLE_t;
+
+PACKEDCOLORMAIN_T convert_565_to_a888(uint16_t color);
+void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color);
+void graw_picture_RLE_buf(PACKEDCOLORMAIN_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color);
+
+#endif /* WITHRLEDECOMPRESS */
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

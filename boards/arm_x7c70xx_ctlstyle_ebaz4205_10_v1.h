@@ -241,6 +241,7 @@
 			#define WITHALTERNATIVEFONTS	1
 			#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
+			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */

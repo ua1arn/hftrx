@@ -133,6 +133,7 @@ static void window_menu_params_proccess(void);
 static void window_time_proccess(void);
 static void window_kbd_proccess(void);
 static void window_kbd_test_proccess(void);
+static void window_testrle_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -170,6 +171,7 @@ static window_t windows [] = {
 #endif /* defined (RTC1_TYPE) */
 	{ WINDOWS_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "",		 		 	 	 0, window_kbd_proccess, },
 	{ WINDOWS_KBD_TEST, 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
+	{ WINDOWS_RLE_TEST, 	 WINDOW_UTILS,			ALIGN_CENTER_X, "RLE demo",	 	 		 1, window_testrle_proccess, },
 };
 
 /* Возврат ссылки на окно */
@@ -1785,6 +1787,7 @@ static void window_utilites_process(void)
 		static const button_t buttons [] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_kbdtest", "Keyboard|test", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_rletest", "RLE pic|test", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1823,6 +1826,7 @@ static void window_utilites_process(void)
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
 			button_t * btn_kbdtest = find_gui_element(TYPE_BUTTON, win, "btn_kbdtest");
+			button_t * btn_rletest = find_gui_element(TYPE_BUTTON, win, "btn_rletest");
 
 			if (bh == btn_kbdtest)
 			{
@@ -1836,6 +1840,13 @@ static void window_utilites_process(void)
 				open_window(winSWR);
 			}
 #endif /* WITHTX */
+#if WITHRLEDECOMPRESS
+			else if (bh == btn_rletest)
+			{
+				window_t * const winrle = get_win(WINDOWS_RLE_TEST);
+				open_window(winrle);
+			}
+#endif /* WITHRLEDECOMPRESS */
 		}
 		break;
 
@@ -4927,6 +4938,32 @@ static void window_kbd_test_proccess(void)
 	default:
 	break;
 	}
+}
+
+// *********************************************************************************************************************************************************************
+
+static void window_testrle_proccess(void)
+{
+#if WITHRLEDECOMPRESS
+	window_t * const win = get_win(WINDOWS_RLE_TEST);
+	extern const picRLE_t storch_logo;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+
+		calculate_window_position(win, WINDOW_POSITION_MANUAL_SIZE, storch_logo.width, storch_logo.height);
+	}
+
+	graw_picture_RLE(win->draw_x1, win->draw_y1, & storch_logo, COLORMAIN_BLACK);
+
+	GET_FROM_WM_QUEUE
+	{
+	default:
+
+		break;
+	}
+#endif /* WITHRLEDECOMPRESS */
 }
 
 // *********************************************************************************************************************************************************************

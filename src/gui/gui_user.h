@@ -43,6 +43,7 @@ enum {
 #endif /* defined (RTC1_TYPE) */
 	WINDOWS_KBD,					// экранная клавиатура
 	WINDOWS_KBD_TEST,
+	WINDOWS_RLE_TEST,
 
 	WINDOWS_COUNT
 };

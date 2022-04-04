@@ -2018,3 +2018,113 @@ RGB_t hsv2rgb(HSV_t hsv)
     if (H < five_sixths_hue) return rgb(rising, low, high);
     return rgb(high, low, falling);
 }
+
+#if WITHRLEDECOMPRESS
+
+PACKEDCOLORMAIN_T convert_565_to_a888(uint16_t color)
+{
+	uint8_t b5 = (color & 0x1F) << 3;
+	uint8_t g6 = ((color & 0x7E0) >> 5) << 2;
+	uint8_t r5 = ((color & 0xF800) >> 11) << 3;
+
+	return TFTRGB(r5, g6, b5);
+}
+
+void graw_picture_RLE(uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color)
+{
+	uint_fast32_t i = 0;
+	uint_fast16_t x1 = x, y1 = y;
+	uint_fast16_t transparent_color = 0, count = 0;
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	while (y1 < y + picture->height)
+	{
+		if ((int16_t)picture->data [i] < 0) // no repeats
+		{
+			count = (-(int16_t)picture->data [i]);
+			i ++;
+			for (uint_fast16_t p = 0; p < count; p ++)
+			{
+				PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
+
+				x1 ++;
+				if (x1 >= x + picture->width)
+				{
+					x1 = x;
+					y1 ++;
+				}
+				i ++;
+			}
+		}
+		else // repeats
+		{
+			count = ((int16_t)picture->data [i]);
+			i++;
+
+			PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+			for (uint_fast16_t p = 0; p < count; p ++)
+			{
+				colpip_point(fr, DIM_X, DIM_Y, x1, y1, picture->data [i] == 0 ? bg_color : point);
+
+				x1 ++;
+				if (x1 >= x + picture->width)
+				{
+					x1 = x;
+					y1 ++;
+				}
+			}
+			i ++;
+		}
+	}
+}
+
+void graw_picture_RLE_buf(PACKEDCOLORMAIN_T * const buf, uint_fast16_t dx, uint_fast16_t dy, uint16_t x, uint16_t y, const picRLE_t * picture, PACKEDCOLORMAIN_T bg_color)
+{
+	uint_fast32_t i = 0;
+	uint_fast16_t x1 = x, y1 = y;
+	uint_fast16_t transparent_color = 0, count = 0;
+
+	while (y1 < y + picture->height)
+	{
+		if ((int16_t)picture->data [i] < 0) // no repeats
+		{
+			count = (-(int16_t)picture->data [i]);
+			i ++;
+			for (uint_fast16_t p = 0; p < count; p++)
+			{
+				PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+				colpip_point(buf, dx, dy, x1, y1, picture->data [i] == transparent_color ? bg_color : point);
+
+				x1 ++;
+				if (x1 >= x + picture->width)
+				{
+					x1 = x;
+					y1 ++;
+				}
+				i ++;
+			}
+		}
+		else // repeats
+		{
+			count = ((int16_t)picture->data [i]);
+			i ++;
+
+			PACKEDCOLORMAIN_T point = convert_565_to_a888(picture->data [i]);
+			for (uint_fast16_t p = 0; p < count; p++)
+			{
+				colpip_point(buf, dx, dy, x1, y1, picture->data[i] == transparent_color ? bg_color : point);
+
+				x1 ++;
+				if (x1 >= x + picture->width)
+				{
+					x1 = x;
+					y1 ++;
+				}
+			}
+			i ++;
+		}
+	}
+}
+
+#endif /* WITHRLEDECOMPRESS */
