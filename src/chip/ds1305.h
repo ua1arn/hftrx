@@ -11,6 +11,7 @@
 
 #define DS1305_SPIMODE SPIC_MODE3
 #define DS1305_SPISPEED	SPIC_SPEED400k
+#define DS1305_SPICSDELAYUS 4	// uS, CE to CLK Setup and CE Inactive Time
 
 enum
 {
@@ -29,21 +30,7 @@ static void ds1305_readbuff(
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 	const uint8_t cmd = addr & 0x7F;	// D7=0: read mode
 
-	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, 10, & cmd, 1, NULL, 0, data, len);
-
-//	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
-//	local_delay_us(10);		// 4 uS required
-//
-//	spi_progval8_p1(target, addr & 0x7F);	// D7=0: read mode
-//	spi_complete(target);
-//
-//	spi_to_read(target);
-//
-//	prog_spi_read_frame(target, data, len);
-//
-//	spi_to_write(target);
-//	spi_unselect(target);	/* done sending data to target chip */
-//	local_delay_us(10);		// 4 uS required
+	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, NULL, 0, data, len);
 }
 
 static void ds1305_writebuff(
@@ -55,17 +42,7 @@ static void ds1305_writebuff(
 	const spitarget_t target = targetrtc1;		/* addressing to chip */
 	const uint8_t cmd = addr | 0x80;	// D7=1: write mode;
 
-	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, 10, & cmd, 1, data, len, NULL, 0);
-
-//	spi_select2(target, DS1305_SPIMODE, DS1305_SPISPEED);
-//	local_delay_us(10);		// 4 uS required
-//
-//	spi_progval8_p1(target, cmd);	// D7=1: write mode
-//	spi_complete(target);
-//	prog_spi_send_frame(target, data, len);
-//
-//	spi_unselect(target);	/* done sending data to target chip */
-//	local_delay_us(10);		// 4 uS required
+	prog_spi_io(target, DS1305_SPISPEED, DS1305_SPIMODE, DS1305_SPICSDELAYUS, & cmd, 1, data, len, NULL, 0);
 }
 
 #if 0
