@@ -555,8 +555,6 @@
 
 	#define WITHSPICSEMIO	1	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
-	#define TARGET_NVRAM_EMIO	TARGET_NVRAM_CS_EMIO	// nvram FM25L256
-
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
 		gpio_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 1 : 0); \

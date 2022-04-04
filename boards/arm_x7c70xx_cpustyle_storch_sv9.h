@@ -587,8 +587,6 @@
 
 	#define WITHSPICSEMIO	1	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
 
-	#define TARGET_NVRAM_EMIO	TARGET_NVRAM_CS_EMIO	// nvram FM25L256
-
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
 		gpio_writepin((target), ((target) == TARGET_RTC_CS_EMIO) ? 1 : 0); \
@@ -630,11 +628,11 @@
 	#define	SPI_MISO_MIO 	41	//	SPI_MISO	C36	C17	PS_MIO41_501
 	#define	SPI_SCLK_MIO 	40	//	SPI_SCLK	C39	D14	PS_MIO40_501
 
-	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); __DSB(); } while (0)
-	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); __DSB(); } while (0)
+	#define SPI_SCLK_C()	do { gpio_writepin(SPI_SCLK_MIO, 0); } while (0)
+	#define SPI_SCLK_S()	do { gpio_writepin(SPI_SCLK_MIO, 1); } while (0)
 
-	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); __DSB(); } while (0)
-	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); __DSB(); } while (0)
+	#define SPI_MOSI_C()	do { gpio_writepin(SPI_MOSI_MIO, 0); } while (0)
+	#define SPI_MOSI_S()	do { gpio_writepin(SPI_MOSI_MIO, 1); } while (0)
 
 	#define SPI_TARGET_MISO_PIN		(gpio_readpin(SPI_MISO_MIO))
 
