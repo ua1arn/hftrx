@@ -482,8 +482,13 @@ void prog_spi_io_frame(
 		spi_complete(target);
 	}
 
-	while (rxsize --)
-		* rxbuff ++ = spi_read_byte(target, 0xff);
+	if (rxsize != 0)
+	{
+		spi_to_read(target);
+		while (rxsize --)
+			* rxbuff ++ = spi_read_byte(target, 0xff);
+		spi_to_write(target);
+	}
 
 	spi_unselect(target);
 	local_delay_us(csdelayUS);		// 4 uS required
