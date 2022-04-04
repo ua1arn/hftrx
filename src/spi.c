@@ -454,8 +454,8 @@ void NOINLINEAT (prog_val8_impl)(
 
 #endif /* WITHSPISW */
 
-// send and then read  bytes via SPI
-void prog_spi_io_frame(
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+void prog_spi_io(
 	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff1, unsigned int txsize1,
@@ -464,7 +464,7 @@ void prog_spi_io_frame(
 	)
 {
 	spi_select2(target, spimode, spispeedindex);
-	local_delay_us(csdelayUS);		// 4 uS required
+	local_delay_us(csdelayUS);
 
 	if (txsize1 != 0)
 	{
@@ -491,7 +491,29 @@ void prog_spi_io_frame(
 	}
 
 	spi_unselect(target);
-	local_delay_us(csdelayUS);		// 4 uS required
+	local_delay_us(csdelayUS);
+}
+
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Вылача и прием ответных байтов
+void prog_spi_exchange(
+	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
+	)
+{
+	spi_select2(target, spimode, spispeedindex);
+	local_delay_us(csdelayUS);
+
+	while (size --)
+	{
+		* rxbuff ++ = spi_read_byte(target, * txbuff ++);
+	}
+
+	spi_unselect(target);
+	local_delay_us(csdelayUS);
 }
 
 

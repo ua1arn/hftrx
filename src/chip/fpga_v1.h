@@ -28,7 +28,7 @@ board_fpga1_spi_send_frame(
 	unsigned int size
 	)
 {
-	prog_spi_io_frame(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
 }
 
 /* programming FPGA SPI registers */

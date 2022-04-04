@@ -296,14 +296,24 @@ void prog_spi_read_frame(
 	unsigned int size
 	);
 
-// send and then read  bytes via SPI
+// Assert CS, send and then read  bytes via SPI, and deassert CS
 // При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
-void prog_spi_io_frame(
+void prog_spi_io(
 	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff1, unsigned int txsize1,
 	const uint8_t * txbuff2, unsigned int txsize2,
 	uint8_t * rxbuff, unsigned int rxsize
+	);
+
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Вылача и прием ответных байтов
+void prog_spi_exchange(
+	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
 	);
 
 

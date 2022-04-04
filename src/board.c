@@ -160,7 +160,7 @@ board_ctlregs_spi_send_frame(
 	unsigned int size
 	)
 {
-	prog_spi_io_frame(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
 }
 
 #endif /* WITHSPIHW || WITHSPISW */

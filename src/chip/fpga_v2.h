@@ -35,7 +35,7 @@ static void prog_fpga_update(
 
 	RBVAL8(0 * 8, 0);	// format
 
-	prog_spi_io_frame(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0,
+	prog_spi_io(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0,
 			rbbuff, sizeof rbbuff / sizeof rbbuff [0], NULL, 0);
 }
 
