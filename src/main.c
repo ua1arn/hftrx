@@ -19380,7 +19380,7 @@ void display2_menu_valxx(
 			default: 	msg = PSTR("STM32MP15xxx"); break;
 			}
 #elif CPUSTYLE_XC7Z
-			msg = PSTR("ZYNQ 7000");
+			msg = PSTR("ZYNQ 7020");
 #elif CPUSTYLE_XCZU
 			msg = PSTR("ZYNQ USCALE");
 #elif CPUSTYLE_R7S721
