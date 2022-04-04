@@ -457,18 +457,36 @@ void NOINLINEAT (prog_val8_impl)(
 // send and then read  bytes via SPI
 void prog_spi_io_frame(
 	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
-	const uint8_t * txbuff, unsigned int txsize,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
 	uint8_t * rxbuff, unsigned int rxsize
 	)
 {
 	spi_select2(target, spimode, spispeedindex);
-	spi_progval8_p1(target, * txbuff);
-	while (-- txsize)
-		spi_progval8_p2(target, * ++ txbuff);
-	spi_complete(target);
+	local_delay_us(csdelayUS);		// 4 uS required
+
+	if (txsize1 != 0)
+	{
+		spi_progval8_p1(target, * txbuff1);
+		while (-- txsize1)
+			spi_progval8_p2(target, * ++ txbuff1);
+		spi_complete(target);
+	}
+
+	if (txsize2 != 0)
+	{
+		spi_progval8_p1(target, * txbuff2);
+		while (-- txsize2)
+			spi_progval8_p2(target, * ++ txbuff2);
+		spi_complete(target);
+	}
+
 	while (rxsize --)
 		* rxbuff ++ = spi_read_byte(target, 0xff);
+
 	spi_unselect(target);
+	local_delay_us(csdelayUS);		// 4 uS required
 }
 
 

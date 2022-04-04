@@ -35,9 +35,8 @@ static void prog_fpga_update(
 
 	RBVAL8(0 * 8, 0);	// format
 
-	spi_select2(target, FPGA_SPIMODE, SPIC_SPEEDFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	prog_spi_io_frame(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0,
+			rbbuff, sizeof rbbuff / sizeof rbbuff [0], NULL, 0);
 }
 
 static uint_fast32_t ftw2freq(uint_fast32_t ftw)

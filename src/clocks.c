@@ -7749,17 +7749,17 @@ hardware_spi_master_send_frame_8bpartial(
 #elif CPUSTYLE_STM32F30X || CPUSTYLE_STM32F0XX
 	#warning TODO: implement SPI over DMA
 
-	//prog_spi_send_frame(target, buffer, size);
+	//xprog_spi_send_frame(target, buffer, size);
 
 #elif CPUSTYLE_STM32F1XX
 	#warning TODO: implement SPI over DMA
 
-	//prog_spi_send_frame(target, buffer, size);
+	//xprog_spi_send_frame(target, buffer, size);
 
 #elif CPUSTYLE_ATXMEGA
 	#warning TODO: implement SPI over DMA
 
-	//prog_spi_send_frame(target, buffer, size);
+	//xprog_spi_send_frame(target, buffer, size);
 
 #elif CPUSTYLE_R7S721
 
