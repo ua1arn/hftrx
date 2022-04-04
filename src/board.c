@@ -9341,7 +9341,22 @@ mcp3208_read(
 	const spi_speeds_t adcspeed = SPIC_SPEED400k;
 	const spi_modes_t adcmode = SPIC_MODE3;
 
-#if WITHSPI32BIT
+#if 1
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	uint8_t txbuf [4] =
+	{
+		cmd1 << (LSBPOS + 14) >> 24,
+		cmd1 << (LSBPOS + 14) >> 16,
+		cmd1 << (LSBPOS + 14) >> 8,
+		0x00,
+	};
+	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
+
+	prog_spi_exchange(target, adcspeed, adcmode, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	rv = ((uint_fast32_t) rxbuf [0] << 24) | ((uint_fast32_t) rxbuf [1] << 16) | ((uint_fast32_t) rxbuf [2] << 8) | rxbuf [3];
+
+#elif WITHSPI32BIT
 
 	hardware_spi_connect_b32(adcspeed, adcmode);
 	prog_select(target);

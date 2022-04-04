@@ -454,6 +454,7 @@ void NOINLINEAT (prog_val8_impl)(
 
 #endif /* WITHSPISW */
 
+// Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 void prog_spi_io(
 	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
@@ -494,6 +495,7 @@ void prog_spi_io(
 	local_delay_us(csdelayUS);
 }
 
+// Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // Вылача и прием ответных байтов
 void prog_spi_exchange(

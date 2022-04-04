@@ -296,6 +296,7 @@ void prog_spi_read_frame(
 	unsigned int size
 	);
 
+// Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void prog_spi_io(
@@ -306,6 +307,7 @@ void prog_spi_io(
 	uint8_t * rxbuff, unsigned int rxsize
 	);
 
+// Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // Вылача и прием ответных байтов
 void prog_spi_exchange(
