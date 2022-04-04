@@ -9416,35 +9416,30 @@ mcp3208_read(
 	uint_fast8_t * valid
 	)
 {
-	uint_fast16_t v0, v1, v2, v3;
 	// сдвинуто, чтобы позиция временной диаграммы,
 	// где формируется время выборки, не попадала на паузу между байтами.
 	const uint_fast8_t cmd1 = 0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07);
 	uint_fast32_t rv;
 
 	enum { LSBPOS = 0 };
-	const spi_speeds_t adcspeed = SPIC_SPEED400k;
-	const spi_modes_t adcmode = SPIC_MODE3;
+	const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
+	const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
 
 #if WITHSPILOWSUPPORTT
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
-	uint8_t txbuf [4] =
-	{
-		cmd1 << (LSBPOS + 14) >> 24,
-		cmd1 << (LSBPOS + 14) >> 16,
-		cmd1 << (LSBPOS + 14) >> 8,
-		0x00,
-	};
+	uint8_t txbuf [4];
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
-	prog_spi_exchange(target, adcspeed, adcmode, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	rv = ((uint_fast32_t) rxbuf [0] << 24) | ((uint_fast32_t) rxbuf [1] << 16) | ((uint_fast32_t) rxbuf [2] << 8) | rxbuf [3];
+	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
+	rv = USBD_peek_u32_BE(rxbuf);
 
 #elif WITHSPI32BIT
 
-	hardware_spi_connect_b32(adcspeed, adcmode);
+	hardware_spi_connect_b32(MCP3208_SPISPEED, MCP3208_SPISMODE);
 	prog_select(target);
 
 	hardware_spi_b32_p1((uint_fast32_t) cmd1 << (LSBPOS + 14));
@@ -9456,7 +9451,9 @@ mcp3208_read(
 
 #elif WITHSPI16BIT
 
-	hardware_spi_connect_b16(adcspeed, adcmode);
+	uint_fast16_t v0, v1;
+
+	hardware_spi_connect_b16(MCP3208_SPISPEED, MCP3208_SPISMODE);
 	prog_select(target);
 
 	hardware_spi_b16_p1((uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
@@ -9471,7 +9468,9 @@ mcp3208_read(
 
 #else
 
-	spi_select2(target, adcmode, adcspeed);	// for 50 kS/S and 24 bit words
+	uint_fast8_t v0, v1, v2, v3;
+
+	spi_select2(target, MCP3208_SPISMODE, MCP3208_SPISPEED);	// for 50 kS/S and 24 bit words
 
 	v0 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 24);
 	v1 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
@@ -9505,23 +9504,20 @@ mcp3208_read_low(
 	uint_fast32_t rv;
 
 	enum { LSBPOS = 0 };
-	const spi_speeds_t adcspeed = SPIC_SPEED400k;
-	const spi_modes_t adcmode = SPIC_MODE3;
+	const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
+	const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
 
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
-	uint8_t txbuf [4] =
-	{
-		cmd1 << (LSBPOS + 14) >> 24,
-		cmd1 << (LSBPOS + 14) >> 16,
-		cmd1 << (LSBPOS + 14) >> 8,
-		0x00,
-	};
+	uint8_t txbuf [4];
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
-	prog_spi_exchange_low(target, adcspeed, adcmode, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	rv = ((uint_fast32_t) rxbuf [0] << 24) | ((uint_fast32_t) rxbuf [1] << 16) | ((uint_fast32_t) rxbuf [2] << 8) | rxbuf [3];
+	prog_spi_exchange_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
+	rv = USBD_peek_u32_BE(rxbuf);
+
 	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
 	return (rv >> LSBPOS) & 0xFFF;
 }
