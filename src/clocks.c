@@ -6825,9 +6825,10 @@ void hardware_spi_master_initialize(void)
 	SCLR->APER_CLK_CTRL |= (0x01uL << 14);	// APER_CLK_CTRL.SPI0_CPU_1XCLKACT
 	(void) SCLR->APER_CLK_CTRL;
 
+
 	// Set DIVISOR
 	SCLR->SPI_CLK_CTRL = (SCLR->SPI_CLK_CTRL & ~ (0x3FuL << 8)) |
-			(16uL << 8) |
+			(SCLR_SPI_CLK_CTRL_DIVISOR_VALUE << 8) |
 			0;
 
 //	PRINTF("1 XQSPIPS->CR=%08lX\n", XQSPIPS->CR);
@@ -7134,7 +7135,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	};
 
 	unsigned value;
-	const uint_fast8_t prei = calcdivider(calcdivround2(xc7z_get_spi_freq(), spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
+	const uint_fast8_t prei = calcdivider(calcdivround2(BOARD_SPI_FREQ, spispeed), XC7Z_SPI_BR_WIDTH, XC7Z_SPI_BR_TAPS, & value, 1);
 
 	unsigned brdiv = ulmin(prei + 1, 7);
 	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, brdiv=%u (clk=%lu)\n", prei, value, spispeed, brdiv, xc7z_get_spi_freq());
@@ -10753,7 +10754,7 @@ void hardware_sdhost_initialize(void)
 	SCLR->APER_CLK_CTRL |= (0x01uL << (10 + sdioix));	// APER_CLK_CTRL.SDI0_CPU_1XCLKACT
     //EMIT_MASKWRITE(0XF8000150, 0x00003F33U ,0x00001001U),	// SDIO_CLK_CTRL
 	SCLR->SDIO_CLK_CTRL = (SCLR->SDIO_CLK_CTRL & ~ (0x00003F33U)) |
-		((uint_fast32_t) SCLR_SDIO_CLK_CTRL_DIVISOR << 8) | // DIVISOR
+		((uint_fast32_t) SCLR_SDIO_CLK_CTRL_DIVISOR_VALUE << 8) | // DIVISOR
 		(0x00uL << 4) |	// SRCSEL - 0x: IO PLL
 		(0x01uL << sdioix) | // CLKACT0 - SDIO 0 reference clock active
 		0;

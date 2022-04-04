@@ -1769,7 +1769,6 @@ static void flashPrepareLqspiCR(uint_fast8_t enableMmap);
 
 static uint32_t SendBankSelect(uint8_t BankSel);
 
-#define LQSPI_CLK_CTRL_DIVISOR_VALUE 8
 
 void spidf_initialize(void)
 {
@@ -1781,7 +1780,7 @@ void spidf_initialize(void)
 	(void) SCLR->APER_CLK_CTRL;
 
 	SCLR->LQSPI_CLK_CTRL = (SCLR->LQSPI_CLK_CTRL & ~ 0x3F00) |
-			(LQSPI_CLK_CTRL_DIVISOR_VALUE << 8) |
+			(SCLR_LQSPI_CLK_CTRL_DIVISOR_VALUE << 8) |
 			0;
 
 	PRINTF("spidf_initialize: xc7z_get_qspi_freq()=%lu\n", xc7z_get_qspi_freq());
