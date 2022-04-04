@@ -344,6 +344,7 @@ ui16min(uint_least16_t a, uint_least16_t b)
 #endif /* (NVRAM_TYPE != NVRAM_TYPE_CPUEEPROM) */
 #endif /* CPUSTYLE_STM32F */
 
+/* вызывается при разрешённых прерываниях. */
 void nvram_initialize(void)
 {
 	//PRINTF(PSTR("nvram_initialize\n"));
