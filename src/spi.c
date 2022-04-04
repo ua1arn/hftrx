@@ -464,6 +464,48 @@ void prog_spi_io(
 	uint8_t * rxbuff, unsigned int rxsize
 	)
 {
+#if 0
+
+	unsigned i = 0;
+	lowspiio_t io;
+	io.target = target;
+	io.speedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+
+	if (txsize1 != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_TX;
+		io.chunks [i].bytecount = txsize1;
+		io.chunks [i].txbuff = txbuff1;
+		io.chunks [i].rxbuff = NULL;
+
+		++ i;
+	}
+	if (txsize2 != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_TX;
+		io.chunks [i].bytecount = txsize2;
+		io.chunks [i].txbuff = txbuff2;
+		io.chunks [i].rxbuff = NULL;
+
+		++ i;
+	}
+	if (rxsize != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_RX;
+		io.chunks [i].bytecount = rxsize;
+		io.chunks [i].txbuff = NULL;
+		io.chunks [i].rxbuff = rxbuff;
+
+		++ i;
+	}
+
+	io.count = i;
+
+	spi_perform(& io);
+
+#else
 	spi_select2(target, spimode, spispeedindex);
 	local_delay_us(csdelayUS);
 
@@ -493,6 +535,7 @@ void prog_spi_io(
 
 	spi_unselect(target);
 	local_delay_us(csdelayUS);
+#endif
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -506,6 +549,26 @@ void prog_spi_exchange(
 	unsigned int size
 	)
 {
+#if 0
+
+	lowspiio_t io;
+	io.target = target;
+	io.speedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+
+	unsigned i = 0;
+	io.chunks [i].spiiotype = SPIIO_EXCHANGE;
+	io.chunks [i].bytecount = size;
+	io.chunks [i].txbuff = txbuff;
+	io.chunks [i].rxbuff = rxbuff;
+	++ i;
+
+	io.count = i;
+
+	spi_perform(& io);
+
+#else
 	spi_select2(target, spimode, spispeedindex);
 	local_delay_us(csdelayUS);
 
@@ -516,6 +579,7 @@ void prog_spi_exchange(
 
 	spi_unselect(target);
 	local_delay_us(csdelayUS);
+#endif
 }
 
 

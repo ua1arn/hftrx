@@ -296,6 +296,38 @@ void prog_spi_read_frame(
 	unsigned int size
 	);
 
+typedef enum lowspiiotype_tag
+{
+	SPIIO_TX = 1,
+	SPIIO_RX = 2,
+	SPIIO_EXCHANGE = 3,
+	//
+	SPIIO_count
+} lowspiiotype_t;
+
+typedef struct lowspiexchange_tag
+{
+	lowspiiotype_t spiiotype;
+	unsigned bytecount;
+	const uint8_t * txbuff;
+	uint8_t * rxbuff;
+} lowspiexchange_t;
+
+typedef struct lowspiio_targ
+{
+	spitarget_t target;
+	spi_speeds_t speedindex;
+	spi_modes_t spimode;
+	unsigned csdelayUS;
+
+	unsigned count;
+	lowspiexchange_t chunks [4];
+} lowspiio_t;
+
+
+void spi_perform(lowspiio_t * operation);
+void spi_perform_low(lowspiio_t * operation);
+
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
