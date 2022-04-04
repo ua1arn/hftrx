@@ -300,7 +300,7 @@ void prog_spi_read_frame(
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void prog_spi_io(
-	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff1, unsigned int txsize1,
 	const uint8_t * txbuff2, unsigned int txsize2,
@@ -309,9 +309,9 @@ void prog_spi_io(
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
-// Вылача и прием ответных байтов
+// Выдача и прием ответных байтов
 void prog_spi_exchange(
-	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff,
 	uint8_t * rxbuff,
@@ -501,10 +501,10 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len);
 
 
 void hardware_spi_master_initialize(void);		/* инициализация и перевод в состояние "отключено" */
-void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispeed);
-void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено */
-void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
-void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
+void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed);
+void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено */
+void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
+void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode);	/* управление состоянием - подключено - работа в режиме 16-ти битных слов. */
 void hardware_spi_disconnect(void);	/* управление состоянием - отключено */
 
 portholder_t hardware_spi_b32(portholder_t v);	/* передача 16-ти бит, возврат считанного */

@@ -6855,7 +6855,7 @@ void hardware_spi_master_initialize(void)
 #if WITHSPIHW
 
 
-void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispeed)
+void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -7161,7 +7161,7 @@ void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispe
 }
 
 /* управление состоянием "подключено" */
-void hardware_spi_connect(uint_fast8_t spispeedindex, spi_modes_t spimode)
+void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -8381,7 +8381,7 @@ void hardware_spi_master_read_frame(
 #if WITHSPI16BIT
 
 /* управление состоянием "подключено" - работа в режиме 16-ти битных слов.*/
-void hardware_spi_connect_b16(uint_fast8_t spispeedindex, spi_modes_t spimode)
+void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
@@ -8631,7 +8631,7 @@ portholder_t RAMFUNC hardware_spi_b16(
 #if WITHSPI32BIT
 
 /* управление состоянием "подключено" - работа в режиме 32-ти битных слов. */
-void hardware_spi_connect_b32(uint_fast8_t spispeedindex, spi_modes_t spimode)
+void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 {
 #if CPUSTYLE_STM32H7XX
 

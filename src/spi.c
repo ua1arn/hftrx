@@ -457,7 +457,7 @@ void NOINLINEAT (prog_val8_impl)(
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 void prog_spi_io(
-	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff1, unsigned int txsize1,
 	const uint8_t * txbuff2, unsigned int txsize2,
@@ -497,9 +497,9 @@ void prog_spi_io(
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
-// Вылача и прием ответных байтов
+// Выдача и прием ответных байтов
 void prog_spi_exchange(
-	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff,
 	uint8_t * rxbuff,
