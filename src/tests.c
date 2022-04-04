@@ -5041,6 +5041,25 @@ static void serial_irq_loopback_test(void)
 // Периодически вызывается в главном цикле
 void looptests(void)
 {
+#if 0 && defined (KI_LIST) // && WITHKEYBOARD && KEYBOARD_USE_ADC
+	{
+		// Тестирование АЦП клавиатуры
+		static const uint8_t adcinputs [] =
+		{
+			KI_LIST
+		};
+		unsigned i;
+
+		for (i = 0; i < ARRAY_SIZE(adcinputs); ++ i)
+		{
+			const uint_fast8_t adci = adcinputs [i];
+			if (isadchw(adci))
+				continue;
+
+			PRINTF("adci%-2d=%08lX\n", board_getadc_unfiltered_truevalue(adci));
+		}
+	}
+#endif
 #if 0
 	{
 		// вычисления с плавающей точкой
