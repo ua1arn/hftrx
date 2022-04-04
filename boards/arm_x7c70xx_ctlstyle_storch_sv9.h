@@ -535,23 +535,23 @@
 	#endif /* WITHPOTAFGAIN */
 
 	#if WITHREFSENSOR
-		VREFIX = 17,		// Reference voltage
+		//VREFIX = 17,		// Reference voltage
 	#endif /* WITHREFSENSOR */
 	#if WITHTEMPSENSOR
-		TEMPIX = 16,
+		//TEMPIX = 16,
 	#endif /* WITHTEMPSENSOR */
 
 	#if WITHPOTWPM
-		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
+		POTWPM = WPM_POTIX,			// PA6 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
 	#if WITHPOTPOWER
-		POTPOWER = 6,			// регулировка мощности
+		POTPOWER = WPM_POTIX,			// регулировка мощности
 	#endif /* WITHPOTPOWER */
 
 
 	#if WITHAUTOTUNER_AVBELNN
 
-		XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+		//XTHERMOIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 
 		#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
@@ -559,11 +559,9 @@
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 		//#define WITHCURRLEVEL_ACS712_20A 1	// PA current sense - ACS712ELCTR-20B-T chip
 		PASENSEIX = WPM_POTIX,		// PA1 PA current sense - ACS712-05 chip
-		//PASENSEIX = 2,		// PA1 PA current sense - ACS712-05 chip
 
 		#if WITHSWRMTR
-			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
+			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),		// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 
@@ -588,20 +586,18 @@
 		//#define WITHTHERMOLEVEL	1	/* отображение температуры */
 
 		#if WITHCURRLEVEL
-			//PASENSEIX = BOARD_ADCXIN(0),		// MCP3208 CH0 PA current sense - ACS712-30 chip
-			PASENSEIX = 12,		// PC2 PA current sense - ACS712-05 chip
+			PASENSEIX = BOARD_ADCX1IN(6),		// MCP3208 CH6 PA current sense - ACS712-05 chip
 		#endif /* WITHCURRLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCX1IN(6),		// Exernal thermo sensor ST LM235Z
+			//XTHERMOIX = BOARD_ADCX1IN(6),		// Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 
 		#if WITHSWRMTR
-			//FWD = BOARD_ADCXIN(2), REF = BOARD_ADCXIN(3),		// MCP3208 CH2, CH3 Детектор прямой, отраженной волны
-			FWD = 14, REF = 15,	// PC4, PC5	SWR-meter
+			FWD = BOARD_ADCX1IN(5), REF = BOARD_ADCX1IN(4),		// MCP3208 CH5, CH4 Детектор прямой, отраженной волны
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 	#endif
@@ -615,7 +611,11 @@
 		PASENSEMRRIX2 = BOARD_ADCMRRIN(5),		// кеш - индекc не должен повторяться в конфигурации
 		PAREFERMRRIX2 = BOARD_ADCMRRIN(6),		// кеш - индекc не должен повторяться в конфигурации
 
-		KI0 = BOARD_ADCXKIN(3), KI1 = BOARD_ADCXKIN(4), KI2 = BOARD_ADCXKIN(5), KI3 = BOARD_ADCXKIN(6), KI4 = BOARD_ADCXKIN(7)	// клавиатура
+		KI0 = BOARD_ADCXKIN(3), 	// клавиатура на АЦП MCP3208
+		KI1 = BOARD_ADCXKIN(4),
+		KI2 = BOARD_ADCXKIN(5),
+		KI3 = BOARD_ADCXKIN(6),
+		KI4 = BOARD_ADCXKIN(7)
 	};
 
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
