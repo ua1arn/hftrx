@@ -28,7 +28,7 @@ XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z020.elf
 
 #
 CC   = $(TRGT)gcc
-GPP   = $(TRGT)g++
+GPP  = $(TRGT)g++
 CP   = $(TRGT)objcopy
 AR   = $(TRGT)ar rcs --plugin ../lib/gcc/$(TRGT2)/10.3.1/liblto_plugin-0.dll
 AS   = $(TRGT)gcc -x assembler-with-cpp
