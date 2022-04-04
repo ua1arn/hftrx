@@ -9354,6 +9354,7 @@ mcp3208_read(
 	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
 
 	prog_spi_exchange(target, adcspeed, adcmode, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
 	rv = ((uint_fast32_t) rxbuf [0] << 24) | ((uint_fast32_t) rxbuf [1] << 16) | ((uint_fast32_t) rxbuf [2] << 8) | rxbuf [3];
 
 #elif WITHSPI32BIT
@@ -9401,6 +9402,47 @@ mcp3208_read(
 	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
 	return (rv >> LSBPOS) & 0xFFF;
 }
+
+#if WITHSPILOWSUPPORTT
+// Read ADC MCP3204/MCP3208
+uint_fast16_t
+mcp3208_read_low(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci,
+	uint_fast8_t * valid
+	)
+{
+	uint_fast16_t v0, v1, v2, v3;
+	// сдвинуто, чтобы позиция временной диаграммы,
+	// где формируется время выборки, не попадала на паузу между байтами.
+	const uint_fast8_t cmd1 = 0x10 | (diff ? 0x00 : 0x08) | (adci & 0x07);
+	uint_fast32_t rv;
+
+	enum { LSBPOS = 0 };
+	const spi_speeds_t adcspeed = SPIC_SPEED400k;
+	const spi_modes_t adcmode = SPIC_MODE3;
+
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	uint8_t txbuf [4] =
+	{
+		cmd1 << (LSBPOS + 14) >> 24,
+		cmd1 << (LSBPOS + 14) >> 16,
+		cmd1 << (LSBPOS + 14) >> 8,
+		0x00,
+	};
+	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
+
+	prog_spi_exchange_low(target, adcspeed, adcmode, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
+	rv = ((uint_fast32_t) rxbuf [0] << 24) | ((uint_fast32_t) rxbuf [1] << 16) | ((uint_fast32_t) rxbuf [2] << 8) | rxbuf [3];
+	* valid = ((rv >> (LSBPOS + 12)) & 0x01) == 0;
+	return (rv >> LSBPOS) & 0xFFF;
+}
+
+#endif /* WITHSPILOWSUPPORTT */
+
 #endif /* WITHSPIHW || WITHSPISW */
 
 #if ! CPUSTYLE_ATMEGA

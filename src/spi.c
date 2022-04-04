@@ -454,6 +454,63 @@ void NOINLINEAT (prog_val8_impl)(
 
 #endif /* WITHSPISW */
 
+void spi_operate_low(lowspiio_t * iospi)
+{
+	unsigned i;
+	spitarget_t target = iospi->target;
+
+	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+	spi_select2(target, iospi->spimode, iospi->spispeedindex);
+	local_delay_us(iospi->csdelayUS);
+
+	ASSERT(iospi->count <= ARRAY_SIZE(iospi->chunks));
+
+	for (i = 0; i < iospi->count; ++ i)
+	{
+		lowspiexchange_t * const ex = & iospi->chunks [i];
+		unsigned size = ex->bytecount;
+		if (size == 0)
+			continue;
+
+		uint8_t * rxbuff = ex->rxbuff;
+		const uint8_t * txbuff = ex->txbuff;
+
+		switch (iospi->chunks [i].spiiotype)
+		{
+		case SPIIO_TX:
+			{
+				spi_progval8_p1(target, * txbuff);
+				while (-- size)
+					spi_progval8_p2(target, * ++ txbuff);
+				spi_complete(target);
+			}
+			break;
+		case SPIIO_RX:
+			{
+				spi_to_read(target);
+				while (size --)
+					* rxbuff ++ = spi_read_byte(target, 0xff);
+				spi_to_write(target);
+			}
+			break;
+#if SPI_BIDIRECTIONAL
+#else /* SPI_BIDIRECTIONAL */
+		case SPIIO_EXCHANGE:
+			{
+				while (size --)
+					* rxbuff ++ = spi_read_byte(target, * txbuff ++);
+			}
+			break;
+#endif /* SPI_BIDIRECTIONAL */
+		default:
+			break;
+		}
+	}
+
+	spi_unselect(target);
+	local_delay_us(iospi->csdelayUS);
+}
+
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 void prog_spi_io(
@@ -464,15 +521,15 @@ void prog_spi_io(
 	uint8_t * rxbuff, unsigned int rxsize
 	)
 {
-#if WITHSPILOWSUPPORTT
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	unsigned i = 0;
 	lowspiio_t io;
 	io.target = target;
-	io.speedindex = spispeedindex;
+	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
 	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U8;
 
 	if (txsize1 != 0)
 	{
@@ -504,39 +561,13 @@ void prog_spi_io(
 
 	io.count = i;
 
+#if WITHSPILOWSUPPORTT
 	spi_perform(& io);
 
-#else
-	spi_select2(target, spimode, spispeedindex);
-	local_delay_us(csdelayUS);
+#else /* WITHSPILOWSUPPORTT */
+	spi_operate_low(& io);
+#endif /* WITHSPILOWSUPPORTT */
 
-	if (txsize1 != 0)
-	{
-		spi_progval8_p1(target, * txbuff1);
-		while (-- txsize1)
-			spi_progval8_p2(target, * ++ txbuff1);
-		spi_complete(target);
-	}
-
-	if (txsize2 != 0)
-	{
-		spi_progval8_p1(target, * txbuff2);
-		while (-- txsize2)
-			spi_progval8_p2(target, * ++ txbuff2);
-		spi_complete(target);
-	}
-
-	if (rxsize != 0)
-	{
-		spi_to_read(target);
-		while (rxsize --)
-			* rxbuff ++ = spi_read_byte(target, 0xff);
-		spi_to_write(target);
-	}
-
-	spi_unselect(target);
-	local_delay_us(csdelayUS);
-#endif
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -550,14 +581,14 @@ void prog_spi_exchange(
 	unsigned int size
 	)
 {
-#if WITHSPILOWSUPPORTT
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	lowspiio_t io;
 	io.target = target;
-	io.speedindex = spispeedindex;
+	io.spispeedindex = spispeedindex;
 	io.spimode = spimode;
 	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U8;
 
 	unsigned i = 0;
 	io.chunks [i].spiiotype = SPIIO_EXCHANGE;
@@ -568,34 +599,28 @@ void prog_spi_exchange(
 
 	io.count = i;
 
+#if WITHSPILOWSUPPORTT
 	spi_perform(& io);
 
-#else
-	spi_select2(target, spimode, spispeedindex);
-	local_delay_us(csdelayUS);
-
-	while (size --)
-	{
-		* rxbuff ++ = spi_read_byte(target, * txbuff ++);
-	}
-
-	spi_unselect(target);
-	local_delay_us(csdelayUS);
-#endif
+#else /* WITHSPILOWSUPPORTT */
+	spi_operate_low(& io);
+#endif /* WITHSPILOWSUPPORTT */
 }
 
 
 #if WITHSPILOWSUPPORTT
 
-void spi_perform(lowspiio_t * operation)
+void spi_perform(lowspiio_t * iospi)
 {
-
+	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
 }
 
-void spi_perform_low(lowspiio_t * operation)
+void spi_perform_low(lowspiio_t * iospi)
 {
-
+	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
 }
+
+
 
 typedef enum
 {

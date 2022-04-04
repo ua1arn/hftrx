@@ -284,6 +284,14 @@ mcp3208_read(
 	uint_fast8_t * valid
 	);
 
+uint_fast16_t
+mcp3208_read_low(
+	spitarget_t target,
+	uint_fast8_t diff,
+	uint_fast8_t adci,
+	uint_fast8_t * valid
+	);
+
 void board_adc_initialize(void);
 void board_usb_initialize(void);
 void board_usb_activate(void);

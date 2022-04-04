@@ -305,28 +305,40 @@ typedef enum lowspiiotype_tag
 	SPIIO_count
 } lowspiiotype_t;
 
+typedef enum lowspiiosize_tag
+{
+	SPIIOSIZE_U8 = 1,
+	SPIIOSIZE_U16 = 2,
+	SPIIOSIZE_U32 = 3,
+	//
+	SPIIOSIZE_count
+} lowspiiosize_t;
+
 typedef struct lowspiexchange_tag
 {
 	lowspiiotype_t spiiotype;
 	unsigned bytecount;
-	const uint8_t * txbuff;
-	uint8_t * rxbuff;
+	const void * txbuff;
+	void * rxbuff;
 } lowspiexchange_t;
 
-typedef struct lowspiio_targ
+typedef struct lowspiio_tag
 {
 	spitarget_t target;
-	spi_speeds_t speedindex;
+	spi_speeds_t spispeedindex;
 	spi_modes_t spimode;
+	lowspiiosize_t spiiosize;
 	unsigned csdelayUS;
 
 	unsigned count;
-	lowspiexchange_t chunks [4];
+	lowspiexchange_t chunks [3];
 } lowspiio_t;
 
 
-void spi_perform(lowspiio_t * operation);
-void spi_perform_low(lowspiio_t * operation);
+void spi_perform(lowspiio_t * iospi);	/* выполняем обмен из user mode (ожидаем выполнения опаерации на system level) */
+void spi_perform_low(lowspiio_t * iospi);
+
+void spi_operate_low(lowspiio_t * iospi);
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
@@ -343,6 +355,16 @@ void prog_spi_io(
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // Выдача и прием ответных байтов
 void prog_spi_exchange(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
+	);
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Выдача и прием ответных байтов
+void prog_spi_exchange_low(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff,
