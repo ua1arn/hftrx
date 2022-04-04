@@ -8663,6 +8663,77 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 	return padcs->adc_data_raw;
 }
 
+/* получить значение от АЦП */
+adcvalholder_t board_getadc_unfiltered_truevalue_low(uint_fast8_t adci)
+{
+	static const struct
+	{
+		uint8_t ch;
+		uint8_t diff;
+	} xad2xlt [8] =
+	{
+			{	0, 0, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
+			{	1, 0, },
+			{	2, 0, },
+			{	3, 0, },
+			{	4, 0, },
+			{	5, 0, },
+			{	6, 0, },
+			{	7, 0, },
+	};
+
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	boardadc_t * const padcs = & badcst [adci];
+	// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
+	// targetadck - on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+	// targetxad2 - external SPI device (PA BOARD ADC)
+	//BOARD_ADCX0BASE - индексы менше этого относятся ко встроенным АЦП процесосра
+	if (adci < BOARD_ADCX0BASE || adci >= BOARD_ADCMRRBASE)
+	{
+		// mirror - значения АЦП устанавливабтся выходами программных компонентов, без считывания с аппаратуры.
+		return padcs->adc_data_raw;
+	}
+	if (adci >= BOARD_ADCXKBASE && adci < BOARD_ADCXKBASE + 8)
+	{
+		/* on-board ADC MCP3208-BI/SL chip select (keyboard) */
+#if defined (targetadck)
+		uint_fast8_t valid;
+		uint_fast8_t ch = adci - BOARD_ADCXKBASE;
+		//PRINTF("targetadc2: ch = %u\n", ch);
+		return mcp3208_read_low(targetadck, 0, ch, & valid);
+#else /* defined (targetadc2) */
+		return 0;
+#endif /* defined (targetadc2) */
+	}
+	if (adci >= BOARD_ADCX1BASE && adci < BOARD_ADCX1BASE + 8)
+	{
+		// external SPI device (PA BOARD ADC)
+#if defined (targetxad2)
+		uint_fast8_t valid;
+		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
+		adcvalholder_t rv = mcp3208_read_low(targetxad2, xad2xlt [ch].diff, xad2xlt [ch].ch, & valid);
+		//PRINTF("targetxad2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
+		return rv;
+#else /* defined (targetxad2) */
+		return 0;
+#endif /* defined (targetxad2) */
+	}
+	if (adci >= BOARD_ADCX0BASE && adci < BOARD_ADCX0BASE + 8)
+	{
+		/* on-board ADC MCP3208-BI/SL chip select (potentiometers) */
+#if defined (targetadc2)
+		uint_fast8_t valid;
+		uint_fast8_t ch = adci - BOARD_ADCX0BASE;
+		//PRINTF("targetadc2: ch = %u\n", ch);
+		return mcp3208_read_low(targetadc2, 0, ch, & valid);
+#else /* defined (targetadc2) */
+		return 0;
+#endif /* defined (targetadc2) */
+	}
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	return padcs->adc_data_raw;
+}
+
 
 /* получить отфильтрованное значение от АЦП в диапазоне lower..upper (включая границы) */
 uint_fast8_t board_getadc_filtered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)
@@ -8729,6 +8800,20 @@ uint_fast8_t board_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, u
 	const uint_fast8_t v = lower + (uint_fast8_t) ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
 	ASSERT(v >= lower && v <= upper);
 	return v;
+}
+
+/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+uint_fast8_t keyboard_getadc_unfiltered_u8(uint_fast8_t adci, uint_fast8_t lower, uint_fast8_t upper)	/* получить значение от АЦП в диапазоне lower..upper (включая границы) */
+{
+#if KEYBOARD_USE_ADC_LOW
+	ASSERT(adci < HARDWARE_ADCINPUTS);
+	const adcvalholder_t t = board_getadc_unfiltered_truevalue_low(adci);
+	const uint_fast8_t v = lower + (uint_fast8_t) ((uint_fast32_t) t * (upper - lower) / board_getadc_fsval(adci));	// нормируем к требуемому диапазону
+	ASSERT(v >= lower && v <= upper);
+	return v;
+#else /* KEYBOARD_USE_ADC_LOW */
+		return board_getadc_unfiltered_u8(adci, lower, upper);
+#endif /* KEYBOARD_USE_ADC_LOW */
 }
 
 /* получить значение от АЦП в диапазоне lower..upper (включая границы) */
@@ -9147,16 +9232,16 @@ board_get_pressed_key(void)
 	{
 	#if KEYBOARD_USE_ADC6
 		// шесть кнопок на одном входе АЦП
-		const uint_fast8_t v = kbd_adc6_decode(board_getadc_unfiltered_u8(kitable [ki], 0, 255));
+		const uint_fast8_t v = kbd_adc6_decode(keyboard_getadc_unfiltered_u8(kitable [ki], 0, 255));
 	#elif KEYBOARD_USE_ADC6_V1
 		// шесть кнопок на одном входе АЦП
-		const uint_fast8_t v = kbd_adc6v1_decode(board_getadc_unfiltered_u8(kitable [ki], 0, 255));
+		const uint_fast8_t v = kbd_adc6v1_decode(keyboard_getadc_unfiltered_u8(kitable [ki], 0, 255));
 	#else /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
 		// исправление ошибочного срабатывания - вокруг значений при нажатых клавишах
 		// (между ними) добавляются защитные интервалы, обрабаатываемые как ненажатая клавиша.
 		// Последний инлекс не выдается, отпущеная кнопка - предпоследний.
 		// четыре кнопки на одном входе АЦП
-		const uint_fast8_t v = kixlat4 [board_getadc_unfiltered_u8(kitable [ki], 0, sizeof kixlat4 / sizeof kixlat4 [0] - 1)];
+		const uint_fast8_t v = kixlat4 [keyboard_getadc_unfiltered_u8(kitable [ki], 0, sizeof kixlat4 / sizeof kixlat4 [0] - 1)];
 	#endif /* KEYBOARD_USE_ADC6 || KEYBOARD_USE_ADC6_V1 */
 		if (v != KEYBOARD_NOKEY)
 		{

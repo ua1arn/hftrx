@@ -456,8 +456,8 @@ void NOINLINEAT (prog_val8_impl)(
 
 void spi_operate_low(lowspiio_t * iospi)
 {
+	const spitarget_t target = iospi->target;
 	unsigned i;
-	spitarget_t target = iospi->target;
 
 	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
 	spi_select2(target, iospi->spimode, iospi->spispeedindex);
@@ -472,13 +472,11 @@ void spi_operate_low(lowspiio_t * iospi)
 		if (size == 0)
 			continue;
 
-		uint8_t * rxbuff = ex->rxbuff;
-		const uint8_t * txbuff = ex->txbuff;
-
 		switch (iospi->chunks [i].spiiotype)
 		{
 		case SPIIO_TX:
 			{
+				const uint8_t * txbuff = ex->txbuff;
 				spi_progval8_p1(target, * txbuff);
 				while (-- size)
 					spi_progval8_p2(target, * ++ txbuff);
@@ -487,6 +485,7 @@ void spi_operate_low(lowspiio_t * iospi)
 			break;
 		case SPIIO_RX:
 			{
+				uint8_t * rxbuff = ex->rxbuff;
 				spi_to_read(target);
 				while (size --)
 					* rxbuff ++ = spi_read_byte(target, 0xff);
@@ -497,6 +496,8 @@ void spi_operate_low(lowspiio_t * iospi)
 #else /* SPI_BIDIRECTIONAL */
 		case SPIIO_EXCHANGE:
 			{
+				uint8_t * rxbuff = ex->rxbuff;
+				const uint8_t * txbuff = ex->txbuff;
 				while (size --)
 					* rxbuff ++ = spi_read_byte(target, * txbuff ++);
 			}
@@ -574,6 +575,45 @@ void prog_spi_io(
 // Assert CS, send and then read  bytes via SPI, and deassert CS
 // Выдача и прием ответных байтов
 void prog_spi_exchange(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff,
+	uint8_t * rxbuff,
+	unsigned int size
+	)
+{
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	lowspiio_t io;
+	io.target = target;
+	io.spispeedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U8;
+
+	unsigned i = 0;
+	io.chunks [i].spiiotype = SPIIO_EXCHANGE;
+	io.chunks [i].bytecount = size;
+	io.chunks [i].txbuff = txbuff;
+	io.chunks [i].rxbuff = rxbuff;
+	++ i;
+
+	io.count = i;
+
+#if WITHSPILOWSUPPORTT
+	system_disableIRQ();
+	spi_operate_low(& io);
+	system_enableIRQ();
+
+#else /* WITHSPILOWSUPPORTT */
+	spi_operate_low(& io);
+#endif /* WITHSPILOWSUPPORTT */
+}
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
+// Выдача и прием ответных байтов
+void prog_spi_exchange_low(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
 	unsigned csdelayUS,		/* задержка после изменения состояния CS */
 	const uint8_t * txbuff,
