@@ -464,7 +464,8 @@ void prog_spi_io(
 	uint8_t * rxbuff, unsigned int rxsize
 	)
 {
-#if 0
+#if WITHSPILOWSUPPORTT
+	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	unsigned i = 0;
 	lowspiio_t io;
@@ -549,7 +550,8 @@ void prog_spi_exchange(
 	unsigned int size
 	)
 {
-#if 0
+#if WITHSPILOWSUPPORTT
+	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	lowspiio_t io;
 	io.target = target;
@@ -583,6 +585,50 @@ void prog_spi_exchange(
 }
 
 
+#if WITHSPILOWSUPPORTT
+
+void spi_perform(lowspiio_t * operation)
+{
+
+}
+
+void spi_perform_low(lowspiio_t * operation)
+{
+
+}
+
+typedef enum
+{
+	SPISTATE_IDLE,
+	//
+	SPISTATE_count
+} spistate_t;
+
+static spistate_t spistate = SPISTATE_IDLE;
+// вызывается с частотой TICKS_FREQUENCY герц
+static void
+spi_spool(void * ctx)
+{
+}
+
+static const uint8_t spiadcinputs [] =
+{
+		KI_LIST
+};
+
+void spi_perform_initialize(void)
+{
+	static ticker_t spiticker;
+
+	spistate = SPISTATE_IDLE;
+
+	ticker_initialize(& spiticker, 1, spi_spool, NULL);
+	ticker_add(& spiticker);
+
+}
+
+#else /* WITHSPILOWSUPPORTT */
+
 // Send a frame of bytes via SPI
 void 
 prog_spi_send_frame(
@@ -609,6 +655,8 @@ prog_spi_read_frame(
 	while (size --)
 		* buff ++ = spi_read_byte(target, 0xff);
 }
+
+#endif /* WITHSPILOWSUPPORTT */
 
 /* 
  * интерфейс с платой - управление чипселектом
@@ -770,6 +818,11 @@ void spi_initialize(void)
 #endif /* (SPISPEED400k) || defined (SPISPEED100k) */
 
 #endif /* WITHSPIHW */
+
+#if WITHSPILOWSUPPORTT
+	// Работа совместно с фоновым обменом SPI по прерываниям
+	spi_perform_initialize();
+#endif /* WITHSPILOWSUPPORTT */
 }
 
 #endif /* WITHSPIHW || WITHSPISW */

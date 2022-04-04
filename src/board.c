@@ -8395,7 +8395,7 @@ void board_beep_initialize(void)
 
 // Для поддержки случаев, когда входы АЦП используются не подряд
 // Готовые значения для выдачи в регистр ADCMUX
-static const uint_fast8_t adcinputs [] =
+static const uint8_t adcinputs [] =
 {
 
 #if WITHVOLTLEVEL 
@@ -9341,7 +9341,7 @@ mcp3208_read(
 	const spi_speeds_t adcspeed = SPIC_SPEED400k;
 	const spi_modes_t adcmode = SPIC_MODE3;
 
-#if 1
+#if WITHSPILOWSUPPORTT
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
 	uint8_t txbuf [4] =
