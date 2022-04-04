@@ -20,6 +20,17 @@ extern const phase_t phase_0;
 #define FPGA_DECODE_NBLVL	(1u << 6)
 
 
+// Send a frame of bytes via SPI
+static void
+board_fpga1_spi_send_frame(
+	spitarget_t target,
+	const uint8_t * buff,
+	unsigned int size
+	)
+{
+	prog_spi_io_frame(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
+}
+
 /* programming FPGA SPI registers */
 
 static void prog_fpga_valX(

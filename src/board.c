@@ -153,7 +153,7 @@ static void prog_rfadc_update(void);
 
 #if WITHSPIHW || WITHSPISW
 // Send a frame of bytes via SPI
-void
+static void
 board_ctlregs_spi_send_frame(
 	spitarget_t target,
 	const uint8_t * buff,
@@ -161,28 +161,6 @@ board_ctlregs_spi_send_frame(
 	)
 {
 	prog_spi_io_frame(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
-}
-
-// Send a frame of bytes via SPI
-void
-board_fpga1_spi_send_frame(
-	spitarget_t target,
-	const uint8_t * buff,
-	unsigned int size
-	)
-{
-	prog_spi_io_frame(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
-}
-
-// Send a frame of bytes via SPI
-void
-board_fpga_м_spi_send_frame(
-	spitarget_t target,
-	const uint8_t * buff,
-	unsigned int size
-	)
-{
-	prog_spi_io_frame(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
 }
 
 #endif /* WITHSPIHW || WITHSPISW */

@@ -83,19 +83,24 @@ eeprom_read_status(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-	uint_fast8_t v;
-
-	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-
-	spi_progval8_p1(target, RDSR);		/* read status register */
-	spi_complete(target);
-
-	spi_to_read(target);
-	v = spi_read_byte(target, 0xff);
-	spi_to_write(target);
-
-	spi_unselect(target);	/* done sending data to target chip */
+	const uint8_t cmd = RDSR; /* read status register */
+	uint8_t v;
+	prog_spi_io_frame(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, & cmd, 1, NULL, 0, & v, 1);
 	return v;
+
+//
+//	uint_fast8_t v;
+//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
+//
+//	spi_progval8_p1(target, RDSR);		/* read status register */
+//	spi_complete(target);
+//
+//	spi_to_read(target);
+//	v = spi_read_byte(target, 0xff);
+//	spi_to_write(target);
+//
+//	spi_unselect(target);	/* done sending data to target chip */
+//	return v;
 }
 
 static void 
@@ -105,10 +110,13 @@ eeprom_writeenable(
 	)
 {
 	// +++ РАЗРЕШЕНИЕ ЗАПИСИ
-	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
-	spi_progval8_p1(target, WREN);		/* set write-enable latch */
-	spi_complete(target);
-	spi_unselect(target);	/* done sending data to target chip */
+	const uint8_t cmd = WREN; /* set write-enable latch */
+	uint8_t v;
+	prog_spi_io_frame(target, SPIC_SPEEDFAST, NVRAM_SPIMODE, 0, & cmd, 1, NULL, 0, NULL, 0);
+//	spi_select(target, NVRAM_SPIMODE);	/* start sending data to target chip */
+//	spi_progval8_p1(target, WREN);		/* set write-enable latch */
+//	spi_complete(target);
+//	spi_unselect(target);	/* done sending data to target chip */
 	// --- РАЗРЕШЕНИЕ ЗАПИСИ
 }
 
