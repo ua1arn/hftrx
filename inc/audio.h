@@ -934,7 +934,7 @@ int_fast32_t dsp_get_samplerateuacin_rts(void);			// RTS samplerate
 int_fast32_t dsp_get_samplerateuacout(void);			// UAC OUT samplerate
 
 uint_fast8_t dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
-uint_fast16_t dsp_getsmeter10(uint_fast8_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
+uint_fast16_t dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean);	/* получить значение от АЦП s-метра */
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale);	/* получить значение от детектора VOX */
 uint_fast8_t dsp_getavox(uint_fast8_t fullscale);	/* получить значение от детектора Anti-VOX */
 uint_fast8_t dsp_getfreqdelta10(int_fast32_t * p, uint_fast8_t pathi);	/* Получить значение отклонения частоты с точностью 0.1 герца */

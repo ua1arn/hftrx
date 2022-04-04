@@ -3590,7 +3590,7 @@ dsp_getsmeter(uint_fast8_t * tracemax, uint_fast8_t lower, uint_fast8_t upper, u
 /* -73.01dBm == 50 uV rms == S9 */
 /* Вызывается из user-mode программы */
 uint_fast16_t
-dsp_getsmeter10(uint_fast8_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean)
+dsp_getsmeter10(uint_fast16_t * tracemax, uint_fast16_t lower, uint_fast16_t upper, uint_fast8_t clean)
 {
 	const uint_fast8_t pathi = 0;	// тракт, испольуемый для показа s-метра
 	//if (clean != 0)
