@@ -5053,10 +5053,8 @@ void looptests(void)
 		for (i = 0; i < ARRAY_SIZE(adcinputs); ++ i)
 		{
 			const uint_fast8_t adci = adcinputs [i];
-			if (isadchw(adci))
-				continue;
 
-			PRINTF("adci%-2d=%08lX\n", board_getadc_unfiltered_truevalue(adci));
+			PRINTF("%2u adci%2d %08lX\n", i, (unsigned) adci, (unsigned long) board_getadc_unfiltered_truevalue(adci));
 		}
 	}
 #endif
