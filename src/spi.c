@@ -10,6 +10,7 @@
 #include "spi.h"
 #include "gpio.h"
 #include "formats.h"
+#include <string.h>
 #include <stdlib.h>
 
 // битовые маски, соответствующие биту в байте по его номеру.
@@ -453,6 +454,23 @@ void NOINLINEAT (prog_val8_impl)(
 
 #endif /* WITHSPISW */
 
+// send and then read  bytes via SPI
+void prog_spi_io_frame(
+	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
+	const uint8_t * txbuff, unsigned int txsize,
+	uint8_t * rxbuff, unsigned int rxsize
+	)
+{
+	spi_select2(target, spimode, spispeedindex);
+	spi_progval8_p1(target, * txbuff);
+	while (-- txsize)
+		spi_progval8_p2(target, * ++ txbuff);
+	spi_complete(target);
+	while (rxsize --)
+		* rxbuff ++ = spi_read_byte(target, 0xff);
+	spi_unselect(target);
+}
+
 
 // Send a frame of bytes via SPI
 void 
@@ -469,7 +487,7 @@ prog_spi_send_frame(
 }
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при этом должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// На сигнале MOSI при этом должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void 
 prog_spi_read_frame(
 	spitarget_t target,

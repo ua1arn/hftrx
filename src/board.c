@@ -151,6 +151,31 @@ static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
 
 static void prog_rfadc_update(void);
 
+#if WITHSPIHW || WITHSPISW
+// Send a frame of bytes via SPI
+void
+board_ctlregs_spi_send_frame(
+	spitarget_t target,
+	const uint8_t * buff,
+	unsigned int size
+	)
+{
+	prog_spi_io_frame(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, buff, size, NULL, 0);
+}
+
+// Send a frame of bytes via SPI
+void
+board_fpga1_spi_send_frame(
+	spitarget_t target,
+	const uint8_t * buff,
+	unsigned int size
+	)
+{
+	prog_spi_io_frame(target, SPIC_SPEEDUFAST, CTLREG_SPIMODE, buff, size, NULL, 0);
+}
+
+#endif /* WITHSPIHW || WITHSPISW */
+
 /**********************/
 //#if defined(PLL1_TYPE) && (LO1MODE_DIRECT == 0)
 //	#define PLLX_TYPE PLL1_TYPE
@@ -1037,9 +1062,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(000, 0x00, 4);	/* d0..d3 in control register */
 #endif
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2012_MINI || CTLREGSTYLE_SW2012C
@@ -1074,9 +1097,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2012CN
@@ -1126,9 +1147,7 @@ prog_ctrlreg(uint_fast8_t plane)
 				RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
 				RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
 
-				spi_select(target, CTLREG_SPIMODE);
-				prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-				spi_unselect(target);
+				board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 			}
 		#elif SHORTSET8 || FULLSET8
 			#error CTLREGSTYLE_SW2012CN && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
@@ -1159,9 +1178,7 @@ prog_ctrlreg(uint_fast8_t plane)
 			RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
 			RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
 
-			spi_select(target, CTLREG_SPIMODE);
-			prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-			spi_unselect(target);
+			board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 		}
 #endif /* WITHAUTOTUNER */
 
@@ -1184,9 +1201,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(001, glob_tx);
 		RBBIT(000, glob_mikemute);
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 
 #elif CTLREGSTYLE_SW2012CN_RN3ZOB
@@ -1223,9 +1238,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
 		RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	#elif SHORTSET8 || FULLSET8
 		#error CTLREGSTYLE_SW2012CN_RN3ZOB && WITHAUTOTUNER && (SHORTSET8 || FULLSET8) not supported
 	#else
@@ -1271,9 +1284,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01: d1 - bnd2 signal */
 		RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 
 #elif CTLREGSTYLE_SW2013SF
@@ -1314,9 +1325,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2013SF_V1	// For UT4UA - with RDX0154 & LCD backlight level
@@ -1356,9 +1365,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2013SF_V2
@@ -1405,9 +1412,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2013SF_V3
@@ -1451,9 +1456,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2013RDX
@@ -1503,9 +1506,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2013RDX_UY5UM_WO240
@@ -1555,9 +1556,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, glob_antenna);		/* pin 15: in control register - antenna select */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2014NFM
@@ -1611,9 +1610,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2016VHF
@@ -1668,9 +1665,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, glob_antenna);		/* pin 15: in control register - SPARE, antenna for UY5UM */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2013RDX_UY5UM	/* с регулировкой мощности R-2R на сигналах выбора диапазонного фильтра */
@@ -1710,9 +1705,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2013RDX_LTIYUR
@@ -1751,9 +1744,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* pin 01 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2011 //  плата с ATMega, 32 bits
@@ -1793,9 +1784,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* d1 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGSTYLE_SW2011N //  плата с ATMega, 32 bits
@@ -1835,9 +1824,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf >= glob_bandfonhpf);		/* d1 - bnd2 signal */
 	RBBIT(000, ! glob_reset_n);		/* d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE24_UA3DKC
@@ -1892,9 +1879,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(005, glob_autotune);			/* pin 5: tune mode */
 	RBVAL(000, glob_filter, 5);			/* pin 15, 01, 02, 03: 	RX IF FILTER (low 4 bits), pin , 4, TX IF filter (bit 5). */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE24
@@ -1928,9 +1913,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, glob_filter, 2);		/* pin 01-02: und1 & und2 */
 	RBBIT(000, ! glob_reset_n);		/* d0 pin 15: in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE24_RK4CI
@@ -1972,9 +1955,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, glob_bglight, 2);	/* d1..d2 LCD backlight */
 	RBBIT(000, ! glob_reset_n);		/* d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE24_RK4CI_V1	/* управляющий регистр - "Воробей-3" с 3*ULN2003 */
@@ -2014,9 +1995,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, glob_bglight, 2);			/* d1..d2 LCD backlight */
 	RBBIT(000, ! glob_reset_n);			/* d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE24_V1
@@ -2079,9 +2058,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, glob_bglight, 2);	/* d1..d2 LCD backlight */
 	RBBIT(000, ! glob_reset_n);		/* d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE32_V1
@@ -2121,9 +2098,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, glob_bglight, 2);			/* d1..d2 LCD backlight */
 	RBBIT(000, ! glob_reset_n);			/* d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE24_V2
@@ -2165,9 +2140,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, glob_bglight, 2);	/* d1..d2 LCD backlight */
 	RBBIT(000, ! glob_reset_n);		/* d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE24_IGOR
@@ -2207,9 +2180,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, glob_bglight, 2);	/* d1..d2 LCD backlight */
 	RBBIT(000, ! glob_reset_n);		/* d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE16_GEN500
@@ -2236,9 +2207,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, 0xff, 7);	// spare
 	RBBIT(000, 0x01);		// DAC reset	
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_RA4YBO
@@ -2287,9 +2256,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, 0x00);		/* D1 - und2 */
 	RBBIT(000, 0x00);		/* D0 - und1 */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_RA4YBO_V1
@@ -2389,9 +2356,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_user2);		/* D1: pin 01: und2 */
 	RBBIT(000, glob_user1);		/* D0: pin 15: und1 */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 
@@ -2441,9 +2406,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_user2);		/* D1: pin 01: und2 */
 	RBBIT(000, glob_user1);		/* D0: pin 15: und1 */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_RA4YBO_V3
@@ -2492,9 +2455,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_user2);		/* D1: pin 01: und2 */
 	RBBIT(000, glob_user1);		/* D0: pin 15: und1 */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_RA4YBO_V3A
@@ -2596,9 +2557,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(0001, glob_antenna);			/* D1: pin 01: YAGI */
 	RBBIT(0000, glob_tuner_bypass);		/* D0: pin 15: byp tun */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE16
@@ -2656,9 +2615,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_boardagc);						/* pin 1 AGC OFF */
 	RBBIT(000, ! glob_reset_n);					/* pin 15 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 #elif CTLREGMODE16_UR3VBM
 #define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
@@ -2715,9 +2672,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_boardagc);						/* pin 1 AGC OFF */
 	RBBIT(000, ! glob_reset_n);					/* pin 15 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE8_UR5YFV
@@ -2753,9 +2708,7 @@ prog_ctrlreg(uint_fast8_t plane)
     RBBIT(001, ! glob_tx && glob_preamp);   /* pin 1  - PRE */
     RBBIT(000, glob_tx);                    /* pin 15 - TX_MODE */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE8_UA3RNB
@@ -2792,9 +2745,7 @@ prog_ctrlreg(uint_fast8_t plane)
     RBBIT(001, ! glob_tx && glob_preamp);   /* pin 1  - PRE */
     RBBIT(000, glob_tx);                    /* pin 15 - TX_MODE */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE16_RN3ZOB
@@ -2827,9 +2778,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_boardagc);						/* pin 1 AGC OFF */
 	RBBIT(000, ! glob_reset_n);					/* pin 15 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 
@@ -2889,9 +2838,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBVAL(001, glob_filter, 3);						/* pin 1 2 3 - filter selection */
 	RBBIT(000, ! glob_reset_n);					/* pin 15 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE16_NIKOLAI
@@ -2919,9 +2866,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_filter == BOARD_FILTER_6P0);	/* pin 01 6 kHz filter */
 	RBBIT(000, ! glob_reset_n);		/* pin 15 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_V8A	// приёмник "Воронёнок"
@@ -2980,9 +2925,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, 1);			/* pin 01: d1 in control register - 0: ad9951 controlled localy */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_RAVENDSP_V1	// трансивер "Воронёнок" с 12 kHz IF DSP
@@ -3034,9 +2977,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_kblight);			/* pin 01: d1 in control register - keyboard backlight */
 	RBBIT(000, ! glob_reset_n);		/* pin 15: d0 in control register - ad9951 RESET */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_RAVENDSP_V3	// трансивер "Воронёнок" с DSP и FPGA
@@ -3105,9 +3046,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 		RBVAL(001, (glob_bglight - WITHLCDBACKLIGHTMIN), 2);	/* D2:D1 - LCD backlight */
 		RBBIT(000, glob_kblight);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -3205,9 +3144,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 		RBBIT(001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(000, glob_preamp && glob_bandf != 0 /*glob_kblight*/);			/* D0: keyboard backlight заменён на внешнее управление УВЧ */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -3244,9 +3181,7 @@ prog_atuctlreg(const spitarget_t target)
 	RBVAL(000, glob_tuner_bypass ? 0 : glob_tuner_L, 7);	/* LSB-MSB: pin06-pin01,pin15: Inductors tuner bank 	*/
 	/* --- Управление согласующим устройством */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 #endif /* WITHAUTOTUNEROWNSPI && WITHAUTOTUNER */
 
@@ -3332,9 +3267,7 @@ prog_rxctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -3433,9 +3366,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -3529,9 +3460,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -3618,9 +3547,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 #elif CTLREGMODE_STORCH_V1_R4DR	// STORCH_V1 thermo с USB FS, DSP и FPGA, DUAL WATCH, SD-CARD & PA on board
@@ -3709,9 +3636,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_tx);			/* D0: keyboard backlight -> PTT OUT */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -3797,9 +3722,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -3885,9 +3808,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4023,9 +3944,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 #endif /* WITHKBDBACKLIGHT */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4155,9 +4074,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight  - removed in LVDS version*/
 		RBBIT(0000, glob_kblight);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4293,9 +4210,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0004, ! xvrtr && glob_tx);				// EXT_PTT added in LVDS version
 		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4318,9 +4233,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0005, glob_tx && glob_txgate);	// питание предварительного усилителя и цепь смещения оконечного
 		RBBIT(0004, ! glob_tx);					// питание УВЧ
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4360,9 +4273,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_tx);			/* D0: PTT out for UA1CEI keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4418,9 +4329,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, lcdblcode & 0x01);		/* D2:D1 - LCD backlight */
 		RBBIT(0000, glob_tx/*glob_kblight*/);			/* D0: keyboard backlight */
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4458,9 +4367,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBBIT(0001, 0);						// QB
 		RBBIT(0000, xvrtr);					// QA: > 50 MHz ON
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4526,9 +4433,7 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(000, adj8bits(bandmask >> 0), 8);
 		//RBBIT(0007, 1);	
 
-		spi_select(target, CTLREG_SPIMODE);
-		prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-		spi_unselect(target);
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 	}
 }
 
@@ -4808,9 +4713,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_filter);		/* pin 01 - включение узкого фильтра по ПЧ, was: +CW */
 	RBBIT(000, glob_tx && glob_txcw);/* pin 15 - передача в режиме телеграфа, was: reserved */
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_V3D
@@ -4846,9 +4749,7 @@ prog_ctrlreg(uint_fast8_t plane)
 	RBBIT(001, glob_bandf & 0x10);	// 20m
 	RBBIT(000, glob_bandf & 0x08);	// 30m
 
-	spi_select(target, CTLREG_SPIMODE);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 #elif CTLREGMODE_ZYNQ_4205

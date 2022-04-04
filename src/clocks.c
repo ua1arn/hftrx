@@ -7960,7 +7960,7 @@ hardware_spi_master_send_frame_16bpartial(
 }
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// На сигнале MOSI при это должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 static void
 hardware_spi_master_read_frame_16bpartial(
 	//spitarget_t target,	/* addressing to chip */
@@ -8120,7 +8120,7 @@ hardware_spi_master_read_frame_16bpartial(
 #endif /* WITHSPI16BIT */
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// На сигнале MOSI при это должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 static void
 hardware_spi_master_read_frame_8bpartial(
 	//spitarget_t target,	/* addressing to chip */

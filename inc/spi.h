@@ -19,6 +19,24 @@ extern "C" {
 
 void spi_initialize(void);	// отдельно инициализация SPI
 
+
+/* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
+   на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается.
+
+   Так как переключение в нужный режим SPI производится после активизации CS, для такого применения не годятся
+   режимы SPI с "0" уровнем SCLK в неактивном состоянии.
+   */
+
+typedef enum
+{
+	SPIC_MODE0,
+	SPIC_MODE1,
+	SPIC_MODE2,
+	SPIC_MODE3,
+	//
+	SPIC_MODES_COUNT
+} spi_modes_t;
+
 #if WITHSPISW
 	#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 		#define SCLK_NPULSE() do { 							\
@@ -271,11 +289,19 @@ void prog_spi_send_frame(
 
 // Read a frame of bytes via SPI
 // Приём блока
-// На сигнале MOSI при этом должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// На сигнале MOSI при этом должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void prog_spi_read_frame(
 	spitarget_t target,
 	uint8_t * buff, 
 	unsigned int size
+	);
+
+// send and then read  bytes via SPI
+// При приеме на сигнале MOSI должно обеспечиваться состояние логической "1" для корректной работы SD CARD
+void prog_spi_io_frame(
+	spitarget_t target, uint_fast8_t spispeedindex, spi_modes_t spimode,
+	const uint8_t * txbuff, unsigned int txsize,
+	uint8_t * rxbuff, unsigned int rxsize
 	);
 
 
@@ -459,23 +485,6 @@ void hardware_spi_slave_callback(uint8_t * buff, uint_fast8_t len);
 
 
 
-/* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
-   на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается.
-
-   Так как переключение в нужный режим SPI производится после активизации CS, для такого применения не годятся
-   режимы SPI с "0" уровнем SCLK в неактивном состоянии.
-   */
-
-typedef enum
-{
-	SPIC_MODE0,
-	SPIC_MODE1,
-	SPIC_MODE2,
-	SPIC_MODE3,
-	//
-	SPIC_MODES_COUNT
-} spi_modes_t;
-
 
 void hardware_spi_master_initialize(void);		/* инициализация и перевод в состояние "отключено" */
 void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispeed);
@@ -502,7 +511,7 @@ portholder_t hardware_spi_complete_b16(void);	/* дождаться готовн
 portholder_t hardware_spi_complete_b32(void);	/* дождаться готовности передача 16-ти бит*/
 
 // Read a frame of bytes via SPI
-// На сигнале MOSI при это должно обеспачиваться состояние логической "1" для корректной работы SD CARD
+// На сигнале MOSI при это должно обеспечиваться состояние логической "1" для корректной работы SD CARD
 void hardware_spi_master_read_frame(uint8_t * pBuffer, uint_fast32_t size);
 void hardware_spi_master_read_frame_16b(uint16_t * pBuffer, uint_fast32_t size);
 // Send a frame of bytes via SPI

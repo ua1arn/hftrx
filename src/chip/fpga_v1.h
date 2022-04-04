@@ -36,9 +36,7 @@ static void prog_fpga_valX(
 	RBVAL8(010, v32 >> 8);
 	RBVAL8(000, v32 >> 0);
 
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_fpga1_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 static void prog_fpga_freqX(
@@ -136,9 +134,7 @@ prog_fpga_ctrlreg(
 #endif /* ! WITHWAVPLAYER */
 	RBBIT(0, glob_reset_n);					/* b0: ! reset_n net - FIR filter требует перехода из "1" в "0" на reset_n для нормальной работы */
 
-	spi_select2(target, CTLREG_SPIMODE, SPIC_SPEEDUFAST);
-	prog_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
-	spi_unselect(target);
+	board_fpga1_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
 }
 
 
