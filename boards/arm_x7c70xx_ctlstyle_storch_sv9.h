@@ -306,18 +306,16 @@
 
 	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
-		#define WITHFFTSIZEWIDE 		1024	/* Отображение спектра и волопада */
-		#define WITHVIEW_3DSS		1
-		#define WITHDEFAULTVIEW		VIEW_3DSS
-		#define WITHVIEW_3DSS_MARK	1
+		#define WITHFFTSIZEWIDE 		1024	/* FFT - тображение спектра и волопада */
 		#define WITHDISPLAY_FPS			30
 		#define WITHDISPLAYSWR_FPS		30
 		#define WITHSPECBETA_DEFAULT	30
-		#define WITHAFSPECTRE			1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 			512		/* Отображение спектра НЧ сигнвлв */
+		#define WITHAFSPECTRE			1		/* показ спектра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 			512		/* FFT - Отображение спектра НЧ сигнвлв */
+		#define WITHVIEW_3DSS		1
+		#define WITHVIEW_3DSS_MARK	1
 		#if 1
 			#define WITHTOUCHGUI		1
-			#define WITHAFSPECTRE		1	/* показ спктра прослушиваемого НЧ сигнала. */
 			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
@@ -326,17 +324,18 @@
 			#define WITHALTERNATIVEFONTS	1
 			#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
+			#define WITHDEFAULTVIEW		VIEW_3DSS
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
-		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
+		#define WITHFFTSIZEWIDE 512		/*  FFT - Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		#define WITHAFSPECTRE		1		/* показ спектра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/*  FFT - Отображение спектра НЧ сигнвлв */
 	#else
-		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
+		#define WITHFFTSIZEWIDE 1024		/*  FFT - Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
-		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
+		#define WITHAFSPECTRE		1		/* показ спектра прослушиваемого НЧ сигнала. */
+		#define WITHFFTSIZEAF 		512		/*  FFT - Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
 	////*#define WITHRTS192 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
