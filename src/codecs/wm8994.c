@@ -56,10 +56,12 @@ static void wm8994_setreg(
 
 	#if WITHSPILOWSUPPORTT
 		// Работа совместно с фоновым обменом SPI по прерываниям
-		const uint8_t txbuf [2] =
+		const uint8_t txbuf [4] =
 		{
-			regv & 0x7FFF,
-			datav,
+			(regv >> 8) & 0x7F,
+			regv >> 0,
+			datav >> 8,
+			datav >> 0,
 		};
 
 		prog_spi_io(target, WM8994_SPISPEED, WM8994_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
