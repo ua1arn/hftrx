@@ -22,6 +22,7 @@
 
 // Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define NAU8822_SPIMODE		SPIC_MODE3
+#define NAU8822_SPISPEED SPIC_SPEEDFAST
 #define NAU8822_ADDRESS_W	0x34	// I2C address: 0x34
 
 // Условие использования оптимизированных функций обращения к SPI
@@ -54,9 +55,16 @@ void nau8822_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPIEXT16
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		uint8_t txbuf [2];
 
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, NAU8822_SPIMODE);
+		USBD_poke_u16_BE(txbuf, fulldata);
+		prog_spi_io(target, NAU8822_SPISPEED, NAU8822_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+
+	#elif WITHSPIEXT16
+
+		hardware_spi_connect_b16(NAU8822_SPISPEED, NAU8822_SPIMODE);
 		prog_select(target);	/* start sending data to target chip */
 		hardware_spi_b16_p1(fulldata);
 		hardware_spi_complete_b16();

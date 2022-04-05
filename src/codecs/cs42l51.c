@@ -31,7 +31,14 @@ void cs42l51_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPIEXT16
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		uint8_t txbuf [2];
+
+		USBD_poke_u16_BE(txbuf, fulldata);
+		prog_spi_io(target, SPIC_SPEEDFAST, CS42L51_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0);
+
+	#elif WITHSPIEXT16
 
 		hardware_spi_connect_b16(SPIC_SPEEDFAST, CS42L51_SPIMODE);
 		prog_select(target);	/* start sending data to target chip */

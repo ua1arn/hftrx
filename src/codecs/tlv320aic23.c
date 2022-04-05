@@ -22,6 +22,7 @@
 
 // Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define TLV320AIC23_SPIMODE		SPIC_MODE3	// Linux initialize in mode 0
+#define TLV320AIC23_SPISPEED 	SPIC_SPEEDFAST
 
 // Условие использования оптимизированных функций обращения к SPI
 #define WITHSPIEXT16 (WITHSPIHW && WITHSPI16BIT)
@@ -40,9 +41,16 @@ static void tlv320aic23_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPIEXT16
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		uint8_t txbuf [2];
 
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, TLV320AIC23_SPIMODE);
+		USBD_poke_u16_BE(txbuf, fulldata);
+		prog_spi_io(target, TLV320AIC23_SPISPEED, TLV320AIC23_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+
+	#elif WITHSPIEXT16
+
+		hardware_spi_connect_b16(TLV320AIC23_SPISPEED, TLV320AIC23_SPIMODE);
 		prog_select(target);	/* start sending data to target chip */
 		hardware_spi_b16_p1(fulldata);
 		hardware_spi_complete_b16();

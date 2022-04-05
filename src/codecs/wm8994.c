@@ -22,6 +22,8 @@
 
 // Clock period, SCLK no less then 80 nS (не выше 12.5 МГц)
 #define WM8994_SPIMODE		SPIC_MODE3
+#define WM8994_SPISPEED		SPIC_SPEEDFAST
+
 #define WM8994_ADDRESS_W	0x34	// I2C address (на платеSTM32F746G-DISCO): 0x34
 
 // Условие использования оптимизированных функций обращения к SPI
@@ -52,9 +54,19 @@ static void wm8994_setreg(
 	// кодек управляется по SPI
 	const spitarget_t target = targetcodec1;	/* addressing to chip */
 
-	#if WITHSPIEXT16
+	#if WITHSPILOWSUPPORTT
+		// Работа совместно с фоновым обменом SPI по прерываниям
+		const uint8_t txbuf [2] =
+		{
+			regv & 0x7FFF,
+			datav,
+		};
 
-		hardware_spi_connect_b16(SPIC_SPEEDFAST, WM8994_SPIMODE);
+		prog_spi_io(target, WM8994_SPISPEED, WM8994_SPIMODE, 0, txbuf, ARRAY_SIZE(txbuf), NULL, 0, NULL, 0);
+
+	#elif WITHSPIEXT16
+
+		hardware_spi_connect_b16(WM8994_SPISPEED, WM8994_SPIMODE);
 		prog_select(target);	/* start sending data to target chip */
 		hardware_spi_b16_p1(regv & 0x7FFF);	// b15==0: write to register
 		hardware_spi_b16_p2(datav);
