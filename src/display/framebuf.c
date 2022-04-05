@@ -1034,8 +1034,11 @@ void colmain_line(
 		{
 			if (((xold == xn - 1) || (xold == xn + 1)) && ((yold == yn - 1) || (yold == yn + 1)))
 			{
-				colmain_putpixel(buffer, bx, by, xn, yold, sc);
-				colmain_putpixel(buffer, bx, by, xold, yn, sc);
+				if (color != * colmain_mem_at(buffer, bx, by, xn, yold))
+					colmain_putpixel(buffer, bx, by, xn, yold, sc);
+
+				if (color != * colmain_mem_at(buffer, bx, by, xold, yn))
+					colmain_putpixel(buffer, bx, by, xold, yn, sc);
 //				colmain_putpixel(buffer, bx, by, xn, yn, sc);		// нужны дополнительные цвета для этих 2х точек
 //				colmain_putpixel(buffer, bx, by, xold, yold, sc);
 			}
