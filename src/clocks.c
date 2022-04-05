@@ -8839,7 +8839,7 @@ portholder_t hardware_spi_b8(
 
 // При отсутствующем аппаратном контроллере ничего не делает.
 
-void hardware_spi_master_setfreq(uint_fast8_t spispeedindex, int_fast32_t spispeed)
+void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispeed)
 {
 	(void) spispeedindex;
 	(void) spispeed;
