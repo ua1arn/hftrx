@@ -189,6 +189,9 @@
 	} while (0)
 #endif /* WITHI2S2HW */
 
+	#define I2S2HW_MASTER_INITIALIZE() do { \
+	} while (0)
+
 #if WITHI2S3HW
 #endif /* WITHI2S3HW */
 
