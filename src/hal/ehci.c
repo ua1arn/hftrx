@@ -49,9 +49,9 @@ void USBH_POSTRESET_INIT(void)
 #if CPUSTYLE_XC7Z
 	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
-//    USBx->TTCTRL = (USBx->TTCTRL & ~ (0xFF000000)) |
-//        (0x17 << 24) |
-//        0;
+    USBx->TTCTRL = (USBx->TTCTRL & ~ (0xFF000000ul)) |	// TTCTRL_HUBADDR
+        (0x17 << 24) |
+        0;
 
 	USBx->MODE = (USBx->MODE & ~ (0x0003)) |
 		//0x02 |		// IDLE
@@ -1060,7 +1060,6 @@ void ulpi_chip_initialize(void)
 
 void ulpi_chip_sethost(uint_fast8_t state)
 {
-	return;
 	// USB3340
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
@@ -1096,6 +1095,8 @@ void ulpi_chip_sethost(uint_fast8_t state)
 		ulpi_reg_write(0x0B, (0x01 << 0));	// Set IdPullup bit
 	}
 	PRINTF("ulpi_chip_sethost(%u): ULPI chip: Carkit Control reg19=%02X\n", (unsigned) state, ulpi_reg_read(0x19));
+	local_delay_ms(100);
+	ulpi_reg_write(0x06, (0x03 << 0));	// XcvrSelect[1:0] = 00
 	local_delay_ms(100);
 }
 
