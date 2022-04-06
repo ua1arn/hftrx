@@ -37,8 +37,8 @@ static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 #if CPUSTYLE_XC7Z
 XUSBPS_Registers * EHCIxToUSBx(void * p)
 {
-	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
-	return USBx;
+    XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+    return USBx;
 }
 
 #endif /* CPUSTYLE_XC7Z */
@@ -49,9 +49,6 @@ void USBH_POSTRESET_INIT(void)
 #if CPUSTYLE_XC7Z
 	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
-    USBx->TTCTRL = (USBx->TTCTRL & ~ (0xFF000000ul)) |	// TTCTRL_HUBADDR
-        (0x17 << 24) |
-        0;
 
 	USBx->MODE = (USBx->MODE & ~ (0x0003)) |
 		//0x02 |		// IDLE
@@ -1038,6 +1035,7 @@ static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 
 void ulpi_chip_initialize(void)
 {
+return;
 	// USB3340
 	ulpi_reg_read(0x16);	/* Scratch regiser - dummy read */
 
@@ -1060,7 +1058,10 @@ void ulpi_chip_initialize(void)
 
 void ulpi_chip_sethost(uint_fast8_t state)
 {
+	return;
 	// USB3340
+	ulpi_reg_read(0x00);	/* dummy read */
+	return;
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
@@ -1094,14 +1095,12 @@ void ulpi_chip_sethost(uint_fast8_t state)
 		ulpi_reg_write(0x1B, (0x01 << 1));	// Clear IdGndDrv bit
 		ulpi_reg_write(0x0B, (0x01 << 0));	// Set IdPullup bit
 	}
-	PRINTF("ulpi_chip_sethost(%u): ULPI chip: Carkit Control reg19=%02X\n", (unsigned) state, ulpi_reg_read(0x19));
-	local_delay_ms(100);
-	ulpi_reg_write(0x06, (0x03 << 0));	// XcvrSelect[1:0] = 00
-	local_delay_ms(100);
+	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
 }
 
 void ulpi_chip_debug(void)
 {
+	return;
 	PRINTF("Function Control (0x04): %02X\n", 	ulpi_reg_read(0x04));
 	PRINTF("Interface Control (0x07): %02X\n", 	ulpi_reg_read(0x07));
 	PRINTF("OTG Control (0x0A): %02X\n", 		ulpi_reg_read(0x0A));
@@ -1124,6 +1123,7 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 {
 	return;
 	// USB3340
+	ulpi_reg_read(0x00);	/* dummy read */
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
@@ -1188,56 +1188,61 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #elif CPUSTYLE_XC7Z
 
-	enum {  SRCSEL_SHIFT = 4 };
-	const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
-	if (WITHUSBHW_EHCI == EHCI0)
-	{
-		enum { usbIX = 0 };
-		//PRINTF("HAL_EHCI_MspInit: EHCI0\n");
+		XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+		enum {  SRCSEL_SHIFT = 4 };
+		const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
+		if (WITHUSBHW_EHCI == EHCI0)
+		{
+			enum { usbIX = 0 };
+			//PRINTF("HAL_EHCI_MspInit: EHCI0\n");
 
-		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-		SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
+			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
 
-		SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
-			(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
-			0;
-		(void) SCLR->USB0_CLK_CTRL;
+			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
+				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
+				0;
+			(void) SCLR->USB0_CLK_CTRL;
 
-		SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
-		(void) SCLR->USB_RST_CTRL;
-		SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
-		(void) SCLR->USB_RST_CTRL;
+			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
 
-#if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
-#endif /* WITHEHCIHWSOFTSPOLL == 0 */
-	}
-	else if (WITHUSBHW_EHCI == EHCI1)
-	{
-		enum { usbIX = 1 };
-		//PRINTF("HAL_EHCI_MspInit: EHCI1\n");
-
-		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-		SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
-
-		SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
-			(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
-			0;
-		(void) SCLR->USB1_CLK_CTRL;
-
-		SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
-		(void) SCLR->USB_RST_CTRL;
-		SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
-		(void) SCLR->USB_RST_CTRL;
+			//USBH_POSTRESET_INIT();
 
 #if WITHEHCIHWSOFTSPOLL == 0
-		arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
+			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
-	}
-	else
-	{
-		ASSERT(0);
-	}
+		}
+		else if (WITHUSBHW_EHCI == EHCI1)
+		{
+			enum { usbIX = 1 };
+			//PRINTF("HAL_EHCI_MspInit: EHCI1\n");
+
+			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB1_CPU_1XCLKACT
+
+			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
+				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
+				0;
+			(void) SCLR->USB0_CLK_CTRL;
+
+			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
+			(void) SCLR->USB_RST_CTRL;
+
+			//USBH_POSTRESET_INIT();
+
+#if WITHEHCIHWSOFTSPOLL == 0
+			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+		}
+		else
+		{
+			ASSERT(0);
+		}
 
 #else
 
@@ -1245,9 +1250,11 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #endif
 #if WITHUSBHOST_HIGHSPEEDULPI
-	ulpi_chip_initialize();
-	ulpi_chip_sethost(1);
-	TARGET_USBFS_VBUSON_SET(1);
+		ulpi_chip_initialize();
+		ulpi_chip_sethost(1);
+		TARGET_USBFS_VBUSON_SET(1);
+		PRINTF("host init:\n");
+		//ulpi_chip_debug();
 #endif /* WITHUSBHOST_HIGHSPEEDULPI */
 }
 
