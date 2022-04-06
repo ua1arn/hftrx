@@ -34,12 +34,24 @@ static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 #include "../../Class/HID/Inc/usbh_hid.h"
 #include "../../Class/HUB/Inc/usbh_hub.h"
 
+#if CPUSTYLE_XC7Z
+XUSBPS_Registers * EHCIxToUSBx(void * p)
+{
+	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+	return USBx;
+}
+
+#endif /* CPUSTYLE_XC7Z */
+
 /* Вызываем после выполнения reset контроллера */
 void USBH_POSTRESET_INIT(void)
 {
 #if CPUSTYLE_XC7Z
-	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
+//    USBx->TTCTRL = (USBx->TTCTRL & ~ (0xFF000000)) |
+//        (0x17 << 24) |
+//        0;
 
 	USBx->MODE = (USBx->MODE & ~ (0x0003)) |
 		//0x02 |		// IDLE
@@ -987,7 +999,7 @@ void USBH_EHCI_IRQHandler(void)
 
 static void ulpi_reg_write(uint_fast8_t addr, uint_fast8_t data)
 {
-	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
 	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
 		;
@@ -1006,7 +1018,7 @@ static void ulpi_reg_write(uint_fast8_t addr, uint_fast8_t data)
 
 static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 {
-	XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
 	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
 		;
@@ -1174,60 +1186,56 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #elif CPUSTYLE_XC7Z
 
-		enum {  SRCSEL_SHIFT = 4 };
-		const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
-		if (WITHUSBHW_EHCI == EHCI0)
-		{
-			enum { usbIX = 0 };
-			//PRINTF("HAL_EHCI_MspInit: EHCI0\n");
+	enum {  SRCSEL_SHIFT = 4 };
+	const unsigned long SRCSEL_MASK = (0x07uL << SRCSEL_SHIFT);
+	if (WITHUSBHW_EHCI == EHCI0)
+	{
+		enum { usbIX = 0 };
+		//PRINTF("HAL_EHCI_MspInit: EHCI0\n");
 
-			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
 
-			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
-				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
-				0;
-			(void) SCLR->USB0_CLK_CTRL;
+		SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
+			(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
+			0;
+		(void) SCLR->USB0_CLK_CTRL;
 
-			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-
-			//USBH_POSTRESET_INIT();
+		SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+		(void) SCLR->USB_RST_CTRL;
+		SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
+		(void) SCLR->USB_RST_CTRL;
 
 #if WITHEHCIHWSOFTSPOLL == 0
-			arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB0_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
-		}
-		else if (WITHUSBHW_EHCI == EHCI1)
-		{
-			enum { usbIX = 1 };
-			//PRINTF("HAL_EHCI_MspInit: EHCI1\n");
+	}
+	else if (WITHUSBHW_EHCI == EHCI1)
+	{
+		enum { usbIX = 1 };
+		//PRINTF("HAL_EHCI_MspInit: EHCI1\n");
 
-			SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-			SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
+		SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+		SCLR->APER_CLK_CTRL |= (0x01uL << (usbIX + 2));	// APER_CLK_CTRL.USB0_CPU_1XCLKACT
 
-			SCLR->USB0_CLK_CTRL = (SCLR->USB0_CLK_CTRL & ~ SRCSEL_MASK) |
-				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
-				0;
-			(void) SCLR->USB0_CLK_CTRL;
+		SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
+			(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
+			0;
+		(void) SCLR->USB1_CLK_CTRL;
 
-			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
-			(void) SCLR->USB_RST_CTRL;
-
-			//USBH_POSTRESET_INIT();
+		SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
+		(void) SCLR->USB_RST_CTRL;
+		SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
+		(void) SCLR->USB_RST_CTRL;
 
 #if WITHEHCIHWSOFTSPOLL == 0
-			arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB1_IRQn, USBH_EHCI_IRQHandler);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
-		}
-		else
-		{
-			ASSERT(0);
-		}
+	}
+	else
+	{
+		ASSERT(0);
+	}
 
 #else
 
@@ -1235,11 +1243,9 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 #endif
 #if WITHUSBHOST_HIGHSPEEDULPI
-		ulpi_chip_initialize();
-		ulpi_chip_sethost(1);
-		TARGET_USBFS_VBUSON_SET(1);
-		PRINTF("host init:\n");
-		//ulpi_chip_debug();
+	ulpi_chip_initialize();
+	ulpi_chip_sethost(1);
+	TARGET_USBFS_VBUSON_SET(1);
 #endif /* WITHUSBHOST_HIGHSPEEDULPI */
 }
 
@@ -1967,19 +1973,19 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 	{
 	case 0x00:
 		speed = USBH_SPEED_FULL;
-		PRINTF("speed=USBH_SPEED_FULL\n");
+		//PRINTF("speed=USBH_SPEED_FULL\n");
 		break;
 	case 0x01:
 		speed = USBH_SPEED_LOW;
-		PRINTF("speed=USBH_SPEED_LOW\n");
+		//PRINTF("speed=USBH_SPEED_LOW\n");
 		break;
 	case 0x02:
 		speed = USBH_SPEED_HIGH;
-		PRINTF("speed=USBH_SPEED_HIGH\n");
+		//PRINTF("speed=USBH_SPEED_HIGH\n");
 		break;
 	case 0x03:
 		speed = USBH_SPEED_HIGH;
-		PRINTF("speed=not connected\n");
+		//PRINTF("speed=not connected\n");
 		break;
 	}
 #else /* CPUSTYLE_XC7Z */
@@ -1987,19 +1993,19 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 	{
 		/* Port not connected */
 		//speed = USB_SPEED_NONE;
-		PRINTF("speed=USB_SPEED_NONE\n");
+		//PRINTF("speed=USB_SPEED_NONE\n");
 	}
 	else if (line == EHCI_PORTSC_LINE_STATUS_LOW)
 	{
 		/* Detected as low-speed */
 		speed = USBH_SPEED_LOW;
-		PRINTF("speed=USB_SPEED_LOW\n");
+		//PRINTF("speed=USB_SPEED_LOW\n");
 	}
 	else if (ped)
 	{
 		/* Port already enabled: must be high-speed */
 		speed = USBH_SPEED_HIGH;
-		PRINTF("speed=USB_SPEED_HIGH\n");
+		//PRINTF("speed=USB_SPEED_HIGH\n");
 	}
 	else
 	{
@@ -2007,7 +2013,7 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 		 * full-speed or high-speed; we can't yet tell.
 		 */
 		speed = USBH_SPEED_FULL;
-		PRINTF("speed=USB_SPEED_FULL\n");
+		//PRINTF("speed=USB_SPEED_FULL\n");
 	}
 
 	if (0 && speed != USBH_SPEED_HIGH)
