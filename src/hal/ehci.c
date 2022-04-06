@@ -997,9 +997,6 @@ static void ulpi_reg_write(uint_fast8_t addr, uint_fast8_t data)
 {
 	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
-	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
-		;
-
 	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
 			XUSBPS_ULPIVIEW_RW_MASK | 	// Select write direction
 			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
@@ -1016,9 +1013,6 @@ static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 {
 	XUSBPS_Registers * const USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
-	while ((USBx->ULPIVIEW & XUSBPS_ULPIVIEW_RUN_MASK) != 0)
-		;
-
 	USBx->ULPIVIEW = (USBx->ULPIVIEW & ~ (XUSBPS_ULPIVIEW_ADDR_MASK | XUSBPS_ULPIVIEW_DATWR_MASK | XUSBPS_ULPIVIEW_RUN_MASK | XUSBPS_ULPIVIEW_RW_MASK)) |
 			(((uint_fast32_t) addr << XUSBPS_ULPIVIEW_ADDR_SHIFT) & XUSBPS_ULPIVIEW_ADDR_MASK) |
 			0;
@@ -1034,7 +1028,6 @@ static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 
 void ulpi_chip_initialize(void)
 {
-return;
 	// USB3340
 	ulpi_reg_read(0x16);	/* Scratch Register - dummy read */
 
@@ -1049,6 +1042,8 @@ return;
 	const uint_fast16_t vid = v1 * 256 + v0;
 	const uint_fast16_t pid = v3 * 256 + v2;
 	PRINTF("ulpi_chip_initialize: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
+
+	ulpi_reg_write(0x16, 0xE5);	/* Scratch Register - dummy read */
 
 	if (vid != 0x0424 || pid != 0x0009)
 		return;
@@ -1200,6 +1195,13 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 				0;
 			(void) SCLR->USB0_CLK_CTRL;
 
+	#if WITHUSBHOST_HIGHSPEEDULPI
+			ulpi_chip_initialize();
+			ulpi_chip_sethost(1);
+			TARGET_USBFS_VBUSON_SET(1);
+			//ulpi_chip_debug();
+	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
@@ -1224,6 +1226,13 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 				0;
 			(void) SCLR->USB0_CLK_CTRL;
 
+	#if WITHUSBHOST_HIGHSPEEDULPI
+			ulpi_chip_initialize();
+			ulpi_chip_sethost(1);
+			TARGET_USBFS_VBUSON_SET(1);
+			//ulpi_chip_debug();
+	#endif /* WITHUSBHOST_HIGHSPEEDULPI */
+
 			SCLR->USB_RST_CTRL |= (0x01uL << usbIX);
 			(void) SCLR->USB_RST_CTRL;
 			SCLR->USB_RST_CTRL &= ~ (0x01uL << usbIX);
@@ -1245,13 +1254,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#warning HAL_EHCI_MspInit Not implemented for CPUSTYLE_xxxxx
 
 #endif
-#if WITHUSBHOST_HIGHSPEEDULPI
-		ulpi_chip_initialize();
-		ulpi_chip_sethost(1);
-		TARGET_USBFS_VBUSON_SET(1);
-		PRINTF("host init:\n");
-		//ulpi_chip_debug();
-#endif /* WITHUSBHOST_HIGHSPEEDULPI */
 }
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
