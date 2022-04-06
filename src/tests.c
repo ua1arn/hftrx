@@ -6507,7 +6507,7 @@ void hightests(void)
 		PRINTF("XDCFG->MCTRL.PS_VERSION=%02lX\n", (XDCFG->MCTRL >> 28) & 0x0F);
 	}
 #endif
-#if 1 && WITHETHHW && CPUSTYLE_XC7Z
+#if 0 && WITHETHHW && CPUSTYLE_XC7Z
 	{
 		PRINTF("GEM0 test:\n");
 
