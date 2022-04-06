@@ -1045,9 +1045,12 @@ void ulpi_chip_initialize(void)
 
 	ulpi_reg_write(0x16, 0xE5);	/* Scratch Register - dummy read */
 
-	if (vid != 0x0424 || pid != 0x0009)
-		return;
+//	if (vid != 0x0424 || pid != 0x0009)
+//		return;
 
+	//	7.1.1.5 Function Control
+	//	Address = 04-06h (read), 04h (write), 05h (set), 06h (clear)
+	ulpi_reg_write(0x06, 0x03);	/* Function Control - XcvrSelect[1:0] = 00 00b: Enables HS transceiver */
 
 }
 
@@ -1113,7 +1116,6 @@ void ulpi_chip_debug(void)
 
 void ulpi_chip_vbuson(uint_fast8_t state)
 {
-	return;
 	// USB3340
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
@@ -1128,8 +1130,8 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 	const uint_fast16_t pid = v3 * 256 + v2;
 	//PRINTF("ulpi_chip_vbuson: ULPI chip: VendorID=%04X, productID=%04X\n", (unsigned) vid, (unsigned) pid);
 
-	if (vid != 0x0424 || pid != 0x0009)
-		return;
+//	if (vid != 0x0424 || pid != 0x0009)
+//		return;
 
 	//	7.1.1.7 OTG Control
 	//	Address = 0A-0Ch (read), 0Ah (write), 0Bh (set), 0Ch (clear)

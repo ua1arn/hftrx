@@ -849,7 +849,7 @@
 	} while (0)
 
 	#define TARGET_USBFS_VBUSON_SET(on)	do { \
-		ulpi_chip_vbuson(!! on); \
+		/*ulpi_chip_vbuson(!! on); */\
 	} while (0)
 
 	/**USB_OTG_HS GPIO Configuration
