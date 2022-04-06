@@ -823,7 +823,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	USBH_POSTRESET_INIT();
 
 #if WITHUSBHOST_HIGHSPEEDULPI
-	PRINTF("host HAL_EHCI_Init:\n");
 	//ulpi_chip_debug();
 #endif /* WITHUSBHOST_HIGHSPEEDULPI */
 
@@ -1037,7 +1036,7 @@ void ulpi_chip_initialize(void)
 {
 return;
 	// USB3340
-	ulpi_reg_read(0x16);	/* Scratch regiser - dummy read */
+	ulpi_reg_read(0x16);	/* Scratch Register - dummy read */
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
@@ -1054,13 +1053,12 @@ return;
 	if (vid != 0x0424 || pid != 0x0009)
 		return;
 
+
 }
 
 void ulpi_chip_sethost(uint_fast8_t state)
 {
-	return;
 	// USB3340
-	ulpi_reg_read(0x00);	/* dummy read */
 	return;
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
@@ -1100,7 +1098,6 @@ void ulpi_chip_sethost(uint_fast8_t state)
 
 void ulpi_chip_debug(void)
 {
-	return;
 	PRINTF("Function Control (0x04): %02X\n", 	ulpi_reg_read(0x04));
 	PRINTF("Interface Control (0x07): %02X\n", 	ulpi_reg_read(0x07));
 	PRINTF("OTG Control (0x0A): %02X\n", 		ulpi_reg_read(0x0A));
@@ -1123,7 +1120,6 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 {
 	return;
 	// USB3340
-	ulpi_reg_read(0x00);	/* dummy read */
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
