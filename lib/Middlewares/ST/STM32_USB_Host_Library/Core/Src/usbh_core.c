@@ -544,7 +544,7 @@ USBH_StatusTypeDef  USBH_Process(USBH_HandleTypeDef *phost)
 
       if (phost->device.PortEnabled == 1U)
       {
-        USBH_UsrLog("USB Device Reset Completed");
+        //USBH_UsrLog("USB Device Reset Completed");
         phost->device.RstCnt = 0U;
         phost->gState = HOST_DEV_ATTACHED_WAITSPEED;
         phost->hubInstances = 0;
