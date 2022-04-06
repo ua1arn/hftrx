@@ -1039,7 +1039,7 @@ static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 void ulpi_chip_initialize(void)
 {
 	// USB3340
-	ulpi_reg_read(0x00);	/* dummy read */
+	ulpi_reg_read(0x16);	/* Scratch regiser - dummy read */
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
@@ -1095,7 +1095,8 @@ void ulpi_chip_sethost(uint_fast8_t state)
 		ulpi_reg_write(0x1B, (0x01 << 1));	// Clear IdGndDrv bit
 		ulpi_reg_write(0x0B, (0x01 << 0));	// Set IdPullup bit
 	}
-	//PRINTF("ULPI chip: reg19=%02X\n", ulpi_reg_read(0x19));
+	PRINTF("ulpi_chip_sethost(%u): ULPI chip: Carkit Control reg19=%02X\n", (unsigned) state, ulpi_reg_read(0x19));
+	local_delay_ms(100);
 }
 
 void ulpi_chip_debug(void)
