@@ -1028,6 +1028,7 @@ static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 
 void ulpi_chip_initialize(void)
 {
+	return;
 	// USB3340
 	ulpi_reg_read(0x16);	/* Scratch Register - dummy read */
 
@@ -1057,7 +1058,7 @@ void ulpi_chip_initialize(void)
 void ulpi_chip_sethost(uint_fast8_t state)
 {
 	// USB3340
-//	return;
+	return;
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
@@ -1096,6 +1097,7 @@ void ulpi_chip_sethost(uint_fast8_t state)
 
 void ulpi_chip_debug(void)
 {
+	return;
 	PRINTF("Function Control (0x04): %02X\n", 	ulpi_reg_read(0x04));
 	PRINTF("Interface Control (0x07): %02X\n", 	ulpi_reg_read(0x07));
 	PRINTF("OTG Control (0x0A): %02X\n", 		ulpi_reg_read(0x0A));
@@ -1116,6 +1118,7 @@ void ulpi_chip_debug(void)
 
 void ulpi_chip_vbuson(uint_fast8_t state)
 {
+	return;
 	// USB3340
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
@@ -1341,7 +1344,7 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
   	while ((EHCIx->USBSTS & STS_HCHALTED) != 0)
  		;
 
-#if 1
+#if ! WITHEHCIHWSOFTSPOLL
  	EHCIx->USBINTR |=
  			INTR_IOAA |	// Interrupt on ASync Advance Enable
 			INTR_HSE |	// Host System Error Interrupt Enable
@@ -1350,7 +1353,9 @@ HAL_StatusTypeDef HAL_EHCI_Start(EHCI_HandleTypeDef *hehci)
 			INTR_ERROR |	// USB Error Interrupt Enable
 			INTR_USBINT |	// USB Interrupt Enable
 			0;
-#endif
+#else/* ! WITHEHCIHWSOFTSPOLL */
+ 	EHCIx->USBINTR = 0;
+#endif /* ! WITHEHCIHWSOFTSPOLL */
 
 	__HAL_LOCK(hehci);
 	__HAL_EHCI_ENABLE(hehci);
