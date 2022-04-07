@@ -1057,7 +1057,7 @@ void ulpi_chip_initialize(void)
 void ulpi_chip_sethost(uint_fast8_t state)
 {
 	// USB3340
-	return;
+//	return;
 
 	// Address = 00h (read only) Vendor ID Low = 0x24
 	// Address = 01h (read only) Vendor ID High = 0x04
