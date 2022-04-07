@@ -1028,7 +1028,7 @@ static uint_fast8_t ulpi_reg_read(uint_fast8_t addr)
 
 void ulpi_chip_initialize(void)
 {
-	return;
+	//return;
 	// USB3340
 	ulpi_reg_read(0x16);	/* Scratch Register - dummy read */
 
@@ -1051,7 +1051,7 @@ void ulpi_chip_initialize(void)
 
 	//	7.1.1.5 Function Control
 	//	Address = 04-06h (read), 04h (write), 05h (set), 06h (clear)
-	ulpi_reg_write(0x06, 0x03);	/* Function Control - XcvrSelect[1:0] = 00 00b: Enables HS transceiver */
+	//ulpi_reg_write(0x06, 0x03);	/* Function Control - XcvrSelect[1:0] = 00 00b: Enables HS transceiver */
 
 }
 
