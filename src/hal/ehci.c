@@ -579,6 +579,8 @@ void HAL_EHCI_SOF_Callback(EHCI_HandleTypeDef *hhcd)
   USBH_LL_IncTimer(hhcd->pData);
 }
 
+
+static EHCI_HCTypeDef * ghc = NULL;
 /**
   * @brief  Handle USB_EHCI interrupt request.
   * @param  hehci USB_EHCI handle
@@ -593,7 +595,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		return;
 
  	const uint_fast32_t usbsts = le32_to_cpu(EHCIx->USBSTS);
- 	const uint_fast32_t usbstsMasked = usbsts & le32_to_cpu(EHCIx->USBSTS & EHCIx->USBINTR);
+ 	//const uint_fast32_t usbstsMasked = usbsts & le32_to_cpu(EHCIx->USBSTS & EHCIx->USBINTR);
 	unsigned long portsc = le32_to_cpu(hehci->portsc [WITHEHCIHW_EHCIPORT]);
  	//PRINTF("HAL_EHCI_IRQHandler: USBSTS=%08lX, portsc=%08lX\n", usbsts, portsc);
 
@@ -608,13 +610,16 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
  		//PRINTF("HAL_EHCI_IRQHandler: USB Interrupt (USBINT), usbsts=%08lX\n", usbsts);
 		__DMB();     // ensure the ordering of data cache maintenance operations and their effects
 
- 		unsigned ch_num;
- 		for (ch_num = 0; ch_num < ARRAY_SIZE(hehci->hc); ++ ch_num)
+ 		//unsigned ch_num;
+ 		//for (ch_num = 0; ch_num < ARRAY_SIZE(hehci->hc); ++ ch_num)
+ 		if (ghc != NULL)
  		{
-			EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+			//EHCI_HCTypeDef * const hc = & hehci->hc [ch_num];
+			EHCI_HCTypeDef * const hc = ghc;
 
-			if (hc->ehci_urb_state != URB_IDLE)
-				continue;
+			//if (hc->ehci_urb_state != URB_IDLE)
+			//	continue;
+			ASSERT(hc->ehci_urb_state == URB_IDLE);
 //			if (/*hc->ch_num >= ARRAY_SIZE(hehci->hc) || */ hc->ch_num != ch_num)
 //				continue;
 			volatile struct ehci_transfer_descriptor * const qtd = & hehci->qtds [hc->ch_num];
@@ -633,18 +638,18 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 		 		}
 		 		else if ((status & EHCI_STATUS_BABBLE) != 0)
 				{
-		 			PRINTF("ch_num=%u: EHCI_STATUS_BABBLE\n", ch_num);
+		 			PRINTF("ch_num=%u: EHCI_STATUS_BABBLE\n", hc->ch_num);
 					hc->ehci_urb_state = URB_NOTREADY;
 					hc->ehci_urb_state = URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_BUFFER) != 0)
 				{
-		 			PRINTF("ch_num=%u: EHCI_STATUS_BUFFER\n", ch_num);
+		 			PRINTF("ch_num=%u: EHCI_STATUS_BUFFER\n", hc->ch_num);
 					hc->ehci_urb_state = URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_XACT_ERR) != 0)
 				{
-		 			PRINTF("ch_num=%u: EHCI_STATUS_XACT_ERR\n", ch_num);
+		 			PRINTF("ch_num=%u: EHCI_STATUS_XACT_ERR\n", hc->ch_num);
 					hc->ehci_urb_state = URB_NOTREADY;
 					hc->ehci_urb_state = URB_STALL;
 				}
@@ -653,11 +658,11 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 		 			//PRINTF("ch_num=%u: stall\n", ch_num);
 					hc->ehci_urb_state = URB_STALL;
 				}
-
+	 			ghc = NULL;
 			}
 			else if ((status & EHCI_STATUS_ACTIVE) != 0)
 			{
-				continue;	/* обмен еще не закончился */
+				//continue;	/* обмен еще не закончился */
 			}
 			else
 			{
@@ -672,6 +677,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 				hc->xfer_count += pktcnt;
 				// Transaction done
 	 			hc->ehci_urb_state = URB_DONE;
+	 			ghc = NULL;
 			}
  		}
 
@@ -1526,6 +1532,8 @@ HAL_StatusTypeDef HAL_EHCI_HC_SubmitRequest(EHCI_HandleTypeDef *hehci,
 		break;
 	}
 
+	ghc = hc;
+
 	hc->xfer_buff = pbuff;
 	hc->xfer_len = length;
 	hc->ehci_urb_state = URB_IDLE;
@@ -1992,19 +2000,19 @@ USBH_SpeedTypeDef USBH_LL_GetSpeed(USBH_HandleTypeDef *phost)
 	{
 	case 0x00:
 		speed = USBH_SPEED_FULL;
-		//PRINTF("speed=USBH_SPEED_FULL\n");
+		PRINTF("speed=USBH_SPEED_FULL\n");
 		break;
 	case 0x01:
 		speed = USBH_SPEED_LOW;
-		//PRINTF("speed=USBH_SPEED_LOW\n");
+		PRINTF("speed=USBH_SPEED_LOW\n");
 		break;
 	case 0x02:
 		speed = USBH_SPEED_HIGH;
-		//PRINTF("speed=USBH_SPEED_HIGH\n");
+		PRINTF("speed=USBH_SPEED_HIGH\n");
 		break;
 	case 0x03:
 		speed = USBH_SPEED_HIGH;
-		//PRINTF("speed=not connected\n");
+		PRINTF("speed=not connected\n");
 		break;
 	}
 #else /* CPUSTYLE_XC7Z */
