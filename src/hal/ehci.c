@@ -633,20 +633,24 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 		 		}
 		 		else if ((status & EHCI_STATUS_BABBLE) != 0)
 				{
+		 			PRINTF("ch_num=%u: EHCI_STATUS_BABBLE\n", ch_num);
 					hc->ehci_urb_state = URB_NOTREADY;
 					hc->ehci_urb_state = URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_BUFFER) != 0)
 				{
+		 			PRINTF("ch_num=%u: EHCI_STATUS_BUFFER\n", ch_num);
 					hc->ehci_urb_state = URB_STALL;
 				}
 				else if ((status & EHCI_STATUS_XACT_ERR) != 0)
 				{
+		 			PRINTF("ch_num=%u: EHCI_STATUS_XACT_ERR\n", ch_num);
 					hc->ehci_urb_state = URB_NOTREADY;
 					hc->ehci_urb_state = URB_STALL;
 				}
 				else
 				{
+		 			//PRINTF("ch_num=%u: stall\n", ch_num);
 					hc->ehci_urb_state = URB_STALL;
 				}
 
@@ -658,6 +662,7 @@ void HAL_EHCI_IRQHandler(EHCI_HandleTypeDef * hehci)
 			else
 			{
 
+//	 			PRINTF("ch_num=%u: ok\n", ch_num);
 //	 			if (hc->ep_is_in && hc->ep_type == EP_TYPE_INTR)
 //	 			{
 //	 				PRINTF("status=%02X ", status);
