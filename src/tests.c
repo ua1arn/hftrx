@@ -5041,6 +5041,15 @@ static void serial_irq_loopback_test(void)
 // Периодически вызывается в главном цикле
 void looptests(void)
 {
+#if 0
+	{
+		// Display SOF frequency on USB device
+		// Also set:
+		//	hpcd_USB_OTG.Init.Sof_enable = DISABLE;
+		unsigned v = hamradio_get__getsoffreq();
+		PRINTF("SofFreq=%u\n", v);
+	}
+#endif
 #if 0 && defined (KI_LIST) // && WITHKEYBOARD && KEYBOARD_USE_ADC
 	{
 		// Тестирование АЦП клавиатуры
