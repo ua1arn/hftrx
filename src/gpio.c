@@ -615,7 +615,7 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 #elif CPUSTYLE_XC7Z
 
 /* адреса функций - обработчиков на каждый GPIO/EMIO */
-static void (* gpio_vectors [64])(void);
+static void (* gpio_vectors [ZYNQ_MIO_CNT + 2 * 32])(void);
 
 void GPIO_IRQHandler(void)
 {
