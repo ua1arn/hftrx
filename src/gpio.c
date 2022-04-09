@@ -642,10 +642,8 @@ void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void), uint32_t prior
 	const portholder_t bank = GPIO_PIN2BANK(pin);
 	const portholder_t mask = GPIO_PIN2MASK(pin);
 
-	//const uintptr_t int_mask = GPIO_INT_MASK(bank);
 	const uintptr_t int_en = GPIO_INT_EN(bank);
 	//const uintptr_t int_dis = GPIO_INT_DIS(bank);
-	//const uintptr_t int_stat = GPIO_INT_STAT(bank);
 	//const uintptr_t int_type = GPIO_INT_TYPE(bank);	// 0: level-sensitive, 1: edge-sensitive
 	//const uintptr_t int_polatity = GPIO_INT_POLARITY(bank);
 	const uintptr_t int_any = GPIO_INT_ANY(bank);
