@@ -1243,7 +1243,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 			SCLR->USB1_CLK_CTRL = (SCLR->USB1_CLK_CTRL & ~ SRCSEL_MASK) |
 				(0x04uL << SRCSEL_SHIFT) |	// SRCSEL
 				0;
-			(void) SCLR->USB0_CLK_CTRL;
+			(void) SCLR->USB1_CLK_CTRL;
 
 	#if WITHUSBHOST_HIGHSPEEDULPI
 			ulpi_chip_initialize();
