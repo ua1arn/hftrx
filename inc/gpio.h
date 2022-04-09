@@ -244,7 +244,7 @@ extern "C" {
 		GPIO_BANK_SET_DIRM(bank, mask, 0); \
 	} while (0)
 
-	void gpio_onchangeinterrupt(unsigned pin, uint32_t priority, uint32_t tgcpu);
+	void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu);
 
 	// Enable output drive for pin
 	#define MIO_SET_TRI_ENABLE(pin, tri_enable) do { \

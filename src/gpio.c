@@ -614,25 +614,29 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 #elif CPUSTYLE_XC7Z
 
+/* адреса функций - обработчиков на каждый GPIO/EMIO */
+static void (* gpio_vectors [64])(void);
+
 void GPIO_IRQHandler(void)
 {
+	unsigned pin;
+	for (pin = 0; pin < ARRAY_SIZE(gpio_vectors); ++ pin)
 	{
-		const unsigned pin = TARGET_ENCODER_A_EMIO;
 		const portholder_t bank = GPIO_PIN2BANK(pin);
 		const portholder_t mask = GPIO_PIN2MASK(pin);
-		ZYNQ_IORW32(GPIO_INT_STAT(bank)) = ZYNQ_IORW32(GPIO_INT_STAT(bank)) & mask;
-	}
-	{
-		const unsigned pin = TARGET_ENCODER_B_EMIO;
-		const portholder_t bank = GPIO_PIN2BANK(pin);
-		const portholder_t mask = GPIO_PIN2MASK(pin);
-		ZYNQ_IORW32(GPIO_INT_STAT(bank)) = ZYNQ_IORW32(GPIO_INT_STAT(bank)) & mask;
-	}
+		const uintptr_t int_stat = GPIO_INT_STAT(bank);
+		const unsigned state = ZYNQ_IORW32(int_stat) & mask;
 
-	spool_encinterrupt();
+		if (state != 0)
+		{
+			ZYNQ_IORW32(int_stat) = mask;
+			ASSERT(gpio_vectors [pin] != NULL);
+			(* gpio_vectors [pin])();
+		}
+	}
 }
 
-void gpio_onchangeinterrupt(unsigned pin, uint32_t priority, uint32_t tgcpu)
+void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu)
 {
 	const portholder_t bank = GPIO_PIN2BANK(pin);
 	const portholder_t mask = GPIO_PIN2MASK(pin);
@@ -645,10 +649,13 @@ void gpio_onchangeinterrupt(unsigned pin, uint32_t priority, uint32_t tgcpu)
 	const uintptr_t int_polatity = GPIO_INT_POLARITY(bank);
 	const uintptr_t int_any = GPIO_INT_ANY(bank);
 
+	ASSERT(pin < ARRAY_SIZE(gpio_vectors));
+
 	ZYNQ_IORW32(int_mask) &= ~ mask;
 	ZYNQ_IORW32(int_any) |= mask;
 	ZYNQ_IORW32(int_en) = mask;
 
+	gpio_vectors [pin] = handler;
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
