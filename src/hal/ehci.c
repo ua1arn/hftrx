@@ -1111,6 +1111,7 @@ void ulpi_chip_sethost(uint_fast8_t state)
 
 void ulpi_chip_debug(void)
 {
+	PRINTF("sts=%08lX, portsc=%08lX\n", EHCIxToUSBx(WITHUSBHW_EHCI)->ISR, EHCIxToUSBx(WITHUSBHW_EHCI)->PORTSCR1);
 	return;
 	PRINTF("Function Control (0x04): %02X\n", 	ulpi_reg_read(0x04));
 	PRINTF("Interface Control (0x07): %02X\n", 	ulpi_reg_read(0x07));
@@ -2103,11 +2104,11 @@ USBH_StatusTypeDef USBH_LL_ResetPort2(USBH_HandleTypeDef *phost, unsigned resetI
 
  		hehci->portsc [WITHEHCIHW_EHCIPORT] = portsc;
  		(void) hehci->portsc [WITHEHCIHW_EHCIPORT];
-	}
 #if CPUSTYLE_XC7Z
-	local_delay_ms(200);
-	//HAL_Delay(5);
+		local_delay_ms(1000);
+		//HAL_Delay(5);
 #endif /* CPUSTYLE_XC7Z */
+	}
 	//PRINTF("USBH_LL_ResetPort2: 2 active=%d, : USBCMD=%08lX USBSTS=%08lX PORTSC[%u]=%08lX\n", (int) resetIsActive, EHCIx->USBCMD, EHCIx->USBSTS, WITHEHCIHW_EHCIPORT, hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	//PRINTF("USBH_LL_ResetPort2: EHCI_PORTSC_OWNER=%d\n", !! (hehci->portsc [WITHEHCIHW_EHCIPORT] & EHCI_PORTSC_OWNER));
 
