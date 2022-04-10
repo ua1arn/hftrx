@@ -8,8 +8,8 @@
 // rmainunit_v5km2.pcb rmainunit_v5km3
 // R7S721020VCFP, TFT 4.3" or 7", 2xUSB, NAU8822L и FPGA EP4CE22E22I7N, AD9246BCPZ-125
 
-#ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_RA4ASN_H_INCLUDED
-#define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_RA4ASN_H_INCLUDED 1
+#ifndef ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_UA6LJX_H_INCLUDED
+#define ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_UA6LJX_H_INCLUDED 1
 
 	// в данной конфигурации I2S и SAI (SSIF) - в режиме MASTER
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
@@ -265,7 +265,7 @@
 	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
@@ -344,9 +344,9 @@
 
 	#define WITHBARS		1	/* отображение S-метра и SWR-метра */
 
-	#define WITHVIEW_3DSS		1
-	#define WITHDEFAULTVIEW		VIEW_3DSS
-	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
+//	#define WITHVIEW_3DSS		1
+//	#define WITHDEFAULTVIEW		VIEW_3DSS
+//	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 
 	#define WITHDISPLAY_FPS		25
 	#define WITHDISPLAYSWR_FPS	25
@@ -355,18 +355,18 @@
 	#define WITHMAXPWRCALI		150	/* калибровочный параметр PWR-метра */
 	#define WITHSWRCALI			150	/* калибровочный параметр SWR-метра */
 
-	#define WITHTOUCHGUI		1
-	#define WITHALPHA			64
+//	#define WITHTOUCHGUI		1
+//	#define WITHALPHA			64
 
 	#define WITHAFSPECTRE		1
 
-	#define WITHAFEQUALIZER		1
+//	#define WITHAFEQUALIZER		1
 
-	#define WITHBOTTOMDBVAL		110
-	#define DEFAULTDIALFREQ		3708000L
+//	#define WITHBOTTOMDBVAL		110
+//	#define DEFAULTDIALFREQ		3708000L
 
-	#define WITHALTERNATIVEFONTS	1
-	#define WITHALTERNATIVELAYOUT	1
+//	#define WITHALTERNATIVEFONTS	1
+//	#define WITHALTERNATIVELAYOUT	1
 
 	#define WITHVOLTLEVEL	1	/* отображение напряжения питания */
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
@@ -395,7 +395,7 @@
 
 	//#define WITHONLYBANDS 1		/* Перестройка может быть ограничена любительскими диапазонами */
 	//#define WITHBCBANDS	1		/* в таблице диапазонов присутствуют вещательные диапазоны */
-	//#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
+	#define WITHWARCBANDS	1	/* В таблице диапазонов присутствуют HF WARC диапазоны */
 	//#define WITHLFM		1	/* LFM MODE */
 	//#define WITHTEMPSENSOR	1	/* отображение данных с датчика температуры */
 	#define WITHDIRECTBANDS 1	/* Прямой переход к диапазонам по нажатиям на клавиатуре */
@@ -440,7 +440,7 @@
 	#define RTC1_TYPE RTC_TYPE_DS1305	/* MAXIM DS1305EN RTC clock chip with SPI interface */
 	//#define RTC1_TYPE RTC_TYPE_M41T81	/* ST M41T81M6 RTC clock chip with I2C interface */
 	//#define TSC1_TYPE TSC_TYPE_TSC2046	/* Resistive touch screen controller TI TSC2046 */
-	#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
+	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
 	//#define WITH_STMPE811_INTERRUPTS	1
 	//#define WITH_GT911_INTERRUPTS	1
 	//#define TSC1_TYPE	TSC_TYPE_GT911		/* Capacitive touch screen with controller Goodix GT911 */
@@ -520,7 +520,7 @@
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 	#endif /* WITHTHERMOLEVEL */
 
-	#if 0
+	#if 1
 		// main board - 5W
 
 		#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
@@ -573,4 +573,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_RA4ASN_H_INCLUDED */
+#endif /* ARM_R7S72_TQFP176_CTLSTYLE_STORCH_V8_UA6LJX_H_INCLUDED */
