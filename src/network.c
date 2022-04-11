@@ -28,8 +28,8 @@
 #include "netif/etharp.h"
 #include "lwip/ip_addr.h"
 
-#include "src/dhcp-server/dhserver.h"
-#include "src/dns-server/dnserver.h"
+#include "../lib/dhcp-server/dhserver.h"
+#include "../lib/dns-server/dnserver.h"
 #include "lwip/apps/httpd.h"
 
 #define DHCP_SERVER 1
@@ -290,7 +290,6 @@ void init_htserv(void)
 static int writeok;
 static unsigned bufoffset;
 static ALIGNX_BEGIN RAMNOINIT_D1 uint8_t appbuff [4096uL * 1024] ALIGNX_END;
-static size_t ulmin(size_t a, size_t b) { return a < b ? a : b; }
 
 
 static const uint8_t * findpattern(const uint8_t * buff, unsigned size, const void * pbuff, unsigned psize)

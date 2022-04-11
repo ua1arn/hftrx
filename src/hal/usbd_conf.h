@@ -55,6 +55,10 @@
 	#include "stm32f4xx.h"
 	#include "stm32f4xx_hal.h"
 
+#elif CPUSTYLE_XC7Z
+
+	#include "zynq7000_hal.h"
+
 #endif
 
 /* USER CODE BEGIN INCLUDE */

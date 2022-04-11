@@ -16,10 +16,12 @@
   *
   ******************************************************************************
   */
-#if WITHETHHW
 
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
+
+#if WITHETHHW
+
 #include "lwip/opt.h"
 #include "lwip/mem.h"
 #include "lwip/memp.h"
@@ -34,7 +36,10 @@
 /* Within 'USER CODE' section, code will be kept by default at each generation */
 /* USER CODE BEGIN 0 */
 
-#if defined (ETH) && WITHLWIP
+#if CPUSTYLE_XC7Z && WITHLWIP
+#warning Should be implemented for Zynq 7000
+
+#elif defined (ETH) && WITHLWIP
 
 /* USER CODE END 0 */
 
