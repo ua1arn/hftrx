@@ -29,6 +29,7 @@
 #include "netif/ethernet.h"
 #include "netif/etharp.h"
 #include "lwip/ethip6.h"
+#include "lwip/ip.h"
 #include "ethernetif.h"
 //#include "lan8742.h"
 #include <string.h>
@@ -50,6 +51,10 @@ typedef struct gembuf_tag
 } gembuf_t;
 
 
+static void gem_buffers_initialize(void)
+{
+
+}
 
 static struct netif gem_netif_data;
 
@@ -151,7 +156,7 @@ void init_netif(void)
 {
 #if 0
 	gem_buffers_initialize();
-	gem_rxproc = on_packet;		// разрешаем принимать пакеты даптеру и отправлять в LWIP
+	gem_rxproc = on_packet;		// разрешаем принимать пакеты адаптеру и отправлять в LWIP
 
 	static const  uint8_t hwaddrv [6]  = { HWADDR };
 
