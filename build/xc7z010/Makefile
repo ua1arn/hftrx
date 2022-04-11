@@ -127,7 +127,7 @@ SRCDIRS = $(PRJROOT)/src
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(MDLWUSBDIR)
-#SRCDIRS += $(LWIPDIR)/src
+#SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
 
