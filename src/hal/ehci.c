@@ -1832,10 +1832,10 @@ USBH_StatusTypeDef USBH_LL_SubmitURB(USBH_HandleTypeDef *phost, uint8_t pipe,
  * @retval URB state
  *          This parameter can be one of the these values:
  *            @arg URB_IDLE
- *            @arg URB_DONE
- *            @arg URB_NOTREADY
+ *            @arg URB_DONE - nex state
+ *            @arg URB_NOTREADY = USBH_URB_NOTREADY = end waiting
  *            @arg URB_NYET
- *            @arg URB_ERROR
+ *            @arg URB_ERROR - USBH_URB_ERROR = end waiting
  *            @arg URB_STALL
  */
 USBH_URBStateTypeDef USBH_LL_GetURBState(USBH_HandleTypeDef *phost,
