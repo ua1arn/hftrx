@@ -138,7 +138,7 @@ rwildcard = $(foreach d, $(wildcard $(1:=/*)), $(call rwildcard, $(d), $(2)) $(f
 
 SRCDIRS += $(PRJROOT)/src
 #SRCDIRS += $(DSP3DDIR)/src
-#SRCDIRS += $(LWIPDIR)/src
+#SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(OPENVGDIR)/src
 SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(HALDIR) $(MDLWUSBDIR) $(MDLWHOSTDIR)
