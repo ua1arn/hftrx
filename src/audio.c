@@ -20,10 +20,6 @@
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1
 
-#if WITHUSEDUALWATCH && WITHDSPLOCALFIR
-	#error Can not support WITHUSEDUALWATCH && WITHDSPLOCALFIR together
-#endif /* WITHUSEDUALWATCH && WITHDSPLOCALFIR */
-
 #if 0
 	#ifdef __ARM_FP
 		#warning Avaliable __ARM_FP
@@ -2341,9 +2337,49 @@ static RAMFUNC FLOAT32P_t scalepair_int32(INT32P_t a, int_fast32_t b)
 
 
 #if WITHDSPEXTDDC
-// Фильтр квадратурных каналов приёмника
+// Фильтр квадратурных каналов приёмника A
 // Используется в случае внешнего DDCV
-static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ(FLOAT32P_t NewSample)
+static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ_A(FLOAT32P_t NewSample)
+{
+	const FLOAT_t * const k = FIRCoef_rx_SSB_IQ [gwprof];
+	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
+	// буфер с сохраненными значениями сэмплов
+	static RAMDTCM FLOAT32P_t x [Ntap * 2];
+	static RAMDTCM uint_fast16_t fir_head = 0;
+
+	// shift the old samples
+	// fir_head -  Начало обрабатываемой части буфера
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфера
+	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
+    x [fir_head] = x [fir_head + Ntap] = NewSample;
+
+	uint_fast16_t bh = fir_head + NtapHalf;			// Начало обрабатываемой части буфера
+	uint_fast16_t bt = bh;	// Позиция за концом обрабатываемого буфера
+    // Calculate the new output
+	uint_fast16_t n = NtapHalf;
+	// Выборка в середине буфера
+	FLOAT32P_t v = scalepair(x [bh], k [n]);            // sample at middle of buffer
+	do
+	{
+		{
+			const FLOAT_t kv = k [-- n];
+			v.IV += kv * (x [-- bh].IV + x [++ bt].IV);
+			v.QV += kv * (x [bh].QV + x [bt].QV);
+		}
+		{
+			const FLOAT_t kv = k [-- n];
+			v.IV += kv * (x [-- bh].IV + x [++ bt].IV);
+			v.QV += kv * (x [bh].QV + x [bt].QV);
+		}
+	}
+	while (n != 0);
+
+    return v;
+}
+
+// Фильтр квадратурных каналов приёмника B
+// Используется в случае внешнего DDCV
+static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ_B(FLOAT32P_t NewSample)
 {
 	const FLOAT_t * const k = FIRCoef_rx_SSB_IQ [gwprof];
 	enum { Ntap = Ntap_rx_SSB_IQ, NtapHalf = Ntap / 2 };
@@ -4505,9 +4541,18 @@ static RAMFUNC FLOAT_t processifadcsampleIQ(
 	{
 		FLOAT32P_t vp0 = { { adpt_input(& ifcodecin, iv0), adpt_input(& ifcodecin, qv0) } };
 #if WITHDSPLOCALFIR
-		////BEGIN_STAMP();
-		vp0 = filter_firp_rx_SSB_IQ(vp0);
-		////END_STAMP();
+		// BEGIN_STAMP();
+
+#if WITHUSEDUALWATCH
+		if (pathi)
+			vp0 = filter_firp_rx_SSB_IQ_B(vp0);
+		else
+			vp0 = filter_firp_rx_SSB_IQ_A(vp0);
+#else /* WITHUSEDUALWATCH */
+		vp0 = filter_firp_rx_SSB_IQ_A(vp0);
+#endif /* WITHUSEDUALWATCH */
+
+		//END_STAMP();
 #endif /* WITHDSPLOCALFIR */
 		return baseband_demodulator(vp0, dspmode, pathi);
 	}
