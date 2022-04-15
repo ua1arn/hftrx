@@ -2337,7 +2337,7 @@ static RAMFUNC FLOAT32P_t scalepair_int32(INT32P_t a, int_fast32_t b)
 
 
 #if WITHDSPEXTDDC
-// Фильтр квадратурных каналов приёмника
+// Фильтр квадратурных каналов приёмника A
 // Используется в случае внешнего DDCV
 static RAMFUNC_NONILINE FLOAT32P_t filter_firp_rx_SSB_IQ_A(FLOAT32P_t NewSample)
 {
