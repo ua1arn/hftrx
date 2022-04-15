@@ -251,6 +251,10 @@ static void qtd_item2(volatile struct ehci_transfer_descriptor * p, unsigned pid
 //	p->len = cpu_to_le16((length & EHCI_LEN_MASK) | (pid != EHCI_FL_PID_SETUP) * EHCI_LEN_TOGGLE);	// Data toggle.
 //														// This bit controls the data toggle sequence. This bit should be set for IN and OUT transactions and
 //														// cleared for SETUP packets
+// 	Zynq7000:
+//	Note: The HCD must not program Cerr to a value of 0 when the QH.EPS field is programmed with
+//	a value indicating a FS or LS device. This combination could result in undefined behavior
+
 	p->flags = pid | 1 * EHCI_FL_CERR_MAX | EHCI_FL_IOC;	// Current Page (C_Page) field = 0
 	p->status = 0 * EHCI_STATUS_ACTIVE | EHCI_STATUS_PING * (ping != 0);
 	//le8_modify(& p->status, EHCI_STATUS_MASK | EHCI_STATUS_PING, EHCI_STATUS_PING * (ping != 0));
