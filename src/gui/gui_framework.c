@@ -41,8 +41,6 @@ static btn_bg_t btn_bg [] = {
 	{ 130, 35, },
 	{ 100, 44, },
 	{ 86, 44, },
-	{ 50, 50, },
-	{ 40, 40, },
 };
 enum { BG_COUNT = ARRAY_SIZE(btn_bg) };
 
@@ -1748,7 +1746,7 @@ void gui_drawline(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast1
 	ASSERT(yn < win->draw_y2);
 	ASSERT(yk < win->draw_y2);
 
-	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 0);
+	colmain_line(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, 1);
 }
 
 void gui_drawrect(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast16_t x2, uint_fast16_t y2, COLORMAIN_T color, uint_fast8_t fill)
