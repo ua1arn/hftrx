@@ -71,8 +71,8 @@
 	//#define COLORSTYLE_RED	1	// Цвета а-ля FT-1000
 
 	// +++ Особые варианты расположения кнопок на клавиатуре
-	//#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
-	#define KEYB_FPANEL20_V0A_RA4ASN	1			/* дополнительно коды для прямого ввода частоты */
+	#define KEYB_FPANEL20_V0A	1	/* 20 кнопок на 5 линий - плата rfrontpanel_v0 + LCDMODE_UC1608 в нормальном расположении */
+	//#define KEYB_FPANEL20_V0A_RA4ASN	1			/* дополнительно коды для прямого ввода частоты */
 	//#define KEYB_RAVEN20_V5	1		/* 5 линий клавиатуры: расположение кнопок для Воробей с DSP обработкой */
 	// --- Особые варианты расположения кнопок на клавиатуре
 	#define WITHSPLIT	1	/* управление режимами расстройки одной кнопкой */
@@ -265,8 +265,8 @@
 	//#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define BOARD_FFTZOOM_POW2MAX 4	// Возможные масштабы FFT x1, x2, x4, x8, x16
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	#define WITHUSEDUALWATCH	1	// Второй приемник
-	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	#define WITHFQMETER	1	/* есть схема измерения опорной частоты, по внешнему PPS */
 	//#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 
@@ -348,8 +348,8 @@
 //	#define WITHDEFAULTVIEW		VIEW_3DSS
 //	#define WITHVIEW_3DSS_MARK	1	/* Для VIEW_3DSS - индикация полосы пропускания на спектре */
 
-	#define WITHDISPLAY_FPS		25
-	#define WITHDISPLAYSWR_FPS	25
+	#define WITHDISPLAY_FPS		15
+	#define WITHDISPLAYSWR_FPS	15
 	#define WITHSPECBETA_DEFAULT	30
 
 	#define WITHMAXPWRCALI		150	/* калибровочный параметр PWR-метра */
