@@ -4124,8 +4124,14 @@ static RAMFUNC ncoftwi_t demodulator_FM(
 
 	if (vp1.IV == 0 && vp1.QV == 0)
 		vp1.QV = 1;
-	const ncoftwi_t fi = OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
 
+#if 0
+	float32_t result;
+	VERIFY(arm_atan2_f32(vp1.QV, vp1.IV, & result) == ARM_MATH_SUCCESS);
+	const ncoftwi_t fi = OMEGA2FTWI(result);	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
+#else
+	const ncoftwi_t fi = OMEGA2FTWI(ATAN2F(vp1.QV, vp1.IV));	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.
+#endif
 	const ncoftwi_t d_fi = (ncoftwi_t) (fi - prev_fi [pathi]);
 	prev_fi [pathi] = fi;
 
