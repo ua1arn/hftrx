@@ -176,6 +176,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_STM32F7XX
 	// STM32F745ZGT6 processors, up to 216 MHz 
@@ -200,6 +201,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_STM32F4XX
 
@@ -223,6 +225,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_STM32F30X
 
@@ -432,6 +435,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_STM32MP1
 
@@ -460,7 +464,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_XC7Z
 
@@ -487,6 +491,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYLE_XCZU
 	// Zynq UltraScale+ Device
@@ -510,7 +515,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif CPUSTYPE_ALLWNV3S
 	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
@@ -540,6 +545,7 @@ extern "C" {
 	#endif /* __ARM_NEON */
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
 
 #elif \
 	defined (__TMS320C28X__) || \
