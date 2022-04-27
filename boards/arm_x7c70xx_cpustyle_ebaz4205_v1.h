@@ -729,7 +729,11 @@
 
 	// Инициализация битов портов ввода-вывода для аппаратной реализации I2C
 	// присоединение выводов к периферийному устройству
-	#define	TWIHARD_INITIALIZE() do { i2chw_initialize(); } while (0)
+	#define	TWIHARD_INITIALIZE() do { \
+		/*gpio_peripherial(TARGET_TWI_TWD_MIO, pinmode);*/	/*  PS_MIO43_501 SDA */ \
+		/*gpio_peripherial(TARGET_TWI_TWCK_MIO, pinmode);*/	/*  PS_MIO42_501 SCL */ \
+		/* i2chw_initialize(); */ \
+	} while (0)
 
 
 #endif // WITHTWISW

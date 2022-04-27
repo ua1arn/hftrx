@@ -175,7 +175,6 @@ extern "C" {
 	};
 	// initial value = 0x00001601
 	#define MIO_SET_MODE(pin, pinmode) do { \
-		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 		SCLR->MIO_PIN [(pin)] = (pinmode); /*  */ \
 	} while (0)
 
@@ -226,6 +225,7 @@ extern "C" {
 	#define gpio_output2(pin, state, pinmode) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
+		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
@@ -237,6 +237,7 @@ extern "C" {
 	#define gpio_input2(pin, pinmode) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
+		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		} \
@@ -256,6 +257,7 @@ extern "C" {
 	#define gpio_opendrain2(pin, drive, pinmode) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
+		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
@@ -277,6 +279,7 @@ extern "C" {
 	#define emio_opendrain2(pin, drive) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
+		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 		GPIO_BANK_SET_OUTPUTS(bank, mask, 0); \
 		GPIO_BANK_SET_DIRM(bank, mask, mask); \
 		GPIO_BANK_SET_OEN(bank, mask, mask * !! (drive)); \
@@ -292,6 +295,7 @@ extern "C" {
 	#define gpio_peripherial(pin, pinmode) do { \
 		const portholder_t bank = GPIO_PIN2BANK(pin); \
 		const portholder_t mask = GPIO_PIN2MASK(pin); \
+		SCLR->SLCR_UNLOCK = 0x0000DF0DuL; \
 		if ((pin) < ZYNQ_MIO_CNT) { \
 			MIO_SET_MODE((pin), (pinmode)); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
 		/*GPIO_BANK_SET_DIRM(bank, mask, mask); */\

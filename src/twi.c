@@ -1544,10 +1544,6 @@ void i2c_initialize(void)
 	SET_TWCK();
 	i2c_dly();
 
-#if WITHTWIHW
-	TWIHARD_INITIALIZE();
-#endif
-
 #ifdef TWISOFT2_INITIALIZE
 
 	TWISOFT2_INITIALIZE();

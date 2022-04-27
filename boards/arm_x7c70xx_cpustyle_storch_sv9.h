@@ -733,16 +733,14 @@
 	// todo: check tri_enable field
 	// MIO_PIN_VALUE(disablercvr, pullup, io_type, speed, l3_sel, l2_sel, l1_sel, l0_sel, tri_enable)
 	#define	TWIHARD_INITIALIZE() do { \
-		enum { IOTYPE = TARGET_TWI_IOTYPE }; \
-		const portholder_t pinmode = MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0x02, 0, 0, 0, 1); \
+		const portholder_t pinmode = MIO_PIN_VALUE(1, 1, TARGET_TWI_IOTYPE, 0, 0x02, 0, 0, 0, 1); \
 		gpio_peripherial(TARGET_TWI_TWD_MIO, pinmode);	/*  PS_MIO43_501 SDA */ \
 		gpio_peripherial(TARGET_TWI_TWCK_MIO, pinmode);	/*  PS_MIO42_501 SCL */ \
-		i2chw_initialize(); \
+		/* i2chw_initialize(); */ \
 	} while (0)
 
 	#define TWISOFT_INITIALIZE() do { \
-		enum { IOTYPE = TARGET_TWI_IOTYPE }; \
-		const portholder_t pinmode =  MIO_PIN_VALUE(1, 1, IOTYPE, 0, 0, 0, 0, 0, 0); \
+		const portholder_t pinmode =  MIO_PIN_VALUE(1, 1, TARGET_TWI_IOTYPE, 0, 0, 0, 0, 0, 0); \
 		gpio_opendrain2(TARGET_TWI_TWD_MIO, 0, pinmode);		/*  PS_MIO43_501 SDA */ \
 		gpio_opendrain2(TARGET_TWI_TWCK_MIO, 0, pinmode);		/*  PS_MIO42_501 SCL */ \
 	} while(0)
