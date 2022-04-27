@@ -4191,24 +4191,24 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 
 	static const codechw_t audiocodechw_xc7z =
 	{
-		hardware_dummy_initialize,	// added...
+		xcz_ah_preinit,				// added...
 		hardware_dummy_initialize,
-		hardware_dummy_initialize,
-		xc7z_dma_init_af_tx,
-		hardware_dummy_enable,
-		hardware_dummy_enable,
-		"ZYNQ 7000 audio codec"
+		xcz_audio_rx_init,
+		xcz_audio_tx_init,
+		xcz_audio_rx_enable,
+		xcz_audio_tx_enable,
+		"ZYNQ audio codec"
 	};
 
 	static const codechw_t ifcodechw_xc7z =
 	{
 		hardware_dummy_initialize,	// added...
 		hardware_dummy_initialize,
-		hardware_dummy_initialize,
-		xc7z_if_fifo_init,
-		hardware_dummy_enable,
-		hardware_dummy_enable,
-		"ZYNQ 7000 IF codec"
+		xcz_if_rx_init,
+		xcz_if_tx_init,
+		xcz_if_rx_enable,
+		xcz_if_tx_enable,
+		"ZYNQ IF codec"
 	};
 
 #elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1

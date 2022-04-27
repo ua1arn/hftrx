@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2015 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2015 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -28,6 +28,10 @@
 * 7.0  mus       07/03/19 Tweak Xil_ExceptionRegisterHandler and
 *                         Xil_GetExceptionRegisterHandler to support legacy
 *                         examples for Cortexa72 EL3 exception level.
+* 7.3  mus       07/27/20 Updated Xil_ExceptionRegisterHandler and
+*                         Xil_GetExceptionRegisterHandler to ignore
+*                         Exception_id, only if its pointing to IRQ.
+*                         It fixes CR#1069524
 *
 * </pre>
 *
@@ -35,15 +39,14 @@
 
 /***************************** Include Files ********************************/
 
-#include <xdebug.h>
-#include <xil_assert.h>
-#include <xil_exception.h>
-#include <xil_types.h>
-#include <xpseudo_asm.h>
+#include "xil_types.h"
+#include "xil_assert.h"
+#include "xil_exception.h"
+#include "xpseudo_asm.h"
+#include "xdebug.h"
 /************************** Constant Definitions ****************************/
 
 /**************************** Type Definitions ******************************/
-#if 0
 
 typedef struct {
 	Xil_ExceptionHandler Handler;
@@ -101,8 +104,6 @@ u32 UndefinedExceptionAddr;   /* Address of instruction causing Undefined
 *
 * @return	None.
 *
-* @note		None.
-*
 *****************************************************************************/
 static void Xil_ExceptionNullHandler(void *Data)
 {
@@ -120,11 +121,7 @@ DieLoop: goto DieLoop;
 *			issues (in earlier versions of BSPs, this API was being used to
 *			initialize exception handlers).
 *
-* @param	None.
-*
 * @return	None.
-*
-* @note		None.
 *
 *****************************************************************************/
 void Xil_ExceptionInit(void)
@@ -137,7 +134,7 @@ void Xil_ExceptionInit(void)
 * @brief	Register a handler for a specific exception. This handler is being
 *			called when the processor encounters the specified exception.
 *
-* @param	exception_id contains the ID of the exception source and should
+* @param	Exception_id contains the ID of the exception source and should
 *			be in the range of 0 to XIL_EXCEPTION_ID_LAST.
 *			See xil_exception.h for further information.
 * @param	Handler to the Handler for that exception.
@@ -146,20 +143,21 @@ void Xil_ExceptionInit(void)
 *
 * @return	None.
 *
-* @note		None.
-*
 ****************************************************************************/
 void Xil_ExceptionRegisterHandler(u32 Exception_id,
 				    Xil_ExceptionHandler Handler,
 				    void *Data)
 {
 #if defined (versal) && !defined(ARMR5) && EL3
-/*
- * Cortexa72 processor in versal is coupled with GIC-500, and GIC-500 supports
- * only FIQ at EL3. Hence, tweaking this API to always act on FIQ,
- * ignoring argument passed by user.
- */
-	Exception_id = XIL_EXCEPTION_ID_FIQ_INT;
+	if ( XIL_EXCEPTION_ID_IRQ_INT == Exception_id )
+	{
+	/*
+	 * Cortexa72 processor in versal is coupled with GIC-500, and
+	 * GIC-500 supports only FIQ at EL3. Hence, tweaking this API
+	 * to act on IRQ, if Exception_id is pointing to IRQ
+	 */
+		Exception_id = XIL_EXCEPTION_ID_FIQ_INT;
+	}
 #endif
 	XExc_VectorTable[Exception_id].Handler = Handler;
 	XExc_VectorTable[Exception_id].Data = Data;
@@ -170,7 +168,7 @@ void Xil_ExceptionRegisterHandler(u32 Exception_id,
 * @brief	Get a handler for a specific exception. This handler is being
 *			called when the processor encounters the specified exception.
 *
-* @param	exception_id contains the ID of the exception source and should
+* @param	Exception_id contains the ID of the exception source and should
 *			be in the range of 0 to XIL_EXCEPTION_ID_LAST.
 *			See xil_exception.h for further information.
 * @param	Handler to the Handler for that exception.
@@ -179,20 +177,22 @@ void Xil_ExceptionRegisterHandler(u32 Exception_id,
 *
 * @return	None.
 *
-* @note		None.
-*
 ****************************************************************************/
 void Xil_GetExceptionRegisterHandler(u32 Exception_id,
 					Xil_ExceptionHandler *Handler,
 					void **Data)
 {
 #if defined (versal) && !defined(ARMR5) && EL3
-/*
- * Cortexa72 processor in versal is coupled with GIC-500, and GIC-500 supports
- * only FIQ at EL3. Hence, tweaking this API to always act on FIQ,
- * ignoring argument passed by user.
- */
-	Exception_id = XIL_EXCEPTION_ID_FIQ_INT;
+	if ( XIL_EXCEPTION_ID_IRQ_INT == Exception_id )
+	{
+	/*
+	 * Cortexa72 processor in versal is coupled with GIC-500, and
+	 * GIC-500 supports only FIQ at EL3. Hence, tweaking this API
+	 * to act on IRQ, if Exception_id is pointing to IRQ
+	 */
+
+		Exception_id = XIL_EXCEPTION_ID_FIQ_INT;
+	}
 #endif
 
 	*Handler = XExc_VectorTable[Exception_id].Handler;
@@ -205,13 +205,11 @@ void Xil_GetExceptionRegisterHandler(u32 Exception_id,
 * @brief	Removes the Handler for a specific exception Id. The stub Handler
 *			is then registered for this exception Id.
 *
-* @param	exception_id contains the ID of the exception source and should
+* @param	Exception_id contains the ID of the exception source and should
 *			be in the range of 0 to XIL_EXCEPTION_ID_LAST.
 *			See xil_exception.h for further information.
 *
 * @return	None.
-*
-* @note		None.
 *
 ****************************************************************************/
 void Xil_ExceptionRemoveHandler(u32 Exception_id)
@@ -228,11 +226,7 @@ void Xil_ExceptionRemoveHandler(u32 Exception_id)
 * Default Synchronous abort handler which prints a debug message on console if
 * Debug flag is enabled
 *
-* @param        None
-*
 * @return       None.
-*
-* @note         None.
 *
 ****************************************************************************/
 
@@ -250,11 +244,7 @@ void Xil_SyncAbortHandler(void *CallBackRef){
 * Default SError abort handler which prints a debug message on console if
 * Debug flag is enabled
 *
-* @param        None
-*
 * @return       None.
-*
-* @note         None.
 *
 ****************************************************************************/
 void Xil_SErrorAbortHandler(void *CallBackRef){
@@ -266,16 +256,12 @@ void Xil_SErrorAbortHandler(void *CallBackRef){
 }
 #else
 /*****************************************************************************/
-/*
+/**
 *
 * Default Data abort handler which prints data fault status register through
 * which information about data fault can be acquired
 *
-* @param	None
-*
 * @return	None.
-*
-* @note		None.
 *
 ****************************************************************************/
 
@@ -302,16 +288,12 @@ void Xil_DataAbortHandler(void *CallBackRef){
 }
 
 /*****************************************************************************/
-/*
+/**
 *
 * Default Prefetch abort handler which prints prefetch fault status register through
 * which information about instruction prefetch fault can be acquired
 *
-* @param	None
-*
 * @return	None.
-*
-* @note		None.
 *
 ****************************************************************************/
 void Xil_PrefetchAbortHandler(void *CallBackRef){
@@ -336,16 +318,12 @@ void Xil_PrefetchAbortHandler(void *CallBackRef){
 	}
 }
 /*****************************************************************************/
-/*
+/**
 *
 * Default undefined exception handler which prints address of the undefined
 * instruction if debug prints are enabled
 *
-* @param	None
-*
 * @return	None.
-*
-* @note		None.
 *
 ****************************************************************************/
 void Xil_UndefinedExceptionHandler(void *CallBackRef){
@@ -355,5 +333,4 @@ void Xil_UndefinedExceptionHandler(void *CallBackRef){
 		;
 	}
 }
-#endif
 #endif

@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2014 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2014 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -25,6 +25,14 @@
 *                         ARM processors
 * 7.20  har      01/03/20 Added Xil_SecureOut32 for avoiding blindwrite for
 *                         CR-1049218
+* 7.30  kpt      09/21/20 Moved Xil_EndianSwap16 and Xil_EndianSwap32 to
+*                         xil_io.h and made them as static inline
+*       am       10/13/20 Changed the return type of Xil_SecureOut32 function
+*                         from u32 to int
+* 7.50  dp       02/12/21 Fix compilation error in Xil_EndianSwap32() that occur
+*                         when -Werror=conversion compiler flag is enabled
+* 7.5   mus      05/17/21 Update the functions with comments. It fixes CR#1067739.
+*
 * </pre>
 ******************************************************************************/
 
@@ -37,19 +45,17 @@ extern "C" {
 
 /***************************** Include Files *********************************/
 
-#include <xil_types.h>
-#include <xil_printf.h>
-#include <xstatus.h>
+#include "xil_types.h"
+#include "xil_printf.h"
+#include "xstatus.h"
 
 #if defined (__MICROBLAZE__)
 #include "mb_interface.h"
 #else
-#include <xpseudo_asm.h>
+#include "xpseudo_asm.h"
 #endif
 
 /************************** Function Prototypes ******************************/
-u16 Xil_EndianSwap16(u16 Data);
-u32 Xil_EndianSwap32(u32 Data);
 #ifdef ENABLE_SAFETY
 extern u32 XStl_RegUpdate(u32 RegAddr, u32 RegVal);
 #endif
@@ -162,6 +168,7 @@ static INLINE u64 Xil_In64(UINTPTR Addr)
 ******************************************************************************/
 static INLINE void Xil_Out8(UINTPTR Addr, u8 Value)
 {
+	/* write 8 bit value to specified address */
 	volatile u8 *LocalAddr = (volatile u8 *)Addr;
 	*LocalAddr = Value;
 }
@@ -180,6 +187,7 @@ static INLINE void Xil_Out8(UINTPTR Addr, u8 Value)
 ******************************************************************************/
 static INLINE void Xil_Out16(UINTPTR Addr, u16 Value)
 {
+	/* write 16 bit value to specified address */
 	volatile u16 *LocalAddr = (volatile u16 *)Addr;
 	*LocalAddr = Value;
 }
@@ -199,6 +207,7 @@ static INLINE void Xil_Out16(UINTPTR Addr, u16 Value)
 ******************************************************************************/
 static INLINE void Xil_Out32(UINTPTR Addr, u32 Value)
 {
+	/* write 32 bit value to specified address */
 #ifndef ENABLE_SAFETY
 	volatile u32 *LocalAddr = (volatile u32 *)Addr;
 	*LocalAddr = Value;
@@ -221,6 +230,7 @@ static INLINE void Xil_Out32(UINTPTR Addr, u32 Value)
 ******************************************************************************/
 static INLINE void Xil_Out64(UINTPTR Addr, u64 Value)
 {
+	/* write 64 bit value to specified address */
 	volatile u64 *LocalAddr = (volatile u64 *)Addr;
 	*LocalAddr = Value;
 }
@@ -240,22 +250,69 @@ static INLINE void Xil_Out64(UINTPTR Addr, u64 Value)
  *        	- XST_FAILURE on failure
  *
  *****************************************************************************/
-static INLINE u32 Xil_SecureOut32(UINTPTR Addr, u32 Value)
+static INLINE int Xil_SecureOut32(UINTPTR Addr, u32 Value)
 {
+	int Status = XST_FAILURE;
 	u32 ReadReg;
 	u32 ReadRegTemp;
-	u32 Status = (u32)XST_FAILURE;
 
+	/* writing 32 bit value to specified address */
 	Xil_Out32(Addr, Value);
 
+	/* verify value written to specified address with multiple reads */
 	ReadReg = Xil_In32(Addr);
 	ReadRegTemp = Xil_In32(Addr);
 
 	if( (ReadReg == Value) && (ReadRegTemp == Value) ) {
-		Status = (u32)XST_SUCCESS;
+		Status = XST_SUCCESS;
 	}
 
 	return Status;
+}
+
+/*****************************************************************************/
+/**
+*
+* @brief    Perform a 16-bit endian conversion.
+*
+* @param	Data: 16 bit value to be converted
+*
+* @return	16 bit Data with converted endianness
+*
+******************************************************************************/
+static INLINE __attribute__((always_inline)) u16 Xil_EndianSwap16(u16 Data)
+{
+	return (u16) (((Data & 0xFF00U) >> 8U) | ((Data & 0x00FFU) << 8U));
+}
+
+/*****************************************************************************/
+/**
+*
+* @brief    Perform a 32-bit endian conversion.
+*
+* @param	Data: 32 bit value to be converted
+*
+* @return	32 bit data with converted endianness
+*
+******************************************************************************/
+static INLINE __attribute__((always_inline)) u32 Xil_EndianSwap32(u32 Data)
+{
+	u16 LoWord;
+	u16 HiWord;
+
+	/* get each of the half words from the 32 bit word */
+
+	LoWord = (u16) (Data & 0x0000FFFFU);
+	HiWord = (u16) ((Data & 0xFFFF0000U) >> 16U);
+
+	/* byte swap each of the 16 bit half words */
+
+	LoWord = (u16)(((LoWord & 0xFF00U) >> 8U) | ((LoWord & 0x00FFU) << 8U));
+	HiWord = (u16)(((HiWord & 0xFF00U) >> 8U) | ((HiWord & 0x00FFU) << 8U));
+
+	/* swap the half words before returning the value */
+
+	return ((((u32)LoWord) << (u32)16U) | (u32)HiWord);
 }
 
 #if defined (__MICROBLAZE__)

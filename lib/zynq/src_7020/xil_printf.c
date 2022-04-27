@@ -1,3 +1,7 @@
+/******************************************************************************
+* Copyright (c) 1995 - 2021 Xilinx, Inc.  All rights reserved.
+* SPDX-License-Identifier: MIT
+*******************************************************************************/
 /*---------------------------------------------------*/
 /* Modified from :                                   */
 /* Public Domain version of printf                   */
@@ -5,10 +9,10 @@
 /* For Embedded Systems Programming, 1991            */
 /*                                                   */
 /*---------------------------------------------------*/
+#include "xil_printf.h"
+#include "xil_types.h"
+#include "xil_assert.h"
 #include <ctype.h>
-#include <xil_assert.h>
-#include <xil_printf.h>
-#include <xil_types.h>
 #include <string.h>
 #include <stdarg.h>
 
@@ -239,6 +243,19 @@ void xil_printf( const char8 *ctrl1, ...){
 #else
 void xil_printf( const char8 *ctrl1, ...)
 {
+	va_list argp;
+
+	va_start(argp, ctrl1);
+
+	xil_vprintf(ctrl1, argp);
+
+	va_end(argp);
+}
+#endif
+
+/* This routine is equivalent to vprintf routine */
+void xil_vprintf(const char8 *ctrl1, va_list argp)
+{
 	s32 Check;
 #if defined (__aarch64__) || defined (__arch64__)
     s32 long_flag;
@@ -248,10 +265,7 @@ void xil_printf( const char8 *ctrl1, ...)
     params_t par;
 
     char8 ch;
-    va_list argp;
     char8 *ctrl = (char8 *)ctrl1;
-
-    va_start( argp, ctrl1);
 
     while ((ctrl != NULL) && (*ctrl != (char8)0)) {
 
@@ -429,7 +443,5 @@ void xil_printf( const char8 *ctrl1, ...)
         }
         goto try_next;
     }
-    va_end( argp);
 }
-#endif
 /*---------------------------------------------------*/

@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2009 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2009 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,6 +7,8 @@
 /**
 *
 * @file xil_assert.c
+* @addtogroup common_assert_apis Assert APIs and Macros
+* @{
 *
 * This file contains basic assert related functions for Xilinx software IP.
 *
@@ -23,8 +25,8 @@
 
 /***************************** Include Files *********************************/
 
-#include <xil_assert.h>
-#include <xil_types.h>
+#include "xil_types.h"
+#include "xil_assert.h"
 
 /************************** Constant Definitions *****************************/
 
@@ -35,14 +37,14 @@
 /************************** Variable Definitions *****************************/
 
 /**
- * This variable allows testing to be done easier with asserts. An assert
+ * @brief This variable allows testing to be done easier with asserts. An assert
  * sets this variable such that a driver can evaluate this variable
  * to determine if an assert occurred.
  */
 u32 Xil_AssertStatus;
 
 /**
- * This variable allows the assert functionality to be changed for testing
+ * @brief This variable allows the assert functionality to be changed for testing
  * such that it does not wait infinitely. Use the debugger to disable the
  * waiting during testing of asserts.
  */
@@ -61,8 +63,8 @@ static Xil_AssertCallback Xil_AssertCallbackRoutine = NULL;
 *           infinite loop depending on the value of the Xil_AssertWait
 *           variable.
 *
-* @param    file: filename of the source
-* @param    line: linenumber within File
+* @param    File: filename of the source
+* @param    Line: linenumber within File
 *
 * @return   None.
 *
@@ -89,7 +91,7 @@ void Xil_Assert(const char8 *File, s32 Line)
 * @brief    Set up a callback function to be invoked when an assert occurs.
 *           If a callback is already installed, then it will be replaced.
 *
-* @param    routine: callback to be invoked when an assert is taken
+* @param    Routine: callback to be invoked when an assert is taken
 *
 * @return   None.
 *
@@ -119,3 +121,6 @@ void XNullHandler(void *NullParameter)
 {
 	(void) NullParameter;
 }
+/**
+* @} End of "addtogroup common_assert_apis".
+*/

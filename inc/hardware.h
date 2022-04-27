@@ -1099,16 +1099,30 @@ extern uint8_t myGATEWAY [4];
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-#include "zynq_test.h"
-
 void xc7z_hardware_initialize(void);
 float xc7z_get_cpu_temperature(void);
 uint_fast8_t xc7z_readpin(uint8_t pin);
 void xc7z_writepin(uint8_t pin, uint8_t val);
 void xc7z_gpio_input(uint8_t pin);
 void xc7z_gpio_output(uint8_t pin);
-void xc7z_dds_ftw(const uint_least64_t * val);
-void xc7z_dds_rts(const uint_least64_t * val);
+
+void xcz_rxtx_state(uint8_t tx);
+void xcz_ah_preinit(void);
+
+void xcz_audio_rx_init(void);
+void xcz_audio_tx_init(void);
+void xcz_audio_rx_enable(uint_fast8_t state);
+void xcz_audio_tx_enable(uint_fast8_t state);
+
+void xcz_if_rx_init(void);
+void xcz_if_tx_init(void);
+void xcz_if_rx_enable(uint_fast8_t state);
+void xcz_if_tx_enable(uint_fast8_t state);
+void xcz_rx_iq_shift(uint32_t val);
+void xcz_rx_cic_shift(uint32_t val);
+void xcz_tx_shift(uint32_t val);
+void xcz_adcrand_set(uint8_t val);
+
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 /* получить 32-бит значение */

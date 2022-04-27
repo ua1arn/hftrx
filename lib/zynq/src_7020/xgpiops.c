@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xgpiops.c
-* @addtogroup gpiops_v3_7
+* @addtogroup gpiops_v3_9
 * @{
 *
 * The XGpioPs driver. Functions in this file are the minimum required functions
@@ -52,10 +52,10 @@
 
 /************************** Function Prototypes ******************************/
 
-extern void StubHandler(void *CallBackRef, u32 Bank, u32 Status);
+void StubHandler(void *CallBackRef, u32 Bank, u32 Status); /**< Stub handler */
 
 /*****************************************************************************/
-/*
+/**
 *
 * This function initializes a XGpioPs instance/driver.
 * All members of the XGpioPs instance structure are initialized and
@@ -77,7 +77,7 @@ extern void StubHandler(void *CallBackRef, u32 Bank, u32 Status);
 s32 XGpioPs_CfgInitialize(XGpioPs *InstancePtr, const XGpioPs_Config *ConfigPtr,
 				u32 EffectiveAddr)
 {
-	s32 Status = XST_SUCCESS;
+	s32 Status = (s32)0;
 	u8 i;
 	Xil_AssertNonvoid(InstancePtr != NULL);
 	Xil_AssertNonvoid(ConfigPtr != NULL);
@@ -204,7 +204,7 @@ u32 XGpioPs_Read(const XGpioPs *InstancePtr, u8 Bank)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
         Xil_AssertNonvoid(Bank < InstancePtr->MaxBanks);
 #ifdef versal
-        if(InstancePtr->PmcGpio == TRUE) {
+        if(InstancePtr->PmcGpio == (u32)TRUE) {
                 Xil_AssertNonvoid(Bank != XGPIOPS_TWO);
         } else {
                 Xil_AssertNonvoid((Bank !=XGPIOPS_ONE) && (Bank !=XGPIOPS_TWO));
@@ -275,7 +275,7 @@ void XGpioPs_Write(const XGpioPs *InstancePtr, u8 Bank, u32 Data)
 	Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
         Xil_AssertVoid(Bank < InstancePtr->MaxBanks);
 #ifdef versal
-        if(InstancePtr->PmcGpio == TRUE) {
+        if(InstancePtr->PmcGpio == (u32)TRUE) {
                 Xil_AssertVoid(Bank != XGPIOPS_TWO);
         } else {
                 Xil_AssertVoid((Bank !=XGPIOPS_ONE) && (Bank !=XGPIOPS_TWO));
@@ -370,7 +370,7 @@ void XGpioPs_SetDirection(const XGpioPs *InstancePtr, u8 Bank, u32 Direction)
 	Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
         Xil_AssertVoid(Bank < InstancePtr->MaxBanks);
 #ifdef versal
-        if(InstancePtr->PmcGpio == TRUE) {
+        if(InstancePtr->PmcGpio == (u32)TRUE) {
                 Xil_AssertVoid(Bank != XGPIOPS_TWO);
         } else {
                 Xil_AssertVoid((Bank !=XGPIOPS_ONE) && (Bank !=XGPIOPS_TWO));
@@ -449,7 +449,7 @@ u32 XGpioPs_GetDirection(const XGpioPs *InstancePtr, u8 Bank)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
         Xil_AssertNonvoid(Bank < InstancePtr->MaxBanks);
 #ifdef versal
-        if(InstancePtr->PmcGpio == TRUE) {
+        if(InstancePtr->PmcGpio == (u32)TRUE) {
                 Xil_AssertNonvoid(Bank != XGPIOPS_TWO);
         } else {
                 Xil_AssertNonvoid((Bank !=XGPIOPS_ONE) && (Bank !=XGPIOPS_TWO));
@@ -524,7 +524,7 @@ void XGpioPs_SetOutputEnable(const XGpioPs *InstancePtr, u8 Bank, u32 OpEnable)
 	Xil_AssertVoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
         Xil_AssertVoid(Bank < InstancePtr->MaxBanks);
 #ifdef versal
-        if(InstancePtr->PmcGpio == TRUE) {
+        if(InstancePtr->PmcGpio == (u32)TRUE) {
                 Xil_AssertVoid(Bank != XGPIOPS_TWO);
         } else {
                 Xil_AssertVoid((Bank !=XGPIOPS_ONE) && (Bank !=XGPIOPS_TWO));
@@ -608,7 +608,7 @@ u32 XGpioPs_GetOutputEnable(const XGpioPs *InstancePtr, u8 Bank)
 	Xil_AssertNonvoid(InstancePtr->IsReady == XIL_COMPONENT_IS_READY);
         Xil_AssertNonvoid(Bank < InstancePtr->MaxBanks);
 #ifdef versal
-        if(InstancePtr->PmcGpio == TRUE) {
+        if(InstancePtr->PmcGpio == (u32)TRUE) {
                 Xil_AssertNonvoid(Bank != XGPIOPS_TWO);
         } else {
                 Xil_AssertNonvoid((Bank !=XGPIOPS_ONE) && (Bank !=XGPIOPS_TWO));
@@ -659,7 +659,7 @@ u32 XGpioPs_GetOutputEnablePin(const XGpioPs *InstancePtr, u32 Pin)
 }
 
 /****************************************************************************/
-/*
+/**
 *
 * Get the Bank number and the Pin number in the Bank, for the given PinNumber
 * in the GPIO device.
@@ -804,5 +804,29 @@ void XGpioPs_GetBankPin(u8 PinNumber, u8 *BankNumber, u8 *PinNumberInBank)
 		*PinNumberInBank = (u8)((u32)PinNumber %
 					(XGpioPsPinTable[*BankNumber - (u8)1] + (u32)1));
         }
+}
+
+/*****************************************************************************/
+/**
+*
+* This is a stub for the status callback. The stub is here in case the upper
+* layers do not set the handler.
+*
+* @param	CallBackRef is a pointer to the upper layer callback reference
+* @param	Bank is the GPIO Bank in which an interrupt occurred.
+* @param	Status is the Interrupt status of the GPIO bank.
+*
+* @return	None.
+*
+* @note		None.
+*
+******************************************************************************/
+void StubHandler(void *CallBackRef, u32 Bank, u32 Status)
+{
+	(void) CallBackRef;
+	(void) Bank;
+	(void) Status;
+
+	Xil_AssertVoidAlways();
 }
 /** @} */

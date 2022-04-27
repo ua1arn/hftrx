@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xgpiops_selftest.c
-* @addtogroup gpiops_v3_7
+* @addtogroup gpiops_v3_9
 * @{
 *
 * This file contains a diagnostic self-test function for the XGpioPs driver.
@@ -62,7 +62,7 @@
 ******************************************************************************/
 s32 XGpioPs_SelfTest(const XGpioPs *InstancePtr)
 {
-	s32 Status = XST_SUCCESS;
+	s32 Status = (s32)0;
 	u32 IntrEnabled;
 	u32 CurrentIntrType = 0U;
 	u32 CurrentIntrPolarity = 0U;
@@ -95,7 +95,7 @@ s32 XGpioPs_SelfTest(const XGpioPs *InstancePtr)
 	if ((IntrType != IntrTestValue) && (IntrPolarity != IntrTestValue) &&
 	    (IntrOnAny != IntrTestValue)) {
 
-		Status = XST_FAILURE;
+		Status = (s32)XST_FAILURE;
 	}
 
 	/*

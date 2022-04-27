@@ -26,22 +26,10 @@
 
 #include "xadcps.h"
 #include "xgpiops.h"
-#include "xgpio.h"
 
 static XGpioPs xc7z_gpio;
 #if ! WITHISBOOTLOADER
 static XAdcPs xc7z_xadc;
-static XGpio xc7z_nco;
-
-void xc7z_dds_ftw(const uint_least64_t * val)
-{
-	XGpio_DiscreteWrite(& xc7z_nco, 1, * val);
-}
-
-void xc7z_dds_rts(const uint_least64_t * val)
-{
-	XGpio_DiscreteWrite(& xc7z_nco, 2, * val);
-}
 #endif /* ! WITHISBOOTLOADER */
 
 void xc7z_hardware_initialize(void)
@@ -59,6 +47,18 @@ void xc7z_hardware_initialize(void)
 		ASSERT(0);
 	}
 
+#if WITHPS7BOARD_MYC_Y7Z020
+	// пока так
+	xc7z_gpio_output(TARGET_RFADC_SHDN_EMIO);
+	xc7z_writepin(TARGET_RFADC_SHDN_EMIO, 0);
+
+	xc7z_gpio_output(TARGET_RFADC_DITH_EMIO);
+	xc7z_writepin(TARGET_RFADC_DITH_EMIO, 0);
+
+	xc7z_gpio_output(TARGET_RFADC_PGA_EMIO);
+	xc7z_writepin(TARGET_RFADC_PGA_EMIO, 0);
+#endif /* WITHPS7BOARD_MYC_Y7Z020 */
+
 #if ! WITHISBOOTLOADER
 	XAdcPs_Config * xadccfg = XAdcPs_LookupConfig(XPAR_XADCPS_0_DEVICE_ID);
 	XAdcPs_CfgInitialize(& xc7z_xadc, xadccfg, xadccfg->BaseAddress);
@@ -71,12 +71,6 @@ void xc7z_hardware_initialize(void)
 	}
 
 	XAdcPs_SetSequencerMode(& xc7z_xadc, XADCPS_SEQ_MODE_SAFE);
-
-	Status = XGpio_Initialize(& xc7z_nco, XPAR_GPIO_0_DEVICE_ID);
-	if (Status != XST_SUCCESS) {
-		PRINTF("AXI GPIO init error %d", Status);
-		ASSERT(0);
-	}
 #endif /* ! WITHISBOOTLOADER */
 }
 

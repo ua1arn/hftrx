@@ -251,8 +251,8 @@ bitstream_myir7020.h: bitstream_myir7020.bit
 	
 bootloader: bitstreams BOOT2
   
-app_run: $(PROJECT)_app.elf bitstream_ant_20.bit app_run_ant_20.tcl
-	xsct.bat app_run_4205.tcl 
+app_run: $(PROJECT)_app.elf bitstream_myir7020.bit app_run_myir7020.tcl
+	xsct.bat app_run_myir7020.tcl 
 
 lib: $(ZYNQLIB)
 

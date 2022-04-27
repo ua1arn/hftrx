@@ -5819,7 +5819,9 @@ prog_dds1_setlevel(uint_fast8_t percent)
 void 
 prog_dds1_ftw_sub(const ftw_t * value)
 {
-#if (DDS1_TYPE == DDS_TYPE_FPGAV1)
+#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
+	xcz_dds_ftw_sub(value);
+#elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq2(targetfpga1, value);
 	prog_pulse_ioupdate();
 #endif
@@ -5858,7 +5860,7 @@ prog_dds1_ftw(const ftw_t * value)
 #else	/* LO1PHASES */
 
 	#if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
-		xc7z_dds_ftw(value);
+		xcz_dds_ftw(value);
 	#elif (DDS1_TYPE == DDS_TYPE_AD9852)
 		prog_ad9852_freq1(targetdds1, value);
 		prog_pulse_ioupdate();
@@ -5897,7 +5899,7 @@ void
 prog_rts1_ftw(const ftw_t * value)
 {
 #if (DDS1_TYPE == DDS_TYPE_ZYNQ_PL)
-	xc7z_dds_rts(value);
+	xcz_dds_rts(value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV1)
 	prog_fpga_freq1_rts(targetfpga1, value);
 #elif (DDS1_TYPE == DDS_TYPE_FPGAV2)
@@ -6888,7 +6890,7 @@ XAxiDma xcz_dma_fir_coeffs;
 
 void board_fpga_fir_initialize(void)
 {
-	XAxiDma_Config * config = XAxiDma_LookupConfig(AXIDMA_FIR_COEFFS_ID);
+	XAxiDma_Config * config = XAxiDma_LookupConfig(XPAR_AXI_DMA_FIR_RELOAD_DEVICE_ID);
 	int Status = XAxiDma_CfgInitialize(& xcz_dma_fir_coeffs, config);
 
 	if (Status != XST_SUCCESS) {
