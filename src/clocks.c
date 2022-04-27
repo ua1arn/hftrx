@@ -11930,7 +11930,7 @@ void hardware_twi_master_configure(void)
 
 #elif CPUSTYLE_XC7Z
 
-	unsigned iicix = 0; //XPAR_XIICPS_0_DEVICE_ID;
+	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
 	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
 
