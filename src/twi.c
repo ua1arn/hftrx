@@ -1440,12 +1440,8 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 
 static XIicPs xc7z_iicps;
 
-static void i2chw_initialize(void)
+void hardware_iicps_configure(void)
 {
-	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
-	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
-	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
-
 	XIicPs_Config *Config = XIicPs_LookupConfig(XPAR_XIICPS_0_DEVICE_ID);
 	XIicPs_CfgInitialize(& xc7z_iicps, Config, Config->BaseAddress);
 
@@ -1524,7 +1520,8 @@ void i2c_initialize(void)
 #endif
 
 	TWIHARD_INITIALIZE();
-	i2chw_initialize();
+	hardware_twi_master_configure();	// clocks - pass XPAR_XIICPS_0_DEVICE_ID
+	hardware_iicps_configure();			// Peripheral
 }
 
 #else

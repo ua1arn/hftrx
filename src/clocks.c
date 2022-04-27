@@ -11928,7 +11928,14 @@ void hardware_twi_master_configure(void)
 	// Enable the I2Cx peripheral
 	I2C1->CR1 |= I2C_CR1_PE;
 
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#elif CPUSTYLE_XC7Z
+
+	unsigned iicix = 0; //XPAR_XIICPS_0_DEVICE_ID;
+	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
+	SCLR->APER_CLK_CTRL |= (0x01uL << (18 + iicix));	// APER_CLK_CTRL.I2C0_CPU_1XCLKACT
+
+#elif CPUSTYLE_XCZU
+	#warning Plaxe ZynqMP IIC clocks initialization hers
 
 #else
 	#warning Undefined CPUSTYLE_XXX
