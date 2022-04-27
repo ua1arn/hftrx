@@ -1481,6 +1481,52 @@ uint16_t i2chw_write(uint16_t slave_address, uint8_t * buf, uint32_t size)
 
 	return Status;
 }
+
+void i2c_initialize(void)
+{
+#if 0
+	// программирование выводов, управляющих I2C
+	TWISOFT_INITIALIZE();
+
+#if 0
+	uint_fast8_t i;
+	// release I2C bus
+	CLR_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+	SET_TWD();
+	for (i = 0; i < 24; ++ i)
+	{
+		CLR_TWCK();
+		SET_TWCK();
+	}
+
+#endif
+
+	SET_TWD();
+	i2c_dly();
+	SET_TWCK();
+	i2c_dly();
+
+#ifdef TWISOFT2_INITIALIZE
+
+	TWISOFT2_INITIALIZE();
+
+	SET2_TWD();
+	i2c_dly();
+	SET2_TWCK();
+	i2c_dly();
+#endif
+
+#endif
+
+	TWIHARD_INITIALIZE();
+	i2chw_initialize();
+}
+
 #else
 	#error I2C hardware implementation for CPUSTYPE_xxx is not avaliable
 
