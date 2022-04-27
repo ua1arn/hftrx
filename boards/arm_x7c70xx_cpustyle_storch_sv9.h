@@ -12,15 +12,6 @@
 #ifndef ARM_X7C7XX_BGAXXX_CPUSTYLE_STORCH_SV9_H_INCLUDED
 #define ARM_X7C7XX_BGAXXX_CPUSTYLE_STORCH_SV9_H_INCLUDED 1
 
-//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
-#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
-//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
-//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
-//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
-#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
-
 #if WITHINTEGRATEDDSP
 	//#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 и I2S2_alt или I2S2 и I2S3	*/
 	//#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
@@ -151,6 +142,15 @@
 	//#define WITHUSBRNDIS	1	/* RNDIS использовать Remote NDIS на USB соединении */
 
 #else /* WITHISBOOTLOADER */
+
+	//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+	//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+	#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
+	//#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
+	//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+	//#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
+	//#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
+	#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
@@ -722,7 +722,7 @@
 
 #endif /* WITHKEYBOARD */
 
-#if WITHTWISW
+#if WITHTWISW || WITHTWIHW
 
 	#define TARGET_TWI_IOTYPE 		GPIO_IOTYPE_501
 	#define TARGET_TWI_TWCK_MIO		42	//	I2C_SCL	C42	E12	PS_MIO42_501	Open Drain
@@ -756,7 +756,7 @@
 	#define GET_TWCK() (gpio_readpin(TARGET_TWI_TWCK_MIO))
 	#define GET_TWD() (gpio_readpin(TARGET_TWI_TWD_MIO))
 
-#endif // WITHTWISW
+#endif /* WITHTWISW || WITHTWIHW */
 
 #if WITHFPGAWAIT_AS || WITHFPGALOAD_PS
 

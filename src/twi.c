@@ -113,7 +113,9 @@ void i2c_initialize(void)
 
 	TWISOFT_INITIALIZE();
 	hardware_twi_master_configure();
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 
@@ -420,7 +422,9 @@ void i2c_initialize(void)
 
     // Configure clock
 	hardware_twi_master_configure();
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 #elif CPUSTYLE_STM32F1XX || CPUSTYLE_STM32F4XX
@@ -696,7 +700,9 @@ void i2c_stop(void)
 void i2c_initialize(void)
 {
 	hardware_twi_master_configure();
-	TWIHARD_INITIALIZE();		// соединение периферии с выводами
+#if WITHTWIHW
+	TWIHARD_INITIALIZE();
+#endif
 }
 
 #elif CPUSTYLE_STM32F7XX || CPUSTYLE_STM32F0XX || CPUSTYLE_STM32F0XX
@@ -858,7 +864,9 @@ void i2c_initialize(void)
 	TWISOFT_INITIALIZE();
 	
 	hardware_twi_master_configure();
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 
@@ -1200,8 +1208,9 @@ void i2c_initialize(void)
 {
 	
 	hardware_twi_master_configure();
-
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 #elif CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -1321,12 +1330,12 @@ void i2c_initialize(void)
 	}
 #endif
 
-	TWISOFT_INITIALIZE();
-
     // Configure clock
 	hardware_twi_master_configure();
 	// 
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 
 #elif CPUSTYLE_ATXMEGA
@@ -1355,7 +1364,9 @@ void i2c_initialize(void)
 	TWISOFT_INITIALIZE();
 
 	hardware_twi_master_configure();
+#if WITHTWIHW
 	TWIHARD_INITIALIZE();
+#endif
 }
 // start write
 /* char */ void i2c_start(
@@ -1510,10 +1521,6 @@ void i2c_initialize(void)
 	// программирование выводов, управляющих I2C
 	TWISOFT_INITIALIZE();
 
-#if WITHTWIHW
-	TWIHARD_INITIALIZE();
-#endif
-
 #if 0
 	uint_fast8_t i;
 	// release I2C bus
@@ -1536,6 +1543,10 @@ void i2c_initialize(void)
 	i2c_dly();
 	SET_TWCK();
 	i2c_dly();
+
+#if WITHTWIHW
+	TWIHARD_INITIALIZE();
+#endif
 
 #ifdef TWISOFT2_INITIALIZE
 

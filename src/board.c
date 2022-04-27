@@ -151,7 +151,6 @@ static uint_fast8_t		glob_attvalue;	// RF signal gen attenuator value
 
 static void prog_rfadc_update(void);
 
-#if WITHSPIHW || WITHSPISW
 // Send a frame of bytes via SPI
 static void
 board_ctlregs_spi_send_frame(
@@ -160,10 +159,11 @@ board_ctlregs_spi_send_frame(
 	unsigned int size
 	)
 {
+#if WITHSPIHW || WITHSPISW
 	prog_spi_io(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
+#endif /* WITHSPIHW || WITHSPISW */
 }
 
-#endif /* WITHSPIHW || WITHSPISW */
 
 /**********************/
 //#if defined(PLL1_TYPE) && (LO1MODE_DIRECT == 0)
