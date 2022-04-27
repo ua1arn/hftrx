@@ -6929,6 +6929,7 @@ void board_reload_fir(uint_fast8_t ifir, const int_fast32_t * const k, unsigned 
 			PRINTF("board_reload_fir transmit error %d\n", Status);
 			ASSERT(0);
 		}
+		while(XAxiDma_Busy(& xcz_dma_fir_coeffs, XAXIDMA_DMA_TO_DEVICE));
 	}
 }
 #else

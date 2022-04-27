@@ -168,14 +168,10 @@ void xcz_dma_transmit_if_tx(UINTPTR buffer)
 
 void xcz_dma_if_tx_inthandler(void)
 {
-	static uint16_t iii = 0;
-
-
-		XAxiDma_IntrAckIrq(& xcz_axidma_if_tx, XAXIDMA_IRQ_IOC_MASK, XAXIDMA_DMA_TO_DEVICE);
-		const uintptr_t addr = getfilled_dmabuffer32tx_main();
-		xcz_dma_transmit_if_tx(addr);
-		release_dmabuffer32tx(addr);
-
+	XAxiDma_IntrAckIrq(& xcz_axidma_if_tx, XAXIDMA_IRQ_IOC_MASK, XAXIDMA_DMA_TO_DEVICE);
+	const uintptr_t addr = getfilled_dmabuffer32tx_main();
+	xcz_dma_transmit_if_tx(addr);
+	release_dmabuffer32tx(addr);
 }
 
 void xcz_if_tx_enable(uint_fast8_t state)
