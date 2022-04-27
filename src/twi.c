@@ -1440,7 +1440,7 @@ void i2c_read(uint8_t *data, uint_fast8_t ack_type)
 
 static XIicPs xc7z_iicps;
 
-void i2chw_initialize(void)
+static void i2chw_initialize(void)
 {
 	unsigned iicix = XPAR_XIICPS_0_DEVICE_ID;
 	SCLR->SLCR_UNLOCK = 0x0000DF0DU;
@@ -1553,6 +1553,11 @@ void i2c_initialize(void)
 	SET2_TWCK();
 	i2c_dly();
 #endif
+
+#if WITHTWIHW
+	TWIHARD_INITIALIZE();
+	i2chw_initialize();
+#endif /* WITHTWIHW */
 }
 
 

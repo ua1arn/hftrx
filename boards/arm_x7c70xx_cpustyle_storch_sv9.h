@@ -736,7 +736,6 @@
 		const portholder_t pinmode = MIO_PIN_VALUE(1, 1, TARGET_TWI_IOTYPE, 0, 0x02, 0, 0, 0, 1); \
 		gpio_peripherial(TARGET_TWI_TWD_MIO, pinmode);	/*  PS_MIO43_501 SDA */ \
 		gpio_peripherial(TARGET_TWI_TWCK_MIO, pinmode);	/*  PS_MIO42_501 SCL */ \
-		/* i2chw_initialize(); */ \
 	} while (0)
 
 	#define TWISOFT_INITIALIZE() do { \
