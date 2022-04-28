@@ -54,9 +54,6 @@ void xc7z_hardware_initialize(void)
 
 	xc7z_gpio_output(TARGET_RFADC_DITH_EMIO);
 	xc7z_writepin(TARGET_RFADC_DITH_EMIO, 0);
-
-	xc7z_gpio_output(TARGET_RFADC_PGA_EMIO);
-	xc7z_writepin(TARGET_RFADC_PGA_EMIO, 0);
 #endif /* WITHPS7BOARD_MYC_Y7Z020 */
 
 #if ! WITHISBOOTLOADER

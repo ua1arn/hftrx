@@ -743,6 +743,12 @@ prog_gpioreg(void)
 	HARDWARE_DAC_ALC((WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) * dac_dacfs_coderange / (WITHPOWERTRIMMAX - WITHPOWERTRIMMIN) + dac_dacfs_lowcode);
 //#endif /* WITHCPUDACHW && WITHPOWERTRIM && ! WITHNOTXDACCONTROL */
 #endif /* defined (HARDWARE_DAC_ALC) */
+
+#if CPUSTYLE_XC7Z
+	xcz_rxtx_state(glob_tx);
+	xc7z_gpio_output(TARGET_RFADC_PGA_EMIO);
+	xc7z_writepin(TARGET_RFADC_PGA_EMIO, glob_preamp);
+#endif /* CPUSTYLE_XC7Z */
 }
 
 
