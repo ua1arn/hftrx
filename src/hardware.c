@@ -112,12 +112,14 @@ void xc7z_writepin(uint8_t pin, uint8_t val)
 
 	GPIO_BANK_DEFINE(pin, Bank, PinNumber);
 
+	SCLR->SLCR_UNLOCK = 0x0000DF0DuL;
 	GPIO_BANK_SET_OUTPUTS(Bank, 1uL << PinNumber, !! val << PinNumber);
 	return;
 }
 
 void xc7z_gpio_input(uint8_t pin)
 {
+	SCLR->SLCR_UNLOCK = 0x0000DF0DuL;
 	if (pin < ZYNQ_MIO_CNT)
 	{
 		MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
@@ -144,6 +146,7 @@ void xc7z_gpio_input(uint8_t pin)
 
 void xc7z_gpio_output(uint8_t pin)
 {
+	SCLR->SLCR_UNLOCK = 0x0000DF0DuL;
 	if (pin < ZYNQ_MIO_CNT)
 	{
 		MIO_SET_MODE(pin, 0x00001600uL); /* initial value - with pull-up, TRI_ENABLE=0, then 3-state is controlled by the gpio.OEN_x register. */ \
