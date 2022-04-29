@@ -134,6 +134,7 @@ static void window_time_proccess(void);
 static void window_kbd_proccess(void);
 static void window_kbd_test_proccess(void);
 static void window_testrle_proccess(void);
+static void window_shift_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -172,6 +173,7 @@ static window_t windows [] = {
 	{ WINDOWS_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "",		 		 	 	 0, window_kbd_proccess, },
 	{ WINDOWS_KBD_TEST, 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
 	{ WINDOWS_RLE_TEST, 	 WINDOW_UTILS,			ALIGN_CENTER_X, "RLE demo",	 	 		 1, window_testrle_proccess, },
+	{ WINDOW_SHIFT, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "IQ shift",				 1, window_shift_proccess, },
 };
 
 /* Возврат ссылки на окно */
@@ -602,11 +604,26 @@ static void gui_main_process(void)
 			button_t * btn_speaker = find_gui_element(TYPE_BUTTON, win, "btn_speaker");
 			button_t * btn_Receive = find_gui_element(TYPE_BUTTON, win, "btn_Receive");
 			button_t * btn_ft8 = find_gui_element(TYPE_BUTTON, win, "btn_ft8");
+			button_t * btn_2 = find_gui_element(TYPE_BUTTON, win, "btn_2");
 
 			if (bh == btn_notch)
 			{
 				hamradio_set_gnotch(! hamradio_get_gnotch());
 				update = 1;
+			}
+			else if (bh == btn_2)
+			{
+				if (check_for_parent_window() != NO_PARENT_WINDOW)
+				{
+					close_window(OPEN_PARENT_WINDOW);
+					footer_buttons_state(CANCELLED);
+				}
+				else
+				{
+					window_t * const win = get_win(WINDOW_SHIFT);
+					open_window(win);
+					footer_buttons_state(DISABLED, btn_2);
+				}
 			}
 #if WITHFT8
 			else if (bh == btn_ft8)
@@ -3945,6 +3962,62 @@ void gui_open_sys_menu(void)
 		window_t * const win = get_win(WINDOW_MENU);
 		open_window(win);
 		footer_buttons_state(DISABLED);
+	}
+}
+
+static void window_shift_proccess(void)
+{
+	window_t * const win = get_win(WINDOW_SHIFT);
+
+	static uint8_t shift = 45;
+	static bp_var_t shift_t;
+
+	if (win->first_call)
+	{
+		uint_fast16_t x = 0, y = 0;
+		uint_fast8_t interval = 6, row_count = 4;
+		win->first_call = 0;
+
+		static const label_t labels [] = {
+			{ WINDOW_SHIFT, CANCELLED, 0, NON_VISIBLE, "lbl_shift",  "****",  FONT_MEDIUM, COLORMAIN_YELLOW, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
+		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
+		lbl_shift->x = 10;
+		lbl_shift->y = 10;
+		lbl_shift->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		shift += action;
+
+		shift = shift > 56 ? 56 : shift;
+		shift = shift < 32 ? 32 : shift;
+		xcz_rx_iq_shift(shift);
+
+//		shift = shift > 30 ? 30 : shift;
+//		shift = shift < 0 ? 0 : shift;
+//		xcz_tx_shift(shift);
+
+		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
+		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
+
+		break;
+
+	default:
+
+		break;
 	}
 }
 

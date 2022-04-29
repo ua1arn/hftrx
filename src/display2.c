@@ -9,7 +9,6 @@
 #include "board.h"
 #include "audio.h"
 #include "display2.h"
-
 #include "formats.h"
 
 #include <string.h>
@@ -7980,9 +7979,9 @@ typedef struct {
 #if WITHVIEW_3DSS
 enum {
 #if CPUSTYLE_XC7Z || CPUSTYLE_STM32MP1
-	MAX_3DSS_STEP = WFROWS,
-	Y_STEP = 1,
-	DEPTH_ATTENUATION = 4,
+	MAX_3DSS_STEP = 70,
+	Y_STEP = 2,
+	DEPTH_ATTENUATION = 2,
 #else
 	MAX_3DSS_STEP = 42,
 	Y_STEP = 2,
@@ -9265,6 +9264,7 @@ static void display2_spectrum(
 							uint_fast16_t y1 = y0 - t0;
 							int_fast16_t h = y0 - y1 - i / DEPTH_ATTENUATION;		// высота пика
 							h = h < 0 ? 0 : h;
+							h = h > y0 ? y0 : h;
 
 							for (; h > 0; h --)
 							{

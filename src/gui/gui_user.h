@@ -44,6 +44,7 @@ enum {
 	WINDOWS_KBD,					// экранная клавиатура
 	WINDOWS_KBD_TEST,
 	WINDOWS_RLE_TEST,
+	WINDOW_SHIFT,
 
 	WINDOWS_COUNT
 };
