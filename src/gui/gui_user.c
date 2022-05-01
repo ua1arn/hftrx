@@ -5041,8 +5041,8 @@ static void window_testrle_proccess(void)
 
 // *********************************************************************************************************************************************************************
 
-#define MENU_GROUPS_MAX	20
-#define MENU_PARAMS_MAX	30
+#define MENU_GROUPS_MAX	30
+#define MENU_PARAMS_MAX	60
 static uint8_t index_param = 0;
 
 static void window_menu_params_proccess(void)

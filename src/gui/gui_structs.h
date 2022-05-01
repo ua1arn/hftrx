@@ -75,7 +75,7 @@ typedef enum {
 } title_align_t;
 
 enum {
-	NAME_ARRAY_SIZE = 30,
+	NAME_ARRAY_SIZE = 40,
 	TEXT_ARRAY_SIZE = 50,
 	MENU_ARRAY_SIZE = 50,
 	GUI_ELEMENTS_ARRAY_SIZE = 60

@@ -44,7 +44,10 @@
 #include "xil_exception.h"
 #include "xpseudo_asm.h"
 #include "xdebug.h"
+#include "formats.h"
 /************************** Constant Definitions ****************************/
+
+#define DEBUG	1
 
 /**************************** Type Definitions ******************************/
 
@@ -279,8 +282,8 @@ void Xil_DataAbortHandler(void *CallBackRef){
 	        { volatile register u32 Reg __asm(XREG_CP15_DATA_FAULT_STATUS);
 	        FaultStatus = Reg; }
 	    #endif
-	xdbg_printf(XDBG_DEBUG_GENERAL, "Data abort with Data Fault Status Register  %lx\n",FaultStatus);
-	xdbg_printf(XDBG_DEBUG_GENERAL, "Address of Instruction causing Data abort %lx\n",DataAbortAddr);
+	PRINTF("Data abort with Data Fault Status Register  %lx\n",FaultStatus);
+	PRINTF("Address of Instruction causing Data abort %lx\n",DataAbortAddr);
 #endif
 	while(1) {
 		;
@@ -310,8 +313,8 @@ void Xil_PrefetchAbortHandler(void *CallBackRef){
 			{ volatile register u32 Reg __asm(XREG_CP15_INST_FAULT_STATUS);
 			FaultStatus = Reg; }
 		#endif
-	xdbg_printf(XDBG_DEBUG_GENERAL, "Prefetch abort with Instruction Fault Status Register  %lx\n",FaultStatus);
-	xdbg_printf(XDBG_DEBUG_GENERAL, "Address of Instruction causing Prefetch abort %lx\n",PrefetchAbortAddr);
+	PRINTF("Prefetch abort with Instruction Fault Status Register  %lx\n",FaultStatus);
+	PRINTF("Address of Instruction causing Prefetch abort %lx\n",PrefetchAbortAddr);
 #endif
 	while(1) {
 		;
@@ -328,7 +331,7 @@ void Xil_PrefetchAbortHandler(void *CallBackRef){
 ****************************************************************************/
 void Xil_UndefinedExceptionHandler(void *CallBackRef){
 	(void) CallBackRef;
-	xdbg_printf(XDBG_DEBUG_GENERAL, "Address of the undefined instruction %lx\n",UndefinedExceptionAddr);
+	PRINTF("Address of the undefined instruction %lx\n",UndefinedExceptionAddr);
 	while(1) {
 		;
 	}
