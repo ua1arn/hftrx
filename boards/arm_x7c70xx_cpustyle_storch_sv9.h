@@ -225,6 +225,8 @@
 	#define BOARD_GT911_RESET_INITIO_2() do { xc7z_gpio_input(BOARD_GT911_INT_PIN); } while (0)
 
 	#define BOARD_GT911_INT_CONNECT() do { \
+		xc7z_gpio_input(TARGET_TS_INT_EMIO); \
+		gpio_onrisinginterrupt(TARGET_TS_INT_EMIO, gt911_interrupt_handler, ARM_SYSTEM_PRIORITY, TARGETCPU_SYSTEM); \
 	} while (0)
 
 #endif

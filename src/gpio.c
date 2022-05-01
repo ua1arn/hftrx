@@ -657,6 +657,50 @@ void gpio_onchangeinterrupt(unsigned pin, void (* handler)(void), uint32_t prior
 	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
 }
 
+void gpio_onrisinginterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu)
+{
+	const portholder_t bank = GPIO_PIN2BANK(pin);
+	const portholder_t mask = GPIO_PIN2MASK(pin);
+
+	const uintptr_t int_en = GPIO_INT_EN(bank);
+	//const uintptr_t int_dis = GPIO_INT_DIS(bank);
+	const uintptr_t int_type = GPIO_INT_TYPE(bank);	// 0: level-sensitive, 1: edge-sensitive
+	const uintptr_t int_polatity = GPIO_INT_POLARITY(bank);
+	const uintptr_t int_any = GPIO_INT_ANY(bank);
+
+	ASSERT(pin < ARRAY_SIZE(gpio_vectors));
+
+	ZYNQ_IORW32(int_type) |= mask;
+	ZYNQ_IORW32(int_any) &= ~ mask;
+	ZYNQ_IORW32(int_polatity) |= mask;
+	ZYNQ_IORW32(int_en) = mask;
+
+	gpio_vectors [pin] = handler;
+	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
+}
+
+void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priority, uint32_t tgcpu)
+{
+	const portholder_t bank = GPIO_PIN2BANK(pin);
+	const portholder_t mask = GPIO_PIN2MASK(pin);
+
+	const uintptr_t int_en = GPIO_INT_EN(bank);
+	//const uintptr_t int_dis = GPIO_INT_DIS(bank);
+	const uintptr_t int_type = GPIO_INT_TYPE(bank);	// 0: level-sensitive, 1: edge-sensitive
+	const uintptr_t int_polatity = GPIO_INT_POLARITY(bank);
+	const uintptr_t int_any = GPIO_INT_ANY(bank);
+
+	ASSERT(pin < ARRAY_SIZE(gpio_vectors));
+
+	ZYNQ_IORW32(int_type) |= mask;
+	ZYNQ_IORW32(int_any) &= ~ mask;
+	ZYNQ_IORW32(int_polatity) &= ~ mask;
+	ZYNQ_IORW32(int_en) = mask;
+
+	gpio_vectors [pin] = handler;
+	arm_hardware_set_handler(GPIO_IRQn, GPIO_IRQHandler, priority, tgcpu);
+}
+
 #elif CPUSTYLE_ARM
 
 	/* Установка начального состояния битов  в GPIO STM32F4X */
