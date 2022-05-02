@@ -703,17 +703,17 @@
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCXIN(4),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCX2IN(4),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
 
 		// ST LM235Z
-		#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_UPPER		0	// 4.7 kOhm - верхний резистор делителя датчика температуры
 		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-		#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
+		#define THERMOSENSOR_OFFSET 	(- (2980 + 250))		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	1			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#elif WITHAUTOTUNER_AVBELNN
 

@@ -4295,6 +4295,15 @@ static uint_fast8_t amenuset(void)
 	return menuset;
 }
 
+
+uint_fast8_t habradio_get_classa(void)
+{
+#if WITHPACLASSA
+	return gclassamode;
+#else /* WITHPACLASSA */
+	return 0;
+#endif /* WITHPACLASSA */
+}
 // текущее состояние LOCK
 uint_fast8_t
 hamradio_get_lockvalue(void)
@@ -11627,7 +11636,7 @@ int_fast16_t hamradio_get_temperature_value(void)
 
 #else /* WITHREFSENSOR */
 
-	const unsigned Vref_mV = 2900;//ADCVREF_CPU * 100;
+	const unsigned Vref_mV = ADCVREF_CPU * 100;
 	const int_fast32_t mv = (int32_t) board_getadc_filtered_u32(XTHERMOMRRIX, 0, (uint_fast64_t) Vref_mV * (THERMOSENSOR_UPPER + THERMOSENSOR_LOWER) / THERMOSENSOR_LOWER);
 	return (mv + thermo_offset) / THERMOSENSOR_DENOM;	// Приводим к десятым долям градуса
 

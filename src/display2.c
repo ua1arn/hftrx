@@ -3193,6 +3193,17 @@ static void display2_currlevel5(
 #endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
 }
 
+static void display2_classa7(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+#if WITHPACLASSA
+	display_at(x, y, habradio_get_classa() ? "CLASS A" : "       ");
+#endif /* WITHPACLASSA */
+}
+
 // Отображение уровня сигнала в dBm
 static void display_siglevel7(
 	uint_fast8_t x,
@@ -7035,6 +7046,7 @@ enum
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
 		{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
+		{	32, DLE1,	display2_classa7,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
 	#if WITHMENU
