@@ -14998,13 +14998,12 @@ uint_fast8_t hamradio_get_txdisable(void)
 		return 1;
 #endif /* defined (HARDWARE_GET_TXDISABLE) */
 #if WITHTHERMOLEVEL
-	int_fast16_t tempv = hamradio_get_temperature_value();	// Градусы в десятых долях
+	const int_fast16_t tempv = hamradio_get_temperature_value();	// Градусы в десятых долях
 	if (tempv >= gtempvmax * 10)
 		return 1;
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-	const uint_fast16_t swr = get_swr(40);
-	if (swr >= 20)	// SWR >= 3.0
+	if (reqautotune == 0 && get_swr(40) >= 20)	// SWR >= 3.0
 		return 1;
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	return 0;
@@ -15061,9 +15060,14 @@ processtxrequest(void)
 	const uint_fast8_t error = hamradio_get_txdisable();
 	if (error)
 	{
+#if WITHCAT
 		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
+#endif	/* WITHCAT */
 		moxmode = 0;
 		tunemode = 0;		/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+#if WITHAUTOTUNER
+		reqautotune = 0;
+#endif /* WITHAUTOTUNER */
 	}
 
 	seq_txrequest(! error && tunreq, ! error && (tunreq || txreq));
