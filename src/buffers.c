@@ -1556,9 +1556,9 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 	while (n >= CNT16)
 	{
 		buffers_resample();		// формирование одного буфера синхронного потока из N несинхронного
-#if ! WITHI2S2HW
+#if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
 		release_dmabuffer16(getfilled_dmabuffer16phones());
-#endif /* WITHI2S2HW */
+#endif /* ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) */
 		n -= CNT16;
 	}
 }
@@ -1569,6 +1569,16 @@ void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 // Параметр - количество сэмплов (стерео пар или квадратур) в обмене этого обработчика.
 void RAMFUNC buffers_resampleuacin(unsigned nsamples)
 {
+	static unsigned n = 0;
+	n += nsamples;
+	while (n >= CNT16)
+	{
+#if ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU)
+		release_dmabuffer16(getfilled_dmabuffer16phones());
+#endif /* ! WITHI2S2HW && ! (CPUSTYLE_XC7Z || CPUSTYLE_XCZU) */
+		n -= CNT16;
+	}
+
 }
 
 #endif /* WITHUSBUAC */
