@@ -212,6 +212,8 @@
 
 #if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
 
+	//#define WITH_GT911_INTERRUPTS	1
+
 	void gt911_interrupt_handler(void);
 	#define BOARD_GT911_INT_PIN 	TARGET_TS_INT_EMIO
 	#define BOARD_GT911_RESET_PIN 	TARGET_FPLCD_RESET_EMIO

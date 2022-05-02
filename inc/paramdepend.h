@@ -2536,6 +2536,10 @@ extern "C" {
 // Поддержка FatFS если запрошена поддержка однорго из носителей
 #define WITHUSEFATFS (WITHUSESDCARD || WITHUSEUSBFLASH || WITHUSERAMDISK)
 
+#if defined WITHDSPLOCALFIR && defined WITHDSPLOCALTXFIR
+	#undef WITHDSPLOCALTXFIR
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

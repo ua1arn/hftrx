@@ -344,6 +344,11 @@ void endstamp3(void)
 
 #endif /* WITHDSPLOCALFIR */
 
+#if WITHDSPLOCALTXFIR
+	static RAMDTCM FLOAT_t FIRCoef_tx_SSB_IQ [NPROF] [NtapCoeffs(Ntap_tx_SSB_IQ)];
+	static RAMDTCM FLOAT_t FIRCwnd_tx_SSB_IQ [NtapCoeffs(Ntap_tx_SSB_IQ)];			// подготовленные значения функции окна
+#endif /* WITHDSPLOCALTXFIR */
+
 // Фильтр для передатчика (floating point)
 // Обрабатывается как несимметричный
 static RAMBIGDTCM FLOAT_t FIRCoef_tx_MIKE [NPROF] [NtapCoeffs(Ntap_tx_MIKE)];
@@ -2624,6 +2629,46 @@ static RAMFUNC_NONILINE FLOAT32P_t filter_fir4_tx_SSB_IQ(FLOAT32P_t NewSample, u
 
 #endif /* WITHDSPLOCALFIR */
 
+#if WITHDSPLOCALTXFIR
+static RAMFUNC_NONILINE FLOAT32P_t filter_firp_tx_SSB_IQ(FLOAT32P_t NewSample)
+{
+	const FLOAT_t * const k = FIRCoef_tx_SSB_IQ [gwprof];
+	enum { Ntap = Ntap_tx_SSB_IQ, NtapHalf = Ntap / 2 };
+	// буфер с сохраненными значениями сэмплов
+	static RAMDTCM FLOAT32P_t x [Ntap * 2];
+	static RAMDTCM uint_fast16_t fir_head = 0;
+
+	// shift the old samples
+	// fir_head -  Начало обрабатываемой части буфера
+	// fir_head + Ntap -  Позиция за концом обрабатываемого буфера
+	fir_head = (fir_head == 0) ? (Ntap - 1) : (fir_head - 1);
+    x [fir_head] = x [fir_head + Ntap] = NewSample;
+
+	uint_fast16_t bh = fir_head + NtapHalf;			// Начало обрабатываемой части буфера
+	uint_fast16_t bt = bh;	// Позиция за концом обрабатываемого буфера
+    // Calculate the new output
+	uint_fast16_t n = NtapHalf;
+	// Выборка в середине буфера
+	FLOAT32P_t v = scalepair(x [bh], k [n]);            // sample at middle of buffer
+	do
+	{
+		{
+			const FLOAT_t kv = k [-- n];
+			v.IV += kv * (x [-- bh].IV + x [++ bt].IV);
+			v.QV += kv * (x [bh].QV + x [bt].QV);
+		}
+		{
+			const FLOAT_t kv = k [-- n];
+			v.IV += kv * (x [-- bh].IV + x [++ bt].IV);
+			v.QV += kv * (x [bh].QV + x [bt].QV);
+		}
+	}
+	while (n != 0);
+
+    return v;
+}
+#endif /* WITHDSPLOCALTXFIR */
+
 /* Выполнение обработки в симметричном FIR фильтре */
 static RAMFUNC FLOAT_t filter_fir_compute(const FLOAT_t * const pk0, const FLOAT_t * xbh, uint_fast16_t n)
 {
@@ -2834,6 +2879,10 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 		(void) dspmode;
 		fir_design_integers_passtrough(FIRCoef_trxi_IQ, Ntap_trxi_IQ, 1);
 	#endif /* WITHDSPLOCALFIR */
+#if WITHDSPLOCALTXFIR
+		if (isdspmodetx(dspmode))
+			fir_design_passtrough(FIRCoef_tx_SSB_IQ [spf], Ntap_tx_SSB_IQ, 1);
+#endif /* WITHDSPLOCALTXFIR */
 	}
 	else
 	{
@@ -2860,6 +2909,10 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, txfiltergain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 
 	#else /* WITHDSPLOCALFIR */
+	#if WITHDSPLOCALTXFIR
+			if (isdspmodetx(dspmode))
+				fir_design_lowpass_freq_scaled(FIRCoef_tx_SSB_IQ [spf], FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ, cutfreq, 1);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
+	#endif /* WITHDSPLOCALTXFIR */
 
 		(void) dspmode;
 		#if WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08)
@@ -3986,7 +4039,7 @@ static RAMFUNC void processafadcsampleiq(
 
 		
 		vi = filter_fir_tx_MIKE(vi, 0);
-#if WITHDSPLOCALFIR
+#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 		const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
 #else /* WITHDSPLOCALFIR */
 		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
@@ -5949,6 +6002,9 @@ void dsp_initialize(void)
 	fir_design_windowbuff(FIRCwnd_rx_SSB_IQ, Ntap_rx_SSB_IQ);
 	fir_design_windowbuff(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ);
 #endif /* WITHDSPLOCALFIR */
+#if WITHDSPLOCALTXFIR
+	fir_design_windowbuff(FIRCwnd_tx_SSB_IQ, Ntap_tx_SSB_IQ);
+#endif /* WITHDSPLOCALTXFIR */
 
 	omega2ftw_k1 = POWF(2, NCOFTWBITS);
 
