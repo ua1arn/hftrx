@@ -14964,6 +14964,52 @@ static void spool_secound(void * ctx)
 	//VERIFY(board_dpc(& dpc_1slock, dpc_1stimer, NULL));
 }
 
+#if WITHTX
+
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
+{
+	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
+	adcvalholder_t forward, reflected;
+
+	forward = board_getswrmeter_unfiltered(& reflected, swrcalibr);
+
+								// рассчитанное  значение
+	if (forward < minforward)
+		swr10 = 0;				// SWR=1
+	else if (forward <= reflected)
+		swr10 = swr_fullscale;		// SWR is infinite
+	else
+		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
+	return swr10;
+}
+#else
+uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
+{
+	return 0;
+}
+#endif /* WITHTX */
+
+static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
+
+uint_fast8_t hamradio_get_txdisable(void)
+{
+#if defined (HARDWARE_GET_TXDISABLE)
+	if (HARDWARE_GET_TXDISABLE())
+		return 1;
+#endif /* defined (HARDWARE_GET_TXDISABLE) */
+#if WITHTHERMOLEVEL
+	int_fast16_t tempv = hamradio_get_temperature_value();	// Градусы в десятых долях
+	if (tempv >= gtempvmax * 10)
+		return 1;
+#endif /* WITHTHERMOLEVEL */
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	const uint_fast16_t swr = get_swr(40);
+	if (swr >= 20)	// SWR >= 3.0
+		return 1;
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+	return 0;
+}
+
 /* Установка сиквенсору запроса на передачу.	*/
 static void
 //NOINLINEAT
@@ -15011,7 +15057,16 @@ processtxrequest(void)
 	{
 		tunreq = 1;
 	}
-	seq_txrequest(tunreq, tunreq || txreq);
+
+	const uint_fast8_t error = hamradio_get_txdisable();
+	if (error)
+	{
+		cat_reset_ptt();	// снять программный запрос на передачу - "залипший" запрос.
+		moxmode = 0;
+		tunemode = 0;		/* не важно, по какой причине переходил на передачу - выход из режима при настройке */
+	}
+
+	seq_txrequest(! error && tunreq, ! error && (tunreq || txreq));
 #endif /* WITHTX */
 }
 

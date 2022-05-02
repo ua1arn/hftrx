@@ -1228,31 +1228,6 @@ uint_fast16_t normalize3(
 		return normalize(raw - rawmid, 0, rawmax - rawmid, range2 - range1) + range1;
 }
 
-#if WITHTX
-
-uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
-{
-	uint_fast16_t swr10; 		// swr10 = 0..30 for swr 1..4
-	adcvalholder_t forward, reflected;
-
-	forward = board_getswrmeter_unfiltered(& reflected, swrcalibr);
-
-								// рассчитанное  значение
-	if (forward < minforward)
-		swr10 = 0;				// SWR=1
-	else if (forward <= reflected)
-		swr10 = swr_fullscale;		// SWR is infinite
-	else
-		swr10 = (forward + reflected) * SWRMIN / (forward - reflected) - SWRMIN;
-	return swr10;
-}
-#else
-uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
-{
-	return 0;
-}
-#endif /* WITHTX */
-
 #if LCDMODE_LTDC && WITHBARS
 
 enum {
