@@ -491,6 +491,9 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					ASSERT(req->wLength == 0);
 					break;
 
+				case CDC_SET_LINE_CODING:
+					PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_LINE_CODING, wValue=%04X\n"), req->wValue);
+					break;
 				default:
 					break;
 				}

@@ -360,7 +360,7 @@
 	//#define ENCODER_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	//#define ENCODER2_REVERSE	1	/* разводка на плате с перепутаными фазами от валкодера */
 	#define WITHENCODER2	1		/* есть второй валкодер */
-	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
+	#define BOARD_ENCODER2_DIVIDE 2		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
 	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
@@ -639,12 +639,6 @@
 	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
-	// ST LM235Z
-	#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
-	#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
-	#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
-	#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
-
 #endif /* WITHISBOOTLOADER */
 
 	#define WITHMODESETFULLNFM 1
@@ -679,13 +673,6 @@
 		POTNFMSQL = IFGAIN_IXI,
 	#endif /* WITHPOTNFMSQL */
 
-	#if WITHREFSENSOR
-		VREFIX = 17,		// Reference voltage
-	#endif /* WITHREFSENSOR */
-	#if WITHTEMPSENSOR
-		TEMPIX = 16,
-	#endif /* WITHTEMPSENSOR */
-
 	#if WITHPOTWPM
 		POTWPM = 6,			// PA6 потенциометр управления скоростью передачи в телеграфе
 	#endif /* WITHPOTWPM */
@@ -701,6 +688,9 @@
 		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 		#define WITHCURRLEVEL	1	/* отображение тока оконечного каскада */
 		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
+		#define WITHPACLASSA	1	/* усилитель мощности поддерживает переключение в класс А */
+		#define WITHPOWERTRIMCLASSA 100	// Значение для работы в классе A
+		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 
@@ -713,11 +703,17 @@
 		PAREFERIX2 = BOARD_ADCX2IN(3),	// reference (1/2 питания ACS712ELCTR-30B-T).
 
 		#if WITHTHERMOLEVEL
-			XTHERMOIX = BOARD_ADCXIN(6),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
+			XTHERMOIX = BOARD_ADCXIN(4),		// MCP3208 CH6 Exernal thermo sensor ST LM235Z
 		#endif /* WITHTHERMOLEVEL */
 		#if WITHVOLTLEVEL
 			VOLTSOURCE = BOARD_ADCX1IN(7),		// Средняя точка делителя напряжения, для АКБ
 		#endif /* WITHVOLTLEVEL */
+
+		// ST LM235Z
+		#define THERMOSENSOR_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика температуры
+		#define THERMOSENSOR_LOWER		10	// 1 kOhm - нижний резистор
+		#define THERMOSENSOR_OFFSET 	(- 2730)		// 2.98 volt = 25 Celsius, 10 mV/C
+		#define THERMOSENSOR_DENOM	 	10			// миливольты к десятым долям градуса 2.98 volt = 25 Celsius
 
 	#elif WITHAUTOTUNER_AVBELNN
 
@@ -779,6 +775,10 @@
 			PWRI = FWD,
 		#endif /* WITHSWRMTR */
 	#endif
+
+		#if WITHREFSENSOR
+			VREFIX = 17,		// Reference voltage
+		#endif /* WITHREFSENSOR */
 
 		XTHERMOMRRIX = BOARD_ADCMRRIN(0),	// кеш - индекc не должен повторяться в конфигурации
 		PASENSEMRRIX = BOARD_ADCMRRIN(1),	// кеш - индекc не должен повторяться в конфигурации
