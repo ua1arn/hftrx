@@ -568,10 +568,10 @@ typedef struct
 	#define WITHADAPTERRTS192_WIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHADAPTERRTS192_SHIFT	0		// количество незанятых битов справа.
 	// IF TX
-	#define WITHADAPTERIFDACWIDTH	16		// 1 бит знак и 31 бит значащих
+	#define WITHADAPTERIFDACWIDTH	32		// 1 бит знак и 31 бит значащих
 	#define WITHADAPTERIFDACSHIFT	0		// количество незанятых битов справа.
 	typedef int32_t IFADCvalue_t;
-	typedef int16_t IFDACvalue_t;
+	typedef int32_t IFDACvalue_t;
 
 
 #else /* CPUSTYLE_XC7Z */
@@ -710,14 +710,14 @@ extern transform_t if2rts192out;	// преобразование из выход
 
 #endif /* WITHDTMFPROCESSING */
 
-#if WITHDSPLOCALFIR
+#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 	/* Фильтрация квадратур осуществляется процессором */
 	#if CPUSTYLE_R7S721
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(105)	// single samples, floating point implementation
 
-	#elif CPUSTYLE_STM32MP1
+	#elif CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z
 		#define Ntap_rx_SSB_IQ	NtapValidate(241)	// SSB/CW filters: complex numbers, floating-point implementation
 		#define Ntap_tx_SSB_IQ	NtapValidate(241)	// SSB/CW TX filter: complex numbers, floating-point implementation
 		#define Ntap_tx_MIKE	NtapValidate(241)	// single samples, floating point implementation

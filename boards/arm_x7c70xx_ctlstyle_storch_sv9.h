@@ -279,10 +279,10 @@
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
-	//
 	#define WITHDSPEXTDDC 1			/* Квадратуры получаются внешней аппаратурой */
 	#define WITHDSPEXTFIR 1			/* Фильтрация квадратур осуществляется внешней аппаратурой */
 	//#define WITHDSPLOCALFIR 1		/* test: Фильтрация квадратур осуществляется процессором */
+	#define WITHDSPLOCALTXFIR 1
 	#define WITHDACSTRAIGHT 1		/* Требуется формирование кода для ЦАП в режиме беззнакового кода */
 	#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
 	#define WITHDEFDACSCALE 100	/* 0..100: настраивается под прегруз драйвера. (ADT1-6T, 200 Ohm feedbask) */
@@ -331,9 +331,9 @@
 			#define WITHAFGAINDEFAULT	150
 			#define WITHCPUTEMPERATURE	1
 			#define WITHALTERNATIVEFONTS	1
-			#define WITHAFEQUALIZER		1
+			//#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
-			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
+			//#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
 		#else
 			#define WITHDISPLAY_FPS		15
