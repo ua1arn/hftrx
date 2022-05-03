@@ -78,12 +78,6 @@ void load_settings(void)
 	if (gui_nvram.enc2step_pos == 255)
 		gui_nvram.enc2step_pos = enc2step_default;
 
-	if (gui_nvram.tune_powerdown_enable == 255)
-		gui_nvram.tune_powerdown_enable = tune_powerdown_enable_default;
-
-	if (gui_nvram.tune_powerdown_value == 255)
-		gui_nvram.tune_powerdown_value = tune_powerdown_value_default;
-
 	if (gui_nvram.freq_swipe_enable == 255)
 		gui_nvram.freq_swipe_enable = freq_swipe_enable_default;
 
@@ -542,8 +536,6 @@ static void gui_main_process(void)
 
 		load_settings();
 		elements_state(win);
-
-		tune_backup_power = hamradio_get_tx_power();
 	}
 
 	GET_FROM_WM_QUEUE
@@ -713,11 +705,6 @@ static void gui_main_process(void)
 #if WITHTX
 			else if (bh == btn_txrx)
 			{
-				if (hamradio_tunemode(0))
-					hamradio_set_tx_power(tune_backup_power);
-				else
-					tune_backup_power = hamradio_get_tx_power();
-
 				hamradio_gui_set_reqautotune2(0);
 				hamradio_moxmode(1);
 				update = 1;
@@ -732,17 +719,6 @@ static void gui_main_process(void)
 #if WITHTX
 			if (bh == btn_txrx)
 			{
-				if (gui_nvram.tune_powerdown_enable)
-				{
-					if (hamradio_tunemode(0))
-						hamradio_set_tx_power(tune_backup_power);
-					else
-					{
-						tune_backup_power = hamradio_get_tx_power();
-						hamradio_set_tx_power(gui_nvram.tune_powerdown_value);
-					}
-				}
-
 				hamradio_gui_set_reqautotune2(1);
 				hamradio_tunemode(1);
 				update = 1;
@@ -2434,7 +2410,6 @@ static void window_tx_power_process(void)
 
 		static const button_t buttons [] = {
 			{  44, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_tx_pwr_OK", 	   "OK", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_TX_POWER, NON_VISIBLE, INT32_MAX, "btn_LP_tune", "",   },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2469,14 +2444,9 @@ static void window_tx_power_process(void)
 		lbl_tune_power->visible = VISIBLE;
 		local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), power_tune);
 
-		button_t * btn_LP_tune = find_gui_element(TYPE_BUTTON, win, "btn_LP_tune");
-		btn_LP_tune->x1 = 0;
-		btn_LP_tune->y1 = lbl_tune_power->y + interval;
-		btn_LP_tune->visible = VISIBLE;
-
 		button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-		btn_tx_pwr_OK->x1 = btn_LP_tune->x1 + btn_LP_tune->w + btn_tx_pwr_OK->w;
-		btn_tx_pwr_OK->y1 = btn_LP_tune->y1;
+		btn_tx_pwr_OK->x1 = 0;
+		btn_tx_pwr_OK->y1 = lbl_tune_power->y + interval;
 		btn_tx_pwr_OK->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -2490,17 +2460,10 @@ static void window_tx_power_process(void)
 		{
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
-			button_t * btn_LP_tune = find_gui_element(TYPE_BUTTON, win, "btn_LP_tune");
 
 			if (bh == btn_tx_pwr_OK)
 			{
 				close_all_windows();
-			}
-			else if (bh == btn_LP_tune)
-			{
-				gui_nvram.tune_powerdown_enable = gui_nvram.tune_powerdown_enable ? 0 : 1;
-				save_settings();
-				pw.updated = 1;
 			}
 		}
 		else if (IS_LABEL_PRESS)
@@ -2551,7 +2514,6 @@ static void window_tx_power_process(void)
 
 				local_snprintf_P(lbl_tune_power->text, ARRAY_SIZE(lbl_tune_power->text), PSTR("Tune power: %3d"), power_tune);
 				hamradio_set_tx_tune_power(power_tune);
-				gui_nvram.tune_powerdown_value = power_tune;
 				save_settings();
 
 				break;
@@ -2566,10 +2528,6 @@ static void window_tx_power_process(void)
 
 		ASSERT(pw.select < win->lh_count);
 		win->lh_ptr [pw.select].color = COLORMAIN_YELLOW;
-
-		button_t * btn_LP_tune = find_gui_element(TYPE_BUTTON, win, "btn_LP_tune");
-		local_snprintf_P(btn_LP_tune->text, ARRAY_SIZE(btn_LP_tune->text), "LP tune");
-		btn_LP_tune->is_locked = gui_nvram.tune_powerdown_enable ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 	}
 
 #endif /* WITHPOWERTRIM */

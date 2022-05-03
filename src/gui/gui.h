@@ -48,8 +48,6 @@ typedef struct {
 struct gui_nvram_t {
 	uint8_t enc2step_pos;
 	uint8_t micprofile;
-	uint8_t tune_powerdown_enable;
-	uint8_t tune_powerdown_value;
 	uint8_t freq_swipe_enable;
 	uint8_t freq_swipe_step;
 } ATTRPACKED;
