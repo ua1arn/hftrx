@@ -248,6 +248,12 @@ static USBH_StatusTypeDef DeInitStateMachine(USBH_HandleTypeDef *phost)
   phost->device.RstCnt = 0U;
   phost->device.EnumCnt = 0U;
 
+  /* Reset the device struct */
+  USBH_memset(& phost->device.CfgDesc_Raw, 0, sizeof (phost->device.CfgDesc_Raw));
+  USBH_memset(& phost->device.Data, 0, sizeof (phost->device.Data));
+  USBH_memset(& phost->device.DevDesc, 0, sizeof (phost->device.DevDesc));
+  USBH_memset(& phost->device.CfgDesc, 0, sizeof (phost->device.CfgDesc));
+
   phost->allocaddress = 0;
   phost->currentTarget = & phost->rootTarget;
   phost->rootTarget.dev_address = USBH_ADDRESS_DEFAULT;
