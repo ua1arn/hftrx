@@ -10873,14 +10873,17 @@ uif_key_click_b_from_a(void)
 {
 #if (WITHSPLIT || WITHSPLITEX)
 
-	const uint_fast8_t sbi = getbankindex_ab(0);	// bank index исходных данных
-	const uint_fast8_t tbi = getbankindex_ab(1);	// bank index куда копируются данные
-	const vindex_t tgvi = getvfoindex(tbi);		// vfo index куда копируются данные
+	if (gsplitmode == VFOMODES_VFOSPLIT)
+	{
+		const uint_fast8_t sbi = getbankindex_ab(0);	// bank index исходных данных
+		const uint_fast8_t tbi = getbankindex_ab(1);	// bank index куда копируются данные
+		const vindex_t tgvi = getvfoindex(tbi);		// vfo index куда копируются данные
 
-	copybankstate(sbi, tbi, 0);
-	savebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
-	savebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
-	updateboard(1, 1);
+		copybankstate(sbi, tbi, 0);
+		savebandstate(tgvi, tbi); // записать все параметры настройки (кроме частоты) в область данных VFO */
+		savebandfreq(tgvi, tbi); // записать частоту в область данных VFO */
+		updateboard(1, 1);
+	}
 
 #endif /* (WITHSPLIT || WITHSPLITEX) */
 }
