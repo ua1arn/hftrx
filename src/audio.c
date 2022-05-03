@@ -3893,11 +3893,12 @@ static RAMFUNC FLOAT_t preparevi(
 	case DSPCTL_MODE_TX_AM:
 	case DSPCTL_MODE_TX_NFM:
 	case DSPCTL_MODE_TX_FREEDV:
-		// Источник нормируется к txlevelfenceSSB или txlevelfenceDIGI
 		switch (glob_txaudio)
 		{
 		case BOARD_TXAUDIO_MIKE:
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 		case BOARD_TXAUDIO_LINE:
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 			// источник - микрофон
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)

@@ -384,7 +384,9 @@ const phase_t * getplo2r(
 enum
 {
 	BOARD_TXAUDIO_MIKE,	// "MIKE ",
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	BOARD_TXAUDIO_LINE,	// "LINE ",
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 #if WITHUSBUACOUT
 	BOARD_TXAUDIO_USB,	// "USB AUDIO",
 #endif /* WITHUSBUACOUT */

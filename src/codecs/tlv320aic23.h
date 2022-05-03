@@ -112,8 +112,6 @@
 
 
 #if defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B)
-	//#define WITHAFCODEC1HAVEPROC	1	/* кодек имеет управление обработкой микрофонного сигнала */
-	#define WITHAFCODEC1HAVELINEINLEVEL	1	/* кодек имеет управление усилением с линейного входа */
 	#define	HARDWARE_CODEC1_NPROCPARAMS	5
 #endif /* defined (CODEC1_TYPE) && (CODEC1_TYPE == CODEC_TYPE_TLV320AIC23B) */
 

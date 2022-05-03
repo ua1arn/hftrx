@@ -952,12 +952,12 @@ static const FLASHMEM struct {
 }  txaudiosrcs [] =
 {
 	{ BOARD_TXAUDIO_MIKE, 	"MIKE ", },
-#if WITHAFCODEC1HAVELINEINLEVEL
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
 	{ BOARD_TXAUDIO_LINE, 	"LINE ", },
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
-#if WITHUSBUAC
+#if WITHUSBUACOUT
 	{ BOARD_TXAUDIO_USB, 	"USB  ", },
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACOUT */
 	{ BOARD_TXAUDIO_2TONE, 	"2TONE", },
 	{ BOARD_TXAUDIO_NOISE, 	"NOISE", },
 	{ BOARD_TXAUDIO_1TONE, 	"1TONE", },
@@ -2003,11 +2003,11 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_DIGI, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	#if WITHUSBUAC
+	#if WITHUSBUACOUT
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
-	#else /* WITHUSBUAC */
+	#else /* WITHUSBUACOUT */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBUACOUT */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
 		{ afpnoproc, afpnoproc, }, // afproc - сигнал не обрабатывается
@@ -2040,11 +2040,11 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ DSPCTL_MODE_RX_WIDE, DSPCTL_MODE_TX_SSB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_DIGI, BWSETI_DIGI, },				// индекс банка полос пропускания для данного режима
 		{ 0, INT16_MAX, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	#if WITHUSBUAC
+	#if WITHUSBUACOUT
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
-	#else /* WITHUSBUAC */
+	#else /* WITHUSBUACOUT */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBUACOUT */
 		TXAPROFIG_DIGI,				// группа профилей обработки звука
 		AGCSETI_DIGI,
 		{ afprtty, afpnoproc, }, // afproc
@@ -2112,11 +2112,11 @@ static FLASHMEM const struct modetempl mdt [MODE_COUNT] =
 		{ DSPCTL_MODE_RX_ISB, DSPCTL_MODE_TX_ISB, },	// Управление для DSP в режиме приёма и передачи - режим широкого фильтра
 		{ BWSETI_SSB, BWSETI_SSBTX, },				// индекс банка полос пропускания для данного режима
 		{ 0, 0, },	// фиксированная полоса пропускания в DSP (if6) для данного режима (если не ноль).
-	#if WITHUSBUAC
+	#if WITHUSBUACOUT
 		BOARD_TXAUDIO_USB,		// источник звукового сигнала для данного режима
-	#else /* WITHUSBUAC */
+	#else /* WITHUSBUACOUT */
 		BOARD_TXAUDIO_MIKE,		// источник звукового сигнала для данного режима
-	#endif /* WITHUSBUAC */
+	#endif /* WITHUSBUACOUT */
 		TXAPROFIG_SSB,				// группа профилей обработки звука
 		AGCSETI_SSB,
 		{ afpcw, afpnoproc, }, // afproc
@@ -10462,7 +10462,11 @@ updateboardZZZ(
 		#else /* defined (WITHBBOXMIKESRC) */
 			const uint_fast8_t txaudio = gtxaudio [txmode];
 		#endif /* defined (WITHBBOXMIKESRC) */
+#if WITHAFCODEC1HAVELINEINLEVEL
 		board_set_lineinput(txaudio == BOARD_TXAUDIO_LINE);
+#else /* WITHAFCODEC1HAVELINEINLEVEL */
+		board_set_lineinput(0);
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
 		board_set_detector(BOARD_DETECTOR_SSB);		/* Всегда смесительный детектор */
 		board_set_digigainmax(gdigigainmax);
 		board_set_gvad605(gvad605);			/* напряжение на AD605 (управление усилением тракта ПЧ */
@@ -19261,10 +19265,12 @@ void display2_menu_valxx(
 			static const FLASHMEM char msg [] [6] = 
 			{
  				"MIKE ",	// BOARD_TXAUDIO_MIKE
+#if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
  				"LINE ",	// BOARD_TXAUDIO_LINE
-#if WITHUSBUAC
+#endif /* WITHAFCODEC1HAVELINEINLEVEL */
+#if WITHUSBUACOUT
 				"USB  ",	// BOARD_TXAUDIO_USB
-#endif /* WITHUSBUAC */
+#endif /* WITHUSBUACOUT */
 				"2TONE",	// BOARD_TXAUDIO_2TONE
 				"NOISE",	// BOARD_TXAUDIO_NOISE
 				"1TONE",	// BOARD_TXAUDIO_1TONE
