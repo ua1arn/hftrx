@@ -3253,7 +3253,9 @@ filter_t fi_2p0_455 =
 	uint8_t gsubtonei;	// номер subtone
 	uint8_t gctssenable;	// разрешить формирование subtone
 #endif /* WITHSUBTONES */
-
+#if WITHTHERMOLEVEL
+	uint8_t gtempvmax;
+#endif /* WITHTHERMOLEVEL */
 #endif /* WITHTX */
 
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
@@ -4270,6 +4272,9 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #endif /* CTLSTYLE_RA4YBO_V1 || CTLSTYLE_RA4YBO_V2 || CTLSTYLE_RA4YBO_V3 */
 
 #if WITHTX
+#if WITHTHERMOLEVEL
+	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
+#endif /* WITHTHERMOLEVEL */
 	static uint_fast8_t tunemode;	/* режим настройки передающего тракта */
 	static uint_fast8_t moxmode;	/* передача, включённая кнопкой с клавиатуры */
 #if WITHAUTOTUNER
@@ -14989,8 +14994,6 @@ uint_fast16_t get_swr(uint_fast16_t swr_fullscale)
 }
 #endif /* WITHTX */
 
-static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
-
 uint_fast8_t hamradio_get_txdisable(void)
 {
 #if defined (HARDWARE_GET_TXDISABLE)
@@ -17974,6 +17977,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
+#if WITHTHERMOLEVEL
+	{
+		QLABEL("TEMP LIM"), 7, 2, 0,	ISTEP1,
+		ITEM_VALUE,
+		20, 85,						/* порог срабатывания защиты по температуре */
+		offsetof(struct nvmap, gtempvmax),
+		nvramoffs0,
+		NULL,
+		& gtempvmax,
+		getzerobase,
+	},
+#endif /* WITHTHERMOLEVEL */
 
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
