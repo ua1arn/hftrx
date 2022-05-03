@@ -52,7 +52,6 @@ void xcz_dds_rts(const uint_least64_t * val)
 
 void xcz_rx_iq_shift(uint32_t val) // 48
 {
-//	val = val > 56 ? 56 : val;
 	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 12, val);
 }
 
@@ -68,7 +67,6 @@ void xcz_rx_cic_shift(uint32_t val)
 
 void xcz_tx_shift(uint32_t val)
 {
-	//val = val > 94 ? 94 : val;
 	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 20, val);
 }
 
@@ -81,8 +79,7 @@ void xcz_ah_preinit(void)
 	xcz_rxtx_state(1);
 	xcz_rxtx_state(0);
 	xcz_rx_iq_shift(45); 	// 45
-//	xcz_rx_cic_shift(87);
-	xcz_tx_shift(25);		// 23
+	xcz_tx_shift(24);		// 24
 
 	uint16_t ss = DMABUFFSIZE16;
 	uint16_t amp = 16384;
