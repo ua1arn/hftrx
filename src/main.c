@@ -3256,6 +3256,9 @@ filter_t fi_2p0_455 =
 #if WITHTHERMOLEVEL
 	uint8_t gtempvmax;
 #endif /* WITHTHERMOLEVEL */
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	uint8_t gignoreswwr;	/* игнорирование превышения КСВ */
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 #endif /* WITHTX */
 
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
@@ -4275,6 +4278,9 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 #if WITHTHERMOLEVEL
 	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
 #endif /* WITHTHERMOLEVEL */
+#if (WITHSWRMTR || WITHSHOWSWRPWR)
+	static uint_fast8_t gignoreswwr;	/* игнорирование превышения КСВ */
+#endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	static uint_fast8_t tunemode;	/* режим настройки передающего тракта */
 	static uint_fast8_t moxmode;	/* передача, включённая кнопкой с клавиатуры */
 #if WITHAUTOTUNER
@@ -15010,7 +15016,7 @@ uint_fast8_t hamradio_get_txdisable(void)
 		return 1;
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-	if (reqautotune == 0 && get_swr(40) >= 20)	// SWR >= 3.0
+	if (gignoreswwr == 0 && reqautotune == 0 && get_swr(40) >= 20)	// SWR >= 3.0
 		return 1;
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	return 0;
@@ -17983,7 +17989,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 #endif /* WITHFANTIMER */
 #if WITHTHERMOLEVEL
 	{
-		QLABEL("TEMP LIM"), 7, 2, 0,	ISTEP1,
+		QLABEL("TEMP LIM"), 7, 0, 0,	ISTEP1,
 		ITEM_VALUE,
 		20, 85,						/* порог срабатывания защиты по температуре */
 		offsetof(struct nvmap, gtempvmax),
@@ -18349,12 +18355,22 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
-		1, 255, 
+		1, 255,
 		offsetof(struct nvmap, maxpwrcali),
 		nvramoffs0,
 		NULL,
 		& maxpwrcali,
-		getzerobase, 
+		getzerobase,
+	},
+	{
+		QLABEL("IGNO SWR"), 7, 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,						/* игнорирование превышения КСВ */
+		offsetof(struct nvmap, gignoreswwr),
+		nvramoffs0,
+		NULL,
+		& gignoreswwr,
+		getzerobase,
 	},
 	
 #elif WITHPWRMTR
