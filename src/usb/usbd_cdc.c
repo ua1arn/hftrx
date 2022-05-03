@@ -353,7 +353,8 @@ static USBD_StatusTypeDef USBD_CDC_EP0_RxReady(USBD_HandleTypeDef *pdev)
 			break;
 		default:
 			// непонятно, для чего эти данные?
-			TP();
+            PRINTF("req->bReques=%02X\n", req->bRequest);
+            TP();
 			break;
 		}
 	}
@@ -449,6 +450,7 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					break;
 
 				default:
+		            PRINTF("req->bReques=%02X\n", req->bRequest);
 					TP();
 					USBD_CtlError(pdev, req);
 					break;
@@ -462,13 +464,17 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 				switch (req->bRequest)
 				{
 					case USB_REQ_GET_INTERFACE:
-					{
-						static __ALIGN4k_BEGIN uint8_t buff [64] __ALIGN4k_END;
-						//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
-						buff [0] = 0;
-						USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
-					}
-					break;
+						{
+							static __ALIGN4k_BEGIN uint8_t buff [64] __ALIGN4k_END;
+							//PRINTF(PSTR("USBD_CDC_Setup: USB_REQ_TYPE_STANDARD USB_REQ_GET_INTERFACE dir=%02X interfacev=%d, req->wLength=%d\n"), req->bmRequest & 0x80, interfacev, (int) req->wLength);
+							buff [0] = 0;
+							USBD_CtlSendData(pdev, buff, ulmin16(ARRAY_SIZE(buff), req->wLength));
+						}
+						break;
+					default:
+			            PRINTF("req->bReques=%02X\n", req->bRequest);
+						TP();
+						break;
 				}
 			}
 			break;
@@ -492,9 +498,12 @@ static USBD_StatusTypeDef USBD_CDC_Setup(USBD_HandleTypeDef *pdev, const USBD_Se
 					break;
 
 				case CDC_SET_LINE_CODING:
-					PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_LINE_CODING, wValue=%04X\n"), req->wValue);
+					//PRINTF(PSTR("USBD_CDC_Setup OUT: CDC_SET_LINE_CODING, wValue=%04X\n"), req->wValue);
 					break;
+
 				default:
+					PRINTF("req->bReques=%02X\n", req->bRequest);
+					TP();
 					break;
 				}
 				/* все запросы этого класса устройств */
