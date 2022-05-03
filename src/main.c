@@ -15016,7 +15016,7 @@ uint_fast8_t hamradio_get_txdisable(void)
 		return 1;
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-	if (gignoreswwr == 0 && reqautotune == 0 && get_swr(40) >= 20)	// SWR >= 3.0
+	if (gignoreswwr == 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
 		return 1;
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	return 0;
