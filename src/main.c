@@ -4289,9 +4289,15 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	enum { reqautotune = 0 };
 #endif /* WITHAUTOTUNER */
 
+#if WITHTOUCHGUI
+	static uint_fast8_t reqautotune2 = 0;
+#else
+	enum { reqautotune2 = 0 };
+#endif /* WITHTOUCHGUI */
+
 #else /* WITHTX */
 
-	enum { tunemode = 0, moxmode = 0, reqautotune = 0 };
+	enum { tunemode = 0, moxmode = 0, reqautotune = 0, reqautotune2 = 0 };
 
 #endif /* WITHTX */
 
@@ -8252,7 +8258,7 @@ getlo4ref(
 static uint_fast8_t
 getactualtune(void)
 {
-	return tunemode || (catenable && cattunemode) || reqautotune || hardware_get_tune();
+	return tunemode || (catenable && cattunemode) || reqautotune || reqautotune2 || hardware_get_tune();
 }
 
 // вызывается из user mode
@@ -8260,7 +8266,7 @@ getactualtune(void)
 static uint_fast8_t
 getactualdownpower(void)
 {
-	return reqautotune || hardware_get_tune();
+	return reqautotune || reqautotune2 || hardware_get_tune();
 }
 
 #if WITHTX
@@ -23253,6 +23259,12 @@ void hamradio_gui_enc2_update(void)
 {
 }
 #endif /* WITHENCODER2 */
+
+void hamradio_gui_set_reqautotune2(uint_fast8_t val)
+{
+	reqautotune2 = val != 0;
+}
+
 #endif /* WITHTOUCHGUI */
 
 // основной цикл программы при работе в режиме любительского премника

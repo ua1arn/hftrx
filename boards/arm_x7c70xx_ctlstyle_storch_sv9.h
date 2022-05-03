@@ -584,15 +584,16 @@
 
 		VOLTSOURCE = BOARD_ADCX1IN(7),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
-	#elif 0
+	#elif 1
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
 
-		FWD = BOARD_ADCX2IN(3),
-		REF = BOARD_ADCX2IN(2),
+		FWD = BOARD_ADCX2IN(2),
+		REF = BOARD_ADCX2IN(3),
 		PWRI = FWD,
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
+		#define WITHVOLTLEVEL	1	/* отображение напряжения АКБ */
 		PASENSEIX2 = BOARD_ADCX2IN(0),	// DRAIN
 		PAREFERIX2 = BOARD_ADCX2IN(1),	// reference (1/2 питания ACS712ELCTR-30B-T).
 	#else

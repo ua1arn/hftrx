@@ -718,6 +718,7 @@ static void gui_main_process(void)
 				else
 					tune_backup_power = hamradio_get_tx_power();
 
+				hamradio_gui_set_reqautotune2(0);
 				hamradio_moxmode(1);
 				update = 1;
 			}
@@ -742,6 +743,7 @@ static void gui_main_process(void)
 					}
 				}
 
+				hamradio_gui_set_reqautotune2(1);
 				hamradio_tunemode(1);
 				update = 1;
 			}
@@ -4002,13 +4004,13 @@ static void window_shift_proccess(void)
 
 		shift += action;
 
-		shift = shift > 56 ? 56 : shift;
-		shift = shift < 32 ? 32 : shift;
-		xcz_rx_iq_shift(shift);
+//		shift = shift > 56 ? 56 : shift;
+//		shift = shift < 32 ? 32 : shift;
+//		xcz_rx_iq_shift(shift);
 
-//		shift = shift > 30 ? 30 : shift;
-//		shift = shift < 0 ? 0 : shift;
-//		xcz_tx_shift(shift);
+		shift = shift > 56 ? 56 : shift;
+		shift = shift < 16 ? 16 : shift;
+		xcz_tx_shift(shift);
 
 		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
 		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
