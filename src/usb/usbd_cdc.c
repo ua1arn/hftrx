@@ -253,6 +253,7 @@ uint_fast8_t usbd_cdc2_getdtr(void)
 }
 
 static volatile uint8_t usbd_cdc_txenabled [WITHUSBCDCACM_N];	/* виртуальный флаг разрешения прерывания по готовности передатчика - HARDWARE_CDC_ONTXCHAR*/
+static volatile uint8_t usbd_cdc_zlp_pending [WITHUSBCDCACM_N];
 
 /* Разрешение/запрещение прерывания по передаче символа */
 void usbd_cdc_enabletx(uint_fast8_t state)	/* вызывается из обработчика прерываний */
@@ -383,13 +384,27 @@ static USBD_StatusTypeDef USBD_CDC_DataIn(USBD_HandleTypeDef *pdev, uint_fast8_t
 			{
 				HARDWARE_CDC_ONTXCHAR(offset, pdev);	// при отсутствии данных usbd_cdc_txenabled устанавливается в 0
 			}
+#if 0
 			USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
 			cdcXbuffinlevel [offset] = 0;
+#else
+			if (cdcXbuffin [offset] != 0)
+			{
+				usbd_cdc_zlp_pending [offset] = cdcXbuffinlevel [offset] == VIRTUAL_COM_PORT_IN_DATA_SIZE;
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
+				cdcXbuffinlevel [offset] = 0;
+			}
+			else if (usbd_cdc_zlp_pending [offset] != 0)
+			{
+				usbd_cdc_zlp_pending [offset] = 0;
+				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), NULL, 0);	// Send ZLP
+			}
+#endif
 			break;
 		default:
 			if (1)
 			{
-				USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
+				//USBD_LL_Transmit(pdev, USB_ENDPOINT_IN(epnum), cdcXbuffin [offset], cdcXbuffinlevel [offset]);
 				cdcXbuffinlevel [offset] = 0;
 			}
 			else
@@ -548,13 +563,15 @@ static USBD_StatusTypeDef USBD_CDC_Init(USBD_HandleTypeDef *pdev, uint_fast8_t c
     /* cdc Open EP IN */
  	for (offset = 0; offset < WITHUSBCDCACM_N; ++ offset)
 	{
-	   USBD_LL_OpenEP(pdev,
-			   	   	   USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset),
-					   USBD_EP_TYPE_BULK,
-					   VIRTUAL_COM_PORT_IN_DATA_SIZE);
+		usbd_cdc_zlp_pending [offset] = 0;
 
- 		USBD_LL_Transmit(pdev, USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset), NULL, 0);
-	     /* cdc Open EP OUT */
+		USBD_LL_OpenEP(pdev,
+			   USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset),
+			   USBD_EP_TYPE_BULK,
+			   VIRTUAL_COM_PORT_IN_DATA_SIZE);
+
+		USBD_LL_Transmit(pdev, USBD_CDCACM_EP(USBD_EP_CDCACM_IN, offset), NULL, 0);
+		/* cdc Open EP OUT */
 		USBD_LL_OpenEP(pdev, USBD_CDCACM_EP(USBD_EP_CDCACM_OUT, offset), USBD_EP_TYPE_BULK, VIRTUAL_COM_PORT_OUT_DATA_SIZE);
 
 #if WITHUSBCDCACMINTSHARING
