@@ -43,8 +43,12 @@ val_step_t freq_swipe_step [] = {
 
 struct gui_nvram_t gui_nvram;
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
+
 static menu_by_name_t menu_uif;
+
 static char * kbd_editstr;
+static uint16_t * kbd_editdigits;
+static uint_fast8_t kbd_clean = 0, kbd_digits_only = 0;
 
 enum { enc2step_vals = ARRAY_SIZE(enc2step) };
 enum { freq_swipe_step_vals = ARRAY_SIZE(freq_swipe_step) };
@@ -65,6 +69,63 @@ const uint8_t infobar_places [infobar_num_places] = {
 
 #endif /* GUI_SHOW_INFOBAR */
 
+#if WITHFT8
+
+#include "ft8_core0.h"
+
+const uint_fast32_t ft8_bands [] = {
+		1840000uL,
+		3573000uL,
+		5357000uL,
+		7074000uL,
+		10136000uL,
+		14074000uL,
+		18100000uL,
+		21074000uL,
+		24915000uL,
+		28074000uL,
+};
+
+enum {
+	ft8_band_default = 3, 						// 40m
+	ft8_txfreq_default = 1500,
+	ft8_txfreq_equal_default = 1,
+	ft8_mode = SUBMODE_USB,
+	ft8_bands_count = ARRAY_SIZE(ft8_bands),
+};
+
+typedef enum {
+	FT8_STATE_INIT,
+	FT8_STATE_TX_REQ,	// передача вызываемому корреспонденту рапорта
+	FT8_STATE_RX_ANS,	// прием от корреспондента ответа
+	FT8_STATE_TX_END,	// передача корреспонденту завершения связи 73
+	FT8_STATE_RX_ACK,	// прием от корреспондента подтверждения 73
+} ft8_state_t;
+
+ft8_state_t ft8_state;
+
+typedef struct {
+	label_t * ptr;
+} lh_array_t;
+
+#endif /* #if WITHFT8 */
+
+#if WITHWIFI
+
+enum {
+	WIFI_AP_IDLE,
+	WIFI_AP_SCAN,
+	WIFI_AP_SCAN_DONE,
+	WIFI_AP_CONNECT,
+	WIFI_AP_CONNECT_DONE,
+	WIFI_AP_CONNECT_ERROR,
+	WIFI_AP_DISCONNECT
+};
+
+static uint_fast8_t wifi_status = WIFI_AP_IDLE;
+
+#endif /* WITHWIFI */
+
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
 	memcpy(& gui_enc2_menu, enc2_menu, sizeof (gui_enc2_menu));
@@ -83,6 +144,29 @@ void load_settings(void)
 
 	if (gui_nvram.freq_swipe_step == 255)
 		gui_nvram.freq_swipe_step = freq_swipe_step_default;
+
+#if WITHFT8
+	if (gui_nvram.ft8_callsign [0] == 255)
+		local_snprintf_P(gui_nvram.ft8_callsign, ARRAY_SIZE(gui_nvram.ft8_callsign), "RA4ASN");
+
+	if (gui_nvram.ft8_snr [0] == 255)
+		local_snprintf_P(gui_nvram.ft8_snr, ARRAY_SIZE(gui_nvram.ft8_snr), "-20");
+
+	if (gui_nvram.ft8_qth [0] == 255)
+		local_snprintf_P(gui_nvram.ft8_qth, ARRAY_SIZE(gui_nvram.ft8_qth), "LO10");
+
+	if (gui_nvram.ft8_end [0] == 255)
+		local_snprintf_P(gui_nvram.ft8_end, ARRAY_SIZE(gui_nvram.ft8_end), "RR73");
+
+	if (gui_nvram.ft8_band == 255)
+		gui_nvram.ft8_band = ft8_band_default;
+
+	if (gui_nvram.ft8_txfreq_val == 65535)
+		gui_nvram.ft8_txfreq_val = ft8_txfreq_default;
+
+	if (gui_nvram.ft8_txfreq_equal == 255)
+		gui_nvram.ft8_txfreq_equal = ft8_txfreq_equal_default;
+#endif /* WITHFT8 */
 
 #if WITHAFCODEC1HAVEPROC
 	if (gui_nvram.micprofile != micprofile_default && gui_nvram.micprofile < NMICPROFCELLS)
@@ -121,14 +205,16 @@ static void window_receive_process(void);
 static void window_notch_process(void);
 static void window_gui_settings_process(void);
 static void window_ft8_process(void);
+static void window_ft8_bands_process(void);
+static void window_ft8_settings_process(void);
 static void window_infobar_menu_process(void);
-static void windows_af_eq_proccess(void);
+static void window_af_eq_proccess(void);
+static void window_shift_proccess(void);
 static void window_menu_params_proccess(void);
 static void window_time_proccess(void);
 static void window_kbd_proccess(void);
 static void window_kbd_test_proccess(void);
-static void window_testrle_proccess(void);
-static void window_shift_proccess(void);
+static void window_wifi_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -158,21 +244,24 @@ static window_t windows [] = {
 	{ WINDOW_GUI_SETTINGS, 	 WINDOW_OPTIONS, 		ALIGN_CENTER_X, "GUI settings",	 		 1, window_gui_settings_process, },
 #if WITHFT8
 	{ WINDOW_FT8, 			 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "FT8 terminal",		 	 1, window_ft8_process, },
+	{ WINDOW_FT8_BANDS, 	 WINDOW_FT8,			ALIGN_CENTER_X, "FT8 bands",		 	 0, window_ft8_bands_process, },
+	{ WINDOW_FT8_SETTINGS, 	 WINDOW_FT8,			ALIGN_CENTER_X, "FT8 settings",		 	 0, window_ft8_settings_process, },
 #endif /* #if WITHFT8 */
 	{ WINDOW_INFOBAR_MENU, 	 NO_PARENT_WINDOW,		ALIGN_MANUAL,   "",		 				 0, window_infobar_menu_process, },
-	{ WINDOW_AF_EQ, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "AF equalizer",			 1, windows_af_eq_proccess, },
-#if defined (RTC1_TYPE)
-	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
-#endif /* defined (RTC1_TYPE) */
-	{ WINDOWS_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "",		 		 	 	 0, window_kbd_proccess, },
-	{ WINDOWS_KBD_TEST, 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
-	{ WINDOWS_RLE_TEST, 	 WINDOW_UTILS,			ALIGN_CENTER_X, "RLE demo",	 	 		 1, window_testrle_proccess, },
+	{ WINDOW_AF_EQ, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "AF equalizer",			 1, window_af_eq_proccess, },
 	{ WINDOW_SHIFT, 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "IQ shift",				 1, window_shift_proccess, },
+	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
+	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_proccess, },
+	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
+	{ WINDOW_WIFI, 		 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Wi-Fi AP",	 			 1, window_wifi_proccess, },
 };
 
 /* Возврат ссылки на окно */
 window_t * get_win(uint8_t window_id)
 {
+	if (window_id == NO_PARENT_WINDOW)	//	костыль
+		return & windows [0];
+
 	ASSERT(window_id < WINDOWS_COUNT);
 	return & windows [window_id];
 }
@@ -181,6 +270,25 @@ void gui_user_actions_after_close_window(void)
 {
 	hamradio_disable_encoder2_redirect();
 	gui_update();
+}
+
+static void keyboard_edit_string(char * str, uint_fast8_t strlen, window_t * parent_win, uint_fast8_t clean)
+{
+	kbd_editstr = str;
+	kbd_clean = clean;
+	kbd_digits_only = 0;
+	window_t * win_kbd = get_win(WINDOW_KBD);
+	win_kbd->parent_id = parent_win->window_id;
+	open_window(win_kbd);
+}
+
+static void keyboard_edit_digits(uint16_t * val, window_t * parent_win)
+{
+	kbd_editdigits = val;
+	kbd_digits_only = 1;
+	window_t * win_kbd = get_win(WINDOW_KBD);
+	win_kbd->parent_id = parent_win->window_id;
+	open_window(win_kbd);
 }
 
 // *********************************************************************************************************************************************************************
@@ -212,6 +320,35 @@ static void window_infobar_menu_process(void)
 
 		switch (infobar)
 		{
+#if WITHUSEDUALWATCH
+		case INFOBAR_SPLIT:
+		{
+			for (uint_fast8_t i = 0; i < 2; i ++)
+			{
+				char btn_name [6] = { 0 };
+				local_snprintf_P(btn_name, ARRAY_SIZE(btn_name), PSTR("btn_%d"), i);
+				button_t * bh = find_gui_element(TYPE_BUTTON, win, btn_name);
+				bh->x1 = 0;
+				bh->y1 = yy;
+				bh->visible = VISIBLE;
+				bh->payload = i + 1;
+
+				if (i == 0)
+				{
+					uint_fast8_t state;
+					hamradio_get_vfomode3_value(& state);
+					bh->is_locked = state != 0;
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "SPLIT");
+				}
+				else if (i == 1)
+				{
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
+				}
+				yy = yy + interval + bh->h;
+			}
+		}
+			break;
+#endif /* WITHUSEDUALWATCH */
 		case INFOBAR_AF_VOLUME:
 		{
 			for (uint_fast8_t i = 0; i < 4; i ++)
@@ -250,6 +387,7 @@ static void window_infobar_menu_process(void)
 					bh->y1 = yy;
 					bh->visible = VISIBLE;
 					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "mute");
+					bh->is_locked = hamradio_get_gmutespkr() ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
 					yy = yy + interval + bh->h;
 				}
 #if WITHAFEQUALIZER
@@ -322,9 +460,7 @@ static void window_infobar_menu_process(void)
 
 		case INFOBAR_TX_POWER:
 
-#if WITHPOWERTRIM
 			need_open = infobar;
-#endif /*  WITHPOWERTRIM */
 			break;
 
 		case INFOBAR_DNR:
@@ -352,6 +488,21 @@ static void window_infobar_menu_process(void)
 
 			switch (infobar)
 			{
+#if WITHUSEDUALWATCH
+			case INFOBAR_SPLIT:
+			{
+				if (bh->payload == 1) // SPLIT on/off
+				{
+					bh->is_locked = hamradio_split_toggle();
+				}
+				else if (bh->payload == 2) // SPLIT mode
+				{
+					hamradio_split_mode_toggle();
+					local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), hamradio_get_mainsubrxmode3_value_P());
+				}
+			}
+				break;
+#endif /* WITHUSEDUALWATCH */
 			case INFOBAR_AF_VOLUME:
 			{
 #if ! WITHPOTAFGAIN
@@ -404,19 +555,18 @@ static void window_infobar_menu_process(void)
 		}
 		break;
 
-	case WM_MESSAGE_ENC2_ROTATE:
-	{
-		if (infobar == INFOBAR_AF_VOLUME)
+		case WM_MESSAGE_ENC2_ROTATE:
 		{
+			if (infobar == INFOBAR_AF_VOLUME)
+			{
 #if ! WITHPOTAFGAIN
-			hamradio_set_afgain(hamradio_get_afgain() + action);
+				hamradio_set_afgain(hamradio_get_afgain() + action);
 #endif /* ! WITHPOTAFGAIN */
+			}
 		}
-	}
-	break;
 
-	default:
-		break;
+		default:
+			break;
 	}
 
 	if (need_open != 255)
@@ -452,7 +602,6 @@ static void gui_main_process(void)
 	char buf [TEXT_ARRAY_SIZE];
 	const uint_fast8_t buflen = ARRAY_SIZE(buf);
 	uint_fast8_t update = 0;
-	static uint_fast8_t tune_backup_power;
 	static uint_fast16_t freq_swipe;
 
 	if (win->first_call)
@@ -624,14 +773,12 @@ static void gui_main_process(void)
 				{
 					close_window(OPEN_PARENT_WINDOW);
 					footer_buttons_state(CANCELLED);
-					hamradio_ft8_toggle_state();
 				}
 				else
 				{
 					window_t * const win = get_win(WINDOW_FT8);
 					open_window(win);
 					footer_buttons_state(DISABLED, btn_ft8);
-					hamradio_ft8_toggle_state();
 				}
 			}
 #endif /* WITHFT8 */
@@ -817,270 +964,295 @@ static void gui_main_process(void)
 	}
 
 #if GUI_SHOW_INFOBAR
-	// разметка инфобара
-	for(uint_fast8_t i = 1; i < infobar_num_places; i++)
+
+	const window_t * const pwin = get_win(check_for_parent_window());
+	if (pwin->size_mode != WINDOW_POSITION_FULLSCREEN)
 	{
-		uint_fast16_t x = infobar_label_width * i;
-		colmain_line(fr, DIM_X, DIM_Y, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORMAIN_GREEN, 0);
-	}
+		// разметка инфобара
+		const uint_fast16_t y_mid = infobar_1st_str_y + (infobar_2nd_str_y - infobar_1st_str_y) / 2;
 
-	for (uint8_t current_place = 0; current_place < infobar_num_places; current_place ++)
-	{
-		uint_fast8_t infobar = infobar_places [current_place] & INFOBAR_VALID_MASK;
-		switch (infobar)
+		for(uint_fast8_t i = 1; i < infobar_num_places; i++)
 		{
-		case INFOBAR_AF_VOLUME:
-		{
-			static uint_fast8_t vol;
-			uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-			if (update)
-				vol = hamradio_get_afgain();
-
-			local_snprintf_P(buf, buflen, PSTR("AF gain"));
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-			if (hamradio_get_gmutespkr())
-				local_snprintf_P(buf, buflen, PSTR("muted"));
-			else
-				local_snprintf_P(buf, buflen, PSTR("%d"), vol);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+			uint_fast16_t x = infobar_label_width * i;
+			colmain_line(fr, DIM_X, DIM_Y, x, infobar_1st_str_y, x, infobar_2nd_str_y + SMALLCHARH2, COLORMAIN_GREEN, 0);
 		}
-			break;
 
-		case INFOBAR_TX_POWER:
+		for (uint8_t current_place = 0; current_place < infobar_num_places; current_place ++)
 		{
-			static uint_fast8_t tx_pwr, tune_pwr;
-			uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-			if (update)
+			uint_fast8_t infobar = infobar_places [current_place] & INFOBAR_VALID_MASK;
+			switch (infobar)
 			{
-				tx_pwr = hamradio_get_tx_power();
-				tune_pwr = hamradio_get_tx_tune_power();
+			case INFOBAR_SPLIT:
+			{
+				static uint_fast8_t val = 0;
+				uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+				if (update)
+					hamradio_get_vfomode3_value(& val);
+
+				local_snprintf_P(buf, buflen, PSTR("SPLIT"));
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y_mid, buf, val ? COLORMAIN_WHITE : COLORMAIN_GRAY);
 			}
+				break;
 
-			local_snprintf_P(buf, buflen, PSTR("TX %d\%"), tx_pwr);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-			local_snprintf_P(buf, buflen, PSTR("Tune %d\%"), tune_pwr);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
-		}
-			break;
-
-		case INFOBAR_DNR:
-		{
-			static int_fast32_t grade = 0;
-			static uint_fast8_t state = 0;
-			uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-			if (update)
+			case INFOBAR_AF_VOLUME:
 			{
-				state = hamradio_get_nrvalue(& grade);
-			}
+				static uint_fast8_t vol;
+				uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
-			local_snprintf_P(buf, buflen, PSTR("DNR"));
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? COLORMAIN_WHITE : COLORMAIN_GRAY);
-			local_snprintf_P(buf, buflen, state ? "on" : "off");
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? COLORMAIN_WHITE : COLORMAIN_GRAY);
-		}
+				if (update)
+					vol = hamradio_get_afgain();
 
-			break;
-
-		case INFOBAR_AF:
-		// параметры полосы пропускания фильтра
-		{
-			static uint_fast8_t bp_wide;
-			static uint_fast16_t bp_low, bp_high;
-			uint_fast16_t xx;
-
-			if (update)
-			{
-				bp_wide = hamradio_get_bp_type_wide();
-				bp_high = hamradio_get_high_bp(0);
-				bp_low = hamradio_get_low_bp(0) * 10;
-				bp_high = bp_wide ? (bp_high * 100) : (bp_high * 10);
-			}
-			local_snprintf_P(buf, buflen, PSTR("AF"));
-			xx = current_place * infobar_label_width + 7;
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_1st_str_y + (infobar_2nd_str_y - infobar_1st_str_y) / 2, buf, COLORMAIN_WHITE);
-			xx += SMALLCHARW2 * 3;
-			local_snprintf_P(buf, buflen, bp_wide ? (PSTR("L %u")) : (PSTR("W %u")), bp_low);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-			local_snprintf_P(buf, buflen, bp_wide ? (PSTR("H %u")) : (PSTR("P %u")), bp_high);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
-		}
-			break;
-
-		case INFOBAR_IF_SHIFT:
-		// значение сдвига частоты
-		{
-			static int_fast16_t if_shift;
-			uint_fast16_t xx;
-
-			if (update)
-				if_shift = hamradio_if_shift(0);
-			xx = current_place * infobar_label_width + infobar_label_width / 2;
-			if (if_shift)
-			{
-				local_snprintf_P(buf, buflen, PSTR("IF shift"));
+				local_snprintf_P(buf, buflen, PSTR("AF gain"));
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-				local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+d Hz"), if_shift);
+				if (hamradio_get_gmutespkr())
+					local_snprintf_P(buf, buflen, PSTR("muted"));
+				else
+					local_snprintf_P(buf, buflen, PSTR("%d"), vol);
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
 			}
-			else
+				break;
+
+			case INFOBAR_TX_POWER:
 			{
-				local_snprintf_P(buf, buflen, PSTR("IF shift"));
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y + (infobar_2nd_str_y - infobar_1st_str_y) / 2, buf, COLORMAIN_GRAY);
-			}
-		}
-			break;
+				static uint_fast8_t tx_pwr, tune_pwr;
+				uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
-		case INFOBAR_ATT:
-		// attenuator
-		{
-			static uint8_t atten;
-			uint_fast16_t xx;
-
-			if (update)
-			{
-				atten  = hamradio_get_att_db();
-			}
-			xx = current_place * infobar_label_width + infobar_label_width / 2;
-			local_snprintf_P(buf, buflen, PSTR("ATT"));
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-			if (atten)
-				local_snprintf_P(buf, buflen, PSTR("%d db"), atten);
-			else
-				local_snprintf_P(buf, buflen, PSTR("off"));
-
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
-		}
-			break;
-
-		case INFOBAR_SPAN:
-		// ширина панорамы
-		{
-#if WITHIF4DSP
-			static int_fast32_t z;
-			uint_fast16_t xx;
-
-			if (update)
-				z = display_zoomedbw() / 1000;
-			local_snprintf_P(buf, buflen, PSTR("SPAN"));
-			xx = current_place * infobar_label_width + infobar_label_width / 2;
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-			local_snprintf_P(buf, buflen, PSTR("%dk"), z);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
-#endif /* WITHIF4DSP */
-		}
-			break;
-
-		case INFOBAR_VOLTAGE:
-		{
-#if WITHVOLTLEVEL
-			// напряжение питания
-			static ldiv_t v;
-			uint_fast16_t xx;
-
-			if (update)
-				v = ldiv(hamradio_get_volt_value(), 10);
-			local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
-			xx = current_place * infobar_label_width + infobar_label_width / 2;
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, hamradio_get_tx() ? infobar_1st_str_y : (infobar_1st_str_y + (infobar_2nd_str_y - infobar_1st_str_y) / 2), buf, COLORMAIN_WHITE);
-#endif /* WITHVOLTLEVEL */
-
-#if WITHCURRLEVEL || WITHCURRLEVEL2
-		// ток PA (при передаче)
-			if (hamradio_get_tx())
-			{
-				uint_fast16_t xx;
-				xx = current_place * infobar_label_width + infobar_label_width / 2;
-
-				static int_fast16_t drain;
 				if (update)
 				{
-					drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
-					if (drain < 0)
-					{
-						drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
-					}
+					tx_pwr = hamradio_get_tx_power();
+					tune_pwr = hamradio_get_tx_tune_power();
 				}
 
-#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
-				// для больших токов (более 9 ампер)
-				const ldiv_t t = ldiv(drain / 10, 10);
-				local_snprintf_P(buf, buflen, PSTR("%2d.%01dA"), t.quot, ABS(t.rem));
-
-#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
-				// Датчик тока до 5 ампер
-				const ldiv_t t = ldiv(drain, 100);
-				local_snprintf_P(buf, buflen, PSTR("%d.%02dA"), t.quot, ABS(t.rem));
-
-#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
-
+				local_snprintf_P(buf, buflen, PSTR("TX %d\%"), tx_pwr);
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+				local_snprintf_P(buf, buflen, PSTR("Tune %d\%"), tune_pwr);
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
 			}
-#endif /* WITHCURRLEVEL */
-		}
-			break;
+				break;
 
-		case INFOBAR_CPU_TEMP:
-		{
-#if WITHCPUTEMPERATURE
-			// вывод температуры процессора, если поддерживается
-			static float cpu_temp = 0;
-			if (update)
-				cpu_temp = GET_CPU_TEMPERATURE();
-
-			uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
-			local_snprintf_P(buf, buflen, PSTR("CPU temp"));
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-			local_snprintf_P(buf, buflen, PSTR("%2.1f"), cpu_temp);
-			colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORMAIN_RED : COLORMAIN_WHITE);
-#endif /* WITHCPUTEMPERATURE */
-		}
-			break;
-
-		case INFOBAR_2ND_ENC_MENU:
-		{
-			// быстрое меню 2-го энкодера
-			uint_fast16_t xx;
-
-			hamradio_gui_enc2_update();
-
-			if (gui_enc2_menu.state)
+			case INFOBAR_DNR:
 			{
-				local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.param);
-				remove_end_line_spaces(buf);
-				xx = current_place * infobar_label_width + infobar_label_width / 2;
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-				local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.val);
-				remove_end_line_spaces(buf);
-				COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
-				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
+				static int_fast32_t grade = 0;
+				static uint_fast8_t state = 0;
+				uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+				if (update)
+				{
+					state = hamradio_get_nrvalue(& grade);
+				}
+
+				local_snprintf_P(buf, buflen, PSTR("DNR"));
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, state ? COLORMAIN_WHITE : COLORMAIN_GRAY);
+				local_snprintf_P(buf, buflen, state ? "on" : "off");
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, state ? COLORMAIN_WHITE : COLORMAIN_GRAY);
 			}
-			else
+
+				break;
+
+			case INFOBAR_AF:
+			// параметры полосы пропускания фильтра
 			{
-#if defined (RTC1_TYPE)
-				// текущее время
-				static uint_fast16_t year;
-				static uint_fast8_t month, day, hour, minute, secounds;
+				static uint_fast8_t bp_wide;
+				static uint_fast16_t bp_low, bp_high;
 				uint_fast16_t xx;
 
 				if (update)
-					board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+				{
+					bp_wide = hamradio_get_bp_type_wide();
+					bp_high = hamradio_get_high_bp(0);
+					bp_low = hamradio_get_low_bp(0) * 10;
+					bp_high = bp_wide ? (bp_high * 100) : (bp_high * 10);
+				}
+				local_snprintf_P(buf, buflen, PSTR("AF"));
+				xx = current_place * infobar_label_width + 7;
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, y_mid, buf, COLORMAIN_WHITE);
+				xx += SMALLCHARW2 * 3;
+				local_snprintf_P(buf, buflen, bp_wide ? (PSTR("L %u")) : (PSTR("W %u")), bp_low);
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+				local_snprintf_P(buf, buflen, bp_wide ? (PSTR("H %u")) : (PSTR("P %u")), bp_high);
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+			}
+				break;
 
-				local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
+			case INFOBAR_IF_SHIFT:
+			// значение сдвига частоты
+			{
+				static int_fast16_t if_shift;
+				uint_fast16_t xx;
+
+				if (update)
+					if_shift = hamradio_if_shift(0);
+				xx = current_place * infobar_label_width + infobar_label_width / 2;
+				if (if_shift)
+				{
+					local_snprintf_P(buf, buflen, PSTR("IF shift"));
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+					local_snprintf_P(buf, buflen, if_shift == 0 ? PSTR("%d") : PSTR("%+d Hz"), if_shift);
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+				}
+				else
+				{
+					local_snprintf_P(buf, buflen, PSTR("IF shift"));
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, y_mid, buf, COLORMAIN_GRAY);
+				}
+			}
+				break;
+
+			case INFOBAR_ATT:
+			// attenuator
+			{
+				static uint8_t atten;
+				uint_fast16_t xx;
+
+				if (update)
+				{
+					atten  = hamradio_get_att_db();
+				}
+				xx = current_place * infobar_label_width + infobar_label_width / 2;
+				local_snprintf_P(buf, buflen, PSTR("ATT"));
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+				if (atten)
+					local_snprintf_P(buf, buflen, PSTR("%d db"), atten);
+				else
+					local_snprintf_P(buf, buflen, PSTR("off"));
+
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+			}
+				break;
+
+			case INFOBAR_SPAN:
+			// ширина панорамы
+			{
+	#if WITHIF4DSP
+				static int_fast32_t z;
+				uint_fast16_t xx;
+
+				if (update)
+					z = display_zoomedbw() / 1000;
+				local_snprintf_P(buf, buflen, PSTR("SPAN"));
 				xx = current_place * infobar_label_width + infobar_label_width / 2;
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
-				local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
+				local_snprintf_P(buf, buflen, PSTR("%dk"), z);
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
-#endif 	/* defined (RTC1_TYPE) */
+	#endif /* WITHIF4DSP */
 			}
-		}
-			break;
+				break;
 
-		default:
-			break;
+			case INFOBAR_VOLTAGE:
+			{
+	#if WITHVOLTLEVEL
+				// напряжение питания
+				static ldiv_t v;
+				uint_fast16_t xx;
 
+				if (update)
+					v = ldiv(hamradio_get_volt_value(), 10);
+				local_snprintf_P(buf, buflen, PSTR("%d.%1dV"), v.quot, v.rem);
+				xx = current_place * infobar_label_width + infobar_label_width / 2;
+	#if WITHCURRLEVEL || WITHCURRLEVEL2
+				uint_fast16_t yy = hamradio_get_tx() ? infobar_1st_str_y : y_mid;
+	#else
+				uint_fast16_t yy = y_mid;
+	#endif /* WITHCURRLEVEL || WITHCURRLEVEL2 */
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, yy, buf, COLORMAIN_WHITE);
+	#endif /* WITHVOLTLEVEL */
+
+	#if WITHCURRLEVEL || WITHCURRLEVEL2
+			// ток PA (при передаче)
+				if (hamradio_get_tx())
+				{
+					uint_fast16_t xx;
+					xx = current_place * infobar_label_width + infobar_label_width / 2;
+
+					static int_fast16_t drain;
+					if (update)
+					{
+						drain = hamradio_get_pacurrent_value();	// Ток в десятках милиампер (может быть отрицательным)
+		//				if (drain < 0)
+		//				{
+		//					drain = 0;	// FIXME: без калибровки нуля (как у нас сейчас) могут быть ошибки установки тока
+		//				}
+					}
+
+	#if (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A)
+					// для больших токов (более 9 ампер)
+					const ldiv_t t = ldiv(drain / 10, 10);
+					local_snprintf_P(buf, buflen, PSTR("%2d.%01dA"), t.quot, ABS(t.rem));
+
+	#else /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
+					// Датчик тока до 5 ампер
+					const ldiv_t t = ldiv(drain, 100);
+					local_snprintf_P(buf, buflen, PSTR("%d.%02dA"), t.quot, ABS(t.rem));
+
+	#endif /* (WITHCURRLEVEL_ACS712_30A || WITHCURRLEVEL_ACS712_20A) */
+
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+				}
+	#endif /* WITHCURRLEVEL */
+			}
+				break;
+
+			case INFOBAR_CPU_TEMP:
+			{
+	#if WITHCPUTEMPERATURE
+				// вывод температуры процессора, если поддерживается
+				static float cpu_temp = 0;
+				if (update)
+					cpu_temp = GET_CPU_TEMPERATURE();
+
+				uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
+				local_snprintf_P(buf, buflen, PSTR("CPU temp"));
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+				local_snprintf_P(buf, buflen, PSTR("%2.1f"), cpu_temp);
+				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, cpu_temp > 60.0 ? COLORMAIN_RED : COLORMAIN_WHITE);
+	#endif /* WITHCPUTEMPERATURE */
+			}
+				break;
+
+			case INFOBAR_2ND_ENC_MENU:
+			{
+				// быстрое меню 2-го энкодера
+				uint_fast16_t xx;
+
+				hamradio_gui_enc2_update();
+
+				if (gui_enc2_menu.state)
+				{
+					local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.param);
+					remove_end_line_spaces(buf);
+					xx = current_place * infobar_label_width + infobar_label_width / 2;
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+					local_snprintf_P(buf, buflen, PSTR("%s"), gui_enc2_menu.val);
+					remove_end_line_spaces(buf);
+					COLORPIP_T color_lbl = gui_enc2_menu.state == 2 ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, color_lbl);
+				}
+				else
+				{
+	#if defined (RTC1_TYPE)
+					// текущее время
+					static uint_fast16_t year;
+					static uint_fast8_t month, day, hour, minute, secounds;
+					uint_fast16_t xx;
+
+					if (update)
+						board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+
+					local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
+					xx = current_place * infobar_label_width + infobar_label_width / 2;
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
+					local_snprintf_P(buf, buflen, PSTR("%02d%c%02d"), hour, ((secounds & 1) ? ' ' : ':'), minute);
+					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+	#endif 	/* defined (RTC1_TYPE) */
+				}
+			}
+				break;
+
+			default:
+				break;
+
+			}
 		}
 	}
 
@@ -1406,9 +1578,8 @@ static void window_options_process(void)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Display", "Display|settings", 	},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_gui",     "GUI|settings", 		},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Utils",   "Utils", 			    },
-#if defined (RTC1_TYPE)
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_time",    "Set time|& date", 	},
-#endif /* defined (RTC1_TYPE) */
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Time",    "Set time|& date", 	},
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_wifi",    "WiFi|APs", 	},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1457,13 +1628,17 @@ static void window_options_process(void)
 			button_t * btn_AUDsett = find_gui_element(TYPE_BUTTON, win, "btn_AUDsett");
 			button_t * btn_SysMenu = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
 			button_t * btn_Display = find_gui_element(TYPE_BUTTON, win, "btn_Display");
-#if defined (RTC1_TYPE)
-			button_t * btn_time = find_gui_element(TYPE_BUTTON, win, "btn_time");
-#endif /* defined (RTC1_TYPE) */
+			button_t * btn_Time = find_gui_element(TYPE_BUTTON, win, "btn_Time");
+			button_t * btn_wifi = find_gui_element(TYPE_BUTTON, win, "btn_wifi");
 
 			if (bh == btn_Utils)
 			{
 				window_t * const win = get_win(WINDOW_UTILS);
+				open_window(win);
+			}
+			else if (bh == btn_Time)
+			{
+				window_t * const win = get_win(WINDOW_TIME);
 				open_window(win);
 			}
 			else if (bh == btn_gui)
@@ -1494,14 +1669,13 @@ static void window_options_process(void)
 				open_window(win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
-#if defined (RTC1_TYPE)
-			else if (bh == btn_time)
+#if WITHWIFI
+			else if (bh == btn_wifi)
 			{
-				window_t * const win = get_win(WINDOW_TIME);
+				window_t * const win = get_win(WINDOW_WIFI);
 				open_window(win);
 			}
-#endif /* defined (RTC1_TYPE) */
-
+#endif /* WITHWIFI */
 		}
 		break;
 
@@ -1782,7 +1956,6 @@ static void window_utilites_process(void)
 		static const button_t buttons [] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_kbdtest", "Keyboard|test", },
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_rletest", "RLE pic|test", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1821,11 +1994,10 @@ static void window_utilites_process(void)
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
 			button_t * btn_kbdtest = find_gui_element(TYPE_BUTTON, win, "btn_kbdtest");
-			button_t * btn_rletest = find_gui_element(TYPE_BUTTON, win, "btn_rletest");
 
 			if (bh == btn_kbdtest)
 			{
-				window_t * const winSWR = get_win(WINDOWS_KBD_TEST);
+				window_t * const winSWR = get_win(WINDOW_KBD_TEST);
 				open_window(winSWR);
 			}
 #if WITHTX
@@ -1835,13 +2007,6 @@ static void window_utilites_process(void)
 				open_window(winSWR);
 			}
 #endif /* WITHTX */
-#if WITHRLEDECOMPRESS
-			else if (bh == btn_rletest)
-			{
-				window_t * const winrle = get_win(WINDOWS_RLE_TEST);
-				open_window(winrle);
-			}
-#endif /* WITHRLEDECOMPRESS */
 		}
 		break;
 
@@ -2446,7 +2611,7 @@ static void window_tx_power_process(void)
 
 		button_t * btn_tx_pwr_OK = find_gui_element(TYPE_BUTTON, win, "btn_tx_pwr_OK");
 		btn_tx_pwr_OK->x1 = 0;
-		btn_tx_pwr_OK->y1 = lbl_tune_power->y + interval;
+				btn_tx_pwr_OK->y1 = lbl_tune_power->y + interval;
 		btn_tx_pwr_OK->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -2505,6 +2670,7 @@ static void window_tx_power_process(void)
 
 				local_snprintf_P(lbl_tx_power->text, ARRAY_SIZE(lbl_tx_power->text), PSTR("TX power  : %3d"), power_full);
 				hamradio_set_tx_power(power_full);
+				save_settings();
 
 				break;
 
@@ -3007,7 +3173,7 @@ static void window_ap_mic_eq_process(void)
 
 // *********************************************************************************************************************************************************************
 
-static void windows_af_eq_proccess(void)
+static void window_af_eq_proccess(void)
 {
 #if WITHAFEQUALIZER
 	window_t * const win = get_win(WINDOW_AF_EQ);
@@ -3779,6 +3945,249 @@ static void window_gui_settings_process(void)
 
 // *********************************************************************************************************************************************************************
 
+static void window_shift_proccess(void)
+{
+	window_t * const win = get_win(WINDOW_SHIFT);
+
+	static uint8_t shift = 45;
+	static bp_var_t shift_t;
+
+	if (win->first_call)
+	{
+		uint_fast16_t x = 0, y = 0;
+		uint_fast8_t interval = 6, row_count = 4;
+		win->first_call = 0;
+
+		static const label_t labels [] = {
+			{ WINDOW_SHIFT, CANCELLED, 0, NON_VISIBLE, "lbl_shift",  "****",  FONT_MEDIUM, COLORMAIN_YELLOW, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
+		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
+		lbl_shift->x = 10;
+		lbl_shift->y = 10;
+		lbl_shift->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ENC2_ROTATE:
+
+		shift += action;
+
+//		shift = shift > 56 ? 56 : shift;
+//		shift = shift < 32 ? 32 : shift;
+//		xcz_rx_iq_shift(shift);
+
+		shift = shift > 30 ? 30 : shift;
+		shift = shift < 0 ? 0 : shift;
+		xcz_tx_shift(shift);
+
+		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
+		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
+
+		break;
+
+	default:
+
+		break;
+	}
+}
+
+// *********************************************************************************************************************************************************************
+
+static void window_wifi_proccess(void)
+{
+#if WITHWIFI
+	window_t * const win = get_win(WINDOW_WIFI);
+	static uint_fast8_t update = 0, idx_AP = 255, cntAP = 0, work = 0;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+
+		if (! work)
+		{
+			share_mem.wifiAPstatus = 0;
+			wifi_status = WIFI_AP_IDLE;
+			idx_AP = 255;
+		}
+		else
+			update = 1;
+
+		uint_fast8_t x = 0, y = 0, interval = 20;
+
+		static const button_t buttons [] = {
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_WIFI, NON_VISIBLE, INT32_MAX, "btn_scan",  	"AP scan", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_WIFI, NON_VISIBLE, INT32_MAX, "btn_connect",  	"Connect", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		static const label_t labels [] = {
+			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap0", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 0, },
+			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap1", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 1, },
+			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap2", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 2, },
+			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap3", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 3, },
+			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap4", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 4, },
+			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap5", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 5, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		label_t * lh;
+		button_t * btn_scan = find_gui_element(TYPE_BUTTON, win, "btn_scan");
+		button_t * btn_connect = find_gui_element(TYPE_BUTTON, win, "btn_connect");
+
+		for (uint_fast8_t i = 0; i < 6; i ++)
+		{
+			char lh_name [15];
+			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_ap%d", i);
+			lh = find_gui_element(TYPE_LABEL, win, lh_name);
+			lh->x = x;
+			lh->y = y;
+			y = y + get_label_height(lh) + interval;
+		}
+
+		btn_scan->x1 = lh->x + get_label_width(lh) + interval;
+		btn_scan->y1 = 0;
+		btn_scan->visible = VISIBLE;
+
+		btn_connect->x1 = btn_scan->x1;
+		btn_connect->y1 = btn_scan->y1 + btn_scan->h + interval;
+		btn_connect->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Wi-Fi Connect");
+		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
+	}
+
+	if (share_mem.wifiAPstatus > 0 && share_mem.wifiAPstatus < 100)
+	{
+		cntAP = share_mem.wifiAPstatus;
+		share_mem.wifiAPstatus = 0;
+		update = 1;
+	}
+	else if (share_mem.wifiAPstatus == WIFI_STATUS_CONNECTED)
+	{
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Connected");
+		share_mem.wifiAPstatus = 0;
+	}
+	else if (share_mem.wifiAPstatus == WIFI_STATUS_TIME_UPDATED)
+	{
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Time updated");
+		share_mem.wifiAPstatus = 0;
+		button_t * btn_connect = find_gui_element(TYPE_BUTTON, win, "btn_connect");
+		btn_connect->state = DISABLED;
+	}
+
+	if (work && wifi_status == WIFI_AP_CONNECT && ! update)
+	{
+		work = 0;
+		char lh_name [15];
+		local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_ap%d", idx_AP);
+		label_t * lh = find_gui_element(TYPE_LABEL, win, lh_name);
+		strcpy(share_mem.wifiAPname, lh->text);
+		xczu_ipi_sendmsg(WIFI_MSG_AP_CONNECT);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Connecting...");
+		update = 1;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_scan = find_gui_element(TYPE_BUTTON, win, "btn_scan");
+			button_t * btn_connect = find_gui_element(TYPE_BUTTON, win, "btn_connect");
+
+			if (bh == btn_scan)
+			{
+				xczu_ipi_sendmsg(WIFI_MSG_AP_LIST);
+				wifi_status = WIFI_AP_SCAN;
+				idx_AP = 255;
+				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Scanning...");
+			}
+			else if (bh == btn_connect)
+			{
+				if (idx_AP != 255)
+				{
+					wifi_status = WIFI_AP_CONNECT;
+					work = 1;
+					keyboard_edit_string(share_mem.wifiAPkey, 1, win, 1);
+				}
+			}
+		}
+		else if (IS_LABEL_PRESS)
+		{
+			label_t * lh = (label_t *) ptr;
+			idx_AP = lh->index;
+			update = 1;
+		}
+
+		break;
+
+	case WM_MESSAGE_CLOSE:
+
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		PRINTF("%d %s\n", cntAP, share_mem.wifiAPs);
+
+		char tmpstr [wifiAPname_max_lenght * wifiAPmaxcount];
+		strcpy(tmpstr, share_mem.wifiAPs);
+
+		char * s = strtok(tmpstr, "|");
+
+		for (uint_fast8_t i = 0; i < 6; i ++)
+		{
+			char lh_name [15];
+			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_ap%d", i);
+			label_t * lh = find_gui_element(TYPE_LABEL, win, lh_name);
+
+			if (i < cntAP)
+			{
+				local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%s", s);
+				lh->visible = VISIBLE;
+				s = strtok(NULL, "|");
+
+				lh->color = i == idx_AP ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
+			}
+			else
+				lh->visible = NON_VISIBLE;
+		}
+	}
+
+
+
+#endif /* WITHWIFI */
+}
+
+// *********************************************************************************************************************************************************************
+
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
 {
 	window_t * const win = get_win(WINDOW_UIF);
@@ -3855,7 +4264,7 @@ static void window_uif_process(void)
 		lbl_uif_val->y = button_up->h / 2 - get_label_height(lbl_uif_val) / 2;
 		lbl_uif_val->visible = VISIBLE;
 
-		strcpy(win->title, menu_uif.name);
+		strcpy(win->name, menu_uif.name);
 
 		hamradio_enable_keyboard_redirect();
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
@@ -3892,7 +4301,7 @@ static void window_uif_process(void)
 	if (reinit)
 	{
 		reinit = 0;
-		strcpy(win->title, menu_uif.name);
+		strcpy(win->name, menu_uif.name);
 
 		const char * v = hamradio_gui_edit_menu_item(menu_uif.menupos, 0);
 		strcpy(lbl_uif_val->text, v);
@@ -3925,53 +4334,111 @@ void gui_open_sys_menu(void)
 	}
 }
 
-static void window_shift_proccess(void)
-{
-	window_t * const win = get_win(WINDOW_SHIFT);
+// ****** Common windows ***********************************************************************
 
-	static uint8_t shift = 45;
-	static bp_var_t shift_t;
+#if WITHFT8
+
+static uint8_t parse_ft8buf = 0, idx_cqcall = 0, cq_filter = 0;
+static char cq_call [6][10];
+static text_field_t * tf_ft8 = NULL;
+
+void hamradio_gui_parse_ft8buf(void)
+{
+	parse_ft8buf = 1;
+	idx_cqcall = 0;
+	memset(cq_call, 0, sizeof(cq_call));
+}
+
+void parse_ft8_answer(char * str, COLORMAIN_T * color, uint8_t * cq_flag)
+{
+	* color = COLORMAIN_WHITE;
+	* cq_flag = 0;
+	char tmpstr [TEXT_ARRAY_SIZE];
+	strcpy(tmpstr, str);
+
+	char lexem [10][10]; // date; time; freq; snr; "~"; text 2 - 4 pcs
+
+	char * l = strtok(tmpstr, " ");
+	for (uint8_t i = 0; i < 10; i ++)
+	{
+		if (l == NULL)
+			break;
+
+		strcpy(lexem[i], l);
+		l = strtok(NULL, " ");
+	}
+
+	if (! strcmp(lexem[4], "CQ") && strcmp(lexem[5], "CQ") && strcmp(lexem[5], "DX"))
+	{
+		* color = COLORMAIN_GREEN;
+		* cq_flag = 1;
+		if (idx_cqcall < 6)
+			strcpy(cq_call [idx_cqcall ++], lexem[5]);
+	}
+	else if (! strcmp(lexem[4], "RA4ASN"))
+	{
+		* color = COLORMAIN_RED;
+	}
+}
+
+static void window_ft8_bands_process(void)
+{
+	window_t * const win = get_win(WINDOW_FT8_BANDS);
 
 	if (win->first_call)
 	{
-		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, row_count = 4;
 		win->first_call = 0;
+		uint_fast8_t cols = ft8_bands_count > 10 ? 4 : 5, interval = 15;
+		uint_fast16_t x = 0, y = 0;
+		button_t * bh;
 
-		static const label_t labels [] = {
-			{ WINDOW_SHIFT, CANCELLED, 0, NON_VISIBLE, "lbl_shift",  "****",  FONT_MEDIUM, COLORMAIN_YELLOW, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
+		win->bh_count = ft8_bands_count;
+		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
 
-		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
-		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
-		lbl_shift->x = 10;
-		lbl_shift->y = 10;
-		lbl_shift->visible = VISIBLE;
+		uint_fast32_t freq = hamradio_get_freq_rx();
+
+		for (uint_fast8_t i = 0; i < win->bh_count; i ++)
+		{
+			bh = & win->bh_ptr [i];
+			bh->x1 = x;
+			bh->y1 = y;
+			bh->w = 86;
+			bh->h = 44;
+			bh->state = CANCELLED;
+			bh->visible = VISIBLE;
+			bh->parent = WINDOW_FT8_BANDS;
+			bh->index = i;
+			bh->is_long_press = 0;
+			bh->is_repeating = 0;
+			local_snprintf_P(bh->name, ARRAY_SIZE(bh->name), "btn_bands_%02d", i);
+			local_snprintf_P(bh->text, ARRAY_SIZE(bh->text), "%dk", ft8_bands [i] / 1000);
+			bh->payload = ft8_bands [i];
+			bh->is_locked = freq == bh->payload ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+
+			x = x + interval + bh->w;
+			if ((i + 1) % cols == 0)
+			{
+				x = 0;
+				y = y + bh->h + interval;
+			}
+		}
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 
 	GET_FROM_WM_QUEUE
 	{
-	case WM_MESSAGE_ENC2_ROTATE:
+	case WM_MESSAGE_ACTION:
 
-		shift += action;
-
-//		shift = shift > 56 ? 56 : shift;
-//		shift = shift < 32 ? 32 : shift;
-//		xcz_rx_iq_shift(shift);
-
-		shift = shift > 56 ? 56 : shift;
-		shift = shift < 16 ? 16 : shift;
-		xcz_tx_shift(shift);
-
-		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
-		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			gui_nvram.ft8_band = bh->index;
+			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
+			close_window(OPEN_PARENT_WINDOW);
+		}
 
 		break;
 
@@ -3981,29 +4448,164 @@ static void window_shift_proccess(void)
 	}
 }
 
-#if WITHFT8
-
-#include "ft8.h"
-
-static uint8_t parse_ft8buf = 0;
-
-void hamradio_gui_parse_ft8buf(void)
+static void window_ft8_settings_process(void)
 {
-	parse_ft8buf = 1;
+	window_t * const win = get_win(WINDOW_FT8_SETTINGS);
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		uint_fast8_t interval = 10;
+
+		static const button_t buttons [] = {
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_callsign",  "Callsign", },
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_qth", 		"QTH", },
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq", 		"TX freq", },
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_freq_eq",	"", },
+			{ 40, 40, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8_SETTINGS, NON_VISIBLE, INT32_MAX, "btn_OK", 		"OK", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		static const label_t labels [] = {
+			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_callsign", "**********", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_qth",  	  "**********", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOW_FT8_SETTINGS, CANCELLED, 0, NON_VISIBLE, "lbl_txfreq",   "**********", FONT_MEDIUM, COLORMAIN_WHITE, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		label_t * lbl_callsign = find_gui_element(TYPE_LABEL, win, "lbl_callsign");
+		label_t * lbl_qth = find_gui_element(TYPE_LABEL, win, "lbl_qth");
+		label_t * lbl_txfreq = find_gui_element(TYPE_LABEL, win, "lbl_txfreq");
+		button_t * btn_callsign = find_gui_element(TYPE_BUTTON, win, "btn_callsign");
+		button_t * btn_qth = find_gui_element(TYPE_BUTTON, win, "btn_qth");
+		button_t * btn_freq = find_gui_element(TYPE_BUTTON, win, "btn_freq");
+		button_t * btn_OK = find_gui_element(TYPE_BUTTON, win, "btn_OK");
+
+		uint_fast8_t lbllen = get_label_width(lbl_callsign);
+
+		btn_freq->x1 = lbllen + interval;
+		btn_freq->y1 = 0;
+		btn_freq->visible = VISIBLE;
+
+		btn_callsign->x1 = btn_freq->x1;
+		btn_callsign->y1 = btn_freq->y1 + btn_freq->h + interval * 2;
+		btn_callsign->visible = VISIBLE;
+		btn_callsign->payload = (uintptr_t) gui_nvram.ft8_callsign;
+
+		btn_qth->x1 = btn_callsign->x1;
+		btn_qth->y1 = btn_callsign->y1 + btn_callsign->h + interval * 2;
+		btn_qth->visible = VISIBLE;
+		btn_qth->payload = (uintptr_t) gui_nvram.ft8_qth;
+
+		lbl_txfreq->x = 0;
+		lbl_txfreq->y = btn_freq->y1 + btn_freq->h / 2 - get_label_height(lbl_txfreq) / 2;
+		lbl_txfreq->visible = VISIBLE;
+		local_snprintf_P(lbl_txfreq->text, ARRAY_SIZE(lbl_txfreq->text), "%d Hz", gui_nvram.ft8_txfreq_val);
+
+		lbl_callsign->x = 0;
+		lbl_callsign->y = btn_callsign->y1 + btn_callsign->h / 2 - get_label_height(lbl_callsign) / 2;
+		lbl_callsign->visible = VISIBLE;
+		local_snprintf_P(lbl_callsign->text, ARRAY_SIZE(lbl_callsign->text), "%s", gui_nvram.ft8_callsign);
+
+		lbl_qth->x = 0;
+		lbl_qth->y = btn_qth->y1 + btn_qth->h / 2 - get_label_height(lbl_qth) / 2;
+		lbl_qth->visible = VISIBLE;
+		local_snprintf_P(lbl_qth->text, ARRAY_SIZE(lbl_qth->text), "%s", gui_nvram.ft8_qth);
+
+		btn_OK->x1 = btn_callsign->x1 + btn_callsign->w + interval;
+		btn_OK->y1 = btn_callsign->y1;
+		btn_OK->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_OK = find_gui_element(TYPE_BUTTON, win, "btn_OK");
+			button_t * btn_freq = find_gui_element(TYPE_BUTTON, win, "btn_freq");
+
+			if (bh == btn_OK)
+			{
+				close_window(OPEN_PARENT_WINDOW);
+			}
+			else if (bh == btn_freq)
+			{
+				keyboard_edit_digits(& (gui_nvram.ft8_txfreq_val), win);
+			}
+			else
+			{
+				keyboard_edit_string((char *) bh->payload, 1, win, 1);
+			}
+		}
+
+		break;
+
+	default:
+
+		break;
+	}
 }
 
 static void window_ft8_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8);
-	static uint16_t win_x = 0, win_y = 0;
-
+	static uint_fast16_t win_x = 0, win_y = 0, x, y;
+	static uint_fast8_t update = 0, selected_label_cq = 0, selected_label_tx = 0, backup_mode = 0, work = 0;
+	static lh_array_t lh_array_cq [6];
+	static lh_array_t lh_array_tx [3];
+	static const int8_t snr = -10;
+	static uint_fast32_t backup_freq = 0;
 
 	if (win->first_call)
 	{
 		win->first_call = 0;
 
+		static const button_t buttons [] = {
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8, NON_VISIBLE, INT32_MAX, "btn_tx", 	  "Transmit", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8, NON_VISIBLE, INT32_MAX, "btn_filter",   "View|all", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8, NON_VISIBLE, INT32_MAX, "btn_bands",    "FT8|bands", },
+			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_FT8, NON_VISIBLE, INT32_MAX, "btn_settings", "Edit|settings", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		static const label_t labels [] = {
+			{ WINDOW_FT8, DISABLED,  0, NON_VISIBLE, "lbl_cq_title", "CQ:", FONT_LARGE, COLORMAIN_GREEN, },
+			{ WINDOW_FT8, DISABLED,  0, NON_VISIBLE, "lbl_tx_title", "TX:", FONT_LARGE, COLORMAIN_GREEN, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq0", "********", FONT_MEDIUM, COLORMAIN_WHITE, 0, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq1", "********", FONT_MEDIUM, COLORMAIN_WHITE, 1, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq2", "********", FONT_MEDIUM, COLORMAIN_WHITE, 2, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq3", "********", FONT_MEDIUM, COLORMAIN_WHITE, 3, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq4", "********", FONT_MEDIUM, COLORMAIN_WHITE, 4, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq5", "********", FONT_MEDIUM, COLORMAIN_WHITE, 5, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg0", "*********************", FONT_MEDIUM, COLORMAIN_WHITE, 10, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg1", "*********************", FONT_MEDIUM, COLORMAIN_WHITE, 11, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg2", "*********************", FONT_MEDIUM, COLORMAIN_WHITE, 12, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
 		static const text_field_t text_field [] = {
-			{ 40, 25, CANCELLED, WINDOW_FT8, NON_VISIBLE, "tf_ft8", },
+			{ 40, 23, CANCELLED, WINDOW_FT8, NON_VISIBLE, & gothic_11x13, "tf_ft8", },
 		};
 		win->tf_count = ARRAY_SIZE(text_field);
 		uint_fast16_t tf_size = sizeof(text_field);
@@ -4011,26 +4613,222 @@ static void window_ft8_process(void)
 		GUI_MEM_ASSERT(win->tf_ptr);
 		memcpy(win->tf_ptr, text_field, tf_size);
 
-		text_field_t * tf_ft8 = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ft8");
+		tf_ft8 = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ft8");
+		textfield_update_size(tf_ft8);
 		tf_ft8->x1 = 0;
 		tf_ft8->y1 = 0;
 		tf_ft8->visible = VISIBLE;
 
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		hamradio_ft8_start_fill();
+		label_t * lh = NULL;
+		label_t * lbl_cq_title = find_gui_element(TYPE_LABEL, win, "lbl_cq_title");
+		label_t * lbl_tx_title = find_gui_element(TYPE_LABEL, win, "lbl_tx_title");
+		button_t * btn_tx = find_gui_element(TYPE_BUTTON, win, "btn_tx");
+		button_t * btn_filter = find_gui_element(TYPE_BUTTON, win, "btn_filter");
+		button_t * btn_bands = find_gui_element(TYPE_BUTTON, win, "btn_bands");
+		button_t * btn_settings = find_gui_element(TYPE_BUTTON, win, "btn_settings");
+
+		uint8_t interval = get_label_height(lbl_cq_title) * 2;
+
+		lbl_cq_title->x = tf_ft8->x1 + tf_ft8->w + 10;
+		lbl_cq_title->y = 0;
+		lbl_cq_title->visible = VISIBLE;
+
+		x = lbl_cq_title->x;
+		y = lbl_cq_title->y + interval;
+		for (uint8_t i = 0; i < 6; i ++)
+		{
+			char lh_name [15];
+			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_cq%d", i);
+			lh = find_gui_element(TYPE_LABEL, win, lh_name);
+			lh->x = x;
+			lh->y = y;
+			y += interval;
+			lh_array_cq [i].ptr = lh;
+		}
+
+		lbl_tx_title->x = lbl_cq_title->x + get_label_width(lh_array_cq [0].ptr) + 10;
+		lbl_tx_title->y = 0;
+		lbl_tx_title->visible = VISIBLE;
+
+		x = lbl_tx_title->x;
+		y = lbl_tx_title->y + interval;
+		for (uint8_t i = 0; i < 3; i ++)
+		{
+			char lh_name [15];
+			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_txmsg%d", i);
+			lh = find_gui_element(TYPE_LABEL, win, lh_name);
+			lh->x = x;
+			lh->y = y;
+			lh->visible = VISIBLE;
+			y += interval;
+			lh_array_tx [i].ptr = lh;
+		}
+
+		btn_tx->x1 = lh_array_tx [2].ptr->x;
+		btn_tx->y1 = lh_array_tx [2].ptr->y + get_label_height(lh_array_tx [2].ptr) * 3;
+		btn_tx->visible = VISIBLE;
+
+		btn_filter->x1 = btn_tx->x1 + btn_tx->w + interval;
+		btn_filter->y1 = btn_tx->y1;
+		btn_filter->visible = VISIBLE;
+
+		btn_bands->x1 = btn_tx->x1;
+		btn_bands->y1 = btn_tx->y1 + btn_tx->h + interval;
+		btn_bands->visible = VISIBLE;
+
+		btn_settings->x1 = btn_filter->x1;
+		btn_settings->y1 = btn_filter->y1 + btn_filter->h + interval;
+		btn_settings->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_FULLSCREEN);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k", ft8_bands [gui_nvram.ft8_band] / 1000);
+
+		if (! work)
+		{
+			backup_freq = hamradio_get_freq_rx();
+			backup_mode = hamradio_get_submode();
+
+			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
+			hamradio_change_submode(ft8_mode, 0);
+		}
+		work = 0;
+
+		display2_set_page_temp(display_getpagegui());
+
+		ft8_set_state(1);
 	}
 
 	if (parse_ft8buf)
 	{
 		parse_ft8buf = 0;
+		selected_label_cq = 0;
+		selected_label_tx = 0;
 		text_field_t * tf_ft8 = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ft8");
-		for (uint8_t i = 0; i < ft8.decoded_messages; i ++)
+
+		memset(cq_call, 0, sizeof(cq_call));
+
+		for (uint8_t i = 0; i < share_mem.decoded_messages; i ++)
 		{
-			char * msg = ft8.rx_text [i];
-			textfield_add_string(tf_ft8, msg, COLORMAIN_WHITE);
+			char * msg = share_mem.ft8_RX_text [i];
+			COLORMAIN_T colorline;
+			uint8_t cq_flag = 0;
+			parse_ft8_answer(msg, & colorline, & cq_flag);
+			if (cq_filter)
+			{
+				if (cq_flag)
+					textfield_add_string(tf_ft8, msg, colorline);
+			}
+			else
+				textfield_add_string(tf_ft8, msg, colorline);
+		}
+
+		update = 1;
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_tx = find_gui_element(TYPE_BUTTON, win, "btn_tx");
+			button_t * btn_filter = find_gui_element(TYPE_BUTTON, win, "btn_filter");
+			button_t * btn_bands = find_gui_element(TYPE_BUTTON, win, "btn_bands");
+			button_t * btn_settings = find_gui_element(TYPE_BUTTON, win, "btn_settings");
+
+			if (bh == btn_tx)
+			{
+				strcpy(share_mem.ft8_TX_text, lh_array_tx [selected_label_tx].ptr->text);
+				share_mem.ft8_tx_freq = (float) gui_nvram.ft8_txfreq_val;
+				xczu_ipi_sendmsg(FT8_MSG_ENCODE);
+			}
+			else if (bh == btn_filter)
+			{
+				cq_filter = ! cq_filter;
+				local_snprintf_P(btn_filter->text, ARRAY_SIZE(btn_filter->text), "%s", cq_filter ? "View|CQ only" : "View|all");
+			}
+			else if (bh == btn_settings)
+			{
+				work = 1;
+				window_t * win2 = get_win(WINDOW_FT8_SETTINGS);
+				open_window(win2);
+			}
+			else if (bh == btn_bands)
+			{
+				work = 1;
+				window_t * win2 = get_win(WINDOW_FT8_BANDS);
+				open_window(win2);
+			}
+		}
+		else if (IS_LABEL_PRESS)
+		{
+			label_t * lh = (label_t *) ptr;
+			if (lh->index < 10)
+				selected_label_cq = lh->index;
+			else
+				selected_label_tx = lh->index - 10;
+			update = 1;
+		}
+
+		break;
+
+	case WM_MESSAGE_CLOSE:
+
+		if (! work)
+		{
+			hamradio_set_freq(backup_freq);
+			hamradio_change_submode(backup_mode, 0);
+			ft8_set_state(0);
+			save_settings();
+		}
+		display2_set_page_temp(display_getpage0());
+
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (update)
+	{
+		update = 0;
+
+		for (uint8_t i = 0; i < 6; i ++)
+		{
+			label_t * lh = lh_array_cq [i].ptr;
+			lh->visible = NON_VISIBLE;
+			lh->color = COLORMAIN_WHITE;
+			if (strlen(cq_call [i]))
+			{
+				strcpy(lh->text, cq_call [i]);
+				lh->visible = VISIBLE;
+
+				if (lh->index == selected_label_cq)
+					lh->color = COLORMAIN_YELLOW;
+			}
+		}
+
+		for (uint8_t i = 0; i < 3; i ++)
+		{
+			label_t * lh = lh_array_tx [i].ptr;
+
+			if (i == selected_label_tx)
+				lh->color = COLORMAIN_YELLOW;
+			else
+				lh->color = COLORMAIN_WHITE;
+		}
+
+		if (strlen(cq_call [selected_label_cq]))
+		{
+			local_snprintf_P(lh_array_tx [0].ptr->text, ARRAY_SIZE(lh_array_tx [0].ptr->text), "%s %s %s", gui_nvram.ft8_callsign, cq_call [selected_label_cq], gui_nvram.ft8_qth);
+			local_snprintf_P(lh_array_tx [1].ptr->text, ARRAY_SIZE(lh_array_tx [1].ptr->text), "%s %s %s", gui_nvram.ft8_callsign, cq_call [selected_label_cq], gui_nvram.ft8_snr);
+			local_snprintf_P(lh_array_tx [2].ptr->text, ARRAY_SIZE(lh_array_tx [2].ptr->text), "%s %s %s", gui_nvram.ft8_callsign, cq_call [selected_label_cq], gui_nvram.ft8_end);
 		}
 	}
 }
+
 #endif /* WITHFT8 */
 
 // *********************************************************************************************************************************************************************
@@ -4327,7 +5125,7 @@ static void window_receive_process(void)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_mode",   "Mode", 		},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_preamp", "", 			},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_AF",  	 "AF|filter", 	},
-
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_RECEIVE, NON_VISIBLE, INT32_MAX, "btn_DNR",    "DNR", 		},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -4369,6 +5167,7 @@ static void window_receive_process(void)
 			button_t * btn_AF = find_gui_element(TYPE_BUTTON, win, "btn_AF");
 			button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
 			button_t * btn_mode = find_gui_element(TYPE_BUTTON, win, "btn_mode");
+			button_t * btn_DNR = find_gui_element(TYPE_BUTTON, win, "btn_DNR");
 
 			if (bh == btn_att)
 			{
@@ -4392,6 +5191,10 @@ static void window_receive_process(void)
 			{
 				window_t * const win = get_win(WINDOW_MODES);
 				open_window(win);
+			}
+			else if (bh == btn_DNR)
+			{
+				hamradio_change_nr();
 			}
 		}
 		break;
@@ -4418,6 +5221,10 @@ static void window_receive_process(void)
 
 		button_t * btn_AGC = find_gui_element(TYPE_BUTTON, win, "btn_AGC");
 		local_snprintf_P(btn_AGC->text, ARRAY_SIZE(btn_AGC->text), PSTR("AGC|%s"), btn_AGC->payload ? "fast" : "slow");
+
+		button_t * btn_DNR = find_gui_element(TYPE_BUTTON, win, "btn_DNR");
+		int_fast32_t grade = 0;
+		btn_DNR->is_locked = hamradio_get_nrvalue(& grade) != 0;
 	}
 }
 
@@ -4555,9 +5362,8 @@ static void window_freq_process (void)
 	}
 }
 
-// *********************************************************************************************************************************************************************
+// *****************************************************************************************************************************
 
-#if defined (RTC1_TYPE)
 static void window_time_proccess(void)
 {
 	window_t * const win = get_win(WINDOW_TIME);
@@ -4721,13 +5527,10 @@ static void window_time_proccess(void)
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", secound);
 	}
 }
-#endif /* defined (RTC1_TYPE) */
-
-// *********************************************************************************************************************************************************************
 
 static void window_kbd_proccess(void)
 {
-	window_t * const win = get_win(WINDOWS_KBD);
+	window_t * const win = get_win(WINDOW_KBD);
 	static uint_fast8_t update = 0, is_shift = 0;
 	const char kbd_cap[] = ",.!@#*()?;QWERTYUIOPASDFGHJKLZXCVBNM";
 	const char kbd_low[] = "1234567890qwertyuiopasdfghjklzxcvbnm";
@@ -4743,7 +5546,10 @@ static void window_kbd_proccess(void)
 		button_t * bh = NULL;
 		uint_fast16_t x = 0, y = 0, interval = 5, i = 0;
 
-		strcpy(edit_str, kbd_editstr);
+		if (kbd_clean || kbd_digits_only)
+			memset(edit_str, 0, strlen(edit_str) * sizeof(char));
+		else
+			strcpy(edit_str, kbd_editstr);
 
 		win->bh_count = kbd_len + 5;
 		uint_fast16_t buttons_size = win->bh_count * sizeof (button_t);
@@ -4773,9 +5579,9 @@ static void window_kbd_proccess(void)
 			bh->y1 = y;
 			bh->w = btn_size;
 			bh->h = btn_size;
-			bh->state = CANCELLED;
+			bh->state = (kbd_digits_only && i > len1 - 1 && i < kbd_len) ? DISABLED : CANCELLED;
 			bh->visible = VISIBLE;
-			bh->parent = WINDOWS_KBD;
+			bh->parent = WINDOW_KBD;
 			bh->index = i;
 			bh->is_long_press = 0;
 			bh->is_repeating = 0;
@@ -4794,6 +5600,7 @@ static void window_kbd_proccess(void)
 		btn_kbd_caps->w = 75;
 		local_snprintf_P(btn_kbd_caps->text, ARRAY_SIZE(btn_kbd_caps->text), "CAPS");
 		btn_kbd_caps->is_locked = is_shift ? BUTTON_LOCKED : BUTTON_NON_LOCKED;
+		btn_kbd_caps->state = kbd_digits_only ? DISABLED : CANCELLED;
 
 		button_t * btn_kbd_backspace = find_gui_element(TYPE_BUTTON, win, "btn_kbd_backspace");
 		btn_kbd_backspace->x1 = btn_size * len1 + interval * len1;
@@ -4807,6 +5614,7 @@ static void window_kbd_proccess(void)
 		btn_kbd_space->w = 95;
 		local_snprintf_P(btn_kbd_space->text, ARRAY_SIZE(btn_kbd_space->text), "Space");
 		btn_kbd_space->payload = (char) ' ';
+		btn_kbd_space->state = kbd_digits_only ? DISABLED : CANCELLED;
 
 		button_t * btn_kbd_esc = find_gui_element(TYPE_BUTTON, win, "btn_kbd_esc");
 		btn_kbd_esc->x1 = btn_kbd_backspace->x1 + btn_kbd_backspace->w + interval * 3;
@@ -4865,7 +5673,12 @@ static void window_kbd_proccess(void)
 				PRINTF("edit str: %s\n", edit_str);
 
 				if (bh == btn_kbd_enter)
-					strcpy(kbd_editstr, edit_str);
+				{
+					if (kbd_digits_only)
+						* kbd_editdigits = atoi(edit_str);
+					else
+						strcpy(kbd_editstr, edit_str);
+				}
 
 				close_window(OPEN_PARENT_WINDOW);
 				return;
@@ -4899,7 +5712,7 @@ static void window_kbd_proccess(void)
 
 static void window_kbd_test_proccess(void)
 {
-	window_t * const win = get_win(WINDOWS_KBD_TEST);
+	window_t * const win = get_win(WINDOW_KBD_TEST);
 	static char str_lbl1 [TEXT_ARRAY_SIZE] = "12345", str_lbl2 [TEXT_ARRAY_SIZE] = "qwerty";
 
 	if (win->first_call)
@@ -4908,8 +5721,8 @@ static void window_kbd_test_proccess(void)
 		const uint_fast16_t interval = 50;
 
 		static const button_t buttons [] = {
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOWS_KBD_TEST, VISIBLE, INT32_MAX, "btn_text1", "Edit...", },
-			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOWS_KBD_TEST, VISIBLE, INT32_MAX, "btn_text2", "Edit...", },
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_KBD_TEST, VISIBLE, INT32_MAX, "btn_text1", "Edit...", },
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_KBD_TEST, VISIBLE, INT32_MAX, "btn_text2", "Edit...", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -4918,8 +5731,8 @@ static void window_kbd_test_proccess(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ WINDOWS_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text1", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ WINDOWS_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text2", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text1", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text2", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -4960,11 +5773,7 @@ static void window_kbd_test_proccess(void)
 		if (IS_BUTTON_PRESS)
 		{
 			button_t * bh = (button_t *) ptr;
-
-			kbd_editstr = (char *) bh->payload;
-			window_t * win_kbd = get_win(WINDOWS_KBD);
-			win_kbd->parent_id = WINDOWS_KBD_TEST;
-			open_window(win_kbd);
+			keyboard_edit_string((char *) bh->payload, 1, win, 0);
 		}
 		break;
 
@@ -4973,36 +5782,10 @@ static void window_kbd_test_proccess(void)
 	}
 }
 
-// *********************************************************************************************************************************************************************
+// *****************************************************************************************************************************
 
-static void window_testrle_proccess(void)
-{
-#if WITHRLEDECOMPRESS
-	window_t * const win = get_win(WINDOWS_RLE_TEST);
-	extern const picRLE_t storch_logo;
-
-	if (win->first_call)
-	{
-		win->first_call = 0;
-
-		calculate_window_position(win, WINDOW_POSITION_MANUAL_SIZE, storch_logo.width, storch_logo.height);
-	}
-
-	graw_picture_RLE(win->draw_x1, win->draw_y1, & storch_logo, COLORMAIN_BLACK);
-
-	GET_FROM_WM_QUEUE
-	{
-	default:
-
-		break;
-	}
-#endif /* WITHRLEDECOMPRESS */
-}
-
-// *********************************************************************************************************************************************************************
-
-#define MENU_GROUPS_MAX	30
-#define MENU_PARAMS_MAX	60
+#define MENU_GROUPS_MAX	20
+#define MENU_PARAMS_MAX	30
 static uint8_t index_param = 0;
 
 static void window_menu_params_proccess(void)
@@ -5168,4 +5951,4 @@ static void window_menu_process(void)
 	}
 }
 
-#endif /* WITHTOUCHGUI && WITHGUISTYLE_COMMON */
+#endif /* WITHTOUCHGUI */

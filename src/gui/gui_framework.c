@@ -668,11 +668,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 {
 	uint_fast16_t title_length = strlen(win->title) * SMALLCHARW;
 	uint_fast16_t xmax = 0, ymax = 0, shift_x, shift_y, x_start, y_start;
-
-#if WITHGUISTYLE_MINI
-	// Для разрешения 480х272 окна всегда полноэкранные
-	mode = WINDOW_POSITION_FULLSCREEN;
-#endif
+	win->size_mode = mode;
 
 	switch (mode)
 	{
@@ -763,17 +759,8 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	}
 
 	// Выравнивание массива оконных элементов по центру окна
-
-	if (mode == WINDOW_POSITION_FULLSCREEN)
-	{
-		shift_x = (win->w - xmax) / 2;
-		shift_y = (win->h - ymax) / 2 + (strcmp(win->title, "") ? window_title_height : 0);
-	}
-	else
-	{
-		shift_x = edge_step;
-		shift_y = (strcmp(win->title, "") ? window_title_height : 0) + edge_step;
-	}
+	shift_x = edge_step;
+	shift_y = (title_length ? window_title_height : 0) + edge_step;
 
 	if (win->bh_ptr != NULL)
 	{
@@ -831,7 +818,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 		win->x1 = 0;
 		win->y1 = 0;
 		win->w = WITHGUIMAXX;
-		win->h = WITHGUIMAXY - h - (strcmp(win->title, "") ? window_title_height : 0);
+		win->h = WITHGUIMAXY - FOOTER_HEIGHT;
 	}
 	else if (mode == WINDOW_POSITION_MANUAL_POSITION)
 	{
@@ -879,7 +866,7 @@ void calculate_window_position(window_t * win, uint_fast8_t mode, ...)
 	}
 
 	win->draw_x1 = win->x1 + edge_step;
-	win->draw_y1 = win->y1 + edge_step + (strcmp(win->title, "") ? window_title_height : 0);
+	win->draw_y1 = win->y1 + edge_step + (title_length ? window_title_height : 0);
 	win->draw_x2 = win->x1 + win->w - edge_step;
 	win->draw_y2 = win->y1 + win->h - edge_step;
 
@@ -1311,8 +1298,17 @@ void textfield_update_size(text_field_t * tf)
 /* Добавить строку в текстовое поле */
 void textfield_add_string(text_field_t * tf, char * str, COLORMAIN_T color)
 {
-	ASSERT(strlen(str) < TEXT_ARRAY_SIZE);
-	strcpy(tf->record [tf->index].text, str);
+	uint_fast8_t len = strlen(str);
+	ASSERT(len < TEXT_ARRAY_SIZE);
+
+	if (len > tf->w_sim)
+	{
+		PRINTF("text field '%s': string length exceeded, %s\n", tf->name, str);
+		len = tf->w_sim;
+	}
+
+	memset(tf->record [tf->index].text, 0, tf->w_sim * sizeof(char));
+	strncpy(tf->record [tf->index].text, str, len);
 	tf->record [tf->index].color_line = color;
 	tf->index ++;
 	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
@@ -1389,6 +1385,9 @@ static void set_state_record(gui_element_t * val)
 				if (! put_to_wm_queue(val->win, WM_MESSAGE_ACTION, TYPE_TOUCH_AREA, ta, MOVING))
 					dump_queue(val->win);
 			}
+			break;
+
+		case TYPE_TEXT_FIELD:
 			break;
 
 		default:
@@ -1764,6 +1763,20 @@ void gui_drawrect(window_t * win, uint_fast16_t x1, uint_fast16_t y1, uint_fast1
 	ASSERT(yk < win->draw_y2);
 
 	colpip_rect(fr, DIM_X, DIM_Y, xn, yn, xk, yk, color, fill);
+}
+
+void gui_drawpoint(window_t * win, uint_fast16_t x1, uint_fast16_t y1, COLORMAIN_T color)
+{
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	const uint_fast16_t xp = x1 + win->draw_x1;
+	const uint_fast16_t yp = y1 + win->draw_y1;
+
+
+	ASSERT(xp < win->draw_x2);
+	ASSERT(xp < win->draw_x2);
+
+	colpip_point(fr, DIM_X, DIM_Y, xp, yp, color);
 }
 
 #endif /* WITHTOUCHGUI */

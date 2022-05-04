@@ -6574,6 +6574,7 @@ enum
 	enum
 	{
 		DPAGE0,					// Страница, в которой отображаются основные (или все)
+		DPAGE1,					// служебная страница для полноэкранных окон touch GUI
 		DISPLC_MODCOUNT
 	};
 
@@ -6587,6 +6588,7 @@ enum
 		PGLATCH = PGALL | REDRSUBSET_SLEEP,	// страницы, на которых возможно отображение водопада или панорамы.
 		PGSLP = REDRSUBSET_SLEEP,
 		PGINI = REDRSUBSET_INIT,
+		PGGUI = REDRSUBSET(DPAGE1),
 		PGunused
 	};
 
@@ -6605,7 +6607,7 @@ enum
 	//#define SMALLCHARW 16 /* Font width */
 	static const FLASHMEM struct dzone dzones [] =
 	{
-		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+		{	0,	0,	display2_clearbg, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP | PGGUI, },
 		{	17,	0,	display_txrxstate5alt, REDRM_MODE, PGALL, },
 		{	21,	0,	display2_ant7alt,		REDRM_MODE, PGALL, },
 		{	26,	0,	display2_att5alt,		REDRM_MODE, PGALL, },
@@ -6653,10 +6655,10 @@ enum
 //		{	36, 30,	display2_freqdelta8, REDRM_BARS, PGSWR, },	// выход ЧМ демодулятора
 	#if WITHSPECTRUMWF || WITHAFSPECTRE
 		{	0,	DLES,	display2_wfl_init,	REDRM_INIS,	PGINI, },	// формирование палитры водопада
-		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH, },	// формирование данных спектра для последующего отображения спектра или водопада
-		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE, },// подготовка изображения спектра
-		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL, },// подготовка изображения водопада
-		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE, },// Отображение водопада и/или спектра
+		{	0,	DLES,	display2_latchwaterfall,	REDRM_BARS,	PGLATCH | PGGUI, },	// формирование данных спектра для последующего отображения спектра или водопада
+		{	0,	DLES,	display2_spectrum,	REDRM_BARS, PGSPE | PGGUI, },// подготовка изображения спектра
+		{	0,	DLES,	display2_waterfall,	REDRM_BARS, PGWFL | PGGUI, },// подготовка изображения водопада
+		{	0,	DLES,	display2_colorbuff,	REDRM_BARS,	PGWFL | PGSPE | PGGUI, },// Отображение водопада и/или спектра
 	#endif /* WITHSPECTRUMWF */
 #else
 		{	0,	25,	display2_adctest,	REDRM_BARS, PGSWR, },	// ADC raw data print
@@ -6668,9 +6670,9 @@ enum
 		// sleep mode display
 		{	5,	25,	display2_datetime12,	REDRM_BARS, PGSLP, },	// DATE & TIME // DATE&TIME Jan-01 13:40
 		{	20, 25,	display2_voltlevelV5, REDRM_VOLT, PGSLP, },	// voltmeter with "V"
-		{	0,	DLES,	gui_WM_walktrough,	REDRM_BARS, PGWFL | PGSPE, },
+		{	0,	DLES,	gui_WM_walktrough,	REDRM_BARS, PGWFL | PGSPE | PGGUI, },
 
-		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP, },
+		{	0,	0,	display2_nextfb, 	REDRM_MODE, PGALL | REDRSUBSET_SLEEP | PGGUI, },
 	};
 
 #if WITHMENU
@@ -10400,3 +10402,18 @@ void display2_set_smetertype(uint_fast8_t v)
 	ASSERT(v < SMETER_TYPE_COUNT);
 	glob_smetertype = v;
 }
+
+#if WITHTOUCHGUI
+
+uint_fast8_t display_getpagegui(void)
+{
+	return DPAGE1;
+}
+
+uint_fast8_t display_getpage0(void)
+{
+	return DPAGE0;
+}
+
+#endif /* WITHTOUCHGUI */
+

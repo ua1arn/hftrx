@@ -82,6 +82,11 @@ uint_fast16_t hamradio_get_afgain(void);
 void hamradio_set_afgain(uint_fast16_t v);
 void hamradio_change_nr(void);
 void hamradio_gui_set_reqautotune2(uint_fast8_t val);
+uint_fast8_t hamradio_split_toggle(void);
+void hamradio_split_mode_toggle(void);
+void display2_set_page_temp(uint_fast8_t page);
+uint_fast8_t display_getpage0(void);
+uint_fast8_t display_getpagegui(void);
 
 void gui_encoder2_menu(enc2_menu_t * enc2_menu);
 void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx);

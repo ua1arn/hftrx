@@ -23268,7 +23268,30 @@ void hamradio_gui_set_reqautotune2(uint_fast8_t val)
 	reqautotune2 = val != 0;
 }
 
+void display2_set_page_temp(uint_fast8_t page)
+{
+	menuset = page;
+	display2_bgreset();
+}
+
 #endif /* WITHTOUCHGUI */
+
+#if WITHUSEDUALWATCH
+uint_fast8_t hamradio_split_toggle(void)
+{
+	if (gsplitmode == VFOMODES_VFOINIT)
+		uif_key_spliton(0);
+	else
+		uif_key_splitoff();
+
+	return gsplitmode != 0;
+}
+
+void hamradio_split_mode_toggle(void)
+{
+	uif_key_mainsubrx();
+}
+#endif /* WITHUSEDUALWATCH */
 
 // основной цикл программы при работе в режиме любительского премника
 static void

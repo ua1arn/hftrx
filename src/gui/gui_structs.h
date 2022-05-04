@@ -193,7 +193,7 @@ typedef enum {
 	ALIGN_CENTER_X 	= WITHGUIMAXX / 2,					// вертикальное выравнивание по центру экрана
 	ALIGN_RIGHT_X 	= ALIGN_LEFT_X + ALIGN_CENTER_X,	// вертикальное выравнивание по центру правой половины экрана
 	ALIGN_MANUAL 	= 0,								// ручное указание координат
-	ALIGN_Y 		= WITHGUIMAXY / 2					// горизонтальное выравнивание всегда по центру экрана
+	ALIGN_Y 	= WITHGUIMAXY / 2 - FOOTER_HEIGHT / 2	// горизонтальное выравнивание всегда по центру экрана
 } window_align_t;
 
 enum {
@@ -254,6 +254,7 @@ typedef struct {
 	uint16_t draw_x2;
 	uint16_t draw_y2;
 	title_align_t title_align;
+	uint8_t size_mode;
 } window_t;
 
 typedef struct {

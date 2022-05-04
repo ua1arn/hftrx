@@ -34,17 +34,17 @@ enum {
 	WINDOW_NOTCH,					// ручной режекторый фильтр
 	WINDOW_GUI_SETTINGS,			// настройки интерфейса GUI
 #if WITHFT8
-	WINDOW_FT8,						// FT8 декодер
+	WINDOW_FT8,
+	WINDOW_FT8_BANDS,
+	WINDOW_FT8_SETTINGS,
 #endif /* #if WITHFT8 */
-	WINDOW_INFOBAR_MENU,			// инфобар
-	WINDOW_AF_EQ,					// НЧ эквалайзер (тест)
-#if defined (RTC1_TYPE)
-	WINDOW_TIME,					// настройка времени и даты
-#endif /* defined (RTC1_TYPE) */
-	WINDOWS_KBD,					// экранная клавиатура
-	WINDOWS_KBD_TEST,
-	WINDOWS_RLE_TEST,
+	WINDOW_INFOBAR_MENU,
+	WINDOW_AF_EQ,
 	WINDOW_SHIFT,
+	WINDOW_TIME,
+	WINDOW_KBD,
+	WINDOW_KBD_TEST,
+	WINDOW_WIFI,
 
 	WINDOWS_COUNT
 };
@@ -121,8 +121,6 @@ enum {
 	freq_swipe_step_default = 3,
 	freq_swipe_enable_default = 0,
 	micprofile_default = UINT8_MAX,
-	tune_powerdown_enable_default = 1,
-	tune_powerdown_value_default = WITHPOWERTRIMATU
 };
 
 #if GUI_SHOW_INFOBAR
@@ -134,10 +132,10 @@ enum {
 	infobar_label_width = 100
 };
 
-#define INFOBAR_EMPTY 			0x80
-#define INFOBAR_NOACTION		0x40
+#define INFOBAR_EMPTY 		0x80
+#define INFOBAR_NOACTION	0x40
 #define INFOBAR_NOACTION_POS	6
-#define INFOBAR_VALID_MASK		0x3F
+#define INFOBAR_VALID_MASK	0x3F
 
 enum {
 	INFOBAR_AF,
@@ -150,6 +148,7 @@ enum {
 	INFOBAR_TX_POWER,
 	INFOBAR_AF_VOLUME,
 	INFOBAR_DNR,
+	INFOBAR_SPLIT,
 };
 
 #endif /* GUI_SHOW_INFOBAR */
