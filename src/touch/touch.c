@@ -222,11 +222,12 @@ board_tsc_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 
 void ili2102_initialize(void)
 {
-	BOARD_ILI2102_RESET_SET(1);
+	BOARD_GT911_RESET_INITIO_1();
+	BOARD_GT911_RESET_SET(1);
 	local_delay_us(100);
-	BOARD_ILI2102_RESET_SET(0);
+	BOARD_GT911_RESET_SET(0);
 	local_delay_us(100);
-	BOARD_ILI2102_RESET_SET(1);
+	BOARD_GT911_RESET_SET(1);
 	local_delay_us(500);
 
 	uint8_t command = REG_FIRMWARE_VERSION;

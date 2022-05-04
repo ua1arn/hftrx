@@ -210,7 +210,7 @@
 #endif /* WITHISBOOTLOADER */
 
 
-#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911)
+#if defined (TSC1_TYPE) && (TSC1_TYPE == TSC_TYPE_GT911 || TSC1_TYPE == TSC_TYPE_ILI2102)
 
 	//#define WITH_GT911_INTERRUPTS	1
 
