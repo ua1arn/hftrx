@@ -4279,7 +4279,11 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
+#if defined (WITHIGNORESWR)
+	static uint_fast8_t gignoreswwr = WITHIGNORESWR;
+#else
 	static uint_fast8_t gignoreswwr;	/* игнорирование превышения КСВ */
+#endif
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	static uint_fast8_t tunemode;	/* режим настройки передающего тракта */
 	static uint_fast8_t moxmode;	/* передача, включённая кнопкой с клавиатуры */

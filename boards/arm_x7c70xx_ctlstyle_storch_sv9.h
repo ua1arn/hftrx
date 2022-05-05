@@ -336,6 +336,8 @@
 			//#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
 //			#define WITHFT8				1
+			#define REALREFERENCE_FREQ 	122879000L
+			#define WITHIGNORESWR		1
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
