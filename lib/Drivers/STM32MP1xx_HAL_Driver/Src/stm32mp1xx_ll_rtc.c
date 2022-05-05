@@ -30,7 +30,7 @@
   * @{
   */
 
-#if defined(RTC)
+#if defined(RTC) && defined(CORE_CM4)
 
 /** @addtogroup RTC_LL
   * @{
@@ -866,7 +866,7 @@ ErrorStatus LL_RTC_WaitForSynchro(RTC_TypeDef *RTCx)
   * @}
   */
 
-#endif /* defined(RTC) */
+#endif /* defined(RTC) && defined(CORE_CM4) */
 
 /**
   * @}
