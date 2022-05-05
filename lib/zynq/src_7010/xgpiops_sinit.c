@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xgpiops_sinit.c
-* @addtogroup gpiops_v3_7
+* @addtogroup gpiops_v3_9
 * @{
 *
 * This file contains the implementation of the XGpioPs driver's static
@@ -40,8 +40,6 @@
 
 /************************** Function Prototypes ******************************/
 
-/************************** Variable Definitions *****************************/
-extern XGpioPs_Config XGpioPs_ConfigTable[XPAR_XGPIOPS_NUM_INSTANCES];
 
 /*****************************************************************************/
 /**

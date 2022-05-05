@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xiicps_sinit.c
-* @addtogroup iicps_v3_11
+* @addtogroup iicps_v3_13
 * @{
 *
 * The implementation of the XIicPs component's static initialization

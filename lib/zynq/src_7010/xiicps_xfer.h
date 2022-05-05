@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xiicps_xfer.h
-* @addtogroup iicps_v3_11
+* @addtogroup iicps_v3_13
 * @{
 *
 * Contains implementation of required helper functions for the XIicPs driver.
@@ -22,7 +22,7 @@
 *
 ******************************************************************************/
 #ifndef XIICPS_XFER_H             /* prevent circular inclusions */
-#define XIICPS_XFER_H             /* by using protection macros */
+#define XIICPS_XFER_H             /**< by using protection macros */
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,12 +38,37 @@ extern "C" {
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
+/*****************************************************************************/
+/**
+*
+* This function is to check if Rx data is valid or not.
+*
+* @param        InstancePtr is a pointer to the XIicPs instance.
+*
+* @return       The return value is '1' if Rx data is valid, '0' otherwise.
+*
+* @note         None.
+*
+******************************************************************************/
 static INLINE u32 XIicPs_RxDataValid(XIicPs *InstancePtr)
 {
 	return ((XIicPs_ReadReg(InstancePtr->Config.BaseAddress, XIICPS_SR_OFFSET))
 				& XIICPS_SR_RXDV_MASK);
 }
 
+/*****************************************************************************/
+/**
+*
+* This function is to check if Rx FIFO is full or not.
+*
+* @param        InstancePtr is a pointer to the XIicPs instance.
+* @param        ByteCountVar is the number of bytes to be received.
+*
+* @return       The return value is '0' if Rx FIFO is full, '1' otherwise.
+*
+* @note         None.
+*
+******************************************************************************/
 static INLINE u32 XIicPs_RxFIFOFull(XIicPs *InstancePtr, s32 ByteCountVar)
 {
 	u32 Status = 0;

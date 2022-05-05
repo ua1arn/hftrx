@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xgpiops.h
-* @addtogroup gpiops_v3_7
+* @addtogroup gpiops_v3_9
 * @{
 * @details
 *
@@ -92,12 +92,15 @@
 * 3.6	sne  06/12/19 Fixed IAR compiler warning.
 * 3.6   sne  08/14/19 Added interrupt handler support on versal.
 * 3.7	sne  12/04/19 Reverted versal examples support.
+* 3.8   sne  08/28/20 Modify Makefile to support parallel make execution.
+* 3.8	sne  09/17/20 Added description for Versal PS and PMC GPIO pins.
+* 3.9	sne  03/15/21 Fixed MISRA-C violations.
 *
 * </pre>
 *
 ******************************************************************************/
 #ifndef XGPIOPS_H		/* prevent circular inclusions */
-#define XGPIOPS_H		/* by using protection macros */
+#define XGPIOPS_H		/**< by using protection macros */
 
 #ifdef __cplusplus
 extern "C" {
@@ -121,7 +124,7 @@ extern "C" {
 #define XGPIOPS_IRQ_TYPE_EDGE_BOTH	0x02U  /**< Interrupt on both edges */
 #define XGPIOPS_IRQ_TYPE_LEVEL_HIGH	0x03U  /**< Interrupt on high level */
 #define XGPIOPS_IRQ_TYPE_LEVEL_LOW	0x04U  /**< Interrupt on low level */
-/*@}*/
+/** @}*/
 
 #define XGPIOPS_BANK_MAX_PINS		(u32)32 /**< Max pins in a GPIO bank */
 #define XGPIOPS_BANK0			0x00U  /**< GPIO Bank 0 */
@@ -181,7 +184,7 @@ typedef void (*XGpioPs_Handler) (void *CallBackRef, u32 Bank, u32 Status);
  */
 typedef struct {
 	u16 DeviceId;		/**< Unique ID of device */
-	u32 BaseAddr;		/**< Register base address */
+	UINTPTR BaseAddr;		/**< Register base address */
 } XGpioPs_Config;
 
 /**
@@ -199,6 +202,9 @@ typedef struct {
 	u8 MaxBanks;			/**< Max banks in a GPIO device */
         u32 PmcGpio;                    /**< Flag for accessing PS GPIO for versal*/
 } XGpioPs;
+
+/************************** Variable Definitions *****************************/
+extern XGpioPs_Config XGpioPs_ConfigTable[];
 
 /***************** Macros (Inline Functions) Definitions *********************/
 

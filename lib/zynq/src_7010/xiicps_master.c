@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xiicps_master.c
-* @addtogroup iicps_v3_11
+* @addtogroup iicps_v3_13
 * @{
 *
 * Handles master mode transfers.
@@ -48,6 +48,8 @@
 * 3.11  sd  02/06/20 Added clocking support.
 * 3.11  rna 02/12/20 Moved static data transfer functions to xiicps_xfer.c file
 *	    02/18/20 Modified latest code for MISRA-C:2012 Compliance.
+* 3.13  rna 11/24/20 Added timeout to XIicPs_MasterSendPolled function.
+*	rna 12/17/20 Clear hold bit at correct time in Rx path of ISR
 * </pre>
 *
 ******************************************************************************/
@@ -56,12 +58,14 @@
 
 #include "xiicps.h"
 #include "xiicps_xfer.h"
+#include "sleep.h"
 
 /************************** Constant Definitions *****************************/
 
 /**************************** Type Definitions *******************************/
 
 /***************** Macros (Inline Functions) Definitions *********************/
+#define TX_MAX_LOOPCNT 1000000	/**< Used to wait in polled function */
 
 /************************** Function Prototypes ******************************/
 
@@ -274,7 +278,8 @@ s32 XIicPs_MasterSendPolled(XIicPs *InstancePtr, u8 *MsgPtr,
 	u32 StatusReg;
 	u32 BaseAddr;
 	u32 Intrs;
-	s32 Status;
+	s32 Status = (s32)XST_FAILURE;
+	u32 timeout = 0;
 	_Bool Value;
 
 	/*
@@ -364,6 +369,17 @@ s32 XIicPs_MasterSendPolled(XIicPs *InstancePtr, u8 *MsgPtr,
 		 * If there is an error, tell the caller.
 		 */
 		if ((IntrStatusReg & Intrs) != 0U) {
+			if ((IntrStatusReg & XIICPS_IXR_ARB_LOST_MASK) != 0U) {
+				Status = (s32) XST_IIC_ARB_LOST;
+			}
+			break;
+		}
+		/*
+		 * Timeout if stuck for more than 1 second
+		 */
+		usleep(1);
+		timeout++;
+		if (timeout == TX_MAX_LOOPCNT) {
 			break;
 		}
 	}
@@ -374,14 +390,9 @@ s32 XIicPs_MasterSendPolled(XIicPs *InstancePtr, u8 *MsgPtr,
 						(~XIICPS_CR_HOLD_MASK));
 	}
 
-	if ((IntrStatusReg & Intrs) != 0U) {
-		if ((IntrStatusReg & XIICPS_IXR_ARB_LOST_MASK) != 0U) {
-			Status = (s32) XST_IIC_ARB_LOST;
-		} else {
-			Status = (s32)XST_FAILURE;
-		}
-	} else {
-			Status = (s32)XST_SUCCESS;
+	/* Set the Status for XST_SUCCESS */
+	if (((IntrStatusReg & Intrs) == 0U) && (timeout != TX_MAX_LOOPCNT)) {
+		Status = XST_SUCCESS;
 	}
 
 	return Status;
@@ -742,7 +753,6 @@ void XIicPs_DisableSlaveMonitor(XIicPs *InstancePtr)
 *
 * Completion events and errors are signaled to upper layer for proper handling.
 *
-* <pre>
 * The interrupts that are handled are:
 * - DATA
 *	This case is handled only for master receive data.
@@ -767,8 +777,6 @@ void XIicPs_DisableSlaveMonitor(XIicPs *InstancePtr)
 * - All Other interrupts
 *	These interrupts are marked as error. This is signalled to the upper
 *	layer by calling the callback handler.
-*
-* </pre>
 *
 * @param	InstancePtr is a pointer to the XIicPs instance.
 *
@@ -843,18 +851,21 @@ void XIicPs_MasterInterruptHandler(XIicPs *InstancePtr)
 		 (0U != (IntrStatusReg & (u32)XIICPS_IXR_COMP_MASK)))){
 
 		while ((XIicPs_RxDataValid(InstancePtr)) != 0U) {
-			if ((InstancePtr->RecvByteCount <
-				XIICPS_DATA_INTR_DEPTH)  && (IsHold != 0)  &&
-				(InstancePtr->IsRepeatedStart == 0) &&
-				(InstancePtr->UpdateTxSize == 0)) {
+
+			XIicPs_RecvByte(InstancePtr);
+			ByteCnt--;
+
+			/* Clear hold bit when not required */
+			if ((InstancePtr->RecvByteCount <=
+					XIICPS_DATA_INTR_DEPTH) && (IsHold != 0)
+					&& (InstancePtr->IsRepeatedStart == 0)
+					&& (InstancePtr->UpdateTxSize == 0)) {
 				IsHold = 0;
 				XIicPs_WriteReg(BaseAddr, XIICPS_CR_OFFSET,
 						XIicPs_ReadReg(BaseAddr,
 						XIICPS_CR_OFFSET) &
 						(~XIICPS_CR_HOLD_MASK));
 			}
-			XIicPs_RecvByte(InstancePtr);
-			ByteCnt--;
 
 			if (Platform == (u32)XPLAT_ZYNQ) {
 			    if ((InstancePtr->UpdateTxSize != 0) &&

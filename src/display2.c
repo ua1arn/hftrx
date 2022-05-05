@@ -7522,7 +7522,7 @@ void display_swrmeter(
 	uint_fast16_t minforward
 	)
 {
-#if WITHBARS
+#if WITHBARS && WITHTX
 
 	// SWRMIN - значение 10 - соответствует SWR = 1.0, точность = 0.1
 	// SWRMAX - какая цифра стоит в конце шкалы SWR-метра (30 = КСВ 3.0)
@@ -7556,7 +7556,7 @@ void display_swrmeter(
 		display_wrdatabar_end();
 	}
 
-#endif /* WITHBARS */
+#endif /* WITHBARS && WITHTX */
 }
 
 #if CTLSTYLE_RA4YBO_AM0

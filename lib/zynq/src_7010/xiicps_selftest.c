@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xiicps_selftest.c
-* @addtogroup iicps_v3_11
+* @addtogroup iicps_v3_13
 * @{
 *
 * This component contains the implementation of selftest functions for the
@@ -32,7 +32,7 @@
 
 /************************** Constant Definitions *****************************/
 
-#define REG_TEST_VALUE    0x00000005U
+#define REG_TEST_VALUE    0x00000005U	/**< Register value to write */
 
 /**************************** Type Definitions *******************************/
 

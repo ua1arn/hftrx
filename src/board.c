@@ -746,10 +746,14 @@ prog_gpioreg(void)
 
 #if CPUSTYLE_XC7Z
 	xcz_rxtx_state(glob_tx);
+#if defined (TARGET_RFADC_PGA_EMIO)
 	xc7z_gpio_output(TARGET_RFADC_PGA_EMIO);
 	xc7z_writepin(TARGET_RFADC_PGA_EMIO, glob_preamp);
+#endif /* defined (TARGET_RFADC_PGA_EMIO) */
+#if defined (TARGET_DAC_SLEEP_EMIO)
 	xc7z_gpio_output(TARGET_DAC_SLEEP_EMIO);
 	xc7z_writepin(TARGET_DAC_SLEEP_EMIO, ! glob_tx);
+#endif /* defined (TARGET_DAC_SLEEP_EMIO) */
 #endif /* CPUSTYLE_XC7Z */
 }
 

@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2013 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2013 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xiicps_hw.c
-* @addtogroup iicps_v3_11
+* @addtogroup iicps_v3_13
 * @{
 *
 * Contains implementation of required functions for providing the reset sequence

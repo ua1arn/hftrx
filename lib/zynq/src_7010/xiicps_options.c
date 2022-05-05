@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xiicps_options.c
-* @addtogroup iicps_v3_11
+* @addtogroup iicps_v3_13
 * @{
 *
 * Contains functions for the configuration of the XIccPs driver.
@@ -54,14 +54,14 @@
 
 
 /************************** Variable Definitions *****************************/
-/*
+/**
  * Create the table of options which are processed to get/set the device
  * options. These options are table driven to allow easy maintenance and
  * expansion of the options.
  */
 typedef struct {
-		u32 Option;
-		u32 Mask;
+		u32 Option;	/**< Option to select */
+		u32 Mask;	/**< Mask to select */
 } OptionsMap;
 
 static OptionsMap OptionsTable[] = {
@@ -71,7 +71,7 @@ static OptionsMap OptionsTable[] = {
 		{XIICPS_REP_START_OPTION, XIICPS_CR_HOLD_MASK},
 };
 
-#define XIICPS_NUM_OPTIONS      (sizeof(OptionsTable) / sizeof(OptionsMap))
+#define XIICPS_NUM_OPTIONS      (sizeof(OptionsTable) / sizeof(OptionsMap)) /**< Calculated no. of options */
 
 /*****************************************************************************/
 /**

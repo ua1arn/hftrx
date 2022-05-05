@@ -23263,6 +23263,8 @@ void hamradio_gui_enc2_update(void)
 }
 #endif /* WITHENCODER2 */
 
+#if WITHTX
+
 void hamradio_gui_set_reqautotune2(uint_fast8_t val)
 {
 	reqautotune2 = val != 0;
@@ -23273,6 +23275,8 @@ void display2_set_page_temp(uint_fast8_t page)
 	menuset = page;
 	display2_bgreset();
 }
+
+#endif /* WITHTX */
 
 #endif /* WITHTOUCHGUI */
 

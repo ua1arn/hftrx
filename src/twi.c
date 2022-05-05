@@ -1519,7 +1519,10 @@ void i2c_initialize(void)
 
 #endif
 
+#if defined (TWIHARD_INITIALIZE)
 	TWIHARD_INITIALIZE();
+#endif /* defined (TWIHARD_INITIALIZE) */
+
 	hardware_twi_master_configure();	// clocks - pass XPAR_XIICPS_0_DEVICE_ID
 	hardware_iicps_configure();			// Peripheral
 }

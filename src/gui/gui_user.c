@@ -71,7 +71,7 @@ const uint8_t infobar_places [infobar_num_places] = {
 
 #if WITHFT8
 
-#include "ft8_core0.h"
+#include "ft8.h"
 
 const uint_fast32_t ft8_bands [] = {
 		1840000uL,
@@ -1015,6 +1015,7 @@ static void gui_main_process(void)
 
 			case INFOBAR_TX_POWER:
 			{
+#if WITHTX
 				static uint_fast8_t tx_pwr, tune_pwr;
 				uint_fast16_t xx = current_place * infobar_label_width + infobar_label_width / 2;
 
@@ -1028,6 +1029,7 @@ static void gui_main_process(void)
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
 				local_snprintf_P(buf, buflen, PSTR("Tune %d\%"), tune_pwr);
 				colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_2nd_str_y, buf, COLORMAIN_WHITE);
+#endif /* WITHTX */
 			}
 				break;
 
@@ -2558,7 +2560,7 @@ static void window_tx_vox_process(void)
 
 static void window_tx_power_process(void)
 {
-#if WITHPOWERTRIM
+#if WITHPOWERTRIM && WITHTX
 	window_t * const win = get_win(WINDOW_TX_POWER);
 
 	static label_t * lbl_tx_power = NULL, * lbl_tune_power = NULL;
@@ -2696,7 +2698,7 @@ static void window_tx_power_process(void)
 		win->lh_ptr [pw.select].color = COLORMAIN_YELLOW;
 	}
 
-#endif /* WITHPOWERTRIM */
+#endif /* WITHPOWERTRIM && WITHTX */
 }
 
 // *********************************************************************************************************************************************************************
@@ -3982,13 +3984,13 @@ static void window_shift_proccess(void)
 
 		shift += action;
 
-//		shift = shift > 56 ? 56 : shift;
-//		shift = shift < 32 ? 32 : shift;
-//		xcz_rx_iq_shift(shift);
+		shift = shift > 56 ? 56 : shift;
+		shift = shift < 32 ? 32 : shift;
+		xcz_rx_iq_shift(shift);
 
-		shift = shift > 30 ? 30 : shift;
-		shift = shift < 0 ? 0 : shift;
-		xcz_tx_shift(shift);
+//		shift = shift > 30 ? 30 : shift;
+//		shift = shift < 0 ? 0 : shift;
+//		xcz_tx_shift(shift);
 
 		label_t * lbl_shift = find_gui_element(TYPE_LABEL, win, "lbl_shift");
 		local_snprintf_P(lbl_shift->text, ARRAY_SIZE(lbl_shift->text), "%d", shift);
@@ -5366,6 +5368,7 @@ static void window_freq_process (void)
 
 static void window_time_proccess(void)
 {
+#if defined (RTC1_TYPE)
 	window_t * const win = get_win(WINDOW_TIME);
 	static uint_fast16_t year;
 	static uint_fast8_t month, day, hour, minute, secound, update;
@@ -5526,6 +5529,7 @@ static void window_time_proccess(void)
 		lh =  find_gui_element(TYPE_LABEL, win, "lbl_second");
 		local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%02d", secound);
 	}
+#endif /* defined (RTC1_TYPE) */
 }
 
 static void window_kbd_proccess(void)

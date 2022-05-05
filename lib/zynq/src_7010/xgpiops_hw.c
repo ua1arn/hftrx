@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2013 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2013 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xgpiops_hw.c
-* @addtogroup gpiops_v3_7
+* @addtogroup gpiops_v3_9
 * @{
 *
 * This file contains low level GPIO functions.
@@ -47,19 +47,19 @@
 
 
 /*****************************************************************************/
-/*
+/**
 *
 * This function resets the GPIO module by writing reset values to
 * all registers
 *
-* @param	Base address of GPIO module
+* @param	BaseAddress address of GPIO module
 *
 * @return	None
 *
 * @note		None.
 *
 ******************************************************************************/
-void XGpioPs_ResetHw(u32 BaseAddress)
+void XGpioPs_ResetHw(UINTPTR BaseAddress)
 {
 	u32 BankCount;
 	u32 Platform,MaxBanks;
@@ -154,11 +154,11 @@ void XGpioPs_ResetHw(u32 BaseAddress)
                                 XGPIOPS_INTTYPE_BANK1_RESET);
                 /* Bank 3 Int type */
                 XGpioPs_WriteReg(BaseAddress,
-                                (((u32)3 * XGPIOPS_REG_MASK_OFFSET) + XGPIOPS_INTTYPE_OFFSET),
+                                (((u32)3 * XGPIOPS_REG_MASK_OFFSET) + (u32)XGPIOPS_INTTYPE_OFFSET),
                                 XGPIOPS_INTTYPE_BANK3_RESET);
                 /* Bank 4 Int type */
                 XGpioPs_WriteReg(BaseAddress,
-                                (((u32)4 * XGPIOPS_REG_MASK_OFFSET) + XGPIOPS_INTTYPE_OFFSET),
+                                (((u32)4 * XGPIOPS_REG_MASK_OFFSET) + (u32)XGPIOPS_INTTYPE_OFFSET),
                                 XGPIOPS_INTTYPE_BANK4_RESET);
         }
         else
@@ -217,21 +217,21 @@ void XGpioPs_ResetHw(u32 BaseAddress)
                                 XGPIOPS_INTTYPE_BANK1_RESET);
                 /* Bank 2 Int type */
                 XGpioPs_WriteReg(BaseAddress,
-                                (((u32)2 * XGPIOPS_REG_MASK_OFFSET) + XGPIOPS_INTTYPE_OFFSET),
+                                (((u32)2 * XGPIOPS_REG_MASK_OFFSET) + (u32)XGPIOPS_INTTYPE_OFFSET),
                                 XGPIOPS_INTTYPE_BANK2_RESET);
                 /* Bank 3 Int type */
                 XGpioPs_WriteReg(BaseAddress,
-                                (((u32)3 * XGPIOPS_REG_MASK_OFFSET) + XGPIOPS_INTTYPE_OFFSET),
+                                (((u32)3 * XGPIOPS_REG_MASK_OFFSET) + (u32)XGPIOPS_INTTYPE_OFFSET),
                                 XGPIOPS_INTTYPE_BANK3_RESET);
 
                 if (Platform == (u32)XPLAT_ZYNQ_ULTRA_MP) {
                         /* Bank 4 Int type */
                         XGpioPs_WriteReg(BaseAddress,
-                                        (((u32)4 * XGPIOPS_REG_MASK_OFFSET) + XGPIOPS_INTTYPE_OFFSET),
+                                        (((u32)4 * XGPIOPS_REG_MASK_OFFSET) + (u32)XGPIOPS_INTTYPE_OFFSET),
                                         XGPIOPS_INTTYPE_BANK4_RESET);
                         /* Bank 5 Int type */
                         XGpioPs_WriteReg(BaseAddress,
-                                        (((u32)5 * XGPIOPS_REG_MASK_OFFSET) + XGPIOPS_INTTYPE_OFFSET),
+                                        (((u32)5 * XGPIOPS_REG_MASK_OFFSET) + (u32)XGPIOPS_INTTYPE_OFFSET),
                                         XGPIOPS_INTTYPE_BANK5_RESET);
                 }
         }

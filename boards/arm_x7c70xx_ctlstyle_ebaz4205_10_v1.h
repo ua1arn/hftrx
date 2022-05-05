@@ -200,12 +200,12 @@
 	//#define WITHFPGAWAIT_AS	1	/* FPGA загружается из собственной микросхемы загрузчика - дождаться окончания загрузки перед инициализацией SPI в процессоре */
 	//#define WITHFPGALOAD_PS	1	/* FPGA загружается процессором с помощью SPI */
 	//#define WITHFPGALOAD_DCFG	1	/* FPGA загружается процессором через интерфейс XDCFG (ZYNQ7000) */
-	#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_4205_10.h"
+	//#define BOARD_BITIMAGE_NAME "build/xc7Z010/bitstream_4205_10.h"
 
 	//#define WITHSKIPUSERMODE 1	// debug option: не отдавать в USER MODE блоки для фильтрации аудиосигнала
 	#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 	//#define WITHNOSPEEX	1	// Без шумоподавителя SPEEX
-	////#define WITHUSEDUALWATCH	1	// Второй приемник
+	//#define WITHUSEDUALWATCH	1	// Второй приемник
 	#define WITHREVERB	1	// ревербератор в обработке микрофонного сигнала
 	//#define WITHLOOPBACKTEST	1	/* прослушивание микрофонного входа, генераторов */
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
@@ -236,12 +236,12 @@
 			#define WITHALPHA			24
 			#define FORMATFROMLIBRARY 	1
 			#define WITHUSEMALLOC		1	/* разрешение поддержки malloc/free/calloc/realloc */
-			#define WITHAFGAINDEFAULT	150
+			#define WITHAFGAINDEFAULT	200
 			#define WITHCPUTEMPERATURE	1
 			#define WITHALTERNATIVEFONTS	1
 			#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
-			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
+//			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
 		#endif
 	#elif LCDMODE_LQ043T3DX02K
 		#define WITHFFTSIZEWIDE 512		/* Отображение спектра и волопада */
@@ -264,11 +264,11 @@
 
 	#define WITHNOTXDACCONTROL	1	/* в этой версии нет ЦАП управления смещением TXDAC передатчика */
 
-	#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
+	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	////#define WITHCAT		1	/* используется CAT */
-	#define WITHTX	1
+	//#define WITHTX	1
 	#if WITHTX
 		#define WITHVOX			1	/* используется VOX */
 		#define WITHSHOWSWRPWR 1	/* на дисплее одновременно отображаются SWR-meter и PWR-meter */
@@ -332,8 +332,8 @@
 	/* Board hardware configuration */
 	#define DDS1_TYPE DDS_TYPE_ZYNQ_PL
 	//#define TSC1_TYPE TSC_TYPE_STMPE811	/* touch screen controller */
-	//#define TSC1_TYPE TSC_TYPE_GT911
-	#define TSC1_TYPE TSC_TYPE_ILI2102
+	#define TSC1_TYPE TSC_TYPE_GT911
+	//#define TSC1_TYPE TSC_TYPE_ILI2102
 
 	#define DDS1_CLK_DIV	1		/* Делитель опорной частоты перед подачей в DDS1 */
 

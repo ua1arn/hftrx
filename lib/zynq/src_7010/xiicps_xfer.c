@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xiicps_xfer.c
-* @addtogroup iicps_v3_11
+* @addtogroup iicps_v3_13
 * @{
 *
 * Contains implementation of required helper functions for the XIicPs driver.
@@ -41,7 +41,7 @@
 /*****************************************************************************/
 
 /*****************************************************************************/
-/*
+/**
 * This function prepares a device to transfers as a master.
 *
 * @param        InstancePtr is a pointer to the XIicPs instance.
@@ -94,7 +94,7 @@ s32 XIicPs_SetupMaster(XIicPs *InstancePtr, s32 Role)
 }
 
 /*****************************************************************************/
-/*
+/**
 * This function handles continuation of sending data. It is invoked
 * from interrupt handler.
 *
@@ -131,7 +131,7 @@ void MasterSendData(XIicPs *InstancePtr)
 }
 
 /*****************************************************************************/
-/*
+/**
 *
 * This function handles continuation of receiving data. It is invoked
 * from interrupt handler.

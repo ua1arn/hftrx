@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2010 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2010 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,7 @@
 /**
 *
 * @file xiicps.c
-* @addtogroup iicps_v3_11
+* @addtogroup iicps_v3_13
 * @{
 *
 * Contains implementation of required functions for the XIicPs driver.
@@ -174,8 +174,6 @@ s32 XIicPs_BusIsBusy(XIicPs *InstancePtr)
 *
 * @param	CallBackRef is a pointer to the upper layer callback reference.
 * @param	StatusEvent is the event that just occurred.
-* @param	ByteCount is the number of bytes transferred up until the event
-*		occurred.
 *
 * @return	None.
 *
