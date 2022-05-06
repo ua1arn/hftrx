@@ -25,7 +25,13 @@ typedef struct {
 } enc2_menu_t;
 
 enum {
-	memory_cells_count = 20
+	memory_cells_count = 20,
+	callsign_max_lenght = 15,
+	qth_max_lenght = 10,
+	end_max_lenght = 6,
+	wifiAPname_max_lenght = 20,
+	wifiAPkey_max_lenght = 20,
+	wifiAPmaxcount = 10,
 };
 
 typedef enum {
@@ -48,9 +54,24 @@ typedef struct {
 struct gui_nvram_t {
 	uint8_t enc2step_pos;
 	uint8_t micprofile;
+	uint8_t tune_powerdown_enable;
+	uint8_t tune_powerdown_value;
 	uint8_t freq_swipe_enable;
 	uint8_t freq_swipe_step;
-} ATTRPACKED;
+#if WITHFT8
+	char ft8_callsign [callsign_max_lenght];
+	char ft8_qth [qth_max_lenght];
+	char ft8_snr [end_max_lenght];
+	char ft8_end [end_max_lenght];
+	uint8_t ft8_band;
+	uint16_t ft8_txfreq_val;
+	uint8_t ft8_txfreq_equal;
+#endif /* WITHFT8 */
+#if WITHWIFI
+	char wifiAPname [wifiAPmaxcount][wifiAPname_max_lenght];
+	char wifiAPkey [wifiAPmaxcount][wifiAPkey_max_lenght];
+#endif /* WITHWIFI */
+};
 
 uint_fast8_t hamradio_get_multilinemenu_block_groups(menu_names_t * vals);
 uint_fast8_t hamradio_get_multilinemenu_block_params(menu_names_t * vals, uint_fast8_t index, uint_fast8_t max_count);
@@ -70,7 +91,6 @@ uint_fast8_t hamradio_check_current_freq_by_band(uint_fast8_t band);
 void hamradio_load_gui_settings(void * ptr);
 void hamradio_save_gui_settings(const void * ptr);
 void hamradio_gui_enc2_update(void);
-void hamradio_gui_parse_ft8buf(void);
 void hamradio_ft8_toggle_state(void);
 void hamradio_ft8_start_fill(void);
 uint_fast8_t hamradio_get_att_dbs(uint_fast8_t * values, uint_fast8_t limit);

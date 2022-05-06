@@ -24,7 +24,15 @@
 
 #include "speex/kiss_fftr.h"
 
+void ft8_irqhandler_core1(void);
+
 ft8_t ft8;
+uint32_t bufind1 = 0, bufind2 = 0;
+uint8_t fill_ft8_buf1 = 0, fill_ft8_buf2 = 0, ft8_enable = 0;
+const uint32_t bufsize = ft8_sample_rate * ft8_length;
+uint8_t ft8_tx = 0;
+uint32_t bufind = 0;
+uint8_t ft8_mox_request = 0;
 
 const int kMin_score = 10; // Minimum sync score threshold for candidates
 const int kMax_candidates = 120;
@@ -149,19 +157,18 @@ void extract_power(const float signal[], waterfall_t *power, int block_size)
     free(fft_work);
 }
 
+const int sample_rate = ft8_sample_rate;
+const int num_samples = ft8_length * sample_rate;
+const int num_bins = (int)(sample_rate / (2 * kFSK_dev)); // number bins of FSK tone width that the spectrum can be divided into
+const int block_size = (int)(sample_rate / kFSK_dev);     // samples corresponding to one FSK symbol
+const int subblock_size = block_size / kTime_osr;
+const int nfft = block_size * kFreq_osr;
+const int num_blocks = (num_samples - nfft + subblock_size) / block_size;
+
 void ft8_decode(float * signal)
 {
-	const int sample_rate = ft8_sample_rate;
-	const int num_samples = ft8_length * sample_rate;
 	float time_total = 0;
 	memset(ft8.rx_text, '\0', ft8_text_records * ft8_text_length);
-
-	// Compute DSP parameters that depend on the sample rate
-	const int num_bins = (int)(sample_rate / (2 * kFSK_dev)); // number bins of FSK tone width that the spectrum can be divided into
-	const int block_size = (int)(sample_rate / kFSK_dev);     // samples corresponding to one FSK symbol
-	const int subblock_size = block_size / kTime_osr;
-	const int nfft = block_size * kFreq_osr;
-	const int num_blocks = (num_samples - nfft + subblock_size) / block_size;
 
 	//PRINTF("Sample rate %d Hz, %d blocks, %d bins\n", sample_rate, num_blocks, num_bins);
 
@@ -253,17 +260,157 @@ void ft8_decode(float * signal)
 			int snr = 0; // TODO: compute SNR
 //			PRINTF("000000 %+4.2f %4.0f ~ %s\n", time_sec, freq_hz, message.text);
 
-			local_snprintf_P(& ft8.rx_text [num_decoded][0], ft8_text_length, "000000 %+4.2f %4.0f ~ %s",
-					time_sec, freq_hz, message.text);
+			local_snprintf_P(ft8.rx_text [num_decoded], ft8_text_length, "%02d%02d%02d %4.0f %02d ~ %s",
+								0, 0, 0, freq_hz, snr, message.text);
 
 			num_decoded ++;
 			time_total += time_sec;
 		}
 	}
 	ft8.decoded_messages = num_decoded;
-	PRINTF("ft8: decoded %d messages\n", num_decoded);
-//	correct_time += (time_total / num_decoded);
-//	PRINTF("correct_time %d\n", correct_time);
+	PRINTF("%u ft8: decoded %d messages\n", (unsigned) (__get_MPIDR() & 0x03), num_decoded);
+//	xcz_ipi_sendmsg_c0(FT8_MSG_DECODE_DONE);
+}
+
+// ********************************************************************************
+
+void ft8_irqhandler_core0(void)
+{
+	uint8_t msg = ft8.int_core0;
+
+	if (msg == FT8_MSG_START_FILL_1)
+	{
+		ft8_start_fill();
+	}
+	else if (msg == FT8_MSG_DECODE_DONE)
+	{
+		hamradio_gui_parse_ft8buf();
+	}
+	else if (msg == FT8_MSG_ENCODE_DONE)
+	{
+		PRINTF("transmit message...\n\r");
+		ft8_stop_fill();
+		ft8_tx_enable();
+	}
+}
+
+void ft8_irqhandler_core1(void)
+{
+	uint8_t msg = ft8.int_core1;
+	PRINTF("ft8_irqhandler_core1 CPU%u\n", (unsigned) (__get_MPIDR() & 0x03));
+
+	if (msg == FT8_MSG_DECODE_1) // start decode
+	{
+		//PRINTF("core 1: start decoding 1\r\n");
+		ft8_decode(ft8.rx_buf1);
+	}
+	else if (msg == FT8_MSG_DECODE_2) // start decode
+	{
+		//PRINTF("core 1: start decoding 2\r\n");
+		ft8_decode(ft8.rx_buf1);
+	}
+	else if (msg == FT8_MSG_ENCODE)  // transmit message
+	{
+//		ft8_encode(ft8.tx_buf, ft8.tx_text, ft8.tx_freq);
+//    	ft8_decode(share_mem.ft8txbuf, & st1);
+//		xcz_ipi_sendmsg_c0(FT8_MSG_ENCODE_DONE);
+	}
+}
+
+void ft8_tx_enable(void)
+{
+	ft8_tx = 1;
+	ft8_mox_request = 1;
+}
+
+void ft8_txfill(float * sample)
+{
+	const uint32_t bufsize = ft8_sample_rate * ft8_length;
+
+	if (ft8_tx && hamradio_get_tx())
+	{
+		* sample = ft8.tx_buf [bufind];
+		bufind ++;
+		if (bufind >= bufsize)
+		{
+			ft8_tx = 0;
+			bufind = 0;
+			ft8_mox_request = 1;
+		}
+	}
+}
+
+void ft8_fill(float sample)
+{
+	system_disableIRQ();
+	if (fill_ft8_buf1 == 1)
+	{
+		ASSERT(bufind1 < bufsize);
+		ft8.rx_buf1 [bufind1] = sample;
+		bufind1 ++;
+		if (bufind1 >= bufsize)
+		{
+			fill_ft8_buf1 = 0;
+			bufind1 = 0;
+			xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_1); // decode 1
+		}
+	}
+	else if (fill_ft8_buf2 == 1)
+	{
+		ASSERT(bufind2 < bufsize);
+		ft8.rx_buf2 [bufind2] = sample;
+		bufind2 ++;
+		if (bufind2 >= bufsize)
+		{
+			fill_ft8_buf2 = 0;
+			bufind2 = 0;
+			xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_2); // decode 2
+		}
+	}
+	system_enableIRQ();
+}
+
+void ft8_start_fill(void)
+{
+	if (fill_ft8_buf1)
+	{
+		system_disableIRQ();
+		fill_ft8_buf2 = 1;
+		system_enableIRQ();
+		PRINTF("core 0: start fill 2\n");
+	}
+	else
+	{
+		system_disableIRQ();
+		fill_ft8_buf1 = 1;
+		system_enableIRQ();
+		PRINTF("core 0: start fill 1\n");
+	}
+}
+
+void ft8_stop_fill(void)
+{
+	fill_ft8_buf1 = 0;
+	fill_ft8_buf1 = 0;
+	bufind1 = 0;
+	bufind2 = 0;
+}
+
+void ft8_set_state(uint8_t v)
+{
+	ft8_enable = v != 0;
+	xcz_ipi_sendmsg_c1(FT8_MSG_DISABLE + ft8_enable);
+}
+
+uint8_t get_ft8_state(void)
+{
+	return ft8_enable;
+}
+
+void ft8_initialize(void)
+{
+	arm_hardware_set_handler_system(ft8_interrupt_core0, ft8_irqhandler_core0);
+	arm_hardware_set_handler_realtime(ft8_interrupt_core1, ft8_irqhandler_core1);
 }
 
 #endif /* WITHFT8 */

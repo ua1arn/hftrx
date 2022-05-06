@@ -102,7 +102,7 @@ typedef struct {
 	uint8_t state;
 	uint8_t parent;
 	uint8_t visible;
-//	UB_Font * font;
+	UB_Font * font;
 	char name [NAME_ARRAY_SIZE];
 	uint8_t index;
 	record_t * record;

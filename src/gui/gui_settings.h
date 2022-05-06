@@ -72,7 +72,7 @@ enum {
 
 #if WITHALTERNATIVEFONTS
 	#include "../display/fonts/ub_fonts.h"
-	#define FONT_BUTTONS	gothic_12x16
+	#define FONT_BUTTONS	gothic_12x16_p
 #endif /* WITHALTERNATIVEFONTS */
 
 #endif /* GUI_STRUCTS_H_INCLUDED */

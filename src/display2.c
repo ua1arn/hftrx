@@ -105,7 +105,7 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 	strcpy(buf, str);
 	strtrim(buf);
 #if WITHALTERNATIVEFONTS
-	const uint_fast16_t width_str = getwidth_Pstring(buf, & gothic_12x16);
+	const uint_fast16_t width_str = getwidth_Pstring(buf, & gothic_12x16_p);
 #else
 	const uint_fast16_t width_str = strwidth2(buf);
 #endif /* WITHALTERNATIVEFONTS */
@@ -131,7 +131,7 @@ void layout_label1_medium(uint_fast8_t xgrid, uint_fast8_t ygrid, const char * s
 		colmain_rounded_rect(fr, DIM_X, DIM_Y, xx, yy, xx + width_p, yy + SMALLCHARH2 + 5, 5, color_bg, 1);
 
 #if WITHALTERNATIVEFONTS
-	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16, color_fg);
+	UB_Font_DrawPString(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 2, buf, & gothic_12x16_p, color_fg);
 #else
 	colpip_string2_tbg(fr, DIM_X, DIM_Y, xx + (width_p - width_str) / 2 , yy + 4, buf, color_fg);
 #endif /* WITHALTERNATIVEFONTS */

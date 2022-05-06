@@ -4692,12 +4692,15 @@ static void window_ft8_process(void)
 
 			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
 			hamradio_change_submode(ft8_mode, 0);
+			ft8_start_fill();
 		}
 		work = 0;
 
 		display2_set_page_temp(display_getpagegui());
+//		xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_1);
+//		DSPCTL_MODE_TX_DIGI <--------------
+//		ft8_set_state(1);
 
-		ft8_set_state(1);
 	}
 
 	if (parse_ft8buf)
@@ -4709,9 +4712,9 @@ static void window_ft8_process(void)
 
 		memset(cq_call, 0, sizeof(cq_call));
 
-		for (uint8_t i = 0; i < share_mem.decoded_messages; i ++)
+		for (uint8_t i = 0; i < ft8.decoded_messages; i ++)
 		{
-			char * msg = share_mem.ft8_RX_text [i];
+			char * msg = ft8.rx_text [i];
 			COLORMAIN_T colorline;
 			uint8_t cq_flag = 0;
 			parse_ft8_answer(msg, & colorline, & cq_flag);
@@ -4741,9 +4744,9 @@ static void window_ft8_process(void)
 
 			if (bh == btn_tx)
 			{
-				strcpy(share_mem.ft8_TX_text, lh_array_tx [selected_label_tx].ptr->text);
-				share_mem.ft8_tx_freq = (float) gui_nvram.ft8_txfreq_val;
-				xczu_ipi_sendmsg(FT8_MSG_ENCODE);
+				strcpy(ft8.tx_text, lh_array_tx [selected_label_tx].ptr->text);
+				ft8.tx_freq = (float) gui_nvram.ft8_txfreq_val;
+				xcz_ipi_sendmsg_c1(FT8_MSG_ENCODE);
 			}
 			else if (bh == btn_filter)
 			{
@@ -4781,8 +4784,9 @@ static void window_ft8_process(void)
 		{
 			hamradio_set_freq(backup_freq);
 			hamradio_change_submode(backup_mode, 0);
-			ft8_set_state(0);
+//			ft8_set_state(0);
 			save_settings();
+			ft8_stop_fill();
 		}
 		display2_set_page_temp(display_getpage0());
 
