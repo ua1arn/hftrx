@@ -6897,7 +6897,7 @@ restart:
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-#include "xaxidma.h"
+#include "xc7z_inc.h"
 XAxiDma xcz_dma_fir_coeffs;
 
 void board_fpga_fir_initialize(void)
