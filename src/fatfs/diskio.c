@@ -238,7 +238,7 @@ DWORD get_fattime (void)
 	uint_fast8_t month, day;
 	uint_fast8_t hour, minute, secounds;
 
-	board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+	board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 
 	return	  ((DWORD)(year - 1980) << 25)	/* Year = 2012 */
 			| ((DWORD)month << 21)				/* Month = 1 */
