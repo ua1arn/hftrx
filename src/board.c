@@ -7469,6 +7469,96 @@ void board_initialize(void)
 
 #if defined (RTC1_TYPE)
 
+
+#if WITHSPILOWSUPPORTT
+
+	static volatile uint_fast16_t board_rtc_cached_year = 2000;
+	static volatile uint_fast8_t board_rtc_cached_month = 1;
+	static volatile uint_fast8_t board_rtc_cached_dayofmonth = 1;
+	static volatile uint_fast8_t board_rtc_cached_hour;
+	static volatile uint_fast8_t board_rtc_cached_minute;
+	static volatile uint_fast8_t board_rtc_cached_secounds;
+
+static void board_rtc_cache_update(void * ctx)
+{
+	board_rtc_getdatetime_low(
+			& board_rtc_cached_year, & board_rtc_cached_month, & board_rtc_cached_dayofmonth,
+			& board_rtc_cached_hour, & board_rtc_cached_minute, & board_rtc_cached_secounds
+			);
+}
+
+#endif /* WITHSPILOWSUPPORTT */
+
+// функции без задержек на чтение из аппаратного RTC
+void board_rtc_cached_getdate(
+	uint_fast16_t * year,
+	uint_fast8_t * month,
+	uint_fast8_t * dayofmonth
+	)
+{
+#if WITHSPILOWSUPPORTT
+
+	system_disableIRQ();
+
+	* year = board_rtc_cached_year;
+	* month = board_rtc_cached_month;
+	* dayofmonth = board_rtc_cached_dayofmonth;
+
+	system_enableIRQ();
+
+#else /* WITHSPILOWSUPPORTT */
+	board_rtc_getdate(year, month, dayofmonth);
+#endif /* WITHSPILOWSUPPORTT */
+}
+
+void board_rtc_cached_gettime(
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	)
+{
+#if WITHSPILOWSUPPORTT
+
+	system_disableIRQ();
+
+	* hour = board_rtc_cached_hour;
+	* minute = board_rtc_cached_minute;
+	* secounds = board_rtc_cached_secounds;
+
+	system_enableIRQ();
+
+#else /* WITHSPILOWSUPPORTT */
+	board_rtc_getdate(hour, minute, secounds);
+#endif /* WITHSPILOWSUPPORTT */
+}
+
+void board_rtc_cached_getdatetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	)
+{
+#if WITHSPILOWSUPPORTT
+
+	system_disableIRQ();
+
+	* year = board_rtc_cached_year;
+	* month = board_rtc_cached_month;
+	* dayofmonth = board_rtc_cached_dayofmonth;
+	* hour = board_rtc_cached_hour;
+	* minute = board_rtc_cached_minute;
+	* secounds = board_rtc_cached_secounds;
+
+	system_enableIRQ();
+
+#else /* WITHSPILOWSUPPORTT */
+	board_rtc_getdatetime(year, month, dayofmonth, hour, minute, secounds);
+#endif /* WITHSPILOWSUPPORTT */
+}
+
 /* вызывается при разрешённых прерываниях. */
 static void board_rtc_initialize(void)
 {
@@ -7520,6 +7610,18 @@ static void board_rtc_initialize(void)
 
 		//board_rtc_setdate(2016, 3, 1);
 	}
+#if WITHSPILOWSUPPORTT
+
+	static ticker_t rtcticker;
+
+	system_disableIRQ();
+	board_rtc_cache_update(NULL);
+
+	ticker_initialize(& rtcticker, NTICKS(500), board_rtc_cache_update, NULL);
+	ticker_add(& rtcticker);
+	system_enableIRQ();
+
+#endif /* WITHSPILOWSUPPORTT */
 }
 
 #else /* defined (RTC1_TYPE) */

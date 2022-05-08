@@ -576,6 +576,60 @@ void prog_spi_io(
 
 // Работа совместно с фоновым обменом SPI по прерываниям
 // Assert CS, send and then read  bytes via SPI, and deassert CS
+void prog_spi_io_low(
+	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,
+	unsigned csdelayUS,		/* задержка после изменения состояния CS */
+	const uint8_t * txbuff1, unsigned int txsize1,
+	const uint8_t * txbuff2, unsigned int txsize2,
+	uint8_t * rxbuff, unsigned int rxsize
+	)
+{
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	unsigned i = 0;
+	lowspiio_t io;
+	io.target = target;
+	io.spispeedindex = spispeedindex;
+	io.spimode = spimode;
+	io.csdelayUS = csdelayUS;
+	io.spiiosize = SPIIOSIZE_U8;
+
+	if (txsize1 != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_TX;
+		io.chunks [i].bytecount = txsize1;
+		io.chunks [i].txbuff = txbuff1;
+		io.chunks [i].rxbuff = NULL;
+
+		++ i;
+	}
+	if (txsize2 != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_TX;
+		io.chunks [i].bytecount = txsize2;
+		io.chunks [i].txbuff = txbuff2;
+		io.chunks [i].rxbuff = NULL;
+
+		++ i;
+	}
+	if (rxsize != 0)
+	{
+		io.chunks [i].spiiotype = SPIIO_RX;
+		io.chunks [i].bytecount = rxsize;
+		io.chunks [i].txbuff = NULL;
+		io.chunks [i].rxbuff = rxbuff;
+
+		++ i;
+	}
+
+	io.count = i;
+
+	spi_operate_low(& io);
+
+}
+
+// Работа совместно с фоновым обменом SPI по прерываниям
+// Assert CS, send and then read  bytes via SPI, and deassert CS
 // Выдача и прием ответных байтов
 void prog_spi_exchange(
 	spitarget_t target, spi_speeds_t spispeedindex, spi_modes_t spimode,

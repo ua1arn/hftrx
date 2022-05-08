@@ -219,6 +219,35 @@ void board_rtc_getdatetime(
 	uint_fast8_t * minute,
 	uint_fast8_t * secounds
 	);
+void board_rtc_getdatetime_low(
+	volatile uint_fast16_t * year,
+	volatile uint_fast8_t * month,	// 01-12
+	volatile uint_fast8_t * dayofmonth,
+	volatile uint_fast8_t * hour,
+	volatile uint_fast8_t * minute,
+	volatile uint_fast8_t * secounds
+	);
+
+// функции без задержек на чтение из аппаратного RTC
+void board_rtc_cached_getdate(
+	uint_fast16_t * year,
+	uint_fast8_t * month,
+	uint_fast8_t * dayofmonth
+	);
+void board_rtc_cached_gettime(
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	);
+void board_rtc_cached_getdatetime(
+	uint_fast16_t * year,
+	uint_fast8_t * month,	// 01-12
+	uint_fast8_t * dayofmonth,
+	uint_fast8_t * hour,
+	uint_fast8_t * minute,
+	uint_fast8_t * secounds
+	);
+
 void board_rtc_setdate(
 	uint_fast16_t year,
 	uint_fast8_t month,
