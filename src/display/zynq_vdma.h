@@ -1,13 +1,8 @@
 #ifndef ZYNQ_VDMA_H_INCLUDED
 #define ZYNQ_VDMA_H_INCLUDED
 
-#include <xaxivdma.h>
-#include <xdebug.h>
-#include <xil_exception.h>
-#include <xil_types.h>
-#include <xparameters.h>
-#include <xvtc.h>
 #include "hardware.h"	/* зависящие от процессора функции работы с портами */
+#include "xc7z_inc.h"
 
 #if 0
 typedef struct {

@@ -2529,8 +2529,8 @@ int largetimed_dataflash_read_status(void)
 
 #if CPUSTYLE_XC7Z && WIHSPIDFHW
 
-#include "xqspips_hw.h"
-#include "xqspips.h"
+#include "lib\zynq\src_7020\qspips_v3_9\xqspips_hw.h" // конфликт с одним из дефайнов в clock
+#include "lib\zynq\src_7020\qspips_v3_9\xqspips.h"
 
 /************************** Constant Definitions *****************************/
 

@@ -24,9 +24,7 @@
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-#include "xadcps.h"
-#include "xgpiops.h"
-
+#include "xc7z_inc.h"
 static XGpioPs xc7z_gpio;
 #if ! WITHISBOOTLOADER
 static XAdcPs xc7z_xadc;
