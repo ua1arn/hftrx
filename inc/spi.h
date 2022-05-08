@@ -495,42 +495,37 @@ void prog_spi_exchange_low(
 typedef uint8_t rbtype_t;
 extern const uint_fast8_t rbvalues [8];	// битовые маски, соответствующие биту в байте по его номеру.
 
-#define RBBIT(bitpos, v) \
-	do { \
+#define RBBIT(bitpos, v) do { \
 		if ((v) != 0) \
 			rbbuff [(sizeof rbbuff / sizeof rbbuff [0]) - 1 - (bitpos) / 8] |= rbvalues [(bitpos) % 8]; \
 	} while (0)
 
 // Для ширины поля до 8 бит
-#define RBVAL(rightbitpos, v, width) \
-	do { \
-		uint_fast8_t v2 = v; \
-		uint_fast8_t p = rightbitpos; \
-		uint_fast8_t i; \
-		for (i = 0; i < (width); ++ i, v2 >>= 1, ++ p) \
-		{	RBBIT(p, v2 & 0x01); \
+#define RBVAL(rightbitpos, v, width)  do { \
+		uint_fast8_t v2_507 = (v); \
+		uint_fast8_t p_508 = (rightbitpos); \
+		uint_fast8_t i_509; \
+		for (i_509 = 0; i_509 < (width); ++ i_509, v2_507 >>= 1, ++ p_508) \
+		{	RBBIT(p_508, v2_507 & 0x01); \
 		}	\
 	} while (0)
 
 // Для ширины поля до 16 бит
-#define RBVAL_W16(rightbitpos, v, width) \
-	do { \
-		uint_fast16_t v2 = v; \
-		uint_fast8_t p = rightbitpos; \
+#define RBVAL_W16(rightbitpos, v, width) do { \
+		uint_fast16_t v2_515 = (v); \
+		uint_fast8_t p_516 = (rightbitpos); \
 		uint_fast8_t i; \
-		for (i = 0; i < (width); ++ i, v2 >>= 1, ++ p) \
-		{	RBBIT(p, v2 & 0x01); \
+		for (i = 0; i < (width); ++ i, v2_515 >>= 1, ++ p_516) \
+		{	RBBIT(p, v2_515 & 0x01); \
 		}	\
 	} while (0)
 
 // For set values in 8-bit alligned places
-#define RBVAL8(rightbitpos, v) \
-	do { \
+#define RBVAL8(rightbitpos, v) do { \
 		rbbuff [(sizeof rbbuff / sizeof rbbuff [0]) - 1 - (rightbitpos) / 8] = (v); \
 	} while (0)
 
-#define RBNULL(rightbitpos, width) \
-	do { \
+#define RBNULL(rightbitpos, width) do { \
 		(void) (rightbitpos); \
 		(void) (width); \
 	} while (0)
