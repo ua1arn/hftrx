@@ -581,6 +581,8 @@
 #define targetadc2		TARGET_ADC1_CS_EMIO	// on-board ADC MCP3208-BI/SL chip select (potentiometers)
 #define targetadck		TARGET_ADC2_CS_EMIO	// on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
 #define targetxad2		TARGET_EXT2_CS_EMIO	// external SPI device (PA BOARD ADC)
+#define targettsc1		TARGET_EXT1_CS_EMIO	// external SPI device (front panel board)
+#define targetlcd		TARGET_EXT1_CS_EMIO	// external SPI device (front panel board)
 
 #if WITHSPIHW || WITHSPISW
 
