@@ -41,6 +41,9 @@ val_step_t freq_swipe_step [] = {
 	{ 500, "500 Hz", },
 };
 
+static uint_fast16_t year;
+static uint_fast8_t month, day, hour, minute, secounds;
+
 struct gui_nvram_t gui_nvram;
 static enc2_menu_t gui_enc2_menu = { "", "", 0, 0, };
 
@@ -961,6 +964,10 @@ static void gui_main_process(void)
 		btn_txrx->state = DISABLED;
 		local_snprintf_P(btn_txrx->text, ARRAY_SIZE(btn_txrx->text), PSTR("RX"));
 #endif /* WITHTX */
+
+#if defined (RTC1_TYPE)
+		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+#endif /* defined (RTC1_TYPE) */
 	}
 
 #if GUI_SHOW_INFOBAR
@@ -1234,13 +1241,7 @@ static void gui_main_process(void)
 				{
 	#if defined (RTC1_TYPE)
 					// текущее время
-					static uint_fast16_t year;
-					static uint_fast8_t month, day, hour, minute, secounds;
 					uint_fast16_t xx;
-
-					if (update)
-						board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
-
 					local_snprintf_P(buf, buflen, PSTR("%02d.%02d"), day, month);
 					xx = current_place * infobar_label_width + infobar_label_width / 2;
 					colpip_string2_tbg(fr, DIM_X, DIM_Y, xx - strwidth2(buf) / 2, infobar_1st_str_y, buf, COLORMAIN_WHITE);
@@ -1266,6 +1267,11 @@ static void gui_main_process(void)
 			PRINTF("%s\n", buf);		// пока вывод в консоль
 		}
 #endif /* WITHTHERMOLEVEL */
+
+#if WITHFT8
+		if (update)
+			ft8_walkthrought_core0(secounds);
+#endif /* WITHFT8 */
 
 #endif /* GUI_SHOW_INFOBAR */
 }
@@ -4692,12 +4698,11 @@ static void window_ft8_process(void)
 
 			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
 			hamradio_change_submode(ft8_mode, 0);
+			ft8_set_state(1);
 		}
 		work = 0;
 
 		display2_set_page_temp(display_getpagegui());
-
-		ft8_set_state(1);
 	}
 
 	if (parse_ft8buf)
@@ -4709,9 +4714,9 @@ static void window_ft8_process(void)
 
 		memset(cq_call, 0, sizeof(cq_call));
 
-		for (uint8_t i = 0; i < share_mem.decoded_messages; i ++)
+		for (uint8_t i = 0; i < ft8.decoded_messages; i ++)
 		{
-			char * msg = share_mem.ft8_RX_text [i];
+			char * msg = ft8.rx_text [i];
 			COLORMAIN_T colorline;
 			uint8_t cq_flag = 0;
 			parse_ft8_answer(msg, & colorline, & cq_flag);
@@ -4741,9 +4746,9 @@ static void window_ft8_process(void)
 
 			if (bh == btn_tx)
 			{
-				strcpy(share_mem.ft8_TX_text, lh_array_tx [selected_label_tx].ptr->text);
-				share_mem.ft8_tx_freq = (float) gui_nvram.ft8_txfreq_val;
-				xczu_ipi_sendmsg(FT8_MSG_ENCODE);
+				strcpy(ft8.tx_text, lh_array_tx [selected_label_tx].ptr->text);
+				ft8.tx_freq = (float) gui_nvram.ft8_txfreq_val;
+				xcz_ipi_sendmsg_c1(FT8_MSG_ENCODE);
 			}
 			else if (bh == btn_filter)
 			{

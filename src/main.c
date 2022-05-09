@@ -19,6 +19,10 @@
 #include "audio.h"
 #include "codecs.h"
 
+#if WITHFT8
+	#include "ft8.h"
+#endif /* WITHFT8 */
+
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
 #endif /* WITHUSEFATFS */
@@ -29,98 +33,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
-
-#if WITHFT8
-
-#include "ft8.h"
-
-static const uint32_t ft8bufsize = ft8_sample_rate * ft8_length;
-static uint8_t fill_ft8_buf1 = 0, fill_ft8_buf2 = 0, ft8_enable = 0;
-static uint32_t bufind1 = 0, bufind2 = 0;
-
-void ft8_fill1(float sample)
-{
-	system_disableIRQ();
-	if (fill_ft8_buf1 && ft8_enable)
-	{
-		ASSERT(bufind1 < ft8bufsize);
-		ft8.rx_buf1 [bufind1] = sample;
-		bufind1 ++;
-		if (bufind1 >= ft8bufsize)
-		{
-			fill_ft8_buf1 = 0;
-			bufind1 = 0;
-			IRQ_SetPending(ft8_interrupt_decode1);
-		}
-	}
-	system_enableIRQ();
-}
-
-void ft8_fill2(float sample)
-{
-	system_disableIRQ();
-	if (fill_ft8_buf2 && ft8_enable)
-	{
-		ASSERT(bufind2 < ft8bufsize);
-		ft8.rx_buf2 [bufind2] = sample;
-		bufind2 ++;
-		if (bufind2 >= ft8bufsize)
-		{
-			fill_ft8_buf2 = 0;
-			bufind2 = 0;
-			IRQ_SetPending(ft8_interrupt_decode2);
-		}
-	}
-	system_enableIRQ();
-}
-
-void hamradio_ft8_start_fill(void)
-{
-	if (fill_ft8_buf1)
-	{
-		system_disableIRQ();
-		fill_ft8_buf2 = 1;
-		system_enableIRQ();
-//		PRINTF("ft8: start fill 2\n");
-	}
-	else
-	{
-		system_disableIRQ();
-		fill_ft8_buf1 = 1;
-		system_enableIRQ();
-//		PRINTF("ft8: start fill 1\n");
-	}
-}
-
-void hamradio_ft8_toggle_state(void)
-{
-	ft8_enable = ! ft8_enable;
-}
-
-uint8_t get_ft8_state(void)
-{
-	return ft8_enable;
-}
-
-void ft8_irqhandler_decode_buf1(void)
-{
-	ft8_decode(ft8.rx_buf1);
-	hamradio_gui_parse_ft8buf();
-}
-
-void ft8_irqhandler_decode_buf2(void)
-{
-	ft8_decode(ft8.rx_buf2);
-	hamradio_gui_parse_ft8buf();
-}
-
-void ft8_initialize(void)
-{
-	arm_hardware_set_handler_realtime(ft8_interrupt_decode1, ft8_irqhandler_decode_buf1);
-	arm_hardware_set_handler_realtime(ft8_interrupt_decode2, ft8_irqhandler_decode_buf2);
-}
-
-#endif /* WITHFT8 */
 
 // Определения для работ по оптимизации быстродействия
 #if WITHDEBUG && 0
@@ -21836,6 +21748,8 @@ hamradio_main_step(void)
 				{
 					switch (c)
 					{
+					case 0x00:
+						break;
 					default:
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;
@@ -23274,13 +23188,13 @@ void hamradio_gui_set_reqautotune2(uint_fast8_t val)
 	reqautotune2 = val != 0;
 }
 
+#endif /* WITHTX */
+
 void display2_set_page_temp(uint_fast8_t page)
 {
 	menuset = page;
 	display2_bgreset();
 }
-
-#endif /* WITHTX */
 
 #endif /* WITHTOUCHGUI */
 

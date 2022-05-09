@@ -1305,7 +1305,7 @@
 #endif
 
 	/* запрос на вход в режим загрузчика */
-	#define BOARD_IS_USERBOOT() (gpio_input_readpin(TARGET_USER_BOOT2_MIO) == 0)
+	#define BOARD_IS_USERBOOT() (0/*gpio_input_readpin(TARGET_USER_BOOT2_MIO) == 0*/)
 	#define BOARD_USERBOOT_INITIALIZE() do { \
 		const portholder_t pinmode_input = MIO_PIN_VALUE(1, 1, GPIO_IOTYPE_500, 0, 0, 0, 0, 0, 1); /* with pull-up */ \
 		gpio_input(TARGET_USER_BOOT2_MIO, pinmode_input); /* set as input with pull-up */ \

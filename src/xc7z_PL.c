@@ -168,7 +168,7 @@ void xcz_if_rx_enable(uint_fast8_t state)
 {
 	XLlFifo_IntDisable(& fifo_if_rx, XLLF_INT_ALL_MASK);
 	XLlFifo_IntEnable(& fifo_if_rx, XLLF_INT_RFPF_MASK);
-	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_IQ_RX_INTERRUPT_INTR, xcz_fifo_if_rx_inthandler);
+	arm_hardware_set_handler_overrealtime(XPAR_FABRIC_AXI_FIFO_IQ_RX_INTERRUPT_INTR, xcz_fifo_if_rx_inthandler);
 }
 
 // ****************** IF TX ******************
