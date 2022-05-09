@@ -406,7 +406,7 @@ void ft8_irqhandler_core1(void)
 	}
 }
 
-void ft8_walkthrought_core0(uint_fast8_t rtc_secounds)
+void ft8_walkthrough_core0(uint_fast8_t rtc_secounds)
 {
 	if (rtc_secounds == 0 || rtc_secounds == 15 || rtc_secounds == 30 || rtc_secounds == 45)
 	{
@@ -515,8 +515,8 @@ uint8_t get_ft8_state(void)
 
 void ft8_initialize(void)
 {
-	arm_hardware_set_handler_system(ft8_interrupt_core0, ft8_irqhandler_core0);
-	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, 1 << 1);
+	arm_hardware_set_handler(ft8_interrupt_core0, ft8_irqhandler_core0, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU0);
+	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);
 }
 
 #endif /* WITHFT8 */

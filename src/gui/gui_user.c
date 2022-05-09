@@ -1270,7 +1270,7 @@ static void gui_main_process(void)
 
 #if WITHFT8
 		if (update)
-			ft8_walkthrought_core0(secounds);
+			ft8_walkthrough_core0(secounds);
 #endif /* WITHFT8 */
 
 #endif /* GUI_SHOW_INFOBAR */

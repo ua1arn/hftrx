@@ -20,15 +20,13 @@
 void xcz_ipi_sendmsg_c0(uint8_t msg)
 {
 	ft8.int_core0 = msg;
-	//IRQ_SetPending(ft8_interrupt_core0);
-	GIC_SendSGI(ft8_interrupt_core0, 0x01uL << 0, 0x00);
+	GIC_SendSGI(ft8_interrupt_core0, TARGETCPU_CPU0, 0x00);
 }
 
 void xcz_ipi_sendmsg_c1(uint8_t msg)
 {
 	ft8.int_core1 = msg;
-	//IRQ_SetPending(ft8_interrupt_core1);
-	GIC_SendSGI(ft8_interrupt_core1, 0x01uL << 1, 0x00);
+	GIC_SendSGI(ft8_interrupt_core1, TARGETCPU_CPU1, 0x00);
 }
 
 #endif

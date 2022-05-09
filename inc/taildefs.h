@@ -136,6 +136,8 @@ typedef struct spinlock_tag {
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT 	(1u << 1)		// CPU #1
 	#define TARGETCPU_OVRT 	(1u << 0)		// CPU #0
+	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
+	#define TARGETCPU_CPU1 (1u << 1)		// CPU #1
 
 	#define SPIN_LOCK(p) do { spin_lock(p, __FILE__, __LINE__); } while (0)
 	#define SPIN_UNLOCK(p) do { spin_unlock(p); } while (0)
@@ -157,6 +159,8 @@ typedef struct spinlock_tag {
 	#define TARGETCPU_SYSTEM (1u << 0)		// CPU #0
 	#define TARGETCPU_RT (1u << 0)			// CPU #0
 	#define TARGETCPU_OVRT (1u << 0)		// CPU #0
+	#define TARGETCPU_CPU0 (1u << 0)		// CPU #0
+	#define TARGETCPU_CPU1 (1u << 0)		// CPU #0
 
 	#define SPIN_LOCK(p) do { (void) p; } while (0)
 	#define SPIN_UNLOCK(p) do { (void) p; } while (0)
