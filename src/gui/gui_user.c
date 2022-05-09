@@ -966,7 +966,7 @@ static void gui_main_process(void)
 #endif /* WITHTX */
 
 #if defined (RTC1_TYPE)
-		board_rtc_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
+		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute, & secounds);
 #endif /* defined (RTC1_TYPE) */
 	}
 
@@ -5456,7 +5456,7 @@ static void window_time_proccess(void)
 		button_t * btn_set =  find_gui_element(TYPE_BUTTON, win, "btn_set");
 		btn_set->is_locked = BUTTON_LOCKED;
 
-		board_rtc_getdatetime(& year, & month, & day, & hour, & minute,	& secound);
+		board_rtc_cached_getdatetime(& year, & month, & day, & hour, & minute,	& secound);
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
 	}
 

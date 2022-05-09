@@ -516,7 +516,7 @@ uint8_t get_ft8_state(void)
 void ft8_initialize(void)
 {
 	arm_hardware_set_handler_system(ft8_interrupt_core0, ft8_irqhandler_core0);
-	arm_hardware_set_handler_realtime(ft8_interrupt_core1, ft8_irqhandler_core1);
+	arm_hardware_set_handler(ft8_interrupt_core1, ft8_irqhandler_core1, ARM_SYSTEM_PRIORITY, 1 << 1);
 }
 
 #endif /* WITHFT8 */
