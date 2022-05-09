@@ -17,6 +17,10 @@
 #include <string.h>
 #include <math.h>
 
+#if WITHFT8
+	#include "ft8.h"
+#endif /* WITHFT8 */
+
 #define DUALFILTERSPROCESSING 1	// Фильтры НЧ для левого и правого каналов - вынсено в конфигурационный файл
 //#define WITHDOUBLEFIRCOEFS 1
 
@@ -3873,6 +3877,10 @@ static RAMFUNC FLOAT_t preparevi(
 	const FLOAT_t txlevelXXX = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 	const int_fast32_t txlevelfenceXXX_INTEGER = (dspmode == DSPCTL_MODE_TX_DIGI) ? txlevelfenceDIGI : txlevelfenceSSB;
 
+#if WITHFT8
+	ft8_txfill(& vi0f);
+#endif /* WITHFT8 */
+
 #if WITHTXCPATHCALIBRATE
 	savemonistereo(0, 0);
 	return (FLOAT_t) glob_designscale / 100;
@@ -4179,7 +4187,7 @@ static RAMFUNC ncoftwi_t demodulator_FM(
 	if (vp1.IV == 0 && vp1.QV == 0)
 		vp1.QV = 1;
 
-#if 0
+#if 1
 	float32_t result;
 	VERIFY(arm_atan2_f32(vp1.QV, vp1.IV, & result) == ARM_MATH_SUCCESS);
 	const ncoftwi_t fi = OMEGA2FTWI(result);	//  returns a value in the range –pi to pi radians, using the signs of both parameters to determine the quadrant of the return value.

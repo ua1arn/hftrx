@@ -5,6 +5,7 @@
 
 #include "hardware.h"
 #include "formats.h"
+#include "board.h"
 
 #if WITHFT8
 
@@ -25,7 +26,38 @@
 
 #include "speex/kiss_fftr.h"
 
+/// Configuration options for FT4/FT8 monitor
+typedef struct
+{
+    float f_min;             ///< Lower frequency bound for analysis
+    float f_max;             ///< Upper frequency bound for analysis
+    int sample_rate;         ///< Sample rate in Hertz
+    int time_osr;            ///< Number of time subdivisions
+    int freq_osr;            ///< Number of frequency subdivisions
+    ftx_protocol_t protocol; ///< Protocol: FT4 or FT8
+} monitor_config_t;
+
+/// FT4/FT8 monitor object that manages DSP processing of incoming audio data
+/// and prepares a waterfall object
+typedef struct
+{
+    float symbol_period; ///< FT4/FT8 symbol period in seconds
+    int block_size;      ///< Number of samples per symbol (block)
+    int subblock_size;   ///< Analysis shift size (number of samples)
+    int nfft;            ///< FFT size
+    float fft_norm;      ///< FFT normalization factor
+    float* window;       ///< Window function for STFT analysis (nfft samples)
+    float* last_frame;   ///< Current STFT analysis frame (nfft samples)
+    waterfall_t wf;      ///< Waterfall object
+    float max_mag;       ///< Maximum detected magnitude (debug stats)
+
+    // KISS FFT housekeeping variables
+    void* fft_work;        ///< Work area required by Kiss FFT
+    kiss_fftr_cfg fft_cfg; ///< Kiss FFT housekeeping object
+} monitor_t;
+
 ft8_t ft8;
+timestamp_t ts1, ts2;
 
 uint32_t bufind1 = 0, bufind2 = 0;
 uint8_t fill_ft8_buf1 = 0, fill_ft8_buf2 = 0, ft8_enable = 0;
@@ -92,36 +124,6 @@ void waterfall_free(waterfall_t* me)
 {
     free(me->mag);
 }
-
-/// Configuration options for FT4/FT8 monitor
-typedef struct
-{
-    float f_min;             ///< Lower frequency bound for analysis
-    float f_max;             ///< Upper frequency bound for analysis
-    int sample_rate;         ///< Sample rate in Hertz
-    int time_osr;            ///< Number of time subdivisions
-    int freq_osr;            ///< Number of frequency subdivisions
-    ftx_protocol_t protocol; ///< Protocol: FT4 or FT8
-} monitor_config_t;
-
-/// FT4/FT8 monitor object that manages DSP processing of incoming audio data
-/// and prepares a waterfall object
-typedef struct
-{
-    float symbol_period; ///< FT4/FT8 symbol period in seconds
-    int block_size;      ///< Number of samples per symbol (block)
-    int subblock_size;   ///< Analysis shift size (number of samples)
-    int nfft;            ///< FFT size
-    float fft_norm;      ///< FFT normalization factor
-    float* window;       ///< Window function for STFT analysis (nfft samples)
-    float* last_frame;   ///< Current STFT analysis frame (nfft samples)
-    waterfall_t wf;      ///< Waterfall object
-    float max_mag;       ///< Maximum detected magnitude (debug stats)
-
-    // KISS FFT housekeeping variables
-    void* fft_work;        ///< Work area required by Kiss FFT
-    kiss_fftr_cfg fft_cfg; ///< Kiss FFT housekeeping object
-} monitor_t;
 
 void monitor_init(monitor_t* me, const monitor_config_t* cfg)
 {
@@ -238,7 +240,7 @@ void monitor_reset(monitor_t* me)
     me->max_mag = 0;
 }
 
-void ft8_decode_buf(float * signal)
+void ft8_decode_buf(float * signal, timestamp_t ts)
 {
 	// Compute FFT over the whole signal and store it
     monitor_t mon;
@@ -339,10 +341,10 @@ void ft8_decode_buf(float * signal)
 			// Fake WSJT-X-like output for now
 			int snr = cand->score > 160 ? 160 : cand->score;
 			snr = (snr - 160) / 6;
-//			PRINTF("000000 %3d %+4.2f %4.0f ~  %s\n", cand->score, time_sec, freq_hz, message.text);
+//			PRINTF("%02d%02d%02d %4.0f %02d ~ %s", ts.hour, ts.minute, ts.second, freq_hz, snr, message.text);
 
 			local_snprintf_P(ft8.rx_text [num_decoded], ft8_text_length, "%02d%02d%02d %4.0f %02d ~ %s",
-					0, 0, 0, freq_hz, snr, message.text);
+					ts.hour, ts.minute, ts.second, freq_hz, snr, message.text);
 
 			++num_decoded;
 		}
@@ -382,11 +384,13 @@ void ft8_irqhandler_core1(void)
 
 	if (msg == FT8_MSG_DECODE_1) // start decode
 	{
-		ft8_decode_buf(ft8.rx_buf1);
+		board_rtc_cached_gettime(& ts1.hour, & ts1.minute, & ts1.second);
+		ft8_decode_buf(ft8.rx_buf1, ts1);
 	}
 	else if (msg == FT8_MSG_DECODE_2) // start decode
 	{
-		ft8_decode_buf(ft8.rx_buf1);
+		board_rtc_cached_gettime(& ts2.hour, & ts2.minute, & ts2.second);
+		ft8_decode_buf(ft8.rx_buf1, ts2);
 	}
 	else if (msg == FT8_MSG_ENCODE)  // transmit message
 	{

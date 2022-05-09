@@ -40,9 +40,15 @@ typedef struct {
 	float tx_buf [ft8_sample_rate * ft8_length];
 } ft8_t;
 
+typedef struct {
+	uint_fast8_t hour;
+	uint_fast8_t minute;
+	uint_fast8_t second;
+} timestamp_t;
+
 extern ft8_t ft8;
 
-void ft8_decode_buf(float * signal);
+void ft8_decode_buf(float * signal, timestamp_t ts);
 void ft8_fill1(float sample);
 void ft8_fill2(float sample);
 void ft8_txfill(float * sample);

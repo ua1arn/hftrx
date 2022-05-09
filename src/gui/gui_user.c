@@ -4689,7 +4689,7 @@ static void window_ft8_process(void)
 		btn_settings->visible = VISIBLE;
 
 		calculate_window_position(win, WINDOW_POSITION_FULLSCREEN);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k", ft8_bands [gui_nvram.ft8_band] / 1000);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, secounds);
 
 		if (! work)
 		{
@@ -4698,6 +4698,7 @@ static void window_ft8_process(void)
 
 			hamradio_set_freq(ft8_bands [gui_nvram.ft8_band]);
 			hamradio_change_submode(ft8_mode, 0);
+			memset(ft8.rx_text, '\0', ft8_text_records * ft8_text_length);
 			ft8_set_state(1);
 		}
 		work = 0;
@@ -4793,6 +4794,11 @@ static void window_ft8_process(void)
 
 		break;
 
+	case WM_MESSAGE_UPDATE:
+
+		update = 1;
+		break;
+
 	default:
 
 		break;
@@ -4833,6 +4839,8 @@ static void window_ft8_process(void)
 			local_snprintf_P(lh_array_tx [1].ptr->text, ARRAY_SIZE(lh_array_tx [1].ptr->text), "%s %s %s", gui_nvram.ft8_callsign, cq_call [selected_label_cq], gui_nvram.ft8_snr);
 			local_snprintf_P(lh_array_tx [2].ptr->text, ARRAY_SIZE(lh_array_tx [2].ptr->text), "%s %s %s", gui_nvram.ft8_callsign, cq_call [selected_label_cq], gui_nvram.ft8_end);
 		}
+
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, secounds);
 	}
 }
 
