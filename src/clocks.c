@@ -8574,7 +8574,7 @@ static RAMFUNC void hardware_spi_ready_b16_void(void)	/* дождаться го
    завершение передачи будут проверять другие.
 */
 void RAMFUNC hardware_spi_b16_p1(
-	portholder_t v		/* значениеслова для передачи */
+	portholder_t v		/* значение слова для передачи */
 	)
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -8680,7 +8680,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	//	;
 	while ((SPI1->SR & SPI_SR_RXP) == 0)
 		;
-	const portholder_t t = * (volatile uint32_t *) & SPI1->RXDR;	/* SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
+	const portholder_t t = SPI1->RXDR;	/* SPI_RXDR_RXDR clear SPI_SR_RXNE in status register */
 	return t;
 
 #elif CPUSTYLE_R7S721
@@ -8702,7 +8702,7 @@ static void hardware_spi_ready_b32_void(void)	/* дождаться готовн
 	//	;
 	while ((SPI1->SR & SPI_SR_RXP) == 0)
 		;
-	(void) * (volatile uint32_t *) & SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
+	(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
 
 #elif CPUSTYLE_R7S721
 
@@ -8721,12 +8721,12 @@ static void hardware_spi_ready_b32_void(void)	/* дождаться готовн
    завершение передачи будут проверять другие.
 */
 void hardware_spi_b32_p1(
-	portholder_t v		/* значениеслова для передачи */
+	portholder_t v		/* значение слова для передачи */
 	)
 {
 #if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
 
-	* (volatile uint32_t *) & (SPI1)->TXDR = v;	// prevent data packing feature
+	(SPI1)->TXDR = v;
 
 #elif CPUSTYLE_R7S721
 
