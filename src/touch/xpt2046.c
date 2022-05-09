@@ -35,8 +35,10 @@
 
 enum XPTCoordinate
 {
-	XPT2046_X  = 1 * XPT2046_A0 | XPT2046_DFR_MODE,	// Длинная сторона на 320x240
-	XPT2046_Y  = 5 * XPT2046_A0 | XPT2046_DFR_MODE,	// Короткая сторона на 320x240
+	//XPT2046_X  = 1 * XPT2046_A0 | XPT2046_DFR_MODE,	// Длинная сторона на 320x240
+	//XPT2046_Y  = 5 * XPT2046_A0 | XPT2046_DFR_MODE,	// Короткая сторона на 320x240
+	XPT2046_Y  = 1 * XPT2046_A0 | XPT2046_DFR_MODE,
+	XPT2046_X  = 5 * XPT2046_A0 | XPT2046_DFR_MODE,
 	XPT2046_Z1 = 3 * XPT2046_A0 | XPT2046_DFR_MODE,
 	XPT2046_Z2 = 4 * XPT2046_A0 | XPT2046_DFR_MODE,
 	XPT2046_TEMP = 0 * XPT2046_A0 | XPT2046_SER_MODE,		// Термодачик
@@ -71,7 +73,19 @@ xpt2046_read(
 	cmd |= XPT2046_CONTROL;
 	cmd |= XPT2046_PD0 | XPT2046_PD1;	// PD0=1 & PD1=1: Device is always powered. Reference is on and ADC is on.
 
-#if WITHSPI32BIT
+#if WITHSPILOWSUPPORTT
+	// Работа совместно с фоновым обменом SPI по прерываниям
+
+	uint8_t txbuf [4];
+	uint8_t rxbuf [ARRAY_SIZE(txbuf)];
+
+	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd << CMDPOS);
+
+	prog_spi_exchange(target, tscspeed, tscmode, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+
+	rv = USBD_peek_u32_BE(rxbuf);
+
+#elif WITHSPI32BIT
 
 	hardware_spi_connect_b32(tscspeed, tscmode);
 	prog_select(target);
@@ -153,12 +167,12 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 {
 	const spitarget_t target = targettsc1;
 	/* top left raw data values */
-	static uint_fast16_t xrawmin = 330;
-	static uint_fast16_t yrawmin = 510;
+	static uint_fast16_t xrawmin = 850;//330;
+	static uint_fast16_t yrawmin = 420;//510;
 
 	/* bottom right raw data values */
-	static uint_fast16_t xrawmax = 3610;
-	static uint_fast16_t yrawmax = 3640;
+	static uint_fast16_t xrawmax = 3990;//3610;
+	static uint_fast16_t yrawmax = 3890;//3640;
 
 	uint_fast16_t x = xpt2046_read(target, XPT2046_X);
 	uint_fast16_t y = xpt2046_read(target, XPT2046_Y);
@@ -170,9 +184,9 @@ uint_fast8_t xpt2046_getxy(uint_fast16_t * xr, uint_fast16_t * yr)
 	* xr = tcsnormalize(x, xrawmin, xrawmax, DIM_X - 1);
 #endif /* BOARD_TSC1_XMIRROR */
 #if BOARD_TSC1_YMIRROR
-	* yr = tcsnormalize(x, yrawmax, yrawmin, DIM_Y - 1);
+	* yr = tcsnormalize(y, yrawmax, yrawmin, DIM_Y - 1);
 #else /* BOARD_TSC1_YMIRROR */
-	* yr = tcsnormalize(x, yrawmin, yrawmax, DIM_Y - 1);
+	* yr = tcsnormalize(y, yrawmin, yrawmax, DIM_Y - 1);
 #endif /* BOARD_TSC1_YMIRROR */
 
 	return z1 > XPT2046_Z1_THRESHOLD;
