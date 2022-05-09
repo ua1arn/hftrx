@@ -19,7 +19,9 @@
 #include "audio.h"
 #include "codecs.h"
 
-#include "ft8.h"
+#if WITHFT8
+	#include "ft8.h"
+#endif /* WITHFT8 */
 
 #if WITHUSEFATFS
 	#include "fatfs/ff.h"
@@ -9727,7 +9729,8 @@ audioproc_spool_user(void)
 	#endif /* WITHUSEDUALWATCH */
 
 	#if WITHFT8
-			ft8_fill(outsp [0] [i]);
+			ft8_fill1(outsp [0] [i]);
+			ft8_fill2(outsp [0] [i]);
 	#endif /* WITHFT8 */
 		}
 		// Освобождаем буфер
@@ -21745,6 +21748,8 @@ hamradio_main_step(void)
 				{
 					switch (c)
 					{
+					case 0x00:
+						break;
 					default:
 						PRINTF("key=%02X\n", (unsigned char) c);
 						break;

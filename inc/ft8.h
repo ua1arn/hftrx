@@ -11,8 +11,7 @@ enum {
 	FT8_MSG_TIME_UPDATED = 1,
 	FT8_MSG_DISABLE,
 	FT8_MSG_ENABLE,
-	FT8_MSG_START_FILL_1,
-	FT8_MSG_START_FILL_2,
+	FT8_MSG_START_FILL,
 	FT8_MSG_DECODE_1,
 	FT8_MSG_DECODE_2,
 	FT8_MSG_DECODE_DONE,
@@ -43,8 +42,9 @@ typedef struct {
 
 extern ft8_t ft8;
 
-void ft8_decode(float * signal);
-void ft8_fill(float sample);
+void ft8_decode_buf(float * signal);
+void ft8_fill1(float sample);
+void ft8_fill2(float sample);
 void ft8_txfill(float * sample);
 void ft8_start_fill(void);
 void ft8_stop_fill(void);
@@ -52,7 +52,7 @@ void ft8_set_state(uint8_t v);
 uint8_t get_ft8_state(void);
 void ft8_tx_enable(void);
 void ft8_initialize(void);
-void ft8_action(void);
+void ft8_walkthrought_core0(uint_fast8_t rtc_secounds);
 
 void xcz_ipi_sendmsg_c0(uint8_t msg);
 void xcz_ipi_sendmsg_c1(uint8_t msg);
