@@ -2540,6 +2540,9 @@ extern "C" {
 	#undef WITHDSPLOCALTXFIR
 #endif
 
+// Работа с кешированным состоянием RTC
+#define WITHRTCCACHED (WITHSPILOWSUPPORTT && defined (RTC1_TYPE) && (RTC1_TYPE == RTC_TYPE_DS1305))
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

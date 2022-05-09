@@ -7469,8 +7469,7 @@ void board_initialize(void)
 
 #if defined (RTC1_TYPE)
 
-
-#if WITHSPILOWSUPPORTT
+#if WITHRTCCACHED
 
 	static volatile uint_fast16_t board_rtc_cached_year = 2000;
 	static volatile uint_fast8_t board_rtc_cached_month = 1;
@@ -7487,7 +7486,7 @@ static void board_rtc_cache_update(void * ctx)
 			);
 }
 
-#endif /* WITHSPILOWSUPPORTT */
+#endif /* WITHRTCCACHED */
 
 // функции без задержек на чтение из аппаратного RTC
 void board_rtc_cached_getdate(
@@ -7496,7 +7495,7 @@ void board_rtc_cached_getdate(
 	uint_fast8_t * dayofmonth
 	)
 {
-#if WITHSPILOWSUPPORTT
+#if WITHRTCCACHED
 
 	system_disableIRQ();
 
@@ -7506,9 +7505,9 @@ void board_rtc_cached_getdate(
 
 	system_enableIRQ();
 
-#else /* WITHSPILOWSUPPORTT */
+#else /* WITHRTCCACHED */
 	board_rtc_getdate(year, month, dayofmonth);
-#endif /* WITHSPILOWSUPPORTT */
+#endif /* WITHRTCCACHED */
 }
 
 void board_rtc_cached_gettime(
@@ -7517,7 +7516,7 @@ void board_rtc_cached_gettime(
 	uint_fast8_t * secounds
 	)
 {
-#if WITHSPILOWSUPPORTT
+#if WITHRTCCACHED
 
 	system_disableIRQ();
 
@@ -7527,9 +7526,9 @@ void board_rtc_cached_gettime(
 
 	system_enableIRQ();
 
-#else /* WITHSPILOWSUPPORTT */
+#else /* WITHRTCCACHED */
 	board_rtc_getdate(hour, minute, secounds);
-#endif /* WITHSPILOWSUPPORTT */
+#endif /* WITHRTCCACHED */
 }
 
 void board_rtc_cached_getdatetime(
@@ -7541,7 +7540,7 @@ void board_rtc_cached_getdatetime(
 	uint_fast8_t * secounds
 	)
 {
-#if WITHSPILOWSUPPORTT
+#if WITHRTCCACHED
 
 	system_disableIRQ();
 
@@ -7554,9 +7553,9 @@ void board_rtc_cached_getdatetime(
 
 	system_enableIRQ();
 
-#else /* WITHSPILOWSUPPORTT */
+#else /* WITHRTCCACHED */
 	board_rtc_getdatetime(year, month, dayofmonth, hour, minute, secounds);
-#endif /* WITHSPILOWSUPPORTT */
+#endif /* WITHRTCCACHED */
 }
 
 /* вызывается при разрешённых прерываниях. */
@@ -7610,7 +7609,7 @@ static void board_rtc_initialize(void)
 
 		//board_rtc_setdate(2016, 3, 1);
 	}
-#if WITHSPILOWSUPPORTT
+#if WITHRTCCACHED
 
 	static ticker_t rtcticker;
 
@@ -7621,7 +7620,7 @@ static void board_rtc_initialize(void)
 	ticker_add(& rtcticker);
 	system_enableIRQ();
 
-#endif /* WITHSPILOWSUPPORTT */
+#endif /* WITHRTCCACHED */
 }
 
 #else /* defined (RTC1_TYPE) */
