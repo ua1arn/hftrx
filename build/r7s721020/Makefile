@@ -148,6 +148,7 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
 #ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
 ASRC_APP += $(PRJROOT)/src/crt_CortexA.S
+ASRC_BOOT += $(ASRC_APP)
 
 VPATH = $(PRJROOT)
 
@@ -162,6 +163,7 @@ DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
 
 OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
+OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 
