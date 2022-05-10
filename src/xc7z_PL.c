@@ -323,10 +323,11 @@ void xcz_audio_tx_enable(uint_fast8_t state)
 //	XLlFifo_iTxSetLen(& fifo_phones, DMABUFFSIZE16 * 4 / fifo_divider);
 }
 
-#else
+#else // заглушки для бутлоадера
 
 void xcz_rxtx_state(uint8_t tx)
 {
+
 }
 
 #endif /* CPUSTYLE_XC7Z */

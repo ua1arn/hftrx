@@ -620,7 +620,7 @@ uint_fast8_t
 //NOINLINEAT
 restore_i8(nvramaddress_t addr)
 {
-	return 0;
+	return 0xFF;
 }
 
 /* сохранение по указанному индексу в FRAM одного байта */
@@ -635,7 +635,7 @@ uint_fast16_t
 //NOINLINEAT
 restore_i16(nvramaddress_t addr)
 {
-	return 0;
+	return 0xFFFF;
 }
 
 /* сохранение по указанному индексу в FRAM одного 16-битного слова */
@@ -650,7 +650,7 @@ uint_fast32_t
 //NOINLINEAT
 restore_i32(nvramaddress_t addr)
 {
-	return 0;
+	return 0xFFFFFFFF;
 }
 
 /* сохранение по указанному индексу в FRAM одного 32-битного слова */
