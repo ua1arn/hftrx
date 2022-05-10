@@ -22,6 +22,7 @@
 #include "ft8/decode.h"
 #include "ft8/constants.h"
 #include "ft8/encode.h"
+#include "ft8/pack.h"
 #include "ft8/crc.h"
 
 #include "speex/kiss_fftr.h"
@@ -341,18 +342,105 @@ void ft8_decode_buf(float * signal, timestamp_t ts)
 			// Fake WSJT-X-like output for now
 			int snr = cand->score > 160 ? 160 : cand->score;
 			snr = (snr - 160) / 6;
-//			PRINTF("%02d%02d%02d %4.0f %02d ~ %s", ts.hour, ts.minute, ts.second, freq_hz, snr, message.text);
+//			PRINTF("%02d%02d%02d %4.0f %02d %s", ts.hour, ts.minute, ts.second, freq_hz, snr, message.text);
 
-			local_snprintf_P(ft8.rx_text [num_decoded], ft8_text_length, "%02d%02d%02d %4.0f %02d ~ %s",
+			local_snprintf_P(ft8.rx_text [num_decoded], ft8_text_length, "%02d%02d%02d %4.0f %02d %s",
 					ts.hour, ts.minute, ts.second, freq_hz, snr, message.text);
 
 			++num_decoded;
 		}
 	}
-	PRINTF("ft8: decoded %d messages\n", num_decoded);
+	PRINTF("core%d: decoded %d messages\n", (unsigned) (__get_MPIDR() & 0x03), num_decoded);
 	ft8.decoded_messages = num_decoded;
 	monitor_free(&mon);
 	xcz_ipi_sendmsg_c0(FT8_MSG_DECODE_DONE);
+}
+
+// *** Encode *********************************************************************
+
+#define FT8_SYMBOL_BT 2.0f ///< symbol smoothing filter bandwidth factor (BT)
+#define FT4_SYMBOL_BT 1.0f ///< symbol smoothing filter bandwidth factor (BT)
+
+#define GFSK_CONST_K 5.336446f ///< == pi * sqrt(2 / log(2))
+
+void gfsk_pulse(int n_spsym, float symbol_bt, float* pulse)
+{
+    for (int i = 0; i < 3 * n_spsym; ++i)
+    {
+        float t = i / (float)n_spsym - 1.5f;
+        float arg1 = GFSK_CONST_K * symbol_bt * (t + 0.5f);
+        float arg2 = GFSK_CONST_K * symbol_bt * (t - 0.5f);
+        pulse[i] = (erff(arg1) - erff(arg2)) / 2;
+    }
+}
+
+void synth_gfsk(const uint8_t* symbols, int n_sym, float f0, float symbol_bt, float symbol_period, int signal_rate, float* signal)
+{
+    int n_spsym = (int)(0.5f + signal_rate * symbol_period); // Samples per symbol
+    int n_wave = n_sym * n_spsym;                            // Number of output samples
+    float hmod = 1.0f;
+
+//    PRINTF("n_spsym = %d\n", n_spsym);
+    // Compute the smoothed frequency waveform.
+    // Length = (nsym+2)*n_spsym samples, first and last symbols extended
+    float dphi_peak = 2 * M_PI * hmod / n_spsym;
+    float dphi[n_wave + 2 * n_spsym];
+
+    // Shift frequency up by f0
+    for (int i = 0; i < n_wave + 2 * n_spsym; ++i)
+    {
+        dphi[i] = 2 * M_PI * f0 / signal_rate;
+    }
+
+    float pulse[3 * n_spsym];
+    gfsk_pulse(n_spsym, symbol_bt, pulse);
+
+    for (int i = 0; i < n_sym; ++i)
+    {
+        int ib = i * n_spsym;
+        for (int j = 0; j < 3 * n_spsym; ++j)
+        {
+            dphi[j + ib] += dphi_peak * symbols[i] * pulse[j];
+        }
+    }
+
+    // Add dummy symbols at beginning and end with tone values equal to 1st and last symbol, respectively
+    for (int j = 0; j < 2 * n_spsym; ++j)
+    {
+        dphi[j] += dphi_peak * pulse[j + n_spsym] * symbols[0];
+        dphi[j + n_sym * n_spsym] += dphi_peak * pulse[j] * symbols[n_sym - 1];
+    }
+
+    // Calculate and insert the audio waveform
+    float phi = 0;
+    for (int k = 0; k < n_wave; ++k)
+    { // Don't include dummy symbols
+        signal[k] = sinf(phi);
+        phi = fmodf(phi + dphi[k + n_spsym], 2 * M_PI);
+    }
+
+    // Apply envelope shaping to the first and last symbols
+    int n_ramp = n_spsym / 8;
+    for (int i = 0; i < n_ramp; ++i)
+    {
+        float env = (1 - cosf(2 * M_PI * i / (2 * n_ramp))) / 2;
+        signal[i] *= env;
+        signal[n_wave - 1 - i] *= env;
+    }
+}
+
+void ft8_encode_buf(float * signal, char * message, float frequency)
+{
+	uint8_t packed[FTX_LDPC_K_BYTES];
+	int num_tones = FT8_NN;
+	float symbol_period = FT8_SYMBOL_PERIOD;
+	float symbol_bt = FT8_SYMBOL_BT;
+	uint8_t tones[num_tones]; // Array of 79 tones (symbols)
+
+	PRINTF("tx message: %s\n", message);
+	pack77(message, packed);
+	ft8_encode(packed, tones);
+	synth_gfsk(tones, num_tones, frequency, symbol_bt, symbol_period, ft8_sample_rate, signal);
 }
 
 // ********************************************************************************
@@ -372,7 +460,6 @@ void ft8_irqhandler_core0(void)
 	else if (msg == FT8_MSG_ENCODE_DONE)
 	{
 		PRINTF("transmit message...\n");
-		ft8_stop_fill();
 		ft8_tx_enable();
 	}
 }
@@ -394,9 +481,11 @@ void ft8_irqhandler_core1(void)
 	}
 	else if (msg == FT8_MSG_ENCODE)  // transmit message
 	{
-//		ft8_encode_buf(ft8.tx_buf, ft8.tx_text, ft8.tx_freq);
-//    	ft8_decode_buf(share_mem.ft8txbuf, & st1);
-//		xcz_ipi_sendmsg_c0(FT8_MSG_ENCODE_DONE);
+		ft8_stop_fill();
+		ft8_encode_req = 1;
+		memset(ft8.tx_buf, 0, sizeof(float) * ft8_sample_rate * ft8_length);
+		ft8_encode_buf(ft8.tx_buf, ft8.tx_text, ft8.tx_freq);
+		xcz_ipi_sendmsg_c0(FT8_MSG_ENCODE_DONE);
 	}
 	else if (msg == FT8_MSG_ENABLE)	// enable ft8
 	{
@@ -406,18 +495,33 @@ void ft8_irqhandler_core1(void)
 	else if (msg == FT8_MSG_DISABLE)  // disable ft8
 	{
 		ft8_enable = 0;
+		ft8_stop_fill();
 		PRINTF("core %d: ft8 disabled\n", (unsigned) (__get_MPIDR() & 0x03));
+	}
+	else if (msg == FT8_MSG_TX_DONE)
+	{
+		ft8_encode_req = 0;
+		xcz_ipi_sendmsg_c0(FT8_MSG_START_FILL);
 	}
 }
 
 void ft8_walkthrough_core0(uint_fast8_t rtc_secounds)
 {
+	static uint_fast8_t old_s = 99;
+
 	if (rtc_secounds == 0 || rtc_secounds == 15 || rtc_secounds == 30 || rtc_secounds == 45)
 	{
-		if (ft8_enable && ! ft8_encode_req)
+		if ((ft8_enable && ! ft8_encode_req) && (old_s != rtc_secounds))
 		{
 			xcz_ipi_sendmsg_c0(FT8_MSG_START_FILL);
+			old_s = rtc_secounds;
 		}
+	}
+
+	if (ft8_mox_request)
+	{
+		ft8_mox_request = 0;
+		hamradio_moxmode(1);
 	}
 }
 
@@ -435,18 +539,19 @@ void ft8_txfill(float * sample)
 	{
 		* sample = ft8.tx_buf [bufind];
 		bufind ++;
-		if (bufind >= bufsize)
+		if (bufind >= bufsize || ft8.tx_buf [bufind] == 0)
 		{
 			ft8_tx = 0;
 			bufind = 0;
 			ft8_mox_request = 1;
+			xcz_ipi_sendmsg_c1(FT8_MSG_TX_DONE);
 		}
 	}
 }
 
 void ft8_fill1(float sample)
 {
-//	system_disableIRQ();
+	system_disableIRQ();
 	if (fill_ft8_buf1 == 1)
 	{
 		ASSERT(bufind1 < bufsize);
@@ -459,12 +564,12 @@ void ft8_fill1(float sample)
 			xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_1);
 		}
 	}
-//	system_enableIRQ();
+	system_enableIRQ();
 }
 
 void ft8_fill2(float sample)
 {
-//	system_disableIRQ();
+	system_disableIRQ();
 	if (fill_ft8_buf2 == 1)
 	{
 		ASSERT(bufind2 < bufsize);
@@ -477,7 +582,7 @@ void ft8_fill2(float sample)
 			xcz_ipi_sendmsg_c1(FT8_MSG_DECODE_2);
 		}
 	}
-//	system_enableIRQ();
+	system_enableIRQ();
 }
 
 void ft8_start_fill(void)

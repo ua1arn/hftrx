@@ -1686,10 +1686,10 @@ void gui_WM_walktrough(uint_fast8_t x, uint_fast8_t y, dctx_t * pctx)
 							for (uint8_t i = 0; i < tf->h_str; i ++)
 							{
 								j = j < 0 ? (tf->h_str - 1) : j;
-								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * i,
-										tf->record[j].text, tf->record[j].color_line);
-//								UB_Font_DrawString(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * i,
-//										tf->record[j].text, tf->font, tf->record[j].color_line);
+//								colpip_string2_tbg(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + SMALLCHARH2 * i,
+//										tf->record[j].text, tf->record[j].color_line);
+								UB_Font_DrawString(fr, DIM_X, DIM_Y, win->x1 + tf->x1, win->y1 + tf->y1 + tf->font->height * i,
+										tf->record[j].text, tf->font, tf->record[j].color_line);
 								j --;
 							}
 						}

@@ -1269,8 +1269,7 @@ static void gui_main_process(void)
 #endif /* WITHTHERMOLEVEL */
 
 #if WITHFT8
-		if (update)
-			ft8_walkthrough_core0(secounds);
+		ft8_walkthrough_core0(secounds);
 #endif /* WITHFT8 */
 
 #endif /* GUI_SHOW_INFOBAR */
@@ -4364,7 +4363,7 @@ void parse_ft8_answer(char * str, COLORMAIN_T * color, uint8_t * cq_flag)
 	char tmpstr [TEXT_ARRAY_SIZE];
 	strcpy(tmpstr, str);
 
-	char lexem [10][10]; // date; time; freq; snr; "~"; text 2 - 4 pcs
+	char lexem [10][10]; // time; freq; snr; text 2 - 4 pcs
 
 	char * l = strtok(tmpstr, " ");
 	for (uint8_t i = 0; i < 10; i ++)
@@ -4376,16 +4375,18 @@ void parse_ft8_answer(char * str, COLORMAIN_T * color, uint8_t * cq_flag)
 		l = strtok(NULL, " ");
 	}
 
-	if (! strcmp(lexem[4], "CQ") && strcmp(lexem[5], "CQ") && strcmp(lexem[5], "DX"))
+	if (! strcmp(lexem[3], "CQ") && strcmp(lexem[4], "CQ") && strcmp(lexem[4], "DX"))
 	{
 		* color = COLORMAIN_GREEN;
 		* cq_flag = 1;
 		if (idx_cqcall < 6)
-			strcpy(cq_call [idx_cqcall ++], lexem[5]);
+			strcpy(cq_call [idx_cqcall ++], lexem[4]);
 	}
-	else if (! strcmp(lexem[4], "RA4ASN"))
+	else if (! strcmp(lexem[3], gui_nvram.ft8_callsign))
 	{
 		* color = COLORMAIN_RED;
+		* cq_flag = 1;
+		strcpy(cq_call [idx_cqcall ++], lexem[4]);
 	}
 }
 
@@ -4571,9 +4572,9 @@ static void window_ft8_process(void)
 {
 	window_t * const win = get_win(WINDOW_FT8);
 	static uint_fast16_t win_x = 0, win_y = 0, x, y;
-	static uint_fast8_t update = 0, selected_label_cq = 0, selected_label_tx = 0, backup_mode = 0, work = 0;
+	static uint_fast8_t update = 0, selected_label_cq = 255, selected_label_tx = 0, backup_mode = 0, work = 0, labels_tx_update = 0;
 	static lh_array_t lh_array_cq [6];
-	static lh_array_t lh_array_tx [3];
+	static lh_array_t lh_array_tx [4];
 	static const int8_t snr = -10;
 	static uint_fast32_t backup_freq = 0;
 
@@ -4602,9 +4603,10 @@ static void window_ft8_process(void)
 			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq3", "********", FONT_MEDIUM, COLORMAIN_WHITE, 3, },
 			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq4", "********", FONT_MEDIUM, COLORMAIN_WHITE, 4, },
 			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_cq5", "********", FONT_MEDIUM, COLORMAIN_WHITE, 5, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg0", "*********************", FONT_MEDIUM, COLORMAIN_WHITE, 10, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg1", "*********************", FONT_MEDIUM, COLORMAIN_WHITE, 11, },
-			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg2", "*********************", FONT_MEDIUM, COLORMAIN_WHITE, 12, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg0", "", FONT_MEDIUM, COLORMAIN_WHITE, 10, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg1", "", FONT_MEDIUM, COLORMAIN_WHITE, 11, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg2", "", FONT_MEDIUM, COLORMAIN_WHITE, 12, },
+			{ WINDOW_FT8, CANCELLED, 0, NON_VISIBLE, "lbl_txmsg3", "", FONT_MEDIUM, COLORMAIN_WHITE, 13, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -4613,7 +4615,7 @@ static void window_ft8_process(void)
 		memcpy(win->lh_ptr, labels, labels_size);
 
 		static const text_field_t text_field [] = {
-			{ 40, 23, CANCELLED, WINDOW_FT8, NON_VISIBLE, & gothic_11x13, "tf_ft8", },
+			{ 40, 26, CANCELLED, WINDOW_FT8, NON_VISIBLE, & gothic_11x13, "tf_ft8", },
 		};
 		win->tf_count = ARRAY_SIZE(text_field);
 		uint_fast16_t tf_size = sizeof(text_field);
@@ -4637,7 +4639,7 @@ static void window_ft8_process(void)
 
 		uint8_t interval = get_label_height(lbl_cq_title) * 2;
 
-		lbl_cq_title->x = tf_ft8->x1 + tf_ft8->w + 10;
+		lbl_cq_title->x = tf_ft8->x1 + tf_ft8->w + 70;
 		lbl_cq_title->y = 0;
 		lbl_cq_title->visible = VISIBLE;
 
@@ -4660,7 +4662,7 @@ static void window_ft8_process(void)
 
 		x = lbl_tx_title->x;
 		y = lbl_tx_title->y + interval;
-		for (uint8_t i = 0; i < 3; i ++)
+		for (uint8_t i = 0; i < 4; i ++)
 		{
 			char lh_name [15];
 			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_txmsg%d", i);
@@ -4672,9 +4674,14 @@ static void window_ft8_process(void)
 			lh_array_tx [i].ptr = lh;
 		}
 
-		btn_tx->x1 = lh_array_tx [2].ptr->x;
-		btn_tx->y1 = lh_array_tx [2].ptr->y + get_label_height(lh_array_tx [2].ptr) * 3;
+		local_snprintf_P(lh_array_tx [0].ptr->text, ARRAY_SIZE(lh_array_tx [0].ptr->text), "CQ %s %s", gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
+
+		btn_tx->x1 = lh_array_tx [3].ptr->x;
+		btn_tx->y1 = lh_array_tx [3].ptr->y + get_label_height(lh_array_tx [3].ptr) * 3;
 		btn_tx->visible = VISIBLE;
+#if ! WITHTX
+		btn_tx->state = DISABLED;
+#endif
 
 		btn_filter->x1 = btn_tx->x1 + btn_tx->w + interval;
 		btn_filter->y1 = btn_tx->y1;
@@ -4709,8 +4716,7 @@ static void window_ft8_process(void)
 	if (parse_ft8buf)
 	{
 		parse_ft8buf = 0;
-		selected_label_cq = 0;
-		selected_label_tx = 0;
+		selected_label_cq = 255;
 		text_field_t * tf_ft8 = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ft8");
 
 		memset(cq_call, 0, sizeof(cq_call));
@@ -4773,7 +4779,10 @@ static void window_ft8_process(void)
 		{
 			label_t * lh = (label_t *) ptr;
 			if (lh->index < 10)
+			{
 				selected_label_cq = lh->index;
+				labels_tx_update = 1;
+			}
 			else
 				selected_label_tx = lh->index - 10;
 			update = 1;
@@ -4823,7 +4832,7 @@ static void window_ft8_process(void)
 			}
 		}
 
-		for (uint8_t i = 0; i < 3; i ++)
+		for (uint8_t i = 0; i < 4; i ++)
 		{
 			label_t * lh = lh_array_tx [i].ptr;
 
@@ -4833,11 +4842,12 @@ static void window_ft8_process(void)
 				lh->color = COLORMAIN_WHITE;
 		}
 
-		if (strlen(cq_call [selected_label_cq]))
+		if (labels_tx_update)
 		{
-			local_snprintf_P(lh_array_tx [0].ptr->text, ARRAY_SIZE(lh_array_tx [0].ptr->text), "%s %s %s", gui_nvram.ft8_callsign, cq_call [selected_label_cq], gui_nvram.ft8_qth);
-			local_snprintf_P(lh_array_tx [1].ptr->text, ARRAY_SIZE(lh_array_tx [1].ptr->text), "%s %s %s", gui_nvram.ft8_callsign, cq_call [selected_label_cq], gui_nvram.ft8_snr);
-			local_snprintf_P(lh_array_tx [2].ptr->text, ARRAY_SIZE(lh_array_tx [2].ptr->text), "%s %s %s", gui_nvram.ft8_callsign, cq_call [selected_label_cq], gui_nvram.ft8_end);
+			labels_tx_update = 0;
+			local_snprintf_P(lh_array_tx [1].ptr->text, ARRAY_SIZE(lh_array_tx [1].ptr->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_qth);
+			local_snprintf_P(lh_array_tx [2].ptr->text, ARRAY_SIZE(lh_array_tx [2].ptr->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_snr);
+			local_snprintf_P(lh_array_tx [3].ptr->text, ARRAY_SIZE(lh_array_tx [3].ptr->text), "%s %s %s", cq_call [selected_label_cq], gui_nvram.ft8_callsign, gui_nvram.ft8_end);
 		}
 
 		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "FT8 terminal *** %d k *** %02d:%02d:%02d", ft8_bands [gui_nvram.ft8_band] / 1000, hour, minute, secounds);
