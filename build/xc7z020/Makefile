@@ -186,14 +186,17 @@ find_S = $(wildcard $(dir)*.S)
 CSRC += $(call rwildcard, $(SRCDIRS), *.c)
 CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 # List ASM source files here
-ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_APP += $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_BOOT += $(PRJROOT)/src/crt_CortexA.S
+ASRC_APP += $(ASRC_BOOT)
 
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
-OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
+OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT))
 
 SRCS = $(CSRC) $(CPPSRC) $(ASRC)
-OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+OBJS = $(OBJSC) $(OBJSCPP)
 
 # Collect files for library
 
@@ -291,12 +294,12 @@ $(OBJSA) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
+%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
+%_app.elf: $(OBJS) $(OBJSA_APP)
+	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
 %hex: %elf
