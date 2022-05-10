@@ -196,7 +196,7 @@ OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
 OBJSA_BOOT 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_BOOT))
 
 SRCS = $(CSRC) $(CPPSRC) $(ASRC)
-OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+OBJS = $(OBJSC) $(OBJSCPP)
 
 # Collect files for library
 
@@ -295,7 +295,7 @@ $(OBJSCPP) $(ZOBJSCPP):
 	@mkdir -p $(@D)
 	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
-$(OBJSA) $(ZOBJSA):
+$(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 

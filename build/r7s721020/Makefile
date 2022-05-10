@@ -237,16 +237,16 @@ $(OBJSCPP):
 	@mkdir -p $(@D)
 	$(GPP) -o $@ -std=gnu++11 -fno-rtti -fexceptions -c $(CPFLAGS) $(INCDIR) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.cpp, $@)))
 
-$(OBJSA):
+$(OBJSA_APP) $(ZOBJSA):
 	@mkdir -p $(@D)
 	$(AS) -o $@ -c $(ASFLAGS) $(addprefix $(PRJROOT)/, $(patsubst $(OBJDIR)/%, %, $(patsubst %.o, %.S, $@)))
 
-%_boot.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_BOOT) $(LIBS) -o $@
+%_boot.elf: $(OBJS) $(OBJSA_BOOT)
+	$(GPP) $(OBJS) $(OBJSA_BOOT) $(LDFLAGS_BOOT) $(LIBS) -o $@
 	$(SIZE) $@
 
-%_app.elf: $(OBJS)
-	$(GPP) $(OBJS) $(LDFLAGS_APP) $(LIBS) -o $@
+%_app.elf: $(OBJS) $(OBJSA_APP)
+	$(GPP) $(OBJS) $(OBJSA_APP) $(LDFLAGS_APP) $(LIBS) -o $@
 	$(SIZE) $@
 
 %hex: %elf
