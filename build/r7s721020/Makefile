@@ -146,7 +146,8 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
+#ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
+ASRC_APP += $(PRJROOT)/src/crt_CortexA.S
 
 VPATH = $(PRJROOT)
 
@@ -160,11 +161,11 @@ LIBDIR  = $(patsubst %,-L%,$(DLIBDIR) $(ULIBDIR))
 DEFS    = $(DDEFS) $(UDEFS)
 ADEFS   = $(DADEFS) $(UADEFS)
 
-OBJSA 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC))
+OBJSA_APP 	+= $(patsubst $(PRJROOT)/%.S, $(OBJDIR)/%.o, $(ASRC_APP))
 OBJSC 	+= $(patsubst $(PRJROOT)/%.c, $(OBJDIR)/%.o, $(CSRC))
 OBJSCPP 	+= $(patsubst $(PRJROOT)/%.cpp, $(OBJDIR)/%.o, $(CPPSRC))
 
-OBJS = $(OBJSC) $(OBJSCPP) $(OBJSA)
+OBJS = $(OBJSC) $(OBJSCPP)
 
 LIBS    = $(DLIBS) $(ULIBS)
 
