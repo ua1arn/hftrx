@@ -53,7 +53,7 @@ static void padding( const s32 l_flag, const struct params_s *par)
 		i=(par->len);
         for (; i<(par->num1); i++) {
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-            outbyte( par->pad_character);
+            dbg_putchar( par->pad_character);
 #endif
 		}
     }
@@ -76,7 +76,7 @@ static void outs(const charptr lp, struct params_s *par)
 		while (((*LocalPtr) != (char8)0) && ((par->num2) != 0)) {
 			(par->num2)--;
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-			outbyte(*LocalPtr);
+			dbg_putchar(*LocalPtr);
 #endif
 			LocalPtr += 1;
 		}
@@ -137,7 +137,7 @@ static void outnum( const s32 n, const s32 base, struct params_s *par)
     padding( !(par->left_flag), par);
     while (&outbuf[i] >= outbuf) {
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-	outbyte( outbuf[i] );
+	dbg_putchar( outbuf[i] );
 #endif
 		i--;
 }
@@ -192,7 +192,7 @@ static void outnum1( const s64 n, const s32 base, params_t *par)
     par->len = (s32)strlen(outbuf);
     padding( !(par->left_flag), par);
     while (&outbuf[i] >= outbuf) {
-	outbyte( outbuf[i] );
+	dbg_putchar( outbuf[i] );
 		i--;
 }
     padding( par->left_flag, par);
@@ -273,7 +273,7 @@ void xil_vprintf(const char8 *ctrl1, va_list argp)
         /* format control is found.                    */
         if (*ctrl != '%') {
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-            outbyte(*ctrl);
+            dbg_putchar(*ctrl);
 #endif
 			ctrl += 1;
             continue;
@@ -324,7 +324,7 @@ void xil_vprintf(const char8 *ctrl1, va_list argp)
         switch (tolower((s32)ch)) {
             case '%':
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-                outbyte( '%');
+                dbg_putchar( '%');
 #endif
                 Check = 1;
                 break;
@@ -393,7 +393,7 @@ void xil_vprintf(const char8 *ctrl1, va_list argp)
 
             case 'c':
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-                outbyte( va_arg( argp, s32));
+                dbg_putchar( va_arg( argp, s32));
 #endif
                 Check = 1;
                 break;
@@ -402,28 +402,28 @@ void xil_vprintf(const char8 *ctrl1, va_list argp)
                 switch (*ctrl) {
                     case 'a':
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-                        outbyte( ((char8)0x07));
+                        dbg_putchar( ((char8)0x07));
 #endif
                         break;
                     case 'h':
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-                        outbyte( ((char8)0x08));
+                        dbg_putchar( ((char8)0x08));
 #endif
                         break;
                     case 'r':
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-                        outbyte( ((char8)0x0D));
+                        dbg_putchar( ((char8)0x0D));
 #endif
                         break;
                     case 'n':
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-                        outbyte( ((char8)0x0D));
-                        outbyte( ((char8)0x0A));
+                        dbg_putchar( ((char8)0x0D));
+                        dbg_putchar( ((char8)0x0A));
 #endif
                         break;
                     default:
 #if defined(STDOUT_BASEADDRESS) || defined(VERSAL_PLM)
-                        outbyte( *ctrl);
+                        dbg_putchar( *ctrl);
 #endif
                         break;
                 }

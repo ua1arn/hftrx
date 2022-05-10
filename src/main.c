@@ -14602,7 +14602,7 @@ static void dpc_1stimer(void * arg)
 #endif /* WITHSLEEPTIMER */
 
 #if WITHLWIP
-	sys_check_timeouts();
+	//sys_check_timeouts();
 #endif /* WITHLWIP */
 
 #if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
@@ -14724,7 +14724,8 @@ processmessages(
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLWIP
 		/* LWIP */
-		usb_polling();     // usb device polling
+		//usb_polling();     // usb device polling
+		network_spool();
 		//stmr();            // call software timers
 #endif /* WITHLWIP */
 		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */

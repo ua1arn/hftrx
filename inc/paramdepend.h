@@ -778,7 +778,7 @@ extern "C" {
 	#define CPU_FREQ	(xc7z_get_arm_freq())
 	#define BOARD_SPI_FREQ (xc7z_get_spi_freq())
 
-	#define TICKS_FREQUENCY 200
+	#define TICKS_FREQUENCY 5 //200 <---------- потом вернуть обратно
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 

@@ -87,7 +87,7 @@
 #define TARGET_DAC_SLEEP_EMIO		86	//	V18	A18	V18	IO_L21N_T3_DQS_34
 
 
-#define TARGET_ACTIVITY2_MIO		7	// LED anode
+//#define TARGET_ACTIVITY2_MIO		7	// LED anode
 #define TARGET_USER_BOOT2_MIO		74	// U15	A13	U15	IO_B34_LN11	Input, pull-up need
 
 #if WITHISBOOTLOADER
@@ -1288,18 +1288,15 @@
 			const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0, 0, 0, 0, 0); \
 			const portholder_t pinmode_emio = 0; /* dummy parameter */ \
 			gpio_output2(TARGET_ACTIVITY_MIO, 0, pinmode_output); \
-			gpio_output2(TARGET_ACTIVITY2_MIO, 1, pinmode_output); \
 			gpio_output2(TARGET_ACTIVITY_EMIO, 1, pinmode_emio); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 		if (state) \
 		{ \
 			gpio_writepin(TARGET_ACTIVITY_MIO, 0); \
-			gpio_writepin(TARGET_ACTIVITY2_MIO, 1); \
 			gpio_writepin(TARGET_ACTIVITY_EMIO, 1); \
 		} else { \
 			gpio_writepin(TARGET_ACTIVITY_MIO, 1); \
-			gpio_writepin(TARGET_ACTIVITY2_MIO, 0); \
 			gpio_writepin(TARGET_ACTIVITY_EMIO, 0); \
 		} \
 	} while (0)

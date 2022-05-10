@@ -20,7 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hardware.h"
 
-#if WITHETHHW
+#if 0 //WITHETHHW
 
 #include "lwip/opt.h"
 #include "lwip/mem.h"

@@ -72,7 +72,7 @@ ZYNQLIB = zynq7020.a
 
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.1
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D
@@ -100,7 +100,11 @@ DINCDIR = \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/src/include/lwip \
 	$(LWIPDIR)/src/apps/http \
+	$(LWIPDIR)/ports/xilinx/include \
+	$(LWIPDIR)/ports/xilinx/include/netif \
+	$(LWIPDIR)/ports/xilinx/include/arch \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
@@ -128,6 +132,7 @@ SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(MDLWUSBDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
 
