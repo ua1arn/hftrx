@@ -19,7 +19,7 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
-UADEFS += -D"WITHSMPSYSTEM"
+#UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
 OBJDIR = obj
@@ -146,7 +146,7 @@ CPPSRC += $(call rwildcard, $(SRCDIRS), *.cpp)
 
 # not all .S files in directory need
 #ASRC += $(call rwildcard, $(SRCDIRS), *.S)
-ASRC += $(PRJROOT)/src/crt_CortexA.S
+ASRC += $(PRJROOT)/src/crt_CortexA.S $(PRJROOT)/src/crt_CortexA_CPUn.S
 
 VPATH = $(PRJROOT)
 
