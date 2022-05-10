@@ -71,6 +71,8 @@
 	.code 32
 	.align 4, 0
 
+  	.extern Reset_CPUn_Handler
+  	.global Reset_CPU1_Handler
     .func   Reset_CPU1_Handler
     /* invoked at ARM_MODE_SVC */
 Reset_CPU1_Handler:
