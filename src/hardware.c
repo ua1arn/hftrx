@@ -24,7 +24,7 @@
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
-extern u8_t bd_space[];
+extern uint8_t bd_space[];
 
 #include "xc7z_inc.h"
 static XGpioPs xc7z_gpio;

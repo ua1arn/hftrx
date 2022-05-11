@@ -72,7 +72,7 @@ ZYNQLIB = zynq7020.a
 
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
-LWIPDIR = $(PRJROOT)/lib/lwip-2.1.1
+LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
 # see usage of preprocessor HG_FLAT_INCLUDES and EGL_STATIC_LIBRARY symbol
 OPENVGDIR = $(PRJROOT)/lib/OpenVG
 DSP3DDIR = $(PRJROOT)/lib/dsp3D

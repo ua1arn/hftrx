@@ -252,7 +252,7 @@ void XEmacPs_IntrHandler2(void)
 
 	XEmacPs *InstancePtr = XEmacPsInst;
 
-	dbg_putchar('.');
+//	dbg_putchar('.');
 
 	Xil_AssertVoid(InstancePtr != NULL);
 	Xil_AssertVoid(InstancePtr->IsReady == (u32)XIL_COMPONENT_IS_READY);
