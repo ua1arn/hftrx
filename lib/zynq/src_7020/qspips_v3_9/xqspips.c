@@ -112,8 +112,6 @@ typedef struct {
 
 /***************** Macros (Inline Functions) Definitions *********************/
 
-#define ARRAY_SIZE(Array)		(sizeof(Array) / sizeof((Array)[0]))
-
 /************************** Function Prototypes ******************************/
 static void XQspiPs_GetReadData(XQspiPs *InstancePtr, u32 Data, u8 Size);
 static void StubStatusHandler(void *CallBackRef, u32 StatusEvent,

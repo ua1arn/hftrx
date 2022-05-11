@@ -653,7 +653,7 @@ unsigned char mac_ethernet_address[] =
 	{ 0x00, 0x0a, 0x35, 0x00, 0x01, 0x02 };
 
 void
-print_ip(char *msg, ip_addr_t *ip)
+print_ip(const char *msg, ip_addr_t *ip)
 {
 	PRINTF(msg);
 	PRINTF("%d.%d.%d.%d\n\r", ip4_addr1(ip), ip4_addr2(ip),
