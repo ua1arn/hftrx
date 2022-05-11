@@ -42,7 +42,7 @@ typedef struct {
 	int head, tail, len;
 } pq_queue_t;
 
-pq_queue_t*	pq_create_queue();
+pq_queue_t*	pq_create_queue(void);
 int 		pq_enqueue(pq_queue_t *q, void *p);
 void*		pq_dequeue(pq_queue_t *q);
 int		pq_qlength(pq_queue_t *q);
