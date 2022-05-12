@@ -286,24 +286,13 @@ static void adcdones_spool(void)
 }
 
 #if 1//WITHLWIP
-#include "lwip/tcp.h"
-#include "lwip/dhcp.h"
-#include "netif/xadapter.h"
+
 static volatile uint32_t sys_now_counter;
 uint32_t sys_now(void)
 {
 	return sys_now_counter;
 }
 
-#define RESET_RX_CNTR_LIMIT	400
-#define ETH_LINK_DETECT_INTERVAL 4
-volatile int dhcp_timoutcntr = 24;
-void dhcp_fine_tmr(void);
-void dhcp_coarse_tmr(void);
-volatile int TcpFastTmrFlag = 0;
-volatile int TcpSlowTmrFlag = 0;
-static int ResetRxCntr = 0;
-extern struct netif *echo_netif;
 #endif /* WITHLWIP */
 
 /* Машинно-независимый обработчик прерываний. */
@@ -318,37 +307,6 @@ RAMFUNC void spool_systimerbundle1(void)
 
 #if 1//WITHLWIP
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
-
-	static int DetectEthLinkStatus = 0;
-	static int odd = 1;
-	static int dhcp_timer = 0;
-
-	DetectEthLinkStatus++;
-	TcpFastTmrFlag = 1;
-	odd = !odd;
-	ResetRxCntr++;
-	if (odd) {
-#if LWIP_DHCP==1
-	dhcp_timer++;
-	dhcp_timoutcntr--;
-#endif
-	TcpSlowTmrFlag = 1;
-#if LWIP_DHCP==1
-	dhcp_fine_tmr();
-	if (dhcp_timer >= 120) {
-		dhcp_coarse_tmr();
-		dhcp_timer = 0;
-		}
-	}
-#endif
-	if (ResetRxCntr >= RESET_RX_CNTR_LIMIT) {
-		xemacpsif_resetrx_on_no_rxdata(echo_netif);
-		ResetRxCntr = 0;
-	}
-	if (DetectEthLinkStatus == ETH_LINK_DETECT_INTERVAL) {
-		eth_link_detect(echo_netif);
-		DetectEthLinkStatus = 0;
-	}
 #endif /* WITHLWIP */
 
 	//spool_lfm();

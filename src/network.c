@@ -660,6 +660,18 @@ unsigned char mac_ethernet_address[] =
 
 uint_fast8_t timezone = 3;  // GMT+3
 
+static ticker_t lwipticker;
+
+#define RESET_RX_CNTR_LIMIT	400
+#define ETH_LINK_DETECT_INTERVAL 4
+volatile int dhcp_timoutcntr = 24;
+void dhcp_fine_tmr(void);
+void dhcp_coarse_tmr(void);
+volatile int TcpFastTmrFlag = 0;
+volatile int TcpSlowTmrFlag = 0;
+static int ResetRxCntr = 0;
+extern struct netif *echo_netif;
+
 void board_update_time(uint32_t sec)
 {
 	const time_t ut = sec + 60 * 60 * timezone;
@@ -761,6 +773,40 @@ int start_echo_server(void)
 	return 0;
 }
 
+void lwip_timer_spool(void)
+{
+	static int DetectEthLinkStatus = 0;
+	static int odd = 1;
+	static int dhcp_timer = 0;
+
+	DetectEthLinkStatus++;
+	TcpFastTmrFlag = 1;
+	odd = !odd;
+	ResetRxCntr++;
+	if (odd) {
+#if LWIP_DHCP==1
+	dhcp_timer++;
+	dhcp_timoutcntr--;
+#endif
+	TcpSlowTmrFlag = 1;
+#if LWIP_DHCP==1
+	dhcp_fine_tmr();
+	if (dhcp_timer >= 120) {
+		dhcp_coarse_tmr();
+		dhcp_timer = 0;
+		}
+	}
+#endif
+	if (ResetRxCntr >= RESET_RX_CNTR_LIMIT) {
+		xemacpsif_resetrx_on_no_rxdata(echo_netif);
+		ResetRxCntr = 0;
+	}
+	if (DetectEthLinkStatus == ETH_LINK_DETECT_INTERVAL) {
+		eth_link_detect(echo_netif);
+		DetectEthLinkStatus = 0;
+	}
+}
+
 void network_initialize(void)
 {
 	ip_addr_t ipaddr, netmask, gw;
@@ -768,6 +814,9 @@ void network_initialize(void)
     ipaddr.addr = 0;
 	gw.addr = 0;
 	netmask.addr = 0;
+
+	ticker_initialize(& lwipticker, 40, lwip_timer_spool, NULL);	// 200 ms
+	ticker_add(& lwipticker);
 
 	lwip_init();
 
