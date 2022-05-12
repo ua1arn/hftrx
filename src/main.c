@@ -14602,7 +14602,7 @@ static void dpc_1stimer(void * arg)
 #endif /* WITHSLEEPTIMER */
 
 #if WITHLWIP
-	//sys_check_timeouts();
+	sys_check_timeouts();
 #endif /* WITHLWIP */
 
 #if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU

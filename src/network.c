@@ -631,6 +631,7 @@ void network_initialize(void)
 
 #else /*  WITHLWIP */
 
+#include <time.h>
 #include <stdbool.h>
 #include "lwip/opt.h"
 
@@ -639,9 +640,14 @@ void network_initialize(void)
 #include "lwip/udp.h"
 #include "lwip/dhcp.h"
 #include "netif/etharp.h"
+#include "xadapter.h"
 #include "lwip/ip_addr.h"
 #include "lwip/err.h"
 #include "lwip/tcp.h"
+#include "lwip/apps/sntp.h"
+#include "lwip/priv/tcp_priv.h"
+
+#include "board.h"
 
 extern volatile int TcpFastTmrFlag;
 extern volatile int TcpSlowTmrFlag;
@@ -651,6 +657,19 @@ static struct netif server_netif;
 struct netif *echo_netif;
 unsigned char mac_ethernet_address[] =
 	{ 0x00, 0x0a, 0x35, 0x00, 0x01, 0x02 };
+
+uint_fast8_t timezone = 3;  // GMT+3
+
+void board_update_time(uint32_t sec)
+{
+	const time_t ut = sec + 60 * 60 * timezone;
+	struct tm * datetime;
+	datetime = localtime(& ut);
+
+	board_rtc_setdatetime(datetime->tm_year, datetime->tm_mon + 1, datetime->tm_mday, datetime->tm_hour, datetime->tm_min, datetime->tm_sec);
+
+	PRINTF("ntp time updated: %s", ctime(& ut));
+}
 
 void
 print_ip(const char *msg, ip_addr_t *ip)
@@ -786,11 +805,16 @@ void network_initialize(void)
 	print_ip("Netmask : ", & netmask);
 	print_ip("Gateway : ", & gw);
 
+	//132.163.97.1 time nist.gov
+
+	ip_addr_t ntps;
+	ipaddr_aton("132.163.97.1", & ntps);
+	sntp_setserver(0, & ntps);
+	sntp_setoperatingmode(SNTP_OPMODE_POLL);
+	sntp_init();
+
 	start_echo_server();
-
 }
-
-#endif /*  WITHLWIP */
 
 void network_spool(void)
 {
@@ -804,6 +828,8 @@ void network_spool(void)
 	}
 	xemacif_input(echo_netif);
 }
+
+#endif /*  WITHLWIP */
 
 #if 1
 

@@ -749,52 +749,52 @@ static u32_t get_PHY_MICREL_speed(XEmacPs *xemacpsp, u32_t phy_addr){
     XEmacPs_PhyWrite(xemacpsp, phy_addr, IEEE_COPPER_SPECIFIC_CONTROL_REG, control);
 
     XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, &control);
-        control |= IEEE_CTRL_AUTONEGOTIATE_ENABLE;
-        control |= IEEE_STAT_AUTONEGOTIATE_RESTART;
-        XEmacPs_PhyWrite(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, control);
+	control |= IEEE_CTRL_AUTONEGOTIATE_ENABLE;
+	control |= IEEE_STAT_AUTONEGOTIATE_RESTART;
+	XEmacPs_PhyWrite(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, control);
 
-        XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, &control);
-        control |= IEEE_CTRL_RESET_MASK;
-        XEmacPs_PhyWrite(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, control);
+	XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, &control);
+	control |= IEEE_CTRL_RESET_MASK;
+	XEmacPs_PhyWrite(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, control);
 
-        while (1) {
-            XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, &control);
-            if (control & IEEE_CTRL_RESET_MASK)
-                continue;
-            else
-                break;
-        }
-        xil_printf("Waiting for PHY to complete autonegotiation.\r\n");
+	while (1) {
+		XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_CONTROL_REG_OFFSET, &control);
+		if (control & IEEE_CTRL_RESET_MASK)
+			continue;
+		else
+			break;
+	}
+	xil_printf("Waiting for PHY to complete autonegotiation.\r\n");
 
-        XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_STATUS_REG_OFFSET, &status);
-        while ( !(status & IEEE_STAT_AUTONEGOTIATE_COMPLETE) ) {
-            sleep(1);
-            XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_COPPER_SPECIFIC_STATUS_REG_2, &temp);
-            if (temp & IEEE_AUTONEG_ERROR_MASK) {
-                xil_printf("Auto negotiation error \r\n");
-            }
-            XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_STATUS_REG_OFFSET, &status);
-            }
-        xil_printf("autonegotiation complete \r\n");
+	XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_STATUS_REG_OFFSET, &status);
+	while ( !(status & IEEE_STAT_AUTONEGOTIATE_COMPLETE) ) {
+		sleep(1);
+		XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_COPPER_SPECIFIC_STATUS_REG_2, &temp);
+		if (temp & IEEE_AUTONEG_ERROR_MASK) {
+			xil_printf("Auto negotiation error \r\n");
+		}
+		XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_STATUS_REG_OFFSET, &status);
+		}
+	xil_printf("autonegotiation complete \r\n");
 
-        if (phy_model == PHY_MICREL_KSZ9031_MODEL) {
-            XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_PARTNER_ABILITIES_1_REG_OFFSET, &partner_capabilities);
+	if (phy_model == PHY_MICREL_KSZ9031_MODEL) {
+		XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_PARTNER_ABILITIES_1_REG_OFFSET, &partner_capabilities);
 
-            if (status & IEEE_STAT_1GBPS_EXTENSIONS) {
-                XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_PARTNER_ABILITIES_3_REG_OFFSET, &partner_capabilities_1000);
-                if (partner_capabilities_1000 & IEEE_AN3_ABILITY_MASK_1GBPS){
-                    return 1000;
-                }
-            }
+		if (status & IEEE_STAT_1GBPS_EXTENSIONS) {
+			XEmacPs_PhyRead(xemacpsp, phy_addr, IEEE_PARTNER_ABILITIES_3_REG_OFFSET, &partner_capabilities_1000);
+			if (partner_capabilities_1000 & IEEE_AN3_ABILITY_MASK_1GBPS){
+				return 1000;
+			}
+		}
 
-            if (partner_capabilities & IEEE_AN1_ABILITY_MASK_100MBPS){
-                return 100;
-            }
-            if (partner_capabilities & IEEE_AN1_ABILITY_MASK_10MBPS){
-                return 10;
-            }
-        }
-
+		if (partner_capabilities & IEEE_AN1_ABILITY_MASK_100MBPS){
+			return 100;
+		}
+		if (partner_capabilities & IEEE_AN1_ABILITY_MASK_10MBPS){
+			return 10;
+		}
+	}
+	return 0;
 }
 
 static u32_t get_IEEE_phy_speed(XEmacPs *xemacpsp, u32_t phy_addr)

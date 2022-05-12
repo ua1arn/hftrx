@@ -184,12 +184,14 @@ void display_vtty_printf(const char * format, ...);
 
 #endif /* old settings */
 
+void board_update_time(uint32_t sec);
+
 #define NO_SYS 						1
 #define LWIP_SOCKET 				0
 #define LWIP_COMPAT_SOCKETS			0
 #define LWIP_NETCONN 				0
 
-#define NO_SYS_NO_TIMERS 			1
+//#define NO_SYS_NO_TIMERS 			1
 
 #define LWIP_TCP_KEEPALIVE 			0
 
@@ -255,6 +257,16 @@ void display_vtty_printf(const char * format, ...);
 
 #define LWIP_DHCP 					1
 #define DHCP_DOES_ARP_CHECK 		1
+
+#define SNTP_SUPPORT      			1
+#define SNTP_UPDATE_DELAY 			8640000
+#define SNTP_DEBUG                  LWIP_DBG_ON
+
+//#define LWIP_DEBUG             		1
+//#define LWIP_DBG_MIN_LEVEL     		LWIP_DBG_LEVEL_ALL
+//#define LWIP_DBG_TYPES_ON      		(LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
+
+#define SNTP_SET_SYSTEM_TIME(sec) board_update_time(sec)
 
 /**
  * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain

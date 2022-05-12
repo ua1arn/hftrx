@@ -287,6 +287,7 @@ static void adcdones_spool(void)
 
 #if 1//WITHLWIP
 #include "lwip/tcp.h"
+#include "lwip/dhcp.h"
 #include "netif/xadapter.h"
 static volatile uint32_t sys_now_counter;
 uint32_t sys_now(void)
@@ -297,8 +298,8 @@ uint32_t sys_now(void)
 #define RESET_RX_CNTR_LIMIT	400
 #define ETH_LINK_DETECT_INTERVAL 4
 volatile int dhcp_timoutcntr = 24;
-void dhcp_fine_tmr();
-void dhcp_coarse_tmr();
+void dhcp_fine_tmr(void);
+void dhcp_coarse_tmr(void);
 volatile int TcpFastTmrFlag = 0;
 volatile int TcpSlowTmrFlag = 0;
 static int ResetRxCntr = 0;

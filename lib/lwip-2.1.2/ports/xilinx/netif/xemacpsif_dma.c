@@ -567,8 +567,8 @@ XStatus init_dma(struct xemac_s *xemac)
 	volatile UINTPTR tempaddress;
 	u32_t index;
 	u32_t gigeversion;
-	XEmacPs_Bd *bdtxterminate;
-	XEmacPs_Bd *bdrxterminate;
+	XEmacPs_Bd *bdtxterminate = NULL;
+	XEmacPs_Bd *bdrxterminate = NULL;
 	u32 *temp;
 
 	xemacpsif_s *xemacpsif = (xemacpsif_s *)(xemac->state);
@@ -874,14 +874,4 @@ void reset_dma(struct xemac_s *xemac)
 
 	XEmacPs_SetQueuePtr(&(xemacpsif->emacps), xemacpsif->emacps.RxBdRing.BaseBdAddr, 0, XEMACPS_RECV);
 	XEmacPs_SetQueuePtr(&(xemacpsif->emacps), xemacpsif->emacps.TxBdRing.BaseBdAddr, txqueuenum, XEMACPS_SEND);
-}
-
-void emac_disable_intr(void)
-{
-	XScuGic_DisableIntr(INTC_DIST_BASE_ADDR, emac_intr_num);
-}
-
-void emac_enable_intr(void)
-{
-	XScuGic_EnableIntr(INTC_DIST_BASE_ADDR, emac_intr_num);
 }
