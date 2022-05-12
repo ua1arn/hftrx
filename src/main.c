@@ -23848,7 +23848,9 @@ main(void)
 	bandf2adjust_initialize();
 #endif /* WITHTX */
 	initialize2();	/* вызывается при разрешённых прерываниях. */
+#if WITHLWIP
 	network_initialize();
+#endif /* WITHLWIP */
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 

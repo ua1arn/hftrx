@@ -675,10 +675,12 @@ extern struct netif *echo_netif;
 void board_update_time(uint32_t sec)
 {
 	const time_t ut = sec + 60 * 60 * timezone;
+
+#if defined RTC1_TYPE
 	struct tm * datetime;
 	datetime = localtime(& ut);
-
 	board_rtc_setdatetime(datetime->tm_year, datetime->tm_mon + 1, datetime->tm_mday, datetime->tm_hour, datetime->tm_min, datetime->tm_sec);
+#endif /* RTC1_TYPE */
 
 	PRINTF("ntp time updated: %s", ctime(& ut));
 }
@@ -773,7 +775,7 @@ int start_echo_server(void)
 	return 0;
 }
 
-void lwip_timer_spool(void)
+void lwip_timer_spool(void * ctx)
 {
 	static int DetectEthLinkStatus = 0;
 	static int odd = 1;
