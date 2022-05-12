@@ -807,6 +807,7 @@ void lwip_timer_spool(void)
 	}
 }
 
+/* вызывается при разрешённых прерываниях. */
 void network_initialize(void)
 {
 	ip_addr_t ipaddr, netmask, gw;
@@ -815,8 +816,10 @@ void network_initialize(void)
 	gw.addr = 0;
 	netmask.addr = 0;
 
-	ticker_initialize(& lwipticker, 40, lwip_timer_spool, NULL);	// 200 ms
+	system_disableIRQ();
+	ticker_initialize(& lwipticker, NTICKS(200), lwip_timer_spool, NULL);	// 200 ms
 	ticker_add(& lwipticker);
+	system_enableIRQ();
 
 	lwip_init();
 
