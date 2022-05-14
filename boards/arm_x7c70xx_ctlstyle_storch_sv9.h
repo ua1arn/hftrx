@@ -229,7 +229,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	#define CTLREGMODE_STORCH_V9B	1
 	//#define CTLREGMODE_NOCTLREG 1	/* Загрузчик не имеет доступа к управлению SPI. Однако, есть прямое управление выъодами GPIO */
 
 	#define ENCRES_DEFAULT ENCRES_128
@@ -440,7 +441,7 @@
 	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	////#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
-	//#define WITHANTSELECT	1	// Управление переключением антенн
+	#define WITHANTSELECT2	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
