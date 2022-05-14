@@ -1248,7 +1248,7 @@ filter_t fi_15p0 =
 	#undef IF3_MODEL
 	#define IF3_MODEL	IF3_TYPE_CUSTOM
 
-#endif /* defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_6000_SW2015) */
+#endif /* defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_6000_SW2016MINI) */
 
 #if defined (IF3_MODEL) && (IF3_MODEL == IF3_TYPE_6000_SW2014NFM)
 

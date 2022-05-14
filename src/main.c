@@ -7208,7 +7208,7 @@ loadnewband(
 #if WITHANTSELECTRX
 	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
-#ekif WITHANTSELECT2
+#elif WITHANTSELECT2
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
@@ -7363,6 +7363,10 @@ catchangefreq(
 {
 	const uint_fast8_t bi = getbankindex_ab(ab);
 	const vindex_t b = getfreqband(f);	/* определяем по частоте, в каком диапазоне находимся */
+	if (b != ((vindex_t) - 1))
+	{
+		return;	// Wrong argumrnt
+	}
 
 	gfreqs [bi] = f;
 #if WITHONLYBANDS
@@ -11070,7 +11074,12 @@ uif_key_click_banddjump(uint_fast32_t f)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
+	if (b != ((vindex_t) - 1))
+	{
+		return;	// Wrong argumrnt
+	}
 	vindex_t bn = getfreqband(f);
+
 	const uint_fast8_t bandgroup = bandsmap [bn].bandgroup;
 	verifyband(b);
 	verifyband(bn);
