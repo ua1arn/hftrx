@@ -152,6 +152,7 @@ static void display2_af_spectre15(uint_fast8_t xgrid, uint_fast8_t ygrid, dctx_t
 
 #if WITHSPECTRUMWF
 
+#if WITHGRADIENT_FIXED
 // https://www.mischianti.org/images-to-byte-array-online-converter-cpp-arduino/
 static const unsigned long pancolor [] FLASHMEM = {
 	0x00891127uL,
@@ -823,12 +824,13 @@ static const unsigned long pancolor [] FLASHMEM = {
 	0x003300f5uL,
 	0x003300f5uL,
 };
+#endif /* WITHGRADIENT_FIXED */
 
 // get color from signal strength
 // Get FFT color warmth (blue to red)
 COLOR24_T colorgradient(unsigned pos, unsigned maxpos)
 {
-#if 1
+#if WITHGRADIENT_FIXED
 	// построение цветных градиентов по готовой таблице.
 	const COLOR24_T c = pancolor [ARRAY_SIZE(pancolor) - 1 - normalize(pos, 0, maxpos, ARRAY_SIZE(pancolor) - 1)];
 	return COLOR24(COLOR24_R(c), COLOR24_G(c), COLOR24_B(c));
@@ -7927,7 +7929,7 @@ typedef struct {
 	enum { WFROWS = WFDY };
 	static uint_fast16_t wfrow;		// строка, в которую последней занесены данные
 
-#elif WITHFASTWATERFLOW && 1
+#elif WITHFASTWATERFLOW && WITHGRADIENT_FIXED
 
 	/* быстрое отображение водопада (но требует больше памяти) */
 	enum { WFROWS = WFDY };
