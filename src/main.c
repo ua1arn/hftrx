@@ -20659,6 +20659,7 @@ processkeyboard(uint_fast8_t kbch)
 #endif //WITHMENU && ! WITHTOUCHGUI
 
 	case KBD_CODE_DISPMODE:
+#if ! WITHTOUCHGUI
 		if (display_getpagesmax() != 0)
 		{
 			/* Альтернативные функции кнопок - "Fn"
@@ -20668,6 +20669,7 @@ processkeyboard(uint_fast8_t kbch)
 			display2_bgreset();
 			return 1;	// требуется обновление индикатора
 		}
+#endif /* ! WITHTOUCHGUI */
 		return 0;	// не требуется обновление индикатора
 
 #if WITHMENU
