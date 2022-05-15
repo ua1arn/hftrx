@@ -7363,7 +7363,7 @@ catchangefreq(
 {
 	const uint_fast8_t bi = getbankindex_ab(ab);
 	const vindex_t b = getfreqband(f);	/* определяем по частоте, в каком диапазоне находимся */
-	if (b != ((vindex_t) - 1))
+	if (b == ((vindex_t) - 1))
 	{
 		return;	// Wrong argumrnt
 	}
@@ -11074,7 +11074,7 @@ uif_key_click_banddjump(uint_fast32_t f)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
-	if (b != ((vindex_t) - 1))
+	if (b == ((vindex_t) - 1))
 	{
 		return;	// Wrong argumrnt
 	}
@@ -22331,9 +22331,11 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	if (freqvalid(freq, gtx))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
-		//vindex_t vi = getvfoindex(bi);
 		gfreqs [bi] = freq;
-		//savebandfreq(vi, bi);
+#if WITHANTSELECT2
+		gantennas [bi] = getdefantenna(gfreqs [bi]);
+#endif /* WITHANTSELECT2 */
+		sthrl = STHRL_RXTX_FQCHANGED;
 		updateboard(0, 0);
 		return 1;
 	}
