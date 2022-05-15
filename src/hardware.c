@@ -3390,8 +3390,8 @@ void cpump_initialize(void)
 void cpump_runuser(void)
 {
 	SPIN_UNLOCK(& cpu1runuser);
-	SPIN_LOCK(& cpu1runuser);
-	SPIN_UNLOCK(& cpu1runuser);
+//	SPIN_LOCK(& cpu1runuser);
+//	SPIN_UNLOCK(& cpu1runuser);
 }
 
 #else /* WITHSMPSYSTEM */
