@@ -9313,8 +9313,6 @@ void board_adc_initialize(void)
 	}
 #endif /* WITHDEBUG */
 
-	//PRINTF(PSTR("hardware_adc_initialize\n"));
-
 #if WITHCPUADCHW
 
 	hardware_adc_initialize();

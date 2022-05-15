@@ -8886,6 +8886,7 @@ build_adc_mask(void)
 
 void hardware_adc_initialize(void)
 {
+	PRINTF(PSTR("hardware_adc_initialize\n"));
 
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
 
