@@ -926,7 +926,6 @@ uint_fast8_t isadchw(uint_fast8_t adci); // Проверка что индекс
 
 
 void cpump_initialize(void);
-void cpump_runuser(void);	// Вызывается из main - разрешить второму фдру выполнять прерывания
 
 void cpu_stm32f1xx_setmapr(unsigned long bits);
 

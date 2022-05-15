@@ -8884,8 +8884,6 @@ build_adc_mask(void)
 
 #endif
 
-/* инициализация при запрещённых прерываниях.
-*/
 void hardware_adc_initialize(void)
 {
 	PRINTF(PSTR("hardware_adc_initialize\n"));
@@ -9605,7 +9603,7 @@ void hardware_adc_initialize(void)
 	#warning Undefined CPUSTYLE_XXX
 #endif
 
-	PRINTF(PSTR("hardware_adc_initialize done\n"));
+	//PRINTF(PSTR("hardware_adc_initialize done\n"));
 }
 
 #endif /* WITHCPUADCHW */

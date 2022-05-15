@@ -205,8 +205,6 @@ RAMFUNC void spool_elkeyinputsbundle(void)
 	//key_spool_inputs();	// опрос состояния электронного ключа и запоминание факта нажатия
 }
 
-static RAMDTCM SPINLOCK_t tickerslock = SPINLOCK_INIT;
-static RAMDTCM SPINLOCK_t adcdoneslock = SPINLOCK_INIT;
 
 static volatile VLIST_ENTRY tickers;
 static volatile VLIST_ENTRY adcdones;
@@ -223,9 +221,7 @@ void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void 
 
 void ticker_add(ticker_t * p)
 {
-	SPIN_LOCK(& tickerslock);
 	InsertHeadVList(& tickers, & p->item);
-	SPIN_UNLOCK(& tickerslock);
 }
 
 static void tickers_spool(void)
@@ -250,8 +246,6 @@ static void tickers_spool(void)
 
 void tickers_initialize(void)
 {
-
-	SPINLOCK_INITIALIZE(& tickerslock);
 	InitializeListHead(& tickers);
 
 }
@@ -259,7 +253,6 @@ void tickers_initialize(void)
 // инициализация списка обработчиков конца преобразования АЦП
 void adcdones_initialize(void)
 {
-	SPINLOCK_INITIALIZE(& adcdoneslock);
 	InitializeListHead(& adcdones);
 }
 
@@ -273,16 +266,13 @@ void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx)
 // регистрируется обработчик конца преобразования АЦП
 void adcdone_add(adcdone_t * p)
 {
-	SPIN_LOCK(& adcdoneslock);
 	InsertHeadVList(& adcdones, & p->item);
-	SPIN_UNLOCK(& adcdoneslock);
 }
 
 static void adcdones_spool(void)
 {
 
 	//++ nowtick;
-	SPIN_LOCK(& adcdoneslock);
 	PVLIST_ENTRY t;
 	for (t = adcdones.Blink; t != & adcdones; t = t->Blink)
 	{
@@ -291,7 +281,6 @@ static void adcdones_spool(void)
 		if (p->cb != NULL)
 			(p->cb)(p->ctx);
 	}
-	SPIN_UNLOCK(& adcdoneslock);
 }
 
 #if 1//WITHLWIP
@@ -3286,7 +3275,6 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 #endif /* CPUSTYLE_STM32MP1 */
 
 static RAMDTCM SPINLOCK_t cpu1init;
-static RAMDTCM SPINLOCK_t cpu1runuser;
 
 // Инициализация второго ппрцессора
 void Reset_CPUn_Handler(void)
@@ -3313,7 +3301,7 @@ void Reset_CPUn_Handler(void)
 	{
 		GIC_Enable();
 	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_IPC));		// пока прерывания не воспринимаем
+		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
@@ -3336,8 +3324,6 @@ void Reset_CPUn_Handler(void)
 	arm_hardware_populte_second_initialize();
 	__enable_irq();
 	SPIN_UNLOCK(& cpu1init);
-	SPIN_LOCK(& cpu1runuser);
-	GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
 
 	// Idle loop
 	for (;;)
@@ -3346,7 +3332,7 @@ void Reset_CPUn_Handler(void)
 	}
 }
 
-// Вызывается из main - на boot ядре
+// Вызывается из main
 void cpump_initialize(void)
 {
 #if (__CORTEX_A != 0) || (__CORTEX_A == 9U)
@@ -3371,10 +3357,8 @@ void cpump_initialize(void)
 
 	cortexa_cpuinfo();
 	SPINLOCK_INITIALIZE(& cpu1init);
-	SPINLOCK_INITIALIZE(& cpu1runuser);
-	SPIN_LOCK(& cpu1runuser);
 	SPIN_LOCK(& cpu1init);
-	cortexa_mp_cpu1_start((uintptr_t) Reset_CPU1_Handler);	// на втором ядре будет вызван Reset_CPUn_Handler
+	cortexa_mp_cpu1_start((uintptr_t) Reset_CPU1_Handler);
 	SPIN_LOCK(& cpu1init);
 	SPIN_UNLOCK(& cpu1init);
 
@@ -3384,14 +3368,6 @@ void cpump_initialize(void)
 #endif /* WITHSMPSYSTEM */
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
-}
-
-// Вызывается из main - разрешить второму фдру выполнять прерывания
-void cpump_runuser(void)
-{
-	SPIN_UNLOCK(& cpu1runuser);
-//	SPIN_LOCK(& cpu1runuser);
-//	SPIN_UNLOCK(& cpu1runuser);
 }
 
 #else /* WITHSMPSYSTEM */
@@ -3408,11 +3384,6 @@ void cpump_initialize(void)
 	SystemCoreClock = CPU_FREQ;
 	cortexa_cpuinfo();
 
-}
-
-// Вызывается из main
-void cpump_runuser(void)
-{
 }
 
 #endif /* WITHSMPSYSTEM */
