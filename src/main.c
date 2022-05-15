@@ -7178,11 +7178,13 @@ loadsavedstate(void)
 	}
 }
 
+#if WITHANTSELECT2
 /* получить номер конфигкрайии антенны в зависимости от частоты */
 static uint_fast8_t getdefantenna(uint_fast32_t f)
 {
 	return f > 12000000uL ? (ANTMODE_COUNT - 1) : 0;
 }
+#endif /* WITHANTSELECT2 */
 
 /* по диапазону вытащить все параметры (и частоту) нового диапазона */
 static void 
