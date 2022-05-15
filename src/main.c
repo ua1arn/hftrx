@@ -7365,10 +7365,6 @@ catchangefreq(
 {
 	const uint_fast8_t bi = getbankindex_ab(ab);
 	const vindex_t b = getfreqband(f);	/* определяем по частоте, в каком диапазоне находимся */
-	if (b == ((vindex_t) - 1))
-	{
-		return;	// Wrong argumrnt
-	}
 
 	gfreqs [bi] = f;
 #if WITHONLYBANDS
@@ -11076,10 +11072,6 @@ uif_key_click_banddjump(uint_fast32_t f)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
-	if (b == ((vindex_t) - 1))
-	{
-		return;	// Wrong argumrnt
-	}
 	vindex_t bn = getfreqband(f);
 
 	const uint_fast8_t bandgroup = bandsmap [bn].bandgroup;
