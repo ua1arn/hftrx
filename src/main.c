@@ -3638,7 +3638,46 @@ enum
 };
 
 
-#if SHORTSET8
+#if FULLSET_7L8C
+	/* 7 indictors, 8 capacitors */
+	#define CMAX	254    //максимальное значение емкости конденсатора контура
+	#define CMIN  0      //минимальное значение емкости конденсатора контура
+	#define LMAX	127    //максимальное значение индуктивности катушки контура
+	#define LMIN  0      //минимальное значение индуктивности катушки контура
+#elif SHORTSET_7L8C
+	/* 7 indictors, 8 capacitors */
+	#define POSZ_C 8
+	const FLASHMEM uint_fast8_t logtable_cap [] =
+	{
+		0, 1, 2, 3, 4, 5, 6, 7,	/* 0..POSZ_C - 1 */
+		POSZ_C * 1, POSZ_C * 2, POSZ_C * 3,  POSZ_C * 4, POSZ_C * 5, POSZ_C * 6, POSZ_C * 7,
+		POSZ_C * 8, POSZ_C * 9, POSZ_C * 10, POSZ_C * 11,  POSZ_C * 12, POSZ_C * 13, POSZ_C * 14, POSZ_C * 15,
+		POSZ_C * 16, POSZ_C * 17, POSZ_C * 18, POSZ_C * 19,  POSZ_C * 20, POSZ_C * 21, POSZ_C * 22, POSZ_C * 23,
+		POSZ_C * 24, POSZ_C * 25, POSZ_C * 26, POSZ_C * 27,  POSZ_C * 28, POSZ_C * 29, POSZ_C * 30, POSZ_C * 31,
+	};
+
+	#define POSZ_L 2
+	const FLASHMEM uint_fast8_t logtable_ind [] =
+	{
+		0, 1, /* 1..POSZ_L - 1 */
+		POSZ_L * 1, POSZ_L * 2, POSZ_L * 3,  POSZ_L * 4, POSZ_L * 5, POSZ_L * 6, POSZ_L * 7,
+		POSZ_L * 8, POSZ_L * 9, POSZ_L * 10, POSZ_L * 11,  POSZ_L * 12, POSZ_L * 13, POSZ_L * 14, POSZ_L * 15,
+		POSZ_L * 16, POSZ_L * 17, POSZ_L * 18, POSZ_L * 19,  POSZ_L * 20, POSZ_L * 21, POSZ_L * 22, POSZ_L * 23,
+		POSZ_L * 24, POSZ_L * 25, POSZ_L * 26, POSZ_L * 27,  POSZ_L * 28, POSZ_L * 29, POSZ_L * 30, POSZ_L * 31,
+
+		POSZ_L * 32, POSZ_L * 33, POSZ_L * 34, POSZ_L * 35,  POSZ_L * 36, POSZ_L * 37, POSZ_L * 38, POSZ_L * 39,
+		POSZ_L * 40, POSZ_L * 41, POSZ_L * 42, POSZ_L * 43,  POSZ_L * 44, POSZ_L * 45, POSZ_L * 46, POSZ_L * 47,
+		POSZ_L * 48, POSZ_L * 49, POSZ_L * 50, POSZ_L * 51,  POSZ_L * 52, POSZ_L * 53, POSZ_L * 54, POSZ_L * 55,
+		POSZ_L * 56, POSZ_L * 57, POSZ_L * 58, POSZ_L * 59,  POSZ_L * 60, POSZ_L * 61, POSZ_L * 62, POSZ_L * 62,
+	};
+
+	#define CMAX (sizeof logtable_cap / sizeof logtable_cap [0] - 1)      //максимальное значение емкости конденсатора контура
+	#define CMIN 0        //минимальное значение емкости конденсатора контура
+	#define LMAX (sizeof logtable_ind / sizeof logtable_ind [0] - 1)        //максимальное значение индуктивности катушки контура
+	#define LMIN 0        //минимальное значение индуктивности катушки контура
+
+#elif SHORTSET8
+	/* 8 indictors, 8 capacitors */
 	#define POSZ 8
 	const FLASHMEM uint_fast8_t logtable_cap [] =
 	{
@@ -3663,7 +3702,7 @@ enum
 	#define LMIN 0        //минимальное значение индуктивности катушки контура
 
 #elif SHORTSET7
-
+	/* 7 indictors, 7 capacitors */
 	#define POSZ 2
 	const FLASHMEM uint_fast8_t logtable_cap [] =
 	{
@@ -3698,11 +3737,13 @@ enum
 	#define LMIN 0        //минимальное значение индуктивности катушки контура
 
 #elif FULLSET7
+	/* 7 indictors, 7 capacitors */
 	#define CMAX	127    //максимальное значение емкости конденсатора контура
 	#define CMIN  0      //минимальное значение емкости конденсатора контура
 	#define LMAX	127    //максимальное значение индуктивности катушки контура
 	#define LMIN  0      //минимальное значение индуктивности катушки контура
 #elif FULLSET8
+	/* 8 indictors, 8 capacitors */
 	#define CMAX	254    //максимальное значение емкости конденсатора контура
 	#define CMIN  0      //минимальное значение емкости конденсатора контура
 	#define LMAX	254    //максимальное значение индуктивности катушки контура
