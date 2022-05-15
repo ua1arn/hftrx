@@ -9296,6 +9296,8 @@ adcfilters_initialize(void)
 }
 
 
+/* инициализация при запрещённых прерываниях.
+*/
 void board_adc_initialize(void)
 {
 	if (board_get_adcinputs() == 0)
