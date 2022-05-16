@@ -316,9 +316,9 @@ enum
 	CAT_SM_INDEX,		// smanswer()
 	CAT_RA_INDEX,		// raanswer()
 	CAT_PA_INDEX,		// paanswer()
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	CAT_AN_INDEX,		// ananswer()
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	CAT_RM1_INDEX,		// rm1answer()
 	CAT_RM2_INDEX,		// rm2answer()
@@ -766,13 +766,25 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	#error WITHAGCMODExxxx undefined
 #endif
 
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	enum { NANTENNAS = 2 };		// выбираем одну из двух антенн
-#else /* WITHANTSELECT || WITHANTSELECTRX */
+#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 	enum { NANTENNAS = 1 };		// eдинственная антенна
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 
-#if WITHANTSELECTRX
+#if WITHANTSELECT2
+
+static const FLASHMEM struct {
+	uint8_t code;
+	char label2 [3];
+	char label5 [6];
+}  antmodes [] =
+{
+	{	0,	"A1", "ANT1 " },
+	{	1,	"A2", "ANT2 " },
+};
+
+#elif WITHANTSELECTRX
 
 static const FLASHMEM struct {
 	uint8_t code;
@@ -2707,6 +2719,8 @@ struct bandinfo
 #if WITHANTSELECTRX
 	uint8_t rxant;		/* код выбора антенны (0/1) */
 	uint8_t ant;		/* признак включения приемной антенны */
+#elif WITHANTSELECT2
+	uint8_t ant;		/* код выбора антенны (0/1) */
 #elif WITHANTSELECT
 	uint8_t ant;		/* код выбора антенны (1T+1R, 2T+1R и так далее, не код антенны (0/1) */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -3354,6 +3368,8 @@ static uint_fast8_t gatts [VFOS_COUNT];
 #if WITHANTSELECTRX
 static uint_fast8_t grxantennas [VFOS_COUNT];
 static uint_fast8_t gantennas [VFOS_COUNT];
+#elif WITHANTSELECT2
+static uint_fast8_t gantennas [VFOS_COUNT];
 #elif WITHANTSELECT
 static uint_fast8_t gantennas [VFOS_COUNT];
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -3622,7 +3638,46 @@ enum
 };
 
 
-#if SHORTSET8
+#if FULLSET_7L8C
+	/* 7 indictors, 8 capacitors */
+	#define CMAX	254    //максимальное значение емкости конденсатора контура
+	#define CMIN  0      //минимальное значение емкости конденсатора контура
+	#define LMAX	127    //максимальное значение индуктивности катушки контура
+	#define LMIN  0      //минимальное значение индуктивности катушки контура
+#elif SHORTSET_7L8C
+	/* 7 indictors, 8 capacitors */
+	#define POSZ_C 8
+	const FLASHMEM uint_fast8_t logtable_cap [] =
+	{
+		0, 1, 2, 3, 4, 5, 6, 7,	/* 0..POSZ_C - 1 */
+		POSZ_C * 1, POSZ_C * 2, POSZ_C * 3,  POSZ_C * 4, POSZ_C * 5, POSZ_C * 6, POSZ_C * 7,
+		POSZ_C * 8, POSZ_C * 9, POSZ_C * 10, POSZ_C * 11,  POSZ_C * 12, POSZ_C * 13, POSZ_C * 14, POSZ_C * 15,
+		POSZ_C * 16, POSZ_C * 17, POSZ_C * 18, POSZ_C * 19,  POSZ_C * 20, POSZ_C * 21, POSZ_C * 22, POSZ_C * 23,
+		POSZ_C * 24, POSZ_C * 25, POSZ_C * 26, POSZ_C * 27,  POSZ_C * 28, POSZ_C * 29, POSZ_C * 30, POSZ_C * 31,
+	};
+
+	#define POSZ_L 2
+	const FLASHMEM uint_fast8_t logtable_ind [] =
+	{
+		0, 1, /* 1..POSZ_L - 1 */
+		POSZ_L * 1, POSZ_L * 2, POSZ_L * 3,  POSZ_L * 4, POSZ_L * 5, POSZ_L * 6, POSZ_L * 7,
+		POSZ_L * 8, POSZ_L * 9, POSZ_L * 10, POSZ_L * 11,  POSZ_L * 12, POSZ_L * 13, POSZ_L * 14, POSZ_L * 15,
+		POSZ_L * 16, POSZ_L * 17, POSZ_L * 18, POSZ_L * 19,  POSZ_L * 20, POSZ_L * 21, POSZ_L * 22, POSZ_L * 23,
+		POSZ_L * 24, POSZ_L * 25, POSZ_L * 26, POSZ_L * 27,  POSZ_L * 28, POSZ_L * 29, POSZ_L * 30, POSZ_L * 31,
+
+		POSZ_L * 32, POSZ_L * 33, POSZ_L * 34, POSZ_L * 35,  POSZ_L * 36, POSZ_L * 37, POSZ_L * 38, POSZ_L * 39,
+		POSZ_L * 40, POSZ_L * 41, POSZ_L * 42, POSZ_L * 43,  POSZ_L * 44, POSZ_L * 45, POSZ_L * 46, POSZ_L * 47,
+		POSZ_L * 48, POSZ_L * 49, POSZ_L * 50, POSZ_L * 51,  POSZ_L * 52, POSZ_L * 53, POSZ_L * 54, POSZ_L * 55,
+		POSZ_L * 56, POSZ_L * 57, POSZ_L * 58, POSZ_L * 59,  POSZ_L * 60, POSZ_L * 61, POSZ_L * 62, POSZ_L * 62,
+	};
+
+	#define CMAX (sizeof logtable_cap / sizeof logtable_cap [0] - 1)      //максимальное значение емкости конденсатора контура
+	#define CMIN 0        //минимальное значение емкости конденсатора контура
+	#define LMAX (sizeof logtable_ind / sizeof logtable_ind [0] - 1)        //максимальное значение индуктивности катушки контура
+	#define LMIN 0        //минимальное значение индуктивности катушки контура
+
+#elif SHORTSET8
+	/* 8 indictors, 8 capacitors */
 	#define POSZ 8
 	const FLASHMEM uint_fast8_t logtable_cap [] =
 	{
@@ -3647,7 +3702,7 @@ enum
 	#define LMIN 0        //минимальное значение индуктивности катушки контура
 
 #elif SHORTSET7
-
+	/* 7 indictors, 7 capacitors */
 	#define POSZ 2
 	const FLASHMEM uint_fast8_t logtable_cap [] =
 	{
@@ -3682,11 +3737,13 @@ enum
 	#define LMIN 0        //минимальное значение индуктивности катушки контура
 
 #elif FULLSET7
+	/* 7 indictors, 7 capacitors */
 	#define CMAX	127    //максимальное значение емкости конденсатора контура
 	#define CMIN  0      //минимальное значение емкости конденсатора контура
 	#define LMAX	127    //максимальное значение индуктивности катушки контура
 	#define LMIN  0      //минимальное значение индуктивности катушки контура
 #elif FULLSET8
+	/* 8 indictors, 8 capacitors */
 	#define CMAX	254    //максимальное значение емкости конденсатора контура
 	#define CMIN  0      //минимальное значение емкости конденсатора контура
 	#define LMAX	254    //максимальное значение индуктивности катушки контура
@@ -4454,22 +4511,22 @@ typedef struct tunerstate
 	uint8_t swr;	// values 0..190: SWR = 1..20
 	adcvalholder_t f, r;
 } tus_t;
-#define TUS_SWRMAX (SWRMIN * 3)			// 4.0
+#define TUS_SWRMAX (SWRMIN * 9)			// 4.0
 #define TUS_SWR1p1 (SWRMIN * 11 / 10)	// SWR=1.1
 
 static void board_set_tuner_group(void)
 {
 	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	// todo: добавить учет включенной антенны
-#if SHORTSET7 || SHORTSET8
+#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	board_set_tuner_C(logtable_cap [tunercap]);
 	board_set_tuner_L(logtable_ind [tunerind]);
 	//board_set_tuner_C(1U << tunercap);
 	//board_set_tuner_L(1U << tunerind);
-#else /* SHORTSET7 || SHORTSET8 */
+#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	board_set_tuner_C(tunercap);
 	board_set_tuner_L(tunerind);
-#endif /* SHORTSET7 || SHORTSET8 */
+#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	board_set_tuner_type(tunertype);
 	board_set_tuner_bypass(! tunerwork);
 }
@@ -4511,27 +4568,29 @@ static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale, adcvalholder_t * pr, 
 static void printtunerstate(const char * title, uint_fast8_t swr, adcvalholder_t r, adcvalholder_t f)
 {
 
-#if SHORTSET8 || SHORTSET7
-	PRINTF("%s: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u\n",
+#if SHORTSET8 || SHORTSET7 || SHORTSET_7L8C
+	PRINTF("%s: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u.%u\n",
 		title,
 		(unsigned) logtable_ind [tunerind], (unsigned) tunerind,
 		(unsigned) logtable_cap [tunercap], (unsigned) tunercap,
 		(unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
-		(unsigned) (swr + SWRMIN));
+		(unsigned) (swr + SWRMIN) / 10,
+		(unsigned) (swr + SWRMIN) % 10);
 #else /* SHORTSET8 || SHORTSET7 */
-	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u\n",
+	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u.%u\n",
 		title,
 		(unsigned) tunerind, (unsigned) tunercap, (unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
-		(unsigned) (swr + SWRMIN));
+		(unsigned) (swr + SWRMIN) / 10,
+		(unsigned) (swr + SWRMIN) % 10);
 #endif /* SHORTSET8 || SHORTSET7 */
 
 }
 
-static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+static uint_fast8_t tuner_get_swr(const char * title, uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	adcvalholder_t r;
 	adcvalholder_t f;
@@ -4539,7 +4598,7 @@ static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale, adcvalholder_t * pr, a
 
 	* pr = r;
 	* pf = f;
-	printtunerstate("tuner_get_swr", swr, r, f);
+	printtunerstate(title, swr, r, f);
 	return swr;
 }
 
@@ -4572,8 +4631,6 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 	uint_fast8_t bestswrvalid = 0;
 	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
-	tus->tunertype = tunertype;
-	tus->tunercap = tunercap;
 	for (tunerind = LMIN; tunerind <= LMAX; ++ tunerind)
 	{
 		if (tuneabort())
@@ -4582,7 +4639,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 		tuner_waitadc();
 		adcvalholder_t r;
 		adcvalholder_t f;
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
+		const uint_fast8_t swr = tuner_get_swr("scanminLk", TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -4593,6 +4650,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
+			PRINTF("scanminLk: best ty=%u, L=%u\n", tunerind, tunerind);
 		}
 		else
 		{
@@ -4612,8 +4670,6 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 	uint_fast8_t bestswrvalid = 0;
 	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
-	tus->tunerind = tunerind;
-	tus->tunertype = tunertype;
 	for (tunercap = CMIN; tunercap <= CMAX; ++ tunercap)
 	{
 		if (tuneabort())
@@ -4622,7 +4678,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 		tuner_waitadc();
 		adcvalholder_t r;
 		adcvalholder_t f;
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
+		const uint_fast8_t swr = tuner_get_swr("scanminCk", TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -4633,6 +4689,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
+			PRINTF("scanminCk: best ty=%u, C=%u\n", tunerind, tunercap);
 		}
 		else
 		{
@@ -4668,31 +4725,89 @@ static void auto_tune(void)
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const vindex_t b = getvfoindex(bi);
 
-#if SHORTSET7 || SHORTSET8
+#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	const uint_fast8_t addstepsLk = 3;
 	const uint_fast8_t addstepsCk = 3;
-#else /* SHORTSET7 || SHORTSET8 */
+#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	const uint_fast8_t addstepsLk = 15;
 	const uint_fast8_t addstepsCk = 15;
-#endif /* SHORTSET7 || SHORTSET8 */
+#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 
-	//PRINTF(PSTR("auto_tune start\n"));
+	PRINTF(PSTR("auto_tune start\n"));
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
 	// Попытка согласовать двумя схемами
 	for (tunertype = 0; tunertype < KSCH_COUNT; ++ tunertype)
 	{
+		statuses [tunertype].tunertype = tunertype;
 		tunercap = CMIN;
+		PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
 		if (scanminLk(& statuses [tunertype], addstepsLk) != 0)
 			goto aborted;
-		tunerind = statuses [tunertype].tunerind;
+		tunerind = statuses [tunertype].tunerind;	// лучшее запомненное
+		//PRINTF("scanminLk finish: L=%u\n", tunerind);
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подходяшее согласование?
 		////if (statuses [tunertype].swr <= TUS_SWR1p1)
 		////	goto NoMoreTune;
-
+		PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
 		if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
 			goto aborted;
-		tunercap = statuses [tunertype].tunercap;
+		//tunercap = statuses [tunertype].tunercap;	// лучшее запомненное
+		//PRINTF("scanminCk finish: L=%u\n", tunercap);
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подходяшее согласование?
@@ -4701,14 +4816,14 @@ static void auto_tune(void)
 	}
 	// Выбираем наилучший результат согласования
 	cshindex = findbestswr(statuses, sizeof statuses / sizeof statuses [0]);
-	//PRINTF(PSTR("auto_tune loop done\n"));
+	PRINTF(PSTR("auto_tune loop done\n"));
 	// Устанавливаем аппаратуру в состояние при лучшем результате
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
 	printtunerstate("Selected", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	updateboard_tuner();
-	//PRINTF(PSTR("auto_tune stop\n"));
+	PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
 
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
@@ -6132,6 +6247,8 @@ copybankstate(
 #if  WITHANTSELECTRX
 	grxantennas [tbi] = grxantennas [sbi];
 	gantennas [tbi] = gantennas [sbi];
+#elif WITHANTSELECT2
+	gantennas [tbi] = gantennas [sbi];
 #elif WITHANTSELECT
 	gantennas [tbi] = gantennas [sbi];
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -6178,6 +6295,8 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(RMT_ATT_BASE(b), gatts [bi]);
 #if WITHANTSELECTRX
 	save_i8(RMT_RXANTENNA_BASE(b), grxantennas [bi]);
+	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
+#elif WITHANTSELECT2
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
 #elif WITHANTSELECT
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
@@ -7158,6 +7277,14 @@ loadsavedstate(void)
 	}
 }
 
+#if WITHANTSELECT2
+/* получить номер конфигкрайии антенны в зависимости от частоты */
+static uint_fast8_t getdefantenna(uint_fast32_t f)
+{
+	return f > 12000000uL ? (ANTMODE_COUNT - 1) : 0;
+}
+#endif /* WITHANTSELECT2 */
+
 /* по диапазону вытащить все параметры (и частоту) нового диапазона */
 static void 
 //NOINLINEAT
@@ -7182,6 +7309,8 @@ loadnewband(
 #if WITHANTSELECTRX
 	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+#elif WITHANTSELECT2
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -7355,6 +7484,12 @@ catchangefreq(
 	}
 #if WITHANTSELECTRX
 	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_AN_INDEX);
+	}
+#elif WITHANTSELECT2
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	if (aistate != 0)
 	{
@@ -10354,6 +10489,8 @@ updateboardZZZ(
 	#if WITHANTSELECTRX
 		board_set_rxantenna(rxantmodes [grxantennas [rxbi]].code);
 		board_set_antenna(antmodes [gantennas [rxbi]].code);
+	#elif WITHANTSELECT2
+		board_set_antenna(antmodes [gantennas [rxbi]].code);
 	#elif WITHANTSELECT
 		board_set_antenna(antmodes [gantennas [rxbi]].code [gtx]);
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -10730,7 +10867,7 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 }
 
 
-#elif WITHANTSELECT
+#elif WITHANTSELECT || WITHANTSELECT2
 
 // antenna
 const FLASHMEM char * hamradio_get_ant5_value_P(void)
@@ -11035,6 +11172,7 @@ uif_key_click_banddjump(uint_fast32_t f)
 	const vindex_t vi = getvfoindex(bi);
 	const vindex_t b = getfreqband(gfreqs [bi]);	/* определяем по частоте, в каком диапазоне находимся */
 	vindex_t bn = getfreqband(f);
+
 	const uint_fast8_t bandgroup = bandsmap [bn].bandgroup;
 	verifyband(b);
 	verifyband(bn);
@@ -11104,7 +11242,7 @@ uif_key_next_rxantenna(void)
 	updateboard(1, 0);
 }
 
-#elif WITHANTSELECT
+#elif WITHANTSELECT || WITHANTSELECT2
 
 /* Antenna switch
 	  */
@@ -12302,6 +12440,15 @@ display2_redrawbarstimed(
 	if (immed || display_refreshenabled_voltage())
 	{
 		looptests();		// Периодически вызывается в главном цикле - тесты
+#if WITHAUTOTUNER
+		if (gtx && ! reqautotune)
+		{
+			adcvalholder_t r;
+			adcvalholder_t f;
+			const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
+
+		}
+#endif /*  WITHAUTOTUNER */
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
@@ -20614,6 +20761,7 @@ processkeyboard(uint_fast8_t kbch)
 #endif //WITHMENU && ! WITHTOUCHGUI
 
 	case KBD_CODE_DISPMODE:
+#if ! WITHTOUCHGUI
 		if (display_getpagesmax() != 0)
 		{
 			/* Альтернативные функции кнопок - "Fn"
@@ -20623,6 +20771,7 @@ processkeyboard(uint_fast8_t kbch)
 			display2_bgreset();
 			return 1;	// требуется обновление индикатора
 		}
+#endif /* ! WITHTOUCHGUI */
 		return 0;	// не требуется обновление индикатора
 
 #if WITHMENU
@@ -22286,9 +22435,11 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	if (freqvalid(freq, gtx))
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
-		//vindex_t vi = getvfoindex(bi);
 		gfreqs [bi] = freq;
-		//savebandfreq(vi, bi);
+#if WITHANTSELECT2
+		gantennas [bi] = getdefantenna(gfreqs [bi]);
+#endif /* WITHANTSELECT2 */
+		sthrl = STHRL_RXTX_FQCHANGED;
 		updateboard(0, 0);
 		return 1;
 	}
@@ -23840,6 +23991,7 @@ main(void)
 	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
+	cpump_runuser();	/* остальным ядрам разрешаем выполнятиь прерывания */
 	midtests();
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHTX
