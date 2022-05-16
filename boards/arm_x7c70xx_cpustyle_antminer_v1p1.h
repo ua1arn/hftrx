@@ -1138,6 +1138,58 @@
 
 	#endif /* (WITHNANDHW || WITHNANDSW) */
 
+
+#if WITHETHHW
+
+	#define TARGET_RGMII_RESET		x7	// PS_MIO7_500
+
+	#define TARGET_MDIO_CK			52	// PS_MIO52_501
+	#define TARGET_MDIO_DATA		53	// PS_MIO53_501
+	#define TARGET_RGMII0_TX_CLK 	16	// PS_MIO16_501
+	#define TARGET_RGMII0_TX_D0 	17	// PS_MIO17_501
+	#define TARGET_RGMII0_TX_D1 	18	// PS_MIO18_501
+	#define TARGET_RGMII0_TX_D2 	19	// PS_MIO19_501
+	#define TARGET_RGMII0_TX_D3 	20	// PS_MIO20_501
+	#define TARGET_RGMII0_TX_EN 	21	// PS_MIO21_501
+	#define TARGET_RGMII0_RX_CLK 	22	// PS_MIO22_501
+	#define TARGET_RGMII0_RX_D0 	23	// PS_MIO23_501
+	#define TARGET_RGMII0_RX_D1 	24	// PS_MIO24_501
+	#define TARGET_RGMII0_RX_D2 	25	// PS_MIO25_501
+	#define TARGET_RGMII0_RX_D3 	26	// PS_MIO26_501
+	#define TARGET_RGMII0_RX_EN 	27	// PS_MIO27_501
+
+	// See Table 16‐10: Ethernet RGMII Interface Signals via MIO Pins
+	// GigE 0
+	#define ETHERNET_INITIALIZE() do { \
+		const portholder_t pinmode_output = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_500, 1, 0x00, 0x00, 0x00, 0x00, 0); \
+		const portholder_t pinmode_mdio = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x04, 0x00, 0x00, 0x00, 0); \
+		const portholder_t pinmode_rgmii_tx = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x00, 0x00, 0x00, 0x01, 0); \
+		const portholder_t pinmode_rgmii_rx = MIO_PIN_VALUE(1, 0, GPIO_IOTYPE_501, 1, 0x00, 0x00, 0x00, 0x01, 1); \
+		/* RESET */ \
+		/*gpio_output2(TARGET_RGMII_RESET, 0, pinmode_output); *//* RESET = 0 */ \
+		/* RGMII */ \
+		gpio_peripherial(TARGET_MDIO_CK, pinmode_mdio);	/*  */ \
+		gpio_peripherial(TARGET_MDIO_DATA, pinmode_mdio);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_CLK, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D0, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D1, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D2, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_D3, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_TX_EN, pinmode_rgmii_tx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_CLK, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D0, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D1, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D2, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_D3, pinmode_rgmii_rx);	/*  */ \
+		gpio_peripherial(TARGET_RGMII0_RX_EN, pinmode_rgmii_rx);	/*  */ \
+		/* RESET */ \
+		local_delay_ms(10); \
+		/*gpio_writepin(TARGET_RGMII_RESET, 1);*/ /* RESET = 1 */ \
+		local_delay_ms(10); \
+	} while (0)
+
+#endif /* WITHETHHW */
+
 #if 1
 	#define ZYNQBOARD_LED_RED 37 /* PS_MIO37_LED_R */
 	#define ZYNQBOARD_LED_GREEN 38 /* PS_MIO38_LED_G */
@@ -1174,6 +1226,7 @@
 		HARDWARE_DCDC_INITIALIZE(); \
 		TXDISABLE_INITIALIZE(); \
 		TUNE_INITIALIZE(); \
+		ETHERNET_INITIALIZE(); \
 		BOARD_USERBOOT_INITIALIZE(); \
 		/*USBD_FS_INITIALIZE(); */\
 	} while (0)
