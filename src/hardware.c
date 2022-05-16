@@ -206,6 +206,8 @@ RAMFUNC void spool_elkeyinputsbundle(void)
 }
 
 
+static RAMDTCM SPINLOCK_t tickerslock = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t adcdoneslock = SPINLOCK_INIT;
 static VLIST_ENTRY tickers;
 static VLIST_ENTRY adcdones;
 //static unsigned nowtick;
@@ -246,6 +248,7 @@ static void tickers_spool(void)
 
 void tickers_initialize(void)
 {
+	SPINLOCK_INITIALIZE(& tickerslock);
 	InitializeListHead(& tickers);
 
 }
@@ -253,6 +256,7 @@ void tickers_initialize(void)
 // инициализация списка обработчиков конца преобразования АЦП
 void adcdones_initialize(void)
 {
+	SPINLOCK_INITIALIZE(& adcdoneslock);
 	InitializeListHead(& adcdones);
 }
 
@@ -3274,7 +3278,8 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 #endif /* CPUSTYLE_STM32MP1 */
 
-static RAMDTCM SPINLOCK_t cpu1init;
+static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
+static RAMDTCM SPINLOCK_t cpu1userstart = SPINLOCK_INIT;
 
 // Инициализация второго ппрцессора
 void Reset_CPUn_Handler(void)
@@ -3356,6 +3361,7 @@ void cpump_initialize(void)
 #endif /* (__CORTEX_A == 9U) */
 
 	cortexa_cpuinfo();
+	SPINLOCK_INITIALIZE(& cpu1userstart);
 	SPINLOCK_INITIALIZE(& cpu1init);
 	SPIN_LOCK(& cpu1init);
 	cortexa_mp_cpu1_start((uintptr_t) Reset_CPU1_Handler);
@@ -3367,6 +3373,12 @@ void cpump_initialize(void)
 
 #endif /* WITHSMPSYSTEM */
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
+
+}
+
+/* остальным ядрам разрешаем выполнять прерывания */
+void cpump_runuser(void)
+{
 
 }
 
@@ -3383,6 +3395,12 @@ void cpump_initialize(void)
 {
 	SystemCoreClock = CPU_FREQ;
 	cortexa_cpuinfo();
+
+}
+
+/* остальным ядрам разрешаем выполнять прерывания */
+void cpump_runuser(void)
+{
 
 }
 
