@@ -206,8 +206,8 @@ RAMFUNC void spool_elkeyinputsbundle(void)
 }
 
 
-static VLIST_ENTRY tickers;
-static VLIST_ENTRY adcdones;
+static volatile VLIST_ENTRY tickers;
+static volatile VLIST_ENTRY adcdones;
 //static unsigned nowtick;
 
 void ticker_initialize(ticker_t * p, unsigned nticks, void (* cb)(void *), void * ctx)

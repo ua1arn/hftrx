@@ -5260,13 +5260,12 @@ static void window_freq_process (void)
 	static label_t * lbl_freq;
 	static editfreq_t editfreq;
 	window_t * const win = get_win(WINDOW_FREQ);
-	static const char * win_title = "Freq:";
 	uint_fast8_t update = 0;
 
 	if (win->first_call)
 	{
 		uint_fast16_t x = 0, y = 0;
-		uint_fast8_t interval = 6, row_count = 4;
+		uint_fast8_t interval = 6, row_count = 3;
 		win->first_call = 0;
 		button_t * bh = NULL;
 
@@ -5274,15 +5273,16 @@ static void window_freq_process (void)
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 1, 		 		"btn_Freq1",  "1", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 2, 		 		"btn_Freq2",  "2", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 3, 		 		"btn_Freq3",  "3", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_BK, "btn_FreqBK", "<-", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 4, 	 			"btn_Freq4",  "4", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 5, 				"btn_Freq5",  "5", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 6, 				"btn_Freq6",  "6", },
-			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_OK, "btn_FreqOK", "OK", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 7, 				"btn_Freq7",  "7", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 8,  			"btn_Freq8",  "8", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 9, 		 		"btn_Freq9",  "9", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_BK, "btn_FreqBK", "<-", },
 			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, 0, 	 			"btn_Freq0",  "0", },
+			{ 50, 50, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_FREQ, NON_VISIBLE, BUTTON_CODE_OK, "btn_FreqOK", "OK", },
+
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -5313,9 +5313,10 @@ static void window_freq_process (void)
 		editfreq.num = 0;
 		editfreq.key = BUTTON_CODE_DONE;
 
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s %d k", win_title, editfreq.val);
+		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%d k", editfreq.val);
 
 		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
 	}
 
 	GET_FROM_WM_QUEUE
@@ -5380,9 +5381,9 @@ static void window_freq_process (void)
 			editfreq.key = BUTTON_CODE_DONE;
 
 			if (editfreq.error)
-				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s ERROR", win_title);
+				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "ERROR");
 			else
-				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%s %d k", win_title, editfreq.val);
+				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "%d k", editfreq.val);
 		}
 	}
 }

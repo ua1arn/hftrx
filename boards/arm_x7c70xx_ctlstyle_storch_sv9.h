@@ -229,7 +229,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	#define CTLREGMODE_STORCH_V9B	1
 	//#define CTLREGMODE_NOCTLREG 1	/* Загрузчик не имеет доступа к управлению SPI. Однако, есть прямое управление выъодами GPIO */
 
 	#define ENCRES_DEFAULT ENCRES_128
@@ -408,7 +409,7 @@
 		#define SHORTSET8	1
 		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
-	#elif 0
+	#elif 1
 		/* TUNER by R3KBL */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET7	1
@@ -440,7 +441,7 @@
 	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
 	////#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
-	//#define WITHANTSELECT	1	// Управление переключением антенн
+	#define WITHANTSELECT2	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
@@ -591,9 +592,13 @@
 	#elif 1
 		// UA1CEI PA board: MCP3208 at targetext2 - P2_0 external SPI device (PA BOARD ADC)
 		VOLTSOURCE = BOARD_ADCX2IN(4),		// MCP3208 CH7 Средняя точка делителя напряжения, для АКБ
-
+	#if WITHAUTOTUNER
+		FWD = BOARD_ADCX1IN(5),
+		REF = BOARD_ADCX1IN(4),
+	#else
 		FWD = BOARD_ADCX2IN(2),
 		REF = BOARD_ADCX2IN(3),
+	#endif /* WITHAUTOTUNER */
 		PWRI = FWD,
 
 		#define WITHCURRLEVEL2	1	/* отображение тока оконечного каскада */
