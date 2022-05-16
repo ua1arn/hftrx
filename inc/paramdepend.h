@@ -911,10 +911,11 @@ extern "C" {
 		enum
 		{
 			PRI_IPC,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+			PRI_IPC_ONLY,
 			PRI_OVRT,
-			PRI_RT = 1,
-			PRI_SYS = 2,
-			PRI_USER = 3,
+			PRI_RT,
+			PRI_SYS,
+			PRI_USER,
 
 //			gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT),	// value for GIC_SetPriority
 //			gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT),	// value for GIC_SetPriority
