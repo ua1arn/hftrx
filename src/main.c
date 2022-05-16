@@ -4511,22 +4511,22 @@ typedef struct tunerstate
 	uint8_t swr;	// values 0..190: SWR = 1..20
 	adcvalholder_t f, r;
 } tus_t;
-#define TUS_SWRMAX (SWRMIN * 3)			// 4.0
+#define TUS_SWRMAX (SWRMIN * 9)			// 4.0
 #define TUS_SWR1p1 (SWRMIN * 11 / 10)	// SWR=1.1
 
 static void board_set_tuner_group(void)
 {
 	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	// todo: добавить учет включенной антенны
-#if SHORTSET7 || SHORTSET8
+#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	board_set_tuner_C(logtable_cap [tunercap]);
 	board_set_tuner_L(logtable_ind [tunerind]);
 	//board_set_tuner_C(1U << tunercap);
 	//board_set_tuner_L(1U << tunerind);
-#else /* SHORTSET7 || SHORTSET8 */
+#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	board_set_tuner_C(tunercap);
 	board_set_tuner_L(tunerind);
-#endif /* SHORTSET7 || SHORTSET8 */
+#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	board_set_tuner_type(tunertype);
 	board_set_tuner_bypass(! tunerwork);
 }
@@ -4568,27 +4568,29 @@ static uint_fast8_t tuner_get_swr0(uint_fast8_t fullscale, adcvalholder_t * pr, 
 static void printtunerstate(const char * title, uint_fast8_t swr, adcvalholder_t r, adcvalholder_t f)
 {
 
-#if SHORTSET8 || SHORTSET7
-	PRINTF("%s: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u\n",
+#if SHORTSET8 || SHORTSET7 || SHORTSET_7L8C
+	PRINTF("%s: L=%u(%u),C=%u(%u),ty=%u,fw=%u,ref=%u,swr=%u.%u\n",
 		title,
 		(unsigned) logtable_ind [tunerind], (unsigned) tunerind,
 		(unsigned) logtable_cap [tunercap], (unsigned) tunercap,
 		(unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
-		(unsigned) (swr + SWRMIN));
+		(unsigned) (swr + SWRMIN) / 10,
+		(unsigned) (swr + SWRMIN) % 10);
 #else /* SHORTSET8 || SHORTSET7 */
-	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u\n",
+	PRINTF("%s: L=%u,C=%u,ty=%u,fw=%u,ref=%u,swr=%u.%u\n",
 		title,
 		(unsigned) tunerind, (unsigned) tunercap, (unsigned) tunertype,
 		(unsigned) f,
 		(unsigned) r,
-		(unsigned) (swr + SWRMIN));
+		(unsigned) (swr + SWRMIN) / 10,
+		(unsigned) (swr + SWRMIN) % 10);
 #endif /* SHORTSET8 || SHORTSET7 */
 
 }
 
-static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+static uint_fast8_t tuner_get_swr(const char * title, uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	adcvalholder_t r;
 	adcvalholder_t f;
@@ -4596,7 +4598,7 @@ static uint_fast8_t tuner_get_swr(uint_fast8_t fullscale, adcvalholder_t * pr, a
 
 	* pr = r;
 	* pf = f;
-	printtunerstate("tuner_get_swr", swr, r, f);
+	printtunerstate(title, swr, r, f);
 	return swr;
 }
 
@@ -4629,8 +4631,6 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 	uint_fast8_t bestswrvalid = 0;
 	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
-	tus->tunertype = tunertype;
-	tus->tunercap = tunercap;
 	for (tunerind = LMIN; tunerind <= LMAX; ++ tunerind)
 	{
 		if (tuneabort())
@@ -4639,7 +4639,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 		tuner_waitadc();
 		adcvalholder_t r;
 		adcvalholder_t f;
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
+		const uint_fast8_t swr = tuner_get_swr("scanminLk", TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -4650,6 +4650,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
+			PRINTF("scanminLk: best ty=%u, L=%u\n", tunerind, tunerind);
 		}
 		else
 		{
@@ -4669,8 +4670,6 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 	uint_fast8_t bestswrvalid = 0;
 	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
-	tus->tunerind = tunerind;
-	tus->tunertype = tunertype;
 	for (tunercap = CMIN; tunercap <= CMAX; ++ tunercap)
 	{
 		if (tuneabort())
@@ -4679,7 +4678,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 		tuner_waitadc();
 		adcvalholder_t r;
 		adcvalholder_t f;
-		const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
+		const uint_fast8_t swr = tuner_get_swr("scanminCk", TUS_SWRMAX, & r, & f);
 
 		if ((bestswrvalid == 0) || (tus->swr > swr))
 		{
@@ -4690,6 +4689,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
+			PRINTF("scanminCk: best ty=%u, C=%u\n", tunerind, tunercap);
 		}
 		else
 		{
@@ -4725,31 +4725,89 @@ static void auto_tune(void)
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const vindex_t b = getvfoindex(bi);
 
-#if SHORTSET7 || SHORTSET8
+#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	const uint_fast8_t addstepsLk = 3;
 	const uint_fast8_t addstepsCk = 3;
-#else /* SHORTSET7 || SHORTSET8 */
+#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	const uint_fast8_t addstepsLk = 15;
 	const uint_fast8_t addstepsCk = 15;
-#endif /* SHORTSET7 || SHORTSET8 */
+#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 
-	//PRINTF(PSTR("auto_tune start\n"));
+	PRINTF(PSTR("auto_tune start\n"));
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
+	{
+		if (tuneabort())
+			;
+		local_delay_ms(50);
+		adcvalholder_t r;
+		adcvalholder_t f;
+		const uint_fast8_t swr = tuner_get_swr("dummy", TUS_SWRMAX, & r, & f);
+		tuner_waitadc();
+	}
 	// Попытка согласовать двумя схемами
 	for (tunertype = 0; tunertype < KSCH_COUNT; ++ tunertype)
 	{
+		statuses [tunertype].tunertype = tunertype;
 		tunercap = CMIN;
+		PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
 		if (scanminLk(& statuses [tunertype], addstepsLk) != 0)
 			goto aborted;
-		tunerind = statuses [tunertype].tunerind;
+		tunerind = statuses [tunertype].tunerind;	// лучшее запомненное
+		//PRINTF("scanminLk finish: L=%u\n", tunerind);
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подходяшее согласование?
 		////if (statuses [tunertype].swr <= TUS_SWR1p1)
 		////	goto NoMoreTune;
-
+		PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
 		if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
 			goto aborted;
-		tunercap = statuses [tunertype].tunercap;
+		//tunercap = statuses [tunertype].tunercap;	// лучшее запомненное
+		//PRINTF("scanminCk finish: L=%u\n", tunercap);
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подходяшее согласование?
@@ -4758,14 +4816,14 @@ static void auto_tune(void)
 	}
 	// Выбираем наилучший результат согласования
 	cshindex = findbestswr(statuses, sizeof statuses / sizeof statuses [0]);
-	//PRINTF(PSTR("auto_tune loop done\n"));
+	PRINTF(PSTR("auto_tune loop done\n"));
 	// Устанавливаем аппаратуру в состояние при лучшем результате
 	tunertype = statuses [cshindex].tunertype;
 	tunerind = statuses [cshindex].tunerind;
 	tunercap = statuses [cshindex].tunercap;
 	printtunerstate("Selected", statuses [cshindex].swr, statuses [cshindex].r, statuses [cshindex].f);
 	updateboard_tuner();
-	//PRINTF(PSTR("auto_tune stop\n"));
+	PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
 
 	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
@@ -12382,6 +12440,15 @@ display2_redrawbarstimed(
 	if (immed || display_refreshenabled_voltage())
 	{
 		looptests();		// Периодически вызывается в главном цикле - тесты
+#if WITHAUTOTUNER
+		if (gtx && ! reqautotune)
+		{
+			adcvalholder_t r;
+			adcvalholder_t f;
+			const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
+
+		}
+#endif /* WITHAUTOTUNER */
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
@@ -23924,6 +23991,7 @@ main(void)
 	cpu_initialize();		// в случае ARM - инициализация прерываний и контроллеров, AVR - запрет JTAG
 	lowinitialize();	/* вызывается при запрещённых прерываниях. */
 	global_enableIRQ();
+	//cpump_runuser();	/* остальным ядрам разрешаем выполнятиь прерывания */
 	midtests();
 	// Инициализируем то что не получается иниитить в описании перменных.
 #if WITHTX
