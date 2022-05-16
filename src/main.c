@@ -12440,6 +12440,7 @@ display2_redrawbarstimed(
 	if (immed || display_refreshenabled_voltage())
 	{
 		looptests();		// Периодически вызывается в главном цикле - тесты
+#if WITHAUTOTUNER
 		if (gtx && ! reqautotune)
 		{
 			adcvalholder_t r;
@@ -12447,6 +12448,7 @@ display2_redrawbarstimed(
 			const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
 
 		}
+#endif /*  WITHAUTOTUNER */
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
