@@ -4602,18 +4602,6 @@ static uint_fast8_t tuner_get_swr(const char * title, uint_fast8_t fullscale, ad
 	return swr;
 }
 
-uint_fast8_t tuner_get_swr2(uint_fast8_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
-{
-	adcvalholder_t r;
-	adcvalholder_t f;
-	const uint_fast8_t swr = tuner_get_swr0(fullscale, & r, & f);
-
-	* pr = r;
-	* pf = f;
-	printtunerstate("tuner_get_swr2", swr, r, f);
-	return swr;
-}
-
 // Если прервана настройка - возврат не-0
 static uint_fast8_t tuneabort(void)
 {
@@ -12452,13 +12440,15 @@ display2_redrawbarstimed(
 	if (immed || display_refreshenabled_voltage())
 	{
 		looptests();		// Периодически вызывается в главном цикле - тесты
+#if WITHAUTOTUNER
 		if (gtx && ! reqautotune)
 		{
 			adcvalholder_t r;
 			adcvalholder_t f;
-			const uint_fast8_t swr = tuner_get_swr2(TUS_SWRMAX, & r, & f);
+			const uint_fast8_t swr = tuner_get_swr(TUS_SWRMAX, & r, & f);
 
 		}
+#endif /*  WITHAUTOTUNER */
 		/* медленно меняющиеся значения с редким опорсом */
 		/* +++ переписываем значения из возможно внешних АЦП в кеш значений */
 	#if WITHTHERMOLEVEL
