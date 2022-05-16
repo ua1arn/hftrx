@@ -4518,15 +4518,15 @@ static void board_set_tuner_group(void)
 {
 	//PRINTF(PSTR("tuner: CAP=%-3d, IND=%-3d, TYP=%d\n"), tunercap, tunerind, tunertype);
 	// todo: добавить учет включенной антенны
-#if SHORTSET7 || SHORTSET8
+#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	board_set_tuner_C(logtable_cap [tunercap]);
 	board_set_tuner_L(logtable_ind [tunerind]);
 	//board_set_tuner_C(1U << tunercap);
 	//board_set_tuner_L(1U << tunerind);
-#else /* SHORTSET7 || SHORTSET8 */
+#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	board_set_tuner_C(tunercap);
 	board_set_tuner_L(tunerind);
-#endif /* SHORTSET7 || SHORTSET8 */
+#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	board_set_tuner_type(tunertype);
 	board_set_tuner_bypass(! tunerwork);
 }
@@ -4643,8 +4643,6 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 	uint_fast8_t bestswrvalid = 0;
 	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
-	tus->tunertype = tunertype;
-	tus->tunercap = tunercap;
 	for (tunerind = LMIN; tunerind <= LMAX; ++ tunerind)
 	{
 		if (tuneabort())
@@ -4664,7 +4662,7 @@ static uint_fast8_t scanminLk(tus_t * tus, uint_fast8_t addsteps)
 			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
-			PRINTF("scanminLk: best L=%u\n", tunerind);
+			PRINTF("scanminLk: best ty=%u, L=%u\n", tunerind, tunerind);
 		}
 		else
 		{
@@ -4684,8 +4682,6 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 	uint_fast8_t bestswrvalid = 0;
 	uint_fast8_t a = 1;	/* чтобы не ругался компилятор */
 
-	tus->tunerind = tunerind;
-	tus->tunertype = tunertype;
 	for (tunercap = CMIN; tunercap <= CMAX; ++ tunercap)
 	{
 		if (tuneabort())
@@ -4705,7 +4701,7 @@ static uint_fast8_t scanminCk(tus_t * tus, uint_fast8_t addsteps)
 			tus->f = f;
 			bestswrvalid = 1;
 			a = addsteps;
-			PRINTF("scanminCk: best C=%u\n", tunercap);
+			PRINTF("scanminCk: best ty=%u, C=%u\n", tunerind, tunercap);
 		}
 		else
 		{
@@ -4741,13 +4737,13 @@ static void auto_tune(void)
 	const uint_fast8_t bi = getbankindex_tx(tx);
 	const vindex_t b = getvfoindex(bi);
 
-#if SHORTSET7 || SHORTSET8
+#if SHORTSET7 || SHORTSET8 || SHORTSET_7L8C
 	const uint_fast8_t addstepsLk = 3;
 	const uint_fast8_t addstepsCk = 3;
-#else /* SHORTSET7 || SHORTSET8 */
+#else /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 	const uint_fast8_t addstepsLk = 15;
 	const uint_fast8_t addstepsCk = 15;
-#endif /* SHORTSET7 || SHORTSET8 */
+#endif /* SHORTSET7 || SHORTSET8 || SHORTSET_7L8C */
 
 	PRINTF(PSTR("auto_tune start\n"));
 	{
@@ -4807,12 +4803,13 @@ static void auto_tune(void)
 	// Попытка согласовать двумя схемами
 	for (tunertype = 0; tunertype < KSCH_COUNT; ++ tunertype)
 	{
+		statuses [tunertype].tunertype = tunertype;
 		tunercap = CMIN;
 		PRINTF("tuner: ty=%u, scan inductors\n", (unsigned) tunertype);
 		if (scanminLk(& statuses [tunertype], addstepsLk) != 0)
 			goto aborted;
-		tunerind = statuses [tunertype].tunerind;
-		PRINTF("scanminLk finish: L=%u\n", tunerind);
+		tunerind = statuses [tunertype].tunerind;	// лучшее запомненное
+		//PRINTF("scanminLk finish: L=%u\n", tunerind);
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подходяшее согласование?
@@ -4821,8 +4818,8 @@ static void auto_tune(void)
 		PRINTF("tuner: ty=%u, scan capacitors\n", (unsigned) tunertype);
 		if (scanminCk(& statuses [tunertype], addstepsCk) != 0)
 			goto aborted;
-		tunercap = statuses [tunertype].tunercap;
-		PRINTF("scanminCk finish: L=%u\n", tunercap);
+		//tunercap = statuses [tunertype].tunercap;	// лучшее запомненное
+		//PRINTF("scanminCk finish: L=%u\n", tunercap);
 		updateboard_tuner();
 
 		// проверка - а может уже нашли подходяшее согласование?
