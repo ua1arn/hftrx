@@ -4305,12 +4305,12 @@ prog_ctrlreg(uint_fast8_t plane)
 	#elif SHORTSET7 || FULLSET7
 
 		/* +++ Управление согласующим устройством */
-		/* регистр управления наборной индуктивностью. */
-		RBVAL(0060, glob_tuner_bypass ? 0 : glob_tuner_L, 7);					/* Inductors tuner bank 	*/
-
 		/* регистр управления массивом конденсаторов */
-		RBBIT(0057, glob_tuner_bypass ? 0 : glob_tuner_type);					/* pin 7: TYPE OF TUNER 	*/
-		RBVAL(0050, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C)), 7);		/* Capacitors tuner bank 	*/
+		RBBIT(0067, glob_tuner_bypass ? 0 : glob_tuner_type);		/* pin 7: TYPE OF TUNER 	*/
+		RBVAL(0060, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C) >> 1), 7);/* Capacitors tuner bank 	*/
+		/* регистр управления наборной индуктивностью. */
+		RBBIT(0057, ! glob_tuner_bypass);		// pin 7: обход СУ
+		RBVAL(0050, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_L) >> 1), 7);			/* pin 15, 1..6: Inductors tuner bank 	*/
 		/* --- Управление согласующим устройством */
 
 	#else
