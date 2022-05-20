@@ -1257,6 +1257,10 @@ typedef struct {
 
 static smeter_params_t smprms [SMETER_TYPE_COUNT];
 
+#if WITHRLEDECOMPRESS
+extern const picRLE_t smeter_bg_new;
+#endif /* WITHRLEDECOMPRESS */
+
 static void
 display2_smeter15_layout(
 	uint_fast8_t xgrid,
@@ -1273,9 +1277,15 @@ display2_smeter15_layout(
 	{
 	case SMETER_TYPE_DIAL:
 		{
+#if WITHRLEDECOMPRESS
+			smpr->gs = 0;
+			smpr->gm = 108;
+			smpr->ge = 206;
+#else
 			smpr->gm = 270;
 			smpr->gs = smpr->gm - halfsect;
 			smpr->ge = smpr->gm + halfsect;
+#endif /* WITHRLEDECOMPRESS */
 			smpr->rv1 = 7 * GRID2Y(3);
 			smpr->rv2 = smpr->rv1 - 3 * GRID2Y(3);
 			smpr->r1 = 7 * GRID2Y(3) - 8;	//350;
@@ -1367,6 +1377,9 @@ display2_smeter15_layout(
 	case SMETER_TYPE_DIAL:
 
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX];
+#if WITHRLEDECOMPRESS
+		graw_picture_RLE_buf(bg, SM_BG_W, SM_BG_H, 0, 0, & smeter_bg_new, COLORMAIN_BLACK);
+#else
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
 		for (p = 0, i = 0; i < ARRAY_SIZE(markersTX_pwr) - 1; ++ i, p += 10)
@@ -1398,7 +1411,12 @@ display2_smeter15_layout(
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeter, 1, 1);
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
+#endif /* WITHRLEDECOMPRESS */
+
 		bg = smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX];
+#if WITHRLEDECOMPRESS
+		graw_picture_RLE_buf(bg, SM_BG_W, SM_BG_H, 0, 0, & smeter_bg_new, COLORMAIN_BLACK);
+#else
 		colpip_rect(bg, SM_BG_W, SM_BG_H, 0, 0, SM_BG_W - 1, SM_BG_H - 1, COLORMAIN_BLACK, 1);
 
 		for (p = 1, i = 0; i < ARRAY_SIZE(markers); ++ i, p += 2)
@@ -1433,7 +1451,7 @@ display2_smeter15_layout(
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->gm, smpr->r1, 1, smeter, 1, 1);
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gm, smpr->ge, smpr->r1, 1, smeterplus, 1, 1);
 		display_segm_buf(bg, SM_BG_W, SM_BG_H, xb, yb, smpr->gs, smpr->ge, smpr->r2, 1, COLORMAIN_WHITE, 1, 1);
-
+#endif /* WITHRLEDECOMPRESS */
 		break;
 
 	default:
@@ -1524,6 +1542,74 @@ display2_smeter15_init(
 	smprmsinited = 1;
 }
 
+static void smeter_arrow(uint_fast16_t target_pixel_x, uint_fast16_t x, uint_fast16_t y, uint_fast16_t w, uint_fast16_t h, COLORMAIN_T color)
+{
+	if (target_pixel_x > 220)
+		target_pixel_x = 220;
+	float32_t x0 = x + w / 2 + 2;
+	float32_t y0 = y + h + 140;
+	float32_t x1 = x + target_pixel_x;
+	float32_t y1 = y;
+
+	PACKEDCOLORMAIN_T * const fr = colmain_fb_draw();
+
+	// length cut
+	const uint32_t max_length = 220;
+	float32_t x_diff = 0;
+	float32_t y_diff = 0;
+	float32_t length = sqrtf((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0));
+	if (length > max_length)
+	{
+		float32_t coeff = (float32_t) max_length / length;
+		x_diff = (x1 - x0) * coeff;
+		y_diff = (y1 - y0) * coeff;
+		x1 = x0 + x_diff;
+		y1 = y0 + y_diff;
+	}
+	// right cut
+	uint_fast16_t tryes = 0;
+	while ((x1 > x + w) && tryes < 100)
+	{
+		x_diff = (x1 - x0) * 0.99f;
+		y_diff = (y1 - y0) * 0.99f;
+		x1 = x0 + x_diff;
+		y1 = y0 + y_diff;
+		tryes ++;
+	}
+	// left cut
+	tryes = 0;
+	while ((x1 < x) && tryes < 100)
+	{
+		x_diff = (x1 - x0) * 0.99f;
+		y_diff = (y1 - y0) * 0.99f;
+		x1 = x0 + x_diff;
+		y1 = y0 + y_diff;
+		tryes ++;
+	}
+	// start cut
+	tryes = 0;
+	while ((y0 > y + h) && tryes < 150)
+	{
+		x_diff = (x1 - x0) * 0.99f;
+		y_diff = (y1 - y0) * 0.99f;
+		x0 = x1 - x_diff;
+		y0 = y1 - y_diff;
+		tryes ++;
+	}
+
+	// draw
+	if (x1 < x0)
+	{
+		colmain_line(fr, DIM_X, DIM_Y, x0, y0, x1, y1, color, 1);
+		colmain_line(fr, DIM_X, DIM_Y, x0 + 1, y0, x1 + 1, y1, color, 1);
+	}
+	else
+	{
+		colmain_line(fr, DIM_X, DIM_Y, x0, y0, x1, y1, color, 1);
+		colmain_line(fr, DIM_X, DIM_Y, x0 - 1, y0, x1 - 1, y1, color, 1);
+	}
+}
+
 // ширина занимаемого места - 15 ячеек (240/16 = 15)
 static void
 display2_smeter15(
@@ -1586,6 +1672,13 @@ display2_smeter15(
 	}
 	else
 	{
+#if WITHRLEDECOMPRESS
+		uint_fast16_t tracemax;
+		uint_fast16_t value = dsp_getsmeter10(& tracemax, 0, UINT8_MAX * 10, 0);
+		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
+
+		gv = normalize3(value, (s9level - s9delta) * 10, s9level * 10, (s9level + s9_60_delta) * 10, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
+#else
 		uint_fast8_t tracemax;
 		uint_fast8_t value = board_getsmeter(& tracemax, 0, UINT8_MAX, 0);
 		tracemax = value > tracemax ? value : tracemax;	// защита от рассогласования значений
@@ -1594,6 +1687,7 @@ display2_smeter15(
 			smpr->gs + normalize3(value, 	s9level - s9delta, s9level, s9level + s9_60_delta, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
 		gv_trace =
 			smpr->gs + normalize3(tracemax, s9level - s9delta, s9level, s9level + s9_60_delta, smpr->gm - smpr->gs, smpr->ge - smpr->gs);
+#endif
 
 		first_tx = 1;
 	}
@@ -1611,7 +1705,9 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_TX], SM_BG_W, SM_BG_H - dial_shift);
-
+#if WITHRLEDECOMPRESS
+			smeter_arrow(gp, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
+#else
 			if (gswr > smpr->gs)
 			{
 				uint_fast16_t xx, yy;
@@ -1629,7 +1725,9 @@ display2_smeter15(
 			display_radius_buf(fr, DIM_X, DIM_Y, xc - 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
 			display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
 			display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gp, smpr->rv1, smpr->rv2, color, 0, 1);
+#endif /* WITHRLEDECOMPRESS */
 		}
+
 		else
 		{
 			// RX state
@@ -1638,7 +1736,9 @@ display2_smeter15(
 					fr, DIM_X, DIM_Y, x0, y0 + dial_shift,
 					(uintptr_t) smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], GXSIZE(SM_BG_W, SM_BG_H) * sizeof (PACKEDCOLORMAIN_T),
 					smeter_bg [SMETER_TYPE_DIAL][SM_STATE_RX], SM_BG_W, SM_BG_H - dial_shift);
-
+#if WITHRLEDECOMPRESS
+			smeter_arrow(gv, x0, y0 + dial_shift, smeter_bg_new.width, smeter_bg_new.height, COLOR_GRAY);
+#else
 			{
 				// Рисование peak value (риска)
 				const COLORMAIN_T color = COLORMAIN_YELLOW;
@@ -1654,6 +1754,7 @@ display2_smeter15(
 				display_radius_buf(fr, DIM_X, DIM_Y, xc, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
 				display_radius_buf(fr, DIM_X, DIM_Y, xc + 1, yc, gv, smpr->rv1, smpr->rv2, color, 0, 1);
 			}
+#endif /* WITHRLEDECOMPRESS */
 		}
 
 		break;
