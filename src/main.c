@@ -3181,13 +3181,11 @@ filter_t fi_2p0_455 =
 #endif /* WITHSUBTONES */
 #if WITHTHERMOLEVEL
 	uint8_t gtempvmax;
+	uint8_t gheatprot;	/* защита от перегрева */
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
 	uint8_t gswrprot;	/* защита от превышения КСВ */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
-#if WITHTHERMOLEVEL
-	uint8_t gheatprot;	/* защита от перегрева */
-#endif /* WITHTHERMOLEVEL */
 #endif /* WITHTX */
 
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
@@ -18064,18 +18062,6 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 	#endif /* WITHFANPWM */
 #endif /* WITHFANTIMER */
-#if WITHTHERMOLEVEL
-	{
-		QLABEL("TEMP LIM"), 7, 0, 0,	ISTEP1,
-		ITEM_VALUE,
-		20, 85,						/* порог срабатывания защиты по температуре */
-		offsetof(struct nvmap, gtempvmax),
-		nvramoffs0,
-		NULL,
-		& gtempvmax,
-		getzerobase,
-	},
-#endif /* WITHTHERMOLEVEL */
 
 #if WITHPOWERTRIM
   #if ! WITHPOTPOWER
@@ -18463,6 +18449,16 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	},
 #endif
 #if WITHTHERMOLEVEL
+	{
+		QLABEL("HEAT LIM"), 7, 0, 0,	ISTEP1,
+		ITEM_VALUE,
+		20, 85,						/* порог срабатывания защиты по температуре */
+		offsetof(struct nvmap, gtempvmax),
+		nvramoffs0,
+		NULL,
+		& gtempvmax,
+		getzerobase,
+	},
 	{
 		QLABEL("HEATPROT"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
