@@ -755,7 +755,7 @@ void spi_perform_initialize(void)
 	ticker_initialize(& spiticker, 1, spi_spool, NULL);
 	ticker_add(& spiticker);
 
-	SPINLOCK_INITIANIZE(& spilock);
+	SPINLOCK_INITIALIZE(& spilock);
 }
 
 #else /* WITHSPILOWSUPPORTT */

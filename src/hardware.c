@@ -3314,7 +3314,7 @@ void Reset_CPUn_Handler(void)
 	{
 		GIC_Enable();
 	#if WITHNESTEDINTERRUPTS
-		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+		GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_IPC_ONLY));
 	#endif /* WITHNESTEDINTERRUPTS */
 	}
 
@@ -3340,6 +3340,9 @@ void Reset_CPUn_Handler(void)
 
 	SPIN_LOCK(& cpu1userstart);		/* ждем пока основной user thread не разрешит выполняться */
 	SPIN_UNLOCK(& cpu1userstart);
+#if WITHNESTEDINTERRUPTS
+	GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
+#endif /* WITHNESTEDINTERRUPTS */
 
 	// Idle loop
 	for (;;)
