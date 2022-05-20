@@ -3183,8 +3183,11 @@ filter_t fi_2p0_455 =
 	uint8_t gtempvmax;
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-	uint8_t gignoreswwr;	/* игнорирование превышения КСВ */
+	uint8_t gswrprot;	/* защита от превышения КСВ */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
+#if WITHTHERMOLEVEL
+	uint8_t gheatprot;	/* защита от перегрева */
+#endif /* WITHTHERMOLEVEL */
 #endif /* WITHTX */
 
 #if WITHVOLTLEVEL && ! WITHREFSENSOR
@@ -4248,11 +4251,14 @@ static uint_fast8_t gmodecolmaps [2] [MODEROW_COUNT];	/* индексом 1-й �
 	static uint_fast8_t gtempvmax = 55;		/* порог срабатывания защиты по температуре */
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-#if defined (WITHIGNORESWR)
-	static uint_fast8_t gignoreswwr = WITHIGNORESWR;
+#if defined (WITHSWRPROT)
+	static uint_fast8_t gswrprot = WITHSWRPROT;
 #else
-	static uint_fast8_t gignoreswwr;	/* игнорирование превышения КСВ */
+	static uint_fast8_t gswrprot = 1;	/* защита от превышения КСВ */
 #endif
+#if WITHTHERMOLEVEL
+	static uint_fast8_t gheatprot = 1;	/* защита от перегрева */
+#endif /* WITHTHERMOLEVEL */
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	static uint_fast8_t tunemode;	/* режим настройки передающего тракта */
 	static uint_fast8_t moxmode;	/* передача, включённая кнопкой с клавиатуры */
@@ -15083,12 +15089,11 @@ uint_fast8_t hamradio_get_txdisable(void)
 		return 1;
 #endif /* defined (HARDWARE_GET_TXDISABLE) */
 #if WITHTHERMOLEVEL
-	const int_fast16_t tempv = hamradio_get_temperature_value();	// Градусы в десятых долях
-	if (tempv >= gtempvmax * 10)
+	if (gheatprot != 0 && hamradio_get_temperature_value() >= gtempvmax * 10)// Градусы в десятых долях
 		return 1;
 #endif /* WITHTHERMOLEVEL */
 #if (WITHSWRMTR || WITHSHOWSWRPWR)
-	if (gignoreswwr == 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
+	if (gswrprot != 0 && getactualdownpower() == 0 && get_swr(40) >= 20)	// SWR >= 3.0
 		return 1;
 #endif /* (WITHSWRMTR || WITHSHOWSWRPWR) */
 	return 0;
@@ -18435,13 +18440,13 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 	{
-		QLABEL("IGNO SWR"), 7, 0, RJ_ON,	ISTEP1,
+		QLABEL("SWR PROT"), 7, 0, RJ_ON,	ISTEP1,
 		ITEM_VALUE,
-		0, 1,						/* игнорирование превышения КСВ */
-		offsetof(struct nvmap, gignoreswwr),
+		0, 1,						/* защита от превышения КСВ */
+		offsetof(struct nvmap, gswrprot),
 		nvramoffs0,
 		NULL,
-		& gignoreswwr,
+		& gswrprot,
 		getzerobase,
 	},
 	
@@ -18449,7 +18454,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL("PWR CALI"), 7, 0, 0,	ISTEP1,		/* калибровка PWR-метра */
 		ITEM_VALUE,
-		10, 255, 
+		10, 255,
 		offsetof(struct nvmap, maxpwrcali),
 		nvramoffs0,
 		NULL,
@@ -18457,6 +18462,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		getzerobase,
 	},
 #endif
+#if WITHTHERMOLEVEL
+	{
+		QLABEL("HEATPROT"), 7, 0, RJ_ON,	ISTEP1,
+		ITEM_VALUE,
+		0, 1,						/* защита от перегрева */
+		offsetof(struct nvmap, gheatprot),
+		nvramoffs0,
+		NULL,
+		& gheatprot,
+		getzerobase,
+	},
+#endif /* WITHTHERMOLEVEL */
 #if WITHIF4DSP || defined (TXPATH_BIT_ENABLE_SSB) || defined (TXPATH_BIT_ENABLE_CW) || defined (TXPATH_BIT_GATE)
 	{
 		QLABEL("RXTX DLY"), 7, 0, 0,	ISTEP5,	/* 5 mS step of changing value */

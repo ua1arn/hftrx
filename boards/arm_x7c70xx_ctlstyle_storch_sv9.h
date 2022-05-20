@@ -339,7 +339,7 @@
 			#define WITHDEFAULTVIEW		VIEW_3DSS
 			#define WITHFT8				1
 			#define REALREFERENCE_FREQ 	122879000L
-			#define WITHIGNORESWR		1
+			#define WITHSWRPROT		0	/* защита от превышения КСВ */
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
