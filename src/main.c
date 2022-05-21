@@ -10902,7 +10902,7 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
 			PSTR("%s %s"),
-			antmodes [gantennas [getbankindex_tx(gtx)]].label2,
+			antmodes [gantmanual ? gantennas [bi] : getdefantenna(gfreqs [bi])].label2,
 			gantmanual ? "MN" : "AU"
 	);
 	return b;
