@@ -316,9 +316,9 @@ enum
 	CAT_SM_INDEX,		// smanswer()
 	CAT_RA_INDEX,		// raanswer()
 	CAT_PA_INDEX,		// paanswer()
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	CAT_AN_INDEX,		// ananswer()
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	CAT_RM1_INDEX,		// rm1answer()
 	CAT_RM2_INDEX,		// rm2answer()
@@ -766,11 +766,11 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	#error WITHAGCMODExxxx undefined
 #endif
 
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	enum { NANTENNAS = 2 };		// выбираем одну из двух антенн
-#else /* WITHANTSELECT || WITHANTSELECTRX */
+#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 	enum { NANTENNAS = 1 };		// eдинственная антенна
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 
 #if WITHANTSELECTRX
 
@@ -810,6 +810,16 @@ static const FLASHMEM struct {
 #endif /* WITHTX */
 };
 
+#elif WITHANTSELECT2
+
+static const FLASHMEM struct {
+	uint8_t code;
+	char label2 [3];
+}  antmodes [] =
+{
+	{	0,	"A1" },
+	{	1,	"A2" },
+};
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 
 #if WITHPOWERLPHP
@@ -2707,6 +2717,8 @@ struct bandinfo
 #if WITHANTSELECTRX
 	uint8_t rxant;		/* код выбора антенны (0/1) */
 	uint8_t ant;		/* признак включения приемной антенны */
+#elif WITHANTSELECT2
+	uint8_t ant;		/* антенна при ручном выборе */
 #elif WITHANTSELECT
 	uint8_t ant;		/* код выбора антенны (1T+1R, 2T+1R и так далее, не код антенны (0/1) */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -2871,6 +2883,9 @@ struct nvmap
 	uint8_t bandset2m;	/* используется ли диапазон 2 метра */
 #endif /* TUNE_2MBAND */
 
+#if WITHANTSELECT2
+	uint8_t gantmanual;		/* 0 - выбор антенны автоматический */
+#endif /* WITHANTSELECT2 */
 #if WITHSPLIT
 	uint8_t splitmode;		/* не-0, если работа с фиксированными ячейками (vfo/vfoa/vfob/mem) */
 	uint8_t vfoab;		/* 1, если работа с VFO B, 0 - с VFO A */
@@ -3294,6 +3309,7 @@ filter_t fi_2p0_455 =
 #define RMT_SPLITMODE_BASE offsetof(struct nvmap, splitmode)		/* (vfo/vfoa/vfob/mem) */
 #define RMT_VFOAB_BASE offsetof(struct nvmap, vfoab)		/* (vfoa/vfob) */
 #define RMT_MBAND_BASE offsetof(struct nvmap, gmband)		/* ячейка памяти фиксированных частот */
+#define RMT_ANTMANUAL_BASE offsetof(struct nvmap, gantmanual)		/* 0 - выбор антенны автоматический */
 
 #define RMT_MAINSUBRXMODE_BASE	offsetof(struct nvmap, mainsubrxmode)
 #define RMT_DATAMODE_BASE	offsetof(struct nvmap, gdatamode)
@@ -3360,7 +3376,9 @@ static uint_fast8_t gatts [VFOS_COUNT];
 static uint_fast8_t grxantennas [VFOS_COUNT];
 static uint_fast8_t gantennas [VFOS_COUNT];
 #elif WITHANTSELECT2
+static uint_fast8_t gantennas [VFOS_COUNT];
 static uint_fast8_t hffreqswitch = 14; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
+static uint_fast8_t gantmanual;		/* 0 - выбор антенны автоматический */
 #elif WITHANTSELECT
 static uint_fast8_t gantennas [VFOS_COUNT];
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -6241,7 +6259,7 @@ copybankstate(
 #if  WITHANTSELECTRX
 	grxantennas [tbi] = grxantennas [sbi];
 	gantennas [tbi] = gantennas [sbi];
-#elif WITHANTSELECT
+#elif WITHANTSELECT || WITHANTSELECT2
 	gantennas [tbi] = gantennas [sbi];
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 
@@ -6288,7 +6306,7 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 #if WITHANTSELECTRX
 	save_i8(RMT_RXANTENNA_BASE(b), grxantennas [bi]);
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
-#elif WITHANTSELECT
+#elif WITHANTSELECT || WITHANTSELECT2
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 #if WITHAUTOTUNER
@@ -7233,6 +7251,9 @@ loadsavedstate(void)
 //#if WITHAUTOTUNER
 //	tunerwork = loadvfy8up(offsetof(struct nvmap, tunerwork), 0, 1, tunerwork);
 //#endif /* WITHAUTOTUNER */
+#if WITHANTSELECT2
+	gantmanual = loadvfy8up(RMT_ANTMANUAL_BASE, 0, 1, gantmanual);
+#endif /* WITHANTSELECT2 */
 
 #if WITHIF4DSP
 	#if WITHUSBUAC && WITHTX
@@ -7301,6 +7322,8 @@ loadnewband(
 #if WITHANTSELECTRX
 	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+#elif WITHANTSELECT2
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -7475,6 +7498,13 @@ catchangefreq(
 #if WITHANTSELECTRX
 	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
+	if (aistate != 0)
+	{
+		cat_answer_request(CAT_AN_INDEX);
+	}
+#elif WITHANTSELECT2
+	gantmanual = 1;
+	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, getdefantenna(f));	/* вытаскиваем номер включённой антенны */
 	if (aistate != 0)
 	{
 		cat_answer_request(CAT_AN_INDEX);
@@ -10479,7 +10509,7 @@ updateboardZZZ(
 		board_set_rxantenna(rxantmodes [grxantennas [rxbi]].code);
 		board_set_antenna(antmodes [gantennas [rxbi]].code);
 	#elif WITHANTSELECT2
-		board_set_antenna(ant2hint);
+		board_set_antenna(gantmanual ? antmodes [gantennas [rxbi]].code : ant2hint);
 	#elif WITHANTSELECT
 		board_set_antenna(antmodes [gantennas [rxbi]].code [gtx]);
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -10871,8 +10901,9 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
 	static char b [6];
 	local_snprintf_P(b, ARRAY_SIZE(b),
-			PSTR("ANT%d"),
-			getdefantenna(gfreqs [bi]) + 1
+			PSTR("%s %s"),
+			antmodes [gantennas [getbankindex_tx(gtx)]].label2,
+			gantmanual ? "MN" : "AU"
 	);
 	return b;
 }
@@ -11240,6 +11271,32 @@ uif_key_next_rxantenna(void)
 
 	grxantennas [bi] = calc_next(grxantennas [bi], 0, RXANTMODE_COUNT - 1);
 	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
+	updateboard(1, 0);
+}
+
+#elif WITHANTSELECT2
+
+/* Antenna switch
+	  */
+static void
+uif_key_next_antenna(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	const vindex_t vi = getvfoindex(bi);
+
+	verifyband(vi);
+
+	gantennas [bi] = calc_next(gantennas [bi], 0, ANTMODE_COUNT - 1);
+	savebandstate(vi, bi);	// запись всех режимов в область памяти диапазона
+	updateboard(1, 0);
+}
+
+/* ручной/автоматический выбор антенны */
+static void
+uif_key_next_autoantmode(void)
+{
+	gantmanual = calc_next(gantmanual, 0, 1);
+	save_i8(RMT_ANTMANUAL_BASE, gantmanual);
 	updateboard(1, 0);
 }
 
@@ -13443,7 +13500,7 @@ static void paanswer(uint_fast8_t arg)
 	cat_answer(len);
 }
 
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 
 static void ananswer(uint_fast8_t arg)
 {
@@ -13750,9 +13807,9 @@ static const canapfn catanswers [CAT_MAX_INDEX] =
 	smanswer,
 	raanswer,
 	paanswer,
-#if WITHANTSELECT || WITHANTSELECTRX
+#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
 	ananswer,
-#endif /* WITHANTSELECT || WITHANTSELECTRX */
+#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	rm1answer,
 	rm2answer,
@@ -20312,6 +20369,17 @@ process_key_menuset_common(uint_fast8_t kbch)
 	case KBD_CODE_ANTENNA:
 		/* RX Antenna switch */
 		uif_key_next_rxantenna();
+		return 1;	/* клавиша уже обработана */
+
+#elif WITHANTSELECT2
+	case KBD_CODE_ANTENNA_HOLDED:
+		/* ручной/автоматический выбор антенны */
+		uif_key_next_autoantmode();
+		return 1;	/* клавиша уже обработана */
+
+	case KBD_CODE_ANTENNA:
+		/* Antenna switch */
+		uif_key_next_antenna();
 		return 1;	/* клавиша уже обработана */
 
 #elif WITHANTSELECT
