@@ -316,9 +316,9 @@ enum
 	CAT_SM_INDEX,		// smanswer()
 	CAT_RA_INDEX,		// raanswer()
 	CAT_PA_INDEX,		// paanswer()
-#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECT || WITHANTSELECTRX
 	CAT_AN_INDEX,		// ananswer()
-#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 #if WITHTX && (WITHSWRMTR || WITHSHOWSWRPWR)
 	CAT_RM1_INDEX,		// rm1answer()
 	CAT_RM2_INDEX,		// rm2answer()
@@ -766,25 +766,13 @@ static int_fast16_t gerflossdb10(uint_fast8_t xvrtr, uint_fast8_t att, uint_fast
 	#error WITHAGCMODExxxx undefined
 #endif
 
-#if WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2
+#if WITHANTSELECT || WITHANTSELECTRX
 	enum { NANTENNAS = 2 };		// выбираем одну из двух антенн
-#else /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#else /* WITHANTSELECT || WITHANTSELECTRX */
 	enum { NANTENNAS = 1 };		// eдинственная антенна
-#endif /* WITHANTSELECT || WITHANTSELECTRX || WITHANTSELECT2 */
+#endif /* WITHANTSELECT || WITHANTSELECTRX */
 
-#if WITHANTSELECT2
-
-static const FLASHMEM struct {
-	uint8_t code;
-	char label2 [3];
-	char label5 [6];
-}  antmodes [] =
-{
-	{	0,	"A1", "ANT1 " },
-	{	1,	"A2", "ANT2 " },
-};
-
-#elif WITHANTSELECTRX
+#if WITHANTSELECTRX
 
 static const FLASHMEM struct {
 	uint8_t code;
@@ -2719,8 +2707,6 @@ struct bandinfo
 #if WITHANTSELECTRX
 	uint8_t rxant;		/* код выбора антенны (0/1) */
 	uint8_t ant;		/* признак включения приемной антенны */
-#elif WITHANTSELECT2
-	uint8_t ant;		/* код выбора антенны (0/1) */
 #elif WITHANTSELECT
 	uint8_t ant;		/* код выбора антенны (1T+1R, 2T+1R и так далее, не код антенны (0/1) */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -3374,7 +3360,6 @@ static uint_fast8_t gatts [VFOS_COUNT];
 static uint_fast8_t grxantennas [VFOS_COUNT];
 static uint_fast8_t gantennas [VFOS_COUNT];
 #elif WITHANTSELECT2
-static uint_fast8_t gantennas [VFOS_COUNT];
 static uint_fast8_t hffreqswitch = 14; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
 #elif WITHANTSELECT
 static uint_fast8_t gantennas [VFOS_COUNT];
@@ -6256,8 +6241,6 @@ copybankstate(
 #if  WITHANTSELECTRX
 	grxantennas [tbi] = grxantennas [sbi];
 	gantennas [tbi] = gantennas [sbi];
-#elif WITHANTSELECT2
-	gantennas [tbi] = gantennas [sbi];
 #elif WITHANTSELECT
 	gantennas [tbi] = gantennas [sbi];
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -6304,8 +6287,6 @@ savebandstate(const vindex_t b, const uint_fast8_t bi)
 	save_i8(RMT_ATT_BASE(b), gatts [bi]);
 #if WITHANTSELECTRX
 	save_i8(RMT_RXANTENNA_BASE(b), grxantennas [bi]);
-	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
-#elif WITHANTSELECT2
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
 #elif WITHANTSELECT
 	save_i8(RMT_ANTENNA_BASE(b), gantennas [bi]);
@@ -7287,12 +7268,12 @@ loadsavedstate(void)
 }
 
 #if WITHANTSELECT2
-/* получить номер конфигкрайии антенны в зависимости от частоты */
+/* получить номер антенны в зависимости от частоты */
 static uint_fast8_t getdefantenna(uint_fast32_t f)
 {
 	const uint_fast32_t fsw = hffreqswitch * 1000000uL;
 	ASSERT((fsw > TUNE_BOTTOM) && (fsw < TUNE_TOP));
-	return f > fsw  ? (ANTMODE_COUNT - 1) : 0;
+	return f > fsw;
 }
 #endif /* WITHANTSELECT2 */
 
@@ -7320,8 +7301,6 @@ loadnewband(
 #if WITHANTSELECTRX
 	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
-#elif WITHANTSELECT2
-	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, getdefantenna(gfreqs [bi]));	/* вытаскиваем номер включённой антенны */
 #elif WITHANTSELECT
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -7495,12 +7474,6 @@ catchangefreq(
 	}
 #if WITHANTSELECTRX
 	grxantennas [bi] = loadvfy8up(RMT_RXANTENNA_BASE(b), 0, RXANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
-	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
-	if (aistate != 0)
-	{
-		cat_answer_request(CAT_AN_INDEX);
-	}
-#elif WITHANTSELECT2
 	gantennas [bi] = loadvfy8up(RMT_ANTENNA_BASE(b), 0, ANTMODE_COUNT - 1, 0);	/* вытаскиваем номер включённой антенны */
 	if (aistate != 0)
 	{
@@ -10065,7 +10038,9 @@ updateboardZZZ(
 	static uint_fast8_t bandf2hint = UINT8_MAX;
 	static uint_fast8_t bandf3hint = UINT8_MAX;	// управление через разъем ACC
 #endif /* CTLSTYLE_IGOR */
-
+#if WITHANTSELECT2
+	static uint_fast8_t ant2hint = UINT8_MAX;
+#endif /* WITHANTSELECT2 */
 	uint_fast8_t full2 = full; 
 
 	uint_fast8_t pathi;
@@ -10097,6 +10072,9 @@ updateboardZZZ(
 	#endif /* CTLSTYLE_IGOR */
 		full2 |= flagne_u8(& lo0side, getsidelo0(freq));	// LOCODE_UPPER, LOCODE_LOWER or LOCODE_TARGETED
 		full2 |= flagne_u32(& lo0hint, gethintlo0(freq, lo0side));
+	#if WITHANTSELECT2
+		full2 |= flagne_u8(& ant2hint, getdefantenna(freq));
+	#endif /* WITHANTSELECT2 */
 	}
 	/* --- проверка необходимости полной перенастройки из-за сменившихся условий выбора частот. */
 
@@ -10501,7 +10479,7 @@ updateboardZZZ(
 		board_set_rxantenna(rxantmodes [grxantennas [rxbi]].code);
 		board_set_antenna(antmodes [gantennas [rxbi]].code);
 	#elif WITHANTSELECT2
-		board_set_antenna(antmodes [gantennas [rxbi]].code);
+		board_set_antenna(ant2hint);
 	#elif WITHANTSELECT
 		board_set_antenna(antmodes [gantennas [rxbi]].code [gtx]);
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -10878,7 +10856,7 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 }
 
 
-#elif WITHANTSELECT || WITHANTSELECT2
+#elif WITHANTSELECT
 
 // antenna
 const FLASHMEM char * hamradio_get_ant5_value_P(void)
@@ -10886,6 +10864,18 @@ const FLASHMEM char * hamradio_get_ant5_value_P(void)
 	return antmodes [gantennas [getbankindex_tx(gtx)]].label5;
 }
 
+#elif WITHANTSELECT2
+// antenna
+const FLASHMEM char * hamradio_get_ant5_value_P(void)
+{
+	const uint_fast8_t bi = getbankindex_tx(gtx);	/* vfo bank index */
+	static char b [6];
+	local_snprintf_P(b, ARRAY_SIZE(b),
+			PSTR("ANT%d"),
+			getdefantenna(gfreqs [bi]) + 1
+	);
+	return b;
+}
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
 
 // включение режима split (возможо, с расстройко от текущей частоты)
@@ -11253,7 +11243,7 @@ uif_key_next_rxantenna(void)
 	updateboard(1, 0);
 }
 
-#elif WITHANTSELECT || WITHANTSELECT2
+#elif WITHANTSELECT
 
 /* Antenna switch
 	  */
@@ -18652,7 +18642,7 @@ filter_t fi_2p0_455 =	// strFlash2p0
 	{
 		QLABEL2("HF ANT F", "HF Ant freq"), 3, 0, 0, ISTEP1,
 		ITEM_VALUE,
-		TUNE_BOTTOM / 1000000, TUNE_TOP / 1000000,
+		TUNE_BOTTOM / 1000000, (TUNE_TOP - 1) / 1000000,
 		offsetof(struct nvmap, hffreqswitch),
 		nvramoffs0,
 		NULL,
@@ -22468,9 +22458,6 @@ uint_fast8_t hamradio_set_freq(uint_fast32_t freq)
 	{
 		const uint_fast8_t bi = getbankindex_tx(gtx);
 		gfreqs [bi] = freq;
-#if WITHANTSELECT2
-		gantennas [bi] = getdefantenna(gfreqs [bi]);
-#endif /* WITHANTSELECT2 */
 		sthrl = STHRL_RXTX_FQCHANGED;
 		updateboard(0, 0);
 		return 1;
