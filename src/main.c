@@ -3281,6 +3281,10 @@ filter_t fi_2p0_455 =
 	struct bandgroup_tag bandgroups [BANDGROUP_COUNT];
 #endif	/* WITHDIRECTBANDS */
 
+#if WITHANTSELECT2
+	uint8_t hffreqswitch; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
+#endif /* WITHANTSELECT2 */
+
 #if WITHTOUCHGUI
 	struct gui_nvram_t gui_nvram;
 
@@ -3371,6 +3375,7 @@ static uint_fast8_t grxantennas [VFOS_COUNT];
 static uint_fast8_t gantennas [VFOS_COUNT];
 #elif WITHANTSELECT2
 static uint_fast8_t gantennas [VFOS_COUNT];
+static uint_fast8_t hffreqswitch = 14; /* выше этой частоты (МГц) выбирается вторая (ВЧ) антенна */
 #elif WITHANTSELECT
 static uint_fast8_t gantennas [VFOS_COUNT];
 #endif /* WITHANTSELECT || WITHANTSELECTRX */
@@ -7285,7 +7290,9 @@ loadsavedstate(void)
 /* получить номер конфигкрайии антенны в зависимости от частоты */
 static uint_fast8_t getdefantenna(uint_fast32_t f)
 {
-	return f > 12000000uL ? (ANTMODE_COUNT - 1) : 0;
+	const uint_fast32_t fsw = hffreqswitch * 1000000uL;
+	ASSERT((fsw > TUNE_BOTTOM) && (fsw < TUNE_TOP));
+	return f > fsw  ? (ANTMODE_COUNT - 1) : 0;
 }
 #endif /* WITHANTSELECT2 */
 
@@ -18641,6 +18648,18 @@ filter_t fi_2p0_455 =	// strFlash2p0
 		& bandset11m,
 		getzerobase, /* складывается со смещением и отображается */
 	},
+#if WITHANTSELECT2
+	{
+		QLABEL2("HF ANT F", "HF Ant freq"), 3, 0, 0, ISTEP1,
+		ITEM_VALUE,
+		TUNE_BOTTOM / 1000000, TUNE_TOP / 1000000,
+		offsetof(struct nvmap, hffreqswitch),
+		nvramoffs0,
+		NULL,
+		& hffreqswitch,
+		getzerobase, /* складывается со смещением и отображается */
+	},
+#endif /* WITHANTSELECT2 */
 #if WITHBCBANDS
 	{
 		QLABEL("BAND BC "), 7, 3, RJ_YES,	ISTEP1,
