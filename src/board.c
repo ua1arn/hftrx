@@ -8851,22 +8851,6 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 /* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)	
 {
-	static const struct
-	{
-		uint8_t ch;
-		uint8_t diff;
-	} xad2xlt [8] =
-	{
-			{	0, 0, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
-			{	1, 0, },
-			{	2, 0, },
-			{	3, 0, },
-			{	4, 0, },
-			{	5, 0, },
-			{	6, 0, },
-			{	7, 0, },
-	};
-
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
@@ -8896,8 +8880,10 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 #if defined (targetxad2)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
-		adcvalholder_t rv = mcp3208_read(targetxad2, xad2xlt [ch].diff, xad2xlt [ch].ch, & valid);
+		adcvalholder_t rv = mcp3208_read(targetxad2, 0, ch, & valid);
 		//PRINTF("targetxad2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
+		if (valid == 0)
+			PRINTF("ADC%u validation failed\n", ch);
 		return rv;
 #else /* defined (targetxad2) */
 		return 0;
