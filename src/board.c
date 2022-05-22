@@ -9663,6 +9663,10 @@ void hardware_cw_diagnostics(
 
 #if WITHSPIHW || WITHSPISW
 
+static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
+static const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
+static const unsigned MCP3208_usCsDelay = 50;
+
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
 mcp3208_read(
@@ -9678,8 +9682,6 @@ mcp3208_read(
 	uint_fast32_t rv;
 
 	enum { LSBPOS = 0 };
-	const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
-	const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
 
 #if WITHSPILOWSUPPORTT
 	// Работа совместно с фоновым обменом SPI по прерываниям
@@ -9689,7 +9691,7 @@ mcp3208_read(
 
 	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = USBD_peek_u32_BE(rxbuf);
 
@@ -9697,12 +9699,14 @@ mcp3208_read(
 
 	hardware_spi_connect_b32(MCP3208_SPISPEED, MCP3208_SPISMODE);
 	prog_select(target);
+	local_delay_us(MCP3208_usCsDelay);
 
 	hardware_spi_b32_p1((uint_fast32_t) cmd1 << (LSBPOS + 14));
 	rv = hardware_spi_complete_b32();
 
 	prog_unselect(target);
 	hardware_spi_disconnect();
+	local_delay_us(MCP3208_usCsDelay);
 
 
 #elif WITHSPI16BIT
@@ -9711,6 +9715,7 @@ mcp3208_read(
 
 	hardware_spi_connect_b16(MCP3208_SPISPEED, MCP3208_SPISMODE);
 	prog_select(target);
+	local_delay_us(MCP3208_usCsDelay);
 
 	hardware_spi_b16_p1((uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
 	v0 = hardware_spi_complete_b16();
@@ -9719,6 +9724,7 @@ mcp3208_read(
 
 	prog_unselect(target);
 	hardware_spi_disconnect();
+	local_delay_us(MCP3208_usCsDelay);
 
 	rv = ((uint_fast32_t) v0 << 16) | v1;
 
@@ -9727,6 +9733,7 @@ mcp3208_read(
 	uint_fast8_t v0, v1, v2, v3;
 
 	spi_select2(target, MCP3208_SPISMODE, MCP3208_SPISPEED);	// for 50 kS/S and 24 bit words
+	local_delay_us(MCP3208_usCsDelay);
 
 	v0 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 24);
 	v1 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
@@ -9734,6 +9741,7 @@ mcp3208_read(
 	v3 = spi_read_byte(target, 0x00);
 
 	spi_unselect(target);
+	local_delay_us(MCP3208_usCsDelay);
 
 	rv = ((uint_fast32_t) v0 << 24) | ((uint_fast32_t) v1 << 16) | ((uint_fast32_t) v2 << 8) | v3;
 
@@ -9760,8 +9768,6 @@ mcp3208_read_low(
 	uint_fast32_t rv;
 
 	enum { LSBPOS = 0 };
-	const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
-	const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
 
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
@@ -9770,7 +9776,7 @@ mcp3208_read_low(
 
 	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	prog_spi_exchange_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = USBD_peek_u32_BE(rxbuf);
 
