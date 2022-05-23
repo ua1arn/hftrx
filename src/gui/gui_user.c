@@ -2037,6 +2037,7 @@ static void window_utilites_process(void)
 
 // *********************************************************************************************************************************************************************
 
+// переделать полностью
 static void window_swrscan_process(void)
 {
 #if WITHTX
@@ -2216,7 +2217,6 @@ static void window_swrscan_process(void)
 	{
 		// отрисовка фона графика и разметки
 		uint_fast16_t gr_x = win->x1 + x0, gr_y = win->y1 + y0;
-		colpip_fillrect(fr, DIM_X, DIM_Y, x0, win->y1 + window_title_height + edge_step, gr_w, gr_h, COLORMAIN_BLACK);
 		colmain_line(fr, DIM_X, DIM_Y, gr_x, gr_y, gr_x, win->y1 + y1, COLORMAIN_WHITE, 0);
 		colmain_line(fr, DIM_X, DIM_Y, gr_x, gr_y, win->x1 + x1, gr_y, COLORMAIN_WHITE, 0);
 
@@ -5812,8 +5812,8 @@ static void window_kbd_test_proccess(void)
 
 // *****************************************************************************************************************************
 
-#define MENU_GROUPS_MAX	20
-#define MENU_PARAMS_MAX	30
+#define MENU_GROUPS_MAX	30
+#define MENU_PARAMS_MAX	50
 static uint8_t index_param = 0;
 
 static void window_menu_params_proccess(void)

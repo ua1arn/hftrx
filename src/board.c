@@ -4334,7 +4334,7 @@ prog_ctrlreg(uint_fast8_t plane)
 
 		// DD22 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
-		RBBIT(0020, ! xvrtr && glob_bandf != 0 && ! txgated);		// D0: включение подачи смещения на выходной каскад усилителя мощности
+		RBBIT(0020, ! (! xvrtr && glob_bandf != 0 && txgated));		// D0: включение подачи смещения на выходной каскад усилителя мощности
 
 		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
 		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
