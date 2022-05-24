@@ -8868,8 +8868,11 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 #if defined (targetadck)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCXKBASE;
-		//PRINTF("targetadc2: ch = %u\n", ch);
-		return mcp3208_read(targetadck, 0, ch, & valid);
+		adcvalholder_t rv = mcp3208_read(targetadck, 0, ch, & valid);
+		//PRINTF("targetadck: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
+		if (valid == 0)
+			PRINTF("ADC%u validation failed\n", adci);
+		return rv;
 #else /* defined (targetadc2) */
 		return 0;
 #endif /* defined (targetadc2) */
@@ -8883,7 +8886,7 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		adcvalholder_t rv = mcp3208_read(targetxad2, 0, ch, & valid);
 		//PRINTF("targetxad2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
 		if (valid == 0)
-			PRINTF("ADC%u validation failed\n", ch);
+			PRINTF("ADC%u validation failed\n", adci);
 		return rv;
 #else /* defined (targetxad2) */
 		return 0;
@@ -8896,7 +8899,11 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX0BASE;
 		//PRINTF("targetadc2: ch = %u\n", ch);
-		return mcp3208_read(targetadc2, 0, ch, & valid);
+		adcvalholder_t rv = mcp3208_read(targetadc2, 0, ch, & valid);
+		//PRINTF("targetadc2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
+		if (valid == 0)
+			PRINTF("ADC%u validation failed\n", adci);
+		return rv;
 #else /* defined (targetadc2) */
 		return 0;
 #endif /* defined (targetadc2) */
@@ -9649,9 +9656,9 @@ void hardware_cw_diagnostics(
 
 #if WITHSPIHW || WITHSPISW
 
-static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
+static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED1M;
 static const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
-static const unsigned MCP3208_usCsDelay = 50;
+static const unsigned MCP3208_usCsDelay = 0;
 
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
