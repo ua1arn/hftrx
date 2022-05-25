@@ -234,7 +234,8 @@
 	#define CTLREGMODE_STORCH_V9B	1
 	//#define CTLREGMODE_NOCTLREG 1	/* Загрузчик не имеет доступа к управлению SPI. Однако, есть прямое управление выъодами GPIO */
 
-	#define ENCRES_DEFAULT ENCRES_128
+	#define ENCRES_DEFAULT ENCRES_600
+	#define ENCDIV_DEFAULT 4
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
