@@ -646,8 +646,12 @@ void network_initialize(void)
 #include "lwip/tcp.h"
 #include "lwip/apps/sntp.h"
 #include "lwip/priv/tcp_priv.h"
+#include "lwip/timeouts.h"
 
 #include "board.h"
+#include "xc7z_inc.h"
+
+#define COUNTS_PER_MSECOND  (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ / (2U*1000U))
 
 extern volatile int TcpFastTmrFlag;
 extern volatile int TcpSlowTmrFlag;
@@ -660,7 +664,7 @@ unsigned char mac_ethernet_address[] =
 
 uint_fast8_t timezone = 3;  // GMT+3
 
-static ticker_t lwipticker;
+static uint_fast8_t network_inited = 0;
 
 #define RESET_RX_CNTR_LIMIT	400
 #define ETH_LINK_DETECT_INTERVAL 4
@@ -671,6 +675,9 @@ volatile int TcpFastTmrFlag = 0;
 volatile int TcpSlowTmrFlag = 0;
 static int ResetRxCntr = 0;
 extern struct netif *echo_netif;
+
+void start_ping_action(void * arg);
+void check_ping_result(void * arg);
 
 void board_update_time(uint32_t sec)
 {
@@ -775,11 +782,24 @@ int start_echo_server(void)
 	return 0;
 }
 
-void lwip_timer_spool(void * ctx)
+static volatile uint32_t sys_now_counter = 0;
+uint32_t sys_now(void)
+{
+	return sys_now_counter;
+}
+
+void lwip_timer_spool(void)
 {
 	static int DetectEthLinkStatus = 0;
 	static int odd = 1;
 	static int dhcp_timer = 0;
+
+	sys_now_counter ++;
+
+	sys_check_timeouts();
+
+	if (network_inited)
+		network_spool();
 
 	DetectEthLinkStatus++;
 	TcpFastTmrFlag = 1;
@@ -818,10 +838,12 @@ void network_initialize(void)
 	gw.addr = 0;
 	netmask.addr = 0;
 
-	system_disableIRQ();
-	ticker_initialize(& lwipticker, NTICKS(200), lwip_timer_spool, NULL);	// 200 ms
-	ticker_add(& lwipticker);
-	system_enableIRQ();
+	PTIM_SetControl(0);
+	PTIM_SetCurrentValue(0);
+	PTIM_SetLoadValue(1 * COUNTS_PER_MSECOND);
+	PTIM_SetControl(0x06U);
+	arm_hardware_set_handler_system(PrivTimer_IRQn, lwip_timer_spool);
+	PTIM_SetControl(PTIM_GetControl() | 0x01);
 
 	lwip_init();
 
@@ -868,6 +890,11 @@ void network_initialize(void)
 	sntp_init();
 
 	start_echo_server();
+
+	sys_timeout(4000, start_ping_action, NULL);
+	sys_timeout(100, check_ping_result, NULL);
+
+	network_inited = 1;
 }
 
 void network_spool(void)

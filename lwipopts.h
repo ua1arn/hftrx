@@ -186,6 +186,7 @@ void display_vtty_printf(const char * format, ...);
 
 void board_update_time(uint32_t sec);
 
+#define LWIP_RAW                    1
 #define NO_SYS 						1
 #define LWIP_SOCKET 				0
 #define LWIP_COMPAT_SOCKETS			0
