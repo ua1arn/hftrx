@@ -640,7 +640,7 @@ void network_initialize(void)
 #include "lwip/udp.h"
 #include "lwip/dhcp.h"
 #include "netif/etharp.h"
-#include "xadapter.h"
+#include "netif/xadapter.h"
 #include "lwip/ip_addr.h"
 #include "lwip/err.h"
 #include "lwip/tcp.h"

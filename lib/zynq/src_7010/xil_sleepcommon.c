@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2017 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2017 - 2022 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -16,6 +16,11 @@
 * Ver   Who      Date     Changes
 * ----- -------- -------- -----------------------------------------------
 * 6.6 	srm  	 11/02/17 First release
+* 7.7	sk	 01/10/22 Typecast sleep function argument from unsigned
+* 			  int to u32 to fix misra_c_2012_directive_4_6
+* 			  violation.
+* 7.7	sk	 03/02/22 Update usleep argument type to fix misra_c_2012_
+* 			  directive_4_6 violation.
 * </pre>
 ******************************************************************************/
 
@@ -39,7 +44,7 @@
 * @note             none
 *
 *****************************************************************************/
- void sleep(unsigned int seconds)
+ void sleep(u32 seconds)
  {
 #if defined (ARMR5)
 	sleep_R5(seconds);
@@ -65,7 +70,7 @@
 * @note             none
 *
 *****************************************************************************/
- void usleep(unsigned long useconds)
+ void usleep(ULONG useconds)
  {
 #if defined (ARMR5)
 	usleep_R5(useconds);

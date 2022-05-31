@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2002 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2002 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -37,10 +37,14 @@
 *
 ******************************************************************************/
 
+/**
+ *@cond nocomments
+ */
+
 #ifndef XENV_STANDALONE_H
 #define XENV_STANDALONE_H
 
-#include <xil_types.h>
+#include "xil_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,10 +61,10 @@ extern "C" {
 
 #if defined __MICROBLAZE__
 #  include "mb_interface.h"
-#  include <xparameters.h>   /* XPAR constants used below in MB section */
+#  include "xparameters.h"   /* XPAR constants used below in MB section */
 
 #elif defined __PPC__
-#  include <sleep.h>
+#  include "sleep.h"
 #  include "xcache_l.h"      /* also include xcache_l.h for caching macros */
 #endif
 
@@ -340,3 +344,7 @@ typedef s32 XENV_TIME_STAMP;
 #endif
 
 #endif	/* #ifndef XENV_STANDALONE_H */
+
+ /**
+ *@endcond
+ */

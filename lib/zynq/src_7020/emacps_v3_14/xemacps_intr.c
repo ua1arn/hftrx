@@ -364,6 +364,5 @@ void XEmacPs_IntrHandler2(void)
 		InstancePtr->ErrorHandler(InstancePtr->ErrorRef, XEMACPS_SEND,
 					  RegSR);
 	}
-
 }
 /** @} */

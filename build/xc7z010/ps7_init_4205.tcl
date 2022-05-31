@@ -28,11 +28,14 @@ proc ps7_pll_init_data_3_0 {} {
 proc ps7_clock_init_data_3_0 {} {
     mwr -force 0XF8000008 0x0000DF0D
     mask_write 0XF8000128 0x03F03F01 0x00700F01
+    mask_write 0XF8000138 0x00000011 0x00000011
+    mask_write 0XF8000140 0x03F03F71 0x00100141
     mask_write 0XF8000154 0x00003F33 0x00001002
     mask_write 0XF8000168 0x00003F31 0x00000801
     mask_write 0XF8000170 0x03F03F30 0x00400800
+    mask_write 0XF8000180 0x03F03F30 0x00800800
     mask_write 0XF80001C4 0x00000001 0x00000001
-    mask_write 0XF800012C 0x01FFCCCD 0x016C000D
+    mask_write 0XF800012C 0x01FFCCCD 0x016C004D
     mwr -force 0XF8000004 0x0000767B
 }
 proc ps7_ddr_init_data_3_0 {} {
@@ -247,11 +250,14 @@ proc ps7_pll_init_data_2_0 {} {
 proc ps7_clock_init_data_2_0 {} {
     mwr -force 0XF8000008 0x0000DF0D
     mask_write 0XF8000128 0x03F03F01 0x00700F01
+    mask_write 0XF8000138 0x00000011 0x00000011
+    mask_write 0XF8000140 0x03F03F71 0x00100141
     mask_write 0XF8000154 0x00003F33 0x00001002
     mask_write 0XF8000168 0x00003F31 0x00000801
     mask_write 0XF8000170 0x03F03F30 0x00400800
+    mask_write 0XF8000180 0x03F03F30 0x00800800
     mask_write 0XF80001C4 0x00000001 0x00000001
-    mask_write 0XF800012C 0x01FFCCCD 0x016C000D
+    mask_write 0XF800012C 0x01FFCCCD 0x016C004D
     mwr -force 0XF8000004 0x0000767B
 }
 proc ps7_ddr_init_data_2_0 {} {
@@ -467,11 +473,14 @@ proc ps7_pll_init_data_1_0 {} {
 proc ps7_clock_init_data_1_0 {} {
     mwr -force 0XF8000008 0x0000DF0D
     mask_write 0XF8000128 0x03F03F01 0x00700F01
+    mask_write 0XF8000138 0x00000011 0x00000011
+    mask_write 0XF8000140 0x03F03F71 0x00100141
     mask_write 0XF8000154 0x00003F33 0x00001002
     mask_write 0XF8000168 0x00003F31 0x00000801
     mask_write 0XF8000170 0x03F03F30 0x00400800
+    mask_write 0XF8000180 0x03F03F30 0x00800800
     mask_write 0XF80001C4 0x00000001 0x00000001
-    mask_write 0XF800012C 0x01FFCCCD 0x016C000D
+    mask_write 0XF800012C 0x01FFCCCD 0x016C004D
     mwr -force 0XF8000004 0x0000767B
 }
 proc ps7_ddr_init_data_1_0 {} {

@@ -24,7 +24,7 @@ PRJROOT := ../..
 OBJDIR = obj
 
 ZINQ_BOOT_DIR := E:
-XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z020.elf
+XILINX_JTAGOPTS := -flash_type qspi-x4-single -fsbl fsbl_Y7Z010.elf
 
 #
 CC   = $(TRGT)gcc
@@ -101,6 +101,7 @@ DINCDIR = \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
 	$(LWIPDIR)/src/apps/http \
+	$(LWIPDIR)/ports/xilinx/include \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
@@ -130,6 +131,7 @@ SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
+SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 
 # Define project name here
 PROJECT = tc1_xc7z010

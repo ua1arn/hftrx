@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2014 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2014 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -24,12 +24,16 @@
 *
 ******************************************************************************/
 
+/**
+ *@cond nocomments
+ */
+
 #ifndef XPSEUDO_ASM_GCC_H  /* prevent circular inclusions */
 #define XPSEUDO_ASM_GCC_H  /* by using protection macros */
 
 /***************************** Include Files ********************************/
 
-#include <xil_types.h>
+#include "xil_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -228,5 +232,9 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
+
+/**
+ *@endcond
+ */
 
 #endif /* XPSEUDO_ASM_GCC_H */
