@@ -5,8 +5,8 @@
  *      Author: User
  */
 
-#ifndef ARCH_ALLWNR_T13S3_ALLWNR_T13S3_H_
-#define ARCH_ALLWNR_T13S3_ALLWNR_T13S3_H_
+#ifndef ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
+#define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
 
 /**
  * @brief STM32MP1XX Interrupt Number Definition, according to the selected device
@@ -399,4 +399,4 @@ typedef enum IRQn
 #define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)
 
 
-#endif /* ARCH_ALLWNR_T13S3_ALLWNR_T13S3_H_ */
+#endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */

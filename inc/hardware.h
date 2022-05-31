@@ -479,7 +479,7 @@ extern "C" {
 	#define CORE_CA7	1
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
 
-	#include "arch/allwnr_t13s3/allwnr_t13s3.h"
+	#include "arch/allwnr_t113s3/allwnr_t113s3.h"
 	#include "irq_ctrl.h"
 
 	#define DCACHEROWSIZE 64
