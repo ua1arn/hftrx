@@ -747,7 +747,7 @@
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
-#if 1
+#if 0
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_INPUT		(GPIOC->IDR)
 	#define TARGET_FPGA_OVF_BIT			(1u << 8)	// PC8
@@ -1096,6 +1096,7 @@
 	//#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board
 	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
 
+#if 0
 	#define BOARD_BLINK_INITIALIZE() do { \
 			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
 		} while (0)
@@ -1105,18 +1106,20 @@
 			else \
 				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
 		} while (0)
+#endif
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_USERBOOT_BIT	(1uL << 1)	/* PB1: ~USER_BOOT */
-	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->IDR) & TARGET_ENC2BTN_BIT) == 0)
-	#define BOARD_USERBOOT_INITIALIZE() do { \
+	#define BOARD_IS_USERBOOT() 0//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->IDR) & TARGET_ENC2BTN_BIT) == 0)
+	#define BOARD_USERBOOT_INITIALIZEwrk() do { \
 			arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); /* set as input with pull-up */ \
 		} while (0)
+	#define BOARD_USERBOOT_INITIALIZE() do { \
+		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
-	#define	HARDWARE_INITIALIZE() do { \
-			I2S2HW_POOLDOWN(); \
+	#define	HARDWARE_INITIALIZEwrk() do { \
 			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			HARDWARE_DAC_INITIALIZE(); \
@@ -1126,6 +1129,8 @@
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
 			USBD_EHCI_INITIALIZE(); \
+		} while (0)
+	#define	HARDWARE_INITIALIZE() do { \
 		} while (0)
 
 #endif /* ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED */
