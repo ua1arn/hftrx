@@ -375,8 +375,6 @@ typedef enum IRQn
  // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 	0x40000000	/* 2 GB */
 
-
-
 #define GPIOA_BASE		(GPIO_BASE + 0x030 * 0)
 #define GPIOB_BASE		(GPIO_BASE + 0x030 * 1)
 #define GPIOC_BASE		(GPIO_BASE + 0x030 * 2)
