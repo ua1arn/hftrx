@@ -8,12 +8,8 @@
 // Трансивер с DSP обработкой "Аист" на процессоре STM32MP1xx
 // rmainunit_v5km7.pcb STM32MP1xx, 2xUSB, NAU8822L и FPGA EP4CE22E22I7N
 
-#ifndef ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED
-#define ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
-
-	#if ! defined(STM32MP157Axx) && ! defined(STM32MP153Dxx)
-		#error Wrong CPU selected. STM32MP157Axx expected
-	#endif /* ! defined(STM32MP157Axx) */
+#ifndef ARM_ALLWT128S3_CTLSTYLE_STORCH_V9A_H_INCLUDED
+#define ARM_ALLWT128S3_CTLSTYLE_STORCH_V9A_H_INCLUDED 1
 
 	//#define WITHSAICLOCKFROMI2S 1	/* Блок SAI1 тактируется от PLL I2S */
 	// в данной конфигурации I2S и SAI - в режиме SLAVE
@@ -244,7 +240,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if WITHISBOOTLOADER
+#if WITHISBOOTLOADER || 1
 
 	#define LCDMODE_DUMMY	1
 
@@ -439,18 +435,18 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
-	#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
+	//#define WITHUSEAUDIOREC		1	// Запись звука на SD CARD
 	//#define WITHUSEAUDIOREC2CH	1	// Запись звука на SD CARD в стерео
 	//#define WITHUSEAUDIORECCLASSIC	1	// стандартный формат записи, без "дыр"
 
 	//#define WITHFT8	1	/* Поддержка протокола FT8. Для фонового декодирования требуется минимум двухъядерный процессор и внешняя оперативная память */
 	//#define WITHRTTY 1	/* подержка демодулятора RTTY */
 
-	#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
+	//#define WITHRTS96 1		/* Получение от FPGA квадратур, возможно передача по USB и отображение спектра/водопада. */
 	#if LCDMODE_AT070TNA2 || LCDMODE_AT070TN90
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
@@ -488,7 +484,7 @@
 		#define BOARD_FFTZOOM_POW2MAX 3	// Возможные масштабы FFT x1, x2, x4, x8
 		#define WITHFFTSIZEWIDE 1024		/* Отображение спектра и волопада */
 		#define WITHDISPLAYSWR_FPS 15
-		#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
+		//#define WITHAFSPECTRE		1		/* показ спктра прослушиваемого НЧ сигнала. */
 		#define WITHFFTSIZEAF 		512		/* Отображение спектра НЧ сигнвлв */
 	#endif /* LCDMODE_AT070TNA2 || LCDMODE_AT070TN90 */
 
@@ -537,11 +533,11 @@
 
 	// +++ Эти строки можно отключать, уменьшая функциональность готового изделия
 	//#define WITHRFSG	1	/* включено управление ВЧ сигнал-генератором. */
-	#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
+	//#define WITHTX		1	/* включено управление передатчиком - сиквенсор, электронный ключ. */
 	#if 0
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define WITHAUTOTUNER_UA1CEI_V2 1
-	#elif 1
+	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
 		#define SHORTSET8	1
@@ -558,7 +554,7 @@
 	//#define WITHIFSHIFT	1	/* используется IF SHIFT */
 	//#define WITHIFSHIFTOFFSET	(-250)	/* Начальное занчение IF SHIFT */
 	//#define WITHPBT		1	/* используется PBT (если LO3 есть) */
-	#define WITHCAT		1	/* используется CAT */
+	//#define WITHCAT		1	/* используется CAT */
 	//#define WITHMODEM		1	/* Устройство работает как радиомодем с последовательным интерфейсом */
 	//#define WITHFREEDV	1	/* поддержка режима FreeDV - http://freedv.org/ */
 	//#define WITHNMEA		1	/* используется NMEA parser */
@@ -616,7 +612,7 @@
 	/* что за память настроек и частот используется в контроллере */
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25XXXX	// SERIAL FRAM AUTODETECT
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L04	// Так же при использовании FM25040A - 5 вольт, 512 байт
-	#define NVRAM_TYPE NVRAM_TYPE_FM25L16
+	//#define NVRAM_TYPE NVRAM_TYPE_FM25L16
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L64
 	//#define NVRAM_TYPE NVRAM_TYPE_FM25L256	// FM25L256, FM25W256
 	//#define NVRAM_TYPE NVRAM_TYPE_CPUEEPROM
@@ -625,7 +621,7 @@
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25L16		// demo board with atxmega128a4u
 	//#define NVRAM_TYPE NVRAM_TYPE_AT25256A
 	//#define NVRAM_TYPE NVRAM_TYPE_BKPSRAM	// Область памяти с батарейным питанием
-	//#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
+	#define NVRAM_TYPE NVRAM_TYPE_NOTHING	// нет NVRAM
 	//#define HARDWARE_IGNORENONVRAM	1		// отладка на платах где нет никакого NVRAM
 
 	// End of NVRAM definitions section
@@ -676,7 +672,7 @@
 	/* фильтры, для которых стоит признак HAVE */
 	#define IF3_FHAVE	( IF3_FMASK_0P5 | IF3_FMASK_3P1 /*| IF3_FMASK_6P0 | IF3_FMASK_8P0*/)
 
-	#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
+	//#define WITHDCDCFREQCTL	1		// Имеется управление частотой преобразователей блока питания и/или подсветки дисплея
 
 	#define VOLTLEVEL_UPPER		47	// 4.7 kOhm - верхний резистор делителя датчика напряжения
 	#define VOLTLEVEL_LOWER		10	// 1 kOhm - нижний резистор
@@ -815,4 +811,4 @@
 	#define KI_COUNT 5	// количество используемых под клавиатуру входов АЦП
 	#define KI_LIST	KI4, KI3, KI2, KI1, KI0,	// инициализаторы для функции перекодировки
 
-#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_STORCH_V9A_H_INCLUDED */
+#endif /* ARM_ALLWT128S3_CTLSTYLE_STORCH_V9A_H_INCLUDED */

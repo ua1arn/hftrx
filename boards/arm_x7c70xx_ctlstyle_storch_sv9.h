@@ -197,7 +197,8 @@
 
 #if WITHISBOOTLOADER
 
-	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	#define CTLREGMODE_STORCH_V9B	1
 	//#define CTLREGMODE_NOCTLREG 1	/* Загрузчик не имеет доступа к управлению SPI. Однако, есть прямое управление выъодами GPIO */
 
 	// +++ заглушки для плат с DSP обработкой
@@ -229,10 +230,12 @@
 
 #else /* WITHISBOOTLOADER */
 
-	#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	//#define CTLREGMODE_STORCH_V9A	1	/* STM32MP157, дополнения для подключения трансвертора */
+	#define CTLREGMODE_STORCH_V9B	1
 	//#define CTLREGMODE_NOCTLREG 1	/* Загрузчик не имеет доступа к управлению SPI. Однако, есть прямое управление выъодами GPIO */
 
-	#define ENCRES_DEFAULT ENCRES_128
+	#define ENCRES_DEFAULT ENCRES_600
+	#define ENCDIV_DEFAULT 4
 	//#define ENCRES_DEFAULT ENCRES_24
 	#define WITHDIRECTFREQENER	1 //(! CTLSTYLE_SW2011ALL && ! CTLSTYLE_UA3DKC)
 	#define WITHENCODER	1	/* для изменения частоты имеется енкодер */
@@ -333,11 +336,11 @@
 			#define WITHALTERNATIVEFONTS	1
 			//#define WITHAFEQUALIZER		1
 			#define WITHALTERNATIVELAYOUT	1
-			//#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
+			#define WITHRLEDECOMPRESS	1	/* поддержка вывода сжатых RLE изображений, пока что только для ARGB888 видеобуфера */
 			#define WITHDEFAULTVIEW		VIEW_3DSS
 			#define WITHFT8				1
 			#define REALREFERENCE_FREQ 	122879000L
-			#define WITHIGNORESWR		1
+			#define WITHSWRPROT		0	/* защита от превышения КСВ */
 		#else
 			#define WITHDISPLAY_FPS		15
 			#define WITHDISPLAYSWR_FPS	15
@@ -438,9 +441,9 @@
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
 	////#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	////#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
-	//#define WITHANTSELECT	1	// Управление переключением антенн
+	#define WITHANTSELECT2	1	// Управление переключением антенн
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 

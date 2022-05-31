@@ -4125,8 +4125,13 @@ prog_ctrlreg(uint_fast8_t plane)
 #if WITHAUTOTUNER
 	#if WITHAUTOTUNER_UA1CEI_V2
 
+		#if ! SHORTSET_7L8C && ! FULLSET_7L8C
+			#error Wrong config
+		#endif /* ! SHORTSET_7L8C && ! FULLSET_7L8C */
+		/* 7 indictors, 8 capacitors */
 		RBVAL8(0100, glob_tuner_C);
-		RBVAL8(0070, glob_tuner_L);
+		RBBIT(0077, glob_tuner_type);	// 0 - понижающий, 1 - повышающий
+		RBVAL(0070, glob_tuner_L, 7);
 
 		//RBBIT(0067, 0);	// UNUSED
 		RBBIT(0066, 0);	// undefined
@@ -4200,6 +4205,141 @@ prog_ctrlreg(uint_fast8_t plane)
 		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
 		RBVAL(0014, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
 		RBBIT(0013, xvrtr && glob_fanflag);			/* D3: XVRTR PA FAN */
+		RBBIT(0012, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
+		RBBIT(0011, ! xvrtr && glob_tx);				// D1: TX ANT relay
+		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
+
+		// DD28 SN74HC595PW рядом с DIN8
+		RBBIT(0007, glob_poweron);			// POWER_HOLD_ON added in next version
+		RBBIT(0006, ! xvrtr && glob_fanflag);			// FAN_CTL added in LVDS version
+		RBBIT(0005, ! xvrtr && glob_tx);				// EXT_PTT2 added in LVDS version
+		RBBIT(0004, ! xvrtr && glob_tx);				// EXT_PTT added in LVDS version
+		RBVAL(0000, glob_bandf3, 4);		/* D3:D0: DIN8 EXT PA band select */
+
+		board_ctlregs_spi_send_frame(target, rbbuff, sizeof rbbuff / sizeof rbbuff [0]);
+	}
+}
+
+#elif CTLREGMODE_STORCH_V9B
+
+/* MYC-Y7Z020-4E-512D-766-I , дополнения для подключения трансвертора */
+
+#define BOARD_NPLANES	1	/* в данной конфигурации не требуется обновлять множество регистров со "слоями" */
+
+static void
+//NOINLINEAT
+prog_ctrlreg(uint_fast8_t plane)
+{
+
+#if defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1)
+	prog_fpga_ctrlreg(targetfpga1);	// FPGA control register
+#endif /* defined(DDS1_TYPE) && (DDS1_TYPE == DDS_TYPE_FPGAV1) */
+	//prog_rfadc_update();			// AD9246 vref divider update
+
+	// registers chain control register
+	{
+		//Current Output at Full Power A1 = 1, A0 = 1, VO = 0 ±500 ±380 ±350 ±320 mA min A
+		//Current Output at Power Cutback A1 = 1, A0 = 0, VO = 0 ±450 ±350 ±320 ±300 mA min A
+		//Current Output at Idle Power A1 = 0, A0 = 1, VO = 0 ±100 ±60 ±55 ±50 mA min A
+
+		enum
+		{
+			HARDWARE_OPA2674I_FULLPOWER = 0x03,
+			HARDWARE_OPA2674I_POWERCUTBACK = 0x02,
+			HARDWARE_OPA2674I_IDLEPOWER = 0x01,
+			HARDWARE_OPA2674I_SHUTDOWN = 0x00
+		};
+		static const FLASHMEM uint_fast8_t powerxlat [] =
+		{
+			HARDWARE_OPA2674I_IDLEPOWER,
+			HARDWARE_OPA2674I_POWERCUTBACK,
+			HARDWARE_OPA2674I_FULLPOWER,
+		};
+		const spitarget_t target = targetctl1;
+
+		rbtype_t rbbuff [10] = { 0 };
+		const uint_fast8_t txgated = glob_tx && glob_txgate;
+		const uint_fast8_t xvrtr = bandf_calc_getxvrtr(glob_bandf);
+		//PRINTF("prog_ctrlreg: glob_bandf=%d, xvrtr=%d\n", glob_bandf, xvrtr);
+
+#if WITHAUTOTUNER
+	#if WITHAUTOTUNER_UA1CEI_V2
+
+		RBVAL8(0100, glob_tuner_C);
+		RBVAL8(0070, glob_tuner_L);
+
+		//RBBIT(0067, 0);	// UNUSED
+		RBBIT(0066, 0);	// undefined
+		RBBIT(0065, glob_classamode);	// class A
+		RBBIT(0064, glob_rxantenna);	// RX ANT
+		RBBIT(0063, ! glob_tuner_bypass);	// Energized - tuner on
+		RBBIT(0062, ! glob_classamode);	// hi power out
+		RBBIT(0061, txgated);	//
+		RBBIT(0060, glob_fanflag);	// fan
+
+		RBBIT(0057, glob_antenna);	// Ant A/B
+		RBVAL(0050, 1U << glob_bandf2, 7);	// LPF6..LPF0
+
+	#elif WITHAUTOTUNER_AVBELNN
+		// Плата управления LPF и тюнером от avbelnn
+
+		// Схему брал на краснодарском форуме Аист сообщение 545 от avbelnn.
+		// http://www.cqham.ru/forum/showthread.php?36525-QRP-SDR-трансивер-Аист-(Storch)&p=1541543&viewfull=1#post1541543
+
+		RBBIT(0107, 0);	// REZ4
+		RBBIT(0106, 0);	// REZ3
+		RBBIT(0105, 0);	// REZ2_OC
+		RBBIT(0104, glob_antenna);	// REZ1_OC -> antenna switch
+		RBBIT(0103, ! (txgated && ! glob_autotune));	// HP/LP: 0: high power, 1: low power
+		RBBIT(0102, txgated && ! xvrtr);
+		RBBIT(0101, glob_fanflag && ! xvrtr);	// FAN
+		// 0100 is a bpf7
+		RBVAL(0072, 1U << glob_bandf2, 7);	// BPF7..BPF1 (fences: 2.4 MHz, 3.9 MHz, 7.4 MHz, 14.8 MHz, 22 MHz, 30 MHz, 50 MHz)
+		RBBIT(0071, glob_tuner_type);		// TY
+		RBBIT(0070, ! glob_tuner_bypass);	// в обесточенном состоянии - режим BYPASS
+		RBVAL8(0060, glob_tuner_C);
+		RBVAL8(0050, glob_tuner_L);
+
+	#elif SHORTSET8 || FULLSET8
+
+	#elif SHORTSET7 || FULLSET7
+
+		/* +++ Управление согласующим устройством */
+		/* регистр управления наборной индуктивностью. */
+		RBVAL(0060, glob_tuner_bypass ? 0 : glob_tuner_L, 7);					/* Inductors tuner bank 	*/
+
+		/* регистр управления массивом конденсаторов */
+		RBBIT(0057, glob_tuner_bypass ? 0 : glob_tuner_type);					/* pin 7: TYPE OF TUNER 	*/
+		RBVAL(0050, glob_tuner_bypass ? 0 : (revbits8(glob_tuner_C)), 7);		/* Capacitors tuner bank 	*/
+		/* --- Управление согласующим устройством */
+
+	#else
+		#error WITHAUTOTUNER and unknown details
+	#endif
+#endif /* WITHAUTOTUNER */
+
+		// DD23 SN74HC595PW + ULN2003APW на разъём управления LPF
+		RBBIT(0047, ! xvrtr && txgated);		// D7 - XS18 PIN 16: PTT
+		RBVAL(0040, 1U << glob_bandf2, 7);		// D0..D6: band select бит выбора диапазонного фильтра передатчика
+
+		// DD42 SN74HC595PW
+		RBBIT(0037, xvrtr && ! glob_tx);	// D7 - XVR_RXMODE
+		RBBIT(0036, xvrtr && glob_tx);		// D6 - XVR_TXMODE
+		RBBIT(0035, 0);			// D5: CTLSPARE2
+		RBBIT(0034, 0);			// D4: CTLSPARE1
+		RBBIT(0033, 0);			// D3: not used
+		RBBIT(0032, ! glob_bglightoff);			// D2: LCD_BL_ENABLE
+		RBBIT(0031, 0);			// D1: not used
+		RBBIT(0030, 0);			// D0: not used
+
+		// DD22 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0021, glob_tx ? 0 : (1U << glob_bandf) >> 1, 7);		// D1: 1, D7..D1: band select бит выбора диапазонного фильтра приёмника
+		RBBIT(0020, ! (! xvrtr && glob_bandf != 0 && txgated));		// D0: включение подачи смещения на выходной каскад усилителя мощности
+
+		// DD21 SN74HC595PW в управлении диапазонными фильтрами приёмника
+		RBVAL(0016, glob_att, 2);			/* D7:D6: 12 dB and 6 dB attenuator control */
+		RBVAL(0014, ~ ((! xvrtr && txgated) ? powerxlat [glob_stage1level] : HARDWARE_OPA2674I_SHUTDOWN), 2);	// A1..A0 of OPA2674I-14D in stage 1
+		RBBIT(0013, glob_antenna);			/* D3: antenna 1-2 */
 		RBBIT(0012, xvrtr || (glob_bandf == 0));		// D2: средневолновый ФНЧ - управление реле на выходе фильтров
 		RBBIT(0011, ! xvrtr && glob_tx);				// D1: TX ANT relay
 		RBBIT(0010, glob_bandf == 0);		// D0: средневолновый ФНЧ - управление реле на входе
@@ -8711,22 +8851,6 @@ adcvalholder_t board_getadc_filtered_truevalue(uint_fast8_t adci)
 /* получить значение от АЦП */
 adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)	
 {
-	static const struct
-	{
-		uint8_t ch;
-		uint8_t diff;
-	} xad2xlt [8] =
-	{
-			{	0, 0, },	// DRAIN (negative from midpoint at CH1: ch0=in-, ch1=in+)
-			{	1, 0, },
-			{	2, 0, },
-			{	3, 0, },
-			{	4, 0, },
-			{	5, 0, },
-			{	6, 0, },
-			{	7, 0, },
-	};
-
 	ASSERT(adci < HARDWARE_ADCINPUTS);
 	boardadc_t * const padcs = & badcst [adci];
 	// targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)
@@ -8744,8 +8868,11 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 #if defined (targetadck)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCXKBASE;
-		//PRINTF("targetadc2: ch = %u\n", ch);
-		return mcp3208_read(targetadck, 0, ch, & valid);
+		adcvalholder_t rv = mcp3208_read(targetadck, 0, ch, & valid);
+		//PRINTF("targetadck: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
+		if (valid == 0)
+			PRINTF("ADC%u validation failed\n", adci);
+		return rv;
 #else /* defined (targetadc2) */
 		return 0;
 #endif /* defined (targetadc2) */
@@ -8756,8 +8883,10 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 #if defined (targetxad2)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX1BASE;
-		adcvalholder_t rv = mcp3208_read(targetxad2, xad2xlt [ch].diff, xad2xlt [ch].ch, & valid);
+		adcvalholder_t rv = mcp3208_read(targetxad2, 0, ch, & valid);
 		//PRINTF("targetxad2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
+		if (valid == 0)
+			PRINTF("ADC%u validation failed\n", adci);
 		return rv;
 #else /* defined (targetxad2) */
 		return 0;
@@ -8770,7 +8899,11 @@ adcvalholder_t board_getadc_unfiltered_truevalue(uint_fast8_t adci)
 		uint_fast8_t valid;
 		uint_fast8_t ch = adci - BOARD_ADCX0BASE;
 		//PRINTF("targetadc2: ch = %u\n", ch);
-		return mcp3208_read(targetadc2, 0, ch, & valid);
+		adcvalholder_t rv = mcp3208_read(targetadc2, 0, ch, & valid);
+		//PRINTF("targetadc2: ch=%u, rv=%04X, valid=%d\n", (unsigned) ch, (unsigned) rv, (int) valid);
+		if (valid == 0)
+			PRINTF("ADC%u validation failed\n", adci);
+		return rv;
 #else /* defined (targetadc2) */
 		return 0;
 #endif /* defined (targetadc2) */
@@ -9156,6 +9289,8 @@ adcfilters_initialize(void)
 }
 
 
+/* инициализация при запрещённых прерываниях.
+*/
 void board_adc_initialize(void)
 {
 	if (board_get_adcinputs() == 0)
@@ -9172,8 +9307,6 @@ void board_adc_initialize(void)
 		}
 	}
 #endif /* WITHDEBUG */
-
-	//PRINTF(PSTR("hardware_adc_initialize\n"));
 
 #if WITHCPUADCHW
 
@@ -9523,6 +9656,10 @@ void hardware_cw_diagnostics(
 
 #if WITHSPIHW || WITHSPISW
 
+static const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED1M;
+static const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
+static const unsigned MCP3208_usCsDelay = 0;
+
 // Read ADC MCP3204/MCP3208
 uint_fast16_t
 mcp3208_read(
@@ -9538,8 +9675,6 @@ mcp3208_read(
 	uint_fast32_t rv;
 
 	enum { LSBPOS = 0 };
-	const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
-	const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
 
 #if WITHSPILOWSUPPORTT
 	// Работа совместно с фоновым обменом SPI по прерываниям
@@ -9549,7 +9684,7 @@ mcp3208_read(
 
 	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = USBD_peek_u32_BE(rxbuf);
 
@@ -9557,12 +9692,14 @@ mcp3208_read(
 
 	hardware_spi_connect_b32(MCP3208_SPISPEED, MCP3208_SPISMODE);
 	prog_select(target);
+	local_delay_us(MCP3208_usCsDelay);
 
 	hardware_spi_b32_p1((uint_fast32_t) cmd1 << (LSBPOS + 14));
 	rv = hardware_spi_complete_b32();
 
 	prog_unselect(target);
 	hardware_spi_disconnect();
+	local_delay_us(MCP3208_usCsDelay);
 
 
 #elif WITHSPI16BIT
@@ -9571,6 +9708,7 @@ mcp3208_read(
 
 	hardware_spi_connect_b16(MCP3208_SPISPEED, MCP3208_SPISMODE);
 	prog_select(target);
+	local_delay_us(MCP3208_usCsDelay);
 
 	hardware_spi_b16_p1((uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
 	v0 = hardware_spi_complete_b16();
@@ -9579,6 +9717,7 @@ mcp3208_read(
 
 	prog_unselect(target);
 	hardware_spi_disconnect();
+	local_delay_us(MCP3208_usCsDelay);
 
 	rv = ((uint_fast32_t) v0 << 16) | v1;
 
@@ -9587,6 +9726,7 @@ mcp3208_read(
 	uint_fast8_t v0, v1, v2, v3;
 
 	spi_select2(target, MCP3208_SPISMODE, MCP3208_SPISPEED);	// for 50 kS/S and 24 bit words
+	local_delay_us(MCP3208_usCsDelay);
 
 	v0 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 24);
 	v1 = spi_read_byte(target, (uint_fast32_t) cmd1 << (LSBPOS + 14) >> 16);
@@ -9594,6 +9734,7 @@ mcp3208_read(
 	v3 = spi_read_byte(target, 0x00);
 
 	spi_unselect(target);
+	local_delay_us(MCP3208_usCsDelay);
 
 	rv = ((uint_fast32_t) v0 << 24) | ((uint_fast32_t) v1 << 16) | ((uint_fast32_t) v2 << 8) | v3;
 
@@ -9620,8 +9761,6 @@ mcp3208_read_low(
 	uint_fast32_t rv;
 
 	enum { LSBPOS = 0 };
-	const spi_speeds_t MCP3208_SPISPEED = SPIC_SPEED400k;
-	const spi_modes_t MCP3208_SPISMODE = SPIC_MODE3;
 
 	// Работа совместно с фоновым обменом SPI по прерываниям
 
@@ -9630,7 +9769,7 @@ mcp3208_read_low(
 
 	USBD_poke_u32_BE(txbuf, (uint_fast32_t) cmd1 << (LSBPOS + 14));
 
-	prog_spi_exchange_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, 0, txbuf, rxbuf, ARRAY_SIZE(txbuf));
+	prog_spi_exchange_low(target, MCP3208_SPISPEED, MCP3208_SPISMODE, MCP3208_usCsDelay, txbuf, rxbuf, ARRAY_SIZE(txbuf));
 
 	rv = USBD_peek_u32_BE(rxbuf);
 

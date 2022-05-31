@@ -454,12 +454,15 @@ void NOINLINEAT (prog_val8_impl)(
 
 #endif /* WITHSPISW */
 
+static SPINLOCK_t spilock = SPINLOCK_INIT;
+
 void spi_operate_low(lowspiio_t * iospi)
 {
 	const spitarget_t target = iospi->target;
 	unsigned i;
 
 	ASSERT(iospi->spiiosize == SPIIOSIZE_U8);
+	SPIN_LOCK(& spilock);
 	spi_select2(target, iospi->spimode, iospi->spispeedindex);
 	local_delay_us(iospi->csdelayUS);
 
@@ -510,6 +513,7 @@ void spi_operate_low(lowspiio_t * iospi)
 
 	spi_unselect(target);
 	local_delay_us(iospi->csdelayUS);
+	SPIN_UNLOCK(& spilock);
 }
 
 // Работа совместно с фоновым обменом SPI по прерываниям
@@ -751,6 +755,7 @@ void spi_perform_initialize(void)
 	ticker_initialize(& spiticker, 1, spi_spool, NULL);
 	ticker_add(& spiticker);
 
+	SPINLOCK_INITIALIZE(& spilock);
 }
 
 #else /* WITHSPILOWSUPPORTT */

@@ -192,7 +192,7 @@
 
 	#define WITHPOWERTRIMMIN	5	// Нижний предел регулировки (показываемый на дисплее)
 	#define WITHPOWERTRIMMAX	100	// Верхний предел регулировки (показываемый на дисплее)
-	#define WITHPOWERTRIMATU	15	// Значение для работы автотюнера
+	#define WITHPOWERTRIMATU	30	// Значение для работы автотюнера
 
 	#define WITHPABIASMIN		0
 	#define WITHPABIASMAX		255
@@ -561,6 +561,7 @@
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
+	//#define WITHANTSELECT2	1	/* Управление переключением двух антенн (без разбивки по прием-передача) */
 
 	#define WITHMENU 	1	/* функциональность меню может быть отключена - если настраивать нечего */
 
@@ -692,7 +693,8 @@
 		#define WITHTHERMOLEVEL	1	/* отображение данных с датчика температуры */
 		#define WITHANTSELECTRX	1	/* Управление переключением антенн и приемной антенны */
 
-		#define SHORTSET7	1
+		//#define SHORTSET_7L8C	1	/* 7 indictors, 8 capacitors */
+		#define FULLSET_7L8C	1	/* 7 indictors, 8 capacitors */
 
 		#define WITHCURRLEVEL_ACS712_30A 1	// PA current sense - ACS712ELCTR-30B-T chip
 

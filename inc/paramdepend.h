@@ -787,6 +787,32 @@ extern "C" {
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
+
+#elif CPUSTYPE_ALLWNT113
+
+	typedef uint_fast16_t adcvalholder_t;
+	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
+
+	#if WITHCPUXOSC
+		// с внешним генератором
+		#define	REFINFREQ WITHCPUXOSC
+	#elif WITHCPUXTAL
+		// с внешним кварцевым резонатором
+		#define	REFINFREQ WITHCPUXTAL
+	#endif /* WITHCPUXTAL */
+
+	#define CPU_FREQ	(xc7z_get_arm_freq())
+	#define BOARD_SPI_FREQ (xc7z_get_spi_freq())
+
+	#define TICKS_FREQUENCY 200
+	#define ADCVREF_CPU	33		// 3.3 volt
+	#define HARDWARE_ADCBITS 12
+
+	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
+	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+
 #elif CPUSTYLE_XCZU
 	// Zynq UltraScale+ Device
 	// XCZU2..XCZU9, XCZU11
@@ -911,10 +937,11 @@ extern "C" {
 		enum
 		{
 			PRI_IPC,	/* Приоритет SGI прерывания для синхронизации приоритетов GIC на остальных процессорах */
+			PRI_IPC_ONLY,
 			PRI_OVRT,
-			PRI_RT = 1,
-			PRI_SYS = 2,
-			PRI_USER = 3,
+			PRI_RT,
+			PRI_SYS,
+			PRI_USER,
 
 //			gARM_OVERREALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_OVRT),	// value for GIC_SetPriority
 //			gARM_REALTIME_PRIORITY = ARM_CA9_ENCODE_PRIORITY(PRI_RT),	// value for GIC_SetPriority
@@ -922,6 +949,7 @@ extern "C" {
 //
 //			gARM_BASEPRI_ONLY_REALTIME = ARM_CA9_ENCODE_PRIORITY(PRI_SYS),	// value for GIC_SetInterfacePriorityMask
 //			gARM_BASEPRI_ALL_ENABLED = ARM_CA9_ENCODE_PRIORITY(PRI_USER)	// value for GIC_SetInterfacePriorityMask
+			PRI_count
 		};
 
 		#define BOARD_SGI_IRQ SGI1_IRQn		/* Прерываниедля синхронизации приоритетов GIC на остальных процессорах  */

@@ -113,7 +113,7 @@ extern "C" {
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
-	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYPE_ALLWNT113
 
 		#if WITHFPGAIF_FRAMEBITS == 64
 

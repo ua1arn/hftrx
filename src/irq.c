@@ -1339,7 +1339,7 @@ static void vectors_relocate(void)
 void spin_lock(volatile spinlock_t * p, const char * file, int line)
 {
 #if WITHDEBUG
-	unsigned v = 0xFFFFFFF;
+	unsigned v = 0xFFFFFFFF;
 #endif /* WITHDEBUG */
 	// Note: __LDREXW and __STREXW are CMSIS functions
 	int status;

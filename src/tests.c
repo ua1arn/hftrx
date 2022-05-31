@@ -8487,6 +8487,8 @@ void hightests(void)
 	}
 #endif
 #if 0
+	board_set_bglight(0, WITHLCDBACKLIGHTMAX);	// включить подсветку
+	board_update();
 	// тест дисплея - проход по всем возможным уровням основных цветов
 	for (;;)
 	{
@@ -8500,6 +8502,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("WHITE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
+			display_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -8514,6 +8517,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("RED %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
+			display_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -8528,6 +8532,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("GREEN %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
+			display_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
@@ -8542,6 +8547,7 @@ void hightests(void)
 			local_snprintf_P(b, sizeof b / sizeof b [0], PSTR("BLUE %-3d"), c);
 			colmain_setcolors(COLOR_WHITE, COLOR_BLACK);
 			display_at(0, 0, b);
+			display_nextfb();
 			local_delay_ms(50);
 		}
 		//for (; c -- > 0; )
