@@ -466,6 +466,36 @@ extern "C" {
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 	#define ARM_FAST_ALLOW_TABLES	1
 
+
+#elif CPUSTYPE_ALLWNT113
+
+	// ST dual core A7 + M4
+
+	// STM32MP157Axx
+	// STM32MP157Dxx
+	// STM32MP157AAB3
+	// STM32MP157DAB1
+
+	#define CORE_CA7	1
+	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
+
+	#include "arch/allwnr_t13s3/allwnr_t13s3.h"
+	#include "irq_ctrl.h"
+
+	#define DCACHEROWSIZE 64
+	#define ICACHEROWSIZE 32
+
+	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
+	#define ALIGNX_END /* nothing */
+
+	#if __ARM_NEON
+		//#define ARM_MATH_NEON 1
+		//#define ARM_MATH_NEON_EXPERIMENTAL 1
+	#endif /* __ARM_NEON */
+	//#define ARM_MATH_AUTOVECTORIZE 1
+	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
+	#define ARM_FAST_ALLOW_TABLES	1
+
 #elif CPUSTYLE_XC7Z
 
 	// Zynq®-7000 SoC Family
