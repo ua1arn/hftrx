@@ -1658,6 +1658,9 @@ local_delay_uscycles(unsigned timeUS, unsigned cpufreq_MHz)
 #elif CPUSTYPE_TMS320F2833X	&& 0	// FLASH code
 	#warning TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
+#elif CPUSTYPE_ALLWNT113
+	// калибровано для 800 МГц процессора
+	const unsigned long top = 120uL * cpufreq_MHz * timeUS / 1000;
 #else
 	#error TODO: calibrate constant looks like CPUSTYLE_STM32MP1
 	const unsigned long top = 55uL * cpufreq_MHz * timeUS / 1000;
@@ -2746,6 +2749,11 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 	if (a >= 0xFFF00000uL)			// OCM (On Chip Memory) is mapped high
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 
+	return addrbase | TTB_PARA_DEVICE;
+
+#elif CPUSTYPE_ALLWNT113
+
+	#warning ttb_accessbits: Unhandled CPUSTYPE_ALLWNT113
 	return addrbase | TTB_PARA_DEVICE;
 
 #else

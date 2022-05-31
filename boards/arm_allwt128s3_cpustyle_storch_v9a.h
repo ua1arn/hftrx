@@ -870,26 +870,28 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-	/* BL0: PA14. BL1: PA15 */
-	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
-		arm_hardware_pioa_opendrain(BLpins, 0); \
-		} while (0)
+	#if 0
+		/* BL0: PA14. BL1: PA15 */
+		#define	HARDWARE_BL_INITIALIZE() do { \
+			const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+			const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
+			arm_hardware_pioa_opendrain(BLpins, 0); \
+			} while (0)
 
-	/* установка яркости и включение/выключение преобразователя подсветки */
-	/* BL0: PA14. BL1: PA15 */
-	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t Vlevel = (level) & 0x03; \
-		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
-		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t BLstate = (~ Vlevel) << 14; \
-		GPIOA->BSRR = \
-			BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
-			BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
-			0; \
-		__DSB(); \
-	} while (0)
+		/* установка яркости и включение/выключение преобразователя подсветки */
+		/* BL0: PA14. BL1: PA15 */
+		#define HARDWARE_BL_SET(en, level) do { \
+			const portholder_t Vlevel = (level) & 0x03; \
+			const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
+			const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+			const portholder_t BLstate = (~ Vlevel) << 14; \
+			GPIOA->BSRR = \
+				BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
+				BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
+				0; \
+			__DSB(); \
+		} while (0)
+	#endif
 
 #if WITHLTDCHW
 	/* demode values: 0: static signal, 1: DE controlled */

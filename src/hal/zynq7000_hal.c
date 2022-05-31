@@ -1,5 +1,5 @@
 /*
- * rza1xx_hal.c
+ * zynq7000_hal.c
  *
  *  Created on: May 6, 2021
  *      Author: gena

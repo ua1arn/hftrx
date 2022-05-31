@@ -243,9 +243,9 @@ typedef enum IRQn
 #define GIC_INTERFACE_BASE   (GIC_BASE+0x1000)
 
 #include "core_ca.h"
-//#include "system_stm32mp1xx_A7.h"
+#include "system_allwnr_t113s3.h"
 
 
-
+#define DRAM_MEM_BASE 0xC0000000
 
 #endif /* ARCH_ALLWNR_T13S3_ALLWNR_T13S3_H_ */

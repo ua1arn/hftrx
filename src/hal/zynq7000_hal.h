@@ -5,8 +5,8 @@
  *      Author: User
  */
 
-#ifndef SRC_HAL_ZYNQ7000_HAL_H_
-#define SRC_HAL_ZYNQ7000_HAL_H_
+#ifndef SRC_HAL_ALLWNRT113S3_HAL_H_
+#define SRC_HAL_ALLWNRT113S3_HAL_H_
 
 #if  defined ( __GNUC__ )
   #ifndef __weak
@@ -610,4 +610,4 @@ uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
                                     }while (0U)
 #endif /* USE_RTOS */
 
-#endif /* SRC_HAL_ZYNQ7000_HAL_H_ */
+#endif /* SRC_HAL_ALLWNRT113S3_HAL_H_ */
