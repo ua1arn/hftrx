@@ -246,6 +246,159 @@ typedef enum IRQn
 #include "system_allwnr_t113s3.h"
 
 
-#define DRAM_MEM_BASE 0xC0000000
+
+ // описание структуры UART
+ typedef struct
+ {
+ 	volatile	uint32_t DATA;				// Offset: 0x0000	SELECT
+ 	volatile	uint32_t DLH_IER;			// Offset: 0x0004
+ 	volatile	uint32_t IIR_FCR;			// Offset: 0x0008
+ 	volatile	uint32_t LCR;				// Offset: 0x000C
+ 	volatile	uint32_t MCR;				// Offset: 0x0010
+ 	volatile	uint32_t LSR;				// Offset: 0x0014
+ 	volatile	uint32_t MSR;				// Offset: 0x0018
+ 	volatile	uint32_t SCH;				// Offset: 0x001C
+ 	volatile	uint32_t Reserv1[24];
+ 	volatile	uint32_t USR;				// Offset: 0x007C
+ 	volatile	uint32_t TFL;				// Offset: 0x0080
+ 	volatile	uint32_t RFL;				// Offset: 0x0084
+ 	volatile	uint32_t HSK;				// Offset: 0x0088
+ 	volatile	uint32_t DMA_REQ_EN;		// Offset: 0x008C
+ 	volatile	uint32_t Reserv2[6];
+ 	volatile	uint32_t HALT;				// Offset: 0x00A4
+ 	volatile	uint32_t Reserv3[3];
+ 	volatile	uint32_t DBG_DLL;			// Offset: 0x00B0
+ 	volatile	uint32_t DBG_DLH;			// Offset: 0x00B4
+ 	volatile	uint32_t Reserv4[15];
+ 	volatile	uint32_t A_FCC;				// Offset: 0x00F0
+ 	volatile	uint32_t Reserv5[4];
+ 	volatile	uint32_t A_RXDMA_CTRL;		// Offset: 0x0100
+ 	volatile	uint32_t A_RXDMA_STR;		// Offset: 0x0104
+ 	volatile	uint32_t A_RXDMA_STA;		// Offset: 0x0108
+ 	volatile	uint32_t A_RXDMA_LMT;		// Offset: 0x010C
+ 	volatile	uint32_t A_RXDMA_SADDRL;	// Offset: 0x0110
+ 	volatile	uint32_t A_RXDMA_SADDRH;	// Offset: 0x0114
+ 	volatile	uint32_t A_RXDMA_BL;		// Offset: 0x0118
+ 	volatile	uint32_t Reserv6;
+ 	volatile	uint32_t A_RXDMA_IE;		// Offset: 0x0120
+ 	volatile	uint32_t A_RXDMA_IS;		// Offset: 0x0124
+ 	volatile	uint32_t A_RXDMA_WADDRL;	// Offset: 0x0128
+ 	volatile	uint32_t A_RXDMA_WADDRH;	// Offset: 0x012C
+ 	volatile	uint32_t A_RXDMA_RADDRL;	// Offset: 0x0130
+ 	volatile	uint32_t A_RXDMA_RADDRH;	// Offset: 0x0134
+ 	volatile	uint32_t A_RXDMA_DCNT;		// Offset: 0x0138
+ }  UART_TypeDef;
+
+ // описание структуры GPIO
+ typedef struct
+ {
+ 	volatile	uint32_t CFG0;		// Offset: 0x00	SELECT
+ 	volatile	uint32_t CFG1;		// Offset: 0x04
+ 	volatile	uint32_t CFG2;		// Offset: 0x08
+ 	volatile	uint32_t CFG3;		// Offset: 0x0c
+ 	volatile	uint32_t DATA;		// Offset: 0x10
+ 	volatile	uint32_t DRV0;		// Offset: 0x14
+ 	volatile	uint32_t DRV1;		// Offset: 0x18
+ 	volatile	uint32_t DRV2;		// Offset: 0x1C
+ 	volatile	uint32_t DRV3;		// Offset: 0x20
+ 	volatile	uint32_t PULL0;		// Offset: 0x24
+ 	volatile	uint32_t PULL1;		// Offset: 0x28
+ }  GPIO_TypeDef;
+
+// SP0 (SYS domain)
+#define GPIO_BASE			0x02000000
+#define SPC_BASE			0x02000800
+#define PWM_BASE			0x02000C00
+#define CCU_BASE			0x02001000
+#define CIR_TX_BASE			0x02003000
+#define TZMA_BASE			0x02004000
+#define LEDC_BASE			0x02008000
+#define GPADC_BASE			0x02009000
+#define THS_BASE			0x02009400
+#define TPADC_BASE			0x02009C00
+#define IOMMU_BASE			0x02010000
+#define AUDIOCODEC_BASE		0x02030000
+#define DMIC_BASE			0x02031000
+#define I2S1_BASE			0x02033000
+#define I2S2_BASE			0x02034000
+#define OWA_BASE			0x02036000
+#define TIMER_BASE			0x02050000
+
+// SP1 (SYS domain)
+#define UART0_BASE      	0x02500000
+#define UART1_BASE      	0x02000400
+#define UART2_BASE      	0x02000800
+#define UART3_BASE     		0x02000C00
+#define UART4_BASE      	0x02001000
+#define UART5_BASE      	0x02001400
+
+#define TWI0_BASE 	     	0x02502000
+#define TWI1_BASE 	     	0x02502400
+#define TWI2_BASE 	     	0x02502800
+#define TWI3_BASE 	     	0x02502C00
+
+// SH0 (SYS domain)
+#define SYSCTRL_BASE      	0x03000000
+#define DMAC_BASE      		0x03002000
+#define CPUX_MSGBOX_BASE	0x03003000
+#define SPINLOCK_BASE     	0x03005000
+#define	SID_BASE  		   	0x03006000
+#define SMC_BASE     		0x03007000
+#define HSTIMER_BASE     	0x03008000
+#define DCU_BASE      		0x03010000
+#define GIC_BASE      		0x03020000
+#define CE_NS_BASE      	0x03040000
+#define CE_S_BASE   	   	0x03040800
+#define CE_KEY_SRAM_BASE    0x03041000
+#define MSI_MEMC_BASE	    0x03102000
+
+// SH2 (SYS domain)
+#define SMHC0_BASE      	0x04020000
+#define SMHC1_BASE      	0x04021000
+#define SMHC2_BASE      	0x04022000
+#define SPI0_BASE    	  	0x04025000
+#define SPI1_BASE    	  	0x04026000
+#define USB0_BASE 	     	0x04100000
+#define USB1_BASE 	     	0x04200000
+#define EMAC_BASE 	     	0x04500000
+
+// VIDEO_OUT_SYS related
+
+// VIDEO_IN_SYS related
+
+// APBS0 related
+
+// AHBS related
+
+ // CPUX related
+
+ // DRAM Space (SYS domain)
+#define DRAM_SPACE_BASE 	0x40000000	/* 2 GB */
+
+
+
+#define GPIOA_BASE		(GPIO_BASE + 0x030 * 0)
+#define GPIOB_BASE		(GPIO_BASE + 0x030 * 1)
+#define GPIOC_BASE		(GPIO_BASE + 0x030 * 2)
+#define GPIOD_BASE		(GPIO_BASE + 0x030 * 3)
+#define GPIOE_BASE		(GPIO_BASE + 0x030 * 4)
+#define GPIOF_BASE		(GPIO_BASE + 0x030 * 5)
+#define GPIOG_BASE		(GPIO_BASE + 0x030 * 6)
+
+#define UART0      ((UART_TypeDef *) UART0_BASE)
+#define UART1      ((UART_TypeDef *) UART1_BASE)
+#define UART2      ((UART_TypeDef *) UART2_BASE)
+#define UART3      ((UART_TypeDef *) UART3_BASE)
+#define UART4      ((UART_TypeDef *) UART4_BASE)
+#define UART5      ((UART_TypeDef *) UART5_BASE)
+
+#define GPIOA      ((GPIO_TypeDef *) GPIOA_BASE)
+#define GPIOB      ((GPIO_TypeDef *) GPIOB_BASE)
+#define GPIOC      ((GPIO_TypeDef *) GPIOC_BASE)
+#define GPIOD      ((GPIO_TypeDef *) GPIOD_BASE)
+#define GPIOE      ((GPIO_TypeDef *) GPIOE_BASE)
+#define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)
+#define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)
+
 
 #endif /* ARCH_ALLWNR_T13S3_ALLWNR_T13S3_H_ */
