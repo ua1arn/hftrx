@@ -836,7 +836,12 @@ static void arm_alwnr_pioX_updownoff(
 	unsigned long iopins
 	)
 {
+	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
+	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 bits */
+	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 bits */
 
+	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0);
+	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
 }
 
 
