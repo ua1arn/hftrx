@@ -754,23 +754,8 @@ XStatus init_dma(struct xemac_s *xemac)
 				   (UINTPTR)bdtxterminate);
 	}
 
-
-	/*
-	 * Connect the device driver handler that will be called when an
-	 * interrupt for the device occurs, the handler defined above performs
-	 * the specific interrupt processing for the device.
-	 */
-//	XScuGic_RegisterHandler(INTC_BASE_ADDR, xtopologyp->scugic_emac_intr,
-//				(Xil_ExceptionHandler)XEmacPs_IntrHandler,
-//						(void *)&xemacpsif->emacps);
-	/*
-	 * Enable the interrupt for emacps.
-	 */
-//	XScuGic_EnableIntr(INTC_DIST_BASE_ADDR, (u32) xtopologyp->scugic_emac_intr);
-
 	XEmacPsInst = & xemacpsif->emacps;
 	arm_hardware_set_handler_system(xtopologyp->scugic_emac_intr, XEmacPs_IntrHandler2);
-
 
 	emac_intr_num = (u32) xtopologyp->scugic_emac_intr;
 	return 0;

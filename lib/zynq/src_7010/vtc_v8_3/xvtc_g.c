@@ -14,25 +14,18 @@
 *******************************************************************/
 
 #include "xparameters.h"
-#include "xllfifo.h"
+#include "xvtc.h"
 
 /*
 * The configuration table for devices
 */
 
-XLlFifo_Config XLlFifo_ConfigTable[] =
+XVtc_Config XVtc_ConfigTable[XPAR_XVTC_NUM_INSTANCES] =
 {
 	{
-		XPAR_AXI_FIFO_0_DEVICE_ID,
-		XPAR_AXI_FIFO_0_BASEADDR,
-		XPAR_AXI_FIFO_0_AXI4_BASEADDR,
-		XPAR_AXI_FIFO_0_DATA_INTERFACE_TYPE
-	},
-	{
-		XPAR_AXI_FIFO_1_DEVICE_ID,
-		XPAR_AXI_FIFO_1_BASEADDR,
-		XPAR_AXI_FIFO_1_AXI4_BASEADDR,
-		XPAR_AXI_FIFO_1_DATA_INTERFACE_TYPE
+		XPAR_V_TC_0_DEVICE_ID,
+		XPAR_V_TC_0_BASEADDR
 	}
 };
+
 

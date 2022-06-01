@@ -52,8 +52,7 @@ extern "C" {
 #include "xpseudo_asm.h"
 #include "xil_cache.h"
 #include "xil_printf.h"
-//#include "xscugic.h"
-#include "xemacps.h"		/* defines XEmacPs API */
+#include "xc7z_inc.h"
 
 #include "netif/xpqueue.h"
 #include "xlwipconfig.h"

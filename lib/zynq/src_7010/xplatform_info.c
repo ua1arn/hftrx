@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2014 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2014 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,7 +7,8 @@
 /**
 *
 * @file xplatform_info.c
-*
+* @addtogroup common_platform_info Hardware Platform Information
+* @{
 * This file contains information about hardware for which the code is built
 *
 * <pre>
@@ -35,11 +36,11 @@
 
 /***************************** Include Files *********************************/
 
-#include <xil_io.h>
-#include <xil_types.h>
-#include <xplatform_info.h>
+#include "xil_types.h"
+#include "xil_io.h"
+#include "xplatform_info.h"
 #if defined (__aarch64__)
-#include <bspconfig.h>
+#include "bspconfig.h"
 #include "xil_smc.h"
 #endif
 /************************** Constant Definitions *****************************/
@@ -57,8 +58,6 @@
 /**
 *
 * @brief    This API is used to provide information about platform
-*
-* @param    None.
 *
 * @return   The information about platform defined in xplatform_info.h
 *
@@ -80,8 +79,6 @@ u32 XGetPlatform_Info()
 /**
 *
 * @brief    This API is used to provide information about zynq ultrascale MP platform
-*
-* @param    None.
 *
 * @return   The information about zynq ultrascale MP platform defined in
 *			xplatform_info.h
@@ -113,8 +110,6 @@ u32 XGet_Zynq_UltraMp_Platform_info()
 *
 * @brief    This API is used to provide information about PS Silicon version
 *
-* @param    None.
-*
 * @return   The information about PS Silicon version.
 *
 ******************************************************************************/
@@ -139,3 +134,4 @@ u32 XGetPSVersion_Info()
 #endif
 }
 #endif
+/** @} */

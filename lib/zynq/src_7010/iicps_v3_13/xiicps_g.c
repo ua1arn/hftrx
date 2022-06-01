@@ -14,25 +14,19 @@
 *******************************************************************/
 
 #include "xparameters.h"
-#include "xllfifo.h"
+#include "xiicps.h"
 
 /*
 * The configuration table for devices
 */
 
-XLlFifo_Config XLlFifo_ConfigTable[] =
+XIicPs_Config XIicPs_ConfigTable[XPAR_XIICPS_NUM_INSTANCES] =
 {
 	{
-		XPAR_AXI_FIFO_0_DEVICE_ID,
-		XPAR_AXI_FIFO_0_BASEADDR,
-		XPAR_AXI_FIFO_0_AXI4_BASEADDR,
-		XPAR_AXI_FIFO_0_DATA_INTERFACE_TYPE
-	},
-	{
-		XPAR_AXI_FIFO_1_DEVICE_ID,
-		XPAR_AXI_FIFO_1_BASEADDR,
-		XPAR_AXI_FIFO_1_AXI4_BASEADDR,
-		XPAR_AXI_FIFO_1_DATA_INTERFACE_TYPE
+		XPAR_PS7_I2C_0_DEVICE_ID,
+		XPAR_PS7_I2C_0_BASEADDR,
+		XPAR_PS7_I2C_0_I2C_CLK_FREQ_HZ
 	}
 };
+
 
