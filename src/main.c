@@ -23650,39 +23650,19 @@ static uint_fast8_t bootloader_get_start(
 }
 
 static uint_fast8_t bootloader_copyapp(
-		uintptr_t apparea	/* целевой адрес для загрузки образа */
+		uint_fast32_t appoffset,	/* смещение заголовка приожения в накопителе */
+		uintptr_t * ip
 		)
 {
 	enum { HEADERSIZE = 256 };
-	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
+	static uint8_t tmpbuff [HEADERSIZE];
+	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) tmpbuff;
 
-#if CPUSTYLE_R7S721
-
-	memcpy((void *) apparea, (const void *) BOOTLOADER_APPBASE, HEADERSIZE);
+	bootloader_readimage(appoffset, tmpbuff, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
-	memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + HEADERSIZE), hdr->image_length);
-
-#elif (BOOTLOADER_SELFSIZE != 0)
-
-#if 0
-	//PRINTF("erase chip:\n");
-	//bootloader_chiperase();
-	static uint8_t b [256];
-	bootloader_readimage(BOOTLOADER_FSBL_OFFSET, b, ARRAY_SIZE(b));
-	PRINTF("boot image:\n");
-	printhex(BOOTLOADER_FSBL_OFFSET, b, ARRAY_SIZE(b));
-	bootloader_readimage(BOOTLOADER_SELFSIZE, b, ARRAY_SIZE(b));
-	PRINTF("app image:\n");
-	printhex(BOOTLOADER_SELFSIZE, b, ARRAY_SIZE(b));
-#endif
-
-	bootloader_readimage(BOOTLOADER_SELFSIZE, (void *) apparea, HEADERSIZE);
-	if (hdr->magic_number != HEADER_MAGIC)
-		return 1;
-	bootloader_readimage(BOOTLOADER_SELFSIZE + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
-
-#endif /* CPUSTYLE_R7S721 */
+	* ip = hdr->image_entry_point;
+	bootloader_readimage(appoffset + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
 
 	return 0;
 }
@@ -23956,15 +23936,9 @@ static void bootloader_mainloop(void)
 		do
 		{
 			uintptr_t ip;
-			if (bootloader_copyapp(BOOTLOADER_RAMAREA) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
+			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
 			{
 				PRINTF("bootloader_mainloop: No application image\n");
-				break;
-			}
-			//PRINTF(PSTR("Compare signature of to application\n"));
-			if (bootloader_get_start(BOOTLOADER_RAMAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
-			{
-				PRINTF("bootloader_mainloop: No start address\n");
 				break;
 			}
 	#if WITHUSBHW
