@@ -813,6 +813,26 @@ extern "C" {
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
+
+	typedef enum {
+		GPIO_CFG_IN  = 0x00,
+		GPIO_CFG_OUT = 0x01,
+		GPIO_CFG_AF2 = 0x02,
+		GPIO_CFG_AF3 = 0x03,
+		GPIO_CFG_AF4 = 0x04,
+		GPIO_CFG_AF5 = 0x05,
+		GPIO_CFG_AF6 = 0x06,
+		GPIO_CFG_AF7 = 0x07,
+		GPIO_CFG_AF8 = 0x08,
+		GPIO_CFG_AF9 = 0x09,
+		GPIO_CFG_AF10 = 0x0A,
+		GPIO_CFG_AF11 = 0x0B,
+		GPIO_CFG_AF12 = 0x0C,
+		GPIO_CFG_AF13 = 0x0D,
+		GPIO_CFG_AF14 = 0x0E,
+		GPIO_CFG_AF15 = 0x0F,
+	} GPIOMode_TypeDef;
+
 #elif CPUSTYLE_XCZU
 	// Zynq UltraScale+ Device
 	// XCZU2..XCZU9, XCZU11

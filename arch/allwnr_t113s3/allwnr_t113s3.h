@@ -290,20 +290,13 @@ typedef enum IRQn
  }  UART_TypeDef;
 
  // описание структуры GPIO
- typedef struct
- {
- 	volatile	uint32_t CFG0;		// Offset: 0x00	SELECT
- 	volatile	uint32_t CFG1;		// Offset: 0x04
- 	volatile	uint32_t CFG2;		// Offset: 0x08
- 	volatile	uint32_t CFG3;		// Offset: 0x0c
- 	volatile	uint32_t DATA;		// Offset: 0x10
- 	volatile	uint32_t DRV0;		// Offset: 0x14
- 	volatile	uint32_t DRV1;		// Offset: 0x18
- 	volatile	uint32_t DRV2;		// Offset: 0x1C
- 	volatile	uint32_t DRV3;		// Offset: 0x20
- 	volatile	uint32_t PULL0;		// Offset: 0x24
- 	volatile	uint32_t PULL1;		// Offset: 0x28
- }  GPIO_TypeDef;
+typedef struct
+{
+	volatile	uint32_t CFG [4];		// Offset: 0x00	SELECT
+	volatile	uint32_t DATA;			// Offset: 0x10
+	volatile	uint32_t DRV [4];		// Offset: 0x14
+	volatile	uint32_t PULL [2];		// Offset: 0x24
+}  GPIO_TypeDef;
 
 // SP0 (SYS domain)
 #define GPIO_BASE			0x02000000
