@@ -23715,9 +23715,9 @@ bootloader_launch_app(uintptr_t ip)
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
 void bootloader_deffereddetach(void * arg)
 {
-#if BOOTLOADER_RAMSIZE
+#if defined (USBD_DFU_RAM_LOADER)
 	uintptr_t ip;
-	if (bootloader_get_start(BOOTLOADER_RAMAREA, & ip) == 0)
+	if (bootloader_get_start(USBD_DFU_RAM_LOADER, & ip) == 0)
 	{
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
@@ -23729,9 +23729,9 @@ void bootloader_deffereddetach(void * arg)
 	}
 	else
 	{
-		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) BOOTLOADER_RAMAREA);
+		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) USBD_DFU_RAM_LOADER);
 	}
-#endif /* BOOTLOADER_RAMSIZE */
+#endif /* defined (USBD_DFU_RAM_LOADER) */
 }
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
