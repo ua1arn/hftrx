@@ -368,7 +368,6 @@ typedef struct
  // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 	0x40000000	/* 2 GB */
 
-#define GPIOA_BASE		(GPIO_BASE + 0x030 * 0)
 #define GPIOB_BASE		(GPIO_BASE + 0x030 * 1)
 #define GPIOC_BASE		(GPIO_BASE + 0x030 * 2)
 #define GPIOD_BASE		(GPIO_BASE + 0x030 * 3)
@@ -383,7 +382,6 @@ typedef struct
 #define UART4      ((UART_TypeDef *) UART4_BASE)
 #define UART5      ((UART_TypeDef *) UART5_BASE)
 
-#define GPIOA      ((GPIO_TypeDef *) GPIOA_BASE)
 #define GPIOB      ((GPIO_TypeDef *) GPIOB_BASE)
 #define GPIOC      ((GPIO_TypeDef *) GPIOC_BASE)
 #define GPIOD      ((GPIO_TypeDef *) GPIOD_BASE)
