@@ -3664,10 +3664,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 void cpu_initdone(void)
 {
 #if WITHISBOOTLOADER
-	#if BOOTLOADER_RAMSIZE
-		if (bootloader_copyapp(BOOTLOADER_RAMAREA))	/* копирование исполняемого образа (если есть) в требуемое место */
-			PRINTF("cpu_initdone: No application image\n");
-	#endif /* BOOTLOADER_RAMSIZE */
+
 #if CPUSTYLE_R7S721
 
 	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)
