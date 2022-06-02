@@ -1,6 +1,13 @@
 #ifndef LWIP_PING_H
 #define LWIP_PING_H
 
+#include "lwip/opt.h"
+#include "lwip/mem.h"
+#include "lwip/memp.h"
+#include "netif/etharp.h"
+#include "lwip/dhcp.h"
+#include "lwip/netif.h"
+#include "lwip/timeouts.h"
 #include "lwip/ip_addr.h"
 
 typedef enum {
@@ -44,3 +51,4 @@ int ping_ip(ip_addr_t ping_addr);
 int ping_ip_result(ping_result_t *res);
 
 #endif /* LWIP_PING_H */
+

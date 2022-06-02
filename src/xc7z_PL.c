@@ -156,7 +156,7 @@ void xcz_fifo_if_rx_inthandler(void)
 		XLlFifo_iRead_Aligned(& fifo_if_rx, (IFADCvalue_t *) addr, DMABUFFSIZE32RX);
 		processing_dmabuffer32rx(addr);
 		release_dmabuffer32rx(addr);
-		rx_stage += CNT32RX;
+//		rx_stage += CNT32RX;
 	}
 
 	while (rx_stage >= CNT16)
@@ -307,7 +307,7 @@ void xcz_fifo_phones_inthandler(void)
 	XLlFifo_IntClear(& fifo_phones, 0xffffffff);
 	u32 vac = XLlFifo_TxVacancy(& fifo_phones);
 
-//	if (ss & XLLF_INT_TFPE_MASK)
+	if (ss & XLLF_INT_TFPE_MASK)
 	{
 		const uintptr_t addr = getfilled_dmabuffer16phones();
 		XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) addr, DMABUFFSIZE16 / fifo_divider);
@@ -318,11 +318,11 @@ void xcz_fifo_phones_inthandler(void)
 
 void xcz_audio_tx_enable(uint_fast8_t state)
 {
-//	XLlFifo_IntDisable(& fifo_phones, XLLF_INT_ALL_MASK);
-//	XLlFifo_IntEnable(& fifo_phones, XLLF_INT_TFPE_MASK);
-//	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_PHONES_INTERRUPT_INTR, xcz_fifo_phones_inthandler);
-//	XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) sinbuf32, DMABUFFSIZE16 / fifo_divider);	// пнуть, чтобы заработало
-//	XLlFifo_iTxSetLen(& fifo_phones, DMABUFFSIZE16 * 4 / fifo_divider);
+	XLlFifo_IntDisable(& fifo_phones, XLLF_INT_ALL_MASK);
+	XLlFifo_IntEnable(& fifo_phones, XLLF_INT_TFPE_MASK);
+	arm_hardware_set_handler_realtime(XPAR_FABRIC_AXI_FIFO_PHONES_INTERRUPT_INTR, xcz_fifo_phones_inthandler);
+	XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) sinbuf32, DMABUFFSIZE16 / fifo_divider);	// пнуть, чтобы заработало
+	XLlFifo_iTxSetLen(& fifo_phones, DMABUFFSIZE16 * 4 / fifo_divider);
 }
 
 #endif /* WITHRTS96 */

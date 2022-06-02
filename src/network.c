@@ -653,12 +653,9 @@ void network_initialize(void)
 
 #define COUNTS_PER_MSECOND  (XPAR_CPU_CORTEXA9_CORE_CLOCK_FREQ_HZ / (2U*1000U))
 
-extern volatile int TcpFastTmrFlag;
-extern volatile int TcpSlowTmrFlag;
-extern volatile int dhcp_timoutcntr;
 err_t dhcp_start(struct netif *netif);
 static struct netif server_netif;
-struct netif *echo_netif;
+struct netif * netif;
 unsigned char mac_ethernet_address[] =
 	{ 0x00, 0x0a, 0x35, 0x00, 0x01, 0x02 };
 
@@ -674,7 +671,6 @@ void dhcp_coarse_tmr(void);
 volatile int TcpFastTmrFlag = 0;
 volatile int TcpSlowTmrFlag = 0;
 static int ResetRxCntr = 0;
-extern struct netif *echo_netif;
 
 void start_ping_action(void * arg);
 void check_ping_result(void * arg);
@@ -820,11 +816,11 @@ void lwip_timer_spool(void)
 	}
 #endif
 	if (ResetRxCntr >= RESET_RX_CNTR_LIMIT) {
-		xemacpsif_resetrx_on_no_rxdata(echo_netif);
+		xemacpsif_resetrx_on_no_rxdata(netif);
 		ResetRxCntr = 0;
 	}
 	if (DetectEthLinkStatus == ETH_LINK_DETECT_INTERVAL) {
-		eth_link_detect(echo_netif);
+		eth_link_detect(netif);
 		DetectEthLinkStatus = 0;
 	}
 }
@@ -833,7 +829,7 @@ void lwip_timer_spool(void)
 void network_initialize(void)
 {
 	ip_addr_t ipaddr, netmask, gw;
-	echo_netif = &server_netif;
+	netif = &server_netif;
     ipaddr.addr = 0;
 	gw.addr = 0;
 	netmask.addr = 0;
@@ -847,35 +843,35 @@ void network_initialize(void)
 
 	lwip_init();
 
-	if (!xemac_add(echo_netif, &ipaddr, &netmask,
+	if (!xemac_add(netif, &ipaddr, &netmask,
 						&gw, mac_ethernet_address,
 						XPAR_XEMACPS_0_BASEADDR)) {
 		PRINTF("Error adding N/W interface\n\r");
 		ASSERT(0);
 	}
 
-	netif_set_default(echo_netif);
-	netif_set_up(echo_netif);
+	netif_set_default(netif);
+	netif_set_up(netif);
 
-	dhcp_start(echo_netif);
+	dhcp_start(netif);
 	dhcp_timoutcntr = 24;
 
-	while(((echo_netif->ip_addr.addr) == 0) && (dhcp_timoutcntr > 0))
-		xemacif_input(echo_netif);
+	while(((netif->ip_addr.addr) == 0) && (dhcp_timoutcntr > 0))
+		xemacif_input(netif);
 
 	if (dhcp_timoutcntr <= 0) {
-		if ((echo_netif->ip_addr.addr) == 0) {
+		if ((netif->ip_addr.addr) == 0) {
 			PRINTF("DHCP Timeout\r\n");
 			PRINTF("Configuring default IP of 192.168.1.10\r\n");
-			IP4_ADDR(&(echo_netif->ip_addr),  192, 168,   1, 10);
-			IP4_ADDR(&(echo_netif->netmask), 255, 255, 255,  0);
-			IP4_ADDR(&(echo_netif->gw),      192, 168,   1,  1);
+			IP4_ADDR(&(netif->ip_addr),  192, 168,   1, 10);
+			IP4_ADDR(&(netif->netmask), 255, 255, 255,  0);
+			IP4_ADDR(&(netif->gw),      192, 168,   1,  1);
 		}
 	}
 
-	ipaddr.addr = echo_netif->ip_addr.addr;
-	gw.addr = echo_netif->gw.addr;
-	netmask.addr = echo_netif->netmask.addr;
+	ipaddr.addr = netif->ip_addr.addr;
+	gw.addr = netif->gw.addr;
+	netmask.addr = netif->netmask.addr;
 
 	print_ip("Board IP: ", & ipaddr);
 	print_ip("Netmask : ", & netmask);
@@ -891,8 +887,8 @@ void network_initialize(void)
 
 	start_echo_server();
 
-	sys_timeout(4000, start_ping_action, NULL);
-	sys_timeout(100, check_ping_result, NULL);
+//	sys_timeout(4000, start_ping_action, NULL);
+//	sys_timeout(100, check_ping_result, NULL);
 
 	network_inited = 1;
 }
@@ -907,7 +903,7 @@ void network_spool(void)
 		tcp_slowtmr();
 		TcpSlowTmrFlag = 0;
 	}
-	xemacif_input(echo_netif);
+	xemacif_input(netif);
 }
 
 #endif /*  WITHLWIP */

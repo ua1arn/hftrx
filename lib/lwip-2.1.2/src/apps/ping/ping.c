@@ -1,38 +1,51 @@
-#include "lwip/opt.h"
-#include "lwip/mem.h"
-#include "lwip/memp.h"
-#include "netif/etharp.h"
-#include "lwip/dhcp.h"
-#include "lwip/netif.h"
-#include "lwip/timeouts.h"
 #include "ping-helper.h"
 #include <string.h>
 
-extern struct netif *echo_netif;
+extern struct netif * netif;
+
+int ping_send_ip(const char * ip_str)
+{
+	ip_addr_t target_ping_ip;
+	int res = ipaddr_aton(ip_str, & target_ping_ip);
+
+	if (! res) 					// invalid conversion string to IP address
+		return -10;
+
+	ip_addr_t gw_addr = netif->gw;
+	if (! ip4_addr1(& gw_addr)) // gateway not assigned by DHCP
+		return -11;
+
+	res = ping_ip(target_ping_ip);
+	if (res != PING_ERR_OK)		// error while sending ICMP request
+		return res;
+
+	return PING_ERR_OK;
+}
+
+int ping_check_response(void)
+{
+	ping_result_t res;
+	memset(& res, 0, sizeof(res));
+	int retcode = ping_ip_result(& res);
+
+	if(retcode == PING_ERR_OK)
+	{
+		if (res.result_code == PING_RES_ECHO_REPLY)
+		{
+			return res.response_time_ms;
+		}
+	}
+	return retcode;
+}
 
 void start_ping_action(void * arg)
 {
-	//get gateway IP from global net interface
-	ip_addr_t gw_addr = echo_netif->gw;
-	uint8_t gw_ip_part_1 = ip4_addr1(&gw_addr);
-	//check if DHCP already succeeded by checking against non 0 ip part
-	int ret = 0;
-	if(gw_ip_part_1 != 0) {
-		ip_addr_t target_ping_ip; // = gw_addr;
-		//select target:
-		//gateway
-		//target_ping_ip = gw_addr;
-		//static IPs
-		//IP_ADDR4(&target_ping_ip, 192,168,1,180);
-		ipaddr_aton("192.168.1.111", & target_ping_ip);
+	const char str[] = "8.8.8.8";
+	int ret = ping_send_ip(str);
+	PRINTF("Starting to ping IP: %s\n", str);
+	if(ret != PING_ERR_OK)
+		PRINTF("Error while sending ping: %d\n", ret);
 
-		PRINTF("Starting to ping IP: %d.%d.%d.%d.\n", (int)ip4_addr1(&target_ping_ip),
-				(int)ip4_addr2(&target_ping_ip), (int)ip4_addr3(&target_ping_ip),
-				(int)ip4_addr4(&target_ping_ip));
-		if((ret = ping_ip(target_ping_ip)) != PING_ERR_OK) {
-			PRINTF("Error while sending ping: %d\n", ret);
-		}
-	}
 	//every 4 seconds, start a new ping attempt
 	sys_timeout(4000, start_ping_action, NULL);
 }
@@ -49,9 +62,8 @@ void check_ping_result(void * arg)
         } else {
         	PRINTF("Bad ping err %d\n", res.result_code);
         }
-	} else {
-		//printf("No ping result available yet: %d\n", retcode);
 	}
+
 	sys_timeout(100, check_ping_result, NULL);
 }
 

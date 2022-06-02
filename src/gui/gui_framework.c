@@ -1289,17 +1289,19 @@ static void slider_process(slider_t * sl)
 /* Рассчитать размеры текстового поля */
 void textfield_update_size(text_field_t * tf)
 {
-	tf->w = SMALLCHARW2 * tf->w_sim;
-	tf->h = SMALLCHARH2 * tf->h_str;
+	ASSERT(tf != NULL);
+	tf->w = tf->font->width * tf->w_sim;
+	tf->h = tf->font->height * tf->h_str;
 	ASSERT(tf->w < WITHGUIMAXX);
 	ASSERT(tf->h < WITHGUIMAXY - window_title_height);
 }
 
 /* Добавить строку в текстовое поле */
-void textfield_add_string(text_field_t * tf, char * str, COLORMAIN_T color)
+void textfield_add_string(text_field_t * tf, const char * str, COLORMAIN_T color)
 {
 	uint_fast8_t len = strlen(str);
 	ASSERT(len < TEXT_ARRAY_SIZE);
+	ASSERT(tf != NULL);
 
 	if (len > tf->w_sim)
 	{
@@ -1312,6 +1314,14 @@ void textfield_add_string(text_field_t * tf, char * str, COLORMAIN_T color)
 	tf->record [tf->index].color_line = color;
 	tf->index ++;
 	tf->index = tf->index >= tf->h_str ? 0 : tf->index;
+}
+
+/* Очистить текстовое поле */
+void textfield_clean(text_field_t * tf)
+{
+	ASSERT(tf != NULL);
+	tf->index = 0;
+	memset(tf->record, 0, tf->h_str * sizeof(record_t));
 }
 
 /* Селектор запуска функций обработки событий */
