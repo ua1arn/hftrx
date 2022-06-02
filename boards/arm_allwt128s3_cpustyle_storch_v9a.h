@@ -45,14 +45,14 @@
 #define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
 
 // OHCI at USB1HSFSP2_BASE
-#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
+////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
 
 #if WITHISBOOTLOADER
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-	#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
+	////#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
-	#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
+	////#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
 
 	#define WITHSDRAMHW	1		/* В процессоре есть внешняя память */
 	//#define WITHSDRAM_PMC1	1	/* power management chip */
@@ -60,11 +60,11 @@
 	//#define WITHLTDCHW		1	/* Наличие контроллера дисплея с framebuffer-ом */
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	//#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
+	////#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 	#define USBPHYC_MISC_SWITHOST_VAL 0		// 0 or 1 - value for USBPHYC_MISC_SWITHOST field. 0: Select OTG controller for 2nd PHY port, 1: Select Host controller for 2nd PHY port
 	#define USBPHYC_MISC_PPCKDIS_VAL 0x00
 
-	#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	////#define WITHUSBHW_DEVICE	USB_OTG_HS	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1
@@ -75,8 +75,8 @@
 	#define WITHUSBHOST_HIGHSPEEDPHYC	1	// UTMI -> USB_DP2 & USB_DM2
 	#define WITHUSBHOST_DMAENABLE 1
 
-	#define WITHEHCIHW	1	/* USB_EHCI controller */
-	#define WITHUSBHW_EHCI		USB1_EHCI
+	////#define WITHEHCIHW	1	/* USB_EHCI controller */
+	////#define WITHUSBHW_EHCI		USB1_EHCI
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
 
 
@@ -747,7 +747,7 @@
 		} while (0)
 #endif /* WITHDSPEXTFIR */
 
-#if 1
+#if 0
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_INPUT		(GPIOC->IDR)
 	#define TARGET_FPGA_OVF_BIT			(1u << 8)	// PC8
@@ -870,26 +870,28 @@
 		#define WITHLCDBACKLIGHTMAX	2	// Верхний предел регулировки (показываемый на дисплее)
 	#endif
 
-	/* BL0: PA14. BL1: PA15 */
-	#define	HARDWARE_BL_INITIALIZE() do { \
-		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
-		arm_hardware_pioa_opendrain(BLpins, 0); \
-		} while (0)
+	#if 0
+		/* BL0: PA14. BL1: PA15 */
+		#define	HARDWARE_BL_INITIALIZE() do { \
+			const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+			const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware  */ \
+			arm_hardware_pioa_opendrain(BLpins, 0); \
+			} while (0)
 
-	/* установка яркости и включение/выключение преобразователя подсветки */
-	/* BL0: PA14. BL1: PA15 */
-	#define HARDWARE_BL_SET(en, level) do { \
-		const portholder_t Vlevel = (level) & 0x03; \
-		const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
-		const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
-		const portholder_t BLstate = (~ Vlevel) << 14; \
-		GPIOA->BSRR = \
-			BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
-			BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
-			0; \
-		__DSB(); \
-	} while (0)
+		/* установка яркости и включение/выключение преобразователя подсветки */
+		/* BL0: PA14. BL1: PA15 */
+		#define HARDWARE_BL_SET(en, level) do { \
+			const portholder_t Vlevel = (level) & 0x03; \
+			const portholder_t ENmask = 0 * (1U << 1); /* PF1 - not in this hardware */ \
+			const portholder_t BLpins = (1U << 15) | (1U << 14); /* PA15:PA14 */ \
+			const portholder_t BLstate = (~ Vlevel) << 14; \
+			GPIOA->BSRR = \
+				BSRR_S((BLstate) & (BLpins)) | /* set bits */ \
+				BSRR_C(~ (BLstate) & (BLpins)) | /* reset bits */ \
+				0; \
+			__DSB(); \
+		} while (0)
+	#endif
 
 #if WITHLTDCHW
 	/* demode values: 0: static signal, 1: DE controlled */
@@ -953,7 +955,7 @@
 
 	#if WITHSDRAMHW
 		// Bootloader parameters
-		#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
+		#define BOOTLOADER_RAMAREA DRAM_SPACE_BASE	/* адрес ОЗУ, куда перемещать application */
 		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 256)	// 256M
 		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
 		#define USBD_DFU_RAM_XFER_SIZE 4096
@@ -1096,6 +1098,7 @@
 	//#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board
 	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
 
+#if 0
 	#define BOARD_BLINK_INITIALIZE() do { \
 			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
 		} while (0)
@@ -1105,18 +1108,20 @@
 			else \
 				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
 		} while (0)
+#endif
 
 	/* запрос на вход в режим загрузчика */
 	#define BOARD_USERBOOT_BIT	(1uL << 1)	/* PB1: ~USER_BOOT */
-	#define BOARD_IS_USERBOOT() (((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->IDR) & TARGET_ENC2BTN_BIT) == 0)
-	#define BOARD_USERBOOT_INITIALIZE() do { \
+	#define BOARD_IS_USERBOOT() 0//(((GPIOB->IDR) & BOARD_USERBOOT_BIT) == 0 || ((GPIOE->IDR) & TARGET_ENC2BTN_BIT) == 0)
+	#define BOARD_USERBOOT_INITIALIZEwrk() do { \
 			arm_hardware_piob_inputs(BOARD_USERBOOT_BIT); /* set as input with pull-up */ \
 			arm_hardware_pioe_inputs(TARGET_ENC2BTN_BIT); /* set as input with pull-up */ \
 		} while (0)
+	#define BOARD_USERBOOT_INITIALIZE() do { \
+		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
-	#define	HARDWARE_INITIALIZE() do { \
-			I2S2HW_POOLDOWN(); \
+	#define	HARDWARE_INITIALIZEwrk() do { \
 			BOARD_BLINK_INITIALIZE(); \
 			HARDWARE_KBD_INITIALIZE(); \
 			HARDWARE_DAC_INITIALIZE(); \
@@ -1126,6 +1131,8 @@
 			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
 			USBD_EHCI_INITIALIZE(); \
+		} while (0)
+	#define	HARDWARE_INITIALIZE() do { \
 		} while (0)
 
 #endif /* ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED */

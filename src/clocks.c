@@ -5851,6 +5851,10 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 #endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
+
+#if CPUSTYPE_ALLWNT113
+#endif /* CPUSTYPE_ALLWNT113 */
+
 uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
 
 // PLL initialize

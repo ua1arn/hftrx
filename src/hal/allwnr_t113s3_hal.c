@@ -1,5 +1,5 @@
 /*
- * zynq7000_hal.c
+ * allwnr_t113s3_hal.c
  *
  *  Created on: May 6, 2021
  *      Author: gena
@@ -9,11 +9,11 @@
 
 #include "hardware.h"
 
-#if CPUSTYLE_XC7Z
+#if CPUSTYPE_ALLWNT113
 
 #include "board.h"
 #include "formats.h"
-#include "zynq7000_hal.h"
+#include "allwnr_t113s3_hal.h"
 
 //uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Clock) */
 

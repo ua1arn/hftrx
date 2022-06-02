@@ -1,5 +1,5 @@
 /*
- * zynq7000_hal.h
+ * allwnr_t113s3_hal.h
  *
  *  Created on: 16 мар. 2022 г.
  *      Author: User
@@ -254,6 +254,7 @@ void HAL_MspDeInit(void);
 /** @defgroup HCD_Exported_Types HCD Exported Types
   * @{
   */
+#if 0
 
 /** @defgroup HCD_Exported_Types_Group1 HCD State Structure definition
   * @{
@@ -609,5 +610,7 @@ uint_fast8_t 			HAL_HCD_GetCurrentSpeedReady(HCD_HandleTypeDef *hhcd);
                                       (__HANDLE__)->Lock = HAL_UNLOCKED;    \
                                     }while (0U)
 #endif /* USE_RTOS */
+
+#endif
 
 #endif /* SRC_HAL_ALLWNRT113S3_HAL_H_ */

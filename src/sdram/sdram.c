@@ -4226,4 +4226,12 @@ void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
 
 #endif	//  CPUSTYLE_XC7Z || CPUSTYLE_XCZU
 
+
+#if CPUSTYPE_ALLWNT113
+void FLASHMEMINITFUNC arm_hardware_sdram_initialize(void)
+{
+	PRINTF("arm_hardware_sdram_initialize start\n");
+	PRINTF("arm_hardware_sdram_initialize done\n");
+}
+#endif /* CPUSTYPE_ALLWNT113 */
 #endif /* WITHSDRAMHW */
