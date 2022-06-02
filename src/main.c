@@ -21365,6 +21365,8 @@ static void initialize2(void)
 #endif
 }
 
+static uint_fast8_t usbactivated;
+
 /* вызывается при разрешённых прерываниях. */
 static void 
 hamradio_initialize(void)
@@ -21433,7 +21435,20 @@ hamradio_initialize(void)
 #endif /* WITHINTEGRATEDDSP */
 
 #if WITHUSBHW
-	board_usb_activate();		// USB device and host start
+
+	#if WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT)
+		if (BOARD_IS_USERBOOT())
+		{
+			board_usb_activate();		// USB device and host start
+			usbactivated = 1;
+		}
+
+	#else /* WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT) */
+		board_usb_activate();		// USB device and host start
+		usbactivated = 1;
+
+	#endif /* WITHISBOOTLOADER && defined (BOARD_IS_USERBOOT) */
+
 #endif /* WITHUSBHW */
 
 	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
@@ -23697,8 +23712,6 @@ bootloader_launch_app(uintptr_t ip)
 		;
 }
 
-#if WITHUSBHW
-
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
 void bootloader_deffereddetach(void * arg)
 {
@@ -23708,7 +23721,10 @@ void bootloader_deffereddetach(void * arg)
 	{
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
-		board_usb_deactivate();
+#if WITHUSBHW
+		if (usbactivated)
+			board_usb_deactivate();
+#endif /* WITHUSBHW */
 		bootloader_launch_app(ip);
 	}
 	else
@@ -23718,7 +23734,87 @@ void bootloader_deffereddetach(void * arg)
 #endif /* defined (USBD_DFU_RAM_LOADER) */
 }
 
-#endif /* WITHUSBHW */
+#if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
+
+static unsigned volatile tmpressed;
+static unsigned volatile pressflag;
+
+static unsigned refreshtimer;
+static unsigned volatile refreshevent;
+
+static unsigned s1timer;
+static unsigned volatile s1event;
+
+static unsigned s01timer;
+static unsigned volatile s01event;
+enum { REFRESHPERIODmS = 500 };
+
+static unsigned tcpiptimer;
+static unsigned volatile tcpipevent;
+
+static int getrefresh(void)
+{
+	unsigned v;
+
+	system_disableIRQ();
+	v = refreshevent;
+	refreshevent = 0;
+	system_enableIRQ();
+
+	return v;
+}
+
+
+static void
+tsc_spool(void * ctx)
+{
+	{
+		unsigned t = tmpressed;
+		if (t != 0)
+			tmpressed = t - 1;
+	}
+	// обновление крана
+	{
+		unsigned t = refreshtimer;
+		if (++ t >= NTICKS(REFRESHPERIODmS))
+		{
+			refreshevent = 1;
+			refreshtimer = 0;
+		}
+		else
+		{
+			refreshtimer = t;
+		}
+	}
+	// обработка LWIP
+	{
+		unsigned t = tcpiptimer;
+		if (++ t >= NTICKS(250))
+		{
+			tcpipevent = 1;
+			tcpiptimer = 0;
+		}
+		else
+		{
+			tcpiptimer = t;
+		}
+	}
+//	{
+//		unsigned t = s1timer;
+//		if (++ t >= NTICKS(1000))
+//		{
+//			++ abstime;
+//			s1event = 1;
+//			s1timer = 0;
+//		}
+//		else
+//		{
+//			s1timer = t;
+//		}
+//	}
+}
+
+#endif /* CPUSTYLE_XC7Z || CPUSTYLE_XCZU */
 
 #if WITHISBOOTLOADERFATFS
 
@@ -23846,7 +23942,8 @@ static void bootloader_mainloop(void)
 				break;
 			}
 	#if WITHUSBHW
-			board_usb_deactivate();
+			if (usbactivated)
+				board_usb_deactivate();
 	#endif /* WITHUSBHW */
 			bootloader_launch_app(ip);
 
