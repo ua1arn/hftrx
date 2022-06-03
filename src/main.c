@@ -23633,7 +23633,7 @@ struct stm32_header {
 
 #define HEADER_MAGIC	0x324d5453  //	__be32_to_cpu(0x53544D32)
 
-uint_fast8_t bootloader_get_start(
+static uint_fast8_t bootloader_get_start(
 		uintptr_t apparea,	/* целевой адрес для загрузки образа - здесь лежит заголовок файла */
 		uintptr_t * ip)
 {
@@ -23649,40 +23649,20 @@ uint_fast8_t bootloader_get_start(
 	return checksum != 0;	// возврат 0 если контрольная сумма совпала
 }
 
-uint_fast8_t bootloader_copyapp(
-		uintptr_t apparea	/* целевой адрес для загрузки образа */
+static uint_fast8_t bootloader_copyapp(
+		uint_fast32_t appoffset,	/* смещение заголовка приожения в накопителе */
+		uintptr_t * ip
 		)
 {
 	enum { HEADERSIZE = 256 };
-	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) apparea;
+	static uint8_t tmpbuff [HEADERSIZE];
+	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) tmpbuff;
 
-#if CPUSTYLE_R7S721
-
-	memcpy((void *) apparea, (const void *) BOOTLOADER_APPBASE, HEADERSIZE);
+	bootloader_readimage(appoffset, tmpbuff, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
-	memcpy((void *) hdr->load_address, (const void *) (BOOTLOADER_APPBASE + HEADERSIZE), hdr->image_length);
-
-#elif (BOOTLOADER_SELFSIZE != 0)
-
-#if 0
-	//PRINTF("erase chip:\n");
-	//bootloader_chiperase();
-	static uint8_t b [256];
-	bootloader_readimage(BOOTLOADER_FSBL_OFFSET, b, ARRAY_SIZE(b));
-	PRINTF("boot image:\n");
-	printhex(BOOTLOADER_FSBL_OFFSET, b, ARRAY_SIZE(b));
-	bootloader_readimage(BOOTLOADER_SELFSIZE, b, ARRAY_SIZE(b));
-	PRINTF("app image:\n");
-	printhex(BOOTLOADER_SELFSIZE, b, ARRAY_SIZE(b));
-#endif
-
-	bootloader_readimage(BOOTLOADER_SELFSIZE, (void *) apparea, HEADERSIZE);
-	if (hdr->magic_number != HEADER_MAGIC)
-		return 1;
-	bootloader_readimage(BOOTLOADER_SELFSIZE + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
-
-#endif /* CPUSTYLE_R7S721 */
+	* ip = hdr->image_entry_point;
+	bootloader_readimage(appoffset + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
 
 	return 0;
 }
@@ -23735,9 +23715,9 @@ bootloader_launch_app(uintptr_t ip)
 /* Вызов заказан вызывется из обработчика USB прерываний EP0 */
 void bootloader_deffereddetach(void * arg)
 {
-#if BOOTLOADER_RAMSIZE
+#if defined (USBD_DFU_RAM_LOADER)
 	uintptr_t ip;
-	if (bootloader_get_start(BOOTLOADER_RAMAREA, & ip) == 0)
+	if (bootloader_get_start(USBD_DFU_RAM_LOADER, & ip) == 0)
 	{
 		PRINTF("bootloader_deffereddetach: ip=%08lX\n", (unsigned long) ip);
 		/* Perform an Attach-Detach operation on USB bus */
@@ -23749,9 +23729,9 @@ void bootloader_deffereddetach(void * arg)
 	}
 	else
 	{
-		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) BOOTLOADER_RAMAREA);
+		PRINTF("bootloader_deffereddetach: Header is not loaded to %08lX.\n", (unsigned long) USBD_DFU_RAM_LOADER);
 	}
-#endif /* BOOTLOADER_RAMSIZE */
+#endif /* defined (USBD_DFU_RAM_LOADER) */
 }
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU	// мигалка
@@ -23949,99 +23929,34 @@ static void bootloader_mainloop(void)
 	board_set_bglight(1, gbglight);	// выключить подсветку
 	board_update();
 
-	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 64);
-	//local_delay_ms(1000);
-	//printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
-	//PRINTF(PSTR("Ready jump to application at %p. Press 'r' at any time, 'd' for dump.\n"), (void *) BOOTLOADER_RAMAREA);
-ddd:
-	;
-
-	char c;
-	if (dbg_getchar(& c))
+#if BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT)
+	if (BOARD_IS_USERBOOT() == 0)
 	{
-		dbg_putchar(c);
-	}
+		/* Нет запроса на вход в режим загрузчика - грузим с QSPI FLASH */
+		do
+		{
+			uintptr_t ip;
+			if (bootloader_copyapp(BOOTLOADER_SELFSIZE, & ip) != 0)	/* копирование исполняемого образа (если есть) в требуемое место */
+			{
+				PRINTF("bootloader_mainloop: No application image\n");
+				break;
+			}
+	#if WITHUSBHW
+			if (usbactivated)
+				board_usb_deactivate();
+	#endif /* WITHUSBHW */
+			bootloader_launch_app(ip);
 
-#if WITHUSBHW
+		} while (0);
+	}
+#endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
+
+	/* Обеспечение работы USB DFU */
 	for (;;)
 	{
 		uint_fast8_t kbch, kbready;
 		processmessages(& kbch, & kbready, 0, NULL);
-
-
-#if defined (BOARD_IS_USERBOOT)
-		/* тест что всё еще работает и не повисло... */
-		char c;
-		if (dbg_getchar(& c))
-		{
-			dbg_putchar(c);
-#if WITHUSBHOST_HIGHSPEEDULPI
-			if (c == 'u')
-			{
-				PRINTF("hkey:\n");
-				ulpi_chip_debug();
-				continue;
-			}
-#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-		}
-		/* если не установлен джампер - запускаем программу. */
-//		if (! BOARD_IS_USERBOOT())
-//			break;
-		//	при наличии перемычки (нажатой кнопки) входим в режим загрузчика по USB.
-		//	Выйти или через команду DFU или по сбросу.
-		if (usbactivated == 0)
-			break;
-#elif WITHDEBUG
-		/* ввод 'r' - запускаем программу. */
-		char c;
-		if (dbg_getchar(& c))
-		{
-			dbg_putchar(c);
-			if (c == 'r')
-				break;
-#if BOOTLOADER_RAMSIZE
-			if (c == 'd')
-			{
-				printhex(BOOTLOADER_RAMAREA, (void *) BOOTLOADER_RAMAREA, 512);
-				continue;
-			}
-#endif /* BOOTLOADER_RAMSIZE */
-#if WITHUSBHOST_HIGHSPEEDULPI
-			if (c == 'u')
-			{
-				PRINTF("hkey:\n");
-				ulpi_chip_debug();
-				continue;
-			}
-#endif /* WITHUSBHOST_HIGHSPEEDULPI */
-		}
-
-//#else /* WITHDEBUG */
-//		/* вытаскиваем USB кабель - запускаем программу. */
-//		if (hardware_usbd_get_vbusbefore() == 0)
-//			break;
-//		if (hardware_usbd_get_vbusnow() == 0)
-//			break;
-
-#endif /* WITHDEBUG */
 	}
-#endif /* WITHUSBHW */
-
-#if BOOTLOADER_RAMSIZE
-	uintptr_t ip;
-	//PRINTF(PSTR("Compare signature of to application\n"));
-	if (bootloader_get_start(BOOTLOADER_RAMAREA, & ip) != 0)	/* проверка сигнатуры и получение стартового адреса */
-		goto ddd;
-#else /* BOOTLOADER_RAMSIZE */
-	goto ddd;
-#endif /* BOOTLOADER_RAMSIZE */
-#if WITHUSBHW
-	board_usb_deactivate();
-	board_usb_deinitialize();
-#endif /* WITHUSBHW */
-#if BOOTLOADER_RAMSIZE
-	bootloader_launch_app(ip);
-#endif /* BOOTLOADER_RAMSIZE */
 }
 #endif /* WITHISBOOTLOADERFATFS */
 

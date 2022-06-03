@@ -944,35 +944,7 @@
 	} while (0)
 #endif /* LCDMODE_LTDC */
 
-	#if WITHSDRAMHW
-		// Bootloader parameters
-		#define BOOTLOADER_RAMAREA DRAM_MEM_BASE	/* адрес ОЗУ, куда перемещать application */
-		#define BOOTLOADER_RAMSIZE (1024uL * 1024uL * 64)	// 64M
-		#define BOOTLOADER_RAMPAGESIZE	(1024uL * 1024)	// при загрузке на исполнение используется размер страницы в 1 мегабайт
-		#define USBD_DFU_RAM_XFER_SIZE 4096
-	#endif /* WITHSDRAMHW */
-
-	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
-	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_SELFSIZE (1024uL * 256 * 2)	// 256k * 2 - двве копии загрузчика
-
-	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */
-	#define BOOTLOADER_APPSIZE (BOOTLOADER_FLASHSIZE - BOOTLOADER_SELFSIZE)
-
-	#define BOOTLOADER_PAGESIZE (1024uL * 64)	// W25Q32FV with 64 KB pages
-
-	#define USBD_DFU_FLASH_XFER_SIZE 256	// match to (Q)SPI FLASH MEMORY page size
-	#define USBD_DFU_FLASHNAME "W25Q128JV"
-
 	#define WITHBOOTSD 1	/* загрузка с SD CARD (если нет - с QSPI FLASH). */
-	#define APPFIRSTOFFSET	(4400uL + BOOTLOADER_SELFSIZE)		// начальное смещение расположения образа applicaton
-	#define USERFIRSTOFFSET	(APPFIRSTOFFSET + BOOTLOADER_FLASHSIZE)	// начальное смещение области для создания хранилища данных
-	//#define APPFIRSTSECTOR (APPFIRSTOFFSET / 512)
-
-	#define APPFIRSTSECTOR (0x84400  / 512)
-	#define FSBL1FIRSTSECTOR (0x04400 / 512)
-	#define FSBL2FIRSTSECTOR (0x44400  / 512)
-
 	#define USERFIRSTSBLOCK (USERFIRSTOFFSET / 512)
 
 	#if WIHSPIDFSW || WIHSPIDFHW

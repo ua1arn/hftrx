@@ -135,11 +135,11 @@ SRCDIRS += $(MDLWHOSTDIR)
 PROJECT = tc1_xc7z020
 
 # Define linker script file here
-LDSCRIPT_BOOT = ./xc7z010xx_ca9_boot.ld
-LDSCRIPT_APP = ./xc7z010xx_ca9_app.ld
+LDSCRIPT_BOOT = ./xc7z020xx_ca9_boot.ld
+LDSCRIPT_APP = ./xc7z020xx_ca9_app.ld
 
 # List all user C define here, like -D_DEBUG=1
-UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_XC7Z"=1 -D"XC7Z010"=1 -D"EGL_STATIC_LIBRARY"=1
+UDEFS += -D"NDEBUG"=1 -D"CPUSTYLE_XC7Z"=1 -D"XC7Z020"=1 -D"EGL_STATIC_LIBRARY"=1
 #UDEFS += -D"USE_HAL_DRIVER"=1 -D"USE_FULL_LL_DRIVER"=1
 
 # Define ASM defines here
