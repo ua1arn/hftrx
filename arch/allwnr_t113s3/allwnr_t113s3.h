@@ -59,7 +59,7 @@ typedef enum IRQn
 	IR_TX_IRQn = (51), /*  Peripherial */
 	LEDC_IRQn = (52), /*  Peripherial */
 	CAN0_IRQ = (53), /*  Peripherial */
-	CAN0_IRQ = (54), /*  Peripherial */
+	CAN1_IRQ = (54), /*  Peripherial */
 	OWA_IRQn = (55), /*  Peripherial */
 	DMIC_IRQn = (56), /*  Peripherial */
 	AUDIO_CODEC_IRQn = (57), /*  Peripherial */
