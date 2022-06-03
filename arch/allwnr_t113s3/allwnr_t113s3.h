@@ -1044,6 +1044,24 @@ typedef struct SPI_BDI_Type
 	         uint8_t reserved10 [0x00FC];
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x0300 SPI RX Data register */
 } SPI_BDI_TypeDef;
+/*
+ * @brief CE_S
+ */
+/*!< CE_S Controller Interface */
+typedef struct CE_S_Type
+{
+    volatile uint32_t CE_TDA;                         /*!< Offset 0x0000 Task Descriptor Address */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t CE_ICR;                         /*!< Offset 0x0008 Interrupt Control Register */
+    volatile uint32_t CE_ISR;                         /*!< Offset 0x000C Interrupt Status Register */
+    volatile uint32_t CE_TLR;                         /*!< Offset 0x0010 Task Load Register */
+    volatile uint32_t CE_TSR;                         /*!< Offset 0x0014 Task Status Register */
+    volatile uint32_t CE_ESR;                         /*!< Offset 0x0018 Error Status Register */
+	         uint8_t reserved2 [0x0008];
+    volatile uint32_t CE_CSA;                         /*!< Offset 0x0024 DMA Current Source Address */
+    volatile uint32_t CE_CDA;                         /*!< Offset 0x0028 DMA Current Destination Address */
+    volatile uint32_t CE_TPR;                         /*!< Offset 0x002C Throughput Register */
+} CE_S_TypeDef;
 
 
 /* Base addresses */
@@ -1165,6 +1183,7 @@ typedef struct SPI_BDI_Type
 #define TPADC		((TPADC_TypeDef *) TPADC_BASE)
 #define CIR_RX		((CIR_RX_TypeDef *) CIR_RX_BASE)
 #define CIR_TX		((CIR_TX_TypeDef *) CIR_TX_BASE)
+#define CE_S		((CE_S_TypeDef *) CE_S_BASE)
 
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
