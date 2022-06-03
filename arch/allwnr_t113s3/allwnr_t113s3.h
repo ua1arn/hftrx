@@ -547,6 +547,304 @@ typedef struct GPIO_Type
 	volatile	uint32_t PULL [2];		// Offset: 0x24
 }  GPIO_TypeDef;
 
+/*
+ * @brief SMHC
+ */
+/*!< SMHC Controller Interface */
+typedef struct SMHC_Type
+{
+    volatile uint32_t SMHC_CTRL;                      /*!< Offset 0x0000 Control Register */
+    volatile uint32_t SMHC_CLKDIV;                    /*!< Offset 0x0004 Clock Control Register */
+    volatile uint32_t SMHC_TMOUT;                     /*!< Offset 0x0008 Time Out Register */
+    volatile uint32_t SMHC_CTYPE;                     /*!< Offset 0x000C Bus Width Register */
+    volatile uint32_t SMHC_BLKSIZ;                    /*!< Offset 0x0010 Block Size Register */
+    volatile uint32_t SMHC_BYTCNT;                    /*!< Offset 0x0014 Byte Count Register */
+    volatile uint32_t SMHC_CMD;                       /*!< Offset 0x0018 Command Register */
+    volatile uint32_t SMHC_CMDARG;                    /*!< Offset 0x001C Command Argument Register */
+    volatile uint32_t SMHC_RESP0;                     /*!< Offset 0x0020 Response 0 Register */
+    volatile uint32_t SMHC_RESP1;                     /*!< Offset 0x0024 Response 1 Register */
+    volatile uint32_t SMHC_RESP2;                     /*!< Offset 0x0028 Response 2 Register */
+    volatile uint32_t SMHC_RESP3;                     /*!< Offset 0x002C Response 3 Register */
+    volatile uint32_t SMHC_INTMASK;                   /*!< Offset 0x0030 Interrupt Mask Register */
+    volatile uint32_t SMHC_MINTSTS;                   /*!< Offset 0x0034 Masked Interrupt Status Register */
+    volatile uint32_t SMHC_RINTSTS;                   /*!< Offset 0x0038 Raw Interrupt Status Register */
+    volatile uint32_t SMHC_STATUS;                    /*!< Offset 0x003C Status Register */
+    volatile uint32_t SMHC_FIFOTH;                    /*!< Offset 0x0040 FIFO Water Level Register */
+    volatile uint32_t SMHC_FUNS;                      /*!< Offset 0x0044 FIFO Function Select Register */
+    volatile uint32_t SMHC_TCBCNT;                    /*!< Offset 0x0048 Transferred Byte Count between Controller and Card */
+    volatile uint32_t SMHC_TBBCNT;                    /*!< Offset 0x004C Transferred Byte Count between Host Memory and Internal FIFO */
+    volatile uint32_t SMHC_DBGC;                      /*!< Offset 0x0050 Current Debug Control Register */
+    volatile uint32_t SMHC_CSDC;                      /*!< Offset 0x0054 CRC Status Detect Control Registers */
+    volatile uint32_t SMHC_A12A;                      /*!< Offset 0x0058 Auto Command 12 Argument Register */
+    volatile uint32_t SMHC_NTSR;                      /*!< Offset 0x005C SD New Timing Set Register */
+	         uint8_t reserved1 [0x0018];
+    volatile uint32_t SMHC_HWRST;                     /*!< Offset 0x0078 Hardware Reset Register */
+	         uint8_t reserved2 [0x0004];
+    volatile uint32_t SMHC_IDMAC;                     /*!< Offset 0x0080 IDMAC Control Register */
+    volatile uint32_t SMHC_DLBA;                      /*!< Offset 0x0084 Descriptor List Base Address Register */
+    volatile uint32_t SMHC_IDST;                      /*!< Offset 0x0088 IDMAC Status Register */
+    volatile uint32_t SMHC_IDIE;                      /*!< Offset 0x008C IDMAC Interrupt Enable Register */
+	         uint8_t reserved3 [0x0070];
+    volatile uint32_t SMHC_THLD;                      /*!< Offset 0x0100 Card Threshold Control Register */
+    volatile uint32_t SMHC_SFC;                       /*!< Offset 0x0104 Sample FIFO Control Register */
+    volatile uint32_t SMHC_A23A;                      /*!< Offset 0x0108 Auto Command 23 Argument Register */
+    volatile uint32_t EMMC_DDR_SBIT_DET;              /*!< Offset 0x010C eMMC4.5 DDR Start Bit Detection Control Register */
+	         uint8_t reserved4 [0x0028];
+    volatile uint32_t SMHC_EXT_CMD;                   /*!< Offset 0x0138 Extended Command Register */
+    volatile uint32_t SMHC_EXT_RESP;                  /*!< Offset 0x013C Extended Response Register */
+    volatile uint32_t SMHC_DRV_DL;                    /*!< Offset 0x0140 Drive Delay Control Register */
+    volatile uint32_t SMHC_SMAP_DL;                   /*!< Offset 0x0144 Sample Delay Control Register */
+    volatile uint32_t SMHC_DS_DL;                     /*!< Offset 0x0148 Data Strobe Delay Control Register */
+    volatile uint32_t SMHC_HS400_DL;                  /*!< Offset 0x014C HS400 Delay Control Register */
+	         uint8_t reserved5 [0x00B0];
+    volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x0200 Read/Write FIFO */
+} SMHC_TypeDef;
+
+/*
+ * @brief I2S_PCM
+ */
+/*!< I2S_PCM Controller Interface */
+typedef struct I2S_PCM_Type
+{
+    volatile uint32_t I2S_PCM_CTL;                    /*!< Offset 0x0000 I2S/PCM Control Register */
+    volatile uint32_t I2S_PCM_FMT0;                   /*!< Offset 0x0004 I2S/PCM Format Register 0 */
+    volatile uint32_t I2S_PCM_FMT1;                   /*!< Offset 0x0008 I2S/PCM Format Register 1 */
+    volatile uint32_t I2S_PCM_ISTA;                   /*!< Offset 0x000C I2S/PCM Interrupt Status Register */
+    volatile uint32_t I2S_PCM_RXFIFO;                 /*!< Offset 0x0010 I2S/PCM RXFIFO Register */
+    volatile uint32_t I2S_PCM_FCTL;                   /*!< Offset 0x0014 I2S/PCM FIFO Control Register */
+    volatile uint32_t I2S_PCM_FSTA;                   /*!< Offset 0x0018 I2S/PCM FIFO Status Register */
+    volatile uint32_t I2S_PCM_INT;                    /*!< Offset 0x001C I2S/PCM DMA & Interrupt Control Register */
+    volatile uint32_t I2S_PCM_TXFIFO;                 /*!< Offset 0x0020 I2S/PCM TXFIFO Register */
+    volatile uint32_t I2S_PCM_CLKD;                   /*!< Offset 0x0024 I2S/PCM Clock Divide Register */
+    volatile uint32_t I2S_PCM_TXCNT;                  /*!< Offset 0x0028 I2S/PCM TX Sample Counter Register */
+    volatile uint32_t I2S_PCM_RXCNT;                  /*!< Offset 0x002C I2S/PCM RX Sample Counter Register */
+    volatile uint32_t I2S_PCM_CHCFG;                  /*!< Offset 0x0030 I2S/PCM Channel Configuration Register */
+    volatile uint32_t I2S_PCM_TX0CHSEL;               /*!< Offset 0x0034 I2S/PCM TX0 Channel Select Register */
+    volatile uint32_t I2S_PCM_TX1CHSEL;               /*!< Offset 0x0038 I2S/PCM TX1 Channel Select Register */
+    volatile uint32_t I2S_PCM_TX2CHSEL;               /*!< Offset 0x003C I2S/PCM TX2 Channel Select Register */
+    volatile uint32_t I2S_PCM_TX3CHSEL;               /*!< Offset 0x0040 I2S/PCM TX3 Channel Select Register */
+    volatile uint32_t I2S_PCM_TX0CHMAP0;              /*!< Offset 0x0044 I2S/PCM TX0 Channel Mapping Register0 */
+    volatile uint32_t I2S_PCM_TX0CHMAP1;              /*!< Offset 0x0048 I2S/PCM TX0 Channel Mapping Register1 */
+    volatile uint32_t I2S_PCM_TX1CHMAP0;              /*!< Offset 0x004C I2S/PCM TX1 Channel Mapping Register0 */
+    volatile uint32_t I2S_PCM_TX1CHMAP1;              /*!< Offset 0x0050 I2S/PCM TX1 Channel Mapping Register1 */
+    volatile uint32_t I2S_PCM_TX2CHMAP0;              /*!< Offset 0x0054 I2S/PCM TX2 Channel Mapping Register0 */
+    volatile uint32_t I2S_PCM_TX2CHMAP1;              /*!< Offset 0x0058 I2S/PCM TX2 Channel Mapping Register1 */
+    volatile uint32_t I2S_PCM_TX3CHMAP0;              /*!< Offset 0x005C I2S/PCM TX3 Channel Mapping Register0 */
+    volatile uint32_t I2S_PCM_TX3CHMAP1;              /*!< Offset 0x0060 I2S/PCM TX3 Channel Mapping Register1 */
+    volatile uint32_t I2S_PCM_RXCHSEL;                /*!< Offset 0x0064 I2S/PCM RX Channel Select Register */
+    volatile uint32_t I2S_PCM_RXCHMAP0;               /*!< Offset 0x0068 I2S/PCM RX Channel Mapping Register0 */
+    volatile uint32_t I2S_PCM_RXCHMAP1;               /*!< Offset 0x006C I2S/PCM RX Channel Mapping Register1 */
+    volatile uint32_t I2S_PCM_RXCHMAP2;               /*!< Offset 0x0070 I2S/PCM RX Channel Mapping Register2 */
+    volatile uint32_t I2S_PCM_RXCHMAP3;               /*!< Offset 0x0074 I2S/PCM RX Channel Mapping Register3 */
+	         uint8_t reserved1 [0x0008];
+    volatile uint32_t MCLKCFG;                        /*!< Offset 0x0080 ASRC MCLK Configuration Register */
+    volatile uint32_t FsoutCFG;                       /*!< Offset 0x0084 ASRC Out Sample Rate Configuration Register */
+    volatile uint32_t FsinEXTCFG;                     /*!< Offset 0x0088 ASRC Input Sample Pulse Extend Configuration Register */
+    volatile uint32_t ASRCCFG;                        /*!< Offset 0x008C ASRC Enable Register */
+    volatile uint32_t ASRCMANCFG;                     /*!< Offset 0x0090 ASRC Manual Ratio Configuration Register */
+    volatile uint32_t ASRCRATIOSTAT;                  /*!< Offset 0x0094 ASRC Status Register */
+    volatile uint32_t ASRCFIFOSTAT;                   /*!< Offset 0x0098 ASRC FIFO Level Status Register */
+    volatile uint32_t ASRCMBISTCFG;                   /*!< Offset 0x009C ASRC MBIST Test Configuration Register */
+    volatile uint32_t ASRCMBISTSTAT;                  /*!< Offset 0x00A0 ASRC MBIST Test Status Register */
+} I2S_PCM_TypeDef;
+/*
+ * @brief DMIC
+ */
+/*!< DMIC Controller Interface */
+typedef struct DMIC_Type
+{
+    volatile uint32_t DMIC_EN;                        /*!< Offset 0x0000 DMIC Enable Control Register */
+    volatile uint32_t DMIC_SR;                        /*!< Offset 0x0004 DMIC Sample Rate Register */
+    volatile uint32_t DMIC_CTR;                       /*!< Offset 0x0008 DMIC Control Register */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t DMIC_DATA;                      /*!< Offset 0x0010 DMIC Data Register */
+    volatile uint32_t DMIC_INTC;                      /*!< Offset 0x0014 MIC Interrupt Control Register */
+    volatile uint32_t DMIC_INTS;                      /*!< Offset 0x0018 DMIC Interrupt Status Register */
+    volatile uint32_t DMIC_RXFIFO_CTR;                /*!< Offset 0x001C DMIC RXFIFO Control Register */
+    volatile uint32_t DMIC_RXFIFO_STA;                /*!< Offset 0x0020 DMIC RXFIFO Status Register */
+    volatile uint32_t DMIC_CH_NUM;                    /*!< Offset 0x0024 DMIC Channel Numbers Register */
+    volatile uint32_t DMIC_CH_MAP;                    /*!< Offset 0x0028 DMIC Channel Mapping Register */
+    volatile uint32_t DMIC_CNT;                       /*!< Offset 0x002C DMIC Counter Register */
+    volatile uint32_t DATA0_DATA1_VOL_CTR;            /*!< Offset 0x0030 Data0 and Data1 Volume Control Register */
+    volatile uint32_t DATA2_DATA3_VOL_CTR;            /*!< Offset 0x0034 Data2 And Data3 Volume Control Register */
+    volatile uint32_t HPF_EN_CTR;                     /*!< Offset 0x0038 High Pass Filter Enable Control Register */
+    volatile uint32_t HPF_COEF_REG;                   /*!< Offset 0x003C High Pass Filter Coefficient Register */
+    volatile uint32_t HPF_GAIN_REG;                   /*!< Offset 0x0040 High Pass Filter Gain Register */
+} DMIC_TypeDef;
+/*
+ * @brief OWA
+ */
+/*!< OWA Controller Interface */
+typedef struct OWA_Type
+{
+    volatile uint32_t OWA_GEN_CTL;                    /*!< Offset 0x0000 OWA General Control Register */
+    volatile uint32_t OWA_TX_CFIG;                    /*!< Offset 0x0004 OWA TX Configuration Register */
+    volatile uint32_t OWA_RX_CFIG;                    /*!< Offset 0x0008 OWA RX Configuration Register */
+    volatile uint32_t OWA_ISTA;                       /*!< Offset 0x000C OWA Interrupt Status Register */
+    volatile uint32_t OWA_RXFIFO;                     /*!< Offset 0x0010 OWA RXFIFO Register */
+    volatile uint32_t OWA_FCTL;                       /*!< Offset 0x0014 OWA FIFO Control Register */
+    volatile uint32_t OWA_FSTA;                       /*!< Offset 0x0018 OWA FIFO Status Register */
+    volatile uint32_t OWA_INT;                        /*!< Offset 0x001C OWA Interrupt Control Register */
+    volatile uint32_t OWA_TX_FIFO;                    /*!< Offset 0x0020 OWA TX FIFO Register */
+    volatile uint32_t OWA_TX_CNT;                     /*!< Offset 0x0024 OWA TX Counter Register */
+    volatile uint32_t OWA_RX_CNT;                     /*!< Offset 0x0028 OWA RX Counter Register */
+    volatile uint32_t OWA_TX_CHSTA0;                  /*!< Offset 0x002C OWA TX Channel Status Register0 */
+    volatile uint32_t OWA_TX_CHSTA1;                  /*!< Offset 0x0030 OWA TX Channel Status Register1 */
+    volatile uint32_t OWA_RXCHSTA0;                   /*!< Offset 0x0034 OWA RX Channel Status Register0 */
+    volatile uint32_t OWA_RXCHSTA1;                   /*!< Offset 0x0038 OWA RX Channel Status Register1 */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t OWA_EXP_CTL;                    /*!< Offset 0x0040 OWA Expand Control Register */
+    volatile uint32_t OWA_EXP_ISTA;                   /*!< Offset 0x0044 OWA Expand Interrupt Status Register */
+    volatile uint32_t OWA_EXP_INFO_0;                 /*!< Offset 0x0048 OWA Expand Infomation Register0 */
+    volatile uint32_t OWA_EXP_INFO_1;                 /*!< Offset 0x004C OWA Expand Infomation Register1 */
+    volatile uint32_t OWA_EXP_DBG_0;                  /*!< Offset 0x0050 OWA Expand Debug Register0 */
+    volatile uint32_t OWA_EXP_DBG_1;                  /*!< Offset 0x0054 OWA Expand Debug Register1 */
+} OWA_TypeDef;
+/*
+ * @brief AUDIO_CODEC
+ */
+/*!< AUDIO_CODEC Controller Interface */
+typedef struct AUDIO_CODEC_Type
+{
+    volatile uint32_t AC_DAC_DPC;                     /*!< Offset 0x0000 DAC Digital Part Control Register */
+    volatile uint32_t DAC_VOL_CTRL;                   /*!< Offset 0x0004 DAC Volume Control Register */
+	         uint8_t reserved1 [0x0008];
+    volatile uint32_t AC_DAC_FIFOC;                   /*!< Offset 0x0010 DAC FIFO Control Register */
+    volatile uint32_t AC_DAC_FIFOS;                   /*!< Offset 0x0014 DAC FIFO Status Register */
+	         uint8_t reserved2 [0x0008];
+    volatile uint32_t AC_DAC_TXDATA;                  /*!< Offset 0x0020 DAC TX DATA Register */
+    volatile uint32_t AC_DAC_CNT;                     /*!< Offset 0x0024 DAC TX FIFO Counter Register */
+    volatile uint32_t AC_DAC_DG;                      /*!< Offset 0x0028 DAC Debug Register */
+	         uint8_t reserved3 [0x0004];
+    volatile uint32_t AC_ADC_FIFOC;                   /*!< Offset 0x0030 ADC FIFO Control Register */
+    volatile uint32_t ADC_VOL_CTRL1;                  /*!< Offset 0x0034 ADC Volume Control1 Register */
+    volatile uint32_t AC_ADC_FIFOS;                   /*!< Offset 0x0038 ADC FIFO Status Register */
+	         uint8_t reserved4 [0x0004];
+    volatile uint32_t AC_ADC_RXDATA;                  /*!< Offset 0x0040 ADC RX Data Register */
+    volatile uint32_t AC_ADC_CNT;                     /*!< Offset 0x0044 ADC RX Counter Register */
+	         uint8_t reserved5 [0x0004];
+    volatile uint32_t AC_ADC_DG;                      /*!< Offset 0x004C ADC Debug Register */
+    volatile uint32_t ADC_DIG_CTRL;                   /*!< Offset 0x0050 ADC Digtial Control Register */
+    volatile uint32_t VRA1SPEEDUP_DOWN_CTRL;          /*!< Offset 0x0054 VRA1 Speedup Down Control Register */
+	         uint8_t reserved6 [0x0098];
+    volatile uint32_t AC_DAC_DAP_CTRL;                /*!< Offset 0x00F0 DAC DAP Control Register */
+	         uint8_t reserved7 [0x0004];
+    volatile uint32_t AC_ADC_DAP_CTR;                 /*!< Offset 0x00F8 ADC DAP Control Register */
+	         uint8_t reserved8 [0x0004];
+    volatile uint32_t AC_DAC_DRC_HHPFC;               /*!< Offset 0x0100 DAC DRC High HPF Coef Register */
+    volatile uint32_t AC_DAC_DRC_LHPFC;               /*!< Offset 0x0104 DAC DRC Low HPF Coef Register */
+    volatile uint32_t AC_DAC_DRC_CTRL;                /*!< Offset 0x0108 DAC DRC Control Register */
+    volatile uint32_t AC_DAC_DRC_LPFHAT;              /*!< Offset 0x010C DAC DRC Left Peak Filter High Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_LPFLAT;              /*!< Offset 0x0110 DAC DRC Left Peak Filter Low Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFHAT;              /*!< Offset 0x0114 DAC DRC Right Peak Filter High Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFLAT;              /*!< Offset 0x0118 DAC DRC Peak Filter Low Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_LPFHRT;              /*!< Offset 0x011C DAC DRC Left Peak Filter High Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_LPFLRT;              /*!< Offset 0x0120 DAC DRC Left Peak Filter Low Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFHRT;              /*!< Offset 0x0124 DAC DRC Right Peak filter High Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_RPFLRT;              /*!< Offset 0x0128 DAC DRC Right Peak filter Low Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_LRMSHAT;             /*!< Offset 0x012C DAC DRC Left RMS Filter High Coef Register */
+    volatile uint32_t AC_DAC_DRC_LRMSLAT;             /*!< Offset 0x0130 DAC DRC Left RMS Filter Low Coef Register */
+    volatile uint32_t AC_DAC_DRC_RRMSHAT;             /*!< Offset 0x0134 DAC DRC Right RMS Filter High Coef Register */
+    volatile uint32_t AC_DAC_DRC_RRMSLAT;             /*!< Offset 0x0138 DAC DRC Right RMS Filter Low Coef Register */
+    volatile uint32_t AC_DAC_DRC_HCT;                 /*!< Offset 0x013C DAC DRC Compressor Threshold High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LCT;                 /*!< Offset 0x0140 DAC DRC Compressor Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_HKC;                 /*!< Offset 0x0144 DAC DRC Compressor Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LKC;                 /*!< Offset 0x0148 DAC DRC Compressor Slope Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HOPC;                /*!< Offset 0x014C DAC DRC Compresso */
+    volatile uint32_t AC_DAC_DRC_LOPC;                /*!< Offset 0x0150 DAC DRC Compressor Low Output at Compressor Threshold Register */
+    volatile uint32_t AC_DAC_DRC_HLT;                 /*!< Offset 0x0154 DAC DRC Limiter Threshold High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LLT;                 /*!< Offset 0x0158 DAC DRC Limiter Threshold Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HKl;                 /*!< Offset 0x015C DAC DRC Limiter Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LKl;                 /*!< Offset 0x0160 DAC DRC Limiter Slope Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HOPL;                /*!< Offset 0x0164 DAC DRC Limiter High Output at Limiter Threshold */
+    volatile uint32_t AC_DAC_DRC_LOPL;                /*!< Offset 0x0168 DAC DRC Limiter Low Output at Limiter Threshold */
+    volatile uint32_t AC_DAC_DRC_HET;                 /*!< Offset 0x016C DAC DRC Expander Threshold High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LET;                 /*!< Offset 0x0170 DAC DRC Expander Threshold Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HKE;                 /*!< Offset 0x0174 DAC DRC Expander Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LKE;                 /*!< Offset 0x0178 DAC DRC Expander Slope Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_HOPE;                /*!< Offset 0x017C DAC DRC Expander High Output at Expander Threshold */
+    volatile uint32_t AC_DAC_DRC_LOPE;                /*!< Offset 0x0180 DAC DRC Expander Low Output at Expander Threshold */
+    volatile uint32_t AC_DAC_DRC_HKN;                 /*!< Offset 0x0184 DAC DRC Linear Slope High Setting Register */
+    volatile uint32_t AC_DAC_DRC_LKN;                 /*!< Offset 0x0188 DAC DRC Linear Slope Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_SFHAT;               /*!< Offset 0x018C DAC DRC Smooth filter Gain High Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_SFLAT;               /*!< Offset 0x0190 DAC DRC Smooth filter Gain Low Attack Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_SFHRT;               /*!< Offset 0x0194 DAC DRC Smooth filter Gain High Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_SFLRT;               /*!< Offset 0x0198 DAC DRC Smooth filter Gain Low Release Time Coef Register */
+    volatile uint32_t AC_DAC_DRC_MXGHS;               /*!< Offset 0x019C DAC DRC MAX Gain High Setting Register */
+    volatile uint32_t AC_DAC_DRC_MXGLS;               /*!< Offset 0x01A0 DAC DRC MAX Gain Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_MNGHS;               /*!< Offset 0x01A4 DAC DRC MIN Gain High Setting Register */
+    volatile uint32_t AC_DAC_DRC_MNGLS;               /*!< Offset 0x01A8 DAC DRC MIN Gain Low Setting Register */
+    volatile uint32_t AC_DAC_DRC_EPSHC;               /*!< Offset 0x01AC DAC DRC Expander Smooth Time High Coef Register */
+    volatile uint32_t AC_DAC_DRC_EPSLC;               /*!< Offset 0x01B0 DAC DRC Expander Smooth Time Low Coef Register */
+	         uint8_t reserved9 [0x0004];
+    volatile uint32_t AC_DAC_DRC_HPFHGAIN;            /*!< Offset 0x01B8 DAC DRC HPF Gain High Coef Register */
+    volatile uint32_t AC_DAC_DRC_HPFLGAIN;            /*!< Offset 0x01BC DAC DRC HPF Gain Low Coef Register */
+	         uint8_t reserved10 [0x0040];
+    volatile uint32_t AC_ADC_DRC_HHPFC;               /*!< Offset 0x0200 ADC DRC High HPF Coef Register */
+    volatile uint32_t AC_ADC_DRC_LHPFC;               /*!< Offset 0x0204 ADC DRC Low HPF Coef Register */
+    volatile uint32_t AC_ADC_DRC_CTRL;                /*!< Offset 0x0208 ADC DRC Control Register */
+    volatile uint32_t AC_ADC_DRC_LPFHAT;              /*!< Offset 0x020C ADC DRC Left Peak Filter High Attack Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_LPFLAT;              /*!< Offset 0x0210 ADC DRC Left Peak Filter Low Attack Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_RPFHAT;              /*!< Offset 0x0214 ADC DRC Right Peak Filter High Attack Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_RPFLAT;              /*!< Offset 0x0218 ADC DRC Right Peak Filter Low Attack Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_LPFHRT;              /*!< Offset 0x021C ADC DRC Left Peak Filter High Release Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_LPFLRT;              /*!< Offset 0x0220 ADC DRC Left Peak Filter Low Release Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_RPFHRT;              /*!< Offset 0x0224 ADC DRC Right Peak Filter High Release Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_RPFLRT;              /*!< Offset 0x0228 ADC DRC Right Peak Filter Low Release Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_LRMSHAT;             /*!< Offset 0x022C ADC DRC Left RMS Filter High Coef Register */
+    volatile uint32_t AC_ADC_DRC_LRMSLAT;             /*!< Offset 0x0230 ADC DRC Left RMS Filter Low Coef Register */
+    volatile uint32_t AC_ADC_DRC_RRMSHAT;             /*!< Offset 0x0234 ADC DRC Right RMS Filter High Coef Register */
+    volatile uint32_t AC_ADC_DRC_RRMSLAT;             /*!< Offset 0x0238 ADC DRC Right RMS Filter Low Coef Register */
+    volatile uint32_t AC_ADC_DRC_HCT;                 /*!< Offset 0x023C ADC DRC Compressor Threshold High Setting Register */
+    volatile uint32_t AC_ADC_DRC_LCT;                 /*!< Offset 0x0240 ADC DRC Compressor Slope High Setting Register */
+    volatile uint32_t AC_ADC_DRC_HKC;                 /*!< Offset 0x0244 ADC DRC Compressor Slope High Setting Register */
+    volatile uint32_t AC_ADC_DRC_LKC;                 /*!< Offset 0x0248 ADC DRC Compressor Slope Low Setting Register */
+    volatile uint32_t AC_ADC_DRC_HOPC;                /*!< Offset 0x024C ADC DRC Compressor High Output at Compressor Threshold Register */
+    volatile uint32_t AC_ADC_DRC_LOPC;                /*!< Offset 0x0250 ADC DRC Compressor Low Output at Compressor Threshold Register */
+    volatile uint32_t AC_ADC_DRC_HLT;                 /*!< Offset 0x0254 ADC DRC Limiter Threshold High Setting Register */
+    volatile uint32_t AC_ADC_DRC_LLT;                 /*!< Offset 0x0258 ADC DRC Limiter Threshold Low Setting Register */
+    volatile uint32_t AC_ADC_DRC_HKl;                 /*!< Offset 0x025C ADC DRC Limiter Slope High Setting Register */
+    volatile uint32_t AC_ADC_DRC_LKl;                 /*!< Offset 0x0260 ADC DRC Limiter Slope Low Setting Register */
+    volatile uint32_t AC_ADC_DRC_HOPL;                /*!< Offset 0x0264 ADC DRC Limiter High Output at Limiter Threshold */
+    volatile uint32_t AC_ADC_DRC_LOPL;                /*!< Offset 0x0268 ADC DRC Limiter Low Output at Limiter Threshold */
+    volatile uint32_t AC_ADC_DRC_HET;                 /*!< Offset 0x026C ADC DRC Expander Threshold High Setting Register */
+    volatile uint32_t AC_ADC_DRC_LET;                 /*!< Offset 0x0270 ADC DRC Expander Threshold Low Setting Register */
+    volatile uint32_t AC_ADC_DRC_HKE;                 /*!< Offset 0x0274 ADC DRC Expander Slope High Setting Register */
+    volatile uint32_t AC_ADC_DRC_LKE;                 /*!< Offset 0x0278 ADC DRC Expander Slope Low Setting Register */
+    volatile uint32_t AC_ADC_DRC_HOPE;                /*!< Offset 0x027C ADC DRC Expander High Output at Expander Threshold */
+    volatile uint32_t AC_ADC_DRC_LOPE;                /*!< Offset 0x0280 ADC DRC Expander Low Output at Expander Threshold */
+    volatile uint32_t AC_ADC_DRC_HKN;                 /*!< Offset 0x0284 ADC DRC Linear Slope High Setting Register */
+    volatile uint32_t AC_ADC_DRC_LKN;                 /*!< Offset 0x0288 ADC DRC Linear Slope Low Setting Register */
+    volatile uint32_t AC_ADC_DRC_SFHAT;               /*!< Offset 0x028C ADC DRC Smooth filter Gain High Attack Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_SFLAT;               /*!< Offset 0x0290 ADC DRC Smooth filter Gain Low Attack Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_SFHRT;               /*!< Offset 0x0294 ADC DRC Smooth filter Gain High Release Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_SFLRT;               /*!< Offset 0x0298 ADC DRC Smooth filter Gain Low Release Time Coef Register */
+    volatile uint32_t AC_ADC_DRC_MXGHS;               /*!< Offset 0x029C ADC DRC MAX Gain High Setting Register */
+    volatile uint32_t AC_ADC_DRC_MXGLS;               /*!< Offset 0x02A0 ADC DRC MAX Gain Low Setting Register */
+    volatile uint32_t AC_ADC_DRC_MNGHS;               /*!< Offset 0x02A4 ADC DRC MIN Gain High Setting Register */
+    volatile uint32_t AC_ADC_DRC_MNGLS;               /*!< Offset 0x02A8 ADC DRC MIN Gain Low Setting Register */
+    volatile uint32_t AC_ADC_DRC_EPSHC;               /*!< Offset 0x02AC ADC DRC Expander Smooth Time High Coef Register */
+    volatile uint32_t AC_ADC_DRC_EPSLC;               /*!< Offset 0x02B0 ADC DRC Expander Smooth Time Low Coef Register */
+	         uint8_t reserved11 [0x0004];
+    volatile uint32_t AC_ADC_DRC_HPFHGAIN;            /*!< Offset 0x02B8 ADC DRC HPF Gain High Coef Register */
+    volatile uint32_t AC_ADC_DRC_HPFLGAIN;            /*!< Offset 0x02BC ADC DRC HPF Gain Low Coef Register */
+	         uint8_t reserved12 [0x0040];
+    volatile uint32_t ADC1_REG;                       /*!< Offset 0x0300 ADC1 Analog Control Register */
+    volatile uint32_t ADC2_REG;                       /*!< Offset 0x0304 ADC2 Analog Control Register */
+    volatile uint32_t ADC3_REG;                       /*!< Offset 0x0308 ADC3 Analog Control Register */
+	         uint8_t reserved13 [0x0004];
+    volatile uint32_t DAC_REG;                        /*!< Offset 0x0310 DAC Analog Control Register */
+	         uint8_t reserved14 [0x0004];
+    volatile uint32_t MICBIAS_REG;                    /*!< Offset 0x0318 MICBIAS Analog Control Register */
+    volatile uint32_t RAMP_REG;                       /*!< Offset 0x031C BIAS Analog Control Register */
+    volatile uint32_t BIAS_REG;                       /*!< Offset 0x0320 BIAS Analog Control Register */
+	         uint8_t reserved15 [0x000C];
+    volatile uint32_t ADC5_REG;                       /*!< Offset 0x0330 ADC5 Analog Control Register */
+} AUDIO_CODEC_TypeDef;
+
+
+/* Base addresses */
+
 #define CPU_SUBSYS_CTRL_BASE	0x08100000
 
 // SP0 (SYS domain)
@@ -626,21 +924,30 @@ typedef struct GPIO_Type
 #define GPIOF_BASE		(GPIO_BASE + 0x030 * 5)
 #define GPIOG_BASE		(GPIO_BASE + 0x030 * 6)
 
+/* Access pointers */
+
 #define UART0      ((UART_TypeDef *) UART0_BASE)
 #define UART1      ((UART_TypeDef *) UART1_BASE)
 #define UART2      ((UART_TypeDef *) UART2_BASE)
 #define UART3      ((UART_TypeDef *) UART3_BASE)
 #define UART4      ((UART_TypeDef *) UART4_BASE)
 #define UART5      ((UART_TypeDef *) UART5_BASE)
-
 #define GPIOB      ((GPIO_TypeDef *) GPIOB_BASE)
 #define GPIOC      ((GPIO_TypeDef *) GPIOC_BASE)
 #define GPIOD      ((GPIO_TypeDef *) GPIOD_BASE)
 #define GPIOE      ((GPIO_TypeDef *) GPIOE_BASE)
 #define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)
 #define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)
-
-#define SYS_CFG 		((SYS_CFG_TypeDef *) SYS_CFG_BASE)
+#define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)
 #define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
+#define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)
+#define SMHC1      	((SMHC_TypeDef *) SMHC1_BASE)
+#define SMHC2      	((SMHC_TypeDef *) SMHC2_BASE)
+#define I2S1      	((I2S_PCM_TypeDef *) I2S1_BASE)
+#define I2S2      	((I2S_PCM_TypeDef *) I2S2_BASE)
+#define DMIC      	((DMIC_TypeDef *) DMIC_BASE)
+#define OWA			((OWA_TypeDef *) OWA_BASE)
+#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)
+
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
