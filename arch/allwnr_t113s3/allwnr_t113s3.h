@@ -488,53 +488,50 @@ typedef struct SYS_CFG_Type
     volatile uint32_t RES240_CTRL_REG;                /*!< Offset 0x0168 240ohms Resistor Manual Control Register */
     volatile uint32_t RESCAL_STATUS_REG;              /*!< Offset 0x016C Resistor Calibration Status Register */
 } SYS_CFG_TypeDef;
-
 /*
-* @brief UART
-*/
+ * @brief UART
+ */
 /*!< UART Controller Interface */
 typedef struct UART_Type
 {
- 	volatile	uint32_t DATA;				// Offset: 0x0000
- 	volatile	uint32_t DLH_IER;			// Offset: 0x0004
- 	volatile	uint32_t IIR_FCR;			// Offset: 0x0008
- 	volatile	uint32_t LCR;				// Offset: 0x000C
- 	volatile	uint32_t MCR;				// Offset: 0x0010
- 	volatile	uint32_t LSR;				// Offset: 0x0014
- 	volatile	uint32_t MSR;				// Offset: 0x0018
- 	volatile	uint32_t SCH;				// Offset: 0x001C
- 				uint32_t reserved1 [23];
- 	volatile	uint32_t USR;				// Offset: 0x007C
- 	volatile	uint32_t TFL;				// Offset: 0x0080
- 	volatile	uint32_t RFL;				// Offset: 0x0084
- 	volatile	uint32_t HSK;				// Offset: 0x0088
- 	volatile	uint32_t DMA_REQ_EN;		// Offset: 0x008C
- 				uint32_t reserved2 [5];
- 	volatile	uint32_t HALT;				// Offset: 0x00A4
- 				uint32_t reserved3 [2];
- 	volatile	uint32_t DBG_DLL;			// Offset: 0x00B0
- 	volatile	uint32_t DBG_DLH;			// Offset: 0x00B4
- 				uint32_t reserved4 [14];
- 	volatile	uint32_t A_FCC;				// Offset: 0x00F0
- 				uint32_t reserved5 [3];
- 	volatile	uint32_t A_RXDMA_CTRL;		// Offset: 0x0100
- 	volatile	uint32_t A_RXDMA_STR;		// Offset: 0x0104
- 	volatile	uint32_t A_RXDMA_STA;		// Offset: 0x0108
- 	volatile	uint32_t A_RXDMA_LMT;		// Offset: 0x010C
- 	volatile	uint32_t A_RXDMA_SADDRL;	// Offset: 0x0110
- 	volatile	uint32_t A_RXDMA_SADDRH;	// Offset: 0x0114
- 	volatile	uint32_t A_RXDMA_BL;		// Offset: 0x0118
- 				uint32_t reserved6;
- 	volatile	uint32_t A_RXDMA_IE;		// Offset: 0x0120
- 	volatile	uint32_t A_RXDMA_IS;		// Offset: 0x0124
- 	volatile	uint32_t A_RXDMA_WADDRL;	// Offset: 0x0128
- 	volatile	uint32_t A_RXDMA_WADDRH;	// Offset: 0x012C
- 	volatile	uint32_t A_RXDMA_RADDRL;	// Offset: 0x0130
- 	volatile	uint32_t A_RXDMA_RADDRH;	// Offset: 0x0134
- 	volatile	uint32_t A_RXDMA_DCNT;		// Offset: 0x0138
-}  UART_TypeDef;
-
-
+    volatile uint32_t DATA;                           /*!< Offset 0x0000 UART Receive Buffer Register/Transmit Holding Register */
+    volatile uint32_t DLH_IER;                        /*!< Offset 0x0004 UART Divisor Latch High Register/UART Interrupt Enable Register */
+    volatile uint32_t IIR_FCR;                        /*!< Offset 0x0008 UART Interrupt Identity Register/UART FIFO Control Register */
+    volatile uint32_t UART_LCR;                       /*!< Offset 0x000C UART Line Control Register */
+    volatile uint32_t UART_MCR;                       /*!< Offset 0x0010 UART Modem Control Register */
+    volatile uint32_t UART_LSR;                       /*!< Offset 0x0014 UART Line Status Register */
+    volatile uint32_t UART_MSR;                       /*!< Offset 0x0018 UART Modem Status Register */
+    volatile uint32_t UART_SCH;                       /*!< Offset 0x001C UART Scratch Register */
+	         uint8_t reserved1 [0x005C];
+    volatile uint32_t UART_USR;                       /*!< Offset 0x007C UART Status Register */
+    volatile uint32_t UART_TFL;                       /*!< Offset 0x0080 UART Transmit FIFO Level Register */
+    volatile uint32_t UART_RFL;                       /*!< Offset 0x0084 UART Receive FIFO Level Register */
+    volatile uint32_t UART_HSK;                       /*!< Offset 0x0088 UART DMA Handshake Configuration Register */
+    volatile uint32_t UART_DMA_REQ_EN;                /*!< Offset 0x008C UART DMA Request Enable Register */
+	         uint8_t reserved2 [0x0014];
+    volatile uint32_t UART_HALT;                      /*!< Offset 0x00A4 UART Halt TX Register */
+	         uint8_t reserved3 [0x0008];
+    volatile uint32_t UART_DBG_DLL;                   /*!< Offset 0x00B0 UART Debug DLL Register */
+    volatile uint32_t UART_DBG_DLH;                   /*!< Offset 0x00B4 UART Debug DLH Register */
+	         uint8_t reserved4 [0x0038];
+    volatile uint32_t UART_A_FCC;                     /*!< Offset 0x00F0 UART FIFO Clock Control Register */
+	         uint8_t reserved5 [0x000C];
+    volatile uint32_t UART_A_RXDMA_CTRL;              /*!< Offset 0x0100 UART RXDMA Control Register */
+    volatile uint32_t UART_A_RXDMA_STR;               /*!< Offset 0x0104 UART RXDMA Start Register */
+    volatile uint32_t UART_A_RXDMA_STA;               /*!< Offset 0x0108 UART RXDMA Status Register */
+    volatile uint32_t UART_A_RXDMA_LMT;               /*!< Offset 0x010C UART RXDMA Limit Register */
+    volatile uint32_t UART_A_RXDMA_SADDRL;            /*!< Offset 0x0110 UART RXDMA Buffer Start Address Low Register */
+    volatile uint32_t UART_A_RXDMA_SADDRH;            /*!< Offset 0x0114 UART RXDMA Buffer Start Address High Register */
+    volatile uint32_t UART_A_RXDMA_BL;                /*!< Offset 0x0118 UART RXDMA Buffer Length Register */
+	         uint8_t reserved6 [0x0004];
+    volatile uint32_t UART_A_RXDMA_IE;                /*!< Offset 0x0120 UART RXDMA Interrupt Enable Register */
+    volatile uint32_t UART_A_RXDMA_IS;                /*!< Offset 0x0124 UART RXDMA Interrupt Status Register */
+    volatile uint32_t UART_A_RXDMA_WADDRL;            /*!< Offset 0x0128 UART RXDMA Write Address Low Register */
+    volatile uint32_t UART_A_RXDMA_WADDRH;            /*!< Offset 0x012C UART RXDMA Write Address high Register */
+    volatile uint32_t UART_A_RXDMA_RADDRL;            /*!< Offset 0x0130 UART RXDMA Read Address Low Register */
+    volatile uint32_t UART_A_RXDMA_RADDRH;            /*!< Offset 0x0134 UART RXDMA Read Address high Register */
+    volatile uint32_t UART_A_RXDMA_DCNT;              /*!< Offset 0x0138 UART RADMA Data Count Register */
+} UART_TypeDef;
 /*
 * @brief GPIO
 */
@@ -841,11 +838,70 @@ typedef struct AUDIO_CODEC_Type
 	         uint8_t reserved15 [0x000C];
     volatile uint32_t ADC5_REG;                       /*!< Offset 0x0330 ADC5 Analog Control Register */
 } AUDIO_CODEC_TypeDef;
+/*
+ * @brief TWI
+ */
+/*!< TWI Controller Interface */
+typedef struct TWI_Type
+{
+    volatile uint32_t TWI_ADDR;                       /*!< Offset 0x0000 TWI Slave Address Register */
+    volatile uint32_t TWI_XADDR;                      /*!< Offset 0x0004 TWI Extended Slave Address Register */
+    volatile uint32_t TWI_DATA;                       /*!< Offset 0x0008 TWI Data Byte Register */
+    volatile uint32_t TWI_CNTR;                       /*!< Offset 0x000C TWI Control Register */
+    volatile uint32_t TWI_STAT;                       /*!< Offset 0x0010 TWI Status Register */
+    volatile uint32_t TWI_CCR;                        /*!< Offset 0x0014 TWI Clock Control Register */
+    volatile uint32_t TWI_SRST;                       /*!< Offset 0x0018 TWI Software Reset Register */
+    volatile uint32_t TWI_EFR;                        /*!< Offset 0x001C TWI Enhance Feature Register */
+    volatile uint32_t TWI_LCR;                        /*!< Offset 0x0020 TWI Line Control Register */
+	         uint8_t reserved1 [0x01DC];
+    volatile uint32_t TWI_DRV_CTRL;                   /*!< Offset 0x0200 TWI_DRV Control Register */
+    volatile uint32_t TWI_DRV_CFG;                    /*!< Offset 0x0204 TWI_DRV Transmission Configuration Register */
+    volatile uint32_t TWI_DRV_SLV;                    /*!< Offset 0x0208 TWI_DRV Slave ID Register */
+    volatile uint32_t TWI_DRV_FMT;                    /*!< Offset 0x020C TWI_DRV Packet Format Register */
+    volatile uint32_t TWI_DRV_BUS_CTRL;               /*!< Offset 0x0210 TWI_DRV Bus Control Register */
+    volatile uint32_t TWI_DRV_INT_CTRL;               /*!< Offset 0x0214 TWI_DRV Interrupt Control Register */
+    volatile uint32_t TWI_DRV_DMA_CFG;                /*!< Offset 0x0218 TWI_DRV DMA Configure Register */
+    volatile uint32_t TWI_DRV_FIFO_CON;               /*!< Offset 0x021C TWI_DRV FIFO Content Register */
+	         uint8_t reserved2 [0x00E0];
+    volatile uint32_t TWI_DRV_SEND_FIFO_ACC;          /*!< Offset 0x0300 TWI_DRV Send Data FIFO Access Register */
+    volatile uint32_t TWI_DRV_RECV_FIFO_ACC;          /*!< Offset 0x0304 TWI_DRV Receive Data FIFO Access Register */
+} TWI_TypeDef;
+/*
+ * @brief SPI
+ */
+/*!< SPI Controller Interface */
+typedef struct SPI_Type
+{
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t SPI_GCR;                        /*!< Offset 0x0004 SPI Global Control Register */
+    volatile uint32_t SPI_TCR;                        /*!< Offset 0x0008 SPI Transfer Control Register */
+	         uint8_t reserved2 [0x0004];
+    volatile uint32_t SPI_IER;                        /*!< Offset 0x0010 SPI Interrupt Control Register */
+    volatile uint32_t SPI_ISR;                        /*!< Offset 0x0014 SPI Interrupt Status Register */
+    volatile uint32_t SPI_FCR;                        /*!< Offset 0x0018 SPI FIFO Control Register */
+    volatile uint32_t SPI_FSR;                        /*!< Offset 0x001C SPI FIFO Status Register */
+    volatile uint32_t SPI_WCR;                        /*!< Offset 0x0020 SPI Wait Clock Register */
+	         uint8_t reserved3 [0x0004];
+    volatile uint32_t SPI_SAMP_DL;                    /*!< Offset 0x0028 SPI Sample Delay Control Register */
+	         uint8_t reserved4 [0x0004];
+    volatile uint32_t SPI_MBC;                        /*!< Offset 0x0030 SPI Master Burst Counter Register */
+    volatile uint32_t SPI_MTC;                        /*!< Offset 0x0034 SPI Master Transmit Counter Register */
+    volatile uint32_t SPI_BCC;                        /*!< Offset 0x0038 SPI Master Burst Control Register */
+	         uint8_t reserved5 [0x0004];
+    volatile uint32_t SPI_BATCR;                      /*!< Offset 0x0040 SPI Bit-Aligned Transfer Configure Register */
+    volatile uint32_t SPI_BA_CCR;                     /*!< Offset 0x0044 SPI Bit-Aligned Clock Configuration Register */
+    volatile uint32_t SPI_TBR;                        /*!< Offset 0x0048 SPI TX Bit Register */
+    volatile uint32_t SPI_RBR;                        /*!< Offset 0x004C SPI RX Bit Register */
+	         uint8_t reserved6 [0x0038];
+    volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x0088 SPI Normal DMA Mode Control Register */
+	         uint8_t reserved7 [0x0174];
+    volatile uint32_t SPI_TXD;                        /*!< Offset 0x0200 SPI TX Data Register */
+	         uint8_t reserved8 [0x00FC];
+    volatile uint32_t SPI_RXD;                        /*!< Offset 0x0300 SPI RX Data Register */
+} SPI_TypeDef;
 
 
 /* Base addresses */
-
-#define CPU_SUBSYS_CTRL_BASE	0x08100000
 
 // SP0 (SYS domain)
 #define GPIO_BASE			0x02000000
@@ -917,6 +973,8 @@ typedef struct AUDIO_CODEC_Type
  // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 	0x40000000	/* 2 GB */
 
+#define CPU_SUBSYS_CTRL_BASE	0x08100000
+
 #define GPIOB_BASE		(GPIO_BASE + 0x030 * 1)
 #define GPIOC_BASE		(GPIO_BASE + 0x030 * 2)
 #define GPIOD_BASE		(GPIO_BASE + 0x030 * 3)
@@ -948,6 +1006,12 @@ typedef struct AUDIO_CODEC_Type
 #define DMIC      	((DMIC_TypeDef *) DMIC_BASE)
 #define OWA			((OWA_TypeDef *) OWA_BASE)
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)
+#define TWI0		((TWI_TypeDef *) TWI0_BASE)
+#define TWI1		((TWI_TypeDef *) TWI1_BASE)
+#define TWI2		((TWI_TypeDef *) TWI2_BASE)
+#define TWI3		((TWI_TypeDef *) TWI3_BASE)
+#define SPI0		((SPI_TypeDef *) SPI0_BASE)
+#define SPI1		((SPI_TypeDef *) SPI1_BASE)
 
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
