@@ -899,6 +899,151 @@ typedef struct SPI_Type
 	         uint8_t reserved8 [0x00FC];
     volatile uint32_t SPI_RXD;                        /*!< Offset 0x0300 SPI RX Data Register */
 } SPI_TypeDef;
+/*
+ * @brief CIR_RX
+ */
+/*!< CIR_RX Controller Interface */
+typedef struct CIR_RX_Type
+{
+    volatile uint32_t CIR_CTL;                        /*!< Offset 0x0000 CIR Control Register */
+	         uint8_t reserved1 [0x000C];
+    volatile uint32_t CIR_RXPCFG;                     /*!< Offset 0x0010 CIR Receiver Pulse Configure Register */
+	         uint8_t reserved2 [0x000C];
+    volatile uint32_t CIR_RXFIFO;                     /*!< Offset 0x0020 CIR Receiver FIFO Register */
+	         uint8_t reserved3 [0x0008];
+    volatile uint32_t CIR_RXINT;                      /*!< Offset 0x002C CIR Receiver Interrupt Control Register */
+    volatile uint32_t CIR_RXSTA;                      /*!< Offset 0x0030 CIR Receiver Status Register */
+    volatile uint32_t CIR_RXCFG;                      /*!< Offset 0x0034 CIR Receiver Configure Register */
+} CIR_RX_TypeDef;
+/*
+ * @brief CIR_TX
+ */
+/*!< CIR_TX Controller Interface */
+typedef struct CIR_TX_Type
+{
+    volatile uint32_t CIR_TGLR;                       /*!< Offset 0x0000 CIR Transmit Global Register */
+    volatile uint32_t CIR_TMCR;                       /*!< Offset 0x0004 CIR Transmit Modulation Control Register */
+    volatile uint32_t CIR_TCR;                        /*!< Offset 0x0008 CIR Transmit Control Register */
+    volatile uint32_t CIR_IDC_H;                      /*!< Offset 0x000C CIR Transmit Idle Duration Threshold High Bit Register */
+    volatile uint32_t CIR_IDC_L;                      /*!< Offset 0x0010 CIR Transmit Idle Duration Threshold Low Bit Register */
+    volatile uint32_t CIR_TICR_H;                     /*!< Offset 0x0014 CIR Transmit Idle Counter High Bit Register */
+    volatile uint32_t CIR_TICR_L;                     /*!< Offset 0x0018 CIR Transmit Idle Counter Low Bit Register */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t CIR_TEL;                        /*!< Offset 0x0020 CIR TX FIFO Empty Level Register */
+    volatile uint32_t CIR_TXINT;                      /*!< Offset 0x0024 CIR Transmit Interrupt Control Register */
+    volatile uint32_t CIR_TAC;                        /*!< Offset 0x0028 CIR Transmit FIFO Available Counter Register */
+    volatile uint32_t CIR_TXSTA;                      /*!< Offset 0x002C CIR Transmit Status Register */
+    volatile uint32_t CIR_TXT;                        /*!< Offset 0x0030 CIR Transmit Threshold Register */
+    volatile uint32_t CIR_DMA;                        /*!< Offset 0x0034 CIR DMA Control Register */
+	         uint8_t reserved2 [0x0048];
+    volatile uint32_t CIR_TXFIFO;                     /*!< Offset 0x0080 CIR Transmit FIFO Data Register */
+} CIR_TX_TypeDef;
+/*
+ * @brief LEDC
+ */
+/*!< LEDC Controller Interface */
+typedef struct LEDC_Type
+{
+    volatile uint32_t LEDC_CTRL_REG;                  /*!< Offset 0x0000 LEDC Control Register */
+    volatile uint32_t LED_T01_TIMING_CTRL_REG;        /*!< Offset 0x0004 LEDC T0 & T1 Timing Control Register */
+    volatile uint32_t LEDC_DATA_FINISH_CNT_REG;       /*!< Offset 0x0008 LEDC Data Finish Counter Register */
+    volatile uint32_t LED_RESET_TIMING_CTRL_REG;      /*!< Offset 0x000C LEDC Reset Timing Control Register */
+    volatile uint32_t LEDC_WAIT_TIME0_CTRL_REG;       /*!< Offset 0x0010 LEDC Wait Time0 Control Register */
+    volatile uint32_t LEDC_DATA_REG;                  /*!< Offset 0x0014 LEDC Data Register */
+    volatile uint32_t LEDC_DMA_CTRL_REG;              /*!< Offset 0x0018 LEDC DMA Control Register */
+    volatile uint32_t LEDC_INT_CTRL_REG;              /*!< Offset 0x001C LEDC Interrupt Control Register */
+    volatile uint32_t LEDC_INT_STS_REG;               /*!< Offset 0x0020 LEDC Interrupt Status Register */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t LEDC_WAIT_TIME1_CTRL_REG;       /*!< Offset 0x0028 LEDC Wait Time1 Control Register */
+	         uint8_t reserved2 [0x0004];
+    volatile uint32_t LEDC_FIFO_DATA_REGS [32];       /*!< Offset 0x0030 LEDC FIFO Data Registers array */
+} LEDC_TypeDef;
+/*
+ * @brief TPADC
+ */
+/*!< TPADC Controller Interface */
+typedef struct TPADC_Type
+{
+    volatile uint32_t TP_CTRL_REG0;                   /*!< Offset 0x0000 TP Control Register 0 */
+    volatile uint32_t TP_CTRL_REG1;                   /*!< Offset 0x0004 TP Control Register 1 */
+    volatile uint32_t TP_CTRL_REG2;                   /*!< Offset 0x0008 TP Control Register 2 */
+    volatile uint32_t TP_CTRL_REG3;                   /*!< Offset 0x000C TP Control Register 3 */
+    volatile uint32_t TP_INT_FIFO_CTRL_REG;           /*!< Offset 0x0010 TP Interrupt FIFO Control Register */
+    volatile uint32_t TP_INT_FIFO_STAT_REG;           /*!< Offset 0x0014 TP Interrupt FIFO Status Register */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t TP_CALI_DATA_REG;               /*!< Offset 0x001C TP Calibration Data Register */
+	         uint8_t reserved2 [0x0004];
+    volatile uint32_t TP_DATA_REG;                    /*!< Offset 0x0024 TP Data Register */
+} TPADC_TypeDef;
+/*
+ * @brief GPADC
+ */
+/*!< GPADC Controller Interface */
+typedef struct GPADC_Type
+{
+    volatile uint32_t GP_SR_CON;                      /*!< Offset 0x0000 GPADC Sample Rate Configure Register */
+    volatile uint32_t GP_CTRL;                        /*!< Offset 0x0004 GPADC Control Register */
+    volatile uint32_t GP_CS_EN;                       /*!< Offset 0x0008 GPADC Compare and Select Enable Register */
+    volatile uint32_t GP_FIFO_INTC;                   /*!< Offset 0x000C GPADC FIFO Interrupt Control Register */
+    volatile uint32_t GP_FIFO_INTS;                   /*!< Offset 0x0010 GPADC FIFO Interrupt Status Register */
+    volatile uint32_t GP_FIFO_DATA;                   /*!< Offset 0x0014 GPADC FIFO Data Register */
+    volatile uint32_t GP_CDATA;                       /*!< Offset 0x0018 GPADC Calibration Data Register */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t GP_DATAL_INTC;                  /*!< Offset 0x0020 GPADC Data Low Interrupt Configure Register */
+    volatile uint32_t GP_DATAH_INTC;                  /*!< Offset 0x0024 GPADC Data High Interrupt Configure Register */
+    volatile uint32_t GP_DATA_INTC;                   /*!< Offset 0x0028 GPADC Data Interrupt Configure Register */
+	         uint8_t reserved2 [0x0004];
+    volatile uint32_t GP_DATAL_INTS;                  /*!< Offset 0x0030 GPADC Data Low Interrupt Status Register */
+    volatile uint32_t GP_DATAH_INTS;                  /*!< Offset 0x0034 GPADC Data High Interrupt Status Register */
+    volatile uint32_t GP_DATA_INTS;                   /*!< Offset 0x0038 GPADC Data Interrupt Status Register */
+	         uint8_t reserved3 [0x0004];
+    volatile uint32_t GP_CH0_CMP_DATA;                /*!< Offset 0x0040 GPADC CH0 Compare Data Register */
+	         uint8_t reserved4 [0x003C];
+    volatile uint32_t GP_CH0_DATA;                    /*!< Offset 0x0080 GPADC CH0 Data Register */
+} GPADC_TypeDef;
+/*
+ * @brief SPI_BDI
+ */
+/*!< SPI_BDI Controller Interface */
+typedef struct SPI_BDI_Type
+{
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t SPI_GCR;                        /*!< Offset 0x0004 SPI Global Control Register */
+    volatile uint32_t SPI_TCR;                        /*!< Offset 0x0008 SPI Transfer Control Register */
+	         uint8_t reserved2 [0x0004];
+    volatile uint32_t SPI_IER;                        /*!< Offset 0x0010 SPI Interrupt Control Register */
+    volatile uint32_t SPI_ISR;                        /*!< Offset 0x0014 SPI Interrupt Status Register */
+    volatile uint32_t SPI_FCR;                        /*!< Offset 0x0018 SPI FIFO Control Register */
+    volatile uint32_t SPI_FSR;                        /*!< Offset 0x001C SPI FIFO Status Register */
+    volatile uint32_t SPI_WCR;                        /*!< Offset 0x0020 SPI Wait Clock Register */
+	         uint8_t reserved3 [0x0004];
+    volatile uint32_t SPI_SAMP_DL;                    /*!< Offset 0x0028 SPI Sample Delay Control Register */
+	         uint8_t reserved4 [0x0004];
+    volatile uint32_t SPI_MBC;                        /*!< Offset 0x0030 SPI Master Burst Counter Register */
+    volatile uint32_t SPI_MTC;                        /*!< Offset 0x0034 SPI Master Transmit Counter Register */
+    volatile uint32_t SPI_BCC;                        /*!< Offset 0x0038 SPI Master Burst Control Register */
+	         uint8_t reserved5 [0x0004];
+    volatile uint32_t SPI_BATCR;                      /*!< Offset 0x0040 SPI Bit-Aligned Transfer Configure Register */
+    volatile uint32_t SPI_BA_CCR;                     /*!< Offset 0x0044 SPI Bit-Aligned Clock Configuration Register */
+    volatile uint32_t SPI_TBR;                        /*!< Offset 0x0048 SPI TX Bit Register */
+    volatile uint32_t SPI_RBR;                        /*!< Offset 0x004C SPI RX Bit Register */
+	         uint8_t reserved6 [0x0038];
+    volatile uint32_t SPI_NDMA_MODE_CTL;              /*!< Offset 0x0088 SPI Normal DMA Mode Control Register */
+	         uint8_t reserved7 [0x0074];
+    volatile uint32_t DBI_CTL_0;                      /*!< Offset 0x0100 DBI Control Register 0 */
+    volatile uint32_t DBI_CTL_1;                      /*!< Offset 0x0104 DBI Control Register 1 */
+    volatile uint32_t DBI_CTL_2;                      /*!< Offset 0x0108 DBI Control Register 2 */
+    volatile uint32_t DBI_TIMER;                      /*!< Offset 0x010C DBI Timer Control Register */
+    volatile uint32_t DBI_VIDEO_SZIE;                 /*!< Offset 0x0110 DBI Video Size Configuration Register */
+	         uint8_t reserved8 [0x000C];
+    volatile uint32_t DBI_INT;                        /*!< Offset 0x0120 DBI Interrupt Register */
+    volatile uint32_t DBI_DEBUG_0;                    /*!< Offset 0x0124 DBI BEBUG 0 Register */
+    volatile uint32_t DBI_DEBUG_1;                    /*!< Offset 0x0128 DBI BEBUG 1 Register */
+	         uint8_t reserved9 [0x00D4];
+    volatile uint32_t SPI_TXD;                        /*!< Offset 0x0200 SPI TX Data register */
+	         uint8_t reserved10 [0x00FC];
+    volatile uint32_t SPI_RXD;                        /*!< Offset 0x0300 SPI RX Data register */
+} SPI_BDI_TypeDef;
 
 
 /* Base addresses */
@@ -970,6 +1115,9 @@ typedef struct SPI_Type
 
  // CPUX related
 
+
+#define CIR_RX_BASE			0x07040000
+
  // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 	0x40000000	/* 2 GB */
 
@@ -1012,6 +1160,11 @@ typedef struct SPI_Type
 #define TWI3		((TWI_TypeDef *) TWI3_BASE)
 #define SPI0		((SPI_TypeDef *) SPI0_BASE)
 #define SPI1		((SPI_TypeDef *) SPI1_BASE)
+#define LEDC		((LEDC_TypeDef *) LEDC_BASE)
+#define GPADC		((GPADC_TypeDef *) GPADC_BASE)
+#define TPADC		((TPADC_TypeDef *) TPADC_BASE)
+#define CIR_RX		((CIR_RX_TypeDef *) CIR_RX_BASE)
+#define CIR_TX		((CIR_TX_TypeDef *) CIR_TX_BASE)
 
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
