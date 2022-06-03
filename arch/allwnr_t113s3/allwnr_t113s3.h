@@ -252,7 +252,7 @@ typedef enum IRQn
  // описание структуры UART
  typedef struct
  {
- 	volatile	uint32_t DATA;				// Offset: 0x0000	SELECT
+ 	volatile	uint32_t DATA;				// Offset: 0x0000
  	volatile	uint32_t DLH_IER;			// Offset: 0x0004
  	volatile	uint32_t IIR_FCR;			// Offset: 0x0008
  	volatile	uint32_t LCR;				// Offset: 0x000C
@@ -260,20 +260,20 @@ typedef enum IRQn
  	volatile	uint32_t LSR;				// Offset: 0x0014
  	volatile	uint32_t MSR;				// Offset: 0x0018
  	volatile	uint32_t SCH;				// Offset: 0x001C
- 	volatile	uint32_t Reserv1[23];
+ 				uint32_t reserved1 [23];
  	volatile	uint32_t USR;				// Offset: 0x007C
  	volatile	uint32_t TFL;				// Offset: 0x0080
  	volatile	uint32_t RFL;				// Offset: 0x0084
  	volatile	uint32_t HSK;				// Offset: 0x0088
  	volatile	uint32_t DMA_REQ_EN;		// Offset: 0x008C
- 	volatile	uint32_t Reserv2[5];
+ 				uint32_t reserved2 [5];
  	volatile	uint32_t HALT;				// Offset: 0x00A4
- 	volatile	uint32_t Reserv3[2];
+ 				uint32_t reserved3 [2];
  	volatile	uint32_t DBG_DLL;			// Offset: 0x00B0
  	volatile	uint32_t DBG_DLH;			// Offset: 0x00B4
- 	volatile	uint32_t Reserv4[14];
+ 				uint32_t reserved4 [14];
  	volatile	uint32_t A_FCC;				// Offset: 0x00F0
- 	volatile	uint32_t Reserv5[3];
+ 				uint32_t reserved5 [3];
  	volatile	uint32_t A_RXDMA_CTRL;		// Offset: 0x0100
  	volatile	uint32_t A_RXDMA_STR;		// Offset: 0x0104
  	volatile	uint32_t A_RXDMA_STA;		// Offset: 0x0108
@@ -281,7 +281,7 @@ typedef enum IRQn
  	volatile	uint32_t A_RXDMA_SADDRL;	// Offset: 0x0110
  	volatile	uint32_t A_RXDMA_SADDRH;	// Offset: 0x0114
  	volatile	uint32_t A_RXDMA_BL;		// Offset: 0x0118
- 	volatile	uint32_t Reserv6;
+ 				uint32_t reserved6;
  	volatile	uint32_t A_RXDMA_IE;		// Offset: 0x0120
  	volatile	uint32_t A_RXDMA_IS;		// Offset: 0x0124
  	volatile	uint32_t A_RXDMA_WADDRL;	// Offset: 0x0128
@@ -294,7 +294,7 @@ typedef enum IRQn
  // описание структуры GPIO
 typedef struct
 {
-	volatile	uint32_t CFG [4];		// Offset: 0x00	SELECT
+	volatile	uint32_t CFG [4];		// Offset: 0x00
 	volatile	uint32_t DATA;			// Offset: 0x10
 	volatile	uint32_t DRV [4];		// Offset: 0x14
 	volatile	uint32_t PULL [2];		// Offset: 0x24
