@@ -9,7 +9,7 @@
 #define ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_
 
 /**
- * @brief STM32MP1XX Interrupt Number Definition, according to the selected device
+ * @brief Allwinner T128-S3 Interrupt Number Definition, according to the selected device
  *        in @ref Library_configuration_section
  */
 typedef enum IRQn
@@ -40,9 +40,10 @@ typedef enum IRQn
 	SecurePhysicalTimer_IRQn         = 29,     /*!< Secure Physical Timer Interrupt                                      */
 	NonSecurePhysicalTimer_IRQn      = 30,     /*!< Non-Secure Physical Timer Interrupt                                  */
 	Legacy_nIRQ_IRQn                 = 31,     /*!< Legacy nIRQ Interrupt                                                */
-	/******  STM32 specific Interrupt Numbers ****************************************************************************/
 
-	CPUX_MSGBOX_R = (32),
+	/******  Allwinner T128-S3 specific Interrupt Numbers ****************************************************************************/
+
+	CPUX_MSGBOX_R = (32), /*  Peripherial */
 	UART0_IRQn = (34), /*  Peripherial */
 	UART1_IRQn = (35), /*  Peripherial */
 	UART2_IRQn = (36), /*  Peripherial */
@@ -78,8 +79,8 @@ typedef enum IRQn
 	SMC_IRQn = (76), /*  Peripherial */
 	EMAC_IRQn = (78), /*  Peripherial */
 	TZMA_ERR_IRQn = (79), /*  Peripherial */
-	ECCU_FERR_IRQn = (80), /*  Peripherial */
-	AHB_TIMEOUT_IRQn = (81), /*  Peripherial */
+	CCU_FERR_IRQn = (80), /*  Peripherial */
+	AHB_HREADY_TIME_OUT_IRQn = (81), /*  Peripherial */
 	DMAC_NS_IRQn = (82), /*  Peripherial */
 	DMAC_S_IRQn = (83), /*  Peripherial */
 	CE_NS_IRQn = (84), /*  Peripherial */
@@ -107,6 +108,7 @@ typedef enum IRQn
 	GPIOF_NS_IRQn = (109), /*  Peripherial */
 	GPIOF_S_IRQn = (110), /*  Peripherial */
 	GPIOG_NS_IRQn = (111), /*  Peripherial */
+	CPUX_MSGBOX_DSP_W = (117), /*  Peripherial */
 	DE_IRQn = (119), /*  Peripherial */
 	DI_IRQn = (120), /*  Peripherial */
 	G2D_IRQn = (121), /*  Peripherial */
@@ -249,9 +251,9 @@ typedef enum IRQn
 
 
 
- // описание структуры UART
- typedef struct
- {
+ // UART Controller Interface
+typedef struct
+{
  	volatile	uint32_t DATA;				// Offset: 0x0000
  	volatile	uint32_t DLH_IER;			// Offset: 0x0004
  	volatile	uint32_t IIR_FCR;			// Offset: 0x0008
@@ -291,7 +293,7 @@ typedef enum IRQn
  	volatile	uint32_t A_RXDMA_DCNT;		// Offset: 0x0138
  }  UART_TypeDef;
 
- // описание структуры GPIO
+// GPIO Controller Interface
 typedef struct
 {
 	volatile	uint32_t CFG [4];		// Offset: 0x00
