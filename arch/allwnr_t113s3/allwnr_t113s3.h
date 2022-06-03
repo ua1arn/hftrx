@@ -468,6 +468,26 @@ typedef struct CCU_Type
      volatile uint32_t CCU_FAN_REG;                    /*!< Offset 0x0F3C CCU FANOUT Register */
 } CCU_TypeDef;
 
+/*
+ * @brief SYS_CFG
+ */
+/*!< SYS_CFG Controller Interface */
+typedef struct SYS_CFG_Type
+{
+                 uint8_t reserved1 [0x0008];
+    volatile uint32_t DSP_BOOT_RAMMAP_REG;            /*!< Offset 0x0008 DSP Boot SRAM Remap Control Register */
+                 uint8_t reserved2 [0x0018];
+    volatile uint32_t VER_REG;                        /*!< Offset 0x0024 Version Register */
+                 uint8_t reserved3 [0x0008];
+    volatile uint32_t EMAC_EPHY_CLK_REG0;             /*!< Offset 0x0030 EMAC-EPHY Clock Register 0 */
+                 uint8_t reserved4 [0x011C];
+    volatile uint32_t SYS_LDO_CTRL_REG;               /*!< Offset 0x0150 System LDO Control Register */
+                 uint8_t reserved5 [0x000C];
+    volatile uint32_t RESCAL_CTRL_REG;                /*!< Offset 0x0160 Resistor Calibration Control Register */
+                 uint8_t reserved6 [0x0004];
+    volatile uint32_t RES240_CTRL_REG;                /*!< Offset 0x0168 240ohms Resistor Manual Control Register */
+    volatile uint32_t RESCAL_STATUS_REG;              /*!< Offset 0x016C Resistor Calibration Status Register */
+} SYS_CFG_TypeDef;
 
 /*
 * @brief UART
@@ -562,7 +582,7 @@ typedef struct GPIO_Type
 #define TWI3_BASE 	     	0x02502C00
 
 // SH0 (SYS domain)
-#define SYSCTRL_BASE      	0x03000000
+#define SYS_CFG_BASE      	0x03000000
 #define DMAC_BASE      		0x03002000
 #define CPUX_MSGBOX_BASE	0x03003000
 #define SPINLOCK_BASE     	0x03005000
@@ -620,6 +640,7 @@ typedef struct GPIO_Type
 #define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)
 #define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)
 
+#define SYS_CFG 		((SYS_CFG_TypeDef *) SYS_CFG_BASE)
 #define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
