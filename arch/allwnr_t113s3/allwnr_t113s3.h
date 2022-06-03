@@ -1,4 +1,4 @@
-/*
+﻿/*
  * allwnr_t13s3.h
  *
  *  Created on: 31 мая 2022 г.
@@ -58,6 +58,8 @@ typedef enum IRQn
 	PWM_IRQn = (50), /*  Peripherial */
 	IR_TX_IRQn = (51), /*  Peripherial */
 	LEDC_IRQn = (52), /*  Peripherial */
+	CAN0_IRQ = (53), /*  Peripherial */
+	CAN0_IRQ = (54), /*  Peripherial */
 	OWA_IRQn = (55), /*  Peripherial */
 	DMIC_IRQn = (56), /*  Peripherial */
 	AUDIO_CODEC_IRQn = (57), /*  Peripherial */
@@ -258,20 +260,20 @@ typedef enum IRQn
  	volatile	uint32_t LSR;				// Offset: 0x0014
  	volatile	uint32_t MSR;				// Offset: 0x0018
  	volatile	uint32_t SCH;				// Offset: 0x001C
- 	volatile	uint32_t Reserv1[24];
+ 	volatile	uint32_t Reserv1[23];
  	volatile	uint32_t USR;				// Offset: 0x007C
  	volatile	uint32_t TFL;				// Offset: 0x0080
  	volatile	uint32_t RFL;				// Offset: 0x0084
  	volatile	uint32_t HSK;				// Offset: 0x0088
  	volatile	uint32_t DMA_REQ_EN;		// Offset: 0x008C
- 	volatile	uint32_t Reserv2[6];
+ 	volatile	uint32_t Reserv2[5];
  	volatile	uint32_t HALT;				// Offset: 0x00A4
- 	volatile	uint32_t Reserv3[3];
+ 	volatile	uint32_t Reserv3[2];
  	volatile	uint32_t DBG_DLL;			// Offset: 0x00B0
  	volatile	uint32_t DBG_DLH;			// Offset: 0x00B4
- 	volatile	uint32_t Reserv4[15];
+ 	volatile	uint32_t Reserv4[14];
  	volatile	uint32_t A_FCC;				// Offset: 0x00F0
- 	volatile	uint32_t Reserv5[4];
+ 	volatile	uint32_t Reserv5[3];
  	volatile	uint32_t A_RXDMA_CTRL;		// Offset: 0x0100
  	volatile	uint32_t A_RXDMA_STR;		// Offset: 0x0104
  	volatile	uint32_t A_RXDMA_STA;		// Offset: 0x0108
