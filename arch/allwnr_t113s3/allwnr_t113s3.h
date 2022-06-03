@@ -228,7 +228,7 @@ typedef enum IRQn
 
 	MAX_IRQ_n,
 	Force_IRQn_enum_size             = 1048    /* Dummy entry to ensure IRQn_Type is more than 8 bits. Otherwise GIC init loop would fail */
- } IRQn_Type;
+} IRQn_Type;
 
 /* =========================================================================================================================== */
 /* ================                           Processor and Core Peripheral Section                           ================ */
@@ -248,6 +248,22 @@ typedef enum IRQn
 
 #include "core_ca.h"
 #include "system_allwnr_t113s3.h"
+
+
+/*
+* @brief CPU Subsystem Control Registers
+*/
+/*!< CPU Subsystem Control Register List */
+typedef struct CPU_SUBSYS_CTRL_Type
+{
+	volatile uint32_t GENER_CTRL_REG0;        /*!< Offset 0x0000 General Control Register0 */
+			uint8_t reserved1 [0x0008];
+	volatile uint32_t GIC_JTAG_RST_CTRL;      /*!< Offset 0x000C GIC and JTAG Reset Control Register */
+	volatile uint32_t C0_INT_EN;              /*!< Offset 0x0010 Cluster0 Interrupt Enable Control Register */
+	volatile uint32_t RQ_FIQ_STATUS;          /*!< Offset 0x0014 IRQ/FIQ Status Register */
+	volatile uint32_t GENER_CTRL_REG2;        /*!< Offset 0x0018 General Control Register2 */
+	volatile uint32_t DBG_STATE;              /*!< Offset 0x001C Debug State Register */
+} CPU_SUBSYS_CTRL_TypeDef;
 
 /*
 * @brief CCU
@@ -511,6 +527,8 @@ typedef struct GPIO_Type
 	volatile	uint32_t PULL [2];		// Offset: 0x24
 }  GPIO_TypeDef;
 
+#define CPU_SUBSYS_CTRL_BASE	0x08100000
+
 // SP0 (SYS domain)
 #define GPIO_BASE			0x02000000
 #define SPC_BASE			0x02000800
@@ -602,5 +620,6 @@ typedef struct GPIO_Type
 #define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)
 #define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)
 
+#define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
