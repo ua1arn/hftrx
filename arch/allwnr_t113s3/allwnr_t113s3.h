@@ -467,7 +467,6 @@ typedef struct CCU_Type
      volatile uint32_t PCLK_FAN_REG;                   /*!< Offset 0x0F38 PCLK FANOUT Register */
      volatile uint32_t CCU_FAN_REG;                    /*!< Offset 0x0F3C CCU FANOUT Register */
 } CCU_TypeDef;
-
 /*
  * @brief SYS_CFG
  */
@@ -1062,6 +1061,271 @@ typedef struct CE_S_Type
     volatile uint32_t CE_CDA;                         /*!< Offset 0x0028 DMA Current Destination Address */
     volatile uint32_t CE_TPR;                         /*!< Offset 0x002C Throughput Register */
 } CE_S_TypeDef;
+/*
+ * @brief RTC
+ */
+/*!< RTC Controller Interface */
+typedef struct RTC_Type
+{
+    volatile uint32_t LOSC_CTRL_REG;                  /*!< Offset 0x0000 Low Oscillator Control Register */
+    volatile uint32_t LOSC_AUTO_SWT_STA_REG;          /*!< Offset 0x0004 LOSC Auto Switch Status Register */
+    volatile uint32_t INTOSC_CLK_PRESCAL_REG;         /*!< Offset 0x0008 Internal OSC Clock Pre-scalar Register */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t RTC_DAY_REG;                    /*!< Offset 0x0010 RTC Year-Month-Day Register */
+    volatile uint32_t RTC_HH_MM_SS_REG;               /*!< Offset 0x0014 RTC Hour-Minute-Second Register */
+	         uint8_t reserved2 [0x0008];
+    volatile uint32_t ALARM0_DAY_SET_REG;             /*!< Offset 0x0020 Alarm 0 Day Setting Register */
+    volatile uint32_t ALARM0_CUR_VLU_REG;             /*!< Offset 0x0024 Alarm 0 Counter Current Value Register */
+    volatile uint32_t ALARM0_ENABLE_REG;              /*!< Offset 0x0028 Alarm 0 Enable Register */
+    volatile uint32_t ALARM0_IRQ_EN;                  /*!< Offset 0x002C Alarm 0 IRQ Enable Register */
+    volatile uint32_t ALARM0_IRQ_STA_REG;             /*!< Offset 0x0030 Alarm 0 IRQ Status Register */
+	         uint8_t reserved3 [0x001C];
+    volatile uint32_t ALARM_CONFIG_REG;               /*!< Offset 0x0050 Alarm Configuration Register */
+	         uint8_t reserved4 [0x000C];
+    volatile uint32_t F32K_FOUT_CTRL_GATING_REG;       /*!< Offset 0x0060 32K Fanout Control Gating Register */
+	         uint8_t reserved5 [0x009C];
+    volatile uint32_t GP_DATA_REG [8];                    /*!< Offset 0x0100 General Purpose Register (N=0 to 7) */
+    volatile uint32_t FBOOT_INFO_REG0;                /*!< Offset 0x0120 Fast Boot Information Register0 */
+    volatile uint32_t FBOOT_INFO_REG1;                /*!< Offset 0x0124 Fast Boot Information Register1 */
+	         uint8_t reserved7 [0x0038];
+    volatile uint32_t DCXO_CTRL_REG;                  /*!< Offset 0x0160 DCXO Control Register */
+	         uint8_t reserved8 [0x002C];
+    volatile uint32_t RTC_VIO_REG;                    /*!< Offset 0x0190 RTC_VIO Regulation Register */
+	         uint8_t reserved9 [0x005C];
+    volatile uint32_t IC_CHARA_REG;                   /*!< Offset 0x01F0 IC Characteristic Register */
+    volatile uint32_t VDD_OFF_GATING_CTRL_REG;        /*!< Offset 0x01F4 VDD Off Gating Control Register */
+	         uint8_t reserved10 [0x000C];
+    volatile uint32_t EFUSE_HV_PWRSWT_CTRL_REG;       /*!< Offset 0x0204 Efuse High Voltage Power Switch Control Register */
+	         uint8_t reserved11 [0x0108];
+    volatile uint32_t RTC_SPI_CLK_CTRL_REG;           /*!< Offset 0x0310 RTC SPI Clock Control Register */
+} RTC_TypeDef;
+/*
+ * @brief IOMMU
+ */
+/*!< IOMMU Controller Interface */
+typedef struct IOMMU_Type
+{
+	         uint8_t reserved1 [0x0010];
+    volatile uint32_t IOMMU_RESET_REG;                /*!< Offset 0x0010 IOMMU Reset Register */
+	         uint8_t reserved2 [0x000C];
+    volatile uint32_t IOMMU_ENABLE_REG;               /*!< Offset 0x0020 IOMMU Enable Register */
+	         uint8_t reserved3 [0x000C];
+    volatile uint32_t IOMMU_BYPASS_REG;               /*!< Offset 0x0030 IOMMU Bypass Register */
+	         uint8_t reserved4 [0x000C];
+    volatile uint32_t IOMMU_AUTO_GATING_REG;          /*!< Offset 0x0040 IOMMU Auto Gating Register */
+    volatile uint32_t IOMMU_WBUF_CTRL_REG;            /*!< Offset 0x0044 IOMMU Write Buffer Control Register */
+    volatile uint32_t IOMMU_OOO_CTRL_REG;             /*!< Offset 0x0048 IOMMU Out of Order Control Register */
+    volatile uint32_t IOMMU_4KB_BDY_PRT_CTRL_REG;     /*!< Offset 0x004C IOMMU 4KB Boundary Protect Control Register */
+    volatile uint32_t IOMMU_TTB_REG;                  /*!< Offset 0x0050 IOMMU Translation Table Base Register */
+	         uint8_t reserved5 [0x000C];
+    volatile uint32_t IOMMU_TLB_ENABLE_REG;           /*!< Offset 0x0060 IOMMU TLB Enable Register */
+	         uint8_t reserved6 [0x000C];
+    volatile uint32_t IOMMU_TLB_PREFETCH_REG;         /*!< Offset 0x0070 IOMMU TLB Prefetch Register */
+	         uint8_t reserved7 [0x000C];
+    volatile uint32_t IOMMU_TLB_FLUSH_ENABLE_REG;     /*!< Offset 0x0080 IOMMU TLB Flush Enable Register */
+    volatile uint32_t IOMMU_TLB_IVLD_MODE_SEL_REG;    /*!< Offset 0x0084 IOMMU TLB Invalidation Mode Select Register */
+    volatile uint32_t IOMMU_TLB_IVLD_STA_ADDR_REG;    /*!< Offset 0x0088 IOMMU TLB Invalidation Start Address Register */
+    volatile uint32_t IOMMU_TLB_IVLD_END_ADDR_REG;    /*!< Offset 0x008C IOMMU TLB Invalidation End Address Register */
+    volatile uint32_t IOMMU_TLB_IVLD_ADDR_REG;        /*!< Offset 0x0090 IOMMU TLB Invalidation Address Register */
+    volatile uint32_t IOMMU_TLB_IVLD_ADDR_MASK_REG;   /*!< Offset 0x0094 IOMMU TLB Invalidation Address Mask Register */
+    volatile uint32_t IOMMU_TLB_IVLD_ENABLE_REG;      /*!< Offset 0x0098 IOMMU TLB Invalidation Enable Register */
+    volatile uint32_t IOMMU_PC_IVLD_MODE_SEL_REG;     /*!< Offset 0x009C IOMMU PC Invalidation Mode Select Register */
+    volatile uint32_t IOMMU_PC_IVLD_ADDR_REG;         /*!< Offset 0x00A0 IOMMU PC Invalidation Address Register */
+    volatile uint32_t IOMMU_PC_IVLD_STA_ADDR_REG;     /*!< Offset 0x00A4 IOMMU PC Invalidation Start Address Register */
+    volatile uint32_t IOMMU_PC_IVLD_ENABLE_REG;       /*!< Offset 0x00A8 IOMMU PC Invalidation Enable Register */
+    volatile uint32_t IOMMU_PC_IVLD_END_ADDR_REG;     /*!< Offset 0x00AC IOMMU PC Invalidation End Address Register */
+    volatile uint32_t IOMMU_DM_AUT_CTRL0_REG;         /*!< Offset 0x00B0 IOMMU Domain Authority Control 0 Register */
+    volatile uint32_t IOMMU_DM_AUT_CTRL1_REG;         /*!< Offset 0x00B4 IOMMU Domain Authority Control 1 Register */
+    volatile uint32_t IOMMU_DM_AUT_CTRL2_REG;         /*!< Offset 0x00B8 IOMMU Domain Authority Control 2 Register */
+    volatile uint32_t IOMMU_DM_AUT_CTRL3_REG;         /*!< Offset 0x00BC IOMMU Domain Authority Control 3 Register */
+    volatile uint32_t IOMMU_DM_AUT_CTRL4_REG;         /*!< Offset 0x00C0 IOMMU Domain Authority Control 4 Register */
+    volatile uint32_t IOMMU_DM_AUT_CTRL5_REG;         /*!< Offset 0x00C4 IOMMU Domain Authority Control 5 Register */
+    volatile uint32_t IOMMU_DM_AUT_CTRL6_REG;         /*!< Offset 0x00C8 IOMMU Domain Authority Control 6 Register */
+    volatile uint32_t IOMMU_DM_AUT_CTRL7_REG;         /*!< Offset 0x00CC IOMMU Domain Authority Control 7 Register */
+    volatile uint32_t IOMMU_DM_AUT_OVWT_REG;          /*!< Offset 0x00D0 IOMMU Domain Authority Overwrite Register */
+	         uint8_t reserved8 [0x002C];
+    volatile uint32_t IOMMU_INT_ENABLE_REG;           /*!< Offset 0x0100 IOMMU Interrupt Enable Register */
+    volatile uint32_t IOMMU_INT_CLR_REG;              /*!< Offset 0x0104 IOMMU Interrupt Clear Register */
+    volatile uint32_t IOMMU_INT_STA_REG;              /*!< Offset 0x0108 IOMMU Interrupt Status Register */
+	         uint8_t reserved9 [0x0004];
+    volatile uint32_t IOMMU_INT_ERR_ADDR0_REG;        /*!< Offset 0x0110 IOMMU Interrupt Error Address 0 Register */
+    volatile uint32_t IOMMU_INT_ERR_ADDR1_REG;        /*!< Offset 0x0114 IOMMU Interrupt Error Address 1 Register */
+    volatile uint32_t IOMMU_INT_ERR_ADDR2_REG;        /*!< Offset 0x0118 IOMMU Interrupt Error Address 2 Register */
+    volatile uint32_t IOMMU_INT_ERR_ADDR3_REG;        /*!< Offset 0x011C IOMMU Interrupt Error Address 3 Register */
+    volatile uint32_t IOMMU_INT_ERR_ADDR4_REG;        /*!< Offset 0x0120 IOMMU Interrupt Error Address 4 Register */
+    volatile uint32_t IOMMU_INT_ERR_ADDR5_REG;        /*!< Offset 0x0124 IOMMU Interrupt Error Address 5 Register */
+    volatile uint32_t IOMMU_INT_ERR_ADDR6_REG;        /*!< Offset 0x0128 IOMMU Interrupt Error Address 6 Register */
+	         uint8_t reserved10 [0x0004];
+    volatile uint32_t IOMMU_INT_ERR_ADDR7_REG;        /*!< Offset 0x0130 IOMMU Interrupt Error Address 7 Register */
+    volatile uint32_t IOMMU_INT_ERR_ADDR8_REG;        /*!< Offset 0x0134 IOMMU Interrupt Error Address 8 Register */
+	         uint8_t reserved11 [0x0018];
+    volatile uint32_t IOMMU_INT_ERR_DATA0_REG;        /*!< Offset 0x0150 IOMMU Interrupt Error Data 0 Register */
+    volatile uint32_t IOMMU_INT_ERR_DATA1_REG;        /*!< Offset 0x0154 IOMMU Interrupt Error Data 1 Register */
+    volatile uint32_t IOMMU_INT_ERR_DATA2_REG;        /*!< Offset 0x0158 IOMMU Interrupt Error Data 2 Register */
+    volatile uint32_t IOMMU_INT_ERR_DATA3_REG;        /*!< Offset 0x015C IOMMU Interrupt Error Data 3 Register */
+    volatile uint32_t IOMMU_INT_ERR_DATA4_REG;        /*!< Offset 0x0160 IOMMU Interrupt Error Data 4 Register */
+    volatile uint32_t IOMMU_INT_ERR_DATA5_REG;        /*!< Offset 0x0164 IOMMU Interrupt Error Data 5 Register */
+    volatile uint32_t IOMMU_INT_ERR_DATA6_REG;        /*!< Offset 0x0168 IOMMU Interrupt Error Data 6 Register */
+	         uint8_t reserved12 [0x0004];
+    volatile uint32_t IOMMU_INT_ERR_DATA7_REG;        /*!< Offset 0x0170 IOMMU Interrupt Error Data 7 Register */
+    volatile uint32_t IOMMU_INT_ERR_DATA8_REG;        /*!< Offset 0x0174 IOMMU Interrupt Error Data 8 Register */
+	         uint8_t reserved13 [0x0008];
+    volatile uint32_t IOMMU_L1PG_INT_REG;             /*!< Offset 0x0180 IOMMU L1 Page Table Interrupt Register */
+    volatile uint32_t IOMMU_L2PG_INT_REG;             /*!< Offset 0x0184 IOMMU L2 Page Table Interrupt Register */
+	         uint8_t reserved14 [0x0008];
+    volatile uint32_t IOMMU_VA_REG;                   /*!< Offset 0x0190 IOMMU Virtual Address Register */
+    volatile uint32_t IOMMU_VA_DATA_REG;              /*!< Offset 0x0194 IOMMU Virtual Address Data Register */
+    volatile uint32_t IOMMU_VA_CONFIG_REG;            /*!< Offset 0x0198 IOMMU Virtual Address Configuration Register */
+	         uint8_t reserved15 [0x0064];
+    volatile uint32_t IOMMU_PMU_ENABLE_REG;           /*!< Offset 0x0200 IOMMU PMU Enable Register */
+	         uint8_t reserved16 [0x000C];
+    volatile uint32_t IOMMU_PMU_CLR_REG;              /*!< Offset 0x0210 IOMMU PMU Clear Register */
+	         uint8_t reserved17 [0x001C];
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW0_REG;      /*!< Offset 0x0230 IOMMU PMU Access Low 0 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH0_REG;     /*!< Offset 0x0234 IOMMU PMU Access High 0 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW0_REG;         /*!< Offset 0x0238 IOMMU PMU Hit Low 0 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH0_REG;        /*!< Offset 0x023C IOMMU PMU Hit High 0 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW1_REG;      /*!< Offset 0x0240 IOMMU PMU Access Low 1 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH1_REG;     /*!< Offset 0x0244 IOMMU PMU Access High 1 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW1_REG;         /*!< Offset 0x0248 IOMMU PMU Hit Low 1 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH1_REG;        /*!< Offset 0x024C IOMMU PMU Hit High 1 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW2_REG;      /*!< Offset 0x0250 IOMMU PMU Access Low 2 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH2_REG;     /*!< Offset 0x0254 IOMMU PMU Access High 2 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW2_REG;         /*!< Offset 0x0258 IOMMU PMU Hit Low 2 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH2_REG;        /*!< Offset 0x025C IOMMU PMU Hit High 2 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW3_REG;      /*!< Offset 0x0260 IOMMU PMU Access Low 3 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH3_REG;     /*!< Offset 0x0264 IOMMU PMU Access High 3 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW3_REG;         /*!< Offset 0x0268 IOMMU PMU Hit Low 3 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH3_REG;        /*!< Offset 0x026C IOMMU PMU Hit High 3 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW4_REG;      /*!< Offset 0x0270 IOMMU PMU Access Low 4 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH4_REG;     /*!< Offset 0x0274 IOMMU PMU Access High 4 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW4_REG;         /*!< Offset 0x0278 IOMMU PMU Hit Low 4 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH4_REG;        /*!< Offset 0x027C IOMMU PMU Hit High 4 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW5_REG;      /*!< Offset 0x0280 IOMMU PMU Access Low 5 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH5_REG;     /*!< Offset 0x0284 IOMMU PMU Access High 5 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW5_REG;         /*!< Offset 0x0288 IOMMU PMU Hit Low 5 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH5_REG;        /*!< Offset 0x028C IOMMU PMU Hit High 5 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW6_REG;      /*!< Offset 0x0290 IOMMU PMU Access Low 6 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH6_REG;     /*!< Offset 0x0294 IOMMU PMU Access High 6 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW6_REG;         /*!< Offset 0x0298 IOMMU PMU Hit Low 6 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH6_REG;        /*!< Offset 0x029C IOMMU PMU Hit High 6 Register */
+	         uint8_t reserved18 [0x0030];
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW7_REG;      /*!< Offset 0x02D0 IOMMU PMU Access Low 7 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH7_REG;     /*!< Offset 0x02D4 IOMMU PMU Access High 7 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW7_REG;         /*!< Offset 0x02D8 IOMMU PMU Hit Low 7 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH7_REG;        /*!< Offset 0x02DC IOMMU PMU Hit High 7 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_LOW8_REG;      /*!< Offset 0x02E0 IOMMU PMU Access Low 8 Register */
+    volatile uint32_t IOMMU_PMU_ACCESS_HIGH8_REG;     /*!< Offset 0x02E4 IOMMU PMU Access High 8 Register */
+    volatile uint32_t IOMMU_PMU_HIT_LOW8_REG;         /*!< Offset 0x02E8 IOMMU PMU Hit Low 8 Register */
+    volatile uint32_t IOMMU_PMU_HIT_HIGH8_REG;        /*!< Offset 0x02EC IOMMU PMU Hit High 8 Register */
+	         uint8_t reserved19 [0x0010];
+    volatile uint32_t IOMMU_PMU_TL_LOW0_REG;          /*!< Offset 0x0300 IOMMU Total Latency Low 0 Register */
+    volatile uint32_t IOMMU_PMU_TL_HIGH0_REG;         /*!< Offset 0x0304 IOMMU Total Latency High 0 Register */
+    volatile uint32_t IOMMU_PMU_ML0_REG;              /*!< Offset 0x0308 IOMMU Max Latency 0 Register */
+	         uint8_t reserved20 [0x0004];
+    volatile uint32_t IOMMU_PMU_TL_LOW1_REG;          /*!< Offset 0x0310 IOMMU Total Latency Low 1 Register */
+    volatile uint32_t IOMMU_PMU_TL_HIGH1_REG;         /*!< Offset 0x0314 IOMMU Total Latency High 1 Register */
+    volatile uint32_t IOMMU_PMU_ML1_REG;              /*!< Offset 0x0318 IOMMU Max Latency 1 Register */
+	         uint8_t reserved21 [0x0004];
+    volatile uint32_t IOMMU_PMU_TL_LOW2_REG;          /*!< Offset 0x0320 IOMMU Total Latency Low 2 Register */
+    volatile uint32_t IOMMU_PMU_TL_HIGH2_REG;         /*!< Offset 0x0324 IOMMU Total Latency High 2 Register */
+    volatile uint32_t IOMMU_PMU_ML2_REG;              /*!< Offset 0x0328 IOMMU Max Latency 2 Register */
+	         uint8_t reserved22 [0x0004];
+    volatile uint32_t IOMMU_PMU_TL_LOW3_REG;          /*!< Offset 0x0330 IOMMU Total Latency Low 3 Register */
+    volatile uint32_t IOMMU_PMU_TL_HIGH3_REG;         /*!< Offset 0x0334 IOMMU Total Latency High 3 Register */
+    volatile uint32_t IOMMU_PMU_ML3_REG;              /*!< Offset 0x0338 IOMMU Max Latency 3 Register */
+	         uint8_t reserved23 [0x0004];
+    volatile uint32_t IOMMU_PMU_TL_LOW4_REG;          /*!< Offset 0x0340 IOMMU Total Latency Low 4 Register */
+    volatile uint32_t IOMMU_PMU_TL_HIGH4_REG;         /*!< Offset 0x0344 IOMMU Total Latency High 4 Register */
+    volatile uint32_t IOMMU_PMU_ML4_REG;              /*!< Offset 0x0348 IOMMU Max Latency 4 Register */
+	         uint8_t reserved24 [0x0004];
+    volatile uint32_t IOMMU_PMU_TL_LOW5_REG;          /*!< Offset 0x0350 IOMMU Total Latency Low 5 Register */
+    volatile uint32_t IOMMU_PMU_TL_HIGH5_REG;         /*!< Offset 0x0354 IOMMU Total Latency High 5 Register */
+    volatile uint32_t IOMMU_PMU_ML5_REG;              /*!< Offset 0x0358 IOMMU Max Latency 5 Register */
+	         uint8_t reserved25 [0x0004];
+    volatile uint32_t IOMMU_PMU_TL_LOW6_REG;          /*!< Offset 0x0360 IOMMU Total Latency Low 6 Register */
+    volatile uint32_t IOMMU_PMU_TL_HIGH6_REG;         /*!< Offset 0x0364 IOMMU Total Latency High 6 Register */
+    volatile uint32_t IOMMU_PMU_ML6_REG;              /*!< Offset 0x0368 IOMMU Max Latency 6 Register */
+} IOMMU_TypeDef;
+/*
+ * @brief THS
+ */
+/*!< THS Controller Interface */
+typedef struct THS_Type
+{
+    volatile uint32_t THS_CTRL;                       /*!< Offset 0x0000 THS Control Register */
+    volatile uint32_t THS_EN;                         /*!< Offset 0x0004 THS Enable Register */
+    volatile uint32_t THS_PER;                        /*!< Offset 0x0008 THS Period Control Register */
+	         uint8_t reserved1 [0x0004];
+    volatile uint32_t THS_DATA_INTC;                  /*!< Offset 0x0010 THS Data Interrupt Control Register */
+    volatile uint32_t THS_SHUT_INTC;                  /*!< Offset 0x0014 THS Shut Interrupt Control Register */
+    volatile uint32_t THS_ALARM_INTC;                 /*!< Offset 0x0018 THS Alarm Interrupt Control Register */
+	         uint8_t reserved2 [0x0004];
+    volatile uint32_t THS_DATA_INTS;                  /*!< Offset 0x0020 THS Data Interrupt Status Register */
+    volatile uint32_t THS_SHUT_INTS;                  /*!< Offset 0x0024 THS Shut Interrupt Status Register */
+    volatile uint32_t THS_ALARMO_INTS;                /*!< Offset 0x0028 THS Alarm off Interrupt Status Register */
+    volatile uint32_t THS_ALARM_INTS;                 /*!< Offset 0x002C THS Alarm Interrupt Status Register */
+    volatile uint32_t THS_FILTER;                     /*!< Offset 0x0030 THS Median Filter Control Register */
+	         uint8_t reserved3 [0x000C];
+    volatile uint32_t THS_ALARM_CTRL;                 /*!< Offset 0x0040 THS Alarm Threshold Control Register */
+	         uint8_t reserved4 [0x003C];
+    volatile uint32_t THS_SHUTDOWN_CTRL;              /*!< Offset 0x0080 THS Shutdown Threshold Control Register */
+	         uint8_t reserved5 [0x001C];
+    volatile uint32_t THS_CDATA;                      /*!< Offset 0x00A0 THS Calibration Data */
+	         uint8_t reserved6 [0x001C];
+    volatile uint32_t THS_DATA;                       /*!< Offset 0x00C0 THS Data Register */
+} THS_TypeDef;
+/*
+ * @brief TIMER
+ */
+/*!< TIMER Controller Interface */
+typedef struct TIMER_Type
+{
+    volatile uint32_t TMR_IRQ_EN_REG;                 /*!< Offset 0x0000 Timer IRQ Enable Register */
+    volatile uint32_t TMR_IRQ_STA_REG;                /*!< Offset 0x0004 Timer Status Register */
+	         uint8_t reserved1 [0x0008];
+    volatile uint32_t TMR0_CTRL_REG;                  /*!< Offset 0x0010 Timer0 Control Register */
+    volatile uint32_t TMR0_INTV_VALUE_REG;            /*!< Offset 0x0014 Timer0 Interval Value Register */
+    volatile uint32_t TMR0_CUR_VALUE_REG;             /*!< Offset 0x0018 Timer0 Current Value Register */
+	         uint8_t reserved2 [0x0004];
+    volatile uint32_t TMR1_CTRL_REG;                  /*!< Offset 0x0020 Timer1 Control Register */
+    volatile uint32_t TMR1_INTV_VALUE_REG;            /*!< Offset 0x0024 Timer1 Interval Value Register */
+    volatile uint32_t TMR1_CUR_VALUE_REG;             /*!< Offset 0x0028 Timer1 Current Value Register */
+	         uint8_t reserved3 [0x0074];
+    volatile uint32_t WDOG_IRQ_EN_REG;                /*!< Offset 0x00A0 Watchdog IRQ Enable Register */
+    volatile uint32_t WDOG_IRQ_STA_REG;               /*!< Offset 0x00A4 Watchdog Status Register */
+    volatile uint32_t WDOG_SOFT_RST_REG;              /*!< Offset 0x00A8 Watchdog Software Reset Register */
+	         uint8_t reserved4 [0x0004];
+    volatile uint32_t WDOG_CTRL_REG;                  /*!< Offset 0x00B0 Watchdog Control Register */
+    volatile uint32_t WDOG_CFG_REG;                   /*!< Offset 0x00B4 Watchdog Configuration Register */
+    volatile uint32_t WDOG_MODE_REG;                  /*!< Offset 0x00B8 Watchdog Mode Register */
+    volatile uint32_t WDOG_OUTPUT_CFG_REG;            /*!< Offset 0x00BC Watchdog Output Configuration Register */
+    volatile uint32_t AVS_CNT_CTL_REG;                /*!< Offset 0x00C0 AVS Control Register */
+    volatile uint32_t AVS_CNT0_REG;                   /*!< Offset 0x00C4 AVS Counter 0 Register */
+    volatile uint32_t AVS_CNT1_REG;                   /*!< Offset 0x00C8 AVS Counter 1 Register */
+    volatile uint32_t AVS_CNT_DIV_REG;                /*!< Offset 0x00CC AVS Divisor Register */
+} TIMER_TypeDef;
+/*
+ * @brief HSTIMER
+ */
+/*!< HSTIMER Controller Interface */
+typedef struct HSTIMER_Type
+{
+    volatile uint32_t HS_TMR_IRQ_EN_REG;              /*!< Offset 0x0000 HS Timer IRQ Enable Register */
+    volatile uint32_t HS_TMR_IRQ_STAS_REG;            /*!< Offset 0x0004 HS Timer Status Register */
+	         uint8_t reserved1 [0x0018];
+    volatile uint32_t HS_TMR0_CTRL_REG;               /*!< Offset 0x0020 HS Timer0 Control Register */
+    volatile uint32_t HS_TMR0_INTV_LO_REG;            /*!< Offset 0x0024 HS Timer0 Interval Value Low Register */
+    volatile uint32_t HS_TMR0_INTV_HI_REG;            /*!< Offset 0x0028 HS Timer0 Interval Value High Register */
+    volatile uint32_t HS_TMR0_CURNT_LO_REG;           /*!< Offset 0x002C HS Timer0 Current Value Low Register */
+    volatile uint32_t HS_TMR0_CURNT_HI_REG;           /*!< Offset 0x0030 HS Timer0 Current Value High Register */
+	         uint8_t reserved2 [0x000C];
+    volatile uint32_t HS_TMR1_CTRL_REG;               /*!< Offset 0x0040 HS Timer1 Control Register */
+    volatile uint32_t HS_TMR1_INTV_LO_REG;            /*!< Offset 0x0044 HS Timer1 Interval Value Low Register */
+    volatile uint32_t HS_TMR1_INTV_HI_REG;            /*!< Offset 0x0048 HS Timer1 Interval Value High Register */
+    volatile uint32_t HS_TMR1_CURNT_LO_REG;           /*!< Offset 0x004C HS Timer1 Current Value Low Register */
+    volatile uint32_t HS_TMR1_CURNT_HI_REG;           /*!< Offset 0x0050 HS Timer1 Current Value High Register */
+} HSTIMER_TypeDef;
 
 
 /* Base addresses */
@@ -1148,6 +1412,89 @@ typedef struct CE_S_Type
 #define GPIOF_BASE		(GPIO_BASE + 0x030 * 5)
 #define GPIOG_BASE		(GPIO_BASE + 0x030 * 6)
 
+/////////////////////
+#define T113_DE_BASE		(0x05000000)
+
+#define T113_DE_MUX_GLB		(0x00100000 + 0x00000)
+#define T113_DE_MUX_BLD		(0x00100000 + 0x01000)
+#define T113_DE_MUX_CHAN	(0x00100000 + 0x02000)
+#define T113_DE_MUX_VSU		(0x00100000 + 0x20000)
+#define T113_DE_MUX_GSU1	(0x00100000 + 0x30000)
+#define T113_DE_MUX_GSU2	(0x00100000 + 0x40000)
+#define T113_DE_MUX_GSU3	(0x00100000 + 0x50000)
+#define T113_DE_MUX_FCE		(0x00100000 + 0xa0000)
+#define T113_DE_MUX_BWS		(0x00100000 + 0xa2000)
+#define T113_DE_MUX_LTI		(0x00100000 + 0xa4000)
+#define T113_DE_MUX_PEAK	(0x00100000 + 0xa6000)
+#define T113_DE_MUX_ASE		(0x00100000 + 0xa8000)
+#define T113_DE_MUX_FCC		(0x00100000 + 0xaa000)
+#define T113_DE_MUX_DCSC	(0x00100000 + 0xb0000)
+
+
+#define T113_TCONLCD_BASE		0x05461000
+
+/*
+ * @brief TCONLCD
+ */
+/*!< TCONLCD Controller Interface */
+typedef struct TCONLCD_Type
+{
+	volatile uint32_t GCTRL;				/* 0x00 */
+	volatile uint32_t GINT0;				/* 0x04 */
+	volatile uint32_t GINT1;				/* 0x08 */
+			uint32_t RES_0C;
+	volatile uint32_t FRM_CTRL;				/* 0x10 */
+	volatile uint32_t FRM_SEED[6];			/* 0x14 */
+	volatile uint32_t FRM_TABLE[4];			/* 0x2c */
+	volatile uint32_t FIFO_3D;				/* 0x3c */
+	volatile uint32_t CTRL;					/* 0x40 */
+	volatile uint32_t DCLK;					/* 0x44 */
+	volatile uint32_t TIMING0;				/* 0x48 */
+	volatile uint32_t TIMING1;				/* 0x4c */
+	volatile uint32_t TIMING2;				/* 0x50 */
+	volatile uint32_t TIMING3;				/* 0x54 */
+	volatile uint32_t HV_INTF;				/* 0x58 */
+			uint32_t RES_5C;
+	volatile uint32_t CPU_INTF;				/* 0x60 */
+	volatile uint32_t CPU_WR;				/* 0x64 */
+	volatile uint32_t CPU_RD0;				/* 0x68 */
+	volatile uint32_t CPU_RD1;				/* 0x6c */
+			uint32_t RES_70_80[5];			/* 0x70 */
+	volatile uint32_t LVDS_INTF;			/* 0x84 */
+	volatile uint32_t IO_POLARITY;			/* 0x88 */
+	volatile uint32_t IO_TRISTATE;			/* 0x8c */
+			uint32_t RES_90_F8[27];
+	volatile uint32_t DEBUG;				/* 0xfc */
+	volatile uint32_t CEU_CTL;				/* 0x100 */
+			uint32_t RES_104_10C[3];
+	volatile uint32_t CEU_COEF[20];			/* 0x110 */
+	volatile uint32_t CPU_TRI0;				/* 0x160 */
+	volatile uint32_t CPU_TRI1;				/* 0x164 */
+	volatile uint32_t CPU_TRI2;				/* 0x168 */
+	volatile uint32_t CPU_TRI3;				/* 0x16c */
+	volatile uint32_t CPU_TRI4;				/* 0x170 */
+	volatile uint32_t CPU_TRI5;				/* 0x174 */
+	volatile uint32_t RES_178_17C[2];
+	volatile uint32_t CMAP_CTL;				/* 0x180 */
+			uint32_t RES_184_18C[3];
+	volatile uint32_t CMAP_ODD0;			/* 0x190 */
+	volatile uint32_t CMAP_ODD1;			/* 0x194 */
+	volatile uint32_t CMAP_EVEN0;			/* 0x198 */
+	volatile uint32_t CMAP_EVEN1;			/* 0x19c */
+			uint32_t RES_1A0_1EC[20];
+	volatile uint32_t SAFE_PERIOD;			/* 0x1f0 */
+			uint32_t RES_1F4_21C[11];
+	volatile uint32_t LVDS_ANA0;			/* 0x220 */
+	volatile uint32_t LVDS_ANA1;			/* 0x224 */
+			uint32_t RES_228_22C[2];
+	volatile uint32_t SYNC_CTL;				/* 0x230 */
+	volatile uint32_t SYNC_POS;				/* 0x234 */
+	volatile uint32_t SLAVE_STOP_POS;		/* 0x238 */
+			uint32_t RES_23C_3FC[113];
+	volatile uint32_t GAMMA_TABLE[256];		/* 0x400 */
+} TCONLCD_TypeDef;
+
+#define TCONLCD ((t113_tconlcd_reg_t *) T113_TCONLCD_BASE)
 /* Access pointers */
 
 #define UART0      ((UART_TypeDef *) UART0_BASE)
@@ -1184,6 +1531,11 @@ typedef struct CE_S_Type
 #define CIR_RX		((CIR_RX_TypeDef *) CIR_RX_BASE)
 #define CIR_TX		((CIR_TX_TypeDef *) CIR_TX_BASE)
 #define CE_S		((CE_S_TypeDef *) CE_S_BASE)
+#define HSTIMER		((HSTIMER_TypeDef *) HSTIMER_BASE)
+#define TIMER		((TIMER_TypeDef *) TIMER_BASE)
+#define RTC			((RTC_TypeDef *) RTC_BASE)
+#define THS			((THS_TypeDef *) THS_BASE)
+#define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)
 
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
