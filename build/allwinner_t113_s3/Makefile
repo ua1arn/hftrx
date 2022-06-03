@@ -216,9 +216,13 @@ allZ:
 
 bootloader: BOOT2 fsbl.alw32 boot.hex
   
-app_run: $(PROJECT)_app.alw32
-	./dfu-util --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download "tc1_stm32mp157axx_app.alw32"
-	./dfu-util --alt 2 --detach
+app_run: led_t.bin
+	./xfel-windows-v1.2.7/xfel write 0x00028000 led_t.bin
+	./xfel-windows-v1.2.7/xfel exec 0x00028000
+  
+app_runXXXX: $(PROJECT)_app.alw32
+	./xfel-windows-v1.2.7/xfel write 0x00028000 $(PROJECT)_app.alw32
+	./xfel-windows-v1.2.7/xfel exec 0x00028000
 
 flash: $(PROJECT)_app.alw32
 	./dfu-util --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.alw32
