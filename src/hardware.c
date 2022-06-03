@@ -1433,6 +1433,9 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
+#elif CPUSTYPE_ALLWNT113
+	#warning Unhandled CPUSTYPE_ALLWNT113
+
 #else
 	#error No CPUSTYLE_XXXXX defined
 #endif
@@ -1536,6 +1539,10 @@ hardware_adc_startonescan(void)
 
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
+
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Unhandled CPUSTYPE_ALLWNT113
 
 #else
 
@@ -3286,6 +3293,14 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	__SEV();
 }
 
+
+#elif CPUSTYPE_ALLWNT113
+
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+{
+#warning Unhandled CPUSTYPE_ALLWNT113
+}
 
 #endif /* CPUSTYLE_STM32MP1 */
 
