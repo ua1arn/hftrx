@@ -255,202 +255,203 @@ typedef enum IRQn
 /*!< CCU Controller Interface */
 typedef struct CCU_Type
 {
- 	volatile uint32_t PLL_CPU_CTRL_REG;			/*!< Offset 0x0000 PLL_CPU Control Register */
+     volatile uint32_t PLL_CPU_CTRL_REG;               /*!< Offset 0x0000 PLL_CPU Control Register */
  	         uint8_t reserved1 [0x000C];
- 	volatile uint32_t PLL_DDR_CTRL_REG;			/*!< Offset 0x0010 PLL_DDR Control Register */
+     volatile uint32_t PLL_DDR_CTRL_REG;               /*!< Offset 0x0010 PLL_DDR Control Register */
  	         uint8_t reserved2 [0x000C];
- 	volatile uint32_t PLL_PERI_CTRL_REG;		/*!< Offset 0x0020 PLL_PERI Control Register */
+     volatile uint32_t PLL_PERI_CTRL_REG;              /*!< Offset 0x0020 PLL_PERI Control Register */
  	         uint8_t reserved3 [0x001C];
- 	volatile uint32_t PLL_VIDEO0_CTRL_REG;		/*!< Offset 0x0040 PLL_VIDEO0 Control Register */
+     volatile uint32_t PLL_VIDEO0_CTRL_REG;            /*!< Offset 0x0040 PLL_VIDEO0 Control Register */
  	         uint8_t reserved4 [0x0004];
- 	volatile uint32_t PLL_VIDEO1_CTRL_REG;		/*!< Offset 0x0048 PLL_VIDEO1 Control Register */
+     volatile uint32_t PLL_VIDEO1_CTRL_REG;            /*!< Offset 0x0048 PLL_VIDEO1 Control Register */
  	         uint8_t reserved5 [0x000C];
- 	volatile uint32_t PLL_VE_CTRL_REG;			/*!< Offset 0x0058 PLL_VE Control Register */
+     volatile uint32_t PLL_VE_CTRL_REG;                /*!< Offset 0x0058 PLL_VE Control Register */
  	         uint8_t reserved6 [0x001C];
- 	volatile uint32_t PLL_AUDIO0_CTRL_REG;		/*!< Offset 0x0078 PLL_AUDIO0 Control Register */
+     volatile uint32_t PLL_AUDIO0_CTRL_REG;            /*!< Offset 0x0078 PLL_AUDIO0 Control Register */
  	         uint8_t reserved7 [0x0004];
- 	volatile uint32_t PLL_AUDIO1_CTRL_REG;		/*!< Offset 0x0080 PLL_AUDIO1 Control Register */
+     volatile uint32_t PLL_AUDIO1_CTRL_REG;            /*!< Offset 0x0080 PLL_AUDIO1 Control Register */
  	         uint8_t reserved8 [0x008C];
- 	volatile uint32_t PLL_DDR_PAT0_CTRL_REG;	/*!< Offset 0x0110 PLL_DDR Pattern0 Control Register */
- 	volatile uint32_t PLL_DDR_PAT1_CTRL_REG;	/*!< Offset 0x0114 PLL_DDR Pattern1 Control Register */
+     volatile uint32_t PLL_DDR_PAT0_CTRL_REG;          /*!< Offset 0x0110 PLL_DDR Pattern0 Control Register */
+     volatile uint32_t PLL_DDR_PAT1_CTRL_REG;          /*!< Offset 0x0114 PLL_DDR Pattern1 Control Register */
  	         uint8_t reserved9 [0x0008];
- 	volatile uint32_t PLL_PERI_PAT0_CTRL_REG;	/*!< Offset 0x0120 PLL_PERI Pattern0 Control Register */
- 	volatile uint32_t PLL_PERI_PAT1_CTRL_REG;	/*!< Offset 0x0124 PLL_PERI Pattern1 Control Register */
+     volatile uint32_t PLL_PERI_PAT0_CTRL_REG;         /*!< Offset 0x0120 PLL_PERI Pattern0 Control Register */
+     volatile uint32_t PLL_PERI_PAT1_CTRL_REG;         /*!< Offset 0x0124 PLL_PERI Pattern1 Control Register */
  	         uint8_t reserved10 [0x0018];
- 	volatile uint32_t PLL_VIDEO0_PAT0_CTRL_REG;	/*!< Offset 0x0140 PLL_VIDEO0 Pattern0 Control Register */
- 	volatile uint32_t PLL_VIDEO0_PAT1_CTRL_REG;	/*!< Offset 0x0144 PLL_VIDEO0 Pattern1 Control Register */
- 	volatile uint32_t PLL_VIDEO1_PAT0_CTRL_REG;	/*!< Offset 0x0148 PLL_VIDEO1 Pattern0 Control Register */
- 	volatile uint32_t PLL_VIDEO1_PAT1_CTRL_REG;	/*!< Offset 0x014C PLL_VIDEO1 Pattern1 Control Register */
+     volatile uint32_t PLL_VIDEO0_PAT0_CTRL_REG;       /*!< Offset 0x0140 PLL_VIDEO0 Pattern0 Control Register */
+     volatile uint32_t PLL_VIDEO0_PAT1_CTRL_REG;       /*!< Offset 0x0144 PLL_VIDEO0 Pattern1 Control Register */
+     volatile uint32_t PLL_VIDEO1_PAT0_CTRL_REG;       /*!< Offset 0x0148 PLL_VIDEO1 Pattern0 Control Register */
+     volatile uint32_t PLL_VIDEO1_PAT1_CTRL_REG;       /*!< Offset 0x014C PLL_VIDEO1 Pattern1 Control Register */
  	         uint8_t reserved11 [0x0008];
- 	volatile uint32_t PLL_VE_PAT0_CTRL_REG;		/*!< Offset 0x0158 PLL_VE Pattern0 Control Register */
- 	volatile uint32_t PLL_VE_PAT1_CTRL_REG;		/*!< Offset 0x015C PLL_VE Pattern1 Control Register */
+     volatile uint32_t PLL_VE_PAT0_CTRL_REG;           /*!< Offset 0x0158 PLL_VE Pattern0 Control Register */
+     volatile uint32_t PLL_VE_PAT1_CTRL_REG;           /*!< Offset 0x015C PLL_VE Pattern1 Control Register */
  	         uint8_t reserved12 [0x0018];
- 	volatile uint32_t PLL_AUDIO0_PAT0_CTRL_REG;	/*!< Offset 0x0178 PLL_AUDIO0 Pattern0 Control Register */
- 	volatile uint32_t PLL_AUDIO0_PAT1_CTRL_REG;	/*!< Offset 0x017C PLL_AUDIO0 Pattern1 Control Register */
- 	volatile uint32_t PLL_AUDIO1_PAT0_CTRL_REG;	/*!< Offset 0x0180 PLL_AUDIO1 Pattern0 Control Register */
- 	volatile uint32_t PLL_AUDIO1_PAT1_CTRL_REG;	/*!< Offset 0x0184 PLL_AUDIO1 Pattern1 Control Register */
+     volatile uint32_t PLL_AUDIO0_PAT0_CTRL_REG;       /*!< Offset 0x0178 PLL_AUDIO0 Pattern0 Control Register */
+     volatile uint32_t PLL_AUDIO0_PAT1_CTRL_REG;       /*!< Offset 0x017C PLL_AUDIO0 Pattern1 Control Register */
+     volatile uint32_t PLL_AUDIO1_PAT0_CTRL_REG;       /*!< Offset 0x0180 PLL_AUDIO1 Pattern0 Control Register */
+     volatile uint32_t PLL_AUDIO1_PAT1_CTRL_REG;       /*!< Offset 0x0184 PLL_AUDIO1 Pattern1 Control Register */
  	         uint8_t reserved13 [0x0178];
- 	volatile uint32_t PLL_CPU_BIAS_REG;	/*!< Offset 0x0300 PLL_CPU Bias Register */
+     volatile uint32_t PLL_CPU_BIAS_REG;               /*!< Offset 0x0300 PLL_CPU Bias Register */
  	         uint8_t reserved14 [0x000C];
- 	volatile uint32_t PLL_DDR_BIAS_REG;	/*!< Offset 0x0310 PLL_DDR Bias Register */
+     volatile uint32_t PLL_DDR_BIAS_REG;               /*!< Offset 0x0310 PLL_DDR Bias Register */
  	         uint8_t reserved15 [0x000C];
- 	volatile uint32_t PLL_PERI_BIAS_REG;	/*!< Offset 0x0320 PLL_PERI Bias Register */
+     volatile uint32_t PLL_PERI_BIAS_REG;              /*!< Offset 0x0320 PLL_PERI Bias Register */
  	         uint8_t reserved16 [0x001C];
- 	volatile uint32_t PLL_VIDEO0_BIAS_REG;	/*!< Offset 0x0340 PLL_VIDEO0 Bias Register */
+     volatile uint32_t PLL_VIDEO0_BIAS_REG;            /*!< Offset 0x0340 PLL_VIDEO0 Bias Register */
  	         uint8_t reserved17 [0x0004];
- 	volatile uint32_t PLL_VIDEO1_BIAS_REG;	/*!< Offset 0x0348 PLL_VIDEO1 Bias Register */
+     volatile uint32_t PLL_VIDEO1_BIAS_REG;            /*!< Offset 0x0348 PLL_VIDEO1 Bias Register */
  	         uint8_t reserved18 [0x000C];
- 	volatile uint32_t PLL_VE_BIAS_REG;	/*!< Offset 0x0358 PLL_VE Bias Register */
+     volatile uint32_t PLL_VE_BIAS_REG;                /*!< Offset 0x0358 PLL_VE Bias Register */
  	         uint8_t reserved19 [0x001C];
- 	volatile uint32_t PLL_AUDIO0_BIAS_REG;	/*!< Offset 0x0378 PLL_AUDIO0 Bias Register */
+     volatile uint32_t PLL_AUDIO0_BIAS_REG;            /*!< Offset 0x0378 PLL_AUDIO0 Bias Register */
  	         uint8_t reserved20 [0x0004];
- 	volatile uint32_t PLL_AUDIO1_BIAS_REG;	/*!< Offset 0x0380 PLL_AUDIO1 Bias Register */
+     volatile uint32_t PLL_AUDIO1_BIAS_REG;            /*!< Offset 0x0380 PLL_AUDIO1 Bias Register */
  	         uint8_t reserved21 [0x007C];
- 	volatile uint32_t PLL_CPU_TUN_REG;	/*!< Offset 0x0400 PLL_CPU Tuning Register */
+     volatile uint32_t PLL_CPU_TUN_REG;                /*!< Offset 0x0400 PLL_CPU Tuning Register */
  	         uint8_t reserved22 [0x00FC];
- 	volatile uint32_t CPU_AXI_CFG_REG;	/*!< Offset 0x0500 CPU_AXI Configuration Register */
- 	volatile uint32_t CPU_GATING_REG;	/*!< Offset 0x0504 CPU_GATING Configuration Register */
+     volatile uint32_t CPU_AXI_CFG_REG;                /*!< Offset 0x0500 CPU_AXI Configuration Register */
+     volatile uint32_t CPU_GATING_REG;                 /*!< Offset 0x0504 CPU_GATING Configuration Register */
  	         uint8_t reserved23 [0x0008];
- 	volatile uint32_t PSI_CLK_REG;	/*!< Offset 0x0510 PSI Clock Register */
+     volatile uint32_t PSI_CLK_REG;                    /*!< Offset 0x0510 PSI Clock Register */
  	         uint8_t reserved24 [0x000C];
- 	volatile uint32_t APB0_CLK_REG;	/*!< Offset 0x0520 APB0 Clock Register */
- 	volatile uint32_t APB1_CLK_REG;	/*!< Offset 0x0524 APB1 Clock Register */
+     volatile uint32_t APB0_CLK_REG;                   /*!< Offset 0x0520 APB0 Clock Register */
+     volatile uint32_t APB1_CLK_REG;                   /*!< Offset 0x0524 APB1 Clock Register */
  	         uint8_t reserved25 [0x0018];
- 	volatile uint32_t MBUS_CLK_REG;	/*!< Offset 0x0540 MBUS Clock Register */
+     volatile uint32_t MBUS_CLK_REG;                   /*!< Offset 0x0540 MBUS Clock Register */
  	         uint8_t reserved26 [0x00BC];
- 	volatile uint32_t DE_CLK_REG;	/*!< Offset 0x0600 DE Clock Register */
+     volatile uint32_t DE_CLK_REG;                     /*!< Offset 0x0600 DE Clock Register */
  	         uint8_t reserved27 [0x0008];
- 	volatile uint32_t DE_BGR_REG;	/*!< Offset 0x060C DE Bus Gating Reset Register */
+     volatile uint32_t DE_BGR_REG;                     /*!< Offset 0x060C DE Bus Gating Reset Register */
  	         uint8_t reserved28 [0x0010];
- 	volatile uint32_t DI_CLK_REG;	/*!< Offset 0x0620 DI Clock Register */
+     volatile uint32_t DI_CLK_REG;                     /*!< Offset 0x0620 DI Clock Register */
  	         uint8_t reserved29 [0x0008];
- 	volatile uint32_t DI_BGR_REG;	/*!< Offset 0x062C DI Bus Gating Reset Register */
- 	volatile uint32_t G2D_CLK_REG;	/*!< Offset 0x0630 G2D Clock Register */
+     volatile uint32_t DI_BGR_REG;                     /*!< Offset 0x062C DI Bus Gating Reset Register */
+     volatile uint32_t G2D_CLK_REG;                    /*!< Offset 0x0630 G2D Clock Register */
  	         uint8_t reserved30 [0x0008];
- 	volatile uint32_t G2D_BGR_REG;	/*!< Offset 0x063C G2D Bus Gating Reset Register */
+     volatile uint32_t G2D_BGR_REG;                    /*!< Offset 0x063C G2D Bus Gating Reset Register */
  	         uint8_t reserved31 [0x0040];
- 	volatile uint32_t CE_CLK_REG;	/*!< Offset 0x0680 CE Clock Register */
+     volatile uint32_t CE_CLK_REG;                     /*!< Offset 0x0680 CE Clock Register */
  	         uint8_t reserved32 [0x0008];
- 	volatile uint32_t CE_BGR_REG;	/*!< Offset 0x068C CE Bus Gating Reset Register */
- 	volatile uint32_t VE_CLK_REG;	/*!< Offset 0x0690 VE Clock Register */
+     volatile uint32_t CE_BGR_REG;                     /*!< Offset 0x068C CE Bus Gating Reset Register */
+     volatile uint32_t VE_CLK_REG;                     /*!< Offset 0x0690 VE Clock Register */
  	         uint8_t reserved33 [0x0008];
- 	volatile uint32_t VE_BGR_REG;	/*!< Offset 0x069C VE Bus Gating Reset Register */
+     volatile uint32_t VE_BGR_REG;                     /*!< Offset 0x069C VE Bus Gating Reset Register */
  	         uint8_t reserved34 [0x006C];
- 	volatile uint32_t DMA_BGR_REG;	/*!< Offset 0x070C DMA Bus Gating Reset Register */
+     volatile uint32_t DMA_BGR_REG;                    /*!< Offset 0x070C DMA Bus Gating Reset Register */
  	         uint8_t reserved35 [0x000C];
- 	volatile uint32_t MSGBOX_BGR_REG;	/*!< Offset 0x071C MSGBOX Bus Gating Reset Register */
+     volatile uint32_t MSGBOX_BGR_REG;                 /*!< Offset 0x071C MSGBOX Bus Gating Reset Register */
  	         uint8_t reserved36 [0x000C];
- 	volatile uint32_t SPINLOCK_BGR_REG;	/*!< Offset 0x072C SPINLOCK Bus Gating Reset Register */
+     volatile uint32_t SPINLOCK_BGR_REG;               /*!< Offset 0x072C SPINLOCK Bus Gating Reset Register */
  	         uint8_t reserved37 [0x000C];
- 	volatile uint32_t HSTIMER_BGR_REG;	/*!< Offset 0x073C HSTIMER Bus Gating Reset Register */
- 	volatile uint32_t AVS_CLK_REG;	/*!< Offset 0x0740 AVS Clock Register */
+     volatile uint32_t HSTIMER_BGR_REG;                /*!< Offset 0x073C HSTIMER Bus Gating Reset Register */
+     volatile uint32_t AVS_CLK_REG;                    /*!< Offset 0x0740 AVS Clock Register */
  	         uint8_t reserved38 [0x0048];
- 	volatile uint32_t DBGSYS_BGR_REG;	/*!< Offset 0x078C DBGSYS Bus Gating Reset Register */
+     volatile uint32_t DBGSYS_BGR_REG;                 /*!< Offset 0x078C DBGSYS Bus Gating Reset Register */
  	         uint8_t reserved39 [0x001C];
- 	volatile uint32_t PWM_BGR_REG;	/*!< Offset 0x07AC PWM Bus Gating Reset Register */
+     volatile uint32_t PWM_BGR_REG;                    /*!< Offset 0x07AC PWM Bus Gating Reset Register */
  	         uint8_t reserved40 [0x000C];
- 	volatile uint32_t IOMMU_BGR_REG;	/*!< Offset 0x07BC IOMMU Bus Gating Reset Register */
+     volatile uint32_t IOMMU_BGR_REG;                  /*!< Offset 0x07BC IOMMU Bus Gating Reset Register */
  	         uint8_t reserved41 [0x0040];
- 	volatile uint32_t DRAM_CLK_REG;	/*!< Offset 0x0800 DRAM Clock Register */
- 	volatile uint32_t MBUS_MAT_CLK_GATING_REG;	/*!< Offset 0x0804 MBUS Master Clock Gating Register */
+     volatile uint32_t DRAM_CLK_REG;                   /*!< Offset 0x0800 DRAM Clock Register */
+     volatile uint32_t MBUS_MAT_CLK_GATING_REG;        /*!< Offset 0x0804 MBUS Master Clock Gating Register */
  	         uint8_t reserved42 [0x0004];
- 	volatile uint32_t DRAM_BGR_REG;	/*!< Offset 0x080C DRAM Bus Gating Reset Register */
+     volatile uint32_t DRAM_BGR_REG;                   /*!< Offset 0x080C DRAM Bus Gating Reset Register */
  	         uint8_t reserved43 [0x0020];
- 	volatile uint32_t SMHC0_CLK_REG;	/*!< Offset 0x0830 SMHC0 Clock Register */
- 	volatile uint32_t SMHC1_CLK_REG;	/*!< Offset 0x0834 SMHC1 Clock Register */
- 	volatile uint32_t SMHC2_CLK_REG;	/*!< Offset 0x0838 SMHC2 Clock Register */
+     volatile uint32_t SMHC0_CLK_REG;                  /*!< Offset 0x0830 SMHC0 Clock Register */
+     volatile uint32_t SMHC1_CLK_REG;                  /*!< Offset 0x0834 SMHC1 Clock Register */
+     volatile uint32_t SMHC2_CLK_REG;                  /*!< Offset 0x0838 SMHC2 Clock Register */
  	         uint8_t reserved44 [0x0010];
- 	volatile uint32_t SMHC_BGR_REG;	/*!< Offset 0x084C SMHC Bus Gating Reset Register */
+     volatile uint32_t SMHC_BGR_REG;                   /*!< Offset 0x084C SMHC Bus Gating Reset Register */
  	         uint8_t reserved45 [0x00BC];
- 	volatile uint32_t UART_BGR_REG;	/*!< Offset 0x090C UART Bus Gating Reset Register */
+     volatile uint32_t UART_BGR_REG;                   /*!< Offset 0x090C UART Bus Gating Reset Register */
  	         uint8_t reserved46 [0x000C];
- 	volatile uint32_t TWI_BGR_REG;	/*!< Offset 0x091C TWI Bus Gating Reset Register */
+     volatile uint32_t TWI_BGR_REG;                    /*!< Offset 0x091C TWI Bus Gating Reset Register */
  	         uint8_t reserved47 [0x0020];
- 	volatile uint32_t SPI0_CLK_REG;	/*!< Offset 0x0940 SPI0 Clock Register */
- 	volatile uint32_t SPI1_CLK_REG;	/*!< Offset 0x0944 SPI1 Clock Register */
+     volatile uint32_t SPI0_CLK_REG;                   /*!< Offset 0x0940 SPI0 Clock Register */
+     volatile uint32_t SPI1_CLK_REG;                   /*!< Offset 0x0944 SPI1 Clock Register */
  	         uint8_t reserved48 [0x0024];
- 	volatile uint32_t SPI_BGR_REG;	/*!< Offset 0x096C SPI Bus Gating Reset Register */
- 	volatile uint32_t EMAC_25M_CLK_REG;	/*!< Offset 0x0970 EMAC_25M Clock Register */
+     volatile uint32_t SPI_BGR_REG;                    /*!< Offset 0x096C SPI Bus Gating Reset Register */
+     volatile uint32_t EMAC_25M_CLK_REG;               /*!< Offset 0x0970 EMAC_25M Clock Register */
  	         uint8_t reserved49 [0x0008];
- 	volatile uint32_t EMAC_BGR_REG;	/*!< Offset 0x097C EMAC Bus Gating Reset Register */
+     volatile uint32_t EMAC_BGR_REG;                   /*!< Offset 0x097C EMAC Bus Gating Reset Register */
  	         uint8_t reserved50 [0x0040];
- 	volatile uint32_t IRTX_CLK_REG;	/*!< Offset 0x09C0 IRTX Clock Register */
+     volatile uint32_t IRTX_CLK_REG;                   /*!< Offset 0x09C0 IRTX Clock Register */
  	         uint8_t reserved51 [0x0008];
- 	volatile uint32_t IRTX_BGR_REG;	/*!< Offset 0x09CC IRTX Bus Gating Reset Register */
+     volatile uint32_t IRTX_BGR_REG;                   /*!< Offset 0x09CC IRTX Bus Gating Reset Register */
  	         uint8_t reserved52 [0x001C];
- 	volatile uint32_t GPADC_BGR_REG;	/*!< Offset 0x09EC GPADC Bus Gating Reset Register */
+     volatile uint32_t GPADC_BGR_REG;                  /*!< Offset 0x09EC GPADC Bus Gating Reset Register */
  	         uint8_t reserved53 [0x000C];
- 	volatile uint32_t THS_BGR_REG;	/*!< Offset 0x09FC THS Bus Gating Reset Register */
+     volatile uint32_t THS_BGR_REG;                    /*!< Offset 0x09FC THS Bus Gating Reset Register */
  	         uint8_t reserved54 [0x0014];
- 	volatile uint32_t I2S1_CLK_REG;	/*!< Offset 0x0A14 I2S1 Clock Register */
- 	volatile uint32_t I2S2_CLK_REG;	/*!< Offset 0x0A18 I2S2 Clock Register */
- 	volatile uint32_t I2S2_ASRC_CLK_REG;	/*!< Offset 0x0A1C I2S2_ASRC Clock Register */
- 	volatile uint32_t I2S_BGR_REG;	/*!< Offset 0x0A20 I2S Bus Gating Reset Register */
- 	volatile uint32_t OWA_TX_CLK_REG;	/*!< Offset 0x0A24 OWA_TX Clock Register */
- 	volatile uint32_t OWA_RX_CLK_REG;	/*!< Offset 0x0A28 OWA_RX Clock Register */
- 	volatile uint32_t OWA_BGR_REG;	/*!< Offset 0x0A2C OWA Bus Gating Reset Register */
+     volatile uint32_t I2S1_CLK_REG;                   /*!< Offset 0x0A14 I2S1 Clock Register */
+     volatile uint32_t I2S2_CLK_REG;                   /*!< Offset 0x0A18 I2S2 Clock Register */
+     volatile uint32_t I2S2_ASRC_CLK_REG;              /*!< Offset 0x0A1C I2S2_ASRC Clock Register */
+     volatile uint32_t I2S_BGR_REG;                    /*!< Offset 0x0A20 I2S Bus Gating Reset Register */
+     volatile uint32_t OWA_TX_CLK_REG;                 /*!< Offset 0x0A24 OWA_TX Clock Register */
+     volatile uint32_t OWA_RX_CLK_REG;                 /*!< Offset 0x0A28 OWA_RX Clock Register */
+     volatile uint32_t OWA_BGR_REG;                    /*!< Offset 0x0A2C OWA Bus Gating Reset Register */
  	         uint8_t reserved55 [0x0010];
- 	volatile uint32_t DMIC_CLK_REG;	/*!< Offset 0x0A40 DMIC Clock Register */
+     volatile uint32_t DMIC_CLK_REG;                   /*!< Offset 0x0A40 DMIC Clock Register */
  	         uint8_t reserved56 [0x0008];
- 	volatile uint32_t DMIC_BGR_REG;	/*!< Offset 0x0A4C DMIC Bus Gating Reset Register */
- 	volatile uint32_t AUDIO_CODEC_DAC_CLK_REG;	/*!< Offset 0x0A50 AUDIO_CODEC_DAC Clock Register */
- 	volatile uint32_t AUDIO_CODEC_ADC_CLK_REG;	/*!< Offset 0x0A54 AUDIO_CODEC_ADC Clock Register */
+     volatile uint32_t DMIC_BGR_REG;                   /*!< Offset 0x0A4C DMIC Bus Gating Reset Register */
+     volatile uint32_t AUDIO_CODEC_DAC_CLK_REG;        /*!< Offset 0x0A50 AUDIO_CODEC_DAC Clock Register */
+     volatile uint32_t AUDIO_CODEC_ADC_CLK_REG;        /*!< Offset 0x0A54 AUDIO_CODEC_ADC Clock Register */
  	         uint8_t reserved57 [0x0004];
- 	volatile uint32_t AUDIO_CODEC_BGR_REG;	/*!< Offset 0x0A5C AUDIO_CODEC Bus Gating Reset Register */
+     volatile uint32_t AUDIO_CODEC_BGR_REG;            /*!< Offset 0x0A5C AUDIO_CODEC Bus Gating Reset Register */
  	         uint8_t reserved58 [0x0010];
- 	volatile uint32_t USB0_CLK_REG;	/*!< Offset 0x0A70 USB0 Clock Register */
- 	volatile uint32_t USB1_CLK_REG;	/*!< Offset 0x0A74 USB1 Clock Register */
+     volatile uint32_t USB0_CLK_REG;                   /*!< Offset 0x0A70 USB0 Clock Register */
+     volatile uint32_t USB1_CLK_REG;                   /*!< Offset 0x0A74 USB1 Clock Register */
  	         uint8_t reserved59 [0x0014];
- 	volatile uint32_t USB_BGR_REG;	/*!< Offset 0x0A8C USB Bus Gating Reset Register */
+     volatile uint32_t USB_BGR_REG;                    /*!< Offset 0x0A8C USB Bus Gating Reset Register */
  	         uint8_t reserved60 [0x002C];
- 	volatile uint32_t DPSS_TOP_BGR_REG;	/*!< Offset 0x0ABC DPSS_TOP Bus Gating Reset Register */
+     volatile uint32_t DPSS_TOP_BGR_REG;               /*!< Offset 0x0ABC DPSS_TOP Bus Gating Reset Register */
  	         uint8_t reserved61 [0x0064];
- 	volatile uint32_t DSI_CLK_REG;	/*!< Offset 0x0B24 DSI Clock Register */
+     volatile uint32_t DSI_CLK_REG;                    /*!< Offset 0x0B24 DSI Clock Register */
  	         uint8_t reserved62 [0x0024];
- 	volatile uint32_t DSI_BGR_REG;	/*!< Offset 0x0B4C DSI Bus Gating Reset Register */
+     volatile uint32_t DSI_BGR_REG;                    /*!< Offset 0x0B4C DSI Bus Gating Reset Register */
  	         uint8_t reserved63 [0x0010];
- 	volatile uint32_t TCONLCD_CLK_REG;	/*!< Offset 0x0B60 TCONLCD Clock Register */
+     volatile uint32_t TCONLCD_CLK_REG;                /*!< Offset 0x0B60 TCONLCD Clock Register */
  	         uint8_t reserved64 [0x0018];
- 	volatile uint32_t TCONLCD_BGR_REG;	/*!< Offset 0x0B7C TCONLCD Bus Gating Reset Register */
- 	volatile uint32_t TCONTV_CLK_REG;	/*!< Offset 0x0B80 TCONTV Clock Register */
+     volatile uint32_t TCONLCD_BGR_REG;                /*!< Offset 0x0B7C TCONLCD Bus Gating Reset Register */
+     volatile uint32_t TCONTV_CLK_REG;                 /*!< Offset 0x0B80 TCONTV Clock Register */
  	         uint8_t reserved65 [0x0018];
- 	volatile uint32_t TCONTV_BGR_REG;	/*!< Offset 0x0B9C TCONTV Bus Gating Reset Register */
+     volatile uint32_t TCONTV_BGR_REG;                 /*!< Offset 0x0B9C TCONTV Bus Gating Reset Register */
  	         uint8_t reserved66 [0x000C];
- 	volatile uint32_t LVDS_BGR_REG;	/*!< Offset 0x0BAC LVDS Bus Gating Reset Register */
- 	volatile uint32_t TVE_CLK_REG;	/*!< Offset 0x0BB0 TVE Clock Register */
+     volatile uint32_t LVDS_BGR_REG;                   /*!< Offset 0x0BAC LVDS Bus Gating Reset Register */
+     volatile uint32_t TVE_CLK_REG;                    /*!< Offset 0x0BB0 TVE Clock Register */
  	         uint8_t reserved67 [0x0008];
- 	volatile uint32_t TVE_BGR_REG;	/*!< Offset 0x0BBC TVE Bus Gating Reset Register */
- 	volatile uint32_t TVD_CLK_REG;	/*!< Offset 0x0BC0 TVD Clock Register */
+     volatile uint32_t TVE_BGR_REG;                    /*!< Offset 0x0BBC TVE Bus Gating Reset Register */
+     volatile uint32_t TVD_CLK_REG;                    /*!< Offset 0x0BC0 TVD Clock Register */
  	         uint8_t reserved68 [0x0018];
- 	volatile uint32_t TVD_BGR_REG;	/*!< Offset 0x0BDC TVD Bus Gating Reset Register */
+     volatile uint32_t TVD_BGR_REG;                    /*!< Offset 0x0BDC TVD Bus Gating Reset Register */
  	         uint8_t reserved69 [0x0010];
- 	volatile uint32_t LEDC_CLK_REG;	/*!< Offset 0x0BF0 LEDC Clock Register */
+     volatile uint32_t LEDC_CLK_REG;                   /*!< Offset 0x0BF0 LEDC Clock Register */
  	         uint8_t reserved70 [0x0008];
- 	volatile uint32_t LEDC_BGR_REG;	/*!< Offset 0x0BFC LEDC Bus Gating Reset Register */
+     volatile uint32_t LEDC_BGR_REG;                   /*!< Offset 0x0BFC LEDC Bus Gating Reset Register */
  	         uint8_t reserved71 [0x0004];
- 	volatile uint32_t CSI_CLK_REG;	/*!< Offset 0x0C04 CSI Clock Register */
- 	volatile uint32_t CSI_MASTER_CLK_REG;	/*!< Offset 0x0C08 CSI Master Clock Register */
+     volatile uint32_t CSI_CLK_REG;                    /*!< Offset 0x0C04 CSI Clock Register */
+     volatile uint32_t CSI_MASTER_CLK_REG;             /*!< Offset 0x0C08 CSI Master Clock Register */
  	         uint8_t reserved72 [0x0010];
- 	volatile uint32_t CSI_BGR_REG;	/*!< Offset 0x0C1C CSI Bus Gating Reset Register */
+     volatile uint32_t CSI_BGR_REG;                    /*!< Offset 0x0C1C CSI Bus Gating Reset Register */
  	         uint8_t reserved73 [0x0030];
- 	volatile uint32_t TPADC_CLK_REG;	/*!< Offset 0x0C50 TPADC Clock Register */
+     volatile uint32_t TPADC_CLK_REG;                  /*!< Offset 0x0C50 TPADC Clock Register */
  	         uint8_t reserved74 [0x0008];
- 	volatile uint32_t TPADC_BGR_REG;	/*!< Offset 0x0C5C TPADC Bus Gating Reset Register */
+     volatile uint32_t TPADC_BGR_REG;                  /*!< Offset 0x0C5C TPADC Bus Gating Reset Register */
  	         uint8_t reserved75 [0x0010];
- 	volatile uint32_t DSP_CLK_REG;	/*!< Offset 0x0C70 DSP Clock Register */
+     volatile uint32_t DSP_CLK_REG;                    /*!< Offset 0x0C70 DSP Clock Register */
  	         uint8_t reserved76 [0x0008];
- 	volatile uint32_t DSP_BGR_REG;	/*!< Offset 0x0C7C DSP Bus Gating Reset Register */
+     volatile uint32_t DSP_BGR_REG;                    /*!< Offset 0x0C7C DSP Bus Gating Reset Register */
  	         uint8_t reserved77 [0x0284];
- 	volatile uint32_t PLL_LOCK_DBG_CTRL_REG;	/*!< Offset 0x0F04 PLL Lock Debug Control Register */
- 	volatile uint32_t FRE_DET_CTRL_REG;	/*!< Offset 0x0F08 Frequency Detect Control Register */
- 	volatile uint32_t FRE_UP_LIM_REG;	/*!< Offset 0x0F0C Frequency Up Limit Register */
- 	volatile uint32_t FRE_DOWN_LIM_REG;	/*!< Offset 0x0F10 Frequency Down Limit Register */
+     volatile uint32_t PLL_LOCK_DBG_CTRL_REG;          /*!< Offset 0x0F04 PLL Lock Debug Control Register */
+     volatile uint32_t FRE_DET_CTRL_REG;               /*!< Offset 0x0F08 Frequency Detect Control Register */
+     volatile uint32_t FRE_UP_LIM_REG;                 /*!< Offset 0x0F0C Frequency Up Limit Register */
+     volatile uint32_t FRE_DOWN_LIM_REG;               /*!< Offset 0x0F10 Frequency Down Limit Register */
  	         uint8_t reserved78 [0x001C];
- 	volatile uint32_t CCU_FAN_GATE_REG;	/*!< Offset 0x0F30 CCU FANOUT CLOCK GATE Register */
- 	volatile uint32_t CLK27M_FAN_REG;	/*!< Offset 0x0F34 CLK27M FANOUT Register */
- 	volatile uint32_t PCLK_FAN_REG;	/*!< Offset 0x0F38 PCLK FANOUT Register */
- 	volatile uint32_t CCU_FAN_REG;	/*!< Offset 0x0F3C CCU FANOUT Register */
- } CCU_TypeDef;
+     volatile uint32_t CCU_FAN_GATE_REG;               /*!< Offset 0x0F30 CCU FANOUT CLOCK GATE Register */
+     volatile uint32_t CLK27M_FAN_REG;                 /*!< Offset 0x0F34 CLK27M FANOUT Register */
+     volatile uint32_t PCLK_FAN_REG;                   /*!< Offset 0x0F38 PCLK FANOUT Register */
+     volatile uint32_t CCU_FAN_REG;                    /*!< Offset 0x0F3C CCU FANOUT Register */
+} CCU_TypeDef;
+
 
 /*
 * @brief UART
