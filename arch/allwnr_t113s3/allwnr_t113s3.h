@@ -1494,7 +1494,7 @@ typedef struct TCONLCD_Type
 	volatile uint32_t GAMMA_TABLE[256];		/* 0x400 */
 } TCONLCD_TypeDef;
 
-#define TCONLCD ((t113_tconlcd_reg_t *) T113_TCONLCD_BASE)
+#define TCONLCD ((TCONLCD_TypeDef *) T113_TCONLCD_BASE)
 /* Access pointers */
 
 #define UART0      ((UART_TypeDef *) UART0_BASE)
