@@ -207,7 +207,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 $(PROJECT)_app.alw32 app.hex
+all: APP2 $(PROJECT)_app.alw32
 
 allZ:
 	@echo Src
@@ -215,7 +215,7 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32 boot.hex
+bootloader: BOOT2 fsbl.alw32
   
 app_runBOOT: fsbl.alw32
 	./xfel-windows-v1.2.7/xfel write 0x00028000 fsbl.alw32
@@ -224,15 +224,13 @@ app_runBOOT: fsbl.alw32
 app_run: pboot.bin $(PROJECT)_app.bin
 	./xfel-windows-v1.2.7/xfel ddr t113-s3
 	./xfel-windows-v1.2.7/xfel write 0x00028000 pboot.bin
-	./xfel-windows-v1.2.7/xfel write 0x40000000 $(PROJECT)_app.bin
+	./xfel-windows-v1.2.7/xfel write 0x40000000 boottemplate.bin
+	./xfel-windows-v1.2.7/xfel write 0x40000100 $(PROJECT)_app.bin
 	./xfel-windows-v1.2.7/xfel exec 0x00028000 
 
 flash:
 	./xfel-windows-v1.2.7/xfel.exe spinor write 0x00000000 fsbl.alw32
 	./xfel-windows-v1.2.7/xfel.exe spinor write 0x00080000 $(PROJECT)_app.alw32
-
-flashXXXX: $(PROJECT)_app.alw32
-	./dfu-util --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.alw32
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
@@ -243,14 +241,8 @@ fsbl.alw32: $(PROJECT)_boot.bin
 	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 tc1_alwnrt113s3_boot.bin -w
 	./checksum.exe fsbl.alw32.tmp fsbl.alw32
 	
-boot.hex: fsbl.alw32
-	./bin2ihex -l 0x00000000 -s fsbl.alw32 >$@
-	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
 	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
-	
-app.hex: $(PROJECT)_app.alw32
-	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.alw32 >$@
 
 $(OBJSC):
 	@mkdir -p $(@D)

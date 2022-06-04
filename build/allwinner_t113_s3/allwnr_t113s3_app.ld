@@ -1,20 +1,10 @@
 /* $Id$ */
-/* ST STM32MP157AAB3/STM32MP157DAB1 memory layout */
+/* Allwinner T113-S3 layout */
 /* Linker script to configure memory regions. */
 
-/* Note: due to ROM code RAM needs, FSBL payload is limited to 247 KB.  */
-/* The ROM code loads the image into SYSRAM internal memory at address 0x2ffc2400.  */
-/*
-	https://community.st.com/s/question/0D50X0000BiDo0fSQC/stm32mp157aab-failed-to-boot-from-nor-qspi-baremetal?t=1575552683743
-	
-	Load address is ALWAYS 0x2FFC2400 for FSBL, whatever you put in the header (it is ignored for FSBL).
-	Entry point in the header could be anywhere after the header (i.e. 0x2FFC2500) and the end of the SYSRAM
-	I recommend to compile your FSBL SW to fit with a region starting from 0x2FFC2500 (with a size of max 247KB minus 256 for header).
-	Entry point will depend on your SW startup.s construction, it is not always at the very first address.
-*/
 MEMORY
 {
-  RAM (rwx) 	: ORIGIN = 0x40000000, LENGTH = 0x07FFC000 	/* DDR internal memory - 128 MB - 16 MB - 256 B*/
+  RAM (rwx) 	: ORIGIN = 0x40000100, LENGTH = 0x07FFBF00 	/* DDR internal memory - 128 MB - 16 MB - 256 B*/
   TTB (rwx)  	: ORIGIN = 0x47FFC000, LENGTH = 16k			/* last 16 kB DDR3 RAM for TTB */
   SYSRAM (rwx)	: ORIGIN = 0x00028000, LENGTH = 64k	/*  */
 }
