@@ -14,9 +14,9 @@
 */
 MEMORY
 {
-  RAM (rwx) 	: ORIGIN = 0x40000100, LENGTH = 0x06FFFF00 	/* DDR internal memory - 128 MB - 16 MB - 256 B*/
-  TTB (rwx)  	: ORIGIN = 0x47000000, LENGTH = 16M			/* last 16 MB DDR3 RAM for TTB */
-  SYSRAM (rwx)	: ORIGIN = 0x2FFC2500, LENGTH = 0x0003DB00	/* SYSRAM - 256 k - 9 k - 256 B */
+  RAM (rwx) 	: ORIGIN = 0x40000000, LENGTH = 0x07FFC000 	/* DDR internal memory - 128 MB - 16 MB - 256 B*/
+  TTB (rwx)  	: ORIGIN = 0x47FFC000, LENGTH = 16k			/* last 16 kB DDR3 RAM for TTB */
+  SYSRAM (rwx)	: ORIGIN = 0x00028000, LENGTH = 64k	/*  */
 }
 
 /* Library configurations */

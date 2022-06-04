@@ -215,21 +215,12 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2 fsbl.alw32 boot.hex
-
   
-app_run: $(PROJECT)_boot.bin loader.V3s
+app_run: loader.V3s $(PROJECT)_app.bin
 	./xfel-windows-v1.2.7/xfel ddr t113-s3
-	./xfel-windows-v1.2.7/xfel write 0x40000000 $(PROJECT)_boot.bin
+	./xfel-windows-v1.2.7/xfel write 0x40000000 $(PROJECT)_app.bin
 	./xfel-windows-v1.2.7/xfel write 0x00028000 loader.V3s
 	./xfel-windows-v1.2.7/xfel exec 0x00028000 
-  
-app_runZZZ: led_t.bin
-	./xfel-windows-v1.2.7/xfel write 0x00028000 led_t.bin
-	./xfel-windows-v1.2.7/xfel exec 0x00028000
-  
-app_runXXXX: $(PROJECT)_app.alw32
-	./xfel-windows-v1.2.7/xfel write 0x00028000 $(PROJECT)_app.alw32
-	./xfel-windows-v1.2.7/xfel exec 0x00028000
 
 flash: $(PROJECT)_app.alw32
 	./dfu-util --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.alw32

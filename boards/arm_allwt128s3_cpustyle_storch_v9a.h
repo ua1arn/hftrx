@@ -16,7 +16,7 @@
 //#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 //#define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
-//#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
+#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */
 //#define WITHDMA2DHW		1	/* Использование DMA2D для формирования изображений	- у STM32MP1 его нет */
 
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
@@ -529,8 +529,8 @@
 
 #if WITHSPIHW || WITHSPISW
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ALLCS_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
-	#define SPI_ALLCS_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
+	#define SPI_ALLCS_PORT_S(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
+	#define SPI_ALLCS_PORT_C(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
 
 	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
 	#define targetxad2		(1uL << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
@@ -565,19 +565,19 @@
 	/* инициализация лиий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() \
 		do { \
-			arm_hardware_pioe_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); \
+			/*arm_hardware_pioe_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); */\
 		} while (0)
 
 	// MOSI & SCK port
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
-	#define	SPI_SCLK_BIT			(1uL << 3)	// * PB3 бит, через который идет синхронизация SPI
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { } while (0) //do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { } while (0) //do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
+	#define	SPI_SCLK_BIT			(0*1uL << 3)	// * PB3 бит, через который идет синхронизация SPI
 
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
-	#define	SPI_MOSI_BIT			(1uL << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+	#define SPI_TARGET_MOSI_PORT_C(v)	do { } while (0) //do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
+	#define SPI_TARGET_MOSI_PORT_S(v)	do { } while (0) //do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
+	#define	SPI_MOSI_BIT			(0*1uL << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
-	#define SPI_TARGET_MISO_PIN		(GPIOB->IDR)
+	#define SPI_TARGET_MISO_PIN		0//(GPIOB->IDR)
 	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
@@ -596,10 +596,10 @@
 			arm_hardware_piob_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	/* PIO disable for MOSI bit */ \
+			/*arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	*//* PIO disable for MOSI bit */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	/* PIO enable for MOSI bit */ \
+			/*arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	*//* PIO enable for MOSI bit */ \
 		} while (0)
 #else
 	#define targetext1		(0)		// PE8 ext1 on front panel
