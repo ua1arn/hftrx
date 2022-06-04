@@ -806,7 +806,7 @@ static void arm_alwnr_pioX_prog(
 	gpio->DRV [2] = (gpio->DRV [2] & ~ mask2) | (drv * mask2);
 	gpio->DRV [3] = (gpio->DRV [3] & ~ mask3) | (drv * mask3);
 
-	// 0x01 = pull-up, 0x02 - pull-down
+	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1) | (pull * pull1);
 }
@@ -817,7 +817,6 @@ static void arm_alwnr_pioX_updown(
 	unsigned long iodown
 	)
 {
-	// 0x01 = pull-up, 0x02 - pull-down
 	const portholder_t iopins = ioup | iodown;
 	const portholder_t pull0 = power2(iopins >> 0);				/* PULL0 bits */
 	const portholder_t pull0up = power2(ioup >> 0);
@@ -826,7 +825,7 @@ static void arm_alwnr_pioX_updown(
 	const portholder_t pull1up = power2(ioup >> 16);
 	const portholder_t pull1down = power2(iodown >> 16);
 
-	// 0x01 = pull-up, 0x02 - pull-down
+	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0) | (0x01 * pull0up) | (0x02 * pull0down);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1) | (0x01 * pull1up) | (0x02 * pull1down);
 }

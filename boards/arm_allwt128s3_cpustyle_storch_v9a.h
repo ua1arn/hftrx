@@ -1079,22 +1079,17 @@
 
 	#endif
 
-	#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - led on Storch board
-	//#define BOARD_BLINK_BIT (1uL << 13)	// PA13 - RED LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BIT (1uL << 14)	// PA14 - GREEN LED LD5 on DK1/DK2 MB1272.pdf
-	//#define BOARD_BLINK_BIT (1uL << 14)	// PD14 - LED on small board
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PI11 - LED1# on PanGu board
-	//#define BOARD_BLINK_BIT (1uL << 11)	// PH6 - LED2# on PanGu board
+	#define BOARD_BLINK_BIT (1uL << 22)	// PD22 (PWM7) - led on mq-r board (from VCC33
 
-#if 0
+#if 1
 	#define BOARD_BLINK_INITIALIZE() do { \
-			arm_hardware_pioa_outputs(BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
+			arm_hardware_piod_outputs(BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOA)->BSRR = BSRR_S(BOARD_BLINK_BIT); \
+				(GPIOD)->DATA &= ~ BOARD_BLINK_BIT; \
 			else \
-				(GPIOA)->BSRR = BSRR_C(BOARD_BLINK_BIT); \
+				(GPIOD)->DATA |= BOARD_BLINK_BIT; \
 		} while (0)
 #endif
 
@@ -1121,6 +1116,7 @@
 			USBD_EHCI_INITIALIZE(); \
 		} while (0)
 	#define	HARDWARE_INITIALIZE() do { \
+		BOARD_BLINK_INITIALIZE(); \
 		} while (0)
 
 #endif /* ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED */

@@ -3179,6 +3179,17 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+#if CPUSTYPE_ALLWNT113
+	for (;;)
+	{
+#if defined (BOARD_BLINK_SETSTATE)
+		BOARD_BLINK_SETSTATE(1);
+		local_delay_ms(100);
+		BOARD_BLINK_SETSTATE(0);
+		local_delay_ms(500);
+#endif /* defined (BOARD_BLINK_SETSTATE) */
+	}
+#endif /* CPUSTYPE_ALLWNT113 */
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_debug_initialize();

@@ -215,9 +215,16 @@ allZ:
 	@echo $(abspath $(OBJS))
 
 bootloader: BOOT2 fsbl.alw32 boot.hex
+
   
-app_run: led_t.bin
-	./xfel-windows-v1.2.7/xfel write 0x00028000 led_t.bin
+app_run: $(PROJECT)_boot.bin loader.V3s
+	./xfel-windows-v1.2.7/xfel ddr t113-s3
+	./xfel-windows-v1.2.7/xfel write 0x40000000 app.bin
+	./xfel-windows-v1.2.7/xfel write 0x00028000 loader.V3s
+	./xfel-windows-v1.2.7/xfel exec 0x00028000 
+  
+app_runXX: fsbl.alw32
+	./xfel-windows-v1.2.7/xfel write 0x00028000 fsbl.alw32
 	./xfel-windows-v1.2.7/xfel exec 0x00028000
   
 app_runXXXX: $(PROJECT)_app.alw32
@@ -232,7 +239,12 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
-	./stm32image -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
+	./filler.exe $(PROJECT)_boot.bin led.fil1
+	./checksum.exe led.fil1 fsbl.alw32
+
+fsbl22222.alw32: $(PROJECT)_boot.bin
+	./filler.exe $(PROJECT)_boot.bin led.fil1
+	./checksum.exe led.fil1 fsbl.alw32
 	
 boot.hex: fsbl.alw32
 	./bin2ihex -l 0x00000000 -s fsbl.alw32 >$@
