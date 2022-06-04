@@ -2760,7 +2760,11 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYPE_ALLWNT113
 
-	#warning ttb_accessbits: Unhandled CPUSTYPE_ALLWNT113
+	if (a >= 0x40000000uL && a < 0x48000000uL)			//  DDR3 - 128 MB
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+	if (a >= 0x000028000 && a < 0x000038000)			//  SYSRAM - 64 kB
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
 	return addrbase | TTB_PARA_DEVICE;
 
 #else
@@ -3180,25 +3184,6 @@ FLASHMEMINITFUNC
 SystemInit(void)
 {
 	sysinit_fpu_initialize();
-#if CPUSTYPE_ALLWNT113
-
-	HARDWARE_DEBUG_INITIALIZE();
-	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
-	PRINTF("Hello3, ua1arn!\n");
-	PRINTF("Hello4, ua1arn again!\n");
-	TP();
-
-	BOARD_BLINK_INITIALIZE();
-	for (;;)
-	{
-#if defined (BOARD_BLINK_SETSTATE)
-		BOARD_BLINK_SETSTATE(1);
-		local_delay_ms(100);
-		BOARD_BLINK_SETSTATE(0);
-		local_delay_ms(500);
-#endif /* defined (BOARD_BLINK_SETSTATE) */
-	}
-#endif /* CPUSTYPE_ALLWNT113 */
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
