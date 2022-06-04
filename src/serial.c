@@ -745,8 +745,9 @@ hardware_uart1_getchar(char * cp)
 
 #elif CPUSTYPE_ALLWNT113
 
-	#warning Undefined CPUSTYLE_XXX
-	return 0;
+	if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
+		return 0;
+	* cp = UART0->DATA;
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -851,7 +852,7 @@ hardware_uart1_putchar(uint_fast8_t c)
 
 #elif CPUSTYPE_ALLWNT113
 
-	if ((UART0->UART_USR & (0x1 << 1)) == 0)
+	if ((UART0->UART_USR & (0x1uL << 1)) == 0)	// TX FIFO Not Full
 		return 0;
 	UART0->DATA = c;
 
