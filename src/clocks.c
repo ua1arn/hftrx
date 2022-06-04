@@ -6062,9 +6062,9 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 static inline void sdelay(int loops)
 {
-
-	__asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"
-		"bne 1b":"=r" (loops):"0"(loops));
+	local_delay_ms(10);
+//	__asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"
+//		"bne 1b":"=r" (loops):"0"(loops));
 }
 
 static void set_pll_cpux_axi(void)

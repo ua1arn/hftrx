@@ -1602,7 +1602,7 @@ void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint
 	GIC_SetTarget(int_id, targetcpu);
 
 
-	#if CPUSTYLE_STM32MP1
+	#if CPUSTYLE_STM32MP1 || CPUSTYPE_ALLWNT113
 		// peripheral (hardware) interrupts using the GIC 1-N model.
 		uint_fast32_t cfg = GIC_GetConfiguration(int_id);
 		cfg &= ~ 0x02;	/* Set level sensitive configuration */
