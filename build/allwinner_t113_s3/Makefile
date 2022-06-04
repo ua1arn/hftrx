@@ -223,12 +223,11 @@ app_runBOOT: fsbl.alw32
 	$(XFEL) write 0x00028000 fsbl.alw32
 	$(XFEL) exec 0x00028000 
   
-app_run: pboot.bin $(PROJECT)_app.bin
+app_run: boot256.bin $(PROJECT)_app.bin
 	$(XFEL) ddr t113-s3
-	$(XFEL) write 0x00028000 pboot.bin
-	$(XFEL) write 0x40000000 boottemplate.bin
+	$(XFEL) write 0x40000000 boot256.bin
 	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
-	$(XFEL) exec 0x00028000 
+	$(XFEL) exec 0x40000000 
 
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
