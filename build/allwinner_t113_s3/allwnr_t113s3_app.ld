@@ -181,7 +181,7 @@ SECTIONS
 		KEEP(*(.dtcm*))
 		. = ALIGN(32);
 		__data2_end__ = .;
-	} > SYSRAM
+	} > RAM /* was: STSRAN */
 
 	. = __etext2 + __data2_end__ - __data2_start__;
 
