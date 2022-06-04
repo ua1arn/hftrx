@@ -1536,6 +1536,7 @@ typedef struct TCONLCD_Type
 #define RTC			((RTC_TypeDef *) RTC_BASE)
 #define THS			((THS_TypeDef *) THS_BASE)
 #define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)
+#define CCU			((CCU_TypeDef *) CCU_BASE)
 
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
