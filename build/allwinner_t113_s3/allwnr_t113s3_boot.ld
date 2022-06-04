@@ -4,7 +4,8 @@
 
 MEMORY
 {
-  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x00013F00		/*  */
+  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x0007F00		/*  */
+  RAM2 (rwx): ORIGIN = 0x00030000, LENGTH = 16k		/*  */
   TTB (rwx) : ORIGIN = 0x00034000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
   DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 128M	/*  */
 }
@@ -173,14 +174,14 @@ SECTIONS
 		KEEP(*(COMMON))
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
+	} > RAM2
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
 		KEEP(*(.noinit*))
 		. = ALIGN(32);
-	} > RAM
+	} > RAM2
 
 	.vram (NOLOAD):
 	{
@@ -196,7 +197,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > DDR3
+	} > RAM2
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign
