@@ -1821,6 +1821,11 @@ unsigned long allwnr_t128s3_get_arm_freq(void)
 	return 800000000uL;
 }
 
+unsigned long allwnr_t128s3_get_pl1_timer_freq(void)
+{
+	return 800000000uL;
+}
+
 #endif /* CPUSTYLE_STM32MP1 */
 
 
@@ -2293,6 +2298,56 @@ void hardware_spi_io_delay(void)
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
+#elif CPUSTYPE_ALLWNT113
+
+//	#if WITHELKEY
+//
+//	// 1/20 dot length interval timer
+//	void
+//	TIM3_IRQHandler(void)
+//	{
+//		const portholder_t st = TIM3->SR;
+//		if ((st & TIM_SR_UIF) != 0)
+//		{
+//			TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+//			spool_elkeybundle();
+//		}
+//		else
+//		{
+//			ASSERT(0);
+//		}
+//	}
+//	#endif /* WITHELKEY */
+//
+//	void
+//	TIM5_IRQHandler(void)
+//	{
+//		const portholder_t st = TIM5->SR;
+//		if ((st & TIM_SR_UIF) != 0)
+//		{
+//			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+//			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+//			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+//		}
+//		else
+//		{
+//			ASSERT(0);
+//		}
+//	}
+
+	static uint_fast32_t gtimloadvalue;
+
+	void
+	SecurePhysicalTimer_IRQHandler(void)
+	{
+		TP();
+		//IRQ_ClearPending (SecurePhysicalTimer_IRQn);
+		PL1_SetLoadValue(gtimloadvalue);
+
+		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+	}
+
 #elif CPUSTYLE_R7S721
 
 	// Таймер "тиков"
@@ -2662,6 +2717,22 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	PL1_SetControl(PL1_GetControl() | 0x01);
 
 	//arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
+
+#elif CPUSTYPE_ALLWNT113
+	// Prepare funcionality: use CNTP
+	const uint_fast32_t gtimfreq = allwnr_t128s3_get_pl1_timer_freq();
+
+	PL1_SetCounterFrequency(gtimfreq);	// CNTFRQ
+
+	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
+	// Private timer use
+	// Disable Private Timer and set load value
+	PL1_SetControl(PL1_GetControl() & ~ 0x01);	// CNTP_CTL
+	PL1_SetLoadValue(gtimloadvalue);	// CNTP_TVAL
+	// Enable timer control
+	PL1_SetControl(PL1_GetControl() | 0x01);
+
+	arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
 
 #elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
