@@ -216,7 +216,7 @@ allZ:
 
 bootloader: BOOT2 fsbl.alw32 boot.hex
   
-app_runAAA: fsbl.alw32
+app_runBOOT: fsbl.alw32
 	./xfel-windows-v1.2.7/xfel write 0x00028000 fsbl.alw32
 	./xfel-windows-v1.2.7/xfel exec 0x00028000 
   
@@ -226,7 +226,11 @@ app_run: pboot.bin $(PROJECT)_app.bin
 	./xfel-windows-v1.2.7/xfel write 0x40000000 $(PROJECT)_app.bin
 	./xfel-windows-v1.2.7/xfel exec 0x00028000 
 
-flash: $(PROJECT)_app.alw32
+flash:
+	./xfel-windows-v1.2.7/xfel.exe spinor write 0x00000000 fsbl.alw32
+	./xfel-windows-v1.2.7/xfel.exe spinor write 0x00080000 $(PROJECT)_app.alw32
+
+flashXXXX: $(PROJECT)_app.alw32
 	./dfu-util --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.alw32
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
@@ -242,7 +246,7 @@ boot.hex: fsbl.alw32
 	./bin2ihex -l 0x00000000 -s fsbl.alw32 >$@
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
-	./stm32image -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
+	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 	
 app.hex: $(PROJECT)_app.alw32
 	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.alw32 >$@

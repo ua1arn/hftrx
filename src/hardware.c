@@ -2786,6 +2786,7 @@ sysinit_ttbr_initialize(void)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
+	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
 
 #if 0
 	/* Set location of level 1 page table
@@ -3027,6 +3028,7 @@ static void FLASHMEMINITFUNC
 sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
+
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
@@ -3095,7 +3097,7 @@ sysinit_mmu_initialize(void)
 
 #endif /* (__CORTEX_A != 0) */
 
-	//PRINTF("MMU initialized\n");
+	//PRINTF("sysinit_mmu_initialize done.\n");
 }
 
 // ОБщая для всех процессоров инициализация

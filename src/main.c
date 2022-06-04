@@ -23659,11 +23659,13 @@ static uint_fast8_t bootloader_copyapp(
 	volatile struct stm32_header * const hdr = (volatile struct stm32_header *) tmpbuff;
 
 	bootloader_readimage(appoffset, tmpbuff, HEADERSIZE);
+	//printhex(appoffset, tmpbuff, HEADERSIZE);
 	if (hdr->magic_number != HEADER_MAGIC)
 		return 1;
 	* ip = hdr->image_entry_point;
+	PRINTF("bootloader_copyapp: ip=%08lX (addr=%08lX, len=%08lX)\n", (unsigned long) * ip, hdr->load_address, hdr->image_length);
 	bootloader_readimage(appoffset + HEADERSIZE, (void *) hdr->load_address, hdr->image_length);
-
+	PRINTF("bootloader_copyapp done.\n");
 	return 0;
 }
 
@@ -23930,6 +23932,7 @@ static void bootloader_mainloop(void)
 	board_update();
 
 #if BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT)
+
 	if (BOARD_IS_USERBOOT() == 0)
 	{
 		/* Нет запроса на вход в режим загрузчика - грузим с QSPI FLASH */
@@ -23945,12 +23948,14 @@ static void bootloader_mainloop(void)
 			if (usbactivated)
 				board_usb_deactivate();
 	#endif /* WITHUSBHW */
+			PRINTF("bootloader_mainloop: ip=%08lX\n", (unsigned long) ip);
 			bootloader_launch_app(ip);
 
 		} while (0);
 	}
 #endif /* BOOTLOADER_RAMSIZE && defined (BOARD_IS_USERBOOT) */
 
+	PRINTF("bootloader_mainloop: loop\n");
 	/* Обеспечение работы USB DFU */
 	for (;;)
 	{
