@@ -2760,6 +2760,9 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYPE_ALLWNT113
 
+	if (a < 0x00100000uL)			// BOOT
+		return addrbase | TTB_PARA_NO_ACCESS;			// NULL pointers access trap
+
 	if (a >= 0x40000000uL && a < 0x48000000uL)			//  DDR3 - 128 MB
 		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
 	if (a >= 0x000028000 && a < 0x000038000)			//  SYSRAM - 64 kB
