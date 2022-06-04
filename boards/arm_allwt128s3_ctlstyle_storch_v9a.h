@@ -26,8 +26,12 @@
 
 	#define LSEFREQ 32768uL
 
+	#define BOARD_HOSC_FREQ 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+
+	//#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
+	#define PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
 
 	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
