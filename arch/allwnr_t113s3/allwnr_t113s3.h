@@ -243,8 +243,8 @@ typedef enum IRQn
 #define __L2C_PRESENT                 0U      /*!< Set to 1 if L2C is present                  */
 
 #define GIC_BASE             0x03020000
-#define GIC_DISTRIBUTOR_BASE GIC_BASE
-#define GIC_INTERFACE_BASE   (GIC_BASE+0x1000)
+#define GIC_DISTRIBUTOR_BASE (GIC_BASE + 0x1000)
+#define GIC_INTERFACE_BASE   (GIC_BASE + 0x2000)
 
 #include "core_ca.h"
 #include "system_allwnr_t113s3.h"
