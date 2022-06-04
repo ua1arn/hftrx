@@ -216,10 +216,14 @@ allZ:
 
 bootloader: BOOT2 fsbl.alw32 boot.hex
   
-app_run: loader.V3s $(PROJECT)_app.bin
+app_runAAA: fsbl.alw32
+	./xfel-windows-v1.2.7/xfel write 0x00028000 fsbl.alw32
+	./xfel-windows-v1.2.7/xfel exec 0x00028000 
+  
+app_run: pboot.bin $(PROJECT)_app.bin
 	./xfel-windows-v1.2.7/xfel ddr t113-s3
+	./xfel-windows-v1.2.7/xfel write 0x00028000 pboot.bin
 	./xfel-windows-v1.2.7/xfel write 0x40000000 $(PROJECT)_app.bin
-	./xfel-windows-v1.2.7/xfel write 0x00028000 loader.V3s
 	./xfel-windows-v1.2.7/xfel exec 0x00028000 
 
 flash: $(PROJECT)_app.alw32
@@ -230,12 +234,9 @@ BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
-	./filler.exe $(PROJECT)_boot.bin led.fil1
-	./checksum.exe led.fil1 fsbl.alw32
-
-fsbl22222.alw32: $(PROJECT)_boot.bin
-	./filler.exe $(PROJECT)_boot.bin led.fil1
-	./checksum.exe led.fil1 fsbl.alw32
+	cp boottemplate.bin fsbl.alw32.tmp
+	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 tc1_alwnrt113s3_boot.bin -w
+	./checksum.exe fsbl.alw32.tmp fsbl.alw32
 	
 boot.hex: fsbl.alw32
 	./bin2ihex -l 0x00000000 -s fsbl.alw32 >$@

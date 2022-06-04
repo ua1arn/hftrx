@@ -4,10 +4,8 @@
 
 MEMORY
 {
-  RAM (rwx)	: ORIGIN = 0x40000000, LENGTH = 1M		/*  */
-  TTB (rwx) : ORIGIN = 0x40100000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
-  RAMx (rwx)	: ORIGIN = 0x00028000, LENGTH = 48k		/*  */
-  TTBx (rwx) : ORIGIN = 0x00034000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
+  RAM (rwx)	: ORIGIN = 0x00028100, LENGTH = 0x0BF00		/*  */
+  TTB (rwx) : ORIGIN = 0x00034000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
   DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 128M	/*  */
 }
 

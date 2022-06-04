@@ -49,7 +49,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	////#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	////#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -663,7 +663,7 @@
 
 #endif /* WITHKEYBOARD */
 
-#if 1 // WITHTWISW
+#if WITHTWISW
 	// I2C1_SDA	PB11
 	// I2C1_SCL	PD7
 	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
