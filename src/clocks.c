@@ -2456,7 +2456,6 @@ void hardware_spi_io_delay(void)
 	void
 	SecurePhysicalTimer_IRQHandler(void)
 	{
-		TP();
 		//IRQ_ClearPending (SecurePhysicalTimer_IRQn);
 		PL1_SetLoadValue(gtimloadvalue);
 
@@ -2827,12 +2826,13 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
 	// Private timer use
 	// Disable Private Timer and set load value
-	PL1_SetControl(PL1_GetControl() & ~ 0x01);	// CNTP_CTL
+	PL1_SetControl(0);	// CNTP_CTL
 	PL1_SetLoadValue(gtimloadvalue);	// CNTP_TVAL
-	// Enable timer control
-	PL1_SetControl(PL1_GetControl() | 0x01);
 
 	//arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
+
+	// Enable timer control
+	PL1_SetControl(1);
 
 #elif CPUSTYPE_ALLWNT113
 	// Prepare funcionality: use CNTP
@@ -2843,12 +2843,13 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
 	// Private timer use
 	// Disable Private Timer and set load value
-	PL1_SetControl(PL1_GetControl() & ~ 0x01);	// CNTP_CTL
+	PL1_SetControl(0);	// CNTP_CTL
 	PL1_SetLoadValue(gtimloadvalue);	// CNTP_TVAL
-	// Enable timer control
-	PL1_SetControl(PL1_GetControl() | 0x01);
 
 	arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
+
+	// Enable timer control
+	PL1_SetControl(1);
 
 #elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
