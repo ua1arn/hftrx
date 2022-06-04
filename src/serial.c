@@ -295,7 +295,20 @@ void nmea_disconnect(void)
 	static RAMFUNC_NONILINE void UART0_IRQHandler(void)
 	{
 	#if WITHUART1HW
-		TP();
+		const uint_fast32_t ier = UART0->DLH_IER;
+		const uint_fast32_t usr = UART0->UART_USR;
+		if ((UART0->UART_USR & (0x1uL << 3)) == 0)	// RX FIFO Not Empty
+
+		if (ier & (0x01uL << 0))	// ERBFI Enable Received Data Available Interrupt
+		{
+			if (usr & (0x1uL << 3))	// RX FIFO Not Empty
+				HARDWARE_UART1_ONRXCHAR(UART0->DATA);
+		}
+		if (ier & (0x01uL << 1))	// ETBEI Enable Transmit Holding Register Empty Interrupt
+		{
+			if (usr & (0x1uL << 1))	// TX FIFO Not Full
+				HARDWARE_UART1_ONTXCHAR(UART0);
+		}
 	#endif /* WITHUART1HW */
 	}
 
