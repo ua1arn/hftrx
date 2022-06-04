@@ -801,15 +801,15 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ	800000000uL //(allwnr_t128s3_get_arm_freq())
-	#define BOARD_SPI_FREQ 10000000uL //(allwnr_t128s3_get_spi_freq())
+	#define CPU_FREQ	(allwnr_t128s3_get_arm_freq())
+	#define BOARD_SPI_FREQ (allwnr_t128s3_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12
 
-	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEED (12000000uL)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
+	#define SPISPEEDUFAST 12000000uL	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
 	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 

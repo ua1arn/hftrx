@@ -1811,6 +1811,16 @@ unsigned long allwnrt113_get_usart_freq(void)
 	return 24000000uL;
 }
 
+unsigned long allwnr_t128s3_get_spi_freq(void)
+{
+	return 24000000uL;
+}
+
+unsigned long allwnr_t128s3_get_arm_freq(void)
+{
+	return 800000000uL;
+}
+
 #endif /* CPUSTYLE_STM32MP1 */
 
 
