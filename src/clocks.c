@@ -6253,7 +6253,7 @@ void sys_clock_init(void)
 	//set_pll_cpux_axi(); // в оригинале закомментировано
 	set_pll_periph0();
 	set_ahb();
-	set_apb();
+	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
 	set_dma();
 	set_mbus();
 	set_module(& CCU->PLL_PERI_CTRL_REG);
