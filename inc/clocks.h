@@ -148,5 +148,7 @@ unsigned long hardware_get_apb1_tim_freq(void);
 unsigned long hardware_get_apb2_freq(void);
 unsigned long hardware_get_apb2_tim_freq(void);
 
+// Allwinner T113-S3
+unsigned long allwnrt113_get_usart_freq(void);
 
 #endif /* INC_CLOCKS_H_ */

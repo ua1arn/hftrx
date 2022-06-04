@@ -36,13 +36,13 @@
 //#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
 
 #if WITHDEBUG
-	#define WITHUART2HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
-	#define WITHUARTFIFO	1	/* испольование FIFO */
+	#define WITHUART1HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
 //#define WITHCAT_USART1		1
-#define WITHDEBUG_USART2	1
-#define WITHNMEA_USART2		1	/* порт подключения GPS/GLONASS */
+#define WITHDEBUG_USART1	1
+#define WITHNMEA_USART1		1	/* порт подключения GPS/GLONASS */
 
 // OHCI at USB1HSFSP2_BASE
 ////#define WITHUSBHW_OHCI ((struct ohci_registers *) USB1HSFSP2_BASE)
@@ -613,12 +613,13 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART1HW
+// GPIOE2 и GPIOE3 = txd0 и rxd0
 #define HARDWARE_UART1_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = 0 * (1uL << 11); /* PG11: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = 0 * (1uL << 2); /* PB2: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piog_altfn2(TXMASK, AF_USART1); /* AF4 */ \
-		arm_hardware_piob_altfn2(RXMASK, AF_USART1); /* AF4 */ \
-		arm_hardware_piob_updown(RXMASK, 0); \
+		const uint_fast32_t TXMASK = (1uL << 2); /* GPIOE2 = txd0 */ \
+		const uint_fast32_t RXMASK = (1uL << 3); /* GPIOE3 = rxd0 - pull-up RX data */  \
+		arm_hardware_pioe_altfn2(TXMASK,	GPIO_CFG_AF6); \
+		arm_hardware_pioe_altfn2(RXMASK,	GPIO_CFG_AF6); \
+		arm_hardware_pioe_updown(RXMASK, 0); \
 	} while (0)
 
 // WITHUART2HW

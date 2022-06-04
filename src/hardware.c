@@ -72,7 +72,7 @@ void xc7z_hardware_initialize(void)
 float xc7z_get_cpu_temperature(void)
 {
 #if ! WITHISBOOTLOADER
-	u32 TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
+	uint32_t TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
 	return XAdcPs_RawToTemperature(TempRawData);
 #else
 	return 0;
@@ -3179,7 +3179,16 @@ void
 FLASHMEMINITFUNC
 SystemInit(void)
 {
+	sysinit_fpu_initialize();
 #if CPUSTYPE_ALLWNT113
+
+	HARDWARE_DEBUG_INITIALIZE();
+	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
+	PRINTF("Hello3, ua1arn!\n");
+	PRINTF("Hello4, ua1arn again!\n");
+	TP();
+
+	BOARD_BLINK_INITIALIZE();
 	for (;;)
 	{
 #if defined (BOARD_BLINK_SETSTATE)
@@ -3190,7 +3199,6 @@ SystemInit(void)
 #endif /* defined (BOARD_BLINK_SETSTATE) */
 	}
 #endif /* CPUSTYPE_ALLWNT113 */
-	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();

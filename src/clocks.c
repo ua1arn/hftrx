@@ -1802,6 +1802,15 @@ unsigned long hardware_get_spi_freq(void)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
+#elif CPUSTYPE_ALLWNT113
+
+#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+
+unsigned long allwnrt113_get_usart_freq(void)
+{
+	return 24000000uL;
+}
+
 #endif /* CPUSTYLE_STM32MP1 */
 
 
@@ -11051,8 +11060,16 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART0->CR = r;
 
+#elif CPUSTYPE_ALLWNT113
+
+	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
+
+	UART0->UART_LCR |= (1 << 7);
+	UART0->DATA = divisor & 0xff;
+	UART0->DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_LCR &= ~ (1 << 7);
 #else
-	#warning Undefined CPUSTYLE_XXX
+	#error Undefined CPUSTYLE_XXX
 #endif
 
 }
