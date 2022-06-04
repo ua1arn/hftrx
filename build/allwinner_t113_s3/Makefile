@@ -19,6 +19,8 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
+XFEL = ./xfel-windows-v1.2.7/xfel
+
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
@@ -218,19 +220,19 @@ allZ:
 bootloader: BOOT2 fsbl.alw32
   
 app_runBOOT: fsbl.alw32
-	./xfel-windows-v1.2.7/xfel write 0x00028000 fsbl.alw32
-	./xfel-windows-v1.2.7/xfel exec 0x00028000 
+	$(XFEL) write 0x00028000 fsbl.alw32
+	$(XFEL) exec 0x00028000 
   
 app_run: pboot.bin $(PROJECT)_app.bin
-	./xfel-windows-v1.2.7/xfel ddr t113-s3
-	./xfel-windows-v1.2.7/xfel write 0x00028000 pboot.bin
-	./xfel-windows-v1.2.7/xfel write 0x40000000 boottemplate.bin
-	./xfel-windows-v1.2.7/xfel write 0x40000100 $(PROJECT)_app.bin
-	./xfel-windows-v1.2.7/xfel exec 0x00028000 
+	$(XFEL) ddr t113-s3
+	$(XFEL) write 0x00028000 pboot.bin
+	$(XFEL) write 0x40000000 boottemplate.bin
+	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
+	$(XFEL) exec 0x00028000 
 
 flash:
-	./xfel-windows-v1.2.7/xfel.exe spinor write 0x00000000 fsbl.alw32
-	./xfel-windows-v1.2.7/xfel.exe spinor write 0x00080000 $(PROJECT)_app.alw32
+	$(XFEL) spinor write 0x00000000 fsbl.alw32
+	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
