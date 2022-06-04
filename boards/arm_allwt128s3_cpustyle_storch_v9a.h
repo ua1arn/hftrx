@@ -995,10 +995,10 @@
 		#else /* WIHSPIDFHW */
 
 			#define SPIDF_MISO() ((GPIOC->DATA & SPDIF_MISO_BIT) != 0)
-			#define SPIDF_MOSI(v) do { if (v) GPIOC->DATA |= (SPDIF_MOSI_BIT); else GPIOF->DATA &= ~ (SPDIF_MOSI_BIT); __DSB(); } while (0)
-			#define SPIDF_SCLK(v) do { if (v) GPIOC->DATA |= (SPDIF_SCLK_BIT); else GPIOF->DATA &= ~ (SPDIF_SCLK_BIT); __DSB(); } while (0)
+			#define SPIDF_MOSI(v) do { if (v) GPIOC->DATA |= (SPDIF_MOSI_BIT); else GPIOC->DATA &= ~ (SPDIF_MOSI_BIT); __DSB(); } while (0)
+			#define SPIDF_SCLK(v) do { if (v) GPIOC->DATA |= (SPDIF_SCLK_BIT); else GPIOC->DATA &= ~ (SPDIF_SCLK_BIT); __DSB(); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-					arm_hardware_pioc_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2 tie-up */ \
+					arm_hardware_pioc_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2/WP tie-up */ \
 					arm_hardware_pioc_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3/HOLD tie-up */ \
 					arm_hardware_pioc_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
 					arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
