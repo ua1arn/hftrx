@@ -820,6 +820,7 @@ void arm_hardware_ltdc_pip_off(void)	// set PIP framebuffer address
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	struct st_vdc5 * const vdc = & VDC50;
@@ -840,7 +841,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 	(void) vdc->GR2_UPDATE;
 }
 
-/* set bottom buffer start */
+/* set visible buffer start. Wait VSYNC. */
 /* Set MAIN frame buffer address. Wait for VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
@@ -1586,7 +1587,7 @@ arm_hardware_ltdc_deinitialize(void)
 #endif
 }
 
-/* set bottom buffer start */
+/* set visible buffer start. Wait VSYNC. */
 /* Set PIP frame buffer address. */
 void arm_hardware_ltdc_pip_set(uintptr_t p)
 {
@@ -1642,6 +1643,7 @@ void arm_hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 	/* дождаться, пока не будет использовано ранее заказанное переключение отображаемой страницы экрана */
@@ -1712,6 +1714,7 @@ void arm_hardware_ltdc_L8_palette(void)
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t addr)
 {
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
@@ -1723,6 +1726,28 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 	DisplayChangeFrame(&dispCtrl, colmain_getindexbyaddr(addr));
 }
 
+#elif CPUSTYPE_ALLWNT113
+
+void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
+{
+}
+
+/* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
+void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
+{
+}
+
+/* set visible buffer start. Wait VSYNC. */
+void arm_hardware_ltdc_main_set(uintptr_t p)
+{
+}
+
+/* Palette reload */
+void arm_hardware_ltdc_L8_palette(void)
+{
+}
+
 #else
 	//#error Wrong CPUSTYLE_xxxx
 
@@ -1731,15 +1756,17 @@ void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * 
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
+/* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
 }
 
-/* set bottom buffer start */
+/* set visible buffer start. Wait VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 }
 
+/* Palette reload */
 void arm_hardware_ltdc_L8_palette(void)
 {
 }
