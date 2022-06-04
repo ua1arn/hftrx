@@ -49,7 +49,7 @@
 
 #if WITHISBOOTLOADER
 
-	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	////#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	////#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -106,7 +106,7 @@
 	//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
 	//#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 
-	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -963,19 +963,19 @@
 #endif /* WITHLTDCHW */
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
-	#define SPDIF_MISO_BIT (1u << 9)	// PF9	QUADSPI_BK1_IO1
-	#define SPDIF_MOSI_BIT (1u << 8)	// PF8	QUADSPI_BK1_IO0
-	#define SPDIF_SCLK_BIT (1u << 10)	// PF10	QUADSPI_CLK
-	#define SPDIF_NCS_BIT (1u << 6)		// PB6	QUADSPI_BK1_NCS
+	#define SPDIF_MISO_BIT (1u << 5)	// PC5	SPI0_MISO
+	#define SPDIF_MOSI_BIT (1u << 4)	// PC4	SPI0_MOSI
+	#define SPDIF_SCLK_BIT (1u << 2)	// PC2	SPI0_CLK
+	#define SPDIF_NCS_BIT (1u << 3)		// PC3	SPI0_CS
 
-	#define SPDIF_D2_BIT (1u << 7)		// PF7	QUADSPI_BK1_IO2
-	#define SPDIF_D3_BIT (1u << 6)		// PF6	QUADSPI_BK1_IO3
+	#define SPDIF_D2_BIT (1u << 6)		// PC6	SPI0_WP/D2
+	#define SPDIF_D3_BIT (1u << 7)		// PC7	SPI0_HOLD/D3
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
-			arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-			arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-			arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+			arm_hardware_pioc_inputs(SPDIF_NCS_BIT); \
+			arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
+			arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
+			arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
 		} while (0)
 
 	#if WIHSPIDFSW || WIHSPIDFHW
@@ -994,31 +994,31 @@
 
 		#else /* WIHSPIDFHW */
 
-			#define SPIDF_MISO() ((GPIOF->IDR & SPDIF_MISO_BIT) != 0)
-			#define SPIDF_MOSI(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_MOSI_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_MOSI_BIT); } while (0)
-			#define SPIDF_SCLK(v) do { if (v) GPIOF->BSRR = BSRR_S(SPDIF_SCLK_BIT); else GPIOF->BSRR = BSRR_C(SPDIF_SCLK_BIT); } while (0)
+			#define SPIDF_MISO() ((GPIOC->DATA & SPDIF_MISO_BIT) != 0)
+			#define SPIDF_MOSI(v) do { if (v) GPIOC->DATA |= (SPDIF_MOSI_BIT); else GPIOF->DATA &= ~ (SPDIF_MOSI_BIT); __DSB(); } while (0)
+			#define SPIDF_SCLK(v) do { if (v) GPIOC->DATA |= (SPDIF_SCLK_BIT); else GPIOF->DATA &= ~ (SPDIF_SCLK_BIT); __DSB(); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
-					/*arm_hardware_piof_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); */ /* D2 tie-up */ \
-					/*arm_hardware_piof_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); */ /* D3 tie-up */ \
-					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-					arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-					arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+					arm_hardware_pioc_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2 tie-up */ \
+					arm_hardware_pioc_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3/HOLD tie-up */ \
+					arm_hardware_pioc_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+					arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+					arm_hardware_pioc_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
 				} while (0)
 			#define SPIDF_SELECT() do { \
-					arm_hardware_piob_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
-					arm_hardware_piof_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
-					arm_hardware_piof_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
-					GPIOB->BSRR = BSRR_C(SPDIF_NCS_BIT); \
+					arm_hardware_pioc_outputs(SPDIF_NCS_BIT, SPDIF_NCS_BIT); \
+					arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
+					arm_hardware_pioc_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
+					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
+					GPIOC->DATA &= ~ SPDIF_NCS_BIT; \
 					__DSB(); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					GPIOB->BSRR = BSRR_S(SPDIF_NCS_BIT); \
-					arm_hardware_piob_inputs(SPDIF_NCS_BIT); \
-					arm_hardware_piof_inputs(SPDIF_SCLK_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MOSI_BIT); \
-					arm_hardware_piof_inputs(SPDIF_MISO_BIT); \
+					GPIOC->DATA |= SPDIF_NCS_BIT; \
+					arm_hardware_pioc_inputs(SPDIF_NCS_BIT); \
+					arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
+					arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
+					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
 					__DSB(); \
 				} while (0)
 
@@ -1105,19 +1105,16 @@
 		} while (0)
 
 	/* макроопределение, которое должно включить в себя все инициализации */
-	#define	HARDWARE_INITIALIZEwrk() do { \
-			BOARD_BLINK_INITIALIZE(); \
-			HARDWARE_KBD_INITIALIZE(); \
-			HARDWARE_DAC_INITIALIZE(); \
-			HARDWARE_BL_INITIALIZE(); \
-			HARDWARE_DCDC_INITIALIZE(); \
-			TXDISABLE_INITIALIZE(); \
-			TUNE_INITIALIZE(); \
-			BOARD_USERBOOT_INITIALIZE(); \
-			USBD_EHCI_INITIALIZE(); \
-		} while (0)
 	#define	HARDWARE_INITIALIZE() do { \
-		BOARD_BLINK_INITIALIZE(); \
+			BOARD_BLINK_INITIALIZE(); \
+			/*HARDWARE_KBD_INITIALIZE(); */\
+			/*HARDWARE_DAC_INITIALIZE(); */\
+			/*HARDWARE_BL_INITIALIZE(); */\
+			HARDWARE_DCDC_INITIALIZE(); \
+			/*TXDISABLE_INITIALIZE(); */\
+			/*TUNE_INITIALIZE(); */\
+			/*BOARD_USERBOOT_INITIALIZE(); */\
+			/*USBD_EHCI_INITIALIZE(); */\
 		} while (0)
 
 #endif /* ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED */
