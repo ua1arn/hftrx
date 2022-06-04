@@ -217,13 +217,13 @@ allZ:
 bootloader: BOOT2 fsbl.alw32 boot.hex
 
   
-app_runZZZ: $(PROJECT)_boot.bin loader.V3s
+app_run: $(PROJECT)_boot.bin loader.V3s
 	./xfel-windows-v1.2.7/xfel ddr t113-s3
-	./xfel-windows-v1.2.7/xfel write 0x40000000 app.bin
+	./xfel-windows-v1.2.7/xfel write 0x40000000 $(PROJECT)_boot.bin
 	./xfel-windows-v1.2.7/xfel write 0x00028000 loader.V3s
 	./xfel-windows-v1.2.7/xfel exec 0x00028000 
   
-app_run: led_t.bin
+app_runZZZ: led_t.bin
 	./xfel-windows-v1.2.7/xfel write 0x00028000 led_t.bin
 	./xfel-windows-v1.2.7/xfel exec 0x00028000
   
