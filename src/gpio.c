@@ -737,40 +737,6 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_AF50M 0x03
 #define ALWNR_GPIO_PULL_AF50M 0x00
 
-static void arm_alwnr_pioX_poweron(
-	GPIO_TypeDef * gpio
-	)
-{
-	if (0)
-	{
-
-	}
-	else if (gpio == GPIOB)
-	{
-
-	}
-	else if (gpio == GPIOC)
-	{
-
-	}
-	else if (gpio == GPIOD)
-	{
-
-	}
-	else if (gpio == GPIOE)
-	{
-
-	}
-	else if (gpio == GPIOF)
-	{
-
-	}
-	else if (gpio == GPIOG)
-	{
-
-	}
-}
-
 static void arm_alwnr_pioX_setstate(
 	GPIO_TypeDef * gpio,
 	unsigned long opins,
@@ -796,19 +762,19 @@ static void arm_alwnr_pioX_prog(
 	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 bits */
 	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 bits */
 
-	gpio->CFG [0] = (gpio->CFG [0] & ~ mask0) | (cfg * mask0);
-	gpio->CFG [1] = (gpio->CFG [1] & ~ mask1) | (cfg * mask1);
-	gpio->CFG [2] = (gpio->CFG [2] & ~ mask2) | (cfg * mask2);
-	gpio->CFG [3] = (gpio->CFG [3] & ~ mask3) | (cfg * mask3);
+	gpio->CFG [0] = (gpio->CFG [0] & ~ (mask0 * 0x0F)) | (cfg * mask0);
+	gpio->CFG [1] = (gpio->CFG [1] & ~ (mask1 * 0x0F)) | (cfg * mask1);
+	gpio->CFG [2] = (gpio->CFG [2] & ~ (mask2 * 0x0F)) | (cfg * mask2);
+	gpio->CFG [3] = (gpio->CFG [3] & ~ (mask3 * 0x0F)) | (cfg * mask3);
 
-	gpio->DRV [0] = (gpio->DRV [0] & ~ mask0) | (drv * mask0);
-	gpio->DRV [1] = (gpio->DRV [1] & ~ mask1) | (drv * mask1);
-	gpio->DRV [2] = (gpio->DRV [2] & ~ mask2) | (drv * mask2);
-	gpio->DRV [3] = (gpio->DRV [3] & ~ mask3) | (drv * mask3);
+	gpio->DRV [0] = (gpio->DRV [0] & ~ (mask0 * 0x0F)) | (drv * mask0);
+	gpio->DRV [1] = (gpio->DRV [1] & ~ (mask1 * 0x0F)) | (drv * mask1);
+	gpio->DRV [2] = (gpio->DRV [2] & ~ (mask2 * 0x0F)) | (drv * mask2);
+	gpio->DRV [3] = (gpio->DRV [3] & ~ (mask3 * 0x0F)) | (drv * mask3);
 
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
-	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0) | (pull * pull0);
-	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1) | (pull * pull1);
+	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
+	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
 }
 
 static void arm_alwnr_pioX_updown(
@@ -818,16 +784,16 @@ static void arm_alwnr_pioX_updown(
 	)
 {
 	const portholder_t iopins = ioup | iodown;
-	const portholder_t pull0 = power2(iopins >> 0);				/* PULL0 bits */
+	const portholder_t pull0mask = power2(iopins >> 0) * 0x03;				/* PULL0 bits */
 	const portholder_t pull0up = power2(ioup >> 0);
 	const portholder_t pull0down = power2(iodown >> 0);
-	const portholder_t pull1 = power2(iopins >> 16);			/* PULL1 bits */
+	const portholder_t pull1mask = power2(iopins >> 16) * 0x03;			/* PULL1 bits */
 	const portholder_t pull1up = power2(ioup >> 16);
 	const portholder_t pull1down = power2(iodown >> 16);
 
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
-	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0) | (0x01 * pull0up) | (0x02 * pull0down);
-	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1) | (0x01 * pull1up) | (0x02 * pull1down);
+	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0mask) | (0x01 * pull0up) | (0x02 * pull0down);
+	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1mask) | (0x01 * pull1up) | (0x02 * pull1down);
 }
 
 static void arm_alwnr_pioX_updownoff(
@@ -836,8 +802,8 @@ static void arm_alwnr_pioX_updownoff(
 	)
 {
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
-	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 bits */
-	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 bits */
+	const portholder_t pull0 = power2(iopins >> 0) * 0x03;		/* PULL0 bits */
+	const portholder_t pull1 = power2(iopins >> 16 * 0x03);	/* PULL1 bits */
 
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
@@ -1544,7 +1510,7 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_prog(GPIOA, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOA)
@@ -1612,7 +1578,7 @@ arm_hardware_piob_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_prog(GPIOB, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOB)
@@ -1680,7 +1646,7 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_prog(GPIOC, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOC)
@@ -1740,7 +1706,7 @@ arm_hardware_piod_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_prog(GPIOD, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOD)
@@ -1793,7 +1759,7 @@ arm_hardware_pioe_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOE);
+	//arm_alwnr_pioX_poweron(GPIOE);
 	arm_alwnr_pioX_prog(GPIOE, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOE)
@@ -1846,7 +1812,7 @@ arm_hardware_piof_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOF);
+	//arm_alwnr_pioX_poweron(GPIOF);
 	arm_alwnr_pioX_prog(GPIOF, ipins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOF)
@@ -1899,7 +1865,7 @@ arm_hardware_piog_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_prog(GPIOG, ipins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIG)
@@ -2165,7 +2131,7 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_setstate(GPIOA, opins, initialstate);
 //	arm_alwnr_pioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
@@ -2259,7 +2225,7 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_setstate(GPIOA, opins, initialstate);
 //	arm_alwnr_pioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT10M, ALWNR_GPIO_PULL_OUTPUT10M);
 
@@ -2354,7 +2320,7 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_setstate(GPIOA, opins, initialstate);
 //	arm_alwnr_pioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
@@ -2438,7 +2404,7 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_setstate(GPIOB, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
@@ -2533,7 +2499,7 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_setstate(GPIOB, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
@@ -2629,7 +2595,7 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_setstate(GPIOC, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
@@ -2726,7 +2692,7 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_setstate(GPIOD, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
@@ -2823,7 +2789,7 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOE);
+	//arm_alwnr_pioX_poweron(GPIOE);
 	arm_alwnr_pioX_setstate(GPIOE, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
@@ -2909,7 +2875,7 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_setstate(GPIOC, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
@@ -2983,7 +2949,7 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_setstate(GPIOA, opins, initialstate);
 //	arm_alwnr_pioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
@@ -3057,7 +3023,7 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_setstate(GPIOB, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
@@ -3131,7 +3097,7 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_setstate(GPIOC, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
@@ -3205,7 +3171,7 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_setstate(GPIOD, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
@@ -3270,7 +3236,7 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_setstate(GPIOD, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
@@ -3335,7 +3301,7 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOE);
+	//arm_alwnr_pioX_poweron(GPIOE);
 	arm_alwnr_pioX_setstate(GPIOE, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
@@ -3400,7 +3366,7 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOE);
+	//arm_alwnr_pioX_poweron(GPIOE);
 	arm_alwnr_pioX_setstate(GPIOE, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
@@ -3466,7 +3432,7 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOF);
+	//arm_alwnr_pioX_poweron(GPIOF);
 	arm_alwnr_pioX_setstate(GPIOF, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
@@ -3530,7 +3496,7 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOF);
+	//arm_alwnr_pioX_poweron(GPIOF);
 	arm_alwnr_pioX_setstate(GPIOF, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
@@ -3599,7 +3565,7 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_setstate(GPIOG, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
@@ -3663,7 +3629,7 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_setstate(GPIOG, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
@@ -3726,7 +3692,7 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_setstate(GPIOG, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
@@ -4526,7 +4492,7 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_setstate(GPIOA, opins, initialstate);
 //	arm_alwnr_pioX_prog(GPIOA, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
@@ -4599,7 +4565,7 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_setstate(GPIOB, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOB, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
@@ -4673,7 +4639,7 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_setstate(GPIOC, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOC, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
@@ -4746,7 +4712,7 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_setstate(GPIOD, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOD, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
@@ -4810,7 +4776,7 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOE);
+	//arm_alwnr_pioX_poweron(GPIOE);
 	arm_alwnr_pioX_setstate(GPIOE, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOE, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
@@ -4874,7 +4840,7 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOF);
+	//arm_alwnr_pioX_poweron(GPIOF);
 	arm_alwnr_pioX_setstate(GPIOF, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOF, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
@@ -4937,7 +4903,7 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_setstate(GPIOG, opins, initialstate);
 	arm_alwnr_pioX_prog(GPIOG, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
@@ -5223,7 +5189,7 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif defined (GPIOA)
@@ -5290,7 +5256,7 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif defined (GPIOB)
@@ -5349,7 +5315,7 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif defined (GPIOC)
@@ -5409,7 +5375,7 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOD)
@@ -5469,7 +5435,7 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif defined (GPIOD)
@@ -5537,7 +5503,7 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOA)
@@ -5605,7 +5571,7 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOA)
@@ -5673,7 +5639,7 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOB)
@@ -5741,7 +5707,7 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOB)
@@ -5809,7 +5775,7 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOC)
@@ -5877,7 +5843,7 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOC)
@@ -5937,7 +5903,7 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOD)
@@ -5997,7 +5963,7 @@ arm_hardware_pioe_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOE);
+	//arm_alwnr_pioX_poweron(GPIOE);
 	arm_alwnr_pioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
@@ -6055,7 +6021,7 @@ arm_hardware_pioe_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOE);
+	//arm_alwnr_pioX_poweron(GPIOE);
 	arm_alwnr_pioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #else
@@ -6113,7 +6079,7 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOF);
+	//arm_alwnr_pioX_poweron(GPIOF);
 	arm_alwnr_pioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
@@ -6176,7 +6142,7 @@ arm_hardware_piof_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOF);
+	//arm_alwnr_pioX_poweron(GPIOF);
 	arm_alwnr_pioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
@@ -6234,7 +6200,7 @@ arm_hardware_piof_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOF);
+	//arm_alwnr_pioX_poweron(GPIOF);
 	arm_alwnr_pioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #else
@@ -6292,7 +6258,7 @@ arm_hardware_piof_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOF);
+	//arm_alwnr_pioX_poweron(GPIOF);
 	arm_alwnr_pioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
@@ -6354,7 +6320,7 @@ arm_hardware_piog_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
@@ -6412,7 +6378,7 @@ arm_hardware_piog_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #else
@@ -6470,7 +6436,7 @@ arm_hardware_piog_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
@@ -7368,7 +7334,7 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	arm_alwnr_pioX_poweron(GPIOA);
+//	//arm_alwnr_pioX_poweron(GPIOA);
 //	arm_alwnr_pioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOA)
@@ -7434,7 +7400,7 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOB);
+	//arm_alwnr_pioX_poweron(GPIOB);
 	arm_alwnr_pioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOB)
@@ -7501,7 +7467,7 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOC);
+	//arm_alwnr_pioX_poweron(GPIOC);
 	arm_alwnr_pioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOC)
@@ -7568,7 +7534,7 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOD);
+	//arm_alwnr_pioX_poweron(GPIOD);
 	arm_alwnr_pioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOD)
@@ -7627,7 +7593,7 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOE);
+	//arm_alwnr_pioX_poweron(GPIOE);
 	arm_alwnr_pioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOE)
@@ -7686,7 +7652,7 @@ void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #else
@@ -7741,7 +7707,7 @@ void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	arm_alwnr_pioX_poweron(GPIOG);
+	//arm_alwnr_pioX_poweron(GPIOG);
 	arm_alwnr_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #else
