@@ -1728,19 +1728,378 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 
 #elif CPUSTYPE_ALLWNT113
 
+#include "reg-ccu.h"
+#include "reg-de.h"
+#include "reg-tconlcd.h"
+
+static uint32_t read32(uintptr_t a)
+{
+	return * (volatile uint32_t *) a;
+}
+
+static void write32(uintptr_t a, uint32_t v)
+{
+	* (volatile uint32_t *) a = v;
+}
+
+struct fb_t113_rgb_pdata_t
+{
+	uintptr_t virt_de;
+	uintptr_t virt_tconlcd;
+
+	char * clk_de;
+	char * clk_tconlcd;
+	int rst_de;
+	int rst_tconlcd;
+	int width;
+	int height;
+	int pwidth;
+	int pheight;
+	int bits_per_pixel;
+	int bytes_per_pixel;
+	int pixlen;
+	int index;
+	uintptr_t vram [2];
+	struct region_list_t * nrl, * orl;
+
+	struct {
+		int pixel_clock_hz;
+		int h_front_porch;
+		int h_back_porch;
+		int h_sync_len;
+		int v_front_porch;
+		int v_back_porch;
+		int v_sync_len;
+		int h_sync_active;
+		int v_sync_active;
+		int den_active;
+		int clk_active;
+	} timing;
+
+	struct led_t * backlight;
+	int brightness;
+};
+
+static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
+	write32((uintptr_t)&glb->dbuff, 1);
+}
+
+static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
+{
+	struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+	write32((uintptr_t)&ui->cfg[0].top_laddr, vram);
+}
+
+static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct de_clk_t * clk = (struct de_clk_t *)(pdat->virt_de);
+	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
+	struct de_bld_t * bld = (struct de_bld_t *)(pdat->virt_de + T113_DE_MUX_BLD);
+	struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+	uint32_t size = (((pdat->height - 1) << 16) | (pdat->width - 1));
+	uint32_t val;
+	int i;
+
+	val = read32((uintptr_t)&clk->rst_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t)&clk->rst_cfg, val);
+
+	val = read32((uintptr_t)&clk->gate_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t)&clk->gate_cfg, val);
+
+	val = read32((uintptr_t)&clk->bus_cfg);
+	val |= 1 << 0;
+	write32((uintptr_t)&clk->bus_cfg, val);
+
+	val = read32((uintptr_t)&clk->sel_cfg);
+	val &= ~(1 << 0);
+	write32((uintptr_t)&clk->sel_cfg, val);
+
+	write32((uintptr_t)&glb->ctl, (1 << 0));
+	write32((uintptr_t)&glb->status, 0);
+	write32((uintptr_t)&glb->dbuff, 1);
+	write32((uintptr_t)&glb->size, size);
+
+	for(i = 0; i < 4; i++)
+	{
+		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
+		memset(chan, 0, i == 0 ? sizeof(struct de_vi_t) : sizeof(struct de_ui_t));
+	}
+	memset(bld, 0, sizeof(struct de_bld_t));
+
+	write32((uintptr_t)&bld->fcolor_ctl, 0x00000101);
+	write32((uintptr_t)&bld->route, 1);
+	write32((uintptr_t)&bld->premultiply, 0);
+	write32((uintptr_t)&bld->bkcolor, 0xff000000);
+	write32((uintptr_t)&bld->bld_mode[0], 0x03010301);
+	write32((uintptr_t)&bld->bld_mode[1], 0x03010301);
+	write32((uintptr_t)&bld->output_size, size);
+	write32((uintptr_t)&bld->out_ctl, 0);
+	write32((uintptr_t)&bld->ck_ctl, 0);
+	for(i = 0; i < 4; i++)
+	{
+		write32((uintptr_t)&bld->attr[i].fcolor, 0xff000000);
+		write32((uintptr_t)&bld->attr[i].insize, size);
+	}
+
+	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU1, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU2, 0);
+	write32(pdat->virt_de + T113_DE_MUX_GSU3, 0);
+	write32(pdat->virt_de + T113_DE_MUX_FCE, 0);
+	write32(pdat->virt_de + T113_DE_MUX_BWS, 0);
+	write32(pdat->virt_de + T113_DE_MUX_LTI, 0);
+	write32(pdat->virt_de + T113_DE_MUX_PEAK, 0);
+	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
+	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
+	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
+
+	write32((uintptr_t)&ui->cfg[0].attr, (1 << 0) | (4 << 8) | (1 << 1) | (0xff << 24));
+	write32((uintptr_t)&ui->cfg[0].size, size);
+	write32((uintptr_t)&ui->cfg[0].coord, 0);
+	write32((uintptr_t)&ui->cfg[0].pitch, 4 * pdat->width);
+	write32((uintptr_t)&ui->cfg[0].top_laddr, pdat->vram[pdat->index]);
+	write32((uintptr_t)&ui->ovl_size, size);
+}
+
+static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	uint32_t val;
+
+	val = read32((uintptr_t)&tcon->gctrl);
+	val |= (1 << 31);
+	write32((uintptr_t)&tcon->gctrl, val);
+}
+
+static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	uint32_t val;
+
+	val = read32((uintptr_t)&tcon->dclk);
+	val &= ~(0xf << 28);
+	write32((uintptr_t)&tcon->dclk, val);
+
+	write32((uintptr_t)&tcon->gctrl, 0);
+	write32((uintptr_t)&tcon->gint0, 0);
+}
+
+static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	int bp, total;
+	uint32_t val;
+
+	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
+	write32((uintptr_t)&tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0));
+	val = 396000000 / pdat->timing.pixel_clock_hz;
+	write32((uintptr_t)&tcon->dclk, (0xf << 28) | ((val / 2) << 0));
+	write32((uintptr_t)&tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
+	bp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
+	total = pdat->width + pdat->timing.h_front_porch + bp;
+	write32((uintptr_t)&tcon->timing1, ((total - 1) << 16) | ((bp - 1) << 0));
+	bp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
+	total = pdat->height + pdat->timing.v_front_porch + bp;
+	write32((uintptr_t)&tcon->timing2, ((total * 2) << 16) | ((bp - 1) << 0));
+	write32((uintptr_t)&tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
+
+	val = (0 << 31) | (1 << 28);
+	if(!pdat->timing.h_sync_active)
+		val |= (1 << 25);
+	if(!pdat->timing.v_sync_active)
+		val |= (1 << 24);
+	if(!pdat->timing.den_active)
+		val |= (1 << 27);
+	if(!pdat->timing.clk_active)
+		val |= (1 << 26);
+	write32((uintptr_t)&tcon->io_polarity, val);
+	write32((uintptr_t)&tcon->io_tristate, 0);
+}
+
+static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
+{
+	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+
+	if((pdat->bits_per_pixel == 16) || (pdat->bits_per_pixel == 18))
+	{
+		write32((uintptr_t)&tcon->frm_seed[0], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[1], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[2], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[3], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[4], 0x11111111);
+		write32((uintptr_t)&tcon->frm_seed[5], 0x11111111);
+		write32((uintptr_t)&tcon->frm_table[0], 0x01010000);
+		write32((uintptr_t)&tcon->frm_table[1], 0x15151111);
+		write32((uintptr_t)&tcon->frm_table[2], 0x57575555);
+		write32((uintptr_t)&tcon->frm_table[3], 0x7f7f7777);
+
+		if(pdat->bits_per_pixel == 16)
+			write32((uintptr_t)&tcon->frm_ctrl, (1 << 31) | (1 << 6) | (0 << 5)| (1 << 4));
+		else if(pdat->bits_per_pixel == 18)
+			write32((uintptr_t)&tcon->frm_ctrl, (1 << 31) | (0 << 6) | (0 << 5)| (0 << 4));
+	}
+}
+
+#define GPIO_Pin_0                 ((uint32_t)0x000001)  /* Pin 0 selected */
+#define GPIO_Pin_1                 ((uint32_t)0x000002)  /* Pin 1 selected */
+#define GPIO_Pin_2                 ((uint32_t)0x000004)  /* Pin 2 selected */
+#define GPIO_Pin_3                 ((uint32_t)0x000008)  /* Pin 3 selected */
+#define GPIO_Pin_4                 ((uint32_t)0x000010)  /* Pin 4 selected */
+#define GPIO_Pin_5                 ((uint32_t)0x000020)  /* Pin 5 selected */
+#define GPIO_Pin_6                 ((uint32_t)0x000040)  /* Pin 6 selected */
+#define GPIO_Pin_7                 ((uint32_t)0x000080)  /* Pin 7 selected */
+#define GPIO_Pin_8                 ((uint32_t)0x000100)  /* Pin 8 selected */
+#define GPIO_Pin_9                 ((uint32_t)0x000200)  /* Pin 9 selected */
+#define GPIO_Pin_10                ((uint32_t)0x000400)  /* Pin 10 selected */
+#define GPIO_Pin_11                ((uint32_t)0x000800)  /* Pin 11 selected */
+#define GPIO_Pin_12                ((uint32_t)0x001000)  /* Pin 12 selected */
+#define GPIO_Pin_13                ((uint32_t)0x002000)  /* Pin 13 selected */
+#define GPIO_Pin_14                ((uint32_t)0x004000)  /* Pin 14 selected */
+#define GPIO_Pin_15                ((uint32_t)0x008000)  /* Pin 15 selected */
+#define GPIO_Pin_16                ((uint32_t)0x010000)  /* Pin 16 selected */
+#define GPIO_Pin_17                ((uint32_t)0x020000)  /* Pin 17 selected */
+#define GPIO_Pin_18                ((uint32_t)0x040000)  /* Pin 18 selected */
+#define GPIO_Pin_19                ((uint32_t)0x080000)  /* Pin 19 selected */
+#define GPIO_Pin_20                ((uint32_t)0x100000)  /* Pin 20 selected */
+#define GPIO_Pin_21                ((uint32_t)0x200000)  /* Pin 21 selected */
+#define GPIO_Pin_22                ((uint32_t)0x400000)  /* Pin 22 selected */
+#define GPIO_Pin_23                ((uint32_t)0x800000)  /* Pin 23 selected */
+
+static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat)
+{
+//    GPIO_InitTypeDef InitGpio;
+//	InitGpio.GPIO_Mode = GPIO_Mode_AF2;
+//	InitGpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
+//	InitGpio.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10
+//	|GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15|GPIO_Pin_16|GPIO_Pin_17|GPIO_Pin_18|GPIO_Pin_19|GPIO_Pin_20|GPIO_Pin_21;
+//
+//	GPIO_Init(GPIOD, &InitGpio);
+
+	const portholder_t mask =
+			GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7 |
+			GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15 |
+			GPIO_Pin_16 | GPIO_Pin_17 | GPIO_Pin_18 | GPIO_Pin_19 | GPIO_Pin_20 | GPIO_Pin_21;
+
+	arm_hardware_piog_altfn50(mask, GPIO_CFG_AF2);
+
+    PRINTF("pin lcd ok\n");
+/*	if(pdat->bits_per_pixel == 16)
+	{
+		fb_t113_cfg_gpios(T113_GPIOD1, 5, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
+		fb_t113_cfg_gpios(T113_GPIOD6, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
+		fb_t113_cfg_gpios(T113_GPIOD13, 5, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
+		fb_t113_cfg_gpios(T113_GPIOD18, 4, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
+	}
+	else if(pdat->bits_per_pixel == 18)
+	{
+		fb_t113_cfg_gpios(T113_GPIOD0, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
+		fb_t113_cfg_gpios(T113_GPIOD6, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
+		fb_t113_cfg_gpios(T113_GPIOD12, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
+		fb_t113_cfg_gpios(T113_GPIOD18, 4, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
+	}
+*/
+	t113_tconlcd_disable(pdat);
+	t113_tconlcd_set_timing(pdat);
+	t113_tconlcd_set_dither(pdat);
+	t113_tconlcd_enable(pdat);
+	t113_de_set_mode(pdat);
+	t113_de_enable(pdat);
+	t113_de_set_address(pdat, pdat->vram[pdat->index]);
+	t113_de_enable(pdat);
+	PRINTF("tcon De ok\n");
+}
+
+
+#define CCU_DE_CLK_REG 0x0600
+#define CCU_DE_BGR_REG 0x060C
+#define CCU_TCONLCD_CLK_REG 0x0B60
+#define CCU_TCONLCD_BGR_REG 0x0B7C
+
+static struct fb_t113_rgb_pdata_t pdat0;
+
+void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
+{
+	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
+	uint32_t val;
+
+	pdat->virt_tconlcd = T113_TCONLCD_BASE;
+    pdat->virt_de = T113_DE_BASE;
+	pdat->clk_tconlcd = (void *) 3260000000;
+    pdat->clk_de = (void *) 396000000;
+	pdat->width = vdmode->width;
+	pdat->height =  vdmode->height;
+	pdat->pwidth =  216;
+	pdat->pheight = 135;
+	pdat->bits_per_pixel = 18;
+	pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
+	pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
+	pdat->vram[0] = frames [0];
+	pdat->vram[1] = frames [1];
+
+	pdat->timing.pixel_clock_hz = display_getdotclock(vdmode);
+	pdat->timing.h_front_porch = vdmode->hfp; //40;
+	pdat->timing.h_back_porch = vdmode->hbp; //87;
+	pdat->timing.h_sync_len =  vdmode->hsync; //1;
+	pdat->timing.v_front_porch = vdmode->vfp; //13;
+	pdat->timing.v_back_porch = vdmode->vbp; //31;
+	pdat->timing.v_sync_len = vdmode->vsync; //1;
+	pdat->timing.h_sync_active =  0;
+	pdat->timing.v_sync_active = 0;
+	pdat->timing.den_active = 0;
+	pdat->timing.clk_active =  0;
+	pdat->backlight = NULL;
+
+
+    val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
+    val |= (1 << 31)|(3 << 0);///300 MHz
+    write32(T113_CCU_BASE + CCU_DE_CLK_REG,val);
+	//Open the clock gate
+    val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+    val |= (1 << 0);
+    write32(T113_CCU_BASE + CCU_DE_BGR_REG,val);
+    //Deassert reset
+    val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+    val |= (1 << 16);
+    write32(T113_CCU_BASE + CCU_DE_BGR_REG,val);
+
+    val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
+    val |= (1 << 31);
+    write32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG,val);
+	//Open the clock gate
+    val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
+    val |= (1 << 0);
+    write32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG,val);
+    //eassert reset
+    val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
+    val |= (1 << 16);
+    write32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG,val);
+
+
+	fb_t113_rgb_init(pdat);
+
+}
+
+
 void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
+	allwnr_lcd_init(frames, vdmode);
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
 /* Вызывается из display_flush, используется только в тестах */
 void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 {
+	t113_de_set_address(& pdat0, p);
 }
 
 /* set visible buffer start. Wait VSYNC. */
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
+	t113_de_set_address(& pdat0, p);
 }
 
 /* Palette reload */
