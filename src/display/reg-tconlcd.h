@@ -1,7 +1,7 @@
 #ifndef __T113_REG_TCONLCD_H__
 #define __T113_REG_TCONLCD_H__
 
-//#define T113_TCONLCD_BASE		(0x05461000)
+#define T113_TCONLCD_BASE		(0x05461000)
 
 struct t113_tconlcd_reg_t {
 	uint32_t gctrl;				/* 0x00 */
