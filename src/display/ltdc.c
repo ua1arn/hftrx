@@ -1747,8 +1747,8 @@ struct fb_t113_rgb_pdata_t
 	uintptr_t virt_de;
 	uintptr_t virt_tconlcd;
 
-	char * clk_de;
-	char * clk_tconlcd;
+	//char * clk_de;
+	//char * clk_tconlcd;
 	int rst_de;
 	int rst_tconlcd;
 	int width;
@@ -1890,13 +1890,14 @@ static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat)
 {
+	PRINTF("allwnrt113_get_video0_x4_freq()=%lu\n", allwnrt113_get_video0_x4_freq());
 	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
 	int bp, total;
 	uint32_t val;
 
 	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
 	write32((uintptr_t)&tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0));
-	val = 396000000 / pdat->timing.pixel_clock_hz;
+	val = allwnrt113_get_video0_x4_freq() / pdat->timing.pixel_clock_hz;
 	write32((uintptr_t)&tcon->dclk, (0xf << 28) | ((val / 2) << 0));
 	write32((uintptr_t)&tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
 	bp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
@@ -2019,6 +2020,7 @@ static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat)
 #define CCU_TCONLCD_CLK_REG 0x0B60
 #define CCU_TCONLCD_BGR_REG 0x0B7C
 
+
 static struct fb_t113_rgb_pdata_t pdat0;
 
 void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
@@ -2028,8 +2030,8 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
 
 	pdat->virt_tconlcd = T113_TCONLCD_BASE;
     pdat->virt_de = T113_DE_BASE;
-	pdat->clk_tconlcd = (void *) 3260000000;
-    pdat->clk_de = (void *) 396000000;
+	//pdat->clk_tconlcd = (void *) allwnrt113_get_video0_x2_freq();
+    //pdat->clk_de = (void *) 396000000;
 	pdat->width = vdmode->width;
 	pdat->height =  vdmode->height;
 	//pdat->pwidth =  216;
@@ -2047,12 +2049,11 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
 	pdat->timing.v_front_porch = vdmode->vfp; //13;
 	pdat->timing.v_back_porch = vdmode->vbp; //31;
 	pdat->timing.v_sync_len = vdmode->vsync; //1;
-	pdat->timing.h_sync_active =  0;
-	pdat->timing.v_sync_active = 0;
-	pdat->timing.den_active = 0;
+	pdat->timing.h_sync_active =  1;
+	pdat->timing.v_sync_active = 1;
+	pdat->timing.den_active = 1;
 	pdat->timing.clk_active =  0;
 	pdat->backlight = NULL;
-
 
     val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
     val |= (1 << 31)|(3 << 0);///300 MHz

@@ -1838,6 +1838,25 @@ unsigned long allwnrt113_get_pll_peri_800M_freq(void)
 	return allwnrt113_get_pll_peri_freq() / pllP1;
 }
 
+unsigned long allwnrt113_get_video0_x4_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
+	const uint_fast32_t div2 = 1 + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / div2;
+}
+
+unsigned long allwnrt113_get_video0_x2_freq(void)
+{
+	return allwnrt113_get_video0_x4_freq() / 2;
+}
+
+unsigned long allwnrt113_get_video0_x1_freq(void)
+{
+	return allwnrt113_get_video0_x4_freq() / 4;
+}
+
 unsigned long allwnrt113_get_pll_peri_x1_freq(void)
 {
 	return allwnrt113_get_pll_peri_x2_freq() / 2;

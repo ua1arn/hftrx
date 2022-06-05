@@ -153,5 +153,8 @@ unsigned long allwnrt113_get_usart_freq(void);
 unsigned long allwnr_t128s3_get_spi_freq(void);
 unsigned long allwnr_t128s3_get_arm_freq(void);
 unsigned long allwnr_t128s3_get_pl1_timer_freq(void);
+unsigned long allwnrt113_get_video0_x4_freq(void);
+unsigned long allwnrt113_get_video0_x2_freq(void);
+unsigned long allwnrt113_get_video0_x1_freq(void);
 
 #endif /* INC_CLOCKS_H_ */
