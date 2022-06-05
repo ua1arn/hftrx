@@ -6080,7 +6080,7 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 #elif CPUSTYPE_ALLWNT113
 
 	//arm_alwnr_pioX_poweron(GPIOF);
-	arm_alwnr_pioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+	arm_alwnr_pioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
