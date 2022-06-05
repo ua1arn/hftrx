@@ -2406,12 +2406,13 @@ static FLASHMEM struct bandrange  const bandsmap [] =
 	typedef uint_fast8_t vindex_t;
 
 #endif	/* WITHSWLMODE */
-	
+
+static vindex_t getfreqband(uint_fast32_t freq);
+
 /* получение индекса хранения VFO в памяти в зависимости от текущего режима расстройки
    - в режиме приема
 */
 static vindex_t 
-//NOINLINEAT
 getvfoindex(uint_fast8_t bi)
 {
 	ASSERT(bi < 2);
@@ -5673,7 +5674,6 @@ nyquistadj3(uint_fast32_t f)
 /* получить номер диапазона, в который попадает отображающаяся частота
   Если не принадлежит ни одному диапазону, возврат ((uint8_t)-1) */
 static vindex_t 
-//NOINLINEAT
 getfreqband(const uint_fast32_t freq)
 {
 	vindex_t i;
@@ -5691,7 +5691,6 @@ getfreqband(const uint_fast32_t freq)
 /* получить номер диапазона с большей частотой, на который переходить.
   Если нет подходящих, возврат low */
 static vindex_t 
-//NOINLINEAT
 getnexthband(const uint_fast32_t freq)
 {
 	enum { LOW = 0, HIGH = HBANDS_COUNT - 1 };
@@ -5711,7 +5710,6 @@ getnexthband(const uint_fast32_t freq)
  вернуть номер текущего.
  */
 static vindex_t 
-//NOINLINEAT
 getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 {
 	enum { LOW = 0, HIGH = HBANDS_COUNT - 1 };
@@ -5731,7 +5729,6 @@ getnextbandingroup(const vindex_t b, const uint_fast8_t bandgroup)
 /* получить номер диапазона с меньшей частотой, на который переходить.
   Если нет подходящих, возврат high */
 static vindex_t 
-//NOINLINEAT
 getprevhband(const uint_fast32_t freq)
 {
 	vindex_t i;
@@ -5755,7 +5752,6 @@ getprevhband(const uint_fast32_t freq)
 
 
 static vindex_t
-//NOINLINEAT
 getnext_ham_band(
 	vindex_t b,		// текущий диапазон
 	const uint_fast32_t freq
@@ -5881,7 +5877,6 @@ getnext_ham_band(
 
 
 static vindex_t
-//NOINLINEAT
 getprev_ham_band(
 	vindex_t b,		// текущий диапазон
 	const uint_fast32_t freq
