@@ -1984,7 +1984,7 @@ static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat)
 			GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15 |
 			GPIO_Pin_16 | GPIO_Pin_17 | GPIO_Pin_18 | GPIO_Pin_19 | GPIO_Pin_20 | GPIO_Pin_21;
 
-	arm_hardware_piog_altfn50(mask, GPIO_CFG_AF2);
+	arm_hardware_piod_altfn50(mask, GPIO_CFG_AF2);
 
     PRINTF("pin lcd ok\n");
 /*	if(pdat->bits_per_pixel == 16)
