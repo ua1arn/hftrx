@@ -1945,46 +1945,10 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 	}
 }
 
-#define GPIO_Pin_0                 ((uint32_t)0x000001)  /* Pin 0 selected */
-#define GPIO_Pin_1                 ((uint32_t)0x000002)  /* Pin 1 selected */
-#define GPIO_Pin_2                 ((uint32_t)0x000004)  /* Pin 2 selected */
-#define GPIO_Pin_3                 ((uint32_t)0x000008)  /* Pin 3 selected */
-#define GPIO_Pin_4                 ((uint32_t)0x000010)  /* Pin 4 selected */
-#define GPIO_Pin_5                 ((uint32_t)0x000020)  /* Pin 5 selected */
-#define GPIO_Pin_6                 ((uint32_t)0x000040)  /* Pin 6 selected */
-#define GPIO_Pin_7                 ((uint32_t)0x000080)  /* Pin 7 selected */
-#define GPIO_Pin_8                 ((uint32_t)0x000100)  /* Pin 8 selected */
-#define GPIO_Pin_9                 ((uint32_t)0x000200)  /* Pin 9 selected */
-#define GPIO_Pin_10                ((uint32_t)0x000400)  /* Pin 10 selected */
-#define GPIO_Pin_11                ((uint32_t)0x000800)  /* Pin 11 selected */
-#define GPIO_Pin_12                ((uint32_t)0x001000)  /* Pin 12 selected */
-#define GPIO_Pin_13                ((uint32_t)0x002000)  /* Pin 13 selected */
-#define GPIO_Pin_14                ((uint32_t)0x004000)  /* Pin 14 selected */
-#define GPIO_Pin_15                ((uint32_t)0x008000)  /* Pin 15 selected */
-#define GPIO_Pin_16                ((uint32_t)0x010000)  /* Pin 16 selected */
-#define GPIO_Pin_17                ((uint32_t)0x020000)  /* Pin 17 selected */
-#define GPIO_Pin_18                ((uint32_t)0x040000)  /* Pin 18 selected */
-#define GPIO_Pin_19                ((uint32_t)0x080000)  /* Pin 19 selected */
-#define GPIO_Pin_20                ((uint32_t)0x100000)  /* Pin 20 selected */
-#define GPIO_Pin_21                ((uint32_t)0x200000)  /* Pin 21 selected */
-#define GPIO_Pin_22                ((uint32_t)0x400000)  /* Pin 22 selected */
-#define GPIO_Pin_23                ((uint32_t)0x800000)  /* Pin 23 selected */
-
 static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat)
 {
-//    GPIO_InitTypeDef InitGpio;
-//	InitGpio.GPIO_Mode = GPIO_Mode_AF2;
-//	InitGpio.GPIO_PuPd = GPIO_PuPd_NOPULL;
-//	InitGpio.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_9|GPIO_Pin_10
-//	|GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12|GPIO_Pin_13|GPIO_Pin_14|GPIO_Pin_15|GPIO_Pin_16|GPIO_Pin_17|GPIO_Pin_18|GPIO_Pin_19|GPIO_Pin_20|GPIO_Pin_21;
-//
-//	GPIO_Init(GPIOD, &InitGpio);
 
-	const portholder_t mask =
-			GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7 |
-			GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15 |
-			GPIO_Pin_16 | GPIO_Pin_17 | GPIO_Pin_18 | GPIO_Pin_19 | GPIO_Pin_20 | GPIO_Pin_21;
-
+	const portholder_t mask = 0x3FFFFF;	// bits 0..21
 	arm_hardware_piod_altfn50(mask, GPIO_CFG_AF2);
 
     PRINTF("pin lcd ok\n");
@@ -2049,8 +2013,8 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
 	pdat->timing.v_front_porch = vdmode->vfp; //13;
 	pdat->timing.v_back_porch = vdmode->vbp; //31;
 	pdat->timing.v_sync_len = vdmode->vsync; //1;
-	pdat->timing.h_sync_active =  1;
-	pdat->timing.v_sync_active = 1;
+	pdat->timing.h_sync_active = 0;
+	pdat->timing.v_sync_active = 0;
 	pdat->timing.den_active = 1;
 	pdat->timing.clk_active =  0;
 	pdat->backlight = NULL;
