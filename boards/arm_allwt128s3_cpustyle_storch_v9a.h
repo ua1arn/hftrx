@@ -907,6 +907,15 @@
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
 		const portholder_t mask = 0x3FFFFF;	/* bits 0..21 */ \
 		arm_hardware_piod_altfn50(mask, GPIO_CFG_AF2); \
+		/* sync */ \
+		arm_hardware_piod_altfn50(1uL << 21, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_altfn50(1uL << 20, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_altfn50(1uL << 19, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		/* pixel clock */ \
+		arm_hardware_piod_altfn50(1uL << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
+		/* RED */ \
+		/* GREEN */ \
+		/* BLUE */ \
 		} while (0)
 
 	/* управление состоянием сигнала DISP панели */
