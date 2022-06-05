@@ -4830,6 +4830,12 @@ static void auto_tune(void)
 	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
 	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
 	save_i8(offsetof(struct nvmap, bands[b].tunerwork), 1);
+
+	vindex_t bn = getfreqband(gfreqs [bi]);		/* определяем по частоте, в каком диапазоне находимся */
+	save_i8(offsetof(struct nvmap, bands[bn].tunercap), tunercap);
+	save_i8(offsetof(struct nvmap, bands[bn].tunerind), tunerind);
+	save_i8(offsetof(struct nvmap, bands[bn].tunertype), tunertype);
+	save_i8(offsetof(struct nvmap, bands[bn].tunerwork), 1);
 	return;
 
 aborted:
