@@ -1753,8 +1753,8 @@ struct fb_t113_rgb_pdata_t
 	int rst_tconlcd;
 	int width;
 	int height;
-	int pwidth;
-	int pheight;
+	//int pwidth;
+	//int pheight;
 	int bits_per_pixel;
 	int bytes_per_pixel;
 	int pixlen;
@@ -2032,9 +2032,9 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
     pdat->clk_de = (void *) 396000000;
 	pdat->width = vdmode->width;
 	pdat->height =  vdmode->height;
-	pdat->pwidth =  216;
-	pdat->pheight = 135;
-	pdat->bits_per_pixel = 18;
+	//pdat->pwidth =  216;
+	//pdat->pheight = 135;
+	pdat->bits_per_pixel = LCDMODE_PIXELSIZE * 8; //18;
 	pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
 	pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
 	pdat->vram[0] = frames [0];
