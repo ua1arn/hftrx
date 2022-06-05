@@ -2036,7 +2036,7 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
 	pdat->height =  vdmode->height;
 	//pdat->pwidth =  216;
 	//pdat->pheight = 135;
-	pdat->bits_per_pixel = LCDMODE_PIXELSIZE * 8; //18;
+	pdat->bits_per_pixel = 18; //LCDMODE_PIXELSIZE * 8; //18;
 	pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
 	pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
 	pdat->vram[0] = frames [0];
@@ -2101,6 +2101,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	t113_de_set_address(& pdat0, p);
+	//local_delay_ms(200);
 }
 
 /* Palette reload */
