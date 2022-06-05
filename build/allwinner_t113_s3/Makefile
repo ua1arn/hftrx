@@ -229,6 +229,11 @@ app_run: boot256.bin $(PROJECT)_app.bin
 	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
 	$(XFEL) exec 0x40000000 
 
+app_runXBOT: boot256.bin $(PROJECT)_app.bin
+	$(XFEL) ddr t113-s3
+	$(XFEL) write 0x40000000 xboot_t113_800.bin
+	$(XFEL) exec 0x40000000 
+
 flash:
 	$(XFEL) spinor write 0x00000000 fsbl.alw32
 	$(XFEL) spinor write 0x00040000 ddr3init.bin
