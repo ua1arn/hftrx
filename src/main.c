@@ -4593,6 +4593,26 @@ static uint_fast16_t tuner_get_swr0(uint_fast16_t fullscale, adcvalholder_t * pr
 	return swr10 > fs ? fs : swr10;
 }
 
+void display2_swrsts22(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+	adcvalholder_t r;
+	adcvalholder_t f;
+	const uint_fast16_t swr = tuner_get_swr0(TUS_SWRMAX, & r, & f);
+	char b [23];
+
+	local_snprintf_P(b, ARRAY_SIZE(b), PSTR("%u.%02u f=%-5u r=%-5u"),
+		(unsigned) (swr + TUS_SWRMIN) / 100,
+		(unsigned) (swr + TUS_SWRMIN) % 100,
+		f,
+		r);
+	display_at(x, y, b);
+
+}
+
 static void printtunerstate(const char * title, uint_fast16_t swr, adcvalholder_t r, adcvalholder_t f)
 {
 
@@ -4618,7 +4638,7 @@ static void printtunerstate(const char * title, uint_fast16_t swr, adcvalholder_
 
 }
 
-static uint_fast16_t tuner_get_swr(const char * title, uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
+uint_fast16_t tuner_get_swr(const char * title, uint_fast16_t fullscale, adcvalholder_t * pr, adcvalholder_t * pf)
 {
 	adcvalholder_t r;
 	adcvalholder_t f;
@@ -4746,6 +4766,22 @@ static uint_fast8_t findbestswr(const tus_t * v, uint_fast8_t n)
 	return best;
 }
 
+static void savetunerallstate(uint_fast8_t bi, vindex_t b)
+{
+
+	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
+	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
+	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
+	save_i8(offsetof(struct nvmap, bands[b].tunerwork), tunerwork);
+
+	vindex_t bn = getfreqband(gfreqs [bi]);		/* определяем по частоте, в каком диапазоне находимся */
+	save_i8(offsetof(struct nvmap, bands[bn].tunercap), tunercap);
+	save_i8(offsetof(struct nvmap, bands[bn].tunerind), tunerind);
+	save_i8(offsetof(struct nvmap, bands[bn].tunertype), tunertype);
+	save_i8(offsetof(struct nvmap, bands[bn].tunerwork), tunerwork);
+
+}
+
 /* отсюда не возвращаемся пока не настроится тюнер */
 static void auto_tune(void)
 {	
@@ -4825,17 +4861,7 @@ static void auto_tune(void)
 	updateboard_tuner();
 	PRINTF(PSTR("auto_tune stop\n"));
 ////NoMoreTune:
-
-	save_i8(offsetof(struct nvmap, bands[b].tunercap), tunercap);
-	save_i8(offsetof(struct nvmap, bands[b].tunerind), tunerind);
-	save_i8(offsetof(struct nvmap, bands[b].tunertype), tunertype);
-	save_i8(offsetof(struct nvmap, bands[b].tunerwork), 1);
-
-	vindex_t bn = getfreqband(gfreqs [bi]);		/* определяем по частоте, в каком диапазоне находимся */
-	save_i8(offsetof(struct nvmap, bands[bn].tunercap), tunercap);
-	save_i8(offsetof(struct nvmap, bands[bn].tunerind), tunerind);
-	save_i8(offsetof(struct nvmap, bands[bn].tunertype), tunertype);
-	save_i8(offsetof(struct nvmap, bands[bn].tunerwork), 1);
+	savetunerallstate(bi, b);
 	return;
 
 aborted:
@@ -11599,7 +11625,9 @@ uif_key_bypasstoggle(void)
 	const vindex_t b = getvfoindex(bi);
 
 	tunerwork = calc_next(tunerwork, 0, 1);	// переключаем в противоположное состояние
-	save_i8(offsetof(struct nvmap, bands[b].tunerwork), 1);
+
+	savetunerallstate(bi, b);
+
 	if (tunerwork == 0)
 		reqautotune = 0;	// сброс идущей настройки
 	updateboard(1, 0);
@@ -12487,7 +12515,7 @@ display2_redrawbarstimed(
 	{
 		looptests();		// Периодически вызывается в главном цикле - тесты
 #if WITHAUTOTUNER
-		if (gtx && ! reqautotune)
+		//if (gtx && ! reqautotune)
 		{
 			adcvalholder_t r;
 			adcvalholder_t f;

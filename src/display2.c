@@ -2187,6 +2187,15 @@ static void display2_rec3(
 #endif /* WITHUSEAUDIOREC */
 }
 
+
+void display2_swrsts(
+	uint_fast8_t x,
+	uint_fast8_t y,
+	dctx_t * pctx
+	)
+{
+
+}
 // отображение состояния USB HOST
 static void display2_usbsts3(
 	uint_fast8_t x,
@@ -7125,7 +7134,7 @@ enum
 		{	0,	DLE1,	display2_datetime12,	REDRM_BARS, PGALL,	},	// DATE&TIME Jan-01 13:40
 		{	13,	DLE1,	display2_span9,		REDRM_MODE, PGALL, },	/* Получить информацию об ошибке настройки в режиме SAM */
 		{	23, DLE1,	display2_thermo4,	REDRM_VOLT, PGALL, },	// thermo sensor
-		{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PGALL, },	// USB host status
+		{	28, DLE1,	display2_usbsts3,		REDRM_BARS, PG0, },	// USB host status
 		{	32, DLE1,	display2_classa7,		REDRM_BARS, PGALL, },	// USB host status
 		//{	28, DLE1,	display_freqmeter10, REDRM_BARS, PGALL, },	// измеренная частота опоры
 
@@ -7133,6 +7142,9 @@ enum
 		{	3,				DLES,	display2_multilinemenu_block_groups,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (группы)
 		{	LABELW + 5,		DLES,	display2_multilinemenu_block_params,	REDRM_MLBL, REDRSUBSET_MENU, }, //Блок с пунктами меню (параметры)
 		{	LABELW*2 + 6,	DLES,	display2_multilinemenu_block_vals,	REDRM_MVAL, REDRSUBSET_MENU, }, //Блок с пунктами меню (значения)
+	#if WITHAUTOTUNER
+		{	28, 			DLE1,	display2_swrsts22,	REDRM_BARS, REDRSUBSET_MENU, },	// SWR METER display
+	#endif /* WITHAUTOTUNER */
 	#endif /* WITHMENU */
 
 		// sleep mode display

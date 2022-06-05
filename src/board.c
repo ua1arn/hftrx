@@ -20,7 +20,9 @@
 #include <math.h>
 
 
+#define CTLREG_SPISPEED	SPIC_SPEED1M
 #define CTLREG_SPIMODE	SPIC_MODE3
+#define CTLREG_SPIDELAY	50
 
 //#include "chip/cmx992.c"
 /********************************/
@@ -160,7 +162,7 @@ board_ctlregs_spi_send_frame(
 	)
 {
 #if WITHSPIHW || WITHSPISW
-	prog_spi_io(target, SPIC_SPEEDFAST, CTLREG_SPIMODE, 0, buff, size, NULL, 0, NULL, 0);
+	prog_spi_io(target, CTLREG_SPISPEED, CTLREG_SPIMODE, CTLREG_SPIDELAY, buff, size, NULL, 0, NULL, 0);
 #endif /* WITHSPIHW || WITHSPISW */
 }
 
