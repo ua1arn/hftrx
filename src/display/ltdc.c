@@ -1890,7 +1890,6 @@ static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat)
 {
-	PRINTF("allwnrt113_get_video0_x4_freq()=%lu\n", allwnrt113_get_video0_x4_freq());
 	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
 	int bp, total;
 	uint32_t val;
@@ -1947,11 +1946,6 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 
 static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat)
 {
-
-	const portholder_t mask = 0x3FFFFF;	// bits 0..21
-	arm_hardware_piod_altfn50(mask, GPIO_CFG_AF2);
-
-    PRINTF("pin lcd ok\n");
 /*	if(pdat->bits_per_pixel == 16)
 	{
 		fb_t113_cfg_gpios(T113_GPIOD1, 5, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
@@ -1975,7 +1969,6 @@ static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat)
 	t113_de_enable(pdat);
 	t113_de_set_address(pdat, pdat->vram[pdat->index]);
 	t113_de_enable(pdat);
-	PRINTF("tcon De ok\n");
 }
 
 
@@ -2052,6 +2045,8 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
 void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	allwnr_lcd_init(frames, vdmode);
+
+	ltdc_tfcon_cfg(vdmode);
 }
 
 /* Set MAIN frame buffer address. No waiting for VSYNC. */
