@@ -1523,7 +1523,7 @@ static void arm_hardware_gicsfetch(void)
 /* вызывается на любом ядре */
 static void arm_hardware_populate(int int_id)
 {
-	const uint32_t target_list = 0x01uL << (arm_hardware_cpuid() == 0);	// получателем будет ДРУГОЕ ядро
+	const uint32_t target_list = 0xFF & ~ (0x01uL << arm_hardware_cpuid());	// получателями будут остальные ядра
 	SPIN_LOCK(& populate_lock);
 	//PRINTF("arm_hardware_populate: int_id=%d\n", int_id);
 	//gicshadow_target [int_id] = targetcpu;
