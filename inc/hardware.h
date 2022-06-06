@@ -1050,8 +1050,6 @@ void adcdone_initialize(adcdone_t * p, void (* cb)(void *), void * ctx);
 void adcdone_add(adcdone_t * p);
 void adcdone_del(adcdone_t * p);
 
-uint_fast8_t bootloader_copyapp(uintptr_t apparea);
-uint_fast8_t bootloader_get_start(uintptr_t apparea, uintptr_t * ip);
 void bootloader_deffereddetach(void * arg);
 
 // targetadc2 - on-board ADC MCP3208-BI/SL chip select (potentiometers)

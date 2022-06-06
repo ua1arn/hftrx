@@ -55,8 +55,8 @@ CORE += -mfpu=vfpv4
 # Define optimisation level here
 # olny -Og for app
 # Application
-#OPT = -Og
-OPT = -Ofast -flto
+OPT = -Og
+#OPT = -Ofast -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2

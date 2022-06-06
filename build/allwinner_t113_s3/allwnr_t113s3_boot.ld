@@ -1,25 +1,13 @@
 /* $Id$ */
-/* ST STM32MP157AAB3/STM32MP157DAB1 memory layout */
+/* Allwinner T113-S3 layout */
 /* Linker script to configure memory regions. */
 
-/* Note: due to ROM code RAM needs, FSBL payload is limited to 247 KB.  */
-/* The ROM code loads the image into SYSRAM internal memory at address 0x2ffc2400.  */
-/*
-	https://community.st.com/s/question/0D50X0000BiDo0fSQC/stm32mp157aab-failed-to-boot-from-nor-qspi-baremetal?t=1575552683743
-	
-	Load address is ALWAYS 0x2FFC2400 for FSBL, whatever you put in the header (it is ignored for FSBL).
-	Entry point in the header could be anywhere after the header (i.e. 0x2FFC2500) and the end of the SYSRAM
-	I recommend to compile your FSBL SW to fit with a region starting from 0x2FFC2500 (with a size of max 247KB minus 256 for header).
-	Entry point will depend on your SW startup.s construction, it is not always at the very first address.
-*/
 MEMORY
 {
-  FLASH (rx) 	: ORIGIN = 0x70000000, LENGTH = 4M		/* W25Q32FVZPIG */
-  DDR3 (rwx) 	: ORIGIN = 0x44000000, LENGTH = 64M 		/* lower 64MB reserved for image, DDR3 single chip NT5CC128M16IP-DI */
-  RAM (rwx)	: ORIGIN = 0x2FFC2500, LENGTH = 0x00039B00	/* SYSRAM - 256k - 16k - 9k - 256 B */
-  TTB (rwx)  	: ORIGIN = 0x2FFFC000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
-  SRAM (rwx)  	: ORIGIN = 0x20000000, LENGTH = 384k		/* Cortex-M4 memories */
-  SRAM2 (rwx)  	: ORIGIN = 0x30000000, LENGTH = 96k		/* Cortex-M4 memories visible for Cortex-A7*/
+  RAM (rwx)	: ORIGIN = 0x00020100, LENGTH = 0x0007F00		/*  */
+  RAM2 (rwx): ORIGIN = 0x00030000, LENGTH = 16k		/*  */
+  TTB (rwx) : ORIGIN = 0x00034000, LENGTH = 16k		/* last 16 kB SYSRAM for TTB */
+  DDR3 (rwx) : ORIGIN = 0x40000000, LENGTH = 128M	/*  */
 }
 
 /* Library configurations */
@@ -186,14 +174,14 @@ SECTIONS
 		KEEP(*(COMMON))
 		. = ALIGN(32);
 		__bss_end__ = .;
-	} > RAM
+	} > RAM2
 
 	.noinit (NOLOAD):
 	{
 		. = ALIGN(32);
 		KEEP(*(.noinit*))
 		. = ALIGN(32);
-	} > RAM
+	} > RAM2
 
 	.vram (NOLOAD):
 	{
@@ -209,7 +197,7 @@ SECTIONS
 		end = __end__;
 		KEEP(*(.heap*))
 		__HeapLimit = .;
-	} > DDR3
+	} > RAM2
 
 	/* .stack_dummy section doesn't contains any symbols. It is only
 	 * used for linker to calculate size of stack sections, and assign

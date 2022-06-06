@@ -26,8 +26,12 @@
 
 	#define LSEFREQ 32768uL
 
+	#define BOARD_HOSC_FREQ 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
+
+	//#define PLL_CPU_N 42	/* 24 MHz * 42 = 1008 MHz */
+	#define PLL_CPU_N 33	/* 24 MHz * 33 = 792 MHz */
 
 	#if 1//WITHISBOOTLOADER
 		// Варианты конфигурации тактирования
@@ -35,134 +39,8 @@
 		// PLL1, PLL2 VCOs
 		#if WITHCPUXTAL || WITHCPUXOSC
 
-			// PLL1_1600
-			#define PLL1DIVM	2	// ref1_ck = 12 MHz (8..16 MHz valid)
-			#define PLL1DIVP	1	// MPU
-			#define PLL1DIVQ	2
-			#define PLL1DIVR	2
-
-			//#define PLL1DIVN	54	// 12*54 = 648 MHz
-			//#define PLL1DIVN	66	// 12*66 = 792 MHz
-			#define PLL1DIVN	(stm32mp1_overdrived() ? 66 : 54)	// Auto select
-
-			// PLL2_1600
-			#if 0
-				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
-				#define PLL2DIVN	44	// 528 MHz Valid division rations for DIVN: between 25 and 100
-				#define PLL2DIVP	2	// AXISS_CK div2=minimum 528/2 = 264 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-				#define PLL2DIVQ	1	// GPU clock divider = 528 MHz - 533 MHz max for all CPU revisions
-				#define PLL2DIVR	1	// DDR clock divider = 528 MHz
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
-			#else
-				// PLL2_1600
-				/* bad boards DDR3 clock = 300 MHz */
-				#define PLL2DIVM	2	// ref2_ck = 12 MHz (8..16 MHz valid)
-				#define PLL2DIVN	50	// 600 MHz Valid division rations for DIVN: between 25 and 100
-				#define PLL2DIVP	3	// AXISS_CK div2=minimum 1056/4 = 200 MHz PLL2 selected as AXI sub-system clock (pll2_p_ck) - 266 MHz max for all CPU revisions
-				#define PLL2DIVQ	2	// GPU clock divider = 300 MHz - 533 MHz max for all CPU revisions
-				#define PLL2DIVR	2	// DDR clock divider = 300 MHz
-				// less or equal 300 MHz
-				// DDR3 timings only 6-6-6 (in  according AN5168
-				//#include "src/sdram/stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
-			#endif
-
-			// PLL3_800
-			#define PLL3DIVM	2	// ref3_ck = 12 MHz (4..16 MHz valid)
-			#define PLL3DIVN	64	// 768 MHz
-			#define PLL3DIVQ	125	// I2S, SAI clock divider: 12/2*64 = 768 MHz. 768/125 = 6.144 MHz. 48 kHz * 64 = 3.072 MHz
-
-			// PLL4_800
-			#define PLL4DIVM	2	// ref2_ck = 12 MHz (4..16 MHz valid)
-			#define PLL4DIVN	64	// 768 MHz
-			#define PLL4DIVP	2	// div2
-			//#define PLL4DIVQ	19	// LTDC clock divider = 30.315 MHz
-			//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
-			//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
-			//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-			#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
-
-			//	In addition, if the USBO is used in full-speed mode only, the application can choose the
-			//	48 MHz clock source to be provided to the USBO:
-			// USBOSRC
-			//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
-			//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
-			// USBPHYSRC
-			//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
-			//  0x1: pll4_r_ck clock selected as kernel peripheral clock
-			//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
-			#define RCC_USBCKSELR_USBOSRC_VAL 0x01
-			#define RCC_USBCKSELR_USBPHYSRC_VAL 0x00
-
 
 		#else
-			// HSI version (HSI=64 MHz)
-			// PLL1_1600
-			#define PLL1DIVM	5	// ref1_ck = 12.8 MHz (8..16 MHz valid)
-			#define PLL1DIVP	1	// MPU
-			#define PLL1DIVQ	2
-			#define PLL1DIVR	2
-			//#define PLL1DIVN	50	// x25..x100: 12.8 * 50 = 640 MHz
-			//#define PLL1DIVN	62	// x25..x100: 12.8 * 62 = 793.6 MHz
-			#define PLL1DIVN	(stm32mp1_overdrived() ? 62 : 50)	// Auto select
-
-			#if 1
-				// PLL2_1600
-				#define PLL2DIVM	5	// ref2_ck = 12.8 MHz (8..16 MHz valid)
-				#define PLL2DIVN	41	// 12.8 * 41 = 524.8 MHz
-				#define PLL2DIVP	2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
-				#define PLL2DIVQ	1	// GPU clock divider
-				#define PLL2DIVR	1	// DDR clock divider
-				//#include "src/sdram/stm32mp15-mx_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_4G.dtsi"		// 256k*16
-				//#include "src/sdram/stm32mp15-mx_8G.dtsi"	// 512k*16
-			#else
-				// PLL2_1600
-				#define PLL2DIVM	5	// ref2_ck = 12.8 MHz (8..16 MHz valid)
-				#define PLL2DIVN	61//41	// 12.8 * 41 = 524.8 MHz
-				#define PLL2DIVP	3//2	// div2=minimum PLL2 selected as AXI sub-system clock (pll2_p_ck)
-				#define PLL2DIVQ	2//1	// GPU clock divider
-				#define PLL2DIVR	3//1	// DDR clock divider
-				// less or equal 300 MHz
-				// DDR3 timings only 6-6-6 (in  according AN5168
-				//#include "src/sdram/stm32mp15-mx_300MHz_1G.dtsi"	// 64k*16
-				#include "src/sdram/stm32mp15-mx_300MHz_2G.dtsi"	// 128k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_4G.dtsi"	// 256k*16
-				//#include "src/sdram/stm32mp15-mx_300MHz_8G.dtsi"	// 512k*16
-			#endif
-
-			// PLL3_800
-			// pll3_p_ck -> mcuss_ck - 209 MHz Max
-			#define PLL3DIVM	5	// ref3_ck = 12.8 MHz (4..16 MHz valid)
-			#define PLL3DIVN	60	// 768 MHz
-			#define PLL3DIVQ	125	// I2S, SAI clock divider: 12/2*64 = 768 MHz. 768/125 = 6.144 MHz. 48 kHz * 64 = 3.072 MHz
-
-			// PLL4_800
-			#define PLL4DIVM	5	// ref2_ck = 12.8 MHz  (4..16 MHz valid)
-			#define PLL4DIVN	60	// 12.8 * 60 = 768 MHz
-			#define PLL4DIVP	2	// div2
-			//#define PLL4DIVR	20	// USBPHY clock divider = 38.4 MHz
-			//#define PLL4DIVR	24	// USBPHY clock divider = 32 MHz
-			//#define PLL4DIVR	32	// USBPHY clock divider = 24 MHz
-			#define PLL4DIVR	16	// USBPHY clock divider = 48 MHz (для прямого тактирования USB_OTG FS)
-
-			//	In addition, if the USBO is used in full-speed mode only, the application can choose the
-			//	48 MHz clock source to be provided to the USBO:
-			// USBOSRC
-			//	0: pll4_r_ck clock selected as kernel peripheral clock (default after reset)
-			//	1: clock provided by the USB PHY (rcc_ck_usbo_48m) selected as kernel peripheral clock
-			// USBPHYSRC
-			//  0x0: hse_ker_ck clock selected as kernel peripheral clock (default after reset)
-			//  0x1: pll4_r_ck clock selected as kernel peripheral clock
-			//  0x2: hse_ker_ck/2 clock selected as kernel peripheral clock
-			#define RCC_USBCKSELR_USBOSRC_VAL 0x01
-			#define RCC_USBCKSELR_USBPHYSRC_VAL 0x01
 
 		#endif
 	#endif /* WITHISBOOTLOADER */
@@ -241,7 +119,7 @@
 	//#define WITHSPLITEX	1	/* Трехкнопочное управление режимами расстройки */
 
 	// +++ Одна из этих строк определяет тип дисплея, для которого компилируется прошивка
-#if WITHISBOOTLOADER || 1
+#if WITHISBOOTLOADER
 
 	#define LCDMODE_DUMMY	1
 
@@ -258,8 +136,8 @@
 	#define LCDMODE_AT070TN90 1	/* AT070TN90 panel (800*480) - 7" display */
 
 	//#define LCDMODE_V2 1	/* только главный экран 8 бит (две страницы), L8, без PIP */
-	#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
-	//#define LCDMODE_V5A	1	/* только главный экран с тремя видеобуферами 32 бит ARGB888, без PIP */
+	//#define LCDMODE_V2A_2PAGE 1	/* только главный экран 16 бит (две страницы), без PIP */
+	#define LCDMODE_V5A	1	/* только главный экран с двумя видеобуферами 32 бит ARGB888, без PIP */
 
 	//#define WITHFLATLINK 1	/* Работа с TFT панелью через преобразователь RGB->FlatLink SN75LVDS83B	*/
 	//#define WITHLCDDEMODE	1	/* DE MODE: MODE="1", VS and HS must pull high. */
@@ -386,7 +264,7 @@
 	//#define CODEC_TYPE_WM8731_USE_SPI	1
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
-	////#define CODEC1_TYPE CODEC_TYPE_NAU8822L
+	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
 	#define CODEC_TYPE_NAU8822_USE_SPI	1
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
@@ -409,11 +287,10 @@
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
 
 	//#define WITHWATCHDOG	1	/* разрешение сторожевого таймера в устройстве */
-	#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
+	//#define WITHSMPSYSTEM	1	/* разрешение поддержки SMP, Symmetric Multiprocessing */
 	#define WITHNESTEDINTERRUPTS	1	/* используется при наличии real-time части. */
 	#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 	#define WITHINTEGRATEDDSP		1	/* в программу включена инициализация и запуск DSP части. */
-	//#define WITHSPILOWSUPPORTT	1	/* Работа совместно с фоновым обменом SPI по прерываниям */
 
 	#define WITHIF4DSP	1			/*  "Дятел" */
 	//#define WITHDACOUTDSPAGC		1	/* АРУ реализовано как выход ЦАП на аналоговую часть. */
@@ -655,7 +532,7 @@
 	#define WITHCATEXT	1	/* Расширенный набор команд CAT */
 	//#define WITHELKEY	1
 	//#define WITHKBDENCODER 1	// перестройка частоты кнопками
-	#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
+	//#define WITHKEYBOARD 1	/* в данном устройстве есть клавиатура */
 	#define KEYBOARD_USE_ADC	1	/* на одной линии установлено  четыре  клавиши. на vref - 6.8K, далее 2.2К, 4.7К и 13K. */
 
 	// ST LM235Z

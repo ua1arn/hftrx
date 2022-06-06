@@ -19,6 +19,8 @@
 TRGT = arm-none-eabi-
 #TRGT = C:\user\klen\bin\arm-kgp-eabi-
 
+XFEL = ./xfel-windows-v1.2.7/xfel
+
 #UADEFS += -D"WITHSMPSYSTEM"
 
 PRJROOT := ../..
@@ -56,7 +58,8 @@ CORE += -mfpu=vfpv4
 # olny -Og for app
 # Application
 #OPT = -Og
-OPT = -Ofast -flto
+#OPT = -Ofast -flto
+OPT = -Os -flto
 
 CMSISDIR = $(PRJROOT)/CMSIS_5/CMSIS
 LWIPDIR = $(PRJROOT)/lib/lwip-2.1.2
@@ -206,7 +209,7 @@ ASFLAGS += -MD -MP -MF ./$(@D)/$(@F).d
 
 .PHONY: all bootloader flash clean
 
-all: APP2 $(PROJECT)_app.alw32 app.hex
+all: APP2 $(PROJECT)_app.alw32
 
 allZ:
 	@echo Src
@@ -214,30 +217,39 @@ allZ:
 	@echo Obj at $(OBJDIR)
 	@echo $(abspath $(OBJS))
 
-bootloader: BOOT2 fsbl.alw32 boot.hex
+bootloader: BOOT2 fsbl.alw32
   
-app_run: $(PROJECT)_app.alw32
-	./dfu-util --alt 2 --transfer-size 4096 --dfuse-address 0xC0000000 --download "tc1_stm32mp157axx_app.alw32"
-	./dfu-util --alt 2 --detach
+app_runBOOT: fsbl.alw32
+	$(XFEL) write 0x00028000 fsbl.alw32
+	$(XFEL) exec 0x00028000 
+  
+app_run: boot256.bin $(PROJECT)_app.bin
+	$(XFEL) ddr t113-s3
+	$(XFEL) write 0x40000000 boot256.bin
+	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
+	$(XFEL) exec 0x40000000 
 
-flash: $(PROJECT)_app.alw32
-	./dfu-util --alt 0 --dfuse-address 0x70080000 --download $(PROJECT)_app.alw32
+app_runXBOOT: boot256.bin $(PROJECT)_app.bin
+	$(XFEL) ddr t113-s3
+	$(XFEL) write 0x40000000 xboot_t113_800.bin
+	$(XFEL) exec 0x40000000 
+
+flash:
+	$(XFEL) spinor write 0x00000000 fsbl.alw32
+	$(XFEL) spinor write 0x00040000 ddr3init.bin
+	$(XFEL) spinor write 0x00080000 $(PROJECT)_app.alw32
 
 BOOT2: version $(PROJECT)_boot.elf $(PROJECT)_boot.bin
 
 APP2: version $(PROJECT)_app.elf $(PROJECT)_app.bin
 
 fsbl.alw32: $(PROJECT)_boot.bin
-	./stm32image -l 0x2FFC2500 -e 0x2FFC2500 -s $(PROJECT)_boot.bin -d $@
-	
-boot.hex: fsbl.alw32
-	./bin2ihex -l 0x00000000 -s fsbl.alw32 >$@
+	cp boottemplate.bin fsbl.alw32.tmp
+	./wtitefsbl.exe fsbl.alw32.tmp 0x00100 tc1_alwnrt113s3_boot.bin -w
+	./checksum.exe fsbl.alw32.tmp fsbl.alw32
 	
 $(PROJECT)_app.alw32: $(PROJECT)_app.bin
-	./stm32image -l 0xC0000100 -e 0xC0000100 -s $(PROJECT)_app.bin -d $@
-	
-app.hex: $(PROJECT)_app.alw32
-	./bin2ihex -l 0x00080000 -s $(PROJECT)_app.alw32 >$@
+	./stm32image -l 0x40000100 -e 0x40000100 -s $(PROJECT)_app.bin -d $@
 
 $(OBJSC):
 	@mkdir -p $(@D)

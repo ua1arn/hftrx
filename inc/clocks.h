@@ -148,5 +148,13 @@ unsigned long hardware_get_apb1_tim_freq(void);
 unsigned long hardware_get_apb2_freq(void);
 unsigned long hardware_get_apb2_tim_freq(void);
 
+// Allwinner T113-S3
+unsigned long allwnrt113_get_usart_freq(void);
+unsigned long allwnr_t128s3_get_spi_freq(void);
+unsigned long allwnr_t128s3_get_arm_freq(void);
+unsigned long allwnr_t128s3_get_pl1_timer_freq(void);
+unsigned long allwnrt113_get_video0_x4_freq(void);
+unsigned long allwnrt113_get_video0_x2_freq(void);
+unsigned long allwnrt113_get_video0_x1_freq(void);
 
 #endif /* INC_CLOCKS_H_ */

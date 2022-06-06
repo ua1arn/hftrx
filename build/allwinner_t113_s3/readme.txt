@@ -1,5 +1,8 @@
 ﻿Каталог для сборки версии программы под процессор Allwinner T133-S3
 
+Dual-core ARM CortexTM-A7
+32 KB L1 I-cache + 32 KB L1 D-cache per core, and 256 KB L2 cache
+
 Программа:
 Выполнить make clean, затем make
 Результатом работы является файл tc1_alwnrt113s3.alw32

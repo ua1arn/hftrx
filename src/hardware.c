@@ -74,7 +74,7 @@ void xc7z_hardware_initialize(void)
 float xc7z_get_cpu_temperature(void)
 {
 #if ! WITHISBOOTLOADER
-	u32 TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
+	uint32_t TempRawData = XAdcPs_GetAdcData(& xc7z_xadc, XADCPS_CH_TEMP);
 	return XAdcPs_RawToTemperature(TempRawData);
 #else
 	return 0;
@@ -1437,6 +1437,9 @@ r7s721_adi_irq_handler(void)
 	}
 }
 
+#elif CPUSTYPE_ALLWNT113
+	#warning Unhandled CPUSTYPE_ALLWNT113
+
 #else
 	#error No CPUSTYLE_XXXXX defined
 #endif
@@ -1540,6 +1543,10 @@ hardware_adc_startonescan(void)
 
 #elif CPUSTYLE_STM32F0XX
 	#warning: #warning Must be implemented for this CPU
+
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Unhandled CPUSTYPE_ALLWNT113
 
 #else
 
@@ -2760,7 +2767,14 @@ ttb_accessbits(uintptr_t a, int ro, int xn)
 
 #elif CPUSTYPE_ALLWNT113
 
-	#warning ttb_accessbits: Unhandled CPUSTYPE_ALLWNT113
+	if (a < 0x00400000uL)
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
+	if (a >= 0x40000000uL && a < 0xC0000000uL)			//  DDR3 - 2 GB
+		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+//	if (a >= 0x000020000 && a < 0x000038000)			//  SYSRAM - 64 kB
+//		return addrbase | TTB_PARA_NORMAL_CACHE(ro, 0);
+
 	return addrbase | TTB_PARA_DEVICE;
 
 #else
@@ -2779,6 +2793,7 @@ sysinit_ttbr_initialize(void)
 {
 	extern volatile uint32_t __TTB_BASE;		// получено из скрипта линкера
 	volatile uint32_t * const tlbbase = & __TTB_BASE;
+	ASSERT(((uintptr_t) tlbbase & 0x3F00) == 0);
 
 #if 0
 	/* Set location of level 1 page table
@@ -2851,11 +2866,6 @@ ttb_initialize(uint32_t (* accessbits)(uintptr_t a, int ro, int xn), uintptr_t t
 		textsize -= pagesize;
 		textstart += pagesize;
 	}
-
-#if (CPUSTYLE_STM32MP1 || CPUSTYLE_XC7Z) && ! WITHISBOOTLOADER
-	/* R/O, XN for pages table. - 1 MB size. */
-	tlbbase [(uintptr_t) tlbbase / pagesize] = accessbits((uintptr_t) tlbbase, 1, 1);
-#endif /* CPUSTYLE_STM32MP1 && ! WITHISBOOTLOADER */
 }
 
 // TODO: use MMU_TTSection. See also MMU_TTPage4k MMU_TTPage64k and MMU_CreateTranslationTable
@@ -3025,6 +3035,7 @@ static void FLASHMEMINITFUNC
 sysinit_mmu_initialize(void)
 {
 	//PRINTF("sysinit_mmu_initialize\n");
+
 #if (__CORTEX_A != 0) || CPUSTYLE_ARM9
 	// MMU iniitialize
 
@@ -3093,7 +3104,7 @@ sysinit_mmu_initialize(void)
 
 #endif /* (__CORTEX_A != 0) */
 
-	//PRINTF("MMU initialized\n");
+	//PRINTF("sysinit_mmu_initialize done.\n");
 }
 
 // ОБщая для всех процессоров инициализация
@@ -3298,6 +3309,14 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 	__SEV();
 }
 
+
+#elif CPUSTYPE_ALLWNT113
+
+
+static void cortexa_mp_cpu1_start(uintptr_t startfunc)
+{
+#warning Unhandled CPUSTYPE_ALLWNT113
+}
 
 #endif /* CPUSTYLE_STM32MP1 */
 
@@ -3680,10 +3699,7 @@ cpu_tms320f2833x_flash_waitstates(uint_fast8_t flashws, uint_fast8_t otpws)
 void cpu_initdone(void)
 {
 #if WITHISBOOTLOADER
-	#if BOOTLOADER_RAMSIZE
-		if (bootloader_copyapp(BOOTLOADER_RAMAREA))	/* копирование исполняемого образа (если есть) в требуемое место */
-			PRINTF("cpu_initdone: No application image\n");
-	#endif /* BOOTLOADER_RAMSIZE */
+
 #if CPUSTYLE_R7S721
 
 	if ((CPG.STBCR9 & CPG_STBCR9_BIT_MSTP93) == 0)

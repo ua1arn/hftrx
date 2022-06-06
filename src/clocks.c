@@ -1802,6 +1802,165 @@ unsigned long hardware_get_spi_freq(void)
 #define BOARD_TIM3_FREQ (CPU_FREQ / 1)
 #warning TODO: use real clocks
 
+#elif CPUSTYPE_ALLWNT113
+
+#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
+#define BOARD_CLK32K_FREQ 32000uL
+#define BOARD_CLK16M_RC_FREQ 16000000uL
+
+static uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllM = 1; //1 + ((reg >> 1) & 0x01);
+	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN;
+}
+
+static uint_fast64_t allwnrt113_get_pll_peri_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
+	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN;
+}
+
+unsigned long allwnrt113_get_pll_peri_x2_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
+	const uint_fast32_t pllP0 = 1 + ((reg >> 16) & 0x07);
+	return allwnrt113_get_pll_peri_freq() / pllP0;
+}
+
+unsigned long allwnrt113_get_pll_peri_800M_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
+	const uint_fast32_t pllP1 = 1 + ((reg >> 20) & 0x07);
+	return allwnrt113_get_pll_peri_freq() / pllP1;
+}
+
+unsigned long allwnrt113_get_video0_x4_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_VIDEO0_CTRL_REG;
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
+	const uint_fast32_t div2 = 1 + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / div2;
+}
+
+unsigned long allwnrt113_get_video0_x2_freq(void)
+{
+	return allwnrt113_get_video0_x4_freq() / 2;
+}
+
+unsigned long allwnrt113_get_video0_x1_freq(void)
+{
+	return allwnrt113_get_video0_x4_freq() / 4;
+}
+
+unsigned long allwnrt113_get_pll_peri_x1_freq(void)
+{
+	return allwnrt113_get_pll_peri_x2_freq() / 2;
+}
+
+unsigned long allwnrt113_get_psi_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->PSI_CLK_REG;
+	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const unsigned long M = 1uL + ((clkreg >> 0) & 0x03);
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		/* 00: HOSC */
+		return BOARD_HOSC_FREQ / M / N;
+	case 0x01:
+		/* 01: CLK32K */
+		return BOARD_CLK32K_FREQ / M / N;
+	case 0x02:
+		/* 010: CLK16M_RC */
+		return BOARD_CLK16M_RC_FREQ / M / N;
+	case 0x03:
+		/* 11: PLL_PERI(1X) */
+		return allwnrt113_get_pll_peri_x1_freq() / M / N;
+	}
+}
+
+unsigned long allwnrt113_get_apb0_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->APB0_CLK_REG;
+	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		/* 00: HOSC */
+		return BOARD_HOSC_FREQ / M / N;
+	case 0x01:
+		/* 01: CLK32K */
+		return BOARD_CLK32K_FREQ / M / N;
+	case 0x02:
+		/* 10: PSI_CLK */
+		return allwnrt113_get_psi_freq() / M / N;
+	case 0x03:
+		/* 11: PLL_PERI(1X) */
+		return allwnrt113_get_pll_peri_x1_freq() / M / N;
+	}
+}
+
+unsigned long allwnrt113_get_apb1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->APB1_CLK_REG;
+	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
+	switch ((clkreg >> 24) & 0x03)
+	{
+	default:
+	case 0x00:
+		/* 00: HOSC */
+		return BOARD_HOSC_FREQ / M / N;
+	case 0x01:
+		/* 01: CLK32K */
+		return BOARD_CLK32K_FREQ / M / N;
+	case 0x02:
+		/* 10: PSI_CLK */
+		return allwnrt113_get_psi_freq() / M / N;
+	case 0x03:
+		/* 11: PLL_PERI(1X) */
+		return allwnrt113_get_pll_peri_x1_freq() / M / N;
+	}
+}
+
+unsigned long allwnrt113_get_ahb_freq(void)
+{
+	return BOARD_HOSC_FREQ;
+}
+
+unsigned long allwnrt113_get_usart_freq(void)
+{
+	return allwnrt113_get_apb1_freq();
+}
+
+unsigned long allwnrt113_get_twi_freq(void)
+{
+	return allwnrt113_get_apb1_freq();
+}
+
+unsigned long allwnr_t128s3_get_spi_freq(void)
+{
+	return allwnrt113_get_ahb_freq();
+}
+
+unsigned long allwnr_t128s3_get_arm_freq(void)
+{
+	return allwnrt113_get_pll_cpu_freq();
+}
+
+unsigned long allwnr_t128s3_get_pl1_timer_freq(void)
+{
+	return allwnrt113_get_ahb_freq();
+}
+
 #endif /* CPUSTYLE_STM32MP1 */
 
 
@@ -2274,6 +2433,55 @@ void hardware_spi_io_delay(void)
 		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
 	}
 
+#elif CPUSTYPE_ALLWNT113
+
+//	#if WITHELKEY
+//
+//	// 1/20 dot length interval timer
+//	void
+//	TIM3_IRQHandler(void)
+//	{
+//		const portholder_t st = TIM3->SR;
+//		if ((st & TIM_SR_UIF) != 0)
+//		{
+//			TIM3->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+//			spool_elkeybundle();
+//		}
+//		else
+//		{
+//			ASSERT(0);
+//		}
+//	}
+//	#endif /* WITHELKEY */
+//
+//	void
+//	TIM5_IRQHandler(void)
+//	{
+//		const portholder_t st = TIM5->SR;
+//		if ((st & TIM_SR_UIF) != 0)
+//		{
+//			TIM5->SR = ~ TIM_SR_UIF;	// clear UIF interrupt request
+//			spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+//			spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+//		}
+//		else
+//		{
+//			ASSERT(0);
+//		}
+//	}
+
+	static uint_fast32_t gtimloadvalue;
+
+	void
+	SecurePhysicalTimer_IRQHandler(void)
+	{
+		//IRQ_ClearPending (SecurePhysicalTimer_IRQn);
+		PL1_SetLoadValue(gtimloadvalue);
+
+		spool_systimerbundle1();	// При возможности вызываются столько раз, сколько произошло таймерных прерываний.
+		spool_systimerbundle2();	// Если пропущены прерывания, компенсировать дополнительными вызовами нет смысла.
+	}
+
 #elif CPUSTYLE_R7S721
 
 	// Таймер "тиков"
@@ -2637,12 +2845,30 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
 	// Private timer use
 	// Disable Private Timer and set load value
-	PL1_SetControl(PL1_GetControl() & ~ 0x01);	// CNTP_CTL
+	PL1_SetControl(0);	// CNTP_CTL
 	PL1_SetLoadValue(gtimloadvalue);	// CNTP_TVAL
-	// Enable timer control
-	PL1_SetControl(PL1_GetControl() | 0x01);
 
 	//arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
+
+	// Enable timer control
+	PL1_SetControl(1);
+
+#elif CPUSTYPE_ALLWNT113
+	// Prepare funcionality: use CNTP
+	const uint_fast32_t gtimfreq = allwnr_t128s3_get_pl1_timer_freq();
+
+	PL1_SetCounterFrequency(gtimfreq);	// CNTFRQ
+
+	gtimloadvalue = calcdivround2(gtimfreq, ticksfreq) - 1;
+	// Private timer use
+	// Disable Private Timer and set load value
+	PL1_SetControl(0);	// CNTP_CTL
+	PL1_SetLoadValue(gtimloadvalue);	// CNTP_TVAL
+
+	arm_hardware_set_handler_system(SecurePhysicalTimer_IRQn, SecurePhysicalTimer_IRQHandler);
+
+	// Enable timer control
+	PL1_SetControl(1);
 
 #elif CPUSTYLE_XC7Z /* || CPUSTYLE_XCZU */
 
@@ -5853,6 +6079,210 @@ void hardware_set_dotclock(unsigned long dotfreq)
 
 
 #if CPUSTYPE_ALLWNT113
+
+static inline void sdelay(int loops)
+{
+	local_delay_ms(10);
+//	__asm__ __volatile__ ("1:\n" "subs %0, %1, #1\n"
+//		"bne 1b":"=r" (loops):"0"(loops));
+}
+
+static void set_pll_cpux_axi(void)
+{
+	uint32_t val;
+
+	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
+	CCU->CPU_AXI_CFG_REG = (0 << 24) | (3 << 8) | (1 << 0);
+	sdelay(1);
+
+	/* Disable pll gating */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~(1 << 27);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Enable pll ldo */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1 << 30);
+	CCU->PLL_CPU_CTRL_REG = val;
+	sdelay(5);
+
+	/* Set default clk to 1008mhz */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~ ((0x3 << 16) | (0xff << 8) | (0x3 << 0));
+	val |= ((PLL_CPU_N - 1) << 8);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Lock enable */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1 << 29);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Enable pll */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1 << 31);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Wait pll stable */
+	while((CCU->PLL_CPU_CTRL_REG & (0x1 << 28)) == 0)
+		;
+	sdelay(20);
+
+	/* Enable pll gating */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val |= (1 << 27);
+	CCU->PLL_CPU_CTRL_REG = val;
+
+	/* Lock disable */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~(1 << 29);
+	CCU->PLL_CPU_CTRL_REG = val;
+	sdelay(1);
+
+	/* Set and change cpu clk src */
+	val = CCU->CPU_AXI_CFG_REG;
+	val &= ~(0x07 << 24 | 0x3 << 16 | 0x3 << 8 | 0xf << 0);
+	val |= (0x03 << 24 | 0x0 << 16 | 0x0 << 8 | 0x0 << 0);
+	CCU->CPU_AXI_CFG_REG = val;
+	sdelay(1);
+	//sys_uart_puts("set_pll_cpux_axi Ok \n");
+}
+
+static void set_pll_periph0(void)
+{
+	uint32_t val;
+
+	/* Periph0 has been enabled */
+	if (CCU->PLL_PERI_CTRL_REG & (1 << 31))
+	{
+		//sys_uart_puts("PLL_PERI_REG = ");
+		//sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_PLL_PERI_CTRL_REG));
+		//sys_uart_puts("\n");
+		return;
+	}
+
+	/* Change psi src to osc24m */
+	val = CCU->PSI_CLK_REG;
+	val &= (~(0x3 << 24));
+	CCU->PSI_CLK_REG = val;
+
+	/* Set default val */
+	CCU->PLL_PERI_CTRL_REG = 0x63 << 8;
+
+	/* Lock enable */
+	val = CCU->PLL_PERI_CTRL_REG;
+	val |= (1 << 29);
+	CCU->PLL_PERI_CTRL_REG = val;
+
+	/* Enabe pll 600m(1x) 1200m(2x) */
+	val = CCU->PLL_PERI_CTRL_REG;
+	val |= (1 << 31);
+	CCU->PLL_PERI_CTRL_REG = val;
+
+	/* Wait pll stable */
+	while(!(CCU->PLL_PERI_CTRL_REG & (0x1 << 28)))
+		;
+	sdelay(20);
+
+	/* Lock disable */
+	val = CCU->PLL_PERI_CTRL_REG;
+	val &= ~(1 << 29);
+	CCU->PLL_PERI_CTRL_REG = val;
+
+	//sys_uart_puts("set_pll_periph0 Ok\n");
+	//sys_uart_puts("PLL_PERI_REG = ");
+	//sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_PLL_PERI_CTRL_REG));
+	//sys_uart_puts("\n");
+}
+
+static void set_ahb(void)
+{
+	CCU->PSI_CLK_REG = (2 << 0) | (0 << 8);
+	CCU->PSI_CLK_REG |= (0x03 << 24);
+	sdelay(1);
+}
+
+static void set_apb(void)
+{
+	CCU->APB0_CLK_REG = (2 << 0) | (1 << 8);
+	CCU->APB0_CLK_REG |= (0x03 << 24);
+	sdelay(1);
+
+	// UARTx
+	CCU->APB1_CLK_REG = (2 << 0) | (1 << 8);
+	CCU->APB1_CLK_REG |= (0x03 << 24);	/* 11: PLL_PERI(1X) */
+	//CCU->APB1_CLK_REG |= (0x02 << 24);	/* 10: PSI_CLK */
+	sdelay(1);
+
+/*
+	sys_uart_puts("APB0_CLK_REG = ");
+	sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_APB0_CLK_REG));
+	sys_uart_puts("\n");
+
+	sys_uart_puts("APB1_CLK_REG = ");
+	sys_uart_send_u32_t(read32(T113_CCU_BASE + CCU_APB1_CLK_REG));
+	sys_uart_puts("\n");*/
+}
+
+static void set_dma(void)
+{
+	/* Dma reset */
+	CCU->DMA_BGR_REG |= (1 << 16);
+	sdelay(20);
+	/* Enable gating clock for dma */
+	CCU->DMA_BGR_REG |= (1 << 0);
+	sdelay(20);
+}
+
+static void set_mbus(void)
+{
+	uint32_t val;
+
+	/* Reset mbus domain */
+	CCU->MBUS_CLK_REG |= (1 << 30);
+	sdelay(1);
+	/* Enable mbus master clock gating */
+	CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
+}
+
+static void set_module(volatile uint32_t * reg)
+{
+	uint32_t val;
+
+	if(!(* reg & (1 << 31)))
+	{
+		* reg |= (1 << 31) | (1 << 30);
+
+		/* Lock enable */
+		* reg |= (1 << 29);
+
+		/* Wait pll stable */
+		while(!(* reg & (0x1 << 28)))
+			;
+		sdelay(20);
+
+		/* Lock disable */
+		val = * reg;
+		val &= ~(1 << 29);
+		* reg = val;
+	}
+}
+
+void sys_clock_init(void)
+{
+	//set_pll_cpux_axi(); // в оригинале закомментировано
+	set_pll_periph0();
+	set_ahb();
+	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
+	set_dma();
+	set_mbus();
+	set_module(& CCU->PLL_PERI_CTRL_REG);
+	set_module(& CCU->PLL_VIDEO0_CTRL_REG);
+	set_module(& CCU->PLL_VIDEO1_CTRL_REG);
+	set_module(& CCU->PLL_VE_CTRL_REG);
+	set_module(& CCU->PLL_AUDIO0_CTRL_REG);
+	set_module(& CCU->PLL_AUDIO1_CTRL_REG);
+}
+
 #endif /* CPUSTYPE_ALLWNT113 */
 
 uint32_t SystemCoreClock;     /*!< System Clock Frequency (Core Clock)  */
@@ -6146,7 +6576,12 @@ sysinit_pll_initialize(void)
 
 	#endif /* WITHISBOOTLOADER */
 
+#elif CPUSTYPE_ALLWNT113
+
+		sys_clock_init();
+
 #endif
+
 	SystemCoreClock = CPU_FREQ;
 }
 
@@ -11051,8 +11486,16 @@ hardware_uart1_set_speed(uint_fast32_t baudrate)
 	  r &= ~(XUARTPS_CR_RX_DIS | XUARTPS_CR_TX_DIS); // Clear TX & RX disabled
 	  UART0->CR = r;
 
+#elif CPUSTYPE_ALLWNT113
+
+	unsigned divisor = calcdivround2(BOARD_USART_FREQ, baudrate * 16);
+
+	UART0->UART_LCR |= (1 << 7);
+	UART0->DATA = divisor & 0xff;
+	UART0->DLH_IER = (divisor >> 8) & 0xff;
+	UART0->UART_LCR &= ~ (1 << 7);
 #else
-	#warning Undefined CPUSTYLE_XXX
+	#error Undefined CPUSTYLE_XXX
 #endif
 
 }
