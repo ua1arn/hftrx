@@ -462,7 +462,7 @@
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */
 	#endif
-	#if 0
+	#if 1
 		#define WITHLWIP 1
 		#define WITHUSEMALLOC	1	/* разрешение поддержки malloc/free/calloc/realloc */
 		#define FORMATFROMLIBRARY 	1	/* поддержка печати плавающей точки */

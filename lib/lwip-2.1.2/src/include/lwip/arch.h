@@ -77,11 +77,11 @@
  * in turn pull in a lot of standard libary code. In resource-constrained 
  * systems, this should be defined to something less resource-consuming.
  */
-//#ifndef LWIP_PLATFORM_DIAG
-//#define LWIP_PLATFORM_DIAG(x) do {printf x;} while(0)
-//#include <stdio.h>
-//#include <stdlib.h>
-//#endif
+#ifndef LWIP_PLATFORM_DIAG
+#define LWIP_PLATFORM_DIAG(x) do {printf x;} while(0)
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
 /** Platform specific assertion handling.\n
  * Note the default implementation pulls in printf, fflush and abort, which may

@@ -37,13 +37,17 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#if 0 // old settings
+
 #if 0//WITHISBOOTLOADER
 	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
 	#define NO_SYS                          1
 	#define LWIP_RAW                        1
 	#define LWIP_NETCONN                    0
 	#define LWIP_SOCKET                     0
-	//#define LWIP_DHCP                       1	/* DHCP client */
+#if ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED
+	#define LWIP_DHCP                       1
+#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED */
 	#define LWIP_ICMP                       1
 	#define LWIP_UDP                        1
 	#define LWIP_TCP                        1
@@ -70,10 +74,13 @@
 #else /* WITHISBOOTLOADER */
 	/* Prevent having to link sys_arch.c (we don't test the API layers in unit tests) */
 	#define NO_SYS                          1
+	#define NO_SYS_NO_TIMERS                1
 	#define LWIP_RAW                        1
 	#define LWIP_NETCONN                    0
 	#define LWIP_SOCKET                     0
-	//#define LWIP_DHCP                       1	/* DHCP client */
+#if 1//ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED
+	#define LWIP_DHCP                       1
+#endif /* ARM_STM32MP1_LFBGA354_CTLSTYLE_PANGUBOARD_V1P2_H_INCLUDED */
 	#define LWIP_ICMP                       1
 	#define LWIP_UDP                        1
 	#define LWIP_TCP                        1
@@ -100,7 +107,6 @@
 	//#define LWIP_AUTOIP 1
 
 #endif	/* WITHISBOOTLOADER */
-#define LWIP_IPV4                       1
 
 #define UDP_TTL 64
 #define ETH_PAD_SIZE                    64
@@ -118,7 +124,7 @@
  * critical regions during buffer allocation, deallocation and memory
  * allocation and deallocation.
  */
-#define SYS_LIGHTWEIGHT_PROT 0
+#define SYS_LIGHTWEIGHT_PROT 1
 typedef unsigned sys_prot_t;
 
 //#define LWIP_ALLOW_MEM_FREE_FROM_OTHER_CONTEXT 1
@@ -138,7 +144,7 @@ typedef unsigned sys_prot_t;
 #define LWIP_DBG_MIN_LEVEL     LWIP_DBG_LEVEL_ALL
 #define LWIP_DBG_TYPES_ON      (LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
 
-#define HTTPD_DEBUG           LWIP_DBG_ON
+//#define HTTPD_DEBUG           LWIP_DBG_ON
 //#define ETHARP_DEBUG           LWIP_DBG_ON
 #define NETIF_DEBUG            LWIP_DBG_ON
 //#define PBUF_DEBUG             LWIP_DBG_ON
@@ -150,20 +156,20 @@ typedef unsigned sys_prot_t;
 #define INET_DEBUG             LWIP_DBG_ON
 #define IP_DEBUG               LWIP_DBG_ON
 #define IP_REASS_DEBUG         LWIP_DBG_ON
-#define RAW_DEBUG              LWIP_DBG_ON
-#define MEM_DEBUG              LWIP_DBG_ON
-#define MEMP_DEBUG             LWIP_DBG_ON
-#define SYS_DEBUG              LWIP_DBG_ON
-#define TIMERS_DEBUG           LWIP_DBG_ON
-#define TCP_DEBUG              LWIP_DBG_ON
-#define TCP_INPUT_DEBUG        LWIP_DBG_ON
-#define TCP_FR_DEBUG           LWIP_DBG_ON
-#define TCP_RTO_DEBUG          LWIP_DBG_ON
-#define TCP_CWND_DEBUG         LWIP_DBG_ON
-#define TCP_WND_DEBUG          LWIP_DBG_ON
-#define TCP_OUTPUT_DEBUG       LWIP_DBG_ON
-#define TCP_RST_DEBUG          LWIP_DBG_ON
-#define TCP_QLEN_DEBUG         LWIP_DBG_ON
+//#define RAW_DEBUG              LWIP_DBG_ON
+//#define MEM_DEBUG              LWIP_DBG_ON
+//#define MEMP_DEBUG             LWIP_DBG_ON
+//#define SYS_DEBUG              LWIP_DBG_ON
+//#define TIMERS_DEBUG           LWIP_DBG_ON
+//#define TCP_DEBUG              LWIP_DBG_ON
+//#define TCP_INPUT_DEBUG        LWIP_DBG_ON
+//#define TCP_FR_DEBUG           LWIP_DBG_ON
+//#define TCP_RTO_DEBUG          LWIP_DBG_ON
+//#define TCP_CWND_DEBUG         LWIP_DBG_ON
+//#define TCP_WND_DEBUG          LWIP_DBG_ON
+//#define TCP_OUTPUT_DEBUG       LWIP_DBG_ON
+//#define TCP_RST_DEBUG          LWIP_DBG_ON
+//#define TCP_QLEN_DEBUG         LWIP_DBG_ON
 #define UDP_DEBUG              LWIP_DBG_ON
 #define TCPIP_DEBUG            LWIP_DBG_ON
 #define SLIP_DEBUG             LWIP_DBG_ON
@@ -171,64 +177,104 @@ typedef unsigned sys_prot_t;
 #define AUTOIP_DEBUG           LWIP_DBG_ON
 #define DNS_DEBUG              LWIP_DBG_ON
 #define IP6_DEBUG              LWIP_DBG_ON
-#define PING_DEBUG				LWIP_DBG_ON
 
 void display_vtty_printf(const char * format, ...);
 //#define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; } while (0)
 #define LWIP_PLATFORM_DIAG(mmsg) do { PRINTF mmsg; /*display_vtty_printf mmsg; */} while (0)
 
-/* LwIP Stack Parameters (modified compared to initialization value in opt.h) -*/
-/* Parameters set in STM32CubeMX LwIP Configuration GUI -*/
-/*----- Default value in ETH configuration GUI in CubeMx: 1524 -----*/
-#define ETH_RX_BUFFER_SIZE 1524
-/*----- Value in opt.h for NO_SYS: 0 -----*/
-#define NO_SYS 1
-/*----- Value in opt.h for SYS_LIGHTWEIGHT_PROT: 1 -----*/
-#define SYS_LIGHTWEIGHT_PROT 0
-/*----- Value in opt.h for MEM_ALIGNMENT: 1 -----*/
-#define MEM_ALIGNMENT 8
-/*----- Default Value for H7 devices: 0x30044000 -----*/
-//#define LWIP_RAM_HEAP_POINTER 0x30044000
-/*----- Value supported for H7 devices: 1 -----*/
-#define LWIP_SUPPORT_CUSTOM_PBUF 1
-/*----- Value in opt.h for LWIP_ETHERNET: LWIP_ARP || PPPOE_SUPPORT -*/
-#define LWIP_ETHERNET 1
-/*----- Value in opt.h for LWIP_DNS_SECURE: (LWIP_DNS_SECURE_RAND_XID | LWIP_DNS_SECURE_NO_MULTIPLE_OUTSTANDING | LWIP_DNS_SECURE_RAND_SRC_PORT) -*/
-#define LWIP_DNS_SECURE 7
-/*----- Value in opt.h for TCP_SND_QUEUELEN: (4*TCP_SND_BUF + (TCP_MSS - 1))/TCP_MSS -----*/
-#define TCP_SND_QUEUELEN 9
-/*----- Value in opt.h for TCP_SNDLOWAT: LWIP_MIN(LWIP_MAX(((TCP_SND_BUF)/2), (2 * TCP_MSS) + 1), (TCP_SND_BUF) - 1) -*/
-#define TCP_SNDLOWAT 1071
-/*----- Value in opt.h for TCP_SNDQUEUELOWAT: LWIP_MAX(TCP_SND_QUEUELEN)/2, 5) -*/
-#define TCP_SNDQUEUELOWAT 5
-/*----- Value in opt.h for TCP_WND_UPDATE_THRESHOLD: LWIP_MIN(TCP_WND/4, TCP_MSS*4) -----*/
-#define TCP_WND_UPDATE_THRESHOLD 536
-/*----- Value in opt.h for LWIP_NETIF_LINK_CALLBACK: 0 -----*/
-#define LWIP_NETIF_LINK_CALLBACK 1
-/*----- Value in opt.h for LWIP_NETCONN: 1 -----*/
-#define LWIP_NETCONN 0
-/*----- Value in opt.h for LWIP_SOCKET: 1 -----*/
-#define LWIP_SOCKET 0
-/*----- Value in opt.h for RECV_BUFSIZE_DEFAULT: INT_MAX -----*/
-#define RECV_BUFSIZE_DEFAULT 2000000000
-/*----- Value in opt.h for LWIP_STATS: 1 -----*/
-#define LWIP_STATS 0
-/*----- Value in opt.h for CHECKSUM_GEN_IP: 1 -----*/
-#define CHECKSUM_GEN_IP 0
-/*----- Value in opt.h for CHECKSUM_GEN_UDP: 1 -----*/
-#define CHECKSUM_GEN_UDP 0
-/*----- Value in opt.h for CHECKSUM_GEN_TCP: 1 -----*/
-#define CHECKSUM_GEN_TCP 0
-/*----- Value in opt.h for CHECKSUM_GEN_ICMP6: 1 -----*/
-#define CHECKSUM_GEN_ICMP6 0
-/*----- Value in opt.h for CHECKSUM_CHECK_IP: 1 -----*/
-#define CHECKSUM_CHECK_IP 0
-/*----- Value in opt.h for CHECKSUM_CHECK_UDP: 1 -----*/
-#define CHECKSUM_CHECK_UDP 0
-/*----- Value in opt.h for CHECKSUM_CHECK_TCP: 1 -----*/
-#define CHECKSUM_CHECK_TCP 0
-/*----- Value in opt.h for CHECKSUM_CHECK_ICMP6: 1 -----*/
-#define CHECKSUM_CHECK_ICMP6 0
-/*-----------------------------------------------------------------------------*/
+#endif /* old settings */
+
+void board_update_time(uint32_t sec);
+
+#define LWIP_RAW                    1
+#define NO_SYS 						1
+#define LWIP_SOCKET 				0
+#define LWIP_COMPAT_SOCKETS			0
+#define LWIP_NETCONN 				0
+
+//#define NO_SYS_NO_TIMERS 			1
+
+#define LWIP_TCP_KEEPALIVE 			0
+
+#define MEM_SIZE                    131072
+#define MEM_ALIGNMENT               64 //8
+#define MEMP_NUM_PBUF 				16
+#define MEMP_NUM_PBUF 				16
+#define MEMP_NUM_UDP_PCB 			4
+#define MEMP_NUM_TCP_PCB 			32
+#define MEMP_NUM_TCP_PCB_LISTEN 	8
+#define MEMP_NUM_TCP_SEG 			256
+#define MEMP_NUM_SYS_TIMEOUT 		8
+#define MEMP_NUM_NETBUF 			8
+#define MEMP_NUM_NETCONN 			16
+#define MEMP_NUM_TCPIP_MSG_API 		16
+#define MEMP_NUM_TCPIP_MSG_INPKT 	64
+
+#define MEMP_NUM_SYS_TIMEOUT 		8
+#define PBUF_POOL_SIZE 				2048
+#define PBUF_POOL_BUFSIZE 			1700
+#define PBUF_LINK_HLEN 				16
+
+#define ARP_TABLE_SIZE 				10
+#define ARP_QUEUEING 				1
+
+#define IP_OPTIONS 					0
+#define IP_FORWARD 					0
+#define IP_REASSEMBLY 				1
+#define IP_FRAG 					1
+#define IP_REASS_MAX_PBUFS 			128
+#define IP_FRAG_MAX_MTU 			1500
+#define IP_DEFAULT_TTL 				255
+#define LWIP_CHKSUM_ALGORITHM 		3
+
+#define CONFIG_LINKSPEED_AUTODETECT 1
+#define LWIP_TCP_KEEPALIVE 			0
+
+#define LWIP_UDP 					1
+#define UDP_TTL 					55
+
+#define LWIP_TCP 					1
+#define TCP_MSS 					1460
+#define TCP_SND_BUF 				8192
+#define TCP_WND 					2048
+#define TCP_TTL 					255
+#define TCP_MAXRTX 					12
+#define TCP_SYNMAXRTX				4
+#define TCP_QUEUE_OOSEQ 			1
+#define TCP_SND_QUEUELEN   			16 * TCP_SND_BUF/TCP_MSS
+#define CHECKSUM_GEN_TCP 			0
+#define CHECKSUM_GEN_UDP 			0
+#define CHECKSUM_GEN_IP  			0
+#define CHECKSUM_CHECK_TCP  		0
+#define CHECKSUM_CHECK_UDP  		0
+#define CHECKSUM_CHECK_IP 			0
+#define LWIP_FULL_CSUM_OFFLOAD_RX	1
+#define LWIP_FULL_CSUM_OFFLOAD_TX	1
+
+#define MEMP_SEPARATE_POOLS 		1
+#define MEMP_NUM_FRAG_PBUF 			256
+#define IP_OPTIONS_ALLOWED 			0
+#define TCP_OVERSIZE 				CP_MSS
+
+#define LWIP_DHCP 					1
+#define DHCP_DOES_ARP_CHECK 		1
+
+#define SNTP_SUPPORT      			1
+#define SNTP_UPDATE_DELAY 			8640000
+#define SNTP_DEBUG                  LWIP_DBG_ON
+
+//#define LWIP_DEBUG             		1
+//#define LWIP_DBG_MIN_LEVEL     		LWIP_DBG_LEVEL_ALL
+//#define LWIP_DBG_TYPES_ON      		(LWIP_DBG_TRACE | LWIP_DBG_STATE | LWIP_DBG_FRESH | LWIP_DBG_HALT)
+
+#define SNTP_SET_SYSTEM_TIME(sec) board_update_time(sec)
+
+/**
+ * SYS_LIGHTWEIGHT_PROT==1: if you want inter-task protection for certain
+ * critical regions during buffer allocation, deallocation and memory
+ * allocation and deallocation.
+ */
+#define SYS_LIGHTWEIGHT_PROT 1
+typedef unsigned sys_prot_t;
 
 #endif /* __LWIPOPTS_H__ */

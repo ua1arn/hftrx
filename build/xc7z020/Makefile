@@ -100,7 +100,11 @@ DINCDIR = \
 	$(CMSISDIR)/DSP/PrivateInclude \
 	$(LWIPDIR)/src/include \
 	$(LWIPDIR)/src/include/ipv4 \
+	$(LWIPDIR)/src/include/lwip \
 	$(LWIPDIR)/src/apps/http \
+	$(LWIPDIR)/ports/xilinx/include \
+	$(LWIPDIR)/ports/xilinx/include/netif \
+	$(LWIPDIR)/ports/xilinx/include/arch \
 	$(OPENVGDIR)/include/VG \
 	$(OPENVGDIR)/include \
 	$(OPENVGDIR)/include/EGL \
@@ -128,6 +132,7 @@ SRCDIRS += $(ARCHDIR)
 SRCDIRS += $(MDLWHOSTDIR)
 #SRCDIRS += $(MDLWUSBDIR)
 #SRCDIRS += $(LWIPDIR)/src $(PRJROOT)/lib/dhcp-server $(PRJROOT)/lib/dns-server
+SRCDIRS += $(LWIPDIR)/src $(LWIPDIR)/ports/xilinx
 #SRCDIRS += $(DSP3DDIR)/src
 #SRCDIRS += $(OPENVGDIR)/src
 

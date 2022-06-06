@@ -38,7 +38,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "xpseudo_asm_gcc.h"
 #include "lwipopts.h"
+#include "hardware.h"
 
 /** if you want to use the struct timeval provided
  * by your system, set this to 0 and include <sys/time.h> in cc.h */
@@ -77,6 +79,6 @@ typedef unsigned long mem_ptr_t;
 #define PACK_STRUCT_END
 
 #define LWIP_PLATFORM_ASSERT(x)
-#define LWIP_PLATFORM_DIAG(x) do { xil_printf x; } while(0)
+#define LWIP_PLATFORM_DIAG(x) do { PRINTF x; } while(0)
 
 #endif /* __ARCH_CC_H__ */

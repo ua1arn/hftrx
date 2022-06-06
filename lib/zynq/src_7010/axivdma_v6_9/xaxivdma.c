@@ -86,7 +86,7 @@ XAxiVdma_Channel *XAxiVdma_GetChannel(XAxiVdma *InstancePtr,
 		return &(InstancePtr->WriteChannel);
 	}
 	else {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Invalid direction %x\r\n", Direction);
 
 		return NULL;
@@ -231,7 +231,7 @@ int XAxiVdma_CfgInitialize(XAxiVdma *InstancePtr, XAxiVdma_Config *CfgPtr,
 		}
 
 		if (!Polls) {
-			PRINTF(
+			xdbg_printf(XDBG_DEBUG_ERROR,
 			    "Read channel reset failed %x\n\r",
 			    (unsigned int)XAxiVdma_ChannelGetStatus(RdChannel));
 
@@ -315,7 +315,7 @@ int XAxiVdma_CfgInitialize(XAxiVdma *InstancePtr, XAxiVdma_Config *CfgPtr,
 		}
 
 		if (!Polls) {
-			PRINTF(
+			xdbg_printf(XDBG_DEBUG_ERROR,
 			    "Write channel reset failed %x\n\r",
 			    (unsigned int)XAxiVdma_ChannelGetStatus(WrChannel));
 
@@ -522,7 +522,7 @@ int XAxiVdma_SetLineBufThreshold(XAxiVdma *InstancePtr, int LineBufThreshold,
 	Channel = XAxiVdma_GetChannel(InstancePtr, Direction);
 
 	if (!(Channel->DbgFeatureFlags & XAXIVDMA_ENABLE_DBG_THRESHOLD_REG)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 				"Threshold Register is disabled\n\r");
 		return XST_NO_FEATURE;
 	}
@@ -539,13 +539,13 @@ int XAxiVdma_SetLineBufThreshold(XAxiVdma *InstancePtr, int LineBufThreshold,
 				XAXIVDMA_BUFTHRES_OFFSET));
 		}
 		else {
-			PRINTF(
+			xdbg_printf(XDBG_DEBUG_ERROR,
 				"Invalid Line Buffer Threshold\n\r");
 			return XST_FAILURE;
 		}
 	}
 	else {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 			"Failed to set Threshold\n\r");
 		return XST_FAILURE;
 	}
@@ -615,7 +615,7 @@ int XAxiVdma_FsyncSrcSelect(XAxiVdma *InstancePtr, u32 Source,
 		return XST_SUCCESS;
 	}
 
-	PRINTF(
+	xdbg_printf(XDBG_DEBUG_ERROR,
 			"This bit is not valid for this configuration\n\r");
 	return XST_FAILURE;
 }
@@ -667,7 +667,7 @@ int XAxiVdma_GenLockSourceSelect(XAxiVdma *InstancePtr, u32 Source,
 			else if (Source == XAXIVDMA_EXTERNAL_GENLOCK)
 				CrBits &= ~XAXIVDMA_CR_GENLCK_SRC_MASK;
 			else {
-				PRINTF(
+				xdbg_printf(XDBG_DEBUG_ERROR,
 					"Invalid argument\n\r");
 				return XST_FAILURE;
 			}
@@ -679,7 +679,7 @@ int XAxiVdma_GenLockSourceSelect(XAxiVdma *InstancePtr, u32 Source,
 		}
 	}
 
-	PRINTF(
+	xdbg_printf(XDBG_DEBUG_ERROR,
 			"This bit is not valid for this configuration\n\r");
 	return XST_FAILURE;
 }
@@ -708,7 +708,7 @@ int XAxiVdma_StartParking(XAxiVdma *InstancePtr, int FrameIndex,
 	int Status;
 
 	if (FrameIndex > XAXIVDMA_FRM_MAX) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 		    "Invalid frame to park on %d\r\n", FrameIndex);
 
 		return XST_INVALID_PARAM;
@@ -754,7 +754,7 @@ int XAxiVdma_StartParking(XAxiVdma *InstancePtr, int FrameIndex,
 	if (Channel->IsValid) {
 		Status = XAxiVdma_ChannelStartParking(Channel);
 		if (Status != XST_SUCCESS) {
-			PRINTF(
+			xdbg_printf(XDBG_DEBUG_ERROR,
 			    "Failed to start channel %x\r\n",
 			    (unsigned int)Channel);
 
@@ -1141,7 +1141,7 @@ int XAxiVdma_SetFrameCounter(XAxiVdma *InstancePtr,
 		Status = XAxiVdma_ChannelSetFrmCnt(Channel, CfgPtr->ReadFrameCount,
 				    CfgPtr->ReadDelayTimerCount);
 		if (Status != XST_SUCCESS) {
-			PRINTF(
+			xdbg_printf(XDBG_DEBUG_ERROR,
 			    "Setting read channel frame counter "
 			    "failed with %d\r\n", Status);
 
@@ -1157,7 +1157,7 @@ int XAxiVdma_SetFrameCounter(XAxiVdma *InstancePtr,
 		          CfgPtr->WriteFrameCount,
 			      CfgPtr->WriteDelayTimerCount);
 		if (Status != XST_SUCCESS) {
-			PRINTF(
+			xdbg_printf(XDBG_DEBUG_ERROR,
 			    "Setting write channel frame counter "
 			    "failed with %d\r\n", Status);
 
@@ -1251,13 +1251,13 @@ int XAxiVdma_SetFrmStore(XAxiVdma *InstancePtr, u8 FrmStoreNum, u16 Direction)
 	}
 
 	if(XAxiVdma_ChannelIsRunning(Channel)) {
-		PRINTF( "Cannot set frame store..."
+		xdbg_printf(XDBG_DEBUG_ERROR, "Cannot set frame store..."
 						"channel is running\r\n");
 		return XST_FAILURE;
 	}
 
 	if (!(Channel->DbgFeatureFlags & XAXIVDMA_ENABLE_DBG_FRMSTORE_REG)) {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 			"Frame Store Register is disabled\n\r");
 		return XST_NO_FEATURE;
 	}
@@ -1301,7 +1301,7 @@ void XAxiVdma_GetFrmStore(XAxiVdma *InstancePtr, u8 *FrmStoreNum,
 		*FrmStoreNum = (XAxiVdma_ReadReg(Channel->ChanBase,
 			XAXIVDMA_FRMSTORE_OFFSET)) & XAXIVDMA_FRMSTORE_MASK;
 	} else {
-		PRINTF(
+		xdbg_printf(XDBG_DEBUG_ERROR,
 			"Frame Store Register is disabled\n\r");
 	}
 }

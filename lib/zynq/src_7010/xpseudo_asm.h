@@ -41,9 +41,9 @@
 extern "C" {
 #endif
 
-#include <xreg_cortexa9.h>
+#include "xreg_cortexa9.h"
 #ifdef __GNUC__
- #include <xpseudo_asm_gcc.h>
+ #include "xpseudo_asm_gcc.h"
 #elif defined (__ICCARM__)
  #include "xpseudo_asm_iccarm.h"
 #else

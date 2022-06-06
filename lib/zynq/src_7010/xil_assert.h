@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2009 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2009 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -28,11 +28,14 @@
 *
 ******************************************************************************/
 
+/**
+ *@cond nocomments
+ */
+
 #ifndef XIL_ASSERT_H	/* prevent circular inclusions */
 #define XIL_ASSERT_H	/* by using protection macros */
 
-#include <xil_types.h>
-#include "formats.h"
+#include "xil_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,6 +54,9 @@ extern "C" {
 extern u32 Xil_AssertStatus;
 extern s32 Xil_AssertWait;
 extern void Xil_Assert(const char8 *File, s32 Line);
+/**
+ *@endcond
+ */
 void XNullHandler(void *NullParameter);
 
 /**
@@ -149,9 +155,9 @@ typedef void (*Xil_AssertCallback) (const char8 *File, s32 Line);
 
 #else
 
-#define Xil_AssertVoid(Expression)		ASSERT(Expression)
+#define Xil_AssertVoid(Expression)
 #define Xil_AssertVoidAlways()
-#define Xil_AssertNonvoid(Expression)	ASSERT(Expression)
+#define Xil_AssertNonvoid(Expression)
 #define Xil_AssertNonvoidAlways()
 
 #endif
