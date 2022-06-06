@@ -6793,6 +6793,8 @@ sysinit_pll_initialize(void)
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
 		static portholder_t xc7z_spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+	#elif CPUSTYPE_ALLWNT113
+		// place here
 	#endif /* CPUSTYLE_STM32F1XX */
 
 #if WITHSPIHWDMA
