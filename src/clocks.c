@@ -10038,6 +10038,13 @@ void hardware_adc_initialize(void)
 	// первый запуск производится в hardware_adc_startonescan().
 	// А здесь всё...
 
+#elif CPUSTYPE_ALLWNT113
+
+	//#warning GPADC need to implement at CPUSTYPE_ALLWNT113
+
+
+	(void) GPADC;
+
 #else
 	#warning Undefined CPUSTYLE_XXX
 #endif
