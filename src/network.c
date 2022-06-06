@@ -907,6 +907,13 @@ void network_spool(void)
 	xemacif_input(netif);
 }
 
+#else
+
+void network_initialize(void)
+{
+
+}
+
 #endif /*  WITHLWIP */
 
 #if 1
