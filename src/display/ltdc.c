@@ -1757,12 +1757,12 @@ struct fb_t113_rgb_pdata_t
 	int height;
 	//int pwidth;
 	//int pheight;
-	int bits_per_pixel;
-	int bytes_per_pixel;
-	int pixlen;
+	//int bits_per_pixel;
+	//int bytes_per_pixel;
+	//int pixlen;
 	int index;
 	uintptr_t vram [2];
-	struct region_list_t * nrl, * orl;
+	//struct region_list_t * nrl, * orl;
 
 	struct {
 		int pixel_clock_hz;
@@ -1778,28 +1778,33 @@ struct fb_t113_rgb_pdata_t
 		int clk_active;
 	} timing;
 
-	struct led_t * backlight;
-	int brightness;
+//	struct led_t * backlight;
+//	int brightness;
 };
 
 static void inline t113_de_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
-	write32((uintptr_t) & glb->dbuff, 1);
+	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);
+
+	while ((read32((uintptr_t) & glb->dbuff) & 0x01uL) != 0)
+		;
+	write32((uintptr_t) & glb->dbuff, 0x01uL);	// 1: register value be ready for update (self-cleaning bit)
+	while ((read32((uintptr_t) & glb->dbuff) & 0x01uL) != 0)
+		;
 }
 
 static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintptr_t vram)
 {
-	struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+	struct de_ui_t * const ui = (struct de_ui_t *) (pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, vram);
 }
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_clk_t * const clk = (struct de_clk_t *)(pdat->virt_de);
-	struct de_glb_t * const glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
-	struct de_bld_t * const bld = (struct de_bld_t *)(pdat->virt_de + T113_DE_MUX_BLD);
-	struct de_ui_t * const ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+	struct de_clk_t * const clk = (struct de_clk_t *) (pdat->virt_de);
+	struct de_glb_t * const glb = (struct de_glb_t *) (pdat->virt_de + T113_DE_MUX_GLB);		// Global control register
+	struct de_bld_t * const bld = (struct de_bld_t *) (pdat->virt_de + T113_DE_MUX_BLD);
+	struct de_ui_t * const ui = (struct de_ui_t *) (pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
 
 	// Allwinner_DE2.0_Spec_V1.0.pdf
 	// 5.10.8.2 OVL_UI memory block size register
@@ -1839,17 +1844,19 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	val &= ~(1 << 0);
 	write32((uintptr_t) & clk->sel_cfg, val);
 
-	write32((uintptr_t) & glb->ctl, (1 << 0));
-	write32((uintptr_t) & glb->status, 0);
-	write32((uintptr_t) & glb->dbuff, 1);
+	write32((uintptr_t) & glb->ctl, (0x01uL << 0));
+	write32((uintptr_t) & glb->status, 0x00uL);
+	write32((uintptr_t) & glb->dbuff, 0x01uL);		// 1: register value be ready for update (self-cleaning bit)
 	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
 
 	for(i = 0; i < 4; i++)
 	{
 		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
+
 		// peripherial registers
 		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
 	}
+
 	// peripherial registers
 	memset(bld, 0, sizeof (struct de_bld_t));
 
@@ -1907,7 +1914,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
 	uint32_t val;
 
 	val = read32((uintptr_t) & tcon->gctrl);
@@ -1917,7 +1924,7 @@ static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
 	uint32_t val;
 
 	val = read32((uintptr_t) & tcon->dclk);
@@ -1930,40 +1937,55 @@ static void t113_tconlcd_disable(struct fb_t113_rgb_pdata_t * pdat)
 
 static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
-	int bp, total;
+	struct t113_tconlcd_reg_t * const tcon = (struct t113_tconlcd_reg_t *) pdat->virt_tconlcd;
+	int vbp, vtotal;
+	int hbp, htotal;
 	uint32_t val;
 
+	// ctrl
 	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
-	write32((uintptr_t) & tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0));
+	write32((uintptr_t) & tcon->ctrl, (0x01uL << 31) | (0x00uL << 24) | (0x00uL << 23) | ((val & 0x1f) << 4) | (0x00uL << 0));
 
+	// dclk
 	// 31..28: TCON0_Dclk_En
 	// 6..0: TCON0_Dclk_Div
 	val = allwnrt113_get_video0_x2_freq() / pdat->timing.pixel_clock_hz;
-	write32((uintptr_t) & tcon->dclk, (0xf << 28) | (val << 0));
+	write32((uintptr_t) & tcon->dclk, (0x0FuL << 28) | (val << 0));
 
+	// timing0 (window)
 	write32((uintptr_t) & tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
-	bp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
-	total = pdat->width + pdat->timing.h_front_porch + bp;
-	write32((uintptr_t) & tcon->timing1, ((total - 1) << 16) | ((bp - 1) << 0));
-	bp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
-	total = pdat->height + pdat->timing.v_front_porch + bp;
-	write32((uintptr_t) & tcon->timing2, ((total * 2) << 16) | ((bp - 1) << 0));
+
+	// timing1 (horizontal)
+	hbp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
+	htotal = pdat->width + pdat->timing.h_front_porch + hbp;
+	write32((uintptr_t) & tcon->timing1, ((htotal - 1) << 16) | ((hbp - 1) << 0));
+
+	// timing2 (vertical)
+	vbp = pdat->timing.v_sync_len + pdat->timing.v_back_porch;
+	vtotal = pdat->height + pdat->timing.v_front_porch + vbp;
+	write32((uintptr_t) & tcon->timing2, ((vtotal * 2) << 16) | ((vbp - 1) << 0));
+
+	// timing3
 	write32((uintptr_t) & tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
 
-	val = (0 << 31) | (1 << 28);
+	// io_polarity
+	val = (0x00uL << 31) | (0x01uL << 28);
+
 	if(!pdat->timing.h_sync_active)
-		val |= (1 << 25);
+		val |= (0x01uL << 25);
 	if(!pdat->timing.v_sync_active)
-		val |= (1 << 24);
+		val |= (0x01uL << 24);
 	if(!pdat->timing.den_active)
-		val |= (1 << 27);
+		val |= (0x01uL << 27);
 	if(!pdat->timing.clk_active)
-		val |= (1 << 26);
+		val |= (0x01uL << 26);
 	write32((uintptr_t) & tcon->io_polarity, val);
+
+	// io_tristate
 	write32((uintptr_t) & tcon->io_tristate, 0);
 }
 
+#if 0
 static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
@@ -1981,16 +2003,19 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t) & tcon->frm_table[2], 0x57575555);
 		write32((uintptr_t) & tcon->frm_table[3], 0x7f7f7777);
 
-		if(pdat->bits_per_pixel == 16)
-			write32((uintptr_t) & tcon->frm_ctrl, (1 << 31) | (1 << 6) | (0 << 5)| (1 << 4));
-		else if(pdat->bits_per_pixel == 18)
-			write32((uintptr_t) & tcon->frm_ctrl, (1 << 31) | (0 << 6) | (0 << 5)| (0 << 4));
+		// 31: TCON_FRM_EN: 0: disable, 1: enable
+		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
+		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
+		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
+		write32((uintptr_t) & tcon->frm_ctrl, (1 << 31) | TCON_FRM_MODE_VAL);
 	}
 }
+#endif
 
 static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat)
 {
-/*	if(pdat->bits_per_pixel == 16)
+/*
+ 	if(pdat->bits_per_pixel == 16)
 	{
 		fb_t113_cfg_gpios(T113_GPIOD1, 5, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
 		fb_t113_cfg_gpios(T113_GPIOD6, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
@@ -2007,19 +2032,21 @@ static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat)
 */
 	t113_tconlcd_disable(pdat);
 	t113_tconlcd_set_timing(pdat);
-	t113_tconlcd_set_dither(pdat);
+	//t113_tconlcd_set_dither(pdat);
 	t113_tconlcd_enable(pdat);
+
 	t113_de_set_mode(pdat);
 	t113_de_enable(pdat);
+
 	t113_de_set_address(pdat, pdat->vram[pdat->index]);
 	t113_de_enable(pdat);
 }
 
 
-#define CCU_DE_CLK_REG 0x0600
-#define CCU_DE_BGR_REG 0x060C
-#define CCU_TCONLCD_CLK_REG 0x0B60
-#define CCU_TCONLCD_BGR_REG 0x0B7C
+//#define CCU_DE_CLK_REG 0x0600
+//#define CCU_DE_BGR_REG 0x060C
+//#define CCU_TCONLCD_CLK_REG 0x0B60
+//#define CCU_TCONLCD_BGR_REG 0x0B7C
 
 
 static struct fb_t113_rgb_pdata_t pdat0;
@@ -2037,11 +2064,11 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
 	pdat->height =  vdmode->height;
 	//pdat->pwidth =  216;
 	//pdat->pheight = 135;
-	pdat->bits_per_pixel = 18; //LCDMODE_PIXELSIZE * 8; //18;
-	pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
-	pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
-	pdat->vram[0] = frames [0];
-	pdat->vram[1] = frames [1];
+	//pdat->bits_per_pixel = 18; // panel connection type
+	//pdat->bytes_per_pixel = LCDMODE_PIXELSIZE;
+	//pdat->pixlen = pdat->width * pdat->height * pdat->bytes_per_pixel;
+	pdat->vram [0] = frames [0];
+	pdat->vram [1] = frames [1];
 
 	pdat->timing.pixel_clock_hz = display_getdotclock(vdmode);
 	pdat->timing.h_front_porch = vdmode->hfp; //40;
@@ -2054,32 +2081,41 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
 	pdat->timing.v_sync_active = 0;
 	pdat->timing.den_active = 1;
 	pdat->timing.clk_active =  0;
-	pdat->backlight = NULL;
+	//pdat->backlight = NULL;
 
-    val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
-    val |= (1 << 31)|(3 << 0);///300 MHz
-    write32(T113_CCU_BASE + CCU_DE_CLK_REG,val);
-	//Open the clock gate
-    val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
-    val |= (1 << 0);
-    write32(T113_CCU_BASE + CCU_DE_BGR_REG,val);
-    //Deassert reset
-    val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
-    val |= (1 << 16);
-    write32(T113_CCU_BASE + CCU_DE_BGR_REG,val);
+//    val = read32(T113_CCU_BASE + CCU_DE_CLK_REG);
+//    val |= (1 << 31)|(3 << 0);///300 MHz
+//    write32(T113_CCU_BASE + CCU_DE_CLK_REG,val);
+    CCU->DE_CLK_REG |= (0x01uL << 31) | (0x03uL << 0);	// 300 MHz
 
-    val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
-    val |= (1 << 31);
-    write32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG,val);
-	//Open the clock gate
-    val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-    val |= (1 << 0);
-    write32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG,val);
-    //eassert reset
-    val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
-    val |= (1 << 16);
-    write32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG,val);
+	// Open the clock gate
+//    val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+//    val |= (1 << 0);
+//    write32(T113_CCU_BASE + CCU_DE_BGR_REG,val);
+    CCU->DE_BGR_REG |= (0x01uL << 0);
 
+    // Deassert reset
+//    val = read32(T113_CCU_BASE + CCU_DE_BGR_REG);
+//    val |= (1 << 16);
+//    write32(T113_CCU_BASE + CCU_DE_BGR_REG,val);
+    CCU->DE_BGR_REG |= (0x01uL << 16);
+
+//    val = read32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG);
+//    val |= (1 << 31);
+//    write32(T113_CCU_BASE + CCU_TCONLCD_CLK_REG,val);
+    CCU->TCONLCD_CLK_REG |= (0x01uL << 31);
+
+	// Open the clock gate
+//    val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
+//    val |= (1 << 0);
+//    write32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG,val);
+    CCU->TCONLCD_BGR_REG |= (0x01uL << 0);
+
+    // Deassert reset
+//    val = read32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG);
+//    val |= (1 << 16);
+//    write32(T113_CCU_BASE + CCU_TCONLCD_BGR_REG,val);
+    CCU->TCONLCD_BGR_REG |= (0x01uL << 16);
 
 	fb_t113_rgb_init(pdat);
 
@@ -2104,7 +2140,7 @@ void arm_hardware_ltdc_main_set_no_vsync(uintptr_t p)
 void arm_hardware_ltdc_main_set(uintptr_t p)
 {
 	t113_de_set_address(& pdat0, p);
-	//local_delay_ms(200);
+	t113_de_enable(& pdat0);
 }
 
 /* Palette reload */

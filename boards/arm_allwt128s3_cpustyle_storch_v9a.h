@@ -903,6 +903,10 @@
 	#endif
 
 #if WITHLTDCHW
+
+	//#define TCON_FRM_MODE_VAL ((0x01uL << 6) | (0x00uL << 5) | (0x01uL << 4))	// 16 bit panel connected
+	#define TCON_FRM_MODE_VAL ((0x00uL << 6) | (0x00uL << 5)| (0x00uL << 4))	// 18 bit panel connected
+
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
 		const portholder_t mask = 0x3FFFFF;	/* bits 0..21 */ \

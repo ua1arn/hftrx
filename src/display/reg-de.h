@@ -26,24 +26,30 @@ struct de_clk_t {
 	uint32_t sel_cfg;
 };
 
+// Allwinner_DE2.0_Spec_V1.0
+// 5.10.3.4 Blender
+// GLB
 struct de_glb_t {
-	uint32_t ctl;
-	uint32_t status;
-	uint32_t dbuff;
-	uint32_t size;
+	uint32_t ctl;		/** Offset 0x000 Global control register */
+	uint32_t status;	/** Offset 0x004 Global status register */
+	uint32_t dbuff;		/** Offset 0x008 Global double buffer control register */
+	uint32_t size;		/** Offset 0x00C Global size register */
 };
 
+// Allwinner_DE2.0_Spec_V1.0
+// 5.10.3.4 Blender
+// BLD
 struct de_bld_t {
-	uint32_t fcolor_ctl;
+	uint32_t fcolor_ctl;	/** Offset 0x000 BLD fill color control register */
 	struct {
-		uint32_t fcolor;
-		uint32_t insize;
-		uint32_t offset;
-		uint32_t dum;
+		uint32_t fcolor;	/**  BLD fill color register */
+		uint32_t insize;	/**  BLD input memory size register */
+		uint32_t offset;	/**  BLD input memory offset register */
+		uint32_t dum;		/**  filler */
 	} attr[4];
 	uint32_t dum0[15];
-	uint32_t route;
-	uint32_t premultiply;
+	uint32_t route;			/** Offset 0x080 BLD routing control register */
+	uint32_t premultiply;	/** Offset 0x080 BLD pre-multiply control register */
 	uint32_t bkcolor;
 	uint32_t output_size;
 	uint32_t bld_mode[4];
