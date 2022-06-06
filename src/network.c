@@ -629,7 +629,7 @@ void network_initialize(void)
 
 }
 
-#else /*  WITHLWIP */
+#elif (CPUSTYLE_XC7Z) && WITHLWIP /*  WITHLWIP */
 
 #include <time.h>
 #include <stdbool.h>

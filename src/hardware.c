@@ -297,9 +297,10 @@ static void adcdones_spool(void)
 	SPIN_UNLOCK(& adcdoneslock);
 }
 
-#if 0//WITHLWIP
-
 static volatile uint32_t sys_now_counter;
+
+#if ! (CPUSTYLE_XC7Z)
+
 uint32_t sys_now(void)
 {
 	return sys_now_counter;
@@ -317,9 +318,7 @@ RAMFUNC void spool_systimerbundle1(void)
 	HAL_IncTick();
 #endif /* USE_HAL_DRIVER */
 
-#if 0//WITHLWIP
 	sys_now_counter += (1000 / TICKS_FREQUENCY);
-#endif /* WITHLWIP */
 
 	//spool_lfm();
 	tickers_spool();
