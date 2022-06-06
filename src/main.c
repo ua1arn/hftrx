@@ -6870,7 +6870,7 @@ static const FLASHMEM struct enc2menu enc2menus [] =
 		"BOTTOM DB",
 		RJ_UNSIGNED,		// rj
 		ISTEP1,		/* spectrum range */
-		80, 160,	/* диапазон отображаемых значений */
+		WITHBOTTOMDBMIN, WITHBOTTOMDBMAX,	/* диапазон отображаемых значений */
 		offsetof(struct nvmap, bands [0].gbottomdbspe),
 		nvramoffs_band_a,
 		valoffset_bi_a,

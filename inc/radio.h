@@ -54,7 +54,7 @@ typedef uint_least64_t phase_t;
 
 #define WITHBOTTOMDBTX 90
 
-#define WITHBOTTOMDBMIN 80
+#define WITHBOTTOMDBMIN 40
 #define WITHBOTTOMDBMAX 160
 
 #define	BOARD_IFGAIN_MIN	0		/* код управления усилением ВЧ тракта */
