@@ -3359,6 +3359,10 @@ void Reset_CPUn_Handler(void)
 	GIC_SetInterfacePriorityMask(ARM_CA9_ENCODE_PRIORITY(PRI_USER));
 #endif /* WITHNESTEDINTERRUPTS */
 
+#if WITHLWIP
+	network_initialize();
+#endif /* WITHLWIP */
+
 	// Idle loop
 	for (;;)
 	{

@@ -24075,7 +24075,7 @@ main(void)
 #endif /* WITHTX */
 	initialize2();	/* вызывается при разрешённых прерываниях. */
 #if WITHLWIP
-	network_initialize();
+	//network_initialize();
 #endif /* WITHLWIP */
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */

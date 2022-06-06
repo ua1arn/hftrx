@@ -1573,7 +1573,7 @@ void arm_hardware_populte_second_initialize(void)
 // Set interrupt vector wrapper
 void arm_hardware_set_handler(uint_fast16_t int_id, void (* handler)(void), uint_fast8_t priority, uint_fast8_t targetcpu)
 {
-	ASSERT(arm_hardware_cpuid() == 0);
+//	ASSERT(arm_hardware_cpuid() == 0);
 
 #if CPUSTYLE_AT91SAM7S
 

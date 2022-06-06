@@ -838,7 +838,8 @@ void network_initialize(void)
 	PTIM_SetCurrentValue(0);
 	PTIM_SetLoadValue(1 * COUNTS_PER_MSECOND);
 	PTIM_SetControl(0x06U);
-	arm_hardware_set_handler_system(PrivTimer_IRQn, lwip_timer_spool);
+	//arm_hardware_set_handler_system(PrivTimer_IRQn, lwip_timer_spool);
+	arm_hardware_set_handler(PrivTimer_IRQn, lwip_timer_spool, ARM_SYSTEM_PRIORITY, TARGETCPU_CPU1);
 	PTIM_SetControl(PTIM_GetControl() | 0x01);
 
 	lwip_init();
