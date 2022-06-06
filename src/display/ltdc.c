@@ -1732,7 +1732,7 @@ void arm_hardware_ltdc_main_set(uintptr_t addr)
 #include "reg-de.h"
 #include "reg-tconlcd.h"
 
-#define UI_CFG_INDEX 0	/* тспользуется одна конфигурация */
+#define UI_CFG_INDEX 0	/* 0..3 используется одна конфигурация */
 
 static uint32_t read32(uintptr_t a)
 {
@@ -1746,7 +1746,7 @@ static void write32(uintptr_t a, uint32_t v)
 
 struct fb_t113_rgb_pdata_t
 {
-	uintptr_t virt_de;
+	uintptr_t virt_de;	// 0: struct de_vi_t, 1..3: struct de_ui_t
 	uintptr_t virt_tconlcd;
 
 	//char * clk_de;
@@ -1796,12 +1796,31 @@ static inline void t113_de_set_address(struct fb_t113_rgb_pdata_t * pdat, uintpt
 
 static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 {
-	struct de_clk_t * clk = (struct de_clk_t *)(pdat->virt_de);
-	struct de_glb_t * glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
-	struct de_bld_t * bld = (struct de_bld_t *)(pdat->virt_de + T113_DE_MUX_BLD);
-	struct de_ui_t * ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
-	uint32_t size = (((pdat->height - 1) << 16) | (pdat->width - 1));
+	struct de_clk_t * const clk = (struct de_clk_t *)(pdat->virt_de);
+	struct de_glb_t * const glb = (struct de_glb_t *)(pdat->virt_de + T113_DE_MUX_GLB);
+	struct de_bld_t * const bld = (struct de_bld_t *)(pdat->virt_de + T113_DE_MUX_BLD);
+	struct de_ui_t * const ui = (struct de_ui_t *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * 1);
+
+	// Allwinner_DE2.0_Spec_V1.0.pdf
+	// 5.10.8.2 OVL_UI memory block size register
+	// 28..16: LAY_HEIGHT
+	// 12..0: LAY_WIDTH
+	const uint32_t ovl_ui_mbsize = (((pdat->height - 1) << 16) | (pdat->width - 1));
+	// 5.10.8.1 OVL_UI attribute control register
+	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565, 0x08: RGB_888
+#if LCDMODE_MAIN_ARGB888
+	//const uint32_t ovl_ui_format = 0x08;
+	const uint32_t ovl_ui_format = 0x04;
+#elif LCDMODE_MAIN_RGB565
+	const uint32_t ovl_ui_format = 0x0A;
+#else
+	#error Unsupported framebuffer format
+	const uint32_t ovl_ui_format = 0x0A;
+#endif
+
 	uint32_t val;
+
 	int i;
 
 	val = read32((uintptr_t) & clk->rst_cfg);
@@ -1823,7 +1842,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t) & glb->ctl, (1 << 0));
 	write32((uintptr_t) & glb->status, 0);
 	write32((uintptr_t) & glb->dbuff, 1);
-	write32((uintptr_t) & glb->size, size);
+	write32((uintptr_t) & glb->size, ovl_ui_mbsize);
 
 	for(i = 0; i < 4; i++)
 	{
@@ -1838,13 +1857,13 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32((uintptr_t) & bld->bkcolor, 0xff000000);
 	write32((uintptr_t) & bld->bld_mode[0], 0x03010301);
 	write32((uintptr_t) & bld->bld_mode[1], 0x03010301);
-	write32((uintptr_t) & bld->output_size, size);
+	write32((uintptr_t) & bld->output_size, ovl_ui_mbsize);
 	write32((uintptr_t) & bld->out_ctl, 0);
 	write32((uintptr_t) & bld->ck_ctl, 0);
 	for(i = 0; i < 4; i++)
 	{
 		write32((uintptr_t) & bld->attr[i].fcolor, 0xff000000);
-		write32((uintptr_t) & bld->attr[i].insize, size);
+		write32((uintptr_t) & bld->attr[i].insize, ovl_ui_mbsize);
 	}
 
 	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
@@ -1858,13 +1877,25 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
 	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
 	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
-
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr, (1 << 0) | (4 << 8) | (1 << 1) | (0xff << 24));
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].size, size);
+	// Allwinner_DE2.0_Spec_V1.0.pdf
+	// 5.10.8.1 OVL_UI attribute control register
+	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
+	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].attr, (1 << 0) | (ovl_ui_format << 8) | (1 << 1) | (0xff << 24));
+	// 5.10.8.2 OVL_UI memory block size register
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].size, ovl_ui_mbsize);
+	// 5.10.8.3 OVL_UI memory block coordinate register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].coord, 0);
+	// 5.10.8.4 OVL_UI memory pitch register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(pdat->width));	// размер строки в байтах
+	// 5.10.8.5 OVL_UI top field memory block low address register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
-	write32((uintptr_t) & ui->ovl_size, size);
+	// 5.10.8.6 OVL_UI bottom field memory block low address register
+	// ...
+	// 5.10.8.2 OVL_UI memory block size register
+	// 28..16: LAY_HEIGHT
+	// 12..0: LAY_WIDTH
+	write32((uintptr_t) & ui->ovl_size, ovl_ui_mbsize);
 }
 
 static void t113_tconlcd_enable(struct fb_t113_rgb_pdata_t * pdat)
