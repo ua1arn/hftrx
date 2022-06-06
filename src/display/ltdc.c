@@ -1847,23 +1847,25 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	for(i = 0; i < 4; i++)
 	{
 		void * chan = (void *)(pdat->virt_de + T113_DE_MUX_CHAN + 0x1000 * i);
-		memset(chan, 0, i == 0 ? sizeof(struct de_vi_t) : sizeof(struct de_ui_t));
+		// peripherial registers
+		memset(chan, 0, i == 0 ? sizeof (struct de_vi_t) : sizeof (struct de_ui_t));
 	}
-	memset(bld, 0, sizeof(struct de_bld_t));
+	// peripherial registers
+	memset(bld, 0, sizeof (struct de_bld_t));
 
 	write32((uintptr_t) & bld->fcolor_ctl, 0x00000101);
 	write32((uintptr_t) & bld->route, 1);
 	write32((uintptr_t) & bld->premultiply, 0);
 	write32((uintptr_t) & bld->bkcolor, 0xff000000);
-	write32((uintptr_t) & bld->bld_mode[0], 0x03010301);
-	write32((uintptr_t) & bld->bld_mode[1], 0x03010301);
+	write32((uintptr_t) & bld->bld_mode [0], 0x03010301);
+	write32((uintptr_t) & bld->bld_mode [1], 0x03010301);
 	write32((uintptr_t) & bld->output_size, ovl_ui_mbsize);
 	write32((uintptr_t) & bld->out_ctl, 0);
 	write32((uintptr_t) & bld->ck_ctl, 0);
 	for(i = 0; i < 4; i++)
 	{
-		write32((uintptr_t) & bld->attr[i].fcolor, 0xff000000);
-		write32((uintptr_t) & bld->attr[i].insize, ovl_ui_mbsize);
+		write32((uintptr_t) & bld->attr [i].fcolor, 0xff000000);
+		write32((uintptr_t) & bld->attr [i].insize, ovl_ui_mbsize);
 	}
 
 	write32(pdat->virt_de + T113_DE_MUX_VSU, 0);
@@ -1877,7 +1879,12 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	write32(pdat->virt_de + T113_DE_MUX_ASE, 0);
 	write32(pdat->virt_de + T113_DE_MUX_FCC, 0);
 	write32(pdat->virt_de + T113_DE_MUX_DCSC, 0);
+
+
 	// Allwinner_DE2.0_Spec_V1.0.pdf
+
+	// Note: the layer priority is layer3>layer2>layer1>layer0
+
 	// 5.10.8.1 OVL_UI attribute control register
 	// 31..24: LAY_GLBALPHA Alpha value is used for this layer
 	// 12..8: 0x04: XRGB_8888, 0x0A: RGB_565
