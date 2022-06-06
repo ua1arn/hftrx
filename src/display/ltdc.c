@@ -1896,8 +1896,12 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat)
 
 	val = (pdat->timing.v_front_porch + pdat->timing.v_back_porch + pdat->timing.v_sync_len) / 2;
 	write32((uintptr_t)&tcon->ctrl, (1 << 31) | (0 << 24) | (0 << 23) | ((val & 0x1f) << 4) | (0 << 0));
-	val = allwnrt113_get_video0_x4_freq() / pdat->timing.pixel_clock_hz;
-	write32((uintptr_t)&tcon->dclk, (0xf << 28) | ((val / 2) << 0));
+
+	// 31..28: TCON0_Dclk_En
+	// 6..0: TCON0_Dclk_Div
+	val = allwnrt113_get_video0_x2_freq() / pdat->timing.pixel_clock_hz;
+	write32((uintptr_t)&tcon->dclk, (0xf << 28) | (val << 0));
+
 	write32((uintptr_t)&tcon->timing0, ((pdat->width - 1) << 16) | ((pdat->height - 1) << 0));
 	bp = pdat->timing.h_sync_len + pdat->timing.h_back_porch;
 	total = pdat->width + pdat->timing.h_front_porch + bp;

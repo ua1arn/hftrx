@@ -3,6 +3,8 @@
 
 #define T113_TCONLCD_BASE		(0x05461000)
 
+// Sochip_VE_S3_Datasheet_V1.0.pdf
+// 7.2.4 TCON Module register list
 struct t113_tconlcd_reg_t {
 	uint32_t gctrl;				/* 0x00 */
 	uint32_t gint0;				/* 0x04 */
