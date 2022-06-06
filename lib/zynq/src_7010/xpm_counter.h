@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (c) 2011 - 2020 Xilinx, Inc.  All rights reserved.
+* Copyright (c) 2011 - 2021 Xilinx, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -35,14 +35,18 @@
 *
 ******************************************************************************/
 
+/**
+*@cond nocomments
+*/
+
 #ifndef XPMCOUNTER_H /* prevent circular inclusions */
 #define XPMCOUNTER_H /* by using protection macros */
 
 /***************************** Include Files ********************************/
 
-#include <xil_types.h>
-#include <xpseudo_asm.h>
 #include <stdint.h>
+#include "xpseudo_asm.h"
+#include "xil_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -533,6 +537,10 @@ extern "C" {
 /***************** Macros (Inline Functions) Definitions ********************/
 
 /************************** Variable Definitions ****************************/
+
+/**
+*@endcond
+*/
 
 /************************** Function Prototypes *****************************/
 

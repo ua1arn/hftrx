@@ -91,6 +91,8 @@ void xcz_tx_shift(uint32_t val)
 	Xil_Out32(XPAR_TRX_CONTROL2_0_S00_AXI_BASEADDR + 20, val);
 }
 
+#if WITHRTS96
+
 void xcz_ah_preinit(void)
 {
 	fifo_divider = 2;
@@ -322,6 +324,8 @@ void xcz_audio_tx_enable(uint_fast8_t state)
 //	XLlFifo_iWrite_Aligned(& fifo_phones, (u32 *) sinbuf32, DMABUFFSIZE16 / fifo_divider);	// пнуть, чтобы заработало
 //	XLlFifo_iTxSetLen(& fifo_phones, DMABUFFSIZE16 * 4 / fifo_divider);
 }
+
+#endif /* WITHRTS96 */
 
 #else // заглушки для бутлоадера
 

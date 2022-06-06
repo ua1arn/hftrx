@@ -14823,7 +14823,7 @@ static void dpc_1stimer(void * arg)
 #endif /* WITHSLEEPTIMER */
 
 #if WITHLWIP
-	sys_check_timeouts();
+//	sys_check_timeouts();
 #endif /* WITHLWIP */
 
 #if 0 && CPUSTYLE_XC7Z || CPUSTYLE_XCZU
@@ -14945,7 +14945,8 @@ processmessages(
 #endif /* WITHWAVPLAYER || WITHSENDWAV */
 #if WITHLWIP
 		/* LWIP */
-		usb_polling();     // usb device polling
+		//usb_polling();     // usb device polling
+		//network_spool();
 		//stmr();            // call software timers
 #endif /* WITHLWIP */
 		display2_bgprocess();			/* выполнение шагов state machine отображения дисплея */
@@ -24022,7 +24023,9 @@ main(void)
 	bandf2adjust_initialize();
 #endif /* WITHTX */
 	initialize2();	/* вызывается при разрешённых прерываниях. */
-	network_initialize();
+#if WITHLWIP
+	//network_initialize();
+#endif /* WITHLWIP */
 	hamradio_initialize();
 	hightests();		/* подпрограммы для тестирования аппаратуры */
 

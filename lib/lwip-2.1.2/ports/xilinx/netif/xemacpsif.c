@@ -47,8 +47,7 @@
 #include "netif/xadapter.h"
 #include "netif/xpqueue.h"
 #include "xparameters.h"
-#include "xscugic.h"
-#include "xemacps.h"
+#include "xc7z_inc.h"
 
 #if LWIP_IPV6
 #include "lwip/ethip6.h"

@@ -46,6 +46,8 @@
 #include "netif/etharp.h"
 #include "netif/xadapter.h"
 
+#include"formats.h"
+
 #ifdef XLWIP_CONFIG_INCLUDE_EMACLITE
 #include "netif/xemacliteif.h"
 #endif
@@ -228,7 +230,7 @@ xemacif_input(struct netif *netif)
 			n_packets = xemacliteif_input(netif);
 			break;
 #else
-			print("incorrect configuration: xps_ethernetlite drivers not present?");
+			PRINTF("incorrect configuration: xps_ethernetlite drivers not present?");
 			while(1);
 			return 0;
 #endif
@@ -237,7 +239,7 @@ xemacif_input(struct netif *netif)
 			n_packets = xaxiemacif_input(netif);
 			break;
 #else
-			print("incorrect configuration: axi_ethernet drivers not present?");
+			PRINTF("incorrect configuration: axi_ethernet drivers not present?");
 			while(1);
 			return 0;
 #endif
@@ -253,7 +255,7 @@ xemacif_input(struct netif *netif)
 #endif
 #endif
 		default:
-			print("incorrect configuration: unknown temac type");
+			PRINTF("incorrect configuration: unknown temac type");
 			while(1);
 			return 0;
 	}

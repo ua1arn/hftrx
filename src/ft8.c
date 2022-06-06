@@ -518,11 +518,13 @@ void ft8_walkthrough_core0(uint_fast8_t rtc_secounds)
 		}
 	}
 
+#if WITHTX
 	if (ft8_mox_request)
 	{
 		ft8_mox_request = 0;
 		hamradio_moxmode(1);
 	}
+#endif /* WITHTX */
 }
 
 void ft8_tx_enable(void)

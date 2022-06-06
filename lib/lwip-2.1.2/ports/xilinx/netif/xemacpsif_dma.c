@@ -41,7 +41,7 @@
 #include "xparameters.h"
 #include "xparameters_ps.h"
 #include "xil_exception.h"
-#include "xil_mmu.h"
+//#include "xil_mmu.h"
 #if defined (ARMR5)
 #include "xreg_cortexr5.h"
 #endif
@@ -54,6 +54,8 @@
 #include "timers.h"
 #endif
 
+#include "hardware.h"
+void XEmacPs_IntrHandler2(void);
 
 #define INTC_BASE_ADDR		XPAR_SCUGIC_0_CPU_BASEADDR
 #define INTC_DIST_BASE_ADDR	XPAR_SCUGIC_0_DIST_BASEADDR
@@ -135,7 +137,6 @@ s32_t is_tx_space_available(xemacpsif_s *emac)
 	freecnt = XEmacPs_BdRingGetFreeCnt(txring);
 	return freecnt;
 }
-
 
 static inline
 u32_t get_base_index_txpbufsstorage (xemacpsif_s *xemacpsif)
@@ -552,6 +553,8 @@ void clean_dma_txdescs(struct xemac_s *xemac)
 	XEmacPs_BdRingClone(txringptr, &bdtemplate, XEMACPS_SEND);
 }
 
+extern XEmacPs * XEmacPsInst;
+
 XStatus init_dma(struct xemac_s *xemac)
 {
 	XEmacPs_Bd bdtemplate;
@@ -564,8 +567,8 @@ XStatus init_dma(struct xemac_s *xemac)
 	volatile UINTPTR tempaddress;
 	u32_t index;
 	u32_t gigeversion;
-	XEmacPs_Bd *bdtxterminate;
-	XEmacPs_Bd *bdrxterminate;
+	XEmacPs_Bd *bdtxterminate = NULL;
+	XEmacPs_Bd *bdrxterminate = NULL;
 	u32 *temp;
 
 	xemacpsif_s *xemacpsif = (xemacpsif_s *)(xemac->state);
@@ -587,7 +590,7 @@ XStatus init_dma(struct xemac_s *xemac)
 #if defined __aarch64__
 	Xil_SetTlbAttributes((u64)bd_space, NORM_NONCACHE | INNER_SHAREABLE);
 #else
-	Xil_SetTlbAttributes((s32_t)bd_space, DEVICE_MEMORY); // addr, attr
+//	Xil_SetTlbAttributes((s32_t)bd_space, 0xC06); // addr, attr
 #endif
 #endif
 		bd_space_attr_set = 1;
@@ -751,19 +754,9 @@ XStatus init_dma(struct xemac_s *xemac)
 				   (UINTPTR)bdtxterminate);
 	}
 
+	XEmacPsInst = & xemacpsif->emacps;
+	arm_hardware_set_handler_system(xtopologyp->scugic_emac_intr, XEmacPs_IntrHandler2);
 
-	/*
-	 * Connect the device driver handler that will be called when an
-	 * interrupt for the device occurs, the handler defined above performs
-	 * the specific interrupt processing for the device.
-	 */
-	XScuGic_RegisterHandler(INTC_BASE_ADDR, xtopologyp->scugic_emac_intr,
-				(Xil_ExceptionHandler)XEmacPs_IntrHandler,
-						(void *)&xemacpsif->emacps);
-	/*
-	 * Enable the interrupt for emacps.
-	 */
-	XScuGic_EnableIntr(INTC_DIST_BASE_ADDR, (u32) xtopologyp->scugic_emac_intr);
 	emac_intr_num = (u32) xtopologyp->scugic_emac_intr;
 	return 0;
 }
@@ -866,14 +859,4 @@ void reset_dma(struct xemac_s *xemac)
 
 	XEmacPs_SetQueuePtr(&(xemacpsif->emacps), xemacpsif->emacps.RxBdRing.BaseBdAddr, 0, XEMACPS_RECV);
 	XEmacPs_SetQueuePtr(&(xemacpsif->emacps), xemacpsif->emacps.TxBdRing.BaseBdAddr, txqueuenum, XEMACPS_SEND);
-}
-
-void emac_disable_intr(void)
-{
-	XScuGic_DisableIntr(INTC_DIST_BASE_ADDR, emac_intr_num);
-}
-
-void emac_enable_intr(void)
-{
-	XScuGic_EnableIntr(INTC_DIST_BASE_ADDR, emac_intr_num);
 }

@@ -113,21 +113,12 @@ typedef struct {
 
 #endif /* #if WITHFT8 */
 
-#if WITHWIFI
+#if WITHLWIP
 
-enum {
-	WIFI_AP_IDLE,
-	WIFI_AP_SCAN,
-	WIFI_AP_SCAN_DONE,
-	WIFI_AP_CONNECT,
-	WIFI_AP_CONNECT_DONE,
-	WIFI_AP_CONNECT_ERROR,
-	WIFI_AP_DISCONNECT
-};
+int ping_check_response(void);
+int ping_send_ip(const char * ip_str);
 
-static uint_fast8_t wifi_status = WIFI_AP_IDLE;
-
-#endif /* WITHWIFI */
+#endif
 
 void gui_encoder2_menu (enc2_menu_t * enc2_menu)
 {
@@ -217,7 +208,7 @@ static void window_menu_params_proccess(void);
 static void window_time_proccess(void);
 static void window_kbd_proccess(void);
 static void window_kbd_test_proccess(void);
-static void window_wifi_proccess(void);
+static void window_ping_proccess(void);
 
 static window_t windows [] = {
 //     window_id,   		 parent_id, 			align_mode,     title,     				is_close, onVisibleProcess
@@ -256,7 +247,7 @@ static window_t windows [] = {
 	{ WINDOW_TIME, 	 	 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Date & time set",		 1, window_time_proccess, },
 	{ WINDOW_KBD, 	 	 	 NO_PARENT_WINDOW,		ALIGN_CENTER_X, "Keyboard",		 		 0, window_kbd_proccess, },
 	{ WINDOW_KBD_TEST, 		 WINDOW_UTILS,			ALIGN_CENTER_X, "Keyboard demo",	 	 1, window_kbd_test_proccess, },
-	{ WINDOW_WIFI, 		 	 WINDOW_OPTIONS,		ALIGN_CENTER_X, "Wi-Fi AP",	 			 1, window_wifi_proccess, },
+	{ WINDOW_PING, 		 	 WINDOW_UTILS,			ALIGN_CENTER_X, "Network ping test",	 1, window_ping_proccess, },
 };
 
 /* Возврат ссылки на окно */
@@ -1586,7 +1577,6 @@ static void window_options_process(void)
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_gui",     "GUI|settings", 		},
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Utils",   "Utils", 			    },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_Time",    "Set time|& date", 	},
-			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_OPTIONS, NON_VISIBLE, INT32_MAX, "btn_wifi",    "WiFi|APs", 	},
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -1636,7 +1626,6 @@ static void window_options_process(void)
 			button_t * btn_SysMenu = find_gui_element(TYPE_BUTTON, win, "btn_SysMenu");
 			button_t * btn_Display = find_gui_element(TYPE_BUTTON, win, "btn_Display");
 			button_t * btn_Time = find_gui_element(TYPE_BUTTON, win, "btn_Time");
-			button_t * btn_wifi = find_gui_element(TYPE_BUTTON, win, "btn_wifi");
 
 			if (bh == btn_Utils)
 			{
@@ -1676,13 +1665,6 @@ static void window_options_process(void)
 				open_window(win);
 			}
 #endif /* WITHSPECTRUMWF && WITHMENU */
-#if WITHWIFI
-			else if (bh == btn_wifi)
-			{
-				window_t * const win = get_win(WINDOW_WIFI);
-				open_window(win);
-			}
-#endif /* WITHWIFI */
 		}
 		break;
 
@@ -1963,6 +1945,7 @@ static void window_utilites_process(void)
 		static const button_t buttons [] = {
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_SWRscan", "SWR|scanner", },
 			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_kbdtest", "Keyboard|test", },
+			{ 100, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 0, WINDOW_UTILS, NON_VISIBLE, INT32_MAX, "btn_pingtest", "IP ping|test", },
 		};
 		win->bh_count = ARRAY_SIZE(buttons);
 		uint_fast16_t buttons_size = sizeof(buttons);
@@ -2001,19 +1984,24 @@ static void window_utilites_process(void)
 			button_t * bh = (button_t *) ptr;
 			button_t * btn_SWRscan = find_gui_element(TYPE_BUTTON, win, "btn_SWRscan");
 			button_t * btn_kbdtest = find_gui_element(TYPE_BUTTON, win, "btn_kbdtest");
+			button_t * btn_pingtest = find_gui_element(TYPE_BUTTON, win, "btn_pingtest");
 
 			if (bh == btn_kbdtest)
 			{
-				window_t * const winSWR = get_win(WINDOW_KBD_TEST);
-				open_window(winSWR);
+				open_window(get_win(WINDOW_KBD_TEST));
 			}
 #if WITHTX
 			else if (bh == btn_SWRscan)
 			{
-				window_t * const winSWR = get_win(WINDOW_SWR_SCANNER);
-				open_window(winSWR);
+				open_window(get_win(WINDOW_SWR_SCANNER));
 			}
 #endif /* WITHTX */
+#if WITHLWIP
+			else if (bh == btn_pingtest)
+			{
+				open_window(get_win(WINDOW_PING));
+			}
+#endif /* WITHLWIP */
 		}
 		break;
 
@@ -4010,191 +3998,6 @@ static void window_shift_proccess(void)
 
 // *********************************************************************************************************************************************************************
 
-static void window_wifi_proccess(void)
-{
-#if WITHWIFI
-	window_t * const win = get_win(WINDOW_WIFI);
-	static uint_fast8_t update = 0, idx_AP = 255, cntAP = 0, work = 0;
-
-	if (win->first_call)
-	{
-		win->first_call = 0;
-
-		if (! work)
-		{
-			share_mem.wifiAPstatus = 0;
-			wifi_status = WIFI_AP_IDLE;
-			idx_AP = 255;
-		}
-		else
-			update = 1;
-
-		uint_fast8_t x = 0, y = 0, interval = 20;
-
-		static const button_t buttons [] = {
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_WIFI, NON_VISIBLE, INT32_MAX, "btn_scan",  	"AP scan", },
-			{ 86, 44, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_WIFI, NON_VISIBLE, INT32_MAX, "btn_connect",  	"Connect", },
-		};
-		win->bh_count = ARRAY_SIZE(buttons);
-		uint_fast16_t buttons_size = sizeof(buttons);
-		win->bh_ptr = malloc(buttons_size);
-		GUI_MEM_ASSERT(win->bh_ptr);
-		memcpy(win->bh_ptr, buttons, buttons_size);
-
-		static const label_t labels [] = {
-			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap0", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 0, },
-			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap1", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 1, },
-			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap2", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 2, },
-			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap3", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 3, },
-			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap4", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 4, },
-			{ WINDOW_WIFI, CANCELLED, 0, NON_VISIBLE, "lbl_ap5", "****************", FONT_MEDIUM, COLORMAIN_WHITE, 5, },
-		};
-		win->lh_count = ARRAY_SIZE(labels);
-		uint_fast16_t labels_size = sizeof(labels);
-		win->lh_ptr = malloc(labels_size);
-		GUI_MEM_ASSERT(win->lh_ptr);
-		memcpy(win->lh_ptr, labels, labels_size);
-
-		label_t * lh;
-		button_t * btn_scan = find_gui_element(TYPE_BUTTON, win, "btn_scan");
-		button_t * btn_connect = find_gui_element(TYPE_BUTTON, win, "btn_connect");
-
-		for (uint_fast8_t i = 0; i < 6; i ++)
-		{
-			char lh_name [15];
-			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_ap%d", i);
-			lh = find_gui_element(TYPE_LABEL, win, lh_name);
-			lh->x = x;
-			lh->y = y;
-			y = y + get_label_height(lh) + interval;
-		}
-
-		btn_scan->x1 = lh->x + get_label_width(lh) + interval;
-		btn_scan->y1 = 0;
-		btn_scan->visible = VISIBLE;
-
-		btn_connect->x1 = btn_scan->x1;
-		btn_connect->y1 = btn_scan->y1 + btn_scan->h + interval;
-		btn_connect->visible = VISIBLE;
-
-		calculate_window_position(win, WINDOW_POSITION_AUTO);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Wi-Fi Connect");
-		window_set_title_align(win, TITLE_ALIGNMENT_CENTER);
-	}
-
-	if (share_mem.wifiAPstatus > 0 && share_mem.wifiAPstatus < 100)
-	{
-		cntAP = share_mem.wifiAPstatus;
-		share_mem.wifiAPstatus = 0;
-		update = 1;
-	}
-	else if (share_mem.wifiAPstatus == WIFI_STATUS_CONNECTED)
-	{
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Connected");
-		share_mem.wifiAPstatus = 0;
-	}
-	else if (share_mem.wifiAPstatus == WIFI_STATUS_TIME_UPDATED)
-	{
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Time updated");
-		share_mem.wifiAPstatus = 0;
-		button_t * btn_connect = find_gui_element(TYPE_BUTTON, win, "btn_connect");
-		btn_connect->state = DISABLED;
-	}
-
-	if (work && wifi_status == WIFI_AP_CONNECT && ! update)
-	{
-		work = 0;
-		char lh_name [15];
-		local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_ap%d", idx_AP);
-		label_t * lh = find_gui_element(TYPE_LABEL, win, lh_name);
-		strcpy(share_mem.wifiAPname, lh->text);
-		xczu_ipi_sendmsg(WIFI_MSG_AP_CONNECT);
-		local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Connecting...");
-		update = 1;
-	}
-
-	GET_FROM_WM_QUEUE
-	{
-	case WM_MESSAGE_ACTION:
-
-		if (IS_BUTTON_PRESS)
-		{
-			button_t * bh = (button_t *) ptr;
-			button_t * btn_scan = find_gui_element(TYPE_BUTTON, win, "btn_scan");
-			button_t * btn_connect = find_gui_element(TYPE_BUTTON, win, "btn_connect");
-
-			if (bh == btn_scan)
-			{
-				xczu_ipi_sendmsg(WIFI_MSG_AP_LIST);
-				wifi_status = WIFI_AP_SCAN;
-				idx_AP = 255;
-				local_snprintf_P(win->title, ARRAY_SIZE(win->title), "Scanning...");
-			}
-			else if (bh == btn_connect)
-			{
-				if (idx_AP != 255)
-				{
-					wifi_status = WIFI_AP_CONNECT;
-					work = 1;
-					keyboard_edit_string(share_mem.wifiAPkey, 1, win, 1);
-				}
-			}
-		}
-		else if (IS_LABEL_PRESS)
-		{
-			label_t * lh = (label_t *) ptr;
-			idx_AP = lh->index;
-			update = 1;
-		}
-
-		break;
-
-	case WM_MESSAGE_CLOSE:
-
-		break;
-
-	default:
-
-		break;
-	}
-
-	if (update)
-	{
-		update = 0;
-
-		PRINTF("%d %s\n", cntAP, share_mem.wifiAPs);
-
-		char tmpstr [wifiAPname_max_lenght * wifiAPmaxcount];
-		strcpy(tmpstr, share_mem.wifiAPs);
-
-		char * s = strtok(tmpstr, "|");
-
-		for (uint_fast8_t i = 0; i < 6; i ++)
-		{
-			char lh_name [15];
-			local_snprintf_P(lh_name, ARRAY_SIZE(lh_name), "lbl_ap%d", i);
-			label_t * lh = find_gui_element(TYPE_LABEL, win, lh_name);
-
-			if (i < cntAP)
-			{
-				local_snprintf_P(lh->text, ARRAY_SIZE(lh->text), "%s", s);
-				lh->visible = VISIBLE;
-				s = strtok(NULL, "|");
-
-				lh->color = i == idx_AP ? COLORMAIN_YELLOW : COLORMAIN_WHITE;
-			}
-			else
-				lh->visible = NON_VISIBLE;
-		}
-	}
-
-
-
-#endif /* WITHWIFI */
-}
-
-// *********************************************************************************************************************************************************************
-
 void gui_uif_editmenu(const char * name, uint_fast16_t menupos, uint_fast8_t exitkey)
 {
 	window_t * const win = get_win(WINDOW_UIF);
@@ -5808,6 +5611,160 @@ static void window_kbd_test_proccess(void)
 	default:
 	break;
 	}
+}
+
+// *****************************************************************************************************************************
+
+static void window_ping_proccess(void)
+{
+#if WITHLWIP
+	window_t * const win = get_win(WINDOW_PING);
+	static uint_fast8_t is_ping = 0, ping_delay = 0, update = 0;
+	static char ip_str [20] = "8.8.8.8";
+	static text_field_t * tf_ping = NULL;
+
+	if (win->first_call)
+	{
+		win->first_call = 0;
+		uint_fast8_t interval = 20;
+		is_ping = 0;
+		ping_delay = 0;
+		update = 0;
+
+		static const button_t buttons [] = {
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_PING, NON_VISIBLE, INT32_MAX, "btn_edit",  "Set IP", },
+			{ 86, 30, CANCELLED, BUTTON_NON_LOCKED, 0, 1, WINDOW_PING, NON_VISIBLE, INT32_MAX, "btn_ping",	"Ping", },
+		};
+		win->bh_count = ARRAY_SIZE(buttons);
+		uint_fast16_t buttons_size = sizeof(buttons);
+		win->bh_ptr = malloc(buttons_size);
+		GUI_MEM_ASSERT(win->bh_ptr);
+		memcpy(win->bh_ptr, buttons, buttons_size);
+
+		static const label_t labels [] = {
+			{ WINDOW_PING, CANCELLED, 0, NON_VISIBLE, "lbl_ip", "***************", FONT_MEDIUM, COLORMAIN_WHITE, },
+		};
+		win->lh_count = ARRAY_SIZE(labels);
+		uint_fast16_t labels_size = sizeof(labels);
+		win->lh_ptr = malloc(labels_size);
+		GUI_MEM_ASSERT(win->lh_ptr);
+		memcpy(win->lh_ptr, labels, labels_size);
+
+		static const text_field_t text_field [] = {
+			{ 35, 20, CANCELLED, WINDOW_PING, NON_VISIBLE, & gothic_11x13, "tf_ping", },
+		};
+		win->tf_count = ARRAY_SIZE(text_field);
+		uint_fast16_t tf_size = sizeof(text_field);
+		win->tf_ptr = malloc(tf_size);
+		GUI_MEM_ASSERT(win->tf_ptr);
+		memcpy(win->tf_ptr, text_field, tf_size);
+
+		tf_ping = find_gui_element(TYPE_TEXT_FIELD, win, "tf_ping");
+		textfield_update_size(tf_ping);
+		tf_ping->x1 = 0;
+		tf_ping->y1 = 0;
+		tf_ping->visible = VISIBLE;
+
+		label_t * lbl_ip =  find_gui_element(TYPE_LABEL, win, "lbl_ip");
+		lbl_ip->x = tf_ping->x1 + tf_ping->w + interval;
+		lbl_ip->y = 0;
+		lbl_ip->visible = VISIBLE;
+
+		button_t * btn_edit = find_gui_element(TYPE_BUTTON, win, "btn_edit");
+		btn_edit->x1 = lbl_ip->x;
+		btn_edit->y1 = lbl_ip->y + get_label_height(lbl_ip) + interval;
+		btn_edit->visible = VISIBLE;
+
+		button_t * btn_ping = find_gui_element(TYPE_BUTTON, win, "btn_ping");
+		btn_ping->x1 = btn_edit->x1;
+		btn_ping->y1 = btn_edit->y1 + btn_edit->h + interval;
+		btn_ping->visible = VISIBLE;
+
+		calculate_window_position(win, WINDOW_POSITION_AUTO);
+		local_snprintf_P(lbl_ip->text, ARRAY_SIZE(lbl_ip->text), PSTR("%s"), ip_str);
+	}
+
+	GET_FROM_WM_QUEUE
+	{
+	case WM_MESSAGE_ACTION:
+
+		if (IS_BUTTON_PRESS)
+		{
+			button_t * bh = (button_t *) ptr;
+			button_t * btn_edit = find_gui_element(TYPE_BUTTON, win, "btn_edit");
+			button_t * btn_ping = find_gui_element(TYPE_BUTTON, win, "btn_ping");
+
+			if (bh == btn_ping)
+			{
+				if(is_ping)
+					is_ping = 0;
+				else
+				{
+					int val = ping_send_ip(ip_str);
+					if (val)
+					{
+						char str[30];
+						local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, val);
+						textfield_add_string(tf_ping, str, COLORMAIN_RED);
+					}
+					else
+					{
+						is_ping = 1;
+						ping_delay = 0;
+						textfield_clean(tf_ping);
+					}
+				}
+				update = 1;
+			}
+			else if (bh == btn_edit)
+			{
+				keyboard_edit_string(ip_str, 20, win, 1);
+			}
+		}
+		break;
+
+	default:
+
+		break;
+	}
+
+	if (is_ping)
+	{
+		if (ping_delay > 80)
+		{
+			ping_delay = 0;
+			int resp = ping_check_response();
+
+			if (resp)
+			{
+				char str[30];
+				local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Answer from %s: %d ms"), ip_str, resp);
+				textfield_add_string(tf_ping, str, COLORMAIN_WHITE);
+
+				int send = ping_send_ip(ip_str);
+				if(send)
+				{
+					char str[30];
+					local_snprintf_P(str, ARRAY_SIZE(str), PSTR("Ping %s error=%d"), ip_str, send);
+					textfield_add_string(tf_ping, str, COLORMAIN_RED);
+					is_ping = 0;
+					update = 1;
+				}
+			}
+		}
+
+		ping_delay ++;
+	}
+
+	if (update)
+	{
+		update = 0;
+		button_t * btn_edit = find_gui_element(TYPE_BUTTON, win, "btn_edit");
+		button_t * btn_ping = find_gui_element(TYPE_BUTTON, win, "btn_ping");
+		btn_ping->is_locked = is_ping;
+		btn_edit->state = is_ping ? DISABLED : CANCELLED;
+	}
+#endif
 }
 
 // *****************************************************************************************************************************
