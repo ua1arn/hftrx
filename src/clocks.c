@@ -1847,6 +1847,42 @@ unsigned long allwnrt113_get_video0_x4_freq(void)
 	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / div2;
 }
 
+unsigned long allwnrt113_get_video1_x4_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_VIDEO1_CTRL_REG;
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
+	const uint_fast32_t div2 = 1 + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / div2;
+}
+
+unsigned long allwnrt113_get_ve_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_VE_CTRL_REG;
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
+	const uint_fast32_t div2 = 1 + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / div2;
+}
+
+unsigned long allwnrt113_get_audio0_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
+	const uint_fast32_t div2 = 1 + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / div2;
+}
+
+unsigned long allwnrt113_get_audio1_freq(void)
+{
+	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
+	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
+	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
+	const uint_fast32_t div2 = 1 + ((reg >> 0) & 0x01);
+	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / div2;
+}
+
 unsigned long allwnrt113_get_video0_x2_freq(void)
 {
 	return allwnrt113_get_video0_x4_freq() / 2;
