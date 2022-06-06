@@ -636,6 +636,13 @@ void network_initialize(void)
 
 }
 
+#else
+
+void network_initialize(void)
+{
+
+}
+
 #endif /*  WITHLWIP */
 
 #if 1
