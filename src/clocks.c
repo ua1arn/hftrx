@@ -7284,6 +7284,11 @@ void hardware_spi_master_initialize(void)
 
 	SPIIO_INITIALIZE();
 
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Need be implemented for CPUSTYPE_ALLWNT113
+	SPIIO_INITIALIZE();
+
 #else
 	#error Wrong CPUSTYLE macro
 
@@ -7594,6 +7599,9 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 	xc7z_spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
 	xc7z_spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
 
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Need be implemented for CPUSTYPE_ALLWNT113
 #else
 	#error Wrong CPUSTYLE macro
 
@@ -7744,6 +7752,11 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Need be implemented for CPUSTYPE_ALLWNT113
+
+	HARDWARE_SPI_CONNECT();
 #else
 	#error Wrong CPUSTYLE macro
 
@@ -7819,6 +7832,11 @@ void hardware_spi_disconnect(void)
 	SPI0->ER = 0x0000;	// 0: disable the SPI
 	HARDWARE_SPI_DISCONNECT();
 
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Need be implemented for CPUSTYPE_ALLWNT113
+	HARDWARE_SPI_DISCONNECT();
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -7892,6 +7910,10 @@ hardware_spi_ready_b8_void(void)
 		;
 	}
 	(void) SPI0->RXD;
+
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Need be implemented for CPUSTYPE_ALLWNT113
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -7972,8 +7994,14 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 	}
 	return SPI0->RXD & 0xFF;
 
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Need be implemented for CPUSTYPE_ALLWNT113
+	return 0;
+
 #else
 	#error Wrong CPUSTYLE macro
+	return 0;
 #endif
 }
 
@@ -9248,6 +9276,10 @@ void hardware_spi_b8_p1(
 		//local_delay_ms(100);
 		;
 	}
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Need be implemented for CPUSTYPE_ALLWNT113
+
 
 #else
 	#error Wrong CPUSTYLE macro

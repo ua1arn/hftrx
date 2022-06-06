@@ -569,26 +569,26 @@
 		} while (0)
 
 	// MOSI & SCK port
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { } while (0) //do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { } while (0) //do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
 	#define	SPI_SCLK_BIT			(0*1uL << 3)	// * PB3 бит, через который идет синхронизация SPI
 
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { } while (0) //do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { } while (0) //do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
+	#define SPI_TARGET_MOSI_PORT_C(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
+	#define SPI_TARGET_MOSI_PORT_S(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
 	#define	SPI_MOSI_BIT			(0*1uL << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
 
-	#define SPI_TARGET_MISO_PIN		0//(GPIOB->IDR)
+	#define SPI_TARGET_MISO_PIN		0//(GPIOE->DATA)
 	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
 
 	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
-			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
-			arm_hardware_piob_inputs(SPI_MISO_BIT); /* PB4 */ \
+			arm_hardware_pioe_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
+			arm_hardware_pioe_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
+			arm_hardware_pioe_inputs(SPI_MISO_BIT); /* PB4 */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_piob_altfn20(SPI_SCLK_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
-			arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
-			arm_hardware_piob_altfn20(SPI_MISO_BIT, AF_SPI1); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_pioe_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF6); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_pioe_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF6); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_pioe_altfn20(SPI_MISO_BIT, GPIO_CFG_AF6); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
 			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
