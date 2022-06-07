@@ -7846,6 +7846,7 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	SPI0->SPI_GCR |= (0x01uL << 0);	// SPI Module Enable Control
 
 	HARDWARE_SPI_CONNECT();
+
 #else
 	#error Wrong CPUSTYLE macro
 
