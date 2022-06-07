@@ -147,9 +147,13 @@ spi_cs_disable(
 	)
 {
 #if defined (SPI_CS_DEASSERT)
+
 	SPI_CS_DEASSERT(target);
+
 #else /* defined (SPI_CS_DEASSERT) */
+
 	spi_allcs_disable();
+
 #endif /* defined (SPI_CS_DEASSERT) */
 }
 
@@ -159,12 +163,7 @@ spi_cs_enable(
 	spitarget_t target	/* addressing to chip */
 	)
 {
-#if WITHSPICSEMIO
-	/* специфицеская конфигурация - управление сигналами CS SPI периферии выполняется через EMIO */
-
-	SPI_CS_ASSERT(target);
-
-#elif CPUSTYLE_XC7Z || CPUSTYLE_XCZU
+#if defined (SPI_CS_ASSERT)
 
 	SPI_CS_ASSERT(target);
 
