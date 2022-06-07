@@ -1968,17 +1968,20 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 	// timing3
 	write32((uintptr_t) & tcon->timing3, ((pdat->timing.h_sync_len - 1) << 16) | ((pdat->timing.v_sync_len - 1) << 0));
 
+	// Sochip_VE_S3_Datasheet_V1.0.pdf
+	// 7.2.5.19. TCON0_IO_POL_REG
 	// io_polarity
-	val = (0x00uL << 31) | (0x01uL << 28);
+	val = (0x00uL << 31) | 	// IO_Output_Sel: 0: nirmal, 1: sync to dclk
+			(0x01uL << 28);	// DCLK_Sel: 0x00: DCLK0 (normal phase offset), 0x01: DCLK1(1/3 phase offset
 
 	if(!pdat->timing.h_sync_active)
-		val |= (0x01uL << 25);
+		val |= (0x01uL << 25);	// IO1_Inv
 	if(!pdat->timing.v_sync_active)
-		val |= (0x01uL << 24);
+		val |= (0x01uL << 24);	// IO0_Inv
 	if(!pdat->timing.den_active)
-		val |= (0x01uL << 27);
+		val |= (0x01uL << 27);	// IO3_Inv
 	if(!pdat->timing.clk_active)
-		val |= (0x01uL << 26);
+		val |= (0x01uL << 26);	// IO2_Inv
 	write32((uintptr_t) & tcon->io_polarity, val);
 
 	// io_tristate
