@@ -922,12 +922,15 @@
 
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_INITIALIZE(demode) do { \
+		const uint32_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNCC */ \
+		const uint32_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
+		const uint32_t DEmask = (1U << 19); /* PD19 LCD_DE */ \
 		const portholder_t mask = 0x3FFFFF;	/* bits 0..21 */ \
 		arm_hardware_piod_altfn50(mask, GPIO_CFG_AF2); \
 		/* sync */ \
-		arm_hardware_piod_altfn50(1uL << 21, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_altfn50(1uL << 20, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
-		arm_hardware_piod_altfn50(1uL << 19, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		arm_hardware_piod_altfn50(VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_altfn50(HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_altfn50(DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
 		/* pixel clock */ \
 		arm_hardware_piod_altfn50(1uL << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
 		/* RED */ \
@@ -938,8 +941,9 @@
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
-		const uint32_t VSmask = (1U << 4); 	/* PA4 - VSYNC */ \
-		const uint32_t DEmask = (1U << 13); /* PE13 */ \
+		const uint32_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNCC */ \
+		const uint32_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
+		const uint32_t DEmask = (1U << 19); /* PD19 LCD_DE */ \
 		/* while ((GPIOA->IDR & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOA->IDR & VSmask) == 0) ; */ /* дождаться 1 */ \
 		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
@@ -954,6 +958,7 @@
 
 	#define SPDIF_D2_BIT (1u << 6)		// PC6	SPI0_WP/D2
 	#define SPDIF_D3_BIT (1u << 7)		// PC7	SPI0_HOLD/D3
+
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
 			arm_hardware_pioc_inputs(SPDIF_NCS_BIT); \
@@ -979,8 +984,8 @@
 		#else /* WIHSPIDFHW */
 
 			#define SPIDF_MISO() ((GPIOC->DATA & SPDIF_MISO_BIT) != 0)
-			#define SPIDF_MOSI(v) do { if (v) GPIOC->DATA |= (SPDIF_MOSI_BIT); else GPIOC->DATA &= ~ (SPDIF_MOSI_BIT); __DSB(); } while (0)
-			#define SPIDF_SCLK(v) do { if (v) GPIOC->DATA |= (SPDIF_SCLK_BIT); else GPIOC->DATA &= ~ (SPDIF_SCLK_BIT); __DSB(); } while (0)
+			#define SPIDF_MOSI(v) do { allwnrt113_pioX_setstate(GPIOC, SPDIF_MOSI_BIT, !! (v) * SPDIF_MOSI_BIT); } while (0)
+			#define SPIDF_SCLK(v) do { allwnrt113_pioX_setstate(GPIOC, SPDIF_SCLK_BIT, !! (v) * SPDIF_SCLK_BIT); } while (0)
 			#define SPIDF_SOFTINITIALIZE() do { \
 					arm_hardware_pioc_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2/WP tie-up */ \
 					arm_hardware_pioc_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3/HOLD tie-up */ \
@@ -994,11 +999,10 @@
 					arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 					arm_hardware_pioc_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
 					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
-					GPIOC->DATA &= ~ SPDIF_NCS_BIT; \
-					__DSB(); \
+					allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					GPIOC->DATA |= SPDIF_NCS_BIT; \
+					allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); \
 					arm_hardware_pioc_inputs(SPDIF_NCS_BIT); \
 					arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
 					arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
@@ -1072,9 +1076,9 @@
 		} while (0)
 	#define BOARD_BLINK_SETSTATE(state) do { \
 			if (state) \
-				(GPIOD)->DATA &= ~ BOARD_BLINK_BIT; \
+				allwnrt113_pioX_setstate(GPIOD, BOARD_BLINK_BIT, 0 * BOARD_BLINK_BIT); \
 			else \
-				(GPIOD)->DATA |= BOARD_BLINK_BIT; \
+				allwnrt113_pioX_setstate(GPIOD, BOARD_BLINK_BIT, 1 * BOARD_BLINK_BIT); \
 		} while (0)
 #endif
 
