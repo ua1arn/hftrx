@@ -1901,7 +1901,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 	// 5.10.8.3 OVL_UI memory block coordinate register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].coord, 0);
 	// 5.10.8.4 OVL_UI memory pitch register
-	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(pdat->width));	// размер строки в байтах
+	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].pitch, LCDMODE_PIXELSIZE * GXADJ(DIM_X));	// размер строки в байтах
 	// 5.10.8.5 OVL_UI top field memory block low address register
 	write32((uintptr_t) & ui->cfg [UI_CFG_INDEX].top_laddr, pdat->vram [pdat->index]);
 	// 5.10.8.6 OVL_UI bottom field memory block low address register
