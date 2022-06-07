@@ -5351,6 +5351,10 @@ GridTest(void)
 				 TFTRGB(n * 16, k * 16, 255 - (n * 8 + k * 8) )
 				 );
 */
+
+	display_fillrect(xm * 4 / 10, 0, xm * 3 / 10, ym * 2 / 10, COLORMAIN_WHITE);
+	display_line(xm * 6 / 10,  0, xm * 6 / 10, ym,  COLORMAIN_RED);
+
 	/* Interlase clocke test.	*/
 	display_line(10,  0,  xm, 10 + 1,  col3);
 	display_line(10,  0,  xm, 10 + 3,  col3);
