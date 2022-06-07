@@ -1772,10 +1772,10 @@ struct fb_t113_rgb_pdata_t
 		int v_front_porch;
 		int v_back_porch;
 		int v_sync_len;
-		int h_sync_active;
-		int v_sync_active;
-		int den_active;
-		int clk_active;
+		int h_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int v_sync_active;	// 1 - negatibe pulses, 0 - positice pulses
+		int den_active;		// 1 - negatibe pulses, 0 - positice pulses
+		int clk_active;		// 1 - negatibe pulses, 0 - positice pulses
 	} timing;
 
 //	struct led_t * backlight;
@@ -2074,16 +2074,16 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
 	pdat->vram [1] = frames [1];
 
 	pdat->timing.pixel_clock_hz = display_getdotclock(vdmode);
-	pdat->timing.h_front_porch = vdmode->hfp; //40;
-	pdat->timing.h_back_porch = vdmode->hbp; //87;
-	pdat->timing.h_sync_len =  vdmode->hsync; //1;
-	pdat->timing.v_front_porch = vdmode->vfp; //13;
-	pdat->timing.v_back_porch = vdmode->vbp; //31;
-	pdat->timing.v_sync_len = vdmode->vsync; //1;
-	pdat->timing.h_sync_active = 0;
-	pdat->timing.v_sync_active = 0;
-	pdat->timing.den_active = 1;
-	pdat->timing.clk_active =  0;
+	pdat->timing.h_front_porch = vdmode->hfp;
+	pdat->timing.h_back_porch = vdmode->hbp;
+	pdat->timing.h_sync_len =  vdmode->hsync;
+	pdat->timing.v_front_porch = vdmode->vfp;
+	pdat->timing.v_back_porch = vdmode->vbp;
+	pdat->timing.v_sync_len = vdmode->vsync;
+	pdat->timing.h_sync_active = vdmode->vsyncneg;
+	pdat->timing.v_sync_active = vdmode->hsyncneg;
+	pdat->timing.den_active = ! vdmode->deneg;
+	pdat->timing.clk_active = 0;
 	//pdat->backlight = NULL;
 
     CCU->DE_CLK_REG |= (0x01uL << 31) | (0x03uL << 0);	// 300 MHz
