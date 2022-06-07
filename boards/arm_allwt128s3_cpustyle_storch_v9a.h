@@ -534,26 +534,28 @@
 
 	#define targetdataflash 0xFF
 
-	#define targetext1		(0 * 1uL << 8)		// PE8 ext1 on front panel
-	#define targetnvram		(0 * 1uL << 0)		// PE0 nvmem FM25L16B
-	#define targetctl1		(0 * 1uL << 1)		// PE1 board control registers chain
-	#define targetcodec1	(0 * 1uL << 2)		// PE2 on-board codec1 NAU8822L
-	#define targetfpga1		(0 * 1uL << 10)		// PE10 FPGA control registers CS1
-	#define targetrtc1		(0 * 1uL << 0)		// RTC DS1305
+	#define targetext1		(0 * 1uL << 8)		// PDx ext1 on front panel
+	#define targetnvram		(0 * 1uL << 0)		// PDx nvmem FM25L16B
+	#define targetctl1		(0 * 1uL << 1)		// PDx board control registers chain
+	#define targetcodec1	(0 * 1uL << 2)		// PDx on-board codec1 NAU8822L
+	#define targetfpga1		(0 * 1uL << 10)		// PDx FPGA control registers CS1
+	#define targetrtc1		(0 * 1uL << 0)		// PDx RTC DS1305
 
-	#define targetadc2		(0 * 1uL << 0)	// on-board ADC MCP3208-BI/SL chip select (potentiometers)
-	#define targetadck		(0 * 1uL << 0)	// on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
-	#define targetxad2		(0 * 1uL << 0)	// external SPI device (PA BOARD ADC)
+	#define targetadc2		(0 * 1uL << 0)	// PDx on-board ADC MCP3208-BI/SL chip select (potentiometers)
+	#define targetadck		(0 * 1uL << 0)	// PDx on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+	#define targetxad2		(0 * 1uL << 0)	// PDx external SPI device (PA BOARD ADC)
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
-		targetext1		| 	/* PE8 ext1 on front panel */ \
-		targetxad2		|	/* PE7 PA100W on-board ADC (not connected on this board) */ \
-		targetnvram		| 	/* PE0 nvmem FM25L16B */ \
-		targetctl1		| 	/* PE1 board control registers chain */ \
-		targetcodec1	| 	/* PE2 on-board codec1 NAU8822L */ \
-		targetfpga1		| 	/* PE10 FPGA control registers CS1 */ \
-		targetadc2		| 	/*	PE9 ADC MCP3208-BI/SL chip select (potentiometers) */ \
+		targetext1		 | 	/* PDx ext1 on front panel */ \
+		targetnvram		 | 	/* PDx nvmem FM25L16B */ \
+		targetctl1		 | 	/* PDx board control registers chain */ \
+		targetcodec1	 | 	/* PDx on-board codec1 NAU8822L */ \
+		targetfpga1		 | 	/* PDx FPGA control registers CS1 */ \
+		targetrtc1		 | 	/* PDx RTC DS1305 */ \
+		targetadc2		 |	/* PDx on-board ADC MCP3208-BI/SL chip select (potentiometers) */ \
+		targetadck		 |	/* PDx on-board ADC MCP3208-BI/SL chip select (KEYBOARD) */ \
+		targetxad2		 |	/* PDx external SPI device (PA BOARD ADC) */ \
 		0)
 
 	#define targetlcd	targetext1 	/* LCD over SPI line devices control */ 
@@ -564,14 +566,14 @@
 
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
-		allwnrt113_pioX_setstate(GPIOC, (target) == targetdataflash * SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-		allwnrt113_pioX_setstate(GPIOD, (target) != targetdataflash * target, 0 * target); \
+		allwnrt113_pioX_setstate(GPIOC, ((target) == targetdataflash) * SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+		allwnrt113_pioX_setstate(GPIOD, ((target) != targetdataflash) * target, 0 * target); \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
-		allwnrt113_pioX_setstate(GPIOC, (target) == targetdataflash * SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
-		allwnrt113_pioX_setstate(GPIOD, (target) != targetdataflash * target, 1 * target); \
+		allwnrt113_pioX_setstate(GPIOC, ((target) == targetdataflash) * SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+		allwnrt113_pioX_setstate(GPIOD, ((target) != targetdataflash) * target, 1 * target); \
 	} while (0)
 
 	#define SPI_ALLCS_DISABLE() do { \
