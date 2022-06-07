@@ -50,7 +50,7 @@
 #if WITHISBOOTLOADER
 
 	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-//	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
+	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 	////#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	////#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -108,7 +108,7 @@
 	//#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 
 	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
-//	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
+	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -195,14 +195,14 @@
 
 	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS			(1u << 3)			// PD3 signal
+	#define LS020_RS			(1uL << 3)			// PD3 signal
 
 #elif LCDMODE_SPI_RN
 	// эти контроллеры требуют только RESET
 
 	#define LS020_RESET_PORT_S(v)		do { } while (0) //do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
 	#define LS020_RESET_PORT_C(v)		do { } while (0) //do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET			0//(1u << 4)			// PD4 signal
+	#define LS020_RESET			0//(1uL << 4)			// PD4 signal
 
 #elif LCDMODE_SPI_RA
 	// Эти контроллеры требуют RESET и RS
@@ -210,11 +210,11 @@
 
 	#define LS020_RS_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
 	#define LS020_RS_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RS			(1u << 3)			// PD3 signal
+	#define LS020_RS			(1uL << 3)			// PD3 signal
 
 	#define LS020_RESET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
 	#define LS020_RESET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
-	#define LS020_RESET			(1u << 2)			// PD4 signal
+	#define LS020_RESET			(1uL << 2)			// PD4 signal
 
 #elif LCDMODE_HD44780 && (LCDMODE_SPI == 0)
 
@@ -226,13 +226,13 @@
 
 	// Выводы подключения енкодера #1
 	#define ENCODER_INPUT_PORT	(GPIOG->IDR)
-	#define ENCODER_BITA		(1u << 13)		// PG13
-	#define ENCODER_BITB		(1u << 9)		// PG9
+	#define ENCODER_BITA		(1uL << 13)		// PG13
+	#define ENCODER_BITB		(1uL << 9)		// PG9
 
 	// Выводы подключения енкодера #2
 	#define ENCODER2_INPUT_PORT	(GPIOG->IDR)
-	#define ENCODER2_BITA		(1u << 15)		// PG15
-	#define ENCODER2_BITB		(1u << 14)		// PG14
+	#define ENCODER2_BITA		(1uL << 15)		// PG15
+	#define ENCODER2_BITB		(1uL << 14)		// PG14
 
 
 	#define ENCODER_BITS		(ENCODER_BITA | ENCODER_BITB)
@@ -319,11 +319,11 @@
 
 	// CAT control lines
 	//#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) 
-	//#define FROMCAT_BIT_RTS				(1u << 11)	/* PA11 сигнал RTS от FT232RL	*/
+	//#define FROMCAT_BIT_RTS				(1uL << 11)	/* PA11 сигнал RTS от FT232RL	*/
 
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
 	//#define FROMCAT_TARGET_PIN_DTR		(GPIOA->IDR)
-	//#define FROMCAT_BIT_DTR				(1u << 12)	/* PA12 сигнал DTR от FT232RL	*/
+	//#define FROMCAT_BIT_DTR				(1uL << 12)	/* PA12 сигнал DTR от FT232RL	*/
 
 	/* манипуляция от порта RS-232 */
 	#define FROMCAT_DTR_INITIALIZE() \
@@ -344,11 +344,11 @@
 
 	// CAT control lines
 	//#define FROMCAT_TARGET_PIN_RTS		(GPIOA->IDR) // was PINA 
-	//#define FROMCAT_BIT_RTS				(1u << 11)	/* сигнал RTS от FT232RL	*/
+	//#define FROMCAT_BIT_RTS				(1uL << 11)	/* сигнал RTS от FT232RL	*/
 
 	/* манипуляция от порта RS-232, сигнал PPS от GPS/GLONASS/GALILEO модуля */
 	//#define FROMCAT_TARGET_PIN_DTR		(GPIOA->IDR) // was PINA 
-	//#define FROMCAT_BIT_DTR				(1u << 12)	/* сигнал DTR от FT232RL	*/
+	//#define FROMCAT_BIT_DTR				(1uL << 12)	/* сигнал DTR от FT232RL	*/
 
 	/* манипуляция от виртуального CDC порта */
 	#define FROMCAT_DTR_INITIALIZE() \
@@ -419,7 +419,7 @@
 
 	#define HARDWARE_SDIOPOWER_C(v)	do { GPIOC->BSRR = BSRR_C(v); (void) GPIOC->BSRR; } while (0)
 	#define HARDWARE_SDIOPOWER_S(v)	do { GPIOC->BSRR = BSRR_S(v); (void) GPIOC->BSRR; } while (0)
-	#define HARDWARE_SDIOPOWER_BIT (1u << 7)	/* PC7 */
+	#define HARDWARE_SDIOPOWER_BIT (1uL << 7)	/* PC7 */
 	/* если питание SD CARD управляется прямо с процессора */
 	#define HARDWARE_SDIOPOWER_INITIALIZE()	do { \
 		arm_hardware_pioc_outputs2m(HARDWARE_SDIOPOWER_BIT, HARDWARE_SDIOPOWER_BIT); /* питание выключено */ \
@@ -440,12 +440,12 @@
 	////#define TXPATH_TARGET_PORT_S(v)		do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
 	////#define TXPATH_TARGET_PORT_C(v)		do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
 	// 
-	#define TXGFV_RX		(1u << 4)
+	#define TXGFV_RX		(1uL << 4)
 	#define TXGFV_TRANS		0			// переход между режимами приёма и передачи
-	#define TXGFV_TX_SSB	(1u << 0)
-	#define TXGFV_TX_CW		(1u << 1)
-	#define TXGFV_TX_AM		(1u << 2)
-	#define TXGFV_TX_NFM	(1u << 3)
+	#define TXGFV_TX_SSB	(1uL << 0)
+	#define TXGFV_TX_CW		(1uL << 1)
+	#define TXGFV_TX_AM		(1uL << 2)
+	#define TXGFV_TX_NFM	(1uL << 3)
 
 	#define TXPATH_INITIALIZE() \
 		do { \
@@ -531,18 +531,19 @@
 
 #if WITHSPIHW || WITHSPISW
 	// Набор определений для работы без внешнего дешифратора
-	#define SPI_ALLCS_PORT_S(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
-	#define SPI_ALLCS_PORT_C(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
 
-//	#define targetdataflash 0xFFF
+	#define targetdataflash 0xFF
 
-	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
-	#define targetxad2		(1uL << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
-	#define targetnvram		(1uL << 0)		// PE0 nvmem FM25L16B
-	#define targetctl1		(1uL << 1)		// PE1 board control registers chain
-	#define targetcodec1	(1uL << 2)		// PE2 on-board codec1 NAU8822L
-	#define targetadc2		(1uL << 9) 		// PE9 ADC MCP3208-BI/SL chip select (potentiometers)
-	#define targetfpga1		(1uL << 10)		// PE10 FPGA control registers CS1
+	#define targetext1		(0 * 1uL << 8)		// PE8 ext1 on front panel
+	#define targetnvram		(0 * 1uL << 0)		// PE0 nvmem FM25L16B
+	#define targetctl1		(0 * 1uL << 1)		// PE1 board control registers chain
+	#define targetcodec1	(0 * 1uL << 2)		// PE2 on-board codec1 NAU8822L
+	#define targetfpga1		(0 * 1uL << 10)		// PE10 FPGA control registers CS1
+	#define targetrtc1		(0 * 1uL << 0)		// RTC DS1305
+
+	#define targetadc2		(0 * 1uL << 0)	// on-board ADC MCP3208-BI/SL chip select (potentiometers)
+	#define targetadck		(0 * 1uL << 0)	// on-board ADC MCP3208-BI/SL chip select (KEYBOARD)
+	#define targetxad2		(0 * 1uL << 0)	// external SPI device (PA BOARD ADC)
 
 	// Здесь должны быть перечислены все биты формирования CS в устройстве.
 	#define SPI_ALLCS_BITS ( \
@@ -561,58 +562,63 @@
 
 	#define SPI_ALLCS_BITSNEG 0		// Выходы, активные при "1"
 
-	//#define SPI_NAEN_PORT_S(v)	do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
-	//#define SPI_NAEN_PORT_C(v)	do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
-
-	//#define SPI_NAEN_BIT (1u << 7)		// * PE7 used
-
 	/* Select specified chip. */
 	#define SPI_CS_ASSERT(target)	do { \
+		allwnrt113_pioX_setstate(GPIOC, (target) == targetdataflash * SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+		allwnrt113_pioX_setstate(GPIOD, (target) != targetdataflash * target, 0 * target); \
 	} while (0)
 
 	/* Unelect specified chip. */
 	#define SPI_CS_DEASSERT(target)	do { \
+		allwnrt113_pioX_setstate(GPIOC, (target) == targetdataflash * SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+		allwnrt113_pioX_setstate(GPIOD, (target) != targetdataflash * target, 1 * target); \
 	} while (0)
 
 	#define SPI_ALLCS_DISABLE() do { \
+		allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+		allwnrt113_pioX_setstate(GPIOD, SPI_ALLCS_BITS, 1 * SPI_ALLCS_BITS); \
 	} while(0)
 
 	/* инициализация линий выбора периферийных микросхем */
 	#define SPI_ALLCS_INITIALIZE() do { \
+		arm_hardware_pioc_outputs50m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
 	} while (0)
 
 	// MOSI & SCK port
-	#define SPI_TARGET_SCLK_PORT_C(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
-	#define SPI_TARGET_SCLK_PORT_S(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
-	#define	SPI_SCLK_BIT			(0*1uL << 3)	// * PB3 бит, через который идет синхронизация SPI
+	#define	SPI_SCLK_BIT			(1uL << 2)	// PC2 SPI0_CLK
+	#define	SPI_MOSI_BIT			(1uL << 4)	// PC4 SPI0_MOSI
+	#define	SPI_MISO_BIT			(1uL << 5)	// PC5 SPI0_MISO
 
-	#define SPI_TARGET_MOSI_PORT_C(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
-	#define SPI_TARGET_MOSI_PORT_S(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
-	#define	SPI_MOSI_BIT			(0*1uL << 5)	// * PB5 бит, через который идет вывод (или ввод в случае двунаправленного SPI).
+	#define SPI_TARGET_SCLK_PORT_C(v)	do { allwnrt113_pioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0)
+	#define SPI_TARGET_SCLK_PORT_S(v)	do { allwnrt113_pioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
 
-	#define SPI_TARGET_MISO_PIN		0//(GPIOE->DATA)
-	#define	SPI_MISO_BIT			(1uL << 4)	// * PB4 бит, через который идет ввод с SPI.
+	#define SPI_TARGET_MOSI_PORT_C(v)	do { allwnrt113_pioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0)
+	#define SPI_TARGET_MOSI_PORT_S(v)	do { allwnrt113_pioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
+
+	#define SPI_TARGET_MISO_PIN		(GPIOC->DATA)
 
 	#define SPIIO_INITIALIZE() do { \
-			arm_hardware_pioe_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PB3 */ \
-			arm_hardware_pioe_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PB5 */ \
-			arm_hardware_pioe_inputs(SPI_MISO_BIT); /* PB4 */ \
+			arm_hardware_pioc_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); /* PC2 SPI0_CLK */ \
+			arm_hardware_pioc_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); /* PC4 SPI0_MOSI */ \
+			arm_hardware_pioc_inputs(SPI_MISO_BIT); /* PC5 SPI0_MISO */ \
+			arm_hardware_pioc_outputs(SPDIF_D2_BIT, 1 * SPDIF_D2_BIT); /* PC6 SPI0_WP/D2 */ \
+			arm_hardware_pioc_outputs(SPDIF_D3_BIT, 1 * SPDIF_D3_BIT); /* PC7 SPI0_HOLD/D3 */ \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT() do { \
-			arm_hardware_pioe_altfn20(SPI_SCLK_BIT, GPIO_CFG_AF6); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
-			arm_hardware_pioe_altfn20(SPI_MOSI_BIT, GPIO_CFG_AF6); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
-			arm_hardware_pioe_altfn20(SPI_MISO_BIT, GPIO_CFG_AF6); /* В этих процессорах и входы и выходы переключаются на ALT FN */ \
+			arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2); \
+			arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); \
+			arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2); \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT() do { \
-			arm_hardware_piob_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
-			arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); \
-			arm_hardware_piob_inputs(SPI_MISO_BIT); \
+			arm_hardware_pioc_outputs50m(SPI_SCLK_BIT, SPI_SCLK_BIT); \
+			arm_hardware_pioc_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT); \
+			arm_hardware_pioc_inputs(SPI_MISO_BIT); \
 		} while (0)
 	#define HARDWARE_SPI_CONNECT_MOSI() do { \
-			/*arm_hardware_piob_altfn20(SPI_MOSI_BIT, AF_SPI1);	*//* PIO disable for MOSI bit */ \
+			arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2); \
 		} while (0)
 	#define HARDWARE_SPI_DISCONNECT_MOSI() do { \
-			/*arm_hardware_piob_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	*//* PIO enable for MOSI bit */ \
+			/*arm_hardware_pioc_outputs50m(SPI_MOSI_BIT, SPI_MOSI_BIT);	*//* PIO enable for MOSI bit */ \
 		} while (0)
 #else
 	#define targetext1		(0)		// PE8 ext1 on front panel
@@ -679,12 +685,12 @@
 #if WITHTWISW
 	// I2C1_SDA	PB11
 	// I2C1_SCL	PD7
-	#define TARGET_TWI_TWCK		(1u << 7)		// PD7 I2C1_SCL
+	#define TARGET_TWI_TWCK		(1uL << 7)		// PD7 I2C1_SCL
 	#define TARGET_TWI_TWCK_PIN		(GPIOD->IDR)
 	#define TARGET_TWI_TWCK_PORT_C(v) do { GPIOD->BSRR = BSRR_C(v); (void) GPIOD->BSRR; } while (0)
 	#define TARGET_TWI_TWCK_PORT_S(v) do { GPIOD->BSRR = BSRR_S(v); (void) GPIOD->BSRR; } while (0)
 
-	#define TARGET_TWI_TWD		(1u << 11)		// PB11 I2C1_SDA
+	#define TARGET_TWI_TWD		(1uL << 11)		// PB11 I2C1_SDA
 	#define TARGET_TWI_TWD_PIN		(GPIOB->IDR)
 	#define TARGET_TWI_TWD_PORT_C(v) do { GPIOB->BSRR = BSRR_C(v); (void) GPIOB->BSRR; } while (0)
 	#define TARGET_TWI_TWD_PORT_S(v) do { GPIOB->BSRR = BSRR_S(v); (void) GPIOB->BSRR; } while (0)
@@ -772,7 +778,7 @@
 #if 0
 	/* получение состояния переполнения АЦП */
 	#define TARGET_FPGA_OVF_INPUT		(GPIOC->IDR)
-	#define TARGET_FPGA_OVF_BIT			(1u << 8)	// PC8
+	#define TARGET_FPGA_OVF_BIT			(1uL << 8)	// PC8
 	#define TARGET_FPGA_OVF_GET			((TARGET_FPGA_OVF_INPUT & TARGET_FPGA_OVF_BIT) == 0)	// 1 - overflow active
 	#define TARGET_FPGA_OVF_INITIALIZE() do { \
 				arm_hardware_pioc_inputs(TARGET_FPGA_OVF_BIT); \
@@ -925,39 +931,59 @@
 		const uint32_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNCC */ \
 		const uint32_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
 		const uint32_t DEmask = (1U << 19); /* PD19 LCD_DE */ \
-		const portholder_t mask = 0x3FFFFF;	/* bits 0..21 */ \
-		arm_hardware_piod_altfn50(mask, GPIO_CFG_AF2); \
-		/* sync */ \
-		arm_hardware_piod_altfn50(VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_altfn50(HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
-		arm_hardware_piod_altfn50(DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		/* sync - DE mode */ \
+		arm_hardware_piod_outputs(! (demode) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_outputs(! (demode) * HSmask, 1 * VSmask); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_altfn50(!! (demode) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
+		/* sync - sync mode */ \
+		arm_hardware_piod_altfn50(!! (demode) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
+		arm_hardware_piod_altfn50(!! (demode) * HSmask, GPIO_CFG_AF2); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_outputs(! (demode) * DEmask, 0 * DEmask); /* PD19 LCD_DE */ \
 		/* pixel clock */ \
 		arm_hardware_piod_altfn50(1uL << 18, GPIO_CFG_AF2); /* PD18 LCD_CLK */ \
 		/* RED */ \
+		arm_hardware_piod_altfn50(1uL << 0, GPIO_CFG_AF2); /* LCD_D0 */ \
+		arm_hardware_piod_altfn50(1uL << 1, GPIO_CFG_AF2); /* LCD_D1 */ \
+		arm_hardware_piod_altfn50(1uL << 2, GPIO_CFG_AF2); /* LCD_D2 */ \
+		arm_hardware_piod_altfn50(1uL << 3, GPIO_CFG_AF2); /* LCD_D3 */ \
+		arm_hardware_piod_altfn50(1uL << 4, GPIO_CFG_AF2); /* LCD_D4 */ \
+		arm_hardware_piod_altfn50(1uL << 5, GPIO_CFG_AF2); /* LCD_D5 */ \
 		/* GREEN */ \
+		arm_hardware_piod_altfn50(1uL << 6, GPIO_CFG_AF2); /* LCD_D6 */ \
+		arm_hardware_piod_altfn50(1uL << 7, GPIO_CFG_AF2); /* LCD_D7 */ \
+		arm_hardware_piod_altfn50(1uL << 8, GPIO_CFG_AF2); /* LCD_D8 */ \
+		arm_hardware_piod_altfn50(1uL << 9, GPIO_CFG_AF2); /* LCD_D9 */ \
+		arm_hardware_piod_altfn50(1uL << 10, GPIO_CFG_AF2); /* LCD_D10 */ \
+		arm_hardware_piod_altfn50(1uL << 11, GPIO_CFG_AF2); /* LCD_D11 */ \
 		/* BLUE */ \
-		} while (0)
+		arm_hardware_piod_altfn50(1uL << 12, GPIO_CFG_AF2); /* LCD_D12 */ \
+		arm_hardware_piod_altfn50(1uL << 13, GPIO_CFG_AF2); /* LCD_D13 */ \
+		arm_hardware_piod_altfn50(1uL << 14, GPIO_CFG_AF2); /* LCD_D14 */ \
+		arm_hardware_piod_altfn50(1uL << 15, GPIO_CFG_AF2); /* LCD_D15 */ \
+		arm_hardware_piod_altfn50(1uL << 16, GPIO_CFG_AF2); /* LCD_D16 */ \
+		arm_hardware_piod_altfn50(1uL << 17, GPIO_CFG_AF2); /* LCD_D17 */ \
+	} while (0)
 
 	/* управление состоянием сигнала DISP панели */
 	/* demode values: 0: static signal, 1: DE controlled */
 	#define HARDWARE_LTDC_SET_DISP(state) do { \
 		const uint32_t VSmask = (1U << 21); 	/* PD21 LCD_VSYNCC */ \
 		const uint32_t HSmask = (1U << 20); 	/* PD20 LCD_HSYNC */ \
-		const uint32_t DEmask = (1U << 19); /* PD19 LCD_DE */ \
+		const uint32_t DEmask = (1U << 19); 	/* PD19 LCD_DE */ \
 		/* while ((GPIOA->IDR & VSmask) != 0) ; */ /* схема синхронизации стоит на плате дисплея. дождаться 0 */ \
 		/* while ((GPIOA->IDR & VSmask) == 0) ; */ /* дождаться 1 */ \
-		arm_hardware_pioe_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
+		arm_hardware_piod_outputs(DEmask, ((state) != 0) * DEmask); /* DE=DISP, pin 31 - можно менять только при VSYNC=1 */ \
 	} while (0)
 #endif /* WITHLTDCHW */
 
 	/* Выводы соединения с QSPI BOOT NOR FLASH */
-	#define SPDIF_MISO_BIT (1u << 5)	// PC5	SPI0_MISO
-	#define SPDIF_MOSI_BIT (1u << 4)	// PC4	SPI0_MOSI
-	#define SPDIF_SCLK_BIT (1u << 2)	// PC2	SPI0_CLK
-	#define SPDIF_NCS_BIT (1u << 3)		// PC3	SPI0_CS
+	#define SPDIF_MISO_BIT (1uL << 5)	// PC5 SPI0_MISO
+	#define SPDIF_MOSI_BIT (1uL << 4)	// PC4 SPI0_MOSI
+	#define SPDIF_SCLK_BIT (1uL << 2)	// PC2 SPI0_CLK
+	#define SPDIF_NCS_BIT (1uL << 3)	// PC3 SPI0_CS
 
-	#define SPDIF_D2_BIT (1u << 6)		// PC6	SPI0_WP/D2
-	#define SPDIF_D3_BIT (1u << 7)		// PC7	SPI0_HOLD/D3
+	#define SPDIF_D2_BIT (1uL << 6)		// PC6 SPI0_WP/D2
+	#define SPDIF_D3_BIT (1uL << 7)		// PC7 SPI0_HOLD/D3
 
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
@@ -999,11 +1025,11 @@
 					arm_hardware_pioc_outputs(SPDIF_SCLK_BIT, SPDIF_SCLK_BIT); \
 					arm_hardware_pioc_outputs(SPDIF_MOSI_BIT, SPDIF_MOSI_BIT); \
 					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
-					allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); \
+					allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
 				} while (0)
 			#define SPIDF_UNSELECT() do { \
-					allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); \
-					arm_hardware_pioc_inputs(SPDIF_NCS_BIT); \
+					allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+					arm_hardware_pioc_inputs(SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
 					arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
 					arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
 					arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \

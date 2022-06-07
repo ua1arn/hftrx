@@ -1394,7 +1394,7 @@ static uint_fast8_t spidf_readval8(void)
 {
 #if WIHSPIDFOVERSPI
 	spitarget_t target = targetdataflash;	/* addressing to chip */
-	return spi_progval8(target, sendval);
+	return spi_progval8(target, 0xFF);
 #else /* WIHSPIDFOVERSPI */
 	return spidf_read_bytefast();
 #endif /* WIHSPIDFOVERSPI */
