@@ -6316,7 +6316,7 @@ void hightests(void)
 	arm_hardware_ltdc_main_set((uintptr_t) colmain_fb_draw());
 #endif /* WITHLTDCHW && LCDMODE_LTDC */
 
-#if 0 && (WIHSPIDFSW || WIHSPIDFHW)
+#if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
 	{
 		// QSPI test
 		spidf_initialize();
@@ -6324,13 +6324,13 @@ void hightests(void)
 
 		unsigned char b [64];
 		memset(b, 0xE5, sizeof b);
-		readDATAFLASH(0x00000, b, 64);
+		readDATAFLASH(0x000000, b, 64);
 		printhex(0, b, 64);
 
 		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 
 		memset(b, 0xE5, sizeof b);
-		readDATAFLASH(0x00000, b, 64);
+		readDATAFLASH(0x800000, b, 64);
 		printhex(0, b, 64);
 
 		spidf_uninitialize();
