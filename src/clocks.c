@@ -9368,11 +9368,8 @@ void hardware_spi_b8_p1(
 
 	SPI0->TXD = v;
 	while ((SPI0->SR & (1uL << 2)) == 0)	// TX FIFO not full
-	{
-		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
-		//local_delay_ms(100);
 		;
-	}
+
 #elif CPUSTYPE_ALLWNT113
 
 	* (volatile uint8_t *) SPI0->SPI_TXD = v;
