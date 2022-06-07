@@ -7430,7 +7430,7 @@ void hardware_spi_master_initialize(void)
 	val = SPI0->SPI_GCR;
 	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);	// 7:TP_EN, master mode, enable
 	SPI0->SPI_GCR = val;
-	while(SPI0->SPI_GCR & (1 << 31))
+	while (SPI0->SPI_GCR & (1 << 31))
 		;
 
 	val = SPI0->SPI_TCR;
@@ -7443,6 +7443,10 @@ void hardware_spi_master_initialize(void)
 //	val |= (1 << 31) | (1 << 15);	// resret fifo
 //	SPI0->SPI_FCR = val;
 
+	SPI0->SPI_FCR = (SPI0->SPI_FCR & ~ (0xFFuL << 16)) |
+		(0x01uL << 16) |	// TX_TRIG_LEVEL
+		0;
+
 	// TXFIFO Reset
 	SPI0->SPI_FCR |= (1 << 31);
 	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
@@ -7452,6 +7456,8 @@ void hardware_spi_master_initialize(void)
 	SPI0->SPI_FCR |= (1 << 15);
 	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
 		;
+
+	PRINTF("SPI0->SPI_FCR=%08lX", SPI0->SPI_FCR);
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -8114,12 +8120,14 @@ hardware_spi_ready_b8_void(void)
 
 #elif CPUSTYPE_ALLWNT113
 
+	PRINTF("hardware_spi_ready_b8_void: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
 	while ((SPI0->SPI_FSR & (0xFFuL << 0)) == 0)	// RX FIFO empty
 	{
 		PRINTF("hardware_spi_ready_b8_void: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
+		PRINTF("hardware_spi_ready_b8_void: SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
 		local_delay_ms(100);
 	}
-	(void) * (volatile uint8_t *) SPI0->SPI_RXD;
+	(void) * (volatile uint8_t *) & SPI0->SPI_RXD;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -8198,12 +8206,16 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 
 #elif CPUSTYPE_ALLWNT113
 
+	PRINTF("hardware_spi_complete_b8: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
 	while ((SPI0->SPI_FSR & (0xFFuL << 0)) == 0)	// RX FIFO empty
 	{
 		PRINTF("hardware_spi_complete_b8: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
+		PRINTF("hardware_spi_complete_b8: SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
 		local_delay_ms(100);
 	}
-	return * (volatile uint8_t *) SPI0->SPI_RXD;
+	unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+	//PRINTF("hardware_spi_complete_b8: v=%02X\n", v);
+	return v;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -9481,7 +9493,13 @@ void hardware_spi_b8_p1(
 
 #elif CPUSTYPE_ALLWNT113
 
-	* (volatile uint8_t *) SPI0->SPI_TXD = v;
+	SPI0->SPI_MBC = 1;
+
+	* (volatile uint8_t *) & SPI0->SPI_TXD = v;
+
+	SPI0->SPI_TCR |= (1 << 31);
+	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+		;
 
 #else
 	#error Wrong CPUSTYLE macro
