@@ -2001,17 +2001,17 @@ unsigned long allwnrt113_get_twi_freq(void)
 	return allwnrt113_get_apb1_freq();
 }
 
-unsigned long allwnr_t128s3_get_spi_freq(void)
+unsigned long allwnrt113_get_spi_freq(void)
 {
 	return allwnrt113_get_ahb_freq();
 }
 
-unsigned long allwnr_t128s3_get_arm_freq(void)
+unsigned long allwnrt113_get_arm_freq(void)
 {
 	return allwnrt113_get_pll_cpu_freq();
 }
 
-unsigned long allwnr_t128s3_get_pl1_timer_freq(void)
+unsigned long allwnrt113_get_pl1_timer_freq(void)
 {
 	return allwnrt113_get_ahb_freq();
 }
@@ -2910,7 +2910,7 @@ hardware_timer_initialize(uint_fast32_t ticksfreq)
 
 #elif CPUSTYPE_ALLWNT113
 	// Prepare funcionality: use CNTP
-	const uint_fast32_t gtimfreq = allwnr_t128s3_get_pl1_timer_freq();
+	const uint_fast32_t gtimfreq = allwnrt113_get_pl1_timer_freq();
 
 	PL1_SetCounterFrequency(gtimfreq);	// CNTFRQ
 

@@ -801,8 +801,8 @@ extern "C" {
 		#define	REFINFREQ WITHCPUXTAL
 	#endif /* WITHCPUXTAL */
 
-	#define CPU_FREQ	(allwnr_t128s3_get_arm_freq())
-	#define BOARD_SPI_FREQ (allwnr_t128s3_get_spi_freq())
+	#define CPU_FREQ	(allwnrt113_get_arm_freq())
+	#define BOARD_SPI_FREQ (allwnrt113_get_spi_freq())
 
 	#define TICKS_FREQUENCY 200
 	#define ADCVREF_CPU	33		// 3.3 volt
