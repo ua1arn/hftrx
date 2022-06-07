@@ -1874,7 +1874,7 @@ unsigned long allwnrt113_get_ve_freq(void)
 	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM1 * pllN / pllM0;
 }
 
-unsigned long allwnrt113_get_audio0_x4_freq(void)
+unsigned long allwnrt113_get_pll_audio0_x4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -1883,13 +1883,23 @@ unsigned long allwnrt113_get_audio0_x4_freq(void)
 	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM0 * pllN / pllM1;
 }
 
-unsigned long allwnrt113_get_audio1_x4_freq(void)
+unsigned long allwnrt113_get_pll_audio1_x4_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
 	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM0 * pllN / pllM1;
+}
+
+unsigned long allwnrt113_get_pll_audio0_x1_freq(void)
+{
+	return allwnrt113_get_pll_audio0_x4_freq() / 4;
+}
+
+unsigned long allwnrt113_get_pll_audio1_x1_freq(void)
+{
+	return allwnrt113_get_pll_audio1_x4_freq() / 4;
 }
 
 unsigned long allwnrt113_get_video0_x2_freq(void)
@@ -2001,9 +2011,30 @@ unsigned long allwnrt113_get_twi_freq(void)
 	return allwnrt113_get_apb1_freq();
 }
 
-unsigned long allwnrt113_get_spi_freq(void)
+unsigned long allwnrt113_get_spi0_freq(void)
 {
-	return allwnrt113_get_ahb_freq();
+	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
+	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return BOARD_HOSC_FREQ;
+	case 0x01:
+		/* 001: PLL_PERI(1X) */
+		return allwnrt113_get_pll_peri_x1_freq();
+	case 0x02:
+		/* 010: PLL_PERI(2X) */
+		return allwnrt113_get_pll_peri_x2_freq();
+	case 0x03:
+		/* 011: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_pll_audio1_x1_freq() / 2;
+	case 0x04:
+		/* 100: PLL_AUDIO1(DIV5) */
+		return allwnrt113_get_pll_audio1_x1_freq() / 5;
+	}
 }
 
 unsigned long allwnrt113_get_arm_freq(void)
@@ -7345,13 +7376,17 @@ void hardware_spi_master_initialize(void)
 #elif CPUSTYPE_ALLWNT113
 
 	unsigned ix = 0;	// SPI0
+
 	/* Open the clock gate for SPI0 */
 	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
 
 	/* Deassert SPI0 reset */
 	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
 
-	CCU->SPI0_CLK_REG = (0x01uL << 31);	// SPI0_CLK_GATING
+	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
+
+	PRINTF("allwnrt113_get_spi0_freq = %lu\n", allwnrt113_get_spi0_freq());
+	SPIIO_INITIALIZE();
 
 	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
 	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
@@ -7360,7 +7395,36 @@ void hardware_spi_master_initialize(void)
 		(0x00uL < 1) |	// MODE: 1: Master mode
 		0;
 
-	SPIIO_INITIALIZE();
+	//PRINTF("SPI0->SPI_GCR=%08lX\n", SPI0->SPI_GCR);
+	//for (;;)
+	//	;
+	uint32_t val;
+	/* Enable spi0 and do a soft reset */
+	val = SPI0->SPI_GCR;
+	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);	// 7:TP_EN, master mode, enable
+	SPI0->SPI_GCR = val;
+	while(SPI0->SPI_GCR & (1 << 31))
+		;
+
+	val = SPI0->SPI_TCR;
+	val &= ~(0x3 << 0);		// bit1 (Polarity) and bit0 (Phase)
+	val |= (0x3 << 0);	// mode3
+	val |= (1 << 6) | (1 << 2);	// SS_OWNER: 1: Software, SPOL = 1
+	SPI0->SPI_TCR = val;
+
+//	val = SPI0->SPI_FCR;
+//	val |= (1 << 31) | (1 << 15);	// resret fifo
+//	SPI0->SPI_FCR = val;
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -7848,13 +7912,19 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYPE_ALLWNT113
 
-	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	SPI0->SPI_BATCR = (SPI0->SPI_BATCR & ~ ((0x1FuL << 8) | 0)) |
-			(8uL << 8) |	// TX_FRM_LEN
-			(0x00uL << 0) |	// Work Mode Select
-			0;
-	SPI0->SPI_GCR |= (0x01uL << 0);	// SPI Module Enable Control
+//	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+//	//SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+//	SPI0->SPI_BATCR = (SPI0->SPI_BATCR & ~ ((0x1FuL << 8) | 0)) |
+//			(8uL << 8) |	// TX_FRM_LEN
+//			(0x00uL << 0) |	// Work Mode Select
+//			0;
+//	SPI0->SPI_GCR |= (0x01uL << 0);	// SPI Module Enable Control
+
+	uint32_t val;
+	val = SPI0->SPI_TCR;
+	val &= ~((0x3 << 4) | (0x1 << 7));
+	val |= ((0 & 0x3) << 4) | (0x0 << 7);
+	SPI0->SPI_TCR = val;
 
 	HARDWARE_SPI_CONNECT();
 
@@ -7936,7 +8006,14 @@ void hardware_spi_disconnect(void)
 #elif CPUSTYPE_ALLWNT113
 
 	HARDWARE_SPI_DISCONNECT();
-	SPI0->SPI_GCR &= ~ (0x01uL << 0);	// SPI Module Enable Control
+	//SPI0->SPI_GCR &= ~ (0x01uL << 0);	// SPI Module Enable Control
+
+	uint32_t val;
+	val = SPI0->SPI_TCR;
+	val &= ~((0x3 << 4) | (0x1 << 7));
+	val |= ((0 & 0x3) << 4) | (0x1 << 7);
+	SPI0->SPI_TCR = val;
+
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -8012,9 +8089,8 @@ hardware_spi_ready_b8_void(void)
 
 	while ((SPI0->SPI_FSR & (0xFFuL << 0)) == 0)	// RX FIFO empty
 	{
-		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
-		//local_delay_ms(100);
-		;
+		PRINTF("hardware_spi_ready_b8_void: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
+		local_delay_ms(100);
 	}
 	(void) * (volatile uint8_t *) SPI0->SPI_RXD;
 
@@ -8097,9 +8173,8 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 
 	while ((SPI0->SPI_FSR & (0xFFuL << 0)) == 0)	// RX FIFO empty
 	{
-		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
-		//local_delay_ms(100);
-		;
+		PRINTF("hardware_spi_complete_b8: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
+		local_delay_ms(100);
 	}
 	return * (volatile uint8_t *) SPI0->SPI_RXD;
 
