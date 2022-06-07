@@ -4224,6 +4224,10 @@ static const codechw_t fpgaspectrumhw_ssif2_rx_master =
 		"sai2-fpga spectrum for WFM"
 	};
 
+#elif CPUSTYPE_ALLWNT113
+
+	#warning Codecs not defined for CPUSTYPE_ALLWNT113
+
 #else
 
 	#warning Codecs not defined for this CPUSTYLE_XXX

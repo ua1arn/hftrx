@@ -22,7 +22,7 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
-	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S2 */
+	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S */
 	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 #endif /* WITHINTEGRATEDDSP */
 
@@ -98,9 +98,8 @@
 
 #else /* WITHISBOOTLOADER */
 
-	//#define WITHFPGAIF_SAI1_A_TX_B_RX_SLAVE	1		/* Получение квадратур и RTS96 от FPGA через SAI1, SAI1_A - TX, SAI1_B - RX */
-	//#define WITHFPGARTS_SAI2_B_RX_SLAVE	1	/* Получение RTS192 от FPGA через SAI2 */
-	//#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
+	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
+	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 
 	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
@@ -245,17 +244,24 @@
 
 #endif
 
+	// Инициализируются I2S1 в дуплексном режиме.
+	// аудиокодек
+	#define I2S1HW_SLAVE_INITIALIZE() do { \
+			SPI1->SPI_GCR |= xx0 * 0; \
+			arm_hardware_piog_altfn20(0 * 1uL << 12,	GPIO_CFG_AF2); /* PG12 I2S1-LRCK	*/ \
+			arm_hardware_piog_altfn20(0 * 1uL << 13,	GPIO_CFG_AF2); /* PG13 I2S1-BCLK	*/ \
+			arm_hardware_piog_altfn20(0 * 1uL << 14,	GPIO_CFG_AF2); /* PG14 I2S1-DIN0, - приём от кодека */ \
+			arm_hardware_piog_altfn20(0 * 1uL << 15,	GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 - передача к кодеку */ \
+		} while (0)
+
 	// Инициализируются I2S2 в дуплексном режиме.
+	// FPGA или IF codec
 	#define I2S2HW_SLAVE_INITIALIZE() do { \
-			SPI2->CFG2 |= SPI_CFG2_IOSWP; \
-			arm_hardware_piob_altfn2(1uL << 12,	AF_SPI2); /* PB12 I2S2_WS	*/ \
-			arm_hardware_piob_updown(0, 1uL << 12); \
-			arm_hardware_piob_altfn2(1uL << 13,	AF_SPI2); /* PB13 I2S2_CK	*/ \
-			arm_hardware_piob_updown(0, 1uL << 13); \
-			arm_hardware_piob_altfn2(1uL << 15,	AF_SPI2); /* PB15 I2S2_SDO - передача */ \
-			arm_hardware_piob_updown(0, 1uL << 15); \
-			arm_hardware_piob_altfn2(1uL << 14,	AF_SPI2); /* PB14 I2S2_SDI, - приём от кодека */ \
-			arm_hardware_piob_updown(0, 1uL << 14); \
+			SPI2->SPI_GCR |= xx0 * 0; \
+			arm_hardware_piob_altfn20(0 * 1uL << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
+			arm_hardware_piob_altfn20(0 * 1uL << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
+			arm_hardware_piob_altfn20(0 * 1uL << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 - передача к FPGA */ \
+			arm_hardware_piob_altfn20(0 * 1uL << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0, - приём от FPGA */ \
 		} while (0)
 
 	#define I2S2HW_MASTER_INITIALIZE() do { \
@@ -269,15 +275,7 @@
 
 	// для предотвращения треска от оставшегося инициализированным кодека
 	#define I2S2HW_POOLDOWN() do { \
-		arm_hardware_piob_inputs(1uL << 12); /* PB12 I2S2_WS	*/ \
-		arm_hardware_piob_updown(0, 1uL << 12); \
-		arm_hardware_piob_inputs(1uL << 13); /* PB13 I2S2_CK	*/ \
-		arm_hardware_piob_updown(0, 1uL << 13); \
-		arm_hardware_piob_inputs(1uL << 15); /* PB15 I2S2_SDO - передача */ \
-		arm_hardware_piob_updown(0, 1uL << 15); \
-		arm_hardware_piob_inputs(1uL << 14); /* PB14 I2S2_SDI, - приём от кодека */ \
-		arm_hardware_piob_updown(0, 1uL << 14); \
-	} while (0)
+		} while (0)
 
 #if WITHSAI1HW
 	/*
@@ -631,8 +629,8 @@
 // WITHUART1HW
 // GPIOE2 и GPIOE3 = txd0 и rxd0
 #define HARDWARE_UART1_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = (1uL << 2); /* PE2 UART0-TX */ \
-		const uint_fast32_t RXMASK = (1uL << 3); /* PE3 UART0-RX - pull-up RX data */  \
+		const portholder_t TXMASK = (1uL << 2); /* PE2 UART0-TX */ \
+		const portholder_t RXMASK = (1uL << 3); /* PE3 UART0-RX - pull-up RX data */  \
 		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
 		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
 		arm_hardware_pioe_updown(RXMASK, 0); \
@@ -640,8 +638,8 @@
 
 // WITHUART2HW
 #define HARDWARE_UART2_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
-		const uint_fast32_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
+		const portholder_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
+		const portholder_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
 		arm_hardware_piod_altfn2(TXMASK, AF_USART2); \
 		arm_hardware_piod_altfn2(RXMASK, AF_USART2); \
 		arm_hardware_piod_updown(RXMASK, 0); \
