@@ -2037,6 +2037,32 @@ unsigned long allwnrt113_get_spi0_freq(void)
 	}
 }
 
+unsigned long allwnrt113_get_spi1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
+	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
+	switch ((clkreg >> 24) & 0x07)
+	{
+	default:
+	case 0x00:
+		/* 000: HOSC */
+		return BOARD_HOSC_FREQ;
+	case 0x01:
+		/* 001: PLL_PERI(1X) */
+		return allwnrt113_get_pll_peri_x1_freq();
+	case 0x02:
+		/* 010: PLL_PERI(2X) */
+		return allwnrt113_get_pll_peri_x2_freq();
+	case 0x03:
+		/* 011: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_pll_audio1_x1_freq() / 2;
+	case 0x04:
+		/* 100: PLL_AUDIO1(DIV5) */
+		return allwnrt113_get_pll_audio1_x1_freq() / 5;
+	}
+}
+
 unsigned long allwnrt113_get_arm_freq(void)
 {
 	return allwnrt113_get_pll_cpu_freq();
@@ -7386,6 +7412,7 @@ void hardware_spi_master_initialize(void)
 	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
 
 	PRINTF("allwnrt113_get_spi0_freq = %lu\n", allwnrt113_get_spi0_freq());
+	PRINTF("allwnrt113_get_spi1_freq = %lu\n", allwnrt113_get_spi1_freq());
 	SPIIO_INITIALIZE();
 
 	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
