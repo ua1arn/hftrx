@@ -30,10 +30,8 @@
 //#define WITHSDHCHW4BIT	1	/* Hardware SD HOST CONTROLLER в 4-bit bus width */
 //#define WITHETHHW 1	/* Hardware Ethernet controller */
 
-//#define WITHUART1HW	1	/* PA9, PA10 Используется периферийный контроллер последовательного порта #1 */
-
 #if WITHDEBUG
-	#define WITHUART1HW	1	/* PD5, PD6 Используется периферийный контроллер последовательного порта #2 */
+	#define WITHUART1HW	1	/* PE2 PE3 Используется периферийный контроллер последовательного порта #1 UART0 */
 	//#define WITHUARTFIFO	1	/* испольование FIFO */
 #endif /* WITHDEBUG */
 
@@ -633,10 +631,10 @@
 // WITHUART1HW
 // GPIOE2 и GPIOE3 = txd0 и rxd0
 #define HARDWARE_UART1_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = (1uL << 2); /* GPIOE2 = txd0 */ \
-		const uint_fast32_t RXMASK = (1uL << 3); /* GPIOE3 = rxd0 - pull-up RX data */  \
-		arm_hardware_pioe_altfn2(TXMASK,	GPIO_CFG_AF6); \
-		arm_hardware_pioe_altfn2(RXMASK,	GPIO_CFG_AF6); \
+		const uint_fast32_t TXMASK = (1uL << 2); /* PE2 = txd0 */ \
+		const uint_fast32_t RXMASK = (1uL << 3); /* PE3 = rxd0 - pull-up RX data */  \
+		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
+		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
 		arm_hardware_pioe_updown(RXMASK, 0); \
 	} while (0)
 
@@ -644,8 +642,8 @@
 #define HARDWARE_UART2_INITIALIZE() do { \
 		const uint_fast32_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
 		const uint_fast32_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piod_altfn50(TXMASK, AF_USART2); \
-		arm_hardware_piod_altfn50(RXMASK, AF_USART2); \
+		arm_hardware_piod_altfn2(TXMASK, AF_USART2); \
+		arm_hardware_piod_altfn2(RXMASK, AF_USART2); \
 		arm_hardware_piod_updown(RXMASK, 0); \
 	} while (0)
 
