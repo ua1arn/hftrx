@@ -7843,6 +7843,10 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	SPI0->SPI_BATCR = (SPI0->SPI_BATCR & ~ ((0x1FuL << 8) | 0)) |
+			(8uL << 8) |	// TX_FRM_LEN
+			(0x00uL << 0) |	// Work Mode Select
+			0;
 	SPI0->SPI_GCR |= (0x01uL << 0);	// SPI Module Enable Control
 
 	HARDWARE_SPI_CONNECT();
