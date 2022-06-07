@@ -6847,9 +6847,10 @@ sysinit_pll_initialize(void)
 		static portholder_t spi_spcmd0_val16w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 		static portholder_t spi_spcmd0_val32w [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYLE_XC7Z
-		static portholder_t xc7z_spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
+		static portholder_t spi_cr_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];	/* для spi mode0..mode3 */
 	#elif CPUSTYPE_ALLWNT113
-		// place here
+		static portholder_t ccu_spi_clk_reg_val [SPIC_SPEEDS_COUNT];
+		static portholder_t spi_tcr_reg_val [SPIC_SPEEDS_COUNT][SPIC_MODES_COUNT];
 	#endif /* CPUSTYLE_STM32F1XX */
 
 #if WITHSPIHWDMA
@@ -7343,7 +7344,15 @@ void hardware_spi_master_initialize(void)
 
 #elif CPUSTYPE_ALLWNT113
 
-	#warning Need be implemented for CPUSTYPE_ALLWNT113
+	CCU->SPI0_CLK_REG = (0x01uL << 31);	// SPI0_CLK_GATING
+
+	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
+	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
+		;
+	SPI0->SPI_GCR =
+		(0x00uL < 1) |	// MODE: 1: Master mode
+		0;
+
 	SPIIO_INITIALIZE();
 
 #else
@@ -7651,14 +7660,35 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 			(1uL << 0) |	// 1: the SPI is in master mode
 			0;
 
-	xc7z_spi_cr_val [spispeedindex][SPIC_MODE0] = cr_val | SPICR_MODE0;
-	xc7z_spi_cr_val [spispeedindex][SPIC_MODE1] = cr_val | SPICR_MODE1;
-	xc7z_spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
-	xc7z_spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
+	spi_cr_val [spispeedindex][SPIC_MODE0] = cr_val | SPICR_MODE0;
+	spi_cr_val [spispeedindex][SPIC_MODE1] = cr_val | SPICR_MODE1;
+	spi_cr_val [spispeedindex][SPIC_MODE2] = cr_val | SPICR_MODE2;
+	spi_cr_val [spispeedindex][SPIC_MODE3] = cr_val | SPICR_MODE3;
 
 #elif CPUSTYPE_ALLWNT113
 
-	#warning Need be implemented for CPUSTYPE_ALLWNT113
+	// SCLK = Clock Source/M/N.
+	unsigned factorN = 3;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = 15;	/* FACTOR_M: 0..15: M = 1..16 */
+	ccu_spi_clk_reg_val [spispeedindex] =
+			(0x00uL << 24) |	/* CLK_SRC_SEL: 000: HOSC */
+			(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+			(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+			(0x01uL << 31) |	// 1: Clock is ON
+			0;
+
+	const portholder_t tcr =
+			(0x00uL << 12) |	// FBS: 0: MSB first
+			(0x01uL << 6) |		// SS_OWNER: 1: Software
+			0;
+
+	// SPI Transfer Control Register (Default Value: 0x0000_0087)
+	// CPOL at bit 1, CPHA at bit 0
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE0] = tcr | (0x00uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE1] = tcr | (0x01uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE2] = tcr | (0x02uL << 0);
+	spi_tcr_reg_val [spispeedindex][SPIC_MODE3] = tcr | (0x03uL << 0);
+
 #else
 	#error Wrong CPUSTYLE macro
 
@@ -7804,14 +7834,16 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYLE_XC7Z
 
-	SPI0->CR = xc7z_spi_cr_val [spispeedindex][spimode];
+	SPI0->CR = spi_cr_val [spispeedindex][spimode];
 	SPI0->ER = 0x0001;	// 1: enable the SPI
 
 	HARDWARE_SPI_CONNECT();
 
 #elif CPUSTYPE_ALLWNT113
 
-	#warning Need be implemented for CPUSTYPE_ALLWNT113
+	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+	SPI0->SPI_GCR |= (0x01uL << 0);	// SPI Module Enable Control
 
 	HARDWARE_SPI_CONNECT();
 #else
@@ -7891,8 +7923,8 @@ void hardware_spi_disconnect(void)
 
 #elif CPUSTYPE_ALLWNT113
 
-	#warning Need be implemented for CPUSTYPE_ALLWNT113
 	HARDWARE_SPI_DISCONNECT();
+	SPI0->SPI_GCR &= ~ (0x01uL << 0);	// SPI Module Enable Control
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -7961,16 +7993,18 @@ hardware_spi_ready_b8_void(void)
 #elif CPUSTYLE_XC7Z
 
 	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
+		;
+	(void) SPI0->RXD;
+
+#elif CPUSTYPE_ALLWNT113
+
+	while ((SPI0->SPI_FSR & (0xFFuL << 0)) == 0)	// RX FIFO empty
 	{
 		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
 		//local_delay_ms(100);
 		;
 	}
-	(void) SPI0->RXD;
-
-#elif CPUSTYPE_ALLWNT113
-
-	#warning Need be implemented for CPUSTYPE_ALLWNT113
+	(void) * (volatile uint8_t *) SPI0->SPI_RXD;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -8044,17 +8078,18 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 #elif CPUSTYLE_XC7Z
 
 	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
+		;
+	return SPI0->RXD & 0xFF;
+
+#elif CPUSTYPE_ALLWNT113
+
+	while ((SPI0->SPI_FSR & (0xFFuL << 0)) == 0)	// RX FIFO empty
 	{
 		//PRINTF("SPI0->SR=%08lX\n", SPI0->SR);
 		//local_delay_ms(100);
 		;
 	}
-	return SPI0->RXD & 0xFF;
-
-#elif CPUSTYPE_ALLWNT113
-
-	#warning Need be implemented for CPUSTYPE_ALLWNT113
-	return 0;
+	return * (volatile uint8_t *) SPI0->SPI_RXD;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -9335,8 +9370,7 @@ void hardware_spi_b8_p1(
 	}
 #elif CPUSTYPE_ALLWNT113
 
-	#warning Need be implemented for CPUSTYPE_ALLWNT113
-
+	* (volatile uint8_t *) SPI0->SPI_TXD = v;
 
 #else
 	#error Wrong CPUSTYLE macro
