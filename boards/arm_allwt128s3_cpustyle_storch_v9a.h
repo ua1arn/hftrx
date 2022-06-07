@@ -50,6 +50,7 @@
 #if WITHISBOOTLOADER
 
 	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+//	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 	////#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	////#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -107,6 +108,7 @@
 	//#define WITHCODEC1_I2S2_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S2 */
 
 	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+//	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
 	//#define WIHSPIDFHW4BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 4-м проводам */
@@ -532,6 +534,8 @@
 	#define SPI_ALLCS_PORT_S(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_S(v); (void) GPIOE->BSRR; } while (0)
 	#define SPI_ALLCS_PORT_C(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
 
+//	#define targetdataflash 0xFFF
+
 	#define targetext1		(1uL << 8)		// PE8 ext1 on front panel
 	#define targetxad2		(1uL << 7)		// PE7 ext2 двунаправленный SPI для подключения внешних устройств - например тюнера
 	#define targetnvram		(1uL << 0)		// PE0 nvmem FM25L16B
@@ -562,11 +566,20 @@
 
 	//#define SPI_NAEN_BIT (1u << 7)		// * PE7 used
 
-	/* инициализация лиий выбора периферийных микросхем */
-	#define SPI_ALLCS_INITIALIZE() \
-		do { \
-			/*arm_hardware_pioe_outputs2m(SPI_ALLCS_BITS, SPI_ALLCS_BITS ^ SPI_ALLCS_BITSNEG); */\
-		} while (0)
+	/* Select specified chip. */
+	#define SPI_CS_ASSERT(target)	do { \
+	} while (0)
+
+	/* Unelect specified chip. */
+	#define SPI_CS_DEASSERT(target)	do { \
+	} while (0)
+
+	#define SPI_ALLCS_DISABLE() do { \
+	} while(0)
+
+	/* инициализация линий выбора периферийных микросхем */
+	#define SPI_ALLCS_INITIALIZE() do { \
+	} while (0)
 
 	// MOSI & SCK port
 	#define SPI_TARGET_SCLK_PORT_C(v)	do { } while (0) //do { GPIOE->BSRR = BSRR_C(v); (void) GPIOE->BSRR; } while (0)
