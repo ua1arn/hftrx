@@ -981,6 +981,9 @@
 
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
+		} while (0)
+	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
+	#define SPIDF_HANGOFFold() do { \
 			arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
 			arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
 			arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
