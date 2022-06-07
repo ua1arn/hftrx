@@ -935,7 +935,7 @@
 		const uint32_t DEmask = (1U << 19); /* PD19 LCD_DE */ \
 		/* sync - DE mode */ \
 		arm_hardware_piod_outputs(! (demode) * VSmask, 1 * VSmask); /* PD21 LCD_VSYNC */ \
-		arm_hardware_piod_outputs(! (demode) * HSmask, 1 * VSmask); /* PD20 LCD_HSYNC */ \
+		arm_hardware_piod_outputs(! (demode) * HSmask, 1 * HSmask); /* PD20 LCD_HSYNC */ \
 		arm_hardware_piod_altfn50(!! (demode) * DEmask, GPIO_CFG_AF2); /* PD19 LCD_DE */ \
 		/* sync - sync mode */ \
 		arm_hardware_piod_altfn50(!! (demode) * VSmask, GPIO_CFG_AF2); /* PD21 LCD_VSYNC */ \
