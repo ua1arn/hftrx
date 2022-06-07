@@ -148,7 +148,9 @@ typedef enum IRQn
 	DBGWRUPREQ_OUT0_IRQn = (212), /*  Peripherial */
 	DBGWRUPREQ_OUT1_IRQn = (213), /*  Peripherial */
 
-	GPIOB2_IRQn = (224 + 2), /*  Peripherial */
+	GPIOA0_IRQn = 192,	/* Marker for calculations. Each port contain 32 sources */
+
+	GPIOB2_IRQn = ((GPIOA0_IRQn * 32 * 1) + 2), /*  Peripherial */
 	GPIOB3_IRQn = (224 + 3), /*  Peripherial */
 	GPIOB4_IRQn = (224 + 4), /*  Peripherial */
 	GPIOB5_IRQn = (224 + 5), /*  Peripherial */

@@ -753,8 +753,8 @@ static SPINLOCK_t gpiodata_locks [8] =
 /*!< Atomic port state change */
 void allwnrt113_pioX_setstate(
 	GPIO_TypeDef * gpio,
-	unsigned long mask,
-	unsigned long state
+	portholder_t mask,
+	portholder_t state
 	)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
@@ -768,10 +768,10 @@ void allwnrt113_pioX_setstate(
 
 static void allwnrt113_pioX_prog(
 	GPIO_TypeDef * gpio,
-	unsigned long iopins,
-	unsigned long cfg,
-	unsigned long drv,
-	unsigned long pull
+	portholder_t iopins,
+	unsigned cfg,
+	unsigned drv,
+	unsigned pull
 	)
 {
 	const portholder_t mask0 = power4(iopins >> 0);		/* CFG0 and DRV0 bits */
@@ -799,8 +799,8 @@ static void allwnrt113_pioX_prog(
 
 static void allwnrt113_pioX_updown(
 	GPIO_TypeDef * gpio,
-	unsigned long ioup,
-	unsigned long iodown
+	portholder_t ioup,
+	portholder_t iodown
 	)
 {
 	const portholder_t iopins = ioup | iodown;
@@ -818,7 +818,7 @@ static void allwnrt113_pioX_updown(
 
 static void allwnrt113_pioX_updownoff(
 	GPIO_TypeDef * gpio,
-	unsigned long iopins
+	portholder_t iopins
 	)
 {
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
@@ -829,6 +829,27 @@ static void allwnrt113_pioX_updownoff(
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
 }
 
+/* разрешение прерывания по изменению состояния указанных групп выводов */
+static void
+allwnrt113_pioX_onchangeinterrupt(
+		GPIO_TypeDef * gpio,
+		portholder_t ipins,
+		portholder_t raise, portholder_t fall,
+		uint32_t priority,
+		uint_fast8_t targetcpu
+		)
+{
+	const unsigned IRQbase = (gpio - ((GPIO_TypeDef *) GPIO_BASE)) * 32 + GPIOA0_IRQn;
+	unsigned pos;
+
+	for (pos = 0; pos < 32; ++ pos)
+	{
+		const portholder_t mask = (portholder_t) 0x01L << pos;
+		if ((ipins & mask) == 0)
+			continue;
+		arm_hardware_set_handler(IRQbase + pos, ALLW_GPIO_IRQ_Handler, priority, targetcpu);
+	}
+}
 
 #endif
 
@@ -8355,7 +8376,8 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PA, priority, tgcpu);	// PORT A
 
 #elif CPUSTYPE_ALLWNT113
-//	#warning Must be implemented for CPUSTYPE_ALLWNT113
+
+//	allwnrt113_pioX_onchangeinterrupt(GPIOA, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -8392,7 +8414,8 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Must be implemented for CPUSTYPE_ALLWNT113
+
+	allwnrt113_pioX_onchangeinterrupt(GPIOB, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -8430,7 +8453,8 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 #elif CPUSTYLE_AT91SAM7S
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Must be implemented for CPUSTYPE_ALLWNT113
+
+	allwnrt113_pioX_onchangeinterrupt(GPIOC, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -8466,7 +8490,8 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PD, priority, tgcpu);	// PORTD
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Must be implemented for CPUSTYPE_ALLWNT113
+
+	allwnrt113_pioX_onchangeinterrupt(GPIOD, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8503,7 +8528,8 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PE, priority, tgcpu);	// PORT E
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Must be implemented for CPUSTYPE_ALLWNT113
+
+	allwnrt113_pioX_onchangeinterrupt(GPIOE, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8540,7 +8566,8 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PF, priority, tgcpu);	// PORT F
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Must be implemented for CPUSTYPE_ALLWNT113
+
+	allwnrt113_pioX_onchangeinterrupt(GPIOF, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8576,7 +8603,8 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 	stm32mp1_pioX_onchangeinterrupt(ipins, raise, fall, EXTI_EXTICR1_EXTI0_PG, priority, tgcpu);	// PORT G
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Must be implemented for CPUSTYPE_ALLWNT113
+
+	allwnrt113_pioX_onchangeinterrupt(GPIOG, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #else
 	#error Undefined CPUSTYLE_XXX

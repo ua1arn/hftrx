@@ -579,8 +579,8 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 /*!< Atomic port state change */
 void allwnrt113_pioX_setstate(
 	GPIO_TypeDef * gpio,
-	unsigned long mask,
-	unsigned long state
+	portholder_t mask,
+	portholder_t state
 	);
 
 #ifdef __cplusplus

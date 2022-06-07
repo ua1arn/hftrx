@@ -841,6 +841,15 @@ static RAMFUNC void stm32fxxx_pinirq(portholder_t pr)
 		#endif
 	#endif /* CPUSTYLE_ATMEGA_XXX4 && defined (PCIVECT) */
 
+#elif CPUSTYPE_ALLWNT113
+
+// Allwinner specific
+void ALLW_GPIO_IRQ_Handler(void)
+{
+	TP();
+	ASSERT(0);
+}
+
 #else
 
 	//#warning Undefined CPUSTYLE_XXX encoder interrrupts handlers
@@ -1437,7 +1446,8 @@ r7s721_adi_irq_handler(void)
 }
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Unhandled CPUSTYPE_ALLWNT113
+	// ADC IRQ handler
+	//#warning Unhandled CPUSTYPE_ALLWNT113
 
 #else
 	#error No CPUSTYLE_XXXXX defined
@@ -1545,7 +1555,7 @@ hardware_adc_startonescan(void)
 
 #elif CPUSTYPE_ALLWNT113
 
-	#warning Unhandled CPUSTYPE_ALLWNT113
+	//#warning Unhandled CPUSTYPE_ALLWNT113
 
 #else
 
