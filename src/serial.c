@@ -1331,7 +1331,7 @@ void hardware_uart1_initialize(uint_fast8_t debug)
 	const unsigned ix = 0;
 
 	/* Open the clock gate for uart0 */
-	CCU->UART_BGR_REG |= (0x01uL << ix);
+	CCU->UART_BGR_REG |= (0x01uL << (ix + 0));
 
 	/* Deassert uart0 reset */
 	CCU->UART_BGR_REG |= (0x01uL << (ix + 16));

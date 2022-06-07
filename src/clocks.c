@@ -7344,6 +7344,13 @@ void hardware_spi_master_initialize(void)
 
 #elif CPUSTYPE_ALLWNT113
 
+	unsigned ix = 0;	// SPI0
+	/* Open the clock gate for SPI0 */
+	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
+
+	/* Deassert SPI0 reset */
+	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
+
 	CCU->SPI0_CLK_REG = (0x01uL << 31);	// SPI0_CLK_GATING
 
 	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
