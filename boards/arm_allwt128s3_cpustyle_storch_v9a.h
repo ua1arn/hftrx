@@ -44,7 +44,7 @@
 
 #if WITHISBOOTLOADER
 
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 	////#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
@@ -101,7 +101,7 @@
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
 
-	#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
+	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
 	//#define WIHSPIDFHW		1	/* аппаратное обслуживание DATA FLASH */
 	//#define WIHSPIDFHW2BIT	1	/* аппаратное обслуживание DATA FLASH с подддержкой QSPI подключения по 2-м проводам */
