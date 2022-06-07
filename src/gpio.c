@@ -737,7 +737,17 @@ void gpio_onfallinterrupt(unsigned pin, void (* handler)(void), uint32_t priorit
 #define ALWNR_GPIO_DRV_AF50M 0x03
 #define ALWNR_GPIO_PULL_AF50M 0x00
 
-static SPINLOCK_t gpiodata_lock = SPINLOCK_INIT;
+static SPINLOCK_t gpiodata_locks [8] =
+{
+	SPINLOCK_INIT,	// GPIOA
+	SPINLOCK_INIT,	// GPIOB - in T113-S3
+	SPINLOCK_INIT,	// GPIOC - in T113-S3
+	SPINLOCK_INIT,	// GPIOD - in T113-S3
+	SPINLOCK_INIT,	// GPIOE - in T113-S3
+	SPINLOCK_INIT,	// GPIOF - in T113-S3
+	SPINLOCK_INIT,	// GPIOG - in T113-S3
+	SPINLOCK_INIT,	// GPIOH
+};
 
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
 /*!< Atomic port state change */
@@ -747,9 +757,13 @@ void allwnrt113_pioX_setstate(
 	unsigned long state
 	)
 {
-	SPIN_LOCK(& gpiodata_lock);
+	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
+	const uint32_t cpsr = __get_CPSR();
+	__set_CPSR(cpsr | (0x01uL << 7));	// IRQ mask
+	SPIN_LOCK(lck);
 	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
-	SPIN_UNLOCK(& gpiodata_lock);
+	SPIN_UNLOCK(lck);
+	__set_CPSR(cpsr);
 }
 
 static void allwnrt113_pioX_prog(
@@ -809,7 +823,7 @@ static void allwnrt113_pioX_updownoff(
 {
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	const portholder_t pull0 = power2(iopins >> 0) * 0x03;		/* PULL0 bits */
-	const portholder_t pull1 = power2(iopins >> 16 * 0x03);	/* PULL1 bits */
+	const portholder_t pull1 = power2(iopins >> 16) * 0x03;		/* PULL1 bits */
 
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
