@@ -22,11 +22,8 @@
 //#define WITHTWIHW 	1	/* Использование аппаратного контроллера TWI (I2C) */
 //#define WITHTWISW 	1	/* Использование программного контроллера TWI (I2C) */
 #if WITHINTEGRATEDDSP
-	#define WITHI2S2HW	1	/* Использование I2S - аудиокодек на I2S2 */
-	#define WITHI2S3HW	1	/* Использование I2S - аудиокодек на I2S3 */
-	#define WITHSAI1HW	1	/* Использование SAI1 - FPGA или IF codec	*/
-	//#define WITHSAI2HW	1	/* Использование SAI2 - FPGA или IF codec	*/
-	//#define WITHSAI3HW	1	/* Использование SAI3 - FPGA скоростной канал записи спктра	*/
+	#define WITHI2S1HW	1	/* Использование I2S1 - аудиокодек на I2S2 */
+	#define WITHI2S2HW	1	/* Использование I2S2 - FPGA или IF codec	*/
 #endif /* WITHINTEGRATEDDSP */
 
 //#define WITHSDHCHW	1		/* Hardware SD HOST CONTROLLER */
