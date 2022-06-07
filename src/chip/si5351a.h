@@ -44,7 +44,9 @@
 
 #endif
 
-#define SI5351a_PLL_INPUT_SOURCE	15			// Register definitions
+// Register definitions
+#define SI5351a_DEVICE_STATUS	0			// Register 0. Device Status
+#define SI5351a_PLL_INPUT_SOURCE	15
 #define SI5351a_CLK0_CONTROL	16
 #define SI5351a_CLK1_CONTROL	17
 #define SI5351a_CLK2_CONTROL	18
@@ -102,7 +104,7 @@ si535x_SendRegister(uint_fast8_t reg, uint_fast8_t data)
 	i2c_stop();	
 }
 
-static void si535x_ReadRegister(uint_fast8_t reg, uint_fast8_t * data)
+static void si535x_ReadRegister(uint_fast8_t reg, uint8_t * data)
 {
 	i2c_start(SI53xx_I2C_WRITE);
 	i2c_write_withrestart(reg);
@@ -379,6 +381,13 @@ static void si5351aQuadrature(void)
 
 static void si5351aInitialize(void)
 {
+	for (;;)
+	{
+		uint8_t val;
+		si535x_ReadRegister(SI5351a_DEVICE_STATUS, & val);
+		if ((val & 0x80) == 0)	// 0: System initialization is complete. Device is ready
+			break;
+	}
 	// с этими строками частокол пораженок
 	//si535x_SendRegister(SI5351a_CLK6_CONTROL, 0x40);	// D6=FBA_INT
 	//si535x_SendRegister(SI5351a_CLK7_CONTROL, 0x40);	// D6=FBB_INT
