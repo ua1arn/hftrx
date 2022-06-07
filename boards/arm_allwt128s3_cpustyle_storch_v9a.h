@@ -631,8 +631,8 @@
 // WITHUART1HW
 // GPIOE2 и GPIOE3 = txd0 и rxd0
 #define HARDWARE_UART1_INITIALIZE() do { \
-		const uint_fast32_t TXMASK = (1uL << 2); /* PE2 = txd0 */ \
-		const uint_fast32_t RXMASK = (1uL << 3); /* PE3 = rxd0 - pull-up RX data */  \
+		const uint_fast32_t TXMASK = (1uL << 2); /* PE2 UART0-TX */ \
+		const uint_fast32_t RXMASK = (1uL << 3); /* PE3 UART0-RX - pull-up RX data */  \
 		arm_hardware_pioe_altfn2(TXMASK, GPIO_CFG_AF6); \
 		arm_hardware_pioe_altfn2(RXMASK, GPIO_CFG_AF6); \
 		arm_hardware_pioe_updown(RXMASK, 0); \
