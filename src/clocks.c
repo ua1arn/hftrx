@@ -7087,76 +7087,7 @@ static void write32(uintptr_t a, uint32_t v)
 	* (volatile uint32_t *) a = v;
 }
 
-void sys_spinor_init(void)
-{
-	uintptr_t addr;
-	unsigned int val;
-
-	/* Deassert spi0 reset */
-	addr = 0x0200196c;
-	val = read32(addr);
-	val |= (1 << 16);
-	write32(addr, val);
-
-	/* Open the spi0 gate */
-	addr = 0x02001940;
-	val = read32(addr);
-	val |= (1 << 31);
-	write32(addr, val);
-
-	/* Open the spi0 bus gate */
-	addr = 0x0200196c;
-	val = read32(addr);
-	val |= (1 << 0);
-	write32(addr, val);
-
-#if 0
-	/* Select pll-periph0 for spi0 clk */
-	addr = 0x02001940;
-	val = read32(addr);
-	val &= ~(0x3 << 24);
-	val |= 0x1 << 24;
-	write32(addr, val);
-
-	/* Set clock pre divide ratio, divided by 1 */
-	addr = 0x02001940;
-	val = read32(addr);
-	val &= ~(0x3 << 8);
-	val |= 0x0 << 8;
-	write32(addr, val);
-
-	/* Set clock divide ratio, divided by 6 */
-	addr = 0x02001940;
-	val = read32(addr);
-	val &= ~(0xf << 0);
-	val |= (6 - 1) << 0;
-	write32(addr, val);
-#endif
-
-	/* Enable spi0 and do a soft reset */
-	val = SPI0->SPI_GCR;
-	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);
-	SPI0->SPI_GCR = val;
-	while(SPI0->SPI_GCR & (1 << 31))
-		;
-
-	val = SPI0->SPI_TCR;
-	val &= ~(0x3 << 0);
-	val |= (1 << 6) | (1 << 2);
-	SPI0->SPI_TCR = val;
-
-	// TXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 31);
-	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
-		;
-
-	// RXFIFO Reset
-	SPI0->SPI_FCR |= (1 << 15);
-	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
-		;
-}
-
-void sys_spinor_exit(void)
+static void sys_spinor_exit(void)
 {
 	//uintptr_t addr = 0x04025000;
 	unsigned int val;
@@ -7253,7 +7184,7 @@ static int sys_spi_write_then_read(void * txbuf, int txlen, void * rxbuf, int rx
 	return 0;
 }
 
-void sys_spinor_read(int addr, void * buf, int count)
+static void sys_spinor_read(int addr, void * buf, int count)
 {
 	unsigned char  tx[4];
 
@@ -7266,20 +7197,20 @@ void sys_spinor_read(int addr, void * buf, int count)
 	sys_spi_deselect();
 }
 
-
-
-uint32_t MX25_GetIdentification(void){
-  uint32_t ID = 0x00000000;
-  uint8_t ID_ch[10];
-  uint8_t tx[4];
-  tx[0] = 0x9F;	// read id
-  sys_spi_select();
-  sys_spi_write_then_read(tx, 1, ID_ch, 4);
-  sys_spi_deselect();
-
-  ID = ID_ch[2]|(ID_ch[1]<<8)|(ID_ch[0]<<16);
-  return ID;
-}
+//
+//
+//uint32_t MX25_GetIdentification(void){
+//  uint32_t ID = 0x00000000;
+//  uint8_t ID_ch[10];
+//  uint8_t tx[4];
+//  tx[0] = 0x9F;	// read id
+//  sys_spi_select();
+//  sys_spi_write_then_read(tx, 1, ID_ch, 4);
+//  sys_spi_deselect();
+//
+//  ID = ID_ch[2]|(ID_ch[1]<<8)|(ID_ch[0]<<16);
+//  return ID;
+//}
 
 
 #endif
@@ -7630,32 +7561,62 @@ void hardware_spi_master_initialize(void)
 		(0x00uL < 1) |	// MODE: 1: Master mode
 		0;
 
-	sys_spinor_init();
 
-	//PRINTF("SPI0->SPI_GCR=%08lX\n", SPI0->SPI_GCR);
-	//for (;;)
-	//	;
-//	uint32_t val;
-//	/* Enable spi0 and do a soft reset */
-//	val = SPI0->SPI_GCR;
-//	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);	// 7:TP_EN, master mode, enable
-//	SPI0->SPI_GCR = val;
-//	while (SPI0->SPI_GCR & (1 << 31))
-//		;
-//
-//	val = SPI0->SPI_TCR;
-//	val &= ~(0x3 << 0);		// bit1 (Polarity) and bit0 (Phase)
-//	val |= (0x3 << 0);	// mode3
-//	val |= (1 << 6) | (1 << 2);	// SS_OWNER: 1: Software, SPOL = 1
-//	SPI0->SPI_TCR = val;
+	uintptr_t addr;
+	unsigned int val;
 
-//	val = SPI0->SPI_FCR;
-//	val |= (1 << 31) | (1 << 15);	// resret fifo
-//	SPI0->SPI_FCR = val;
+	/* Deassert spi0 reset */
+	addr = 0x0200196c;
+	val = read32(addr);
+	val |= (1 << 16);
+	write32(addr, val);
 
-	SPI0->SPI_FCR = (SPI0->SPI_FCR & ~ (0xFFuL << 16)) |
-		(0x01uL << 16) |	// TX_TRIG_LEVEL
-		0;
+	/* Open the spi0 gate */
+	addr = 0x02001940;
+	val = read32(addr);
+	val |= (1 << 31);
+	write32(addr, val);
+
+	/* Open the spi0 bus gate */
+	addr = 0x0200196c;
+	val = read32(addr);
+	val |= (1 << 0);
+	write32(addr, val);
+
+#if 0
+	/* Select pll-periph0 for spi0 clk */
+	addr = 0x02001940;
+	val = read32(addr);
+	val &= ~(0x3 << 24);
+	val |= 0x1 << 24;
+	write32(addr, val);
+
+	/* Set clock pre divide ratio, divided by 1 */
+	addr = 0x02001940;
+	val = read32(addr);
+	val &= ~(0x3 << 8);
+	val |= 0x0 << 8;
+	write32(addr, val);
+
+	/* Set clock divide ratio, divided by 6 */
+	addr = 0x02001940;
+	val = read32(addr);
+	val &= ~(0xf << 0);
+	val |= (6 - 1) << 0;
+	write32(addr, val);
+#endif
+
+	/* Enable spi0 and do a soft reset */
+	val = SPI0->SPI_GCR;
+	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);
+	SPI0->SPI_GCR = val;
+	while(SPI0->SPI_GCR & (1 << 31))
+		;
+
+	val = SPI0->SPI_TCR;
+	val &= ~(0x3 << 0);
+	val |= (1 << 6) | (1 << 2);
+	SPI0->SPI_TCR = val;
 
 	// TXFIFO Reset
 	SPI0->SPI_FCR |= (1 << 31);
@@ -7668,16 +7629,13 @@ void hardware_spi_master_initialize(void)
 		;
 
 	SPIIO_INITIALIZE();
+	SPI_ALLCS_INITIALIZE();
 	HARDWARE_SPI_CONNECT();
-	//arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2);
-	arm_hardware_pioc_outputs50m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */
 
-	//PRINTF("SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
-
-	unsigned id = MX25_GetIdentification();
-	PRINTF("id=%08lX\n", id);
-	unsigned id2 = MX25_GetIdentification();
-	PRINTF("id2=%08lX\n", id2);
+//	unsigned id = MX25_GetIdentification();
+//	PRINTF("id=%08lX\n", id);
+//	unsigned id2 = MX25_GetIdentification();
+//	PRINTF("id2=%08lX\n", id2);
 
 
 	unsigned char b1 [1];
