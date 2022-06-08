@@ -7077,6 +7077,7 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #if CPUSTYPE_ALLWNT113
 
+#if 0
 static void sys_spinor_exit(void)
 {
 	//uintptr_t addr = 0x04025000;
@@ -7194,6 +7195,7 @@ static void sys_spinor_read(int addr, void * buf, int count)
 	sys_spi_deselect();
 }
 
+#endif
 //
 //
 //uint32_t MX25_GetIdentification(void){
@@ -7589,6 +7591,8 @@ void hardware_spi_master_initialize(void)
 		;
 
 	SPIIO_INITIALIZE();
+
+#if 0
 	SPI_ALLCS_INITIALIZE();
 	HARDWARE_SPI_CONNECT();
 
@@ -7624,6 +7628,7 @@ void hardware_spi_master_initialize(void)
 	TP();
 	for (;;)
 		;
+#endif
 
 #else
 	#error Wrong CPUSTYLE macro
