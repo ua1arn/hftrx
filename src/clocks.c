@@ -7562,55 +7562,21 @@ void hardware_spi_master_initialize(void)
 		0;
 
 
-	uintptr_t addr;
-	unsigned int val;
 
 	/* Deassert spi0 reset */
-	addr = 0x0200196c;
-	val = read32(addr);
-	val |= (1 << 16);
-	write32(addr, val);
-
+	CCU->SPI_BGR_REG |= (1 << (ix + 16));
 	/* Open the spi0 gate */
-	addr = 0x02001940;
-	val = read32(addr);
-	val |= (1 << 31);
-	write32(addr, val);
-
+	CCU->SPI0_CLK_REG |= (1 << 31);
 	/* Open the spi0 bus gate */
-	addr = 0x0200196c;
-	val = read32(addr);
-	val |= (1 << 0);
-	write32(addr, val);
+	CCU->SPI_BGR_REG |= (1 << (ix + 0));
 
-#if 0
-	/* Select pll-periph0 for spi0 clk */
-	addr = 0x02001940;
-	val = read32(addr);
-	val &= ~(0x3 << 24);
-	val |= 0x1 << 24;
-	write32(addr, val);
 
-	/* Set clock pre divide ratio, divided by 1 */
-	addr = 0x02001940;
-	val = read32(addr);
-	val &= ~(0x3 << 8);
-	val |= 0x0 << 8;
-	write32(addr, val);
-
-	/* Set clock divide ratio, divided by 6 */
-	addr = 0x02001940;
-	val = read32(addr);
-	val &= ~(0xf << 0);
-	val |= (6 - 1) << 0;
-	write32(addr, val);
-#endif
-
+	unsigned int val;
 	/* Enable spi0 and do a soft reset */
 	val = SPI0->SPI_GCR;
 	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);
 	SPI0->SPI_GCR = val;
-	while(SPI0->SPI_GCR & (1 << 31))
+	while((SPI0->SPI_GCR & (1 << 31)) != 0)
 		;
 
 	val = SPI0->SPI_TCR;
@@ -7981,6 +7947,30 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 			(0x00uL << 12) |	// FBS: 0: MSB first
 			(0x01uL << 6) |		// SS_OWNER: 1: Software
 			0;
+#if 1
+	unsigned int val;
+	/* TODO: move to calculate clock ratio */
+	/* Select pll-periph0 for spi0 clk */
+	val = CCU->SPI0_CLK_REG;
+
+	val &= ~ (0x3 << 24);
+	val |= 0x1 << 24;
+	//CCU->SPI0_CLK_REG = val;
+
+	/* Set clock pre divide ratio, divided by 1 */
+	//val = CCU->SPI0_CLK_REG;
+	val &= ~ (0x3 << 8);
+	val |= 0x0 << 8;
+	//CCU->SPI0_CLK_REG = val;
+
+	/* Set clock divide ratio, divided by 6 */
+	//val = CCU->SPI0_CLK_REG;
+	val &= ~ (0xf << 0);
+	val |= (6 - 1) << 0;
+
+	CCU->SPI0_CLK_REG = val;
+	ccu_spi_clk_reg_val [spispeedindex] = val;
+#endif
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
@@ -8141,21 +8131,17 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
-//	//SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-	SPI0->SPI_BATCR = (SPI0->SPI_BATCR & ~ ((0x1FuL << 8) | (0x03uL << 0) | 0)) |
-			(8uL << 8) |	// TX_FRM_LEN
-			(0x00uL << 0) |	// Work Mode Select
-			0;
-	SPI0->SPI_GCR |= (0x01uL << 0);	// SPI Module Enable Control
+	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 
-	uint32_t val;
+	//uintptr_t addr = 0x04025000;
+	unsigned int val;
+
 	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
 	val |= ((0 & 0x3) << 4) | (0x0 << 7);
 	SPI0->SPI_TCR = val;
 
-	HARDWARE_SPI_CONNECT();
+ 	HARDWARE_SPI_CONNECT();
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -8235,9 +8221,9 @@ void hardware_spi_disconnect(void)
 #elif CPUSTYPE_ALLWNT113
 
 	HARDWARE_SPI_DISCONNECT();
-	//SPI0->SPI_GCR &= ~ (0x01uL << 0);	// SPI Module Enable Control
 
-	uint32_t val;
+	unsigned int val;
+
 	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
 	val |= ((0 & 0x3) << 4) | (0x1 << 7);
