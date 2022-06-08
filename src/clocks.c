@@ -7087,55 +7087,6 @@ static void write32(uintptr_t a, uint32_t v)
 	* (volatile uint32_t *) a = v;
 }
 
-static void write8(uintptr_t a, uint8_t v)
-{
-	* (volatile uint8_t *) a = v;
-}
-
-static uint8_t read8(uintptr_t a)
-{
-	return * (volatile uint8_t *) a;
-}
-
-
-#define COMMAND_WREN  0x06
-#define COMMAND_WRDI  0x04
-#define COMMAND_RDSR  0x05  //ÑÑ‚Ð°Ñ‚ÑƒÑ
-#define COMMAND_WRSR  0x01
-#define COMMAND_READ  0x03
-#define COMMAND_FREAD 0x0B
-#define COMMAND_WRITE 0x02
-#define COMMAND_RDID  0x9F  	//ID
-#define COMMAND_REMS  0x90  	//
-#define COMMAND_SE    0x20		//ÑÑ‚Ð¸Ñ€Ð°Ð½Ð¸Ðµ ÑÐµÐºÑ‚Ð¾Ñ€Ð° 4kb
-#define COMMAND_BE    0x52		//ÑÑ‚Ð¸Ñ€Ð°Ð½Ð¸Ðµ Ð±Ð»Ð¾ÐºÐ° 32kb
-#define COMMAND_CE    0x60		//ÑÑ‚Ð¸Ñ€Ð°Ð½Ð¸Ðµ Ð²ÑÐµÐ³Ð¾ Ñ‡Ð¸Ð¿Ð°
-
-#define STATUS_WIP    0b00000001
-#define STATUS_WEL    0b00000010
-#define STATUS_BP0    0b00000100
-#define STATUS_BP1    0b00001000
-#define STATUS_BP2    0b00010000
-#define STATUS_BP3    0b00100000
-#define STATUS_RES    0b01000000
-#define STATUS_SWRD   0b10000000
-
-enum {
-	SPI_GCR	= 0x04,
-	SPI_TCR	= 0x08,
-	SPI_IER	= 0x10,
-	SPI_ISR	= 0x14,
-	SPI_FCR	= 0x18,
-	SPI_FSR	= 0x1c,
-	SPI_WCR	= 0x20,
-	SPI_CCR	= 0x24,
-	SPI_MBC	= 0x30,
-	SPI_MTC	= 0x34,
-	SPI_BCC	= 0x38,
-	SPI_TXD	= 0x200,
-	SPI_RXD	= 0x300,
-};
-
 void sys_spinor_init(void)
 {
 	uintptr_t addr;
@@ -7181,61 +7132,62 @@ void sys_spinor_init(void)
 	write32(addr, val);
 
 	/* Set spi clock rate control register, divided by 2 */
-	addr = 0x04025000;
-	write32(addr + SPI_CCR, 0x1000);
+//	addr = 0x04025000;
+//	write32(addr + SPI_CCR, 0x1000);
 
 	/* Enable spi0 and do a soft reset */
 	addr = 0x04025000;
-	val = read32(addr + SPI_GCR);
+	val = SPI0->SPI_GCR;
 	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);
-	write32(addr + SPI_GCR, val);
-	while(read32(addr + SPI_GCR) & (1 << 31));
+	SPI0->SPI_GCR = val;
+	while(SPI0->SPI_GCR & (1 << 31))
+		;
 
-	val = read32(addr + SPI_TCR);
+	val = SPI0->SPI_TCR;
 	val &= ~(0x3 << 0);
 	val |= (1 << 6) | (1 << 2);
-	write32(addr + SPI_TCR, val);
+	SPI0->SPI_TCR = val;
 
-	val = read32(addr + SPI_FCR);
+	val = SPI0->SPI_FCR;
 	val |= (1 << 31) | (1 << 15);
-	write32(addr + SPI_FCR, val);
+	SPI0->SPI_FCR = val;
 }
 
 void sys_spinor_exit(void)
 {
-	uintptr_t addr = 0x04025000;
+	//uintptr_t addr = 0x04025000;
 	unsigned int val;
 
 	/* Disable the spi0 controller */
-	val = read32(addr + SPI_GCR);
+	val = SPI0->SPI_GCR;
 	val &= ~((1 << 1) | (1 << 0));
-	write32(addr + SPI_GCR, val);
+	SPI0->SPI_GCR = val;
 }
 
 static void sys_spi_select(void)
 {
-	uintptr_t addr = 0x04025000;
+	//uintptr_t addr = 0x04025000;
 	unsigned int val;
 
-	val = read32(addr + SPI_TCR);
+	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
 	val |= ((0 & 0x3) << 4) | (0x0 << 7);
-	write32(addr + SPI_TCR, val);
+	SPI0->SPI_TCR = val;
 
     SPI_CS_ASSERT(targetdataflash);
 }
 
 static void sys_spi_deselect(void)
 {
-	uintptr_t addr = 0x04025000;
+	//uintptr_t addr = 0x04025000;
 	unsigned int val;
 
 	SPI_CS_DEASSERT(targetdataflash);
 
-	val = read32(addr + SPI_TCR);
+	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
 	val |= ((0 & 0x3) << 4) | (0x1 << 7);
-	write32(addr + SPI_TCR, val);
+	SPI0->SPI_TCR = val;
 }
 
 static void sys_spi_write_txbuf(unsigned char * buf, int len)
@@ -7243,40 +7195,41 @@ static void sys_spi_write_txbuf(unsigned char * buf, int len)
 	uintptr_t addr = 0x04025000;
 	int i;
 
-	write32(addr + SPI_MTC, len & 0xffffff);
-	write32(addr + SPI_BCC, len & 0xffffff);
+	SPI0->SPI_MTC = len & 0xffffff;
+	SPI0->SPI_BCC = len & 0xffffff;
 	if(buf)
 	{
 		for(i = 0; i < len; i++)
-			write8(addr + SPI_TXD, *buf++);
+			* (volatile uint8_t *) & SPI0->SPI_TXD = *buf++;
 	}
 	else
 	{
 		for(i = 0; i < len; i++)
-			write8(addr + SPI_TXD, 0xff);
+			* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
 	}
 }
 
 static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 {
-	uintptr_t addr = 0x04025000;
+	//uintptr_t addr = 0x04025000;
 	int count = len;
 	unsigned char  * tx = txbuf;
 	unsigned char  * rx = rxbuf;
-	unsigned char  val;
-	int n, i;
 
 	while(count > 0)
 	{
+		unsigned char  val;
+		int n, i;
 		n = (count <= 64) ? count : 64;
-		write32(addr + SPI_MBC, n);
+		SPI0->SPI_MBC = n;
 		sys_spi_write_txbuf(tx, n);
-		write32(addr + SPI_TCR, read32(addr + SPI_TCR) | (1 << 31));
+		SPI0->SPI_TCR |= (1 << 31);
 
-		while((read32(addr + SPI_FSR) & 0xff) < n);
+		while((SPI0->SPI_FSR & 0xff) < n)
+			;
 		for(i = 0; i < n; i++)
 		{
-			val = read8(addr + SPI_RXD);
+			val = * (volatile uint8_t *) & SPI0->SPI_RXD;
 			if(rx)
 				*rx++ = val;
 		}
