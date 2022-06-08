@@ -7076,8 +7076,6 @@ static void DMA2_SPI1_TX_initialize(void)
 #endif /* WITHSPIHWDMA */
 
 #if CPUSTYPE_ALLWNT113
-
-#if 0
 static void sys_spinor_exit(void)
 {
 	//uintptr_t addr = 0x04025000;
@@ -7088,131 +7086,8 @@ static void sys_spinor_exit(void)
 	val &= ~ ((1 << 1) | (1 << 0));
 	SPI0->SPI_GCR = val;
 }
+#endif /* CPUSTYPE_ALLWNT113 */
 
-static void sys_spi_select(void)
-{
-//	int csval = 0;
-	//uintptr_t addr = 0x04025000;
-//	unsigned int val;
-//	val = SPI0->SPI_TCR;
-//	val &= ~((0x3 << 4) | (0x1 << 7));
-//	val |= ((0 & 0x3) << 4) | (csval << 7);
-//	SPI0->SPI_TCR = val;
-
-    SPI_CS_ASSERT(targetdataflash);
-}
-
-static void sys_spi_deselect(void)
-{
-//	int csval = 0;
-	//uintptr_t addr = 0x04025000;
-//	unsigned int val;
-
-	SPI_CS_DEASSERT(targetdataflash);
-
-//	val = SPI0->SPI_TCR;
-//	val &= ~((0x3 << 4) | (0x1 << 7));
-//	val |= ((0 & 0x3) << 4) | (csval << 7);
-//	SPI0->SPI_TCR = val;
-}
-
-static void sys_spi_write_txbuf(unsigned char * buf, int len)
-{
-	//uintptr_t addr = 0x04025000;
-	int i;
-
-	SPI0->SPI_MTC = len & 0xffffff;
-	SPI0->SPI_BCC = len & 0xffffff;
-	if(buf)
-	{
-		for(i = 0; i < len; i++)
-			* (volatile uint8_t *) & SPI0->SPI_TXD = *buf++;
-	}
-	else
-	{
-		for(i = 0; i < len; i++)
-			* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
-	}
-}
-
-static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
-{
-	int count = len;
-	unsigned char  * tx = txbuf;
-	unsigned char  * rx = rxbuf;
-	const int maxchunk = 1;
-	while (count > 0)
-	{
-		int i;
-		const int n = (count <= maxchunk) ? count : maxchunk;
-
-		SPI0->SPI_MBC = n;
-		sys_spi_write_txbuf(tx, n);
-
-		SPI0->SPI_TCR |= (1 << 31);
-		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
-			;
-
-		ASSERT((SPI0->SPI_FSR & 0xFF) == n);
-
-//		while ((SPI0->SPI_FSR & 0xff) < n)
-//			;
-
-		for (i = 0; i < n; i++)
-		{
-			unsigned char  val;
-			val = * (volatile uint8_t *) & SPI0->SPI_RXD;
-			if (rx)
-				* rx++ = val;
-		}
-
-		if(tx)
-			tx += n;
-		count -= n;
-	}
-	return len;
-}
-
-static int sys_spi_write_then_read(void * txbuf, int txlen, void * rxbuf, int rxlen)
-{
-	if (sys_spi_transfer(txbuf, 0, txlen) != txlen)
-		return -1;
-	if (sys_spi_transfer(0, rxbuf, rxlen) != rxlen)
-		return -1;
-	return 0;
-}
-
-static void sys_spinor_read(int addr, void * buf, int count)
-{
-	unsigned char  tx [4];
-
-	tx[0] = 0x03;
-	tx[1] = (unsigned char )(addr >> 16);
-	tx[2] = (unsigned char )(addr >> 8);
-	tx[3] = (unsigned char )(addr >> 0);
-	sys_spi_select();
-	sys_spi_write_then_read(tx, 4, buf, count);
-	sys_spi_deselect();
-}
-
-#endif
-//
-//
-//uint32_t MX25_GetIdentification(void){
-//  uint32_t ID = 0x00000000;
-//  uint8_t ID_ch[10];
-//  uint8_t tx[4];
-//  tx[0] = 0x9F;	// read id
-//  sys_spi_select();
-//  sys_spi_write_then_read(tx, 1, ID_ch, 4);
-//  sys_spi_deselect();
-//
-//  ID = ID_ch[2]|(ID_ch[1]<<8)|(ID_ch[0]<<16);
-//  return ID;
-//}
-
-
-#endif
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
    */
@@ -7591,44 +7466,6 @@ void hardware_spi_master_initialize(void)
 		;
 
 	SPIIO_INITIALIZE();
-
-#if 0
-	SPI_ALLCS_INITIALIZE();
-	HARDWARE_SPI_CONNECT();
-
-//	unsigned id = MX25_GetIdentification();
-//	PRINTF("id=%08lX\n", id);
-//	unsigned id2 = MX25_GetIdentification();
-//	PRINTF("id2=%08lX\n", id2);
-
-
-	unsigned char b1 [1];
-	unsigned char b2 [26];
-
-	memset(b1, 0xE5, sizeof b1);
-	sys_spinor_read(0, b1, sizeof b1);
-	printhex(0, b1, sizeof b1);
-
-	memset(b2, 0xE5, sizeof b2);
-	sys_spinor_read(0x800000, b2, sizeof b2);
-	printhex(0, b2, sizeof b2);
-
-	memset(b1, 0xE5, sizeof b1);
-	sys_spinor_read(0, b1, sizeof b1);
-	printhex(0, b1, sizeof b1);
-
-	memset(b1, 0xE5, sizeof b1);
-	sys_spinor_read(0, b1, sizeof b1);
-	printhex(0, b1, sizeof b1);
-
-	memset(b2, 0xE5, sizeof b2);
-	sys_spinor_read(0x800000, b2, sizeof b2);
-	printhex(0, b2, sizeof b2);
-
-	TP();
-	for (;;)
-		;
-#endif
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -9582,9 +9419,9 @@ void hardware_spi_b8_p1(
 
 #elif CPUSTYPE_ALLWNT113
 
-	SPI0->SPI_MBC = 1;
-	SPI0->SPI_MTC = 1;
-	SPI0->SPI_BCC = 1;
+	SPI0->SPI_MBC = 1;	// Master Burst Counter
+	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	SPI0->SPI_BCC = 1;	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 
 	* (volatile uint8_t *) & SPI0->SPI_TXD = v;
 
