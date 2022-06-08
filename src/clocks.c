@@ -7077,16 +7077,6 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #if CPUSTYPE_ALLWNT113
 
-static uint32_t read32(uintptr_t a)
-{
-	return * (volatile uint32_t *) a;
-}
-
-static void write32(uintptr_t a, uint32_t v)
-{
-	* (volatile uint32_t *) a = v;
-}
-
 static void sys_spinor_exit(void)
 {
 	//uintptr_t addr = 0x04025000;
@@ -7094,7 +7084,7 @@ static void sys_spinor_exit(void)
 
 	/* Disable the spi0 controller */
 	val = SPI0->SPI_GCR;
-	val &= ~((1 << 1) | (1 << 0));
+	val &= ~ ((1 << 1) | (1 << 0));
 	SPI0->SPI_GCR = val;
 }
 
@@ -7149,7 +7139,7 @@ static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 	int count = len;
 	unsigned char  * tx = txbuf;
 	unsigned char  * rx = rxbuf;
-	const int maxchunk = 64;
+	const int maxchunk = 1;
 	while (count > 0)
 	{
 		int i;
@@ -8235,87 +8225,6 @@ void hardware_spi_disconnect(void)
 
 }
 
-/* дождаться завершения передачи (на atmega оптимизированно по скорости - без чиения регистра данных). */
-static void
-hardware_spi_ready_b8_void(void)
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	/* дождаться завершения приёма/передачи */
-	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
-		;
-	(void) SPI->SPI_RDR;
-
-#elif CPUSTYLE_AT91SAM7S
-
-	/* дождаться завершения приёма/передачи */
-	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) == 0)
-		;
-	(void) AT91C_BASE_SPI->SPI_RDR;
-
-#elif CPUSTYLE_ATMEGA
-
-	/* дождаться завершения приёма/передачи */
-	while ((SPSR & (1U << SPIF)) == 0)
-		;
-	//(void) SPDR;
-
-#elif CPUSTYLE_ATXMEGA
-
-	/* дождаться завершения приёма/передачи */
-	while ((TARGETHARD_SPI.STATUS & SPI_IF_bm) == 0)
-		;
-	//(void) TARGETHARD_SPI.DATA;
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-	//while ((SPI1->SR & SPI_SR_TXC) == 0)
-	//	;
-	while ((SPI1->SR & SPI_SR_RXP) == 0)
-		;
-	(void) * (volatile uint8_t *) & SPI1->RXDR;	/* clear SPI_SR_RXP in status register */
-
-#elif CTLSTYLE_V3D		// SPI2
-
-	while ((SPI2->SR & SPI_SR_RXNE) == 0)
-			;
-		(void) SPI2->DR;	/* clear SPI_SR_RXNE in status register */
-
-#elif CPUSTYLE_STM32F
-
-	while ((SPI1->SR & SPI_SR_RXNE) == 0)
-		;
-	(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
-
-#elif CPUSTYLE_R7S721
-
-	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
-		;
-	(void) HW_SPIUSED->SPDR.UINT8 [R_IO_LL]; // LL=0
-
-#elif CPUSTYLE_XC7Z
-
-	while ((SPI0->SR & (1uL << 4)) == 0)	// RX FIFO not empty
-		;
-	(void) SPI0->RXD;
-
-#elif CPUSTYPE_ALLWNT113
-
-	PRINTF("hardware_spi_ready_b8_void: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
-	while ((SPI0->SPI_FSR & (0xFFuL << 0)) == 0)	// RX FIFO empty
-	{
-		PRINTF("hardware_spi_ready_b8_void: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
-		PRINTF("hardware_spi_ready_b8_void: SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
-		local_delay_ms(100);
-	}
-	(void) * (volatile uint8_t *) & SPI0->SPI_RXD;
-
-#else
-	#error Wrong CPUSTYLE macro
-
-#endif
-}
-
 portholder_t hardware_spi_complete_b8(void)	/* дождаться готовности */
 {
 #if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
@@ -8387,16 +8296,10 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 
 #elif CPUSTYPE_ALLWNT113
 
-	PRINTF("hardware_spi_complete_b8: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
-	while ((SPI0->SPI_FSR & (0xFFuL << 0)) == 0)	// RX FIFO empty
-	{
-		PRINTF("hardware_spi_complete_b8: SPI0->SPI_FSR=%08lX\n", SPI0->SPI_FSR);
-		PRINTF("hardware_spi_complete_b8: SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
-		local_delay_ms(100);
-	}
-	unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
-	//PRINTF("hardware_spi_complete_b8: v=%02X\n", v);
-	return v;
+	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+		;
+
+	return * (volatile uint8_t *) & SPI0->SPI_RXD;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -9675,12 +9578,12 @@ void hardware_spi_b8_p1(
 #elif CPUSTYPE_ALLWNT113
 
 	SPI0->SPI_MBC = 1;
+	SPI0->SPI_MTC = 1;
+	SPI0->SPI_BCC = 1;
 
 	* (volatile uint8_t *) & SPI0->SPI_TXD = v;
 
-	SPI0->SPI_TCR |= (1 << 31);
-	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
-		;
+	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
