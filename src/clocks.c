@@ -7114,13 +7114,6 @@ void sys_spinor_init(void)
 //	val |= ((0x3 & 0x7) << ((3 & 0x7) << 2));
 //	write32(addr, val);
 
-	arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2);
-	arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2);
-	arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2);
-	arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2);
-	arm_hardware_pioc_outputs(SPDIF_D2_BIT, 1 * SPDIF_D2_BIT); /* PC6 SPI0_WP/D2 */
-	arm_hardware_pioc_outputs(SPDIF_D3_BIT, 1 * SPDIF_D3_BIT); /* PC7 SPI0_HOLD/D3 */
-
 	/* Deassert spi0 reset */
 	addr = 0x01c202c0;
 	val = read32(addr);
@@ -7648,9 +7641,7 @@ void hardware_spi_master_initialize(void)
 		(0x00uL < 1) |	// MODE: 1: Master mode
 		0;
 
-	TP();
 	sys_spinor_init();
-	TP();
 
 	//PRINTF("SPI0->SPI_GCR=%08lX\n", SPI0->SPI_GCR);
 	//for (;;)
@@ -7687,11 +7678,32 @@ void hardware_spi_master_initialize(void)
 	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
 		;
 
-	PRINTF("SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
+	SPIIO_INITIALIZE();
+	HARDWARE_SPI_CONNECT();
+	arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2);
+
+	//PRINTF("SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
+
 	unsigned id = MX25_GetIdentification();
 	PRINTF("id=%08lX\n", id);
 	unsigned id2 = MX25_GetIdentification();
 	PRINTF("id2=%08lX\n", id2);
+
+
+	unsigned char b1 [5];
+	unsigned char b2 [1];
+
+	memset(b1, 0xE5, sizeof b1);
+	sys_spinor_read(0, b1, sizeof b1);
+	printhex(0, b1, sizeof b1);
+
+	//testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+
+	memset(b2, 0xE5, sizeof b2);
+	sys_spinor_read(0x800000, b2, sizeof b2);
+	printhex(0, b2, sizeof b2);
+
+	TP();
 	for (;;)
 		;
 
