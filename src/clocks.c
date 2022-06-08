@@ -7110,6 +7110,7 @@ void sys_spinor_init(void)
 	val |= (1 << 0);
 	write32(addr, val);
 
+#if 0
 	/* Select pll-periph0 for spi0 clk */
 	addr = 0x02001940;
 	val = read32(addr);
@@ -7130,13 +7131,9 @@ void sys_spinor_init(void)
 	val &= ~(0xf << 0);
 	val |= (6 - 1) << 0;
 	write32(addr, val);
-
-	/* Set spi clock rate control register, divided by 2 */
-//	addr = 0x04025000;
-//	write32(addr + SPI_CCR, 0x1000);
+#endif
 
 	/* Enable spi0 and do a soft reset */
-	addr = 0x04025000;
 	val = SPI0->SPI_GCR;
 	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);
 	SPI0->SPI_GCR = val;
@@ -7148,9 +7145,15 @@ void sys_spinor_init(void)
 	val |= (1 << 6) | (1 << 2);
 	SPI0->SPI_TCR = val;
 
-	val = SPI0->SPI_FCR;
-	val |= (1 << 31) | (1 << 15);
-	SPI0->SPI_FCR = val;
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
 }
 
 void sys_spinor_exit(void)
