@@ -7166,7 +7166,7 @@ static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 		{
 			val = * (volatile uint8_t *) & SPI0->SPI_RXD;
 			if(rx)
-				*rx++ = val;
+				* rx++ = val;
 		}
 
 		if(tx)
@@ -7550,11 +7550,6 @@ void hardware_spi_master_initialize(void)
 
 	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
 
-
-	PRINTF("allwnrt113_get_spi0_freq = %lu\n", allwnrt113_get_spi0_freq());
-	PRINTF("allwnrt113_get_spi1_freq = %lu\n", allwnrt113_get_spi1_freq());
-	//SPIIO_INITIALIZE();
-
 	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
 	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
 		;
@@ -7572,17 +7567,19 @@ void hardware_spi_master_initialize(void)
 	CCU->SPI_BGR_REG |= (1 << (ix + 0));
 
 
-	unsigned int val;
-	/* Enable spi0 and do a soft reset */
-	val = SPI0->SPI_GCR;
-	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);
-	SPI0->SPI_GCR = val;
+	/* Enable spi0 */
+	SPI0->SPI_GCR |= (1 << 7) | (1 << 1) | (1 << 0);
+	/* Do a soft reset */
+	SPI0->SPI_GCR |= (1 << 31);
 	while((SPI0->SPI_GCR & (1 << 31)) != 0)
 		;
 
+	SPI0->SPI_TCR |= (1 << 6);	// SS_OWNER 1: Software
+
+	unsigned int val;
 	val = SPI0->SPI_TCR;
-	val &= ~(0x3 << 0);
-	val |= (1 << 6) | (1 << 2);
+	val &= ~ (0x3 << 0);
+	val |= (1 << 1) | (1 << 0);	// SPI MODE 3
 	SPI0->SPI_TCR = val;
 
 	// TXFIFO Reset
@@ -7934,6 +7931,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYPE_ALLWNT113
 
+//	PRINTF("allwnrt113_get_spi0_freq = %lu\n", allwnrt113_get_spi0_freq());
 	// SCLK = Clock Source/M/N.
 	unsigned factorN = 3;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = 15;	/* FACTOR_M: 0..15: M = 1..16 */
