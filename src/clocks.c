@@ -7192,19 +7192,21 @@ void sys_spinor_exit(void) {
 }
 
 void sys_spi_select(void) {
-	int addr = 0x01c68000;
 	uint32_t val;
 
 	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
 	val |= ((0 & 0x3) << 4) | (0x0 << 7);
 	SPI0->SPI_TCR = val;
+
+	SPI_CS_ASSERT(targetdataflash);
 }
 
 
 static void sys_spi_deselect(void) {
-	int addr = 0x01c68000;
 	uint32_t val;
+
+	SPI_CS_DEASSERT(targetdataflash);
 
 	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
@@ -7220,10 +7222,10 @@ void sys_spi_write_txbuf(uint8_t *buf, int len) {
 	SPI0->SPI_BCC = len & 0xffffff;
 	if (buf) {
 		for (i = 0; i < len; i++)
-			*((volatile uint8_t*) (&SPI0->SPI_TXD)) = *buf++;
+			* (volatile uint8_t*) & SPI0->SPI_TXD = *buf++;
 	} else {
 		for (i = 0; i < len; i++)
-			*((volatile uint8_t*) (&SPI0->SPI_TXD)) = 0xff;
+			* (volatile uint8_t*) & SPI0->SPI_TXD = 0xff;
 	}
 }
 
@@ -7231,10 +7233,11 @@ int sys_spi_transfer(void *txbuf, void *rxbuf, int len) {
 	int count = len;
 	uint8_t *tx = txbuf;
 	uint8_t *rx = rxbuf;
-	uint8_t val;
-	int n, i;
 
-	while (count > 0) {
+	while (count > 0)
+	{
+		uint8_t val;
+		int n, i;
 		n = (count <= 64) ? count : 64;
 		SPI0->SPI_MBC = n;
 		sys_spi_write_txbuf(tx, n);
@@ -7242,7 +7245,7 @@ int sys_spi_transfer(void *txbuf, void *rxbuf, int len) {
 		while ((SPI0->SPI_FSR & 0xff) < n)
 			;
 		for (i = 0; i < n; i++) {
-			val = *((volatile uint8_t*) (&SPI0->SPI_RXD));
+			val = * (volatile uint8_t*) & SPI0->SPI_RXD;
 			if (rx)
 				*rx++ = val;
 		}
@@ -7680,7 +7683,8 @@ void hardware_spi_master_initialize(void)
 
 	SPIIO_INITIALIZE();
 	HARDWARE_SPI_CONNECT();
-	arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2);
+	//arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2);
+	arm_hardware_pioc_outputs50m(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
 
 	//PRINTF("SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
 
@@ -7691,7 +7695,7 @@ void hardware_spi_master_initialize(void)
 
 
 	unsigned char b1 [5];
-	unsigned char b2 [1];
+	unsigned char b2 [9];
 
 	memset(b1, 0xE5, sizeof b1);
 	sys_spinor_read(0, b1, sizeof b1);
