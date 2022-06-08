@@ -7146,7 +7146,6 @@ static void sys_spi_write_txbuf(unsigned char * buf, int len)
 
 static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 {
-	//uintptr_t addr = 0x04025000;
 	int count = len;
 	unsigned char  * tx = txbuf;
 	unsigned char  * rx = rxbuf;
@@ -7155,12 +7154,19 @@ static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 	{
 		int i;
 		const int n = (count <= maxchunk) ? count : maxchunk;
+
 		SPI0->SPI_MBC = n;
 		sys_spi_write_txbuf(tx, n);
-		SPI0->SPI_TCR |= (1 << 31);
 
-		while ((SPI0->SPI_FSR & 0xff) < n)
+		SPI0->SPI_TCR |= (1 << 31);
+		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 			;
+
+		ASSERT((SPI0->SPI_FSR & 0xFF) == n);
+
+//		while ((SPI0->SPI_FSR & 0xff) < n)
+//			;
+
 		for (i = 0; i < n; i++)
 		{
 			unsigned char  val;
@@ -7603,7 +7609,7 @@ void hardware_spi_master_initialize(void)
 
 
 	unsigned char b1 [1];
-	unsigned char b2 [9];
+	unsigned char b2 [26];
 
 	memset(b1, 0xE5, sizeof b1);
 	sys_spinor_read(0, b1, sizeof b1);
