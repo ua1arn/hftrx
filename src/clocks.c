@@ -9421,7 +9421,10 @@ void hardware_spi_b8_p1(
 
 	SPI0->SPI_MBC = 1;	// Master Burst Counter
 	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
-	SPI0->SPI_BCC = 1;	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+		1 |
+		0;
 
 	* (volatile uint8_t *) & SPI0->SPI_TXD = v;
 
