@@ -7100,33 +7100,34 @@ static void sys_spinor_exit(void)
 
 static void sys_spi_select(void)
 {
+//	int csval = 0;
 	//uintptr_t addr = 0x04025000;
-	unsigned int val;
-
-	val = SPI0->SPI_TCR;
-	val &= ~((0x3 << 4) | (0x1 << 7));
-	val |= ((0 & 0x3) << 4) | (0x0 << 7);
-	SPI0->SPI_TCR = val;
+//	unsigned int val;
+//	val = SPI0->SPI_TCR;
+//	val &= ~((0x3 << 4) | (0x1 << 7));
+//	val |= ((0 & 0x3) << 4) | (csval << 7);
+//	SPI0->SPI_TCR = val;
 
     SPI_CS_ASSERT(targetdataflash);
 }
 
 static void sys_spi_deselect(void)
 {
+//	int csval = 0;
 	//uintptr_t addr = 0x04025000;
-	unsigned int val;
+//	unsigned int val;
 
 	SPI_CS_DEASSERT(targetdataflash);
 
-	val = SPI0->SPI_TCR;
-	val &= ~((0x3 << 4) | (0x1 << 7));
-	val |= ((0 & 0x3) << 4) | (0x1 << 7);
-	SPI0->SPI_TCR = val;
+//	val = SPI0->SPI_TCR;
+//	val &= ~((0x3 << 4) | (0x1 << 7));
+//	val |= ((0 & 0x3) << 4) | (csval << 7);
+//	SPI0->SPI_TCR = val;
 }
 
 static void sys_spi_write_txbuf(unsigned char * buf, int len)
 {
-	uintptr_t addr = 0x04025000;
+	//uintptr_t addr = 0x04025000;
 	int i;
 
 	SPI0->SPI_MTC = len & 0xffffff;
@@ -7177,16 +7178,16 @@ static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 
 static int sys_spi_write_then_read(void * txbuf, int txlen, void * rxbuf, int rxlen)
 {
-	if(sys_spi_transfer(txbuf, 0, txlen) != txlen)
+	if (sys_spi_transfer(txbuf, 0, txlen) != txlen)
 		return -1;
-	if(sys_spi_transfer(0, rxbuf, rxlen) != rxlen)
+	if (sys_spi_transfer(0, rxbuf, rxlen) != rxlen)
 		return -1;
 	return 0;
 }
 
 static void sys_spinor_read(int addr, void * buf, int count)
 {
-	unsigned char  tx[4];
+	unsigned char  tx [4];
 
 	tx[0] = 0x03;
 	tx[1] = (unsigned char )(addr >> 16);
@@ -8133,14 +8134,6 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 
-	//uintptr_t addr = 0x04025000;
-	unsigned int val;
-
-	val = SPI0->SPI_TCR;
-	val &= ~((0x3 << 4) | (0x1 << 7));
-	val |= ((0 & 0x3) << 4) | (0x0 << 7);
-	SPI0->SPI_TCR = val;
-
  	HARDWARE_SPI_CONNECT();
 
 #else
@@ -8221,14 +8214,6 @@ void hardware_spi_disconnect(void)
 #elif CPUSTYPE_ALLWNT113
 
 	HARDWARE_SPI_DISCONNECT();
-
-	unsigned int val;
-
-	val = SPI0->SPI_TCR;
-	val &= ~((0x3 << 4) | (0x1 << 7));
-	val |= ((0 & 0x3) << 4) | (0x1 << 7);
-	SPI0->SPI_TCR = val;
-
 
 #else
 	#error Wrong CPUSTYLE macro
