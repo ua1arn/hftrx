@@ -1453,6 +1453,62 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 		spidf_progval8(* buff ++);
 }
 
+#elif WIHSPIDFHW && CPUSTYPE_ALLWNT113
+
+static void sys_spi_write_txbuf(unsigned char * buf, int len)
+{
+    int i;
+
+    SPI0->SPI_MTC = len & 0xffffff;
+    SPI0->SPI_BCC = len & 0xffffff;
+    if (buf != NULL)
+    {
+        for(i = 0; i < len; i++)
+            * (volatile uint8_t *) & SPI0->SPI_TXD = * buf++;
+    }
+    else
+    {
+        for(i = 0; i < len; i++)
+            * (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
+    }
+}
+
+static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
+{
+	int count = len;
+	unsigned char  * tx = txbuf;
+	unsigned char  * rx = rxbuf;
+	const int maxchunk = 64;
+
+	while (count > 0)
+	{
+		const int n = (count <= maxchunk) ? count : maxchunk;
+		int i;
+
+		SPI0->SPI_MBC = n;
+		sys_spi_write_txbuf(tx, n);
+
+		SPI0->SPI_TCR |= (1 << 31);
+		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+			;
+
+//		while ((SPI0->SPI_FSR & 0xff) < n)
+//			;
+
+		for (i = 0; i < n; i++)
+		{
+			unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+			if (rx != NULL)
+				* rx++ = v;
+		}
+
+		if (tx != NULL)
+			tx += n;
+		count -= n;
+	}
+	return len;
+}
+
 #elif WIHSPIDFHW && CPUSTYLE_XC7Z
 
 // https://github.com/grub4android/lk/blob/579832fe57eeb616cefd82b93d991141f0db91ce/platform/zynq/qspi.c
