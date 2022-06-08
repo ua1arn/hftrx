@@ -7150,22 +7150,22 @@ static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 	int count = len;
 	unsigned char  * tx = txbuf;
 	unsigned char  * rx = rxbuf;
-
-	while(count > 0)
+	const int maxchunk = 64;
+	while (count > 0)
 	{
-		unsigned char  val;
-		int n, i;
-		n = (count <= 64) ? count : 64;
+		int i;
+		const int n = (count <= maxchunk) ? count : maxchunk;
 		SPI0->SPI_MBC = n;
 		sys_spi_write_txbuf(tx, n);
 		SPI0->SPI_TCR |= (1 << 31);
 
-		while((SPI0->SPI_FSR & 0xff) < n)
+		while ((SPI0->SPI_FSR & 0xff) < n)
 			;
-		for(i = 0; i < n; i++)
+		for (i = 0; i < n; i++)
 		{
+			unsigned char  val;
 			val = * (volatile uint8_t *) & SPI0->SPI_RXD;
-			if(rx)
+			if (rx)
 				* rx++ = val;
 		}
 
@@ -7609,7 +7609,17 @@ void hardware_spi_master_initialize(void)
 	sys_spinor_read(0, b1, sizeof b1);
 	printhex(0, b1, sizeof b1);
 
-	//testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
+	memset(b2, 0xE5, sizeof b2);
+	sys_spinor_read(0x800000, b2, sizeof b2);
+	printhex(0, b2, sizeof b2);
+
+	memset(b1, 0xE5, sizeof b1);
+	sys_spinor_read(0, b1, sizeof b1);
+	printhex(0, b1, sizeof b1);
+
+	memset(b1, 0xE5, sizeof b1);
+	sys_spinor_read(0, b1, sizeof b1);
+	printhex(0, b1, sizeof b1);
 
 	memset(b2, 0xE5, sizeof b2);
 	sys_spinor_read(0x800000, b2, sizeof b2);
