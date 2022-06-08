@@ -7087,7 +7087,7 @@ static void write32(uintptr_t a, uint32_t v)
 	* (volatile uint32_t *) a = v;
 }
 
-void sys_spinor_init(void)
+static void sys_spinor_init(void)
 {
 	int addr;
 	uint32_t val;
@@ -7180,18 +7180,18 @@ void sys_spinor_init(void)
 
 }
 
+//
+//static void sys_spinor_exit(void) {
+//	int addr = 0x01c68000;
+//	uint32_t val;
+//
+//	/* Disable the spi0 controller */
+//	val = SPI0->SPI_GCR;
+//	val &= ~((1 << 1) | (1 << 0));
+//	SPI0->SPI_GCR = val;
+//}
 
-void sys_spinor_exit(void) {
-	int addr = 0x01c68000;
-	uint32_t val;
-
-	/* Disable the spi0 controller */
-	val = SPI0->SPI_GCR;
-	val &= ~((1 << 1) | (1 << 0));
-	SPI0->SPI_GCR = val;
-}
-
-void sys_spi_select(void) {
+static void sys_spi_select(void) {
 	uint32_t val;
 
 	val = SPI0->SPI_TCR;
@@ -7215,7 +7215,7 @@ static void sys_spi_deselect(void) {
 }
 
 
-void sys_spi_write_txbuf(uint8_t *buf, int len) {
+static void sys_spi_write_txbuf(uint8_t *buf, int len) {
 	int i;
 
 	SPI0->SPI_MTC = len & 0xffffff;
@@ -7229,7 +7229,7 @@ void sys_spi_write_txbuf(uint8_t *buf, int len) {
 	}
 }
 
-int sys_spi_transfer(void *txbuf, void *rxbuf, int len) {
+static int sys_spi_transfer(void *txbuf, void *rxbuf, int len) {
 	int count = len;
 	uint8_t *tx = txbuf;
 	uint8_t *rx = rxbuf;
