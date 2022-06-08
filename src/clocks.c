@@ -7075,6 +7075,232 @@ static void DMA2_SPI1_TX_initialize(void)
 
 #endif /* WITHSPIHWDMA */
 
+#if CPUSTYPE_ALLWNT113
+
+static uint32_t read32(uintptr_t a)
+{
+	return * (volatile uint32_t *) a;
+}
+
+static void write32(uintptr_t a, uint32_t v)
+{
+	* (volatile uint32_t *) a = v;
+}
+
+void sys_spinor_init(void)
+{
+	int addr;
+	uint32_t val;
+
+	/* Config GPIOC0, GPIOC1, GPIOC2 and GPIOC3 */
+//	addr = 0x01c20848 + 0x00;
+//	val = read32(addr);
+//	val &= ~(0xf << ((0 & 0x7) << 2));
+//	val |= ((0x3 & 0x7) << ((0 & 0x7) << 2));
+//	write32(addr, val);
+//
+//	val = read32(addr);
+//	val &= ~(0xf << ((1 & 0x7) << 2));
+//	val |= ((0x3 & 0x7) << ((1 & 0x7) << 2));
+//	write32(addr, val);
+//
+//	val = read32(addr);
+//	val &= ~(0xf << ((2 & 0x7) << 2));
+//	val |= ((0x3 & 0x7) << ((2 & 0x7) << 2));
+//	write32(addr, val);
+//
+//	val = read32(addr);
+//	val &= ~(0xf << ((3 & 0x7) << 2));
+//	val |= ((0x3 & 0x7) << ((3 & 0x7) << 2));
+//	write32(addr, val);
+
+	arm_hardware_pioc_altfn50(SPI_SCLK_BIT, GPIO_CFG_AF2);
+	arm_hardware_pioc_altfn50(SPI_MOSI_BIT, GPIO_CFG_AF2);
+	arm_hardware_pioc_altfn50(SPI_MISO_BIT, GPIO_CFG_AF2);
+	arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2);
+	arm_hardware_pioc_outputs(SPDIF_D2_BIT, 1 * SPDIF_D2_BIT); /* PC6 SPI0_WP/D2 */
+	arm_hardware_pioc_outputs(SPDIF_D3_BIT, 1 * SPDIF_D3_BIT); /* PC7 SPI0_HOLD/D3 */
+
+	/* Deassert spi0 reset */
+	addr = 0x01c202c0;
+	val = read32(addr);
+	val |= (1 << 20);
+	write32(addr, val);
+
+	/* Open the spi0 gate */
+	addr = 0x01c20000 + 0xa0;
+	val = read32(addr);
+	val |= (1 << 31);
+	write32(addr, val);
+
+	/* Open the spi0 bus gate */
+	addr = 0x01c20000 + 0x60;
+	val = read32(addr);
+	val |= (1 << 20);
+	write32(addr, val);
+
+	/* Select pll-periph0 for spi0 clk */
+	addr = 0x01c200a0;
+	val = read32(addr);
+	val &= ~(0x3 << 24);
+	val |= 0x1 << 24;
+	write32(addr, val);
+
+	/* Set clock pre divide ratio, divided by 1 */
+	addr = 0x01c200a0;
+	val = read32(addr);
+	val &= ~(0x3 << 16);
+	val |= 0x0 << 16;
+	write32(addr, val);
+
+	/* Set clock divide ratio, divided by 6 */
+	addr = 0x01c200a0;
+	val = read32(addr);
+	val &= ~(0xf << 0);
+	//val |= (6 - 1) << 0;//50 MHz
+	val |= (12 - 1) << 0;//25MHz
+	write32(addr, val);
+
+	/* Set spi clock rate control register, divided by 2 */
+//	addr = 0x01c68000;
+//	SPI0->SPI_CCR = 0x1000;
+
+	/* Enable spi0 and do a soft reset */
+	val = SPI0->SPI_GCR;
+	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);
+	SPI0->SPI_GCR = val;
+	while(SPI0->SPI_GCR & (1 << 31));
+
+	val = SPI0->SPI_TCR;
+	val &= ~(0x3 << 0);
+	val |= (1 << 6) | (1 << 2);
+	SPI0->SPI_TCR = val;
+
+	val = SPI0->SPI_FCR;
+	val |= (1 << 31) | (1 << 15);
+	SPI0->SPI_FCR = val;
+
+    ///------INT-----------
+	//addr = 0x01c68000;
+	//write32(addr + SPI_IER, 1<<12);///TC_NT_EN
+    //irq_enable(V3S_IRQ_SPI0);
+
+}
+
+
+void sys_spinor_exit(void) {
+	int addr = 0x01c68000;
+	uint32_t val;
+
+	/* Disable the spi0 controller */
+	val = SPI0->SPI_GCR;
+	val &= ~((1 << 1) | (1 << 0));
+	SPI0->SPI_GCR = val;
+}
+
+void sys_spi_select(void) {
+	int addr = 0x01c68000;
+	uint32_t val;
+
+	val = SPI0->SPI_TCR;
+	val &= ~((0x3 << 4) | (0x1 << 7));
+	val |= ((0 & 0x3) << 4) | (0x0 << 7);
+	SPI0->SPI_TCR = val;
+}
+
+
+static void sys_spi_deselect(void) {
+	int addr = 0x01c68000;
+	uint32_t val;
+
+	val = SPI0->SPI_TCR;
+	val &= ~((0x3 << 4) | (0x1 << 7));
+	val |= ((0 & 0x3) << 4) | (0x1 << 7);
+	SPI0->SPI_TCR = val;
+}
+
+
+void sys_spi_write_txbuf(uint8_t *buf, int len) {
+	int i;
+
+	SPI0->SPI_MTC = len & 0xffffff;
+	SPI0->SPI_BCC = len & 0xffffff;
+	if (buf) {
+		for (i = 0; i < len; i++)
+			*((volatile uint8_t*) (&SPI0->SPI_TXD)) = *buf++;
+	} else {
+		for (i = 0; i < len; i++)
+			*((volatile uint8_t*) (&SPI0->SPI_TXD)) = 0xff;
+	}
+}
+
+int sys_spi_transfer(void *txbuf, void *rxbuf, int len) {
+	int count = len;
+	uint8_t *tx = txbuf;
+	uint8_t *rx = rxbuf;
+	uint8_t val;
+	int n, i;
+
+	while (count > 0) {
+		n = (count <= 64) ? count : 64;
+		SPI0->SPI_MBC = n;
+		sys_spi_write_txbuf(tx, n);
+		SPI0->SPI_TCR = SPI0->SPI_TCR | (1 << 31);
+		while ((SPI0->SPI_FSR & 0xff) < n)
+			;
+		for (i = 0; i < n; i++) {
+			val = *((volatile uint8_t*) (&SPI0->SPI_RXD));
+			if (rx)
+				*rx++ = val;
+		}
+
+		if (tx)
+			tx += n;
+		count -= n;
+	}
+
+	return len;
+}
+
+static int sys_spi_write_then_read(void * txbuf, int txlen, void * rxbuf, int rxlen)
+{
+	if(sys_spi_transfer(txbuf, 0, txlen) != txlen)
+		return -1;
+	if(sys_spi_transfer(0, rxbuf, rxlen) != rxlen)
+		return -1;
+	return 0;
+}
+
+
+void sys_spinor_read(int addr, void * buf, int count)
+{
+	uint8_t tx[4];
+
+	tx[0] = 0x03;
+	tx[1] = (uint8_t)(addr >> 16);
+	tx[2] = (uint8_t)(addr >> 8);
+	tx[3] = (uint8_t)(addr >> 0);
+	sys_spi_select();
+	sys_spi_write_then_read(tx, 4, buf, count);
+	sys_spi_deselect();
+}
+
+
+uint32_t MX25_GetIdentification(void){
+  uint32_t ID = 0x00000000;
+  uint8_t ID_ch[10];
+  uint8_t tx[4];
+  tx[0] = 0x9F;	// read id
+  sys_spi_select();
+  sys_spi_write_then_read(tx, 1, ID_ch, 4);
+  sys_spi_deselect();
+
+  ID = ID_ch[2]|(ID_ch[1]<<8)|(ID_ch[0]<<16);
+  return ID;
+}
+
+
+#endif
 /* Управление SPI. Так как некоторые периферийные устройства не могут работать с 8-битовыми блоками
    на шине, в таких случаях формирование делается программно - аппаратный SPI при этом отключается
    */
@@ -7400,7 +7626,6 @@ void hardware_spi_master_initialize(void)
 	SPIIO_INITIALIZE();
 
 #elif CPUSTYPE_ALLWNT113
-
 	unsigned ix = 0;	// SPI0
 
 	/* Open the clock gate for SPI0 */
@@ -7411,9 +7636,10 @@ void hardware_spi_master_initialize(void)
 
 	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
 
+
 	PRINTF("allwnrt113_get_spi0_freq = %lu\n", allwnrt113_get_spi0_freq());
 	PRINTF("allwnrt113_get_spi1_freq = %lu\n", allwnrt113_get_spi1_freq());
-	SPIIO_INITIALIZE();
+	//SPIIO_INITIALIZE();
 
 	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
 	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
@@ -7422,22 +7648,26 @@ void hardware_spi_master_initialize(void)
 		(0x00uL < 1) |	// MODE: 1: Master mode
 		0;
 
+	TP();
+	sys_spinor_init();
+	TP();
+
 	//PRINTF("SPI0->SPI_GCR=%08lX\n", SPI0->SPI_GCR);
 	//for (;;)
 	//	;
-	uint32_t val;
-	/* Enable spi0 and do a soft reset */
-	val = SPI0->SPI_GCR;
-	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);	// 7:TP_EN, master mode, enable
-	SPI0->SPI_GCR = val;
-	while (SPI0->SPI_GCR & (1 << 31))
-		;
-
-	val = SPI0->SPI_TCR;
-	val &= ~(0x3 << 0);		// bit1 (Polarity) and bit0 (Phase)
-	val |= (0x3 << 0);	// mode3
-	val |= (1 << 6) | (1 << 2);	// SS_OWNER: 1: Software, SPOL = 1
-	SPI0->SPI_TCR = val;
+//	uint32_t val;
+//	/* Enable spi0 and do a soft reset */
+//	val = SPI0->SPI_GCR;
+//	val |= (1 << 31) | (1 << 7) | (1 << 1) | (1 << 0);	// 7:TP_EN, master mode, enable
+//	SPI0->SPI_GCR = val;
+//	while (SPI0->SPI_GCR & (1 << 31))
+//		;
+//
+//	val = SPI0->SPI_TCR;
+//	val &= ~(0x3 << 0);		// bit1 (Polarity) and bit0 (Phase)
+//	val |= (0x3 << 0);	// mode3
+//	val |= (1 << 6) | (1 << 2);	// SS_OWNER: 1: Software, SPOL = 1
+//	SPI0->SPI_TCR = val;
 
 //	val = SPI0->SPI_FCR;
 //	val |= (1 << 31) | (1 << 15);	// resret fifo
@@ -7457,7 +7687,13 @@ void hardware_spi_master_initialize(void)
 	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
 		;
 
-	PRINTF("SPI0->SPI_FCR=%08lX", SPI0->SPI_FCR);
+	PRINTF("SPI0->SPI_FCR=%08lX\n", SPI0->SPI_FCR);
+	unsigned id = MX25_GetIdentification();
+	PRINTF("id=%08lX\n", id);
+	unsigned id2 = MX25_GetIdentification();
+	PRINTF("id2=%08lX\n", id2);
+	for (;;)
+		;
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -7947,11 +8183,11 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 //	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 //	//SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
-//	SPI0->SPI_BATCR = (SPI0->SPI_BATCR & ~ ((0x1FuL << 8) | 0)) |
-//			(8uL << 8) |	// TX_FRM_LEN
-//			(0x00uL << 0) |	// Work Mode Select
-//			0;
-//	SPI0->SPI_GCR |= (0x01uL << 0);	// SPI Module Enable Control
+	SPI0->SPI_BATCR = (SPI0->SPI_BATCR & ~ ((0x1FuL << 8) | (0x03uL << 0) | 0)) |
+			(8uL << 8) |	// TX_FRM_LEN
+			(0x00uL << 0) |	// Work Mode Select
+			0;
+	SPI0->SPI_GCR |= (0x01uL << 0);	// SPI Module Enable Control
 
 	uint32_t val;
 	val = SPI0->SPI_TCR;
