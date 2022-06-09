@@ -1718,4 +1718,9 @@ typedef struct TVE_Type
 #define CAN0			((CAN_TypeDef *) CAN0_BASE)
 #define CAN1			((CAN_TypeDef *) CAN1_BASE)
 
+#define USB1_BASE		0x04200000	/* EHCI */
+
+#define USB0			((USB0_TypeDef *) USB0_BASE)
+#define USB1			((USB1_TypeDef *) USB1_BASE)
+
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
