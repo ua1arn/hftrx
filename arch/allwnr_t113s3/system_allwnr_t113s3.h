@@ -1,40 +1,15 @@
 /**
   ******************************************************************************
-  * @file    system_stm32mp1xx_A7.h
+  * @file    system_allwnr_t113s3.h
   ******************************************************************************
   */
-
-/** @addtogroup CMSIS
-  * @{
-  */
-
-/** @addtogroup stm32mp1xx_system
-  * @{
-  */
-
-/**
-  * @brief Define to prevent recursive inclusion
-  */
-#ifndef __SYSTEM_STM32MP1XX_A7_H
-#define __SYSTEM_STM32MP1XX_A7_H
+#ifndef __SYSTEM_ALLWNR_T113S3_H
+#define __SYSTEM_ALLWNR_T113S3_H
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-
-/** @addtogroup STM32MP1xx_System_Includes
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-
-/** @addtogroup STM32MP1xx_System_Exported_types
-  * @{
-  */
   /* This variable is updated in three ways:
       1) by calling CMSIS function SystemCoreClockUpdate()
       2) by calling HAL API function HAL_RCC_GetSysClockFreq()
@@ -47,47 +22,11 @@ extern uint32_t SystemCoreClock;          /*!< System Core1 Clock Frequency  */
 extern uint32_t SystemCore1Clock;         /*!< System Core1 Clock Frequency  */
 extern uint32_t SystemCore2Clock;         /*!< System Core2 Clock Frequency  */
 
-/**
-  * @}
-  */
-
-/** @addtogroup STM32MP1xx_System_Exported_Constants
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32MP1xx_System_Exported_Macros
-  * @{
-  */
-
-/**
-  * @}
-  */
-
-/** @addtogroup STM32MP1xx_System_Exported_Functions
-  * @{
-  */
-
 extern void SystemInit(void);
 extern void SystemCoreClockUpdate(void);
-/**
-  * @}
-  */
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /*__SYSTEM_STM32MP1XX_A7_H */
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+#endif /*__SYSTEM_ALLWNR_T113S3_H */
