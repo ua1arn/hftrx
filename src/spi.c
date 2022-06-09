@@ -1224,6 +1224,11 @@ void spidf_initialize(void)
 	// Connect I/O pins
 	SPIDF_SOFTINITIALIZE();
 #endif /* defined (SPIDF_SOFTINITIALIZE) */
+#if WIHSPIDFOVERSPI
+	#if (WITHSPIHW || WITHSPISW)
+		spi_initialize();
+	#endif /* (WITHSPIHW || WITHSPISW) */
+#endif /* WIHSPIDFOVERSPI */
 }
 
 #if ! WIHSPIDFOVERSPI
