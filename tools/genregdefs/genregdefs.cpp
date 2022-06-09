@@ -54,6 +54,16 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 
 		int commentspos = 54;
 		const struct ddd * p = & regs [i];
+        char fldtype [256];
+        if (p->fldsize >= sizeof fldtypes / sizeof fldtypes [0])
+        {
+            _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "typesize%u", p->fldsize);
+        }
+        else
+        {
+             _snprintf(fldtype, sizeof fldtype / sizeof fldtype [0], "%s", fldtypes [p->fldsize]);
+       }
+
 		if (p->fldoffs > offs)
 		{
 			// reserving
@@ -69,14 +79,14 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
             if (p->fldrept)
             {
                 // Array forming
-  			    printf("    " "volatile %s %s [0x%03X];%n", fldtypes [p->fldsize], p->fldname, p->fldrept, & eolpos);
+  			    printf("    " "volatile %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
 
  			    offs += p->fldsize * p->fldrept;
             }
             else
             {
                 // Plain field
-  			    printf("    " "volatile %s %s;%n", fldtypes [p->fldsize], p->fldname, & eolpos);
+  			    printf("    " "volatile %s %s;%n", fldtype, p->fldname, & eolpos);
  			    offs += p->fldsize;
             }
 			if (eolpos < commentspos)
@@ -130,11 +140,19 @@ static int processfile(const char * file, const char * bname)
         }
         else
         {
-            printf("#error: wrong format '%s'\n", buff);
+            printf("#error: wrong format f1=%d, at parse file '%s': '%s'\n", f1, file, buff);
             exit(1);
         }
         regs [nregs].fldsize = fldsize;
-        regs [nregs].fldname = strdup(fldname);
+
+         if (strchr(fldname, '\n') != NULL)
+            * strchr(fldname, '\n') = '\0';
+         if (strchr(fldname, '/') != NULL)
+            * strchr(fldname, '/') = '_';
+         if (strchr(fldname, '/') != NULL)
+            * strchr(fldname, '/') = '_';
+
+         regs [nregs].fldname = strdup(fldname);
 
         char * s1 = fgets(buff, sizeof buff / sizeof buff [0], fp);
         if (s1 == NULL)

@@ -31,4 +31,3 @@ LEDC Wait Time1 Control Register
 LEDC_FIFO_DATA_REG
 0x0030 32
 LEDC FIFO Data Registers array
-

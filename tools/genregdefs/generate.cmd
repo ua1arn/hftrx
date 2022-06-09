@@ -27,16 +27,18 @@ echo /* Generated section start */ > tt.txt
 .\Debug\genregdefs.exe usb1.txt USB1 >> tt.txt
 
 
+.\Debug\genregdefs.exe csi.txt			CSI			 >> tt.txt
+.\Debug\genregdefs.exe tvd.txt		TVD		 >> tt.txt
+
 .\Debug\genregdefs.exe de.txt 			DE 		 >> tt.txt	
 .\Debug\genregdefs.exe di.txt 			DI 		 >> tt.txt	
 .\Debug\genregdefs.exe g2d.txt 		G2D 		 >> tt.txt
 .\Debug\genregdefs.exe dsi.txt 		DSI 		 >> tt.txt
 .\Debug\genregdefs.exe display_top.txt DISPLAY_TOP  >> tt.txt
 .\Debug\genregdefs.exe tcon_lcd.txt 	TCON_LCD 	 >> tt.txt
-.\Debug\genregdefs.exe tcon_tv.txt		TCON_TV 	 >> tt.txt
 .\Debug\genregdefs.exe tve.txt 	TVE 	 >> tt.txt
 
-.\Debug\genregdefs.exe csi.txt			CSI			 >> tt.txt
-.\Debug\genregdefs.exe tvd.txt		TVD		 >> tt.txt
+rem .\Debug\genregdefs.exe tv_full.txt TV_FILL 	 >> tt.txt
+rem .\Debug\genregdefs.exe tcon_tv.txt		TCON_TV 	 >> tt.txt
 
 echo /* Generated section end */ >> tt.txt
