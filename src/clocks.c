@@ -2259,8 +2259,8 @@ unsigned long allwnrt113_get_twi_freq(void)
 unsigned long allwnrt113_get_spi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
+//	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+//	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x07)
 	{
 	default:
@@ -7808,16 +7808,29 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYPE_ALLWNT113
 
-//	PRINTF("allwnrt113_get_spi0_freq = %lu\n", allwnrt113_get_spi0_freq());
+	enum
+	{
+		ALLWNT113_SPI_BR_WIDTH = 4, ALLWNT113_SPI_BR_TAPS = ( 8 | 4 | 2 | 1)
+
+	};
+
+	const portholder_t clk_src = 0x01;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
+		(clk_src << 24) |	/* CLK_SRC_SEL */
+		0;
+
 	// SCLK = Clock Source/M/N.
-	unsigned factorN = 1;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-	unsigned factorM = 2;//6;	/* FACTOR_M: 0..15: M = 1..16 */
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
+	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	ccu_spi_clk_reg_val [spispeedindex] =
-			(0x00uL << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
-			(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-			(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
-			(0x01uL << 31) |	// 1: Clock is ON
-			0;
+		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		(0x01uL << 31) |	// 1: Clock is ON
+		0;
 
 	const portholder_t tcr =
 			(0x00uL << 12) |	// FBS: 0: MSB first
