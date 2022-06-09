@@ -240,7 +240,7 @@ static int processfile(const char * file, const char * bname)
             * strchr(s0, '/') = '_';
          if (strchr(s0, '/') != NULL)
             * strchr(s0, '/') = '_';
-       regs [nregs].fldname = strdup(s0);
+        regs [nregs].fldname = strdup(s0);
 
         char * s1 = fgets(buff, sizeof buff / sizeof buff [0], fp);
         if (s1 == NULL)
@@ -256,7 +256,7 @@ static int processfile(const char * file, const char * bname)
             break;
         default:
             if (1 != sscanf(buff, "%u", & regs [nregs].fldoffs))
-			    printf("WRONG offset format %s (%04x)\n",  regs [nregs].fldname);
+			    printf("WRONG offset format '%s'\n", regs [nregs].fldname);
             break;
         }
 

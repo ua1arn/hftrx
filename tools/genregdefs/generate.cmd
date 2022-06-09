@@ -5,6 +5,7 @@ rem .\Debug\genregdefs.exe audio_codec.txt AUDIO_CODEC >> tt.txt
 
 rem .\Debug\genregdefs.exe twi.txt TWI > tt.txt
 rem .\Debug\genregdefs.exe uart.txt UART >> tt.txt
+.\Debug\genregdefs.exe GPIO.txt GPIO > tt.txt
 rem .\Debug\genregdefs.exe spi.txt SPI >> tt.txt
 rem .\Debug\genregdefs.exe spi_bdi.txt SPI_BDI >> tt.txt
 rem .\Debug\genregdefs.exe uart.txt UART > tt.txt
@@ -22,6 +23,6 @@ rem .\Debug\genregdefs.exe timer.txt TIMER >> tt.txt
 rem .\Debug\genregdefs.exe hstimer.txt HSTIMER >> tt.txt
 
 
-.\Debug\genregdefs.exe can.txt CAN > tt.txt
+rem .\Debug\genregdefs.exe can.txt CAN > tt.txt
 
 
