@@ -7484,14 +7484,6 @@ void hardware_spi_master_initialize(void)
 	while((SPI0->SPI_GCR & (1 << 31)) != 0)
 		;
 
-	SPI0->SPI_TCR |= (1 << 6);	// SS_OWNER 1: Software
-
-	unsigned int val;
-	val = SPI0->SPI_TCR;
-	val &= ~ (0x3 << 0);
-	val |= (1 << 1) | (1 << 0);	// SPI MODE 3
-	SPI0->SPI_TCR = val;
-
 	// TXFIFO Reset
 	SPI0->SPI_FCR |= (1 << 31);
 	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
@@ -7827,7 +7819,7 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 			(0x01uL << 31) |	// 1: Clock is ON
 			0;
 
-	const portholder_t tcr = (SPI0->SPI_TCR & ~ ((0x01uL << 12) | (0x03uL << 0))) |
+	const portholder_t tcr =
 			(0x00uL << 12) |	// FBS: 0: MSB first
 			(0x01uL << 6) |		// SS_OWNER: 1: Software
 			0;
