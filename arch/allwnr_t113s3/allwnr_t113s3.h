@@ -1494,7 +1494,7 @@ typedef struct USB1_Type
 // VIDEO_IN_SYS related
 #define CSI_BASE 			0x05800000
 #define TVD_TOP_BASE 		0x05C00000
-#define TV_Decoder_BASE 	0x05C01000
+#define TVD0_BASE 			0x05C01000
 
 // APBS0 related
 #define CIR_RX_BASE			0x07040000
@@ -1503,6 +1503,7 @@ typedef struct USB1_Type
 #define RTC_BASE			0x07090000
 
 // CPUX related
+// Address (It is for Cluster CPU)
 #define CPU_SUBSYS_CTRL_BASE	0x08100000
 #define TimeStamp_STA_BASE		0x08110000
 #define TimeStamp_CTRL_BASE		0x08120000
@@ -1570,12 +1571,12 @@ typedef struct USB1_Type
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)
 #define TCON_LCD0 	((TCON_LCD0_TypeDef *) TCON_LCD0_BASE)
 #define TCON_TV0 	((TCON_TV0_TypeDef *) TCON_TV0_BASE)
-#define TVE_TOP 	((TVE_TOP_TypeDef *) TVE_TOP_BASE)
-#define TV_Encoder 	((TV_Encoder_TypeDef *) TV_Encoder_BASE)
+#define TVE_TOP 	((TVE_TypeDef *) TVE_TOP_BASE)
+#define TV_Encoder 	((TVE_TypeDef *) TV_Encoder_BASE)
 
 #define CSI			((CSI_TypeDef *) CSI_BASE)
-#define TVD_TOP		((TVD_TOP_TypeDef *) TVD_TOP_BASE)
-#define TV_Decoder	((TV_Decoder_TypeDef *) TV_Decoder_BASE)
+#define TVD_TOP		((TVD_TypeDef *) TVD_TOP_BASE)
+#define TVD0		((TVD_TypeDef *) TVD0_BASE)
 
 #define RTC			((RTC_TypeDef *) RTC_BASE)
 

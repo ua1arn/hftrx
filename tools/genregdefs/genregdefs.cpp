@@ -100,7 +100,7 @@ static int processfile(const char * file, const char * bname)
     FILE * fp = fopen(file, "rt");
     if (fp == NULL)
     {
-        printf("#error Can not open file '%'\n", file);
+        printf("#error Can not open file '%s'\n", file);
         return 1;
     }
 
@@ -108,7 +108,7 @@ static int processfile(const char * file, const char * bname)
     struct ddd * regs = (struct ddd *) calloc(sizeof (struct ddd), maxrows);
     if (regs == NULL)
     {
-        printf("#error Can not allocate vtvory for file '%'\n", file);
+        printf("#error Can not allocate memory for file '%s'\n", file);
         return 1;
     }
     size_t nregs;
@@ -161,6 +161,15 @@ static int processfile(const char * file, const char * bname)
             * strchr(s2, '\n') = '\0';
        regs [nregs].comment = strdup(s2);
 
+    }
+    if (nregs == 0)
+    {
+        regs [nregs].fldoffs = 0;
+        regs [nregs].fldsize = 4;
+        regs [nregs].fldname = strdup("DUMMY");
+       regs [nregs].comment = strdup("Dummy field definition");
+
+        nregs = 1;
     }
 	genstruct(regs, nregs, bname);
 
