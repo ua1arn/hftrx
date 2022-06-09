@@ -1328,7 +1328,43 @@ typedef struct HSTIMER_Type
     volatile uint32_t HS_TMR1_CURNT_LO_REG;           /*!< Offset 0x004C HS Timer1 Current Value Low Register */
     volatile uint32_t HS_TMR1_CURNT_HI_REG;           /*!< Offset 0x0050 HS Timer1 Current Value High Register */
 } HSTIMER_TypeDef;
-
+/*
+ * @brief CAN
+ */
+/*!< CAN Controller Interface */
+typedef struct CAN_Type
+{
+    volatile uint32_t CAN_MSEL;                       /*!< Offset 0x0000 CAN mode select register */
+    volatile uint32_t CAN_CMD;                        /*!< Offset 0x0004 CAN command register */
+    volatile uint32_t CAN_STA;                        /*!< Offset 0x0008 CAN status register */
+    volatile uint32_t CAN_INT;                        /*!< Offset 0x000C CAN interrupt register */
+    volatile uint32_t CAN_INTEN;                      /*!< Offset 0x0010 CAN interrupt enable register */
+    volatile uint32_t CAN_BUSTIME;                    /*!< Offset 0x0014 CAN bus timing register */
+    volatile uint32_t CAN_TEWL;                       /*!< Offset 0x0018 CAN TX error warning limit register */
+    volatile uint32_t CAN_ERRC;                       /*!< Offset 0x001C CAN error counter register */
+    volatile uint32_t CAN_RMCNT;                      /*!< Offset 0x0020 CAN receive message counter register */
+    volatile uint32_t CAN_RBUF_SADDR;                 /*!< Offset 0x0024 CAN receive buffer start address register */
+    volatile uint32_t CAN_ACPC;                       /*!< Offset 0x0028 CAN acceptance code 0 register(reset mode) */
+    volatile uint32_t CAN_ACPM;                       /*!< Offset 0x002C CAN acceptance mask 0 register(reset mode) */
+	         uint8_t reserved1 [0x0010];
+    volatile uint32_t CAN_TRBUF0;                     /*!< Offset 0x0040 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF1;                     /*!< Offset 0x0044 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF2;                     /*!< Offset 0x0048 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF3;                     /*!< Offset 0x004C CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF4;                     /*!< Offset 0x0050 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF5;                     /*!< Offset 0x0054 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF6;                     /*!< Offset 0x0058 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF7;                     /*!< Offset 0x005C CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF8;                     /*!< Offset 0x0060 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF9;                     /*!< Offset 0x0064 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF10;                    /*!< Offset 0x0068 CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF11;                    /*!< Offset 0x006C CAN TX/RX message buffer 0 register */
+    volatile uint32_t CAN_TRBUF12;                    /*!< Offset 0x0070 CAN TX/RX message buffer 0 register */
+	         uint8_t reserved2 [0x010C];
+    volatile uint32_t CAN_RBUF_RBACK [0x030];         /*!< Offset 0x0180 CAN transmit buffer for read back register (0x0180 ~0x1b0) */
+	         uint8_t reserved3 [0x00C0];
+    volatile uint32_t CAN_VERSION;                    /*!< Offset 0x0300 CAN Version Register */
+} CAN_TypeDef;
 
 /* Base addresses */
 
@@ -1363,6 +1399,9 @@ typedef struct HSTIMER_Type
 #define TWI1_BASE 	     	0x02502400
 #define TWI2_BASE 	     	0x02502800
 #define TWI3_BASE 	     	0x02502C00
+
+#define CAN0_BASE  			0x02504000
+#define CAN1_BASE  			0x02504400
 
 // SH0 (SYS domain)
 #define SYS_CFG_BASE      	0x03000000
@@ -1494,5 +1533,8 @@ typedef struct HSTIMER_Type
 #define IDC				(IDC_TypeDef *) IDC_BASE)
 #define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)
 #define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)
+
+#define CAN0			((CAN_TypeDef *) CAN0_BASE)
+#define CAN1			((CAN_TypeDef *) CAN1_BASE)
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
