@@ -1697,8 +1697,8 @@ typedef struct TVE_Type
 #define G2D 		((G2D_TypeDef *) G2D_BASE)
 #define DSI 		((DSI_TypeDef *) DSI_BASE)
 #define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)
-#define TCON_LCD0 	((TCON_LCD0_TypeDef *) TCON_LCD0_BASE)
-#define TCON_TV0 	((TCON_TV0_TypeDef *) TCON_TV0_BASE)
+#define TCON_LCD0 	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)
+#define TCON_TV0 	((TCON_TV_TypeDef *) TCON_TV0_BASE)
 #define TVE_TOP 	((TVE_TypeDef *) TVE_TOP_BASE)
 #define TV_Encoder 	((TVE_TypeDef *) TV_Encoder_BASE)
 
