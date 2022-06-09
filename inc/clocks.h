@@ -165,4 +165,16 @@ unsigned long allwnrt113_get_pll_audio0_x4_freq(void);
 unsigned long allwnrt113_get_pll_audio1_x4_freq(void);
 uint_fast64_t allwnrt113_get_pll_ddr_freq(void);
 
+/* PLL initialization functions. Take care on glitches. */
+void allwnrt113_set_pll_cpux(unsigned m, unsigned n);
+void allwnrt113_set_pll_ddr(unsigned m, unsigned n);
+void allwnrt113_set_pll_peri(unsigned m, unsigned n);
+void allwnrt113_set_pll_vieo0(unsigned m, unsigned n);
+void allwnrt113_set_pll_vieo1(unsigned m, unsigned n);
+void allwnrt113_set_pll_ve(unsigned m, unsigned n);
+void allwnrt113_set_pll_audio0(unsigned m, unsigned n);
+void allwnrt113_set_pll_audio1(unsigned m, unsigned n);
+
+void allwnrt113_pll_initialize(void);
+
 #endif /* INC_CLOCKS_H_ */
