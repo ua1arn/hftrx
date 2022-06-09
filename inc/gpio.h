@@ -576,12 +576,14 @@ void arm_hardware_pio11_onchangeinterrupt(unsigned long ipins, int edge, uint32_
 
 void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority, void (* vector)(void));
 
-/*!< Atomic port state change */
-void allwnrt113_pioX_setstate(
-	GPIO_TypeDef * gpio,
-	portholder_t mask,
-	portholder_t state
-	);
+#if CPUSTYPE_ALLWNT113
+	/*!< Atomic port state change */
+	void allwnrt113_pioX_setstate(
+		GPIO_TypeDef * gpio,
+		portholder_t mask,
+		portholder_t state
+		);
+#endif /* CPUSTYPE_ALLWNT113 */
 
 #ifdef __cplusplus
 }
