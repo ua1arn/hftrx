@@ -1804,10 +1804,6 @@ unsigned long hardware_get_spi_freq(void)
 
 #elif CPUSTYPE_ALLWNT113
 
-#define BOARD_USART_FREQ (allwnrt113_get_usart_freq())
-#define HARDWARE_CLK32K_FREQ 32000uL
-#define HARDWARE_CLK16M_RC_FREQ 16000000uL
-
 
 static void set_pll_cpux_axi(void)
 {
@@ -1991,12 +1987,22 @@ static void set_module(volatile uint32_t * reg)
 
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n)
 {
-	uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
+	// PLL_CPU = InputFreq*N.
+	ASSERT(m == 2);
+	uint_fast32_t val = CCU->PLL_CPU_CTRL_REG;
 
+	/* Set default clk to 1008mhz */
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~ ((0xff << 8) | (0x3 << 0));
+	val |= ((n - 1) << 8);		//was: PLL_CPU_N
+	val |= ((m - 1) << 0);
+
+	CCU->PLL_CPU_CTRL_REG = val;
 }
 
 void allwnrt113_set_pll_ddr(unsigned m, unsigned n)
 {
+	// PLL_DDR = InputFreq*N/M1/M0.
 	uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
 
 }
@@ -2055,6 +2061,7 @@ void allwnrt113_pll_initialize(void)
 
 static uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 {
+	// PLL_CPU = InputFreq*N.
 	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x03);
@@ -2063,6 +2070,7 @@ static uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 
 uint_fast64_t allwnrt113_get_pll_ddr_freq(void)
 {
+	// PLL_DDR = InputFreq*N/M1/M0
 	const uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 0) & 0x01);	// PLL input divider
