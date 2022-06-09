@@ -7818,43 +7818,19 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 //	PRINTF("allwnrt113_get_spi0_freq = %lu\n", allwnrt113_get_spi0_freq());
 	// SCLK = Clock Source/M/N.
-	unsigned factorN = 3;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-	unsigned factorM = 15;	/* FACTOR_M: 0..15: M = 1..16 */
+	unsigned factorN = 1;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = 2;//6;	/* FACTOR_M: 0..15: M = 1..16 */
 	ccu_spi_clk_reg_val [spispeedindex] =
-			(0x00uL << 24) |	/* CLK_SRC_SEL: 000: HOSC */
+			(0x00uL << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 			(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 			(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
 			(0x01uL << 31) |	// 1: Clock is ON
 			0;
 
-	const portholder_t tcr =
+	const portholder_t tcr = (SPI0->SPI_TCR & ~ ((0x01uL << 12) | (0x03uL << 0))) |
 			(0x00uL << 12) |	// FBS: 0: MSB first
 			(0x01uL << 6) |		// SS_OWNER: 1: Software
 			0;
-#if 1
-	unsigned int val;
-	/* TODO: move to calculate clock ratio */
-	/* Select pll-periph0 for spi0 clk */
-	val = CCU->SPI0_CLK_REG;
-
-	val &= ~ (0x3 << 24);
-	val |= 0x1 << 24;
-	//CCU->SPI0_CLK_REG = val;
-
-	/* Set clock pre divide ratio, divided by 1 */
-	//val = CCU->SPI0_CLK_REG;
-	val &= ~ (0x3 << 8);
-	val |= 0x0 << 8;
-	//CCU->SPI0_CLK_REG = val;
-
-	/* Set clock divide ratio, divided by 6 */
-	//val = CCU->SPI0_CLK_REG;
-	val &= ~ (0xf << 0);
-	val |= (6 - 1) << 0;
-
-	CCU->SPI0_CLK_REG = val;
-	ccu_spi_clk_reg_val [spispeedindex] = val;
-#endif
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
@@ -8016,6 +7992,7 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 #elif CPUSTYPE_ALLWNT113
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 
  	HARDWARE_SPI_CONNECT();
 
