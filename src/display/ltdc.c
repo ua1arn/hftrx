@@ -2015,46 +2015,10 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 }
 #endif
 
-static void fb_t113_rgb_init(struct fb_t113_rgb_pdata_t * pdat, const videomode_t * vdmode)
-{
-/*
- 	if(pdat->bits_per_pixel == 16)
-	{
-		fb_t113_cfg_gpios(T113_GPIOD1, 5, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
-		fb_t113_cfg_gpios(T113_GPIOD6, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
-		fb_t113_cfg_gpios(T113_GPIOD13, 5, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
-		fb_t113_cfg_gpios(T113_GPIOD18, 4, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
-	}
-	else if(pdat->bits_per_pixel == 18)
-	{
-		fb_t113_cfg_gpios(T113_GPIOD0, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
-		fb_t113_cfg_gpios(T113_GPIOD6, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
-		fb_t113_cfg_gpios(T113_GPIOD12, 6, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
-		fb_t113_cfg_gpios(T113_GPIOD18, 4, 0x2, GPIO_PULL_NONE, GPIO_DRV_STRONG);
-	}
-*/
-	t113_tconlcd_disable(pdat);
-	t113_tconlcd_set_timing(pdat, vdmode);
-	//t113_tconlcd_set_dither(pdat);
-	t113_tconlcd_enable(pdat);
-
-	t113_de_set_mode(pdat);
-	t113_de_enable(pdat);
-
-	t113_de_set_address(pdat, pdat->vram [pdat->index]);
-	t113_de_enable(pdat);
-}
-
-
-//#define CCU_DE_CLK_REG 0x0600
-//#define CCU_DE_BGR_REG 0x060C
-//#define CCU_TCONLCD_CLK_REG 0x0B60
-//#define CCU_TCONLCD_BGR_REG 0x0B7C
-
 
 static struct fb_t113_rgb_pdata_t pdat0;
 
-void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
+void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
 {
 	struct fb_t113_rgb_pdata_t * const pdat = & pdat0;
 	uint32_t val;
@@ -2095,15 +2059,19 @@ void allwnr_lcd_init(const uintptr_t * frames, const videomode_t * vdmode)
     CCU->TCONLCD_BGR_REG |= (0x01uL << 0);	// Open the clock gate
     CCU->TCONLCD_BGR_REG |= (0x01uL << 16); // Deassert reset
 
-	fb_t113_rgb_init(pdat, vdmode);
 
-}
+	t113_tconlcd_disable(pdat);
+	t113_tconlcd_set_timing(pdat, vdmode);
+	//t113_tconlcd_set_dither(pdat);
+	t113_tconlcd_enable(pdat);
 
+	t113_de_set_mode(pdat);
+	t113_de_enable(pdat);
 
-void arm_hardware_ltdc_initialize(const uintptr_t * frames, const videomode_t * vdmode)
-{
-	allwnr_lcd_init(frames, vdmode);
+	t113_de_set_address(pdat, pdat->vram [pdat->index]);
+	t113_de_enable(pdat);
 
+	// Set DE MODE if need
 	ltdc_tfcon_cfg(vdmode);
 }
 
