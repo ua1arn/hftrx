@@ -35,7 +35,7 @@ F32K_FOUT_CTRL_GATING_REG
 0x0060
 32K Fanout Control Gating Register
 GP_DATA_REG
-0x0100 + N*0x04
+0x0100 8
 General Purpose Register (N=0 to 7)
 FBOOT_INFO_REG0
 0x0120

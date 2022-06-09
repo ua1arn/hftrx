@@ -175,7 +175,7 @@ DAC DRC MAX Gain Low Setting Register
 AC_DAC_DRC_MNGHS
 0x01A4
 DAC DRC MIN Gain High Setting Register
-AC_ADC_DRC_MNGHS
+AC_DAC_DRC_MNGLS
 0x01A8
 DAC DRC MIN Gain Low Setting Register
 AC_DAC_DRC_EPSHC
@@ -313,7 +313,7 @@ ADC DRC MAX Gain High Setting Register
 AC_ADC_DRC_MXGLS
 0x02A0
 ADC DRC MAX Gain Low Setting Register
-AC_ADC_DRC_MNGLS
+AC_ADC_DRC_MNGHS
 0x02A4
 ADC DRC MIN Gain High Setting Register
 AC_ADC_DRC_MNGLS
