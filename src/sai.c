@@ -3440,14 +3440,36 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYPE_ALLWNT113 && 0
 
+	static const codechw_t audiocodechw_i2s1_duplex_mster =
+	{
+		hardware_i2s1_mster_duplex_initialize_codec1,
+		hardware_dummy_initialize,
+		DMA_I2S1_RX_initialize_codec1,
+		DMA_I2S1_TX_initialize_codec1,
+		hardware_i2s1_enable_codec1,
+		hardware_dummy_enable,
+		"audiocodechw-i2s1-duplex-mster"
+	};
+
+	static const codechw_t fpgacodechw_i2s2_duplex_mster =
+	{
+		hardware_i2s2_mster_duplex_initialize_fpga,
+		hardware_dummy_initialize,
+		DMA_I2S2_RX_initialize_fpga,
+		DMA_I2S2_TX_initialize_fpga,
+		hardware_i2s2_enable_fpga,
+		hardware_dummy_enable,
+		"fpgacodechw-i2s2-duplex-mster"
+	};
+
 	static const codechw_t audiocodechw_i2s1_duplex_slave =
 	{
 		hardware_i2s1_slave_duplex_initialize_codec1,
 		hardware_dummy_initialize,
-		DMA_SAI1_B_RX_initialize_codec1,
-		DMA_SAI1_A_TX_initialize_codec1,
-		hardware_sai1_b_enable_codec1,
-		hardware_sai1_a_enable_codec1,
+		DMA_I2S1_RX_initialize_codec1,
+		DMA_I2S1_TX_initialize_codec1,
+		hardware_i2s1_enable_codec1,
+		hardware_dummy_enable,
 		"audiocodechw-i2s1-duplex-slave"
 	};
 
@@ -3455,10 +3477,10 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 	{
 		hardware_i2s2_slave_duplex_initialize_fpga,
 		hardware_dummy_initialize,
-		DMA_SAI1_B_RX_initialize_fpga,
-		DMA_SAI1_A_TX_initialize_fpga,
-		hardware_sai1_b_enable_fpga,
-		hardware_sai1_a_enable_fpga,
+		DMA_I2S2_RX_initialize_fpga,
+		DMA_I2S2_TX_initialize_fpga,
+		hardware_i2s2_enable_fpga,
+		hardware_dummy_enable,
 		"fpgacodechw-i2s2-duplex-slave"
 	};
 
@@ -4457,6 +4479,12 @@ static const codechw_t fpgaspectrumhw_dummy =
 #if WITHFPGAIF_I2S2_DUPLEX_SLAVE
 		& fpgacodechw_i2s2_duplex_slave,					// Интерфейс к IF кодеку/FPGA
 #endif /* WITHFPGAIF_I2S2_DUPLEX_SLAVE */
+#if WITHCODEC1_I2S1_DUPLEX_MASTER
+		& audiocodechw_i2s1_duplex_master,					// Интерфейс к НЧ кодеку
+#endif /* WITHCODEC1_I2S1_DUPLEX_MASTER */
+#if WITHFPGAIF_I2S2_DUPLEX_MASTER
+		& fpgacodechw_i2s2_duplex_master,					// Интерфейс к IF кодеку/FPGA
+#endif /* WITHFPGAIF_I2S2_DUPLEX_MASTER */
 		//& fpgaspectrumhw_rx_sai2,			// Интерфейс к FPGA - широкополосный канал (WFM)
 	};
 
