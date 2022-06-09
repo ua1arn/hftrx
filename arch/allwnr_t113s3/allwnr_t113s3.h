@@ -1363,6 +1363,59 @@ typedef struct CAN_Type
 	         uint8_t reserved3 [0x00C0];
     volatile uint32_t CAN_VERSION;                    /*!< Offset 0x0300 CAN Version Register */
 } CAN_TypeDef;
+/*
+ * @brief USB1
+ */
+/*!< USB1 Controller Interface */
+typedef struct USB1_Type
+{
+    volatile uint16_t E_CAPLENGTH;                    /*!< Offset 0x0000 EHCI Capability Register Length Register */
+    volatile uint16_t E_HCIVERSION;                   /*!< Offset 0x0002 EHCI Host Interface Version Number Register */
+    volatile uint32_t E_HCSPARAMS;                    /*!< Offset 0x0004 EHCI Host Control Structural Parameter Register */
+    volatile uint32_t E_HCCPARAMS;                    /*!< Offset 0x0008 EHCI Host Control Capability Parameter Register */
+    volatile uint32_t E_HCSPPORTROUTE;                /*!< Offset 0x000C EHCI Companion Port Route Description */
+    volatile uint32_t E_USBCMD;                       /*!< Offset 0x0010 EHCI USB Command Register */
+    volatile uint32_t E_USBSTS;                       /*!< Offset 0x0014 EHCI USB Status Register */
+    volatile uint32_t E_USBINTR;                      /*!< Offset 0x0018 EHCI USB Interrupt Enable Register */
+    volatile uint32_t E_FRINDEX;                      /*!< Offset 0x001C EHCI USB Frame Index Register */
+    volatile uint32_t E_CTRLDSSEGMENT;                /*!< Offset 0x0020 EHCI 4G Segment Selector Register */
+    volatile uint32_t E_PERIODICLISTBASE;             /*!< Offset 0x0024 EHCI Frame List Base Address Register */
+    volatile uint32_t E_ASYNCLISTADDR;                /*!< Offset 0x0028 EHCI Next Asynchronous List Address Register */
+	         uint8_t reserved1 [0x0024];
+    volatile uint32_t E_CONFIGFLAG;                   /*!< Offset 0x0050 EHCI Configured Flag Register */
+    volatile uint32_t E_PORTSC;                       /*!< Offset 0x0054 EHCI Port Status/Control Register */
+	         uint8_t reserved2 [0x03AC];
+    volatile uint32_t O_HcControl;                    /*!< Offset 0x0404 OHCI Control Register */
+    volatile uint32_t O_HcCommandStatus;              /*!< Offset 0x0408 OHCI Command Status Register */
+    volatile uint32_t O_HcInterruptStatus;            /*!< Offset 0x040C OHCI Interrupt Status Register */
+    volatile uint32_t O_HcInterruptEnable;            /*!< Offset 0x0410 OHCI Interrupt Enable Register */
+    volatile uint32_t O_HcInterruptDisable;           /*!< Offset 0x0414 OHCI Interrupt Disable Register */
+    volatile uint32_t O_HcHCCA;                       /*!< Offset 0x0418 OHCI HCCA Base */
+    volatile uint32_t O_HcPeriodCurrentED;            /*!< Offset 0x041C OHCI Period Current ED Base */
+    volatile uint32_t O_HcControlHeadED;              /*!< Offset 0x0420 OHCI Control Head ED Base */
+    volatile uint32_t O_HcControlCurrentED;           /*!< Offset 0x0424 OHCI Control Current ED Base */
+    volatile uint32_t O_HcBulkHeadED;                 /*!< Offset 0x0428 OHCI Bulk Head ED Base */
+    volatile uint32_t O_HcBulkCurrentED;              /*!< Offset 0x042C OHCI Bulk Current ED Base */
+    volatile uint32_t O_HcDoneHead;                   /*!< Offset 0x0430 OHCI Done Head Base */
+    volatile uint32_t O_HcFmInterval;                 /*!< Offset 0x0434 OHCI Frame Interval Register */
+    volatile uint32_t O_HcFmRemaining;                /*!< Offset 0x0438 OHCI Frame Remaining Register */
+    volatile uint32_t O_HcFmNumber;                   /*!< Offset 0x043C OHCI Frame Number Register */
+    volatile uint32_t O_HcPerioddicStart;             /*!< Offset 0x0440 OHCI Periodic Start Register */
+    volatile uint32_t O_HcLSThreshold;                /*!< Offset 0x0444 OHCI LS Threshold Register */
+    volatile uint32_t O_HcRhDescriptorA;              /*!< Offset 0x0448 OHCI Root Hub Descriptor Register A */
+    volatile uint32_t O_HcRhDesriptorB;               /*!< Offset 0x044C OHCI Root Hub Descriptor Register B */
+    volatile uint32_t O_HcRhStatus;                   /*!< Offset 0x0450 OHCI Root Hub Status Register */
+    volatile uint32_t O_HcRhPortStatus;               /*!< Offset 0x0454 OHCI Root Hub Port Status Register */
+	         uint8_t reserved3 [0x03A8];
+    volatile uint32_t HCI_Interface;                  /*!< Offset 0x0800 HCI Interface Register */
+	         uint8_t reserved4 [0x0004];
+    volatile uint32_t HCI_CTRL3;                      /*!< Offset 0x0808 HCI Control Register */
+	         uint8_t reserved5 [0x0004];
+    volatile uint32_t PHY_Control;                    /*!< Offset 0x0810 PHY Control Register */
+	         uint8_t reserved6 [0x0010];
+    volatile uint32_t PHY_STATUS;                     /*!< Offset 0x0824 PHY Status Register */
+    volatile uint32_t HCI;                            /*!< Offset 0x0828 HCI SIE Port Disable Control Register */
+} USB1_TypeDef;
 /* Generated section end */
 
 /* Base addresses */
