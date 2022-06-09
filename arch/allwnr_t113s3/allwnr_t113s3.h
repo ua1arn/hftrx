@@ -539,12 +539,11 @@ typedef struct UART_Type
 /*!< GPIO Controller Interface */
 typedef struct GPIO_Type
 {
-	volatile	uint32_t CFG [4];		// Offset: 0x00
-	volatile	uint32_t DATA;			// Offset: 0x10
-	volatile	uint32_t DRV [4];		// Offset: 0x14
-	volatile	uint32_t PULL [2];		// Offset: 0x24
-}  GPIO_TypeDef;
-
+	volatile uint32_t CFG [0x004];                    /*!< Offset 0x0000 Configure Register */
+	volatile uint32_t DATA;                           /*!< Offset 0x0010 Data Register */
+	volatile uint32_t DRV [0x004];                    /*!< Offset 0x0014 Multi_Driving Register */
+	volatile uint32_t PULL [0x002];                   /*!< Offset 0x0024 Pull Register */
+} GPIO_TypeDef;
 /*
  * @brief SMHC
  */
@@ -597,7 +596,6 @@ typedef struct SMHC_Type
 	         uint8_t reserved5 [0x00B0];
     volatile uint32_t SMHC_FIFO;                      /*!< Offset 0x0200 Read/Write FIFO */
 } SMHC_TypeDef;
-
 /*
  * @brief I2S_PCM
  */
