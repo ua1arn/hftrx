@@ -70,7 +70,14 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 			unsigned sz = p->fldoffs - offs;
 
 
-			printf("\t" "         " "uint8_t reserved%u [0x%04X];\n", ++ reservers, sz);
+            if ((sz % 4) == 0)
+            {
+			    printf("\t" "uint32_t reserved%u [0x%04X];\n", ++ reservers, sz / 4);
+            }
+            else
+            {
+		    	printf("\t" "uint8_t reserved%u [0x%04X];\n", ++ reservers, sz);
+            }
 			offs = p->fldoffs;
 		}
 		if (p->fldoffs == offs)
@@ -79,14 +86,14 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
             if (p->fldrept)
             {
                 // Array forming
-  			    printf("    " "volatile %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
+  			    printf("\t" "__IO %s %s [0x%03X];%n", fldtype, p->fldname, p->fldrept, & eolpos);
 
  			    offs += p->fldsize * p->fldrept;
             }
             else
             {
                 // Plain field
-  			    printf("    " "volatile %s %s;%n", fldtype, p->fldname, & eolpos);
+  			    printf("\t" "__IO %s %s;%n", fldtype, p->fldname, & eolpos);
  			    offs += p->fldsize;
             }
 			if (eolpos < commentspos)
