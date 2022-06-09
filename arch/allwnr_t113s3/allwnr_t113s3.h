@@ -1390,23 +1390,39 @@ typedef struct HSTIMER_Type
 #define EMAC_BASE 	     	0x04500000
 
 // VIDEO_OUT_SYS related
+#define DE_BASE 			0x05000000
+#define DI_BASE 			0x05400000
+#define G2D_BASE 			0x05410000
+#define DSI_BASE 			0x05450000
+#define DISPLAY_TOP_BASE 	0x05460000
+#define TCON_LCD0_BASE 		0x05461000
+#define TCON_TV0_BASE 		0x05470000
+#define TVE_TOP_BASE 		0x05600000
+#define TV_Encoder_BASE 	0x05604000
 
 // VIDEO_IN_SYS related
+#define CSI_BASE 			0x05800000
+#define TVD_TOP_BASE 		0x05C00000
+#define TV_Decoder_BASE 	0x05C01000
 
 // APBS0 related
-
-// AHBS related
-
- // CPUX related
-
-
 #define CIR_RX_BASE			0x07040000
 
- // DRAM Space (SYS domain)
+// AHBS related
+#define RTC_BASE			0x07090000
+
+// CPUX related
+#define CPU_SUBSYS_CTRL_BASE	0x08100000
+#define TimeStamp_STA_BASE		0x08110000
+#define TimeStamp_CTRL_BASE		0x08120000
+#define IDC_BASE				0x08130000
+#define C0_CPUX_CFG_BASE		0x09010000
+#define C0_CPUX_MBIST_BASE		0x09020000
+
+// DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 	0x40000000	/* 2 GB */
 
-#define CPU_SUBSYS_CTRL_BASE	0x08100000
-
+// GPIO registers calculation
 #define GPIOB_BASE		(GPIO_BASE + 0x030 * 1)
 #define GPIOC_BASE		(GPIO_BASE + 0x030 * 2)
 #define GPIOD_BASE		(GPIO_BASE + 0x030 * 3)
@@ -1453,10 +1469,24 @@ typedef struct HSTIMER_Type
 #define CE_S		((CE_S_TypeDef *) CE_S_BASE)
 #define HSTIMER		((HSTIMER_TypeDef *) HSTIMER_BASE)
 #define TIMER		((TIMER_TypeDef *) TIMER_BASE)
-#define RTC			((RTC_TypeDef *) RTC_BASE)
 #define THS			((THS_TypeDef *) THS_BASE)
 #define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)
 #define CCU			((CCU_TypeDef *) CCU_BASE)
 
+#define DE 			((DE_TypeDef *) DE_BASE)
+#define DI 			((DI_TypeDef *) DI_BASE)
+#define G2D 		((G2D_TypeDef *) G2D_BASE)
+#define DSI 		((DSI_TypeDef *) DSI_BASE)
+#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)
+#define TCON_LCD0 	((TCON_LCD0_TypeDef *) TCON_LCD0_BASE)
+#define TCON_TV0 	((TCON_TV0_TypeDef *) TCON_TV0_BASE)
+#define TVE_TOP 	((TVE_TOP_TypeDef *) TVE_TOP_BASE)
+#define TV_Encoder 	((TV_Encoder_TypeDef *) TV_Encoder_BASE)
+
+#define CSI			((CSI_TypeDef *) CSI_BASE)
+#define TVD_TOP		((TVD_TOP_TypeDef *) TVD_TOP_BASE)
+#define TV_Decoder	((TV_Decoder_TypeDef *) TV_Decoder_BASE)
+
+#define RTC			((RTC_TypeDef *) RTC_BASE)
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
