@@ -1170,7 +1170,15 @@ void ulpi_chip_vbuson(uint_fast8_t state)
 
 void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
-#if CPUSTYLE_STM32MP1
+#if CPUSTYPE_ALLWNT113
+
+
+#if WITHEHCIHWSOFTSPOLL == 0
+	arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+	arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+#elif CPUSTYLE_STM32MP1
 
 	USBD_EHCI_INITIALIZE();
 	RCC->MP_AHB6ENSETR = RCC_MP_AHB6ENSETR_USBHEN;
@@ -1282,7 +1290,14 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
-#if CPUSTYLE_STM32MP1
+#if CPUSTYPE_ALLWNT113
+
+#if WITHEHCIHWSOFTSPOLL == 0
+	arm_hardware_disable_handler(USB1_OHCI_IRQn);
+	arm_hardware_disable_handler(USB1_EHCII_IRQn);
+#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+#elif CPUSTYLE_STM32MP1
 
 #if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_disable_handler(USBH_OHCI_IRQn);
