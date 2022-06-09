@@ -219,17 +219,12 @@ allZ:
 
 bootloader: BOOT2 fsbl.alw32
   
-app_runBOOT: fsbl.alw32
-	$(XFEL) write 0x00028000 fsbl.alw32
-	$(XFEL) exec 0x00028000 
-  
-app_run: boot256.bin $(PROJECT)_app.bin
+app_run: $(PROJECT)_app.alw32
 	$(XFEL) ddr t113-s3
-	$(XFEL) write 0x40000000 boot256.bin
-	$(XFEL) write 0x40000100 $(PROJECT)_app.bin
-	$(XFEL) exec 0x40000000 
+	$(XFEL) write 0x40000000 $(PROJECT)_app.alw32
+	$(XFEL) exec 0x40000100 
 
-app_runXBOOT: boot256.bin $(PROJECT)_app.bin
+app_runXBOOT: xboot_t113_800.bin
 	$(XFEL) ddr t113-s3
 	$(XFEL) write 0x40000000 xboot_t113_800.bin
 	$(XFEL) exec 0x40000000 
