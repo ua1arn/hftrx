@@ -21,6 +21,7 @@ using namespace std;
 struct ddd
 {
 	char * fldname;
+	unsigned fldsize;
 	unsigned fldoffs;
 	char * comment;
 	unsigned fldrept;   // 0 - plain field, 1..n - array
@@ -42,6 +43,15 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 	unsigned offs = 0;
 	for (i = 0; i < szregs; ++ i)
 	{
+        static const char * fldtypes [] =
+        {
+            "uint32_t",
+            "uint8_t ",
+            "uint16_t",
+            "uint24_t",
+            "uint32_t",
+        };
+
 		int commentspos = 54;
 		const struct ddd * p = & regs [i];
 		if (p->fldoffs > offs)
@@ -59,15 +69,15 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
             if (p->fldrept)
             {
                 // Array forming
-  			    printf("    " "volatile uint32_t %s [0x%03X];%n", p->fldname, p->fldrept, & eolpos);
+  			    printf("    " "volatile %s %s [0x%03X];%n", fldtypes [p->fldsize], p->fldname, p->fldrept, & eolpos);
 
- 			    offs += 4 * p->fldrept;
+ 			    offs += p->fldsize * p->fldrept;
             }
             else
             {
                 // Plain field
-  			    printf("    " "volatile uint32_t %s;%n", p->fldname, & eolpos);
- 			    offs += 4;
+  			    printf("    " "volatile %s %s;%n", fldtypes [p->fldsize], p->fldname, & eolpos);
+ 			    offs += p->fldsize;
             }
 			if (eolpos < commentspos)
 			{
@@ -89,29 +99,42 @@ static int processfile(const char * file, const char * bname)
 {
     FILE * fp = fopen(file, "rt");
     if (fp == NULL)
+    {
+        printf("#error Can not open file '%'\n", file);
         return 1;
+    }
 
     size_t maxrows = 1024;
     struct ddd * regs = (struct ddd *) calloc(sizeof (struct ddd), maxrows);
     if (regs == NULL)
     {
-        printf("#error Can not open file '%'\n", file);
+        printf("#error Can not allocate vtvory for file '%'\n", file);
         return 1;
     }
     size_t nregs;
     for (nregs = 0; nregs < maxrows; ++ nregs)
     {
+        char fldname [1024];
+        int fldsize;
         char buff [1024];
         char * s0 = fgets(buff, sizeof buff / sizeof buff [0], fp);
         if (s0 == NULL)
             break;
-         if (strchr(s0, '\n') != NULL)
-            * strchr(s0, '\n') = '\0';
-         if (strchr(s0, '/') != NULL)
-            * strchr(s0, '/') = '_';
-         if (strchr(s0, '/') != NULL)
-            * strchr(s0, '/') = '_';
-        regs [nregs].fldname = strdup(s0);
+        int f1 = sscanf(s0, "%s %i", fldname, & fldsize);
+        if (f1 == 2)
+        {
+        }
+        else if (f1 == 1)
+        {
+            fldsize = 4;
+        }
+        else
+        {
+            printf("#error: wrong format '%s'\n", buff);
+            exit(1);
+        }
+        regs [nregs].fldsize = fldsize;
+        regs [nregs].fldname = strdup(fldname);
 
         char * s1 = fgets(buff, sizeof buff / sizeof buff [0], fp);
         if (s1 == NULL)
