@@ -1446,7 +1446,6 @@ typedef struct HSTIMER_Type
 #define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)
 #define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)
 #define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)
-#define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
 #define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)
 #define SMHC1      	((SMHC_TypeDef *) SMHC1_BASE)
 #define SMHC2      	((SMHC_TypeDef *) SMHC2_BASE)
@@ -1488,5 +1487,12 @@ typedef struct HSTIMER_Type
 #define TV_Decoder	((TV_Decoder_TypeDef *) TV_Decoder_BASE)
 
 #define RTC			((RTC_TypeDef *) RTC_BASE)
+
+#define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
+#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
+#define TimeStamp_CTRL	((TimeStamp_CTRL_TypeDef *) TimeStamp_CTRL_BASE)
+#define IDC				(IDC_TypeDef *) IDC_BASE)
+#define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)
+#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)
 
 #endif /* ARCH_ALLWNR_T113S3_ALLWNR_T13S3_H_ */
