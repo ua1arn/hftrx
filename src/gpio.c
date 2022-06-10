@@ -749,6 +749,21 @@ static SPINLOCK_t gpiodata_locks [8] =
 	SPINLOCK_INIT,	// GPIOH
 };
 
+static uint32_t allwnrt113_pioX_lock(GPIO_TypeDef * gpio)
+{
+	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
+	const uint32_t cpsr = __get_CPSR();
+	//__set_CPSR(cpsr | (0x01uL << 7));	// IRQ mask
+	__disable_irq();
+	//SPIN_LOCK(lck);
+	return cpsr;
+}
+
+static void allwnrt113_pioX_unlock(GPIO_TypeDef * gpio, uint32_t cpsr)
+{
+	//SPIN_UNLOCK(lck);
+	__set_CPSR(cpsr);
+}
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
 /*!< Atomic port state change */
 void allwnrt113_pioX_setstate(
@@ -757,13 +772,11 @@ void allwnrt113_pioX_setstate(
 	portholder_t state
 	)
 {
-	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
-	const uint32_t cpsr = __get_CPSR();
-	__set_CPSR(cpsr | (0x01uL << 7));	// IRQ mask
-	SPIN_LOCK(lck);
+	const uint32_t cpsr = allwnrt113_pioX_lock(gpio);
+
 	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
-	SPIN_UNLOCK(lck);
-	__set_CPSR(cpsr);
+
+	allwnrt113_pioX_unlock(gpio, cpsr);
 }
 
 static void allwnrt113_pioX_prog(
@@ -782,6 +795,8 @@ static void allwnrt113_pioX_prog(
 	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 bits */
 	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 bits */
 
+	const uint32_t cpsr = allwnrt113_pioX_lock(gpio);
+
 	gpio->CFG [0] = (gpio->CFG [0] & ~ (mask0 * 0x0F)) | (cfg * mask0);
 	gpio->CFG [1] = (gpio->CFG [1] & ~ (mask1 * 0x0F)) | (cfg * mask1);
 	gpio->CFG [2] = (gpio->CFG [2] & ~ (mask2 * 0x0F)) | (cfg * mask2);
@@ -795,6 +810,8 @@ static void allwnrt113_pioX_prog(
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
+
+	allwnrt113_pioX_unlock(gpio, cpsr);
 }
 
 static void allwnrt113_pioX_updown(
@@ -811,9 +828,13 @@ static void allwnrt113_pioX_updown(
 	const portholder_t pull1up = power2(ioup >> 16);
 	const portholder_t pull1down = power2(iodown >> 16);
 
+	const uint32_t cpsr = allwnrt113_pioX_lock(gpio);
+
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0mask) | (0x01 * pull0up) | (0x02 * pull0down);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1mask) | (0x01 * pull1up) | (0x02 * pull1down);
+
+	allwnrt113_pioX_unlock(gpio, cpsr);
 }
 
 static void allwnrt113_pioX_updownoff(
@@ -825,8 +846,12 @@ static void allwnrt113_pioX_updownoff(
 	const portholder_t pull0 = power2(iopins >> 0) * 0x03;		/* PULL0 bits */
 	const portholder_t pull1 = power2(iopins >> 16) * 0x03;		/* PULL1 bits */
 
+	const uint32_t cpsr = allwnrt113_pioX_lock(gpio);
+
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
+
+	allwnrt113_pioX_unlock(gpio, cpsr);
 }
 
 /* разрешение прерывания по изменению состояния указанных групп выводов */
