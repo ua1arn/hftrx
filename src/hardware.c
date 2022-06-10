@@ -3324,9 +3324,35 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 #elif CPUSTYPE_ALLWNT113
 
+//	3.4.2.4 CPU0 Hotplug Process
+//
+//	The Hotplug Flag Register is 0x070005C0.
+//	The Soft Entry Address Register is 0x070005C4.
+
+//	3.4.2.3 NON_CPU0 Boot Process
+//
+//	The Soft Entry Address Register of CPU0 is 0x070005C4
+//	The Soft Entry Address Register of CPU1 is 0x070005C8
+
+#define HARDWARE_HOTPLUG_FLAG 0xFA50392F	// CPU Hotplug Flag value
+
+#define SUNXI_HOTPLUG_MAGIC		0xFA50392F
+#define SUNXI_STANDBY_MAGIC		0x0000EFE8
+
+#define HARDWARE_HOTPLUG_REG 	(* (volatile uint32_t *) 0x070005C0)
+
+#define HARDWARE_SOFTENTRY_CPU0_ADDR (* (volatile uint32_t *) 0x070005C4)
+#define HARDWARE_SOFTENTRY_CPU1_ADDR (* (volatile uint32_t *) 0x070005C8)
 
 static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 {
+	PRINTF("1 HARDWARE_SOFTENTRY_CPU1_ADDR=%08lX, HARDWARE_HOTPLUG_REG=%08lX\n", HARDWARE_SOFTENTRY_CPU1_ADDR, HARDWARE_HOTPLUG_REG);
+	HARDWARE_SOFTENTRY_CPU1_ADDR = startfunc;
+	HARDWARE_HOTPLUG_REG = HARDWARE_HOTPLUG_FLAG;	// CPU hotplug magic
+	ASSERT(HARDWARE_SOFTENTRY_CPU1_ADDR == startfunc);
+	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
+	TP();
+	PRINTF("2 HARDWARE_SOFTENTRY_CPU1_ADDR=%08lX, HARDWARE_HOTPLUG_REG=%08lX\n", HARDWARE_SOFTENTRY_CPU1_ADDR, HARDWARE_HOTPLUG_REG);
 #warning Unhandled CPUSTYPE_ALLWNT113
 }
 
