@@ -129,8 +129,13 @@ typedef struct spinlock_tag {
 } spinlock_t;
 
 #define SPINLOCK_t spinlock_t
-#define SPINLOCK_INIT { 0 }
-#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
+#if WITHDEBUG
+	#define SPINLOCK_INIT { 0, "z", 0, 255 }
+	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; (p)->file = "n"; (p)->line = 0, (p)->cpuid = 255; } while (0)
+#else /* WITHDEBUG */
+	#define SPINLOCK_INIT { 0, }
+	#define SPINLOCK_INITIALIZE(p) do { (p)->lock = 0; } while (0)
+#endif /* WITHDEBUG */
 
 #if WITHSMPSYSTEM
 	/* Пока привязка процессора обрабатывающего прерывание по приоритету. */
