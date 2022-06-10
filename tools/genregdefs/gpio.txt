@@ -10,3 +10,6 @@ Multi_Driving Register
 PULL
 0x024 2
 Pull Register
+padding
+0x02C
+Need for address arithmetics

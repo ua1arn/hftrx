@@ -754,14 +754,14 @@ static uint32_t allwnrt113_pioX_lock(GPIO_TypeDef * gpio)
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
 	const uint32_t cpsr = __get_CPSR();
 	__disable_irq();
-	//SPIN_LOCK(lck);
+	SPIN_LOCK(lck);
 	return cpsr;
 }
 
 static void allwnrt113_pioX_unlock(GPIO_TypeDef * gpio, uint32_t cpsr)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
-	//SPIN_UNLOCK(lck);
+	SPIN_UNLOCK(lck);
 	__set_CPSR(cpsr);
 }
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */

@@ -543,6 +543,7 @@ typedef struct GPIO_Type
 	__IO uint32_t DATA;                                  /*!< Offset 0x0010 Data Register */
 	__IO uint32_t DRV [0x004];                           /*!< Offset 0x0014 Multi_Driving Register */
 	__IO uint32_t PULL [0x002];                          /*!< Offset 0x0024 Pull Register */
+	__IO uint32_t padding;                               /*!< Offset 0x002C Need for address arithmetics */
 } GPIO_TypeDef;
 /*
  * @brief SMHC
