@@ -124,6 +124,7 @@ typedef struct spinlock_tag {
 #if WITHDEBUG
 	const char * file;
 	int line;
+	uint_fast8_t cpuid;
 #endif /* WITHDEBUG */
 } spinlock_t;
 
