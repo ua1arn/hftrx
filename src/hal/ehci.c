@@ -1317,7 +1317,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 
 #if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_disable_handler(USB1_OHCI_IRQn);
-	arm_hardware_disable_handler(USB1_EHCII_IRQn);
+	arm_hardware_disable_handler(USB1_EHCI_IRQn);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	if (0/*WITHUSBHW_EHCI == EHCI0*/)
