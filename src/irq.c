@@ -1351,7 +1351,7 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 #if WITHDEBUG
 			if (-- v == 0)
 			{
-				PRINTF("Locked by %s(%d), wait at %s(%d)\n", p->file, p->line, file, line);
+				PRINTF("Locked by CPU%u %s(%d), CPU%u wait at %s(%d)\n", p->cpuid, p->file, p->line, arm_hardware_cpuid(), file, line);
 				for (;;)
 					;
 			}
@@ -1366,6 +1366,7 @@ void spin_lock(volatile spinlock_t * p, const char * file, int line)
 #if WITHDEBUG
 	p->file = file;
 	p->line = line;
+	p->cpuid = arm_hardware_cpuid();
 #endif /* WITHDEBUG */
 }
 /*
