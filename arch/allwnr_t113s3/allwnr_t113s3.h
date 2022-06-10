@@ -1544,6 +1544,35 @@ typedef struct TVE_Type
 {
 	__IO uint32_t DUMMY;                                 /*!< Offset 0x0000 Dummy field definition */
 } TVE_TypeDef;
+/*
+ * @brief C0_CPUX_CFG
+ */
+/*!< C0_CPUX_CFG Controller Interface */
+typedef struct C0_CPUX_CFG_Type
+{
+	__IO uint32_t C0_RST_CTRL;                           /*!< Offset 0x0000 Cluster 0 Reset Control Register */
+	uint32_t reserved1 [0x0003];
+	__IO uint32_t C0_CTRL_REG0;                          /*!< Offset 0x0010 Cluster 0 Control Register0 */
+	__IO uint32_t C0_CTRL_REG1;                          /*!< Offset 0x0014 Cluster 0 Control Register1 */
+	__IO uint32_t C0_CTRL_REG2;                          /*!< Offset 0x0018 Cluster 0 Control Register2 */
+	uint32_t reserved2 [0x0002];
+	__IO uint32_t CACHE_CFG_REG;                         /*!< Offset 0x0024 Cache Configuration Register */
+	uint32_t reserved3 [0x0016];
+	__IO uint32_t C0_CPU_STATUS;                         /*!< Offset 0x0080 Cluster 0 CPU Status Register */
+	__IO uint32_t L2_STATUS_REG;                         /*!< Offset 0x0084 Cluster 0 L2 Status Register */
+	uint32_t reserved4 [0x000E];
+	__IO uint32_t DBG_REG0;                              /*!< Offset 0x00C0 Cluster 0 Debug Control Register0 */
+	__IO uint32_t DBG_REG1;                              /*!< Offset 0x00C4 Cluster 0 Debug Control Register1 */
+	uint32_t reserved5 [0x0002];
+	__IO uint32_t AXI_MNT_CTRL_REG;                      /*!< Offset 0x00D0 AXI Monitor Control Register */
+	__IO uint32_t AXI_MNT_PRD_REG;                       /*!< Offset 0x00D4 AXI Monitor Period Register */
+	__IO uint32_t AXI_MNT_RLTCY_REG;                     /*!< Offset 0x00D8 AXI Monitor Read Total Latency Register */
+	__IO uint32_t AXI_MNT_WLTCY_REG;                     /*!< Offset 0x00DC AXI Monitor Write Total Latency Register */
+	__IO uint32_t AXI_MNT_RREQ_REG;                      /*!< Offset 0x00E0 AXI Monitor Read Request Times Register */
+	__IO uint32_t AXI_MNT_WREQ_REG;                      /*!< Offset 0x00E4 AXI Monitor Write Request Times Register */
+	__IO uint32_t AXI_MNT_RBD_REG;                       /*!< Offset 0x00E8 AXI Monitor Read Bandwidth Register */
+	__IO uint32_t AXI_MNT_WBD_REG;                       /*!< Offset 0x00EC AXI Monitor Write Bandwidth Register */
+} C0_CPUX_CFG_TypeDef;
 /* Generated section end */
 
 
@@ -1655,7 +1684,7 @@ typedef struct USB_EHCI_CapabilityType
 #define TimeStamp_CTRL_BASE		0x08120000
 #define IDC_BASE				0x08130000
 #define C0_CPUX_CFG_BASE		0x09010000
-#define C0_CPUX_MBIST_BASE		0x09020000
+#define C0_CPUX_MBIST_BASE		0x09020000	// Memory Built In Self Test (MBIST) controller - DDI0414I_cortex_a9_mbist_controller_r4p1_trm.pdf
 
 // DRAM Space (SYS domain)
 #define DRAM_SPACE_BASE 	0x40000000	/* 2 GB */
@@ -1727,11 +1756,11 @@ typedef struct USB_EHCI_CapabilityType
 #define RTC			((RTC_TypeDef *) RTC_BASE)
 
 #define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
-#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
-#define TimeStamp_CTRL	((TimeStamp_CTRL_TypeDef *) TimeStamp_CTRL_BASE)
-#define IDC				(IDC_TypeDef *) IDC_BASE)
+//#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
+//#define TimeStamp_CTRL	((TimeStamp_CTRL_TypeDef *) TimeStamp_CTRL_BASE)
+//#define IDC				(IDC_TypeDef *) IDC_BASE)
 #define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)
-#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)
+//#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)
 
 #define CAN0			((CAN_TypeDef *) CAN0_BASE)
 #define CAN1			((CAN_TypeDef *) CAN1_BASE)
