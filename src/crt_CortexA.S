@@ -65,7 +65,6 @@
 	 STACKSIZEIRQ = 512
 
 	 STACKSIZESVCBOOT = 2048
-	 STACKSIZESVCCPU1 = 16777216
   
 	.global __Vectors
 	.section .vectors, "ax"
