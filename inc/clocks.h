@@ -177,5 +177,6 @@ void allwnrt113_set_pll_audio0(unsigned m, unsigned n);
 void allwnrt113_set_pll_audio1(unsigned m, unsigned n);
 
 void allwnrt113_pll_initialize(void);
+void set_pll_cpux_axi(unsigned n);
 
 #endif /* INC_CLOCKS_H_ */

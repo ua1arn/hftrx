@@ -3206,6 +3206,7 @@ SystemInit(void)
 {
 	sysinit_fpu_initialize();
 	sysinit_pll_initialize();	// PLL iniitialize
+	sysinit_gpio_initialize();
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
 #if CPUSTYPE_ALLWNT113

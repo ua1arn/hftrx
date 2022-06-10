@@ -24002,13 +24002,15 @@ int
 //__attribute__ ((used))
 main(void)
 {
+#if CPUSTYLE_ARM
+	sysinit_gpio_initialize();
+#endif /* CPUSTYLE_ARM */
 #if WITHDEBUG && (! CPUSTYLE_ARM /* || WITHISBOOTLOADER */)
 
 	HARDWARE_DEBUG_INITIALIZE();
 	HARDWARE_DEBUG_SET_SPEED(DEBUGSPEED);
 
 #endif /* WITHDEBUG && ! CPUSTYLE_ARM */
-
 	lowtests();		/* функции тестирования, работающие до инициализации периферии */
 
 	global_disableIRQ();

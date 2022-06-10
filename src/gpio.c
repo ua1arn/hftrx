@@ -170,6 +170,12 @@ power8(uint_fast8_t v)
 	} while (0)
 
 
+// временная подготовка к работе с gpio.
+// Вызывается из SystemInit() - после работы память будет затерта
+void sysinit_gpio_initialize(void)
+{
+}
+
 // R7S721 interrupts
 
 static void r7s721_pio_onchangeinterrupt(
@@ -612,6 +618,48 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 
 #elif CPUSTYLE_XC7Z
 
+static SPINLOCK_t gpiodata_locks [8] =
+{
+		SPINLOCK_INIT,
+		SPINLOCK_INIT,
+		SPINLOCK_INIT,
+		SPINLOCK_INIT,
+		SPINLOCK_INIT,
+		SPINLOCK_INIT,
+		SPINLOCK_INIT,
+		SPINLOCK_INIT,
+};
+
+// временная подготовка к работе с gpio.
+// Вызывается из SystemInit() - после работы память будет затерта
+void sysinit_gpio_initialize(void)
+{
+	unsigned i;
+
+	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
+	{
+		SPINLOCK_t * const lck = & gpiodata_locks [i];
+		SPINLOCK_INITILAZE(lck);
+	}
+}
+
+static uint32_t gpio_lock(unsigned bank)
+{
+	SPINLOCK_t * const lck = & gpiodata_locks [bank];
+	const uint32_t cpsr = __get_CPSR();
+	__disable_irq();
+	SPIN_LOCK(lck);
+	return cpsr;
+}
+
+static void allwnrt113_pioX_unlock(unsigned bank, uint32_t cpsr)
+{
+	SPINLOCK_t * const lck = & gpiodata_locks [bank];
+	SPIN_UNLOCK(lck);
+	__set_CPSR(cpsr);
+}
+
+
 /* адреса функций - обработчиков на каждый GPIO/EMIO */
 static void (* gpio_vectors [ZYNQ_MIO_CNT + 2 * 32])(void);
 
@@ -749,6 +797,19 @@ static SPINLOCK_t gpiodata_locks [8] =
 	SPINLOCK_INIT,	// GPIOH
 };
 
+// временная подготовка к работе с gpio.
+// Вызывается из SystemInit() - после работы память будет затерта
+void sysinit_gpio_initialize(void)
+{
+	unsigned i;
+
+	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
+	{
+		SPINLOCK_t * const lck = & gpiodata_locks [i];
+		SPINLOCK_INITIALIZE(lck);
+	}
+}
+
 static uint32_t allwnrt113_pioX_lock(GPIO_TypeDef * gpio)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
@@ -875,6 +936,15 @@ allwnrt113_pioX_onchangeinterrupt(
 		arm_hardware_set_handler(IRQbase + pos, ALLW_GPIO_IRQ_Handler, priority, targetcpu);
 	}
 }
+
+#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
+
+// временная подготовка к работе с gpio.
+// Вызывается из SystemInit() - после работы память будет затерта
+void sysinit_gpio_initialize(void)
+{
+}
+
 
 #endif
 
