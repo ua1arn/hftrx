@@ -1217,6 +1217,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 
+	USB1_TypeDef * p = EHCIxToUSBx(WITHUSBHW_EHCI);
 #elif CPUSTYLE_STM32MP1
 
 	USBD_EHCI_INITIALIZE();
