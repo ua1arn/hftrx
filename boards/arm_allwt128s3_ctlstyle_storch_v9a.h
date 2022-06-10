@@ -316,7 +316,7 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
