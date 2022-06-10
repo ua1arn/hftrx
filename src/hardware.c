@@ -3090,7 +3090,7 @@ sysinit_mmu_initialize(void)
 		((volatile uint32_t *) SCU_CONTROL_BASE) [0x3] = 0;		// SCU Invalidate All Registers in Secure State
 		((volatile uint32_t *) SCU_CONTROL_BASE) [0] |= 0x01;	// SCU Control Register
 	}
-#endif
+#endif /* 1 && (__CORTEX_A == 9U) && WITHSMPSYSTEM && defined (SCU_CONTROL_BASE) */
 
 #if WITHISBOOTLOADER || CPUSTYLE_R7S721
 
@@ -3346,21 +3346,13 @@ static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 
 static void cortexa_mp_cpu1_start(uintptr_t startfunc)
 {
-//	PRINTF("1 C0_RST_CTRL=%08lX\n", C0_CPUX_CFG->C0_RST_CTRL);
-//	PRINTF("1 HARDWARE_SOFTENTRY_CPU1_ADDR=%08lX, HARDWARE_HOTPLUG_REG=%08lX\n", HARDWARE_SOFTENTRY_CPU1_ADDR, HARDWARE_HOTPLUG_REG);
 	HARDWARE_SOFTENTRY_CPU1_ADDR = startfunc;
-	HARDWARE_HOTPLUG_REG = HARDWARE_HOTPLUG_FLAG;	// CPU hotplug magic
-//	ASSERT(HARDWARE_SOFTENTRY_CPU1_ADDR == startfunc);
 	arm_hardware_flush_all();	// startup code should be copyed in to sysram for example.
-//	TP();
 	C0_CPUX_CFG->C0_RST_CTRL |= (0x01uL << 1);
-//	local_delay_ms(500);
-//	TP();
-//	PRINTF("2 C0_RST_CTRL=%08lX\n", C0_CPUX_CFG->C0_RST_CTRL);
-//	PRINTF("2 HARDWARE_SOFTENTRY_CPU1_ADDR=%08lX, HARDWARE_HOTPLUG_REG=%08lX\n", HARDWARE_SOFTENTRY_CPU1_ADDR, HARDWARE_HOTPLUG_REG);
+	(void) C0_CPUX_CFG->C0_RST_CTRL;
 }
 
-#endif /* CPUSTYLE_STM32MP1 */
+#endif /* WITHSMPSYSTEM */
 
 static RAMDTCM SPINLOCK_t cpu1init = SPINLOCK_INIT;
 static RAMDTCM SPINLOCK_t cpu1userstart = SPINLOCK_INIT;
@@ -3438,8 +3430,6 @@ void cpump_initialize(void)
 
 	SystemCoreClock = CPU_FREQ;
 
-#if WITHSMPSYSTEM
-
 #if (__CORTEX_A == 9U)
 	// set the ACTLR.SMP
 	// 0x02: L2 Prefetch hint enable
@@ -3463,10 +3453,6 @@ void cpump_initialize(void)
 	SPIN_LOCK(& cpu1init);
 	SPIN_UNLOCK(& cpu1init);
 
-#else /* WITHSMPSYSTEM */
-	cortexa_cpuinfo();
-
-#endif /* WITHSMPSYSTEM */
 #endif /* (__CORTEX_A == 7U) || (__CORTEX_A == 9U) */
 
 }
