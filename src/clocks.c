@@ -1855,10 +1855,10 @@ static void set_pll_cpux_axi(void)
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	/* Lock disable */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~(1 << 29);
-	CCU->PLL_CPU_CTRL_REG = val;
-	local_delay_ms(1);
+//	val = CCU->PLL_CPU_CTRL_REG;
+//	val &= ~(1 << 29);
+//	CCU->PLL_CPU_CTRL_REG = val;
+//	local_delay_ms(1);
 
 	/* Set and change cpu clk src */
 	val = CCU->CPU_AXI_CFG_REG;
