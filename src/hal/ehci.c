@@ -1172,23 +1172,29 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYPE_ALLWNT113
 
-	//CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
-	//CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
+	if (0/*WITHUSBHW_EHCI == EHCI0*/)
+	{
+		CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
 
-	//CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
-	//CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
-	//CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
-	//CCU->USB_BGR_REG |= (0x01uL << 16);	// USBOHCI0_RST
-	//CCU->USB_BGR_REG |= (0x01uL << 20);	// USBEHCI0_RST
-	//CCU->USB_BGR_REG |= (0x01uL << 24);	// USBOTG0_RST
+		CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
+		CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
+		//CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
+		CCU->USB_BGR_REG |= (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG |= (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG |= (0x01uL << 24);	// USBOTG0_RST
+	}
+	else
+	{
+		CCU->USB1_CLK_REG |= (0x01uL << 31);	// USB1_CLKEN
+		CCU->USB1_CLK_REG |= (0x01uL << 30);	// USBPHY1_RSTN
 
-	CCU->USB1_CLK_REG |= (0x01uL << 31);	// USB1_CLKEN
-	CCU->USB1_CLK_REG |= (0x01uL << 30);	// USBPHY1_RSTN
+		CCU->USB_BGR_REG |= (0x01uL << 1);	// USBOHCI1_GATING
+		CCU->USB_BGR_REG |= (0x01uL << 5);	// USBEHCI1_GATING
+		CCU->USB_BGR_REG |= (0x01uL << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG |= (0x01uL << 21);	// USBEHCI1_RST
+	}
 
-	CCU->USB_BGR_REG |= (0x01uL << 1);	// USBOHCI1_GATING
-	CCU->USB_BGR_REG |= (0x01uL << 5);	// USBEHCI1_GATING
-	CCU->USB_BGR_REG |= (0x01uL << 17);	// USBOHCI1_RST
-	CCU->USB_BGR_REG |= (0x01uL << 21);	// USBEHCI1_RST
 
 #if WITHEHCIHWSOFTSPOLL == 0
 	arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -1313,6 +1319,30 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 	arm_hardware_disable_handler(USB1_OHCI_IRQn);
 	arm_hardware_disable_handler(USB1_EHCII_IRQn);
 #endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
+	if (0/*WITHUSBHW_EHCI == EHCI0*/)
+	{
+		CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
+		//CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
+		CCU->USB0_CLK_REG &= ~ (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+	}
+	else
+	{
+
+		CCU->USB_BGR_REG &= ~ (0x01uL << 1);	// USBOHCI1_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 5);	// USBEHCI1_GATING
+		CCU->USB_BGR_REG &= ~ (0x01uL << 17);	// USBOHCI1_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 21);	// USBEHCI1_RST
+
+		CCU->USB1_CLK_REG &= ~ (0x01uL << 30);	// USBPHY1_RSTN
+		CCU->USB1_CLK_REG &= ~ (0x01uL << 31);	// USB1_CLKEN
+	}
 
 #elif CPUSTYLE_STM32MP1
 
