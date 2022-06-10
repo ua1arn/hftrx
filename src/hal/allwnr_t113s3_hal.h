@@ -254,7 +254,7 @@ void HAL_MspDeInit(void);
 /** @defgroup HCD_Exported_Types HCD Exported Types
   * @{
   */
-#if 0
+#if 1
 
 /** @defgroup HCD_Exported_Types_Group1 HCD State Structure definition
   * @{

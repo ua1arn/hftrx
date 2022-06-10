@@ -1809,6 +1809,8 @@ static void set_pll_cpux_axi(void)
 {
 	uint32_t val;
 
+//	TP();
+//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG);
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
 	CCU->CPU_AXI_CFG_REG = (0 << 24) | (3 << 8) | (1 << 0);
 	local_delay_ms(1);
@@ -1863,6 +1865,8 @@ static void set_pll_cpux_axi(void)
 	CCU->CPU_AXI_CFG_REG = val;
 	local_delay_ms(1);
 	//sys_uart_puts("set_pll_cpux_axi Ok \n");
+//	TP();
+//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG);
 }
 
 static void set_pll_periph0(void)
@@ -2045,7 +2049,7 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n)
 
 void allwnrt113_pll_initialize(void)
 {
-	//set_pll_cpux_axi(); // в оригинале закомментировано
+	set_pll_cpux_axi(); // в оригинале закомментировано
 	set_pll_periph0();
 	set_ahb();
 	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
@@ -2059,23 +2063,34 @@ void allwnrt113_pll_initialize(void)
 	set_module(& CCU->PLL_AUDIO1_CTRL_REG);
 }
 
-static uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
+unsigned long allwnrt113_get_hosc_freq(void)
+{
+#if defined WITHCPUXTAL
+	return WITHCPUXTAL;
+#elif defined WITHCPUXOSC
+	return WITHCPUXOSC;
+#else
+	return 24000000uL;	/* На процессоре установлен кварц 24.000 МГц */
+#endif
+}
+
+unsigned long allwnrt113_get_pll_cpu_freq(void)
 {
 	// PLL_CPU = InputFreq*N.
 	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM = 1 + ((reg >> 0) & 0x03);
-	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN;
 }
 
-uint_fast64_t allwnrt113_get_pll_ddr_freq(void)
+unsigned long allwnrt113_get_pll_ddr_freq(void)
 {
 	// PLL_DDR = InputFreq*N/M1/M0
 	const uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 0) & 0x01);	// PLL input divider
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);	// P:: outpur divider
-	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM1 * pllN / pllM0;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
 }
 
 static uint_fast64_t allwnrt113_get_pll_peri_freq(void)
@@ -2083,7 +2098,7 @@ static uint_fast64_t allwnrt113_get_pll_peri_freq(void)
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
-	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN;
 }
 
 unsigned long allwnrt113_get_pll_peri_x2_freq(void)
@@ -2106,7 +2121,7 @@ unsigned long allwnrt113_get_video0_x4_freq(void)
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / pllM0;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN / pllM0;
 }
 
 unsigned long allwnrt113_get_video1_x4_freq(void)
@@ -2115,7 +2130,7 @@ unsigned long allwnrt113_get_video1_x4_freq(void)
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN / pllM0;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN / pllM0;
 }
 
 unsigned long allwnrt113_get_ve_freq(void)
@@ -2124,7 +2139,7 @@ unsigned long allwnrt113_get_ve_freq(void)
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM1 * pllN / pllM0;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
 }
 
 unsigned long allwnrt113_get_pll_audio0_x4_freq(void)
@@ -2133,7 +2148,7 @@ unsigned long allwnrt113_get_pll_audio0_x4_freq(void)
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM0 * pllN / pllM1;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1;
 }
 
 unsigned long allwnrt113_get_pll_audio1_x4_freq(void)
@@ -2142,7 +2157,7 @@ unsigned long allwnrt113_get_pll_audio1_x4_freq(void)
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM0 * pllN / pllM1;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1;
 }
 
 unsigned long allwnrt113_get_pll_audio0_x1_freq(void)
@@ -2190,7 +2205,7 @@ unsigned long allwnrt113_get_psi_freq(void)
 	default:
 	case 0x00:
 		/* 00: HOSC */
-		return BOARD_HOSC_FREQ / M / N;
+		return allwnrt113_get_hosc_freq() / M / N;
 	case 0x01:
 		/* 01: CLK32K */
 		return HARDWARE_CLK32K_FREQ / M / N;
@@ -2213,7 +2228,7 @@ unsigned long allwnrt113_get_apb0_freq(void)
 	default:
 	case 0x00:
 		/* 00: HOSC */
-		return BOARD_HOSC_FREQ / M / N;
+		return allwnrt113_get_hosc_freq() / M / N;
 	case 0x01:
 		/* 01: CLK32K */
 		return HARDWARE_CLK32K_FREQ / M / N;
@@ -2236,7 +2251,7 @@ unsigned long allwnrt113_get_apb1_freq(void)
 	default:
 	case 0x00:
 		/* 00: HOSC */
-		return BOARD_HOSC_FREQ / M / N;
+		return allwnrt113_get_hosc_freq() / M / N;
 	case 0x01:
 		/* 01: CLK32K */
 		return HARDWARE_CLK32K_FREQ / M / N;
@@ -2251,7 +2266,7 @@ unsigned long allwnrt113_get_apb1_freq(void)
 
 unsigned long allwnrt113_get_ahb_freq(void)
 {
-	return BOARD_HOSC_FREQ;
+	return allwnrt113_get_hosc_freq();
 }
 
 unsigned long allwnrt113_get_usart_freq(void)
@@ -2267,14 +2282,14 @@ unsigned long allwnrt113_get_twi_freq(void)
 unsigned long allwnrt113_get_spi0_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
-	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
-	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
+//	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+//	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
 	switch ((clkreg >> 24) & 0x07)
 	{
 	default:
 	case 0x00:
 		/* 000: HOSC */
-		return BOARD_HOSC_FREQ;
+		return allwnrt113_get_hosc_freq();
 	case 0x01:
 		/* 001: PLL_PERI(1X) */
 		return allwnrt113_get_pll_peri_x1_freq();
@@ -2300,7 +2315,7 @@ unsigned long allwnrt113_get_spi1_freq(void)
 	default:
 	case 0x00:
 		/* 000: HOSC */
-		return BOARD_HOSC_FREQ;
+		return allwnrt113_get_hosc_freq();
 	case 0x01:
 		/* 001: PLL_PERI(1X) */
 		return allwnrt113_get_pll_peri_x1_freq();
@@ -7492,14 +7507,6 @@ void hardware_spi_master_initialize(void)
 	while((SPI0->SPI_GCR & (1 << 31)) != 0)
 		;
 
-	SPI0->SPI_TCR |= (1 << 6);	// SS_OWNER 1: Software
-
-	unsigned int val;
-	val = SPI0->SPI_TCR;
-	val &= ~ (0x3 << 0);
-	val |= (1 << 1) | (1 << 0);	// SPI MODE 3
-	SPI0->SPI_TCR = val;
-
 	// TXFIFO Reset
 	SPI0->SPI_FCR |= (1 << 31);
 	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
@@ -7824,45 +7831,34 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 #elif CPUSTYPE_ALLWNT113
 
-//	PRINTF("allwnrt113_get_spi0_freq = %lu\n", allwnrt113_get_spi0_freq());
+	enum
+	{
+		ALLWNT113_SPI_BR_WIDTH = 4, ALLWNT113_SPI_BR_TAPS = ( 8 | 4 | 2 | 1)
+
+	};
+
+	const portholder_t clk_src = 0x01;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
+		(clk_src << 24) |	/* CLK_SRC_SEL */
+		0;
+
 	// SCLK = Clock Source/M/N.
-	unsigned factorN = 3;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-	unsigned factorM = 15;	/* FACTOR_M: 0..15: M = 1..16 */
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
+	//PRINTF("hardware_spi_master_setfreq: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
+	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	ccu_spi_clk_reg_val [spispeedindex] =
-			(0x00uL << 24) |	/* CLK_SRC_SEL: 000: HOSC */
-			(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
-			(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
-			(0x01uL << 31) |	// 1: Clock is ON
-			0;
+		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		(0x01uL << 31) |	// 1: Clock is ON
+		0;
 
 	const portholder_t tcr =
 			(0x00uL << 12) |	// FBS: 0: MSB first
 			(0x01uL << 6) |		// SS_OWNER: 1: Software
 			0;
-#if 1
-	unsigned int val;
-	/* TODO: move to calculate clock ratio */
-	/* Select pll-periph0 for spi0 clk */
-	val = CCU->SPI0_CLK_REG;
-
-	val &= ~ (0x3 << 24);
-	val |= 0x1 << 24;
-	//CCU->SPI0_CLK_REG = val;
-
-	/* Set clock pre divide ratio, divided by 1 */
-	//val = CCU->SPI0_CLK_REG;
-	val &= ~ (0x3 << 8);
-	val |= 0x0 << 8;
-	//CCU->SPI0_CLK_REG = val;
-
-	/* Set clock divide ratio, divided by 6 */
-	//val = CCU->SPI0_CLK_REG;
-	val &= ~ (0xf << 0);
-	val |= (6 - 1) << 0;
-
-	CCU->SPI0_CLK_REG = val;
-	ccu_spi_clk_reg_val [spispeedindex] = val;
-#endif
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
@@ -8024,6 +8020,7 @@ void hardware_spi_connect(spi_speeds_t spispeedindex, spi_modes_t spimode)
 #elif CPUSTYPE_ALLWNT113
 
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 
  	HARDWARE_SPI_CONNECT();
 

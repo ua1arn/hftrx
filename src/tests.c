@@ -6331,7 +6331,7 @@ void hightests(void)
 
 		memset(b, 0xE5, sizeof b);
 		readDATAFLASH(0x800000, b, 64);
-		printhex(0, b, 64);
+		printhex(0x800000, b, 64);
 
 		spidf_uninitialize();
 	}

@@ -26,7 +26,6 @@
 
 	#define LSEFREQ 32768uL
 
-	#define BOARD_HOSC_FREQ 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	#define WITHCPUXTAL 24000000uL	/* На процессоре установлен кварц 24.000 МГц */
 	//#define WITHCPUXOSC 24000000uL	/* На процессоре установлен генератор 24.000 МГц */
 
@@ -316,7 +315,7 @@
 	//#define WITHMODEMIQLOOPBACK	1	/* модем получает собственные передаваемые квадратуры */
 
 	//#define WITHUSESDCARD		1	// Включение поддержки SD CARD
-	//#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
+	#define WITHUSEUSBFLASH		1	// Включение поддержки USB memory stick
 	//#define WITHUSERAMDISK			1			// создание FATFS диска в озу
 	//#define WITHUSERAMDISKSIZEKB	(192uL * 1024)	// размр в килобайтах FATFS диска в озу
 
@@ -454,8 +453,8 @@
 	#define WITHDATAMODE	1	/* управление с клавиатуры передачей с USB AUDIO канала */
 	// Есть ли регулировка параметров потенциометрами
 	////#define WITHPOTWPM		1	/* используется регулировка скорости передачи в телеграфе потенциометром */
-	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
-	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
+//	#define WITHPOTIFGAIN		1	/* регуляторы усиления ПЧ на потенциометрах */
+//	#define WITHPOTAFGAIN		1	/* регуляторы усиления НЧ на потенциометрах */
 	//#define WITHPOTPOWER	1	/* регулятор мощности на потенциометре */
 	//#define WITHPOTNFMSQL 1		/* NFM SQUELCH */
 	//#define WITHANTSELECT	1	// Управление переключением антенн
