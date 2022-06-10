@@ -1820,7 +1820,7 @@ static inline void t113_de_set_mode(struct fb_t113_rgb_pdata_t * pdat)
 #elif LCDMODE_MAIN_RGB565
 	const uint32_t ovl_ui_format = 0x0A;	// 0x0A: RGB_565
 #else
-	#error Unsupported framebuffer format
+	#error Unsupported framebuffer format. Looks like you need remove WITHLTDCHW
 	const uint32_t ovl_ui_format = 0x0A;
 #endif
 
