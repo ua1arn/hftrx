@@ -2039,7 +2039,7 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n)
 
 void allwnrt113_pll_initialize(void)
 {
-	//set_pll_cpux_axi(); // в оригинале закомментировано
+	set_pll_cpux_axi(); // в оригинале закомментировано
 	set_pll_periph0();
 	set_ahb();
 	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
@@ -2053,7 +2053,7 @@ void allwnrt113_pll_initialize(void)
 	set_module(& CCU->PLL_AUDIO1_CTRL_REG);
 }
 
-static uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
+unsigned long allwnrt113_get_pll_cpu_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2061,7 +2061,7 @@ static uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 	return (uint_fast64_t) BOARD_HOSC_FREQ / pllM * pllN;
 }
 
-uint_fast64_t allwnrt113_get_pll_ddr_freq(void)
+unsigned long allwnrt113_get_pll_ddr_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);

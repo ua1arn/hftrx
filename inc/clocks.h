@@ -163,7 +163,8 @@ unsigned long allwnrt113_get_video1_x1_freq(void);
 unsigned long allwnrt113_get_ve_freq(void);
 unsigned long allwnrt113_get_pll_audio0_x4_freq(void);
 unsigned long allwnrt113_get_pll_audio1_x4_freq(void);
-uint_fast64_t allwnrt113_get_pll_ddr_freq(void);
+unsigned long allwnrt113_get_pll_cpu_freq(void);
+unsigned long allwnrt113_get_pll_ddr_freq(void);
 
 /* PLL initialization functions. Take care on glitches. */
 void allwnrt113_set_pll_cpux(unsigned m, unsigned n);
