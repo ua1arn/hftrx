@@ -1813,6 +1813,8 @@ static void set_pll_cpux_axi(void)
 {
 	uint32_t val;
 
+//	TP();
+//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG);
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
 	CCU->CPU_AXI_CFG_REG = (0 << 24) | (3 << 8) | (1 << 0);
 	local_delay_ms(1);
@@ -1855,10 +1857,10 @@ static void set_pll_cpux_axi(void)
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	/* Lock disable */
-//	val = CCU->PLL_CPU_CTRL_REG;
-//	val &= ~(1 << 29);
-//	CCU->PLL_CPU_CTRL_REG = val;
-//	local_delay_ms(1);
+	val = CCU->PLL_CPU_CTRL_REG;
+	val &= ~(1 << 29);
+	CCU->PLL_CPU_CTRL_REG = val;
+	local_delay_ms(1);
 
 	/* Set and change cpu clk src */
 	val = CCU->CPU_AXI_CFG_REG;
@@ -1867,6 +1869,8 @@ static void set_pll_cpux_axi(void)
 	CCU->CPU_AXI_CFG_REG = val;
 	local_delay_ms(1);
 	//sys_uart_puts("set_pll_cpux_axi Ok \n");
+//	TP();
+//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG);
 }
 
 static void set_pll_periph0(void)
