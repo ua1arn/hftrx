@@ -3208,6 +3208,9 @@ SystemInit(void)
 	sysinit_pll_initialize();	// PLL iniitialize
 	sysinit_debug_initialize();
 	sysintt_sdram_initialize();
+#if CPUSTYPE_ALLWNT113
+	set_pll_cpux_axi(PLL_CPU_N);
+#endif /* CPUSTYPE_ALLWNT113 */
 	sysinit_vbar_initialize();		// interrupt vectors relocate
 	sysinit_mmu_initialize();
 	sysinit_cache_initialize();	// caches iniitialize

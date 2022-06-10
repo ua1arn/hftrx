@@ -1805,15 +1805,22 @@ unsigned long hardware_get_spi_freq(void)
 #elif CPUSTYPE_ALLWNT113
 
 
-static void set_pll_cpux_axi(void)
+void set_pll_cpux_axi(unsigned n)
 {
 	uint32_t val;
 
-//	TP();
-//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG);
+	// After ddr3_init
+	// PLL_CPU_CTRL_REG=CA002900
+	// CPU_AXI_CFG_REG=03000301
+	//TP();
+    //PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
+    //return;
 	/* Select cpux clock src to osc24m, axi divide ratio is 3, system apb clk ratio is 4 */
-	CCU->CPU_AXI_CFG_REG = (0 << 24) | (3 << 8) | (1 << 0);
-	local_delay_ms(1);
+	CCU->CPU_AXI_CFG_REG =
+			(0 << 24) | // old 0x03, old 011: PLL_CPU/P, new 000: HOSC
+			(3 << 8) |	// old 0x03 old CPU_DIV2=4, new same
+			(1 << 0) |	// old 0x01 old CPU_DIV1, new same
+			0;
 
 	/* Disable pll gating */
 	val = CCU->PLL_CPU_CTRL_REG;
@@ -1824,12 +1831,11 @@ static void set_pll_cpux_axi(void)
 	val = CCU->PLL_CPU_CTRL_REG;
 	val |= (1 << 30);
 	CCU->PLL_CPU_CTRL_REG = val;
-	local_delay_ms(5);
 
 	/* Set default clk to 1008mhz */
 	val = CCU->PLL_CPU_CTRL_REG;
 	val &= ~ ((0x3 << 16) | (0xff << 8) | (0x3 << 0));
-	val |= ((PLL_CPU_N - 1) << 8);
+	val |= ((n - 1) << 8);
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	/* Lock enable */
@@ -1842,10 +1848,11 @@ static void set_pll_cpux_axi(void)
 	val |= (1 << 31);
 	CCU->PLL_CPU_CTRL_REG = val;
 
+	//TP();
 	/* Wait pll stable */
 	while((CCU->PLL_CPU_CTRL_REG & (0x1 << 28)) == 0)
 		;
-	local_delay_ms(20);
+	//TP();
 
 	/* Enable pll gating */
 	val = CCU->PLL_CPU_CTRL_REG;
@@ -1853,20 +1860,25 @@ static void set_pll_cpux_axi(void)
 	CCU->PLL_CPU_CTRL_REG = val;
 
 	/* Lock disable */
-	val = CCU->PLL_CPU_CTRL_REG;
-	val &= ~(1 << 29);
-	CCU->PLL_CPU_CTRL_REG = val;
-	local_delay_ms(1);
+//	val = CCU->PLL_CPU_CTRL_REG;
+//	val &= ~(1 << 29);
+//	CCU->PLL_CPU_CTRL_REG = val;
+	//local_delay_ms(1);
 
 	/* Set and change cpu clk src */
 	val = CCU->CPU_AXI_CFG_REG;
 	val &= ~(0x07 << 24 | 0x3 << 16 | 0x3 << 8 | 0xf << 0);
-	val |= (0x03 << 24 | 0x0 << 16 | 0x0 << 8 | 0x0 << 0);
+	val |=
+		(0x03 << 24) |
+		(0x0 << 16) |	// PLL_CPU_OUT_EXT_DIVP
+		(0x3 << 8) |
+		(0x1 << 0) |
+		0;
 	CCU->CPU_AXI_CFG_REG = val;
-	local_delay_ms(1);
+	//local_delay_ms(1);
 	//sys_uart_puts("set_pll_cpux_axi Ok \n");
-//	TP();
-//    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG);
+	TP();
+    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
 
 static void set_pll_periph0(void)
@@ -2049,7 +2061,7 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n)
 
 void allwnrt113_pll_initialize(void)
 {
-	set_pll_cpux_axi(); // в оригинале закомментировано
+	//set_pll_cpux_axi(PLL_CPU_N);
 	set_pll_periph0();
 	set_ahb();
 	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
