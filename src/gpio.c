@@ -753,7 +753,6 @@ static uint32_t allwnrt113_pioX_lock(GPIO_TypeDef * gpio)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
 	const uint32_t cpsr = __get_CPSR();
-	//__set_CPSR(cpsr | (0x01uL << 7));	// IRQ mask
 	__disable_irq();
 	//SPIN_LOCK(lck);
 	return cpsr;
