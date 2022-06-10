@@ -1765,7 +1765,7 @@ typedef struct USB_EHCI_CapabilityType
 #define CAN0			((CAN_TypeDef *) CAN0_BASE)
 #define CAN1			((CAN_TypeDef *) CAN1_BASE)
 
-#define USB0			((USB0_TypeDef *) USB0_BASE)
+#define USB0			((USB1_TypeDef *) USB0_BASE)
 #define USB1			((USB1_TypeDef *) USB1_BASE)
 
 #define EHCI1			((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)

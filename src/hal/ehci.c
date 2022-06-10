@@ -35,9 +35,18 @@ static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 #include "../../Class/HUB/Inc/usbh_hub.h"
 
 #if CPUSTYLE_XC7Z
+
 XUSBPS_Registers * EHCIxToUSBx(void * p)
 {
     XUSBPS_Registers * const USBx = (WITHUSBHW_EHCI == EHCI0) ? USB0 : USB1;
+    return USBx;
+}
+
+#elif CPUSTYPE_ALLWNT113
+
+USB1_TypeDef * EHCIxToUSBx(void * p)
+{
+	USB1_TypeDef * const USBx = (WITHUSBHW_EHCI == EHCI1) ? USB1 : USB0;
     return USBx;
 }
 
@@ -1184,6 +1193,11 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
 		CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
 		//CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB0_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 	else
 	{
@@ -1195,13 +1209,13 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 		CCU->USB_BGR_REG |= (0x01uL << 1);	// USBOHCI1_GATING
 		CCU->USB_BGR_REG |= (0x01uL << 5);	// USBEHCI1_GATING
+
+
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
+		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
-
-
-#if WITHEHCIHWSOFTSPOLL == 0
-	arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
-	arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
-#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 #elif CPUSTYLE_STM32MP1
 
@@ -1317,14 +1331,15 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYPE_ALLWNT113
 
-#if WITHEHCIHWSOFTSPOLL == 0
-	arm_hardware_disable_handler(USB1_OHCI_IRQn);
-	arm_hardware_disable_handler(USB1_EHCI_IRQn);
-#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 	if (0/*WITHUSBHW_EHCI == EHCI0*/)
 	{
 		CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USB0_OHCI_IRQn);
+		arm_hardware_disable_handler(USB0_EHCI_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
+
 		CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
 		//CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
 		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
@@ -1336,6 +1351,10 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 	}
 	else
 	{
+	#if WITHEHCIHWSOFTSPOLL == 0
+		arm_hardware_disable_handler(USB1_OHCI_IRQn);
+		arm_hardware_disable_handler(USB1_EHCI_IRQn);
+	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 
 		CCU->USB_BGR_REG &= ~ (0x01uL << 1);	// USBOHCI1_GATING
 		CCU->USB_BGR_REG &= ~ (0x01uL << 5);	// USBEHCI1_GATING
