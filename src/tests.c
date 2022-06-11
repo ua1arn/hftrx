@@ -6319,10 +6319,11 @@ void hightests(void)
 #if 0 && (WIHSPIDFSW || WIHSPIDFHW || WIHSPIDFOVERSPI)
 	{
 		// QSPI test
+		unsigned char b [64];
+
 		spidf_initialize();
 		testchipDATAFLASH();	// устанока кодов опрерации для скоростных режимов
 
-		unsigned char b [64];
 		memset(b, 0xE5, sizeof b);
 		readDATAFLASH(0x000000, b, 64);
 		printhex(0, b, 64);
