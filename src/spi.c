@@ -1511,6 +1511,38 @@ static int sys_spi_transfer(const void * txbuf, void * rxbuf, int len)
 	return len;
 }
 
+// 0 - ok, 1 - error
+static int sys_spi_verify(const void * buf, int len)
+{
+	int count = len;
+	const uint8_t * rx = buf;
+	const int maxchunk = 64;
+	uint_fast8_t err = 0;
+
+	while (count > 0)
+	{
+		const int n = (count <= maxchunk) ? count : maxchunk;
+		int i;
+
+		SPI0->SPI_MBC = n;
+		sys_spi_write_txbuf(NULL, n);
+
+		SPI0->SPI_TCR |= (1 << 31);
+		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+			;
+
+		for (i = 0; i < n; i++)
+		{
+			unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+			if (* rx++ != v)
+				err |= 1;
+		}
+
+		count -= n;
+	}
+	return len;
+}
+
 void spidf_initialize(void)
 {
 	unsigned ix = 0;	// SPI0
@@ -1617,22 +1649,22 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 }
 
 // вычитываем все заказанное количество
+// 0 - ok, 1 - error
 static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 {
-	return 0;
-	uint_fast8_t err = 0;
-	while (size --)
-	{
-//		while ((QUADSPI->SR & QUADSPI_SR_FTF_Msk) == 0)
-//			;
-//		err |= * buff ++ != * (volatile uint8_t *) & QUADSPI->DR;
-	}
-	return err;
+	return sys_spi_verify(buff, size);
 }
 
 static void spidf_unselect(void)
 {
-	allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+	uint32_t val;
+	int state = 0;
+
+	val = SPI0->SPI_TCR;
+	val &= ~((0x3 << 4) | (0x1 << 7));
+	val |= ((0 & 0x3) << 4) | (state << 7);
+	SPI0->SPI_TCR = val;
+
 	// Disconnect I/O pins
 	SPIDF_HANGOFF();
 }
@@ -1680,8 +1712,14 @@ static void spidf_iostart(
 
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
-	arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
-	allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+
+	uint32_t val;
+	int state = 0;
+
+	val = SPI0->SPI_TCR;
+	val &= ~((0x3 << 4) | (0x1 << 7));
+	val |= ((0 & 0x3) << 4) | (state << 7);
+	SPI0->SPI_TCR = val;
 
 	sys_spi_transfer(b, NULL, i);
 }
