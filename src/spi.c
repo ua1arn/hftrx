@@ -1463,8 +1463,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t r
 
 #elif WIHSPIDFHW && CPUSTYPE_ALLWNT113
 
-// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
-static void spidf_spi_write_txbuf(const uint8_t * buf, int len, uint_fast8_t readnb)
+static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
 {
 
     if (buf != NULL)
@@ -1529,30 +1528,39 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
-
-		if (readnb == SPDFIO_1WIRE)
+		switch (readnb)
 		{
-			spidf_spi_write_txbuf(tx, chunk, readnb);
+		default:
+		case SPDFIO_1WIRE:
+			spidf_spi_write_txbuf(tx, chunk);
 			SPI0->SPI_MBC = chunk;	// total burst counter
 		    SPI0->SPI_MTC = chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 			SPI0->SPI_BCC = chunk & 0xFFFFFFuL;
+			break;
+		case SPDFIO_4WIRE:
+			if (tx != 0)
+			{
+				// 4-wire write
+				spidf_spi_write_txbuf(tx, chunk);
+				SPI0->SPI_MBC = chunk;	// total burst counter
+			    SPI0->SPI_MTC = 0;//chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
+				SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
+			}
+			else
+			{
+				// 4-wire read
+				spidf_spi_write_txbuf(tx, chunk);
+				SPI0->SPI_MBC = chunk;	// total burst counter
+			    SPI0->SPI_MTC = 0;//chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
+				SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
+			}
+			break;
 		}
-		else if (readnb == SPDFIO_2WIRE)
-		{
 
-		}
-		else
-		{
-			spidf_spi_write_txbuf(tx, chunk, readnb);
-			SPI0->SPI_MBC = chunk;	// total burst counter
-		    SPI0->SPI_MTC = 0;//chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
-			SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
-		}
-
-		SPI0->SPI_TCR |= (1 << 31);
+		SPI0->SPI_TCR |= (1 << 31);	// XCH
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
-		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
+		while ((SPI0->SPI_TCR & (1 << 31)) != 0)	// XCH
 			;
 		SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
 
