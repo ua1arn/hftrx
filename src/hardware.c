@@ -3485,6 +3485,14 @@ void cpump_runuser(void)
 
 #endif /* WITHSMPSYSTEM */
 
+#else
+
+/* остальным ядрам разрешаем выполнять прерывания */
+void cpump_runuser(void)
+{
+
+}
+
 #endif /*  (__CORTEX_A != 0) */
 
 #if CPUSTYLE_ATSAM3S
