@@ -2101,8 +2101,8 @@ unsigned long allwnrt113_get_pll_ddr_freq(void)
 	// PLL_DDR = InputFreq*N/M1/M0
 	const uint_fast32_t reg = CCU->PLL_DDR_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
-	const uint_fast32_t pllM1 = 1 + ((reg >> 0) & 0x01);	// PLL input divider
-	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);	// P:: outpur divider
+	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);	// PLL input divider
+	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);	// PLL outpur divider
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
 }
 
@@ -2208,6 +2208,24 @@ unsigned long allwnrt113_get_pll_peri_x1_freq(void)
 	return allwnrt113_get_pll_peri_x2_freq() / 2;
 }
 
+unsigned long allwnrt113_get_dram_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->DRAM_CLK_REG;
+	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const unsigned long M = 1uL + ((clkreg >> 0) & 0x03);
+	switch ((clkreg >> 24) & 0x03)	/* DRAM_CLK_SEL */
+	{
+	default:
+	case 0x00:	/* 00: PLL_DDR */
+		return allwnrt113_get_pll_ddr_freq() / M / N;
+	case 0x01:	/* 01: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_pll_ddr_freq() / M / N;
+	case 0x02:	/* 10: PLL_PERI(2X) */
+		return allwnrt113_get_pll_peri_800M_freq() / M / N;
+	case 0x03: /* 11: PLL_PERI(800M) */
+		return allwnrt113_get_pll_peri_800M_freq() / M / N;
+	}
+}
 unsigned long allwnrt113_get_psi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->PSI_CLK_REG;
