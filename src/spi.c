@@ -1473,8 +1473,36 @@ static void sys_spi_write_txbuf(const uint8_t * buf, int len)
     }
     else
     {
-        for(i = 0; i < len; i++)
-            * (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
+        for (i = 0; i < len; )
+        {
+			switch (len - i)
+			{
+			default:
+				SPI0->SPI_TXD = 0xFFFFFFFF;
+				i += 4;
+				continue;
+			case 16:
+				SPI0->SPI_TXD = 0xFFFFFFFF;
+				SPI0->SPI_TXD = 0xFFFFFFFF;
+				i += 8;
+			case 8:
+				SPI0->SPI_TXD = 0xFFFFFFFF;
+				SPI0->SPI_TXD = 0xFFFFFFFF;
+				i += 8;
+				continue;
+			case 3:
+				 * (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
+				 i += 1;
+			case 2:
+				 * (volatile uint16_t *) & SPI0->SPI_TXD = 0xFFFF;
+				 i += 2;
+				continue;
+			case 1:
+				* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
+				i += 1;
+				continue;
+			}
+        }
     }
 }
 
