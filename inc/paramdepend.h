@@ -447,26 +447,6 @@ extern "C" {
 	typedef uint_fast16_t adcvalholder_t;		
 	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
 
-#elif CPUSTYLE_MK20DX	// Tennesy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
-
-	// todo: заполнить правильными значениями
-	#define CPU_FREQ 72000000	// частота периферии (процессорная после деления).
-	#define SCL_CLOCK  400000uL	/* 400 kHz I2C/TWI speed */
-	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
-	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
-
-	#define TICKS_FREQUENCY		200U // 200 Hz
-
-	#define ADCVREF_CPU	33		// 3.3 volt
-	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
-	#define HARDWARE_ADCBITS 10	/* АЦП работает с 10-битными значениями */
-	//#define HARDWARE_ADCINPUTS	40	/* до 16-ти входов АЦП */
-
-	/* тип для хранения данных, считанных с АЦП */
-	typedef uint_fast16_t adcvalholder_t;		
-	typedef int_fast16_t sadcvalholder_t;	// для хранения знаковых значений
-
 #elif CPUSTYLE_ATMEGA
 
 	// ATMega processors

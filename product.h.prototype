@@ -118,7 +118,6 @@
 //#define CTLSTYLE_V1G	1	// Плата с процессором STM32L051K6T (TQFP-32)
 //#define CTLSTYLE_V1H	1	// Плата с процессором ATMega328 (DIP-28) - тестирование Hittite HMC830
 //#define CTLSTYLE_V1X	1	// Плата с процессором ATXMega128A4U
-//#define CTLSTYLE_V1T	1	// Плата Teensy 3.1 с процессором MK20DX256VLH7
 //#define CTLSTYLE_V1M	1	// Плата с процессором ATmega64 (RA1AGO)
 
 // Исторические конфигурации:
@@ -558,10 +557,6 @@
 	#include "boards/arm_ctlstyle_satmod_v1.h"
 	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
 	#include "boards/arm_atsam3s_satmod_v1.h"
-#elif CPUSTYLE_MK20DX && CTLSTYLE_V1T		// Плата Teensy 3.1 с процессором MK20DX256VLH7
-	#include "boards/arm_mk20dx256_ctlstyle_v1t.h"
-	#include "paramdepend.h"				/* проверка зависимостей параметров конфигурации */
-	#include "boards/arm_mk20dx256_cpustyle_v1t.h"
 #else
 	#define LCDMODE_RDX0154		1
 	#define BANDSELSTYLERE_NOTHING	1

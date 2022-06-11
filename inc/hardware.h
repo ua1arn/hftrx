@@ -335,23 +335,6 @@ extern "C" {
 	//#define ARM_MATH_AUTOVECTORIZE 1
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 
-#elif CPUSTYLE_MK20DX	// Teensy 3.1 - Freescale Semiconductor - KINETIS MK20DX256VLH7
-
-	#define CPUSTYLE_ARM	1		/* архитектура процессора ARM */
-	#define CPUSTYLE_ARM_CM4	1		/* архитектура процессора CORTEX M3 */
-
-	#include "arch/mk20/MK20D5.h"
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
-	#define ALIGNX_END /* nothing */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-
 #elif CPUSTYLE_AT91SAM7S
 
 	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
