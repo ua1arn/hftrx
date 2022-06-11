@@ -1432,8 +1432,9 @@ static void spidf_iostart(
 }
 
 
-static void spidf_read(uint8_t * buff, uint_fast32_t size)
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
+	ASSERT(readnb == SPDFIO_1WIRE);
 	spidf_to_read();
 	while (size --)
 		* buff ++ = spidf_readval8();
@@ -1441,8 +1442,9 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 }
 
 
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
+	ASSERT(readnb == SPDFIO_1WIRE);
 	uint_fast8_t err = 0;
 	spidf_to_read();
 	while (size --)
@@ -1452,15 +1454,17 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 }
 
 
-static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
+	ASSERT(readnb == SPDFIO_1WIRE);
 	while (size --)
 		spidf_progval8(* buff ++);
 }
 
 #elif WIHSPIDFHW && CPUSTYPE_ALLWNT113
 
-static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_spi_write_txbuf(const uint8_t * buf, int len, uint_fast8_t readnb)
 {
     int i;
 
@@ -1494,6 +1498,7 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
 				SPI0->SPI_TXD = 0xFFFFFFFF;
 				i += 8;
 				continue;
+
 			case 3:
 				 * (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
 				 i += 1;
@@ -1501,6 +1506,7 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
 				 * (volatile uint16_t *) & SPI0->SPI_TXD = 0xFFFF;
 				 i += 2;
 				continue;
+
 			case 1:
 				* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
 				i += 1;
@@ -1510,12 +1516,20 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
     }
 }
 
-static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fast8_t readnb)
 {
 	int count = len;
 	const uint8_t * tx = txbuf;
 	uint8_t * rx = rxbuf;
 	const int MAXCHUNK = 64;
+
+	if (readnb == SPDFIO_4WIRE)
+	{
+		SPI0->SPI_BCC |= (0x01uL << 29);	/* Quad_EN */
+
+		ASSERT(SPI0->SPI_BCC & (0x01uL << 29));
+	}
 
 	while (count > 0)
 	{
@@ -1523,7 +1537,7 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len)
 		int i;
 
 		SPI0->SPI_MBC = n;
-		spidf_spi_write_txbuf(tx, n);
+		spidf_spi_write_txbuf(tx, n, readnb);
 
 		SPI0->SPI_TCR |= (1 << 31);
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
@@ -1533,6 +1547,7 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len)
 		for (i = 0; i < n; i++)
 		{
 			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+			//PRINTF("RX: %02X\n", v);
 			if (rx != NULL)
 				* rx++ = v;
 		}
@@ -1541,16 +1556,27 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len)
 			tx += n;
 		count -= n;
 	}
+
+	SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
+
 	return len;
 }
 
 // 0 - ok, 1 - error
-static int spidf_spi_verify(const void * buf, int len)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 {
 	int count = len;
 	const uint8_t * rx = buf;
 	const int MAXCHUNK = 64;
 	uint_fast8_t err = 0;
+
+	if (readnb == SPDFIO_4WIRE)
+	{
+		SPI0->SPI_BCC |= (0x01uL << 29);	/* Quad_EN */
+
+		ASSERT(SPI0->SPI_BCC & (0x01uL << 29));
+	}
 
 	while (count > 0)
 	{
@@ -1558,7 +1584,7 @@ static int spidf_spi_verify(const void * buf, int len)
 		int i;
 
 		SPI0->SPI_MBC = n;
-		spidf_spi_write_txbuf(NULL, n);
+		spidf_spi_write_txbuf(NULL, n, readnb);
 
 		SPI0->SPI_TCR |= (1 << 31);
 		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
@@ -1573,7 +1599,10 @@ static int spidf_spi_verify(const void * buf, int len)
 
 		count -= n;
 	}
-	return len;
+
+	SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
+
+	return err;
 }
 
 void spidf_initialize(void)
@@ -1638,7 +1667,7 @@ void spidf_initialize(void)
 	// SCLK = Clock Source/M/N.
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
-	PRINTF("spidf_initialize: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
+	//PRINTF("spidf_initialize: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
 	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
 	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
 	CCU->SPI0_CLK_REG =
@@ -1655,46 +1684,27 @@ void spidf_initialize(void)
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
-	//SPI0->SPI_TCR = tcr | (0x03uL << 0);
-	SPI0->SPI_TCR = tcr | (0x00uL << 0);
+	SPI0->SPI_TCR = tcr | (0x03uL << 0);
+	//SPI0->SPI_TCR = tcr | (0x00uL << 0);
 
 }
 
 void spidf_uninitialize(void)
 {
-
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
 }
 
 void spidf_hangoff(void)
 {
-
-}
-
-// вычитываем все заказанное количество
-static void spidf_read(uint8_t * buff, uint_fast32_t size)
-{
-	spidf_spi_transfer(NULL, buff, size);
-}
-
-// передаем все заказанное количество
-static void spidf_write(const uint8_t * buff, uint_fast32_t size)
-{
-	spidf_spi_transfer(buff, NULL, size);
-}
-
-// вычитываем все заказанное количество
-// 0 - ok, 1 - error
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
-{
-	return spidf_spi_verify(buff, size);
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
 }
 
 static void spidf_unselect(void)
 {
 	uint32_t val;
 	int state = 0;
-
-	SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
 
 	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
@@ -1715,20 +1725,20 @@ static void spidf_iostart(
 	uint_fast32_t address
 	)
 {
-	/* код ширины шины */
-	static const uint8_t nbits [3] =
-	{
-			0x01,	// single line
-			0x02,	// two lines
-			0x03,	// four lines
-	};
-	/* за сколько тактов пройдет один dummy byte */
-	static const uint8_t nmuls [3] =
-	{
-			8,	// single line
-			4,	// two lines
-			2,	// four lines
-	};
+//	/* код ширины шины */
+//	static const uint8_t nbits [3] =
+//	{
+//			0x01,	// single line
+//			0x02,	// two lines
+//			0x03,	// four lines
+//	};
+//	/* за сколько тактов пройдет один dummy byte */
+//	static const uint8_t nmuls [3] =
+//	{
+//			8,	// single line
+//			4,	// two lines
+//			2,	// four lines
+//	};
 	//const uint_fast32_t bw = nbits [readnb];
 	//const uint_fast32_t ml = nmuls [readnb];
 
@@ -1744,26 +1754,44 @@ static void spidf_iostart(
 		b [i ++] = address >> 0;
 	}
 	while (ndummy --)
-		b [i ++] = 0x00;	// dummy byte
+		b [i ++] = 0xFF;	// dummy byte
 
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
 
-	uint32_t val;
-	int state = 0;
-
-
-	val = SPI0->SPI_TCR;
-	val &= ~((0x3 << 4) | (0x1 << 7));
-	val |= ((0 & 0x3) << 4) | (state << 7);
-	SPI0->SPI_TCR = val;
-
-	spidf_spi_transfer(b, NULL, i);
-
-	if (readnb == 2)
 	{
-		SPI0->SPI_BCC |= (0x01uL << 29);	/* Quad_EN */
+		// Assert CS
+		uint32_t val;
+		int state = 0;
+
+
+		val = SPI0->SPI_TCR;
+		val &= ~((0x3 << 4) | (0x1 << 7));
+		val |= ((0 & 0x3) << 4) | (state << 7);
+		SPI0->SPI_TCR = val;
 	}
+
+	spidf_spi_transfer(b, NULL, 1, SPDFIO_1WIRE);
+	spidf_spi_transfer(b + 1, NULL, i - 1, readnb);
+}
+
+// вычитываем все заказанное количество
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	spidf_spi_transfer(NULL, buff, size, readnb);
+}
+
+// передаем все заказанное количество
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	spidf_spi_transfer(buff, NULL, size, readnb);
+}
+
+// вычитываем все заказанное количество
+// 0 - ok, 1 - error
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
+{
+	return spidf_spi_verify(buff, size, readnb);
 }
 
 
@@ -2388,14 +2416,14 @@ static void spidf_iostart(
 //		;
 }
 
-static void spidf_read(uint8_t * buff, uint_fast32_t size)
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 		* buff ++ = spidf_progval8(0xff);
 }
 
-
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	uint_fast8_t err = 0;
 	while (size --)
@@ -2403,8 +2431,8 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 	return err;
 }
 
-
-static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 		spidf_progval8(* buff ++);
@@ -2414,7 +2442,8 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 
 
 // вычитываем все заказанное количество
-static void spidf_read(uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 	{
@@ -2425,7 +2454,8 @@ static void spidf_read(uint8_t * buff, uint_fast32_t size)
 }
 
 // передаем все заказанное количество
-static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 	{
@@ -2436,7 +2466,8 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 }
 
 // вычитываем все заказанное количество
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	uint_fast8_t err = 0;
 	while (size --)
@@ -2456,6 +2487,7 @@ static void spidf_unselect(void)
 	SPIDF_HANGOFF();
 }
 
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
 static void spidf_iostart(
 	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
 	uint_fast8_t cmd,
@@ -2593,7 +2625,8 @@ void spidf_hangoff(void)
 #elif WIHSPIDFHW && CPUSTYLE_R7S721
 
 // передаем все заказанное количество
-static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_write(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while ((SPIBSC0.CMNSR & SPIBSC_CMNSR_TEND) == 0)
 		;
@@ -2625,7 +2658,8 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 }
 
 // вычитываем все заказанное количество
-static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	uint_fast8_t err = 0;
 	while (size --)
@@ -2653,7 +2687,8 @@ static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 }
 
 // вычитываем все заказанное количество
-static void spidf_read(uint8_t * buff, uint_fast32_t size)
+// readnb: SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static void spidf_read(uint8_t * buff, uint_fast32_t size, uint_fast8_t readnb)
 {
 	while (size --)
 	{
@@ -2865,7 +2900,7 @@ uint_fast8_t dataflash_read_status(void)
 	enum { SPDIF_IOSIZE = sizeof v };
 
 	spidf_iostart(SPDIFIO_READ, 0x05, SPDFIO_1WIRE, 0, SPDIF_IOSIZE, 0, 0x00000000);	/* read status register */
-	spidf_read(& v, SPDIF_IOSIZE);
+	spidf_read(& v, SPDIF_IOSIZE, SPDFIO_1WIRE);
 	spidf_unselect();	/* done sending data to target chip */
 	//PRINTF("dataflash_read_status: v=%02X\n", v);
 	return v;
@@ -3118,7 +3153,7 @@ static void readFlashID(uint8_t * buff, unsigned size)
 
 #else
 	spidf_iostart(SPDIFIO_READ, 0x9F, SPDFIO_1WIRE, 0, size, 0, 0x00000000);	/* read id register */
-	spidf_read(buff, size);
+	spidf_read(buff, size, SPDFIO_1WIRE);
 	spidf_unselect();	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
 }
@@ -3163,7 +3198,7 @@ static void readSFDPDATAFLASH(unsigned long flashoffset, uint8_t * buff, unsigne
 
 #else
 	spidf_iostart(SPDIFIO_READ, 0x5A, SPDFIO_1WIRE, 1, size, 1, flashoffset);	// READ SFDP (with dummy bytes)
-	spidf_read(buff, size);
+	spidf_read(buff, size, SPDFIO_1WIRE);
 	spidf_unselect();	/* done sending data to target chip */
 #endif /* CPUSTYLE_XC7Z */
 }
@@ -3377,7 +3412,7 @@ int prepareDATAFLASH(void)
 		uint8_t v = 0x00;	/* status register data */
 		// Write Status Register
 		spidf_iostart(SPDIFIO_WRITE, 0x01, SPDFIO_1WIRE, 0, 1, 0, 0);	/* Write Status Register */
-		spidf_write(& v, 1);
+		spidf_write(& v, 1, SPDFIO_1WIRE);
 		spidf_unselect();	/* done sending data to target chip */
 	}
 
@@ -3430,7 +3465,7 @@ int writesinglepageDATAFLASH(unsigned long flashoffset, const unsigned char * da
 	// start byte programm
 
 	spidf_iostart(SPDIFIO_WRITE, 0x02, SPDFIO_1WIRE, 0, len, 1, flashoffset);		/* Page Program */
-	spidf_write(data, len);
+	spidf_write(data, len, SPDFIO_1WIRE);
 	spidf_unselect();	/* done sending data to target chip */
 
 	//PRINTF(PSTR( Prog to address %08lX %02X done\n"), flashoffset, len);
@@ -3458,21 +3493,32 @@ int writeDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lon
 	return 0;
 }
 
-static void
+// Возвращает код ширниы шины для следующей операции обмена
+// SPDFIO_1WIRE, SPDFIO_2WIRE, SPDFIO_4WIRE
+static uint_fast8_t
 spdif_iostartread(unsigned long len, unsigned long flashoffset)
 {
 	if (0)
 		;
 #if WIHSPIDFHW4BIT
 	else if (readxb [SPDFIO_4WIRE] != 0x00)
+	{
 		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_4WIRE], SPDFIO_4WIRE, dmyb [SPDFIO_4WIRE], len, 1, flashoffset);	/* 0xEB: Fast Read Quad I/O */
+		return SPDFIO_4WIRE;
+	}
 #endif /* WIHSPIDFHW4BIT */
 #if WIHSPIDFHW2BIT
 	else if (readxb [SPDFIO_2WIRE] != 0x00)
+	{
 		spidf_iostart(SPDIFIO_READ, readxb [SPDFIO_2WIRE], SPDFIO_2WIRE, dmyb [SPDFIO_2WIRE], len, 1, flashoffset);	/* 0xBB: Fast Read Dual I/O */
+		return SPDFIO_2WIRE;
+	}
 #endif /* WIHSPIDFHW2BIT */
 	else
+	{
 		spidf_iostart(SPDIFIO_READ, 0x03, SPDFIO_1WIRE, 0, len, 1, flashoffset);	/* 0x03: sequential read block */
+		return SPDFIO_1WIRE;
+	}
 }
 
 int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned long len)
@@ -3487,8 +3533,8 @@ int verifyDATAFLASH(unsigned long flashoffset, const uint8_t * data, unsigned lo
 		return 1;
 	}
 
-	spdif_iostartread(len, flashoffset);
-	err = spidf_verify(data, len);
+	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
+	err = spidf_verify(data, len, readnb);
 	spidf_unselect();	/* done sending data to target chip */
 
 	if (err)
@@ -3513,8 +3559,10 @@ int readDATAFLASH(unsigned long flashoffset, uint8_t * data, unsigned long len)
 
 #else /* CPUSTYLE_XC7Z */
 
-	spdif_iostartread(len, flashoffset);
-	spidf_read(data, len);
+//	TP();
+//	PRINTF("read operation\n");
+	const uint_fast8_t readnb = spdif_iostartread(len, flashoffset);
+	spidf_read(data, len, readnb);
 	spidf_unselect();	/* done sending data to target chip */
 
 #endif /* CPUSTYLE_XC7Z */
