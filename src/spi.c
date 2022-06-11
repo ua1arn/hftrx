@@ -1460,14 +1460,14 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 
 #elif WIHSPIDFHW && CPUSTYPE_ALLWNT113
 
-static void sys_spi_write_txbuf(const uint8_t * buf, int len)
+static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
 {
     int i;
 
     SPI0->SPI_MTC = len & 0xffffff;
 	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL << 0)) |
-		((len & 0xffffff)  << 0) |
+		((len & 0xFFFFFFuL)  << 0) |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
     if (buf != NULL)
@@ -1510,7 +1510,7 @@ static void sys_spi_write_txbuf(const uint8_t * buf, int len)
     }
 }
 
-static int sys_spi_transfer(const void * txbuf, void * rxbuf, int len)
+static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len)
 {
 	int count = len;
 	const uint8_t * tx = txbuf;
@@ -1523,7 +1523,7 @@ static int sys_spi_transfer(const void * txbuf, void * rxbuf, int len)
 		int i;
 
 		SPI0->SPI_MBC = n;
-		sys_spi_write_txbuf(tx, n);
+		spidf_spi_write_txbuf(tx, n);
 
 		SPI0->SPI_TCR |= (1 << 31);
 		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
@@ -1545,7 +1545,7 @@ static int sys_spi_transfer(const void * txbuf, void * rxbuf, int len)
 }
 
 // 0 - ok, 1 - error
-static int sys_spi_verify(const void * buf, int len)
+static int spidf_spi_verify(const void * buf, int len)
 {
 	int count = len;
 	const uint8_t * rx = buf;
@@ -1558,7 +1558,7 @@ static int sys_spi_verify(const void * buf, int len)
 		int i;
 
 		SPI0->SPI_MBC = n;
-		sys_spi_write_txbuf(NULL, n);
+		spidf_spi_write_txbuf(NULL, n);
 
 		SPI0->SPI_TCR |= (1 << 31);
 		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
@@ -1673,20 +1673,20 @@ void spidf_hangoff(void)
 // вычитываем все заказанное количество
 static void spidf_read(uint8_t * buff, uint_fast32_t size)
 {
-	sys_spi_transfer(NULL, buff, size);
+	spidf_spi_transfer(NULL, buff, size);
 }
 
 // передаем все заказанное количество
 static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 {
-	sys_spi_transfer(buff, NULL, size);
+	spidf_spi_transfer(buff, NULL, size);
 }
 
 // вычитываем все заказанное количество
 // 0 - ok, 1 - error
 static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
 {
-	return sys_spi_verify(buff, size);
+	return spidf_spi_verify(buff, size);
 }
 
 static void spidf_unselect(void)
@@ -1758,7 +1758,7 @@ static void spidf_iostart(
 	val |= ((0 & 0x3) << 4) | (state << 7);
 	SPI0->SPI_TCR = val;
 
-	sys_spi_transfer(b, NULL, i);
+	spidf_spi_transfer(b, NULL, i);
 
 	if (readnb == 2)
 	{
