@@ -1468,10 +1468,11 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len, uint_fast8_t rea
 {
     int i;
 
+	SPI0->SPI_MBC = len;	// total burst counter
 	if (readnb == SPDFIO_4WIRE)
 	{
-	    //SPI0->SPI_MTC = len & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
-		SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
+	    SPI0->SPI_MTC = 0;//len & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		SPI0->SPI_BCC = (0x01uL << 29) | (len & 0xFFFFFFuL);	/* Quad_EN */
 
 	}
 	else
@@ -1491,6 +1492,9 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len, uint_fast8_t rea
     {
         for (i = 0; i < len; )
         {
+			* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
+			++ i;
+			continue;
 			switch (len - i)
 			{
 			default:
@@ -1538,7 +1542,6 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		const int n = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
-		SPI0->SPI_MBC = n;	// total burst counter
 		spidf_spi_write_txbuf(tx, n, readnb);
 
 		SPI0->SPI_TCR |= (1 << 31);
@@ -1585,7 +1588,6 @@ static int spidf_spi_verify(const void * buf, int len, uint_fast8_t readnb)
 		const int n = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
-		SPI0->SPI_MBC = n;
 		spidf_spi_write_txbuf(NULL, n, readnb);
 
 		SPI0->SPI_TCR |= (1 << 31);
@@ -1756,7 +1758,7 @@ static void spidf_iostart(
 		b [i ++] = address >> 0;
 	}
 	while (ndummy --)
-		b [i ++] = 0xFF;	// dummy byte
+		b [i ++] = 0x00;	// dummy byte
 
 	// Connect I/O pins
 	SPIDF_HARDINITIALIZE();
