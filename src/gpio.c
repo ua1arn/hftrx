@@ -639,7 +639,7 @@ void sysinit_gpio_initialize(void)
 	for (i = 0; i < ARRAY_SIZE(gpiodata_locks); ++ i)
 	{
 		SPINLOCK_t * const lck = & gpiodata_locks [i];
-		SPINLOCK_INITILAZE(lck);
+		SPINLOCK_INITIALIZE(lck);
 	}
 }
 
