@@ -179,4 +179,12 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n);
 void allwnrt113_pll_initialize(void);
 void set_pll_cpux_axi(unsigned n);
 
+uint_fast8_t
+calcdivider(
+	uint_fast32_t divisor, // ожидаемый коэффициент деления всей системы
+	uint_fast8_t width,			// количество разрядов в счётчике
+	uint_fast16_t taps,			// маска битов - выходов прескалера. 0x01 - означает bypass, 0x02 - делитель на 2... 0x400 - делитель на 1024
+	unsigned * dvalue,		// Значение для записи в регистр сравнения делителя
+	uint_fast8_t substract);
+
 #endif /* INC_CLOCKS_H_ */

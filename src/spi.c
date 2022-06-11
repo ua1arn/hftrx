@@ -1460,7 +1460,7 @@ static void spidf_write(const uint8_t * buff, uint_fast32_t size)
 
 #elif WIHSPIDFHW && CPUSTYPE_ALLWNT113
 
-static void sys_spi_write_txbuf(unsigned char * buf, int len)
+static void sys_spi_write_txbuf(const uint8_t * buf, int len)
 {
     int i;
 
@@ -1478,11 +1478,11 @@ static void sys_spi_write_txbuf(unsigned char * buf, int len)
     }
 }
 
-static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
+static int sys_spi_transfer(const void * txbuf, void * rxbuf, int len)
 {
 	int count = len;
-	unsigned char  * tx = txbuf;
-	unsigned char  * rx = rxbuf;
+	const uint8_t * tx = txbuf;
+	uint8_t * rx = rxbuf;
 	const int maxchunk = 64;
 
 	while (count > 0)
@@ -1497,9 +1497,6 @@ static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 			;
 
-//		while ((SPI0->SPI_FSR & 0xff) < n)
-//			;
-
 		for (i = 0; i < n; i++)
 		{
 			unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
@@ -1513,6 +1510,182 @@ static int sys_spi_transfer(void * txbuf, void * rxbuf, int len)
 	}
 	return len;
 }
+
+void spidf_initialize(void)
+{
+	unsigned ix = 0;	// SPI0
+
+	/* Open the clock gate for SPI0 */
+	CCU->SPI_BGR_REG |= (0x01uL << (ix + 0));
+
+	/* Deassert SPI0 reset */
+	CCU->SPI_BGR_REG |= (0x01uL << (ix + 16));
+
+	CCU->SPI0_CLK_REG |= (0x01uL << 31);	// SPI0_CLK_GATING
+
+	SPI0->SPI_GCR = (0x01uL << 31);	// SRST soft reset
+	while ((SPI0->SPI_GCR & (0x01uL << 31)) != 0)
+		;
+	SPI0->SPI_GCR =
+		(0x00uL < 1) |	// MODE: 1: Master mode
+		0;
+
+
+
+	/* Deassert spi0 reset */
+	CCU->SPI_BGR_REG |= (1 << (ix + 16));
+	/* Open the spi0 gate */
+	CCU->SPI0_CLK_REG |= (1 << 31);
+	/* Open the spi0 bus gate */
+	CCU->SPI_BGR_REG |= (1 << (ix + 0));
+
+
+	/* Enable spi0 */
+	SPI0->SPI_GCR |= (1 << 7) | (1 << 1) | (1 << 0);
+	/* Do a soft reset */
+	SPI0->SPI_GCR |= (1 << 31);
+	while((SPI0->SPI_GCR & (1 << 31)) != 0)
+		;
+
+	// TXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 31);
+	while ((SPI0->SPI_FCR & (1 << 31)) != 0)
+		;
+
+	// RXFIFO Reset
+	SPI0->SPI_FCR |= (1 << 15);
+	while ((SPI0->SPI_FCR & (1 << 15)) != 0)
+		;
+
+
+	enum
+	{
+		ALLWNT113_SPI_BR_WIDTH = 4, ALLWNT113_SPI_BR_TAPS = ( 8 | 4 | 2 | 1)
+
+	};
+
+	const portholder_t clk_src = 0x01;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
+		(clk_src << 24) |	/* CLK_SRC_SEL */
+		0;
+
+	const uint_fast32_t spispeed = 25000000uL;
+	// SCLK = Clock Source/M/N.
+	unsigned value;
+	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
+	PRINTF("spidf_initialize: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());
+	unsigned factorN = prei;	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+	unsigned factorM = value;	/* FACTOR_M: 0..15: M = 1..16 */
+	CCU->SPI0_CLK_REG =
+		(clk_src << 24) |	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+		(factorN << 8) |	/* FACTOR_N: 11: 8 (1, 2, 4, 8) */
+		(factorM << 0) |	/* FACTOR_M: 0..15: M = 1..16 */
+		(0x01uL << 31) |	// 1: Clock is ON
+		0;
+
+	const portholder_t tcr =
+			(0x00uL << 12) |	// FBS: 0: MSB first
+			(0x01uL << 6) |		// SS_OWNER: 1: Software
+			0;
+
+	// SPI Transfer Control Register (Default Value: 0x0000_0087)
+	// CPOL at bit 1, CPHA at bit 0
+	SPI0->SPI_TCR = tcr | (0x03uL << 0);
+
+}
+
+void spidf_uninitialize(void)
+{
+
+}
+
+void spidf_hangoff(void)
+{
+
+}
+
+// вычитываем все заказанное количество
+static void spidf_read(uint8_t * buff, uint_fast32_t size)
+{
+	sys_spi_transfer(NULL, buff, size);
+}
+
+// передаем все заказанное количество
+static void spidf_write(const uint8_t * buff, uint_fast32_t size)
+{
+	sys_spi_transfer(buff, NULL, size);
+}
+
+// вычитываем все заказанное количество
+static uint_fast8_t spidf_verify(const uint8_t * buff, uint_fast32_t size)
+{
+	return 0;
+	uint_fast8_t err = 0;
+	while (size --)
+	{
+//		while ((QUADSPI->SR & QUADSPI_SR_FTF_Msk) == 0)
+//			;
+//		err |= * buff ++ != * (volatile uint8_t *) & QUADSPI->DR;
+	}
+	return err;
+}
+
+static void spidf_unselect(void)
+{
+	allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+	// Disconnect I/O pins
+	SPIDF_HANGOFF();
+}
+
+static void spidf_iostart(
+	uint_fast8_t direction,	// 0: dataflash-to-cpu, 1: cpu-to-dataflash
+	uint_fast8_t cmd,
+	uint_fast8_t readnb,	// признак работы по QSPI 4 bit - все кроме команды идет во 4-байтной шине
+	uint_fast8_t ndummy,	// number of dummy bytes
+	uint_fast32_t size,
+	uint_fast8_t hasaddress,
+	uint_fast32_t address
+	)
+{
+	/* код ширины шины */
+	static const uint8_t nbits [3] =
+	{
+			0x01,	// single line
+			0x02,	// two lines
+			0x03,	// four lines
+	};
+	/* за сколько тактов пройдет один dummy byte */
+	static const uint8_t nmuls [3] =
+	{
+			8,	// single line
+			4,	// two lines
+			2,	// four lines
+	};
+	//const uint_fast32_t bw = nbits [readnb];
+	//const uint_fast32_t ml = nmuls [readnb];
+
+	uint8_t b [16];
+	unsigned i = 0;
+
+	b [i ++] = cmd;		/* The Read SFDP instruction code is 0x5A */
+
+	if (hasaddress)
+	{
+		b [i ++] = address >> 16;
+		b [i ++] = address >> 8;
+		b [i ++] = address >> 0;
+	}
+	while (ndummy --)
+		b [i ++] = 0x00;	// dummy byte
+
+	// Connect I/O pins
+	SPIDF_HARDINITIALIZE();
+	arm_hardware_pioc_outputs(SPDIF_NCS_BIT, 1 * SPDIF_NCS_BIT); 	/* PC3 SPI0_CS */ \
+	allwnrt113_pioX_setstate(GPIOC, SPDIF_NCS_BIT, 0 * SPDIF_NCS_BIT); /* PC3 SPI0_CS */ \
+
+	sys_spi_transfer(b, NULL, i);
+}
+
 
 #elif WIHSPIDFHW && CPUSTYLE_XC7Z
 

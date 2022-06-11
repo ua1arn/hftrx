@@ -983,9 +983,6 @@
 
 	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
 	#define SPIDF_HANGOFF() do { \
-		} while (0)
-	/* Отсоединить процессор от BOOT ROM - для возможности работы внешнего программатора. */
-	#define SPIDF_HANGOFFold() do { \
 			arm_hardware_pioc_inputs(SPDIF_SCLK_BIT); \
 			arm_hardware_pioc_inputs(SPDIF_MOSI_BIT); \
 			arm_hardware_pioc_inputs(SPDIF_MISO_BIT); \
@@ -997,15 +994,14 @@
 	#if WIHSPIDFSW || WIHSPIDFHW
 
 		#if WIHSPIDFHW
+			/* connect and assert CS */
 			#define SPIDF_HARDINITIALIZE() do { \
+					arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); 	/* PC3 SPI0_CS */ \
 					arm_hardware_pioc_altfn50(SPDIF_D2_BIT, GPIO_CFG_AF2);  	/* PC6 SPI0_WP/D2 */ \
 					arm_hardware_pioc_altfn50(SPDIF_D3_BIT, GPIO_CFG_AF2);  	/* PC7 SPI0_HOLD/D3 */ \
-					arm_hardware_pioc_outputs(SPDIF_D2_BIT, SPDIF_D2_BIT); /* D2/WP tie-up */ \
-					arm_hardware_pioc_outputs(SPDIF_D3_BIT, SPDIF_D3_BIT); /* D3/HOLD tie-up */ \
 					arm_hardware_pioc_altfn50(SPDIF_SCLK_BIT, GPIO_CFG_AF2); 	/* PC2 SPI0_CLK */ \
 					arm_hardware_pioc_altfn50(SPDIF_MOSI_BIT, GPIO_CFG_AF2); 	/* PC4 SPI0_MOSI */ \
 					arm_hardware_pioc_altfn50(SPDIF_MISO_BIT, GPIO_CFG_AF2); 	/* PC5 SPI0_MISO */ \
-					arm_hardware_pioc_altfn50(SPDIF_NCS_BIT, GPIO_CFG_AF2); 	/* PC3 SPI0_CS */ \
 				} while (0)
 
 		#else /* WIHSPIDFHW */
