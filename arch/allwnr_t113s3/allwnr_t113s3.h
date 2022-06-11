@@ -1727,7 +1727,7 @@ typedef struct USB_EHCI_CapabilityType
 #define TWI2		((TWI_TypeDef *) TWI2_BASE)
 #define TWI3		((TWI_TypeDef *) TWI3_BASE)
 #define SPI0		((SPI_TypeDef *) SPI0_BASE)
-#define SPI_DBI		((SPI_DBI_TypeDef *) SPI_DB_BASEI)
+#define SPI_DBI		((SPI_DBI_TypeDef *) SPI_DBI_BASE)
 #define LEDC		((LEDC_TypeDef *) LEDC_BASE)
 #define GPADC		((GPADC_TypeDef *) GPADC_BASE)
 #define TPADC		((TPADC_TypeDef *) TPADC_BASE)
