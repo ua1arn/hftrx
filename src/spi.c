@@ -1465,7 +1465,11 @@ static void sys_spi_write_txbuf(const uint8_t * buf, int len)
     int i;
 
     SPI0->SPI_MTC = len & 0xffffff;
-    SPI0->SPI_BCC = len & 0xffffff;
+	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL << 0)) |
+		((len & 0xffffff)  << 0) |
+		0;
+
     if (buf != NULL)
     {
         for(i = 0; i < len; i++)
@@ -1511,23 +1515,24 @@ static int sys_spi_transfer(const void * txbuf, void * rxbuf, int len)
 	int count = len;
 	const uint8_t * tx = txbuf;
 	uint8_t * rx = rxbuf;
-	const int maxchunk = 64;
+	const int MAXCHUNK = 64;
 
 	while (count > 0)
 	{
-		const int n = (count <= maxchunk) ? count : maxchunk;
+		const int n = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
 		SPI0->SPI_MBC = n;
 		sys_spi_write_txbuf(tx, n);
 
 		SPI0->SPI_TCR |= (1 << 31);
+		// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 		while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 			;
 
 		for (i = 0; i < n; i++)
 		{
-			unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
 			if (rx != NULL)
 				* rx++ = v;
 		}
@@ -1544,12 +1549,12 @@ static int sys_spi_verify(const void * buf, int len)
 {
 	int count = len;
 	const uint8_t * rx = buf;
-	const int maxchunk = 64;
+	const int MAXCHUNK = 64;
 	uint_fast8_t err = 0;
 
 	while (count > 0)
 	{
-		const int n = (count <= maxchunk) ? count : maxchunk;
+		const int n = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
 		SPI0->SPI_MBC = n;
@@ -1561,7 +1566,7 @@ static int sys_spi_verify(const void * buf, int len)
 
 		for (i = 0; i < n; i++)
 		{
-			unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
 			if (* rx++ != v)
 				err |= 1;
 		}
@@ -1650,7 +1655,8 @@ void spidf_initialize(void)
 
 	// SPI Transfer Control Register (Default Value: 0x0000_0087)
 	// CPOL at bit 1, CPHA at bit 0
-	SPI0->SPI_TCR = tcr | (0x03uL << 0);
+	//SPI0->SPI_TCR = tcr | (0x03uL << 0);
+	SPI0->SPI_TCR = tcr | (0x00uL << 0);
 
 }
 
@@ -1687,6 +1693,8 @@ static void spidf_unselect(void)
 {
 	uint32_t val;
 	int state = 0;
+
+	SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
 
 	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
@@ -1744,12 +1752,18 @@ static void spidf_iostart(
 	uint32_t val;
 	int state = 0;
 
+
 	val = SPI0->SPI_TCR;
 	val &= ~((0x3 << 4) | (0x1 << 7));
 	val |= ((0 & 0x3) << 4) | (state << 7);
 	SPI0->SPI_TCR = val;
 
 	sys_spi_transfer(b, NULL, i);
+
+	if (readnb == 2)
+	{
+		SPI0->SPI_BCC |= (0x01uL << 29);	/* Quad_EN */
+	}
 }
 
 

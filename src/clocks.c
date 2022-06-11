@@ -8192,6 +8192,7 @@ portholder_t hardware_spi_complete_b8(void)	/* дождаться готовно
 
 #elif CPUSTYPE_ALLWNT113
 
+	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
