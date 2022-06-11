@@ -2221,7 +2221,7 @@ unsigned long allwnrt113_get_dram_freq(void)
 	case 0x01:	/* 01: PLL_AUDIO1(DIV2) */
 		return allwnrt113_get_pll_ddr_freq() / M / N;
 	case 0x02:	/* 10: PLL_PERI(2X) */
-		return allwnrt113_get_pll_peri_800M_freq() / M / N;
+		return allwnrt113_get_pll_peri_x2_freq() / M / N;
 	case 0x03: /* 11: PLL_PERI(800M) */
 		return allwnrt113_get_pll_peri_800M_freq() / M / N;
 	}
