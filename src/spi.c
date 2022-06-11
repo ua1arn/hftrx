@@ -1475,40 +1475,9 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len)
     else
     {
         int i;
-        for (i = 0; i < len; )
+        for(i = 0; i < len; i ++)
         {
 			* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
-			++ i;
-			continue;
-			switch (len - i)
-			{
-			default:
-				SPI0->SPI_TXD = 0xFFFFFFFF;
-				i += 4;
-				continue;
-			case 16:
-				SPI0->SPI_TXD = 0xFFFFFFFF;
-				SPI0->SPI_TXD = 0xFFFFFFFF;
-				i += 8;
-			case 8:
-				SPI0->SPI_TXD = 0xFFFFFFFF;
-				SPI0->SPI_TXD = 0xFFFFFFFF;
-				i += 8;
-				continue;
-
-			case 3:
-				 * (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
-				 i += 1;
-			case 2:
-				 * (volatile uint16_t *) & SPI0->SPI_TXD = 0xFFFF;
-				 i += 2;
-				continue;
-
-			case 1:
-				* (volatile uint8_t *) & SPI0->SPI_TXD = 0xFF;
-				i += 1;
-				continue;
-			}
         }
     }
 
@@ -1534,7 +1503,7 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		default:
 		case SPDFIO_1WIRE:
 			spidf_spi_write_txbuf(tx, chunk);
-		    SPI0->SPI_MTC = chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		    SPI0->SPI_MTC = chunk & 0xFFFFFFuL;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 			SPI0->SPI_BCC = chunk & 0xFFFFFFuL;
 			break;
@@ -1545,12 +1514,12 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			{
 				// 4-wire write
 				spidf_spi_write_txbuf(tx, chunk);
-			    SPI0->SPI_MTC = chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPI0->SPI_MTC = chunk & 0xFFFFFFuL;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			else
 			{
 				// 4-wire read
-			    SPI0->SPI_MTC = 0;//chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
+			    SPI0->SPI_MTC = 0;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			break;
 		}
@@ -1561,15 +1530,12 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			;
 		SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
 
-		//if (readnb == SPDFIO_1WIRE || rx != NULL)
+		for (i = 0; i < chunk; i ++)
 		{
-			for (i = 0; i < chunk; i ++)
-			{
-				const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
-				//PRINTF("RX: %02X\chunk", v);
-				if (rx != NULL)
-					* rx++ = v;
-			}
+			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+			//PRINTF("RX: %02X\chunk", v);
+			if (rx != NULL)
+				* rx++ = v;
 		}
 
 		if (tx != NULL)
