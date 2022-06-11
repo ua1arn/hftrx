@@ -1528,32 +1528,29 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 		const int chunk = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
+		SPI0->SPI_MBC = chunk;	// total burst counter
 		switch (readnb)
 		{
 		default:
 		case SPDFIO_1WIRE:
 			spidf_spi_write_txbuf(tx, chunk);
-			SPI0->SPI_MBC = chunk;	// total burst counter
 		    SPI0->SPI_MTC = chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 			SPI0->SPI_BCC = chunk & 0xFFFFFFuL;
 			break;
+
 		case SPDFIO_4WIRE:
+			SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
 			if (tx != 0)
 			{
 				// 4-wire write
 				spidf_spi_write_txbuf(tx, chunk);
-				SPI0->SPI_MBC = chunk;	// total burst counter
-			    SPI0->SPI_MTC = 0;//chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
-				SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
+			    SPI0->SPI_MTC = chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
 			}
 			else
 			{
 				// 4-wire read
-				spidf_spi_write_txbuf(tx, chunk);
-				SPI0->SPI_MBC = chunk;	// total burst counter
 			    SPI0->SPI_MTC = 0;//chunk & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
-				SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
 			}
 			break;
 		}
@@ -1564,12 +1561,15 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 			;
 		SPI0->SPI_BCC &= ~ (0x01uL << 29);	/* Quad_EN */
 
-		for (i = 0; i < chunk; i ++)
+		//if (readnb == SPDFIO_1WIRE || rx != NULL)
 		{
-			const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
-			//PRINTF("RX: %02X\chunk", v);
-			if (rx != NULL)
-				* rx++ = v;
+			for (i = 0; i < chunk; i ++)
+			{
+				const unsigned v = * (volatile uint8_t *) & SPI0->SPI_RXD;
+				//PRINTF("RX: %02X\chunk", v);
+				if (rx != NULL)
+					* rx++ = v;
+			}
 		}
 
 		if (tx != NULL)
