@@ -1468,11 +1468,19 @@ static void spidf_spi_write_txbuf(const uint8_t * buf, int len, uint_fast8_t rea
 {
     int i;
 
-    SPI0->SPI_MTC = len & 0xffffff;
-	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL << 0)) |
-		((len & 0xFFFFFFuL)  << 0) |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
-		0;
+	if (readnb == SPDFIO_4WIRE)
+	{
+	    //SPI0->SPI_MTC = len & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		SPI0->SPI_BCC = (0x01uL << 29);	/* Quad_EN */
+
+	}
+	else
+	{
+	    SPI0->SPI_MTC = len & 0xffffff;	// MWTC - Master Write Transmit Counter - bursts before dummy
+		// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+		SPI0->SPI_BCC = len & 0xFFFFFFuL;
+	}
+
 
     if (buf != NULL)
     {
@@ -1524,19 +1532,13 @@ static int spidf_spi_transfer(const void * txbuf, void * rxbuf, int len, uint_fa
 	uint8_t * rx = rxbuf;
 	const int MAXCHUNK = 64;
 
-	if (readnb == SPDFIO_4WIRE)
-	{
-		SPI0->SPI_BCC |= (0x01uL << 29);	/* Quad_EN */
-
-		ASSERT(SPI0->SPI_BCC & (0x01uL << 29));
-	}
 
 	while (count > 0)
 	{
 		const int n = (count <= MAXCHUNK) ? count : MAXCHUNK;
 		int i;
 
-		SPI0->SPI_MBC = n;
+		SPI0->SPI_MBC = n;	// total burst counter
 		spidf_spi_write_txbuf(tx, n, readnb);
 
 		SPI0->SPI_TCR |= (1 << 31);
