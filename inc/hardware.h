@@ -548,36 +548,6 @@ extern "C" {
 	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
 	#define ARM_FAST_ALLOW_TABLES	1
 
-#elif CPUSTYPE_ALLWNV3S
-	// Allwinner V3s is SoC with build-in ARM Cortex A7 CPU and integrated 64MB DDR2 RAM
-	//
-	//	ARM Cortex TM -A7 MP1 Processor
-	//	Thumb-2 Technology
-	//	Support NEON Advanced SIMD(Single Instruction Multiple Data)instruction for acceleration of media and signal processing functions
-	//	Support Large Physical Address Extensions(LPAE)
-	//	VFPv4 Floating Point Unit
-	//	32KB L1 Instruction cache and 32KB L1 Data cache
-	//	128KB L2 cache
-
-	#define CPUSTYLE_ARM		1		/* архитектура процессора ARM */
-
-	#include "arch/alwnrv3s/alwnrv3s.h"
-	#include "irq_ctrl.h"
-
-	#define DCACHEROWSIZE 64
-	#define ICACHEROWSIZE 32
-
-	#define ALIGNX_BEGIN __attribute__ ((aligned(64)))
-	#define ALIGNX_END /* nothing */
-
-	#if __ARM_NEON
-		//#define ARM_MATH_NEON 1
-		//#define ARM_MATH_NEON_EXPERIMENTAL 1
-	#endif /* __ARM_NEON */
-	//#define ARM_MATH_AUTOVECTORIZE 1
-	#define ARM_MATH_LOOPUNROLL 1	// выставляется в hardware.h
-	#define ARM_FAST_ALLOW_TABLES	1
-
 #elif \
 	defined (__TMS320C28X__) || \
 	0
