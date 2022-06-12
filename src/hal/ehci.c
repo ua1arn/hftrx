@@ -1186,6 +1186,24 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYPE_ALLWNT113
 
+	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
+
+	PRINTF("From boot: CCU->USB_BGR_REG=%08lX @%p\n", CCU->USB_BGR_REG, & CCU->USB_BGR_REG);
+	PRINTF("From boot: CCU->PLL_PERI_CTRL_REG=%08lX @%p\n", CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_CTRL_REG);
+	PRINTF("From boot: CCU->USB0_CLK_REG=%08lX @%p\n", CCU->USB0_CLK_REG, & CCU->USB0_CLK_REG);
+	PRINTF("From boot: CCU->USB1_CLK_REG=%08lX @%p\n", CCU->USB1_CLK_REG, & CCU->USB1_CLK_REG);
+
+	/* Off bootloader USB */
+	if (0)
+	{
+		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+		CCU->USB_BGR_REG &= ~  (0x01uL << 24);	// USBOTG0_RST
+
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+		CCU->USB0_CLK_REG &= ~  (0x01uL << 30);	// USBPHY0_RSTN
+	}
+
 	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
 	{
 		ASSERT(0);					/* тут нет EHCI */
@@ -1217,12 +1235,20 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB_BGR_REG |= (0x01uL << 1);	// USBOHCI1_GATING
 		CCU->USB_BGR_REG |= (0x01uL << 5);	// USBEHCI1_GATING
 
+		// OHCI0 12M Source Select
+		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (0x03 << 24)) |
+			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+			0;
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
 		arm_hardware_set_handler_system(USB1_EHCI_IRQn, USBH_EHCI_IRQHandler);
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
+
+	PRINTF("CCU->USB0_CLK_REG=%08lX @%p\n", CCU->USB0_CLK_REG, & CCU->USB0_CLK_REG);
+	PRINTF("CCU->USB1_CLK_REG=%08lX @%p\n", CCU->USB1_CLK_REG, & CCU->USB1_CLK_REG);
+	PRINTF("CCU->USB_BGR_REG=%08lX @%p\n", CCU->USB_BGR_REG, & CCU->USB_BGR_REG);
 
 	USB1_TypeDef * p = EHCIxToUSBx(WITHUSBHW_EHCI);
 #elif CPUSTYLE_STM32MP1

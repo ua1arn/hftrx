@@ -1881,7 +1881,7 @@ void set_pll_cpux_axi(unsigned n)
 //	TP();
 //    PRINTF("freq = %lu, PLL_CPU_CTRL_REG=%08lX,CPU_AXI_CFG_REG=%08lX\n", allwnrt113_get_pll_cpu_freq(), CCU->PLL_CPU_CTRL_REG, CCU->CPU_AXI_CFG_REG);
 }
-
+#if 0
 static void set_pll_periph0(void)
 {
 	uint32_t val;
@@ -1978,6 +1978,7 @@ static void set_mbus(void)
 	/* Enable mbus master clock gating */
 	CCU->MBUS_MAT_CLK_GATING_REG = 0x00000d87;
 }
+#endif
 
 static void set_module(volatile uint32_t * reg)
 {
@@ -1996,9 +1997,9 @@ static void set_module(volatile uint32_t * reg)
 		local_delay_ms(20);
 
 		/* Lock disable */
-		val = * reg;
-		val &= ~(1 << 29);
-		* reg = val;
+//		val = * reg;
+//		val &= ~(1 << 29);
+//		* reg = val;
 	}
 }
 
@@ -2063,11 +2064,11 @@ void allwnrt113_set_pll_audio1(unsigned m, unsigned n)
 void allwnrt113_pll_initialize(void)
 {
 	//set_pll_cpux_axi(PLL_CPU_N);
-	set_pll_periph0();
-	set_ahb();
+	//set_pll_periph0();
+	//set_ahb();
 	//set_apb();	// УБрал для того, чтобы инициализация ddr3 продолжала выводить текстовый лог
-	set_dma();
-	set_mbus();
+	//set_dma();
+	//set_mbus();
 	set_module(& CCU->PLL_PERI_CTRL_REG);
 	set_module(& CCU->PLL_VIDEO0_CTRL_REG);
 	set_module(& CCU->PLL_VIDEO1_CTRL_REG);
