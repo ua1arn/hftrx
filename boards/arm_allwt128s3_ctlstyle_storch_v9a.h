@@ -258,16 +258,17 @@
 	////#define WITHENCODER2	1		/* есть второй валкодер */
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
-	//#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
-	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
+	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
+	#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
 	//#define CODEC_TYPE_WM8731_USE_SPI	1
 	//#define CODEC_TYPE_WM8731_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 
-	#define CODEC1_TYPE CODEC_TYPE_NAU8822L
-	#define CODEC_TYPE_NAU8822_USE_SPI	1
+	//#define CODEC1_TYPE CODEC_TYPE_NAU8822L
+	//#define CODEC_TYPE_NAU8822_USE_SPI	1
 	//#define CODEC_TYPE_NAU8822_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
+	//#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	//#define WITHDTMFPROCESSING 1
 	//#define WITHBBOXMIKESRC BOARD_TXAUDIO_LINE
@@ -282,7 +283,6 @@
 	//#define WITHFPGARTS_FORMATI2S_PHILIPS 1	// требуется при получении данных от FPGA
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 64		// Полный размер фрейма для двух каналов - канал кодека
-	#define CODEC_TYPE_NAU8822_MASTER 1	// кодек формирует синхронизацию
 
 	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
 	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
