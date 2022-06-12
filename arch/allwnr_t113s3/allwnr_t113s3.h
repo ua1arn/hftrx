@@ -1680,7 +1680,7 @@ typedef struct C0_CPUX_CFG_Type
  * @brief USB_EHCI_Capability
  */
 /*!< USB_EHCI_Capability Controller Interface */
-typedef struct USB_EHCI_Capability_Type
+typedef struct USB_EHCI_CapabilityType
 {
 	__IO uint32_t HCCAPBASE;                             /*!< Offset 0x0000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
 	__IO uint32_t HCSPARAMS;                             /*!< Offset 0x0004 EHCI Host Control Structural Parameter Register */
@@ -1693,7 +1693,7 @@ typedef struct USB_EHCI_Capability_Type
 	__IO uint32_t CTRLDSSEGMENT;                         /*!< Offset 0x0020 EHCI 4G Segment Selector Register */
 	__IO uint32_t PERIODICLISTBASE;                      /*!< Offset 0x0024 EHCI Frame List Base Address Register */
 	__IO uint32_t ASYNCLISTADDR;                         /*!< Offset 0x0028 EHCI Next Asynchronous List Address Register */
-} USB_EHCI_Capability_TypeDef;
+} USB_EHCI_CapabilityTypeDef;
 /* Generated section end */
 
 /* Access pointers */
@@ -1766,7 +1766,7 @@ typedef struct USB_EHCI_Capability_Type
 #define USB0			((USB1_TypeDef *) USB0_BASE)
 #define USB1			((USB1_TypeDef *) USB1_BASE)
 
-#define EHCI1			((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)
+#define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)
 
 /** @addtogroup Exported_types
   * @{

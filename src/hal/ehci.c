@@ -46,7 +46,7 @@ XUSBPS_Registers * EHCIxToUSBx(void * p)
 
 USB1_TypeDef * EHCIxToUSBx(void * p)
 {
-	USB1_TypeDef * const USBx = (WITHUSBHW_EHCI == EHCI1) ? USB1 : USB0;
+	USB1_TypeDef * const USBx = (WITHUSBHW_EHCI == USB1_EHCI) ? USB1 : USB0;
     return USBx;
 }
 
@@ -1332,8 +1332,7 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYPE_ALLWNT113
 
-
-	if (0/*WITHUSBHW_EHCI == EHCI0*/)
+	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
 	{
 		CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
 	#if WITHEHCIHWSOFTSPOLL == 0
