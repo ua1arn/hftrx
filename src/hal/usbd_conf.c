@@ -435,6 +435,27 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	//	different register layout and a few missing registers.
 	#warning HAL_PCD_MspInit should be implemented
 
+	// Turn off EHCI0
+
+	CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
+	CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
+
+	CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
+	CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
+
+	// Enable
+	CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
+	CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
+
+	// Turn off USBOTG0
+	CCU->USB_BGR_REG |= (0x01uL << 24);	// USBOTG0_RST
+	CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
+
+	// OHCI0 12M Source Select
+	CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
+		(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+		0;
+
 #else
 	#error HAL_PCD_MspInit should be implemented
 

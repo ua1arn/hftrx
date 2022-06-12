@@ -816,6 +816,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	hehci->portsc = (__IO uint32_t*) (opregspacebase + 0x0044);
 	hehci->configFlag = (__IO uint32_t*) (opregspacebase + 0x0040);
 
+	//PRINTF("HAL_EHCI_Init: NPORTS=%u\n", hehci->nports);
 	ASSERT(WITHEHCIHW_EHCIPORT < hehci->nports);
 	//EhciOpRegs * const opRegs = (EhciOpRegs*) opregspacebase;
 	//hehci->ehci.capRegs = (EhciCapRegs*) EHCIx;
@@ -1201,20 +1202,20 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
 	{
+		// Turn off USBOTG0
 		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
 		CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
 
+		// Enable
 		CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
 
 		CCU->USB_BGR_REG |= (0x01uL << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG |= (0x01uL << 20);	// USBEHCI0_RST
-		//CCU->USB_BGR_REG |= (0x01uL << 24);	// USBOTG0_RST
 
 		CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
 		CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
 
-		CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
 
 		// OHCI0 12M Source Select
 		CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
