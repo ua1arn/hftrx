@@ -1676,41 +1676,40 @@ typedef struct C0_CPUX_CFG_Type
 	__IO uint32_t AXI_MNT_RBD_REG;                       /*!< Offset 0x00E8 AXI Monitor Read Bandwidth Register */
 	__IO uint32_t AXI_MNT_WBD_REG;                       /*!< Offset 0x00EC AXI Monitor Write Bandwidth Register */
 } C0_CPUX_CFG_TypeDef;
-/* Generated section end */
-
-
-typedef struct USB_EHCI_CapabilityType
+/*
+ * @brief USB_EHCI_Capability
+ */
+/*!< USB_EHCI_Capability Controller Interface */
+typedef struct USB_EHCI_Capability_Type
 {
-	volatile uint32_t HCCAPBASE;
-//	volatile uint16_t CAPLENGTH;                    /*!< Offset 0x0000 EHCI Capability Register Length Register */
-//	volatile uint16_t HCIVERSION;                   /*!< Offset 0x0002 EHCI Host Interface Version Number Register */
-	volatile uint32_t HCSPARAMS;                    /*!< Offset 0x0004 EHCI Host Control Structural Parameter Register */
-	volatile uint32_t HCCPARAMS;                    /*!< Offset 0x0008 EHCI Host Control Capability Parameter Register */
-	volatile uint32_t HCSPPORTROUTE;                /*!< Offset 0x000C EHCI Companion Port Route Description */
-	volatile uint32_t USBCMD;                       /*!< Offset 0x0010 EHCI USB Command Register */
-	volatile uint32_t USBSTS;                       /*!< Offset 0x0014 EHCI USB Status Register */
-	volatile uint32_t USBINTR;                      /*!< Offset 0x0018 EHCI USB Interrupt Enable Register */
-	volatile uint32_t FRINDEX;                      /*!< Offset 0x001C EHCI USB Frame Index Register */
-	volatile uint32_t CTRLDSSEGMENT;                /*!< Offset 0x0020 EHCI 4G Segment Selector Register */
-	volatile uint32_t PERIODICLISTBASE;             /*!< Offset 0x0024 EHCI Frame List Base Address Register */
-	volatile uint32_t ASYNCLISTADDR;                /*!< Offset 0x0028 EHCI Next Asynchronous List Address Register */
-} USB_EHCI_CapabilityTypeDef;
-
+	__IO uint32_t HCCAPBASE;                             /*!< Offset 0x0000 EHCI Capability Register (HCIVERSION and CAPLENGTH) register */
+	__IO uint32_t HCSPARAMS;                             /*!< Offset 0x0004 EHCI Host Control Structural Parameter Register */
+	__IO uint32_t HCCPARAMS;                             /*!< Offset 0x0008 EHCI Host Control Capability Parameter Register */
+	__IO uint32_t HCSPPORTROUTE;                         /*!< Offset 0x000C EHCI Companion Port Route Description */
+	__IO uint32_t USBCMD;                                /*!< Offset 0x0010 EHCI USB Command Register */
+	__IO uint32_t USBSTS;                                /*!< Offset 0x0014 EHCI USB Status Register */
+	__IO uint32_t USBINTR;                               /*!< Offset 0x0018 EHCI USB Interrupt Enable Register */
+	__IO uint32_t FRINDEX;                               /*!< Offset 0x001C EHCI USB Frame Index Register */
+	__IO uint32_t CTRLDSSEGMENT;                         /*!< Offset 0x0020 EHCI 4G Segment Selector Register */
+	__IO uint32_t PERIODICLISTBASE;                      /*!< Offset 0x0024 EHCI Frame List Base Address Register */
+	__IO uint32_t ASYNCLISTADDR;                         /*!< Offset 0x0028 EHCI Next Asynchronous List Address Register */
+} USB_EHCI_Capability_TypeDef;
+/* Generated section end */
 
 /* Access pointers */
 
-#define UART0      ((UART_TypeDef *) UART0_BASE)
-#define UART1      ((UART_TypeDef *) UART1_BASE)
-#define UART2      ((UART_TypeDef *) UART2_BASE)
-#define UART3      ((UART_TypeDef *) UART3_BASE)
-#define UART4      ((UART_TypeDef *) UART4_BASE)
-#define UART5      ((UART_TypeDef *) UART5_BASE)
-#define GPIOB      ((GPIO_TypeDef *) GPIOB_BASE)
-#define GPIOC      ((GPIO_TypeDef *) GPIOC_BASE)
-#define GPIOD      ((GPIO_TypeDef *) GPIOD_BASE)
-#define GPIOE      ((GPIO_TypeDef *) GPIOE_BASE)
-#define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)
-#define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)
+#define UART0      ((UART_TypeDef *) UART0_BASE)		/*!< \brief UART0 Interface register set access pointer */
+#define UART1      ((UART_TypeDef *) UART1_BASE)		/*!< \brief UART1 Interface register set access pointer */
+#define UART2      ((UART_TypeDef *) UART2_BASE)		/*!< \brief UART2 Interface register set access pointer */
+#define UART3      ((UART_TypeDef *) UART3_BASE)		/*!< \brief UART3 Interface register set access pointer */
+#define UART4      ((UART_TypeDef *) UART4_BASE)		/*!< \brief UART4 Interface register set access pointer */
+#define UART5      ((UART_TypeDef *) UART5_BASE)		/*!< \brief UART5 Interface register set access pointer */
+#define GPIOB      ((GPIO_TypeDef *) GPIOB_BASE)		/*!< \brief GPIOB Interface register set access pointer */
+#define GPIOC      ((GPIO_TypeDef *) GPIOC_BASE)		/*!< \brief GPIOC Interface register set access pointer */
+#define GPIOD      ((GPIO_TypeDef *) GPIOD_BASE)		/*!< \brief GPIOD Interface register set access pointer */
+#define GPIOE      ((GPIO_TypeDef *) GPIOE_BASE)		/*!< \brief GPIOE Interface register set access pointer */
+#define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)		/*!< \brief GPIOF Interface register set access pointer */
+#define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)		/*!< \brief GPIOG Interface register set access pointer */
 #define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)
 #define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)
 #define SMHC1      	((SMHC_TypeDef *) SMHC1_BASE)
@@ -1720,12 +1719,12 @@ typedef struct USB_EHCI_CapabilityType
 #define DMIC      	((DMIC_TypeDef *) DMIC_BASE)
 #define OWA			((OWA_TypeDef *) OWA_BASE)
 #define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)
-#define TWI0		((TWI_TypeDef *) TWI0_BASE)
-#define TWI1		((TWI_TypeDef *) TWI1_BASE)
-#define TWI2		((TWI_TypeDef *) TWI2_BASE)
-#define TWI3		((TWI_TypeDef *) TWI3_BASE)
-#define SPI0		((SPI_TypeDef *) SPI0_BASE)
-#define SPI_DBI		((SPI_DBI_TypeDef *) SPI_DBI_BASE)
+#define TWI0		((TWI_TypeDef *) TWI0_BASE)			/*!< \brief TWI0 Interface register set access pointer */
+#define TWI1		((TWI_TypeDef *) TWI1_BASE)			/*!< \brief TWI1 Interface register set access pointer */
+#define TWI2		((TWI_TypeDef *) TWI2_BASE)			/*!< \brief TWI2 Interface register set access pointer */
+#define TWI3		((TWI_TypeDef *) TWI3_BASE)			/*!< \brief TWI3 Interface register set access pointer */
+#define SPI0		((SPI_TypeDef *) SPI0_BASE)			/*!< \brief SPI0 Interface register set access pointer */
+#define SPI_DBI		((SPI_DBI_TypeDef *) SPI_DBI_BASE)	/*!< \brief SPI_DBI Interface register set access pointer */
 #define LEDC		((LEDC_TypeDef *) LEDC_BASE)
 #define GPADC		((GPADC_TypeDef *) GPADC_BASE)
 #define TPADC		((TPADC_TypeDef *) TPADC_BASE)
@@ -1736,7 +1735,7 @@ typedef struct USB_EHCI_CapabilityType
 #define TIMER		((TIMER_TypeDef *) TIMER_BASE)
 #define THS			((THS_TypeDef *) THS_BASE)
 #define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)
-#define CCU			((CCU_TypeDef *) CCU_BASE)
+#define CCU			((CCU_TypeDef *) CCU_BASE)			/*!< \brief CCU Interface register set access pointer */
 
 #define DE 			((DE_TypeDef *) DE_BASE)
 #define DI 			((DI_TypeDef *) DI_BASE)
@@ -1752,7 +1751,7 @@ typedef struct USB_EHCI_CapabilityType
 #define TVD_TOP		((TVD_TypeDef *) TVD_TOP_BASE)
 #define TVD0		((TV_TypeDef *) TVD0_BASE)
 
-#define RTC			((RTC_TypeDef *) RTC_BASE)
+#define RTC			((RTC_TypeDef *) RTC_BASE)			/*!< \brief RTC Interface register set access pointer */
 
 #define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
 //#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
@@ -1768,6 +1767,7 @@ typedef struct USB_EHCI_CapabilityType
 #define USB1			((USB1_TypeDef *) USB1_BASE)
 
 #define EHCI1			((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)
+
 /** @addtogroup Exported_types
   * @{
   */

@@ -44,5 +44,7 @@ rem .\Debug\genregdefs.exe tcon_tv.txt		TCON_TV 	 >> tt.txt
 .\Debug\genregdefs.exe c0_cpux_cfg.txt 	 C0_CPUX_CFG 	 >> tt.txt
 rem .\Debug\genregdefs.exe c0_cpux_mbist.txt C0_CPUX_MBIST 	 >> tt.txt
 
+.\Debug\genregdefs.exe usb_ehci_capability.txt 	 USB_EHCI_Capability 	 >> tt.txt
+
 
 echo /* Generated section end */ >> tt.txt
