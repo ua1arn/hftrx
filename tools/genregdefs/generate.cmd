@@ -25,6 +25,7 @@ echo /* Generated section start */ > tt.txt
 .\Debug\genregdefs.exe hstimer.txt HSTIMER >> tt.txt
 .\Debug\genregdefs.exe can.txt CAN >> tt.txt
 .\Debug\genregdefs.exe usb1.txt USB1 >> tt.txt
+.\Debug\genregdefs.exe drd.txt DRD >> tt.txt
 
 
 .\Debug\genregdefs.exe csi.txt			CSI			 >> tt.txt

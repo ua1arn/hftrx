@@ -428,6 +428,15 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		NVIC_EnableIRQ(OTG_FS_IRQn);	// OTG_FS_IRQHandler() enable
 
 	}
+#elif CPUSTYPE_ALLWNT113
+	//	Allwinner USB DRD support (musb_otg)
+	//
+	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
+	//	different register layout and a few missing registers.
+	#warning HAL_PCD_MspInit should be implemented
+
+#else
+	#error HAL_PCD_MspInit should be implemented
 
 #endif
 }
@@ -492,20 +501,24 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 
 #elif CPUSTYLE_STM32F
 
-#if defined (USB_OTG_HS)
-	  if (pcdHandle->Instance == USB_OTG_HS)
-	  {
-	    /* Peripheral interrupt Deinit*/
-	    arm_hardware_disable_handler(OTG_HS_IRQn);
-	  }
-#endif /* defined (USB_OTG_HS) */
-#if defined (USB_OTG_FS)
-	  if (pcdHandle->Instance == USB_OTG_FS)
-	  {
-	    /* Peripheral interrupt Deinit*/
-	    arm_hardware_disable_handler(OTG_FS_IRQn);
-	  }
-#endif /* defined (USB_OTG_FS) */
+	#if defined (USB_OTG_HS)
+		  if (pcdHandle->Instance == USB_OTG_HS)
+		  {
+			/* Peripheral interrupt Deinit*/
+			arm_hardware_disable_handler(OTG_HS_IRQn);
+		  }
+	#endif /* defined (USB_OTG_HS) */
+	#if defined (USB_OTG_FS)
+		  if (pcdHandle->Instance == USB_OTG_FS)
+		  {
+			/* Peripheral interrupt Deinit*/
+			arm_hardware_disable_handler(OTG_FS_IRQn);
+		  }
+	#endif /* defined (USB_OTG_FS) */
+
+#elif CPUSTYPE_ALLWNT113
+
+	#warning HAL_PCD_MspDeInit should be implemented
 
 #else
 	#error HAL_PCD_MspDeInit should be implemented
