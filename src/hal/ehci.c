@@ -921,9 +921,16 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	EHCIx->CTRLDSSEGMENT = cpu_to_le32(0);
 	EHCIx->USBSTS = ~ 0uL;	// Clear status
 
+	// Expected results (STM32MP1):
+	//	1 HAL_EHCI_Init: PORTSC=00002000
+	//	2 HAL_EHCI_Init: PORTSC=00000000
+	//	3 HAL_EHCI_Init: PORTSC=00001000
+
+	PRINTF("1 HAL_EHCI_Init: PORTSC=%08lX\n", hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	*hehci->configFlag = EHCI_CONFIGFLAG_CF;
 	(void) *hehci->configFlag;
+	PRINTF("2 HAL_EHCI_Init: PORTSC=%08lX\n",hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
 	/* Enable power to all ports */
 	unsigned porti = WITHEHCIHW_EHCIPORT;
@@ -941,6 +948,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
+	PRINTF("3 HAL_EHCI_Init: PORTSC=%08lX\n", hehci->portsc [WITHEHCIHW_EHCIPORT]);
 
 	// OHCI init
 
@@ -955,14 +963,15 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 
 		unsigned long PowerOnToPowerGoodTime = ((le32_to_cpu(hehci->ohci->HcRhDescriptorA) >> 24) & 0xFF) * 2;
 
-		PRINTF("OHCI: HcCommandStatus=%08lX\n", le32_to_cpu(hehci->ohci->HcCommandStatus));
-		PRINTF("OHCI: HcRevision=%08lX\n", le32_to_cpu(hehci->ohci->HcRevision));
-		PRINTF("OHCI: HcControl=%08lX\n", le32_to_cpu(hehci->ohci->HcControl));
-		PRINTF("OHCI: HcFmInterval=%08lX\n", le32_to_cpu(hehci->ohci->HcFmInterval));
-		PRINTF("OHCI: HcRhDescriptorA=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
-		PRINTF("OHCI: HcRhDescriptorB=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
-		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
-		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
+//		PRINTF("OHCI: HcCommandStatus=%08lX\n", le32_to_cpu(hehci->ohci->HcCommandStatus));
+//		PRINTF("OHCI: HcRevision=%08lX\n", le32_to_cpu(hehci->ohci->HcRevision));
+//		PRINTF("OHCI: HcControl=%08lX\n", le32_to_cpu(hehci->ohci->HcControl));
+//		PRINTF("OHCI: HcFmInterval=%08lX\n", le32_to_cpu(hehci->ohci->HcFmInterval));
+//		PRINTF("OHCI: HcRhDescriptorA=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorA));
+//		PRINTF("OHCI: HcRhDescriptorB=%08lX\n", le32_to_cpu(hehci->ohci->HcRhDescriptorB));
+
+//		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
+//		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 
 
 		hehci->ohci->HcRhPortStatus[0] = cpu_to_le32(0x01ul << 8); // PortPowerStatus
@@ -972,8 +981,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 //		hehci->ohci->HcRhPortStatus[0] = cpu_to_le32(0x01ul << 0); // PortEnableStatus
 //		hehci->ohci->HcRhPortStatus[1] = cpu_to_le32(0x01ul << 0); // PortEnableStatus
 
-		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
-		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
+//		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
+//		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 	}
 
 	return HAL_OK;
