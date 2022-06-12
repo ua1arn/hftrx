@@ -941,7 +941,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
- 	PRINTF("HAL_EHCI_Init: USBSTS=%08lX, portsc=%08lX\n", USB1->E_USBSTS, USB1->E_PORTSC);
 
 	// OHCI init
 
