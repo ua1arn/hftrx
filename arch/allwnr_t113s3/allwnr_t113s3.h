@@ -1521,6 +1521,28 @@ typedef struct USB1_Type
 	__IO uint32_t HCI;                                   /*!< Offset 0x0828 HCI SIE Port Disable Control Register */
 } USB1_TypeDef;
 /*
+ * @brief DRD
+ */
+/*!< DRD Controller Interface */
+typedef struct DRD_Type
+{
+	__IO uint32_t USB_REVISION_REG;                      /*!< Offset 0x0000 usb_revision_reg	0x00 */
+	__IO uint32_t USB_CTRL_REG;                          /*!< Offset 0x0004 usb_ctrl_reg	0x04 */
+	__IO uint32_t USB_STAT_REG;                          /*!< Offset 0x0008 usb_stat_reg	0x08 */
+	__IO uint32_t USB_EMULATION_REG;                     /*!< Offset 0x000C usb_emulation_reg 0x0c */
+	uint32_t reserved1 [0x0002];
+	__IO uint32_t USB_SRP_FIX_TIME_REG;                  /*!< Offset 0x0018 usb_srp_fix_time_reg 0x18 */
+	uint32_t reserved2 [0x0001];
+	__IO uint32_t USB_INTR_SRC_REG;                      /*!< Offset 0x0020 usb_intr_src_reg	0x20 */
+	__IO uint32_t USB_INTR_SRC_SET_REG;                  /*!< Offset 0x0024 usb_intr_src_set_reg 0x24 */
+	__IO uint32_t USB_INTR_SRC_CLEAR_REG;                /*!< Offset 0x0028 usb_intr_src_clear_reg 0x28 */
+	__IO uint32_t USB_INTR_MASK_REG;                     /*!< Offset 0x002C usb_intr_mask_reg 0x2c */
+	__IO uint32_t USB_INTR_MASK_SET_REG;                 /*!< Offset 0x0030 usb_intr_mask_set_reg 0x30 */
+	__IO uint32_t USB_INTR_MASK_CLEAR_REG;               /*!< Offset 0x0034 usb_intr_mask_clear_reg 0x34 */
+	__IO uint32_t USB_INTR_SRC_MASKED_REG;               /*!< Offset 0x0038 usb_intr_src_masked_reg 0x38 */
+	__IO uint32_t USB_END_OF_INTR_REG;                   /*!< Offset 0x003C usb_end_of_intr_reg 0x3c */
+} DRD_TypeDef;
+/*
  * @brief CSI
  */
 /*!< CSI Controller Interface */
@@ -1767,9 +1789,10 @@ typedef struct USB_EHCI_CapabilityType
 #define USB0			((USB1_TypeDef *) USB0_BASE)					/*!< \brief USB0 Interface register set access pointer */
 #define USB1			((USB1_TypeDef *) USB1_BASE)					/*!< \brief USB1 Interface register set access pointer */
 
-#define USB_OTG0		((USB1_TypeDef *) USB0_BASE)					/*!< \brief USB_OTG0 Interface register set access pointer */
+#define USB0_OTG		((DRD_TypeDef *) USB0_BASE)					/*!< \brief USB0_OTG Interface register set access pointer */
 
-#define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)		/*!< \brief USB1_EHCI Interface register set access pointer */
+#define USB0_EHCI		((USB_EHCI_CapabilityTypeDef * ) (USB0_BASE + 0x1000))	/*!< \brief USB0_EHCI Interface register set access pointer */
+#define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */
 
 /** @addtogroup Exported_types
   * @{

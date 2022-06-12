@@ -926,7 +926,7 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	//	2 HAL_EHCI_Init: PORTSC=00000000
 	//	3 HAL_EHCI_Init: PORTSC=00001000
 
-	PRINTF("1 HAL_EHCI_Init: PORTSC=%08lX\n", hehci->portsc [WITHEHCIHW_EHCIPORT]);
+	PRINTF("1 HAL_EHCI_Init: PORTSC=%08lX @%p\n", hehci->portsc [WITHEHCIHW_EHCIPORT], & hehci->portsc [WITHEHCIHW_EHCIPORT]);
 	/* Route all ports to EHCI controller */
 	*hehci->configFlag = EHCI_CONFIGFLAG_CF;
 	(void) *hehci->configFlag;
@@ -1193,6 +1193,25 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	PRINTF("From boot: CCU->USB0_CLK_REG=%08lX @%p\n", CCU->USB0_CLK_REG, & CCU->USB0_CLK_REG);
 	PRINTF("From boot: CCU->USB1_CLK_REG=%08lX @%p\n", CCU->USB1_CLK_REG, & CCU->USB1_CLK_REG);
 
+	// https://github.com/allwinner-zh/bootloader/blob/master/u-boot-2011.09/usb_sunxi/usb_efex.h
+//	#define DRIVER_VENDOR_ID			0x1F3A
+//	#define DRIVER_PRODUCT_ID			0xEfE8
+//
+//	#define CBW_MAGIC		0x43555741	//AWUC
+//	#define CSW_MAGIC		0x53555741	//AWUS
+//	#define CSW_STATUS_PASS	0x00
+//	#define CSW_STATUS_FAIL	0x01
+//
+//	#define CBW_TOTAL_LEN		32	//
+//	#define CBW_MAX_CMD_SIZE	16
+//
+//	#define	FES_PLATFORM_HW_ID		    0x00161000
+
+	//printhex(0x04100000, 0x04100000, 8192);
+	PRINTF("USB0_OTG->USB_REVISION_REG=%08lX\n", USB0_OTG->USB_REVISION_REG);	// 0x00200209
+	PRINTF("USB0_OTG->USB_CTRL_REG=%08lX\n", USB0_OTG->USB_CTRL_REG);			// 0x43555741
+	PRINTF("USB0_OTG->USB_STAT_REG=%08lX\n", USB0_OTG->USB_STAT_REG);			// 0x00200209
+
 	/* Off bootloader USB */
 	if (0)
 	{
@@ -1206,8 +1225,6 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
 	{
-		ASSERT(0);					/* тут нет EHCI */
-
 		CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
 
@@ -1217,7 +1234,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 		CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
 		CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
-		//CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
+
+		CCU->USB_BGR_REG |= (0x01uL << 8);	// USBOTG0_GATING
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB0_OHCI_IRQn, USBH_OHCI_IRQHandler);
@@ -1237,7 +1255,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 		// OHCI0 12M Source Select
 		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (0x03 << 24)) |
-			(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
+			0*(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 			0;
 
 	#if WITHEHCIHWSOFTSPOLL == 0
