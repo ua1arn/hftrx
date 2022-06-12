@@ -2088,7 +2088,7 @@ unsigned long allwnrt113_get_hosc_freq(void)
 #endif
 }
 
-unsigned long allwnrt113_get_pll_cpu_freq(void)
+uint_fast64_t allwnrt113_get_pll_cpu_freq(void)
 {
 	// PLL_CPU = InputFreq*N.
 	const uint_fast32_t reg = CCU->PLL_CPU_CTRL_REG;
@@ -2107,7 +2107,7 @@ unsigned long allwnrt113_get_pll_ddr_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
 }
 
-static uint_fast64_t allwnrt113_get_pll_peri_freq(void)
+uint_fast64_t allwnrt113_get_pll_peri_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
