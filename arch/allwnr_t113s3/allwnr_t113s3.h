@@ -1487,7 +1487,8 @@ typedef struct USB1_Type
 	uint32_t reserved1 [0x0009];
 	__IO uint32_t E_CONFIGFLAG;                          /*!< Offset 0x0050 EHCI Configured Flag Register */
 	__IO uint32_t E_PORTSC;                              /*!< Offset 0x0054 EHCI Port Status/Control Register */
-	uint32_t reserved2 [0x00EB];
+	uint32_t reserved2 [0x00EA];
+	__IO uint32_t O_HcRevision;                          /*!< Offset 0x0400 OHCI Revision Register (not documented) */
 	__IO uint32_t O_HcControl;                           /*!< Offset 0x0404 OHCI Control Register */
 	__IO uint32_t O_HcCommandStatus;                     /*!< Offset 0x0408 OHCI Command Status Register */
 	__IO uint32_t O_HcInterruptStatus;                   /*!< Offset 0x040C OHCI Interrupt Status Register */

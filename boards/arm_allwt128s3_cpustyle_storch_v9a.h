@@ -131,6 +131,7 @@
 	#define WITHEHCIHW	1	/* USB_EHCI controller */
 	#define WITHUSBHW_EHCI		USB1_EHCI
 	#define WITHEHCIHW_EHCIPORT 0	// 0 - use 1st PHY port, 1 - 2nd PHY port (shared with USB_OTG_HS). See also USBPHYC_MISC_SWITHOST_VAL
+	#define WITHUSBHW_OHCI ((struct ohci_registers *) & USB1->O_HcRevision)
 
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1

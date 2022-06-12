@@ -941,8 +941,8 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 	/* Wait 20ms after potentially enabling power to a port */
 	//local_delay_ms ( EHCI_PORT_POWER_DELAY_MS );
 	local_delay_ms(50);
+ 	PRINTF("HAL_EHCI_Init: USBSTS=%08lX, portsc=%08lX\n", USB1->E_USBSTS, USB1->E_PORTSC);
 
-#if defined (USB1HSFSP2_BASE)
 	// OHCI init
 
 	if (hehci->ohci != NULL)
@@ -976,9 +976,6 @@ HAL_StatusTypeDef HAL_EHCI_Init(EHCI_HandleTypeDef *hehci)
 		PRINTF("OHCI: HcRhPortStatus[0]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[0]));
 		PRINTF("OHCI: HcRhPortStatus[1]=%08lX\n", le32_to_cpu(hehci->ohci->HcRhPortStatus[1]));
 	}
-
-
-#endif /* defined (USB1HSFSP2_BASE) */
 
 	return HAL_OK;
 }

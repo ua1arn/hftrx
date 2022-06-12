@@ -40,6 +40,9 @@ EHCI Configured Flag Register
 E_PORTSC
 0x0054
 EHCI Port Status/Control Register
+O_HcRevision
+0x0400
+OHCI Revision Register (not documented)
 O_HcControl
 0x0404
 OHCI Control Register
