@@ -1250,8 +1250,8 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 	USB1_TypeDef * USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
-	USBx->HCI_Interface |= (0x01uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
-	USBx->PHY_Control &= ~ (0x01uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+	USBx->USB_CTRL |= (0x01uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+	USBx->PHY_CTRL &= ~ (0x01uL << 3); 	// SIDDQ 0: Write 0 to enable phy
 
 #elif CPUSTYLE_STM32MP1
 

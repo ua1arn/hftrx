@@ -1511,14 +1511,14 @@ typedef struct USB1_Type
 	__IO uint32_t O_HcRhStatus;                          /*!< Offset 0x0450 OHCI Root Hub Status Register */
 	__IO uint32_t O_HcRhPortStatus;                      /*!< Offset 0x0454 OHCI Root Hub Port Status Register */
 	uint32_t reserved3 [0x00EA];
-	__IO uint32_t HCI_Interface;                         /*!< Offset 0x0800 HCI Interface Register */
+	__IO uint32_t USB_CTRL;                              /*!< Offset 0x0800 HCI Interface Register (HCI_Interface) */
 	uint32_t reserved4 [0x0001];
-	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x0808 HCI Control Register */
+	__IO uint32_t HCI_CTRL3;                             /*!< Offset 0x0808 HCI Control 3 Register */
 	uint32_t reserved5 [0x0001];
-	__IO uint32_t PHY_Control;                           /*!< Offset 0x0810 PHY Control Register */
+	__IO uint32_t PHY_CTRL;                              /*!< Offset 0x0810 PHY Control Register (PHY_Control) */
 	uint32_t reserved6 [0x0004];
 	__IO uint32_t PHY_STATUS;                            /*!< Offset 0x0824 PHY Status Register */
-	__IO uint32_t HCI;                                   /*!< Offset 0x0828 HCI SIE Port Disable Control Register */
+	__IO uint32_t USB_SPDCR;                             /*!< Offset 0x0828 HCI SIE Port Disable Control Register */
 } USB1_TypeDef;
 /*
  * @brief DRD
