@@ -1187,12 +1187,21 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 #if CPUSTYPE_ALLWNT113
 
 	PRINTF("From boot: allwnrt113_get_pll_peri_800M_freq=%lu\n", allwnrt113_get_pll_peri_800M_freq());
+#define USB0x_EHCI		((USB1_TypeDef * ) (USB0_BASE + 0x1000))	/*!< \brief USB0_EHCI Interface register set access pointer */
 
 	PRINTF("From boot: CCU->USB_BGR_REG=%08lX @%p\n", CCU->USB_BGR_REG, & CCU->USB_BGR_REG);
 	PRINTF("From boot: CCU->PLL_PERI_CTRL_REG=%08lX @%p\n", CCU->PLL_PERI_CTRL_REG, & CCU->PLL_PERI_CTRL_REG);
 	PRINTF("From boot: CCU->USB0_CLK_REG=%08lX @%p\n", CCU->USB0_CLK_REG, & CCU->USB0_CLK_REG);
 	PRINTF("From boot: CCU->USB1_CLK_REG=%08lX @%p\n", CCU->USB1_CLK_REG, & CCU->USB1_CLK_REG);
 
+	PRINTF("From boot: USB0->PHY_Control=%08lX @%p\n", USB0x_EHCI->PHY_Control, & USB0x_EHCI->PHY_Control);
+	PRINTF("From boot: USB1->PHY_Control=%08lX @%p\n", USB1->PHY_Control, & USB1->PHY_Control);
+
+	USB0x_EHCI->PHY_Control = 0;
+	USB1->PHY_Control = 0;
+
+	PRINTF("From boot: USB0->PHY_Control=%08lX @%p\n", USB0x_EHCI->PHY_Control, & USB0x_EHCI->PHY_Control);
+	PRINTF("From boot: USB1->PHY_Control=%08lX @%p\n", USB1->PHY_Control, & USB1->PHY_Control);
 	// https://github.com/allwinner-zh/bootloader/blob/master/u-boot-2011.09/usb_sunxi/usb_efex.h
 //	#define DRIVER_VENDOR_ID			0x1F3A
 //	#define DRIVER_PRODUCT_ID			0xEfE8
@@ -1213,7 +1222,7 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	PRINTF("USB0_OTG->USB_STAT_REG=%08lX\n", USB0_OTG->USB_STAT_REG);			// 0x00200209
 
 	/* Off bootloader USB */
-	if (0)
+	if (1)
 	{
 		CCU->USB_BGR_REG &= ~ (0x01uL << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG &= ~ (0x01uL << 20);	// USBEHCI0_RST
@@ -1225,12 +1234,15 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
 	{
+		CCU->USB_BGR_REG &= ~ (0x01uL << 24);	// USBOTG0_RST
+		CCU->USB_BGR_REG &= ~ (0x01uL << 8);	// USBOTG0_GATING
+
 		CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
 
 		CCU->USB_BGR_REG |= (0x01uL << 16);	// USBOHCI0_RST
 		CCU->USB_BGR_REG |= (0x01uL << 20);	// USBEHCI0_RST
-		CCU->USB_BGR_REG |= (0x01uL << 24);	// USBOTG0_RST
+		//CCU->USB_BGR_REG |= (0x01uL << 24);	// USBOTG0_RST
 
 		CCU->USB_BGR_REG |= (0x01uL << 0);	// USBOHCI0_GATING
 		CCU->USB_BGR_REG |= (0x01uL << 4);	// USBEHCI0_GATING
@@ -1257,6 +1269,13 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 		CCU->USB1_CLK_REG = (CCU->USB1_CLK_REG & ~ (0x03 << 24)) |
 			0*(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 			0;
+
+		USB0x_EHCI->PHY_Control = 0;
+		USB1->HCI_Interface |= 1;	// 1: Enable UTMI interface, disable ULPI interface
+		USB1->PHY_Control = 0;
+
+		PRINTF("USB0->PHY_Control=%08lX @%p\n", USB0x_EHCI->PHY_Control, & USB0x_EHCI->PHY_Control);
+		PRINTF("USB1->PHY_Control=%08lX @%p\n", USB1->PHY_Control, & USB1->PHY_Control);
 
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_set_handler_system(USB1_OHCI_IRQn, USBH_OHCI_IRQHandler);
