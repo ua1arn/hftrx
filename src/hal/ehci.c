@@ -24,8 +24,6 @@
 /* USB Host Core handle declaration. */
 RAMNOINIT_D1 USBH_HandleTypeDef hUsbHostHS;
 
-static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
-
 static RAMNOINIT_D1 EHCI_HandleTypeDef hehci_USB;
 
 #if WITHUSEUSBFLASH
@@ -2422,36 +2420,6 @@ USBH_StatusTypeDef USBH_LL_Stop(USBH_HandleTypeDef *phost)
 	usb_status = USBH_Get_USB_Status(hal_status);
 
 	return usb_status;
-}
-
-/*
- * user callback definition
-*/
-void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
-{
-
-	/* USER CODE BEGIN CALL_BACK_1 */
-	switch(id)
-	{
-	case HOST_USER_SELECT_CONFIGURATION:
-		break;
-
-	case HOST_USER_DISCONNECTION:
-		Appli_state = APPLICATION_DISCONNECT;
-		break;
-
-	case HOST_USER_CLASS_ACTIVE:
-		Appli_state = APPLICATION_READY;
-		break;
-
-	case HOST_USER_CONNECTION:
-		Appli_state = APPLICATION_START;
-		break;
-
-	default:
-		break;
-	}
-	/* USER CODE END CALL_BACK_1 */
 }
 
 void MX_USB_HOST_Init(void)

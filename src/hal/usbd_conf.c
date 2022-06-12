@@ -67,17 +67,6 @@ __ALIGN4k_BEGIN PCD_HandleTypeDef hpcd_USB_OTG __ALIGN4k_END;
 /* USB Device Core handle declaration */
 static __ALIGN4k_BEGIN USBD_HandleTypeDef hUsbDevice __ALIGN4k_END;
 
-//
-//typedef enum {
-//  APPLICATION_IDLE = 0,
-//  APPLICATION_START,
-//  APPLICATION_READY,
-//  APPLICATION_DISCONNECT,
-//} ApplicationTypeDef;
-
-//static RAMBIGDTCM ApplicationTypeDef Appli_state = APPLICATION_IDLE;
-
-
 
 /* USER CODE BEGIN 1 */
 

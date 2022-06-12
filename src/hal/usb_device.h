@@ -154,15 +154,9 @@
 
  void MX_USB_HOST_Process(void);
 
- /** Status of the application. */
- typedef enum {
-   APPLICATION_IDLE = 0,
-   APPLICATION_START,
-   APPLICATION_READY,
-   APPLICATION_DISCONNECT
- }ApplicationTypeDef;
+extern USBH_HandleTypeDef hUsbHostHS;
 
- extern USBH_HandleTypeDef hUsbHostHS;
+void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id);
 
 #ifdef __cplusplus
 }

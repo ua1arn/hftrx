@@ -58,8 +58,6 @@ void Error_Handler(void);
 //	USBH_HandleTypeDef hUSBHost[5];
 //	HCD_HandleTypeDef _hHCD[2];
 
-	static ApplicationTypeDef Appli_state = APPLICATION_IDLE;
-
 #endif /* defined (WITHUSBHW_HOST) */
 /*
  * -- Insert your variables declaration here --
@@ -180,37 +178,6 @@ void MX_USB_DEVICE_DeInit(void)
 #endif /* defined (WITHUSBHW_DEVICE) */
 
 #if defined (WITHUSBHW_HOST)
-
-
-/*
- * user callback definition
-*/
-void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
-{
-
-	/* USER CODE BEGIN CALL_BACK_1 */
-	switch(id)
-	{
-	case HOST_USER_SELECT_CONFIGURATION:
-		break;
-
-	case HOST_USER_DISCONNECTION:
-		Appli_state = APPLICATION_DISCONNECT;
-		break;
-
-	case HOST_USER_CLASS_ACTIVE:
-		Appli_state = APPLICATION_READY;
-		break;
-
-	case HOST_USER_CONNECTION:
-		Appli_state = APPLICATION_START;
-		break;
-
-	default:
-		break;
-	}
-	/* USER CODE END CALL_BACK_1 */
-}
 // вызывается с частотой TICKS_FREQUENCY (например, 200 Гц) с запрещенными прерываниями.
 static void
 board_usb_tspool(void * ctx)
@@ -369,6 +336,111 @@ uint_fast8_t hamradio_get_usbh_active(void)
 }
 
 #if defined (WITHUSBHW_HOST) || defined (WITHUSBHW_EHCI)
+
+
+/** Status of the application. */
+typedef enum {
+  APPLICATION_IDLE = 0,
+  APPLICATION_START,
+  APPLICATION_READY,
+  APPLICATION_DISCONNECT
+} ApplicationTypeDef;
+
+ApplicationTypeDef Appli_state = APPLICATION_IDLE;
+
+/*
+ * user callback definition
+*/
+void USBH_UserProcess(USBH_HandleTypeDef *phost, uint8_t id)
+{
+
+	/* USER CODE BEGIN CALL_BACK_1 */
+	switch(id)
+	{
+	case HOST_USER_SELECT_CONFIGURATION:
+		TP();
+		//phost->device.CfgDesc.bConfigurationValue = 1;
+		break;
+
+	case HOST_USER_DISCONNECTION:
+		TP();
+		Appli_state = APPLICATION_DISCONNECT;
+		switch (USBH_GetActiveClass(phost))
+		{
+		default:
+			/* Дескрипторы уже обнулены... */
+			TP();
+			PRINTF("Undefined device disconnected.\n");
+			break;
+
+		case USB_MSC_CLASS:
+			TP();
+			PRINTF("MSC device disconnected.\n");
+			break;
+//		case AC_CLASS:
+//			TP();
+//		      PRINTF("AUDIO device disconnected.\n");
+//			break;
+		case USB_HID_CLASS:
+			TP();
+			PRINTF("HID device disconnected.\n");
+			TP();
+			break;
+		case USB_HUB_CLASS:
+			TP();
+			PRINTF("HUB device disconnected.\n");
+			break;
+		}
+		break;
+
+	case HOST_USER_CLASS_ACTIVE:
+		TP();
+		Appli_state = APPLICATION_READY;
+	    switch(USBH_GetActiveClass(phost))
+	    {
+	    case USB_MSC_CLASS:
+	      //Appli_state = APPLICATION_MSC;
+	      TP();
+	      PRINTF("MSC device connected.\n");
+	      /* Link the USB disk I/O driver */
+	      //FATFS_LinkDriver(&USBH_Driver, USBDISKPath);
+	      break;
+
+//	    case AC_CLASS:
+//	      Appli_state = APPLICATION_AUDIO;
+//	      TP();
+//	      PRINTF("AUDIO device connected.\n");
+//	      /* Init SD Storage */
+//	      if (SD_StorageInit() == 0)
+//	      {
+//	        SD_StorageParse();
+//	      }
+//	      break;
+
+	    case USB_HID_CLASS:
+			//Appli_state = APPLICATION_HID;
+			TP();
+			PRINTF("MSC device connected.\n");
+			break;
+		case USB_HUB_CLASS:
+			//Appli_state = APPLICATION_HUB;
+			TP();
+			PRINTF("HUB device connected.\n");
+			break;
+	    }
+		break;
+
+	case HOST_USER_CONNECTION:
+		TP();
+		Appli_state = APPLICATION_START;
+		break;
+
+	default:
+		break;
+	}
+	/* USER CODE END CALL_BACK_1 */
+}
+
 void USBH_HID_EventCallback(USBH_HandleTypeDef *phost)
 {
 	for (;;)
