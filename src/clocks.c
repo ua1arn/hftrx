@@ -2184,6 +2184,16 @@ unsigned long allwnrt113_get_pll_audio1_x1_freq(void)
 	return allwnrt113_get_pll_audio1_x4_freq() / 4;
 }
 
+unsigned long allwnrt113_get_pll_audio1_div2_freq(void)
+{
+	return allwnrt113_get_pll_audio1_x1_freq() / 2;
+}
+
+unsigned long allwnrt113_get_pll_audio1_div5_freq(void)
+{
+	return allwnrt113_get_pll_audio1_x1_freq() / 5;
+}
+
 unsigned long allwnrt113_get_video0_x2_freq(void)
 {
 	return allwnrt113_get_video0_x4_freq() / 2;
@@ -2227,6 +2237,47 @@ unsigned long allwnrt113_get_dram_freq(void)
 		return allwnrt113_get_pll_peri_800M_freq() / M / N;
 	}
 }
+
+unsigned long allwnrt113_get_i2s1_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->I2S1_CLK_REG;
+	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
+	// I2S/PCM1_CLK = Clock Source/M/N
+	switch ((clkreg >> 24) & 0x03)	/* I2S1_CLK_SEL */
+	{
+	default:
+	case 0x00:	/* 00: PLL_AUDIO0(1X) */
+		return allwnrt113_get_pll_audio0_x1_freq() / M / N;
+	case 0x01:	/* 01: PLL_AUDIO0(4X) */
+		return allwnrt113_get_pll_audio0_x4_freq() / M / N;
+	case 0x02:	/* 10: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_pll_audio1_div2_freq() / M / N;
+	case 0x03: /* 11: PLL_AUDIO1(DIV5) */
+		return allwnrt113_get_pll_audio1_div5_freq() / M / N;
+	}
+}
+
+unsigned long allwnrt113_get_i2s2_freq(void)
+{
+	const uint_fast32_t clkreg = CCU->I2S2_CLK_REG;
+	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
+	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
+	// I2S/PCM2_CLK = Clock Source/M/N
+	switch ((clkreg >> 24) & 0x03)	/* I2S2_CLK_SEL */
+	{
+	default:
+	case 0x00:	/* 00: PLL_AUDIO0(1X) */
+		return allwnrt113_get_pll_audio0_x1_freq() / M / N;
+	case 0x01:	/* 01: PLL_AUDIO0(4X) */
+		return allwnrt113_get_pll_audio0_x4_freq() / M / N;
+	case 0x02:	/* 10: PLL_AUDIO1(DIV2) */
+		return allwnrt113_get_pll_audio1_div2_freq() / M / N;
+	case 0x03: /* 11: PLL_AUDIO1(DIV5) */
+		return allwnrt113_get_pll_audio1_div5_freq() / M / N;
+	}
+}
+
 unsigned long allwnrt113_get_psi_freq(void)
 {
 	const uint_fast32_t clkreg = CCU->PSI_CLK_REG;

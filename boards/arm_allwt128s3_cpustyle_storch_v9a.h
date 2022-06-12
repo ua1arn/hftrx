@@ -100,8 +100,8 @@
 
 	//#define WITHCODEC1_I2S1_DUPLEX_SLAVE	1		/* Обмен с аудиокодеком через I2S1 */
 	//#define WITHFPGAIF_I2S2_DUPLEX_SLAVE	1		/* Обмен с FPGA через I2S2 */
-	//#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
-	//#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
+	#define WITHCODEC1_I2S1_DUPLEX_MASTER	1		/* Обмен с аудиокодеком через I2S1 */
+	#define WITHFPGAIF_I2S2_DUPLEX_MASTER	1		/* Обмен с FPGA через I2S2 */
 
 	//#define WIHSPIDFSW	1	/* программное обслуживание DATA FLASH */
 	//#define WIHSPIDFOVERSPI 1	/* Для работы используется один из обычных каналов SPI */
@@ -225,12 +225,12 @@
 #if WITHENCODER
 
 	// Выводы подключения енкодера #1
-	#define ENCODER_INPUT_PORT	(GPIOG->IDR)
+	#define ENCODER_INPUT_PORT	(GPIOG->DATA)
 	#define ENCODER_BITA		(1uL << 13)		// PG13
 	#define ENCODER_BITB		(1uL << 9)		// PG9
 
 	// Выводы подключения енкодера #2
-	#define ENCODER2_INPUT_PORT	(GPIOG->IDR)
+	#define ENCODER2_INPUT_PORT	(GPIOG->DATA)
 	#define ENCODER2_BITA		(1uL << 15)		// PG15
 	#define ENCODER2_BITB		(1uL << 14)		// PG14
 
@@ -252,63 +252,21 @@
 
 	// Инициализируются I2S1 в дуплексном режиме.
 	// аудиокодек
-	#define I2S1HW_SLAVE_INITIALIZE() do { \
-			SPI1->SPI_GCR |= xx0 * 0; \
-			arm_hardware_piog_altfn20(0 * 1uL << 12,	GPIO_CFG_AF2); /* PG12 I2S1-LRCK	*/ \
-			arm_hardware_piog_altfn20(0 * 1uL << 13,	GPIO_CFG_AF2); /* PG13 I2S1-BCLK	*/ \
-			arm_hardware_piog_altfn20(0 * 1uL << 14,	GPIO_CFG_AF2); /* PG14 I2S1-DIN0, - приём от кодека */ \
-			arm_hardware_piog_altfn20(0 * 1uL << 15,	GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 - передача к кодеку */ \
-		} while (0)
+	#define I2S1HW_INITIALIZE() do { \
+		arm_hardware_piog_altfn20(1 * 1uL << 12, GPIO_CFG_AF2); /* PG12 I2S1-LRCK	WL_REG_ON, pin P2-6 */ \
+		arm_hardware_piog_altfn20(1 * 1uL << 13, GPIO_CFG_AF2); /* PG13 I2S1-BCLK	AP_WAKE_BT, pin P2-5 */ \
+		arm_hardware_piog_altfn20(1 * 1uL << 14, GPIO_CFG_AF2); /* PG14 I2S1-DIN0 from codec, BT_WAKE_AP, pin P2-4  */ \
+		arm_hardware_piog_altfn20(1 * 1uL << 15, GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 co codec, BT_EN, pin P2-2 */ \
+	} while (0)
 
 	// Инициализируются I2S2 в дуплексном режиме.
 	// FPGA или IF codec
-	#define I2S2HW_SLAVE_INITIALIZE() do { \
-			SPI2->SPI_GCR |= xx0 * 0; \
-			arm_hardware_piob_altfn20(0 * 1uL << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
-			arm_hardware_piob_altfn20(0 * 1uL << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
-			arm_hardware_piob_altfn20(0 * 1uL << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 - передача к FPGA */ \
-			arm_hardware_piob_altfn20(0 * 1uL << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0, - приём от FPGA */ \
-		} while (0)
-
-	#define I2S2HW_MASTER_INITIALIZE() do { \
-		} while (0)
-
-	#define I2S3HW_SLAVE_INITIALIZE() do { \
-		} while (0)
-
-	#define I2S3HW_MASTER_INITIALIZE() do { \
-		} while (0)
-
-	// для предотвращения треска от оставшегося инициализированным кодека
-	#define I2S2HW_POOLDOWN() do { \
-		} while (0)
-
-#if WITHSAI1HW
-	/*
-	 * SAI1_A - TX, SAI1_B - RX
-	 */
-	#define SAI1HW_INITIALIZE()	do { \
-		/*arm_hardware_pioe_altfn20(1uL << 2, AF_SAI); */	/* PE2 - SAI1_MCK_A - 12.288 MHz	*/ \
-		arm_hardware_pioe_altfn2(1uL << 4,	AF_SAI);			/* PE4 - SAI1_FS_A	- 48 kHz	*/ \
-		arm_hardware_pioe_altfn20(1uL << 5,	AF_SAI);			/* PE5 - SAI1_SCK_A	*/ \
-		arm_hardware_pioe_altfn2(1uL << 6,	AF_SAI);			/* PE6 - SAI1_SD_A	(i2s data to codec)	*/ \
-		arm_hardware_pioe_altfn2(1uL << 3,	AF_SAI);			/* PE3 - SAI1_SD_B	(i2s data from codec)	*/ \
-		arm_hardware_pioe_updown(1uL << 3, 0); \
+	#define I2S2HW_INITIALIZE() do { \
+		arm_hardware_piob_altfn20(0 * 1uL << 6,	GPIO_CFG_AF3); /* PB6 I2S2-LRCK	*/ \
+		arm_hardware_piob_altfn20(0 * 1uL << 5,	GPIO_CFG_AF3); /* PB5 I2S2-BCLK	*/ \
+		arm_hardware_piob_altfn20(0 * 1uL << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 to FPGA */ \
+		arm_hardware_piob_altfn20(0 * 1uL << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0 from FPGA */ \
 	} while (0)
-#endif /* WITHSAI1HW */
-
-#if WITHSAI2HW
-	/* 
-	Поскольку блок SAI2 инициализируется как SLAVE с синхронизацией от SAI1,
-	из внешних сигналов требуется только SAI2_SD_A
-	*/
-	#define SAI2HW_INITIALIZE()	do { \
-		arm_hardware_pioe_altfn2(1uL << 11, AF_SAI2);	/* PE11 - SAI2_SD_B	(i2s data from FPGA)	*/ \
-	} while (0)
-#else
-	#define SAI2HW_INITIALIZE()	do { \
-	} while (0)
-#endif /* WITHSAI1HW */
 
 /* Распределение битов в ARM контроллерах */
 

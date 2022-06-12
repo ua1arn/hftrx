@@ -64,7 +64,6 @@ typedef enum IRQn
 	OWA_IRQn = (55), /*  Peripherial */
 	DMIC_IRQn = (56), /*  Peripherial */
 	AUDIO_CODEC_IRQn = (57), /*  Peripherial */
-	I2S0_IRQn = (58), /*  Peripherial */
 	I2S1_IRQn = (59), /*  Peripherial */
 	I2S2_IRQn = (60), /*  Peripherial */
 	USB0_DEVICE_IRQn = (61), /*  Peripherial */
@@ -1789,7 +1788,7 @@ typedef struct USB_EHCI_CapabilityType
 #define USB0			((USB1_TypeDef *) USB0_BASE)					/*!< \brief USB0 Interface register set access pointer */
 #define USB1			((USB1_TypeDef *) USB1_BASE)					/*!< \brief USB1 Interface register set access pointer */
 
-#define USB0_OTG		((DRD_TypeDef *) USB0_BASE)					/*!< \brief USB0_OTG Interface register set access pointer */
+#define USB0_DEVICE		((DRD_TypeDef *) USB0_BASE)					/*!< \brief USB0_OTG Interface register set access pointer */
 
 #define USB0_EHCI		((USB_EHCI_CapabilityTypeDef * ) (USB0_BASE + 0x1000))	/*!< \brief USB0_EHCI Interface register set access pointer */
 #define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */

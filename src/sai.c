@@ -3438,51 +3438,188 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #endif /* WITHSAI1HW */
 
-#elif CPUSTYPE_ALLWNT113 && 0
+#elif CPUSTYPE_ALLWNT113
 
-	static const codechw_t audiocodechw_i2s1_duplex_mster =
-	{
-		hardware_i2s1_mster_duplex_initialize_codec1,
-		hardware_dummy_initialize,
-		DMA_I2S1_RX_initialize_codec1,
-		DMA_I2S1_TX_initialize_codec1,
-		hardware_i2s1_enable_codec1,
-		hardware_dummy_enable,
-		"audiocodechw-i2s1-duplex-mster"
-	};
+static void I2S1_IRQHandler_codec1(void)
+{
+	TP();
+}
 
-	static const codechw_t fpgacodechw_i2s2_duplex_mster =
-	{
-		hardware_i2s2_mster_duplex_initialize_fpga,
-		hardware_dummy_initialize,
-		DMA_I2S2_RX_initialize_fpga,
-		DMA_I2S2_TX_initialize_fpga,
-		hardware_i2s2_enable_fpga,
-		hardware_dummy_enable,
-		"fpgacodechw-i2s2-duplex-mster"
-	};
+static void I2S2_IRQHandler_fpga(void)
+{
+	TP();
+}
 
-	static const codechw_t audiocodechw_i2s1_duplex_slave =
+static void hardware_i2s1_master_duplex_initialize_codec1(void)
+{
+	const int master = 1;
+	enum
 	{
-		hardware_i2s1_slave_duplex_initialize_codec1,
-		hardware_dummy_initialize,
-		DMA_I2S1_RX_initialize_codec1,
-		DMA_I2S1_TX_initialize_codec1,
-		hardware_i2s1_enable_codec1,
-		hardware_dummy_enable,
-		"audiocodechw-i2s1-duplex-slave"
-	};
+		ALLWNT113_I2S1_CLK_WIDTH = 5, ALLWNT113_I2S1_CLK_TAPS = ( 8 | 4 | 2 | 1)
 
-	static const codechw_t fpgacodechw_i2s2_duplex_slave =
-	{
-		hardware_i2s2_slave_duplex_initialize_fpga,
-		hardware_dummy_initialize,
-		DMA_I2S2_RX_initialize_fpga,
-		DMA_I2S2_TX_initialize_fpga,
-		hardware_i2s2_enable_fpga,
-		hardware_dummy_enable,
-		"fpgacodechw-i2s2-duplex-slave"
 	};
+	enum { ix = 1 };
+	CCU->I2S1_CLK_REG;
+	CCU->I2S_BGR_REG;
+
+	unsigned long f = 48000uL * 256;
+
+	PRINTF("hardware_i2s1_master_duplex_initialize_codec1: f = %lu\n", f);
+	PRINTF("hardware_i2s1_master_duplex_initialize_codec1: allwnrt113_get_pll_audio1_div2_freq = %lu\n", allwnrt113_get_pll_audio1_div2_freq());
+	PRINTF("hardware_i2s1_master_duplex_initialize_codec1: allwnrt113_get_pll_audio1_div5_freq = %lu\n", allwnrt113_get_pll_audio1_div5_freq());
+
+	unsigned value;	/* делитель */
+	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_pll_audio1_div2_freq(), f), ALLWNT113_I2S1_CLK_WIDTH, ALLWNT113_I2S1_CLK_TAPS, & value, 1);
+	PRINTF("hardware_i2s1_master_duplex_initialize_codec1: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, f, allwnrt113_get_pll_audio1_div5_freq());
+
+	CCU->I2S1_CLK_REG =
+			(0x01uL << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
+			(0x02uL << 24) |				// CLK_SRC_SEL: 10: PLL_AUDIO1(DIV2), 11: PLL_AUDIO1(DIV5)
+			((uint_fast32_t) prei << 8) |	// Factor N (0..3 /1 /2 /4 /8)
+			((value - 0x01uL) << 0) |		// Factor M (0..31)
+		0;
+
+	CCU->I2S_BGR_REG |= (0x01uL << (0 + ix));	// Gating Clock for I2S/PCMx
+	CCU->I2S_BGR_REG |= (0x01uL << (16 + ix));	// I2S/PCMx Reset
+
+	PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
+	enum { XB = 1 << 12 };	// PG12
+//	arm_hardware_piog_outputs(XB, 1 * XB);
+//	for (;;)
+//	{
+//		allwnrt113_pioX_setstate(GPIOG, XB, 0 * XB);
+//		allwnrt113_pioX_setstate(GPIOG, XB, 1 * XB);
+//
+//	}
+
+	I2S1->I2S_PCM_FMT0 =
+		(32uL << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		(0x07uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		(0x07uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		0;
+	I2S1->I2S_PCM_FMT1 =
+		0;
+	// I2S/PCM Channel Configuration Register
+	I2S1->I2S_PCM_CHCFG =
+		(0x01uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot 8 channels or slots
+		(0x01uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot 8 channels or slots
+		0;
+	I2S1->I2S_PCM_CLKD =
+		(0x0FuL << 4) |	// BCLKDIV
+		(0x02uL << 0) |	// MCLKDIV
+		0;
+
+	// I2S/PCM Clock Divide Register
+	I2S1->I2S_PCM_CTL =
+		(0x01uL << 31) |
+		((uint_fast32_t) master << 18) | // BCLK_OUT
+		((uint_fast32_t) master << 17) | // LRCK_OUT
+		(0x01uL << 4) |	// left mode, need offset=1 for I2S
+		(0x01uL << 2) |	// TXEN
+		(0x01uL << 1) |	// RXEN
+		(0x01uL << 0) |	// GEN Globe Enable
+		0;
+	TP();
+	I2S1HW_INITIALIZE();
+}
+
+static void hardware_i2s1_slave_duplex_initialize_codec1(void)
+{
+	enum { ix = 1 };
+
+	TP();
+	I2S1HW_INITIALIZE();
+}
+
+static void hardware_i2s2_master_duplex_initialize_fpga(void)
+{
+	enum { ix = 2 };
+
+	TP();
+	I2S2HW_INITIALIZE();
+}
+
+static void hardware_i2s2_slave_duplex_initialize_fpga(void)
+{
+	enum { ix = 2 };
+
+	TP();
+	I2S2HW_INITIALIZE();
+}
+
+static void hardware_i2s1_enable_codec1(uint_fast8_t state)
+{
+
+}
+
+static void DMA_I2S1_RX_initialize_codec1(void)
+{
+	arm_hardware_set_handler_realtime(I2S1_IRQn, I2S1_IRQHandler_codec1);
+}
+
+static void DMA_I2S1_TX_initialize_codec1(void)
+{
+	arm_hardware_set_handler_realtime(I2S1_IRQn, I2S1_IRQHandler_codec1);
+}
+
+static void hardware_i2s2_enable_fpga(uint_fast8_t state)
+{
+
+}
+
+static void DMA_I2S2_RX_initialize_fpga(void)
+{
+	arm_hardware_set_handler_realtime(I2S2_IRQn, I2S2_IRQHandler_fpga);
+}
+
+static void DMA_I2S2_TX_initialize_fpga(void)
+{
+	arm_hardware_set_handler_realtime(I2S2_IRQn, I2S2_IRQHandler_fpga);
+}
+
+static const codechw_t audiocodechw_i2s1_duplex_master =
+{
+	hardware_i2s1_master_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMA_I2S1_RX_initialize_codec1,
+	DMA_I2S1_TX_initialize_codec1,
+	hardware_i2s1_enable_codec1,
+	hardware_dummy_enable,
+	"audiocodechw-i2s1-duplex-master"
+};
+
+static const codechw_t fpgacodechw_i2s2_duplex_master =
+{
+	hardware_i2s2_master_duplex_initialize_fpga,
+	hardware_dummy_initialize,
+	DMA_I2S2_RX_initialize_fpga,
+	DMA_I2S2_TX_initialize_fpga,
+	hardware_i2s2_enable_fpga,
+	hardware_dummy_enable,
+	"fpgacodechw-i2s2-duplex-master"
+};
+
+static const codechw_t audiocodechw_i2s1_duplex_slave =
+{
+	hardware_i2s1_slave_duplex_initialize_codec1,
+	hardware_dummy_initialize,
+	DMA_I2S1_RX_initialize_codec1,
+	DMA_I2S1_TX_initialize_codec1,
+	hardware_i2s1_enable_codec1,
+	hardware_dummy_enable,
+	"audiocodechw-i2s1-duplex-slave"
+};
+
+static const codechw_t fpgacodechw_i2s2_duplex_slave =
+{
+	hardware_i2s2_slave_duplex_initialize_fpga,
+	hardware_dummy_initialize,
+	DMA_I2S2_RX_initialize_fpga,
+	DMA_I2S2_TX_initialize_fpga,
+	hardware_i2s2_enable_fpga,
+	hardware_dummy_enable,
+	"fpgacodechw-i2s2-duplex-slave"
+};
 
 #elif CPUSTYLE_R7S721
 	
