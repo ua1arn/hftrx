@@ -1710,63 +1710,65 @@ typedef struct USB_EHCI_CapabilityType
 #define GPIOE      ((GPIO_TypeDef *) GPIOE_BASE)		/*!< \brief GPIOE Interface register set access pointer */
 #define GPIOF      ((GPIO_TypeDef *) GPIOF_BASE)		/*!< \brief GPIOF Interface register set access pointer */
 #define GPIOG      ((GPIO_TypeDef *) GPIOG_BASE)		/*!< \brief GPIOG Interface register set access pointer */
-#define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)
-#define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)
-#define SMHC1      	((SMHC_TypeDef *) SMHC1_BASE)
-#define SMHC2      	((SMHC_TypeDef *) SMHC2_BASE)
-#define I2S1      	((I2S_PCM_TypeDef *) I2S1_BASE)
-#define I2S2      	((I2S_PCM_TypeDef *) I2S2_BASE)
-#define DMIC      	((DMIC_TypeDef *) DMIC_BASE)
-#define OWA			((OWA_TypeDef *) OWA_BASE)
-#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)
+#define SYS_CFG 	((SYS_CFG_TypeDef *) SYS_CFG_BASE)	/*!< \brief SYS_CFG Interface register set access pointer */
+#define SMHC0      	((SMHC_TypeDef *) SMHC0_BASE)		/*!< \brief SMHC0 Interface register set access pointer */
+#define SMHC1      	((SMHC_TypeDef *) SMHC1_BASE)		/*!< \brief SMHC1 Interface register set access pointer */
+#define SMHC2      	((SMHC_TypeDef *) SMHC2_BASE)		/*!< \brief SMHC2 Interface register set access pointer */
+#define I2S1      	((I2S_PCM_TypeDef *) I2S1_BASE)		/*!< \brief I2S1 Interface register set access pointer */
+#define I2S2      	((I2S_PCM_TypeDef *) I2S2_BASE)		/*!< \brief I2S2 Interface register set access pointer */
+#define DMIC      	((DMIC_TypeDef *) DMIC_BASE)		/*!< \brief DMIC Interface register set access pointer */
+#define OWA			((OWA_TypeDef *) OWA_BASE)			/*!< \brief OWA Interface register set access pointer */
+#define AUDIO_CODEC ((AUDIO_CODEC_TypeDef *) AUDIO_CODEC_BASE)		/*!< \brief AUDIO_CODEC Interface register set access pointer */
 #define TWI0		((TWI_TypeDef *) TWI0_BASE)			/*!< \brief TWI0 Interface register set access pointer */
 #define TWI1		((TWI_TypeDef *) TWI1_BASE)			/*!< \brief TWI1 Interface register set access pointer */
 #define TWI2		((TWI_TypeDef *) TWI2_BASE)			/*!< \brief TWI2 Interface register set access pointer */
 #define TWI3		((TWI_TypeDef *) TWI3_BASE)			/*!< \brief TWI3 Interface register set access pointer */
 #define SPI0		((SPI_TypeDef *) SPI0_BASE)			/*!< \brief SPI0 Interface register set access pointer */
 #define SPI_DBI		((SPI_DBI_TypeDef *) SPI_DBI_BASE)	/*!< \brief SPI_DBI Interface register set access pointer */
-#define LEDC		((LEDC_TypeDef *) LEDC_BASE)
-#define GPADC		((GPADC_TypeDef *) GPADC_BASE)
-#define TPADC		((TPADC_TypeDef *) TPADC_BASE)
-#define CIR_RX		((CIR_RX_TypeDef *) CIR_RX_BASE)
-#define CIR_TX		((CIR_TX_TypeDef *) CIR_TX_BASE)
-#define CE_S		((CE_S_TypeDef *) CE_S_BASE)
-#define HSTIMER		((HSTIMER_TypeDef *) HSTIMER_BASE)
-#define TIMER		((TIMER_TypeDef *) TIMER_BASE)
-#define THS			((THS_TypeDef *) THS_BASE)
-#define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)
+#define LEDC		((LEDC_TypeDef *) LEDC_BASE)		/*!< \brief LEDC Interface register set access pointer */
+#define GPADC		((GPADC_TypeDef *) GPADC_BASE)		/*!< \brief GPADC Interface register set access pointer */
+#define TPADC		((TPADC_TypeDef *) TPADC_BASE)		/*!< \brief TPADC Interface register set access pointer */
+#define CIR_RX		((CIR_RX_TypeDef *) CIR_RX_BASE)	/*!< \brief CIR_RX Interface register set access pointer */
+#define CIR_TX		((CIR_TX_TypeDef *) CIR_TX_BASE)	/*!< \brief CIR_TX Interface register set access pointer */
+#define CE_S		((CE_S_TypeDef *) CE_S_BASE)		/*!< \brief CE_S Interface register set access pointer */
+#define HSTIMER		((HSTIMER_TypeDef *) HSTIMER_BASE)	/*!< \brief HSTIMER Interface register set access pointer */
+#define TIMER		((TIMER_TypeDef *) TIMER_BASE)		/*!< \brief TIMER Interface register set access pointer */
+#define THS			((THS_TypeDef *) THS_BASE)			/*!< \brief THS Interface register set access pointer */
+#define IOMMU		((IOMMU_TypeDef *) IOMMU_BASE)		/*!< \brief IOMMU Interface register set access pointer */
 #define CCU			((CCU_TypeDef *) CCU_BASE)			/*!< \brief CCU Interface register set access pointer */
 
-#define DE 			((DE_TypeDef *) DE_BASE)
-#define DI 			((DI_TypeDef *) DI_BASE)
-#define G2D 		((G2D_TypeDef *) G2D_BASE)
-#define DSI 		((DSI_TypeDef *) DSI_BASE)
-#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)
-#define TCON_LCD0 	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)
-#define TCON_TV0 	((TCON_TV_TypeDef *) TCON_TV0_BASE)
-#define TVE_TOP 	((TVE_TypeDef *) TVE_TOP_BASE)
-#define TV_Encoder 	((TVE_TypeDef *) TV_Encoder_BASE)
+#define DE 			((DE_TypeDef *) DE_BASE)					/*!< \brief DE Interface register set access pointer */
+#define DI 			((DI_TypeDef *) DI_BASE)					/*!< \brief DI Interface register set access pointer */
+#define G2D 		((G2D_TypeDef *) G2D_BASE)					/*!< \brief G2D Interface register set access pointer */
+#define DSI 		((DSI_TypeDef *) DSI_BASE)					/*!< \brief DSI Interface register set access pointer */
+#define DISPLAY_TOP ((DISPLAY_TOP_TypeDef *) DISPLAY_TOP_BASE)	/*!< \brief DISPLAY_TOP Interface register set access pointer */
+#define TCON_LCD0 	((TCON_LCD_TypeDef *) TCON_LCD0_BASE)		/*!< \brief TCON_LCD0 Interface register set access pointer */
+#define TCON_TV0 	((TCON_TV_TypeDef *) TCON_TV0_BASE)			/*!< \brief TCON_TV0 Interface register set access pointer */
+#define TVE_TOP 	((TVE_TypeDef *) TVE_TOP_BASE)				/*!< \brief TVE_TOP Interface register set access pointer */
+#define TV_Encoder 	((TVE_TypeDef *) TV_Encoder_BASE)			/*!< \brief TV_Encoder Interface register set access pointer */
 
-#define CSI			((CSI_TypeDef *) CSI_BASE)
-#define TVD_TOP		((TVD_TypeDef *) TVD_TOP_BASE)
-#define TVD0		((TV_TypeDef *) TVD0_BASE)
+#define CSI			((CSI_TypeDef *) CSI_BASE)					/*!< \brief CSI Interface register set access pointer */
+#define TVD_TOP		((TVD_TypeDef *) TVD_TOP_BASE)				/*!< \brief TVD_TOP Interface register set access pointer */
+#define TVD0		((TV_TypeDef *) TVD0_BASE)					/*!< \brief TVD0 Interface register set access pointer */
 
-#define RTC			((RTC_TypeDef *) RTC_BASE)			/*!< \brief RTC Interface register set access pointer */
+#define RTC			((RTC_TypeDef *) RTC_BASE)					/*!< \brief RTC Interface register set access pointer */
 
-#define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)
+#define CPU_SUBSYS_CTRL	((CPU_SUBSYS_CTRL_TypeDef *) CPU_SUBSYS_CTRL_BASE)			/*!< \brief CPU_SUBSYS_CTRL Interface register set access pointer */
 //#define TimeStamp_STA	((TimeStamp_STA_TypeDef *) TimeStamp_STA_BASE)
 //#define TimeStamp_CTRL	((TimeStamp_CTRL_TypeDef *) TimeStamp_CTRL_BASE)
 //#define IDC				(IDC_TypeDef *) IDC_BASE)
-#define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)
-//#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)
+#define C0_CPUX_CFG		((C0_CPUX_CFG_TypeDef *) C0_CPUX_CFG_BASE)			/*!< \brief C0_CPUX_CFG Interface register set access pointer */
+//#define C0_CPUX_MBIST	((C0_CPUX_MBIST_TypeDef *) C0_CPUX_MBIST_BASE)			/*!< \brief C0_CPUX_MBIST Interface register set access pointer */
 
-#define CAN0			((CAN_TypeDef *) CAN0_BASE)
-#define CAN1			((CAN_TypeDef *) CAN1_BASE)
+#define CAN0			((CAN_TypeDef *) CAN0_BASE)						/*!< \brief CAN0 Interface register set access pointer */
+#define CAN1			((CAN_TypeDef *) CAN1_BASE)						/*!< \brief CAN1 Interface register set access pointer */
 
-#define USB0			((USB1_TypeDef *) USB0_BASE)
-#define USB1			((USB1_TypeDef *) USB1_BASE)
+#define USB0			((USB1_TypeDef *) USB0_BASE)					/*!< \brief USB0 Interface register set access pointer */
+#define USB1			((USB1_TypeDef *) USB1_BASE)					/*!< \brief USB1 Interface register set access pointer */
 
-#define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)
+#define USB_OTG0		((USB1_TypeDef *) USB0_BASE)					/*!< \brief USB_OTG0 Interface register set access pointer */
+
+#define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)		/*!< \brief USB1_EHCI Interface register set access pointer */
 
 /** @addtogroup Exported_types
   * @{

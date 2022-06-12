@@ -1181,8 +1181,10 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 {
 #if CPUSTYPE_ALLWNT113
 
-	if (0/*WITHUSBHW_EHCI == EHCI0*/)
+	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
 	{
+		ASSERT(0);					/* тут нет EHCI */
+
 		CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 		CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
 
@@ -1334,6 +1336,8 @@ void HAL_EHCI_MspDeInit(EHCI_HandleTypeDef * hehci)
 
 	if (EHCIxToUSBx(WITHUSBHW_EHCI) == USB0)
 	{
+		ASSERT(0);					/* тут нет EHCI */
+
 		CCU->USB_BGR_REG &= ~ (0x01uL << 0);	// USBOHCI0_GATING
 	#if WITHEHCIHWSOFTSPOLL == 0
 		arm_hardware_disable_handler(USB0_OHCI_IRQn);
