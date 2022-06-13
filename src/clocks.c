@@ -2115,7 +2115,7 @@ uint_fast64_t allwnrt113_get_pll_peri_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM * pllN;
 }
 
-unsigned long allwnrt113_get_pll_peri_x2_freq(void)
+unsigned long allwnrt113_get_peripll2x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_PERI_CTRL_REG;
 	const uint_fast32_t pllP0 = 1 + ((reg >> 16) & 0x07);
@@ -2156,7 +2156,7 @@ unsigned long allwnrt113_get_ve_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
 }
 
-unsigned long allwnrt113_get_pll_audio0_x4_freq(void)
+unsigned long allwnrt113_get_audio0pll14x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2165,7 +2165,7 @@ unsigned long allwnrt113_get_pll_audio0_x4_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1;
 }
 
-unsigned long allwnrt113_get_pll_audio1_x4_freq(void)
+unsigned long allwnrt113_get_audio1pll4x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2174,24 +2174,24 @@ unsigned long allwnrt113_get_pll_audio1_x4_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1;
 }
 
-unsigned long allwnrt113_get_pll_audio0_x1_freq(void)
+unsigned long allwnrt113_get_audio0pll1x_freq(void)
 {
-	return allwnrt113_get_pll_audio0_x4_freq() / 4;
+	return allwnrt113_get_audio0pll14x_freq() / 4;
 }
 
-unsigned long allwnrt113_get_pll_audio1_x1_freq(void)
+unsigned long allwnrt113_get_audio1pll1x_freq(void)
 {
-	return allwnrt113_get_pll_audio1_x4_freq() / 4;
+	return allwnrt113_get_audio1pll4x_freq() / 4;
 }
 
-unsigned long allwnrt113_get_pll_audio1_div2_freq(void)
+unsigned long allwnrt113_get_audio1pll_div2_freq(void)
 {
-	return allwnrt113_get_pll_audio1_x1_freq() / 2;
+	return allwnrt113_get_audio1pll1x_freq() / 2;
 }
 
-unsigned long allwnrt113_get_pll_audio1_div5_freq(void)
+unsigned long allwnrt113_get_audio1pll_div5_freq(void)
 {
-	return allwnrt113_get_pll_audio1_x1_freq() / 5;
+	return allwnrt113_get_audio1pll1x_freq() / 5;
 }
 
 unsigned long allwnrt113_get_video0_x2_freq(void)
@@ -2214,9 +2214,9 @@ unsigned long allwnrt113_get_video1_x1_freq(void)
 	return allwnrt113_get_video1_x4_freq() / 4;
 }
 
-unsigned long allwnrt113_get_pll_peri_x1_freq(void)
+unsigned long allwnrt113_get_peripll1x_freq(void)
 {
-	return allwnrt113_get_pll_peri_x2_freq() / 2;
+	return allwnrt113_get_peripll2x_freq() / 2;
 }
 
 unsigned long allwnrt113_get_dram_freq(void)
@@ -2230,9 +2230,9 @@ unsigned long allwnrt113_get_dram_freq(void)
 	case 0x00:	/* 00: PLL_DDR */
 		return allwnrt113_get_pll_ddr_freq() / M / N;
 	case 0x01:	/* 01: PLL_AUDIO1(DIV2) */
-		return allwnrt113_get_pll_audio1_x1_freq() / M / N;	// todo: check selected source
+		return allwnrt113_get_audio1pll1x_freq() / M / N;	// todo: check selected source
 	case 0x02:	/* 10: PLL_PERI(2X) */
-		return allwnrt113_get_pll_peri_x2_freq() / M / N;
+		return allwnrt113_get_peripll2x_freq() / M / N;
 	case 0x03: /* 11: PLL_PERI(800M) */
 		return allwnrt113_get_pll_peri_800M_freq() / M / N;
 	}
@@ -2240,6 +2240,7 @@ unsigned long allwnrt113_get_dram_freq(void)
 
 unsigned long allwnrt113_get_i2s1_freq(void)
 {
+	const unsigned long pgdiv = 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S1_CLK_REG;
 	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
 	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
@@ -2248,18 +2249,19 @@ unsigned long allwnrt113_get_i2s1_freq(void)
 	{
 	default:
 	case 0x00:	/* 00: PLL_AUDIO0(1X) */
-		return allwnrt113_get_pll_audio0_x1_freq() / M / N;
+		return allwnrt113_get_audio0pll1x_freq() / M / N / pgdiv;
 	case 0x01:	/* 01: PLL_AUDIO0(4X) */
-		return allwnrt113_get_pll_audio0_x4_freq() / M / N;
+		return allwnrt113_get_audio0pll14x_freq() / M / N / pgdiv;
 	case 0x02:	/* 10: PLL_AUDIO1(DIV2) */
-		return allwnrt113_get_pll_audio1_div2_freq() / M / N;
+		return allwnrt113_get_audio1pll_div2_freq() / M / N / pgdiv;
 	case 0x03: /* 11: PLL_AUDIO1(DIV5) */
-		return allwnrt113_get_pll_audio1_div5_freq() / M / N;
+		return allwnrt113_get_audio1pll_div5_freq() / M / N / pgdiv;
 	}
 }
 
 unsigned long allwnrt113_get_i2s2_freq(void)
 {
+	const unsigned long pgdiv = 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S2_CLK_REG;
 	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
 	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
@@ -2268,13 +2270,13 @@ unsigned long allwnrt113_get_i2s2_freq(void)
 	{
 	default:
 	case 0x00:	/* 00: PLL_AUDIO0(1X) */
-		return allwnrt113_get_pll_audio0_x1_freq() / M / N;
+		return allwnrt113_get_audio0pll1x_freq() / M / N / pgdiv;
 	case 0x01:	/* 01: PLL_AUDIO0(4X) */
-		return allwnrt113_get_pll_audio0_x4_freq() / M / N;
+		return allwnrt113_get_audio0pll14x_freq() / M / N / pgdiv;
 	case 0x02:	/* 10: PLL_AUDIO1(DIV2) */
-		return allwnrt113_get_pll_audio1_div2_freq() / M / N;
+		return allwnrt113_get_audio1pll_div2_freq() / M / N / pgdiv;
 	case 0x03: /* 11: PLL_AUDIO1(DIV5) */
-		return allwnrt113_get_pll_audio1_div5_freq() / M / N;
+		return allwnrt113_get_audio1pll_div5_freq() / M / N / pgdiv;
 	}
 }
 
@@ -2297,7 +2299,7 @@ unsigned long allwnrt113_get_psi_freq(void)
 		return HARDWARE_CLK16M_RC_FREQ / M / N;
 	case 0x03:
 		/* 11: PLL_PERI(1X) */
-		return allwnrt113_get_pll_peri_x1_freq() / M / N;
+		return allwnrt113_get_peripll1x_freq() / M / N;
 	}
 }
 
@@ -2320,7 +2322,7 @@ unsigned long allwnrt113_get_apb0_freq(void)
 		return allwnrt113_get_psi_freq() / M / N;
 	case 0x03:
 		/* 11: PLL_PERI(1X) */
-		return allwnrt113_get_pll_peri_x1_freq() / M / N;
+		return allwnrt113_get_peripll1x_freq() / M / N;
 	}
 }
 
@@ -2343,7 +2345,7 @@ unsigned long allwnrt113_get_apb1_freq(void)
 		return allwnrt113_get_psi_freq() / M / N;
 	case 0x03:
 		/* 11: PLL_PERI(1X) */
-		return allwnrt113_get_pll_peri_x1_freq() / M / N;
+		return allwnrt113_get_peripll1x_freq() / M / N;
 	}
 }
 
@@ -2364,6 +2366,7 @@ unsigned long allwnrt113_get_twi_freq(void)
 
 unsigned long allwnrt113_get_spi0_freq(void)
 {
+	const unsigned long pgdiv = 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
 //	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
 //	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
@@ -2372,24 +2375,25 @@ unsigned long allwnrt113_get_spi0_freq(void)
 	default:
 	case 0x00:
 		/* 000: HOSC */
-		return allwnrt113_get_hosc_freq();
+		return allwnrt113_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 001: PLL_PERI(1X) */
-		return allwnrt113_get_pll_peri_x1_freq();
+		return allwnrt113_get_peripll1x_freq() / pgdiv;
 	case 0x02:
 		/* 010: PLL_PERI(2X) */
-		return allwnrt113_get_pll_peri_x2_freq();
+		return allwnrt113_get_peripll2x_freq() / pgdiv;
 	case 0x03:
 		/* 011: PLL_AUDIO1(DIV2) */
-		return allwnrt113_get_pll_audio1_x1_freq() / 2;
+		return allwnrt113_get_audio1pll_div2_freq() / pgdiv;
 	case 0x04:
 		/* 100: PLL_AUDIO1(DIV5) */
-		return allwnrt113_get_pll_audio1_x1_freq() / 5;
+		return allwnrt113_get_audio1pll_div5_freq() / pgdiv;
 	}
 }
 
 unsigned long allwnrt113_get_spi1_freq(void)
 {
+	const unsigned long pgdiv = 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI1_CLK_REG;
 	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
 	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
@@ -2398,19 +2402,19 @@ unsigned long allwnrt113_get_spi1_freq(void)
 	default:
 	case 0x00:
 		/* 000: HOSC */
-		return allwnrt113_get_hosc_freq();
+		return allwnrt113_get_hosc_freq() / pgdiv;
 	case 0x01:
 		/* 001: PLL_PERI(1X) */
-		return allwnrt113_get_pll_peri_x1_freq();
+		return allwnrt113_get_peripll1x_freq() / pgdiv;
 	case 0x02:
 		/* 010: PLL_PERI(2X) */
-		return allwnrt113_get_pll_peri_x2_freq();
+		return allwnrt113_get_peripll2x_freq() / pgdiv;
 	case 0x03:
 		/* 011: PLL_AUDIO1(DIV2) */
-		return allwnrt113_get_pll_audio1_x1_freq() / 2;
+		return allwnrt113_get_audio1pll_div2_freq() / pgdiv;
 	case 0x04:
 		/* 100: PLL_AUDIO1(DIV5) */
-		return allwnrt113_get_pll_audio1_x1_freq() / 5;
+		return allwnrt113_get_audio1pll_div5_freq() / pgdiv;
 	}
 }
 

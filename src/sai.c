@@ -3472,14 +3472,14 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 
 	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu\n", mclkf, bclkf, lrckf);
 
-//	PRINTF("i2s1: allwnrt113_get_pll_audio1_x4_freq = %lu\n", allwnrt113_get_pll_audio1_x4_freq());
-//	PRINTF("i2s1: allwnrt113_get_pll_audio1_x1_freq = %lu\n", allwnrt113_get_pll_audio1_x1_freq());
-//	PRINTF("i2s1: allwnrt113_get_pll_audio1_div2_freq = %lu\n", allwnrt113_get_pll_audio1_div2_freq());
-//	PRINTF("i2s1: allwnrt113_get_pll_audio1_div5_freq = %lu\n", allwnrt113_get_pll_audio1_div5_freq());
-	//	i2s1: allwnrt113_get_pll_audio1_x4_freq = 3072000000
-	//	i2s1: allwnrt113_get_pll_audio1_x1_freq = 768000000
-	//	i2s1: allwnrt113_get_pll_audio1_div2_freq = 384000000
-	//	i2s1: allwnrt113_get_pll_audio1_div5_freq = 153600000
+//	PRINTF("i2s1: allwnrt113_get_audio1pll4x_freq = %lu\n", allwnrt113_get_audio1pll4x_freq());
+//	PRINTF("i2s1: allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
+//	PRINTF("i2s1: allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
+//	PRINTF("i2s1: allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
+	//	i2s1: allwnrt113_get_audio1pll4x_freq = 3072000000
+	//	i2s1: allwnrt113_get_audio1pll1x_freq = 768000000
+	//	i2s1: allwnrt113_get_audio1pll_div2_freq = 384000000
+	//	i2s1: allwnrt113_get_audio1pll_div5_freq = 153600000
 	unsigned long src = 0x03;
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
@@ -3491,16 +3491,16 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	{
 	default:
 	case 0x00:
-		clk = allwnrt113_get_pll_audio0_x1_freq();
+		clk = allwnrt113_get_audio0pll1x_freq();
 		break;
 	case 0x01:
-		clk = allwnrt113_get_pll_audio0_x4_freq();
+		clk = allwnrt113_get_audio0pll14x_freq();
 		break;
 	case 0x02:
-		clk = allwnrt113_get_pll_audio1_div2_freq();
+		clk = allwnrt113_get_audio1pll_div2_freq();
 		break;
 	case 0x03:
-		clk = allwnrt113_get_pll_audio1_div5_freq();
+		clk = allwnrt113_get_audio1pll_div5_freq();
 		break;
 	}
 	unsigned value;	/* делитель */
