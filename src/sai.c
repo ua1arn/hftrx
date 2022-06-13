@@ -3450,9 +3450,8 @@ static void I2S2_IRQHandler_fpga(void)
 	TP();
 }
 
-static void hardware_i2s1_master_duplex_initialize_codec1(void)
+static void hardware_i2s1_initialize_codec1(int master)
 {
-	const int master = 1;
 	enum
 	{
 		ALLWNT113_I2S1_CLK_WIDTH = 5, ALLWNT113_I2S1_CLK_TAPS = ( 8 | 4 | 2 | 1)
@@ -3481,7 +3480,7 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	//	i2s1: allwnrt113_get_audio1pll1x_freq = 768000000
 	//	i2s1: allwnrt113_get_audio1pll_div2_freq = 384000000
 	//	i2s1: allwnrt113_get_audio1pll_div5_freq = 153600000
-	unsigned long src = 0x03;
+	unsigned long src = 0x02;
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
 	// 01: PLL_AUDIO0(4X)
@@ -3528,8 +3527,8 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 
 	I2S1->I2S_PCM_FMT0 =
 		(((CODEC1_FRAMEBITS / 2) - 1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
-		(0x07uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		(0x07uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		(0x03uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		(0x03uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
 	I2S1->I2S_PCM_FMT1 =
 		0;
@@ -3586,25 +3585,37 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	I2S1HW_INITIALIZE();
 }
 
+static void hardware_i2s2_initialize_fpga(int master)
+{
+	enum
+	{
+		ALLWNT113_I2S1_CLK_WIDTH = 5, ALLWNT113_I2S1_CLK_TAPS = ( 8 | 4 | 2 | 1)
+
+	};
+	enum { ix = 2 };
+
+	I2S2HW_INITIALIZE();
+}
+
+static void hardware_i2s1_master_duplex_initialize_codec1(void)
+{
+	hardware_i2s1_initialize_codec1(1);
+}
+
 static void hardware_i2s1_slave_duplex_initialize_codec1(void)
 {
-	enum { ix = 1 };
-
-	I2S1HW_INITIALIZE();
+	hardware_i2s1_initialize_codec1(0);
 }
 
 static void hardware_i2s2_master_duplex_initialize_fpga(void)
 {
-	enum { ix = 2 };
-
-	I2S2HW_INITIALIZE();
+	hardware_i2s2_initialize_fpga(1);
 }
 
 static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 {
-	enum { ix = 2 };
+	hardware_i2s2_initialize_fpga(0);
 
-	I2S2HW_INITIALIZE();
 }
 
 static void hardware_i2s1_enable_codec1(uint_fast8_t state)
@@ -3625,6 +3636,24 @@ static void hardware_i2s1_enable_codec1(uint_fast8_t state)
 	}
 }
 
+static void hardware_i2s2_enable_fpga(uint_fast8_t state)
+{
+	if (state)
+	{
+		I2S2->I2S_PCM_CTL |=
+			(0x01uL << 2) |	// TXEN
+			(0x01uL << 1) |	// RXEN
+			0;
+		I2S2->I2S_PCM_CTL |= (0x01uL << 0); // GEN Globe Enable
+	}
+	else
+	{
+		I2S2->I2S_PCM_CTL &= ~ (0x01uL << 0); // GEN Globe Enable
+		I2S2->I2S_PCM_CTL &= ~ (0x01uL << 2); // TXEN
+		I2S2->I2S_PCM_CTL &= ~ (0x01uL << 1); // RXEN
+	}
+}
+
 static void DMA_I2S1_RX_initialize_codec1(void)
 {
 	arm_hardware_set_handler_realtime(I2S1_IRQn, I2S1_IRQHandler_codec1);
@@ -3633,11 +3662,6 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 static void DMA_I2S1_TX_initialize_codec1(void)
 {
 	arm_hardware_set_handler_realtime(I2S1_IRQn, I2S1_IRQHandler_codec1);
-}
-
-static void hardware_i2s2_enable_fpga(uint_fast8_t state)
-{
-
 }
 
 static void DMA_I2S2_RX_initialize_fpga(void)
