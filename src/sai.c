@@ -3471,11 +3471,12 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	unsigned long mclkf = lrckf * 256;
 
 	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu\n", mclkf, bclkf, lrckf);
+	PRINTF("i2s1: allwnrt113_get_audio1pll4x_freq = %lu\n", allwnrt113_get_audio1pll4x_freq());
+	PRINTF("i2s1: allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
+	PRINTF("i2s1: allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
+	PRINTF("i2s1: allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
 
-//	PRINTF("i2s1: allwnrt113_get_audio1pll4x_freq = %lu\n", allwnrt113_get_audio1pll4x_freq());
-//	PRINTF("i2s1: allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
-//	PRINTF("i2s1: allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-//	PRINTF("i2s1: allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
+	//	i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
 	//	i2s1: allwnrt113_get_audio1pll4x_freq = 3072000000
 	//	i2s1: allwnrt113_get_audio1pll1x_freq = 768000000
 	//	i2s1: allwnrt113_get_audio1pll_div2_freq = 384000000
@@ -3503,9 +3504,10 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 		clk = allwnrt113_get_audio1pll_div5_freq();
 		break;
 	}
+	//mclkf *= 10;
 	unsigned value;	/* делитель */
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2S1_CLK_WIDTH, ALLWNT113_I2S1_CLK_TAPS, & value, 1);
-	PRINTF("i2s1: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+	PRINTF("i2s1: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
 
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
@@ -3562,11 +3564,8 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	// BCLK = MCLK / BCLKDIV
 	I2S1->I2S_PCM_CLKD =
 		1 * (1uL << 8) |		// MCLKO_EN
-		//////
-		// MCLK=13.7 MHz, BCLK=53kHz (ratio=256)
-		CLKD_Div1 * (1uL << 0) |		/* MCLKDIV */
+		CLKD_Div4 * (1uL << 0) |		/* MCLKDIV */
 		CLKD_Div32 * (1uL << 4) |		/* BCLKDIV */
-		/////
 		0;
 
 #if CODEC1_FORMATI2S_PHILIPS

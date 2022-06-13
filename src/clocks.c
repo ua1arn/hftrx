@@ -2240,7 +2240,7 @@ unsigned long allwnrt113_get_dram_freq(void)
 
 unsigned long allwnrt113_get_i2s1_freq(void)
 {
-	const unsigned long pgdiv = 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
+	const unsigned long pgdiv = 1;// 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S1_CLK_REG;
 	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
 	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
@@ -2261,7 +2261,7 @@ unsigned long allwnrt113_get_i2s1_freq(void)
 
 unsigned long allwnrt113_get_i2s2_freq(void)
 {
-	const unsigned long pgdiv = 5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
+	const unsigned long pgdiv = 1;//5 * 2;	// post-gete dividers: clkdiv5 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->I2S2_CLK_REG;
 	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
 	const unsigned long M = 1uL + ((clkreg >> 0) & 0x1F);
