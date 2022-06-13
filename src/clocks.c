@@ -2156,7 +2156,7 @@ unsigned long allwnrt113_get_ve_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
 }
 
-unsigned long allwnrt113_get_audio0pll14x_freq(void)
+unsigned long allwnrt113_get_audio0pll4x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2176,7 +2176,7 @@ unsigned long allwnrt113_get_audio1pll4x_freq(void)
 
 unsigned long allwnrt113_get_audio0pll1x_freq(void)
 {
-	return allwnrt113_get_audio0pll14x_freq() / 4;
+	return allwnrt113_get_audio0pll4x_freq() / 4;
 }
 
 unsigned long allwnrt113_get_audio1pll1x_freq(void)
@@ -2251,7 +2251,7 @@ unsigned long allwnrt113_get_i2s1_freq(void)
 	case 0x00:	/* 00: PLL_AUDIO0(1X) */
 		return allwnrt113_get_audio0pll1x_freq() / M / N / pgdiv;
 	case 0x01:	/* 01: PLL_AUDIO0(4X) */
-		return allwnrt113_get_audio0pll14x_freq() / M / N / pgdiv;
+		return allwnrt113_get_audio0pll4x_freq() / M / N / pgdiv;
 	case 0x02:	/* 10: PLL_AUDIO1(DIV2) */
 		return allwnrt113_get_audio1pll_div2_freq() / M / N / pgdiv;
 	case 0x03: /* 11: PLL_AUDIO1(DIV5) */
@@ -2272,7 +2272,7 @@ unsigned long allwnrt113_get_i2s2_freq(void)
 	case 0x00:	/* 00: PLL_AUDIO0(1X) */
 		return allwnrt113_get_audio0pll1x_freq() / M / N / pgdiv;
 	case 0x01:	/* 01: PLL_AUDIO0(4X) */
-		return allwnrt113_get_audio0pll14x_freq() / M / N / pgdiv;
+		return allwnrt113_get_audio0pll4x_freq() / M / N / pgdiv;
 	case 0x02:	/* 10: PLL_AUDIO1(DIV2) */
 		return allwnrt113_get_audio1pll_div2_freq() / M / N / pgdiv;
 	case 0x03: /* 11: PLL_AUDIO1(DIV5) */

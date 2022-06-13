@@ -3450,8 +3450,64 @@ static void I2S2_IRQHandler_fpga(void)
 	TP();
 }
 
+static unsigned ratio2div(unsigned ratio)
+{
+	enum divs
+	{
+		CLKD_Div1 = 0x01,
+		CLKD_Div2,		// 0x02
+		CLKD_Div4,		// 0x03
+		CLKD_Div6,		// 0x04
+		CLKD_Div8,		// 0x05
+		CLKD_Div12,		// 0x06
+		CLKD_Div16,		// 0x07
+		CLKD_Div24,		// 0x08
+		CLKD_Div32,		// 0x09
+		CLKD_Div48,		// 0x0A
+		CLKD_Div64,		// 0x0B
+		CLKD_Div96,		// 0x0C
+		CLKD_Div128,	// 0x0D
+		CLKD_Div176,	// 0x0E
+		CLKD_Div192,	// 0x0F
+	};
+	switch (ratio)
+	{
+	case 1:		return CLKD_Div1;
+	case 2:		return CLKD_Div2;
+	case 4:		return CLKD_Div4;
+	case 6:		return CLKD_Div6;
+	case 8:		return CLKD_Div8;
+	case 12:	return CLKD_Div12;
+	case 16:	return CLKD_Div16;
+	case 24:	return CLKD_Div24;
+	case 32:	return CLKD_Div32;
+	case 48:	return CLKD_Div48;
+	case 64:	return CLKD_Div64;
+	case 96:	return CLKD_Div96;
+	case 128:	return CLKD_Div128;
+	case 176:	return CLKD_Div176;
+	case 192:	return CLKD_Div192;
+	default:	return CLKD_Div192;
+	}
+}
+
+static unsigned width2fmt(unsigned width)
+{
+	switch (width)
+	{
+	default:
+	case 8:			return 0x01;
+	case 12:		return 0x02;
+	case 16:		return 0x03;
+	case 20:		return 0x04;
+	case 24:		return 0x05;
+	case 28:		return 0x06;
+	case 32:		return 0x07;
+	}
+}
 static void hardware_i2s1_initialize_codec1(int master)
 {
+	const unsigned NCH = 2;
 	enum
 	{
 		ALLWNT113_I2S1_CLK_WIDTH = 5, ALLWNT113_I2S1_CLK_TAPS = ( 8 | 4 | 2 | 1)
@@ -3465,22 +3521,24 @@ static void hardware_i2s1_initialize_codec1(int master)
 	// ARMSAIMCLK = ARMSAIRATE * 256
 	// CODEC1_FRAMEBITS 64
 
-	unsigned long lrckf = ARMI2SRATE;
-	unsigned long bclkf = lrckf * CODEC1_FRAMEBITS;
-	unsigned long mclkf = lrckf * 256;
+	const unsigned long lrckf = ARMI2SRATE;
+	const unsigned long bclkf = lrckf * CODEC1_FRAMEBITS;
+	const unsigned long mclkf = lrckf * 256;
 
 	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu, frame=%u\n", mclkf, bclkf, lrckf, CODEC1_FRAMEBITS);
-	PRINTF("i2s1: allwnrt113_get_audio1pll4x_freq = %lu\n", allwnrt113_get_audio1pll4x_freq());
-	PRINTF("i2s1: allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
+	PRINTF("i2s1: allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
+	PRINTF("i2s1: allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
 	PRINTF("i2s1: allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
 	PRINTF("i2s1: allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
 
-	//	i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
-	//	i2s1: allwnrt113_get_audio1pll4x_freq = 3072000000
-	//	i2s1: allwnrt113_get_audio1pll1x_freq = 768000000
-	//	i2s1: allwnrt113_get_audio1pll_div2_freq = 384000000
-	//	i2s1: allwnrt113_get_audio1pll_div5_freq = 153600000
-	unsigned long src = 0x02;
+//	i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000, frame=64
+//	i2s1: allwnrt113_get_audio1pll1x_freq = 768000000
+//	i2s1: allwnrt113_get_audio1pll4x_freq = 3072000000
+//	i2s1: allwnrt113_get_audio1pll_div2_freq = 384000000
+//	i2s1: allwnrt113_get_audio1pll_div5_freq = 153600000
+//	i2s1: prei=0, value=30, mclkf=12288000, (clk=384000000)
+
+	const unsigned long src = 0x02;	// 0x00, 0x01 - не подобрать делитель
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
 	// 01: PLL_AUDIO0(4X)
@@ -3494,7 +3552,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 		clk = allwnrt113_get_audio0pll1x_freq();
 		break;
 	case 0x01:
-		clk = allwnrt113_get_audio0pll14x_freq();
+		clk = allwnrt113_get_audio0pll4x_freq();
 		break;
 	case 0x02:
 		clk = allwnrt113_get_audio1pll_div2_freq();
@@ -3527,44 +3585,27 @@ static void hardware_i2s1_initialize_codec1(int master)
 
 	I2S1->I2S_PCM_FMT0 =
 		(((CODEC1_FRAMEBITS / 2) - 1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
-		(0x03uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		(0x03uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(CODEC1_FRAMEBITS / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(CODEC1_FRAMEBITS / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
 	I2S1->I2S_PCM_FMT1 =
 		0;
 	// I2S/PCM Channel Configuration Register
 	I2S1->I2S_PCM_CHCFG =
-		(0x01uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
-		(0x01uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot
+		(NCH - 1) * (1uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
+		(NCH - 1) * (1uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot
 		0;
 
-	enum divs
-	{
-		CLKD_Div1 = 0x01,
-		CLKD_Div2,		// 0x02
-		CLKD_Div4,		// 0x03
-		CLKD_Div6,		// 0x04
-		CLKD_Div8,		// 0x05
-		CLKD_Div12,		// 0x06
-		CLKD_Div16,		// 0x07
-		CLKD_Div24,		// 0x08
-		CLKD_Div32,		// 0x09
-		CLKD_Div48,		// 0x0A
-		CLKD_Div64,		// 0x0B
-		CLKD_Div96,		// 0x0C
-		CLKD_Div128,	// 0x0D
-		CLKD_Div176,	// 0x0E
-		CLKD_Div192,	// 0x0F
-	};
 	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
 	// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
 	// (pin P2-6) lrck = 53 khz
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
 	// BCLK = MCLK / BCLKDIV
+	const unsigned ratio = 1024 / CODEC1_FRAMEBITS;
 	I2S1->I2S_PCM_CLKD =
 		1 * (1uL << 8) |		// MCLKO_EN
-		CLKD_Div4 * (1uL << 0) |		/* MCLKDIV */
-		CLKD_Div32 * (1uL << 4) |		/* BCLKDIV */
+		ratio2div(4) * (1uL << 0) |		/* MCLKDIV */
+		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
 		0;
 
 #if CODEC1_FORMATI2S_PHILIPS
