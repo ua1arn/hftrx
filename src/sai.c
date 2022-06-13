@@ -3470,7 +3470,7 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	unsigned long bclkf = lrckf * CODEC1_FRAMEBITS;
 	unsigned long mclkf = lrckf * 256;
 
-	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu\n", mclkf, bclkf, lrckf);
+	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu, frame=%u\n", mclkf, bclkf, lrckf, CODEC1_FRAMEBITS);
 	PRINTF("i2s1: allwnrt113_get_audio1pll4x_freq = %lu\n", allwnrt113_get_audio1pll4x_freq());
 	PRINTF("i2s1: allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
 	PRINTF("i2s1: allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
@@ -3516,8 +3516,8 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	// 11: PLL_AUDIO1(DIV5)
 	CCU->I2S1_CLK_REG =
 		(0x01uL << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
-		(src << 24) |					// CLK_SRC_SEL
-		((uint_fast32_t) prei << 8) |	// Factor N (0..3 /1 /2 /4 /8)
+		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
+		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
 		((uint_fast32_t) value << 0) |	// Factor M (0..31)
 		0;
 
@@ -3620,6 +3620,8 @@ static void hardware_i2s1_enable_codec1(uint_fast8_t state)
 	else
 	{
 		I2S1->I2S_PCM_CTL &= ~ (0x01uL << 0); // GEN Globe Enable
+		I2S1->I2S_PCM_CTL &= ~ (0x01uL << 2); // TXEN
+		I2S1->I2S_PCM_CTL &= ~ (0x01uL << 1); // RXEN
 	}
 }
 
