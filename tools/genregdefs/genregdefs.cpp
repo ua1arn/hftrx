@@ -70,7 +70,11 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 			unsigned sz = p->fldoffs - offs;
 
 
-            if ((sz % 4) == 0)
+            if (sz == 4)
+            {
+			    printf("\t" "uint32_t reserved%u;\n", ++ reservers);
+            }
+            else if ((sz % 4) == 0)
             {
 			    printf("\t" "uint32_t reserved%u [0x%04X];\n", ++ reservers, sz / 4);
             }
@@ -101,11 +105,11 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 				int pad = commentspos - eolpos;
 				printf("%*.*s", pad, pad, "");
 			}
-			printf("/*!< Offset 0x%04X %s */\n", p->fldoffs, p->comment);
+			printf("/*!< Offset 0x%03X %s */\n", p->fldoffs, p->comment);
 		}
 		else
 		{
-			printf("WRONG offset at %s (%04x)\n",  p->fldname, p->fldoffs);
+			printf("#error WRONG offset of field '%s' at (%04x)\n",  p->fldname, p->fldoffs);
 			break;
 		}
 	}
