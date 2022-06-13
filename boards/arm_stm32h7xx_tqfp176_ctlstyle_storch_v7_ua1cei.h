@@ -350,8 +350,8 @@
 	#if 1
 		/* TUNER & PA board us4ijr@gmail.com */
 		#define WITHAUTOTUNER	1	/* Есть функция автотюнера */
-		#define SHORTSET8	1
-		#define WITHAUTOTUNER_AVBELNN	1	/* Плата управления LPF и тюнером от avbelnn */
+		#define FULLSET8	1
+		#define WITHAUTOTUNER_AVBELNN_UA1CEI	1	/* Плата управления LPF и тюнером от avbelnn */
 		#define WITHANTSELECT	1	/* Управление переключением антенн */
 	#elif 0
 		/* TUNER & PA board 2*RD16 by avbelnn@yandex.ru */
@@ -500,7 +500,7 @@
 		XTHERMOIX = 9,		// PB1 Exernal thermo sensor ST LM235Z
 	#endif /* WITHTHERMOLEVEL */
 
-	#if WITHAUTOTUNER_AVBELNN
+	#if WITHAUTOTUNER_AVBELNN || WITHAUTOTUNER_AVBELNN_UA1CEI
 		/* TUNER & PA board us4ijr@gmail.com */
 
 		//#define WITHTXCWREDUCE	1	/* для получения сравнимой выходной мощности в SSB и CW уменьшен уровень CW и добавлено усиление аналоговой части. */
