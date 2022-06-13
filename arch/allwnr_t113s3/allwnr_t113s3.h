@@ -1717,6 +1717,44 @@ typedef struct USB_EHCI_CapabilityType
 	__IO uint32_t ASYNCLISTADDR;                         /*!< Offset 0x028 EHCI Next Asynchronous List Address Register */
 } USB_EHCI_CapabilityTypeDef;
 /* Generated section end */
+/*
+ * @brief DMAC_CH
+ */
+/*!< DMAC_CH Controller Interface */
+typedef struct DMAC_CH_Type
+{
+	__IO uint32_t DMAC_EN_REGN;                          /*!< Offset 0x000 DMAC Channel Enable Register N (N = 0 to 15) 0x0100 + N*0x0040 */
+	__IO uint32_t DMAC_PAU_REGN;                         /*!< Offset 0x004 DMAC Channel Pause Register N (N = 0 to 15) 0x0104 + N*0x0040 */
+	__IO uint32_t DMAC_DESC_ADDR_REGN;                   /*!< Offset 0x008 DMAC Channel Start Address Register N (N = 0 to 15) 0x0108 + N*0x0040 */
+	__IO uint32_t DMAC_CFG_REGN;                         /*!< Offset 0x00C DMAC Channel Configuration Register N (N = 0 to 15) 0x010C + N*0x0040 */
+	__IO uint32_t DMAC_CUR_SRC_REGN;                     /*!< Offset 0x010 DMAC Channel Current Source Register N (N = 0 to 15) 0x0110 + N*0x0040 */
+	__IO uint32_t DMAC_CUR_DEST_REGN;                    /*!< Offset 0x014 DMAC Channel Current Destination Register N (N = 0 to 15) 0x0114 + N*0x0040 */
+	__IO uint32_t DMAC_BCNT_LEFT_REGN;                   /*!< Offset 0x018 DMAC Channel Byte Counter Left Register N (N = 0 to 15) 0x0118 + N*0x0040 */
+	__IO uint32_t DMAC_PARA_REGN;                        /*!< Offset 0x01C DMAC Channel Parameter Register N (N = 0 to 15) 0x011C + N*0x0040 */
+	uint32_t reserved1 [0x0002];
+	__IO uint32_t DMAC_MODE_REGN;                        /*!< Offset 0x028 DMAC Mode Register N (N = 0 to 15) 0x0128 + N*0x0040 */
+	__IO uint32_t DMAC_FDESC_ADDR_REGN;                  /*!< Offset 0x02C DMAC Former Descriptor Address Register N (N = 0 to 15) 0x012C + N*0x0040 */
+	__IO uint32_t DMAC_PKG_NUM_REGN;                     /*!< Offset 0x030 DMAC Package Number Register N (N = 0 to 15) 0x0130 + N*0x0040 */
+	uint32_t reserved2 [0x0003];
+} DMAC_CH_TypeDef;
+/*
+ * @brief DMAC
+ */
+/*!< DMAC Controller Interface */
+typedef struct DMAC_Type
+{
+	__IO uint32_t DMAC_IRQ_EN_REG0;                      /*!< Offset 0x000 DMAC IRQ Enable Register 0 */
+	__IO uint32_t DMAC_IRQ_EN_REG1;                      /*!< Offset 0x004 DMAC IRQ Enable Register 1 */
+	uint32_t reserved1 [0x0002];
+	__IO uint32_t DMAC_IRQ_PEND_REG0;                    /*!< Offset 0x010 DMAC IRQ Pending Register 0 */
+	__IO uint32_t DMAC_IRQ_PEND_REG1;                    /*!< Offset 0x014 DMAC IRQ Pending Register 1 */
+	uint32_t reserved2 [0x0004];
+	__IO uint32_t DMAC_AUTO_GATE_REG;                    /*!< Offset 0x028 DMAC Auto Gating Register */
+	uint32_t reserved3;
+	__IO uint32_t DMAC_STA_REG;                          /*!< Offset 0x030 DMAC Status Register */
+	uint32_t reserved4 [0x0033];
+	__IO DMAC_CH_TypeDef CH [16];                        /*!< Offset 0x100 regisrers */
+} DMAC_TypeDef;
 
 /* Access pointers */
 
@@ -1792,6 +1830,7 @@ typedef struct USB_EHCI_CapabilityType
 
 #define USB0_EHCI		((USB_EHCI_CapabilityTypeDef * ) (USB0_BASE + 0x1000))	/*!< \brief USB0_EHCI Interface register set access pointer */
 #define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */
+#define DMAC			((DMAC_TypeDef *) DMAC_BASE)							/*!< \brief DMAC Interface register set access pointer */
 
 /** @addtogroup Exported_types
   * @{
