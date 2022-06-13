@@ -3440,16 +3440,15 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 #elif CPUSTYPE_ALLWNT113
 
-static void I2S1_IRQHandler_codec1(void)
+enum
 {
-	TP();
-}
-
-static void I2S2_IRQHandler_fpga(void)
-{
-	TP();
-}
-
+	DMA_I2S1_TX_Ch,
+	DMA_I2S1_RX_Ch,
+	DMA_I2S2_TX_Ch,
+	DMA_I2S2_RX_Ch,
+	//
+	DMA_Ch_Total
+};
 static unsigned ratio2div(unsigned ratio)
 {
 	enum divs
@@ -3842,24 +3841,80 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 	}
 }
 
+static ALIGNX_BEGIN uint32_t tbuff [512] ALIGNX_END;
+
+void DMAC_NS_IRQHandler(void)
+{
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0;
+	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1;
+
+	TP();
+}
+
+void DMAC_S_IRQHandler(void)
+{
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0;
+	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1;
+
+	TP();
+}
+
 static void DMA_I2S1_RX_initialize_codec1(void)
 {
-	arm_hardware_set_handler_realtime(I2S1_IRQn, I2S1_IRQHandler_codec1);
+	unsigned dmach = DMA_I2S1_RX_Ch;
+	//
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_GATING 1: Pass
+
+	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
+
+	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
+	DMAC->CH [dmach].DMAC_CFG_REGN =
+		0 * (1uL << 0) |
+		0;
+
+	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+	arm_hardware_set_handler_realtime(DMAC_S_IRQn, DMAC_S_IRQHandler);
+
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
+
+	I2S1->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 }
 
 static void DMA_I2S1_TX_initialize_codec1(void)
 {
-	arm_hardware_set_handler_realtime(I2S1_IRQn, I2S1_IRQHandler_codec1);
+	unsigned dmach = DMA_I2S1_TX_Ch;
+	//
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_GATING 1: Pass
+
+	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+	arm_hardware_set_handler_realtime(DMAC_S_IRQn, DMAC_S_IRQHandler);
+	I2S1->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
 }
 
 static void DMA_I2S2_RX_initialize_fpga(void)
 {
-	arm_hardware_set_handler_realtime(I2S2_IRQn, I2S2_IRQHandler_fpga);
+	unsigned dmach = DMA_I2S2_RX_Ch;
+	//
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_GATING 1: Pass
+
+	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+	arm_hardware_set_handler_realtime(DMAC_S_IRQn, DMAC_S_IRQHandler);
+	I2S2->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 }
 
 static void DMA_I2S2_TX_initialize_fpga(void)
 {
-	arm_hardware_set_handler_realtime(I2S2_IRQn, I2S2_IRQHandler_fpga);
+	unsigned dmach = DMA_I2S2_TX_Ch;
+	//
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_GATING 1: Pass
+
+	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+	arm_hardware_set_handler_realtime(DMAC_S_IRQn, DMAC_S_IRQHandler);
+	I2S2->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
 }
 
 static const codechw_t audiocodechw_i2s1_duplex_master =
