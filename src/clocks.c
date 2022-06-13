@@ -2206,12 +2206,12 @@ unsigned long allwnrt113_get_video0_x1_freq(void)
 
 unsigned long allwnrt113_get_video1_x2_freq(void)
 {
-	return allwnrt113_get_video0_x4_freq() / 2;
+	return allwnrt113_get_video1_x4_freq() / 2;
 }
 
 unsigned long allwnrt113_get_video1_x1_freq(void)
 {
-	return allwnrt113_get_video0_x4_freq() / 4;
+	return allwnrt113_get_video1_x4_freq() / 4;
 }
 
 unsigned long allwnrt113_get_pll_peri_x1_freq(void)
