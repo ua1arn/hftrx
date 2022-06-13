@@ -3882,15 +3882,15 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 	unsigned dmach = DMA_I2S1_RX_Ch;
 
 	const uint_fast32_t config =
-		1 * (1uL << 30) |	// BMODE_SEL
+		0 * (1uL << 30) |	// BMODE_SEL
 		0x02 * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
-		DMAC_DstDrqDRAM * (1uL << 16) |	// DMA Destination DRQ Type
+		DMAC_DstReqDRAM * (1uL << 16) |	// DMA Destination DRQ Type
 		0x02 * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 6) |	// DMA Source Block Size
-		DMAC_SrcDrqDRAM * (1uL << 0) |	// DMA Source DRQ Type
+		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
 		0;
 
 	// Six words of DMAC sescriptor:
