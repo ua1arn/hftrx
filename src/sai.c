@@ -3870,80 +3870,19 @@ void DMAC_NS_IRQHandler(void)
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0;
 	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1;
 
-	PRINTF("DMAC_NS_IRQHandler: reg1/0=%08lX:%08lX\n", reg1, reg0);
-
 	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
 }
 
-enum DMAC_SrcDrqType
-{
-	DMAC_SrcDrqSRAM = 0,
-	DMAC_SrcDrqDRAM = 1,
-	DMAC_SrcDrqOWA_RX = 2,
-	DMAC_SrcDrqI2S1_RX = 4,
-	DMAC_SrcDrqI2S2_RX = 5,
-	DMAC_SrcDrqAudioCodec = 7,
-	DMAC_SrcDrqDMIC = 8,
-	DMAC_SrcDrqGPADC = 12,
-	DMAC_SrcDrqTPADC = 13,
-	DMAC_SrcDrqUART0_RX = 14,
-	DMAC_SrcDrqUART1_RX = 15,
-	DMAC_SrcDrqUART2_RX = 16,
-	DMAC_SrcDrqUART3_RX = 17,
-	DMAC_SrcDrqUART4_RX = 18,
-	DMAC_SrcDrqUART5_RX = 19,
-	DMAC_SrcDrqSPI0_RX = 22,
-	DMAC_SrcDrqSPI1_RX = 23,
-	DMAC_SrcDrqUSB0_EP1 = 30,
-	DMAC_SrcDrqUSB0_EP2 = 31,
-	DMAC_SrcDrqUSB0_EP3 = 32,
-	DMAC_SrcDrqUSB0_EP4 = 33,
-	DMAC_SrcDrqUSB0_EP5 = 34,
-	DMAC_SrcDrqTWI0_RX = 43,
-	DMAC_SrcDrqTWI1_RX = 44,
-	DMAC_SrcDrqTWI2_RX = 45,
-	DMAC_SrcDrqTWI3_RX = 46,
-};
-
-enum DMAC_DstDrqType
-{
-	DMAC_DstDrqSRAM = 0,
-	DMAC_DstDrqDRAM = 1,
-	DMAC_DstDrqOWA_TX = 2,
-	DMAC_DstDrqI2S1_TX = 4,
-	DMAC_DstDrqI2S2_TX = 5,
-	DMAC_DstDrqAudioCodec = 7,
-	DMAC_DstDrqIR_TX = 13,
-	DMAC_DstDrqUART0_TX = 14,
-	DMAC_DstDrqUART1_TX = 15,
-	DMAC_DstDrqUART2_TX = 16,
-	DMAC_DstDrqUART3_TX = 17,
-	DMAC_DstDrqUART4_TX = 18,
-	DMAC_DstDrqUART5_TX = 19,
-	DMAC_DstDrqSPI0_TX = 22,
-	DMAC_DstDrqSPI1_TX = 23,
-	DMAC_DstDrqUSB0_EP1 = 30,
-	DMAC_DstDrqUSB0_EP2 = 31,
-	DMAC_DstDrqUSB0_EP3 = 32,
-	DMAC_DstDrqUSB0_EP4 = 33,
-	DMAC_DstDrqUSB0_EP5 = 34,
-	DMAC_DstDrqLEDC = 42,
-	DMAC_DstDrqTWI0_TX = 43,
-	DMAC_DstDrqTWI1_TX = 44,
-	DMAC_DstDrqTWI2_TX = 45,
-	DMAC_DstDrqTWI3_TX = 46,
-};
-
 static void DMA_I2S1_RX_initialize_codec1(void)
 {
 	static ALIGNX_BEGIN uint32_t srcdata [] ALIGNX_END = { 0xABBA1980, 0xDEADBEEF, 0x12345678, 0x9ABCDEF0 };
-	static ALIGNX_BEGIN uint32_t descr [8] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [8] ALIGNX_END;
 
 	unsigned dmach = DMA_I2S1_RX_Ch;
 
 	const uint_fast32_t config =
-		0 * (1uL << 30) |	// BMODE_SEL
+		1 * (1uL << 30) |	// BMODE_SEL
 		0x02 * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
@@ -3954,19 +3893,25 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 		DMAC_SrcDrqDRAM * (1uL << 0) |	// DMA Source DRQ Type
 		0;
 
-	descr [0] = config;					// Cofigurarion
-	descr [1] = (uintptr_t) srcdata; //& I2S1->I2S_PCM_RXFIFO;	// Source Address
-	descr [2] = (uintptr_t) tbuff;		// Destination Address
-	descr [3] = sizeof srcdata;			// Byte Counter
-	descr [4] = 0;						// Parameter
-	descr [5] = (uintptr_t) 0xFFFFF800;	// Link
+	// Six words of DMAC sescriptor:
+	descr0 [0] = config;					// Cofigurarion
+	descr0 [1] = (uintptr_t) & srcdata;//I2S1->I2S_PCM_RXFIFO;	// Source Address
+	descr0 [2] = (uintptr_t) tbuff;		// Destination Address
+	descr0 [3] = sizeof srcdata;			// Byte Counter
+	descr0 [4] = 0;						// Parameter
+	descr0 [5] = (uintptr_t) 0xFFFFF800;	// Link
 
-	uintptr_t descraddr = (uintptr_t) descr;
-	arm_hardware_flush(descraddr, sizeof descr);
+	uintptr_t descraddr = (uintptr_t) descr0;
+	arm_hardware_flush(descraddr, sizeof descr0);
+	arm_hardware_invalidate((uintptr_t) tbuff, sizeof tbuff);
 	//
+	CCU->MBUS_CLK_REG |= (0x01uL << 30);	// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (0x01uL << 0);	// Gating MBUS Clock For DMA
 	CCU->DMA_BGR_REG |= (0x01uL << 0);	// DMA_GATING 1: Pass clock
 	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert reset
 	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 1);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 0);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
 
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
@@ -3974,11 +3919,13 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == (descraddr & ~ 0x03));
 	PRINTF("descraddr=%08lX\n", descraddr);
 
+	//arm_hardware_set_handler_system(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
 	const unsigned mask0 = 1uL << (dmach * 4);	// CH7..CH0
 	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * 0x02;		// 0x04: Queue, 0x02: Pkq, 0x01: half
 
+	DMAC->CH [dmach].DMAC_MODE_REGN = 0x0C;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
 

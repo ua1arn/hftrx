@@ -1832,6 +1832,66 @@ typedef struct DMAC_Type
 #define USB1_EHCI		((USB_EHCI_CapabilityTypeDef * ) USB1_BASE)				/*!< \brief USB1_EHCI Interface register set access pointer */
 #define DMAC			((DMAC_TypeDef *) DMAC_BASE)							/*!< \brief DMAC Interface register set access pointer */
 
+
+enum DMAC_SrcDrqType
+{
+	DMAC_SrcDrqSRAM = 0,
+	DMAC_SrcDrqDRAM = 1,
+	DMAC_SrcDrqOWA_RX = 2,
+	DMAC_SrcDrqI2S1_RX = 4,
+	DMAC_SrcDrqI2S2_RX = 5,
+	DMAC_SrcDrqAudioCodec = 7,
+	DMAC_SrcDrqDMIC = 8,
+	DMAC_SrcDrqGPADC = 12,
+	DMAC_SrcDrqTPADC = 13,
+	DMAC_SrcDrqUART0_RX = 14,
+	DMAC_SrcDrqUART1_RX = 15,
+	DMAC_SrcDrqUART2_RX = 16,
+	DMAC_SrcDrqUART3_RX = 17,
+	DMAC_SrcDrqUART4_RX = 18,
+	DMAC_SrcDrqUART5_RX = 19,
+	DMAC_SrcDrqSPI0_RX = 22,
+	DMAC_SrcDrqSPI1_RX = 23,
+	DMAC_SrcDrqUSB0_EP1 = 30,
+	DMAC_SrcDrqUSB0_EP2 = 31,
+	DMAC_SrcDrqUSB0_EP3 = 32,
+	DMAC_SrcDrqUSB0_EP4 = 33,
+	DMAC_SrcDrqUSB0_EP5 = 34,
+	DMAC_SrcDrqTWI0_RX = 43,
+	DMAC_SrcDrqTWI1_RX = 44,
+	DMAC_SrcDrqTWI2_RX = 45,
+	DMAC_SrcDrqTWI3_RX = 46,
+};
+
+enum DMAC_DstDrqType
+{
+	DMAC_DstDrqSRAM = 0,
+	DMAC_DstDrqDRAM = 1,
+	DMAC_DstDrqOWA_TX = 2,
+	DMAC_DstDrqI2S1_TX = 4,
+	DMAC_DstDrqI2S2_TX = 5,
+	DMAC_DstDrqAudioCodec = 7,
+	DMAC_DstDrqIR_TX = 13,
+	DMAC_DstDrqUART0_TX = 14,
+	DMAC_DstDrqUART1_TX = 15,
+	DMAC_DstDrqUART2_TX = 16,
+	DMAC_DstDrqUART3_TX = 17,
+	DMAC_DstDrqUART4_TX = 18,
+	DMAC_DstDrqUART5_TX = 19,
+	DMAC_DstDrqSPI0_TX = 22,
+	DMAC_DstDrqSPI1_TX = 23,
+	DMAC_DstDrqUSB0_EP1 = 30,
+	DMAC_DstDrqUSB0_EP2 = 31,
+	DMAC_DstDrqUSB0_EP3 = 32,
+	DMAC_DstDrqUSB0_EP4 = 33,
+	DMAC_DstDrqUSB0_EP5 = 34,
+	DMAC_DstDrqLEDC = 42,
+	DMAC_DstDrqTWI0_TX = 43,
+	DMAC_DstDrqTWI1_TX = 44,
+	DMAC_DstDrqTWI2_TX = 45,
+	DMAC_DstDrqTWI3_TX = 46,
+};
+
 /** @addtogroup Exported_types
   * @{
   */
