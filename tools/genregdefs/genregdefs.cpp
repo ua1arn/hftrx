@@ -109,7 +109,7 @@ void genstruct(const struct ddd * regs, unsigned szregs, const char * bname)
 		}
 		else
 		{
-			printf("#error WRONG offset of field '%s' at (%04x)\n",  p->fldname, p->fldoffs);
+			printf("#error WRONG offset of field '%s' at (%03X)\n",  p->fldname, p->fldoffs);
 			break;
 		}
 	}
