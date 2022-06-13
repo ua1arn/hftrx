@@ -938,14 +938,11 @@ void spi_initialize(void)
 
 	hardware_spi_master_setfreq(SPIC_SPEEDFAST, SPISPEED);
 
-#if defined (SPISPEED400k) || defined (SPISPEED100k)
-	hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);		// 100 kHz for MICROCHIP MCP3204/MCP3208
 	hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);
 	hardware_spi_master_setfreq(SPIC_SPEED1M, 1000000uL);	/* 1 MHz для XPT2046 */
 	hardware_spi_master_setfreq(SPIC_SPEED4M, 4000000uL);	/* 4 MHz для CS4272 */
 	hardware_spi_master_setfreq(SPIC_SPEED10M, 10000000uL);	/* 10 MHz для ILI9341 */
 	hardware_spi_master_setfreq(SPIC_SPEED25M, 25000000uL);	/* 25 MHz  */
-#endif /* (SPISPEED400k) || defined (SPISPEED100k) */
 
 #endif /* WITHSPIHW */
 
@@ -1607,13 +1604,14 @@ void spidf_initialize(void)
 
 	};
 
-	const portholder_t clk_src = 0x01;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
 		(clk_src << 24) |	/* CLK_SRC_SEL */
 		0;
 
 	const uint_fast32_t spispeed = 25000000uL;
 	// SCLK = Clock Source/M/N.
+	//TP();
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);
 	//PRINTF("spidf_initialize: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, spispeed, allwnrt113_get_spi0_freq());

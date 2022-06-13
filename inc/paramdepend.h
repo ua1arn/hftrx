@@ -26,7 +26,7 @@ extern "C" {
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ARM_OVERREALTIME_PRIORITY	AT91C_AIC_PRIOR_HIGHEST
 	#define ARM_REALTIME_PRIORITY		(AT91C_AIC_PRIOR_LOWEST + 1)
@@ -65,7 +65,7 @@ extern "C" {
 
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -107,7 +107,7 @@ extern "C" {
 
 	#define SPISPEED (PCLK1_FREQ / 1)	/* 8 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	30		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -138,7 +138,7 @@ extern "C" {
 	#define SPISPEED (PCLK1_FREQ / 4)	/* 9.0 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define TICKS_FREQUENCY		(200uL * 1) // at ARM - 200 Hz
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
 	// ADC clock frequency: 1..20 MHz
@@ -332,7 +332,7 @@ extern "C" {
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -383,7 +383,7 @@ extern "C" {
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
@@ -413,7 +413,7 @@ extern "C" {
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	//#define HARDWARE_DACBITS 12	/* ЦАП работает с 12-битными значениями */
@@ -432,7 +432,7 @@ extern "C" {
 
 	#define SPISPEED (4UL * 1000 * 1000)	/* 4 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define TICKS_FREQUENCY		200U // 200 Hz
 
@@ -462,7 +462,7 @@ extern "C" {
 
 	#define SPISPEED (CPU_FREQ / 2) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADC_FREQ	250000uL	/* тактовая частота SAR преобразователя АЦП. */
 
@@ -501,7 +501,7 @@ extern "C" {
 
 	#define SPISPEED (8000000) /* 4 (5) MHz на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADC_FREQ	125000uL	/* тактовая частота SAR преобразователя АЦП. */
 
@@ -540,7 +540,7 @@ extern "C" {
 	#define SPISPEED 8000000uL	/* 8 MHz (10.5) на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST (P1CLOCK_FREQ / 3)	// 20 MHz
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define HARDWARE_ADCBITS 12	/* АЦП работает с 12-битными значениями */
@@ -662,7 +662,7 @@ extern "C" {
 	#define SPISPEED (BOARD_SPI_FREQ / 4)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 24000000uL	/* 2требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 	#define ADCVREF_CPU	33		// 3.3 volt
 	#define DACVREF_CPU	33		// 3.3 volt
@@ -710,7 +710,7 @@ extern "C" {
 	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
 #elif CPUSTYPE_ALLWNT113
@@ -740,7 +740,7 @@ extern "C" {
 	#define SPISPEED (12000000uL)	/* 12 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL	/* 12 MHzна SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 
 	typedef enum {
@@ -787,7 +787,7 @@ extern "C" {
 	#define SPISPEED (12000000uL)	/* 14 MHz на SCLK - требуемая скорость передачи по SPI */
 	#define SPISPEEDUFAST 12000000uL//(PCLK1_FREQ / 2)	/* 28 на SCLK - требуемая скорость передачи по SPI */
 	#define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-	#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
+	//#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 #elif defined(_WIN32)
 

@@ -284,9 +284,6 @@ uint_fast8_t board_rtc_chip_initialize(void)
 {
 	uint_fast8_t eosc;
 
-	//hardware_spi_master_setfreq(SPIC_SPEED400k, SPISPEED400k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
-	//hardware_spi_master_setfreq(SPIC_SPEED100k, SPISPEED100k);	// Slow clock speed (for chips like LM7001 or DS1305EN)
-
 	uint8_t b [1];
 	static const uint8_t b0 [1] = { 0 };
 	static const uint8_t b_WP [1] = { 0x40 };

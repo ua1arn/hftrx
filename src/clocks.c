@@ -2366,7 +2366,7 @@ unsigned long allwnrt113_get_twi_freq(void)
 
 unsigned long allwnrt113_get_spi0_freq(void)
 {
-	const unsigned long pgdiv = 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
+	const unsigned long pgdiv = 1; //= 4 * 2;	// post-gete dividers: clkdiv4 and clkdiv2y
 	const uint_fast32_t clkreg = CCU->SPI0_CLK_REG;
 //	const unsigned long N = 0x01uL << ((clkreg >> 8) & 0x03);
 //	const unsigned long M = 1uL + ((clkreg >> 0) & 0x0F);
@@ -7923,11 +7923,12 @@ void hardware_spi_master_setfreq(spi_speeds_t spispeedindex, int_fast32_t spispe
 
 	};
 
-	const portholder_t clk_src = 0x01;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
+	const portholder_t clk_src = 0x00;	/* CLK_SRC_SEL: 000: HOSC, 001: PLL_PERI(1X), 010: PLL_PERI(2X), 011: PLL_AUDIO1(DIV2), , 100: PLL_AUDIO1(DIV5) */
 	CCU->SPI0_CLK_REG = (CCU->SPI0_CLK_REG & ~ (0x03uL << 24)) |
 		(clk_src << 24) |	/* CLK_SRC_SEL */
 		0;
 
+	//TP();
 	// SCLK = Clock Source/M/N.
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_spi0_freq(), spispeed), ALLWNT113_SPI_BR_WIDTH, ALLWNT113_SPI_BR_TAPS, & value, 1);

@@ -3505,14 +3505,17 @@ static unsigned width2fmt(unsigned width)
 	case 32:		return 0x07;
 	}
 }
+
+enum
+{
+	ALLWNT113_I2Sx_CLK_WIDTH = 5, ALLWNT113_I2Sx_CLK_TAPS = ( 8 | 4 | 2 | 1 )
+
+};
+
 static void hardware_i2s1_initialize_codec1(int master)
 {
 	const unsigned NCH = 2;
-	enum
-	{
-		ALLWNT113_I2S1_CLK_WIDTH = 5, ALLWNT113_I2S1_CLK_TAPS = ( 8 | 4 | 2 | 1)
-
-	};
+	const unsigned framebis = CODEC1_FRAMEBITS;
 	enum { ix = 1 };
 
 	// ARMI2SRATE // I2S sample rate audio codec (human side)
@@ -3522,14 +3525,14 @@ static void hardware_i2s1_initialize_codec1(int master)
 	// CODEC1_FRAMEBITS 64
 
 	const unsigned long lrckf = ARMI2SRATE;
-	const unsigned long bclkf = lrckf * CODEC1_FRAMEBITS;
+	const unsigned long bclkf = lrckf * framebis;
 	const unsigned long mclkf = lrckf * 256;
 
-	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu, frame=%u\n", mclkf, bclkf, lrckf, CODEC1_FRAMEBITS);
-	PRINTF("i2s1: allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
-	PRINTF("i2s1: allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
-	PRINTF("i2s1: allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-	PRINTF("i2s1: allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
+//	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu, frame=%u\n", mclkf, bclkf, lrckf, CODEC1_FRAMEBITS);
+//	PRINTF("i2s1: allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
+//	PRINTF("i2s1: allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
+//	PRINTF("i2s1: allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
+//	PRINTF("i2s1: allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
 
 //	i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000, frame=64
 //	i2s1: allwnrt113_get_audio1pll1x_freq = 768000000
@@ -3561,10 +3564,10 @@ static void hardware_i2s1_initialize_codec1(int master)
 		clk = allwnrt113_get_audio1pll_div5_freq();
 		break;
 	}
-	//mclkf *= 10;
+	//TP();
 	unsigned value;	/* делитель */
-	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2S1_CLK_WIDTH, ALLWNT113_I2S1_CLK_TAPS, & value, 1);
-	PRINTF("i2s1: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
+	//PRINTF("i2s1: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
 
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
@@ -3581,12 +3584,12 @@ static void hardware_i2s1_initialize_codec1(int master)
 	CCU->I2S_BGR_REG |= (0x01uL << (0 + ix));	// Gating Clock for I2S/PCMx
 	CCU->I2S_BGR_REG |= (0x01uL << (16 + ix));	// I2S/PCMx Reset
 
-	PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
+	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
 	I2S1->I2S_PCM_FMT0 =
-		(((CODEC1_FRAMEBITS / 2) - 1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
-		width2fmt(CODEC1_FRAMEBITS / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
-		width2fmt(CODEC1_FRAMEBITS / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		(((framebis / 2) - 1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		width2fmt(framebis / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebis / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
 	I2S1->I2S_PCM_FMT1 =
 		0;
@@ -3601,7 +3604,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 	// (pin P2-6) lrck = 53 khz
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
 	// BCLK = MCLK / BCLKDIV
-	const unsigned ratio = 1024 / CODEC1_FRAMEBITS;
+	const unsigned ratio = 1024 / framebis;
 	I2S1->I2S_PCM_CLKD =
 		1 * (1uL << 8) |		// MCLKO_EN
 		ratio2div(4) * (1uL << 0) |		/* MCLKDIV */
@@ -3623,17 +3626,161 @@ static void hardware_i2s1_initialize_codec1(int master)
 		//(0x01uL << 0) |	// GEN Globe Enable
 		0;
 
+	I2S1->I2S_PCM_RXCHSEL =
+		0x01 * (1uL << 20) |	// RX_OFFSET (need for I2S mode
+		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
+		0;
+
+	const unsigned tx_offset = 1;
+	I2S1->I2S_PCM_TX0CHSEL =
+		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		0;
+	I2S1->I2S_PCM_TX1CHSEL =
+		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		0;
+	I2S1->I2S_PCM_TX2CHSEL =
+		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		0;
+	I2S1->I2S_PCM_TX3CHSEL =
+		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		0;
+
+	I2S1->I2S_PCM_RXCHMAP0 =
+		0 * (1uL << 28) |	// RX_CH15_SELECT
+		0 * (1uL << 24) |	// RX_CH15_MAP
+		0 * (1uL << 20) |	// RX_CH14_SELECT
+		0 * (1uL << 16) |	// RX_CH14_MAP
+		0;
+
 	I2S1HW_INITIALIZE();
 }
 
 static void hardware_i2s2_initialize_fpga(int master)
 {
-	enum
-	{
-		ALLWNT113_I2S1_CLK_WIDTH = 5, ALLWNT113_I2S1_CLK_TAPS = ( 8 | 4 | 2 | 1)
-
-	};
+	const unsigned NCH = 8;
+	const unsigned framebis = WITHFPGAIF_FRAMEBITS;
 	enum { ix = 2 };
+
+	// ARMI2SRATE // I2S sample rate audio codec (human side)
+	// ARMI2SMCLK = ARMI2SRATE * 256
+	// ARMSAIRATE // SAI sample rate (FPGA/IF CODEC side)
+	// ARMSAIMCLK = ARMSAIRATE * 256
+	// CODEC1_FRAMEBITS 64
+
+	const unsigned long lrckf = ARMSAIRATE;
+	const unsigned long bclkf = lrckf * framebis;
+	const unsigned long mclkf = lrckf * 256;
+
+	const unsigned long src = 0x02;	// 0x00, 0x01 - не подобрать делитель
+	// CLK_SRC_SEL:
+	// 00: PLL_AUDIO0(1X)
+	// 01: PLL_AUDIO0(4X)
+	// 10: PLL_AUDIO1(DIV2)
+	// 11: PLL_AUDIO1(DIV5)
+	unsigned long clk;
+	switch (src)
+	{
+	default:
+	case 0x00:
+		clk = allwnrt113_get_audio0pll1x_freq();
+		break;
+	case 0x01:
+		clk = allwnrt113_get_audio0pll4x_freq();
+		break;
+	case 0x02:
+		clk = allwnrt113_get_audio1pll_div2_freq();
+		break;
+	case 0x03:
+		clk = allwnrt113_get_audio1pll_div5_freq();
+		break;
+	}
+	//TP();
+	unsigned value;	/* делитель */
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
+	PRINTF("i2s2: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+
+	// CLK_SRC_SEL:
+	// 00: PLL_AUDIO0(1X)
+	// 01: PLL_AUDIO0(4X)
+	// 10: PLL_AUDIO1(DIV2)
+	// 11: PLL_AUDIO1(DIV5)
+	CCU->I2S2_CLK_REG =
+		(0x01uL << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
+		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
+		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
+		((uint_fast32_t) value << 0) |	// Factor M (0..31)
+		0;
+
+	CCU->I2S_BGR_REG |= (0x01uL << (0 + ix));	// Gating Clock for I2S/PCMx
+	CCU->I2S_BGR_REG |= (0x01uL << (16 + ix));	// I2S/PCMx Reset
+
+	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
+
+	I2S2->I2S_PCM_FMT0 =
+		(((framebis / 2) - 1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		width2fmt(framebis / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
+		width2fmt(framebis / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
+		0;
+	I2S2->I2S_PCM_FMT1 =
+		0;
+	// I2S/PCM Channel Configuration Register
+	I2S2->I2S_PCM_CHCFG =
+		(NCH - 1) * (1uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
+		(NCH - 1) * (1uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot
+		0;
+
+	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
+	// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
+	// (pin P2-6) lrck = 53 khz
+	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
+	// BCLK = MCLK / BCLKDIV
+	const unsigned ratio = 1024 / framebis;
+	I2S2->I2S_PCM_CLKD =
+		1 * (1uL << 8) |		// MCLKO_EN
+		ratio2div(4) * (1uL << 0) |		/* MCLKDIV */
+		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
+		0;
+
+#if CODEC1_FORMATI2S_PHILIPS
+#else /* CODEC1_FORMATI2S_PHILIPS */
+#endif /* CODEC1_FORMATI2S_PHILIPS */
+
+	// I2S/PCM Clock Divide Register
+	I2S2->I2S_PCM_CTL = 0;
+	I2S2->I2S_PCM_CTL =
+		((uint_fast32_t) master << 18) | // BCLK_OUT
+		((uint_fast32_t) master << 17) | // LRCK_OUT
+		(0x01uL << 4) |	// left mode, need offset=1 for I2S
+		//(0x01uL << 2) |	// TXEN
+		//(0x01uL << 1) |	// RXEN
+		//(0x01uL << 0) |	// GEN Globe Enable
+		0;
+
+	I2S2->I2S_PCM_RXCHSEL =
+		0x01 * (1uL << 20) |	// RX_OFFSET (need for I2S mode
+		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
+		0;
+
+	const unsigned tx_offset = 1;
+	I2S2->I2S_PCM_TX0CHSEL =
+		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		0;
+	I2S2->I2S_PCM_TX1CHSEL =
+		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		0;
+	I2S2->I2S_PCM_TX2CHSEL =
+		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		0;
+	I2S2->I2S_PCM_TX3CHSEL =
+		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		0;
+
+	I2S2->I2S_PCM_RXCHMAP0 =
+		0 * (1uL << 28) |	// RX_CH15_SELECT
+		0 * (1uL << 24) |	// RX_CH15_MAP
+		0 * (1uL << 20) |	// RX_CH14_SELECT
+		0 * (1uL << 16) |	// RX_CH14_MAP
+		0;
 
 	I2S2HW_INITIALIZE();
 }

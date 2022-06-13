@@ -18,18 +18,15 @@
 #endif
 
 #define	SPISPEED400k	400000uL	/* 400 kHz для низкоскоростных микросхем */
-#define	SPISPEED100k	100000uL	/* 100 kHz для низкоскоростных микросхем */
 
 typedef enum
 {
-#if (SPISPEED400k) || defined (SPISPEED100k)
-	SPIC_SPEED100k,
 	SPIC_SPEED400k,
 	SPIC_SPEED1M,	/* 1 MHz для XPT2046 */
 	SPIC_SPEED4M,	/* 4 MHz для CS4272 */
 	SPIC_SPEED10M,	/* 10 MHz для ILI9341 */
 	SPIC_SPEED25M,	/* 25 MHz  */
-#endif /* (SPISPEED400k) || defined (SPISPEED100k) */
+
 	SPIC_SPEEDFAST,
 	SPIC_SPEEDUFAST,	// Скорость для загрузки FPGA
 #if WITHUSESDCARD
