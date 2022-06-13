@@ -88,17 +88,20 @@ typedef enum IRQn
 
 } IRQn_Type;
 
-//Info: Found Cortex-A9 r3p0
-//Info: 6 code breakpoints, 4 data breakpoints
-//Info: Debug architecture ARMv7.0
-//Info: Data endian: little
-//Info: Main ID register: 0x413FC090
-//Info: I-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
-//Info: D-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
-
 /******************************************************************************/
 /*                Device Specific Peripheral Section */
 /******************************************************************************/
+
+/* memory addresses */
+/* assumes sram is mapped at 0 the first MB of sdram is covered by it */
+#define SDRAM_BASE          (0x00100000)
+#define SDRAM_APERTURE_SIZE (0x3fF00000)
+#define SRAM_BASE           (0x0)
+#define SRAM_BASE_HIGH      (0xfffc0000)
+#define SRAM_APERTURE_SIZE  (0x00040000)
+#define SRAM_SIZE           (0x00040000)
+
+#define QSPI_LINEAR_BASE  (0xfC000000uL)
 
 #define CPUPRIV_BASE      (0xF8F00000uL)
 #define SCU_CONTROL_BASE  (CPUPRIV_BASE + 0x0000uL)
@@ -108,19 +111,60 @@ typedef enum IRQn
 #define GIC_DISTRIB_BASE  (CPUPRIV_BASE + 0x1000uL)
 #define L2CACHE_BASE      (CPUPRIV_BASE + 0x2000uL)
 
-#define __CORTEX_A                    9U      /*!< Cortex-A# Core */
-#define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present */
-#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present */
-#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present */
-#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present */
+/* hardware base addresses */
+#define UART0_BASE (0xE0000000uL)
+#define UART1_BASE (0xE0001000uL)
+#define USB0_BASE  (0xE0002000uL)
+#define USB1_BASE  (0xE0003000uL)
+#define I2C0_BASE  (0xE0004000uL)
+#define I2C1_BASE  (0xE0005000uL)
+#define SPI0_BASE  (0xE0006000uL)
+#define SPI1_BASE  (0xE0007000uL)
+#define CAN0_BASE  (0xE0008000uL)
+#define CAN1_BASE  (0xE0009000uL)
+#define GPIO_BASE  (0xE000A000uL)
+#define GEM0_BASE  (0xE000B000uL) // gigabit eth controller
+#define GEM1_BASE  (0xE000C000uL) // ""
+#define QSPI_BASE  (0xE000D000uL)
+#define SMCC_BASE  (0xE000E000uL) // PL353 shared memory controller
+
+#define SD0_BASE   (0xE0100000uL)
+#define SD1_BASE   (0xE0101000uL)
+
+#define SLCR_BASE  		(0xF8000000uL)
+#define TTC0_BASE  		(0xF8001000uL)
+#define TTC1_BASE  		(0xF8002000uL)
+#define DMAC0_NS_BASE 	(0xF8004000uL)
+#define DMAC0_S_BASE 	(0xF8003000uL)
+#define SWDT_BASE  		(0xF8005000uL)
+#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
+
+/* configuration for the PL310 L2 cache controller */
+#define PL310_BASE L2CACHE_BASE
+#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
+#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
 
 #define GIC_DISTRIBUTOR_BASE         GIC_DISTRIB_BASE                        /*!< (GIC DIST  ) Base Address */
 #define GIC_INTERFACE_BASE           GIC_PROC_BASE                        /*!< (GIC CPU IF) Base Address */
 #define L2C_310_BASE                 L2CACHE_BASE                        /*!< (PL310     ) Base Address */
 #define TIMER_BASE				PRIV_TIMER_BASE
 
+//Info: Found Cortex-A9 r3p0
+//Info: 6 code breakpoints, 4 data breakpoints
+//Info: Debug architecture ARMv7.0
+//Info: Data endian: little
+//Info: Main ID register: 0x413FC090
+//Info: I-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
+//Info: D-Cache L1: 32 KB, 256 Sets, 32 Bytes/Line, 4-Way
+
 /* --------  Configuration of the Cortex-A9 Processor and Core Peripherals  ------- */
 #define __CA_REV         		    0x0000    /*!< Core revision r0p0 */
+
+#define __CORTEX_A                    9U      /*!< Cortex-A# Core */
+#define __FPU_PRESENT                 1U      /*!< Set to 1 if FPU is present */
+#define __GIC_PRESENT                 1U      /*!< Set to 1 if GIC is present */
+#define __TIM_PRESENT                 1U      /*!< Set to 1 if TIM is present */
+#define __L2C_PRESENT                 1U      /*!< Set to 1 if L2C is present */
 
 #include "core_ca.h"
 #include "system_zynq7000.h"
@@ -680,12 +724,6 @@ typedef struct
  */
 
 
-
-/* configuration for the PL310 L2 cache controller */
-#define PL310_BASE L2CACHE_BASE
-#define PL310_TAG_RAM_LATENCY ((1uL << 8) | (1uL << 4) | (1uL << 0))
-#define PL310_DATA_RAM_LATENCY ((1uL << 8) | (2uL << 4) | (1uL << 0))
-
 /* Verify the entries match the TRM offset to validate the struct */
 //STATIC_ASSERT(offsetof(struct slcr_regs, SCL) == 0x0);
 //STATIC_ASSERT(offsetof(struct slcr_regs, DDRIOB_DCI_STATUS) == 0xb74);
@@ -717,45 +755,7 @@ typedef struct
 #define GPIO_INT_POLARITY(bank)     (GPIO_REGS(bank) + 0x1C)
 #define GPIO_INT_ANY(bank)          (GPIO_REGS(bank) + 0x20)
 
-/* memory addresses */
-/* assumes sram is mapped at 0 the first MB of sdram is covered by it */
-#define SDRAM_BASE          (0x00100000)
-#define SDRAM_APERTURE_SIZE (0x3fF00000)
-#define SRAM_BASE           (0x0)
-#define SRAM_BASE_HIGH      (0xfffc0000)
-#define SRAM_APERTURE_SIZE  (0x00040000)
-#define SRAM_SIZE           (0x00040000)
-
-/* hardware base addresses */
-#define UART0_BASE (0xE0000000uL)
-#define UART1_BASE (0xE0001000uL)
-#define USB0_BASE  (0xE0002000uL)
-#define USB1_BASE  (0xE0003000uL)
-#define I2C0_BASE  (0xE0004000uL)
-#define I2C1_BASE  (0xE0005000uL)
-#define SPI0_BASE  (0xE0006000uL)
-#define SPI1_BASE  (0xE0007000uL)
-#define CAN0_BASE  (0xE0008000uL)
-#define CAN1_BASE  (0xE0009000uL)
-#define GPIO_BASE  (0xE000A000uL)
-#define GEM0_BASE  (0xE000B000uL) // gigabit eth controller
-#define GEM1_BASE  (0xE000C000uL) // ""
-#define QSPI_BASE  (0xE000D000uL)
-#define SMCC_BASE  (0xE000E000uL) // PL353 shared memory controller
-
-#define SD0_BASE   (0xE0100000uL)
-#define SD1_BASE   (0xE0101000uL)
-
-#define SLCR_BASE  		(0xF8000000uL)
-#define TTC0_BASE  		(0xF8001000uL)
-#define TTC1_BASE  		(0xF8002000uL)
-#define DMAC0_NS_BASE 	(0xF8004000uL)
-#define DMAC0_S_BASE 	(0xF8003000uL)
-#define SWDT_BASE  		(0xF8005000uL)
-#define XDCFG_BASE  	(0xF8007000uL)	// Device configuraion Interface
-
-#define QSPI_LINEAR_BASE  (0xfC000000uL)
-
+/* Access pointers */
 
 #define GTC 			((GTC_Registers *) GLOBAL_TIMER_BASE)
 #define SCLR 			((SLCR_Registers *) SLCR_BASE)
@@ -776,7 +776,6 @@ typedef struct
 
 #define EHCI0	((USB_EHCI_CapabilityTypeDef *) (USB0_BASE + 0x0100))
 #define EHCI1	((USB_EHCI_CapabilityTypeDef *) (USB1_BASE + 0x0100))
-
 
 /** @addtogroup Exported_types
   * @{
