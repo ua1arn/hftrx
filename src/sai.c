@@ -3466,24 +3466,57 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	// ARMSAIMCLK = ARMSAIRATE * 256
 	// CODEC1_FRAMEBITS 64
 
-	unsigned long mclkf = ARMI2SMCLK;
 	unsigned long lrckf = ARMI2SRATE;
-	unsigned long bclkf = lrckf * 32 * 2;
+	unsigned long bclkf = lrckf * CODEC1_FRAMEBITS;
+	unsigned long mclkf = lrckf * 256;
 
 	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu\n", mclkf, bclkf, lrckf);
 
-	PRINTF("i2s1: allwnrt113_get_pll_audio1_div2_freq = %lu\n", allwnrt113_get_pll_audio1_div2_freq());
-	PRINTF("i2s1: allwnrt113_get_pll_audio1_div5_freq = %lu\n", allwnrt113_get_pll_audio1_div5_freq());
-
+//	PRINTF("i2s1: allwnrt113_get_pll_audio1_x4_freq = %lu\n", allwnrt113_get_pll_audio1_x4_freq());
+//	PRINTF("i2s1: allwnrt113_get_pll_audio1_x1_freq = %lu\n", allwnrt113_get_pll_audio1_x1_freq());
+//	PRINTF("i2s1: allwnrt113_get_pll_audio1_div2_freq = %lu\n", allwnrt113_get_pll_audio1_div2_freq());
+//	PRINTF("i2s1: allwnrt113_get_pll_audio1_div5_freq = %lu\n", allwnrt113_get_pll_audio1_div5_freq());
+	//	i2s1: allwnrt113_get_pll_audio1_x4_freq = 3072000000
+	//	i2s1: allwnrt113_get_pll_audio1_x1_freq = 768000000
+	//	i2s1: allwnrt113_get_pll_audio1_div2_freq = 384000000
+	//	i2s1: allwnrt113_get_pll_audio1_div5_freq = 153600000
+	unsigned long src = 0x03;
+	// CLK_SRC_SEL:
+	// 00: PLL_AUDIO0(1X)
+	// 01: PLL_AUDIO0(4X)
+	// 10: PLL_AUDIO1(DIV2)
+	// 11: PLL_AUDIO1(DIV5)
+	unsigned long clk;
+	switch (src)
+	{
+	default:
+	case 0x00:
+		clk = allwnrt113_get_pll_audio0_x1_freq();
+		break;
+	case 0x01:
+		clk = allwnrt113_get_pll_audio0_x4_freq();
+		break;
+	case 0x02:
+		clk = allwnrt113_get_pll_audio1_div2_freq();
+		break;
+	case 0x03:
+		clk = allwnrt113_get_pll_audio1_div5_freq();
+		break;
+	}
 	unsigned value;	/* делитель */
-	const uint_fast8_t prei = calcdivider(calcdivround2(allwnrt113_get_pll_audio1_div2_freq() / 4, mclkf), ALLWNT113_I2S1_CLK_WIDTH, ALLWNT113_I2S1_CLK_TAPS, & value, 1);
-	PRINTF("i2s1: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, mclkf, allwnrt113_get_pll_audio1_div5_freq());
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2S1_CLK_WIDTH, ALLWNT113_I2S1_CLK_TAPS, & value, 1);
+	PRINTF("i2s1: prei=%u, value=%u, spispeed=%u, (clk=%lu)\n", prei, value, mclkf, clk);
 
+	// CLK_SRC_SEL:
+	// 00: PLL_AUDIO0(1X)
+	// 01: PLL_AUDIO0(4X)
+	// 10: PLL_AUDIO1(DIV2)
+	// 11: PLL_AUDIO1(DIV5)
 	CCU->I2S1_CLK_REG =
 		(0x01uL << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
-		(0x02uL << 24) |				// CLK_SRC_SEL: 10: PLL_AUDIO1(DIV2), 11: PLL_AUDIO1(DIV5)
+		(src << 24) |					// CLK_SRC_SEL
 		((uint_fast32_t) prei << 8) |	// Factor N (0..3 /1 /2 /4 /8)
-		((value - 0x01uL) << 0) |		// Factor M (0..31)
+		((uint_fast32_t) value << 0) |	// Factor M (0..31)
 		0;
 
 	CCU->I2S_BGR_REG |= (0x01uL << (0 + ix));	// Gating Clock for I2S/PCMx
@@ -3492,7 +3525,7 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 	PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
 	I2S1->I2S_PCM_FMT0 =
-		(31uL << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		(((CODEC1_FRAMEBITS / 2) - 1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
 		(0x07uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
 		(0x07uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
@@ -3500,27 +3533,27 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 		0;
 	// I2S/PCM Channel Configuration Register
 	I2S1->I2S_PCM_CHCFG =
-		(0x01uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot 8 channels or slots
-		(0x01uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot 8 channels or slots
+		(0x01uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
+		(0x01uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot
 		0;
 
 	enum divs
 	{
 		CLKD_Div1 = 0x01,
-		CLKD_Div2,
-		CLKD_Div4,
-		CLKD_Div6,
-		CLKD_Div8,
-		CLKD_Div12,
-		CLKD_Div16,
-		CLKD_Div24,
-		CLKD_Div32,
-		CLKD_Div48,
-		CLKD_Div64,
-		CLKD_Div96,
-		CLKD_Div128,
-		CLKD_Div176,
-		CLKD_Div192,
+		CLKD_Div2,		// 0x02
+		CLKD_Div4,		// 0x03
+		CLKD_Div6,		// 0x04
+		CLKD_Div8,		// 0x05
+		CLKD_Div12,		// 0x06
+		CLKD_Div16,		// 0x07
+		CLKD_Div24,		// 0x08
+		CLKD_Div32,		// 0x09
+		CLKD_Div48,		// 0x0A
+		CLKD_Div64,		// 0x0B
+		CLKD_Div96,		// 0x0C
+		CLKD_Div128,	// 0x0D
+		CLKD_Div176,	// 0x0E
+		CLKD_Div192,	// 0x0F
 	};
 	// Need i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000
 	// (pin P2-5) bclk = 3.4 MHz, BCLKDIV=CLKD_Div64
@@ -3531,8 +3564,8 @@ static void hardware_i2s1_master_duplex_initialize_codec1(void)
 		1 * (1uL << 8) |		// MCLKO_EN
 		//////
 		// MCLK=13.7 MHz, BCLK=53kHz (ratio=256)
-		CLKD_Div16 * (1uL << 0) |		/* MCLKDIV */
-		CLKD_Div64 * (1uL << 4) |		/* BCLKDIV */
+		CLKD_Div1 * (1uL << 0) |		/* MCLKDIV */
+		CLKD_Div32 * (1uL << 4) |		/* BCLKDIV */
 		/////
 		0;
 
@@ -3558,7 +3591,6 @@ static void hardware_i2s1_slave_duplex_initialize_codec1(void)
 {
 	enum { ix = 1 };
 
-	TP();
 	I2S1HW_INITIALIZE();
 }
 
@@ -3566,7 +3598,6 @@ static void hardware_i2s2_master_duplex_initialize_fpga(void)
 {
 	enum { ix = 2 };
 
-	TP();
 	I2S2HW_INITIALIZE();
 }
 
@@ -3574,7 +3605,6 @@ static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 {
 	enum { ix = 2 };
 
-	TP();
 	I2S2HW_INITIALIZE();
 }
 
