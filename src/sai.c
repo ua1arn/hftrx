@@ -3531,7 +3531,7 @@ enum
 
 /* I2S/PCM RX Channel Mapping Registers initialization */
 /* Простое отображение каналов с последовательно увеличивающимся номером */
-static void I2S_sdi_map(
+static void I2S_sdi_map_RXCHMAP(
 	I2S_PCM_TypeDef * i2s,
 	unsigned rxsdi
 	)
@@ -3540,18 +3540,19 @@ static void I2S_sdi_map(
 	unsigned chnl;
 	for (chnl = 0; chnl < 16; ++ chnl)
 	{
-		/* в каждом регичтре управления для восьми каналов */
+		/* в каждом регистре управления для восьми каналов */
 		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP0
 		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
 		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP2
 		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP3
 
+		const portholder_t ALLMASK = 0xFF;
 		const portholder_t field = ((portholder_t) rxsdi << 4) | ((portholder_t) chnl << 0);
 
-		reg [0] = (reg [0] & ~ (mask0 * 0xFF)) | (mask0 * field);
-		reg [1] = (reg [1] & ~ (mask1 * 0xFF)) | (mask1 * field);
-		reg [2] = (reg [2] & ~ (mask2 * 0xFF)) | (mask2 * field);
-		reg [3] = (reg [3] & ~ (mask3 * 0xFF)) | (mask3 * field);
+		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
+		reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
+		reg [2] = (reg [2] & ~ (mask2 * ALLMASK)) | (mask2 * field);
+		reg [3] = (reg [3] & ~ (mask3 * ALLMASK)) | (mask3 * field);
 	}
 }
 
@@ -3687,7 +3688,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 		0;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_sdi_map(I2S1, HARDWARE_I2S1HW_DIN);
+	I2S_sdi_map_RXCHMAP(I2S1, HARDWARE_I2S1HW_DIN);
 
 	I2S1HW_INITIALIZE();
 }
@@ -3810,7 +3811,7 @@ static void hardware_i2s2_initialize_fpga(int master)
 		0;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_sdi_map(I2S2, HARDWARE_I2S2HW_DIN);
+	I2S_sdi_map_RXCHMAP(I2S2, HARDWARE_I2S2HW_DIN);
 
 	I2S2HW_INITIALIZE();
 }
