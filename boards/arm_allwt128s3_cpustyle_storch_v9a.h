@@ -257,7 +257,7 @@
 		arm_hardware_piog_altfn20(1 * 1uL << 12, GPIO_CFG_AF2); /* PG12 I2S1-LRCK	WL_REG_ON, pin P2-6 */ \
 		arm_hardware_piog_altfn20(1 * 1uL << 13, GPIO_CFG_AF2); /* PG13 I2S1-BCLK	AP_WAKE_BT, pin P2-5 */ \
 		arm_hardware_piog_altfn20(1 * 1uL << 14, GPIO_CFG_AF2); /* PG14 I2S1-DIN0 from codec, BT_WAKE_AP, pin P2-4  */ \
-		arm_hardware_piog_altfn20(1 * 1uL << 15, GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 co codec, BT_EN, pin P2-2 */ \
+		arm_hardware_piog_altfn20(1 * 1uL << 15, GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 co codec, BT_EN, pin P2-3 */ \
 	} while (0)
 	#define HARDWARE_I2S1HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S1HW_DOUT 0	/* DOUT0 used */
