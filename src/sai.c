@@ -3511,6 +3511,38 @@ enum
 
 };
 
+/* Простое отображение каналов с последовательно увеличивающимся номером */
+static void I2S_sdi_map(
+	I2S_PCM_TypeDef * i2s,
+	unsigned rxsdi
+	)
+{
+	unsigned chnl;
+	for (chnl = 0; chnl < 16; ++ chnl)
+	{
+		/* в каждом регичтре управления для восьми каналов */
+		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP0
+		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
+		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP2
+		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP3
+
+		const portholder_t field = ((portholder_t) rxsdi << 4) | ((portholder_t) chnl << 0);
+
+		I2S1->I2S_PCM_RXCHMAP0 = (I2S1->I2S_PCM_RXCHMAP0 & ~ (mask0 * 0xFF)) |
+			(mask0 * field) |
+			0;
+		I2S1->I2S_PCM_RXCHMAP1 = (I2S1->I2S_PCM_RXCHMAP1 & ~ (mask1 * 0xFF)) |
+			(mask1 * field) |
+			0;
+		I2S1->I2S_PCM_RXCHMAP2 = (I2S1->I2S_PCM_RXCHMAP2 & ~ (mask2 * 0xFF)) |
+			(mask2 * field) |
+			0;
+		I2S1->I2S_PCM_RXCHMAP3 = (I2S1->I2S_PCM_RXCHMAP3 & ~ (mask3 * 0xFF)) |
+			(mask3 * field) |
+			0;
+	}
+}
+
 static void hardware_i2s1_initialize_codec1(int master)
 {
 	const unsigned NCH = 2;
@@ -3642,31 +3674,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 		0;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	const unsigned RXSDI = HARDWARE_I2S1HW_DIN;
-	unsigned chnl;
-	for (chnl = 0; chnl < 16; ++ chnl)
-	{
-		/* в каждом регичтре управления для восьми каналов */
-		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP0
-		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
-		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP2
-		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP3
-
-		const portholder_t field = (RXSDI << 4) | (chnl << 0);
-
-		I2S1->I2S_PCM_RXCHMAP0 = (I2S1->I2S_PCM_RXCHMAP0 & ~ (mask0 * 0xFF)) |
-			(mask0 * field) |
-			0;
-		I2S1->I2S_PCM_RXCHMAP1 = (I2S1->I2S_PCM_RXCHMAP1 & ~ (mask1 * 0xFF)) |
-			(mask1 * field) |
-			0;
-		I2S1->I2S_PCM_RXCHMAP2 = (I2S1->I2S_PCM_RXCHMAP2 & ~ (mask2 * 0xFF)) |
-			(mask2 * field) |
-			0;
-		I2S1->I2S_PCM_RXCHMAP3 = (I2S1->I2S_PCM_RXCHMAP3 & ~ (mask3 * 0xFF)) |
-			(mask3 * field) |
-			0;
-	}
+	I2S_sdi_map(I2S1, HARDWARE_I2S1HW_DIN);
 
 	I2S1HW_INITIALIZE();
 }
@@ -3789,31 +3797,7 @@ static void hardware_i2s2_initialize_fpga(int master)
 		0;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	const unsigned RXSDI = HARDWARE_I2S2HW_DIN;
-	unsigned chnl;
-	for (chnl = 0; chnl < 16; ++ chnl)
-	{
-		/* в каждом регичтре управления для восьми каналов */
-		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP0
-		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
-		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP2
-		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP3
-
-		const portholder_t field = (RXSDI << 4) | (chnl << 0);
-
-		I2S2->I2S_PCM_RXCHMAP0 = (I2S2->I2S_PCM_RXCHMAP0 & ~ (mask0 * 0xFF)) |
-			(mask0 * field) |
-			0;
-		I2S2->I2S_PCM_RXCHMAP1 = (I2S2->I2S_PCM_RXCHMAP1 & ~ (mask1 * 0xFF)) |
-			(mask1 * field) |
-			0;
-		I2S2->I2S_PCM_RXCHMAP2 = (I2S2->I2S_PCM_RXCHMAP2 & ~ (mask2 * 0xFF)) |
-			(mask2 * field) |
-			0;
-		I2S2->I2S_PCM_RXCHMAP3 = (I2S2->I2S_PCM_RXCHMAP3 & ~ (mask3 * 0xFF)) |
-			(mask3 * field) |
-			0;
-	}
+	I2S_sdi_map(I2S2, HARDWARE_I2S2HW_DIN);
 
 	I2S2HW_INITIALIZE();
 }
@@ -3878,7 +3862,7 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 #define DMAC_DESC_SIZE 8	/* требуется 6, но для удобства работы с кешем */
 
 /* Прием от кодека */
-static void DMA_I2S1_RX_Handler(void)
+static void DMA_I2S1_RX_Handler_codec1(void)
 {
 	const uintptr_t descbase = DMAC->CH [DMA_I2S1_RX_Ch].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
@@ -3895,7 +3879,7 @@ static void DMA_I2S1_RX_Handler(void)
 
 
 /* Передача в кодек */
-static void DMA_I2S1_TX_Handler(void)
+static void DMA_I2S1_TX_Handler_codec1(void)
 {
 	const uintptr_t descbase = DMAC->CH [DMA_I2S1_TX_Ch].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
@@ -3908,7 +3892,7 @@ static void DMA_I2S1_TX_Handler(void)
 }
 
 /* Прием от FPGA */
-static void DMA_I2S2_RX_Handler(void)
+static void DMA_I2S2_RX_Handler_fpga(void)
 {
 	const uintptr_t descbase = DMAC->CH [DMA_I2S2_RX_Ch].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
@@ -3924,7 +3908,7 @@ static void DMA_I2S2_RX_Handler(void)
 }
 
 /* Передача в FPGA */
-static void DMA_I2S2_TX_Handler(void)
+static void DMA_I2S2_TX_Handler_fpga(void)
 {
 	const uintptr_t descbase = DMAC->CH [DMA_I2S2_TX_Ch].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
@@ -3944,19 +3928,19 @@ static void DMAC_NS_IRQHandler(void)
 
 	if ((reg0 & (1uL << (DMA_I2S1_RX_Ch * 4))) != 0)
 	{
-		DMA_I2S1_RX_Handler();
+		DMA_I2S1_RX_Handler_codec1();
 	}
 	if ((reg0 & (1uL << (DMA_I2S1_TX_Ch * 4))) != 0)
 	{
-		DMA_I2S1_TX_Handler();
+		DMA_I2S1_TX_Handler_codec1();
 	}
 	if ((reg0 & (1uL << (DMA_I2S2_RX_Ch * 4))) != 0)
 	{
-		DMA_I2S2_RX_Handler();
+		DMA_I2S2_RX_Handler_fpga();
 	}
 	if ((reg0 & (1uL << (DMA_I2S2_TX_Ch * 4))) != 0)
 	{
-		DMA_I2S2_TX_Handler();
+		DMA_I2S2_TX_Handler_fpga();
 	}
 
 
