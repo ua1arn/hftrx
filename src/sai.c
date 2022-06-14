@@ -3611,6 +3611,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 		0;
 
 #if CODEC1_FORMATI2S_PHILIPS
+	const unsigned txrx_offset = 1;
 #else /* CODEC1_FORMATI2S_PHILIPS */
 #endif /* CODEC1_FORMATI2S_PHILIPS */
 
@@ -3620,28 +3621,24 @@ static void hardware_i2s1_initialize_codec1(int master)
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
 		(0x01uL << 4) |	// left mode, need offset=1 for I2S
-		//(0x01uL << 2) |	// TXEN
-		//(0x01uL << 1) |	// RXEN
-		//(0x01uL << 0) |	// GEN Globe Enable
 		0;
 
 	I2S1->I2S_PCM_RXCHSEL =
-		0x01 * (1uL << 20) |	// RX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// RX_OFFSET (need for I2S mode
 		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
 		0;
 
-	const unsigned tx_offset = 1;
 	I2S1->I2S_PCM_TX0CHSEL =
-		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
 		0;
 	I2S1->I2S_PCM_TX1CHSEL =
-		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
 		0;
 	I2S1->I2S_PCM_TX2CHSEL =
-		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
 		0;
 	I2S1->I2S_PCM_TX3CHSEL =
-		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
 		0;
 
 	I2S1->I2S_PCM_RXCHMAP0 =
@@ -3741,6 +3738,7 @@ static void hardware_i2s2_initialize_fpga(int master)
 		0;
 
 #if WITHFPGAIF_FORMATI2S_PHILIPS
+	const unsigned txrx_offset = 1;
 #else /* WITHFPGAIF_FORMATI2S_PHILIPS */
 #endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 
@@ -3750,28 +3748,24 @@ static void hardware_i2s2_initialize_fpga(int master)
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
 		(0x01uL << 4) |	// left mode, need offset=1 for I2S
-		//(0x01uL << 2) |	// TXEN
-		//(0x01uL << 1) |	// RXEN
-		//(0x01uL << 0) |	// GEN Globe Enable
 		0;
 
 	I2S2->I2S_PCM_RXCHSEL =
-		0x01 * (1uL << 20) |	// RX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// RX_OFFSET (need for I2S mode
 		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
 		0;
 
-	const unsigned tx_offset = 1;
 	I2S2->I2S_PCM_TX0CHSEL =
-		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
 		0;
 	I2S2->I2S_PCM_TX1CHSEL =
-		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
 		0;
 	I2S2->I2S_PCM_TX2CHSEL =
-		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
 		0;
 	I2S2->I2S_PCM_TX3CHSEL =
-		tx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
 		0;
 
 	I2S2->I2S_PCM_RXCHMAP0 =
@@ -3852,6 +3846,9 @@ static void DMA_I2S1_RX_Handler(void)
 	descraddr [2] = dma_invalidate16rx(allocate_dmabuffer16());
 	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
+	printhex(addr, (void *) addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+	for (;;)
+		;
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer16rx(addr);
 }
