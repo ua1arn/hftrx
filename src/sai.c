@@ -3861,6 +3861,23 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 
 #define DMAC_DESC_SIZE 8	/* требуется 6, но для удобства работы с кешем */
 
+// DMA Source/Destination Data Width
+// 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+static uint_fast32_t dmac_desc_datawidth(unsigned width)
+{
+	switch (width)
+	{
+	default:
+	case 8:
+		return 0x00;
+	case 16:
+		return 0x01;
+	case 32:
+		return 0x02;
+	case 64:
+		return 0x03;
+	}
+}
 /* Прием от кодека */
 static void DMA_I2S1_RX_Handler_codec1(void)
 {
@@ -3952,21 +3969,23 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 {
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 
-	unsigned dmach = DMA_I2S1_RX_Ch;
+	const unsigned dmach = DMA_I2S1_RX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE16 * sizeof (aubufv_t);
+	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
+
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
-		0x02 * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (1uL << 16) |	// DMA Destination DRQ Type
-		0x02 * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 6) |	// DMA Source Block Size
 		DMAC_SrcReqI2S1_RX * (1uL << 0) |	// DMA Source DRQ Type
 		0;
-
-	const uint_fast32_t NBYTES = DMABUFFSIZE16 * sizeof (aubufv_t);
-	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
@@ -4012,22 +4031,23 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 static void DMA_I2S1_TX_initialize_codec1(void)
 {
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMA_I2S1_TX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE16 * sizeof (aubufv_t);
+	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
 
-	unsigned dmach = DMA_I2S1_TX_Ch;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
-		0x02 * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
 		DMAC_DstReqI2S1_TX * (1uL << 16) |	// DMA Destination DRQ Type
-		0x02 * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
 		0;
-
-	const uint_fast32_t NBYTES = DMABUFFSIZE16 * sizeof (aubufv_t);
-	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
@@ -4076,21 +4096,23 @@ static void DMA_I2S2_RX_initialize_fpga(void)
 {
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 
-	unsigned dmach = DMA_I2S2_RX_Ch;
+	const unsigned dmach = DMA_I2S2_RX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(sizeof (IFADCvalue_t) * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(sizeof (IFADCvalue_t) * 8);	// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);
+	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO;
+
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
-		0x02 * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (1uL << 16) |	// DMA Destination DRQ Type
-		0x02 * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 6) |	// DMA Source Block Size
 		DMAC_SrcReqI2S2_RX * (1uL << 0) |	// DMA Source DRQ Type
 		0;
-
-	const uint_fast32_t NBYTES = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);
-	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
@@ -4136,22 +4158,24 @@ static void DMA_I2S2_RX_initialize_fpga(void)
 static void DMA_I2S2_TX_initialize_fpga(void)
 {
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
+	const unsigned dmach = DMA_I2S2_TX_Ch;
+	const unsigned sdwt = dmac_desc_datawidth(sizeof (IFDACvalue_t) * 8);	// DMA Source Data Width
+	const unsigned ddwt = dmac_desc_datawidth(sizeof (IFDACvalue_t) * 8);	// DMA Destination Data Width
+	const unsigned NBYTES = DMABUFFSIZE32TX * sizeof (IFDACvalue_t);
+	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO;
 
-	unsigned dmach = DMA_I2S2_TX_Ch;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
-		0x02 * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		1 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
 		DMAC_DstReqI2S2_TX * (1uL << 16) |	// DMA Destination DRQ Type
-		0x02 * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
+		sdwt * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
 		0;
 
-	const uint_fast32_t NBYTES = DMABUFFSIZE32TX * sizeof (IFDACvalue_t);
-	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
