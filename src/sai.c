@@ -3564,7 +3564,7 @@ static void I2S_fill_RXCHMAP(
 static void I2S_fill_TXxCHMAP(
 	I2S_PCM_TypeDef * i2s,
 	unsigned txoffs,	// 0..3 - I2S_PCM_TX0..I2S_PCM_TX3
-	unsigned txsdo
+	unsigned txsdo_UNUSED		// 0..3 - DOUT0..DOUT3
 	)
 {
 	__IO uint32_t * const reg = & I2S1->I2S_PCM_TX0CHMAP0 + txoffs * 2;
