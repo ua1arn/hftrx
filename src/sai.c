@@ -3664,6 +3664,17 @@ static void hardware_i2s1_initialize_codec1(int master)
 		0;
 	I2S1->I2S_PCM_FMT1 =
 		0;
+
+	if (framebis < 64)
+	{
+		// Данные берутся/появляются в младшей части регистра FIFO
+		// I2S/PCM FIFO Control Register
+		I2S1->I2S_PCM_FCTL = (I2S1->I2S_PCM_FCTL & ~ (0x07uL)) |
+			1 * (1uL << 2) |	// TXIM Mode 1: TXFIFO[31:0] = {APB_WDATA[19:0], 12’h0}
+			3 * (1uL << 0) |	// RXOM Mode 3: APB_RDATA[31:0] = {16{RXFIFO[31], RXFIFO[31:16]}
+			0;
+	}
+
 	// I2S/PCM Channel Configuration Register
 	I2S1->I2S_PCM_CHCFG =
 		(NCH - 1) * (1uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
