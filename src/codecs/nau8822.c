@@ -430,7 +430,7 @@ board_getaudiocodecif(void)
 	static const codec1if_t ifc =
 	{
 		nau8822_stop,
-		nau8822_initialize_fullduplex,
+		nau8822_initialize_fullduplex,	/* master или slave в зависимости от определения CODEC_TYPE_NAU8822_MASTER */
 		nau8822_setvolume,		/* Установка громкости на наушники */
 		nau8822_lineinput,		/* Выбор LINE IN как источника для АЦП вместо микрофона */
 		nau8822_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */

@@ -94,8 +94,15 @@ static void tlv320aic23_stop(void)
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 }
 
-static void tlv320aic23_initialize_slave_fullduplex(void)
+static void tlv320aic23_initialize_fullduplex(void)
 {
+#if CODEC_TYPE_TLV320AIC23B_MASTER
+	const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
+#else /* CODEC_TYPE_TLV320AIC23B_MASTER */
+	const uint_fast8_t master = 0;
+#endif /* CODEC_TYPE_TLV320AIC23B_MASTER */
+	const unsigned long framebits = CODEC1_FRAMEBITS;
+
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 
 	tlv320aic23_setreg(TLV320AIC23_PWR,			
@@ -107,13 +114,19 @@ static void tlv320aic23_initialize_slave_fullduplex(void)
 		0
 		);	
 
+	unsigned iwl;
+	switch (WITHADAPTERAFADCWIDTH)
+	{
+	default:
+	case 16: iwl = TLV320AIC23_IWL_16; break;
+	case 20: iwl = TLV320AIC23_IWL_20; break;
+	case 24: iwl = TLV320AIC23_IWL_24; break;
+	case 32: iwl = TLV320AIC23_IWL_32; break;
+	}
+
 	tlv320aic23_setreg(TLV320AIC23_DIGT_FMT, 
-		0 * TLV320AIC23_MS_MASTER | /* operate in slave mode */
-#if CODEC_TYPE_TLV320AIC23B_USE_32BIT
-		TLV320AIC23_IWL_32 |
-#else /* CODEC_TYPE_TLV320AIC23B_USE_32BIT */
-		TLV320AIC23_IWL_16 |
-#endif /* CODEC_TYPE_TLV320AIC23B_USE_32BIT */
+			master * TLV320AIC23_MS_MASTER | /* 0 - operate in slave mode */
+			iwl |
 #if CODEC1_FORMATI2S_PHILIPS
 		TLV320AIC23_FOR_I2S |
 #else /* CODEC1_FORMATI2S_PHILIPS */
@@ -247,7 +260,7 @@ board_getaudiocodecif(void)
 	static const codec1if_t ifc =
 	{
 		tlv320aic23_stop,
-		tlv320aic23_initialize_slave_fullduplex,
+		tlv320aic23_initialize_fullduplex,	/* master или slave в зависимости от определения CODEC_TYPE_TLV320AIC23B_MASTER */
 		tlv320aic23_setvolume,	/* Установка громкости на наушники */
 		tlv320aic23_lineinput,	/* Выбор LINE IN как источника для АЦП вместо микрофона */
 		tlv320aic23_setprocparams,	/* Параметры обработки звука с микрофона (эхо, эквалайзер, ...) */
