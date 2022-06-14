@@ -3688,7 +3688,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 	// BCLK = MCLK / BCLKDIV
 	const unsigned ratio = 1024 / framebis;
 	I2S1->I2S_PCM_CLKD =
-		//1 * (1uL << 8) |		// MCLKO_EN
+		1 * (1uL << 8) |		// MCLKO_EN
 		ratio2div(4) * (1uL << 0) |		/* MCLKDIV */
 		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
 		0;

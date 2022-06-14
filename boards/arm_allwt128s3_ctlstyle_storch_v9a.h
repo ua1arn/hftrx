@@ -259,7 +259,7 @@
 	#define BOARD_ENCODER2_DIVIDE 4		/* значение для валкодера PEC16-4220F-n0024 (с трещёткой") */
 	/* Board hardware configuration */
 	#define CODEC1_TYPE CODEC_TYPE_TLV320AIC23B
-	#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
+	//#define CODEC_TYPE_TLV320AIC23B_USE_SPI	1
 	//#define CODEC_TYPE_TLV320AIC23B_USE_8KS	1	/* кодек работает с sample rate 8 kHz */
 	//#define CODEC_TYPE_TLV320AIC23B_MASTER 1	// кодек формирует синхронизацию
 
