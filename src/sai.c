@@ -3841,34 +3841,67 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 	}
 }
 
-static ALIGNX_BEGIN uint32_t tbuff [64] ALIGNX_END;
+#define DMAC_DESC_SIZE 8	/* требуется 6, но для удобства работы с кешем */
 
-void saitest(void)
+/* Прием от кодека */
+static void DMA_I2S1_RX_Handler(void)
 {
-	printhex(0, tbuff, sizeof tbuff);
+	const uintptr_t descbase = DMAC->CH [DMA_I2S1_RX_Ch].DMAC_FDESC_ADDR_REGN;
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr = descraddr [2];
+	/* Работа с только что принятыми данными */
+	descraddr [2] = dma_invalidate16rx(allocate_dmabuffer16());
+	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+
+	//PRINTF("%08lX\n", addr);
+	release_dmabuffer16(addr);
+	//processing_dmabuffer16rx(addr);
 }
 
-void sairegs(void)
+/* Передача в кодек */
+static void DMA_I2S1_TX_Handler(void)
 {
-	PRINTF("addr=%08lX, sts=%08lX\n", DMAC->CH [1].DMAC_DESC_ADDR_REGN, DMAC->DMAC_STA_REG);
-
-	PRINTF("DMAC_EN_REGN=%08lX\n", DMAC->CH [1].DMAC_EN_REGN);
-	PRINTF("DMAC_PAU_REGN=%08lX\n", DMAC->CH [1].DMAC_PAU_REGN);
-	PRINTF("DMAC_DESC_ADDR_REGN=%08lX\n", DMAC->CH [1].DMAC_DESC_ADDR_REGN);
-	PRINTF("DMAC_CFG_REGN=%08lX\n", DMAC->CH [1].DMAC_CFG_REGN);
-	PRINTF("DMAC_CUR_SRC_REGN=%08lX\n", DMAC->CH [1].DMAC_CUR_SRC_REGN);
-	PRINTF("DMAC_CUR_DEST_REGN=%08lX\n", DMAC->CH [1].DMAC_CUR_DEST_REGN);
-	PRINTF("DMAC_BCNT_LEFT_REGN=%08lX\n", DMAC->CH [1].DMAC_BCNT_LEFT_REGN);
-	PRINTF("DMAC_PARA_REGN=%08lX\n", DMAC->CH [1].DMAC_PARA_REGN);
-	PRINTF("DMAC_MODE_REGN=%08lX\n", DMAC->CH [1].DMAC_MODE_REGN);
-	PRINTF("DMAC_FDESC_ADDR_REGN=%08lX\n", DMAC->CH [1].DMAC_FDESC_ADDR_REGN);
-	PRINTF("DMAC_PKG_NUM_REGN=%08lX\n", DMAC->CH [1].DMAC_PKG_NUM_REGN);
-
+	const uintptr_t descbase = DMAC->CH [DMA_I2S1_TX_Ch].DMAC_FDESC_ADDR_REGN;
+	TP();
 }
-void DMAC_NS_IRQHandler(void)
+
+/* Прием от FPGA */
+static void DMA_I2S2_RX_Handler(void)
+{
+	const uintptr_t descbase = DMAC->CH [DMA_I2S2_RX_Ch].DMAC_FDESC_ADDR_REGN;
+	TP();
+}
+
+/* Передача в FPGA */
+static void DMA_I2S2_TX_Handler(void)
+{
+	const uintptr_t descbase = DMAC->CH [DMA_I2S2_TX_Ch].DMAC_FDESC_ADDR_REGN;
+	TP();
+}
+
+/* Обработчик прерывания от DMAC */
+static void DMAC_NS_IRQHandler(void)
 {
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0;
 	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1;
+
+	if ((reg0 & (1uL << (DMA_I2S1_RX_Ch * 4))) != 0)
+	{
+		DMA_I2S1_RX_Handler();
+	}
+	if ((reg0 & (1uL << (DMA_I2S1_TX_Ch * 4))) != 0)
+	{
+		DMA_I2S1_TX_Handler();
+	}
+	if ((reg0 & (1uL << (DMA_I2S2_RX_Ch * 4))) != 0)
+	{
+		DMA_I2S2_RX_Handler();
+	}
+	if ((reg0 & (1uL << (DMA_I2S2_TX_Ch * 4))) != 0)
+	{
+		DMA_I2S2_TX_Handler();
+	}
+
 
 	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
@@ -3876,56 +3909,58 @@ void DMAC_NS_IRQHandler(void)
 
 static void DMA_I2S1_RX_initialize_codec1(void)
 {
-	static ALIGNX_BEGIN uint32_t srcdata [] ALIGNX_END = { 0xABBA1980, 0xDEADBEEF, 0x12345678, 0x9ABCDEF0 };
-	static ALIGNX_BEGIN uint32_t descr0 [8] ALIGNX_END;
+	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 
 	unsigned dmach = DMA_I2S1_RX_Ch;
-
-	const uint_fast32_t config =
+	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		0x02 * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
 		0 * (1uL << 24) |	// DMA Destination Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 22) |	// DMA Destination Block Size
 		DMAC_DstReqDRAM * (1uL << 16) |	// DMA Destination DRQ Type
 		0x02 * (1uL << 9) |	// DMA Source Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
-		0 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
+		1 * (1uL << 8) |	// DMA Source Address Mode 0: Linear Mode 1: IO Mode
 		0 * (1uL << 6) |	// DMA Source Block Size
-		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
+		DMAC_SrcReqI2S1_RX * (1uL << 0) |	// DMA Source DRQ Type
 		0;
 
-	// Six words of DMAC sescriptor:
-	descr0 [0] = config;					// Cofigurarion
-	descr0 [1] = (uintptr_t) & srcdata;//I2S1->I2S_PCM_RXFIFO;	// Source Address
-	descr0 [2] = (uintptr_t) tbuff;		// Destination Address
-	descr0 [3] = sizeof srcdata;			// Byte Counter
-	descr0 [4] = 0;						// Parameter
-	descr0 [5] = (uintptr_t) 0xFFFFF800;	// Link
+	const uint_fast32_t NBYTES = DMABUFFSIZE16 * sizeof (aubufv_t);
+
+	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
+	descr0 [0] [0] = configDMAC;			// Cofigurarion
+	descr0 [0] [1] = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;	// Source Address
+	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16());		// Destination Address
+	descr0 [0] [3] = NBYTES;				// Byte Counter
+	descr0 [0] [4] = 0;						// Parameter
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link
+
+	descr0 [1] [0] = configDMAC;			// Cofigurarion
+	descr0 [1] [1] = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;							// Source Address
+	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16());		// Destination Address
+	descr0 [1] [3] = NBYTES;				// Byte Counter
+	descr0 [1] [4] = 0;						// Parameter
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush(descraddr, sizeof descr0);
-	arm_hardware_invalidate((uintptr_t) tbuff, sizeof tbuff);
+	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
+
 	//
 	CCU->MBUS_CLK_REG |= (0x01uL << 30);	// MBUS Reset 1: De-assert reset
 	CCU->MBUS_MAT_CLK_GATING_REG |= (0x01uL << 0);	// Gating MBUS Clock For DMA
 	CCU->DMA_BGR_REG |= (0x01uL << 0);	// DMA_GATING 1: Pass clock
 	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert reset
 	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
-	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 1);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
-	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 0);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
 
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
-	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = (descraddr & ~ 0x03);
-	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == (descraddr & ~ 0x03));
-	PRINTF("descraddr=%08lX\n", descraddr);
+	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
+	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
-	//arm_hardware_set_handler_system(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
 	const unsigned mask0 = 1uL << (dmach * 4);	// CH7..CH0
 	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * 0x02;		// 0x04: Queue, 0x02: Pkq, 0x01: half
 
-	DMAC->CH [dmach].DMAC_MODE_REGN = 0x0C;
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
 
