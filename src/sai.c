@@ -4088,7 +4088,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	DMAC_SetHandler(dmach, 0x02, DMA_I2S1_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 
 	I2S1->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 }
@@ -4144,11 +4144,9 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	DMAC_SetHandler(dmach, 0x02, DMA_I2S1_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 
 	I2S1->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
-
-
 }
 
 static void DMAC_I2S2_RX_initialize_fpga(void)
@@ -4203,7 +4201,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	DMAC_SetHandler(dmach, 0x02, DMA_I2S2_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 
 	I2S2->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 }
@@ -4260,7 +4258,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	DMAC_SetHandler(dmach, 0x02, DMA_I2S2_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
-	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
+	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 
 	I2S2->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
 
