@@ -3922,9 +3922,8 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 }
 
 /* Прием от кодека */
-static void DMA_I2S1_RX_Handler_codec1(void)
+static void DMA_I2S1_RX_Handler_codec1(unsigned dmach)
 {
-	const unsigned dmach = DMAC_I2S1_RX_Ch;
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [2];
@@ -3940,9 +3939,8 @@ static void DMA_I2S1_RX_Handler_codec1(void)
 
 
 /* Передача в кодек */
-static void DMA_I2S1_TX_Handler_codec1(void)
+static void DMA_I2S1_TX_Handler_codec1(unsigned dmach)
 {
-	const unsigned dmach = DMAC_I2S1_TX_Ch;
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [1];
@@ -3954,9 +3952,8 @@ static void DMA_I2S1_TX_Handler_codec1(void)
 }
 
 /* Прием от FPGA */
-static void DMA_I2S2_RX_Handler_fpga(void)
+static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 {
-	const unsigned dmach = DMAC_I2S2_RX_Ch;
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [2];
@@ -3971,9 +3968,8 @@ static void DMA_I2S2_RX_Handler_fpga(void)
 }
 
 /* Передача в FPGA */
-static void DMA_I2S2_TX_Handler_fpga(void)
+static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 {
-	const unsigned dmach = DMAC_I2S2_TX_Ch;
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [1];
@@ -3984,34 +3980,60 @@ static void DMA_I2S2_TX_Handler_fpga(void)
 	release_dmabuffer32tx(addr);
 }
 
+/* Обработчики прерываний от DMAC в зависимости от номерв канала */
+static void (* dmac_handlers [16])(unsigned dmach);
+
 /* Обработчик прерывания от DMAC */
 static void DMAC_NS_IRQHandler(void)
 {
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0;
 	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1;
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	const unsigned flag = 0x02;
+	const unsigned flag = 0x07;
 
-	if ((reg0 & flag * DMAC_REG0_I2S1_RX_Msk)  || (reg1 & flag * DMAC_REG1_I2S1_RX_Msk))
-	{
-		DMA_I2S1_RX_Handler_codec1();
-	}
-	if ((reg0 & flag * DMAC_REG0_I2S1_TX_Msk)  || (reg1 & flag * DMAC_REG1_I2S1_TX_Msk))
-	{
-		DMA_I2S1_TX_Handler_codec1();
-	}
-	if ((reg0 & flag * DMAC_REG0_I2S2_RX_Msk)  || (reg1 & flag * DMAC_REG1_I2S1_RX_Msk))
-	{
-		DMA_I2S2_RX_Handler_fpga();
-	}
-	if ((reg0 & flag * DMAC_REG0_I2S2_TX_Msk)  || (reg1 & flag * DMAC_REG1_I2S2_TX_Msk))
-	{
-		DMA_I2S2_TX_Handler_fpga();
-	}
+	unsigned dmach;
 
+	for (dmach = 0; dmach < 8; ++ dmach)
+	{
+		const portholder_t maskreg0 = (portholder_t) 1 << (dmach % 8 * 4);
+		if ((reg0 & maskreg0) != 0)
+		{
+			dmac_handlers [dmach](dmach);
+		}
+	}
+	for (dmach = 8; dmach < 16; ++ dmach)
+	{
+		const portholder_t maskreg1 = (portholder_t) 1 << (dmach % 8 * 4);
+		if ((reg1 & maskreg1) != 0)
+		{
+			dmac_handlers [dmach](dmach);
+		}
+	}
 
 	DMAC->DMAC_IRQ_PEND_REG0 = reg0;	// Write 1 to clear the pending status.
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
+}
+
+static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler2)(unsigned dmach))
+{
+	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
+	dmac_handlers [dmach] = handler2;
+	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
+
+	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
+	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
+	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
+	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
+
+}
+
+static void DMAC_clock_initialize(void)
+{
+	CCU->MBUS_CLK_REG |= (0x01uL << 30);	// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (0x01uL << 0);	// Gating MBUS Clock For DMA
+	CCU->DMA_BGR_REG |= (0x01uL << 0);	// DMA_GATING 1: Pass clock
+	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert reset
+	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
 }
 
 static void DMAC_I2S1_RX_initialize_codec1(void)
@@ -4043,38 +4065,27 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16());				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = 0;						// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
 	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16());				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = 0;						// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
 
-	//
-	CCU->MBUS_CLK_REG |= (0x01uL << 30);	// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (0x01uL << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (0x01uL << 0);	// DMA_GATING 1: Pass clock
-	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert reset
-	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC_clock_initialize();
 
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
-	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
-
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	const unsigned flag = 0x02;
-	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
-	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
-	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
+	DMAC_SetHandler(dmach, 0x02, DMA_I2S1_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
@@ -4110,38 +4121,27 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = 0;						// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;			// Source Address
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16phones());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [4] = 0;						// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
 
-	//
-	CCU->MBUS_CLK_REG |= (0x01uL << 30);	// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (0x01uL << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (0x01uL << 0);	// DMA_GATING 1: Pass clock
-	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert reset
-	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC_clock_initialize();
 
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
-	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
-
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	const unsigned flag = 0x02;
-	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
-	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
-	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
+	DMAC_SetHandler(dmach, 0x02, DMA_I2S1_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
@@ -4180,38 +4180,27 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = 0;						// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
 	descr0 [1] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = 0;						// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
 
-	//
-	CCU->MBUS_CLK_REG |= (0x01uL << 30);	// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (0x01uL << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (0x01uL << 0);	// DMA_GATING 1: Pass clock
-	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert reset
-	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC_clock_initialize();
 
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
-	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
-
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	const unsigned flag = 0x02;
-	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
-	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
-	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
+	DMAC_SetHandler(dmach, 0x02, DMA_I2S2_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
@@ -4248,38 +4237,27 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = 0;						// Parameter
-	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link
+	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
 	descr0 [1] [4] = 0;						// Parameter
-	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link
+	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
 	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
 
-	//
-	CCU->MBUS_CLK_REG |= (0x01uL << 30);	// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (0x01uL << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (0x01uL << 0);	// DMA_GATING 1: Pass clock
-	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert reset
-	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	DMAC_clock_initialize();
 
 	DMAC->CH [dmach].DMAC_EN_REGN = 0;	// 0: Disabled
 
 	DMAC->CH [dmach].DMAC_DESC_ADDR_REGN = descraddr;
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
-	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
-
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	const unsigned flag = 0x02;
-	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
-	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
-	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
+	DMAC_SetHandler(dmach, 0x02, DMA_I2S2_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
