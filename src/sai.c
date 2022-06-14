@@ -176,16 +176,16 @@ enum
 		CODEC1_SAI_CR1_DS = 0x07, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
 	#elif CODEC1_FRAMEBITS == 32
 		CODEC1_SAI_CR1_DS = 0x04, // 6: data size - 24 bit, 7: 32 bit, 4: 16 bit
-	#else
+	#else /* CODEC1_FRAMEBITS */
 		#error Unexpected CODEC1_FRAMEBITS value
-	#endif
+	#endif /* CODEC1_FRAMEBITS */
 	NBSLOT_SAIAUDIO = 2,	/* всегда стерео */
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
 	// значению DMABUFSTEP16 соответственно.
 	SLOTEN_RX_SAIAUDIO = 0x0003,
 	SLOTEN_TX_SAIAUDIO = 0x0003,
 
-#endif /* defined (WITHFPGARTS_FRAMEBITS) */
+#endif /* defined (CODEC1_FRAMEBITS) */
 
 		enum_finish
 };
@@ -3740,9 +3740,9 @@ static void hardware_i2s2_initialize_fpga(int master)
 		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
 		0;
 
-#if CODEC1_FORMATI2S_PHILIPS
-#else /* CODEC1_FORMATI2S_PHILIPS */
-#endif /* CODEC1_FORMATI2S_PHILIPS */
+#if WITHFPGAIF_FORMATI2S_PHILIPS
+#else /* WITHFPGAIF_FORMATI2S_PHILIPS */
+#endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 
 	// I2S/PCM Clock Divide Register
 	I2S2->I2S_PCM_CTL = 0;
