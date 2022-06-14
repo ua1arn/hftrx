@@ -3882,6 +3882,8 @@ static void DMA_I2S2_RX_Handler(void)
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer32rx(addr);
 	release_dmabuffer32rx(addr);
+
+	buffers_resampleuacin(DMABUFFSIZE32RX / DMABUFSTEP32RX);
 }
 
 /* Передача в FPGA */
