@@ -3449,6 +3449,23 @@ enum
 	//
 	DMA_Ch_Total
 };
+
+#define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0uL : (1uL << ((ch) * 4)))
+#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0uL : (1uL << ((ch) * 4)))
+
+#define DMAC_REG0_I2S1_TX_Msk (DMAC_REG1_MASK(DMA_I2S1_TX_Ch))
+#define DMAC_REG1_I2S1_TX_Msk (DMAC_REG1_MASK(DMA_I2S1_TX_Ch))
+
+#define DMAC_REG0_I2S1_RX_Msk (DMAC_REG1_MASK(DMA_I2S1_RX_Ch))
+#define DMAC_REG1_I2S1_RX_Msk (DMAC_REG1_MASK(DMA_I2S1_RX_Ch))
+
+#define DMAC_REG0_I2S2_TX_Msk (DMAC_REG1_MASK(DMA_I2S2_TX_Ch))
+#define DMAC_REG1_I2S2_TX_Msk (DMAC_REG1_MASK(DMA_I2S2_TX_Ch))
+
+#define DMAC_REG0_I2S2_RX_Msk (DMAC_REG1_MASK(DMA_I2S2_RX_Ch))
+#define DMAC_REG1_I2S2_RX_Msk (DMAC_REG1_MASK(DMA_I2S2_RX_Ch))
+
+
 static unsigned ratio2div(unsigned ratio)
 {
 	enum divs
@@ -3880,7 +3897,8 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 /* Прием от кодека */
 static void DMA_I2S1_RX_Handler_codec1(void)
 {
-	const uintptr_t descbase = DMAC->CH [DMA_I2S1_RX_Ch].DMAC_FDESC_ADDR_REGN;
+	const unsigned dmach = DMA_I2S1_RX_Ch;
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [2];
 	descraddr [2] = dma_invalidate16rx(allocate_dmabuffer16());
@@ -3897,7 +3915,8 @@ static void DMA_I2S1_RX_Handler_codec1(void)
 /* Передача в кодек */
 static void DMA_I2S1_TX_Handler_codec1(void)
 {
-	const uintptr_t descbase = DMAC->CH [DMA_I2S1_TX_Ch].DMAC_FDESC_ADDR_REGN;
+	const unsigned dmach = DMA_I2S1_TX_Ch;
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [1];
 	descraddr [1] = dma_flush16tx(getfilled_dmabuffer16phones());
@@ -3910,7 +3929,8 @@ static void DMA_I2S1_TX_Handler_codec1(void)
 /* Прием от FPGA */
 static void DMA_I2S2_RX_Handler_fpga(void)
 {
-	const uintptr_t descbase = DMAC->CH [DMA_I2S2_RX_Ch].DMAC_FDESC_ADDR_REGN;
+	const unsigned dmach = DMA_I2S2_RX_Ch;
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [2];
 	descraddr [2] = dma_invalidate32rx(allocate_dmabuffer32rx());
@@ -3926,7 +3946,8 @@ static void DMA_I2S2_RX_Handler_fpga(void)
 /* Передача в FPGA */
 static void DMA_I2S2_TX_Handler_fpga(void)
 {
-	const uintptr_t descbase = DMAC->CH [DMA_I2S2_TX_Ch].DMAC_FDESC_ADDR_REGN;
+	const unsigned dmach = DMA_I2S2_TX_Ch;
+	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [1];
 	descraddr [1] = dma_flush32tx(getfilled_dmabuffer32tx_main());
@@ -3941,20 +3962,22 @@ static void DMAC_NS_IRQHandler(void)
 {
 	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0;
 	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1;
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	const unsigned flag = 0x02;
 
-	if ((reg0 & (1uL << (DMA_I2S1_RX_Ch * 4))) != 0)
+	if ((reg0 & flag * DMAC_REG0_I2S1_RX_Msk)  || (reg1 & flag * DMAC_REG1_I2S1_RX_Msk))
 	{
 		DMA_I2S1_RX_Handler_codec1();
 	}
-	if ((reg0 & (1uL << (DMA_I2S1_TX_Ch * 4))) != 0)
+	if ((reg0 & flag * DMAC_REG0_I2S1_TX_Msk)  || (reg1 & flag * DMAC_REG1_I2S1_TX_Msk))
 	{
 		DMA_I2S1_TX_Handler_codec1();
 	}
-	if ((reg0 & (1uL << (DMA_I2S2_RX_Ch * 4))) != 0)
+	if ((reg0 & flag * DMAC_REG0_I2S2_RX_Msk)  || (reg1 & flag * DMAC_REG1_I2S1_RX_Msk))
 	{
 		DMA_I2S2_RX_Handler_fpga();
 	}
-	if ((reg0 & (1uL << (DMA_I2S2_TX_Ch * 4))) != 0)
+	if ((reg0 & flag * DMAC_REG0_I2S2_TX_Msk)  || (reg1 & flag * DMAC_REG1_I2S2_TX_Msk))
 	{
 		DMA_I2S2_TX_Handler_fpga();
 	}
@@ -4019,8 +4042,12 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
-	const unsigned mask0 = 1uL << (dmach * 4);	// CH7..CH0
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * 0x02;		// 0x04: Queue, 0x02: Pkq, 0x01: half
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	const unsigned flag = 0x02;
+	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
+	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
+	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
+	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
@@ -4082,8 +4109,12 @@ static void DMA_I2S1_TX_initialize_codec1(void)
 
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
-	const unsigned mask0 = 1uL << (dmach * 4);	// CH7..CH0
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * 0x02;		// 0x04: Queue, 0x02: Pkq, 0x01: half
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	const unsigned flag = 0x02;
+	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
+	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
+	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
+	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
@@ -4148,8 +4179,12 @@ static void DMA_I2S2_RX_initialize_fpga(void)
 
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
-	const unsigned mask0 = 1uL << (dmach * 4);	// CH7..CH0
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * 0x02;		// 0x04: Queue, 0x02: Pkq, 0x01: half
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	const unsigned flag = 0x02;
+	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
+	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
+	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
+	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
@@ -4212,8 +4247,12 @@ static void DMA_I2S2_TX_initialize_fpga(void)
 
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
-	const unsigned mask0 = 1uL << (dmach * 4);	// CH7..CH0
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * 0x02;		// 0x04: Queue, 0x02: Pkq, 0x01: half
+	// 0x04: Queue, 0x02: Pkq, 0x01: half
+	const unsigned flag = 0x02;
+	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
+	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
+	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
+	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
