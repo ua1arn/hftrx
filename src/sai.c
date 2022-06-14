@@ -4045,6 +4045,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16 * dw;
 	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO + sizeof (uint32_t) - dw;	// Данные в left justified - выбираем старшие биты
 
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4062,14 +4063,14 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	descr0 [0] [1] = portaddr;				// Source Address
 	descr0 [0] [2] = dma_invalidate16rx(allocate_dmabuffer16());				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = 0;						// Parameter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
 	descr0 [1] [2] = dma_invalidate16rx(allocate_dmabuffer16());				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = 0;						// Parameter
+	descr0 [1] [4] = parameterDMAC;				// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -4101,6 +4102,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	const unsigned NBYTES = DMABUFFSIZE16 * dw;
 	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO + sizeof (uint32_t) - dw;	// Данные в left justified - выбираем старшие биты
 
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4118,14 +4120,14 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16phones());			// Source Address
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = 0;						// Parameter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;			// Source Address
 	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16phones());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
-	descr0 [1] [4] = 0;						// Parameter
+	descr0 [1] [4] = parameterDMAC;			// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -4157,6 +4159,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
 	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO + sizeof (uint32_t) - dw;	// Данные в left justified - выбираем старшие биты
 
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4174,14 +4177,14 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	descr0 [0] [1] = portaddr;				// Source Address
 	descr0 [0] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = 0;						// Parameter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = portaddr;				// Source Address
 	descr0 [1] [2] = dma_invalidate32rx(allocate_dmabuffer32rx());		// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = 0;						// Parameter
+	descr0 [1] [4] = parameterDMAC;			// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
@@ -4209,11 +4212,11 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
-	//const unsigned ddwt = dmac_desc_datawidth(sizeof I2S2->I2S_PCM_TXFIFO * 8);	// DMA Destination Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
 	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO + sizeof (uint32_t) - dw;	// Данные в left justified - выбираем старшие биты
 
+	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
 		0 * (1uL << 30) |	// BMODE_SEL
 		ddwt * (1uL << 25) |	// DMA Destination Data Width 00: 8-bit 01: 16-bit 10: 32-bit 11: 64-bit
@@ -4232,14 +4235,14 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
-	descr0 [0] [4] = 0;						// Parameter
+	descr0 [0] [4] = parameterDMAC;			// Parameter
 	descr0 [0] [5] = (uintptr_t) descr0 [1];	// Link to next
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());				// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [3] = NBYTES;				// Byte Counter
-	descr0 [1] [4] = 0;						// Parameter
+	descr0 [1] [4] = parameterDMAC;			// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
