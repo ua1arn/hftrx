@@ -3442,28 +3442,28 @@ static const codechw_t fpgacodechw_sai2_a_tx_b_rx_master =
 
 enum
 {
-	DMA_I2S1_TX_Ch,
-	DMA_I2S1_RX_Ch,
-	DMA_I2S2_TX_Ch,
-	DMA_I2S2_RX_Ch,
+	DMAC_I2S1_TX_Ch,
+	DMAC_I2S1_RX_Ch,
+	DMAC_I2S2_TX_Ch,
+	DMAC_I2S2_RX_Ch,
 	//
-	DMA_Ch_Total
+	DMAC_Ch_Total
 };
 
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0uL : (1uL << ((ch) * 4)))
 #define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0uL : (1uL << ((ch) * 4)))
 
-#define DMAC_REG0_I2S1_TX_Msk (DMAC_REG1_MASK(DMA_I2S1_TX_Ch))
-#define DMAC_REG1_I2S1_TX_Msk (DMAC_REG1_MASK(DMA_I2S1_TX_Ch))
+#define DMAC_REG0_I2S1_TX_Msk (DMAC_REG0_MASK(DMAC_I2S1_TX_Ch))
+#define DMAC_REG1_I2S1_TX_Msk (DMAC_REG1_MASK(DMAC_I2S1_TX_Ch))
 
-#define DMAC_REG0_I2S1_RX_Msk (DMAC_REG1_MASK(DMA_I2S1_RX_Ch))
-#define DMAC_REG1_I2S1_RX_Msk (DMAC_REG1_MASK(DMA_I2S1_RX_Ch))
+#define DMAC_REG0_I2S1_RX_Msk (DMAC_REG0_MASK(DMAC_I2S1_RX_Ch))
+#define DMAC_REG1_I2S1_RX_Msk (DMAC_REG1_MASK(DMAC_I2S1_RX_Ch))
 
-#define DMAC_REG0_I2S2_TX_Msk (DMAC_REG1_MASK(DMA_I2S2_TX_Ch))
-#define DMAC_REG1_I2S2_TX_Msk (DMAC_REG1_MASK(DMA_I2S2_TX_Ch))
+#define DMAC_REG0_I2S2_TX_Msk (DMAC_REG0_MASK(DMAC_I2S2_TX_Ch))
+#define DMAC_REG1_I2S2_TX_Msk (DMAC_REG1_MASK(DMAC_I2S2_TX_Ch))
 
-#define DMAC_REG0_I2S2_RX_Msk (DMAC_REG1_MASK(DMA_I2S2_RX_Ch))
-#define DMAC_REG1_I2S2_RX_Msk (DMAC_REG1_MASK(DMA_I2S2_RX_Ch))
+#define DMAC_REG0_I2S2_RX_Msk (DMAC_REG0_MASK(DMAC_I2S2_RX_Ch))
+#define DMAC_REG1_I2S2_RX_Msk (DMAC_REG1_MASK(DMAC_I2S2_RX_Ch))
 
 
 static unsigned ratio2div(unsigned ratio)
@@ -3897,7 +3897,7 @@ static uint_fast32_t dmac_desc_datawidth(unsigned width)
 /* Прием от кодека */
 static void DMA_I2S1_RX_Handler_codec1(void)
 {
-	const unsigned dmach = DMA_I2S1_RX_Ch;
+	const unsigned dmach = DMAC_I2S1_RX_Ch;
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [2];
@@ -3915,7 +3915,7 @@ static void DMA_I2S1_RX_Handler_codec1(void)
 /* Передача в кодек */
 static void DMA_I2S1_TX_Handler_codec1(void)
 {
-	const unsigned dmach = DMA_I2S1_TX_Ch;
+	const unsigned dmach = DMAC_I2S1_TX_Ch;
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [1];
@@ -3929,7 +3929,7 @@ static void DMA_I2S1_TX_Handler_codec1(void)
 /* Прием от FPGA */
 static void DMA_I2S2_RX_Handler_fpga(void)
 {
-	const unsigned dmach = DMA_I2S2_RX_Ch;
+	const unsigned dmach = DMAC_I2S2_RX_Ch;
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [2];
@@ -3946,7 +3946,7 @@ static void DMA_I2S2_RX_Handler_fpga(void)
 /* Передача в FPGA */
 static void DMA_I2S2_TX_Handler_fpga(void)
 {
-	const unsigned dmach = DMA_I2S2_TX_Ch;
+	const unsigned dmach = DMAC_I2S2_TX_Ch;
 	const uintptr_t descbase = DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [1];
@@ -3987,11 +3987,11 @@ static void DMAC_NS_IRQHandler(void)
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
 }
 
-static void DMA_I2S1_RX_initialize_codec1(void)
+static void DMAC_I2S1_RX_initialize_codec1(void)
 {
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 
-	const unsigned dmach = DMA_I2S1_RX_Ch;
+	const unsigned dmach = DMAC_I2S1_RX_Ch;
 	//const unsigned sdwt = dmac_desc_datawidth(sizeof I2S1->I2S_PCM_RXFIFO * 8);	// DMA Source Data Width
 	const unsigned sdwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Destination Data Width
@@ -4055,10 +4055,10 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 	I2S1->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 }
 
-static void DMA_I2S1_TX_initialize_codec1(void)
+static void DMAC_I2S1_TX_initialize_codec1(void)
 {
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMA_I2S1_TX_Ch;
+	const unsigned dmach = DMAC_I2S1_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Source Data Width
 	//const unsigned ddwt = dmac_desc_datawidth(sizeof I2S1->I2S_PCM_TXFIFO * 8);	// DMA Destination Data Width
 	const unsigned ddwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Destination Data Width
@@ -4124,11 +4124,11 @@ static void DMA_I2S1_TX_initialize_codec1(void)
 
 }
 
-static void DMA_I2S2_RX_initialize_fpga(void)
+static void DMAC_I2S2_RX_initialize_fpga(void)
 {
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 
-	const unsigned dmach = DMA_I2S2_RX_Ch;
+	const unsigned dmach = DMAC_I2S2_RX_Ch;
 	//const unsigned sdwt = dmac_desc_datawidth(sizeof I2S2->I2S_PCM_RXFIFO * 8);	// DMA Source Data Width
 	const unsigned sdwt = dmac_desc_datawidth(sizeof (IFADCvalue_t) * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(sizeof (IFADCvalue_t) * 8);	// DMA Destination Data Width
@@ -4192,10 +4192,10 @@ static void DMA_I2S2_RX_initialize_fpga(void)
 	I2S2->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 }
 
-static void DMA_I2S2_TX_initialize_fpga(void)
+static void DMAC_I2S2_TX_initialize_fpga(void)
 {
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
-	const unsigned dmach = DMA_I2S2_TX_Ch;
+	const unsigned dmach = DMAC_I2S2_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(sizeof (IFDACvalue_t) * 8);	// DMA Source Data Width
 	//const unsigned ddwt = dmac_desc_datawidth(sizeof I2S2->I2S_PCM_TXFIFO * 8);	// DMA Destination Data Width
 	const unsigned ddwt = dmac_desc_datawidth(sizeof (IFDACvalue_t) * 8);	// DMA Destination Data Width
@@ -4265,8 +4265,8 @@ static const codechw_t audiocodechw_i2s1_duplex_master =
 {
 	hardware_i2s1_master_duplex_initialize_codec1,
 	hardware_dummy_initialize,
-	DMA_I2S1_RX_initialize_codec1,
-	DMA_I2S1_TX_initialize_codec1,
+	DMAC_I2S1_RX_initialize_codec1,
+	DMAC_I2S1_TX_initialize_codec1,
 	hardware_i2s1_enable_codec1,
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-master"
@@ -4276,8 +4276,8 @@ static const codechw_t fpgacodechw_i2s2_duplex_master =
 {
 	hardware_i2s2_master_duplex_initialize_fpga,
 	hardware_dummy_initialize,
-	DMA_I2S2_RX_initialize_fpga,
-	DMA_I2S2_TX_initialize_fpga,
+	DMAC_I2S2_RX_initialize_fpga,
+	DMAC_I2S2_TX_initialize_fpga,
 	hardware_i2s2_enable_fpga,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-master"
@@ -4287,8 +4287,8 @@ static const codechw_t audiocodechw_i2s1_duplex_slave =
 {
 	hardware_i2s1_slave_duplex_initialize_codec1,
 	hardware_dummy_initialize,
-	DMA_I2S1_RX_initialize_codec1,
-	DMA_I2S1_TX_initialize_codec1,
+	DMAC_I2S1_RX_initialize_codec1,
+	DMAC_I2S1_TX_initialize_codec1,
 	hardware_i2s1_enable_codec1,
 	hardware_dummy_enable,
 	"audiocodechw-i2s1-duplex-slave"
@@ -4298,8 +4298,8 @@ static const codechw_t fpgacodechw_i2s2_duplex_slave =
 {
 	hardware_i2s2_slave_duplex_initialize_fpga,
 	hardware_dummy_initialize,
-	DMA_I2S2_RX_initialize_fpga,
-	DMA_I2S2_TX_initialize_fpga,
+	DMAC_I2S2_RX_initialize_fpga,
+	DMAC_I2S2_TX_initialize_fpga,
 	hardware_i2s2_enable_fpga,
 	hardware_dummy_enable,
 	"fpgacodechw-i2s2-duplex-slave"
