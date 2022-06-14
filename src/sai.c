@@ -3856,6 +3856,7 @@ static void DMA_I2S1_RX_Handler(void)
 	processing_dmabuffer16rx(addr);
 }
 
+
 /* Передача в кодек */
 static void DMA_I2S1_TX_Handler(void)
 {
@@ -4002,12 +4003,12 @@ static void DMA_I2S1_TX_initialize_codec1(void)
 		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
 		0;
 
-	const uint_fast32_t NBYTES = DMABUFFSIZE32TX * sizeof (IFDACvalue_t);
+	const uint_fast32_t NBYTES = DMABUFFSIZE16 * sizeof (aubufv_t);
 	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
-	descr0 [0] [1] = dma_flush32tx(allocate_dmabuffer32tx());			// Source Address
+	descr0 [0] [1] = dma_flush16tx(getfilled_dmabuffer16phones());			// Source Address
 	descr0 [0] [2] = portaddr;				// Destination Address
 	descr0 [0] [3] = NBYTES;				// Byte Counter
 	descr0 [0] [4] = 0;						// Parameter
@@ -4015,7 +4016,7 @@ static void DMA_I2S1_TX_initialize_codec1(void)
 
 	descr0 [1] [0] = configDMAC;			// Cofigurarion
 	descr0 [1] [1] = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;			// Source Address
-	descr0 [1] [1] = dma_flush32tx(allocate_dmabuffer32tx());			// Source Address
+	descr0 [1] [1] = dma_flush16tx(getfilled_dmabuffer16phones());			// Source Address
 	descr0 [1] [2] = portaddr;				// Destination Address
 	descr0 [1] [4] = 0;						// Parameter
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link
@@ -4043,7 +4044,7 @@ static void DMA_I2S1_TX_initialize_codec1(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
 
-	I2S1->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
+	I2S1->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
 
 
 }
@@ -4167,7 +4168,7 @@ static void DMA_I2S2_TX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Eabled
 
-	I2S2->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
+	I2S2->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
 
 }
 

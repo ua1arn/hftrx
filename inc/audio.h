@@ -28,7 +28,7 @@ extern "C" {
  */
 #if WITHDSPEXTDDC
 
-	#if CPUSTYLE_R7S721
+	#if CPUSTYLE_R7S721 || CPUSTYPE_ALLWNT113
 
 		// buff data layout: I main/I sub/Q main/Q sub
 		#define DMABUFSTEP32RX	8		// Каждому сэмплу соответствует восемь чисел в DMA буфере
@@ -113,7 +113,7 @@ extern "C" {
 
 		#define DMABUFSTEP16	2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 
-	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYPE_ALLWNT113
+	#elif CPUSTYLE_STM32F || CPUSTYLE_STM32MP1
 
 		#if WITHFPGAIF_FRAMEBITS == 64
 
