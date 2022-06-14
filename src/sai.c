@@ -3529,12 +3529,14 @@ enum
 
 };
 
+/* I2S/PCM RX Channel Mapping Registers initialization */
 /* Простое отображение каналов с последовательно увеличивающимся номером */
 static void I2S_sdi_map(
 	I2S_PCM_TypeDef * i2s,
 	unsigned rxsdi
 	)
 {
+	__IO uint32_t * const reg = & I2S1->I2S_PCM_RXCHMAP0;
 	unsigned chnl;
 	for (chnl = 0; chnl < 16; ++ chnl)
 	{
@@ -3546,18 +3548,10 @@ static void I2S_sdi_map(
 
 		const portholder_t field = ((portholder_t) rxsdi << 4) | ((portholder_t) chnl << 0);
 
-		I2S1->I2S_PCM_RXCHMAP0 = (I2S1->I2S_PCM_RXCHMAP0 & ~ (mask0 * 0xFF)) |
-			(mask0 * field) |
-			0;
-		I2S1->I2S_PCM_RXCHMAP1 = (I2S1->I2S_PCM_RXCHMAP1 & ~ (mask1 * 0xFF)) |
-			(mask1 * field) |
-			0;
-		I2S1->I2S_PCM_RXCHMAP2 = (I2S1->I2S_PCM_RXCHMAP2 & ~ (mask2 * 0xFF)) |
-			(mask2 * field) |
-			0;
-		I2S1->I2S_PCM_RXCHMAP3 = (I2S1->I2S_PCM_RXCHMAP3 & ~ (mask3 * 0xFF)) |
-			(mask3 * field) |
-			0;
+		reg [0] = (reg [0] & ~ (mask0 * 0xFF)) | (mask0 * field);
+		reg [1] = (reg [1] & ~ (mask1 * 0xFF)) | (mask1 * field);
+		reg [2] = (reg [2] & ~ (mask2 * 0xFF)) | (mask2 * field);
+		reg [3] = (reg [3] & ~ (mask3 * 0xFF)) | (mask3 * field);
 	}
 }
 
