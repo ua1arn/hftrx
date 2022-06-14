@@ -3629,24 +3629,44 @@ static void hardware_i2s1_initialize_codec1(int master)
 		0;
 
 	I2S1->I2S_PCM_TX0CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
 		0;
 	I2S1->I2S_PCM_TX1CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
 		0;
 	I2S1->I2S_PCM_TX2CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
 		0;
 	I2S1->I2S_PCM_TX3CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
 		0;
 
-	I2S1->I2S_PCM_RXCHMAP0 =
-		0 * (1uL << 28) |	// RX_CH15_SELECT
-		0 * (1uL << 24) |	// RX_CH15_MAP
-		0 * (1uL << 20) |	// RX_CH14_SELECT
-		0 * (1uL << 16) |	// RX_CH14_MAP
-		0;
+	/* Простое отображение каналов с последовательно увеличивающимся номером */
+	const unsigned RXSDI = HARDWARE_I2S1HW_DIN;
+	unsigned chnl;
+	for (chnl = 0; chnl < 16; ++ chnl)
+	{
+		/* в каждом регичтре управления для восьми каналов */
+		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP0
+		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
+		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP2
+		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP3
+
+		const portholder_t field = (RXSDI << 4) | (chnl << 0);
+
+		I2S1->I2S_PCM_RXCHMAP0 = (I2S1->I2S_PCM_RXCHMAP0 & ~ (mask0 * 0xFF)) |
+			(mask0 * field) |
+			0;
+		I2S1->I2S_PCM_RXCHMAP1 = (I2S1->I2S_PCM_RXCHMAP1 & ~ (mask1 * 0xFF)) |
+			(mask1 * field) |
+			0;
+		I2S1->I2S_PCM_RXCHMAP2 = (I2S1->I2S_PCM_RXCHMAP2 & ~ (mask2 * 0xFF)) |
+			(mask2 * field) |
+			0;
+		I2S1->I2S_PCM_RXCHMAP3 = (I2S1->I2S_PCM_RXCHMAP3 & ~ (mask3 * 0xFF)) |
+			(mask3 * field) |
+			0;
+	}
 
 	I2S1HW_INITIALIZE();
 }
@@ -3756,24 +3776,44 @@ static void hardware_i2s2_initialize_fpga(int master)
 		0;
 
 	I2S2->I2S_PCM_TX0CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
 		0;
 	I2S2->I2S_PCM_TX1CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
 		0;
 	I2S2->I2S_PCM_TX2CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
 		0;
 	I2S2->I2S_PCM_TX3CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode
+		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
 		0;
 
-	I2S2->I2S_PCM_RXCHMAP0 =
-		0 * (1uL << 28) |	// RX_CH15_SELECT
-		0 * (1uL << 24) |	// RX_CH15_MAP
-		0 * (1uL << 20) |	// RX_CH14_SELECT
-		0 * (1uL << 16) |	// RX_CH14_MAP
-		0;
+	/* Простое отображение каналов с последовательно увеличивающимся номером */
+	const unsigned RXSDI = HARDWARE_I2S2HW_DIN;
+	unsigned chnl;
+	for (chnl = 0; chnl < 16; ++ chnl)
+	{
+		/* в каждом регичтре управления для восьми каналов */
+		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP0
+		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
+		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP2
+		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP3
+
+		const portholder_t field = (RXSDI << 4) | (chnl << 0);
+
+		I2S2->I2S_PCM_RXCHMAP0 = (I2S2->I2S_PCM_RXCHMAP0 & ~ (mask0 * 0xFF)) |
+			(mask0 * field) |
+			0;
+		I2S2->I2S_PCM_RXCHMAP1 = (I2S2->I2S_PCM_RXCHMAP1 & ~ (mask1 * 0xFF)) |
+			(mask1 * field) |
+			0;
+		I2S2->I2S_PCM_RXCHMAP2 = (I2S2->I2S_PCM_RXCHMAP2 & ~ (mask2 * 0xFF)) |
+			(mask2 * field) |
+			0;
+		I2S2->I2S_PCM_RXCHMAP3 = (I2S2->I2S_PCM_RXCHMAP3 & ~ (mask3 * 0xFF)) |
+			(mask3 * field) |
+			0;
+	}
 
 	I2S2HW_INITIALIZE();
 }
@@ -3846,9 +3886,9 @@ static void DMA_I2S1_RX_Handler(void)
 	descraddr [2] = dma_invalidate16rx(allocate_dmabuffer16());
 	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
-	printhex(addr, (void *) addr, DMABUFFSIZE16 * sizeof (aubufv_t));
-	for (;;)
-		;
+//	printhex(addr, (void *) addr, DMABUFFSIZE16 * sizeof (aubufv_t));
+//	for (;;)
+//		;
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer16rx(addr);
 }
