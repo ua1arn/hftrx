@@ -3560,7 +3560,7 @@ static void I2S_fill_RXCHMAP(
 /* Простое отображение каналов с последовательно увеличивающимся номером */
 static void I2S_fill_TXxCHMAP(
 	I2S_PCM_TypeDef * i2s,
-	unsigned txoffs,
+	unsigned txoffs,	// 0..3 - I2S_PCM_TX0..I2S_PCM_TX3
 	unsigned txsdo
 	)
 {
@@ -3569,8 +3569,8 @@ static void I2S_fill_TXxCHMAP(
 	unsigned chnl;
 	for (chnl = 0; chnl < 16; ++ chnl)
 	{
-		const portholder_t mask0 = power4((1uL << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP0
-		const portholder_t mask1 = power4((1uL << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0
+		const portholder_t mask0 = power4((1uL << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
+		const portholder_t mask1 = power4((1uL << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
 
 		const portholder_t ALLMASK = 0x0F;
 		const portholder_t field = (portholder_t) chnl << 0;
@@ -3712,9 +3712,10 @@ static void hardware_i2s1_initialize_codec1(int master)
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
 	I2S_fill_RXCHMAP(I2S1, HARDWARE_I2S1HW_DIN);
-	I2S_fill_TXxCHMAP(I2S1, 0, HARDWARE_I2S1HW_DOUT);
-	I2S_fill_TXxCHMAP(I2S1, 1, HARDWARE_I2S1HW_DOUT);
-	I2S_fill_TXxCHMAP(I2S1, 2, HARDWARE_I2S1HW_DOUT);
+	I2S_fill_TXxCHMAP(I2S1, 0, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(I2S1, 1, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(I2S1, 2, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(I2S1, 3, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX3CHMAPx
 
 	I2S1HW_INITIALIZE();
 }
@@ -3836,9 +3837,10 @@ static void hardware_i2s2_initialize_fpga(int master)
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
 	I2S_fill_RXCHMAP(I2S2, HARDWARE_I2S2HW_DIN);
-	I2S_fill_TXxCHMAP(I2S2, 0, HARDWARE_I2S2HW_DOUT);
-	I2S_fill_TXxCHMAP(I2S2, 1, HARDWARE_I2S2HW_DOUT);
-	I2S_fill_TXxCHMAP(I2S2, 2, HARDWARE_I2S2HW_DOUT);
+	I2S_fill_TXxCHMAP(I2S2, 0, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(I2S2, 1, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(I2S2, 2, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(I2S2, 3, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX3CHMAPx
 
 	I2S2HW_INITIALIZE();
 }
