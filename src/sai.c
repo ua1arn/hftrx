@@ -3651,6 +3651,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 	// I2S/PCM Clock Divide Register
 	I2S1->I2S_PCM_CTL = 0;
 	I2S1->I2S_PCM_CTL =
+		0x0F * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
 		(0x01uL << 4) |	// left mode, need offset=1 for I2S
@@ -3773,6 +3774,7 @@ static void hardware_i2s2_initialize_fpga(int master)
 	// I2S/PCM Clock Divide Register
 	I2S2->I2S_PCM_CTL = 0;
 	I2S2->I2S_PCM_CTL =
+		0x0F * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
 		(0x01uL << 4) |	// left mode, need offset=1 for I2S
