@@ -4040,10 +4040,10 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	const size_t dw = sizeof (aubufv_t);
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S1_RX_Ch;
-	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
+	const unsigned sdwt = dmac_desc_datawidth(32);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16 * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO + sizeof (uint32_t) - dw;	// Данные в left justified - выбираем старшие биты
+	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -4098,9 +4098,9 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S1_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
-	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
+	const unsigned ddwt = dmac_desc_datawidth(32);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16 * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO + sizeof (uint32_t) - dw;	// Данные в left justified - выбираем старшие биты
+	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -4154,10 +4154,10 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	const size_t dw = sizeof (IFADCvalue_t);
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_RX_Ch;
-	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
+	const unsigned sdwt = dmac_desc_datawidth(32);		// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO + sizeof (uint32_t) - dw;	// Данные в left justified - выбираем старшие биты
+	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO;
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -4212,9 +4212,9 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMAC_I2S2_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(dw * 8);	// DMA Source Data Width
-	const unsigned ddwt = dmac_desc_datawidth(dw * 8);	// DMA Destination Data Width
+	const unsigned ddwt = dmac_desc_datawidth(32);		// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * dw;
-	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO + sizeof (uint32_t) - dw;	// Данные в left justified - выбираем старшие биты
+	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO;
 
 	const uint_fast32_t parameterDMAC = 0;
 	const uint_fast32_t configDMAC =
@@ -4228,7 +4228,6 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 		0 * (1uL << 6) |	// DMA Source Block Size
 		DMAC_SrcReqDRAM * (1uL << 0) |	// DMA Source DRQ Type
 		0;
-
 
 	// Six words of DMAC sescriptor: (Link=0xFFFFF800 for last)
 	descr0 [0] [0] = configDMAC;			// Cofigurarion
