@@ -3849,13 +3849,12 @@ static void DMA_I2S1_RX_Handler(void)
 	const uintptr_t descbase = DMAC->CH [DMA_I2S1_RX_Ch].DMAC_FDESC_ADDR_REGN;
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [2];
-	/* Работа с только что принятыми данными */
 	descraddr [2] = dma_invalidate16rx(allocate_dmabuffer16());
 	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
-	//PRINTF("%08lX\n", addr);
-	release_dmabuffer16(addr);
+	/* Работа с только что принятыми данными */
 	//processing_dmabuffer16rx(addr);
+	release_dmabuffer16(addr);
 }
 
 /* Передача в кодек */
@@ -3869,7 +3868,14 @@ static void DMA_I2S1_TX_Handler(void)
 static void DMA_I2S2_RX_Handler(void)
 {
 	const uintptr_t descbase = DMAC->CH [DMA_I2S2_RX_Ch].DMAC_FDESC_ADDR_REGN;
-	TP();
+	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
+	const uintptr_t addr = descraddr [2];
+	descraddr [2] = dma_invalidate32rx(allocate_dmabuffer32rx());
+	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+
+	/* Работа с только что принятыми данными */
+	processing_dmabuffer32rx(addr);
+	release_dmabuffer32rx(addr);
 }
 
 /* Передача в FPGA */
