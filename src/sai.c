@@ -3970,7 +3970,7 @@ static void DMA_I2S1_RX_initialize_codec1(void)
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 
 	const unsigned dmach = DMA_I2S1_RX_Ch;
-	const unsigned sdwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Source Data Width
+	const unsigned sdwt = dmac_desc_datawidth(sizeof I2S1->I2S_PCM_RXFIFO * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16 * sizeof (aubufv_t);
 	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_RXFIFO;
@@ -4033,7 +4033,7 @@ static void DMA_I2S1_TX_initialize_codec1(void)
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMA_I2S1_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Source Data Width
-	const unsigned ddwt = dmac_desc_datawidth(sizeof (aubufv_t) * 8);	// DMA Destination Data Width
+	const unsigned ddwt = dmac_desc_datawidth(sizeof I2S1->I2S_PCM_TXFIFO * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE16 * sizeof (aubufv_t);
 	const uintptr_t portaddr = (uintptr_t) & I2S1->I2S_PCM_TXFIFO;
 
@@ -4097,7 +4097,7 @@ static void DMA_I2S2_RX_initialize_fpga(void)
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 
 	const unsigned dmach = DMA_I2S2_RX_Ch;
-	const unsigned sdwt = dmac_desc_datawidth(sizeof (IFADCvalue_t) * 8);	// DMA Source Data Width
+	const unsigned sdwt = dmac_desc_datawidth(sizeof I2S2->I2S_PCM_RXFIFO * 8);	// DMA Source Data Width
 	const unsigned ddwt = dmac_desc_datawidth(sizeof (IFADCvalue_t) * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32RX * sizeof (IFADCvalue_t);
 	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_RXFIFO;
@@ -4160,7 +4160,7 @@ static void DMA_I2S2_TX_initialize_fpga(void)
 	static ALIGNX_BEGIN uint32_t descr0 [2] [DMAC_DESC_SIZE] ALIGNX_END;
 	const unsigned dmach = DMA_I2S2_TX_Ch;
 	const unsigned sdwt = dmac_desc_datawidth(sizeof (IFDACvalue_t) * 8);	// DMA Source Data Width
-	const unsigned ddwt = dmac_desc_datawidth(sizeof (IFDACvalue_t) * 8);	// DMA Destination Data Width
+	const unsigned ddwt = dmac_desc_datawidth(sizeof I2S2->I2S_PCM_TXFIFO * 8);	// DMA Destination Data Width
 	const unsigned NBYTES = DMABUFFSIZE32TX * sizeof (IFDACvalue_t);
 	const uintptr_t portaddr = (uintptr_t) & I2S2->I2S_PCM_TXFIFO;
 
