@@ -3546,8 +3546,11 @@ static void I2S_fill_RXCHMAP(
 		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP1
 		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP0
 
-		const portholder_t ALLMASK = 0xFF;
-		const portholder_t field = ((portholder_t) rxsdi << 4) | ((portholder_t) chnl << 0);
+		const portholder_t ALLMASK = 0x3F;
+		const portholder_t field =
+			((portholder_t) rxsdi << 4) |	// RX Channel 0 Select (0..3 - SDI0..SDI3)
+			((portholder_t) chnl << 0) |	// RX Channel 0 Mapping (0..15 - sample position)
+			0;
 
 		reg [0] = (reg [0] & ~ (mask0 * ALLMASK)) | (mask0 * field);
 		reg [1] = (reg [1] & ~ (mask1 * ALLMASK)) | (mask1 * field);
