@@ -259,7 +259,8 @@
 		arm_hardware_piog_altfn20(1 * 1uL << 14, GPIO_CFG_AF2); /* PG14 I2S1-DIN0 from codec, BT_WAKE_AP, pin P2-4  */ \
 		arm_hardware_piog_altfn20(1 * 1uL << 15, GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 co codec, BT_EN, pin P2-2 */ \
 	} while (0)
-
+	#define HARDWARE_I2S1HW_DIN 0	/* DIN0 used */
+	#define HARDWARE_I2S1HW_DOUT 0	/* DOUT0 used */
 	// Инициализируются I2S2 в дуплексном режиме.
 	// FPGA или IF codec
 	#define I2S2HW_INITIALIZE() do { \
@@ -268,6 +269,8 @@
 		arm_hardware_piob_altfn20(0 * 1uL << 4,	GPIO_CFG_AF3); /* PB4 I2S2-DOUT0 to FPGA */ \
 		arm_hardware_piob_altfn20(0 * 1uL << 3,	GPIO_CFG_AF5); /* PB3 I2S2-DIN0 from FPGA */ \
 	} while (0)
+	#define HARDWARE_I2S2HW_DIN 0	/* DIN0 used */
+	#define HARDWARE_I2S2HW_DOUT 0	/* DOUT0 used */
 
 /* Распределение битов в ARM контроллерах */
 

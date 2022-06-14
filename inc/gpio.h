@@ -585,6 +585,11 @@ void arm_hardware_irqn_interrupt(unsigned long irq, int edge, uint32_t priority,
 		);
 #endif /* CPUSTYPE_ALLWNT113 */
 
+
+portholder_t power2(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.
+portholder_t power4(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
+portholder_t power8(uint_fast8_t v);	// Перенос каждого бита в байте в позицию с увеличенным в 8 раз номером.
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

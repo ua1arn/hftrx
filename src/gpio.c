@@ -14,7 +14,7 @@
 
 #if CPUSTYLE_STM32F || CPUSTYLE_STM32MP1 || CPUSTYPE_ALLWNT113
 // Перенос каждого бита в байте в позицию с увеличенным в 4 раза номером.
-static portholder_t
+portholder_t
 power4(uint_fast8_t v)
 {
 #if 1
@@ -72,7 +72,7 @@ power4(uint_fast8_t v)
 }
 
 // Перенос каждого бита в байте в позицию с увеличенным в 2 раза номером.
-static portholder_t
+portholder_t
 power2(uint_fast16_t v)
 {
 	portholder_t r = 0;
@@ -97,8 +97,8 @@ power2(uint_fast16_t v)
 	return r;
 }
 
-// Перенос каждого бита в байте в позицию с увеличенным в 8 раза номером.
-static portholder_t
+// Перенос каждого бита в байте в позицию с увеличенным в 8 раз номером.
+portholder_t
 power8(uint_fast8_t v)
 {
 	portholder_t r = 0;
