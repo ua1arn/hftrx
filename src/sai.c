@@ -3531,7 +3531,7 @@ enum
 
 /* I2S/PCM RX Channel Mapping Registers initialization */
 /* Простое отображение каналов с последовательно увеличивающимся номером */
-static void I2S_sdi_map_RXCHMAP(
+static void I2S_fill_RXCHMAP(
 	I2S_PCM_TypeDef * i2s,
 	unsigned rxsdi
 	)
@@ -3674,21 +3674,20 @@ static void hardware_i2s1_initialize_codec1(int master)
 		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
 		0;
 
-	I2S1->I2S_PCM_TX0CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
-		0;
-	I2S1->I2S_PCM_TX1CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
-		0;
-	I2S1->I2S_PCM_TX2CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
-		0;
-	I2S1->I2S_PCM_TX3CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
+
+	const portholder_t txchsel =
+		txrx_offset * (1uL << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
+		(NCH - 1) * (1uL << 16) |	// TX3 Channel (Slot) Number Select for Each Output
+		0xFFFF * (1uL << 0) |		// TX3 Channel (Slot) Enable
 		0;
 
+	I2S1->I2S_PCM_TX0CHSEL = txchsel;
+	I2S1->I2S_PCM_TX1CHSEL = txchsel;
+	I2S1->I2S_PCM_TX2CHSEL = txchsel;
+	I2S1->I2S_PCM_TX3CHSEL = txchsel;
+
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_sdi_map_RXCHMAP(I2S1, HARDWARE_I2S1HW_DIN);
+	I2S_fill_RXCHMAP(I2S1, HARDWARE_I2S1HW_DIN);
 
 	I2S1HW_INITIALIZE();
 }
@@ -3797,21 +3796,19 @@ static void hardware_i2s2_initialize_fpga(int master)
 		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
 		0;
 
-	I2S2->I2S_PCM_TX0CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
-		0;
-	I2S2->I2S_PCM_TX1CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
-		0;
-	I2S2->I2S_PCM_TX2CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
-		0;
-	I2S2->I2S_PCM_TX3CHSEL =
-		txrx_offset * (1uL << 20) |	// TX_OFFSET (need for I2S mode)
+	const portholder_t txchsel =
+		txrx_offset * (1uL << 20) |	// TX3 Offset Tune (TX3 Data offset to LRCK)
+		(NCH - 1) * (1uL << 16) |	// TX3 Channel (Slot) Number Select for Each Output
+		0xFFFF * (1uL << 0) |		// TX3 Channel (Slot) Enable
 		0;
 
+	I2S2->I2S_PCM_TX0CHSEL = txchsel;
+	I2S2->I2S_PCM_TX1CHSEL = txchsel;
+	I2S2->I2S_PCM_TX2CHSEL = txchsel;
+	I2S2->I2S_PCM_TX3CHSEL = txchsel;
+
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_sdi_map_RXCHMAP(I2S2, HARDWARE_I2S2HW_DIN);
+	I2S_fill_RXCHMAP(I2S2, HARDWARE_I2S2HW_DIN);
 
 	I2S2HW_INITIALIZE();
 }
