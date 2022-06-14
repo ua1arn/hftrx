@@ -3541,10 +3541,10 @@ static void I2S_fill_RXCHMAP(
 	for (chnl = 0; chnl < 16; ++ chnl)
 	{
 		/* в каждом регистре управления для восьми каналов */
-		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP0
-		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP1
-		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP2
-		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP3
+		const portholder_t mask3 = power8((1uL << chnl) >> 0);	// биты в I2S_PCM_RXCHMAP3
+		const portholder_t mask2 = power8((1uL << chnl) >> 8);	// биты в I2S_PCM_RXCHMAP2
+		const portholder_t mask1 = power8((1uL << chnl) >> 16);	// биты в I2S_PCM_RXCHMAP1
+		const portholder_t mask0 = power8((1uL << chnl) >> 24);	// биты в I2S_PCM_RXCHMAP0
 
 		const portholder_t ALLMASK = 0xFF;
 		const portholder_t field = ((portholder_t) rxsdi << 4) | ((portholder_t) chnl << 0);
@@ -3569,8 +3569,8 @@ static void I2S_fill_TXxCHMAP(
 	unsigned chnl;
 	for (chnl = 0; chnl < 16; ++ chnl)
 	{
-		const portholder_t mask0 = power4((1uL << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
 		const portholder_t mask1 = power4((1uL << chnl) >> 0);	// биты в I2S_PCM_TX0CHMAP1 - каналы 7..0
+		const portholder_t mask0 = power4((1uL << chnl) >> 8);	// биты в I2S_PCM_TX0CHMAP0 - каналы 15..8
 
 		const portholder_t ALLMASK = 0x0F;
 		const portholder_t field = (portholder_t) chnl << 0;
