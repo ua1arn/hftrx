@@ -5219,6 +5219,9 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			moni.IV = 0;
 			moni.QV = 0;
 		}
+//		b [L] = adpt_output(& afcodecio, sdtnv);
+//		b [R] = adpt_output(& afcodecio, sdtnv);
+//		continue;
 		const FLOAT_t moniL = mixmonitor(sdtnshape, sdtnv, moni.IV);
 		const FLOAT_t moniR = mixmonitor(sdtnshape, sdtnv, moni.QV);
 
