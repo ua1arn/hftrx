@@ -56,6 +56,10 @@ http://ccrma.stanford.edu/courses/422/projects/WaveFormat/
 
  */
 
+unsigned audiorec_getwidth(void)
+{
+	return bytes_per_sample * 8;
+}
 
 static FRESULT write_little_endian(unsigned int word, int num_bytes)
 {
