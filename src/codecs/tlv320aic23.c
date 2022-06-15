@@ -114,8 +114,16 @@ static void tlv320aic23_initialize_fullduplex(void)
 		0
 		);	
 
+	//	It is recommended that between changing any content of Digital Audio Interface or Sampling Control
+	//	Register that the active bit is reset then set.
+
+	tlv320aic23_setreg(TLV320AIC23_ACTIVE,
+		0 * TLV320AIC23_ACT_ON |		// Digital Interface Activation
+		0
+		);
+
 	unsigned iwl;
-	switch (WITHADAPTERAFADCWIDTH)
+	switch (WITHADAPTERCODEC1WIDTH)
 	{
 	default:
 	case 16: iwl = TLV320AIC23_IWL_16; break;

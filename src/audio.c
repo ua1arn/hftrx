@@ -785,9 +785,10 @@ int64_t transform_do64(
 	return (v << tfm->lshift64) >> tfm->rshift64;
 }
 
-//#if WITHDSPEXTFIR
+#if WITHDSPEXTFIR
 static adapter_t fpgafircoefsout;
-//#endif /* #if WITHDSPEXTFIR */
+#endif /* #if WITHDSPEXTFIR */
+
 adapter_t afcodecio;
 adapter_t ifcodecin;
 adapter_t ifspectrumin;
@@ -795,10 +796,19 @@ adapter_t ifcodecout;
 adapter_t uac48io;
 adapter_t rts96out;
 adapter_t rts192o;
+adapter_t nfmdemod;		/* Преобразование выхода demodulator_FM() */
+
+#if WITHUSEAUDIOREC
 adapter_t sdcardio;
-adapter_t nfmdemod;
+#endif /* WITHUSEAUDIOREC */
+
+#if WITHRTS96
 transform_t if2rts96out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+#endif /* WITHRTS96 */
+
+#if WITHRTS192
 transform_t if2rts192out;	// преобразование из выхода панорамы FPGA в формат UAB AUDIO
+#endif /* WITHRTS192 */
 
 static void adapterst_initialize(void)
 {
@@ -807,13 +817,14 @@ static void adapterst_initialize(void)
 	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
 #endif /* WITHDSPEXTFIR */
 	/* Аудиокодек */
-	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
-	adpt_initialize(& afcodecio, WITHADAPTERAFADCWIDTH, WITHADAPTERAFADCSHIFT);
+	adpt_initialize(& afcodecio, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
+#if WITHUSEAUDIOREC
 	/* SD CARD */
-	adpt_initialize(& sdcardio, 16, 0);
+	adpt_initialize(& sdcardio, audiorec_getwidth(), 0);
+#endif /* WITHUSEAUDIOREC */
 	/* канал звука USB AUDIO */
 	adpt_initialize(& uac48io, UACOUT_AUDIO48_SAMPLEBITS, 0);
 #if WITHRTS96
@@ -828,6 +839,7 @@ static void adapterst_initialize(void)
 	adpt_initialize(& rts192out, UACIN_RTS192_SAMPLEBITS, 0);
 	transform_initialize(& if2rts192out, & ifspectrumin, & rts192out);
 #endif /* WITHRTS192 */
+	/* Преобразование выхода demodulator_FM() */
 	adpt_initialize(& nfmdemod, 32, 0);
 }
 
@@ -2245,6 +2257,8 @@ static void fir_design_bandpass_freq(FLOAT_t * dCoeff, int iCoefNum, int iCutLow
 }
 
 
+#if WITHDSPEXTFIR
+
 // преобразование к целым
 static void fir_design_copy_integers(int_fast32_t * lCoeff, const FLOAT_t * dCoeff, int iCoefNum)
 {
@@ -2272,9 +2286,6 @@ static void fir_design_integer_lowpass_scaled(int_fast32_t *lCoeff, const FLOAT_
 	fir_design_lowpass_freq_scaled(dCoeff, dWindow, iCoefNum, iCutHigh, dGain);	// с управлением крутизной скатов и нормированием усиления, с наложением окна
 	fir_design_copy_integers(lCoeff, dCoeff, iCoefNum);
 }
-
-
-#if WITHDSPEXTFIR
 
 // преобразование к целым
 static void fir_design_copy_integersL(int_fast32_t * lCoeff, const double * dCoeff, int iCoefNum)
@@ -2939,7 +2950,7 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			fir_design_copy_integersL(FIRCoef_trxi_IQ, dCoeff, iCoefNum);
 		}
 
-		#else
+		#else /* WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08) */
 
 		if (1)
 			fir_design_integer_lowpass_scaled(FIRCoef_trxi_IQ, FIRCwnd_trxi_IQ, Ntap_trxi_IQ, cutfreq, 1);
@@ -2959,7 +2970,8 @@ static void audio_setup_wiver(const uint_fast8_t spf, const uint_fast8_t pathi)
 			fir_design_copy_integers(FIRCoef_trxi_IQ, dCoeff, iCoefNum);
 		}
 
-		#endif
+		#endif /* WITHDOUBLEFIRCOEFS && (__ARM_FP & 0x08) */
+
 	#endif /* WITHDSPLOCALFIR */
 	}
 

@@ -288,10 +288,9 @@ nau8822_ilog2(
 static void nau8822_initialize_fullduplex(void)
 {
 	//debug_printf_P(PSTR("nau8822_initialize_fullduplex start\n"));
-	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
 	unsigned long NAU8822_AUDIO_INTERFACE_WLEN_val;
 	unsigned long NAU8822_MISC_8B_val;	// When in 8-bit mode, the Register 4 word length control (WLEN) is ignored.
-	switch (WITHADAPTERAFADCWIDTH)
+	switch (WITHADAPTERCODEC1WIDTH)
 	{
 	default:
 	case 32: NAU8822_AUDIO_INTERFACE_WLEN_val = 0x060; NAU8822_MISC_8B_val = 0x00; break;
