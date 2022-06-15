@@ -521,10 +521,8 @@ typedef struct
 #if CODEC1_FRAMEBITS == 64
 
 	/* параметры входного/выходного адаптеров */
-	#define WITHADAPTERAFADCWIDTH	24		// 1 бит знак и 23 бит значащих
-	#define WITHADAPTERAFADCSHIFT	8		// количество незанятых битов справа.
-	#define WITHADAPTERAFDACWIDTH	24		// 1 бит знак и 23 бит значащих
-	#define WITHADAPTERAFDACSHIFT	8		// количество незанятых битов справа.
+	#define WITHADAPTERCODEC1WIDTH	24		// 1 бит знак и 23 бит значащих
+	#define WITHADAPTERCODEC1SHIFT	8		// количество незанятых битов справа.
 	typedef int32_t aubufv_t;
 	typedef int_fast32_t aufastbufv_t;
 	typedef int_fast64_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
@@ -533,26 +531,13 @@ typedef struct
 #else /* CODEC1_FRAMEBITS == 64 */
 
 	/* параметры входного/выходного адаптеров */
-	#define WITHADAPTERAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHADAPTERAFADCSHIFT	0		// количество незанятых битов справа.
-	#define WITHADAPTERAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
-	#define WITHADAPTERAFDACSHIFT	0		// количество незанятых битов справа.
+	#define WITHADAPTERCODEC1WIDTH	16		// 1 бит знак и 15 бит значащих
+	#define WITHADAPTERCODEC1SHIFT	0		// количество незанятых битов справа.
 	typedef int16_t aubufv_t;
 	typedef int_fast16_t aufastbufv_t;
 	typedef int_fast32_t aufastbufv2x_t;	/* тип для работы ресэмплера при получении среднего арифметического */
 
 #endif /* CODEC1_FRAMEBITS == 64 */
-
-// xxx_ctlstyle_raven_v1, xxx_ctlstyle_nucleo
-	/* параметры входного/выходного адаптеров */
-//#define WITHIFDACWIDTH	32//24		// 1 бит знак и 23 бит значащих
-//#define WITHIFADCWIDTH	32//24		// 1 бит знак и 23 бит значащих
-
-// arm_stm32f4xx_tqfp144_ctlstyle_32F429DISCO
-// DDC Module 1
-/* параметры входного/выходного адаптеров */
-//#define WITHIFDACWIDTH	16 //32		// 1 бит знак и 31 бит значащих
-//#define WITHIFADCWIDTH	32//24 //32		// 1 бит знак и 31 бит значащих
 
 
 #if CPUSTYLE_XC7Z || CPUSTYLE_XCZU

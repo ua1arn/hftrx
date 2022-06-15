@@ -115,7 +115,7 @@ static void tlv320aic23_initialize_fullduplex(void)
 		);	
 
 	unsigned iwl;
-	switch (WITHADAPTERAFADCWIDTH)
+	switch (WITHADAPTERCODEC1WIDTH)
 	{
 	default:
 	case 16: iwl = TLV320AIC23_IWL_16; break;

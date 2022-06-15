@@ -807,8 +807,7 @@ static void adapterst_initialize(void)
 	adpt_initialize(& fpgafircoefsout, HARDWARE_COEFWIDTH, 0);
 #endif /* WITHDSPEXTFIR */
 	/* Аудиокодек */
-	ASSERT(WITHADAPTERAFADCWIDTH == WITHADAPTERAFDACWIDTH);
-	adpt_initialize(& afcodecio, WITHADAPTERAFADCWIDTH, WITHADAPTERAFADCSHIFT);
+	adpt_initialize(& afcodecio, WITHADAPTERCODEC1WIDTH, WITHADAPTERCODEC1SHIFT);
 	/* IF codec / FPGA */
 	adpt_initialize(& ifcodecin, WITHADAPTERIFADCWIDTH, WITHADAPTERIFADCSHIFT);
 	adpt_initialize(& ifcodecout, WITHADAPTERIFDACWIDTH, WITHADAPTERIFDACSHIFT);
