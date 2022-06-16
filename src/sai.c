@@ -3706,10 +3706,11 @@ static void hardware_i2s1_initialize_codec1(int master)
 	const unsigned txrx_offset = 0;
 #endif /* CODEC1_FORMATI2S_PHILIPS */
 
-	// I2S/PCM Clock Divide Register
+	ASSERT(HARDWARE_I2S1HW_DOUT < 4);
+	// I2S/PCM Control Register
 	I2S1->I2S_PCM_CTL = 0;
 	I2S1->I2S_PCM_CTL =
-		0x0F * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
+		(1u << HARDWARE_I2S1HW_DOUT) * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
 		(0x01uL << 4) |	// left mode, need offset=1 for I2S
@@ -3839,10 +3840,11 @@ static void hardware_i2s2_initialize_fpga(int master)
 	const unsigned txrx_offset = 0;
 #endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 
-	// I2S/PCM Clock Divide Register
+	ASSERT(HARDWARE_I2S1HW_DOUT < 4);
+	// I2S/PCM Control Register
 	I2S2->I2S_PCM_CTL = 0;
 	I2S2->I2S_PCM_CTL =
-		0x0F * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
+		(1u << HARDWARE_I2S2HW_DOUT) * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
 		(0x01uL << 4) |	// left mode, need offset=1 for I2S
