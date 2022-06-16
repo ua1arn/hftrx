@@ -3657,8 +3657,15 @@ static void hardware_i2s1_initialize_codec1(int master)
 
 	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
+	// Данные на выходе меняются по спадающему фронту (I2S complaint)
+	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 0, DIN sample data at positive edge;
+	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 1, DIN sample data at negative edge;
+	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
+	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
 	I2S1->I2S_PCM_FMT0 =
-		(((framebis / 2) - 1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		0 * (1uL << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+		0 * (1uL << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
+		((framebis / 2) - 1) * (1uL << 8) |		// LRCK_PERIOD - for I2S - each channel width
 		width2fmt(framebis / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
 		width2fmt(framebis / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
@@ -3696,6 +3703,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 #if CODEC1_FORMATI2S_PHILIPS
 	const unsigned txrx_offset = 1;
 #else /* CODEC1_FORMATI2S_PHILIPS */
+	const unsigned txrx_offset = 0;
 #endif /* CODEC1_FORMATI2S_PHILIPS */
 
 	// I2S/PCM Clock Divide Register
@@ -3731,7 +3739,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 	I2S_fill_TXxCHMAP(I2S1, 2, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX2CHMAPx
 	I2S_fill_TXxCHMAP(I2S1, 3, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX3CHMAPx
 
-	I2S1HW_INITIALIZE();
+	I2S1HW_INITIALIZE(master);
 }
 
 static void hardware_i2s2_initialize_fpga(int master)
@@ -3793,9 +3801,15 @@ static void hardware_i2s2_initialize_fpga(int master)
 	CCU->I2S_BGR_REG |= (0x01uL << (0 + ix));	// Gating Clock for I2S/PCMx
 	CCU->I2S_BGR_REG |= (0x01uL << (16 + ix));	// I2S/PCMx Reset
 
-	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
+	// Данные на выходе меняются по спадающему фронту (I2S complaint)
+	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 0, DIN sample data at positive edge;
+	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 1, DIN sample data at negative edge;
+	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
+	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
 	I2S2->I2S_PCM_FMT0 =
-		(((framebis / 2) - 1) << 8) |	// LRCK_PERIOD - for I2S - each channel width
+		0 * (1uL << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
+		0 * (1uL << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
+		((framebis / 2) - 1) * (1uL << 8) |		// LRCK_PERIOD - for I2S - each channel width
 		width2fmt(framebis / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
 		width2fmt(framebis / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
@@ -3822,6 +3836,7 @@ static void hardware_i2s2_initialize_fpga(int master)
 #if WITHFPGAIF_FORMATI2S_PHILIPS
 	const unsigned txrx_offset = 1;
 #else /* WITHFPGAIF_FORMATI2S_PHILIPS */
+	const unsigned txrx_offset = 0;
 #endif /* WITHFPGAIF_FORMATI2S_PHILIPS */
 
 	// I2S/PCM Clock Divide Register
@@ -3856,7 +3871,7 @@ static void hardware_i2s2_initialize_fpga(int master)
 	I2S_fill_TXxCHMAP(I2S2, 2, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX2CHMAPx
 	I2S_fill_TXxCHMAP(I2S2, 3, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX3CHMAPx
 
-	I2S2HW_INITIALIZE();
+	I2S2HW_INITIALIZE(master);
 }
 
 static void hardware_i2s1_master_duplex_initialize_codec1(void)
