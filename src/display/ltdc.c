@@ -2006,6 +2006,8 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 		write32((uintptr_t) & tcon->frm_table[2], 0x57575555);
 		write32((uintptr_t) & tcon->frm_table[3], 0x7f7f7777);
 
+		// Sochip_VE_S3_Datasheet_V1.0.pdf
+		// TCON0_TRM_CTL_REG offset 0x0010
 		// 31: TCON_FRM_EN: 0: disable, 1: enable
 		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit

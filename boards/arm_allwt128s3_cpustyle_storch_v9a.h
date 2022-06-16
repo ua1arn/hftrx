@@ -877,6 +877,8 @@
 
 #if WITHLTDCHW
 
+	// Sochip_VE_S3_Datasheet_V1.0.pdf
+	// TCON0_TRM_CTL_REG offset 0x0010
 	//#define TCON_FRM_MODE_VAL ((0x01uL << 6) | (0x00uL << 5) | (0x01uL << 4))	// 16 bit panel connected
 	#define TCON_FRM_MODE_VAL ((0x00uL << 6) | (0x00uL << 5)| (0x00uL << 4))	// 18 bit panel connected
 
