@@ -1989,6 +1989,7 @@ static void t113_tconlcd_set_timing(struct fb_t113_rgb_pdata_t * pdat, const vid
 }
 
 #if 0
+
 static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 {
 	struct t113_tconlcd_reg_t * tcon = (struct t113_tconlcd_reg_t *)pdat->virt_tconlcd;
@@ -2008,13 +2009,18 @@ static void t113_tconlcd_set_dither(struct fb_t113_rgb_pdata_t * pdat)
 
 		// Sochip_VE_S3_Datasheet_V1.0.pdf
 		// TCON0_TRM_CTL_REG offset 0x0010
+		// User manual:
+		// LCD FRM Control Register (Default Value: 0x0000_0000)
 		// 31: TCON_FRM_EN: 0: disable, 1: enable
 		// 6: TCON_FRM_MODE_R: 0 - 6 bit, 1: 5 bit
 		// 5: TCON_FRM_MODE_G: 0 - 6 bit, 1: 5 bit
 		// 4: TCON_FRM_MODE_B: 0 - 6 bit, 1: 5 bit
 		write32((uintptr_t) & tcon->frm_ctrl, (1 << 31) | TCON_FRM_MODE_VAL);
+		/* режим и формат выхода */
+		TCON_LCD0->LCD_FRM_CTL_REG = (1 << 31) | TCON_FRM_MODE_VAL;
 	}
 }
+
 #endif
 
 
