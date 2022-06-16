@@ -595,7 +595,6 @@
 #endif /* WITHSPIHW || WITHSPISW */
 
 // WITHUART1HW
-// GPIOE2 и GPIOE3 = txd0 и rxd0
 #define HARDWARE_UART1_INITIALIZE() do { \
 		const portholder_t TXMASK = (1uL << 2); /* PE2 UART0-TX */ \
 		const portholder_t RXMASK = (1uL << 3); /* PE3 UART0-RX - pull-up RX data */  \
@@ -604,14 +603,6 @@
 		arm_hardware_pioe_updown(RXMASK, 0); \
 	} while (0)
 
-// WITHUART2HW
-#define HARDWARE_UART2_INITIALIZE() do { \
-		const portholder_t TXMASK = (1uL << 5); /* PD5: TX DATA line (2 MHz) */ \
-		const portholder_t RXMASK = (1uL << 6); /* PD6: RX DATA line (2 MHz) - pull-up RX data */  \
-		arm_hardware_piod_altfn2(TXMASK, AF_USART2); \
-		arm_hardware_piod_altfn2(RXMASK, AF_USART2); \
-		arm_hardware_piod_updown(RXMASK, 0); \
-	} while (0)
 
 #define TARGET_ENC2BTN_BIT (1U << 15)	// PE15 - second encoder button with pull-up
 
