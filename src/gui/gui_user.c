@@ -5562,8 +5562,8 @@ static void window_kbd_test_proccess(void)
 		memcpy(win->bh_ptr, buttons, buttons_size);
 
 		static const label_t labels [] = {
-			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text1", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
-			{ WINDOW_KBD_TEST, DISABLED, 0, VISIBLE, "lbl_text2", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOW_KBD_TEST, DISABLED, 0, NON_VISIBLE, "lbl_text1", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
+			{ WINDOW_KBD_TEST, DISABLED, 0, NON_VISIBLE, "lbl_text2", "********************", FONT_MEDIUM, COLORMAIN_WHITE, },
 		};
 		win->lh_count = ARRAY_SIZE(labels);
 		uint_fast16_t labels_size = sizeof(labels);
@@ -5588,8 +5588,10 @@ static void window_kbd_test_proccess(void)
 		btn_text2->x1 = btn_text1->x1;
 		btn_text2->y1 = lbl_text2->y;
 
-		strcpy(lbl_text1->text, str_lbl1);
-		strcpy(lbl_text2->text, str_lbl2);
+		label_set_param(win, "lbl_text1", P_LBL_VISIBLE, VISIBLE);
+		label_set_param(win, "lbl_text2", P_LBL_VISIBLE, VISIBLE);
+		label_set_param(win, "lbl_text1", P_LBL_TEXT, str_lbl1);
+		label_set_param(win, "lbl_text2", P_LBL_TEXT, str_lbl2);
 
 		btn_text1->payload = (uintptr_t) str_lbl1;
 		btn_text2->payload = (uintptr_t) str_lbl2;

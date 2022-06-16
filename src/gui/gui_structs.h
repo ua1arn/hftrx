@@ -163,6 +163,14 @@ typedef struct {
 	uint16_t y;
 } label_t;
 
+typedef enum {
+	P_LBL_PARENT,
+	P_LBL_STATE,
+	P_LBL_IS_TRACKABLE,
+	P_LBL_VISIBLE,
+	P_LBL_TEXT,
+} label_parameters;
+
 typedef enum  {
 	ORIENTATION_VERTICAL,
 	ORIENTATION_HORIZONTAL
