@@ -726,7 +726,6 @@ hardware_i2s2_i2s2ext_master_duplex_initialize_codec1(void)		/* инициали
 
 #endif /* defined (I2S2ext) */
 
-//#if WITHI2SHWTXSLAVE
 
 // Интерфейс к НЧ кодеку
 static void 
@@ -768,12 +767,6 @@ hardware_i2s2_slave_tx_initialize_codec1(void)		/* инициализация I2
 	//PRINTF(PSTR("hardware_i2s2_slave_tx_initialize_codec1 done\n"));
 }
 
-//#else /* WITHI2SHWTXSLAVE */
-
-
-//#endif /* WITHI2SHWTXSLAVE */
-
-//#if WITHI2SHWRXSLAVE
 
 // Интерфейс к НЧ кодеку
 static void 
@@ -853,8 +846,6 @@ hardware_i2s2_slave_duplex_initialize_codec1(void)
 
 	//PRINTF(PSTR("hardware_i2s2_slave_duplex_initialize_codec1 done\n"));
 }
-
-//#endif /* WITHI2SHWRXSLAVE */
 
 
 // Интерфейс к НЧ кодеку
@@ -1118,7 +1109,6 @@ static const codechw_t audiocodechw_i2s2_duplex_master =
 
 #endif /* WITHI2SI2S2EXTFULLDUPLEXHW */
 
-// WITHI2SHWRXSLAVE and WITHI2SHWTXSLAVE are true
 static const codechw_t audiocodechw_i2s2_tx_slave =
 {
 	hardware_dummy_initialize,	/* Интерфейс к НЧ кодеку - микрофон */

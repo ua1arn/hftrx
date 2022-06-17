@@ -285,8 +285,7 @@
 	//#define EXTI2S_FREQ (REFERENCE_FREQ / FPGADIVIDERATIO)
 	#define CODEC1_FORMATI2S_PHILIPS 1	// Возможно использование при передаче данных в кодек, подключенный к наушникам и микрофону
 	#define CODEC1_FRAMEBITS 32	// Полный размер фрейма для двух каналов - канал кодека
-	#define WITHI2SHWRXSLAVE	1		// Приёмный канал I2S (микрофон) используюся в SLAVE MODE
-	#define WITHI2SHWTXSLAVE	1		// Передающий канал I2S (наушники) используюся в SLAVE MODE
+
 	// USB интерфейс и все кодеки
 	#define WITHAFADCWIDTH	16		// 1 бит знак и 15 бит значащих
 	#define WITHAFDACWIDTH	16		// 1 бит знак и 15 бит значащих
