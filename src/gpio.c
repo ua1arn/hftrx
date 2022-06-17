@@ -652,7 +652,7 @@ static uint32_t gpio_lock(unsigned bank)
 	return cpsr;
 }
 
-static void allwnrt113_pioX_unlock(unsigned bank, uint32_t cpsr)
+static void gpioX_unlock(unsigned bank, uint32_t cpsr)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [bank];
 	SPIN_UNLOCK(lck);
@@ -810,7 +810,7 @@ void sysinit_gpio_initialize(void)
 	}
 }
 
-static uint32_t allwnrt113_pioX_lock(GPIO_TypeDef * gpio)
+static uint32_t gpioX_lock(GPIO_TypeDef * gpio)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
 	const uint32_t cpsr = __get_CPSR();
@@ -819,7 +819,7 @@ static uint32_t allwnrt113_pioX_lock(GPIO_TypeDef * gpio)
 	return cpsr;
 }
 
-static void allwnrt113_pioX_unlock(GPIO_TypeDef * gpio, uint32_t cpsr)
+static void gpioX_unlock(GPIO_TypeDef * gpio, uint32_t cpsr)
 {
 	SPINLOCK_t * const lck = & gpiodata_locks [gpio - (GPIO_TypeDef *) GPIO_BASE];
 	SPIN_UNLOCK(lck);
@@ -827,20 +827,20 @@ static void allwnrt113_pioX_unlock(GPIO_TypeDef * gpio, uint32_t cpsr)
 }
 /* Отсутствие атомарных операций модификации состояния выводов требует исключительного доступа */
 /*!< Atomic port state change */
-void allwnrt113_pioX_setstate(
+void gpioX_setstate(
 	GPIO_TypeDef * gpio,
 	portholder_t mask,
 	portholder_t state
 	)
 {
-	const uint32_t cpsr = allwnrt113_pioX_lock(gpio);
+	const uint32_t cpsr = gpioX_lock(gpio);
 
 	gpio->DATA = (gpio->DATA & ~ mask) | (state & mask);
 
-	allwnrt113_pioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, cpsr);
 }
 
-static void allwnrt113_pioX_prog(
+static void gpioX_prog(
 	GPIO_TypeDef * gpio,
 	portholder_t iopins,
 	unsigned cfg,
@@ -856,7 +856,7 @@ static void allwnrt113_pioX_prog(
 	const portholder_t pull0 = power2(iopins >> 0);		/* PULL0 bits */
 	const portholder_t pull1 = power2(iopins >> 16);	/* PULL1 bits */
 
-	const uint32_t cpsr = allwnrt113_pioX_lock(gpio);
+	const uint32_t cpsr = gpioX_lock(gpio);
 
 	gpio->CFG [0] = (gpio->CFG [0] & ~ (mask0 * 0x0F)) | (cfg * mask0);
 	gpio->CFG [1] = (gpio->CFG [1] & ~ (mask1 * 0x0F)) | (cfg * mask1);
@@ -872,10 +872,10 @@ static void allwnrt113_pioX_prog(
 	gpio->PULL [0] = (gpio->PULL [0] & ~ (pull0 * 0x03)) | (pull * pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ (pull1 * 0x03)) | (pull * pull1);
 
-	allwnrt113_pioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, cpsr);
 }
 
-static void allwnrt113_pioX_updown(
+static void gpioX_updown(
 	GPIO_TypeDef * gpio,
 	portholder_t ioup,
 	portholder_t iodown
@@ -889,16 +889,16 @@ static void allwnrt113_pioX_updown(
 	const portholder_t pull1up = power2(ioup >> 16);
 	const portholder_t pull1down = power2(iodown >> 16);
 
-	const uint32_t cpsr = allwnrt113_pioX_lock(gpio);
+	const uint32_t cpsr = gpioX_lock(gpio);
 
 	// PULL: 0x00 = disable, 0x01 = pull-up, 0x02 - pull-down
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0mask) | (0x01 * pull0up) | (0x02 * pull0down);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1mask) | (0x01 * pull1up) | (0x02 * pull1down);
 
-	allwnrt113_pioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, cpsr);
 }
 
-static void allwnrt113_pioX_updownoff(
+static void gpioX_updownoff(
 	GPIO_TypeDef * gpio,
 	portholder_t iopins
 	)
@@ -907,17 +907,17 @@ static void allwnrt113_pioX_updownoff(
 	const portholder_t pull0 = power2(iopins >> 0) * 0x03;		/* PULL0 bits */
 	const portholder_t pull1 = power2(iopins >> 16) * 0x03;		/* PULL1 bits */
 
-	const uint32_t cpsr = allwnrt113_pioX_lock(gpio);
+	const uint32_t cpsr = gpioX_lock(gpio);
 
 	gpio->PULL [0] = (gpio->PULL [0] & ~ pull0);
 	gpio->PULL [1] = (gpio->PULL [1] & ~ pull1);
 
-	allwnrt113_pioX_unlock(gpio, cpsr);
+	gpioX_unlock(gpio, cpsr);
 }
 
 /* разрешение прерывания по изменению состояния указанных групп выводов */
 static void
-allwnrt113_pioX_onchangeinterrupt(
+gpioX_onchangeinterrupt(
 		GPIO_TypeDef * gpio,
 		portholder_t ipins,
 		portholder_t raise, portholder_t fall,
@@ -1646,8 +1646,8 @@ arm_hardware_pioa_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_prog(GPIOA, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_prog(GPIOA, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -1714,8 +1714,8 @@ arm_hardware_piob_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_prog(GPIOB, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	//gpioX_poweron(GPIOB);
+	gpioX_prog(GPIOB, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -1782,8 +1782,8 @@ arm_hardware_pioc_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_prog(GPIOC, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	//gpioX_poweron(GPIOC);
+	gpioX_prog(GPIOC, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -1842,8 +1842,8 @@ arm_hardware_piod_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_prog(GPIOD, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	//gpioX_poweron(GPIOD);
+	gpioX_prog(GPIOD, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -1895,8 +1895,8 @@ arm_hardware_pioe_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOE);
-	allwnrt113_pioX_prog(GPIOE, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	//gpioX_poweron(GPIOE);
+	gpioX_prog(GPIOE, ipins, GPIO_CFG_IN, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -1948,8 +1948,8 @@ arm_hardware_piof_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOF);
-	allwnrt113_pioX_prog(GPIOF, ipins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	//gpioX_poweron(GPIOF);
+	gpioX_prog(GPIOF, ipins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIOF)
 	#error Undefined CPUSTYLE_XXX
@@ -2001,8 +2001,8 @@ arm_hardware_piog_inputs(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_prog(GPIOG, ipins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
+	//gpioX_poweron(GPIOG);
+	gpioX_prog(GPIOG, ipins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_INPUT, ALWNR_GPIO_PULL_INPUT);
 
 #elif defined (GPIG)
 	#error Undefined CPUSTYLE_XXX
@@ -2267,9 +2267,9 @@ arm_hardware_pioa_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_setstate(GPIOA, opins, initialstate);
-//	allwnrt113_pioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_setstate(GPIOA, opins, initialstate);
+//	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -2361,9 +2361,9 @@ arm_hardware_pioa_outputs10m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_setstate(GPIOA, opins, initialstate);
-//	allwnrt113_pioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT10M, ALWNR_GPIO_PULL_OUTPUT10M);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_setstate(GPIOA, opins, initialstate);
+//	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT10M, ALWNR_GPIO_PULL_OUTPUT10M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -2456,9 +2456,9 @@ arm_hardware_pioa_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_setstate(GPIOA, opins, initialstate);
-//	allwnrt113_pioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_setstate(GPIOA, opins, initialstate);
+//	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -2540,9 +2540,9 @@ arm_hardware_piob_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_setstate(GPIOB, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+	//gpioX_poweron(GPIOB);
+	gpioX_setstate(GPIOB, opins, initialstate);
+	gpioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -2635,9 +2635,9 @@ arm_hardware_piob_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_setstate(GPIOB, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
+	//gpioX_poweron(GPIOB);
+	gpioX_setstate(GPIOB, opins, initialstate);
+	gpioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -2731,9 +2731,9 @@ arm_hardware_pioc_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_setstate(GPIOC, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
+	//gpioX_poweron(GPIOC);
+	gpioX_setstate(GPIOC, opins, initialstate);
+	gpioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -2828,9 +2828,9 @@ arm_hardware_piod_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_setstate(GPIOD, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
+	//gpioX_poweron(GPIOD);
+	gpioX_setstate(GPIOD, opins, initialstate);
+	gpioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -2925,9 +2925,9 @@ arm_hardware_pioe_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOE);
-	allwnrt113_pioX_setstate(GPIOE, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
+	//gpioX_poweron(GPIOE);
+	gpioX_setstate(GPIOE, opins, initialstate);
+	gpioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -3011,9 +3011,9 @@ arm_hardware_pioc_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_setstate(GPIOC, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+	//gpioX_poweron(GPIOC);
+	gpioX_setstate(GPIOC, opins, initialstate);
+	gpioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -3085,9 +3085,9 @@ arm_hardware_pioa_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_setstate(GPIOA, opins, initialstate);
-//	allwnrt113_pioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_setstate(GPIOA, opins, initialstate);
+//	gpioX_prog(GPIOA, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -3159,9 +3159,9 @@ arm_hardware_piob_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_setstate(GPIOB, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+	//gpioX_poweron(GPIOB);
+	gpioX_setstate(GPIOB, opins, initialstate);
+	gpioX_prog(GPIOB, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -3233,9 +3233,9 @@ arm_hardware_pioc_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_setstate(GPIOC, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+	//gpioX_poweron(GPIOC);
+	gpioX_setstate(GPIOC, opins, initialstate);
+	gpioX_prog(GPIOC, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -3307,9 +3307,9 @@ arm_hardware_piod_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_setstate(GPIOD, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+	//gpioX_poweron(GPIOD);
+	gpioX_setstate(GPIOD, opins, initialstate);
+	gpioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -3372,9 +3372,9 @@ arm_hardware_piod_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_setstate(GPIOD, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
+	//gpioX_poweron(GPIOD);
+	gpioX_setstate(GPIOD, opins, initialstate);
+	gpioX_prog(GPIOD, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -3437,9 +3437,9 @@ arm_hardware_pioe_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOE);
-	allwnrt113_pioX_setstate(GPIOE, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
+	//gpioX_poweron(GPIOE);
+	gpioX_setstate(GPIOE, opins, initialstate);
+	gpioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT20M, ALWNR_GPIO_PULL_OUTPUT20M);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -3502,9 +3502,9 @@ arm_hardware_pioe_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOE);
-	allwnrt113_pioX_setstate(GPIOE, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+	//gpioX_poweron(GPIOE);
+	gpioX_setstate(GPIOE, opins, initialstate);
+	gpioX_prog(GPIOE, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -3568,9 +3568,9 @@ arm_hardware_piof_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOF);
-	allwnrt113_pioX_setstate(GPIOF, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+	//gpioX_poweron(GPIOF);
+	gpioX_setstate(GPIOF, opins, initialstate);
+	gpioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
 #elif defined (GPIOF)
 	#error Undefined CPUSTYLE_XXX
@@ -3632,9 +3632,9 @@ arm_hardware_piof_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOF);
-	allwnrt113_pioX_setstate(GPIOF, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+	//gpioX_poweron(GPIOF);
+	gpioX_setstate(GPIOF, opins, initialstate);
+	gpioX_prog(GPIOF, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
 #elif defined (GPIOF)
 	#error Undefined CPUSTYLE_XXX
@@ -3701,9 +3701,9 @@ arm_hardware_piog_outputs(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_setstate(GPIOG, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
+	//gpioX_poweron(GPIOG);
+	gpioX_setstate(GPIOG, opins, initialstate);
+	gpioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT, ALWNR_GPIO_PULL_OUTPUT);
 
 #elif defined (GPIOG)
 	#error Undefined CPUSTYLE_XXX
@@ -3765,9 +3765,9 @@ arm_hardware_piog_outputs2m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_setstate(GPIOG, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
+	//gpioX_poweron(GPIOG);
+	gpioX_setstate(GPIOG, opins, initialstate);
+	gpioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT2M, ALWNR_GPIO_PULL_OUTPUT2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -3828,9 +3828,9 @@ arm_hardware_piog_outputs50m(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_setstate(GPIOG, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
+	//gpioX_poweron(GPIOG);
+	gpioX_setstate(GPIOG, opins, initialstate);
+	gpioX_prog(GPIOG, opins, GPIO_CFG_OUT, ALWNR_GPIO_DRV_OUTPUT50M, ALWNR_GPIO_PULL_OUTPUT50M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -4628,9 +4628,9 @@ arm_hardware_pioa_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_setstate(GPIOA, opins, initialstate);
-//	allwnrt113_pioX_prog(GPIOA, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_setstate(GPIOA, opins, initialstate);
+//	gpioX_prog(GPIOA, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -4701,9 +4701,9 @@ arm_hardware_piob_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_setstate(GPIOB, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOB, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	//gpioX_poweron(GPIOB);
+	gpioX_setstate(GPIOB, opins, initialstate);
+	gpioX_prog(GPIOB, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -4775,9 +4775,9 @@ arm_hardware_pioc_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_setstate(GPIOC, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOC, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	//gpioX_poweron(GPIOC);
+	gpioX_setstate(GPIOC, opins, initialstate);
+	gpioX_prog(GPIOC, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -4848,9 +4848,9 @@ arm_hardware_piod_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_setstate(GPIOD, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOD, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	//gpioX_poweron(GPIOD);
+	gpioX_setstate(GPIOD, opins, initialstate);
+	gpioX_prog(GPIOD, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -4912,9 +4912,9 @@ arm_hardware_pioe_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOE);
-	allwnrt113_pioX_setstate(GPIOE, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOE, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	//gpioX_poweron(GPIOE);
+	gpioX_setstate(GPIOE, opins, initialstate);
+	gpioX_prog(GPIOE, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -4976,9 +4976,9 @@ arm_hardware_piof_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOF);
-	allwnrt113_pioX_setstate(GPIOF, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOF, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	//gpioX_poweron(GPIOF);
+	gpioX_setstate(GPIOF, opins, initialstate);
+	gpioX_prog(GPIOF, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5039,9 +5039,9 @@ arm_hardware_piog_opendrain(unsigned long opins, unsigned long initialstate)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_setstate(GPIOG, opins, initialstate);
-	allwnrt113_pioX_prog(GPIOG, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
+	//gpioX_poweron(GPIOG);
+	gpioX_setstate(GPIOG, opins, initialstate);
+	gpioX_prog(GPIOG, opins, ALWNR_GPIO_CFG_OPENDRAIN, ALWNR_GPIO_DRV_OPENDRAIN, ALWNR_GPIO_PULL_OPENDRAIN);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -5325,8 +5325,8 @@ arm_hardware_pioa_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -5392,8 +5392,8 @@ arm_hardware_piob_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+	//gpioX_poweron(GPIOB);
+	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -5451,8 +5451,8 @@ arm_hardware_pioc_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+	//gpioX_poweron(GPIOC);
+	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -5511,8 +5511,8 @@ arm_hardware_piod_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+	//gpioX_poweron(GPIOD);
+	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -5571,8 +5571,8 @@ arm_hardware_piod_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+	//gpioX_poweron(GPIOD);
+	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -5639,8 +5639,8 @@ arm_hardware_pioa_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -5707,8 +5707,8 @@ arm_hardware_pioa_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -5775,8 +5775,8 @@ arm_hardware_piob_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+	//gpioX_poweron(GPIOB);
+	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -5843,8 +5843,8 @@ arm_hardware_piob_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+	//gpioX_poweron(GPIOB);
+	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -5911,8 +5911,8 @@ arm_hardware_pioc_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+	//gpioX_poweron(GPIOC);
+	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -5979,8 +5979,8 @@ arm_hardware_pioc_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+	//gpioX_poweron(GPIOC);
+	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -6039,8 +6039,8 @@ arm_hardware_piod_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+	//gpioX_poweron(GPIOD);
+	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -6099,8 +6099,8 @@ arm_hardware_pioe_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOE);
-	allwnrt113_pioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+	//gpioX_poweron(GPIOE);
+	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6157,8 +6157,8 @@ arm_hardware_pioe_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOE);
-	allwnrt113_pioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+	//gpioX_poweron(GPIOE);
+	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6215,8 +6215,8 @@ arm_hardware_pioe_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOF);
-	allwnrt113_pioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+	//gpioX_poweron(GPIOF);
+	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6278,8 +6278,8 @@ arm_hardware_piof_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOF);
-	allwnrt113_pioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+	//gpioX_poweron(GPIOF);
+	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6336,8 +6336,8 @@ arm_hardware_piof_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOF);
-	allwnrt113_pioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+	//gpioX_poweron(GPIOF);
+	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6394,8 +6394,8 @@ arm_hardware_piof_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOF);
-	allwnrt113_pioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+	//gpioX_poweron(GPIOF);
+	gpioX_prog(GPIOF, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6456,8 +6456,8 @@ arm_hardware_piog_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
+	//gpioX_poweron(GPIOG);
+	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF2M, ALWNR_GPIO_PULL_AF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6514,8 +6514,8 @@ arm_hardware_piog_altfn20(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
+	//gpioX_poweron(GPIOG);
+	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF20M, ALWNR_GPIO_PULL_AF20M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -6572,8 +6572,8 @@ arm_hardware_piog_altfn50(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
+	//gpioX_poweron(GPIOG);
+	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_AF50M, ALWNR_GPIO_PULL_AF50M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7470,8 +7470,8 @@ void arm_hardware_pioa_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	//allwnrt113_pioX_poweron(GPIOA);
-//	allwnrt113_pioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+//	//gpioX_poweron(GPIOA);
+//	gpioX_prog(GPIOA, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -7536,8 +7536,8 @@ void arm_hardware_piob_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOB);
-	allwnrt113_pioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	//gpioX_poweron(GPIOB);
+	gpioX_prog(GPIOB, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -7603,8 +7603,8 @@ void arm_hardware_pioc_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOC);
-	allwnrt113_pioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	//gpioX_poweron(GPIOC);
+	gpioX_prog(GPIOC, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -7670,8 +7670,8 @@ void arm_hardware_piod_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOD);
-	allwnrt113_pioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	//gpioX_poweron(GPIOD);
+	gpioX_prog(GPIOD, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -7729,8 +7729,8 @@ void arm_hardware_pioe_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOE);
-	allwnrt113_pioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	//gpioX_poweron(GPIOE);
+	gpioX_prog(GPIOE, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -7788,8 +7788,8 @@ void arm_hardware_piof_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	//gpioX_poweron(GPIOG);
+	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7843,8 +7843,8 @@ void arm_hardware_piog_periphopendrain_altfn2(unsigned long opins, unsigned af)
 
 #elif CPUSTYPE_ALLWNT113
 
-	//allwnrt113_pioX_poweron(GPIOG);
-	allwnrt113_pioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
+	//gpioX_poweron(GPIOG);
+	gpioX_prog(GPIOG, opins, af, ALWNR_GPIO_DRV_OPENDRAINAF2M, ALWNR_GPIO_PULL_OPENDRAINAF2M);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -7870,7 +7870,7 @@ arm_hardware_pioa_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	allwnrt113_pioX_updown(GPIOA, up, down);
+//	gpioX_updown(GPIOA, up, down);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -7895,7 +7895,7 @@ arm_hardware_piob_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updown(GPIOB, up, down);
+	gpioX_updown(GPIOB, up, down);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -7920,7 +7920,7 @@ arm_hardware_pioc_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updown(GPIOC, up, down);
+	gpioX_updown(GPIOC, up, down);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -7945,7 +7945,7 @@ arm_hardware_piod_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updown(GPIOD, up, down);
+	gpioX_updown(GPIOD, up, down);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -7970,7 +7970,7 @@ arm_hardware_pioe_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updown(GPIOE, up, down);
+	gpioX_updown(GPIOE, up, down);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -7995,7 +7995,7 @@ arm_hardware_piof_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updown(GPIOF, up, down);
+	gpioX_updown(GPIOF, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8021,7 +8021,7 @@ arm_hardware_piog_updown(unsigned long up, unsigned long down)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updown(GPIOG, up, down);
+	gpioX_updown(GPIOG, up, down);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8157,7 +8157,7 @@ arm_hardware_pioa_updownoff(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-//	allwnrt113_pioX_updownoff(GPIOA, ipins);
+//	gpioX_updownoff(GPIOA, ipins);
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -8182,7 +8182,7 @@ arm_hardware_piob_updownoff(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updownoff(GPIOB, ipins);
+	gpioX_updownoff(GPIOB, ipins);
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -8207,7 +8207,7 @@ arm_hardware_pioc_updownoff(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updownoff(GPIOC, ipins);
+	gpioX_updownoff(GPIOC, ipins);
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -8232,7 +8232,7 @@ arm_hardware_piod_updownoff(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updownoff(GPIOD, ipins);
+	gpioX_updownoff(GPIOD, ipins);
 
 #elif defined (GPIOD)
 	#error Undefined CPUSTYLE_XXX
@@ -8257,7 +8257,7 @@ arm_hardware_pioe_updownoff(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updownoff(GPIOE, ipins);
+	gpioX_updownoff(GPIOE, ipins);
 
 #elif defined (GPIOE)
 	#error Undefined CPUSTYLE_XXX
@@ -8282,7 +8282,7 @@ arm_hardware_piof_updownoff(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updownoff(GPIOF, ipins);
+	gpioX_updownoff(GPIOF, ipins);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8308,7 +8308,7 @@ arm_hardware_piog_updownoff(unsigned long ipins)
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_updownoff(GPIOG, ipins);
+	gpioX_updownoff(GPIOG, ipins);
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8472,7 +8472,7 @@ arm_hardware_pioa_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYPE_ALLWNT113
 
-//	allwnrt113_pioX_onchangeinterrupt(GPIOA, ipins, raise, fall, priority, tgcpu);	// PORT B
+//	gpioX_onchangeinterrupt(GPIOA, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #elif defined (GPIOA)
 	#error Undefined CPUSTYLE_XXX
@@ -8510,7 +8510,7 @@ arm_hardware_piob_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_onchangeinterrupt(GPIOB, ipins, raise, fall, priority, tgcpu);	// PORT B
+	gpioX_onchangeinterrupt(GPIOB, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #elif defined (GPIOB)
 	#error Undefined CPUSTYLE_XXX
@@ -8549,7 +8549,7 @@ arm_hardware_pioc_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_onchangeinterrupt(GPIOC, ipins, raise, fall, priority, tgcpu);	// PORT B
+	gpioX_onchangeinterrupt(GPIOC, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #elif defined (GPIOC)
 	#error Undefined CPUSTYLE_XXX
@@ -8586,7 +8586,7 @@ arm_hardware_piod_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_onchangeinterrupt(GPIOD, ipins, raise, fall, priority, tgcpu);	// PORT B
+	gpioX_onchangeinterrupt(GPIOD, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8624,7 +8624,7 @@ arm_hardware_pioe_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_onchangeinterrupt(GPIOE, ipins, raise, fall, priority, tgcpu);	// PORT B
+	gpioX_onchangeinterrupt(GPIOE, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8662,7 +8662,7 @@ arm_hardware_piof_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_onchangeinterrupt(GPIOF, ipins, raise, fall, priority, tgcpu);	// PORT B
+	gpioX_onchangeinterrupt(GPIOF, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #else
 	#error Undefined CPUSTYLE_XXX
@@ -8699,7 +8699,7 @@ arm_hardware_piog_onchangeinterrupt(unsigned long ipins, unsigned long raise, un
 
 #elif CPUSTYPE_ALLWNT113
 
-	allwnrt113_pioX_onchangeinterrupt(GPIOG, ipins, raise, fall, priority, tgcpu);	// PORT B
+	gpioX_onchangeinterrupt(GPIOG, ipins, raise, fall, priority, tgcpu);	// PORT B
 
 #else
 	#error Undefined CPUSTYLE_XXX
