@@ -96,6 +96,7 @@ static void tlv320aic23_stop(void)
 
 static void tlv320aic23_initialize_fullduplex(void)
 {
+	//PRINTF("tlv320aic23_initialize_fullduplex\n");
 #if CODEC_TYPE_TLV320AIC23B_MASTER
 	const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
 #else /* CODEC_TYPE_TLV320AIC23B_MASTER */
@@ -105,14 +106,14 @@ static void tlv320aic23_initialize_fullduplex(void)
 
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 
-	tlv320aic23_setreg(TLV320AIC23_PWR,			
+	tlv320aic23_setreg(TLV320AIC23_PWR,
 		TLV320AIC23_CLK_OFF |	// Выключаем выход тактовой частоты (вывод 02) - можно использовать для тестирования - на незапрограммированной микросхеме сигнал присутствует
 		TLV320AIC23_OSC_OFF |	// Выключаем кварцевый генератор
 		//TLV320AIC23_OUT_OFF |	// Выключаем усилитель наушников
 		//TLV320AIC23_ADC_OFF |	// Выключаем АЦП
 		//TLV320AIC23_LINE_OFF |	// Выключаем Line input
 		0
-		);	
+		);
 
 	//	It is recommended that between changing any content of Digital Audio Interface or Sampling Control
 	//	Register that the active bit is reset then set.
