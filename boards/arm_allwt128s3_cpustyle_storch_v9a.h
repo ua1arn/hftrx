@@ -259,6 +259,13 @@
 		arm_hardware_piog_altfn20(1uL << 14, GPIO_CFG_AF2); /* PG14 I2S1-DIN0 from codec, BT_WAKE_AP, pin P2-4 - wire to pin 4 */ \
 		arm_hardware_piog_altfn20(1uL << 15, GPIO_CFG_AF2); /* PG15 I2S1-DOUT0 co codec, BT_EN, pin P2-3 - wire to pin 10 */ \
 	} while (0)
+	#define I2S1HW_UNINITIALIZE(master) do { \
+		arm_hardware_piog_inputs(!! (master) * 1uL << 11); /* TEST PG11 I2S1-MCLK	pin P2-7  - wire to pin 8 hseda 24bit vga+audio board */ \
+		arm_hardware_piog_inputs(1uL << 12); /* PG12 I2S1-LRCK	WL_REG_ON, pin P2-6 - wire to pin 9 */ \
+		arm_hardware_piog_inputs(1uL << 13); /* PG13 I2S1-BCLK	AP_WAKE_BT, pin P2-5 - wire to pin 11 */ \
+		arm_hardware_piog_inputs(1uL << 14); /* PG14 I2S1-DIN0 from codec, BT_WAKE_AP, pin P2-4 - wire to pin 4 */ \
+		arm_hardware_piog_inputs(1uL << 15); /* PG15 I2S1-DOUT0 co codec, BT_EN, pin P2-3 - wire to pin 10 */ \
+	} while (0)
 	#define HARDWARE_I2S1HW_DIN 0	/* DIN0 used */
 	#define HARDWARE_I2S1HW_DOUT 0	/* DOUT0 used */
 	// Инициализируются I2S2 в дуплексном режиме.
