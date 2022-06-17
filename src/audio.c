@@ -2124,26 +2124,13 @@ static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t fCutLow,
 // Наложение оконной функции
 static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum)
 {
-	const int j = NtapCoeffs(iCoefNum);
-	arm_mult_f32(dCoeff, dWindow, dCoeff, j);
-
-//	int iCnt;
-//	for (iCnt = 0; iCnt < j; iCnt ++)
-//	{
-//		dCoeff [iCnt] *= dWindow [iCnt];
-//	}
+	ARM_MULT_FXX(dCoeff, dWindow, dCoeff, NtapCoeffs(iCoefNum));
 }
 
 // Наложение оконной функции
 static void fir_design_applaywindowL(double *dCoeff, const double *dWindow, int iCoefNum)
 {
-	const int j = NtapCoeffs(iCoefNum);
-	//arm_mult_f64(dCoeff, dWindow, dCoeff, j);
-	int iCnt;
-	for (iCnt = 0; iCnt < j; iCnt ++)
-	{
-		dCoeff [iCnt] *= dWindow [iCnt];
-	}
+	arm_mult_f64(dCoeff, dWindow, dCoeff, NtapCoeffs(iCoefNum));
 }
 
 // подготовка буфера с оконной функцией
@@ -2173,20 +2160,15 @@ static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
 {
 	if (dScale == 1)
 		return;
-	arm_scale_f32(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));
+	ARM_SCALE_FXX(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));
 }
 
 // Масштабирование для симметричного фильтра
 static void fir_design_scaleL(double * dCoeff, int iCoefNum, double dScale)
 {
-	const int j = NtapCoeffs(iCoefNum);
-	int iCnt;
 	if (dScale == 1)
 		return;
-	for (iCnt = 0; iCnt < j; iCnt ++)
-	{
-		dCoeff [iCnt] *= dScale;
-	}
+	arm_scale_f64(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));
 }
 
 #if 0

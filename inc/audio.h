@@ -375,6 +375,8 @@ extern "C" {
 
 		typedef double FLOAT_t;
 
+		#define ARM_SCALE_FXX arm_scale_f64
+		#define ARM_MULT_FXX arm_mult_f64
 		#define FLOORF	floor
 		#define LOG10F	local_log10 //log10
 		#define LOGF	log
@@ -405,6 +407,8 @@ extern "C" {
 
 		typedef float FLOAT_t;
 
+		#define ARM_SCALE_FXX arm_scale_f32
+		#define ARM_MULT_FXX arm_mult_f32
 		#define FLOORF	floorf
 		#define LOG10F	local_log10 //log10f
 		#define LOGF	logf
