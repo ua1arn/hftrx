@@ -3585,6 +3585,7 @@ static void I2S_fill_TXxCHMAP(
 
 static void hardware_i2s1_initialize_codec1(int master)
 {
+	I2S_PCM_TypeDef * const i2s = I2S1;
 	const unsigned NCH = 2;
 	const unsigned framebis = CODEC1_FRAMEBITS;
 	enum { ix = 1 };
@@ -3662,14 +3663,14 @@ static void hardware_i2s1_initialize_codec1(int master)
 	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 1, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
-	I2S1->I2S_PCM_FMT0 =
+	i2s->I2S_PCM_FMT0 =
 		0 * (1uL << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (1uL << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
 		((framebis / 2) - 1) * (1uL << 8) |		// LRCK_PERIOD - for I2S - each channel width
 		width2fmt(framebis / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
 		width2fmt(framebis / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
-	I2S1->I2S_PCM_FMT1 =
+	i2s->I2S_PCM_FMT1 =
 		0;
 
 	if (framebis < 64)
@@ -3683,7 +3684,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 	}
 
 	// I2S/PCM Channel Configuration Register
-	I2S1->I2S_PCM_CHCFG =
+	i2s->I2S_PCM_CHCFG =
 		(NCH - 1) * (1uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
 		(NCH - 1) * (1uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot
 		0;
@@ -3694,7 +3695,7 @@ static void hardware_i2s1_initialize_codec1(int master)
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
 	// BCLK = MCLK / BCLKDIV
 	const unsigned ratio = 1024 / framebis;
-	I2S1->I2S_PCM_CLKD =
+	i2s->I2S_PCM_CLKD =
 		1 * (1uL << 8) |		// MCLKO_EN
 		ratio2div(4) * (1uL << 0) |		/* MCLKDIV */
 		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
@@ -3708,15 +3709,15 @@ static void hardware_i2s1_initialize_codec1(int master)
 
 	ASSERT(HARDWARE_I2S1HW_DOUT < 4);
 	// I2S/PCM Control Register
-	I2S1->I2S_PCM_CTL = 0;
-	I2S1->I2S_PCM_CTL =
+	i2s->I2S_PCM_CTL = 0;
+	i2s->I2S_PCM_CTL =
 		(1u << HARDWARE_I2S1HW_DOUT) * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
 		(0x01uL << 4) |	// left mode, need offset=1 for I2S
 		0;
 
-	I2S1->I2S_PCM_RXCHSEL =
+	i2s->I2S_PCM_RXCHSEL =
 		txrx_offset * (1uL << 20) |	// RX_OFFSET (need for I2S mode
 		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
 		0;
@@ -3728,23 +3729,27 @@ static void hardware_i2s1_initialize_codec1(int master)
 		0xFFFF * (1uL << 0) |		// TX3 Channel (Slot) Enable
 		0;
 
-	I2S1->I2S_PCM_TX0CHSEL = txchsel;
-	I2S1->I2S_PCM_TX1CHSEL = txchsel;
-	I2S1->I2S_PCM_TX2CHSEL = txchsel;
-	I2S1->I2S_PCM_TX3CHSEL = txchsel;
+	i2s->I2S_PCM_TX0CHSEL = txchsel;
+	i2s->I2S_PCM_TX1CHSEL = txchsel;
+	i2s->I2S_PCM_TX2CHSEL = txchsel;
+	i2s->I2S_PCM_TX3CHSEL = txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_fill_RXCHMAP(I2S1, HARDWARE_I2S1HW_DIN);
-	I2S_fill_TXxCHMAP(I2S1, 0, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX0CHMAPx
-	I2S_fill_TXxCHMAP(I2S1, 1, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX1CHMAPx
-	I2S_fill_TXxCHMAP(I2S1, 2, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX2CHMAPx
-	I2S_fill_TXxCHMAP(I2S1, 3, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX3CHMAPx
+	I2S_fill_RXCHMAP(i2s, HARDWARE_I2S1HW_DIN);
+	I2S_fill_TXxCHMAP(i2s, 0, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 1, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 2, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 3, HARDWARE_I2S1HW_DOUT);	// I2S_PCM_TX3CHMAPx
+
+	i2s->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
+	i2s->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 
 	I2S1HW_INITIALIZE(master);
 }
 
 static void hardware_i2s2_initialize_fpga(int master)
 {
+	I2S_PCM_TypeDef * const i2s = I2S2;
 	const unsigned NCH = 8;
 	const unsigned framebis = WITHFPGAIF_FRAMEBITS;
 	enum { ix = 2 };
@@ -3807,17 +3812,17 @@ static void hardware_i2s2_initialize_fpga(int master)
 	//	BCLK_POLARITY = 0, EDGE_TRANSFER = 1, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 0, DIN sample data at negative edge;
 	//	BCLK_POLARITY = 1, EDGE_TRANSFER = 1, DIN sample data at positive edge.
-	I2S2->I2S_PCM_FMT0 =
+	i2s->I2S_PCM_FMT0 =
 		0 * (1uL << 7) | 						// BCLK_POLARITY 1: Invert mode, DOUT drives data at positive edge
 		0 * (1uL << 3) | 						// EDGE_TRANSFER 1: Invert mode, DOUT drives data at positive edge
 		((framebis / 2) - 1) * (1uL << 8) |		// LRCK_PERIOD - for I2S - each channel width
 		width2fmt(framebis / 2) * (1uL << 4) |	// Sample Resolution . 0x03 - 16 bit, 0x07 - 32 bit
 		width2fmt(framebis / 2) * (1uL << 0) |	// Slot Width Select . 0x03 - 16 bit, 0x07 - 32 bit
 		0;
-	I2S2->I2S_PCM_FMT1 =
+	i2s->I2S_PCM_FMT1 =
 		0;
 	// I2S/PCM Channel Configuration Register
-	I2S2->I2S_PCM_CHCFG =
+	i2s->I2S_PCM_CHCFG =
 		(NCH - 1) * (1uL << 4) |	// RX_SLOT_NUM 0111: 0001: 2 channel or slot
 		(NCH - 1) * (1uL << 0) |	// TX_SLOT_NUM 0111: 0001: 2 channel or slot
 		0;
@@ -3828,7 +3833,7 @@ static void hardware_i2s2_initialize_fpga(int master)
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
 	// BCLK = MCLK / BCLKDIV
 	const unsigned ratio = 1024 / framebis;
-	I2S2->I2S_PCM_CLKD =
+	i2s->I2S_PCM_CLKD =
 		1 * (1uL << 8) |		// MCLKO_EN
 		ratio2div(4) * (1uL << 0) |		/* MCLKDIV */
 		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
@@ -3842,15 +3847,15 @@ static void hardware_i2s2_initialize_fpga(int master)
 
 	ASSERT(HARDWARE_I2S1HW_DOUT < 4);
 	// I2S/PCM Control Register
-	I2S2->I2S_PCM_CTL = 0;
-	I2S2->I2S_PCM_CTL =
+	i2s->I2S_PCM_CTL = 0;
+	i2s->I2S_PCM_CTL =
 		(1u << HARDWARE_I2S2HW_DOUT) * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
 		(0x01uL << 4) |	// left mode, need offset=1 for I2S
 		0;
 
-	I2S2->I2S_PCM_RXCHSEL =
+	i2s->I2S_PCM_RXCHSEL =
 		txrx_offset * (1uL << 20) |	// RX_OFFSET (need for I2S mode
 		0x01 * (1uL << 16) |	// RX Channel (Slot) Number Select for Input
 		0;
@@ -3861,17 +3866,20 @@ static void hardware_i2s2_initialize_fpga(int master)
 		0xFFFF * (1uL << 0) |		// TX3 Channel (Slot) Enable
 		0;
 
-	I2S2->I2S_PCM_TX0CHSEL = txchsel;
-	I2S2->I2S_PCM_TX1CHSEL = txchsel;
-	I2S2->I2S_PCM_TX2CHSEL = txchsel;
-	I2S2->I2S_PCM_TX3CHSEL = txchsel;
+	i2s->I2S_PCM_TX0CHSEL = txchsel;
+	i2s->I2S_PCM_TX1CHSEL = txchsel;
+	i2s->I2S_PCM_TX2CHSEL = txchsel;
+	i2s->I2S_PCM_TX3CHSEL = txchsel;
 
 	/* Простое отображение каналов с последовательно увеличивающимся номером */
-	I2S_fill_RXCHMAP(I2S2, HARDWARE_I2S2HW_DIN);
-	I2S_fill_TXxCHMAP(I2S2, 0, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX0CHMAPx
-	I2S_fill_TXxCHMAP(I2S2, 1, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX1CHMAPx
-	I2S_fill_TXxCHMAP(I2S2, 2, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX2CHMAPx
-	I2S_fill_TXxCHMAP(I2S2, 3, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX3CHMAPx
+	I2S_fill_RXCHMAP(i2s, HARDWARE_I2S2HW_DIN);
+	I2S_fill_TXxCHMAP(i2s, 0, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX0CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 1, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX1CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 2, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX2CHMAPx
+	I2S_fill_TXxCHMAP(i2s, 3, HARDWARE_I2S2HW_DOUT);	// I2S_PCM_TX3CHMAPx
+
+	i2s->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
+	i2s->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 
 	I2S2HW_INITIALIZE(master);
 }
@@ -3959,7 +3967,7 @@ static void DMA_I2S1_RX_Handler_codec1(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
 	descraddr [DMAC_DESC_DST] = dma_invalidate16rx(allocate_dmabuffer16());
-	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 //	printhex(addr, (void *) addr, DMABUFFSIZE16 * sizeof (aubufv_t));
 //	for (;;)
@@ -3976,7 +3984,7 @@ static void DMA_I2S1_TX_Handler_codec1(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush16tx(getfilled_dmabuffer16phones());
-	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16(addr);
@@ -3989,7 +3997,7 @@ static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
 	descraddr [DMAC_DESC_DST] = dma_invalidate32rx(allocate_dmabuffer32rx());
-	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer32rx(addr);
@@ -4005,7 +4013,7 @@ static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 	volatile uint32_t * const descraddr = (volatile uint32_t *) descbase;
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush32tx(getfilled_dmabuffer32tx_main());
-	arm_hardware_flush_invalidate(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
@@ -4105,7 +4113,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
+	arm_hardware_flush(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4119,8 +4127,6 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
-
-	I2S1->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 }
 
 static void DMAC_I2S1_TX_initialize_codec1(void)
@@ -4162,7 +4168,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
+	arm_hardware_flush(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4176,8 +4182,6 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
-
-	I2S1->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
 }
 
 static void DMAC_I2S2_RX_initialize_fpga(void)
@@ -4219,7 +4223,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
+	arm_hardware_flush(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4234,7 +4238,6 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
 
-	I2S2->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
 }
 
 static void DMAC_I2S2_TX_initialize_fpga(void)
@@ -4276,7 +4279,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	descr0 [1] [5] = (uintptr_t) descr0 [0];	// Link to previous
 
 	uintptr_t descraddr = (uintptr_t) descr0;
-	arm_hardware_flush_invalidate(descraddr, sizeof descr0);
+	arm_hardware_flush(descraddr, sizeof descr0);
 
 	DMAC_clock_initialize();
 
@@ -4290,9 +4293,6 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
-
-	I2S2->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
-
 }
 
 static const codechw_t audiocodechw_i2s1_duplex_master =
