@@ -5410,22 +5410,24 @@ static void
 inject_testsignals(IFADCvalue_t * const dbuff)
 {
 #ifdef DMABUF32RX0I
+	static FLOAT_t simlevelRX = (FLOAT_t) 0.0000001;	// -140 dBFS
+	static FLOAT_t simlevelspec = (FLOAT_t) 1;	// 0 dBFS
 	// приёмник
-	const FLOAT32P_t simval = scalepair(get_float_monofreq(), (FLOAT_t) 1);	// frequency
-	dbuff [DMABUF32RX0I] = simval.IV;
-	dbuff [DMABUF32RX0Q] = simval.QV;
+	const FLOAT32P_t simval = scalepair(get_float_monofreq(), simlevelRX);	// frequency
+	dbuff [DMABUF32RX0I] = adpt_output(& ifcodecin, simval.IV);
+	dbuff [DMABUF32RX0Q] = adpt_output(& ifcodecin, simval.QV);
 
 #if WITHRTS96
 	// панорама
 	// previous - oldest
-	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), (FLOAT_t) 1);	// frequency2
-	dbuff [DMABUF32RTS0I] = simval0.IV;
-	dbuff [DMABUF32RTS0Q] = simval0.QV;
+	const FLOAT32P_t simval0 = scalepair(get_float_monofreq2(), simlevelspec);	// frequency2
+	dbuff [DMABUF32RTS0I] = adpt_output(& ifcodecin, simval0.IV);
+	dbuff [DMABUF32RTS0Q] = adpt_output(& ifcodecin, simval0.QV);
 
 	// current	- nevest
-	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), (FLOAT_t) 1);	// frequency2
-	dbuff [DMABUF32RTS1I] = simval1.IV;
-	dbuff [DMABUF32RTS1Q] = simval1.QV;
+	const FLOAT32P_t simval1 = scalepair(get_float_monofreq2(), simlevelspec);	// frequency2
+	dbuff [DMABUF32RTS1I] = adpt_output(& ifcodecin, simval1.IV);
+	dbuff [DMABUF32RTS1Q] = adpt_output(& ifcodecin, simval1.QV);
 #endif /* WITHRTS96 */
 
 #endif
