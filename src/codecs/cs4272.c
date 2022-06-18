@@ -228,6 +228,12 @@ static void cs4272_initialize_fullduplex(void)
 	cs4272_initialize_fullduplex_addr(0);
 }
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t cs4272_clocksneed(void)
+{
+	return 1;
+}
+
 const codec2if_t * board_getfpgacodecif(void)
 {
 	static const char codecname [] = "CS4272";
@@ -235,6 +241,7 @@ const codec2if_t * board_getfpgacodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec2if_t ifc =
 	{
+		cs4272_clocksneed
 		cs4272_initialize_fullduplex,
 		codecname
 	};

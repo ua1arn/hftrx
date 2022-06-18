@@ -419,6 +419,12 @@ static void nau8822_stop(void)
 #endif /* CODEC_TYPE_NAU8822_MASTER */
 }
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t nau8822_clocksneed(void)
+{
+	return 0;
+}
+
 const codec1if_t *
 board_getaudiocodecif(void)
 {
@@ -428,6 +434,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		nau8822_clocksneed,
 		nau8822_stop,
 		nau8822_initialize_fullduplex,	/* master или slave в зависимости от определения CODEC_TYPE_NAU8822_MASTER */
 		nau8822_setvolume,		/* Установка громкости на наушники */

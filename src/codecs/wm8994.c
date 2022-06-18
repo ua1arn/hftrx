@@ -632,6 +632,11 @@ static void wm8994_initialize_slave_fullduplex(void)
 }
 
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t wm8994_clocksneed(void)
+{
+	return 0;
+}
 
 const codec1if_t *
 board_getaudiocodecif(void)
@@ -642,6 +647,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		wm8994_clocksneed,
 		wm8994_stop,
 		wm8994_initialize_slave_fullduplex,
 		wm8994_setvolume,		/* Установка громкости на наушники */

@@ -6689,6 +6689,12 @@ static void fpga_initialize_fullduplex(void)
 }
 
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t fpga_clocksneed(void)
+{
+	return 0;
+}
+
 
 const codec2if_t * board_getfpgacodecif(void)
 {
@@ -6697,6 +6703,7 @@ const codec2if_t * board_getfpgacodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec2if_t ifc =
 	{
+		fpga_clocksneed,
 		fpga_initialize_fullduplex,
 		codecname
 	};

@@ -250,6 +250,11 @@ static void tlv320aic23_setprocparams(
 
 }
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t tlv320aic23_clocksneed(void)
+{
+	return 0;
+}
 
 const codec1if_t *
 board_getaudiocodecif(void)
@@ -260,6 +265,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		tlv320aic23_clocksneed,
 		tlv320aic23_stop,
 		tlv320aic23_initialize_fullduplex,	/* master или slave в зависимости от определения CODEC_TYPE_TLV320AIC23B_MASTER */
 		tlv320aic23_setvolume,	/* Установка громкости на наушники */

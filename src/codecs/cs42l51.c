@@ -100,6 +100,12 @@ static void cs42l51_stop(void)
 #endif /* CODEC_TYPE_CS42L51_MASTER */
 }
 
+/* требуется ли подача тактирования для инициадизации кодека */
+static uint_fast8_t cs42l51_clocksneed(void)
+{
+	return 0;
+}
+
 const codec1if_t *
 board_getaudiocodecif(void)
 {
@@ -109,6 +115,7 @@ board_getaudiocodecif(void)
 	/* Интерфейс цправления кодеком */
 	static const codec1if_t ifc =
 	{
+		cs42l51_clocksneed.
 		cs42l51_stop,
 		cs42l51_initialize_fullduplex,
 		cs42l51_setvolume,		/* Установка громкости на наушники */

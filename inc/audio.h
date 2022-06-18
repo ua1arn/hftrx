@@ -942,6 +942,7 @@ uint_fast8_t modem_get_ptt(void);
 /* Интерфейс к AF кодеку */
 typedef struct codec1if_tag
 {
+	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
 	void (* stop) (void);
 	void (* initialize) (void);
 	void (* setvolume) (uint_fast16_t gain, uint_fast8_t mute, uint_fast8_t mutespk);	/* Установка громкости на наушники */
@@ -955,6 +956,7 @@ const codec1if_t * board_getaudiocodecif(void);		// получить интер�
 /* Интерфейс к IF кодеку */
 typedef struct codec2if_tag
 {
+	uint_fast8_t (* clocksneed)(void);	/* требуется ли подача тактирования для инициадизации кодека */
 	void (* initialize)(void);
 	const char * label;
 } codec2if_t;
