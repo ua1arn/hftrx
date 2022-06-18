@@ -181,14 +181,15 @@ static void tlv320aic23_initialize_fullduplex(void)
 		TLV320AIC23_INSEL_MIC |			// Оцифровка с микрофона а не с line in
 		0
 		);
-
-	tlv320aic23_setreg(TLV320AIC23_DIGT, 
-		0 * TLV320AIC23_ADCHP_ONFF |			/* ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
-		0
-		);
 #endif /* WITHDEBUG */
 
-	tlv320aic23_setreg(TLV320AIC23_ACTIVE, 
+	tlv320aic23_setreg(TLV320AIC23_DIGT,
+		0 * TLV320AIC23_ADCHP_ONFF |			/* ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
+		0 * TLV320AIC23_DACM_MUTE | 			/* 0 - выключаем DAC MUTE */
+		0
+		);
+
+	tlv320aic23_setreg(TLV320AIC23_ACTIVE,
 		TLV320AIC23_ACT_ON |		// Digital Interface Activation
 		0
 		);
@@ -242,10 +243,6 @@ static void tlv320aic23_lineinput(uint_fast8_t v, uint_fast8_t mikeboost20db, ui
 			0
 			);
 	}
-	tlv320aic23_setreg(TLV320AIC23_DIGT, 
-		0 * TLV320AIC23_ADCHP_ONFF |			/* ФВЧ перед АЦП - наличие бита означает ВЫКЛЮЧИТЬ */
-		0
-		);
 }
 
 
