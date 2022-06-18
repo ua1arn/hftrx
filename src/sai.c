@@ -3441,19 +3441,7 @@ enum
 };
 
 #define DMAC_REG0_MASK(ch) ((ch) >= 8 ? 0uL : (1uL << ((ch) * 4)))
-#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0uL : (1uL << ((ch) * 4)))
-
-#define DMAC_REG0_I2S1_TX_Msk (DMAC_REG0_MASK(DMAC_I2S1_TX_Ch))
-#define DMAC_REG1_I2S1_TX_Msk (DMAC_REG1_MASK(DMAC_I2S1_TX_Ch))
-
-#define DMAC_REG0_I2S1_RX_Msk (DMAC_REG0_MASK(DMAC_I2S1_RX_Ch))
-#define DMAC_REG1_I2S1_RX_Msk (DMAC_REG1_MASK(DMAC_I2S1_RX_Ch))
-
-#define DMAC_REG0_I2S2_TX_Msk (DMAC_REG0_MASK(DMAC_I2S2_TX_Ch))
-#define DMAC_REG1_I2S2_TX_Msk (DMAC_REG1_MASK(DMAC_I2S2_TX_Ch))
-
-#define DMAC_REG0_I2S2_RX_Msk (DMAC_REG0_MASK(DMAC_I2S2_RX_Ch))
-#define DMAC_REG1_I2S2_RX_Msk (DMAC_REG1_MASK(DMAC_I2S2_RX_Ch))
+#define DMAC_REG1_MASK(ch) ((ch) < 8 ? 0uL : (1uL << (((ch) - 8) * 4)))
 
 
 static unsigned ratio2div(unsigned ratio)
@@ -3761,37 +3749,39 @@ static void hardware_i2s2_slave_duplex_initialize_fpga(void)
 
 static void hardware_i2s1_enable_codec1(uint_fast8_t state)
 {
+	I2S_PCM_TypeDef * const i2s = I2S1;
 	if (state)
 	{
-		I2S1->I2S_PCM_CTL |=
+		i2s->I2S_PCM_CTL |=
 			(0x01uL << 2) |	// TXEN
 			(0x01uL << 1) |	// RXEN
 			0;
-		I2S1->I2S_PCM_CTL |= (0x01uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL |= (0x01uL << 0); // GEN Globe Enable
 	}
 	else
 	{
-		I2S1->I2S_PCM_CTL &= ~ (0x01uL << 0); // GEN Globe Enable
-		I2S1->I2S_PCM_CTL &= ~ (0x01uL << 2); // TXEN
-		I2S1->I2S_PCM_CTL &= ~ (0x01uL << 1); // RXEN
+		i2s->I2S_PCM_CTL &= ~ (0x01uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL &= ~ (0x01uL << 2); // TXEN
+		i2s->I2S_PCM_CTL &= ~ (0x01uL << 1); // RXEN
 	}
 }
 
 static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 {
+	I2S_PCM_TypeDef * const i2s = I2S2;
 	if (state)
 	{
-		I2S2->I2S_PCM_CTL |=
+		i2s->I2S_PCM_CTL |=
 			(0x01uL << 2) |	// TXEN
 			(0x01uL << 1) |	// RXEN
 			0;
-		I2S2->I2S_PCM_CTL |= (0x01uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL |= (0x01uL << 0); // GEN Globe Enable
 	}
 	else
 	{
-		I2S2->I2S_PCM_CTL &= ~ (0x01uL << 0); // GEN Globe Enable
-		I2S2->I2S_PCM_CTL &= ~ (0x01uL << 2); // TXEN
-		I2S2->I2S_PCM_CTL &= ~ (0x01uL << 1); // RXEN
+		i2s->I2S_PCM_CTL &= ~ (0x01uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL &= ~ (0x01uL << 2); // TXEN
+		i2s->I2S_PCM_CTL &= ~ (0x01uL << 1); // RXEN
 	}
 }
 
@@ -3879,8 +3869,8 @@ static void (* dmac_handlers [16])(unsigned dmach);
 /* Обработчик прерывания от DMAC */
 static void DMAC_NS_IRQHandler(void)
 {
-	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0;
-	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1;
+	const portholder_t reg0 = DMAC->DMAC_IRQ_PEND_REG0 & DMAC->DMAC_IRQ_EN_REG0;
+	const portholder_t reg1 = DMAC->DMAC_IRQ_PEND_REG1 & DMAC->DMAC_IRQ_EN_REG1;
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
 	const unsigned flag = 0x07;
 
@@ -3888,7 +3878,7 @@ static void DMAC_NS_IRQHandler(void)
 
 	for (dmach = 0; dmach < 8; ++ dmach)
 	{
-		const portholder_t maskreg0 = (portholder_t) 1 << (dmach % 8 * 4);
+		const portholder_t maskreg0 = DMAC_REG0_MASK(dmach) * flag;
 		if ((reg0 & maskreg0) != 0)
 		{
 			dmac_handlers [dmach](dmach);
@@ -3896,7 +3886,7 @@ static void DMAC_NS_IRQHandler(void)
 	}
 	for (dmach = 8; dmach < 16; ++ dmach)
 	{
-		const portholder_t maskreg1 = (portholder_t) 1 << (dmach % 8 * 4);
+		const portholder_t maskreg1 = DMAC_REG1_MASK(dmach) * flag;
 		if ((reg1 & maskreg1) != 0)
 		{
 			dmac_handlers [dmach](dmach);
@@ -3907,16 +3897,18 @@ static void DMAC_NS_IRQHandler(void)
 	DMAC->DMAC_IRQ_PEND_REG1 = reg1;	// Write 1 to clear the pending status.
 }
 
+
+// 0x04: Queue, 0x02: Pkq, 0x01: half
+#define DMAC_I2S_IRQ_bit (0x01)
+
 static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler2)(unsigned dmach))
 {
 	ASSERT(dmach < ARRAY_SIZE(dmac_handlers));
 	dmac_handlers [dmach] = handler2;
 	arm_hardware_set_handler_realtime(DMAC_NS_IRQn, DMAC_NS_IRQHandler);
 
-	const unsigned mask0 = power4((1uL << dmach) >> 0);	// CH7..CH0
-	const unsigned mask1 = power4((1uL << dmach) >> 8);	// CH15..CH8
-	DMAC->DMAC_IRQ_EN_REG0 |= mask0 * flag;
-	DMAC->DMAC_IRQ_EN_REG1 |= mask1 * flag;
+	DMAC->DMAC_IRQ_EN_REG0 = (DMAC->DMAC_IRQ_EN_REG0 & ~ (DMAC_REG0_MASK(dmach) * 0x07)) | DMAC_REG0_MASK(dmach) * flag;
+	DMAC->DMAC_IRQ_EN_REG1 = (DMAC->DMAC_IRQ_EN_REG1 & ~ (DMAC_REG1_MASK(dmach) * 0x07)) | DMAC_REG1_MASK(dmach) * flag;
 }
 
 static void DMAC_clock_initialize(void)
@@ -3977,7 +3969,7 @@ static void DMAC_I2S1_RX_initialize_codec1(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, 0x02, DMA_I2S1_RX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_RX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4032,7 +4024,7 @@ static void DMAC_I2S1_TX_initialize_codec1(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, 0x02, DMA_I2S1_TX_Handler_codec1);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S1_TX_Handler_codec1);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4087,7 +4079,7 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, 0x02, DMA_I2S2_RX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S2_RX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
@@ -4143,7 +4135,7 @@ static void DMAC_I2S2_TX_initialize_fpga(void)
 	ASSERT(DMAC->CH [dmach].DMAC_DESC_ADDR_REGN == descraddr);
 
 	// 0x04: Queue, 0x02: Pkq, 0x01: half
-	DMAC_SetHandler(dmach, 0x02, DMA_I2S2_TX_Handler_fpga);
+	DMAC_SetHandler(dmach, DMAC_I2S_IRQ_bit, DMA_I2S2_TX_Handler_fpga);
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
