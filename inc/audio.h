@@ -375,8 +375,7 @@ extern "C" {
 
 		typedef double FLOAT_t;
 
-		#define ARM_SCALE_FXX arm_scale_f64
-		#define ARM_MULT_FXX arm_mult_f64
+		#define ARM_MORPH(name) name ## _f64
 		#define FLOORF	floor
 		#define LOG10F	local_log10 //log10
 		#define LOGF	log
@@ -407,8 +406,7 @@ extern "C" {
 
 		typedef float FLOAT_t;
 
-		#define ARM_SCALE_FXX arm_scale_f32
-		#define ARM_MULT_FXX arm_mult_f32
+		#define ARM_MORPH(name) name ## _f32
 		#define FLOORF	floorf
 		#define LOG10F	local_log10 //log10f
 		#define LOGF	logf
@@ -823,13 +821,7 @@ void savesampleout192stereo(void * ctx, int_fast32_t ch0, int_fast32_t ch1);
 	#include "src/speex/arch.h"
 	#include "src/speex/speex_preprocess.h"
 
-	#if WITHNOSPEEX
-		typedef float32_t speexel_t;
-
-	#else /* WITHNOSPEEX */
-		typedef float32_t speexel_t;
-
-	#endif /* WITHNOSPEEX */
+	typedef FLOAT_t speexel_t;
 	uint_fast8_t takespeexready_user(speexel_t * * dest);
 	void releasespeexbuffer_user(speexel_t * t);
 #endif /* WITHINTEGRATEDDSP */

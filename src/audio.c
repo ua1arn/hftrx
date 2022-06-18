@@ -1168,10 +1168,8 @@ static FLOAT_t getmaxresponce(void)
 
 static void imp_response(const FLOAT_t *dCoeff, int iCoefNum) 
 {
-#if DSP_FLOAT_BITSMANTISSA == 54
-
-	arm_cfft_instance_f64 fftinstance;
-	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f64(& fftinstance, FFTSizeFilters));
+	ARM_MORPH(arm_cfft_instance) fftinstance;
+	VERIFY(ARM_MATH_SUCCESS == ARM_MORPH(arm_cfft_init)(& fftinstance, FFTSizeFilters));
 	const int iHalfLen = (iCoefNum - 1) / 2;
 	int i;
 
@@ -1196,56 +1194,17 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 //		Sig [i].real = 0;
 //		Sig [i].imag = 0;
 //	}
-	arm_fill_f64(0, (float64_t *) & Sig [iCoefNum], (FFTSizeFilters - iCoefNum) * 2);
+	ARM_MORPH(arm_fill)(0, (FLOAT_t *) & Sig [iCoefNum], (FFTSizeFilters - iCoefNum) * 2);
 	//---------------------------
 	// Do FFT
 	//---------------------------
 
 
-  /* Process the data through the CFFT/CIFFT module */
-	arm_cfft_f64(& fftinstance, (FLOAT_t *) Sig, 0, 1);
+	/* Process the data through the CFFT/CIFFT module */
+	ARM_MORPH(arm_cfft)(& fftinstance, (FLOAT_t *) Sig, 0, 1);
 
-	//arm_cmplx_mag_squared_f64(sg, MagArr, MagLen);
+	//ARM_MORPH(arm_cmplx_mag_squared)(sg, MagArr, MagLen);
 
-#else /* DSP_FLOAT_BITSMANTISSA */
-
-	arm_cfft_instance_f32 fftinstance;
-	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, FFTSizeFilters));
-	const int iHalfLen = (iCoefNum - 1) / 2;
-	int i;
-
-	//---------------------------
-	// copy coefficients to Sig
-	//---------------------------
-	Sig [iHalfLen].real = dCoeff [iHalfLen];
-	Sig [iHalfLen].imag = 0;
-	for (i = 1; i <= iHalfLen; ++ i)
-	{
-		const FLOAT_t k = dCoeff [iHalfLen - i];
-		Sig [iHalfLen - i].real = k;
-		Sig [iHalfLen + i].real = k;
-		Sig [iHalfLen - i].imag = 0;
-		Sig [iHalfLen + i].imag = 0;
-	}
-
-	//---------------------------
-	// append zeros
-	//---------------------------
-//	for (i = iCoefNum; i < FFTSizeFilters; ++ i) {
-//		Sig [i].real = 0;
-//		Sig [i].imag = 0;
-//	}
-	arm_fill_f32(0, (float32_t *) & Sig [iCoefNum], (FFTSizeFilters - iCoefNum) * 2);
-	//---------------------------
-	// Do FFT
-	//---------------------------
-
-  /* Process the data through the CFFT/CIFFT module */
-	arm_cfft_f32(& fftinstance, (FLOAT_t *) Sig, 0, 1);
-
-	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
-
-#endif /* DSP_FLOAT_BITSMANTISSA */
 }
 
 static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
@@ -2163,7 +2122,7 @@ static void fir_design_bandpass(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t fCutLow,
 // Наложение оконной функции
 static void fir_design_applaywindow(FLOAT_t *dCoeff, const FLOAT_t *dWindow, int iCoefNum)
 {
-	ARM_MULT_FXX(dCoeff, dWindow, dCoeff, NtapCoeffs(iCoefNum));
+	ARM_MORPH(arm_mult)(dCoeff, dWindow, dCoeff, NtapCoeffs(iCoefNum));	// arm_mult_f32/arm_mult_f64
 }
 
 // Наложение оконной функции
@@ -2199,7 +2158,7 @@ static void fir_design_scale(FLOAT_t * dCoeff, int iCoefNum, FLOAT_t dScale)
 {
 	if (dScale == 1)
 		return;
-	ARM_SCALE_FXX(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));
+	ARM_MORPH(arm_scale)(dCoeff, dScale, dCoeff, NtapCoeffs(iCoefNum));	// arm_scale_f32/arm_scale_f64
 }
 
 // Масштабирование для симметричного фильтра

@@ -286,12 +286,12 @@ static uint_fast8_t getactualmainsubrx(void);
 
 #if WITHIF4DSP
 struct rxaproc_tag;
-static float32_t * afpnoproc(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afpcw(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afpcwtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afpssb(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afpssbtx(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
-static float32_t * afprtty(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);
+static FLOAT_t * afpnoproc(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afpcw(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afpcwtx(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afpssb(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afpssbtx(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
+static FLOAT_t * afprtty(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);
 #endif /* WITHIF4DSP */
 
 #if WITHCAT
@@ -1620,7 +1620,7 @@ struct modetempl
 	uint_fast8_t txaudio;			// источник звукового сигнала для данного режима
 	uint_fast8_t txaprofgp;		// группа профилей обработки звука
 	uint_fast8_t agcseti;			// параметры слухового приема
-	float32_t * (* afproc [2])(uint_fast8_t pathi, struct rxaproc_tag *, float32_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
+	FLOAT_t * (* afproc [2])(uint_fast8_t pathi, struct rxaproc_tag *, FLOAT_t * p);	// функция обработки звука в user mode в режиме приёма и передачи
 #else /* WITHIF4DSP */
 	uint_fast8_t detector [2];		/* код детектора RX и TX */
 #endif /* WITHIF4DSP */
@@ -9495,7 +9495,7 @@ typedef struct
 static void hamradio_autonotch_init(LMSData_t * const lmsd)
 {
 	lmsd->phonefence = 1;
-	const float32_t mu = log10f(((5 + 1.0f) / 1500.0f) + 1.0f);
+	const FLOAT_t mu = LOG10F(((5 + 1.0f) / 1500.0f) + 1.0f);
 	//const float32_t mu = 0.0001f;		// UA3REO value
 	arm_lms_norm_init_f32(& lmsd->lms2Norm_instance, AUTONOTCH_NUMTAPS, lmsd->norm, lmsd->lms2StateF32, mu, FIRBUFSIZE);
 	arm_fill_f32(0, lmsd->ref, AUTONOTCH_BUFFER_SIZE);
@@ -9508,7 +9508,7 @@ static void hamradio_autonotch_init(LMSData_t * const lmsd)
 
 // pInput - входной буфер FIRBUFSIZE сэмплов
 // pOutput - обработаный буфер FIRBUFSIZE сэмплов
-static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInput, float32_t * pOutput)
+static void hamradio_autonotch_process(LMSData_t * const lmsd, FLOAT_t * pInput, FLOAT_t * pOutput)
 {
     static float32_t errsig2 [FIRBUFSIZE];	/* unused output */
 //	float32_t diag;
@@ -9563,10 +9563,10 @@ static void hamradio_autonotch_process(LMSData_t * const lmsd, float32_t * pInpu
 typedef struct rxaproc_tag
 {
 	// FIR audio filter
-	float32_t firEQcoeff [Ntap_rx_AUDIO];
-	arm_fir_instance_f32 fir_instance;
-	float32_t fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
-	float32_t wire1 [FIRBUFSIZE];
+	FLOAT_t firEQcoeff [Ntap_rx_AUDIO];
+	ARM_MORPH(arm_fir_instance) fir_instance;
+	FLOAT_t fir_state [FIRBUFSIZE + Ntap_rx_AUDIO - 1];
+	FLOAT_t wire1 [FIRBUFSIZE];
 
 #if WITHNOSPEEX
 	// NLMS NR
@@ -9718,7 +9718,7 @@ static void InitNoiseReduction(void)
 	{
 		rxaproc_t * const nrp = & rxaprocs [pathi];
 
-		arm_fir_init_f32(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->firEQcoeff, nrp->fir_state, FIRBUFSIZE);
+		ARM_MORPH(arm_fir_init)(& nrp->fir_instance, Ntap_rx_AUDIO, nrp->firEQcoeff, nrp->fir_state, FIRBUFSIZE);
 
 #if WITHNOSPEEX
 
@@ -9765,7 +9765,7 @@ static void processNoiseReduction(rxaproc_t * nrp, const float* bufferIn, float*
 
 // user-mode processing
 // На выходе входной сигнал без изменений
-static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static FLOAT_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
 //	static const float32_t ki = 32768;
@@ -9784,11 +9784,11 @@ static float32_t * afpnoproc(uint_fast8_t pathi, rxaproc_t * const nrp, float32_
 #endif /* WITHNOSPEEX */
 }
 
-static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static FLOAT_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 	// FIXME: speex внутри использует целочисленные вычисления
-	static const float32_t ki = 32768;
-	static const float32_t ko = 1. / 32768;
+	static const FLOAT_t ki = 32768;
+	static const FLOAT_t ko = 1. / 32768;
 	const uint_fast8_t amode = getamode(pathi);
 	const uint_fast8_t denoise = ispathprocessing(pathi) && gnoisereducts [amode];
 	const uint_fast8_t anotch = ispathprocessing(pathi) && gnotch && notchmodes [gnotchtype].code == BOARD_NOTCH_AUTO;
@@ -9800,21 +9800,21 @@ static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * 
 	if (denoise)
 	{
 		// Filtering and denoise.
-		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		processNoiseReduction(nrp, nrp->wire1, p);	// result copy back
 		return p;
 	}
 	else
 	{
 		// Filtering only.
-		arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 		return nrp->wire1;
 	}
 #else /* WITHNOSPEEX */
 
 	// Filtering and denoise.
 	BEGIN_STAMP();
-	arm_fir_f32(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
+	ARM_MORPH(arm_fir)(& nrp->fir_instance, p, nrp->wire1, FIRBUFSIZE);
 	END_STAMP();
 	if (anotch)
 	{
@@ -9831,9 +9831,9 @@ static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * 
 #else /* WITHLEAKYLMSANR */
 	if (ispathprocessing(pathi))
 	{
-		arm_scale_f32(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_scale)(nrp->wire1, ki, nrp->wire1, FIRBUFSIZE);
 		speex_preprocess_run(nrp->st_handle, nrp->wire1);
-		arm_scale_f32(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
+		ARM_MORPH(arm_scale)(nrp->wire1, ko, nrp->wire1, FIRBUFSIZE);
 	}
 #endif /* WITHLEAKYLMSANR */
 	return nrp->wire1;
@@ -9846,7 +9846,7 @@ static float32_t * afpcw(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * 
 // user-mode processing
 // На выходе формируется тишина
 // прием телетайпа в приемнике A
-static float32_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, float32_t * p)
+static FLOAT_t * afprtty(uint_fast8_t pathi, rxaproc_t * const nrp, FLOAT_t * p)
 {
 #if WITHRTTY
 	if (pathi == 0)
@@ -9869,7 +9869,7 @@ audioproc_spool_user(void)
 	{
 		// обработка и сохранение в savesampleout16stereo_user()
 		uint_fast8_t pathi;
-		float32_t * outsp [NTRX];
+		FLOAT_t * outsp [NTRX];
 		for (pathi = 0; pathi < NTRX; ++ pathi)
 		{
 			rxaproc_t * const nrp = & rxaprocs [pathi];
