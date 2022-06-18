@@ -1168,18 +1168,13 @@ static FLOAT_t getmaxresponce(void)
 
 static void imp_response(const FLOAT_t *dCoeff, int iCoefNum) 
 {
-	arm_cfft_instance_f32 fftinstance;
+#if DSP_FLOAT_BITSMANTISSA == 54
 
-	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, FFTSizeFilters));
-
+	arm_cfft_instance_f64 fftinstance;
+	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f64(& fftinstance, FFTSizeFilters));
 	const int iHalfLen = (iCoefNum - 1) / 2;
 	int i;
 
-	//ASSERT(iHalfLen <= FFTSizeFilters);
-	//if (iHalfLen > FFTSizeFilters)
-	//	return;
-
-	//memset(Sig, 0, sizeof Sig);
 	//---------------------------
 	// copy coefficients to Sig
 	//---------------------------
@@ -1197,20 +1192,60 @@ static void imp_response(const FLOAT_t *dCoeff, int iCoefNum)
 	//---------------------------
 	// append zeros
 	//---------------------------
-	for (i = iCoefNum; i < FFTSizeFilters; ++ i) {
-		Sig [i].real = 0;
-		Sig [i].imag = 0;
-	} 	
+//	for (i = iCoefNum; i < FFTSizeFilters; ++ i) {
+//		Sig [i].real = 0;
+//		Sig [i].imag = 0;
+//	}
+	arm_fill_f64(0, (float64_t *) & Sig [iCoefNum], (FFTSizeFilters - iCoefNum) * 2);
 	//---------------------------
 	// Do FFT
 	//---------------------------
 
 
   /* Process the data through the CFFT/CIFFT module */
-	arm_cfft_f32(& fftinstance, (float *) Sig, 0, 1);
+	arm_cfft_f64(& fftinstance, (FLOAT_t *) Sig, 0, 1);
 
+	//arm_cmplx_mag_squared_f64(sg, MagArr, MagLen);
+
+#else /* DSP_FLOAT_BITSMANTISSA */
+
+	arm_cfft_instance_f32 fftinstance;
+	VERIFY(ARM_MATH_SUCCESS == arm_cfft_init_f32(& fftinstance, FFTSizeFilters));
+	const int iHalfLen = (iCoefNum - 1) / 2;
+	int i;
+
+	//---------------------------
+	// copy coefficients to Sig
+	//---------------------------
+	Sig [iHalfLen].real = dCoeff [iHalfLen];
+	Sig [iHalfLen].imag = 0;
+	for (i = 1; i <= iHalfLen; ++ i)
+	{
+		const FLOAT_t k = dCoeff [iHalfLen - i];
+		Sig [iHalfLen - i].real = k;
+		Sig [iHalfLen + i].real = k;
+		Sig [iHalfLen - i].imag = 0;
+		Sig [iHalfLen + i].imag = 0;
+	}
+
+	//---------------------------
+	// append zeros
+	//---------------------------
+//	for (i = iCoefNum; i < FFTSizeFilters; ++ i) {
+//		Sig [i].real = 0;
+//		Sig [i].imag = 0;
+//	}
+	arm_fill_f32(0, (float32_t *) & Sig [iCoefNum], (FFTSizeFilters - iCoefNum) * 2);
+	//---------------------------
+	// Do FFT
+	//---------------------------
+
+  /* Process the data through the CFFT/CIFFT module */
+	arm_cfft_f32(& fftinstance, (FLOAT_t *) Sig, 0, 1);
 
 	//arm_cmplx_mag_squared_f32(sg, MagArr, MagLen);
+
+#endif /* DSP_FLOAT_BITSMANTISSA */
 }
 
 static void sigtocoeffs(FLOAT_t *dCoeff, int iCoefNum)
