@@ -9216,6 +9216,14 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 	HARDWARE_SPI_CONNECT();
 
+#elif CPUSTYPE_ALLWNT113
+
+	#error Add support for CPUSTYPE_ALLWNT113 - 16 bit
+	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+
+ 	HARDWARE_SPI_CONNECT();
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -9262,53 +9270,19 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 		;
 	return HW_SPIUSED->SPDR.UINT16 [R_IO_L]; // L=0
 
-#else
-	#error Wrong CPUSTYLE macro
-#endif
-}
+#elif CPUSTYPE_ALLWNT113
 
-static RAMFUNC void hardware_spi_ready_b16_void(void)	/* дождаться готовности */
-{
-#if CPUSTYLE_ATSAM3S || CPUSTYLE_ATSAM4S
-
-	/* дождаться завершения приёма/передачи */
-	while ((SPI->SPI_SR & SPI_SR_RDRF) == 0)
+	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
+	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
-	(void) SPI->SPI_RDR;
 
-#elif CPUSTYLE_AT91SAM7S
+	return * (volatile uint16_t *) & SPI0->SPI_RXD;
 
-	/* дождаться завершения приёма/передачи */
-	while ((AT91C_BASE_SPI->SPI_SR & AT91C_SPI_RDRF) == 0)
-		;
-	(void) AT91C_BASE_SPI->SPI_RDR;
-
-#elif CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-	//while ((SPI1->SR & SPI_SR_TXC) == 0)
-	//	;
-	while ((SPI1->SR & SPI_SR_RXP) == 0)
-		;
-	(void) * (volatile uint16_t *) & SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
-
-
-#elif CPUSTYLE_STM32F
-
-	while ((SPI1->SR & SPI_SR_RXNE) == 0)
-		;
-	(void) SPI1->DR;	/* clear SPI_SR_RXNE in status register */
-
-#elif CPUSTYLE_R7S721
-
-	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
-		;
-	(void) HW_SPIUSED->SPDR.UINT16 [R_IO_L];	 // L=0
 
 #else
 	#error Wrong CPUSTYLE macro
 #endif
 }
-
 
 /* группа функций для использования в групповых передачах по SPI */
 /* передача первого байта в последовательности - Не проверяем готовность перед передачей,
@@ -9341,6 +9315,19 @@ void RAMFUNC hardware_spi_b16_p1(
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT16 [R_IO_L] = v; // L=0
+
+#elif CPUSTYPE_ALLWNT113
+
+	SPI0->SPI_MBC = 1;	// Master Burst Counter
+	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+		0;
+
+	* (volatile uint16_t *) & SPI0->SPI_TXD = v;
+
+	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
@@ -9407,6 +9394,14 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 	SPI1->CR1 |= SPI_CR1_SPE;
 	SPI1->CR1 |= SPI_CR1_CSTART;
 
+#elif CPUSTYPE_ALLWNT113
+
+	#error Add support for CPUSTYPE_ALLWNT113 - 32 bit
+	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
+	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
+
+ 	HARDWARE_SPI_CONNECT();
+
 #else
 	#error Wrong CPUSTYLE macro
 #endif
@@ -9430,32 +9425,19 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 		;
 	return HW_SPIUSED->SPDR.UINT32;
 
-#else
-	#error Wrong CPUSTYLE macro
-#endif
-}
+#elif CPUSTYPE_ALLWNT113
 
-static void hardware_spi_ready_b32_void(void)	/* дождаться готовности */
-{
-#if CPUSTYLE_STM32H7XX || CPUSTYLE_STM32MP1
-
-	//while ((SPI1->SR & SPI_SR_TXC) == 0)
-	//	;
-	while ((SPI1->SR & SPI_SR_RXP) == 0)
+	// auto-clear after finishing the bursts transfer specified by SPI_MBC.
+	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
-	(void) SPI1->RXDR;	/* clear SPI_SR_RXNE in status register */
 
-#elif CPUSTYLE_R7S721
+	return SPI0->SPI_RXD;	/* 32-bit access */
 
-	while ((HW_SPIUSED->SPSR & (1U << 7)) == 0)	// SPRF bit
-		;
-	(void) HW_SPIUSED->SPDR.UINT32;
 
 #else
 	#error Wrong CPUSTYLE macro
 #endif
 }
-
 
 /* группа функций для использования в групповых передачах по SPI */
 /* передача первого байта в последовательности - Не проверяем готовность перед передачей,
@@ -9472,6 +9454,19 @@ void hardware_spi_b32_p1(
 #elif CPUSTYLE_R7S721
 
 	HW_SPIUSED->SPDR.UINT32 = v;
+
+#elif CPUSTYPE_ALLWNT113
+
+	SPI0->SPI_MBC = 1;	// Master Burst Counter
+	SPI0->SPI_MTC = 1;	// 23..0: Number of bursts
+	// Quad en, DRM, 27..24: DBC, 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+	SPI0->SPI_BCC = (SPI0->SPI_BCC & ~ (0xFFFFFFuL)) |
+		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
+		0;
+
+	SPI0->SPI_TXD = v;	/* 32bit access */
+
+	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
 
 #else
 	#error Wrong CPUSTYLE macro
