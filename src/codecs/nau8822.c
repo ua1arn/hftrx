@@ -422,7 +422,7 @@ static void nau8822_stop(void)
 /* требуется ли подача тактирования для инициадизации кодека */
 static uint_fast8_t nau8822_clocksneed(void)
 {
-	return 0;
+	return 1;
 }
 
 const codec1if_t *

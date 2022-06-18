@@ -96,7 +96,7 @@ static void tlv320aic23_stop(void)
 
 static void tlv320aic23_initialize_fullduplex(void)
 {
-	//PRINTF("tlv320aic23_initialize_fullduplex\n");
+	PRINTF("tlv320aic23_initialize_fullduplex\n");
 #if CODEC_TYPE_TLV320AIC23B_MASTER
 	const uint_fast8_t master = 1;	// кодек формирует I2S синхронизацию
 #else /* CODEC_TYPE_TLV320AIC23B_MASTER */
@@ -104,6 +104,7 @@ static void tlv320aic23_initialize_fullduplex(void)
 #endif /* CODEC_TYPE_TLV320AIC23B_MASTER */
 	const unsigned long framebits = CODEC1_FRAMEBITS;
 
+	I2S1HW_UNINITIALIZE(1);
 	tlv320aic23_setreg(TLV320AIC23_RESET, 0x00);	// RESET
 
 	tlv320aic23_setreg(TLV320AIC23_PWR,
@@ -188,6 +189,7 @@ static void tlv320aic23_initialize_fullduplex(void)
 		TLV320AIC23_ACT_ON |		// Digital Interface Activation
 		0
 		);
+	I2S1HW_INITIALIZE(1);
 }
 
 /* Установка громкости на наушники */

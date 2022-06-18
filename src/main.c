@@ -21481,12 +21481,29 @@ hamradio_initialize(void)
 
 #endif /* WITHUSBHW */
 
-	hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+	// TODO: у аудио кодека и IF кодека могут быть раные требования
+#if defined(CODEC1_TYPE)
+	/* требуется ли подача тактирования для инициадизации кодека */
+	const int reqclk = board_getaudiocodecif()->clocksneed();
+#else /* defined(CODEC1_TYPE) */
+	const int reqclk = 1;
+#endif /* defined(CODEC1_TYPE) */
 
-	board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
-	board_update();
+	if (reqclk != 0)
+	{
+		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
+		board_update();
+	}
 
 	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
+
+	if (reqclk == 0)
+	{
+		hardware_channels_enable();	// SAI, I2S и подключенная на них периферия
+		board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
+		board_update();
+	}
 
 #if WITHSPISLAVE
 	hardware_spi_slave_enable(SPIC_MODE3);
