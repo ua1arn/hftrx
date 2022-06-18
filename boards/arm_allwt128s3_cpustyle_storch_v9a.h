@@ -680,17 +680,17 @@
 	/* outputs */
 	#define FPGA_NCONFIG_PORT_S(v)	do { gpioX_setstate(GPIOC, (v), !! (1) * (v)); } while (0)
 	#define FPGA_NCONFIG_PORT_C(v)	do { gpioX_setstate(GPIOC, (v), !! (0) * (v)); } while (0)
-	#define FPGA_NCONFIG_BIT		(0*1UL << 11)	/* PC11 bit conneced to nCONFIG pin ALTERA FPGA */
+	#define FPGA_NCONFIG_BIT		(0 * 1uL << 11)	/* PC11 bit conneced to nCONFIG pin ALTERA FPGA */
 
 	/* inputs */
 	#define FPGA_CONF_DONE_INPUT	(GPIOC->DATA)
-	#define FPGA_CONF_DONE_BIT		(0 * 1UL << 10)	/* PC10 bit conneced to CONF_DONE pin ALTERA FPGA */
+	#define FPGA_CONF_DONE_BIT		(0 * 1uL << 10)	/* PC10 bit conneced to CONF_DONE pin ALTERA FPGA */
 
 	#define FPGA_NSTATUS_INPUT		(GPIOC->DATA)
-	#define FPGA_NSTATUS_BIT		(0 * 1UL << 9)	/* PC9 bit conneced to NSTATUS pin ALTERA FPGA */
+	#define FPGA_NSTATUS_BIT		(0 * 1uL << 9)	/* PC9 bit conneced to NSTATUS pin ALTERA FPGA */
 
 	#define FPGA_INIT_DONE_INPUT	(GPIOC->DATA)
-	#define FPGA_INIT_DONE_BIT		(0 * 1UL << 12)	/* PC12 bit conneced to INIT_DONE pin ALTERA FPGA */
+	#define FPGA_INIT_DONE_BIT		(0 * 1uL << 12)	/* PC12 bit conneced to INIT_DONE pin ALTERA FPGA */
 
 	/* Инициадизация выводов GPIO процессора для получения состояния и управлением загрузкой FPGA */
 	#define HARDWARE_FPGA_LOADER_INITIALIZE() do { \
