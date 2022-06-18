@@ -12,8 +12,8 @@
 #ifndef ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED
 #define ARM_ALLWT128S3_CPUSTYLE_STORCH_V9A_H_INCLUDED 1
 
-//#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
-//#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
+#define WITHSPI16BIT	1	/* возможно использование 16-ти битных слов при обмене по SPI */
+#define WITHSPI32BIT	1	/* возможно использование 32-ти битных слов при обмене по SPI */
 #define WITHSPIHW 		1	/* Использование аппаратного контроллера SPI */
 //#define WITHSPIHWDMA 	1	/* Использование DMA при обмене по SPI */
 //#define WITHSPISW 	1	/* Использование программного управления SPI. Нельзя убирать эту строку - требуется явное отключение из-за конфликта с I2C */

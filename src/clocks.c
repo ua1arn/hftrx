@@ -9218,7 +9218,6 @@ void hardware_spi_connect_b16(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYPE_ALLWNT113
 
-	#error Add support for CPUSTYPE_ALLWNT113 - 16 bit
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 
@@ -9276,7 +9275,7 @@ portholder_t RAMFUNC hardware_spi_complete_b16(void)	/* дождаться го�
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	return * (volatile uint16_t *) & SPI0->SPI_RXD;
+	return __bswap16(* (volatile uint16_t *) & SPI0->SPI_RXD);
 
 
 #else
@@ -9325,7 +9324,7 @@ void RAMFUNC hardware_spi_b16_p1(
 		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	* (volatile uint16_t *) & SPI0->SPI_TXD = v;
+	* (volatile uint16_t *) & SPI0->SPI_TXD = __bswap16(v);
 
 	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
 
@@ -9396,7 +9395,6 @@ void hardware_spi_connect_b32(spi_speeds_t spispeedindex, spi_modes_t spimode)
 
 #elif CPUSTYPE_ALLWNT113
 
-	#error Add support for CPUSTYPE_ALLWNT113 - 32 bit
 	CCU->SPI0_CLK_REG = ccu_spi_clk_reg_val [spispeedindex];
 	SPI0->SPI_TCR = spi_tcr_reg_val [spispeedindex][spimode];
 
@@ -9431,7 +9429,7 @@ portholder_t hardware_spi_complete_b32(void)	/* дождаться готовн�
 	while ((SPI0->SPI_TCR & (1 << 31)) != 0)
 		;
 
-	return SPI0->SPI_RXD;	/* 32-bit access */
+	return __bswap32(SPI0->SPI_RXD);	/* 32-bit access */
 
 
 #else
@@ -9464,7 +9462,7 @@ void hardware_spi_b32_p1(
 		1 |	// 23..0: STC Master Single Mode Transmit Counter (number of bursts)
 		0;
 
-	SPI0->SPI_TXD = v;	/* 32bit access */
+	SPI0->SPI_TXD = __bswap32(v);	/* 32bit access */
 
 	SPI0->SPI_TCR |= (1 << 31);	// запуск обмена
 
