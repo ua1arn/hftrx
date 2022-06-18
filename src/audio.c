@@ -442,7 +442,8 @@ static RAMFUNC FLOAT_t getsinf(ncoftw_t angle)
 	FLOAT_t v;
 	const q31_t sinv = arm_sin_q31(FTW2_COS_Q31(angle));
 	//v = FAST_Q31_2_FLOAT(sinv);	// todo: use arm_q31_to_float
-	arm_q31_to_float(& sinv, & v, 1);
+	//arm_q31_to_float(& sinv, & v, 1);
+	v = FAST_Q31_2_FLOAT(sinv);
 	return v;
 }
 
@@ -451,23 +452,26 @@ static RAMFUNC FLOAT_t getcosf(ncoftw_t angle)
 	FLOAT_t v;
 	const q31_t cosv = arm_cos_q31(FTW2_COS_Q31(angle));
 	//v = FAST_Q31_2_FLOAT(cosv);	// todo: use arm_q31_to_float
-	arm_q31_to_float(& cosv, & v, 1);
+	//arm_q31_to_float(& cosv, & v, 1);
+	v = FAST_Q31_2_FLOAT(cosv);
 	return v;
 }
 
 static RAMFUNC FLOAT32P_t getsincosf(ncoftw_t angle)
 {
 	FLOAT32P_t v;
-	q31_t sincosv [2];
+	//q31_t sincosv [2];
 #if 1
-	sincosv [0] = arm_sin_q31(FTW2_COS_Q31(angle));
-	sincosv [1] = arm_cos_q31(FTW2_COS_Q31(angle));
+	FLOAT_t sinv = arm_sin_q31(FTW2_COS_Q31(angle));
+	FLOAT_t cosv = arm_cos_q31(FTW2_COS_Q31(angle));
 #else
 	arm_sin_cos_q31(FTW2_SINCOS_Q31(angle), & sincosv [0], & sincosv [1]);
 	// at index 0 all fine
 	// at index 1 with sidetones
 #endif
-	arm_q31_to_float(sincosv, v.ivqv, 2);
+	//arm_q31_to_float(sincosv, v.ivqv, 2);
+	v.IV = FAST_Q31_2_FLOAT(sinv);
+	v.QV = FAST_Q31_2_FLOAT(cosv);
 	return v;
 }
 
@@ -3060,7 +3064,7 @@ static void audio_update(const uint_fast8_t spf, uint_fast8_t pathi)
 }
 
 // calculate 1/2 of coefficients
-void dsp_recalceq_coeffs(uint_fast8_t pathi, float * dCoeff, int iCoefNum)
+void dsp_recalceq_coeffs(uint_fast8_t pathi, FLOAT_t * dCoeff, int iCoefNum)
 {
 	const int cutfreqlow = glob_aflowcutrx [pathi];
 	const int cutfreqhigh = glob_afhighcutrx [pathi];
