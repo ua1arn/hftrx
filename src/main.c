@@ -21486,11 +21486,11 @@ hamradio_initialize(void)
 	board_set_i2s_enable(1);	// Разрешить FPGA формирование тактовой частоты для кодеков и тактирование I2S
 	board_update();
 
+	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
+
 #if WITHSPISLAVE
 	hardware_spi_slave_enable(SPIC_MODE3);
 #endif /* WITHSPISLAVE */
-
-	board_init_chips2();	// программирование кодеков при подающейся тактовой частоте
 
 #if WITHTOUCHGUI
 	gui_initialize();
