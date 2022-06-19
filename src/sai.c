@@ -1334,8 +1334,8 @@ static void hardware_sai1_sai2_clock_selection(void)
 		//	others: reserved, the kernel clock is disabled
 		//	Note: I2S_CKIN is an external clock taken from a pin.
 		RCC->D2CCIP1R = (RCC->D2CCIP1R & ~ (RCC_D2CCIP1R_SAI1SEL | RCC_D2CCIP1R_SAI23SEL)) |
-			(0x01uL << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
-			(0x01uL << RCC_D2CCIP1R_SAI23SEL_Pos) |
+			(1uL << RCC_D2CCIP1R_SAI1SEL_Pos) |	// PLL2 Q
+			(1uL << RCC_D2CCIP1R_SAI23SEL_Pos) |
 			0;
 
 	#elif CPUSTYLE_STM32MP1
@@ -3134,7 +3134,7 @@ static void hardware_sai2_slave_duplex_initialize_fpga(void)		/* инициал�
 		0;
 	SAI2_Block_B->CR1 =
 		commoncr1 |
-		(0x01uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
+		(1uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
 		(0x03uL << SAI_xCR1_MODE_Pos) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
 
@@ -3267,8 +3267,8 @@ static void hardware_sai2_master_duplex_initialize_fpga(void)		/* инициал
 		0;
 	SAI2_Block_B->CR1 =
 		commoncr1 |
-		(0x01uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
-		(0x01uL << SAI_xCR1_MODE_Pos) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
+		(1uL << SAI_xCR1_SYNCEN_Pos) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
+		(1uL << SAI_xCR1_MODE_Pos) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
 
 	// CR2 value
@@ -3625,14 +3625,14 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	volatile uint32_t * const i2s_clk_reg = & CCU->I2S1_CLK_REG + ix - 1;
 
 	* i2s_clk_reg =
-		(0x01uL << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
+		(1uL << 31) |				// I2S/PCM1_CLK_GATING: 1: Clock is ON
 		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
 		((uint_fast32_t) value << 0) |	// Factor M (0..31)
 		0;
 
-	CCU->I2S_BGR_REG |= (0x01uL << (0 + ix));	// Gating Clock for I2S/PCMx
-	CCU->I2S_BGR_REG |= (0x01uL << (16 + ix));	// I2S/PCMx Reset
+	CCU->I2S_BGR_REG |= (1uL << (0 + ix));	// Gating Clock for I2S/PCMx
+	CCU->I2S_BGR_REG |= (1uL << (16 + ix));	// I2S/PCMx Reset
 
 	//PRINTF("allwnrt113_get_i2s1_freq = %lu\n", allwnrt113_get_i2s1_freq());
 
@@ -3693,7 +3693,7 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 		(1u << dout) * (1uL << 8) |	// DOUT3_EN..DOUT0_EN
 		((uint_fast32_t) master << 18) | // BCLK_OUT
 		((uint_fast32_t) master << 17) | // LRCK_OUT
-		(0x01uL << 4) |	// left mode, need offset=1 for I2S
+		(1uL << 4) |	// left mode, need offset=1 for I2S
 		0;
 
 	i2s->I2S_PCM_RXCHSEL =
@@ -3720,8 +3720,8 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	I2S_fill_TXxCHMAP(i2s, 2, dout);	// I2S_PCM_TX2CHMAPx
 	I2S_fill_TXxCHMAP(i2s, 3, dout);	// I2S_PCM_TX3CHMAPx
 
-	i2s->I2S_PCM_INT |= (0x01uL << 7); // TX_DRQ
-	i2s->I2S_PCM_INT |= (0x01uL << 3); // RX_DRQ
+	i2s->I2S_PCM_INT |= (1uL << 7); // TX_DRQ
+	i2s->I2S_PCM_INT |= (1uL << 3); // RX_DRQ
 
 }
 
@@ -3790,7 +3790,7 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	//	10: PLL_AUDIO1(DIV5)
 
 	const portholder_t clk_reg =
-		(0x01uL << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
+		(1uL << 31) |				// AUDIO_CODEC_ADC_CLK_GATING
 		((uint_fast32_t) src << 24) |	// CLK_SRC_SEL
 		((uint_fast32_t) prei << 8) |	// Factor N (0..3: /1 /2 /4 /8)
 		((uint_fast32_t) value << 0) |	// Factor M (0..31)
@@ -3799,8 +3799,8 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	CCU->AUDIO_CODEC_ADC_CLK_REG = clk_reg;
 	CCU->AUDIO_CODEC_DAC_CLK_REG = clk_reg;
 
-	CCU->AUDIO_CODEC_BGR_REG |= (0x01uL << 0);	// Gating Clock For AUDIO_CODEC
-	CCU->AUDIO_CODEC_BGR_REG |= (0x01uL << 16);	// AUDIO_CODEC Reset
+	CCU->AUDIO_CODEC_BGR_REG |= (1uL << 0);	// Gating Clock For AUDIO_CODEC
+	CCU->AUDIO_CODEC_BGR_REG |= (1uL << 16);	// AUDIO_CODEC Reset
 
 	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
 
@@ -3832,16 +3832,16 @@ static void hardware_i2s1_enable_codec1(uint_fast8_t state)
 	if (state)
 	{
 		i2s->I2S_PCM_CTL |=
-			(0x01uL << 2) |	// TXEN
-			(0x01uL << 1) |	// RXEN
+			(1uL << 2) |	// TXEN
+			(1uL << 1) |	// RXEN
 			0;
-		i2s->I2S_PCM_CTL |= (0x01uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL |= (1uL << 0); // GEN Globe Enable
 	}
 	else
 	{
-		i2s->I2S_PCM_CTL &= ~ (0x01uL << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (0x01uL << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (0x01uL << 1); // RXEN
+		i2s->I2S_PCM_CTL &= ~ (1uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL &= ~ (1uL << 2); // TXEN
+		i2s->I2S_PCM_CTL &= ~ (1uL << 1); // RXEN
 	}
 }
 
@@ -3851,16 +3851,16 @@ static void hardware_i2s2_enable_fpga(uint_fast8_t state)
 	if (state)
 	{
 		i2s->I2S_PCM_CTL |=
-			(0x01uL << 2) |	// TXEN
-			(0x01uL << 1) |	// RXEN
+			(1uL << 2) |	// TXEN
+			(1uL << 1) |	// RXEN
 			0;
-		i2s->I2S_PCM_CTL |= (0x01uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL |= (1uL << 0); // GEN Globe Enable
 	}
 	else
 	{
-		i2s->I2S_PCM_CTL &= ~ (0x01uL << 0); // GEN Globe Enable
-		i2s->I2S_PCM_CTL &= ~ (0x01uL << 2); // TXEN
-		i2s->I2S_PCM_CTL &= ~ (0x01uL << 1); // RXEN
+		i2s->I2S_PCM_CTL &= ~ (1uL << 0); // GEN Globe Enable
+		i2s->I2S_PCM_CTL &= ~ (1uL << 2); // TXEN
+		i2s->I2S_PCM_CTL &= ~ (1uL << 1); // RXEN
 	}
 }
 
@@ -3998,11 +3998,11 @@ static void DMAC_SetHandler(unsigned dmach, unsigned flag, void (* handler2)(uns
 
 static void DMAC_clock_initialize(void)
 {
-	CCU->MBUS_CLK_REG |= (0x01uL << 30);	// MBUS Reset 1: De-assert reset
-	CCU->MBUS_MAT_CLK_GATING_REG |= (0x01uL << 0);	// Gating MBUS Clock For DMA
-	CCU->DMA_BGR_REG |= (0x01uL << 0);	// DMA_GATING 1: Pass clock
-	CCU->DMA_BGR_REG |= (0x01uL << 16);	// DMA_RST 1: De-assert reset
-	DMAC->DMAC_AUTO_GATE_REG |= (0x01uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
+	CCU->MBUS_CLK_REG |= (1uL << 30);		// MBUS Reset 1: De-assert reset
+	CCU->MBUS_MAT_CLK_GATING_REG |= (1uL << 0);	// Gating MBUS Clock For DMA
+	CCU->DMA_BGR_REG |= (1uL << 0);			// DMA_GATING 1: Pass clock
+	CCU->DMA_BGR_REG |= (1uL << 16);		// DMA_RST 1: De-assert reset
+	DMAC->DMAC_AUTO_GATE_REG |= (1uL << 2);	// DMA_MCLK_CIRCUIT 1: Auto gating disabled
 }
 
 static void DMAC_I2S1_RX_initialize_codec1(void)
