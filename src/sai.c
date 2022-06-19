@@ -3756,8 +3756,8 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 {
 	const unsigned framebits = CODEC1_FRAMEBITS;
 	const unsigned long lrckf = ARMI2SRATE;
-	const unsigned long bclkf = lrckf * framebits;
-	const unsigned long mclkf = lrckf * 256;
+
+	const unsigned long mclkf = lrckf * 128;
 
 	const unsigned long src = 0x01;
 	//	Clock Source Select
@@ -3772,20 +3772,20 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 		clk = allwnrt113_get_audio0pll1x_freq();
 		break;
 	case 0x01:
-		clk = allwnrt113_get_audio0pll4x_freq();
-		break;
-	case 0x02:
 		clk = allwnrt113_get_audio1pll_div2_freq();
 		break;
-	case 0x03:
+	case 0x02:
 		clk = allwnrt113_get_audio1pll_div5_freq();
 		break;
 	}
 	//TP();
 	unsigned value;	/* делитель */
-	//PRINTF("AudioCodec: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
 
+	//PRINTF("AudioCodec: prei=%u, value=%u, lrckf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+
+	// audiocode1x_dac_clk
+	// audiocode1x_adc_clk
 	//	Clock Source Select
 	//	00: PLL_AUDIO0(1X)
 	//	01: PLL_AUDIO1(DIV2)
@@ -3809,6 +3809,9 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 	AUDIO_CODEC->AC_DAC_FIFOC |= (1uL << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 
+	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |
+			(0x04 | 0x02) << (1uL << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+			0;
 	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 3);	// ADC_DRQ_EN
 	AUDIO_CODEC->AC_DAC_FIFOC |= (1uL << 4);	// DAC_DRQ_EN
 }
@@ -3818,7 +3821,7 @@ static void hardware_hwblock_enable_codec1(uint_fast8_t state)
 {
 	if (state)
 	{
-		AUDIO_CODEC->AC_DAC_DPC |= (1uL << 31);	// DAC Digital Part Enable
+		AUDIO_CODEC->AC_DAC_DPC |= (1uL << 31);		// DAC Digital Part Enable
 		AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 28);	// ADC Digital Part Enable
 	}
 	else
