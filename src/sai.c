@@ -3677,11 +3677,14 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
 	// BCLK = MCLK / BCLKDIV
 	const unsigned ratio = 1024 / framebits;
+	const unsigned div4 = 4;
 	i2s->I2S_PCM_CLKD =
 		1 * (1uL << 8) |		// MCLKO_EN
-		ratio2div(4) * (1uL << 0) |		/* MCLKDIV */
+		ratio2div(div4) * (1uL << 0) |		/* MCLKDIV */
 		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
 		0;
+
+	PRINTF("ix=%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
 
 #if CODEC1_FORMATI2S_PHILIPS
 	const unsigned txrx_offset = 1;
