@@ -3591,7 +3591,9 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 //	i2s1: allwnrt113_get_audio1pll_div5_freq = 153600000
 //	i2s1: prei=0, value=30, mclkf=12288000, (clk=384000000)
 
-	const unsigned long src = 0x02;	// 0x00, 0x01 - не подобрать делитель
+	// 0x02 = ~ 48350
+	// 0x03 = ~ 46300
+	const unsigned long src = 0x03;	// 0x00, 0x01 - не подобрать делитель
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
 	// 01: PLL_AUDIO0(4X)
@@ -3757,8 +3759,14 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	const unsigned framebits = CODEC1_FRAMEBITS;
 	const unsigned long lrckf = ARMI2SRATE;
 
-	const unsigned long mclkf = lrckf * 128;
+	//const unsigned long mclkf = lrckf * 128;
+	const unsigned long mclkf = lrckf * 125;
 
+	// 0x01 = ~ 46900 (x 128)
+	// 0x02 = ~ 48000 (x 128)
+
+	// 0x01 = ~ 46902 (x 125)
+	// 0x02 = ~ 46180 (x 125)
 	const unsigned long src = 0x02;
 	//	Clock Source Select
 	//	00: PLL_AUDIO0(1X)
