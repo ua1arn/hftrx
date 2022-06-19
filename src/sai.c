@@ -3759,7 +3759,7 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 
 	const unsigned long mclkf = lrckf * 128;
 
-	const unsigned long src = 0x01;
+	const unsigned long src = 0x02;
 	//	Clock Source Select
 	//	00: PLL_AUDIO0(1X)
 	//	01: PLL_AUDIO1(DIV2)
