@@ -163,7 +163,6 @@ unsigned long allwnrt113_get_video1_x1_freq(void);
 unsigned long allwnrt113_get_ve_freq(void);
 unsigned long allwnrt113_get_audio0pll4x_freq(void);
 unsigned long allwnrt113_get_audio0pll1x_freq(void);
-unsigned long allwnrt113_get_audio1pll4x_freq(void);
 unsigned long allwnrt113_get_audio1pll1x_freq(void);
 unsigned long allwnrt113_get_audio1pll_div2_freq(void);
 unsigned long allwnrt113_get_audio1pll_div5_freq(void);

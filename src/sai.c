@@ -3578,22 +3578,24 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	const unsigned long bclkf = lrckf * framebits;
 	const unsigned long mclkf = lrckf * 256;
 
-//	PRINTF("i2s1: mclkf=%lu, bclkf=%lu, lrckf=%lu, frame=%u\n", mclkf, bclkf, lrckf, CODEC1_FRAMEBITS);
-//	PRINTF("i2s1: allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
-//	PRINTF("i2s1: allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
-//	PRINTF("i2s1: allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
-//	PRINTF("i2s1: allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
+//	PRINTF("allwnrt113_get_audio0pll1x_freq = %lu\n", allwnrt113_get_audio0pll1x_freq());
+//	PRINTF("allwnrt113_get_audio0pll4x_freq = %lu\n", allwnrt113_get_audio0pll4x_freq());
+//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
+//	PRINTF("allwnrt113_get_audio1pll1x_freq = %lu\n", allwnrt113_get_audio1pll1x_freq());
+//	PRINTF("allwnrt113_get_audio1pll_div2_freq = %lu\n", allwnrt113_get_audio1pll_div2_freq());
+//	PRINTF("allwnrt113_get_audio1pll_div5_freq = %lu\n", allwnrt113_get_audio1pll_div5_freq());
 
-//	i2s1: mclkf=12288000, bclkf=3072000, lrckf=48000, frame=64
-//	i2s1: allwnrt113_get_audio1pll1x_freq = 768000000
-//	i2s1: allwnrt113_get_audio1pll4x_freq = 3072000000
-//	i2s1: allwnrt113_get_audio1pll_div2_freq = 384000000
-//	i2s1: allwnrt113_get_audio1pll_div5_freq = 153600000
-//	i2s1: prei=0, value=30, mclkf=12288000, (clk=384000000)
+	//	i2s1: prei=2, value=30, mclkf=12288000, (clk=1536000000)
+	//	allwnrt113_get_audio0pll1x_freq = 24.571.428
+	//	allwnrt113_get_audio0pll4x_freq = 98.28.5714
+	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
+	//	allwnrt113_get_audio1pll1x_freq = 3072.000.000
+	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
+	//	allwnrt113_get_audio1pll_div5_freq = 614.400.000
 
 	// 0x02 = ~ 48350
 	// 0x03 = ~ 46300
-	const unsigned long src = 0x03;	// 0x00, 0x01 - не подобрать делитель
+	const unsigned long src = 0x02;	// 0x00, 0x01 - не подобрать делитель
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
 	// 01: PLL_AUDIO0(4X)
@@ -3619,7 +3621,7 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	//TP();
 	unsigned value;	/* делитель */
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
-	//PRINTF("i2s%u:prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", ix, prei, value, mclkf, clk);
+	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", ix, prei, value, mclkf, clk);
 
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)

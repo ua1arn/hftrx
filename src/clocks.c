@@ -2156,16 +2156,25 @@ unsigned long allwnrt113_get_ve_freq(void)
 	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM1 * pllN / pllM0;
 }
 
+//	By default, PLL_AUDIO0(1X) is 24.5714 MHz, and PLL_AUDIO0(4X) is 98.2856 MHz.
+
 unsigned long allwnrt113_get_audio0pll4x_freq(void)
 {
+	//PLL_AUDIO0(4X) = 24MHz*N/M1/M0/P
 	const uint_fast32_t reg = CCU->PLL_AUDIO0_CTRL_REG;
+	const uint_fast32_t pllPostDivP = 1 + ((reg >> 16) & 0x3F);	// PLL_POST_DIV_P
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
 	const uint_fast32_t pllM1 = 1 + ((reg >> 1) & 0x01);
 	const uint_fast32_t pllM0 = 1 + ((reg >> 0) & 0x01);
-	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1;
+	return (uint_fast64_t) allwnrt113_get_hosc_freq() / pllM0 * pllN / pllM1 / pllPostDivP;
 }
 
-unsigned long allwnrt113_get_audio1pll4x_freq(void)
+// By default,
+//	PLL_AUDIO1 is 3072 MHz,
+// PLL_AUDIO1(DIV2) is 1536 MHz, and
+// PLL_AUDIO1(DIV5) is 614.4 MHz (24.576 MHz*25).
+
+unsigned long allwnrt113_get_audio1pll1x_freq(void)
 {
 	const uint_fast32_t reg = CCU->PLL_AUDIO1_CTRL_REG;
 	const uint_fast32_t pllN = 1 + ((reg >> 8) & 0xFF);
@@ -2177,11 +2186,6 @@ unsigned long allwnrt113_get_audio1pll4x_freq(void)
 unsigned long allwnrt113_get_audio0pll1x_freq(void)
 {
 	return allwnrt113_get_audio0pll4x_freq() / 4;
-}
-
-unsigned long allwnrt113_get_audio1pll1x_freq(void)
-{
-	return allwnrt113_get_audio1pll4x_freq() / 4;
 }
 
 unsigned long allwnrt113_get_audio1pll_div2_freq(void)
@@ -2618,7 +2622,7 @@ calcdivider(
 		}
 	}
 
-	//PRINTF("calcdivider: no parameters for divisor=%u, width=%u, taps=%08X\n", (unsigned long) divisor, (unsigned) width, (unsigned) taps);
+	PRINTF("calcdivider: no parameters for divisor=%u, width=%u, taps=%08X\n", (unsigned long) divisor, (unsigned) width, (unsigned) taps);
 
 	// Не подобрать комбинацию прескалера и делителя для ожидаемого коэффициента деления.
 	* dvalue = (1U << width) - 1;	// просто пустышка - максимальный делитель
