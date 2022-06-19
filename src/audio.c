@@ -5136,7 +5136,7 @@ void RAMFUNC dsp_extbuffer32wfm(const int32_t * buff)
 
 	if (dspmodeA == DSPCTL_MODE_RX_WFM)
 	{
-		for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
+		for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
 		{
 			// Детектор
 			const FLOAT_t a0 = demod_WFM(buff [i + DMABUF32RXWFM0I], buff [i + DMABUF32RXWFM0Q]);
@@ -5192,13 +5192,13 @@ static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 // realtime level
 void dsp_addsidetone(aubufv_t * buff, int usebuf)
 {
-	enum { L, R };
+	enum { L = DMABUFF16TX_LEFT, R = DMABUFF16TX_RIGHT };
 	ASSERT(buff != NULL);
 	ASSERT(gwprof < NPROF);
 	const uint_fast8_t dspmodeA = globDSPMode [gwprof] [0];
 	const uint_fast8_t tx = isdspmodetx(dspmodeA);
 	unsigned i;
-	for (i = 0; i < DMABUFFSIZE16; i += DMABUFSTEP16)
+	for (i = 0; i < DMABUFFSIZE16TX; i += DMABUFFSTEP16TX)
 	{
 		aubufv_t * const b = & buff [i];
 		const FLOAT_t sdtnshape = shapeSidetoneStep();	// 0..1: 0 - monitor, 1 - sidetone
@@ -5296,8 +5296,8 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 }
 
 // Проверка качества линии передачи от FPGA
-static int32_t seqNext [DMABUFSTEP32RX];
-static uint_fast8_t  seqValid [DMABUFSTEP32RX];
+static int32_t seqNext [DMABUFFSTEP32RX];
+static uint_fast8_t  seqValid [DMABUFFSTEP32RX];
 static long int seqErrors;
 static long int seqTotal;
 static long int seqRun;
@@ -5305,7 +5305,7 @@ static int seqDone;
 
 enum { MAXSEQHIST = DMABUFCLUSTER + 5 };
 
-static int32_t seqHist [MAXSEQHIST] [DMABUFSTEP32RX];
+static int32_t seqHist [MAXSEQHIST] [DMABUFFSTEP32RX];
 static const void * seqHistP [MAXSEQHIST];
 static unsigned seqHistR [MAXSEQHIST];
 static unsigned seqPos;
@@ -5320,7 +5320,7 @@ static void printSeqError(void)
 		unsigned ix = ((MAXSEQHIST - 1) - i + seqPos) % MAXSEQHIST;
 		PRINTF("hist [%2d] %02d @%p :", i, seqHistR [ix], seqHistP [ix]);
 		unsigned col;
-		for (col = 0; col < DMABUFSTEP32RX; ++ col)
+		for (col = 0; col < DMABUFFSTEP32RX; ++ col)
 			PRINTF("%08lx ", seqHist [ix] [col]);
 		PRINTF("\n");
 	}
@@ -5333,10 +5333,10 @@ static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * 
 	seqPos = (seqPos == 0) ? MAXSEQHIST - 1 : seqPos - 1;
 	//memcpy(seqHist [seqPos], base, sizeof seqHist [seqPos]);
 	unsigned col;
-	for (col = 0; col < DMABUFSTEP32RX; ++ col)
+	for (col = 0; col < DMABUFFSTEP32RX; ++ col)
 		seqHist [seqPos] [col] = base [col];
 	seqHistP [seqPos] = base;
-	seqHistR [seqPos] = rowi / DMABUFSTEP32RX;
+	seqHistR [seqPos] = rowi / DMABUFFSTEP32RX;
 
 	if (seqAfterError)
 	{
@@ -5357,7 +5357,7 @@ static void validateSeq(uint_fast8_t slot, int32_t v, int rowi, const int32_t * 
 //	return;
 	if (seqDone)
 		return;
-	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFSTEP32RX) * 10000L))
+	if (seqTotal >= ((DMABUFFSIZE32RX / DMABUFFSTEP32RX) * 10000L))
 	{
 		seqDone = 1;
 		printSeqError();
@@ -5427,14 +5427,14 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 	unsigned i;
 	const int rxgate = getRxGate();
 
-	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFSTEP32RX)
+	for (i = 0; i < DMABUFFSIZE32RX; i += DMABUFFSTEP32RX)
 	{
 	#if 0
 		if (0)
 		{
 			// Проверка качества линии передачи от FPGA
 			uint_fast8_t slot;
-			for (slot = 0; slot < DMABUFSTEP32RX; ++ slot)
+			for (slot = 0; slot < DMABUFFSTEP32RX; ++ slot)
 				validateSeq(slot, buff [i + slot], i, buff + i);
 		}
 		else if (1)
@@ -5990,7 +5990,7 @@ trxparam_update(void)
 void dsp_initialize(void)
 {
 	PRINTF("dsp_initialize: ARMI2SRATE=%lu, ARMI2SRATE100=%lu.%02lu\n", (unsigned long) ARMI2SRATE, (unsigned long) (ARMI2SRATE100 / 100), (unsigned long) (ARMI2SRATE100 % 100));
-	//PRINTF("DMABUFFSIZE32RX=%d, DMABUFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFSTEP32RX);
+	//PRINTF("DMABUFFSIZE32RX=%d, DMABUFFSTEP32RX=%d\n", (int) DMABUFFSIZE32RX, (int) DMABUFFSTEP32RX);
 
 	fir_design_windowbuff(FIRCwnd_tx_MIKE, Ntap_tx_MIKE);
 	fir_design_windowbuff(FIRCwnd_rx_AUDIO, Ntap_rx_AUDIO);
