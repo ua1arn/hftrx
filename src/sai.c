@@ -3686,7 +3686,7 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 		ratio2div(ratio) * (1uL << 4) |		/* BCLKDIV */
 		0;
 
-	PRINTF("ix=%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
+	//PRINTF("I2S%u: MCLKDIV=%u(%u), BCLKDIV=%u(%u)\n", ix, ratio2div(div4), div4, ratio2div(ratio), ratio);
 
 #if CODEC1_FORMATI2S_PHILIPS
 	const unsigned txrx_offset = 1;
