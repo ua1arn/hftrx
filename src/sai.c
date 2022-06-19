@@ -3593,9 +3593,9 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	//	allwnrt113_get_audio1pll_div2_freq = 1536.000.000
 	//	allwnrt113_get_audio1pll_div5_freq = 614.400.000
 
-	// 0x02 = ~ 48350
-	// 0x03 = ~ 46300
-	const unsigned long src = 0x02;	// 0x00, 0x01 - не подобрать делитель
+	// 0x00, 0x01, 0x03: 48000
+	// 0x02: ~ 48350
+	const unsigned long src = 0x01;
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
 	// 01: PLL_AUDIO0(4X)
@@ -3621,7 +3621,7 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	//TP();
 	unsigned value;	/* делитель */
 	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
-	PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", ix, prei, value, mclkf, clk);
+	//PRINTF("i2s%u: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", ix, prei, value, mclkf, clk);
 
 	// CLK_SRC_SEL:
 	// 00: PLL_AUDIO0(1X)
@@ -3678,8 +3678,8 @@ static void hardware_i2s_initialize(I2S_PCM_TypeDef * i2s, int master, unsigned 
 	// (pin P2-6) lrck = 53 khz
 	// (pin P2-7) mclk = 13.7 MHz, MCLKDIV=CLKD_Div16
 	// BCLK = MCLK / BCLKDIV
-	const unsigned ratio = 1024 / framebits;
-	const unsigned div4 = 4;
+	const unsigned ratio = 256 / framebits;
+	const unsigned div4 = 1;
 	i2s->I2S_PCM_CLKD =
 		1 * (1uL << 8) |		// MCLKO_EN
 		ratio2div(div4) * (1uL << 0) |		/* MCLKDIV */
@@ -3764,15 +3764,12 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	const unsigned framebits = CODEC1_FRAMEBITS;
 	const unsigned long lrckf = ARMI2SRATE;
 
-	//const unsigned long mclkf = lrckf * 128;
-	const unsigned long mclkf = lrckf * 125;
+	const unsigned long mclkf = lrckf * 512;
 
-	// 0x01 = ~ 46900 (x 128)
-	// 0x02 = ~ 48000 (x 128)
-
-	// 0x01 = ~ 46902 (x 125)
-	// 0x02 = ~ 46180 (x 125)
-	const unsigned long src = 0x02;
+	// 0x00 = 48000 (x 512)
+	// 0x01 = ~ 46902 (x 512)
+	// 0x02 = 48000 (x 512)
+	const unsigned long src = 0x00;
 	//	Clock Source Select
 	//	00: PLL_AUDIO0(1X)
 	//	01: PLL_AUDIO1(DIV2)
