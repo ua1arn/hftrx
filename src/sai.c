@@ -3812,6 +3812,7 @@ static void DMA_I2S1_RX_Handler_codec1(unsigned dmach)
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
 	descraddr [DMAC_DESC_DST] = dma_invalidate16rx(allocate_dmabuffer16());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 //	printhex(addr, (void *) addr, DMABUFFSIZE16 * sizeof (aubufv_t));
 //	for (;;)
@@ -3829,6 +3830,7 @@ static void DMA_I2S1_TX_Handler_codec1(unsigned dmach)
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush16tx(getfilled_dmabuffer16phones());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer16(addr);
@@ -3842,6 +3844,7 @@ static void DMA_I2S2_RX_Handler_fpga(unsigned dmach)
 	const uintptr_t addr = descraddr [DMAC_DESC_DST];
 	descraddr [DMAC_DESC_DST] = dma_invalidate32rx(allocate_dmabuffer32rx());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 	/* Работа с только что принятыми данными */
 	processing_dmabuffer32rx(addr);
@@ -3858,6 +3861,7 @@ static void DMA_I2S2_TX_Handler_fpga(unsigned dmach)
 	const uintptr_t addr = descraddr [DMAC_DESC_SRC];
 	descraddr [DMAC_DESC_SRC] = dma_flush32tx(getfilled_dmabuffer32tx_main());
 	arm_hardware_flush(descbase, DMAC_DESC_SIZE * sizeof (uint32_t));
+	ASSERT(DMAC->CH [dmach].DMAC_FDESC_ADDR_REGN == descbase);
 
 	/* Работа с только что передаными данными */
 	release_dmabuffer32tx(addr);
