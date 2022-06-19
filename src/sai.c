@@ -3802,6 +3802,10 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	CCU->AUDIO_CODEC_BGR_REG |= (0x01uL << 0);	// Gating Clock For AUDIO_CODEC
 	CCU->AUDIO_CODEC_BGR_REG |= (0x01uL << 16);	// AUDIO_CODEC Reset
 
+	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
+
+	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
+	AUDIO_CODEC->AC_DAC_FIFOC |= (1uL << 5);	// TX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 
 	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 3);	// ADC_DRQ_EN
 	AUDIO_CODEC->AC_DAC_FIFOC |= (1uL << 4);	// DAC_DRQ_EN
@@ -4164,7 +4168,6 @@ static void DMAC_I2S2_RX_initialize_fpga(void)
 
 	DMAC->CH [dmach].DMAC_PAU_REGN = 0;	// 0: Resume Transferring
 	DMAC->CH [dmach].DMAC_EN_REGN = 1;	// 1: Enabled
-
 }
 
 static void DMAC_I2S2_TX_initialize_fpga(void)
