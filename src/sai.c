@@ -3505,8 +3505,10 @@ static unsigned width2fmt(unsigned width)
 
 enum
 {
-	ALLWNT113_I2Sx_CLK_WIDTH = 5, ALLWNT113_I2Sx_CLK_TAPS = ( 8 | 4 | 2 | 1 )
-
+	ALLWNT113_I2Sx_CLK_WIDTH = 5, ALLWNT113_I2Sx_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+	ALLWNT113_AudioCodec_CLK_WIDTH = 5, ALLWNT113_AudioCodec_CLK_TAPS = ( 8 | 4 | 2 | 1 ),
+	//
+	ALLWNT113_pad
 };
 
 /* I2S/PCM RX Channel Mapping Registers initialization */
@@ -3781,8 +3783,8 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 	}
 	//TP();
 	unsigned value;	/* делитель */
-	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_I2Sx_CLK_WIDTH, ALLWNT113_I2Sx_CLK_TAPS, & value, 1);
 	//PRINTF("AudioCodec: prei=%u, value=%u, mclkf=%u, (clk=%lu)\n", prei, value, mclkf, clk);
+	const uint_fast8_t prei = calcdivider(calcdivround2(clk, mclkf), ALLWNT113_AudioCodec_CLK_WIDTH, ALLWNT113_AudioCodec_CLK_TAPS, & value, 1);
 
 	//	Clock Source Select
 	//	00: PLL_AUDIO0(1X)

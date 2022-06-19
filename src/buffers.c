@@ -1020,7 +1020,7 @@ static RAMFUNC void buffers_savefrommikeadc(voice16_t * p)
 	ASSERT(p->tag3 == p);
 #if WITHBUFFERSDEBUG
 	// подсчёт скорости в сэмплах за секунду
-	debugcount_mikeadc += sizeof p->buff / sizeof p->buff [0] / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
+	debugcount_mikeadc += DMABUFFSIZE16 / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 
 #if WITHUSBUAC
@@ -2134,6 +2134,24 @@ uintptr_t getfilled_dmabuffer32tx_main(void)
 uintptr_t getfilled_dmabuffer32tx_sub(void)
 {
 	return allocate_dmabuffer32tx();
+}
+
+// Отладочная функция для тестирования обмена с кодеком
+void dsp_calctx(void)
+{
+#if WITHBUFFERSDEBUG
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_phonesdac += DMABUFFSIZE16 / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
+#endif /* WITHBUFFERSDEBUG */
+}
+
+// Отладочная функция для тестирования обмена с кодеком
+void dsp_calcrx(void)
+{
+#if WITHBUFFERSDEBUG
+	// подсчёт скорости в сэмплах за секунду
+	debugcount_mikeadc += DMABUFFSIZE16 / DMABUFSTEP16;	// в буфере пары сэмплов по два байта
+#endif /* WITHBUFFERSDEBUG */
 }
 
 // Этой функцией пользуются обработчики прерываний DMA
