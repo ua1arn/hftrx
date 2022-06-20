@@ -451,6 +451,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
+	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
 	unsigned ep;
 	for (ep = 0; ep < 6; ++ ep)
 	{

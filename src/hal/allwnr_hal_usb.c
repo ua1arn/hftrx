@@ -42,8 +42,57 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	USBx->INTUSB = intusb;
 }
 
+/**
+  * @brief  USB_DevConnect : Connect the USB device by enabling Rpu
+  * @param  USBx  Selected device
+  * @retval HAL status
+  */
+HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
+{
+//    /* Enable pullup on D+ */
+//    USBx->INTENB0 |= (USB_VBSE | USB_SOFE | USB_DVSE | USB_CTRE | USB_BEMPE | USB_NRDYE | USB_BRDYE);
+//    USBx->SYSCFG0 |= USB_DPRPU;
+//
+//    /* Enable USB */
+//    if (USBx == & USB200)
+//	{
+//    	arm_hardware_set_handler_system(USBI0_IRQn, device_USBI0_IRQHandler);
+//	}
+//	else if (USBx == & USB201)
+//	{
+//		arm_hardware_set_handler_system(USBI1_IRQn, device_USBI1_IRQHandler);
+//	}
+////    InterruptHandlerRegister(USBIX_IRQn, &_usbisr);
+////    GIC_SetPriority(USBIX_IRQn, 16);
+////    GIC_SetConfiguration(USBIX_IRQn, 1);
+////    GIC_EnableIRQ(USBIX_IRQn);
+//	//arm_hardware_set_handler_system(USBIX_IRQn, _usbisr);
+	int on = 1;
+	unsigned temp = USBx->POWER;
+	if (on)
+		temp |= MUSB2_MASK_SOFTC;
+	else
+		temp &= ~ MUSB2_MASK_SOFTC;
+	USBx->POWER = temp;
+
+    return HAL_OK;
+}
+
+/**
+  * @brief  USB_DevDisconnect : Disconnect the USB device by disabling Rpu
+  * @param  USBx  Selected device
+  * @retval HAL status
+  */
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
+	int on = 0;
+	unsigned temp = USBx->POWER;
+	if (on)
+		temp |= MUSB2_MASK_SOFTC;
+	else
+		temp &= ~ MUSB2_MASK_SOFTC;
+	USBx->POWER = temp;
+
     /* Disable USB */
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 ////    InterruptHandlerRegister(USBIX_IRQn, NULL);
@@ -360,7 +409,7 @@ HAL_StatusTypeDef HAL_PCD_DeInit(PCD_HandleTypeDef *hpcd)
 HAL_StatusTypeDef HAL_PCD_Start(PCD_HandleTypeDef *hpcd)
 {
 //  __HAL_LOCK(hpcd);
-//  USB_DevConnect (hpcd->Instance);
+	USB_DevConnect (hpcd->Instance);
 //  __HAL_PCD_ENABLE(hpcd);
 //  __HAL_UNLOCK(hpcd);
   return HAL_OK;
@@ -375,8 +424,8 @@ HAL_StatusTypeDef HAL_PCD_Stop(PCD_HandleTypeDef *hpcd)
 {
 //  __HAL_LOCK(hpcd);
 //  __HAL_PCD_DISABLE(hpcd);
-//  USB_StopDevice(hpcd->Instance);
-//  USB_DevDisconnect (hpcd->Instance);
+  USB_StopDevice(hpcd->Instance);
+  USB_DevDisconnect (hpcd->Instance);
 //  __HAL_UNLOCK(hpcd);
   return HAL_OK;
 }
