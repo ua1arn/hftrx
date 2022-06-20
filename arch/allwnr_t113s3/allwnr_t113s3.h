@@ -1525,21 +1525,31 @@ typedef struct USB1_Type
 /*!< DRD Controller Interface */
 typedef struct DRD_Type
 {
-	__IO uint32_t USB_REVISION_REG;                      /*!< Offset 0x000 usb_revision_reg	0x00 */
-	__IO uint32_t USB_CTRL_REG;                          /*!< Offset 0x004 usb_ctrl_reg	0x04 */
-	__IO uint32_t USB_STAT_REG;                          /*!< Offset 0x008 usb_stat_reg	0x08 */
-	__IO uint32_t USB_EMULATION_REG;                     /*!< Offset 0x00C usb_emulation_reg 0x0c */
-	uint32_t reserved1 [0x0002];
-	__IO uint32_t USB_SRP_FIX_TIME_REG;                  /*!< Offset 0x018 usb_srp_fix_time_reg 0x18 */
-	uint32_t reserved2;
-	__IO uint32_t USB_INTR_SRC_REG;                      /*!< Offset 0x020 usb_intr_src_reg	0x20 */
-	__IO uint32_t USB_INTR_SRC_SET_REG;                  /*!< Offset 0x024 usb_intr_src_set_reg 0x24 */
-	__IO uint32_t USB_INTR_SRC_CLEAR_REG;                /*!< Offset 0x028 usb_intr_src_clear_reg 0x28 */
-	__IO uint32_t USB_INTR_MASK_REG;                     /*!< Offset 0x02C usb_intr_mask_reg 0x2c */
-	__IO uint32_t USB_INTR_MASK_SET_REG;                 /*!< Offset 0x030 usb_intr_mask_set_reg 0x30 */
-	__IO uint32_t USB_INTR_MASK_CLEAR_REG;               /*!< Offset 0x034 usb_intr_mask_clear_reg 0x34 */
-	__IO uint32_t USB_INTR_SRC_MASKED_REG;               /*!< Offset 0x038 usb_intr_src_masked_reg 0x38 */
-	__IO uint32_t USB_END_OF_INTR_REG;                   /*!< Offset 0x03C usb_end_of_intr_reg 0x3c */
+	__IO uint32_t EPFIFO [0x006];                        /*!< Offset 0x000 to be commented */
+	uint32_t reserved1 [0x000A];
+	__IO uint8_t  POWER;                                 /*!< Offset 0x040 to be commented */
+	__IO uint8_t  DEVCTL;                                /*!< Offset 0x041 to be commented */
+	__IO uint16_t EPINDEX;                               /*!< Offset 0x042 to be commented */
+	__IO uint16_t INTTX;                                 /*!< Offset 0x044 to be commented */
+	__IO uint16_t INTRX;                                 /*!< Offset 0x046 to be commented */
+	__IO uint16_t INTTXE;                                /*!< Offset 0x048 to be commented */
+	__IO uint8_t  INTRXE;                                /*!< Offset 0x04A to be commented */
+	uint8_t reserved2 [0x0001];
+	__IO uint16_t INTUSB;                                /*!< Offset 0x04C to be commented */
+	uint8_t reserved3 [0x0002];
+	__IO uint32_t INTUSBE;                               /*!< Offset 0x050 to be commented */
+	__IO uint32_t FRAME;                                 /*!< Offset 0x054 to be commented */
+	uint32_t reserved4 [0x0009];
+	__IO uint32_t TESTMODE;                              /*!< Offset 0x07C to be commented */
+	__IO uint16_t TXMAXP;                                /*!< Offset 0x080 to be commented */
+	__IO uint8_t  TXCSRL;                                /*!< Offset 0x082 to be commented */
+	__IO uint8_t  TXCSRH;                                /*!< Offset 0x083 to be commented */
+	__IO uint16_t RXMAXP;                                /*!< Offset 0x084 to be commented */
+	__IO uint8_t  RXCSRL;                                /*!< Offset 0x086 to be commented */
+	__IO uint8_t  RXCSRH;                                /*!< Offset 0x087 to be commented */
+	__IO uint32_t RXCOUNT;                               /*!< Offset 0x088 to be commented */
+	uint32_t reserved5 [0x000D];
+	__IO uint32_t CONFDATA;                              /*!< Offset 0x0C0 to be commented */
 } DRD_TypeDef;
 /*
  * @brief CSI

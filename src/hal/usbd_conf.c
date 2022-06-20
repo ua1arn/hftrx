@@ -450,11 +450,16 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
-//	PRINTF("USB_REVISION_REG=%08lX\n", USB0_DEVICE->USB_REVISION_REG);
-//	USB0_DEVICE->USB_REVISION_REG = 0;
-//	PRINTF("USB_REVISION_REG=%08lX\n", USB0_DEVICE->USB_REVISION_REG);
-//	USB0_DEVICE->USB_INTR_MASK_CLEAR_REG = 0;
-//	USB0_DEVICE->USB_INTR_MASK_CLEAR_REG = ~ 0;
+	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
+	unsigned ep;
+	for (ep = 0; ep < 6; ++ ep)
+	{
+		PRINTF("EPFIFO%u=%08lX\n", ep, USB0_DEVICE->EPFIFO [ep]);
+	}
+
+	PRINTF("POWER=%08lX\n", USB0_DEVICE->POWER);
+	PRINTF("DEVCTL=%08lX\n", USB0_DEVICE->DEVCTL);
+	PRINTF("CONFDATA=%08lX\n", USB0_DEVICE->CONFDATA);
 
 #else
 	#error HAL_PCD_MspInit should be implemented

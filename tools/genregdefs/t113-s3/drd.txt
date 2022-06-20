@@ -1,39 +1,60 @@
-USB_REVISION_REG
-0x00
-usb_revision_reg	0x00
-USB_CTRL_REG
-0x04
-usb_ctrl_reg	0x04
-USB_STAT_REG
-0x08
-usb_stat_reg	0x08
-USB_EMULATION_REG
-0x0c
-usb_emulation_reg 0x0c
-USB_SRP_FIX_TIME_REG
-0x18
-usb_srp_fix_time_reg 0x18
-USB_INTR_SRC_REG
-0x20
-usb_intr_src_reg	0x20
-USB_INTR_SRC_SET_REG
-0x24
-usb_intr_src_set_reg 0x24
-USB_INTR_SRC_CLEAR_REG
-0x28
-usb_intr_src_clear_reg 0x28
-USB_INTR_MASK_REG
-0x2c
-usb_intr_mask_reg 0x2c
-USB_INTR_MASK_SET_REG
-0x30
-usb_intr_mask_set_reg 0x30
-USB_INTR_MASK_CLEAR_REG
-0x34
-usb_intr_mask_clear_reg 0x34
-USB_INTR_SRC_MASKED_REG
-0x38
-usb_intr_src_masked_reg 0x38
-USB_END_OF_INTR_REG
-0x3c
-usb_end_of_intr_reg 0x3c
+EPFIFO
+0x0000 6
+to be commented
+POWER 1
+0x0040
+to be commented
+DEVCTL 1
+0x0041
+to be commented
+EPINDEX 2
+0x0042
+to be commented
+INTTX 2
+0x0044
+to be commented
+INTRX 2
+0x0046
+to be commented
+INTTXE 2
+0x0048
+to be commented
+INTRXE 1
+0x004a
+to be commented
+INTUSB 2
+0x004c
+to be commented
+INTUSBE
+0x0050
+to be commented
+FRAME
+0x0054
+to be commented
+TESTMODE
+0x007c
+to be commented
+TXMAXP 2
+0x0080
+to be commented
+TXCSRL 1
+0x0082
+to be commented
+TXCSRH 1
+0x0083
+to be commented
+RXMAXP 2
+0x0084
+to be commented
+RXCSRL 1
+0x0086
+to be commented
+RXCSRH 1
+0x0087
+to be commented
+RXCOUNT
+0x0088
+to be commented
+CONFDATA
+0x00c0
+to be commented
