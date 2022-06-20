@@ -66,7 +66,7 @@ extern "C" {
   */
 
 
-typedef struct USB1_Type  USB_OTG_GlobalTypeDef;
+typedef struct DRD_Type  USB_OTG_GlobalTypeDef;
 
 typedef USB_OTG_GlobalTypeDef	PCD_TypeDef;	/* processor peripherial */
 //typedef USB_OTG_GlobalTypeDef	HCD_TypeDef;	/* processor peripherial */

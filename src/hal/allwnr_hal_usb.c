@@ -31,7 +31,15 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
 	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+
+	const unsigned intusb = USBx->INTUSB;
+	const unsigned inttx  = USBx->INTTX;
+	const unsigned intrx  = USBx->INTRX;
 	TP();
+
+	USBx->INTUSB = intusb;
+	USBx->INTUSB = intusb;
+	USBx->INTUSB = intusb;
 }
 
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
