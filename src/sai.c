@@ -3816,10 +3816,12 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 
 	//PRINTF("AC_ADC_FIFOC=%08lX, AC_DAC_FIFOC=%08lX\n", AUDIO_CODEC->AC_ADC_FIFOC, AUDIO_CODEC->AC_DAC_FIFOC);
 
+	// количество каналов должно соотыетствовать DMABUFFSTEP16RX
 	AUDIO_CODEC->ADC_DIG_CTRL = (AUDIO_CODEC->ADC_DIG_CTRL & ~ (0x07uL)) |
-			(0x04 | 0x02) << (1uL << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
+			(0x04 | 0x01) << (1uL << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
 			0;
 
+	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1uL << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register
 	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 3);	// ADC_DRQ_EN
