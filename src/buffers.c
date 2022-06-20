@@ -1210,10 +1210,10 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 	}
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-
+	const FLOAT_t sample = adpt_input(& afcodecio, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_MIKE]);	// микрофон или левый канал
 	// Использование данных.
-	v->ivqv [L] = adpt_input(& afcodecio, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_LEFT]);	// микрофон или левый канал
-	v->ivqv [R] = adpt_input(& afcodecio, p->buff [pos * DMABUFFSTEP16RX + DMABUFF16RX_RIGHT]);	// правый канал
+	v->ivqv [L] = sample;
+	v->ivqv [R] = sample;
 
 	if (++ pos >= CNT16RX)
 	{

@@ -64,8 +64,7 @@ extern "C" {
 		#define DMABUF32RXWFM3Q	7		// WFM
 
 		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16RX_RIGHT 	1		/* индекс сэмпла правого канала */
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
 
 		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
@@ -118,8 +117,7 @@ extern "C" {
 		#endif /* WITHFPGAIF_FRAMEBITS */
 
 		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16RX_RIGHT 	1		/* индекс сэмпла правого канала */
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
 
 		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
@@ -171,8 +169,7 @@ extern "C" {
 		#endif
 
 		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16RX_RIGHT 	1		/* индекс сэмпла правого канала */
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
 
 		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
@@ -215,8 +212,7 @@ extern "C" {
 		#define DMABUF32RXWFM3Q	7		// WFM
 
 		#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-		#define DMABUFF16RX_LEFT 	0		/* индекс сэмпла левого канала */
-		#define DMABUFF16RX_RIGHT 	1		/* индекс сэмпла правого канала */
+		#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла левого канала */
 
 		#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 		#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
@@ -236,8 +232,7 @@ extern "C" {
 	#define DMABUF32TXQ	1		// TX, Q
 
 	#define DMABUFFSTEP16RX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
-	#define DMABUFF16RX_LEFT 	0		/* индекс сэмпла левого канала */
-	#define DMABUFF16RX_RIGHT 	1		/* индекс сэмпла правого канала */
+	#define DMABUFF16RX_MIKE 	0		/* индекс сэмпла канала микрофона */
 
 	#define DMABUFFSTEP16TX		2		// 2 - каждому сэмплу при обмене с AUDIO CODEC соответствует два числа в DMA буфере
 	#define DMABUFF16TX_LEFT 	0		/* индекс сэмпла левого канала */
