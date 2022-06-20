@@ -49,6 +49,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
+	USBx->INTUSBE = ~ 0;
+	USBx->INTTXE = ~ 0;
+	USBx->INTRXE = ~ 0;
 //    /* Enable pullup on D+ */
 //    USBx->INTENB0 |= (USB_VBSE | USB_SOFE | USB_DVSE | USB_CTRE | USB_BEMPE | USB_NRDYE | USB_BRDYE);
 //    USBx->SYSCFG0 |= USB_DPRPU;
@@ -111,6 +114,9 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 //    USBx->SYSCFG0 |= USB_DCFM;
 //    HARDWARE_DELAY_MS(1);
 //    USBx->SYSCFG0 &= ~USB_DCFM;
+	USBx->INTUSBE = 0;
+	USBx->INTTXE = 0;
+	USBx->INTRXE = 0;
 
     return HAL_OK;
 }
@@ -156,6 +162,8 @@ HAL_StatusTypeDef USB_SetCurrentMode(USB_OTG_GlobalTypeDef *USBx, USB_OTG_ModeTy
   */
 HAL_StatusTypeDef USB_DevInit(USB_OTG_GlobalTypeDef *USBx, USB_OTG_CfgTypeDef cfg)
 {
+	//TP();
+	USBx->INTUSBE = 0xFF; //MUSB2_MASK_IRESET;
 //	unsigned i;
 //
 //	USBx->SYSCFG0 &= ~ USB_SYSCFG_USBE;	// USBE 0: USB module operation is disabled.
