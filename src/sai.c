@@ -3821,6 +3821,14 @@ static void hardware_hwblock_master_duplex_initialize_codec1(void)
 			(0x04 | 0x01) << (1uL << 0) |	// ADC_CHANNEL_EN Bit 2: ADC3 enabled Bit 1: ADC2 enabled Bit 0: ADC1 enabled
 			0;
 
+	// ADCx Analog Control Register
+	AUDIO_CODEC->ADC1_REG |= (1uL << 31);	// FMINL ADC1 Channel Enable
+	AUDIO_CODEC->ADC2_REG |= (1uL << 31);	// FMINR
+	AUDIO_CODEC->ADC3_REG |= (1uL << 31);	// MIC3
+
+	// DAC Analog Control Register
+	AUDIO_CODEC->DAC_REG |= (1uL << 15) | (1uL << 14);	// DACL_EN, DACR_EN
+
 	// See WITHADAPTERCODEC1WIDTH and WITHADAPTERCODEC1SHIFT
 	AUDIO_CODEC->AC_ADC_FIFOC |= (1uL << 16);	// RX_SAMPLE_BITS 1: 20 bits 0: 16 bits
 	AUDIO_CODEC->AC_ADC_FIFOC &= ~ (1uL << 24);	// RX_FIFO_MODE 0: Expanding ‘0’ at LSB of TX FIFO register

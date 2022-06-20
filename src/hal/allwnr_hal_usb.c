@@ -27,6 +27,13 @@
 #include "allwnr_hal_usb.h"
 
 
+void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
+{
+	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;
+	USB_OTG_GlobalTypeDef * const USBx = hpcd->Instance;
+	TP();
+}
+
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
     /* Disable USB */

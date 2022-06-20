@@ -422,7 +422,6 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	//
 	//	Allwinner USB DRD is based on the Mentor USB OTG controller, with a
 	//	different register layout and a few missing registers.
-	#warning HAL_PCD_MspInit should be implemented
 	// Turn off EHCI0
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
     arm_hardware_disable_handler(USB0_EHCI_IRQn);
@@ -448,6 +447,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB0_CLK_REG = (CCU->USB0_CLK_REG & ~ (0x03 << 24)) |
 		(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 		0;
+
+	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
+
+	PRINTF("USB_REVISION_REG=%08lX\n", USB0_DEVICE->USB_REVISION_REG);
 
 #else
 	#error HAL_PCD_MspInit should be implemented
@@ -533,6 +536,7 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef* pcdHandle)
 #elif CPUSTYPE_ALLWNT113
 
 	#warning HAL_PCD_MspDeInit should be implemented
+	arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 
 #else
 	#error HAL_PCD_MspDeInit should be implemented
