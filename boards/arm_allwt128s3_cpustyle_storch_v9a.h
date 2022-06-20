@@ -118,7 +118,7 @@
 	//#define WITHGPUHW	1	/* Graphic processor unit */
 	#define WITHUSBHW	1	/* Используется встроенная в процессор поддержка USB */
 
-//	#define WITHUSBHW_DEVICE	USB0	/* на этом устройстве поддерживается функциональность DEVICE	*/
+	#define WITHUSBHW_DEVICE	USB0	/* на этом устройстве поддерживается функциональность DEVICE	*/
 	#define WITHUSBDEV_VBUSSENSE	1		/* используется предопределенный вывод OTG_VBUS */
 	#define WITHUSBDEV_HSDESC	1			/* Требуется формировать дескрипторы как для HIGH SPEED */
 	//#define WITHUSBDEV_HIGHSPEEDULPI	1	// ULPI
@@ -140,7 +140,7 @@
 	#define WITHCAT_CDC		1	/* использовать виртуальный последовательный порт на USB соединении */
 	#define WITHMODEM_CDC	1
 
-	#if WITHINTEGRATEDDSP && 0
+	#if WITHINTEGRATEDDSP
 
 		//#define WITHUAC2		1	/* UAC2 support */
 		#define WITHUSBUACINOUT	1	/* совмещённое усройство ввода/вывода (без спектра) */

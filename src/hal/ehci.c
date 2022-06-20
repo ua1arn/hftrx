@@ -1247,10 +1247,15 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 	#endif /* WITHEHCIHWSOFTSPOLL == 0 */
 	}
 
-	USB1_TypeDef * USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
-	USBx->USB_CTRL |= (0x01uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
-	USBx->PHY_CTRL &= ~ (0x01uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+	#if WITHUSBHOST_HIGHSPEEDPHYC
+
+		USB1_TypeDef * USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
+
+		USBx->USB_CTRL |= (0x01uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+		USBx->PHY_CTRL &= ~ (0x01uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+
+	#endif /* WITHUSBHOST_HIGHSPEEDPHYC */
 
 #elif CPUSTYLE_STM32MP1
 
