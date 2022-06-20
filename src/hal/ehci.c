@@ -1252,8 +1252,15 @@ void HAL_EHCI_MspInit(EHCI_HandleTypeDef * hehci)
 
 		USB1_TypeDef * USBx = EHCIxToUSBx(WITHUSBHW_EHCI);
 
-		USBx->USB_CTRL |= (0x01uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
-		USBx->PHY_CTRL &= ~ (0x01uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+		USBx->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+		USBx->USB_CTRL |=
+			(1uL << 11) |	// 1: Use INCR16 when appropriate
+			(1uL << 10) |	// 1: Use INCR8 when appropriate
+			(1uL << 9) |	// 1: Use INCR4 when appropriate
+			(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
+			0;
+
+		USBx->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
 
 	#endif /* WITHUSBHOST_HIGHSPEEDPHYC */
 
