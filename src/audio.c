@@ -178,6 +178,13 @@ static uint_fast8_t		glob_nfmdeviation100 = 75;	// 7.5 kHz максимальн�
 static uint_fast8_t 	glob_dspagc;
 static uint_fast8_t		glob_dsploudspeaker_off;
 
+#if WITHUSBUAC
+static RAMBIGDTCM volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+	#if WITHTX
+	static RAMBIGDTCM volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+	#endif /* WITHTX */
+#endif /* WITHUSBUAC */
+
 #if WITHINTEGRATEDDSP
 
 #define NPROF 2	/* количество профилей параметров DSP фильтров. */
@@ -6616,6 +6623,22 @@ board_set_afresponcetx(int_fast8_t v)
 		glob_afresponcetx = v;
 		board_flt1regchanged();
 	}
+}
+
+/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+void board_set_uacplayer(uint_fast8_t v)
+{
+#if WITHUSBUAC
+	uacoutplayer = v;
+#endif /* WITHUSBUAC */
+}
+
+/* автоматический переход на передачу при появлении звука со стороны компьютера */
+void board_set_datavox(uint_fast8_t v)
+{
+#if WITHUSBUAC && WITHTX
+	datavox = v;
+#endif /* WITHUSBUAC && WITHTX */
 }
 
 #if WITHAFEQUALIZER

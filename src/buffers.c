@@ -314,19 +314,15 @@ static RAMBIGDTCM LIST_HEAD2 speexfree16;		// Свободные буферы
 static RAMBIGDTCM LIST_HEAD2 speexready16;	// Буферы для обработки speex
 static RAMBIGDTCM SPINLOCK_t speexlock = SPINLOCK_INIT;
 
-#if WITHUSBUAC
-static RAMBIGDTCM volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-static RAMBIGDTCM volatile uint_fast8_t uacoutmike;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
-	#if WITHTX
-	static RAMBIGDTCM volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
-	#endif /* WITHTX */
-#endif /* WITHUSBUAC */
+#if WITHUSBHW && WITHUSBUAC
+static volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
+static volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
+static volatile uint_fast8_t uacoutalt;
+static volatile uint_fast8_t uacoutmike;	/* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
+#else /* WITHUSBHW && WITHUSBUAC */
+enum { uacoutmike = 0 };
+#endif /* WITHUSBHW && WITHUSBUAC */
 
-#if WITHUSBHW
-static RAMBIGDTCM volatile uint_fast8_t uacinalt = UACINALT_NONE;		/* выбор альтернативной конфигурации для UAC IN interface */
-static RAMBIGDTCM volatile uint_fast8_t uacinrtsalt = UACINRTSALT_NONE;		/* выбор альтернативной конфигурации для RTS UAC IN interface */
-static RAMBIGDTCM volatile uint_fast8_t uacoutalt;
-#endif /* WITHUSBHW */
 
 static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1);
 static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1);
@@ -1042,33 +1038,11 @@ static RAMFUNC void buffers_savefrommikeadc(voice16rx_t * p)
 	debugcount_mikeadc += DMABUFFSIZE16RX / DMABUFFSTEP16RX;	// в буфере пары сэмплов по два байта
 #endif /* WITHBUFFERSDEBUG */
 
-#if WITHUSBUAC
 	if (uacoutmike == 0)
 		buffers_tomodulators16rx(p);
 	else
 		buffers_tonull16rx(p);
-#else /* WITHUSBUAC */
-	buffers_tomodulators16rx(p);
-#endif /* WITHUSBUAC */
 
-}
-
-// Сохранить звук после получения из него информации для модулятора
-static RAMFUNC void buffers_aftermodulatorsrx(voice16rx_t * p)
-{
-	ASSERT(p->tag2 == p);
-	ASSERT(p->tag3 == p);
-	// если поток используется и как источник аудиоинформации для модулятора и для динамиков,
-	// в динамики будет направлен после модулятора
-#if WITHUSBUAC && 0
-
-	if (uacoutplayer && uacoutmike)
-		buffers_tophones16rx(p);
-	else
-		buffers_tonull16rx(p);
-#else /* WITHUSBUAC */
-	buffers_tonull16rx(p);
-#endif /* WITHUSBUAC */
 }
 
 // +++ Коммутация потоков аудиоданных
@@ -1078,14 +1052,7 @@ buffers_savefromrxout16tx(voice16tx_t * p)
 {
 	ASSERT(p->tag2 == p);
 	ASSERT(p->tag3 == p);
-#if WITHUSBUAC
-	if (uacoutplayer != 0)
-		buffers_tonull16tx(p);
-	else
-		buffers_tophones16tx(p);
-#else /* WITHUSBUAC */
 	buffers_tophones16tx(p);
-#endif /* WITHUSBUAC */
 }
 
 
@@ -1110,8 +1077,6 @@ buffers_savefromresampling(voice16rx_t * p)
 
 	if (uacoutmike != 0)
 		buffers_tomodulators16rx(p);
-//	else if (uacoutplayer != 0)
-//		buffers_tophones16rx(p);
 	else
 		buffers_tonull16rx(p);
 }
@@ -1217,7 +1182,7 @@ RAMFUNC uint_fast8_t getsampmlemike(FLOAT32P_t * v)
 
 	if (++ pos >= CNT16RX)
 	{
-		buffers_aftermodulatorsrx(p);
+		buffers_tonull16rx(p);
 		p = NULL;
 	}
 	return 1;	
@@ -2784,35 +2749,17 @@ void savesamplerecord16uacin(int_fast16_t ch0, int_fast16_t ch1)
 
 #endif /* WITHUSBUAC */
 
-/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
-void board_set_uacplayer(uint_fast8_t v)
-{
-#if WITHUSBUAC
-	uacoutplayer = v;
-#endif /* WITHUSBUAC */
-}
-
 /* на вход трансивера берутся аудиоданные с USB виртуальной платы, а не с микрофона */
 void board_set_uacmike(uint_fast8_t v)
 {
-#if WITHUSBUAC
+#if WITHUSBHW && WITHUSBUAC
 	uacoutmike = v;
-#endif /* WITHUSBUAC */
-}
-
-/* автоматический переход на передачу при появлении звука со стороны компьютера */
-void board_set_datavox(uint_fast8_t v)
-{
-#if WITHUSBUAC && WITHTX
-	datavox = v;
-#endif /* WITHUSBUAC && WITHTX */
+#endif /* WITHUSBHW && WITHUSBUAC */
 }
 
 #if WITHUSBUAC && WITHUSBHW
 
 /* +++ UAC OUT data save */
-
-
 
 void 
 buffers_set_uacinalt(uint_fast8_t v)	/* выбор альтернативной конфигурации для UAC IN interface */
