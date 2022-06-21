@@ -36,6 +36,9 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 	const unsigned inttx  = USBx->INTTX;
 	const unsigned intrx  = USBx->INTRX;
 	TP();
+	PRINTF("HAL_PCD_IRQHandler: INTUSBE=%08lX\n", USBx->INTUSBE);
+	PRINTF("HAL_PCD_IRQHandler: INTTXE=%08lX\n", USBx->INTTXE);
+	PRINTF("HAL_PCD_IRQHandler: INTRXE=%08lX\n", USBx->INTRXE);
 
 	USBx->INTUSB = intusb;
 	USBx->INTUSB = intusb;
@@ -49,9 +52,14 @@ void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
   */
 HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 {
-	USBx->INTUSBE = ~ 0;
-	USBx->INTTXE = ~ 0;
-	USBx->INTRXE = ~ 0;
+	/* Enable all nnterrupts */
+	USBx->INTUSBE = 0x03FF;
+	USBx->INTTXE = 0x03F;
+	USBx->INTRXE = 0x03E;
+
+	PRINTF("USB_DevConnect: INTUSBE=%08lX\n", USBx->INTUSBE);
+	PRINTF("USB_DevConnect: INTTXE=%08lX\n", USBx->INTTXE);
+	PRINTF("USB_DevConnect: INTRXE=%08lX\n", USBx->INTRXE);
 //    /* Enable pullup on D+ */
 //    USBx->INTENB0 |= (USB_VBSE | USB_SOFE | USB_DVSE | USB_CTRE | USB_BEMPE | USB_NRDYE | USB_BRDYE);
 //    USBx->SYSCFG0 |= USB_DPRPU;
@@ -70,13 +78,8 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
 ////    GIC_SetConfiguration(USBIX_IRQn, 1);
 ////    GIC_EnableIRQ(USBIX_IRQn);
 //	//arm_hardware_set_handler_system(USBIX_IRQn, _usbisr);
-	int on = 1;
-	unsigned temp = USBx->POWER;
-	if (on)
-		temp |= MUSB2_MASK_SOFTC;
-	else
-		temp &= ~ MUSB2_MASK_SOFTC;
-	USBx->POWER = temp;
+
+	USBx->POWER |= MUSB2_MASK_SOFTC;
 
     return HAL_OK;
 }
@@ -88,14 +91,10 @@ HAL_StatusTypeDef  USB_DevConnect(USB_OTG_GlobalTypeDef *USBx)
   */
 HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 {
-	int on = 0;
-	unsigned temp = USBx->POWER;
-	if (on)
-		temp |= MUSB2_MASK_SOFTC;
-	else
-		temp &= ~ MUSB2_MASK_SOFTC;
-	USBx->POWER = temp;
 
+	USBx->INTUSBE = 0;
+	USBx->INTTXE = 0;
+	USBx->INTRXE = 0;
     /* Disable USB */
     arm_hardware_disable_handler(USB0_DEVICE_IRQn);
 ////    InterruptHandlerRegister(USBIX_IRQn, NULL);
@@ -108,15 +107,8 @@ HAL_StatusTypeDef  USB_DevDisconnect(USB_OTG_GlobalTypeDef *USBx)
 //		arm_hardware_disable_handler(USBI1_IRQn);
 //	}
 //
-//    /* Disable pullup on D+ */
-//    USBx->SYSCFG0 &= ~USB_DPRPU;
-//    HARDWARE_DELAY_MS(1);
-//    USBx->SYSCFG0 |= USB_DCFM;
-//    HARDWARE_DELAY_MS(1);
-//    USBx->SYSCFG0 &= ~USB_DCFM;
-	USBx->INTUSBE = 0;
-	USBx->INTTXE = 0;
-	USBx->INTRXE = 0;
+	/* Disable pullup on D+ */
+	USBx->POWER &= ~ MUSB2_MASK_SOFTC;
 
     return HAL_OK;
 }

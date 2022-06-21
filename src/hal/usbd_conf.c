@@ -435,6 +435,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 	CCU->USB_BGR_REG &= ~ (0x01uL << 4);	// USBEHCI0_GATING
 	CCU->USB0_CLK_REG &= ~ (0x01uL << 30);	// USBPHY0_RSTN
 
+	PRINTF("HAL_PCD_MspInit: USB DEVICE Initialization disabled\n");
+	return;
+
 	// Enable
 	CCU->USB0_CLK_REG |= (0x01uL << 31);	// USB0_CLKEN - Gating Special Clock For OHCI0
 	CCU->USB0_CLK_REG |= (0x01uL << 30);	// USBPHY0_RSTN
@@ -448,19 +451,62 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
 		(0x01 << 24) | 	// 00: 12M divided from 48 MHz 01: 12M divided from 24 MHz 10: RTC_32K
 		0;
 
+	USB1_TypeDef * USBx = USB0;
+
+	USBx->USB_CTRL |= (1uL << 0);	// 1: Enable UTMI interface, disable ULPI interface
+	USBx->USB_CTRL |=
+		(1uL << 11) |	// 1: Use INCR16 when appropriate
+		(1uL << 10) |	// 1: Use INCR8 when appropriate
+		(1uL << 9) |	// 1: Use INCR4 when appropriate
+		(1uL << 8) |	// 1: Start INCRx burst only on burst x-align address Note: This bit must enable if any bit of bit[11:9] is enabled
+		0;
+
+	USBx->PHY_CTRL &= ~ (1uL << 3); 	// SIDDQ 0: Write 0 to enable phy
+
 	arm_hardware_set_handler_system(USB0_DEVICE_IRQn, device_OTG_HS_IRQHandler);
 
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg_allwinner.c
 	// https://github.com/abmwine/FreeBSD-src/blob/86cb59de6f4c60abd0ea3695ebe8fac26ff0af44/sys/dev/usb/controller/musb_otg.c
-	unsigned ep;
-	for (ep = 0; ep < 6; ++ ep)
-	{
-		PRINTF("EPFIFO%u=%08lX\n", ep, USB0_DEVICE->EPFIFO [ep]);
-	}
+//	unsigned ep;
+//	for (ep = 0; ep < 6; ++ ep)
+//	{
+//		PRINTF("EPFIFO%u=%08lX\n", ep, USB0_DEVICE->EPFIFO [ep]);
+//	}
+//	/* enable HighSpeed and ISO Update flags */
+//
+//	MUSB2_WRITE_1(sc, MUSB2_REG_POWER,
+//	    MUSB2_MASK_HSENAB | MUSB2_MASK_ISOUPD);
+//
+//	if (sc->sc_mode == MUSB2_DEVICE_MODE) {
+//		/* clear Session bit, if set */
+//		temp = MUSB2_READ_1(sc, MUSB2_REG_DEVCTL);
+//		temp &= ~MUSB2_MASK_SESS;
+//		MUSB2_WRITE_1(sc, MUSB2_REG_DEVCTL, temp);
+//	} else {
+//		/* Enter session for Host mode */
+//		temp = MUSB2_READ_1(sc, MUSB2_REG_DEVCTL);
+//		temp |= MUSB2_MASK_SESS;
+//		MUSB2_WRITE_1(sc, MUSB2_REG_DEVCTL, temp);
+//	}
+//
+//	/* wait a little for things to stabilise */
+//	usb_pause_mtx(&sc->sc_bus.bus_mtx, hz / 10);
+
+	// USB0_DEVICE->CONFDATA |= MUSB2_MASK_CD_UTMI_DW; // R/O register?
+	USB0_DEVICE->POWER = MUSB2_MASK_HSENAB | MUSB2_MASK_ISOUPD;
+	USB0_DEVICE->DEVCTL &= ~ (MUSB2_MASK_SESS);
+	local_delay_ms(10);
+
+//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
+//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
+//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
+//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
+//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
+//	PRINTF("EPFIFO%u=%08lX\n", 0, USB0_DEVICE->EPFIFO [0]);
 
 //	PRINTF("POWER=%08lX\n", USB0_DEVICE->POWER);
 //	PRINTF("DEVCTL=%08lX\n", USB0_DEVICE->DEVCTL);
-//	PRINTF("CONFDATA=%08lX\n", USB0_DEVICE->CONFDATA);
+	PRINTF("CONFDATA=%08lX\n", USB0_DEVICE->CONFDATA);
 //	PRINTF("INTUSB=%08lX\n", USB0_DEVICE->INTUSB);
 //	PRINTF("INTTX=%08lX\n", USB0_DEVICE->INTTX);
 //	PRINTF("INTRX=%08lX\n", USB0_DEVICE->INTRX);
