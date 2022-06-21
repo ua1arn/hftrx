@@ -1597,11 +1597,15 @@ static RAMDTCM FLOAT_t mikeinlevel;
 static RAMDTCM FLOAT_t VOXDISCHARGE;
 static RAMDTCM FLOAT_t VOXCHARGE = 0;
 
+static RAMDTCM FLOAT_t dvoxlevel;
+static RAMDTCM FLOAT_t DVOXDISCHARGE;
+static RAMDTCM FLOAT_t DVOXCHARGE = 0;
+
 // Возвращает значения 0..255
 uint_fast8_t dsp_getvox(uint_fast8_t fullscale)
 {
-	uint_fast8_t v = mikeinlevel * UINT8_MAX;	// масшабирование к 0..255
-	return v > UINT8_MAX ? UINT8_MAX : v;
+	unsigned v = FMAXF(mikeinlevel, datavox == 0 ? 0 : dvoxlevel) * fullscale;	// масшабирование к 0..255
+	return v > fullscale ? fullscale : v;
 }
 
 // Возвращает значения 0..255
@@ -1612,8 +1616,11 @@ uint_fast8_t dsp_getavox(uint_fast8_t fullscale)
 
 static void voxmeter_initialize(void)
 {
-	VOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем зарада 0
+	VOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем заряда 0
 	VOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// Пиковый детектор со временем разряда 0.02 секунды
+
+	DVOXCHARGE = MAKETAUAF0();	// Пиковый детектор со временем заряда 0
+	DVOXDISCHARGE = MAKETAUAF((FLOAT_t) 0.02);	// Пиковый детектор со временем разряда 0.02 секунды
 }
 
 /////////////////////////////
@@ -4728,6 +4735,11 @@ static RAMFUNC FLOAT32P_t getsampmlemike2(void)
 	// Поддержка работы VOX
 	const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
 	charge2(& mikeinlevel, vi0f, (mikeinlevel < vi0f) ? VOXCHARGE : VOXDISCHARGE);
+
+	// VOX detector и разрядная цепь
+	// Поддержка работы DATA VOX
+	//const FLOAT_t vi0f = FMAXF(FABSF(v.IV), FABSF(v.QV));
+	charge2(& dvoxlevel, vi0f, (dvoxlevel < vi0f) ? DVOXCHARGE : DVOXDISCHARGE);
 
 	return v;
 }
