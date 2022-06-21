@@ -720,9 +720,7 @@ void buffers_initialize(void)
 
 	static RAMBIGDTCM_MDMA ALIGNX_BEGIN voice16tx_t voicesarray16tx [NVCOICESFREE16TX] ALIGNX_END;
 
-	#if WITHUSBUACOUT
-		InitializeListHead3(& resample16rx, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
-	#endif /* WITHUSBUACOUT */
+	InitializeListHead3(& resample16rx, RESAMPLE16NORMAL);	// буферы от USB для синхронизации
 
 	InitializeListHead3(& voicesmike16rx, VOICESMIKE16NORMAL);	// список оцифрованных с АЦП кодека
 	InitializeListHead2(& voicesfree16rx);	// Незаполненные
@@ -1426,7 +1424,7 @@ static RAMFUNC unsigned getsamplemsuacout(
 			// Микрофонный кодек ещё не успел начать работать - возвращаем 0.
 			SPIN_UNLOCK(& locklist16rx);
 			memset(buff, 0x00, size * sizeof (* buff));	// тишина
-			return size;	// ноль нельзя возвращать - зацикливается проуелура ресэмплинга
+			return size;	// ноль нельзя возвращать - зацикливается проуедура ресэмплинга
 		}
 		else
 		{
