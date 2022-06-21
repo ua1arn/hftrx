@@ -1533,22 +1533,19 @@ typedef struct DRD_Type
 	__IO uint16_t INTTX;                                 /*!< Offset 0x044 to be commented */
 	__IO uint16_t INTRX;                                 /*!< Offset 0x046 to be commented */
 	__IO uint16_t INTTXE;                                /*!< Offset 0x048 to be commented */
-	__IO uint8_t  INTRXE;                                /*!< Offset 0x04A to be commented */
-	uint8_t reserved2 [0x0001];
+	__IO uint16_t INTRXE;                                /*!< Offset 0x04A to be commented */
 	__IO uint16_t INTUSB;                                /*!< Offset 0x04C to be commented */
-	uint8_t reserved3 [0x0002];
+	uint8_t reserved2 [0x0002];
 	__IO uint32_t INTUSBE;                               /*!< Offset 0x050 to be commented */
 	__IO uint32_t FRAME;                                 /*!< Offset 0x054 to be commented */
-	uint32_t reserved4 [0x0009];
+	uint32_t reserved3 [0x0009];
 	__IO uint32_t TESTMODE;                              /*!< Offset 0x07C to be commented */
 	__IO uint16_t TXMAXP;                                /*!< Offset 0x080 to be commented */
-	__IO uint8_t  TXCSRL;                                /*!< Offset 0x082 to be commented */
-	__IO uint8_t  TXCSRH;                                /*!< Offset 0x083 to be commented */
+	__IO uint16_t TXCSR;                                 /*!< Offset 0x082 to be commented */
 	__IO uint16_t RXMAXP;                                /*!< Offset 0x084 to be commented */
-	__IO uint8_t  RXCSRL;                                /*!< Offset 0x086 to be commented */
-	__IO uint8_t  RXCSRH;                                /*!< Offset 0x087 to be commented */
+	__IO uint16_t RXCSR;                                 /*!< Offset 0x086 to be commented */
 	__IO uint32_t RXCOUNT;                               /*!< Offset 0x088 to be commented */
-	uint32_t reserved5 [0x000D];
+	uint32_t reserved4 [0x000D];
 	__IO uint32_t CONFDATA;                              /*!< Offset 0x0C0 to be commented */
 } DRD_TypeDef;
 /*
