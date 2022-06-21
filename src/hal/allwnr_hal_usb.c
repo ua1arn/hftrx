@@ -27,6 +27,60 @@
 #include "allwnr_hal_usb.h"
 
 
+/**
+  * @brief  Set a STALL condition over an endpoint
+  * @param  hpcd PCD handle
+  * @param  ep_addr endpoint address
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_PCD_EP_SetStall(PCD_HandleTypeDef *hpcd, uint8_t ep_addr)
+{
+  PCD_EPTypeDef *ep;
+
+  if (((uint32_t)ep_addr & EP_ADDR_MSK) > hpcd->Init.dev_endpoints)
+  {
+    return HAL_ERROR;
+  }
+
+  if ((0x80U & ep_addr) == 0x80U)
+  {
+    ep = &hpcd->IN_ep[ep_addr & EP_ADDR_MSK];
+    ep->is_in = 1U;
+  }
+  else
+  {
+    ep = &hpcd->OUT_ep[ep_addr];
+    ep->is_in = 0U;
+  }
+
+  ep->is_stall = 1U;
+  ep->num = ep_addr & EP_ADDR_MSK;
+//
+//  __HAL_LOCK(hpcd);
+//
+//#if ! WITHNEWUSBHAL
+//  (void)USB_EPSetStall(hpcd->Instance, ep);
+//#else
+//  if ((ep_addr & EP_ADDR_MSK) == 0U)
+//  {
+//	  USBPhyHw_ep0_stall(hpcd);
+//  }
+//  else
+//  {
+//	  USBPhyHw_endpoint_stall(hpcd, ep_addr);
+//
+//  }
+//#endif
+//  if ((ep_addr & EP_ADDR_MSK) == 0U)
+//  {
+//    (void)USB_EP0_OutStart(hpcd->Instance, (uint8_t)hpcd->Init.dma_enable, (uint8_t *)hpcd->Setup);
+//  }
+//
+//  __HAL_UNLOCK(hpcd);
+
+  return HAL_OK;
+}
+
 void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd)
 {
 	//PCD_HandleTypeDef * const hpcd = & hpcd_USB_OTG;

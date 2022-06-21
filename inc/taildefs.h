@@ -487,8 +487,9 @@ uint_fast8_t dpclock_tray(dpclock_t * lp);
 		#define USBD_DFU_RAM_LOADER BOOTLOADER_RAMAREA//(BOOTLOADER_RAMAREA + 0x4000uL)	/* адрес ОЗУ, куда DFU загрузчиком помещаем первую страницу образа */
 	#endif /* WITHSDRAMHW */
 
+	/* DFU device разделяет по приходящему адресу куда писать */
 	#define BOOTLOADER_FLASHSIZE (1024uL * 1024uL * 16)	// 16M FLASH CHIP
-	#define BOOTLOADER_SELFBASE QSPI_MEM_BASE	/* адрес где лежит во FLASH образ application */
+	#define BOOTLOADER_SELFBASE 0xC0000000uL	/* адрес где лежит во FLASH образ application */
 	#define BOOTLOADER_SELFSIZE (1024uL * 512)	// 512k
 
 	#define BOOTLOADER_APPBASE (BOOTLOADER_SELFBASE + BOOTLOADER_SELFSIZE)	/* адрес где лежит во FLASH образ application */

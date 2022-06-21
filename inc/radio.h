@@ -547,7 +547,6 @@ uint_fast8_t hardware_getshutdown(void);	/* возвращаем запрос н
 
 void hardware_elkey_timer_initialize(void);
 void hardware_elkey_set_speed(uint_fast32_t ticksfreq);
-void hardware_elkey_set_speed128(uint_fast32_t ticksfreq, int scale);
 void hardware_elkey_ports_initialize(void); // Инициализация входов электронного ключа, входа CAT_DTR
 void hardware_ptt_port_initialize(void);	// Инициализация входа PTT, входа CAT_RTS и TXDISABLE
 

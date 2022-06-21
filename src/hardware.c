@@ -187,9 +187,7 @@ void xc7z_gpio_output(uint8_t pin)
 */
 RAMFUNC void spool_elkeybundle(void)
 {
-#if WITHOPERA4BEACON
-	spool_0p128();
-#elif WITHELKEY
+#if WITHELKEY
 	elkey_spool_dots();		// вызывается с периодом 1/ELKEY_DISCRETE от длительности точки
 #endif /* WITHOPERA4BEACON */
 #if WITHENCODER2 && defined (ENCODER2_BITS)

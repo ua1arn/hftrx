@@ -10528,9 +10528,7 @@ updateboardZZZ(
 		board_set_antenna(antmodes [gantennas [rxbi]].code [gtx]);
 	#endif /* WITHANTSELECT || WITHANTSELECTRX */
 	#if WITHELKEY
-		#if ! WITHOPERA4BEACON
-			board_set_wpm(elkeywpm.value);	/* скорость электронного ключа */
-		#endif /* ! WITHOPERA4BEACON */
+		board_set_wpm(elkeywpm.value);	/* скорость электронного ключа */
 		#if WITHVIBROPLEX
 			elkey_set_slope(elkeyslopeenable ? elkeyslope : 0);	/* скорость уменьшения длительности точки и паузы - имитация виброплекса */
 		#endif /* WITHVIBROPLEX */
@@ -21548,163 +21546,6 @@ dspcontrol_mainloop(void)
 }
 #endif /* WITHSPISLAVE */
 
-#if WITHOPERA4BEACON
-
-#if 1
-
-
-
-#define NFREQS 1
-#define FREQTEMPO	512	// 128 ms интервал
-// . Частота - Dial USB + 1500 Гц
-// 3. Передаем со скоростью Opera05: 0.128 s  на ВСЕХ частотах.
-//3570     CH1TST
-static const char msg1 [] = "11011001101010100110101010100110010101010110101010011001100110010101101001101010101010100110011010011001011010100101100101011010101010011010100110010110100101101010011010011001011001011010011010011001011010010110100101100101101001101001010";
-
-static unsigned long freqs [NFREQS] = 
-{
-	3548500,
-};
-
-static const char * const msgs [NFREQS] =
-{
-	msg1,
-};
-
-#elif 1
-
-#define NFREQS 4
-#define FREQTEMPO	128	// 128 ms интервал
-// . Частота - Dial USB + 1500 Гц
-// 3. Передаем со скоростью Opera05: 0.128 s  на ВСЕХ частотах.
-//3570     CH1TST
-static const char msg1 [] = "11011010100110010101011001010101101001101010011010100110100110010110011010101010100101100110100110101001011010100110100110010110011010010110101010101001100110010110010101011010101010101001010101010101010110011010100110011010100110101010011";
-//5358    CH2TST
-static const char msg2 [] = "11011010101001011010100101100101010101101010010101010101010101101010011010101001101001010110100101010110011010100101100110011001100110101010101010011001011001011010100101011010101010100110011001100101101001011010101001101001101001011001011";
-//7037    CH3TST
-static const char msg3 [] = "11011010101001100101010110010101011001101010011010011001101010011001101010101001011010011001100110011010011010100101011001011010101001101010101010011001011010011001011001101010101010010101011010101001010110011010101010011010010110011010101";
-//10134   CH4TST
-static const char msg4 [] = "11011010101010101010010101100110100101101010011001101001011010101001011010101001100110101010011001100110011010100101010101010101011010101010101010010101010110101001011010011010101010011001011010010110100101011010101001100101010110010110011";
-//14063   CH5TST
-//static const char msg5 [] = "11011010101001010101100110100110101001101010010101100110101010011010011010101001101001101001101010101001011010100110011001100101101010100110101010010110011010100110011010011010101010011010101001011001101010011010101010010101101001101010101";
-
-static unsigned long freqs [NFREQS] = 
-{
-	(3570 * 1000uL) + 1500,
-	(5359 * 1000uL) + 1500,
-	(7036 * 1000uL) + 1500,
-	(10133 * 1000uL) + 1500,
-	//(14063 * 1000uL) + 1500,
-};
-
-static const char * const msgs [NFREQS] =
-{
-	msg1,
-	msg2,
-	msg3,
-	msg4,
-	//msg5,
-};
-#endif
-
-static int getkeydn(int msg, int pos)
-{
-	return msgs [msg][pos] == '1';
-}
-
-static void setmsgkeys(int pos)
-{
-	int msg;
-	for (msg = 0; msg < NFREQS; ++ msg)
-	{
-		const uint_fast32_t freq = getkeydn(msg, pos) * freqs [msg];
-		static uint_fast32_t lastfreq = UINT32_MAX;
-		if (lastfreq != freq)
-		{
-			lastfreq = freq;
-			synth_lo1_setfrequ(msg, freq, getlo1div(gtx));
-		}
-	}
-}
-
-static volatile int flag128;
-
-void spool_0p128(void)
-{
-	flag128 = 1;
-}
-
-static int getevent128ms(void)
-{
-	//local_delay_ms(FREQTEMPO);
-	//return 1;
-
-	system_disableIRQ();
-	int f = flag128;
-	flag128 = 0;
-	system_enableIRQ();
-	return f;
-}
-
-static void dumbtx(int tx)
-{
-	if (gtx == tx)
-		return;
-	seq_txrequest(0, tx);	// press PTT
-	while (seq_get_txstate() != tx)
-		;
-	gtx = tx;
-#if WITHDSPEXTDDC
-	gdactest = tx;
-#endif /* WITHDSPEXTDDC */
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-
-	seq_ask_txstate(tx);
-
-}
-
-static void
-hamradio_mainloop_OPERA4(void)
-{
-	int periodS = 2uL * 60;
-	int msgpos;
-	const int msglen = strlen(msgs [0]);
-	long ticks0 = ((int64_t) periodS * 1000) / FREQTEMPO - msglen - 2;
-	if (ticks0 < 0)
-		ticks0 = 5120;
-
-	ticks0 = 5120;
-	gtx = 0;
-
-	updateboard(1, 1);	/* полная перенастройка (как после смены режима) */
-	hardware_elkey_set_speed128(1000, FREQTEMPO);	// период 0.128 секунды
-	
-	for (msgpos = 0;;)
-	{
-		while (getevent128ms() == 0)
-			;
-		dumbtx(1);
-		setmsgkeys(msgpos);
-		msgpos = ((msgpos + 1) >= msglen) ? 0 : (msgpos + 1);
-		if (msgpos == 0)
-		{
-			while (getevent128ms() == 0)
-				;
-			setmsgkeys(msglen);	// выключить формирование - превести на частоту 0 все каналы
-			dumbtx(0);
-			long ticks = ticks0;
-			while (ticks --)
-			{
-				while (getevent128ms() == 0)
-					;
-			}
-
-		}
-	}
-}
-
-#endif /* WITHOPERA4BEACON */
-
 #if CTLSTYLE_V1H
 
 static void df(
@@ -24052,8 +23893,6 @@ main(void)
 	bootloader_fatfs_mainloop();
 #elif WITHISBOOTLOADER
 	bootloader_mainloop();
-#elif WITHOPERA4BEACON
-	hamradio_mainloop_OPERA4();
 #elif 0
 	siggen_mainloop();
 #elif 0

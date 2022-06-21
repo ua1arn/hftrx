@@ -154,7 +154,7 @@
 		//#define WITHUABUACOUTAUDIO48MONO	1	/* для уменьшения размера буферов в endpoints */
 	#endif /* WITHINTEGRATEDDSP */
 
-	////#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
+	#define WITHUSBCDCACM		1	/* ACM использовать виртуальный последовательный порт на USB соединении */
 	#define WITHUSBCDCACM_N	2	/* количество виртуальных последовательных портов */
     //#define WITHUSBCDCACMINTSHARING 1    /* Использование общей notification endpoint на всех CDC ACM устрйоствах */
 	#if WITHLWIP
@@ -164,9 +164,9 @@
 	#endif /* WITHLWIP */
 	//#define WITHUSBHID	1	/* HID использовать Human Interface Device на USB соединении */
 
-	////#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
-	////#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
-	////#define WITHUSBWCID	1
+	#define WITHUSBDFU	1	/* DFU USB Device Firmware Upgrade support */
+	#define WITHMOVEDFU 1	// Переместить интерфейс DFU в область меньших номеров. Утилита dfu-util 0.9 не работает с DFU на интерфейсе с индексом 10
+	#define WITHUSBWCID	1
 
 #endif /* WITHISBOOTLOADER */
 
@@ -440,7 +440,7 @@
 	#define PTT2_TARGET_PIN				(GPIOD->DATA)
 	#define PTT2_BIT_PTT				(1uL << 9)		// PD9 - PTT2
 	// получить бит запроса оператором перехода на пердачу
-	#define HARDWARE_GET_PTT() ((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
+	#define HARDWARE_GET_PTT() (0) //((PTT_TARGET_PIN & PTT_BIT_PTT) == 0 || (PTT2_TARGET_PIN & PTT2_BIT_PTT) == 0)
 	#define PTT_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(PTT_BIT_PTT); \
@@ -451,8 +451,8 @@
 	// ---
 	// TUNE input - PD11
 	#define TUNE_TARGET_PIN				(GPIOD->DATA)
-	#define TUNE_BIT_TUNE					(1U << 11)		// PD11
-	#define HARDWARE_GET_TUNE() ((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
+	#define TUNE_BIT_TUNE					0//(1U << 11)		// PD11
+	#define HARDWARE_GET_TUNE() 0//((TUNE_TARGET_PIN & TUNE_BIT_TUNE) == 0)
 	#define TUNE_INITIALIZE() \
 		do { \
 			arm_hardware_piod_inputs(TUNE_BIT_TUNE); \
@@ -474,13 +474,13 @@
 
 #if WITHELKEY
 	// Electronic key inputs
-	#define ELKEY_BIT_LEFT				(1uL << 14)		// PD14
-	#define ELKEY_BIT_RIGHT				(1uL << 15)		// PD15
+	#define ELKEY_BIT_LEFT				0//(1uL << 14)		// PD14
+	#define ELKEY_BIT_RIGHT				0//(1uL << 15)		// PD15
 
 	#define ELKEY_TARGET_PIN			(GPIOD->DATA)
 
-	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
-	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+	#define HARDWARE_GET_ELKEY_LEFT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
 
 
 	#define ELKEY_INITIALIZE() \
@@ -1090,8 +1090,8 @@
 			/*HARDWARE_DAC_INITIALIZE(); */\
 			/*HARDWARE_BL_INITIALIZE(); */\
 			HARDWARE_DCDC_INITIALIZE(); \
-			/*TXDISABLE_INITIALIZE(); */\
-			/*TUNE_INITIALIZE(); */\
+			TXDISABLE_INITIALIZE(); \
+			TUNE_INITIALIZE(); \
 			BOARD_USERBOOT_INITIALIZE(); \
 			/*USBD_EHCI_INITIALIZE(); */\
 		} while (0)
