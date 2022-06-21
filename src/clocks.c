@@ -2909,7 +2909,7 @@ void hardware_spi_io_delay(void)
 
 	// 1/20 dot length interval timer
 	void
-	TIMER0_base_IRQHandler(void)
+	TIMER0_IRQHandler(void)
 	{
 		const portholder_t st = TIMER->TMR_IRQ_STA_REG;
 		if ((st & (1uL << 0)) != 0)	// TMR0_IRQ_PEND
@@ -10966,24 +10966,11 @@ hardware_elkey_timer_initialize(void)
 	arm_hardware_set_handler_system(TIM3_IRQn, TIM3_IRQHandler);
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Should be implemented for CPUSTYPE_ALLWNT113
 
-//	writel(0x2EE0, TMR_0_INTV); //Set the interval value
-//	writel(0x94, TMR_0_CTRL); //Select Single mode, 24 MHz clock source, 2 pre-scale
-//	writel(readl(TMR_0_CTRL)|(1<<1), TMR_0_CTRL); //Set the Reload bit
-//	while((readl(TMR_0_CTRL)>>1)&1); //Waiting the Reload bit turns to 0
-//	writel(readl(TMR_0_CTRL)|(1<<0), TMR_0_CTRL); //Enable Timer0
-
-//	TIMER->TMR0_INTV_VALUE_REG = 0x2EE0;
-	TIMER->TMR0_CTRL_REG = 0x94;
-	TIMER->TMR0_CTRL_REG &= ~ ((1uL << 7)); // TMR0_MODE 0: Periodic mode.
-	TIMER->TMR0_CTRL_REG |= (1uL << 1);	// TMR0_RELOAD
-//	while ((TIMER->TMR0_CTRL_REG & (1uL << 1)) != 0)
-//		;
-	//TIMER->TMR0_CTRL_REG |= (1uL << 0);	// TMR0_EN
+	TIMER->TMR0_CTRL_REG = 0;
 
 	TIMER->TMR_IRQ_EN_REG |= (1uL << 0);	// TMR0_IRQ_EN
-	arm_hardware_set_handler_system(TIMER0_base_IRQn, TIMER0_base_IRQHandler);
+	arm_hardware_set_handler_system(TIMER0_IRQn, TIMER0_IRQHandler);
 
 #else
 	#warning Undefined CPUSTYLE_XXX
@@ -11082,21 +11069,18 @@ void hardware_elkey_set_speed(uint_fast32_t ticksfreq)
 		0;
 
 #elif CPUSTYPE_ALLWNT113
-	#warning Should be implemented for CPUSTYPE_ALLWNT113
 
 	enum { ALLWNR_TIMER_WIDTH = 32, ALLWNR_TIMER_TAPS = (128 | 64 | 32 | 16 | 8 | 4 | 2 | 1) };
 	unsigned value;
 	const uint_fast8_t prei = calcdivider(calcdivround2(24000000uL, ticksfreq), ALLWNR_TIMER_WIDTH, ALLWNR_TIMER_TAPS, & value, 0);
 
 	TIMER->TMR0_INTV_VALUE_REG = value;
-	//TIMER->TMR0_CTRL_REG = 0x94;
-	TIMER->TMR0_CTRL_REG = //(TIMER->TMR0_CTRL_REG & ~ (0x07uL << 4)) |
+	TIMER->TMR0_CTRL_REG =
 		0 * (1uL << 7) |	// TMR0_MODE 0: Periodic mode.
 		prei * (1uL << 4) |
 		0x01 * (1uL << 2) |	// TMR1_CLK_SRC 01: OSC24M
 		(1uL << 0) | // TMR0_EN
 		0;
-	TIMER->TMR0_CTRL_REG &= ~ ((1uL << 7)); // TMR0_MODE 0: Periodic mode.
 
 	while ((TIMER->TMR0_CTRL_REG & (1uL << 1)) != 0)
 		;

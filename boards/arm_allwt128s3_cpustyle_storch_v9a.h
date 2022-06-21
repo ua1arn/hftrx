@@ -474,19 +474,19 @@
 
 #if WITHELKEY
 	// Electronic key inputs
-	#define ELKEY_BIT_LEFT				0//(1uL << 14)		// PD14
-	#define ELKEY_BIT_RIGHT				0//(1uL << 15)		// PD15
+	#define ELKEY_BIT_LEFT				(1uL << 4)		// PB4
+	#define ELKEY_BIT_RIGHT				(1uL << 5)		// PB5
 
-	#define ELKEY_TARGET_PIN			(GPIOD->DATA)
+	#define ELKEY_TARGET_PIN			(GPIOB->DATA)
 
-	#define HARDWARE_GET_ELKEY_LEFT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
-	#define HARDWARE_GET_ELKEY_RIGHT() 	0//((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
+	#define HARDWARE_GET_ELKEY_LEFT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_LEFT) == 0)
+	#define HARDWARE_GET_ELKEY_RIGHT() 	((ELKEY_TARGET_PIN & ELKEY_BIT_RIGHT) == 0)
 
 
 	#define ELKEY_INITIALIZE() \
 		do { \
-			arm_hardware_piod_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
-			arm_hardware_piod_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
+			arm_hardware_piob_inputs(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT); \
+			arm_hardware_piob_updown(ELKEY_BIT_LEFT | ELKEY_BIT_RIGHT, 0); \
 		} while (0)
 
 #endif /* WITHELKEY */

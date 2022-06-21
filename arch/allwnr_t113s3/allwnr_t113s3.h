@@ -89,8 +89,8 @@ typedef enum IRQn
 	HSTIME1_IRQn = (88), /*  Peripherial */
 	GPADC_IRQn = (89), /*  Peripherial */
 	THS_IRQn = (90), /*  Peripherial */
-	TIMER0_base_IRQn = (91), /*  Peripherial */
-	TIMER1_base_IRQn = (92), /*  Peripherial */
+	TIMER0_IRQn = (91), /*  Peripherial */
+	TIMER1_IRQn = (92), /*  Peripherial */
 	LRADC_IRQn = (93), /*  Peripherial */
 	TPADC_IRQn = (94), /*  Peripherial */
 	WATCHDOG_IRQn = (95), /*  Peripherial */
@@ -127,10 +127,10 @@ typedef enum IRQn
 	NMI_IRQn = (168), /*  Peripherial */
 	PPU_IRQn = (169), /*  Peripherial */
 	TWD_IRQn = (170), /*  Peripherial */
-	TIMER0_IRQn = (172), /*  Peripherial */
-	TIMER1_IRQn = (173), /*  Peripherial */
-	TIMER2_IRQn = (174), /*  Peripherial */
-	TIMER3_IRQn = (175), /*  Peripherial */
+	TIMER_und_0_IRQn = (172), /*  Peripherial */
+	TIMER_und_1_IRQn = (173), /*  Peripherial */
+	TIMER_und_2_IRQn = (174), /*  Peripherial */
+	TIMER_und_3_IRQn = (175), /*  Peripherial */
 	ALARM0_IRQn = (176), /*  Peripherial */
 	IRRX_IRQn = (183), /*  Peripherial */
 	C0_CTI0_IRQn = (192), /*  Peripherial */
