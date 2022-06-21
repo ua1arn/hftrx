@@ -1251,9 +1251,7 @@ void savemonistereo(FLOAT_t ch0, FLOAT_t ch1)
 	ASSERT(p->tag3 == p);
 
 	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = adpt_outputexact(& afcodecio, ch0);	// sample value
-#if DMABUFFSTEP16 > 1
 	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = adpt_outputexact(& afcodecio, ch1);	// sample value
-#endif
 
 	if (++ n >= CNT16TX)
 	{
@@ -1461,9 +1459,8 @@ static RAMFUNC unsigned getsamplemsuacout(
 				enum { HALF = DMABUFFSIZE16RX / 2 };
 				// значения как среднее арифметическое сэмплов, между которыми вставляем дополнительный.
 				addsample [0] = ((aufastbufv2x_t) p->buff [HALF - DMABUFFSTEP16RX + 0] + p->buff [HALF + 0]) / 2;	// Left
-		#if DMABUFFSTEP16 > 1
 				addsample [1] = ((aufastbufv2x_t) p->buff [HALF - DMABUFFSTEP16RX + 1] + p->buff [HALF + 1]) / 2;	// Right
-		#endif
+
 				part = NPARTS - 3;
 				datas [0] = & p->buff [0];		// часть перед вставкой
 				sizes [0] = HALF;
@@ -2256,9 +2253,7 @@ static void savesampleout16stereo_user(int_fast32_t ch0, int_fast32_t ch1)
 	ASSERT(p->tag3 == p);
 
 	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch0;	// sample value
-#if DMABUFFSTEP16 > 1
-	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch1;	// sample value
-#endif
+	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = ch1;	// sample value
 
 	if (++ n >= CNT16TX)
 	{

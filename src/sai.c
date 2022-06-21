@@ -181,7 +181,7 @@ enum
 	#endif /* CODEC1_FRAMEBITS */
 	NBSLOT_SAIAUDIO = 2,	/* всегда стерео */
 	// Количество битов в SLOTEN_TX_xxx и SLOTEN_RX_xxx должно быть равно
-	// значению DMABUFFSTEP16 соответственно.
+	// значению DMABUFFSTEP16TX/DMABUFFSTEP16RX соответственно.
 	SLOTEN_RX_SAIAUDIO = 0x0003,
 	SLOTEN_TX_SAIAUDIO = 0x0003,
 
