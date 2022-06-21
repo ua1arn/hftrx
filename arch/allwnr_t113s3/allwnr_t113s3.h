@@ -89,8 +89,8 @@ typedef enum IRQn
 	HSTIME1_IRQn = (88), /*  Peripherial */
 	GPADC_IRQn = (89), /*  Peripherial */
 	THS_IRQn = (90), /*  Peripherial */
-	TIMER0_IRQn = (91), /*  Peripherial */
-	TIMER1_IRQn = (92), /*  Peripherial */
+	TIMER0_IRQn = (91), /*  TIMER->TMR0_CTRL_REG */
+	TIMER1_IRQn = (92), /*  TIMER->TMR1_CTRL_REG */
 	LRADC_IRQn = (93), /*  Peripherial */
 	TPADC_IRQn = (94), /*  Peripherial */
 	WATCHDOG_IRQn = (95), /*  Peripherial */
