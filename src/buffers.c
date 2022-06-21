@@ -2282,9 +2282,7 @@ static void savesampleout16stereo(int_fast32_t ch0, int_fast32_t ch1)
 	ASSERT(p->tag3 == p);
 
 	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_LEFT] = ch0;	// sample value
-#if DMABUFFSTEP16TX > 1
 	p->buff [n * DMABUFFSTEP16TX + DMABUFF16TX_RIGHT] = ch1;	// sample value
-#endif
 
 	if (++ n >= CNT16TX)
 	{
