@@ -3962,8 +3962,15 @@ static RAMFUNC FLOAT_t preparevi(
 		}
 	}
 	// В режиме приёма или bypass ничего не делаем.
-	moni->IV = 0;
-	moni->QV = 0;
+	if (uacoutplayer)
+	{
+		* moni = viusb0f;
+	}
+	else
+	{
+		moni->IV = 0;
+		moni->QV = 0;
+	}
 	return 0;
 }
 
@@ -4055,13 +4062,10 @@ static RAMFUNC void processafadcsampleiq(
 	#endif /* WITHMODEMIQLOOPBACK */
 			const int vv = txb ? 0 : - 1;	// txiq[63] управляет инверсией сигнала переж АЦП
 			savesampleout32stereo(adpt_output(& ifcodecout, vv), adpt_output(& ifcodecout, vv));	// Запись в поток к передатчику I/Q значений.
-			moni->VI = 0;
-			moni->QI = 0;
 #endif /* WITHMODEM */
 		}
 		else
 		{
-			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 			vi = filter_fir_tx_MIKE(vi, 0);
 	#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
 			const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
@@ -4077,12 +4081,9 @@ static RAMFUNC void processafadcsampleiq(
 	}
 	else
 	{
+		// RX
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
-	}
-	if (uacoutplayer)
-	{
-		* moni = viusb0;
 	}
 }
 
