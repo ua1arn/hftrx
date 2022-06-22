@@ -3920,12 +3920,10 @@ static RAMFUNC FLOAT_t preparevi(
 			// источник - микрофон
 			// дополнительно работает ограничитель.
 			// see glob_mik1level (0..100)
+			vi0f = txmikereverb(txmikeagc(vi0f * txlevelXXX));
 			moni->IV = vi0f;
 			moni->QV = vi0f;
-			return injectsubtone(
-					txmikereverb(
-							txmikeagc(vi0f * txlevelXXX)
-							), ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(vi0f, ctcss); //* TXINSCALE; // источник сигнала - микрофон
 
 #if WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
