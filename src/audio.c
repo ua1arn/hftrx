@@ -3730,17 +3730,19 @@ static RAMFUNC FLOAT_t txmikeagc(FLOAT_t vi)
 		const FLOAT_t gain = agccalcgain_log(agcp, agc_result_slow(st));
 		vi *= gain;
 	}
+	return vi;
+}
 
-	{
-		// Ограничитель
-		const FLOAT_t levelp = mickecliplevelp [gwagcproftx];
-		const FLOAT_t leveln = mickeclipleveln [gwagcproftx];
-		if (vi > levelp)	
-			vi = levelp;
-		else if (vi < leveln)
-			vi = leveln;
-		vi *= mickeclipscale [gwagcproftx];
-	}
+static RAMFUNC FLOAT_t txmikeclip(FLOAT_t vi)
+{
+	// Ограничитель
+	const FLOAT_t levelp = mickecliplevelp [gwagcproftx];
+	const FLOAT_t leveln = mickeclipleveln [gwagcproftx];
+	if (vi > levelp)
+		vi = levelp;
+	else if (vi < leveln)
+		vi = leveln;
+	vi *= mickeclipscale [gwagcproftx];
 
 	return vi;
 }
@@ -3913,24 +3915,24 @@ static RAMFUNC FLOAT_t preparevi(
 		switch (glob_txaudio)
 		{
 		default:
-		case BOARD_TXAUDIO_MIKE:
 #if WITHAFCODEC1HAVELINEINLEVEL	/* кодек имеет управление усилением с линейного входа */
+			// источник - LINE IN
 		case BOARD_TXAUDIO_LINE:
 #endif /* WITHAFCODEC1HAVELINEINLEVEL */
+		case BOARD_TXAUDIO_MIKE:
 			// источник - микрофон
-			// дополнительно работает ограничитель.
-			// see glob_mik1level (0..100)
-			vi0f = txmikereverb(txmikeagc(vi0f * txlevelXXX));
+			vi0f = txmikeagc(vi0f * txlevelXXX);	// АРУ
+			vi0f = txmikeclip(vi0f);	// Ограничитель
+			vi0f = txmikereverb(vi0f);	// Ревербератор
 			moni->IV = vi0f;
 			moni->QV = vi0f;
-			return injectsubtone(vi0f, ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(vi0f, ctcss);
 
 #if WITHUSBUACOUT
 		case BOARD_TXAUDIO_USB:
-			// источник - LINE IN или USB
-			// see glob_mik1level (0..100)
+			// источник - USB
 			* moni = viusb0f;
-			return injectsubtone(viusb0f.IV * txlevelXXX, ctcss); //* TXINSCALE; // источник сигнала - микрофон
+			return injectsubtone(viusb0f.IV * txlevelXXX, ctcss);
 #endif /* WITHUSBUACOUT */
 
 		case BOARD_TXAUDIO_NOISE:
