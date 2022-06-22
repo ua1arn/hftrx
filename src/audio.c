@@ -179,9 +179,9 @@ static uint_fast8_t 	glob_dspagc;
 static uint_fast8_t		glob_dsploudspeaker_off;
 
 #if WITHUSBUAC
-static RAMBIGDTCM volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
+static volatile uint_fast8_t uacoutplayer;	/* режим прослушивания выхода компьютера в наушниках трансивера - отладочный режим */
 	#if WITHTX
-	static RAMBIGDTCM volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
+	static volatile uint_fast8_t datavox;	/* автоматический переход на передачу при появлении звука со стороны компьютера */
 	#endif /* WITHTX */
 #endif /* WITHUSBUAC */
 
@@ -4040,13 +4040,12 @@ static RAMFUNC void processafadcsampleiq(
 	FLOAT32P_t * moni
 	)
 {
-	// vi - audio sample in range [- txlevelfence.. + txlevelfence]
 	FLOAT_t vi = preparevi(vi0.IV, viusb0, dspmode, ctcss, moni);	// vi нормирован к разрядности выходного ЦАП
 	if (isdspmodetx(dspmode))
 	{
-#if WITHMODEM
 		if (dspmode == DSPCTL_MODE_TX_BPSK)
 		{
+#if WITHMODEM
 			// высокоскоростной модем. До вызова baseband_modulator и в нём modem_get_tx_iq дело не доходит.
 			const int txb = modem_get_tx_b(getTxShapeNotComplete());
 	#if WITHMODEMIQLOOPBACK
@@ -4058,27 +4057,32 @@ static RAMFUNC void processafadcsampleiq(
 			savesampleout32stereo(adpt_output(& ifcodecout, vv), adpt_output(& ifcodecout, vv));	// Запись в поток к передатчику I/Q значений.
 			moni->VI = 0;
 			moni->QI = 0;
-			return;
-		}
 #endif /* WITHMODEM */
-
-		
-		vi = filter_fir_tx_MIKE(vi, 0);
-#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
-		const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
-#else /* WITHDSPLOCALFIR */
-		const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
-#endif /* WITHDSPLOCALFIR */
-#if WITHTXCPATHCALIBRATE
-		savesampleout32stereo(adpt_outputexact(& ifcodecout, vfb.IV), adpt_outputexact(& ifcodecout, vfb.QV));	// Запись в поток к передатчику I/Q значений.
-#else /* WITHTXCPATHCALIBRATE */
-		savesampleout32stereo(adpt_output(& ifcodecout, vfb.IV), adpt_output(& ifcodecout, vfb.QV));	// Запись в поток к передатчику I/Q значений.
-#endif /* WITHTXCPATHCALIBRATE */
+		}
+		else
+		{
+			// vi - audio sample in range [- txlevelfence.. + txlevelfence]
+			vi = filter_fir_tx_MIKE(vi, 0);
+	#if WITHDSPLOCALFIR || WITHDSPLOCALTXFIR
+			const FLOAT32P_t vfb = filter_firp_tx_SSB_IQ(baseband_modulator(vi, dspmode, shape));
+	#else /* WITHDSPLOCALFIR */
+			const FLOAT32P_t vfb = baseband_modulator(vi, dspmode, shape);
+	#endif /* WITHDSPLOCALFIR */
+	#if WITHTXCPATHCALIBRATE
+			savesampleout32stereo(adpt_outputexact(& ifcodecout, vfb.IV), adpt_outputexact(& ifcodecout, vfb.QV));	// Запись в поток к передатчику I/Q значений.
+	#else /* WITHTXCPATHCALIBRATE */
+			savesampleout32stereo(adpt_output(& ifcodecout, vfb.IV), adpt_output(& ifcodecout, vfb.QV));	// Запись в поток к передатчику I/Q значений.
+	#endif /* WITHTXCPATHCALIBRATE */
+		}
 	}
 	else
 	{
 		filter_fir_tx_MIKE(vi, 1);		// Фильтр не применяется, только выполняется сдвиг в линии задержки
 		savesampleout32stereo(0, 0);
+	}
+	if (uacoutplayer)
+	{
+		* moni = viusb0;
 	}
 }
 
@@ -5226,6 +5230,8 @@ static RAMFUNC void recordsampleSD(FLOAT_t left, FLOAT_t right)
 // shape: 0..1: 0 - monitor, 1 - sidetone
 static FLOAT_t mixmonitor(FLOAT_t shape, FLOAT_t sdtn, FLOAT_t moni)
 {
+	if (uacoutplayer)
+		return moni;
 	return sdtn * shape + moni * glob_moniflag * (1 - shape);
 }
 // перед передачей по DMA в аудиокодек
@@ -5271,7 +5277,7 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 				right = dual.QV;
 			}
 		}
-#elif WITHUSBHEADSET || WITHUSBAUDIOSAI1
+#elif WITHUSBHEADSET
 		// Обеспечиваем прослушивание стерео
 #else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
@@ -5296,10 +5302,10 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			recordsampleUAC(left, right);	// Запись в UAC демодулированного сигнала без озвучки клавиш
 		}
 
-#if WITHUSBHEADSET || WITHUSBAUDIOSAI1
+#if WITHUSBHEADSET
 		b [L] = adpt_outputexact(& afcodecio, left);
 		b [R] = adpt_outputexact(& afcodecio, right);
-#else /* WITHUSBHEADSET || WITHUSBAUDIOSAI1 */
+#else /* WITHUSBHEADSET */
 		switch (glob_mainsubrxmode)
 		{
 		default:
@@ -5332,7 +5338,7 @@ void dsp_addsidetone(aubufv_t * buff, int usebuf)
 			}
 			break;
 		}
-#endif /* WITHUSBHEADSET || WITHUSBAUDIOSAI1 */
+#endif /* WITHUSBHEADSET */
 	}
 }
 
@@ -5501,20 +5507,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		nco_setlo_delay(0, tx);
 	#endif /* WITHUSEDUALWATCH */
 
-#if WITHUSBAUDIOSAI1
-		//processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
-		savemonistereo(moni.IV, moni.QV);
-		savesampleout32stereo(adpt_output(& ifcodecout, viusb.IV), adpt_output(& ifcodecout, viusb.QV));	// Запись в поток к передатчику I/Q значений.
-		//const INT32P_t dual = vi;
-		//const INT32P_t dual = { { get_lout(), get_rout() } }; // vi;
-		savesampleout32stereo(adpt_output(& ifcodecout, viusb.IV), adpt_output(& ifcodecout, viusb.QV));	// Запись в поток к передатчику I/Q значений.
-//		recordsampleUAC(viusb.IV, viusb.QV);	// Запись в UAC демодулированного сигнала без озвучки клавиш
-		recordsampleUAC(
-			adpt_input(& ifcodecout, buff [i + DMABUF32RXI] * rxgate),
-			adpt_input(& ifcodecout, buff [i + DMABUF32RXQ] * rxgate)
-			);
-
-#elif WITHSUSBSPKONLY
+#if WITHSUSBSPKONLY
 		// тестирование в режиме USB SPEAKER
 
 		if (isdspmodetx(dspmodeA))
@@ -5564,7 +5557,7 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 		//dual.IV = vi.IV; //get_lout();
 		dual.IV = get_lout();
 		dual.QV = 0;
-		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(dual, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		// Тестирование распознавания DTMF
 		if (dtmfbi < DTMF_STEPS)
@@ -5589,23 +5582,23 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#if 0
 		// Тестирование (самопрослушивание) того, что идет с микрофона
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		save16demod(vi.IV, vi.QV);
 
 	#elif WITHLOOPBACKTEST
 
-		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape);
-		processafadcsampleiq(dual, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		const FLOAT32P_t dual = loopbacktestaudio(vi, dspmodeA, shape, & moni);
+		processafadcsampleiq(dual, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
 		//
 		// Тестирование источников и потребителей звука
 		save16demod(dual.IV, dual.QV);
 
 	#elif WITHUSBHEADSET
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
 		savemonistereo(moni.IV, moni.QV);
-		/* трансивер работает USB гарнитурой для компьютера - режим тестирования */
+
 
 		save16demod(vi.IV, vi.QV);		// данные игнорируются
 		//FLOAT_t t = get_lout();
@@ -5656,7 +5649,8 @@ void RAMFUNC dsp_extbuffer32rx(const IFADCvalue_t * buff)
 
 	#else /* WITHUSEDUALWATCH */
 
-		processafadcsampleiq(vi, dspmodeA, shape, ctcss);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		processafadcsampleiq(vi, viusb, dspmodeA, shape, ctcss, & moni);	// Передатчик - формирование одного сэмпла (пары I/Q).
+		savemonistereo(moni.IV, moni.QV);
 		// Одноканальный приёмник
 
 		if (dspmodeA == DSPCTL_MODE_RX_WFM)
@@ -5952,7 +5946,7 @@ rxparam_update(uint_fast8_t profile, uint_fast8_t pathi)
 	}
 
 	// Уровень сигнала самоконтроля
-#if WITHUSBHEADSET || WITHUSBAUDIOSAI1 || WITHWAVPLAYER
+#if WITHUSBHEADSET || WITHWAVPLAYER
 	// В этих вариантвх самоконтроля нет.
 	sidetonevolume = 0;
 #else /* WITHUSBHEADSET */

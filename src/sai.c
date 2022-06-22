@@ -2844,23 +2844,12 @@ static void hardware_sai2_b_enable_WFM(uint_fast8_t state)		/* разрешен�
 
 #endif /* WITHFPGARTS_FRAMEBITS */
 
-static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* инициализация SAI2 на STM32F4xx */
+static void hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI_Block_TypeDef * sai_A, SAI_Block_TypeDef * sai_B)		/* инициализация SAI2 на STM32F4xx */
 {
-	hardware_sai1_sai2_clock_selection();
-
-#if CPUSTYLE_STM32MP1
-	// Теперь настроим модуль SAI.
-	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
-	(void) RCC->MP_APB2ENSETR;
-#else /* CPUSTYLE_STM32MP1 */
-	// Теперь настроим модуль SAI.
-	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
-	(void) RCC->APB2ENR;
-#endif /* CPUSTYLE_STM32MP1 */
 	
 
-	SAI2_Block_A->CR1 &= ~ SAI_xCR1_SAIEN;
-	SAI2_Block_B->CR1 &= ~ SAI_xCR1_SAIEN;
+	sai_A->CR1 &= ~ SAI_xCR1_SAIEN;
+	sai_B->CR1 &= ~ SAI_xCR1_SAIEN;
 
 	// extclock = 24.576 MHz
 	// if SAI_xCR1_NODIV == 1, ws=384 kHz
@@ -2897,19 +2886,19 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 		0;
 
 #if WITHSAICLOCKFROMPIN
-	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_codec1: 1 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 1 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, EXTSAI_FREQ=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) EXTSAI_FREQ);
 #elif WITHSAICLOCKFROMI2S
-	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_codec1: 2 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 2 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, PLLI2S_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLI2S_FREQ_OUT);
 #else
-	PRINTF(PSTR("hardware_sai2_a_tx_b_rx_master_initialize_codec1: 3 SAI2 MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
+	PRINTF(PSTR("hardware_saiX_a_tx_b_rx_master_initialize_codec1: 3 SAIx MCKDIV=%lu, ARMSAIMCLK=%lu, PLLSAI_FREQ_OUT=%lu\n"), (unsigned long) mckdiv, (unsigned long) ARMSAIMCLK, (unsigned long) PLLSAI_FREQ_OUT);
 #endif
 
-	SAI2_Block_A->CR1 = 
+	sai_A->CR1 =
 		commoncr1 |
 		(0 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: 0: audio sub-block in asynchronous mode.
 		(0 * SAI_xCR1_MODE_0) |	// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
 		0;
-	SAI2_Block_B->CR1 = 
+	sai_B->CR1 =
 		commoncr1 |
 		(1 * SAI_xCR1_SYNCEN_0) |	// SYNChronization ENable: audio sub-block is synchronous with the other internal audio sub-block. In this case, the audio sub-block must be configured in slave mode
 		(3 * SAI_xCR1_MODE_0) |		// 0: Master transmitter, 1: Master receiver, 2: Slave transmitter, 3: Slave receiver
@@ -2919,10 +2908,10 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 	const portholder_t commoncr2 =
 		//(2 * SAI_xCR2_FTH_0) |
 		0;
-	SAI2_Block_A->CR2 = 
+	sai_A->CR2 =
 		commoncr2 |
 		0;
-	SAI2_Block_B->CR2 = 
+	sai_B->CR2 =
 		commoncr2 |
 		0;
 	// SLOTR value
@@ -2933,11 +2922,11 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 		//(3UL << 16) |
 		//(1 * SAI_xSLOTR_FBOFF_0) | // slot offset - "1" for I2S 24 bit in 32 bit slot
 		0;
-	SAI2_Block_A->SLOTR = 
+	sai_A->SLOTR =
 		((SLOTEN_TX_SAIAUDIO << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// TX slots enabled
 		commonslotr |
 		0;
-	SAI2_Block_B->SLOTR = 
+	sai_B->SLOTR =
 		((SLOTEN_RX_SAIAUDIO << SAI_xSLOTR_SLOTEN_Pos) & SAI_xSLOTR_SLOTEN_Msk) |			// RX slots enabled
 		commonslotr |
 		0;
@@ -2953,13 +2942,46 @@ static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* иниц�
 #endif /* CODEC1_FORMATI2S_PHILIPS */
 		0;
 	// FRAME CONTROL REGISTER
-	SAI2_Block_A->FRCR =
+	sai_A->FRCR =
 		comm_frcr |
 		0;
-	SAI2_Block_B->FRCR =
+	sai_B->FRCR =
 		comm_frcr |
 		0;
 
+
+}
+
+static void hardware_sai1_a_tx_b_rx_master_initialize_codec1(void)		/* инициализация SAI2 на STM32F4xx */
+{
+#if CPUSTYLE_STM32MP1
+	// Теперь настроим модуль SAI.
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI1EN; //подать тактирование
+	(void) RCC->MP_APB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	// Теперь настроим модуль SAI.
+	RCC->APB2ENR |= RCC_APB2ENR_SAI1EN; //подать тактирование
+	(void) RCC->APB2ENR;
+#endif /* CPUSTYLE_STM32MP1 */
+
+	hardware_sai1_sai2_clock_selection();
+	hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI1_Block_A, SAI1_Block_B);
+	SAI1HW_INITIALIZE();
+}
+
+static void hardware_sai2_a_tx_b_rx_master_initialize_codec1(void)		/* инициализация SAI2 на STM32F4xx */
+{
+#if CPUSTYLE_STM32MP1
+	// Теперь настроим модуль SAI.
+	RCC->MP_APB2ENSETR = RCC_MP_APB2ENSETR_SAI2EN; //подать тактирование
+	(void) RCC->MP_APB2ENSETR;
+#else /* CPUSTYLE_STM32MP1 */
+	// Теперь настроим модуль SAI.
+	RCC->APB2ENR |= RCC_APB2ENR_SAI2EN; //подать тактирование
+	(void) RCC->APB2ENR;
+#endif /* CPUSTYLE_STM32MP1 */
+	hardware_sai1_sai2_clock_selection();
+	hardware_sai_a_tx_b_rx_master_initialize_codec1(SAI2_Block_A, SAI2_Block_B);
 	SAI2HW_INITIALIZE();
 }
 
@@ -3357,11 +3379,22 @@ static const codechw_t audiocodechw_sai2_a_tx_b_rx_master =
 {
 	hardware_sai2_a_tx_b_rx_master_initialize_codec1,	/* Интерфейс к НЧ кодеку - микрофон */
 	hardware_dummy_initialize,
-	DMA_SAI2_B_RX_initialize_codec1,					// DMA по приёму SPI3_RX - DMA1, Stream0, Channel0
-	DMA_SAI2_A_TX_initialize_codec1,					// DMA по передаче канал TX	SAI2_A	DMA2	Stream 4	Channel 3
+	DMA_SAI2_B_RX_initialize_codec1,					// DMA по приёму
+	DMA_SAI2_A_TX_initialize_codec1,					// DMA по передаче
 	hardware_sai2_b_enable_codec1,
 	hardware_sai2_a_enable_codec1,
 	"audiocodechw-sai2-a-tx-b-rx-master"
+};
+
+static const codechw_t audiocodechw_sai2_a_tx_b_rx_master =
+{
+	hardware_sai1_a_tx_b_rx_master_initialize_codec1,	/* Интерфейс к НЧ кодеку - микрофон */
+	hardware_dummy_initialize,
+	DMA_SAI1_B_RX_initialize_codec1,					// DMA по приёму
+	DMA_SAI1_A_TX_initialize_codec1,					// DMA по передаче
+	hardware_sai1_b_enable_codec1,
+	hardware_sai1_a_enable_codec1,
+	"audiocodechw-sai1-a-tx-b-rx-master"
 };
 
 static const codechw_t fpgacodechw_sai2_a_tx_b_rx_slave =
@@ -5349,8 +5382,9 @@ static const codechw_t fpgaspectrumhw_dummy =
 #if WITHFPGARTS_SAI2_B_RX_SLAVE
 		& fpgaspectrumhw_rx_sai2,					// Интерфейс к FPGA - широкополосный канал (WFM)
 #endif /* WITHFPGARTS_SAI2_B_RX_SLAVE */
-	};
-
+#if WITHCODEC1_SAI1_A_TX_B_RX_MASTER 1  /* Обмен с аудиокодеком через SAI1: SAI1_A - TX, SAI1_B - RX */  	};
+		& audiocodechw_sai1_a_tx_b_rx_master,	// Интерфейс к НЧ кодеку
+#endif /* WITHCODEC1_SAI1_A_TX_B_RX_MASTER */
 #elif CPUSTYLE_STM32F4XX
 	static const codechw_t * const channels [] =
 	{
